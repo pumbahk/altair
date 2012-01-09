@@ -20,3 +20,4 @@ Useful Resources
 
 * `Pyramid Documentation <http://docs.pylonsproject.org/docs/pyramid.html>`_
 * `Pyramid Migration Guide <http://bytebucket.org/sluggo/pyramid-docs/wiki/html/migration.html>`_
+
