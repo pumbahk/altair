@@ -8,26 +8,26 @@ private enum State {
 }
 
 class ComponentBase<Tself:Component> implements Component {
-    public var renderer(get_renderer, null):Renderer<Component>;
+    public var renderer(default, set_renderer):Renderer;
     public var on(default, null):Dynamic;
     public var position(default, null):Point;
     public var parent(default, null):Component;
-    private var renderer_:Renderer<Tself>;
     private var draggable:Bool;
     private var state:State;
 
-    public function new(renderer:Renderer<Tself>) {
+    public function new(?renderer:Renderer) {
         var meta = Meta.getType(Type.getClass(this));
         var on = { click: null, dragstart: null, dragend: null };
-        var events:Array<String> = meta.events;
-        events.concat(["click", "dragstart", "dragend"]);
+        var events = ["click", "dragstart", "dragend"];
+        if (meta.events != null)
+            events.concat(meta.events);
         for (event_kind in events)
             untyped on[event_kind] = new EventListeners();
-        this.renderer_ = renderer;
         this.on = on;
         this.draggable = true;
         this.state = NONE;
         this.parent = null;
+        this.renderer = renderer;
         this.position = { x: 0, y: 0 };
 
         bindEvents();
@@ -64,10 +64,10 @@ class ComponentBase<Tself:Component> implements Component {
     }
 
     public function refresh() {
-        renderer.realize(cast(this, Tself));
+        renderer.realize(this);
     }
 
-    private function get_renderer():Renderer<Component> {
-        return untyped renderer_;
+    private function set_renderer(renderer:Renderer):Renderer {
+        return this.renderer = renderer; 
     }
 }

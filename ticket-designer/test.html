@@ -12,7 +12,14 @@
   <script type="text/javascript">
   $(function() {
     var canvas = $('#canvas');
-    var tc = new TextComponent();
+    var f = new ComponentFactory(
+      new RenderingFacade(
+        new RenderingManager(),
+        new rendering.js.dom.JSDOMRendererFactory(canvas)
+      )
+    );
+    var tc = f.create(TextComponent);
+    console.log(tc);
     canvas.append(tc.n); 
     tc.text = "test";
     tc.refresh();
