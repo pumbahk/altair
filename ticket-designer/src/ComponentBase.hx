@@ -8,7 +8,7 @@ private enum State {
 }
 
 class ComponentBase<Tself:Component> implements Component {
-    public var renderer(get_renderer, null):Renderer<Dynamic>;
+    public var renderer(get_renderer, null):Renderer<Component>;
     public var on(default, null):Dynamic;
     public var position(default, null):Point;
     public var parent(default, null):Component;
@@ -67,7 +67,7 @@ class ComponentBase<Tself:Component> implements Component {
         renderer.realize(cast(this, Tself));
     }
 
-    public function get_renderer():Renderer<Dynamic> {
-        return cast(renderer_, Renderer<Dynamic>);
+    private function get_renderer():Renderer<Component> {
+        return untyped renderer_;
     }
 }
