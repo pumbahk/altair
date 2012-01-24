@@ -17,19 +17,31 @@ class TextComponentRenderer extends JSDOMRenderer, implements Renderer {
         n.bind('mousedown', onPress);
         n.bind('mousemove', onMouseMove);
         n.bind('mouseup', onRelease);
-        n.appendTo(base);
+        n.appendTo(cast(manager, JSDOMRenderingManager).base);
+    }
+
+    private function createMouseEvent(e:JqEvent):MouseEvent {
+        var manager_ = cast(manager, JSDOMRenderingManager);
+        return {
+            source: this,
+            cause: e,
+            position:{ x:e.pageX - manager_.basePageOffset.x,
+                       y:e.pageY - manager_.basePageOffset.y },
+            left:(e.which & 1) != 0,
+            middle:(e.which & 2) != 0,
+            right:(e.which & 3) != 0 };
     }
 
     private function onPress(e:JqEvent) {
-        onPressHandler(null);
+        onPressHandler(createMouseEvent(e));
     }
 
     private function onMouseMove(e:JqEvent) {
-        onMouseMoveHandler(null);
+        onMouseMoveHandler(createMouseEvent(e));
     }
 
     private function onRelease(e:JqEvent) {
-        onReleaseHandler(null);
+        onReleaseHandler(createMouseEvent(e));
     }
 
     public function realize(component:Component):Void {

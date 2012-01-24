@@ -37,7 +37,7 @@ class ComponentBase<Tself:Component> implements Component {
         var pressed = false;
 
         renderer.bind(EventKind.PRESS, function(e:Event) {
-            state = PRESSED(cast(e, MouseEvent).position);
+            state = PRESSED((cast e).position);
         });
 
         renderer.bind(EventKind.MOUSEMOVE, function(e:Event) {

@@ -14,8 +14,8 @@
     var canvas = $('#canvas');
     var f = new ComponentFactory(
       new RenderingFacade(
-        new RenderingManager(),
-        new rendering.js.dom.JSDOMRendererFactory(canvas)
+        new rendering.js.dom.JSDOMRenderingManager(canvas),
+        new rendering.js.dom.JSDOMRendererFactory()
       )
     );
     var tc = f.create(TextComponent);

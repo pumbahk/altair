@@ -6,9 +6,14 @@ class JSDOMRenderer {
     public var base(default, null):JQuery;
     public var manager(default, set_manager):RenderingManager;
 
-    public function new(base:JQuery) {
-        this.base = base;
+    public function new() {
+        this.base = null;
         this.manager = null;
+    }
+
+    public function basePageOffset():Point {
+        var offset = base.offset();
+        return { x:offset.left, y:offset.top };
     }
 
     function set_manager(manager:RenderingManager):RenderingManager {
