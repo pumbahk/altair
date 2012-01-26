@@ -4,11 +4,11 @@ import haxe.rtti.Meta;
 private enum State {
     NONE;
     PRESSED(position:Point);
-    DRAGGING;
+    DRAGGING(pof:Point);
 }
 
 class ComponentBase<Tself:Component> implements Component {
-    public var renderer(default, set_renderer):Renderer;
+    public var renderer(default, null):Renderer;
     public var on(default, null):Dynamic;
     public var position(default, null):Point;
     public var parent(default, null):Component;
@@ -18,7 +18,7 @@ class ComponentBase<Tself:Component> implements Component {
     public function new(?renderer:Renderer) {
         var meta = Meta.getType(Type.getClass(this));
         var on = { click: null, dragstart: null, dragend: null };
-        var events = ["click", "dragstart", "dragend"];
+        var events = ["click", "dragstart", "drag", "dragend"];
         if (meta.events != null)
             events.concat(meta.events);
         for (event_kind in events)
@@ -37,16 +37,31 @@ class ComponentBase<Tself:Component> implements Component {
         var pressed = false;
 
         renderer.bind(EventKind.PRESS, function(e:Event) {
-            state = PRESSED((cast e).position);
+            state = PRESSED({
+                x: (cast e).position.x - position.x,
+                y: (cast e).position.y - position.y
+            });
         });
-
         renderer.bind(EventKind.MOUSEMOVE, function(e:Event) {
             switch (state) {
-            case PRESSED(_):
+            case PRESSED(pof):
                 if (draggable) {
-                    state = DRAGGING;
+                    state = DRAGGING(pof);
+                    renderer.captureMouse();
+                    this.position = {
+                        x: (cast e).position.x - pof.x,
+                        y: (cast e).position.y - pof.y
+                    };
+                    this.refresh();
                     on.dragstart.call(this, e);
                 }
+            case DRAGGING(pof):
+                this.position = {
+                    x: (cast e).position.x - pof.x,
+                    y: (cast e).position.y - pof.y
+                };
+                this.refresh();
+                on.drag.call(this, e);
             default:
             }
         });
@@ -55,7 +70,8 @@ class ComponentBase<Tself:Component> implements Component {
             switch (state) {
             case PRESSED(_):
                 on.click.call(this, e);
-            case DRAGGING:
+            case DRAGGING(_):
+                renderer.releaseMouse();
                 on.dragend.call(this, e);
             default:
             }
@@ -65,9 +81,5 @@ class ComponentBase<Tself:Component> implements Component {
 
     public function refresh() {
         renderer.realize(this);
-    }
-
-    private function set_renderer(renderer:Renderer):Renderer {
-        return this.renderer = renderer; 
     }
 }

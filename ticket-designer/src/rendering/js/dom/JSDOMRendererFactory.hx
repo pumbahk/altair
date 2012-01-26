@@ -1,6 +1,6 @@
 package rendering.js.dom;
 
-class JSDOMRendererFactory {
+class JSDOMRendererFactory implements RendererFactory {
     static var klasses:Hash<Class<Renderer>>;
 
     public static function addImplementation(componentKlass:Class<Component>, rendererKlass:Class<Renderer>) {

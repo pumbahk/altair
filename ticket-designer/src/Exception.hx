@@ -5,9 +5,13 @@ class Exception implements Throwable {
     public var message(get_message, null): String;
     public var cause(get_cause, null): Throwable;
 
-    public function new(?message: String, cause: Throwable) {
+    public function new(?message: String, ?cause: Throwable) {
         this.message_ = message;
         this.cause_ = cause;
+    }
+
+    public function toString():String {
+        return message_;
     }
 
     private function get_message(): String {

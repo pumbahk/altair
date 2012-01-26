@@ -1,18 +1,15 @@
-class BasicRenderingManagerImpl implements RenderingManager {
+class BasicRenderingManagerImpl<Trenderer:Renderer> implements RenderingManager {
     public var renderers(get_renderers, null):Iterable<Renderer>;
-    private var renderers_:Array<Renderer>;
+    var renderers_:Array<Trenderer>;
+    var nextId:Int;
 
-    public function addRenderer(renderer:Renderer) {
+    public function addRenderer(renderer:Renderer):Void {
+        var id = nextId++;
         renderers_.push(untyped renderer);
-        setupRenderer(renderer);
-        renderer.setup();
+        renderer.setup(this, id);
     }
 
-    function setupRenderer(renderer:Renderer) {
-        renderer.manager = this;
-    }
-
-    public function dispose() {
+    public function dispose():Void {
         for (renderer in renderers_) {
             var throwables = new Array<Throwable>();
             try {
@@ -30,6 +27,7 @@ class BasicRenderingManagerImpl implements RenderingManager {
     }
 
     public function new() {
-        renderers_ = new Array<Renderer>();
+        this.renderers_ = new Array<Trenderer>();
+        this.nextId = 1;
     }
 }
