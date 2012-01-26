@@ -25,14 +25,16 @@
         new rendering.js.dom.JSDOMRendererFactory()
       )
     );
-    var tc = f.create(TextComponent);
-    console.log(tc);
-    canvas.append(tc.n); 
-    tc.text = "test";
-    tc.refresh();
-    tc.on.click.do_(function(a) { console.log(a); });
-    tc.on.dragstart.do_(function(a) { console.log(a); });
-    tc.on.dragend.do_(function(a) { console.log(a); });
+    for (var i = 0; i < 100; i++) {
+      var tc = f.create(TextComponent);
+      tc.on.click.do_(function(a) { console.log(a); });
+      tc.position.x = Math.random() * 800;
+      tc.position.y = Math.random() * 600;
+      tc.text = "test";
+      tc.refresh();
+    }
+    // tc.on.dragstart.do_(function(a) {});
+    // tc.on.dragend.do_(function(a) {});
   });
   </script>
 </head>
