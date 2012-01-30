@@ -1,0 +1,10 @@
+#wrapper {
+    width: 1200px;
+    margin: 0 auto;
+}
+#column-left {
+    width: 900px;
+}
+#column-right {
+    width: 300px;
+}
