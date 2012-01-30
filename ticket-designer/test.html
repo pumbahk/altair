@@ -3,22 +3,36 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
   <title></title>
-  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
-  <script type="text/javascript" src="out.js"></script>
+  <!-- <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script> -->
+  <script src="jquery.min.js" type="text/javascript"></script>
+  <script type="text/javascript" src="build/out.js"></script>
+  <link rel="stylesheet" href="components.css" />
   <style type="text/css">
-.canvas .component-text {
+.canvas {
+  width: 800px;
+  height: 600px;
+  background-color: #eef;
   position: absolute;
+  overflow: scroll;
 }
   </style>
   <script type="text/javascript">
   $(function() {
     var canvas = $('#canvas');
-    var tc = new TextComponent();
-    canvas.append(tc.n); 
+    var f = new ComponentFactory(
+      new RenderingFacade(
+        new rendering.js.dom.JSDOMRenderingManager(canvas),
+        new rendering.js.dom.JSDOMRendererFactory()
+      )
+    );
+    var tc = f.create(TextComponent);
     console.log(tc);
-    tc.text("test");
+    canvas.append(tc.n); 
+    tc.text = "test";
     tc.refresh();
-    tc.on.click['do'](function(a) { console.log(a); });
+    tc.on.click.do_(function(a) { console.log(a); });
+    tc.on.dragstart.do_(function(a) { console.log(a); });
+    tc.on.dragend.do_(function(a) { console.log(a); });
   });
   </script>
 </head>
