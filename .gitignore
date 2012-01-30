@@ -1,2 +1,4 @@
+*.pyc
 ticket-designer/doc/build
 cms/doc/build
+cms/src/.idea

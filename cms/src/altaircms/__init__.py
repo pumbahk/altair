@@ -55,10 +55,6 @@ def main(global_config, **settings):
     config.include(api_include, route_prefix='/api')
 
     config.scan("altaircms.views")
-
-    #config.include('velruse.providers.github')
-    #config.include('velruse.providers.facebook')
-
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)
 
     return config.make_wsgi_app()

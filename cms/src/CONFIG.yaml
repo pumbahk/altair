@@ -1,3 +1,11 @@
 Store:
-    Type: SQL
-    DB: sqlite:////%(here)s/data/stockpot.db
+    Type: SQL
+    DB: sqlite:///%(here)s/altaircms.db
+OpenID:
+    Realm: http://127.0.0.1:6543
+    Endpoint Regex: http://127.0.0.1:6543/.*
+OpenID Store:
+    Type: openid.store.memstore:MemoryStore
+Google:
+    OAuth Consumer Key: MYKEY
+    OAuth Consumer Secret: MYSECRET

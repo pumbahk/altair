@@ -23,35 +23,6 @@
   <component name="FileEditorManager">
     <leaf>
       <file leaf-file-name="views.py" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/altaircms/event/views.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="31" column="33" selection-start="595" selection-end="595" vertical-scroll-proportion="-17.884615">
-              <folding>
-                <element signature="e#16#27#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="development.ini" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/development.ini">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="30" column="0" selection-start="686" selection-end="686" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="CONFIG.yaml" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/altaircms/CONFIG.yaml">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="3" column="0" selection-start="66" selection-end="66" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="views.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/altaircms/auth/views.py">
           <provider selected="true" editor-type-id="text-editor">
             <state line="62" column="0" selection-start="1840" selection-end="1840" vertical-scroll-proportion="0.0">
@@ -64,9 +35,7 @@
         <entry file="file://$PROJECT_DIR$/altaircms/lib.py">
           <provider selected="true" editor-type-id="text-editor">
             <state line="7" column="16" selection-start="265" selection-end="265" vertical-scroll-proportion="0.0">
-              <folding>
-                <element signature="e#16#60#0" expanded="true" />
-              </folding>
+              <folding />
             </state>
           </provider>
         </entry>
@@ -83,7 +52,7 @@
       <file leaf-file-name="models.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/altaircms/models.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="70" column="33" selection-start="1446" selection-end="1785" vertical-scroll-proportion="-18.307692">
+            <state line="70" column="33" selection-start="1446" selection-end="1785" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -92,16 +61,43 @@
       <file leaf-file-name="__init__.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/altaircms/__init__.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="35" column="43" selection-start="973" selection-end="973" vertical-scroll-proportion="0.0">
+            <state line="53" column="0" selection-start="1516" selection-end="1516" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="login.mako" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="development.ini" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/development.ini">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="38" column="44" selection-start="942" selection-end="942" vertical-scroll-proportion="-21.923077">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="CONFIG.yaml" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/CONFIG.yaml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="11" column="0" selection-start="279" selection-end="279" vertical-scroll-proportion="0.18497758">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="login.mako" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/altaircms/templates/login.mako">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="15" column="11" selection-start="693" selection-end="693" vertical-scroll-proportion="0.25921658">
+            <state line="28" column="7" selection-start="1588" selection-end="1588" vertical-scroll-proportion="-17.5">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="README.txt" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/README.txt">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="1" column="0" selection-start="18" selection-end="18" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -110,9 +106,9 @@
       <file leaf-file-name="views.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/altaircms/views.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="7" column="0" selection-start="210" selection-end="210" vertical-scroll-proportion="0.0">
+            <state line="4" column="0" selection-start="122" selection-end="122" vertical-scroll-proportion="0.0">
               <folding>
-                <element signature="e#16#52#0" expanded="true" />
+                <element signature="e#16#50#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -133,27 +129,27 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/altaircms/templates/client/form.mako" />
-        <option value="$PROJECT_DIR$/altaircms/forms.py" />
         <option value="$PROJECT_DIR$/altaircms/fainit.py" />
         <option value="$PROJECT_DIR$/altaircms/base/views.py" />
         <option value="$PROJECT_DIR$/../../lib/python2.7/site-packages/webob/response.py" />
         <option value="$PROJECT_DIR$/altaircms/models.py" />
         <option value="$PROJECT_DIR$/altaircms/event/forms.py" />
         <option value="$PROJECT_DIR$/altaircms/templates/event/form.mako" />
-        <option value="$PROJECT_DIR$/altaircms/views.py" />
         <option value="$PROJECT_DIR$/altaircms/event/views.py" />
         <option value="$PROJECT_DIR$/altaircms/lib.py" />
         <option value="$PROJECT_DIR$/altaircms/auth/views.py" />
-        <option value="$PROJECT_DIR$/development.ini" />
+        <option value="$PROJECT_DIR$/altaircms/views.py" />
         <option value="$PROJECT_DIR$/altaircms/CONFIG.yaml" />
         <option value="$PROJECT_DIR$/altaircms/__init__.py" />
+        <option value="$PROJECT_DIR$/development.ini" />
+        <option value="$PROJECT_DIR$/README.txt" />
         <option value="$PROJECT_DIR$/altaircms/templates/login.mako" />
+        <option value="$PROJECT_DIR$/CONFIG.yaml" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="192" />
+    <option name="x" value="375" />
     <option name="y" value="22" />
     <option name="width" value="1536" />
     <option name="height" value="1060" />
@@ -366,8 +362,8 @@
     <property name="last_opened_file_path" value="$PROJECT_DIR$/altaircms/templates" />
     <property name="FullScreen" value="false" />
     <property name="DefaultHtmlFileTemplate" value="Html" />
-    <property name="options.splitter.details.proportions" value="0.2" />
     <property name="options.searchVisible" value="true" />
+    <property name="options.splitter.details.proportions" value="0.2" />
   </component>
   <component name="PyConsoleOptionsProvider">
     <option name="myPythonConsoleState">
@@ -468,14 +464,14 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="192" y="22" width="1536" height="1060" extended-state="0" />
+    <frame x="375" y="22" width="1536" height="1060" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Data Sources" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2701613" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.27419356" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
@@ -542,23 +538,9 @@
     <breakpoint-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/../../lib/python2.7/site-packages/formalchemy/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="40" column="14" selection-start="1518" selection-end="1518" vertical-scroll-proportion="0.5381166" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../../lib/python2.7/site-packages/deform/form.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="106" column="19" selection-start="4516" selection-end="4516" vertical-scroll-proportion="0.595186">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/altaircms/templates/event/form.mako">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="5" column="0" selection-start="74" selection-end="74" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
+        <state line="5" column="0" selection-start="74" selection-end="74" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/altaircms/base/views.py">
@@ -568,90 +550,83 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/altaircms/event/forms.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="16" column="0" selection-start="772" selection-end="772" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
+        <state line="16" column="0" selection-start="772" selection-end="772" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/altaircms/event/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/altaircms/event/views.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="31" column="33" selection-start="595" selection-end="595" vertical-scroll-proportion="-17.884615">
-          <folding>
-            <element signature="e#16#27#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/altaircms/security.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+        <state line="31" column="33" selection-start="595" selection-end="595" vertical-scroll-proportion="0.0">
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/altaircms/views.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="7" column="0" selection-start="210" selection-end="210" vertical-scroll-proportion="0.0">
-          <folding>
-            <element signature="e#16#52#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/altaircms/lib.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="7" column="16" selection-start="265" selection-end="265" vertical-scroll-proportion="0.0">
-          <folding>
-            <element signature="e#16#60#0" expanded="true" />
-          </folding>
-        </state>
+        <state line="7" column="16" selection-start="265" selection-end="265" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/altaircms/security.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/altaircms/models.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="70" column="33" selection-start="1446" selection-end="1785" vertical-scroll-proportion="-18.307692">
+        <state line="70" column="33" selection-start="1446" selection-end="1785" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/altaircms/auth/views.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="62" column="0" selection-start="1840" selection-end="1840" vertical-scroll-proportion="0.0">
+        <state line="62" column="0" selection-start="1840" selection-end="1840" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/altaircms/views.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="4" column="0" selection-start="122" selection-end="122" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="e#16#50#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/altaircms/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="53" column="0" selection-start="1516" selection-end="1516" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/development.ini">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="30" column="0" selection-start="686" selection-end="686" vertical-scroll-proportion="0.0">
+        <state line="38" column="44" selection-start="942" selection-end="942" vertical-scroll-proportion="-21.923077">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/altaircms/CONFIG.yaml">
+    <entry file="file://$PROJECT_DIR$/README.txt">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="3" column="0" selection-start="66" selection-end="66" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/altaircms/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="35" column="43" selection-start="973" selection-end="973" vertical-scroll-proportion="0.0">
+        <state line="1" column="0" selection-start="18" selection-end="18" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/altaircms/templates/login.mako">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="15" column="11" selection-start="693" selection-end="693" vertical-scroll-proportion="0.25921658">
+        <state line="28" column="7" selection-start="1588" selection-end="1588" vertical-scroll-proportion="-17.5">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CONFIG.yaml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="11" column="0" selection-start="279" selection-end="279" vertical-scroll-proportion="0.18497758">
           <folding />
         </state>
       </provider>
