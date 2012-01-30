@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Message>
+  <Auth>
+    <Order> 
+      <ItemCd>333</ItemCd> <!-- see also: code定義書 -->
+      <ItemName>xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</ItemName>
+      <OrderYMD>88888888</OrderYMD>
+      <SalesAmount>7777777</SalesAmount>
+      <TaxCarriage>7777777</TaxCarriage>
+      <FreeData>yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy</FreeData>
+      <ClientName>xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</ClientName>
+      <MailAddress>zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz</MailAddress>
+      <MailSend>1</MailSend> <!-- see also: code定義書 -->
+    </Order>
+    <Card>
+      <CardNo>1111111111111222</CardNo> <!-- 13 <= n<= 16 -->
+      <CardLimit>4444</CardLimit>
+      <CardHolderName>xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</CardHolderName>
+      <PayKindCd>11</PayKindCd> <!-- see also: code定義書 -->
+      <PayCount>11</PayCount> <!-- see also: code定義書 -->
+      <SecureKind>1</SecureKind> <!-- see also: code定義書 -->
+    </Card>
+    <SecureCd> <!-- CVV2/CVC2/CAV2/4DBCを利用する場合に設定-->
+      <Code>3334</Code>
+    </SecureCd>
+    <Secure3D>
+      <Mvn>xxxxxxxxxx</Mvn>
+      <Xid>yyyyyyyyyyyyyyyyyyyyyyyyyyyy</Xid>
+      <Ts>z</Ts>
+      <ECI>aa</ECI>
+      <CAVV>aaaaaaaaaaaaaaaaaaaaaaaaaaaa</CAVV>
+      <CavvAlgorithm>z</CavvAlgorithm>
+      <CardNo>111111111111222</CardNo>
+    </Secure3D>
+  </Auth>
+</Message>
+

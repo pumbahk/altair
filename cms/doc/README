@@ -1,0 +1,13 @@
+xml validation
+----------------------------------------
+
+:: 
+
+   $ make xmlvalidate
+
+:require: xmllint
+
+for ubuntu user::
+
+   $ sudo apt-get install libxml2-utils
+

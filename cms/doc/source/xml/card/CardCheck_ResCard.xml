@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Message>
+  <Auth>
+    <Request>
+      <BizClassCd>xx</BizClassCd> <!-- see also: code定義書 -->
+      <Storecd>yyyyyyyyyy</Storecd>
+    </Request>
+    <Result>
+      <SettlementInfo></SettlementInfo>
+      <OrderNo>zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz</OrderNo>
+      <Status>aaa</Status> <!-- see also: code定義書 -->
+      <PublicTranId>bbbbbbbbbbbbbbbbbbbbbbbbb</PublicTranId>
+      <AheadComCd>ccccccc</AheadComCd> <!-- see also: code定義書 -->
+      <ApprovalNo>ccccccc</ApprovalNo>
+      <CardErrorCd>dddddd</CardErrorCd> <!-- see also: code定義書 -->
+      <ReqYmd>eeeeeeee</ReqYmd>
+      <CmnErrorCd>dddddd</CmnErrorCd> <!-- see also: code定義書 -->
+    </Result>
+  </Auth>
+</Message>
+
