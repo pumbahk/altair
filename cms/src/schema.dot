@@ -250,6 +250,53 @@
     >]
     
 
+        CssAsset [label=<
+        <TABLE BGCOLOR="lightyellow" BORDER="0"
+            CELLBORDER="0" CELLSPACING="0">
+                <TR><TD COLSPAN="2" CELLPADDING="4"
+                        ALIGN="CENTER" BGCOLOR="palegoldenrod"
+                ><FONT FACE="Helvetica Bold" COLOR="black"
+                >CssAsset</FONT></TD></TR><TR><TD ALIGN="LEFT" BORDER="0"
+        ><FONT FACE="Bitstream Vera Sans">id</FONT
+        ></TD><TD ALIGN="LEFT"
+        ><FONT FACE="Bitstream Vera Sans">Integer</FONT
+        ></TD></TR> <TR><TD ALIGN="LEFT" BORDER="0"
+        ><FONT FACE="Bitstream Vera Sans">site_id</FONT
+        ></TD><TD ALIGN="LEFT"
+        ><FONT FACE="Bitstream Vera Sans">Integer</FONT
+        ></TD></TR> <TR><TD ALIGN="LEFT" BORDER="0"
+        ><FONT FACE="Bitstream Vera Sans">filepath</FONT
+        ></TD><TD ALIGN="LEFT"
+        ><FONT FACE="Bitstream Vera Sans">String</FONT
+        ></TD></TR> <TR><TD ALIGN="LEFT" BORDER="0"
+        ><FONT FACE="Bitstream Vera Sans">size</FONT
+        ></TD><TD ALIGN="LEFT"
+        ><FONT FACE="Bitstream Vera Sans">Integer</FONT
+        ></TD></TR> <TR><TD ALIGN="LEFT" BORDER="0"
+        ><FONT FACE="Bitstream Vera Sans">width</FONT
+        ></TD><TD ALIGN="LEFT"
+        ><FONT FACE="Bitstream Vera Sans">Integer</FONT
+        ></TD></TR> <TR><TD ALIGN="LEFT" BORDER="0"
+        ><FONT FACE="Bitstream Vera Sans">height</FONT
+        ></TD><TD ALIGN="LEFT"
+        ><FONT FACE="Bitstream Vera Sans">Integer</FONT
+        ></TD></TR> <TR><TD ALIGN="LEFT" BORDER="0"
+        ><FONT FACE="Bitstream Vera Sans">length</FONT
+        ></TD><TD ALIGN="LEFT"
+        ><FONT FACE="Bitstream Vera Sans">Integer</FONT
+        ></TD></TR> <TR><TD ALIGN="LEFT" BORDER="0"
+        ><FONT FACE="Bitstream Vera Sans">mimetype</FONT
+        ></TD><TD ALIGN="LEFT"
+        ><FONT FACE="Bitstream Vera Sans">String</FONT
+        ></TD></TR> <TR><TD ALIGN="LEFT" BORDER="0"
+        ><FONT FACE="Bitstream Vera Sans">type</FONT
+        ></TD><TD ALIGN="LEFT"
+        ><FONT FACE="Bitstream Vera Sans">String</FONT
+        ></TD></TR>
+        </TABLE>
+    >]
+    
+
         Event [label=<
         <TABLE BGCOLOR="lightyellow" BORDER="0"
             CELLBORDER="0" CELLSPACING="0">
@@ -797,6 +844,10 @@
         ></TD><TD ALIGN="LEFT"
         ><FONT FACE="Bitstream Vera Sans">Integer</FONT
         ></TD></TR> <TR><TD ALIGN="LEFT" BORDER="0"
+        ><FONT FACE="Bitstream Vera Sans">event_id</FONT
+        ></TD><TD ALIGN="LEFT"
+        ><FONT FACE="Bitstream Vera Sans">Integer</FONT
+        ></TD></TR> <TR><TD ALIGN="LEFT" BORDER="0"
         ><FONT FACE="Bitstream Vera Sans">created_at</FONT
         ></TD><TD ALIGN="LEFT"
         ><FONT FACE="Bitstream Vera Sans">DateTime</FONT
@@ -820,6 +871,10 @@
         ><FONT FACE="Bitstream Vera Sans">content</FONT
         ></TD><TD ALIGN="LEFT"
         ><FONT FACE="Bitstream Vera Sans">Unicode</FONT
+        ></TD></TR> <TR><TD ALIGN="LEFT" BORDER="0"
+        ><FONT FACE="Bitstream Vera Sans">version</FONT
+        ></TD><TD ALIGN="LEFT"
+        ><FONT FACE="Bitstream Vera Sans">Integer</FONT
         ></TD></TR> <TR><TD ALIGN="LEFT" BORDER="0"
         ><FONT FACE="Bitstream Vera Sans">site_id</FONT
         ></TD><TD ALIGN="LEFT"
@@ -1446,6 +1501,8 @@
 	]
 	AssetTag -> Tag 
 
+	CssAsset -> Asset 
+
 	EventTag -> Tag 
 
 	FlashAsset -> Asset 
@@ -1463,6 +1520,7 @@
 	Asset -> Site [label = "site_id"]
 	AssetTag -> Site [label = "site_id"]
 	AssetTag -> Asset [label = "asset_id"]
+	AssetTag -> CssAsset [label = "asset_id"]
 	AssetTag -> FlashAsset [label = "asset_id"]
 	AssetTag -> ImageAsset [label = "asset_id"]
 	AssetTag -> MovieAsset [label = "asset_id"]
@@ -1470,6 +1528,7 @@
 	BillingHistory -> User [label = "user_id"]
 	BillingHistoryWidget -> Widget [label = "widget_id"]
 	BreadcrumbsWidget -> Widget [label = "id"]
+	CssAsset -> Site [label = "site_id"]
 	Event -> Client [label = "client_id"]
 	EventTag -> Site [label = "site_id"]
 	EventTag -> Event [label = "event_id"]
@@ -1477,12 +1536,14 @@
 	FlashAsset -> Site [label = "site_id"]
 	FlashWidget -> Widget [label = "id"]
 	FlashWidget -> Asset [label = "asset_id"]
+	FlashWidget -> CssAsset [label = "asset_id"]
 	FlashWidget -> FlashAsset [label = "asset_id"]
 	FlashWidget -> ImageAsset [label = "asset_id"]
 	FlashWidget -> MovieAsset [label = "asset_id"]
 	ImageAsset -> Site [label = "site_id"]
 	ImageWidget -> Widget [label = "id"]
 	ImageWidget -> Asset [label = "asset_id"]
+	ImageWidget -> CssAsset [label = "asset_id"]
 	ImageWidget -> FlashAsset [label = "asset_id"]
 	ImageWidget -> ImageAsset [label = "asset_id"]
 	ImageWidget -> MovieAsset [label = "asset_id"]
@@ -1496,11 +1557,13 @@
 	MovieAsset -> Site [label = "site_id"]
 	MovieWidget -> Widget [label = "id"]
 	MovieWidget -> Asset [label = "asset_id"]
+	MovieWidget -> CssAsset [label = "asset_id"]
 	MovieWidget -> FlashAsset [label = "asset_id"]
 	MovieWidget -> ImageAsset [label = "asset_id"]
 	MovieWidget -> MovieAsset [label = "asset_id"]
 	Operator -> Client [label = "client_id"]
 	Page -> Page [label = "parent_id"]
+	Page -> Event [label = "event_id"]
 	Page -> Site [label = "site_id"]
 	Page -> Layout [label = "layout_id"]
 	Page2Widget -> Page [label = "page_id"]

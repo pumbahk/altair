@@ -15,7 +15,20 @@ from altaircms.models import DBSession, Event
 ## CMS view
 ##
 
-@view_config(name='event', renderer='altaircms:templates/event/form.mako')
+@view_config(route_name="event", renderer='altaircms:templates/event/view.mako')
+def view(request):
+    id_ = request.matchdict['id']
+
+    dbsession = DBSession()
+    event = dbsession.query(Event).get(id_)
+    DBSession.remove()
+
+    return dict(
+        event=event
+    )
+
+
+@view_config(route_name='event_list', renderer='altaircms:templates/event/list.mako')
 def event(request):
     dbsession = DBSession()
     events = dbsession.query(Event).order_by(Event.id.desc()).all()
@@ -24,6 +37,7 @@ def event(request):
     return dict(
         events=events
     )
+
 
 
 ##

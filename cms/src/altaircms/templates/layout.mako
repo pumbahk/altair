@@ -26,5 +26,7 @@
           ${next.body()}</div>
       <div id="footer"><%block name="footer"><%include file="parts/footer.html"/></%block></div>
     </div>
+    ## javascript block
+    <%block name="js_foot"/>
   </body>
 </html>

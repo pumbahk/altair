@@ -29,6 +29,11 @@ def api_include(config):
     config.add_route('api_event', '/event/{id}')
     config.add_route('api_event_list', '/event/')
 
+def cms_include(config):
+    config.add_route('event', 'event/{id}')
+    config.add_route('event_list', 'event')
+    config.add_route('page_add', 'page/edit')
+
 
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
@@ -53,6 +58,7 @@ def main(global_config, **settings):
     config.include('pyramid_tm')
 
     config.include(api_include, route_prefix='/api')
+    config.include(cms_include, route_prefix='/')
 
     config.scan("altaircms.views")
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)

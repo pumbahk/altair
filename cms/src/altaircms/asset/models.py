@@ -13,7 +13,8 @@ __all__ = [
     'Asset',
     'ImageAsset',
     'MovieAsset',
-    'FlashAsset'
+    'FlashAsset',
+    'CssAsset'
 ]
 
 
@@ -27,6 +28,9 @@ class MovieAsset(Asset):
     pass
 
 class FlashAsset(Asset):
+    pass
+
+class CssAsset(Asset):
     pass
 
 
@@ -48,3 +52,4 @@ asset_mapper = mapper(Asset, asset_table, polymorphic_on=asset_table.c.type, pol
 image_asset_mapper = mapper(ImageAsset, inherits=asset_mapper, polymorphic_identity='image_asset')
 mapper(MovieAsset, inherits=asset_mapper, polymorphic_identity='movie_asset')
 mapper(FlashAsset, inherits=asset_mapper, polymorphic_identity='flash_asset')
+mapper(CssAsset, inherits=asset_mapper, polymorphic_identity='css_asset')
