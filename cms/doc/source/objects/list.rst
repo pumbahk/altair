@@ -9,6 +9,7 @@
 
 .. toctree::
 
+   page.rst
    breadcrumbs.rst
    menu.rst
    calendar.rst
