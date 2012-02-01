@@ -7,11 +7,12 @@
 
 from datetime import datetime
 
+from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, ForeignKey
 from sqlalchemy import Integer, DateTime, Unicode, String
 
 from altaircms.models import Base
-from altaircms.asset.models import ImageAsset, image_asset_mapper, MovieAsset, FlashAsset
+from altaircms.asset.models import ImageAsset, MovieAsset, FlashAsset, CssAsset
 
 
 class Page2Widget(Base):
@@ -21,10 +22,15 @@ class Page2Widget(Base):
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=datetime.now())
 
-    position = Column(String) # 何かしらのレイアウト情報をシリアライズして保持する想定
+    block = Column(String) # HTMLのIDが入る想定
+    order = Column(Integer) # ウィジェットの並び替え情報
+
+    options = Column(String) # 何かしらの付加情報があればJSONシリアライズして保持する
 
     page_id = Column(Integer, ForeignKey("page.id"))
-    widget_d = Column(Integer, ForeignKey("widget.id"))
+    widget_id = Column(Integer, ForeignKey("widget.id"))
+
+    relationship("Page", backref="widget")
 
 
 """

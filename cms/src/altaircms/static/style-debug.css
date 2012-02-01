@@ -10,3 +10,7 @@
 #column-right {
     background-color: #aaffaa;
 }
+
+div {
+    border: 0px solid gray;
+}
