@@ -60,6 +60,11 @@ class Widget(Base):
 
     site_id = Column(Integer, ForeignKey("site.id"))
 
+    def __repr__(self):
+        return '<Widget %s>' % self.id
+
+    def __unicode__(self):
+        return '%s' % self.id
 
 class TextWidget(Base):
     __tablename__ = "widget_text"

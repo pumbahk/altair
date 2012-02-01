@@ -17,17 +17,26 @@ def view(request):
     if not page:
         return NotFound()
 
-    widgets = dbsession.query(Page2Widget, Widget).filter(Page2Widget.widget_id==Widget.id).\
+    results = dbsession.query(Page2Widget, Widget).filter(Page2Widget.widget_id==Widget.id).\
         filter(Page2Widget.page_id==page.id).order_by(asc(Page2Widget.order)).all()
 
     tmpl = 'altaircms:templates/front/layout/' + str(page.layout_id) + '.mako'
 
     DBSession.remove()
 
+    # ウィジェットの組み立て
+    display_blocks = {}
+    for p2w, widget in results:
+        key = p2w.block
+        if key in display_blocks:
+            display_blocks[key].append(widget)
+        else:
+            display_blocks[key] = [widget]
+
     return render_to_response(
         tmpl, dict(
             page=page,
-            widgets=widgets,
+            display_blocks=display_blocks
         ),
         request
     )
