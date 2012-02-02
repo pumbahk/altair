@@ -5,7 +5,7 @@
 
 <hr/>
 
-<a href="/page/edit">add page</a>
+<a href="/event/${event.id}/page/edit">add page</a>
 <h2>page list</h2>
 
 

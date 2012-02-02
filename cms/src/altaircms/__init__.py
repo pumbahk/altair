@@ -25,14 +25,20 @@ class RootFactory(object):
     def __init__(self, request):
         pass
 
+
 def api_include(config):
     config.add_route('api_event', '/event/{id}')
     config.add_route('api_event_list', '/event/')
 
+
 def cms_include(config):
     config.add_route('event', 'event/{id}')
     config.add_route('event_list', 'event')
-    config.add_route('page_add', 'page/edit')
+    config.add_route('page_add', 'event/{event_id}/page/edit')
+
+
+def front_include(config):
+    config.add_route('front', '{page_name}')
 
 
 def main(global_config, **settings):
@@ -58,6 +64,7 @@ def main(global_config, **settings):
     config.include('pyramid_tm')
 
     config.include(api_include, route_prefix='/api')
+    config.include(front_include, route_prefix='/f')
     config.include(cms_include, route_prefix='/')
 
     config.scan("altaircms.views")

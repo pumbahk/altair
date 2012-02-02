@@ -81,6 +81,15 @@ CMS以外の機能
    research/kotti.rst
    research/fantastic.rst
 
+
+スケジュール
+======================
+
+.. toctree::
+
+   schedule.rst
+
+
 付録
 =====
 

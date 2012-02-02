@@ -272,7 +272,6 @@ class Page(Base):
     description = Column(Unicode)
     url = Column(String)
     version = Column(Integer)
-    content = Column(Unicode)
 
     site_id = Column(Integer, ForeignKey("site.id"))
     layout_id = Column(Integer, ForeignKey("layout.id"))
