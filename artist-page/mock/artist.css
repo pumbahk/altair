@@ -125,13 +125,32 @@ a:hover{
 
 
 
+
 #tx_right {
-	    font-size: 1.5em;
-        width:100px;
+	    
+        width:auto;
 	    border: 1px solid black;
 		float:right;
 }
 
+#accordion{
+	font-size: 0.5em;
+     border: 1px #ccc solid;
+     border-top:none;
+     width:99px;
+     }
+#accordion dt{
+     background: #ddd;
+     padding: 0px;
+     border-top: 1px #ccc solid;
+     }
+     #accordion dt a{color: #000; text-decoration:none;display:block;}
+#accordion dd{padding: 0px}
+
+#right_contents {
+	font-size: 1.5em;
+	border: 1px solid black;
+	}
 
 #footer {
         width:100%;
