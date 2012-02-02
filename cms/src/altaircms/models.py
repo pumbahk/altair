@@ -276,6 +276,17 @@ class Page(Base):
     site_id = Column(Integer, ForeignKey("site.id"))
     layout_id = Column(Integer, ForeignKey("layout.id"))
 
+    relationship('Layout', backref='layout')
+
+    def __repr__(self):
+        return '<%s %s>' % (self.__class__.__name__, self.id)
+
+    def __str__(self):
+        return '%s'  % self.id
+
+    def __unicode__(self):
+        return u'%s' % self.title
+
 
 class Site(Base):
     __tablename__ = "site"

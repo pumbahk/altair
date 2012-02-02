@@ -32,9 +32,10 @@ def api_include(config):
 
 
 def cms_include(config):
-    config.add_route('event', 'event/{id}')
-    config.add_route('event_list', 'event')
-    config.add_route('page_add', 'event/{event_id}/page/edit')
+    config.add_route('event', '/event/{id}')
+    config.add_route('event_list', '/event')
+    config.add_route('page_add', '/event/{event_id}/page/edit')
+    config.add_route('page_edit', '/event/{event_id}/page/{page_id}/edit')
 
 
 def front_include(config):
@@ -65,7 +66,7 @@ def main(global_config, **settings):
 
     config.include(api_include, route_prefix='/api')
     config.include(front_include, route_prefix='/f')
-    config.include(cms_include, route_prefix='/')
+    config.include(cms_include, route_prefix='')
 
     config.scan("altaircms.views")
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)

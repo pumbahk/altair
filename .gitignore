@@ -1,3 +1,4 @@
+.DS_Store
 *.pyc
 ticket-designer/doc/build
 cms/doc/build
