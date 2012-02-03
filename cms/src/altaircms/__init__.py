@@ -48,7 +48,7 @@ def main(global_config, **settings):
     engine = engine_from_config(settings, 'sqlalchemy.')
     initialize_sql(engine)
 
-    # sqlahelper.add_engine(engine)
+    sqlahelper.add_engine(engine)
 
     authn_policy = AuthTktAuthenticationPolicy(secret='sosecret', callback=groupfinder)
     authz_policy = ACLAuthorizationPolicy()
