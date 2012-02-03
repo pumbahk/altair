@@ -20,14 +20,11 @@ def view(request):
     except NoResultFound:
         return NotFound(u'レイアウトが設定されていません。')
 
-    results = dbsession.query(Page2Widget, Widget).filter(Page2Widget.widget_id==Widget.id).\
-        filter(Page2Widget.page_id==page.id).order_by(asc(Page2Widget.order)).all()
-
-    DBSession.remove()
-
-    import pdb; pdb.set_trace()
-
     # ウィジェットの組み立て
+    # @TODO page.viewsでも利用しているので統合する
+    results = dbsession.query(Page2Widget, Widget).filter(Page2Widget.widget_id==Widget.id).\
+    filter(Page2Widget.page_id==page.id).order_by(asc(Page2Widget.order)).all()
+
     display_blocks = {}
     for p2w, widget in results:
         key = p2w.block
@@ -37,6 +34,8 @@ def view(request):
             display_blocks[key] = [widget]
 
     tmpl = 'altaircms:templates/front/layout/' + str(layout.template_filename)
+
+    DBSession.remove()
 
     return render_to_response(
         tmpl, dict(

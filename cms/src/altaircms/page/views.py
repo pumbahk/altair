@@ -6,12 +6,13 @@ import json
 from pyramid.view import view_config
 from pyramid.response import Response
 from pyramid.exceptions import NotFound
+from sqlalchemy.sql.expression import asc
 
 import transaction
 
 from altaircms.page.forms import PageMetadataEditForm, PageEditForm
 from altaircms.models import DBSession, Page, Event
-from altaircms.widget.models import Page2Widget
+from altaircms.widget.models import Page2Widget, Widget
 
 
 class PageEditView(object):
@@ -32,6 +33,16 @@ class PageEditView(object):
                 self.page = dbsession.query(Page).filter_by(event_id=self.event.id, id=page_id).one()
                 if not self.page:
                     return NotFound()
+                results = dbsession.query(Page2Widget, Widget).filter(Page2Widget.widget_id==Widget.id).\
+                    filter(Page2Widget.page_id==page_id).order_by(asc(Page2Widget.order)).all()
+
+                self.display_blocks = {}
+                for p2w, widget in results:
+                    key = p2w.block
+                    if key in self.display_blocks:
+                        self.display_blocks[key].append(widget)
+                    else:
+                        self.display_blocks[key] = [widget]
 
         DBSession.remove()
 
@@ -125,4 +136,12 @@ class PageEditView(object):
 
             return Response('<div id="thanks">Thanks!</div>')
 
-        return self.render_form(PageEditForm, success=succeed)
+        for key, values in self.display_blocks.iteritems():
+            self.display_blocks[key] = [value.id for value in values]
+
+        appstruct = {
+            'layout_id': self.page.layout_id if self.page.layout_id else 0,
+            'structure': json.dumps(self.display_blocks)
+        }
+
+        return self.render_form(PageEditForm, appstruct=appstruct, success=succeed)
