@@ -119,6 +119,10 @@ class PageEditView(object):
         """
         def succeed(captured, event=None, page=None):
             dbsession = DBSession()
+
+            self.page.layout_id = captured['layout_id']
+            dbsession.add(self.page)
+
             page_structure = json.loads(captured['structure'])
 
             for key, values in page_structure.iteritems():

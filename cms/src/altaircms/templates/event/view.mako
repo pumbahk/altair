@@ -13,8 +13,7 @@
     <tbody>
         %for page in pages:
             <tr>
-                ## 編集を追加する
-                <td>${page} 
+                <td>${page}
                     <a href="${request.route_url('page_edit', event_id=event.id, page_id=page.id)}">edit</a>
                     <a href="/f/${page.url|n}" target="_blank">preview</a></td>
             </tr>

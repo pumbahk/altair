@@ -134,9 +134,9 @@ def post(request):
     dbsession = DBSession()
     event = dbsession.query(Event).get(id_)
 
-    event.title=appstruct['title']
-    event.subtitle=appstruct['subtitle']
-    event.description=appstruct['description']
+    event.title = appstruct['title']
+    event.subtitle = appstruct['subtitle']
+    event.description = appstruct['description']
 
     dbsession.add(event)
     DBSession.remove()

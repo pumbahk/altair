@@ -66,7 +66,8 @@
     </script>
 </%block>
 
-<h1>ページ追加 / 編集</h1>
+<h1>イベント${event}の${page}ページの編集</h1>
+<a href="${request.route_url('event', id=event.id)}">back</a>
 
 <div id="pagecontentform">
     <form action="${request.route_url('page_edit', event_id=event.id, page_id=page.id)}" method="post">
