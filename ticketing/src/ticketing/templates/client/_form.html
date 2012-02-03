@@ -1,0 +1,2 @@
+<%! import deform as f,ticketing.views.admin.client.forms as cf %>
+${f.Form(cf.Client(),buttons=(f.Button(name='submit',title=u'新規',),)).render()|n}
