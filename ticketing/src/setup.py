@@ -19,7 +19,9 @@ requires = [
     'zope.sqlalchemy',
     'transaction',
     'pastescript',
-    'sadisplay'
+    'sadisplay',
+    'sqlahelper',
+    'WebHelpers'
     ]
 
 setup(name='ticketing',

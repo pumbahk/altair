@@ -6,6 +6,8 @@ from sqlalchemy import engine_from_config
 
 from .models import initialize_sql
 
+import sqlahelper
+
 try:
     import pymysql_sa
     pymysql_sa.make_default_mysql_dialect()
@@ -23,6 +25,7 @@ def main(global_config, **settings):
     """
     engine = engine_from_config(settings, 'sqlalchemy.')
     initialize_sql(engine)
+    sqlahelper.add_engine(engine)
     
     config = Configurator(settings=settings)
     Form.set_default_renderer(renderer)

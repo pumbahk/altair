@@ -7,9 +7,10 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.exc import IntegrityError
 from zope.sqlalchemy import ZopeTransactionExtension
+import sqlahelper
 
-DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
-Base = declarative_base()
+Base = sqlahelper.get_base()
+DBSession = sqlahelper.get_session()
 
 from .boxoffice import *
 

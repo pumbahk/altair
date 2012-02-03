@@ -4,6 +4,9 @@ from ticketing.models import DBSession, Base
 from ticketing.utils import StandardEnum
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey
 from sqlalchemy.orm import relationship, join, backref, column_property
+import sqlahelper
+
+session = sqlahelper.get_session()
 
 class ClientTypeEnum(StandardEnum):
     Standard        = 1
@@ -32,6 +35,23 @@ class Client(Base):
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
     status = Column(Integer)
+
+    @staticmethod
+    def add(client):
+        session.add(client)
+
+    @staticmethod
+    def get(client_id):
+        return session.query(Client).filter(Client.id==client_id).first()
+
+    @staticmethod
+    def update(client):
+        session.merge(client)
+        session.flush()
+
+    @staticmethod
+    def all():
+        return session.query(Client).all()
 
 operator_roll_association_table = Table('OperatorRoll_Operator', Base.metadata,
     Column('operator_roll_id', BigInteger, ForeignKey('OperatorRoll.id')),
@@ -115,9 +135,6 @@ event_table = Table(
     Column('margin_ratio', Float),
     Column('printing_fee', Float),
     Column('registration_fee', Float),
-    Column('redirect_to_url', String(1024)),
-    Column('hidden', Boolean),
-    Column('exclude_from_search', Boolean)
     )
 
 event_detail_table = Table(
@@ -130,6 +147,22 @@ class Event(Base):
     __table__ = join(event_table, event_detail_table, event_table.c.id == event_detail_table.c.id)
     id = column_property(event_table.c.id, event_detail_table.c.id)
     performances = relationship('Performance', backref='event')
+    @staticmethod
+    def add(event):
+        session.add(event)
+
+    @staticmethod
+    def get(event_id):
+        return session.query(Event).filter(Event.id==event_id).first()
+
+    @staticmethod
+    def update(event):
+        session.merge(event)
+        session.flush()
+
+    @staticmethod
+    def all():
+        return session.query(Client).all()
 
 class SeatType(Base):
     __tablename__ = 'SeatType'
