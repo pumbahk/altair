@@ -146,16 +146,19 @@ var DroppedWidgetViewModel = {
 var WidgetDialogViewModel = (function(){
     var on_dialog = function(dialog_elt, widget_name, widget_elt){
         // fixme
-        // dialog_elt.append($("<a class='close'>"));
-        dialog_elt.append($("<div>").text("hohohohoho"));
-        dialog_elt.css("background-color", "blue");
         console.log("dialog created");
     };
-    var on_selected = function(choiced_elt, widget_elt, close_fn){
+    var on_selected = function(choiced_elt, widget_name, widget_elt, close_fn){
         // fixme
-        service.VisibilityService.data_packed_widget(widget_elt);
-        console.log("dialog selected");
         close_fn();
+        var params = {
+            widget_name: widget_name, 
+            choiced_elt: choiced_elt, 
+            widget_elt: widget_elt, 
+        }
+        console.log("dialog selected");
+        var dfd = reaction.WidgetDataSubmit.start();
+        return dfd.resolveWith(dfd, [params])
     };
     return {
         // on_droppable_widget_created: on_droppable_widget_created, 

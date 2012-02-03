@@ -30,7 +30,7 @@ var manager = (function(){
             return _D[block_name];
         }
 
-        var _find_elt = function(block_name, elt){
+        var _find_info = function(block_name, elt){
             var k = _to_key(elt);
             var arr = _get_block(block_name);
             for (var i=0, j=arr.length;i<j;i++){
@@ -43,7 +43,7 @@ var manager = (function(){
             throw"widget not found";            
         }
         var _delete_elt = function(block_name, elt){
-            var info = _find_elt(block_name, elt);
+            var info = _find_info(block_name, elt);
             delete info.block[info.i];
         };
 
@@ -51,6 +51,7 @@ var manager = (function(){
             var arr = _get_block(block_name);
             var k = _to_key(elt);
             var orderno = 0;
+
             for (var i=0, j=arr.length;i<j;i++){
                 if(!!arr[i]){
                     if(arr[i].uid == k){
@@ -62,28 +63,33 @@ var manager = (function(){
             throw "widget not found(orderno)";            
         };
 
-        var _add_widget = function(block_name, elt, i){
+        var _add_widget = function(block_name, elt, data){// data  is optional
             var k = _to_key(elt);
-            var val = {elt: elt,  uid: k};
-            if(!!i){
-                _get_block(block_name)[i] = val
-            } else {
-                _get_block(block_name).push(val);
+            var val = {
+                elt: elt, 
+                uid: k,
+            };
+            if(!!data){
+                _.extend(val, data);
             }
+            _get_block(block_name).push(val);
             _RD[k] = block_name;
-        };
-
+        };        
         return {
             refresh: function(){
                 _D = {};
                 _RD = {};
+            }, 
+            update_data: function(block_name, elt, data){
+                var info = _find_info(block_name, elt)
+                return _.extend(info.block[info.i], data);
             }, 
             move_widget: function(old_block, block_name, elt){
                 _add_widget(block_name, elt);
                 _delete_elt(old_block, elt)
             }, 
             add_widget: _add_widget, 
-            block_name: function(elt){
+            block_name:  function(elt){
                 return _RD[_to_key(elt)];
             }, 
             orderno: _get_orderno, 

@@ -43,9 +43,9 @@ var service = (function(){
 			        }
                 });
             }, 
-            append_widget: function(where, block_name, widget){
+            append_widget: function(where, block_name, widget_name, widget){
                 var manager = Resource.manager;
-                manager.add_widget(block_name, widget);
+                manager.add_widget(block_name, widget, {widget_name: widget_name});
                 return where.append(widget)
             }
         };
@@ -113,13 +113,18 @@ var service = (function(){
     var WidgetDialogService = (function(){
         var _close_dialog = null;
         var _widget_elt = null;
-
+        var _widget_name = null;
         return {
-            close_dialog: function(caller){
-                var dm = Resource.dialog_manager
-                var close_fn = _close_dialog;
-                var widget_elt = _widget_elt;
-                return WidgetDialogViewModel.on_selected(caller, widget_elt, close_fn);
+            // clean_dialog: function(){
+            //     $(".dialog_overlay .contentWrap").children().remove();
+            // }, 
+            finish_dialog: function(caller){
+                return WidgetDialogViewModel.on_selected(
+                    caller,
+                    _widget_name,
+                    _widget_elt,
+                    _close_dialog
+                );
             }, 
             attach_overlay_event: function(widget_name, dropped_widget, attach_source){ //widget_nameで分岐
                 var widget_elt = dropped_widget;
@@ -134,13 +139,17 @@ var service = (function(){
                         var block_name = manager.block_name(widget_elt);
                         var orderno = manager.orderno(block_name, widget_elt);
                         var url =  api.load_widget_url(block_name, orderno);
-                        
+
+                        // set widget info                        
                         _close_dialog = attach_source.data("overlay").close;
-                        if(_close_dialog == null){
+                        _widget_name = widget_name,
+                        _widget_elt = widget_elt;
+
+                        if(_close_dialog == null || _widget_elt == null || _widget_elt == null){
                             throw "overlay close() is not found(in select widget dialog)"
                         }
 
-                        _widget_elt = widget_elt;
+
 
                         var dialog_elt = wrap.load(url)
                         WidgetDialogViewModel.on_dialog(dialog_elt, widget_name, widget_elt);
@@ -159,7 +168,7 @@ var service = (function(){
             return elt;
         }, 
         data_packed_widget: function(elt){
-            elt.addClass("data-packed").css("background-color", "blue");
+            $(elt).addClass("data-packed").css("background-color", "blue");
             return elt;
         }, 
         unhidden: function(expr){
@@ -208,6 +217,11 @@ var service = (function(){
             var block_name = manager.block_name(widget_element);
             var orderno = manager.orderno(block_name, widget_element);
             return api.delete_widget(block_name, orderno);
+        }, 
+        save_data: function(widget_name, widget_elt, data){
+            console.log("---save_data!--");
+            console.log(widget_name);
+            console.dir(data);
         }
     };
 
@@ -226,8 +240,14 @@ var service = (function(){
         }
     };
 
+    var FetchDialogDataService = {
+        image_widget: function(choiced_elt, widget_elt){
+            return {imagefile: $(choiced_elt).attr("src")};
+        }
+    }
+    
     return {
-        DragWidgetService: DragWidgetService,
+        DragWidgetService: DragWidgetService, 
         ElementInfoService: ElementInfoService,
         DroppableSheetService: DroppableSheetService,
         SelectLayoutService: SelectLayoutService,
@@ -235,6 +255,7 @@ var service = (function(){
         VisibilityService: VisibilityService,
         ApiService: ApiService,
         ElementLayoutService: ElementLayoutService, 
-        WidgetElementService: WidgetElementService
+        WidgetElementService: WidgetElementService, 
+        FetchDialogDataService: FetchDialogDataService
     };
 })();

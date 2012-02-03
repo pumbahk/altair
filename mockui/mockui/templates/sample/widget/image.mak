@@ -1,6 +1,6 @@
 <script>
   $("#image_widget_area img").live("click", function(){
-     service.WidgetDialogService.close_dialog(this);
+     service.WidgetDialogService.finish_dialog(this);
     });
 </script>
 <div id="image_widget_area">

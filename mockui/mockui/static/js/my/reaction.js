@@ -26,13 +26,15 @@ var reaction = (function(){
         };
 
         var delegated_with_args = function(dfd, args, cont){
+            dfd.done(function(){
+                return action.apply(dfd, args);
+            });
+
             if(!!cont){
                 dfd.done(cont);
             }
 
-            dfd.done(function(){
-                return action.apply(dfd, args);
-            });
+
             // if(!!opt.after_that){
             //     dfd = dfd.done(opt.after_that);
             // }
@@ -126,13 +128,12 @@ var reaction = (function(){
         react: function(draggable, droppable){
             var widget_name = service.ElementInfoService.get_name($(draggable));
             var dropped_widget = service.DragWidgetService.create_dropped_widget(widget_name);
-                        
 
             var edit_button = service.WidgetElementService.get_edit_button(dropped_widget);
             service.WidgetDialogService.attach_overlay_event(widget_name, dropped_widget, edit_button);
 
             var block_name = service.ElementInfoService.get_name($(droppable));
-            service.DroppableSheetService.append_widget($(droppable), block_name, dropped_widget);
+            service.DroppableSheetService.append_widget($(droppable), block_name, widget_name, dropped_widget);
             service.ApiService.save_block(block_name, widget_name, dropped_widget);
         }
     });
@@ -146,7 +147,7 @@ var reaction = (function(){
             service.WidgetDialogService.attach_overlay_event(widget_name, dropped_widget, edit_button);
 
             var block_name = service.ElementInfoService.get_name($(droppable));
-            service.DroppableSheetService.append_widget($(droppable), block_name, dropped_widget);
+            service.DroppableSheetService.append_widget($(droppable), block_name, widget_name, dropped_widget);
         }
     });
 
@@ -160,6 +161,17 @@ var reaction = (function(){
         // }
     });
 
+    var WidgetDataSubmit = Reaction({
+        react: function(ctx){
+            var manager = Resource.manager;
+            var block_name = manager.block_name(ctx.widget_elt);
+            var fetch_data_fn = service.FetchDialogDataService[ctx.widget_name];
+            var data = fetch_data_fn(ctx.choiced_elt, ctx.widget_elt);            
+            Resource.manager.update_data(block_name, ctx.widget_elt, data);
+            service.ApiService.save_data(ctx.widget_name, ctx.widget_elt, data);
+            service.VisibilityService.data_packed_widget(ctx.widget_elt);
+        }
+    });
     // widget dialog 
     return {
         Reaction: Reaction, 
@@ -169,6 +181,7 @@ var reaction = (function(){
         WidgetCloseButtonPushed: WidgetCloseButtonPushed, 
         DragWidgetFromPalet: DragWidgetFromPalet, 
         DragWidgetFromPaletNoSaveApi: DragWidgetFromPaletNoSaveApi, 
-        DragWidgetFromInternalBlock: DragWidgetFromInternalBlock
+        DragWidgetFromInternalBlock: DragWidgetFromInternalBlock, 
+        WidgetDataSubmit: WidgetDataSubmit
     };
 })();
