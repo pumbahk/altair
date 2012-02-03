@@ -197,7 +197,30 @@ a:hover{
 #live {
 	width ="200px;
 	}
+#lives_s{
+	width:100px;
+	height:auto;
+	border: 1px solid black;
+		font-size:0.5em;
 
+
+	}
+#lives_m {
+	width:200px;
+	height:auto;
+    border: 1px solid black;
+		font-size:0.5em;
+
+
+	}
+#lives_l {
+	width:300px;
+	height:auto;
+    border: 1px solid black;
+	
+
+	}
+	
 
 .focus{
 	color: #969696

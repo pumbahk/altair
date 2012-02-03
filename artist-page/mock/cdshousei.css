@@ -121,8 +121,17 @@ a:hover{
 
 }
 
-
-
+#imgs {
+	width:300px;
+	float:left;
+	}
+#sichou {
+	margin-left:10px;
+	}
+#review {
+	border: 1px solid black;
+	}
+	
 
 
 #tx_right {
@@ -169,6 +178,11 @@ a:hover{
         font-size: 10px;
         width: 80px;
 }
+
+
+
+
+
 
 
 
