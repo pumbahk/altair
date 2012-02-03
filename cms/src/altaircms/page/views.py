@@ -102,7 +102,7 @@ class PageEditView(object):
                 keyword=captured['keyword'],
                 # page.tags = captured['tags']
                 )
-            dbsession.add(page)
+            dbsession.save(page)
 
             transaction.commit()
             DBSession.remove()

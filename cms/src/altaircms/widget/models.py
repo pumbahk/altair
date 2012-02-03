@@ -66,6 +66,7 @@ class Widget(Base):
     def __unicode__(self):
         return '%s' % self.id
 
+
 class TextWidget(Base):
     __tablename__ = "widget_text"
 
@@ -170,3 +171,5 @@ class RakutenPointWidget(Base):
 
     id = Column(Integer, primary_key=True)
     widget_id = Column(Integer, ForeignKey("widget.id"))
+
+
