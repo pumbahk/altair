@@ -1,0 +1,28 @@
+<form>
+  <div class="ui-toolbar">
+    <a href="${request.route_path('admin.client.new')}" class="ui-button">新規クライアント</a>
+    <a href="#" class="ui-button">まとめて削除</a>
+  </div>
+  ${clients.pager(u'$link_previous ~3~ $link_next ( $pageページ目 $page_count ページ中)')}
+  <table class="table fullwidth checkboxed_table">
+    <thead>
+      <tr>
+        <th class="minwidth"><input type="checkbox" class="__action__-select_all" /></th>
+        <th class="minwidth">ID</th>
+        <th>クライアント名</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody>
+    % for client in clients.items:
+      <tr>
+        <td><input type="checkbox" /></td>
+        <td><a href="${request.route_path('admin.client.show', client_id=client.id)}">${client.id}</a></td>
+        <td><a href="${request.route_path('admin.client.show', client_id=client.id)}">${client.name}</a></td>
+        <td><a href="${request.route_path('admin.client.edit', client_id=client.id)}">編集</a></td>
+      </tr>
+    % endfor
+    </tbody>
+  </table>
+  ${clients.pager(u'$link_previous ~3~ $link_next ( $pageページ目 $page_count ページ中)')}
+</form>
