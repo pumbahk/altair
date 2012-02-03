@@ -1,0 +1,72 @@
+
+/* the overlayed element */
+.simple_overlay {
+	
+	/* must be initially hidden */
+	display:none;
+	
+	/* place overlay on top of other elements */
+	z-index:10000;
+	
+	/* styling */
+	background-color:#333;
+
+	width:675px;	
+	min-height:200px;
+	border:1px solid #666;
+	
+	/* CSS3 styling for latest browsers */
+	-moz-box-shadow:0 0 90px 5px #000;
+	-webkit-box-shadow: 0 0 90px #000;	
+}
+
+/* the overlayed element */
+.dialog_overlay {
+	
+	/* initially overlay is hidden */
+	display:none;
+	
+	/* growing background image */
+	/* background-image:url(../img/overlay/white.png); */
+	
+	/* place overlay on top of other elements */
+	z-index:10000;
+	
+	/* styling */
+	background-color:#333;
+	color: #fff;
+	
+	/* 
+		width after the growing animation finishes
+		height is automatically calculated
+	*/
+	width:640px;		
+	
+	/* some padding to layout nested elements nicely  */
+	padding:35px;
+
+	/* a little styling */	
+	font-size:11px;
+}
+
+
+/* close button positioned on upper right corner */
+.dropped-widget .close, .simple_overlay .close, .dialog_overlay .close {
+	/* background-image:url(/statics/img/overlay/close.png); */
+	background-image:url(/static/img/overlay/close.png);
+	position:absolute;
+	right:-15px;
+	top:-15px;
+	cursor:pointer;
+	height:35px;
+	width:35px;
+}
+.dropped-widget .edit{
+	background-image:url(/static/img/overlay/edit.png);
+	position:absolute;
+	right:-15px;
+	bottom:-15px;
+	cursor:pointer;
+	height:35px;
+	width:35px;
+}

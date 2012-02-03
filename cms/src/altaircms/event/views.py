@@ -1,6 +1,7 @@
 # coding: utf-8
 import json
 
+from pyramid.exceptions import NotFound
 from pyramid.response import Response
 from pyramid.view import view_config
 
@@ -8,28 +9,29 @@ from deform import Form
 from deform import ValidationFailure
 
 from altaircms.event.forms import event_schema
-from altaircms.models import DBSession, Event
+from altaircms.models import DBSession, Event, Page
 
 
 ##
 ## CMS view
 ##
-
-@view_config(route_name="event", renderer='altaircms:templates/event/view.mako')
-def view(request):
+@view_config(route_name='event', renderer='altaircms:templates/event/view.mako')
+def event_view(request):
     id_ = request.matchdict['id']
 
     dbsession = DBSession()
     event = dbsession.query(Event).get(id_)
+    pages = dbsession.query(Page).filter_by(event_id=event.id)
     DBSession.remove()
 
     return dict(
-        event=event
+        event=event,
+        pages=pages
     )
 
 
 @view_config(route_name='event_list', renderer='altaircms:templates/event/list.mako')
-def event(request):
+def event_list(request):
     dbsession = DBSession()
     events = dbsession.query(Event).order_by(Event.id.desc()).all()
     DBSession.remove()
@@ -37,7 +39,6 @@ def event(request):
     return dict(
         events=events
     )
-
 
 
 ##
@@ -133,9 +134,9 @@ def post(request):
     dbsession = DBSession()
     event = dbsession.query(Event).get(id_)
 
-    event.title=appstruct['title']
-    event.subtitle=appstruct['subtitle']
-    event.description=appstruct['description']
+    event.title = appstruct['title']
+    event.subtitle = appstruct['subtitle']
+    event.description = appstruct['description']
 
     dbsession.add(event)
     DBSession.remove()

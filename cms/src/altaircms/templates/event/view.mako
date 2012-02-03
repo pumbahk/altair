@@ -1,18 +1,22 @@
 <%inherit file='../layout.mako'/>
 
-<h1>${event.title}</h1>
-<a href="">preview</a> <a href="">sync</a>
+<h1>イベントのタイトル - ${event.title} (ID: ${event.id})</h1>
+<a href="">プレビュー（preview）</a> <a href="">バックから最新情報取得（sync）</a>
 
 <hr/>
 
-<a href="/page/edit">add page</a>
-<h2>page list</h2>
+<a href="/event/${event.id}/page/edit">ページ追加</a>
 
+<h2>イベント配下のページ一覧</h2>
 
 <table>
     <tbody>
-    <tr>
-        <th>ID</th><td>${event.id}</td>
-    </tr>
+        %for page in pages:
+            <tr>
+                <td>${page}
+                    <a href="${request.route_url('page_edit', event_id=event.id, page_id=page.id)}">edit</a>
+                    <a href="/f/${page.url|n}" target="_blank">preview</a></td>
+            </tr>
+        %endfor
     </tbody>
 </table>

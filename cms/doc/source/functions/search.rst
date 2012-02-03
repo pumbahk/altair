@@ -1,4 +1,4 @@
-.. _funciton-search:
+.. _function-search:
 
 検索
 ==========================

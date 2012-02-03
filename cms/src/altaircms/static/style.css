@@ -8,3 +8,6 @@
 #column-right {
     width: 300px;
 }
+.clear {
+    clear:both;
+}

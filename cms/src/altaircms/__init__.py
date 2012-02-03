@@ -25,14 +25,21 @@ class RootFactory(object):
     def __init__(self, request):
         pass
 
+
 def api_include(config):
     config.add_route('api_event', '/event/{id}')
     config.add_route('api_event_list', '/event/')
 
+
 def cms_include(config):
-    config.add_route('event', 'event/{id}')
-    config.add_route('event_list', 'event')
-    config.add_route('page_add', 'page/edit')
+    config.add_route('event', '/event/{id}')
+    config.add_route('event_list', '/event')
+    config.add_route('page_add', '/event/{event_id}/page/edit')
+    config.add_route('page_edit', '/event/{event_id}/page/{page_id}/edit')
+
+
+def front_include(config):
+    config.add_route('front', '{page_name}')
 
 
 def main(global_config, **settings):
@@ -41,7 +48,7 @@ def main(global_config, **settings):
     engine = engine_from_config(settings, 'sqlalchemy.')
     initialize_sql(engine)
 
-    # sqlahelper.add_engine(engine)
+    sqlahelper.add_engine(engine)
 
     authn_policy = AuthTktAuthenticationPolicy(secret='sosecret', callback=groupfinder)
     authz_policy = ACLAuthorizationPolicy()
@@ -58,7 +65,8 @@ def main(global_config, **settings):
     config.include('pyramid_tm')
 
     config.include(api_include, route_prefix='/api')
-    config.include(cms_include, route_prefix='/')
+    config.include(front_include, route_prefix='/f')
+    config.include(cms_include, route_prefix='')
 
     config.scan("altaircms.views")
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)
