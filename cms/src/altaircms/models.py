@@ -302,8 +302,8 @@ class Site(Base):
     client_id = Column(Integer, ForeignKey("client.id")) #@TODO: サイトにくっつけるべき？
 
 
-from usersetting.models import *
-from asset.models import *
-from tag.models import *
-from page.models import *
-from widget.models import *
+from altaircms.usersetting.models import *
+from altaircms.asset.models import *
+from altaircms.tag.models import *
+from altaircms.page.models import *
+from altaircms.widget.models import *

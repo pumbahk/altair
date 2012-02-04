@@ -8,7 +8,7 @@ from zope.sqlalchemy.tests import metadata
 
 from altaircms.models import Event
 from altaircms.asset.models import Asset
-from altaircms.models import Site, Page
+from altaircms.models import Site, Page, Base
 
 
 __all__ = [ 'EventTag', 'PageTag', 'AssetTag']
@@ -29,7 +29,7 @@ class AssetTag(Tag):
 
 tags = Table(
     "tag",
-    metadata,
+    Base.metadata,
     Column("id", Integer, primary_key=True),
     Column("name", Unicode),
     Column("is_public", Integer, default=0),
@@ -41,21 +41,21 @@ tags = Table(
 
 page_tags = Table(
     "tag_page",
-    metadata,
+    Base.metadata,
     Column("tag_id", Integer, ForeignKey('tag.id'), primary_key=True),
     Column("page_id", Integer, ForeignKey(Page.__table__.c.id))
 )
 
 event_tags = Table(
     "tag_event",
-    metadata,
+    Base.metadata,
     Column("tag_id", Integer, ForeignKey('tag.id'), primary_key=True),
     Column("event_id", Integer, ForeignKey(Event.__table__.c.id))
 )
 
 asset_tags = Table(
     "tag_asset",
-    metadata,
+    Base.metadata,
     Column("tag_id", Integer, ForeignKey('tag.id'), primary_key=True),
     Column("asset_id", Integer, ForeignKey('asset.id'))
 )
