@@ -1,14 +1,13 @@
 # coding: utf-8
 import colander
 import deform
-from deform.form import Form
-from deform.interfaces import FileUploadTempStore
 
 __all__ = [
     'ASSET_TYPE',
-    'ImageAssetForm',
-    'MovieAssetForm',
-    'FlashAssetForm',
+    'ImageAsset',
+    'MovieAsset',
+    'FlashAsset',
+    'CssAsset',
 ]
 
 ASSET_TYPE = [
@@ -17,19 +16,27 @@ ASSET_TYPE = [
     'flash',
 ]
 
-tmpstore = FileUploadTempStore()
+class Store(dict):
+    def preview_url(self, name):
+        return None
+
+tmpstore = Store()
 
 
 class Asset(colander.MappingSchema):
-    type = colander.SchemaNode(colander.String())
+    type = colander.SchemaNode(
+        colander.String(),
+        validator=colander.OneOf(ASSET_TYPE),
+        widget=deform.widget.HiddenWidget()
+    )
 
 
 class ImageAsset(Asset):
     alt = colander.SchemaNode(colander.String(), missing=colander.null, default='')
-    width = colander.SchemaNode(colander.Integer())
-    height = colander.SchemaNode(colander.Integer())
+    width = colander.SchemaNode(colander.Integer(), missing=colander.null)
+    height = colander.SchemaNode(colander.Integer(), missing=colander.null)
     image = colander.SchemaNode(
-        deform.FileData(),
+        deform.schema.FileData(),
         widget=deform.widget.FileUploadWidget(tmpstore)
     )
 
@@ -57,8 +64,3 @@ class MovieAsset(Asset):
 
 class CssAsset(Asset):
     pass
-
-
-ImageAssetForm = Form(ImageAsset(), buttons=('submit',), use_ajax=True)
-MovieAssetForm = Form(MovieAsset(), buttons=('submit',), use_ajax=True)
-FlashAssetForm = Form(FlashAsset(), buttons=('submit',), use_ajax=True)
