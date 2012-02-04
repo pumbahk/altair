@@ -240,18 +240,6 @@
         ></TD><TD ALIGN="LEFT"
         ><FONT FACE="Bitstream Vera Sans">Float</FONT
         ></TD></TR> <TR><TD ALIGN="LEFT" BORDER="0"
-        ><FONT FACE="Bitstream Vera Sans">redirect_to_url</FONT
-        ></TD><TD ALIGN="LEFT"
-        ><FONT FACE="Bitstream Vera Sans">String</FONT
-        ></TD></TR> <TR><TD ALIGN="LEFT" BORDER="0"
-        ><FONT FACE="Bitstream Vera Sans">hidden</FONT
-        ></TD><TD ALIGN="LEFT"
-        ><FONT FACE="Bitstream Vera Sans">Boolean</FONT
-        ></TD></TR> <TR><TD ALIGN="LEFT" BORDER="0"
-        ><FONT FACE="Bitstream Vera Sans">exclude_from_search</FONT
-        ></TD><TD ALIGN="LEFT"
-        ><FONT FACE="Bitstream Vera Sans">Boolean</FONT
-        ></TD></TR> <TR><TD ALIGN="LEFT" BORDER="0"
         ><FONT FACE="Bitstream Vera Sans">seats_and_prices</FONT
         ></TD><TD ALIGN="LEFT"
         ><FONT FACE="Bitstream Vera Sans">String</FONT
@@ -1221,18 +1209,6 @@
         ><FONT FACE="Bitstream Vera Sans">registration_fee</FONT
         ></TD><TD ALIGN="LEFT"
         ><FONT FACE="Bitstream Vera Sans">Float</FONT
-        ></TD></TR> <TR><TD ALIGN="LEFT" BORDER="0"
-        ><FONT FACE="Bitstream Vera Sans">redirect_to_url</FONT
-        ></TD><TD ALIGN="LEFT"
-        ><FONT FACE="Bitstream Vera Sans">String</FONT
-        ></TD></TR> <TR><TD ALIGN="LEFT" BORDER="0"
-        ><FONT FACE="Bitstream Vera Sans">hidden</FONT
-        ></TD><TD ALIGN="LEFT"
-        ><FONT FACE="Bitstream Vera Sans">Boolean</FONT
-        ></TD></TR> <TR><TD ALIGN="LEFT" BORDER="0"
-        ><FONT FACE="Bitstream Vera Sans">exclude_from_search</FONT
-        ></TD><TD ALIGN="LEFT"
-        ><FONT FACE="Bitstream Vera Sans">Boolean</FONT
         ></TD></TR>
         </TABLE>
     >]

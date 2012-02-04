@@ -53,30 +53,29 @@ class Client(Base):
     def all():
         return session.query(Client).all()
 
-operator_roll_association_table = Table('OperatorRoll_Operator', Base.metadata,
-    Column('operator_roll_id', BigInteger, ForeignKey('OperatorRoll.id')),
+operator_role_association_table = Table('OperatorRole_Operator', Base.metadata,
+    Column('operator_role_id', BigInteger, ForeignKey('OperatorRole.id')),
     Column('operator_id', BigInteger, ForeignKey('Operator.id'))
 )
 
 class Permission(Base):
     __tablename__ = 'Permission'
     id = Column(BigInteger, primary_key=True)
-    operator_roll_id = Column(BigInteger, ForeignKey('OperatorRoll.id'))
-    operator_roll = relationship('OperatorRoll', uselist=False)
+    operator_role_id = Column(BigInteger, ForeignKey('OperatorRole.id'))
+#   operator_role = relationship('OperatorRole', uselist=False)
     category_code = Column(Integer)
     permit = Column(Integer)
 
-class OperatorRoll(Base):
-    __tablename__ = 'OperatorRoll'
+class OperatorRole(Base):
+    __tablename__ = 'OperatorRole'
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
     operators = relationship("Operator",
-                    secondary=operator_roll_association_table,
-                    backref="OperatorRoll")
+                    secondary=operator_role_association_table)
     permissions = relationship('Permission')
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
-    status = Column(Integer)
+    status = Column('status',Integer, default=1)
 
 class OperatorActionHistory(Base):
     __tablename__ = 'OperatorActionHistory'
@@ -93,9 +92,10 @@ operator_table = Table(
     Column('name', String(255)),
     Column('email',String(255)),
     Column('client_id',BigInteger, ForeignKey('Client.id')),
+    Column('expire_at',DateTime, nullable=True),
     Column('updated_at',DateTime),
     Column('created_at',DateTime),
-    Column('status',Integer)
+    Column('status',Integer, default=1)
 )
 operator_auth_table = Table(
     'Operator_Auth', Base.metadata,
@@ -108,7 +108,8 @@ class Operator(Base):
     __table__ = join(operator_table, operator_auth_table, operator_table.c.id == operator_auth_table.c.id)
     id = column_property(operator_table.c.id, operator_auth_table.c.id)
     client = relationship('Client',uselist=False)
-
+    roles = relationship("OperatorRole",
+        secondary=operator_role_association_table)
 
 class Performance(Base):
     __tablename__ = 'Performance'
@@ -231,6 +232,7 @@ class BankAccount(Base):
     __tablename__ = 'BankAccount'
     id = Column(BigInteger, primary_key=True)
     back_id = Column(BigInteger, ForeignKey("Bank.id"))
+    bank = relationship("Bank", backref=backref('addresses', order_by=id))
     account_type = Column(Integer)
     account_number = Column(String(255))
     account_owner = Column(String(255))

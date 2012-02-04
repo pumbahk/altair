@@ -58,9 +58,6 @@ Class Event {
 	margin_ratio 		Float
 	printing_fee 		Float
 	registration_fee 		Float
-	redirect_to_url 		String
-	hidden 		Boolean
-	exclude_from_search 		Boolean
 	seats_and_prices 		String
 	+		performances
 
@@ -322,9 +319,6 @@ Class Event {
 	margin_ratio 		Float
 	printing_fee 		Float
 	registration_fee 		Float
-	redirect_to_url 		String
-	hidden 		Boolean
-	exclude_from_search 		Boolean
 
 
 }
