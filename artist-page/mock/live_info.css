@@ -198,25 +198,52 @@ a:hover{
 	width ="200px;
 	}
 #lives_s{
-	width:100px;
+	width:100%;
 	height:auto;
 	border: 1px solid black;
-		font-size:0.5em;
-
+	font-size:0.5em;
+	position:relative;
+	top:-160px;
+	
 
 	}
 #lives_m {
-	width:200px;
+	width:180px;
 	height:auto;
     border: 1px solid black;
-		font-size:0.5em;
-
+	font-size:0.7em;
+	position:relative;
+	top:-170px;
+	left:400px;
+	}
+	
+#lives_ll {
+	width:600px;
+	height:360px;
+    border: 1px solid black;
+	
 
 	}
+	
+#lives_ll p {
+	margin:0px;
+	position:relative;
+	top:-100px;
+	
+	}
+#if {
+	position:relative;
+	top:-100px;
+	left:200px;
+	margin:0px;
+	}
+	
+	
 #lives_l {
-	width:300px;
-	height:auto;
+	width:400px;
+	height:170px;
     border: 1px solid black;
+
 	
 
 	}
