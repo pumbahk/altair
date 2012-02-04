@@ -68,13 +68,14 @@ var reaction = (function(){
         side_effect: function(ctx){
             service.ElementLayoutService.default_layout(ctx.layout_targets);
             service.VisibilityService.unhidden(ctx.selected_id);
+            service.VisibilityService.attach_selected_highlight_event(ctx.has_selected_highlight); // fixme
         }
     });
 
 
     var AfterSelectLayout = Reaction({
         react: function(ctx){
-            var dfd = service.ApiService.load_layout(ctx.prefix, ctx.layout_name).done( // todo fix
+            var dfd = service.ApiService.load_layout(ctx.prefix, ctx.layout_name).done(
                 DroppableSheetViewModel.on_drawable
             )
             if(!!ctx.after_api_cont){
@@ -84,6 +85,7 @@ var reaction = (function(){
         }, 
         side_effect: function(ctx){
             // swap selected example 
+            service.VisibilityService.unselect(ctx.selected_elt)
             var new_selected = $.clone(ctx.selected_elt);
             service.ElementLayoutService.swap_child(ctx.event_farm, new_selected);
         }

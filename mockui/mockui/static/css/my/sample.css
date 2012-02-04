@@ -1,9 +1,11 @@
 /* some styling for triggers */
 
 .selected {
-	border-style: groove;
-	boder-width: 5px;
-	border-color: blue;
+	/* border-style: groove;
+	 * boder-width: 5px;
+	 * border-color: blue;
+     */
+    background-color: gray;
 }
 
 .dropped-widget .close, .dropped-widget .edit {
@@ -70,8 +72,8 @@
     margin: 10px;
 }
 .dropped-widget {
-    width: 70px;
-    height: 30px;
+    /* width: 70px; */
+    height: 50px;
     margin: 10px;
 }
 

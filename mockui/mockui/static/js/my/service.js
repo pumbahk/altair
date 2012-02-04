@@ -184,6 +184,9 @@ var service = (function(){
                 elt.hide();
             }
         }, 
+        unselect: function(elt){
+            $(elt).removeClass("selected");
+        }, 
         attach_selected_highlight_event: function(expr){
 	        $(expr+":not(.sexprcted)").live("mouseenter",function(){
 	            $(this).addClass("selected");

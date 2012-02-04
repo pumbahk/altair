@@ -77,8 +77,8 @@ class OrderedBlocks(object):
         self.blocks[dst].delete(e)
 
     def move(self, src, dst, e):
-        self.add(src, e)
-        self.delete(dst, e)
+        self.add(dst, e)
+        self.delete(src, e)
     
     def orderno(self, blockname, e):
         return self.blocks[blockname].orderno(e)

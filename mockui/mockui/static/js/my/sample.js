@@ -17,6 +17,7 @@ var SelectLayoutViewModel = (function(){
         event_farm: "#selected", 
         overlay_trigger: "div[rel]", 
         overlay_close_trigger: ".candidate", 
+        has_selected_highlight: ".candidate", 
         selected_id: "#wrapped", 
         layout_targets: ["#wrapped", "#wrapped1", "#wrapped2"]
     };
@@ -78,7 +79,8 @@ var DraggableWidgetViewModel = (function(){
 
     var on_drawable = function(){
         // add widget
-		    $(_selector.draggable).draggable({revert: true});
+        service.VisibilityService.attach_selected_highlight_event(".widget");
+		$(_selector.draggable).draggable({revert: true});
     };
     return {
         on_drawable: on_drawable
