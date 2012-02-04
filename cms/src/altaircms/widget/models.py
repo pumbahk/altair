@@ -15,6 +15,15 @@ from sqlalchemy import Integer, DateTime, Unicode, String
 from altaircms.models import Base
 from altaircms.asset.models import ImageAsset, MovieAsset, FlashAsset, CssAsset
 
+__all__ = [
+#    'Widget',
+    'ImageWidget',
+    'MovieWidget',
+    'FlashWidget',
+    'TextWidget',
+    'BreadcrumbsWidget',
+]
+
 
 widget = Table(
     'widget',
@@ -42,10 +51,7 @@ widget_flash = Table(
     'widget_flash',
     Base.metadata,
     Column('id', Integer, ForeignKey('widget.id'), primary_key=True),
-    Column('asset_id', Integer, ForeignKey('asset.id')),
-    Column('url', String),
-    Column('title', String), # 要らないかも？
-    Column('mimetype', String),
+    Column('asset_id', Integer, ForeignKey('asset.id'))
 )
 
 widget_movie = Table(
@@ -53,21 +59,13 @@ widget_movie = Table(
     Base.metadata,
     Column('id', Integer, ForeignKey('widget.id'), primary_key=True),
     Column('asset_id', Integer, ForeignKey('asset.id')),
-    Column('url', String),
-    Column('title', String), # 要らないかも？
-    Column('mimetype', String),
 )
 
 widget_image = Table(
     'widget_image',
     Base.metadata,
     Column('id', Integer, ForeignKey('widget.id'), primary_key=True),
-    Column('asset_id', Integer, ForeignKey('asset.id')),
-    Column('url', String),
-    Column('alt', String),
-    Column('size', Integer),
-    Column('width', Integer),
-    Column('height', Integer),
+    Column('asset_id', Integer, ForeignKey('asset.id'))
 )
 
 
@@ -164,48 +162,6 @@ class Asset2Widget(Base):
 """
 
 """
-class Widget(Base):
-    # ウィジェットの基底クラス
-    __tablename__ = "widget"
-
-    id = Column(Integer, primary_key=True)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
-
-    site_id = Column(Integer, ForeignKey("site.id"))
-
-    def __repr__(self):
-        return '<Widget %s>' % self.id
-
-    def __unicode__(self):
-        return '%s' % self.id
-
-
-class TextWidget(Base):
-    __tablename__ = "widget_text"
-
-    id = Column(Integer, ForeignKey("widget.id"), primary_key=True)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
-
-    text = Column(Unicode)
-
-"""
-
-"""
-class BreadcrumbsWidget(Base):
-    #パンくずウィジェット
-    #
-    #現在のページ情報を元に階層構造を組み立てる？
-    __tablename__ = "widget_breadcrumbs"
-
-    id = Column(Integer, ForeignKey("widget.id"), primary_key=True)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
-
-    breadcrumb = Column(String)
-
-
 class MenuWidget(Base):
     __tablename__ = "widget_menu"
 
@@ -250,27 +206,6 @@ class FacebookWidget(Base):
 
     id = Column(Integer, ForeignKey("widget.id"), primary_key=True)
     url = Column(String)
-
-
-class ImageWidget(Base):
-    __tablename__ = 'widget_image'
-
-    id = Column(Integer, ForeignKey("widget.id"), primary_key=True)
-    asset_id = Column(Integer, ForeignKey(ImageAsset.id))
-
-
-class MovieWidget(Base):
-    __tablename__ = 'widget_movie'
-
-    id = Column(Integer, ForeignKey("widget.id"), primary_key=True)
-    asset_id = Column(Integer, ForeignKey(MovieAsset.id))
-
-
-class FlashWidget(Base):
-    __tablename__ = 'widget_flash'
-
-    id = Column(Integer, ForeignKey("widget.id"), primary_key=True)
-    asset_id = Column(Integer, ForeignKey(FlashAsset.id))
 
 
 class BillingHistoryWidget(Base):
