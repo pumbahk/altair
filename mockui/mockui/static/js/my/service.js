@@ -1,25 +1,29 @@
-var service = (function(){
-    var DragWidgetService = {
-        create_dropped_widget: function(widget_name){
-            var w = $("<div>").draggable({revert:true});
-            VisibilityService.dropped_widget(w).text(widget_name);
 
-            // attach close button
-            var close_button = $("<a class='close'>")
-            w.append(close_button);
-            
-            // attach edit button
-            var edit_button = $("<a class='edit'>").attr("rel", "#overlay")
-            w.append(edit_button);
-            return w
-        }, 
-        get_elt: function(widget_name){
-            return $("#widget_palet #@name@".replace("@name@", widget_name))
-        }
-    };
+var service = (function(){
+    var DragWidgetService = (function(){
+
+        var fragment = _.template(
+(['<div class="dropped-widget">', 
+        '<%= content%>', 
+        '<a class="close"></a>', 
+        '<a class="edit" rel="#overlay"></a>', 
+        '</div>', 
+  ]).join("\n"));
+
+        return {
+            create_dropped_widget: function(widget_name){
+                var w = $(fragment({content: widget_name}))
+                return w.draggable({revert: true});
+            },
+            get_elt: function(widget_name){
+                return $("#widget_palet #@name@".replace("@name@", widget_name))
+            }
+        };
+    })();
 
     var ElementInfoService = {
-        get_name: function(element){ return element.attr("id");}
+        get_name: function(element){ return element.attr("id");}, 
+        get_height: function(element) {return element.css("height");}
     };
 
     var DroppableSheetService = (function(){
@@ -43,10 +47,16 @@ var service = (function(){
 			        }
                 });
             }, 
-            append_widget: function(where, block_name, widget){
+            append_widget: function(where, widget, block_name, widget_name, data){
                 var manager = Resource.manager;
-                manager.add_widget(block_name, widget);
-                return where.append(widget)
+                var data = data || {}
+                _.extend(data, {widget_name: widget_name})
+                manager.add_widget(block_name, widget, data);
+
+                where.append(widget);
+                // if(where.find("ul").length==0){
+                //     widget.wrap("ul");
+                // }
             }
         };
     })();
@@ -113,19 +123,31 @@ var service = (function(){
     var WidgetDialogService = (function(){
         var _close_dialog = null;
         var _widget_elt = null;
-
+        var _widget_name = null;
+        var _dialog_elt = null;
         return {
-            close_dialog: function(caller){
-                var dm = Resource.dialog_manager
-                var close_fn = _close_dialog;
-                var widget_elt = _widget_elt;
-                return WidgetDialogViewModel.on_selected(caller, widget_elt, close_fn);
+            // clean_dialog: function(){
+            //     $(".dialog_overlay .contentWrap").children().remove();
+            // }, 
+            finish_dialog: function(caller){
+                return WidgetDialogViewModel.on_selected(
+                    caller,
+                    _widget_name,
+                    _widget_elt,
+                    _close_dialog
+                );
             }, 
             attach_overlay_event: function(widget_name, dropped_widget, attach_source){ //widget_nameで分岐
                 var widget_elt = dropped_widget;
                 var opts = {
                     closeOnClick: true,
-                    closeOnESC: true, 
+                    closeOnESC: true,
+                    onLoad: function(){
+                        if(_close_dialog == null || _widget_elt == null || _widget_elt == null){
+                            throw "overlay close() is not found(in select widget dialog)"
+                        }
+                        WidgetDialogViewModel.on_dialog(_dialog_elt, _widget_name, _widget_elt);
+                    }, 
                     onBeforeLoad: function() {
 			            // grab wrapper element inside content
 			            var wrap = this.getOverlay().find(".contentWrap");
@@ -134,16 +156,17 @@ var service = (function(){
                         var block_name = manager.block_name(widget_elt);
                         var orderno = manager.orderno(block_name, widget_elt);
                         var url =  api.load_widget_url(block_name, orderno);
-                        
-                        _close_dialog = attach_source.data("overlay").close;
-                        if(_close_dialog == null){
-                            throw "overlay close() is not found(in select widget dialog)"
-                        }
 
+                        // set widget info                        
+                        _close_dialog = attach_source.data("overlay").close;
+                        _widget_name = widget_name,
                         _widget_elt = widget_elt;
 
-                        var dialog_elt = wrap.load(url)
-                        WidgetDialogViewModel.on_dialog(dialog_elt, widget_name, widget_elt);
+                        if(_close_dialog == null || _widget_elt == null || _widget_elt == null){
+                            throw "overlay close() is not found(in select widget dialog)"
+                        }
+                        _dialog_elt = wrap.load(url);
+                        // WidgetDialogViewModel.on_dialog(_dialog_elt, widget_name, widget_elt);
 		            }
                 };
                 $(attach_source).overlay(opts);
@@ -153,31 +176,44 @@ var service = (function(){
     
 
     var VisibilityService = {
-        dropped_widget : function(elt){
-            elt.addClass("dropped-widget").addClass("float-left");
-            elt.css("background-color", "orange")
-            return elt;
-        }, 
         data_packed_widget: function(elt){
-            elt.addClass("data-packed").css("background-color", "blue");
+            $(elt).addClass("data-packed").css("background-color", "blue");
             return elt;
         }, 
         unhidden: function(expr){
             var elt = $(expr);
             if(elt.hasClass("hidden")){
                 $(expr).removeClass("hidden");
-            } else{
-                elt.show();
             }
         }, 
         hidden: function(expr){
             var elt = $(expr);
             if(elt.hasClass("hidden")){
                 $(expr).addClass("hidden");
-            } else{
-                elt.hide();
             }
-        }
+        }, 
+        unselect: function(elt){
+            $(elt).removeClass("selected");
+        }, 
+        attach_selected_highlight_event: (function(){
+            var _cache = {} //cache
+            var _first = true
+            return function(expr){
+                if(!_cache[expr]){
+                    // console.log("### "+expr+" ###");
+                    _cache[expr] = true; //
+	                $(expr+":not(.selected)").live("mouseenter",function(){
+	                    $(this).addClass("selected");
+	                });
+                }
+                if (_first){
+                    _first = false
+	                $(".selected").live("mouseleave",function(){
+	                    $(this).removeClass("selected");
+	                });
+                }
+            }
+        })()
     };
 
     var ApiService = {
@@ -208,6 +244,12 @@ var service = (function(){
             var block_name = manager.block_name(widget_element);
             var orderno = manager.orderno(block_name, widget_element);
             return api.delete_widget(block_name, orderno);
+        }, 
+        save_widget: function(widget_name, widget_element, data){
+            var manager = Resource.manager;
+            var block_name = manager.block_name(widget_element);
+            var orderno = manager.orderno(block_name, widget_element);
+            return api.save_widget(widget_name, block_name, orderno, data);
         }
     };
 
@@ -223,11 +265,67 @@ var service = (function(){
         }, 
         replace_inner: function(target, html){
             $(target)[0].innerHTML = html;
-        }
+        }, 
+        extend_height: function(wrap, wraph, elth){
+            var new_height = calc.add(wraph, elth);
+            wrap.css("height", new_height);
+        }, 
     };
 
+    var ChangeHeightService = (function(){
+        var _row_block = null;
+        return {
+            manage_it: function(row_block){
+                _row_block = row_block;
+                var hmanager = Resource.hmanager;
+                hmanager.manage_it(row_block, "0px"); //fix
+                // set_default
+            }, 
+            extend_if_need: function(where, widget){
+                if(_row_block == null){
+                    throw "not manage it row block is null (extend)";
+                }
+                if(!!_row_block){
+                    var hmanager = Resource.hmanager;
+                    var row_elt = hmanager.child_to_rowelt(where);
+                    var widget_height = unit.get(ElementInfoService.get_height(widget));
+                    var height = hmanager.add_current(row_elt, widget_height);
+                    console.log(height);
+                    if(hmanager.over_default(row_elt)){
+                        // extend
+                        row_elt.find("div").css("height", height.toString())
+                    }
+                }
+            }, 
+            reduce_if_need: function(where, widget){
+                if(_row_block == null){
+                    throw "not manage it row block is null (reduce)";
+                }
+                if(!!_row_block){
+                    var hmanager = Resource.hmanager;
+                    var row_elt = hmanager.child_to_rowelt(where);
+                    var widget_height = unit.get(ElementInfoService.get_height(widget));
+                    if(hmanager.over_default(row_elt)){
+                        var height = hmanager.sub_current(elt, widget_height);
+                        // reduce
+                        row_elt.find("div").css("height", height.toString())
+                    } else {
+                        hmanager.sub_current(row_elt, widget_height);
+                    }
+                }
+            }
+        }
+    })();
+
+
+    var FetchDialogDataService = {
+        image_widget: function(choiced_elt, widget_elt){
+            return {imagefile: $(choiced_elt).attr("src")};
+        }
+    }
+    
     return {
-        DragWidgetService: DragWidgetService,
+        DragWidgetService: DragWidgetService, 
         ElementInfoService: ElementInfoService,
         DroppableSheetService: DroppableSheetService,
         SelectLayoutService: SelectLayoutService,
@@ -235,6 +333,8 @@ var service = (function(){
         VisibilityService: VisibilityService,
         ApiService: ApiService,
         ElementLayoutService: ElementLayoutService, 
-        WidgetElementService: WidgetElementService
+        WidgetElementService: WidgetElementService, 
+        FetchDialogDataService: FetchDialogDataService, 
+        ChangeHeightService: ChangeHeightService
     };
 })();

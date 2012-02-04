@@ -22,11 +22,11 @@ class StageInfo(object):
         """
         output:
         [{
-            'widgets': ["image_widget"], 
+            'widgets': [{"widget_name": "image_widget", "data": {"image_file": "/statics/img/foo.png"}}], 
             'block_name': 'selected_center'
          }, 
          {
-            'widgets': ["dummy_widget"], 
+            'widgets': [{"widget_name": "dummy_widget", "data": {}}], 
             'block_name': 'selected_header'
          }]
         """

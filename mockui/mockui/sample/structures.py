@@ -23,7 +23,18 @@ class NoPushBack(object):
                 self.xs[i] = self.zero
                 return True
         return False     # raise exception?
-
+    
+    def _orderno_to_index(self, orderno):
+        for i, x in enumerate(self.xs):
+            if x is not self.zero:
+                if orderno == 0:
+                    return i
+                orderno -= 1
+            
+    def update_by_orderno(self, orderno, data):
+        i = self._orderno_to_index(orderno)
+        self.xs[i] = data
+        
     def get_by_orderno(self, orderno):
         for i, x in enumerate(self._cleaned(self.xs)):
             if i == orderno:
@@ -77,9 +88,12 @@ class OrderedBlocks(object):
         self.blocks[dst].delete(e)
 
     def move(self, src, dst, e):
-        self.add(src, e)
-        self.delete(dst, e)
-    
+        self.add(dst, e)
+        self.delete(src, e)
+
+    def update_by_orderno(self, blockname, orderno, e):
+        self.blocks[blockname].update_by_orderno(orderno, e)
+
     def orderno(self, blockname, e):
         return self.blocks[blockname].orderno(e)
 
@@ -137,6 +151,18 @@ if __name__ == "__main__":
 
             new_xs = pickle.loads(pickle.dumps(xs))
             self.assertEquals(new_xs.xs, [1, 3, 2])
+
+        def test_update_by_orderno_first(self):
+            vals = [0, 1, 2, 3]
+            xs = NoPushBack(values=vals, zero=0)
+            xs.update_by_orderno(0, 100)
+            self.assertEquals(xs.xs, [0, 100, 2, 3])
+
+        def test_update_by_orderno(self):
+            vals = [1, 0, 0, 2, 0, 0, 3]
+            xs = NoPushBack(values=vals, zero=0)
+            xs.update_by_orderno(2, 100)
+            self.assertEquals(xs.xs, [1, 0, 0, 2, 0, 0, 100])
 
     class OrderedBlocksTests(unittest.TestCase):
         def test_from_dict(self):
