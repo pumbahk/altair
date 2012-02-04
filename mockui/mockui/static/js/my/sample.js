@@ -19,7 +19,7 @@ var SelectLayoutViewModel = (function(){
         overlay_close_trigger: ".candidate", 
         has_selected_highlight: ".candidate", 
         selected_id: "#wrapped", 
-        layout_targets: ["#wrapped", "#wrapped1", "#wrapped2"]
+        layout_targets: ["#wrapped > .block-row", "#wrapped1 > .block-row", "#wrapped2 > .block-row"]
     };
 
     var on_drawable = function(){
@@ -91,9 +91,10 @@ var DroppableSheetViewModel = (function(){
     var _selector = {
         dropped_sheet: "#selected_layout", 
         sheet_block: "#wrapped", 
+        layout_target: "#wrapped > .block-row"
     };
     var on_drawable = function(selected_html){
-        var selected_layout = new layouts.Candidate("#wrapped");
+        var selected_layout = new layouts.Candidate(_selector.layout_target);
         var params = {selected_html: selected_html, 
                       selected_layout: selected_layout};
         var ctx = _.extend({}, _selector, params);

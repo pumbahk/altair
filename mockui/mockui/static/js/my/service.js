@@ -1,24 +1,34 @@
+
 var service = (function(){
-    var DragWidgetService = {
-        create_dropped_widget: function(widget_name){
-            var w = $("<div>").draggable({revert:true});
+    var DragWidgetService = (function(){
+//         var fragment = _.template(
+// (['<li>', 
+//       '<div class="dropped-widget">', 
+//         '<%= content%>', 
+//         '<a class="close"></a>', 
+//         '<a class="edit" rel="#overlay"></a>', 
+//         '</div>', 
+//     '</li>', 
+//   ]).join("\n"));
 
-            w.addClass("dropped-widget").addClass("float-left");
-            w.css("background-color", "orange").text(widget_name);
+        var fragment = _.template(
+(['<div class="dropped-widget">', 
+        '<%= content%>', 
+        '<a class="close"></a>', 
+        '<a class="edit" rel="#overlay"></a>', 
+        '</div>', 
+  ]).join("\n"));
 
-            // attach close button
-            var close_button = $("<a class='close'>")
-            w.append(close_button);
-            
-            // attach edit button
-            var edit_button = $("<a class='edit'>").attr("rel", "#overlay")
-            w.append(edit_button);
-            return w
-        }, 
-        get_elt: function(widget_name){
-            return $("#widget_palet #@name@".replace("@name@", widget_name))
-        }
-    };
+        return {
+            create_dropped_widget: function(widget_name){
+                var w = $(fragment({content: widget_name}))
+                return w.draggable({revert: true});
+            },
+            get_elt: function(widget_name){
+                return $("#widget_palet #@name@".replace("@name@", widget_name))
+            }
+        };
+    })();
 
     var ElementInfoService = {
         get_name: function(element){ return element.attr("id");}
@@ -50,7 +60,11 @@ var service = (function(){
                 var data = data || {}
                 _.extend(data, {widget_name: widget_name})
                 manager.add_widget(block_name, widget, data);
-                return where.append(widget)
+
+                where.append(widget);
+                // if(where.find("ul").length==0){
+                //     widget.wrap("ul");
+                // }
             }
         };
     })();
@@ -263,7 +277,11 @@ var service = (function(){
         }, 
         replace_inner: function(target, html){
             $(target)[0].innerHTML = html;
-        }
+        }, 
+        extend_height: function(wrap, wraph, elth){
+            var new_height = calc.add(wraph, elth);
+            wrap.css("height", new_height);
+        }, 
     };
 
     var FetchDialogDataService = {

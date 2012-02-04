@@ -55,8 +55,8 @@
 	/* background-image:url(/statics/img/overlay/close.png); */
 	background-image:url(/static/img/overlay/close.png);
 	position:absolute;
-	right:-15px;
-	top:-15px;
+	right:10px;
+	top:-10px;
 	cursor:pointer;
 	height:35px;
 	width:35px;
@@ -64,8 +64,8 @@
 .dropped-widget .edit{
 	background-image:url(/static/img/overlay/edit.png);
 	position:absolute;
-	right:-15px;
-	bottom:-15px;
+	right:10px;
+	bottom:-10px;
 	cursor:pointer;
 	height:35px;
 	width:35px;

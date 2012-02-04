@@ -20,18 +20,12 @@
       margin: 30px;
       float: left;
       }
-
-      .dropped-widget {
-      width: 100%;
-      height: 100px;
-	  width:auto;
-      background-color: #ffffaa;
-      }
-    </style>   
+   </style>   
 
     <script type="text/javascript" src="/static/js/my/old_layouts.js"></script>
     <script type="text/javascript" src="/static/js/my/old_sample_api.js"></script>
     <script type="text/javascript" src="/static/js/my/old_sample_manager.js"></script>
+    <script type="text/javascript" src="/static/js/my/unit.js"></script>
     <script type="text/javascript" src="/static/js/my/reaction.js"></script>
     <script type="text/javascript" src="/static/js/my/service.js"></script>
     <script type="text/javascript" src="/static/js/my/sample.js"></script>

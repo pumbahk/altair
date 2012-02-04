@@ -144,7 +144,7 @@ var reaction = (function(){
         react: function(draggable, droppable, data){
             var widget_name = service.ElementInfoService.get_name($(draggable));
             var dropped_widget = service.DragWidgetService.create_dropped_widget(widget_name);
-                        
+            
             var edit_button = service.WidgetElementService.get_edit_button(dropped_widget);
             service.WidgetDialogService.attach_overlay_event(widget_name, dropped_widget, edit_button);
 
