@@ -4,7 +4,7 @@
     <div id="block_name">
         %if 'block_name' in display_blocks:
             %for widget in display_blocks['block_name']:
-               widget id ${widget.created_at}
+               ${widget|n}
             %endfor
         %endif
     </div>

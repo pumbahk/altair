@@ -4,4 +4,5 @@
     <li><a href="/client">edit client</a></li>
     <li><a href="/event">edit event</a></li>
     <li><a href="/page">edit page</a></li>
+    <li><a href="/asset">edit asset</a></li>
 </ul>

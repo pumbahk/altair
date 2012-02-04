@@ -91,6 +91,10 @@ a:hover{
         background-color:#0CE0C0;
 }
 
+li a {
+color:#fff;
+}
+
 #kensaku {
 		widht = 100%;
 		border: 1px solid black;

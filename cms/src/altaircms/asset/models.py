@@ -9,7 +9,6 @@ from zope.sqlalchemy.tests import metadata
 from altaircms.models import Base, Site
 
 __all__ = [
-    'asset_mapper',
     'Asset',
     'ImageAsset',
     'MovieAsset',
@@ -36,7 +35,7 @@ class CssAsset(Asset):
 
 asset_table = Table(
     "asset",
-    metadata,
+    Base.metadata,
     Column("id", Integer, primary_key=True),
     Column("site_id", Integer, ForeignKey(Site.__table__.c.id)),
     Column("filepath", String),

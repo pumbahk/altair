@@ -42,6 +42,9 @@ body {
 a {
         text-decoration: none;
 }
+li a {
+color:#fff;
+}
     
 a:hover{
         color:#7fffd4;

@@ -3,6 +3,9 @@ from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
 from pyramid.session import UnencryptedCookieSessionFactoryConfig
+from pyramid.security import Allow, Authenticated
+from pyramid.security import Everyone
+
 import sqlahelper
 
 from sqlalchemy import engine_from_config
@@ -11,8 +14,13 @@ from altaircms.security import groupfinder
 from altaircms.models import initialize_sql
 
 
-from pyramid.security import Allow, Authenticated
-from pyramid.security import Everyone
+try:
+    import pymysql_sa
+    pymysql_sa.make_default_mysql_dialect()
+    print 'Using PyMySQL'
+except:
+    pass
+
 
 class RootFactory(object):
     __name__ = None
@@ -36,6 +44,10 @@ def cms_include(config):
     config.add_route('event_list', '/event')
     config.add_route('page_add', '/event/{event_id}/page/edit')
     config.add_route('page_edit', '/event/{event_id}/page/{page_id}/edit')
+    config.add_route('asset_list', '/asset')
+    config.add_route('asset_form', '/asset/form/{asset_type}')
+    config.add_route('asset_edit', '/asset/{asset_id}')
+    config.add_route('asset_delete', '/asset/{asset_id}')
 
 
 def front_include(config):
