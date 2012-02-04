@@ -137,6 +137,9 @@ var DroppableSheetViewModel = (function(){
 })();
 
 var DroppedWidgetViewModel = {
+    on_drawable: function(){
+        service.VisibilityService.attach_selected_highlight_event(".dropped-widget");
+    }, 
     on_close_button_pushed: function(widget_elt){
         var dfd =  reaction.WidgetCloseButtonPushed.start()
         dfd.resolveWith(dfd, [widget_elt]);
@@ -201,6 +204,7 @@ function loading_data(){
 
 $(function(){
     $.when(SelectLayoutViewModel.on_drawable(), 
-           DraggableWidgetViewModel.on_drawable())
+           DraggableWidgetViewModel.on_drawable(), 
+           DroppedWidgetViewModel.on_drawable())
         .done(loading_data);
 });

@@ -21,7 +21,8 @@
       float: left;
       }
 
-      .dropped_widget {
+      .dropped-widget {
+      width: 100%;
       height: 100px;
 	  width:auto;
       background-color: #ffffaa;

@@ -2,7 +2,9 @@ var service = (function(){
     var DragWidgetService = {
         create_dropped_widget: function(widget_name){
             var w = $("<div>").draggable({revert:true});
-            VisibilityService.dropped_widget(w).text(widget_name);
+
+            w.addClass("dropped-widget").addClass("float-left");
+            w.css("background-color", "orange").text(widget_name);
 
             // attach close button
             var close_button = $("<a class='close'>")
@@ -162,11 +164,6 @@ var service = (function(){
     
 
     var VisibilityService = {
-        dropped_widget : function(elt){
-            elt.addClass("dropped-widget").addClass("float-left");
-            elt.css("background-color", "orange")
-            return elt;
-        }, 
         data_packed_widget: function(elt){
             $(elt).addClass("data-packed").css("background-color", "blue");
             return elt;
@@ -186,6 +183,15 @@ var service = (function(){
             } else{
                 elt.hide();
             }
+        }, 
+        attach_selected_highlight_event: function(expr){
+	        $(expr+":not(.sexprcted)").live("mouseenter",function(){
+	            $(this).addClass("selected");
+	        });
+            
+	        $(".selected").live("mouseleave",function(){
+	            $(this).removeClass("selected");
+	        });
         }
     };
 

@@ -1,4 +1,19 @@
 /* some styling for triggers */
+
+.selected {
+	border-style: groove;
+	boder-width: 5px;
+	border-color: blue;
+}
+
+.dropped-widget .close, .dropped-widget .edit {
+    visibility: hidden;;
+}
+
+.selected .close, .selected .edit {
+    visibility: visible;
+}
+
 #triggers {
 	text-align:center;
 }
