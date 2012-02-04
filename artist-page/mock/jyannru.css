@@ -32,8 +32,19 @@ body {
 
 }
 a {
+	//color:#fff;
         text-decoration: none;
 }
+
+
+li a {
+color:#fff;
+}
+
+li a {
+color:#fff;
+}
+
     
 a:hover{
         color:#7fffd4;
@@ -216,6 +227,14 @@ a:hover{
 		clear :left;
 }
 
+#tx_main_header li a {
+	color:black;
+	}
+	
+#gyou_itiran li a {
+	color:black;
+	}
+	
 
 #tx_right {
 	    font-size: 0.7em;

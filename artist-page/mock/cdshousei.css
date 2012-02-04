@@ -34,7 +34,12 @@ body {
 a {
         text-decoration: none;
 }
-    
+ 
+
+li a {
+color:#fff;
+}
+   
 a:hover{
         color:#7fffd4;
 }
@@ -97,6 +102,7 @@ a:hover{
 		padding-left:600px;
 }	 
         
+        
 #tx_left {
 	    font-size: 1em;
         width:100px;
@@ -108,6 +114,32 @@ a:hover{
     	background-image:url("tx_main_bg.png");
 
 }
+#tx_left ul{
+        list-style-type:none;
+        vertical-align:baseline;
+        margin:0;
+        padding:0;
+		font-color:#ffffff;
+}
+#tx_left ul li{
+        list-style-type:none;
+		background-color:#000000;
+		font-size:0.4em;
+		margin:1px;
+		font-color:#ffffff;
+      
+}
+#tx_left ul  a li  {
+	
+        display:block;
+        list-style-type:none;	line-height:40px;
+        font-color:#ffffff;
+        font-size:0.4em;
+        text-align: center;
+        text-decoration: none;
+        margin-left:30px;
+}		
+
 
 #tx_center {
 	    font-size: 1em;
@@ -120,6 +152,80 @@ a:hover{
     	background-image:url("tx_main_bg.png");
 
 }
+
+
+
+
+
+
+
+
+
+#carousel_inner {  
+float:left; /* important for inline positioning */  
+width:630px; /* important (this width = width of list item(including margin) * items shown */  
+overflow: hidden;  /* important (hide the items outside the div) */  
+/* non-important styling bellow */  
+background: #F0F0F0;  
+}  
+  
+#carousel_ul {  
+position:relative;  
+left:-210px; /* important (this should be negative number of list items width(including margin) */  
+list-style-type: none; /* removing the default styling for unordered list items */  
+margin: 0px;  
+padding: 0px;  
+width:9999px; /* important */  
+/* non-important styling bellow */  
+padding-bottom:10px;  
+}  
+  
+#carousel_ul li{  
+float: left; /* important for inline positioning of the list items */  
+width:200px;  /* fixed width, important */  
+/* just styling bellow*/  
+padding:0px;  
+height:110px;  
+background: #000000;  
+margin-top:10px;  
+margin-bottom:10px;  
+margin-left:5px;  
+margin-right:5px;  
+}  
+  
+#carousel_ul li img {  
+.margin-bottom:-4px; /* IE is making a 4px gap bellow an image inside of an anchor (<a href...>) so this is to fix that*/  
+/* styling */  
+cursor:pointer;  
+cursor: hand;  
+border:0px;  
+}  
+#left_scroll, #right_scroll{  
+float:left;  
+height:130px;  
+width:15px;  
+background: #C0C0C0;  
+}  
+#left_scroll img, #right_scroll img{  
+/*styling*/  
+cursor: pointer;  
+cursor: hand;  
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #imgs {
 	width:300px;
