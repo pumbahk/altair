@@ -135,13 +135,13 @@ var reaction = (function(){
             service.WidgetDialogService.attach_overlay_event(widget_name, dropped_widget, edit_button);
 
             var block_name = service.ElementInfoService.get_name($(droppable));
-            service.DroppableSheetService.append_widget($(droppable), block_name, widget_name, dropped_widget);
+            service.DroppableSheetService.append_widget($(droppable), dropped_widget, block_name, widget_name);
             service.ApiService.save_block(block_name, widget_name, dropped_widget);
         }
     });
 
-    var DragWidgetFromPaletNoSaveApi = Reaction({ //almost same DragWidgetFromPalet
-        react: function(draggable, droppable){
+    var DragWidgetFromPaletWithApi = Reaction({ //almost same DragWidgetFromPalet
+        react: function(draggable, droppable, data){
             var widget_name = service.ElementInfoService.get_name($(draggable));
             var dropped_widget = service.DragWidgetService.create_dropped_widget(widget_name);
                         
@@ -149,7 +149,7 @@ var reaction = (function(){
             service.WidgetDialogService.attach_overlay_event(widget_name, dropped_widget, edit_button);
 
             var block_name = service.ElementInfoService.get_name($(droppable));
-            service.DroppableSheetService.append_widget($(droppable), block_name, widget_name, dropped_widget);
+            service.DroppableSheetService.append_widget($(droppable), dropped_widget, block_name, widget_name, data);
         }
     });
 
@@ -170,7 +170,7 @@ var reaction = (function(){
             var fetch_data_fn = service.FetchDialogDataService[ctx.widget_name];
             var data = fetch_data_fn(ctx.choiced_elt, ctx.widget_elt);            
             Resource.manager.update_data(block_name, ctx.widget_elt, data);
-            service.ApiService.save_data(ctx.widget_name, ctx.widget_elt, data);
+            service.ApiService.save_widget(ctx.widget_name, ctx.widget_elt, data);
             service.VisibilityService.data_packed_widget(ctx.widget_elt);
         }
     });
@@ -182,7 +182,7 @@ var reaction = (function(){
         AfterDrawableDroppableSheet: AfterDrawableDroppableSheet, 
         WidgetCloseButtonPushed: WidgetCloseButtonPushed, 
         DragWidgetFromPalet: DragWidgetFromPalet, 
-        DragWidgetFromPaletNoSaveApi: DragWidgetFromPaletNoSaveApi, 
+        DragWidgetFromPaletWithApi: DragWidgetFromPaletWithApi, 
         DragWidgetFromInternalBlock: DragWidgetFromInternalBlock, 
         WidgetDataSubmit: WidgetDataSubmit
     };

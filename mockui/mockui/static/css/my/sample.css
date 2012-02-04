@@ -1,11 +1,23 @@
 /* some styling for triggers */
 
-.selected {
+div.selected {
 	/* border-style: groove;
 	 * boder-width: 5px;
 	 * border-color: blue;
      */
-    background-color: gray;
+    background-color: #ccc;
+}
+
+img.managed {
+    border-style: solid;
+	border-width: 5px;
+	border-color: orange;
+}
+
+img.selected {
+    border-style: solid;
+	border-width: 5px;
+	border-color: #ccc;
 }
 
 .dropped-widget .close, .dropped-widget .edit {

@@ -80,6 +80,11 @@ var manager = (function(){
                 _D = {};
                 _RD = {};
             }, 
+            find: function(elt){
+                var block_name = _RD[_to_key(elt)];
+                var info = _find_info(block_name, elt);
+                return info.block[info.i];
+            }, 
             update_data: function(block_name, elt, data){
                 var info = _find_info(block_name, elt)
                 return _.extend(info.block[info.i], data);

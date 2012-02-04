@@ -45,9 +45,11 @@ var service = (function(){
 			        }
                 });
             }, 
-            append_widget: function(where, block_name, widget_name, widget){
+            append_widget: function(where, widget, block_name, widget_name, data){
                 var manager = Resource.manager;
-                manager.add_widget(block_name, widget, {widget_name: widget_name});
+                var data = data || {}
+                _.extend(data, {widget_name: widget_name})
+                manager.add_widget(block_name, widget, data);
                 return where.append(widget)
             }
         };
@@ -116,6 +118,7 @@ var service = (function(){
         var _close_dialog = null;
         var _widget_elt = null;
         var _widget_name = null;
+        var _dialog_elt = null;
         return {
             // clean_dialog: function(){
             //     $(".dialog_overlay .contentWrap").children().remove();
@@ -132,7 +135,13 @@ var service = (function(){
                 var widget_elt = dropped_widget;
                 var opts = {
                     closeOnClick: true,
-                    closeOnESC: true, 
+                    closeOnESC: true,
+                    onLoad: function(){
+                        if(_close_dialog == null || _widget_elt == null || _widget_elt == null){
+                            throw "overlay close() is not found(in select widget dialog)"
+                        }
+                        WidgetDialogViewModel.on_dialog(_dialog_elt, _widget_name, _widget_elt);
+                    }, 
                     onBeforeLoad: function() {
 			            // grab wrapper element inside content
 			            var wrap = this.getOverlay().find(".contentWrap");
@@ -150,11 +159,8 @@ var service = (function(){
                         if(_close_dialog == null || _widget_elt == null || _widget_elt == null){
                             throw "overlay close() is not found(in select widget dialog)"
                         }
-
-
-
-                        var dialog_elt = wrap.load(url)
-                        WidgetDialogViewModel.on_dialog(dialog_elt, widget_name, widget_elt);
+                        _dialog_elt = wrap.load(url);
+                        // WidgetDialogViewModel.on_dialog(_dialog_elt, widget_name, widget_elt);
 		            }
                 };
                 $(attach_source).overlay(opts);
@@ -187,15 +193,25 @@ var service = (function(){
         unselect: function(elt){
             $(elt).removeClass("selected");
         }, 
-        attach_selected_highlight_event: function(expr){
-	        $(expr+":not(.sexprcted)").live("mouseenter",function(){
-	            $(this).addClass("selected");
-	        });
-            
-	        $(".selected").live("mouseleave",function(){
-	            $(this).removeClass("selected");
-	        });
-        }
+        attach_selected_highlight_event: (function(){
+            var _cache = {} //cache
+            var _first = true
+            return function(expr){
+                if(!_cache[expr]){
+                    console.log("### "+expr+" ###");
+                    _cache[expr] = true; //
+	                $(expr+":not(.selected)").live("mouseenter",function(){
+	                    $(this).addClass("selected");
+	                });
+                }
+                if (_first){
+                    _first = false
+	                $(".selected").live("mouseleave",function(){
+	                    $(this).removeClass("selected");
+	                });
+                }
+            }
+        })()
     };
 
     var ApiService = {
@@ -227,10 +243,11 @@ var service = (function(){
             var orderno = manager.orderno(block_name, widget_element);
             return api.delete_widget(block_name, orderno);
         }, 
-        save_data: function(widget_name, widget_elt, data){
-            console.log("---save_data!--");
-            console.log(widget_name);
-            console.dir(data);
+        save_widget: function(widget_name, widget_element, data){
+            var manager = Resource.manager;
+            var block_name = manager.block_name(widget_element);
+            var orderno = manager.orderno(block_name, widget_element);
+            return api.save_widget(widget_name, block_name, orderno, data);
         }
     };
 

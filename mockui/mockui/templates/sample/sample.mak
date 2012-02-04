@@ -75,7 +75,7 @@
 
 	  <div class="dialog_overlay" id="overlay">
 		<!-- the external content is loaded inside this tag -->
-		<div class="contentWrap"></div>
+		<div id="wrap" class="contentWrap"></div>
 	  </div>
 	</div>
   </body>

@@ -3,6 +3,7 @@ from pyramid.response import Response
 from tmpstorage import get_storage
 from stage import get_stage
 from mockui.fanstatic import jqueries_need
+import json
 
 @view_config(route_name="sample::sample", renderer="sample/sample.mak")
 def sample_view(request):
@@ -15,7 +16,6 @@ def load_stage_view(request):
     try:
         storage = get_storage()
         info = get_stage(storage)
-        print info.layoutname
         return dict(status="success", stage=info.stage, 
                     layoutname=info.layoutname, context=info.context)
     except Exception, e:
@@ -89,22 +89,43 @@ def load_widget_view(request):
     storage = get_storage()
     block_name = request.GET["block_name"]
     orderno = request.GET["orderno"]
-    widget_name = storage.load_block(block_name, orderno)
+    val = storage.load_block(block_name, orderno)
+    widget_name = val["widget_name"]
     from pyramid.view import render_view_to_response
     ## widget name : a name of widget.py's view.
     return render_view_to_response(None, request, name=widget_name)
 
 
 
-@view_config(route_name="sample::api_save_widget", renderer="json")
-def save_widget_view(request):
-    pass
-
 @view_config(route_name="sample::api_delete_widget", renderer="json")
 def delete_widget_view(request):
+    """
+    :params:
+    block_name: <string>
+    orderno: <int>
+    """
     storage = get_storage()
     block_name = request.POST["block_name"]
     orderno = request.POST["orderno"]
     status = storage.delete_widget(block_name, orderno)
     return dict(status="success")
+
+@view_config(route_name="sample::api_save_widget", renderer="json")
+def save_widget_view(request):
+    """
+    :params:
+    widget_name: <string>
+    block_name: <string>
+    orderno: <int>
+    data: <json>
+    """
+    storage = get_storage()
+    widget_name = request.POST["widget_name"]
+    block_name = request.POST["block_name"]
+    orderno = request.POST["orderno"]
+    data = json.loads(request.POST["data"])
+
+    storage.save_widget(widget_name, block_name, orderno, data)
+    return dict(status="success")
+
 

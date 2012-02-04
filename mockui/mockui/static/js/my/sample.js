@@ -112,21 +112,21 @@ var DroppableSheetViewModel = (function(){
     };
 
     var on_append_with_api = function(dfd, data){
-        // [{
-        //     'widgets': ["image_widget"], 
-        //     'block_name': 'selected_center'
-        //  }, 
-        //  {
-        //     'widgets': ["dummy_widget"], 
-        //     'block_name': 'selected_header'
-        //  }]
+      // [{widgets:[{data:{},
+      //             widget_name:"dummy_widget1"}],
+      //   block_name:"selected_left"},
+      //  {widgets:[{data:{},
+      //             widget_name:"image_widget"}],
+      //   block_name:"selected_header"}
+      // ]
         _.each(data, function(saved_block){
             var block_name = saved_block["block_name"];
             var droppable = service.DroppableSheetService.get_elt(block_name);
             _.each(saved_block["widgets"], function(widget_info){
-                var widget_name = widget_info;
+                var widget_name = widget_info.widget_name;
                 var draggable = service.DragWidgetService.get_elt(widget_name);
-                reaction.DragWidgetFromPaletNoSaveApi.delegated_with_args(dfd, [draggable, droppable]);
+                var data = widget_info.data;
+                reaction.DragWidgetFromPaletWithApi.delegated_with_args(dfd, [draggable, droppable, data]);
             });
         });
     };
@@ -149,12 +149,27 @@ var DroppedWidgetViewModel = {
 };
 
 var WidgetDialogViewModel = (function(){
+    var _selector = null
     var on_dialog = function(dialog_elt, widget_name, widget_elt){
-        // fixme
-        console.log("dialog created");
+        if(widget_name == "image_widget"){
+            setTimeout(function(){
+            _selector = "#"+dialog_elt.attr("id")+" img";
+            $(_selector).live("click", function(){
+                service.WidgetDialogService.finish_dialog(this);
+            });
+
+            service.VisibilityService.attach_selected_highlight_event(_selector);
+
+            var imagefile = Resource.manager.find(widget_elt).imagefile
+            dialog_elt.find("img[src='@src@']".replace("@src@", imagefile)).addClass("managed");
+            }, 0);
+        }
     };
     var on_selected = function(choiced_elt, widget_name, widget_elt, close_fn){
         // fixme
+        if(widget_name == "image_widget"){
+            $(_selector).die();
+        }
         close_fn();
         var params = {
             widget_name: widget_name, 
@@ -179,7 +194,9 @@ var STAGE = {
 };
 
 function loading_data(){
-    $.getJSON("/api/load/stage").done(function(data){
+    $.getJSON("/sample/api/load/stage").done(function(data){
+        //
+        //
         Resource.current_state = data.stage; //
         var dfd = $.Deferred();
         // if(data.stage >= STAGE.NEW){}
