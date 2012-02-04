@@ -1,15 +1,6 @@
 
 var service = (function(){
     var DragWidgetService = (function(){
-//         var fragment = _.template(
-// (['<li>', 
-//       '<div class="dropped-widget">', 
-//         '<%= content%>', 
-//         '<a class="close"></a>', 
-//         '<a class="edit" rel="#overlay"></a>', 
-//         '</div>', 
-//     '</li>', 
-//   ]).join("\n"));
 
         var fragment = _.template(
 (['<div class="dropped-widget">', 
@@ -31,7 +22,8 @@ var service = (function(){
     })();
 
     var ElementInfoService = {
-        get_name: function(element){ return element.attr("id");}
+        get_name: function(element){ return element.attr("id");}, 
+        get_height: function(element) {return element.css("height");}
     };
 
     var DroppableSheetService = (function(){
@@ -192,16 +184,12 @@ var service = (function(){
             var elt = $(expr);
             if(elt.hasClass("hidden")){
                 $(expr).removeClass("hidden");
-            } else{
-                elt.show();
             }
         }, 
         hidden: function(expr){
             var elt = $(expr);
             if(elt.hasClass("hidden")){
                 $(expr).addClass("hidden");
-            } else{
-                elt.hide();
             }
         }, 
         unselect: function(elt){
@@ -212,7 +200,7 @@ var service = (function(){
             var _first = true
             return function(expr){
                 if(!_cache[expr]){
-                    console.log("### "+expr+" ###");
+                    // console.log("### "+expr+" ###");
                     _cache[expr] = true; //
 	                $(expr+":not(.selected)").live("mouseenter",function(){
 	                    $(this).addClass("selected");
@@ -284,6 +272,52 @@ var service = (function(){
         }, 
     };
 
+    var ChangeHeightService = (function(){
+        var _row_block = null;
+        return {
+            manage_it: function(row_block){
+                _row_block = row_block;
+                var hmanager = Resource.hmanager;
+                hmanager.manage_it(row_block, "0px"); //fix
+                // set_default
+            }, 
+            extend_if_need: function(where, widget){
+                if(_row_block == null){
+                    throw "not manage it row block is null (extend)";
+                }
+                if(!!_row_block){
+                    var hmanager = Resource.hmanager;
+                    var row_elt = hmanager.child_to_rowelt(where);
+                    var widget_height = unit.get(ElementInfoService.get_height(widget));
+                    var height = hmanager.add_current(row_elt, widget_height);
+                    console.log(height);
+                    if(hmanager.over_default(row_elt)){
+                        // extend
+                        row_elt.find("div").css("height", height.toString())
+                    }
+                }
+            }, 
+            reduce_if_need: function(where, widget){
+                if(_row_block == null){
+                    throw "not manage it row block is null (reduce)";
+                }
+                if(!!_row_block){
+                    var hmanager = Resource.hmanager;
+                    var row_elt = hmanager.child_to_rowelt(where);
+                    var widget_height = unit.get(ElementInfoService.get_height(widget));
+                    if(hmanager.over_default(row_elt)){
+                        var height = hmanager.sub_current(elt, widget_height);
+                        // reduce
+                        row_elt.find("div").css("height", height.toString())
+                    } else {
+                        hmanager.sub_current(row_elt, widget_height);
+                    }
+                }
+            }
+        }
+    })();
+
+
     var FetchDialogDataService = {
         image_widget: function(choiced_elt, widget_elt){
             return {imagefile: $(choiced_elt).attr("src")};
@@ -300,6 +334,7 @@ var service = (function(){
         ApiService: ApiService,
         ElementLayoutService: ElementLayoutService, 
         WidgetElementService: WidgetElementService, 
-        FetchDialogDataService: FetchDialogDataService
+        FetchDialogDataService: FetchDialogDataService, 
+        ChangeHeightService: ChangeHeightService
     };
 })();

@@ -1,4 +1,4 @@
-var calc = (function(){
+var unit = (function(){
     var Unit = function(val, unit){
         this.unit = unit;
         this.val = val;

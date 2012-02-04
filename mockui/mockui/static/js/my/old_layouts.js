@@ -60,22 +60,10 @@ var layouts = (function(){
             width: function(width){
                 $(wrapped_expr).css("width",width);
             },
-            color: function(suffix,color){
+            if_matched: function(suffix, cont){
                 var matched = _get_block_by_suffix(suffix);
-                !!matched && $(matched).css("background-color",color);
-            },
-            colors: function(colors){
-                _blocks_map(colors,function(block,color){
-                    $(block).css("background-color", color);
-                });
-            },
-            height: function(suffix,height){
-                var matched = _get_block_by_suffix(suffix);
-                !!matched && $(matched).css("height",height);
-            },
-            heights: function(heights){
-                _blocks_map(heights, function(block,height){$(block).css("height", height);});
-            }
+                !!matched && cont($(matched));
+            }, 
         };
     };
 
@@ -102,6 +90,9 @@ var layouts = (function(){
             add: function(e){
                 _.member.push(e);
             },
+            each: function(fn){
+                _.member.each(fn);
+            }, 
             width: function(width){
                 _.each(_member, function(e){e.width(width)});
             },
@@ -117,49 +108,74 @@ var layouts = (function(){
                     self.height(p, height, base, unit);
                 });
             },
-            color: function(suffix,color){
-                _.each(_member, function(e){e.color(suffix, _convertor.color(color));});
+            color: function(suffix, color){
+                _.each(_member, function(cand){
+                    cand.if_matched(suffix, function(m){
+                        $(m).css("background-color", _convertor.color(color));
+                    });
+                });
             },
             height: function(suffix, height, base, unit){
-                _.each(_member, function(e){e.height(suffix, _convertor.length(height, base, unit))});
+                _.each(_member, function(cand){
+                    cand.if_matched(suffix, function(m){
+                        $(m).css("height", _convertor.length(height, base, unit));
+                    });
+                });
             }
         }
     };
 
+    var candidate_layout_property = {
+        width: 200, 
+        heights: {ratio: {header: 0.25,
+                          left: 1.0,
+                          center: 1.0,
+                          right: 1.0,
+                          footer: 0.25}, 
+                  base: 200, 
+                  unit: "px"}, 
+        colors: {
+            "header": "gray",
+            "left": "blue",
+            "center": "green",
+            "right": "red",
+            "footer": "gray"
+        }        
+
+    };
+    var selected_layout_property = {
+        width: 600, 
+        heights: {ratio: {header: 0.25,
+                          left: 1.0,
+                          center: 1.0,
+                          right: 1.0,
+                          footer: 0.25}, 
+                  base: 300, 
+                  unit: "px"}, 
+        colors: {
+            "header": "gray",
+            "left": "blue",
+            "center": "green",
+            "right": "red",
+            "footer": "gray"
+        }        
+    };
+
+    // todo refactoring    
     var DefaultLayout = {
+        candidate_layout_property: candidate_layout_property, 
+        selected_layout_property: selected_layout_property, 
         candidate_layout: function(cl){
-            cl.width(200);
-            cl.heights({
-                "header": 0.25,
-                "left": 1.0,
-                "center": 1.0,
-                "right": 1.0,
-                "footer": 0.25
-            }, 200, "px");
-            cl.colors({
-                "header": "gray",
-                "left": "blue",
-                "center": "green",
-                "right": "red",
-                "footer": "gray"
-            });
+            var prop = candidate_layout_property;
+            cl.width(prop.width);
+            cl.heights(prop.heights.ratio, prop.heights.base, prop.heights.unit);
+            cl.colors(prop.colors)
         }, 
         selected_layout: function(cl){
-            cl.width(600);
-            cl.heights({
-                "header": 0.25,
-                "left": 1.0,
-                "center": 1.0,
-                "right": 1.0,
-                "footer": 0.25
-            }, 300, "px");
-            cl.colors({
-                "header": "gray",
-                "left": "blue",
-                "center": "green",
-                "right": "red",
-                "footer": "gray"
-            });
+            var prop = selected_layout_property;
+            cl.width(prop.width);
+            cl.heights(prop.heights.ratio, prop.heights.base, prop.heights.unit);
+            cl.colors(prop.colors)
         }
     };
 

@@ -1,11 +1,14 @@
 var Resource = (function(){
     var current_state = null;
     var _manager = manager.DataManager();
+    var _hmanager = manager.HeightManager();
     return {
         current_state: current_state, 
+        hmanager: _hmanager, 
         manager: _manager, 
         refresh: function(){
             _manager.refresh();
+            _hmanager.refresh();
         }
     };
 })()
@@ -91,14 +94,15 @@ var DroppableSheetViewModel = (function(){
     var _selector = {
         dropped_sheet: "#selected_layout", 
         sheet_block: "#wrapped", 
-        layout_target: "#wrapped > .block-row"
+        layout_target: "#wrapped > .block-row", 
+        row_block: ".block-row"
     };
     var on_drawable = function(selected_html){
         var selected_layout = new layouts.Candidate(_selector.layout_target);
         var params = {selected_html: selected_html, 
                       selected_layout: selected_layout};
         var ctx = _.extend({}, _selector, params);
-        var dft = reaction.AfterDrawableDroppableSheet.start()
+        var dft = reaction.AfterDrawableDroppableSheet.start();
         dft.resolveWith(dft, [ctx]);
     };
     
@@ -120,16 +124,18 @@ var DroppableSheetViewModel = (function(){
       //             widget_name:"image_widget"}],
       //   block_name:"selected_header"}
       // ]
-        _.each(data, function(saved_block){
-            var block_name = saved_block["block_name"];
-            var droppable = service.DroppableSheetService.get_elt(block_name);
-            _.each(saved_block["widgets"], function(widget_info){
-                var widget_name = widget_info.widget_name;
-                var draggable = service.DragWidgetService.get_elt(widget_name);
-                var data = widget_info.data;
-                reaction.DragWidgetFromPaletWithApi.delegated_with_args(dfd, [draggable, droppable, data]);
-            });
-        });
+      dfd.done(function(){
+          _.each(data, function(saved_block){
+              var block_name = saved_block["block_name"];
+              var droppable = service.DroppableSheetService.get_elt(block_name);
+              _.each(saved_block["widgets"], function(widget_info){
+                  var widget_name = widget_info.widget_name;
+                  var draggable = service.DragWidgetService.get_elt(widget_name);
+                  var data = widget_info.data;
+                  reaction.DragWidgetFromPaletWithApi.delegated_with_args(dfd, [draggable, droppable, data]);
+              });
+          });
+      })
     };
 
     return {

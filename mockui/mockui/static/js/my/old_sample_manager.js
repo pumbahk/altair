@@ -105,7 +105,130 @@ var manager = (function(){
         }
     };
 
+    var LayoutManager = (function(color_mapping){
+        // todo fix
+        var candidate_conf = {
+            width: 200, 
+            heights: {ratio: {header: 0.25,
+                              left: 1.0,
+                              center: 1.0,
+                              right: 1.0,
+                              footer: 0.25}, 
+                      base: 200, 
+                      unit: "px"}, 
+            colors: {
+                "header": "gray",
+                "left": "blue",
+                "center": "green",
+                "right": "red",
+                "footer": "gray"
+            }
+        };
+
+        var selected_conf = {
+            width: 600, 
+            heights: {ratio: {header: 0.25,
+                              left: 1.0,
+                              center: 1.0,
+                              right: 1.0,
+                              footer: 0.25}, 
+                      base: 300, 
+                      unit: "px"}, 
+            colors: {
+                "header": "gray",
+                "left": "blue",
+                "center": "green",
+                "right": "red",
+                "footer": "gray"
+            }        
+        };
+
+        var defaultColor = {
+            "red": "#ffaaaa",
+            "green": "#aaffaa",
+            "blue": "#aaaaff",
+            "gray": "#999"
+        };
+        if (!color_mapping){
+            color_mapping = defaultColor;
+        }
+        var _get_color = function(color){
+            return !!color_mapping[color] ? color_mapping[color] : color;
+        };
+
+        var _get_length = function(length, base, unit){
+            if(_.isNumber(length)){
+                length = base * length;
+                if(!!unit){
+                    length = String(length)+unit;
+                }
+            }
+            return length;
+        };
+
+        return {
+            candidate_conf: candidate_conf,
+            selected_conf: selected_conf,
+            color: _get_color,
+            length: _get_length
+        }
+    })();
+    
+    var HeightManager = function(){
+        current_map = {};
+        default_map = {};
+        var gensym_c = 0;
+        var _to_key = function(elt){
+            foo = elt;
+            var k = $(elt).data("hid:");
+            if(!!k){return k;}
+            throw "not managed it (HeightManager)"
+        };
+
+        return {
+            manage_it: function(row_expr, default_v){
+                _.each($(row_expr), function(e){
+                    $(e).data("hid:", gensym_c);
+                    current_map[gensym_c] = unit.get(default_v); //
+                    gensym_c++;
+                });
+            }, 
+            child_to_rowelt: function(row_expr, child){
+                return $(child).parent(row_expr);
+            }, 
+            over_default: function(elt){
+                var k = _to_key(elt);
+                return default_map[k].val < current_map[k].val;
+            }, 
+            refresh: function(){
+                current_map = {};
+                default_map = {};
+                gensym_c = 0;
+            }, 
+            set_default: function(elt, height){
+                default_map[_to_key(elt)] = height;
+            }, 
+            add_current: function(elt, d){
+                var k = _to_key(elt);
+                console.log("k is "+k);
+                var v = current_map[k].add(d);
+                current_map[k] = v;
+                return v;
+            }, 
+            sub_current: function(elt, d){
+                var k = _to_key(elt);
+                var v = current_map[k].sub(d);
+                current_map[k] = v;
+                return v;
+            }, 
+            current: function(elt){
+                return current_map[_to_key(elt)];
+            }
+        }
+    };
     return {
-        "DataManager": DataManager, 
+        DataManager: DataManager, 
+        HeightManager: HeightManager, 
+        LayoutManager: LayoutManager
     };
 })();
