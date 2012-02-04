@@ -13,6 +13,7 @@
     <link rel="stylesheet" type="text/css"
           href="http://rakuten-ticket-static.s3.amazonaws.com/public/stylesheets/ui-lightness/jquery-ui-1.8.13.custom.css"/>
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script type="text/javascript" src="/static/swfobject.js"></script>
     ## javascript block
     <%block name="js"/>
     <script type="text/javascript">
@@ -25,13 +26,12 @@
     <%block name="style"/>
 </head>
 <body>
-<div class="page">
-    <%block name="header"><%include file="../parts/header.mako"/></%block>
+<div class="page page-two_columns">
+    <%block name="page"><%include file="../parts/header.mako"/></%block>
 
     <div class="page-main">
         <div class="page-main-header">
-            <div class="page-main-header-content">
-            </div>
+            <div class="page-main-header-content"></div>
         </div>
         <div class="page-main-main">
             <div class="page-main-main-content"><%block name="content"/>${next.body()}</div>

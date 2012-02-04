@@ -36,7 +36,7 @@ class CssAsset(Asset):
 
 asset_table = Table(
     "asset",
-    metadata,
+    Base.metadata,
     Column("id", Integer, primary_key=True),
     Column("site_id", Integer, ForeignKey(Site.__table__.c.id)),
     Column("filepath", String),

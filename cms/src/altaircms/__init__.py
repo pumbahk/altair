@@ -3,6 +3,9 @@ from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
 from pyramid.session import UnencryptedCookieSessionFactoryConfig
+from pyramid.security import Allow, Authenticated
+from pyramid.security import Everyone
+
 import sqlahelper
 
 from sqlalchemy import engine_from_config
@@ -11,8 +14,13 @@ from altaircms.security import groupfinder
 from altaircms.models import initialize_sql
 
 
-from pyramid.security import Allow, Authenticated
-from pyramid.security import Everyone
+try:
+    import pymysql_sa
+    pymysql_sa.make_default_mysql_dialect()
+    print 'Using PyMySQL'
+except:
+    pass
+
 
 class RootFactory(object):
     __name__ = None
