@@ -31,11 +31,7 @@ EXT_MAP = {
 
 def detect_mimetype(filename):
     ext = filename[filename.rfind('.') + 1:].lower()
-
-    if ext in EXT_MAP:
-        return EXT_MAP[ext]
-    else:
-        return 'application/octet-stream'
+    return EXT_MAP[ext] if ext in EXT_MAP else 'application/octet-stream'
 
 
 class AssetEditView(object):
@@ -84,7 +80,7 @@ class AssetEditView(object):
             'asset_type': self.asset_type,
             }
 
-    @view_config(route_name='asset_list', renderer='altaircms:templates/asset/list.mako', request_method='GET')
+    @view_config(route_name='asset_list', renderer='altaircms:templates/asset/list.mako', request_method='GET', permission='edit')
     def asset_list(self):
         assets = DBSession().query(Asset).order_by(desc(Asset.id)).all()
 
@@ -92,7 +88,7 @@ class AssetEditView(object):
             assets=assets
         )
 
-    @view_config(route_name="asset_form", renderer='altaircms:templates/asset/form.mako')
+    @view_config(route_name="asset_form", renderer='altaircms:templates/asset/form.mako', permission='edit')
     def asset_form(self):
         def succeed(request, captured):
             # @TODO: S3に対応する
@@ -127,20 +123,32 @@ class AssetEditView(object):
 
         return self.render_form(form, success=succeed)
 
-    @view_config(route_name="asset_edit")
+    @view_config(route_name="asset_edit", permission='edit', renderer='altaircms:templates/asset/view.mako', request_method='GET')
     def asset_edit(self):
-        pass
-
-    @view_config(route_name="asset_delete")
-    def asset_delete(self):
-        pass
-
-    @view_config(route_name="asset_view")
-    def asset_view(self):
         if not self.asset:
             return NotFound()
 
-        filepath = os.path.join(get_storepath(self.request), self.asset.filepath)
-        content_type = self.asset.mimetype if self.asset.mimetype else 'application/octet-stream'
+        if 'raw' in self.request.params:
+            filepath = os.path.join(get_storepath(self.request), self.asset.filepath)
+            content_type = self.asset.mimetype if self.asset.mimetype else 'application/octet-stream'
 
-        return Response(file(filepath).read(), content_type=content_type)
+            return Response(file(filepath).read(), content_type=content_type)
+
+        return dict(
+            asset=self.asset
+        )
+
+    @view_config(route_name="asset_edit", permission='edit', request_method='POST')
+    def asset_delete(self):
+        if not self.asset:
+            return NotFound()
+
+        if '_method' in self.request.params and self.request.params['_method'].lower() == 'delete':
+            # 削除処理
+            os.remove(os.path.join(get_storepath(self.request), self.asset.filepath))
+            DBSession.delete(self.asset)
+
+            return self.response_json_ok()
+        else:
+            # 更新処理
+            pass
