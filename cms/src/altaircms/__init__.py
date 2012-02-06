@@ -48,6 +48,7 @@ def cms_include(config):
     config.add_route('asset_form', '/asset/form/{asset_type}')
     config.add_route('asset_edit', '/asset/{asset_id}')
     config.add_route('asset_delete', '/asset/{asset_id}')
+    config.add_route('asset_view', '/asset/view/{asset_id}')
 
 
 def front_include(config):
