@@ -4,10 +4,10 @@ import deform
 
 __all__ = [
     'ASSET_TYPE',
-    'ImageAsset',
-    'MovieAsset',
-    'FlashAsset',
-    'CssAsset',
+    'ImageAssetSchema',
+    'MovieAssetSchema',
+    'FlashAssetSchema',
+    'CssAssetSchema',
 ]
 
 ASSET_TYPE = [
@@ -23,7 +23,7 @@ class Store(dict):
 tmpstore = Store()
 
 
-class Asset(colander.MappingSchema):
+class BaseAssetSchema(colander.MappingSchema):
     type = colander.SchemaNode(
         colander.String(),
         validator=colander.OneOf(ASSET_TYPE),
@@ -31,7 +31,8 @@ class Asset(colander.MappingSchema):
     )
 
 
-class ImageAsset(Asset):
+#@TODO: 画像フォーマットやサイズのバリデーションを行う
+class ImageAssetSchema(BaseAssetSchema):
     alt = colander.SchemaNode(colander.String(), missing=colander.null, default='')
     width = colander.SchemaNode(colander.Integer(), missing=colander.null)
     height = colander.SchemaNode(colander.Integer(), missing=colander.null)
@@ -41,7 +42,7 @@ class ImageAsset(Asset):
     )
 
 
-class FlashAsset(Asset):
+class FlashAssetSchema(BaseAssetSchema):
     width = colander.SchemaNode(colander.Integer())
     height = colander.SchemaNode(colander.Integer())
     length = colander.SchemaNode(colander.Integer())
@@ -51,7 +52,7 @@ class FlashAsset(Asset):
     )
 
 
-class MovieAsset(Asset):
+class MovieAssetSchema(BaseAssetSchema):
     width = colander.SchemaNode(colander.Integer())
     height = colander.SchemaNode(colander.Integer())
     length = colander.SchemaNode(colander.Integer())
@@ -62,5 +63,5 @@ class MovieAsset(Asset):
     )
 
 
-class CssAsset(Asset):
+class CssAssetSchema(BaseAssetSchema):
     pass

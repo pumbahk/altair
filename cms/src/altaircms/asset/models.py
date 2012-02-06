@@ -21,7 +21,13 @@ class Asset(object):
     pass
 
 class ImageAsset(Asset):
-    pass
+    def __init__(self, filepath, alt='', size=None, width=None, height=None, mimetype=None):
+        self.alt = alt
+        self.size = size
+        self.width = width
+        self.height = height
+        self.filepath = filepath
+        self.mimetype = mimetype
 
 class MovieAsset(Asset):
     pass
@@ -44,7 +50,7 @@ asset_table = Table(
     Column('height', Integer),
     Column('length', Integer),
     Column('mimetype', String),
-    Column('type', String(30)),
+    Column('type', String(30))
 )
 
 asset_mapper = mapper(Asset, asset_table, polymorphic_on=asset_table.c.type, polymorphic_identity='asset')
