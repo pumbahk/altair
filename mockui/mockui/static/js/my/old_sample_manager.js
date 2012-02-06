@@ -186,15 +186,12 @@ var manager = (function(){
         };
 
         return {
-            manage_it: function(row_expr, default_v){
-                _.each($(row_expr), function(e){
+            manage_it: function(elt, default_v){
+                _.each($(elt), function(e){
                     $(e).data("hid:", gensym_c);
                     current_map[gensym_c] = unit.get(default_v); //
                     gensym_c++;
                 });
-            }, 
-            child_to_rowelt: function(row_expr, child){
-                return $(child).parent(row_expr);
             }, 
             over_default: function(elt){
                 var k = _to_key(elt);

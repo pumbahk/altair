@@ -51,7 +51,7 @@ var layouts = (function(){
 
         var _get_block_by_suffix = function(suffix){
             var reg = new RegExp("-"+suffix);
-            var finder = function(e){return reg.test($(e).attr("class"))};
+            var finder = function(e){return reg.test($(e).attr("class"))}; //using class?
             return _.find(_get_blocks(), finder);
         };
 
@@ -102,12 +102,6 @@ var layouts = (function(){
                     self.color(p, color);
                 });
             },
-            heights: function(params, base, unit){
-                var self = this
-                _each_items(params, function(p, height){
-                    self.height(p, height, base, unit);
-                });
-            },
             color: function(suffix, color){
                 _.each(_member, function(cand){
                     cand.if_matched(suffix, function(m){
@@ -118,8 +112,15 @@ var layouts = (function(){
             height: function(suffix, height, base, unit){
                 _.each(_member, function(cand){
                     cand.if_matched(suffix, function(m){
-                        $(m).css("height", _convertor.length(height, base, unit));
+                        var h = _convertor.length(height, base, unit);
+                        $(m).css("height", h).attr("height", h);
                     });
+                });
+            }, 
+            heights: function(params, base, unit){
+                var self = this
+                _each_items(params, function(p, height){
+                    self.height(p, height, base, unit);
                 });
             }
         }
@@ -144,13 +145,13 @@ var layouts = (function(){
 
     };
     var selected_layout_property = {
-        width: 600, 
+        width: 700, 
         heights: {ratio: {header: 0.25,
                           left: 1.0,
                           center: 1.0,
                           right: 1.0,
                           footer: 0.25}, 
-                  base: 300, 
+                  base: 400, 
                   unit: "px"}, 
         colors: {
             "header": "gray",

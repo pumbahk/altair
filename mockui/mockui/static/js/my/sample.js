@@ -22,7 +22,7 @@ var SelectLayoutViewModel = (function(){
         overlay_close_trigger: ".candidate", 
         has_selected_highlight: ".candidate", 
         selected_id: "#wrapped", 
-        layout_targets: ["#wrapped > .block-row", "#wrapped1 > .block-row", "#wrapped2 > .block-row"]
+        layout_targets: ["#wrapped ", "#wrapped1 ", "#wrapped2 "]
     };
 
     var on_drawable = function(){
@@ -94,8 +94,8 @@ var DroppableSheetViewModel = (function(){
     var _selector = {
         dropped_sheet: "#selected_layout", 
         sheet_block: "#wrapped", 
-        layout_target: "#wrapped > .block-row", 
-        row_block: ".block-row"
+        layout_target: "#wrapped", 
+        row_block: ".block-row" //
     };
     var on_drawable = function(selected_html){
         var selected_layout = new layouts.Candidate(_selector.layout_target);
