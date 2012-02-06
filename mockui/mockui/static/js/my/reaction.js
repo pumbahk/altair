@@ -26,13 +26,14 @@ var reaction = (function(){
         };
 
         var delegated_with_args = function(dfd, args, cont){
+            dfd.done(function(){
+                return action.apply(dfd, args);
+            });
+
             if(!!cont){
                 dfd.done(cont);
             }
 
-            dfd.done(function(){
-                return action.apply(dfd, args);
-            });
             // if(!!opt.after_that){
             //     dfd = dfd.done(opt.after_that);
             // }
@@ -65,14 +66,16 @@ var reaction = (function(){
         }, 
         side_effect: function(ctx){
             service.ElementLayoutService.default_layout(ctx.layout_targets);
+
             service.VisibilityService.unhidden(ctx.selected_id);
+            service.VisibilityService.attach_selected_highlight_event(ctx.has_selected_highlight); // fixme
         }
     });
 
 
     var AfterSelectLayout = Reaction({
         react: function(ctx){
-            var dfd = service.ApiService.load_layout(ctx.prefix, ctx.layout_name).done( // todo fix
+            var dfd = service.ApiService.load_layout(ctx.prefix, ctx.layout_name).done(
                 DroppableSheetViewModel.on_drawable
             )
             if(!!ctx.after_api_cont){
@@ -82,6 +85,7 @@ var reaction = (function(){
         }, 
         side_effect: function(ctx){
             // swap selected example 
+            service.VisibilityService.unselect(ctx.selected_elt)
             var new_selected = $.clone(ctx.selected_elt);
             service.ElementLayoutService.swap_child(ctx.event_farm, new_selected);
         }
@@ -91,22 +95,17 @@ var reaction = (function(){
     // droppable sheet
     var AfterDrawableDroppableSheet = Reaction({
         react: function(ctx){
-            var dfd = $.Deferred()
-            dfd.done(function(){
-                // 挿入されたwidgetの表示が気に食わないので後で書きなおすかも？
-                service.ElementLayoutService.replace_inner(
-                    ctx.dropped_sheet, ctx.selected_html
-                );
-            });
-            dfd.done(function(){
-                service.DroppableSheetService.attach_droppable(ctx.selected_layout);
-            });
-            dfd.resolve();
+            // service.ChangeHeightService.manage_it(ctx.row_block);
+            // 挿入されたwidgetの表示が気に食わないので後で書きなおすかも？
+            service.ElementLayoutService.replace_inner(
+                ctx.dropped_sheet, ctx.selected_html
+            );
+            service.DroppableSheetService.attach_droppable(ctx.selected_layout);
         },
         side_effect: function(ctx){
             service.WidgetElementService.attach_widget_delete_event();
             var cl = layouts.CandidateList(ctx.selected_layout);
-            layouts.DefaultLayout.selected_layout(cl);
+            layouts.DefaultLayout.selected_layout(cl, Resource.hmanager);            
         }
     });
 
@@ -126,40 +125,55 @@ var reaction = (function(){
         react: function(draggable, droppable){
             var widget_name = service.ElementInfoService.get_name($(draggable));
             var dropped_widget = service.DragWidgetService.create_dropped_widget(widget_name);
-                        
 
             var edit_button = service.WidgetElementService.get_edit_button(dropped_widget);
             service.WidgetDialogService.attach_overlay_event(widget_name, dropped_widget, edit_button);
 
             var block_name = service.ElementInfoService.get_name($(droppable));
-            service.DroppableSheetService.append_widget($(droppable), block_name, dropped_widget);
-            service.ApiService.save_block(block_name, widget_name, dropped_widget);
+
+            var dropped_area = $(droppable);
+            service.DroppableSheetService.append_widget(dropped_area, dropped_widget, block_name, widget_name);
+            // service.ChangeHeightService.extend_if_need(dropped_area, dropped_widget);
+            service.ApiService.save_block(block_name, widget_name, dropped_widget); // ordered ><
         }
     });
-
-    var DragWidgetFromPaletNoSaveApi = Reaction({ //almost same DragWidgetFromPalet
-        react: function(draggable, droppable){
+    
+    var DragWidgetFromPaletWithApi = Reaction({ //almost same DragWidgetFromPalet
+        react: function(draggable, droppable, data){
             var widget_name = service.ElementInfoService.get_name($(draggable));
             var dropped_widget = service.DragWidgetService.create_dropped_widget(widget_name);
-                        
+
             var edit_button = service.WidgetElementService.get_edit_button(dropped_widget);
             service.WidgetDialogService.attach_overlay_event(widget_name, dropped_widget, edit_button);
 
             var block_name = service.ElementInfoService.get_name($(droppable));
-            service.DroppableSheetService.append_widget($(droppable), block_name, dropped_widget);
+            service.DroppableSheetService.append_widget($(droppable), dropped_widget, block_name, widget_name, data);
+            // service.ChangeHeightService.extend_if_need($(droppable), dropped_widget);
         }
     });
 
     var DragWidgetFromInternalBlock = Reaction({
         react: function(draggable, droppable){
             service.ApiService.move_block(draggable, droppable)
-                .done(function(){$(droppable).append(draggable)});
+                .done(function(){$(droppable).append(draggable)})
+                // .done(function(){
+                //     service.ChangeHeightService.extend_if_need($(droppable), draggable);
+                //     service.ChangeHeightService.reduce_if_need($(draggable), draggable);
+                // });
         }, 
-        // side_effect: function(draggable, droppable){
-        //     $(droppable).append(draggable);
-        // }
     });
 
+    var WidgetDataSubmit = Reaction({
+        react: function(ctx){
+            var manager = Resource.manager;
+            var block_name = manager.block_name(ctx.widget_elt);
+            var fetch_data_fn = service.FetchDialogDataService[ctx.widget_name];
+            var data = fetch_data_fn(ctx.choiced_elt, ctx.widget_elt);            
+            Resource.manager.update_data(block_name, ctx.widget_elt, data);
+            service.ApiService.save_widget(ctx.widget_name, ctx.widget_elt, data);
+            service.VisibilityService.data_packed_widget(ctx.widget_elt);
+        }
+    });
     // widget dialog 
     return {
         Reaction: Reaction, 
@@ -168,7 +182,8 @@ var reaction = (function(){
         AfterDrawableDroppableSheet: AfterDrawableDroppableSheet, 
         WidgetCloseButtonPushed: WidgetCloseButtonPushed, 
         DragWidgetFromPalet: DragWidgetFromPalet, 
-        DragWidgetFromPaletNoSaveApi: DragWidgetFromPaletNoSaveApi, 
-        DragWidgetFromInternalBlock: DragWidgetFromInternalBlock
+        DragWidgetFromPaletWithApi: DragWidgetFromPaletWithApi, 
+        DragWidgetFromInternalBlock: DragWidgetFromInternalBlock, 
+        WidgetDataSubmit: WidgetDataSubmit
     };
 })();

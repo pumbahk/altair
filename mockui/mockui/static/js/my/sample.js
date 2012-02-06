@@ -1,11 +1,14 @@
 var Resource = (function(){
     var current_state = null;
     var _manager = manager.DataManager();
+    var _hmanager = manager.HeightManager();
     return {
         current_state: current_state, 
+        hmanager: _hmanager, 
         manager: _manager, 
         refresh: function(){
             _manager.refresh();
+            _hmanager.refresh();
         }
     };
 })()
@@ -17,8 +20,9 @@ var SelectLayoutViewModel = (function(){
         event_farm: "#selected", 
         overlay_trigger: "div[rel]", 
         overlay_close_trigger: ".candidate", 
+        has_selected_highlight: ".candidate", 
         selected_id: "#wrapped", 
-        layout_targets: ["#wrapped", "#wrapped1", "#wrapped2"]
+        layout_targets: ["#wrapped > .block-row", "#wrapped1 > .block-row", "#wrapped2 > .block-row"]
     };
 
     var on_drawable = function(){
@@ -78,7 +82,8 @@ var DraggableWidgetViewModel = (function(){
 
     var on_drawable = function(){
         // add widget
-		    $(_selector.draggable).draggable({revert: true});
+        service.VisibilityService.attach_selected_highlight_event(".widget");
+		$(_selector.draggable).draggable({revert: true});
     };
     return {
         on_drawable: on_drawable
@@ -89,13 +94,15 @@ var DroppableSheetViewModel = (function(){
     var _selector = {
         dropped_sheet: "#selected_layout", 
         sheet_block: "#wrapped", 
+        layout_target: "#wrapped > .block-row", 
+        row_block: ".block-row"
     };
     var on_drawable = function(selected_html){
-        var selected_layout = new layouts.Candidate("#wrapped");
+        var selected_layout = new layouts.Candidate(_selector.layout_target);
         var params = {selected_html: selected_html, 
                       selected_layout: selected_layout};
         var ctx = _.extend({}, _selector, params);
-        var dft = reaction.AfterDrawableDroppableSheet.start()
+        var dft = reaction.AfterDrawableDroppableSheet.start();
         dft.resolveWith(dft, [ctx]);
     };
     
@@ -110,23 +117,25 @@ var DroppableSheetViewModel = (function(){
     };
 
     var on_append_with_api = function(dfd, data){
-        // [{
-        //     'widgets': ["image_widget"], 
-        //     'block_name': 'selected_center'
-        //  }, 
-        //  {
-        //     'widgets': ["dummy_widget"], 
-        //     'block_name': 'selected_header'
-        //  }]
-        _.each(data, function(saved_block){
-            var block_name = saved_block["block_name"];
-            var droppable = service.DroppableSheetService.get_elt(block_name);
-            _.each(saved_block["widgets"], function(widget_info){
-                var widget_name = widget_info;
-                var draggable = service.DragWidgetService.get_elt(widget_name);
-                reaction.DragWidgetFromPaletNoSaveApi.delegated_with_args(dfd, [draggable, droppable]);
-            });
-        });
+      // [{widgets:[{data:{},
+      //             widget_name:"dummy_widget1"}],
+      //   block_name:"selected_left"},
+      //  {widgets:[{data:{},
+      //             widget_name:"image_widget"}],
+      //   block_name:"selected_header"}
+      // ]
+      dfd.done(function(){
+          _.each(data, function(saved_block){
+              var block_name = saved_block["block_name"];
+              var droppable = service.DroppableSheetService.get_elt(block_name);
+              _.each(saved_block["widgets"], function(widget_info){
+                  var widget_name = widget_info.widget_name;
+                  var draggable = service.DragWidgetService.get_elt(widget_name);
+                  var data = widget_info.data;
+                  reaction.DragWidgetFromPaletWithApi.delegated_with_args(dfd, [draggable, droppable, data]);
+              });
+          });
+      })
     };
 
     return {
@@ -137,6 +146,9 @@ var DroppableSheetViewModel = (function(){
 })();
 
 var DroppedWidgetViewModel = {
+    on_drawable: function(){
+        service.VisibilityService.attach_selected_highlight_event(".dropped-widget");
+    }, 
     on_close_button_pushed: function(widget_elt){
         var dfd =  reaction.WidgetCloseButtonPushed.start()
         dfd.resolveWith(dfd, [widget_elt]);
@@ -144,18 +156,36 @@ var DroppedWidgetViewModel = {
 };
 
 var WidgetDialogViewModel = (function(){
+    var _selector = null
     var on_dialog = function(dialog_elt, widget_name, widget_elt){
-        // fixme
-        // dialog_elt.append($("<a class='close'>"));
-        dialog_elt.append($("<div>").text("hohohohoho"));
-        dialog_elt.css("background-color", "blue");
-        console.log("dialog created");
+        if(widget_name == "image_widget"){
+            setTimeout(function(){
+            _selector = "#"+dialog_elt.attr("id")+" img";
+            $(_selector).live("click", function(){
+                service.WidgetDialogService.finish_dialog(this);
+            });
+
+            service.VisibilityService.attach_selected_highlight_event(_selector);
+
+            var imagefile = Resource.manager.find(widget_elt).imagefile
+            dialog_elt.find("img[src='@src@']".replace("@src@", imagefile)).addClass("managed");
+            }, 0);
+        }
     };
-    var on_selected = function(choiced_elt, widget_elt, close_fn){
+    var on_selected = function(choiced_elt, widget_name, widget_elt, close_fn){
         // fixme
-        service.VisibilityService.data_packed_widget(widget_elt);
-        console.log("dialog selected");
+        if(widget_name == "image_widget"){
+            $(_selector).die();
+        }
         close_fn();
+        var params = {
+            widget_name: widget_name, 
+            choiced_elt: choiced_elt, 
+            widget_elt: widget_elt, 
+        }
+        console.log("dialog selected");
+        var dfd = reaction.WidgetDataSubmit.start();
+        return dfd.resolveWith(dfd, [params])
     };
     return {
         // on_droppable_widget_created: on_droppable_widget_created, 
@@ -171,7 +201,9 @@ var STAGE = {
 };
 
 function loading_data(){
-    $.getJSON("/api/load/stage").done(function(data){
+    $.getJSON("/sample/api/load/stage").done(function(data){
+        //
+        //
         Resource.current_state = data.stage; //
         var dfd = $.Deferred();
         // if(data.stage >= STAGE.NEW){}
@@ -198,6 +230,7 @@ function loading_data(){
 
 $(function(){
     $.when(SelectLayoutViewModel.on_drawable(), 
-           DraggableWidgetViewModel.on_drawable())
+           DraggableWidgetViewModel.on_drawable(), 
+           DroppedWidgetViewModel.on_drawable())
         .done(loading_data);
 });

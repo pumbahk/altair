@@ -1,4 +1,42 @@
 /* some styling for triggers */
+
+div.selected {
+	/* border-style: groove;
+	 * boder-width: 5px;
+	 * border-color: blue;
+     */
+    background-color: #ccc;
+}
+
+#selected_layout ul {
+    list-style: none;
+	padding: 0px;
+	margin: 0px;
+}
+
+img.managed {
+    border-style: solid;
+	border-width: 5px;
+	border-color: orange;
+}
+
+img.selected {
+    border-style: solid;
+	border-width: 5px;
+	border-color: #ccc;
+}
+
+.hidden {
+    display: none;
+}
+.dropped-widget .close, .dropped-widget .edit {
+    visibility: hidden;;
+}
+
+.selected .close, .selected .edit {
+    visibility: visible;
+}
+
 #triggers {
 	text-align:center;
 }
@@ -54,11 +92,17 @@
     height: 50px;
     margin: 10px;
 }
+	
 .dropped-widget {
-    width: 70px;
-    height: 30px;
-    margin: 10px;
+    height: 40px;
+    margin-left: 2%;
+    margin-top: 1%;
+    margin-bottom: 1%;
+	width: 95%;
+    style: center;
+    background-color: #ffffaa;
 }
+
 
 .ui-state-highlight, .ui-widget-content .ui-state-highlight, .ui-widget-header .ui-state-highlight  {border: none;}
 .ui-state-hover, .ui-widget-content .ui-state-hover, .ui-widget-header .ui-state-hover, .ui-state-focus, .ui-widget-content .ui-state-focus, .ui-widget-header .ui-state-focus { border: none;}

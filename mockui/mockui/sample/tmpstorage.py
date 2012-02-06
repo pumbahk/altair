@@ -8,40 +8,11 @@ import sys
 
 logger = logging.getLogger(__name__)
 
-class Storage(object):
-    def __init__(self):
-        self.layout = None
-        self.blocks = self._refresh()
-
-    def _refresh(self):
-        self.blocks = defaultdict(dict)
-
-    def save_layout(self, layout_name):
-        self.layout = layout_name
-        self._refresh()
-
-    def save_block(self, block_name, orderno, widget_name):
-        self.blocks[block_name][orderno] = widget_name
-        logger.debug(self.blocks)
-    
-    def move_block(self, oldblock,  old_orderno, block_name, orderno):
-        if not oldblock == block_name and old_orderno == orderno:
-            widget_name = self.blocks[oldblock][orderno]
-            self.save_block(block_name, orderno, widget_name)
-            del self.blocks[oldblock][orderno]
-            logger.debug(self.blocks)
-
-    def load_block(self, block_name, orderno):
-        return self.blocks[block_name][orderno]
-        logger.debug(self.blocks)
-        
-
-### signal trap
 
 def _normalize(method):
     def decorated(self, *args):
         args_ = [str(x) if isinstance(x, basestring) else x for x in args]
-        return unicode(method(self, *args_))
+        return method(self, *args_)
     return decorated
 
 class ShelveStorage(object):
@@ -71,6 +42,7 @@ class ShelveStorage(object):
             r = pickle.load(open(self.fname))
         else:
             r = OrderedBlocks()
+        print r
         logging.debug(r)
         return r
 
@@ -89,15 +61,16 @@ class ShelveStorage(object):
     @_normalize
     def save_block(self, block_name, orderno, widget_name): #orderno?
         ## add block
-        self.blocks.add(block_name, widget_name)
+        elt = {"widget_name": widget_name, "data": {}}
+        self.blocks.add(block_name, elt) #widget_name ? elt?
         logger.debug(self.blocks)
 
 
     @_normalize
     def move_block(self, oldblock,  old_orderno, block_name, orderno): #orderno?
         if not (oldblock == block_name and old_orderno == orderno):
-            widget_name = self.blocks[oldblock].get_by_orderno(int(old_orderno))
-            self.blocks.move(oldblock, block_name, widget_name)
+            elt = self.blocks[oldblock].get_by_orderno(int(old_orderno))
+            self.blocks.move(oldblock, block_name, elt)
             logger.debug(self.blocks)
 
     @_normalize
@@ -107,10 +80,16 @@ class ShelveStorage(object):
 
     @_normalize
     def delete_widget(self, block_name, orderno):
-        widget_name = self.blocks[block_name].get_by_orderno(int(orderno))
-        self.blocks.delete(block_name, widget_name)
+        elt = self.blocks[block_name].get_by_orderno(int(orderno))
+        self.blocks.delete(block_name, elt)
         logger.debug(self.blocks)
 
+    @_normalize
+    def save_widget(self, widget_name, block_name, orderno, data):
+        ## branch by widget`name ? 
+        val = {"widget_name": widget_name, "data": data}
+        self.blocks.update_by_orderno(block_name, int(orderno), val)
+        logger.debug(self.blocks)
 
 _storage = ShelveStorage()
 _storage.capture_signal()

@@ -18,3 +18,4 @@ from altaircms.event.views import *
 from altaircms.base.views import *
 from altaircms.page.views import *
 from altaircms.front.views import *
+from altaircms.asset.views import *

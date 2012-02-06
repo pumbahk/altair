@@ -9,7 +9,6 @@ from zope.sqlalchemy.tests import metadata
 from altaircms.models import Base, Site
 
 __all__ = [
-    'asset_mapper',
     'Asset',
     'ImageAsset',
     'MovieAsset',
