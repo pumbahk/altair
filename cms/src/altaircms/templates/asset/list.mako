@@ -7,8 +7,9 @@
 <li><a href="${request.route_url('asset_form', asset_type="flash")}">Flashを追加する</a></li>
 </ul>
 
+<h2>登録済みのアセット一覧</h2>
 <ul>
 %for asset in assets:
-            <li>${asset}}</li>
+            <li><a href="${request.route_url("asset_view", asset_id=asset.id)}">${asset}</a></li>
 %endfor
 </ul>

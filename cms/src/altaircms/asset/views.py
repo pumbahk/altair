@@ -1,4 +1,5 @@
 # coding: utf-8
+import json
 import os
 from datetime import date
 from uuid import uuid4
@@ -11,11 +12,26 @@ from deform.exception import ValidationFailure
 from pyramid.exceptions import NotFound
 from pyramid.response import Response
 from pyramid.view import view_config
+from sqlalchemy.sql.expression import desc
 
 from altaircms.asset import get_storepath
-from altaircms.asset.models import Asset, ImageAsset
+from altaircms.asset.models import Asset, ImageAsset, MovieAsset, FlashAsset
 from altaircms.asset.forms import *
 from altaircms.models import DBSession
+
+
+EXT_MAP = {
+    'jpg':'image/jpeg',
+    'png':'image/png',
+    'gif':'image/gif',
+    'mov':'video/quicktime',
+    'mp4':'video/quicktime',
+    'swf':'application/x-shockwave-flash',
+}
+
+def detect_mimetype(filename):
+    ext = filename[filename.rfind('.') + 1:].lower()
+    return EXT_MAP[ext] if ext in EXT_MAP else 'application/octet-stream'
 
 
 class AssetEditView(object):
@@ -24,6 +40,12 @@ class AssetEditView(object):
         self.asset_id = self.request.matchdict['asset_id'] if 'asset_id' in self.request.matchdict else None
         self.asset = DBSession.query(Asset).get(self.asset_id) if self.asset_id else None
         self.asset_type = self.request.matchdict['asset_type'] if 'asset_type' in self.request.matchdict else None
+
+    def response_json_ok(self):
+        # @TODO: 他のAPI呼び出しなどと共通化する
+        content = json.dumps(dict(status='OK'))
+        content_type = 'application/json'
+        return Response(content, content_type=content_type)
 
     def render_form(self, form, appstruct=colander.null, submitted='submit',
                     success=None, readonly=False):
@@ -58,35 +80,40 @@ class AssetEditView(object):
             'asset_type': self.asset_type,
             }
 
-    @view_config(route_name='asset_list', renderer='altaircms:templates/asset/list.mako', request_method='GET')
+    @view_config(route_name='asset_list', renderer='altaircms:templates/asset/list.mako', request_method='GET', permission='edit')
     def asset_list(self):
-        assets = DBSession().query(Asset).all()
+        assets = DBSession().query(Asset).order_by(desc(Asset.id)).all()
 
         return dict(
             assets=assets
         )
 
-    @view_config(route_name="asset_form", renderer='altaircms:templates/asset/form.mako')
+    @view_config(route_name="asset_form", renderer='altaircms:templates/asset/form.mako', permission='edit')
     def asset_form(self):
         def succeed(request, captured):
-            # @TODO: モデルの追加処理を行う
             # @TODO: S3に対応する
-            original_filename = captured['image']['filename']
-            filename = '%s.%s' % (uuid4(), original_filename[original_filename.rfind('.') + 1:])
             today = date.today().strftime('%Y-%m-%d')
-
             storepath = os.path.join(get_storepath(request),  today)
             if not os.path.exists(storepath):
                 os.makedirs(storepath)
 
+            original_filename = captured['uploadfile']['filename']
+            filename = '%s.%s' % (uuid4(), original_filename[original_filename.rfind('.') + 1:])
             f = open(os.path.join(storepath, filename), 'wb')
-            f.write(captured['image']['fp'].read())
+            f.write(captured['uploadfile']['fp'].read())
 
-            import pdb; pdb.set_trace()
-            asset = ImageAsset(filepath=os.path.join(today, filename))
+            mimetype = detect_mimetype(filename)
+
+            if captured['type'] == 'image':
+                asset = ImageAsset(filepath=os.path.join(today, filename), mimetype=mimetype)
+            elif captured['type'] == 'movie':
+                asset = MovieAsset(filepath=os.path.join(today, filename), mimetype=mimetype)
+            elif captured['type'] == 'flash':
+                asset = FlashAsset(filepath=os.path.join(today, filename))
+
             DBSession.add(asset)
 
-            return Response("hoge")
+            return self.response_json_ok()
 
         if self.asset_type not in ASSET_TYPE:
             return NotFound()
@@ -96,11 +123,32 @@ class AssetEditView(object):
 
         return self.render_form(form, success=succeed)
 
-    @view_config(route_name="asset_edit")
+    @view_config(route_name="asset_edit", permission='edit', renderer='altaircms:templates/asset/view.mako', request_method='GET')
     def asset_edit(self):
-        pass
+        if not self.asset:
+            return NotFound()
 
-    @view_config(route_name="asset_delete")
+        if 'raw' in self.request.params:
+            filepath = os.path.join(get_storepath(self.request), self.asset.filepath)
+            content_type = self.asset.mimetype if self.asset.mimetype else 'application/octet-stream'
+
+            return Response(file(filepath).read(), content_type=content_type)
+
+        return dict(
+            asset=self.asset
+        )
+
+    @view_config(route_name="asset_edit", permission='edit', request_method='POST')
     def asset_delete(self):
-        pass
+        if not self.asset:
+            return NotFound()
 
+        if '_method' in self.request.params and self.request.params['_method'].lower() == 'delete':
+            # 削除処理
+            os.remove(os.path.join(get_storepath(self.request), self.asset.filepath))
+            DBSession.delete(self.asset)
+
+            return self.response_json_ok()
+        else:
+            # 更新処理
+            pass

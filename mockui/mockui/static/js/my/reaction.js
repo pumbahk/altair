@@ -75,6 +75,7 @@ var reaction = (function(){
 
     var AfterSelectLayout = Reaction({
         react: function(ctx){
+            console.log("one")
             var dfd = service.ApiService.load_layout(ctx.prefix, ctx.layout_name).done(
                 DroppableSheetViewModel.on_drawable
             )
@@ -95,17 +96,23 @@ var reaction = (function(){
     // droppable sheet
     var AfterDrawableDroppableSheet = Reaction({
         react: function(ctx){
-            // service.ChangeHeightService.manage_it(ctx.row_block);
+            console.log("two main")
             // 挿入されたwidgetの表示が気に食わないので後で書きなおすかも？
             service.ElementLayoutService.replace_inner(
                 ctx.dropped_sheet, ctx.selected_html
             );
-            service.DroppableSheetService.attach_droppable(ctx.selected_layout);
+            var cl = layouts.CandidateList(ctx.selected_layout);
+            _.each(ctx.selected_layout.blocks(), function(e){
+                service.ChangeHeightService.manage_it(e);
+            });
+            console.log(current_map);
+            console.log(default_map);
+            console.log("two")
+            layouts.DefaultLayout.selected_layout(cl, Resource.hmanager);            
         },
         side_effect: function(ctx){
+            service.DroppableSheetService.attach_droppable(ctx.selected_layout);
             service.WidgetElementService.attach_widget_delete_event();
-            var cl = layouts.CandidateList(ctx.selected_layout);
-            layouts.DefaultLayout.selected_layout(cl, Resource.hmanager);            
         }
     });
 
@@ -140,6 +147,7 @@ var reaction = (function(){
     
     var DragWidgetFromPaletWithApi = Reaction({ //almost same DragWidgetFromPalet
         react: function(draggable, droppable, data){
+            console.log("three");
             var widget_name = service.ElementInfoService.get_name($(draggable));
             var dropped_widget = service.DragWidgetService.create_dropped_widget(widget_name);
 

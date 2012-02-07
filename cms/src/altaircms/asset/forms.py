@@ -36,29 +36,32 @@ class ImageAssetSchema(BaseAssetSchema):
     alt = colander.SchemaNode(colander.String(), missing=colander.null, default='')
     width = colander.SchemaNode(colander.Integer(), missing=colander.null)
     height = colander.SchemaNode(colander.Integer(), missing=colander.null)
-    image = colander.SchemaNode(
+    uploadfile = colander.SchemaNode(
         deform.schema.FileData(),
+        title='画像ファイル',
         widget=deform.widget.FileUploadWidget(tmpstore)
     )
 
 
 class FlashAssetSchema(BaseAssetSchema):
-    width = colander.SchemaNode(colander.Integer())
-    height = colander.SchemaNode(colander.Integer())
-    length = colander.SchemaNode(colander.Integer())
-    flash = colander.SchemaNode(
+    width = colander.SchemaNode(colander.Integer(), missing=colander.null)
+    height = colander.SchemaNode(colander.Integer(), missing=colander.null)
+    length = colander.SchemaNode(colander.Integer(), missing=colander.null)
+    uploadfile = colander.SchemaNode(
         deform.FileData(),
+        title='Flashファイル',
         widget=deform.widget.FileUploadWidget(tmpstore)
     )
 
 
 class MovieAssetSchema(BaseAssetSchema):
-    width = colander.SchemaNode(colander.Integer())
-    height = colander.SchemaNode(colander.Integer())
-    length = colander.SchemaNode(colander.Integer())
-    mimetype = colander.SchemaNode(colander.String())
-    movie = colander.SchemaNode(
+    width = colander.SchemaNode(colander.Integer(), missing=colander.null)
+    height = colander.SchemaNode(colander.Integer(), missing=colander.null)
+    length = colander.SchemaNode(colander.Integer(), missing=colander.null)
+#    mimetype = colander.SchemaNode(colander.String(), missing=colander.null)
+    uploadfile = colander.SchemaNode(
         deform.FileData(),
+        title='動画ファイル',
         widget=deform.widget.FileUploadWidget(tmpstore)
     )
 
