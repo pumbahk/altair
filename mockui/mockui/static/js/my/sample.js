@@ -158,26 +158,28 @@ var DroppedWidgetViewModel = {
 var WidgetDialogViewModel = (function(){
     var _selector = null
     var on_dialog = function(dialog_elt, widget_name, widget_elt){
-        if(widget_name == "image_widget"){
-            setTimeout(function(){
-            _selector = "#"+dialog_elt.attr("id")+" img";
-            $(_selector).live("click", function(){
-                service.WidgetDialogService.finish_dialog(this);
+        var wmodule = widget.get(widget_name)
+        if(!!wmodule){
+            var we = widget.create_widget_event({
+                dialog: dialog_elt, 
+                where: widget_elt, 
+                widget_name: widget_name
             });
-
-            service.VisibilityService.attach_selected_highlight_event(_selector);
-
-            var imagefile = Resource.manager.find(widget_elt).imagefile
-            dialog_elt.find("img[src='@src@']".replace("@src@", imagefile)).addClass("managed");
-            }, 0);
+            setTimeout(function(){wmodule.on_dialog(we);}, 0);
         }
     };
     var on_selected = function(choiced_elt, widget_name, widget_elt, close_fn){
-        // fixme
-        if(widget_name == "image_widget"){
-            $(_selector).die();
+        var wmodule = widget.get(widget_name)
+        if(!!wmodule){
+            var we = widget.create_widget_event({
+                dialog: dialog_elt, 
+                where: widget_elt, 
+                widget_name: widget_name, 
+                close_dialog: close_fn
+            });
+            vm.module.on_selected(we);
         }
-        close_fn();
+
         var params = {
             widget_name: widget_name, 
             choiced_elt: choiced_elt, 
@@ -229,6 +231,18 @@ function loading_data(){
 };
 
 $(function(){
+    widget.configure({
+        dialog: null, //dynamic bind
+        widget_name: null, //dynamic bind
+        where: null, //dynamic bind
+        close_dialog: function(){}, //dynamic bind 
+        get_data: function(e){return Resource.manager.find(e)}, 
+        set_data: function(e, data){
+            var block_name = manager.block_name(e);
+            Resource.manager.update_data(block_name, e, data);
+        }, 
+        attach_highlight: service.VisibilityService.attach_hightlight
+    });
     $.when(SelectLayoutViewModel.on_drawable(), 
            DraggableWidgetViewModel.on_drawable(), 
            DroppedWidgetViewModel.on_drawable())

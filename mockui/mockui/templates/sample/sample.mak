@@ -29,7 +29,8 @@
     <script type="text/javascript" src="/static/js/my/reaction.js"></script>
     <script type="text/javascript" src="/static/js/my/service.js"></script>
     <script type="text/javascript" src="/static/js/my/sample.js"></script>
-
+    <script type="text/javascript" src="/static/js/my/widget/base.js"></script>
+    <script type="text/javascript" src="/static/js/my/widget/image.js"></script>
     <link rel="stylesheet" type="text/css" href="/static/css/overlay-basic.css"/>
 	<link rel="stylesheet" type="text/css" href="/static/css/my/sample.css">
   </head>
