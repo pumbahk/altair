@@ -16,7 +16,7 @@ from altaircms.models import Base
 from altaircms.asset.models import ImageAsset, MovieAsset, FlashAsset, CssAsset
 
 __all__ = [
-#    'Widget',
+    'Widget',
     'ImageWidget',
     'MovieWidget',
     'FlashWidget',
@@ -24,6 +24,13 @@ __all__ = [
     'BreadcrumbsWidget',
 ]
 
+WIDGET_TYPE = [
+    'text',
+    'breadcrumbs',
+    'flash',
+    'movie',
+    'image',
+]
 
 widget = Table(
     'widget',
@@ -77,10 +84,10 @@ class Widget(object):
 
 
 class TextWidget(Widget):
-    def __init__(self, id_, site_id, text):
-        self.id = id_
-        self.site_id = site_id
-        self.text = text
+    def __init__(self, captured):
+        self.id = captured.get('id', None)
+        self.site_id = captured.get('site_id', None)
+        self.text = captured.get('text', None)
 
 
 class BreadcrumbsWidget(Widget):

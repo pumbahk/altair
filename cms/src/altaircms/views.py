@@ -19,3 +19,4 @@ from altaircms.base.views import *
 from altaircms.page.views import *
 from altaircms.front.views import *
 from altaircms.asset.views import *
+from altaircms.widget.views import *

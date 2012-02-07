@@ -42,13 +42,18 @@ def api_include(config):
 def cms_include(config):
     config.add_route('event', '/event/{id}')
     config.add_route('event_list', '/event')
+
     config.add_route('page_add', '/event/{event_id}/page')
     config.add_route('page_edit', '/event/{event_id}/page/{page_id}/edit')
+
     config.add_route('asset_list', '/asset')
     config.add_route('asset_form', '/asset/form/{asset_type}')
     config.add_route('asset_edit', '/asset/{asset_id}')
     config.add_route('asset_view', '/asset/{asset_id}')
 
+    config.add_route('widget_add', '/widget/form/{widget_type}')
+    config.add_route('widget', '/widget/{widget_id}')
+    config.add_route('widget_list', '/widget')
 
 def front_include(config):
     config.add_route('front', '{page_name}')
