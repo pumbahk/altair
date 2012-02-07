@@ -30,7 +30,7 @@ var service = (function(){
         var _is_close_event_attached = false
         var default_opt = {
             dropable_class: "droppable", 
-            hover_class: "ui-state-hove", 
+            hover_class: "ui-state-highlight", 
         };
         return {
             get_elt: function(block_name){
@@ -273,44 +273,32 @@ var service = (function(){
     };
 
     var ChangeHeightService = (function(){
-        var _row_block = null;
         return {
-            manage_it: function(row_block){
-                _row_block = row_block;
+            manage_it: function(elt){
                 var hmanager = Resource.hmanager;
-                hmanager.manage_it(row_block, "0px"); //fix
-                // set_default
+                hmanager.manage_it(elt, "0px"); //fix
             }, 
             extend_if_need: function(where, widget){
-                if(_row_block == null){
-                    throw "not manage it row block is null (extend)";
-                }
-                if(!!_row_block){
-                    var hmanager = Resource.hmanager;
-                    var row_elt = hmanager.child_to_rowelt(where);
-                    var widget_height = unit.get(ElementInfoService.get_height(widget));
-                    var height = hmanager.add_current(row_elt, widget_height);
-                    console.log(height);
-                    if(hmanager.over_default(row_elt)){
-                        // extend
-                        row_elt.find("div").css("height", height.toString())
-                    }
+                var hmanager = Resource.hmanager;
+                var widget_height = unit.get(ElementInfoService.get_height(widget));
+                var height = hmanager.add_current(where, widget_height);
+                console.log(height);
+                if(hmanager.over_default(where)){
+                    // extend
+                    where.find("div").css("height", height.toString())
                 }
             }, 
             reduce_if_need: function(where, widget){
-                if(_row_block == null){
-                    throw "not manage it row block is null (reduce)";
-                }
-                if(!!_row_block){
+                if(!!_where){
                     var hmanager = Resource.hmanager;
-                    var row_elt = hmanager.child_to_rowelt(where);
+                    var where = hmanager.child_to_rowwhere(where);
                     var widget_height = unit.get(ElementInfoService.get_height(widget));
-                    if(hmanager.over_default(row_elt)){
-                        var height = hmanager.sub_current(elt, widget_height);
+                    if(hmanager.over_default(where)){
+                        var height = hmanager.sub_current(where, widget_height);
                         // reduce
-                        row_elt.find("div").css("height", height.toString())
+                        where.find("div").css("height", height.toString())
                     } else {
-                        hmanager.sub_current(row_elt, widget_height);
+                        hmanager.sub_current(where, widget_height);
                     }
                 }
             }
