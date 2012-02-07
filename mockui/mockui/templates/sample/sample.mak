@@ -25,12 +25,12 @@
     <script type="text/javascript" src="/static/js/my/old_layouts.js"></script>
     <script type="text/javascript" src="/static/js/my/old_sample_api.js"></script>
     <script type="text/javascript" src="/static/js/my/old_sample_manager.js"></script>
+    <script type="text/javascript" src="/static/js/my/widgets/base.js"></script>
+    <script type="text/javascript" src="/static/js/my/widgets/image.js"></script>
     <script type="text/javascript" src="/static/js/my/unit.js"></script>
     <script type="text/javascript" src="/static/js/my/reaction.js"></script>
     <script type="text/javascript" src="/static/js/my/service.js"></script>
     <script type="text/javascript" src="/static/js/my/sample.js"></script>
-    <script type="text/javascript" src="/static/js/my/widget/base.js"></script>
-    <script type="text/javascript" src="/static/js/my/widget/image.js"></script>
     <link rel="stylesheet" type="text/css" href="/static/css/overlay-basic.css"/>
 	<link rel="stylesheet" type="text/css" href="/static/css/my/sample.css">
   </head>

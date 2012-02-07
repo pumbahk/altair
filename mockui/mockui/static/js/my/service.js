@@ -149,9 +149,9 @@ var service = (function(){
                         WidgetDialogViewModel.on_dialog(_dialog_elt, _widget_name, _widget_elt);
                     }, 
                     onBeforeLoad: function() {
-			            // grab wrapper element inside content
-			            var wrap = this.getOverlay().find(".contentWrap");
-			            // load the page specified in the trigger
+			                  // grab wrapper element inside content
+			                  var wrap = this.getOverlay().find(".contentWrap");
+			                  // load the page specified in the trigger
                         var manager = Resource.manager;
                         var block_name = manager.block_name(widget_elt);
                         var orderno = manager.orderno(block_name, widget_elt);
@@ -166,8 +166,7 @@ var service = (function(){
                             throw "overlay close() is not found(in select widget dialog)"
                         }
                         _dialog_elt = wrap.load(url);
-                        // WidgetDialogViewModel.on_dialog(_dialog_elt, widget_name, widget_elt);
-		            }
+		                }
                 };
                 $(attach_source).overlay(opts);
             }

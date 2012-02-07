@@ -175,10 +175,9 @@ var reaction = (function(){
         react: function(ctx){
             var manager = Resource.manager;
             var block_name = manager.block_name(ctx.widget_elt);
-            var fetch_data_fn = service.FetchDialogDataService[ctx.widget_name];
-            var data = fetch_data_fn(ctx.choiced_elt, ctx.widget_elt);            
+            var data = ctx.wmodule.collect_data(null, ctx.choiced_elt); //fixme
             Resource.manager.update_data(block_name, ctx.widget_elt, data);
-            service.ApiService.save_widget(ctx.widget_name, ctx.widget_elt, data);
+            service.ApiService.save_widget(ctx.widget_name, ctx.widget_elt, data); //fixme
             service.VisibilityService.data_packed_widget(ctx.widget_elt);
         }
     });

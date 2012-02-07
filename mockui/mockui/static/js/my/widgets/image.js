@@ -6,21 +6,18 @@ if(!widget){
     var _has_click_event = null;
 
     var on_dialog = function(we){
-        var dialog = we.get_dialog();
-        _has_click_event = "#@id@ img".replace("@id@", dialog.attr("id"));
+        _has_click_event = "#@id@ img".replace("@id@", we.dialog.attr("id"));
         $(document).on("click", _has_click_event, function(){
             we.close_dialog(this);
         });
         
-        we.attach_hightlight(_has_click_event);
-        
-        var expr = "img[src='@src@']".replace("@src@", we.get_data().imagefile)
-        we.attach_managed(dialog_elt.find(expr));
+        we.attach_highlight(_has_click_event);
+        var expr = "img[src='@src@']".replace("@src@", we.get_data(we.where).imagefile)
+        we.attach_managed(we.dialog.find(expr));
     };
 
     var on_selected = function(we){
-        _has_click_event.die();
-        we.close_dialog();
+        $(document).off("click", _has_click_event);
     };
 
     var collect_data = function(we, choiced_elt){
@@ -30,6 +27,7 @@ if(!widget){
     return widget.include("image", {
         on_dialog: on_dialog, 
         on_selected: on_selected, 
-        collect_data: collect_data
+        collect_data: collect_data, 
+        save_url: "/sample/api/save/widget"
     });
-})(widget); // widget is ok?
+})(widget); 

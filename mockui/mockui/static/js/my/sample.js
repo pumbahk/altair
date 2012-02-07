@@ -158,12 +158,14 @@ var DroppedWidgetViewModel = {
 var WidgetDialogViewModel = (function(){
     var _selector = null
     var on_dialog = function(dialog_elt, widget_name, widget_elt){
+        wname = widget_name
         var wmodule = widget.get(widget_name)
         if(!!wmodule){
-            var we = widget.create_widget_event({
+            var we = wmodule.create_context({
                 dialog: dialog_elt, 
                 where: widget_elt, 
-                widget_name: widget_name
+                widget_name: widget_name, 
+                close_dialog: service.WidgetDialogService.finish_dialog
             });
             setTimeout(function(){wmodule.on_dialog(we);}, 0);
         }
@@ -171,21 +173,19 @@ var WidgetDialogViewModel = (function(){
     var on_selected = function(choiced_elt, widget_name, widget_elt, close_fn){
         var wmodule = widget.get(widget_name)
         if(!!wmodule){
-            var we = widget.create_widget_event({
-                dialog: dialog_elt, 
+            var we = wmodule.create_context({
                 where: widget_elt, 
                 widget_name: widget_name, 
-                close_dialog: close_fn
             });
-            vm.module.on_selected(we);
+            wmodule.on_selected(we);
         }
-
+        close_fn();
         var params = {
             widget_name: widget_name, 
             choiced_elt: choiced_elt, 
             widget_elt: widget_elt, 
+            wmodule: wmodule //ok?
         }
-        console.log("dialog selected");
         var dfd = reaction.WidgetDataSubmit.start();
         return dfd.resolveWith(dfd, [params])
     };
@@ -235,13 +235,15 @@ $(function(){
         dialog: null, //dynamic bind
         widget_name: null, //dynamic bind
         where: null, //dynamic bind
-        close_dialog: function(){}, //dynamic bind 
+        get_close_dialog: function(){}, //dynamic bind 
         get_data: function(e){return Resource.manager.find(e)}, 
         set_data: function(e, data){
             var block_name = manager.block_name(e);
             Resource.manager.update_data(block_name, e, data);
         }, 
-        attach_highlight: service.VisibilityService.attach_hightlight
+        attach_highlight: service.VisibilityService.attach_selected_highlight_event, 
+        attach_managed: function(e){$(e).addClass("managed")}
+        
     });
     $.when(SelectLayoutViewModel.on_drawable(), 
            DraggableWidgetViewModel.on_drawable(), 
