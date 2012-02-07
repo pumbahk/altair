@@ -254,40 +254,6 @@ class Topic(Base):
     site_id = Column(Integer, ForeignKey("site.id"))
 
 
-class Page(Base):
-    """
-    ページ
-    """
-    __tablename__ = "page"
-
-    id = Column(Integer, primary_key=True)
-    parent_id = Column(Integer, ForeignKey('page.id'))
-    event_id = Column(Integer, ForeignKey('event.id'))
-
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
-
-    title = Column(Unicode)
-    keyword = Column(Unicode)
-    description = Column(Unicode)
-    url = Column(String)
-    version = Column(Integer)
-
-    site_id = Column(Integer, ForeignKey("site.id"))
-    layout_id = Column(Integer, ForeignKey("layout.id"))
-
-    relationship('Layout', backref='layout')
-
-    def __repr__(self):
-        return '<%s %s>' % (self.__class__.__name__, self.id)
-
-    def __str__(self):
-        return '%s'  % self.id
-
-    def __unicode__(self):
-        return u'%s' % self.title
-
-
 class Site(Base):
     __tablename__ = "site"
 
@@ -302,8 +268,3 @@ class Site(Base):
     client_id = Column(Integer, ForeignKey("client.id")) #@TODO: サイトにくっつけるべき？
 
 
-from altaircms.usersetting.models import *
-from altaircms.asset.models import *
-from altaircms.tag.models import *
-from altaircms.page.models import *
-from altaircms.widget.models import *

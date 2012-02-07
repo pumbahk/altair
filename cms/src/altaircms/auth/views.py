@@ -56,7 +56,6 @@ def auth_complete_view(context, request):
         }
 
 
-@view_config(context='velruse.exceptions.AuthenticationDenied',
-    renderer='json')
+@view_config(context='velruse.exceptions.AuthenticationDenied', renderer='json')
 def auth_denied_view(context, request):
     return context.args

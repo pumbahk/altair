@@ -2,6 +2,7 @@
 import json
 
 import colander
+import deform
 from deform.form import Form
 
 
@@ -12,18 +13,16 @@ def json_validator(node, value):
         raise colander.Invalid(node, 'JSON object required')
 
 
-class PageMetadataSchema(colander.MappingSchema):
+class PageSchema(colander.MappingSchema):
     url = colander.SchemaNode(colander.String())
     title = colander.SchemaNode(colander.String())
-    description = colander.SchemaNode(colander.String())
-    keyword = colander.SchemaNode(colander.String())
-    tags = colander.SchemaNode(colander.String())
+    description = colander.SchemaNode(colander.String(), missing='')
+    keyword = colander.SchemaNode(colander.String(), missing='')
+    tags = colander.SchemaNode(colander.String(), missing='') # タグマスタと紐付ける用。ajaxで書いたほうがいいかも
 
-
-class PageSchema(colander.MappingSchema):
     layout_id = colander.SchemaNode(colander.Integer())
-    structure = colander.SchemaNode(colander.String(), validator=json_validator)
+    structure = colander.SchemaNode(colander.String(), validator=json_validator,
+        widget=deform.widget.TextAreaWidget())
 
-
-PageMetadataEditForm = Form(PageMetadataSchema(), buttons=('submit',), use_ajax=True)
-PageEditForm = Form(PageSchema(), buttons=('submit',), use_ajax=True)
+PageAddForm = Form(PageSchema(), buttons=('submit',), use_ajax=True)
+PageEditForm = Form(PageSchema(), buttons=('submit', 'duplicate'), use_ajax=True)

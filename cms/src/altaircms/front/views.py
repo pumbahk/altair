@@ -5,7 +5,8 @@ from pyramid.view import view_config
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql.expression import asc
 
-from altaircms.models import DBSession, Page, Layout
+from altaircms.models import DBSession, Layout
+from altaircms.page.models import Page
 from altaircms.widget.models import Page2Widget, Widget
 from altaircms.views import render_widget
 

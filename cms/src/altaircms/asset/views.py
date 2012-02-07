@@ -123,7 +123,8 @@ class AssetEditView(object):
 
         return self.render_form(form, success=succeed)
 
-    @view_config(route_name="asset_edit", permission='edit', renderer='altaircms:templates/asset/view.mako', request_method='GET')
+    @view_config(route_name="asset_edit", permission='edit',
+        renderer='altaircms:templates/asset/view.mako', request_method='GET')
     def asset_edit(self):
         if not self.asset:
             return NotFound()

@@ -5,7 +5,7 @@
 
 <hr/>
 
-<a href="/event/${event.id}/page/edit">ページ追加</a>
+<a href="${request.route_url("page_add", event_id=event.id)}">ページ追加</a>
 
 <h2>イベント配下のページ一覧</h2>
 
@@ -13,8 +13,8 @@
     <tbody>
         %for page in pages:
             <tr>
-                <td>${page}
-                    <a href="${request.route_url('page_edit', event_id=event.id, page_id=page.id)}">edit</a>
+                <td>
+                    <a href="${request.route_url('page_edit', event_id=event.id, page_id=page.id)}">${page}</a>
                     <a href="/f/${page.url|n}" target="_blank">preview</a></td>
             </tr>
         %endfor

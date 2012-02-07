@@ -1,3 +1,6 @@
+##
+##
+##
 <%inherit file='../layout.mako'/>
 <%block name='js'>
     <script type="text/javascript" src="/static/deform/js/jquery.form.js"></script>
@@ -66,25 +69,31 @@
     </script>
 </%block>
 
-<h1>イベント${event}の${page}ページの編集</h1>
+%if page:
+<h1>イベント${event}の${page}の編集</h1>
+%else:
+<h1>イベント${event}のページ追加</h1>
+%endif
 <a href="${request.route_url('event', id=event.id)}">back</a>
 
+<div id="pageform">
+    %if page:
+    <form id="deform" class="deform" action="${request.route_url('page_edit', event_id=event.id, page_id=page.id)}" method="post">
+    %else:
+    <form id="deform" class="deform" action="${request.route_url('page_add', event_id=event.id)}" method="post">
+    %endif
+    ${form|n}
+    </form>
+</div>
+
+
 <div id="pagecontentform">
-    <form action="${request.route_url('page_edit', event_id=event.id, page_id=page.id)}" method="post">
-        <%doc>
-        <div id="pagelayout">
-            レイアウト選択
-            <select name="layout_id">
-                <option value="1">layout 1</option>
-                <option value="2">layout 2</option>
-            </select>
-        </div>
-        <div id="pageversion">ページのバージョンが入る</div>
-        <div id="pagewidget">ウィジェット</div>
-        <br class="clear"/>
+    <div id="pagelayout">レイアウト選択</div>
+    <div id="pageversion">ページのバージョンが入る</div>
+    <div id="pagewidget">ウィジェット</div>
+    <br class="clear"/>
+    <form action="#" method="post">
         <div id="page">ページ編集</div>
         <button type="submit">保存</button>
-</%doc>
-        ${form|n}
     </form>
 </div>

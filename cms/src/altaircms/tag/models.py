@@ -7,8 +7,7 @@ from sqlalchemy.types import Integer, Unicode, DateTime, String
 from zope.sqlalchemy.tests import metadata
 
 from altaircms.models import Event
-from altaircms.asset.models import Asset
-from altaircms.models import Site, Page, Base
+from altaircms.models import Site, Base
 
 
 __all__ = [ 'EventTag', 'PageTag', 'AssetTag']
@@ -43,7 +42,7 @@ page_tags = Table(
     "tag_page",
     Base.metadata,
     Column("tag_id", Integer, ForeignKey('tag.id'), primary_key=True),
-    Column("page_id", Integer, ForeignKey(Page.__table__.c.id))
+    Column("page_id", Integer, ForeignKey('page.id'))
 )
 
 event_tags = Table(

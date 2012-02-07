@@ -10,8 +10,9 @@ from sqlalchemy.sql.expression import asc
 
 import transaction
 
-from altaircms.page.forms import PageMetadataEditForm, PageEditForm
-from altaircms.models import DBSession, Page, Event
+from altaircms.page.forms import PageEditForm, PageAddForm
+from altaircms.models import DBSession, Event
+from altaircms.page.models import Page
 from altaircms.widget.models import Page2Widget, Widget
 
 
@@ -46,20 +47,19 @@ class PageEditView(object):
 
         DBSession.remove()
 
-    def render_form(self, form, appstruct=colander.null, submitted='submit',
+    def render_form(self, form, appstruct=colander.null, submitted='submit', duplicated='duplicate',
                     success=None, readonly=False):
-
-        dbsession = DBSession()
         captured = None
 
-        if submitted in self.request.POST:
+        if submitted in self.request.POST or duplicated in self.request.POST:
             # the request represents a form submission
             try:
                 # try to validate the submitted values
                 controls = self.request.POST.items()
                 captured = form.validate(controls)
                 if success:
-                    response = success(captured, self.event, self.page)
+                    duplicate = True if duplicated in self.request.POST else False
+                    response = success(captured, duplicate=duplicate)
                     if response is not None:
                         return response
                 html = form.render(captured)
@@ -85,67 +85,77 @@ class PageEditView(object):
             'showmenu':True,
             'css_links':reqts['css'],
             'js_links':reqts['js'],
-            }
+        }
 
-    @view_config(route_name='page_add', renderer='altaircms:templates/page/form.mako')
+    @view_config(route_name='page_add', renderer='altaircms:templates/page/edit.mako')
     def page_add(self):
-        """
-        ページのメタデータ新規登録用ビュー
-        """
-        def succeed(captured, event=None, page=None):
-            dbsession = DBSession()
+        appstruct = {
+            'layout_id': 1,
+            'structure': '{}',
+        }
+        return self.render_form(PageAddForm, success=self._succeed, appstruct=appstruct)
+
+    @view_config(route_name='page_edit', renderer='altaircms:templates/page/edit.mako')
+    def page_edit(self):
+        if self.page:
+            # @TODO: モデルプロパティとして移したほうがいいかも知れない
+            for key, values in self.display_blocks.iteritems():
+                self.display_blocks[key] = [value.id for value in values]
+
+            appstruct = {
+                'url': self.page.url,
+                'title': self.page.title,
+                'description': self.page.description,
+                'keyword': self.page.keyword,
+                'layout_id': self.page.layout_id if self.page.layout_id else 0,
+                'structure': json.dumps(self.display_blocks)
+            }
+        else:
+            appstruct = {}
+
+        return self.render_form(PageEditForm, appstruct=appstruct, success=self._succeed)
+
+    def _succeed(self, captured, duplicate=False):
+        dbsession = DBSession()
+
+        import pdb; pdb.set_trace()
+        if duplicate or not self.page:
             page = Page(
-                event_id=event.id if event else None,
+                event_id=self.event.id if self.event else None,
                 url=captured['url'],
                 title=captured['title'],
                 description=captured['description'],
                 keyword=captured['keyword'],
+                layout_id=captured['layout_id'],
                 # page.tags = captured['tags']
-                )
-            dbsession.save(page)
-
-            transaction.commit()
-            DBSession.remove()
-
-            return Response('<div id="thanks">Thanks!</div>')
-
-        DBSession.remove()
-        return self.render_form(PageMetadataEditForm, success=succeed)
-
-    @view_config(route_name='page_edit', renderer='altaircms:templates/page/edit.mako')
-    def page_edit(self):
-        """
-        ページ内容の編集用ビュー
-        """
-        def succeed(captured, event=None, page=None):
-            dbsession = DBSession()
-
+            )
+        else:
+            self.page.url = captured['url']
+            self.page.title = captured['title']
+            self.page.description = captured['description']
+            self.page.keyword = captured['keyword']
             self.page.layout_id = captured['layout_id']
-            dbsession.add(self.page)
 
-            page_structure = json.loads(captured['structure'])
+            page = self.page
 
-            for key, values in page_structure.iteritems():
-                for value in values:
-                    dbsession.add(
-                        Page2Widget(
-                            page_id=page.id,
-                            widget_id=value,
-                            block=key
-                        )
+        dbsession.add(page)
+
+        page_structure = json.loads(captured['structure'])
+
+        #q = dbsession.query(Page2Widget).filter_by(page_id=page.id)
+        #dbsession.delete(q)
+
+        for key, values in page_structure.iteritems():
+            for value in values:
+                dbsession.add(
+                    Page2Widget(
+                        page_id=page.id,
+                        widget_id=value,
+                        block=key
                     )
+                )
 
-            transaction.commit()
-            DBSession.remove()
+        transaction.commit()
+        DBSession.remove()
 
-            return Response('<div id="thanks">Thanks!</div>')
-
-        for key, values in self.display_blocks.iteritems():
-            self.display_blocks[key] = [value.id for value in values]
-
-        appstruct = {
-            'layout_id': self.page.layout_id if self.page.layout_id else 0,
-            'structure': json.dumps(self.display_blocks)
-        }
-
-        return self.render_form(PageEditForm, appstruct=appstruct, success=succeed)
+        return Response('<div id="thanks">Thanks!</div>')

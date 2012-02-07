@@ -9,12 +9,14 @@ from deform import Form
 from deform import ValidationFailure
 
 from altaircms.event.forms import event_schema
-from altaircms.models import DBSession, Event, Page
+from altaircms.models import DBSession, Event
 
 
 ##
 ## CMS view
 ##
+from altaircms.page.models import Page
+
 @view_config(route_name='event', renderer='altaircms:templates/event/view.mako')
 def event_view(request):
     id_ = request.matchdict['id']

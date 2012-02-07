@@ -42,7 +42,7 @@ def api_include(config):
 def cms_include(config):
     config.add_route('event', '/event/{id}')
     config.add_route('event_list', '/event')
-    config.add_route('page_add', '/event/{event_id}/page/edit')
+    config.add_route('page_add', '/event/{event_id}/page')
     config.add_route('page_edit', '/event/{event_id}/page/{page_id}/edit')
     config.add_route('asset_list', '/asset')
     config.add_route('asset_form', '/asset/form/{asset_type}')
