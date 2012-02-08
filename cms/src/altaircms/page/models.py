@@ -43,7 +43,7 @@ class Page(Base):
     site_id = Column(Integer, ForeignKey("site.id"))
     layout_id = Column(Integer, ForeignKey("layout.id"))
 
-    relationship('Layout', backref='layout')
+    relationship('Layout', backref='pages')
 
     def __repr__(self):
         return '<%s %s %s>' % (self.__class__.__name__, self.url, self.title)

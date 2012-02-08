@@ -5,10 +5,11 @@ from pyramid.view import view_config
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql.expression import asc
 
-from altaircms.models import DBSession, Layout
+from altaircms.models import DBSession
 from altaircms.page.models import Page
 from altaircms.widget.models import Page2Widget, Widget
 from altaircms.views import render_widget
+from altaircms.layout.models import Layout
 
 
 @view_config(route_name='front')

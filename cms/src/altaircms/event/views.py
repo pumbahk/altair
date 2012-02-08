@@ -21,10 +21,8 @@ from altaircms.page.models import Page
 def event_view(request):
     id_ = request.matchdict['id']
 
-    dbsession = DBSession()
-    event = dbsession.query(Event).get(id_)
-    pages = dbsession.query(Page).filter_by(event_id=event.id)
-    DBSession.remove()
+    event = DBSession.query(Event).get(id_)
+    pages = DBSession.query(Page).filter_by(event_id=event.id)
 
     return dict(
         event=event,
@@ -34,10 +32,7 @@ def event_view(request):
 
 @view_config(route_name='event_list', renderer='altaircms:templates/event/list.mako')
 def event_list(request):
-    dbsession = DBSession()
-    events = dbsession.query(Event).order_by(Event.id.desc()).all()
-    DBSession.remove()
-
+    events = DBSession.query(Event).order_by(Event.id.desc()).all()
     return dict(
         events=events
     )
@@ -85,9 +80,7 @@ def put(request):
         return Response(json.dumps(e.error.asdict()), content_type='application/json', status=400)
 
     model = Event(title=appstruct['title'],subtitle=appstruct['subtitle'], description=appstruct['description'])
-    dbsession = DBSession()
-    dbsession.add(model)
-    DBSession.remove()
+    DBSession.add(model)
 
     return Response('', status=201)
 
