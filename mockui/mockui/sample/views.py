@@ -3,12 +3,20 @@ from pyramid.response import Response
 from tmpstorage import get_storage
 from stage import get_stage
 from mockui.fanstatic import jqueries_need
+from mockui.fanstatic import wysiwyg_editor_need
 import json
 
 @view_config(route_name="sample::sample", renderer="sample/sample.mak")
 def sample_view(request):
     jqueries_need()
+    wysiwyg_editor_need()
     return {}
+
+@view_config(route_name="sample::freetext", renderer="sample/freetext.mak")
+def freetext_view(request):
+    wysiwyg_editor_need()
+    return {}
+
 
 ### api
 @view_config(route_name="sample::api_load_stage", renderer="json")
@@ -79,22 +87,23 @@ def save_block_view(request):
     return Response("ok")
 
 
-@view_config(route_name="sample::api_load_widget", renderer="json")
-def load_widget_view(request):
-    """
-    :params:
-    block_name: <string>
-    orderno: <int>
-    """
-    storage = get_storage()
-    block_name = request.GET["block_name"]
-    orderno = request.GET["orderno"]
-    val = storage.load_block(block_name, orderno)
-    widget_name = val["widget_name"]
-    from pyramid.view import render_view_to_response
-    ## widget name : a name of widget.py's view.
-    return render_view_to_response(None, request, name=widget_name)
-
+## deprecated:
+#
+# @view_config(route_name="sample::api_load_widget", renderer="json")
+# def load_widget_view(request):
+#     """
+#     :params:
+#     block_name: <string>
+#     orderno: <int>
+#     """
+#     storage = get_storage()
+#     block_name = request.GET["block_name"]
+#     orderno = request.GET["orderno"]
+#     val = storage.load_block(block_name, orderno)
+#     widget_name = val["widget_name"]
+#     from pyramid.view import render_view_to_response
+#     ## widget name : a name of widget.py's view.
+#     return render_view_to_response(None, request, name=widget_name)
 
 
 @view_config(route_name="sample::api_delete_widget", renderer="json")
@@ -127,5 +136,6 @@ def save_widget_view(request):
 
     storage.save_widget(widget_name, block_name, orderno, data)
     return dict(status="success")
+
 
 

@@ -157,9 +157,21 @@ var DroppedWidgetViewModel = {
 
 var WidgetDialogViewModel = (function(){
     var _selector = null
-    var on_dialog = function(dialog_elt, widget_name, widget_elt){
-        wname = widget_name
+    var on_load_dialog = function(dialog_elt, widget_name, widget_elt){
         var wmodule = widget.get(widget_name)
+        if(!!wmodule){
+            var we = wmodule.create_context({
+                dialog: dialog_elt, 
+                where: widget_elt, 
+                widget_name: widget_name, 
+            });
+            return wmodule.load_page(we);
+        }
+        // dummy
+    };
+
+    var on_dialog = function(dialog_elt, widget_name, widget_elt){
+        var wmodule = widget.get(widget_name);
         if(!!wmodule){
             var we = wmodule.create_context({
                 dialog: dialog_elt, 
@@ -191,6 +203,7 @@ var WidgetDialogViewModel = (function(){
     };
     return {
         // on_droppable_widget_created: on_droppable_widget_created, 
+        on_load_dialog: on_load_dialog, 
         on_dialog: on_dialog, 
         on_selected: on_selected
     }
@@ -238,12 +251,18 @@ $(function(){
         get_close_dialog: function(){}, //dynamic bind 
         get_data: function(e){return Resource.manager.find(e)}, 
         set_data: function(e, data){
-            var block_name = manager.block_name(e);
+            var block_name = Resource.manager.block_name(e);
             Resource.manager.update_data(block_name, e, data);
         }, 
         attach_highlight: service.VisibilityService.attach_selected_highlight_event, 
-        attach_managed: function(e){$(e).addClass("managed")}
-        
+        attach_managed: function(e){$(e).addClass("managed")}, 
+        get_block_name: function(e){
+            return Resource.manager.block_name(e);
+        }, 
+        get_orderno: function(e){
+            var block_name =  Resource.manager.block_name(e);
+            return Resource.manager.orderno(block_name, e);
+        }
     });
     $.when(SelectLayoutViewModel.on_drawable(), 
            DraggableWidgetViewModel.on_drawable(), 

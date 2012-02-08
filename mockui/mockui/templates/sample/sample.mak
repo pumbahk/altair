@@ -22,15 +22,6 @@
       }
    </style>   
 
-    <script type="text/javascript" src="/static/js/my/old_layouts.js"></script>
-    <script type="text/javascript" src="/static/js/my/old_sample_api.js"></script>
-    <script type="text/javascript" src="/static/js/my/old_sample_manager.js"></script>
-    <script type="text/javascript" src="/static/js/my/widgets/base.js"></script>
-    <script type="text/javascript" src="/static/js/my/widgets/image.js"></script>
-    <script type="text/javascript" src="/static/js/my/unit.js"></script>
-    <script type="text/javascript" src="/static/js/my/reaction.js"></script>
-    <script type="text/javascript" src="/static/js/my/service.js"></script>
-    <script type="text/javascript" src="/static/js/my/sample.js"></script>
     <link rel="stylesheet" type="text/css" href="/static/css/overlay-basic.css"/>
 	<link rel="stylesheet" type="text/css" href="/static/css/my/sample.css">
   </head>
@@ -72,6 +63,16 @@
 		<!-- the external content is loaded inside this tag -->
 		<div id="wrap" class="contentWrap"></div>
 	  </div>
+    <script type="text/javascript" src="/static/js/my/old_layouts.js"></script>
+    <script type="text/javascript" src="/static/js/my/old_sample_api.js"></script>
+    <script type="text/javascript" src="/static/js/my/old_sample_manager.js"></script>
+    <script type="text/javascript" src="/static/js/my/widgets/base.js"></script>
+    <script type="text/javascript" src="/static/js/my/widgets/image.js"></script>
+    <script type="text/javascript" src="/static/js/my/unit.js"></script>
+    <script type="text/javascript" src="/static/js/my/reaction.js"></script>
+    <script type="text/javascript" src="/static/js/my/service.js"></script>
+    <script type="text/javascript" src="/static/js/my/sample.js"></script>
+
 	</div>
   </body>
 </html>

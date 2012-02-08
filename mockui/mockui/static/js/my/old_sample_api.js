@@ -35,13 +35,14 @@ var api = (function(){
         }
         return $.get("/sample/api/load/block",  params).then(_with_log);
     };
-    var _load_widget_url = function(block_name, orderno){
-        var params = {
-            block_name: block_name, 
-            orderno: orderno
-        }
-        return "/sample/api/load/widget"+"?"+$.param(params)
-    };
+    // deperecated
+    // var _load_widget_url = function(block_name, orderno){
+    //     var params = {
+    //         block_name: block_name, 
+    //         orderno: orderno
+    //     }
+    //     return "/sample/api/load/widget"+"?"+$.param(params)
+    // };
 
     var _move_block = function(old_block, old_orderno, block_name, orderno){
         var params = {
@@ -75,7 +76,7 @@ var api = (function(){
         load_layout: _load_layout, 
         save_block: _save_block, 
         load_block: _load_block, 
-        load_widget_url: _load_widget_url, 
+        // load_widget_url: _load_widget_url, 
         move_block: _move_block, 
         delete_widget: _delete_widget, 
         save_widget: _save_widget

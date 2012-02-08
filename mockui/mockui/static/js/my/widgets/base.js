@@ -4,11 +4,13 @@ var widget = (function(){
         dialog: null, 
         widget_name: null, 
         where: null,  //widget self
-        get_data: function(){}, 
-        set_data: function(){}, 
-        close_dialog: function(){} 
-        // attach_hightlight: function(){}, 
-        // attach_managed: function(){}
+        get_block_name: function(e){}, 
+        get_orderno: function(e){}, 
+        get_data: function(e){}, 
+        set_data: function(e, data){}, 
+        close_dialog: function(){}, 
+        attach_hightlight: function(e){}, 
+        attach_managed: function(e){}
     };
 
     var configure = function(opt){
@@ -34,7 +36,7 @@ var widget = (function(){
         }
         env[name] = val;
 
-        var default_opt = _.extend({}, base_opt);
+        var default_opt = _.extend({}, base_opt, env[name].opt);
         env[name].opt = default_opt;
         env[name].create_context= function(opt){
             // env local variable
