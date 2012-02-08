@@ -26,9 +26,11 @@ if(!widget){
     };
 
     var collect_data = function(we, choiced_elt){
-        return {imagefile: $(choiced_elt).attr("src")};
+        var choiced_elt = $(choiced_elt);
+        return {imagefile: choiced_elt.attr("src"), 
+                pk: choiced_elt.attr("pk")};
     };
-
+    
     return widget.include("image", {
         load_page: load_page, 
         on_dialog: on_dialog, 

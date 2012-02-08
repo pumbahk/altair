@@ -80,7 +80,7 @@ def main(global_config, **settings):
         authorization_policy=authz_policy
     )
     config.include('pyramid_tm')
-
+    config.include("pyramid_fanstatic")
     config.include("altaircms.sample", route_prefix="/sample")
 
     config.include(api_include, route_prefix='/api')
@@ -88,6 +88,7 @@ def main(global_config, **settings):
     config.include(cms_include, route_prefix='')
 
     config.scan("altaircms.views")
+    config.scan("altaircms.sample")
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)
 
     return config.make_wsgi_app()

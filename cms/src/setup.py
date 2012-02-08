@@ -17,10 +17,19 @@ requires = [
     'zope.sqlalchemy',
     'sadisplay',
     'pyramid_fanstatic',
-    'fa.jquery',
     'deform',
     'pyramid_deform',
     'pyramid_openid',
+
+    ## fanstatic
+    'fa.jquery',
+    "fanstatic", 
+    "pyramid_fanstatic", 
+    "js.jquery", 
+    "js.json2", 
+    "js.jqueryui", 
+    "js.jquery_tools", 
+    "js.underscore"
     ]
 
 if sys.version_info[:3] < (2,5,0):
