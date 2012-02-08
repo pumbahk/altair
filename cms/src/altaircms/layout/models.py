@@ -10,12 +10,15 @@ class Layout(Base):
     """
     __tablename__ = "layout"
 
-    id = Column(Integer, primary_key=True)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
+    id = Column(Integer(), primary_key=True)
+    created_at = Column(DateTime(), default=datetime.now())
+    updated_at = Column(DateTime(), default=datetime.now())
 
-    title = Column(Unicode)
-    template_filename = Column(String)
+    title = Column(String())
+    template_filename = Column(String())
 
-    site_id = Column(Integer, ForeignKey("site.id"))
-    client_id = Column(Integer, ForeignKey("client.id"))
+    site_id = Column(Integer(), ForeignKey("site.id"))
+    client_id = Column(Integer(), ForeignKey("client.id"))
+
+    def __repr__(self):
+        return '<%s %s>' % (self.__class__.__name__, self.template_filename)

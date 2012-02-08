@@ -5,5 +5,6 @@
 
 <hr/>
 
+ID: ${layout.id}<br/>
 名称: ${layout.title}<br/>
 テンプレートファイル名: ${layout.template_filename}

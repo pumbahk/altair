@@ -17,7 +17,6 @@ def list(request):
     form = Form(LayoutSchema(), buttons=('submit', ))
 
     if 'submit' in request.POST:
-        import pdb; pdb.set_trace()
         try:
             controls = request.POST.items()
             captured = form.validate(controls)
