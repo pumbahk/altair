@@ -81,6 +81,8 @@ def main(global_config, **settings):
     )
     config.include('pyramid_tm')
 
+    config.include("altaircms.sample", route_prefix="/sample")
+
     config.include(api_include, route_prefix='/api')
     config.include(front_include, route_prefix='/f')
     config.include(cms_include, route_prefix='')

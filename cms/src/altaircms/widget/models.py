@@ -155,7 +155,7 @@ class Page2Widget(Base):
 
 
 """
-class Asset2Widget(Base):
+classA sset2Widget(Base):
     __tablename__ = "asset2widget"
 
     id = Column(Integer, primary_key=True)
