@@ -118,7 +118,6 @@ class PageEditView(object):
     def _succeed(self, captured, duplicate=False):
         dbsession = DBSession()
 
-        import pdb; pdb.set_trace()
         if duplicate or not self.page:
             page = Page(
                 event_id=self.event.id if self.event else None,

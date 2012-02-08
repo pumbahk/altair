@@ -1,9 +1,7 @@
 # coding: utf-8
 from datetime import datetime
 
-#from sqlalchemy import Column
-from formalchemy import Column
-
+from sqlalchemy import Column
 from sqlalchemy import Integer
 from sqlalchemy import Unicode
 from sqlalchemy import String
@@ -16,8 +14,6 @@ from zope.sqlalchemy import ZopeTransactionExtension
 
 import sqlahelper
 import transaction
-
-
 
 DBSession = sqlahelper.get_session()
 Base = declarative_base()
@@ -160,26 +156,6 @@ class Ticket(Base):
     seattype_id = Column(Integer, ForeignKey("seattype.id"))
 
 
-
-class Layout(Base):
-    """
-    テンプレートレイアウトマスタ
-    """
-    __tablename__ = "layout"
-
-    id = Column(Integer, primary_key=True)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
-
-    title = Column(Unicode)
-    template_filename = Column(String)
-
-    site_id = Column(Integer, ForeignKey("site.id"))
-    client_id = Column(Integer, ForeignKey("client.id"))
-
-    pages = relationship("Page", backref="page")
-
-
 class Client(Base):
     """
     顧客マスタ
@@ -266,5 +242,6 @@ class Site(Base):
     url = Column(String)
 
     client_id = Column(Integer, ForeignKey("client.id")) #@TODO: サイトにくっつけるべき？
+
 
 

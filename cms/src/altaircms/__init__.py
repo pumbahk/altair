@@ -43,6 +43,9 @@ def cms_include(config):
     config.add_route('event', '/event/{id}')
     config.add_route('event_list', '/event')
 
+    config.add_route('layout', '/layout/{layout_id}')
+    config.add_route('layout_list', '/layout')
+
     config.add_route('page_add', '/event/{event_id}/page')
     config.add_route('page_edit', '/event/{event_id}/page/{page_id}/edit')
 
