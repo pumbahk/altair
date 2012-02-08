@@ -111,20 +111,6 @@ class TextWidget(Widget):
         self.text = captured.get('text', None)
 
 
-class BreadcrumbsWidget(Widget):
-    def __init__(self, captured):
-        self.id = captured.get('id', None)
-        self.site_id = captured.get('site_id', None)
-        self.breadcrumb = captured.get('breadcrumb', None)
-
-
-class FlashWidget(Widget):
-    def __init__(self, captured):
-        self.id = captured.get('id', None)
-        self.site_id = captured.get('site_id', None)
-        self.title = captured.get('asset_id', None)
-
-
 class MenuWidget(Widget):
     def __init__(self, captured):
         self.id = captured.get('id', None)
@@ -132,7 +118,21 @@ class MenuWidget(Widget):
         self.menu = captured.get('menu', None)
 
 
+class BreadcrumbsWidget(Widget):
+    def __init__(self, captured):
+        self.id = captured.get('id', None)
+        self.site_id = captured.get('site_id', None)
+        self.breadcrumb = captured.get('breadcrumb', None)
+
+
 class MovieWidget(Widget):
+    def __init__(self, captured):
+        self.id = captured.get('id', None)
+        self.site_id = captured.get('site_id', None)
+        self.title = captured.get('asset_id', None)
+
+
+class FlashWidget(Widget):
     def __init__(self, captured):
         self.id = captured.get('id', None)
         self.site_id = captured.get('site_id', None)

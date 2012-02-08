@@ -15,6 +15,7 @@ from sqlalchemy.sql.expression import desc
 from altaircms.models import DBSession
 from altaircms.widget.forms import *
 from altaircms.widget.models import *
+from altaircms.asset import get_storepath
 
 
 class WidgetEditView(object):
@@ -97,7 +98,8 @@ class WidgetEditView(object):
 
         if '_method' in self.request.params and self.request.params['_method'].lower() == 'delete':
             # 削除処理
-            os.remove(os.path.join(get_storepath(self.request), self.widget.filepath))
+            if hasattr(self.widget, 'filepath'):
+                os.remove(os.path.join(get_storepath(self.request), self.widget.filepath))
             DBSession.delete(self.widget)
 
             return self.response_json_ok()
