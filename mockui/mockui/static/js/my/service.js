@@ -83,11 +83,11 @@ var service = (function(){
     })();
     
     var SelectLayoutService = (function(){
-        var _close_dialog = null;
+        var _finish_dialog = null;
         return {
             attach_click_after_event: function(elemts, selector){
                 $(selector).live("click", function(ev, data){
-                    SelectLayoutService.close_dialog(this)
+                    SelectLayoutService.finish_dialog(this)
                 });
             },
             attach_overlay_event: function(open_trigger, close_trigger){
@@ -98,16 +98,16 @@ var service = (function(){
                     closeOnClick: true,
                     closeOnESC: true, 
                     onBeforeLoad: function(){
-                        _close_dialog = elt.data("overlay").close;
-                        if(_close_dialog == null){
+                        _finish_dialog = elt.data("overlay").close;
+                        if(_finish_dialog == null){
                             throw "overlay close() is not found(in select layout dialog)"
                         }
                         SelectLayoutViewModel.on_dialog(this.getOverlay());
                     }
                 });
             }, 
-            close_dialog: function(caller){
-                var close_fn = _close_dialog;
+            finish_dialog: function(caller){
+                var close_fn = _finish_dialog;
                 return SelectLayoutViewModel.on_selected(caller, close_fn);
             }, 
             layout_name: function(expr){
@@ -142,6 +142,12 @@ var service = (function(){
                 var opts = {
                     closeOnClick: true,
                     closeOnESC: true,
+                    onClose: function(){
+                        setTimeout(function(){
+                            //中をdialogの中を空にする
+                            WidgetDialogViewModel.on_close(_dialog_elt, _widget_name, _widget_elt);
+                        }, 0);
+                    }, 
                     onLoad: function(){
                         if(_close_dialog == null || _widget_elt == null || _widget_elt == null){
                             throw "overlay close() is not found(in select widget dialog)"
@@ -149,13 +155,9 @@ var service = (function(){
                         WidgetDialogViewModel.on_dialog(_dialog_elt, _widget_name, _widget_elt);
                     }, 
                     onBeforeLoad: function() {
-			                  // grab wrapper element inside content
-			                  var wrap = this.getOverlay().find(".contentWrap");
-			                  // load the page specified in the trigger
-                        var manager = Resource.manager;
-                        var block_name = manager.block_name(widget_elt);
-                        var orderno = manager.orderno(block_name, widget_elt);
-                        var url =  api.load_widget_url(block_name, orderno);
+			            // grab wrapper element inside content
+			            var wrap = this.getOverlay().find(".contentWrap");
+			            // load the page specified in the trigger
 
                         // set widget info                        
                         _close_dialog = attach_source.data("overlay").close;
@@ -165,8 +167,8 @@ var service = (function(){
                         if(_close_dialog == null || _widget_elt == null || _widget_elt == null){
                             throw "overlay close() is not found(in select widget dialog)"
                         }
-                        _dialog_elt = wrap.load(url);
-		                }
+                        _dialog_elt = WidgetDialogViewModel.on_load_dialog(wrap, _widget_name, _widget_elt);
+		            }
                 };
                 $(attach_source).overlay(opts);
             }
@@ -269,6 +271,10 @@ var service = (function(){
             var new_height = calc.add(wraph, elth);
             wrap.css("height", new_height);
         }, 
+        remove_children: function(e){
+            var e = $(e);
+            _.each(e.children(), function(c){$(c).remove();});
+        }
     };
 
     var ChangeHeightService = (function(){
@@ -304,13 +310,6 @@ var service = (function(){
         }
     })();
 
-
-    var FetchDialogDataService = {
-        image_widget: function(choiced_elt, widget_elt){
-            return {imagefile: $(choiced_elt).attr("src")};
-        }
-    }
-    
     return {
         DragWidgetService: DragWidgetService, 
         ElementInfoService: ElementInfoService,
@@ -321,7 +320,6 @@ var service = (function(){
         ApiService: ApiService,
         ElementLayoutService: ElementLayoutService, 
         WidgetElementService: WidgetElementService, 
-        FetchDialogDataService: FetchDialogDataService, 
         ChangeHeightService: ChangeHeightService
     };
 })();

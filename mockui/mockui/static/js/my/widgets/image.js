@@ -3,12 +3,17 @@ if(!widget){
 }
 
 (function(widget){
+    var opt = {} //widget local variable
     var _has_click_event = null;
 
+    var load_page = function(we){
+        return we.dialog.load("/sample/api/load/widget/image");
+    };
+
     var on_dialog = function(we){
-        _has_click_event = "#@id@ img".replace("@id@", we.dialog.attr("id"));
+        _has_click_event = "#@id@ img".replace("@id@", we.dialog .attr("id"));
         $(document).on("click", _has_click_event, function(){
-            we.close_dialog(this);
+            we.finish_dialog(this);
         });
         
         we.attach_highlight(_has_click_event);
@@ -16,7 +21,7 @@ if(!widget){
         we.attach_managed(we.dialog.find(expr));
     };
 
-    var on_selected = function(we){
+    var on_close = function(we){
         $(document).off("click", _has_click_event);
     };
 
@@ -25,8 +30,9 @@ if(!widget){
     };
 
     return widget.include("image", {
+        load_page: load_page, 
         on_dialog: on_dialog, 
-        on_selected: on_selected, 
+        on_close: on_close, 
         collect_data: collect_data, 
         save_url: "/sample/api/save/widget"
     });
