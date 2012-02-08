@@ -20,8 +20,10 @@ __all__ = [
     'ImageWidget',
     'MovieWidget',
     'FlashWidget',
+    'MenuWidget',
     'TextWidget',
     'BreadcrumbsWidget',
+    'TopicWidget',
 ]
 
 WIDGET_TYPE = [
@@ -30,6 +32,9 @@ WIDGET_TYPE = [
     'flash',
     'movie',
     'image',
+    'topic',
+    'menu',
+    'billinghistory',
 ]
 
 widget = Table(
@@ -75,6 +80,22 @@ widget_image = Table(
     Column('asset_id', Integer, ForeignKey('asset.id'))
 )
 
+widget_topic = Table(
+    'widget_topic',
+    Base.metadata,
+    Column('id', Integer, ForeignKey('widget.id'), primary_key=True),
+    Column('topic_id', Integer, ForeignKey('topic.id')),
+    Column('title', String)
+)
+
+widget_menu = Table(
+    'widget_menu',
+    Base.metadata,
+    Column('id', Integer, ForeignKey('widget.id'), primary_key=True),
+    Column('topic_id', Integer, ForeignKey('topic.id')),
+    Column('menu', String)
+)
+
 
 class Widget(object):
     def __init__(self, id_, site_id, type_):
@@ -91,40 +112,46 @@ class TextWidget(Widget):
 
 
 class BreadcrumbsWidget(Widget):
-    def __init__(self, id_, site_id, breadcrumb):
-        self.id = id_
-        self.site_id = site_id
-        self.breadcrumb = breadcrumb
+    def __init__(self, captured):
+        self.id = captured.get('id', None)
+        self.site_id = captured.get('site_id', None)
+        self.breadcrumb = captured.get('breadcrumb', None)
 
 
 class FlashWidget(Widget):
-    def __init__(self, id_, site_id, url, title, mimetype):
-        self.id = id_
-        self.site_id = site_id
-        self.type = type_
-        self.url = url
-        self.title = title
-        self.mimetype = mimetype
+    def __init__(self, captured):
+        self.id = captured.get('id', None)
+        self.site_id = captured.get('site_id', None)
+        self.title = captured.get('asset_id', None)
+
+
+class MenuWidget(Widget):
+    def __init__(self, captured):
+        self.id = captured.get('id', None)
+        self.site_id = captured.get('site_id', None)
+        self.menu = captured.get('menu', None)
 
 
 class MovieWidget(Widget):
-    def __init__(self, id_, site_id, url, title, mimetype):
-        self.id = id_
-        self.site_id = site_id
-        self.breadcrumb = breadcrumb
-        self.url = url
-        self.title = title
-        self.mimetype = mimetype
+    def __init__(self, captured):
+        self.id = captured.get('id', None)
+        self.site_id = captured.get('site_id', None)
+        self.title = captured.get('asset_id', None)
 
 
 class ImageWidget(Widget):
-    def __init__(self, id_, site_id, url, title):
-        self.id = id_
-        self.site_id = site_id
-        self.breadcrumb = breadcrumb
-        self.url = url
-        self.title = title
-        self.mimetype = mimetype
+    def __init__(self, captured):
+        self.id = captured.get('id', None)
+        self.site_id = captured.get('site_id', None)
+        self.asset_id = captured.get('asset_id', None)
+
+
+class TopicWidget(Widget):
+    def __init__(self, captured):
+        self.id = captured.get('id', None)
+        self.site_id = captured.get('site_id', None)
+        self.title = captured.get('title', None)
+        self.topic_id = captured.get('topic_id', None)
 
 
 mapper(Widget, widget, polymorphic_on=widget.c.type, polymorphic_identity='widget')
@@ -133,6 +160,8 @@ mapper(BreadcrumbsWidget, widget_breadcrumbs, inherits=Widget, polymorphic_ident
 mapper(FlashWidget, widget_flash, inherits=Widget, polymorphic_identity='widget_flash')
 mapper(MovieWidget, widget_movie, inherits=Widget, polymorphic_identity='widget_movie')
 mapper(ImageWidget, widget_image, inherits=Widget, polymorphic_identity='widget_image')
+mapper(TopicWidget, widget_topic, inherits=Widget, polymorphic_identity='widget_topic')
+mapper(MenuWidget, widget_menu, inherits=Widget, polymorphic_identity='widget_menu')
 
 
 

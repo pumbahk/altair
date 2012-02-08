@@ -244,4 +244,7 @@ class Site(Base):
     client_id = Column(Integer, ForeignKey("client.id")) #@TODO: サイトにくっつけるべき？
 
 
-
+from altaircms.widget.models import *
+from altaircms.layout.models import *
+from altaircms.page.models import *
+# from altaircms.event.models import *
