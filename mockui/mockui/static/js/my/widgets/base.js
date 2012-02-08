@@ -8,7 +8,7 @@ var widget = (function(){
         get_orderno: function(e){}, 
         get_data: function(e){}, 
         set_data: function(e, data){}, 
-        close_dialog: function(){}, 
+        finish_dialog: function(){}, 
         attach_hightlight: function(e){}, 
         attach_managed: function(e){}
     };

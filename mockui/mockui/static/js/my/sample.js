@@ -177,35 +177,55 @@ var WidgetDialogViewModel = (function(){
                 dialog: dialog_elt, 
                 where: widget_elt, 
                 widget_name: widget_name, 
-                close_dialog: service.WidgetDialogService.finish_dialog
+                finish_dialog: service.WidgetDialogService.finish_dialog
             });
             setTimeout(function(){wmodule.on_dialog(we);}, 0);
         }
     };
-    var on_selected = function(choiced_elt, widget_name, widget_elt, close_fn){
+
+    var on_close = function(dialog_elt, widget_name, widget_elt){
+        setTimeout(function(){
+            var wmodule = widget.get(widget_name)
+            if(!!wmodule){
+                var we = wmodule.create_context({
+                    dialog: dialog_elt, 
+                    where: widget_elt, 
+                    widget_name: widget_name, 
+                });
+                wmodule.on_close(we);
+            }
+            service.ElementLayoutService.remove_children(dialog_elt);
+        }, 0);
+    };
+
+    var on_selected = function(choiced_elt, widget_name, widget_elt, close_dialog){
         var wmodule = widget.get(widget_name)
         if(!!wmodule){
             var we = wmodule.create_context({
                 where: widget_elt, 
                 widget_name: widget_name, 
             });
-            wmodule.on_selected(we);
+            var data = wmodule.collect_data(we, choiced_elt); 
         }
-        close_fn();
+        close_dialog();
         var params = {
             widget_name: widget_name, 
             choiced_elt: choiced_elt, 
             widget_elt: widget_elt, 
-            wmodule: wmodule //ok?
+            data: data || null
         }
-        var dfd = reaction.WidgetDataSubmit.start();
-        return dfd.resolveWith(dfd, [params])
+        if(!!data){
+            var dfd = reaction.WidgetDataSubmit.start();
+            return dfd.resolveWith(dfd, [params])
+        }
     };
     return {
         // on_droppable_widget_created: on_droppable_widget_created, 
         on_load_dialog: on_load_dialog, 
+        on_close: on_close, 
         on_dialog: on_dialog, 
-        on_selected: on_selected
+        on_selected: on_selected, 
+        on_close: on_close
     }
 })();
 
@@ -248,7 +268,6 @@ $(function(){
         dialog: null, //dynamic bind
         widget_name: null, //dynamic bind
         where: null, //dynamic bind
-        get_close_dialog: function(){}, //dynamic bind 
         get_data: function(e){return Resource.manager.find(e)}, 
         set_data: function(e, data){
             var block_name = Resource.manager.block_name(e);

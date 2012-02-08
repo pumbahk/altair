@@ -5,6 +5,10 @@ from pyramid.response import Response
 def image_widget(request):
     return {}
 
+@view_config(route_name="sample::freetext_widget", renderer="/sample/widget/freetext.mak")
+def freetext_widget(request):
+    return {}
+
 @view_config(name="dummy_widget")
 def dummy_widget(request):
     return Response("dummy")

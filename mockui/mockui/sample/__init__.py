@@ -15,5 +15,6 @@ def includeme(config):
 
     ## widget view
     config.add_route("sample::image_widget", "/api/load/widget/image")
+    config.add_route("sample::freetext_widget", "/api/load/widget/freetext")
     # config.add_route("sample::dummy_widget", "/widget/dummy")
     

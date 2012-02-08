@@ -175,10 +175,10 @@ var reaction = (function(){
         react: function(ctx){
             var manager = Resource.manager;
             var block_name = manager.block_name(ctx.widget_elt);
-            var data = ctx.wmodule.collect_data(null, ctx.choiced_elt); //fixme
-            Resource.manager.update_data(block_name, ctx.widget_elt, data);
-            service.ApiService.save_widget(ctx.widget_name, ctx.widget_elt, data); //fixme
+            Resource.manager.update_data(block_name, ctx.widget_elt, ctx.data);
+            service.ApiService.save_widget(ctx.widget_name, ctx.widget_elt, ctx.data); //fixme
             service.VisibilityService.data_packed_widget(ctx.widget_elt);
+            service.ElementLayoutService.remove_children(ctx)
         }
     });
     // widget dialog 
