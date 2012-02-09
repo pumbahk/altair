@@ -99,12 +99,18 @@ widget_menu = Table(
 
 
 class AssetWidgetMixin(object):
+    _asset = None
+
     @property
     def asset(self):
+        if self._asset:
+            return self._asset
+
         clsname = self.__class__.__name__[:self.__class__.__name__.rfind("Widget")] + 'Asset'
         cls = globals()[clsname]
 
-        return DBSession.query(cls).get(self.asset_id)
+        self._asset = DBSession.query(cls).get(self.asset_id)
+        return self._asset
 
 
 class Widget(object):
@@ -112,6 +118,19 @@ class Widget(object):
         self.id = id_
         self.site_id = site_id
         self.type = type_
+
+    def __repr__(self):
+        return '<%s %s>' % (self.__class__.__name__, self.id)
+
+    @property
+    def appstruct(self):
+        ## ウィジェットのプロパティを取得する
+        attrs = [attr for attr in dir(self) if attr != 'appstruct' and not attr.startswith('_') and not callable(getattr(self, attr))]
+        output = {}
+        for attr in attrs:
+            output[attr] = getattr(self, attr)
+
+        return output
 
 
 class TextWidget(Widget):
@@ -164,13 +183,13 @@ class TopicWidget(Widget):
 
 
 mapper(Widget, widget, polymorphic_on=widget.c.type, polymorphic_identity='widget')
-mapper(TextWidget, widget_text, inherits=Widget, polymorphic_identity='widget_text')
+mapper(TextWidget, widget_text, inherits=Widget, polymorphic_identity='text')
 mapper(BreadcrumbsWidget, widget_breadcrumbs, inherits=Widget, polymorphic_identity='widget_breadcrumbs')
-mapper(FlashWidget, widget_flash, inherits=Widget, polymorphic_identity='widget_flash')
-mapper(MovieWidget, widget_movie, inherits=Widget, polymorphic_identity='widget_movie')
-mapper(ImageWidget, widget_image, inherits=Widget, polymorphic_identity='widget_image')
-mapper(TopicWidget, widget_topic, inherits=Widget, polymorphic_identity='widget_topic')
-mapper(MenuWidget, widget_menu, inherits=Widget, polymorphic_identity='widget_menu')
+mapper(FlashWidget, widget_flash, inherits=Widget, polymorphic_identity='flash')
+mapper(MovieWidget, widget_movie, inherits=Widget, polymorphic_identity='movie')
+mapper(ImageWidget, widget_image, inherits=Widget, polymorphic_identity='image')
+mapper(TopicWidget, widget_topic, inherits=Widget, polymorphic_identity='topic')
+mapper(MenuWidget, widget_menu, inherits=Widget, polymorphic_identity='menu')
 
 
 

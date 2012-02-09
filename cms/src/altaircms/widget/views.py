@@ -61,6 +61,7 @@ class WidgetEditView(object):
         return {
             'form':html,
             'captured':repr(captured),
+            'widget':self.widget,
             'widget_type': self.widget_type,
             }
 
@@ -72,6 +73,7 @@ class WidgetEditView(object):
             widgets=widgets
         )
 
+    @view_config(route_name="widget", permission='edit', renderer='altaircms:templates/widget/form.mako', request_method='GET')
     @view_config(route_name='widget_add', permission='edit', renderer='altaircms:templates/widget/form.mako')
     def widget_form(self):
         def succeed(request, captured):
@@ -81,15 +83,10 @@ class WidgetEditView(object):
 
             return Response('<p>Thanks!</p>')
 
-        cls = globals()[self.widget_type.capitalize() + 'WidgetSchema']()
-        form = Form(cls, buttons=('submit',), use_ajax=True)
-        return self.render_form(form, success=succeed)
+        appstruct = self.widget.appstruct if self.widget else {}
 
-    @view_config(route_name="widget", permission='edit', renderer='altaircms:templates/widget/view.mako', request_method='GET')
-    def widget_edit(self):
-        return dict(
-            widget=self.widget
-        )
+        form = Form(get_schema_by_widget(self.widget, self.widget_type)(), buttons=('submit',), use_ajax=True)
+        return self.render_form(form, success=succeed, appstruct=appstruct)
 
     @view_config(route_name="widget", permission='edit', request_method='POST')
     def widget_delete(self):
