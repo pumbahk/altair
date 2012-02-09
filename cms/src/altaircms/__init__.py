@@ -60,7 +60,7 @@ def cms_include(config):
 
 
 def front_include(config):
-    config.add_route('front', '/*page_name')
+    config.add_route('front', '/{page_name:.*}')
 
 
 def main(global_config, **settings):

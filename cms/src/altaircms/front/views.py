@@ -15,7 +15,7 @@ from altaircms.layout.models import Layout
 
 @view_config(route_name='front')
 def view(request):
-    url = '/'.join(request.matchdict['page_name'])
+    url = request.matchdict['page_name']
 
     try:
         (page, layout) = DBSession.query(Page, Layout).filter(Page.layout_id==Layout.id).filter_by(url=url).one()
