@@ -58,6 +58,11 @@ setup(name='altair-cms',
       [paste.app_factory]
       main = altaircms:main
       """,
+      # entry_points = {
+      #   "paste.app_factory": [
+      #       "main=altaircms:main"
+      #   ]
+      # }, 
       paster_plugins=['pyramid'],
       )
 

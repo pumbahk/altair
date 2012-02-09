@@ -3,7 +3,6 @@ from pyramid.response import Response
 
 @view_config(route_name="sample::image_widget", renderer="/sample/widget/image.mak")
 def image_widget(request):
-    print "ho"
     image_assets = request.context.get_image_asset_query()
     return {"image_assets": image_assets}
 

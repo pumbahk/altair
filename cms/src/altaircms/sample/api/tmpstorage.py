@@ -8,7 +8,6 @@ import sys
 
 logger = logging.getLogger(__name__)
 
-
 def _normalize(method):
     def decorated(self, *args):
         args_ = [str(x) if isinstance(x, basestring) else x for x in args]
