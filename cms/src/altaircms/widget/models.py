@@ -7,12 +7,13 @@
 
 from datetime import datetime
 from pyramid.renderers import render
+from sqlalchemy.ext.hybrid import hybrid_property
 
 from sqlalchemy.orm import relationship, mapper
 from sqlalchemy.schema import Column, ForeignKey, Table
 from sqlalchemy import Integer, DateTime, Unicode, String
 
-from altaircms.models import Base
+from altaircms.models import Base, DBSession
 from altaircms.asset.models import ImageAsset, MovieAsset, FlashAsset, CssAsset
 
 __all__ = [
@@ -70,7 +71,7 @@ widget_movie = Table(
     'widget_movie',
     Base.metadata,
     Column('id', Integer, ForeignKey('widget.id'), primary_key=True),
-    Column('asset_id', Integer, ForeignKey('asset.id')),
+    Column('asset_id', Integer, ForeignKey('asset.id'))
 )
 
 widget_image = Table(
@@ -97,6 +98,15 @@ widget_menu = Table(
 )
 
 
+class AssetWidgetMixin(object):
+    @property
+    def asset(self):
+        clsname = self.__class__.__name__[:self.__class__.__name__.rfind("Widget")] + 'Asset'
+        cls = globals()[clsname]
+
+        return DBSession.query(cls).get(self.asset_id)
+
+
 class Widget(object):
     def __init__(self, id_, site_id, type_):
         self.id = id_
@@ -109,7 +119,6 @@ class TextWidget(Widget):
         self.id = captured.get('id', None)
         self.site_id = captured.get('site_id', None)
         self.text = captured.get('text', None)
-
 
 class MenuWidget(Widget):
     def __init__(self, captured):
@@ -125,21 +134,21 @@ class BreadcrumbsWidget(Widget):
         self.breadcrumb = captured.get('breadcrumb', None)
 
 
-class MovieWidget(Widget):
+class MovieWidget(Widget, AssetWidgetMixin):
     def __init__(self, captured):
         self.id = captured.get('id', None)
         self.site_id = captured.get('site_id', None)
-        self.title = captured.get('asset_id', None)
+        self.asset_id = captured.get('asset_id', None)
 
 
-class FlashWidget(Widget):
+class FlashWidget(Widget, AssetWidgetMixin):
     def __init__(self, captured):
         self.id = captured.get('id', None)
         self.site_id = captured.get('site_id', None)
-        self.title = captured.get('asset_id', None)
+        self.asset_id = captured.get('asset_id', None)
 
 
-class ImageWidget(Widget):
+class ImageWidget(Widget, AssetWidgetMixin):
     def __init__(self, captured):
         self.id = captured.get('id', None)
         self.site_id = captured.get('site_id', None)

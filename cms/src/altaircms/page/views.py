@@ -141,8 +141,9 @@ class PageEditView(object):
 
         page_structure = json.loads(captured['structure'])
 
-        #q = dbsession.query(Page2Widget).filter_by(page_id=page.id)
-        #dbsession.delete(q)
+        q = dbsession.query(Page2Widget).filter_by(page_id=page.id)
+        for p2w in q:
+            dbsession.delete(p2w)
 
         for key, values in page_structure.iteritems():
             for value in values:

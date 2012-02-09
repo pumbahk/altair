@@ -30,10 +30,11 @@ def view(request):
     display_blocks = {}
     for p2w, widget in results:
         key = p2w.block
+        html = render_widget(request, widget)
         if key in display_blocks:
-            display_blocks[key].append(render_widget(widget))
+            display_blocks[key].append(html)
         else:
-            display_blocks[key] = [render_widget(widget)]
+            display_blocks[key] = [html]
 
     tmpl = 'altaircms:templates/front/layout/' + str(layout.template_filename)
 

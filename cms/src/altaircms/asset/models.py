@@ -3,10 +3,11 @@ from datetime import datetime
 
 from pyramid.url import route_url
 
-from sqlalchemy.orm import mapper
+from sqlalchemy.orm import mapper, relationship
 from sqlalchemy.schema import Column, ForeignKey, Table
 from sqlalchemy import Integer, DateTime, String
 from zope.sqlalchemy.tests import metadata
+from sqlalchemy.sql.expression import and_
 
 from altaircms.models import Base
 from altaircms.models import Site
