@@ -58,8 +58,9 @@ def cms_include(config):
     config.add_route('widget', '/widget/{widget_id}')
     config.add_route('widget_list', '/widget')
 
+
 def front_include(config):
-    config.add_route('front', '{page_name}')
+    config.add_route('front', '/{page_name}')
 
 
 def main(global_config, **settings):
@@ -90,7 +91,15 @@ def main(global_config, **settings):
     config.include(front_include, route_prefix='/f')
     config.include(cms_include, route_prefix='')
 
-    config.scan("altaircms.views")
+    config.scan('altaircms.base')
+    config.scan('altaircms.auth')
+    config.scan('altaircms.event')
+    config.scan('altaircms.page')
+    config.scan('altaircms.asset')
+    config.scan('altaircms.widget')
+    config.scan('altaircms.layout')
+    config.scan('altaircms.front')
+
     config.scan("altaircms.sample")
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)
 

@@ -11,13 +11,3 @@ def render_widget(widget):
         raise
 
     return result
-
-
-from altaircms.auth.views import *
-from altaircms.event.views import *
-from altaircms.base.views import *
-from altaircms.page.views import *
-from altaircms.front.views import *
-from altaircms.asset.views import *
-from altaircms.widget.views import *
-from altaircms.layout.views import *
