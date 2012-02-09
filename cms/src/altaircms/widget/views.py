@@ -73,13 +73,21 @@ class WidgetEditView(object):
             widgets=widgets
         )
 
-    @view_config(route_name="widget", permission='edit', renderer='altaircms:templates/widget/form.mako', request_method='GET')
+    @view_config(route_name="widget", permission='edit', renderer='altaircms:templates/widget/form.mako')
     @view_config(route_name='widget_add', permission='edit', renderer='altaircms:templates/widget/form.mako')
     def widget_form(self):
         def succeed(request, captured):
-            mdl = globals()[self.widget_type.capitalize() + 'Widget']
-            obj = mdl(captured)
-            DBSession.add(obj)
+            if self.widget:
+                for key, value in captured.iteritems():
+                    try:
+                        setattr(self.widget, key, value)
+                    except AttributeError:
+                        pass
+                DBSession.add(self.widget)
+            else:
+                mdl = globals()[self.widget_type.capitalize() + 'Widget']
+                obj = mdl(captured)
+                DBSession.add(obj)
 
             return Response('<p>Thanks!</p>')
 
@@ -88,7 +96,7 @@ class WidgetEditView(object):
         form = Form(get_schema_by_widget(self.widget, self.widget_type)(), buttons=('submit',), use_ajax=True)
         return self.render_form(form, success=succeed, appstruct=appstruct)
 
-    @view_config(route_name="widget", permission='edit', request_method='POST')
+    @view_config(route_name="widget_delete", permission='edit', request_method='POST')
     def widget_delete(self):
         if not self.widget:
             return NotFound()
@@ -100,6 +108,5 @@ class WidgetEditView(object):
             DBSession.delete(self.widget)
 
             return self.response_json_ok()
-        else:
-            # 更新処理
-            pass
+
+        return NotFound()

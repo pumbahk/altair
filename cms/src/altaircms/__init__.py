@@ -54,8 +54,9 @@ def cms_include(config):
     config.add_route('asset_edit', '/asset/{asset_id}')
     config.add_route('asset_view', '/asset/{asset_id}')
 
-    config.add_route('widget_add', '/widget/form/{widget_type}')
     config.add_route('widget', '/widget/{widget_id}')
+    config.add_route('widget_add', '/widget/form/{widget_type}')
+    config.add_route('widget_delete', '/widget/{widget_id}/delete')
     config.add_route('widget_list', '/widget')
 
 

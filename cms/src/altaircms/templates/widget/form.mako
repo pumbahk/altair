@@ -31,3 +31,10 @@
 <div id="widget-form">
     ${form}
 </div>
+
+%if widget:
+<form action="${request.route_url('widget_delete', widget_id=widget.id)}" method="post">
+  <input type="hidden" name="_method" value="delete">
+  <button type="submit">削除</button>
+</form>
+%endif
