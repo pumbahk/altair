@@ -20,11 +20,13 @@ from sqlalchemy.orm import sessionmaker
 from zope.sqlalchemy import ZopeTransactionExtension
 from altaircms.models import Base
 from altaircms.tag.models import Tag
+from altaircms.models import DBSession
 
 class Page(Base):
     """
     ページ
     """
+    query = DBSession.query_property()
     __tablename__ = "page"
 
     id = Column(Integer, primary_key=True)

@@ -50,6 +50,31 @@ class ResourceImageAssetTest(unittest.TestCase):
         query = self._getResource().get_image_asset_query()
         self.assertEqual(len(query.all()), 1)
 
+class ResourceCreatePageTest(unittest.TestCase):
+    def tearDown(self):
+        import transaction
+        transaction.abort()
+
+
+    def _getResource(self):
+        from altaircms.sample.core.resources import SampleCoreResource
+        return SampleCoreResource(None)
+
+    def test_create_page(self):
+        context = self._getResource()
+        params = {'description': u'boo',
+                  'keyword': u'oo',
+                  'tags': u'ooo',
+                  'url': u'hohohoho',
+                  'layout_id': 1,
+                  'title': u'boo',
+                  'structure': u'{}'
+                  }
+        page = context.create_page(params)        
+        context.add(page)
+        context.show()
+        print context.get()[0].id
+
 class ResourceLayoutTest(unittest.TestCase):
     # def setUp(self):
     #     self.config = testing.setUp()

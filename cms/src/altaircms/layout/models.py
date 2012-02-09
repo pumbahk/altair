@@ -5,10 +5,10 @@ from sqlalchemy import Column, Integer, DateTime, Unicode, String, ForeignKey
 from altaircms.models import Base
 
 class Layout(Base):
-    query = DBSession.query_property()
     """
     テンプレートレイアウトマスタ
     """
+    query = DBSession.query_property()
     __tablename__ = "layout"
 
     id = Column(Integer(), primary_key=True)

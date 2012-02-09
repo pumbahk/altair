@@ -2,16 +2,32 @@ from altaircms.models import DBSession
 from deform.form import Form
 from . import forms
 
+def set_with_dict(obj, D):
+    for k, v in D.items():
+        setattr(obj, k, v)
+    return obj
+
 class UsingFormMixin(object):
-    def get_page_form(self):
-        return Form(forms.PageSchema(), buttons=("submit", ))
+    def get_page_form(self, appstruct=None, mapper=None):
+        form = Form(forms.UnregisteredPageSchema(), buttons=("submit", ))
+        return forms._FormWrapper(form, appstruct=appstruct, mapper=mapper)
 
 class UsingPageMixin(object):
-    pass
-    
+    import altaircms.page.models as m
+    def create_page(self, params):
+        page = self.m.Page()
+        page = set_with_dict(page, params)
+        return page
+
+    def get_page(self, page_id):
+        return self.m.Page.query.filter(self.m.Page.id==page_id).one()
+
 class SampleCoreResource(UsingPageMixin, UsingFormMixin):
     def __init__(self, request):
         self.request = request
-        
-    def add(self, data):
+
+    def add(self, data, flush=False):
         DBSession.add(data)
+        if flush:
+            DBSession.flush()
+

@@ -31,7 +31,25 @@ def use_session(session):
         client.contract_status = 0
         session.add(client)
 
-        
+
+    # with block("create page"):
+    #     from altaircms.page.models import Page
+    #     page = m.Page()
+    #     def set_with_dict(obj, D):
+    #         for k, v in D.items():
+    #             setattr(obj, k, v)
+    #         return obj
+    #     params = {'description': u'boo',
+    #               'keyword': u'oo',
+    #               'tags': u'ooo',
+    #               'url': u'hohohoho',
+    #               # 'layout_id': 1,
+    #               'title': u'boo',
+    #               # 'structure': u'{}'
+    #               }
+    #     page = set_with_dict(page, params)
+    #     session.add(page)
+
     with block("create image asset"):
         from altaircms.asset.models import ImageAsset
         imga = ImageAsset("/static/img/samples/Abstract_Desktop_290.jpg")
