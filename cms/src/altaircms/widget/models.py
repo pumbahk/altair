@@ -12,6 +12,7 @@ from sqlalchemy.schema import Column, ForeignKey, Table
 from sqlalchemy import Integer, DateTime, Unicode, String
 
 from altaircms.models import Base, DBSession
+from altaircms.asset.models import *
 
 __all__ = [
     'Widget',
@@ -100,6 +101,9 @@ class AssetWidgetMixin(object):
 
     @property
     def asset(self):
+        if not self.asset_id:
+            return None
+
         if self._asset:
             return self._asset
 

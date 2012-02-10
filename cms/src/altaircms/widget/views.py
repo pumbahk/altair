@@ -14,7 +14,7 @@ from pyramid.view import view_config
 from altaircms.models import DBSession
 from altaircms.widget.forms import *
 from altaircms.widget.models import *
-from altaircms.widget import get_widget_list, get_mapper_cls
+from altaircms.widget import get_widget_list, widget_convert_to_dict
 from altaircms.asset import get_storepath
 
 class WidgetEditView(object):
@@ -71,7 +71,7 @@ class WidgetEditView(object):
 
         if 'json' in self.request.params:
             return dict(
-                widgets=[get_mapper_cls(widget)(widget).as_dict() for widget in widgets]
+                widgets=[widget_convert_to_dict(widget) for widget in widgets]
             )
         else:
             return dict(
