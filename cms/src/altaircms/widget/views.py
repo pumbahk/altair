@@ -10,13 +10,12 @@ from deform.exception import ValidationFailure
 from pyramid.exceptions import NotFound
 from pyramid.response import Response
 from pyramid.view import view_config
-from sqlalchemy.sql.expression import desc
 
 from altaircms.models import DBSession
 from altaircms.widget.forms import *
 from altaircms.widget.models import *
+from altaircms.widget import get_widget_list, get_mapper_cls
 from altaircms.asset import get_storepath
-
 
 class WidgetEditView(object):
     def __init__(self, request):
@@ -65,13 +64,19 @@ class WidgetEditView(object):
             'widget_type': self.widget_type,
             }
 
+    @view_config(route_name='widget_list', renderer='json', request_method='GET', request_param='json', permission='edit')
     @view_config(route_name='widget_list', renderer='altaircms:templates/widget/list.mako', request_method='GET', permission='edit')
     def widget_list(self):
-        widgets = DBSession().query(Widget).order_by(desc(Widget.id)).all()
+        widgets = get_widget_list()
 
-        return dict(
-            widgets=widgets
-        )
+        if 'json' in self.request.params:
+            return dict(
+                widgets=[get_mapper_cls(widget)(widget).as_dict() for widget in widgets]
+            )
+        else:
+            return dict(
+                widgets=widgets
+            )
 
     @view_config(route_name="widget", permission='edit', renderer='altaircms:templates/widget/form.mako')
     @view_config(route_name='widget_add', permission='edit', renderer='altaircms:templates/widget/form.mako')

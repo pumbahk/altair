@@ -23,6 +23,7 @@ requires = [
     "velruse", 
     ## fanstatic
     'fa.jquery',
+    'bpmappers',
     "fanstatic", 
     "pyramid_fanstatic", 
     "js.jquery", 

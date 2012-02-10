@@ -6,15 +6,12 @@
 """
 
 from datetime import datetime
-from pyramid.renderers import render
-from sqlalchemy.ext.hybrid import hybrid_property
 
 from sqlalchemy.orm import relationship, mapper
 from sqlalchemy.schema import Column, ForeignKey, Table
 from sqlalchemy import Integer, DateTime, Unicode, String
 
 from altaircms.models import Base, DBSession
-from altaircms.asset.models import ImageAsset, MovieAsset, FlashAsset, CssAsset
 
 __all__ = [
     'Widget',
@@ -184,7 +181,7 @@ class TopicWidget(Widget):
 
 mapper(Widget, widget, polymorphic_on=widget.c.type, polymorphic_identity='widget')
 mapper(TextWidget, widget_text, inherits=Widget, polymorphic_identity='text')
-mapper(BreadcrumbsWidget, widget_breadcrumbs, inherits=Widget, polymorphic_identity='widget_breadcrumbs')
+mapper(BreadcrumbsWidget, widget_breadcrumbs, inherits=Widget, polymorphic_identity='breadcrumbs')
 mapper(FlashWidget, widget_flash, inherits=Widget, polymorphic_identity='flash')
 mapper(MovieWidget, widget_movie, inherits=Widget, polymorphic_identity='movie')
 mapper(ImageWidget, widget_image, inherits=Widget, polymorphic_identity='image')
@@ -212,30 +209,6 @@ class Page2Widget(Base):
 
 
 """
-classA sset2Widget(Base):
-    __tablename__ = "asset2widget"
-
-    id = Column(Integer, primary_key=True)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
-
-    position = Column(String) # 何かしらのレイアウト情報をシリアライズして保持する想定
-
-    asset_id = Column(Integer, ForeignKey("asset.id"))
-    widget_d = Column(Integer, ForeignKey("widget.id"))
-"""
-
-"""
-class MenuWidget(Base):
-    __tablename__ = "widget_menu"
-
-    id = Column(Integer, ForeignKey("widget.id"), primary_key=True)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
-
-    menu = Column(String)
-
-
 class TwitterTimelineWidget(Base):
     __tablename__ = "widget_twitter_timeline"
 
@@ -244,6 +217,7 @@ class TwitterTimelineWidget(Base):
     updated_at = Column(DateTime, default=datetime.now())
 
     screen_name = Column(String)
+
 
 class TwitterSearchWidget(Base):
     __tablename__ = "widget_twitter_search"
@@ -254,16 +228,6 @@ class TwitterSearchWidget(Base):
 
     search_word = Column(Unicode)
 
-
-class TopicWidget(Base):
-    __tablename__ = "widget_topic"
-
-    id = Column(Integer, ForeignKey("widget.id"), primary_key=True)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
-
-    topic_type = Column(Integer)
-    view_limit = Column(Integer)
 
 class FacebookWidget(Base):
     __tablename__ = 'widget_facebook'
@@ -287,3 +251,5 @@ class RakutenPointWidget(Base):
 
 
 """
+
+
