@@ -69,30 +69,14 @@
     </script>
 </%block>
 
-%if page and event:
-<h1>イベント${event}の${page}の編集</h1>
-%elif event:
-<h1>イベント${event}のページ追加</h1>
-%elif page:
-<h1>${page}ページの編集</h1>
-%endif
-
-%if event:
-<a href="${request.route_url('event', id=event.id)}">back</a>
-%endif
+<h1>ページ追加・一覧</h1>
 
 <div id="pageform">
     ${form|n}
 </div>
 
-
-<div id="pagecontentform">
-    <div id="pagelayout">レイアウト選択</div>
-    <div id="pageversion">ページのバージョンが入る</div>
-    <div id="pagewidget">ウィジェット</div>
-    <br class="clear"/>
-    <form action="#" method="post">
-        <div id="page">ページ編集</div>
-        <button type="submit">保存</button>
-    </form>
-</div>
+<ul>
+%for page in pages:
+<li><a href="${request.route_url("page_edit_", page_id=page.id)}">${page}</li>
+%endfor
+</ul>
