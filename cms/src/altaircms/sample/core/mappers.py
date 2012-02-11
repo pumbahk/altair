@@ -5,6 +5,7 @@ class UnregisteredPageMapper(bp.Mapper):
     title = bp.RawField()
     description = bp.RawField()
     keyword = bp.RawField()
+    layout_id = bp.RawField()
     # tags = bp.RawField("tags") ## tag attribute is not supprted yet.
 
     @classmethod

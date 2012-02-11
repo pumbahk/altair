@@ -5,7 +5,7 @@ from js.json2 import json2
 from js.jqueryui import black_tie
 from js.jqueryui import jqueryui
 from js.tinymce import tinymce
-
+from js.backbone import backbone
 def jqueries_need():
     underscore.need()
     jquery.need()
@@ -13,6 +13,7 @@ def jqueries_need():
     json2.need()
     jqueryui.need()
     black_tie.need()
+    backbone.need()
 
 def wysiwyg_editor_need():
     tinymce.need()

@@ -7,10 +7,6 @@ from deform import ValidationFailure
 from . import helpers
 from . import mappers
 
-@view_config(route_name="ok")
-def ok(request):
-    from pyramid.response import Response
-    return Response("ok")
 
 @view_config(route_name="sample::create_page", renderer="sample/create_page.mak", request_method="GET")
 def create_page_form(request):
@@ -34,10 +30,23 @@ def create_page(request):
 @view_config(route_name="sample::edit_page", renderer="sample/edit_page.mak", request_method="GET")
 def edit_page(request):
     page_id = request.matchdict["page_id"]
-    page = request.context.get_page(page_id)
+    context = request.context
+    page = context.get_page(page_id)
+    layout_image = context.get_layout_image(page)
     mapper = mappers.UnregisteredPageMapper.as_mapper
-    form = request.context.get_page_form(mapper=mapper, appstruct=page)
-    return {"page": page, "form": form}
+    form = context.get_page_form(mapper=mapper, appstruct=page)
+
+    jqueries_need()
+    wysiwyg_editor_need()
+
+    return {"layout_image": layout_image, "form": form}
+
+## unfixed
+
+@view_config(route_name="ok")
+def ok(request):
+    from pyramid.response import Response
+    return Response("ok")
 
 @view_config(route_name="sample::sample", renderer="sample/sample.mak")
 def sample(request):
@@ -45,7 +54,6 @@ def sample(request):
     wysiwyg_editor_need()
     return {}
 
-## todo: deleteit
 @view_config(route_name="sample::freetext", renderer="sample/freetext.mak")
 def freetext(request):
     wysiwyg_editor_need()

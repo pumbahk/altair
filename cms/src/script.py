@@ -58,18 +58,12 @@ def use_session(session):
     with block("create layout model"):
         from altaircms.layout.models import Layout
         layout0 = Layout()
-        layout0.title = "col2"
-        layout0.template_filename = "/static/css/samples/col2.css"
+        layout0.title = "one"
+        layout0.template_filename = "./altaircms/templates/front/layout/1.mako"
+        layout0.blocks = '[["content"],["footer"]]'
         layout0.site_id = 1 ##
         layout0.client_id = 1 ##
         session.add(layout0)
-
-        layout1 = Layout()
-        layout1.title = "col3"
-        layout1.template_filename = "/static/css/samples/col3.css"
-        layout1.site_id = 1 ##
-        layout1.client_id = 1 ##
-        session.add(layout1)
 
     transaction.commit()
 

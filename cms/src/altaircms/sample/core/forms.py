@@ -12,6 +12,7 @@ class UnregisteredPageSchema(colander.MappingSchema):
     description = colander.SchemaNode(colander.String(), missing='')
     keyword = colander.SchemaNode(colander.String(), missing='')
     tags = colander.SchemaNode(colander.String(), missing='')
+    layout_id = colander.SchemaNode(colander.Integer(), missing=1)
 
 class _FormWrapper(object):
     def __init__(self, form, appstruct=None, mapper=None):

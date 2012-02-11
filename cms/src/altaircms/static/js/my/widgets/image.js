@@ -7,6 +7,7 @@ if(!widget){
     var _has_click_event = null;
 
     var load_page = function(we){
+        foo = we;
         return we.dialog.load("/sample/api/load/widget/image");
     };
 

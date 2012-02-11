@@ -10,7 +10,6 @@ def widget_convert_to_dict(widget):
     cls = globals()[widget.type.capitalize() + 'WidgetMapper'](widget)
     return {widget.type: cls.as_dict()}
 
-
 def get_widget_list(site_id=None):
     objects = DBSession.query(Widget).order_by(desc(Widget.id)).all()
     return objects

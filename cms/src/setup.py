@@ -21,9 +21,9 @@ requires = [
     'pyramid_deform',
     'pyramid_openid',
     "velruse", 
+    "bpmappers", 
     ## fanstatic
     'fa.jquery',
-    'bpmappers',
     "fanstatic", 
     "pyramid_fanstatic", 
     "js.jquery", 

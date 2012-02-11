@@ -21,6 +21,7 @@ from zope.sqlalchemy import ZopeTransactionExtension
 from altaircms.models import Base
 from altaircms.tag.models import Tag
 from altaircms.models import DBSession
+from altaircms.layout.models import Layout
 
 class Page(Base):
     """
@@ -46,6 +47,10 @@ class Page(Base):
     layout_id = Column(Integer, ForeignKey("layout.id"))
 
     relationship('Layout', backref='pages')
+
+    @property
+    def layout(self):
+        return Layout.query.filter(Layout.id==self.layout_id).one()
 
     def __repr__(self):
         return '<%s %s %s>' % (self.__class__.__name__, self.url, self.title)

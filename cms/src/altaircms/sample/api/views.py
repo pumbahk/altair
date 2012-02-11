@@ -4,6 +4,27 @@ from tmpstorage import get_storage
 from stage import get_stage
 import json
 
+
+### fixed api
+
+
+## return json -> rendering where client side.
+# @view_config(route_name="sample::layout_list", renderer="json")
+# def layout_list(request):
+#     return dict(status="success", 
+#                 data=[{"pk": 1, 
+#                        "cssjson": open("./layout.json").read(),
+#                        "htmljson": ["header", "left", "right", "footer"], 
+#                        "prefix": "one-", 
+#                        "wrapped": "wrapped"}]
+#                 )
+
+# @view_config(route_name="sample::layout_list", renderer="sample/layout_list.mak")
+# def layout_list(request):
+#     layouts = request.context.get_layout_query()
+#     pass
+
+
 ### api
 @view_config(route_name="sample::load_stage", renderer="json")
 def load_stage(request):

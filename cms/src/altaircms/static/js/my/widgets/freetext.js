@@ -36,7 +36,6 @@ if(!widget){
     };
 
     var on_close = function(we){
-        console.log("hoho")
         tinyMCE.execCommand("mceRemoveControl", true, "freetext_widget_textarea");
         $(document).off("click", _has_click_event);
     };
