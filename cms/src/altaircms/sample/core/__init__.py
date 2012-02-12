@@ -3,8 +3,8 @@ def me():
     return __package__
 
 def includeme(config):
-    config.add_route("sample::create_page", "/create_page", factory=SampleCoreResource)
-    config.add_route("sample::edit_page", "/edit_page/page/{page_id}", factory=SampleCoreResource)
+    config.add_route("sample::create_page", "/page/create", factory=SampleCoreResource)
+    config.add_route("sample::edit_page", "/page/{page_id}/edit", factory=SampleCoreResource)
     config.add_route("sample::sample", "/sample")
     config.add_route("sample::freetext", "/freetext")
 

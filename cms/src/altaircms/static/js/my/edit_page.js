@@ -1,3 +1,15 @@
+// Backbone.sync = function(method, model, option){
+//     console.log("method:"+method);
+//     console.log(JSON.stringify(model));
+//     console.log("option:"+option);
+// };
+
+// change to each model has add sync method?
+
+var ApiUrlMapping = {
+    BlockSheet: "/sample/api/structure"
+};
+
 widget.configure({
     dialog: null, //dynamic bind
     widget_name: null, //dynamic bind
@@ -14,17 +26,14 @@ widget.configure({
     attach_managed: function(e){
         return $(e).addClass("managed")
     }, 
-    get_block_name: function(e){
-        return $(e).data("view").model.get("block_name");
-    }, 
     get_orderno: function(e){
-        return $(e).data("view").model.getOrderno();
+        return $(e).data("view").model.get_orderno();
     }
 });
 
 var LayoutService = {
     cache: {}, 
-    attachHighlight: function(key, elts){
+    attach_highlight: function(key, elts){
         if(!this.cache[key]){
             this.cache[key] = true;
             setTimeout(function(){
@@ -40,19 +49,25 @@ var LayoutService = {
 };
 
 var InfoService = {
-    getName: function(e){
+    get_name: function(e){
         return $(e).attr("id");
     }, 
-    getUniqId: function(e){
+    get_uniq_id: function(e){
         return $(e).attr("cid");
     }, 
-    isDroppedWidget: function(e){
+    is_dropped_widget: function(e){
         return $(e).hasClass("dropped-widget")
     }
 };
 
 var DroppedWidget = Backbone.Model.extend({
-    getOrderno: function(){
+    defaults: function(){
+        return {
+            pk: 0, //conflict?
+            name: "dummy"
+        }
+    }, 
+    get_orderno: function(){
         this.trigger("orderno", this);
         return this.get("roderno");
     }
@@ -66,7 +81,7 @@ var CloseWidgetView = Backbone.View.extend({
     initialize: function(){
         this.model.bind("destroy", this.remove, this);
     }, 
-    onCloseBottonClicked: function(){
+    on_close_button_clicked: function(){
         if(confirm("このwidgetを消します。このwidgetに登録したデータも消えます。良いですか？")){
             this.model.destroy();
         }
@@ -82,17 +97,17 @@ var WidgetDialogView = Backbone.View.extend({
         this.close_dialog = null;
         var self = this;
         var opts={
-            onClose: function(){self.onCloseDialog();}, 
-            onLoad: function(){self.onDialog();}, 
+            onClose: function(){self.on_close_dialog();}, 
+            onLoad: function(){self.on_dialog();}, 
             onBeforeLoad: function(){
 			    self.dialog = this.getOverlay().find(".contentWrap");
                 self.close_dialog = self.edit_button.data("overlay").close;
-                self.onLoadDialog();
+                self.on_load_dialog();
             }, 
         };
         this.edit_button.overlay(opts);
     }, 
-    prepareWidgetModule: function(opt){
+    prepare_widget_module: function(opt){
         var wname = this.model.get("name");
         var wmodule = widget.get(wname);
         if(!wmodule){ return false}
@@ -105,41 +120,42 @@ var WidgetDialogView = Backbone.View.extend({
         var we = wmodule.create_context(params);
         return function(method_name){
             var args = Array.prototype.slice.call(arguments);
-            args.unshift(we);
+            args[0] = we;
             return wmodule[method_name].apply(wmodule, args);
         }
     }, 
-    onLoadDialog: function(){
+    on_load_dialog: function(){
         if(this.close_dialog == null){
             throw "overlay close() is not found"
         }
-        var wmodule = this.prepareWidgetModule();
+        var wmodule = this.prepare_widget_module();
         if(!!wmodule){
             return wmodule("load_page");
         }
     }, 
-    onDialog: function(){
+    on_dialog: function(){
         var self = this;
-        var wmodule = this.prepareWidgetModule({
-            finish_dialog: function(choiced){self.onWidgetSelected(choiced);}
+        var wmodule = this.prepare_widget_module({
+            finish_dialog: function(choiced){self.on_widget_selected(choiced);}
         })
         if(!!wmodule){
             return setTimeout(function(){wmodule("on_dialog");}, 0);
         }
     }, 
-    onCloseDialog: function(){
-        var wmodule = this.prepareWidgetModule();
+    on_close_dialog: function(){
+        var wmodule = this.prepare_widget_module();
         if(!!wmodule){
             return setTimeout(function(){wmodule("on_close");}, 0);
         }
     }, 
-    onWidgetSelected: function(choiced_elt){
-        var wmodule = this.prepareWidgetModule();
+    on_widget_selected: function(choiced_elt){
+        var wmodule = this.prepare_widget_module();
         if(!!wmodule){
             var data = wmodule("collect_data", choiced_elt);
         }
         this.close_dialog();
-        // eidt model with data
+        console.dir(data);
+        // edit model with data
     }
 })
 
@@ -149,24 +165,24 @@ var DroppedWidgetView = (function(){
     return Backbone.View.extend({
         className: "dropped-widget", 
         initialize: function(){
-            this.initializeOnce();
+            this.initialize_once();
             this.model.bind("change", this.render, this);
             $(this.el).data("view", this);
         }, 
-        afterRenderInitialize: function(){
+        after_render_initialize: function(){
             this.close_view = new CloseWidgetView({el: this.el, model: this.model});
             this.dialog_view = new WidgetDialogView({el: this.el, model: this.model});
         }, 
-        initializeOnce: function(){
+        initialize_once: function(){
             if(!is_live_event_bound){
                 is_live_event_bound = true;
                 // element毎のeventは重くなるので
                 var self = this;
                 setTimeout(function(){
-                    LayoutService.attachHighlight("dwidget", $(self.className));
+                    LayoutService.attach_highlight("dwidget", $(self.className));
                     $("."+self.className+" .close").live("click", function(){
                         var dw = $(this).parent("."+self.className);
-                        $(dw).data("view").close_view.onCloseBottonClicked();
+                        $(dw).data("view").close_view.on_close_button_clicked();
                     });
                 }, 0);
             }
@@ -179,7 +195,7 @@ var DroppedWidgetView = (function(){
         render: function(){
             var e = $(this.el).html(this.template(this.model.toJSON()));
             e.attr("cid", this.model.cid).draggable({revert: true});
-            this.afterRenderInitialize();
+            this.after_render_initialize();
             return this;
         }
     })})();
@@ -197,7 +213,7 @@ var Block = Backbone.Model.extend({
         }
         // check("defaults", this);
     }, 
-    isEmpty: function(){
+    is_empty: function(){
         var arr = this.get("widgets");
         var n = 0;
         for(var i=0, j=arr.length; i<j; i++){
@@ -205,8 +221,8 @@ var Block = Backbone.Model.extend({
         }
         return n <= 0;
     }, 
-    popByCid: function(cid){
-        // check("pre popByCid", this);
+    pop_by_cid: function(cid){
+        // check("pre pop_by_cid", this);
         var arr = this.get("widgets");
         for(var i=0, j=arr.length; i<j; i++){
             if(!!arr[i] && cid == arr[i].cid){
@@ -216,17 +232,17 @@ var Block = Backbone.Model.extend({
             }
         }
     }, 
-    popIt: function(dwidget){
-        this.popByCid(dwidget.cid);
+    pop_it: function(dwidget){
+        this.pop_by_cid(dwidget.cid);
     }, 
-    addWidget: function(dwidget){
-        // check("pre addWidget", this);
+    add_widget: function(dwidget){
+        // check("pre add_widget", this);
         this.get("widgets").push(dwidget);
-        dwidget.bind("destroy", this.popIt, this);
-        dwidget.bind("orderno", this.getOrderno, this);
-        // check("post addWidget", this);
+        dwidget.bind("destroy", this.pop_it, this);
+        dwidget.bind("orderno", this.get_orderno, this);
+        // check("post add_widget", this);
     }, 
-    getOrderno: function(dwidget){
+    get_orderno: function(dwidget){
         var no = 0;
         for(var i=0, j=arr.length; i<j; i++){
             if(!!arr[i]){
@@ -236,7 +252,7 @@ var Block = Backbone.Model.extend({
                 no++;
             }
         }
-        throw "getOrderno: match widget is not found";
+        throw "get_orderno: match widget is not found";
     }, 
     move: function(dst, model){
         // check("pre move", this);
@@ -253,35 +269,58 @@ var Block = Backbone.Model.extend({
 
 var BlockView = Backbone.View.extend({
     initialize: function(){
-        this.model.bind("add", this.addOne, this);
+        this.model.bind("add", this.add_one, this);
     }, 
-    changeNumberOfItem: function(){
+    change_number_of_item: function(){
         // too cost
-        if(this.model.isEmpty()){
+        if(this.model.is_empty()){
             $(this.el).addClass("noitem");
         } else {
             $(this.el).removeClass("noitem");
         }
     }, 
-    findByCid: function(cid){
+    find_by_cid: function(cid){
         return this.$("[cid="+cid+"]");
     }, 
-    addOne: function(dwidget){
+    add_one: function(dwidget){
         var view = new DroppedWidgetView({model: dwidget});
-        view.model.bind("destroy", this.changeNumberOfItem, this);
+        view.model.bind("destroy", this.change_number_of_item, this);
         $(this.el).append(view.render().el);
-        this.changeNumberOfItem();
+        this.change_number_of_item();
     }, 
 });
 
 var PaletView = Backbone.View.extend({
     initialize: function(){
         this.$(".widget").draggable({revert: true});
-        LayoutService.attachHighlight("palet", this.$(".widget"));
+        LayoutService.attach_highlight("palet", this.$(".widget"));
     }
 });
 
 var BlockSheet = Backbone.Model.extend({
+    url: ApiUrlMapping.BlockSheet, 
+    load_data: function(){
+        var self = this;
+        $.getJSON(this.url, {page: get_page()}).then(
+            function(data){
+                self.after_load_success(data)
+            }, 
+            function(data){
+                // self.trigger("load_fail", data);
+            });
+    }, 
+    after_load_success: function(data){
+        var blocks = data.loaded;
+        for(var block_name in blocks){
+            if(blocks.hasOwnProperty(block_name)){
+                var widgets = blocks[block_name];
+                for(var i=0, j=widgets.length; i<j; i++){
+                    this.add(block_name, new DroppedWidget(widgets[i]), true)
+                }
+            }
+        }
+        // this.trigger("load_success", data);
+    }, 
     defaults: function(){
         return {
             blocks: {}, 
@@ -295,65 +334,91 @@ var BlockSheet = Backbone.Model.extend({
         this.get("blocks")[block_name] = block;
         return block;
     }, 
-    add: function(block_name, dwidget){
-        this.get("blocks")[block_name].addWidget(dwidget);
+    toJSON: function(){
+        // if block is not saved. ?(now, a default of pk value is 0. so id is 0)
+        var r = {}
+        var blocks = this.get("blocks")
+        for(k in blocks){
+            if(blocks.hasOwnProperty(k)){
+                r[k] = _.compact(blocks[k].get("widgets"));
+            }
+        }
+        return {"structure": r,  "page": get_page()} //get_page is generated by template(edit_page.mak)
+    }, 
+    add: function(block_name, dwidget, nosave){
+        this.get("blocks")[block_name].add_widget(dwidget);
         this.get("reverse_map")[dwidget.cid] = block_name;
+        if(!nosave){this.save();}
         this.trigger("add", block_name, dwidget);
     }, 
     move: function(block_name, cid){
         var old_block_name = this.get("reverse_map")[cid];
         var blocks = this.get("blocks");
-        var dwidget =  blocks[old_block_name].popByCid(cid);
+        var dwidget =  blocks[old_block_name].pop_by_cid(cid);
         // check("pre move(src)", blocks[old_block_name]);
         // check("pre move(dst)", blocks[block_name]);
-        blocks[block_name].addWidget(dwidget);
+        blocks[block_name].add_widget(dwidget);
         this.get("reverse_map")[dwidget.cid] = block_name;
         this.trigger("move", old_block_name, block_name, dwidget);
+        this.save();
         // check("post move(src)", blocks[old_block_name]);
         // check("post move(dst)", blocks[block_name]);
     }, 
 });
 
 var BlockSheetView = Backbone.View.extend({
-    addOne: function(block_name, dwidget){
-        this.views[block_name].addOne(dwidget);
-    }, 
-    moveOne: function(src, dst, model){
-        var e = this.views[src].findByCid(model.cid)
-        this.views[src].changeNumberOfItem();
-        $(this.views[dst].el).append(e);
-        this.views[dst].changeNumberOfItem();
-    }, 
     initialize: function(){
-        var self = this;
         this.model = new BlockSheet;
-        this.model.bind("add", this.addOne, this);
-        this.model.bind("move", this.moveOne, this);
+        this.model.bind("add", this.add_one, this);
+        this.model.bind("move", this.move_one, this);
+        // this.model.bind("load_success", this.after_load_success, this);
+        // this.model.bind("load_fail", this.after_load_fail, this);
         this.views = {};
-
-        var block_elts = this.$(".block")
-        LayoutService.attachHighlight("block", block_elts);
-
+        this.initialize_bloks(this.$(".block"));
+        this.model.load_data();
+    }, 
+    add_one: function(block_name, dwidget){
+        this.views[block_name].add_one(dwidget);
+    }, 
+    move_one: function(src, dst, model){
+        var e = this.views[src].find_by_cid(model.cid)
+        this.views[src].change_number_of_item();
+        $(this.views[dst].el).append(e);
+        this.views[dst].change_number_of_item();
+    }, 
+    // after_load_success: function(model){
+    // }, 
+    // after_load_fail: function(model){
+    // }, 
+    initialize_bloks: function(block_elts){
+        var self = this;
+        LayoutService.attach_highlight("block", block_elts);
         _.each(block_elts, function(e){
-            var name = InfoService.getName(e);
+            var name = InfoService.get_name(e);
             var block = self.model.initializeBlock(name);
             self.views[name] = new BlockView({el: $(e), model: block});
         });
         block_elts.droppable({
             drop: function(ev, ui){
-                if(InfoService.isDroppedWidget(ui.draggable)){
-                    var block_name = InfoService.getName(this);
-                    // console.log("drop:: "+ $(ui.draggable).html());
-                    var cid = InfoService.getUniqId(ui.draggable);
-                    self.model.move(block_name, cid);
+                if(InfoService.is_dropped_widget(ui.draggable)){
+                    self.drop_from_block(ui.draggable, this);
                 } else {
-                    var block_name = InfoService.getName(this);
-                    var widget_name = InfoService.getName(ui.draggable)
-                    var dwmodel = new DroppedWidget({block_name: block_name, name: widget_name});
-                    self.model.add(block_name, dwmodel);
+                    self.drop_from_palet(ui.draggable, this);
                 }
             }
         });
+    }, 
+    drop_from_palet: function(draggable, droppable){
+        var block_name = InfoService.get_name(droppable);
+        var widget_name = InfoService.get_name(draggable)
+        var dwmodel = new DroppedWidget({name: widget_name});
+        this.model.add(block_name, dwmodel);
+    }, 
+    drop_from_block: function(draggable, droppable){
+        var block_name = InfoService.get_name(droppable);
+        // console.log("drop:: "+ $(draggable).html());
+        var cid = InfoService.get_uniq_id(draggable);
+        this.model.move(block_name, cid);
     }, 
 });
 

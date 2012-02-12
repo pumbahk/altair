@@ -46,6 +46,8 @@ class Page(Base):
     site_id = Column(Integer, ForeignKey("site.id"))
     layout_id = Column(Integer, ForeignKey("layout.id"))
 
+    structure = Column(String)
+
     relationship('Layout', backref='pages')
 
     @property

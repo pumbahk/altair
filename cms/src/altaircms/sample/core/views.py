@@ -38,8 +38,7 @@ def edit_page(request):
 
     jqueries_need()
     wysiwyg_editor_need()
-
-    return {"layout_image": layout_image, "form": form}
+    return {"layout_image": layout_image, "form": form, "page": page}
 
 ## unfixed
 

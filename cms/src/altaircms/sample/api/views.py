@@ -3,9 +3,42 @@ from pyramid.response import Response
 from tmpstorage import get_storage
 from stage import get_stage
 import json
-
+from functools import wraps
 
 ### fixed api
+
+class StructureView(object):
+    import altaircms.page.models as m
+    def __init__(self, request):
+        self.request = request
+
+    @view_config(route_name="sample::structure_create", renderer="json", request_method="POST")
+    def create(self):
+        pass
+
+    @view_config(route_name="sample::structure", renderer="json", request_method="POST")
+    def update(self):
+        request = self.request
+        m = self.m
+        pk = request.json_body["page"]
+        page = m.Page.query.filter(m.Page.id == pk).one()
+        page.structure = json.dumps(request.json_body["structure"])
+        m.DBSession.add(page)
+        print page.structure
+        return "ok"
+
+    @view_config(route_name="sample::structure_delete", renderer="json", request_method="POST")
+    def delete(self):
+        pass
+
+    @view_config(route_name="sample::structure", renderer="json", request_method="GET")
+    def get(self):
+        request = self.request
+        m = self.m
+        pk = request.GET["page"]
+        page = m.Page.query.filter(m.Page.id == pk).one()
+        return dict(loaded=json.loads(page.structure))
+
 
 
 ## return json -> rendering where client side.

@@ -50,6 +50,9 @@
     </%text>
 <br>
 <br>	<br>	<br>
+    <script type="text/javascript">
+      function get_page(){return ${page.id};}
+    </script>
     <script type="text/javascript" src="/static/js/my/widgets/base.js"></script>
     <script type="text/javascript" src="/static/js/my/widgets/image.js"></script>
     <script type="text/javascript" src="/static/js/my/widgets/freetext.js"></script>

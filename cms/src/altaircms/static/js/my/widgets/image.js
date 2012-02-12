@@ -28,15 +28,19 @@ if(!widget){
 
     var collect_data = function(we, choiced_elt){
         var choiced_elt = $(choiced_elt);
+        console.log(choiced_elt);
         return {imagefile: choiced_elt.attr("src"), 
                 pk: choiced_elt.attr("pk")};
     };
-    
+
+    var save_data = function(params){
+        
+    };
     return widget.include("image", {
         load_page: load_page, 
         on_dialog: on_dialog, 
         on_close: on_close, 
         collect_data: collect_data, 
-        save_url: "/sample/api/save/widget"
+        save_data: save_data, 
     });
 })(widget); 
