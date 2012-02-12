@@ -1,3 +1,61 @@
+  var infoMap = {
+    'create': {type: 'POST', sufix: "create"},
+    'update': {type: 'POST', sufix: "update"},
+    'delete': {type: 'POST', sufix: "delete"},
+      'read': {type: 'GET' , sufix: "get"}
+  };
+
+  Backbone.sync = function(info, model, options) {
+    var info = infoMap[info];
+    var type = info.type; // method_type
+    var url_sufix = info.sufix // url`suffix
+
+    // Default JSON-request options.
+    var params = {type: type, dataType: 'json'};
+
+    // Ensure that we have a URL.
+    if (!options.url) {
+      params.url = getValue(model, 'url') || urlError();
+    }
+      
+    // Put suffix via request type(e.g. update: /foo -> /foo/update)
+      params.url += "/"+url_sufix;
+
+    // Ensure that we have the appropriate request data.
+    if(type == "POST"){
+      params.contentType = 'application/json';
+      params.data = JSON.stringify(model.toJSON());
+    } else {
+      params.data = $.param(model.toJSON());
+    }
+
+    // For older servers, emulate JSON by encoding the request into an HTML-form.
+    if (Backbone.emulateJSON) {
+      params.contentType = 'application/x-www-form-urlencoded';
+      params.data = params.data ? {model: params.data} : {};
+    }
+    // Don't process data on a non-GET request.
+    if (params.type !== 'GET' && !Backbone.emulateJSON) {
+      params.processData = false;
+    }
+      // console.dir(params);
+    // Make the request, allowing the user to override any Ajax options.
+    return $.ajax(_.extend(params, options));
+  };
+
+  // Helper function to get a value from a Backbone object as a property
+  // or as a function.
+  var getValue = function(object, prop) {
+    if (!(object && object[prop])) return null;
+    return _.isFunction(object[prop]) ? object[prop]() : object[prop];
+  };
+
+  // Throw an error when a URL is needed, and none is supplied.
+  var urlError = function() {
+    throw new Error('A "url" property or function must be specified');
+  };
+
+
 // Backbone.sync = function(method, model, option){
 //     console.log("method:"+method);
 //     console.log(JSON.stringify(model));
@@ -7,7 +65,8 @@
 // change to each model has add sync method?
 
 var ApiUrlMapping = {
-    BlockSheet: "/sample/api/structure"
+    BlockSheet: "/sample/api/structure", 
+    Widget: "/sample/api/widget"
 };
 
 widget.configure({
@@ -21,7 +80,7 @@ widget.configure({
         return $(e).data("view").model.set("data", data);
     }, 
     attach_highlight: function(e){
-        return $(e).addClass("selected");
+        return LayoutService.attach_highlight(null, $(e));
     }, 
     attach_managed: function(e){
         return $(e).addClass("managed")
@@ -34,7 +93,7 @@ widget.configure({
 var LayoutService = {
     cache: {}, 
     attach_highlight: function(key, elts){
-        if(!this.cache[key]){
+        if(key == null || !this.cache[key]){
             this.cache[key] = true;
             setTimeout(function(){
                 elts.live("mouseover", function(){
@@ -61,11 +120,18 @@ var InfoService = {
 };
 
 var DroppedWidget = Backbone.Model.extend({
+    url: function(){
+        return ApiUrlMapping.Widget+"/"+this.get("name");
+    }, 
     defaults: function(){
         return {
-            pk: 0, //conflict?
-            name: "dummy"
+            pk: null, //conflict?
+            name: "dummy", 
+            data: {}
         }
+    }, 
+    isNew: function(){
+        return !this.get("pk")
     }, 
     get_orderno: function(){
         this.trigger("orderno", this);
@@ -73,26 +139,25 @@ var DroppedWidget = Backbone.Model.extend({
     }
 });
 
-// var DroppedWidgetCollection = Backbone.Collection.extend({
-//     model: DroppedWidget
-// });
-
 var CloseWidgetView = Backbone.View.extend({
     initialize: function(){
         this.model.bind("destroy", this.remove, this);
     }, 
     on_close_button_clicked: function(){
         if(confirm("このwidgetを消します。このwidgetに登録したデータも消えます。良いですか？")){
+            // this.model.isNew = function(){return false;}; //
             this.model.destroy();
         }
     }, 
     remove: function(){
+        // delete api?
         $(this.el).remove();
     }
 })
 
 var WidgetDialogView = Backbone.View.extend({
     initialize: function(){
+        this.model.bind("update_widget", this.update_widget_layout_edit, this);
         this.edit_button = this.$(".edit");
         this.close_dialog = null;
         var self = this;
@@ -152,10 +217,21 @@ var WidgetDialogView = Backbone.View.extend({
         var wmodule = this.prepare_widget_module();
         if(!!wmodule){
             var data = wmodule("collect_data", choiced_elt);
+            this.model.set("data", data);
+            this.close_dialog();
+            var self = this;
+            this.model.save().done(function(data){
+                foo = self.model;
+                bar = data;
+                self.model.set("pk", data.pk) // pk
+                self.model.id = self.model.get("pk");
+                self.model.trigger("update_widget", self.model);
+            });
         }
-        this.close_dialog();
-        console.dir(data);
-        // edit model with data
+    }, 
+    update_widget_layout_edit: function(){
+        $(this.el).addClass("edited");
+        //本当はこの後の処理もmoduleにやらせたい
     }
 })
 
@@ -235,10 +311,14 @@ var Block = Backbone.Model.extend({
     pop_it: function(dwidget){
         this.pop_by_cid(dwidget.cid);
     }, 
+    // update_pk: function(dwidget){
+    //     var i = this.get_index(dwidget);
+    //     this.get("widgets")[i]
+    //     dwidget.get("pk")
+    // }, 
     add_widget: function(dwidget){
         // check("pre add_widget", this);
         this.get("widgets").push(dwidget);
-        dwidget.bind("destroy", this.pop_it, this);
         dwidget.bind("orderno", this.get_orderno, this);
         // check("post add_widget", this);
     }, 
@@ -254,13 +334,17 @@ var Block = Backbone.Model.extend({
         }
         throw "get_orderno: match widget is not found";
     }, 
-    move: function(dst, model){
-        // check("pre move", this);
+    get_index: function(dwidget){
         var arr = this.get("widgets");
         for(var i=0, j=arr.length; i<j; i++){
-            if(!!arr[i] && arr[i] == model)
+            if(!!arr[i] && arr[i] == dwidget)
                 break;
         };
+        return i;
+    }, 
+    move: function(dst, dwidget){
+        // check("pre move", this);
+        var i = this.get_index(dwidget);
         dst.push(arr.pop(i));
         $(this).trigger("move", src, dst);
         // check("post move", this);
@@ -299,18 +383,18 @@ var PaletView = Backbone.View.extend({
 
 var BlockSheet = Backbone.Model.extend({
     url: ApiUrlMapping.BlockSheet, 
+    isNew: function(){return false;}, 
     load_data: function(){
         var self = this;
-        $.getJSON(this.url, {page: get_page()}).then(
-            function(data){
-                self.after_load_success(data)
-            }, 
-            function(data){
-                // self.trigger("load_fail", data);
-            });
+        this.fetch().done(function(data){
+            self.after_load_success(data);
+        });
     }, 
     after_load_success: function(data){
         var blocks = data.loaded;
+        if(!data.loaded){
+            return;
+        }
         for(var block_name in blocks){
             if(blocks.hasOwnProperty(block_name)){
                 var widgets = blocks[block_name];
@@ -340,12 +424,25 @@ var BlockSheet = Backbone.Model.extend({
         var blocks = this.get("blocks")
         for(k in blocks){
             if(blocks.hasOwnProperty(k)){
-                r[k] = _.compact(blocks[k].get("widgets"));
+                r[k] = _.map(_.compact(blocks[k].get("widgets")), 
+                             function(e){return {pk: e.get("pk"), name: e.get("name")}});
             }
         }
         return {"structure": r,  "page": get_page()} //get_page is generated by template(edit_page.mak)
     }, 
+    after_destroy: function(dw){
+        var block_name = this.get("reverse_map")[dw.cid]
+        this.get("blocks")[block_name].pop_it(dw);
+        this.save();
+    }, 
+    update_widget_data: function(dw){
+        // var block_name = this.get("reverse_map")[dw.cid];
+        // this.get("blocks")[block_name].update_data(dw);
+        this.save()
+    }, 
     add: function(block_name, dwidget, nosave){
+        dwidget.bind("destroy", this.after_destroy, this);
+        dwidget.bind("update_widget", this.update_widget_data, this)
         this.get("blocks")[block_name].add_widget(dwidget);
         this.get("reverse_map")[dwidget.cid] = block_name;
         if(!nosave){this.save();}
@@ -429,7 +526,7 @@ var AppView = Backbone.View.extend({
         this.BlockSheetView = new BlockSheetView({el: $("#wrapped")});
     }
 });
-
+function info(){console.log(JSON.stringify(window.AppView.BlockSheetView.model));};
 $(function(){
     window.AppView = new AppView()
 });

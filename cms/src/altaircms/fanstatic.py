@@ -7,13 +7,13 @@ from js.jqueryui import jqueryui
 from js.tinymce import tinymce
 from js.backbone import backbone
 def jqueries_need():
-    underscore.need()
     jquery.need()
     jquery_tools.need()
     json2.need()
     jqueryui.need()
     black_tie.need()
-    backbone.need()
+    # underscore.need()
+    # backbone.need()
 
 def wysiwyg_editor_need():
     tinymce.need()

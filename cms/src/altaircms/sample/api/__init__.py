@@ -1,10 +1,14 @@
 # -*- coding:utf-8 -*-
+from altaircms.sample.api.resources import SampleResource
 
 def includeme(config):
-    config.add_route("foo", "/api/blocks/save", request_method="POST")
     config.add_route("sample::structure_create", "/api/structure/create")
-    config.add_route("sample::structure_delete", "/api/structure/delete")
-    config.add_route("sample::structure", "/api/structure")
+    config.add_route("sample::structure_update", "/api/structure/update")
+    config.add_route("sample::structure_get", "/api/structure/get")
+    config.add_route("sample::image_widget_create", "/api/widget/image_widget/create", factory=SampleResource)
+    config.add_route("sample::image_widget_update", "/api/widget/image_widget/update", factory=SampleResource)
+    config.add_route("sample::image_widget_delete", "/api/widget/image_widget/delete", factory=SampleResource)
+    config.add_route("sample::image_widget", "/api/widget/image_widget", factory=SampleResource)
 
     ## api view
     config.add_route("sample::load_stage", "/api/load/stage", request_method="GET")

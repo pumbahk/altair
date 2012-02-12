@@ -25,6 +25,9 @@
      */
     background-color: #eee;
 }
+.edited {
+    background-color: #ccf;
+}
 
 .noitem {
     height: 60px;

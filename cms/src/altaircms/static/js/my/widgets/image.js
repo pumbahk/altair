@@ -7,8 +7,7 @@ if(!widget){
     var _has_click_event = null;
 
     var load_page = function(we){
-        foo = we;
-        return we.dialog.load("/sample/api/load/widget/image");
+        return we.dialog.load("/sample/api/widget/image_widget");
     };
 
     var on_dialog = function(we){
@@ -16,7 +15,6 @@ if(!widget){
         $(document).on("click", _has_click_event, function(){
             we.finish_dialog(this);
         });
-        
         we.attach_highlight(_has_click_event);
         var expr = "img[src='@src@']".replace("@src@", we.get_data(we.where).imagefile)
         we.attach_managed(we.dialog.find(expr));
@@ -28,9 +26,8 @@ if(!widget){
 
     var collect_data = function(we, choiced_elt){
         var choiced_elt = $(choiced_elt);
-        console.log(choiced_elt);
         return {imagefile: choiced_elt.attr("src"), 
-                pk: choiced_elt.attr("pk")};
+                asset_id: choiced_elt.attr("pk")};
     };
 
     var save_data = function(params){

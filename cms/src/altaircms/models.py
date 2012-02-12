@@ -16,7 +16,7 @@ import sqlahelper
 import transaction
 
 DBSession = sqlahelper.get_session()
-Base = declarative_base()
+Base = sqlahelper.get_base()
 
 
 

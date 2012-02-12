@@ -54,6 +54,8 @@ def use_session(session):
         from altaircms.asset.models import ImageAsset
         imga = ImageAsset("/static/img/samples/Abstract_Desktop_290.jpg")
         session.add(imga)
+        imga = ImageAsset("/static/img/samples/2.jpg")
+        session.add(imga)
     
     with block("create layout model"):
         from altaircms.layout.models import Layout
