@@ -3,6 +3,10 @@
 ticket-designer/doc/build
 cms/doc/build
 cms/src/.idea
+cms/src/schema.*
+cms/src/build/*
+cms/src/dist/*
+cms/src/data/*
 cms/src/altair-cms.db
 cms/src/altair_cms.egg-info/*
 mockui/shelve.dat

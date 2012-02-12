@@ -6,24 +6,35 @@
 """
 
 from datetime import datetime
-from pyramid.renderers import render
 
 from sqlalchemy.orm import relationship, mapper
 from sqlalchemy.schema import Column, ForeignKey, Table
 from sqlalchemy import Integer, DateTime, Unicode, String
 
-from altaircms.models import Base
-from altaircms.asset.models import ImageAsset, MovieAsset, FlashAsset, CssAsset
+from altaircms.models import Base, DBSession
+from altaircms.asset.models import *
 
 __all__ = [
-#    'Widget',
+    'Widget',
     'ImageWidget',
     'MovieWidget',
     'FlashWidget',
+    'MenuWidget',
     'TextWidget',
     'BreadcrumbsWidget',
+    'TopicWidget',
 ]
 
+WIDGET_TYPE = [
+    'text',
+    'breadcrumbs',
+    'flash',
+    'movie',
+    'image',
+    'topic',
+    'menu',
+    'billinghistory',
+]
 
 widget = Table(
     'widget',
@@ -58,7 +69,7 @@ widget_movie = Table(
     'widget_movie',
     Base.metadata,
     Column('id', Integer, ForeignKey('widget.id'), primary_key=True),
-    Column('asset_id', Integer, ForeignKey('asset.id')),
+    Column('asset_id', Integer, ForeignKey('asset.id'))
 )
 
 widget_image = Table(
@@ -68,6 +79,40 @@ widget_image = Table(
     Column('asset_id', Integer, ForeignKey('asset.id'))
 )
 
+widget_topic = Table(
+    'widget_topic',
+    Base.metadata,
+    Column('id', Integer, ForeignKey('widget.id'), primary_key=True),
+    Column('topic_id', Integer, ForeignKey('topic.id')),
+    Column('title', String)
+)
+
+widget_menu = Table(
+    'widget_menu',
+    Base.metadata,
+    Column('id', Integer, ForeignKey('widget.id'), primary_key=True),
+    Column('topic_id', Integer, ForeignKey('topic.id')),
+    Column('menu', String)
+)
+
+
+class AssetWidgetMixin(object):
+    _asset = None
+
+    @property
+    def asset(self):
+        if not self.asset_id:
+            return None
+
+        if self._asset:
+            return self._asset
+
+        clsname = self.__class__.__name__[:self.__class__.__name__.rfind("Widget")] + 'Asset'
+        cls = globals()[clsname]
+
+        self._asset = DBSession.query(cls).get(self.asset_id)
+        return self._asset
+
 
 class Widget(object):
     def __init__(self, id_, site_id, type_):
@@ -75,57 +120,77 @@ class Widget(object):
         self.site_id = site_id
         self.type = type_
 
+    def __repr__(self):
+        return '<%s %s>' % (self.__class__.__name__, self.id)
+
+    @property
+    def appstruct(self):
+        ## ウィジェットのプロパティを取得する
+        attrs = [attr for attr in dir(self) if attr != 'appstruct' and not attr.startswith('_') and not callable(getattr(self, attr))]
+        output = {}
+        for attr in attrs:
+            output[attr] = getattr(self, attr)
+
+        return output
+
 
 class TextWidget(Widget):
-    def __init__(self, id_, site_id, text):
-        self.id = id_
-        self.site_id = site_id
-        self.text = text
+    def __init__(self, captured):
+        self.id = captured.get('id', None)
+        self.site_id = captured.get('site_id', None)
+        self.text = captured.get('text', None)
+
+class MenuWidget(Widget):
+    def __init__(self, captured):
+        self.id = captured.get('id', None)
+        self.site_id = captured.get('site_id', None)
+        self.menu = captured.get('menu', None)
 
 
 class BreadcrumbsWidget(Widget):
-    def __init__(self, id_, site_id, breadcrumb):
-        self.id = id_
-        self.site_id = site_id
-        self.breadcrumb = breadcrumb
+    def __init__(self, captured):
+        self.id = captured.get('id', None)
+        self.site_id = captured.get('site_id', None)
+        self.breadcrumb = captured.get('breadcrumb', None)
 
 
-class FlashWidget(Widget):
-    def __init__(self, id_, site_id, url, title, mimetype):
-        self.id = id_
-        self.site_id = site_id
-        self.type = type_
-        self.url = url
-        self.title = title
-        self.mimetype = mimetype
+class MovieWidget(Widget, AssetWidgetMixin):
+    def __init__(self, captured):
+        self.id = captured.get('id', None)
+        self.site_id = captured.get('site_id', None)
+        self.asset_id = captured.get('asset_id', None)
 
 
-class MovieWidget(Widget):
-    def __init__(self, id_, site_id, url, title, mimetype):
-        self.id = id_
-        self.site_id = site_id
-        self.breadcrumb = breadcrumb
-        self.url = url
-        self.title = title
-        self.mimetype = mimetype
+class FlashWidget(Widget, AssetWidgetMixin):
+    def __init__(self, captured):
+        self.id = captured.get('id', None)
+        self.site_id = captured.get('site_id', None)
+        self.asset_id = captured.get('asset_id', None)
 
 
-class ImageWidget(Widget):
-    def __init__(self, id_, site_id, url, title):
-        self.id = id_
-        self.site_id = site_id
-        self.breadcrumb = breadcrumb
-        self.url = url
-        self.title = title
-        self.mimetype = mimetype
+class ImageWidget(Widget, AssetWidgetMixin):
+    def __init__(self, captured):
+        self.id = captured.get('id', None)
+        self.site_id = captured.get('site_id', None)
+        self.asset_id = captured.get('asset_id', None)
+
+
+class TopicWidget(Widget):
+    def __init__(self, captured):
+        self.id = captured.get('id', None)
+        self.site_id = captured.get('site_id', None)
+        self.title = captured.get('title', None)
+        self.topic_id = captured.get('topic_id', None)
 
 
 mapper(Widget, widget, polymorphic_on=widget.c.type, polymorphic_identity='widget')
-mapper(TextWidget, widget_text, inherits=Widget, polymorphic_identity='widget_text')
-mapper(BreadcrumbsWidget, widget_breadcrumbs, inherits=Widget, polymorphic_identity='widget_breadcrumbs')
-mapper(FlashWidget, widget_flash, inherits=Widget, polymorphic_identity='widget_flash')
-mapper(MovieWidget, widget_movie, inherits=Widget, polymorphic_identity='widget_movie')
-mapper(ImageWidget, widget_image, inherits=Widget, polymorphic_identity='widget_image')
+mapper(TextWidget, widget_text, inherits=Widget, polymorphic_identity='text')
+mapper(BreadcrumbsWidget, widget_breadcrumbs, inherits=Widget, polymorphic_identity='breadcrumbs')
+mapper(FlashWidget, widget_flash, inherits=Widget, polymorphic_identity='flash')
+mapper(MovieWidget, widget_movie, inherits=Widget, polymorphic_identity='movie')
+mapper(ImageWidget, widget_image, inherits=Widget, polymorphic_identity='image')
+mapper(TopicWidget, widget_topic, inherits=Widget, polymorphic_identity='topic')
+mapper(MenuWidget, widget_menu, inherits=Widget, polymorphic_identity='menu')
 
 
 
@@ -148,30 +213,6 @@ class Page2Widget(Base):
 
 
 """
-class Asset2Widget(Base):
-    __tablename__ = "asset2widget"
-
-    id = Column(Integer, primary_key=True)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
-
-    position = Column(String) # 何かしらのレイアウト情報をシリアライズして保持する想定
-
-    asset_id = Column(Integer, ForeignKey("asset.id"))
-    widget_d = Column(Integer, ForeignKey("widget.id"))
-"""
-
-"""
-class MenuWidget(Base):
-    __tablename__ = "widget_menu"
-
-    id = Column(Integer, ForeignKey("widget.id"), primary_key=True)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
-
-    menu = Column(String)
-
-
 class TwitterTimelineWidget(Base):
     __tablename__ = "widget_twitter_timeline"
 
@@ -180,6 +221,7 @@ class TwitterTimelineWidget(Base):
     updated_at = Column(DateTime, default=datetime.now())
 
     screen_name = Column(String)
+
 
 class TwitterSearchWidget(Base):
     __tablename__ = "widget_twitter_search"
@@ -190,16 +232,6 @@ class TwitterSearchWidget(Base):
 
     search_word = Column(Unicode)
 
-
-class TopicWidget(Base):
-    __tablename__ = "widget_topic"
-
-    id = Column(Integer, ForeignKey("widget.id"), primary_key=True)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
-
-    topic_type = Column(Integer)
-    view_limit = Column(Integer)
 
 class FacebookWidget(Base):
     __tablename__ = 'widget_facebook'
@@ -223,3 +255,5 @@ class RakutenPointWidget(Base):
 
 
 """
+
+

@@ -69,21 +69,20 @@
     </script>
 </%block>
 
-%if page:
+%if page and event:
 <h1>イベント${event}の${page}の編集</h1>
-%else:
+%elif event:
 <h1>イベント${event}のページ追加</h1>
+%elif page:
+<h1>${page}ページの編集</h1>
 %endif
+
+%if event:
 <a href="${request.route_url('event', id=event.id)}">back</a>
+%endif
 
 <div id="pageform">
-    %if page:
-    <form id="deform" class="deform" action="${request.route_url('page_edit', event_id=event.id, page_id=page.id)}" method="post">
-    %else:
-    <form id="deform" class="deform" action="${request.route_url('page_add', event_id=event.id)}" method="post">
-    %endif
     ${form|n}
-    </form>
 </div>
 
 

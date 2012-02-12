@@ -20,11 +20,13 @@ from sqlalchemy.orm import sessionmaker
 from zope.sqlalchemy import ZopeTransactionExtension
 from altaircms.models import Base
 from altaircms.tag.models import Tag
+from altaircms.models import DBSession
 
 class Page(Base):
     """
     ページ
     """
+    query = DBSession.query_property()
     __tablename__ = "page"
 
     id = Column(Integer, primary_key=True)
@@ -43,7 +45,7 @@ class Page(Base):
     site_id = Column(Integer, ForeignKey("site.id"))
     layout_id = Column(Integer, ForeignKey("layout.id"))
 
-    relationship('Layout', backref='layout')
+    relationship('Layout', backref='pages')
 
     def __repr__(self):
         return '<%s %s %s>' % (self.__class__.__name__, self.url, self.title)

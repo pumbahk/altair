@@ -22,28 +22,33 @@ class PageEditView(object):
 
         self.request = request
         self.page = None
+        self.event = None
 
-        event_id = self.request.matchdict['event_id']
+        event_id = self.request.matchdict.get('event_id', None)
         if event_id:
             self.event = dbsession.query(Event).get(event_id)
             if not self.event:
                 return NotFound()
 
-            page_id = self.request.matchdict['page_id'] if 'page_id' in self.request.matchdict else None
-            if page_id:
+        page_id = self.request.matchdict.get('page_id', None)
+        if page_id:
+            if event_id:
                 self.page = dbsession.query(Page).filter_by(event_id=self.event.id, id=page_id).one()
-                if not self.page:
-                    return NotFound()
-                results = dbsession.query(Page2Widget, Widget).filter(Page2Widget.widget_id==Widget.id).\
-                    filter(Page2Widget.page_id==page_id).order_by(asc(Page2Widget.order)).all()
+            else:
+                self.page = dbsession.query(Page).filter_by(id=page_id).one()
 
-                self.display_blocks = {}
-                for p2w, widget in results:
-                    key = p2w.block
-                    if key in self.display_blocks:
-                        self.display_blocks[key].append(widget)
-                    else:
-                        self.display_blocks[key] = [widget]
+            if not self.page:
+                return NotFound()
+            results = dbsession.query(Page2Widget, Widget).filter(Page2Widget.widget_id==Widget.id).\
+                filter(Page2Widget.page_id==page_id).order_by(asc(Page2Widget.order)).all()
+
+            self.display_blocks = {}
+            for p2w, widget in results:
+                key = p2w.block
+                if key in self.display_blocks:
+                    self.display_blocks[key].append(widget)
+                else:
+                    self.display_blocks[key] = [widget]
 
         DBSession.remove()
 
@@ -81,6 +86,7 @@ class PageEditView(object):
             'form':html,
             'event':self.event,
             'page':self.page,
+            'pages':DBSession.query(Page).all(),
             'captured':repr(captured),
             'showmenu':True,
             'css_links':reqts['css'],
@@ -95,6 +101,7 @@ class PageEditView(object):
         }
         return self.render_form(PageAddForm, success=self._succeed, appstruct=appstruct)
 
+    @view_config(route_name='page_edit_', renderer='altaircms:templates/page/edit.mako')
     @view_config(route_name='page_edit', renderer='altaircms:templates/page/edit.mako')
     def page_edit(self):
         if self.page:
@@ -115,10 +122,14 @@ class PageEditView(object):
 
         return self.render_form(PageEditForm, appstruct=appstruct, success=self._succeed)
 
+    @view_config(route_name='page_list', renderer='altaircms:templates/page/list.mako')
+    def page_list(self):
+        appstruct = {}
+        return self.render_form(PageAddForm, success=self._succeed, appstruct=appstruct)
+
     def _succeed(self, captured, duplicate=False):
         dbsession = DBSession()
 
-        import pdb; pdb.set_trace()
         if duplicate or not self.page:
             page = Page(
                 event_id=self.event.id if self.event else None,
@@ -142,8 +153,9 @@ class PageEditView(object):
 
         page_structure = json.loads(captured['structure'])
 
-        #q = dbsession.query(Page2Widget).filter_by(page_id=page.id)
-        #dbsession.delete(q)
+        q = dbsession.query(Page2Widget).filter_by(page_id=page.id)
+        for p2w in q:
+            dbsession.delete(p2w)
 
         for key, values in page_structure.iteritems():
             for value in values:

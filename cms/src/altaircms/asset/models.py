@@ -3,12 +3,15 @@ from datetime import datetime
 
 from pyramid.url import route_url
 
-from sqlalchemy.orm import mapper
+from sqlalchemy.orm import mapper, relationship
 from sqlalchemy.schema import Column, ForeignKey, Table
 from sqlalchemy import Integer, DateTime, String
 from zope.sqlalchemy.tests import metadata
+from sqlalchemy.sql.expression import and_
 
-from altaircms.models import Base, Site
+from altaircms.models import Base
+from altaircms.models import Site
+from altaircms.models import DBSession
 
 __all__ = [
     'Asset',
@@ -20,14 +23,16 @@ __all__ = [
 
 
 class Asset(object):
+    query = DBSession.query_property()
     def __repr__(self):
-        return '<%s %s>' % (self.__class__.__name__, self.filepath)
+        return '<%s %s %s>' % (self.__class__.__name__, self.id, self.filepath)
 
     def get_url(self):
         return route_url('asset_view', asset_id=self.id)
 
 
 class ImageAsset(Asset):
+    query = DBSession.query_property()
     def __init__(self, filepath, alt='', size=None, width=None, height=None, mimetype=None):
         self.alt = alt
         self.size = size

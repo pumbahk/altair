@@ -6,7 +6,7 @@ def main(global_config, **settings):
     """
     config = Configurator(root_factory=Root, settings=settings)
 
-    config.include("mockui.sample")
+    config.include("mockui.sample", route_prefix="/sample")
     config.include("pyramid_fanstatic")
     config.add_route("home", "/")
 
