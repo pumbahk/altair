@@ -7,7 +7,7 @@ if(!widget){
     var _has_click_event = null;
 
     var load_page = function(we){
-        return we.dialog.load("/sample/api/widget/image_widget");
+        return we.dialog.load("/api/widget/image_widget/dialog");
     };
 
     var on_dialog = function(we){

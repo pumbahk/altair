@@ -88,8 +88,8 @@ def main(global_config, **settings):
     )
     config.include('pyramid_tm')
     config.include("pyramid_fanstatic")
-    config.include("altaircms.sample", route_prefix="/sample")
-
+    # config.include("altaircms.sample", route_prefix="/sample")
+    config.include("altaircms.widget")
     config.include(api_include, route_prefix='/api')
     config.include(front_include, route_prefix='/f')
     config.include(cms_include, route_prefix='')
@@ -103,7 +103,7 @@ def main(global_config, **settings):
     config.scan('altaircms.layout')
     config.scan('altaircms.front')
 
-    config.scan("altaircms.sample")
+    # config.scan("altaircms.sample")
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)
 
     return config.make_wsgi_app()

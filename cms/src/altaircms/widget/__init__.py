@@ -13,3 +13,14 @@ def widget_convert_to_dict(widget):
 def get_widget_list(site_id=None):
     objects = DBSession.query(Widget).order_by(desc(Widget.id)).all()
     return objects
+
+from .api.resources import WidgetResource
+
+def includeme(config):
+    config.add_route("structure_create", "/api/structure/create")
+    config.add_route("structure_update", "/api/structure/update")
+    config.add_route("structure_get", "/api/structure/get")
+    config.add_route("image_widget_create", "/api/widget/image_widget/create", factory=WidgetResource)
+    config.add_route("image_widget_update", "/api/widget/image_widget/update", factory=WidgetResource)
+    config.add_route("image_widget_delete", "/api/widget/image_widget/delete", factory=WidgetResource)
+    config.add_route("image_widget_dialog", "/api/widget/image_widget/dialog", factory=WidgetResource)
