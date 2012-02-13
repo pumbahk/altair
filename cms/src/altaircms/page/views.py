@@ -99,6 +99,7 @@ class PageEditView(object):
             'layout_id': 1,
             'structure': '{}',
         }
+
         return self.render_form(PageAddForm, success=self._succeed, appstruct=appstruct)
 
     @view_config(route_name='page_edit_', renderer='altaircms:templates/page/edit.mako')
@@ -117,6 +118,12 @@ class PageEditView(object):
                 'layout_id': self.page.layout_id if self.page.layout_id else 0,
                 'structure': json.dumps(self.display_blocks)
             }
+
+            ## fanstatic
+            from altaircms.fanstatic import jqueries_need
+            jqueries_need()
+            ##
+
         else:
             appstruct = {}
 

@@ -1,3 +1,10 @@
+if(!_.has){
+        // Has own property?
+    _.has = function(obj, key) {
+        return hasOwnProperty.call(obj, key);
+    };
+}
+
   var infoMap = {
     'create': {type: 'POST', sufix: "create"},
     'update': {type: 'POST', sufix: "update"},

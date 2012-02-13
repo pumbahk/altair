@@ -2,6 +2,9 @@
 ##
 ##
 <%inherit file='../layout.mako'/>
+<%namespace name="co" file="components.mako"/>
+<%namespace name="css" file="internal.css.mako"/>
+
 <%block name='js'>
     <script type="text/javascript" src="/static/deform/js/jquery.form.js"></script>
     <script type="text/javascript" src="/static/deform/js/deform.js"></script>
@@ -9,63 +12,11 @@
 </%block>
 <%block name='style'>
     <link rel="stylesheet" href="/static/deform/css/form.css" type="text/css" />
-    <style type="text/css">
-        #pagelayout {
-            width: 900px;
-            float: left;
-            background-color: #f8f8ff;
-        }
-        #pagewidget {
-            width: 900px;
-            float: left;
-            background-color: #f5f5dc;
-        }
-        #pageversion {
-            width: 300px;
-            height: 150px;
-            float: right;
-            background-color: #faebd7;
-        }
-        #page {
-            width: 100%;
-            height: 300px;
-            background-color: #adff2f;
-            text-align: center;
-            vertical-align: middle;
-        }
-    </style>
+    ${css.edit()}
 </%block>
 <%block name='js_foot'>
     <script type="text/javascript">
-        var stylesheets = ['/static/deform/css/beautify.css'];
-
-        function deform_ajaxify(response, status, xhr, form, oid, mthd){
-            var options = {
-                target: '#' + oid,
-                replaceTarget: true,
-                success: function(response, status, xhr, form){
-                    deform_ajaxify(response, status, xhr, form, oid);
-                }
-            };
-            var extra_options = {};
-            var name;
-            if (extra_options) {
-                for (name in extra_options) {
-                    options[name] = extra_options[name];
-                };
-            };
-            $('#' + oid).ajaxForm(options);
-            if(mthd){
-                mthd(response, status, xhr, form);
-            }
-        }
-        deform.addCallback(
-                'deform',
-                function(oid) {
-                    deform_ajaxify(null, null, null, null, oid);
-                }
-        );
-        deform.load();
+	  ${co.form()}
     </script>
 </%block>
 
