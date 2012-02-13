@@ -31,7 +31,7 @@ if(!widget){
         if(!!freetext){
             setTimeout(function(){ //fixme
                 tinyMCE.get("freetext_widget_textarea").setContent(freetext);
-s            }, 200);
+            }, 200);
         }
         $(document).on("click", _has_click_event, function(){
             we.finish_dialog(this);
