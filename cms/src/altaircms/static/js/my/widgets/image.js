@@ -2,6 +2,9 @@ if(!widget){
     throw "widget module is not found";
 }
 
+// load_page はCoCに紐つけることも加納だな。
+// 逆にsave_dataが内部で紐づいちゃっている
+
 (function(widget){
     var opt = {} //widget local variable
     var _has_click_event = null;

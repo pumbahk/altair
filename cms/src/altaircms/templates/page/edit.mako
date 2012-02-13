@@ -12,6 +12,9 @@
 </%block>
 <%block name='style'>
     <link rel="stylesheet" href="/static/deform/css/form.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="/static/css/overlay-basic.css"/>
+	<link rel="stylesheet" type="text/css" href="/static/css/my/sample.css">
+    <link rel="stylesheet" href="/static/css/page/edit.css" type="text/css" />
     ${css.edit()}
 </%block>
 <%block name='js_foot'>
@@ -40,10 +43,44 @@
 <div id="pagecontentform">
     <div id="pagelayout">レイアウト選択</div>
     <div id="pageversion">ページのバージョンが入る</div>
-    <div id="pagewidget">ウィジェット</div>
+    <div id="pagewidget">ウィジェット
+        <div id="widget_palet">
+            <div id="image_widget" class="widget red float-left">image widget</div>
+            <div id="freetext_widget" class="widget blue float-left">freetext widget</div>
+            <div id="dummy_widget2"  class="widget green float-left">widget</div>
+            <div id="dummy_widget3"  class="widget gray float-left">widget</div>
+            <div id="dummy_widget4"  class="widget green float-left">widget</div>
+            <div id="dummy_widget5"  class="widget blue float-left">widget</div>
+            <div id="dummy_widget6"  class="widget red float-left">widget</div>
+    	</div>
+    </div>
     <br class="clear"/>
     <form action="#" method="post">
-        <div id="page">ページ編集</div>
+        <div id="page">ページ編集
+		<div id="selected_layout" class="clear">
+		  <div id="wrapped">
+			% for name  in layout_image:
+			<div id="${name}" class="block noitem">${name}</div>
+			% endfor
+		  </div>
+		</div>
+
+		<div class="dialog_overlay" id="overlay">
+		  <!-- the external content is loaded inside this tag -->
+		  <div id="wrap" class="contentWrap"></div>
+		</div>
+		</div>
         <button type="submit">保存</button>
     </form>
 </div>
+
+<script type="text/javascript">
+  function get_page(){return ${page.id};}
+</script>
+<script type="text/javascript" src="/static/js/my/widgets/base.js"></script>
+<script type="text/javascript" src="/static/js/my/widgets/image.js"></script>
+<script type="text/javascript" src="/static/js/my/widgets/freetext.js"></script>
+<script type="text/javascript" src="/static/js/page/backbone_patch.js"></script>
+<script type="text/javascript" src="/static/js/page/edit.js"></script>
+
+

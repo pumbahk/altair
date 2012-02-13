@@ -81,8 +81,13 @@ class PageEditView(object):
 
         reqts = form.get_widget_resources()
 
+        ## create layout image
+        layout_image = self.request.context.get_layout_image(self.page)
+        ##
+
         # values passed to template for rendering
         return {
+            "layout_image": layout_image, 
             'form':html,
             'event':self.event,
             'page':self.page,
@@ -121,7 +126,9 @@ class PageEditView(object):
 
             ## fanstatic
             from altaircms.fanstatic import jqueries_need
+            from altaircms.fanstatic import wysiwyg_editor_need
             jqueries_need()
+            wysiwyg_editor_need()
             ##
 
         else:

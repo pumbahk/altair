@@ -7,40 +7,45 @@ def set_with_dict(obj, D):
     return obj
 
 class UsingAssetMixin(object):
-    import altaircms.asset.models as m
+    from altaircms.asset.models import ImageAsset
     def get_image_asset_query(self):
-        return self.m.ImageAsset.query
+        return self.ImageAsset.query
 
     def get_image_asset(self, asset_id):
-        return self.m.ImageAsset.query.filter(self.m.ImageAsset.id == asset_id).one()
+        return self.ImageAsset.query.filter(self.ImageAsset.id == asset_id).one()
 
 class UsingWidgetMixin(object):
-    def get_image_widget(self, widget_id):
-        print widget_id
+    from altaircms.widget.models import ImageWidget
+    from altaircms.widget.models import TextWidget
+    from altaircms.widget.models import DBSession
+    def _get_or_create(self, model, widget_id):
         if widget_id is None:
-            return self.m.ImageAsset(widget_id)
+            return model({})
         else:
-            return self.m.ImageAsset.query.filter(self.m.ImageAsset.id == widget_id).one()
+            return DBSession.query(model).filter(model.id == widget_id).one()
+        
+    def get_image_widget(self, widget_id):
+        return self._get_or_create(self.ImageWidget, widget_id)
+
+    def get_freetext_widget(self, widget_id):
+        return self._get_or_create(self.TextWidget, widget_id)
 
     def update_widget(self, widget, params):
         set_with_dict(widget, params)
         return widget
 
 class UsingPageMixin(object):
-    import altaircms.page.models as m
-
+    from altaircms.page.models import Page
     def get_page(self, page_id):
-        return m.Page.query.filter(m.Page.id == page_id).one()
+        return self.Page.query.filter(self.Page.id == page_id).one()
 
 class UsingLayoutMixin(object):
-    import altaircms.layout.models as m
-
+    from altaircms.layout.models import Layout
     def get_layout_query(self):
-        return self.m.Layout.query
+        return self.Layout.query
 
     def get_layout_template(self, layoutname):
-        Layout = self.m.Layout
-        return Layout.query.filter(Layout.title==layoutname).one()
+        return self.Layout.query.filter(self.Layout.title==layoutname).one()
     
 class WidgetResource(UsingAssetMixin,
                      UsingPageMixin, 
@@ -58,5 +63,3 @@ class WidgetResource(UsingAssetMixin,
         DBSession.delete(data)
         if flush:
             DBSession.flush()
-
-

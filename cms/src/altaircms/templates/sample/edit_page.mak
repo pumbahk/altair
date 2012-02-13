@@ -42,12 +42,6 @@
 	  <div id="wrap" class="contentWrap"></div>
 	</div>
 	
-	<%text>
-	<script type="text/html" id="dropped_widget_template">
-	  <div class="dropped-widget"><%= name %>
-	  </div>
-	</script>
-    </%text>
 <br>
 <br>	<br>	<br>
     <script type="text/javascript">

@@ -16,7 +16,14 @@ if(!widget){
             is_initialized = true;
         }
     }
-
+    var load_page = function(we){
+        var pk = we.get_pk(we.where);
+        var url = "/api/widget/freetext_widget/dialog";
+        if(!!pk){
+            url += "?" + $.param({"pk": pk});
+        }
+        return we.dialog.load(url);
+    };
     var on_dialog = function(we){
         _initialize(we)
         tinyMCE.execCommand("mceAddControl", true, "freetext_widget_textarea");
@@ -24,15 +31,11 @@ if(!widget){
         if(!!freetext){
             setTimeout(function(){ //fixme
                 tinyMCE.get("freetext_widget_textarea").setContent(freetext);
-            }, 200);
+s            }, 200);
         }
         $(document).on("click", _has_click_event, function(){
             we.finish_dialog(this);
         });
-    };
-
-    var load_page = function(we){
-        return we.dialog.load("/sample/api/load/widget/freetext");
     };
 
     var on_close = function(we){

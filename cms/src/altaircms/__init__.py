@@ -47,7 +47,7 @@ def cms_include(config):
     config.add_route('layout_list', '/layout')
 
     config.add_route('page_list', '/page')
-    config.add_route('page_edit_', '/page/{page_id}')
+    config.add_route('page_edit_', '/page/{page_id}', factory="altaircms.page.resources.SampleCoreResource")
     config.add_route('page_add', '/event/{event_id}/page')
     config.add_route('page_edit', '/event/{event_id}/page/{page_id}/edit')
 
@@ -88,7 +88,6 @@ def main(global_config, **settings):
     )
     config.include('pyramid_tm')
     config.include("pyramid_fanstatic")
-    # config.include("altaircms.sample", route_prefix="/sample")
     config.include("altaircms.widget")
     config.include(api_include, route_prefix='/api')
     config.include(front_include, route_prefix='/f')
@@ -103,7 +102,6 @@ def main(global_config, **settings):
     config.scan('altaircms.layout')
     config.scan('altaircms.front')
 
-    # config.scan("altaircms.sample")
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)
 
     return config.make_wsgi_app()

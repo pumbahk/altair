@@ -5,14 +5,17 @@
 // @require ./backbone_patch.js
 
 var ApiUrlMapping = {
-    BlockSheet: "/sample/api/stru3ecture", 
-    Widget: "/sample/api/widget"
+    BlockSheet: "/api/structure", 
+    Widget: "/api/widget"
 };
 
 widget.configure({
     dialog: null, //dynamic bind
     widget_name: null, //dynamic bind
     where: null, //dynamic bind
+    get_pk: function(e){
+        return $(e).data("view").model.get("pk") || null;
+    }, 
     get_data: function(e){
         return $(e).data("view").model.get("data") || {};
     }, 
@@ -30,22 +33,34 @@ widget.configure({
     }
 });
 
-var LayoutService = {
-    cache: {}, 
-    attach_highlight: function(key, elts){
-        if(key == null || !this.cache[key]){
-            this.cache[key] = true;
-            setTimeout(function(){
-                elts.live("mouseover", function(){
-                    $(this).addClass("selected");
-                });
-                elts.live("mouseleave", function(){
-                    $(this).removeClass("selected");
-                });
-            }, 0);
+var LayoutService = (function(){
+    var cache = {};
+    var is_highlight_enable = true
+    return {
+        highlight_enable: function(){
+            $(".selected").removeClass("selected");
+            is_highlight_enable = true;
+        }, 
+        highlight_disable: function(){
+            is_highlight_enable = false;
+        }, 
+        attach_highlight: function(key, elts){
+            if(key == null || !cache[key]){
+                cache[key] = true;
+                setTimeout(function(){
+                    elts.live("mouseover", function(){
+                        if(is_highlight_enable){
+                            $(this).addClass("selected");
+                        }
+                    });
+                    elts.live("mouseleave", function(){
+                        $(this).removeClass("selected");
+                    });
+                }, 0);
+            }
         }
-    }
-};
+    };
+})();
 
 var InfoService = {
     get_name: function(e){
@@ -161,8 +176,6 @@ var WidgetDialogView = Backbone.View.extend({
             this.close_dialog();
             var self = this;
             this.model.save().done(function(data){
-                foo = self.model;
-                bar = data;
                 self.model.set("pk", data.pk) // pk
                 self.model.id = self.model.get("pk");
                 self.model.trigger("update_widget", self.model);
@@ -195,7 +208,7 @@ var DroppedWidgetView = (function(){
                 // element毎のeventは重くなるので
                 var self = this;
                 setTimeout(function(){
-                    LayoutService.attach_highlight("dwidget", $(self.className));
+                    LayoutService.attach_highlight("dwidget", $("."+self.className));
                     $("."+self.className+" .close").live("click", function(){
                         var dw = $(this).parent("."+self.className);
                         $(dw).data("view").close_view.on_close_button_clicked();
@@ -210,7 +223,13 @@ var DroppedWidgetView = (function(){
         ].join("\n")), 
         render: function(){
             var e = $(this.el).html(this.template(this.model.toJSON()));
-            e.attr("cid", this.model.cid).draggable({revert: true});
+            e.attr("cid", this.model.cid).draggable({
+                revert: true,
+                cancel: "a", 
+                distance: 5, 
+                start: LayoutService.highlight_disable, 
+                stop: LayoutService.highlight_enable
+            });
             this.after_render_initialize();
             return this;
         }
@@ -316,7 +335,12 @@ var BlockView = Backbone.View.extend({
 
 var PaletView = Backbone.View.extend({
     initialize: function(){
-        this.$(".widget").draggable({revert: true});
+        this.$(".widget").draggable({
+            revert: true,
+            distance: 5, 
+            start: LayoutService.highlight_disable, 
+            stop: LayoutService.highlight_enable
+        });
         LayoutService.attach_highlight("palet", this.$(".widget"));
     }
 });
@@ -429,7 +453,7 @@ var BlockSheetView = Backbone.View.extend({
     // }, 
     initialize_bloks: function(block_elts){
         var self = this;
-        LayoutService.attach_highlight("block", block_elts);
+        // LayoutService.attach_highlight("block", block_elts);
         _.each(block_elts, function(e){
             var name = InfoService.get_name(e);
             var block = self.model.initializeBlock(name);
