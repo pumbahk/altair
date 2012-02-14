@@ -61,7 +61,6 @@ setup(name='altair-cms',
 
       [paste.paster_command]
       pscript = scripts.paster:PScript
-      mycommand = scripts.commands:MyCommand
       """,
       # entry_points = {
       #   "paste.app_factory": [

@@ -1,11 +1,7 @@
+## 不思議なコードの書き方なのは、execを呼び出しているせい。
 def main():
-    from altaircms.models import Base
     from altaircms.models import DBSession
     import transaction
-
-    def setup():
-        Base.metadata.drop_all();
-        Base.metadata.create_all();
 
     from contextlib import contextmanager
     @contextmanager
@@ -58,7 +54,7 @@ def main():
         from altaircms.layout.models import Layout
         layout0 = Layout()
         layout0.title = "one"
-        layout0.template_filename = "./altaircms/templates/front/layout/1.mako"
+        layout0.template_filename = "1.mako"
         layout0.blocks = '[["content"],["footer"]]'
         layout0.site_id = 1 ##
         layout0.client_id = 1 ##
@@ -66,4 +62,11 @@ def main():
 
     transaction.commit()
 
+
+def setup():
+    from altaircms.models import Base
+    Base.metadata.drop_all();
+    Base.metadata.create_all();
+setup()
 main()
+

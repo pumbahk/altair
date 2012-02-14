@@ -1,7 +1,7 @@
+# -*- coding:utf-8 -*-
 from pyramid.paster import PCommand
 from pyramid.paster import get_app
 from paste.script import command
-import ConfigParser
 
 class PScript(PCommand):
     """run script on app env.
