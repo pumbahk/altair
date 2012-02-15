@@ -8,6 +8,9 @@ from sqlalchemy.types import String, DateTime, Integer, Unicode
 
 from altaircms.models import Base
 
+PERMISSION_VIEW = 'view'
+PERMISSION_EDIT = 'edit'
+
 
 class OAuthToken(Base):
     __tablename__ = 'oauth_token'

@@ -11,8 +11,8 @@ def client(request):
     )
 
 
-@view_config(name='', renderer='altaircms:templates/dashboard.mako', permission='view')
-def default_view(request):
+@view_config(name='', renderer='altaircms:templates/dashboard.mako', permission='authenticated')
+def dashboard(request):
     """
     ログイン後トップページ
     """

@@ -1,13 +1,11 @@
 # coding: utf-8
-USERS = {
-    'editor':'editor',
-    'viewer':'viewer'
-}
-GROUPS = {
-    'viewer':['group:viewers'],
-    'editor':['group:editors']
-}
+from altaircms.models import DBSession, Permission
 
 def groupfinder(userid, request):
-    if userid in USERS:
-        return GROUPS.get(userid, [])
+    objects = DBSession.query(Permission).filter_by(operator_id=userid)
+    perms = []
+
+    for obj in objects:
+        perms.append(obj.permission)
+
+    return perms

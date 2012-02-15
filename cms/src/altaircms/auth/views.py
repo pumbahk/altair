@@ -3,90 +3,44 @@ import urlparse
 
 from pyramid.exceptions import Forbidden
 from pyramid.httpexceptions import HTTPFound
-from pyramid.response import Response
-from pyramid.security import authenticated_userid, forget, remember
+from pyramid.security import forget, remember
 from pyramid.view import view_config
 
 from sqlalchemy.orm.exc import NoResultFound
 
+import oauth2
 import transaction
 
-from altaircms.security import USERS
-from altaircms.models import DBSession, Operator
-from altaircms.auth.models import OAuthToken
+from altaircms.models import DBSession, Operator, Permission
+from altaircms.auth.errors import AuthenticationError
+from altaircms.auth.models import PERMISSION_VIEW, PERMISSION_EDIT
 
-__all__ = [
-    'login',
-    'logout'
-]
 
 @view_config(name='login', renderer='altaircms:templates/login.mako')
 @view_config(context='pyramid.httpexceptions.HTTPForbidden', renderer='altaircms:templates/login.mako')
 def login(request):
-    login_url = request.resource_url(request.context, 'login')
-    referrer = request.url
-
-    if referrer == login_url:
-        referrer = '/' # never use the login form itself as came_from
-
-    came_from = request.params.get('came_from', referrer)
     message = ''
-    login = ''
-    password = ''
-
-    if 'form.submitted' in request.params:
-        login = request.params['login']
-        password = request.params['password']
-        if USERS.get(login) == password:
-            headers = remember(request, login)
-            return HTTPFound(location = came_from, headers = headers)
-        message = 'Failed login'
 
     return dict(
-        message = message,
-        url = request.application_url + '/login',
-        came_from = came_from,
-        login = login,
-        password = password,
-        logged_in = authenticated_userid(request)
+        message=message
     )
 
 
 @view_config(name='logout')
 def logout(request):
     headers = forget(request)
-    return HTTPFound(location = request.resource_url(request.context), headers = headers)
 
-
-@view_config(context='velruse.api.AuthenticationComplete', renderer='json')
-def auth_complete_view(context, request):
-    return {
-        'profile': context.profile,
-        'credentials': context.credentials,
-        }
-
-
-@view_config(context='velruse.exceptions.AuthenticationDenied', renderer='json')
-def auth_denied_view(context, request):
-    return context.args
-
-
-import oauth2
-
-api_endpoint = 'https://api.twitter.com/1/'
-
-class AuthenticationError(Exception):
-    def __init__(self, msg):
-        self.msg = msg
-
-    def __str__(self):
-        return self.msg
+    return HTTPFound(
+        location=request.resource_url(request.context),
+        headers=headers
+    )
 
 
 class OAuthLogin(object):
     def __init__(self, request):
         self.request = request
 
+        self.api_endpoint = 'https://api.twitter.com/1/'
         self.request_token_url = 'http://twitter.com/oauth/request_token'
         self.access_token_url = 'http://twitter.com/oauth/access_token'
         self.authorize_url = 'http://twitter.com/oauth/authorize'
@@ -137,10 +91,69 @@ class OAuthLogin(object):
             )
             DBSession.add(operator)
 
-        headers = remember(self.request, str(dict(user_id=operator.user_id, auth_source=operator.auth_source)))
+            for perm in PERMISSION_VIEW, PERMISSION_EDIT:
+                permission = Permission(
+                    operator_id=operator.user_id,
+                    permission=perm
+                )
+                DBSession.add(permission)
+
+        headers = remember(self.request, operator.user_id)
 
         del self.request.session['request_token']
 
         transaction.commit()
 
         return HTTPFound(location = '/', headers = headers)
+
+
+"""
+__all__ = [
+    'login',
+    'logout'
+]
+
+@view_config(name='login', renderer='altaircms:templates/login.mako')
+@view_config(context='pyramid.httpexceptions.HTTPForbidden', renderer='altaircms:templates/login.mako')
+def login(request):
+    login_url = request.resource_url(request.context, 'login')
+    referrer = request.url
+
+    if referrer == login_url:
+        referrer = '/' # never use the login form itself as came_from
+
+    came_from = request.params.get('came_from', referrer)
+    message = ''
+    login = ''
+    password = ''
+
+    if 'form.submitted' in request.params:
+        login = request.params['login']
+        password = request.params['password']
+        if USERS.get(login) == password:
+            headers = remember(request, login)
+            return HTTPFound(location = came_from, headers = headers)
+        message = 'Failed login'
+
+    return dict(
+        message = message,
+        url = request.application_url + '/login',
+        came_from = came_from,
+        login = login,
+        password = password,
+        logged_in = authenticated_userid(request)
+    )
+
+
+@view_config(context='velruse.api.AuthenticationComplete', renderer='json')
+def auth_complete_view(context, request):
+    return {
+        'profile': context.profile,
+        'credentials': context.credentials,
+        }
+
+
+@view_config(context='velruse.exceptions.AuthenticationDenied', renderer='json')
+def auth_denied_view(context, request):
+    return context.args
+"""

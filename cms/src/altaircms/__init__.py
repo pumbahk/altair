@@ -1,10 +1,9 @@
 # coding:utf-8
-from pyramid.authentication import AuthTktAuthenticationPolicy
+from pyramid.authentication import AuthTktAuthenticationPolicy, SessionAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
 from pyramid.session import UnencryptedCookieSessionFactoryConfig
-from pyramid.security import Allow, Authenticated
-from pyramid.security import Everyone
+from pyramid.security import Allow, Authenticated, Everyone, Deny
 
 import sqlahelper
 
@@ -24,10 +23,10 @@ except:
 
 class RootFactory(object):
     __name__ = None
-    __parent__ = None
     __acl__ = [
-        (Allow, Authenticated, 'view'),
-        (Allow, 'group:editors', 'edit')
+        (Allow, Authenticated, 'authenticated'),
+        (Allow, 'view', 'view'),
+        (Allow, 'edit', 'edit')
     ]
 
     def __init__(self, request):
@@ -78,7 +77,8 @@ def main(global_config, **settings):
 
     sqlahelper.add_engine(engine)
 
-    authn_policy = AuthTktAuthenticationPolicy(secret='sosecret', callback=groupfinder)
+    # authn_policy = AuthTktAuthenticationPolicy(secret='SDQGxGIhVqSr3zJWV8KvHqHtJujhJj', callback=groupfinder)
+    authn_policy = SessionAuthenticationPolicy(callback=groupfinder)
     authz_policy = ACLAuthorizationPolicy()
 
     session_factory = UnencryptedCookieSessionFactoryConfig('itsaseekreet')
@@ -90,9 +90,11 @@ def main(global_config, **settings):
         authentication_policy=authn_policy,
         authorization_policy=authz_policy
     )
+
     config.include('pyramid_tm')
     config.include("pyramid_fanstatic")
     config.include("altaircms.widget")
+
     config.include(auth_include, route_prefix='/auth')
     config.include(api_include, route_prefix='/api')
     config.include(front_include, route_prefix='/f')
