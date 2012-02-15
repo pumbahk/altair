@@ -10,13 +10,12 @@ from deform.exception import ValidationFailure
 from pyramid.exceptions import NotFound
 from pyramid.response import Response
 from pyramid.view import view_config
-from sqlalchemy.sql.expression import desc
 
 from altaircms.models import DBSession
 from altaircms.widget.forms import *
 from altaircms.widget.models import *
+from altaircms.widget import get_widget_list, widget_convert_to_dict
 from altaircms.asset import get_storepath
-
 
 class WidgetEditView(object):
     def __init__(self, request):
@@ -61,37 +60,48 @@ class WidgetEditView(object):
         return {
             'form':html,
             'captured':repr(captured),
+            'widget':self.widget,
             'widget_type': self.widget_type,
             }
 
+    @view_config(route_name='widget_list', renderer='json', request_method='GET', request_param='json', permission='edit')
     @view_config(route_name='widget_list', renderer='altaircms:templates/widget/list.mako', request_method='GET', permission='edit')
     def widget_list(self):
-        widgets = DBSession().query(Widget).order_by(desc(Widget.id)).all()
+        widgets = get_widget_list()
 
-        return dict(
-            widgets=widgets
-        )
+        if 'json' in self.request.params:
+            return dict(
+                widgets=[widget_convert_to_dict(widget) for widget in widgets]
+            )
+        else:
+            return dict(
+                widgets=widgets
+            )
 
+    @view_config(route_name="widget", permission='edit', renderer='altaircms:templates/widget/form.mako')
     @view_config(route_name='widget_add', permission='edit', renderer='altaircms:templates/widget/form.mako')
     def widget_form(self):
         def succeed(request, captured):
-            mdl = globals()[self.widget_type.capitalize() + 'Widget']
-            obj = mdl(captured)
-            DBSession.add(obj)
+            if self.widget:
+                for key, value in captured.iteritems():
+                    try:
+                        setattr(self.widget, key, value)
+                    except AttributeError:
+                        pass
+                DBSession.add(self.widget)
+            else:
+                mdl = globals()[self.widget_type.capitalize() + 'Widget']
+                obj = mdl(captured)
+                DBSession.add(obj)
 
             return Response('<p>Thanks!</p>')
 
-        cls = globals()[self.widget_type.capitalize() + 'WidgetSchema']()
-        form = Form(cls, buttons=('submit',), use_ajax=True)
-        return self.render_form(form, success=succeed)
+        appstruct = self.widget.appstruct if self.widget else {}
 
-    @view_config(route_name="widget", permission='edit', renderer='altaircms:templates/widget/view.mako', request_method='GET')
-    def widget_edit(self):
-        return dict(
-            widget=self.widget
-        )
+        form = Form(get_schema_by_widget(self.widget, self.widget_type)(), buttons=('submit',), use_ajax=True)
+        return self.render_form(form, success=succeed, appstruct=appstruct)
 
-    @view_config(route_name="widget", permission='edit', request_method='POST')
+    @view_config(route_name="widget_delete", permission='edit', request_method='POST')
     def widget_delete(self):
         if not self.widget:
             return NotFound()
@@ -101,6 +111,5 @@ class WidgetEditView(object):
             DBSession.delete(self.widget)
 
             return self.response_json_ok()
-        else:
-            # 更新処理
-            pass
+
+        return NotFound()

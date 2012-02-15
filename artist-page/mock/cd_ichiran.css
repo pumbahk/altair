@@ -67,14 +67,7 @@ a:hover{
 }
 
 
-#header {
-        width:400px;
-        height:40px;
-        margin-top:0px;
-        margin-left:550px;
-        height:40px;
 
-}
 
 #tops {
 		width:100%;
@@ -99,6 +92,14 @@ a:hover{
 
         list-style-type:none;
         }
+#header {
+        width:400px;
+        height:10px;
+        margin-top:0px;
+        margin-left:550px;
+
+}
+
 #header ul {
         list-style-type:none;
         vertical-align:baseline;
@@ -111,17 +112,23 @@ a:hover{
 
 }
 #header ul  a li  {
-      
-        list-style-type:none;	line-height:40px;
-        color:#000000;
+        display:block;
+	width:80px;
+        list-style-type:none;	line-height:20px;
+	background-color:#0c0c0c;
+        color:#cccccc;
         font-size:0.7em;
         text-align: center;
         text-decoration: none;
-        margin-left:30px;
+	 margin-left:20px;
 }
-#header ul a li hover {
-        background-color:#0CE0C0;
+#header ul   li a {
+		   margin-left:20px;
+		   }
+#header ul  a li hover {
+        background-color:#CCCCCC;
 }
+
 
 #kensaku {
 		widht = 100%;
@@ -135,14 +142,13 @@ a:hover{
 	
 }		
 #tx_left {
-	    font-size: 1em;
-        width:100px;
+	font-size: 1em;
+        width:140px;
         //height:100%;
-		height:auto;
+	height:auto;
         float:left;
         margin:0px 5px 5px 5px;
-        border: 1px solid black;
-    	background-image:url("tx_main_bg.png");
+        border: 1px solid transparent;
 
 }
 #tx_left ul{
@@ -150,16 +156,37 @@ a:hover{
         vertical-align:baseline;
         margin:0;
         padding:0;
-		font-color:#ffffff;
+	font-color:#ffffff;
 }
-#tx_left ul li{
+
+
+#tx_left ul li {
         list-style-type:none;
-		background-color:#000000;
-		font-size:0.4em;
-		margin:1px;
-		font-color:#ffffff;
+	background-color:#000000;
+	font-size:0.9em;
+	margin-top:5px;
+	font-color:#ffffff;
       
 }
+#tx_left ul li hover {
+        list-style-type:none;
+	background-color:#33cc99;
+	font-size:0.7em;
+	margin:1px;
+	font-color:#ffffff;
+      
+}
+
+
+#tx_left ul hover{
+        list-style-type:none;
+        vertical-align:baseline;
+        margin:0;
+        padding:0;
+	font-color:#ffffff;
+	color:#33ff99;
+}
+
 #tx_left ul  a li  {
 	
         display:block;
@@ -169,7 +196,8 @@ a:hover{
         text-align: center;
         text-decoration: none;
         margin-left:30px;
-}		
+}
+
 
 #tx_center {
 	    font-size: 1em;
@@ -271,5 +299,14 @@ a:hover{
 	font-size:0.5em;
 	}
 	
+#ke{
+	float:left;
+	}
 	
-
+		
+#tx_center h6 {
+	position:relative;
+	top:-50px;
+	left:50px;
+	}
+	

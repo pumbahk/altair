@@ -22,33 +22,38 @@ class PageEditView(object):
 
         self.request = request
         self.page = None
+        self.event = None
 
-        event_id = self.request.matchdict['event_id']
+        event_id = self.request.matchdict.get('event_id', None)
         if event_id:
             self.event = dbsession.query(Event).get(event_id)
             if not self.event:
                 return NotFound()
 
-            page_id = self.request.matchdict['page_id'] if 'page_id' in self.request.matchdict else None
-            if page_id:
+        page_id = self.request.matchdict.get('page_id', None)
+        if page_id:
+            if event_id:
                 self.page = dbsession.query(Page).filter_by(event_id=self.event.id, id=page_id).one()
-                if not self.page:
-                    return NotFound()
-                results = dbsession.query(Page2Widget, Widget).filter(Page2Widget.widget_id==Widget.id).\
-                    filter(Page2Widget.page_id==page_id).order_by(asc(Page2Widget.order)).all()
+            else:
+                self.page = dbsession.query(Page).filter_by(id=page_id).one()
 
-                self.display_blocks = {}
-                for p2w, widget in results:
-                    key = p2w.block
-                    if key in self.display_blocks:
-                        self.display_blocks[key].append(widget)
-                    else:
-                        self.display_blocks[key] = [widget]
+            if not self.page:
+                return NotFound()
+            results = dbsession.query(Page2Widget, Widget).filter(Page2Widget.widget_id==Widget.id).\
+                filter(Page2Widget.page_id==page_id).order_by(asc(Page2Widget.order)).all()
+
+            self.display_blocks = {}
+            for p2w, widget in results:
+                key = p2w.block
+                if key in self.display_blocks:
+                    self.display_blocks[key].append(widget)
+                else:
+                    self.display_blocks[key] = [widget]
 
         DBSession.remove()
 
     def render_form(self, form, appstruct=colander.null, submitted='submit', duplicated='duplicate',
-                    success=None, readonly=False):
+                    success=None, readonly=False, extra_context=None):
         captured = None
 
         if submitted in self.request.POST or duplicated in self.request.POST:
@@ -76,16 +81,23 @@ class PageEditView(object):
 
         reqts = form.get_widget_resources()
 
-        # values passed to template for rendering
-        return {
+
+        ctx =  {
             'form':html,
             'event':self.event,
             'page':self.page,
+            'pages':DBSession.query(Page).all(),
             'captured':repr(captured),
             'showmenu':True,
             'css_links':reqts['css'],
             'js_links':reqts['js'],
         }
+        
+        if extra_context:
+            ctx.update(extra_context)
+
+        # values passed to template for rendering
+        return ctx
 
     @view_config(route_name='page_add', renderer='altaircms:templates/page/edit.mako')
     def page_add(self):
@@ -93,11 +105,15 @@ class PageEditView(object):
             'layout_id': 1,
             'structure': '{}',
         }
+
         return self.render_form(PageAddForm, success=self._succeed, appstruct=appstruct)
 
+    @view_config(route_name='page_edit_', renderer='altaircms:templates/page/edit.mako')
     @view_config(route_name='page_edit', renderer='altaircms:templates/page/edit.mako')
     def page_edit(self):
-        if self.page:
+        if not self.page:
+            return self.render_form(PageEditForm, appstruct={}, success=self._succeed)            
+        else:
             # @TODO: モデルプロパティとして移したほうがいいかも知れない
             for key, values in self.display_blocks.iteritems():
                 self.display_blocks[key] = [value.id for value in values]
@@ -110,10 +126,25 @@ class PageEditView(object):
                 'layout_id': self.page.layout_id if self.page.layout_id else 0,
                 'structure': json.dumps(self.display_blocks)
             }
-        else:
-            appstruct = {}
 
-        return self.render_form(PageEditForm, appstruct=appstruct, success=self._succeed)
+            ## layout_image
+            layout_image = self.request.context.get_layout_image(self.page)
+            ## fanstatic
+
+            from altaircms.fanstatic import jqueries_need
+            from altaircms.fanstatic import wysiwyg_editor_need
+            jqueries_need()
+            wysiwyg_editor_need()
+            ##
+
+            return self.render_form(PageEditForm, appstruct=appstruct, success=self._succeed, 
+                                    extra_context={"layout_image": layout_image})            
+
+
+    @view_config(route_name='page_list', renderer='altaircms:templates/page/list.mako')
+    def page_list(self):
+        appstruct = {}
+        return self.render_form(PageAddForm, success=self._succeed, appstruct=appstruct)
 
     def _succeed(self, captured, duplicate=False):
         dbsession = DBSession()
@@ -141,8 +172,9 @@ class PageEditView(object):
 
         page_structure = json.loads(captured['structure'])
 
-        #q = dbsession.query(Page2Widget).filter_by(page_id=page.id)
-        #dbsession.delete(q)
+        q = dbsession.query(Page2Widget).filter_by(page_id=page.id)
+        for p2w in q:
+            dbsession.delete(p2w)
 
         for key, values in page_structure.iteritems():
             for value in values:

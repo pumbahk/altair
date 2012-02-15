@@ -17,10 +17,20 @@ requires = [
     'zope.sqlalchemy',
     'sadisplay',
     'pyramid_fanstatic',
-    'fa.jquery',
     'deform',
     'pyramid_deform',
     'pyramid_openid',
+    "velruse", 
+    "bpmappers", 
+    ## fanstatic
+    'fa.jquery',
+    "fanstatic", 
+    "pyramid_fanstatic", 
+    "js.jquery", 
+    "js.json2", 
+    "js.jqueryui", 
+    "js.jquery_tools", 
+    "js.underscore"
     ]
 
 if sys.version_info[:3] < (2,5,0):
@@ -48,7 +58,15 @@ setup(name='altair-cms',
       entry_points = """\
       [paste.app_factory]
       main = altaircms:main
+
+      [paste.paster_command]
+      pscript = scripts.paster:PScript
       """,
+      # entry_points = {
+      #   "paste.app_factory": [
+      #       "main=altaircms:main"
+      #   ]
+      # }, 
       paster_plugins=['pyramid'],
       )
 

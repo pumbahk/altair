@@ -13,6 +13,7 @@ __all__ = [
     'MenuWidgetSchema',
     'BillinghistoryWidgetSchema',
     'TopicWidgetSchema',
+    'get_schema_by_widget'
 ]
 
 
@@ -56,3 +57,10 @@ class MovieWidgetSchema(WidgetSchema):
 
 class FlashWidgetSchema(WidgetSchema):
     asset_id = colander.SchemaNode(colander.Integer())
+
+
+def get_schema_by_widget(widget, type_=None):
+    type_ = type_ if type_ else widget.type
+
+    cls = globals()[type_.capitalize() + 'WidgetSchema']
+    return cls

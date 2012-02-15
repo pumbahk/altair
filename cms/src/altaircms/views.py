@@ -1,23 +1,15 @@
 # coding: utf-8
 from pyramid.renderers import render
 
-def render_widget(widget):
+def render_widget(request, widget):
     try:
         templeate_file = 'altaircms:templates/front/widget/%s.mako' % (widget.type)
         result = render(templeate_file, {
-            'widget': widget
-        })
+                    'widget': widget
+                    },
+                    request=request
+                )
     except:
         raise
 
     return result
-
-
-from altaircms.auth.views import *
-from altaircms.event.views import *
-from altaircms.base.views import *
-from altaircms.page.views import *
-from altaircms.front.views import *
-from altaircms.asset.views import *
-from altaircms.widget.views import *
-from altaircms.layout.views import *
