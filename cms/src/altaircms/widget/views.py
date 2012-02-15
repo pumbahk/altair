@@ -98,8 +98,6 @@ class WidgetEditView(object):
 
         if '_method' in self.request.params and self.request.params['_method'].lower() == 'delete':
             # 削除処理
-            if hasattr(self.widget, 'filepath'):
-                os.remove(os.path.join(get_storepath(self.request), self.widget.filepath))
             DBSession.delete(self.widget)
 
             return self.response_json_ok()
