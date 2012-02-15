@@ -1,9 +1,19 @@
 # coding: utf-8
+import urlparse
+
+from pyramid.exceptions import Forbidden
 from pyramid.httpexceptions import HTTPFound
+from pyramid.response import Response
 from pyramid.security import authenticated_userid, forget, remember
 from pyramid.view import view_config
 
+from sqlalchemy.orm.exc import NoResultFound
+
+import transaction
+
 from altaircms.security import USERS
+from altaircms.models import DBSession, Operator
+from altaircms.auth.models import OAuthToken
 
 __all__ = [
     'login',
@@ -59,3 +69,78 @@ def auth_complete_view(context, request):
 @view_config(context='velruse.exceptions.AuthenticationDenied', renderer='json')
 def auth_denied_view(context, request):
     return context.args
+
+
+import oauth2
+
+api_endpoint = 'https://api.twitter.com/1/'
+
+class AuthenticationError(Exception):
+    def __init__(self, msg):
+        self.msg = msg
+
+    def __str__(self):
+        return self.msg
+
+
+class OAuthLogin(object):
+    def __init__(self, request):
+        self.request = request
+
+        self.request_token_url = 'http://twitter.com/oauth/request_token'
+        self.access_token_url = 'http://twitter.com/oauth/access_token'
+        self.authorize_url = 'http://twitter.com/oauth/authorize'
+
+        self.consumer = oauth2.Consumer(
+            request.registry.settings['oauth.consumer_key'],
+            request.registry.settings['oauth.consumer_secret']
+        )
+
+    @view_config(route_name='oauth_entry')
+    def oauth_entry(self):
+        client = oauth2.Client(self.consumer)
+        resp, content = client.request(self.request_token_url, "GET")
+        request_token = dict(urlparse.parse_qsl(content))
+
+        self.request.session['request_token'] = {
+            'oauth_token': request_token['oauth_token'],
+            'oauth_token_secret': request_token['oauth_token_secret']
+        }
+
+        return HTTPFound('%s?oauth_token=%s' % (self.authorize_url, request_token['oauth_token']))
+
+    @view_config(route_name='oauth_callback')
+    def oauth_callback(self):
+        try:
+            token = oauth2.Token(self.request.session['request_token']['oauth_token'],
+                self.request.session['request_token']['oauth_token_secret'])
+            client = oauth2.Client(self.consumer, token)
+
+            resp, content = client.request(self.access_token_url, "GET")
+            data = dict(urlparse.parse_qsl(content))
+
+            if resp.status != 200 or 'user_id' not in data:
+                raise AuthenticationError(resp.reason)
+        except KeyError, e:
+            return Forbidden('%s is not found' % (str(e), ))
+        except AuthenticationError, e:
+            return Forbidden(str(e))
+
+        try:
+            operator = DBSession.query(Operator).filter_by(auth_source='oauth', user_id=data['user_id']).one()
+        except NoResultFound:
+            operator = Operator(
+                auth_source='oauth',
+                user_id=data['user_id'],
+                oauth_token=data['oauth_token'],
+                oauth_token_secret=data['oauth_token_secret']
+            )
+            DBSession.add(operator)
+
+        headers = remember(self.request, str(dict(user_id=operator.user_id, auth_source=operator.auth_source)))
+
+        del self.request.session['request_token']
+
+        transaction.commit()
+
+        return HTTPFound(location = '/', headers = headers)

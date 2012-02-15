@@ -20,8 +20,9 @@ requires = [
     'deform',
     'pyramid_deform',
     'pyramid_openid',
-    "velruse", 
-    "bpmappers", 
+    "velruse",
+    "bpmappers",
+    'oauth2',
     ## fanstatic
     'fa.jquery',
     "fanstatic", 

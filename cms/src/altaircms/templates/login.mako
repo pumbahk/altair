@@ -1,5 +1,9 @@
 <%inherit file='layout.mako'/>
 ${message}
+
+<a href="${request.route_url("oauth_entry")}">login with twitter (OAuth)</a>
+
+<%doc>
 <form action="${url}" method="post">
     <input type="hidden" name="came_from" value="${came_from}"/>
     <input type="text" name="login" value="${login}"/><br/>
@@ -27,3 +31,4 @@ ${message}
     <input type="hidden" name="end_point" value="http://127.0.0.1:6543/login">
     <input type="submit" value="Login with Google">
 </form>
+</%doc>
