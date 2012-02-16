@@ -17,8 +17,7 @@ class TestMyView(unittest.TestCase):
         testing.tearDown()
 
     def test_it(self):
-        from altaircms.base.views import default_view
+        from altaircms.base.views import dashboard
         request = testing.DummyRequest()
-        info = default_view(request)
-        self.assertEqual(info['root'].name, 'root')
-        self.assertEqual(info['project'], 'altair-cms')
+        resp = dashboard(request)
+        self.assertTrue(isinstance(resp, dict))

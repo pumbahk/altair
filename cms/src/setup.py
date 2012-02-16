@@ -14,7 +14,7 @@ requires = [
     'transaction',
     'SQLAlchemy',
     'SQLAHelper',
-    'zope.sqlalchemy',
+    ## 'zope.sqlalchemy',
     'sadisplay',
     'deform',
     'alembic',

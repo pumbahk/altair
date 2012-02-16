@@ -6,9 +6,7 @@ from pyramid.view import view_config
 
 @view_config(name='client', renderer='altaircms:templates/client/form.mako', permission='view')
 def client(request):
-    return dict(
-        logged_in=authenticated_userid(request)
-    )
+    return dict()
 
 
 @view_config(name='', renderer='altaircms:templates/dashboard.mako', permission='authenticated')
@@ -16,10 +14,7 @@ def dashboard(request):
     """
     ログイン後トップページ
     """
-    return dict(
-        login='/login',
-        logout='/logout',
-    )
+    return dict()
 
 
 class BaseApiView(object):
