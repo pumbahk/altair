@@ -2,7 +2,7 @@ import unittest
 from altaircms.front.generate import template_to_render
 from altaircms.front.generate import WidgetNode
 from altaircms.front.generate import GeneratePageException
-from altaircms.front.generate import get_page_node_from_page
+from altaircms.front.generate import get_pagerender_tree
 
 class WidgetNodeTest(unittest.TestCase):
     def test_it(self):
@@ -23,7 +23,7 @@ class WidgetNodeTest(unittest.TestCase):
         self.assertRaises(GeneratePageException,  lambda : wn.template)
 
     def test_find_template_from_widget_type_and_config(self):
-        config = {"widget_file_format": "widget/%s.mako"}
+        config = {"widget.template_path_format": "widget/%s.mako"}
         class widget(object):
             type = "image"
         wn = WidgetNode(widget)
@@ -49,7 +49,8 @@ class GetPageNodeTest(unittest.TestCase):
             name = "B"
             widgets = [Widget(i) for i in [4, 5]]
         class HasManyBlockPage(object):
-            blocks = [ABlock, BBlock]
+            blocks = {ABlock.name: ABlock.widgets, 
+                      BBlock.name: BBlock.widgets}
         return HasManyBlockPage
 
     def _get_render(self, fmt):
@@ -58,7 +59,7 @@ class GetPageNodeTest(unittest.TestCase):
 
     def test_structure(self):
         page = self._get_page_with_many_blocks()
-        page_node = get_page_node_from_page(page)
+        page_node = get_pagerender_tree(page)
         render = self._get_render("""${widget.n}""")
         self.assertEquals(page_node.concrete(render=render), 
                           {'A': ["1", "2", "3"], 'B': ["4", "5"]})
@@ -72,19 +73,19 @@ class GetPageNodeTest(unittest.TestCase):
             name = "block"
             widgets = [Widget("a"), Widget("b")]
         class Page(object):
-            blocks = [Block]
+            blocks = {Block.name: Block.widgets}
         return Page
 
     def test_template(self):
         page = self._get_page()
-        page_node = get_page_node_from_page(page)
+        page_node = get_pagerender_tree(page)
         render = self._get_render("""content:${widget.content}""")
         self.assertEquals(page_node.concrete(render=render), 
                            {'block': [u'content:a', u'content:b']})
 
     def test_extra_context(self):
         page = self._get_page()
-        page_node = get_page_node_from_page(page)
+        page_node = get_pagerender_tree(page)
         render = self._get_render("""${me}:${widget.content}""")
         result = page_node.concrete(render=render, extra_context={"me":"foo"})
         self.assertEquals(result, {'block': [u'foo:a', u'foo:b']})

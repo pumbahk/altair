@@ -1,8 +1,14 @@
 # -*- coding:utf-8 -*-
 
 from altaircms.interfaces import IConcreteNode
+from altaircms.interfaces import IBlockTree
 from zope.interface import implements
 from pyramid.renderers import render as default_render
+from collections import defaultdict
+import os.path
+
+WIDGET_TEMPLATE_PATH_FORMAT = "widget.template_path_format"
+WIDGET_LAYOUT_DIRECTORIES = "widget.layout_directories"
 
 class GeneratePageException(Exception):
     pass
@@ -26,13 +32,12 @@ for block in page.blocks:
        yield widget
 """
 
-# layout?
 class PageNode(object):
-    implements(IConcreteNode)
+    implements(IConcreteNode, IBlockTree)
 
     def __init__(self):
         self.blocks = {}
-        self.result = {}
+        self.result = defaultdict(list)
 
     def add(self, block_name, widget):
         if not block_name in self.blocks:
@@ -92,7 +97,6 @@ class WidgetNode(object):
     """
 
     implements(IConcreteNode)
-    WIDGET_FILE = "widget_file_format"
 
     def __init__(self, widget,template=None, render=default_render):
         self.widget = widget
@@ -114,8 +118,8 @@ class WidgetNode(object):
     def _find_template(self):
         if hasattr(self.widget, "template_name"):
             return self.widget.template_name
-        elif self.config and self.WIDGET_FILE in self.config:
-            fmt = self.config[self.WIDGET_FILE]
+        elif self.config and WIDGET_TEMPLATE_PATH_FORMAT in self.config:
+            fmt = self.config[WIDGET_TEMPLATE_PATH_FORMAT]
             return fmt % self.widget.type
         else:
             raise GeneratePageException("widget template file is not found")
@@ -156,10 +160,23 @@ class RenderAdaptor(object):
 def template_to_render(template):
     return RenderAdaptor(template).render
 
-def get_page_node_from_page(page):
+def get_config(request):
+    config = {}
+    settings = request.registry.settings
+    template_format = settings.get(WIDGET_TEMPLATE_PATH_FORMAT)
+    if template_format:
+        config[WIDGET_TEMPLATE_PATH_FORMAT] = template_format
+    layout_dir = settings.get(WIDGET_LAYOUT_DIRECTORIES)
+    if layout_dir:
+        config[WIDGET_LAYOUT_DIRECTORIES] = layout_dir
+    return config
+
+def get_layout_template(template_filename, config):
+    return os.path.join(config[WIDGET_LAYOUT_DIRECTORIES], template_filename)
+
+def get_pagerender_tree(widget_tree):
     root = PageNode()
-    for bname, widgets in page.blocks.items():
+    for bname, widgets in widget_tree.blocks.items():
         for w in widgets:
             root.add(bname, w)
     return root
-

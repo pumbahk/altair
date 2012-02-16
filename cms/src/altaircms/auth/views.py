@@ -12,7 +12,11 @@ import oauth2
 import transaction
 
 from altaircms.models import DBSession, Operator, Permission
-from altaircms.auth.errors import AuthenticationError
+try:
+    from altaircms.auth.errors import AuthenticationError
+except ImportError:
+    class AuthenticationError(Exception):
+        pass
 from altaircms.auth.models import PERMISSION_VIEW, PERMISSION_EDIT
 
 
