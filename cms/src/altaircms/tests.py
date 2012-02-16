@@ -10,16 +10,19 @@ from altaircms import add_renderer_globals
 def _initTestingDB():
     from sqlalchemy import create_engine
     from altaircms.models import initialize_sql
-    session = initialize_sql(create_engine('sqlite://'))
+    session = initialize_sql(create_engine('sqlite:///:memory:'))
     return session
 
-class TestBaseView(unittest.TestCase):
+
+class BaseTest(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp()
         self.config.add_subscriber(add_renderer_globals, BeforeRender)
 
         _initTestingDB()
 
+
+class TestBaseView(BaseTest):
     def tearDown(self):
         testing.tearDown()
 

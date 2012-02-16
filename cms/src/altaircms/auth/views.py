@@ -90,7 +90,7 @@ class OAuthLogin(object):
                 self.request.session['request_token']['oauth_token_secret'])
             client = oauth2.Client(self.consumer, token)
 
-            resp, content = client.request(self.access_token_url, "GET")
+            resp, content = self._oauth_request(client, self.access_token_url, "GET")
             data = dict(urlparse.parse_qsl(content))
 
             if resp.status != 200 or 'user_id' not in data:
