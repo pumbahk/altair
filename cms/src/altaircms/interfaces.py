@@ -1,4 +1,5 @@
 from zope.interface import Interface
+from zope.interface import Attribute
 
 class IConcrete(Interface):
     def concrete(self):
@@ -14,3 +15,16 @@ class IConcreteNode(IConcrete, INode):
     def concrete(self, request=None, config=None, extra_context=None):
         pass
 
+class IBlockTree(Interface):
+    Attribute("blocks")
+
+class ICacher(Interface):
+    Attribute("fetched")
+    Attribute("scanned")
+    Attribute("result")
+
+    def scan(self, target):
+        pass
+
+    def fetch(self):
+        pass

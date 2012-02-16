@@ -1,5 +1,5 @@
-　　## 画像ウィジェット
+## 画像ウィジェット
 ## @TODO: height, widthといった属性は必要か?
-<div>
-    <img src="${widget.url}" alt="${widget.alt}"/>
+<div class="image-widget>
+    <img src="${widget.asset.filepath}"/>
 </div>

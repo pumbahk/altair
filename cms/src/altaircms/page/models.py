@@ -2,9 +2,6 @@
 from datetime import datetime
 from formalchemy import Column
 
-import transaction
-
-from sqlalchemy import Column, Integer, ForeignKey, DateTime, Unicode, String
 from sqlalchemy import Integer
 from sqlalchemy import Unicode
 from sqlalchemy import String

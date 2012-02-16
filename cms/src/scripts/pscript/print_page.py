@@ -4,3 +4,4 @@ import transaction
 from altaircms.page.models import Page
 
 print DBSession.query(Page).all()
+

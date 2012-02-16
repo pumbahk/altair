@@ -7,22 +7,20 @@
 
 from datetime import datetime
 
-from sqlalchemy.orm import relationship, mapper
-from sqlalchemy.schema import Column, ForeignKey, Table
-from sqlalchemy import Integer, DateTime, Unicode, String
+import sqlalchemy as sa
+import sqlalchemy.orm as orm
 
 from altaircms.models import Base, DBSession
-from altaircms.asset.models import *
 
 __all__ = [
     'Widget',
     'ImageWidget',
-    'MovieWidget',
-    'FlashWidget',
-    'MenuWidget',
+    # 'MovieWidget',
+    # 'FlashWidget',
+    # 'MenuWidget',
     'TextWidget',
-    'BreadcrumbsWidget',
-    'TopicWidget',
+    # 'BreadcrumbsWidget',
+    # 'TopicWidget',
 ]
 
 WIDGET_TYPE = [
@@ -35,6 +33,128 @@ WIDGET_TYPE = [
     'menu',
     'billinghistory',
 ]
+    
+
+class AssetWidgetMixin(object):
+    _asset = None
+
+    @property
+    def asset(self):
+        if not self.asset_id:
+            return None
+
+        if self._asset:
+            return self._asset
+
+        clsname = self.__class__.__name__[:self.__class__.__name__.rfind("Widget")] + 'Asset'
+        cls = globals()[clsname]
+
+        self._asset = DBSession.query(cls).get(self.asset_id)
+        return self._asset
+
+
+class Widget(Base):
+    query = DBSession.query_property()
+    __tablename__ = "widget"
+    id = sa.Column(sa.Integer, primary_key=True)
+    site_id = sa.Column(sa.Integer, sa.ForeignKey("site.id"))
+    type = sa.Column(sa.String, nullable=False)
+
+    def __init__(self, id_, site_id, type_):
+        self.id = id_
+        self.site_id = site_id
+        self.type = type_
+
+    def __repr__(self):
+        return '<%s %s>' % (self.__class__.__name__, self.id)
+
+    @property
+    def appstruct(self):
+        ## ウィジェットのプロパティを取得する
+        attrs = [attr for attr in dir(self) if attr != 'appstruct' and not attr.startswith('_') and not callable(getattr(self, attr))]
+        output = {}
+        for attr in attrs:
+            output[attr] = getattr(self, attr)
+
+        return output
+
+class FromDictMixin(object):
+    @classmethod
+    def from_dict(cls, D):
+        instance = cls()
+        for k, v in D.items():
+            setattr(instance, k, v)
+        return instance
+
+class TextWidget(FromDictMixin, Base):
+    type = "text"
+    
+    query = DBSession.query_property()
+    __tablename__ = "widget_text"
+    id = sa.Column(sa.Integer, primary_key=True)
+    text = sa.Column(sa.Unicode)
+
+    def __init__(self, id=None, text=None):
+        self.id = id
+        self.text = text
+
+from altaircms.asset.models import *
+
+class ImageWidget(FromDictMixin, Base):
+    type = "image"
+
+    query = DBSession.query_property()
+    __tablename__ = "widget_image"
+    id = sa.Column(sa.Integer, primary_key=True)
+    asset_id = sa.Column(sa.Integer, sa.ForeignKey("asset.id"))
+    asset = orm.relationship(ImageAsset, backref="widget", uselist=False)
+
+    def __init__(self, id=None, asset_id=None):
+        self.id = id
+        self.asset_id = asset_id
+
+class WidgetFetchException(Exception):
+    pass
+
+class WidgetFetcher(object):
+    """ fetching a widget from a element of page.structure .
+    e.g. {block_name: "image_widget",  pk: 1} => <ImageWidget object>
+    """
+    def fetch(self, name, pks):
+        try:
+            return getattr(self, name)(pks)
+        except AttributeError:
+            raise WidgetFetchException("%s model's fetch method is not defined" % name)
+
+    def _query_by_object(self, model, pks):
+        return DBSession.query(model).filter(model.id.in_(pks))
+
+    def image_widget(self, pks):
+        return self._query_by_object(ImageWidget, pks)
+
+    def freetext_widget(self, pks):
+        return self._query_by_object(TextWidget, pks)
+
+## ?? ##
+class Page2Widget(Base):
+    __tablename__ = "page2widget"
+
+    id = sa.Column(sa.Integer, primary_key=True)
+    created_at = sa.Column(sa.DateTime, default=datetime.now())
+    updated_at = sa.Column(sa.DateTime, default=datetime.now())
+
+    block = sa.Column(sa.String) # HTMLのIDが入る想定
+    order = sa.Column(sa.Integer) # ウィジェットの並び替え情報
+
+    options = sa.Column(sa.String) # 何かしらの付加情報があればJSONシリアライズして保持する
+
+    page_id = sa.Column(sa.Integer, sa.ForeignKey("page.id"))
+    widget_id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"))
+
+    orm.relationship("Page", backref="widget")
+
+
+"""
 
 widget = Table(
     'widget',
@@ -95,45 +215,6 @@ widget_menu = Table(
     Column('menu', String)
 )
 
-
-class AssetWidgetMixin(object):
-    _asset = None
-
-    @property
-    def asset(self):
-        if not self.asset_id:
-            return None
-
-        if self._asset:
-            return self._asset
-
-        clsname = self.__class__.__name__[:self.__class__.__name__.rfind("Widget")] + 'Asset'
-        cls = globals()[clsname]
-
-        self._asset = DBSession.query(cls).get(self.asset_id)
-        return self._asset
-
-
-class Widget(object):
-    def __init__(self, id_, site_id, type_):
-        self.id = id_
-        self.site_id = site_id
-        self.type = type_
-
-    def __repr__(self):
-        return '<%s %s>' % (self.__class__.__name__, self.id)
-
-    @property
-    def appstruct(self):
-        ## ウィジェットのプロパティを取得する
-        attrs = [attr for attr in dir(self) if attr != 'appstruct' and not attr.startswith('_') and not callable(getattr(self, attr))]
-        output = {}
-        for attr in attrs:
-            output[attr] = getattr(self, attr)
-
-        return output
-
-
 class TextWidget(Widget):
     def __init__(self, captured):
         self.id = captured.get('id', None)
@@ -145,7 +226,6 @@ class MenuWidget(Widget):
         self.id = captured.get('id', None)
         self.site_id = captured.get('site_id', None)
         self.menu = captured.get('menu', None)
-
 
 class BreadcrumbsWidget(Widget):
     def __init__(self, captured):
@@ -193,26 +273,6 @@ mapper(TopicWidget, widget_topic, inherits=Widget, polymorphic_identity='topic')
 mapper(MenuWidget, widget_menu, inherits=Widget, polymorphic_identity='menu')
 
 
-
-class Page2Widget(Base):
-    __tablename__ = "page2widget"
-
-    id = Column(Integer, primary_key=True)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
-
-    block = Column(String) # HTMLのIDが入る想定
-    order = Column(Integer) # ウィジェットの並び替え情報
-
-    options = Column(String) # 何かしらの付加情報があればJSONシリアライズして保持する
-
-    page_id = Column(Integer, ForeignKey("page.id"))
-    widget_id = Column(Integer, ForeignKey("widget.id"))
-
-    relationship("Page", backref="widget")
-
-
-"""
 class TwitterTimelineWidget(Base):
     __tablename__ = "widget_twitter_timeline"
 
