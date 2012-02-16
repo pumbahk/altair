@@ -1,6 +1,11 @@
 import unittest
+
 from pyramid.config import Configurator
 from pyramid import testing
+from pyramid.events import BeforeRender
+
+from altaircms import add_renderer_globals
+
 
 def _initTestingDB():
     from sqlalchemy import create_engine
@@ -8,9 +13,11 @@ def _initTestingDB():
     session = initialize_sql(create_engine('sqlite://'))
     return session
 
-class TestMyView(unittest.TestCase):
+class TestBaseView(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp()
+        self.config.add_subscriber(add_renderer_globals, BeforeRender)
+
         _initTestingDB()
 
     def tearDown(self):
@@ -18,6 +25,7 @@ class TestMyView(unittest.TestCase):
 
     def test_it(self):
         from altaircms.base.views import dashboard
+
         request = testing.DummyRequest()
         resp = dashboard(request)
-        self.assertTrue(isinstance(resp, dict))
+        self.assertEqual(resp, {})

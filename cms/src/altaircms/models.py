@@ -27,7 +27,7 @@ def populate():
 
 
 def initialize_sql(engine):
-    DBSession.configure(bind=engine)
+    # DBSession.configure(bind=engine)
     Base.metadata.bind = engine
     Base.metadata.create_all(engine)
     try:

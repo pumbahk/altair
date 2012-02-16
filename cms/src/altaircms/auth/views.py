@@ -2,7 +2,7 @@
 import urlparse
 
 from pyramid.exceptions import Forbidden
-from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPFound, HTTPBadRequest, HTTPUnauthorized
 from pyramid.security import forget, remember
 from pyramid.view import view_config
 
@@ -41,23 +41,39 @@ def logout(request):
 
 
 class OAuthLogin(object):
-    def __init__(self, request):
+    def __init__(self, request, consumer_key=None, consumer_secret=None,
+                 authorize_url='http://twitter.com/oauth/authorize',
+                 request_token_url='http://twitter.com/oauth/request_token',
+                 access_token_url='http://twitter.com/oauth/access_token',
+                 _stub_client=None):
         self.request = request
 
         self.api_endpoint = 'https://api.twitter.com/1/'
-        self.request_token_url = 'http://twitter.com/oauth/request_token'
-        self.access_token_url = 'http://twitter.com/oauth/access_token'
-        self.authorize_url = 'http://twitter.com/oauth/authorize'
 
-        self.consumer = oauth2.Consumer(
-            request.registry.settings['oauth.consumer_key'],
-            request.registry.settings['oauth.consumer_secret']
-        )
+        self.request_token_url = request_token_url
+        self.access_token_url = access_token_url
+        self.authorize_url = authorize_url
+
+        consumer_key = consumer_key if consumer_key else request.registry.settings['oauth.consumer_key']
+        consumer_secret = consumer_secret if consumer_secret else request.registry.settings['oauth.consumer_secret']
+        self.consumer = oauth2.Consumer(consumer_key, consumer_secret)
+
+        self._stub_client = _stub_client
+
+    def _oauth_request(self, client, url, method):
+        if self._stub_client:
+            return self._stub_client.request(url, method)
+
+        return client.request(url, method)
 
     @view_config(route_name='oauth_entry')
     def oauth_entry(self):
         client = oauth2.Client(self.consumer)
-        resp, content = client.request(self.request_token_url, "GET")
+
+        resp, content = self._oauth_request(client, self.request_token_url, "GET")
+        if resp.status != 200 and resp.status != 302:
+            return HTTPUnauthorized()
+
         request_token = dict(urlparse.parse_qsl(content))
 
         self.request.session['request_token'] = {

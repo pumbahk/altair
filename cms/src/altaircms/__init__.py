@@ -75,9 +75,8 @@ def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
     engine = engine_from_config(settings, 'sqlalchemy.')
-    initialize_sql(engine)
-
     sqlahelper.add_engine(engine)
+    initialize_sql(engine)
 
     # authn_policy = AuthTktAuthenticationPolicy(secret='SDQGxGIhVqSr3zJWV8KvHqHtJujhJj', callback=groupfinder)
     authn_policy = SessionAuthenticationPolicy(callback=groupfinder)
