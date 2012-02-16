@@ -48,6 +48,9 @@ class Operator(Base):
 
     UniqueConstraint('auth_source', 'user_id')
 
+    def __unicode__(self):
+        return '%s' % self.user_id
+
 
 class Permission(Base):
     __tablename__ = 'permission'

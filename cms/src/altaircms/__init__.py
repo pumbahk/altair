@@ -4,6 +4,7 @@ from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
 from pyramid.session import UnencryptedCookieSessionFactoryConfig
 from pyramid.security import Allow, Authenticated, Everyone, Deny
+from pyramid.events import BeforeRender
 
 import sqlahelper
 
@@ -11,6 +12,7 @@ from sqlalchemy import engine_from_config
 
 from altaircms.security import groupfinder
 from altaircms.models import initialize_sql
+from altaircms.auth import helpers
 
 
 try:
@@ -19,6 +21,10 @@ try:
     print 'Using PyMySQL'
 except:
     pass
+
+
+def add_renderer_globals(event):
+    event['user'] = helpers.user_context(event)
 
 
 class RootFactory(object):
@@ -110,5 +116,6 @@ def main(global_config, **settings):
     config.scan('altaircms.front')
 
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)
+    config.add_subscriber(add_renderer_globals, BeforeRender)
 
     return config.make_wsgi_app()

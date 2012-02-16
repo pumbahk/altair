@@ -16,12 +16,9 @@ def dashboard(request):
     """
     ログイン後トップページ
     """
-    logged_in = authenticated_userid(request)
-
     return dict(
         login='/login',
         logout='/logout',
-        logged_in=logged_in,
     )
 
 
