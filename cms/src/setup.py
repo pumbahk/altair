@@ -20,6 +20,7 @@ requires = [
     'alembic',
     'pyramid_deform',
     'pyramid_openid',
+    'zope.interface',
     "velruse",
     "bpmappers",
     'oauth2',
