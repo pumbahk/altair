@@ -18,6 +18,7 @@ requires = [
     'sadisplay',
     'pyramid_fanstatic',
     'deform',
+    'alembic',
     'pyramid_deform',
     'pyramid_openid',
     "velruse",
