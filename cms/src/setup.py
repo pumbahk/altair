@@ -16,7 +16,6 @@ requires = [
     'SQLAHelper',
     'zope.sqlalchemy',
     'sadisplay',
-    'pyramid_fanstatic',
     'deform',
     'alembic',
     'pyramid_deform',
