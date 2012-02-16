@@ -71,10 +71,6 @@ def cms_include(config):
     config.add_route('widget_list', '/widget')
 
 
-def front_include(config):
-    config.add_route('front', '/{page_name:.*}')
-
-
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
@@ -103,7 +99,7 @@ def main(global_config, **settings):
 
     config.include(auth_include, route_prefix='/auth')
     config.include(api_include, route_prefix='/api')
-    config.include(front_include, route_prefix='/f')
+    config.include("altaircms.front", route_prefix="f")
     config.include(cms_include, route_prefix='')
 
     config.scan('altaircms.base')

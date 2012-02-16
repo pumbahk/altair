@@ -21,8 +21,8 @@ class PageSchema(colander.MappingSchema):
     tags = colander.SchemaNode(colander.String(), missing='') # タグマスタと紐付ける用。ajaxで書いたほうがいいかも
 
     layout_id = colander.SchemaNode(colander.Integer())
-    structure = colander.SchemaNode(colander.String(), validator=json_validator,
-        widget=deform.widget.TextAreaWidget())
+    # structure = colander.SchemaNode(colander.String(), validator=json_validator,
+    #                                 widget=deform.widget.TextAreaWidget())
 
 PageAddForm = Form(PageSchema(), buttons=('submit',), use_ajax=True)
 PageEditForm = Form(PageSchema(), buttons=('submit', 'duplicate'), use_ajax=True)
