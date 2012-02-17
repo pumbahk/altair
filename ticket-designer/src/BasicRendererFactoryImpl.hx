@@ -1,15 +1,29 @@
 class BasicRendererFactoryImpl implements RendererFactory {
-    var klasses:Hash<Class<Renderer>>;
+    var klassesMap:Hash<Hash<Class<Renderer>>>;
+    var nextId:Int;
 
-    public function addImplementation(componentKlass:Class<Component>, rendererKlass:Class<Renderer>) {
-        klasses.set(Type.getClassName(componentKlass), rendererKlass);
+    public function addImplementation(renderableKlass:Class<Renderable>, rendererKlass:Class<Renderer>, ?variant:String) {
+        var className = Type.getClassName(renderableKlass);
+        var klasses = klassesMap.get(className);
+        if (klasses == null)
+            klassesMap.set(className, klasses = new Hash());
+        klasses.set(variant == null ? '': variant, rendererKlass);
     }
 
-    public function create(componentKlass:Class<Component>):Renderer {
-        return untyped Type.createInstance(klasses.get(Type.getClassName(componentKlass)), []);
+    public function create(renderableKlass:Class<Renderable>, ?options:Dynamic):Renderer {
+        var className = Type.getClassName(renderableKlass);
+        var klasses = klassesMap.get(className);
+        if (klasses == null)
+            throw new IllegalArgumentException("no implementations are registered for " + className);
+        var variant = options != null ? options.variant: '';
+        var klass = klasses.get(variant);
+        if (klass == null)
+            throw new IllegalArgumentException("no implementation is registered for " + className + ", variant=" + variant);
+        return untyped Type.createInstance(klass, [ nextId++ ]);
     }
 
     public function new() {
-        klasses = new Hash<Class<Renderer>>();
+        klassesMap = new Hash();
+        nextId = 1;
     }
 }

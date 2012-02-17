@@ -15,7 +15,7 @@ class ComponentBase<Tself:Component> implements Component {
     private var draggable:Bool;
     private var state:State;
 
-    public function new(?renderer:Renderer) {
+    public function new(renderer:ComponentRenderer) {
         var meta = Meta.getType(Type.getClass(this));
         var on = { click: null, dragstart: null, dragend: null };
         var events = ["click", "dragstart", "drag", "dragend"];
@@ -28,7 +28,7 @@ class ComponentBase<Tself:Component> implements Component {
         this.state = NONE;
         this.parent = null;
         this.renderer = renderer;
-        this.position = { x: 0, y: 0 };
+        this.position = { x: 0., y: 0. };
 
         bindEvents();
     }

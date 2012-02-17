@@ -1,12 +1,12 @@
-class BasicRenderingManagerImpl<Trenderer:Renderer> implements RenderingManager {
-    public var renderers(get_renderers, null):Iterable<Renderer>;
+class BasicStageImpl<Trenderer:ComponentRenderer, Tview:View> implements Stage {
+    public var renderers(get_renderers, null):Iterable<ComponentRenderer>;
+    public var view(get_view, null):View;
+    public var view_:Tview;
     var renderers_:Array<Trenderer>;
-    var nextId:Int;
 
-    public function addRenderer(renderer:Renderer):Void {
-        var id = nextId++;
+    public function add(renderer:ComponentRenderer):Void {
         renderers_.push(untyped renderer);
-        renderer.setup(this, id);
+        renderer.stage = this;
     }
 
     public function dispose():Void {
@@ -22,12 +22,16 @@ class BasicRenderingManagerImpl<Trenderer:Renderer> implements RenderingManager 
         }
     }
 
-    private function get_renderers():Iterable<Renderer> {
+    private function get_renderers():Iterable<ComponentRenderer> {
         return renderers_;
     }
 
-    public function new() {
+    private function get_view():View {
+        return view_;
+    }
+
+    public function new(view:Tview) {
+        this.view_ = view;
         this.renderers_ = new Array<Trenderer>();
-        this.nextId = 1;
     }
 }
