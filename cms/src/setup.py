@@ -14,6 +14,7 @@ requires = [
     'transaction',
     'SQLAlchemy',
     'SQLAHelper',
+    "webtest", 
     ## 'zope.sqlalchemy',
     'sadisplay',
     'deform',
