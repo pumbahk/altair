@@ -18,7 +18,18 @@ import transaction
 DBSession = sqlahelper.get_session()
 Base = sqlahelper.get_base()
 
+def to_dict(self):
+    from sqlalchemy.sql.operators import ColumnOperators
+    return {k:getattr(self, k) for k, v in self.__class__.__dict__.items() \
+                if isinstance(v, ColumnOperators)}
+Base.to_dict = to_dict
 
+def from_dict(cls, D):
+    instance = cls()
+    for k, v in D.items():
+        setattr(instance, k, v)
+    return instance
+Base.from_dict = classmethod(from_dict)
 
 def populate():
     session = DBSession()

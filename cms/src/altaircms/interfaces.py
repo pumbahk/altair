@@ -28,3 +28,13 @@ class ICacher(Interface):
 
     def fetch(self):
         pass
+
+# class IFromDict(Interface):
+#     @classmethod
+#     def from_dict(cls):
+#         pass
+# class IToDict(Interface):
+#     def to_dict(self):
+#         pass
+# class IWithDict(IFromDict, IToDict):
+#     pass

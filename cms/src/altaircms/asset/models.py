@@ -29,6 +29,17 @@ class Asset(object):
 
     def get_url(self):
         return route_url('asset_view', asset_id=self.id)
+    __ks__ = ["id", "site_id", "filepath", "size", "width", "height", "length", "mimetype", "type"]
+
+    def to_dict(self):
+        return {k: getattr(self, k) for k in self.__ks__ if hasattr(self, k)}
+
+    @classmethod
+    def from_dict(cls, D):
+        instance = cls(None)
+        for k in cls.__ks__:
+            setattr(instance, k, D.get(k))
+        return instance
 
 
 class ImageAsset(Asset):

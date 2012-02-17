@@ -14,7 +14,10 @@ def user_context(event):
     user = None
 
     try:
-        user = DBSession.query(Operator).filter_by(user_id=authenticated_userid(event['request'])).one()
+        request = event['request']
+        if not hasattr(request, "session"):
+            return None
+        user = DBSession.query(Operator).filter_by(user_id=authenticated_userid(request)).one()
     except NoResultFound, e:
         pass
 

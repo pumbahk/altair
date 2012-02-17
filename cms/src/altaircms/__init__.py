@@ -71,7 +71,7 @@ def cms_include(config):
     config.add_route('widget_list', '/widget')
 
 
-def main(global_config, **settings):
+def main_app(global_config, settings):
     """ This function returns a Pyramid WSGI application.
     """
     engine = engine_from_config(settings, 'sqlalchemy.')
@@ -114,3 +114,7 @@ def main(global_config, **settings):
     config.add_subscriber(add_renderer_globals, BeforeRender)
 
     return config.make_wsgi_app()
+    
+def main(global_config, **settings):
+    return main_app(global_config, settings)
+
