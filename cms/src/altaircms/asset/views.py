@@ -18,6 +18,7 @@ from altaircms.asset import get_storepath
 from altaircms.asset.models import Asset, ImageAsset, MovieAsset, FlashAsset
 from altaircms.asset.forms import *
 from altaircms.models import DBSession
+from altaircms.views import BaseRESTAPIView
 
 
 EXT_MAP = {
@@ -153,3 +154,37 @@ class AssetEditView(object):
         else:
             # 更新処理
             pass
+
+
+
+
+class AssetRESTAPIView(BaseRESTAPIView):
+    def __init__(self, request, *args, **kwargs):
+        self.validation_schema = ImageAssetSchema # @TODO: 切り替えられるようにする
+        super(AssetRESTAPIView, self).__init__(request, *args, **kwargs)
+
+    #@view_config(renderer='json')
+    def create(self):
+        return super(AssetRESTAPIView, self).create()
+
+    #@view_config(renderer='json')
+    def read(self):
+        self.model_object = self.get_object_by_id(self.id)
+        return super(AssetRESTAPIView, self).read()
+
+    #@view_config(renderer='json')
+    def update(self):
+        self.model_object = self.get_object_by_id(self.id)
+        super(AssetRESTAPIView, self).update()
+
+    #@view_config(renderer='json')
+    def delete(self):
+        self.model_object = self.get_object_by_id(self.id)
+        super(AssetRESTAPIView, self).delete()
+
+    def get_object_by_id(self, id):
+        try:
+            model_object = self.session.query(self.model).get(id)
+            return model_object
+        except:
+            return None
