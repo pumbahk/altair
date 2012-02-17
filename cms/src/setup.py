@@ -32,7 +32,8 @@ requires = [
     "js.json2", 
     "js.jqueryui", 
     "js.jquery_tools", 
-    "js.underscore"
+    "js.underscore",
+    'js.backbone',
     ]
 
 if sys.version_info[:3] < (2,5,0):
