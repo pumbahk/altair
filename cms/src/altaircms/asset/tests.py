@@ -3,7 +3,6 @@ import os
 import cgi
 
 from pyramid import testing
-from requests.packages.oreos.structures import MultiDict
 
 from altaircms.tests import BaseTest
 from altaircms.asset.views import AssetRESTAPIView
