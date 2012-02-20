@@ -6,6 +6,7 @@ import json
 from pyramid.view import view_config
 from pyramid.response import Response
 from pyramid.exceptions import NotFound
+from pyramid.httpexceptions import HTTPFound
 from sqlalchemy.sql.expression import asc
 
 import transaction
@@ -15,6 +16,12 @@ from altaircms.models import DBSession, Event
 from altaircms.page.models import Page
 from altaircms.widget.models import Page2Widget, Widget
 
+@view_config(route_name="page_edit_", request_method="POST")
+def to_publish(request):     ## fixme
+    page_id = request.matchdict["page_id"]
+    page = Page.query.filter(Page.id==page_id).one()
+    page.to_published()
+    return HTTPFound(request.route_url("page_edit_", page_id=page_id))
 
 class PageEditView(object):
     def __init__(self, request):
@@ -170,21 +177,21 @@ class PageEditView(object):
 
         dbsession.add(page)
 
-        page_structure = json.loads(captured['structure'])
+        # page_structure = json.loads(captured['structure'])
 
-        q = dbsession.query(Page2Widget).filter_by(page_id=page.id)
-        for p2w in q:
-            dbsession.delete(p2w)
+        # q = dbsession.query(Page2Widget).filter_by(page_id=page.id)
+        # for p2w in q:
+        #     dbsession.delete(p2w)
 
-        for key, values in page_structure.iteritems():
-            for value in values:
-                dbsession.add(
-                    Page2Widget(
-                        page_id=page.id,
-                        widget_id=value,
-                        block=key
-                    )
-                )
+        # for key, values in page_structure.iteritems():
+        #     for value in values:
+        #         dbsession.add(
+        #             Page2Widget(
+        #                 page_id=page.id,
+        #                 widget_id=value,
+        #                 block=key
+        #             )
+        #         )
 
         transaction.commit()
         DBSession.remove()

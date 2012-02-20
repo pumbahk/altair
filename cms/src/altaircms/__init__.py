@@ -100,6 +100,7 @@ def main_app(global_config, settings):
     config.include(api_include, route_prefix='/api')
     config.include("altaircms.front", route_prefix="f")
     config.include(cms_include, route_prefix='')
+    config.include("altaircms.plugins")
 
     config.scan('altaircms.base')
     config.scan('altaircms.auth')
@@ -109,8 +110,10 @@ def main_app(global_config, settings):
     config.scan('altaircms.widget')
     config.scan('altaircms.layout')
     config.scan('altaircms.front')
+    config.scan("altaircms.plugins")
 
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)
+    config.add_static_view('plugins/static', 'altaircms:plugins/static', cache_max_age=3600)
     config.add_subscriber(add_renderer_globals, BeforeRender)
 
     return config.make_wsgi_app()

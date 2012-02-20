@@ -3,42 +3,132 @@ import os
 import cgi
 
 from pyramid import testing
+import transaction
+from webob.multidict import MultiDict
+
+from altaircms.models import DBSession
 
 from altaircms.tests import BaseTest
 from altaircms.asset.views import AssetRESTAPIView
-
+from altaircms.asset.models import ImageAsset
 
 """
+browser = None
+def setUpModule():
+    from selenium import selenium
+    global browser
+    browser = selenium("localhost", 4444, "*chrome", "http://localhost:8521/")
+    browser.start()
+    return browser
+
+
+def tearDownModule():
+    browser.stop()
+"""
+
+def _getFile(name='test.py'):
+    import os
+    path = os.path.join(os.path.abspath(os.path.dirname(__file__)), name)
+    filename = os.path.split(path)[-1]
+    return path, filename
+
 class TestAssetView(BaseTest):
     def setUp(self):
         self.request = testing.DummyRequest()
+        #setUpModule()
         super(TestAssetView, self).setUp()
 
-    def _makeOne(self, tmpstore, **kw):
-        from deform.widget import FileUploadWidget
-        return FileUploadWidget(tmpstore, **kw)
+    def tearDown(self):
+        DBSession.query(ImageAsset).delete()
 
     def test_create(self):
-        self.request.POST = {}
+        # null post
+        self.request.POST = MultiDict()
 
         resp = AssetRESTAPIView(self.request).create()
         self.assertEqual(resp.status_int, 400)
         self.assertTrue(isinstance(resp.message, dict))
         self.assertEqual(resp.message['type'], 'Required')
         self.assertEqual(resp.message['uploadfile'], 'Required')
+        self.assertEqual(DBSession.query(ImageAsset).count(), 0)
 
-        upload = DummyUpload()
-        upload = cgi.FieldStorage(fp=DummyUpload())
-        self.request.POST = {
-            'type': 'image',
-            'uploadfile': upload,
-            'submit': 'submit',
-        }
+        # post filled
+        upload = cgi.FieldStorage(u'Binaries--file', u'test.js')
+
+        self.request.POST = MultiDict([
+            (u'_charset_', u'UTF-8'),
+            (u'__formid__', u'deform'),
+            (u'type', u'image'),
+            (u'alt', u'alt text'),
+            (u'width', u'320'),
+            (u'height', u'240'),
+            (u'__start__', u'uploadfile:mapping'),
+            (u'upload', upload),
+            (u'__end__', 'uploadfile:mapping'),
+            (u'submit', u'submit')
+        ])
 
         resp = AssetRESTAPIView(self.request).create()
         self.assertEqual(resp.status_int, 201)
-        self.assertTrue(isinstance(resp.message, dict))
-"""
+        self.assertTrue(isinstance(resp.content_location, str))
+        self.assertEqual(DBSession.query(ImageAsset).count(), 1)
+
+        #@TODO: ファイルの保存確認？
+
+    def test_read(self):
+        self._create_imageasset()
+
+        resp = AssetRESTAPIView(self.request, 1).read()
+
+        self.assertEqual(resp.status_int, 200)
+        self.assertEqual(resp.body['id'], 1)
+        self.assertEqual(resp.body['mimetype'], 'image/jpeg')
+        self.assertEqual(resp.body['filepath'], 'hoge.jpg')
+
+    def test_update(self):
+        self._create_imageasset()
+
+        image_asset = DBSession.query(ImageAsset).one()
+        self.assertEqual(image_asset.filepath, 'hoge.jpg')
+        self.assertEqual(image_asset.mimetype, 'image/jpeg')
+
+        # post filled
+        fp = open(os.path.join(os.path.dirname(__file__), 'test.jpg'), 'rb')
+        upload = cgi.FieldStorage(fp, u'test.jpg')
+
+        self.request.POST = MultiDict([
+            (u'_charset_', u'UTF-8'),
+            (u'__formid__', u'deform'),
+            (u'type', u'image'),
+            (u'alt', u'alt text'),
+            (u'width', u'320'),
+            (u'height', u'240'),
+            (u'__start__', u'uploadfile:mapping'),
+            (u'upload', upload),
+            (u'__end__', 'uploadfile:mapping'),
+            (u'submit', u'submit')
+        ])
+        resp = AssetRESTAPIView(self.request, 1).update()
+        image_asset = DBSession.query(ImageAsset).one()
+        self.assertEqual(resp.status_int, 200)
+        self.assertEqual(image_asset.filepath, 'hoge.jpg')  # @FIXME: test.jpgに更新されない
+        self.assertEqual(image_asset.alt, 'alt text')
+        self.assertEqual(image_asset.width, 320)
+        self.assertEqual(image_asset.height, 240)
+
+    def test_delete(self):
+        self._create_imageasset()
+
+        resp = AssetRESTAPIView(self.request, 1).delete()
+        self.assertEqual(resp.status_int, 200)
+        self.assertEqual(DBSession.query(ImageAsset).count(), 0)
+
+    def _create_imageasset(self):
+        obj = ImageAsset()
+        obj.filepath = 'hoge.jpg'
+        obj.mimetype = 'image/jpeg'
+
+        DBSession.add(obj)
 
 
 # code from https://github.com/Pylons/deform/blob/master/deform/tests/test_widget.py

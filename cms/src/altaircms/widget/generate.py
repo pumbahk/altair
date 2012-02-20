@@ -3,8 +3,7 @@ from collections import defaultdict
 from altaircms.interfaces import IBlockTree
 from altaircms.interfaces import ICacher
 from zope.interface import implements
-
-from . import models
+from .fetcher import WidgetFetcher
 
 class WidgetTreeGenerateException(Exception):
     pass
@@ -13,9 +12,9 @@ class WidgetTreeProxy(object):
     """ a facade for one page object.
     """
     implements(IBlockTree)
-    def __init__(self, page):
+    def __init__(self, page, session=None):
         self.page = page
-        self.cacher = WidgetCacher(models.WidgetFetcher())
+        self.cacher = WidgetCacher(WidgetFetcher(session=session))
         self.tree = None
     
     def _get_tree(self):
@@ -92,6 +91,11 @@ class WidgetCacher(object):
             self.fetch()
         tree = WidgetTree()
         for block_name, blocks in _structure_as_dict(page).items():
-            objs = [self.result[o["name"]][o["pk"]] for o in blocks]
+            objs = []
+            for o in blocks:
+                widgets = self.result[o["name"]]
+                if widgets.get(o["pk"]):
+                    objs.append(widgets[o["pk"]])
+                ## a widget's content is empty, then skipped
             tree.adds(block_name, objs)
         return tree

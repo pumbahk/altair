@@ -1,5 +1,8 @@
 inifile = development.ini
 
+clean:
+	find . -name "*.pyc" | xargs rm 
+
 test:
 	python -m unittest discover
 

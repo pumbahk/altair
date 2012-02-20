@@ -14,11 +14,14 @@ from pyramid.response import Response
 from pyramid.view import view_config
 from sqlalchemy.sql.expression import desc
 
+from altaircms.models import DBSession
+from altaircms.views import BaseRESTAPIView
+
 from altaircms.asset import get_storepath
 from altaircms.asset.models import Asset, ImageAsset, MovieAsset, FlashAsset
 from altaircms.asset.forms import *
-from altaircms.models import DBSession
-from altaircms.views import BaseRESTAPIView
+from altaircms.asset.mappers import *
+
 
 
 EXT_MAP = {
@@ -54,6 +57,7 @@ class AssetEditView(object):
 
         if submitted in self.request.POST:
             try:
+                import pdb; pdb.set_trace()
                 controls = self.request.POST.items()
                 captured = form.validate(controls)
                 if success:
@@ -159,6 +163,8 @@ class AssetEditView(object):
 
 
 class AssetRESTAPIView(BaseRESTAPIView):
+    model = ImageAsset
+
     def __init__(self, request, *args, **kwargs):
         self.validation_schema = ImageAssetSchema # @TODO: 切り替えられるようにする
         super(AssetRESTAPIView, self).__init__(request, *args, **kwargs)
@@ -175,12 +181,16 @@ class AssetRESTAPIView(BaseRESTAPIView):
     #@view_config(renderer='json')
     def update(self):
         self.model_object = self.get_object_by_id(self.id)
-        super(AssetRESTAPIView, self).update()
+        return super(AssetRESTAPIView, self).update()
 
     #@view_config(renderer='json')
     def delete(self):
         self.model_object = self.get_object_by_id(self.id)
-        super(AssetRESTAPIView, self).delete()
+        return super(AssetRESTAPIView, self).delete()
+
+    def _get_mapper(self):
+        mapper = globals()[self.model.__name__ + 'Mapper']
+        return mapper
 
     def get_object_by_id(self, id):
         try:

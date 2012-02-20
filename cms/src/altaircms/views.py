@@ -5,7 +5,8 @@ from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.renderers import render
 from pyramid.response import Response
 from pyramid.view import view_config
-from models import DBSession
+
+from altaircms.models import DBSession
 
 def render_widget(request, widget):
     try:
@@ -56,7 +57,7 @@ class BaseRESTAPIView(object):
             self._create_or_update()
 
             url = ''
-            return Response(status=201, kw={'Location': url}) # @TODO: need return new object location
+            return Response(status=201, content_location=url) # @TODO: need return new object location
         except deform.ValidationFailure, e:
             error = e.error.asdict()
             return HTTPBadRequest(error)
@@ -83,13 +84,15 @@ class BaseRESTAPIView(object):
 
     def _validate_and_map(self):
         try:
-            # import pdb; pdb.set_trace()
             controls = self.request.POST.items()
             captured = self.form.validate(controls)
 
+            if not self.model_object:
+                self.model_object = self.model()
+
             for key, value in captured.iteritems():
-                attr = getattr(self.model, key)
-                setattr(self.model, attr, value)
+                if key in self.model_object.__ks__:
+                    setattr(self.model_object, key, value)
         except deform.ValidationFailure:
             raise
 
@@ -97,7 +100,7 @@ class BaseRESTAPIView(object):
         self.session.add(self.model_object)
 
     def _get_mapper(self):
-        return globals()[self.model.__name__.capitalize() + 'Mapper']
+        raise NotImplementedError()
 
     def get_object_by_id(self, id): #@TODO: いらなくね？
         raise NotImplementedError()

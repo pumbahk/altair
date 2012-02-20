@@ -22,24 +22,27 @@ class FunctionalPageRenderingTest(unittest.TestCase):
         from altaircms import main_app
         app = main_app({}, {"sqlalchemy.url": "sqlite://", 
                             "mako.directories": os.path.join(self.DIR, "templates"), 
+                            "plugin.static_directory": "altaircms:plugins/static", 
                             "widget.template_path_format": "%s.mako", 
                             "widget.layout_directories": "."})
         from webtest import TestApp
         self.testapp = TestApp(app)
 
     def tearDown(self):
+        import transaction
+        transaction.abort()
         self._getSession().remove()
         
     def test_it(self):
         session = self._getSession()
         self._addData(session)
 
-        result = self.testapp.get("/f/sample_page", status=200)
+        result = self.testapp.get("/f/publish/sample_page", status=200)
         import re
         self.assertEqual(re.sub("\s", "", result.text), "text:1image:2")
 
     def test_it_nodata(self):
-        self.testapp.get("/f/sample_page", status=404)
+        self.testapp.get("/f/publish/sample_page", status=404)
 
     def _addData(self, session):
         session.add(self._getPage())
@@ -64,7 +67,7 @@ class FunctionalPageRenderingTest(unittest.TestCase):
              'layout_id': 2,
              'parent_id': None,
              'site_id': None,
-             'structure': u'{"content": [{"pk": 1, "name": "freetext_widget"}], "footer": [{"pk": 2, "name": "image_widget"}]}',
+             'structure': u'{"content": [{"pk": 1, "name": "freetext"}], "footer": [{"pk": 2, "name": "image"}]}',
              'title': u'fofoo',
              'updated_at': datetime.datetime(2012, 2, 14, 15, 13, 26, 438156),
              'url': u'sample_page',
