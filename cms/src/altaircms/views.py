@@ -91,12 +91,8 @@ class BaseRESTAPIView(object):
                 self.model_object = self.model()
 
             for key, value in captured.iteritems():
-                try:
-                    attr = getattr(self.model_object, key)
-                    if attr:
-                        setattr(self.model_object, attr, value)
-                except AttributeError:
-                    pass
+                if key in self.model_object.__ks__:
+                    setattr(self.model_object, key, value)
         except deform.ValidationFailure:
             raise
 

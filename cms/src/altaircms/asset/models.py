@@ -50,6 +50,8 @@ class ImageAsset(Asset):
     filepath = ''
     mimetype = ''
 
+    __ks__ = ['alt', 'size', 'width', 'height', 'filepath', 'mimetype']
+
     query = DBSession.query_property()
 
     def __init__(self, filepath='', alt='', size=None, width=None, height=None, mimetype=None):

@@ -3,6 +3,7 @@ import os
 import cgi
 
 from pyramid import testing
+import transaction
 from webob.multidict import MultiDict
 
 from altaircms.models import DBSession
@@ -85,7 +86,35 @@ class TestAssetView(BaseTest):
         self.assertEqual(resp.body['filepath'], 'hoge.jpg')
 
     def test_update(self):
-        pass
+        self._create_imageasset()
+
+        image_asset = DBSession.query(ImageAsset).one()
+        self.assertEqual(image_asset.filepath, 'hoge.jpg')
+        self.assertEqual(image_asset.mimetype, 'image/jpeg')
+
+        # post filled
+        fp = open(os.path.join(os.path.dirname(__file__), 'test.jpg'), 'rb')
+        upload = cgi.FieldStorage(fp, u'test.jpg')
+
+        self.request.POST = MultiDict([
+            (u'_charset_', u'UTF-8'),
+            (u'__formid__', u'deform'),
+            (u'type', u'image'),
+            (u'alt', u'alt text'),
+            (u'width', u'320'),
+            (u'height', u'240'),
+            (u'__start__', u'uploadfile:mapping'),
+            (u'upload', upload),
+            (u'__end__', 'uploadfile:mapping'),
+            (u'submit', u'submit')
+        ])
+        resp = AssetRESTAPIView(self.request, 1).update()
+        image_asset = DBSession.query(ImageAsset).one()
+        self.assertEqual(resp.status_int, 200)
+        self.assertEqual(image_asset.filepath, 'hoge.jpg')  # @FIXME: test.jpgに更新されない
+        self.assertEqual(image_asset.alt, 'alt text')
+        self.assertEqual(image_asset.width, 320)
+        self.assertEqual(image_asset.height, 240)
 
     def test_delete(self):
         self._create_imageasset()
