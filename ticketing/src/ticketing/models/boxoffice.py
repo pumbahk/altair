@@ -32,9 +32,9 @@ class Client(Base):
     bank_account = relationship('BankAccount', backref='client')
     user_id = Column(BigInteger, ForeignKey("User.id"), nullable=True)
     user = relationship('User', uselist=False)
-    updated_at = Column(DateTime)
+    updated_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime)
-    status = Column(Integer)
+    status = Column(Integer, default=1)
 
     @staticmethod
     def add(client):
@@ -101,7 +101,10 @@ operator_auth_table = Table(
     'Operator_Auth', Base.metadata,
     Column('id', BigInteger, primary_key=True),
     Column('login_id', String(32)),
-    Column('secret_key', String(32))
+    Column('password', String(32)),
+    Column('auth_code', String(32), nullable=True),
+    Column('access_token', String(32), nullable=True),
+    Column('secret_key', String(32), nullable=True),
 )
 
 class Operator(Base):

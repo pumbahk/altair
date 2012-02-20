@@ -21,7 +21,8 @@ requires = [
     'pastescript',
     'sadisplay',
     'sqlahelper',
-    'WebHelpers'
+    'WebHelpers',
+    'fixture'
     ]
 
 setup(name='ticketing',

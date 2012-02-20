@@ -21,7 +21,7 @@ class OperatorRole(SequenceSchema):
 
 class OperatorForm(MappingSchema):
     client_id   = SchemaNode(Int(), widget=deferred_client_choices_widget)
-    email       = SchemaNode(String()   , title=u'Email', validator=Email())
+    email       = SchemaNode(String()   , title=u'Email', validator=Email() )
     name        = SchemaNode(String()   , title=u'名前')
     login_id    = SchemaNode(String()   , title=u'ログインID')
     secret_key  = SchemaNode(String()   , title=u'パスワード', missing=null, widget=CheckedPasswordWidget())
