@@ -181,12 +181,12 @@ class AssetRESTAPIView(BaseRESTAPIView):
     #@view_config(renderer='json')
     def update(self):
         self.model_object = self.get_object_by_id(self.id)
-        super(AssetRESTAPIView, self).update()
+        return super(AssetRESTAPIView, self).update()
 
     #@view_config(renderer='json')
     def delete(self):
         self.model_object = self.get_object_by_id(self.id)
-        super(AssetRESTAPIView, self).delete()
+        return super(AssetRESTAPIView, self).delete()
 
     def _get_mapper(self):
         mapper = globals()[self.model.__name__ + 'Mapper']

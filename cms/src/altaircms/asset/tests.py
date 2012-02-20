@@ -9,6 +9,7 @@ from altaircms.models import DBSession
 
 from altaircms.tests import BaseTest
 from altaircms.asset.views import AssetRESTAPIView
+from altaircms.asset.models import ImageAsset
 
 """
 browser = None
@@ -36,6 +37,9 @@ class TestAssetView(BaseTest):
         #setUpModule()
         super(TestAssetView, self).setUp()
 
+    def tearDown(self):
+        DBSession.query(ImageAsset).delete()
+
     def test_create(self):
         # null post
         self.request.POST = MultiDict()
@@ -45,6 +49,7 @@ class TestAssetView(BaseTest):
         self.assertTrue(isinstance(resp.message, dict))
         self.assertEqual(resp.message['type'], 'Required')
         self.assertEqual(resp.message['uploadfile'], 'Required')
+        self.assertEqual(DBSession.query(ImageAsset).count(), 0)
 
         # post filled
         upload = cgi.FieldStorage(u'Binaries--file', u'test.js')
@@ -65,12 +70,12 @@ class TestAssetView(BaseTest):
         resp = AssetRESTAPIView(self.request).create()
         self.assertEqual(resp.status_int, 201)
         self.assertTrue(isinstance(resp.content_location, str))
+        self.assertEqual(DBSession.query(ImageAsset).count(), 1)
 
         #@TODO: ファイルの保存確認？
 
     def test_read(self):
         self._create_imageasset()
-        self.request.url = ''
 
         resp = AssetRESTAPIView(self.request, 1).read()
 
@@ -83,10 +88,13 @@ class TestAssetView(BaseTest):
         pass
 
     def test_delete(self):
-        pass
+        self._create_imageasset()
+
+        resp = AssetRESTAPIView(self.request, 1).delete()
+        self.assertEqual(resp.status_int, 200)
+        self.assertEqual(DBSession.query(ImageAsset).count(), 0)
 
     def _create_imageasset(self):
-        from altaircms.asset.models import ImageAsset
         obj = ImageAsset()
         obj.filepath = 'hoge.jpg'
         obj.mimetype = 'image/jpeg'
