@@ -91,6 +91,11 @@ class WidgetCacher(object):
             self.fetch()
         tree = WidgetTree()
         for block_name, blocks in _structure_as_dict(page).items():
-            objs = [self.result[o["name"]][o["pk"]] for o in blocks]
+            objs = []
+            for o in blocks:
+                widgets = self.result[o["name"]]
+                if widgets.get(o["pk"]):
+                    objs.append(widgets[o["pk"]])
+                ## a widget's content is empty, then skipped
             tree.adds(block_name, objs)
         return tree

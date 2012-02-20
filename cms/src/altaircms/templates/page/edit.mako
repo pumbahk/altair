@@ -70,7 +70,8 @@
 		  <div id="wrap" class="contentWrap"></div>
 		</div>
 		</div>
-        <button type="submit">保存</button>
+        <a href="${request.route_url("front_to_preview", page_id=page.id)}">preview</a>
+        <button type="submit">publish</button>
     </form>
 </div>
 

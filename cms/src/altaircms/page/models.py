@@ -44,8 +44,19 @@ class Page(Base):
     layout_id = Column(Integer, ForeignKey("layout.id"))
 
     structure = Column(String, default="{}")
-
     relationship('Layout', backref='pages')
+
+    hash_url = Column(String(length=32), default=None)
+    def is_published(self):
+        return self.hash_url is None
+
+    def to_unpublished(self):
+        if self.hash_url is None:
+            import uuid
+            self.hash_url = uuid.uuid4().hex
+
+    def to_published(self):
+        self.hash_url = None
 
     @property
     def layout(self):
