@@ -2,39 +2,57 @@ from zope.interface import Interface
 from zope.interface import Attribute
 
 class IConcrete(Interface):
-    def concrete(self):
+    def concrete():
         pass
 
 class INode(Interface):
     pass
 
 class IConcreteNode(IConcrete, INode):
-    def __init__(self, data, config=None):
-        pass
-
-    def concrete(self, request=None, config=None, extra_context=None):
+    def concrete(request=None, config=None, extra_context=None):
         pass
 
 class IBlockTree(Interface):
-    Attribute("blocks")
+    blocks = Attribute("blocks")
 
 class ICacher(Interface):
-    Attribute("fetched")
-    Attribute("scanned")
-    Attribute("result")
+    fetched = Attribute("fetched")
+    scanned = Attribute("scanned")
+    result = Attribute("result")
 
-    def scan(self, target):
+    def scan(target):
         pass
 
-    def fetch(self):
+    def fetch():
         pass
 
+class IHandleSession(Interface):
+    def add(data, flush=False):
+        pass
+
+    def delete(data, flush=False):
+        pass
+
+class IUpdateData(Interface):
+    def update_data(data, **params):
+        """ update data with keyword paramaters.
+        
+        params is dictionary.
+        use this method, like a update() of dictionary type.
+
+        >>> D = {1: 2}
+        >>> D.update(foo="bar")
+        >>> D
+        {1: 2, "foo": "bar"}
+        """
+    
 # class IFromDict(Interface):
 #     @classmethod
 #     def from_dict(cls):
 #         pass
 # class IToDict(Interface):
-#     def to_dict(self):
+#     def to_dict():
 #         pass
 # class IWithDict(IFromDict, IToDict):
 #     pass
+

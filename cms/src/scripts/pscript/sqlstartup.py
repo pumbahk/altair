@@ -1,3 +1,5 @@
+# -*- coding:utf-8 -*-
+
 ## 不思議なコードの書き方なのは、execを呼び出しているせい。
 def main():
     from altaircms.models import DBSession
