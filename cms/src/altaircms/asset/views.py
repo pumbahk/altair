@@ -14,11 +14,14 @@ from pyramid.response import Response
 from pyramid.view import view_config
 from sqlalchemy.sql.expression import desc
 
+from altaircms.models import DBSession
+from altaircms.views import BaseRESTAPIView
+
 from altaircms.asset import get_storepath
 from altaircms.asset.models import Asset, ImageAsset, MovieAsset, FlashAsset
 from altaircms.asset.forms import *
-from altaircms.models import DBSession
-from altaircms.views import BaseRESTAPIView
+from altaircms.asset.mappers import *
+
 
 
 EXT_MAP = {
@@ -184,6 +187,10 @@ class AssetRESTAPIView(BaseRESTAPIView):
     def delete(self):
         self.model_object = self.get_object_by_id(self.id)
         super(AssetRESTAPIView, self).delete()
+
+    def _get_mapper(self):
+        mapper = globals()[self.model.__name__ + 'Mapper']
+        return mapper
 
     def get_object_by_id(self, id):
         try:

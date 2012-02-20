@@ -5,6 +5,8 @@ import cgi
 from pyramid import testing
 from webob.multidict import MultiDict
 
+from altaircms.models import DBSession
+
 from altaircms.tests import BaseTest
 from altaircms.asset.views import AssetRESTAPIView
 
@@ -32,21 +34,12 @@ class TestAssetView(BaseTest):
     def setUp(self):
         self.request = testing.DummyRequest()
         #setUpModule()
-
         super(TestAssetView, self).setUp()
 
-    def tearDown(self):
-        #tearDownModule()
-        pass
-
-    def _makeOne(self, tmpstore, **kw):
-        from deform.widget import FileUploadWidget
-        return FileUploadWidget(tmpstore, **kw)
-
     def test_create(self):
-        self.request.POST = {}
-
         # null post
+        self.request.POST = MultiDict()
+
         resp = AssetRESTAPIView(self.request).create()
         self.assertEqual(resp.status_int, 400)
         self.assertTrue(isinstance(resp.message, dict))
@@ -72,6 +65,33 @@ class TestAssetView(BaseTest):
         resp = AssetRESTAPIView(self.request).create()
         self.assertEqual(resp.status_int, 201)
         self.assertTrue(isinstance(resp.content_location, str))
+
+        #@TODO: ファイルの保存確認？
+
+    def test_read(self):
+        self._create_imageasset()
+        self.request.url = ''
+
+        resp = AssetRESTAPIView(self.request, 1).read()
+
+        self.assertEqual(resp.status_int, 200)
+        self.assertEqual(resp.body['id'], 1)
+        self.assertEqual(resp.body['mimetype'], 'image/jpeg')
+        self.assertEqual(resp.body['filepath'], 'hoge.jpg')
+
+    def test_update(self):
+        pass
+
+    def test_delete(self):
+        pass
+
+    def _create_imageasset(self):
+        from altaircms.asset.models import ImageAsset
+        obj = ImageAsset()
+        obj.filepath = 'hoge.jpg'
+        obj.mimetype = 'image/jpeg'
+
+        DBSession.add(obj)
 
 
 # code from https://github.com/Pylons/deform/blob/master/deform/tests/test_widget.py

@@ -5,7 +5,8 @@ from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.renderers import render
 from pyramid.response import Response
 from pyramid.view import view_config
-from models import DBSession
+
+from altaircms.models import DBSession
 
 def render_widget(request, widget):
     try:
@@ -103,7 +104,7 @@ class BaseRESTAPIView(object):
         self.session.add(self.model_object)
 
     def _get_mapper(self):
-        return globals()[self.model.__name__.capitalize() + 'Mapper']
+        raise NotImplementedError()
 
     def get_object_by_id(self, id): #@TODO: いらなくね？
         raise NotImplementedError()
