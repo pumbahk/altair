@@ -45,7 +45,11 @@ class IUpdateData(Interface):
         >>> D
         {1: 2, "foo": "bar"}
         """
-    
+
+class IWidget(Interface):
+    type = Attribute(""" widget type e.g. image, freetext, ...""")
+    template_name = Attribute("""render template name""")
+
 # class IFromDict(Interface):
 #     @classmethod
 #     def from_dict(cls):

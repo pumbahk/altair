@@ -1,3 +1,5 @@
+from altaircms.interfaces import IWidget
+from zope.interface import implements
 from altaircms.plugins.base import Base
 from altaircms.plugins.base import DBSession
 from altaircms.plugins.base import HandleSessionMixin
@@ -6,8 +8,10 @@ from altaircms.plugins.base import UpdateDataMixin
 import sqlalchemy as sa
 
 class FreetextWidget(Base):
+    implements(IWidget)
     type = "freetext"
-    
+    template_name = "altaircms.plugins.widget:freetext/render.mako"    
+
     query = DBSession.query_property()
     __tablename__ = "widget_text"
     id = sa.Column(sa.Integer, primary_key=True)

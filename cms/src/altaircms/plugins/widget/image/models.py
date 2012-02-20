@@ -1,3 +1,5 @@
+from altaircms.interfaces import IWidget
+from zope.interface import implements
 from altaircms.plugins.base import Base
 from altaircms.plugins.base import DBSession
 from altaircms.plugins.base import asset
@@ -9,7 +11,11 @@ import sqlalchemy.orm as orm
 
 ImageAsset = asset.models.ImageAsset
 class ImageWidget(Base):
+    implements(IWidget)
+
     type = "image"
+    template_name = "altaircms.plugins.widget:image/render.mako"
+
     __tablename__ = "widget_image"
     query = DBSession.query_property()
 

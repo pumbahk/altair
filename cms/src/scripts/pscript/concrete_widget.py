@@ -1,7 +1,7 @@
 from pyramid.testing import DummyRequest
 from altaircms.front.resources import  PageRenderingResource
 
-url = "sample_page"
+url = "sample/page"
 request = DummyRequest()
 context = PageRenderingResource(request)
 request.registry.settings["widget.template_path_format"] = "altaircms:templates/front/widget/%s.mako"
