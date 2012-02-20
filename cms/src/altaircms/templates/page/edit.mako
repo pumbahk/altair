@@ -45,8 +45,8 @@
     <div id="pageversion">ページのバージョンが入る</div>
     <div id="pagewidget">ウィジェット
         <div id="widget_palet">
-            <div id="image_widget" class="widget red float-left">image widget</div>
-            <div id="freetext_widget" class="widget blue float-left">freetext widget</div>
+            <div id="image" class="widget red float-left">image_widget</div>
+            <div id="freetext" class="widget blue float-left">freetext widget</div>
             <div id="dummy_widget2"  class="widget green float-left">widget</div>
             <div id="dummy_widget3"  class="widget gray float-left">widget</div>
             <div id="dummy_widget4"  class="widget green float-left">widget</div>
@@ -78,8 +78,8 @@
   function get_page(){return ${page.id};}
 </script>
 <script type="text/javascript" src="/static/js/my/widgets/base.js"></script>
-<script type="text/javascript" src="/static/js/my/widgets/image.js"></script>
-<script type="text/javascript" src="/static/js/my/widgets/freetext.js"></script>
+<script type="text/javascript" src="/plugins/static/js/widget/lib/image.js"></script>
+<script type="text/javascript" src="/plugins/static/js/widget/lib/freetext.js"></script>
 <script type="text/javascript" src="/static/js/page/backbone_patch.js"></script>
 <script type="text/javascript" src="/static/js/page/edit.js"></script>
 

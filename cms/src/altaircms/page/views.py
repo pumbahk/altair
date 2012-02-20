@@ -170,21 +170,21 @@ class PageEditView(object):
 
         dbsession.add(page)
 
-        page_structure = json.loads(captured['structure'])
+        # page_structure = json.loads(captured['structure'])
 
-        q = dbsession.query(Page2Widget).filter_by(page_id=page.id)
-        for p2w in q:
-            dbsession.delete(p2w)
+        # q = dbsession.query(Page2Widget).filter_by(page_id=page.id)
+        # for p2w in q:
+        #     dbsession.delete(p2w)
 
-        for key, values in page_structure.iteritems():
-            for value in values:
-                dbsession.add(
-                    Page2Widget(
-                        page_id=page.id,
-                        widget_id=value,
-                        block=key
-                    )
-                )
+        # for key, values in page_structure.iteritems():
+        #     for value in values:
+        #         dbsession.add(
+        #             Page2Widget(
+        #                 page_id=page.id,
+        #                 widget_id=value,
+        #                 block=key
+        #             )
+        #         )
 
         transaction.commit()
         DBSession.remove()
