@@ -8,14 +8,17 @@ class JSDOMViewport implements Viewport {
     public var n(default, set_n):JQuery;
 
     private var view_:JSDOMView;
+    private var scrollPosition:Point;
     private var onScroll:JqEvent -> Void;
 
     public function set_n(value:JQuery):JQuery {
         if (n != null)
             n.unbind('scroll', onScroll);
         n = value;
-        if (n != null)
+        if (n != null) {
+            scrollPosition = view_.pixelToInchP({ x:0. + n[0].scrollLeft, y:0. + n[0].scrollTop });
             n.bind('scroll', onScroll);
+        }
         return value;
     }
 
@@ -33,7 +36,8 @@ class JSDOMViewport implements Viewport {
         this.on = { scroll: new EventListeners() };
         this.n = null;
         this.onScroll = function(e:JqEvent) {
-            on.scroll.call(this, { source:this, cause: null, position: view_.pixelToInchP({ x:0. + e.target.scrollLeft, y:0. + e.target.scrollTop })});
+            scrollPosition = view_.pixelToInchP({ x:0. + e.target.scrollLeft, y:0. + e.target.scrollTop });
+            on.scroll.call(this, { source:this, cause: null, position: scrollPosition });
         };
     }
 }

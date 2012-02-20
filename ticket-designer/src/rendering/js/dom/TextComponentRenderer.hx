@@ -1,7 +1,6 @@
 package rendering.js.dom;
 import js.JQuery;
 import js.JQuery.JqEvent;
-import haxe.Firebug;
 
 class TextComponentRenderer extends JSDOMComponentRenderer {
     var text:String;

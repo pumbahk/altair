@@ -9,8 +9,8 @@ class JSDOMView implements View {
     public var viewport(get_viewport, null):Viewport;
     public var stage(get_stage, null):Stage;
 
-    var viewport_:JSDOMViewport;
-    var stage_:JSDOMStage;
+    public var viewport_:JSDOMViewport;
+    public var stage_:JSDOMStage;
     var capturingRenderer:JSDOMRenderer;
     var eventHandlerHash:Hash<JqEvent->Void>;
     var refreshQueue:Hash<Int>;
@@ -191,12 +191,12 @@ class JSDOMView implements View {
         refreshQueue = new Hash();
         renderers = new Hash();
         batchRefreshNestCount = 0;
+        ppi = 114;
+        zoom = 1.;
 
         viewport_ = new JSDOMViewport(this);
         stage_ = new JSDOMStage(this);
         viewport_.n = viewport;
         stage_.base = base;
-        ppi = 114;
-        zoom = 1.;
     }
 }

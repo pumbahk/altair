@@ -10,7 +10,7 @@ class HorizontalRulerRenderer extends RulerRenderer {
     }
 
     public override function setup():JQuery {
-        return new JQuery('<div class="renderable-horizontal_ruler" style="height:12px; line-height:12px;"><canvas height="12"></canvas></div>');
+        return new JQuery('<div class="renderable-horizontal_ruler" style="height:20px; line-height:20px;"><canvas height="20"></canvas></div>');
     }
 
     public override function refresh():Void {
@@ -31,13 +31,13 @@ class HorizontalRulerRenderer extends RulerRenderer {
             if (Math.floor(i / minimumGraduationWidth) % 10 == 0) {
                 ctx.beginPath();
                 ctx.moveTo(x, 0);
-                ctx.lineTo(x, 12);
+                ctx.lineTo(x, 20);
                 ctx.fillText(Std.string(Std.int(i)), x + 2, 10);
                 ctx.stroke();
             } else {
                 ctx.beginPath();
-                ctx.moveTo(x, 6);
-                ctx.lineTo(x, 12);
+                ctx.moveTo(x, 14);
+                ctx.lineTo(x, 20);
                 ctx.stroke();
             }
             i += minimumGraduationWidth;
