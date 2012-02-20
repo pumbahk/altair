@@ -116,11 +116,11 @@ class WidgetNode(object):
         self.config.update(config)
 
     def _find_template(self):
-        if hasattr(self.widget, "template_name"):
-            return self.widget.template_name
-        elif self.config and WIDGET_TEMPLATE_PATH_FORMAT in self.config:
+        if self.config and WIDGET_TEMPLATE_PATH_FORMAT in self.config:
             fmt = self.config[WIDGET_TEMPLATE_PATH_FORMAT]
             return fmt % self.widget.type
+        elif hasattr(self.widget, "template_name"):
+            return self.widget.template_name
         else:
             raise GeneratePageException("widget template file is not found")
 
