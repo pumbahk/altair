@@ -37,12 +37,12 @@ class FunctionalPageRenderingTest(unittest.TestCase):
         session = self._getSession()
         self._addData(session)
 
-        result = self.testapp.get("/f/sample_page", status=200)
+        result = self.testapp.get("/f/publish/sample_page", status=200)
         import re
         self.assertEqual(re.sub("\s", "", result.text), "text:1image:2")
 
     def test_it_nodata(self):
-        self.testapp.get("/f/sample_page", status=404)
+        self.testapp.get("/f/publish/sample_page", status=404)
 
     def _addData(self, session):
         session.add(self._getPage())
