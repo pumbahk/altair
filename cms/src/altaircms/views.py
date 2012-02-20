@@ -56,7 +56,7 @@ class BaseRESTAPIView(object):
             self._create_or_update()
 
             url = ''
-            return Response(status=201, kw={'Location': url}) # @TODO: need return new object location
+            return Response(status=201, content_location=url) # @TODO: need return new object location
         except deform.ValidationFailure, e:
             error = e.error.asdict()
             return HTTPBadRequest(error)
@@ -83,13 +83,19 @@ class BaseRESTAPIView(object):
 
     def _validate_and_map(self):
         try:
-            # import pdb; pdb.set_trace()
             controls = self.request.POST.items()
             captured = self.form.validate(controls)
 
+            if not self.model_object:
+                self.model_object = self.model()
+
             for key, value in captured.iteritems():
-                attr = getattr(self.model, key)
-                setattr(self.model, attr, value)
+                try:
+                    attr = getattr(self.model_object, key)
+                    if attr:
+                        setattr(self.model_object, attr, value)
+                except AttributeError:
+                    pass
         except deform.ValidationFailure:
             raise
 

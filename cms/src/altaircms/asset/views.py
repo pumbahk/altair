@@ -54,6 +54,7 @@ class AssetEditView(object):
 
         if submitted in self.request.POST:
             try:
+                import pdb; pdb.set_trace()
                 controls = self.request.POST.items()
                 captured = form.validate(controls)
                 if success:
@@ -159,6 +160,8 @@ class AssetEditView(object):
 
 
 class AssetRESTAPIView(BaseRESTAPIView):
+    model = ImageAsset
+
     def __init__(self, request, *args, **kwargs):
         self.validation_schema = ImageAssetSchema # @TODO: 切り替えられるようにする
         super(AssetRESTAPIView, self).__init__(request, *args, **kwargs)

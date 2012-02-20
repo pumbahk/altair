@@ -43,8 +43,16 @@ class Asset(object):
 
 
 class ImageAsset(Asset):
+    alt = None
+    size = None
+    width = None
+    height = None
+    filepath = ''
+    mimetype = ''
+
     query = DBSession.query_property()
-    def __init__(self, filepath, alt='', size=None, width=None, height=None, mimetype=None):
+
+    def __init__(self, filepath='', alt='', size=None, width=None, height=None, mimetype=None):
         self.alt = alt
         self.size = size
         self.width = width
@@ -54,7 +62,7 @@ class ImageAsset(Asset):
 
 
 class MovieAsset(Asset):
-    def __init__(self, filepath, length=None, width=None, height=None, mimetype=None):
+    def __init__(self, filepath='', length=None, width=None, height=None, mimetype=None):
         self.length = length
         self.width = width
         self.height = height
@@ -63,7 +71,7 @@ class MovieAsset(Asset):
 
 
 class FlashAsset(Asset):
-    def __init__(self, filepath, size=None, width=None, height=None):
+    def __init__(self, filepath='', size=None, width=None, height=None):
         self.size = size
         self.width = width
         self.height = height
