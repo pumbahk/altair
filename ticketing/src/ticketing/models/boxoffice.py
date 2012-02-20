@@ -213,6 +213,9 @@ class ProductItem(Base):
     ticket_type = relationship('TicketType', uselist=False)
     seat_type_id = Column(BigInteger, ForeignKey('SeatType.id'))
     seat_type = relationship('SeatType', uselist=False)
+    seat_stock_id = Column(BigInteger, ForeignKey('SeatStock.id'))
+    # @TODO now assumed ProductItem:Seat = 1:1, and can be null if it is a non ticket product
+    seat = relationship('SeatStock', uselist=False)
 
     product_id = Column(BigInteger, ForeignKey('Product.id'))
     product = relationship('Product', uselist=False)
@@ -220,6 +223,76 @@ class ProductItem(Base):
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
     status = Column(Integer)
+
+# stock based on quantity
+class Stock(Base):
+    __tablename__ = "Stock"
+    id = Column(BigInteger, primary_key=True)
+    performance_id = Column(BigInteger, ForeignKey('Performance.id'))
+    performance = relationship('Performance', uselist=False)
+    seat_type_id = Column(BigInteger, ForeignKey('SeatType.id'))
+    seat_type = relationship('SeatType', uselist=False)
+    quantity = Column(Integer)
+
+    updated_at = Column(DateTime)
+    created_at = Column(DateTime)
+    status = Column(Integer)
+
+    @staticmethod
+    def get_for_update(pid, stid):
+        return session.query(Stock).with_lockmode("update").filter(Stock.performance_id==pid, Stock.seat_type_id==stid).first()
+
+# stock based on phisical seat positions
+class SeatStock(Base):
+    __tablename__ = "SeatStock"
+    id = Column(BigInteger, primary_key=True)
+    seat_id = Column(Integer, ForeignKey("SeatMasterL2.seat_id"))
+    seat = relationship('SeatMasterL2', uselist=False, backref="seat_stock_id") # 1:1
+    sold = Column(Boolean) # sold or not
+
+    updated_at = Column(DateTime)
+    created_at = Column(DateTime)
+    status = Column(Integer)
+
+    # @TODO
+    @staticmethod
+    def get_group_seat(pid, stid, num):
+        idx = 0
+        con_num = 0
+	grouping_ss = SeatMasterL2.get_grouping_seat_sets(pid, stid)
+	for grouping_seats in grouping_ss:
+	    for i, gseat in enumerate(grouping_seats):
+		if not gseat.sold:
+		    if con_num == 0:
+		        idx = i
+		    con_num += 1
+		    if con_num == num:
+			# @TODO return with locked status
+			return gseat[idx:idx+num]
+		else:
+		    con_num = 0
+	return []
+
+# Layer2 SeatMaster
+class SeatMasterL2(Base):
+    __tablename__ = "SeatMasterL2"
+    id = Column(BigInteger, primary_key=True)
+    performance_id = Column(BigInteger, ForeignKey('Performance.id'))
+    performance = relationship('Performance', uselist=False)
+    seat_type_id = Column(BigInteger, ForeignKey('SeatType.id'))
+    seat_type = relationship('SeatType', uselist=False)
+    seat_id = Column(Integer)
+    # @TODO have some attributes regarding Layer2
+    venue_id = Column(BigInteger)
+
+    updated_at = Column(DateTime)
+    created_at = Column(DateTime)
+    status = Column(Integer)
+
+    # @TODO
+    @staticmethod
+    def get_grouping_seat_sets(pid, stid):
+        return [[]]
 
 class Bank(Base):
     __tablename__ = 'Bank'
@@ -351,10 +424,5 @@ class OrderItem(Base):
     created_at = Column(DateTime)
     status = Column(Integer)
 
-class SeatStock(Base):
-    __tablename__ = 'SeatStock'
-    id = Column(BigInteger, primary_key=True)
-    seat_id = Column(BigInteger)
-    venue_id = Column(BigInteger)
 
 
