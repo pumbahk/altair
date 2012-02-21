@@ -14,6 +14,7 @@ Ajaxでの呼び出しは行わない想定。
 データ構造
 ----------------
 
-CMSで生成されたページは親子関係を持つ。
+CMSにより登録されたページが持つ親子関係をパンくずとして表示する。
+https://dev.ticketstar.jp/redmine-altair/issues/154
 
 see also: :ref:`object-breadcrumbs`
