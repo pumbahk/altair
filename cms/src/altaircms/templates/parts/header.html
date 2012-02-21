@@ -1,6 +1,23 @@
-<a href="/"><img src="/static/img/altair_logo.png"/></a>
-% if user:
-    <a href="/logout">logout</a>
-% else:
-    <a href="/login">login</a>
-% endif
+<div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <a class="brand" href="/"><img src="/static/img/altair_logo.png"></a>
+            <div class="nav-collapse">
+                <ul class="nav">
+                    <li class="active"><a href="/">Home</a></li>
+                    <li><a href="#about">Event</a></li>
+                    <li><a href="#contact">Page</a></li>
+                    <li><a href="#contact">Asset</a></li>
+                    <li><a href="#contact">Operator (admin only)</a></li>
+                </ul>
+                <p class="navbar-text pull-right">
+                % if user:
+                    <a href="/logout">Logout</a>
+                % else:
+                    <a href="${request.route_url("oauth_entry")}">Login with Twitter (OAuth)</a>
+                % endif
+                </p>
+            </div><!--/.nav-collapse -->
+        </div>
+    </div>
+</div>
