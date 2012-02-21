@@ -134,8 +134,9 @@ class PageEditView(object):
                 'structure': json.dumps(self.display_blocks)
             }
 
-            ## layout_image
-            layout_image = self.request.context.get_layout_image(self.page)
+            ## layout render
+            layout_render = self.request.context.get_layout_render(self.page)
+            page_render = self.request.context.get_page_render(self.page)
             ## fanstatic
 
             from altaircms.fanstatic import jqueries_need
@@ -145,8 +146,9 @@ class PageEditView(object):
             ##
 
             return self.render_form(PageEditForm, appstruct=appstruct, success=self._succeed, 
-                                    extra_context={"layout_image": layout_image})            
-
+                                    extra_context={"layout_render": layout_render, 
+                                                   "page_render": page_render})            
+        
 
     @view_config(route_name='page_list', renderer='altaircms:templates/page/list.mako')
     def page_list(self):

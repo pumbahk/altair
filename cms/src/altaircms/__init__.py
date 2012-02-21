@@ -12,7 +12,7 @@ from sqlalchemy import engine_from_config
 
 from altaircms.security import groupfinder
 from altaircms.models import initialize_sql
-from altaircms.auth import helpers
+from altaircms.auth.helpers import user_context
 
 
 try:
@@ -24,7 +24,7 @@ except:
 
 
 def add_renderer_globals(event):
-    event['user'] = helpers.user_context(event)
+    event['user'] = user_context(event)
 
 
 class RootFactory(object):

@@ -15,6 +15,8 @@
     <link rel="stylesheet" type="text/css" href="/static/css/overlay-basic.css"/>
 	<link rel="stylesheet" type="text/css" href="/static/css/my/sample.css">
     <link rel="stylesheet" href="/static/css/page/edit.css" type="text/css" />
+
+<link rel="stylesheet" type="text/css" href="/plugins/static/css/widget/lib/image.css">
     ${css.edit()}
 </%block>
 <%block name='js_foot'>
@@ -30,6 +32,9 @@
 %elif page:
 <h1>${page}ページの編集</h1>
 %endif
+
+
+${page_render.publish_status(request) | n}
 
 %if event:
 <a href="${request.route_url('event', id=event.id)}">back</a>
@@ -59,7 +64,7 @@
         <div id="page">ページ編集
 		<div id="selected_layout" class="clear">
 		  <div id="wrapped">
-			% for name  in layout_image:
+			% for name  in layout_render.blocks_image():
 			<div id="${name}" class="block noitem">${name}</div>
 			% endfor
 		  </div>

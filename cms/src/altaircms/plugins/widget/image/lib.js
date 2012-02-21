@@ -2,15 +2,12 @@ if(!widget){
     throw "widget module is not found";
 }
 
-// load_page はCoCに紐つけることも可能だな。
-// 逆にsave_dataが内部で紐づいちゃっている
-
 (function(widget){
     var opt = {} //widget local variable
     var _has_click_event = null;
 
     var load_page = function(we){
-        return we.dialog.load("/api/widget/image/dialog");
+        we.dialog.load("/api/widget/image/dialog");
     };
 
     var on_dialog = function(we){
@@ -21,6 +18,17 @@ if(!widget){
         we.attach_highlight(_has_click_event);
         var expr = "img[src='@src@']".replace("@src@", we.get_data(we.where).imagefile)
         we.attach_managed(we.dialog.find(expr));
+
+        // **scroiing**
+        // horizontal scrollables. each one is circular and has its own navigator instance
+        var root = $(".scrollable").scrollable({circular: true, keyboard: true});
+        root.navigator(".navi").eq(0).data("scrollable").focus();
+        var move = root.data("scrollable").move;
+        $(we.dialog).parent().mousewheel(function(e, delta){
+            move(delta < 0 ? 1 : -1, 50); // 50 is speed
+					  return false;
+        });
+        // when page loads setup keyboard focus on the first horzontal scrollable
     };
 
     var on_close = function(we){

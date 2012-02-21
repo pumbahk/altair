@@ -1,4 +1,5 @@
 from pyramid.view import view_config
+from altaircms.itertools import group_by_n
 
 class ImageWidgetView(object):
     def __init__(self, request):
@@ -34,5 +35,6 @@ class ImageWidgetView(object):
 
     @view_config(route_name="image_widget_dialog", renderer="altaircms.plugins.widget:image/dialog.mako", request_method="GET")
     def dialog(self):
-        image_assets = self.request.context.get_image_asset_query()
+        N = 5
+        image_assets = group_by_n(self.request.context.get_image_asset_query(), N)
         return {"image_assets": image_assets}
