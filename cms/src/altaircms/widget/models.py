@@ -12,13 +12,16 @@ import sqlalchemy.orm as orm
 
 from altaircms.models import Base, DBSession
 
+from altaircms.plugins.widget.image.models import ImageWidget
+from altaircms.plugins.widget.freetext.models import FreetextWidget as TextWidget
+
 __all__ = [
-    'Widget',
-    'ImageWidget',
+    # 'Widget',
+     'ImageWidget',
     # 'MovieWidget',
     # 'FlashWidget',
     # 'MenuWidget',
-    'TextWidget',
+     'TextWidget',
     # 'BreadcrumbsWidget',
     # 'TopicWidget',
 ]
@@ -78,62 +81,7 @@ class Widget(Base):
 
         return output
 
-class FromDictMixin(object):
-    @classmethod
-    def from_dict(cls, D):
-        instance = cls()
-        for k, v in D.items():
-            setattr(instance, k, v)
-        return instance
-
-class TextWidget(FromDictMixin, Base):
-    type = "text"
-    
-    query = DBSession.query_property()
-    __tablename__ = "widget_text"
-    id = sa.Column(sa.Integer, primary_key=True)
-    text = sa.Column(sa.Unicode)
-
-    def __init__(self, id=None, text=None):
-        self.id = id
-        self.text = text
-
 from altaircms.asset.models import *
-
-class ImageWidget(FromDictMixin, Base):
-    type = "image"
-
-    query = DBSession.query_property()
-    __tablename__ = "widget_image"
-    id = sa.Column(sa.Integer, primary_key=True)
-    asset_id = sa.Column(sa.Integer, sa.ForeignKey("asset.id"))
-    asset = orm.relationship(ImageAsset, backref="widget", uselist=False)
-
-    def __init__(self, id=None, asset_id=None):
-        self.id = id
-        self.asset_id = asset_id
-
-class WidgetFetchException(Exception):
-    pass
-
-class WidgetFetcher(object):
-    """ fetching a widget from a element of page.structure .
-    e.g. {block_name: "image_widget",  pk: 1} => <ImageWidget object>
-    """
-    def fetch(self, name, pks):
-        try:
-            return getattr(self, name)(pks)
-        except AttributeError:
-            raise WidgetFetchException("%s model's fetch method is not defined" % name)
-
-    def _query_by_object(self, model, pks):
-        return DBSession.query(model).filter(model.id.in_(pks))
-
-    def image_widget(self, pks):
-        return self._query_by_object(ImageWidget, pks)
-
-    def freetext_widget(self, pks):
-        return self._query_by_object(TextWidget, pks)
 
 ## ?? ##
 class Page2Widget(Base):

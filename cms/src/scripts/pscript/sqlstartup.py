@@ -1,3 +1,5 @@
+# -*- coding:utf-8 -*-
+
 ## 不思議なコードの書き方なのは、execを呼び出しているせい。
 def main():
     from altaircms.models import DBSession
@@ -6,13 +8,7 @@ def main():
     from contextlib import contextmanager
     @contextmanager
     def block(message):
-        try:
-            DBSession.remove()
-            yield
-            transaction.commit()
-        except:
-            transaction.abort()
-            raise
+        yield
 
     with block("create client"):
         import altaircms.models as m
@@ -35,8 +31,8 @@ def main():
         params = {'description': u'boo',
                   'keyword': u'oo',
                   'tags': u'ooo',
-                  'url': u'hohohoho',
-                  # 'layout_id': 1,
+                  'url': u'sample/page',
+                  'layout_id': 1,
                   'title': u'boo',
                   # 'structure': u'{}'
                   }
@@ -53,13 +49,22 @@ def main():
     with block("create layout model"):
         from altaircms.layout.models import Layout
         layout0 = Layout()
-        layout0.title = "one"
-        layout0.template_filename = "1.mako"
+        layout0.id = 2
+        layout0.title = "two"
+        layout0.template_filename = "2.mako"
         layout0.blocks = '[["content"],["footer"]]'
         layout0.site_id = 1 ##
         layout0.client_id = 1 ##
         DBSession.add(layout0)
 
+        layout1 = Layout()
+        layout1.id = 1
+        layout1.title = "one"
+        layout1.template_filename = "1.mako"
+        layout1.blocks = '[["content"],["footer"]]'
+        layout1.site_id = 1 ##
+        layout1.client_id = 1 ##
+        DBSession.add(layout1)
     transaction.commit()
 
 

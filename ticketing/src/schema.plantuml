@@ -58,9 +58,6 @@ Class Event {
 	margin_ratio 		Float
 	printing_fee 		Float
 	registration_fee 		Float
-	redirect_to_url 		String
-	hidden 		Boolean
-	exclude_from_search 		Boolean
 	seats_and_prices 		String
 	+		performances
 
@@ -121,8 +118,8 @@ Class Order {
 	status 		Integer
 	+		user
 	+		items
-	+		shipping_id
 	+		order_item
+	+		shipping_id
 
 }
 
@@ -180,6 +177,7 @@ Class ProductItem {
 	performance_id 		BigInteger
 	ticket_type_id 		BigInteger
 	seat_type_id 		BigInteger
+	seat_stock_id 		BigInteger
 	product_id 		BigInteger
 	updated_at 		DateTime
 	created_at 		DateTime
@@ -187,15 +185,34 @@ Class ProductItem {
 	+		performance
 	+		ticket_type
 	+		seat_type
+	+		seat
 	+		product
+
+}
+
+Class SeatMasterL2 {
+	id 		BigInteger
+	performance_id 		BigInteger
+	seat_type_id 		BigInteger
+	seat_id 		Integer
+	venue_id 		BigInteger
+	updated_at 		DateTime
+	created_at 		DateTime
+	status 		Integer
+	+		performance
+	+		seat_type
+	+		seat_stock_id
 
 }
 
 Class SeatStock {
 	id 		BigInteger
-	seat_id 		BigInteger
-	venue_id 		BigInteger
-
+	seat_id 		Integer
+	sold 		Boolean
+	updated_at 		DateTime
+	created_at 		DateTime
+	status 		Integer
+	+		seat
 
 }
 
@@ -235,6 +252,19 @@ Class ShippingAddress {
 	status 		Integer
 	+		user
 	+		order
+
+}
+
+Class Stock {
+	id 		BigInteger
+	performance_id 		BigInteger
+	seat_type_id 		BigInteger
+	quantity 		Integer
+	updated_at 		DateTime
+	created_at 		DateTime
+	status 		Integer
+	+		performance
+	+		seat_type
 
 }
 
@@ -322,9 +352,6 @@ Class Event {
 	margin_ratio 		Float
 	printing_fee 		Float
 	registration_fee 		Float
-	redirect_to_url 		String
-	hidden 		Boolean
-	exclude_from_search 		Boolean
 
 
 }
@@ -386,13 +413,25 @@ ProductItem <--o TicketType: ticket_type_id
 
 ProductItem <--o SeatType: seat_type_id
 
+ProductItem <--o SeatStock: seat_stock_id
+
 ProductItem <--o Product: product_id
+
+SeatMasterL2 <--o Performance: performance_id
+
+SeatMasterL2 <--o SeatType: seat_type_id
+
+SeatStock <--o SeatMasterL2: seat_id
 
 SeatType <--o Event: event_id
 
 ShippingAddress <--o User: user_id
 
 ShippingAddress <--o Order: order_id
+
+Stock <--o Performance: performance_id
+
+Stock <--o SeatType: seat_type_id
 
 TicketType <--o Event: event_id
 

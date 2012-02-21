@@ -75,12 +75,10 @@ class OAuthLogin(object):
             return HTTPUnauthorized()
 
         request_token = dict(urlparse.parse_qsl(content))
-
         self.request.session['request_token'] = {
             'oauth_token': request_token['oauth_token'],
             'oauth_token_secret': request_token['oauth_token_secret']
         }
-
         return HTTPFound('%s?oauth_token=%s' % (self.authorize_url, request_token['oauth_token']))
 
     @view_config(route_name='oauth_callback')

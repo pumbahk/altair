@@ -6,12 +6,14 @@ def set_with_dict(obj, D):
         setattr(obj, k, v)
     return obj
 
-class UsingLayoutMixin(object):
-    def get_layout_image(self, page):
+class UsingRenderMixin(object):
+    def get_layout_render(self, page):
         layout = page.layout
-        return renderable.LayoutImage.from_json(layout.blocks)
+        return renderable.LayoutRender(layout)
+    def get_page_render(self, page):
+        return renderable.PageRender(page)
 
-class SampleCoreResource(UsingLayoutMixin):
+class SampleCoreResource(UsingRenderMixin):
     def __init__(self, request):
         self.request = request
 

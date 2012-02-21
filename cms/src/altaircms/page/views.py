@@ -6,6 +6,7 @@ import json
 from pyramid.view import view_config
 from pyramid.response import Response
 from pyramid.exceptions import NotFound
+from pyramid.httpexceptions import HTTPFound
 from sqlalchemy.sql.expression import asc
 
 import transaction
@@ -15,6 +16,12 @@ from altaircms.models import DBSession, Event
 from altaircms.page.models import Page
 from altaircms.widget.models import Page2Widget, Widget
 
+@view_config(route_name="page_edit_", request_method="POST")
+def to_publish(request):     ## fixme
+    page_id = request.matchdict["page_id"]
+    page = Page.query.filter(Page.id==page_id).one()
+    page.to_published()
+    return HTTPFound(request.route_url("page_edit_", page_id=page_id))
 
 class PageEditView(object):
     def __init__(self, request):
@@ -127,8 +134,9 @@ class PageEditView(object):
                 'structure': json.dumps(self.display_blocks)
             }
 
-            ## layout_image
-            layout_image = self.request.context.get_layout_image(self.page)
+            ## layout render
+            layout_render = self.request.context.get_layout_render(self.page)
+            page_render = self.request.context.get_page_render(self.page)
             ## fanstatic
 
             from altaircms.fanstatic import jqueries_need
@@ -138,8 +146,9 @@ class PageEditView(object):
             ##
 
             return self.render_form(PageEditForm, appstruct=appstruct, success=self._succeed, 
-                                    extra_context={"layout_image": layout_image})            
-
+                                    extra_context={"layout_render": layout_render, 
+                                                   "page_render": page_render})            
+        
 
     @view_config(route_name='page_list', renderer='altaircms:templates/page/list.mako')
     def page_list(self):
@@ -170,21 +179,21 @@ class PageEditView(object):
 
         dbsession.add(page)
 
-        page_structure = json.loads(captured['structure'])
+        # page_structure = json.loads(captured['structure'])
 
-        q = dbsession.query(Page2Widget).filter_by(page_id=page.id)
-        for p2w in q:
-            dbsession.delete(p2w)
+        # q = dbsession.query(Page2Widget).filter_by(page_id=page.id)
+        # for p2w in q:
+        #     dbsession.delete(p2w)
 
-        for key, values in page_structure.iteritems():
-            for value in values:
-                dbsession.add(
-                    Page2Widget(
-                        page_id=page.id,
-                        widget_id=value,
-                        block=key
-                    )
-                )
+        # for key, values in page_structure.iteritems():
+        #     for value in values:
+        #         dbsession.add(
+        #             Page2Widget(
+        #                 page_id=page.id,
+        #                 widget_id=value,
+        #                 block=key
+        #             )
+        #         )
 
         transaction.commit()
         DBSession.remove()

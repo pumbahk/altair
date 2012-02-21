@@ -10,3 +10,4 @@ cms/src/data/*
 cms/src/altair-cms.db
 cms/src/altair_cms.egg-info/*
 mockui/shelve.dat
+*~$

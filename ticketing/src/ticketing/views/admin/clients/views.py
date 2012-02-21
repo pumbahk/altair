@@ -5,7 +5,7 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path
 
 from ticketing.models import merge_session_with_post, record_to_appstruct
-from ticketing.models.boxoffice import Client
+from ticketing.models.boxoffice import Client, session
 
 from forms import ClientForm
 from deform.form import Form,Button
@@ -17,7 +17,7 @@ import webhelpers.paginate as paginate
 def index(context, request):
     current_page = int(request.params.get("page", 0))
     page_url = paginate.PageURL_WebOb(request)
-    query = Client.query()
+    query = session.query(Client)
     clients = paginate.Page(query.order_by(Client.id), current_page, url=page_url)
     return {
         'clients': clients
@@ -42,9 +42,9 @@ def new(context, request):
         try:
             data = f.validate(controls)
             record = Client()
-            record = merge_session_with_post(record, controls)
+            record = merge_session_with_post(record, data)
             Client.add(record)
-            return HTTPFound(location=route_path('admin.client.index', request))
+            return HTTPFound(location=route_path('admin.clients.index', request))
         except ValidationFailure, e:
             return {'form':e.render()}
     else:
@@ -63,7 +63,7 @@ def edit(context, request):
         controls = request.POST.items()
         try:
             data = f.validate(controls)
-            record = merge_session_with_post(client, controls)
+            record = merge_session_with_post(client, data)
             Client.update(record)
             return HTTPFound(location=route_path('admin.clients.index', request))
         except ValidationFailure, e:
