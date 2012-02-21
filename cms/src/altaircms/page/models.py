@@ -20,7 +20,21 @@ from altaircms.tag.models import Tag
 from altaircms.models import DBSession
 from altaircms.layout.models import Layout
 
-class Page(Base):
+
+class PublishUnpublishMixin(object):
+    def is_published(self):
+        return self.hash_url is None
+
+    def to_unpublished(self):
+        if self.hash_url is None:
+            import uuid
+            self.hash_url = uuid.uuid4().hex
+
+    def to_published(self):
+        self.hash_url = None
+
+class Page(PublishUnpublishMixin, 
+           Base):
     """
     ページ
     """
@@ -47,17 +61,6 @@ class Page(Base):
     relationship('Layout', backref='pages')
 
     hash_url = Column(String(length=32), default=None)
-    def is_published(self):
-        return self.hash_url is None
-
-    def to_unpublished(self):
-        if self.hash_url is None:
-            import uuid
-            self.hash_url = uuid.uuid4().hex
-
-    def to_published(self):
-        self.hash_url = None
-
     @property
     def layout(self):
         return Layout.query.filter(Layout.id==self.layout_id).one()

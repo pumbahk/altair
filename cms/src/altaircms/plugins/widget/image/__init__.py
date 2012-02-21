@@ -13,6 +13,8 @@ def includeme(config):
     settings = {
         "model": ImageWidget, 
         "name": ImageWidget.type, 
-        "jsfile": os.path.join(DIR, "lib.js")
+        "jsfile": os.path.join(DIR, "lib.js"), 
+        "cssfile": os.path.join(DIR, "lib.css"), 
+        "imgdirectory": os.path.join(DIR, "img")
         }
     widget_plugin_install(config, settings)

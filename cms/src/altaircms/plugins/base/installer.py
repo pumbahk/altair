@@ -13,7 +13,7 @@ class _FileLinker(object):
         return os.path.exists(path)
 
     def is_valid_link(self, src, dst):
-        return os.path.isfile(dst) and  filecmp.cmp(src, dst)
+        return os.path.isdir(dst) or filecmp.cmp(src, dst)
 
     def _after_invalid(self, dst):
         if self.force:
@@ -46,6 +46,13 @@ def _translate_path(dst, plugin_name, filename, file_type, path):
     base, ext = os.path.splitext(path)
     base = os.path.basename(base)
     return os.path.join(dst, file_type, plugin_name, base, filename)+ext
+
+def _translate_path_simple(dst, plugin_name, widget_name, dir_prefix): #todo rename
+    """
+    >>> _translate_path_simple("app::static", "widget", "scroll", "img")
+    'app:static/img/widget/scroll'
+    """
+    return os.path.join(dst, dir_prefix, plugin_name, widget_name)
 
 class BasePluginInstaller(object):
     PLUGIN_KEY = "altaircms_plugin_store"
@@ -85,4 +92,7 @@ class BasePluginInstaller(object):
         if self.settings.get("cssfile"):
             f = self.settings.get("cssfile")
             self.linker.make_link_if_need(f, _translate_path(dst, self.plugin_type, widget_name, "css", f))
+        if self.settings.get("imgdirectory"):
+            f = self.settings.get("imgdirectory")
+            self.linker.make_link_if_need(f, _translate_path_simple(dst, self.plugin_type, widget_name, "img"))
 
