@@ -86,36 +86,42 @@
     // tc.on.dragend.do_(function(a) {});
     (function() {
       var guide = null;
-      var viewport = view.get_viewport();
       horizontalRuler.on.dragstart.do_(function(e) {
+        var viewport = view.get_viewport();
         guide = f.create(HorizontalGuide);
         guide.position = { x: e.position.x + viewport.scrollPosition.x,
                            y: e.position.y + viewport.scrollPosition.y };
         guide.refresh();
       });
       horizontalRuler.on.drag.do_(function(e) {
+        var viewport = view.get_viewport();
         guide.position = { x: e.position.x + viewport.scrollPosition.x,
                            y: e.position.y + viewport.scrollPosition.y };
         guide.refresh();
       });
-      horizontalRuler.on.dragend.do_(function(a) {
+      horizontalRuler.on.dragend.do_(function(e) {
+        if (e.position.y < 0)
+          view.get_stage().remove(guide.renderer);
       });
     })();
     (function() {
       var guide = null;
-      var viewport = view.get_viewport();
       verticalRuler.on.dragstart.do_(function(e) {
+        var viewport = view.get_viewport();
         guide = f.create(VerticalGuide);
         guide.position = { x: e.position.x + viewport.scrollPosition.x,
                            y: e.position.y + viewport.scrollPosition.y };
         guide.refresh();
       });
       verticalRuler.on.drag.do_(function(e) {
+        var viewport = view.get_viewport();
         guide.position = { x: e.position.x + viewport.scrollPosition.x,
                            y: e.position.y + viewport.scrollPosition.y };
         guide.refresh();
       });
-      verticalRuler.on.dragend.do_(function(a) {
+      verticalRuler.on.dragend.do_(function(e) {
+        if (e.position.x < 0)
+          view.get_stage().remove(guide.renderer);
       });
     })();
     function getBodyClientSize() {
