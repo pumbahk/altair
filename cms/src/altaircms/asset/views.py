@@ -57,7 +57,6 @@ class AssetEditView(object):
 
         if submitted in self.request.POST:
             try:
-                import pdb; pdb.set_trace()
                 controls = self.request.POST.items()
                 captured = form.validate(controls)
                 if success:

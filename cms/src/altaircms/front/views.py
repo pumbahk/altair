@@ -28,7 +28,7 @@ def rendering_preview_page(context, request):
     return render_to_response(
         tmpl, dict(
             page=page,
-            display_blocks=render_tree.concrete(config=config)
+            display_blocks=render_tree.concrete(config=config, request=request)
         ),
         request
     )
