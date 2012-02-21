@@ -38,8 +38,10 @@ class JSDOMView implements View {
     }
 
     public function dispose():Void {
-        viewport_.dispose();
-        stage_.dispose();
+        if (viewport_ != null)
+            viewport_.dispose();
+        if (stage_ != null)
+            stage_.dispose();
     }
 
     public function captureMouse(renderer:JSDOMRenderer):Void {
@@ -175,6 +177,10 @@ class JSDOMView implements View {
     }
 
     public function refreshAll() {
+        if (viewport_ != null)
+            viewport_.refresh();
+        if (stage_ != null)
+            stage_.refresh();
         if (batchRefreshNestCount == 0) {
             this.refreshQueue = new Hash();
             for (id in renderers.keys())
@@ -190,13 +196,13 @@ class JSDOMView implements View {
         eventHandlerHash = new Hash();
         refreshQueue = new Hash();
         renderers = new Hash();
-        batchRefreshNestCount = 0;
-        ppi = 114;
-        zoom = 1.;
-
         viewport_ = new JSDOMViewport(this);
         stage_ = new JSDOMStage(this);
         viewport_.n = viewport;
         stage_.base = base;
+        batchRefreshNestCount = 0;
+
+        ppi = 114;
+        zoom = 1.;
     }
 }

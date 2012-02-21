@@ -32,8 +32,8 @@ class HorizontalRulerRenderer extends RulerRenderer {
                 ctx.beginPath();
                 ctx.moveTo(x, 0);
                 ctx.lineTo(x, 20);
-                ctx.fillText(Std.string(Std.int(i)), x + 2, 10);
                 ctx.stroke();
+                ctx.fillText(Std.string(Std.int(i)), x + 2, 10);
             } else {
                 ctx.beginPath();
                 ctx.moveTo(x, 14);
