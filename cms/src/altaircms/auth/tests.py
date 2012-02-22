@@ -27,7 +27,7 @@ class OAuthCallbackMock(object):
     @staticmethod
     def request(url, method):
         response = Response({'status':200})
-        content = 'user_id=1234&oauth_token=token&oauth_token_secret=secret'
+        content = 'user_id=1234&screen_name=hogehoge&oauth_token=token&oauth_token_secret=secret'
         return (response, content)
 
 
