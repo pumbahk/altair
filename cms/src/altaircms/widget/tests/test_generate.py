@@ -23,8 +23,8 @@ class DummyWidget(Base):
 from altaircms.widget.fetcher import WidgetFetcher
 WidgetFetcher.add_fetch_method("dummy_widget", DummyWidget)
 
-
 def setUpModule():
+    DBSession.remove()
     from altaircms.testutils import create_db
     create_db(base=Base, session=DBSession)
 

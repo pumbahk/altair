@@ -15,6 +15,11 @@ from sqlalchemy.orm import scoped_session, relationship
 from sqlalchemy.orm import sessionmaker
 
 from zope.sqlalchemy import ZopeTransactionExtension
+from datetime import datetime
+from zope.interface import implements
+from altaircms.interfaces import IHasSite
+from altaircms.interfaces import IHasTimeHistory
+
 from altaircms.models import Base
 from altaircms.tag.models import Tag
 from altaircms.models import DBSession
@@ -38,13 +43,15 @@ class Page(PublishUnpublishMixin,
     """
     ページ
     """
+    implements(IHasTimeHistory, IHasSite)
+
     query = DBSession.query_property()
     __tablename__ = "page"
 
     id = Column(Integer, primary_key=True)
     parent_id = Column(Integer, ForeignKey('page.id'))
     event_id = Column(Integer, ForeignKey('event.id'))
-
+    
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=datetime.now())
 
@@ -56,14 +63,10 @@ class Page(PublishUnpublishMixin,
 
     site_id = Column(Integer, ForeignKey("site.id"))
     layout_id = Column(Integer, ForeignKey("layout.id"))
-
+    relationship('Layout', backref='pages', uselist=False)
     structure = Column(String, default="{}")
-    relationship('Layout', backref='pages')
 
     hash_url = Column(String(length=32), default=None)
-    @property
-    def layout(self):
-        return Layout.query.filter(Layout.id==self.layout_id).one()
 
     def __repr__(self):
         return '<%s %s %s>' % (self.__class__.__name__, self.url, self.title)

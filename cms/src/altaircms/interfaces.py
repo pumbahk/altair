@@ -46,9 +46,34 @@ class IUpdateData(Interface):
         {1: 2, "foo": "bar"}
         """
 
+## models
 class IWidget(Interface):
     type = Attribute(""" widget type e.g. image, freetext, ...""")
     template_name = Attribute("""render template name""")
+
+class IAsset(Interface):
+    pass
+
+class IHasSite(Interface):
+    """ has site data
+    """
+    site_id = Attribute(""" site """)
+
+class IHasMedia(Interface):
+    """ using media data. e.g. flash, image, .etc
+    """
+    alt = Attribute(""" alt """)
+    size = Attribute("""size """)
+    width = Attribute(""" width""")
+    height = Attribute(""" height """)
+    filepath = Attribute(""" filepath """)
+    mimetype = Attribute(""" mimetype """)
+
+class IHasTimeHistory(Interface):
+    """ has time history. 
+    """
+    created_at = Attribute(""" a time at object created""")
+    updated_at = Attribute(""" a time at object updated""")
 
 # class IFromDict(Interface):
 #     @classmethod

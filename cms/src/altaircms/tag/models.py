@@ -4,10 +4,7 @@ from datetime import datetime
 from sqlalchemy.orm import mapper
 from sqlalchemy.schema import Column, ForeignKey, Table
 from sqlalchemy.types import Integer, Unicode, DateTime, String
-from zope.sqlalchemy.tests import metadata
-
-from altaircms.models import Event
-from altaircms.models import Site, Base
+from altaircms.models import Base
 
 
 __all__ = [ 'EventTag', 'PageTag', 'AssetTag']
@@ -32,7 +29,7 @@ tags = Table(
     Column("id", Integer, primary_key=True),
     Column("name", Unicode),
     Column("is_public", Integer, default=0),
-    Column("site_id", Integer, ForeignKey(Site.__table__.c.id)),
+    Column("site_id", Integer, ForeignKey("site.id")),
     Column("type", String),
     Column("created_at", DateTime, default=datetime.now()),
     Column("updated_at", DateTime, default=datetime.now())
@@ -49,7 +46,7 @@ event_tags = Table(
     "tag_event",
     Base.metadata,
     Column("tag_id", Integer, ForeignKey('tag.id'), primary_key=True),
-    Column("event_id", Integer, ForeignKey(Event.__table__.c.id))
+    Column("event_id", Integer, ForeignKey("event.id"))
 )
 
 asset_tags = Table(

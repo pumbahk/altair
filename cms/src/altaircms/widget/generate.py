@@ -5,6 +5,11 @@ from altaircms.interfaces import ICacher
 from zope.interface import implements
 from .fetcher import WidgetFetcher
 
+
+"""
+get structure from page and get widget tree from structure.
+"""
+
 class WidgetTreeGenerateException(Exception):
     pass
 
