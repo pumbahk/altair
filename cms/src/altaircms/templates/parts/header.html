@@ -10,13 +10,25 @@
                     <li><a href="#contact">Asset</a></li>
                     <li><a href="#contact">Operator (admin only)</a></li>
                 </ul>
-                <p class="navbar-text pull-right">
-                % if user:
-                    <a href="/logout">${user.screen_name} Logout</a>
-                % else:
-                    <a href="${request.route_url("oauth_entry")}">Login with Twitter (OAuth)</a>
-                % endif
-                </p>
+                <ul class="nav pull-right">
+                        % if user:
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">${user.screen_name}<b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    <li><a href="#">
+                                        <b class="icon-cog"></b>
+                                        Settings</a>
+                                    </li>
+                                    <li><a href="/logout">
+                                        <b class="icon-off"></b>
+                                        Logout</a>
+                                    </li>
+                                </ul>
+                            </li>
+                        % else:
+                            <li class="btn"><a href="${request.route_url("oauth_entry")}">Login with Twitter (OAuth)</a></li>
+                        % endif
+                </ul>
             </div><!--/.nav-collapse -->
         </div>
     </div>

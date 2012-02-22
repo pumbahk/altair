@@ -23,12 +23,14 @@
     <link rel="stylesheet" href="/static/style-debug.css" type="text/css" media="screen" charset="utf-8">
     </%doc>
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script type="text/javascript" src="/static/bootstrap/js/bootstrap.js"></script>
     ## javascript block
     <%block name="js"/>
     <script type="text/javascript">
       ## jQuery depended javascript code
       $(document).ready(function() {
-        <%block name="jquery"/>
+            $().dropdown();
+            <%block name="jquery"/>
       });
     </script>
     ## style
