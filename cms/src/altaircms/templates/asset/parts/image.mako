@@ -1,5 +1,5 @@
 ## 画像ウィジェット
 ## @TODO: height, widthといった属性は必要か?
 <div>
-    <img src="${request.route_url('asset_edit', asset_id=asset.id)}?raw=t" alt=""/>
+    <img src="${h.asset.to_show_page(request, asset)}" alt=""/>
 </div>

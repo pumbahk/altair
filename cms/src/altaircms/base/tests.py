@@ -1,10 +1,9 @@
 import unittest
 
-from pyramid.config import Configurator
 from pyramid import testing
 from pyramid.events import BeforeRender
 
-from altaircms import add_renderer_globals
+from altaircms.subscribers import add_renderer_globals
 
 
 def _initTestingDB():

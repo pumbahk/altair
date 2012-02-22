@@ -4,7 +4,7 @@
   <div>
      % for image in g:
        ## <img pk="${image.id}" src="${image.filepath}" />
-       <img pk="${image.id}" src="${request.route_url('asset_edit', asset_id=image.id)}?raw=t" alt=""/>
+       <img pk="${image.id}" src="${h.asset.to_show_page(request,image)}" alt=""/>
      % endfor          
   </div>
   % endfor 
