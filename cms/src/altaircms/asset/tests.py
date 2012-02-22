@@ -3,12 +3,11 @@ import os
 import cgi
 
 from pyramid import testing
-import transaction
 from webob.multidict import MultiDict
 
 from altaircms.models import DBSession
 
-from altaircms.tests import BaseTest
+from altaircms.base.tests import BaseTest
 from altaircms.asset.views import AssetRESTAPIView
 from altaircms.asset.models import ImageAsset
 
@@ -35,11 +34,10 @@ def _getFile(name='test.py'):
 class TestAssetView(BaseTest):
     def setUp(self):
         self.request = testing.DummyRequest()
-        #setUpModule()
         super(TestAssetView, self).setUp()
 
-    def tearDown(self):
-        DBSession.query(ImageAsset).delete()
+    # def tearDown(self):
+    #     DBSession.query(ImageAsset).delete()
 
     def test_create(self):
         # null post
@@ -159,3 +157,8 @@ def _cgi_FieldStorage__repr__patch(self):
     return "FieldStorage(%r, %r, %r)" % (self.name, self.filename, self.value)
 
 cgi.FieldStorage.__repr__ = _cgi_FieldStorage__repr__patch
+
+if __name__ == "__main__":
+    import unittest
+    unittest.main()
+

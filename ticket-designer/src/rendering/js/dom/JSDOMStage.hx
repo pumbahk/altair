@@ -6,6 +6,8 @@ class JSDOMStage extends BasicStageImpl<JSDOMComponentRenderer, JSDOMView> {
     public var base(default, set_base):JQuery;
     public var basePageOffset(default, null):Point;
 
+    public function refresh():Void {}
+
     private function set_base(value:JQuery):JQuery {
         base = value;
         var offset = base.offset();

@@ -16,7 +16,7 @@
 .viewport {
   position: absolute;
   left: 20px;
-  top: 12px;
+  top: 20px;
   width: 320px;
   height: 320px;
   overflow: scroll;
@@ -25,7 +25,7 @@
 .renderable-vertical_ruler {
   position: absolute;
   left: 0px;
-  top: 11px;
+  top: 19px;
   height: 308px;
 }
 
@@ -84,6 +84,46 @@
     });
     // tc.on.dragstart.do_(function(a) {});
     // tc.on.dragend.do_(function(a) {});
+    (function() {
+      var guide = null;
+      horizontalRuler.on.dragstart.do_(function(e) {
+        var viewport = view.get_viewport();
+        guide = f.create(HorizontalGuide);
+        guide.position = { x: e.position.x + viewport.scrollPosition.x,
+                           y: e.position.y + viewport.scrollPosition.y };
+        guide.refresh();
+      });
+      horizontalRuler.on.drag.do_(function(e) {
+        var viewport = view.get_viewport();
+        guide.position = { x: e.position.x + viewport.scrollPosition.x,
+                           y: e.position.y + viewport.scrollPosition.y };
+        guide.refresh();
+      });
+      horizontalRuler.on.dragend.do_(function(e) {
+        if (e.position.y < 0)
+          view.get_stage().remove(guide.renderer);
+      });
+    })();
+    (function() {
+      var guide = null;
+      verticalRuler.on.dragstart.do_(function(e) {
+        var viewport = view.get_viewport();
+        guide = f.create(VerticalGuide);
+        guide.position = { x: e.position.x + viewport.scrollPosition.x,
+                           y: e.position.y + viewport.scrollPosition.y };
+        guide.refresh();
+      });
+      verticalRuler.on.drag.do_(function(e) {
+        var viewport = view.get_viewport();
+        guide.position = { x: e.position.x + viewport.scrollPosition.x,
+                           y: e.position.y + viewport.scrollPosition.y };
+        guide.refresh();
+      });
+      verticalRuler.on.dragend.do_(function(e) {
+        if (e.position.x < 0)
+          view.get_stage().remove(guide.renderer);
+      });
+    })();
     function getBodyClientSize() {
       var firstChildNode = $("body > :first").get(0);
       return {
@@ -95,13 +135,14 @@
     function adjustViewSize() {
       var n = $("#view");
       var size = { width: n.innerWidth(), height: n.innerHeight() };
+      var margin = { x: verticalRuler.renderer.n.outerWidth(), y: horizontalRuler.renderer.n.outerHeight() };
       view.get_viewport().n
-        .css({ width: (size.width - 12) + "px",
-               height: (size.height - 12) + "px" });
+        .css({ width: (size.width - margin.x) + "px",
+               height: (size.height - margin.y) + "px" });
       horizontalRuler.renderer.n
-        .css({ width: (size.width - 12) + "px" });
+        .css({ width: (size.width - margin.x) + "px" });
       verticalRuler.renderer.n
-        .css({ height: (size.height - 12) + "px" });
+        .css({ height: (size.height - margin.y) + "px" });
       horizontalRuler.refresh();
     }
 

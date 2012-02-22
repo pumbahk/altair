@@ -5,7 +5,7 @@ from httplib2 import Response
 from pyramid import testing
 from pyramid.httpexceptions import HTTPFound, HTTPBadRequest, HTTPUnauthorized
 
-from altaircms.tests import BaseTest
+from altaircms.base.tests import BaseTest
 
 
 class OAuthSuccessMock(object):

@@ -2,11 +2,16 @@ class BasicStageImpl<Trenderer:ComponentRenderer, Tview:View> implements Stage {
     public var renderers(get_renderers, null):Iterable<ComponentRenderer>;
     public var view(get_view, null):View;
     public var view_:Tview;
-    var renderers_:Array<Trenderer>;
+    var renderers_:Hash<Trenderer>;
 
     public function add(renderer:ComponentRenderer):Void {
-        renderers_.push(untyped renderer);
+        renderers_.set(Std.string(renderer.id), untyped renderer);
         renderer.stage = this;
+    }
+
+    public function remove(renderer:ComponentRenderer):Void {
+        renderer.stage = null;
+        renderers_.remove(Std.string(renderer.id));
     }
 
     public function dispose():Void {
@@ -32,6 +37,6 @@ class BasicStageImpl<Trenderer:ComponentRenderer, Tview:View> implements Stage {
 
     public function new(view:Tview) {
         this.view_ = view;
-        this.renderers_ = new Array<Trenderer>();
+        this.renderers_ = new Hash();
     }
 }

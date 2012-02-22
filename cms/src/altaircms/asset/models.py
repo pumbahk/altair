@@ -1,16 +1,5 @@
 # coding: utf-8
-from datetime import datetime
-
-from pyramid.url import route_url
-
-from sqlalchemy.orm import mapper, relationship
-from sqlalchemy.schema import Column, ForeignKey, Table
-from sqlalchemy import Integer, DateTime, String
-from zope.sqlalchemy.tests import metadata
-from sqlalchemy.sql.expression import and_
-
 from altaircms.models import Base
-from altaircms.models import Site
 from altaircms.models import DBSession
 
 __all__ = [
@@ -18,93 +7,65 @@ __all__ = [
     'ImageAsset',
     'MovieAsset',
     'FlashAsset',
-    'CssAsset'
+    # 'CssAsset'
 ]
 
+import sqlalchemy as sa
+# import sqlalchemy.orm as orm
+from sqlalchemy.ext.declarative import declared_attr
 
-class Asset(object):
+class Asset(Base):
     query = DBSession.query_property()
+    __tablename__ = "asset"
+
+    id = sa.Column(sa.Integer, primary_key=True)
+    discriminator = sa.Column("type", sa.String(32), nullable=False)
+    __mapper_args__ = {"polymorphic_on": discriminator}
+
     def __repr__(self):
         return '<%s %s %s>' % (self.__class__.__name__, self.id, self.filepath)
 
-    def get_url(self):
-        return route_url('asset_view', asset_id=self.id)
-    __ks__ = ["id", "site_id", "filepath", "size", "width", "height", "length", "mimetype", "type"]
+class MediaAssetColumnsMixin(object):
+    @declared_attr
+    def site_id(cls):
+    ## Columns with foreign keys to other columns must be declared as @declared_attr callables on declarative mixin classes
+        return sa.Column(sa.Integer, sa.ForeignKey("site.id"))
 
-    def to_dict(self):
-        return {k: getattr(self, k) for k in self.__ks__ if hasattr(self, k)}
+    alt = sa.Column(sa.Integer)
+    size = sa.Column(sa.Integer)
+    width = sa.Column(sa.Integer)
+    height = sa.Column(sa.Integer)
+    filepath = sa.Column(sa.String)
+    mimetype = sa.Column(sa.String, default="")
 
-    @classmethod
-    def from_dict(cls, D):
-        instance = cls(None)
-        for k in cls.__ks__:
-            setattr(instance, k, D.get(k))
-        return instance
-
-
-class ImageAsset(Asset):
-    alt = None
-    size = None
-    width = None
-    height = None
-    filepath = ''
-    mimetype = ''
-
-    __ks__ = ['alt', 'size', 'width', 'height', 'filepath', 'mimetype']
-
-    query = DBSession.query_property()
-
+    ## has default constractor. so this class is called at `Treat' rather than `mixin'.
     def __init__(self, filepath='', alt='', size=None, width=None, height=None, mimetype=None):
         self.alt = alt
         self.size = size
         self.width = width
         self.height = height
         self.filepath = filepath
-        self.mimetype = mimetype
+        self.mimetype = mimetype or self.MIMETYPE_DEFAULT
+    MIMETYPE_DEFAULT = ''
+
+class ImageAsset(MediaAssetColumnsMixin, Asset):
+    __tablename__ = "image_asset"
+    __mapper_args__ = {"polymorphic_identity": "image"}
+    id = sa.Column(sa.Integer, sa.ForeignKey("asset.id"), primary_key=True)
 
 
-class MovieAsset(Asset):
-    def __init__(self, filepath='', length=None, width=None, height=None, mimetype=None):
-        self.length = length
-        self.width = width
-        self.height = height
-        self.filepath = filepath
-        self.mimetype = mimetype
+class FlashAsset(MediaAssetColumnsMixin, Asset):
+    MIMETYPE_DEFAULT = 'application/x-shockwave-flash'
 
+    __tablename__ = "flash_asset"
+    __mapper_args__ = {"polymorphic_identity": "flash"}
+    id = sa.Column(sa.Integer, sa.ForeignKey("asset.id"), primary_key=True)
+    mimetype = sa.Column(sa.String, default='application/x-shockwave-flash')
 
-class FlashAsset(Asset):
-    def __init__(self, filepath='', size=None, width=None, height=None):
-        self.size = size
-        self.width = width
-        self.height = height
-        self.filepath = filepath
-        self.mimetype = 'application/x-shockwave-flash'
+class MovieAsset(MediaAssetColumnsMixin, Asset):
+    __tablename__ = "movie_asset"
+    __mapper_args__ = {"polymorphic_identity": "movie"}
+    id = sa.Column(sa.Integer, sa.ForeignKey("asset.id"), primary_key=True)
 
-
-class CssAsset(Asset):
-    pass
-
-
-##
-## 単一テーブル継承を使用しているが、ウィジェットなどと同様に結合テーブル継承に切り替えたほうがいいかも知れない
-##
-asset_table = Table(
-    "asset",
-    Base.metadata,
-    Column("id", Integer, primary_key=True),
-    Column("site_id", Integer, ForeignKey(Site.__table__.c.id)),
-    Column("filepath", String),
-    Column("size", Integer),
-    Column('width', Integer),
-    Column('height', Integer),
-    Column('length', Integer),
-    Column('mimetype', String),
-    Column('type', String(30))
-)
-
-
-asset_mapper = mapper(Asset, asset_table, polymorphic_on=asset_table.c.type, polymorphic_identity='asset')
-image_asset_mapper = mapper(ImageAsset, inherits=asset_mapper, polymorphic_identity='image_asset')
-mapper(MovieAsset, inherits=asset_mapper, polymorphic_identity='movie_asset')
-mapper(FlashAsset, inherits=asset_mapper, polymorphic_identity='flash_asset')
-mapper(CssAsset, inherits=asset_mapper, polymorphic_identity='css_asset')
+# class CssAsset(Asset):
+#     pass

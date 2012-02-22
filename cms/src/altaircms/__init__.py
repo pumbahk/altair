@@ -12,7 +12,7 @@ from sqlalchemy import engine_from_config
 
 from altaircms.security import groupfinder
 from altaircms.models import initialize_sql
-from altaircms.auth.helpers import user_context
+
 
 
 try:
@@ -23,8 +23,6 @@ except:
     pass
 
 
-def add_renderer_globals(event):
-    event['user'] = user_context(event)
 
 
 class RootFactory(object):
@@ -114,8 +112,6 @@ def main_app(global_config, settings):
 
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)
     config.add_static_view('plugins/static', 'altaircms:plugins/static', cache_max_age=3600)
-    config.add_subscriber(add_renderer_globals, BeforeRender)
-
     return config.make_wsgi_app()
     
 def main(global_config, **settings):

@@ -41,13 +41,13 @@ class ComponentBase<Tself:Component> implements Component {
                 x: (cast e).position.x - position.x,
                 y: (cast e).position.y - position.y
             });
+            renderer.captureMouse();
         });
         renderer.bind(EventKind.MOUSEMOVE, function(e:Event) {
             switch (state) {
             case PRESSED(pof):
                 if (draggable) {
                     state = DRAGGING(pof);
-                    renderer.captureMouse();
                     this.position = {
                         x: (cast e).position.x - pof.x,
                         y: (cast e).position.y - pof.y
@@ -67,11 +67,11 @@ class ComponentBase<Tself:Component> implements Component {
         });
 
         renderer.bind(EventKind.RELEASE, function(e:Event) {
+            renderer.releaseMouse();
             switch (state) {
             case PRESSED(_):
                 on.click.call(this, e);
             case DRAGGING(_):
-                renderer.releaseMouse();
                 on.dragend.call(this, e);
             default:
             }

@@ -24,9 +24,24 @@ def to_dict(self):
                 if isinstance(v, ColumnOperators)}
 Base.to_dict = to_dict
 
+def column_items(self):
+    from sqlalchemy.sql.operators import ColumnOperators
+    return [(k, v) for k, v in self.__class__.__dict__.items()\
+                if isinstance(v, ColumnOperators)]
+
+Base.column_items = column_items
+def column_iters(self, D):
+    from sqlalchemy.sql.operators import ColumnOperators
+    for k, v in self.__class__.__dict__.items():
+        if isinstance(v, ColumnOperators):
+            yield k, D.get(k)
+    
+Base.column_iters = classmethod(column_iters)
+
 def from_dict(cls, D):
     instance = cls()
-    for k, v in D.items():
+    items_fn = D.iteritems if hasattr(D, "iteritems") else D.items
+    for k, v in items_fn():
         setattr(instance, k, v)
     return instance
 Base.from_dict = classmethod(from_dict)

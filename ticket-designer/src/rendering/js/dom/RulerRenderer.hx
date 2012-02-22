@@ -1,5 +1,7 @@
 package rendering.js.dom;
 
+import js.JQuery.JqEvent;
+
 class RulerRenderer extends JSDOMRenderer {
     var offset:Int;
     var unit:UnitKind;
@@ -21,5 +23,17 @@ class RulerRenderer extends JSDOMRenderer {
                 return i;
         }
         return graduations.length - 1;
+    }
+
+    override function createMouseEvent(e:JqEvent):MouseEvent {
+        return {
+            source: this,
+            cause: e,
+            position: view_.pixelToInchP(
+                { x: cast(e.pageX, Float) - view_.stage_.basePageOffset.x,
+                  y: cast(e.pageY, Float) - view_.stage_.basePageOffset.y }),
+            left: (e.which & 1) != 0,
+            middle: (e.which & 2) != 0,
+            right: (e.which & 3) != 0 };
     }
 }

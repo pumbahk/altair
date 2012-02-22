@@ -8,7 +8,7 @@
 <%include file='parts/image.mako'/>
 %endif
 
-<form action="${request.route_url('asset_edit', asset_id=asset.id)}" method="post">
+<form action="${h.asset.to_show_page(request,asset)}" method="post">
   <input type="hidden" name="_method" value="delete">
   <button type="submit">削除</button>
 </form>

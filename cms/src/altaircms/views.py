@@ -2,25 +2,22 @@
 import deform
 from deform import Form
 from pyramid.httpexceptions import HTTPBadRequest
-from pyramid.renderers import render
+# from pyramid.renderers import render
 from pyramid.response import Response
-from pyramid.view import view_config
+# from pyramid.view import view_config
 
-from altaircms.models import DBSession
+# def render_widget(request, widget):
+#     try:
+#         templeate_file = 'altaircms:templates/front/widget/%s.mako' % (widget.type)
+#         result = render(templeate_file, {
+#                     'widget': widget
+#                     },
+#                     request=request
+#                 )
+#     except:
+#         raise
 
-def render_widget(request, widget):
-    try:
-        templeate_file = 'altaircms:templates/front/widget/%s.mako' % (widget.type)
-        result = render(templeate_file, {
-                    'widget': widget
-                    },
-                    request=request
-                )
-    except:
-        raise
-
-    return result
-
+#     return result
 
 class BaseRESTAPIError(Exception):
     def __init__(self, message=''):
@@ -73,7 +70,7 @@ class BaseRESTAPIView(object):
             self._validate_and_map()
             self._create_or_update()
             return Response(status=200)
-        except deform.ValidationFailure, e:
+        except deform.ValidationFailure as e:
             pass
 
     def delete(self):
@@ -91,9 +88,9 @@ class BaseRESTAPIView(object):
             if not self.model_object:
                 self.model_object = self.model()
 
-            for key, value in captured.iteritems():
-                if key in self.model_object.__ks__:
-                    setattr(self.model_object, key, value)
+            for key, value in self.model_object.column_items():
+                if key in  captured:
+                    setattr(self.model_object, key, captured[key])
         except deform.ValidationFailure:
             raise
 
