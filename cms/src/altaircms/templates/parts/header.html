@@ -12,7 +12,7 @@
                 </ul>
                 <p class="navbar-text pull-right">
                 % if user:
-                    <a href="/logout">Logout</a>
+                    <a href="/logout">${user.screen_name} Logout</a>
                 % else:
                     <a href="${request.route_url("oauth_entry")}">Login with Twitter (OAuth)</a>
                 % endif

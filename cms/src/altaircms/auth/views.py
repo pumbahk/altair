@@ -12,11 +12,9 @@ import oauth2
 import transaction
 
 from altaircms.models import DBSession, Operator, Permission
-try:
-    from altaircms.auth.errors import AuthenticationError
-except ImportError:
-    class AuthenticationError(Exception):
-        pass
+from altaircms.views import BaseRESTAPIView
+
+from altaircms.auth.errors import AuthenticationError
 from altaircms.auth.models import PERMISSION_VIEW, PERMISSION_EDIT
 
 
@@ -104,6 +102,7 @@ class OAuthLogin(object):
             operator = Operator(
                 auth_source='oauth',
                 user_id=data['user_id'],
+                screen_name=data['screen_name'],
                 oauth_token=data['oauth_token'],
                 oauth_token_secret=data['oauth_token_secret']
             )
@@ -175,3 +174,8 @@ def auth_complete_view(context, request):
 def auth_denied_view(context, request):
     return context.args
 """
+
+
+class OperatorApiView(BaseRESTAPIView):
+    validationschema = None
+    model = Operator

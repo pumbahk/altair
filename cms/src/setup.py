@@ -15,16 +15,20 @@ requires = [
     'SQLAlchemy',
     'SQLAHelper',
     "webtest", 
-    ## 'zope.sqlalchemy',
-    'sadisplay',
-    'deform',
     'alembic',
-    'pyramid_deform',
-    'pyramid_openid',
     'zope.interface',
-    "velruse",
+    # 'zope.sqlalchemy',
+    ## utility
     "bpmappers",
+    'sadisplay',
+    ## auth
+    "velruse",
     'oauth2',
+    'pyramid_openid',
+    ## form
+    "WTForms",
+    'deform',
+    'pyramid_deform',
     ## fanstatic
     'fa.jquery',
     "fanstatic", 

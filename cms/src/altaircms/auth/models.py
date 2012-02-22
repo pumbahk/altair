@@ -28,8 +28,6 @@ class OAuthToken(Base):
 class Operator(Base):
     """
     サイト管理者
-
-    @TODO: OpenIDの認証情報を保持するカラムが必要かもしれない
     """
     __tablename__ = 'operator'
 
@@ -37,6 +35,7 @@ class Operator(Base):
 
     auth_source = Column(String, nullable=False)
     user_id = Column(Integer)
+    screen_name = Column(Unicode)
 
     oauth_token = Column(String)
     oauth_token_secret = Column(String)

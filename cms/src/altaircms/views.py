@@ -37,9 +37,10 @@ class BaseRESTAPIView(object):
     """
 
     validation_schema = None
-    form = None
     model_object = None
     model = None
+
+    _form = None
 
     def __init__(self, request, id=None):
         from altaircms.models import DBSession
@@ -49,7 +50,7 @@ class BaseRESTAPIView(object):
 
         self.session = DBSession()
 
-        self.form = Form(self.validation_schema())
+        self._form = Form(self.validation_schema())
 
     def create(self):
         try:
@@ -85,7 +86,7 @@ class BaseRESTAPIView(object):
     def _validate_and_map(self):
         try:
             controls = self.request.POST.items()
-            captured = self.form.validate(controls)
+            captured = self._form.validate(controls)
 
             if not self.model_object:
                 self.model_object = self.model()
