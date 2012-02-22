@@ -1,6 +1,15 @@
 # coding: utf-8
+
+
 from altaircms.models import Base
 from altaircms.models import DBSession
+
+from datetime import datetime
+from zope.interface import implements
+from altaircms.interfaces import IAsset
+from altaircms.interfaces import IHasMedia
+from altaircms.interfaces import IHasSite
+from altaircms.interfaces import IHasTimeHistory
 
 __all__ = [
     'Asset',
@@ -12,25 +21,24 @@ __all__ = [
 
 import sqlalchemy as sa
 # import sqlalchemy.orm as orm
-from sqlalchemy.ext.declarative import declared_attr
 
 class Asset(Base):
+    implements(IHasTimeHistory, IHasSite)
     query = DBSession.query_property()
     __tablename__ = "asset"
 
     id = sa.Column(sa.Integer, primary_key=True)
     discriminator = sa.Column("type", sa.String(32), nullable=False)
+    created_at = sa.Column(sa.DateTime, default=datetime.now())
+    updated_at = sa.Column(sa.DateTime, default=datetime.now())
+    site_id =  sa.Column(sa.Integer, sa.ForeignKey("site.id"))
+
     __mapper_args__ = {"polymorphic_on": discriminator}
 
     def __repr__(self):
         return '<%s %s %s>' % (self.__class__.__name__, self.id, self.filepath)
 
 class MediaAssetColumnsMixin(object):
-    @declared_attr
-    def site_id(cls):
-    ## Columns with foreign keys to other columns must be declared as @declared_attr callables on declarative mixin classes
-        return sa.Column(sa.Integer, sa.ForeignKey("site.id"))
-
     alt = sa.Column(sa.Integer)
     size = sa.Column(sa.Integer)
     width = sa.Column(sa.Integer)
@@ -49,22 +57,30 @@ class MediaAssetColumnsMixin(object):
     MIMETYPE_DEFAULT = ''
 
 class ImageAsset(MediaAssetColumnsMixin, Asset):
+    implements(IAsset, IHasMedia)
+
     __tablename__ = "image_asset"
     __mapper_args__ = {"polymorphic_identity": "image"}
+
     id = sa.Column(sa.Integer, sa.ForeignKey("asset.id"), primary_key=True)
 
-
 class FlashAsset(MediaAssetColumnsMixin, Asset):
+    implements(IAsset, IHasMedia)
+
     MIMETYPE_DEFAULT = 'application/x-shockwave-flash'
 
     __tablename__ = "flash_asset"
     __mapper_args__ = {"polymorphic_identity": "flash"}
+
     id = sa.Column(sa.Integer, sa.ForeignKey("asset.id"), primary_key=True)
     mimetype = sa.Column(sa.String, default='application/x-shockwave-flash')
 
 class MovieAsset(MediaAssetColumnsMixin, Asset):
+    implements(IAsset, IHasMedia)
+
     __tablename__ = "movie_asset"
     __mapper_args__ = {"polymorphic_identity": "movie"}
+
     id = sa.Column(sa.Integer, sa.ForeignKey("asset.id"), primary_key=True)
 
 # class CssAsset(Asset):

@@ -11,9 +11,9 @@ from sqlalchemy.orm.exc import NoResultFound
 import oauth2
 import transaction
 
-from altaircms.models import DBSession, Operator, Permission
 from altaircms.views import BaseRESTAPIView
-
+from altaircms.models import DBSession
+from .models import Operator, Permission
 from altaircms.auth.errors import AuthenticationError
 from altaircms.auth.models import PERMISSION_VIEW, PERMISSION_EDIT
 

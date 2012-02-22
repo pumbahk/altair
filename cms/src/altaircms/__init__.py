@@ -1,4 +1,6 @@
 # coding:utf-8
+from . monkeypatch import config_scan_patch
+config_scan_patch()
 from pyramid.authentication import AuthTktAuthenticationPolicy, SessionAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
@@ -21,7 +23,6 @@ try:
     print 'Using PyMySQL'
 except:
     pass
-
 
 
 
@@ -72,10 +73,6 @@ def cms_include(config):
 def main_app(global_config, settings):
     """ This function returns a Pyramid WSGI application.
     """
-    engine = engine_from_config(settings, 'sqlalchemy.')
-    sqlahelper.add_engine(engine)
-    initialize_sql(engine)
-
     # authn_policy = AuthTktAuthenticationPolicy(secret='SDQGxGIhVqSr3zJWV8KvHqHtJujhJj', callback=groupfinder)
     authn_policy = SessionAuthenticationPolicy(callback=groupfinder)
     authz_policy = ACLAuthorizationPolicy()
@@ -105,13 +102,18 @@ def main_app(global_config, settings):
     config.scan('altaircms.event')
     config.scan('altaircms.page')
     config.scan('altaircms.asset')
-    config.scan('altaircms.widget')
+    config.scan('altaircms.widget', ignore=["altaircms.widget.tests"])
     config.scan('altaircms.layout')
     config.scan('altaircms.front')
     config.scan("altaircms.plugins")
 
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)
     config.add_static_view('plugins/static', 'altaircms:plugins/static', cache_max_age=3600)
+
+    engine = engine_from_config(settings, 'sqlalchemy.')
+    sqlahelper.add_engine(engine)
+    initialize_sql(engine)
+
     return config.make_wsgi_app()
     
 def main(global_config, **settings):

@@ -8,7 +8,6 @@ class Base(DefaultBase):
     metadata = sa.MetaData()
 
 DBSession = orm.scoped_session(orm.sessionmaker())
-DBSession.remove()
 class DummyWidget(Base):
     __tablename__ = "dummy"
     def __init__(self, id=None, asset_id=None):
@@ -22,6 +21,7 @@ from altaircms.widget.fetcher import WidgetFetcher
 WidgetFetcher.add_fetch_method("dummy_widget", DummyWidget)
 
 def setUpModule():
+    DBSession.remove()
     from altaircms.testutils import create_db
     create_db(base=Base, session=DBSession)
 

@@ -9,6 +9,8 @@ Widget
 """
 def setUpModule():
     from altaircms.testutils import create_db
+    from altaircms.models import DBSession
+    DBSession.remove()
     create_db()
 
 def tearDownModule():

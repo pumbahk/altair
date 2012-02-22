@@ -4,7 +4,6 @@ def create_db(echo=False, base=None, session=None):
     engine.echo = echo
     if base is None or session is None:
         from altaircms import models as m
-        m.DBSession.remove()
         m.DBSession.configure(bind=engine)
         m.Base.metadata.create_all(bind=engine)
         return m.DBSession

@@ -5,12 +5,17 @@
 設定が必要なウィジェットのみ情報を保持する。
 """
 
-from datetime import datetime
-
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 
 from altaircms.models import Base, DBSession
+
+from datetime import datetime
+from zope.interface import implements
+from altaircms.interfaces import IWidget
+from altaircms.interfaces import IHasSite
+from altaircms.interfaces import IHasTimeHistory
+
 
 from altaircms.plugins.widget.image.models import ImageWidget
 from altaircms.plugins.widget.freetext.models import FreetextWidget as TextWidget
@@ -36,71 +41,29 @@ WIDGET_TYPE = [
     'menu',
     'billinghistory',
 ]
-    
-
-class AssetWidgetMixin(object):
-    _asset = None
-
-    @property
-    def asset(self):
-        if not self.asset_id:
-            return None
-
-        if self._asset:
-            return self._asset
-
-        clsname = self.__class__.__name__[:self.__class__.__name__.rfind("Widget")] + 'Asset'
-        cls = globals()[clsname]
-
-        self._asset = DBSession.query(cls).get(self.asset_id)
-        return self._asset
-
 
 class Widget(Base):
+    implements(IHasTimeHistory, IHasSite)
+
     query = DBSession.query_property()
     __tablename__ = "widget"
+    page_id = sa.Column(sa.Integer, sa.ForeignKey("page.id"))
     id = sa.Column(sa.Integer, primary_key=True)
     site_id = sa.Column(sa.Integer, sa.ForeignKey("site.id"))
-    type = sa.Column(sa.String, nullable=False)
+    discriminator = sa.Column("type", sa.String(32), nullable=False)
+    created_at = sa.Column(sa.DateTime, default=datetime.now())
+    updated_at = sa.Column(sa.DateTime, default=datetime.now())
 
-    def __init__(self, id_, site_id, type_):
-        self.id = id_
+    orm.relationship("Page", backref="widgets",
+                     cascade="save-update, merge, delete, delete-orphan")
+    __mapper_args__ = {"polymorphic_on": discriminator}
+
+    def __init__(self, site_id, type_):
         self.site_id = site_id
         self.type = type_
 
     def __repr__(self):
         return '<%s %s>' % (self.__class__.__name__, self.id)
-
-    @property
-    def appstruct(self):
-        ## ウィジェットのプロパティを取得する
-        attrs = [attr for attr in dir(self) if attr != 'appstruct' and not attr.startswith('_') and not callable(getattr(self, attr))]
-        output = {}
-        for attr in attrs:
-            output[attr] = getattr(self, attr)
-
-        return output
-
-from altaircms.asset.models import *
-
-## ?? ##
-class Page2Widget(Base):
-    __tablename__ = "page2widget"
-
-    id = sa.Column(sa.Integer, primary_key=True)
-    created_at = sa.Column(sa.DateTime, default=datetime.now())
-    updated_at = sa.Column(sa.DateTime, default=datetime.now())
-
-    block = sa.Column(sa.String) # HTMLのIDが入る想定
-    order = sa.Column(sa.Integer) # ウィジェットの並び替え情報
-
-    options = sa.Column(sa.String) # 何かしらの付加情報があればJSONシリアライズして保持する
-
-    page_id = sa.Column(sa.Integer, sa.ForeignKey("page.id"))
-    widget_id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"))
-
-    orm.relationship("Page", backref="widget")
-
 
 """
 
@@ -263,5 +226,3 @@ class RakutenPointWidget(Base):
 
 
 """
-
-

@@ -14,7 +14,7 @@ import transaction
 from altaircms.page.forms import PageEditForm, PageAddForm
 from altaircms.models import DBSession, Event
 from altaircms.page.models import Page
-from altaircms.widget.models import Page2Widget, Widget
+from altaircms.widget.models import Widget
 
 @view_config(route_name="page_edit_", request_method="POST")
 def to_publish(request):     ## fixme
