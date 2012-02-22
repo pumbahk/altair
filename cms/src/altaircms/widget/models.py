@@ -17,8 +17,8 @@ from altaircms.interfaces import IHasSite
 from altaircms.interfaces import IHasTimeHistory
 
 
-from altaircms.plugins.widget.image.models import ImageWidget
-from altaircms.plugins.widget.freetext.models import FreetextWidget as TextWidget
+# from altaircms.plugins.widget.image.models import ImageWidget
+# from altaircms.plugins.widget.freetext.models import FreetextWidget as TextWidget
 
 __all__ = [
     # 'Widget',
