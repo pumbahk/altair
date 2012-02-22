@@ -1,19 +1,20 @@
 <%inherit file='layout.mako'/>
 
 <div class="row">
-    <div class="span2 pull-right">
-        <div class="btn-group">
-            <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-                サイト
-                <span class="caret"></span>
-            </a>
-            <ul class="dropdown-menu">
-                <li><a href="#">ticket.rakuten.co.jp</a></li>
-            </ul>
-        </div>
-    </div>
-    <div class="span6">
-        <h4>最近のお知らせ</h4>
+    <div class="span8">
+        <h4>お知らせ</h4>
+        <table class="table table-striped">
+            <tbody>
+            <tr>
+                <td>199x/1/23</td>
+                <td>世界は核の炎に包まれた</td>
+            </tr>
+            <tr>
+                <td>199x/1/23</td>
+                <td>世界は核の炎に包まれた</td>
+            </tr>
+            </tbody>
+        </table>
 
     </div>
 </div>
