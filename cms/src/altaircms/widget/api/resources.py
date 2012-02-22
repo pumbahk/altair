@@ -14,26 +14,6 @@ class UsingAssetMixin(object):
     def get_image_asset(self, asset_id):
         return self.ImageAsset.query.filter(self.ImageAsset.id == asset_id).one()
 
-class UsingWidgetMixin(object):
-    from altaircms.widget.models import ImageWidget
-    from altaircms.widget.models import TextWidget
-    from altaircms.widget.models import DBSession
-    def _get_or_create(self, model, widget_id):
-        if widget_id is None:
-            return model({})
-        else:
-            return DBSession.query(model).filter(model.id == widget_id).one()
-        
-    def get_image_widget(self, widget_id):
-        return self._get_or_create(self.ImageWidget, widget_id)
-
-    def get_freetext_widget(self, widget_id):
-        return self._get_or_create(self.TextWidget, widget_id)
-
-    def update_widget(self, widget, params):
-        set_with_dict(widget, params)
-        return widget
-
 class UsingPageMixin(object):
     from altaircms.page.models import Page
     def get_page(self, page_id):
@@ -49,8 +29,7 @@ class UsingLayoutMixin(object):
     
 class WidgetResource(UsingAssetMixin,
                      UsingPageMixin, 
-                     UsingLayoutMixin,
-                     UsingWidgetMixin):
+                     UsingLayoutMixin):
     def __init__(self, request):
         self.request = request
         

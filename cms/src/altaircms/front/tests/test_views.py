@@ -96,12 +96,12 @@ class FunctionalPageRenderingTest(unittest.TestCase):
         return ImageAsset.from_dict(D)
 
     def _getTextWidget(self):
-        from altaircms.widget.models import TextWidget
+        from altaircms.plugins.widget.freetext.models import FreetextWidget
         D = {'id': 1, 'text': u'hohoho'}
-        return TextWidget.from_dict(D)
+        return FreetextWidget.from_dict(D)
 
     def _getImageWidget(self):
-        from altaircms.widget.models import ImageWidget
+        from altaircms.plugins.widget.image.models import ImageWidget
         asset = self._getImageAsset()
         D = {"assest": asset,  "asset_id": asset.id, "id": 2}
         return ImageWidget.from_dict(D)
