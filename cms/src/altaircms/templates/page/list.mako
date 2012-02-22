@@ -75,8 +75,14 @@
     ${form|n}
 </div>
 
-<ul>
-%for page in pages:
-<li><a href="${request.route_url("page_edit_", page_id=page.id)}">${page}</a></li>
-%endfor
-</ul>
+<h4>ページ一覧</h4>
+<table class="table-bordered">
+    <tbody>
+        %for page in pages:
+            <tr>
+                <td>${page.created_at}</td>
+                <td><a href="${request.route_url("page_edit_", page_id=page.id)}">${page}</a></td>
+            </tr>
+        %endfor
+    </tbody>
+</table>

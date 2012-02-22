@@ -46,6 +46,7 @@ class PageEditView(object):
 
             if not self.page:
                 return NotFound()
+            """
             results = dbsession.query(Page2Widget, Widget).filter(Page2Widget.widget_id==Widget.id).\
                 filter(Page2Widget.page_id==page_id).order_by(asc(Page2Widget.order)).all()
 
@@ -56,6 +57,8 @@ class PageEditView(object):
                     self.display_blocks[key].append(widget)
                 else:
                     self.display_blocks[key] = [widget]
+            """
+            self.display_blocks = {}
 
         DBSession.remove()
 
