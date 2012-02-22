@@ -77,6 +77,6 @@
 
 <ul>
 %for page in pages:
-<li><a href="${request.route_url("page_edit_", page_id=page.id)}">${page}</li>
+<li><a href="${request.route_url("page_edit_", page_id=page.id)}">${page}</a></li>
 %endfor
 </ul>

@@ -21,7 +21,7 @@ from altaircms.asset import get_storepath
 from altaircms.asset.models import Asset, ImageAsset, MovieAsset, FlashAsset
 from altaircms.asset.forms import *
 from altaircms.asset.mappers import *
-
+from altaircms.asset.forms import ImageAssetForm
 
 
 EXT_MAP = {
@@ -163,9 +163,10 @@ class AssetEditView(object):
 
 class AssetRESTAPIView(BaseRESTAPIView):
     model = ImageAsset
+    form = ImageAssetForm
 
     def __init__(self, request, *args, **kwargs):
-        self.validation_schema = ImageAssetSchema # @TODO: 切り替えられるようにする
+        #self.validation_schema = ImageAssetSchema # @TODO: 切り替えられるようにする
         super(AssetRESTAPIView, self).__init__(request, *args, **kwargs)
 
     #@view_config(renderer='json')

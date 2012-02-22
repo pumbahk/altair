@@ -1,23 +1,12 @@
 # coding: utf-8
-import deform
-from deform import Form
+from cgi import FieldStorage
 from pyramid.httpexceptions import HTTPBadRequest
-# from pyramid.renderers import render
 from pyramid.response import Response
+# from pyramid.renderers import render
 # from pyramid.view import view_config
 
-# def render_widget(request, widget):
-#     try:
-#         templeate_file = 'altaircms:templates/front/widget/%s.mako' % (widget.type)
-#         result = render(templeate_file, {
-#                     'widget': widget
-#                     },
-#                     request=request
-#                 )
-#     except:
-#         raise
+from wtforms.validators import ValidationError
 
-#     return result
 
 class BaseRESTAPIError(Exception):
     def __init__(self, message=''):
@@ -33,11 +22,9 @@ class BaseRESTAPIView(object):
     処理後はコールバックを実行する（optional）
     """
 
-    validation_schema = None
     model_object = None
     model = None
-
-    _form = None
+    form = None  # WTForms Form class for validate post vars.
 
     def __init__(self, request, id=None):
         from altaircms.models import DBSession
@@ -47,18 +34,15 @@ class BaseRESTAPIView(object):
 
         self.session = DBSession()
 
-        self._form = Form(self.validation_schema())
-
     def create(self):
-        try:
-            self._validate_and_map()
-            self._create_or_update()
+        (res, form) = self._validate_and_map()
 
+        if res:
+            self._create_or_update()
             url = ''
             return Response(status=201, content_location=url) # @TODO: need return new object location
-        except deform.ValidationFailure, e:
-            error = e.error.asdict()
-            return HTTPBadRequest(error)
+        else:
+            return HTTPBadRequest(form.errors)
 
     def read(self):
         mapper = self._get_mapper()
@@ -66,12 +50,13 @@ class BaseRESTAPIView(object):
         return Response(content, content_type='application/json', status=200)
 
     def update(self):
-        try:
-            self._validate_and_map()
+        (res, form) = self._validate_and_map()
+
+        if res:
             self._create_or_update()
             return Response(status=200)
-        except deform.ValidationFailure as e:
-            pass
+        else:
+            return HTTPBadRequest(form.errors)
 
     def delete(self):
         if self.model_object:
@@ -81,18 +66,22 @@ class BaseRESTAPIView(object):
             return HTTPBadRequest()
 
     def _validate_and_map(self):
-        try:
-            controls = self.request.POST.items()
-            captured = self._form.validate(controls)
+        if not self.model_object:
+            self.model_object = self.model()
 
-            if not self.model_object:
-                self.model_object = self.model()
+        form = self.form(self.request.POST)
 
-            for key, value in self.model_object.column_items():
-                if key in  captured:
-                    setattr(self.model_object, key, captured[key])
-        except deform.ValidationFailure:
-            raise
+        if not form.validate():
+            return (False, form)
+
+        for key, value in self.model_object.column_items():
+            if hasattr(form, key):
+                post_value = getattr(getattr(form, key), 'data')
+                if isinstance(post_value, FieldStorage):
+                    post_value = post_value.filename
+                setattr(self.model_object, key, post_value)
+
+        return (True, form)
 
     def _create_or_update(self):
         self.session.add(self.model_object)

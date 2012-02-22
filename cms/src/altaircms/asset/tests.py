@@ -23,13 +23,13 @@ def setUpModule():
 
 def tearDownModule():
     browser.stop()
-"""
 
 def _getFile(name='test.py'):
     import os
     path = os.path.join(os.path.abspath(os.path.dirname(__file__)), name)
     filename = os.path.split(path)[-1]
     return path, filename
+"""
 
 class TestAssetView(BaseTest):
     def setUp(self):
@@ -46,25 +46,12 @@ class TestAssetView(BaseTest):
         resp = AssetRESTAPIView(self.request).create()
         self.assertEqual(resp.status_int, 400)
         self.assertTrue(isinstance(resp.message, dict))
-        self.assertEqual(resp.message['type'], 'Required')
-        self.assertEqual(resp.message['uploadfile'], 'Required')
+        self.assertTrue(resp.message['type'])
+        # self.assertTrue(resp.message['uploadfile'])
         self.assertEqual(DBSession.query(ImageAsset).count(), 0)
 
         # post filled
-        upload = cgi.FieldStorage(u'Binaries--file', u'test.js')
-
-        self.request.POST = MultiDict([
-            (u'_charset_', u'UTF-8'),
-            (u'__formid__', u'deform'),
-            (u'type', u'image'),
-            (u'alt', u'alt text'),
-            (u'width', u'320'),
-            (u'height', u'240'),
-            (u'__start__', u'uploadfile:mapping'),
-            (u'upload', upload),
-            (u'__end__', 'uploadfile:mapping'),
-            (u'submit', u'submit')
-        ])
+        self._fill_post_request()
 
         resp = AssetRESTAPIView(self.request).create()
         self.assertEqual(resp.status_int, 201)
@@ -91,25 +78,13 @@ class TestAssetView(BaseTest):
         self.assertEqual(image_asset.mimetype, 'image/jpeg')
 
         # post filled
-        fp = open(os.path.join(os.path.dirname(__file__), 'test.jpg'), 'rb')
-        upload = cgi.FieldStorage(fp, u'test.jpg')
+        self._fill_post_request()
 
-        self.request.POST = MultiDict([
-            (u'_charset_', u'UTF-8'),
-            (u'__formid__', u'deform'),
-            (u'type', u'image'),
-            (u'alt', u'alt text'),
-            (u'width', u'320'),
-            (u'height', u'240'),
-            (u'__start__', u'uploadfile:mapping'),
-            (u'upload', upload),
-            (u'__end__', 'uploadfile:mapping'),
-            (u'submit', u'submit')
-        ])
+
         resp = AssetRESTAPIView(self.request, 1).update()
         image_asset = DBSession.query(ImageAsset).one()
         self.assertEqual(resp.status_int, 200)
-        self.assertEqual(image_asset.filepath, 'hoge.jpg')  # @FIXME: test.jpgに更新されない
+        self.assertEqual(image_asset.filepath, 'test.jpg')  # @FIXME: test.jpgに更新されない
         self.assertEqual(image_asset.alt, 'alt text')
         self.assertEqual(image_asset.width, 320)
         self.assertEqual(image_asset.height, 240)
@@ -128,6 +103,21 @@ class TestAssetView(BaseTest):
 
         DBSession.add(obj)
 
+    def _fill_post_request(self):
+        upload = DummyUpload()
+
+        self.request.POST = MultiDict([
+            (u'type', u'image'),
+            (u'alt', u'alt text'),
+            (u'width', u'320'),
+            (u'height', u'240'),
+            (u'filepath', upload['filename']),
+            (u'submit', u'submit')
+        ])
+        self.request.FILES = MultiDict([
+            (u'filepath', upload)
+        ])
+
 
 # code from https://github.com/Pylons/deform/blob/master/deform/tests/test_widget.py
 class DummyTmpStore(dict):
@@ -138,11 +128,9 @@ class DummyTmpStore(dict):
 class DummyUpload(dict):
     def __init__(self):
         self['file'] = open(os.path.join(os.path.dirname(__file__), 'test.jpg'), 'rb')
-        self['filename'] = 'filename'
+        self['filename'] = 'test.jpg'
         self['type'] = 'mimetype'
         self['length'] = 'size'
-        # upload = 'hogehoge'
-        # uid = 1234
 
 
 def _cgi_FieldStorage__repr__patch(self):
