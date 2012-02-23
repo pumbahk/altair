@@ -36,8 +36,9 @@ class TestAssetView(BaseTest):
         self.request = testing.DummyRequest()
         super(TestAssetView, self).setUp()
 
-    # def tearDown(self):
-    #     DBSession.query(ImageAsset).delete()
+    def tearDown(self):
+        import transaction
+        transaction.abort()
 
     def test_create(self):
         # null post
@@ -62,7 +63,6 @@ class TestAssetView(BaseTest):
 
     def test_read(self):
         self._create_imageasset()
-
         resp = AssetRESTAPIView(self.request, 1).read()
 
         self.assertEqual(resp.status_int, 200)

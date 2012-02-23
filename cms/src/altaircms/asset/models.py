@@ -58,28 +58,30 @@ class MediaAssetColumnsMixin(object):
 
 class ImageAsset(MediaAssetColumnsMixin, Asset):
     implements(IAsset, IHasMedia)
+    type = "image"
 
     __tablename__ = "image_asset"
-    __mapper_args__ = {"polymorphic_identity": "image"}
+    __mapper_args__ = {"polymorphic_identity": type}
 
     id = sa.Column(sa.Integer, sa.ForeignKey("asset.id"), primary_key=True)
 
 class FlashAsset(MediaAssetColumnsMixin, Asset):
     implements(IAsset, IHasMedia)
-
+    type = "flash"
     MIMETYPE_DEFAULT = 'application/x-shockwave-flash'
 
     __tablename__ = "flash_asset"
-    __mapper_args__ = {"polymorphic_identity": "flash"}
+    __mapper_args__ = {"polymorphic_identity": type}
 
     id = sa.Column(sa.Integer, sa.ForeignKey("asset.id"), primary_key=True)
     mimetype = sa.Column(sa.String, default='application/x-shockwave-flash')
 
 class MovieAsset(MediaAssetColumnsMixin, Asset):
     implements(IAsset, IHasMedia)
+    type = "movie"
 
     __tablename__ = "movie_asset"
-    __mapper_args__ = {"polymorphic_identity": "movie"}
+    __mapper_args__ = {"polymorphic_identity": type}
 
     id = sa.Column(sa.Integer, sa.ForeignKey("asset.id"), primary_key=True)
 

@@ -1,20 +1,22 @@
 from altaircms.interfaces import IWidget
 from zope.interface import implements
-from altaircms.plugins.base import Base
+from altaircms.widget.models import Widget
 from altaircms.plugins.base import DBSession
 from altaircms.plugins.base import HandleSessionMixin
 from altaircms.plugins.base import UpdateDataMixin
 
 import sqlalchemy as sa
 
-class FreetextWidget(Base):
+class FreetextWidget(Widget):
     implements(IWidget)
     type = "freetext"
-    template_name = "altaircms.plugins.widget:freetext/render.mako"    
 
-    query = DBSession.query_property()
+    template_name = "altaircms.plugins.widget:freetext/render.mako"    
     __tablename__ = "widget_text"
-    id = sa.Column(sa.Integer, primary_key=True)
+    __mapper_args__ = {"polymorphic_identity": type}
+    query = DBSession.query_property()
+
+    id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
     text = sa.Column(sa.Unicode)
 
     def __init__(self, id=None, text=None):

@@ -12,7 +12,6 @@ from altaircms.models import Base, DBSession
 
 from datetime import datetime
 from zope.interface import implements
-from altaircms.interfaces import IWidget
 from altaircms.interfaces import IHasSite
 from altaircms.interfaces import IHasTimeHistory
 
@@ -21,12 +20,12 @@ from altaircms.interfaces import IHasTimeHistory
 # from altaircms.plugins.widget.freetext.models import FreetextWidget as TextWidget
 
 __all__ = [
-    # 'Widget',
-     'ImageWidget',
+    'Widget',
+    # 'ImageWidget',
     # 'MovieWidget',
     # 'FlashWidget',
     # 'MenuWidget',
-     'TextWidget',
+     # 'TextWidget',
     # 'BreadcrumbsWidget',
     # 'TopicWidget',
 ]
@@ -48,19 +47,16 @@ class Widget(Base):
     query = DBSession.query_property()
     __tablename__ = "widget"
     page_id = sa.Column(sa.Integer, sa.ForeignKey("page.id"))
+    page = orm.relationship("Page", backref="widgets", 
+                            single_parent = True, 
+                           cascade="save-update, merge, delete, delete-orphan")
     id = sa.Column(sa.Integer, primary_key=True)
     site_id = sa.Column(sa.Integer, sa.ForeignKey("site.id"))
     discriminator = sa.Column("type", sa.String(32), nullable=False)
     created_at = sa.Column(sa.DateTime, default=datetime.now())
     updated_at = sa.Column(sa.DateTime, default=datetime.now())
 
-    orm.relationship("Page", backref="widgets",
-                     cascade="save-update, merge, delete, delete-orphan")
     __mapper_args__ = {"polymorphic_on": discriminator}
-
-    def __init__(self, site_id, type_):
-        self.site_id = site_id
-        self.type = type_
 
     def __repr__(self):
         return '<%s %s>' % (self.__class__.__name__, self.id)

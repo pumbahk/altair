@@ -11,7 +11,7 @@ def main():
         yield
 
     with block("create client"):
-        import altaircms.models as m
+        import altaircms.auth.models as m
         client = m.Client()
         client.name = u"master"
         client.prefecture = u"tokyo"

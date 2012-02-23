@@ -1,11 +1,10 @@
+
 import sqlalchemy as sa
-from altaircms.models import Base as DefaultBase
 import sqlalchemy.orm as orm
+from sqlalchemy.ext.declarative import declarative_base
 
-class Base(DefaultBase):
-    __abstract__ = True
-    metadata = sa.MetaData()
-
+metadata = sa.MetaData()
+Base = declarative_base()
 DBSession = orm.scoped_session(orm.sessionmaker())
 
 class DummyWidget(Base):
