@@ -49,17 +49,17 @@ def api_include(config):
 
 def cms_include(config):
     config.add_route('event', '/event/{id}')
-    config.add_route('event_list', '/event')
+    config.add_route('event_list', '/event/')
 
     config.add_route('layout', '/layout/{layout_id}')
-    config.add_route('layout_list', '/layout')
+    config.add_route('layout_list', '/layout/')
 
-    config.add_route('page_list', '/page', factory="altaircms.page.resources.SampleCoreResource")
+    config.add_route('page_list', '/page/', factory="altaircms.page.resources.SampleCoreResource")
     config.add_route('page_edit_', '/page/{page_id}', factory="altaircms.page.resources.SampleCoreResource")
-    config.add_route('page_add', '/event/{event_id}/page')
+    config.add_route('page_add', '/event/{event_id}/page/')
     config.add_route('page_edit', '/event/{event_id}/page/{page_id}/edit')
 
-    config.add_route('asset_list', '/asset')
+    config.add_route('asset_list', '/asset/')
     config.add_route('asset_form', '/asset/form/{asset_type}')
     config.add_route('asset_edit', '/asset/{asset_id}')
     config.add_route('asset_view', '/asset/{asset_id}')
@@ -67,7 +67,7 @@ def cms_include(config):
     config.add_route('widget', '/widget/{widget_id}')
     config.add_route('widget_add', '/widget/form/{widget_type}')
     config.add_route('widget_delete', '/widget/{widget_id}/delete')
-    config.add_route('widget_list', '/widget')
+    config.add_route('widget_list', '/widget/')
 
 
 def main_app(global_config, settings):
