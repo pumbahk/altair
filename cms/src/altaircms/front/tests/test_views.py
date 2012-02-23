@@ -7,16 +7,16 @@ Page -> Layout
 Page.structure{} # widget id
 Widget
 """
+
 def setUpModule():
     from altaircms.testutils import create_db
     from altaircms.models import DBSession
     DBSession.remove()
-    create_db()
+    create_db(message="test view create")
 
 def tearDownModule():
     from altaircms.testutils import dropall_db
-    dropall_db()
-
+    dropall_db(message="test view drop")
 
 class FunctionalPageRenderingTest(unittest.TestCase):
     DIR = os.path.dirname(os.path.abspath(__file__))
@@ -92,12 +92,13 @@ class FunctionalPageRenderingTest(unittest.TestCase):
         from altaircms.asset.models import ImageAsset
         D = {'filepath': u'/static/img/samples/Abstract_Desktop_290.jpg',
              'id': 1,
+             "page_id": 2, 
              'type': u'image_asset'}
         return ImageAsset.from_dict(D)
 
     def _getTextWidget(self):
         from altaircms.plugins.widget.freetext.models import FreetextWidget
-        D = {'id': 1, 'text': u'hohoho'}
+        D = {'id': 1, 'text': u'hohoho',"page_id": 2}
         return FreetextWidget.from_dict(D)
 
     def _getImageWidget(self):

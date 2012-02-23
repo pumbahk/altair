@@ -1,6 +1,6 @@
 from altaircms.interfaces import IWidget
 from zope.interface import implements
-from altaircms.plugins.base import Base
+from altaircms.widget.models import Widget
 from altaircms.plugins.base import DBSession
 from altaircms.plugins.base import asset
 from altaircms.plugins.base import HandleSessionMixin
@@ -10,16 +10,16 @@ import sqlalchemy as sa
 import sqlalchemy.orm as orm
 
 ImageAsset = asset.models.ImageAsset
-class ImageWidget(Base):
+class ImageWidget(Widget):
     implements(IWidget)
-
     type = "image"
-    template_name = "altaircms.plugins.widget:image/render.mako"
 
+    template_name = "altaircms.plugins.widget:image/render.mako"
     __tablename__ = "widget_image"
+    __mapper_args__ = {"polymorphic_identity": type}
     query = DBSession.query_property()
 
-    id = sa.Column(sa.Integer, primary_key=True)
+    id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
     asset_id = sa.Column(sa.Integer, sa.ForeignKey("asset.id"))
     asset = orm.relationship(ImageAsset, backref="widget", uselist=False)
 

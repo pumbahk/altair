@@ -37,11 +37,6 @@ class RootFactory(object):
     def __init__(self, request):
         pass
 
-
-def auth_include(config):
-    config.add_route('oauth_entry', '/oauth')
-    config.add_route('oauth_callback', '/oauth_callback')
-
 def api_include(config):
     config.add_route('api_event', '/event/{id}')
     config.add_route('api_event_list', '/event/')
@@ -91,7 +86,7 @@ def main_app(global_config, settings):
     config.include("pyramid_fanstatic")
     config.include("altaircms.widget")
 
-    config.include(auth_include, route_prefix='/auth')
+    config.include("altaircms.auth", route_prefix='/auth')
     config.include(api_include, route_prefix='/api')
     config.include("altaircms.front", route_prefix="f")
     config.include(cms_include, route_prefix='')

@@ -63,9 +63,8 @@ class Page(PublishUnpublishMixin,
 
     site_id = Column(Integer, ForeignKey("site.id"))
     layout_id = Column(Integer, ForeignKey("layout.id"))
-    relationship('Layout', backref='pages', uselist=False)
+    layout = relationship('Layout', backref='pages', uselist=False)
     structure = Column(String, default="{}")
-
     hash_url = Column(String(length=32), default=None)
 
     def __repr__(self):

@@ -16,9 +16,7 @@ def _initTestingDB():
 class BaseTest(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp()
-        self.config.add_subscriber(add_renderer_globals, BeforeRender)
-
-        _initTestingDB()
+        self.session = _initTestingDB()
 
 
 class TestBaseView(BaseTest):
