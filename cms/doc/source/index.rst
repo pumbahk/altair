@@ -76,6 +76,7 @@ Module
 ========================================
 
 .. toctree::
+   :maxdepth: 2
 
    modules/altaircms.rst
 

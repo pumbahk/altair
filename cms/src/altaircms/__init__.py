@@ -108,5 +108,7 @@ def main_app(global_config, settings):
     return config.make_wsgi_app()
     
 def main(global_config, **settings):
+    """ apprications main
+    """
     return main_app(global_config, settings)
 
