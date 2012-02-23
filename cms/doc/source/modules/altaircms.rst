@@ -1,89 +1,120 @@
-========================================
-altaircms
-========================================
+altaircms Package
+=================
 
-.. todo::
+:mod:`altaircms` Package
+------------------------
 
-   あとでまとめる
+.. automodule:: altaircms.__init__
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
-.. automodule:: altaircms
-   :members:
-
-.. automodule:: altaircms.asset
-   :members:
-
-.. automodule:: altaircms.auth
-   :members:
-
-.. automodule:: altaircms.base
-   :members:
-
-.. automodule:: altaircms.event
-   :members:
+:mod:`fanstatic` Module
+-----------------------
 
 .. automodule:: altaircms.fanstatic
-   :members:
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
-.. automodule:: altaircms.front
-   :members:
-
-.. automodule:: altaircms.helpers
-   :members:
+:mod:`interfaces` Module
+------------------------
 
 .. automodule:: altaircms.interfaces
-   :members:
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`itertools` Module
+-----------------------
 
 .. automodule:: altaircms.itertools
-   :members:
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
-.. automodule:: altaircms.layout
-   :members:
+:mod:`layouts` Module
+---------------------
 
 .. automodule:: altaircms.layouts
-   :members:
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`lib` Module
+-----------------
 
 .. automodule:: altaircms.lib
-   :members:
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
-.. automodule:: altaircms.magazine
-   :members:
+:mod:`models` Module
+--------------------
 
 .. automodule:: altaircms.models
-   :members:
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`monkeypatch` Module
+-------------------------
 
 .. automodule:: altaircms.monkeypatch
-   :members:
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
-.. automodule:: altaircms.page
-   :members:
-
-.. automodule:: altaircms.payment
-   :members:
-
-.. automodule:: altaircms.perms
-   :members:
-
-.. automodule:: altaircms.plugins
-   :members:
+:mod:`security` Module
+----------------------
 
 .. automodule:: altaircms.security
-   :members:
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`subscribers` Module
+-------------------------
 
 .. automodule:: altaircms.subscribers
-   :members:
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
-.. automodule:: altaircms.tag
-   :members:
+:mod:`testutils` Module
+-----------------------
 
 .. automodule:: altaircms.testutils
-   :members:
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
-.. automodule:: altaircms.usersettings
-   :members:
+:mod:`views` Module
+-------------------
 
 .. automodule:: altaircms.views
-   :members:
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
-.. automodule:: altaircms.widget
-   :members:
+Subpackages
+-----------
+
+.. toctree::
+
+    altaircms.asset
+    altaircms.auth
+    altaircms.base
+    altaircms.event
+    altaircms.front
+    altaircms.helpers
+    altaircms.layout
+    altaircms.magazine
+    altaircms.page
+    altaircms.payment
+    altaircms.perms
+    altaircms.plugins
+    altaircms.tag
+    altaircms.usersetting
+    altaircms.widget
 
