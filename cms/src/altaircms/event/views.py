@@ -2,6 +2,7 @@
 import json
 
 from pyramid.exceptions import NotFound
+from pyramid.httpexceptions import HTTPFound
 from pyramid.response import Response
 from pyramid.view import view_config
 
@@ -10,12 +11,14 @@ from deform import ValidationFailure
 
 from altaircms.event.forms import event_schema
 from altaircms.models import DBSession, Event
+from altaircms.views import BaseRESTAPIView
+from altaircms.page.models import Page
+from altaircms.event.forms import EventForm
 
 
 ##
 ## CMS view
 ##
-from altaircms.page.models import Page
 
 @view_config(route_name='event', renderer='altaircms:templates/event/view.mako')
 def event_view(request):
@@ -33,7 +36,16 @@ def event_view(request):
 @view_config(route_name='event_list', renderer='altaircms:templates/event/list.mako')
 def event_list(request):
     events = DBSession.query(Event).order_by(Event.id.desc()).all()
+    if request.method == "POST":
+        form = EventForm(request.POST)
+        if form.validate():
+            request.method = "PUT"
+            EventRESTAPIView(request).create()
+            return HTTPFound(request.route_url("event_list"))
+    else:
+        form = EventForm()
     return dict(
+        form=form,
         events=events
     )
 
@@ -41,6 +53,30 @@ def event_list(request):
 ##
 ## API views
 ##
+class EventRESTAPIView(BaseRESTAPIView):
+    model = Event
+    form = EventForm
+
+    @view_config(route_name='api_event', request_method='PUT', renderer='json')
+    @view_config(route_name='api_event', request_method='PUT', request_param="html=t", renderer='altaircms:templates/event/parts/form.mako')
+    def create(self):
+        return super(EventRESTAPIView, self).create()
+
+    @view_config(route_name='api_event', request_method='GET')
+    @view_config(route_name='api_event_object', request_method='GET')
+    def read(self):
+        return super(EventRESTAPIView, self).read()
+
+    @view_config(route_name='api_event_object', request_method='PUT')
+    def update(self):
+        return super(EventRESTAPIView, self).update()
+
+    @view_config(route_name='api_event_object', request_method='DELETE')
+    def delete(self):
+        return super(EventRESTAPIView, self).delete()
+
+
+'''
 @view_config(route_name='api_event_list', request_method='GET')
 def list(reuqest):
     """
@@ -48,9 +84,7 @@ def list(reuqest):
 
     @TODO: 認証を加える
     """
-    dbsession = DBSession()
-    events = dbsession.query(Event).order_by(Event.id.desc()).all()
-    DBSession.remove()
+    events = DBSession.query(Event).order_by(Event.id.desc()).all()
 
     output = []
     for event in events:
@@ -137,3 +171,4 @@ def post(request):
     DBSession.remove()
 
     return Response('')
+'''

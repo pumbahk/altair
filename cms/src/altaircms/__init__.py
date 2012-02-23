@@ -37,11 +37,6 @@ class RootFactory(object):
     def __init__(self, request):
         pass
 
-def api_include(config):
-    config.add_route('api_event', '/event/{id}')
-    config.add_route('api_event_list', '/event/')
-
-
 def cms_include(config):
     config.add_route('event', '/event/{id}')
     config.add_route('event_list', '/event/')
@@ -87,10 +82,11 @@ def main_app(global_config, settings):
     config.include("altaircms.widget")
 
     config.include("altaircms.auth", route_prefix='/auth')
-    config.include(api_include, route_prefix='/api')
+    # config.include(api_include, route_prefix='/api')
     config.include("altaircms.front", route_prefix="f")
     config.include(cms_include, route_prefix='')
     config.include("altaircms.plugins")
+    config.include("altaircms.event")
 
     config.scan('altaircms.base')
     config.scan('altaircms.auth')
