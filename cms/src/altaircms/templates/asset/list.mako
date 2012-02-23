@@ -1,15 +1,19 @@
-<%inherit file='../layout.mako'/>
+<%inherit file='../layout_2col.mako'/>
 
-<h1>アセットの追加</h1>
-<ul>
-<li><a href="${request.route_url('asset_form', asset_type="image")}">画像を追加する</a></li>
-<li><a href="${request.route_url('asset_form', asset_type="movie")}">動画を追加する</a></li>
-<li><a href="${request.route_url('asset_form', asset_type="flash")}">Flashを追加する</a></li>
-</ul>
+<div class="row" style="margin-bottom: 9px">
+<h4>アセットの追加</h4>
+<div class="btn-group">
+<a class="btn" href="${request.route_url('asset_form', asset_type="image")}">画像</a>
+<a class="btn" href="${request.route_url('asset_form', asset_type="movie")}">動画</a>
+<a class="btn" href="${request.route_url('asset_form', asset_type="flash")}">Flash</a>
+</div>
+</div>
 
-<h2>登録済みのアセット一覧</h2>
+<div class="row">
+<h4>登録済みのアセット一覧</h4>
 <ul>
 %for asset in assets:
             <li><a href="${request.route_url("asset_view", asset_id=asset.id)}">${asset}</a></li>
 %endfor
 </ul>
+</div>

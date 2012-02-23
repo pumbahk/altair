@@ -1,7 +1,7 @@
 ##
 ##
 ##
-<%inherit file='../layout.mako'/>
+<%inherit file='../layout_2col.mako'/>
 <%block name='js'>
     <script type="text/javascript" src="/static/deform/js/jquery.form.js"></script>
     <script type="text/javascript" src="/static/deform/js/deform.js"></script>

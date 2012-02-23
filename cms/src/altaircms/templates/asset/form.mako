@@ -1,4 +1,4 @@
-<%inherit file='../layout.mako'/>
+<%inherit file='../layout_2col.mako'/>
 <%block name='js'>
     <script type="text/javascript" src="/static/js/jquery.form.js"></script>
     <script type="text/javascript" src="/static/js/jquery.maskedinput.js"></script>
@@ -11,9 +11,8 @@
     deform.load();
 </%block>
 
-<h1>アセット追加 / 編集</h1>
+<h3>アセット追加 / 編集</h3>
 
-<a href="${request.route_url('asset_list')}">アセット一覧</a>
 <div id="asset-form">
     ${form}
 </div>

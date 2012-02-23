@@ -1,5 +1,5 @@
 <%inherit file='layout.mako'/>
-<%block name="content">
-  <div id="column-left"><%block name="content-left"></%block></div>
-  <div id="column-right"><%block name="content-right"></%block></div>
-</%block>
+<div class="row">
+  <div class="span2"><%block name="contentleft"><%include file="parts/sidebar.mako"/></%block></div>
+  <div class="span10"><%block name="contentright">${self.body()}</%block></div>
+</div>
