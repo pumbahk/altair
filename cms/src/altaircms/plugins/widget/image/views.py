@@ -10,8 +10,7 @@ class ImageWidgetView(object):
         context = self.request.context
         asset = context.get_image_asset(asset_id);
         widget = context.get_image_widget(self.request.json_body.get("pk"))
-        widget = context.update_data(widget, asset_id=asset_id)
-        # import pdb; pdb.set_trace()
+        widget = context.update_data(widget, asset_id=asset_id, asset=asset)
         context.add(widget, flush=True)
 
         r = self.request.json_body.copy()

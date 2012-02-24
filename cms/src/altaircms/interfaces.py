@@ -48,11 +48,12 @@ class IUpdateData(Interface):
 
 ## models
 class IWidget(Interface):
-    type = Attribute(""" widget type e.g. image, freetext, ...""")
     template_name = Attribute("""render template name""")
+    type = Attribute(""" type """)
 
 class IAsset(Interface):
-    pass
+    type = Attribute(""" type """)
+
 
 class IHasSite(Interface):
     """ has site data

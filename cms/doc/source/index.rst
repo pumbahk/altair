@@ -72,6 +72,14 @@ CMS以外の機能
    functions/index
 
 
+Module
+========================================
+
+.. toctree::
+   :maxdepth: 2
+
+   modules/altaircms.rst
+
 
 調査
 =========
@@ -131,7 +139,6 @@ CMS以外の機能
 
  配券
    席の販売枠の割り当て。
-
 
 TODO
 ====

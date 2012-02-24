@@ -1,11 +1,28 @@
-<%inherit file='../layout.mako'/>
-
-<h1>イベント一覧</h1>
+<%inherit file='../layout_2col.mako'/>
+<div class="row">
+  <div class="span10">
+  <h4>イベント追加</h4>
+  <%include file="parts/form.mako"/>
+  </div>
+</div>
 
 <hr/>
 
-<ul>
+<table class="table table-striped">
+<thead>
+  <tr>
+    <th>イベント名</th>
+    <th>開催場所</th>
+    <th>公開日</th>
+  </tr>
+</thead>
+<tbody>
 %for event in events:
-<li><a href="/event/${event.id}">${event}</a></li>
+  <tr>
+    <td><a href="/event/${event.id}">${event}</a></td>
+    <td>${event.place}</td>
+    <td>${event.event_open} - ${event.event_close}</td>
+  </tr>
 %endfor
-</ul>
+</tbody>
+</table>

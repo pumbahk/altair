@@ -37,29 +37,19 @@ class RootFactory(object):
     def __init__(self, request):
         pass
 
-
-def auth_include(config):
-    config.add_route('oauth_entry', '/oauth')
-    config.add_route('oauth_callback', '/oauth_callback')
-
-def api_include(config):
-    config.add_route('api_event', '/event/{id}')
-    config.add_route('api_event_list', '/event/')
-
-
 def cms_include(config):
     config.add_route('event', '/event/{id}')
-    config.add_route('event_list', '/event')
+    config.add_route('event_list', '/event/')
 
     config.add_route('layout', '/layout/{layout_id}')
-    config.add_route('layout_list', '/layout')
+    config.add_route('layout_list', '/layout/')
 
-    config.add_route('page_list', '/page', factory="altaircms.page.resources.SampleCoreResource")
+    config.add_route('page_list', '/page/', factory="altaircms.page.resources.SampleCoreResource")
     config.add_route('page_edit_', '/page/{page_id}', factory="altaircms.page.resources.SampleCoreResource")
-    config.add_route('page_add', '/event/{event_id}/page')
+    config.add_route('page_add', '/event/{event_id}/page/')
     config.add_route('page_edit', '/event/{event_id}/page/{page_id}/edit')
 
-    config.add_route('asset_list', '/asset')
+    config.add_route('asset_list', '/asset/')
     config.add_route('asset_form', '/asset/form/{asset_type}')
     config.add_route('asset_edit', '/asset/{asset_id}')
     config.add_route('asset_view', '/asset/{asset_id}')
@@ -67,7 +57,7 @@ def cms_include(config):
     config.add_route('widget', '/widget/{widget_id}')
     config.add_route('widget_add', '/widget/form/{widget_type}')
     config.add_route('widget_delete', '/widget/{widget_id}/delete')
-    config.add_route('widget_list', '/widget')
+    config.add_route('widget_list', '/widget/')
 
 
 def main_app(global_config, settings):
@@ -91,11 +81,12 @@ def main_app(global_config, settings):
     config.include("pyramid_fanstatic")
     config.include("altaircms.widget")
 
-    config.include(auth_include, route_prefix='/auth')
-    config.include(api_include, route_prefix='/api')
+    config.include("altaircms.auth", route_prefix='/auth')
+    # config.include(api_include, route_prefix='/api')
     config.include("altaircms.front", route_prefix="f")
     config.include(cms_include, route_prefix='')
     config.include("altaircms.plugins")
+    config.include("altaircms.event")
 
     config.scan('altaircms.base')
     config.scan('altaircms.auth')
@@ -117,5 +108,7 @@ def main_app(global_config, settings):
     return config.make_wsgi_app()
     
 def main(global_config, **settings):
+    """ apprications main
+    """
     return main_app(global_config, settings)
 

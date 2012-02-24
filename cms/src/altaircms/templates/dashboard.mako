@@ -1,7 +1,6 @@
-<%inherit file='layout.mako'/>
-
+<%inherit file='layout_2col.mako'/>
 <div class="row">
-    <div class="span8">
+    <div class="span6">
         <h4>お知らせ</h4>
         <table class="table table-striped">
             <tbody>
@@ -15,16 +14,19 @@
             </tr>
             </tbody>
         </table>
-
+    </div>
+    <div class="span4">
+      <h4>イベント</h4>
+      <div class="btn-toolbar">
+        <div class="btn-group">
+          <a class="btn btn-small" href="#">もうすぐ公開</a>
+          <a class="btn btn-small" href="#">条件付き</a>
+        </div>
+      </div>
+      <table class="table table-striped">
+        <tr>
+          <td>2011/1/1</td><td>blueman live</td>
+        </tr>
+      </table>
     </div>
 </div>
-
-<h1>dashboard</h1>
-<ul>
-    <!-- <li><a href="/client">edit client</a></li> -->
-    <li><a href="${request.route_url("layout_list")}">レイアウト</a></li>
-    <li><a href="${request.route_url("event_list")}">イベント</a></li>
-    <li><a href="${request.route_url("asset_list")}">アセット</a></li>
-    <li><a href="${request.route_url("widget_list")}">ウィジェット</a></li>
-    <li><a href="${request.route_url("page_list")}">ページ</a></li>
-</ul>

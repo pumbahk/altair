@@ -1,4 +1,4 @@
-<%inherit file='../layout.mako'/>
+<%inherit file='../layout_2col.mako'/>
 
 <h4>アセットの追加</h4>
 <ul class="nav nav-pills">
