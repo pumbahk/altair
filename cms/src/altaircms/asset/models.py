@@ -20,6 +20,8 @@ __all__ = [
 ]
 
 import sqlalchemy as sa
+import os
+DIR = os.path.dirname(os.path.abspath(__file__))
 # import sqlalchemy.orm as orm
 
 class Asset(Base):
@@ -66,6 +68,8 @@ class ImageAsset(MediaAssetColumnsMixin, Asset):
     id = sa.Column(sa.Integer, sa.ForeignKey("asset.id"), primary_key=True)
 
 class FlashAsset(MediaAssetColumnsMixin, Asset):
+    DEFAULT_IMAGE_PATH = os.path.join(DIR, "img/not_found.jpg")
+    
     implements(IAsset, IHasMedia)
     type = "flash"
     MIMETYPE_DEFAULT = 'application/x-shockwave-flash'
@@ -75,8 +79,11 @@ class FlashAsset(MediaAssetColumnsMixin, Asset):
 
     id = sa.Column(sa.Integer, sa.ForeignKey("asset.id"), primary_key=True)
     mimetype = sa.Column(sa.String, default='application/x-shockwave-flash')
+    image_path = sa.Column(sa.String, default=DEFAULT_IMAGE_PATH)
 
 class MovieAsset(MediaAssetColumnsMixin, Asset):
+    DEFAULT_IMAGE_PATH = os.path.join(DIR, "img/not_found.jpg")
+
     implements(IAsset, IHasMedia)
     type = "movie"
 
@@ -84,6 +91,7 @@ class MovieAsset(MediaAssetColumnsMixin, Asset):
     __mapper_args__ = {"polymorphic_identity": type}
 
     id = sa.Column(sa.Integer, sa.ForeignKey("asset.id"), primary_key=True)
+    image_path = sa.Column(sa.String, default=DEFAULT_IMAGE_PATH)
 
 # class CssAsset(Asset):
 #     pass
