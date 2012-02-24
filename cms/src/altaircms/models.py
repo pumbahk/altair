@@ -102,9 +102,6 @@ class Event(Base):
 
     client_id = Column(Integer, ForeignKey("client.id"))
 
-    def __repr__(self):
-        return '<Event %s>' % self.title
-
     def __unicode__(self):
         return self.title
 

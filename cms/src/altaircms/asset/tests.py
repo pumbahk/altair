@@ -10,6 +10,7 @@ from altaircms.models import DBSession
 from altaircms.base.tests import BaseTest
 from altaircms.asset.views import AssetRESTAPIView
 from altaircms.asset.models import ImageAsset
+from altaircms.asset.models import Asset
 
 """
 browser = None
@@ -44,19 +45,18 @@ class TestAssetView(BaseTest):
         # null post
         self.request.POST = MultiDict()
 
-        resp = AssetRESTAPIView(self.request).create()
-        self.assertEqual(resp.status_int, 400)
-        self.assertTrue(isinstance(resp.message, dict))
-        self.assertTrue(resp.message['type'])
-        # self.assertTrue(resp.message['uploadfile'])
+        (created, object, errors) = AssetRESTAPIView(self.request).create()
+        self.assertFalse(created)
+        self.assertEqual(object, None)
+        self.assertTrue(errors['type'])
         self.assertEqual(DBSession.query(ImageAsset).count(), 0)
 
         # post filled
         self._fill_post_request()
 
-        resp = AssetRESTAPIView(self.request).create()
-        self.assertEqual(resp.status_int, 201)
-        self.assertTrue(isinstance(resp.content_location, str))
+        (created, object, errors) = AssetRESTAPIView(self.request).create()
+        self.assertTrue(created)
+        self.assertTrue(isinstance(object, ImageAsset))
         self.assertEqual(DBSession.query(ImageAsset).count(), 1)
 
         #@TODO: ファイルの保存確認？
@@ -65,10 +65,10 @@ class TestAssetView(BaseTest):
         self._create_imageasset()
         resp = AssetRESTAPIView(self.request, 1).read()
 
-        self.assertEqual(resp.status_int, 200)
-        self.assertEqual(resp.body['id'], 1)
-        self.assertEqual(resp.body['mimetype'], 'image/jpeg')
-        self.assertEqual(resp.body['filepath'], 'hoge.jpg')
+        self.assertTrue(isinstance(resp, dict))
+        self.assertEqual(resp['id'], 1)
+        self.assertEqual(resp['mimetype'], 'image/jpeg')
+        self.assertEqual(resp['filepath'], 'hoge.jpg')
 
     def test_update(self):
         self._create_imageasset()
@@ -81,9 +81,8 @@ class TestAssetView(BaseTest):
         self._fill_post_request()
 
 
-        resp = AssetRESTAPIView(self.request, 1).update()
-        image_asset = DBSession.query(ImageAsset).one()
-        self.assertEqual(resp.status_int, 200)
+        (status, image_asset, errors) = AssetRESTAPIView(self.request, 1).update()
+        self.assertTrue(status)
         self.assertEqual(image_asset.filepath, 'test.jpg')  # @FIXME: test.jpgに更新されない
         self.assertEqual(image_asset.alt, 'alt text')
         self.assertEqual(image_asset.width, 320)
@@ -93,7 +92,7 @@ class TestAssetView(BaseTest):
         self._create_imageasset()
 
         resp = AssetRESTAPIView(self.request, 1).delete()
-        self.assertEqual(resp.status_int, 200)
+        self.assertTrue(resp)
         self.assertEqual(DBSession.query(ImageAsset).count(), 0)
 
     def _create_imageasset(self):

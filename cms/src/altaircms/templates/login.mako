@@ -1,9 +1,9 @@
 <%inherit file='layout.mako'/>
 
 <div class="row">
-    <span class="span4">&nbsp;</span>
-    <a class="span4 btn btn-primary" href="${request.route_url("oauth_entry")}">Login with twitter (OAuth)</a>
-    <span class="span4">&nbsp;</span>
+    <div class="span6 offset3 well"  style="text-align:center" >
+        <a class="btn btn-primary" href="${request.route_url("oauth_entry")}">Login with Twitter (OAuth)</a>
+    </div>
 </div>
 
 <%doc>

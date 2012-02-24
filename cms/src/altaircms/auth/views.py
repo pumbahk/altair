@@ -11,7 +11,7 @@ from sqlalchemy.orm.exc import NoResultFound
 import oauth2
 import transaction
 
-from altaircms.views import BaseRESTAPIView
+from altaircms.views import BaseRESTAPI
 from altaircms.models import DBSession
 from .models import Operator, Permission
 from altaircms.auth.errors import AuthenticationError
@@ -176,6 +176,6 @@ def auth_denied_view(context, request):
 """
 
 
-class OperatorApiView(BaseRESTAPIView):
+class OperatorApi(BaseRESTAPI):
     validationschema = None
     model = Operator

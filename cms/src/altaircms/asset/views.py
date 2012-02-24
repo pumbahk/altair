@@ -15,7 +15,7 @@ from pyramid.view import view_config
 from sqlalchemy.sql.expression import desc
 
 from altaircms.models import DBSession
-from altaircms.views import BaseRESTAPIView
+from altaircms.views import BaseRESTAPI
 
 from altaircms.asset import get_storepath
 from altaircms.asset.models import Asset, ImageAsset, MovieAsset, FlashAsset
@@ -161,9 +161,11 @@ class AssetEditView(object):
 
 
 
-class AssetRESTAPIView(BaseRESTAPIView):
+class AssetRESTAPIView(BaseRESTAPI):
     model = ImageAsset
     form = ImageAssetForm
+
+    object_mapper = ImageAssetMapper
 
     def __init__(self, request, *args, **kwargs):
         #self.validation_schema = ImageAssetSchema # @TODO: 切り替えられるようにする
@@ -176,7 +178,8 @@ class AssetRESTAPIView(BaseRESTAPIView):
     #@view_config(renderer='json')
     def read(self):
         self.model_object = self.get_object_by_id(self.id)
-        return super(AssetRESTAPIView, self).read()
+        super(AssetRESTAPIView, self).read()
+        return self.object_mapper(self.model_object).as_dict()
 
     #@view_config(renderer='json')
     def update(self):

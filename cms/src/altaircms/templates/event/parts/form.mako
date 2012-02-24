@@ -6,7 +6,7 @@
       %if 'title' in form.errors:
       <br/>
       %for error in form.errors['title']:
-      <span class="btn btn-warning">${error}</span>
+      <span class="btn btn-danger">${error}</span>
       %endfor
       %endif
       </td></tr>
@@ -14,7 +14,7 @@
             %if 'subtitle' in form.errors:
             <br/>
             %for error in form.errors['subtitle']:
-            <span class="btn btn-warning">${error}</span>
+            <span class="btn btn-danger">${error}</span>
             %endfor
             %endif
       </td></tr>
@@ -22,7 +22,7 @@
             %if 'description' in form.errors:
                   <br/>
                   %for error in form.errors['description']:
-                  <span class="btn btn-warning">${error}</span>
+                  <span class="btn btn-danger">${error}</span>
                   %endfor
                   %endif
       </td></tr>
@@ -30,7 +30,7 @@
             %if 'inquiry_for' in form.errors:
                   <br/>
                   %for error in form.errors['inquiry_for']:
-                  <span class="btn btn-warning">${error}</span>
+                  <span class="btn btn-danger">${error}</span>
                   %endfor
                   %endif
             </td></tr>
@@ -38,7 +38,7 @@
       %if 'event_open' in form.errors:
       <br/>
       %for error in form.errors['event_open']:
-      <span class="btn btn-warning">${error}</span>
+      <span class="btn btn-danger">${error}</span>
       %endfor
       %endif
       </td></tr>
@@ -46,7 +46,7 @@
       %if 'deal_open' in form.errors:
       <br/>
       %for error in form.errors['deal_open']:
-      <span class="btn btn-warning">${error}</span>
+      <span class="btn btn-danger">${error}</span>
       %endfor
       %endif
       </td></tr>
@@ -54,7 +54,7 @@
             %if 'place' in form.errors:
                   <br/>
                   %for error in form.errors['place']:
-                  <span class="btn btn-warning">${error}</span>
+                  <span class="btn btn-danger">${error}</span>
                   %endfor
                   %endif
             </td></tr>
