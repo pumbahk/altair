@@ -2,13 +2,8 @@
 import json
 import collections
 
-from pyramid.exceptions import NotFound
 from pyramid.httpexceptions import HTTPFound, HTTPBadRequest, HTTPCreated, HTTPOk
-from pyramid.response import Response
 from pyramid.view import view_config
-
-from deform import Form
-from deform import ValidationFailure
 
 from altaircms.models import DBSession, Event
 from altaircms.views import BaseRESTAPI
@@ -21,7 +16,7 @@ from altaircms.event.mappers import EventMapper, EventsMapper
 ## CMS view
 ##
 @view_config(route_name='event', renderer='altaircms:templates/event/view.mako', permission='view')
-def event_view(request):
+def view(request):
     id_ = request.matchdict['id']
 
     event = EventRESTAPIView(request, id_).read()
@@ -34,17 +29,18 @@ def event_view(request):
 
 
 @view_config(route_name='event_list', renderer='altaircms:templates/event/list.mako', permission='view')
-def event_list(request):
+def list_(request):
     events = EventRESTAPIView(request).read()
 
     if request.method == "POST":
         form = EventForm(request.POST)
         if form.validate():
             request.method = "PUT"
-            (created, obj) = EventRESTAPIView(request).create()
+            EventRESTAPIView(request).create()
             return HTTPFound(request.route_url("event_list"))
     else:
         form = EventForm()
+
     return dict(
         form=form,
         events=events

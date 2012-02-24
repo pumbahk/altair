@@ -1,4 +1,6 @@
+# coding: utf-8
 from altaircms.models import DBSession
+from altaircms.layout.models import Layout
 from . import renderable
 
 def set_with_dict(obj, D):
@@ -8,7 +10,11 @@ def set_with_dict(obj, D):
 
 class UsingRenderMixin(object):
     def get_layout_render(self, page):
-        layout = page.layout
+        # @FIXME: 以下が表示される
+        # DetachedInstanceError: Parent instance <Page at 0x10d7c78d0> is not 
+        # bound to a Session; lazy load operation of attribute 'layout' cannot proceed
+        # layout = page.layout
+        layout = DBSession.query(Layout).filter_by(id=page.layout_id).one()
         return renderable.LayoutRender(layout)
     def get_page_render(self, page):
         return renderable.PageRender(page)

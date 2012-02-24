@@ -1,12 +1,6 @@
 # coding: utf-8
 from cgi import FieldStorage
-from pyramid.httpexceptions import HTTPBadRequest
-from pyramid.response import Response
-# from pyramid.renderers import render
-# from pyramid.view import view_config
-import transaction
-
-from wtforms.validators import ValidationError
+from altaircms.models import DBSession
 
 
 class BaseRESTAPIError(Exception):
@@ -31,10 +25,9 @@ class BaseRESTAPI(object):
     form = None  # WTForms Form class for validate post vars.
 
     model_object = None
+    form_object = None
 
     def __init__(self, request, id=None):
-        from altaircms.models import DBSession
-
         self.request = request
         self.id = id
         self.session = DBSession()
@@ -76,19 +69,20 @@ class BaseRESTAPI(object):
         if not self.model_object:
             self.model_object = self.model()
 
-        form = self.form(self.request.POST)
+        self.form_object = self.form(self.request.POST)
+        self._post_form_hook()
 
-        if not form.validate():
-            return (False, form)
+        if not self.form_object.validate():
+            return (False, self.form_object)
 
         for key, value in self.model_object.column_items():
-            if hasattr(form, key):
-                post_value = getattr(getattr(form, key), 'data')
+            if hasattr(self.form_object, key):
+                post_value = getattr(getattr(self.form_object, key), 'data')
                 if isinstance(post_value, FieldStorage):
                     post_value = post_value.filename
                 setattr(self.model_object, key, post_value)
 
-        return (True, form)
+        return (True, self.form_object)
 
     def _create_or_update(self):
         (res, form) = self._validate_and_map()
@@ -98,6 +92,9 @@ class BaseRESTAPI(object):
             return (True, self.model_object, None)
         else:
             return (False, None, form.errors)
+
+    def _post_form_hook(self):
+        pass
 
     """
     def pre_process_hook(self):

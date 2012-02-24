@@ -1,10 +1,8 @@
-<%inherit file='../layout.mako'/>
+<%inherit file='../layout_2col.mako'/>
 
-<h1>レイアウト - ${layout}</h1>
-<a href="${request.route_url("layout_list")}">back</a>
-
-<hr/>
+<h1 class="page-header">レイアウト - ${layout}</h1>
 
 ID: ${layout.id}<br/>
-名称: ${layout.title}<br/>
+タイトル: ${layout.title}<br/>
+ブロック: ${layout.blocks}<br/>
 テンプレートファイル名: ${layout.template_filename}

@@ -85,7 +85,7 @@ class AssetEditView(object):
             }
 
     @view_config(route_name='asset_list', renderer='altaircms:templates/asset/list.mako', request_method='GET', permission='edit')
-    def asset_list(self):
+    def list_(self):
         assets = DBSession().query(Asset).order_by(desc(Asset.id)).all()
 
         return dict(

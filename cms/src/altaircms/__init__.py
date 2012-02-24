@@ -44,8 +44,9 @@ def cms_include(config):
     config.add_route('layout', '/layout/{layout_id}')
     config.add_route('layout_list', '/layout/')
 
-    config.add_route('page_list', '/page/', factory="altaircms.page.resources.SampleCoreResource")
+    # config.add_route('page_list', '/page/', factory="altaircms.page.resources.SampleCoreResource")
     config.add_route('page_edit_', '/page/{page_id}', factory="altaircms.page.resources.SampleCoreResource")
+
     config.add_route('page_add', '/event/{event_id}/page/')
     config.add_route('page_edit', '/event/{event_id}/page/{page_id}/edit')
 
@@ -82,11 +83,12 @@ def main_app(global_config, settings):
     config.include("altaircms.widget")
 
     config.include("altaircms.auth", route_prefix='/auth')
-    # config.include(api_include, route_prefix='/api')
     config.include("altaircms.front", route_prefix="f")
     config.include(cms_include, route_prefix='')
     config.include("altaircms.plugins")
     config.include("altaircms.event")
+    config.include("altaircms.layout")
+    config.include("altaircms.page")
 
     config.scan('altaircms.base')
     config.scan('altaircms.auth')
@@ -106,7 +108,8 @@ def main_app(global_config, settings):
     initialize_sql(engine)
 
     return config.make_wsgi_app()
-    
+
+
 def main(global_config, **settings):
     """ apprications main
     """
