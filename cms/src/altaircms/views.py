@@ -48,34 +48,19 @@ class BaseRESTAPI(object):
 
         :return: tuple (create_status, 生成したオブジェクト, 更新エラーのdict)
         """
-        (res, form) = self._validate_and_map()
-
-        if res:
-            self._create_or_update()
-            return (True, self.model_object, None)
-        else:
-            return (False, None, form.errors)
+        return self._create_or_update()
 
     def read(self):
         """
         :return: object or list 指定したIDのオブジェクトまたはモデルオブジェクトのlist
         """
-        if self.model_object:
-            return self.model_object
-        else:
-            return self.session.query(self.model)
+        return self.model_object if self.model_object else self.session.query(self.model)
 
     def update(self):
         """
         :return: tuple (update_status, 更新されたオブジェクト, 更新エラーのdict)
         """
-        (res, form) = self._validate_and_map()
-
-        if res:
-            self._create_or_update()
-            return (True, self.model_object, None)
-        else:
-            return (False, None, form.errors)
+        return self._create_or_update()
 
     def delete(self):
         """
@@ -106,7 +91,13 @@ class BaseRESTAPI(object):
         return (True, form)
 
     def _create_or_update(self):
-        self.session.add(self.model_object)
+        (res, form) = self._validate_and_map()
+
+        if res:
+            self.session.add(self.model_object)
+            return (True, self.model_object, None)
+        else:
+            return (False, None, form.errors)
 
     """
     def pre_process_hook(self):

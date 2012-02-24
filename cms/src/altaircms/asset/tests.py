@@ -1,36 +1,16 @@
 # coding: utf-8
 import os
 import cgi
+import transaction
 
 from pyramid import testing
 from webob.multidict import MultiDict
 
 from altaircms.models import DBSession
-
 from altaircms.base.tests import BaseTest
 from altaircms.asset.views import AssetRESTAPIView
-from altaircms.asset.models import ImageAsset
-from altaircms.asset.models import Asset
+from altaircms.asset.models import Asset, ImageAsset
 
-"""
-browser = None
-def setUpModule():
-    from selenium import selenium
-    global browser
-    browser = selenium("localhost", 4444, "*chrome", "http://localhost:8521/")
-    browser.start()
-    return browser
-
-
-def tearDownModule():
-    browser.stop()
-
-def _getFile(name='test.py'):
-    import os
-    path = os.path.join(os.path.abspath(os.path.dirname(__file__)), name)
-    filename = os.path.split(path)[-1]
-    return path, filename
-"""
 
 class TestAssetView(BaseTest):
     def setUp(self):
@@ -38,8 +18,7 @@ class TestAssetView(BaseTest):
         super(TestAssetView, self).setUp()
 
     def tearDown(self):
-        import transaction
-        transaction.abort()
+        transaction.commit()
 
     def test_create(self):
         # null post

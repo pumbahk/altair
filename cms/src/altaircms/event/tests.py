@@ -1,4 +1,6 @@
 # coding: utf-8
+import transaction
+
 from pyramid import testing
 from webob.multidict import MultiDict
 
@@ -10,6 +12,9 @@ class TestEventView(BaseTest):
         self.request = testing.DummyRequest()
         self.request.method = "PUT"
         super(TestEventView, self).setUp()
+
+    def tearDown(self):
+        transaction.commit()
 
     def test_create_invalid(self):
         # null post
