@@ -29,7 +29,8 @@ class RootFactory(object):
 
 def groupfinder(userid, request):
     user = DBSession.query(Operator).filter(Operator.login_id == userid).first()
-    print [g.name for g in user.roles]
+    if user is None:
+        return []
     return [g.name for g in user.roles]
 
 def populate():
