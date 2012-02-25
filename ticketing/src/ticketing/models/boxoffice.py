@@ -113,6 +113,9 @@ class Operator(Base):
     client = relationship('Client',uselist=False)
     roles = relationship("OperatorRole",
         secondary=operator_role_association_table)
+    @staticmethod
+    def get_by_login_id(user_id):
+        return DBSession.query(Operator).filter(Operator.login_id == user_id).first()
 
 class Performance(Base):
     __tablename__ = 'Performance'
@@ -263,19 +266,19 @@ class SeatStock(Base):
     def get_group_seat(pid, stid, num):
         idx = 0
         con_num = 0
-	grouping_ss = SeatMasterL2.get_grouping_seat_sets(pid, stid)
-	for grouping_seats in grouping_ss:
-	    for i, gseat in enumerate(grouping_seats):
-		if not gseat.sold:
-		    if con_num == 0:
-		        idx = i
-		    con_num += 1
-		    if con_num == num:
-			# @TODO return with locked status
-			return gseat[idx:idx+num]
-		else:
-		    con_num = 0
-	return []
+        grouping_ss = SeatMasterL2.get_grouping_seat_sets(pid, stid)
+        for grouping_seats in grouping_ss:
+            for i, gseat in enumerate(grouping_seats):
+                if not gseat.sold:
+                    if con_num == 0:
+                        idx = i
+                    con_num += 1
+                    if con_num == num:
+                        # @TODO return with locked status
+                        return gseat[idx:idx+num]
+                else:
+                    con_num = 0
+        return []
 
 # Layer2 SeatMaster
 class SeatMasterL2(Base):
@@ -285,7 +288,7 @@ class SeatMasterL2(Base):
     performance = relationship('Performance', uselist=False)
     seat_type_id = Column(BigInteger, ForeignKey('SeatType.id'))
     seat_type = relationship('SeatType', uselist=False)
-    seat_id = Column(Integer)
+    seat_id = Column(Integer, index=True)
     # @TODO have some attributes regarding Layer2
     venue_id = Column(BigInteger)
 
