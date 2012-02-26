@@ -15,23 +15,10 @@ class Client(Base):
     __tablename__ = 'Client'
     id = Column(BigInteger, primary_key=True)
     contract_type = Column(Integer)
-    name = Column(String(255))
-    company_name = Column(String(255))
-    section_name = Column(String(255))
-    zip_code = Column(String(7))
-    country_code = Column(Integer)
-    prefecture_code = Column(Integer)
-    city = Column(String(32))
-    address = Column(String(255))
-    street = Column(String(255))
-    other_address = Column(String(255))
-    tel_1 = Column(String(32))
-    tel_2 = Column(String(32))
-    fax = Column(String(32))
-    bank_account_id = Column(BigInteger, ForeignKey('BankAccount.id'))
-    bank_account = relationship('BankAccount', backref='client')
-    user_id = Column(BigInteger, ForeignKey("User.id"), nullable=True)
-    user = relationship('User', uselist=False)
+
+    event_ticket_owner = relationship('EventTicketOwner', uselist=False)
+    event_ticket_owner_id = Column(BigInteger, ForeignKey("EventTicketOwner.id"), nullable=True)
+
     updated_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime)
     status = Column(Integer, default=1)
@@ -53,6 +40,42 @@ class Client(Base):
     def all():
         return session.query(Client).all()
 
+class EventTicketOwner(Base):
+    __tablename__ = "EventTicketOwner"
+    id = Column(BigInteger, primary_key=True)
+    owner_type = Column(Integer)
+    """
+      owner_type:
+        1      => Promoter
+        1 << 1 => Playguide
+        1 << 2 => User (Auction user)
+    """
+    #performances = relationship('Performance', backref='owner')
+
+    bank_account_id = Column(BigInteger, ForeignKey('BankAccount.id'))
+    bank_account = relationship('BankAccount', backref='client')
+
+    user_id = Column(BigInteger, ForeignKey("User.id"), nullable=True)
+    user = relationship('User', uselist=False)
+    client = relationship("Child", uselist=False, backref="parent")
+
+    name = Column(String(255))
+    company_name = Column(String(255))
+    section_name = Column(String(255))
+    zip_code = Column(String(7))
+    country_code = Column(Integer)
+    prefecture_code = Column(Integer)
+    city = Column(String(32))
+    address = Column(String(255))
+    street = Column(String(255))
+    other_address = Column(String(255))
+    tel_1 = Column(String(32))
+    tel_2 = Column(String(32))
+    fax = Column(String(32))
+    updated_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime)
+    status = Column(Integer, default=1)
+
 operator_role_association_table = Table('OperatorRole_Operator', Base.metadata,
     Column('operator_role_id', BigInteger, ForeignKey('OperatorRole.id')),
     Column('operator_id', BigInteger, ForeignKey('Operator.id'))
@@ -62,7 +85,7 @@ class Permission(Base):
     __tablename__ = 'Permission'
     id = Column(BigInteger, primary_key=True)
     operator_role_id = Column(BigInteger, ForeignKey('OperatorRole.id'))
-#   operator_role = relationship('OperatorRole', uselist=False)
+    operator_role = relationship('OperatorRole', uselist=False)
     category_code = Column(Integer)
     permit = Column(Integer)
 
@@ -127,8 +150,8 @@ class Performance(Base):
     no_period = Column(Boolean)
     name = Column(String(255))
     code = Column(String(12))
-    client_id = Column(BigInteger, ForeignKey('Client.id'))
-    client = relationship('Client', backref='event')
+    owner_id = Column(BigInteger, ForeignKey('EventTicketOwner.id'))
+    owner = relationship('EventTicketOwner')
 
 event_table = Table(
     'Event', Base.metadata,
