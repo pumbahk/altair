@@ -30,14 +30,20 @@
     </form>
 </div>
 
+<div class="row">
 <h4>ページ一覧</h4>
 <table class="table table-striped">
     <tbody>
         %for page in pages:
             <tr>
                 <td>${page.created_at}</td>
+                <td>${page.url}</td>
                 <td><a href="${request.route_url("page_edit_", page_id=page.id)}">${page}</a></td>
+                <td>
+                    <a href="#" class="btn btn-small"><i class="icon-eye-open"> </i> Preview</a>
+                </td>
             </tr>
         %endfor
     </tbody>
 </table>
+</div>

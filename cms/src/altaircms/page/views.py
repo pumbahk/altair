@@ -16,6 +16,7 @@ from altaircms.models import DBSession, Event
 from altaircms.page.models import Page
 from altaircms.page.mappers import PageMapper, PagesMapper
 from altaircms.layout.models import Layout
+from altaircms.fanstatic import bootstrap_need
 
 
 """
@@ -43,6 +44,7 @@ def view(request):
 
 @view_config(route_name='page', renderer='altaircms:templates/page/list.mako')
 def list_(request):
+    bootstrap_need()
     layout_choices = [(layout.id, layout.title) for layout in DBSession.query(Layout)]
     if request.method == "POST":
         form = PageForm(request.POST)
@@ -174,8 +176,8 @@ class PageEditView(object):
 
         return self.render_form(PageAddForm, success=self._succeed, appstruct=appstruct)
 
-    @view_config(route_name='page_edit_', renderer='altaircms:templates/page/edit.mako')
-    @view_config(route_name='page_edit', renderer='altaircms:templates/page/edit.mako')
+    @view_config(route_name='page_edit_', renderer='altaircms:templates/page/edit.mako', permission='authenticated')
+    @view_config(route_name='page_edit', renderer='altaircms:templates/page/edit.mako', permission='authenticated')
     def page_edit(self):
         if not self.page:
             return self.render_form(PageEditForm, appstruct={}, success=self._succeed)            
@@ -199,9 +201,11 @@ class PageEditView(object):
             ## fanstatic
 
             from altaircms.fanstatic import jqueries_need
+            from altaircms.fanstatic import bootstrap_need
             from altaircms.fanstatic import wysiwyg_editor_need
             jqueries_need()
             wysiwyg_editor_need()
+            bootstrap_need()
             ##
 
             '''

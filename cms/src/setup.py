@@ -35,6 +35,7 @@ requires = [
     "fanstatic", 
     "pyramid_fanstatic", 
     "js.jquery", 
+    "js.bootstrap", 
     "js.json2", 
     "js.jqueryui", 
     "js.jquery_tools", 

@@ -2,6 +2,7 @@
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.security import authenticated_userid
 from pyramid.view import view_config
+from altaircms.fanstatic import bootstrap_need
 
 
 @view_config(name='client', renderer='altaircms:templates/client/form.mako', permission='view')
@@ -14,27 +15,5 @@ def dashboard(request):
     """
     ログイン後トップページ
     """
+    bootstrap_need()
     return dict()
-
-
-class BaseApiView(object):
-    """
-    APIビューの基底クラス
-    """
-    def __init__(self, request):
-        self.request = request
-
-        func = getattr(self, request.method.lower())
-        func()
-
-    def get(self):
-        pass
-
-    def post(self):
-        pass
-
-    def delete(self):
-        pass
-
-    def put(self):
-        pass

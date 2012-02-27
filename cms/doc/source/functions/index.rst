@@ -4,10 +4,11 @@
 
 .. toctree::
 
-   assets
    account
    auth
+   role
    permission
+   assets
    search
    payment
    sendmail
