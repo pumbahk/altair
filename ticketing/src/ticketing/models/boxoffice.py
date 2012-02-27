@@ -40,6 +40,15 @@ class Client(Base):
     def all():
         return session.query(Client).all()
 
+class Prefecture(Base):
+    __tablename__ = 'Prefecture'
+    id = Column(BigInteger, primary_key=True)
+    name = Column(String(255))
+
+    @staticmethod
+    def get(prefecture_id):
+        return DBSession.query(Prefecture).filter(Prefecture.id == prefecture_id).first();
+
 class EventTicketOwner(Base):
     __tablename__ = "EventTicketOwner"
     id = Column(BigInteger, primary_key=True)
@@ -50,21 +59,23 @@ class EventTicketOwner(Base):
         1 << 1 => Playguide
         1 << 2 => User (Auction user)
     """
-    #performances = relationship('Performance', backref='owner')
 
     bank_account_id = Column(BigInteger, ForeignKey('BankAccount.id'))
     bank_account = relationship('BankAccount', backref='client')
 
     user_id = Column(BigInteger, ForeignKey("User.id"), nullable=True)
     user = relationship('User', uselist=False)
-    client = relationship("Child", uselist=False, backref="parent")
+    client = relationship("Client", uselist=False, backref="parent")
 
     name = Column(String(255))
     company_name = Column(String(255))
     section_name = Column(String(255))
     zip_code = Column(String(7))
+
+    prefecture_id = Column(BigInteger, ForeignKey('Prefecture.id'))
+    prefecture = relationship("Prefecture")
+
     country_code = Column(Integer)
-    prefecture_code = Column(Integer)
     city = Column(String(32))
     address = Column(String(255))
     street = Column(String(255))
@@ -72,6 +83,7 @@ class EventTicketOwner(Base):
     tel_1 = Column(String(32))
     tel_2 = Column(String(32))
     fax = Column(String(32))
+
     updated_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime)
     status = Column(Integer, default=1)
