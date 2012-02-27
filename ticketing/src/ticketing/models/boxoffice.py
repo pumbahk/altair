@@ -329,14 +329,13 @@ class Product(Base):
     created_at = Column(DateTime)
     status = Column(Integer)
 
-    items = relationship('ProductItem')
+    items = relationship('ProductItemMaster', backref='product')
 
-class ProductItem(Base):
-    __tablename__ = 'ProductItem'
+class ProductItemMaster(Base):
+    __tablename__ = 'ProductItemMaster'
     id = Column(BigInteger, primary_key=True)
     
     product_id = Column(BigInteger, ForeignKey('Product.id'))
-    product = relationship('Product', uselist=False)
 
     price = Column(BigInteger)
     item_type = Column(Integer)
@@ -347,13 +346,21 @@ class ProductItem(Base):
     ticket_type = relationship('TicketType', uselist=False)
     seat_type_id = Column(BigInteger, ForeignKey('SeatType.id'))
     seat_type = relationship('SeatType', uselist=False)
-    seat_stock_id = Column(BigInteger, ForeignKey('SeatStock.id'))
-    # @TODO now assumed ProductItem:Seat = 1:1, and can be null if it is a non ticket product
-    seat = relationship('SeatStock', uselist=False)
 
-    product_id = Column(BigInteger, ForeignKey('Product.id'))
-    product = relationship('Product', uselist=False)
+    updated_at = Column(DateTime)
+    created_at = Column(DateTime)
+    status = Column(Integer)
 
+class ProductItem(Base):
+    __tablename__ = 'ProductItem'
+    id = Column(BigInteger, primary_key=True)
+
+    product_item_master_id = Column(BigInteger, ForeignKey('ProductItemMaster.id'))
+    product_item_master = relationship('ProductItemMaster')
+    order_item_id = Column(BigInteger, ForeignKey("OrderItem.id"))
+    # This can be null if it is a non ticket product
+    seat_stock_id = Column(BigInteger, ForeignKey('SeatStock.id'), nullable=True)
+    seat_stock = relationship('SeatStock', uselist=False)
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
     status = Column(Integer)
@@ -380,7 +387,7 @@ class Stock(Base):
 class SeatStock(Base):
     __tablename__ = "SeatStock"
     id = Column(BigInteger, primary_key=True)
-    seat_id = Column(Integer, ForeignKey("SeatMasterL2.seat_id"))
+    seat_id = Column(Integer, ForeignKey("SeatMasterL2.id"))
     seat = relationship('SeatMasterL2', uselist=False, backref="seat_stock_id") # 1:1
     sold = Column(Boolean) # sold or not
 
@@ -391,18 +398,22 @@ class SeatStock(Base):
     # @TODO
     @staticmethod
     def get_group_seat(pid, stid, num):
-        idx = 0
-        con_num = 0
-        grouping_ss = SeatMasterL2.get_grouping_seat_sets(pid, stid)
-        for grouping_seats in grouping_ss:
-            for i, gseat in enumerate(grouping_seats):
+        gid = 0
+        while True:
+            idx = 0
+            con_num = 0
+            grouping_ss = SeatMasterL2.get_grouping_seat_sets(pid, stid, gid)
+            if len(grouping_ss) == 0:
+                break
+            gid += 1
+            for i, gseat in enumerate(grouping_ss):
                 if not gseat.sold:
                     if con_num == 0:
                         idx = i
                     con_num += 1
                     if con_num == num:
                         # @TODO return with locked status
-                        return gseat[idx:idx+num]
+                        return grouping_ss[idx:idx+num]
                 else:
                     con_num = 0
         return []
@@ -415,7 +426,11 @@ class SeatMasterL2(Base):
     performance = relationship('Performance', uselist=False)
     seat_type_id = Column(BigInteger, ForeignKey('SeatType.id'))
     seat_type = relationship('SeatType', uselist=False)
-    seat_id = Column(Integer, index=True)
+    # set a same group id which can be grouping
+    group_id = Column(Integer, index=True)
+    ticket_owner_id = Column(BigInteger, ForeignKey('EventTicketOwner.id'))
+    ticket_owner = relationship('EventTicketOwner')
+    ticket_owner_history = relationship('EventTicketOwnerHistory', backref='seat_masterl2')
     # @TODO have some attributes regarding Layer2
     venue_id = Column(BigInteger)
 
@@ -423,10 +438,25 @@ class SeatMasterL2(Base):
     created_at = Column(DateTime)
     status = Column(Integer)
 
-    # @TODO
+    # @TODO retrieve a record set which have same group_id from 0 to N.
     @staticmethod
-    def get_grouping_seat_sets(pid, stid):
-        return [[]]
+    def get_grouping_seat_sets(pid, stid, gid):
+        return session.query(SeatMasterL2).filter(SeatMasterL2.performance_id==pid, SeatMasterL2.seat_type_id==stid, SeatMasterL2.group_id==gid).first()
+
+class EventTicketOwnerHistory(Base):
+    __tablename__ = 'EventTicketOwnerHistory'
+    id = Column(BigInteger, primary_key=True)
+    seat_masterl2_id = Column(BigInteger, ForeignKey("SeatMasterL2.id"))
+    ticket_owner_id = Column(BigInteger, ForeignKey('EventTicketOwner.id'))
+    ticket_owner = relationship('EventTicketOwner', primaryjoin="EventTicketOwner.id==EventTicketOwnerHistory.ticket_owner_id")
+    src_ticket_owner_id = Column(BigInteger, ForeignKey('EventTicketOwner.id'), nullable=True)
+    src_ticket_owner = relationship('EventTicketOwner', primaryjoin="EventTicketOwner.id==EventTicketOwnerHistory.src_ticket_owner_id")
+    dst_ticket_owner_id = Column(BigInteger, ForeignKey('EventTicketOwner.id'))
+    dst_ticket_owner = relationship('EventTicketOwner', primaryjoin="EventTicketOwner.id==EventTicketOwnerHistory.dst_ticket_owner_id")
+
+    updated_at = Column(DateTime)
+    created_at = Column(DateTime)
+    status = Column(Integer)
 
 class Bank(Base):
     __tablename__ = 'Bank'
@@ -514,7 +544,8 @@ class Order(Base):
     user_id = Column(BigInteger, ForeignKey("User.id"))
     user = relationship('User', uselist=False)
 
-    items = relationship('OrderItem')
+    items = relationship('OrderItem', backref='order')
+
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
     status = Column(Integer)
@@ -523,9 +554,10 @@ class OrderItem(Base):
     __tablename__ = 'OrderItem'
     id = Column(BigInteger, primary_key=True)
     order_id = Column(BigInteger, ForeignKey("Order.id"))
-    order = relationship('Order', backref='order_item')
     product_id = Column(BigInteger, ForeignKey("Product.id"))
     product = relationship('Product', uselist=False)
+    product_items = relationship('ProductItem', backref='order_item')
+
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
     status = Column(Integer)
