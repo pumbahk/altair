@@ -31,5 +31,6 @@ class TextComponentRenderer extends JSDOMComponentRenderer {
               fontSize: Std.string(
                 view_.inchToPixel(UnitUtils.pointToInch(fontSize))) + "px" });
         n.text(text);
+        super.refresh();
     }
 }

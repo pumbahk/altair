@@ -26,5 +26,6 @@ class VerticalGuideRenderer extends JSDOMComponentRenderer {
               width: "0px",
               height: "100%",
               borderWidth: "1px" });
+        super.refresh();
     }
 }

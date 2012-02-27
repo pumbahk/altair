@@ -52,8 +52,9 @@ class ComponentBase<Tself:Component> implements Component {
                         x: (cast e).position.x - pof.x,
                         y: (cast e).position.y - pof.y
                     };
-                    this.refresh();
+                    cast(this.renderer, ComponentRenderer).opacity = .5;
                     on.dragstart.call(this, e);
+                    this.refresh();
                 }
             case DRAGGING(pof):
                 this.position = {
@@ -72,7 +73,9 @@ class ComponentBase<Tself:Component> implements Component {
             case PRESSED(_):
                 on.click.call(this, e);
             case DRAGGING(_):
+                cast(this.renderer, ComponentRenderer).opacity = 1.;
                 on.dragend.call(this, e);
+                this.refresh();
             default:
             }
             state = NONE;

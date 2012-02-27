@@ -3,6 +3,7 @@ import js.JQuery;
 
 class JSDOMComponentRenderer extends JSDOMRenderer, implements ComponentRenderer{
     var stage_:JSDOMStage;
+    public var opacity:Float;
     public var stage(get_stage, set_stage):Stage;
 
     private function get_stage():Stage {
@@ -19,6 +20,10 @@ class JSDOMComponentRenderer extends JSDOMRenderer, implements ComponentRenderer
         return stage;
     }
 
+    public override function refresh(): Void {
+        untyped __js__("this.n.css")("opacity", Std.string(opacity));
+    }
+
     override function createMouseEvent(e:JqEvent):MouseEvent {
         return {
             source: this,
@@ -33,6 +38,7 @@ class JSDOMComponentRenderer extends JSDOMRenderer, implements ComponentRenderer
 
     public function new(id:Int) {
         super(id);
+        this.opacity = 1.0;
         this.stage_ = null;
     }
 }

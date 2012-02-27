@@ -26,5 +26,6 @@ class HorizontalGuideRenderer extends JSDOMComponentRenderer {
               width: "100%",
               height: "0px",
               borderWidth: "1px" });
+        super.refresh();
     }
 }

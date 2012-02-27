@@ -161,8 +161,9 @@
   <div class="page">
     <div class="toolbar ui-widget-header">
       <span class="ui-button-set toolbar-function">
-        <span class="toggle-button"><input class="ui-action-text" type="radio" name="function" value="text" id="toolbar-function-text" checked="checked" /><label for="toolbar-function-text">Text</label></span>
-        <span class="toggle-button"><input class="ui-action-image" type="radio" name="function" value="image" id="toolbar-function-image" /><label for="toolbar-function-image">Image</label></span>
+        <span class="toggle-button"><input class="ui-action-move ui-button ui-no-text ui-icon-arrow-4" type="radio" name="function" value="move" id="toolbar-function-move" checked="checked" /><label for="toolbar-function-move">Move</label></span>
+        <span class="toggle-button"><input class="ui-action-text ui-button ui-no-text ui-icon-pencil" type="radio" name="function" value="text" id="toolbar-function-text" checked="checked" /><label for="toolbar-function-text">Text</label></span>
+        <span class="toggle-button"><input class="ui-action-image ui-button ui-no-text ui-icon-image" type="radio" name="function" value="image" id="toolbar-function-image" /><label for="toolbar-function-image">Image</label></span>
       </span>
       <button class="ui-button ui-action-zoom_in ui-icon-zoomin ui-no-text" id="toolbar-function-zoom_in">Zoom-in</button>
       <button class="ui-button ui-action-zoom_out ui-icon-zoomout ui-no-text" id="toolbar-function-zoom_out">Zoom-out</button>
@@ -180,7 +181,7 @@
     $('.ui-button').each(function(i, n) {
       n = $(n);
       var params = {};
-      var rex = /ui-icon-\w+/, g;
+      var rex = /ui-icon-\S+/, g;
       if ((g = rex.exec(n.attr('class')))) {
         params['icons'] = { primary: g[0] };
       }
