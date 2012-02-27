@@ -19,7 +19,6 @@ from altaircms.security import groupfinder
 from altaircms.models import initialize_sql
 
 
-
 try:
     import pymysql_sa
     pymysql_sa.make_default_mysql_dialect()
@@ -28,13 +27,30 @@ except:
     pass
 
 
-
 class RootFactory(object):
     __name__ = None
     __acl__ = [
+        # 許可状態, 外部から与えられるグループ名, permission名
         (Allow, Authenticated, 'authenticated'),
-        (Allow, 'view', 'view'),
-        (Allow, 'edit', 'edit')
+        (Allow, 'event', 'event_viewer'),
+        (Allow, 'ticket', 'ticket_viewer'),
+        (Allow, 'page', 'page_viewer'),
+        (Allow, 'page_editor', 'page_viewer'),
+        (Allow, 'page_editor', 'page_editor'),
+        (Allow, 'topic', 'topic_viewer'),
+        (Allow, 'topic_editor', 'topic_viewer'),
+        (Allow, 'topic_editor', 'topic_editor'),
+        (Allow, 'magazine', 'magazine_viewer'),
+        (Allow, 'magazine_editor', 'magazine_viewer'),
+        (Allow, 'magazine_editor', 'magazine_editor'),
+
+        # administrator have all permissions
+        (Allow, 'admin', 'event_viewer'),
+        (Allow, 'admin', 'ticket_viewer'),
+        (Allow, 'admin', 'page_editor'),
+        (Allow, 'admin', 'topic_editor'),
+        (Allow, 'admin', 'magazine_editor'),
+        (Allow, 'admin', 'administrator'),
     ]
 
     def __init__(self, request):
@@ -63,22 +79,23 @@ def cms_include(config):
     config.add_route('widget_delete', '/widget/{widget_id}/delete')
     config.add_route('widget_list', '/widget/')
 
+
 def main_app_with_strip_secret(global_config, settings):
     D = {"altaircms.debug.strip_security": True}
     settings.update(D)
     return main_app(global_config, settings)
 
+
 def main_app(global_config, settings):
     """ This function returns a Pyramid WSGI application.
     """
-    # authn_policy = AuthTktAuthenticationPolicy(secret='SDQGxGIhVqSr3zJWV8KvHqHtJujhJj', callback=groupfinder)
     if settings.get("altaircms.debug.strip_security"):
         from altaircms.security import SecurityAllOK
         from altaircms.security import DummyAuthorizationPolicy
         authn_policy = SessionAuthenticationPolicy(callback=SecurityAllOK())
         authz_policy = DummyAuthorizationPolicy()
     else:
-        authn_policy = SessionAuthenticationPolicy(callback=groupfinder)
+        authn_policy = AuthTktAuthenticationPolicy(secret=settings.get('altaircms.auth.secret'), callback=groupfinder)
         authz_policy = ACLAuthorizationPolicy()
 
     session_factory = UnencryptedCookieSessionFactoryConfig('itsaseekreet')

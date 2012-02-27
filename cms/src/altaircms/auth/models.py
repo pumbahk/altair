@@ -58,6 +58,8 @@ class Permission(Base):
     operator_id = Column(Integer, ForeignKey('operator.id'))
     permission = Column(String)
 
+    UniqueConstraint('operator_id', 'permission')
+
 
 class Client(Base):
     """

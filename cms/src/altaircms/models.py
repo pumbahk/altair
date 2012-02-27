@@ -24,19 +24,21 @@ def to_dict(self):
                 if isinstance(v, ColumnOperators)}
 Base.to_dict = to_dict
 
+
 def column_items(self):
     from sqlalchemy.sql.operators import ColumnOperators
     return [(k, v) for k, v in self.__class__.__dict__.items()\
                 if isinstance(v, ColumnOperators)]
-
 Base.column_items = column_items
+
+
 def column_iters(self, D):
     from sqlalchemy.sql.operators import ColumnOperators
     for k, v in self.__class__.__dict__.items():
         if isinstance(v, ColumnOperators):
             yield k, D.get(k)
-    
-Base.column_iters = classmethod(column_iters)
+    Base.column_iters = classmethod(column_iters)
+
 
 def from_dict(cls, D):
     instance = cls()
@@ -45,6 +47,7 @@ def from_dict(cls, D):
         setattr(instance, k, v)
     return instance
 Base.from_dict = classmethod(from_dict)
+
 
 def populate():
     session = DBSession()
@@ -220,11 +223,3 @@ class Site(Base):
     url = Column(String)
 
     client_id = Column(Integer, ForeignKey("client.id")) #@TODO: サイトにくっつけるべき？
-
-
-# from altaircms.asset.models import *
-# from altaircms.widget.models import *
-# from altaircms.layout.models import *
-# from altaircms.page.models import *
-# from altaircms.auth.models import *
-
