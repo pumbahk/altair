@@ -54,8 +54,8 @@ class AssetEditView(object):
     def render_form(self, form, appstruct=colander.null, submitted='submit',
                     success=None, readonly=False):
         captured = None
-
         if submitted in self.request.POST:
+            print self.request.POST
             try:
                 controls = self.request.POST.items()
                 captured = form.validate(controls)
@@ -65,6 +65,7 @@ class AssetEditView(object):
                         return response
                 html = markupsafe.Markup(form.render(captured))
             except ValidationFailure, e:
+                # import pdb; pdb.set_trace()
                 html = markupsafe.Markup(e.render())
 
         else:
@@ -75,8 +76,7 @@ class AssetEditView(object):
         if self.request.is_xhr:
             return Response(html)
 
-        reqts = form.get_widget_resources()
-
+ 
         # values passed to template for rendering
         return {
             'form':html,

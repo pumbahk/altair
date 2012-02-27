@@ -9,6 +9,9 @@ from pyramid.security import Allow, Authenticated, Everyone, Deny
 from pyramid.events import BeforeRender
 
 import sqlahelper
+import re
+import logging
+logger = logging.getLogger(__name__)
 
 from sqlalchemy import engine_from_config
 
@@ -20,7 +23,7 @@ from altaircms.models import initialize_sql
 try:
     import pymysql_sa
     pymysql_sa.make_default_mysql_dialect()
-    print 'Using PyMySQL'
+    logger.info('Using PyMySQL')
 except:
     pass
 
@@ -60,13 +63,23 @@ def cms_include(config):
     config.add_route('widget_delete', '/widget/{widget_id}/delete')
     config.add_route('widget_list', '/widget/')
 
+def main_app_with_strip_secret(global_config, settings):
+    D = {"altaircms.debug.strip_security": True}
+    settings.update(D)
+    return main_app(global_config, settings)
 
 def main_app(global_config, settings):
     """ This function returns a Pyramid WSGI application.
     """
     # authn_policy = AuthTktAuthenticationPolicy(secret='SDQGxGIhVqSr3zJWV8KvHqHtJujhJj', callback=groupfinder)
-    authn_policy = SessionAuthenticationPolicy(callback=groupfinder)
-    authz_policy = ACLAuthorizationPolicy()
+    if settings.get("altaircms.debug.strip_security"):
+        from altaircms.security import SecurityAllOK
+        from altaircms.security import DummyAuthorizationPolicy
+        authn_policy = SessionAuthenticationPolicy(callback=SecurityAllOK())
+        authz_policy = DummyAuthorizationPolicy()
+    else:
+        authn_policy = SessionAuthenticationPolicy(callback=groupfinder)
+        authz_policy = ACLAuthorizationPolicy()
 
     session_factory = UnencryptedCookieSessionFactoryConfig('itsaseekreet')
 
@@ -90,15 +103,16 @@ def main_app(global_config, settings):
     config.include("altaircms.layout")
     config.include("altaircms.page")
 
-    config.scan('altaircms.base')
-    config.scan('altaircms.auth')
-    config.scan('altaircms.event')
-    config.scan('altaircms.page')
-    config.scan('altaircms.asset')
-    config.scan('altaircms.widget', ignore=["altaircms.widget.tests"])
-    config.scan('altaircms.layout')
-    config.scan('altaircms.front')
-    config.scan("altaircms.plugins")
+    test_re = re.compile('tests$').search
+    config.scan('altaircms.base', ignore=[test_re])
+    config.scan('altaircms.auth', ignore=[test_re])
+    config.scan('altaircms.event', ignore=[test_re])
+    config.scan('altaircms.page', ignore=[test_re])
+    config.scan('altaircms.asset', ignore=[test_re])
+    config.scan('altaircms.widget', ignore=[test_re])
+    config.scan('altaircms.layout', ignore=[test_re])
+    config.scan('altaircms.front', ignore=[test_re])
+    config.scan("altaircms.plugins", ignore=[test_re])
 
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)
     config.add_static_view('plugins/static', 'altaircms:plugins/static', cache_max_age=3600)

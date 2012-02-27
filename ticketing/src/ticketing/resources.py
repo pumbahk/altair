@@ -1,15 +1,15 @@
 from zope.interface import Interface, Attribute, implements
-import oauth.oauth as oauth
-from ticketing.models.oauth_data_store import AltairAuthDataStore
+# import oauth.oauth as oauth
+# from ticketing.models.oauth_data_store import AltairAuthDataStore
 
 REALM = 'http://altair.example.net/'
 
 class OAuth(object):
     def __init__(self, request):
         self.request = request
-        self.oauth_server = oauth.OAuthServer(AltairAuthDataStore())
-        self.oauth_server.add_signature_method(oauth.OAuthSignatureMethod_PLAINTEXT())
-        self.oauth_server.add_signature_method(oauth.OAuthSignatureMethod_HMAC_SHA1())
+        #self.oauth_server = oauth.OAuthServer(AltairAuthDataStore())
+        #self.oauth_server.add_signature_method(oauth.OAuthSignatureMethod_PLAINTEXT())
+        #self.oauth_server.add_signature_method(oauth.OAuthSignatureMethod_HMAC_SHA1())
 
         postdata = None
         if self.request.method == 'POST':

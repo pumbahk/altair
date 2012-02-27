@@ -4,8 +4,8 @@ clean:
 	find . -name "*.pyc" | xargs rm 
 
 test:
-	# python -m unittest discover
-	nosetests -q
+	python -m unittest discover
+	# nosetests -q
 
 printpage:
 	paster pscript  -E env ${inifile} scripts/pscript/print_page.py
