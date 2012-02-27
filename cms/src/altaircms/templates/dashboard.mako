@@ -24,9 +24,11 @@
         </div>
       </div>
       <table class="table table-striped">
+          %for event in events:
         <tr>
-          <td>2011/1/1</td><td>blueman live</td>
+          <td>${event.event_open}</td><td><a href="${request.route_url("event", id=event.id)}">${event.title}</a></td>
         </tr>
+          %endfor
       </table>
     </div>
 </div>

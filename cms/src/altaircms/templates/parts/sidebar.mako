@@ -14,4 +14,5 @@
 
     <li class="nav-header">その他</li>
     <li><a href="#">メールマガジン</a></li>
+    <li><a href="#">オペレータ</a></li>
 </ul>
