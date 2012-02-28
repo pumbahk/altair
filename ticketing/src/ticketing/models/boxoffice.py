@@ -31,7 +31,7 @@ class Client(Base):
     __tablename__ = "Client"
 
     id          = Column(BigInteger, primary_key=True)
-    name        = Column(Integer)
+    name        = Column(String(255))
     client_type = Column(Integer)
     prefecture_id = Column(BigInteger, ForeignKey("Prefecture.id"), nullable=True)
     prefecture    = relationship("Prefecture", uselist=False)
@@ -180,7 +180,7 @@ operator_table = Table(
 operator_auth_table = Table(
     'Operator_Auth', Base.metadata,
     Column('id', BigInteger, primary_key=True),
-    Column('login_id', String(32)),
+    Column('login_id', String(32), unique=True),
     Column('password', String(32)),
     Column('auth_code', String(32), nullable=True),
     Column('access_token', String(32), nullable=True),
