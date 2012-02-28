@@ -1,4 +1,5 @@
 # coding:utf-8
+from pyramid.settings import asbool
 from . monkeypatch import config_scan_patch
 config_scan_patch()
 from pyramid.authentication import AuthTktAuthenticationPolicy, SessionAuthenticationPolicy
@@ -31,6 +32,7 @@ class RootFactory(object):
     __name__ = None
     __acl__ = [
         # 許可状態, 外部から与えられるグループ名, permission名
+        (Deny, Everyone, 'anonymous'),
         (Allow, Authenticated, 'authenticated'),
         (Allow, 'event', 'event_viewer'),
         (Allow, 'ticket', 'ticket_viewer'),
@@ -55,6 +57,7 @@ class RootFactory(object):
 
     def __init__(self, request):
         pass
+
 
 def cms_include(config):
     config.add_route('event', '/event/{id}')
@@ -89,16 +92,16 @@ def main_app_with_strip_secret(global_config, settings):
 def main_app(global_config, settings):
     """ This function returns a Pyramid WSGI application.
     """
-    if settings.get("altaircms.debug.strip_security"):
+    if asbool(settings.get("altaircms.debug.strip_security", 'false')):
         from altaircms.security import SecurityAllOK
         from altaircms.security import DummyAuthorizationPolicy
         authn_policy = SessionAuthenticationPolicy(callback=SecurityAllOK())
         authz_policy = DummyAuthorizationPolicy()
     else:
-        authn_policy = AuthTktAuthenticationPolicy(secret=settings.get('altaircms.auth.secret'), callback=groupfinder)
+        authn_policy = AuthTktAuthenticationPolicy(secret=settings.get('auth.secret'), callback=groupfinder)
         authz_policy = ACLAuthorizationPolicy()
 
-    session_factory = UnencryptedCookieSessionFactoryConfig('itsaseekreet')
+    session_factory = UnencryptedCookieSessionFactoryConfig(settings.get('session.secret'))
 
     config = Configurator(
         root_factory=RootFactory,
@@ -121,6 +124,7 @@ def main_app(global_config, settings):
     config.include("altaircms.page")
 
     test_re = re.compile('tests$').search
+    config.scan("altaircms.subscribers")
     config.scan('altaircms.base', ignore=[test_re])
     config.scan('altaircms.auth', ignore=[test_re])
     config.scan('altaircms.event', ignore=[test_re])

@@ -17,7 +17,7 @@ from altaircms.event.mappers import EventMapper, EventsMapper
 ##
 from altaircms.fanstatic import bootstrap_need
 
-@view_config(route_name='event', renderer='altaircms:templates/event/view.mako', permission='view')
+@view_config(route_name='event', renderer='altaircms:templates/event/view.mako', permission='event_viewer')
 def view(request):
     id_ = request.matchdict['id']
 
@@ -32,7 +32,7 @@ def view(request):
     )
 
 
-@view_config(route_name='event_list', renderer='altaircms:templates/event/list.mako', permission='view')
+@view_config(route_name='event_list', renderer='altaircms:templates/event/list.mako', permission='event_editor')
 def list_(request):
     events = EventRESTAPIView(request).read()
 

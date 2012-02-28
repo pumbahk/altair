@@ -13,15 +13,18 @@ import transaction
 
 from altaircms.views import BaseRESTAPI
 from altaircms.models import DBSession
-from .models import Operator, Permission
+from altaircms.fanstatic import bootstrap_need
 from altaircms.auth.errors import AuthenticationError
-from altaircms.auth.models import PERMISSION_VIEW, PERMISSION_EDIT
+from altaircms.auth.models import DEFAULT_PERMISSION
 
+from .models import Operator, Permission
 
 @view_config(name='login', renderer='altaircms:templates/login.mako')
 @view_config(context='pyramid.httpexceptions.HTTPForbidden', renderer='altaircms:templates/login.mako')
 def login(request):
     message = ''
+
+    bootstrap_need()
 
     return dict(
         message=message
@@ -108,7 +111,7 @@ class OAuthLogin(object):
             )
             DBSession.add(operator)
 
-            for perm in PERMISSION_VIEW, PERMISSION_EDIT:
+            for perm in DEFAULT_PERMISSION:
                 permission = Permission(
                     operator_id=operator.user_id,
                     permission=perm

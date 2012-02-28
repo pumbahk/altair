@@ -17,8 +17,8 @@ def groupfinder(userid, request):
 
 class SecurityAllOK(list):
     def __init__(self):
-        from altaircms.auth.models import PERMISSION_VIEW, PERMISSION_EDIT
-        self.perms_keys = PERMISSION_VIEW, PERMISSION_EDIT
+        from altaircms.auth.models import DEFAULT_PERMISSION
+        self.perms_keys = DEFAULT_PERMISSION
         self.perms = None
 
     def __call__(self, user_id, request):
