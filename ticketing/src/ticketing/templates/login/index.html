@@ -1,0 +1,36 @@
+<%inherit file="../layout.html" />
+<%block name="title">ログイン</%block>
+
+<%def name="error(f)">
+%if f.errors:
+  <ul class="errors">
+  %for error in f.errors:
+      <li>${error}</li>
+  %endfor:
+  </ul>
+% endif:
+</%def>
+
+<ul class="errors">
+% for field in form:
+%   if field.errors:
+%     for e in field.errors:
+        <li>${field.label}:${e}</li>
+%     endfor:
+%   endif:
+% endfor
+</ul>
+
+
+<div id="login1">
+    <div class="box">
+        <form action="${request.route_url('login.index')}" method="POST">
+            <label><span>ログインID</span>${form.login_id(id="email")}</label>
+            <label><span>パスワード</span>${form.password(id="password")}</label>
+
+            <div class="spacer">
+                <input type="submit" name="submit" value="Login" />
+            </div>
+        </form>
+    </div>
+</div>
