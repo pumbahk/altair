@@ -6,6 +6,7 @@ from js.jqueryui import black_tie
 from js.jqueryui import jqueryui
 from js.tinymce import tinymce
 from js.backbone import backbone
+from js.bootstrap import bootstrap
 
 def jqueries_need():
     jquery.need()
@@ -18,3 +19,6 @@ def jqueries_need():
 
 def wysiwyg_editor_need():
     tinymce.need()
+
+def bootstrap_need():
+    bootstrap.need()

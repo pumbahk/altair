@@ -1,4 +1,5 @@
 # coding:utf-8
+from pyramid.settings import asbool
 from . monkeypatch import config_scan_patch
 config_scan_patch()
 from pyramid.authentication import AuthTktAuthenticationPolicy, SessionAuthenticationPolicy
@@ -19,7 +20,6 @@ from altaircms.security import groupfinder
 from altaircms.models import initialize_sql
 
 
-
 try:
     import pymysql_sa
     pymysql_sa.make_default_mysql_dialect()
@@ -28,17 +28,36 @@ except:
     pass
 
 
-
 class RootFactory(object):
     __name__ = None
     __acl__ = [
+        # 許可状態, 外部から与えられるグループ名, permission名
+        (Deny, Everyone, 'anonymous'),
         (Allow, Authenticated, 'authenticated'),
-        (Allow, 'view', 'view'),
-        (Allow, 'edit', 'edit')
+        (Allow, 'event', 'event_viewer'),
+        (Allow, 'ticket', 'ticket_viewer'),
+        (Allow, 'page', 'page_viewer'),
+        (Allow, 'page_editor', 'page_viewer'),
+        (Allow, 'page_editor', 'page_editor'),
+        (Allow, 'topic', 'topic_viewer'),
+        (Allow, 'topic_editor', 'topic_viewer'),
+        (Allow, 'topic_editor', 'topic_editor'),
+        (Allow, 'magazine', 'magazine_viewer'),
+        (Allow, 'magazine_editor', 'magazine_viewer'),
+        (Allow, 'magazine_editor', 'magazine_editor'),
+
+        # administrator have all permissions
+        (Allow, 'admin', 'event_viewer'),
+        (Allow, 'admin', 'ticket_viewer'),
+        (Allow, 'admin', 'page_editor'),
+        (Allow, 'admin', 'topic_editor'),
+        (Allow, 'admin', 'magazine_editor'),
+        (Allow, 'admin', 'administrator'),
     ]
 
     def __init__(self, request):
         pass
+
 
 def cms_include(config):
     config.add_route('event', '/event/{id}')
@@ -47,8 +66,9 @@ def cms_include(config):
     config.add_route('layout', '/layout/{layout_id}')
     config.add_route('layout_list', '/layout/')
 
-    config.add_route('page_list', '/page/', factory="altaircms.page.resources.SampleCoreResource")
+    # config.add_route('page_list', '/page/', factory="altaircms.page.resources.SampleCoreResource")
     config.add_route('page_edit_', '/page/{page_id}', factory="altaircms.page.resources.SampleCoreResource")
+
     config.add_route('page_add', '/event/{event_id}/page/')
     config.add_route('page_edit', '/event/{event_id}/page/{page_id}/edit')
 
@@ -62,25 +82,26 @@ def cms_include(config):
     config.add_route('widget_delete', '/widget/{widget_id}/delete')
     config.add_route('widget_list', '/widget/')
 
+
 def main_app_with_strip_secret(global_config, settings):
     D = {"altaircms.debug.strip_security": True}
     settings.update(D)
     return main_app(global_config, settings)
 
+
 def main_app(global_config, settings):
     """ This function returns a Pyramid WSGI application.
     """
-    # authn_policy = AuthTktAuthenticationPolicy(secret='SDQGxGIhVqSr3zJWV8KvHqHtJujhJj', callback=groupfinder)
-    if settings.get("altaircms.debug.strip_security"):
+    if asbool(settings.get("altaircms.debug.strip_security", 'false')):
         from altaircms.security import SecurityAllOK
         from altaircms.security import DummyAuthorizationPolicy
         authn_policy = SessionAuthenticationPolicy(callback=SecurityAllOK())
         authz_policy = DummyAuthorizationPolicy()
     else:
-        authn_policy = SessionAuthenticationPolicy(callback=groupfinder)
+        authn_policy = AuthTktAuthenticationPolicy(secret=settings.get('auth.secret'), callback=groupfinder)
         authz_policy = ACLAuthorizationPolicy()
 
-    session_factory = UnencryptedCookieSessionFactoryConfig('itsaseekreet')
+    session_factory = UnencryptedCookieSessionFactoryConfig(settings.get('session.secret'))
 
     config = Configurator(
         root_factory=RootFactory,
@@ -95,13 +116,15 @@ def main_app(global_config, settings):
     config.include("altaircms.widget")
 
     config.include("altaircms.auth", route_prefix='/auth')
-    # config.include(api_include, route_prefix='/api')
     config.include("altaircms.front", route_prefix="f")
     config.include(cms_include, route_prefix='')
     config.include("altaircms.plugins")
     config.include("altaircms.event")
+    config.include("altaircms.layout")
+    config.include("altaircms.page")
 
     test_re = re.compile('tests$').search
+    config.scan("altaircms.subscribers")
     config.scan('altaircms.base', ignore=[test_re])
     config.scan('altaircms.auth', ignore=[test_re])
     config.scan('altaircms.event', ignore=[test_re])
@@ -120,7 +143,8 @@ def main_app(global_config, settings):
     initialize_sql(engine)
 
     return config.make_wsgi_app()
-    
+
+
 def main(global_config, **settings):
     """ apprications main
     """

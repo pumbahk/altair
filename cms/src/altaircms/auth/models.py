@@ -8,8 +8,14 @@ from sqlalchemy.types import String, DateTime, Integer, Unicode
 
 from altaircms.models import Base
 
-PERMISSION_VIEW = 'view'
-PERMISSION_EDIT = 'edit'
+# readonly
+DEFAULT_PERMISSION = [
+    'event_viewer',
+    'tikcet_viewer',
+    'page_viewer',
+    'topic_viewer',
+    'magazine_viewer',
+]
 
 
 class OAuthToken(Base):
@@ -57,6 +63,8 @@ class Permission(Base):
     id = Column(Integer, primary_key=True)
     operator_id = Column(Integer, ForeignKey('operator.id'))
     permission = Column(String)
+
+    UniqueConstraint('operator_id', 'permission')
 
 
 class Client(Base):

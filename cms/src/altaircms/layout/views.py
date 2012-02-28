@@ -1,52 +1,79 @@
 # coding: utf-8
-from deform.exception import ValidationFailure
-from deform.form import Form
+import collections
 from markupsafe import Markup
+from pyramid.httpexceptions import HTTPOk, HTTPBadRequest, HTTPCreated, HTTPFound
+
 from pyramid.response import Response
 from pyramid.view import view_config
 
 from sqlalchemy.sql.expression import desc
 
+from altaircms.views import BaseRESTAPI
 from altaircms.models import DBSession
 from altaircms.layout.models import Layout
-from altaircms.layout.forms import LayoutSchema
+from altaircms.layout.forms import LayoutForm
+from altaircms.layout.mappers import LayoutMapper, LayoutsMapper
+from altaircms.fanstatic import bootstrap_need
 
 
-@view_config(route_name='layout_list', renderer='altaircms:templates/layout/list.mako')
-def list(request):
-    form = Form(LayoutSchema(), buttons=('submit', ))
-
-    if 'submit' in request.POST:
-        try:
-            controls = request.POST.items()
-            captured = form.validate(controls)
-            # html = form.render(captured)
-
-            layout = Layout(
-                title=captured['title'],
-                template_filename=captured['template_filename']
-            )
-            DBSession.add(layout)
-
-            html = Markup("<p>Thanks!</p>")
-        except ValidationFailure, e:
-            html = Markup(e.render())
-
-        if request.is_xhr:
-            return Response(Markup(html))
-    else:
-        html = Markup(form.render())
-
-    return dict(
-        layouts=DBSession.query(Layout).order_by(desc(Layout.id)).all(),
-        form=html,
-    )
-
-
-@view_config(route_name='layout', renderer='altaircms:templates/layout/view.mako')
+@view_config(route_name='layout', renderer='altaircms:templates/layout/view.mako', permission='view')
 def view(request):
     id_ = request.matchdict.get('layout_id')
+
+    bootstrap_need()
+
     layout = DBSession.query(Layout).get(id_)
     return dict(
         layout=layout
     )
+
+
+@view_config(route_name='layout_list', renderer='altaircms:templates/layout/list.mako', permission='view')
+def list(request):
+    bootstrap_need()
+
+    if request.method == "POST":
+        form = LayoutForm(request.POST)
+        if form.validate():
+            request.method = "PUT"
+            LayoutRESTAPIView(request).create()
+            return HTTPFound(request.route_url("layout_list"))
+    else:
+        form = LayoutForm()
+    layouts = LayoutRESTAPIView(request).read()
+
+    return dict(
+        layouts=layouts,
+        form=form,
+    )
+
+
+class LayoutRESTAPIView(BaseRESTAPI):
+    model = Layout
+    form = LayoutForm
+    object_mapper = LayoutMapper
+    objects_mapper = LayoutsMapper
+
+    @view_config(route_name='api_layout', request_method='PUT')
+    def create(self):
+        (created, object, errors) = super(LayoutRESTAPIView, self).create()
+        return HTTPCreated() if created else HTTPBadRequest(errors)
+
+    @view_config(route_name='api_layout', request_method='GET', renderer='json')
+    @view_config(route_name='api_layout_object', request_method='GET', renderer='json')
+    def read(self):
+        resp = super(LayoutRESTAPIView, self).read()
+        if isinstance(resp, collections.Iterable):
+            return self.objects_mapper({'layouts': resp}).as_dict()
+        else:
+            return self.object_mapper(resp).as_dict()
+
+    @view_config(route_name='api_layout_object', request_method='PUT')
+    def update(self):
+        status = super(LayoutRESTAPIView, self).update()
+        return HTTPOk() if status else HTTPBadRequest()
+
+    @view_config(route_name='api_layout_object', request_method='DELETE')
+    def delete(self):
+        status = super(LayoutRESTAPIView, self).delete()
+        return HTTPOk() if status else HTTPBadRequest()

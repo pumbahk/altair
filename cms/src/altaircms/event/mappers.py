@@ -4,7 +4,7 @@ from bpmappers.fields import RawField, DelegateField, ListDelegateField
 
 class EventMapper(Mapper):
     def _ensure_timeformat(self, value):
-        return value.now().isoformat()
+        return value.isoformat()
 
     def after_filter_event_open(self, value):
         return self._ensure_timeformat(value)

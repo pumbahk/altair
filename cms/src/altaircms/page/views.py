@@ -7,14 +7,72 @@ from pyramid.view import view_config
 from pyramid.response import Response
 from pyramid.exceptions import NotFound
 from pyramid.httpexceptions import HTTPFound
-from sqlalchemy.sql.expression import asc
 
 import transaction
 
-from altaircms.page.forms import PageEditForm, PageAddForm
+from altaircms.views import BaseRESTAPI
+from altaircms.page.forms import PageForm
 from altaircms.models import DBSession, Event
 from altaircms.page.models import Page
-from altaircms.widget.models import Widget
+from altaircms.page.mappers import PageMapper, PagesMapper
+from altaircms.layout.models import Layout
+from altaircms.fanstatic import bootstrap_need
+
+
+"""
+@view_config(route_name='page_object', renderer='altaircms:templates/page/edit.mako', permission='view')
+def view(request):
+    id_ = request.matchdict['id']
+
+    page = PageRESTAPIView(request, id_).read()
+    ## layout render
+    layout_render = request.context.get_layout_render(page)
+    page_render = request.context.get_page_render(page)
+    ## fanstatic
+
+    from altaircms.fanstatic import jqueries_need
+    from altaircms.fanstatic import wysiwyg_editor_need
+    jqueries_need()
+    wysiwyg_editor_need()
+
+    return dict(
+        pages=page,
+        layout_render=layout_render,
+        page_render=page_render,
+    )
+"""
+
+@view_config(route_name='page', renderer='altaircms:templates/page/list.mako')
+def list_(request):
+    bootstrap_need()
+    layout_choices = [(layout.id, layout.title) for layout in DBSession.query(Layout)]
+    if request.method == "POST":
+        form = PageForm(request.POST)
+        form.layout_id.choices = layout_choices
+        if form.validate():
+            request.method = "PUT"
+            PageRESTAPIView(request).create()
+            return HTTPFound(request.route_url("page"))
+    else:
+        form = PageForm()
+        form.layout_id.choices = layout_choices
+
+    return dict(
+        pages=PageRESTAPIView(request).read(),
+        form=form
+    )
+
+
+class PageRESTAPIView(BaseRESTAPI):
+    model = Page
+    form = PageForm
+    object_mapper = PageMapper
+    objects_mapper = PagesMapper
+
+    def _post_form_hook(self):
+        layout_choices = [(layout.id, layout.title) for layout in DBSession.query(Layout)]
+        self.form_object.layout_id.choices = layout_choices
+
 
 @view_config(route_name="page_edit_", request_method="POST")
 def to_publish(request):     ## fixme
@@ -46,7 +104,7 @@ class PageEditView(object):
 
             if not self.page:
                 return NotFound()
-            """
+            '''
             results = dbsession.query(Page2Widget, Widget).filter(Page2Widget.widget_id==Widget.id).\
                 filter(Page2Widget.page_id==page_id).order_by(asc(Page2Widget.order)).all()
 
@@ -57,7 +115,7 @@ class PageEditView(object):
                     self.display_blocks[key].append(widget)
                 else:
                     self.display_blocks[key] = [widget]
-            """
+            '''
             self.display_blocks = {}
 
         DBSession.remove()
@@ -118,8 +176,8 @@ class PageEditView(object):
 
         return self.render_form(PageAddForm, success=self._succeed, appstruct=appstruct)
 
-    @view_config(route_name='page_edit_', renderer='altaircms:templates/page/edit.mako')
-    @view_config(route_name='page_edit', renderer='altaircms:templates/page/edit.mako')
+    @view_config(route_name='page_edit_', renderer='altaircms:templates/page/edit.mako', permission='authenticated')
+    @view_config(route_name='page_edit', renderer='altaircms:templates/page/edit.mako', permission='authenticated')
     def page_edit(self):
         if not self.page:
             return self.render_form(PageEditForm, appstruct={}, success=self._succeed)            
@@ -143,20 +201,26 @@ class PageEditView(object):
             ## fanstatic
 
             from altaircms.fanstatic import jqueries_need
+            from altaircms.fanstatic import bootstrap_need
             from altaircms.fanstatic import wysiwyg_editor_need
             jqueries_need()
             wysiwyg_editor_need()
+            bootstrap_need()
             ##
 
-            return self.render_form(PageEditForm, appstruct=appstruct, success=self._succeed, 
-                                    extra_context={"layout_render": layout_render, 
-                                                   "page_render": page_render})            
-        
+            '''
+            return self.render_form(PageEditForm, appstruct=appstruct, success=self._succeed,
+                                    extra_context={"layout_render": layout_render,
+                                                   "page_render": page_render})
+            '''
+            return {
+                'form':'',
+                'page':self.page,
+                "layout_render": layout_render,
+                "page_render": page_render
+            }
 
-    @view_config(route_name='page_list', renderer='altaircms:templates/page/list.mako')
-    def page_list(self):
-        appstruct = {}
-        return self.render_form(PageAddForm, success=self._succeed, appstruct=appstruct)
+
 
     def _succeed(self, captured, duplicate=False):
         dbsession = DBSession()

@@ -3,26 +3,8 @@
         <div class="container">
             <a class="brand" href="/"><img src="/static/img/altair_logo.png"></a>
             <div class="nav-collapse">
-                <%doc>
-                <ul class="nav">
-                    <li class="active"><a href="/">Home</a></li>
-                    <li><a href="#about">Event</a></li>
-                    <li><a href="#contact">Page</a></li>
-                    <li><a href="#contact">Asset</a></li>
-                    <li><a href="#contact">Operator (admin only)</a></li>
-                </ul>
-                </%doc>
                 <ul class="nav pull-right">
                         % if user:
-                            <%doc>
-                            <li class="dropdown">
-                                <a class="dropdown-toggle" data-toggle="dropdown" href="#">サイト<b class="caret"></b></a>
-                                <ul class="dropdown-menu">
-                                    <li><a href="#">ticket.rakuten.co.jp</a></li>
-                                </ul>
-                            </li>
-                            <li><a href="#">Site: ticket.rakuten.co.jp</a></li>
-                            </%doc>
                             <li class="dropdown">
                                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">${user.screen_name}<b class="caret"></b></a>
                                 <ul class="dropdown-menu">

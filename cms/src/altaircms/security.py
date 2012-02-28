@@ -3,6 +3,9 @@ from altaircms.models import DBSession
 from altaircms.auth.models import Permission
 
 def groupfinder(userid, request):
+    """
+    ユーザIDを受け取ってpermission一覧を返す
+    """
     objects = DBSession.query(Permission).filter_by(operator_id=userid)
     perms = []
 
@@ -11,10 +14,11 @@ def groupfinder(userid, request):
 
     return perms
 
+
 class SecurityAllOK(list):
     def __init__(self):
-        from altaircms.auth.models import PERMISSION_VIEW, PERMISSION_EDIT
-        self.perms_keys = PERMISSION_VIEW, PERMISSION_EDIT
+        from altaircms.auth.models import DEFAULT_PERMISSION
+        self.perms_keys = DEFAULT_PERMISSION
         self.perms = None
 
     def __call__(self, user_id, request):
@@ -25,6 +29,7 @@ class SecurityAllOK(list):
     def _create_perms(self):
         return [Permission(operator_id=None, permission=p) \
                     for p in self.perms_keys]
+
 
 from zope.interface import implements
 from pyramid.interfaces import IAuthorizationPolicy

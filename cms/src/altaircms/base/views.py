@@ -3,6 +3,12 @@ from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.security import authenticated_userid
 from pyramid.view import view_config
 
+from sqlalchemy.sql.expression import desc
+
+from altaircms.fanstatic import bootstrap_need
+from altaircms.models import DBSession
+from altaircms.models import Event
+
 
 @view_config(name='client', renderer='altaircms:templates/client/form.mako', permission='view')
 def client(request):
@@ -14,27 +20,9 @@ def dashboard(request):
     """
     ログイン後トップページ
     """
-    return dict()
+    bootstrap_need()
 
-
-class BaseApiView(object):
-    """
-    APIビューの基底クラス
-    """
-    def __init__(self, request):
-        self.request = request
-
-        func = getattr(self, request.method.lower())
-        func()
-
-    def get(self):
-        pass
-
-    def post(self):
-        pass
-
-    def delete(self):
-        pass
-
-    def put(self):
-        pass
+    events = DBSession.query(Event).order_by(desc(Event.event_open)).all()
+    return dict(
+        events=events
+    )
