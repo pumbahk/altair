@@ -2,7 +2,7 @@
 
 from ticketing.models import DBSession, Base
 from ticketing.utils import StandardEnum
-from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey
+from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL
 from sqlalchemy.orm import relationship, join, backref, column_property
 import sqlahelper
 
@@ -387,7 +387,7 @@ class Stock(Base):
 class SeatStock(Base):
     __tablename__ = "SeatStock"
     id = Column(BigInteger, primary_key=True)
-    seat_id = Column(Integer, ForeignKey("SeatMasterL2.id"))
+    seat_id = Column(Integer, ForeignKey("SeatMasterL2.seat_id"))
     seat = relationship('SeatMasterL2', uselist=False, backref="seat_stock_id") # 1:1
     sold = Column(Boolean) # sold or not
 
@@ -418,6 +418,66 @@ class SeatStock(Base):
                     con_num = 0
         return []
 
+class Venue(Base):
+    __tablename__ = "Venue"
+    id = Column(BigInteger, primary_key=True)
+    performance_id = Column(BigInteger, ForeignKey('Performance.id'))
+    performance = relationship('Performance', uselist=False)
+    name = Column(String(255))
+    updated_at = Column(DateTime)
+    created_at = Column(DateTime)
+    status = Column(Integer)
+
+class VenueBlock(Base):
+    __tablename__ = "VenueBlock"
+    id = Column(BigInteger, primary_key=True)
+    name = Column(String(255))
+    venue           = relationship('Venue')
+    venue_id        = Column(BigInteger, ForeignKey('Venue.id'))
+    updated_at = Column(DateTime)
+    created_at = Column(DateTime)
+    status = Column(Integer)
+
+class VenueGate(Base):
+    __tablename__ = "VenueGate"
+    id = Column(BigInteger, primary_key=True)
+    venue           = relationship('Venue')
+    venue_id        = Column(BigInteger, ForeignKey('Venue.id'))
+    name = Column(String(255))
+    updated_at = Column(DateTime)
+    created_at = Column(DateTime)
+    status = Column(Integer)
+
+class VenueFloor(Base):
+    __tablename__ = "VenueFloor"
+    id = Column(BigInteger, primary_key=True)
+    venue           = relationship('Venue')
+    venue_id        = Column(BigInteger, ForeignKey('Venue.id'))
+    name = Column(String(255))
+    updated_at = Column(DateTime)
+    created_at = Column(DateTime)
+    status = Column(Integer)
+
+# Layer1 SeatMaster
+class SeatMaster(Base):
+    __tablename__ = "SeatMaster"
+    id              = Column(BigInteger, primary_key=True)
+    identifieir     = Column(String(255))
+    venue           = relationship('Venue')
+    venue_id        = Column(BigInteger, ForeignKey('Venue.id'))
+    venue           = relationship('Venue')
+    venue_block_id  = Column(BigInteger, ForeignKey('VenueBlock.id'))
+    venue_block     = relationship('VenueBlock')
+    venue_gate_id   = Column(BigInteger, ForeignKey('VenueGate.id'))
+    venue_gate      = relationship('VenueGate')
+    venue_floor_id  = Column(BigInteger, ForeignKey('VenueFloor.id'))
+    venue_floor     = relationship('VenueFloor')
+    col             = Column(String(255))
+    row             = Column(String(255))
+    updated_at      = Column(DateTime)
+    created_at      = Column(DateTime)
+    status          = Column(Integer)
+
 # Layer2 SeatMaster
 class SeatMasterL2(Base):
     __tablename__ = "SeatMasterL2"
@@ -428,11 +488,12 @@ class SeatMasterL2(Base):
     seat_type = relationship('SeatType', uselist=False)
     # set a same group id which can be grouping
     group_id = Column(Integer, index=True)
-    ticket_owner_id = Column(BigInteger, ForeignKey('EventTicketOwner.id'))
-    ticket_owner = relationship('EventTicketOwner')
-    ticket_owner_history = relationship('EventTicketOwnerHistory', backref='seat_masterl2')
+    account_id = Column(BigInteger, ForeignKey('Account.id'))
+    account = relationship('Account')
+    acconnt_history = relationship('SeatOwneredAccountHistory', backref='seat_masterl2')
     # @TODO have some attributes regarding Layer2
     venue_id = Column(BigInteger)
+    seat_id =  Column(BigInteger, ForeignKey('SeatMaster.id'))
 
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
@@ -443,16 +504,39 @@ class SeatMasterL2(Base):
     def get_grouping_seat_sets(pid, stid, gid):
         return session.query(SeatMasterL2).filter(SeatMasterL2.performance_id==pid, SeatMasterL2.seat_type_id==stid, SeatMasterL2.group_id==gid).first()
 
-class EventTicketOwnerHistory(Base):
-    __tablename__ = 'EventTicketOwnerHistory'
+class SeatGroup(Base):
+    __tablename__ = "SeatGroup"
+    id = Column(BigInteger, primary_key=True)
+    name = Column(String(255))
+
+    performance_id = Column(BigInteger, ForeignKey('Performance.id'))
+    performance = relationship('Performance', uselist=False)
+    updated_at = Column(DateTime)
+    created_at = Column(DateTime)
+    status = Column(Integer)
+    
+class SeatGroupItem(Base):
+    __tablename__ = "SeatGroupItem"
+    id = Column(BigInteger, primary_key=True)
+    seat_group_id = Column(BigInteger, ForeignKey('SeatGroup.id'))
+    seat_group = relationship('SeatGroup')
+    seat_id = Column(BigInteger, ForeignKey('SeatMaster.id'))
+    seat = relationship('SeatMaster');
+
+    updated_at = Column(DateTime)
+    created_at = Column(DateTime)
+    status = Column(Integer)
+
+class SeatOwneredAccountHistory(Base):
+    __tablename__ = 'SeatOwneredAccountHistory'
     id = Column(BigInteger, primary_key=True)
     seat_masterl2_id = Column(BigInteger, ForeignKey("SeatMasterL2.id"))
-    ticket_owner_id = Column(BigInteger, ForeignKey('EventTicketOwner.id'))
-    ticket_owner = relationship('EventTicketOwner', primaryjoin="EventTicketOwner.id==EventTicketOwnerHistory.ticket_owner_id")
-    src_ticket_owner_id = Column(BigInteger, ForeignKey('EventTicketOwner.id'), nullable=True)
-    src_ticket_owner = relationship('EventTicketOwner', primaryjoin="EventTicketOwner.id==EventTicketOwnerHistory.src_ticket_owner_id")
-    dst_ticket_owner_id = Column(BigInteger, ForeignKey('EventTicketOwner.id'))
-    dst_ticket_owner = relationship('EventTicketOwner', primaryjoin="EventTicketOwner.id==EventTicketOwnerHistory.dst_ticket_owner_id")
+    ticket_owner_id = Column(BigInteger, ForeignKey('Account.id'))
+    ticket_owner = relationship('Account', primaryjoin="Account.id==SeatOwneredAccountHistory.ticket_owner_id")
+    src_ticket_owner_id = Column(BigInteger, ForeignKey('Account.id'), nullable=True)
+    src_ticket_owner = relationship('Account', primaryjoin="Account.id==SeatOwneredAccountHistory.src_ticket_owner_id")
+    dst_ticket_owner_id = Column(BigInteger, ForeignKey('Account.id'))
+    dst_ticket_owner = relationship('Account', primaryjoin="Account.id==SeatOwneredAccountHistory.dst_ticket_owner_id")
 
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
@@ -543,6 +627,8 @@ class Order(Base):
     id = Column(BigInteger, primary_key=True)
     user_id = Column(BigInteger, ForeignKey("User.id"))
     user = relationship('User', uselist=False)
+    payment_method_pair_id = Column(BigInteger, ForeignKey('PaymentDeliveryMethodPair.id'))
+    payment_method_pair = relationship('PaymentDeliveryMethodPair')
 
     items = relationship('OrderItem', backref='order')
 
@@ -562,5 +648,55 @@ class OrderItem(Base):
     created_at = Column(DateTime)
     status = Column(Integer)
 
+class PaymentMethod(Base):
+    __tablename__ = 'PaymentMethod'
+    id = Column(BigInteger, primary_key=True)
+    name = Column(String(255))
+    fee = Column(DECIMAL)
+    updated_at = Column(DateTime)
+    created_at = Column(DateTime)
+    status = Column(Integer)
 
+class DeliveryMethod(Base):
+    __tablename__ = 'DeliveryMethod'
+    id = Column(BigInteger, primary_key=True)
+    name = Column(String(255))
+    fee = Column(DECIMAL)
+    updated_at = Column(DateTime)
+    created_at = Column(DateTime)
+    status = Column(Integer)
+
+class PaymentDeliveryMethodPair(Base):
+    __tablename__ = 'PaymentDeliveryMethodPair'
+
+    id = Column(BigInteger, primary_key=True)
+    performance_id = Column(BigInteger, ForeignKey('Performance.id'))
+    performance = relationship('Performance', uselist=False)
+    
+    sales_segment_id = Column(BigInteger, ForeignKey('SalesSegment.id'))
+    sales_segment = relationship('SalesSegment')
+
+    payment_method_id = Column(BigInteger, ForeignKey('PaymentMethod.id'))
+    payment_method = relationship('PaymentMethod')
+    
+    delivery_method_id = Column(BigInteger, ForeignKey('DeliveryMethod.id'))
+    delivery_method = relationship('DeliveryMethod')
+
+    transction_fee = Column(DECIMAL)
+    delivery_fee = Column(DECIMAL)
+
+    updated_at = Column(DateTime)
+    created_at = Column(DateTime)
+    status = Column(Integer)
+
+class SalesSegment(Base):
+    __tablename__ = 'SalesSegment'
+    id = Column(BigInteger, primary_key=True)
+    name = Column(String(255))
+    start_at = Column(DateTime)
+    end_at = Column(DateTime)
+
+    updated_at = Column(DateTime)
+    created_at = Column(DateTime)
+    status = Column(Integer)
 
