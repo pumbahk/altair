@@ -9,8 +9,8 @@ from altaircms.fanstatic import with_bootstrap
 from altaircms.models import DBSession, Event
 
 
-@view_config(name='', renderer='altaircms:templates/dashboard.mako', permission='authenticated')
-@with_bootstrap
+@view_config(name='', renderer='altaircms:templates/dashboard.mako', permission='authenticated', 
+             decorator=with_bootstrap)
 def dashboard(request):
     """
     ログイン後トップページ

@@ -9,8 +9,9 @@ from js.jqueryui import jqueryui
 from js.tinymce import tinymce
 from js.backbone import backbone
 from js.bootstrap import bootstrap
-                
-import venusian
+
+def bootstrap_need():
+    bootstrap.need()
 
 class FanstaticDecoratorFactory(object):
     """ jsを追加するデコレータを作成するファクトリー
@@ -20,36 +21,28 @@ class FanstaticDecoratorFactory(object):
         self.fns = fns
     
     def add(self, fn):
-        self.fns.append(fn)
+        new = FanstaticDecoratorFactory()
+        new.fns = list(self.fns[:])
+        new.fns.append(fn)
+        return new
+
+    def merge(self, other):
+        new = FanstaticDecoratorFactory()
+        new.fns = list(self.fns[:])
+        new.fns.extend(other.fns[:])
+        return new
 
     ## @todo: support venusian
     def attach(self, wrapped):
-        me = self
-        class Wrapper(object):
-            def __init__(self, wrapped):
-                self.callback = wrapped
-
-            def on_scan(self, scanner, name, obj):
-                def decorated(*args, **kwargs):
-                    ## buggy todo fix
-                    try:
-                        response = wrapped(*args, **kwargs)
-                    except Exception as e:
-                        response = wrapped(*args[1:], **kwargs)
-                    for fn in me.fns:
-                        if hasattr(fn, "need"):
-                            fn.need()
-                        else:
-                            fn()
-                            return response
-                self.callback = decorated
-
-            def __call__(self, *args, **kwargs):
-                return self.callback(*args, **kwargs)
-        w = Wrapper(wrapped)
-        w.__name__ = wrapped.__name__
-        venusian.attach(w, w.on_scan)
-        return w
+        def wraps(context, request, *args, **kwargs):
+            response = wrapped(context, request, *args, **kwargs)
+            for fn in self.fns:
+                if hasattr(fn, "need"):
+                    fn.need()
+                else:
+                    fn()
+            return response
+        return wraps
 
     __call__ = attach
 
@@ -77,4 +70,4 @@ with_wysiwyg_editor = FanstaticDecoratorFactory(
 )
 with_bootstrap = FanstaticDecoratorFactory(
     bootstrap.need
-)
+ )

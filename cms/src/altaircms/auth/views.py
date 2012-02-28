@@ -19,8 +19,8 @@ from .models import Operator, Role, DEFAULT_ROLE
 
 
 @view_config(name='login', renderer='altaircms:templates/login.mako')
-@view_config(context='pyramid.httpexceptions.HTTPForbidden', renderer='altaircms:templates/login.mako')
-@with_bootstrap
+@view_config(context='pyramid.httpexceptions.HTTPForbidden', renderer='altaircms:templates/login.mako',
+             decorator=with_bootstrap)
 def login(request):
     message = ''
     return dict(

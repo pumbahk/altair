@@ -46,9 +46,10 @@ def view(request):
     )
 """
 
-@view_config(route_name='page', renderer='altaircms:templates/page/list.mako', permission='page_create', request_method="POST")
-@view_config(route_name='page', renderer='altaircms:templates/page/list.mako', permission='page_read', request_method="GET")
-@with_bootstrap
+@view_config(route_name='page', renderer='altaircms:templates/page/list.mako', permission='page_create', request_method="POST", 
+             decorator=with_bootstrap)
+@view_config(route_name='page', renderer='altaircms:templates/page/list.mako', permission='page_read', request_method="GET", 
+             decorator=with_bootstrap)
 def list_(request):
     layout_choices = [(layout.id, layout.title) for layout in DBSession.query(Layout)]
     if request.method == "POST":
@@ -178,11 +179,10 @@ class PageEditView(object):
 
         return self.render_form(PageAddForm, success=self._succeed, appstruct=appstruct)
 
-    @view_config(route_name='page_edit_', renderer='altaircms:templates/page/edit.mako', permission='authenticated')
-    @view_config(route_name='page_edit', renderer='altaircms:templates/page/edit.mako', permission='authenticated')
-    @with_bootstrap
-    @with_fanstatic_jqueries
-    @with_wysiwyg_editor
+    @view_config(route_name='page_edit_', renderer='altaircms:templates/page/edit.mako', permission='authenticated', 
+                 decorator=with_fanstatic_jqueries.merge(with_bootstrap).merge(with_wysiwyg_editor))
+    @view_config(route_name='page_edit', renderer='altaircms:templates/page/edit.mako', permission='authenticated', 
+                 decorator=with_fanstatic_jqueries.merge(with_bootstrap).merge(with_wysiwyg_editor))
     def page_edit(self):
         if not self.page:
             return self.render_form(PageEditForm, appstruct={}, success=self._succeed)            
