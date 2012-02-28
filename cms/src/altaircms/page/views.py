@@ -82,6 +82,7 @@ def to_publish(request):     ## fixme
     page.to_published()
     return HTTPFound(request.route_url("page_edit_", page_id=page_id))
 
+
 class PageEditView(object):
     def __init__(self, request):
         dbsession = DBSession()

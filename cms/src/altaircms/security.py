@@ -18,12 +18,10 @@ def rolefinder(userid, request):
 # データモデルから取得したACLをまとめる
 class RootFactory(object):
     __name__ = None
-    __acl__ = []
 
     def __init__(self, request):
         self.__acl__ = [
             (Allow, Authenticated, 'authenticated'),
-            DENY_ALL,
         ]
         for role, permission in DBSession.query(Role, RolePermission).filter(Role.id==RolePermission.role_id):
             self.__acl__.append((Allow,) + (str(role.name), str(permission.permission)))
