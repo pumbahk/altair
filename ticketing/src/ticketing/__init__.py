@@ -5,11 +5,10 @@ from pyramid.renderers import render
 from sqlalchemy import engine_from_config
 
 from .models import initialize_sql
-from .models import RootFactory
+from .resources import RootFactory, groupfinder
 
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
-from models import groupfinder
 
 import sqlahelper
 
@@ -28,7 +27,6 @@ def renderer(template, **kwargs):
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
-    print settings
     engine = engine_from_config(settings, 'sqlalchemy.')
     initialize_sql(engine)
     sqlahelper.add_engine(engine)
@@ -38,7 +36,7 @@ def main(global_config, **settings):
     authz_policy = ACLAuthorizationPolicy()
 
     config = Configurator(settings=settings,
-                          root_factory='ticketing.models.RootFactory',
+                          root_factory='ticketing.resources.RootFactory',
                           authentication_policy=authn_policy,
                           authorization_policy=authz_policy)
 
@@ -47,7 +45,6 @@ def main(global_config, **settings):
     config.add_static_view('static', 'ticketing:static', cache_max_age=3600)
     config.add_static_view('_deform', 'deform:static', cache_max_age=3600)
 
-    config.add_route('home', '/')
     config.add_view('pyramid.view.append_slash_notfound_view',
                     context='pyramid.httpexceptions.HTTPNotFound')
     

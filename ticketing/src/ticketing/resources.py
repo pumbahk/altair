@@ -4,33 +4,28 @@ from zope.interface import Interface, Attribute, implements
 
 REALM = 'http://altair.example.net/'
 
-class OAuth(object):
+
+from pyramid.security import Allow, Everyone, Authenticated, authenticated_userid
+
+from ticketing.models import DBSession, Operator
+
+class RootFactory(object):
+    __acl__ = [
+        (Allow, Everyone        , 'everybody'),
+        (Allow, Authenticated   , 'authenticated'),
+        (Allow, 'login'         , 'everybody'),
+        (Allow, 'test'          , ('admin')),
+        ]
+
     def __init__(self, request):
-        self.request = request
-        #self.oauth_server = oauth.OAuthServer(AltairAuthDataStore())
-        #self.oauth_server.add_signature_method(oauth.OAuthSignatureMethod_PLAINTEXT())
-        #self.oauth_server.add_signature_method(oauth.OAuthSignatureMethod_HMAC_SHA1())
+        user_id = authenticated_userid(request)
+        self.user = Operator.get_by_login_id(user_id) if user_id is not None else None
 
-        postdata = None
-        if self.request.method == 'POST':
-            postdata = request.body
-        print self.request.method
-        print request.url
-        print 111
-        print repr(dict(request.headers.items()))
-        print postdata
-        self.oauth_request = oauth.OAuthRequest.from_request(self.request.method, request.url, headers=request.headers, query_string=postdata)
-        print self.oauth_request
-
-    def send_oauth_error(self, err=None):
-        self.send_error(401, str(err.message))
-        header = oauth.build_authenticate_header(realm=REALM)
-        for k, v in header.iteritems():
-            self.send_header(k, v)
-
-class Root(object):
-    def __init__(self, request):
-        self.request = request
+def groupfinder(userid, request):
+    user = DBSession.query(Operator).filter(Operator.login_id == userid).first()
+    if user is None:
+        return []
+    return [g.name for g in user.roles]
 
 class ActingAsBreadcrumb(Interface):
     navigation_parent = Attribute('')

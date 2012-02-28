@@ -15,24 +15,6 @@ DBSession = sqlahelper.get_session()
 
 from .boxoffice import *
 
-from pyramid.security import Allow, Everyone, Authenticated
-
-class RootFactory(object):
-    __acl__ = [
-        (Allow, Everyone        , 'everybody'),
-        (Allow, Authenticated   , 'authenticated'),
-        (Allow, 'login'         , 'everybody'),
-        (Allow, 'test'          , ('admin')),
-        ]
-    def __init__(self, request):
-        pass
-
-def groupfinder(userid, request):
-    user = DBSession.query(Operator).filter(Operator.login_id == userid).first()
-    if user is None:
-        return []
-    return [g.name for g in user.roles]
-
 def populate():
     pass
 
