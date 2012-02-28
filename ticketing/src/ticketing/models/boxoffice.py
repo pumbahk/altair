@@ -80,25 +80,10 @@ class Account(Base):
     __tablename__ = "Account"
 
     id = Column(BigInteger, primary_key=True)
->>>>>>> スキーマの変更
 
     # @see AccountTypeEnum
     account_type = Column(Integer)
 
-<<<<<<< HEAD
-    user_id = Column(BigInteger, ForeignKey("User.id"), nullable=True)
-    user = relationship('User', uselist=False)
-    client = relationship("Child", uselist=False, backref="parent")
-
-    name = Column(String(255))
-    company_name = Column(String(255))
-    section_name = Column(String(255))
-    zip_code = Column(String(7))
-    country_code = Column(Integer)
-    prefecture_code = Column(Integer)
-    city = Column(String(32))
-    address = Column(String(255))
-=======
     user_id         = Column(BigInteger, ForeignKey("User.id"), nullable=True)
     user            = relationship('User', uselist=False)
     ticketer_id     = Column(BigInteger, ForeignKey("Ticketer.id"), nullable=True)
@@ -128,18 +113,13 @@ class User(Base):
     prefecture_id = Column(BigInteger, ForeignKey("Prefecture.id"), nullable=True)
     prefecture    = relationship("Prefecture", uselist=False)
     city = Column(String(255))
->>>>>>> スキーマの変更
     street = Column(String(255))
     address = Column(String(255))
     other_address = Column(String(255))
     tel_1 = Column(String(32))
     tel_2 = Column(String(32))
     fax = Column(String(32))
-<<<<<<< HEAD
     updated_at = Column(DateTime, nullable=True)
-=======
-    updated_at = Column(DateTime)
->>>>>>> スキーマの変更
     created_at = Column(DateTime)
     status = Column(Integer)
 
