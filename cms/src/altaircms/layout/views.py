@@ -16,7 +16,7 @@ from altaircms.layout.mappers import LayoutMapper, LayoutsMapper
 from altaircms.fanstatic import bootstrap_need
 
 
-@view_config(route_name='layout', renderer='altaircms:templates/layout/view.mako', permission='view')
+@view_config(route_name='layout', renderer='altaircms:templates/layout/view.mako', permission='layout_read')
 def view(request):
     id_ = request.matchdict.get('layout_id')
 
@@ -28,7 +28,8 @@ def view(request):
     )
 
 
-@view_config(route_name='layout_list', renderer='altaircms:templates/layout/list.mako', permission='view')
+@view_config(route_name='layout_list', renderer='altaircms:templates/layout/list.mako', permission='layout_read')
+@view_config(route_name='layout_list', renderer='altaircms:templates/layout/list.mako', permission='layout_create', request_method="POST")
 def list(request):
     bootstrap_need()
 

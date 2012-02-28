@@ -14,7 +14,7 @@ from pyramid.settings import asbool
 import sqlahelper
 from sqlalchemy import engine_from_config
 
-from altaircms.security import groupfinder, RootFactory
+from altaircms.security import rolefinder, RootFactory
 from altaircms.models import initialize_sql
 
 
@@ -65,7 +65,7 @@ def main_app(global_config, settings):
         authn_policy = SessionAuthenticationPolicy(callback=SecurityAllOK())
         authz_policy = DummyAuthorizationPolicy()
     else:
-        authn_policy = AuthTktAuthenticationPolicy(secret=settings.get('auth.secret'), callback=groupfinder)
+        authn_policy = AuthTktAuthenticationPolicy(secret=settings.get('auth.secret'), callback=rolefinder)
         authz_policy = ACLAuthorizationPolicy()
 
     session_factory = UnencryptedCookieSessionFactoryConfig(settings.get('session.secret'))

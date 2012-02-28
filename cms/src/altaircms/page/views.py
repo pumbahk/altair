@@ -42,7 +42,8 @@ def view(request):
     )
 """
 
-@view_config(route_name='page', renderer='altaircms:templates/page/list.mako')
+@view_config(route_name='page', renderer='altaircms:templates/page/list.mako', permission='page_create', request_method="POST")
+@view_config(route_name='page', renderer='altaircms:templates/page/list.mako', permission='page_read', request_method="GET")
 def list_(request):
     bootstrap_need()
     layout_choices = [(layout.id, layout.title) for layout in DBSession.query(Layout)]

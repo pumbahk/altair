@@ -11,7 +11,7 @@ from altaircms.models import Base
 DEFAULT_ROLE = 'administrator'
 
 # CMS内で利用されるパーミッション一覧。view_configのpermission引数と合わせる
-target_objects = ['event', 'topic', 'ticket', 'magazine', 'asset', 'page', 'tag']
+target_objects = ['event', 'topic', 'ticket', 'magazine', 'asset', 'page', 'tag', 'layout',]
 PERMISSIONS = []
 for t in target_objects:
     for act in ('create', 'read', 'update', 'delete'):

@@ -6,15 +6,8 @@ from pyramid.view import view_config
 from sqlalchemy.sql.expression import desc
 
 from altaircms.fanstatic import bootstrap_need
-from altaircms.models import DBSession
-from altaircms.models import Event
+from altaircms.models import DBSession, Event
 
-
-"""
-@view_config(name='client', renderer='altaircms:templates/client/form.mako', permission='view')
-def client(request):
-    return dict()
-"""
 
 @view_config(name='', renderer='altaircms:templates/dashboard.mako', permission='authenticated')
 def dashboard(request):
