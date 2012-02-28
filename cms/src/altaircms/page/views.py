@@ -42,7 +42,8 @@ def view(request):
     )
 """
 
-@view_config(route_name='page', renderer='altaircms:templates/page/list.mako')
+@view_config(route_name='page', renderer='altaircms:templates/page/list.mako', permission='page_create', request_method="POST")
+@view_config(route_name='page', renderer='altaircms:templates/page/list.mako', permission='page_read', request_method="GET")
 def list_(request):
     bootstrap_need()
     layout_choices = [(layout.id, layout.title) for layout in DBSession.query(Layout)]
@@ -80,6 +81,7 @@ def to_publish(request):     ## fixme
     page = Page.query.filter(Page.id==page_id).one()
     page.to_published()
     return HTTPFound(request.route_url("page_edit_", page_id=page_id))
+
 
 class PageEditView(object):
     def __init__(self, request):

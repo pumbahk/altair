@@ -15,9 +15,8 @@ from altaircms.views import BaseRESTAPI
 from altaircms.models import DBSession
 from altaircms.fanstatic import bootstrap_need
 from altaircms.auth.errors import AuthenticationError
-from altaircms.auth.models import DEFAULT_PERMISSION
+from .models import Operator, Role, DEFAULT_ROLE
 
-from .models import Operator, Permission
 
 @view_config(name='login', renderer='altaircms:templates/login.mako')
 @view_config(context='pyramid.httpexceptions.HTTPForbidden', renderer='altaircms:templates/login.mako')
@@ -102,21 +101,17 @@ class OAuthLogin(object):
         try:
             operator = DBSession.query(Operator).filter_by(auth_source='oauth', user_id=data['user_id']).one()
         except NoResultFound:
+            role = DBSession.query(Role).filter_by(name=data.get('role', DEFAULT_ROLE)).one()
+
             operator = Operator(
                 auth_source='oauth',
                 user_id=data['user_id'],
                 screen_name=data['screen_name'],
                 oauth_token=data['oauth_token'],
-                oauth_token_secret=data['oauth_token_secret']
+                oauth_token_secret=data['oauth_token_secret'],
+                role_id=role.id
             )
             DBSession.add(operator)
-
-            for perm in DEFAULT_PERMISSION:
-                permission = Permission(
-                    operator_id=operator.user_id,
-                    permission=perm
-                )
-                DBSession.add(permission)
 
         headers = remember(self.request, operator.user_id)
 

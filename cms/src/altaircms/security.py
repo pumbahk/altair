@@ -1,34 +1,39 @@
 # coding: utf-8
+from pyramid.security import Allow, Authenticated, Everyone, Deny, DENY_ALL
+
 from altaircms.models import DBSession
-from altaircms.auth.models import Permission
 
-def groupfinder(userid, request):
+from altaircms.auth.models import Operator, Role, RolePermission
+
+def rolefinder(userid, request):
     """
-    ユーザIDを受け取ってpermission一覧を返す
+    ユーザIDを受け取って所属ロール一覧を返す
+
+    :return: list 所属ロール名のリスト
     """
-    objects = DBSession.query(Permission).filter_by(operator_id=userid)
-    perms = []
+    roles = map(str, [role.name for role in DBSession.query(Role).filter(Operator.user_id==userid).filter(Role.id==Operator.role_id)])
+    return roles
 
-    for obj in objects:
-        perms.append(obj.permission)
 
-    return perms
+# データモデルから取得したACLをまとめる
+class RootFactory(object):
+    __name__ = None
+
+    def __init__(self, request):
+        self.__acl__ = [
+            (Allow, Authenticated, 'authenticated'),
+        ]
+        for role, permission in DBSession.query(Role, RolePermission).filter(Role.id==RolePermission.role_id):
+            self.__acl__.append((Allow,) + (str(role.name), str(permission.permission)))
 
 
 class SecurityAllOK(list):
     def __init__(self):
-        from altaircms.auth.models import DEFAULT_PERMISSION
-        self.perms_keys = DEFAULT_PERMISSION
-        self.perms = None
+        from altaircms.auth.models import PERMISSIONS
+        self.perms = PERMISSIONS
 
     def __call__(self, user_id, request):
-        if self.perms is None:
-            self.perms = self._create_perms()
         return self.perms
-        
-    def _create_perms(self):
-        return [Permission(operator_id=None, permission=p) \
-                    for p in self.perms_keys]
 
 
 from zope.interface import implements
