@@ -2,21 +2,25 @@
 import colander
 import deform
 import json
+import transaction
+import sqlalchemy.orm as orm
 
 from pyramid.view import view_config
 from pyramid.response import Response
 from pyramid.exceptions import NotFound
 from pyramid.httpexceptions import HTTPFound
 
-import transaction
-
 from altaircms.views import BaseRESTAPI
 from altaircms.page.forms import PageForm
 from altaircms.models import DBSession, Event
 from altaircms.page.models import Page
+
 from altaircms.page.mappers import PageMapper, PagesMapper
 from altaircms.layout.models import Layout
-from altaircms.fanstatic import bootstrap_need
+
+from altaircms.fanstatic import with_bootstrap
+from altaircms.fanstatic import with_fanstatic_jqueries
+from altaircms.fanstatic import with_wysiwyg_editor
 
 
 """
@@ -44,8 +48,8 @@ def view(request):
 
 @view_config(route_name='page', renderer='altaircms:templates/page/list.mako', permission='page_create', request_method="POST")
 @view_config(route_name='page', renderer='altaircms:templates/page/list.mako', permission='page_read', request_method="GET")
+@with_bootstrap
 def list_(request):
-    bootstrap_need()
     layout_choices = [(layout.id, layout.title) for layout in DBSession.query(Layout)]
     if request.method == "POST":
         form = PageForm(request.POST)
@@ -74,7 +78,6 @@ class PageRESTAPIView(BaseRESTAPI):
         layout_choices = [(layout.id, layout.title) for layout in DBSession.query(Layout)]
         self.form_object.layout_id.choices = layout_choices
 
-
 @view_config(route_name="page_edit_", request_method="POST")
 def to_publish(request):     ## fixme
     page_id = request.matchdict["page_id"]
@@ -85,24 +88,23 @@ def to_publish(request):     ## fixme
 
 class PageEditView(object):
     def __init__(self, request):
-        dbsession = DBSession()
-
         self.request = request
         self.page = None
         self.event = None
 
         event_id = self.request.matchdict.get('event_id', None)
         if event_id:
-            self.event = dbsession.query(Event).get(event_id)
+            self.event = DBSession.query(Event).get(event_id)
             if not self.event:
                 return NotFound()
 
         page_id = self.request.matchdict.get('page_id', None)
         if page_id:
+            qs = DBSession.query(Page)
             if event_id:
-                self.page = dbsession.query(Page).filter_by(event_id=self.event.id, id=page_id).one()
+                self.page = qs.filter_by(event_id=self.event.id, id=page_id).one()
             else:
-                self.page = dbsession.query(Page).filter_by(id=page_id).one()
+                self.page = qs.filter_by(id=page_id).one()
 
             if not self.page:
                 return NotFound()
@@ -119,8 +121,6 @@ class PageEditView(object):
                     self.display_blocks[key] = [widget]
             '''
             self.display_blocks = {}
-
-        DBSession.remove()
 
     def render_form(self, form, appstruct=colander.null, submitted='submit', duplicated='duplicate',
                     success=None, readonly=False, extra_context=None):
@@ -180,6 +180,9 @@ class PageEditView(object):
 
     @view_config(route_name='page_edit_', renderer='altaircms:templates/page/edit.mako', permission='authenticated')
     @view_config(route_name='page_edit', renderer='altaircms:templates/page/edit.mako', permission='authenticated')
+    @with_bootstrap
+    @with_fanstatic_jqueries
+    @with_wysiwyg_editor
     def page_edit(self):
         if not self.page:
             return self.render_form(PageEditForm, appstruct={}, success=self._succeed)            
@@ -200,15 +203,6 @@ class PageEditView(object):
             ## layout render
             layout_render = self.request.context.get_layout_render(self.page)
             page_render = self.request.context.get_page_render(self.page)
-            ## fanstatic
-
-            from altaircms.fanstatic import jqueries_need
-            from altaircms.fanstatic import bootstrap_need
-            from altaircms.fanstatic import wysiwyg_editor_need
-            jqueries_need()
-            wysiwyg_editor_need()
-            bootstrap_need()
-            ##
 
             '''
             return self.render_form(PageEditForm, appstruct=appstruct, success=self._succeed,

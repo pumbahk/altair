@@ -6,9 +6,10 @@ class FreetextWidgetView(object):
 
     def _create_or_update(self):
         freetext = self.request.json_body["data"]["freetext"]
+        page_id = self.request.json_body["page_id"]
         context = self.request.context
         widget = context.get_freetext_widget(self.request.json_body.get("pk"))
-        widget = context.update_data(widget, text=freetext)
+        widget = context.update_data(widget, text=freetext, page_id=page_id)
         context.add(widget, flush=True)
 
         r = self.request.json_body.copy()

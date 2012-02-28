@@ -41,14 +41,10 @@ if(!widget){
                 asset_id: choiced_elt.attr("pk")};
     };
 
-    var save_data = function(params){
-        
-    };
     return widget.include("image", {
         load_page: load_page, 
         on_dialog: on_dialog, 
         on_close: on_close, 
         collect_data: collect_data, 
-        save_data: save_data, 
     });
 })(widget); 

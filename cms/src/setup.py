@@ -73,7 +73,8 @@ setup(name='altair-cms',
       pscript = scripts.paster:PScript
    
       [paste.paster_create_template]
-      cms_widgetplugin = scaffolds:WidgetPluginTemplate
+      cms_widget = scaffolds:WidgetPluginTemplate
+      cms_asset_widget = scaffolds:AssetWidgetPluginTemplate
       """,
       # entry_points = {
       #   "paste.app_factory": [

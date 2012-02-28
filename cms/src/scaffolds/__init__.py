@@ -10,4 +10,13 @@ class WidgetPluginTemplate(templates.Template):
         vars["Package"] = vars['package'][0].upper() + vars["package"][1:]
         return templates.Template.pre(self, command, output_dir, vars)
 
+class AssetWidgetPluginTemplate(templates.Template):
+    summary = "altaircms asset widget plugin structure"
+    _template_dir = "asset_widget"
+    template_renderer = staticmethod(paste_script_template_renderer)
+
+    def pre(self, command, output_dir, vars):
+        vars["Package"] = vars['package'][0].upper() + vars["package"][1:]
+        return templates.Template.pre(self, command, output_dir, vars)
+
     

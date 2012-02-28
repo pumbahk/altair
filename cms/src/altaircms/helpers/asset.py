@@ -1,2 +1,6 @@
 def to_show_page(request, asset):
-    return request.route_url("asset_edit", asset_id=asset.id, _query=dict(raw="t"))
+    if hasattr(asset, "image_path"): # for movie, flash
+        query = dict(filepath="image_path")
+    else:
+        query = dict()
+    return request.route_url("asset_display", asset_id=asset.id, _query=query)

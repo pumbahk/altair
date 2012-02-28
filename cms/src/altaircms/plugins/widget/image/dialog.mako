@@ -1,9 +1,8 @@
-## N個ごとに区切られたitreratorを受け取り、divで区切って出力(imageのため)
-<%def name="render(image_assets)">
-  % for g in image_assets:
+## N個ごとに区切られたitreratorを受け取り、divで区切って出力(scrollのため)
+<%def name="render(assets)">
+  % for g in assets:
   <div>
      % for image in g:
-       ## <img pk="${image.id}" src="${image.filepath}" />
        <img pk="${image.id}" src="${h.asset.to_show_page(request,image)}" alt=""/>
      % endfor          
   </div>
@@ -20,6 +19,6 @@
 <div class="scrollable">   
    <!-- root element for the items -->
    <div class="items">
-   ${render(image_assets)}
+   ${render(assets)}
    </div>
 </div>

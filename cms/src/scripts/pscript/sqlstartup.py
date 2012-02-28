@@ -65,6 +65,16 @@ def main():
         layout1.site_id = 1 ##
         layout1.client_id = 1 ##
         DBSession.add(layout1)
+
+    with block("create dummy movie"):
+        from altaircms.asset.models import MovieAsset
+        for name in ["foo.avi", "foo.wmv", "boo.mov", "boo.mp4"]:
+            movie = MovieAsset(name)
+            DBSession.add(movie)
+        from altaircms.asset.models import FlashAsset
+        for name in ["foo.swf", "boo.swf"]:
+            movie = FlashAsset(name)
+            DBSession.add(movie)
     transaction.commit()
 
 

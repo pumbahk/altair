@@ -1,6 +1,5 @@
 <%def name="form()">
     var stylesheets = ['/static/deform/css/beautify.css'];
-
     function deform_ajaxify(response, status, xhr, form, oid, mthd){
         var options = {
             target: '#' + oid,

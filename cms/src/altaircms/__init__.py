@@ -17,7 +17,6 @@ from sqlalchemy import engine_from_config
 from altaircms.security import rolefinder, RootFactory
 from altaircms.models import initialize_sql
 
-
 try:
     import pymysql_sa
     pymysql_sa.make_default_mysql_dialect()
@@ -42,6 +41,7 @@ def cms_include(config):
     config.add_route('asset_list', '/asset/')
     config.add_route('asset_form', '/asset/form/{asset_type}')
     config.add_route('asset_edit', '/asset/{asset_id}')
+    config.add_route('asset_display', '/asset/display/{asset_id}')
     config.add_route('asset_view', '/asset/{asset_id}')
 
     config.add_route('widget', '/widget/{widget_id}')
@@ -101,6 +101,7 @@ def main_app(global_config, settings):
     config.scan('altaircms.layout', ignore=[test_re])
     config.scan('altaircms.front', ignore=[test_re])
     config.scan("altaircms.plugins", ignore=[test_re])
+    config.scan("altaircms.subscribers", ignore=[test_re])
 
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)
     config.add_static_view('plugins/static', 'altaircms:plugins/static', cache_max_age=3600)

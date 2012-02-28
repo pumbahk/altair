@@ -1,15 +1,18 @@
-from altaircms.interfaces import IWidget
 from zope.interface import implements
+from altaircms.interfaces import IWidget
+
+import sqlalchemy as sa
+import sqlalchemy.orm as orm
+
 from altaircms.widget.models import Widget
+from altaircms.widget.models import AssetWidgetResourceMixin
 from altaircms.plugins.base import DBSession
 from altaircms.plugins.base import asset
 from altaircms.plugins.base import HandleSessionMixin
 from altaircms.plugins.base import UpdateDataMixin
 
-import sqlalchemy as sa
-import sqlalchemy.orm as orm
-
 ImageAsset = asset.models.ImageAsset
+
 class ImageWidget(Widget):
     implements(IWidget)
     type = "image"
@@ -27,23 +30,13 @@ class ImageWidget(Widget):
         self.id = id
         self.asset_id = asset_id
 
+class ImageWidgetResource(HandleSessionMixin,
+                          UpdateDataMixin,
+                          AssetWidgetResourceMixin
+                          ):
+    WidgetClass = ImageWidget
+    AssetClass = ImageAsset
 
-class ImageWidgetResource(HandleSessionMixin, UpdateDataMixin):
-    from altaircms.asset.models import ImageAsset
     def __init__(self, request):
         self.request = request
 
-    def _get_or_create(self, model, widget_id):
-        if widget_id is None:
-            return model()
-        else:
-            return DBSession.query(model).filter(model.id == widget_id).one()
-        
-    def get_image_widget(self, widget_id):
-        return self._get_or_create(ImageWidget, widget_id)
-
-    def get_image_asset_query(self):
-        return self.ImageAsset.query
-
-    def get_image_asset(self, asset_id):
-        return self.ImageAsset.query.filter(self.ImageAsset.id == asset_id).one()

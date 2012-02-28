@@ -61,6 +61,26 @@ class Widget(Base):
     def __repr__(self):
         return '<%s %s>' % (self.__class__.__name__, self.id)
 
+
+class AssetWidgetResourceMixin(object):
+    WidgetClass = None
+    AssetClass = None
+
+    def _get_or_create(self, model, widget_id):
+        if widget_id is None:
+            return model()
+        else:
+            return DBSession.query(model).filter(model.id == widget_id).one()
+        
+    def get_widget(self, widget_id):
+        return self._get_or_create(self.WidgetClass, widget_id)
+
+    def get_asset_query(self):
+        return self.AssetClass.query
+
+    def get_asset(self, asset_id):
+        return self.AssetClass.query.filter(self.AssetClass.id == asset_id).one()
+
 """
 
 widget = Table(

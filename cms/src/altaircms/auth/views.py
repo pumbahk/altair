@@ -13,18 +13,16 @@ import transaction
 
 from altaircms.views import BaseRESTAPI
 from altaircms.models import DBSession
-from altaircms.fanstatic import bootstrap_need
+from altaircms.fanstatic import with_bootstrap
 from altaircms.auth.errors import AuthenticationError
 from .models import Operator, Role, DEFAULT_ROLE
 
 
 @view_config(name='login', renderer='altaircms:templates/login.mako')
 @view_config(context='pyramid.httpexceptions.HTTPForbidden', renderer='altaircms:templates/login.mako')
+@with_bootstrap
 def login(request):
     message = ''
-
-    bootstrap_need()
-
     return dict(
         message=message
     )

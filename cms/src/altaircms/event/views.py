@@ -15,16 +15,15 @@ from altaircms.event.mappers import EventMapper, EventsMapper
 ##
 ## CMS view
 ##
-from altaircms.fanstatic import bootstrap_need
+from altaircms.fanstatic import with_bootstrap
 
 @view_config(route_name='event', renderer='altaircms:templates/event/view.mako', permission='event_read')
+@with_bootstrap
 def view(request):
     id_ = request.matchdict['id']
 
     event = EventRESTAPIView(request, id_).read()
     pages = DBSession.query(Page).filter_by(event_id=event['id'])
-
-    bootstrap_need()
 
     return dict(
         event=event,
@@ -34,10 +33,9 @@ def view(request):
 
 @view_config(route_name='event_list', renderer='altaircms:templates/event/list.mako', permission='event_create', request_method="POST")
 @view_config(route_name='event_list', renderer='altaircms:templates/event/list.mako', permission='event_read', request_method="GET")
+@with_bootstrap
 def list_(request):
     events = EventRESTAPIView(request).read()
-
-    bootstrap_need()
 
     if request.method == "POST":
         form = EventForm(request.POST)

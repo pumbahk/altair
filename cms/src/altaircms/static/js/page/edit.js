@@ -16,6 +16,9 @@ widget.configure({
     get_pk: function(e){
         return $(e).data("view").model.get("pk") || null;
     }, 
+    get_page: function(){
+        return get_page();
+    }, 
     get_data: function(e){
         return $(e).data("view").model.get("data") || {};
     }, 
@@ -46,6 +49,7 @@ var LayoutService = (function(){
         }, 
         attach_highlight: function(key, elts){
             if(key == null || !cache[key]){
+                console.log(elts);
                 cache[key] = true;
                 setTimeout(function(){
                     elts.live("mouseover", function(){
@@ -82,6 +86,7 @@ var DroppedWidget = Backbone.Model.extend({
         return {
             pk: null, //conflict?
             name: "dummy", 
+            page_id: get_page(), 
             data: {}
         }
     }, 
@@ -222,6 +227,7 @@ var DroppedWidgetView = (function(){
             '<a class="edit" rel="#overlay"></a>', 
         ].join("\n")), 
         render: function(){
+            foo = this;
             var e = $(this.el).html(this.template(this.model.toJSON()));
             e.attr("cid", this.model.cid).draggable({
                 revert: true,

@@ -13,15 +13,13 @@ from altaircms.models import DBSession
 from altaircms.layout.models import Layout
 from altaircms.layout.forms import LayoutForm
 from altaircms.layout.mappers import LayoutMapper, LayoutsMapper
-from altaircms.fanstatic import bootstrap_need
+from altaircms.fanstatic import with_bootstrap
 
 
 @view_config(route_name='layout', renderer='altaircms:templates/layout/view.mako', permission='layout_read')
+@with_bootstrap
 def view(request):
     id_ = request.matchdict.get('layout_id')
-
-    bootstrap_need()
-
     layout = DBSession.query(Layout).get(id_)
     return dict(
         layout=layout
@@ -30,9 +28,8 @@ def view(request):
 
 @view_config(route_name='layout_list', renderer='altaircms:templates/layout/list.mako', permission='layout_read')
 @view_config(route_name='layout_list', renderer='altaircms:templates/layout/list.mako', permission='layout_create', request_method="POST")
+@with_bootstrap
 def list(request):
-    bootstrap_need()
-
     if request.method == "POST":
         form = LayoutForm(request.POST)
         if form.validate():

@@ -7,10 +7,11 @@ class ImageWidgetView(object):
 
     def _create_or_update(self):
         asset_id = self.request.json_body["data"]["asset_id"]
+        page_id = self.request.json_body["page_id"]
         context = self.request.context
-        asset = context.get_image_asset(asset_id);
-        widget = context.get_image_widget(self.request.json_body.get("pk"))
-        widget = context.update_data(widget, asset_id=asset_id, asset=asset)
+        asset = context.get_asset(asset_id);
+        widget = context.get_widget(self.request.json_body.get("pk"))
+        widget = context.update_data(widget, page_id=page_id, asset_id=asset_id, asset=asset)
         context.add(widget, flush=True)
 
         r = self.request.json_body.copy()
@@ -28,12 +29,12 @@ class ImageWidgetView(object):
     @view_config(route_name="image_widget_delete", renderer="json", request_method="POST")        
     def delete(self):
         context = self.request.context
-        widget = context.get_image_widget(self.request.json_body["pk"])
+        widget = context.get_widget(self.request.json_body["pk"])
         context.delete(widget, flush=True)
         return {"status": "ok"}
 
     @view_config(route_name="image_widget_dialog", renderer="altaircms.plugins.widget:image/dialog.mako", request_method="GET")
     def dialog(self):
         N = 5
-        image_assets = group_by_n(self.request.context.get_image_asset_query(), N)
-        return {"image_assets": image_assets}
+        assets = group_by_n(self.request.context.get_asset_query(), N)
+        return {"assets": assets}

@@ -158,7 +158,19 @@ class AssetEditView(object):
             # 更新処理
             pass
 
+@view_config(route_name="asset_display", permission="view", request_method="GET")
+def asset_display(request):
+    """ display asset as image(image, flash, movie)
+    """
+    ## todo refactoring
+    asset = Asset.query.filter(Asset.id == request.matchdict["asset_id"]).one()
 
+    attr = request.GET.get("filepath") or "filepath"
+    filepath = getattr(asset, attr)
+    filepath = os.path.join(get_storepath(request), filepath)
+
+    content_type = asset.mimetype if asset.mimetype else 'application/octet-stream'
+    return Response(file(filepath).read(), content_type=content_type)
 
 
 class AssetRESTAPIView(BaseRESTAPI):
