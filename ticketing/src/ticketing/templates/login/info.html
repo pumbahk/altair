@@ -1,0 +1,56 @@
+<%inherit file="../layout.html" />
+<%block name="title">ログイン情報</%block>
+
+<a href="${request.route_path('login.info.edit')}" class="ui-button">edit</a>
+
+<div class="subsection">
+  <div class="subsection-header">
+    <h2 class="subsection-header-content rounded">基本情報</h2>
+  </div>
+  <div class="subsection-main">
+    <div class="subsection-main-content">
+      <div class="twocolumns">
+        <div class="first column">
+          <div class="column-main">
+            <div class="column-main-content">
+              <table class="vertical-table fullwidth">
+                <tbody>
+                  <tr>
+                    <th>クライアントID</th>
+                    <td>${operator.id}</td>
+                  </tr>
+                  <tr>
+                    <th>クライアント名</th>
+                    <td>${operator.name}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="column">
+          <div class="column-main">
+            <div class="column-main-content">
+              <table class="vertical-table fullwidth">
+                <tbody>
+                  <tr>
+                    <th>クライアント種別</th>
+                    <td>${operator.client.client_type}</td>
+                  </tr>
+                  <tr>
+                    <th>会社名</th>
+                    <td>${operator.client.name}</td>
+                  </tr>
+                  <tr>
+                    <th>部署名</th>
+                    <td></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
