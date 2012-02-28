@@ -24,6 +24,15 @@ class Prefecture(Base):
     def get(prefecture_id):
         return DBSession.query(Prefecture).filter(Prefecture.id == prefecture_id).first()
 
+
+class Billing(Base):
+    __tablename__ = 'Blling'
+    id          = Column(BigInteger, primary_key=True)
+    client_id   = Column(BigInteger, ForeignKey('Client.id'))
+    updated_at = Column(DateTime)
+    created_at = Column(DateTime)
+    status = Column(Integer)
+
 class ClientTypeEnum(StandardEnum):
     Standard        = 1
 
@@ -59,18 +68,6 @@ class Client(Base):
     def all():
         return session.query(Client).all()
 
-class EventTicketOwner(Base):
-    __tablename__ = "EventTicketOwner"
-    id = Column(BigInteger, primary_key=True)
-    owner_type = Column(Integer)
-    """
-      owner_type:
-        1      => Promoter
-        1 << 1 => Playguide
-        1 << 2 => User (Auction user)
-    """
-    #performances = relationship('Performance', backref='owner')
-
 class AccountTypeEnum(StandardEnum):
     Promoter    = 1
     Playguide   = 2
@@ -80,25 +77,10 @@ class Account(Base):
     __tablename__ = "Account"
 
     id = Column(BigInteger, primary_key=True)
->>>>>>> スキーマの変更
 
     # @see AccountTypeEnum
     account_type = Column(Integer)
 
-<<<<<<< HEAD
-    user_id = Column(BigInteger, ForeignKey("User.id"), nullable=True)
-    user = relationship('User', uselist=False)
-    client = relationship("Child", uselist=False, backref="parent")
-
-    name = Column(String(255))
-    company_name = Column(String(255))
-    section_name = Column(String(255))
-    zip_code = Column(String(7))
-    country_code = Column(Integer)
-    prefecture_code = Column(Integer)
-    city = Column(String(32))
-    address = Column(String(255))
-=======
     user_id         = Column(BigInteger, ForeignKey("User.id"), nullable=True)
     user            = relationship('User', uselist=False)
     ticketer_id     = Column(BigInteger, ForeignKey("Ticketer.id"), nullable=True)
@@ -112,38 +94,58 @@ class Account(Base):
     def get(account_id):
         return DBSession.query(Account).filter(Account.id == account_id).first()
 
-class User(Base):
-    __tablename__ = 'User'
+class MemberShip(Base):
+    '''
+      Membership ex) Rakuten Fanclub ....
+    '''
+    __tablename__ = 'MemberShip'
     id = Column(BigInteger, primary_key=True)
-    open_id_identifier = Column(String(255), unique=True)
-    email = Column(String(255))
-    nick_name = Column(String(255))
-    first_name = Column(String(255))
-    last_name = Column(String(255))
-    first_name_kana = Column(String(255))
-    last_name_kana = Column(String(255))
-    birth_day = Column(DateTime)
-    sex = Column(Integer)
-    zip = Column(String(255))
-    prefecture_id = Column(BigInteger, ForeignKey("Prefecture.id"), nullable=True)
-    prefecture    = relationship("Prefecture", uselist=False)
-    city = Column(String(255))
->>>>>>> スキーマの変更
-    street = Column(String(255))
-    address = Column(String(255))
-    other_address = Column(String(255))
-    tel_1 = Column(String(32))
-    tel_2 = Column(String(32))
-    fax = Column(String(32))
-<<<<<<< HEAD
+    name = Column(String(255))
+
     updated_at = Column(DateTime, nullable=True)
-=======
-    updated_at = Column(DateTime)
->>>>>>> スキーマの変更
     created_at = Column(DateTime)
     status = Column(Integer)
 
-    point_accounts = relationship("UserPointAccount")
+user_table = Table(
+    'User', Base.metadata,
+    Column('id',             BigInteger, primary_key=True),
+    Column('member_ship_id', BigInteger, ForeignKey('MemberShip.id')),
+    Column('identifier',     String(255), unique=True),
+    Column('email',          String(255)),
+    Column('secret_key',     String(255)),
+    Column('updated_at',     DateTime),
+    Column('created_at',     DateTime),
+    Column('status',         Integer, default=1)
+)
+
+user_profile_table = Table(
+    'User_Profile', Base.metadata,
+    Column('id',             BigInteger, primary_key=True),
+    Column('nick_name',      String(255)),
+    Column('first_name',     String(255)),
+    Column('last_name',      String(255)),
+    Column('first_name_kana',String(255)),
+    Column('last_name_kana', String(255)),
+    Column('birth_day',      DateTime),
+    Column('sex',            Integer),
+    Column('zip',            Integer),
+    Column('prefecture_id',  ForeignKey("Prefecture.id")),
+    Column('city',           String(255)),
+    Column('street',         String(255)),
+    Column('address',        String(255)),
+    Column('other_address',  String(255)),
+    Column('tel_1',          String(255)),
+    Column('tel_2',          String(255)),
+    Column('fax'  ,          String(255)),
+)
+
+class User(Base):
+    __table__ = join(user_table, user_profile_table, user_table.c.id == user_profile_table.c.id)
+    id = column_property(user_table.c.id, user_profile_table.c.id)
+
+    point_accounts  = relationship("UserPointAccount")
+    prefecture      = relationship("Prefecture", uselist=False)
+    member_ship     = relationship("MemberShip", uselist=False)
 
     @staticmethod
     def get(user_id):
@@ -174,7 +176,7 @@ class Ticketer(Base):
 '''
  Oprerator Role & ticketer
 '''
-operator_role_association_table = Table('OperatorRole_Operator', Base.metadata,
+operator_role_set_table = Table('OperatorRoleSet', Base.metadata,
     Column('operator_role_id', BigInteger, ForeignKey('OperatorRole.id')),
     Column('operator_id', BigInteger, ForeignKey('Operator.id'))
 )
@@ -192,7 +194,7 @@ class OperatorRole(Base):
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
     operators = relationship("Operator",
-                    secondary=operator_role_association_table)
+                    secondary=operator_role_set_table)
     permissions = relationship('Permission')
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
@@ -233,11 +235,45 @@ class Operator(Base):
     id = column_property(operator_table.c.id, operator_auth_table.c.id)
     client = relationship('Client',uselist=False)
     roles = relationship("OperatorRole",
-        secondary=operator_role_association_table)
+        secondary=operator_role_set_table)
 
     @staticmethod
     def get_by_login_id(user_id):
         return DBSession.query(Operator).filter(Operator.login_id == user_id).first()
+
+performer_association_table = Table('Performer_Performance', Base.metadata,
+    Column('performer_id', BigInteger, ForeignKey('Performer.id')),
+    Column('performance_id', BigInteger, ForeignKey('Performance.id'))
+)
+
+class PerformerCategory(StandardEnum):
+    Artist = 1
+    Team   = 2
+
+class Performer(Base):
+    __tablename__ = 'Performer'
+    id = Column(BigInteger, primary_key=True)
+    category_code =  Column(Integer)
+    name = Column(String(255))
+    updated_at = Column(DateTime)
+    created_at = Column(DateTime)
+    status = Column(Integer)
+
+class GrantPoint(Base):
+    __tablename__ = 'GrantPoint'
+    id = Column(BigInteger, primary_key=True)
+    performance_id = Column(BigInteger, ForeignKey('Performance.id'))
+    performance = relationship('Performance', uselist=False)
+    point_type_id = Column(BigInteger, ForeignKey('PointType.id'))
+    point_type = relationship('PointType', uselist=False)
+    
+    grant_type  = Column(Integer)
+    rate        = Column(DECIMAL)
+    fixed       = Column(DECIMAL)
+
+    updated_at  = Column(DateTime)
+    created_at  = Column(DateTime)
+    status      = Column(Integer)
 
 '''
 
@@ -256,6 +292,7 @@ class Performance(Base):
     code = Column(String(12))
     owner_id = Column(BigInteger, ForeignKey('Account.id'))
     owner = relationship('Account')
+    performers = relationship('Performer', secondary=performer_association_table)
 
 event_table = Table(
     'Event', Base.metadata,
@@ -319,9 +356,29 @@ class TicketType(Base):
     created_at = Column(DateTime)
     status = Column(Integer)
 
+buyer_condition_set_table =  Table('BuyerConditionSet', Base.metadata,
+    Column('buyer_condition_id', BigInteger, ForeignKey('BuyerCondition.id')),
+    Column('product_id', BigInteger, ForeignKey('Product.id'))
+)
+
+class BuyerCondition(Base):
+    __tablename__ = 'BuyerCondition'
+    id = Column(BigInteger, primary_key=True)
+
+    member_ship_id = Column(BigInteger, ForeignKey('MemberShip.id'))
+    member_ship   = relationship('MemberShip')
+    '''
+     Any Conditions.....
+    '''
+    updated_at = Column(DateTime)
+    created_at = Column(DateTime)
+    status = Column(Integer)
+
+
 class Product(Base):
     __tablename__ = 'Product'
     id = Column(BigInteger, primary_key=True)
+    buyer_conditions = relationship('BuyerCondition', secondary=buyer_condition_set_table)
     name = Column(String(255))
     price = Column(BigInteger)
     
@@ -560,13 +617,21 @@ class BankAccount(Base):
     created_at = Column(DateTime)
     status = Column(Integer)
 
+class PointType(Base):
+    __tablename__ = 'PointType'
+    id = Column(BigInteger, primary_key=True)
+    name = Column(String(255))
+    updated_at = Column(DateTime)
+    created_at = Column(DateTime)
+    status = Column(Integer)
 
 class UserPointAccount(Base):
     __tablename__ = 'UserPointAccount'
     id = Column(BigInteger, primary_key=True)
     user_id = Column(BigInteger, ForeignKey("User.id"))
     user = relationship('User', uselist=False)
-    point_type_code = Column(Integer)
+    point_type_id = Column(BigInteger, ForeignKey("PointType.id"))
+    point_type = relationship('PointType', uselist=False)
     account_number = Column(String(255))
     account_expire = Column(String(255))
     account_owner = Column(String(255))
@@ -581,6 +646,7 @@ class UserPointHistory(Base):
     user_point_account = relationship('UserPointAccount', uselist=False)
     point = Column(Integer)
     rate = Column(Integer)
+    expire_at = Column(DateTime)
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
     status = Column(Integer)
@@ -625,8 +691,8 @@ class ShippingAddress(Base):
 class Order(Base):
     __tablename__ = 'Order'
     id = Column(BigInteger, primary_key=True)
-    user_id = Column(BigInteger, ForeignKey("User.id"))
-    user = relationship('User', uselist=False)
+    acrcount_id = Column(BigInteger, ForeignKey("Account.id"))
+    account = relationship('Account', uselist=False)
     payment_method_pair_id = Column(BigInteger, ForeignKey('PaymentDeliveryMethodPair.id'))
     payment_method_pair = relationship('PaymentDeliveryMethodPair')
 
@@ -699,4 +765,35 @@ class SalesSegment(Base):
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
     status = Column(Integer)
+
+
+class Auction(Base):
+    __tablename__   = 'Auction'
+    id              = Column(BigInteger, primary_key=True)
+    performance_id  = Column(BigInteger, ForeignKey('Performance.id'))
+    performance     = relationship('Performance', uselist=False)
+    account_id      = Column(BigInteger, ForeignKey('Account.id'))
+    account         = relationship('Account')
+    product_item_id = Column(BigInteger, ForeignKey('ProductItem.id'))
+    product_item    = relationship('ProductItem')
+    start_price     = Column(DECIMAL)
+    start_at        = Column(DateTime)
+    end_at          = Column(DateTime)
+    updated_at      = Column(DateTime)
+    created_at      = Column(DateTime)
+    status          = Column(Integer)
+
+class AuctionBidHistory(Base):
+    __tablename__   = 'AuctionBidHistory'
+    id              = Column(BigInteger, primary_key=True)
+    auction_id      = Column(BigInteger, ForeignKey('Auction.id'))
+    auction         = relationship('Auction', uselist=False)
+    account_id      = Column(BigInteger, ForeignKey('Account.id'))
+    account         = relationship('Account', uselist=False)
+    price           = Column(DECIMAL)
+    updated_at      = Column(DateTime)
+    created_at      = Column(DateTime)
+    status          = Column(Integer)
+
+
 
