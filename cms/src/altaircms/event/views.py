@@ -32,7 +32,8 @@ def view(request):
     )
 
 
-@view_config(route_name='event_list', renderer='altaircms:templates/event/list.mako', permission='event_editor')
+@view_config(route_name='event_list', renderer='altaircms:templates/event/list.mako', permission='event_editor', request_method="POST")
+@view_config(route_name='event_list', renderer='altaircms:templates/event/list.mako', permission='event_viewer', request_method="GET")
 def list_(request):
     events = EventRESTAPIView(request).read()
 

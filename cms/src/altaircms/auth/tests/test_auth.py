@@ -6,6 +6,7 @@ from pyramid import testing
 from pyramid.httpexceptions import HTTPFound, HTTPBadRequest, HTTPUnauthorized
 
 from altaircms.base.tests import BaseTest
+from altaircms.auth.initial_data import insert_initial_authdata
 
 
 class OAuthSuccessMock(object):
@@ -33,6 +34,7 @@ class OAuthCallbackMock(object):
 
 class TestAuthView(BaseTest):
     def setUp(self):
+        insert_initial_authdata()
         self.request = testing.DummyRequest()
         super(TestAuthView, self).setUp()
 

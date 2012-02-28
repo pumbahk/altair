@@ -1,24 +1,60 @@
 # coding: utf-8
+from pyramid.security import Allow, Authenticated, Everyone, Deny, DENY_ALL
+
 from altaircms.models import DBSession
-from altaircms.auth.models import Permission
+
+from altaircms.auth.models import Operator, RolePermission
 
 def groupfinder(userid, request):
     """
     ユーザIDを受け取ってpermission一覧を返す
     """
-    objects = DBSession.query(Permission).filter_by(operator_id=userid)
-    perms = []
+    operator = DBSession.query(Operator).filter_by(user_id=userid).one()
+    return [q.permission for q in DBSession.query(RolePermission).filter_by(role_id=operator.role_id)]
 
-    for obj in objects:
-        perms.append(obj.permission)
 
-    return perms
+# データモデルから取得したACLをまとめる
+class RootFactory(object):
+    __name__ = None
+    __acl__ = [
+        # auth state, username or groupname, permission
+        (Allow, Authenticated, 'authenticated'),
+        (Allow, 'event_', 'event_viewer'),
+        (Allow, 'ticket', 'ticket_viewer'),
+        (Allow, 'page', 'page_viewer'),
+        (Allow, 'page_editor', 'page_viewer'),
+        (Allow, 'page_editor', 'page_editor'),
+        (Allow, 'topic', 'topic_viewer'),
+        (Allow, 'topic_editor', 'topic_viewer'),
+        (Allow, 'topic_editor', 'topic_editor'),
+        (Allow, 'magazine', 'magazine_viewer'),
+        (Allow, 'magazine_editor', 'magazine_viewer'),
+        (Allow, 'magazine_editor', 'magazine_editor'),
+
+        # administrator have all permissions
+        (Allow, 'admin', 'event_viewer'),
+        (Allow, 'admin', 'ticket_viewer'),
+        (Allow, 'admin', 'page_editor'),
+        (Allow, 'admin', 'topic_editor'),
+        (Allow, 'admin', 'magazine_editor'),
+        (Allow, 'admin', 'administrator'),
+        DENY_ALL,
+        ]
+
+    def __init__(self, request):
+        pass
+ALTAIRCMS_ACL = [
+    (Allow, Authenticated, 'authenticated'),
+    DENY_ALL,
+]
+
+RootFactory.__acl__ = ALTAIRCMS_ACL
 
 
 class SecurityAllOK(list):
     def __init__(self):
-        from altaircms.auth.models import DEFAULT_PERMISSION
-        self.perms_keys = DEFAULT_PERMISSION
+        from altaircms.auth.models import PERMISSIONS
+        self.perms_keys = PERMISSIONS
         self.perms = None
 
     def __call__(self, user_id, request):
@@ -27,8 +63,9 @@ class SecurityAllOK(list):
         return self.perms
         
     def _create_perms(self):
-        return [Permission(operator_id=None, permission=p) \
-                    for p in self.perms_keys]
+        #return [Permission(operator_id=None, permission=p) \
+        #             for p in self.perms_keys]
+        return None
 
 
 from zope.interface import implements

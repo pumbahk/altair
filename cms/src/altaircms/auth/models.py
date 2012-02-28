@@ -8,14 +8,14 @@ from sqlalchemy.types import String, DateTime, Integer, Unicode
 
 from altaircms.models import Base
 
-# readonly
-DEFAULT_PERMISSION = [
-    'event_viewer',
-    'tikcet_viewer',
-    'page_viewer',
-    'topic_viewer',
-    'magazine_viewer',
-]
+DEFAULT_ROLE = 'administrator'
+
+# CMS内で利用されるパーミッション一覧。view_configのpermission引数と合わせる
+target_objects = ['event', 'topic', 'ticket', 'magazine', 'asset', 'page', 'tag']
+PERMISSIONS = []
+for t in target_objects:
+    for act in ('create', 'read', 'update', 'delete'):
+        PERMISSIONS.append('%s_%s' % (t, act))
 
 
 class OAuthToken(Base):
@@ -49,6 +49,7 @@ class Operator(Base):
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=datetime.now())
 
+    role_id = Column(Integer, ForeignKey("role.id"))
     client_id = Column(Integer, ForeignKey("client.id"))
 
     UniqueConstraint('auth_source', 'user_id')
@@ -57,14 +58,21 @@ class Operator(Base):
         return '%s' % self.user_id
 
 
-class Permission(Base):
-    __tablename__ = 'permission'
+class Role(Base):
+    __tablename__ = 'role'
 
     id = Column(Integer, primary_key=True)
-    operator_id = Column(Integer, ForeignKey('operator.id'))
+    name = Column(String)
+
+
+class RolePermission(Base):
+    __tablename__ = 'role_permission'
+
+    id = Column(Integer, primary_key=True)
+    role_id = Column(Integer, ForeignKey('role.id'))
     permission = Column(String)
 
-    UniqueConstraint('operator_id', 'permission')
+    UniqueConstraint('role', 'permission')
 
 
 class Client(Base):

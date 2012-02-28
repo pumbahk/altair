@@ -28,4 +28,4 @@ class TestBaseView(BaseTest):
 
         request = testing.DummyRequest()
         resp = dashboard(request)
-        self.assertEqual(resp, {})
+        self.assertEqual(resp, {'events':[]})
