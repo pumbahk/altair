@@ -258,7 +258,7 @@ class OperatorData(DataSet):
         created_at = datetime.now()
         status = 1
         login_id = 'test'
-        password =  md5('test').hexdigest()
+        password =  md5('testtest').hexdigest()
         auth_code = 'auth_code'
         access_token = 'access_token'
         secret_key = 'secret_key'
@@ -269,7 +269,7 @@ class OperatorData(DataSet):
         updated_at = datetime.now()
         created_at = datetime.now()
         status = 1
-        login_id = 'test'
+        login_id = 'testtest'
         password =  md5('test').hexdigest()
         auth_code = 'auth_code'
         access_token = 'access_token'
