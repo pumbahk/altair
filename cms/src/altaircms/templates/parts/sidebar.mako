@@ -15,4 +15,7 @@
     <li class="nav-header">その他</li>
     <li><a href="#">メールマガジン</a></li>
     <li><a href="${request.route_url("operator_list")}">オペレータ</a></li>
+    <li>タグ</li>
+    <li><a href="${request.route_url("apikey_list")}">APIKEY</a></li>
+    <li>ロール</li>
 </ul>

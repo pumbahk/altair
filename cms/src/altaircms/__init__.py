@@ -89,6 +89,7 @@ def main_app(global_config, settings):
     config.include("altaircms.event")
     config.include("altaircms.layout")
     config.include("altaircms.page")
+    config.include("altaircms.base")
 
     test_re = re.compile('tests$').search
     config.scan("altaircms.subscribers")
