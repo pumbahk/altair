@@ -49,13 +49,50 @@ widget.configure({
         $(document).on("click", _has_click_event, function(){
             we.finish_dialog(this);
         });
+
+        // jquery.ui
+        $.datepicker.setDefaults( $.datepicker.regional[ "ja" ] );
+        var dates = $( "#from_date, #to_date" ).datepicker({
+          // defaultDate: "+1w",
+          numberOfMonths: 1,
+          changeMonth: true,
+          /*onSelect: function( selectedDate ) {
+            var option = this.id == "from_date" ? "minDate" : "maxDate",
+              instance = $( this ).data( "datepicker" ),
+              date = $.datepicker.parseDate(
+                instance.settings.dateFormat ||
+                $.datepicker._defaults.dateFormat,
+                selectedDate, instance.settings );
+            dates.not( this ).datepicker( "option", option, date );
+          },*/ 
+            dateFormat: "yy/mm/dd"
+        });
+
+
+        /* jquery.tools
+        $.tools.dateinput.localize("ja",  {
+            months: "１月, ２月, ３月, ４月, ５月, ６月, ７月, ８月, ９月, １０月, １１月, １２月", 
+            shortMonths:   '1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12',
+            days:          '月, 火, 水, 木, 金, 土, 日', 
+            shortDays:     '月, 火, 水, 木, 金, 土, 日'
+        });
+ 
+        $("#from_date, #to_date").dateinput({ 
+	          lang: 'ja', 
+	          format: 'yyyy/mmmmm/dd',
+	          offset: [30, 0]
+        });
+        */
     };
 
     var on_close = function(we){
     };
 
     var collect_data = function(we, choiced_elt){
-        return {calendar_type: $("#calendar_type").val()};
+        return {calendar_type: $("#calendar_type").val(), 
+                from_date: $("#from_date").val(), 
+                to_date: $("#to_date").val()
+               };
     };
 
     return widget.include("calendar", {

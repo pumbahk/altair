@@ -20,6 +20,10 @@
 	-webkit-box-shadow: 0 0 90px #000;	
 }
 
+.dialog_overlay label {
+	color: #fff;
+}
+
 /* the overlayed element */
 .dialog_overlay {
 	

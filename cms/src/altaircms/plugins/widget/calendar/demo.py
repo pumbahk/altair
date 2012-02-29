@@ -6,6 +6,21 @@ import os
 
 here = os.path.abspath(os.path.dirname(__file__))
 
+from datetime import datetime
+from altaircms.models import Performance
+def perf(title, beg, end):
+    p = Performance.from_dict(
+        {"title": title, 
+         "performance_open": beg, 
+         "performance_close": end, 
+         "event_id": 1, 
+         })
+    # p.title = title
+    # p.performance_open = beg
+    # p.performance_close = end
+    # p.event_id = 1
+    return p
+    
 class RenderableAdaptor(object):
     implements(IRenderable)
     def __init__(self, fn, *args, **kwargs):
@@ -20,10 +35,9 @@ class RenderableAdaptor(object):
 
 
 dummy_performances = [
-    "a", 
-    "a", 
-    "a", 
-    "a", 
+    perf("event1", datetime(2012, 2, 10, 10), datetime(2012, 2, 10, 12)), 
+    perf("event2", datetime(2012, 2, 13, 13), datetime(2012, 2, 13, 15)), 
+    perf("event3", datetime(2012, 2, 20, 20), datetime(2012, 2, 20, 12)), 
     ]
 
 def this_month():
@@ -52,7 +66,7 @@ def list():
     
 def term():
     from mako.template import Template
-    from .renderable import CalendarOutput
+    from renderable import CalendarOutput
     from datetime import date
     template = Template(filename=os.path.join(here, "rakuten.calendar.mako"), 
                         input_encoding="utf-8")
@@ -64,3 +78,8 @@ def term():
                              date(2012, 2, 6),
                              date(2012, 3, 18))
         }
+
+if __name__ == "__main__":
+    print this_month()["renderable"].render()
+    print list()["renderable"].render()
+    print term()["renderable"].render()

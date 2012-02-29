@@ -15,7 +15,9 @@
     <link rel="stylesheet" type="text/css" href="/static/css/overlay-basic.css"/>
     <link rel="stylesheet" type="text/css" href="/static/css/my/sample.css">
     <link rel="stylesheet" href="/static/css/page/edit.css" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="/plugins/static/css/widget/lib/image.css"> ##todo: moveit
+ ##todo: moveit
+    <link rel="stylesheet" type="text/css" href="/plugins/static/css/widget/lib/image.css">
+    <link rel="stylesheet" type="text/css" href="/plugins/static/css/widget/lib/calendar.css">
     ${css.edit()}
 </%block>
 <%block name='js_foot'>
@@ -83,11 +85,16 @@ ${page_render.publish_status(request) | n}
   function get_page(){return ${page.id};}
 </script>
 <script type="text/javascript" src="/static/js/my/widgets/base.js"></script>
-<script type="text/javascript" src="/plugins/static/js/widget/lib/image.js"></script> ## todo: moveit
-<script type="text/javascript" src="/plugins/static/js/widget/lib/freetext.js"></script> ## todo: moveit
-<script type="text/javascript" src="/plugins/static/js/widget/lib/movie.js"></script> ## todo: moveit
-<script type="text/javascript" src="/plugins/static/js/widget/lib/flash.js"></script> ## todo: moveit
-<script type="text/javascript" src="/plugins/static/js/widget/lib/calendar.js"></script> ## todo: moveit
+## todo: moveit
+<script type="text/javascript" src="/plugins/static/js/widget/lib/image.js"></script>
+## todo: moveit
+<script type="text/javascript" src="/plugins/static/js/widget/lib/freetext.js"></script>
+## todo: moveit
+<script type="text/javascript" src="/plugins/static/js/widget/lib/movie.js"></script>
+## todo: moveit
+<script type="text/javascript" src="/plugins/static/js/widget/lib/flash.js"></script>
+## todo: moveit
+<script type="text/javascript" src="/plugins/static/js/widget/lib/calendar.js"></script>
 <script type="text/javascript" src="/static/js/page/backbone_patch.js"></script>
 <script type="text/javascript" src="/static/js/page/edit.js"></script>
 

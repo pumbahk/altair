@@ -1,16 +1,26 @@
 from pyramid.view import view_config
+from datetime import datetime
 from . import demo
 
+def _dict_to_object_params(data):
+    params = {}
+    params["calendar_type"] = data["calendar_type"]
+    if data["from_date"] != u"":
+        params["from_date"] = datetime.strptime(data["from_date"], "%Y/%m/%d").date()
+    if data["to_date"] != u"":
+        params["to_date"] = datetime.strptime(data["to_date"], "%Y/%m/%d").date()
+    return params
+    
 class CalendarWidgetView(object):
     def __init__(self, request):
         self.request = request
 
     def _create_or_update(self):
-        calendar_type = self.request.json_body["data"]["calendar_type"]
         page_id = self.request.json_body["page_id"]
         context = self.request.context
         widget = context.get_widget(self.request.json_body.get("pk"))
-        widget = context.update_data(widget, calendar_type=calendar_type, page_id=page_id)
+        params = _dict_to_object_params(self.request.json_body["data"])
+        widget = context.update_data(widget,page_id=page_id, **params)
         context.add(widget, flush=True)
 
         r = self.request.json_body.copy()
@@ -40,8 +50,7 @@ class CalendarWidgetView(object):
         widget = context.get_widget(self.request.GET.get("pk"))
 
         form_class = self.request.context.get_select_form()
-        calendar_type = widget.calendar_type
-        form = form_class(calendar_type=calendar_type)
+        form = form_class(**widget.to_dict())
         return {"form": form}
 
     @view_config(route_name="calendar_widget_dialog_demo", renderer="altaircms.plugins.widget:calendar/demo.mako", request_method="GET")

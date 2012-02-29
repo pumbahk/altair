@@ -22,6 +22,8 @@ class CalendarWidget(Widget):
 
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
     calendar_type = sa.Column(sa.String(255))
+    from_date = sa.Column(sa.Date)
+    to_date = sa.Column(sa.Date)
 
 from . import forms
 
