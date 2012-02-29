@@ -10,7 +10,7 @@ class CalendarWidgetView(object):
         page_id = self.request.json_body["page_id"]
         context = self.request.context
         widget = context.get_widget(self.request.json_body.get("pk"))
-        widget = context.update_data(widget, text=calendar_type, page_id=page_id)
+        widget = context.update_data(widget, calendar_type=calendar_type, page_id=page_id)
         context.add(widget, flush=True)
 
         r = self.request.json_body.copy()

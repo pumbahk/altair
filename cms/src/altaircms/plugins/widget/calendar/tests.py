@@ -66,16 +66,41 @@ class FunctionalViewTests(unittest.TestCase):
 
 
     def _create_widget(self, session, page_id=1, id=1):
-        pass
+        session = self._getSession()
+        page_id = 1
+        dummy = "dummy"
+        self._with_session(session, self._makePage(id=page_id))
+        self._callFUT().post_json(self.create_widget,
+                                  {"page_id": page_id, "pk": None, "data": {"calendar_type": dummy}}, 
+                                  status=200)        
 
     def test_update(self):
-        pass
+        session = self._getSession()
+        page_id = 10
+        self._create_widget(session, id=1, page_id=page_id)
+        updated = "updated"
+        res = self._callFUT().post_json(self.update_widget, 
+                                        {"page_id": page_id, "pk":1, "data": {"calendar_type": updated}}, 
+                                        status=200)
+        expexted = {"page_id": page_id, "pk": 1,  "data": {"calendar_type": updated}}
+
+        self.assertEquals(json.loads(res.body), expexted)
+        self.assertEquals(CalendarWidget.query.count(), 1)
+        self.assertEquals(CalendarWidget.query.first().calendar_type, updated)
+
 
     def test_delete(self):
-        pass
+        session = self._getSession()
+        self._create_widget(session, id=1)
+
+        res = self._callFUT().post_json(self.delete_widget,{"pk":1},  status=200)
+        self.assertEquals(json.loads(res.body), {"status": "ok"})
+        self.assertEquals(CalendarWidget.query.count(), 0)    
+
 
     def test_getdialog(self):
-        pass
+        self._callFUT().get(self.get_dialog, status=200)
+
 
 if __name__ == "__main__":
     unittest.main()

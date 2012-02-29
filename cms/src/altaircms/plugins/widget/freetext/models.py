@@ -2,7 +2,7 @@ from altaircms.interfaces import IWidget
 from zope.interface import implements
 from altaircms.widget.models import Widget
 from altaircms.plugins.base import DBSession
-from altaircms.plugins.base import HandleSessionMixin
+from altaircms.plugins.base.mixins import HandleSessionMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.plugins.base.mixins import HandleWidgetMixin
 

@@ -6,8 +6,10 @@ import sqlalchemy.orm as orm
 
 from altaircms.widget.models import Widget
 from altaircms.plugins.base import DBSession
-from altaircms.plugins.base import HandleSessionMixin
-from altaircms.plugins.base import UpdateDataMixin
+from altaircms.plugins.base.mixins import HandleSessionMixin
+from altaircms.plugins.base.mixins import HandleWidgetMixin
+from altaircms.plugins.base.mixins import UpdateDataMixin
+
 
 class CalendarWidget(Widget):
     implements(IWidget)
@@ -25,6 +27,7 @@ from . import forms
 
 class CalendarWidgetResource(HandleSessionMixin,
                              UpdateDataMixin,
+                             HandleWidgetMixin
                              ):
     WidgetClass = CalendarWidget
 
