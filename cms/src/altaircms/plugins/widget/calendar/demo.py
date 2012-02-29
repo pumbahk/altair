@@ -26,7 +26,7 @@ dummy_performances = [
     "a", 
     ]
 
-def simple():
+def this_month():
     import calendar
     from datetime import date
     today = date.today()

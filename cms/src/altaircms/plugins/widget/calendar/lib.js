@@ -26,7 +26,12 @@ widget.configure({
 (function(widget){
     var opt = {} //widget local variable
     var load_page = function(we){
-        we.dialog.load("/api/widget/calendar/dialog");
+        var pk = we.get_pk(we.where);
+        var url = "/api/widget/calendar/dialog";
+        if(!!pk){
+            url += "?" + $.param({"pk": pk});
+        }
+        return we.dialog.load(url);
     };
 
     var _has_click_event = "#submit";
@@ -50,7 +55,7 @@ widget.configure({
     };
 
     var collect_data = function(we, choiced_elt){
-        return {calender_type: $("#calendar").val()};
+        return {calendar_type: $("#calendar_type").val()};
     };
 
     return widget.include("calendar", {

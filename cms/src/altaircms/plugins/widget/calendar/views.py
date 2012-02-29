@@ -33,9 +33,15 @@ class CalendarWidgetView(object):
         return {"status": "ok"}
 
 
+    DEFAULT_CALENDAR_TYPE = "this_month"
     @view_config(route_name="calendar_widget_dialog", renderer="altaircms.plugins.widget:calendar/dialog.mako", request_method="GET")
     def dialog(self):
-        form = self.request.context.get_select_form()
+        context = self.request.context
+        widget = context.get_widget(self.request.GET.get("pk"))
+
+        form_class = self.request.context.get_select_form()
+        calendar_type = widget.calendar_type
+        form = form_class(calendar_type=calendar_type)
         return {"form": form}
 
     @view_config(route_name="calendar_widget_dialog_demo", renderer="altaircms.plugins.widget:calendar/demo.mako", request_method="GET")

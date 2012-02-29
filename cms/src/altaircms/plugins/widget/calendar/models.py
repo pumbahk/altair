@@ -35,7 +35,7 @@ class CalendarWidgetResource(HandleSessionMixin,
         self.request = request
 
     def get_select_form(self):
-        return forms.CalendarSelectForm()
+        return forms.CalendarSelectForm
 
     def get_widget(self, widget_id):
         return self._get_or_create(CalendarWidget, widget_id)
