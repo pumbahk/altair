@@ -29,7 +29,15 @@ class ICacher(Interface):
 class IRenderable(Interface):
     def render():
         pass
+
 ## resource
+class IHandleWidget(Interface):
+    def _get_or_create(model, widget_id):
+        pass
+        
+    def get_widget(widget_id):
+        pass
+
 class IHandleSession(Interface):
     def add(data, flush=False):
         pass

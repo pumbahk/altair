@@ -40,7 +40,7 @@ widget.configure({
         $(document).on("change", "#calendar_type", function(){
             _draw_demo_api($(this).val());
         });
-        _draw_demo_api($("#calendar").val());
+        _draw_demo_api($("#calendar_type").val());
         $(document).on("click", _has_click_event, function(){
             we.finish_dialog(this);
         });

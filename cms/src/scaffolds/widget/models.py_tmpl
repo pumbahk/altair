@@ -34,3 +34,5 @@ class {{Package}}WidgetResource(HandleSessionMixin,
     def __init__(self, request):
         self.request = request
 
+    def get_widget(self, widget_id):
+        return self._get_or_create({{Package}}Widget, widget_id)

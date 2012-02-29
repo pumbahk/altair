@@ -19,11 +19,7 @@ class CalendarWidget(Widget):
     query = DBSession.query_property()
 
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
-
-    def __init__(self, id=None, asset_id=None):
-        self.id = id
-        self.asset_id = asset_id
-
+    calendar_type = sa.Column(sa.String(255))
 
 from . import forms
 
@@ -37,5 +33,6 @@ class CalendarWidgetResource(HandleSessionMixin,
 
     def get_select_form(self):
         return forms.CalendarSelectForm()
-    
 
+    def get_widget(self, widget_id):
+        return self._get_or_create(CalendarWidget, widget_id)

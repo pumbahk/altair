@@ -49,7 +49,21 @@ class FunctionalViewTests(unittest.TestCase):
           1. Calendar Widget is created,  successfully.
           2. calendar Widget and Page object is bounded
         """
-        pass
+        session = self._getSession()
+        page_id = 1
+        calendar_type = "this_month"
+        self._with_session(session, self._makePage(id=page_id))
+
+        res = self._callFUT().post_json(
+            self.create_widget, 
+            {"page_id": page_id, "pk": None, "data": {"calendar_type": calendar_type}}, 
+            status=200)
+        expexted = {"page_id": page_id, "pk": 1,  "data": {"calendar_type": calendar_type}}
+
+        self.assertEquals(json.loads(res.body), expexted)
+        self.assertEquals(CalendarWidget.query.count(), 1)
+        self.assertEquals(CalendarWidget.query.first().page.id, page_id)
+
 
     def _create_widget(self, session, page_id=1, id=1):
         pass

@@ -1,16 +1,7 @@
-<head></head>
-<script>
-        $("#calendar_type").live("change", function(){
-            var type = $(this).val();
-            var url = "/api/widget/calendar/dialog/demo/@type@".replace("@type@", type);
-            $("#canpas").load(url);
-        });
-
-</script>
 ## calendar widget dialog
 ##  view function is views.CalendarWidgetView.dialog
 ##
-
+<p>利用するカレンダの種類を選択してください。</p>
 <div id="select_calendar">
 %for field in form:
   <tr>

@@ -53,7 +53,7 @@ ${page_render.publish_status(request) | n}
             <div id="freetext" class="widget blue float-left">freetext</div>
             <div id="flash"  class="widget green float-left">flash</div>
             <div id="movie"  class="widget gray float-left">movie</div>
-            <div id="dummy_widget4"  class="widget green float-left">widget</div>
+            <div id="calendar"  class="widget green float-left">calendar</div>
             <div id="dummy_widget5"  class="widget blue float-left">widget</div>
             <div id="dummy_widget6"  class="widget red float-left">widget</div>
         </div>
@@ -87,6 +87,7 @@ ${page_render.publish_status(request) | n}
 <script type="text/javascript" src="/plugins/static/js/widget/lib/freetext.js"></script>
 <script type="text/javascript" src="/plugins/static/js/widget/lib/movie.js"></script>
 <script type="text/javascript" src="/plugins/static/js/widget/lib/flash.js"></script>
+<script type="text/javascript" src="/plugins/static/js/widget/lib/calendar.js"></script>
 <script type="text/javascript" src="/static/js/page/backbone_patch.js"></script>
 <script type="text/javascript" src="/static/js/page/edit.js"></script>
 
