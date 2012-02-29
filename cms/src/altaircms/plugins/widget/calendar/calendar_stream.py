@@ -77,7 +77,7 @@ class MonthStream(object):
         
     def __iter__(self):
         return (DayStream(MonthE(self.ye, m, self.ye.env)) \
-                                for m in self.months()) #bug
+                                for m in self.months())
 
     def months(self):
         months = range(1, 13)
