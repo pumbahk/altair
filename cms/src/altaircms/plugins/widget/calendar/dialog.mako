@@ -24,8 +24,10 @@
   </tr>
 %endfor
 </div>
+<hr/>
+<button type="button" id="submit">登録</button>
 
-<h2>calendar image</h2>
+<h3>選択されたカレンダーのイメージ</h3>
 
 <div id="canpas">
   

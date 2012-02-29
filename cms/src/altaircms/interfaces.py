@@ -26,6 +26,10 @@ class ICacher(Interface):
     def fetch():
         pass
 
+class IRenderable(Interface):
+    def render():
+        pass
+## resource
 class IHandleSession(Interface):
     def add(data, flush=False):
         pass

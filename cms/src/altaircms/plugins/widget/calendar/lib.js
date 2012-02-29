@@ -29,12 +29,20 @@ widget.configure({
         we.dialog.load("/api/widget/calendar/dialog");
     };
 
+    var _has_click_event = "#submit";
+
+    var _draw_demo_api = function(type){
+        var url = "/api/widget/calendar/dialog/demo/@type@".replace("@type@", type);
+        $("#canpas").load(url);
+    };
+
     var on_dialog = function(we){
-        $("#calendar_type").live("change", function(){
-            var type = $(this).val();
-            var url = "/api/widget/calendar/dialog/demo/@type@".replace("@type@", type);
-            console.log(url);
-            // $("#canpas").load(url);
+        $(document).on("change", "#calendar_type", function(){
+            _draw_demo_api($(this).val());
+        });
+        _draw_demo_api($("#calendar").val());
+        $(document).on("click", _has_click_event, function(){
+            we.finish_dialog(this);
         });
     };
 
@@ -42,7 +50,9 @@ widget.configure({
     };
 
     var collect_data = function(we, choiced_elt){
+        return {calender_type: $("#calendar").val()};
     };
+
     return widget.include("calendar", {
         load_page: load_page, 
         on_dialog: on_dialog, 

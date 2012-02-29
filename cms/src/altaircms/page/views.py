@@ -89,6 +89,7 @@ def to_publish(request):     ## fixme
 
 class PageEditView(object):
     def __init__(self, request):
+        
         self.request = request
         self.page = None
         self.event = None

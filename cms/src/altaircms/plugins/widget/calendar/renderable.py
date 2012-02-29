@@ -1,7 +1,7 @@
 from calendar_stream import PackedCalendarStream
 from calendar_stream import CalendarStreamGenerator
 
-__all__ = ["CalendarRenderable"]
+__all__ = ["CalendarOutput"]
 
 YEAR, MONTH, DAY = [0, 1, 2]
 FIRST, LAST = [0, -1]
@@ -43,7 +43,7 @@ class CalendarWeek(object):
     if change month durning rendeering a row, putting special th element before rendering.
     """
 
-class CalendarRenderable(object):
+class CalendarOutput(object):
     template = None
 
     def __init__(self, performances=None, template=None):
@@ -59,7 +59,8 @@ class CalendarRenderable(object):
             yield CalendarWeek(r, self.performances)
 
     def render(self, begin_date, end_date):
-        return self.template.render(self.each_rows(begin_date, end_date))
+        rows = self.each_rows(begin_date, end_date)
+        return self.template.render_unicode(cal=rows)
 
 if __name__ == "__main__":
     import mako.template
@@ -67,6 +68,6 @@ if __name__ == "__main__":
                                       input_encoding='utf-8', 
                                       output_encoding="utf-8")
     from datetime import date
-    cal = CalendarRenderable()
+    cal = CalendarOutput()
     print template.render_unicode(
         cal=cal.each_rows(date(2012, 2, 6), date(2012, 3, 18)))

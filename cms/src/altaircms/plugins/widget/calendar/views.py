@@ -28,6 +28,8 @@ class CalendarWidgetView(object):
                  decorator=with_fanstatic_jqueries)
     def demo(self):
         calendar_type = self.request.matchdict["type"]
-        renderable = getattr(demo, calendar_type)()
-        return {"renderable": renderable, 
-                "calendar_type": calendar_type}
+        demo_context = getattr(demo, calendar_type)()
+        context = {"calendar_type": calendar_type}
+        context.update(demo_context)
+        return context
+

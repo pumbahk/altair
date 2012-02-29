@@ -33,10 +33,11 @@ class _FileLinker(object):
             if self.is_valid_link(src, dst):
                 return
             self._after_invalid(dst)
+        else:
         ## dead link
-        if not os.path.exists(os.readlink(dst)):
-            os.remove(dst)
-        os.symlink(src, dst)
+        # if not os.path.exists(os.readlink(dst)):
+        #     os.remove(dst)
+            os.symlink(src, dst)
 
 def _translate_path(dst, plugin_name, filename, file_type, path):
     """
