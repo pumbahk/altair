@@ -49,7 +49,7 @@ class CalendarRenderable(object):
     def __init__(self, performances=None, template=None):
         self.template = template or self.template
         self.performances = performances or {}
-
+        
     def each_rows(self, begin_date, end_date):
         gen = CalendarStreamGenerator(PackedCalendarStream, force_start_from_monday=True)
         stream = gen.start_from(begin_date.year, begin_date.month, begin_date.day)
@@ -57,6 +57,9 @@ class CalendarRenderable(object):
         yield CalendarWeek(itr.next(), self.performances, month_changed=True)
         for r in itr:
             yield CalendarWeek(r, self.performances)
+
+    def render(self, begin_date, end_date):
+        return self.template.render(self.each_rows(begin_date, end_date))
 
 if __name__ == "__main__":
     import mako.template

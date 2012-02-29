@@ -25,11 +25,17 @@ class CalendarWidget(Widget):
         self.asset_id = asset_id
 
 
+from . import forms
+
 class CalendarWidgetResource(HandleSessionMixin,
-                          UpdateDataMixin,
-                          ):
+                             UpdateDataMixin,
+                             ):
     WidgetClass = CalendarWidget
 
     def __init__(self, request):
         self.request = request
+
+    def get_select_form(self):
+        return forms.CalendarSelectForm()
+    
 

@@ -9,6 +9,7 @@ def includeme(config):
     config.add_route("calendar_widget_delete", "/widget/calendar/delete", factory=CalendarWidgetResource)
     config.add_route("calendar_widget_update", "/widget/calendar/update", factory=CalendarWidgetResource)
     config.add_route("calendar_widget_dialog", "/widget/calendar/dialog", factory=CalendarWidgetResource)
+    config.add_route("calendar_widget_dialog_demo", "/widget/calendar/dialog/demo/{type}", factory=CalendarWidgetResource)
 
     settings = {
         "model": CalendarWidget, 

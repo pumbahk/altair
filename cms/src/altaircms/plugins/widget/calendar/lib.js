@@ -30,6 +30,12 @@ widget.configure({
     };
 
     var on_dialog = function(we){
+        $("#calendar_type").live("change", function(){
+            var type = $(this).val();
+            var url = "/api/widget/calendar/dialog/demo/@type@".replace("@type@", type);
+            console.log(url);
+            // $("#canpas").load(url);
+        });
     };
 
     var on_close = function(we){
