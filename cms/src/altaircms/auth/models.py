@@ -1,6 +1,6 @@
 # coding: utf-8
 from datetime import datetime
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 
 from sqlalchemy.orm.mapper import Mapper
 from sqlalchemy.schema import Table, Column, ForeignKey, UniqueConstraint
@@ -8,10 +8,15 @@ from sqlalchemy.types import String, DateTime, Integer, Unicode
 
 from altaircms.models import Base
 
+## 認証時初期ロール
 DEFAULT_ROLE = 'administrator'
 
-# CMS内で利用されるパーミッション一覧。view_configのpermission引数と合わせる
-target_objects = ['event', 'topic', 'ticket', 'magazine', 'asset', 'page', 'tag', 'layout',]
+##
+## CMS内で利用されるパーミッション一覧。view_configのpermission引数と合わせる
+##
+
+# 対象オブジェクト
+target_objects = ['event', 'topic', 'ticket', 'magazine', 'asset', 'page', 'tag', 'layout', 'operator']
 PERMISSIONS = []
 for t in target_objects:
     for act in ('create', 'read', 'update', 'delete'):
@@ -46,9 +51,12 @@ class Operator(Base):
     oauth_token = Column(String)
     oauth_token_secret = Column(String)
 
+    date_joined = Column(DateTime, default=datetime.now())
+    last_login = Column(DateTime, default=datetime.now())
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=datetime.now())
 
+    role = relationship("Role", backref=backref("operators", order_by=id))
     role_id = Column(Integer, ForeignKey("role.id"))
     client_id = Column(Integer, ForeignKey("client.id"))
 
