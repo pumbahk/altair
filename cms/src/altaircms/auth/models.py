@@ -80,6 +80,8 @@ class RolePermission(Base):
     role_id = Column(Integer, ForeignKey('role.id'))
     permission = Column(String)
 
+    role = relationship("Role", backref=backref("permissions", order_by=id))
+
     UniqueConstraint('role', 'permission')
 
 
