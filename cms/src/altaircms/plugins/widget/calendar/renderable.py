@@ -1,7 +1,15 @@
 from calendar_stream import PackedCalendarStream
 from calendar_stream import CalendarStreamGenerator
+from collections import defaultdict
 
-__all__ = ["CalendarOutput"]
+__all__ = ["CalendarOutput", "performances_to_dict"]
+
+def performances_to_dict(performances):
+    D = defaultdict(list)
+    for p in performances:
+        dt = p.performance_open.date()
+        D[(dt.year, dt.month, dt.day)].append(p)
+    return D
 
 YEAR, MONTH, DAY = [0, 1, 2]
 FIRST, LAST = [0, -1]
@@ -29,7 +37,7 @@ class CalendarWeek(object):
             day_class.append("odd_month" if m.value % 2 == 1 else "even_month")
             yield {"day_class": " ".join(day_class),
                    "day": d.value, 
-                   "performance": self.performances.get(d.value, [])
+                   "day_performances": self.performances[(y.value, m.value, d.value)]
                    }
     """
     * start of week: first
@@ -45,6 +53,11 @@ class CalendarWeek(object):
 
 class CalendarOutput(object):
     template = None
+
+    @classmethod
+    def from_performances(cls, performances, template=None):
+        return cls(performances = performances_to_dict(performances),
+                   template=template)
 
     def __init__(self, performances=None, template=None):
         self.template = template or self.template
