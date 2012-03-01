@@ -3,7 +3,6 @@
 page rendering process: page => widget tree => block_dict(defaultdict(list)) => html
 """
 from collections import defaultdict
-# from altaircms.structures import uniq_struct
 
 class StoreableMixin(object):
     """ 各widget毎の格納領域を作成するmixin
@@ -18,7 +17,28 @@ class StoreableMixin(object):
         return  getattr(self, widget.__class__.__name__)
     
 
-class BlockContext(StoreableMixin):
+class UpdatableMixin(object):
+    """ データを更新するmixin
+        self.blocksを更新する
+    """
+    def merge(self, D):
+        for k, v in D.iteritems():
+            self.blocks[k].add(v)
+
+    def add(self, k, v):
+        self.blocks[k].add(v)
+
+class UniqueByWidgetMixin(object):
+    """ widget毎に設定を一度きりのみ設定できるようにするmixin
+        値をself._widget_classに格納する
+    """
+    def is_attached(self, widget, k):
+        return (widget.__class__, k) in self._widget_classes
+
+    def attach_widget(self, widget, k):
+        self._widget_classes.add((widget.__class__, k))
+
+class BlockContext(StoreableMixin, UpdatableMixin, UniqueByWidgetMixin):
     """ ページをレンダリングするときに利用する設定。self.blocksが実際にレンダリングされる時に使われる予定。
         ブロック中の各widgetがhtmlを生成するとき、このクラスのインスタンスが設定として渡される。
     　　`blocks'以外の名前のattributeは自由に定義して使って良い。
@@ -36,19 +56,6 @@ class BlockContext(StoreableMixin):
         fmt = "%s:blocks=%s"
         return fmt % (super(BlockContext, self).__repr__(), 
                       repr(self.blocks))
-
-    def merge(self, D):
-        for k, v in D.iteritems():
-            self.blocks[k].add(v)
-
-    def add(self, k, v):
-        self.blocks[k].add(v)
-
-    def is_attached(self, widget, k):
-        return (widget.__class__, k) in self._widget_classes
-
-    def attach_widget(self, widget, k):
-        self._widget_classes.add((widget.__class__, k))
 
     # def add_uniq_widget_class(self, widget, k, v):
     #     if self.is_attached(widget, k):

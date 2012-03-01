@@ -7,31 +7,23 @@ from pyramid.view import view_config
 def rendering_page(context, request):
     url = request.matchdict["page_name"]
     page, layout = context.get_page_and_layout(url)
-    render_tree = context.get_render_tree(page)
-    config = context.get_render_config()
-    tmpl = context.get_layout_template(layout, config)
-    return render_to_response(
-        tmpl, dict(
-            page=page,
-            display_blocks=render_tree.concrete(config=config)
-        ),
-        request
-    )
+
+    block_context = context.get_block_context(page)
+    tmpl = context.get_layout_template(layout, context.get_render_config())
+
+    params = dict(page=page, display_blocks=block_context),
+    return render_to_response(tmpl, params, request)
 
 @view_config(route_name="front_preview")
 def rendering_preview_page(context, request):
     url = request.matchdict["page_name"]
     page, layout = context.get_page_and_layout_preview(url)
-    render_tree = context.get_render_tree(page)
-    config = context.get_render_config()
-    tmpl = context.get_layout_template(layout, config)
-    return render_to_response(
-        tmpl, dict(
-            page=page,
-            display_blocks=render_tree.concrete(config=config, request=request)
-        ),
-        request
-    )
+
+    block_context = context.get_block_context(page)
+    tmpl = context.get_layout_template(layout, context.get_render_config())
+
+    params = dict(page=page, display_blocks=block_context),
+    return render_to_response(tmpl, params, request)
 
 @view_config(route_name="front_to_preview") #slack-off
 def to_preview_page(context, request):

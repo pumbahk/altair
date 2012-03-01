@@ -30,8 +30,12 @@ class PageRenderingResource(RootFactory):
     def get_render_config(self):
         return gen.get_config(self.request)
 
-    def get_render_tree(self, page):
-        return gen.get_pagerender_tree(WidgetTreeProxy(page))
+    # def get_render_tree(self, page):
+    #     return gen.get_pagerender_tree(WidgetTreeProxy(page))
+
+    def get_block_context(self, page):
+        from altaircms.widget.tree.block_context import BlockContext
+        return BlockContext.from_widget_tree(WidgetTreeProxy(page), scan=True)
 
     def get_layout_template(self, layout, config):
         return gen.get_layout_template(str(layout.template_filename), config)
