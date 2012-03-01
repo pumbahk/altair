@@ -1,7 +1,15 @@
 from calendar_stream import PackedCalendarStream
 from calendar_stream import CalendarStreamGenerator
+from collections import defaultdict
 
-__all__ = ["CalendarRenderable"]
+__all__ = ["CalendarOutput", "performances_to_dict"]
+
+def performances_to_dict(performances):
+    D = defaultdict(list)
+    for p in performances:
+        dt = p.performance_open.date()
+        D[(dt.year, dt.month, dt.day)].append(p)
+    return D
 
 YEAR, MONTH, DAY = [0, 1, 2]
 FIRST, LAST = [0, -1]
@@ -29,7 +37,7 @@ class CalendarWeek(object):
             day_class.append("odd_month" if m.value % 2 == 1 else "even_month")
             yield {"day_class": " ".join(day_class),
                    "day": d.value, 
-                   "performance": self.performances.get(d.value, [])
+                   "day_performances": self.performances[(y.value, m.value, d.value)]
                    }
     """
     * start of week: first
@@ -43,13 +51,18 @@ class CalendarWeek(object):
     if change month durning rendeering a row, putting special th element before rendering.
     """
 
-class CalendarRenderable(object):
+class CalendarOutput(object):
     template = None
+
+    @classmethod
+    def from_performances(cls, performances, template=None):
+        return cls(performances = performances_to_dict(performances),
+                   template=template)
 
     def __init__(self, performances=None, template=None):
         self.template = template or self.template
         self.performances = performances or {}
-
+        
     def each_rows(self, begin_date, end_date):
         gen = CalendarStreamGenerator(PackedCalendarStream, force_start_from_monday=True)
         stream = gen.start_from(begin_date.year, begin_date.month, begin_date.day)
@@ -58,12 +71,16 @@ class CalendarRenderable(object):
         for r in itr:
             yield CalendarWeek(r, self.performances)
 
+    def render(self, begin_date, end_date):
+        rows = self.each_rows(begin_date, end_date)
+        return self.template.render_unicode(cal=rows)
+
 if __name__ == "__main__":
     import mako.template
     template = mako.template.Template(filename="rakuten.calendar.mako",
                                       input_encoding='utf-8', 
                                       output_encoding="utf-8")
     from datetime import date
-    cal = CalendarRenderable()
+    cal = CalendarOutput()
     print template.render_unicode(
         cal=cal.each_rows(date(2012, 2, 6), date(2012, 3, 18)))
