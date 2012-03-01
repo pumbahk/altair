@@ -12,8 +12,6 @@ class IConcreteNode(IConcrete, INode):
     def concrete(request=None, config=None, extra_context=None):
         pass
 
-class IBlockTree(Interface):
-    blocks = Attribute("blocks")
 
 class ICacher(Interface):
     fetched = Attribute("fetched")
@@ -29,6 +27,16 @@ class ICacher(Interface):
 class IRenderable(Interface):
     def render():
         pass
+
+## page rendering
+class IStruct(Interface):
+    def as_dict():
+        pass
+    def define(keyword, value):
+        pass
+
+class IBlockTree(Interface):
+    blocks = Attribute("blocks")
 
 ## resource
 class IHandleWidget(Interface):

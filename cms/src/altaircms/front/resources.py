@@ -3,8 +3,8 @@
 from altaircms.models import DBSession
 from altaircms.page.models import Page
 from altaircms.layout.models import Layout
-from . import generate as gen
-from altaircms.widget.generate import WidgetTreeProxy
+import altaircms.widget.tree.genpage as gen
+from altaircms.widget.tree.proxy import WidgetTreeProxy
 import sqlalchemy.orm.exc as saexc
 import pyramid.exceptions as pyrexc
 from altaircms.security import RootFactory
