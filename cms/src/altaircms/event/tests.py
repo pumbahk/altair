@@ -7,6 +7,8 @@ from webob.multidict import MultiDict
 from altaircms.base.tests import BaseTest
 from altaircms.event.views import EventRESTAPIView
 
+from .views import event_register
+
 class TestEventView(BaseTest):
     def setUp(self):
         self.request = testing.DummyRequest()
@@ -65,3 +67,156 @@ class TestEventView(BaseTest):
             (u'deal_close', u'2011-12-31 23:59:59'),
             (u'is_searchable', u'y'),
         ])
+
+
+class TestEventRegister(BaseTest):
+    def test_event_register_ok(self):
+        request = testing.DummyRequest()
+        request.POST = MultiDict({'jsonstring': self.jsonstring})
+
+        response = event_register(request)
+
+        self.assertTrue(response.status_int, 201)
+
+    def test_event_register_ng(self):
+        # パラメタなし
+        request = testing.DummyRequest()
+        request.POST = MultiDict({})
+        response = event_register(request)
+
+        self.assertTrue(response.status_int, 400)
+
+        # パースできないJSON
+        request = testing.DummyRequest()
+        request.POST = MultiDict({'jsonstring': self.jsonstring + 'hogehoge'})
+        response = event_register(request)
+
+        self.assertTrue(response.status_int, 400)
+
+    def setUp(self):
+        self.endpoint = '/api/event/register'
+        self.valid_apikey = ''
+        self.invalid_apikey = ''
+        self.jsonstring = '''{
+  "created_at": '2012-01-10T13:42:00+09:00',
+  "updated_at": '2012-01-11T15:32:00+09:00',
+  "events": [
+    {
+      "id": 1,
+      "name": "マツイ・オン・アイス",
+      "start_on": "2012-03-15T19:00:00+09:00",
+      "end_on": "2012-03-15T22:00:00+09:00",
+      "performances": [
+        {
+          "id": 2,
+          "name": "マツイ・オン・アイス 東京公演",
+          "venue": "まついZEROホール",
+          "open_on": "2012-03-15T17:00:00+09:00",
+          "start_on": "2012-03-15T19:00:00+09:00",
+          "close_on": "2012-03-15T22:00:00+09:00",
+          "sales": [
+            {
+              "name": "presale",
+              "start_on": "2012-01-12T19:00:00+09:00",
+              "end_on": "2012-01-22T19:00:00+09:00",
+              "tickets": [
+                {
+                  "name": "A席大人",
+                  "seat_type": "A席",
+                  "price": 5000
+                },
+                {
+                  "name": "A席子供",
+                  "seat_type": "A席",
+                  "price": 3000
+                },
+                {
+                  "name": "B席",
+                  "seat_type": "B席",
+                  "price": 3000
+                }
+              ]
+            },
+            {
+              "name": "normal",
+              "start_on": "2012-01-23T19:00:00+09:00",
+              "end_on": "2012-01-31T19:00:00+09:00",
+              "tickets": [
+                {
+                  "name": "A席大人",
+                  "seat_type": "A席",
+                  "price": 5000
+                },
+                {
+                  "name": "A席子供",
+                  "seat_type": "A席",
+                  "price": 3000
+                },
+                {
+                  "name": "B席",
+                  "seat_type": "B席",
+                  "price": 3000
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 3,
+          "name": "マツイ・オン・アイス 大阪公演",
+          "venue": "心斎橋まつい会館",
+          "open_on": "2012-03-16T17:00:00+09:00",
+          "start_on": "2012-03-16T19:00:00+09:00",
+          "close_on": "2012-03-16T22:00:00+09:00",
+          "sales": [
+            {
+              "name": "presale",
+              "start_on": "2012-01-12T19:00:00+09:00",
+              "end_on": "2012-01-22T19:00:00+09:00",
+              "tickets": [
+                {
+                  "name": "A席大人",
+                  "seat_type": "A席",
+                  "price": 5000
+                },
+                {
+                  "name": "A席子供",
+                  "seat_type": "A席",
+                  "price": 3000
+                },
+                {
+                  "name": "B席",
+                  "seat_type": "B席",
+                  "price": 3000
+                }
+              ]
+            },
+            {
+              "name": "normal",
+              "start_on": "2012-01-23T19:00:00+09:00",
+              "end_on": "2012-01-31T19:00:00+09:00",
+              "tickets": [
+                {
+                  "name": "A席大人",
+                  "seat_type": "A席",
+                  "price": 5000
+                },
+                {
+                  "name": "A席子供",
+                  "seat_type": "A席",
+                  "price": 3000
+                },
+                {
+                  "name": "B席",
+                  "seat_type": "B席",
+                  "price": 3000
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+'''

@@ -124,14 +124,20 @@ class Performance(Base):
     __tablename__ = "performance"
 
     id = Column(Integer, primary_key=True)
+    event_id = Column(Integer, ForeignKey('event_id'))
+    client_id = Column(Integer, ForeignKey("client.id"))
+
+    event = relationship("Event", backref=orm.backref("performances", order_by=id))
+    client = relationship("Client", backref=orm.backref("performances", order_by=id))
+
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=datetime.now())
 
     title = Column(Unicode)
-    performance_open = Column(DateTime)
-    performance_close = Column(DateTime)
+    open_on = Column(DateTime)  # 会場
+    close_on = Column(DateTime)  # 開始
+    end_on = Column(DateTime)  # 終了
 
-    client_id = Column(Integer, ForeignKey("event.id"))
 
 
 class Seatfigure(Base):

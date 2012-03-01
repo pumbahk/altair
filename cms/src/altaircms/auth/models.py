@@ -119,6 +119,8 @@ class APIKey(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String)
     apikey = Column(String, default=generate_apikey)
+    client = relationship("Client", backref=backref("apikeys", order_by=id))
+    client_id = Column(Integer, ForeignKey("client.id"))
 
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=datetime.now())

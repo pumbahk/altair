@@ -1,23 +1,26 @@
 # coding: utf-8
+from Carbon import Res
 import json
 import collections
 
 from pyramid.httpexceptions import HTTPFound, HTTPBadRequest, HTTPCreated, HTTPOk
+from pyramid.response import Response
 from pyramid.view import view_config
 
 from altaircms.models import DBSession, Event
 from altaircms.views import BaseRESTAPI
 from altaircms.page.models import Page
-from altaircms.event.forms import EventForm
-from altaircms.event.mappers import EventMapper, EventsMapper
+from altaircms.fanstatic import with_bootstrap
+
+from .forms import EventForm, EventRegisterForm
+from .mappers import EventMapper, EventsMapper
+from .models import Performance
 
 
 ##
 ## CMS view
 ##
-from altaircms.fanstatic import with_bootstrap
-
-@view_config(route_name='event', renderer='altaircms:templates/event/view.mako', permission='event_read', 
+@view_config(route_name='event', renderer='altaircms:templates/event/view.mako', permission='event_read',
              decorator=with_bootstrap)
 def view(request):
     id_ = request.matchdict['id']
@@ -85,3 +88,55 @@ class EventRESTAPIView(BaseRESTAPI):
     def delete(self):
         status = super(EventRESTAPIView, self).delete()
         return HTTPOk() if status else HTTPBadRequest()
+
+
+##
+## バックエンドとの通信用
+##
+def parse_eventdata(jsonstring):
+    parsed = json.loads(jsonstring)
+    for event in parsed['events']:
+        event_obj = Event()
+        event_obj.backend_event_id = event['id']
+        event_obj.name = event['name']
+        event_obj.event_on = event['start_on']
+        event_obj.event_close = event['end_on']
+
+        DBSession.add(event_obj)
+
+        if 'performances' in event:
+            for performance in event['performances']:
+                performance_obj = Performance()
+                performance_obj.backend_performance_id = performance['id']
+                performance_obj.backend_performance_id = performance['id']
+                performance_obj.title = performance['name']
+                performance_obj.place = performance['venue']
+                performance_obj.open_on = performance['open_on']
+                performance_obj.start_on = performance['start_on']
+                performance_obj.end_on = performance['end_on']
+
+                if 'sales' in performance:
+                    for sale in performance['sales']:
+
+
+
+                        if 'tickets' in sale:
+                            pass
+
+@view_config(route_name="api_event_register", request_method="POST", renderer="json")
+def event_register(request):
+    form = EventRegisterForm(request.POST)
+    if form.validate():
+        try:
+            parse_eventdata(request.POST['jsonstring'])
+        except Exception as e:
+            return Response(json.dumps({
+                'error':str(e)
+            }), status=400, content_type='text/plain')
+        return HTTPCreated()
+    else:
+        return Response(
+            json.dumps(form.errors),
+            content_type='application/json',
+            status=400
+        )
