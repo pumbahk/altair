@@ -4,3 +4,6 @@ def includeme(config):
 
     config.add_route('operator_list', '/operator/')
     config.add_route('operator', '/operator/{id}')
+
+    config.add_route('apikey_list', '/apikey/')
+    config.add_route('apikey', '/apikey/{id}')
