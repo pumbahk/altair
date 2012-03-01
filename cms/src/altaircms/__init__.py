@@ -62,10 +62,10 @@ def main_app(global_config, settings):
     if asbool(settings.get("altaircms.debug.strip_security", 'false')):
         from altaircms.security import SecurityAllOK
         from altaircms.security import DummyAuthorizationPolicy
-        authn_policy = SessionAuthenticationPolicy(callback=SecurityAllOK())
+        authn_policy = AuthTktAuthenticationPolicy(settings.get('session.secret'), callback=SecurityAllOK())
         authz_policy = DummyAuthorizationPolicy()
     else:
-        authn_policy = AuthTktAuthenticationPolicy(secret=settings.get('auth.secret'), callback=rolefinder)
+        authn_policy = AuthTktAuthenticationPolicy(settings.get('auth.secret'), callback=rolefinder)
         authz_policy = ACLAuthorizationPolicy()
 
     session_factory = UnencryptedCookieSessionFactoryConfig(settings.get('session.secret'))

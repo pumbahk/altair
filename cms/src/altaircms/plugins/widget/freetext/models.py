@@ -1,12 +1,13 @@
-from altaircms.interfaces import IWidget
+import sqlalchemy as sa
 from zope.interface import implements
+
+from altaircms.interfaces import IWidget
 from altaircms.widget.models import Widget
 from altaircms.plugins.base import DBSession
 from altaircms.plugins.base.mixins import HandleSessionMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.plugins.base.mixins import HandleWidgetMixin
-
-import sqlalchemy as sa
+from altaircms.security import RootFactory
 
 class FreetextWidget(Widget):
     implements(IWidget)
@@ -26,7 +27,6 @@ class FreetextWidget(Widget):
 
 class FreetextWidgetResource(HandleSessionMixin, 
                              UpdateDataMixin, 
-                             HandleWidgetMixin):
+                             HandleWidgetMixin, 
+                             RootFactory):
     WidgetClass = FreetextWidget
-    def __init__(self, request):
-        self.request = request
