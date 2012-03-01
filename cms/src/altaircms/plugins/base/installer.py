@@ -37,7 +37,7 @@ class _FileLinker(object):
         try:
             if not os.path.exists(os.readlink(dst)):
                 os.remove(dst)
-        except SystemError:
+        except OSError:
             pass
         os.symlink(src, dst)
 

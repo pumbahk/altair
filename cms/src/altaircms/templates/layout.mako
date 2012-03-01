@@ -14,10 +14,10 @@
     <%block name="style"/>
   </head>
   <body>
-    <%block name="header"><%include file="parts/header.html"/></%block>
+    <%block name="header"><%include file="parts/header.mako"/></%block>
     <div class="container">
       <%block name="content"/>${next.body()}
-      <%block name="footer"><%include file="parts/footer.html"/></%block>
+      <%block name="footer"><%include file="parts/footer.mako"/></%block>
     </div>
 
     ## javascript block
