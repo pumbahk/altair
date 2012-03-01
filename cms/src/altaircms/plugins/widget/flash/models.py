@@ -10,6 +10,7 @@ from altaircms.plugins.base import DBSession
 from altaircms.plugins.base import asset
 from altaircms.plugins.base.mixins import HandleSessionMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
+from altaircms.security import RootFactory
 
 FlashAsset = asset.models.FlashAsset
 
@@ -33,11 +34,7 @@ class FlashWidget(Widget):
 
 class FlashWidgetResource(HandleSessionMixin,
                           UpdateDataMixin,
-                          AssetWidgetResourceMixin
-                          ):
+                          AssetWidgetResourceMixin, 
+                          RootFactory):
     WidgetClass = FlashWidget
     AssetClass = FlashAsset
-
-    def __init__(self, request):
-        self.request = request
-

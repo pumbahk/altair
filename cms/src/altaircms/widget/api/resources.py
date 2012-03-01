@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 from altaircms.models import DBSession
+from altaircms.security import RootFactory
 
 def set_with_dict(obj, D):
     for k, v in D.items():
@@ -29,7 +30,8 @@ class UsingLayoutMixin(object):
     
 class WidgetResource(UsingAssetMixin,
                      UsingPageMixin, 
-                     UsingLayoutMixin):
+                     UsingLayoutMixin, 
+                     RootFactory):
     def __init__(self, request):
         self.request = request
         
