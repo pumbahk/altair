@@ -28,7 +28,7 @@ _.each(%s, echo);
             def to_html():
                 code = """function echo(i){console.log(i)} 
                 _.each([%s], echo);
-                """ % ", ".join(bsettings.js_widget_ids)
+                """ % ", ".join(bsettings.get_store(self))
                 return code
             bsettings.add("js_prerender", to_html)
             bsettings.attach_widget(self, "js_prerender")
@@ -37,9 +37,10 @@ _.each(%s, echo);
         self._attach_jscode_if_need(bsettings)
         bsettings.add(bname, self.to_html())
 
-        if not hasattr(bsettings, "js_widget_ids"):
-            bsettings.js_widget_ids = []
-        bsettings.js_widget_ids.append(str(self.id))
+        if not bsettings.has_store(self):
+            bsettings.create_store(self, [])
+        bsettings.get_store(self).append(str(self.id))
+
         
 
 import unittest
@@ -64,9 +65,8 @@ class BlockContextTest(unittest.TestCase):
     def test_jscode(self):
         class WTree(object):
             blocks = {"top": [WithJSWidget("foo", 1), WithJSWidget("bar", 2)]}
-        bsettings = BlockContext.from_widget_tree(WTree)
-
-        self.assertEquals(bsettings.blocks["js_prerender"].pop()(), 
+        bsettings = BlockContext.from_widget_tree(WTree, scan=True)
+        self.assertEquals(bsettings.blocks["js_prerender"][0], 
                           """function echo(i){console.log(i)} 
                 _.each([1, 2], echo);
                 """)
