@@ -1,14 +1,15 @@
 from pyramid.view import view_config
 from datetime import datetime
 from . import demo
+from forms import CalendarSelectForm
 
 def _dict_to_object_params(data):
     params = {}
     params["calendar_type"] = data["calendar_type"]
-    if data["from_date"] != u"":
-        params["from_date"] = datetime.strptime(data["from_date"], "%Y/%m/%d").date()
-    if data["to_date"] != u"":
-        params["to_date"] = datetime.strptime(data["to_date"], "%Y/%m/%d").date()
+    if data.get("from_date", u"") != u"":
+        params["from_date"] = datetime.strptime(data["from_date"], "%Y-%m-%d").date()
+    if data.get("to_date", u"") != u"":
+        params["to_date"] = datetime.strptime(data["to_date"], "%Y-%m-%d").date()
     return params
     
 class CalendarWidgetView(object):
@@ -47,17 +48,18 @@ class CalendarWidgetView(object):
     @view_config(route_name="calendar_widget_dialog", renderer="altaircms.plugins.widget:calendar/dialog.mako", request_method="GET")
     def dialog(self):
         context = self.request.context
+        D = {"form_class": CalendarSelectForm}
         widget = context.get_widget(self.request.GET.get("pk"))
-
-        form_class = self.request.context.get_select_form()
-        form = form_class(**widget.to_dict())
-        return {"form": form}
+        return context.attach_form_from_widget(D, widget)
 
     @view_config(route_name="calendar_widget_dialog_demo", renderer="altaircms.plugins.widget:calendar/demo.mako", request_method="GET")
     def demo(self):
         calendar_type = self.request.matchdict["type"]
-        demo_context = getattr(demo, calendar_type)()
-        context = {"calendar_type": calendar_type}
-        context.update(demo_context)
-        return context
+        D = {"calendar_type": calendar_type}
+        D.update(getattr(demo, calendar_type)())
 
+        if "form_class" in D:
+            context = self.request.context
+            widget = context.get_widget(self.request.GET.get("pk"))
+            return context.attach_form_from_widget(D, widget)
+        return D

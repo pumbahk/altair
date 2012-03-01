@@ -88,6 +88,25 @@ class FunctionalViewTests(unittest.TestCase):
         self.assertEquals(CalendarWidget.query.count(), 1)
         self.assertEquals(CalendarWidget.query.first().calendar_type, updated)
 
+    def test_update_with_term(self):
+        session = self._getSession()
+        page_id = 10
+        self._create_widget(session, id=1, page_id=page_id)
+        updated = "updated"
+        res = self._callFUT().post_json(self.update_widget, 
+                                        {"page_id": page_id, "pk":1,
+                                         "data": {"calendar_type": updated,
+                                                  "from_date": "2011-1-1",
+                                                  "to_date": "2011-2-1"}}, 
+                                        status=200)
+        expexted = {"page_id": page_id, "pk": 1,  "data": {"calendar_type": updated,
+                                                           "from_date": "2011-1-1",
+                                                           "to_date": "2011-2-1"}}
+
+        self.assertEquals(json.loads(res.body), expexted)
+        self.assertEquals(CalendarWidget.query.count(), 1)
+        self.assertEquals(CalendarWidget.query.first().calendar_type, updated)
+
 
     def test_delete(self):
         session = self._getSession()

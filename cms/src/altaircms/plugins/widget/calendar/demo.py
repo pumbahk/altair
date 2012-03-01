@@ -88,16 +88,19 @@ def term():
     from mako.template import Template
     from renderable import CalendarOutput
     from datetime import date
+    from forms import SelectTermForm
     template = Template(filename=os.path.join(here, "rakuten.calendar.mako"), 
                         input_encoding="utf-8")
     cal = CalendarOutput.from_performances(dummy_performances, template=template)
     return {
         "description":  u"""
 開始日／終了日を指定してその範囲のカレンダを表示
+(下の例は、開始＝2012-2-6、終了＝2012-3-18で設定したときの表示)
 """, 
         "renderable": RenderableAdaptor(cal.render, 
                              date(2012, 2, 6),
-                             date(2012, 3, 18))
+                             date(2012, 3, 18)), 
+        "form_class": SelectTermForm
         }
 
 if __name__ == "__main__":
