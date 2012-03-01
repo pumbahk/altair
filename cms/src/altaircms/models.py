@@ -124,11 +124,11 @@ class Performance(Base):
     __tablename__ = "performance"
 
     id = Column(Integer, primary_key=True)
-    event_id = Column(Integer, ForeignKey('event_id'))
+    event_id = Column(Integer, ForeignKey('event.id'))
     client_id = Column(Integer, ForeignKey("client.id"))
 
     event = relationship("Event", backref=orm.backref("performances", order_by=id))
-    client = relationship("Client", backref=orm.backref("performances", order_by=id))
+    # client = relationship("Client", backref=orm.backref("performances", order_by=id))
 
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=datetime.now())

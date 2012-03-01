@@ -7,14 +7,13 @@ from pyramid.httpexceptions import HTTPFound, HTTPBadRequest, HTTPCreated, HTTPO
 from pyramid.response import Response
 from pyramid.view import view_config
 
-from altaircms.models import DBSession, Event
+from altaircms.models import DBSession, Event, Performance
 from altaircms.views import BaseRESTAPI
 from altaircms.page.models import Page
 from altaircms.fanstatic import with_bootstrap
 
-from .forms import EventForm, EventRegisterForm
-from .mappers import EventMapper, EventsMapper
-from .models import Performance
+from altaircms.event.forms import EventForm, EventRegisterForm
+from altaircms.event.mappers import EventMapper, EventsMapper
 
 
 ##
