@@ -98,8 +98,8 @@ class TestEventRegister(BaseTest):
         self.valid_apikey = ''
         self.invalid_apikey = ''
         self.jsonstring = '''{
-  "created_at": '2012-01-10T13:42:00+09:00',
-  "updated_at": '2012-01-11T15:32:00+09:00',
+  "created_at": "2012-01-10T13:42:00+09:00",
+  "updated_at": "2012-01-11T15:32:00+09:00",
   "events": [
     {
       "id": 1,

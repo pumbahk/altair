@@ -78,7 +78,7 @@ class Event(Base):
     """
     イベント
 
-    @TODO: 席図、席種、券種をくっつける
+    @TODO: 席図をくっつける
     """
     __tablename__ = "event"
 
@@ -107,16 +107,6 @@ class Event(Base):
         return self.title
 
 
-class ClientMixin(object):
-    @declared_attr
-    def client_id(self):
-        Column(Integer, ForeignKey("client.id")) # ForeignKeyはdeclared_attrにしないといかん
-
-    @declared_attr
-    def client(self):
-        relationship("Client")
-
-
 class Performance(Base):
     """
     パフォーマンス
@@ -124,9 +114,11 @@ class Performance(Base):
     __tablename__ = "performance"
 
     id = Column(Integer, primary_key=True)
+    backend_performance_id = Column(Integer, nullable=False)
     event_id = Column(Integer, ForeignKey('event.id'))
     client_id = Column(Integer, ForeignKey("client.id"))
 
+    # sale = relationship("Sale", backref=orm.backref("performances", order_by=id))
     event = relationship("Event", backref=orm.backref("performances", order_by=id))
     # client = relationship("Client", backref=orm.backref("performances", order_by=id))
 
@@ -134,10 +126,43 @@ class Performance(Base):
     updated_at = Column(DateTime, default=datetime.now())
 
     title = Column(Unicode)
-    open_on = Column(DateTime)  # 会場
+    open_on = Column(DateTime)  # 開場
     close_on = Column(DateTime)  # 開始
     end_on = Column(DateTime)  # 終了
 
+
+class Sale(Base):
+    __tablename__ = 'sale'
+
+    id = Column(Integer, primary_key=True)
+    performance_id = Column(Integer, ForeignKey('performance.id'))
+    performance = relationship("Performance", backref=orm.backref("sales", order_by=id))
+
+    name = Column(String)
+    start_on = Column(DateTime)
+    end_on = Column(DateTime)
+
+
+    created_at = Column(DateTime, default=datetime.now())
+    updated_at = Column(DateTime, default=datetime.now())
+
+
+class Ticket(Base):
+    """
+    券種
+    """
+    __tablename__ = "ticket"
+
+    id = Column(Integer, primary_key=True)
+    sale_id = Column(Integer, ForeignKey("sale.id"))
+    created_at = Column(DateTime, default=datetime.now())
+    updated_at = Column(DateTime, default=datetime.now())
+    price = Column(Integer, default=0)
+
+    event = relationship("Sale", backref=orm.backref("tickets", order_by=id))
+
+    client_id = Column(Integer, ForeignKey("performance.id"))
+    seattype_id = Column(Integer, ForeignKey("seattype.id"))
 
 
 class Seatfigure(Base):
@@ -155,6 +180,7 @@ class Seatfigure(Base):
 
     client_id = Column(Integer, ForeignKey("event.id"))
 
+
 class Seattype(Base):
     """
     席種
@@ -166,21 +192,6 @@ class Seattype(Base):
     updated_at = Column(DateTime, default=datetime.now())
 
     client_id = Column(Integer, ForeignKey("event.id"))
-
-
-class Ticket(Base):
-    """
-    券種
-    """
-    __tablename__ = "ticket"
-
-    id = Column(Integer, primary_key=True)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
-    price = Column(Integer, default=0)
-
-    client_id = Column(Integer, ForeignKey("performance.id"))
-    seattype_id = Column(Integer, ForeignKey("seattype.id"))
 
 
 class TopicType(Base):

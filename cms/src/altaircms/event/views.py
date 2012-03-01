@@ -1,13 +1,15 @@
 # coding: utf-8
 from Carbon import Res
+import isodate
 import json
 import collections
 
 from pyramid.httpexceptions import HTTPFound, HTTPBadRequest, HTTPCreated, HTTPOk
 from pyramid.response import Response
 from pyramid.view import view_config
+import transaction
 
-from altaircms.models import DBSession, Event, Performance
+from altaircms.models import DBSession, Event, Performance, Sale, Ticket
 from altaircms.views import BaseRESTAPI
 from altaircms.page.models import Page
 from altaircms.fanstatic import with_bootstrap
@@ -92,42 +94,66 @@ class EventRESTAPIView(BaseRESTAPI):
 ##
 ## バックエンドとの通信用
 ##
-def parse_eventdata(jsonstring):
+def parse_and_save_event(jsonstring):
     parsed = json.loads(jsonstring)
-    for event in parsed['events']:
-        event_obj = Event()
-        event_obj.backend_event_id = event['id']
-        event_obj.name = event['name']
-        event_obj.event_on = event['start_on']
-        event_obj.event_close = event['end_on']
 
-        DBSession.add(event_obj)
+    try:
+        for event in parsed['events']:
+            event_obj = Event()
+            event_obj.backend_event_id = event['id']
+            event_obj.name = event['name']
+            event_obj.event_on = isodate.parse_datetime(event['start_on'])
+            event_obj.event_close = isodate.parse_datetime(event['end_on'])
+            DBSession.add(event_obj)
+            event_obj = DBSession.merge(event_obj)
 
-        if 'performances' in event:
-            for performance in event['performances']:
-                performance_obj = Performance()
-                performance_obj.backend_performance_id = performance['id']
-                performance_obj.backend_performance_id = performance['id']
-                performance_obj.title = performance['name']
-                performance_obj.place = performance['venue']
-                performance_obj.open_on = performance['open_on']
-                performance_obj.start_on = performance['start_on']
-                performance_obj.end_on = performance['end_on']
+            if 'performances' in event:
+                for performance in event['performances']:
+                    performance_obj = Performance()
+                    performance_obj.event_id = event_obj.id
+                    performance_obj.backend_performance_id = performance['id']
+                    performance_obj.title = performance['name']
+                    performance_obj.place = performance['venue']
+                    performance_obj.open_on = isodate.parse_datetime(performance['open_on'])
+                    performance_obj.start_on = isodate.parse_datetime(performance['start_on'])
+                    # performance_obj.end_on = isodate.parse_datetime(performance['end_on'])  # TODO: end_onの必須有無確認
+                    performance_obj.end_on = isodate.parse_datetime(performance['end_on']) if 'end_on' in performance else None
+                    DBSession.add(performance_obj)
+                    performance_obj = DBSession.merge(performance_obj)
 
-                if 'sales' in performance:
-                    for sale in performance['sales']:
+                    if 'sales' in performance:
+                        for sale in performance['sales']:
+                            sale_obj = Sale()
+                            sale_obj.performance_id = performance_obj.id
+                            sale_obj.name = sale['name']
+                            sale_obj.start_on = isodate.parse_datetime(sale['start_on'])
+                            sale_obj.end_on = isodate.parse_datetime(sale['end_on'])
+                            DBSession.add(sale_obj)
+                            sale_obj = DBSession.merge(sale_obj)
 
+                            if 'tickets' in sale:
+                                for ticket in sale['tickets']:
+                                    ticket_obj = Ticket()
+                                    ticket_obj.sale_id = sale_obj.id
+                                    ticket_obj.name = ticket['name']
+                                    ticket_obj.price = ticket['price']
+                                    ticket_obj.seat_type = ticket['seat_type']
+                                    DBSession.add(ticket_obj)
+                                    ticket_obj = DBSession.merge(ticket_obj)
+    except:
+        raise
 
+    transaction.commit()
 
-                        if 'tickets' in sale:
-                            pass
+    return True
+
 
 @view_config(route_name="api_event_register", request_method="POST", renderer="json")
 def event_register(request):
     form = EventRegisterForm(request.POST)
     if form.validate():
         try:
-            parse_eventdata(request.POST['jsonstring'])
+            parse_and_save_event(request.POST['jsonstring'])
         except Exception as e:
             return Response(json.dumps({
                 'error':str(e)
