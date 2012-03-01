@@ -179,14 +179,10 @@ class PageEditView(object):
 
         return self.render_form(PageAddForm, success=self._succeed, appstruct=appstruct)
 
-    @view_config(route_name='page_edit_', renderer='altaircms:templates/page/edit.mako', 
+    @view_config(route_name='page_edit_', renderer='altaircms:templates/page/edit.mako', permission='authenticated', 
                  decorator=with_fanstatic_jqueries.merge(with_bootstrap).merge(with_wysiwyg_editor))
-    @view_config(route_name='page_edit', renderer='altaircms:templates/page/edit.mako',
+    @view_config(route_name='page_edit', renderer='altaircms:templates/page/edit.mako', permission='authenticated', 
                  decorator=with_fanstatic_jqueries.merge(with_bootstrap).merge(with_wysiwyg_editor))
-    # @view_config(route_name='page_edit_', renderer='altaircms:templates/page/edit.mako', permission='authenticated', 
-    #              decorator=with_fanstatic_jqueries.merge(with_bootstrap).merge(with_wysiwyg_editor))
-    # @view_config(route_name='page_edit', renderer='altaircms:templates/page/edit.mako', permission='authenticated', 
-    #              decorator=with_fanstatic_jqueries.merge(with_bootstrap).merge(with_wysiwyg_editor))
     def page_edit(self):
         if not self.page:
             return self.render_form(PageEditForm, appstruct={}, success=self._succeed)            

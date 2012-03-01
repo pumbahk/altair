@@ -1,6 +1,7 @@
 # coding: utf-8
 from altaircms.models import DBSession
 from altaircms.layout.models import Layout
+import altaircms.security as security
 from . import renderable
 
 def set_with_dict(obj, D):
@@ -19,10 +20,8 @@ class UsingRenderMixin(object):
     def get_page_render(self, page):
         return renderable.PageRender(page)
 
-class SampleCoreResource(UsingRenderMixin):
-    def __init__(self, request):
-        self.request = request
-
+class SampleCoreResource(UsingRenderMixin, 
+                         security.RootFactory):
     def add(self, data, flush=False):
         DBSession.add(data)
         if flush:
