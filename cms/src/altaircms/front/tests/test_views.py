@@ -25,7 +25,6 @@ class FunctionalPageRenderingTest(unittest.TestCase):
         app = main_app({}, {"sqlalchemy.url": "sqlite://", 
                             "mako.directories": os.path.join(self.DIR, "templates"), 
                             "plugin.static_directory": "altaircms:plugins/static", 
-                            "widget.template_path_format": "%s.mako", 
                             "widget.layout_directories": "."})
         from webtest import TestApp
         self.testapp = TestApp(app)

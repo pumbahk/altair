@@ -31,6 +31,10 @@ class ImageWidget(Widget):
         self.id = id
         self.asset_id = asset_id
 
+    def merge_settings(self, bname, bsettings):
+        # bsettings.add(bname, "")
+        bsettings.add(bname, "image:%s" % self.id)
+
 class ImageWidgetResource(HandleSessionMixin,
                           UpdateDataMixin,
                           AssetWidgetResourceMixin, 
