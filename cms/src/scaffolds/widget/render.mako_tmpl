@@ -1,0 +1,5 @@
+## {{package}} widget output template
+## 
+
+<div class="{{package}}-widget">
+</div>

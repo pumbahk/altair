@@ -4,7 +4,7 @@
 
 body {
   margin: 0 0;
-  background: url(images/diagonal_stripe_bbbbbb_cccccc.png);
+ /* background: url(images/diagonal_stripe_bbbbbb_cccccc.png);*/
 }
 
 a {
@@ -30,7 +30,7 @@ body, table, .ui-widget {
 }
 
 .page {
-  background-color: #eee;
+  background-color: #ffffff;
 }
 
 .main {
@@ -43,7 +43,7 @@ table {
 
 .header {
   margin-bottom: 16px;
-  background: #9aa6a5 url(images/gradient_32_ffffff_r.png) repeat-x left 32px;
+  /*background: #9aa6a5 url(images/gradient_32_ffffff_r.png) repeat-x left 32px;*/
   box-shadow: 0px 0px 12px #000;
 }
 
@@ -403,6 +403,10 @@ h3.rounded {
   border-radius: 12px;
   -webkit-border-radius: 12px;
   -moz-border-radius: 12px;
+}
+
+.right {
+    text-align: right
 }
 
 h1.first, h2.first, h3.first, h4.first, h5.first {

@@ -1,0 +1,43 @@
+#wrapped {
+    width: 600px;
+}
+
+.block {
+    background-color: #aaa;
+    border-style: solid;
+	border-width: 1px;
+	border-color: #777;
+    margin: 15px;
+}
+
+.widget {
+    width: 50px;
+    height: 50px;
+    margin: 10px;
+    background-color: #a7a;
+}
+
+/* control */
+.selected {
+	/* border-style: groove;
+	 * boder-width: 5px;
+	 * border-color: blue;
+     */
+    background-color: #eee;
+}
+.edited {
+    background-color: #ccf;
+}
+
+.noitem {
+    height: 60px;
+}
+
+.clear {
+    clear: both;
+}
+
+.hidden {
+    display: none;
+}
+

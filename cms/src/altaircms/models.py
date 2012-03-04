@@ -16,8 +16,37 @@ import sqlahelper
 import transaction
 
 DBSession = sqlahelper.get_session()
-Base = declarative_base()
+Base = sqlahelper.get_base()
 
+def to_dict(self):
+    from sqlalchemy.sql.operators import ColumnOperators
+    return {k:getattr(self, k) for k, v in self.__class__.__dict__.items() \
+                if isinstance(v, ColumnOperators)}
+Base.to_dict = to_dict
+
+
+def column_items(self):
+    from sqlalchemy.sql.operators import ColumnOperators
+    return [(k, v) for k, v in self.__class__.__dict__.items()\
+                if isinstance(v, ColumnOperators)]
+Base.column_items = column_items
+
+
+def column_iters(self, D):
+    from sqlalchemy.sql.operators import ColumnOperators
+    for k, v in self.__class__.__dict__.items():
+        if isinstance(v, ColumnOperators):
+            yield k, D.get(k)
+    Base.column_iters = classmethod(column_iters)
+
+
+def from_dict(cls, D):
+    instance = cls()
+    items_fn = D.iteritems if hasattr(D, "iteritems") else D.items
+    for k, v in items_fn():
+        setattr(instance, k, v)
+    return instance
+Base.from_dict = classmethod(from_dict)
 
 
 def populate():
@@ -27,8 +56,8 @@ def populate():
 
 
 def initialize_sql(engine):
-    DBSession.configure(bind=engine)
     Base.metadata.bind = engine
+    DBSession.bind = engine
     Base.metadata.create_all(engine)
     try:
         populate()
@@ -75,9 +104,6 @@ class Event(Base):
     is_searchable = Column(Integer, default=0)
 
     client_id = Column(Integer, ForeignKey("client.id"))
-
-    def __repr__(self):
-        return '<Event %s>' % self.title
 
     def __unicode__(self):
         return self.title
@@ -156,51 +182,6 @@ class Ticket(Base):
     seattype_id = Column(Integer, ForeignKey("seattype.id"))
 
 
-class Client(Base):
-    """
-    顧客マスタ
-    """
-    __tablename__ = 'client'
-
-    id = Column(Integer, primary_key=True)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
-
-    name = Column(Unicode)
-    prefecture = Column(Unicode)
-    address = Column(Unicode)
-    email = Column(String)
-    contract_status = Column(Integer)
-
-    operators = relationship("Operator", backref="client")
-    sites = relationship("Site", backref="site")
-    events = relationship("Event", backref="event")
-
-
-class Operator(Base):
-    """
-    サイト管理者
-
-    @TODO: OpenIDの認証情報を保持するカラムが必要かもしれない
-    """
-    __tablename__ = 'operator'
-
-    id = Column(Integer, primary_key=True)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
-
-    client_id = Column(Integer, ForeignKey("client.id"))
-
-
-class Permission(Base):
-    __tablename__ = 'permission'
-
-    id = Column(Integer, primary_key=True)
-    operator_id = Column(Integer, ForeignKey('operator.id'))
-    permission = Column(String)
-
-
-
 class TopicType(Base):
     __tablename__ = 'topic_type'
 
@@ -242,10 +223,3 @@ class Site(Base):
     url = Column(String)
 
     client_id = Column(Integer, ForeignKey("client.id")) #@TODO: サイトにくっつけるべき？
-
-
-from altaircms.asset.models import *
-from altaircms.widget.models import *
-from altaircms.layout.models import *
-from altaircms.page.models import *
-# from altaircms.event.models import *

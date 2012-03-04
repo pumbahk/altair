@@ -1,0 +1,195 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+  <title></title>
+  <link rel="stylesheet" type="text/css" href="lib/jquery-ui.css" />
+  <link rel="stylesheet" href="../components.css" />
+  <script type="text/javascript" src="lib/jquery.min.js" ></script>
+  <script type="text/javascript" src="lib/jquery-ui.min.js"></script>
+  <script type="text/javascript" src="../build/out.js"></script>
+  <style type="text/css">
+.view {
+  position: relative;
+}
+
+.viewport {
+  position: absolute;
+  left: 20px;
+  top: 20px;
+  width: 320px;
+  height: 320px;
+  overflow: scroll;
+}
+
+.renderable-vertical_ruler {
+  position: absolute;
+  left: 0px;
+  top: 19px;
+  height: 308px;
+}
+
+.renderable-horizontal_ruler {
+  position: absolute;
+  left: 19px;
+  top: 0px;
+  width: 320px;
+}
+
+.canvas {
+  margin: 0 0;
+  padding: 0 0;
+  background-color: #eef;
+  position: relative;
+  width: 2000px;
+  height: 2000px;
+  overflow: hidden;
+}
+  </style>
+  <script type="text/javascript">
+  if (!window.console) console = { log: function() {} };
+  $(function() {
+    var canvasNode = $('#view .canvas')
+    var viewportNode = $('#view .viewport');
+    var view = new rendering.js.dom.JSDOMView(canvasNode, viewportNode);
+    var rf = rendering.js.dom.Spi.get_rendererFactory();
+    var f = new ComponentFactory(new ComponentRenderingFacade(view.get_stage(), rf));
+    for (var i = 0; i < 100; i++) {
+      var tc = f.create(TextComponent);
+      tc.on.click.do_(function(a) { console.log(a); });
+      tc.position.x = Math.random() * 8;
+      tc.position.y = Math.random() * 6;
+      tc.text = "test";
+      tc.refresh();
+    }
+    {
+      var rr = rf.create(Ruler, { variant: 'horizontal' });
+      rr.set_view(view);
+      $('#view .renderable-horizontal_ruler').replaceWith(rr.n);
+      var horizontalRuler = new Ruler(rr);
+      horizontalRuler.refresh();
+    }
+    {
+      var rr = rf.create(Ruler, { variant: 'vertical' });
+      rr.set_view(view);
+      $('#view .renderable-vertical_ruler').replaceWith(rr.n);
+      var verticalRuler = new Ruler(rr);
+      verticalRuler.refresh();
+    }
+    view.get_viewport().on.scroll.do_(function(e) {
+      horizontalRuler.offset = e.position.x;
+      verticalRuler.offset = e.position.y;
+      horizontalRuler.refresh();
+      verticalRuler.refresh();
+    });
+    // tc.on.dragstart.do_(function(a) {});
+    // tc.on.dragend.do_(function(a) {});
+    (function() {
+      var guide = null;
+      horizontalRuler.on.dragstart.do_(function(e) {
+        var viewport = view.get_viewport();
+        guide = f.create(HorizontalGuide);
+        guide.position = { x: e.position.x + viewport.scrollPosition.x,
+                           y: e.position.y + viewport.scrollPosition.y };
+        guide.refresh();
+      });
+      horizontalRuler.on.drag.do_(function(e) {
+        var viewport = view.get_viewport();
+        guide.position = { x: e.position.x + viewport.scrollPosition.x,
+                           y: e.position.y + viewport.scrollPosition.y };
+        guide.refresh();
+      });
+      horizontalRuler.on.dragend.do_(function(e) {
+        if (e.position.y < 0)
+          view.get_stage().remove(guide.renderer);
+      });
+    })();
+    (function() {
+      var guide = null;
+      verticalRuler.on.dragstart.do_(function(e) {
+        var viewport = view.get_viewport();
+        guide = f.create(VerticalGuide);
+        guide.position = { x: e.position.x + viewport.scrollPosition.x,
+                           y: e.position.y + viewport.scrollPosition.y };
+        guide.refresh();
+      });
+      verticalRuler.on.drag.do_(function(e) {
+        var viewport = view.get_viewport();
+        guide.position = { x: e.position.x + viewport.scrollPosition.x,
+                           y: e.position.y + viewport.scrollPosition.y };
+        guide.refresh();
+      });
+      verticalRuler.on.dragend.do_(function(e) {
+        if (e.position.x < 0)
+          view.get_stage().remove(guide.renderer);
+      });
+    })();
+    function getBodyClientSize() {
+      var firstChildNode = $("body > :first").get(0);
+      return {
+        width: document.documentElement.clientWidth - firstChildNode.offsetLeft * 2,
+        height: document.documentElement.clientHeight - firstChildNode.offsetTop * 2
+      };
+    };
+
+    function adjustViewSize() {
+      var n = $("#view");
+      var size = { width: n.innerWidth(), height: n.innerHeight() };
+      var margin = { x: verticalRuler.renderer.n.outerWidth(), y: horizontalRuler.renderer.n.outerHeight() };
+      view.get_viewport().n
+        .css({ width: (size.width - margin.x) + "px",
+               height: (size.height - margin.y) + "px" });
+      horizontalRuler.renderer.n
+        .css({ width: (size.width - margin.x) + "px" });
+      verticalRuler.renderer.n
+        .css({ height: (size.height - margin.y) + "px" });
+      horizontalRuler.refresh();
+    }
+
+    adjustViewSize();
+    $(window).resize(adjustViewSize);
+    $('.ui-action-zoom_in').click(function() {
+      view.set_zoom(view.zoom * 1.1);
+    });
+    $('.ui-action-zoom_out').click(function() {
+      view.set_zoom(view.zoom / 1.1);
+    });
+  });
+  </script>
+</head>
+<body>
+  <div class="page">
+    <div class="toolbar ui-widget-header">
+      <span class="ui-button-set toolbar-function">
+        <span class="toggle-button"><input class="ui-action-text" type="radio" name="function" value="text" id="toolbar-function-text" checked="checked" /><label for="toolbar-function-text">Text</label></span>
+        <span class="toggle-button"><input class="ui-action-image" type="radio" name="function" value="image" id="toolbar-function-image" /><label for="toolbar-function-image">Image</label></span>
+      </span>
+      <button class="ui-button ui-action-zoom_in ui-icon-zoomin ui-no-text" id="toolbar-function-zoom_in">Zoom-in</button>
+      <button class="ui-button ui-action-zoom_out ui-icon-zoomout ui-no-text" id="toolbar-function-zoom_out">Zoom-out</button>
+    </div>
+    <div id="view" class="view">
+      <div class="renderable-vertical_ruler"></div>
+      <div class="renderable-horizontal_ruler"></div>
+      <div class="viewport">
+        <div class="canvas">
+        </div>
+      </div>
+    </div>
+  </div>
+  <script type="text/javascript">
+    $('.ui-button').each(function(i, n) {
+      n = $(n);
+      var params = {};
+      var rex = /ui-icon-\w+/, g;
+      if ((g = rex.exec(n.attr('class')))) {
+        params['icons'] = { primary: g[0] };
+      }
+      if (n.hasClass('ui-no-text')) {
+        params['text'] = false;
+      }
+      n.button(params);
+    });
+    $('.ui-button-set').buttonset();
+  </script>
+</body>
+</html>

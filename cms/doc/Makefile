@@ -42,7 +42,10 @@ clean:
 	-rm -rf $(BUILDDIR)/*
 	find . -name '*~' -exec rm {} \;
 
-html:
+apidoc:
+	sphinx-apidoc ../src/altaircms -o source/modules 
+
+html: apidoc
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."

@@ -5,6 +5,7 @@
 *.pt.py
 *.txt.py
 *~
+.DS_Store
 .coverage
 .tox/
 nosetests.xml

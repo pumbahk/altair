@@ -6,7 +6,7 @@ from ticketing.models.master import Prefecture
 
 class ClientForm(MappingSchema):
     name            = SchemaNode(String()   , title=u'クライアント名')
-    client_type     = SchemaNode(Int()      , title=u'クライアントタイプ'
+    contract_type     = SchemaNode(Int()      , title=u'クライアントタイプ'
                                  , widget= SelectWidget(values=[(1, u'スタンダード')]))
     company_name    = SchemaNode(String()   , title=u'会社名')
     section_name    = SchemaNode(String()   , title=u'部署名')

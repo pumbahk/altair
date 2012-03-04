@@ -1,3 +1,3 @@
 interface RendererFactory {
-    public function create(klass:Class<Component>):Renderer;
+    public function create(klass:Class<Renderable>, ?options:Dynamic):Renderer;
 }

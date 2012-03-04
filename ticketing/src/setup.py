@@ -10,18 +10,23 @@ requires = [
     'pyramid',
     'pyramid_debugtoolbar',
     'pyramid_tm',
+    'pyramid_mailer',
+    'pyramid_beaker',
     'pymysql',
     'pymysql_sa',
     'mako',
     'stucco_evolution',
     'deform',
+    'wtforms',
+    'wtforms-recaptcha',
     'sqlalchemy',
     'zope.sqlalchemy',
     'transaction',
     'pastescript',
     'sadisplay',
     'sqlahelper',
-    'WebHelpers'
+    'WebHelpers',
+    'fixture',
     ]
 
 setup(name='ticketing',
@@ -43,7 +48,7 @@ setup(name='ticketing',
       zip_safe=False,
       install_requires=requires,
       tests_require=requires,
-      test_suite="vega",
+      test_suite="ticketing",
       entry_points = """\
       [paste.app_factory]
       main = ticketing:main

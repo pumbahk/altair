@@ -14,10 +14,14 @@ from pyramid.response import Response
 from pyramid.view import view_config
 from sqlalchemy.sql.expression import desc
 
+from altaircms.models import DBSession
+from altaircms.views import BaseRESTAPI
+
 from altaircms.asset import get_storepath
 from altaircms.asset.models import Asset, ImageAsset, MovieAsset, FlashAsset
 from altaircms.asset.forms import *
-from altaircms.models import DBSession
+from altaircms.asset.mappers import *
+from altaircms.asset.forms import ImageAssetForm
 
 
 EXT_MAP = {
@@ -50,8 +54,8 @@ class AssetEditView(object):
     def render_form(self, form, appstruct=colander.null, submitted='submit',
                     success=None, readonly=False):
         captured = None
-
         if submitted in self.request.POST:
+            print self.request.POST
             try:
                 controls = self.request.POST.items()
                 captured = form.validate(controls)
@@ -61,6 +65,7 @@ class AssetEditView(object):
                         return response
                 html = markupsafe.Markup(form.render(captured))
             except ValidationFailure, e:
+                # import pdb; pdb.set_trace()
                 html = markupsafe.Markup(e.render())
 
         else:
@@ -71,8 +76,7 @@ class AssetEditView(object):
         if self.request.is_xhr:
             return Response(html)
 
-        reqts = form.get_widget_resources()
-
+ 
         # values passed to template for rendering
         return {
             'form':html,
@@ -81,7 +85,7 @@ class AssetEditView(object):
             }
 
     @view_config(route_name='asset_list', renderer='altaircms:templates/asset/list.mako', request_method='GET', permission='edit')
-    def asset_list(self):
+    def list_(self):
         assets = DBSession().query(Asset).order_by(desc(Asset.id)).all()
 
         return dict(
@@ -153,3 +157,47 @@ class AssetEditView(object):
         else:
             # 更新処理
             pass
+
+
+
+
+class AssetRESTAPIView(BaseRESTAPI):
+    model = ImageAsset
+    form = ImageAssetForm
+
+    object_mapper = ImageAssetMapper
+
+    def __init__(self, request, *args, **kwargs):
+        #self.validation_schema = ImageAssetSchema # @TODO: 切り替えられるようにする
+        super(AssetRESTAPIView, self).__init__(request, *args, **kwargs)
+
+    #@view_config(renderer='json')
+    def create(self):
+        return super(AssetRESTAPIView, self).create()
+
+    #@view_config(renderer='json')
+    def read(self):
+        self.model_object = self.get_object_by_id(self.id)
+        super(AssetRESTAPIView, self).read()
+        return self.object_mapper(self.model_object).as_dict()
+
+    #@view_config(renderer='json')
+    def update(self):
+        self.model_object = self.get_object_by_id(self.id)
+        return super(AssetRESTAPIView, self).update()
+
+    #@view_config(renderer='json')
+    def delete(self):
+        self.model_object = self.get_object_by_id(self.id)
+        return super(AssetRESTAPIView, self).delete()
+
+    def _get_mapper(self):
+        mapper = globals()[self.model.__name__ + 'Mapper']
+        return mapper
+
+    def get_object_by_id(self, id):
+        try:
+            model_object = self.session.query(self.model).get(id)
+            return model_object
+        except:
+            return None

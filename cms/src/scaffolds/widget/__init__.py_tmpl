@@ -1,0 +1,20 @@
+from altaircms.plugins.widget import widget_plugin_install
+import os.path
+DIR = os.path.dirname(os.path.abspath(__file__))
+
+def includeme(config):
+    from .models import ImageWidget
+    from .models import ImageWidgetResource
+    config.add_route("{{package}}_widget_create", "/widget/{{package}}/create", factory={{Package}}WidgetResource)
+    config.add_route("{{package}}_widget_delete", "/widget/{{package}}/delete", factory={{Package}}WidgetResource)
+    config.add_route("{{package}}_widget_update", "/widget/{{package}}/update", factory={{Package}}WidgetResource)
+    config.add_route("{{package}}_widget_dialog", "/widget/{{package}}/dialog", factory={{Package}}WidgetResource)
+
+    settings = {
+        "model": {{Package}}Widget, 
+        "name": {{Package}}Widget.type, 
+        "jsfile": os.path.join(DIR, "lib.js"), 
+        "cssfile": os.path.join(DIR, "lib.css"), 
+        "imgdirectory": os.path.join(DIR, "img")
+        }
+    widget_plugin_install(config, settings)

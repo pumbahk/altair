@@ -5,14 +5,20 @@ from js.json2 import json2
 from js.jqueryui import black_tie
 from js.jqueryui import jqueryui
 from js.tinymce import tinymce
+from js.backbone import backbone
+from js.bootstrap import bootstrap
 
 def jqueries_need():
-    underscore.need()
     jquery.need()
     jquery_tools.need()
     json2.need()
     jqueryui.need()
     black_tie.need()
+    underscore.need()
+    backbone.need()
 
 def wysiwyg_editor_need():
     tinymce.need()
+
+def bootstrap_need():
+    bootstrap.need()

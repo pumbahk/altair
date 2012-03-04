@@ -15,7 +15,7 @@ class ComponentBase<Tself:Component> implements Component {
     private var draggable:Bool;
     private var state:State;
 
-    public function new(?renderer:Renderer) {
+    public function new(renderer:ComponentRenderer) {
         var meta = Meta.getType(Type.getClass(this));
         var on = { click: null, dragstart: null, dragend: null };
         var events = ["click", "dragstart", "drag", "dragend"];
@@ -28,7 +28,7 @@ class ComponentBase<Tself:Component> implements Component {
         this.state = NONE;
         this.parent = null;
         this.renderer = renderer;
-        this.position = { x: 0, y: 0 };
+        this.position = { x: 0., y: 0. };
 
         bindEvents();
     }
@@ -41,13 +41,13 @@ class ComponentBase<Tself:Component> implements Component {
                 x: (cast e).position.x - position.x,
                 y: (cast e).position.y - position.y
             });
+            renderer.captureMouse();
         });
         renderer.bind(EventKind.MOUSEMOVE, function(e:Event) {
             switch (state) {
             case PRESSED(pof):
                 if (draggable) {
                     state = DRAGGING(pof);
-                    renderer.captureMouse();
                     this.position = {
                         x: (cast e).position.x - pof.x,
                         y: (cast e).position.y - pof.y
@@ -67,11 +67,11 @@ class ComponentBase<Tself:Component> implements Component {
         });
 
         renderer.bind(EventKind.RELEASE, function(e:Event) {
+            renderer.releaseMouse();
             switch (state) {
             case PRESSED(_):
                 on.click.call(this, e);
             case DRAGGING(_):
-                renderer.releaseMouse();
                 on.dragend.call(this, e);
             default:
             }

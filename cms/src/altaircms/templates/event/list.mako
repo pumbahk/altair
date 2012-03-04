@@ -1,11 +1,39 @@
-<%inherit file='../layout.mako'/>
+<%inherit file='../layout_2col.mako'/>
 
-<h1>イベント一覧</h1>
+<div class="row-fluid">
+  <div>
+      <h4>イベント追加</h4>
+      <%include file="parts/form.mako"/>
+  </div>
+</div>
 
 <hr/>
 
-<ul>
-%for event in events:
-<li><a href="/event/${event.id}">${event}</a></li>
-%endfor
-</ul>
+<div class="row-fluid">
+    <h4>イベント</h4>
+
+    %if events:
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>イベント名</th>
+                <th>開催場所</th>
+                <th>公開日</th>
+            </tr>
+            </thead>
+        <tbody>
+        %for event in events['events']:
+        <tr>
+            <td><a href="${request.route_url("event", id=event['id'])}">${event['title']}</a></td>
+            <td>${event['place']}</td>
+            <td>${event['event_open']} - ${event['event_close']}</td>
+        </tr>
+        %endfor
+        </tbody>
+        </table>
+    %else:
+            <div class="alert alert-info">
+                イベントは登録されていません。
+            </div>
+    %endif
+</div>

@@ -1,11 +1,13 @@
 package rendering.js.dom;
+
 import js.JQuery;
 
 class JSDOMRenderer implements Renderer {
-    public var n(default, null):JQuery;
     public var id(default, null):Int;
-    var manager_:JSDOMRenderingManager;
-    public var manager(get_manager, null):RenderingManager;
+    public var n(default, null):JQuery;
+    public var view(default, set_view):View;
+
+    public var view_:JSDOMView;
 
     public var onPress:JqEvent->Void;
     public var onRelease:JqEvent->Void;
@@ -15,11 +17,14 @@ class JSDOMRenderer implements Renderer {
     var onReleaseHandler:Event->Void;
     var onMouseMoveHandler:Event->Void;
 
-    public function setup(manager:RenderingManager, id:Int) {
-        this.id = id;
-        this.manager_ = cast(manager, JSDOMRenderingManager);
-        if (n != null)
-            n.appendTo(manager_.base);
+    private function set_view(value:View):View {
+        view_ = cast(value, JSDOMView);
+        view_.addRenderer(this);
+        return value;
+    }
+
+    public function setup():JQuery {
+        return null;
     }
 
     public function dispose():Void {
@@ -27,57 +32,63 @@ class JSDOMRenderer implements Renderer {
             n.remove();
     }
 
-    public function get_manager():RenderingManager {
-        return manager_;
+    public function captureMouse():Void {
+        view_.captureMouse(this);
     }
 
-    public function realize(component:Component):Void {}
+    public function releaseMouse():Void {
+        view_.releaseMouse();
+    }
 
-    public function createMouseEvent(e:JqEvent):MouseEvent {
-        return {
-            source: this,
-            cause: e,
-            position:{ x:e.pageX - manager_.basePageOffset.x,
-                       y:e.pageY - manager_.basePageOffset.y },
-            left:(e.which & 1) != 0,
-            middle:(e.which & 2) != 0,
-            right:(e.which & 3) != 0 };
+    public function realize(renderable:Dynamic):Void {}
+
+    public function refresh():Void {}
+
+    function createMouseEvent(e:JqEvent):MouseEvent {
+        return null;
     }
 
     public function bind(event_kind:EventKind, handler:Event -> Void):Void {
         switch (event_kind) {
         case PRESS:
-            if (onPressHandler == null)
-                manager_.bindEvent(this, 'mousedown', onPress);
-            else if (handler == null)
-                manager_.unbindEvent(this, 'mousedown');
+            if (onPressHandler == null) {
+                view_.bindEvent(this, 'mousedown', onPress);
+            } else {
+                if (handler != null)
+                    throw new IllegalStateException("event is already bound");
+                view_.unbindEvent(this, 'mousedown');
+            }
             onPressHandler = handler;
         case RELEASE:
-            if (onReleaseHandler == null)
-                manager_.bindEvent(this, 'mouseup', onRelease);
-            else if (handler == null)
-                manager_.unbindEvent(this, 'mouseup');
+            if (onReleaseHandler == null) {
+                view_.bindEvent(this, 'mouseup', onRelease);
+            } else {
+                if (handler != null)
+                    throw new IllegalStateException("event is already bound");
+                view_.unbindEvent(this, 'mouseup');
+            }
             onReleaseHandler = handler;
         case MOUSEMOVE:
-            if (onMouseMoveHandler == null)
-                manager_.bindEvent(this, 'mousemove', onMouseMove);
-            else if (handler == null)
-                manager_.unbindEvent(this, 'mousemove');
+            if (onMouseMoveHandler == null) {
+                view_.bindEvent(this, 'mousemove', onMouseMove);
+            } else {
+                if (handler != null)
+                    throw new IllegalStateException("event is already bound");
+                view_.unbindEvent(this, 'mousemove');
+            }
             onMouseMoveHandler = handler;
         }
     }
 
-    public function captureMouse():Void {
-        manager_.captureMouse(this);
-    }
+    public function new(id:Int) {
+        this.id = id;
+        this.n = setup();
+        setup();
 
-    public function releaseMouse():Void {
-        manager_.releaseMouse(this);
-    }
+        this.onPressHandler = null;
+        this.onReleaseHandler = null;
+        this.onMouseMoveHandler = null;
 
-    public function new() {
-        this.id = null;
-        this.manager_ = null;
         var me = this;
         this.onPress = function (e:JqEvent):Void {
             me.onPressHandler(me.createMouseEvent(e));
@@ -91,5 +102,4 @@ class JSDOMRenderer implements Renderer {
             me.onReleaseHandler(me.createMouseEvent(e));
         };
     }
-
 }

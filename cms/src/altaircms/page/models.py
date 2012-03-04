@@ -2,9 +2,6 @@
 from datetime import datetime
 from formalchemy import Column
 
-import transaction
-
-from sqlalchemy import Column, Integer, ForeignKey, DateTime, Unicode, String
 from sqlalchemy import Integer
 from sqlalchemy import Unicode
 from sqlalchemy import String
@@ -18,21 +15,43 @@ from sqlalchemy.orm import scoped_session, relationship
 from sqlalchemy.orm import sessionmaker
 
 from zope.sqlalchemy import ZopeTransactionExtension
+from datetime import datetime
+from zope.interface import implements
+from altaircms.interfaces import IHasSite
+from altaircms.interfaces import IHasTimeHistory
+
 from altaircms.models import Base
 from altaircms.tag.models import Tag
 from altaircms.models import DBSession
+from altaircms.layout.models import Layout
 
-class Page(Base):
+
+class PublishUnpublishMixin(object):
+    def is_published(self):
+        return self.hash_url is None
+
+    def to_unpublished(self):
+        if self.hash_url is None:
+            import uuid
+            self.hash_url = uuid.uuid4().hex
+
+    def to_published(self):
+        self.hash_url = None
+
+class Page(PublishUnpublishMixin, 
+           Base):
     """
     ページ
     """
+    implements(IHasTimeHistory, IHasSite)
+
     query = DBSession.query_property()
     __tablename__ = "page"
 
     id = Column(Integer, primary_key=True)
     parent_id = Column(Integer, ForeignKey('page.id'))
     event_id = Column(Integer, ForeignKey('event.id'))
-
+    
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=datetime.now())
 
@@ -44,8 +63,9 @@ class Page(Base):
 
     site_id = Column(Integer, ForeignKey("site.id"))
     layout_id = Column(Integer, ForeignKey("layout.id"))
-
-    relationship('Layout', backref='pages')
+    layout = relationship('Layout', backref='pages', uselist=False)
+    structure = Column(String, default="{}")
+    hash_url = Column(String(length=32), default=None)
 
     def __repr__(self):
         return '<%s %s %s>' % (self.__class__.__name__, self.url, self.title)

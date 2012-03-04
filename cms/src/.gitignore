@@ -1,0 +1,3 @@
+altaircms/plugins/static
+*.egg-info
+.coverage

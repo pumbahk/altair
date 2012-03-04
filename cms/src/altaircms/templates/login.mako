@@ -1,5 +1,12 @@
 <%inherit file='layout.mako'/>
-${message}
+
+<div class="row">
+    <div class="span6 offset3 well"  style="text-align:center" >
+        <a class="btn btn-primary" href="${request.route_url("oauth_entry")}">Login with Twitter (OAuth)</a>
+    </div>
+</div>
+
+<%doc>
 <form action="${url}" method="post">
     <input type="hidden" name="came_from" value="${came_from}"/>
     <input type="text" name="login" value="${login}"/><br/>
@@ -27,3 +34,4 @@ ${message}
     <input type="hidden" name="end_point" value="http://127.0.0.1:6543/login">
     <input type="submit" value="Login with Google">
 </form>
+</%doc>

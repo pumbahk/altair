@@ -8,29 +8,39 @@ README = open(os.path.join(here, 'README.txt')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 
 requires = [
+    "venusian>=1.0a3", 
     'pyramid==1.2.7',
     'pyramid_tm',
     'pyramid_debugtoolbar',
     'transaction',
     'SQLAlchemy',
     'SQLAHelper',
-    'zope.sqlalchemy',
+    "webtest", 
+    'alembic',
+    'zope.interface',
+    # 'zope.sqlalchemy',
+    ## utility
+    "bpmappers",
     'sadisplay',
-    'pyramid_fanstatic',
+    ## auth
+    "velruse",
+    'oauth2',
+    'pyramid_openid',
+    ## form
+    "WTForms",
     'deform',
     'pyramid_deform',
-    'pyramid_openid',
-    "velruse", 
     ## fanstatic
     'fa.jquery',
-    'bpmappers',
     "fanstatic", 
     "pyramid_fanstatic", 
     "js.jquery", 
+    "js.bootstrap", 
     "js.json2", 
     "js.jqueryui", 
     "js.jquery_tools", 
-    "js.underscore"
+    "js.underscore",
+    'js.backbone',
     ]
 
 if sys.version_info[:3] < (2,5,0):
@@ -58,6 +68,12 @@ setup(name='altair-cms',
       entry_points = """\
       [paste.app_factory]
       main = altaircms:main
+
+      [paste.paster_command]
+      pscript = scripts.paster:PScript
+   
+      [paste.paster_create_template]
+      cms_widgetplugin = scaffolds:WidgetPluginTemplate
       """,
       # entry_points = {
       #   "paste.app_factory": [

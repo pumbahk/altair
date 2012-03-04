@@ -1,6 +1,10 @@
 # coding: utf-8
+import re
+
 import colander
 import deform
+from wtforms import form, fields, validators
+from wtforms.form import Form
 
 __all__ = [
     'ASSET_TYPE',
@@ -42,6 +46,19 @@ class ImageAssetSchema(BaseAssetSchema):
         widget=deform.widget.FileUploadWidget(tmpstore)
     )
 
+
+class ImageAssetForm(Form):
+    type = fields.TextField('asset type', [validators.Required()])
+    alt = fields.TextField(default='')
+    width = fields.IntegerField(default=None)
+    height = fields.IntegerField(default=None)
+    mimetype = fields.TextField(default='image/jpeg')
+    # uploadfile = fields.FileField('upload file', [validators.regexp(r'^[^/\\]\.jpg$')])
+    filepath = fields.FileField('upload file')
+
+    def validate_filepath(form, field):
+        if field.data:
+            field.data = re.sub(r'[^a-z0-9_.-]', '_', field.data)
 
 class FlashAssetSchema(BaseAssetSchema):
     width = colander.SchemaNode(colander.Integer(), missing=colander.null)

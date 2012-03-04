@@ -1,28 +1,30 @@
 # coding: utf-8
 import json
+import collections
 
-from pyramid.exceptions import NotFound
-from pyramid.response import Response
+from pyramid.httpexceptions import HTTPFound, HTTPBadRequest, HTTPCreated, HTTPOk
 from pyramid.view import view_config
 
-from deform import Form
-from deform import ValidationFailure
-
-from altaircms.event.forms import event_schema
 from altaircms.models import DBSession, Event
+from altaircms.views import BaseRESTAPI
+from altaircms.page.models import Page
+from altaircms.event.forms import EventForm
+from altaircms.event.mappers import EventMapper, EventsMapper
 
 
 ##
 ## CMS view
 ##
-from altaircms.page.models import Page
+from altaircms.fanstatic import bootstrap_need
 
-@view_config(route_name='event', renderer='altaircms:templates/event/view.mako')
-def event_view(request):
+@view_config(route_name='event', renderer='altaircms:templates/event/view.mako', permission='event_viewer')
+def view(request):
     id_ = request.matchdict['id']
 
-    event = DBSession.query(Event).get(id_)
-    pages = DBSession.query(Page).filter_by(event_id=event.id)
+    event = EventRESTAPIView(request, id_).read()
+    pages = DBSession.query(Page).filter_by(event_id=event['id'])
+
+    bootstrap_need()
 
     return dict(
         event=event,
@@ -30,10 +32,23 @@ def event_view(request):
     )
 
 
-@view_config(route_name='event_list', renderer='altaircms:templates/event/list.mako')
-def event_list(request):
-    events = DBSession.query(Event).order_by(Event.id.desc()).all()
+@view_config(route_name='event_list', renderer='altaircms:templates/event/list.mako', permission='event_editor')
+def list_(request):
+    events = EventRESTAPIView(request).read()
+
+    bootstrap_need()
+
+    if request.method == "POST":
+        form = EventForm(request.POST)
+        if form.validate():
+            request.method = "PUT"
+            EventRESTAPIView(request).create()
+            return HTTPFound(request.route_url("event_list"))
+    else:
+        form = EventForm()
+
     return dict(
+        form=form,
         events=events
     )
 
@@ -41,99 +56,32 @@ def event_list(request):
 ##
 ## API views
 ##
-@view_config(route_name='api_event_list', request_method='GET')
-def list(reuqest):
-    """
-    イベントの一覧ビュー
+class EventRESTAPIView(BaseRESTAPI):
+    model = Event
+    form = EventForm
+    object_mapper = EventMapper
+    objects_mapper = EventsMapper
 
-    @TODO: 認証を加える
-    """
-    dbsession = DBSession()
-    events = dbsession.query(Event).order_by(Event.id.desc()).all()
-    DBSession.remove()
+    @view_config(route_name='api_event', request_method='PUT')
+    def create(self):
+        (created, object, errors) = super(EventRESTAPIView, self).create()
+        return HTTPCreated() if created else HTTPBadRequest(errors)
 
-    output = []
-    for event in events:
-        # @TODO: 何かしらのマッピングライブラリを使う（bpmappers?）
-        dist = {
-            'id':event.id,
-            'title':event.title,
-            'description':event.description
-        }
-        output.append(dist)
-    res = json.dumps(output)
+    @view_config(route_name='api_event', request_method='GET', renderer='json')
+    @view_config(route_name='api_event_object', request_method='GET', renderer='json')
+    def read(self):
+        resp = super(EventRESTAPIView, self).read()
+        if isinstance(resp, collections.Iterable):
+            return self.objects_mapper({'events': resp}).as_dict()
+        else:
+            return self.object_mapper(resp).as_dict()
 
-    return Response(res, content_type='application/json')
+    @view_config(route_name='api_event_object', request_method='PUT')
+    def update(self):
+        status = super(EventRESTAPIView, self).update()
+        return HTTPOk() if status else HTTPBadRequest()
 
-
-@view_config(route_name='api_event_list', request_method='PUT')
-def put(request):
-    """
-    イベントオブジェクト追加
-    """
-    myform = Form(event_schema, buttons=('submit',), use_ajax=True)
-
-    try:
-        controls = request.POST.items()
-        appstruct = myform.validate(controls)
-    except ValidationFailure, e:
-        return Response(json.dumps(e.error.asdict()), content_type='application/json', status=400)
-
-    model = Event(title=appstruct['title'],subtitle=appstruct['subtitle'], description=appstruct['description'])
-    DBSession.add(model)
-
-    return Response('', status=201)
-
-
-@view_config(route_name='api_event', request_method='GET')
-def get(request):
-    """
-    イベントオブジェクトの取得
-    """
-    id_ = request.matchdict['id']
-
-    dbsession = DBSession()
-    event = dbsession.query(Event).get(id_)
-    DBSession.remove()
-
-    res = {
-        'id': event.id,
-        'title': event.title,
-        'description': event.description
-    }
-
-    return Response(json.dumps(res), content_type='application/json')
-
-@view_config(route_name='api_event', request_method='DELETE')
-def delete(request):
-    """
-    イベントオブジェクトの削除
-    """
-    id_ = request.matchdict['id']
-
-    dbsession = DBSession()
-    event = dbsession.query(Event).get(id_)
-    dbsession.delete(event)
-    DBSession.remove()
-
-    return Response('')
-
-
-@view_config(route_name='api_event', request_method='PUT')
-def post(request):
-    """
-    イベントオブジェクトの更新
-    """
-    id_ = request.matchdict['id']
-
-    dbsession = DBSession()
-    event = dbsession.query(Event).get(id_)
-
-    event.title = appstruct['title']
-    event.subtitle = appstruct['subtitle']
-    event.description = appstruct['description']
-
-    dbsession.add(event)
-    DBSession.remove()
-
-    return Response('')
+    @view_config(route_name='api_event_object', request_method='DELETE')
+    def delete(self):
+        status = super(EventRESTAPIView, self).delete()
+        return HTTPOk() if status else HTTPBadRequest()

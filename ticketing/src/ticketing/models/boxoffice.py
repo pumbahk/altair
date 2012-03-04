@@ -8,75 +8,154 @@ import sqlahelper
 
 session = sqlahelper.get_session()
 
+'''
+ Master Data
+'''
+class Prefecture(Base):
+    __tablename__ = 'Prefecture'
+    id = Column(BigInteger, primary_key=True)
+    name = Column(String(255))
+
+    @staticmethod
+    def all():
+        return session.query(Prefecture).all()
+
+    @staticmethod
+    def get(prefecture_id):
+        return DBSession.query(Prefecture).filter(Prefecture.id == prefecture_id).first()
+
 class ClientTypeEnum(StandardEnum):
     Standard        = 1
 
 class Client(Base):
-    __tablename__ = 'Client'
-    id = Column(BigInteger, primary_key=True)
-    contract_type = Column(Integer)
-    name = Column(String(255))
-    company_name = Column(String(255))
-    section_name = Column(String(255))
-    zip_code = Column(String(7))
-    country_code = Column(Integer)
-    prefecture_code = Column(Integer)
-    city = Column(String(32))
-    address = Column(String(255))
+    __tablename__ = "Client"
+
+    id          = Column(BigInteger, primary_key=True)
+    name        = Column(String(255))
+    client_type = Column(Integer)
+    prefecture_id = Column(BigInteger, ForeignKey("Prefecture.id"), nullable=True)
+    prefecture    = relationship("Prefecture", uselist=False)
+    city = Column(String(255))
     street = Column(String(255))
+    address = Column(String(255))
     other_address = Column(String(255))
     tel_1 = Column(String(32))
     tel_2 = Column(String(32))
     fax = Column(String(32))
-    bank_account_id = Column(BigInteger, ForeignKey('BankAccount.id'))
-    bank_account = relationship('BankAccount', backref='client')
-    user_id = Column(BigInteger, ForeignKey("User.id"), nullable=True)
-    user = relationship('User', uselist=False)
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
     status = Column(Integer)
 
     @staticmethod
-    def add(client):
-        session.add(client)
-
-    @staticmethod
     def get(client_id):
-        return session.query(Client).filter(Client.id==client_id).first()
+        return DBSession.query(Client).filter(Client.id == client_id).first()
+
+class AccountTypeEnum(StandardEnum):
+    Promoter    = 1
+    Playguide   = 2
+    User        = 3
+
+class Account(Base):
+    __tablename__ = "Account"
+
+    id = Column(BigInteger, primary_key=True)
+
+    # @see AccountTypeEnum
+    account_type = Column(Integer)
+
+    user_id         = Column(BigInteger, ForeignKey("User.id"), nullable=True)
+    user            = relationship('User', uselist=False)
+    ticketer_id     = Column(BigInteger, ForeignKey("Ticketer.id"), nullable=True)
+    ticketer        = relationship("Ticketer", uselist=False)
+
+    updated_at      = Column(DateTime, nullable=True)
+    created_at      = Column(DateTime)
+    status          = Column(Integer, default=1)
 
     @staticmethod
-    def update(client):
-        session.merge(client)
-        session.flush()
+    def get(account_id):
+        return DBSession.query(Account).filter(Account.id == account_id).first()
+
+class User(Base):
+    __tablename__ = 'User'
+    id = Column(BigInteger, primary_key=True)
+    open_id_identifier = Column(String(255), unique=True)
+    email = Column(String(255))
+    nick_name = Column(String(255))
+    first_name = Column(String(255))
+    last_name = Column(String(255))
+    first_name_kana = Column(String(255))
+    last_name_kana = Column(String(255))
+    birth_day = Column(DateTime)
+    sex = Column(Integer)
+    zip = Column(String(255))
+    prefecture_id = Column(BigInteger, ForeignKey("Prefecture.id"), nullable=True)
+    prefecture    = relationship("Prefecture", uselist=False)
+    city = Column(String(255))
+    street = Column(String(255))
+    address = Column(String(255))
+    other_address = Column(String(255))
+    tel_1 = Column(String(32))
+    tel_2 = Column(String(32))
+    fax = Column(String(32))
+    updated_at = Column(DateTime)
+    created_at = Column(DateTime)
+    status = Column(Integer)
+
+    point_accounts = relationship("UserPointAccount")
 
     @staticmethod
-    def all():
-        return session.query(Client).all()
+    def get(user_id):
+        return DBSession.query(User).filter(User.id == user_id).first()
 
-operator_roll_association_table = Table('OperatorRoll_Operator', Base.metadata,
-    Column('operator_roll_id', BigInteger, ForeignKey('OperatorRoll.id')),
+class Ticketer(Base):
+    __tablename__ = 'Ticketer'
+
+    id              = Column(BigInteger, primary_key=True)
+    zip             = Column(String(255))
+    prefecture_id = Column(BigInteger, ForeignKey("Prefecture.id"), nullable=True)
+    prefecture    = relationship("Prefecture", uselist=False)
+    city            = Column(String(255))
+    street          = Column(String(255))
+    address         = Column(String(255))
+    other_address   = Column(String(255))
+    tel_1           = Column(String(32))
+    tel_2           = Column(String(32))
+    fax             = Column(String(32))
+
+    updated_at      = Column(DateTime)
+    created_at      = Column(DateTime)
+    status          = Column(Integer)
+
+    bank_account_id = Column(BigInteger, ForeignKey('BankAccount.id'))
+    bank_account    = relationship('BankAccount', backref='client')
+
+'''
+ Oprerator Role & ticketer
+'''
+operator_role_association_table = Table('OperatorRole_Operator', Base.metadata,
+    Column('operator_role_id', BigInteger, ForeignKey('OperatorRole.id')),
     Column('operator_id', BigInteger, ForeignKey('Operator.id'))
 )
 
 class Permission(Base):
     __tablename__ = 'Permission'
     id = Column(BigInteger, primary_key=True)
-    operator_roll_id = Column(BigInteger, ForeignKey('OperatorRoll.id'))
-    operator_roll = relationship('OperatorRoll', uselist=False)
-    category_code = Column(Integer)
+    operator_role_id = Column(BigInteger, ForeignKey('OperatorRole.id'))
+    operator_role = relationship('OperatorRole', uselist=False)
+    category_name = Column(Integer)
     permit = Column(Integer)
 
-class OperatorRoll(Base):
-    __tablename__ = 'OperatorRoll'
+class OperatorRole(Base):
+    __tablename__ = 'OperatorRole'
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
     operators = relationship("Operator",
-                    secondary=operator_roll_association_table,
-                    backref="OperatorRoll")
+                    secondary=operator_role_association_table)
     permissions = relationship('Permission')
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
-    status = Column(Integer)
+    status = Column('status',Integer, default=1)
 
 class OperatorActionHistory(Base):
     __tablename__ = 'OperatorActionHistory'
@@ -93,23 +172,37 @@ operator_table = Table(
     Column('name', String(255)),
     Column('email',String(255)),
     Column('client_id',BigInteger, ForeignKey('Client.id')),
+    Column('expire_at',DateTime, nullable=True),
     Column('updated_at',DateTime),
     Column('created_at',DateTime),
-    Column('status',Integer)
+    Column('status',Integer, default=1)
 )
 operator_auth_table = Table(
     'Operator_Auth', Base.metadata,
     Column('id', BigInteger, primary_key=True),
-    Column('login_id', String(32)),
-    Column('secret_key', String(32))
+    Column('login_id', String(32), unique=True),
+    Column('password', String(32)),
+    Column('auth_code', String(32), nullable=True),
+    Column('access_token', String(32), nullable=True),
+    Column('secret_key', String(32), nullable=True),
 )
 
 class Operator(Base):
     __table__ = join(operator_table, operator_auth_table, operator_table.c.id == operator_auth_table.c.id)
     id = column_property(operator_table.c.id, operator_auth_table.c.id)
     client = relationship('Client',uselist=False)
+    roles = relationship("OperatorRole",
+        secondary=operator_role_association_table)
 
+    @staticmethod
+    def get_by_login_id(user_id):
+        return DBSession.query(Operator).filter(Operator.login_id == user_id).first()
 
+'''
+
+ Event & Performance
+
+'''
 class Performance(Base):
     __tablename__ = 'Performance'
     id = Column(BigInteger, primary_key=True)
@@ -120,8 +213,8 @@ class Performance(Base):
     no_period = Column(Boolean)
     name = Column(String(255))
     code = Column(String(12))
-    client_id = Column(BigInteger, ForeignKey('Client.id'))
-    client = relationship('Client', backref='event')
+    owner_id = Column(BigInteger, ForeignKey('Account.id'))
+    owner = relationship('Account')
 
 event_table = Table(
     'Event', Base.metadata,
@@ -213,6 +306,9 @@ class ProductItem(Base):
     ticket_type = relationship('TicketType', uselist=False)
     seat_type_id = Column(BigInteger, ForeignKey('SeatType.id'))
     seat_type = relationship('SeatType', uselist=False)
+    seat_stock_id = Column(BigInteger, ForeignKey('SeatStock.id'))
+    # @TODO now assumed ProductItem:Seat = 1:1, and can be null if it is a non ticket product
+    seat = relationship('SeatStock', uselist=False)
 
     product_id = Column(BigInteger, ForeignKey('Product.id'))
     product = relationship('Product', uselist=False)
@@ -220,6 +316,76 @@ class ProductItem(Base):
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
     status = Column(Integer)
+
+# stock based on quantity
+class Stock(Base):
+    __tablename__ = "Stock"
+    id = Column(BigInteger, primary_key=True)
+    performance_id = Column(BigInteger, ForeignKey('Performance.id'))
+    performance = relationship('Performance', uselist=False)
+    seat_type_id = Column(BigInteger, ForeignKey('SeatType.id'))
+    seat_type = relationship('SeatType', uselist=False)
+    quantity = Column(Integer)
+
+    updated_at = Column(DateTime)
+    created_at = Column(DateTime)
+    status = Column(Integer)
+
+    @staticmethod
+    def get_for_update(pid, stid):
+        return session.query(Stock).with_lockmode("update").filter(Stock.performance_id==pid, Stock.seat_type_id==stid).first()
+
+# stock based on phisical seat positions
+class SeatStock(Base):
+    __tablename__ = "SeatStock"
+    id = Column(BigInteger, primary_key=True)
+    seat_id = Column(Integer, ForeignKey("SeatMasterL2.seat_id"))
+    seat = relationship('SeatMasterL2', uselist=False, backref="seat_stock_id") # 1:1
+    sold = Column(Boolean) # sold or not
+
+    updated_at = Column(DateTime)
+    created_at = Column(DateTime)
+    status = Column(Integer)
+
+    # @TODO
+    @staticmethod
+    def get_group_seat(pid, stid, num):
+        idx = 0
+        con_num = 0
+        grouping_ss = SeatMasterL2.get_grouping_seat_sets(pid, stid)
+        for grouping_seats in grouping_ss:
+            for i, gseat in enumerate(grouping_seats):
+                if not gseat.sold:
+                    if con_num == 0:
+                        idx = i
+                    con_num += 1
+                    if con_num == num:
+                        # @TODO return with locked status
+                        return gseat[idx:idx+num]
+                else:
+                    con_num = 0
+        return []
+
+# Layer2 SeatMaster
+class SeatMasterL2(Base):
+    __tablename__ = "SeatMasterL2"
+    id = Column(BigInteger, primary_key=True)
+    performance_id = Column(BigInteger, ForeignKey('Performance.id'))
+    performance = relationship('Performance', uselist=False)
+    seat_type_id = Column(BigInteger, ForeignKey('SeatType.id'))
+    seat_type = relationship('SeatType', uselist=False)
+    seat_id = Column(Integer, index=True)
+    # @TODO have some attributes regarding Layer2
+    venue_id = Column(BigInteger)
+
+    updated_at = Column(DateTime)
+    created_at = Column(DateTime)
+    status = Column(Integer)
+
+    # @TODO
+    @staticmethod
+    def get_grouping_seat_sets(pid, stid):
+        return [[]]
 
 class Bank(Base):
     __tablename__ = 'Bank'
@@ -231,42 +397,14 @@ class BankAccount(Base):
     __tablename__ = 'BankAccount'
     id = Column(BigInteger, primary_key=True)
     back_id = Column(BigInteger, ForeignKey("Bank.id"))
+    bank = relationship("Bank", backref=backref('addresses', order_by=id))
     account_type = Column(Integer)
     account_number = Column(String(255))
     account_owner = Column(String(255))
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
     status = Column(Integer)
-    
-class User(Base):
-    __tablename__ = 'User'
-    id = Column(BigInteger, primary_key=True)
-    '''
-    OpenID 2.0 : openid.claimed_id
-    OpenID 1.1 : openid.identifier
-    '''
-    open_id_identifier = Column(String(255), unique=True)
-    email = Column(String(255))
-    nick_name = Column(String(255))
-    first_name = Column(String(255))
-    last_name = Column(String(255))
-    first_name_kana = Column(String(255))
-    last_name_kana = Column(String(255))
-    birth_day = Column(DateTime)
-    sex = Column(Integer)
-    zip = Column(String(255))
-    prefecture = Column(String(255))
-    city = Column(String(255))
-    street = Column(String(255))
-    address = Column(String(255))
-    other_address = Column(String(255))
-    tel_1 = Column(String(32))
-    tel_2 = Column(String(32))
-    fax = Column(String(32))
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
-    status = Column(Integer)
-    point_accounts = relationship("UserPointAccount")
+
 
 class UserPointAccount(Base):
     __tablename__ = 'UserPointAccount'
@@ -351,10 +489,5 @@ class OrderItem(Base):
     created_at = Column(DateTime)
     status = Column(Integer)
 
-class SeatStock(Base):
-    __tablename__ = 'SeatStock'
-    id = Column(BigInteger, primary_key=True)
-    seat_id = Column(BigInteger)
-    venue_id = Column(BigInteger)
 
 

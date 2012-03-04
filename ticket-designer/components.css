@@ -1,8 +1,32 @@
 .canvas {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
 }
 
 .canvas .component-text {
   position: absolute;
   border: 1px solid black;
   background-color: #ffe;
+  cursor: pointer;
+}
+
+.canvas .component-horizontal_guide,
+.canvas .component-vertical_guide {
+  position: absolute;
+  border: 1px rgba(0, 0, 0, .5);
+}
+
+.canvas .component-horizontal_guide {
+  border-top-style: solid;
+  cursor: crosshair;
+}
+
+.canvas .component-vertical_guide {
+  border-left-style: solid;
+  cursor: crosshair;
 }

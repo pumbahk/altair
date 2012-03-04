@@ -1,4 +1,4 @@
 typedef Point = {
-    var x:Int;
-    var y:Int;
+    var x:Float;
+    var y:Float;
 }

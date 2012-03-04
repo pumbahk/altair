@@ -5,6 +5,10 @@ from pyramid.renderers import render
 from sqlalchemy import engine_from_config
 
 from .models import initialize_sql
+from .resources import RootFactory, groupfinder
+
+from pyramid.authentication import AuthTktAuthenticationPolicy
+from pyramid.authorization import ACLAuthorizationPolicy
 
 import sqlahelper
 
@@ -26,14 +30,21 @@ def main(global_config, **settings):
     engine = engine_from_config(settings, 'sqlalchemy.')
     initialize_sql(engine)
     sqlahelper.add_engine(engine)
-    
-    config = Configurator(settings=settings)
+
+    authn_policy = AuthTktAuthenticationPolicy('secretstring',
+                                               callback=groupfinder)
+    authz_policy = ACLAuthorizationPolicy()
+
+    config = Configurator(settings=settings,
+                          root_factory='ticketing.resources.RootFactory',
+                          authentication_policy=authn_policy,
+                          authorization_policy=authz_policy)
+
     Form.set_default_renderer(renderer)
 
     config.add_static_view('static', 'ticketing:static', cache_max_age=3600)
     config.add_static_view('_deform', 'deform:static', cache_max_age=3600)
 
-    config.add_route('home', '/')
     config.add_view('pyramid.view.append_slash_notfound_view',
                     context='pyramid.httpexceptions.HTTPNotFound')
     

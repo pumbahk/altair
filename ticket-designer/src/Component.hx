@@ -1,5 +1,4 @@
-interface Component {
-    public var renderer(default, null):Renderer;
+interface Component implements Renderable {
     public var on(default, null):Dynamic;
     public var position(default, null):Point;
     public var parent(default, null):Component;
