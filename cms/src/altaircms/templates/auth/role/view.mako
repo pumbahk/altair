@@ -6,8 +6,8 @@ per = count / 2
 %>
 
 <div class="row">
-<h4 class="page-header">オペレータ情報</h4>
-<div class="span5">
+<h4 class="page-header">${role.name}の権限一覧</h4>
+<div class="span5 pull-left">
 <table class="table table-striped">
     <tbody>
     %for perm in role.permissions[:per]:
@@ -19,7 +19,7 @@ per = count / 2
 </table>
 </div>
 
-<div class="span5">
+<div class="span5 pull-left">
 <table class="table table-striped">
     <tbody>
     %for perm in role.permissions[per:]:
