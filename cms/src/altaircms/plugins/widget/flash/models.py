@@ -54,18 +54,20 @@ JS_PRERENDER = """\
 """
 
 JS_POSTRENDER = """\
-    $("flash-widget").each(function(i,e){
+    $(".flash-widget").each(function(i,e){
         var flashvars = {};
         var params = {};
         var attributes = {};
 
         var e = $(e);
-        var width = e.attr("width")
-        var height = e.attr("height")
-        var url = e.attr("url")
+        var width = e.attr("width");
+        var height = e.attr("height");
+        var url = e.attr("url");
+        var uid = String(Math.random()); //slack-off
+        e.attr("id", uid)
         swfobject.embedSWF(
             url,
-            "asset",
+            uid, 
             width,
             height, 
             "9.0.0",
