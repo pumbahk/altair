@@ -16,10 +16,6 @@ def perf(id_, title, beg, end):
          "event_id": 1, 
          "id": id_
          })
-    # p.title = title
-    # p.performance_open = beg
-    # p.performance_close = end
-    # p.event_id = 1
     return p
     
 class RenderableAdaptor(object):
@@ -44,16 +40,6 @@ dummy_performances = [
     perf(5, "event5", datetime(2012, 3, 20, 20), datetime(2012, 3, 20, 13)), 
     ]
 
-# def this_month():
-#     import calendar
-#     from datetime import date
-#     today = date.today()
-#     return {"description": u"""
-# pythonのcalendar.HTMLCalendarを使ったhtml
-# """, 
-#             "renderable": RenderableAdaptor(calendar.HTMLCalendar().formatmonth, today.year, today.month)
-#             }
-
 def this_month():
     from mako.template import Template
     from renderable import CalendarOutput
@@ -70,7 +56,7 @@ def this_month():
                              date(2012, 2, 29))
         }
 
-def list():
+def listing():
     from mako.template import Template
     template = Template(filename=os.path.join(here, "simple.listing.mako"), 
                         input_encoding="utf-8")
@@ -105,5 +91,5 @@ def term():
 
 if __name__ == "__main__":
     print this_month()["renderable"].render()
-    print list()["renderable"].render()
+    print listing()["renderable"].render()
     print term()["renderable"].render()

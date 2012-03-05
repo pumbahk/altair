@@ -1,3 +1,4 @@
+<div class="calendar-widget">
 <ul>
 %for p in performances:
   <li>
@@ -7,3 +8,4 @@
   </li>
 %endfor
 </ul>
+</div>

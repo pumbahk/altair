@@ -1,3 +1,5 @@
+# -*- coding:utf-8 -*-
+
 from calendar_stream import PackedCalendarStream
 from calendar_stream import CalendarStreamGenerator
 from collections import defaultdict
@@ -61,7 +63,7 @@ class CalendarOutput(object):
 
     def __init__(self, performances=None, template=None):
         self.template = template or self.template
-        self.performances = performances or {}
+        self.performances = performances or defaultdict(list)
         
     def each_rows(self, begin_date, end_date):
         gen = CalendarStreamGenerator(PackedCalendarStream, force_start_from_monday=True)
@@ -75,12 +77,42 @@ class CalendarOutput(object):
         rows = self.each_rows(begin_date, end_date)
         return self.template.render_unicode(cal=rows)
 
-if __name__ == "__main__":
-    import mako.template
-    template = mako.template.Template(filename="rakuten.calendar.mako",
-                                      input_encoding='utf-8', 
-                                      output_encoding="utf-8")
-    from datetime import date
-    cal = CalendarOutput()
-    print template.render_unicode(
-        cal=cal.each_rows(date(2012, 2, 6), date(2012, 3, 18)))
+
+### render function ##
+# using these functioins in models.CalendarWidget.merge_settings() via getattr
+
+import os
+here = os.path.abspath(os.path.dirname(__file__))
+from pyramid.renderers import render
+from datetime import date
+
+def _next_month_date(d):
+    if d.month == 12:
+        return date(d.year+1, 1, 1)
+    else:
+        return date(d.year, d.month+1, 1)
+
+def this_month(widget, performances, request):
+    """今月の内容を表示するカレンダー
+    """
+    template_name = os.path.join(here, "rakuten.calendar.mako")
+    cal = CalendarOutput.from_performances(performances)
+    ## fixme
+    today = date.today()
+    rows = cal.each_rows(date(today.year, today.month, 1), 
+                         _next_month_date(today))
+    return render(template_name, {"cal":rows}, request)
+
+def term(widget, performances, request):
+    """開始日／終了日を指定してその範囲のカレンダを表示
+    """
+    template_name = os.path.join(here, "rakuten.calendar.mako")
+    cal = CalendarOutput.from_performances(performances)
+    rows = cal.each_rows(widget.from_date, widget.to_date)
+    return render(template_name, {"cal":rows}, request)
+
+def listing(widget, performances, request): #fixme: rename
+    """パフォーマンスを一覧表示するだけの内容
+    """
+    template_name = os.path.join(here, "simple.listing.mako")
+    return render(template_name, {"performances": performances}, request)

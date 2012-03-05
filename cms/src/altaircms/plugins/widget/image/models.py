@@ -47,4 +47,3 @@ class ImageWidgetResource(HandleSessionMixin,
     WidgetClass = ImageWidget
     AssetClass = ImageAsset
 
-

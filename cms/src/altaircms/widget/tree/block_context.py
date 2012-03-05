@@ -79,7 +79,7 @@ class BlockContext(StoreableMixin,
                    UniqueByWidgetMixin):
     """ ページをレンダリングするときに利用する設定。self.blocksが実際にレンダリングされる時に使われる予定。
         ブロック中の各widgetがhtmlを生成するとき、このクラスのインスタンスが設定として渡される。
-        blocks, is_scanned, extra以外の名前のattributeは自由に定義して使って良い。
+        blocks, is_scanned, extra以外の名前のattributeを自由に定義して使って良い。
     """
     DEFAULT_KEYWORDS = ["js_prerender", "js_postrender",
                         "css_prerender", "css_postrender",
@@ -96,7 +96,7 @@ class BlockContext(StoreableMixin,
 
     def need_extra_in_scan(self, valname):
         def has_val(settings):
-            return settings.extra.get(valname, False)
+            return settings.extra.get(valname, None) is not None
         has_val.__doc__ = "self.extra['%s'] is not found" % valname
         self.attach_validator(has_val, category="before_scan")        
 

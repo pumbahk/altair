@@ -11,11 +11,14 @@ from altaircms.plugins.base.mixins import HandleWidgetMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
 
+from . import renderable
+import os
+here = os.path.abspath(os.path.dirname(__file__))
+
 class CalendarWidget(Widget):
     implements(IWidget)
     type = "calendar"
 
-    template_name = "altaircms.plugins.widget:calendar/render.mako"
     __tablename__ = "widget_calendar"
     __mapper_args__ = {"polymorphic_identity": type}
     query = DBSession.query_property()
@@ -25,7 +28,16 @@ class CalendarWidget(Widget):
     from_date = sa.Column(sa.Date)
     to_date = sa.Column(sa.Date)
 
-from . import forms
+    def merge_settings(self, bname, bsettings):
+        bsettings.need_extra_in_scan("performances")
+        bsettings.need_extra_in_scan("request")
+
+        def block_render():
+            performances = bsettings.extra["performances"]
+            request = bsettings.extra["request"]
+            render_fn = getattr(renderable, self.calendar_type)
+            return render_fn(self, performances, request)
+        bsettings.add(bname, block_render)
 
 class CalendarWidgetResource(HandleSessionMixin,
                              UpdateDataMixin,
