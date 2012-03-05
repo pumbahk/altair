@@ -34,6 +34,20 @@ class UseAssetMixin(object):
              "mimetype": "video/mp4"}
         return MovieAsset.from_dict(D)
 
+    def _getFlashAsset(self):
+        from altaircms.asset.models import FlashAsset
+        D = {'filepath': u'/static/img/samples/flash.swf',
+             'id': 3,
+             "page_id": 2}
+        return FlashAsset.from_dict(D)
+
+    def _getFlashAsset2(self):
+        from altaircms.asset.models import FlashAsset
+        D = {'filepath': u'/static/img/samples/flash.swf',
+             'id': 32,
+             "page_id": 2}
+        return FlashAsset.from_dict(D)
+
 class UseWidgetMixin(object):
     def _getTextWidget(self):
         from altaircms.plugins.widget.freetext.models import FreetextWidget
@@ -62,6 +76,18 @@ class UseWidgetMixin(object):
              }
         return CalendarWidget.from_dict(D)
 
+    def _getFlashWidget(self):
+        from altaircms.plugins.widget.flash.models import FlashWidget
+        asset = self._getFlashAsset()
+        D = {"id": 5, "asset": asset,  "asset_id": asset.id}
+        return FlashWidget.from_dict(D)
+
+    def _getFlashWidget2(self):
+        from altaircms.plugins.widget.flash.models import FlashWidget
+        asset = self._getFlashAsset2()
+        D = {"id": 52, "asset": asset,  "asset_id": asset.id}
+        return FlashWidget.from_dict(D)
+
 class UsePageEtcMixin(object):
     def _getPage(self, structure):
         from altaircms.page.models import Page
@@ -82,7 +108,7 @@ class UsePageEtcMixin(object):
 
     def _getLayout(self):
         from altaircms.layout.models import Layout
-        D = {'blocks': u'[["content"],["footer"]]',
+        D = {'blocks': u'[["content"],["footer"], ["js_prerender"], ["js_postrender"]]',
              'client_id': None,
              'created_at': datetime.datetime(2012, 2, 16, 11, 26, 55, 755523),
              'id': 2,
@@ -122,16 +148,20 @@ class FunctionalPageRenderingTest(UseAssetMixin,
         self.assertTrue('class="image-widget"' in text)
         self.assertTrue('class="movie-widget"' in text)
         self.assertTrue('class="freetext-widget"' in text)
-        
+        self.assertTrue('class="flash-widget"' in text)
+        # self.assertTrue('class="calendar-widget"' in text)
+
         self.assertTrue("<img" in text)
         self.assertTrue("<embed" in text)
+        ## js swfobject
+        self.assertTrue("/static/swfobject.js" in text)
 
     def test_it_nodata(self):
         self.testapp.get("/f/publish/sample_page", status=404)
 
     def _addData(self, session):
         structure = u'''
-{"content": [{"pk": 1, "name": "freetext"}, {"pk": 3, "name": "movie"}, {"pk": 4, "name": "calendar"}],
+{"content": [{"pk": 1, "name": "freetext"}, {"pk": 3, "name": "movie"}, {"pk": 4, "name": "calendar"}, {"pk": 5, "name": "flash"}, {"pk": 52,  "name": "flash"}],
  "footer": [{"pk": 2, "name": "image"}]}
 '''
         session.add(self._getPage(structure))
@@ -140,7 +170,8 @@ class FunctionalPageRenderingTest(UseAssetMixin,
         session.add(self._getImageWidget())
         session.add(self._getMovieWidget())
         session.add(self._getCalendarWidget())
-
+        session.add(self._getFlashWidget())
+        session.add(self._getFlashWidget2())
         import transaction
         transaction.commit()
 

@@ -64,7 +64,7 @@ class BlockContextTest(unittest.TestCase):
         bcontext = BlockContext.from_widget_tree(WTree)
         bcontext.scan()
         self.assertEquals("".join(bcontext.blocks["top"]),
-                          '<p>bar</p><p>foo</p>')
+                          '<p>foo</p><p>bar</p>')
 
     def test_with_js_widget(self):
         """関数を含んだwidgetで動作チェック

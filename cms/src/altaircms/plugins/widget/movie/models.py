@@ -34,11 +34,11 @@ class MovieWidget(Widget):
 
     def merge_settings(self, bname, bsettings):
         bsettings.need_extra_in_scan("request")
-        def block_render():
+        def movie_render():
             return render(self.template_name,
                           {"widget": self,
                            "request": bsettings.extra["request"]})
-        bsettings.add(bname, block_render)
+        bsettings.add(bname, movie_render)
 
 class MovieWidgetResource(HandleSessionMixin,
                           UpdateDataMixin,

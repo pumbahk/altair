@@ -2,8 +2,9 @@
 from pyramid.httpexceptions import HTTPFound
 from pyramid.renderers import render_to_response
 from pyramid.view import view_config
+from altaircms.fanstatic import with_jquery
 
-@view_config(route_name="front")
+@view_config(route_name="front", decorator=with_jquery)
 def rendering_page(context, request):
     url = request.matchdict["page_name"]
     page, layout = context.get_page_and_layout(url)
@@ -15,7 +16,7 @@ def rendering_page(context, request):
     params = dict(page=page, display_blocks=block_context.blocks)
     return render_to_response(tmpl, params, request)
 
-@view_config(route_name="front_preview")
+@view_config(route_name="front_preview", decorator=with_jquery)
 def rendering_preview_page(context, request):
     url = request.matchdict["page_name"]
     page, layout = context.get_page_and_layout_preview(url)

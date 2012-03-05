@@ -1,31 +1,8 @@
 ## flash widget output template
-## 
-
-## Flashウィジェットテンプレート
-## todo remove it
-<script type="text/javascript" src="/fanstatic/jquery/jquery.js"></script> 
-
-<script type="text/javascript" src="/static/swfobject.js"></script>
-<script type="text/javascript">
-$(document).ready(function(){
-    var flashvars = {};
-    var params = {};
-    var attributes = {};
-
-    var width = $('#asset').width();
-    var height = $('#asset').height(); // @TODO: 高さ情報をどこから取得するか検討する
-
-    swfobject.embedSWF(
-        "${request.route_url('asset_view', asset_id=asset.id)}?raw=t",
-        "asset",
-        width,
-        "480",
-        "9.0.0",
-        "/static/expressInstall.swf",
-        flashvars,
-        params,
-        attributes
-    );
-})
-</script>
-<div id="asset"></div>
+## fixme: default width or height
+<div class="flash-widget"
+     url="${h.asset.to_show_page(request, widget.asset)}"
+     pk="${widget.asset.id}"
+     width="${widget.asset.width or 480}"
+     height="${widget.asset.height or 480}"
+></div>

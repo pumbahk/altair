@@ -32,12 +32,12 @@ class CalendarWidget(Widget):
         bsettings.need_extra_in_scan("performances")
         bsettings.need_extra_in_scan("request")
 
-        def block_render():
+        def calendar_render():
             performances = bsettings.extra["performances"]
             request = bsettings.extra["request"]
             render_fn = getattr(renderable, self.calendar_type)
             return render_fn(self, performances, request)
-        bsettings.add(bname, block_render)
+        bsettings.add(bname, calendar_render)
 
 class CalendarWidgetResource(HandleSessionMixin,
                              UpdateDataMixin,

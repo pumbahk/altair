@@ -31,7 +31,10 @@ class PageRenderingResource(RootFactory):
         return gen.get_config(self.request)
 
     def get_performances(self):
-        return []
+        import warnings
+        warnings.warn("using dummy performances")
+        from altaircms.plugins.widget.calendar.demo import dummy_performances
+        return dummy_performances
 
     def get_block_context(self, page):
         from altaircms.widget.tree.block_context import BlockContext

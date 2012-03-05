@@ -26,10 +26,10 @@ class UpdatableMixin(object):
     """
     def merge(self, D):
         for k, v in D.iteritems():
-            self.blocks[k].add(v)
+            self.blocks[k].append(v)
 
     def add(self, k, v):
-        self.blocks[k].add(v)
+        self.blocks[k].append(v)
 
 class UniqueByWidgetMixin(object):
     """ widget毎に設定を一度きりのみ設定できるようにするmixin
@@ -86,12 +86,12 @@ class BlockContext(StoreableMixin,
                         "title", "description"]
     def __init__(self, extra=None):
         self._widget_classes = set()
-        self.blocks = defaultdict(set)
+        self.blocks = defaultdict(list)
         for k in self.DEFAULT_KEYWORDS:
-            self.blocks[k] = set() #default settings
+            self.blocks[k] = list() #default list
 
         self.is_scaned = False
-        self._validators = list() ## fixme 
+        self._validators = list()
         self.extra = extra or {}
 
     def need_extra_in_scan(self, valname):
@@ -104,11 +104,6 @@ class BlockContext(StoreableMixin,
         fmt = "%s:blocks=%s"
         return fmt % (super(BlockContext, self).__repr__(), 
                       repr(self.blocks))
-
-    # def add_uniq_widget_class(self, widget, k, v):
-    #     if self.is_attached(widget, k):
-    #         self.add(k, v)
-    #         self.attach_widget(widget, k)
 
     @classmethod
     def from_widget_tree(cls, wtree, scan=True):
