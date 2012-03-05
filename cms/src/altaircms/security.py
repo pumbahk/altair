@@ -25,16 +25,15 @@ class RootFactory(object):
         ]
         for role, permission in DBSession.query(Role, RolePermission).filter(Role.id==RolePermission.role_id):
             self.__acl__.append((Allow,) + (str(role.name), str(permission.permission)))
-
+        self.request = request
 
 class SecurityAllOK(list):
     def __init__(self):
-        from altaircms.auth.models import PERMISSIONS
-        self.perms = PERMISSIONS
+        from altaircms.auth.models import DEFAULT_ROLE
+        self.roles = [DEFAULT_ROLE]
 
     def __call__(self, user_id, request):
-        return self.perms
-
+        return self.roles
 
 from zope.interface import implements
 from pyramid.interfaces import IAuthorizationPolicy
@@ -69,7 +68,6 @@ class DummyAuthorizationPolicy(object):
 
             allowed_here = set()
             denied_here = set()
-            
             for ace_action, ace_principal, ace_permissions in acl:
                 if not hasattr(ace_permissions, '__iter__'):
                     ace_permissions = [ace_permissions]

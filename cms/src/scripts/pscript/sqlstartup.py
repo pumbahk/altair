@@ -61,7 +61,7 @@ def main():
         layout1.id = 1
         layout1.title = "one"
         layout1.template_filename = "1.mako"
-        layout1.blocks = '[["content"],["footer"]]'
+        layout1.blocks = '[["fulltitle"], ["description"], ["keyword"], ["js"], ["jquery"], ["style"], ["page"], ["content"],["footer"], ["js_foot"]]'
         layout1.site_id = 1 ##
         layout1.client_id = 1 ##
         DBSession.add(layout1)

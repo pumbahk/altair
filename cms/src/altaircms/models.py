@@ -107,16 +107,6 @@ class Event(Base):
         return self.title
 
 
-class ClientMixin(object):
-    @declared_attr
-    def client_id(self):
-        Column(Integer, ForeignKey("client.id")) # ForeignKeyはdeclared_attrにしないといかん
-
-    @declared_attr
-    def client(self):
-        relationship("Client")
-
-
 class Performance(Base):
     """
     パフォーマンス

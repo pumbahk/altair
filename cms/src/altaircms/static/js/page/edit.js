@@ -169,8 +169,12 @@ var WidgetDialogView = Backbone.View.extend({
     }, 
     on_close_dialog: function(){
         var wmodule = this.prepare_widget_module();
+        var self = this
         if(!!wmodule){
-            return setTimeout(function(){wmodule("on_close");}, 0);
+            return setTimeout(function(){
+                wmodule("on_close")
+                _.each(self.dialog.children(), function(e){ $(e).remove();});
+            }, 0);
         }
     }, 
     on_widget_selected: function(choiced_elt){
@@ -184,7 +188,7 @@ var WidgetDialogView = Backbone.View.extend({
                 self.model.set("pk", data.pk) // pk
                 self.model.id = self.model.get("pk");
                 self.model.trigger("update_widget", self.model);
-            });
+            })
         }
     }, 
     update_widget_layout_edit: function(){

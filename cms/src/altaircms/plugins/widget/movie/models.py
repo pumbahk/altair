@@ -8,8 +8,9 @@ from altaircms.widget.models import Widget
 from altaircms.widget.models import AssetWidgetResourceMixin
 from altaircms.plugins.base import DBSession
 from altaircms.plugins.base import asset
-from altaircms.plugins.base import HandleSessionMixin
-from altaircms.plugins.base import UpdateDataMixin
+from altaircms.plugins.base.mixins import HandleSessionMixin
+from altaircms.plugins.base.mixins import UpdateDataMixin
+from altaircms.security import RootFactory
 
 MovieAsset = asset.models.MovieAsset
 
@@ -33,11 +34,9 @@ class MovieWidget(Widget):
 
 class MovieWidgetResource(HandleSessionMixin,
                           UpdateDataMixin,
-                          AssetWidgetResourceMixin
+                          AssetWidgetResourceMixin, 
+                          RootFactory
                           ):
     WidgetClass = MovieWidget
     AssetClass = MovieAsset
-
-    def __init__(self, request):
-        self.request = request
 
