@@ -82,7 +82,8 @@ class CalendarOutput(object):
 # using these functioins in models.CalendarWidget.merge_settings() via getattr
 
 import os
-here = os.path.abspath(os.path.dirname(__file__))
+# here = os.path.abspath(os.path.dirname(__file__))
+here = "altaircms.plugins.widget:calendar"
 from pyramid.renderers import render
 from datetime import date
 

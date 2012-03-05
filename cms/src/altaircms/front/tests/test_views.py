@@ -101,7 +101,7 @@ class FunctionalPageRenderingTest(UseAssetMixin,
     def setUp(self):
         from altaircms import main_app
         app = main_app({}, {"sqlalchemy.url": "sqlite://", 
-                            "mako.directories": os.path.join(self.DIR, "templates")+"\n/", 
+                            "mako.directories": os.path.join(self.DIR, "templates"), 
                             "plugin.static_directory": "altaircms:plugins/static", 
                             "widget.layout_directories": "."})
         from webtest import TestApp
