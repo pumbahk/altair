@@ -72,28 +72,43 @@ class TestEventView(BaseTest):
 class TestEventRegister(BaseTest):
     def test_event_register_ok(self):
         request = testing.DummyRequest()
+        request.headers['X-Altair-Authorization'] = 'hogehoge'
         request.POST = MultiDict({'jsonstring': self.jsonstring})
-
         response = event_register(request)
 
-        self.assertTrue(response.status_int, 201)
+        self.assertEqual(response.status_int, 201)
 
     def test_event_register_ng(self):
-        # パラメタなし
+        # 認証パラメタなし
         request = testing.DummyRequest()
         request.POST = MultiDict({})
         response = event_register(request)
 
-        self.assertTrue(response.status_int, 400)
+        self.assertEqual(response.status_int, 403)
+
+        # 認証通過、必須パラメタなし
+        request = testing.DummyRequest()
+        request.headers['X-Altair-Authorization'] = 'hogehoge'
+        request.POST = MultiDict({})
+        response = event_register(request)
+
+        self.assertEqual(response.status_int, 400)
 
         # パースできないJSON
         request = testing.DummyRequest()
+        request.headers['X-Altair-Authorization'] = 'hogehoge'
         request.POST = MultiDict({'jsonstring': self.jsonstring + 'hogehoge'})
         response = event_register(request)
 
-        self.assertTrue(response.status_int, 400)
+        self.assertEqual(response.status_int, 400)
 
     def setUp(self):
+        from altaircms.models import DBSession
+        from altaircms.auth.models import APIKey
+
+        apikey = APIKey(name='hoge', apikey='hogehoge')
+        DBSession.add(apikey)
+
         self.endpoint = '/api/event/register'
         self.valid_apikey = ''
         self.invalid_apikey = ''
@@ -220,3 +235,5 @@ class TestEventRegister(BaseTest):
   ]
 }
 '''
+        super(TestEventRegister, self).setUp()
+
