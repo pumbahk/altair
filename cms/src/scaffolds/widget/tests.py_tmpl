@@ -13,6 +13,7 @@ class FunctionalViewTests(unittest.TestCase):
         from altaircms import main_app
         self.app = main_app({}, {"sqlalchemy.url": "sqlite://", 
                             "plugin.static_directory": "altaircms:plugins/static", 
+                            "altaircms.debug.strip_security": "true",
                             "widget.template_path_format": "%s.mako", 
                             "widget.layout_directories": "."})
         from webtest import TestApp

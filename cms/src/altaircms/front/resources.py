@@ -7,12 +7,9 @@ from . import generate as gen
 from altaircms.widget.generate import WidgetTreeProxy
 import sqlalchemy.orm.exc as saexc
 import pyramid.exceptions as pyrexc
+from altaircms.security import RootFactory
 
-
-class PageRenderingResource(object):
-    def __init__(self, request):
-        self.request = request
-
+class PageRenderingResource(RootFactory):
     def get_unpublished_page(self, page_id):
         page = Page.query.filter(Page.id==page_id).one()
         page.to_unpublished()

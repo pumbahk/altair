@@ -10,6 +10,7 @@ from altaircms.plugins.base import asset
 from altaircms.plugins.base.mixins import HandleSessionMixin
 from altaircms.plugins.base.mixins import HandleWidgetMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
+from altaircms.security import RootFactory
 
 class {{Package}}Widget(Widget):
     implements(IWidget)
@@ -29,12 +30,10 @@ class {{Package}}Widget(Widget):
 
 class {{Package}}WidgetResource(HandleSessionMixin,
                                 UpdateDataMixin,
-                                HandleWidgetMixin
+                                HandleWidgetMixin,
+                                RootFactory
                           ):
     WidgetClass = {{Package}}Widget
-
-    def __init__(self, request):
-        self.request = request
 
     def get_widget(self, widget_id):
         return self._get_or_create({{Package}}Widget, widget_id)

@@ -4,6 +4,7 @@ from pyramid.security import authenticated_userid, has_permission
 from pyramid.view import view_config
 
 from sqlalchemy.sql.expression import desc
+import transaction
 
 from altaircms.fanstatic import with_bootstrap, bootstrap_need
 from altaircms.models import DBSession, Event

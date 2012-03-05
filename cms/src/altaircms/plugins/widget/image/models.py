@@ -10,6 +10,7 @@ from altaircms.plugins.base import DBSession
 from altaircms.plugins.base import asset
 from altaircms.plugins.base.mixins import HandleSessionMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
+from altaircms.security import RootFactory
 
 ImageAsset = asset.models.ImageAsset
 
@@ -32,11 +33,10 @@ class ImageWidget(Widget):
 
 class ImageWidgetResource(HandleSessionMixin,
                           UpdateDataMixin,
-                          AssetWidgetResourceMixin
+                          AssetWidgetResourceMixin, 
+                          RootFactory
                           ):
     WidgetClass = ImageWidget
     AssetClass = ImageAsset
 
-    def __init__(self, request):
-        self.request = request
 
