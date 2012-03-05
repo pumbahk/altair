@@ -1,38 +1,35 @@
 <%inherit file='../../layout_2col.mako'/>
 
+<%
+count = len(role.permissions)
+per = count / 2
+%>
+
+<div class="row">
 <h4 class="page-header">オペレータ情報</h4>
-<table class="table">
+<div class="span5">
+<table class="table table-striped">
     <tbody>
+    %for perm in role.permissions[:per]:
     <tr>
-        <th>ID(Internal)</th>
-        <td>${operator.id}</td>
+        <td><span class="label label-info">${perm.permission}</span></td>
     </tr>
-    <tr>
-        <th>ID(External)</th>
-        <td>${operator.user_id}</td>
-    </tr>
-    <tr>
-        <th>Authentication source</th>
-        <td>${operator.auth_source}</td>
-    </tr>
-    <tr>
-        <th>Role</th>
-        <td>${operator.role.name}</td>
-    </tr>
-    <tr>
-        <th>最終ログイン</th>
-        <td>${operator.last_login}</td>
-    </tr>
-    <tr>
-        <th>登録日</th>
-        <td>${operator.date_joined}</td>
-    </tr>
+    %endfor
     </tbody>
 </table>
+</div>
 
-%if 'operator_delete' in [perm.permission for perm in user.role.permissions]:
-    <form action="${request.route_url("operator", id=operator.id)}" method="POST">
-        <input type="hidden" name="_method" value="delete"/>
-        <button class="btn" type="submit">削除</button>
-    </form>
-%endif
+<div class="span5">
+<table class="table table-striped">
+    <tbody>
+    %for perm in role.permissions[per:]:
+    <tr>
+        <td><span class="label label-info">${perm.permission}</span></td>
+    </tr>
+    %endfor
+    </tbody>
+</table>
+</span>
+
+</div>
+</div>

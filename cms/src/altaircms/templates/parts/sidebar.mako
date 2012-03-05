@@ -16,6 +16,6 @@
     <li><a href="#">メールマガジン</a></li>
     <li><a href="${request.route_url("operator_list")}">オペレータ</a></li>
     <li><a href="${request.route_url("apikey_list")}">APIKEY</a></li>
-    <li>ロール</li>
+    <li><a href="${request.route_url("role_list")}">ロール</a></li>
     <li>タグ</li>
 </ul>

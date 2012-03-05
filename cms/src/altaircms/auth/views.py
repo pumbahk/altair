@@ -215,8 +215,39 @@ class OperatorView(object):
 
     def _check_obj(self):
         if not self.operator:
-            return HTTPNotFound
+            return HTTPNotFound()
 
 class OperatorAPI(BaseRESTAPI):
     validationschema = None
     model = Operator
+
+
+class RoleAPI(BaseRESTAPI):
+    model = Role
+
+
+class RoleView(object):
+    def __init__(self, request):
+        self.request = request
+        self.id = request.matchdict.get('id', None)
+        if self.id:
+            self.role = RoleAPI(self.request, self.id).read()
+
+        bootstrap_need()
+
+    @view_config(route_name="role_list", request_method="GET", renderer="altaircms:templates/auth/role/list.mako")
+    def list(self):
+        return dict(
+            roles=DBSession.query(Role)
+        )
+
+    @view_config(route_name="role", request_method="POST", renderer="altaircms:templates/auth/role/view.mako")
+    @view_config(route_name="role", request_method="GET", renderer="altaircms:templates/auth/role/view.mako")
+    def read(self):
+        return dict(
+            role=self.role
+        )
+
+    @view_config(route_name="role", request_method="POST")
+    def delete(self):
+        pass
