@@ -6,3 +6,6 @@ def to_show_page(request, asset, filepath=None):
     else:
         raise Exception("invalid filepath %s" % filepath)
     return request.route_url("asset_display", asset_id=asset.id, _query=query)
+
+def not_found_image(request): #fixme
+    return '<img src="/static/img/not_found.jpg" alt="notfound"/>'
