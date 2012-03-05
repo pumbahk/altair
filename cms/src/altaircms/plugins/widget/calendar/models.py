@@ -6,8 +6,10 @@ import sqlalchemy.orm as orm
 
 from altaircms.widget.models import Widget
 from altaircms.plugins.base import DBSession
-from altaircms.plugins.base import HandleSessionMixin
-from altaircms.plugins.base import UpdateDataMixin
+from altaircms.plugins.base.mixins import HandleSessionMixin
+from altaircms.plugins.base.mixins import HandleWidgetMixin
+from altaircms.plugins.base.mixins import UpdateDataMixin
+from altaircms.security import RootFactory
 
 class CalendarWidget(Widget):
     implements(IWidget)
@@ -19,17 +21,22 @@ class CalendarWidget(Widget):
     query = DBSession.query_property()
 
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
+    calendar_type = sa.Column(sa.String(255))
+    from_date = sa.Column(sa.Date)
+    to_date = sa.Column(sa.Date)
 
-    def __init__(self, id=None, asset_id=None):
-        self.id = id
-        self.asset_id = asset_id
-
+from . import forms
 
 class CalendarWidgetResource(HandleSessionMixin,
-                          UpdateDataMixin,
-                          ):
+                             UpdateDataMixin,
+                             HandleWidgetMixin, 
+                             RootFactory):
     WidgetClass = CalendarWidget
 
-    def __init__(self, request):
-        self.request = request
+    def attach_form_from_widget(self, D, widget):
+        form = D["form_class"](**widget.to_dict())
+        D["form"] = form
+        return D
 
+    def get_widget(self, widget_id):
+        return self._get_or_create(CalendarWidget, widget_id)

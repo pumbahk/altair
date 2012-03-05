@@ -15,7 +15,9 @@
     <link rel="stylesheet" type="text/css" href="/static/css/overlay-basic.css"/>
     <link rel="stylesheet" type="text/css" href="/static/css/my/sample.css">
     <link rel="stylesheet" href="/static/css/page/edit.css" type="text/css" />
+ ##todo: moveit
     <link rel="stylesheet" type="text/css" href="/plugins/static/css/widget/lib/image.css">
+    <link rel="stylesheet" type="text/css" href="/plugins/static/css/widget/lib/calendar.css">
     ${css.edit()}
 </%block>
 <%block name='js_foot'>
@@ -45,49 +47,54 @@ ${page_render.publish_status(request) | n}
 
 
 <div id="pagecontentform">
-    <div id="pagelayout">レイアウト選択</div>
-    <div id="pageversion">ページのバージョンが入る</div>
-    <div id="pagewidget">ウィジェット
-        <div id="widget_palet">
-            <div id="image" class="widget red float-left">image</div>
-            <div id="freetext" class="widget blue float-left">freetext</div>
-            <div id="flash"  class="widget green float-left">flash</div>
-            <div id="movie"  class="widget gray float-left">movie</div>
-            <div id="dummy_widget4"  class="widget green float-left">widget</div>
-            <div id="dummy_widget5"  class="widget blue float-left">widget</div>
-            <div id="dummy_widget6"  class="widget red float-left">widget</div>
-        </div>
+  <div id="pagelayout">レイアウト選択</div>
+  <div id="pageversion">ページのバージョンが入る</div>
+  <div id="pagewidget">ウィジェット
+    <div id="widget_palet">
+      <div id="image" class="widget red float-left">image</div>
+      <div id="freetext" class="widget blue float-left">freetext</div>
+      <div id="flash"  class="widget green float-left">flash</div>
+      <div id="movie"  class="widget gray float-left">movie</div>
+      <div id="calendar"  class="widget green float-left">calendar</div>
+      <div id="dummy_widget5"  class="widget blue float-left">widget</div>
+      <div id="dummy_widget6"  class="widget red float-left">widget</div>
     </div>
-    <br class="clear"/>
-    <form action="#" method="post">
-        <div id="page">ページ編集
-        <div id="selected_layout" class="clear">
-          <div id="wrapped">
-            % for name  in layout_render.blocks_image():
+  </div>
+  <br class="clear"/>
+  <form action="#" method="post">
+    <div id="main_page">ページ編集
+      <div id="selected_layout" class="clear">
+        <div id="wrapped">
+          % for name  in layout_render.blocks_image():
             <div id="${name}" class="block noitem">${name}</div>
-            % endfor
-          </div>
+          % endfor
         </div>
+      </div>
 
-        <div class="dialog_overlay" id="overlay">
-          <!-- the external content is loaded inside this tag -->
-          <div id="wrap" class="contentWrap"></div>
-        </div>
-        </div>
-        <a href="${request.route_url("front_to_preview", page_id=page.id)}">preview</a>
-        <button type="submit">publish</button>
-    </form>
+      <div class="dialog_overlay" id="overlay">
+        <!-- the external content is loaded inside this tag -->
+        <div id="wrap" class="contentWrap"></div>
+      </div>
+    </div>
+    <a href="${request.route_url("front_to_preview", page_id=page.id)}">preview</a>
+    <button type="submit">publish</button>
+  </form>
 </div>
 
 <script type="text/javascript">
   function get_page(){return ${page.id};}
 </script>
 <script type="text/javascript" src="/static/js/my/widgets/base.js"></script>
+## todo: moveit
 <script type="text/javascript" src="/plugins/static/js/widget/lib/image.js"></script>
+## todo: moveit
 <script type="text/javascript" src="/plugins/static/js/widget/lib/freetext.js"></script>
+## todo: moveit
 <script type="text/javascript" src="/plugins/static/js/widget/lib/movie.js"></script>
+## todo: moveit
 <script type="text/javascript" src="/plugins/static/js/widget/lib/flash.js"></script>
+## todo: moveit
+<script type="text/javascript" src="/plugins/static/js/widget/lib/calendar.js"></script>
 <script type="text/javascript" src="/static/js/page/backbone_patch.js"></script>
 <script type="text/javascript" src="/static/js/page/edit.js"></script>
-
 

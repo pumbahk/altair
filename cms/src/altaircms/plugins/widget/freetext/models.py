@@ -1,11 +1,13 @@
-from altaircms.interfaces import IWidget
+import sqlalchemy as sa
 from zope.interface import implements
+
+from altaircms.interfaces import IWidget
 from altaircms.widget.models import Widget
 from altaircms.plugins.base import DBSession
-from altaircms.plugins.base import HandleSessionMixin
-from altaircms.plugins.base import UpdateDataMixin
-
-import sqlalchemy as sa
+from altaircms.plugins.base.mixins import HandleSessionMixin
+from altaircms.plugins.base.mixins import UpdateDataMixin
+from altaircms.plugins.base.mixins import HandleWidgetMixin
+from altaircms.security import RootFactory
 
 class FreetextWidget(Widget):
     implements(IWidget)
@@ -23,16 +25,8 @@ class FreetextWidget(Widget):
         self.id = id
         self.text = text
 
-class FreetextWidgetResource(HandleSessionMixin, UpdateDataMixin):
-    def __init__(self, request):
-        self.request = request
-
-    def _get_or_create(self, model, widget_id):
-        if widget_id is None:
-            return model()
-        else:
-            return DBSession.query(model).filter(model.id == widget_id).one()
-        
-    def get_freetext_widget(self, widget_id):
-        return self._get_or_create(FreetextWidget, widget_id)
-
+class FreetextWidgetResource(HandleSessionMixin, 
+                             UpdateDataMixin, 
+                             HandleWidgetMixin, 
+                             RootFactory):
+    WidgetClass = FreetextWidget

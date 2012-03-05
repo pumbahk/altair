@@ -27,8 +27,9 @@
       <td class="${de["day_class"]}">
         <span class="day">${de["day"]}</span>
         <ul>
-        %for p in de["performance"]:
-          ${p.render()}
+        %for p in de["day_performances"]:
+          <li><span class="serial"><a href="#performance-${p.id}"></a></span>
+            <a target="_blank" href="#">${p.performance_open.strftime("%H:%M")}</a></li>
         %endfor
         </ul>
       </td>   

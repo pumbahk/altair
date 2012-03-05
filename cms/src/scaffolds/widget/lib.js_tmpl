@@ -26,7 +26,12 @@ widget.configure({
 (function(widget){
     var opt = {} //widget local variable
     var load_page = function(we){
-        we.dialog.load("/api/widget/{{package}}/dialog");
+        var pk = we.get_pk(we.where);
+        var url = "/api/widget/{{package}}/dialog";
+        if(!!pk){
+            url += "?" + $.param({"pk": pk});
+        }
+        return we.dialog.load(url);
     };
 
     var on_dialog = function(we){

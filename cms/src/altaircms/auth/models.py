@@ -104,3 +104,24 @@ class Client(Base):
     operators = relationship("Operator", backref="client")
     sites = relationship("Site", backref="site")
     events = relationship("Event", backref="event")
+
+
+class APIKey(Base):
+    __tablename__ = 'apikey'
+
+    def generate_apikey(self):
+        from uuid import uuid4
+        import hashlib
+
+        hash = hashlib.new('sha256', str(uuid4()))
+        return hash.hexdigest()
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    apikey = Column(String, default=generate_apikey)
+
+    client_id = Column(Integer, ForeignKey("client.id"))
+    client = relationship("Client", backref=backref("client", order_by=id))
+
+    created_at = Column(DateTime, default=datetime.now())
+    updated_at = Column(DateTime, default=datetime.now())

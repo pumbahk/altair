@@ -107,28 +107,6 @@ class Event(Base):
         return self.title
 
 
-class APIKey(Base):
-    __tablename__ = 'apikey'
-
-    def apikey_gen():
-        from uuid import uuid4
-        import hashlib
-
-        hash = hashlib.new('sha1', str(uuid4()))
-        string = hash.hexdigest()
-
-        return string
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-    apikey = Column(String, default=apikey_gen)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
-
-    client_id = Column(Integer, ForeignKey("client.id"))
-    client = relationship("Client", backref=orm.backref("client", order_by=id))
-
-
 class Performance(Base):
     """
     パフォーマンス
