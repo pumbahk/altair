@@ -12,8 +12,6 @@
           href="http://rakuten-ticket-static.s3.amazonaws.com/public/stylesheets/default.css"/>
     <link rel="stylesheet" type="text/css"
           href="http://rakuten-ticket-static.s3.amazonaws.com/public/stylesheets/ui-lightness/jquery-ui-1.8.13.custom.css"/>
-    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-    <script type="text/javascript" src="/static/swfobject.js"></script>
     ## javascript block
     <%block name="js_prerender"/>
     <script type="text/javascript">
