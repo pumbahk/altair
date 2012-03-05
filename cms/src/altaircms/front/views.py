@@ -9,6 +9,8 @@ def rendering_page(context, request):
     page, layout = context.get_page_and_layout(url)
 
     block_context = context.get_block_context(page)
+    block_context.scan(request=request)
+
     tmpl = context.get_layout_template(layout, context.get_render_config())
     params = dict(page=page, display_blocks=block_context.blocks)
     return render_to_response(tmpl, params, request)
@@ -19,8 +21,9 @@ def rendering_preview_page(context, request):
     page, layout = context.get_page_and_layout_preview(url)
 
     block_context = context.get_block_context(page)
-    tmpl = context.get_layout_template(layout, context.get_render_config())
+    block_context.scan(request=request)
 
+    tmpl = context.get_layout_template(layout, context.get_render_config())
     params = dict(page=page, display_blocks=block_context.blocks)
     return render_to_response(tmpl, params, request)
 

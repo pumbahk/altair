@@ -29,9 +29,9 @@ class FreetextWidget(Widget):
         self.text = text
 
     def merge_settings(self, bname, bsettings):
-        # ctx = {"widget": self}
-        # bsettings.add(bname, render())
-        bsettings.add(bname, "text:%s" % self.id)
+        # bsettings.need_extra_in_scan("request")
+        content = render(self.template_name, {"widget": self})
+        bsettings.add(bname, content)
 
 class FreetextWidgetResource(HandleSessionMixin, 
                              UpdateDataMixin, 

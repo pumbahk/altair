@@ -40,7 +40,8 @@ class FunctionalPageRenderingTest(unittest.TestCase):
 
         result = self.testapp.get("/f/publish/sample_page", status=200)
         import re
-        self.assertEqual(re.sub("\s", "", result.text), "text:1image:2")
+        expexted = '<divclass="freetext-widget">hohoho</div><divclass="image-widget"><imgsrc="http://localhost/asset/display/1?"alt=""/></div>'
+        self.assertEqual(re.sub("\s", "", result.text), expexted)
 
     def test_it_nodata(self):
         self.testapp.get("/f/publish/sample_page", status=404)
@@ -103,7 +104,7 @@ class FunctionalPageRenderingTest(unittest.TestCase):
     def _getImageWidget(self):
         from altaircms.plugins.widget.image.models import ImageWidget
         asset = self._getImageAsset()
-        D = {"assest": asset,  "asset_id": asset.id, "id": 2}
+        D = {"asset": asset,  "asset_id": asset.id, "id": 2}
         return ImageWidget.from_dict(D)
 
 if __name__ == "__main__":
