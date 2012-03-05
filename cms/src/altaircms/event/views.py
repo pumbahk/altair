@@ -1,5 +1,4 @@
 # coding: utf-8
-from Carbon import Res
 import isodate
 import json
 import collections
