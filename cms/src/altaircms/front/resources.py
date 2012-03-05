@@ -3,8 +3,8 @@
 from altaircms.models import DBSession
 from altaircms.page.models import Page
 from altaircms.layout.models import Layout
-from . import generate as gen
-from altaircms.widget.generate import WidgetTreeProxy
+import altaircms.widget.tree.genpage as gen
+from altaircms.widget.tree.proxy import WidgetTreeProxy
 import sqlalchemy.orm.exc as saexc
 import pyramid.exceptions as pyrexc
 from altaircms.security import RootFactory
@@ -30,8 +30,15 @@ class PageRenderingResource(RootFactory):
     def get_render_config(self):
         return gen.get_config(self.request)
 
-    def get_render_tree(self, page):
-        return gen.get_pagerender_tree(WidgetTreeProxy(page))
+    def get_performances(self):
+        import warnings
+        warnings.warn("using dummy performances")
+        from altaircms.plugins.widget.calendar.demo import dummy_performances
+        return dummy_performances
+
+    def get_block_context(self, page):
+        from altaircms.widget.tree.block_context import BlockContext
+        return BlockContext.from_widget_tree(WidgetTreeProxy(page), scan=True)
 
     def get_layout_template(self, layout, config):
         return gen.get_layout_template(str(layout.template_filename), config)

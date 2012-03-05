@@ -6,7 +6,7 @@
   % for g in assets:
   <div>
      % for movie in g:
-       <img pk="${movie.id}" src="${h.asset.to_show_page(request,movie)}" alt=""/>
+       <img pk="${movie.id}" src="${h.asset.to_show_page(request,movie,filepath="imagepath")}" alt=""/>
      % endfor          
   </div>
   % endfor 

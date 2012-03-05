@@ -3,7 +3,7 @@ import unittest
 
 class WidgetCacherTest(unittest.TestCase):
     def _getTarget(self, fetcher=None):
-        from altaircms.widget.generate import WidgetCacher        
+        from altaircms.widget.tree.proxy import WidgetCacher        
         return WidgetCacher(fetcher)
 
     def _getPage(self):

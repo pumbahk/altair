@@ -12,6 +12,7 @@ from altaircms.plugins.base.mixins import HandleSessionMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
 
+from pyramid.renderers import render
 ImageAsset = asset.models.ImageAsset
 
 class ImageWidget(Widget):
@@ -31,6 +32,13 @@ class ImageWidget(Widget):
         self.id = id
         self.asset_id = asset_id
 
+    def merge_settings(self, bname, bsettings):
+        bsettings.need_extra_in_scan("request")
+        content = lambda : render(self.template_name,
+                                  {"widget": self,
+                                   "request": bsettings.extra["request"]})
+        bsettings.add(bname, content)
+
 class ImageWidgetResource(HandleSessionMixin,
                           UpdateDataMixin,
                           AssetWidgetResourceMixin, 
@@ -38,5 +46,4 @@ class ImageWidgetResource(HandleSessionMixin,
                           ):
     WidgetClass = ImageWidget
     AssetClass = ImageAsset
-
 

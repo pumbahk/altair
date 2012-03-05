@@ -1,3 +1,4 @@
+<div class="calendar-widget">
 <table>
  <thead>
    <tr>
@@ -38,3 +39,4 @@
   %endfor
  </tbody>
 </table>
+</div>

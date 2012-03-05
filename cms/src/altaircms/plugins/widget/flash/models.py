@@ -13,6 +13,7 @@ from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
 
 FlashAsset = asset.models.FlashAsset
+from pyramid.renderers import render
 
 class FlashWidget(Widget):
     implements(IWidget)
@@ -30,6 +31,51 @@ class FlashWidget(Widget):
     def __init__(self, id=None, asset_id=None):
         self.id = id
         self.asset_id = asset_id
+
+    def merge_settings(self, bname, bsettings):
+        bsettings.need_extra_in_scan("request")
+        def movie_render():
+            return render(self.template_name,
+                          {"widget": self,
+                           "request": bsettings.extra["request"]})
+        bsettings.add(bname, movie_render)
+
+        if not bsettings.is_attached(self, "js_prerender"):
+            bsettings.add("js_prerender", JS_PRERENDER)
+            bsettings.attach_widget(self, "js_prerender")
+
+        ## in jquery.ready()
+        if not bsettings.is_attached(self, "js_postrender"):
+            bsettings.add("js_postrender", JS_POSTRENDER)
+            bsettings.attach_widget(self, "js_postrender")
+
+JS_PRERENDER = """\
+<script type="text/javascript" src="/static/swfobject.js"></script>
+"""
+
+JS_POSTRENDER = """\
+    $("flash-widget").each(function(i,e){
+        var flashvars = {};
+        var params = {};
+        var attributes = {};
+
+        var e = $(e);
+        var width = e.attr("width")
+        var height = e.attr("height")
+        var url = e.attr("url")
+        swfobject.embedSWF(
+            url,
+            "asset",
+            width,
+            height, 
+            "9.0.0",
+            "/static/expressInstall.swf",
+            flashvars,
+            params,
+            attributes
+        );
+    });
+"""
 
 
 class FlashWidgetResource(HandleSessionMixin,

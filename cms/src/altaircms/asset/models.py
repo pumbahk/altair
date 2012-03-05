@@ -79,7 +79,7 @@ class FlashAsset(MediaAssetColumnsMixin, Asset):
 
     id = sa.Column(sa.Integer, sa.ForeignKey("asset.id"), primary_key=True)
     mimetype = sa.Column(sa.String, default='application/x-shockwave-flash')
-    image_path = sa.Column(sa.String, default=DEFAULT_IMAGE_PATH)
+    imagepath = sa.Column(sa.String, default=DEFAULT_IMAGE_PATH)
 
 class MovieAsset(MediaAssetColumnsMixin, Asset):
     DEFAULT_IMAGE_PATH = os.path.join(DIR, "img/not_found.jpg")
@@ -91,7 +91,7 @@ class MovieAsset(MediaAssetColumnsMixin, Asset):
     __mapper_args__ = {"polymorphic_identity": type}
 
     id = sa.Column(sa.Integer, sa.ForeignKey("asset.id"), primary_key=True)
-    image_path = sa.Column(sa.String, default=DEFAULT_IMAGE_PATH)
+    imagepath = sa.Column(sa.String, default=DEFAULT_IMAGE_PATH)
 
 # class CssAsset(Asset):
 #     pass

@@ -28,9 +28,9 @@ class FunctionalViewTests(unittest.TestCase):
         from altaircms.page.models import Page
         return Page.from_dict({"id": id})
 
-    def _makeAsset(self, id=None, image_path="not_found.jpg"):
+    def _makeAsset(self, id=None, imagepath="not_found.jpg"):
         from altaircms.asset.models import MovieAsset
-        return MovieAsset.from_dict({"id": id, "image_path": image_path})
+        return MovieAsset.from_dict({"id": id, "imagepath": imagepath})
     
     def _getSession(self):
         from altaircms.models import DBSession

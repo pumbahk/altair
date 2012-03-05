@@ -65,7 +65,6 @@ class AssetEditView(object):
                         return response
                 html = markupsafe.Markup(form.render(captured))
             except ValidationFailure, e:
-                # import pdb; pdb.set_trace()
                 html = markupsafe.Markup(e.render())
 
         else:
@@ -168,9 +167,11 @@ def asset_display(request):
     attr = request.GET.get("filepath") or "filepath"
     filepath = getattr(asset, attr)
     filepath = os.path.join(get_storepath(request), filepath)
-
     content_type = asset.mimetype if asset.mimetype else 'application/octet-stream'
-    return Response(file(filepath).read(), content_type=content_type)
+    if os.path.exists(filepath):
+        return Response(file(filepath).read(), content_type=content_type)
+    else:
+        return Response("", content_type=content_type)
 
 
 class AssetRESTAPIView(BaseRESTAPI):

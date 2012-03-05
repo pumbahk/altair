@@ -1,8 +1,8 @@
 import unittest
-from altaircms.front.generate import template_to_render
-from altaircms.front.generate import WidgetNode
-from altaircms.front.generate import GeneratePageException
-from altaircms.front.generate import get_pagerender_tree
+from altaircms.widget.tree.genpage import template_to_render
+from altaircms.widget.tree.genpage import WidgetNode
+from altaircms.widget.tree.genpage import GeneratePageException
+from altaircms.widget.tree.genpage import get_pagerender_tree
 
 class WidgetNodeTest(unittest.TestCase):
     def test_it(self):

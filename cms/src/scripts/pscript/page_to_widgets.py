@@ -1,6 +1,6 @@
 from altaircms.page.models import Page
 from altaircms.widget.generate import WidgetTreeProxy
-from altaircms.front.generate import get_pagerender_tree
+from altaircms.widget.tree.genpage import get_pagerender_tree
 
 
 # page -> WidgetTree -> PageRenderTree -> ConcreteRenderTree -> render

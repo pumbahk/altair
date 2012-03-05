@@ -56,6 +56,10 @@ def view_function(request):
     pass
 """
 
+with_jquery = FanstaticDecoratorFactory(
+    jquery.need
+)
+
 with_fanstatic_jqueries = FanstaticDecoratorFactory(
     jquery.need,
     jquery_tools.need,

@@ -3,7 +3,7 @@ from collections import defaultdict
 from altaircms.interfaces import IBlockTree
 from altaircms.interfaces import ICacher
 from zope.interface import implements
-from .fetcher import WidgetFetcher
+from altaircms.widget.fetcher import WidgetFetcher
 
 
 """

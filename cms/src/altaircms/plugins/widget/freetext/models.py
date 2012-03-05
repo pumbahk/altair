@@ -9,6 +9,9 @@ from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.plugins.base.mixins import HandleWidgetMixin
 from altaircms.security import RootFactory
 
+
+from pyramid.renderers import render
+
 class FreetextWidget(Widget):
     implements(IWidget)
     type = "freetext"
@@ -24,6 +27,11 @@ class FreetextWidget(Widget):
     def __init__(self, id=None, text=None):
         self.id = id
         self.text = text
+
+    def merge_settings(self, bname, bsettings):
+        # bsettings.need_extra_in_scan("request")
+        content = render(self.template_name, {"widget": self})
+        bsettings.add(bname, content)
 
 class FreetextWidgetResource(HandleSessionMixin, 
                              UpdateDataMixin, 

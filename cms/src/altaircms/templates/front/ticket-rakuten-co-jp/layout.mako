@@ -15,11 +15,11 @@
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
     <script type="text/javascript" src="/static/swfobject.js"></script>
     ## javascript block
-    <%block name="js"/>
+    <%block name="js_prerender"/>
     <script type="text/javascript">
             ## jQuery depended javascript code
                   $(document).ready(function () {
-            <%block name="jquery"/>
+            <%block name="js_postrender"/>
         });
     </script>
     ## style

@@ -12,6 +12,7 @@ from altaircms.plugins.base.mixins import HandleSessionMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
 
+from pyramid.renderers import render
 MovieAsset = asset.models.MovieAsset
 
 class MovieWidget(Widget):
@@ -31,6 +32,13 @@ class MovieWidget(Widget):
         self.id = id
         self.asset_id = asset_id
 
+    def merge_settings(self, bname, bsettings):
+        bsettings.need_extra_in_scan("request")
+        def movie_render():
+            return render(self.template_name,
+                          {"widget": self,
+                           "request": bsettings.extra["request"]})
+        bsettings.add(bname, movie_render)
 
 class MovieWidgetResource(HandleSessionMixin,
                           UpdateDataMixin,

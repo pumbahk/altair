@@ -1,7 +1,7 @@
 import json
 import unittest
 
-from . import models
+from altaircms.widget.tests import models
 Base = models.Base
 DBSession = models.DBSession
 DummyWidget = models.DummyWidget
@@ -38,7 +38,7 @@ class WidgetTreeProxyTest(unittest.TestCase):
 
     def test_make_it(self):
         page = self._getPage()
-        from altaircms.widget.generate import WidgetTreeProxy
+        from altaircms.widget.tree.proxy import WidgetTreeProxy
         WidgetTreeProxy(page)
 
     def test_has_block(self):
@@ -47,7 +47,7 @@ class WidgetTreeProxyTest(unittest.TestCase):
         session.add(iw)
 
         page = self._getPage()
-        from altaircms.widget.generate import WidgetTreeProxy
+        from altaircms.widget.tree.proxy import WidgetTreeProxy
         self.assertTrue(WidgetTreeProxy(page, session=session).blocks)
 
     def test_has_block_has_collect_member(self):
@@ -56,7 +56,7 @@ class WidgetTreeProxyTest(unittest.TestCase):
         session.add(iw)
 
         page = self._getPage()
-        from altaircms.widget.generate import WidgetTreeProxy
+        from altaircms.widget.tree.proxy import WidgetTreeProxy
         blocks = WidgetTreeProxy(page, session=session).blocks
         self.assertEquals([o.asset_id for o in blocks["header"]], [10])
 
