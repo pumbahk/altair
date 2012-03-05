@@ -22,6 +22,7 @@ requires = [
     ## utility
     "bpmappers",
     'sadisplay',
+    'isodate',
     ## auth
     "velruse",
     'oauth2',

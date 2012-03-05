@@ -1,23 +1,28 @@
 # coding: utf-8
+from Carbon import Res
+import isodate
 import json
 import collections
 
-from pyramid.httpexceptions import HTTPFound, HTTPBadRequest, HTTPCreated, HTTPOk
+from pyramid.httpexceptions import HTTPFound, HTTPBadRequest, HTTPCreated, HTTPOk, HTTPForbidden
+from pyramid.response import Response
 from pyramid.view import view_config
+import transaction
 
 from altaircms.models import DBSession, Event
 from altaircms.views import BaseRESTAPI
 from altaircms.page.models import Page
-from altaircms.event.forms import EventForm
+from altaircms.fanstatic import with_bootstrap
+
+from altaircms.event.forms import EventForm, EventRegisterForm
 from altaircms.event.mappers import EventMapper, EventsMapper
+from altaircms.event.api import parse_and_save_event, validate_apikey
 
 
 ##
 ## CMS view
 ##
-from altaircms.fanstatic import with_bootstrap
-
-@view_config(route_name='event', renderer='altaircms:templates/event/view.mako', permission='event_read', 
+@view_config(route_name='event', renderer='altaircms:templates/event/view.mako', permission='event_read',
              decorator=with_bootstrap)
 def view(request):
     id_ = request.matchdict['id']
@@ -85,3 +90,29 @@ class EventRESTAPIView(BaseRESTAPI):
     def delete(self):
         status = super(EventRESTAPIView, self).delete()
         return HTTPOk() if status else HTTPBadRequest()
+
+
+##
+## バックエンドとの通信用
+##
+@view_config(route_name="api_event_register", request_method="POST", renderer="json")
+def event_register(request):
+    form = EventRegisterForm(request.POST)
+    apikey = request.headers.get('X-Altair-Authorization', None)
+    if not validate_apikey(apikey):
+        return HTTPForbidden()
+
+    if form.validate():
+        try:
+            parse_and_save_event(request.POST['jsonstring'])
+        except Exception as e:
+            return Response(json.dumps({
+                'error':str(e)
+            }), status=400, content_type='application/json')
+        return HTTPCreated()
+    else:
+        return Response(
+            json.dumps(form.errors),
+            content_type='application/json',
+            status=400
+        )

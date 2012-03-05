@@ -56,7 +56,3 @@ class APIKeyView(object):
             DBSession.delete(self.model_object)
 
         return HTTPFound(self.request.route_url("apikey_list"))
-
-
-class APIKeyAPI(BaseRESTAPI):
-    model = APIKey
