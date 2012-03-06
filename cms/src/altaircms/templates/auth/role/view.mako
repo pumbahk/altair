@@ -1,8 +1,7 @@
 <%inherit file='../../layout_2col.mako'/>
 
-${role.role2permission.permissions}
 <%
-count = len(role.role2permission)
+count = len(role.permissions)
 per = count / 2
 %>
 
@@ -22,10 +21,10 @@ ${form.permission}<br/>
 <div class="span5 pull-left">
 <table class="table table-striped">
     <tbody>
-    %for perm in role.role2permission[:per]:
+    %for perm in role.permissions[:per]:
     <tr>
         <td>
-            <span class="label label-info">${perm.permission}</span>
+            <span class="label label-info">${perm.name}</span>
             <span class="pull-right">
                 <form action="${request.route_url("role_permission", role_id=role.id, id=perm.id)}" method="POST">
                 <input type="hidden" name="_method" value="delete"/>
@@ -42,10 +41,10 @@ ${form.permission}<br/>
 <div class="span5 pull-left">
 <table class="table table-striped">
     <tbody>
-    %for perm in role.role2permission[per:]:
+    %for perm in role.permissions[per:]:
     <tr>
         <td>
-            <span class="label label-info">${perm.permission}</span>
+            <span class="label label-info">${perm.name}</span>
             <span class="pull-right">
                 <form action="${request.route_url("role_permission", role_id=role.id, id=perm.id)}" method="POST">
                 <input type="hidden" name="_method" value="delete"/>

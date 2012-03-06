@@ -33,10 +33,10 @@ class Operator(Base):
     """
     __tablename__ = 'operator'
 
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Integer, primary_key=True)
 
     auth_source = Column(String, nullable=False)
-    user_id = Column(BigInteger)
+    user_id = Column(Integer)
     screen_name = Column(Unicode)
 
     oauth_token = Column(String)
@@ -48,8 +48,8 @@ class Operator(Base):
     updated_at = Column(DateTime, default=datetime.now())
 
     role = relationship("Role", backref=backref("operators", order_by=id))
-    role_id = Column(BigInteger, ForeignKey("role.id"))
-    client_id = Column(BigInteger, ForeignKey("client.id"))
+    role_id = Column(Integer, ForeignKey("role.id"))
+    client_id = Column(Integer, ForeignKey("client.id"))
 
     UniqueConstraint('auth_source', 'user_id')
 
@@ -57,31 +57,33 @@ class Operator(Base):
         return '%s' % self.user_id
 
 
-class Role(Base):
-    __tablename__ = 'role'
-
-    id = Column(BigInteger, primary_key=True)
-    name = Column(String)
-
-
-class Permission(Base):
-    __tablename__ = 'permission'
-
-    id = Column(BigInteger, primary_key=True)
-    name = Column(String, unique=True)
-
-
 class RolePermission(Base):
-    __tablename__ = 'role_permission'
+    __tablename__ = 'role2permission'
 
-    id = Column(BigInteger, primary_key=True, autoincrement=True)
-    role_id = Column(BigInteger, ForeignKey('role.id'))
-    permission_id = Column(BigInteger, ForeignKey('permission.id'))
+    id = Column(Integer, primary_key=True)
+    role_id = Column(Integer, ForeignKey('role.id'))
+    permission_id = Column(Integer, ForeignKey('permission.id'))
 
     role = relationship("Role", backref=backref("role2permission", order_by=id))
     permission = relationship("Permission", backref=backref("role2permission", order_by=id))
 
     UniqueConstraint('role_id', 'permission_id')
+
+
+class Role(Base):
+    __tablename__ = 'role'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+
+    permissions = relationship("Permission", secondary=RolePermission.__table__, backref='role')
+
+
+class Permission(Base):
+    __tablename__ = 'permission'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True)
 
 
 class Client(Base):
@@ -90,7 +92,7 @@ class Client(Base):
     """
     __tablename__ = 'client'
 
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Integer, primary_key=True)
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=datetime.now())
 
@@ -115,11 +117,11 @@ class APIKey(Base):
         hash = hashlib.new('sha256', str(uuid4()))
         return hash.hexdigest()
 
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Integer, primary_key=True)
     name = Column(String)
     apikey = Column(String, default=generate_apikey)
     client = relationship("Client", backref=backref("apikeys", order_by=id))
-    client_id = Column(BigInteger, ForeignKey("client.id"))
+    client_id = Column(Integer, ForeignKey("client.id"))
 
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=datetime.now())

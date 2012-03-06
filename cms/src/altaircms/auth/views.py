@@ -17,7 +17,7 @@ from altaircms.models import DBSession
 from altaircms.fanstatic import with_bootstrap, bootstrap_need
 from altaircms.auth.errors import AuthenticationError
 from altaircms.auth.forms import RoleForm
-from .models import Operator, Role, RolePermission, DEFAULT_ROLE
+from .models import Operator, Role, Permission, RolePermission, DEFAULT_ROLE
 
 
 @view_config(name='login', renderer='altaircms:templates/login.mako')
@@ -247,8 +247,10 @@ class RoleView(object):
         if self.request.method == "POST":
             form = RoleForm(self.request.POST)
             if form.validate():
-                perm = RolePermission(role_id=self.id, permission=form.data.get('permission'))
+                perm = Permission(name=form.data.get('permission'))
                 DBSession.add(perm)
+                DBSession.merge(perm)
+                self.role.permissions.append(perm)
                 return HTTPFound(self.request.route_url('role', id=self.id))
         else:
             form = RoleForm()
@@ -270,13 +272,14 @@ class RolePermissionAPI(BaseRESTAPI):
     model = RolePermission
 
 
-class RolePermission(object):
+class RolePermissionView(object):
     def __init__(self, request):
         self.request = request
         self.role_id = request.matchdict.get('role_id', None)
         self.role_permission_id = request.matchdict.get('id', None)
         if self.role_id:
             self.role = RoleAPI(self.request, self.role_id).read()
+        import pdb; pdb.set_trace()
         if self.role_permission_id:
             self.role_permission = RolePermissionAPI(self.request, self.role_permission_id).read()
 
