@@ -4,7 +4,7 @@ from sqlalchemy.orm import relationship, backref
 
 from sqlalchemy.orm.mapper import Mapper
 from sqlalchemy.schema import Table, Column, ForeignKey, UniqueConstraint
-from sqlalchemy.types import String, DateTime, Integer, Unicode
+from sqlalchemy.types import String, DateTime, Integer, BigInteger, Unicode
 
 from altaircms.models import Base
 
@@ -14,15 +14,6 @@ DEFAULT_ROLE = 'administrator'
 ##
 ## CMS内で利用されるパーミッション一覧。view_configのpermission引数と合わせる
 ##
-
-# 対象オブジェクト
-target_objects = ['event', 'topic', 'ticket', 'magazine', 'asset', 'page', 'tag', 'layout', 'operator']
-PERMISSIONS = []
-for t in target_objects:
-    for act in ('create', 'read', 'update', 'delete'):
-        PERMISSIONS.append('%s_%s' % (t, act))
-
-
 class OAuthToken(Base):
     __tablename__ = 'oauth_token'
 
@@ -42,10 +33,10 @@ class Operator(Base):
     """
     __tablename__ = 'operator'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(BigInteger, primary_key=True)
 
     auth_source = Column(String, nullable=False)
-    user_id = Column(Integer)
+    user_id = Column(BigInteger)
     screen_name = Column(Unicode)
 
     oauth_token = Column(String)
@@ -57,8 +48,8 @@ class Operator(Base):
     updated_at = Column(DateTime, default=datetime.now())
 
     role = relationship("Role", backref=backref("operators", order_by=id))
-    role_id = Column(Integer, ForeignKey("role.id"))
-    client_id = Column(Integer, ForeignKey("client.id"))
+    role_id = Column(BigInteger, ForeignKey("role.id"))
+    client_id = Column(BigInteger, ForeignKey("client.id"))
 
     UniqueConstraint('auth_source', 'user_id')
 
@@ -69,20 +60,28 @@ class Operator(Base):
 class Role(Base):
     __tablename__ = 'role'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(BigInteger, primary_key=True)
     name = Column(String)
+
+
+class Permission(Base):
+    __tablename__ = 'permission'
+
+    id = Column(BigInteger, primary_key=True)
+    name = Column(String, unique=True)
 
 
 class RolePermission(Base):
     __tablename__ = 'role_permission'
 
-    id = Column(Integer, primary_key=True)
-    role_id = Column(Integer, ForeignKey('role.id'))
-    permission = Column(String)
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    role_id = Column(BigInteger, ForeignKey('role.id'))
+    permission_id = Column(BigInteger, ForeignKey('permission.id'))
 
-    role = relationship("Role", backref=backref("permissions", order_by=id))
+    role = relationship("Role", backref=backref("role2permission", order_by=id))
+    permission = relationship("Permission", backref=backref("role2permission", order_by=id))
 
-    UniqueConstraint('role', 'permission')
+    UniqueConstraint('role_id', 'permission_id')
 
 
 class Client(Base):
@@ -91,7 +90,7 @@ class Client(Base):
     """
     __tablename__ = 'client'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(BigInteger, primary_key=True)
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=datetime.now())
 
@@ -116,14 +115,11 @@ class APIKey(Base):
         hash = hashlib.new('sha256', str(uuid4()))
         return hash.hexdigest()
 
-    id = Column(Integer, primary_key=True)
+    id = Column(BigInteger, primary_key=True)
     name = Column(String)
     apikey = Column(String, default=generate_apikey)
     client = relationship("Client", backref=backref("apikeys", order_by=id))
-    client_id = Column(Integer, ForeignKey("client.id"))
-
-    client_id = Column(Integer, ForeignKey("client.id"))
-    client = relationship("Client", backref=backref("client", order_by=id))
+    client_id = Column(BigInteger, ForeignKey("client.id"))
 
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=datetime.now())

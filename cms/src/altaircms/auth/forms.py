@@ -12,3 +12,8 @@ class APIKeyForm(Form):
     name = fields.TextField(
         validators=[validators.Required()]
     )
+
+class RoleForm(Form):
+    permission = fields.TextField(
+        validators=[validators.Required()]
+    )

@@ -14,10 +14,10 @@ import transaction
 
 from altaircms.views import BaseRESTAPI
 from altaircms.models import DBSession
-from altaircms.fanstatic import with_bootstrap
+from altaircms.fanstatic import with_bootstrap, bootstrap_need
 from altaircms.auth.errors import AuthenticationError
-from altaircms.fanstatic import bootstrap_need
-from .models import Operator, Role, DEFAULT_ROLE
+from altaircms.auth.forms import RoleForm
+from .models import Operator, Role, RolePermission, DEFAULT_ROLE
 
 
 @view_config(name='login', renderer='altaircms:templates/login.mako')
@@ -244,10 +244,60 @@ class RoleView(object):
     @view_config(route_name="role", request_method="POST", renderer="altaircms:templates/auth/role/view.mako")
     @view_config(route_name="role", request_method="GET", renderer="altaircms:templates/auth/role/view.mako")
     def read(self):
+        if self.request.method == "POST":
+            form = RoleForm(self.request.POST)
+            if form.validate():
+                perm = RolePermission(role_id=self.id, permission=form.data.get('permission'))
+                DBSession.add(perm)
+                return HTTPFound(self.request.route_url('role', id=self.id))
+        else:
+            form = RoleForm()
         return dict(
+            form=form,
             role=self.role
         )
 
-    @view_config(route_name="role", request_method="POST")
+    @view_config(route_name="role", request_method="POST", request_param="_method=delete")
     def delete(self):
+        try:
+            DBSession.delete(self.role)
+        except:
+            raise
+        return HTTPFound(self.request.route_url("role_list"))
+
+
+class RolePermissionAPI(BaseRESTAPI):
+    model = RolePermission
+
+
+class RolePermission(object):
+    def __init__(self, request):
+        self.request = request
+        self.role_id = request.matchdict.get('role_id', None)
+        self.role_permission_id = request.matchdict.get('id', None)
+        if self.role_id:
+            self.role = RoleAPI(self.request, self.role_id).read()
+        if self.role_permission_id:
+            self.role_permission = RolePermissionAPI(self.request, self.role_permission_id).read()
+
+        bootstrap_need()
+
+    def create(self):
         pass
+
+    @view_config(route_name='role_permission_list', request_method="GET")
+    def read(self):
+        return dict(
+            permissions=DBSession.query(RolePermission)
+        )
+
+    def update(self):
+        pass
+
+    @view_config(route_name='role_permission', request_method="POST", request_param="_method=delete")
+    def delete(self):
+        try:
+            DBSession.delete(self.role_permission)
+        except:
+            raise
+        return HTTPFound(self.request.route_url("role", id=self.role.id))
