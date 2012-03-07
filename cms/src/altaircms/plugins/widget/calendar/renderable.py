@@ -9,7 +9,7 @@ __all__ = ["CalendarOutput", "performances_to_dict"]
 def performances_to_dict(performances):
     D = defaultdict(list)
     for p in performances:
-        dt = p.performance_open.date()
+        dt = p.open_on.date()
         D[(dt.year, dt.month, dt.day)].append(p)
     return D
 
@@ -53,6 +53,16 @@ class CalendarWeek(object):
     if change month durning rendeering a row, putting special th element before rendering.
     """
 
+### todo:fix パフォーマンスリストと同期した形で連番を振る必要があるのでここで連番を振るのは良くない。(タブ表示で死)
+class _Counter(object):
+    def __init__(self, i):
+        self.i = i
+
+    def __call__(self):
+        r = self.i
+        self.i += 1
+        return r
+
 class CalendarOutput(object):
     template = None
 
@@ -62,6 +72,7 @@ class CalendarOutput(object):
                    template=template)
 
     def __init__(self, performances=None, template=None):
+        self.i = _Counter(1)
         self.template = template or self.template
         self.performances = performances or defaultdict(list)
         
@@ -75,7 +86,7 @@ class CalendarOutput(object):
 
     def render(self, begin_date, end_date):
         rows = self.each_rows(begin_date, end_date)
-        return self.template.render_unicode(cal=rows)
+        return self.template.render_unicode(cal=rows, i=self.i)
 
 
 ### render function ##
@@ -102,7 +113,7 @@ def this_month(widget, performances, request):
     today = date.today()
     rows = cal.each_rows(date(today.year, today.month, 1), 
                          _next_month_date(today))
-    return render(template_name, {"cal":rows}, request)
+    return render(template_name, {"cal":rows, "i":cal.i}, request)
 
 def term(widget, performances, request):
     """開始日／終了日を指定してその範囲のカレンダを表示
@@ -110,7 +121,7 @@ def term(widget, performances, request):
     template_name = os.path.join(here, "rakuten.calendar.mako")
     cal = CalendarOutput.from_performances(performances)
     rows = cal.each_rows(widget.from_date, widget.to_date)
-    return render(template_name, {"cal":rows}, request)
+    return render(template_name, {"cal":rows, "i":cal.i}, request)
 
 def listing(widget, performances, request): #fixme: rename
     """パフォーマンスを一覧表示するだけの内容

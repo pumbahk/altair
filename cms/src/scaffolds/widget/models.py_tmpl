@@ -6,7 +6,6 @@ import sqlalchemy.orm as orm
 
 from altaircms.widget.models import Widget
 from altaircms.plugins.base import DBSession
-from altaircms.plugins.base import asset
 from altaircms.plugins.base.mixins import HandleSessionMixin
 from altaircms.plugins.base.mixins import HandleWidgetMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
@@ -22,11 +21,6 @@ class {{Package}}Widget(Widget):
     query = DBSession.query_property()
 
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
-
-    def __init__(self, id=None, asset_id=None):
-        self.id = id
-        self.asset_id = asset_id
-
 
 class {{Package}}WidgetResource(HandleSessionMixin,
                                 UpdateDataMixin,

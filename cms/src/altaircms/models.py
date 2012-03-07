@@ -126,6 +126,7 @@ class Performance(Base):
     updated_at = Column(DateTime, default=datetime.now())
 
     title = Column(Unicode)
+    venue = Column(Unicode) #開催地
     open_on = Column(DateTime)  # 開場
     close_on = Column(DateTime)  # 開始
     end_on = Column(DateTime)  # 終了

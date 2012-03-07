@@ -4,7 +4,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <title><%block name="fulltitle">Ticketstar CMS Front End (PC view)</%block></title>
     <meta name="description" content="<%block name="description"/>">
-    <meta name="keywords" content="<%block name="keyword"/>">
+    <meta name="keywords" content="<%block name="keywords"/>">
     <meta http-equiv="Content-Style-Type" content="text/css">
     <meta http-equiv="Content-Script-Type" content="text/javascript">
     <link rel="shortcut icon" href="/static/favicon.ico"/>

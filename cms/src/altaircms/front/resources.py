@@ -30,15 +30,19 @@ class PageRenderingResource(RootFactory):
     def get_render_config(self):
         return gen.get_config(self.request)
 
-    def get_performances(self):
-        import warnings
-        warnings.warn("using dummy performances")
-        from altaircms.plugins.widget.calendar.demo import dummy_performances
-        return dummy_performances
+    def get_performances(self, page):
+        if page.event:
+            return page.event.performances
+        else:
+            return []
 
     def get_block_context(self, page):
         from altaircms.widget.tree.block_context import BlockContext
-        return BlockContext.from_widget_tree(WidgetTreeProxy(page), scan=True)
+        context =  BlockContext.from_widget_tree(WidgetTreeProxy(page), scan=True)
+        context.blocks["keywords"] = [page.keywords]
+        context.blocks["description"] = [page.description]
+        context.blocks["title"] = [page.title]
+        return context
 
     def get_layout_template(self, layout, config):
         return gen.get_layout_template(str(layout.template_filename), config)
