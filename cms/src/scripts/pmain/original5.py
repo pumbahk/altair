@@ -72,8 +72,7 @@ def add_widget(page):
         from altaircms.plugins.widget.detail.models import DetailWidgetResource
         request = DummyRequest()
         request.json_body = dict(page_id=page.id, 
-                                 kind="description_and_image", 
-                                 data=dict())
+                                 data=dict(kind="description_and_image"))
         context = DetailWidgetResource(request)
         request.context = context
         r = DetailWidgetView(request).create()

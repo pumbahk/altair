@@ -50,6 +50,7 @@
           ${display_blocks["page_main_main"][0]|n}
           ${ widget.social() }
           ${ widget.description_and_image() }
+          ${display_blocks["page_main_main"][3]|n}
           ${ widget.summary()}
           ${display_blocks["page_main_main"][2]|n}
           ${ widget.performances()}
