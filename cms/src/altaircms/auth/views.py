@@ -247,10 +247,8 @@ class RoleView(object):
         if self.request.method == "POST":
             form = RoleForm(self.request.POST)
             if form.validate():
-                perm = Permission(name=form.data.get('permission'))
-                DBSession.add(perm)
-                DBSession.merge(perm)
-                self.role.permissions.append(perm)
+                perm = Permission(id=form.data.get('permission'))
+                DBSession.add(RolePermission(role_id=self.id, permission_id=perm.id))
                 return HTTPFound(self.request.route_url('role', id=self.id))
         else:
             form = RoleForm()

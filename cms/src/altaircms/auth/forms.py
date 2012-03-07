@@ -2,6 +2,9 @@
 from wtforms.form import Form
 from wtforms import fields, widgets, validators
 
+from altaircms.auth.models import Permission
+from altaircms.models import DBSession
+
 class OperatorCrudForm(Form):
     pass
 
@@ -14,6 +17,8 @@ class APIKeyForm(Form):
     )
 
 class RoleForm(Form):
-    permission = fields.TextField(
-        validators=[validators.Required()]
+    permission = fields.SelectField(
+        choices=DBSession.query(Permission.id, Permission.name),
+        validators=[validators.Required()],
+        coerce=int
     )
