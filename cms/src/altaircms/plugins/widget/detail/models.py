@@ -1,3 +1,5 @@
+# -*- coding:utf-8 -*-
+
 from zope.interface import implements
 from altaircms.interfaces import IWidget
 
@@ -10,28 +12,36 @@ from altaircms.plugins.base.mixins import HandleSessionMixin
 from altaircms.plugins.base.mixins import HandleWidgetMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
+from . import renderable
 
-class {{Package}}Widget(Widget):
+## kind = divのクラス名として展開
+KINDS = ["description_and_image"]
+
+class DetailWidget(Widget):
     implements(IWidget)
-    type = "{{package}}"
-
-    template_name = "altaircms.plugins.widget:{{package}}/render.mako"
-    __tablename__ = "widget_{{package}}"
+    type = "detail"
+    
+    __tablename__ = "widget_detail"
     __mapper_args__ = {"polymorphic_identity": type}
     query = DBSession.query_property()
 
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
-
+    kind = sa.Column(sa.String(255))
+    
     def merge_settings(self, bname, bsettings):
         bsettings.need_extra_in_scan("request")
-        # bsettings.add(bname, "content")
+        def detail_render():
+            request = bsettings.extra["request"]
+            render =  getattr(renderable, self.kind)
+            return render(self, request).render()
+        bsettings.add(bname, detail_render)
 
-class {{Package}}WidgetResource(HandleSessionMixin,
+class DetailWidgetResource(HandleSessionMixin,
                                 UpdateDataMixin,
                                 HandleWidgetMixin,
                                 RootFactory
                           ):
-    WidgetClass = {{Package}}Widget
+    WidgetClass = DetailWidget
 
     def get_widget(self, widget_id):
-        return self._get_or_create({{Package}}Widget, widget_id)
+        return self._get_or_create(DetailWidget, widget_id)

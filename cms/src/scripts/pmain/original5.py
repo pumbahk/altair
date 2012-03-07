@@ -66,6 +66,20 @@ def add_widget(page):
         append_to_json_structure(page, "page_main_main", 
                                  {"name": "performancelist", "pk": r["pk"]})
 
+    with block("detail"):
+        ## title
+        from altaircms.plugins.widget.detail.views import DetailWidgetView
+        from altaircms.plugins.widget.detail.models import DetailWidgetResource
+        request = DummyRequest()
+        request.json_body = dict(page_id=page.id, 
+                                 kind="description_and_image", 
+                                 data=dict())
+        context = DetailWidgetResource(request)
+        request.context = context
+        r = DetailWidgetView(request).create()
+        append_to_json_structure(page, "page_main_main", 
+                                 {"name": "detail", "pk": r["pk"]})
+
 def init():
     Base.metadata.create_all()
 
