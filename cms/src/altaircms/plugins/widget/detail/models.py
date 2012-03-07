@@ -14,8 +14,8 @@ from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
 from . import renderable
 
-## kind = divのクラス名として展開
-KINDS = ["description_and_image"]
+## kind = divのクラス名として展開(todo整理)
+KINDS = ["description", "dummy"]
 
 class DetailWidget(Widget):
     implements(IWidget)
@@ -30,10 +30,14 @@ class DetailWidget(Widget):
     
     def merge_settings(self, bname, bsettings):
         bsettings.need_extra_in_scan("request")
+        bsettings.need_extra_in_scan("event")
+        bsettings.need_extra_in_scan("performances")
         def detail_render():
             request = bsettings.extra["request"]
+            performances = bsettings.extra["performances"]
+            event = bsettings.extra["event"]
             render =  getattr(renderable, self.kind)
-            return render(self, request).render()
+            return render(self, request, ctx={"event": event, "performances": performances}).render()
         bsettings.add(bname, detail_render)
 
 class DetailWidgetResource(HandleSessionMixin,

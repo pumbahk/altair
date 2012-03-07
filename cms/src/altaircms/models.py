@@ -107,6 +107,9 @@ class Event(Base):
         return self.title
 
 
+"""
+このあたりevent/models.pyに移動した方が良い。
+"""
 class Performance(Base):
     """
     パフォーマンス

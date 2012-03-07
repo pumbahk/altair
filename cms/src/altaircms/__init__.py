@@ -89,6 +89,7 @@ def main_app(global_config, settings):
     config.include("altaircms.event")
     config.include("altaircms.layout")
     config.include("altaircms.page")
+
     # config.include("altaircms.base")
 
     test_re = re.compile('tests$').search
@@ -111,6 +112,15 @@ def main_app(global_config, settings):
     sqlahelper.add_engine(engine)
     initialize_sql(engine)
 
+    ## 設定ファイルを読み込んで追加でinclude.(debug用)
+    if settings.get("altaircms.debug.additional_includes"):
+        import warnings
+        for m in settings.get("altaircms.debug.additional_includes").split("\n"):
+            warnings.warn("------------additional include " + m)
+            config.include(m)
+    from altaircms.models import DBSession
+    print DBSession.bind
+    print "--"
     return config.make_wsgi_app()
 
 

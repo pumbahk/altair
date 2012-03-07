@@ -9,7 +9,6 @@
 <meta name="description" content="<%block name="description"/>">
 <meta name="keywords" content="<%block name="keywords"/>">
 
-
 <%block name="css_prerender">
 </%block>
 
@@ -21,28 +20,43 @@
   <div class="page page-one_column">  
     <div class="page-header">
       <div class="page-header-content">
-  	    <%block name="page_header_content"/>
+        <%block name="page_header_content"/>
       </div>
       <div class="notice">
-		<%block name="notice"/>
+        <%block name="notice"/>
       </div>
     </div>
     <div class="page-main">
       <div class="page-main-header">
-		<%block name="page_main_header"/>
+        <%block name="page_main_header"/>
       </div>
       <div class="page-main-main">
         <div class="page-main-main-content">
-		  <%block name="page_main_main"/>
+          <%block name="page_main_title"/>
+          <div class="description_and_image">
+            <table>
+              <tbody>
+                <tr>
+                  <td class="image">
+                    <%block name="page_main_image"/>
+                  </td>
+                  <td class="description">
+                    <%block name="page_main_description"/>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <%block name="page_main_main"/>
         </div>
       </div>
       <div class="page-main-footer">
-		<%block name="page_main_footer"/>
+        <%block name="page_main_footer"/>
       </div>
     </div>
     <div class="page-footer">
       ${pagefooter()}
-	  <%block name="page_footer"/>
+      <%block name="page_footer"/>
     </div>
   </div>
   <%block name="js_footer"/>

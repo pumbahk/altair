@@ -57,7 +57,7 @@ class FunctionalViewTests(unittest.TestCase):
         """
         session = self._getSession()
         page_id = 1
-        kind = "description_and_image"
+        kind = "description"
         self._with_session(session, self._makePage(id=page_id))
 
         res = self._callFUT().post_json(
@@ -84,7 +84,7 @@ class FunctionalViewTests(unittest.TestCase):
         session = self._getSession()
         page_id = 10
         self._create_widget(session, id=1, page_id=page_id)
-        updated = "description_and_image"
+        updated = "description"
         res = self._callFUT().post_json(self.update_widget, 
                                         {"page_id": page_id, "pk":1, "data": {"kind": updated} }, 
                                         status=200)

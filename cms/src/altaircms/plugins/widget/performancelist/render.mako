@@ -22,7 +22,7 @@
       <tbody>
       % for p in performances:
         ## あとで修正
-        <tr id="peformance-${p.id}">
+        <tr id="performance-${p.id}">
 		  <td class="serial">
             <span class="serial">${p.id}</span>
           </td>

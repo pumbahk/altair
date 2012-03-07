@@ -1,7 +1,4 @@
 # -*- coding:utf-8 -*-
-"""
-template with inheritance
-"""
 
 import datetime
 import os
@@ -11,7 +8,6 @@ from pyramid.testing import DummyRequest
 import transaction
 
 from altaircms.models import DBSession
-from altaircms.models import Base
 
 
 def append_to_json_structure(page, key, data):
@@ -28,7 +24,6 @@ def block(message):
     yield
 
 here = os.path.abspath(os.path.dirname(__file__))
-
 def _image_asset():
     from altaircms.asset.treat import create_asset
     fname = os.path.join(here, "data/original5.image.jpg")
@@ -79,6 +74,7 @@ def add_widget(page):
         r = CalendarWidgetView(request).create()
         append_to_json_structure(page, "page_main_main", 
                                  {"name": "calendar", "pk": r["pk"]})
+
     with block("performancelist"):
         ## title
         from altaircms.plugins.widget.performancelist.views import PerformancelistWidgetView
@@ -98,16 +94,14 @@ def add_widget(page):
         from altaircms.plugins.widget.detail.models import DetailWidgetResource
         request = DummyRequest()
         request.json_body = dict(page_id=page.id, 
-                                 data=dict(kind="description_and_image"))
+                                 data=dict(kind="description"))
         context = DetailWidgetResource(request)
         request.context = context
         r = DetailWidgetView(request).create()
-        append_to_json_structure(page, "page_main_main", 
+        append_to_json_structure(page, "page_main_description", 
                                  {"name": "detail", "pk": r["pk"]})
 
 def init():
-    Base.metadata.create_all()
-
     with block("create role model"):
         from altaircms.auth.initial_data import insert_initial_authdata
         insert_initial_authdata()
@@ -115,16 +109,16 @@ def init():
     with block("create event"):
         from altaircms.models import Event
         D = {
-            "title": "", 
-            "subtitle": "", 
+            "title": u"松下奈緒コンサートツアー2012　for me", 
+            "subtitle": u"アイフルホーム presents\n 松下奈緒コンサートツアー2012　for me\n supported by ＪＡバンク", 
             "description": "", 
-            "place": "",  ##evue?
+            "place": "",  ##venue?
             "inquiry_for": "",  ##?
-            "event_open": datetime.datetime.now(), 
-            "event_close": datetime.datetime.now(), 
-            "deal_open": datetime.datetime.now(), 
-            "deal_close": datetime.datetime.now(), 
-            "is_searchable": 0, 
+            "event_open": datetime.datetime.now(), #?
+            "event_close": datetime.datetime.now(), #?
+            "deal_open": datetime.datetime.now(), #?
+            "deal_close": datetime.datetime.now(), #?
+            "is_searchable": 0, #?
             }
         event = Event.from_dict(D)
         DBSession.add(event)
@@ -137,8 +131,8 @@ def init():
             "event_id": event.id, 
             "title": u"松下奈緒コンサートツアー2012　for me", 
             "venue": u"岸和田市立浪切ホール 大ホール", 
-            "open_on": datetime.datetime(2012, 6, 3, 17),  ##
-            "start_on": datetime.datetime(2012, 6, 3, 17), 
+            "open_on": datetime.datetime(2012, 6, 3, 16, 30),  ##
+            "close_on": datetime.datetime(2012, 6, 3, 17), 
             "end_on": None
             }
         DBSession.add(Performance.from_dict(D))
@@ -146,9 +140,9 @@ def init():
             "backend_performance_id": 2, 
             "event_id": event.id, 
             "title": u"松下奈緒コンサートツアー2012　for me", 
-            "venue": u"神戸国際会館　こくさいホール ", 
-            "open_on": datetime.datetime(2012, 7, 16, 17),  ##
-            "start_on": datetime.datetime(2012, 7, 16, 17), 
+            "venue": u"神戸国際会館こくさいホール ", 
+            "open_on": datetime.datetime(2012, 7, 16, 16, 30),  ##
+            "close_on": datetime.datetime(2012, 7, 16, 17), 
             "end_on": None
             }
         DBSession.add(Performance.from_dict(D))
@@ -184,16 +178,5 @@ def init():
         layout0.client_id = 1 ##
         DBSession.add(layout0)
     transaction.commit()
-    
-def main(app):
-    init()
-    import sys
-    from altaircms.front.views import rendering_page
-    from altaircms.front.resources import PageRenderingResource
 
-    request = DummyRequest()
-    request.matchdict = dict(page_name="sample_page")
-    import pdb; pdb.set_trace()
-    context = PageRenderingResource(request)
-    result = rendering_page(context, request)
-    sys.stdout.write(result.body)
+    

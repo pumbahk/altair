@@ -46,15 +46,23 @@
 <%block name="page_main_header">
         <div class="page-main-header-content"></div>
 </%block>
-<%block name="page_main_main">
-          ${display_blocks["page_main_main"][0]|n}
+<%block name="page_main_title">
+          ${display_blocks["page_main_title"][0]|n}
           ${ widget.social() }
-          ${ widget.description_and_image() }
-          ${display_blocks["page_main_main"][3]|n}
+</%block>
+<%block name="page_main_image">
+          ${display_blocks["page_main_image"][0]|n}
+          ${ widget.image() }
+</%block>
+<%block name="page_main_description">
+          ${display_blocks["page_main_description"][0]|n}
+          ${ widget.description() }
+</%block>
+<%block name="page_main_main">
           ${ widget.summary()}
-          ${display_blocks["page_main_main"][2]|n}
-          ${ widget.performances()}
           ${display_blocks["page_main_main"][1]|n}
+          ${ widget.performances()}
+          ${display_blocks["page_main_main"][0]|n}
           ${ widget.calendar() }
 </%block>
 
