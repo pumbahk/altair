@@ -119,8 +119,6 @@ def main_app(global_config, settings):
             warnings.warn("------------additional include " + m)
             config.include(m)
     from altaircms.models import DBSession
-    print DBSession.bind
-    print "--"
     return config.make_wsgi_app()
 
 
