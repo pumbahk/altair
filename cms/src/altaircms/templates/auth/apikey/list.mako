@@ -11,7 +11,7 @@ ${form.name}<br/>
 </div>
 
 <hr/>
-<h4>オペレータ一覧</h4>
+<h4>APIKEY一覧</h4>
 <div class="row">
 <div class="span10">
 <table class="table table-striped">
