@@ -279,9 +279,8 @@ class RolePermissionView(object):
         self.role_permission_id = request.matchdict.get('id', None)
         if self.role_id:
             self.role = RoleAPI(self.request, self.role_id).read()
-        import pdb; pdb.set_trace()
         if self.role_permission_id:
-            self.role_permission = RolePermissionAPI(self.request, self.role_permission_id).read()
+            self.role_permission = DBSession.query(RolePermission).filter_by(role_id=self.role_id, permission_id=self.role_permission_id).one()
 
         bootstrap_need()
 

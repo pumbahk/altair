@@ -15,7 +15,7 @@
         <td>${role.name}</td>
         <td>
         %for perm in role.permissions:
-          <span class="label label-info">${perm.permission}</span>
+          <span class="label label-info">${perm.name}</span>
         %endfor
         </td>
         <td><a href="${request.route_url("role", id=role.id)}"><span class="btn"><i class="icon-eye-open"> </i> Show</span></a></td>
