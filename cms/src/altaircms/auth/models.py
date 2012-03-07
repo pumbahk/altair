@@ -4,7 +4,7 @@ from sqlalchemy.orm import relationship, backref
 
 from sqlalchemy.orm.mapper import Mapper
 from sqlalchemy.schema import Table, Column, ForeignKey, UniqueConstraint
-from sqlalchemy.types import String, DateTime, Integer, Unicode
+from sqlalchemy.types import String, DateTime, Integer, BigInteger, Unicode
 
 from altaircms.models import Base
 
@@ -14,15 +14,6 @@ DEFAULT_ROLE = 'administrator'
 ##
 ## CMS内で利用されるパーミッション一覧。view_configのpermission引数と合わせる
 ##
-
-# 対象オブジェクト
-target_objects = ['event', 'topic', 'ticket', 'magazine', 'asset', 'page', 'tag', 'layout', 'operator']
-PERMISSIONS = []
-for t in target_objects:
-    for act in ('create', 'read', 'update', 'delete'):
-        PERMISSIONS.append('%s_%s' % (t, act))
-
-
 class OAuthToken(Base):
     __tablename__ = 'oauth_token'
 
@@ -66,23 +57,33 @@ class Operator(Base):
         return '%s' % self.user_id
 
 
+class RolePermission(Base):
+    __tablename__ = 'role2permission'
+
+    id = Column(Integer, primary_key=True)
+    role_id = Column(Integer, ForeignKey('role.id'))
+    permission_id = Column(Integer, ForeignKey('permission.id'))
+
+    role = relationship("Role", backref=backref("role2permission", order_by=id))
+    permission = relationship("Permission", backref=backref("role2permission", order_by=id))
+
+    UniqueConstraint('role_id', 'permission_id')
+
+
 class Role(Base):
     __tablename__ = 'role'
 
     id = Column(Integer, primary_key=True)
     name = Column(String)
 
+    permissions = relationship("Permission", secondary=RolePermission.__table__, backref='role')
 
-class RolePermission(Base):
-    __tablename__ = 'role_permission'
+
+class Permission(Base):
+    __tablename__ = 'permission'
 
     id = Column(Integer, primary_key=True)
-    role_id = Column(Integer, ForeignKey('role.id'))
-    permission = Column(String)
-
-    role = relationship("Role", backref=backref("permissions", order_by=id))
-
-    UniqueConstraint('role', 'permission')
+    name = Column(String, unique=True)
 
 
 class Client(Base):
@@ -121,9 +122,6 @@ class APIKey(Base):
     apikey = Column(String, default=generate_apikey)
     client = relationship("Client", backref=backref("apikeys", order_by=id))
     client_id = Column(Integer, ForeignKey("client.id"))
-
-    client_id = Column(Integer, ForeignKey("client.id"))
-    client = relationship("Client", backref=backref("client", order_by=id))
 
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=datetime.now())

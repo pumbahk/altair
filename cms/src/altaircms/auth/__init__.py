@@ -7,3 +7,9 @@ def includeme(config):
 
     config.add_route('apikey_list', '/apikey/')
     config.add_route('apikey', '/apikey/{id}')
+
+    config.add_route('role_list', '/role/')
+    config.add_route('role', '/role/{id}')
+
+    config.add_route('role_permission_list', '/role/{role_id}/permission/')
+    config.add_route('role_permission', '/role/{role_id}/permission/{id}')

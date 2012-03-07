@@ -13,6 +13,7 @@ def main():
     with block("create client"):
         import altaircms.auth.models as m
         client = m.Client()
+        client.id = 1
         client.name = u"master"
         client.prefecture = u"tokyo"
         client.address = u"000"
@@ -75,6 +76,11 @@ def main():
         for name in ["foo.swf", "boo.swf"]:
             movie = FlashAsset(name)
             DBSession.add(movie)
+
+    with block("create role model"):
+        from altaircms.auth.initial_data import insert_initial_authdata
+        insert_initial_authdata()
+
     transaction.commit()
 
 

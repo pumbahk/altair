@@ -1,30 +1,57 @@
 # coding: utf-8
+import transaction
+from sqlalchemy.sql.functions import max
 from altaircms.models import DBSession
-from altaircms.auth.models import Role, RolePermission, DEFAULT_ROLE, PERMISSIONS, target_objects
+from altaircms.auth.models import Role, RolePermission, Permission, DEFAULT_ROLE
+
+
+# 対象オブジェクト
+target_objects = ['event', 'topic', 'ticket', 'magazine', 'asset', 'page', 'tag', 'layout', 'operator']
+PERMISSIONS = []
+for t in target_objects:
+    for act in ('create', 'read', 'update', 'delete'):
+        PERMISSIONS.append('%s_%s' % (t, act))
 
 
 def insert_initial_authdata():
+    """
+    ロールとパーミッションを登録する
+    """
+
+    # administrator
     role = Role(id=1, name=DEFAULT_ROLE)
     DBSession.add(role)
 
-    for perm in PERMISSIONS:
-        roleperm = RolePermission(role_id=role.id, permission=perm)
+    # register all permissions to administrator
+    for permission_id, strperm in enumerate(PERMISSIONS, 1):
+        permission = Permission(id=permission_id, name=strperm)
+        DBSession.add(permission)
+
+    for role_permission_id, permission in enumerate(DBSession.query(Permission).all(), 1):
+        roleperm = RolePermission(id=role_permission_id, role_id=1, permission_id=permission.id)
         DBSession.add(roleperm)
 
-    i = 2 # administratorが1なので、2以降が通常ロール
-    for obj in target_objects:
-        for perm in ('viewer', 'editor'):
-            role = Role(id=i, name='%s_%s' % (obj, perm))
-            DBSession.add(role)
+    # regsiter roles
+    role_id = 2 # 1はadministratorなので2から
+    role_permission_id = int(DBSession.query(max(RolePermission.id)).one()[0]) + 1
 
-            if perm == 'viewer' or perm == 'editor':
+    for obj in target_objects:
+        for strperm in ('viewer', 'editor'):
+            role = Role(id=role_id, name='%s_%s' % (obj, strperm))
+            DBSession.add(role)
+            role_id += 1
+
+            if strperm == 'viewer' or strperm == 'editor':
                 # read権限つける
-                role_perm = RolePermission(role_id=role.id, permission='%s_read' % (obj, ))
+                permission = DBSession.query(Permission).filter_by(name='%s_read' % (obj,)).one()
+                role_perm = RolePermission(id=role_permission_id, role_id=role.id, permission_id=permission.id)
                 DBSession.add(role_perm)
 
-            if perm == 'editor':
-                for p in ('create', 'update', 'delete'):
-                    role_perm = RolePermission(role_id=role.id, permission='%s_%s' % (obj, p ))
-                    DBSession.add(role_perm)
+                role_permission_id += 1
 
-            i+=1
+            if strperm == 'editor':
+                for p in ('create', 'update', 'delete'):
+                    permission = DBSession.query(Permission).filter_by(name='%s_%s' % (obj, p)).one()
+                    role_perm = RolePermission(id=role_permission_id, role_id=role.id, permission_id=permission.id)
+                    DBSession.add(role_perm)
+                    role_permission_id += 1
