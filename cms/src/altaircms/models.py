@@ -133,8 +133,8 @@ class Performance(Base):
     title = Column(Unicode)
     venue = Column(Unicode) #開催地
     open_on = Column(DateTime)  # 開場
-    close_on = Column(DateTime)  # 開始
-    end_on = Column(DateTime)  # 終了
+    start_on = Column(DateTime)  # 開始
+    close_on = Column(DateTime)  # 終了
 
 
 class Sale(Base):
@@ -146,7 +146,7 @@ class Sale(Base):
 
     name = Column(String)
     start_on = Column(DateTime)
-    end_on = Column(DateTime)
+    close_on = Column(DateTime)
 
 
     created_at = Column(DateTime, default=datetime.now())

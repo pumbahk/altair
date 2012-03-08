@@ -153,7 +153,7 @@ def upgrade():
     sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.Column('title', sa.Unicode(), nullable=True),
     sa.Column('open_on', sa.DateTime(), nullable=True),
-    sa.Column('close_on', sa.DateTime(), nullable=True),
+    sa.Column('start_on', sa.DateTime(), nullable=True),
     sa.Column('client_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['client_id'], ['event.id'], ),
     sa.PrimaryKeyConstraint('id')

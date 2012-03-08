@@ -3,6 +3,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 def includeme(config):
     config.add_route("demo1", "/demo/demo1")
+    config.add_route("demo2", "/demo/demo2")
     config.scan("altaircms.demo")
 
     assetpath = os.path.join(here, "asset")

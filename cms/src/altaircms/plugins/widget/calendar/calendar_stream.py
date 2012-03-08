@@ -139,7 +139,7 @@ def right_move_with_weekday(day):
     """ slide to friday
     """
     N = day.weekday()
-    return day + timedelta(days=6-N)
+    return day + timedelta(days=5-N)
 
 class PackedCalendarStream(object):
     def __init__(self, y, m, d, env=None, wdays=None, force_start_from_monday=True):

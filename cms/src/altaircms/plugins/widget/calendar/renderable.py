@@ -9,7 +9,7 @@ __all__ = ["CalendarOutput", "performances_to_dict"]
 def performances_to_dict(performances):
     D = defaultdict(list)
     for p in performances:
-        dt = p.open_on.date()
+        dt = p.start_on.date()
         D[(dt.year, dt.month, dt.day)].append(p)
     return D
 

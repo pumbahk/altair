@@ -30,7 +30,7 @@
         <ul>
         %for p in de["day_performances"]:
           <li><span class="serial"><a href="#performance-${p.id}">${i()}</a></span>
-            <a target="_blank" href="#">${p.open_on.strftime("%H:%M")}</a></li>
+            <a target="_blank" href="#">${p.start_on.strftime("%H:%M")}</a></li>
         %endfor
         </ul>
       </td>   
