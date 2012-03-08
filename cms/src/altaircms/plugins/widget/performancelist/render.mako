@@ -31,7 +31,7 @@
           </td>
           <td class="performance_period">
             ## たぶん期間が存在するとき分岐する(helperで指定するようにする)
-            <span class="date">${p.open_on.year}年${ p.open_on.month }月${p.open_on.day }日(${ WEEK[p.open_on.weekday()] }) ${ p.open_on.hour }:00</span>
+            <span class="date">${h.event.performance_time(p)}</span>
           </td>
           <td class="venue">
              ${ p.venue }

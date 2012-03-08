@@ -1,5 +1,7 @@
 # coding:utf-8
 import re
+import warnings
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -110,15 +112,18 @@ def main_app(global_config, settings):
 
     engine = engine_from_config(settings, 'sqlalchemy.')
     sqlahelper.add_engine(engine)
-    initialize_sql(engine)
+    
+    if asbool(settings.get("altaircms.debug.start_when_dropall", "false")):
+        warnings.warn("altaircms.debug.start_when_dropall is true. all table are dropped!")
+        initialize_sql(engine, dropall=True)
+    else:
+        initialize_sql(engine)
 
     ## 設定ファイルを読み込んで追加でinclude.(debug用)
     if settings.get("altaircms.debug.additional_includes"):
-        import warnings
         for m in settings.get("altaircms.debug.additional_includes").split("\n"):
             warnings.warn("------------additional include " + m)
             config.include(m)
-    from altaircms.models import DBSession
     return config.make_wsgi_app()
 
 

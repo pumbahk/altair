@@ -31,10 +31,10 @@ class PageRenderingResource(RootFactory):
         return gen.get_config(self.request)
 
     def get_performances(self, page):
-        if page.event:
-            return page.event.performances
-        else:
-            return []
+        return page.event.performances if page.event else []
+
+    def get_tickets(self, page):
+        return page.event.tickets if page.event else []
 
     def get_block_context(self, page):
         from altaircms.widget.tree.block_context import BlockContext

@@ -2,7 +2,7 @@
   ## todo refactoring(remove layout setting)
   ## todo performancesの表示する数を調整？
 
-    <div style="TEXT-ALIGN: center"><font size="3" face="Arial, Verdana"><b>${event.subtitle}</b></font></div>
+    <div style="TEXT-ALIGN: center"><font size="3" face="Arial, Verdana"><b>${h.base.nl_to_br(event.subtitle)|n}</b></font></div>
     <div style="TEXT-ALIGN: center" align="left">&nbsp;</div><font face="Arial, Verdana"><b>
     <div style="TEXT-ALIGN: center" align="left">&nbsp;</div><font face="Arial, Verdana"><b>
     <div style="TEXT-ALIGN: center" align="left"><strong>【公演日時・会場】</strong></div>

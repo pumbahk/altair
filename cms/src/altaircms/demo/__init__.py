@@ -13,6 +13,4 @@ def includeme(config):
     gregistry = get_current_registry()
     gregistry.settings = config.registry.settings
     from . import initialize
-    print "---------------------------------"
     initialize.init()
-    print "---------------------------------"

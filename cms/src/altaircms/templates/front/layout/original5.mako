@@ -16,6 +16,26 @@
   <link rel="stylesheet" type="text/css" href="http://rakuten-ticket-static.s3.amazonaws.com/public/stylesheets/default.css" />
   <link rel="stylesheet" type="text/css" href="http://rakuten-ticket-static.s3.amazonaws.com/public/stylesheets/ui-lightness/jquery-ui-1.8.13.custom.css" />
   <link rel="stylesheet" type="text/css" href="http://rakuten-ticket-static.s3.amazonaws.com/public/stylesheets/order.css" />
+
+  <style type="text/css">
+    table.ticketlist {
+      margin-top: 0.2em;
+      margin-bottom: 1em;
+      border-collapse: collapse;
+      border: solid 1px #999;
+      font-size: 100%;
+    }
+    table.ticketlist td.head {
+      background: #BFBFBF;
+      text-align: center;
+      white-space: nowrap;
+    }
+    table.ticketlist th,
+    table.ticketlist td {
+      border: solid 1px;
+      padding: 4px 6px;
+    }
+  </style>
 </%block>
 
 <%block name="js_prerender">
@@ -30,6 +50,7 @@
 
 
 <%block name="page_header_content">
+## ここまだ対応していない。
     <div class="logo_and_globalnav">
       ${widget.logo()}
       ${widget.tagline()}
@@ -46,28 +67,55 @@
 <%block name="page_main_header">
         <div class="page-main-header-content"></div>
 </%block>
+
 <%block name="page_main_title">
-          ${display_blocks["page_main_title"][0]|n}
-          ${ widget.social() }
+   ${widgets("page_main_title")}
+  ## ${ widget.social() }
 </%block>
+
 <%block name="page_main_image">
-          ${display_blocks["page_main_image"][0]|n}
-          ${ widget.image() }
+  ${widgets("page_main_image")}
+  ## ${ widget.image() }
 </%block>
+
 <%block name="page_main_description">
-          ${display_blocks["page_main_description"][0]|n}
-          ${ widget.description() }
+  ${widgets("page_main_description")}
+  ## ${ widget.description() }
 </%block>
+
+<%block name="page_main_performance_period">
+  % if page.event:
+    ${h.base.term(page.event.event_open,page.event.event_close)}
+    (<a href="#performance-calendar">講演カレンダーを見る</a>)
+  % endif
+</%block>
+
+<%block name="page_main_ticket_price">
+  ${widgets("page_main_ticket_price")}
+</%block>
+
+<%block name="page_main_inquiry">
+  % if page.event:
+    ${h.base.nl_to_br(page.event.inquiry_for)|n}
+  % endif
+</%block>
+
+<%block name="page_main_sales_period">
+  % if page.event:
+    ${h.base.term(page.event.deal_open,page.event.deal_close)}
+  % endif
+</%block>
+
+
 <%block name="page_main_main">
-          ${ widget.summary()}
-          ${display_blocks["page_main_main"][1]|n}
-          ${ widget.performances()}
-          ${display_blocks["page_main_main"][0]|n}
-          ${ widget.calendar() }
+  ${widgets("page_main_main")}
+  ## ${ widget.summary()}
+  ## ${ widget.performances()}
+  ## ${ widget.calendar() }
 </%block>
 
 <%block name="page_main_footer">
-        <div class="page-main-footer-content"></div>
+  <div class="page-main-footer-content"></div>
 </%block>
 
 <%block name="page_footer">

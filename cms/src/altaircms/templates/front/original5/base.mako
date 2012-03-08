@@ -47,6 +47,22 @@
               </tbody>
             </table>
           </div>
+          <div class="summary">
+            <dl>
+              <dt>公演期間</dt>
+              <dd><%block name="page_main_performance_period">講演期間</%block></dd>
+              <dt class="notice">説明／注意事項</dt>
+              <dd>※未就学児童のご入場はお断りいたします。</dd>
+              <dt class="seats_and_prices">料金</dt>
+              <dd><%block name="page_main_ticket_price">チケット価格</%block></dd>
+              <dt class="contact">お問い合わせ先</dt>
+              <dd><%block name="page_main_inquiry">お問い合わせ</%block></dd>
+              <dt class="sales_period">販売期間</dt>
+              <dd>
+				<%block name="page_main_sales_period">販売期間</%block>
+              </dd>
+            </dl>
+          </div>
           <%block name="page_main_main"/>
         </div>
       </div>
