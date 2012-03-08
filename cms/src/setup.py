@@ -24,7 +24,7 @@ requires = [
     'sadisplay',
     'isodate',
     ## auth
-    "velruse",
+    #"velruse",
     'oauth2',
     'pyramid_openid',
     ## form
