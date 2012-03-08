@@ -104,27 +104,24 @@ def _next_month_date(d):
     else:
         return date(d.year, d.month+1, 1)
 
-def this_month(widget, performances, request):
-    """今月の内容を表示するカレンダー
+def obi(widget, performances, request):
+    """講演の開始から終了までを縦に表示するカレンダー
+    ※ performancesはstart_onでsortedされているとする
     """
     template_name = os.path.join(here, "rakuten.calendar.mako")
+    template_name = os.path.join(here, "rakuten.calendar.mako")
+    performances = list(performances)
     cal = CalendarOutput.from_performances(performances)
-    ## fixme
-    today = date.today()
-    rows = cal.each_rows(date(today.year, today.month, 1), 
-                         _next_month_date(today))
+    rows = cal.each_rows(performances[0].start_on, performances[-1].start_on)
     return render(template_name, {"cal":rows, "i":cal.i}, request)
 
 def term(widget, performances, request):
-    """開始日／終了日を指定してその範囲のカレンダを表示
+    """開始日／終了日を指定してその範囲のカレンダーを表示
     """
     template_name = os.path.join(here, "rakuten.calendar.mako")
     cal = CalendarOutput.from_performances(performances)
     rows = cal.each_rows(widget.from_date, widget.to_date)
     return render(template_name, {"cal":rows, "i":cal.i}, request)
 
-def listing(widget, performances, request): #fixme: rename
-    """パフォーマンスを一覧表示するだけの内容
-    """
-    template_name = os.path.join(here, "simple.listing.mako")
-    return render(template_name, {"performances": performances}, request)
+
+

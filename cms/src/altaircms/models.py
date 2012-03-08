@@ -123,10 +123,6 @@ class Performance(Base):
     event_id = Column(Integer, ForeignKey('event.id'))
     client_id = Column(Integer, ForeignKey("client.id"))
 
-    # sale = relationship("Sale", backref=orm.backref("performances", order_by=id))
-    event = relationship("Event", backref=orm.backref("performances", order_by=id))
-    # client = relationship("Client", backref=orm.backref("performances", order_by=id))
-
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=datetime.now())
 
@@ -135,6 +131,10 @@ class Performance(Base):
     open_on = Column(DateTime)  # 開場
     start_on = Column(DateTime)  # 開始
     close_on = Column(DateTime)  # 終了
+
+    # sale = relationship("Sale", backref=orm.backref("performances", order_by=id))
+    event = relationship("Event", backref=orm.backref("performances", order_by=start_on))
+    # client = relationship("Client", backref=orm.backref("performances", order_by=id))
 
 
 class Sale(Base):
