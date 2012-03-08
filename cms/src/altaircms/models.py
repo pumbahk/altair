@@ -50,9 +50,11 @@ def populate():
     transaction.commit()
 
 
-def initialize_sql(engine):
+def initialize_sql(engine, dropall=False):
     Base.metadata.bind = engine
     DBSession.bind = engine
+    if dropall:
+        Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
     try:
         populate()
@@ -107,6 +109,9 @@ class Event(Base):
         return self.title
 
 
+"""
+このあたりevent/models.pyに移動した方が良い。
+"""
 class Performance(Base):
     """
     パフォーマンス
@@ -118,17 +123,18 @@ class Performance(Base):
     event_id = Column(Integer, ForeignKey('event.id'))
     client_id = Column(Integer, ForeignKey("client.id"))
 
-    # sale = relationship("Sale", backref=orm.backref("performances", order_by=id))
-    event = relationship("Event", backref=orm.backref("performances", order_by=id))
-    # client = relationship("Client", backref=orm.backref("performances", order_by=id))
-
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=datetime.now())
 
     title = Column(Unicode)
+    venue = Column(Unicode) #開催地
     open_on = Column(DateTime)  # 開場
-    close_on = Column(DateTime)  # 開始
-    end_on = Column(DateTime)  # 終了
+    start_on = Column(DateTime)  # 開始
+    close_on = Column(DateTime)  # 終了
+
+    # sale = relationship("Sale", backref=orm.backref("performances", order_by=id))
+    event = relationship("Event", backref=orm.backref("performances", order_by=start_on))
+    # client = relationship("Client", backref=orm.backref("performances", order_by=id))
 
 
 class Sale(Base):
@@ -140,7 +146,7 @@ class Sale(Base):
 
     name = Column(String)
     start_on = Column(DateTime)
-    end_on = Column(DateTime)
+    close_on = Column(DateTime)
 
 
     created_at = Column(DateTime, default=datetime.now())
@@ -154,15 +160,18 @@ class Ticket(Base):
     __tablename__ = "ticket"
 
     id = Column(Integer, primary_key=True)
+    orderno = Column(Integer)
     sale_id = Column(Integer, ForeignKey("sale.id"))
+    event_id = Column(Integer, ForeignKey("event.id"))
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=datetime.now())
     price = Column(Integer, default=0)
 
-    event = relationship("Sale", backref=orm.backref("tickets", order_by=id))
+    sale = relationship("Sale", backref=orm.backref("tickets", order_by=orderno))
+    event = relationship("Event", backref=orm.backref("tickets", order_by=orderno))
 
     client_id = Column(Integer, ForeignKey("performance.id"))
-    seattype_id = Column(Integer, ForeignKey("seattype.id"))
+    seattype = Column(Unicode(255))
 
 
 class Seatfigure(Base):
@@ -179,20 +188,6 @@ class Seatfigure(Base):
     controller_url = Column(String)
 
     client_id = Column(Integer, ForeignKey("event.id"))
-
-
-class Seattype(Base):
-    """
-    席種
-    """
-    __tablename__ = "seattype"
-
-    id = Column(Integer, primary_key=True)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
-
-    client_id = Column(Integer, ForeignKey("event.id"))
-
 
 class TopicType(Base):
     __tablename__ = 'topic_type'

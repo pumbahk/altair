@@ -1,4 +1,4 @@
-<div class="calendar-widget">
+<div class="calendar" id="performance-calendar">
 <table>
  <thead>
    <tr>
@@ -17,7 +17,7 @@
     <tr>
     %if week.month_changed:
       <th class="month">
-        <span class="month-header"><span class="month-header-content"/></span>
+        <span class="month-header"><span class="month-header-content"/></span></span>
         <span class="month-main">${week.month}月</span>
         <span class="month-footer"><span class="month-footer-content"/></span>
       </th>
@@ -29,8 +29,8 @@
         <span class="day">${de["day"]}</span>
         <ul>
         %for p in de["day_performances"]:
-          <li><span class="serial"><a href="#performance-${p.id}"></a></span>
-            <a target="_blank" href="#">${p.performance_open.strftime("%H:%M")}</a></li>
+          <li><span class="serial"><a href="#performance-${p.id}">${i()}</a></span>
+            <a target="_blank" href="#">${p.start_on.strftime("%H:%M")}</a></li>
         %endfor
         </ul>
       </td>   

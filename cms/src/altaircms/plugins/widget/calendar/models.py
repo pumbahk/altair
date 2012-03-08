@@ -12,8 +12,6 @@ from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
 
 from . import renderable
-import os
-here = os.path.abspath(os.path.dirname(__file__))
 
 class CalendarWidget(Widget):
     implements(IWidget)

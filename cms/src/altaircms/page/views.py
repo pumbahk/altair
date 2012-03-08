@@ -195,7 +195,7 @@ class PageEditView(object):
                 'url': self.page.url,
                 'title': self.page.title,
                 'description': self.page.description,
-                'keyword': self.page.keyword,
+                'keywords': self.page.keywords,
                 'layout_id': self.page.layout_id if self.page.layout_id else 0,
                 'structure': json.dumps(self.display_blocks)
             }
@@ -227,7 +227,7 @@ class PageEditView(object):
                 url=captured['url'],
                 title=captured['title'],
                 description=captured['description'],
-                keyword=captured['keyword'],
+                keywords=captured['keywords'],
                 layout_id=captured['layout_id'],
                 # page.tags = captured['tags']
             )
@@ -235,7 +235,7 @@ class PageEditView(object):
             self.page.url = captured['url']
             self.page.title = captured['title']
             self.page.description = captured['description']
-            self.page.keyword = captured['keyword']
+            self.page.keywords = captured['keywords']
             self.page.layout_id = captured['layout_id']
 
             page = self.page

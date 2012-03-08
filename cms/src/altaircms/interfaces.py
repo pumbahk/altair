@@ -32,7 +32,7 @@ class IRenderable(Interface):
 class IStruct(Interface):
     def as_dict():
         pass
-    def define(keyword, value):
+    def define(keywords, value):
         pass
 
 class IBlockTree(Interface):
@@ -55,7 +55,7 @@ class IHandleSession(Interface):
 
 class IUpdateData(Interface):
     def update_data(data, **params):
-        """ update data with keyword paramaters.
+        """ update data with keywords paramaters.
         
         params is dictionary.
         use this method, like a update() of dictionary type.

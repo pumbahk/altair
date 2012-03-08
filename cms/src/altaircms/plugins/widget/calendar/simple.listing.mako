@@ -1,10 +1,10 @@
-<div class="calendar-widget">
+<div class="calendar">
 <ul>
 %for p in performances:
   <li>
-	<span>${p.title}(${p.performance_open.strftime("%m/%d")})</span>
+	<span>${p.title}(${p.open_on.strftime("%m/%d")})</span>
 	<a href="${p.event_id}">${p.event_id}</a>
-	${p.performance_open.strftime("%H:%M")} 〜 ${p.performance_close.strftime("%H:%M")}
+	${p.open_on.strftime("%H:%M")} 〜 ${p.close_on.strftime("%H:%M")}
   </li>
 %endfor
 </ul>
