@@ -11,7 +11,7 @@ def _create_page(page_name):
 
     page = m.Page()
     params = {'description': u'boo',
-              'keyword': u'oo',
+              'keywords': u'oo',
               'tags': u'ooo',
               'url': page_name, 
               'layout_id': 1,

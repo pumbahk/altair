@@ -51,19 +51,20 @@ class Page(PublishUnpublishMixin,
     id = Column(Integer, primary_key=True)
     parent_id = Column(Integer, ForeignKey('page.id'))
     event_id = Column(Integer, ForeignKey('event.id'))
-    
+    event = relationship('Event', backref='page', uselist=False)
+
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=datetime.now())
 
     title = Column(Unicode)
-    keyword = Column(Unicode)
+    keywords = Column(Unicode)
     description = Column(Unicode)
     url = Column(String)
     version = Column(Integer)
 
     site_id = Column(Integer, ForeignKey("site.id"))
     layout_id = Column(Integer, ForeignKey("layout.id"))
-    layout = relationship('Layout', backref='pages', uselist=False)
+    layout = relationship('Layout', backref='page', uselist=False)
     structure = Column(String, default="{}")
     hash_url = Column(String(length=32), default=None)
 

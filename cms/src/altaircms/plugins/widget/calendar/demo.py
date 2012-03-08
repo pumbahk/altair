@@ -11,8 +11,8 @@ from altaircms.models import Performance
 def perf(id_, title, beg, end):
     p = Performance.from_dict(
         {"title": title, 
-         "performance_open": beg, 
-         "performance_close": end, 
+         "open_on": beg, 
+         "close_on": end, 
          "event_id": 1, 
          "id": id_
          })

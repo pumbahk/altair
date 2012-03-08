@@ -34,9 +34,9 @@ class OAuthCallbackMock(object):
 
 class TestAuthView(BaseTest):
     def setUp(self):
+        super(TestAuthView, self).setUp()
         insert_initial_authdata()
         self.request = testing.DummyRequest()
-        super(TestAuthView, self).setUp()
 
     def test_normal_views(self):
         """

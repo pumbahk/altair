@@ -27,6 +27,14 @@ class CalendarStreamGenerator(dict):
     def start_from(self, y, m, d):
         return self.stream_class(y, m, d, self.env, **self.kwargs)
 
+def _config_env(env):
+    by, bm, bd = env["start_date"]
+    ay, am, ad = env["end_date"]
+    env["is_same_year"] = by == ay
+    env["is_same_month"] = bm == am
+    env["is_same_day"] = bd == ad
+    return env
+    
 class CalendarStream(object):
     def __init__(self, y, m, d, env=None):
         self.env = env or {}
@@ -34,6 +42,7 @@ class CalendarStream(object):
 
     def iterate_to(self, y, m, d):
         self.env["end_date"] = (y, m, d)
+        self.env = _config_env(self.env)
         return YearStream(self.env)
 
 class Element(object):
@@ -113,7 +122,11 @@ class DayStream(object):
     def days(self):
         if self.me.is_end:
             _, _, d = self.me.env["end_date"]
-            return range(1, d+1)
+            if self.me.env["is_same_month"]:
+                _, _, bd = self.me.env["start_date"]
+                return range(bd, d+1)
+            else:
+                return range(1, d+1)
 
         N = self._total_days()
         if self.me.is_start:
@@ -164,6 +177,7 @@ class PackedCalendarStream(object):
     def _iterate_to(self, y, m, d):
         self.env["original_end_date"] = (y, m, d)
         self.env["end_date"] = self._rmove_end_date_if_need(y, m, d)
+        _config_env(self.env)
         return YearStream(self.env)
 
     def iterate_to(self, y, m, d):

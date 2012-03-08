@@ -24,7 +24,7 @@ requires = [
     'sadisplay',
     'isodate',
     ## auth
-    "velruse",
+    #"velruse",
     'oauth2',
     'pyramid_openid',
     ## form
@@ -72,6 +72,7 @@ setup(name='altair-cms',
 
       [paste.paster_command]
       pscript = scripts.paster:PScript
+      pmain = scripts.paster:PMain
    
       [paste.paster_create_template]
       cms_widget = scaffolds:WidgetPluginTemplate

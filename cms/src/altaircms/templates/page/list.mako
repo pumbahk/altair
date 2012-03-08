@@ -16,7 +16,7 @@
                 <th>${form.description.label}</th><td>${form.description}</td>
             </tr>
             <tr>
-                <th>${form.keyword.label}</th><td>${form.keyword}</td>
+                <th>${form.keywords.label}</th><td>${form.keywords}</td>
             </tr>
             <tr>
                 <th>${form.structure.label}</th><td>${form.structure}</td>

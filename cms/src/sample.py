@@ -14,7 +14,7 @@ Base.metadata.create_all()
 
 
 params = {'description': u'boo',
-          'keyword': u'oo',
+          'keywords': u'oo',
           'tags': u'ooo',
           'url': u'sample/page',
           'layout_id': 1,

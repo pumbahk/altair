@@ -4,7 +4,7 @@ from calendar_stream import MonthStream
 from calendar_stream import DayStream
 from calendar_stream import YearE
 from calendar_stream import MonthE
-
+from calendar_stream import _config_env
 
 
 class ElementStartEndTest(unittest.TestCase):
@@ -12,6 +12,7 @@ class ElementStartEndTest(unittest.TestCase):
         env = {}
         env["start_date"] = by, bm, bd
         env["end_date"] = ay, am, ad
+        _config_env(env)
         return env
     
     def test_yearE_is_start(self):
@@ -74,6 +75,7 @@ class ElementTermTest(unittest.TestCase):
         env = {}
         env["start_date"] = by, bm, bd
         env["end_date"] = ay, am, ad
+        _config_env(env)
         return env
 
     def test_year_term(self):
@@ -140,6 +142,14 @@ class ElementTermTest(unittest.TestCase):
     """ inivalid return value. but this situation is not occured.
     """
         ## todo:follow
+
+    def test_day_term_is_start_samemonth(self):
+        env = self._makeEnv(2012, 7, 2, 2012, 7, 22)
+        ye = YearE(2012, env)
+        me = MonthE(ye, 7, env)
+        self.assertEquals(DayStream(me).days(), 
+                          [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22])
+
 
 class CStreamFunctionalTest(unittest.TestCase):
     def _make_gen(self):
