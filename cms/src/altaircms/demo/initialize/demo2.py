@@ -130,6 +130,7 @@ def init():
         from altaircms.models import Ticket
         D = {
             "event": event, 
+            "orderno": 1, 
             "price": 10000, 
             "seattype": u"S席"
             }
@@ -138,6 +139,7 @@ def init():
         from altaircms.models import Ticket
         D = {
             "event": event, 
+            "orderno": 2, 
             "price": 8000, 
             "seattype": u"A席"
             }
@@ -146,6 +148,7 @@ def init():
         from altaircms.models import Ticket
         D = {
             "event": event, 
+            "orderno": 3, 
             "price": 6000, 
             "seattype": u"B席"
             }
