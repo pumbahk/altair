@@ -59,13 +59,16 @@
     ${widget.Rnavbar()}
     ${widget.navbar_and_search()}
     </div>
+    ${widgets("page_header_content")}
 </%block>
 
 <%block name="notice">
+    ${widgets("notice")}
 </%block>
 
 <%block name="page_main_header">
-        <div class="page-main-header-content"></div>
+   <div class="page-main-header-content"></div>
+    ${widgets("page_main_header")}
 </%block>
 
 <%block name="page_main_title">

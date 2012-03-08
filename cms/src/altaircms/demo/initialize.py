@@ -191,7 +191,7 @@ def init():
         layout0.id = 1
         layout0.title = "original"
         layout0.template_filename = "original5.mako"
-        layout0.blocks = '[["content"],["footer"]]'
+        layout0.blocks = '[["page_header_content"],["notice"],["page_main_header"],["page_main_title"],["page_main_image"],["page_main_description"],["page_main_ticket_price"],["page_main_main"],["page_main_footer"]]'
         layout0.site_id = 1 ##
         layout0.client_id = 1 ##
         DBSession.add(layout0)
