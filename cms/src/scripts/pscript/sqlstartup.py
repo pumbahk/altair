@@ -30,7 +30,7 @@ def main():
                 setattr(obj, k, v)
             return obj
         params = {'description': u'boo',
-                  'keyword': u'oo',
+                  'keywords': u'oo',
                   'tags': u'ooo',
                   'url': u'sample/page',
                   'layout_id': 1,
@@ -62,7 +62,7 @@ def main():
         layout1.id = 1
         layout1.title = "one"
         layout1.template_filename = "1.mako"
-        layout1.blocks = '[["fulltitle"], ["description"], ["keyword"], ["js"], ["jquery"], ["style"], ["page"], ["content"],["footer"], ["js_foot"]]'
+        layout1.blocks = '[["fulltitle"], ["description"], ["keywords"], ["js"], ["jquery"], ["style"], ["page"], ["content"],["footer"], ["js_foot"]]'
         layout1.site_id = 1 ##
         layout1.client_id = 1 ##
         DBSession.add(layout1)

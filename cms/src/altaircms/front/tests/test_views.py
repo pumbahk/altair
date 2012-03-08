@@ -51,7 +51,7 @@ class UseAssetMixin(object):
 class UseWidgetMixin(object):
     def _getTextWidget(self):
         from altaircms.plugins.widget.freetext.models import FreetextWidget
-        D = {'id': 1, 'text': u'hohoho',"page_id": 2}
+        D = {'id': 1, 'text': u'freetext',"page_id": 2}
         return FreetextWidget.from_dict(D)
 
     def _getImageWidget(self):
@@ -95,7 +95,7 @@ class UsePageEtcMixin(object):
              'description': u'boo',
              'event_id': None,
              'id': 2,
-             'keyword': u'oo',
+             'keywords': u'oo',
              'layout_id': 2,
              'parent_id': None,
              'site_id': None,
@@ -147,9 +147,9 @@ class FunctionalPageRenderingTest(UseAssetMixin,
         ## fixme
         self.assertTrue('class="image-widget"' in text)
         self.assertTrue('class="movie-widget"' in text)
-        self.assertTrue('class="freetext-widget"' in text)
+        self.assertTrue('freetext' in text)
         self.assertTrue('class="flash-widget"' in text)
-        # self.assertTrue('class="calendar-widget"' in text)
+        # self.assertTrue('class="calendar"' in text)
 
         self.assertTrue("<img" in text)
         self.assertTrue("<embed" in text)

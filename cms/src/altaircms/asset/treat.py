@@ -15,19 +15,18 @@ from altaircms.asset.models import ImageAsset
 from altaircms.asset.models import MovieAsset
 from altaircms.asset.models import FlashAsset
 
-def get_storepath(request=None):
+def get_storepath(request=None, registry=None):
     if request:
         return request.registry.settings['asset.storepath']
     else:
         registry = get_current_registry()
         return registry.settings["asset.storepath"]
 
-def create_asset(captured, cb=None):
+def create_asset(captured, request=None, cb=None):
     """captured["type"], captured["filename"], captured["fp"]
     """
     today = date.today().strftime('%Y-%m-%d')
-    storepath = os.path.join(get_storepath)
-    storepath = os.path.join(get_storepath(),  today)
+    storepath = os.path.join(get_storepath(request),  today)
     # @TODO: S3に対応する
     if not os.path.exists(storepath):
         os.makedirs(storepath)
