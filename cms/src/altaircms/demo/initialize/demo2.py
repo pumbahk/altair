@@ -62,14 +62,25 @@ def add_widget(page):
         from altaircms.plugins.widget.calendar.models import CalendarWidgetResource
         request = DummyRequest()
         request.json_body = dict(page_id=page.id, 
-                                 data=dict(calendar_type="term", 
-                                           from_date="2012-7-7", 
-                                           to_date="2012-7-16"))
+                                 data=dict(calendar_type="obi"))
         context = CalendarWidgetResource(request)
         request.context = context
         r = CalendarWidgetView(request).create()
         append_to_json_structure(page, "page_main_main", 
                                  {"name": "calendar", "pk": r["pk"]})
+    # with block("calendar"):
+    #     from altaircms.plugins.widget.calendar.views import CalendarWidgetView
+    #     from altaircms.plugins.widget.calendar.models import CalendarWidgetResource
+    #     request = DummyRequest()
+    #     request.json_body = dict(page_id=page.id, 
+    #                              data=dict(calendar_type="term", 
+    #                                        from_date="2012-7-7", 
+    #                                        to_date="2012-7-16"))
+    #     context = CalendarWidgetResource(request)
+    #     request.context = context
+    #     r = CalendarWidgetView(request).create()
+    #     append_to_json_structure(page, "page_main_main", 
+    #                              {"name": "calendar", "pk": r["pk"]})
 
     with block("ticketlist"):
         from altaircms.plugins.widget.ticketlist.views import TicketlistWidgetView
