@@ -2,17 +2,19 @@
 from pyramid.security import Allow, Authenticated, Everyone, Deny, DENY_ALL
 
 from altaircms.models import DBSession
+from altaircms.auth.models import Operator, Role, RolePermission, Permission
 
-from altaircms.auth.models import Operator, Role, RolePermission
 
 def rolefinder(userid, request):
     """
-    ユーザIDを受け取って所属ロール一覧を返す
+    ユーザIDを受け取ってロール一覧を返す
 
-    :return: list 所属ロール名のリスト
+    :return: list ユーザのロールリスト
     """
-    roles = map(str, [role.name for role in DBSession.query(Role).filter(Operator.user_id==userid).filter(Role.id==Operator.role_id)])
-    return roles
+    operator = DBSession.query(Operator).filter_by(user_id=userid).one()
+    if not operator:
+        return []
+    return [operator.role.name]
 
 
 # データモデルから取得したACLをまとめる
@@ -20,12 +22,20 @@ class RootFactory(object):
     __name__ = None
 
     def __init__(self, request):
-        self.__acl__ = [
+        self.request = request
+
+    @property
+    def __acl__(self):
+        lst = [
             (Allow, Authenticated, 'authenticated'),
         ]
-        for role, permission in DBSession.query(Role, RolePermission).filter(Role.id==RolePermission.role_id):
-            self.__acl__.append((Allow,) + (str(role.name), str(permission.permission)))
-        self.request = request
+        for role, r2p, perm in DBSession.query(Role.name, RolePermission, Permission.name)\
+            .filter(Role.id==RolePermission.role_id)\
+            .filter(Permission.id==RolePermission.permission_id):
+            lst.append((Allow,) + (str(role), str(perm)))
+
+        return lst
+
 
 class SecurityAllOK(list):
     def __init__(self):
@@ -34,6 +44,7 @@ class SecurityAllOK(list):
 
     def __call__(self, user_id, request):
         return self.roles
+
 
 from zope.interface import implements
 from pyramid.interfaces import IAuthorizationPolicy

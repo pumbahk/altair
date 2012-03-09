@@ -8,7 +8,7 @@
 </ul>
 
 <h4>登録済みのアセット一覧</h4>
-<table class="table-bordered">
+<table class="table table-striped">
     <tbody>
             %for asset in assets:
             <tr>

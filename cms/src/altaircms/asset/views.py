@@ -16,6 +16,7 @@ from sqlalchemy.sql.expression import desc
 
 from altaircms.models import DBSession
 from altaircms.views import BaseRESTAPI
+from altaircms.fanstatic import bootstrap_need
 
 from altaircms.asset import get_storepath
 from altaircms.asset.models import Asset, ImageAsset, MovieAsset, FlashAsset
@@ -44,6 +45,8 @@ class AssetEditView(object):
         self.asset_id = self.request.matchdict['asset_id'] if 'asset_id' in self.request.matchdict else None
         self.asset = DBSession.query(Asset).get(self.asset_id) if self.asset_id else None
         self.asset_type = self.request.matchdict['asset_type'] if 'asset_type' in self.request.matchdict else None
+
+        bootstrap_need()
 
     def response_json_ok(self):
         # @TODO: 他のAPI呼び出しなどと共通化する
@@ -83,7 +86,7 @@ class AssetEditView(object):
             'asset_type': self.asset_type,
             }
 
-    @view_config(route_name='asset_list', renderer='altaircms:templates/asset/list.mako', request_method='GET', permission='edit')
+    @view_config(route_name='asset_list', renderer='altaircms:templates/asset/list.mako', request_method='GET', permission='asset_read')
     def list_(self):
         assets = DBSession().query(Asset).order_by(desc(Asset.id)).all()
 
@@ -91,7 +94,7 @@ class AssetEditView(object):
             assets=assets
         )
 
-    @view_config(route_name="asset_form", renderer='altaircms:templates/asset/form.mako', permission='edit')
+    @view_config(route_name="asset_form", renderer='altaircms:templates/asset/form.mako', permission='asset_update')
     def asset_form(self):
         def succeed(request, captured):
             # @TODO: S3に対応する
@@ -126,7 +129,7 @@ class AssetEditView(object):
 
         return self.render_form(form, success=succeed)
 
-    @view_config(route_name="asset_edit", permission='edit',
+    @view_config(route_name="asset_edit", permission='asset_update',
         renderer='altaircms:templates/asset/view.mako', request_method='GET')
     def asset_edit(self):
         if not self.asset:
@@ -142,7 +145,7 @@ class AssetEditView(object):
             asset=self.asset
         )
 
-    @view_config(route_name="asset_edit", permission='edit', request_method='POST')
+    @view_config(route_name="asset_edit", request_method='POST', permission="asset_delete")
     def asset_delete(self):
         if not self.asset:
             return NotFound()

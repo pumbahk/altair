@@ -1,5 +1,9 @@
 <%inherit file='../../layout_2col.mako'/>
 
+You are <strong>${user.role.name}</strong>.
+
+<hr/>
+
 <h4>ロール一覧</h4>
 <table class="table table-striped">
     <thead>
