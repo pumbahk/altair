@@ -22,6 +22,7 @@ def _image_asset():
     return asset
 
 def add_widget(page):
+    DBSession.flush()
     with block("title"):
         title = u'<h1 class="title" style="float: left;">トリニティ・アイリッシュ・ダンス</h1>'
         from altaircms.plugins.widget.freetext.views import FreetextWidgetView
@@ -234,8 +235,8 @@ def init():
              "structure": "{}", 
              'version': None}
         page = Page.from_dict(D)
-        add_widget(page)
         DBSession.add(page)
+        add_widget(page)
     transaction.commit()
 
     

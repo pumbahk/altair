@@ -1,3 +1,5 @@
+# -*- coding:utf-8 -*- 
+
 import unittest
 import json
 from altaircms.plugins.widget.image.models import ImageWidget
@@ -97,12 +99,17 @@ class FunctionalViewTests(unittest.TestCase):
         self.assertEquals(ImageWidget.query.first().asset.id, 2)
 
     def test_delete(self):
+        """ delete created widget. (the widget is deleted, and owner page of it is exist(not deleted))
+        """
         session = self._getSession()
         self._create_widget(session, id=1)
 
         res = self._callFUT().post_json(self.delete_widget,{"pk":1},  status=200)
         self.assertEquals(json.loads(res.body), {"status": "ok"})
-        self.assertEquals(ImageWidget.query.count(), 0)    
+        self.assertEquals(ImageWidget.query.count(), 0)
+
+        from altaircms.page.models import Page
+        self.assertNotEquals(Page.query.count(), 0)
 
     def test_getdialog(self):
         """ add asset env,  then dialog.mako is rendered successfully or not

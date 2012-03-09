@@ -29,18 +29,23 @@ widget.configure({
         var pk = we.get_pk(we.where);
         var url = "/api/widget/detail/dialog";
         if(!!pk){
-            url += "?" + $.param({"pk": pk});
+            url += "?" + $.param({"pk": pk, "page": get_page()}); // todo:move get_page
         }
         return we.dialog.load(url);
     };
-
+    var _has_click_event = "#submit";
     var on_dialog = function(we){
+        $(document).on("click", _has_click_event, function(){
+            we.finish_dialog(this);
+        });
     };
 
     var on_close = function(we){
     };
 
     var collect_data = function(we, choiced_elt){
+        return {kind: $("#kind").val(), 
+               };
     };
     return widget.include("detail", {
         load_page: load_page, 
