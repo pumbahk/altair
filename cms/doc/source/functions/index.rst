@@ -4,6 +4,7 @@
 
 .. toctree::
 
+   register_event
    account
    auth
    role
