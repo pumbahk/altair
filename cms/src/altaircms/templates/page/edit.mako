@@ -51,13 +51,14 @@ ${page_render.publish_status(request) | n}
   <div id="pageversion">ページのバージョンが入る</div>
   <div id="pagewidget">ウィジェット
     <div id="widget_palet">
-      <div id="image" class="widget red float-left">image</div>
-      <div id="freetext" class="widget blue float-left">freetext</div>
+      <div id="image" class="widget red float-left">画像</div>
+      <div id="freetext" class="widget blue float-left">フリーテキスト</div>
       <div id="flash"  class="widget green float-left">flash</div>
-      <div id="movie"  class="widget gray float-left">movie</div>
-      <div id="calendar"  class="widget green float-left">calendar</div>
-      <div id="dummy_widget5"  class="widget blue float-left">widget</div>
-      <div id="dummy_widget6"  class="widget red float-left">widget</div>
+      <div id="movie"  class="widget gray float-left">動画</div>
+      <div id="calendar"  class="widget green float-left">カレンダー</div>
+      <div id="detail"  class="widget blue float-left">イベント詳細</div>
+      <div id="ticketlist"  class="widget red float-left">チケットリスト</div>
+      <div id="performancelist"  class="widget red float-left">講演リスト</div>
     </div>
   </div>
   <br class="clear"/>
@@ -95,6 +96,12 @@ ${page_render.publish_status(request) | n}
 <script type="text/javascript" src="/plugins/static/js/widget/lib/flash.js"></script>
 ## todo: moveit
 <script type="text/javascript" src="/plugins/static/js/widget/lib/calendar.js"></script>
+## todo: moveit
+<script type="text/javascript" src="/plugins/static/js/widget/lib/detail.js"></script>
+## todo: moveit
+<script type="text/javascript" src="/plugins/static/js/widget/lib/ticketlist.js"></script>
+## todo: moveit
+<script type="text/javascript" src="/plugins/static/js/widget/lib/performancelist.js"></script>
 <script type="text/javascript" src="/static/js/page/backbone_patch.js"></script>
 <script type="text/javascript" src="/static/js/page/edit.js"></script>
 

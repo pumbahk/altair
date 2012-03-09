@@ -1,4 +1,5 @@
 from pyramid.view import view_config
+from . forms import DetailSelectForm
 
 class DetailWidgetView(object):
     def __init__(self, request):
@@ -34,5 +35,6 @@ class DetailWidgetView(object):
     @view_config(route_name="detail_widget_dialog", renderer="altaircms.plugins.widget:detail/dialog.mako", request_method="GET")
     def dialog(self):
         context = self.request.context
+        D = {"form_class": DetailSelectForm}
         widget = context.get_widget(self.request.GET.get("pk"))
-        return {"widget": widget}
+        return context.attach_form_from_widget(D, widget)

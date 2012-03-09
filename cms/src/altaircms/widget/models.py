@@ -47,9 +47,7 @@ class Widget(Base):
     query = DBSession.query_property()
     __tablename__ = "widget"
     page_id = sa.Column(sa.Integer, sa.ForeignKey("page.id"))
-    page = orm.relationship("Page", backref="widgets", 
-                            single_parent = True, 
-                           cascade="save-update, merge, delete, delete-orphan")
+    page = orm.relationship("Page", backref="widgets", single_parent = True)
     id = sa.Column(sa.Integer, primary_key=True)
     site_id = sa.Column(sa.Integer, sa.ForeignKey("site.id"))
     discriminator = sa.Column("type", sa.String(32), nullable=False)

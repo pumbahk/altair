@@ -1,17 +1,21 @@
 # -*- coding:utf-8 -*-
 
-from zope.interface import implements
-from altaircms.interfaces import IRenderable
+from datetime import datetime
 import os
+
+from zope.interface import implements
+from mako.template import Template
 
 here = os.path.abspath(os.path.dirname(__file__))
 
-from datetime import datetime
+from altaircms.interfaces import IRenderable
 from altaircms.models import Performance
+from renderable import CalendarOutput
+
 def perf(id_, title, beg, end):
     p = Performance.from_dict(
         {"title": title, 
-         "open_on": beg, 
+         "start_on": beg, 
          "close_on": end, 
          "event_id": 1, 
          "id": id_
@@ -40,39 +44,21 @@ dummy_performances = [
     perf(5, "event5", datetime(2012, 3, 20, 20), datetime(2012, 3, 20, 13)), 
     ]
 
-def this_month():
-    from mako.template import Template
-    from renderable import CalendarOutput
-    from datetime import date
+
+def obi():
     template = Template(filename=os.path.join(here, "rakuten.calendar.mako"), 
                         input_encoding="utf-8")
     cal = CalendarOutput.from_performances(dummy_performances, template=template)
     return {
         "description":  u"""
-今月の内容を表示するカレンダー
+一番初めの講演日と一番最後の講演日から縦長のカレンダーを作成。
 """, 
-        "renderable": RenderableAdaptor(cal.render, 
-                             date(2012, 2, 1),
-                             date(2012, 2, 29))
+        "renderable": RenderableAdaptor(cal.render,
+                                        dummy_performances[0].start_on, 
+                                        dummy_performances[-1].start_on), 
         }
-
-def listing():
-    from mako.template import Template
-    template = Template(filename=os.path.join(here, "simple.listing.mako"), 
-                        input_encoding="utf-8")
-    return {
-        "description": u"""
-パフォーマンスを一覧表示するだけの内容
-""", 
-        "renderable": RenderableAdaptor(template.render, performances=dummy_performances)
-        }
-
-
-    
     
 def term():
-    from mako.template import Template
-    from renderable import CalendarOutput
     from datetime import date
     from forms import SelectTermForm
     template = Template(filename=os.path.join(here, "rakuten.calendar.mako"), 
@@ -90,6 +76,5 @@ def term():
         }
 
 if __name__ == "__main__":
-    print this_month()["renderable"].render()
-    print listing()["renderable"].render()
     print term()["renderable"].render()
+    print obi()["renderable"].render()

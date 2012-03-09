@@ -49,3 +49,8 @@ class DetailWidgetResource(HandleSessionMixin,
 
     def get_widget(self, widget_id):
         return self._get_or_create(DetailWidget, widget_id)
+
+    def attach_form_from_widget(self, D, widget):
+        form = D["form_class"](**widget.to_dict())
+        D["form"] = form
+        return D

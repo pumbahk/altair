@@ -69,7 +69,7 @@ class Page(PublishUnpublishMixin,
     hash_url = Column(String(length=32), default=None)
 
     def __repr__(self):
-        return '<%s %s %s>' % (self.__class__.__name__, self.url, self.title)
+        return '<%s %s>' % (self.__class__.__name__, self.url)
 
     """
     def __str__(self):

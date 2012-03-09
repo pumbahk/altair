@@ -33,14 +33,18 @@ widget.configure({
         }
         return we.dialog.load(url);
     };
-
+    var _has_click_event = "#submit";
     var on_dialog = function(we){
+        $(document).on("click", _has_click_event, function(){
+            we.finish_dialog(this);
+        });
     };
 
     var on_close = function(we){
     };
 
     var collect_data = function(we, choiced_elt){
+        return {}
     };
     return widget.include("performancelist", {
         load_page: load_page, 

@@ -103,6 +103,9 @@ class FunctionalViewTests(unittest.TestCase):
         self.assertEquals(json.loads(res.body), {"status": "ok"})
         self.assertEquals(DetailWidget.query.count(), 0)    
 
+        from altaircms.page.models import Page
+        self.assertNotEquals(Page.query.count(), 0)
+
 
     def test_getdialog(self):
         self._callFUT().get(self.get_dialog, status=200)

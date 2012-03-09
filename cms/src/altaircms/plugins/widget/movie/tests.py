@@ -120,6 +120,9 @@ class FunctionalViewTests(unittest.TestCase):
         self.assertEquals(json.loads(res.body), {"status": "ok"})
         self.assertEquals(MovieWidget.query.count(), 0)    
 
+        from altaircms.page.models import Page
+        self.assertNotEquals(Page.query.count(), 0)
+
     def test_getdialog(self):
         session = self._getSession()
         session.add(self._makeAsset(id=1))
