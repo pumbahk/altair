@@ -3,10 +3,10 @@ from pyramid.httpexceptions import HTTPFound
 
 @view_config(route_name="demo1")
 def demo1(request):
-    url = request.route_url("front", page_name="sample_page")
+    url = request.route_url("front", page_name="demo1")
     return HTTPFound(location=url)
 
 @view_config(route_name="demo2")
 def demo2(request):
-    url = request.route_url("front", page_name="sample_page")
+    url = request.route_url("front", page_name="demo2")
     return HTTPFound(location=url)
