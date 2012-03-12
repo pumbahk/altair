@@ -231,7 +231,6 @@ var DroppedWidgetView = (function(){
             '<a class="edit" rel="#overlay"></a>', 
         ].join("\n")), 
         render: function(){
-            foo = this;
             var e = $(this.el).html(this.template(this.model.toJSON()));
             e.attr("cid", this.model.cid).draggable({
                 revert: true,

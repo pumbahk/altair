@@ -11,6 +11,7 @@ def rendering_page(context, request):
 
     block_context = context.get_block_context(page)
     block_context.scan(request=request,
+                       page=page, 
                        performances=context.get_performances(page),
                        tickets=context.get_tickets(page), 
                        event=page.event)
@@ -25,6 +26,7 @@ def rendering_preview_page(context, request):
 
     block_context = context.get_block_context(page)
     block_context.scan(request=request,
+                       page=page, 
                        performances=context.get_performances(page),
                        tickets=context.get_tickets(page), 
                        event=page.event)

@@ -20,8 +20,9 @@ class UsingRenderMixin(object):
     def get_page_render(self, page):
         return renderable.PageRender(page)
 
-class SampleCoreResource(UsingRenderMixin, 
-                         security.RootFactory):
+
+class PageResource(UsingRenderMixin, 
+                   security.RootFactory):
     def add(self, data, flush=False):
         DBSession.add(data)
         if flush:

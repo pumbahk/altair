@@ -8,7 +8,7 @@ from pyramid.response import Response
 from pyramid.view import view_config
 import transaction
 
-from altaircms.models import DBSession, Event
+from altaircms.models import DBSession, Event, Performance
 from altaircms.views import BaseRESTAPI
 from altaircms.page.models import Page
 from altaircms.fanstatic import with_bootstrap
@@ -28,10 +28,11 @@ def view(request):
 
     event = EventRESTAPIView(request, id_).read()
     pages = DBSession.query(Page).filter_by(event_id=event['id'])
-
+    performances = DBSession.query(Performance).filter(Performance.event_id==event["id"])
     return dict(
         event=event,
-        pages=pages
+        pages=pages, 
+        performances=performances
     )
 
 

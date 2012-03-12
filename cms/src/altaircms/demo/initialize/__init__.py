@@ -20,6 +20,7 @@ def init():
     with block("create role model"):
         from altaircms.auth.initial_data import insert_initial_authdata
         insert_initial_authdata()
+
     with block("create layout model"):
         from altaircms.layout.models import Layout
         layout0 = Layout()
@@ -30,7 +31,19 @@ def init():
         layout0.site_id = 1 ##
         layout0.client_id = 1 ##
         DBSession.add(layout0)
+
+        layout_gallery = Layout()
+        layout_gallery.id = 2
+        layout_gallery.title = "original_gallery"
+        layout_gallery.template_filename = "original5_gallery.mako"
+        layout_gallery.blocks = '[["page_header_content"],["notice"],["page_main_header"],["page_main_title"],["page_main_main"],["page_main_footer"]]'
+        layout_gallery.site_id = 1 ##
+        layout_gallery.client_id = 1 ##
+        DBSession.add(layout_gallery)
+
     from . import demo1
     demo1.init()
+    from . import demo1_tab
+    demo1_tab.init()
     from . import demo2
     demo2.init()

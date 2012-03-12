@@ -109,18 +109,6 @@ class PageEditView(object):
 
             if not self.page:
                 return NotFound()
-            '''
-            results = dbsession.query(Page2Widget, Widget).filter(Page2Widget.widget_id==Widget.id).\
-                filter(Page2Widget.page_id==page_id).order_by(asc(Page2Widget.order)).all()
-
-            self.display_blocks = {}
-            for p2w, widget in results:
-                key = p2w.block
-                if key in self.display_blocks:
-                    self.display_blocks[key].append(widget)
-                else:
-                    self.display_blocks[key] = [widget]
-            '''
             self.display_blocks = {}
 
     def render_form(self, form, appstruct=colander.null, submitted='submit', duplicated='duplicate',

@@ -24,6 +24,17 @@ def _image_asset():
 
 def add_widget(page):
     DBSession.flush()
+    with block("menu"):
+        from altaircms.plugins.widget.menu.views import MenuWidgetView
+        from altaircms.plugins.widget.menu.models import MenuWidgetResource
+        request = DummyRequest()
+        request.json_body = dict(page_id=page.id)
+        context = MenuWidgetResource(request)
+        request.context = context
+        r = MenuWidgetView(request).create()
+        append_to_json_structure(page, "page_main_title", 
+                                 {"name": "menu", "pk": r["pk"]})
+
     with block("title"):
         title = u'<h1 class="title" style="float: left;">松下奈緒コンサートツアー2012　for me</h1>'
         from altaircms.plugins.widget.freetext.views import FreetextWidgetView
@@ -101,6 +112,7 @@ def init():
     with block("create event"):
         from altaircms.models import Event
         D = {
+            "id": 1, 
             "title": u"松下奈緒コンサートツアー2012　for me \n supported by ＪＡバンク", 
             "subtitle": u"アイフルホーム presents\n\n", 
             "description": "", 

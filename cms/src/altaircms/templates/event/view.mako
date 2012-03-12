@@ -43,8 +43,19 @@
 
 <hr/>
 <h2>パフォーマンス</h2>
-
-
+<div class="row">
+  <div class="span5">
+   <table>
+	 <thead><tr><th>講演名</th><th>講演日時</th><th>場所</th></tr>
+	 </thead>
+	 <tbody>
+	   %for p in performances:
+	     <tr><td>${p.title}</td><td>${ p.start_on }</td><td>${ p.venue }</td></tr>
+	   %endfor
+	 </tbody>
+   </table>
+  </div>
+</div>
 <hr/>
 
 <h2>配下のページ一覧</h2>
@@ -54,7 +65,7 @@
         %for page in pages:
             <tr>
                 <td>
-                    <a href="${request.route_url('page_edit', event_id=event.id, page_id=page.id)}">${page}</a>
+                    <a href="${request.route_url('page_edit', event_id=event["id"], page_id=page.id)}">${page}</a>
                     <a href="/f/${page.url|n}" target="_blank">preview</a></td>
             </tr>
         %endfor
