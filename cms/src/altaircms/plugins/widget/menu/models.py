@@ -31,6 +31,7 @@ class MenuWidget(Widget):
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
     items = sa.Column(sa.String) #json string
     
+
     def merge_settings(self, bname, bsettings):
         bsettings.need_extra_in_scan("request")
         bsettings.need_extra_in_scan("page")

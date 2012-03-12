@@ -58,27 +58,6 @@ def add_widget(page):
         append_to_json_structure(page, "page_main_image", 
                                  {"name": "image", "pk": r["pk"]})
 
-    with block("summary"): ##
-        from altaircms.plugins.widget.summary.models import SummaryWidget
-        widget = SummaryWidget.from_page(page)
-        DBSession.add(widget)
-        DBSession.flush()
-        append_to_json_structure(page, "page_main_main", 
-                                 {"name": "summary", "pk": widget.id})
-
-    with block("ticketlist"):
-        from altaircms.plugins.widget.ticketlist.views import TicketlistWidgetView
-        from altaircms.plugins.widget.ticketlist.models import TicketlistWidgetResource
-        request = DummyRequest()
-        request.json_body = dict(page_id=page.id, 
-                                 data=dict())
-        context = TicketlistWidgetResource(request)
-        request.context = context
-        r = TicketlistWidgetView(request).create()
-        append_to_json_structure(page, "page_main_main", 
-                                 {"name": "ticketlist", "pk": r["pk"]})
-
-
                 
     with block("performancelist"):
         from altaircms.plugins.widget.performancelist.views import PerformancelistWidgetView
@@ -106,6 +85,27 @@ def add_widget(page):
         append_to_json_structure(page, "page_main_main", 
                                  {"name": "calendar", "pk": r["pk"]})
 
+    with block("summary"): ##
+        from altaircms.plugins.widget.summary.models import SummaryWidget
+        widget = SummaryWidget.from_page(page)
+        DBSession.add(widget)
+        DBSession.flush()
+        append_to_json_structure(page, "page_main_main", 
+                                 {"name": "summary", "pk": widget.id})
+
+    with block("ticketlist"):
+        from altaircms.plugins.widget.ticketlist.views import TicketlistWidgetView
+        from altaircms.plugins.widget.ticketlist.models import TicketlistWidgetResource
+        request = DummyRequest()
+        request.json_body = dict(page_id=page.id, 
+                                 data=dict())
+        context = TicketlistWidgetResource(request)
+        request.context = context
+        r = TicketlistWidgetView(request).create()
+        append_to_json_structure(page, "page_main_main", 
+                                 {"name": "ticketlist", "pk": r["pk"]})
+
+
     with block("detail"):
         from altaircms.plugins.widget.detail.views import DetailWidgetView
         from altaircms.plugins.widget.detail.models import DetailWidgetResource
@@ -122,7 +122,7 @@ def init():
     with block("create event"):
         from altaircms.models import Event
         D = {
-            "id": 3, 
+            "id": 1, 
             "title": u"松下奈緒コンサートツアー2012　for me \n supported by ＪＡバンク", 
             "subtitle": u"アイフルホーム presents\n\n", 
             "description": "", 
@@ -188,6 +188,7 @@ def init():
         page = Page.from_dict(D)
         DBSession.add(page)
         add_widget(page)
+
     transaction.commit()
 
     

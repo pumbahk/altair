@@ -118,6 +118,7 @@ def add_widget(page):
         append_to_json_structure(page, "page_main_image", 
                                  {"name": "image", "pk": r["pk"]})
 
+                
     with block("performancelist"):
         from altaircms.plugins.widget.performancelist.views import PerformancelistWidgetView
         from altaircms.plugins.widget.performancelist.models import PerformancelistWidgetResource

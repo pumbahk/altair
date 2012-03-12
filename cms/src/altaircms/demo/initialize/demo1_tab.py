@@ -33,7 +33,6 @@ def add_widget(page):
         append_to_json_structure(page, "page_main_title", 
                                  {"name": "menu", "pk": r["pk"]})
 
-
     from altaircms.asset.models import ImageAsset
     asset = ImageAsset.query.first()
     with block("image"):
