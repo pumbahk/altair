@@ -7,9 +7,9 @@
   % endfor
 </%def>
 
-<%block name="description">${widgets("description")}</%block>
-<%block name="keywords">${widgets("keywords")}</%block>
-<%block name="title">${widgets("title")}</%block>
+<%block name="description">${page.description}</%block>
+<%block name="keywords">${page.keywords}</%block>
+<%block name="title">${page.title}</%block>
 
 <%block name="css_prerender">
   ${self.inherits.css_prerender()}

@@ -28,7 +28,13 @@ def add_widget(page):
         from altaircms.plugins.widget.menu.views import MenuWidgetView
         from altaircms.plugins.widget.menu.models import MenuWidgetResource
         request = DummyRequest()
-        request.json_body = dict(page_id=page.id)
+        items = [dict(label=u"松下奈緒コンサートツアー2012　for me", 
+                      link=u"/f/publish/demo1"), 
+                 dict(label=u"画像ギャラリー", 
+                      link=u"/f/publish/demo1_garalley"), 
+                 ]
+        import json
+        request.json_body = dict(page_id=page.id, data=dict(items=json.dumps(items)))
         context = MenuWidgetResource(request)
         request.context = context
         r = MenuWidgetView(request).create()
