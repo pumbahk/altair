@@ -1,33 +1,4 @@
-## menu widget dialog
-##  view function is views.MenuWidgetView.dialog
-##
-<!-- Menu App Interface -->
-<div id="app">
-  <div class="title">
-    <h1>メニュータブ</h1>
-  </div>
-  <div class="content" class="float">
-    <div id="create-menu">
-	  <table>
-		<tr><td><label>リンク先名<input id="label_input" placeholder="ここにリンク名を追加" type="text" /></label></td></tr>
-		<tr><td><label>URL<input id="link_input" placeholder="ここにリンク先のURLを追加" type="text" /></label></td></tr>
-	  </table>
-    </div>
-	<span class="clear"/>
-    <div id="menus">
-	  <table>
-		<thead>
-		  <tr><th>リンク先名</th><th>URL</th><th>削除</th></tr>
-		</thead>
-		<tbody id="menulist">
-		</tbody>
-	  </table>
-    </div>
-  </div>
-  <button id="submit" type="button">登録</button>
-</div>
-<script type="text/javascript">
-(function(){
+var lib = (function(){
     var Item = Backbone.Model.extend({
         sync: function(){
             //don't sync this object
@@ -60,11 +31,11 @@
         template: _.template([
             '<td class="label"></td>', 
             '<td class="link"></td>', 
-            '<td><a href="#" class="remove">remove</a></td>', 
+            '<td class="close"><a href="#" class="close">close</a></td>', 
         ].join("\n")), 
 
         events: {
-            "click a.remove": "clearSelf"
+            "click a.close": "clearSelf"
         }, 
 
         initialize: function(){
@@ -82,7 +53,7 @@
             this.$(".label").text(label);
 
             var link = this.model.get("link");
-            this.$(".link").html($("<a>").attr("href",link).text(link));
+            this.$(".link").text(link);
             // this.input.bind('blur', _.bind(this.close, this)).val(text);
             // blue is unfocus. todo sample is then saved object
         }, 
@@ -107,6 +78,7 @@
         events: {
             "keypress #label_input": "createOnEnter", 
             "keypress #link_input": "createOnEnter", 
+            "click #submit": "collectData",  // todo fix
         }, 
         
         addOne: function(item){
@@ -140,10 +112,7 @@
             this.link_input.val("");
         }, 
     });
-
-  var root =  $("#app");
-  var appview = new AppView({el: root}); 
-  root.data("appview",appview);
-  appview.loadData($.parseJSON('${items|n}')); <%doc> items is mako </%doc>
+    return {
+        AppView: AppView
+    };
 })();
-</script>

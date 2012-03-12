@@ -49,7 +49,6 @@ var LayoutService = (function(){
         }, 
         attach_highlight: function(key, elts){
             if(key == null || !cache[key]){
-                console.log(elts);
                 cache[key] = true;
                 setTimeout(function(){
                     elts.live("mouseover", function(){

@@ -59,10 +59,12 @@ ${page_render.publish_status(request) | n}
       <div id="detail"  class="widget blue float-left">イベント詳細</div>
       <div id="ticketlist"  class="widget red float-left">チケットリスト</div>
       <div id="performancelist"  class="widget red float-left">講演リスト</div>
+      <div id="menu"  class="widget red float-left">メニュー</div>
     </div>
   </div>
   <br class="clear"/>
   <form action="#" method="post">
+  </form>          
     <div id="main_page">ページ編集
       <div id="selected_layout" class="clear">
         <div id="wrapped">
@@ -79,7 +81,6 @@ ${page_render.publish_status(request) | n}
     </div>
     <a href="${request.route_url("front_to_preview", page_id=page.id)}">preview</a>
     <button type="submit">publish</button>
-  </form>
 </div>
 
 <script type="text/javascript">
@@ -102,6 +103,10 @@ ${page_render.publish_status(request) | n}
 <script type="text/javascript" src="/plugins/static/js/widget/lib/ticketlist.js"></script>
 ## todo: moveit
 <script type="text/javascript" src="/plugins/static/js/widget/lib/performancelist.js"></script>
+## todo: moveit
+<script type="text/javascript" src="/plugins/static/js/widget/lib/menu.js"></script>
+## todo: moveit
+<script type="text/javascript" src="/plugins/static/js/widget/lib/summary.js"></script>
 <script type="text/javascript" src="/static/js/page/backbone_patch.js"></script>
 <script type="text/javascript" src="/static/js/page/edit.js"></script>
 

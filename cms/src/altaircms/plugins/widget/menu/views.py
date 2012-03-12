@@ -1,4 +1,7 @@
+# -*- coding:utf-8 -*-
+
 from pyramid.view import view_config
+import json
 
 class MenuWidgetView(object):
     def __init__(self, request):
@@ -6,9 +9,13 @@ class MenuWidgetView(object):
 
     def _create_or_update(self):
         page_id = self.request.json_body["page_id"]
+        if self.request.json_body["data"].get("create_by_page"):
+            items = self.request.context.get_items(page_id)
+        else:
+            items = self.request.json_body["data"]["items"]
         context = self.request.context
         widget = context.get_widget(self.request.json_body.get("pk"))
-        widget = context.update_data(widget, page_id=page_id)
+        widget = context.update_data(widget, page_id=page_id, items=items)
         context.add(widget, flush=True)
 
         r = self.request.json_body.copy()
@@ -34,4 +41,8 @@ class MenuWidgetView(object):
     def dialog(self):
         context = self.request.context
         widget = context.get_widget(self.request.GET.get("pk"))
-        return {"widget": widget}
+        if widget.items is None:
+            items = context.get_items(self.request.GET["page"])
+        else:
+            items = widget.items
+        return {"widget": widget, "items": items}

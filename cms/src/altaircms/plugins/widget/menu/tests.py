@@ -1,6 +1,7 @@
 import unittest
 import json
 from altaircms.plugins.widget.menu.models import MenuWidget
+import mock
 
 class FunctionalViewTests(unittest.TestCase):
     create_widget = "/api/widget/menu/create"
@@ -56,9 +57,9 @@ class FunctionalViewTests(unittest.TestCase):
 
         res = self._callFUT().post_json(
             self.create_widget, 
-            {"page_id": page_id, "pk": None, "data": {} }, 
+            {"page_id": page_id, "pk": None, "data": {"items": "[]"} }, 
             status=200)
-        expexted = {"page_id": page_id, "pk": 1,  "data": {} }
+        expexted = {"page_id": page_id, "pk": 1,  "data": {"items": "[]"} }
 
         self.assertEquals(json.loads(res.body), expexted)
         self.assertEquals(MenuWidget.query.count(), 1)
@@ -70,22 +71,22 @@ class FunctionalViewTests(unittest.TestCase):
         page_id = 1
         self._with_session(session, self._makePage(id=page_id))
         self._callFUT().post_json(self.create_widget,
-                                  {"page_id": page_id, "pk": None, "data": {} }, 
+                                  {"page_id": page_id, "pk": None, "data": {"items": "[]"} }, 
                                   status=200)        
 
-    # def test_update(self):
-    #     session = self._getSession()
-    #     page_id = 10
-    #     self._create_widget(session, id=1, page_id=page_id)
-    #     updated = "updated"
-    #     res = self._callFUT().post_json(self.update_widget, 
-    #                                     {"page_id": page_id, "pk":1, "data": {"content": updated} }, 
-    #                                     status=200)
-    #     expexted = {"page_id": page_id, "pk": 1,  "data": {"content": updated} }
+    def test_update(self):
+        session = self._getSession()
+        page_id = 10
+        self._create_widget(session, id=1, page_id=page_id)
+        updated = '[{label:"google", link:"http://www.google.co.jp"}]'
+        res = self._callFUT().post_json(self.update_widget, 
+                                        {"page_id": page_id, "pk":1, "data": {"items": updated} }, 
+                                        status=200)
+        expexted = {"page_id": page_id, "pk": 1,  "data": {"items": updated} }
 
-    #     self.assertEquals(json.loads(res.body), expexted)
-    #     self.assertEquals(MenuWidget.query.count(), 1)
-    #     self.assertEquals(MenuWidget.query.first().content, updated)
+        self.assertEquals(json.loads(res.body), expexted)
+        self.assertEquals(MenuWidget.query.count(), 1)
+        self.assertEquals(MenuWidget.query.first().items, updated)
 
 
     def test_delete(self):
@@ -99,9 +100,9 @@ class FunctionalViewTests(unittest.TestCase):
         from altaircms.page.models import Page
         self.assertNotEquals(Page.query.count(), 0)
 
-
-    def test_getdialog(self):
-        self._callFUT().get(self.get_dialog, status=200)
+    @mock.patch("altaircms.plugins.widget.menu.models.MenuWidgetResource.get_items", return_value="[]")
+    def test_getdialog(self, mocked):
+        self._callFUT().get(self.get_dialog, {"page":None}, status=200)
 
 if __name__ == "__main__":
     unittest.main()

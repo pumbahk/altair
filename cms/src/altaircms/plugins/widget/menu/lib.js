@@ -29,19 +29,23 @@ widget.configure({
         var pk = we.get_pk(we.where);
         var url = "/api/widget/menu/dialog";
         if(!!pk){
-            url += "?" + $.param({"pk": pk});
+            url += "?" + $.param({"pk": pk, "page": get_page()});
         }
         return we.dialog.load(url);
     };
 
     var on_dialog = function(we){
+        $("#submit").click(function(){we.finish_dialog(this);});
     };
 
     var on_close = function(we){
     };
 
     var collect_data = function(we, choiced_elt){
+        // read dialog.mako
+        return {"items": JSON.stringify($("#app").data("appview").collectData())};
     };
+
     return widget.include("menu", {
         load_page: load_page, 
         on_dialog: on_dialog, 
