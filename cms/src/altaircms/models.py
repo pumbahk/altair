@@ -83,6 +83,7 @@ class Event(Base):
     @TODO: 席図をくっつける
     """
     __tablename__ = "event"
+    query = DBSession.query_property()
 
     id = Column(Integer, primary_key=True)
     created_at = Column(DateTime, default=datetime.now())
@@ -117,6 +118,7 @@ class Performance(Base):
     パフォーマンス
     """
     __tablename__ = "performance"
+    query = DBSession.query_property()
 
     id = Column(Integer, primary_key=True)
     backend_performance_id = Column(Integer, nullable=False)
@@ -139,6 +141,7 @@ class Performance(Base):
 
 class Sale(Base):
     __tablename__ = 'sale'
+    query = DBSession.query_property()
 
     id = Column(Integer, primary_key=True)
     performance_id = Column(Integer, ForeignKey('performance.id'))
@@ -158,6 +161,7 @@ class Ticket(Base):
     券種
     """
     __tablename__ = "ticket"
+    query = DBSession.query_property()
 
     id = Column(Integer, primary_key=True)
     orderno = Column(Integer)
@@ -179,6 +183,7 @@ class Seatfigure(Base):
     席図
     """
     __tablename__ = "seatfigure"
+    query = DBSession.query_property()
 
     id = Column(Integer, primary_key=True)
     created_at = Column(DateTime, default=datetime.now())
@@ -189,37 +194,34 @@ class Seatfigure(Base):
 
     client_id = Column(Integer, ForeignKey("event.id"))
 
-class TopicType(Base):
-    __tablename__ = 'topic_type'
-
-    id = Column(Integer, primary_key=True)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
-    client_id = Column(Integer, ForeignKey('client.id'))
-
-    type = Column(Integer)
-
 
 class Topic(Base):
+    """
+    トピック
+    """
     __tablename__ = "topic"
+    query = DBSession.query_property()
 
     id = Column(Integer, primary_key=True)
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=datetime.now())
 
-    topic_type_id = Column(Integer, ForeignKey('topic_type.id'))
+    client_id = Column(Integer, ForeignKey("client.id")) #?
+    site_id = Column(Integer, ForeignKey("site.id"))    
+
+    type = Column(String(255))
     title = Column(Unicode)
     text = Column(Unicode)
-
-    is_public = Column(Integer, default=0)
+    is_public = Column(Integer, default=0) #?
     publish_at = Column(DateTime)
 
 
-    site_id = Column(Integer, ForeignKey("site.id"))
+
 
 
 class Site(Base):
     __tablename__ = "site"
+    query = DBSession.query_property()
 
     id = Column(Integer, primary_key=True)
     created_at = Column(DateTime, default=datetime.now())

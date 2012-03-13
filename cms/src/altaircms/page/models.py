@@ -52,6 +52,9 @@ class Page(PublishUnpublishMixin,
     parent_id = Column(Integer, ForeignKey('page.id'))
     event_id = Column(Integer, ForeignKey('event.id'))
     event = relationship('Event', backref='pages')
+    topic_id = Column(Integer, ForeignKey("topic.id"))
+    topic = relationship("Topic", backref="page", uselist=False)
+
 
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=datetime.now())
