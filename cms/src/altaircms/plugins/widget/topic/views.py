@@ -1,4 +1,5 @@
 from pyramid.view import view_config
+from . import forms
 
 class TopicWidgetView(object):
     def __init__(self, request):
@@ -35,4 +36,5 @@ class TopicWidgetView(object):
     def dialog(self):
         context = self.request.context
         widget = context.get_widget(self.request.GET.get("pk"))
-        return {"widget": widget}
+        form = forms.TopicChoiceForm(topic=widget.topic)
+        return {"form": form}

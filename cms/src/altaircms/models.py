@@ -216,6 +216,9 @@ class Topic(Base):
     is_public = Column(Integer, default=0) #?
     publish_at = Column(DateTime)
 
+    def __repr__(self):
+        return u"トピック: %s タイトル=%s (%s)" % (self.kind, self.title, self.publish_at)
+
 class Site(Base):
     __tablename__ = "site"
     query = DBSession.query_property()

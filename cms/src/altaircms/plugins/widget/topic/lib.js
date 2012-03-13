@@ -35,12 +35,14 @@ widget.configure({
     };
 
     var on_dialog = function(we){
+        $("#submit").click(function(){we.finish_dialog(this);});
     };
 
     var on_close = function(we){
     };
 
     var collect_data = function(we, choiced_elt){
+        return {"topic": $(we.dialog).find("#select_topic").val()};
     };
     return widget.include("topic", {
         load_page: load_page, 

@@ -21,7 +21,7 @@
         <th>公開日</th><td>${topic['publish_at']}</td>
       </tr>
       <tr>
-        <th class="span2">内容</th><td>${topic['text']}</td>
+        <th class="span2">内容</th><td>${topic['text']|n}</td>
       </tr>
     </table>
   </div>

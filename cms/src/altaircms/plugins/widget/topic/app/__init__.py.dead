@@ -1,4 +1,4 @@
-from . import views
 def includeme(config):
     config.add_route("topicdemo", "/demo/topic")
+    config.add_route("topicdialog", "/demo/dialog/topic")
     config.add_static_view('demo/static', 'altaircms.plugins.widget.topic:app/static', cache_max_age=3600)

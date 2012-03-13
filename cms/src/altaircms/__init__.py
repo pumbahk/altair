@@ -101,7 +101,7 @@ def main_app(global_config, settings):
         initialize_sql(engine)
     ## 設定ファイルを読み込んで追加でinclude.(debug用)
     if settings.get("altaircms.debug.additional_includes"):
-        for m in settings.get("altaircms.debug.additional_includes").split("\n"):
+        for m in settings.get("altaircms.debug.additional_includes").split(" "):
             warnings.warn("------------additional include " + m)
             config.include(m)
     return config.make_wsgi_app()

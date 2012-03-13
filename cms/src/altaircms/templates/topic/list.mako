@@ -28,7 +28,7 @@
             <td><a href="${request.route_url("topic", id=topic['id'])}">${topic['title']}</a></td>
             <td>${topic['kind']}</td>
             <td>${topic['publish_at']}</td>
-            <td>${topic['text']}</td>
+            <td>${topic['text'] if len(topic['text']) <= 20 else topic['text'][:20]+"..."}</td>
         </tr>
         %endfor
         </tbody>
