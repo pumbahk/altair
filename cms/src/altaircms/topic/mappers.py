@@ -3,6 +3,7 @@ import bpmappers.fields as fields
 
 
 class TopicMapper(Mapper):
+    id = fields.RawField()
     event = fields.RawField()
     title = fields.RawField()
     text = fields.RawField()

@@ -70,6 +70,7 @@ def main_app(global_config, settings):
     config.include("altaircms.page")
     config.include("altaircms.widget")
     config.include("altaircms.asset")
+    config.include("altaircms.topic")
 
     # config.include("altaircms.base")
 
@@ -80,6 +81,7 @@ def main_app(global_config, settings):
     config.scan('altaircms.event', ignore=[test_re])
     config.scan('altaircms.page', ignore=[test_re])
     config.scan('altaircms.asset', ignore=[test_re])
+    config.scan('altaircms.topic', ignore=[test_re])
     config.scan('altaircms.widget', ignore=[test_re])
     config.scan('altaircms.layout', ignore=[test_re])
     config.scan('altaircms.front', ignore=[test_re])

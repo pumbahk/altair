@@ -3,7 +3,7 @@
     <!-- <li><a href="/client">edit client</a></li> -->
     <li><a href="${request.route_url("event_list")}">イベント</a></li>
     <li><a href="#">パフォーマンス</a></li>
-    <li><a href="#">トピック</a></li>
+    <li><a href="${request.route_url("topic_list")}">トピック</a></li>
 
     <li class="nav-header">ページ管理</li>
     <li><a href="${request.route_url("layout_list")}">レイアウト</a></li>

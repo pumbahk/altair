@@ -1,4 +1,4 @@
-<% def name="formfield(k)">
+<%def name="formfield(k)">
 	<tr><th>${getattr(form,k).label}</th><td>${getattr(form,k)}
 	%if k in form.errors:
 	  <br/>

@@ -61,22 +61,28 @@ def view(request):
 ## CMS view
 ##
 
+
+
 @view_config(route_name='topic_list', renderer='altaircms:templates/topic/list.mako', permission='topic_create', request_method="POST", 
              decorator=with_bootstrap)
+def _post_list_(request):
+    topics = TopicRESTAPIView(request).read()
+    form = forms.TopicForm(request.POST)
+    if form.validate():
+        request.method = "PUT"
+        TopicRESTAPIView(request).create()
+        return HTTPFound(request.route_url("topic_list"))
+
+    return dict(
+        form=form,
+        topics=topics
+    )
+
 @view_config(route_name='topic_list', renderer='altaircms:templates/topic/list.mako', permission='topic_read', request_method="GET", 
              decorator=with_bootstrap)
-def list_(request):
+def _get_list_(request):
     topics = TopicRESTAPIView(request).read()
-
-    if request.method == "POST":
-        form = forms.TopicForm(request.POST)
-        if form.validate():
-            request.method = "PUT"
-            TopicRESTAPIView(request).create()
-            return HTTPFound(request.route_url("topic_list"))
-    else:
-        form = forms.TopicForm()
-
+    form = forms.TopicForm()
     return dict(
         form=form,
         topics=topics
