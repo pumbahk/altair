@@ -208,16 +208,14 @@ class Topic(Base):
 
     client_id = Column(Integer, ForeignKey("client.id")) #?
     site_id = Column(Integer, ForeignKey("site.id"))    
+    event_id = Column(Integer, ForeignKey("event.id"))
+    event = relationship("Event", backref="topic", uselist=False)
 
     type = Column(String(255))
     title = Column(Unicode)
     text = Column(Unicode)
     is_public = Column(Integer, default=0) #?
     publish_at = Column(DateTime)
-
-
-
-
 
 class Site(Base):
     __tablename__ = "site"
