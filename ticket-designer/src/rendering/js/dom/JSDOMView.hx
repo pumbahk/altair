@@ -81,10 +81,12 @@ class JSDOMView implements View {
             if (capturingRenderer == null
                     || capturingRenderer.n[0] == e.target) {
                 handler(e);
+                return false;
             }
+            return true;
         };
-        eventHandlerHash.set(key, lambda);
-        untyped __js__("renderer.n.bind")(eventName, lambda);
+        eventHandlerHash.set(key, untyped lambda);
+        renderer.n.bind(eventName, untyped lambda);
     }
 
     public function unbindEvent(renderer:JSDOMRenderer, eventName:String) {

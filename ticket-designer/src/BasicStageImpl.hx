@@ -2,7 +2,13 @@ class BasicStageImpl<Trenderer:ComponentRenderer, Tview:View> implements Stage {
     public var renderers(get_renderers, null):Iterable<ComponentRenderer>;
     public var view(get_view, null):View;
     public var view_:Tview;
+    public var cursor(default, set_cursor):MouseCursorKind;
     var renderers_:Hash<Trenderer>;
+
+    function set_cursor(value:MouseCursorKind):MouseCursorKind {
+        cursor = value;
+        return value;
+    }
 
     public function add(renderer:ComponentRenderer):Void {
         renderers_.set(Std.string(renderer.id), untyped renderer);

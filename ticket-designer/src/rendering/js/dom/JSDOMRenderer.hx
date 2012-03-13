@@ -12,10 +12,12 @@ class JSDOMRenderer implements Renderer {
     public var onPress:JqEvent->Void;
     public var onRelease:JqEvent->Void;
     public var onMouseMove:JqEvent->Void;
+    public var onMouseOut:JqEvent->Void;
 
     var onPressHandler:Event->Void;
     var onReleaseHandler:Event->Void;
     var onMouseMoveHandler:Event->Void;
+    var onMouseOutHandler:Event->Void;
 
     private function set_view(value:View):View {
         view_ = cast(value, JSDOMView);
@@ -77,6 +79,15 @@ class JSDOMRenderer implements Renderer {
                 view_.unbindEvent(this, 'mousemove');
             }
             onMouseMoveHandler = handler;
+        case MOUSEOUT:
+            if (onMouseOutHandler == null) {
+                view_.bindEvent(this, 'mouseout', onMouseOut);
+            } else {
+                if (handler != null)
+                    throw new IllegalStateException("event is already bound");
+                view_.unbindEvent(this, 'mouseout');
+            }
+            onMouseOutHandler = handler;
         }
     }
 
@@ -98,8 +109,16 @@ class JSDOMRenderer implements Renderer {
             me.onMouseMoveHandler(me.createMouseEvent(e));
         };
 
+        this.onMouseOut = function(e:JqEvent):Void {
+            me.onMouseOutHandler(me.createMouseEvent(e));
+        };
+
         this.onRelease = function(e:JqEvent):Void {
             me.onReleaseHandler(me.createMouseEvent(e));
         };
+    }
+
+    public function toString() {
+        return Type.getClassName(Type.getClass(this)) + "{ id: " + id + " }";
     }
 }

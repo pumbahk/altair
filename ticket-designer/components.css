@@ -12,7 +12,7 @@
   position: absolute;
   border: 1px solid black;
   background-color: #ffe;
-  cursor: pointer;
+  /* cursor: pointer; */
 }
 
 .canvas .component-horizontal_guide,
@@ -23,10 +23,10 @@
 
 .canvas .component-horizontal_guide {
   border-top-style: solid;
-  cursor: crosshair;
+  /* cursor: crosshair; */
 }
 
 .canvas .component-vertical_guide {
   border-left-style: solid;
-  cursor: crosshair;
+  /* cursor: crosshair; */
 }
