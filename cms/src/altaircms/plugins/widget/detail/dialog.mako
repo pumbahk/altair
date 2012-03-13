@@ -1,6 +1,10 @@
 ## detail widget dialog
 ##  view function is views.DetailWidgetView.dialog
 ##
+<div class="title">
+  <h1>イベント詳細</h1>
+</div>
+
 <div id="select_detail">
 %for field in form:
   <tr>

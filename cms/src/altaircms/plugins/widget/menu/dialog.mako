@@ -9,11 +9,17 @@
   <div class="content" class="float">
     <div id="create-menu">
 	  <table>
-		<tr><td><label>リンク先名<input id="label_input" placeholder="ここにリンク名を追加" type="text" /></label></td></tr>
-		<tr><td><label>URL<input id="link_input" placeholder="ここにリンク先のURLを追加" type="text" /></label></td></tr>
+	  	<tr>
+		  <td><label>リンク先名<input id="label_input" placeholder="ここにリンク名を追加" type="text" /></label></td>
+	  	  <td><label>URL<input id="link_input" placeholder="ここにリンク先のURLを追加" type="text" /></label></td>
+		</tr>
 	  </table>
     </div>
 	<span class="clear"/>
+
+    <h3>現在保存されているタブ</h3>
+    <hr/>
+
     <div id="menus">
 	  <table>
 		<thead>
