@@ -13,7 +13,8 @@
   <table class="table">
     <tbody>
       ${formfield("title")}
-      ${formfield("event")}
+      ${formfield("kind")}
+      ${formfield("publish_at")}
       ${formfield("text")}
     </tbody>
   </table>

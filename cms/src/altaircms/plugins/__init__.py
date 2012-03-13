@@ -8,5 +8,6 @@ def includeme(config):
     config.include(".widget.detail", route_prefix="api")
     config.include(".widget.ticketlist", route_prefix="api")
     config.include(".widget.menu", route_prefix="api")
+    config.include(".widget.topic", route_prefix="api")
 
 

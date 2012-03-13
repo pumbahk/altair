@@ -25,7 +25,6 @@ class TestTopicView(BaseTest):
 
     def test_create_valid(self):
         self._fill_request_post()
-
         resp = TopicRESTAPIView(self.request).create()
         self.assertEqual(resp.status_int, 201)
         self.assertEqual(resp.message, None)
@@ -40,10 +39,11 @@ class TestTopicView(BaseTest):
         # read object
         resp = TopicRESTAPIView(self.request, '1').read()
         self.assertEquals(dict(resp.items()), 
-                         {'event': None,
-                          'text': u'\u5185\u5bb9',
-                          'id': 1,
-                          'title': u'\u305f\u3044\u3068\u308b'})
+                          {'publish_at': u'2012-01-01T10:10:10',
+                           'title': u'たいとる',
+                           "id": 1, 
+                           "kind": u"その他", 
+                           'text': u'内容'})
 
 
     def test_delete(self):
@@ -62,6 +62,8 @@ class TestTopicView(BaseTest):
     def _fill_request_post(self):
         self.request.POST = MultiDict([
             (u'title', u'たいとる'),
+            (u"kind", u"その他"), 
+            (u'publish_at', u'2012-1-1 10:10:10'),
             (u'text', u'内容'),
         ])
 

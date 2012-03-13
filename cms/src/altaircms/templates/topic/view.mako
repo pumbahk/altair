@@ -15,7 +15,10 @@
         <th class="span2">タイトル</th><td>${topic['title']}</td>
       </tr>
       <tr>
-        <th>関連イベント</th><td>${topic['event']}</td>
+        <th>トピックの種類</th><td>${topic['kind']}</td>
+      </tr>
+      <tr>
+        <th>公開日</th><td>${topic['publish_at']}</td>
       </tr>
       <tr>
         <th class="span2">内容</th><td>${topic['text']}</td>
