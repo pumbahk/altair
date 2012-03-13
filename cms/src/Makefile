@@ -1,8 +1,9 @@
 inifile = development.ini
 
 clean:
-	find . -name "*.pyc" | xargs rm 
-	test -d altaircms/demo/asset && rm -r altaircms/demo/asset
+	find . -name "*.pyc" -exec rm {} \;
+	rm -rf altaircms/plugins/static/*
+	if [ -d altaircms/demo/asset ]; then rm -r altaircms/demo/asset; fi
 
 test:
 	python -m unittest discover

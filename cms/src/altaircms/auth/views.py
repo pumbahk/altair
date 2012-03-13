@@ -121,7 +121,7 @@ class OAuthLogin(object):
 
         transaction.commit()
 
-        return HTTPFound(location = '/', headers = headers)
+        return HTTPFound(location=request.route_url("dashboard"), headers = headers)
 
 
 """
