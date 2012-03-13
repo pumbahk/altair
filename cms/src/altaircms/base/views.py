@@ -13,7 +13,7 @@ from altaircms.views import BaseRESTAPI
 from altaircms.auth.forms import APIKeyForm
 
 
-@view_config(name='', renderer='altaircms:templates/dashboard.mako', permission='authenticated', 
+@view_config(renderer='altaircms:templates/dashboard.mako', permission='authenticated',
              decorator=with_bootstrap, route_name="dashboard")
 def dashboard(request):
     """

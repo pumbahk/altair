@@ -121,7 +121,9 @@ class OAuthLogin(object):
 
         transaction.commit()
 
-        return HTTPFound(location="/", headers=headers)
+        # url = self.request.route_url("dashboard")
+        url = self.request.registry.settings.get('oauth.callback_success_url', '/')
+        return HTTPFound(url, headers=headers)
 
 
 """

@@ -37,6 +37,7 @@ class TestAuthView(BaseTest):
         super(TestAuthView, self).setUp()
         insert_initial_authdata()
         self.request = testing.DummyRequest()
+        self.request.registry = self.config.registry
 
     def test_normal_views(self):
         """
@@ -90,15 +91,15 @@ class TestAuthView(BaseTest):
         )
         resp = view.oauth_callback()
         self.assertTrue(isinstance(resp, HTTPFound))
-        self.assertEqual(resp.location, '/')
+        #self.assertEqual(resp.location, self.request.route_url("dashboard"))
+        self.assertEqual(resp.location, self.request.registry.settings.get('oauth.callback_success_url', '/'))
+
 
 class TestSecurity(BaseTest):
     def setUp(self):
         self.request = testing.DummyRequest()
 
     def test_user_notfound(self):
-        from altaircms.models import DBSession
-        from altaircms.auth.models import Operator
         from altaircms.security import rolefinder
 
         self.assertEqual(rolefinder(1234, self.request), [])
