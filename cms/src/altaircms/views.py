@@ -10,6 +10,12 @@ class BaseRESTAPIError(Exception):
     def __str__(self):
         return self.message
 
+dict = REST_MAPPING = dict(
+    put="update", 
+    delete="delete", 
+    post="create", 
+    get="read"
+    )
 
 class BaseRESTAPI(object):
     """
@@ -34,6 +40,8 @@ class BaseRESTAPI(object):
         if self.id:
             self.model_object = self.session.query(self.model).get(self.id)
 
+    def get_rest_action(self, rest_action):
+        return getattr(self, REST_MAPPING[rest_action])
 
     def create(self):
         """

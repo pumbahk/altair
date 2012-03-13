@@ -52,6 +52,33 @@ def view(request):
         topic=topic,
     )
 
+@view_config(route_name="topic_delete_confirm", renderer="altaircms:templates/topic/delete_confirm.mako", 
+             permission="topic_delete", request_method="GET", decorator=with_bootstrap)
+def delete_confirm(request):
+    id_ = request.matchdict['id']
+    topic = TopicRESTAPIView(request, id_).read()
+    return dict(
+        topic=topic,
+    )
+
+@view_config(route_name="topic", permission="topic_delete", request_method="POST", decorator=with_bootstrap)
+def execute(request):
+    id_ = request.matchdict['id']
+    TopicRESTAPIView(request, id_).get_rest_action(request.POST["_method"])()
+    ## fixme: add flash message
+    return HTTPFound(location=request.route_url("topic_list"))
+
+@view_config(route_name="topic_update_confirm", renderer="altaircms:templates/topic/update_confirm.mako", 
+             permission="topic_update", request_method="GET", decorator=with_bootstrap)
+def update_confirm(request):
+    id_ = request.matchdict['id']
+    view  = TopicRESTAPIView(request, id_)
+    topic = view.read()
+    form = forms.TopicForm(**view.model_object.to_dict())
+    return dict(
+        topic=topic, form=form
+    )
+
 ##
 ## CMS view
 ##
