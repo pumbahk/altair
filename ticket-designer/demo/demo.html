@@ -91,6 +91,7 @@
         guide = f.create(HorizontalGuide);
         guide.position = { x: e.position.x + viewport.scrollPosition.x,
                            y: e.position.y + viewport.scrollPosition.y };
+        view.get_stage().set_cursor(MouseCursorKind.CROSSHAIR);
         guide.refresh();
       });
       horizontalRuler.on.drag.do_(function(e) {
@@ -100,6 +101,7 @@
         guide.refresh();
       });
       horizontalRuler.on.dragend.do_(function(e) {
+        view.get_stage().set_cursor(MouseCursorKind.DEFAULT);
         if (e.position.y < 0)
           view.get_stage().remove(guide.renderer);
       });
@@ -111,6 +113,7 @@
         guide = f.create(VerticalGuide);
         guide.position = { x: e.position.x + viewport.scrollPosition.x,
                            y: e.position.y + viewport.scrollPosition.y };
+        view.get_stage().set_cursor(MouseCursorKind.CROSSHAIR);
         guide.refresh();
       });
       verticalRuler.on.drag.do_(function(e) {
@@ -120,6 +123,7 @@
         guide.refresh();
       });
       verticalRuler.on.dragend.do_(function(e) {
+        view.get_stage().set_cursor(MouseCursorKind.DEFAULT);
         if (e.position.x < 0)
           view.get_stage().remove(guide.renderer);
       });
@@ -154,6 +158,47 @@
     $('.ui-action-zoom_out').click(function() {
       view.set_zoom(view.zoom / 1.1);
     });
+
+
+    var selectedFunction = null;
+    var handlers = {
+      cursor: {
+        select: function() {
+        },
+        unselect: function() {}
+      },
+      move: {
+        select: function() {
+          view.get_stage().set_cursor(MouseCursorKind.MOVE);
+        },
+        unselect: function() {
+          view.get_stage().set_cursor(MouseCursorKind.DEFAULT);
+        }
+      },
+      text: {
+        select: function() {},
+        unselect: function() {}
+      },
+      image: {
+        select: function() {},
+        unselect: function() {}
+      }
+    };
+
+    function selectFunction(f) {
+      if (handlers.hasOwnProperty(selectedFunction))
+        handlers[selectedFunction].unselect();
+      selectedFunction = f;
+      handlers[selectedFunction].select();
+      $(".ui-action-function[value='" + f + "']")[0].checked = true;
+    }
+
+    $('.ui-action-function').click(function() {
+      selectFunction(this.value);
+    }).each(function(i, n) {
+      if (n.checked)
+        selectFunction(n.value);
+    });
   });
   </script>
 </head>
@@ -161,9 +206,10 @@
   <div class="page">
     <div class="toolbar ui-widget-header">
       <span class="ui-button-set toolbar-function">
-        <span class="toggle-button"><input class="ui-action-move ui-button ui-no-text ui-icon-arrow-4" type="radio" name="function" value="move" id="toolbar-function-move" checked="checked" /><label for="toolbar-function-move">Move</label></span>
-        <span class="toggle-button"><input class="ui-action-text ui-button ui-no-text ui-icon-pencil" type="radio" name="function" value="text" id="toolbar-function-text" checked="checked" /><label for="toolbar-function-text">Text</label></span>
-        <span class="toggle-button"><input class="ui-action-image ui-button ui-no-text ui-icon-image" type="radio" name="function" value="image" id="toolbar-function-image" /><label for="toolbar-function-image">Image</label></span>
+        <span class="toggle-button"><input class="ui-action-function ui-button ui-no-text ui-icon-arrow-1-ne" type="radio" name="function" value="cursor" id="toolbar-function-cursor" checked="checked" /><label for="toolbar-function-cursor">Cursor</label></span>
+        <span class="toggle-button"><input class="ui-action-function ui-button ui-no-text ui-icon-arrow-4" type="radio" name="function" value="move" id="toolbar-function-move" /><label for="toolbar-function-move">Move</label></span>
+        <span class="toggle-button"><input class="ui-action-function ui-button ui-no-text ui-icon-pencil" type="radio" name="function" value="text" id="toolbar-function-text" /><label for="toolbar-function-text">Text</label></span>
+        <span class="toggle-button"><input class="ui-action-function ui-button ui-no-text ui-icon-image" type="radio" name="function" value="image" id="toolbar-function-image" /><label for="toolbar-function-image">Image</label></span>
       </span>
       <button class="ui-button ui-action-zoom_in ui-icon-zoomin ui-no-text" id="toolbar-function-zoom_in">Zoom-in</button>
       <button class="ui-button ui-action-zoom_out ui-icon-zoomout ui-no-text" id="toolbar-function-zoom_out">Zoom-out</button>

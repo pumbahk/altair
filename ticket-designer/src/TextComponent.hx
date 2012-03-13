@@ -6,5 +6,6 @@ class TextComponent extends ComponentBase<TextComponent> {
         super(renderer);
         text = '';
         fontSize = 10.5;
+        defaultCursor = MouseCursorKind.POINTER;
     }
 }

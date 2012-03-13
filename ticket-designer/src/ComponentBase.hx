@@ -12,8 +12,10 @@ class ComponentBase<Tself:Component> implements Component {
     public var on(default, null):Dynamic;
     public var position(default, null):Point;
     public var parent(default, null):Component;
+    public var defaultCursor:MouseCursorKind;
     private var draggable:Bool;
     private var state:State;
+    var previousCursor:MouseCursorKind;
 
     public function new(renderer:ComponentRenderer) {
         var meta = Meta.getType(Type.getClass(this));
@@ -29,6 +31,8 @@ class ComponentBase<Tself:Component> implements Component {
         this.parent = null;
         this.renderer = renderer;
         this.position = { x: 0., y: 0. };
+        this.previousCursor = null;
+        this.defaultCursor = MouseCursorKind.DEFAULT;
 
         bindEvents();
     }
@@ -44,6 +48,11 @@ class ComponentBase<Tself:Component> implements Component {
             renderer.captureMouse();
         });
         renderer.bind(EventKind.MOUSEMOVE, function(e:Event) {
+            var _renderer = cast(renderer, ComponentRenderer);
+            if (previousCursor == null) {
+                previousCursor = _renderer.stage.cursor;
+                _renderer.stage.cursor = defaultCursor;
+            }
             switch (state) {
             case PRESSED(pof):
                 if (draggable) {
@@ -52,7 +61,7 @@ class ComponentBase<Tself:Component> implements Component {
                         x: (cast e).position.x - pof.x,
                         y: (cast e).position.y - pof.y
                     };
-                    cast(this.renderer, ComponentRenderer).opacity = .5;
+                    _renderer.opacity = .5;
                     on.dragstart.call(this, e);
                     this.refresh();
                 }
@@ -64,6 +73,13 @@ class ComponentBase<Tself:Component> implements Component {
                 this.refresh();
                 on.drag.call(this, e);
             default:
+            }
+        });
+
+        renderer.bind(EventKind.MOUSEOUT, function(e:Event) {
+            if (previousCursor != null) {
+                cast(renderer, ComponentRenderer).stage.cursor = previousCursor;
+                previousCursor = null;
             }
         });
 
