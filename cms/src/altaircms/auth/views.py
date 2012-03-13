@@ -20,7 +20,7 @@ from altaircms.auth.forms import RoleForm
 from .models import Operator, Role, Permission, RolePermission, DEFAULT_ROLE
 
 
-@view_config(name='login', renderer='altaircms:templates/login.mako')
+@view_config(route_name='login', renderer='altaircms:templates/login.mako')
 @view_config(context='pyramid.httpexceptions.HTTPForbidden', renderer='altaircms:templates/login.mako',
              decorator=with_bootstrap)
 def login(request):
@@ -30,7 +30,7 @@ def login(request):
     )
 
 
-@view_config(name='logout')
+@view_config(route_name='logout')
 def logout(request):
     headers = forget(request)
 

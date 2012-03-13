@@ -1,5 +1,6 @@
 # coding: utf-8
 from pyramid.security import Allow, Authenticated, Everyone, Deny, DENY_ALL
+from sqlalchemy.orm.exc import NoResultFound
 
 from altaircms.models import DBSession
 from altaircms.auth.models import Operator, Role, RolePermission, Permission
@@ -11,10 +12,11 @@ def rolefinder(userid, request):
 
     :return: list ユーザのロールリスト
     """
-    operator = DBSession.query(Operator).filter_by(user_id=userid).one()
-    if not operator:
+    try:
+        operator = DBSession.query(Operator).filter_by(user_id=userid).one()
+        return [operator.role.name]
+    except NoResultFound:
         return []
-    return [operator.role.name]
 
 
 # データモデルから取得したACLをまとめる

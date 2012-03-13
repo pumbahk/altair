@@ -91,3 +91,14 @@ class TestAuthView(BaseTest):
         resp = view.oauth_callback()
         self.assertTrue(isinstance(resp, HTTPFound))
         self.assertEqual(resp.location, '/')
+
+class TestSecurity(BaseTest):
+    def setUp(self):
+        self.request = testing.DummyRequest()
+
+    def test_user_notfound(self):
+        from altaircms.models import DBSession
+        from altaircms.auth.models import Operator
+        from altaircms.security import rolefinder
+
+        self.assertEqual(rolefinder(1234, self.request), [])

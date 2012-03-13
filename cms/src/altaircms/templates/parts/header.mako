@@ -12,7 +12,7 @@
                                         <i class="icon-cog"> </i>
                                         Settings</a>
                                     </li>
-                                    <li><a href="/logout">
+                                    <li><a href="${request.route_url("logout")}">
                                         <i class="icon-off"> </i>
                                         Logout</a>
                                     </li>
