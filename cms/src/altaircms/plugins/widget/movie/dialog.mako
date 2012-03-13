@@ -12,6 +12,10 @@
   % endfor 
 </%def>
 
+<div class="title">
+  <h1>動画(movie)</h1>
+</div>
+
 <!-- "previous page" action -->
 <a class="prev browse left"></a>
 <a class="next browse right"></a>

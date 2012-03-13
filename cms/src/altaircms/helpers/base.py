@@ -8,6 +8,11 @@ def make_link(title, url):
 def nl_to_br(string):
     return string.replace("\n", "<br/>")
 
+def jdate(d):
+    """ dateオブジェクトを受け取り日本語の日付を返す
+    """
+    return d.strftime(u"%Y年%m月%d日".encode("utf-8")).decode("utf-8")
+
 def term(beg, end):
     """ dateオブジェクトを受け取り期間を表す文字列を返す
     e.g. 2012年3月3日(土)〜7月12日(木) 

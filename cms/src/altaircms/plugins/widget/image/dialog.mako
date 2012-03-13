@@ -8,6 +8,9 @@
   </div>
   % endfor 
 </%def>
+<div class="title">
+  <h1>画像(image)</h1>
+</div>
 
 <link rel="stylesheet" type="text/css" href="/plugins/static/css/widget/lib/image.css">
 <!-- "previous page" action -->

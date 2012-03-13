@@ -15,6 +15,12 @@
 <%block name="js_prerender">
 </%block>
 
+<script type="text/javascript">
+  $(function(){
+  <%block name="js_postrender"/>
+  });
+</script>
+
 </head>
 <body>
   <div class="page page-one_column">  

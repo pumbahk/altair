@@ -35,6 +35,7 @@
       border: solid 1px;
       padding: 4px 6px;
     }
+    ${widgets("css_prerender")}
   </style>
 </%block>
 
@@ -46,6 +47,13 @@
 </script>
   <script type="text/javascript" src="http://rakuten-ticket-static.s3.amazonaws.com/public/javascripts/jquery-1.6.1.min.js"></script>
   <script type="text/javascript" src="http://rakuten-ticket-static.s3.amazonaws.com/public/javascripts/jquery-ui-1.8.13.custom.min.js"></script>
+  <script src="http://cdn.jquerytools.org/1.2.6/full/jquery.tools.min.js"></script>
+    ${widgets("js_prerender")}
+</%block>
+
+<%block name="js_postrender">
+  ${self.inherits.js_postrender()}
+  ${widgets("js_postrender")}
 </%block>
 
 
