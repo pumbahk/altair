@@ -18,6 +18,20 @@ class JSDOMStage extends BasicStageImpl<JSDOMComponentRenderer, JSDOMView> {
         return value;
     }
 
+    override function set_cursor(value:MouseCursorKind):MouseCursorKind {
+        switch (value) {
+        case DEFAULT:
+            base.css('cursor', 'default');
+        case POINTER:
+            base.css('cursor', 'pointer');
+        case CROSSHAIR:
+            base.css('cursor', 'crosshair');
+        case MOVE:
+            base.css('cursor', 'move');
+        }
+        return super.set_cursor(value);
+    }
+
     public function new(view:JSDOMView) {
         super(view);
     }
