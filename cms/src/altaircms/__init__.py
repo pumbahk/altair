@@ -28,6 +28,8 @@ except:
 
 
 def cms_include(config):
+    config.add_route('dashboard', '/')
+
     config.add_route('event', '/event/{id}')
     config.add_route('event_list', '/event/')
 
