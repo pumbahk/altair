@@ -47,14 +47,9 @@ class TopicRESTAPIView(BaseRESTAPI):
              decorator=with_bootstrap)
 def view(request):
     id_ = request.matchdict['id']
-
     topic = TopicRESTAPIView(request, id_).read()
-    pages = DBSession.query(Page).filter_by(topic_id=topic['id'])
-    performances = DBSession.query(Performance).filter(Performance.topic_id==topic["id"])
     return dict(
         topic=topic,
-        pages=pages, 
-        performances=performances
     )
 
 ##
