@@ -60,6 +60,7 @@ ${page_render.publish_status(request) | n}
       <div id="ticketlist"  class="widget red float-left">チケットリスト</div>
       <div id="performancelist"  class="widget red float-left">講演リスト</div>
       <div id="menu"  class="widget red float-left">メニュー</div>
+      <div id="topic"  class="widget red float-left">トピック</div>
     </div>
   </div>
   <br class="clear"/>
@@ -106,7 +107,7 @@ ${page_render.publish_status(request) | n}
 ## todo: moveit
 <script type="text/javascript" src="/plugins/static/js/widget/lib/menu.js"></script>
 ## todo: moveit
-<script type="text/javascript" src="/plugins/static/js/widget/lib/summary.js"></script>
+<script type="text/javascript" src="/plugins/static/js/widget/lib/topic.js"></script>
 <script type="text/javascript" src="/static/js/page/backbone_patch.js"></script>
 <script type="text/javascript" src="/static/js/page/edit.js"></script>
 

@@ -3,6 +3,10 @@
 ##
 <p>利用するカレンダの種類を選択してください。</p>
 <div id="select_calendar">
+  <div class="title">
+    <h1>カレンダー</h1>
+  </div>
+
 %for field in form:
   <tr>
     %if field.type == "BooleanField":

@@ -11,6 +11,10 @@
   % endfor 
 </%def>
 
+<div class="title">
+  <h1>flash</h1>
+</div>
+
 <!-- "previous page" action -->
 <a class="prev browse left"></a>
 <a class="next browse right"></a>
