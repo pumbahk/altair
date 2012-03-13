@@ -2,10 +2,12 @@
 import transaction
 
 from pyramid import testing
+from sqlalchemy.orm.exc import NoResultFound
 from webob.multidict import MultiDict
 
 from altaircms.base.tests import BaseTest
 from altaircms.event.views import EventRESTAPIView
+from altaircms.models import Event, DBSession
 
 from .views import event_register
 
@@ -77,6 +79,15 @@ class TestEventRegister(BaseTest):
         response = event_register(request)
 
         self.assertEqual(response.status_int, 201)
+        self.assertTrue(DBSession.query(Event).filter_by(id=1).one())
+
+        request = testing.DummyRequest()
+        request.headers['X-Altair-Authorization'] = 'hogehoge'
+        request.POST = MultiDict({'jsonstring': self.jsonstring_delete})
+        response = event_register(request)
+
+        self.assertEqual(response.status_int, 201)
+        self.assertEqual(DBSession.query(Event).filter_by(id=1).count(), 0)
 
     def test_event_register_ng(self):
         # 認証パラメタなし
@@ -112,6 +123,16 @@ class TestEventRegister(BaseTest):
         self.endpoint = '/api/event/register'
         self.valid_apikey = ''
         self.invalid_apikey = ''
+        self.jsonstring_delete = '''{
+  "created_at": "2012-01-10T13:42:00+09:00",
+  "updated_at": "2012-01-11T15:32:00+09:00",
+  "events": [
+    {
+      "id": 1,
+      "deleted": true
+    }
+  ]
+}'''
         self.jsonstring = '''{
   "created_at": "2012-01-10T13:42:00+09:00",
   "updated_at": "2012-01-11T15:32:00+09:00",
