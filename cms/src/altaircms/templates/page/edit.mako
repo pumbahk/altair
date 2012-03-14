@@ -108,6 +108,8 @@ ${page_render.publish_status(request) | n}
 <script type="text/javascript" src="/plugins/static/js/widget/lib/menu.js"></script>
 ## todo: moveit
 <script type="text/javascript" src="/plugins/static/js/widget/lib/topic.js"></script>
+## todo: moveit
+<script type="text/javascript" src="/plugins/static/js/widget/lib/breadcrumbs.js"></script>
 <script type="text/javascript" src="/static/js/page/backbone_patch.js"></script>
 <script type="text/javascript" src="/static/js/page/edit.js"></script>
 

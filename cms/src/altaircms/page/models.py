@@ -1,7 +1,8 @@
 # coding: utf-8
 from datetime import datetime
-from formalchemy import Column
-
+from sqlalchemy import Column
+import sqlalchemy as sa
+import sqlalchemy.orm as orm
 from sqlalchemy import Integer
 from sqlalchemy import Unicode
 from sqlalchemy import String
@@ -38,7 +39,26 @@ class PublishUnpublishMixin(object):
     def to_published(self):
         self.hash_url = None
 
+class HasAncestorMixin(object):
+    ## require self.parent
+    @property
+    def ancestors(self, includeme=False): 
+        """ return ancestors (order: parent, grand parent, ...)
+        """
+        r = []
+        me = self
+        while me.parent:
+            r.append(me)
+            me = me.parent
+        r.append(me)
+        
+        ## not include self iff includeme is false
+        if not includeme:
+            r.pop(0)
+        return r
+    
 class Page(PublishUnpublishMixin, 
+           HasAncestorMixin, 
            Base):
     """
     ページ
@@ -50,6 +70,9 @@ class Page(PublishUnpublishMixin,
 
     id = Column(Integer, primary_key=True)
     parent_id = Column(Integer, ForeignKey('page.id'))
+    @declared_attr
+    def parent(cls):
+        return relationship(cls, backref=orm.backref("child", remote_side=[cls.id]), uselist=False)
     event_id = Column(Integer, ForeignKey('event.id'))
     event = relationship('Event', backref='pages')
 
