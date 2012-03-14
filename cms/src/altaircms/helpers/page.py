@@ -17,3 +17,16 @@ def to_list_page(request):
 
 def to_delete(request, page):
     return request.route_url("page_delete", id=page.id)
+
+def to_update(request, page):
+    return request.route_url("page_update", id=page.id)
+
+def to_update_confirm(request, page):
+    return request.route_url("page_update_confirm", id=page.id)
+
+## todo:rename
+def to_settings(request, page):
+    return request.route_url("page_settings", id=page.id)
+
+# def to_update(request, page):
+#     return request.route_url("page_update", id=page.id)

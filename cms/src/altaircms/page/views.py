@@ -2,8 +2,6 @@
 import colander
 import deform
 import json
-import transaction
-import sqlalchemy.orm as orm
 
 from pyramid.view import view_config
 from pyramid.response import Response
@@ -16,40 +14,16 @@ from altaircms.models import DBSession, Event
 from altaircms.page.models import Page
 
 from altaircms.page.mappers import PageMapper, PagesMapper
-from altaircms.layout.models import Layout
 
 from altaircms.fanstatic import with_bootstrap
 from altaircms.fanstatic import with_fanstatic_jqueries
 from altaircms.fanstatic import with_wysiwyg_editor
 import altaircms.helpers as h
 
-"""
-@view_config(route_name='page_object', renderer='altaircms:templates/page/edit.mako', permission='view')
-def view(request):
-    id_ = request.matchdict['id']
-
-    page = PageRESTAPIView(request, id_).read()
-    ## layout render
-    layout_render = request.context.get_layout_render(page)
-    ## fanstatic
-
-    from altaircms.fanstatic import jqueries_need
-    from altaircms.fanstatic import wysiwyg_editor_need
-    jqueries_need()
-    wysiwyg_editor_need()
-
-    return dict(
-        pages=page,
-        layout_render=layout_render,
-    )
-"""
-
 @view_config(route_name='page', renderer='altaircms:templates/page/list.mako', permission='page_create', request_method="POST", 
              decorator=with_bootstrap)
 def create(request):
-    layout_choices = [(layout.id, layout.title) for layout in DBSession.query(Layout)]
     form = PageForm(request.POST)
-    form.layout_id.choices = layout_choices
     if form.validate():
         request.method = "PUT"
         PageRESTAPIView(request).create()
@@ -78,13 +52,40 @@ def delete(request):
     ## fixme: add flash message
     return HTTPFound(location=h.page.to_list_page(request))
 
+
+@view_config(route_name="page_settings", renderer="altaircms:templates/page/settings.mako", 
+             permission="page_update", request_method="GET", decorator=with_bootstrap)
+def settings(request):
+    id_ = request.matchdict['id']
+    page = PageRESTAPIView(request, id_).read()
+    form = PageForm(**page.to_dict())
+    return dict(
+        page=page, form=form,
+    )
+
+@view_config(route_name="page_update_confirm", renderer="altaircms:templates/page/update_confirm.mako", 
+             permission="page_update", request_method="POST", decorator=with_bootstrap)
+def update_confirm(request):
+    print request.POST
+    id_ = request.matchdict['id']
+    page = PageRESTAPIView(request, id_).read()
+    return dict(
+        page=page, params=request.POST.items()
+    )
+
+@view_config(route_name="page_update", permission="page_update", request_method="POST", renderer="string")
+def update(request):
+    print request.POST
+    id_ = request.matchdict['id']
+    view = PageRESTAPIView(request, id_)
+    view.get_rest_action(request.POST["_method"])()
+    ## fixme: add flash message
+    return HTTPFound(location=h.page.to_list_page(request))
+
+
 @view_config(route_name='page', renderer='altaircms:templates/page/list.mako', permission='page_read', request_method="GET", decorator=with_bootstrap)
 def list_(request):
-    layout_choices = [(layout.id, layout.title) for layout in DBSession.query(Layout)]
     form = PageForm()
-    form.layout_id.choices = layout_choices
-
-
     return dict(
         pages=PageRESTAPIView(request).read(),
         form=form
@@ -97,9 +98,9 @@ class PageRESTAPIView(BaseRESTAPI):
     object_mapper = PageMapper
     objects_mapper = PagesMapper
 
-    def _post_form_hook(self):
-        layout_choices = [(layout.id, layout.title) for layout in DBSession.query(Layout)]
-        self.form_object.layout_id.choices = layout_choices
+    # def _post_form_hook(self):
+    #     layout_choices = [(layout.id, layout.title) for layout in DBSession.query(Layout)]
+    #     self.form_object.layout_id.choices = layout_choices
 
 @view_config(route_name="page_edit_", request_method="POST")
 def to_publish(request):     ## fixme
@@ -263,8 +264,4 @@ class PageEditView(object):
         #                 block=key
         #             )
         #         )
-
-        transaction.commit()
-        DBSession.remove()
-
         return Response('<div id="thanks">Thanks!</div>')

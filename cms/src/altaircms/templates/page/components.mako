@@ -1,3 +1,26 @@
+<%def name="page_difference(page,params)">
+    <table class="table table-striped">
+      <tr><th></th><th>変更前</th><th>変更後</th></tr>
+      <tr>
+        <th class="span2">ページ名</th><td class="span8">${page.title}</td><td>${params["title"]}</td>
+      </tr>
+      <tr>
+        <th class="span2">description</th><td>${page.description}</td><td>${params["description"]}</td>
+      </tr>
+      <tr>
+        <th class="span2">keywords</th><td>${page.keywords}</td><td>${params["keywords"]}</td>
+      </tr>
+      <tr>
+        <th class="span2">url</th><td>${page.url}</td><td>${params["url"]}</td>
+      </tr>
+      <tr>
+        <th class="span2">layout</th><td>${page.layout.title}</td><td>${params["layout"]}</td>
+      </tr>
+##      <tr>
+##        <th class="span2">structure</th><td>${page.structure}</td><td>${params["structure"]}</td>
+##      </tr>
+    </table>
+</%def>
 <%def name="page_description(page)">
     <table class="table table-striped">
       <tr>

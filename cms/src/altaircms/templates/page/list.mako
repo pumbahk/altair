@@ -18,11 +18,11 @@
             <tr>
                 <th>${form.keywords.label}</th><td>${form.keywords}</td>
             </tr>
+##            <tr>
+##                <th>${form.structure.label}</th><td>${form.structure}</td>
+##            </tr>
             <tr>
-                <th>${form.structure.label}</th><td>${form.structure}</td>
-            </tr>
-            <tr>
-                <th>${form.layout_id.label}</th><td>${form.layout_id}</td>
+                <th>${form.layout.label}</th><td>${form.layout}</td>
             </tr>
             </tbody>
         </table>

@@ -2,6 +2,8 @@
 import json
 from wtforms.form import Form
 from wtforms import fields
+import wtforms.ext.sqlalchemy.fields as extfields
+from altaircms.layout.models import Layout
 
 """
 def json_validator(node, value):
@@ -26,11 +28,15 @@ def json_validator(node, value):
 """
 
 
+def existing_layouts():
+    ##本当は、client.id, site.idでfilteringする必要がある
+    ##本当は、日付などでfilteringする必要がある
+    return Layout.query.all()
+
 class PageForm(Form):
     url = fields.TextField()
     title = fields.TextField()
     description = fields.TextField()
     keywords = fields.TextField()
     tags = fields.TextField()
-    layout_id = fields.SelectField(coerce=int)
-    structure = fields.TextField()
+    layout = extfields.QuerySelectField(label=u"", query_factory=existing_layouts, allow_blank=False)
