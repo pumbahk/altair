@@ -10,6 +10,7 @@ CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 requires = [
     "mock", 
     "nose", 
+    "gunicorn",
     "venusian>=1.0a3", 
     'pyramid==1.2.7',
     'pyramid_tm',
