@@ -2,22 +2,22 @@
     <table class="table table-striped">
       <tr><th></th><th>変更前</th><th>変更後</th></tr>
       <tr>
-        <th class="span2">ページ名</th><td class="span8">${page.title}</td><td>${params["title"]}</td>
+        <th class="span2">ページ名</th><td class="span8">${page.title}</td><td class="span8">${params["title"]}</td>
       </tr>
       <tr>
-        <th class="span2">description</th><td>${page.description}</td><td>${params["description"]}</td>
+        <th class="span2">description</th><td>${page.description}</td><td  class="span8">${params["description"]}</td>
       </tr>
       <tr>
-        <th class="span2">keywords</th><td>${page.keywords}</td><td>${params["keywords"]}</td>
+        <th class="span2">keywords</th><td>${page.keywords}</td><td class="span8">${params["keywords"]}</td>
       </tr>
       <tr>
-        <th class="span2">url</th><td>${page.url}</td><td>${params["url"]}</td>
+        <th class="span2">url</th><td>${page.url}</td><td class="span8">${params["url"]}</td>
       </tr>
       <tr>
-        <th class="span2">layout</th><td>${page.layout.title}</td><td>${params["layout"]}</td>
+        <th class="span2">layout</th><td>${page.layout.title}</td><td class="span8">${params["layout"]}</td>
       </tr>
 ##      <tr>
-##        <th class="span2">structure</th><td>${page.structure}</td><td>${params["structure"]}</td>
+##        <th class="span2">structure</th><td>${page.structure}</td><td class="span8">${params["structure"]}</td>
 ##      </tr>
     </table>
 </%def>

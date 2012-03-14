@@ -44,7 +44,7 @@
     <a class="btn btn-danger" href="${h.page.to_delete(request,page)}"><i class="icon-trash icon-white"></i> Delete</a>
   </div>
   <div class="span1">
-	<a class="btn btn-primary" href="${h.page.to_settings(request,page)}"><i class="icon-cog"></i> Settings</a>
+	<a class="btn btn-primary" href="${h.page.to_update(request,page)}"><i class="icon-cog"></i> Settings</a>
   </div>
   <div class="span1">
       <button class="btn" href=""><i class="icon-refresh"> </i> Publish</button>

@@ -18,7 +18,7 @@
 
 <div class="row">
   <div class="span5">
-	<form action="${h.page.to_update_confirm(request,page)}" method="POST">
+	<form action="${h.page.to_update(request,page)}" method="POST">
       <table class="table">
         <tbody>
           ${formfield("title")}
@@ -27,6 +27,7 @@
           ${formfield("keywords")}
           ${formfield("tags")}
           ${formfield("layout")}
+          ${h.base.confirm_stage()|n}
         </tbody>
       </table>
 	  <button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> Update</button>

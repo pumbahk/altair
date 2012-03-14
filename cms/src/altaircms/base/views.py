@@ -56,3 +56,14 @@ class APIKeyView(object):
             DBSession.delete(self.model_object)
 
         return HTTPFound(self.request.route_path("apikey_list"))
+
+
+class RegisterViewPredicate(object):
+    @classmethod
+    def confirm(cls, context, request):
+        return request.POST.get("stage") == "confirm"
+
+    @classmethod
+    def execute(cls, context, request):
+        return request.POST.get("stage") == "execute"
+
