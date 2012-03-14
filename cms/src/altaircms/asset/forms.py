@@ -61,9 +61,6 @@ class ImageAssetForm(Form):
             field.data = re.sub(r'[^a-z0-9_.-]', '_', field.data)
 
 class FlashAssetSchema(BaseAssetSchema):
-    width = colander.SchemaNode(colander.Integer(), missing=colander.null)
-    height = colander.SchemaNode(colander.Integer(), missing=colander.null)
-    length = colander.SchemaNode(colander.Integer(), missing=colander.null)
     uploadfile = colander.SchemaNode(
         deform.FileData(),
         title='Flashファイル',

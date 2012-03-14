@@ -54,6 +54,29 @@ def _get_topic():
     
 def add_widget(page):
     DBSession.flush()
+    with block("topic"):
+        topic = _get_topic()
+        from altaircms.plugins.widget.topic.views import TopicWidgetView
+        from altaircms.plugins.widget.topic.models import TopicWidgetResource
+        request = DummyRequest()
+        request.json_body = dict(page_id=page.id, data=dict(topic=topic.id))
+        context = TopicWidgetResource(request)
+        request.context = context
+        r = TopicWidgetView(request).create()
+        append_to_json_structure(page, "page_main_title", 
+                                 {"name": "topic", "pk": r["pk"]})
+
+    with block("bread_crumbs"):
+        from altaircms.plugins.widget.breadcrumbs.views import BreadcrumbsWidgetView
+        from altaircms.plugins.widget.breadcrumbs.models import BreadcrumbsWidgetResource
+        request = DummyRequest()
+        request.json_body = dict(page_id=page.id, data=dict())
+        context = BreadcrumbsWidgetResource(request)
+        request.context = context
+        r = BreadcrumbsWidgetView(request).create()
+        append_to_json_structure(page, "page_main_title", 
+                                 {"name": "breadcrumbs", "pk": r["pk"]})
+
     with block("menu"):
         from altaircms.plugins.widget.menu.views import MenuWidgetView
         from altaircms.plugins.widget.menu.models import MenuWidgetResource
@@ -71,17 +94,6 @@ def add_widget(page):
         append_to_json_structure(page, "page_main_title", 
                                  {"name": "menu", "pk": r["pk"]})
 
-    with block("topic"):
-        topic = _get_topic()
-        from altaircms.plugins.widget.topic.views import TopicWidgetView
-        from altaircms.plugins.widget.topic.models import TopicWidgetResource
-        request = DummyRequest()
-        request.json_body = dict(page_id=page.id, data=dict(topic=topic.id))
-        context = TopicWidgetResource(request)
-        request.context = context
-        r = TopicWidgetView(request).create()
-        append_to_json_structure(page, "page_main_title", 
-                                 {"name": "topic", "pk": r["pk"]})
         
     with block("title"):
         title = u'<h1 class="title" style="float: left;">松下奈緒コンサートツアー2012　for me</h1>'
@@ -211,12 +223,26 @@ def init():
 
         ## page
         from altaircms.page.models import Page
+        D = {'layout_id': 1,
+             'title': u'TOP',
+             'url': u'top'}
+
+        root_page = Page.from_dict(D)
+        DBSession.add(root_page)
+
+        D = {'layout_id': 1,
+             'title': u'音楽',
+             'url': u'top/music'}
+        category_page = Page.from_dict(D)
+        category_page.parent = root_page
+        DBSession.add(category_page)
+
+        from altaircms.page.models import Page
         D = {'created_at': datetime.datetime(2012, 2, 14, 15, 13, 26, 438062),
              'description': u'松下奈緒コンサートツアー2012　for meの公演についての詳細、チケット予約',
              'event_id': event.id,
              'keywords': u'チケット,演劇,クラシック,オペラ,コンサート,バレエ,ミュージカル,野球,サッカー,格闘技',
              'layout_id': 1,
-             'parent_id': None,
              'site_id': None,
              'title': u'松下奈緒コンサートツアー2012　for me - 楽天チケット',
              'updated_at': datetime.datetime(2012, 2, 14, 15, 13, 26, 438156),
@@ -224,6 +250,7 @@ def init():
              "structure": "{}", 
              'version': None}
         page = Page.from_dict(D)
+        page.parent = category_page
         DBSession.add(page)
         add_widget(page)
 
