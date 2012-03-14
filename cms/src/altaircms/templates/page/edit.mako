@@ -6,14 +6,13 @@
 <%namespace name="css" file="internal.css.mako"/>
 
 <%block name='style'>
-    <link rel="stylesheet" href="/static/deform/css/form.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="/static/css/overlay-basic.css"/>
-    <link rel="stylesheet" type="text/css" href="/static/css/my/sample.css">
     <link rel="stylesheet" href="/static/css/page/edit.css" type="text/css" />
- ##todo: moveit
-    <link rel="stylesheet" type="text/css" href="/plugins/static/css/widget/lib/image.css">
-    <link rel="stylesheet" type="text/css" href="/plugins/static/css/widget/lib/calendar.css">
-    ${css.edit()}
+
+	${css.widget_css_scripts()}
+
+	### widget追加する度に変更する必要(internal.css.mako)
+    ${css.container_layout()}
 </%block>
 
 <div class="row" style="margin-bottom: 9px">
@@ -57,6 +56,7 @@ ${page_render.publish_status(request) | n}
   </form>          
     <div id="main_page">ページ編集
       <div id="selected_layout" class="clear">
+
 		### widget追加する度に修正が必要。(component.mako)
         ${co.render_blocks(layout_render.blocks_image())}
       </div>
