@@ -58,7 +58,6 @@ class AssetEditView(object):
                     success=None, readonly=False):
         captured = None
         if submitted in self.request.POST:
-            print self.request.POST
             try:
                 controls = self.request.POST.items()
                 captured = form.validate(controls)
