@@ -160,7 +160,9 @@ class AssetEditView(object):
 
         if '_method' in self.request.params and self.request.params['_method'].lower() == 'delete':
             # 削除処理
-            os.remove(os.path.join(get_storepath(self.request), self.asset.filepath))
+            filename = os.path.join(get_storepath(self.request), self.asset.filepath)
+            if os.path.exists(filename):
+                os.remove(filename)
             DBSession.delete(self.asset)
 
             return self.response_json_ok()
