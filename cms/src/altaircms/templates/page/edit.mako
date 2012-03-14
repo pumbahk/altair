@@ -3,13 +3,12 @@
 ##
 <%inherit file='../layout_2col.mako'/>
 ##<%inherit file='../layout.mako'/>
-
-<%block name="breadcrumbs">
-  <a href="${h.page.list_page(request,page)}">page</a> &raquo; ${page.title}
-</%block>
-
 <%namespace name="co" file="components.mako"/>
 <%namespace name="css" file="internal.css.mako"/>
+
+<%block name="breadcrumbs">
+  <a href="${h.page.to_list_page(request)}">page</a> &raquo; ${page.title}
+</%block>
 
 <%block name='style'>
     <link rel="stylesheet" type="text/css" href="/static/css/overlay-basic.css"/>
@@ -39,10 +38,10 @@
      ${co.page_description(page)}
   </div>
   <div class="span1">
-    <a class="btn btn-success" href="${request.route_url("front_to_preview", page_id=page.id)}"><i class="icon-eye-open"> </i> Preview</a>
+    <a class="btn btn-success" href="${h.front.to_preview_page(request,page)}"><i class="icon-eye-open"> </i> Preview</a>
   </div>
   <div class="span1">
-    <a class="btn btn-danger" href="#"><i class="icon-trash icon-white"></i> Delete</a>
+    <a class="btn btn-danger" href="${h.page.to_delete(request,page)}"><i class="icon-trash icon-white"></i> Delete</a>
   </div>
   <div class="span1">
 	<a class="btn btn-primary" href="#"><i class="icon-cog"></i> Settings</a>

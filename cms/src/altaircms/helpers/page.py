@@ -12,5 +12,8 @@ def to_edit_page(request, page):
     else:
         return request.route_url("page_edit", event_id=page.event.id, page_id=page.id)
 
-def list_page(request, page):
+def to_list_page(request):
     return request.route_url("page")
+
+def to_delete(request, page):
+    return request.route_url("page_delete", id=page.id)

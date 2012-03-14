@@ -21,7 +21,7 @@ from altaircms.layout.models import Layout
 from altaircms.fanstatic import with_bootstrap
 from altaircms.fanstatic import with_fanstatic_jqueries
 from altaircms.fanstatic import with_wysiwyg_editor
-
+import altaircms.helpers as h
 
 """
 @view_config(route_name='page_object', renderer='altaircms:templates/page/edit.mako', permission='view')
@@ -46,20 +46,44 @@ def view(request):
 
 @view_config(route_name='page', renderer='altaircms:templates/page/list.mako', permission='page_create', request_method="POST", 
              decorator=with_bootstrap)
-@view_config(route_name='page', renderer='altaircms:templates/page/list.mako', permission='page_read', request_method="GET", 
-             decorator=with_bootstrap)
+def create(request):
+    layout_choices = [(layout.id, layout.title) for layout in DBSession.query(Layout)]
+    form = PageForm(request.POST)
+    form.layout_id.choices = layout_choices
+    if form.validate():
+        request.method = "PUT"
+        PageRESTAPIView(request).create()
+        return HTTPFound(request.route_url("page"))
+    return dict(
+        pages=PageRESTAPIView(request).read(),
+        form=form
+    )
+
+##
+## todo: CRUDのview整理する
+##
+@view_config(route_name="page_delete", renderer="altaircms:templates/page/delete_confirm.mako", 
+             permission="page_delete", request_method="GET", decorator=with_bootstrap)
+def delete_confirm(request):
+    id_ = request.matchdict['id']
+    page = PageRESTAPIView(request, id_).read()
+    return dict(
+        page=page,
+    )
+
+@view_config(route_name="page_delete", permission="page_delete", request_method="POST")
+def delete(request):
+    id_ = request.matchdict['id']
+    PageRESTAPIView(request, id_).get_rest_action(request.POST["_method"])()
+    ## fixme: add flash message
+    return HTTPFound(location=h.page.to_list_page(request))
+
+@view_config(route_name='page', renderer='altaircms:templates/page/list.mako', permission='page_read', request_method="GET", decorator=with_bootstrap)
 def list_(request):
     layout_choices = [(layout.id, layout.title) for layout in DBSession.query(Layout)]
-    if request.method == "POST":
-        form = PageForm(request.POST)
-        form.layout_id.choices = layout_choices
-        if form.validate():
-            request.method = "PUT"
-            PageRESTAPIView(request).create()
-            return HTTPFound(request.route_path("page"))
-    else:
-        form = PageForm()
-        form.layout_id.choices = layout_choices
+    form = PageForm()
+    form.layout_id.choices = layout_choices
+
 
     return dict(
         pages=PageRESTAPIView(request).read(),
@@ -162,7 +186,6 @@ class PageEditView(object):
             'layout_id': 1,
             'structure': '{}',
         }
-
         return self.render_form(PageAddForm, success=self._succeed, appstruct=appstruct)
 
     @view_config(route_name='page_edit_', renderer='altaircms:templates/page/edit.mako', permission='authenticated', 
