@@ -1,2 +1,2 @@
-converage
+coverage
 gunicorn-console
