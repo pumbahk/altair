@@ -105,8 +105,11 @@ class AssetEditView(object):
 
             original_filename = captured['uploadfile']['filename']
             filename = '%s.%s' % (uuid4(), original_filename[original_filename.rfind('.') + 1:])
-            f = open(os.path.join(storepath, filename), 'wb')
-            f.write(captured['uploadfile']['fp'].read())
+            filepath = os.path.join(storepath, filename)
+
+            dst_file = open(filepath, 'w+b')
+            dst_file.write(captured['uploadfile']['fp'].read())
+            dst_file.seek(0)
 
             mimetype = detect_mimetype(filename)
 
@@ -115,7 +118,13 @@ class AssetEditView(object):
             elif captured['type'] == 'movie':
                 asset = MovieAsset(filepath=os.path.join(today, filename), mimetype=mimetype)
             elif captured['type'] == 'flash':
-                asset = FlashAsset(filepath=os.path.join(today, filename))
+                from .swfrect import get_swf_rect, rect_to_size, in_pixel
+                (width, height) = in_pixel(rect_to_size(get_swf_rect(dst_file.name)))
+                asset = FlashAsset(
+                    filepath=os.path.join(today, filename),
+                    width=width,
+                    height=height
+                )
 
             DBSession.add(asset)
 
@@ -160,7 +169,8 @@ class AssetEditView(object):
             # 更新処理
             pass
 
-@view_config(route_name="asset_display", permission="view", request_method="GET")
+
+@view_config(route_name="asset_display", permission="authenticated", request_method="GET")
 def asset_display(request):
     """ display asset as image(image, flash, movie)
     """
