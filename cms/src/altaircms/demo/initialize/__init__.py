@@ -47,3 +47,4 @@ def init():
     demo1_tab.init()
     from . import demo2
     demo2.init()
+
