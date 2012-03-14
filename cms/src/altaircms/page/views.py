@@ -31,7 +31,6 @@ def view(request):
     page = PageRESTAPIView(request, id_).read()
     ## layout render
     layout_render = request.context.get_layout_render(page)
-    page_render = request.context.get_page_render(page)
     ## fanstatic
 
     from altaircms.fanstatic import jqueries_need
@@ -42,7 +41,6 @@ def view(request):
     return dict(
         pages=page,
         layout_render=layout_render,
-        page_render=page_render,
     )
 """
 
@@ -190,18 +188,15 @@ class PageEditView(object):
 
             ## layout render
             layout_render = self.request.context.get_layout_render(self.page)
-            page_render = self.request.context.get_page_render(self.page)
 
             '''
             return self.render_form(PageEditForm, appstruct=appstruct, success=self._succeed,
-                                    extra_context={"layout_render": layout_render,
-                                                   "page_render": page_render})
+                                    extra_context={"layout_render": layout_render})
             '''
             return {
                 'form':'',
                 'page':self.page,
                 "layout_render": layout_render,
-                "page_render": page_render
             }
 
 

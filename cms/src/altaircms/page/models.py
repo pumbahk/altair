@@ -1,30 +1,23 @@
 # coding: utf-8
 from datetime import datetime
-from sqlalchemy import Column
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
+from sqlalchemy import Column
 from sqlalchemy import Integer
 from sqlalchemy import Unicode
 from sqlalchemy import String
 from sqlalchemy import ForeignKey
 from sqlalchemy import DateTime
 
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.ext.declarative import declarative_base, declared_attr
+from sqlalchemy.orm import relationship
+from sqlalchemy.ext.declarative import declared_attr
 
-from sqlalchemy.orm import scoped_session, relationship
-from sqlalchemy.orm import sessionmaker
-
-from zope.sqlalchemy import ZopeTransactionExtension
-from datetime import datetime
 from zope.interface import implements
 from altaircms.interfaces import IHasSite
 from altaircms.interfaces import IHasTimeHistory
 
 from altaircms.models import Base
-from altaircms.tag.models import Tag
 from altaircms.models import DBSession
-from altaircms.layout.models import Layout
 
 
 class PublishUnpublishMixin(object):

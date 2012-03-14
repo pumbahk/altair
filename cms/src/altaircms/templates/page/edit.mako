@@ -1,7 +1,13 @@
 ##
 ##
 ##
-<%inherit file='../layout.mako'/>
+<%inherit file='../layout_2col.mako'/>
+##<%inherit file='../layout.mako'/>
+
+<%block name="breadcrumbs">
+  <a href="${h.page.list_page(request,page)}">page</a> &raquo; ${page.title}
+</%block>
+
 <%namespace name="co" file="components.mako"/>
 <%namespace name="css" file="internal.css.mako"/>
 
@@ -15,16 +21,6 @@
     ${css.container_layout()}
 </%block>
 
-<div class="row" style="margin-bottom: 9px">
-  <h2 class="span6"ページのタイトル - ${page.title} (ID: ${page.id})</h2>
-  <div class="span4">
-    <a class="btn btn-success" href=""><i class="icon-eye-open"> </i> Preview</a>
-    <a class="btn btn-danger" href="#"><i class="icon-trash icon-white"></i> Delete</a>
-	<a class="btn btn-primary" href="#"><i class="icon-cog"></i> Settings</a>
-    <a class="btn" href=""><i class="icon-refresh"> </i> Sync</a>
-  </div>
-</div>
-
 %if page and event:
 <h1>イベント${event}の${page}の編集</h1>
 %elif event:
@@ -33,27 +29,42 @@
 <h1>${page}ページの編集</h1>
 %endif
 
+<div class="row" style="margin-bottom: 9px">
+  <h2 class="span6"ページのタイトル - ${page.title} (ID: ${page.id})</h2>
+</div>
 
-${page_render.publish_status(request) | n}
+<div class="row-fluid">
+  <h4>ページ情報</h4>
+  <div class="span5">
+     ${co.page_description(page)}
+  </div>
+  <div class="span1">
+    <a class="btn btn-success" href="${request.route_url("front_to_preview", page_id=page.id)}"><i class="icon-eye-open"> </i> Preview</a>
+  </div>
+  <div class="span1">
+    <a class="btn btn-danger" href="#"><i class="icon-trash icon-white"></i> Delete</a>
+  </div>
+  <div class="span1">
+	<a class="btn btn-primary" href="#"><i class="icon-cog"></i> Settings</a>
+  </div>
+  <div class="span1">
+	<form action="." method="post">
+      <button class="btn" href=""><i class="icon-refresh"> </i> Publish</button>
+	</form>          
+  </div>
+</div>
 
 %if event:
 <a href="${request.route_path('event', id=event.id)}">back</a>
 %endif
 
-<div id="pageform">
-    ${form|n}
-</div>
-
-
 <div id="pagecontentform">
-  <div id="pagelayout">レイアウト選択</div>
-  <div id="pageversion">ページのバージョンが入る</div>
+  <!-- <div id="pagelayout">レイアウト選択</div>
+   !-- <div id="pageversion">ページのバージョンが入る</div> -->
   <div id="pagewidget">ウィジェット
 	${co.widget_palets()}
   </div>
   <br class="clear"/>
-  <form action="#" method="post">
-  </form>          
     <div id="main_page">ページ編集
       <div id="selected_layout" class="clear">
 
@@ -66,8 +77,6 @@ ${page_render.publish_status(request) | n}
         <div id="wrap" class="contentWrap"></div>
       </div>
     </div>
-    <a href="${request.route_path("front_to_preview", page_id=page.id)}">preview</a>
-    <button type="submit">publish</button>
 </div>
 
 <script type="text/javascript">

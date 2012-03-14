@@ -1,3 +1,37 @@
+<%def name="page_description(page)">
+    <table class="table table-striped">
+      <tr>
+        <th class="span2">ページ名</th><td class="span8">${page.title}</td>
+      </tr>
+      <tr>
+        <th class="span2">description</th><td>${page.description}</td>
+      </tr>
+      <tr>
+        <th class="span2">keywords</th><td>${page.keywords}</td>
+      </tr>
+      <tr>
+        <th class="span2">url</th><td>${page.url}</td>
+      </tr>
+      <tr>
+        <th class="span2">layout</th><td>${page.layout.title}</td>
+      </tr>
+##      <tr>
+##        <th class="span2">structure</th><td>${page.structure}</td>
+##      </tr>
+      <tr>
+        <th class="span2">公開ステータス</th><td>${h.page.show_publish_status(page)}</td>
+      </tr>
+      <tr>
+        <th class="span2">親ページ</th>
+		<td>
+		  %for p in reversed(page.ancestors):
+			<a class="parent" href="${h.page.to_edit_page(request,p)}">${p.title}</a> &raquo;
+          %endfor
+        </td>
+      </tr>
+    </table>
+</%def>
+
 <%def name="widget_palets()">
     <div id="widget_palet">
       <div id="image" class="widget red float-left">画像</div>

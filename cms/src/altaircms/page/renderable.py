@@ -34,17 +34,3 @@ class LayoutRender(object):
 
     def blocks_image(self):
         return BlocksImage.from_json(self.obj.blocks)
-
-class PageRender(object):
-    def __init__(self, page):
-        self.obj = page
-
-    def publish_status(self, request=None):
-        if self.obj.is_published():
-            return u"公開中"
-        elif request:
-            link_url = helpers.front.to_preview_page(request, self.obj)
-            return u'非公開(%s)' % helpers.base.make_link(u"preview", link_url)
-        else:
-            return u"非公開"
-
