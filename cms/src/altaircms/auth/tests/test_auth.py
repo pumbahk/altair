@@ -91,7 +91,7 @@ class TestAuthView(BaseTest):
         )
         resp = view.oauth_callback()
         self.assertTrue(isinstance(resp, HTTPFound))
-        #self.assertEqual(resp.location, self.request.route_url("dashboard"))
+        #self.assertEqual(resp.location, self.request.route_path("dashboard"))
         self.assertEqual(resp.location, self.request.registry.settings.get('oauth.callback_success_url', '/'))
 
 

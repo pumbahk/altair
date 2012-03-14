@@ -38,7 +38,7 @@
 ${page_render.publish_status(request) | n}
 
 %if event:
-<a href="${request.route_url('event', id=event.id)}">back</a>
+<a href="${request.route_path('event', id=event.id)}">back</a>
 %endif
 
 <div id="pageform">
@@ -80,7 +80,7 @@ ${page_render.publish_status(request) | n}
         <div id="wrap" class="contentWrap"></div>
       </div>
     </div>
-    <a href="${request.route_url("front_to_preview", page_id=page.id)}">preview</a>
+    <a href="${request.route_path("front_to_preview", page_id=page.id)}">preview</a>
     <button type="submit">publish</button>
 </div>
 

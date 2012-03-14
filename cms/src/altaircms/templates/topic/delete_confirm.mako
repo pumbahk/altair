@@ -25,7 +25,7 @@
     </table>
   </div>
   <div class="span6">
-	<form action="${request.route_url("topic", id=topic["id"])}" method="POST">
+	<form action="${request.route_path("topic", id=topic["id"])}" method="POST">
  	  <input id="_method" name="_method" type="hidden" value="delete" />
 	  <button type="submit" class="btn btn-danger"><i class="icon-trash icon-white"></i> Delete</button>
 	</form>        

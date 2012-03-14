@@ -3,7 +3,7 @@
 <h4>APIKEYの追加</h4>
 <div class="row">
 <div class="span4">
-<form action="${request.route_url("apikey_list")}" method="POST">
+<form action="${request.route_path("apikey_list")}" method="POST">
 ${form.name}<br/>
 <button type="submit" class="btn"><i class="icon-plus"> </i> Add</button>
 </form>
@@ -31,7 +31,7 @@ ${form.name}<br/>
         <td>${apikey.name}</td>
         <td>${apikey.apikey}</td>
         <td>
-        <form action="${request.route_url("apikey", id=apikey.id)}" method="POST">
+        <form action="${request.route_path("apikey", id=apikey.id)}" method="POST">
         <input type="hidden" name="_method" value="delete"/>
         <button class="btn"><i class="icon-trash"> </i> Delete</button>
         </td>

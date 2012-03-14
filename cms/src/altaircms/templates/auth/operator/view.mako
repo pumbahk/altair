@@ -31,7 +31,7 @@
 </table>
 
 %if 'operator_delete' in [perm.permission for perm in user.role.permissions]:
-    <form action="${request.route_url("operator", id=operator.id)}" method="POST">
+    <form action="${request.route_path("operator", id=operator.id)}" method="POST">
         <input type="hidden" name="_method" value="delete"/>
         <button class="btn" type="submit">削除</button>
     </form>

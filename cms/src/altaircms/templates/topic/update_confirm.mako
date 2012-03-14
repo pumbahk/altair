@@ -21,7 +21,7 @@
 	データ更新
   </div>
   <div class="span5">
-	<form action="${request.route_url("topic", id=topic["id"])}" method="POST">
+	<form action="${request.route_path("topic", id=topic["id"])}" method="POST">
       <table class="table">
         <tbody>
           ${formfield("title")}

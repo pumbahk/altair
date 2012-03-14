@@ -36,7 +36,7 @@ def list(request):
         if form.validate():
             request.method = "PUT"
             LayoutRESTAPIView(request).create()
-            return HTTPFound(request.route_url("layout_list"))
+            return HTTPFound(request.route_path("layout_list"))
     else:
         form = LayoutForm()
     layouts = LayoutRESTAPIView(request).read()

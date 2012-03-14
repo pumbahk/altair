@@ -58,7 +58,7 @@ def list_(request):
         if form.validate():
             request.method = "PUT"
             PageRESTAPIView(request).create()
-            return HTTPFound(request.route_url("page"))
+            return HTTPFound(request.route_path("page"))
     else:
         form = PageForm()
         form.layout_id.choices = layout_choices
@@ -84,7 +84,7 @@ def to_publish(request):     ## fixme
     page_id = request.matchdict["page_id"]
     page = Page.query.filter(Page.id==page_id).one()
     page.to_published()
-    return HTTPFound(request.route_url("page_edit_", page_id=page_id))
+    return HTTPFound(request.route_path("page_edit_", page_id=page_id))
 
 
 class PageEditView(object):

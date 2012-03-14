@@ -3,7 +3,7 @@
 <div class="row">
     <div class="span12">
         <ul class="breadcrumb">
-            <li><a href="${request.route_url("asset_list")}">アセット</a> <span class="divider">/</span></li>
+            <li><a href="${request.route_path("asset_list")}">アセット</a> <span class="divider">/</span></li>
             <li>${asset.filepath}</li>
         </ul>
     </div>
@@ -20,7 +20,7 @@
 </div>
 
 <div class="row">
-    <form action="${request.route_url("asset_edit", asset_id=asset.id)}" method="post">
+    <form action="${request.route_path("asset_edit", asset_id=asset.id)}" method="post">
         <input type="hidden" name="_method" value="delete"/>
         <button class="span4 offset4 btn" type="submit">このアセットを削除</button>
     </form>

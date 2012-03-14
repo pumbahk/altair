@@ -22,7 +22,7 @@ You are <strong>${user.role.name}</strong>.
           <span class="label label-info">${perm.name}</span>
         %endfor
         </td>
-        <td><a href="${request.route_url("role", id=role.id)}"><span class="btn"><i class="icon-eye-open"> </i> Show</span></a></td>
+        <td><a href="${request.route_path("role", id=role.id)}"><span class="btn"><i class="icon-eye-open"> </i> Show</span></a></td>
     </tr>
     %endfor
     </tbody>

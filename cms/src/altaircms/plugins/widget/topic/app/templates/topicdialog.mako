@@ -9,7 +9,7 @@
 	</td></tr>
 </%def>
 
-<form id="topic_add_form" action="${request.route_url("topicdialog")}" method="POST">
+<form id="topic_add_form" action="${request.route_path("topicdialog")}" method="POST">
   <table class="table">
     <tbody>
       ${formfield("topic")}

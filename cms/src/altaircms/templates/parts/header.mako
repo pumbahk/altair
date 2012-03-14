@@ -12,14 +12,14 @@
                                         <i class="icon-cog"> </i>
                                         Settings</a>
                                     </li>
-                                    <li><a href="${request.route_url("logout")}">
+                                    <li><a href="${request.route_path("logout")}">
                                         <i class="icon-off"> </i>
                                         Logout</a>
                                     </li>
                                 </ul>
                             </li>
                         % else:
-                            <li><a href="${request.route_url("oauth_entry")}">Login with Twitter (OAuth)</a></li>
+                            <li><a href="${request.route_path("oauth_entry")}">Login with Twitter (OAuth)</a></li>
                         % endif
                 </ul>
             </div><!--/.nav-collapse -->

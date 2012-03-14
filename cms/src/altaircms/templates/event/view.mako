@@ -3,7 +3,7 @@
 <div class="row" style="margin-bottom: 9px">
   <h2 class="span6">イベントのタイトル - ${event['title']} (ID: ${event['id']})</h2>
   <div class="span4">
-    <a class="btn" href="${request.route_url("page_add", event_id=event['id'])}"><i class="icon-plus"> </i> ページ追加</a>
+    <a class="btn" href="${request.route_path("page_add", event_id=event['id'])}"><i class="icon-plus"> </i> ページ追加</a>
     <a class="btn" href=""><i class="icon-eye-open"> </i> Preview</a>
     <a class="btn" href=""><i class="icon-refresh"> </i> Sync</a>
   </div>
@@ -65,7 +65,7 @@
         %for page in pages:
             <tr>
                 <td>
-                    <a href="${request.route_url('page_edit', event_id=event["id"], page_id=page.id)}">${page}</a>
+                    <a href="${request.route_path('page_edit', event_id=event["id"], page_id=page.id)}">${page}</a>
                     <a href="/f/${page.url|n}" target="_blank">preview</a></td>
             </tr>
         %endfor

@@ -41,7 +41,7 @@ class APIKeyView(object):
             form = APIKeyForm(self.request.POST)
             if form.validate():
                 DBSession.add(APIKey(name=form.data.get('name')))
-                return HTTPFound(self.request.route_url("apikey_list"))
+                return HTTPFound(self.request.route_path("apikey_list"))
         else:
             form = APIKeyForm()
 
@@ -55,4 +55,4 @@ class APIKeyView(object):
         if self.model_object:
             DBSession.delete(self.model_object)
 
-        return HTTPFound(self.request.route_url("apikey_list"))
+        return HTTPFound(self.request.route_path("apikey_list"))

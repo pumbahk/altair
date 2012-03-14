@@ -11,7 +11,7 @@
 
 <h1>ウィジェット追加 / 編集</h1>
 
-<a href="${request.route_url('widget_list')}">ウィジェット一覧</a>
+<a href="${request.route_path('widget_list')}">ウィジェット一覧</a>
 
 %if widget:
 <hr/>
@@ -33,7 +33,7 @@
 </div>
 
 %if widget:
-<form action="${request.route_url('widget_delete', widget_id=widget.id)}" method="post">
+<form action="${request.route_path('widget_delete', widget_id=widget.id)}" method="post">
   <input type="hidden" name="_method" value="delete">
   <button type="submit">削除</button>
 </form>

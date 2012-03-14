@@ -24,7 +24,7 @@
         <tbody>
         %for event in events['events']:
         <tr>
-            <td><a href="${request.route_url("event", id=event['id'])}">${event['title']}</a></td>
+            <td><a href="${request.route_path("event", id=event['id'])}">${event['title']}</a></td>
             <td>${event['place']}</td>
             <td>${event['event_open']} - ${event['event_close']}</td>
         </tr>

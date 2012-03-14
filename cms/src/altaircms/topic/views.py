@@ -66,7 +66,7 @@ def execute(request):
     id_ = request.matchdict['id']
     TopicRESTAPIView(request, id_).get_rest_action(request.POST["_method"])()
     ## fixme: add flash message
-    return HTTPFound(location=request.route_url("topic_list"))
+    return HTTPFound(location=request.route_path("topic_list"))
 
 @view_config(route_name="topic_update_confirm", renderer="altaircms:templates/topic/update_confirm.mako", 
              permission="topic_update", request_method="GET", decorator=with_bootstrap)
@@ -93,7 +93,7 @@ def _post_list_(request):
     if form.validate():
         request.method = "PUT"
         TopicRESTAPIView(request).create()
-        return HTTPFound(request.route_url("topic_list"))
+        return HTTPFound(request.route_path("topic_list"))
 
     return dict(
         form=form,

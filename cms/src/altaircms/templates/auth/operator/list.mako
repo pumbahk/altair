@@ -20,7 +20,7 @@
         <td>${operator.auth_source}</td>
         <td>${operator.screen_name}</td>
         <td>${operator.role.name}</td>
-        <td><a href="${request.route_url("operator", id=operator.id)}"><span class="btn"><i class="icon-eye-open"> </i> Show</span></a></td>
+        <td><a href="${request.route_path("operator", id=operator.id)}"><span class="btn"><i class="icon-eye-open"> </i> Show</span></a></td>
     </tr>
     %endfor
     </tbody>

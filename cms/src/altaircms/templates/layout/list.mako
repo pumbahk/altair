@@ -28,7 +28,7 @@
     <ul class="nav nav-list">
         <li class="nav-header">登録済みレイアウト</li>
         %for layout in layouts['layouts']:
-                <li><a href="${request.route_url('layout', layout_id=layout['id'])}">${layout['title']}</a></li>
+                <li><a href="${request.route_path('layout', layout_id=layout['id'])}">${layout['title']}</a></li>
         %endfor
     </ul>
 </div>

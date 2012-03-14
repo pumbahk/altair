@@ -121,7 +121,7 @@ class OAuthLogin(object):
 
         transaction.commit()
 
-        # url = self.request.route_url("dashboard")
+        # url = self.request.route_path("dashboard")
         url = self.request.registry.settings.get('oauth.callback_success_url', '/')
         return HTTPFound(url, headers=headers)
 
@@ -160,7 +160,7 @@ class OperatorView(object):
             return logout(self.request)
 
         # @TODO 何かしらのフラッシュメッセージ？みたいなのを送り込んで遷移先で表示する
-        return HTTPFound(self.request.route_url("operator_list"))
+        return HTTPFound(self.request.route_path("operator_list"))
 
 
     def _check_obj(self):
@@ -199,7 +199,7 @@ class RoleView(object):
             if form.validate():
                 perm = Permission(id=form.data.get('permission'))
                 DBSession.add(RolePermission(role_id=self.id, permission_id=perm.id))
-                return HTTPFound(self.request.route_url('role', id=self.id))
+                return HTTPFound(self.request.route_path('role', id=self.id))
         else:
             form = RoleForm()
         return dict(
@@ -213,7 +213,7 @@ class RoleView(object):
             DBSession.delete(self.role)
         except:
             raise
-        return HTTPFound(self.request.route_url("role_list"))
+        return HTTPFound(self.request.route_path("role_list"))
 
 
 class RolePermissionAPI(BaseRESTAPI):
@@ -250,4 +250,4 @@ class RolePermissionView(object):
             DBSession.delete(self.role_permission)
         except:
             raise
-        return HTTPFound(self.request.route_url("role", id=self.role.id))
+        return HTTPFound(self.request.route_path("role", id=self.role.id))

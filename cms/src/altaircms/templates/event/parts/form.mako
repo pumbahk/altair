@@ -1,5 +1,5 @@
-##<form id="event_add_form" action="${request.route_url("api_event")}?html=t" method="PUT">
-<form id="event_add_form" action="${request.route_url("event_list")}?html=t" method="POST">
+##<form id="event_add_form" action="${request.route_path("api_event")}?html=t" method="PUT">
+<form id="event_add_form" action="${request.route_path("event_list")}?html=t" method="POST">
   <table class="table">
     <tbody>
       <tr><th>${form.title.label}</th><td>${form.title}

@@ -5,7 +5,7 @@
     <h4>APIKEY新規登録</h4>
 
     <div class="span8">
-        <form action="${request.route_url("apikey_list")}" method="POST">
+        <form action="${request.route_path("apikey_list")}" method="POST">
             <table class="table">
                 <tbody>
                 <tr>
