@@ -31,7 +31,7 @@ def main_app_with_strip_secret(global_config, settings):
     return main_app(global_config, settings)
 
 
-def _get_policies(settings, D):
+def _get_policies(settings):
     from pyramid.authentication import AuthTktAuthenticationPolicy
     if asbool(settings.get("altaircms.debug.strip_security", 'false')):
         from altaircms.security import SecurityAllOK
@@ -48,8 +48,7 @@ def main_app(global_config, settings):
     """
 
     session_factory = UnencryptedCookieSessionFactoryConfig(settings.get('session.secret'))
-    params = {}
-    authn_policy, authz_policy = _get_policies(settings, params)
+    authn_policy, authz_policy = _get_policies(settings)
     config = Configurator(
         root_factory=RootFactory,
         settings=settings,

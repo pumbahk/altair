@@ -9,10 +9,8 @@ Widget
 """
 
 def setUpModule():
-    from altaircms.testutils import create_db
     from altaircms.models import DBSession
     DBSession.remove()
-    create_db(message="test view create")
 
 def tearDownModule():
     from altaircms.testutils import dropall_db
