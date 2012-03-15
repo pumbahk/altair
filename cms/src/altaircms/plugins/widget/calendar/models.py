@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 from zope.interface import implements
 from altaircms.interfaces import IWidget
 
@@ -36,6 +37,18 @@ class CalendarWidget(Widget):
             render_fn = getattr(renderable, self.calendar_type)
             return render_fn(self, performances, request)
         bsettings.add(bname, calendar_render)
+        self._if_tab_add_js_script(bsettings)
+
+    def _if_tab_add_js_script(self, bsettings):
+        if self.calendar_type != "tab":
+            return
+        ## jsを追加(一回だけ)
+        if not bsettings.is_attached(self, "js_postrender"):
+            def js():
+                return TAB_CALENDAR_JS
+            bsettings.add("js_postrender", js)
+            bsettings.attach_widget(self, "js_postrender")
+
 
 class CalendarWidgetResource(HandleSessionMixin,
                              UpdateDataMixin,
@@ -50,3 +63,16 @@ class CalendarWidgetResource(HandleSessionMixin,
 
     def get_widget(self, widget_id):
         return self._get_or_create(CalendarWidget, widget_id)
+
+TAB_CALENDAR_JS = u"""\
+/* calendar tab widget*/
+  $(".calendar-tab").click(function(){
+    var selected = $(".calendar-tab.selected");
+    $("#calendar_"+selected.attr("month")).addClass("hidden");
+    selected.removeClass("selected");
+
+    var new_selected = $(this);
+    new_selected.addClass("selected");
+    $("#calendar_"+new_selected.attr("month")).removeClass("hidden");
+  });
+"""

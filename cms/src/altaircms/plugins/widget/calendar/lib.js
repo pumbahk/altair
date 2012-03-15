@@ -43,12 +43,12 @@ widget.configure({
     var _draw_demo_api = function(we, type){
         var url = "/api/widget/calendar/dialog/demo/@type@".replace("@type@", type);
         $("#canpas").load(_with_pk(we, url), function(){
-            // jquery.ui
-            var dates = $( "#from_date, #to_date" ).datepicker({
-                numberOfMonths: 1,
-                changeMonth: true,
-                dateFormat: "yy-mm-dd"
-            });
+            // // jquery.ui
+            // var dates = $( "#from_date, #to_date" ).datepicker({
+            //     numberOfMonths: 1,
+            //     changeMonth: true,
+            //     dateFormat: "yy-mm-dd"
+            // });
             /* jquery.tools
             $.tools.dateinput.localize("ja",  {
                 months: "１月, ２月, ３月, ４月, ５月, ６月, ７月, ８月, ９月, １０月, １１月, １２月", 
@@ -71,7 +71,7 @@ widget.configure({
             _draw_demo_api(we, $(this).val());
         });
         _draw_demo_api(we, $("#calendar_type").val());
-        $.datepicker.setDefaults( $.datepicker.regional[ "ja" ] );
+        // $.datepicker.setDefaults( $.datepicker.regional[ "ja" ] );
         $(document).on("click", _has_click_event, function(){
             we.finish_dialog(this);
         });
