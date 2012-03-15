@@ -11,13 +11,17 @@ class LoginForm(Form):
       Login form
     '''
     login_id    = TextField(u'ユーザー名'         , validators=[Required()])
-    password    = PasswordField(u'パスワード'    , validators=[Required(),Length(8,32)])
+    password    = PasswordField(u'パスワード'    , validators=[Required(),Length(4,32)])
 
 class OperatorForm(Form):
-    '''
-    email       = TextField(u'ユーザー名'         , validators=[Required(),Email()])
+
+    login_id    = TextField(u'ログインID'         , validators=[Required()])
     name        = TextField(u'名前'               , validators=[Required()])
-    login_id    = SchemaNode(String()   , title=u'ログインID')
-    secret_key  = SchemaNode(String()   , title=u'パスワード', missing=null, widget=CheckedPasswordWidget())
-    '''
+    email       = TextField(u'Email'            , validators=[Required(), Email()])
+    password    = PasswordField(u'パスワード'    , validators=[Length(4,32),optional()])
+    password2   = PasswordField(u'パスワード確認' , validators=[
+                                                        EqualTo('password', message=u'パスワードと確認用パスワードは一致しません。',)])
+
+
+class AuthorizeForm(LoginForm):
     pass

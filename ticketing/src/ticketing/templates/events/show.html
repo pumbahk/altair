@@ -1,14 +1,17 @@
 <%inherit file="../layout.html" />
-<%block name="title">${event.title}</%block>
+<h1><%block name="title">${event.title}</%block></h1>
+<div class="ui-toolbar">
+  <a href="${request.route_path('admin.events.edit', event_id=event.id)}" class="btn">編集</a>
+  <a href="${request.route_path('admin.events.new',event_id=event.id)}" class="btn">コピーして新規</a>
+  <a href="${request.route_path('admin.events.delete', event_id=event.id)}" class="btn">削除</a>
+<a href="" class="btn">チケット券面プレビュー</a>
+</div>
+
+<hr />
 <div class="section">
   <div class="section-main">
     <div class="section-main-content">
-      <div class="ui-toolbar">
-        <a href="${request.route_path('admin.events.edit', event_id=event.id)}" class="ui-button">編集</a>
-        <a href="${request.route_path('admin.events.new',event_id=event.id)}" class="ui-button">コピーして新規</a>
-        <a href="${request.route_path('admin.events.delete', event_id=event.id)}" class="ui-button">削除</a>
-		<a href="" class="ui-button">チケット券面プレビュー</a>
-      </div>
+
       <div class="twocolumns">
         <div class="first column">
           <div class="column-main">

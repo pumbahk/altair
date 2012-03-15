@@ -11,9 +11,13 @@ from forms import EventForm
 from deform.form import Form,Button
 from deform.exception import ValidationFailure
 
+from ticketing.fanstatic import with_bootstrap
+from ticketing.fanstatic import bootstrap_need
+
+
 import webhelpers.paginate as paginate
 
-@view_config(route_name='admin.events.index', renderer='ticketing:templates/events/index.html')
+@view_config(route_name='admin.events.index', renderer='ticketing:templates/events/index.html', decorator=with_bootstrap)
 def index(context, request):
     current_page = int(request.params.get("page", 0))
     page_url = paginate.PageURL_WebOb(request)
@@ -24,7 +28,7 @@ def index(context, request):
     }
 
 
-@view_config(route_name='admin.events.show', renderer='ticketing:templates/events/show.html')
+@view_config(route_name='admin.events.show', renderer='ticketing:templates/events/show.html', decorator=with_bootstrap)
 def show(context, request):
     client_id = int(request.matchdict.get("event_id", 0))
     client = Event.get(client_id)
@@ -34,7 +38,7 @@ def show(context, request):
         'event' : client
     }
 
-@view_config(route_name='admin.events.new', renderer='ticketing:templates/events/new.html')
+@view_config(route_name='admin.events.new', renderer='ticketing:templates/events/new.html', decorator=with_bootstrap)
 def new(context, request):
     f = Form(EventForm(), buttons=(Button(name='submit',title=u'新規'),))
     if 'submit' in request.POST:
@@ -42,7 +46,7 @@ def new(context, request):
         try:
             data = f.validate(controls)
             record = Event()
-            record = merge_session_with_post(record, controls)
+            record = merge_session_with_post(record, data)
             Event.add(record)
             return HTTPFound(location=route_path('admin.events.index', request))
         except ValidationFailure, e:

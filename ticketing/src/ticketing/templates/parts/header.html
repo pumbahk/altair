@@ -1,0 +1,38 @@
+<link rel="stylesheet" type="text/css" href="/static/css/navigation.css" />
+<div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <a class="brand" href="${request.route_path('index')}"><img src="/static/images/altair_logo.png"></a>
+            <div class="nav-collapse">
+                <ul class="nav pull-right">
+                    % if request.context.user:
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">${request.context.user.name}<b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="${request.route_path('login.info')}">
+                                <i class="icon-cog"> </i>
+                                設定</a>
+                            </li>
+                            <li><a href="${request.route_path('login.logout')}">
+                                <i class="icon-off"> </i>
+                                ログアウト</a>
+                            </li>
+                        </ul>
+                    </li>
+                    % else:
+                    <li><a href="${request.route_path('login.index')}">ログイン</a></li>
+                    % endif
+                </ul>
+            </div><!--/.nav-collapse -->
+            <!-- Navigation -->
+            <div id="navigation">
+                <ul>
+                    <li><a href="${request.route_path('login.index')}" ${'class="active"' if function=='dashboard' else ''|n}><span>ダッシュボード</span></a></li>
+                    <li><a href="${request.route_path('index')}" class="active"><span>票券管理</span></a></li>
+                    <li><a href="http://127.0.0.1:6543/" ${'class="active"' if function=='projects' else ''|n}><span>CMS</span></a></li>
+                </ul>
+            </div>
+            <!-- End Navigation -->
+        </div>
+    </div>
+</div>

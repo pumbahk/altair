@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 from pyramid.config import Configurator
-from pyramid.renderers import render
 
 from sqlalchemy import engine_from_config
-
 from .resources import RootFactory, groupfinder
 
 from pyramid.authentication import AuthTktAuthenticationPolicy
@@ -17,11 +15,11 @@ try:
     print 'Using PyMySQL'
 except:
     pass
-from deform import Form
 
+import logging
 
-def renderer(template, **kwargs):
-    return render('_deform/%s.mako' % template, kwargs)
+logging.basicConfig()
+logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
@@ -38,17 +36,17 @@ def main(global_config, **settings):
                           authentication_policy=authn_policy,
                           authorization_policy=authz_policy)
 
-    Form.set_default_renderer(renderer)
-
     config.add_static_view('static', 'ticketing:static', cache_max_age=3600)
-    config.add_static_view('_deform', 'deform:static', cache_max_age=3600)
 
     config.add_view('pyramid.view.append_slash_notfound_view',
                     context='pyramid.httpexceptions.HTTPNotFound')
-    
+
+    config.include("pyramid_fanstatic")
     config.include('ticketing.views.add_routes' , route_prefix='/')
     
-    config.add_renderer('.html', 'pyramid.mako_templating.renderer_factory')
+    config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
+    config.add_renderer('json'  , 'ticketing.renderers.json_renderer_factory')
+    config.add_renderer('csv'   , 'ticketing.renderers.csv_renderer_factory')
 
     config.scan('ticketing')
 

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="PYTHON_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$/../..">
+      <sourceFolder url="file://$MODULE_DIR$/.." isTestSource="false" />
+    </content>
+    <orderEntry type="jdk" jdkName="Python 2.7.1 virtualenv at ~/Dropbox/Sourcecode/altair-devel/env" jdkType="Python SDK" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+  <component name="TemplatesService">
+    <option name="templateLanguage" value="Mako" />
+    <option name="TEMPLATE_CONFIGURATION" value="Mako" />
+    <option name="TEMPLATES_IN_JAVASCRIPT" value="true" />
+  </component>
+</module>
+

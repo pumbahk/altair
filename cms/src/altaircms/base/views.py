@@ -1,4 +1,4 @@
-# coding: utf-8
+ # coding: utf-8
 from pyramid.httpexceptions import HTTPBadRequest, HTTPFound
 from pyramid.security import authenticated_userid, has_permission
 from pyramid.view import view_config
