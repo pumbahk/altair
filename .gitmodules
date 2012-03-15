@@ -1,0 +1,3 @@
+[submodule "hall-designer/Fashion"]
+	path = hall-designer/Fashion
+	url = git://github.com/smihica/Fashion.git
