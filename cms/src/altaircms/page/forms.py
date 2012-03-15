@@ -2,6 +2,7 @@
 import json
 from wtforms.form import Form
 from wtforms import fields
+from wtforms import widgets
 import wtforms.ext.sqlalchemy.fields as extfields
 from altaircms.layout.models import Layout
 
@@ -39,4 +40,5 @@ class PageForm(Form):
     description = fields.TextField()
     keywords = fields.TextField()
     tags = fields.TextField()
-    layout = extfields.QuerySelectField(label=u"", query_factory=existing_layouts, allow_blank=False)
+    layout = extfields.QuerySelectField(query_factory=existing_layouts, allow_blank=False)
+    event_id = fields.IntegerField(label=u"", widget=widgets.HiddenInput())

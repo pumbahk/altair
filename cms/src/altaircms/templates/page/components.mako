@@ -21,10 +21,14 @@
 ##      </tr>
     </table>
 </%def>
+
 <%def name="page_description(page)">
     <table class="table table-striped">
       <tr>
         <th class="span2">ページ名</th><td class="span8">${page.title}</td>
+      </tr>
+      <tr>
+        <th class="span2">関連イベント</th><td class="span8"><a href="${h.page.event_page(request,page)}">${page.event.title if page.event else ""}</a></td>
       </tr>
       <tr>
         <th class="span2">description</th><td>${page.description}</td>

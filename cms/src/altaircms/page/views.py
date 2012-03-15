@@ -21,19 +21,6 @@ from altaircms.fanstatic import with_fanstatic_jqueries
 from altaircms.fanstatic import with_wysiwyg_editor
 import altaircms.helpers as h
 
-@view_config(route_name='page', renderer='altaircms:templates/page/list.mako', permission='page_create', request_method="POST", 
-             decorator=with_bootstrap)
-def create(request):
-    form = PageForm(request.POST)
-    if form.validate():
-        request.method = "PUT"
-        PageRESTAPIView(request).create()
-        return HTTPFound(request.route_path("page"))
-    return dict(
-        pages=PageRESTAPIView(request).read(),
-        form=form
-    )
-
 ##
 ## todo: CRUDのview整理する
 ##
@@ -50,11 +37,32 @@ class WithDefaultConfig(object):
         params.update(self.kwargs)
         return self.decorator(*args, **params)
 
+as_create_view = WithDefaultConfig(view_config, permission="page_create", decorator=with_bootstrap)
 as_delete_view = WithDefaultConfig(view_config, route_name="page_delete", 
                                    permission="page_delete", decorator=with_bootstrap)
 as_update_view = WithDefaultConfig(view_config, route_name="page_update", 
                                    permission="page_update", decorator=with_bootstrap)
 
+
+@as_create_view(route_name="page", renderer='altaircms:templates/page/list.mako', request_method="POST")
+def create(request):
+    form = PageForm(request.POST)
+    if form.validate():
+        request.method = "PUT"
+        PageRESTAPIView(request).create()
+        return HTTPFound(request.route_path("page"))
+    return dict(
+        pages=PageRESTAPIView(request).read(),
+        form=form
+        )
+
+@as_create_view(route_name="page_add", renderer="altaircms:templates/page/add.mako")
+def add_view(request):
+    event_id = request.matchdict["event_id"]
+    from altaircms.models import Event
+    event = Event.query.filter(Event.id==event_id).one()
+    form = PageForm()
+    return {"form":form, "event":event}
 
 @as_delete_view(renderer="altaircms:templates/page/delete_confirm.mako", request_method="GET")
 def delete_confirm(request):

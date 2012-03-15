@@ -23,6 +23,7 @@ class UsingRenderMixin(object):
 
 class PageResource(UsingRenderMixin, 
                    security.RootFactory):
+
     def add(self, data, flush=False):
         DBSession.add(data)
         if flush:

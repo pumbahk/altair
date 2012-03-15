@@ -65,8 +65,8 @@
         %for page in pages:
             <tr>
                 <td>
-                    <a href="${request.route_path('page_edit', event_id=event["id"], page_id=page.id)}">${page}</a>
-                    <a href="/f/${page.url|n}" target="_blank">preview</a></td>
+                    <a href="${request.route_path('page_edit', event_id=event["id"], page_id=page.id)}">${page.title}</a>
+                    <!-- <a href="/f/${page.url|n}" target="_blank">preview</a></td> -->
             </tr>
         %endfor
     </tbody>
