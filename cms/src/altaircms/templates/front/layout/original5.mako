@@ -35,6 +35,43 @@
       border: solid 1px;
       padding: 4px 6px;
     }
+    /* menu */
+    ul.menu {
+        margin: 0;
+        padding: 0;
+        border-bottom: 2px #ddd solid;
+    }
+    ul.menu li {
+        float: left;
+        margin: 0 0 0 5px;
+        position: relative;
+        bottom: -2px;
+        list-style-type: none;
+        border: 1px #ddd solid;
+        border-top: none;
+        border-bottom: 2px #ddd solid;
+    }
+    ul.menu li.none {
+        border-bottom: 2px #fff solid;
+        font-weight: bold;
+    }
+    ul.menu li a {
+        color: #000;
+        display: block;
+        padding: 3px 10px 5px;
+        text-decoration: none;
+        background: #fff;
+    }
+    ul.menu li a {
+        border-bottom: 5px #dd1d25 solid;
+    }
+    ul.menu li a:hover {
+        position: relative;
+        bottom: 6px;
+    }
+    .clear {
+        clear: both;
+    }
     ${widgets("css_prerender")}
   </style>
 </%block>

@@ -54,29 +54,6 @@ def _get_topic():
     
 def add_widget(page):
     DBSession.flush()
-    with block("topic"):
-        topic = _get_topic()
-        from altaircms.plugins.widget.topic.views import TopicWidgetView
-        from altaircms.plugins.widget.topic.models import TopicWidgetResource
-        request = DummyRequest()
-        request.json_body = dict(page_id=page.id, data=dict(topic=topic.id))
-        context = TopicWidgetResource(request)
-        request.context = context
-        r = TopicWidgetView(request).create()
-        append_to_json_structure(page, "page_main_title", 
-                                 {"name": "topic", "pk": r["pk"]})
-
-    with block("bread_crumbs"):
-        from altaircms.plugins.widget.breadcrumbs.views import BreadcrumbsWidgetView
-        from altaircms.plugins.widget.breadcrumbs.models import BreadcrumbsWidgetResource
-        request = DummyRequest()
-        request.json_body = dict(page_id=page.id, data=dict())
-        context = BreadcrumbsWidgetResource(request)
-        request.context = context
-        r = BreadcrumbsWidgetView(request).create()
-        append_to_json_structure(page, "page_main_title", 
-                                 {"name": "breadcrumbs", "pk": r["pk"]})
-
     with block("menu"):
         from altaircms.plugins.widget.menu.views import MenuWidgetView
         from altaircms.plugins.widget.menu.models import MenuWidgetResource
@@ -94,6 +71,87 @@ def add_widget(page):
         append_to_json_structure(page, "page_main_title", 
                                  {"name": "menu", "pk": r["pk"]})
 
+    with block("title"):
+        title = u'<br/>'
+        from altaircms.plugins.widget.freetext.views import FreetextWidgetView
+        from altaircms.plugins.widget.freetext.models import FreetextWidgetResource
+        request = DummyRequest()
+        request.json_body = dict(page_id=page.id, data=dict(freetext=title))
+        context = FreetextWidgetResource(request)
+        request.context = context
+        r = FreetextWidgetView(request).create()
+        append_to_json_structure(page, "page_main_title", 
+                                 {"name": "freetext", "pk": r["pk"]})
+
+    with block("bread_crumbs"):
+        from altaircms.plugins.widget.breadcrumbs.views import BreadcrumbsWidgetView
+        from altaircms.plugins.widget.breadcrumbs.models import BreadcrumbsWidgetResource
+        request = DummyRequest()
+        request.json_body = dict(page_id=page.id, data=dict())
+        context = BreadcrumbsWidgetResource(request)
+        request.context = context
+        r = BreadcrumbsWidgetView(request).create()
+        append_to_json_structure(page, "page_main_title", 
+                                 {"name": "breadcrumbs", "pk": r["pk"]})
+
+
+    with block("title"):
+        title = u'<h2 class="title"">お知らせ</h2>'
+        from altaircms.plugins.widget.freetext.views import FreetextWidgetView
+        from altaircms.plugins.widget.freetext.models import FreetextWidgetResource
+        request = DummyRequest()
+        request.json_body = dict(page_id=page.id, data=dict(freetext=title))
+        context = FreetextWidgetResource(request)
+        request.context = context
+        r = FreetextWidgetView(request).create()
+        append_to_json_structure(page, "page_main_title", 
+                                 {"name": "freetext", "pk": r["pk"]})
+
+    with block("topic"):
+        topic = _get_topic()
+        from altaircms.plugins.widget.topic.views import TopicWidgetView
+        from altaircms.plugins.widget.topic.models import TopicWidgetResource
+        request = DummyRequest()
+        request.json_body = dict(page_id=page.id, data=dict(topic=topic.id))
+        context = TopicWidgetResource(request)
+        request.context = context
+        r = TopicWidgetView(request).create()
+        append_to_json_structure(page, "page_main_title", 
+                                 {"name": "topic", "pk": r["pk"]})
+    with block("topic"):
+        topic = _get_topic()
+        from altaircms.plugins.widget.topic.views import TopicWidgetView
+        from altaircms.plugins.widget.topic.models import TopicWidgetResource
+        request = DummyRequest()
+        request.json_body = dict(page_id=page.id, data=dict(topic=topic.id))
+        context = TopicWidgetResource(request)
+        request.context = context
+        r = TopicWidgetView(request).create()
+        append_to_json_structure(page, "page_main_title", 
+                                 {"name": "topic", "pk": r["pk"]})
+    with block("topic"):
+        topic = _get_topic()
+        from altaircms.plugins.widget.topic.views import TopicWidgetView
+        from altaircms.plugins.widget.topic.models import TopicWidgetResource
+        request = DummyRequest()
+        request.json_body = dict(page_id=page.id, data=dict(topic=topic.id))
+        context = TopicWidgetResource(request)
+        request.context = context
+        r = TopicWidgetView(request).create()
+        append_to_json_structure(page, "page_main_title", 
+                                 {"name": "topic", "pk": r["pk"]})
+    with block("topic"):
+        topic = _get_topic()
+        from altaircms.plugins.widget.topic.views import TopicWidgetView
+        from altaircms.plugins.widget.topic.models import TopicWidgetResource
+        request = DummyRequest()
+        request.json_body = dict(page_id=page.id, data=dict(topic=topic.id))
+        context = TopicWidgetResource(request)
+        request.context = context
+        r = TopicWidgetView(request).create()
+        append_to_json_structure(page, "page_main_title", 
+                                 {"name": "topic", "pk": r["pk"]})
+
         
     with block("title"):
         title = u'<h1 class="title" style="float: left;">松下奈緒コンサートツアー2012　for me</h1>'
@@ -106,6 +164,7 @@ def add_widget(page):
         r = FreetextWidgetView(request).create()
         append_to_json_structure(page, "page_main_title", 
                                  {"name": "freetext", "pk": r["pk"]})
+
     with block("image"):
         from altaircms.plugins.widget.image.views import ImageWidgetView
         from altaircms.plugins.widget.image.models import ImageWidgetResource
