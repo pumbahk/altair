@@ -4,9 +4,34 @@ from ticketing.models import DBSession, Base
 from ticketing.utils import StandardEnum
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL
 from sqlalchemy.orm import relationship, join, backref, column_property
-import sqlahelper
 
+from ticketing.oauth2.models import KeyGenerator, TimestampGenerator
+from ticketing.oauth2.consts import CLIENT_KEY_LENGTH, CLIENT_SECRET_LENGTH,\
+                                    ACCESS_TOKEN_LENGTH, REFRESH_TOKEN_LENGTH,\
+                                    ACCESS_TOKEN_EXPIRATION, MAC_KEY_LENGTH, REFRESHABLE,\
+                                    CODE_KEY_LENGTH, CODE_EXPIRATION
+
+from hashlib import md5
+
+from datetime import datetime
+import sqlahelper
 session = sqlahelper.get_session()
+
+
+class Service(Base):
+    __tablename__ = 'Service'
+    id              = Column(BigInteger, primary_key=True)
+    name            = Column(String(255))
+    key             = Column(String(CLIENT_KEY_LENGTH), default=KeyGenerator(CLIENT_KEY_LENGTH), index=True, unique=True)
+    secret          = Column(String(CLIENT_SECRET_LENGTH), default=KeyGenerator(CLIENT_SECRET_LENGTH),unique=True)
+    redirect_uri    = Column(String(1024))
+    updated_at      = Column(DateTime)
+    created_at      = Column(DateTime)
+    status          = Column(Integer)
+
+    @staticmethod
+    def get_key(key):
+        return DBSession.query(Service).filter(Service.key == key).first()
 
 '''
  Master Data
@@ -38,7 +63,6 @@ class ClientTypeEnum(StandardEnum):
 
 class Client(Base):
     __tablename__ = "Client"
-
     id          = Column(BigInteger, primary_key=True)
     name        = Column(String(255))
     client_type = Column(Integer)
@@ -67,6 +91,47 @@ class Client(Base):
     @staticmethod
     def all():
         return session.query(Client).all()
+
+class AccessToken(Base):
+    __tablename__ = 'AccessToken'
+    id          = Column(BigInteger, primary_key=True)
+
+    service = relationship("Service")
+    service_id = Column(BigInteger, ForeignKey("Service.id"))
+    operator = relationship("Operator")
+    operator_id = Column(BigInteger, ForeignKey("Operator.id"))
+
+    key             = Column(String(CODE_KEY_LENGTH), default=KeyGenerator(CODE_KEY_LENGTH), index=True, unique=True)
+    token           = Column(String(ACCESS_TOKEN_LENGTH), default=KeyGenerator(ACCESS_TOKEN_LENGTH), index=True, unique=True)
+    refresh_token   = Column(String(REFRESH_TOKEN_LENGTH), default=KeyGenerator(REFRESH_TOKEN_LENGTH), index=True, unique=True, nullable=True)
+    mac_key         = Column(String(MAC_KEY_LENGTH), index=True, unique=True, nullable=True)
+
+    issue = Column(Integer, default=TimestampGenerator())
+    expire = Column(DateTime, default=TimestampGenerator(ACCESS_TOKEN_EXPIRATION))
+    refreshable = Column(Boolean, default=REFRESHABLE)
+    updated_at = Column(DateTime, onupdate=datetime.now())
+    created_at = Column(DateTime, default=datetime.now())
+    status = Column(Integer, default=1)
+
+    @staticmethod
+    def get(id):
+        return DBSession.query(AccessToken).filter(AccessToken.id == id).first()
+
+    @staticmethod
+    def get_by_key(key):
+        return DBSession.query(AccessToken).filter(AccessToken.key == key).first()
+
+
+class MACNonce(Base):
+    __tablename__       = 'MACNonce'
+    id                  = Column(BigInteger, primary_key=True)
+    access_token        = relationship("AccessToken")
+    access_token_id     = Column(BigInteger, ForeignKey("AccessToken.id"))
+    nonce               = Column(String(30), index=True)
+
+    updated_at          = Column(DateTime, onupdate=datetime.now())
+    created_at          = Column(DateTime, default=datetime.now())
+    status              = Column(Integer, default=1)
 
 class AccountTypeEnum(StandardEnum):
     Promoter    = 1
@@ -186,8 +251,17 @@ class Permission(Base):
     id = Column(BigInteger, primary_key=True)
     operator_role_id = Column(BigInteger, ForeignKey('OperatorRole.id'))
     operator_role = relationship('OperatorRole', uselist=False)
-    category_name = Column(Integer)
+    category_name = Column(String(255), index=True)
     permit = Column(Integer)
+
+    @staticmethod
+    def get_by_key(category_name):
+        return session.query(Permission).filter(Permission.category_name == category_name).first()
+
+    @staticmethod
+    def list_in(category_names):
+        return session.query(Permission)\
+            .filter(Permission.category_name.in_(category_names)).all()
 
 class OperatorRole(Base):
     __tablename__ = 'OperatorRole'
@@ -240,6 +314,13 @@ class Operator(Base):
     @staticmethod
     def get_by_login_id(user_id):
         return DBSession.query(Operator).filter(Operator.login_id == user_id).first()
+
+    @staticmethod
+    def login(login_id, password):
+        operator = session.query(Operator)\
+                .filter(Operator.login_id == login_id)\
+                .filter(Operator.password == md5(password).hexdigest()).first()
+        return operator
 
 performer_association_table = Table('Performer_Performance', Base.metadata,
     Column('performer_id', BigInteger, ForeignKey('Performer.id')),
@@ -444,7 +525,7 @@ class Stock(Base):
 class SeatStock(Base):
     __tablename__ = "SeatStock"
     id = Column(BigInteger, primary_key=True)
-    seat_id = Column(Integer, ForeignKey("SeatMasterL2.seat_id"))
+    seat_id = Column(BigInteger, ForeignKey("SeatMasterL2.seat_id"))
     seat = relationship('SeatMasterL2', uselist=False, backref="seat_stock_id") # 1:1
     sold = Column(Boolean) # sold or not
 
