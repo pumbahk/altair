@@ -27,6 +27,7 @@ requires = [
     'sqlahelper',
     'WebHelpers',
     'fixture',
+    'waitress'
     ]
 
 setup(name='ticketing',
