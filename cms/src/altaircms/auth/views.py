@@ -69,7 +69,6 @@ class OAuthLogin(object):
 
     @view_config(route_name='oauth_callback')
     def oauth_callback(self):
-
         import urlparse
         import urllib
 
@@ -80,7 +79,6 @@ class OAuthLogin(object):
                 client_secret=self.secret_key,
                 code=self.request.GET.get("code"),
                 grant_type='authorization_code')
-
             data = json.loads(urllib.urlopen(
                 self.access_token_url +
                 "?" + urllib.urlencode(args)).read())
@@ -95,6 +93,7 @@ class OAuthLogin(object):
             DBSession.add(operator)
         except NoResultFound:
             role = DBSession.query(Role).filter_by(name=data.get('role', DEFAULT_ROLE)).one()
+            
             operator = Operator(
                 auth_source='oauth',
                 user_id=data['user_id'],
