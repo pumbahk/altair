@@ -4,5 +4,3 @@
   <div class="breadcrumbs"><%block name="breadcrumbs"/></div> 
   <div class="span10"><%block name="contentright">${self.body()}</%block></div>
 </div>
-
-

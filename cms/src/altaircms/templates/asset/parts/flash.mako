@@ -25,7 +25,10 @@ $(document).ready(function(){
 })
 </script>
 
-<div class="span6">
+<div class="span5">
+    <div id="asset"></div>
+</div>
+<div class="span5">
     <table class="table">
         <tbody>
         <tr>
@@ -45,12 +48,13 @@ $(document).ready(function(){
             <td>${asset.created_at}</td>
         </tr>
         <tr>
+            <td>サイズ</td>
+            <td>${asset.size}</td>
+        </tr>
+        <tr>
             <td>タグ</td>
             <td>TBD</td>
         </tr>
         </tbody>
     </table>
-</div>
-<div class="span6">
-    <div id="asset"></div>
 </div>

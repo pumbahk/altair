@@ -37,9 +37,9 @@ class BaseAssetSchema(colander.MappingSchema):
 
 #@TODO: 画像フォーマットやサイズのバリデーションを行う
 class ImageAssetSchema(BaseAssetSchema):
-    alt = colander.SchemaNode(colander.String(), missing=colander.null, default='')
-    width = colander.SchemaNode(colander.Integer(), missing=colander.null)
-    height = colander.SchemaNode(colander.Integer(), missing=colander.null)
+    alt = colander.SchemaNode(colander.String(), missing='', default='')
+    # width = colander.SchemaNode(colander.Integer(), missing=colander.null)
+    # height = colander.SchemaNode(colander.Integer(), missing=colander.null)
     uploadfile = colander.SchemaNode(
         deform.schema.FileData(),
         title='画像ファイル',
@@ -69,10 +69,10 @@ class FlashAssetSchema(BaseAssetSchema):
 
 
 class MovieAssetSchema(BaseAssetSchema):
-    width = colander.SchemaNode(colander.Integer(), missing=colander.null)
-    height = colander.SchemaNode(colander.Integer(), missing=colander.null)
-    length = colander.SchemaNode(colander.Integer(), missing=colander.null)
-#    mimetype = colander.SchemaNode(colander.String(), missing=colander.null)
+    # width = colander.SchemaNode(colander.Integer(), missing=colander.null)
+    # height = colander.SchemaNode(colander.Integer(), missing=colander.null)
+    # length = colander.SchemaNode(colander.Integer(), missing=colander.null)
+    # mimetype = colander.SchemaNode(colander.String(), missing=colander.null)
     uploadfile = colander.SchemaNode(
         deform.FileData(),
         title='動画ファイル',

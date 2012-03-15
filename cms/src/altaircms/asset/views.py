@@ -3,6 +3,7 @@ import json
 import os
 from datetime import date
 from uuid import uuid4
+import Image
 
 import colander
 import markupsafe
@@ -106,14 +107,23 @@ class AssetEditView(object):
             filename = '%s.%s' % (uuid4(), original_filename[original_filename.rfind('.') + 1:])
             filepath = os.path.join(storepath, filename)
 
+            buf = captured['uploadfile']['fp'].read()
+            size = len(buf)
             dst_file = open(filepath, 'w+b')
-            dst_file.write(captured['uploadfile']['fp'].read())
+            dst_file.write(buf)
             dst_file.seek(0)
 
             mimetype = detect_mimetype(filename)
 
             if captured['type'] == 'image':
-                asset = ImageAsset(filepath=os.path.join(today, filename), mimetype=mimetype)
+                (width, height) = Image.open(dst_file.name).size
+                asset = ImageAsset(
+                    filepath=os.path.join(today, filename),
+                    mimetype=mimetype,
+                    width=width,
+                    height=height,
+                    alt=captured.get('alt', '')
+                )
             elif captured['type'] == 'movie':
                 asset = MovieAsset(filepath=os.path.join(today, filename), mimetype=mimetype)
             elif captured['type'] == 'flash':
@@ -125,6 +135,7 @@ class AssetEditView(object):
                     height=height
                 )
 
+            asset.size = size
             DBSession.add(asset)
 
             return self.response_json_ok()
