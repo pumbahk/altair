@@ -10,8 +10,8 @@ def to_preview_page(request, page):
 to_publish_page = to_preview_page
 
 def _to_preview_page(request, page):
-    return request.route_url("front_preview", page_name=page.hash_url)
+    return request.route_path("front_preview", page_name=page.hash_url)
 
 def _to_publish_page(request, page):
-    return request.route_url("front", page_name=page.url)
+    return request.route_path("front", page_name=page.url)
 

@@ -28,7 +28,7 @@ def create(request):
     if form.validate():
         request.method = "PUT"
         PageRESTAPIView(request).create()
-        return HTTPFound(request.route_url("page"))
+        return HTTPFound(request.route_path("page"))
     return dict(
         pages=PageRESTAPIView(request).read(),
         form=form
@@ -130,7 +130,7 @@ def page_edit(request):
     id_ = request.matchdict['page_id']
     page = PageRESTAPIView(request, id_).read()
     if not page:
-        return HTTPFound(request.route_url("page"))
+        return HTTPFound(request.route_path("page"))
     
     layout_render = request.context.get_layout_render(page)
     return {
