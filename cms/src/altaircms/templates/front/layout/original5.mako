@@ -66,12 +66,54 @@
     ul.menu li a {
         border-bottom: 5px #dd1d25 solid;
     }
+    ul.menu li.selected a {
+        background: #ea9;
+    }
     ul.menu li a:hover {
+        position: relative;
+        bottom: 6px;
+    }
+
+    /* calendar menu */
+    ul.calendar-tabmenu {
+        margin: 0;
+        padding: 0;
+        border-bottom: 2px #ddd solid;
+    }
+    ul.calendar-tabmenu li {
+        float: left;
+        margin: 0 0 0 5px;
+        position: relative;
+        bottom: -2px;
+        list-style-type: none;
+        border: 1px #ddd solid;
+        border-top: none;
+        border-bottom: 2px #ddd solid;
+    }
+    ul.calendar-tabmenu li.none {
+        border-bottom: 2px #fff solid;
+        font-weight: bold;
+    }
+    ul.calendar-tabmenu li a {
+        color: #000;
+        display: block;
+        padding: 3px 10px 5px;
+        text-decoration: none;
+        background: #fff;
+        border-bottom: 5px #dd1d25 solid;
+    }
+    ul.calendar-tabmenu li a.selected {
+        background: #ea9;
+    }
+    ul.calendar-tabmenu li a:hover {
         position: relative;
         bottom: 6px;
     }
     .clear {
         clear: both;
+    }
+    .hidden {
+        display: none;
     }
   </style>
 </%block>

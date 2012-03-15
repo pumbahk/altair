@@ -1,7 +1,9 @@
 # -*- coding:utf-8 -*-
 
 from datetime import datetime
+from datetime import date
 import os
+import itertools
 
 from zope.interface import implements
 from mako.template import Template
@@ -59,7 +61,6 @@ def obi():
         }
     
 def term():
-    from datetime import date
     from forms import SelectTermForm
     template = Template(filename=os.path.join(here, "rakuten.calendar.mako"), 
                         input_encoding="utf-8")
@@ -75,6 +76,36 @@ def term():
         "form_class": SelectTermForm
         }
 
+def _next_month_date(d):
+    if d.month == 12:
+        return date(d.year+1, 1, 1)
+    else:
+        return date(d.year, d.month+1, 1)
+
+def tab():
+    performances = [
+        perf(1, "event1", datetime(2012, 2, 10, 10), datetime(2012, 2, 10, 12)), 
+        perf(2, "event2", datetime(2012, 2, 13, 13), datetime(2012, 2, 13, 15)), 
+        perf(3, "event3", datetime(2012, 4, 20, 20), datetime(2012, 4, 20, 12)), 
+        perf(1, "event1", datetime(2012, 5, 10, 10), datetime(2012, 5, 10, 12)), 
+        ]
+    template = Template(filename=os.path.join(here, "rakuten.tab-calendar.mako"), 
+                        input_encoding="utf-8")
+    visibilities = itertools.chain([True], itertools.repeat(False))
+    if len(set(p.start_on.year for p in performances)) == 1:
+        months = sorted(set(p.start_on.month for p in performances))
+    else:
+        months = sorted(set((p.start_on.year, p.start_on.month) for p in performances))
+    monthly_performances = itertools.groupby(performances, lambda p: (p.start_on.year, p.start_on.month))
+    cals = (CalendarOutput.from_performances(perfs).each_rows(date(y, m, 1), _next_month_date(date(y, m, 1)))\
+                for (y, m), perfs in monthly_performances)
+    return {"description": u"""
+パフォーマンスが存在する月のタブを付加したカレンダー。
+""",
+            "renderable": RenderableAdaptor(template.render, cals=cals, months=months, visibilities=visibilities)
+            }
+
 if __name__ == "__main__":
-    print term()["renderable"].render()
-    print obi()["renderable"].render()
+    # print term()["renderable"].render()
+    # print obi()["renderable"].render()
+    print tab()["renderable"].render()

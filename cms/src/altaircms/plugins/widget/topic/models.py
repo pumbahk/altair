@@ -57,8 +57,8 @@ class TopicWidget(Widget):
 (下のコードがトピックwidgetのtooltipのために必要.(jquerytools必要))
 """
 TOPIC_JS = u"""\
-// with topic widget
-$(".topic").tooltip();
+  // with topic widget
+  $(".topic").tooltip();
 """
 
 TOPIC_CSS = u"""\
