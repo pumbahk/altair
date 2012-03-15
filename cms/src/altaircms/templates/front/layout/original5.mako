@@ -18,6 +18,8 @@
   <link rel="stylesheet" type="text/css" href="http://rakuten-ticket-static.s3.amazonaws.com/public/stylesheets/order.css" />
 
   <style type="text/css">
+   ${widgets("css_prerender")}
+
     table.ticketlist {
       margin-left: 50px;
       border-collapse: collapse;
@@ -71,7 +73,6 @@
     .clear {
         clear: both;
     }
-
   </style>
 </%block>
 
