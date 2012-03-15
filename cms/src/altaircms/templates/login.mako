@@ -2,7 +2,7 @@
 
 <div class="row">
     <div class="span6 offset3 well"  style="text-align:center" >
-        <a class="btn btn-primary" href="${request.route_url("oauth_entry")}">Login with Twitter (OAuth)</a>
+        <a class="btn btn-primary" href="${request.route_url("oauth_entry")}">Login (OAuth)</a>
     </div>
 </div>
 

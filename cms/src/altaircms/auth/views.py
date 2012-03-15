@@ -6,11 +6,13 @@ from pyramid.exceptions import Forbidden
 from pyramid.httpexceptions import HTTPFound, HTTPBadRequest, HTTPUnauthorized, HTTPNotFound
 from pyramid.security import forget, remember, authenticated_userid
 from pyramid.view import view_config
+from pyramid.url import route_url
 
 from sqlalchemy.orm.exc import NoResultFound
 
 import oauth2
 import transaction
+import json
 
 from altaircms.views import BaseRESTAPI
 from altaircms.models import DBSession
@@ -41,22 +43,16 @@ def logout(request):
 
 
 class OAuthLogin(object):
-    def __init__(self, request, consumer_key=None, consumer_secret=None,
-                 authorize_url='http://twitter.com/oauth/authorize',
-                 request_token_url='http://twitter.com/oauth/request_token',
-                 access_token_url='http://twitter.com/oauth/access_token',
+    client_id = "fa12a58972626f0597c2faee1454e1"
+    secret_key = "c5f20843c65870fad8550e3ad1f868"
+    def __init__(self, request,
+                 authorize_url='http://localhost:7654/login/authorize',
+                 access_token_url='http://localhost:7654/api/access_token',
                  _stub_client=None):
         self.request = request
 
-        self.api_endpoint = 'https://api.twitter.com/1/'
-
-        self.request_token_url = request_token_url
         self.access_token_url = access_token_url
         self.authorize_url = authorize_url
-
-        consumer_key = consumer_key if consumer_key else request.registry.settings['oauth.consumer_key']
-        consumer_secret = consumer_secret if consumer_secret else request.registry.settings['oauth.consumer_secret']
-        self.consumer = oauth2.Consumer(consumer_key, consumer_secret)
 
         self._stub_client = _stub_client
 
@@ -68,35 +64,30 @@ class OAuthLogin(object):
 
     @view_config(route_name='oauth_entry')
     def oauth_entry(self):
-        client = oauth2.Client(self.consumer)
-
-        resp, content = self._oauth_request(client, self.request_token_url, "GET")
-        if resp.status != 200 and resp.status != 302:
-            return HTTPUnauthorized()
-
-        request_token = dict(urlparse.parse_qsl(content))
-        self.request.session['request_token'] = {
-            'oauth_token': request_token['oauth_token'],
-            'oauth_token_secret': request_token['oauth_token_secret']
-        }
-        return HTTPFound('%s?oauth_token=%s' % (self.authorize_url, request_token['oauth_token']))
+        return HTTPFound('%s?client_id=%s&response_type=code' %
+                         (self.authorize_url, self.client_id))
 
     @view_config(route_name='oauth_callback')
     def oauth_callback(self):
+
+        import urlparse
+        import urllib
+
+        data = None
         try:
-            token = oauth2.Token(self.request.session['request_token']['oauth_token'],
-                self.request.session['request_token']['oauth_token_secret'])
-            client = oauth2.Client(self.consumer, token)
+            args = dict(
+                client_id=self.client_id,
+                client_secret=self.secret_key,
+                code=self.request.GET.get("code"),
+                grant_type='authorization_code')
 
-            resp, content = self._oauth_request(client, self.access_token_url, "GET")
-            data = dict(urlparse.parse_qsl(content))
+            data = json.loads(urllib.urlopen(
+                self.access_token_url +
+                "?" + urllib.urlencode(args)).read())
+        except IOError, e:
+            print e
 
-            if resp.status != 200 or 'user_id' not in data:
-                raise AuthenticationError(resp.reason)
-        except KeyError, e:
-            return Forbidden('%s is not found' % (str(e), ))
-        except AuthenticationError, e:
-            return Forbidden(str(e))
+        print data
 
         try:
             operator = DBSession.query(Operator).filter_by(auth_source='oauth', user_id=data['user_id']).one()
@@ -104,24 +95,22 @@ class OAuthLogin(object):
             DBSession.add(operator)
         except NoResultFound:
             role = DBSession.query(Role).filter_by(name=data.get('role', DEFAULT_ROLE)).one()
-
             operator = Operator(
                 auth_source='oauth',
                 user_id=data['user_id'],
                 screen_name=data['screen_name'],
-                oauth_token=data['oauth_token'],
-                oauth_token_secret=data['oauth_token_secret'],
+                oauth_token=data['access_token'],
+                oauth_token_secret='',
                 role_id=role.id
             )
             DBSession.add(operator)
 
         headers = remember(self.request, operator.user_id)
-
-        del self.request.session['request_token']
-
         transaction.commit()
 
         return HTTPFound(location = '/', headers = headers)
+
+
 
 
 """
