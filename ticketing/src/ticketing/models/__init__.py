@@ -10,37 +10,36 @@ from sqlalchemy.exc import IntegrityError
 from zope.sqlalchemy import ZopeTransactionExtension
 import sqlahelper
 
+print "boxoffice"
 Base = sqlahelper.get_base()
 DBSession = sqlahelper.get_session()
 
+from paste.util.multidict import MultiDict
 from .boxoffice import *
-
-def populate():
-    pass
-
-def initialize_sql(engine):
-    DBSession.configure(bind=engine)
-    Base.metadata.bind = engine
-    Base.metadata.create_all(engine)
-    try:
-        populate()
-    except IntegrityError:
-        transaction.abort()
-    return DBSession
-
 
 def record_to_appstruct(self):
     return dict([(k, self.__dict__[k]) for k in sorted(self.__dict__) if '_sa_' != k[:4]])
 
+def record_to_multidict(self):
+    appstruct = record_to_appstruct(self)
+    return MultiDict(appstruct.items())
+
+import datetime
 def merge_session_with_post(session, post, filters={}):
     def _set_attrs(session, values):
         for key,value in values:
-            attr = getattr(session, key)
             filter = filters.get(key)
             if filter is not None:
-                value = filter(value)
-            setattr(session, key, value)
-                
+                value = filter(session, value)
+                setattr(session, key, value)
+            elif isinstance(value, str) \
+                or isinstance(value, unicode) \
+                or isinstance(value, datetime.datetime) \
+                or isinstance(value, datetime.date):
+                setattr(session, key, value)
+            else:
+                pass
+
     if type(post) is list:
         _set_attrs(session, post)
         return session
@@ -48,9 +47,12 @@ def merge_session_with_post(session, post, filters={}):
         _set_attrs(session, post.items())
         return session
     else:
-        raise Exception('Invalid post type type= %s' % type(post))
+        raise Exception(u'Invalid post type type= %s' % type(post))
 
 
+def add_and_flush(session):
+    DBSession.add(session)
+    DBSession.flush()
 
 def merge_and_flush(session):
     DBSession.merge(session)
