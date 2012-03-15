@@ -63,4 +63,3 @@ class MenuWidgetResource(HandleSessionMixin,
         page = Page.query.filter(Page.id==page_id).one()
         return self._items_from_page(page) if page.event else "[]"
 
-

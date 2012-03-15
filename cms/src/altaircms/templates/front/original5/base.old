@@ -1,7 +1,3 @@
-## base.makoからイベント詳細のために必要なブロックを取り除いたもの
-## これにより元のページとは異なりイベント詳細中に料金を指定することができない。
-##
-
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
   <head>
@@ -18,6 +14,12 @@
 
 <%block name="js_prerender">
 </%block>
+
+<script type="text/javascript">
+  $(function(){
+  <%block name="js_postrender"/>
+  });
+</script>
 
 </head>
 <body>
@@ -50,6 +52,22 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+          <div class="summary">
+            <dl>
+              <dt>公演期間</dt>
+              <dd><%block name="page_main_performance_period">講演期間</%block></dd>
+              <dt class="notice">説明／注意事項</dt>
+              <dd>※未就学児童のご入場はお断りいたします。</dd>
+              <dt class="seats_and_prices">料金</dt>
+              <dd><%block name="page_main_ticket_price">チケット価格</%block></dd>
+              <dt class="contact">お問い合わせ先</dt>
+              <dd><%block name="page_main_inquiry">お問い合わせ</%block></dd>
+              <dt class="sales_period">販売期間</dt>
+              <dd>
+				<%block name="page_main_sales_period">販売期間</%block>
+              </dd>
+            </dl>
           </div>
           <%block name="page_main_main"/>
         </div>

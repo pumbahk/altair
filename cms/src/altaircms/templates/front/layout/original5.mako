@@ -19,8 +19,7 @@
 
   <style type="text/css">
     table.ticketlist {
-      margin-top: 0.2em;
-      margin-bottom: 1em;
+      margin-left: 50px;
       border-collapse: collapse;
       border: solid 1px #999;
       font-size: 100%;
@@ -72,7 +71,7 @@
     .clear {
         clear: both;
     }
-    ${widgets("css_prerender")}
+
   </style>
 </%block>
 
