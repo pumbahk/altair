@@ -1,3 +1,53 @@
 <%inherit file="../layout.html" />
-<%block name="title">ログイン情報</%block>
-${form|n}
+<h4><%block name="title">ログイン情報の編集</%block></h4>
+
+
+<%def name="error(f)">
+%if f.errors:
+  <ul class="errors">
+  %for error in f.errors:
+      <li>${error}</li>
+  %endfor:
+  </ul>
+% endif:
+</%def>
+<ul class="errors">
+% for field in form:
+%   if field.errors:
+%     for e in field.errors:
+        <li>${field.label}:${e}</li>
+%     endfor:
+%   endif:
+% endfor
+</ul>
+
+<form action="${request.route_url('login.info.edit')}" enctype="multipart/form-data" method="POST">
+    <table class="table">
+        <tr>
+            <th>${form.name.label}</th>
+            <td>${form.name}
+                ${error(form.name)}</td>
+        </tr>
+        <tr>
+            <th>${form.email.label}</th>
+            <td>${form.email}
+                ${error(form.email)}</td>
+        </tr>
+        <tr>
+            <th>${form.login_id.label}</th>
+            <td>${form.login_id}
+                ${error(form.login_id)}</td>
+        </tr>
+        <tr>
+            <th>${form.password.label}</th>
+            <td>${form.password}
+                ${error(form.password)}</td>
+        </tr>
+        <tr>
+            <th>${form.password2.label}</th>
+            <td>${form.password2}
+                ${error(form.password2)}</td>
+        </tr>
+    </table>
+    <input type="submit" name="submit" value="変更する">
+</form>
