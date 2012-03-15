@@ -20,7 +20,6 @@ except:
     pass
 
 engine = sa.create_engine('mysql://ticketing:ticketing@127.0.0.1/ticketing?use_unicode=true&charset=utf8', echo=True)
-initialize_sql(engine)
 sqlahelper.add_engine(engine)
 
 from seed.bank import BankData, BankAccountData
