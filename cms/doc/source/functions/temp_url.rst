@@ -30,6 +30,3 @@ http://dev.ticketstar.jp/redmine-altair/issues/106
 
 システム的には公開、非公開のみ存在。
 ユニークなURLを発行。そのURLで閲覧可能なようにする
-
-.. note:: KVSにurl -> pageという対で格納すれば良いかもしれない。
-

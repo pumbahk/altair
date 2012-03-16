@@ -9,6 +9,8 @@
 
   {
       'topic': {
+          "id": int, # topic id
+          "asset_id", int, # アセットID
           "datetime": datetime, # 日付
           "title": unicode, # トピックタイトル
           "type": unicode, # トピックの種別（公演中止情報、お知らせ等）

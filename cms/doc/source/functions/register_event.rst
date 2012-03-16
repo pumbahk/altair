@@ -22,6 +22,7 @@ JSONオブジェクトは次のとおり。
        "performances": [
 	 {
 	   "id": 2,
+           "url": "http://example.com/some/where/to-buy-matsui-on-ice",
 	   "name": "マツイ・オン・アイス 東京公演",
 	   "venue": "まついZEROホール",
 	   "open_on": "2012-03-15T17:00:00+09:00",
@@ -76,6 +77,7 @@ JSONオブジェクトは次のとおり。
 	 },
 	 {
 	   "id": 3,
+           "url": "http://example.com/some/where/to-buy-matsui-on-ice-osaka",
 	   "name": "マツイ・オン・アイス 大阪公演",
 	   "venue": "心斎橋まつい会館",
 	   "open_on": "2012-03-16T17:00:00+09:00",
@@ -132,9 +134,6 @@ JSONオブジェクトは次のとおり。
      }
    ]
  }
-
-.. note:: end_onについて、パフォーマンス購入用URLについて https://dev.ticketstar.jp/redmine-altair/issues/181
-
 
 イベント削除時は、deletedプロパティを付与したJSONオブジェクトPOSTする。
 CMSはdeletedプロパティがtrueとなるパフォーマンス、チケット、イベントを削除する。

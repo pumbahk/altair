@@ -8,18 +8,16 @@
 ------------------
 
 基本的にはOpenIDを利用する。6月版では楽天ID認証を実装する（OAuth）。
+CMSアカウントとフロントエンドの間では、セッションは共有しない（それぞれ個別にログインする必要がある）。
 
 
 OpenIDの楽天ID認証を使う予定
 
-.. note::
+.. note:: その他サイトのOpenIDも使えたら良いなあ
 
-   その他サイトのOpenIDも使えたら良いなあ
 
 楽天ID認証
 ========================================
-
-http://dev.ticketstar.jp/redmine-altair/issues/85
 
 * OAuthを使用する
 
@@ -28,6 +26,10 @@ http://dev.ticketstar.jp/redmine-altair/issues/85
 :"openID version": OpenID2.0
 
 .. todo:: GETかPOSTか表記
+
+関連issue
+* http://dev.ticketstar.jp/redmine-altair/issues/85
+
 
 提供される機能
 ----------------------------------------
@@ -390,8 +392,6 @@ Task
    ボタン画像を編集し、サイズ、デザインを変更して利用することはご遠慮ください。
    提供したボタン画像以外の画像を利用すること、また、提携サイト様が独自にログインフォームやリンクを作成するのはご遠慮ください。
    """
-
-.. todo:: 楽天ID認証のテスト環境、詳細などの情報をもらう
 
 ::
 
