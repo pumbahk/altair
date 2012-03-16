@@ -13,7 +13,14 @@ class TopicMapper(Mapper):
     kind = fields.RawField()
     title = fields.RawField()
     text = fields.RawField()
-    publish_at = fields.RawField()
+    orderno = fields.RawField()
+    is_vetoed = fields.RawField()
+
+    publish_open_on = fields.RawField()
+    publish_close_on = fields.RawField()
+    page = fields.RawField()
+    event = fields.RawField()
+    is_global = fields.RawField()
 
 class TopicsMapper(Mapper):
     topics = fields.ListDelegateField(TopicMapper)

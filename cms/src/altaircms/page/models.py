@@ -18,7 +18,7 @@ from altaircms.interfaces import IHasTimeHistory
 
 from altaircms.models import Base
 from altaircms.models import DBSession
-
+from altaircms.layout.models import Layout
 
 class PublishUnpublishMixin(object):
     def is_published(self):
@@ -81,7 +81,7 @@ class Page(PublishUnpublishMixin,
 
     site_id = Column(Integer, ForeignKey("site.id"))
     layout_id = Column(Integer, ForeignKey("layout.id"))
-    layout = relationship('Layout', backref='page', uselist=False)
+    layout = relationship(Layout, backref='page', uselist=False)
     structure = Column(String, default="{}")
     hash_url = Column(String(length=32), default=None)
 
