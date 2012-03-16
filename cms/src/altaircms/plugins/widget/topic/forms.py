@@ -2,7 +2,7 @@
 import wtforms.form as form
 import wtforms.ext.sqlalchemy.fields as extfields
 
-from altaircms.models import Topic
+from altaircms.topic.models import Topic
 
 def existing_topics():
     ##本当は、client.id, site.idでfilteringする必要がある

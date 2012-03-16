@@ -4,7 +4,7 @@ import wtforms.fields as fields
 import wtforms.validators as validators
 import wtforms.widgets as widgets
 
-from altaircms.models import Topic
+from .models import Topic
 
 
 class TopicForm(form.Form):

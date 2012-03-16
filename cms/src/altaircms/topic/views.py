@@ -11,7 +11,7 @@ from altaircms.fanstatic import with_bootstrap
 
 from . import mappers
 from . import forms
-from altaircms import models
+from . import models
 
 class TopicRESTAPIView(BaseRESTAPI):
     model = models.Topic

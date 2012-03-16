@@ -7,6 +7,7 @@ import sqlalchemy as sa
 import sqlalchemy.orm as orm
 
 from altaircms.widget.models import Widget
+from altaircms.topic.models import Topic
 from altaircms.plugins.base import DBSession
 from altaircms.plugins.base.mixins import HandleSessionMixin
 from altaircms.plugins.base.mixins import HandleWidgetMixin
@@ -29,7 +30,7 @@ class TopicWidget(Widget):
 
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
     topic_id = sa.Column(sa.Integer, sa.ForeignKey("topic.id"))
-    topic = orm.relationship("Topic", backref="widget", uselist=False)
+    topic = orm.relationship(Topic, backref="widget", uselist=False)
 
     def merge_settings(self, bname, bsettings):
         ## jsを追加(一回だけ)

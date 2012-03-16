@@ -196,28 +196,6 @@ class Seatfigure(Base):
 
 
 
-class Topic(Base):    
-    """
-    トピック
-    """
-    __tablename__ = "topic"
-    query = DBSession.query_property()
-    TYPE_CANDIDATES = [u"公演中止情報", u"お知らせ", u"その他"]
-    id = Column(Integer, primary_key=True)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
-
-    client_id = Column(Integer, ForeignKey("client.id")) #?
-    site_id = Column(Integer, ForeignKey("site.id"))    #?
-
-    kind = Column(Unicode(255))
-    title = Column(Unicode)
-    text = Column(Unicode)
-    is_public = Column(Integer, default=0) #?
-    publish_at = Column(DateTime)
-
-    def __repr__(self):
-        return u"トピック: %s タイトル=%s (%s)" % (self.kind, self.title, self.publish_at)
 
 class Site(Base):
     __tablename__ = "site"
