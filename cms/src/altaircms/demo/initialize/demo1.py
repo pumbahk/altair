@@ -82,7 +82,7 @@ def add_widget(page):
         from altaircms.plugins.widget.topic.models import TopicWidgetResource
         request = DummyRequest()
         params =  {"kind": u"お知らせ", 
-                   "display_count": 3, 
+                   "display_count": 5, 
                    "display_global": True, 
                    "display_event": True, 
                    "display_page": True}

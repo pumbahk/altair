@@ -45,9 +45,9 @@ widget.configure({
         var root = $(we.dialog)
         return {"kind": root.find("#kind").val(), 
                 "display_count": root.find("#display_count").val(), 
-                "display_global": root.find("#display_global").val(), 
-                "display_page": root.find("#display_page").val(), 
-                "display_event": root.find("#display_event").val()
+                "display_global": !!root.find("#display_global").attr("checked"), 
+                "display_page": !!root.find("#display_page").attr("checked"), 
+                "display_event": !!root.find("#display_event").attr("checked")
                };
     };
     return widget.include("topic", {
