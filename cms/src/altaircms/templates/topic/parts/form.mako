@@ -14,8 +14,14 @@
     <tbody>
       ${formfield("title")}
       ${formfield("kind")}
-      ${formfield("publish_at")}
+      ${formfield("publish_open_on")}
+      ${formfield("publish_close_on")}
       ${formfield("text")}
+      ${formfield("orderno")}
+      ${formfield("is_vetoed")}
+      ${formfield("page")}
+      ${formfield("event")}
+      ${formfield("is_global")}
     </tbody>
   </table>
   <button type="submit" class="btn">保存</button>
