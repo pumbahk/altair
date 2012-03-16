@@ -1,13 +1,16 @@
 ## topic widget output template
 ## 
 
-<div class="topic" title="<h2>${topic.title}(${h.base.jdate(topic.publish_at)})</h2><p>${topic.text|n}</p>">
-  ${topic.title}(${h.base.jdate(topic.publish_at)})
+<div class="topic-list">
+  %for topic in topics:
+  <div class="topic" title="<h2>${topic.title}(${h.base.jdate(topic.publish_open_on)})</h2><p>${topic.text or ""|n}</p>">
+    ${topic.title}(${h.base.jdate(topic.publish_open_on)})
+  </div>
+  %endfor
 </div>
 ## jsも追加される。
 ## $(function(){ $(".topic").tooltip();})
 ##
-
 ## cssは.topicに対して指定する必要がある。
 
 ####  e.g. 

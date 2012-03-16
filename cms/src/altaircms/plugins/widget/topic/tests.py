@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 import unittest
 import json
 from altaircms.plugins.widget.topic.models import TopicWidget
@@ -52,42 +53,63 @@ class FunctionalViewTests(unittest.TestCase):
         """
         session = self._getSession()
         page_id = 1
-        topic = "1"
         self._with_session(session, self._makePage(id=page_id))
-
+        data = {"kind": u"その他", 
+                "display_count": 5, 
+                "display_global": True, 
+                "display_event": True, 
+                "display_page": True}
         res = self._callFUT().post_json(
             self.create_widget, 
-            {"page_id": page_id, "pk": None, "data": {"topic": topic} }, 
+            {"page_id": page_id, "pk": None, "data": data }, 
             status=200)
-        expexted = {"page_id": page_id, "pk": 1,  "data": {"topic": "1"} }
-
+        expexted = {u'data': {u'display_count': 5,
+                              u'display_event': True,
+                              u'display_global': True,
+                              u'display_page': True,
+                              u'kind': u'その他'},
+                    u'page_id': 1,
+                    u'pk': 1}
         self.assertEquals(json.loads(res.body), expexted)
         self.assertEquals(TopicWidget.query.count(), 1)
         self.assertEquals(TopicWidget.query.first().page.id, page_id)
 
 
     def _create_widget(self, session, page_id=1, id=1):
-        session = self._getSession()
-        page_id = 1
-        dummy = "1"
+        dummy = {"kind": u"その他", 
+                 "display_count": 5, 
+                 "display_global": True, 
+                 "display_event": True, 
+                 "display_page": True}
         self._with_session(session, self._makePage(id=page_id))
         self._callFUT().post_json(self.create_widget,
-                                  {"page_id": page_id, "pk": None, "data": {"topic": dummy} }, 
+                                  {"page_id": page_id, "pk": None, "data": dummy }, 
                                   status=200)        
 
     def test_update(self):
         session = self._getSession()
         page_id = 10
         self._create_widget(session, id=1, page_id=page_id)
-        updated = "2"
-        res = self._callFUT().post_json(self.update_widget, 
-                                        {"page_id": page_id, "pk":1, "data": {"topic": updated} }, 
-                                        status=200)
-        expexted = {"page_id": page_id, "pk": 1,  "data": {"topic": updated} }
+        updated = {"kind": u"その他", 
+                 "display_count": 3, 
+                 "display_global": True, 
+                 "display_event": True, 
+                 "display_page": True}
+        res = self._callFUT().post_json(
+            self.update_widget, 
+            {"page_id": page_id, "pk":1, "data": updated }, 
+            status=200)
 
+        expexted = {u'data': {u'display_count': 3,
+                              u'display_event': True,
+                              u'display_global': True,
+                              u'display_page': True,
+                              u'kind': u'その他'},
+                    u'page_id': 10,
+                    u'pk': 1}
         self.assertEquals(json.loads(res.body), expexted)
         self.assertEquals(TopicWidget.query.count(), 1)
-        self.assertEquals(TopicWidget.query.first().topic_id, int(updated))
+        self.assertEquals(TopicWidget.query.first().display_count, int(updated["display_count"]))
 
 
     def test_delete(self):

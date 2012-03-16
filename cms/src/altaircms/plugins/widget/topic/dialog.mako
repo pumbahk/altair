@@ -18,7 +18,11 @@
 
 <table class="table">
   <tbody>
-    ${formfield("topic")}
+    ${formfield("kind")}
+    ${formfield("count_items")}
+    ${formfield("display_global")}
+    ${formfield("display_page")}
+    ${formfield("display_event")}
   </tbody>
 </table>
 <button type="button" id="submit">登録</button>

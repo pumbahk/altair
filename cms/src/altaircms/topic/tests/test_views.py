@@ -68,8 +68,6 @@ class TestTopicView(BaseTest):
                 (u'text', u'topic content'),
                 (u'title', u'topictitle')
                 ])
-# import warnings
-# warnings.warn("this test is failed")
 
 if __name__ == "__main__":
     import unittest

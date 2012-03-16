@@ -5,52 +5,57 @@ from altaircms.interfaces import IWidget
 
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
-
-from altaircms.widget.models import Widget
 from altaircms.topic.models import Topic
+from altaircms.widget.models import Widget
 from altaircms.plugins.base import DBSession
 from altaircms.plugins.base.mixins import HandleSessionMixin
 from altaircms.plugins.base.mixins import HandleWidgetMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
-from pyramid.renderers import render
-
+from . import renderable
+from datetime import datetime
 """
 1つのwidgetは１つのトピックを持つ
 """
 
 class TopicWidget(Widget):
+    now_date_function = datetime.now
+
     implements(IWidget)
     type = "topic"
 
-    template_name = "altaircms.plugins.widget:topic/render.mako"
     __tablename__ = "widget_topic"
     __mapper_args__ = {"polymorphic_identity": type}
     query = DBSession.query_property()
 
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
-    topic_id = sa.Column(sa.Integer, sa.ForeignKey("topic.id"))
-    topic = orm.relationship(Topic, backref="widget", uselist=False)
+    display_count = sa.Column(sa.Integer)
+    display_global = sa.Column(sa.Boolean)
+    display_event = sa.Column(sa.Boolean)
+    display_page = sa.Column(sa.Boolean)
+    kind = sa.Column(sa.Unicode(255))
 
     def merge_settings(self, bname, bsettings):
         ## jsを追加(一回だけ)
         if not bsettings.is_attached(self, "js_postrender"):
-            def js():
-                return TOPIC_JS
-            bsettings.add("js_postrender", js)
+            bsettings.add("js_postrender", TOPIC_JS)
             bsettings.attach_widget(self, "js_postrender")
 
         ## css追加(1回だけ)
         if not bsettings.is_attached(self, "css_prerender"):
-            def css():
-                return TOPIC_CSS
-            bsettings.add("css_prerender", css)
+            bsettings.add("css_prerender", TOPIC_CSS)
             bsettings.attach_widget(self, "css_prerender")
 
         bsettings.need_extra_in_scan("request")
+        bsettings.need_extra_in_scan("page")
+        bsettings.need_extra_in_scan("event")
         def topic_render():
+            d = self.now_date_function()
             request = bsettings.extra["request"]
-            return render(self.template_name, {"widget":self, "topic":self.topic}, request)
+            event = bsettings.extra["event"] if self.display_event else None
+            page = bsettings.extra["page"] if self.display_page else None
+            qs = Topic.matched_qs(page=page, event=event, d=d, kind=self.kind)
+            return renderable.render_topics(self, qs, self.display_global, request=request)
         bsettings.add(bname, topic_render)
 
 """

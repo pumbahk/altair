@@ -56,7 +56,7 @@ class AboutTopicTypeMixin(object):
     def matched_topic_type(cls, page=None, event=None, category=None, qs=None):
         if qs is None:
             qs = cls.query
-        where = (cls.has_global()) 
+        where = (cls.has_global())
         if page:
             where = where | (cls.same_page(page))
         if event:

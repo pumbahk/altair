@@ -6,13 +6,14 @@ class TopicWidgetView(object):
         self.request = request
 
     def _create_or_update(self):
-        topic = self.request.json_body["data"]["topic"]
+        data = self.request.json_body["data"]
         page_id = self.request.json_body["page_id"]
         context = self.request.context
         widget = context.get_widget(self.request.json_body.get("pk"))
-        widget = context.update_data(widget, topic_id=topic, page_id=page_id)
+        widget = context.update_data(widget,
+                                     page_id=page_id, 
+                                     **data)
         context.add(widget, flush=True)
-
         r = self.request.json_body.copy()
         r.update(pk=widget.id)
         return r
@@ -36,5 +37,5 @@ class TopicWidgetView(object):
     def dialog(self):
         context = self.request.context
         widget = context.get_widget(self.request.GET.get("pk"))
-        form = forms.TopicChoiceForm(topic=widget.topic)
+        form = forms.TopicChoiceForm(**widget.to_dict())
         return {"form": form}

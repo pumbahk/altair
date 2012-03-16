@@ -1,13 +1,13 @@
 # -*- coding:utf-8 -*-
 import wtforms.form as form
-import wtforms.ext.sqlalchemy.fields as extfields
-
+import wtforms.fields as fields
+import wtforms.validators as validators
 from altaircms.topic.models import Topic
 
-def existing_topics():
-    ##本当は、client.id, site.idでfilteringする必要がある
-    ##本当は、日付などでfilteringする必要がある
-    return Topic.query.all()
-
 class TopicChoiceForm(form.Form):
-    topic = extfields.QuerySelectField(id="select_topic", label=u"", query_factory=existing_topics, allow_blank=False)
+    kind = fields.SelectField(label=u"トピックの種別", choices=[(x, x) for x in Topic.TYPE_CANDIDATES])
+    count_items = fields.IntegerField(label=u"表示件数", default=5, validators=[validators.Required()])
+    display_global = fields.BooleanField(label=u"グローバルトピックを表示", default=True)
+    display_page = fields.BooleanField(label=u"ページに関連したトピック表示", default=True)
+    display_event = fields.BooleanField(label=u"イベントに関連したトピック表示", default=True)
+    
