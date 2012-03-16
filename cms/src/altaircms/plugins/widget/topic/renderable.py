@@ -4,9 +4,11 @@ from pyramid.renderers import render
 
 template_name = "altaircms.plugins.widget:topic/render.mako"
 
-def render_topics(widget, topics, display_global=True, request=None):
+def render_topics(widget, topics, N, display_global=True,request=None):
     if not display_global:
         topics.filter(Topic.is_global == False)
+    if topics.count() > N:
+        topics = list(topics)[:N] ## todo:fixme
     return render(template_name, {"widget":widget, "topics":topics}, request)
 
 ## demo

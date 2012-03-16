@@ -55,7 +55,7 @@ class TopicWidget(Widget):
             event = bsettings.extra["event"] if self.display_event else None
             page = bsettings.extra["page"] if self.display_page else None
             qs = Topic.matched_qs(page=page, event=event, d=d, kind=self.kind)
-            return renderable.render_topics(self, qs, self.display_global, request=request)
+            return renderable.render_topics(self, qs, self.display_count, self.display_global, request=request)
         bsettings.add(bname, topic_render)
 
 """

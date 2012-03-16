@@ -21,36 +21,6 @@ def _image_asset():
     DBSession.add(asset)
     DBSession.flush()
     return asset
-
-# def _get_topic():
-#     from altaircms.topic.models import Topic
-#     topic = Topic(kind=u"お知らせ", 
-#                   title=u"公演内容変更のお知らせ1", 
-#                   text=u"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@<br/>@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@<br/>@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@<br/>", 
-#                   publish_at=datetime.datetime.now())
-#     DBSession.add(topic)
-#     topic = Topic(kind=u"お知らせ", 
-#                   title=u"公演内容変更のお知らせ2", 
-#                   text=u"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@<br/>@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@<br/>@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@<br/>", 
-#                   publish_at=datetime.datetime.now())
-#     DBSession.add(topic)
-#     topic = Topic(kind=u"お知らせ", 
-#                   title=u"公演内容変更のお知らせ3", 
-#                   text=u"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@<br/>@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@<br/>@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@<br/>", 
-#                   publish_at=datetime.datetime.now())
-#     DBSession.add(topic)
-#     topic = Topic(kind=u"お知らせ", 
-#                   title=u"公演内容変更のお知らせ4", 
-#                   text=u"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@<br/>@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@<br/>@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@<br/>", 
-#                   publish_at=datetime.datetime.now())
-#     DBSession.add(topic)
-#     topic = Topic(kind=u"お知らせ", 
-#                   title=u"公演内容変更のお知らせ5", 
-#                   text=u"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@<br/>@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@<br/>@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@<br/>", 
-#                   publish_at=datetime.datetime.now())
-#     DBSession.add(topic)
-#     DBSession.flush()
-#     return topic
     
 def add_widget(page):
     DBSession.flush()
@@ -107,51 +77,21 @@ def add_widget(page):
         append_to_json_structure(page, "page_main_title", 
                                  {"name": "freetext", "pk": r["pk"]})
 
-    # with block("topic"):
-    #     topic = _get_topic()
-    #     from altaircms.plugins.widget.topic.views import TopicWidgetView
-    #     from altaircms.plugins.widget.topic.models import TopicWidgetResource
-    #     request = DummyRequest()
-    #     request.json_body = dict(page_id=page.id, data=dict(topic=topic.id))
-    #     context = TopicWidgetResource(request)
-    #     request.context = context
-    #     r = TopicWidgetView(request).create()
-    #     append_to_json_structure(page, "page_main_title", 
-    #                              {"name": "topic", "pk": r["pk"]})
-    # with block("topic"):
-    #     topic = _get_topic()
-    #     from altaircms.plugins.widget.topic.views import TopicWidgetView
-    #     from altaircms.plugins.widget.topic.models import TopicWidgetResource
-    #     request = DummyRequest()
-    #     request.json_body = dict(page_id=page.id, data=dict(topic=topic.id))
-    #     context = TopicWidgetResource(request)
-    #     request.context = context
-    #     r = TopicWidgetView(request).create()
-    #     append_to_json_structure(page, "page_main_title", 
-    #                              {"name": "topic", "pk": r["pk"]})
-    # with block("topic"):
-    #     topic = _get_topic()
-    #     from altaircms.plugins.widget.topic.views import TopicWidgetView
-    #     from altaircms.plugins.widget.topic.models import TopicWidgetResource
-    #     request = DummyRequest()
-    #     request.json_body = dict(page_id=page.id, data=dict(topic=topic.id))
-    #     context = TopicWidgetResource(request)
-    #     request.context = context
-    #     r = TopicWidgetView(request).create()
-    #     append_to_json_structure(page, "page_main_title", 
-    #                              {"name": "topic", "pk": r["pk"]})
-    # with block("topic"):
-    #     topic = _get_topic()
-    #     from altaircms.plugins.widget.topic.views import TopicWidgetView
-    #     from altaircms.plugins.widget.topic.models import TopicWidgetResource
-    #     request = DummyRequest()
-    #     request.json_body = dict(page_id=page.id, data=dict(topic=topic.id))
-    #     context = TopicWidgetResource(request)
-    #     request.context = context
-    #     r = TopicWidgetView(request).create()
-    #     append_to_json_structure(page, "page_main_title", 
-    #                              {"name": "topic", "pk": r["pk"]})
-
+    with block("topic"):
+        from altaircms.plugins.widget.topic.views import TopicWidgetView
+        from altaircms.plugins.widget.topic.models import TopicWidgetResource
+        request = DummyRequest()
+        params =  {"kind": u"お知らせ", 
+                   "display_count": 3, 
+                   "display_global": True, 
+                   "display_event": True, 
+                   "display_page": True}
+        request.json_body = dict(page_id=page.id, data=dict(params))
+        context = TopicWidgetResource(request)
+        request.context = context
+        r = TopicWidgetView(request).create()
+        append_to_json_structure(page, "page_main_title", 
+                                 {"name": "topic", "pk": r["pk"]})
         
     with block("title"):
         title = u'<h1 class="title" style="float: left;">松下奈緒コンサートツアー2012　for me</h1>'
@@ -251,6 +191,50 @@ def add_widget(page):
 
 
 def init():
+    with block("topic global"):
+        from altaircms.topic.models import Topic
+        topic = Topic(kind=u"お知らせ", 
+                      text=u"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@<br/>@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@<br/>@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@<br/>", 
+                      publish_open_on=datetime.datetime(2011, 1, 1),
+                      publish_close_on=datetime.datetime(2013, 1, 1), 
+                      title=u"1. オススメ!!! 最重要", 
+                      is_global=True, 
+                      orderno=1)
+        DBSession.add(topic)
+        topic = Topic(kind=u"お知らせ", 
+                  text=u"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@<br/>@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@<br/>@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@<br/>",
+                      publish_open_on=datetime.datetime(2011, 5, 1),
+                      publish_close_on=datetime.datetime(2013, 1, 1), 
+                      title=u"2. 何とか", 
+                      is_global=True, 
+                      orderno=50)
+        DBSession.add(topic)
+        topic = Topic(kind=u"お知らせ", 
+                  text=u"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@<br/>@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@<br/>@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@<br/>", 
+                      publish_open_on=datetime.datetime(2011, 4, 1),
+                      publish_close_on=datetime.datetime(2013, 1, 1), 
+                      title=u"3. かんとか", 
+                      is_global=True, 
+                      orderno=50)
+        DBSession.add(topic)
+        topic = Topic(kind=u"お知らせ", 
+                  text=u"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@<br/>@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@<br/>@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@<br/>", 
+                      publish_open_on=datetime.datetime(2011, 3, 1),
+                      publish_close_on=datetime.datetime(2013, 1, 1), 
+                      title=u"4. ふつうな感じの告知", 
+                      is_global=True, 
+                      orderno=50)
+        DBSession.add(topic)
+        topic = Topic(kind=u"お知らせ", 
+                  text=u"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@<br/>@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@<br/>@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@<br/>", 
+                      publish_open_on=datetime.datetime(2011, 3, 1),
+                      publish_close_on=datetime.datetime(2013, 1, 1), 
+                      title=u"5. ちょっとどうでも良い", 
+                      is_global=True, 
+                      orderno=100)
+        DBSession.add(topic)
+
+
     with block("create event"):
         from altaircms.models import Event
         D = {

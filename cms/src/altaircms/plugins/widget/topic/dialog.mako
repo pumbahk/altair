@@ -19,7 +19,7 @@
 <table class="table">
   <tbody>
     ${formfield("kind")}
-    ${formfield("count_items")}
+    ${formfield("display_count")}
     ${formfield("display_global")}
     ${formfield("display_page")}
     ${formfield("display_event")}

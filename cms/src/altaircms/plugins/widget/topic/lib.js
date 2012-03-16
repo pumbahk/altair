@@ -42,7 +42,13 @@ widget.configure({
     };
 
     var collect_data = function(we, choiced_elt){
-        return {"topic": $(we.dialog).find("#select_topic").val()};
+        var root = $(we.dialog)
+        return {"kind": root.find("#kind").val(), 
+                "display_count": root.find("#display_count").val(), 
+                "display_global": root.find("#display_global").val(), 
+                "display_page": root.find("#display_page").val(), 
+                "display_event": root.find("#display_event").val()
+               };
     };
     return widget.include("topic", {
         load_page: load_page, 
