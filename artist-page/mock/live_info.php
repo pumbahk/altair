@@ -43,7 +43,7 @@ echo "-------------------------------------------------------------------";
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <script type="text/javascript" src="http://www.google.com/jsapi"></script>  
 <script type="text/javascript">google.load("jquery", "1.2");</script>
-<script type="text/javascript" src="jyannru.js"></script>
+<script type="text/javascript" src="genre.js"></script>
 <script type="text/javascript" src="jquery.page-scroller-308.js"></script>
 
 

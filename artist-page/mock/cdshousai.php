@@ -150,18 +150,18 @@ echo "-------------------------------------------------------------------";
 		<h4>ジャンル検索</h4>
 		<ul>
 
-				<li id ="#"><a href ="jyannru.html">jpop</a></li>
-				<li id ="#"><a href ="jyannru.html">洋楽</a></li>
-				<li id ="#"><a href ="jyannru.html">kpop.アジア</a></li>
-				<li id ="#"><a href ="jyannru.html">ワールド</a></li>
-				<li id ="#"><a href ="jyannru.html">レゲエ</a></li>
-				<li id ="#"><a href ="jyannru.html">ロック</a></li>
-				<li id ="#"><a href ="jyannru.html">エレクトロニカ</a></li>
-				<li id ="#"><a href ="jyannru.html">ダンス.ハウス</a></li>
-				<li id ="#"><a href ="jyannru.html">ヒーリング</a></li>
-				<li id ="#"><a href ="jyannru.html">クラシック洋</a></li>
-				<li id ="#"><a href ="jyannru.html">クラシック邦</a></li>
-				<li id ="#"><a href ="jyannru.html">アニメ映画</a></li>
+				<li id ="#"><a href ="genre.html">jpop</a></li>
+				<li id ="#"><a href ="genre.html">洋楽</a></li>
+				<li id ="#"><a href ="genre.html">kpop.アジア</a></li>
+				<li id ="#"><a href ="genre.html">ワールド</a></li>
+				<li id ="#"><a href ="genre.html">レゲエ</a></li>
+				<li id ="#"><a href ="genre.html">ロック</a></li>
+				<li id ="#"><a href ="genre.html">エレクトロニカ</a></li>
+				<li id ="#"><a href ="genre.html">ダンス.ハウス</a></li>
+				<li id ="#"><a href ="genre.html">ヒーリング</a></li>
+				<li id ="#"><a href ="genre.html">クラシック洋</a></li>
+				<li id ="#"><a href ="genre.html">クラシック邦</a></li>
+				<li id ="#"><a href ="genre.html">アニメ映画</a></li>
 		</ul>
 		<div id ="left_sec">
 				<h6>シーズン>>></h6>
