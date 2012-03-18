@@ -1,85 +1,86 @@
 <?php
+$dbh = new mysqli("127.0.0.1:3306", "root", 'root');
+$dbh->select_db("artistpage");
+$dbh->set_charset("UTF8");
 
+$genre_name = isset($_GET['genre']) ? $_GET['genre'] : null;
 
-$dbh = mysql_connect("127.0.0.1:3306", "root", 'root');
-mysql_selectdb("artistpage");
-//ランキング
+if (!$genre_name) {
+	header("Status: 404");
+	exit("Genre not found");
+} 
 
-$atop_rank ="select * from ranking";
-$atop_rankk = mysql_query($atop_rank,$dbh);
-$atop_rankkout = mysql_fetch_assoc($atop_rankk);
-$atop_rankkoutar = mysql_fetch_row($atop_rankk);
-echo "<h4>ランキング</h4>";
-echo "<br>";
- foreach($atop_rankkoutar as $value){
-	 print $value;
-	 	 echo "　　　";
+function genre_get_by_name($dbh, $genre_name) {
+	$stmt_genre = $dbh->prepare("select id, genre, parent_id from g where genre = ?");
+	$stmt_genre->bind_param('s', $genre_name);
+	$stmt_genre->execute();
+	$stmt_genre->bind_result($id, $genre, $parent_id);
+	$stmt_genre->fetch();
+	$tree = split('/', $genre);
+	$stmt_genre->close();
+	return compact('id', 'genre', 'parent_id', 'tree');
+}
 
-	 }
-	 
-	 
-echo "<br>";
-
- foreach($atop_rankkout as $value){
-	 print $value;
-	 echo "　　　";
-	 }	
-echo "<br>";
-	 
-//最新リリース
-
-$release= "SELECT * FROM cds
-WHERE release_date BETWEEN
-between date_add(date(now()), interval -6 day) and date_format(now(), '%Y.%m.%d')
-ORDER BY release_date";
-$release_test = "select * from cds";
-
-$test = mysql_query($release_test,$dbh);
-echo $test;
-echo "<h4>最新リリース</h4>";
-
-$releasee = mysql_query($release,$dbh);
-$releaseeout = mysql_fetch_assoc($releasee);
-$releaseeoutar = mysql_fetch_row($releasee);
-foreach($releaseeoutar as $value){
-	echo $value;
+function genre_get_child_by_id($dbh, $genre_id) {
+	$stmt_genre_list = $dbh->prepare('select id, genre, parent_id from g where parent_id = ?');
+	$stmt_genre_list->bind_param('i', $genre_id);
+	$stmt_genre_list->execute();
+	$stmt_genre_list->bind_result($id, $genre, $parent_id);
+	$retval = array();
+	while ($stmt_genre_list->fetch()) {
+		$retval[] = compact('id', 'genre', 'parent_id', 'tree'); 
 	}
+	$stmt_genre_list->close();
+	return $retval;
+}
+
+$genre = genre_get_by_name($dbh, $genre_name);
+$genre_link = "";
+foreach ($genre['tree'] as $idx => $tree_genre) {
+	$genre_link .= '/' . urlencode($tree_genre);
+	if ($idx) print '&gt;';
+?>
+<a href="/~katosaori/altair-mock/genre<?=$genre_link?>"><?=$tree_genre ?></a>
+<?
+}
+
+print "<h1>$genre_name</h1>";
+
+$child_genre_list = genre_get_child_by_id($dbh, $genre['id']);
+foreach ($child_genre_list as $genre) {
+	$genre_tree = split('/', $genre['genre']);
+	$genre_link = "";
+	foreach ($genre_tree as $g) {
+		$genre_link .= '/' . urlencode($g);
+	}
+?>
+	<a href="/~katosaori/altair-mock/genre<?=$genre_link?>"><?= htmlspecialchars($genre['genre'])?></a><br>	
+<? echo $genre['id'];?>	
+<?
+}
 	
-	echo "<br>";
+
+?>
+<?php
 
 
-//ライブコンサート情報
 
-$atop_live = "select * from event";
-$live = mysql_query($atop_live,$dbh);
-$livear = mysql_fetch_assoc($live);
-echo "<h4>ライブコンサート情報<h4>";
-echo $livear;
-echo "<br>";
-while($row=mysql_fetch_assoc($live)){
-	echo($row['about']);
-	echo "      ";
-	echo($row['genre']);
-	echo "      ";
-	echo($row['date']);
-	echo"        ";
-	echo "<br>";
-
-	}
-
-
-echo "----------------------------------------------------------------------";	
-
+echo "----------------------------------------------------------------------";
 ?>
 <html>
 <head>
-<link rel="stylesheet" href="jyannru.css" type="text/css" />
+<link rel="stylesheet" href="genre.css" type="text/css" />
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <script type="text/javascript" src="http://www.google.com/jsapi"></script>  
 <script type="text/javascript">google.load("jquery", "1.2");</script>
-<script type="text/javascript" src="jyannru.js"></script>
+<script type="text/javascript" src="genre.js"></script>
 </head>
 <body>
+<?php
+print $_GET['tree'];
+var_dump($_GET);
+
+?>
 <div id = "container">
 	<div id ="mainbox">
 		<div id="page_hanbetu">＊＊＊ジャンル選択あと</div>
@@ -105,18 +106,15 @@ echo "----------------------------------------------------------------------";
 		</div>
 		<div id = "tx_left">
 			<ul>
-				<li id ="#"><a href ="cd_ichiran.html">pop</a></li>
-				<li id ="#"><a href ="cd_ichiran.html">演歌</a></li>
-				<li id ="#"><a href ="cd_ichiran.html">アイドル</a></li>
-				<li id ="#"><a href ="cd_ichiran.html">シンガーソングライター</a></li>
-				<li id ="#"><a href ="cd_ichiran.html">昭和歌謡</a></li>
-				<li id ="#"><a href ="cd_ichiran.html">エレクトロ二カ</a></li>
-				<li id ="#"><a href ="cd_ichiran.html">インディーズ</a></li>
-				<li id ="#"><a href ="cd_ichiran.html">カラオケ人気</a></li>
-				<li id ="#"><a href ="cd_ichiran.html">アニメ</a></li>
-				<li id ="#"><a href ="cd_ichiran.html">CM曲</a></li>
-				<li id ="#"><a href ="cd_ichiran.html">映画</a></li>
-				<li id ="#"><a href ="cd_ichiran.html">なにかしらのグループ</a></li>
+			<? for($q=0;$q<=11;$q++): ?>
+			<form action="genre.php" method="POST">
+			<input type="hidden" name="genre" value ="<?= htmlspecialchars($t[$q]); ?>" >
+			 <input type="submit"> 
+			</form>
+			<li id ='#'><a href ='genre.php'><?= htmlspecialchars($t[$q]); ?></a></li>
+			
+			
+		<? endfor ?>
 			</ul>
 			
 			<div id ="left_sec">

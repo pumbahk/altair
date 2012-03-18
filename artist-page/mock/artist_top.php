@@ -1,120 +1,15 @@
 <?php
-
 $dbh = mysql_connect("127.0.0.1:3306", "root", 'root');
 mysql_selectdb("artistpage");
+mysql_set_charset( "UTF8", $dbh );
 
-
-
-//ニュース
- $atop_news = "select newstopic from news";
- $atop_newss = mysql_query($atop_news,$dbh);
- $atop_newssout = mysql_fetch_assoc($atop_newss);
- $atop_newssoutar = mysql_fetch_row($atop_newss);
- 
- 
- $atop_newsselected = "select left(newstopic,10) from news";
- $atop_newsselectedd = mysql_query($atop_newsselected,$dbh);
- $atop_newsselecteddout = mysql_fetch_assoc($atop_newsselectedd);
- $atop_newsselecteddoutar = mysql_fetch_row($atop_newsselectedd);
- 
- 
- 
- echo "<h4>ニュース</h4>";
-  foreach($atop_newssoutar as $value){
-	 print $value;
-	 }
-	 
-echo "<br>";
-
-
- foreach($atop_newssout as $value){
-	 print $value;
-	 }
-	 
-echo "<br>";
-
- echo"<h4>ニュース10文字</h4>";
- foreach($atop_newsselecteddoutar as $value){
-	 print $value;
-	 }
-	 
-echo "<br>";
-
-
-
-
-//ランキング
-
-$atop_rank ="select * from ranking";
-$atop_rankk = mysql_query($atop_rank,$dbh);
-$atop_rankkout = mysql_fetch_assoc($atop_rankk);
-$atop_rankkoutar = mysql_fetch_row($atop_rankk);
-echo "<h4>ランキング</h4>";
-echo "<br>";
- foreach($atop_rankkoutar as $value){
-	 print $value;
-	 	 echo "　　　";
-
-	 }
-	 
-	 
-echo "<br>";
-
- foreach($atop_rankkout as $value){
-	 print $value;
-	 echo "　　　";
-	 }	
-echo "<br>";
-
-
-
-echo "<br>";
-
-var_dump($atop_rankkout);
-
-echo "<br>";
-
-var_dump($atop_rankkoutar);
-
-echo "<br>";
-
-var_dump($atop_rankk);
-
-echo "<br>";
-
-while($row=mysql_fetch_assoc($atop_rankk)){
-	echo($row['rank']);
-	echo "<br>";
-	echo($row['date']);
-	echo "<br>";
-	}
-	
-	
-	
-
-
-//ジャンル
-
-$atop_genre = "select genre from cds group by genre";
-$atop_genree = mysql_query($atop_genre,$dbh);
-$atop_genreeout = mysql_fetch_assoc($atop_genree);
-$atop_genreeoutar = mysql_fetch_row($atop_genree);
-
-echo "<h4>ジャンル選択枝</h4>";
-
-while($row=mysql_fetch_assoc($atop_genree)){
-	echo($row['genre']);
+$l = "select * from g where parent_id = 0";
+$d = mysql_query($l,$dbh);
+  while($row=mysql_fetch_assoc($d)){
+	echo($row['jyannru']);
 	echo "<br>";
 
 	}
-
-foreach($atop_genreeout as $value){
-	print $value;
-	}
-	echo "<br>";
-	
-echo "-------------------------------------------------------------------";
-
 ?>
 
 <html>
