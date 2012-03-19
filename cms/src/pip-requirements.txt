@@ -2,3 +2,5 @@ mock
 nose
 coverage
 gunicorn-console
+pyramid-debugtoolbar
+sadisplay

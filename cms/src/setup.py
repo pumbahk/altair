@@ -13,7 +13,6 @@ requires = [
     "venusian>=1.0a3", 
     'pyramid==1.2.7',
     'pyramid_tm',
-    'pyramid_debugtoolbar',
     'transaction',
     'SQLAlchemy',
     'SQLAHelper',
@@ -23,7 +22,6 @@ requires = [
     # 'zope.sqlalchemy',
     ## utility
     "bpmappers",
-    'sadisplay',
     'isodate',
     ## auth
     'oauth2',
