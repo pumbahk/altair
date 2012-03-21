@@ -1,18 +1,13 @@
 # coding: utf-8
-import colander
-import deform
-import json
 
 from pyramid.view import view_config
 from pyramid.view import view_defaults
-from pyramid.response import Response
-from pyramid.exceptions import NotFound
 from pyramid.httpexceptions import HTTPFound
 
 from altaircms.views import BaseRESTAPI
 from altaircms.base.views import RegisterViewPredicate
 from altaircms.page.forms import PageForm
-from altaircms.models import DBSession, Event
+from altaircms.models import Event
 from altaircms.page.models import Page
 
 from altaircms.page.mappers import PageMapper, PagesMapper
