@@ -44,7 +44,6 @@ def _get_policies(settings):
 def main_app(global_config, settings):
     """ This function returns a Pyramid WSGI application.
     """
-
     session_factory = UnencryptedCookieSessionFactoryConfig(settings.get('session.secret'))
     authn_policy, authz_policy = _get_policies(settings)
     config = Configurator(

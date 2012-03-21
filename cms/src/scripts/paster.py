@@ -4,6 +4,9 @@ from pyramid.paster import PCommand
 from pyramid.paster import get_app
 from paste.script import command
 
+import warnings
+warnings.warn("deperecated. this modules used by pyramid 1.2.")
+
 class PScript(PCommand):
     """run script on app env.
     """

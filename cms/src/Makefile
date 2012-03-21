@@ -10,10 +10,10 @@ test:
 	# nosetests -q
 
 printpage:
-	paster pscript  -E env ${inifile} scripts/pscript/print_page.py
+	pscript -e env -c ${inifile} -s scripts/pscript/print_page.py
 
 printapp:
-	paster pmain -E app onetime.ini scripts.pmain.printapp
+	pmain -c onetime.ini -s scripts.pmain.printapp
 
 checkpage:
 	cat altaircms/templates/front/original/original.html | tr "\n" " "| sed 's/[ \t\n]//g'> /tmp/before.log
