@@ -489,6 +489,67 @@ class SeatStock(Base):
                     con_num = 0
         return []
 
+
+class Venue(Base):
+    __tablename__ = "Venue"
+    id = Column(BigInteger, primary_key=True)
+    performance_id = Column(BigInteger, ForeignKey('Performance.id'))
+    performance = relationship('Performance', uselist=False)
+    name = Column(String(255))
+    updated_at = Column(DateTime)
+    created_at = Column(DateTime)
+    status = Column(Integer)
+
+class VenueBlock(Base):
+    __tablename__ = "VenueBlock"
+    id = Column(BigInteger, primary_key=True)
+    name = Column(String(255))
+    venue           = relationship('Venue')
+    venue_id        = Column(BigInteger, ForeignKey('Venue.id'))
+    updated_at = Column(DateTime)
+    created_at = Column(DateTime)
+    status = Column(Integer)
+
+class VenueGate(Base):
+    __tablename__ = "VenueGate"
+    id = Column(BigInteger, primary_key=True)
+    venue           = relationship('Venue')
+    venue_id        = Column(BigInteger, ForeignKey('Venue.id'))
+    name = Column(String(255))
+    updated_at = Column(DateTime)
+    created_at = Column(DateTime)
+    status = Column(Integer)
+
+class VenueFloor(Base):
+    __tablename__ = "VenueFloor"
+    id = Column(BigInteger, primary_key=True)
+    venue           = relationship('Venue')
+    venue_id        = Column(BigInteger, ForeignKey('Venue.id'))
+    name = Column(String(255))
+    updated_at = Column(DateTime)
+    created_at = Column(DateTime)
+    status = Column(Integer)
+
+# Layer1 SeatMaster
+class SeatMaster(Base):
+    __tablename__ = "SeatMaster"
+    id              = Column(BigInteger, primary_key=True)
+    identifieir     = Column(String(255))
+    venue           = relationship('Venue')
+    venue_id        = Column(BigInteger, ForeignKey('Venue.id'))
+    venue           = relationship('Venue')
+    venue_block_id  = Column(BigInteger, ForeignKey('VenueBlock.id'))
+    venue_block     = relationship('VenueBlock')
+    venue_gate_id   = Column(BigInteger, ForeignKey('VenueGate.id'))
+    venue_gate      = relationship('VenueGate')
+    venue_floor_id  = Column(BigInteger, ForeignKey('VenueFloor.id'))
+    venue_floor     = relationship('VenueFloor')
+    col             = Column(String(255))
+    row             = Column(String(255))
+    updated_at      = Column(DateTime)
+    created_at      = Column(DateTime)
+    status          = Column(Integer)
+
 # Layer2 SeatMaster
 class SeatMasterL2(Base):
     __tablename__ = "SeatMasterL2"
@@ -497,7 +558,7 @@ class SeatMasterL2(Base):
     performance = relationship('Performance', uselist=False)
     seat_type_id = Column(BigInteger, ForeignKey('SeatType.id'))
     seat_type = relationship('SeatType', uselist=False)
-    seat_id = Column(BigInteger, index=True)
+    seat_id = Column(BigInteger, ForeignKey('SeatMaster.id'))
     # @TODO have some attributes regarding Layer2
     venue_id = Column(BigInteger)
 
