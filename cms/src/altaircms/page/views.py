@@ -4,6 +4,7 @@ import deform
 import json
 
 from pyramid.view import view_config
+from pyramid.view import view_defaults
 from pyramid.response import Response
 from pyramid.exceptions import NotFound
 from pyramid.httpexceptions import HTTPFound
@@ -25,86 +26,84 @@ import altaircms.helpers as h
 ## todo: CRUDのview整理する
 ##
 
-class WithDefaultConfig(object):
-    """view_defaultsがほしい。
-    """
-    def __init__(self, decorator_, **kwargs):
-        self.kwargs = kwargs
-        self.decorator = decorator_
+@view_defaults(permission="page_create", decorator=with_bootstrap)
+class CreateView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
 
-    def __call__(self, *args, **kwargs):
-        params = kwargs.copy()
-        params.update(self.kwargs)
-        return self.decorator(*args, **params)
+    @view_config(route_name="page", renderer='altaircms:templates/page/list.mako', request_method="POST")
+    def create(self):
+        form = PageForm(self.request.POST)
+        if form.validate():
+            self.request.method = "PUT"
+            PageRESTAPIView(self.request).create()
+            return HTTPFound(self.request.route_path("page"))
+        return dict(
+            pages=PageRESTAPIView(self.request).read(),
+            form=form
+            )
 
-as_create_view = WithDefaultConfig(view_config, permission="page_create", decorator=with_bootstrap)
-as_delete_view = WithDefaultConfig(view_config, route_name="page_delete", 
-                                   permission="page_delete", decorator=with_bootstrap)
-as_update_view = WithDefaultConfig(view_config, route_name="page_update", 
-                                   permission="page_update", decorator=with_bootstrap)
+    @view_config(route_name="page_add", renderer="altaircms:templates/page/add.mako")
+    def add_view(self):
+        event_id = self.request.matchdict["event_id"]
+        event = Event.query.filter(Event.id==event_id).one()
+        form = PageForm()
+        return {"form":form, "event":event}
 
+@view_defaults(route_name="page_delete", permission="page_delete", decorator=with_bootstrap)
+class DeleteView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
 
-@as_create_view(route_name="page", renderer='altaircms:templates/page/list.mako', request_method="POST")
-def create(request):
-    form = PageForm(request.POST)
-    if form.validate():
-        request.method = "PUT"
-        PageRESTAPIView(request).create()
-        return HTTPFound(request.route_path("page"))
-    return dict(
-        pages=PageRESTAPIView(request).read(),
-        form=form
+    @view_config(renderer="altaircms:templates/page/delete_confirm.mako", request_method="GET")
+    def delete_confirm(self):
+        id_ = self.request.matchdict['id']
+        page = PageRESTAPIView(self.request, id_).read()
+        return dict(
+            page=page,
         )
 
-@as_create_view(route_name="page_add", renderer="altaircms:templates/page/add.mako")
-def add_view(request):
-    event_id = request.matchdict["event_id"]
-    from altaircms.models import Event
-    event = Event.query.filter(Event.id==event_id).one()
-    form = PageForm()
-    return {"form":form, "event":event}
-
-@as_delete_view(renderer="altaircms:templates/page/delete_confirm.mako", request_method="GET")
-def delete_confirm(request):
-    id_ = request.matchdict['id']
-    page = PageRESTAPIView(request, id_).read()
-    return dict(
-        page=page,
-    )
-
-@as_delete_view(request_method="POST")
-def delete(request):
-    id_ = request.matchdict['id']
-    PageRESTAPIView(request, id_).get_rest_action(request.POST["_method"])()
-    ## fixme: add flash message
-    return HTTPFound(location=h.page.to_list_page(request))
+    @view_config(request_method="POST")
+    def delete(self):
+        id_ = self.request.matchdict['id']
+        PageRESTAPIView(self.request, id_).get_rest_action(self.request.POST["_method"])()
+        ## fixme: add flash message
+        return HTTPFound(location=h.page.to_list_page(self.request))
 
 
-@as_update_view(renderer="altaircms:templates/page/input.mako",  request_method="GET")
-def input(request):
-    id_ = request.matchdict['id']
-    page = PageRESTAPIView(request, id_).read()
-    form = PageForm(**page.to_dict())
-    return dict(
-        page=page, form=form,
-    )
+@view_defaults(route_name="page_update",permission="page_update", decorator=with_bootstrap)
+class UpdateView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
 
-@as_update_view(request_method="POST", renderer="altaircms:templates/page/update_confirm.mako",       
-                custom_predicates=[RegisterViewPredicate.confirm])
-def update_confirm(request):
-    id_ = request.matchdict['id']
-    page = PageRESTAPIView(request, id_).read()
-    return dict(
-        page=page, params=request.POST.items()
-    )
+    @view_config(renderer="altaircms:templates/page/input.mako",  request_method="GET")
+    def input(self):
+        id_ = self.request.matchdict['id']
+        page = PageRESTAPIView(self.request, id_).read()
+        form = PageForm(**page.to_dict())
+        return dict(
+            page=page, form=form,
+        )
 
-@as_update_view(request_method="POST", custom_predicates=[RegisterViewPredicate.execute])
-def update(request):
-    id_ = request.matchdict['id']
-    view = PageRESTAPIView(request, id_)
-    view.get_rest_action(request.POST["_method"])()
-    ## fixme: add flash message
-    return HTTPFound(location=h.page.to_list_page(request))
+    @view_config(request_method="POST", renderer="altaircms:templates/page/update_confirm.mako",       
+                    custom_predicates=[RegisterViewPredicate.confirm])
+    def update_confirm(self):
+        id_ = self.request.matchdict['id']
+        page = PageRESTAPIView(self.request, id_).read()
+        return dict(
+            page=page, params=self.request.POST.items()
+        )
+
+    @view_config(request_method="POST", custom_predicates=[RegisterViewPredicate.execute])
+    def update(self):
+        id_ = self.request.matchdict['id']
+        view = PageRESTAPIView(self.request, id_)
+        view.get_rest_action(self.request.POST["_method"])()
+        ## fixme: add flash message
+        return HTTPFound(location=h.page.to_list_page(self.request))
 
 
 @view_config(route_name='page', renderer='altaircms:templates/page/list.mako', 
