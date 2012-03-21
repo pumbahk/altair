@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 from datetime import date
 from datetime import timedelta
-from altaircms.itertools import group_by_n
+from altaircms.lib.itertools import group_by_n
 
 
 """

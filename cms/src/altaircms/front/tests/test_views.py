@@ -13,7 +13,7 @@ def setUpModule():
     DBSession.remove()
 
 def tearDownModule():
-    from altaircms.testutils import dropall_db
+    from altaircms.lib.testutils import dropall_db
     dropall_db(message="test view drop")
 
 class UseAssetMixin(object):

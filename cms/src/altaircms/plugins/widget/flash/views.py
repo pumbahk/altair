@@ -1,5 +1,5 @@
 from pyramid.view import view_config
-from altaircms.itertools import group_by_n
+from altaircms.lib.itertools import group_by_n
 
 class FlashWidgetView(object):
     def __init__(self, request):

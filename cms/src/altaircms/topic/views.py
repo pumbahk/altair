@@ -7,7 +7,7 @@ from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPFound, HTTPBadRequest, HTTPCreated, HTTPOk
 
 from altaircms.views import BaseRESTAPI
-from altaircms.fanstatic import with_bootstrap
+from altaircms.lib.fanstatic import with_bootstrap
 
 from . import mappers
 from . import forms

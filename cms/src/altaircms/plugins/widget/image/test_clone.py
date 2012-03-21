@@ -7,11 +7,11 @@ from models import ImageWidget
 
 def setUpModule():
     DBSession.remove()
-    from altaircms.testutils import create_db
+    from altaircms.lib.testutils import create_db
     create_db(base=Base, session=DBSession)
 
 def tearDownModule():
-    from altaircms.testutils import dropall_db
+    from altaircms.lib.testutils import dropall_db
     dropall_db(base=Base, session=DBSession)
 
 class WidgetCloneTest(unittest.TestCase):

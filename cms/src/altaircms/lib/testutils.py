@@ -26,7 +26,7 @@ def create_db(echo=False, base=None, session=None, message=None):
     engine = create_engine('sqlite:///')
     engine.echo = echo
     if base is None or session is None:
-        from altaircms import models as m
+        import altaircms.models as m
         return _create_db(m.Base, m.DBSession, engine)
     else:
         return _create_db(base, session, engine)
@@ -34,7 +34,7 @@ def create_db(echo=False, base=None, session=None, message=None):
 
 def dropall_db(base=None, session=None, message=None):
     if base is None or session is None:
-        from . import models as m
+        import altaircms.models as m
         # listing_all(m.Base.metadata)
         m.Base.metadata.drop_all(bind=m.DBSession.bind)
     else:

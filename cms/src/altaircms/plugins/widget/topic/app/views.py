@@ -1,5 +1,5 @@
 # coding: utf-8
-from altaircms.fanstatic import with_fanstatic_jqueries
+from altaircms.lib.fanstatic import with_fanstatic_jqueries
 from pyramid.view import view_config
 from . import forms
 

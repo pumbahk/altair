@@ -102,12 +102,12 @@ warnings.warn("oauth2 view is replaced. but test have not existed, yet")
 class TestSecurity(BaseTest):
     def setUp(self):
         self.request = testing.DummyRequest()
-        from altaircms.testutils import create_db
+        from altaircms.lib.testutils import create_db
         create_db()
         insert_initial_authdata()
 
     def tearDown(self):
-        from altaircms.testutils import dropall_db
+        from altaircms.lib.testutils import dropall_db
         dropall_db()
 
     def test_user_notfound(self):

@@ -16,7 +16,7 @@ import json
 
 from altaircms.views import BaseRESTAPI
 from altaircms.models import DBSession
-from altaircms.fanstatic import with_bootstrap, bootstrap_need
+from altaircms.lib.fanstatic import with_bootstrap, bootstrap_need
 from altaircms.auth.errors import AuthenticationError
 from altaircms.auth.forms import RoleForm
 from .models import Operator, Role, Permission, RolePermission, DEFAULT_ROLE

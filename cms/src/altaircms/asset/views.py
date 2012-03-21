@@ -17,7 +17,7 @@ from sqlalchemy.sql.expression import desc
 
 from altaircms.models import DBSession
 from altaircms.views import BaseRESTAPI
-from altaircms.fanstatic import bootstrap_need
+from altaircms.lib.fanstatic import bootstrap_need
 
 from altaircms.asset import get_storepath
 from altaircms.asset.models import Asset, ImageAsset, MovieAsset, FlashAsset

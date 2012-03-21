@@ -6,7 +6,7 @@ from pyramid.view import view_config
 from sqlalchemy.sql.expression import desc
 import transaction
 
-from altaircms.fanstatic import with_bootstrap, bootstrap_need
+from altaircms.lib.fanstatic import with_bootstrap, bootstrap_need
 from altaircms.models import DBSession, Event
 from altaircms.auth.models import APIKey
 from altaircms.views import BaseRESTAPI

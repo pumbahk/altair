@@ -22,7 +22,7 @@ class FunctionalViewTests(unittest.TestCase):
 
     def tearDown(self):
         self._getSession().remove()
-        from altaircms.testutils import dropall_db
+        from altaircms.lib.testutils import dropall_db
         dropall_db()
         del self.app
 
