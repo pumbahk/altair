@@ -9,8 +9,8 @@ from sqlalchemy.orm.collections import InstrumentedList
 from sqlalchemy.exc import IntegrityError
 from zope.sqlalchemy import ZopeTransactionExtension
 import sqlahelper
+from datetime import  datetime, date
 
-print "boxoffice"
 Base = sqlahelper.get_base()
 DBSession = sqlahelper.get_session()
 
@@ -20,11 +20,25 @@ from .boxoffice import *
 def record_to_appstruct(self):
     return dict([(k, self.__dict__[k]) for k in sorted(self.__dict__) if '_sa_' != k[:4]])
 
-def record_to_multidict(self):
-    appstruct = record_to_appstruct(self)
-    return MultiDict(appstruct.items())
+def record_to_multidict(self, filters=dict()):
+    app_struct = record_to_appstruct(self)
+    print app_struct.items()
+    def _convert(key, value):
+        print key
+        print value
+        if value is None:
+            return (key, None)
+        elif isinstance(value, str) or isinstance(value, unicode):
+            return (key, value)
+        elif isinstance(value, date) or isinstance(value, datetime):
+            filter = filters.get(key)
+            return (key, (filter(value) if filter else str(value)))
+        else:
+            return (key, str(value))
 
-import datetime
+    print [ _convert (k, v) for k,v in app_struct.items()]
+    return MultiDict([ _convert (k, v) for k,v in app_struct.items()])
+
 def merge_session_with_post(session, post, filters={}):
     def _set_attrs(session, values):
         for key,value in values:
@@ -34,8 +48,8 @@ def merge_session_with_post(session, post, filters={}):
                 setattr(session, key, value)
             elif isinstance(value, str) \
                 or isinstance(value, unicode) \
-                or isinstance(value, datetime.datetime) \
-                or isinstance(value, datetime.date):
+                or isinstance(value, datetime) \
+                or isinstance(value, date):
                 setattr(session, key, value)
             else:
                 pass
