@@ -11,7 +11,7 @@ requires = [
     "PIL",
     "gunicorn",
     "venusian>=1.0a3", 
-    'pyramid==1.2.7',
+    'pyramid',
     'pyramid_tm',
     'transaction',
     'SQLAlchemy',
