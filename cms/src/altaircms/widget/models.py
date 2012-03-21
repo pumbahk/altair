@@ -59,7 +59,15 @@ class Widget(Base):
     def __repr__(self):
         return '<%s %s>' % (self.__class__.__name__, self.id)
 
-
+    def clone(self, session, page):
+        D = self.to_dict()
+        D["id"] = None
+        D["page_id"] = None
+        D["page"] = None
+        ins = self.__class__.from_dict(D)
+        session.add(ins)
+        return ins
+    
 class AssetWidgetResourceMixin(object):
     WidgetClass = None
     AssetClass = None

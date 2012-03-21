@@ -17,7 +17,7 @@ import transaction
 class BaseOriginalMixin(object):
     def to_dict(self):
         from sqlalchemy.sql.operators import ColumnOperators
-        return {k: getattr(self, k) for k, v in self.__class__.__dict__.items() \
+        return {k: getattr(self, k) for k, v in self.__class__.__dict__.iteritems() \
                     if isinstance(v, ColumnOperators)}
 
     def column_items(self):
@@ -39,6 +39,7 @@ class BaseOriginalMixin(object):
         for k, v in items_fn():
             setattr(instance, k, v)
         return instance
+
     
 Base = declarative_base(cls=BaseOriginalMixin)
 DBSession = orm.scoped_session(orm.sessionmaker(extension=[ZopeTransactionExtension()]))

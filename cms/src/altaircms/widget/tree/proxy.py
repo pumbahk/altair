@@ -36,8 +36,8 @@ class WidgetTreeProxy(object):
 class WidgetTree(object):
     implements(IBlockTree)
 
-    def __init__(self):
-        self.blocks = defaultdict(list)
+    def __init__(self, blocks=None):
+        self.blocks = blocks or defaultdict(list)
 
     def add(self, block_name, obj):
         self.blocks[block_name].append(obj)

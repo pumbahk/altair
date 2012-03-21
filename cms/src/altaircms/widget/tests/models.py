@@ -15,6 +15,6 @@ class DummyWidget(Base):
     query = DBSession.query_property()
     id = sa.Column(sa.Integer, primary_key=True)
     asset_id = sa.Column(sa.Integer)
-    
+
 from altaircms.widget.fetcher import WidgetFetcher
 WidgetFetcher.add_fetch_method("dummy_widget", DummyWidget)
