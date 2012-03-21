@@ -17,7 +17,7 @@ printapp:
 
 checkpage:
 	cat altaircms/templates/front/original/original.html | tr "\n" " "| sed 's/[ \t\n]//g'> /tmp/before.log
-	paster pmain -E env onetime.ini scripts.pmain.original5 > /tmp/after.html
+	pmain -e env -c onetime.ini -s scripts.pmain.original5 > /tmp/after.html
 	cat /tmp/after.html | tr "\n" " "| sed 's/[ \t\n]//g'> /tmp/after.log
 	diff -u /tmp/before.log /tmp/after.log
 
