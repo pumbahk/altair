@@ -5,8 +5,6 @@ import warnings
 import logging
 logger = logging.getLogger(__name__)
 
-from . monkeypatch import config_scan_patch
-config_scan_patch()
 from pyramid.config import Configurator
 from pyramid.session import UnencryptedCookieSessionFactoryConfig
 from pyramid.settings import asbool
