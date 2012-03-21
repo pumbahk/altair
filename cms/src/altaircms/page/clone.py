@@ -9,8 +9,11 @@ def page_clone(page, session=None):
     """ pageとwidgetlayoutをコピー
     """
     params = page.to_dict()
+    params["title"] = u"%s(コピー)" % page.title
     del params["id"]
+
     new_page = models.Page.from_dict(params)
+
     if session:
         session.add(new_page)
         session.flush()

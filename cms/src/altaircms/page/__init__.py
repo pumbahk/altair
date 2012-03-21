@@ -6,6 +6,7 @@ def includeme(config):
     config.add_route('page_edit', '/event/{event_id}/page/{page_id}/edit', factory="altaircms.page.resources.PageResource")
     config.add_route("page_delete", "/page/{id}/delete")
     config.add_route("page_update", "/page/{id}/update")
+    config.add_route("page_duplicate", "/page/{id}/duplicate", factory="altaircms.page.resources.PageResource")
     config.add_route("page_settings", "/page/{id}/settings")
     config.add_route('page', '/page/')
     # config.add_route('page_object', '/page/{id}')

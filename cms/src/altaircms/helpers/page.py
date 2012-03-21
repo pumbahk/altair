@@ -21,6 +21,9 @@ def to_delete(request, page):
 def to_update(request, page):
     return request.route_path("page_update", id=page.id)
 
+def to_duplicate(request, page):
+    return request.route_path("page_duplicate", id=page.id)
+
 def event_page(request, page):
     if page.event:
         return request.route_path("event", id=page.event.id)

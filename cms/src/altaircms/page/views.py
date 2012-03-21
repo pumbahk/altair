@@ -46,6 +46,20 @@ class CreateView(object):
         form = PageForm()
         return {"form":form, "event":event}
 
+    @view_config(route_name="page_duplicate", request_method="GET", renderer="altaircms:templates/page/duplicate_confirm.mako")
+    def duplicate_confirm(self):
+        id_ = self.request.matchdict['id']
+        page = PageRESTAPIView(self.request, id_).read()
+        return dict(
+            page=page,
+        )
+        
+    @view_config(route_name="page_duplicate", request_method="POST")
+    def duplicate(self):
+        page = self.context.get_page(self.request.matchdict["id"])
+        self.context.page_clone(page)
+        return HTTPFound(self.request.route_path("page"))
+
 @view_defaults(route_name="page_delete", permission="page_delete", decorator=with_bootstrap)
 class DeleteView(object):
     def __init__(self, context, request):

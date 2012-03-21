@@ -49,6 +49,9 @@
   <div class="span1">
       <button class="btn" href=""><i class="icon-refresh"> </i> Publish</button>
   </div>
+  <div class="span1">
+      <a class="btn" href="${h.page.to_duplicate(request,page)}"><i class="icon-repeat"> </i> Duplicate</a>
+  </div>
 </div>
 
 %if event:

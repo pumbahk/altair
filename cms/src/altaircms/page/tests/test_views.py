@@ -52,6 +52,10 @@ class PageFunctionalTests(unittest.TestCase):
        params = {u'_method': u'delete'}
        self.testapp.post("/page/%s/delete" % obj_id, params, status=302)
 
+   def duplicate(self, obj_id):
+       params = {}
+       self.testapp.post("/page/%s/duplicate" % obj_id, params, status=302)
+
    def test_it(self):
        self._create_layout()
 
@@ -67,9 +71,13 @@ class PageFunctionalTests(unittest.TestCase):
        obj = Page.query.first()
        self.assertEquals(obj.title, "music")
 
+       ## duplicate
+       self.duplicate(obj.id)
+       self.assertEquals(Page.query.count(), 2)
+
        ## delete
        self.delete(obj.id)
-       self.assertEquals(Page.query.count(), 0)
+       self.assertEquals(Page.query.count(), 1)
        
 if __name__ == "__main__":
     unittest.main()

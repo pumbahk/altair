@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 import unittest
 import datetime
 import os.path
@@ -96,6 +97,7 @@ class FunctionalPageRenderingTest(UseAssetMixin,
         
         cloned =  page.clone(session)
         self.assertEquals(Page.query.count(), 2)
+        self.assertTrue(u"コピー" in cloned.title)
         self.assertEquals(Widget.query.count(), 4)
         self.assertEquals(cloned.structure, 
                           json.dumps({"content": [{"pk": 3, "name": "freetext"}],

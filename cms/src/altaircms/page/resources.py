@@ -3,6 +3,7 @@ from altaircms.models import DBSession
 from altaircms.layout.models import Layout
 import altaircms.security as security
 from . import renderable
+from . import models
 
 def set_with_dict(obj, D):
     for k, v in D.items():
@@ -11,15 +12,17 @@ def set_with_dict(obj, D):
 
 class UsingRenderMixin(object):
     def get_layout_render(self, page):
-        # @FIXME: 以下が表示される
-        # DetachedInstanceError: Parent instance <Page at 0x10d7c78d0> is not 
-        # bound to a Session; lazy load operation of attribute 'layout' cannot proceed
-        # layout = page.layout
         layout = DBSession.query(Layout).filter_by(id=page.layout_id).one()
         return renderable.LayoutRender(layout)
+
     def get_page_render(self, page):
         return renderable.PageRender(page)
 
+    def get_page(self, page_id):
+        return models.Page.query.filter(models.Page.id==page_id).one()
+
+    def page_clone(self, page):
+        return page.clone(DBSession)
 
 class PageResource(UsingRenderMixin, 
                    security.RootFactory):
