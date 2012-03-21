@@ -1,4 +1,7 @@
 # -*- coding:utf-8 -*-
+from altaircms.widget.models import WidgetDisposition
+
+# -*- coding:utf-8 -*-
 import unittest
 import datetime
 import os.path
@@ -65,7 +68,7 @@ class UsePageEtcMixin(object):
         return Layout.from_dict(D)
 
     
-class PageCloneTest(UseAssetMixin, 
+class WidgetDispositionTest(UseAssetMixin, 
                                   UseWidgetMixin, 
                                   UsePageEtcMixin, 
                                   unittest.TestCase):
@@ -83,26 +86,36 @@ class PageCloneTest(UseAssetMixin,
         import transaction
         transaction.abort()
         self._getSession().remove()
-        
-    def test_it(self):
-        from altaircms.page.models import Page
-        from altaircms.widget.models import Widget
 
+    def test_create_from_page(self):
         session = self._getSession()
         self._addData(session)
+        page = self._get_page()
+        wd = WidgetDisposition.from_page(page, session)
 
-        self.assertEquals(Page.query.count(), 1)
-        self.assertEquals(Widget.query.count(), 2)
-        page = Page.query.first()
+        self.assertEquals(len(wd.widgets), 2)
+
+    def test_bind_page(self):
+        session = self._getSession()
+        wd = self._make_disposition(session)
+        from altaircms.page.models import Page
+        page = Page()
+        wd.bind_page(page, session)
+
+        self.assertEquals(json.loads(page.structure).keys(),
+                          json.loads(wd.structure).keys())
+        ## todo. もっとまじめにチェック
+
+
+    def _make_disposition(self, session):
+        self._addData(session)
+        page = self._get_page()
+        return WidgetDisposition.from_page(page, session)
         
-        cloned =  page.clone(session)
-        self.assertEquals(Page.query.count(), 2)
-        self.assertTrue(u"コピー" in cloned.title)
-        self.assertEquals(Widget.query.count(), 4)
-        self.assertEquals(cloned.structure, 
-                          json.dumps({"content": [{"pk": 3, "name": "freetext"}],
-                                      "footer": [{"pk": 4, "name": "image"}]}))
-
+    def _get_page(self):
+        from altaircms.page.models import Page
+        return Page.query.first()
+        
     def _addData(self, session):
         structure = u'''
 {"content": [{"pk": 1, "name": "freetext"}],
@@ -121,3 +134,4 @@ class PageCloneTest(UseAssetMixin,
 
 if __name__ == "__main__":
     unittest.main()
+

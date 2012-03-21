@@ -4,7 +4,7 @@
 
 設定が必要なウィジェットのみ情報を保持する。
 """
-
+import json
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 
@@ -14,7 +14,6 @@ from datetime import datetime
 from zope.interface import implements
 from altaircms.interfaces import IHasSite
 from altaircms.interfaces import IHasTimeHistory
-
 
 __all__ = [
     'Widget',
@@ -38,6 +37,10 @@ class Widget(Base):
     __tablename__ = "widget"
     page_id = sa.Column(sa.Integer, sa.ForeignKey("page.id"))
     page = orm.relationship("Page", backref="widgets", single_parent = True)
+
+    disposition_id = sa.Column(sa.Integer, sa.ForeignKey("widgetdisposition.id"))
+    disposition = orm.relationship("WidgetDisposition", backref="widgets")
+
     id = sa.Column(sa.Integer, primary_key=True)
     site_id = sa.Column(sa.Integer, sa.ForeignKey("site.id"))
     discriminator = sa.Column("type", sa.String(32), nullable=False)
@@ -58,6 +61,62 @@ class Widget(Base):
         session.add(ins)
         return ins
 
+
+class WidgetDisposition(Base): #todo: rename
+    """ widgetの利用内容を記録しておくためのモデル
+    以下を記録する。
+    * 利用しているwidgetの位置
+    * 利用しているwidgetのデータ
+
+    pageから作成し、pageにbindする
+    """
+    implements(IHasTimeHistory, IHasSite)
+    
+    query = DBSession.query_property()
+    __tablename__ = "widgetdisposition"
+    id = sa.Column(sa.Integer, primary_key=True)
+    title = sa.Column(sa.Unicode(255))
+    site_id = sa.Column(sa.Integer, sa.ForeignKey("site.id"))
+
+    structure = sa.Column(sa.String) # same as: Page.structure
+    blocks = sa.Column(sa.String) # same as: Layout.blocks
+    
+    @classmethod
+    def same_blocks_query(cls, page):
+        return cls.query.filter(cls.blocks==page.layout.blocks)
+
+    @classmethod
+    def from_page(cls, page, session):
+        from altaircms.widget.tree.proxy import WidgetTreeProxy
+        import altaircms.widget.tree.clone as wclone
+        wtree = WidgetTreeProxy(page)
+        new_wtree = wclone.clone(session, None, wtree)
+        if session:
+            session.flush()
+        new_structure = wclone.to_structure(new_wtree)
+
+        D = {"structure": json.dumps(new_structure), 
+             "title": u"%sより" % page.title, 
+             "site_id": page.site_id, 
+             "blocks": page.layout.blocks}
+
+        instance = cls.from_dict(D)
+        for k, ws in new_wtree.blocks.iteritems():
+            for w in ws:
+                w.disposition = instance
+        return instance
+
+    def bind_page(self, page, session):
+        from altaircms.widget.tree.proxy import WidgetTreeProxy
+        import altaircms.widget.tree.clone as wclone
+        wtree = WidgetTreeProxy(self)
+        new_wtree = wclone.clone(session, page, wtree)
+        if session:
+            session.flush()
+        page.structure = json.dumps(wclone.to_structure(new_wtree))
+        return page
+        
+        
 
 class AssetWidgetResourceMixin(object):
     WidgetClass = None
