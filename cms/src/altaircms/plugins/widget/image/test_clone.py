@@ -54,6 +54,8 @@ class WidgetCloneTest(unittest.TestCase):
         session.add(iw.clone(session, page=self._makePage()))
 
         self.assertEquals(ImageWidget.query.count(), 2)
+        from altaircms.widget.models import Widget
+        self.assertEquals(Widget.query.count(), 2)
 
 if __name__ == "__main__":
     unittest.main()
