@@ -1,5 +1,8 @@
 # -*- coding:utf-8 -*-
 
+"""
+problem: attrを設定できない。
+"""
 from zope.interface import implements
 import json
 
@@ -7,12 +10,19 @@ import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from pyramid.renderers import render
 
+###
+import codecs
+import sys
+sys.stdout = codecs.getwriter("utf-8")(sys.stdout)
+###
+
 from altaircms.interfaces import IWidget
 from altaircms.widget.models import Widget
 from altaircms.plugins.base import DBSession
 from altaircms.plugins.base.mixins import HandleSessionMixin
 from altaircms.plugins.base.mixins import HandleWidgetMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
+from altaircms.page.models import Page
 from altaircms.security import RootFactory
 
 """
@@ -31,6 +41,25 @@ from altaircms.security import RootFactory
 販売期間
     2012年03月03日(土) 〜 07月12日(木) 
 """
+
+##
+## ここではattributeを返しているけれど、これをりようできるようになっていない
+"""
+todo:
+   classを指定する方法
+   登録した文字列を編集する方法
+   改行への対応
+"""
+
+def _items_from_page(page):
+    import altaircms.helpers as h
+    event = page.event
+    return [ # todo: fixme
+        dict(label=u"講演期間", attr='class=performance_period', content=h.base.term(event.event_open, event.event_close)), 
+        dict(label=u"説明／注意事項", attr='class=notice', content=u"※未就学児童のご入場はお断りいたします。"), 
+        dict(label=u"お問い合わせ先", attr='class=contact', content=event.inquiry_for.replace("\n", " ")),  ##newline not supported
+        dict(label=u"販売期間", attr="class=sales_period", content=h.base.term(event.deal_open,event.deal_close))
+        ]
 
 class SummaryWidget(Widget):
     implements(IWidget)
@@ -62,14 +91,7 @@ class SummaryWidget(Widget):
         if event is None:
             return cls(page_id=page.id)
         else:
-            import altaircms.helpers as h
-            items = [ # todo: fixme
-                dict(label=u"講演期間", attr='class="performance_period"', content=h.base.term(event.event_open, event.event_close)), 
-                dict(label=u"説明／注意事項", attr='class="notice"', content=u"※未就学児童のご入場はお断りいたします。"), 
-                dict(label=u"お問い合わせ先", attr='class="contact"', content=event.inquiry_for), 
-                dict(label=u"販売期間", attr='class="sales_period"', content=h.base.term(event.deal_open,event.deal_close))
-                ]
-            return cls(page_id=page.id, items=json.dumps(items))
+            return cls(page_id=page.id, items=json.dumps(_items_from_page(page), ensure_ascii=False))
 
 class SummaryWidgetResource(HandleSessionMixin,
                             UpdateDataMixin,
@@ -80,3 +102,12 @@ class SummaryWidgetResource(HandleSessionMixin,
 
     def get_widget(self, widget_id):
         return self._get_or_create(SummaryWidget, widget_id)
+
+    def _items_from_page(self, page):
+        return json.dumps(_items_from_page(page), ensure_ascii=False)
+
+    def get_items(self, page_id):
+        page = Page.query.filter(Page.id==page_id).one()
+        return self._items_from_page(page) if page.event else "[]"
+
+

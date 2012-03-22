@@ -29,7 +29,7 @@
 %endif
 
 <div class="row" style="margin-bottom: 9px">
-  <h2 class="span6"ページのタイトル - ${page.title} (ID: ${page.id})</h2>
+  <h2 class="span6"ページのタイトル - ${page.title} (ID: ${page.id})></h2>
 </div>
 
 <div class="row-fluid">

@@ -29,18 +29,20 @@ widget.configure({
         var pk = we.get_pk(we.where);
         var url = "/api/widget/summary/dialog";
         if(!!pk){
-            url += "?" + $.param({"pk": pk});
+            url += "?" + $.param({"pk": pk, "page": get_page()});
         }
         return we.dialog.load(url);
     };
 
     var on_dialog = function(we){
+        $("#submit").click(function(){we.finish_dialog(this);});
     };
 
     var on_close = function(we){
     };
 
     var collect_data = function(we, choiced_elt){
+        return {"items": JSON.stringify($("#app").data("appview").collectData())};
     };
     return widget.include("summary", {
         load_page: load_page, 

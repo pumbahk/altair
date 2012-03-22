@@ -3,6 +3,7 @@
 import unittest
 import json
 from altaircms.plugins.widget.summary.models import SummaryWidget
+import mock
 
 class FunctionalViewTests(unittest.TestCase):
     create_widget = "/api/widget/summary/create"
@@ -110,9 +111,13 @@ class FunctionalViewTests(unittest.TestCase):
         from altaircms.page.models import Page
         self.assertNotEquals(Page.query.count(), 0)
 
-
-    def test_getdialog(self):
-        self._callFUT().get(self.get_dialog, status=200)
+    item_json=u"""
+       [{label: "講演期間", content: u"2012年06月03日(日) 〜 07月16日(月) (講演カレンダーを見る)"}, 
+        {label: "説明／注意事項", content: u"※未就学児童のご入場はお断りいたします。"}]
+"""
+    @mock.patch("altaircms.plugins.widget.summary.models.SummaryWidgetResource.get_items", return_value=item_json)
+    def test_getdialog(self, mocked):
+        self._callFUT().get(self.get_dialog, {"page": None}, status=200)
 
 if __name__ == "__main__":
     unittest.main()

@@ -14,12 +14,6 @@ from altaircms.page.models import Page
 import altaircms.helpers as h
 from altaircms.lib.interception import not_support_if_keyerror
 
-def _get_url_helper(page):
-    if page.is_published:
-        return h.front.to_publish_page
-    else:
-        return h.front.to_preview_page
-
 class MenuWidget(Widget):
     implements(IWidget)
     type = "menu"
@@ -58,7 +52,7 @@ class MenuWidgetResource(HandleSessionMixin,
         return self._get_or_create(MenuWidget, widget_id)
 
     def _items_from_page(self, page):
-        to_url = _get_url_helper(page)
+        to_url = h.front.to_preview_page
         return json.dumps( [{"label": p.title, "link": to_url(self.request, p)} for p in page.event.pages])        
 
     def get_items(self, page_id):

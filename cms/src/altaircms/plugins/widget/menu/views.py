@@ -1,7 +1,6 @@
 # -*- coding:utf-8 -*-
 
 from pyramid.view import view_config
-import json
 
 class MenuWidgetView(object):
     def __init__(self, request):

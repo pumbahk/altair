@@ -107,4 +107,6 @@
 <script type="text/javascript" src="/plugins/static/js/widget/lib/topic.js"></script>
 ## todo: moveit
 <script type="text/javascript" src="/plugins/static/js/widget/lib/breadcrumbs.js"></script>
+## todo: moveit
+<script type="text/javascript" src="/plugins/static/js/widget/lib/summary.js"></script>
 </%def>
