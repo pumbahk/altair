@@ -53,9 +53,10 @@ def main_app(global_config, settings):
         authentication_policy=authn_policy,
         authorization_policy=authz_policy
     )
-    ## access 
+    ## bind authenticated user
     config.set_request_property("altaircms.auth.helpers.get_authenticated_user", "user", reify=True)
 
+    ## include
     config.include('pyramid_tm')
     config.include("pyramid_fanstatic")
     config.include("altaircms.widget")

@@ -78,10 +78,6 @@ class WidgetDisposition(Base): #todo: rename
     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
     
     @classmethod
-    def same_blocks_query(cls, page):
-        return cls.query.filter(cls.blocks==page.layout.blocks)
-
-    @classmethod
     def from_page(cls, page, session):
         from altaircms.widget.tree.proxy import WidgetTreeProxy
         import altaircms.widget.tree.clone as wclone
@@ -111,6 +107,10 @@ class WidgetDisposition(Base): #todo: rename
             session.flush()
         page.structure = json.dumps(wclone.to_structure(new_wtree))
         return page
+
+    @classmethod
+    def same_blocks_query(cls, page):
+        return cls.query.filter(cls.blocks==page.layout.blocks)
 
     @classmethod
     def enable_only_query(cls, operator):
