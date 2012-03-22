@@ -3,6 +3,8 @@
 page rendering process: page => widget tree => block_dict(defaultdict(list)) => html
 """
 from collections import defaultdict
+from altaircms.lib.structures import StrictDict
+
 __all__ = ["BlockContextException",
            "BlockContext"]
 
@@ -94,11 +96,14 @@ class BlockContext(StoreableMixin,
 
         self.is_scaned = False
         self._validators = list()
-        self.extra = extra or {}
+        self.extra = StrictDict()
+        if extra:
+            self.extra.update(extra)
 
     def need_extra_in_scan(self, valname):
         def has_val(settings):
-            return settings.extra.get(valname, None) is not None
+            # return settings.extra.get(valname, None) is not None
+            return valname in settings.extra
         has_val.__doc__ = "self.extra['%s'] is not found" % valname
         self.attach_validator(has_val, category="before_scan")        
 
