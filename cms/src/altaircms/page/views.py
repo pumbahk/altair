@@ -5,7 +5,8 @@ from pyramid.view import view_defaults
 from pyramid.httpexceptions import HTTPFound
 
 from altaircms.views import BaseRESTAPI
-from altaircms.base.views import RegisterViewPredicate
+from altaircms.base.viewhelpers import RegisterViewPredicate
+from altaircms.base.viewhelpers import FlashMessage
 from altaircms.page.forms import PageForm
 from altaircms.models import Event
 from altaircms.page.models import Page
@@ -33,6 +34,10 @@ class CreateView(object):
         if form.validate():
             self.request.method = "PUT"
             PageRESTAPIView(self.request).create()
+
+            ## flash messsage
+            FlashMessage.success("page created", request=self.request)
+
             return HTTPFound(self.request.route_path("page"))
         return dict(
             pages=PageRESTAPIView(self.request).read(),
@@ -58,6 +63,9 @@ class CreateView(object):
     def duplicate(self):
         page = self.context.get_page(self.request.matchdict["id"])
         self.context.page_clone(page)
+        ## flash messsage
+        FlashMessage.success("page duplicated", request=self.request)
+
         return HTTPFound(self.request.route_path("page"))
 
 @view_defaults(route_name="page_delete", permission="page_delete", decorator=with_bootstrap)
@@ -78,7 +86,10 @@ class DeleteView(object):
     def delete(self):
         id_ = self.request.matchdict['id']
         PageRESTAPIView(self.request, id_).get_rest_action(self.request.POST["_method"])()
-        ## fixme: add flash message
+
+        ## flash messsage
+        FlashMessage.success("page deleted", request=self.request)
+
         return HTTPFound(location=h.page.to_list_page(self.request))
 
 
@@ -111,7 +122,10 @@ class UpdateView(object):
         id_ = self.request.matchdict['id']
         view = PageRESTAPIView(self.request, id_)
         view.get_rest_action(self.request.POST["_method"])()
-        ## fixme: add flash message
+
+        ## flash messsage
+        FlashMessage.success("page updated", request=self.request)
+
         return HTTPFound(location=h.page.to_list_page(self.request))
 
 
