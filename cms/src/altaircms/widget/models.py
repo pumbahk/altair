@@ -42,7 +42,7 @@ class Widget(Base):
     def __repr__(self):
         return '<%s %s>' % (self.__class__.__name__, self.id)
 
-    def clone(self, session, page):
+    def clone(self, session, page): #todo:refactoring model#clone
         D = self.to_dict()
         D["id"] = None
         D["page_id"] = None
@@ -71,6 +71,9 @@ class WidgetDisposition(Base): #todo: rename
     structure = sa.Column(sa.String) # same as: Page.structure
     blocks = sa.Column(sa.String) # same as: Layout.blocks
 
+    is_public = sa.Column(sa.Boolean, default=False)
+    owner_id = sa.Column(sa.Integer, sa.ForeignKey("operator.id"))
+    owner = orm.relationship("Operator", backref="widget_dispositions")
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
     
@@ -108,7 +111,11 @@ class WidgetDisposition(Base): #todo: rename
             session.flush()
         page.structure = json.dumps(wclone.to_structure(new_wtree))
         return page
-        
+
+    @classmethod
+    def enable_only_query(cls, operator):
+        return cls.query.filter((cls.is_public==True)|(cls.owner==operator))
+
     def __repr__(self):
         return self.title
 

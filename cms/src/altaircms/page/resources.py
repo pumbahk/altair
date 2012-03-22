@@ -17,7 +17,7 @@ class ForDispositionMixin(object):
                 "disposition_save": self._wdp_save_form(page)}
 
     def _wdp_select_form(self, page):
-        return wf.WidgetDispositionSelectForm() ## dynamic に絞り込みたい
+        return wf.WidgetDispositionSelectForm.from_operator(self.request.user)
 
     def _wdp_save_form(self, page):
         return wf.WidgetDispositionSaveForm(page=page.id)
