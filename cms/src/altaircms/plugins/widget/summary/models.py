@@ -15,7 +15,6 @@ from altaircms.plugins.base.mixins import HandleWidgetMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
 
-
 """
 公演期間
     2012年06月03日(日) 〜 07月16日(月) (講演カレンダーを見る) 

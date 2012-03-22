@@ -54,7 +54,7 @@
   </div>
   <div class="span5">
 	## ここにレイアウト保存用のformが入る
-	<form action="#" method="POST">
+	<form action="${h.page.to_widget_disposition(request,page)}" method="GET">
       <h4>widget layoutの読み込み</h4>
        ${forms["disposition_select"].disposition}
 	   <input type="submit" value="load"/>

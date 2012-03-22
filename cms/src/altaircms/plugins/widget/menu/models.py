@@ -12,6 +12,7 @@ from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
 from altaircms.page.models import Page
 import altaircms.helpers as h
+from altaircms.lib.interception import not_support_if_keyerror
 
 def _get_url_helper(page):
     if page.is_published:
@@ -35,6 +36,7 @@ class MenuWidget(Widget):
     def merge_settings(self, bname, bsettings):
         bsettings.need_extra_in_scan("request")
         bsettings.need_extra_in_scan("page")
+        @not_support_if_keyerror("menu widget: %(err)s")
         def tab_render():
             from pyramid.renderers import render
             request = bsettings.extra["request"]

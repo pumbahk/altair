@@ -7,6 +7,7 @@ import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from altaircms.topic.models import Topic
 from altaircms.widget.models import Widget
+from altaircms.lib.interception import not_support_if_keyerror
 from altaircms.plugins.base import DBSession
 from altaircms.plugins.base.mixins import HandleSessionMixin
 from altaircms.plugins.base.mixins import HandleWidgetMixin
@@ -46,9 +47,12 @@ class TopicWidget(Widget):
             bsettings.add("css_prerender", TOPIC_CSS)
             bsettings.attach_widget(self, "css_prerender")
 
+
         bsettings.need_extra_in_scan("request")
         bsettings.need_extra_in_scan("page")
         bsettings.need_extra_in_scan("event")
+
+        @not_support_if_keyerror("topic widget: %(err)s")
         def topic_render():
             d = self.now_date_function()
             request = bsettings.extra["request"]

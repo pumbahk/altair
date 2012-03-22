@@ -17,8 +17,15 @@ class ForDispositionMixin(object):
     def _wdp_save_form(self, page):
         return wf.WidgetDispositionSaveForm(page=page.id)
 
-    def get_disposition(self, page):
+    def get_disposition_from_page(self, page):
         return WidgetDisposition.from_page(page, DBSession)
+
+    def get_disposition(self, id_):
+        return WidgetDisposition.query.filter(WidgetDisposition.id==id_).one()
+
+    def bind_disposition(self, page, wdisposition):
+        page = wdisposition.bind_page(page, DBSession)
+        return page
 
 class ForPageMixin(object):
     def get_layout_render(self, page):

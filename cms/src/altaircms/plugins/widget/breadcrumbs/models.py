@@ -11,6 +11,7 @@ from altaircms.plugins.base.mixins import HandleSessionMixin
 from altaircms.plugins.base.mixins import HandleWidgetMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
+from altaircms.lib.interception import not_support_if_keyerror
 
 class BreadcrumbsWidget(Widget):
     implements(IWidget)
@@ -23,6 +24,7 @@ class BreadcrumbsWidget(Widget):
 
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
 
+    @not_support_if_keyerror("breadcrumbs widget: %(err)s")
     def merge_settings(self, bname, bsettings):
         bsettings.need_extra_in_scan("request")
         bsettings.need_extra_in_scan("page")

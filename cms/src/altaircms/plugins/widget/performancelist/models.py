@@ -11,6 +11,7 @@ from altaircms.plugins.base.mixins import HandleWidgetMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
 from . import renderable
+from altaircms.lib.interception import not_support_if_keyerror
 
 class PerformancelistWidget(Widget):
     implements(IWidget)
@@ -26,6 +27,7 @@ class PerformancelistWidget(Widget):
     def merge_settings(self, bname, bsettings):
         bsettings.need_extra_in_scan("performances")
         bsettings.need_extra_in_scan("request")
+        @not_support_if_keyerror("performancelist widget: %(err)s")
         def performancelist_render():
             performances = bsettings.extra["performances"]
             request = bsettings.extra["request"]

@@ -13,6 +13,7 @@ from altaircms.plugins.base.mixins import HandleWidgetMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
 from . import renderable
+from altaircms.lib.interception import not_support_if_keyerror
 
 ## kind = divのクラス名として展開(todo整理)
 KINDS = ["description", "dummy"]
@@ -32,6 +33,7 @@ class DetailWidget(Widget):
         bsettings.need_extra_in_scan("request")
         bsettings.need_extra_in_scan("event")
         bsettings.need_extra_in_scan("performances")
+        @not_support_if_keyerror("detail widget: %(err)s")
         def detail_render():
             request = bsettings.extra["request"]
             performances = bsettings.extra["performances"]

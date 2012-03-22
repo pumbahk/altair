@@ -178,9 +178,19 @@ def page_edit(request):
 @view_config(route_name="disposition", request_method="POST")
 def disposition_save(context, request):
     page = context.get_page(request.matchdict["id"])
-    wdisposition = context.get_disposition(page)
+    wdisposition = context.get_disposition_from_page(page)
     context.add(wdisposition)
     
     FlashMessage.success(u"widgetのデータが保存されました", request=request)
+    return HTTPFound(h.page.to_edit_page(request, page))
+
+@view_config(route_name="disposition", request_method="GET")
+def disposition_load(context, request):
+    page = context.get_page(request.matchdict["id"])
+    wdisposition = context.get_disposition(request.GET["disposition"])
+    page = context.bind_disposition(page, wdisposition)
+    context.add(page)
+    
+    FlashMessage.success(u"widgetのデータが読み込まれました", request=request)
     return HTTPFound(h.page.to_edit_page(request, page))
 

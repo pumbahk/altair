@@ -10,6 +10,7 @@ from altaircms.plugins.base.mixins import HandleSessionMixin
 from altaircms.plugins.base.mixins import HandleWidgetMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
+from altaircms.lib.interception import not_support_if_keyerror
 
 class TicketlistWidget(Widget):
     implements(IWidget)
@@ -25,6 +26,7 @@ class TicketlistWidget(Widget):
     def merge_settings(self, bname, bsettings):
         bsettings.need_extra_in_scan("request")
         bsettings.need_extra_in_scan("tickets")
+        @not_support_if_keyerror("ticketlist widget: %(err)s")
         def ticketlist_render():
             from pyramid.renderers import render
             request = bsettings.extra["request"]

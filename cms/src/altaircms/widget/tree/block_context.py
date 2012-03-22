@@ -3,6 +3,8 @@
 page rendering process: page => widget tree => block_dict(defaultdict(list)) => html
 """
 from collections import defaultdict
+__all__ = ["BlockContextException",
+           "BlockContext"]
 
 class BlockContextException(Exception):
     pass
