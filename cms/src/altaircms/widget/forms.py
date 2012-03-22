@@ -15,4 +15,5 @@ class WidgetDispositionSelectForm(form.Form):
     disposition = extfields.QuerySelectField(query_factory=existing_dispositions, allow_blank=False)
 
 class WidgetDispositionSaveForm(form.Form):
+    title = fields.TextField(validators=[validators.Required()])
     page = fields.IntegerField(widget=widgets.HiddenInput())

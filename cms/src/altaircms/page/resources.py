@@ -8,17 +8,27 @@ from . import models
 from altaircms.widget.models import WidgetDisposition
 
 class ForDispositionMixin(object):
+    def get_confirmed_form(self, postdata):
+        form = wf.WidgetDispositionSaveForm(postdata)
+        return form
+
     def get_forms(self, page):
         return {"disposition_select": self._wdp_select_form(page), 
                 "disposition_save": self._wdp_save_form(page)}
+
     def _wdp_select_form(self, page):
         return wf.WidgetDispositionSelectForm() ## dynamic に絞り込みたい
 
     def _wdp_save_form(self, page):
         return wf.WidgetDispositionSaveForm(page=page.id)
 
-    def get_disposition_from_page(self, page):
-        return WidgetDisposition.from_page(page, DBSession)
+    def get_disposition_from_page(self, page, data=None):
+        wd = WidgetDisposition.from_page(page, DBSession)
+        if data:
+            for k, v in data.iteritems():
+                print k, v
+                setattr(wd, k, v)
+        return wd
 
     def get_disposition(self, id_):
         return WidgetDisposition.query.filter(WidgetDisposition.id==id_).one()

@@ -177,12 +177,16 @@ def page_edit(request):
 ## widgetの保存
 @view_config(route_name="disposition", request_method="POST")
 def disposition_save(context, request):
+    form = context.get_confirmed_form(request.POST)
     page = context.get_page(request.matchdict["id"])
-    wdisposition = context.get_disposition_from_page(page)
-    context.add(wdisposition)
-    
-    FlashMessage.success(u"widgetのデータが保存されました", request=request)
-    return HTTPFound(h.page.to_edit_page(request, page))
+    if form.validate():
+        wdisposition = context.get_disposition_from_page(page, form.data)
+        context.add(wdisposition)
+        FlashMessage.success(u"widgetのデータが保存されました", request=request)
+        return HTTPFound(h.page.to_edit_page(request, page))
+    else:
+        FlashMessage.error(u"タイトルを入力してください", request=request)
+        return HTTPFound(h.page.to_edit_page(request, page))
 
 @view_config(route_name="disposition", request_method="GET")
 def disposition_load(context, request):

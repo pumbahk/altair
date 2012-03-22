@@ -1,8 +1,7 @@
 # coding: utf-8
 """
-ウィジェット用のモデルを定義する。
+ウィジェット用のベースモデルを定義する。
 
-設定が必要なウィジェットのみ情報を保持する。
 """
 import json
 import sqlalchemy as sa
@@ -17,17 +16,8 @@ from altaircms.interfaces import IHasTimeHistory
 
 __all__ = [
     'Widget',
-]
-
-WIDGET_TYPE = [
-    'text',
-    'breadcrumbs',
-    'flash',
-    'movie',
-    'image',
-    'topic',
-    'menu',
-    'billinghistory',
+    "WidgetDisposition", 
+    "AssetWidgetResourceMixin"
 ]
 
 class Widget(Base):
@@ -44,8 +34,8 @@ class Widget(Base):
     id = sa.Column(sa.Integer, primary_key=True)
     site_id = sa.Column(sa.Integer, sa.ForeignKey("site.id"))
     discriminator = sa.Column("type", sa.String(32), nullable=False)
-    created_at = sa.Column(sa.DateTime, default=datetime.now())
-    updated_at = sa.Column(sa.DateTime, default=datetime.now())
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
 
     __mapper_args__ = {"polymorphic_on": discriminator}
 
@@ -80,6 +70,9 @@ class WidgetDisposition(Base): #todo: rename
 
     structure = sa.Column(sa.String) # same as: Page.structure
     blocks = sa.Column(sa.String) # same as: Layout.blocks
+
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
     
     @classmethod
     def same_blocks_query(cls, page):
@@ -116,7 +109,8 @@ class WidgetDisposition(Base): #todo: rename
         page.structure = json.dumps(wclone.to_structure(new_wtree))
         return page
         
-        
+    def __repr__(self):
+        return self.title
 
 class AssetWidgetResourceMixin(object):
     WidgetClass = None
