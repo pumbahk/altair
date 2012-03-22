@@ -5,8 +5,9 @@ import altaircms.widget.forms as wf
 import altaircms.security as security
 from . import renderable
 from . import models
+from altaircms.widget.models import WidgetDisposition
 
-class UsingFormMixin(object):
+class ForDispositionMixin(object):
     def get_forms(self, page):
         return {"disposition_select": self._wdp_select_form(page), 
                 "disposition_save": self._wdp_save_form(page)}
@@ -16,7 +17,10 @@ class UsingFormMixin(object):
     def _wdp_save_form(self, page):
         return wf.WidgetDispositionSaveForm(page=page.id)
 
-class UsingRenderMixin(object):
+    def get_disposition(self, page):
+        return WidgetDisposition.from_page(page, DBSession)
+
+class ForPageMixin(object):
     def get_layout_render(self, page):
         layout = DBSession.query(Layout).filter_by(id=page.layout_id).one()
         return renderable.LayoutRender(layout)
@@ -30,8 +34,8 @@ class UsingRenderMixin(object):
     def page_clone(self, page):
         return page.clone(DBSession)
 
-class PageResource(UsingRenderMixin, 
-                   UsingFormMixin, 
+class PageResource(ForPageMixin, 
+                   ForDispositionMixin, 
                    security.RootFactory):
 
     def add(self, data, flush=False):

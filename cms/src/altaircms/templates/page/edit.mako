@@ -60,7 +60,7 @@
 	   <input type="submit" value="load"/>
 	</form>
 
-	<form action="#" method="POST">
+	<form action="${h.page.to_widget_disposition(request,page)}" method="POST">
        <h4>現在のwidget layoutを保存</h4>
        ${forms["disposition_save"].page}
 	   <input type="submit" value="save"/>

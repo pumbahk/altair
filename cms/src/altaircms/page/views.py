@@ -152,11 +152,14 @@ def to_publish(request):     ## fixme
     page.to_published()
     return HTTPFound(request.route_path("page_edit_", page_id=page_id))
 
+## todo: persmissionが正しいか確認
 @view_config(route_name='page_edit_', renderer='altaircms:templates/page/edit.mako', permission='authenticated', 
              decorator=with_fanstatic_jqueries.merge(with_bootstrap).merge(with_wysiwyg_editor))
 @view_config(route_name='page_edit', renderer='altaircms:templates/page/edit.mako', permission='authenticated', 
              decorator=with_fanstatic_jqueries.merge(with_bootstrap).merge(with_wysiwyg_editor))
 def page_edit(request):
+    """pageの中をwidgetを利用して変更する
+    """
     id_ = request.matchdict['page_id']
     page = PageRESTAPIView(request, id_).read()
     if not page:
@@ -170,3 +173,14 @@ def page_edit(request):
             "forms": forms, #forms is dict
             "layout_render":layout_render
         }
+
+## widgetの保存
+@view_config(route_name="disposition", request_method="POST")
+def disposition_save(context, request):
+    page = context.get_page(request.matchdict["id"])
+    wdisposition = context.get_disposition(page)
+    context.add(wdisposition)
+    
+    FlashMessage.success(u"widgetのデータが保存されました", request=request)
+    return HTTPFound(h.page.to_edit_page(request, page))
+

@@ -30,3 +30,8 @@ def event_page(request, page):
     else:
         return ""
         
+"""
+widgetの表示位置を読み込み・保存
+"""
+def to_widget_disposition(request, page):
+    return request.route_path("disposition", id=page.id)
