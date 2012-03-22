@@ -8,5 +8,6 @@ from . import helpers
 def add_renderer_globals(event):
     event['h'] = helpers
     # event['user'] = user_context(event)
-    event['user'] = event["request"].user
+    if event["request"]:
+        event['user'] = event["request"].user
 

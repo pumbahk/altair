@@ -13,6 +13,7 @@ class PageFunctionalTests(unittest.TestCase):
    def setUp(self):
         from altaircms import main_app
         app = main_app({}, {"sqlalchemy.url": "sqlite://", 
+                            "session.secret": "B7gzHVRUqErB1TFgSeLCHH3Ux6ShtI", 
                             "mako.directories": "altaircms:templates", 
                             "altaircms.debug.strip_security": 'true', 
                             "plugin.static_directory": "altaircms:plugins/static", 
@@ -33,7 +34,6 @@ class PageFunctionalTests(unittest.TestCase):
                  u'layout': u"1",
                  u'title': title, 
                  u'url': u'/tmp/url'}
-
        self.testapp.post("/page/", params, status=302)
 
    def update(self, obj_id, title="title"):

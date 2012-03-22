@@ -37,7 +37,6 @@ class CreateView(object):
 
             ## flash messsage
             FlashMessage.success("page created", request=self.request)
-
             return HTTPFound(self.request.route_path("page"))
         return dict(
             pages=PageRESTAPIView(self.request).read(),
