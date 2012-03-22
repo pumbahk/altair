@@ -22,7 +22,7 @@ class FlashMessage(object):
     def _flash(cls, request, message, queue):
         if request:
             request.session.flash(message, queue)
-        logger.info("flashmessage type:%s message:%s" % (queue, message))
+        logger.info("flashmessage -- type:%s message:%s --" % (queue, message))
 
     @classmethod
     def success(cls, message, request=None):

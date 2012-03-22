@@ -52,6 +52,20 @@
   <div class="span1">
       <a class="btn" href="${h.page.to_duplicate(request,page)}"><i class="icon-repeat"> </i> Duplicate</a>
   </div>
+  <div class="span5">
+	## ここにレイアウト保存用のformが入る
+	<form action="#" method="POST">
+      <h4>widget layoutの読み込み</h4>
+       ${forms["disposition_select"].disposition}
+	   <input type="submit" value="load"/>
+	</form>
+
+	<form action="#" method="POST">
+       <h4>現在のwidget layoutを保存</h4>
+       ${forms["disposition_save"].page}
+	   <input type="submit" value="save"/>
+	</form>
+  </div>
 </div>
 
 %if event:

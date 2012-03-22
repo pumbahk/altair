@@ -1,66 +1,18 @@
 # coding: utf-8
-import colander
-import deform
+import wtforms.form as form
+import wtforms.fields as fields
+import wtforms.validators as validators
+import wtforms.widgets as widgets
+import wtforms.ext.sqlalchemy.fields as extfields
+from . import models
 
-from altaircms.widget.models import WIDGET_TYPE
+def existing_dispositions():
+    ##本当は、client.id, site.idでfilteringする必要がある
+    ##本当は、日付などでfilteringする必要がある
+    return models.WidgetDisposition.query.all()
 
-__all__ = [
-    'TextWidgetSchema',
-    'BreadcrumbsWidgetSchema',
-    'ImageWidgetSchema',
-    'MovieWidgetSchema',
-    'FlashWidgetSchema',
-    'MenuWidgetSchema',
-    'BillinghistoryWidgetSchema',
-    'TopicWidgetSchema',
-    'get_schema_by_widget'
-]
+class WidgetDispositionSelectForm(form.Form):
+    disposition = extfields.QuerySelectField(query_factory=existing_dispositions, allow_blank=False)
 
-
-class WidgetSchema(colander.Schema):
-    type = colander.SchemaNode(
-        colander.String(),
-        validator=colander.OneOf(WIDGET_TYPE),
-        widget=deform.widget.HiddenWidget()
-    )
-
-
-class TextWidgetSchema(WidgetSchema):
-    title = colander.SchemaNode(colander.String())
-    text = colander.SchemaNode(colander.String(), widget=deform.widget.TextAreaWidget())
-
-
-class BreadcrumbsWidgetSchema(WidgetSchema):
-    breadcrumb = colander.SchemaNode(colander.String(), widget=deform.widget.TextAreaWidget(), title=u'パンくず構造のJSONオブジェクト')
-
-
-class MenuWidgetSchema(WidgetSchema):
-    menu = colander.SchemaNode(colander.String(), widget=deform.widget.TextAreaWidget(), title=u'メニュー構造のJSONオブジェクト')
-
-
-class BillinghistoryWidgetSchema(WidgetSchema):
-    text = colander.SchemaNode(colander.String(), widget=deform.widget.TextAreaWidget(), title=u'購入履歴構造のJSONオブジェクト')
-
-
-class TopicWidgetSchema(WidgetSchema):
-    topic_id = colander.SchemaNode(colander.Integer(), title=u'トピックID')
-    title = colander.SchemaNode(colander.String(), title=u'トピック名')
-
-
-class ImageWidgetSchema(WidgetSchema):
-    asset_id = colander.SchemaNode(colander.Integer())
-
-
-class MovieWidgetSchema(WidgetSchema):
-    asset_id = colander.SchemaNode(colander.Integer())
-
-
-class FlashWidgetSchema(WidgetSchema):
-    asset_id = colander.SchemaNode(colander.Integer())
-
-
-def get_schema_by_widget(widget, type_=None):
-    type_ = type_ if type_ else widget.type
-
-    cls = globals()[type_.capitalize() + 'WidgetSchema']
-    return cls
+class WidgetDispositionSaveForm(form.Form):
+    page = fields.IntegerField(widget=widgets.HiddenInput())

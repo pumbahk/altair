@@ -1,14 +1,20 @@
 # coding: utf-8
 from altaircms.models import DBSession
 from altaircms.layout.models import Layout
+import altaircms.widget.forms as wf
 import altaircms.security as security
 from . import renderable
 from . import models
 
-def set_with_dict(obj, D):
-    for k, v in D.items():
-        setattr(obj, k, v)
-    return obj
+class UsingFormMixin(object):
+    def get_forms(self, page):
+        return {"disposition_select": self._wdp_select_form(page), 
+                "disposition_save": self._wdp_save_form(page)}
+    def _wdp_select_form(self, page):
+        return wf.WidgetDispositionSelectForm() ## dynamic に絞り込みたい
+
+    def _wdp_save_form(self, page):
+        return wf.WidgetDispositionSaveForm(page=page.id)
 
 class UsingRenderMixin(object):
     def get_layout_render(self, page):
@@ -25,6 +31,7 @@ class UsingRenderMixin(object):
         return page.clone(DBSession)
 
 class PageResource(UsingRenderMixin, 
+                   UsingFormMixin, 
                    security.RootFactory):
 
     def add(self, data, flush=False):

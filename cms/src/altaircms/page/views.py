@@ -163,8 +163,10 @@ def page_edit(request):
         return HTTPFound(request.route_path("page"))
     
     layout_render = request.context.get_layout_render(page)
+    forms = request.context.get_forms(page)
     return {
             'event':page.event,
             'page':page,
+            "forms": forms, #forms is dict
             "layout_render":layout_render
         }
