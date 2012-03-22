@@ -1,3 +1,5 @@
+# -*- coding:utf-8 -*-
+
 import unittest
 import datetime
 import os.path
@@ -135,10 +137,30 @@ class FunctionalPageRenderingTest(UseAssetMixin,
         import transaction
         transaction.abort()
         self._getSession().remove()
-        
-    def test_it(self):
+
+    def test_it_nodata(self):
+        """ pageのデータが存在しない場合のレンダリング 404
+        """
+        self.testapp.get("/f/publish/sample_page", status=404)
+
+    def test_it_simple(self):
+        """ widgetなしページのレンダリング
+        """
         session = self._getSession()
-        self._addData(session)
+        self._addData(session, u"{}")
+        self.testapp.get("/f/publish/sample_page", status=200)
+
+
+    def test_it(self):
+        """ widgetありページのレンダリング
+        """
+        session = self._getSession()
+        structure = u'''
+{"content": [{"pk": 1, "name": "freetext"}, {"pk": 3, "name": "movie"}, {"pk": 4, "name": "calendar"}, {"pk": 5, "name": "flash"}, {"pk": 52,  "name": "flash"}],
+ "footer": [{"pk": 2, "name": "image"}]}
+'''
+        self._addData(session, structure)
+        self._addWidget(session)
 
         result = self.testapp.get("/f/publish/sample_page", status=200)
         text = result.text
@@ -154,22 +176,19 @@ class FunctionalPageRenderingTest(UseAssetMixin,
         ## js swfobject
         self.assertTrue("/static/swfobject.js" in text)
 
-    def test_it_nodata(self):
-        self.testapp.get("/f/publish/sample_page", status=404)
-
-    def _addData(self, session):
-        structure = u'''
-{"content": [{"pk": 1, "name": "freetext"}, {"pk": 3, "name": "movie"}, {"pk": 4, "name": "calendar"}, {"pk": 5, "name": "flash"}, {"pk": 52,  "name": "flash"}],
- "footer": [{"pk": 2, "name": "image"}]}
-'''
-        session.add(self._getPage(structure))
-        session.add(self._getLayout())
+    def _addWidget(self, session):
         session.add(self._getTextWidget())
         session.add(self._getImageWidget())
         session.add(self._getMovieWidget())
         session.add(self._getCalendarWidget())
         session.add(self._getFlashWidget())
         session.add(self._getFlashWidget2())
+        import transaction
+        transaction.commit()
+        
+    def _addData(self, session, structure=u""):
+        session.add(self._getPage(structure))
+        session.add(self._getLayout())
         import transaction
         transaction.commit()
 

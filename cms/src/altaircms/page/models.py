@@ -73,9 +73,9 @@ class Page(PublishUnpublishMixin,
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=datetime.now())
 
-    title = Column(Unicode)
-    keywords = Column(Unicode)
-    description = Column(Unicode)
+    title = Column(Unicode, default=u"")
+    keywords = Column(Unicode, default=u"")
+    description = Column(Unicode, default=u"")
     url = Column(String)
     version = Column(Integer)
 
