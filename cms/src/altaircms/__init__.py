@@ -59,10 +59,10 @@ def main(global_config, **settings):
     ## include
     config.include('pyramid_tm')
     config.include("pyramid_fanstatic")
-    config.include("altaircms.widget")
 
     config.include("altaircms.auth", route_prefix='/auth')
     config.include("altaircms.front", route_prefix="f")
+    config.include("altaircms.widget")
     config.include("altaircms.plugins")
     config.include("altaircms.event")
     config.include("altaircms.layout")
@@ -71,6 +71,7 @@ def main(global_config, **settings):
     config.include("altaircms.asset")
     config.include("altaircms.topic")
     config.include("altaircms.base")
+
 
     test_re = re.compile('tests$').search
     config.scan(ignore=[test_re, "altaircms.demo"])
@@ -89,7 +90,7 @@ def main(global_config, **settings):
     ## 設定ファイルを読み込んで追加でinclude.(debug用)
 
     if settings.get("altaircms.debug.additional_includes"):
-        for m in settings.get("altaircms.debug.additional_includes").split(" "):
+        for m in re.split("\s+", settings.get("altaircms.debug.additional_includes").lstrip()):
             warnings.warn("------------additional include " + m)
             config.include(m); config.scan(m)
     return config.make_wsgi_app()
