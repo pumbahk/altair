@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 import unittest
 from altaircms.models import DBSession
 from altaircms.page.models import Page
@@ -26,7 +27,7 @@ class PageFunctionalTests(unittest.TestCase):
         
    def _create_layout(self):
        from altaircms.layout.models import Layout
-       layout = Layout()
+       layout = Layout(blocks="[]")
        DBSession.add(layout)
        import transaction
        transaction.commit()
@@ -74,6 +75,8 @@ class PageFunctionalTests(unittest.TestCase):
        obj = Page.query.first()
        self.assertEquals(obj.title, "music")
 
+       ## D&Dでwidgetを追加するページが開ける
+       self.testapp.get("/page/%s" % obj.id, status=200)
        ## duplicate
        self.duplicate(obj.id)
        self.assertEquals(Page.query.count(), 2)

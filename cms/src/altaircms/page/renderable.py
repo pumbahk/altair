@@ -4,6 +4,8 @@ import json
 import altaircms.helpers as helpers
 
 def _safe_json_loads(string):
+    if string is None:
+        return []
     if not isinstance(string, basestring):
         return string
     if isinstance(string, unicode):

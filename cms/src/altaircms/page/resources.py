@@ -26,7 +26,6 @@ class ForDispositionMixin(object):
         wd = WidgetDisposition.from_page(page, DBSession)
         if data:
             for k, v in data.iteritems():
-                print k, v
                 setattr(wd, k, v)
         return wd
 

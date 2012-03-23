@@ -30,7 +30,7 @@ class UseWidgetMixin(object):
     def _getImageWidget(self):
         from altaircms.plugins.widget.image.models import ImageWidget
         asset = self._getImageAsset()
-        D = {"id": 2, "asset": asset,  "asset_id": asset.id}
+        D = {"id": 2, "asset": asset,  "asset_id": asset.id, "page_id":2}
         return ImageWidget.from_dict(D)
 
 
@@ -64,18 +64,19 @@ class UsePageEtcMixin(object):
              'updated_at': datetime.datetime(2012, 2, 16, 11, 26, 55, 755641)}
         return Layout.from_dict(D)
 
-    
-class PageCloneTest(UseAssetMixin, 
-                                  UseWidgetMixin, 
-                                  UsePageEtcMixin, 
-                                  unittest.TestCase):
+
+class WithWidgetPageTest(UseAssetMixin, 
+                    UseWidgetMixin, 
+                    UsePageEtcMixin, 
+                    unittest.TestCase):
     DIR = os.path.dirname(os.path.abspath(__file__))
     def setUp(self):
         from altaircms import main
         app = main({}, **{"sqlalchemy.url": "sqlite://", 
-                            "mako.directories": os.path.join(self.DIR, "templates"), 
-                            "altaircms.plugin_static_directory": "altaircms:plugins/static", 
-                            "altaircms.layout_directory": "."})
+                          "mako.directories": os.path.join(self.DIR, "templates"), 
+                          "altaircms.plugin_static_directory": "altaircms:plugins/static", 
+                          "session.secret": "B7gzHVRUqErB1TFgSeLCHH3Ux6ShtI", 
+                          "altaircms.layout_directory": "."})
         from altaircms.lib.testutils import create_db
         create_db()
         from webtest import TestApp
@@ -86,6 +87,27 @@ class PageCloneTest(UseAssetMixin,
         transaction.abort()
         self._getSession().remove()
         
+    def _addData(self, session):
+        structure = u'''
+{"content": [{"pk": 1, "name": "freetext"}],
+ "footer": [{"pk": 2, "name": "image"}]}
+'''
+        session.add(self._getPage(structure))
+        session.add(self._getLayout())
+        session.add(self._getTextWidget())
+        session.add(self._getImageWidget())
+        import transaction
+        transaction.commit()
+
+    def _getSession(self):
+        from altaircms.models import DBSession
+        return DBSession
+"""
+todo: このあたり汚くて治したい。
+"""
+class PageCloneTest(WithWidgetPageTest):
+    """ pageの複製のテスト
+    """
     def test_it(self):
         from altaircms.page.models import Page
         from altaircms.widget.models import Widget
@@ -103,23 +125,56 @@ class PageCloneTest(UseAssetMixin,
         self.assertEquals(Widget.query.count(), 4)
         self.assertEquals(cloned.structure, 
                           json.dumps({"content": [{"pk": 3, "name": "freetext"}],
-                                      "footer": [{"pk": 4, "name": "image"}]}))
+                                      "footer":  [{"pk": 4, "name": "image"}]}))
 
-    def _addData(self, session):
-        structure = u'''
-{"content": [{"pk": 1, "name": "freetext"}],
- "footer": [{"pk": 2, "name": "image"}]}
-'''
-        session.add(self._getPage(structure))
-        session.add(self._getLayout())
-        session.add(self._getTextWidget())
-        session.add(self._getImageWidget())
+
+class DispositionViewFunctionalTest(WithWidgetPageTest):
+    def _another_page(self, session):
+        from altaircms.page.models import Page
+        page = Page()
+        session.add(page)
+        session.flush()
+        return page
+
+    def _save(self, session):
+        from altaircms.page.models import Page
+        page = Page.query.first()
+        params = dict(id=page.id, title=u"テキトーな名前")
+        self.testapp.post("/page/%s/disposition" % page.id, params, status=302)
+
+    def _load(self, session, page_id, wdisposition_id):
         import transaction
         transaction.commit()
+        params = {"disposition":wdisposition_id}
+        self.testapp.get("/page/%s/disposition" % page_id, params, status=302)     
 
-    def _getSession(self):
-        from altaircms.models import DBSession
-        return DBSession
+    def _page_and_widget_count(self, session, page_id):
+        from altaircms.page.models import Page
+        from altaircms.widget.models import Widget
+        # print [(w.id, w.page_id, w.disposition_id) for w in Widget.query.all()]
+        where = (Page.id==Widget.page_id) & (Page.id==page_id)
+        return session.query(Widget, Page).filter(where).count()
+        
+    def test_it(self):
+        """widget layout 保存. widget layout の読み込み"""
+        session = self._getSession()
+        self._addData(session)
+        self.assertEquals(self._page_and_widget_count(session, 0), 0)
+
+        ## save
+        from altaircms.widget.models import WidgetDisposition
+        self.assertEquals(WidgetDisposition.query.count(), 0)
+        self._save(session)
+        self.assertEquals(WidgetDisposition.query.count(), 1)
+
+        ## create another page
+        page1_id = self._another_page(session).id
+        self.assertEquals(self._page_and_widget_count(session, page1_id), 0)
+
+        ## load
+        wdisposition = WidgetDisposition.query.first()
+        self._load(session, page1_id, wdisposition.id)
+        self.assertNotEquals(self._page_and_widget_count(session, page1_id), 0)
 
 if __name__ == "__main__":
     unittest.main()

@@ -26,7 +26,8 @@ class Widget(Base):
     query = DBSession.query_property()
     __tablename__ = "widget"
     page_id = sa.Column(sa.Integer, sa.ForeignKey("page.id"))
-    page = orm.relationship("Page", backref="widgets", single_parent = True)
+    page = orm.relationship("Page", backref="widgets")
+    # page = orm.relationship("Page", backref="widgets", single_parent = True)
 
     disposition_id = sa.Column(sa.Integer, sa.ForeignKey("widgetdisposition.id"))
     disposition = orm.relationship("WidgetDisposition", backref="widgets")
@@ -43,10 +44,14 @@ class Widget(Base):
         return '<%s %s>' % (self.__class__.__name__, self.id)
 
     def clone(self, session, page): #todo:refactoring model#clone
+        from altaircms.page.models import Page
         D = self.to_dict()
         D["id"] = None
-        D["page_id"] = None
-        D["page"] = None
+        if page:
+            D["page_id"] = page.id
+            D["page"] = page
+        else:
+            D["page_id"] = D["page"] = None
         ins = self.__class__.from_dict(D)
         session.add(ins)
         return ins
@@ -103,8 +108,8 @@ class WidgetDisposition(Base): #todo: rename
         import altaircms.widget.tree.clone as wclone
         wtree = WidgetTreeProxy(self)
         new_wtree = wclone.clone(session, page, wtree)
-        if session:
-            session.flush()
+        # if session:
+        #     session.flush()
         page.structure = json.dumps(wclone.to_structure(new_wtree))
         return page
 
@@ -116,8 +121,8 @@ class WidgetDisposition(Base): #todo: rename
     def enable_only_query(cls, operator):
         return cls.query.filter((cls.is_public==True)|(cls.owner==operator))
 
-    def __repr__(self):
-        return self.title
+    # def __repr__(self):
+    #     return self.title
 
 class AssetWidgetResourceMixin(object):
     WidgetClass = None

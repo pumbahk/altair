@@ -91,6 +91,8 @@ class Page(PublishUnpublishMixin,
     def clone(self, session):
         from . import clone
         return clone.page_clone(self, session)
+
+
     """
     def __str__(self):
         return '%s'  % self.id
