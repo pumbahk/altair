@@ -77,7 +77,7 @@ def main(global_config, **settings):
 
 
     test_re = re.compile('tests$').search
-    config.scan(ignore=[test_re, "altaircms.demo"])
+    config.scan(ignore=[test_re])
 
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)
     config.add_static_view('plugins/static', 'altaircms:plugins/static', cache_max_age=3600)

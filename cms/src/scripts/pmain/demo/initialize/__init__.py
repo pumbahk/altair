@@ -17,10 +17,6 @@ def block(message):
     yield
 
 def init():
-    with block("create role model"):
-        from altaircms.auth.initial_data import insert_initial_authdata
-        insert_initial_authdata()
-
     with block("create layout model"):
         from altaircms.layout.models import Layout
         layout0 = Layout()
