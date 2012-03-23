@@ -20,8 +20,9 @@ class ForDispositionMixin(object):
         return wf.WidgetDispositionSelectForm.from_operator(self.request.user)
 
     def _wdp_save_form(self, page):
+        user = self.request.user
         return wf.WidgetDispositionSaveForm(page=page.id,
-                                            owner_id=self.request.user.id)
+                                            owner_id=user.id if user else None)
 
     def get_disposition_from_page(self, page, data=None):
         wd = WidgetDisposition.from_page(page, DBSession)

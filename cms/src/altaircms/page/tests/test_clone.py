@@ -75,6 +75,7 @@ class WithWidgetPageTest(UseAssetMixin,
         app = main({}, **{"sqlalchemy.url": "sqlite://", 
                           "mako.directories": os.path.join(self.DIR, "templates"), 
                           "altaircms.plugin_static_directory": "altaircms:plugins/static", 
+                          "altaircms.debug.strip_security": "true", 
                           "session.secret": "B7gzHVRUqErB1TFgSeLCHH3Ux6ShtI", 
                           "altaircms.layout_directory": "."})
         from altaircms.lib.testutils import create_db
@@ -139,7 +140,7 @@ class DispositionViewFunctionalTest(WithWidgetPageTest):
     def _save(self, session):
         from altaircms.page.models import Page
         page = Page.query.first()
-        params = dict(id=page.id, title=u"テキトーな名前")
+        params = dict(page=page.id, title=u"テキトーな名前")
         self.testapp.post("/page/%s/disposition" % page.id, params, status=302)
 
     def _load(self, session, page_id, wdisposition_id):

@@ -22,7 +22,7 @@ class WidgetDispositionSelectForm(form.Form):
 
 class WidgetDispositionSaveForm(form.Form):
     page = fields.IntegerField(widget=widgets.HiddenInput(), validators=[validators.Required()])
-    owner_id = fields.IntegerField(widget=widgets.HiddenInput(), validators=[validators.Required()])
+    owner_id = fields.IntegerField(widget=widgets.HiddenInput())
     title = fields.TextField(label=u"保存時のwidget layout名", validators=[validators.Required()])
     is_public = fields.BooleanField(label=u"他の人に公開する")
 
