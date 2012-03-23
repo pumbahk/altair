@@ -73,18 +73,7 @@ def main_app(global_config, settings):
     config.include("altaircms.base")
 
     test_re = re.compile('tests$').search
-    config.scan("altaircms.subscribers")
-    config.scan('altaircms.base', ignore=[test_re])
-    config.scan('altaircms.auth', ignore=[test_re])
-    config.scan('altaircms.event', ignore=[test_re])
-    config.scan('altaircms.page', ignore=[test_re])
-    config.scan('altaircms.asset', ignore=[test_re])
-    config.scan('altaircms.topic', ignore=[test_re])
-    config.scan('altaircms.widget', ignore=[test_re])
-    config.scan('altaircms.layout', ignore=[test_re])
-    config.scan('altaircms.front', ignore=[test_re])
-    config.scan("altaircms.plugins", ignore=[test_re])
-    config.scan("altaircms.subscribers", ignore=[test_re])
+    config.scan(ignore=[test_re, "altaircms.demo"])
 
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)
     config.add_static_view('plugins/static', 'altaircms:plugins/static', cache_max_age=3600)
@@ -102,7 +91,7 @@ def main_app(global_config, settings):
     if settings.get("altaircms.debug.additional_includes"):
         for m in settings.get("altaircms.debug.additional_includes").split(" "):
             warnings.warn("------------additional include " + m)
-            config.include(m)
+            config.include(m); config.scan(m)
     return config.make_wsgi_app()
 
 
