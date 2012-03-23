@@ -33,6 +33,7 @@
   <button id="submit" type="button">登録</button>
 </div>
 <script type="text/javascript">
+<%text>
 (function(){
     var Item = Backbone.Model.extend({
         sync: function(){
@@ -70,12 +71,14 @@
         ].join("\n")), 
 
         events: {
-            "click a.remove": "clearSelf"
+            "click a.remove": "clearSelf",
+            "dblclick td": "transformEditView"
         }, 
 
         initialize: function(){
             this.model.bind("change", this.render, this);
             this.model.bind("destroy", this.remove, this);            
+            this.model.bind("redraw", this.render, this);
         }, 
         render: function(){
             $(this.el).html(this.template(this.model.toJSON()));
@@ -95,9 +98,47 @@
         clearSelf: function(){
             this.model.destroy();
         }, 
+        transformEditView: function(){
+            this.model.unbind("change", this.render);
+            var edit_view = new EditItemView({model: this.model});
+            $(this.el).html(edit_view.render().el);
+        }, 
         remove: function() {
             $(this.el).remove();
         },
+    });
+
+    var EditItemView = Backbone.View.extend({
+        tagName: "div", 
+        className: "edit-item", 
+        template: _.template([
+       			'<td><label>見出し<input class="label" type="text" value="<%= label %>"/></label></td>', 
+            '<td><label>内容<textarea class="content" type="text"><%= content %></textarea></label></td>'
+        ].join("\n")), 
+        
+        events: {
+            "keypress .label": "updateOnEnter", 
+            "keypress .content": "updateOnEnter", 
+        }, 
+
+        updateOnEnter: function(e){
+            var label = this.$(".label").val();
+            var content = this.$(".content").val();
+            if (!label || !content || e.keyCode != 13) return;
+            this.model.set("label", label);
+            this.model.set("content", content);
+            this.yank();
+        }, 
+
+        yank: function(){
+            this.remove();
+            this.model.trigger("redraw");
+        }, 
+
+        render: function(){
+            $(this.el).html(this.template(this.model.toJSON()));
+            return this;
+        }
     });
 
     var AppView = Backbone.View.extend({
@@ -146,7 +187,7 @@
             this.content_input.val("");
         }, 
     });
-
+</%text>
   var root =  $("#app");
   var appview = new AppView({el: root}); 
   root.data("appview",appview);

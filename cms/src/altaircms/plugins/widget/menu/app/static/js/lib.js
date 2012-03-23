@@ -1,3 +1,11 @@
+// underscore
+if(!_.has){
+        // Has own property?
+    _.has = function(obj, key) {
+        return hasOwnProperty.call(obj, key);
+    };
+}
+
 var lib = (function(){
     var Item = Backbone.Model.extend({
         sync: function(){
@@ -31,17 +39,20 @@ var lib = (function(){
         template: _.template([
             '<td class="label"></td>', 
             '<td class="link"></td>', 
-            '<td class="close"><a href="#" class="close">close</a></td>', 
+            '<td><a href="#" class="remove">remove</a></td>', 
         ].join("\n")), 
 
         events: {
-            "click a.close": "clearSelf"
+            "click a.remove": "clearSelf", 
+            "dblclick td": "transformEditView", 
         }, 
 
         initialize: function(){
             this.model.bind("change", this.render, this);
             this.model.bind("destroy", this.remove, this);            
+            this.model.bind("redraw", this.render, this);
         }, 
+
         render: function(){
             $(this.el).html(this.template(this.model.toJSON()));
             this.setContent();
@@ -53,16 +64,54 @@ var lib = (function(){
             this.$(".label").text(label);
 
             var link = this.model.get("link");
-            this.$(".link").text(link);
+            this.$(".link").html($("<a>").attr("href",link).text(link));
             // this.input.bind('blur', _.bind(this.close, this)).val(text);
             // blue is unfocus. todo sample is then saved object
         }, 
         clearSelf: function(){
             this.model.destroy();
         }, 
+        transformEditView: function(){
+            this.model.unbind("change", this.render);
+            var edit_view = new EditItemView({model: this.model});
+            $(this.el).html(edit_view.render().el);
+        }, 
         remove: function() {
             $(this.el).remove();
         },
+    });
+
+    var EditItemView = Backbone.View.extend({
+        tagName: "div", 
+        className: "edit-item", 
+        template: _.template([
+       			'<td><label>リンク先名<input class="label" type="text" value="<%= label %>"/></label></td>', 
+            '<td><label>URL<input class="link" type="text" value="<%= link %>"/></label></td>'
+        ].join("\n")), 
+        
+        events: {
+            "keypress .label": "updateOnEnter", 
+            "keypress .link": "updateOnEnter", 
+        }, 
+
+        updateOnEnter: function(e){
+            var label = this.$(".label").val();
+            var link = this.$(".link").val();
+            if (!label || !link || e.keyCode != 13) return;
+            this.model.set("label", label);
+            this.model.set("link", link);
+            this.yank();
+        }, 
+
+        yank: function(){
+            this.remove();
+            this.model.trigger("redraw");
+        }, 
+
+        render: function(){
+            $(this.el).html(this.template(this.model.toJSON()));
+            return this;
+        }
     });
 
     var AppView = Backbone.View.extend({
@@ -78,7 +127,6 @@ var lib = (function(){
         events: {
             "keypress #label_input": "createOnEnter", 
             "keypress #link_input": "createOnEnter", 
-            "click #submit": "collectData",  // todo fix
         }, 
         
         addOne: function(item){
@@ -112,6 +160,7 @@ var lib = (function(){
             this.link_input.val("");
         }, 
     });
+
     return {
         AppView: AppView
     };

@@ -70,8 +70,9 @@
       <div id="ticketlist"  class="widget red float-left">チケットリスト</div>
       <div id="performancelist"  class="widget red float-left">講演リスト</div>
       <div id="menu"  class="widget red float-left">メニュー</div>
+      <div id="summary"  class="widget red float-left">サマリー</div>
       <div id="topic"  class="widget red float-left">トピック</div>
-      <div id="topic"  class="widget red float-left">パンくずリスト</div>
+      <div id="breadcrumbs"  class="widget red float-left">パンくずリスト</div>
     </div>
 </%def>
 
