@@ -4,6 +4,8 @@ from pyramid.paster import get_app
 from pyramid.paster import bootstrap
 
 def pscript():
+    import warnings
+    warnings.warn("deprecated. use pmain")
     parser = argparse.ArgumentParser(description="Script eval in pyramid app/env.")
     parser.add_argument("-e", "--env", default="env", 
                         help="Set eval env <app/env> (default: app)")

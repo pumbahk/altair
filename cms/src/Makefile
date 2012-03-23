@@ -9,9 +9,6 @@ test:
 	python -m unittest discover
 	# nosetests -q
 
-printpage:
-	pscript -e env -c ${inifile} -s scripts/pscript/print_page.py
-
 printapp:
 	pmain -c onetime.ini -s scripts.pmain.printapp
 
