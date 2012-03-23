@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 from altaircms.widget.models import WidgetDisposition
-
+from altaircms.plugins.widget.image.models import ImageWidget
+from altaircms.plugins.widget.freetext.models import FreetextWidget
 # -*- coding:utf-8 -*-
 import unittest
 import datetime
@@ -8,12 +9,8 @@ import os.path
 import json
 
 def setUpModule():
-    from altaircms.models import DBSession
-    DBSession.remove()
-
-def tearDownModule():
     from altaircms.lib.testutils import dropall_db
-    dropall_db(message="test view drop")
+    dropall_db()
 
 class UseAssetMixin(object):
     def _getImageAsset(self):
@@ -26,12 +23,10 @@ class UseAssetMixin(object):
 
 class UseWidgetMixin(object):
     def _getTextWidget(self):
-        from altaircms.plugins.widget.freetext.models import FreetextWidget
         D = {'id': 1, 'text': u'freetext',"page_id": 2}
         return FreetextWidget.from_dict(D)
 
     def _getImageWidget(self):
-        from altaircms.plugins.widget.image.models import ImageWidget
         asset = self._getImageAsset()
         D = {"id": 2, "asset": asset,  "asset_id": asset.id}
         return ImageWidget.from_dict(D)
@@ -74,18 +69,22 @@ class WidgetDispositionTest(UseAssetMixin,
                                   unittest.TestCase):
     DIR = os.path.dirname(os.path.abspath(__file__))
     def setUp(self):
+        self._getSession().remove()
         from altaircms import main
         app = main({}, **{"sqlalchemy.url": "sqlite://", 
                             "mako.directories": os.path.join(self.DIR, "templates"), 
                             "altaircms.plugin_static_directory": "altaircms:plugins/static", 
                             "altaircms.layout_directory": "."})
+        from altaircms.lib.testutils import create_db
+        create_db()
         from webtest import TestApp
         self.testapp = TestApp(app)
 
     def tearDown(self):
         import transaction
         transaction.abort()
-        self._getSession().remove()
+        from altaircms.lib.testutils import dropall_db
+        dropall_db(message="test view drop")
 
     def test_create_from_page(self):
         session = self._getSession()

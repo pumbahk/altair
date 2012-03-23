@@ -6,6 +6,7 @@ from pyramid.exceptions import Forbidden
 from pyramid.httpexceptions import HTTPFound, HTTPBadRequest, HTTPUnauthorized, HTTPNotFound
 from pyramid.security import forget, remember, authenticated_userid
 from pyramid.view import view_config
+from pyramid.view import view_defaults
 from pyramid.url import route_url
 
 from sqlalchemy.orm.exc import NoResultFound
@@ -16,7 +17,7 @@ import json
 
 from altaircms.views import BaseRESTAPI
 from altaircms.models import DBSession
-from altaircms.lib.fanstatic import with_bootstrap, bootstrap_need
+from altaircms.lib.fanstatic import with_bootstrap
 from altaircms.auth.errors import AuthenticationError
 from altaircms.auth.forms import RoleForm
 from .models import Operator, Role, Permission, RolePermission, DEFAULT_ROLE
@@ -165,15 +166,13 @@ def auth_denied_view(context, request):
     return context.args
 """
 
-
+@view_defaults(decorator=with_bootstrap)
 class OperatorView(object):
     def __init__(self, request):
         self.request = request
         self.id = request.matchdict.get('id', None)
         if self.id:
             self.operator = OperatorAPI(self.request, self.id).read()
-
-        bootstrap_need()
 
     @view_config(route_name="operator_list", renderer='altaircms:templates/auth/operator/list.mako', permission="operator_read")
     def list(self):

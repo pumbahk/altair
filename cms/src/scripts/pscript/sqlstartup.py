@@ -85,6 +85,10 @@ def main():
 
 
 def setup():
+    from altaircms.models import DBSession
+    print "U40="
+    print DBSession.bind
+    print "U40="
     from altaircms.models import Base
     Base.metadata.drop_all();
     Base.metadata.create_all();

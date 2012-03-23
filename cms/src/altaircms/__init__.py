@@ -1,4 +1,8 @@
 # coding:utf-8
+
+## todo: 消す(今はこれを始めに読み込まないとimport errorになるテストがある)
+import altaircms.lib.fanstatic
+
 import re
 import warnings
 
@@ -79,6 +83,10 @@ def main(global_config, **settings):
     config.add_static_view('plugins/static', 'altaircms:plugins/static', cache_max_age=3600)
 
     engine = engine_from_config(settings, 'sqlalchemy.')
+    from altaircms.models import DBSession
+    from altaircms.models import Base
+    DBSession.bind=engine
+    Base.metadata.bind=engine
     sqlahelper.add_engine(engine)
 
     ## 設定ファイルを読み込んで追加でinclude.(debug用)

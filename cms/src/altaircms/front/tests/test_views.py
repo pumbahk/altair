@@ -130,6 +130,10 @@ class FunctionalPageRenderingTest(UseAssetMixin,
                             "mako.directories": os.path.join(self.DIR, "templates"), 
                             "altaircms.plugin_static_directory": "altaircms:plugins/static", 
                             "altaircms.layout_directory": "."})
+
+        from altaircms.lib.testutils import create_db
+        create_db()
+
         from webtest import TestApp
         self.testapp = TestApp(app)
 

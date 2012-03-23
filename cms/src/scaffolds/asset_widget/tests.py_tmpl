@@ -10,6 +10,8 @@ class FunctionalViewTests(unittest.TestCase):
     
     def setUp(self):
         self._getSession().remove()
+        from altaircms.lib.testutils import create_db
+        create_db()
         from altaircms import main
         self.app = main({}, **{"sqlalchemy.url": "sqlite://", 
                             "altaircms.debug.strip_security": "true",

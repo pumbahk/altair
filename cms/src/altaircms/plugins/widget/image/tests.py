@@ -17,6 +17,8 @@ class FunctionalViewTests(unittest.TestCase):
                             "altaircms.plugin_static_directory": "altaircms:plugins/static", 
                             "widget.template_path_format": "%s.mako", 
                             "altaircms.layout_directory": "."})
+        from altaircms.lib.testutils import create_db
+        create_db()
         from webtest import TestApp
         self.testapp = TestApp(self.app)
 

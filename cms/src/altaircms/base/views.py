@@ -6,7 +6,7 @@ from pyramid.view import view_config
 from sqlalchemy.sql.expression import desc
 import transaction
 
-from altaircms.lib.fanstatic import with_bootstrap, bootstrap_need
+from altaircms.lib.fanstatic import with_bootstrap
 from altaircms.models import DBSession, Event
 from altaircms.auth.models import APIKey
 from altaircms.views import BaseRESTAPI
@@ -31,8 +31,6 @@ class APIKeyView(object):
         self.id = request.matchdict.get('id', None)
         #self.model_object = APIKeyAPI(self.request).read()
         self.model_object = DBSession.query(APIKey).filter_by(id=self.id).one() if self.id else None
-
-        bootstrap_need()
 
     @view_config(route_name="apikey_list", request_method="POST", renderer="altaircms:templates/auth/apikey/list.mako")
     @view_config(route_name="apikey_list", request_method="GET", renderer="altaircms:templates/auth/apikey/list.mako")

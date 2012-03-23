@@ -13,12 +13,12 @@ from deform.exception import ValidationFailure
 from pyramid.exceptions import NotFound
 from pyramid.response import Response
 from pyramid.view import view_config
+from pyramid.view import view_defaults
 from sqlalchemy.sql.expression import desc
 
 from altaircms.models import DBSession
 from altaircms.views import BaseRESTAPI
-from altaircms.lib.fanstatic import bootstrap_need
-
+from altaircms.lib.fanstatic import with_bootstrap
 from altaircms.asset import get_storepath
 from altaircms.asset.models import Asset, ImageAsset, MovieAsset, FlashAsset
 from altaircms.asset.forms import *
@@ -39,15 +39,13 @@ def detect_mimetype(filename):
     ext = filename[filename.rfind('.') + 1:].lower()
     return EXT_MAP[ext] if ext in EXT_MAP else 'application/octet-stream'
 
-
+@view_defaults(decorator=with_bootstrap)
 class AssetEditView(object):
     def __init__(self, request):
         self.request = request
         self.asset_id = self.request.matchdict['asset_id'] if 'asset_id' in self.request.matchdict else None
         self.asset = DBSession.query(Asset).get(self.asset_id) if self.asset_id else None
         self.asset_type = self.request.matchdict['asset_type'] if 'asset_type' in self.request.matchdict else None
-
-        bootstrap_need()
 
     def response_json_ok(self):
         # @TODO: 他のAPI呼び出しなどと共通化する
