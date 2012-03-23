@@ -17,10 +17,10 @@ from altaircms.asset.models import FlashAsset
 
 def get_storepath(request=None, registry=None):
     if request:
-        return request.registry.settings['asset.storepath']
+        return request.registry.settings['altaircms.asset.storepath']
     else:
         registry = get_current_registry()
-        return registry.settings["asset.storepath"]
+        return registry.settings["altaircms.asset.storepath"]
 
 def create_asset(captured, request=None, cb=None):
     """captured["type"], captured["filename"], captured["fp"]

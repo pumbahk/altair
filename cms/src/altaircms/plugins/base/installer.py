@@ -84,10 +84,10 @@ class BasePluginInstaller(object):
         self.pyramid_settings[self.PLUGIN_KEY] = store
         
     def install_resource(self):
-        dst = self.pyramid_settings.get("plugin.static_directory")
+        dst = self.pyramid_settings.get("altaircms.plugin_static_directory")
         if not dst:
             ## fixme message
-            raise PluginInstallExceptioni("plugin.static_directory is not found in your pyramid_settings'")
+            raise PluginInstallExceptioni("altaircms.plugin_static_directory is not found in your pyramid_settings'")
 
         dst = abspath_from_asset_spec(dst)
         widget_name = self.settings["name"]

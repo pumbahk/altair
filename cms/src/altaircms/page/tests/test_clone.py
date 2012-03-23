@@ -74,8 +74,8 @@ class PageCloneTest(UseAssetMixin,
         from altaircms import main_app
         app = main_app({}, {"sqlalchemy.url": "sqlite://", 
                             "mako.directories": os.path.join(self.DIR, "templates"), 
-                            "plugin.static_directory": "altaircms:plugins/static", 
-                            "widget.layout_directories": "."})
+                            "altaircms.plugin_static_directory": "altaircms:plugins/static", 
+                            "altaircms.layout_directory": "."})
         from webtest import TestApp
         self.testapp = TestApp(app)
 

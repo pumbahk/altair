@@ -16,8 +16,8 @@ class PageFunctionalTests(unittest.TestCase):
                             "session.secret": "B7gzHVRUqErB1TFgSeLCHH3Ux6ShtI", 
                             "mako.directories": "altaircms:templates", 
                             "altaircms.debug.strip_security": 'true', 
-                            "plugin.static_directory": "altaircms:plugins/static", 
-                            "widget.layout_directories": "."})
+                            "altaircms.plugin_static_directory": "altaircms:plugins/static", 
+                            "altaircms.layout_directory": "."})
         from webtest import TestApp
         self.testapp = TestApp(app)
         

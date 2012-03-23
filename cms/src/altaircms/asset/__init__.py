@@ -6,5 +6,5 @@ def includeme(config):
     config.add_route('asset_view', '/asset/{asset_id}')
 
 def get_storepath(request):
-    return request.registry.settings['asset.storepath']
+    return request.registry.settings['altaircms.asset.storepath']
 

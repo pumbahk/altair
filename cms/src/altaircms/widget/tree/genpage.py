@@ -8,7 +8,7 @@ from collections import defaultdict
 import os.path
 
 WIDGET_TEMPLATE_PATH_FORMAT = "widget.template_path_format"
-WIDGET_LAYOUT_DIRECTORIES = "widget.layout_directories"
+WIDGET_LAYOUT_DIRECTORIES = "altaircms.layout_directory"
 
 class GeneratePageException(Exception):
     pass

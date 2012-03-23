@@ -5,8 +5,8 @@ class FunctionalViewTests(unittest.TestCase):
         self._getSession().remove()
         from altaircms import main_app_with_strip_secret
         settings = {"sqlalchemy.url": "sqlite://", 
-                    "plugin.static_directory": "altaircms:plugins/static", 
-                    "asset.storepath": " %(here)s/data/assets"
+                    "altaircms.plugin_static_directory": "altaircms:plugins/static", 
+                    "altaircms.asset.storepath": " %(here)s/data/assets"
                     }
         self.app = main_app_with_strip_secret({}, settings)
         from webtest import TestApp
