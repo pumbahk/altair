@@ -13,7 +13,6 @@ import sqlahelper
 from sqlalchemy import engine_from_config
 
 from altaircms.security import rolefinder, RootFactory
-from altaircms.models import initialize_sql
 
 try:
     import pymysql_sa
@@ -82,12 +81,11 @@ def main(global_config, **settings):
     engine = engine_from_config(settings, 'sqlalchemy.')
     sqlahelper.add_engine(engine)
 
+    ## 設定ファイルを読み込んで追加でinclude.(debug用)
     if asbool(settings.get("altaircms.debug.start_when_dropall", "false")):
+        from altaircms.models import initialize_sql
         warnings.warn("altaircms.debug.start_when_dropall is true. all table are dropped!")
         initialize_sql(engine, dropall=True)
-    else:
-        initialize_sql(engine)
-    ## 設定ファイルを読み込んで追加でinclude.(debug用)
 
     if settings.get("altaircms.debug.additional_includes"):
         for m in re.split("\s+", settings.get("altaircms.debug.additional_includes").lstrip()):
