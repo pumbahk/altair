@@ -12,8 +12,8 @@ class FunctionalViewTests(unittest.TestCase):
     
     def setUp(self):
         self._getSession().remove()
-        from altaircms import main_app
-        self.app = main_app({}, {"sqlalchemy.url": "sqlite://", 
+        from altaircms import main
+        self.app = main({}, **{"sqlalchemy.url": "sqlite://", 
                             "altaircms.plugin_static_directory": "altaircms:plugins/static", 
                             "widget.template_path_format": "%s.mako", 
                             "altaircms.layout_directory": "."})

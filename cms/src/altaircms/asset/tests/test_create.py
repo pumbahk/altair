@@ -3,7 +3,7 @@ import unittest
 class FunctionalViewTests(unittest.TestCase):
     def setUp(self):
         self._getSession().remove()
-        from altaircms import main_app_with_strip_secret
+        from altaircms import main_with_strip_secret
         settings = {"sqlalchemy.url": "sqlite://", 
                     "altaircms.plugin_static_directory": "altaircms:plugins/static", 
                     "altaircms.asset.storepath": " %(here)s/data/assets"

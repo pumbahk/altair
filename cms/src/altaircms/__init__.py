@@ -23,10 +23,10 @@ except:
     pass
 
 
-def main_app_with_strip_secret(global_config, settings):
+def main_with_strip_secret(global_config, settings):
     D = {"altaircms.debug.strip_security": True}
     settings.update(D)
-    return main_app(global_config, settings)
+    return main(global_config, **settings)
 
 
 def _get_policies(settings):
@@ -40,9 +40,9 @@ def _get_policies(settings):
         from pyramid.authorization import ACLAuthorizationPolicy
         return  AuthTktAuthenticationPolicy(settings.get('auth.secret'), callback=rolefinder), \
             ACLAuthorizationPolicy()
-    
-def main_app(global_config, settings):
-    """ This function returns a Pyramid WSGI application.
+
+def main(global_config, **settings):
+    """ apprications main
     """
     session_factory = UnencryptedCookieSessionFactoryConfig(settings.get('session.secret'))
     authn_policy, authz_policy = _get_policies(settings)
@@ -93,10 +93,4 @@ def main_app(global_config, settings):
             warnings.warn("------------additional include " + m)
             config.include(m); config.scan(m)
     return config.make_wsgi_app()
-
-
-def main(global_config, **settings):
-    """ apprications main
-    """
-    return main_app(global_config, settings)
 

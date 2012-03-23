@@ -125,8 +125,8 @@ class FunctionalPageRenderingTest(UseAssetMixin,
                                   unittest.TestCase):
     DIR = os.path.dirname(os.path.abspath(__file__))
     def setUp(self):
-        from altaircms import main_app
-        app = main_app({}, {"sqlalchemy.url": "sqlite://", 
+        from altaircms import main
+        app = main({}, **{"sqlalchemy.url": "sqlite://", 
                             "mako.directories": os.path.join(self.DIR, "templates"), 
                             "altaircms.plugin_static_directory": "altaircms:plugins/static", 
                             "altaircms.layout_directory": "."})

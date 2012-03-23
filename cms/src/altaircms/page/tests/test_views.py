@@ -11,8 +11,8 @@ def tearDownModule():
 
 class PageFunctionalTests(unittest.TestCase):
    def setUp(self):
-        from altaircms import main_app
-        app = main_app({}, {"sqlalchemy.url": "sqlite://", 
+        from altaircms import main
+        app = main({}, **{"sqlalchemy.url": "sqlite://", 
                             "session.secret": "B7gzHVRUqErB1TFgSeLCHH3Ux6ShtI", 
                             "mako.directories": "altaircms:templates", 
                             "altaircms.debug.strip_security": 'true', 
