@@ -121,8 +121,8 @@ class WidgetDisposition(Base): #todo: rename
     def enable_only_query(cls, operator):
         return cls.query.filter((cls.is_public==True)|(cls.owner==operator))
 
-    # def __repr__(self):
-    #     return self.title
+    def __repr__(self):
+        return self.title
 
 class AssetWidgetResourceMixin(object):
     WidgetClass = None

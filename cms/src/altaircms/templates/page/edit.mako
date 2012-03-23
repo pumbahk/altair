@@ -60,7 +60,7 @@
        <tr><th>${forms["disposition_save"].title.label}</th><td>${forms["disposition_save"].title}</td></tr>
        <tr><th>${forms["disposition_save"].is_public.label}</th><td>${forms["disposition_save"].is_public}</td></tr>
 	   ## submit button
-       <tr><th>${forms["disposition_save"].page}<button type="submit"><i class="icon-cog"></i>save</button></th><td></td></tr>
+       <tr><th>${forms["disposition_save"].page}${forms["disposition_save"].owner_id}<button type="submit"><i class="icon-cog"></i>save</button></th><td></td></tr>
        </table>
 	</form>
 
@@ -72,6 +72,7 @@
        </table>
 	</form>
 
+     <a href="${h.widget.to_disposition_list(request)}">widget layout一覧へ</a>
   </div>
 </div>
 

@@ -173,33 +173,42 @@ def page_edit(request):
             "layout_render":layout_render
         }
 
-## widgetの保存
-@view_defaults(route_name="disposition")
-class DispositionView(object):
-    def __init__(self, context, request):
-        self.context = context
-        self.request = request
+## widgetの保存 場所移動？
+@view_config(route_name="disposition", request_method="POST", permission='authenticated')
+def disposition_save(context, request):
+    form = context.get_confirmed_form(request.POST)
+    page = context.get_page(request.matchdict["id"])
+    if form.validate():
+        wdisposition = context.get_disposition_from_page(page, form.data)
+        context.add(wdisposition)
+        FlashMessage.success(u"widgetのデータが保存されました", request=request)
+        return HTTPFound(h.page.to_edit_page(request, page))
+    else:
+        FlashMessage.error(u"タイトルを入力してください", request=request)
+        return HTTPFound(h.page.to_edit_page(request, page))
 
-    @view_config(request_method="POST")
-    def disposition_save(self):
-        form = self.context.get_confirmed_form(self.request.POST)
-        page = self.context.get_page(self.request.matchdict["id"])
-        if form.validate():
-            wdisposition = self.context.get_disposition_from_page(page, form.data)
-            self.context.add(wdisposition)
-            FlashMessage.success(u"widgetのデータが保存されました", request=self.request)
-            return HTTPFound(h.page.to_edit_page(self.request, page))
-        else:
-            FlashMessage.error(u"タイトルを入力してください", request=self.request)
-            return HTTPFound(h.page.to_edit_page(self.request, page))
+@view_config(route_name="disposition", request_method="GET", permission='authenticated')
+def disposition_load(context, request):
+    page = context.get_page(request.matchdict["id"])
+    wdisposition = context.get_disposition(request.GET["disposition"])
+    page = context.bind_disposition(page, wdisposition)
+    context.add(page)
+    
+    FlashMessage.success(u"widgetのデータが読み込まれました", request=request)
+    return HTTPFound(h.page.to_edit_page(request, page))
 
-    @view_config(request_method="GET")
-    def disposition_load(self):
-        page = self.context.get_page(self.request.matchdict["id"])
-        wdisposition = self.context.get_disposition(self.request.GET["disposition"])
-        page = self.context.bind_disposition(page, wdisposition)
-        self.context.add(page)
 
-        FlashMessage.success(u"widgetのデータが読み込まれました", request=self.request)
-        return HTTPFound(h.page.to_edit_page(self.request, page))
+@view_config(route_name="disposition_list", renderer="altaircms:templates/widget/disposition/list.mako", 
+             decorator=with_bootstrap, permission='authenticated') #permission
+def disposition_list(context, request):
+    ds = context.get_disposition_list(request.user)
+    return {"ds":ds}
+
+@view_config(route_name="disposition_alter", request_method="POST", permission='authenticated') #permission
+def disposition_delete(context, request):
+    disposition = context.get_disposition(request.matchdict["id"])
+    title = disposition.title
+    context.delete(disposition)
+    FlashMessage.success(u"%sを消しました" % title, request=request)
+    return HTTPFound(h.widget.to_disposition_list(request))
 

@@ -20,7 +20,8 @@ class ForDispositionMixin(object):
         return wf.WidgetDispositionSelectForm.from_operator(self.request.user)
 
     def _wdp_save_form(self, page):
-        return wf.WidgetDispositionSaveForm(page=page.id)
+        return wf.WidgetDispositionSaveForm(page=page.id,
+                                            owner_id=self.request.user.id)
 
     def get_disposition_from_page(self, page, data=None):
         wd = WidgetDisposition.from_page(page, DBSession)
@@ -31,6 +32,9 @@ class ForDispositionMixin(object):
 
     def get_disposition(self, id_):
         return WidgetDisposition.query.filter(WidgetDisposition.id==id_).one()
+
+    def get_disposition_list(self, user):
+        return WidgetDisposition.enable_only_query(user)
 
     def bind_disposition(self, page, wdisposition):
         page = wdisposition.bind_page(page, DBSession)
@@ -56,6 +60,11 @@ class PageResource(ForPageMixin,
 
     def add(self, data, flush=False):
         DBSession.add(data)
+        if flush:
+            DBSession.flush()
+
+    def delete(self, obj, flush=False):
+        DBSession.delete(obj)
         if flush:
             DBSession.flush()
 

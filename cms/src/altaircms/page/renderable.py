@@ -1,7 +1,6 @@
 # -*- coding:utf-8 -*-
 
 import json
-import altaircms.helpers as helpers
 
 def _safe_json_loads(string):
     if string is None:

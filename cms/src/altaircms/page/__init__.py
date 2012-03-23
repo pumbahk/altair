@@ -7,6 +7,10 @@ def includeme(config):
     config.add_route("page_delete", "/page/{id}/delete")
     config.add_route("page_update", "/page/{id}/update")
     config.add_route("page_duplicate", "/page/{id}/duplicate", factory="altaircms.page.resources.PageResource")
-    config.add_route("disposition", "/page/{id}/disposition", factory="altaircms.page.resources.PageResource")
     config.add_route('page', '/page/')
     # config.add_route('page_object', '/page/{id}')
+
+    config.add_route("disposition", "/page/{id}/disposition", factory="altaircms.page.resources.PageResource")    
+    ## todo: move bellow
+    config.add_route("disposition_list", "/disposition", factory="altaircms.page.resources.PageResource")
+    config.add_route("disposition_alter", "/disposition/{id}/alter", factory="altaircms.page.resources.PageResource")
