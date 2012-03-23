@@ -11,8 +11,8 @@ ALTAIR CMS
 
  pip install .
  pip install -r pip-requirements.txt
- pscript -c development.ini -s scripts/pscript/sqlstartup.py
- pserve -c development.ini
+ pmain  -c development.ini -s scripts.pmain.sqlstartup
+ pserve development.ini --reload
 
 
 ドキュメント
