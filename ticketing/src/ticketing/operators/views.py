@@ -5,9 +5,10 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path
 
 from ticketing.models import merge_session_with_post, record_to_appstruct, merge_and_flush, session
-from ticketing.models.boxoffice import Operator, OperatorRole, Client
+from ticketing.clients.models import Client
+from ticketing.operators.models import Operator, OperatorRole, Permission
 
-from forms import OperatorForm
+from forms import OperatorForm, OperatorRoleForm
 from deform.form import Form,Button
 from deform.exception import ValidationFailure
 
@@ -45,7 +46,7 @@ class Operator(BaseView):
                 record.secret_key = md5(record.secret_key).hexdigest()
                 print data
                 session.add(record)
-                return HTTPFound(location=route_path('admin.operators.index', request))
+                return HTTPFound(location=route_path('operators.index', self.request))
 
         else:
             return {
@@ -53,8 +54,8 @@ class Operator(BaseView):
             }
 
     @view_config(route_name='operators.edit', renderer='ticketing:templates/operators/edit.html')
-    def edit(context, request):
-        operator_id = int(request.matchdict.get("operator_id", 0))
+    def edit(self):
+        operator_id = int(self.request.matchdict.get("operator_id", 0))
         operator = session.query(Operator).filter(Operator.id == operator_id)
         if operator is None:
             return HTTPNotFound("Operator id %d is not found" % operator_id)
@@ -65,15 +66,15 @@ class Operator(BaseView):
             ),
             buttons=(Button(name='submit',title=u'更新'),)
         )
-        if 'submit' in request.POST:
-            controls = request.POST.items()
+        if 'submit' in self.request.POST:
+            controls = self.request.POST.items()
             try:
                 data = f.validate(controls)
                 record = merge_session_with_post(operator, data, filters={'roles' : _role_id_list_to_role_list})
                 record.secret_key = md5(record.secret_key).hexdigest()
                 merge_and_flush(record)
 
-                return HTTPFound(location=route_path('admin.operators.index', request))
+                return HTTPFound(location=route_path('operators.index', self.request))
             except ValidationFailure, e:
                 return {'form':e.render()}
         else:
@@ -83,11 +84,66 @@ class Operator(BaseView):
             }
 
     @view_config(route_name='operators.show', renderer='ticketing:templates/operators/show.html')
-    def show(context, request):
-        operator_id = int(request.matchdict.get("operator_id", 0))
+    def show(self):
+        operator_id = int(self.request.matchdict.get("operator_id", 0))
         operator = session.query(Operator).filter(Operator.id == operator_id).one()
         if operator is None:
             return HTTPNotFound("operator_id %d is not found" % operator_id)
         return {
             'operator' : operator
         }
+
+@view_defaults(decorator=with_bootstrap)
+class OperatorRoles(BaseView):
+
+    @view_config(route_name='operator_roles.index', renderer='ticketing:templates/operator_roles/index.html')
+    def index(self):
+        current_page = int(self.request.params.get("page", 0))
+        page_url = paginate.PageURL_WebOb(self.request)
+        query = session.query(OperatorRole)
+        roles = paginate.Page(query.order_by(OperatorRole.id), current_page, url=page_url)
+        return {
+            'roles': roles
+        }
+
+    @view_config(route_name='operator_roles.new', renderer='ticketing:templates/operator_roles/new.html')
+    def new(self):
+        f = Form(OperatorRoleForm(), buttons=(Button(name='submit',title=u'新規'),))
+        if 'submit' in self.request.POST:
+            controls = self.request.POST.items()
+            try:
+                data = f.validate(controls)
+                record = OperatorRole()
+                record = merge_session_with_post(record, data)
+                session.add(record)
+                return HTTPFound(location=route_path('operator_roles.index', request))
+            except ValidationFailure, e:
+                return {'form':e.render()}
+        else:
+            return {
+                'form':f.render()
+            }
+
+    @view_config(route_name='operator_roles.edit', renderer='ticketing:templates/operator_roles/edit.html')
+    def edit(self):
+        operator_id = int(self.request.matchdict.get("operator_id", 0))
+        operator = session.query(OperatorRole).filter(OperatorRole.id == operator_id)
+        if operator is None:
+            return HTTPNotFound("Operator id %d is not found" % operator_id)
+        f = Form(OperatorRoleForm(), buttons=(Button(name='submit',title=u'更新'),))
+        if 'submit' in self.request.POST:
+            controls = self.request.POST.items()
+            try:
+
+                data = f.validate(controls)
+                record = merge_session_with_post(operator, data)
+                merge_and_flush(record)
+
+                return HTTPFound(location=route_path('operator_roles.index', self.request))
+            except ValidationFailure, e:
+                return {'form':e.render()}
+        else:
+            appstruct = record_to_appstruct(operator)
+            return {
+                'form':f.render(appstruct=appstruct)
+            }

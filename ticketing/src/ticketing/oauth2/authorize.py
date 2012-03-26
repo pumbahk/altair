@@ -8,13 +8,13 @@ from .consts import AUTHENTICATION_METHOD, MAC, BEARER, MAC_KEY_LENGTH
 from .exceptions import *
 from .util.uri import add_parameters, add_fragments, normalize
 
-from ticketing.models.boxoffice import *
 from ticketing.models import *
+from ticketing.oauth2.models import *
 
 import sqlahelper
 session = sqlahelper.get_session()
 
-from pyramid.httpexceptions import HTTPFound, HTTPNotFound
+from pyramid.httpexceptions import HTTPFound
 import re
 
 absolute_http_url_re = re.compile(r'(?i)^https?://')

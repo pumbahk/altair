@@ -42,8 +42,16 @@ def main(global_config, **settings):
                     context='pyramid.httpexceptions.HTTPNotFound')
 
     config.include("pyramid_fanstatic")
-    config.include('ticketing.views.add_routes' , route_prefix='/')
-    
+
+    config.add_route("index", "/")
+
+    config.include('ticketing.operators' , route_prefix='/operators')
+    config.include('ticketing.login' , route_prefix='/login')
+    config.include('ticketing.clients' , route_prefix='/clients')
+    config.include('ticketing.api' , route_prefix='/api')
+    config.include('ticketing.admin' , route_prefix='/admin')
+    config.include('ticketing.events' , route_prefix='/events')
+
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.add_renderer('json'  , 'ticketing.renderers.json_renderer_factory')
     config.add_renderer('csv'   , 'ticketing.renderers.csv_renderer_factory')

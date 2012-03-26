@@ -1,7 +1,7 @@
 <%inherit file="../layout.html" />
 <%block name="title">クライアント詳細</%block>
 <div class="ui-toolbar">
-  <a href="${request.route_path('admin.clients.edit', client_id=client.id)}" class="ui-button">編集</a>
+  <a href="${request.route_path('clients.edit', client_id=client.id)}" class="ui-button">編集</a>
   <a href="#" class="ui-button">削除</a>
 </div>
 <div class="subsection">
@@ -36,11 +36,11 @@
                 <tbody>
                   <tr>
                     <th>クライアント種別</th>
-                    <td>${client.contract_type}</td>
+                    <td>${client.client_type}</td>
                   </tr>
                   <tr>
                     <th>会社名</th>
-                    <td>${client.company_name}</td>
+                    <td>${client.name}</td>
                   </tr>
                   <tr>
                     <th>部署名</th>
@@ -189,9 +189,9 @@
                         町田市民ホール 2011/12/4 18:00〜
                       </td>
                       <td rowspan="2">2011/11/3 10:00〜<br />2011/11/30 23:59</td>
-                      <td rowspan="2"><a href="${request.route_path('admin.clients.show', client_id=1)}">asdfasdf</a></td>
+                      <td rowspan="2"><a href="${request.route_path('clients.show', client_id=1)}">asdfasdf</a></td>
                       <td rowspan="2">受付中</td>
-                      <td rowspan="2">\4,300 (<a href="${request.route_path('admin.clients.show', client_id=2)}">fghjfghj</a>)</td>
+                      <td rowspan="2">\4,300 (<a href="${request.route_path('clients.show', client_id=2)}">fghjfghj</a>)</td>
                       <td>5</td>
                       <td rowspan="2">\4,000</td>
                       <td>A席</td>
@@ -203,7 +203,7 @@
                         <span class="seat-icon-isle_side"></span>
                       </td>
                       <td rowspan="2">
-                        <a href="${request.route_path('admin.clients.show', client_id=1)}">詳細</a>
+                        <a href="${request.route_path('clients.show', client_id=1)}">詳細</a>
                       </td>
                     </tr>
                     <tr>
@@ -219,7 +219,7 @@
                         なかのZEROホール 2012/2/1 16:00〜
                       </td>
                       <td>2012/1/5 10:00〜<br />2012/1/24 23:59</td>
-                      <td><a href="${request.route_path('admin.clients.show', client_id=1)}">asdfasdf</a></td>
+                      <td><a href="${request.route_path('clients.show', client_id=1)}">asdfasdf</a></td>
                       <td>イベント中止</td>
                       <td>- (-)</td>
                       <td>-</td>
@@ -232,7 +232,7 @@
                         <span class="seat-icon-corner"></span>
                       </td>
                       <td>
-                        <a href="${request.route_path('admin.clients.show', client_id=2)}">詳細</a>
+                        <a href="${request.route_path('clients.show', client_id=2)}">詳細</a>
                       </td>
                     </tr>
                   </tbody>
@@ -269,9 +269,9 @@
                         町田市民ホール 2011/12/4 18:00〜
                       </td>
                       <td rowspan="2">2011/11/3 10:00〜<br />2011/11/30 23:59</td>
-                      <td rowspan="2"><a href="${request.route_path('admin.clients.show', client_id=1)}">asdfasdf</a></td>
+                      <td rowspan="2"><a href="${request.route_path('clients.show', client_id=1)}">asdfasdf</a></td>
                       <td rowspan="2">受付中</td>
-                      <td rowspan="2">\4,300 (<a href="${request.route_path('admin.clients.show', client_id=2)}">fghjfghj</a>)</td>
+                      <td rowspan="2">\4,300 (<a href="${request.route_path('clients.show', client_id=2)}">fghjfghj</a>)</td>
                       <td>5</td>
                       <td rowspan="2">\4,000</td>
                       <td>A席</td>
@@ -283,7 +283,7 @@
                         <span class="seat-icon-isle_side"></span>
                       </td>
                       <td rowspan="2">
-                        <a href="${request.route_path('admin.clients.show', client_id=1)}">詳細</a>
+                        <a href="${request.route_path('clients.show', client_id=1)}">詳細</a>
                       </td>
                     </tr>
                     <tr>
@@ -299,7 +299,7 @@
                         なかのZEROホール 2012/2/1 16:00〜
                       </td>
                       <td>2012/1/5 10:00〜<br />2012/1/24 23:59</td>
-                      <td><a href="${request.route_path('admin.clients.show', client_id=1)}">asdfasdf</a></td>
+                      <td><a href="${request.route_path('clients.show', client_id=1)}">asdfasdf</a></td>
                       <td>イベント中止</td>
                       <td>- (-)</td>
                       <td>-</td>
@@ -312,7 +312,7 @@
                         <span class="seat-icon-corner"></span>
                       </td>
                       <td>
-                        <a href="${request.route_path('admin.clients.show', client_id=2)}">詳細</a>
+                        <a href="${request.route_path('clients.show', client_id=2)}">詳細</a>
                       </td>
                     </tr>
                   </tbody>

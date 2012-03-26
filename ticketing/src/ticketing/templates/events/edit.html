@@ -20,7 +20,7 @@
 % endfor
 </ul>
 
-<form action="${request.route_url('admin.events.edit', event_id=event.id)}" enctype="multipart/form-data" method="POST">
+<form action="${request.route_url('events.edit', event_id=event.id)}" enctype="multipart/form-data" method="POST">
     <table class="table">
         <tr>
             <th>${form.code.label}</th>

@@ -8,8 +8,8 @@ from ticketing.models.boxoffice import *
 from prefecture import PrefectureMaster
 
 class ClientData(DataSet):
-    class ticketstar:
-        name            = u'チケットスター'
+    class client_0:
+        name            = u'楽天チケット（株式会社チケットスター）'
         client_type     = ClientTypeEnum.Standard.v
         prefecture      = PrefectureMaster.tokyo
         city            = u"品川区"
@@ -22,6 +22,7 @@ class ClientData(DataSet):
         updated_at      = datetime.now()
         created_at      = datetime.now()
         status          = 1
+
     class client_1:
         name            = u'クライアント1'
         client_type     = ClientTypeEnum.Standard.v

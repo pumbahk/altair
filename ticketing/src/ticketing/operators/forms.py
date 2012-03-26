@@ -4,8 +4,6 @@ from deform.widget import SelectWidget, PasswordWidget, CheckedPasswordWidget, S
 from colander import deferred, MappingSchema, SequenceSchema, SchemaNode, String, Int, DateTime, Bool,Length, Decimal, Float, null, Email
 import colander
 
-from ticketing.models import session, Client
-
 @colander.deferred
 def deferred_role_choices_widget(node, kw):
     choices = kw.get('role_choices')
@@ -27,3 +25,7 @@ class OperatorForm(MappingSchema):
     secret_key  = SchemaNode(String()   , title=u'パスワード', missing=null, widget=CheckedPasswordWidget())
     expire_at   = SchemaNode(DateTime() , title=u'有効期限')
     roles       = OperatorRole(title=u'ロール', validator = Length(1, 10))
+
+class OperatorRoleForm(MappingSchema):
+    name = SchemaNode(String())
+

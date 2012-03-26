@@ -2,7 +2,8 @@ from zope.interface import Interface, Attribute, implements
 import re
 
 from pyramid.security import Allow, Everyone, Authenticated, authenticated_userid
-from ticketing.models import DBSession, Operator
+from ticketing.models import DBSession
+from ticketing.operators.models import *
 
 r = re.compile(r'^(/_deform)|(/static)|(/_debug_toolbar)|(/favicon.ico)')
 
@@ -11,7 +12,7 @@ class RootFactory(object):
         (Allow, Everyone        , 'everybody'),
         (Allow, Authenticated   , 'authenticated'),
         (Allow, 'login'         , 'everybody'),
-        (Allow, 'test'          , ('admin')),
+        (Allow, 'administrator' , 'administrator'),
         ]
     user = None
     def __init__(self, request):
@@ -27,7 +28,8 @@ def groupfinder(userid, request):
         return []
     permissions = []
     for g in user.roles:
-        permissions.append([p.category_name for p in g.permissions])
+        for category_name in [p.category_name for p in g.permissions]:
+            permissions.append(category_name)
     print permissions
     return permissions
 

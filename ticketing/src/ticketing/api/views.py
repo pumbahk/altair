@@ -1,6 +1,6 @@
 from pyramid.view import view_config
 
-from ticketing.models.boxoffice import *
+from ticketing.oauth2.models import Service, AccessToken
 
 @view_config(route_name='api.access_token' , renderer='json')
 def access_token(context, request):

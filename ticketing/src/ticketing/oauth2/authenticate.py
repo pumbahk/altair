@@ -7,10 +7,8 @@ from simplejson import dumps
 from pyramid.response import Response
 
 from .exceptions import *
-from .models import TimestampGenerator
+from .models import TimestampGenerator, AccessToken
 from .consts import REALM, AUTHENTICATION_METHOD, MAC, BEARER
-
-from ticketing.models.boxoffice import AccessToken
 
 class Authenticator(object):
 

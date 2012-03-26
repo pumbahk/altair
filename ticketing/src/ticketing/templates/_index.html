@@ -1,0 +1,375 @@
+<%inherit file="layout.html" />
+<%block name="title">トップ</%block>
+<style type="text/css">
+.page-main-column_view_navigation {
+  height: 540px;
+  padding: 0 0;
+  margin: 0 0;
+}
+
+.page-main-column_view_navigation .column {
+  float: left;
+  width: 300px;
+  height: 540px;
+  border-right: 1px solid #ddd;
+}
+
+.page-main-column_view_navigation .column > .column-header {
+  padding: 12px 0 12px 20px;
+  overflow: hidden;
+}
+
+.page-main-column_view_navigation .column > .column-header h3 {
+  margin: 0 0;
+  padding: 0 0;
+  float: left;
+}
+
+.page-main-column_view_navigation .column > .column-header > ul.column-view_switcher {
+  list-style-type: none;
+  padding: 0 0;
+  margin: 0 12px 0 0;
+  float: right;
+  white-space: nowrap;
+  font-size: 10px;
+  line-height: 1em;
+  font-weight: bold;
+}
+
+.page-main-column_view_navigation .column > .column-header > ul.column-view_switcher li {
+  display: inline-block;
+  padding: 2px 8px;
+  margin: 0 1px 0 0;
+  color: #fff;
+  background-color: #ccc;
+}
+
+.page-main-column_view_navigation .column > .column-header > ul.column-view_switcher li.selected {
+  background-color: #888;
+}
+
+.page-main-column_view_navigation .column > .column-header > ul.column-view_switcher li.first {
+  border-radius: 8px 0 0 8px;
+}
+
+.page-main-column_view_navigation .column > .column-header > ul.column-view_switcher li.last {
+  border-radius: 0 8px 8px 0;
+  margin: 0 0;
+}
+
+.page-main-column_view_navigation .column .column-content {
+  height: 500px;
+  overflow: scroll;
+}
+
+.page-main-column_view_navigation .column .column-content > form {
+  padding: 12px 20px;
+  margin: 0 0;
+  line-height: 1em;
+}
+
+.page-main-column_view_navigation .column .column-content > ul li > .label {
+  padding-left: 36px;
+}
+
+.page-main-column_view_navigation .column ul {
+  list-style-type: none;
+  padding: 0 0;
+  margin: 0 0;
+}
+
+.page-main-column_view_navigation .column > ul li {
+  margin: 0 0;
+  position: relative;
+}
+
+.page-main-column_view_navigation .column li > ul li > .label {
+  padding-left: 36px;
+}
+
+.page-main-column_view_navigation .column li > .label {
+  display: block;
+  padding: 12px 20px 12px 20px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.page-main-column_view_navigation .column li.first {
+  border-top: none;
+}
+
+.page-main-column_view_navigation .column li:hover > .label {
+  background-color: #eee;
+}
+
+.page-main-column_view_navigation .column li.selected > .label {
+  background-color: #ffc;
+}
+
+.page-main-column_view_navigation .column li.emphasized > .label {
+  font-weight: bold;
+}
+
+.page-main-column_view_navigation .column li > .number {
+  top: 12px;
+  right: 10px;
+  position: absolute;
+  display: block;
+  border-radius: 12px;
+  background-color: #ccc;
+  color: #fff;
+  height: 20px;
+  padding: 0 8px;
+  line-height: 20px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.page-main-column_view_navigation .column li.emphasized > .number {
+  font-weight: bold;
+  background-color: #d50;
+}
+
+.page-main-navigation {
+  height: 540px;
+  width: 360px;
+  overflow: scroll;
+  border-right: 1px solid #ddd;
+}
+
+.page-main-navigation ul {
+  list-style-type: none;
+  padding: 0 0;
+  margin: 0 0;
+}
+
+.page-main-navigation ul > li {
+  margin: 0 0;
+  padding: 0 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.page-main-navigation ul > li > .label {
+  text-overflow: ellipsis;
+}
+
+.page-main-navigation > ul > li {
+  width: 360px;
+}
+
+.page-main-navigation > ul li > ul li > .label {
+  padding-left: 36px;
+}
+
+.page-main-navigation > ul li .label {
+  display: block;
+  padding: 12px 16px 12px 20px;
+  height: 20px;
+}
+
+.page-main-navigation > ul li.first {
+  border-top: none;
+}
+
+.page-main-navigation > ul li:hover > .label {
+  background-color: #eee;
+}
+
+.page-main-navigation > ul li.selected > .label {
+  background-color: #ffc;
+}
+
+.page-main-navigation ul li.emphasized {
+  font-weight: bold;
+}
+
+.page-main-navigation ul li > .number {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: block;
+  border-radius: 12px;
+  background-color: #ccc;
+  color: #fff;
+  width: 24px;
+  height: 20px;
+  line-height: 20px;
+  text-align: center;
+}
+
+.page-main-navigation ul li.emphasized > .number {
+  font-weight: bold;
+  background-color: #d50;
+}
+
+.page-main-header {
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 12px;
+}
+
+.page-main-header h2 {
+  margin: 0 0;
+  padding: 0 0;
+}
+
+.page-main-column_view_navigation .column .column-content-calendar {
+  padding: 12px 20px;
+}
+
+.page-main-column_view_navigation .column .column-content-calendar .calendar {
+  border: 1px solid #ddd;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.page-main-column_view_navigation .column .column-content-calendar .calendar  td,
+.page-main-column_view_navigation .column .column-content-calendar .calendar th {
+  border: 1px solid #ddd;
+  text-align: center;
+  padding: 8px 8px;
+}
+</style>
+<div>
+    <a class="btn btn-primary" href="${request.route_path("admin.events.new")}">新規イベント</a>
+</div>
+
+<div class="page-main-column_view_navigation">
+  <div class="column first">
+    <div class="column-header">
+      <h3>イベント</h3>
+    </div>
+    <ul class="column-content column-content-list">
+      <li class="first"><span class="label">ディズニー・オン・クラシック</span><span class="number">10</span></li>
+      <li class="selected"><span class="label">ディズニー・ライブ</span><span class="number">40</span></li>
+      <li><span class="label">ディズニー・オン・アイス 「オールスターカーニバル」</span><span class="number">24</span></li>
+    </ul>
+  </div>
+  <div class="column">
+    <div class="column-header">
+      <h3>パフォーマンス</h3>
+      <ul class="column-view_switcher">
+        <li class="ui-action-column-view_switcher-list first selected">リスト</li><li class="ui-action-column-view_switcher-calendar last">カレンダー</li>
+      </ul>
+    </div>
+    <div class="column-content column-content-search" style="display:none">
+      <form>
+        <div class="form-fields">
+          <div class="form-field">
+            <span class="form-field-header">
+              <label>検索キーワード</label>
+            </span>
+            <span class="form-field-content">
+              <input type="text" placeholder="検索キーワードを入力" value="ディズニー" />
+            </span>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="column-content column-content-calendar" style="display:none">
+      <table class="calendar">
+        <thead>
+          <tr>
+            <th>月</th>
+            <th>火</th>
+            <th>水</th>
+            <th>木</th>
+            <th>金</th>
+            <th>土</th>
+            <th>日</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>2</td>
+            <td>3</td>
+            <td>4</td>
+            <td>5</td>
+            <td>6</td>
+            <td>7</td>
+          </tr>
+          <tr>
+            <td>8</td>
+            <td>9</td>
+            <td>10</td>
+            <td>11</td>
+            <td>12</td>
+            <td>13</td>
+            <td>14</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <ul class="column-content column-content-list">
+      <li class="first"><span class="label">12/1 午前</span></li>
+      <li><span class="label">12/1 午後</span></li>
+      <li><span class="label">12/2 午前</span></li>
+      <li><span class="label">12/2 午前</span></li>
+      <li class="selected"><span class="label">12/2 午後</span></li>
+      <li><span class="label">12/1 午後</span></li>
+      <li><span class="label">12/2 午前</span></li>
+      <li><span class="label">12/2 午前</span></li>
+      <li><span class="label">12/2 午後</span></li>
+      <li><span class="label">12/1 午後</span></li>
+      <li><span class="label">12/2 午前</span></li>
+      <li><span class="label">12/2 午前</span></li>
+      <li><span class="label">12/2 午後</span></li>
+      <li><span class="label">12/1 午後</span></li>
+      <li><span class="label">12/2 午前</span></li>
+      <li><span class="label">12/2 午前</span></li>
+      <li><span class="label">12/2 午後</span></li>
+      <li><span class="label">12/1 午後</span></li>
+      <li><span class="label">12/2 午前</span></li>
+      <li><span class="label">12/2 午前</span></li>
+      <li><span class="label">12/2 午後</span></li>
+      <li><span class="label">12/1 午後</span></li>
+      <li><span class="label">12/2 午前</span></li>
+      <li><span class="label">12/2 午前</span></li>
+      <li><span class="label">12/2 午後</span></li>
+      <li><span class="label">12/1 午後</span></li>
+      <li><span class="label">12/2 午前</span></li>
+      <li><span class="label">12/2 午前</span></li>
+      <li><span class="label">12/2 午後</span></li>
+      <li><span class="label">12/1 午後</span></li>
+      <li><span class="label">12/2 午前</span></li>
+      <li><span class="label">12/2 午前</span></li>
+      <li><span class="label">12/2 午後</span></li>
+    </ul>
+  </div>
+  <div class="column">
+    <div class="column-header">
+      <h3>商品</h3>
+    </div>
+    <ul class="column-content">
+      <li class="first"><span class="label">A席大人</span><span class="number">残120</span></li>
+      <li><span class="label">A席子供</span><span class="number">残112</span></li>
+      <li><span class="label">B席</span><span class="number">残124</span></li>
+    </ul>
+  </div>
+  <script type="text/javascript">
+    $("script:last").parent().find(".column").each(function(i, parent) {
+      var views = {}, switchers = {}, selected = null;
+      parent = $(parent);
+      $.each(['list', 'search', 'calendar'], function(i, viewName) {
+        views[viewName] = parent.find(".column-content-" + viewName);
+        var switcher = parent.find(".column-view_switcher .ui-action-column-view_switcher-" + viewName);
+        switchers[viewName] = switcher;
+        if (switcher.hasClass('selected'))
+          selected = viewName;
+        switcher.click(function() { selectView(viewName); });
+      });
+      console.log(selected);
+      function selectView(viewName) {
+        if (selected) {
+          switchers[selected].removeClass('selected');
+          views[selected].css('display', 'none');
+        }
+        switchers[viewName].addClass('selected');
+        views[viewName].css('display', 'block');
+        selected = viewName;
+      }
+    });
+  </script>
+</div>

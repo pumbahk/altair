@@ -5,6 +5,7 @@ from ticketing.models import *
 from ticketing.models.boxoffice import *
 from permission import PermissionData
 from datetime import datetime
+from client import ClientData
 
 class OperatorRoleData(DataSet):
     class role_admin_admin:
@@ -58,7 +59,7 @@ class OperatorData(DataSet):
     class operator_1:
         name = 'Administrator'
         email = 'admin@ticketstar.com'
-        client_id = 1
+        client = ClientData.client_1
         updated_at = datetime.now()
         created_at = datetime.now()
         status = 1
@@ -73,7 +74,7 @@ class OperatorData(DataSet):
     class operator_2:
         name = 'オペレーター2'
         email = 'tes2t@test.com'
-        client_id = 1
+        client = ClientData.client_1
         updated_at = datetime.now()
         created_at = datetime.now()
         status = 1

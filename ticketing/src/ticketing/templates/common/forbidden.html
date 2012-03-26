@@ -1,11 +1,2 @@
 <%inherit file="../layout.html" />
-<h1><a href="#">Oripre</a></h1>
-<div class="right">
-    % if request.context.user:
-	<p>
-	    ようこそ <a href="#">${request.context.company.name}</a> <a href="#"><strong>***** 様</strong></a> |
-		<a href="#">Help</a> |
-		<a href="${request.route_path('login.logout')}">Logout</a>
-	</p>
-    % endif
-</div>
+<h1><a href="#">Forbidden</a></h1>

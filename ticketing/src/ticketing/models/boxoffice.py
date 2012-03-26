@@ -18,21 +18,6 @@ import sqlahelper
 session = sqlahelper.get_session()
 
 
-class Service(Base):
-    __tablename__ = 'Service'
-    id              = Column(BigInteger, primary_key=True)
-    name            = Column(String(255))
-    key             = Column(String(CLIENT_KEY_LENGTH), default=KeyGenerator(CLIENT_KEY_LENGTH), index=True, unique=True)
-    secret          = Column(String(CLIENT_SECRET_LENGTH), default=KeyGenerator(CLIENT_SECRET_LENGTH),unique=True)
-    redirect_uri    = Column(String(1024))
-    updated_at      = Column(DateTime)
-    created_at      = Column(DateTime)
-    status          = Column(Integer)
-
-    @staticmethod
-    def get_key(key):
-        return DBSession.query(Service).filter(Service.key == key).first()
-
 '''
  Master Data
 '''
@@ -49,80 +34,7 @@ class Prefecture(Base):
     def get(prefecture_id):
         return DBSession.query(Prefecture).filter(Prefecture.id == prefecture_id).first()
 
-class ClientTypeEnum(StandardEnum):
-    Standard        = 1
 
-class Client(Base):
-    __tablename__ = "Client"
-    id          = Column(BigInteger, primary_key=True)
-    name        = Column(String(255))
-    client_type = Column(Integer)
-    prefecture_id = Column(BigInteger, ForeignKey("Prefecture.id"), nullable=True)
-    prefecture    = relationship("Prefecture", uselist=False)
-    city = Column(String(255))
-    street = Column(String(255))
-    address = Column(String(255))
-    other_address = Column(String(255))
-    tel_1 = Column(String(32))
-    tel_2 = Column(String(32))
-    fax = Column(String(32))
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
-    status = Column(Integer)
-
-    @staticmethod
-    def get(client_id):
-        return DBSession.query(Client).filter(Client.id == client_id).first()
-
-    @staticmethod
-    def update(client):
-        session.merge(client)
-        session.flush()
-
-    @staticmethod
-    def all():
-        return session.query(Client).all()
-
-class AccessToken(Base):
-    __tablename__ = 'AccessToken'
-    id          = Column(BigInteger, primary_key=True)
-
-    service = relationship("Service")
-    service_id = Column(BigInteger, ForeignKey("Service.id"))
-    operator = relationship("Operator")
-    operator_id = Column(BigInteger, ForeignKey("Operator.id"))
-
-    key             = Column(String(CODE_KEY_LENGTH), default=KeyGenerator(CODE_KEY_LENGTH), index=True, unique=True)
-    token           = Column(String(ACCESS_TOKEN_LENGTH), default=KeyGenerator(ACCESS_TOKEN_LENGTH), index=True, unique=True)
-    refresh_token   = Column(String(REFRESH_TOKEN_LENGTH), default=KeyGenerator(REFRESH_TOKEN_LENGTH), index=True, unique=True, nullable=True)
-    mac_key         = Column(String(MAC_KEY_LENGTH), index=True, unique=True, nullable=True)
-
-    issue = Column(Integer, default=TimestampGenerator())
-    expire = Column(DateTime, default=TimestampGenerator(ACCESS_TOKEN_EXPIRATION))
-    refreshable = Column(Boolean, default=REFRESHABLE)
-    updated_at = Column(DateTime, onupdate=datetime.now())
-    created_at = Column(DateTime, default=datetime.now())
-    status = Column(Integer, default=1)
-
-    @staticmethod
-    def get(id):
-        return DBSession.query(AccessToken).filter(AccessToken.id == id).first()
-
-    @staticmethod
-    def get_by_key(key):
-        return DBSession.query(AccessToken).filter(AccessToken.key == key).first()
-
-
-class MACNonce(Base):
-    __tablename__       = 'MACNonce'
-    id                  = Column(BigInteger, primary_key=True)
-    access_token        = relationship("AccessToken")
-    access_token_id     = Column(BigInteger, ForeignKey("AccessToken.id"))
-    nonce               = Column(String(30), index=True)
-
-    updated_at          = Column(DateTime, onupdate=datetime.now())
-    created_at          = Column(DateTime, default=datetime.now())
-    status              = Column(Integer, default=1)
 
 class AccountTypeEnum(StandardEnum):
     Promoter    = 1
@@ -202,91 +114,8 @@ class Ticketer(Base):
     status          = Column(Integer)
 
     bank_account_id = Column(BigInteger, ForeignKey('BankAccount.id'))
-    bank_account    = relationship('BankAccount', backref='client')
+    bank_account    = relationship('BankAccount')
 
-'''
- Oprerator Role & ticketer
-'''
-operator_role_association_table = Table('OperatorRole_Operator', Base.metadata,
-    Column('operator_role_id', BigInteger, ForeignKey('OperatorRole.id')),
-    Column('operator_id', BigInteger, ForeignKey('Operator.id'))
-)
-
-class Permission(Base):
-    __tablename__ = 'Permission'
-    id = Column(BigInteger, primary_key=True)
-    operator_role_id = Column(BigInteger, ForeignKey('OperatorRole.id'))
-    operator_role = relationship('OperatorRole', uselist=False)
-    category_name = Column(String(255), index=True)
-    permit = Column(Integer)
-
-    @staticmethod
-    def get_by_key(category_name):
-        return session.query(Permission).filter(Permission.category_name == category_name).first()
-
-    @staticmethod
-    def list_in(category_names):
-        return session.query(Permission)\
-            .filter(Permission.category_name.in_(category_names)).all()
-
-class OperatorRole(Base):
-    __tablename__ = 'OperatorRole'
-    id = Column(BigInteger, primary_key=True)
-    name = Column(String(255))
-    operators = relationship("Operator",
-                    secondary=operator_role_association_table)
-    permissions = relationship('Permission')
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
-    status = Column('status',Integer, default=1)
-
-class OperatorActionHistory(Base):
-    __tablename__ = 'OperatorActionHistory'
-    id = Column(BigInteger, primary_key=True)
-    function = Column(String(255))
-    data = Column(String(1024))
-    created_at = Column(DateTime)
-    operator_id = Column(BigInteger, ForeignKey('Operator.id'))
-    operator = relationship('Operator', uselist=False)
-
-operator_table = Table(
-    'Operator', Base.metadata,
-    Column('id', BigInteger, primary_key=True),
-    Column('name', String(255)),
-    Column('email',String(255)),
-    Column('client_id',BigInteger, ForeignKey('Client.id')),
-    Column('expire_at',DateTime, nullable=True),
-    Column('updated_at',DateTime),
-    Column('created_at',DateTime),
-    Column('status',Integer, default=1)
-)
-operator_auth_table = Table(
-    'Operator_Auth', Base.metadata,
-    Column('id', BigInteger, primary_key=True),
-    Column('login_id', String(32), unique=True),
-    Column('password', String(32)),
-    Column('auth_code', String(32), nullable=True),
-    Column('access_token', String(32), nullable=True),
-    Column('secret_key', String(32), nullable=True),
-)
-
-class Operator(Base):
-    __table__ = join(operator_table, operator_auth_table, operator_table.c.id == operator_auth_table.c.id)
-    id = column_property(operator_table.c.id, operator_auth_table.c.id)
-    client = relationship('Client',uselist=False)
-    roles = relationship("OperatorRole",
-        secondary=operator_role_association_table)
-
-    @staticmethod
-    def get_by_login_id(user_id):
-        return DBSession.query(Operator).filter(Operator.login_id == user_id).first()
-
-    @staticmethod
-    def login(login_id, password):
-        operator = session.query(Operator)\
-                .filter(Operator.login_id == login_id)\
-                .filter(Operator.password == md5(password).hexdigest()).first()
-        return operator
 
 performer_association_table = Table('Performer_Performance', Base.metadata,
     Column('performer_id', BigInteger, ForeignKey('Performer.id')),
@@ -378,7 +207,7 @@ class Event(Base):
 
     @staticmethod
     def all():
-        return session.query(Client).all()
+        return session.query(Event).all()
 
 class SeatType(Base):
     __tablename__ = 'SeatType'

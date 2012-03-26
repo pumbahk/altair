@@ -32,6 +32,9 @@ from account    import AccountData
 from permission import PermissionData
 from operator   import OperatorData, OperatorRoleData
 
+from ticketing.oauth2.models import Service
+from ticketing.operators.models import Operator, OperatorActionHistory, OperatorRole, Permission
+
 db_fixture = SQLAlchemyFixture(
      env={
          'ServiceData'      : Service,

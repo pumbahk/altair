@@ -1,9 +1,9 @@
 <%inherit file="../layout.html" />
 <h1><%block name="title">${event.title}</%block></h1>
 <div class="ui-toolbar">
-  <a href="${request.route_path('admin.events.edit', event_id=event.id)}" class="btn">編集</a>
-  <a href="${request.route_path('admin.events.new',event_id=event.id)}" class="btn">コピーして新規</a>
-  <a href="${request.route_path('admin.events.delete', event_id=event.id)}" class="btn">削除</a>
+  <a href="${request.route_path('events.edit', event_id=event.id)}" class="btn">編集</a>
+  <a href="${request.route_path('events.new',event_id=event.id)}" class="btn">コピーして新規</a>
+  <a href="${request.route_path('events.delete', event_id=event.id)}" class="btn">削除</a>
 <a href="" class="btn">チケット券面プレビュー</a>
 </div>
 
@@ -66,11 +66,11 @@
                   </tr>
                   <tr>
                     <th>開演日時</th>
-                    <td>${event.start_on}(<a href="${request.route_path('admin.performances.show', event_id=1, performance_id=1)}">○○○○東京公演</a>)</td>
+                    <td>${event.start_on}(<a href="${request.route_path('performances.show', event_id=1, performance_id=1)}">○○○○東京公演</a>)</td>
                   </tr>
                   <tr>
                     <th>最終公演</th>
-                    <td>${event.end_on}(<a href="${request.route_path('admin.performances.show', event_id=1, performance_id=3)}">○○○○大阪公演</a>)</td>
+                    <td>${event.end_on}(<a href="${request.route_path('performances.show', event_id=1, performance_id=3)}">○○○○大阪公演</a>)</td>
                   </tr>
                 </tbody>
               </table>
@@ -106,7 +106,7 @@
         <h2 class="section-header">会場席種マスタ一覧</h2>
         <div class="section-content">
           <div class="ui-toolbar">
-            <a href="${request.route_path('admin.performances.new', event_id=1)}" class="ui-button">新規登録</a>
+            <a href="${request.route_path('performances.new', event_id=1)}" class="ui-button">新規登録</a>
             <a href="#" class="ui-button">まとめて編集</a>
             <a href="#" class="ui-button">まとめて削除</a>
           </div>

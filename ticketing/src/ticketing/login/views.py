@@ -13,6 +13,7 @@ from ticketing.oauth2.authorize import Authorizer, MissingRedirectURI, Authoriza
 from forms import LoginForm, OperatorForm, AuthorizeForm
 from ticketing.models import *
 from ticketing.views import BaseView
+from ticketing.operators.models import Operator
 
 from ticketing.fanstatic import with_bootstrap
 
