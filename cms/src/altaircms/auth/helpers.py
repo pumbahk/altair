@@ -20,6 +20,14 @@ def get_authenticated_user(request):
         pass
     return user
 
+def get_debug_user(request):
+    try:
+        return DBSession.query(Operator).filter_by(user_id=1).one() # return debug user iff initial data are added
+    except NoResultFound:
+        # import warnings
+        # warnings.warn("request.user is not found. so, bound debug user automaticaly")
+        return Operator(auth_source="debug", user_id=1, id=1, role_id=1, screen_name="debug user")
+
 # def user_context(event):
 #     """
 #     テンプレートでレンダリングするためのユーザオブジェクトを返す

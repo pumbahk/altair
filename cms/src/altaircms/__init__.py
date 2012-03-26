@@ -56,9 +56,13 @@ def main(global_config, **settings):
         authentication_policy=authn_policy,
         authorization_policy=authz_policy
     )
-    ## bind authenticated user
-    config.set_request_property("altaircms.auth.helpers.get_authenticated_user", "user", reify=True)
 
+    ## bind authenticated user to request.user
+    if asbool(settings.get("altaircms.debug.strip_security", 'false')):
+        config.set_request_property("altaircms.auth.helpers.get_debug_user", "user", reify=True)
+    else:
+        config.set_request_property("altaircms.auth.helpers.get_authenticated_user", "user", reify=True)
+    
     ## include
     config.include('pyramid_tm')
     config.include("pyramid_fanstatic")

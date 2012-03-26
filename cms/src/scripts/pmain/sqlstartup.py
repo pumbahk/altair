@@ -49,6 +49,10 @@ def main(env):
     with block("create role model"):
         from altaircms.auth.initial_data import insert_initial_authdata
         insert_initial_authdata()
+        
+        from altaircms.auth.models import Operator
+        debug_user = Operator(auth_source="debug", user_id=1, id=1, role_id=1, screen_name="debug user")
+        DBSession.add(debug_user)
 
     ##
     from . import demo
