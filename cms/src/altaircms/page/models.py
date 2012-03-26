@@ -82,11 +82,16 @@ class Page(PublishUnpublishMixin,
     site_id = Column(Integer, ForeignKey("site.id"))
     layout_id = Column(Integer, ForeignKey("layout.id"))
     layout = relationship(Layout, backref='page', uselist=False)
-    structure = Column(String, default="{}")
+    DEFAULT_STRUCTURE = "{}"
+    structure = Column(String, default=DEFAULT_STRUCTURE)
     hash_url = Column(String(length=32), default=None)
 
     def __repr__(self):
         return '<%s id=%s %s>' % (self.__class__.__name__, self.id, self.url)
+
+
+    def has_widgets(self):
+        return self.structure != self.DEFAULT_STRUCTURE
 
     def clone(self, session):
         from . import clone

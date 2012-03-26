@@ -135,7 +135,6 @@ class PageCloneTest(WithWidgetPageTest):
                                                   {"pk": 5, "name": "freetext"}],
                                       "footer":  [{"pk": 6, "name": "image"}]}))
 
-
 class DispositionViewFunctionalTest(WithWidgetPageTest):
     def _another_page(self, session):
         from altaircms.page.models import Page
@@ -180,19 +179,70 @@ class DispositionViewFunctionalTest(WithWidgetPageTest):
         self.assertEquals(WidgetDisposition.query.count(), 1)
 
         ## create another page
-        page1_id = self._another_page(session).id
-        self.assertEquals(self._page_and_widget_count(session, page1_id), 0)
+        another_page_id = self._another_page(session).id
+        self.assertEquals(self._page_and_widget_count(session, another_page_id), 0)
 
         ## load
         wdisposition = WidgetDisposition.query.first()
         wdisposition_id = wdisposition.id
-        self._load(session, page1_id, wdisposition_id)
-        self.assertNotEquals(self._page_and_widget_count(session, page1_id), 0)
+        self._load(session, another_page_id, wdisposition_id)
+        self.assertNotEquals(self._page_and_widget_count(session, another_page_id), 0)
 
         ## delete
         self._delete(wdisposition_id)
         self.assertEquals(WidgetDisposition.query.count(), 0)
 
+    def test_bind_disposition_and_page_structure_has_page_id(self):
+        """ save後のstructureはwidgetのPkを持ち、nullではない。
+        """
+        from altaircms.widget.models import WidgetDisposition
+
+        ## create
+        session = self._getSession()
+        self._addData(session)
+        self._save(session)
+
+        ## bind to another page
+        another_page_id = self._another_page(session).id
+        wdisposition = WidgetDisposition.query.first()
+        wdisposition_id = wdisposition.id
+        self._load(session, another_page_id, wdisposition_id)
+
+        from altaircms.page.models import Page
+        bound_page = Page.query.filter(Page.id==another_page_id).one()
+        structure = json.loads(bound_page.structure)
+        for k, block in structure.items():
+            for w in block:
+                self.assertNotEqual(w["pk"], None)
+
+    def test_if_bind_disposition_many_times(self):
+        """ 何度もwidget layoutをloadしても、widgetの総数は変わらない。
+        """
+        from altaircms.widget.models import WidgetDisposition
+
+        ## create
+        session = self._getSession()
+        self._addData(session)
+        self._save(session)
+
+        ## bind to another page
+        another_page_id = self._another_page(session).id
+        wdisposition = WidgetDisposition.query.first()
+        wdisposition_id = wdisposition.id
+
+        ## bound many times
+        self._load(session, another_page_id, wdisposition_id)
+        from altaircms.widget.models import Widget
+
+        after_one_times = Widget.query.filter_by(page_id=another_page_id).count()
+        self._load(session, another_page_id, wdisposition_id)
+        self._load(session, another_page_id, wdisposition_id)
+
+        self.assertEquals(Widget.query.filter_by(page_id=another_page_id).count(),
+                          after_one_times)
+        
+
+        
     def test_save_and_delete_number_of_widget(self):
         """ widgetも一緒に消されるはず.
         1. page生成 -> widget*2

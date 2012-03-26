@@ -103,19 +103,24 @@ class WidgetDisposition(Base): #todo: rename
         return instance
 
     def bind_page(self, page, session):
+        ## todo: 複数回呼ばれた時
         from altaircms.widget.tree.proxy import WidgetTreeProxy
         import altaircms.widget.tree.clone as wclone
+        
+        if page.has_widgets():
+            self.delete_widgets()
+
+        ## cleanup
         wtree = WidgetTreeProxy(self)
         new_wtree = wclone.clone(session, page, wtree)
-        # if session:
-        #     session.flush()
+        if session:
+            session.flush()
         page.structure = json.dumps(wclone.to_structure(new_wtree))
         return page
 
-    ## todo:fixme
     def delete_widgets(self):
         where = (Widget.disposition_id==self.id) & (Widget.page_id==None)
-        DBSession.query(Widget.id).filter(where).delete()
+        return DBSession.query(Widget.id).filter(where).delete()
 
     @classmethod
     def same_blocks_query(cls, page):
