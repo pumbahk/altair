@@ -149,6 +149,9 @@ class DispositionViewFunctionalTest(WithWidgetPageTest):
         params = {"disposition":wdisposition_id}
         self.testapp.get("/page/%s/disposition" % page_id, params, status=302)     
 
+    def _delete(self, wdisposition_id):
+        self.testapp.post("/disposition/%s/alter" % wdisposition_id)
+
     def _page_and_widget_count(self, session, page_id):
         from altaircms.page.models import Page
         from altaircms.widget.models import Widget
@@ -158,12 +161,13 @@ class DispositionViewFunctionalTest(WithWidgetPageTest):
         
     def test_it(self):
         """widget layout 保存. widget layout の読み込み"""
+        from altaircms.widget.models import WidgetDisposition
+
         session = self._getSession()
         self._addData(session)
         self.assertEquals(self._page_and_widget_count(session, 0), 0)
 
         ## save
-        from altaircms.widget.models import WidgetDisposition
         self.assertEquals(WidgetDisposition.query.count(), 0)
         self._save(session)
         self.assertEquals(WidgetDisposition.query.count(), 1)
@@ -174,8 +178,34 @@ class DispositionViewFunctionalTest(WithWidgetPageTest):
 
         ## load
         wdisposition = WidgetDisposition.query.first()
-        self._load(session, page1_id, wdisposition.id)
+        wdisposition_id = wdisposition.id
+        self._load(session, page1_id, wdisposition_id)
         self.assertNotEquals(self._page_and_widget_count(session, page1_id), 0)
+
+        ## delete
+        self._delete(wdisposition_id)
+        self.assertEquals(WidgetDisposition.query.count(), 0)
+
+    def test_save_and_delete_number_of_widget(self):
+        """ widgetも一緒に消されるはず.
+        1. page生成 -> widget*2
+        2. widget layout保存 -> widget*4
+        3. widget layout削除 -> widget*2"""
+
+        from altaircms.widget.models import Widget
+        from altaircms.widget.models import WidgetDisposition
+
+        ## create
+        session = self._getSession()
+        self._addData(session)
+        self.assertEquals(Widget.query.count(), 2)
+        self._save(session)
+        self.assertEquals(Widget.query.count(), 4)
+        
+        ## delete
+        wdisposition = WidgetDisposition.query.first()
+        self._delete(wdisposition.id)
+        self.assertEquals(Widget.query.count(), 2)
 
 if __name__ == "__main__":
     unittest.main()
