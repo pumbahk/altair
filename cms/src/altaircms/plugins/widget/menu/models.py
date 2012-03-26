@@ -42,9 +42,9 @@ class MenuWidget(Widget):
 
 
 class MenuWidgetResource(HandleSessionMixin,
-                                UpdateDataMixin,
-                                HandleWidgetMixin,
-                                RootFactory
+                         UpdateDataMixin,
+                         HandleWidgetMixin,
+                         RootFactory
                           ):
     WidgetClass = MenuWidget
 

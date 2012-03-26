@@ -208,7 +208,7 @@ def disposition_list(context, request):
 def disposition_delete(context, request):
     disposition = context.get_disposition(request.matchdict["id"])
     title = disposition.title
-    context.delete(disposition)
+    context.delete_disposition(disposition)
     FlashMessage.success(u"%sを消しました" % title, request=request)
     return HTTPFound(h.widget.to_disposition_list(request))
 

@@ -33,6 +33,11 @@ class UseWidgetMixin(object):
         D = {"id": 2, "asset": asset,  "asset_id": asset.id, "page_id":2}
         return ImageWidget.from_dict(D)
 
+    def _getMenuWidget(self):
+        from altaircms.plugins.widget.menu.models import MenuWidget
+        D = {"id": 3,  "page_id":2, "items":"[]"}
+        return MenuWidget.from_dict(D)
+
 
 class UsePageEtcMixin(object):
     def _getPage(self, structure):
@@ -90,13 +95,14 @@ class WithWidgetPageTest(UseAssetMixin,
         
     def _addData(self, session):
         structure = u'''
-{"content": [{"pk": 1, "name": "freetext"}],
+{"content": [{"pk": 3,  "name":"menu"}, {"pk": 1, "name": "freetext"}],
  "footer": [{"pk": 2, "name": "image"}]}
 '''
         session.add(self._getPage(structure))
         session.add(self._getLayout())
         session.add(self._getTextWidget())
         session.add(self._getImageWidget())
+        session.add(self._getMenuWidget())
         import transaction
         transaction.commit()
 
@@ -117,16 +123,17 @@ class PageCloneTest(WithWidgetPageTest):
         self._addData(session)
 
         self.assertEquals(Page.query.count(), 1)
-        self.assertEquals(Widget.query.count(), 2)
+        self.assertEquals(Widget.query.count(), 3)
         page = Page.query.first()
         
         cloned =  page.clone(session)
         self.assertEquals(Page.query.count(), 2)
         self.assertTrue(u"コピー" in cloned.title)
-        self.assertEquals(Widget.query.count(), 4)
+        self.assertEquals(Widget.query.count(), 6)
         self.assertEquals(cloned.structure, 
-                          json.dumps({"content": [{"pk": 3, "name": "freetext"}],
-                                      "footer":  [{"pk": 4, "name": "image"}]}))
+                          json.dumps({"content": [{"pk": 4, "name": "menu"}, 
+                                                  {"pk": 5, "name": "freetext"}],
+                                      "footer":  [{"pk": 6, "name": "image"}]}))
 
 
 class DispositionViewFunctionalTest(WithWidgetPageTest):
@@ -198,14 +205,14 @@ class DispositionViewFunctionalTest(WithWidgetPageTest):
         ## create
         session = self._getSession()
         self._addData(session)
-        self.assertEquals(Widget.query.count(), 2)
+        self.assertEquals(Widget.query.count(), 3)
         self._save(session)
-        self.assertEquals(Widget.query.count(), 4)
+        self.assertEquals(Widget.query.count(), 6)
         
         ## delete
         wdisposition = WidgetDisposition.query.first()
         self._delete(wdisposition.id)
-        self.assertEquals(Widget.query.count(), 2)
+        self.assertEquals(Widget.query.count(), 3)
 
 if __name__ == "__main__":
     unittest.main()

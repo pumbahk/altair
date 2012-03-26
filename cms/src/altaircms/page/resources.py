@@ -41,6 +41,11 @@ class ForDispositionMixin(object):
         page = wdisposition.bind_page(page, DBSession)
         return page
 
+    def delete_disposition(self, wdisposition):
+        ## need self.delete()
+        wdisposition.delete_widgets()
+        self.delete(wdisposition)
+        
 class ForPageMixin(object):
     def get_layout_render(self, page):
         layout = DBSession.query(Layout).filter_by(id=page.layout_id).one()

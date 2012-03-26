@@ -44,7 +44,6 @@ class Widget(Base):
         return '<%s %s>' % (self.__class__.__name__, self.id)
 
     def clone(self, session, page): #todo:refactoring model#clone
-        from altaircms.page.models import Page
         D = self.to_dict()
         D["id"] = None
         if page:
@@ -112,6 +111,11 @@ class WidgetDisposition(Base): #todo: rename
         #     session.flush()
         page.structure = json.dumps(wclone.to_structure(new_wtree))
         return page
+
+    ## todo:fixme
+    def delete_widgets(self):
+        where = (Widget.disposition_id==self.id) & (Widget.page_id==None)
+        DBSession.query(Widget.id).filter(where).delete()
 
     @classmethod
     def same_blocks_query(cls, page):
