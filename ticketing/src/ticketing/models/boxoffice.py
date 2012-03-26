@@ -489,6 +489,11 @@ class SeatStock(Base):
                     con_num = 0
         return []
 
+venue_venue_area_table = Table(
+    'Venue_SeatMasterVenueArea', Base.metadata,
+    Column('venue_area_id', BigInteger, ForeignKey('VenueArea.id')),
+    Column('seat_master_id', BigInteger, ForeignKey('SeatMaster.id'))
+)
 
 class Venue(Base):
     __tablename__ = "Venue"
@@ -500,32 +505,12 @@ class Venue(Base):
     created_at = Column(DateTime)
     status = Column(Integer)
 
-class VenueBlock(Base):
-    __tablename__ = "VenueBlock"
+class VenueArea(Base):
+    __tablename__ = "VenueArea"
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
     venue           = relationship('Venue')
     venue_id        = Column(BigInteger, ForeignKey('Venue.id'))
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
-    status = Column(Integer)
-
-class VenueGate(Base):
-    __tablename__ = "VenueGate"
-    id = Column(BigInteger, primary_key=True)
-    venue           = relationship('Venue')
-    venue_id        = Column(BigInteger, ForeignKey('Venue.id'))
-    name = Column(String(255))
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
-    status = Column(Integer)
-
-class VenueFloor(Base):
-    __tablename__ = "VenueFloor"
-    id = Column(BigInteger, primary_key=True)
-    venue           = relationship('Venue')
-    venue_id        = Column(BigInteger, ForeignKey('Venue.id'))
-    name = Column(String(255))
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
     status = Column(Integer)
@@ -537,13 +522,8 @@ class SeatMaster(Base):
     identifieir     = Column(String(255))
     venue           = relationship('Venue')
     venue_id        = Column(BigInteger, ForeignKey('Venue.id'))
-    venue           = relationship('Venue')
-    venue_block_id  = Column(BigInteger, ForeignKey('VenueBlock.id'))
-    venue_block     = relationship('VenueBlock')
-    venue_gate_id   = Column(BigInteger, ForeignKey('VenueGate.id'))
-    venue_gate      = relationship('VenueGate')
-    venue_floor_id  = Column(BigInteger, ForeignKey('VenueFloor.id'))
-    venue_floor     = relationship('VenueFloor')
+    areas           = relationship("VenueArea",
+                        secondary=venue_venue_area_table, backref="seats")
     col             = Column(String(255))
     row             = Column(String(255))
     updated_at      = Column(DateTime)
