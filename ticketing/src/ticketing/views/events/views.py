@@ -8,6 +8,7 @@ from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.models.boxoffice import session, Event, Performance
 
 from forms import EventForm
+from ticketing.views import BaseView
 
 from ticketing.fanstatic import with_bootstrap
 from ticketing.fanstatic import bootstrap_need
