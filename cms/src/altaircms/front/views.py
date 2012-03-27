@@ -4,6 +4,18 @@ from pyramid.renderers import render_to_response
 from pyramid.view import view_config
 from altaircms.lib.fanstatic import with_jquery
 
+## todo refactoring
+"""
+ここのviewはwidgetなどの情報を集めて、ページをレンダリングするview。
+どのテンプレートを利用するかは実行時に決まる。(render_to_responseを利用)
+
+viewの種類2つ（これは後で綺麗にしたい)
+
++ publish        ---- 公開されたページのレンダリング(url存在)
++ preview        ---- 非公開のページをハッシュ値つけたURLでレンダリング
+
+"""
+
 @view_config(route_name="front", decorator=with_jquery)
 def rendering_page(context, request):
     url = request.matchdict["page_name"]
