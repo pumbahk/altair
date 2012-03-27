@@ -1,6 +1,7 @@
 from pyramid.view import view_config
+from . import forms
 
-class {{Package}}WidgetView(object):
+class CountdownWidgetView(object):
     def __init__(self, request):
         self.request = request
 
@@ -17,24 +18,24 @@ class {{Package}}WidgetView(object):
         r.update(pk=widget.id)
         return r
 
-    @view_config(route_name="{{package}}_widget_create", renderer="json", request_method="POST")
+    @view_config(route_name="countdown_widget_create", renderer="json", request_method="POST")
     def create(self):
         return self._create_or_update()
 
-    @view_config(route_name="{{package}}_widget_update", renderer="json", request_method="POST")
+    @view_config(route_name="countdown_widget_update", renderer="json", request_method="POST")
     def update(self):
         return self._create_or_update()
 
-    @view_config(route_name="{{package}}_widget_delete", renderer="json", request_method="POST")
+    @view_config(route_name="countdown_widget_delete", renderer="json", request_method="POST")
     def delete(self):
         context = self.request.context
         widget = context.get_widget(self.request.json_body["pk"])
         context.delete(widget, flush=True)
         return {"status": "ok"}
 
-    @view_config(route_name="{{package}}_widget_dialog", renderer="altaircms.plugins.widget:{{package}}/dialog.mako", request_method="GET")
+    @view_config(route_name="countdown_widget_dialog", renderer="altaircms.plugins.widget:countdown/dialog.mako", request_method="GET")
     def dialog(self):
         context = self.request.context
         widget = context.get_widget(self.request.GET.get("pk"))
-        form = forms.CountDownChoiceForm(**widget.to_dict())
+        form = forms.CountdownChoiceForm(**widget.to_dict())
         return {"form": form}

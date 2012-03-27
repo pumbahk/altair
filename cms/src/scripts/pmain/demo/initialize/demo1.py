@@ -24,6 +24,19 @@ def _image_asset():
     
 def add_widget(page):
     DBSession.flush()
+
+    with block("countdown"):
+        from altaircms.plugins.widget.countdown.views import CountdownWidgetView
+        from altaircms.plugins.widget.countdown.models import CountdownWidgetResource
+        request = DummyRequest()
+        request.json_body = dict(page_id=page.id, 
+                                 data=dict(kind="deal_close"))
+        context = CountdownWidgetResource(request)
+        request.context = context
+        r = CountdownWidgetView(request).create()
+        append_to_json_structure(page, "page_main_title", 
+                                 {"name": "countdown", "pk": r["pk"]})
+
     with block("menu"):
         from altaircms.plugins.widget.menu.views import MenuWidgetView
         from altaircms.plugins.widget.menu.models import MenuWidgetResource
@@ -188,6 +201,7 @@ def add_widget(page):
         r = DetailWidgetView(request).create()
         append_to_json_structure(page, "page_main_description", 
                                  {"name": "detail", "pk": r["pk"]})
+
 
 
 def init():

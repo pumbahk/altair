@@ -27,7 +27,7 @@ widget.configure({
     var opt = {} //widget local variable
     var load_page = function(we){
         var pk = we.get_pk(we.where);
-        var url = "/api/widget/{{package}}/dialog";
+        var url = "/api/widget/countdown/dialog";
         if(!!pk){
             url += "?" + $.param({"pk": pk});
         }
@@ -35,15 +35,17 @@ widget.configure({
     };
 
     var on_dialog = function(we){
-        $("#submit").click(function(){we.finish_dialog(this);});    
+        $("#submit").click(function(){we.finish_dialog(this);});
     };
 
     var on_close = function(we){
     };
 
     var collect_data = function(we, choiced_elt){
+        var root = $(we.dialog)
+        return {"kind": root.find("#kind").val()}
     };
-    return widget.include("{{package}}", {
+    return widget.include("countdown", {
         load_page: load_page, 
         on_dialog: on_dialog, 
         on_close: on_close, 
