@@ -129,11 +129,13 @@ def obi(widget, performances, request):
     ※ performancesはstart_onでsortされているとする
     """
     template_name = os.path.join(here, "rakuten.calendar.mako")
-    template_name = os.path.join(here, "rakuten.calendar.mako")
     performances = list(performances)
-    cal = CalendarOutput.from_performances(performances)
-    rows = cal.each_rows(performances[0].start_on, performances[-1].start_on)
-    return render(template_name, {"cal":rows, "i":cal.i}, request)
+    if performances:
+        cal = CalendarOutput.from_performances(performances)
+        rows = cal.each_rows(performances[0].start_on, performances[-1].start_on)
+        return render(template_name, {"cal":rows, "i":cal.i}, request)
+    else:
+        return u"performance is not found"
 
 def term(widget, performances, request):
     """開始日／終了日を指定してその範囲のカレンダーを表示
@@ -142,6 +144,7 @@ def term(widget, performances, request):
     cal = CalendarOutput.from_performances(performances)
     rows = cal.each_rows(widget.from_date, widget.to_date)
     return render(template_name, {"cal":rows, "i":cal.i}, request)
+
 
 def tab(widget, performances, request):
     """月毎のタブが存在するカレンダーを表示
