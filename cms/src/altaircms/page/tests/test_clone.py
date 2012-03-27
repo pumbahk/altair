@@ -138,7 +138,8 @@ class PageCloneTest(WithWidgetPageTest):
 class DispositionViewFunctionalTest(WithWidgetPageTest):
     def _another_page(self, session):
         from altaircms.page.models import Page
-        page = Page()
+        from altaircms.page.models import Layout
+        page = Page(layout=Layout())
         session.add(page)
         session.flush()
         return page
@@ -161,7 +162,6 @@ class DispositionViewFunctionalTest(WithWidgetPageTest):
     def _page_and_widget_count(self, session, page_id):
         from altaircms.page.models import Page
         from altaircms.widget.models import Widget
-        # print [(w.id, w.page_id, w.disposition_id) for w in Widget.query.all()]
         where = (Page.id==Widget.page_id) & (Page.id==page_id)
         return session.query(Widget, Page).filter(where).count()
         
@@ -185,12 +185,15 @@ class DispositionViewFunctionalTest(WithWidgetPageTest):
         ## load
         wdisposition = WidgetDisposition.query.first()
         wdisposition_id = wdisposition.id
+        self.assertEquals(WidgetDisposition.query.count(), 1)
         self._load(session, another_page_id, wdisposition_id)
+        self.assertEquals(WidgetDisposition.query.count(), 2)
         self.assertNotEquals(self._page_and_widget_count(session, another_page_id), 0)
 
         ## delete
+        self.assertEquals(WidgetDisposition.query.count(), 2)
         self._delete(wdisposition_id)
-        self.assertEquals(WidgetDisposition.query.count(), 0)
+        self.assertEquals(WidgetDisposition.query.count(), 1)
 
     def test_bind_disposition_and_page_structure_has_page_id(self):
         """ save後のstructureはwidgetのPkを持ち、nullではない。
@@ -216,7 +219,7 @@ class DispositionViewFunctionalTest(WithWidgetPageTest):
                 self.assertNotEqual(w["pk"], None)
 
     def test_if_bind_disposition_many_times(self):
-        """ 何度もwidget layoutをloadしても、widgetの総数は変わらない。
+        """ 何度もwidget layoutをloadできる.その時WidgetLayoutのsnapshotが作成される
         """
         from altaircms.widget.models import WidgetDisposition
 
@@ -232,14 +235,9 @@ class DispositionViewFunctionalTest(WithWidgetPageTest):
 
         ## bound many times
         self._load(session, another_page_id, wdisposition_id)
-        from altaircms.widget.models import Widget
-
-        after_one_times = Widget.query.filter_by(page_id=another_page_id).count()
         self._load(session, another_page_id, wdisposition_id)
         self._load(session, another_page_id, wdisposition_id)
-
-        self.assertEquals(Widget.query.filter_by(page_id=another_page_id).count(),
-                          after_one_times)
+        self.assertEquals(WidgetDisposition.query.count(), 4)
         
 
         

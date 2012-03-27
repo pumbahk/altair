@@ -17,7 +17,8 @@ class Layout(Base):
 
     title = Column(String())
     template_filename = Column(String())
-    blocks = Column(String())
+    DEFAULT_BLOCKS = "[]"
+    blocks = Column(String(), default=DEFAULT_BLOCKS)
 
     site_id = Column(Integer(), ForeignKey("site.id"))
     client_id = Column(Integer(), ForeignKey("client.id"))

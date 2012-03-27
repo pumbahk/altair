@@ -26,7 +26,7 @@ def get_debug_user(request):
     except NoResultFound:
         # import warnings
         # warnings.warn("request.user is not found. so, bound debug user automaticaly")
-        return Operator(auth_source="debug", user_id=1, id=1, role_id=1, screen_name="debug user")
+        return Operator(auth_source="debug", user_id=1, id=1, role_id=1, screen_name=u"debug user")
 
 # def user_context(event):
 #     """

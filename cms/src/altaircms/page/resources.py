@@ -37,6 +37,7 @@ class ForDispositionMixin(object):
         return WidgetDisposition.enable_only_query(user)
 
     def bind_disposition(self, page, wdisposition):
+        WidgetDisposition.snapshot(page, self.request.user, DBSession)
         page = wdisposition.bind_page(page, DBSession)
         return page
 

@@ -13,6 +13,8 @@ from datetime import datetime
 from zope.interface import implements
 from altaircms.interfaces import IHasSite
 from altaircms.interfaces import IHasTimeHistory
+from altaircms.page.models import Page
+from altaircms.layout.models import Layout
 
 __all__ = [
     'Widget',
@@ -27,7 +29,6 @@ class Widget(Base):
     __tablename__ = "widget"
     page_id = sa.Column(sa.Integer, sa.ForeignKey("page.id"))
     page = orm.relationship("Page", backref="widgets")
-    # page = orm.relationship("Page", backref="widgets", single_parent = True)
 
     disposition_id = sa.Column(sa.Integer, sa.ForeignKey("widgetdisposition.id"))
     disposition = orm.relationship("WidgetDisposition", backref="widgets")
@@ -55,7 +56,6 @@ class Widget(Base):
         session.add(ins)
         return ins
 
-
 class WidgetDisposition(Base): #todo: rename
     """ widgetの利用内容を記録しておくためのモデル
     以下を記録する。
@@ -72,8 +72,8 @@ class WidgetDisposition(Base): #todo: rename
     title = sa.Column(sa.Unicode(255))
     site_id = sa.Column(sa.Integer, sa.ForeignKey("site.id"))
 
-    structure = sa.Column(sa.String) # same as: Page.structure
-    blocks = sa.Column(sa.String) # same as: Layout.blocks
+    structure = sa.Column(sa.String, default=Page.DEFAULT_STRUCTURE) # same as: Page.structure
+    blocks = sa.Column(sa.String, default=Layout.DEFAULT_BLOCKS) # same as: Layout.blocks
 
     is_public = sa.Column(sa.Boolean, default=False)
     owner_id = sa.Column(sa.Integer, sa.ForeignKey("operator.id"))
@@ -81,6 +81,13 @@ class WidgetDisposition(Base): #todo: rename
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
     
+    @classmethod
+    def _create_empty_from_page(cls, page, title_fmt=u"%sより"):
+        D = {"title": title_fmt % page.title, 
+             "site_id": page.site_id, 
+             "blocks": page.layout.blocks}
+        return cls.from_dict(D)
+
     @classmethod
     def from_page(cls, page, session):
         from altaircms.widget.tree.proxy import WidgetTreeProxy
@@ -91,25 +98,16 @@ class WidgetDisposition(Base): #todo: rename
             session.flush()
         new_structure = wclone.to_structure(new_wtree)
 
-        D = {"structure": json.dumps(new_structure), 
-             "title": u"%sより" % page.title, 
-             "site_id": page.site_id, 
-             "blocks": page.layout.blocks}
-
-        instance = cls.from_dict(D)
+        instance = cls._create_empty_from_page(page, title_fmt=u"%sより") ##
+        instance.structure = json.dumps(new_structure)
         for k, ws in new_wtree.blocks.iteritems():
             for w in ws:
                 w.disposition = instance
         return instance
 
     def bind_page(self, page, session):
-        ## todo: 複数回呼ばれた時
         from altaircms.widget.tree.proxy import WidgetTreeProxy
         import altaircms.widget.tree.clone as wclone
-        
-        if page.has_widgets():
-            self.delete_widgets()
-
         ## cleanup
         wtree = WidgetTreeProxy(self)
         new_wtree = wclone.clone(session, page, wtree)
@@ -119,8 +117,28 @@ class WidgetDisposition(Base): #todo: rename
         return page
 
     def delete_widgets(self):
-        where = (Widget.disposition_id==self.id) & (Widget.page_id==None)
+        where = (Widget.disposition_id==self.id) & (Widget.page==None)
         return DBSession.query(Widget.id).filter(where).delete()
+
+    @classmethod
+    def _snapshot_title(cls):
+        return u"%%s(%s)" % str(datetime.now())
+
+    @classmethod
+    def snapshot(cls, page, owner, session):
+        """ move widgets page to widget disposition(as tmpstorage)
+        """
+        dispos = cls._create_empty_from_page(page, title_fmt=cls._snapshot_title()) ##
+        dispos.structure = page.structure
+        dispos.owner = owner
+        page.structure = Page.DEFAULT_STRUCTURE
+        if session:
+            session.add(page)
+            session.add(dispos)
+        Widget.query.filter(Widget.page==page).update(
+            {Widget.page: None,  Widget.disposition:dispos}
+            )
+        return dispos
 
     @classmethod
     def same_blocks_query(cls, page):
