@@ -4,7 +4,7 @@ import transaction
 from pyramid import testing
 from webob.multidict import MultiDict
 
-from altaircms.base.tests import BaseTest
+from altaircms.lib.testutils import BaseTest
 from altaircms.topic.views import TopicRESTAPIView
 
 class TestTopicView(BaseTest):

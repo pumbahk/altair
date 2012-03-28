@@ -5,7 +5,7 @@ from pyramid import testing
 from sqlalchemy.orm.exc import NoResultFound
 from webob.multidict import MultiDict
 
-from altaircms.base.tests import BaseTest
+from altaircms.lib.testutils import BaseTest
 from altaircms.event.views import EventRESTAPIView
 from altaircms.models import Event, DBSession
 

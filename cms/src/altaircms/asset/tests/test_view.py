@@ -7,7 +7,7 @@ from pyramid import testing
 from webob.multidict import MultiDict
 
 from altaircms.models import DBSession
-from altaircms.base.tests import BaseTest
+from altaircms.lib.testutils import BaseTest
 from altaircms.asset.views import AssetRESTAPIView
 from altaircms.asset.models import Asset, ImageAsset
 

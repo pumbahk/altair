@@ -1,8 +1,24 @@
 import sys
+import unittest
 # from .dbinspect import listing_all
 """
 todo: output meessage via logger
 """
+
+from pyramid import testing
+
+def _initTestingDB():
+    from sqlalchemy import create_engine
+    from altaircms.models import initialize_sql
+    session = initialize_sql(create_engine('sqlite:///:memory:'))
+    return session
+
+
+class BaseTest(unittest.TestCase):
+    def setUp(self):
+        self.config = testing.setUp()
+        self.session = _initTestingDB()
+
 
 def _create_db(Base, DBSession, engine):
     if not Base.metadata.is_bound():

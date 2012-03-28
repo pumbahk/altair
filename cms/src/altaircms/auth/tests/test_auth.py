@@ -5,7 +5,7 @@ from httplib2 import Response
 from pyramid import testing
 from pyramid.httpexceptions import HTTPFound, HTTPBadRequest, HTTPUnauthorized
 
-from altaircms.base.tests import BaseTest
+from altaircms.lib.testutils import BaseTest
 from altaircms.auth.initial_data import insert_initial_authdata
 
 
