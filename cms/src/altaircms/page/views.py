@@ -5,8 +5,8 @@ from pyramid.view import view_defaults
 from pyramid.httpexceptions import HTTPFound
 
 from altaircms.views import BaseRESTAPI
-from altaircms.base.viewhelpers import RegisterViewPredicate
-from altaircms.base.viewhelpers import FlashMessage
+from altaircms.lib.viewhelpers import RegisterViewPredicate
+from altaircms.lib.viewhelpers import FlashMessage
 from altaircms.page.forms import PageForm
 from altaircms.models import Event
 from altaircms.page.models import Page

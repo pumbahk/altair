@@ -21,7 +21,7 @@ def existing_events():
 
 class TopicForm(form.Form):
     title = fields.TextField(label=u"タイトル", validators=[validators.Required()])
-    kind = fields.SelectField(label=u"トピックの種別", choices=[(x, x) for x in Topic.TYPE_CANDIDATES])
+    kind = fields.SelectField(label=u"トピックの種別", choices=[(x, x) for x in Topic.KIND_CANDIDATES])
     is_global = fields.BooleanField(label=u"全体に公開", default=True)
     publish_open_on = fields.DateTimeField(label=u"公開開始日")
     publish_close_on = fields.DateTimeField(label=u"公開終了日")

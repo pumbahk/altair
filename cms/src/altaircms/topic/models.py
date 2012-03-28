@@ -10,43 +10,36 @@ from altaircms.models import Base
 from altaircms.models import DBSession
 from altaircms.page.models import Page
 from altaircms.models import Event
+from altaircms.lib.modelmixin import AboutPublishMixin
 
-class AboutPublishMixin(object):
-    publish_open_on = sa.Column(sa.DateTime)
-    publish_close_on = sa.Column(sa.DateTime)
-    orderno = sa.Column(sa.Integer, default=50)
-    is_vetoed = sa.Column(sa.Boolean, default=False)
-    
-    @classmethod
-    def publishing(cls, d=None, qs=None):
-        if d is None:
-            d = datetime.now()
-        if qs is None:
-            qs = cls.query
-        return cls._has_permissions(cls._orderby_logic(cls._publishing(qs, d)))
+"""
+topicはtopicウィジェットで使われる。
+以下のような内容の表示に使われる。
 
-    @classmethod
-    def _has_permissions(cls, qs):
-        """ 公開可能なもののみ
-        """
-        return qs.filter(cls.is_vetoed==False)
+2011:2/11 講演者変更:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+2011:2/18 講演者変更:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+2011:2/19 講演者変更:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+2011:2/20 講演者中止:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-    @classmethod
-    def _publishing(cls, qs, d):
-        """ 掲載期間のもののみ
-        """
-        qs = qs.filter(cls.publish_open_on  <= d)
-        return qs.filter(d <= cls.publish_close_on)
 
-    @classmethod
-    def _orderby_logic(cls, qs):
-        """ 表示順序で並べた後、公開期間で降順
-        """
-        table = cls.__tablename__
-        return qs.order_by(sa.asc(table+".orderno"),
-                           sa.desc(table+".publish_open_on"), 
-                           )
+要件として
 
+1. 公開可否を指定できること
+2. 最新N件を取得できること
+3. (2.より優先して)表示順序を指定できること
+    表示順序の範囲は　1 〜 100
+    デフォルトでは50
+4. 自動的に、ページ、イベントに紐ついたページ, 同カテゴリのものが表示される。
+
+ができる必要がある。
+
+
+topic widget(移動予定):
+
+1. 画像を挿入（アセットから選択)
+2. この時、tagでアセットから絞りこまれた内容の画像から選択できるようにする。
+"""
+        
 
 class AboutTopicTypeMixin(object):
     is_global = sa.Column(sa.Boolean, default=False)
@@ -115,7 +108,7 @@ class Topic(AboutPublishMixin, AboutTopicTypeMixin,
     """
     __tablename__ = "topic"
     query = DBSession.query_property()
-    TYPE_CANDIDATES = [u"公演中止情報", u"お知らせ", u"その他"]
+    KIND_CANDIDATES = [u"公演中止情報", u"お知らせ", u"その他"]
 
     id = sa.Column(sa.Integer, primary_key=True)
     created_at = sa.Column(sa.DateTime, default=datetime.now)
@@ -138,34 +131,4 @@ class Topic(AboutPublishMixin, AboutTopicTypeMixin,
         qs = cls.publishing(d=d, qs=qs)
         qs = cls.matched_topic_type(qs=qs, page=page, event=event)
         return qs.filter(cls.kind==kind) if kind else qs
-
-
-"""
-topicはtopicウィジェットで使われる。
-以下のような内容の表示に使われる。
-
-2011:2/11 講演者変更:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-2011:2/18 講演者変更:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-2011:2/19 講演者変更:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-2011:2/20 講演者中止:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-
-要件として
-
-1. 公開可否を指定できること
-2. 最新N件を取得できること
-3. (2.より優先して)表示順序を指定できること
-    表示順序の範囲は　1 〜 100
-    デフォルトでは50
-4. 自動的に、ページ、イベントに紐ついたページ, 同カテゴリのものが表示される。
-
-ができる必要がある。
-
-
-topic widget(移動予定):
-
-1. 画像を挿入（アセットから選択)
-2. この時、tagでアセットから絞りこまれた内容の画像から選択できるようにする。
-"""
-        
 
