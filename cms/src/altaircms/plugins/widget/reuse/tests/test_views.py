@@ -10,20 +10,20 @@ class FunctionalViewTests(unittest.TestCase):
     
     def setUp(self):
         self._getSession().remove()
-        from altaircms.lib.testutils import create_db
-        create_db()
         from altaircms import main
         self.app = main({}, **{"sqlalchemy.url": "sqlite://", 
                             "altaircms.plugin_static_directory": "altaircms:plugins/static", 
                             "altaircms.debug.strip_security": "true",
                             "widget.template_path_format": "%s.mako", 
                             "altaircms.layout_directory": "."})
+        from altaircms.lib.testutils import create_db
+        create_db()
         from webtest import TestApp
         self.testapp = TestApp(self.app)
 
     def tearDown(self):
         self._getSession().remove()
-        from altaircms.testutils import dropall_db
+        from altaircms.lib.testutils import dropall_db
         dropall_db()
         del self.app
 
@@ -54,14 +54,15 @@ class FunctionalViewTests(unittest.TestCase):
         """
         session = self._getSession()
         page_id = 1
-        content = "this_month"
         self._with_session(session, self._makePage(id=page_id))
+        sub_page = self._makePage(id=2)
 
         res = self._callFUT().post_json(
             self.create_widget, 
-            {"page_id": page_id, "pk": None, "data": {"content": content} }, 
+            {"page_id": page_id, "pk": None, "data": {"width": 100, "source_page_id": sub_page.id, } }, 
             status=200)
-        expexted = {"page_id": page_id, "pk": 1,  "data": {"content": "<content>"} }
+        expexted = {"page_id": page_id, "pk": 1, 
+                    "data": {"width": 100, "source_page_id": sub_page.id, }}
 
         self.assertEquals(json.loads(res.body), expexted)
         self.assertEquals(ReuseWidget.query.count(), 1)
@@ -71,25 +72,31 @@ class FunctionalViewTests(unittest.TestCase):
     def _create_widget(self, session, page_id=1, id=1):
         session = self._getSession()
         page_id = 1
-        dummy = "dummy"
+        sub_page = self._makePage(id=2)
+        data = {"height": 100, "width": 100, "source_page_id": sub_page.id, }
         self._with_session(session, self._makePage(id=page_id))
         self._callFUT().post_json(self.create_widget,
-                                  {"page_id": page_id, "pk": None, "data": {"content": dummy} }, 
+                                  {"page_id": page_id, "pk": None, "data": data }, 
                                   status=200)        
 
     def test_update(self):
         session = self._getSession()
         page_id = 10
         self._create_widget(session, id=1, page_id=page_id)
-        updated = "updated"
+        new_page = self._makePage(id=3)
+        updated = {"height": 200, "width": 200, "source_page_id": new_page.id}
         res = self._callFUT().post_json(self.update_widget, 
-                                        {"page_id": page_id, "pk":1, "data": {"content": updated} }, 
+                                        {"page_id": page_id, "pk":1, "data": updated }, 
                                         status=200)
-        expexted = {"page_id": page_id, "pk": 1,  "data": {"content": updated} }
+        expexted = {"page_id": page_id, "pk": 1,  "data": updated }
 
         self.assertEquals(json.loads(res.body), expexted)
         self.assertEquals(ReuseWidget.query.count(), 1)
-        self.assertEquals(ReuseWidget.query.first().content, updated)
+
+        w = ReuseWidget.query.first()
+        self.assertEquals(w.width, 200)
+        self.assertEquals(w.height, 200)
+        self.assertEquals(w.source_page_id, 3)
 
 
     def test_delete(self):

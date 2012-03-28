@@ -42,6 +42,11 @@ widget.configure({
     };
 
     var collect_data = function(we, choiced_elt){
+        var root = $(we.dialog);
+        return {"source_page_id": root.find("#source_page_input").val(), 
+                "width": root.find("#width_input").val(), 
+                "height": root.find("#height_input").val()
+               };
     };
     return widget.include("reuse", {
         load_page: load_page, 

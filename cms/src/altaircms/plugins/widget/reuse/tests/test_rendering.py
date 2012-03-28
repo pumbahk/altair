@@ -36,7 +36,7 @@ class RenderingTest(unittest.TestCase):
         config.registry.settings["mako.directories"] = here
         config.registry.settings["altaircms.layout_directory"] = "altaircms:plugins/widget/reuse/tests"
         config.registry.settings["mako.input_encoding"] = "utf-8"
-        config.registry.settings["altaircms.plugin_static_directory"] = "."
+        config.registry.settings["altaircms.plugin_static_directory"] = here
         config.include("altaircms.front", route_prefix="f")
         config.include("altaircms.plugins.widget.reuse") #attach event
         config.scan("altaircms.subscribers") #attach event
@@ -69,27 +69,8 @@ class RenderingTest(unittest.TestCase):
 </div>
 """)
 
-    def _create_layout_templates(self):
-        base_layout_path = os.path.join(here, "base_layout.mako")
-        if not os.path.exists(base_layout_path):
-            with open(base_layout_path, "w") as wf:
-                wf.write("""\
-<%block name="promotion"/>
-""")
-        layout_path = os.path.join(here, "layout.mako")
-        if not os.path.exists(layout_path):
-            with open(layout_path, "w") as wf:
-                wf.write("""\\
-<%inherit file="altaircms.plugins.widget.reuse:tests/base_layout.mako"/>
-
-<%block name="promotion">
-woo,whee!
-</%block>
-""")
-                
     def test_render_full(self):
         """renderable """
-        self._create_layout_templates()
         request = self._getRequest()
         self._getAppConfig(request)
 
@@ -98,11 +79,10 @@ woo,whee!
         widget.merge_settings("subarea", bsettings)
         bsettings.scan()
         self.assertEquals(bsettings["subarea"].replace("\n", ""), 
-                         '<div class="promotion" id="followme">   woo,whee!</div>')
+                          u'<div class="promotion" id="followme">   にほんご woo,whee!</div>')
 
     def test_css_setting_with_width(self):
         """ css settings is generated if widget's width is boound value' """
-        self._create_layout_templates()
         request = self._getRequest()
         self._getAppConfig(request)
 

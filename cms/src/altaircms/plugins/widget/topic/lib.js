@@ -42,7 +42,7 @@ widget.configure({
     };
 
     var collect_data = function(we, choiced_elt){
-        var root = $(we.dialog)
+        var root = $(we.dialog);
         return {"kind": root.find("#kind").val(), 
                 "display_count": root.find("#display_count").val(), 
                 "display_global": !!root.find("#display_global").attr("checked"), 

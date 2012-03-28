@@ -1,6 +1,8 @@
 from pyramid.view import view_config
 from pyramid.renderers import render_to_response
 
+from . import forms
+
 class ReuseWidgetView(object):
     def __init__(self, request):
         self.request = request
@@ -37,7 +39,7 @@ class ReuseWidgetView(object):
     def dialog(self):
         context = self.request.context
         widget = context.get_widget(self.request.GET.get("pk"))
-        form = forms.CountDownChoiceForm(**widget.to_dict())
+        form = forms.ReuseChoiceForm(**widget.to_dict())
         return {"form": form}
 
 def rendering_source_page(request):

@@ -2,7 +2,7 @@
 
 from zope.interface import implements
 from altaircms.interfaces import IWidget
-from pyramid.view import render_view
+from pyramid.view import render_view_to_response
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 import json
@@ -21,7 +21,7 @@ class ReuseWidget(Widget):
 
     template_name = "altaircms.plugins.widget:reuse/render.mako"
 
-    attrs = sa.Column(sa.String(), default='{"class": reuse-widget}') #json'{"class": "foo" "id": "bar"}'
+    attrs = sa.Column(sa.String(), default='{"class": "reuse-widget"}') #json'{"class": "foo" "id": "bar"}'
     source_page_id = sa.Column(sa.Integer, sa.ForeignKey("page.id"))
     source_page = orm.relationship("Page", backref="reuse_widgets")
     width = sa.Column(sa.Integer, nullable=True)
@@ -44,7 +44,8 @@ class ReuseWidget(Widget):
     def _get_internal_content(self, request):
         request._reuse_widget = self
         ## widgetが持っているpageをレンダリングするviewを呼ぶ
-        return render_view(None, request, name="reuse_redering_source_page_only")# .views
+        response = render_view_to_response(None, request, name="reuse_redering_source_page_only")# .views
+        return response.ubody
 
     def merge_settings(self, bname, bsettings):
         bsettings.need_extra_in_scan("request")
