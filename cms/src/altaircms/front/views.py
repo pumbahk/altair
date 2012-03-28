@@ -2,7 +2,7 @@
 from pyramid.httpexceptions import HTTPFound
 from pyramid.renderers import render_to_response
 from pyramid.view import view_config
-from altaircms.lib.fanstatic import with_jquery
+from altaircms.lib.fanstatic_decorator import with_jquery
 
 ## todo refactoring
 """

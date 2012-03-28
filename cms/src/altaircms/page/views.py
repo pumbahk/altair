@@ -13,9 +13,9 @@ from altaircms.page.models import Page
 
 from altaircms.page.mappers import PageMapper, PagesMapper
 
-from altaircms.lib.fanstatic import with_bootstrap
-from altaircms.lib.fanstatic import with_fanstatic_jqueries
-from altaircms.lib.fanstatic import with_wysiwyg_editor
+from altaircms.lib.fanstatic_decorator import with_bootstrap
+from altaircms.lib.fanstatic_decorator import with_fanstatic_jqueries
+from altaircms.lib.fanstatic_decorator import with_wysiwyg_editor
 import altaircms.helpers as h
 
 ##

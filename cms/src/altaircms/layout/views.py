@@ -13,7 +13,7 @@ from altaircms.models import DBSession
 from altaircms.layout.models import Layout
 from altaircms.layout.forms import LayoutForm
 from altaircms.layout.mappers import LayoutMapper, LayoutsMapper
-from altaircms.lib.fanstatic import with_bootstrap
+from altaircms.lib.fanstatic_decorator import with_bootstrap
 
 
 @view_config(route_name='layout', renderer='altaircms:templates/layout/view.mako', permission='layout_read', 

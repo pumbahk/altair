@@ -11,7 +11,7 @@ import transaction
 from altaircms.models import DBSession, Event, Performance
 from altaircms.lib.apiview import BaseRESTAPI
 from altaircms.page.models import Page
-from altaircms.lib.fanstatic import with_bootstrap
+from altaircms.lib.fanstatic_decorator import with_bootstrap
 
 from altaircms.event.forms import EventForm, EventRegisterForm
 from altaircms.event.mappers import EventMapper, EventsMapper

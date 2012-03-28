@@ -1,5 +1,5 @@
 # coding: utf-8
-from altaircms.lib.fanstatic import with_fanstatic_jqueries
+from altaircms.lib.fanstatic_decorator import with_fanstatic_jqueries
 from pyramid.view import view_config
 
 @view_config(route_name='menudemo', renderer='altaircms.plugins.widget.menu.app:templates/menudemo.mako',

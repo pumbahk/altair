@@ -1,7 +1,5 @@
 # coding:utf-8
 
-## todo: 消す(今はこれを始めに読み込まないとimport errorになるテストがある)
-import altaircms.lib.fanstatic
 
 import re
 import warnings
