@@ -9,7 +9,7 @@ from pyramid.view import view_config
 import transaction
 
 from altaircms.models import DBSession, Event, Performance
-from altaircms.views import BaseRESTAPI
+from altaircms.lib.apiview import BaseRESTAPI
 from altaircms.page.models import Page
 from altaircms.lib.fanstatic import with_bootstrap
 

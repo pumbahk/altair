@@ -8,7 +8,7 @@ from pyramid.view import view_config
 
 from sqlalchemy.sql.expression import desc
 
-from altaircms.views import BaseRESTAPI
+from altaircms.lib.apiview import BaseRESTAPI
 from altaircms.models import DBSession
 from altaircms.layout.models import Layout
 from altaircms.layout.forms import LayoutForm

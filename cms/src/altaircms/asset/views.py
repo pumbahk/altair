@@ -17,7 +17,7 @@ from pyramid.view import view_defaults
 from sqlalchemy.sql.expression import desc
 
 from altaircms.models import DBSession
-from altaircms.views import BaseRESTAPI
+from altaircms.lib.apiview import BaseRESTAPI
 from altaircms.lib.fanstatic import with_bootstrap
 from altaircms.asset import get_storepath
 from altaircms.asset.models import Asset, ImageAsset, MovieAsset, FlashAsset

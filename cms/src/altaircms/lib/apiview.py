@@ -2,7 +2,7 @@
 from cgi import FieldStorage
 from altaircms.models import DBSession
 
-
+## base api view
 class BaseRESTAPIError(Exception):
     def __init__(self, message=''):
         self.message = message
@@ -10,7 +10,7 @@ class BaseRESTAPIError(Exception):
     def __str__(self):
         return self.message
 
-dict = REST_MAPPING = dict(
+REST_MAPPING = dict(
     put="update", 
     delete="delete", 
     post="create", 
@@ -111,3 +111,6 @@ class BaseRESTAPI(object):
     def post_process_hook(self):
         raise NotImplementedError()
     """
+
+
+

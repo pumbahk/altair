@@ -4,7 +4,7 @@ from pyramid.view import view_config
 from pyramid.view import view_defaults
 from pyramid.httpexceptions import HTTPFound
 
-from altaircms.views import BaseRESTAPI
+from altaircms.lib.apiview import BaseRESTAPI
 from altaircms.lib.viewhelpers import RegisterViewPredicate
 from altaircms.lib.viewhelpers import FlashMessage
 from altaircms.page.forms import PageForm

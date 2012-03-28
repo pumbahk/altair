@@ -17,3 +17,5 @@
    event_detail
    calendar
    topic
+   promotion
+   

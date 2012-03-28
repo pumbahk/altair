@@ -15,7 +15,7 @@ import oauth2
 import transaction
 import json
 
-from altaircms.views import BaseRESTAPI
+from altaircms.lib.apiview import BaseRESTAPI
 from altaircms.models import DBSession
 from altaircms.lib.fanstatic import with_bootstrap
 from altaircms.auth.errors import AuthenticationError

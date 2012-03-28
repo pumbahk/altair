@@ -1,15 +1,13 @@
- # coding: utf-8
+# coding: utf-8
 from pyramid.httpexceptions import HTTPBadRequest, HTTPFound
-from pyramid.security import authenticated_userid, has_permission
 from pyramid.view import view_config
 
 from sqlalchemy.sql.expression import desc
-import transaction
+
 
 from altaircms.lib.fanstatic import with_bootstrap
 from altaircms.models import DBSession, Event
 from altaircms.auth.models import APIKey
-from altaircms.views import BaseRESTAPI
 from altaircms.auth.forms import APIKeyForm
 
 
@@ -54,5 +52,4 @@ class APIKeyView(object):
             DBSession.delete(self.model_object)
 
         return HTTPFound(self.request.route_path("apikey_list"))
-
 

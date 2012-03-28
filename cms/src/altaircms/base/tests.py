@@ -1,10 +1,6 @@
 import unittest
 
 from pyramid import testing
-from pyramid.events import BeforeRender
-
-from altaircms.subscribers import add_renderer_globals
-
 
 def _initTestingDB():
     from sqlalchemy import create_engine
@@ -24,8 +20,7 @@ class TestBaseView(BaseTest):
         testing.tearDown()
 
     def test_it(self):
-        from altaircms.base.views import dashboard
-
+        from .views import dashboard
         request = testing.DummyRequest()
         resp = dashboard(request)
         self.assertEqual(resp, {'events':[]})
