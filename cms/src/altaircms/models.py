@@ -77,39 +77,6 @@ class BaseMixin(object):
     updated_at = Column(DateTime, default=datetime.now())
 
 
-class Event(Base):
-    """
-    イベント
-
-    @TODO: 席図をくっつける
-    """
-    __tablename__ = "event"
-    query = DBSession.query_property()
-
-    id = Column(Integer, primary_key=True)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
-
-    title = Column(Unicode)
-    subtitle = Column(Unicode)
-    description = Column(Unicode)
-    place = Column(Unicode)
-    inquiry_for = Column(Unicode)
-    event_open = Column(DateTime)
-    event_close = Column(DateTime)
-    deal_open = Column(DateTime)
-    deal_close = Column(DateTime)
-
-    is_searchable = Column(Integer, default=0)
-
-    client_id = Column(Integer, ForeignKey("client.id"))
-
-    def __unicode__(self):
-        return self.title
-
-    def __html__(self):
-        return self.title
-
 
 """
 このあたりevent/models.pyに移動した方が良い。

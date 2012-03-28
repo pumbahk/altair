@@ -5,7 +5,8 @@ import isodate
 import transaction
 from sqlalchemy.orm.exc import NoResultFound
 
-from altaircms.models import Event, DBSession, Performance, Sale, Ticket
+from altaircms.event.models import Event
+from altaircms.models import DBSession, Performance, Sale, Ticket
 from altaircms.auth.models import APIKey
 
 def parse_and_save_event(jsonstring):

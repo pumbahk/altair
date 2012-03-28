@@ -30,6 +30,7 @@ class Topcontent(AboutPublishMixin,Base):
     title = sa.Column(sa.Unicode)
     text = sa.Column(sa.Unicode)
 
+    KIND_CANDIDATES = [u"公演中止情報", u"お知らせ", u"その他"]
     ## extend
     image_asset_id = sa.Column(sa.Integer, sa.ForeignKey("image_asset.id"), nullable=True)
     image_asset = orm.relationship(ImageAsset, backref="topcontent")

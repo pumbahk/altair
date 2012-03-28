@@ -95,7 +95,7 @@ class TopicListingFull(unittest.TestCase):
         3. pageに関連
         渡された page, eventに関連していないtopicは取得しない
         """
-        from altaircms.models import Event
+        from altaircms.event.models import Event
         from altaircms.page.models import Page
         event0 = self._makeObj(Event)
         event1 = self._makeObj(Event)

@@ -7,8 +7,8 @@ from webob.multidict import MultiDict
 
 from altaircms.lib.testutils import BaseTest
 from altaircms.event.views import EventRESTAPIView
-from altaircms.models import Event, DBSession
-
+from altaircms.event.models import Event
+from altaircms.models import DBSession
 from .views import event_register
 
 class TestEventView(BaseTest):

@@ -60,7 +60,7 @@ class TopicTypeTests(unittest.TestCase):
         self.assertEquals(Topic.matched_topic_type(page=page).count(), 0)
 
     def test_has_event(self):
-        from altaircms.models import Event
+        from altaircms.event.models import Event
         event = self._makeObj(Event, id=1)
         target = Topic(event=event)
         DBSession.flush()
@@ -70,7 +70,7 @@ class TopicTypeTests(unittest.TestCase):
         self.assertEquals(Topic.matched_topic_type(event=event).count(), 1)
 
     def test_has_not_event(self):
-        from altaircms.models import Event
+        from altaircms.event.models import Event
         event = self._makeObj(Event, id=1)
         target = Topic()
         DBSession.flush()

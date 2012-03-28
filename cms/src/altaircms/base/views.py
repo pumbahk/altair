@@ -6,7 +6,8 @@ from sqlalchemy.sql.expression import desc
 
 
 from altaircms.lib.fanstatic_decorator import with_bootstrap
-from altaircms.models import DBSession, Event
+from altaircms.models import DBSession
+from altaircms.event.models import Event
 from altaircms.auth.models import APIKey
 from altaircms.auth.forms import APIKeyForm
 

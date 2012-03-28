@@ -16,7 +16,7 @@ def existing_pages():
 def existing_events():
     ##本当は、client.id, site.idでfilteringする必要がある
     ##本当は、日付などでfilteringする必要がある
-    from altaircms.models import Event
+    from altaircms.event.models import Event
     return Event.query.all()
 
 class TopicForm(form.Form):

@@ -8,7 +8,8 @@ from pyramid.response import Response
 from pyramid.view import view_config
 import transaction
 
-from altaircms.models import DBSession, Event, Performance
+from altaircms.models import DBSession, Performance
+from altaircms.event.models import Event
 from altaircms.lib.apiview import BaseRESTAPI
 from altaircms.page.models import Page
 from altaircms.lib.fanstatic_decorator import with_bootstrap

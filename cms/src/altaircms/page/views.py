@@ -8,7 +8,7 @@ from altaircms.lib.apiview import BaseRESTAPI
 from altaircms.lib.viewhelpers import RegisterViewPredicate
 from altaircms.lib.viewhelpers import FlashMessage
 from altaircms.page.forms import PageForm
-from altaircms.models import Event
+from altaircms.event.models import Event
 from altaircms.page.models import Page
 
 from altaircms.page.mappers import PageMapper, PagesMapper

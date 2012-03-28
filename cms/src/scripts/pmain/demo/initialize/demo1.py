@@ -250,7 +250,7 @@ def init():
 
 
     with block("create event"):
-        from altaircms.models import Event
+        from altaircms.event.models import Event
         D = {
             "id": 1, 
             "title": u"松下奈緒コンサートツアー2012　for me \n supported by ＪＡバンク", 

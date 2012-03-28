@@ -9,7 +9,7 @@ from datetime import datetime
 from altaircms.models import Base
 from altaircms.models import DBSession
 from altaircms.page.models import Page
-from altaircms.models import Event
+from altaircms.event.models import Event
 from altaircms.lib.modelmixin import AboutPublishMixin
 
 """

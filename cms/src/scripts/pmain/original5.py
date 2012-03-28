@@ -113,7 +113,7 @@ def init():
         insert_initial_authdata()
 
     with block("create event"):
-        from altaircms.models import Event
+        from altaircms.event.models import Event
         D = {
             "title": "", 
             "subtitle": "", 

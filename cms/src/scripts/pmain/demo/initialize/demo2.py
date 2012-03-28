@@ -121,7 +121,7 @@ def add_widget(page):
 
 def init():
     with block("create event"):
-        from altaircms.models import Event
+        from altaircms.event.models import Event
         D = {
             "title": u"トリニティアイリッシュ・ダンス", 
             "subtitle": u"NYタイムズが「空飛ぶ脚」と絶賛！\n世界も認めた極上のタップダンス・エンターテインメント\n待望の再来日！！\n\n", 
