@@ -81,6 +81,7 @@ class BaseMixin(object):
 """
 このあたりevent/models.pyに移動した方が良い。
 """
+from altaircms.event.models import Event
 class Performance(Base):
     """
     パフォーマンス

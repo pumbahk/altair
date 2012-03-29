@@ -75,6 +75,7 @@ def main(global_config, **settings):
     config.include("altaircms.widget")
     config.include("altaircms.asset")
     config.include("altaircms.topic")
+    config.include("altaircms.topcontent")
     config.include("altaircms.base")
 
 
