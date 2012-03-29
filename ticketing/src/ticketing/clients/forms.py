@@ -2,7 +2,7 @@
 
 from deform.widget import SelectWidget
 from colander import MappingSchema, SchemaNode, String, Int, DateTime
-from ticketing.models.master import Prefecture
+from ticketing.master.models import Prefecture
 
 class ClientForm(MappingSchema):
     name            = SchemaNode(String()   , title=u'クライアント名')
@@ -14,7 +14,7 @@ class ClientForm(MappingSchema):
     country_code    = SchemaNode(String()   , title=u'国'
                                  , widget= SelectWidget(values=[(81, u'日本')]))
     prefecture_code = SchemaNode(String()   , title=u'都道府県'
-                                 , widget= SelectWidget(values=[(pref.code, pref.name) for pref in Prefecture.get_pref_list()]))
+                                 , widget= SelectWidget(values=[(pref.id, pref.name) for pref in Prefecture.all()]))
     city            = SchemaNode(String()   , title=u'市町村区')
     address         = SchemaNode(String()   , title=u'町名')
     street          = SchemaNode(String()   , title=u'番地')

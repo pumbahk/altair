@@ -59,9 +59,10 @@ class LoginUser(BaseView):
 
     @view_config(route_name='login.info.edit', request_method="GET", renderer='ticketing:templates/login/edit.html')
     def info_edit_get(self):
-        if self.operator is None:
+        operator = self.context.user
+        if operator is None:
             return HTTPNotFound("Operator id %s is not found")
-        appstruct = record_to_multidict(self.operator)
+        appstruct = record_to_multidict(operator)
         f = OperatorForm()
         f.process(appstruct)
         return {
@@ -70,7 +71,8 @@ class LoginUser(BaseView):
 
     @view_config(route_name='login.info.edit', request_method="POST", renderer='ticketing:templates/login/edit.html')
     def info_edit_post(self):
-        if self.operator is None:
+        operator = self.context.user
+        if operator is None:
             return HTTPNotFound("Operator id %s is not found")
 
         f = OperatorForm(self.request.POST)
@@ -78,7 +80,7 @@ class LoginUser(BaseView):
             data = f.data
             if not data['password']:
                 del  data['password']
-            record = merge_session_with_post(self.operator, data)
+            record = merge_session_with_post(operator, data)
             record.secret_key = md5(record.secret_key).hexdigest()
             merge_and_flush(record)
             return HTTPFound(location=route_path("login.info", self.request))
@@ -92,6 +94,7 @@ class LoginUser(BaseView):
         loc = self.request.route_url('login.index')
         return HTTPFound(location=loc, headers=headers)
 
+# TODO move to oauth2
 @view_defaults(permission='authenticated')
 class LoginOAuth(BaseView):
 

@@ -1,4 +1,3 @@
-__author__ = 'mistat'
 
 def includeme(config):
     config.add_route('operators.index'          , '/')
@@ -12,3 +11,5 @@ def includeme(config):
     config.add_route('operator_roles.show'           , '/roles/show/{operator_role_id}')
     config.add_route('operator_roles.edit'           , '/roles/edit/{operator_role_id}')
     config.add_route('operator_roles.edit_multiple'  , '/roles/edit_multiple')
+
+    config.add_route('permissions.index'          , '/permissions')

@@ -4,7 +4,7 @@ from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path
 
-from ticketing.models import merge_session_with_post, record_to_appstruct, merge_and_flush, session
+from ticketing.models import merge_session_with_post, record_to_appstruct, merge_and_flush
 from ticketing.clients.models import Client
 from ticketing.operators.models import Operator, OperatorRole, Permission
 
@@ -19,8 +19,11 @@ from hashlib import md5
 
 import webhelpers.paginate as paginate
 
+import  sqlahelper
+session = sqlahelper.get_session()
+
 @view_defaults(decorator=with_bootstrap)
-class Operator(BaseView):
+class Operators(BaseView):
 
     def _role_id_list_to_role_list(self, role_id_list):
         return [ session.query(OperatorRole).filter(OperatorRole.id==role_id).one() for role_id in role_id_list]
@@ -35,23 +38,26 @@ class Operator(BaseView):
             'operators': operators
         }
 
-    @view_config(route_name='operators.new', renderer='ticketing:templates/operators/new.html')
-    def new(self):
-
+    @view_config(route_name='operators.new', request_method="GET", renderer='ticketing:templates/operators/new.html')
+    def new_get(self):
         form = OperatorForm(self.request.POST)
-        if 'submit' in self.request.POST:
-            if form.validate():
-                record = Operator()
-                record = merge_session_with_post(record, data, filters={'roles' : _role_id_list_to_role_list})
-                record.secret_key = md5(record.secret_key).hexdigest()
-                print data
-                session.add(record)
-                return HTTPFound(location=route_path('operators.index', self.request))
+        return {
+            'form':form
+        }
 
-        else:
-            return {
-                'form':f.render()
-            }
+    @view_config(route_name='operators.new', request_method="POST", renderer='ticketing:templates/operators/new.html')
+    def new_post(self):
+        form = OperatorForm(self.request.POST)
+        if form.validate():
+            data = form.data
+            record = Operator()
+            record = merge_session_with_post(record, data, filters={'roles' : _role_id_list_to_role_list})
+            record.secret_key = md5(record.secret_key).hexdigest()
+            session.add(record)
+            return HTTPFound(location=route_path('operators.index', self.request))
+        return {
+                    'form':form
+                }
 
     @view_config(route_name='operators.edit', renderer='ticketing:templates/operators/edit.html')
     def edit(self):
@@ -116,7 +122,7 @@ class OperatorRoles(BaseView):
                 record = OperatorRole()
                 record = merge_session_with_post(record, data)
                 session.add(record)
-                return HTTPFound(location=route_path('operator_roles.index', request))
+                return HTTPFound(location=route_path('operator_roles.index', self.request))
             except ValidationFailure, e:
                 return {'form':e.render()}
         else:
@@ -147,3 +153,12 @@ class OperatorRoles(BaseView):
             return {
                 'form':f.render(appstruct=appstruct)
             }
+
+@view_defaults(decorator=with_bootstrap, permission="administrator")
+class Permissions(BaseView):
+
+    @view_config(route_name='permissions.index', renderer='ticketing:templates/permissions/index.html')
+    def index(self):
+        return {
+            "permissions" : Permission.all()
+        }

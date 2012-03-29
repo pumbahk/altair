@@ -2,8 +2,10 @@ from zope.interface import Interface, Attribute, implements
 import re
 
 from pyramid.security import Allow, Everyone, Authenticated, authenticated_userid
-from ticketing.models import DBSession
 from ticketing.operators.models import *
+
+import sqlahelper
+session = sqlahelper.get_session()
 
 r = re.compile(r'^(/_deform)|(/static)|(/_debug_toolbar)|(/favicon.ico)')
 
@@ -23,7 +25,7 @@ class RootFactory(object):
             print self.user
 
 def groupfinder(userid, request):
-    user = DBSession.query(Operator).filter(Operator.login_id == userid).first()
+    user = session.query(Operator).filter(Operator.login_id == userid).first()
     if user is None:
         return []
     permissions = []

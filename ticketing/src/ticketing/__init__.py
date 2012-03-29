@@ -51,6 +51,11 @@ def main(global_config, **settings):
     config.include('ticketing.api' , route_prefix='/api')
     config.include('ticketing.admin' , route_prefix='/admin')
     config.include('ticketing.events' , route_prefix='/events')
+    config.include('ticketing.orders' , route_prefix='/orders')
+    config.include('ticketing.master' , route_prefix='/master')
+    config.include('ticketing.products' , route_prefix='/products')
+    config.include('ticketing.users' , route_prefix='/users')
+    config.include('ticketing.venues' , route_prefix='/venues')
 
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.add_renderer('json'  , 'ticketing.renderers.json_renderer_factory')

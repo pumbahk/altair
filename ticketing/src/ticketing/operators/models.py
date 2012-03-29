@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from ticketing.models import DBSession, Base
 from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship, join, column_property
 
@@ -8,8 +7,10 @@ from hashlib import md5
 
 import sqlahelper
 
-
 session = sqlahelper.get_session()
+Base = sqlahelper.get_base()
+
+from ticketing.clients.models import Client
 
 operator_role_association_table = Table('OperatorRole_Operator', Base.metadata,
     Column('operator_role_id', BigInteger, ForeignKey('OperatorRole.id')),
@@ -23,6 +24,10 @@ class Permission(Base):
     operator_role = relationship('OperatorRole', uselist=False)
     category_name = Column(String(255), index=True)
     permit = Column(Integer)
+
+    @staticmethod
+    def all():
+        return session.query(Permission).all()
 
     @staticmethod
     def get_by_key(category_name):
@@ -83,7 +88,7 @@ class Operator(Base):
 
     @staticmethod
     def get_by_login_id(user_id):
-        return DBSession.query(Operator).filter(Operator.login_id == user_id).first()
+        return session.query(Operator).filter(Operator.login_id == user_id).first()
 
     @staticmethod
     def login(login_id, password):

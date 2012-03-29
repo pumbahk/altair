@@ -2,7 +2,6 @@
 
 from deform.widget import SelectWidget
 from colander import MappingSchema, SchemaNode, String, Int, DateTime, Bool, Decimal, Float
-from ticketing.models.master import Prefecture
 
 class PerformanceForm(MappingSchema):
     start_on            = SchemaNode(DateTime()   , title=u'開始日')

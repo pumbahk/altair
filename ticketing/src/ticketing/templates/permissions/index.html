@@ -1,0 +1,18 @@
+<%inherit file="../layout.html" />
+<%block name="title">権限一覧</%block>
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Permissions</th>
+        <td>permit</td>
+    </tr>
+    </thead>
+    <tbody>
+    %for permission in permissions:
+    <tr>
+        <td>${permission.category_name}</td>
+        <td>${permission.permit}</td>
+    </tr>
+    %endfor
+    </tbody>
+</table>

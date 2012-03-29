@@ -15,7 +15,6 @@ Base = sqlahelper.get_base()
 DBSession = sqlahelper.get_session()
 
 from paste.util.multidict import MultiDict
-from .boxoffice import *
 
 def record_to_appstruct(self):
     return dict([(k, self.__dict__[k]) for k in sorted(self.__dict__) if '_sa_' != k[:4]])

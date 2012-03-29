@@ -8,7 +8,6 @@ from hashlib import sha512
 from uuid import uuid4
 from datetime import datetime
 
-from ticketing.models import DBSession, Base
 from sqlalchemy import Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL
 from sqlalchemy.orm import relationship
 
@@ -17,7 +16,12 @@ from ticketing.oauth2.consts import CLIENT_KEY_LENGTH, CLIENT_SECRET_LENGTH,\
                                     ACCESS_TOKEN_EXPIRATION, MAC_KEY_LENGTH, REFRESHABLE,\
                                     CODE_KEY_LENGTH, CODE_EXPIRATION
 
+import sqlahelper
 
+session = sqlahelper.get_session()
+Base = sqlahelper.get_base()
+
+from ticketing.operators.models import Operator
 
 class TimestampGenerator(object):
     """Callable Timestamp Generator that returns a UNIX time integer.
@@ -64,7 +68,7 @@ class Service(Base):
 
     @staticmethod
     def get_key(key):
-        return DBSession.query(Service).filter(Service.key == key).first()
+        return session.query(Service).filter(Service.key == key).first()
 
 
 class AccessToken(Base):
@@ -90,11 +94,11 @@ class AccessToken(Base):
 
     @staticmethod
     def get(id):
-        return DBSession.query(AccessToken).filter(AccessToken.id == id).first()
+        return session.query(AccessToken).filter(AccessToken.id == id).first()
 
     @staticmethod
     def get_by_key(key):
-        return DBSession.query(AccessToken).filter(AccessToken.key == key).first()
+        return session.query(AccessToken).filter(AccessToken.key == key).first()
 
 
 class MACNonce(Base):

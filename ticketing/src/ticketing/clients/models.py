@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from ticketing.models import DBSession, Base
 from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 
@@ -9,7 +8,9 @@ from ticketing.utils import StandardEnum
 import sqlahelper
 
 session = sqlahelper.get_session()
+Base = sqlahelper.get_base()
 
+from ticketing.master.models import Prefecture
 
 class ClientTypeEnum(StandardEnum):
     Standard        = 1
@@ -34,7 +35,7 @@ class Client(Base):
 
     @staticmethod
     def get(client_id):
-        return DBSession.query(Client).filter(Client.id == client_id).first()
+        return session.query(Client).filter(Client.id == client_id).first()
 
     @staticmethod
     def update(client):
