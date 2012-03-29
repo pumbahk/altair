@@ -41,7 +41,7 @@ class Topcontent(AboutPublishMixin,
     page_id = sa.Column(sa.Integer, sa.ForeignKey("page.id"))
     page = orm.relationship(Page)
     countdown_type = sa.Column(sa.String(255))
-    is_global = sa.Column(sa.Boolean, default=False)
+    is_global = sa.Column(sa.Boolean, default=True)
 
     def __repr__(self):
         return "topcontent: %s title=%s" % (self.kind, self.title)

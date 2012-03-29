@@ -27,25 +27,6 @@ def main(env):
         client.contract_status = 0
         DBSession.add(client)
 
-
-    with block("create page"):
-        from altaircms.page.models import Page
-        page = Page()
-        def set_with_dict(obj, D):
-            for k, v in D.items():
-                setattr(obj, k, v)
-            return obj
-        params = {'description': u'boo',
-                  'keywords': u'oo',
-                  'tags': u'ooo',
-                  'url': u'sample/page',
-                  'layout_id': 1,
-                  'title': u'boo',
-                  # 'structure': u'{}'
-                  }
-        page = set_with_dict(page, params)
-        DBSession.add(page)
-
     with block("create role model"):
         from altaircms.auth.initial_data import insert_initial_authdata
         insert_initial_authdata()
