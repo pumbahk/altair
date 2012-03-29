@@ -8,6 +8,7 @@
   </div>
   %endfor
 </div>
+
 ## jsも追加される。
 ## $(function(){ $(".topic").tooltip();})
 ##

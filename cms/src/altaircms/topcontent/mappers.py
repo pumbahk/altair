@@ -20,7 +20,7 @@ class TopcontentMapper(Mapper):
 
     publish_open_on = fields.RawField()
     publish_close_on = fields.RawField()
-    event = fields.RawField()
+    page = fields.RawField()
     # is_global = fields.RawField()
     image_asset = fields.RawField()
     countdown_type = fields.RawField()

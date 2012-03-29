@@ -58,9 +58,9 @@ class TestTopcontentView(BaseTest):
 
     def _fill_request_post(self):
         self.request.POST = MultiDict([
-                (u'event', u'__None'),
-                (u'kind', u"注目のイベント"),
-                (u'countdown_type', u"event_open"),
+                (u'page', u'__None'),
+                (u'kind', u"注目のページ"),
+                (u'countdown_type', u"page_open"),
                 (u'orderno', u'50'),
                 (u'page', u'__None'),
                 (u'publish_open_on', u'2011-01-1 18:00:00'),

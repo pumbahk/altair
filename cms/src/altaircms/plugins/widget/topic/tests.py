@@ -58,6 +58,7 @@ class FunctionalViewTests(unittest.TestCase):
         page_id = 1
         self._with_session(session, self._makePage(id=page_id))
         data = {"kind": u"その他", 
+                "topic_type": "topic", 
                 "display_count": 5, 
                 "display_global": True, 
                 "display_event": True, 
@@ -67,6 +68,7 @@ class FunctionalViewTests(unittest.TestCase):
             {"page_id": page_id, "pk": None, "data": data }, 
             status=200)
         expexted = {u'data': {u'display_count': 5,
+                              "topic_type": "topic", 
                               u'display_event': True,
                               u'display_global': True,
                               u'display_page': True,
@@ -75,7 +77,9 @@ class FunctionalViewTests(unittest.TestCase):
                     u'pk': 1}
         self.assertEquals(json.loads(res.body), expexted)
         self.assertEquals(TopicWidget.query.count(), 1)
+        self.assertEquals(TopicWidget.query.first().topic_type, "topic")
         self.assertEquals(TopicWidget.query.first().page.id, page_id)
+
 
 
     def _create_widget(self, session, page_id=1, id=1):

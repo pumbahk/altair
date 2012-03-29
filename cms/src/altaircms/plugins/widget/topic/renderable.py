@@ -1,15 +1,23 @@
 #-*- coding:utf-8 -*-
 from altaircms.topic.models import Topic
+from altaircms.topcontent.models import Topcontent
 from pyramid.renderers import render
 
-template_name = "altaircms.plugins.widget:topic/render.mako"
-
+_topic_template_name = "altaircms.plugins.widget:topic/topic_render.mako"
 def render_topics(widget, topics, N, display_global=True,request=None):
     if not display_global:
         topics = topics.filter(Topic.is_global == False)
     if topics.count() > N:
         topics = list(topics)[:N] ## todo:fixme
-    return render(template_name, {"widget":widget, "topics":topics}, request)
+    return render(_topic_template_name, {"widget":widget, "topics":topics}, request)
+
+_topcontent_template_name = "altaircms.plugins.widget:topic/topcontent_render.mako"
+def render_topcontent(widget, topcontents, N, display_global=True,request=None):
+    if not display_global:
+        topcontents = topcontents.filter(Topcontent.is_global == False)
+    if topcontents.count() > N:
+        topcontents = list(topcontents)[:N] ## todo:fixme
+    return render(_topcontent_template_name, {"widget":widget, "topcontents":topcontents}, request)
 
 ## demo
 if __name__ == "__main__":
@@ -60,7 +68,7 @@ if __name__ == "__main__":
     import os
     from mako.template import Template
     here = os.path.abspath(os.path.dirname(__file__))
-    template = Template(filename=os.path.join(here, "render.mako"), 
+    template = Template(filename=os.path.join(here, "topic_render.mako"), 
                         input_encoding="utf-8")
 
     class h(object):

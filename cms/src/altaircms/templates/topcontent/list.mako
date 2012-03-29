@@ -23,7 +23,7 @@
               <th>内容</th>
               <th>表示順序</th>
               <th>公開禁止</th>
-              <th>イベント</th>
+              <th>ページ</th>
               <th>画像</th>
               <th>カウントダウンの種別</th>
             </tr>
@@ -38,7 +38,7 @@
             <td>${topcontent['text'] if len(topcontent['text']) <= 20 else topcontent['text'][:20]+"..."}</td>
             <td>${topcontent["orderno"]}</td>
             <td>${topcontent["is_vetoed"]}</td>
-            <td>${topcontent["event"].title if topcontent["event"] else "-"}</td>
+            <td>${topcontent["page"].title if topcontent["page"] else "-"}</td>
             <td><a href="${request.route_path("asset_view", asset_id=topcontent["image_asset"].id)}">${topcontent["image_asset"]}</a></td>
 			<td>${topcontent["countdown_type" ]}</td>
         </tr>

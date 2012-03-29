@@ -15,9 +15,10 @@
 <div class="title">
   <h1>トピック(info)</h1>
 </div>
-
+<p>(手抜き：本当は画像つき・画像なしとで選択できるトピックの種類を絞り込む必要がある)</p>
 <table class="table">
   <tbody>
+    ${formfield("topic_type")}
     ${formfield("kind")}
     ${formfield("display_count")}
     ${formfield("display_global")}

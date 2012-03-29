@@ -34,8 +34,15 @@ widget.configure({
         return we.dialog.load(url);
     };
 
+    form_change_api_url = "./api/form?";
     var on_dialog = function(we){
         $("#submit").click(function(){we.finish_dialog(this);});
+
+        //対応したformに変更
+        // var self = this;
+        // $("#topic_type").change(function(){
+        //     $(this).parent("tbody").load(form_change_api_url+$.param(self.collect_data(we)));
+        // })
     };
 
     var on_close = function(we){
@@ -44,6 +51,7 @@ widget.configure({
     var collect_data = function(we, choiced_elt){
         var root = $(we.dialog);
         return {"kind": root.find("#kind").val(), 
+                "topic_type": root.find("#topic_type").val(), 
                 "display_count": root.find("#display_count").val(), 
                 "display_global": !!root.find("#display_global").attr("checked"), 
                 "display_page": !!root.find("#display_page").attr("checked"), 

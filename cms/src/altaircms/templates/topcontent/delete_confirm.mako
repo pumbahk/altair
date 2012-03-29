@@ -24,8 +24,8 @@
 		  <td>${topcontent["orderno"]}</td></tr>
 		<tr><th class="span2">公開禁止</th>
 		  <td>${topcontent["is_vetoed"]}</td></tr>
-		<tr><th class="span2">イベント</th>
-		  <td>${topcontent["event"].title if topcontent["event"] else "-"}</td></tr>
+		<tr><th class="span2">ページ</th>
+		  <td>${topcontent["page"].title if topcontent["page"] else "-"}</td></tr>
 		<tr><th class="span2">画像</th>
 		  <td>${topcontent["image_asset"]}</td></tr>
 		<tr><th class="span2">カウントダウンの種別</th>

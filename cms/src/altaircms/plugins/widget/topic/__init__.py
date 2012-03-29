@@ -10,6 +10,7 @@ def includeme(config):
     config.add_route("topic_widget_update", "/widget/topic/update", factory=TopicWidgetResource)
     config.add_route("topic_widget_dialog", "/widget/topic/dialog", factory=TopicWidgetResource)
 
+    # config.add_route("topic_widget_dialog_form", "/widget/topic/dialog/api/form", factory=TopicWidgetResource)
     settings = {
         "model": TopicWidget, 
         "name": TopicWidget.type, 

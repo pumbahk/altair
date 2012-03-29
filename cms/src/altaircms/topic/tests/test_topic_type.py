@@ -29,14 +29,12 @@ class TopicTypeTests(unittest.TestCase):
         target = self._makeObj(Topic, is_global=True)
 
         self.assertEquals(target.topic_type, "global")
-        self.assertEquals(Topic.query.filter(Topic.has_global()).count(), 1)
         self.assertEquals(Topic.matched_topic_type().count(), 1)
 
     def test_is_not_global(self):
         target = self._makeObj(Topic, is_global=False)
 
         self.assertEquals(target.topic_type, None)
-        self.assertEquals(Topic.query.filter(Topic.has_global()).count(), 0)
         self.assertEquals(Topic.matched_topic_type().count(), 0)
 
     def test_has_page(self):
@@ -46,7 +44,6 @@ class TopicTypeTests(unittest.TestCase):
         DBSession.flush()
 
         self.assertEquals(target.topic_type, "page:1")
-        self.assertEquals(Topic.query.filter(Topic.same_page(page)).count(), 1)
         self.assertEquals(Topic.matched_topic_type(page=page).count(), 1)
 
     def test_has_not_page(self):
@@ -56,7 +53,6 @@ class TopicTypeTests(unittest.TestCase):
         DBSession.flush()
 
         self.assertNotEquals(target.topic_type, "page:1")
-        self.assertEquals(Topic.query.filter(Topic.same_page(page)).count(), 0)
         self.assertEquals(Topic.matched_topic_type(page=page).count(), 0)
 
     def test_has_event(self):
@@ -66,7 +62,6 @@ class TopicTypeTests(unittest.TestCase):
         DBSession.flush()
 
         self.assertEquals(target.topic_type, "event:1")
-        self.assertEquals(Topic.query.filter(Topic.same_event(event)).count(), 1)
         self.assertEquals(Topic.matched_topic_type(event=event).count(), 1)
 
     def test_has_not_event(self):
@@ -76,7 +71,6 @@ class TopicTypeTests(unittest.TestCase):
         DBSession.flush()
 
         self.assertNotEquals(target.topic_type, "event:1")
-        self.assertEquals(Topic.query.filter(Topic.same_event(event)).count(), 0)
         self.assertEquals(Topic.matched_topic_type(event=event).count(), 0)
 
     # def test_has_category(self):

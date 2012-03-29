@@ -6,6 +6,7 @@ from altaircms.interfaces import IWidget
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from altaircms.topic.models import Topic
+from altaircms.topcontent.models import Topcontent
 from altaircms.widget.models import Widget
 from altaircms.lib.interception import not_support_if_keyerror
 from altaircms.plugins.base import DBSession
@@ -30,6 +31,7 @@ class TopicWidget(Widget):
     query = DBSession.query_property()
 
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
+    topic_type = sa.Column(sa.String(255)) #topiccontent or topic
     display_count = sa.Column(sa.Integer)
     display_global = sa.Column(sa.Boolean)
     display_event = sa.Column(sa.Boolean)
@@ -37,6 +39,23 @@ class TopicWidget(Widget):
     kind = sa.Column(sa.Unicode(255))
 
     def merge_settings(self, bname, bsettings):
+        return getattr(self, self.topic_type+"_merge_settings")(bname, bsettings)
+
+    ## todo: refactoring
+    def topcontent_merge_settings(self, bname, bsettings):
+        bsettings.need_extra_in_scan("request")
+        bsettings.need_extra_in_scan("page")
+
+        @not_support_if_keyerror("topic widget: %(err)s")
+        def topcontent_render():
+            d = self.now_date_function()
+            request = bsettings.extra["request"]
+            page = bsettings.extra["page"] if self.display_page else None
+            qs = Topcontent.matched_qs(page=page, d=d, kind=self.kind)
+            return renderable.render_topcontent(self, qs, self.display_count, self.display_global, request=request)
+        bsettings.add(bname, topcontent_render)
+        
+    def topic_merge_settings(self, bname, bsettings):
         ## jsを追加(一回だけ)
         if not bsettings.is_attached(self, "js_postrender"):
             bsettings.add("js_postrender", TOPIC_JS)
