@@ -11,6 +11,10 @@ from altaircms.models import DBSession
 from altaircms.page.models import Page
 from altaircms.event.models import Event
 from altaircms.lib.modelmixin import AboutPublishMixin
+from zope.interface import implements
+from altaircms.interfaces import IHasSite
+from altaircms.interfaces import IHasTimeHistory
+
 
 """
 topicはtopicウィジェットで使われる。
@@ -101,14 +105,10 @@ class AboutTopicTypeMixin(object):
         # else:
         #     return self.category
 
-class Topic(AboutPublishMixin, AboutTopicTypeMixin, 
-            Base):    
-    """
-    トピック
-    """
-    __tablename__ = "topic"
+class OrderableItem(Base):
+    implements(IHasTimeHistory, IHasSite)
     query = DBSession.query_property()
-    KIND_CANDIDATES = [u"公演中止情報", u"お知らせ", u"その他"]
+    __tablename__ = "orderableitem"
 
     id = sa.Column(sa.Integer, primary_key=True)
     created_at = sa.Column(sa.DateTime, default=datetime.now)
@@ -116,7 +116,23 @@ class Topic(AboutPublishMixin, AboutTopicTypeMixin,
 
     client_id = sa.Column(sa.Integer, sa.ForeignKey("client.id")) #?
     site_id = sa.Column(sa.Integer, sa.ForeignKey("site.id"))   
+    discriminator = sa.Column("type", sa.String(32), nullable=False)
+    
+    __mapper_args__ = {"polymorphic_on": discriminator}
 
+class Topic(AboutPublishMixin, AboutTopicTypeMixin, 
+            OrderableItem):    
+    """
+    トピック
+    """
+    query = DBSession.query_property()
+
+    type = "topic"
+    __tablename__ = "topic"
+    __mapper_args__ = {"polymorphic_identity": type}
+    KIND_CANDIDATES = [u"公演中止情報", u"お知らせ", u"その他"]
+
+    id = sa.Column(sa.Integer, sa.ForeignKey("orderableitem.id"), primary_key=True)
     kind = sa.Column(sa.Unicode(255))
     title = sa.Column(sa.Unicode)
     text = sa.Column(sa.Unicode)

@@ -12,22 +12,20 @@ from altaircms.event.models import Event
 from altaircms.asset.models import ImageAsset
 from altaircms.lib.modelmixin import AboutPublishMixin
 
-class Topcontent(AboutPublishMixin,Base):    
+from altaircms.topic.models import OrderableItem
+class Topcontent(AboutPublishMixin, OrderableItem):    
     """
     Topページの画像つきtopicのようなもの
     """
     __tablename__ = "topcontent"
+    type = "topcontent"
     query = DBSession.query_property()
+    __mapper_args__ = {"polymorphic_identity": type}
     COUNTDOWN_CANDIDATES = [("event_open",u"公演開始まで"),("event_close",u"公演終了まで"),
                             ( "deal_open",u"販売開始まで"),( "deal_close",u"販売終了まで")]
     KIND_CANDIDATES = [u"注目のイベント"]
-    id = sa.Column(sa.Integer, primary_key=True)
-    created_at = sa.Column(sa.DateTime, default=datetime.now)
-    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
 
-    client_id = sa.Column(sa.Integer, sa.ForeignKey("client.id")) #?
-    site_id = sa.Column(sa.Integer, sa.ForeignKey("site.id"))   
-
+    id = sa.Column(sa.Integer, sa.ForeignKey("orderableitem.id"), primary_key=True)
     kind = sa.Column(sa.Unicode(255))
     title = sa.Column(sa.Unicode)
     text = sa.Column(sa.Unicode)
