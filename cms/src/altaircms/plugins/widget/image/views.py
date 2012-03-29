@@ -7,11 +7,14 @@ class ImageWidgetView(object):
 
     def _create_or_update(self):
         asset_id = self.request.json_body["data"]["asset_id"]
+        nowrap = self.request.json_body["data"].get("nowrap")
+        alt = self.request.json_body["data"].get("alt")
+        href = self.request.json_body["data"].get("href")
         page_id = self.request.json_body["page_id"]
         context = self.request.context
         asset = context.get_asset(asset_id);
         widget = context.get_widget(self.request.json_body.get("pk"))
-        widget = context.update_data(widget, page_id=page_id, asset_id=asset_id, asset=asset)
+        widget = context.update_data(widget, page_id=page_id, asset_id=asset_id, nowrap=nowrap, alt=alt, href=href)
         context.add(widget, flush=True)
 
         r = self.request.json_body.copy()

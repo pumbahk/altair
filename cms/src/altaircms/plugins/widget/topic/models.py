@@ -31,7 +31,7 @@ class TopicWidget(Widget):
     query = DBSession.query_property()
 
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
-    topic_type = sa.Column(sa.String(255)) #topiccontent or topic
+    topic_type = sa.Column(sa.String(255), default="topic") #topiccontent or topic
     display_count = sa.Column(sa.Integer)
     display_global = sa.Column(sa.Boolean)
     display_event = sa.Column(sa.Boolean)

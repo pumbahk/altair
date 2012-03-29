@@ -25,8 +25,11 @@ class ImageWidget(Widget):
     query = DBSession.query_property()
 
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
+    href = sa.Column(sa.String)
+    alt = sa.Column(sa.Unicode)
     asset_id = sa.Column(sa.Integer, sa.ForeignKey("asset.id"))
     asset = orm.relationship(ImageAsset, backref="widget", uselist=False)
+    nowrap = sa.Column(sa.Boolean, default=False)
 
     def __init__(self, id=None, asset_id=None):
         self.id = id
