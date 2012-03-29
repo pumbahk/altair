@@ -73,10 +73,10 @@ class AboutTopicTypeMixin(object):
         return sa.Column(sa.Integer, sa.ForeignKey("page.id"), nullable=True)
     @declared_attr
     def event(cls):
-        return orm.relationship(Event, backref=("topic"), uselist=False)
+        return orm.relationship(Event, backref="topic", uselist=False)
     @declared_attr
     def page(cls):
-        return orm.relationship(Page, backref=("topic"), uselist=False)
+        return orm.relationship(Page, backref="topic", uselist=False)
 
     # @classmethod
     # def has_category(cls, category):
