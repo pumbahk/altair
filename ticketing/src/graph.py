@@ -1,33 +1,44 @@
 #!/usr/bin/env python
 import os
 import sadisplay
+import inspect
 
-desc = []
+from ticketing.models import Base
+
+def add(r, m, cands):
+    for k in cands:
+        if not k in r:
+            v = getattr(m, k)
+            if inspect.isclass(v) and issubclass(v, Base):
+                r[k] = v
+    return r
+
+model_instances = {}
+
+
 import ticketing.oauth2.models as models
-print [getattr(models, attr) for attr in dir(models)]
-desc.extend(sadisplay.describe([getattr(models, attr) for attr in dir(models)]))
-# ..models as modelsndesc.extend(sadisplay.describe([getattr(models, attr) for attr in dir(models)]))
+add(model_instances, models, dir(models))
 import ticketing.clients.models as models
-desc.extend(sadisplay.describe([getattr(models, attr) for attr in dir(models)]))
+add(model_instances, models, dir(models))
 import ticketing.events.models as models
-desc.extend(sadisplay.describe([getattr(models, attr) for attr in dir(models)]))
+add(model_instances, models, dir(models))
 import ticketing.master.models as models
-desc.extend(sadisplay.describe([getattr(models, attr) for attr in dir(models)]))
+add(model_instances, models, dir(models))
 import ticketing.oauth2.models as models
-desc.extend(sadisplay.describe([getattr(models, attr) for attr in dir(models)]))
+add(model_instances, models, dir(models))
 import ticketing.operators.models as models
-desc.extend(sadisplay.describe([getattr(models, attr) for attr in dir(models)]))
+add(model_instances, models, dir(models))
 import ticketing.orders.models as models
-desc.extend(sadisplay.describe([getattr(models, attr) for attr in dir(models)]))
+add(model_instances, models, dir(models))
 import ticketing.products.models as models
-desc.extend(sadisplay.describe([getattr(models, attr) for attr in dir(models)]))
+add(model_instances, models, dir(models))
 import ticketing.users.models as models
-desc.extend(sadisplay.describe([getattr(models, attr) for attr in dir(models)]))
+add(model_instances, models, dir(models))
 import ticketing.venues.models as models
-desc.extend(sadisplay.describe([getattr(models, attr) for attr in dir(models)]))
+add(model_instances, models, dir(models))
 
 
-# desc = sadisplay.describe([getattr(models, attr) for attr in dir(models)])
+desc = sadisplay.describe(model_instances.values())
 open('schema.plantuml', 'w').write(sadisplay.plantuml(desc))
 open('schema.dot', 'w').write(sadisplay.dot(desc))
 
