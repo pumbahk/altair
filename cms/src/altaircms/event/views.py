@@ -47,7 +47,6 @@ def list_(request):
     if request.method == "POST":
         form = EventForm(request.POST)
         if form.validate():
-            request.method = "PUT"
             EventRESTAPIView(request).create()
             return HTTPFound(request.route_path("event_list"))
     else:

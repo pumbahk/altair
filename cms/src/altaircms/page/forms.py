@@ -5,6 +5,7 @@ from wtforms import fields
 from wtforms import widgets
 import wtforms.ext.sqlalchemy.fields as extfields
 from altaircms.layout.models import Layout
+from altaircms.lib.formhelpers import dynamic_query_select_field_factory
 
 """
 def json_validator(node, value):
@@ -28,7 +29,6 @@ class PageSchema(colander.MappingSchema):
 
 def existing_layouts():
     ##本当は、client.id, site.idでfilteringする必要がある
-    ##本当は、日付などでfilteringする必要がある
     return Layout.query.all()
 
 class PageForm(Form):
@@ -37,5 +37,6 @@ class PageForm(Form):
     description = fields.TextField()
     keywords = fields.TextField()
     tags = fields.TextField()
-    layout = extfields.QuerySelectField(query_factory=existing_layouts, allow_blank=False)
+    # layout = extfields.QuerySelectField(query_factory=existing_layouts, allow_blank=False)
+    layout = dynamic_query_select_field_factory(Layout, allow_blank=False)
     event_id = fields.IntegerField(label=u"", widget=widgets.HiddenInput())

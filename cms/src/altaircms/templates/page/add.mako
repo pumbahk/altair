@@ -25,7 +25,7 @@
 
 <div class="row">
   <div class="span5">
-	<form action="${request.route_path("page")}" method="POST">
+	<form action="${request.route_path("page_add",event_id=event.id)}" method="POST">
       <table class="table">
         <tbody>
           ${formfield("title")}

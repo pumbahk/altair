@@ -8,8 +8,8 @@ from altaircms.lib.apiview import BaseRESTAPI
 from altaircms.lib.viewhelpers import RegisterViewPredicate
 from altaircms.lib.viewhelpers import FlashMessage
 from altaircms.page.forms import PageForm
-from altaircms.event.models import Event
 from altaircms.page.models import Page
+from altaircms.event.models import Event
 
 from altaircms.page.mappers import PageMapper, PagesMapper
 
@@ -22,6 +22,29 @@ import altaircms.helpers as h
 ## todo: CRUDのview整理する
 ##
 
+@view_defaults(route_name="page_add", decorator=with_bootstrap)
+class AddView(object):
+    """ eventの中でeventに紐ついたpageの作成
+    """
+    def __init__(self, request):
+        self.request = request
+        self.event_id = request.matchdict["event_id"]
+
+    @view_config(request_method="GET", renderer="altaircms:templates/page/add.mako")
+    def input_form(self):
+        event_id = self.request.matchdict["event_id"]
+        event = Event.query.filter(Event.id==event_id).one()
+        form = PageForm()
+        return {"form":form, "event":event}
+
+    @view_config(request_method="POST")
+    def create_page(self):
+        page_view = CreateView(self.request.context, self.request)
+        return page_view.create(after_finish=self._after_finish)
+
+    def _after_finish(self, request):
+        return HTTPFound(self.request.route_path("event", id=self.event_id))
+
 @view_defaults(permission="page_create", decorator=with_bootstrap)
 class CreateView(object):
     def __init__(self, context, request):
@@ -29,26 +52,19 @@ class CreateView(object):
         self.request = request
 
     @view_config(route_name="page", renderer='altaircms:templates/page/list.mako', request_method="POST")
-    def create(self):
+    def create(self, after_finish=None):
         form = PageForm(self.request.POST)
         if form.validate():
-            self.request.method = "PUT"
             PageRESTAPIView(self.request).create()
-
             ## flash messsage
             FlashMessage.success("page created", request=self.request)
+            if after_finish:
+                return after_finish(self.request)
             return HTTPFound(self.request.route_path("page"))
         return dict(
             pages=PageRESTAPIView(self.request).read(),
             form=form
             )
-
-    @view_config(route_name="page_add", renderer="altaircms:templates/page/add.mako")
-    def add_view(self):
-        event_id = self.request.matchdict["event_id"]
-        event = Event.query.filter(Event.id==event_id).one()
-        form = PageForm()
-        return {"form":form, "event":event}
 
     @view_config(route_name="page_duplicate", request_method="GET", renderer="altaircms:templates/page/duplicate_confirm.mako")
     def duplicate_confirm(self):
