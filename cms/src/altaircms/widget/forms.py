@@ -3,22 +3,15 @@ import wtforms.form as form
 import wtforms.fields as fields
 import wtforms.validators as validators
 import wtforms.widgets as widgets
-import wtforms.ext.sqlalchemy.fields as extfields
+from altaircms.lib.formhelpers import dynamic_query_select_field_factory
 from . import models
 
-# def existing_dispositions():
-#     ##本当は、client.id, site.idでfilteringする必要がある
-#     ##本当は、日付などでfilteringする必要がある
-#     return models.WidgetDisposition.query.all()
+
 
 class WidgetDispositionSelectForm(form.Form):
-    disposition = extfields.QuerySelectField(allow_blank=False)
-    
-    @classmethod
-    def from_operator(cls, operator):
-        form = cls()
-        form.disposition.query = models.WidgetDisposition.enable_only_query(operator)
-        return form
+    disposition = dynamic_query_select_field_factory(
+        models.WidgetDisposition, 
+        allow_blank=False)
 
 class WidgetDispositionSaveForm(form.Form):
     page = fields.IntegerField(widget=widgets.HiddenInput(), validators=[validators.Required()])

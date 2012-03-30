@@ -145,8 +145,8 @@ class WidgetDisposition(Base): #todo: rename
         return cls.query.filter(cls.blocks==page.layout.blocks)
 
     @classmethod
-    def enable_only_query(cls, operator):
-        return cls.query.filter((cls.is_public==True)|(cls.owner==operator))
+    def enable_only_query(cls, operator, qs=None):
+        return (qs or cls.query).filter((cls.is_public==True)|(cls.owner==operator))
 
     def __repr__(self):
         return self.title

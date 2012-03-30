@@ -1,9 +1,8 @@
 # coding: utf-8
-import json
+
 from wtforms.form import Form
 from wtforms import fields
 from wtforms import widgets
-import wtforms.ext.sqlalchemy.fields as extfields
 from altaircms.layout.models import Layout
 from altaircms.lib.formhelpers import dynamic_query_select_field_factory
 
@@ -26,17 +25,11 @@ class PageSchema(colander.MappingSchema):
     #                                 widget=deform.widget.TextAreaWidget())
 """
 
-
-def existing_layouts():
-    ##本当は、client.id, site.idでfilteringする必要がある
-    return Layout.query.all()
-
 class PageForm(Form):
     url = fields.TextField()
     title = fields.TextField()
     description = fields.TextField()
     keywords = fields.TextField()
     tags = fields.TextField()
-    # layout = extfields.QuerySelectField(query_factory=existing_layouts, allow_blank=False)
     layout = dynamic_query_select_field_factory(Layout, allow_blank=False)
     event_id = fields.IntegerField(label=u"", widget=widgets.HiddenInput())

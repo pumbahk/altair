@@ -1,5 +1,6 @@
 from pyramid.events import subscriber
 from pyramid.events import BeforeRender
+from altaircms.lib.formevent import AfterFormInitialize
 
 # from altaircms.auth.helpers import user_context
 from . import helpers
@@ -20,9 +21,8 @@ def after_form_initialize(event):
         if isinstance(v, Form):
             request.registry.notify(AfterFormInitialize(v, request, rendering_val))
 
-from altaircms.lib.formevent import AfterFormInitialize
 @subscriber(AfterFormInitialize)
-def add_choices_query(event):
+def add_choices_query_refinement(event): #todo:refactoring
     form = event.form
     form_class = form.__class__
 
@@ -35,5 +35,3 @@ def add_choices_query(event):
             dynamic_query = getattr(getattr(form_class, k), "_dynamic_query", None)
             if dynamic_query:
                 dynamic_query(v, form=form, rendering_val=rendering_val, request=request)
-
-    

@@ -1,22 +1,19 @@
 # -*- coding:utf-8 -*-
-import wtforms.ext.sqlalchemy.fields as extfields
 import wtforms.form as form
 import wtforms.fields as fields
 import wtforms.validators as validators
 import wtforms.widgets as widgets
+
+from altaircms.lib.formhelpers import dynamic_query_select_field_factory
 from .models import Topic
+from altaircms.page.models import Page
+from altaircms.event.models import Event
 
 def existing_pages():
     ##本当は、client.id, site.idでfilteringする必要がある
     ##本当は、日付などでfilteringする必要がある
-    from altaircms.page.models import Page
+    ## lib.formhelpersの中で絞り込みを追加してる。
     return Page.query.filter(Page.event_id==None)
-
-def existing_events():
-    ##本当は、client.id, site.idでfilteringする必要がある
-    ##本当は、日付などでfilteringする必要がある
-    from altaircms.event.models import Event
-    return Event.query.all()
 
 class TopicForm(form.Form):
     title = fields.TextField(label=u"タイトル", validators=[validators.Required()])
@@ -29,9 +26,12 @@ class TopicForm(form.Form):
     orderno = fields.IntegerField(label=u"表示順序", default=50)
     is_vetoed = fields.BooleanField(label=u"公開禁止")
 
-    page = extfields.QuerySelectField(
-        label=u"イベント以外のページ", query_factory=existing_pages, allow_blank=True)
-    event = extfields.QuerySelectField(
-        label=u"イベント", query_factory=existing_events, allow_blank=True)
+    page = dynamic_query_select_field_factory(Page, 
+                                              label=u"イベント以外のページ",
+                                              query_factory=existing_pages, 
+                                              allow_blank=True)
+    event = dynamic_query_select_field_factory(Event, 
+                                               label=u"イベント",
+                                               allow_blank=True)
     
     
