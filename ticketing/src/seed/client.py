@@ -4,7 +4,7 @@ from seed import DataSet
 from datetime import datetime
 
 from ticketing.models import *
-from ticketing.models.boxoffice import *
+from ticketing.clients.models import *
 from prefecture import PrefectureMaster
 
 class ClientData(DataSet):

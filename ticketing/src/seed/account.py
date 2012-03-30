@@ -2,7 +2,7 @@
 
 from seed import DataSet
 from ticketing.models import *
-from ticketing.models.boxoffice import *
+from ticketing.events.models import *
 from ticket import TicketerData
 
 class AccountData(DataSet):

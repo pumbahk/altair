@@ -9,8 +9,16 @@ from sqlalchemy.orm import *
 from datetime import datetime
 from hashlib import md5
 
-from ticketing.models import *
-from ticketing.models.boxoffice import *
+from ticketing.oauth2.models import *
+from ticketing.clients.models import *
+from ticketing.events.models import *
+from ticketing.master.models import *
+from ticketing.oauth2.models import *
+from ticketing.operators.models import *
+from ticketing.orders.models import *
+from ticketing.products.models import *
+from ticketing.users.models import *
+from ticketing.venues.models import *
 
 try:
     import pymysql_sa

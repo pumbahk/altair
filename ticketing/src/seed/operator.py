@@ -2,10 +2,13 @@
 
 from seed import DataSet
 from ticketing.models import *
-from ticketing.models.boxoffice import *
+from ticketing.clients.models import *
 from permission import PermissionData
 from datetime import datetime
 from client import ClientData
+
+
+from hashlib import md5
 
 class OperatorRoleData(DataSet):
     class role_admin_admin:
@@ -22,7 +25,6 @@ class OperatorRoleData(DataSet):
             PermissionData.asset_viewer,
             PermissionData.asset_editor,
             PermissionData.page_viewer,
-            PermissionData.page_editor,
             PermissionData.page_editor,
             PermissionData.tag_editor,
             PermissionData.layout_viewer,
@@ -45,7 +47,6 @@ class OperatorRoleData(DataSet):
             PermissionData.asset_viewer,
             PermissionData.asset_editor,
             PermissionData.page_viewer,
-            PermissionData.page_editor,
             PermissionData.page_editor,
             PermissionData.tag_editor,
             PermissionData.layout_viewer,
