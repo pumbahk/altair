@@ -214,15 +214,13 @@ class OperatorAPI(BaseRESTAPI):
 class RoleAPI(BaseRESTAPI):
     model = Role
 
-
+@view_defaults(decorator=with_bootstrap)
 class RoleView(object):
     def __init__(self, request):
         self.request = request
         self.id = request.matchdict.get('id', None)
         if self.id:
             self.role = RoleAPI(self.request, self.id).read()
-
-        bootstrap_need()
 
     @view_config(route_name="role_list", request_method="GET", renderer="altaircms:templates/auth/role/list.mako")
     def list(self):
@@ -268,8 +266,6 @@ class RolePermissionView(object):
             self.role = RoleAPI(self.request, self.role_id).read()
         if self.role_permission_id:
             self.role_permission = DBSession.query(RolePermission).filter_by(role_id=self.role_id, permission_id=self.role_permission_id).one()
-
-        bootstrap_need()
 
     def create(self):
         pass

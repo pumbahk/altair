@@ -1,9 +1,8 @@
 # coding: utf-8
 from pyramid.httpexceptions import HTTPBadRequest, HTTPFound
 from pyramid.view import view_config
-
+from pyramid.view import view_defaults
 from sqlalchemy.sql.expression import desc
-
 
 from altaircms.lib.fanstatic_decorator import with_bootstrap
 from altaircms.models import DBSession
@@ -23,7 +22,7 @@ def dashboard(request):
         events=events
     )
 
-
+@view_defaults(decorator=with_bootstrap)
 class APIKeyView(object):
     def __init__(self, request):
         self.request = request
