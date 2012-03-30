@@ -324,11 +324,11 @@
 			if (!separator || !parts || parts.length == 0){
 				throw new Error("Invalid date format.");
 			}
-			return {separator: separator, parts: parts};
+			  return {separator: separator, parts: parts, original: format};
 		},
 		parseDate: function(date, format) {
 			var parts = date.split(format.separator),
-				date = new Date(1970, 1, 1, 0, 0, 0),
+				date = new Date(),
 				val;
 			if (parts.length == format.parts.length) {
 				for (var i=0, cnt = format.parts.length; i < cnt; i++) {
@@ -358,15 +358,20 @@
 				d: date.getDate(),
 				m: date.getMonth() + 1,
 				yy: date.getFullYear().toString().substring(2),
-				yyyy: date.getFullYear()
+				yyyy: date.getFullYear(), 
+          HH: date.getHours(), 
+          MM: date.getMinutes(), 
+          SS: date.getSeconds()
 			};
 			val.dd = (val.d < 10 ? '0' : '') + val.d;
 			val.mm = (val.m < 10 ? '0' : '') + val.m;
-			var date = [];
+			var date = [], 
+          output = format.original;
 			for (var i=0, cnt = format.parts.length; i < cnt; i++) {
-				date.push(val[format.parts[i]]);
+          var k = format.parts[i];
+          output = output.replace(k, val[k]);
 			}
-			return date.join(format.separator);
+			  return output;
 		},
 		headTemplate: '<thead>'+
 							'<tr>'+

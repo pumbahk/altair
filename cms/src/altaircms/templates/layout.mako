@@ -35,9 +35,12 @@
       ## jQuery depended javascript code
       $(document).ready(function() {
             $().dropdown();
-	        $(".datepicker").datepicker(
-	           
-	        );
+	        $(".datepicker").datepicker({
+	           weekStart: 1,
+	           format: "yyyy-mm-dd HH:MM:SS"
+	        }).on("changeDate", function(){
+              alert(ev.date);
+            });
             <%block name="jquery"/>
       });
     </script>
