@@ -85,9 +85,6 @@ event_table = Table(
     Column('code', String(12)),
     Column('title', String(1024)),
     Column('abbreviated_title', String(1024)),
-    Column('margin_ratio', Float),
-    Column('printing_fee', Float),
-    Column('registration_fee', Float),
     )
 
 event_detail_table = Table(

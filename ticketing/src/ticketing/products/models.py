@@ -1,16 +1,16 @@
 
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL
-from sqlalchemy.orm import relationship, join, backref, column_property
-
+from sqlalchemy.orm import relationship, join, backref, column_property, mapper, relation
 
 import sqlahelper
 session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
 
 from ticketing.venues.models import SeatMasterL2
+from ticketing.events.models import Account, Event
 
-class TicketType(Base):
-    __tablename__ = 'TicketType'
+class Price(Base):
+    __tablename__ = 'Price'
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
     event_id = Column(BigInteger, ForeignKey('Event.id'))
@@ -19,18 +19,6 @@ class TicketType(Base):
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
     status = Column(Integer)
-
-class Product(Base):
-    __tablename__ = 'Product'
-    id = Column(BigInteger, primary_key=True)
-    name = Column(String(255))
-    price = Column(BigInteger)
-
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
-    status = Column(Integer)
-
-    items = relationship('ProductItem')
 
 class PaymentMethod(Base):
     __tablename__ = 'PaymentMethod'
@@ -54,8 +42,6 @@ class PaymentDeliveryMethodPair(Base):
     __tablename__ = 'PaymentDeliveryMethodPair'
 
     id = Column(BigInteger, primary_key=True)
-    performance_id = Column(BigInteger, ForeignKey('Performance.id'))
-    performance = relationship('Performance', uselist=False)
 
     sales_segment_id = Column(BigInteger, ForeignKey('SalesSegment.id'))
     sales_segment = relationship('SalesSegment')
@@ -66,8 +52,15 @@ class PaymentDeliveryMethodPair(Base):
     delivery_method_id = Column(BigInteger, ForeignKey('DeliveryMethod.id'))
     delivery_method = relationship('DeliveryMethod')
 
-    transction_fee = Column(DECIMAL)
+    transaction_fee = Column(DECIMAL)
     delivery_fee = Column(DECIMAL)
+
+    discount = Column(DECIMAL)
+    discount_unit = Column(Integer)
+    discount_type = Column(Integer)
+
+    start_at = Column(DateTime)
+    end_at = Column(DateTime)
 
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
@@ -77,6 +70,10 @@ class SalesSegment(Base):
     __tablename__ = 'SalesSegment'
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
+
+    sales_segment_set_id = Column(BigInteger, ForeignKey('SalesSegmentSet.id'), nullable=True)
+    sales_segment_set = relationship('SalesSegmentSet', uselist=False)
+
     start_at = Column(DateTime)
     end_at = Column(DateTime)
 
@@ -84,7 +81,22 @@ class SalesSegment(Base):
     created_at = Column(DateTime)
     status = Column(Integer)
 
+class SalesSegmentSet(Base):
+    __tablename__ = 'SalesSegmentSet'
+    id = Column(BigInteger, primary_key=True)
+
+    product_id = Column(BigInteger, ForeignKey('Product.id'), nullable=True)
+    product = relationship('Product', uselist=False)
+
+    event_id = Column(BigInteger, ForeignKey('Event.id'), nullable=True)
+    event = relationship('Event', uselist=False)
+
+    updated_at = Column(DateTime)
+    created_at = Column(DateTime)
+    status = Column(Integer)
+
 buyer_condition_set_table =  Table('BuyerConditionSet', Base.metadata,
+    Column('id', Integer, primary_key=True),
     Column('buyer_condition_id', BigInteger, ForeignKey('BuyerCondition.id')),
     Column('product_id', BigInteger, ForeignKey('Product.id'))
 )
@@ -114,13 +126,10 @@ class ProductItem(Base):
 
     performance_id = Column(BigInteger, ForeignKey('Performance.id'))
     performance = relationship('Performance', uselist=False)
-    ticket_type_id = Column(BigInteger, ForeignKey('TicketType.id'))
-    ticket_type = relationship('TicketType', uselist=False)
+    price_id = Column(BigInteger, ForeignKey('Price.id'))
+    price = relationship('Price', uselist=False)
     seat_type_id = Column(BigInteger, ForeignKey('SeatType.id'))
     seat_type = relationship('SeatType', uselist=False)
-    seat_stock_id = Column(BigInteger, ForeignKey('SeatStock.id'))
-    # @TODO now assumed ProductItem:Seat = 1:1, and can be null if it is a non ticket product
-    seat = relationship('SeatStock', uselist=False)
 
     product_id = Column(BigInteger, ForeignKey('Product.id'))
     product = relationship('Product', uselist=False)
@@ -129,14 +138,35 @@ class ProductItem(Base):
     created_at = Column(DateTime)
     status = Column(Integer)
 
+class StockHolder(Base):
+    __tablename__ = "StockHolder"
+    id = Column(BigInteger, primary_key=True)
+    name = Column(String(255))
+
+    performance_id = Column(BigInteger, ForeignKey('Performance.id'))
+    performance = relationship('Performance', uselist=False)
+
+    account_id = Column(BigInteger, ForeignKey('Account.id'))
+    account = relationship('Account', uselist=False)
+
+    updated_at = Column(DateTime)
+    created_at = Column(DateTime)
+    status = Column(Integer)
+
+
 # stock based on quantity
 class Stock(Base):
     __tablename__ = "Stock"
     id = Column(BigInteger, primary_key=True)
+
     performance_id = Column(BigInteger, ForeignKey('Performance.id'))
     performance = relationship('Performance', uselist=False)
+    stock_folder_id = Column(BigInteger, ForeignKey('StockHolder.id'))
+    stock_folder = relationship('StockHolder', uselist=False)
+
     seat_type_id = Column(BigInteger, ForeignKey('SeatType.id'))
     seat_type = relationship('SeatType', uselist=False)
+
     quantity = Column(Integer)
 
     updated_at = Column(DateTime)
@@ -151,6 +181,10 @@ class Stock(Base):
 class SeatStock(Base):
     __tablename__ = "SeatStock"
     id = Column(BigInteger, primary_key=True)
+
+    stock = Column(BigInteger, ForeignKey('Stock.id'))
+    stock_id = relationship('Stock', uselist=False, backref="seatStocks")
+
     seat_id = Column(BigInteger, ForeignKey("SeatMasterL2.seat_id"))
     seat = relationship('SeatMasterL2', uselist=False, backref="seat_stock_id") # 1:1
     sold = Column(Boolean) # sold or not
@@ -177,3 +211,19 @@ class SeatStock(Base):
                 else:
                     con_num = 0
         return []
+
+
+class Product(Base):
+    __tablename__ = 'Product'
+    id = Column(BigInteger, primary_key=True)
+
+    name = Column(String(255))
+    price = Column(BigInteger)
+
+
+
+    updated_at = Column(DateTime)
+    created_at = Column(DateTime)
+    status = Column(Integer)
+
+    items = relationship('ProductItem')

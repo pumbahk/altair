@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, ForeignKey
-from sqlalchemy.orm import relationship, join, column_property
+from sqlalchemy.orm import relationship, join, column_property, mapper
 
 from hashlib import md5
 
@@ -13,6 +13,7 @@ Base = sqlahelper.get_base()
 from ticketing.clients.models import Client
 
 operator_role_association_table = Table('OperatorRole_Operator', Base.metadata,
+    Column('id', Integer, primary_key=True),
     Column('operator_role_id', BigInteger, ForeignKey('OperatorRole.id')),
     Column('operator_id', BigInteger, ForeignKey('Operator.id'))
 )

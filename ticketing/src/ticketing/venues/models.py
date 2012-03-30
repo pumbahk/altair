@@ -1,5 +1,5 @@
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL
-from sqlalchemy.orm import relationship, join, backref, column_property
+from sqlalchemy.orm import relationship, join, backref, column_property, mapper
 
 import sqlahelper
 
@@ -8,6 +8,7 @@ Base = sqlahelper.get_base()
 
 venue_venue_area_table = Table(
     'Venue_SeatMasterVenueArea', Base.metadata,
+    Column('id', Integer, primary_key=True),
     Column('venue_area_id', BigInteger, ForeignKey('VenueArea.id')),
     Column('seat_master_id', BigInteger, ForeignKey('SeatMaster.id'))
 )
@@ -27,7 +28,21 @@ class Venue(Base):
     id = Column(BigInteger, primary_key=True)
     performance_id = Column(BigInteger, ForeignKey('Performance.id'))
     performance = relationship('Performance', uselist=False)
+
     name = Column(String(255))
+    sub_name = Column(String(255))
+
+    zip = Column(String(255))
+    prefecture_id = Column(BigInteger, ForeignKey("Prefecture.id"), nullable=True)
+    prefecture    = relationship("Prefecture", uselist=False)
+    city = Column(String(255))
+    street = Column(String(255))
+    address = Column(String(255))
+    other_address = Column(String(255))
+    tel_1 = Column(String(32))
+    tel_2 = Column(String(32))
+    fax = Column(String(32))
+
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
     status = Column(Integer)
@@ -51,8 +66,6 @@ class SeatMaster(Base):
     venue_id        = Column(BigInteger, ForeignKey('Venue.id'))
     areas           = relationship("VenueArea",
                         secondary=venue_venue_area_table, backref="seats")
-    col             = Column(String(255))
-    row             = Column(String(255))
     updated_at      = Column(DateTime)
     created_at      = Column(DateTime)
     status          = Column(Integer)

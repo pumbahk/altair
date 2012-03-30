@@ -59,6 +59,8 @@ class UserPointHistory(Base):
     id = Column(BigInteger, primary_key=True)
     user_point_account_id = Column(BigInteger, ForeignKey("UserPointAccount.id"))
     user_point_account = relationship('UserPointAccount', uselist=False)
+    user_id = Column(BigInteger, ForeignKey("User.id"))
+    user = relationship('User', uselist=False)
     point = Column(Integer)
     rate = Column(Integer)
     updated_at = Column(DateTime)
