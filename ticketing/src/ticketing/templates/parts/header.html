@@ -25,12 +25,12 @@
                 </ul>
             </div><!--/.nav-collapse -->
             <!-- Navigation -->
-            <div id="navigation">
-                <ul>
-                    <li><a href="${request.route_path('login.index')}" ${'class="active"' if function=='dashboard' else ''|n}><span>ダッシュボード</span></a></li>
-                    <li><a href="${request.route_path('index')}" class="active"><span>票券管理</span></a></li>
-                    <li><a href="http://127.0.0.1:6543/" ${'class="active"' if function=='projects' else ''|n}><span>CMS</span></a></li>
-                </ul>
+            <div class="nav-collapse">
+              <ul class="nav">
+                <li class="active"><a href="#">Home</a></li>
+                <li><a href="${request.route_path('index')}">イベント</a></li>
+                <li><a href="http://127.0.0.1:6543/">CMS</a></li>
+              </ul>
             </div>
             <!-- End Navigation -->
         </div>

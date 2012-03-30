@@ -1,12 +1,64 @@
 <%inherit file="../layout.html" />
 <h1><%block name="title">${event.title}</%block></h1>
+
+
+<%block name="style">
+	<!-- load dojo and provide config via data attribute -->
+	<script src="http://ajax.googleapis.com/ajax/libs/dojo/1.7.1/dojo/dojo.js"
+			data-dojo-config="async: true, parseOnLoad: true">
+	</script>
+	<script>
+		require(["dijit/layout/BorderContainer", "dijit/layout/TabContainer", "dijit/layout/ContentPane", "dijit/layout/AccordionContainer", "dojo/parser"]);
+	</script>
+    <style type="text/css">
+      @import "http://ajax.googleapis.com/ajax/libs/dojo/1.4/dojo/resources/dojo.css";
+      @import "http://ajax.googleapis.com/ajax/libs/dojo/1.4/dijit/themes/soria/soria.css";
+      @import "http://ajax.googleapis.com/ajax/libs/dojo/1.4/dijit/themes/nihilo/nihilo.css";
+      @import "http://ajax.googleapis.com/ajax/libs/dojo/1.4/dijit/themes/tundra/tundra.css";
+    </style>
+</%block>
+<%block name="body_attrs"> class="nihilo"</%block>
+<br><br>
+<div class="row-fluid">
+    <div class="tabbable tabs-left">
+        <ul class="nav nav-tabs">
+            <li class="active"><a href="#1" data-toggle="tab">Section 1</a></li>
+        </ul>
+     </div>
+</div>
+<div class="row-fluid">
+  <span class="span2">
+      <div class="well">
+      <ul class="nav nav-list">
+          <li class="nav-header">test</li>
+          <li><a href=""><i class="icon-home"></i>販売条件</a></li>
+          <li><a href=""><i class="icon-home"></i>チケット券面</a></li>
+          <li><a href=""><i class="icon-home"></i>会場席種マスタ</a></li>
+          <li><a href=""><i class="icon-home"></i>券種</a></li>
+          <li><a href=""><i class="icon-home"></i>パフォーマンス</a></li>
+          <li><a href=""><i class="icon-home"></i>商品</a></li>
+          <li class="divider"></li>
+      </ul>
+      </div>
+  </span>
+  <span class="span10">
+      <div class="well">
+        <h1>${event.title}</h1><div class="btn-group">
+          <hr>
+      </div>
+      <div class="well">
+        <h1>${event.title}</h1>
+      </div>
+  </span>
+</div>
+
+
 <div class="ui-toolbar">
   <a href="${request.route_path('events.edit', event_id=event.id)}" class="btn">編集</a>
   <a href="${request.route_path('events.new',event_id=event.id)}" class="btn">コピーして新規</a>
   <a href="${request.route_path('events.delete', event_id=event.id)}" class="btn">削除</a>
 <a href="" class="btn">チケット券面プレビュー</a>
 </div>
-
 <hr />
 <div class="section">
   <div class="section-main">

@@ -9,8 +9,4 @@ class EventForm(Form):
     end_on              = DateField(u'終了日', validators=[Required()])
     code                = TextField(u'公演コード', validators=[Required()])
     title               = TextField(u'タイトル', validators=[Required()])
-    abbreviated_title   = TextField(u'タイトル略', validators=[Required()])
-    margin_ratio        = TextField(u'マージン', validators=[])
-    printing_fee        = TextField(u'印刷手数料', validators=[])
-    registration_fee    = TextField(u'登録手数料', validators=[])
-
+    abbreviated_title   = TextField(u'タイトル略称', validators=[Required()])
