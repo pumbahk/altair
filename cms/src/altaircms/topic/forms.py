@@ -4,7 +4,6 @@ import wtforms.form as form
 import wtforms.fields as fields
 import wtforms.validators as validators
 import wtforms.widgets as widgets
-
 from .models import Topic
 
 def existing_pages():

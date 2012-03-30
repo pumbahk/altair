@@ -1,5 +1,7 @@
 # coding:utf-8
 
+from altaircms.lib.formhelpers import datetime_pick_patch
+datetime_pick_patch()
 
 import re
 import warnings

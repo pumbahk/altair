@@ -10,6 +10,9 @@
               padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
           }
     </style>
+	## for date picker
+	<link rel="stylesheet" type="text/css" href="/static/css/datepicker.css"/>
+	<script type="text/javascript" src="/static/js/bootstrap-datepicker.js"></script>
     ## style
     <%block name="style"/>
   </head>
@@ -32,6 +35,9 @@
       ## jQuery depended javascript code
       $(document).ready(function() {
             $().dropdown();
+	        $(".datepicker").datepicker(
+	           
+	        );
             <%block name="jquery"/>
       });
     </script>
