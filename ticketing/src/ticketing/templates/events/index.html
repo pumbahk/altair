@@ -1,6 +1,92 @@
 <%inherit file="../layout.html" />
 <%block name="title">イベント一覧</%block>
+
+<div class="row-fluid">
+  <span class="span2">
+      <div class="well">
+      <ul class="nav nav-list">
+          <li class="nav-header">test</li>
+          <li><a href="${request.route_path('events.new')}"><i class="icon-home"></i>新規イベント</a></li>
+          <li><a href=""><i class="icon-home"></i>チケット券面</a></li>
+          <li><a href=""><i class="icon-home"></i>会場席種マスタ</a></li>
+          <li><a href=""><i class="icon-home"></i>券種</a></li>
+          <li><a href=""><i class="icon-home"></i>パフォーマンス</a></li>
+          <li><a href=""><i class="icon-home"></i>商品</a></li>
+          <li class="divider"></li>
+      </ul>
+      </div>
+  </span>
+  <span class="span10">
+
+  % for event in events.items:
+      <div class="well">
+        <h4 style="float: left">${event.title}</h4>
+        <div class="btn-group" style="float: right; margin-right: 20px">
+          <button class="btn"><i class="icon-pencil"></i>編集</button>
+          <button class="btn dropdown-toggle" data-toggle="dropdown">
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu">
+              <li><a href=""><i class="icon-plus"></i>コピー</a></li>
+              <li><a href=""><i class="icon-minus"></i>削除</a></li>
+          </ul>
+        </div>
+        <br style="clear: both" />
+          <span class="label label-important">先行</span>
+          <span class="label label-success">一般</span>
+          <table class="table fullwidth checkboxed_table">
+            <thead>
+              <tr>
+                <th class="minwidth"><input type="checkbox" class="__action__-select_all" /></th>
+                <th class="minwidth">ID</th>
+                <th><a href="#" class="sortable">名称</a></th>
+                <th><a href="#" class="sortable">会場</a></th>
+                <th><a href="#" class="sortable">販売開始日時</a></th>
+                <th><a href="#" class="sortable">販売終了日時</a></th>
+                <th><a href="#" class="sortable">初回公演日時</a></th>
+                <th><a href="#" class="sortable">最終公演日時</a></th>
+              </tr>
+            </thead>
+            <tbody>
+            % for event in events.items:
+              <tr>
+                <td><input type="checkbox" /></td>
+                <td><a href="${request.route_path('events.show', event_id=1)}">${event.id}</a></td>
+                <td><a href="${request.route_path('events.show', event_id=1)}">${event.title}</a></td>
+                <td><a href="#"></a> / <a href="#"></a></td>
+                <td>2011/11/3 10:00</td>
+                <td>2011/11/30 23:59</td>
+                <td>2012/1/5 10:00</td>
+                <td>2012/1/7 19:00</td>
+              </tr>
+            % endfor
+            </tbody>
+          </table>
+        <div style="float: right"><a href="">このイベントの他の公演を見る</a></div>
+          <br style="clear: both" />
+      </div>
+  % endfor
+      <div class="pagination">
+        <ul>
+          <li><a href="#">Prev</a></li>
+          <li class="active">
+            <a href="#">1</a>
+          </li>
+          <li><a href="#">2</a></li>
+          <li><a href="#">3</a></li>
+          <li><a href="#">4</a></li>
+          <li><a href="#">Next</a></li>
+        </ul>
+      </div>
+  </span>
+</div>
+
+
+
+<%include file="_list.html" />
+
+
+
 <div class="ui-toolbar">
   <a href="${request.route_path('events.new')}" class="btn">新規イベント</a>
 </div>
-<%include file="_list.html" />
