@@ -39,6 +39,7 @@ from ticket     import TicketerData
 from account    import AccountData
 from permission import PermissionData
 from operator   import OperatorData, OperatorRoleData
+from event import EventData
 
 from ticketing.oauth2.models import Service
 from ticketing.operators.models import Operator, OperatorActionHistory, OperatorRole, Permission
@@ -55,6 +56,7 @@ db_fixture = SQLAlchemyFixture(
          'AccountData'      : Account,
          'TicketerData'     : Ticketer,
          'ClientData'       : Client,
+         'EventData'        : Event,
      },
      engine=engine,
 )
@@ -76,6 +78,7 @@ data = db_fixture.data(
     ClientData,
     OperatorRoleData,
     OperatorData,
+    EventData
 
 )
 data.setup()
