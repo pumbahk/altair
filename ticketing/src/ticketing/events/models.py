@@ -79,9 +79,8 @@ class Performance(Base):
 event_table = Table(
     'Event', Base.metadata,
     Column('id', BigInteger, primary_key=True),
-    Column('start_on', Date),
-    Column('end_on', Date),
-    Column('publish_at', DateTime),
+    Column('start_on', Date, nullable=True),
+    Column('end_on', Date, nullable=True),
     Column('code', String(12)),
     Column('title', String(1024)),
     Column('abbreviated_title', String(1024)),
