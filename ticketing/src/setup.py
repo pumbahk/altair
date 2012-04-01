@@ -7,8 +7,11 @@ README = open(os.path.join(here, 'README.rst')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 
 requires = [
+    'nose',
+    'webtest',
     'pyramid',
     'pyramid_debugtoolbar',
+    'pyramid_fanstatic',
     'pyramid_tm',
     'pyramid_mailer',
     'pyramid_beaker',
@@ -27,6 +30,15 @@ requires = [
     'sqlahelper',
     'WebHelpers',
     'fixture',
+    'js.jquery',
+    'js.underscore',
+    'js.jquery_tools',
+    'js.json2',
+    'js.jqueryui',
+    'js.tinymce',
+    'js.backbone',
+    'js.bootstrap',
+    'simplejson',
     'waitress'
     ]
 

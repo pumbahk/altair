@@ -106,6 +106,10 @@ class Event(Base):
         return session.query(Event).filter(Event.id==event_id).first()
 
     @staticmethod
+    def get_by_code(code):
+        return session.query(Event).filter(Event.code==code).first()
+
+    @staticmethod
     def update(event):
         session.merge(event)
         session.flush()
