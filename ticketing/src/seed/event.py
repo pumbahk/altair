@@ -2,6 +2,7 @@
 
 from seed import DataSet
 from datetime import datetime
+from account import AccountData
 
 from ticketing.models import *
 from ticketing.clients.models import *
@@ -34,3 +35,13 @@ class EventData(DataSet):
         abbreviated_title = u"ディズニー・オン・アイス 「オールスターカーニバル」（名古屋）"
 
 
+class PerformanceData(DataSet):
+    class performance_1:
+        event = EventData.event_0
+        start_on = datetime(2012,7,1,19,0)
+        end_on = None
+        open_on = datetime(2012,7,1,18,0)
+        no_period = False
+        name =  u"シルク・ドゥ・ソレイユ「ZED （ゼッド）TM」Presented by JCB"
+        code = u'201207011800'
+        owner = AccountData.account_2
