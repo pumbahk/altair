@@ -13,9 +13,16 @@ def _safe_json_loads(string):
     
 class BlocksImage(object):
     """ use this in template
-    % for name in layout_image:
-      <div id="${name}">${name}</div>
-    % endfor
+    %for row in layout_image:
+        %for x in row:
+          <div class="alert size${len(row)} left" id="${name}">
+            ${name}
+          </div>
+        %endfor
+      %if len(row) > 1:
+        <div class="clear"/>
+      %else
+    %endfor
     """
     @classmethod
     def from_json(cls, json):

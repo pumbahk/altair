@@ -14,6 +14,7 @@ from altaircms.event.models import Event
 from altaircms.page.mappers import PageMapper, PagesMapper
 
 from altaircms.lib.fanstatic_decorator import with_bootstrap
+from altaircms.lib.fanstatic_decorator import with_jquery
 from altaircms.lib.fanstatic_decorator import with_fanstatic_jqueries
 from altaircms.lib.fanstatic_decorator import with_wysiwyg_editor
 import altaircms.helpers as h
@@ -22,7 +23,7 @@ import altaircms.helpers as h
 ## todo: CRUDのview整理する
 ##
 
-@view_defaults(route_name="page_add", decorator=with_bootstrap)
+@view_defaults(route_name="page_add", decorator=with_bootstrap.merge(with_jquery))
 class AddView(object):
     """ eventの中でeventに紐ついたpageの作成
     """
