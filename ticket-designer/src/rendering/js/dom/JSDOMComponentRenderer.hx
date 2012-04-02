@@ -13,14 +13,18 @@ class JSDOMComponentRenderer extends JSDOMRenderer, implements ComponentRenderer
     private function set_stage(stage:Stage):Stage {
         if (n != null)
             n.detach();
-        stage_ = cast(stage, JSDOMStage);
-        if (n != null)
-            n.appendTo(stage_.base);
+        if (stage != null) {
+            stage_ = cast(stage, JSDOMStage);
+            if (n != null)
+                n.appendTo(stage_.n);
+        } else {
+            stage_ = null;
+        }
         return stage;
     }
 
     public override function refresh(): Void {
-        super.setup();
+        super.refresh();
         untyped __js__("this.n.css")("opacity", Std.string(opacity));
     }
 

@@ -15,7 +15,6 @@ class HorizontalGuideRenderer extends JSDOMComponentRenderer {
     }
 
     public override function realize(component:Dynamic):Void {
-        component = cast(component, HorizontalGuide);
         offset = component.position.y;
         view_.scheduleRefresh(this);
     }

@@ -2,10 +2,12 @@ package rendering.js.dom;
 
 import js.JQuery;
 
-class JSDOMRenderer implements Renderer {
+class JSDOMRenderer implements Renderer, implements MouseEventsHandler {
     public var id(default, null):Int;
     public var n(default, null):JQuery;
     public var view(default, null):View;
+    public var innerRenderSize(get_innerRenderSize, null):Point;
+    public var outerRenderSize(get_outerRenderSize, null):Point;
 
     public var onPress:JqEvent->Void;
     public var onRelease:JqEvent->Void;
@@ -18,6 +20,17 @@ class JSDOMRenderer implements Renderer {
     var onReleaseHandler:Event->Void;
     var onMouseMoveHandler:Event->Void;
     var onMouseOutHandler:Event->Void;
+
+    var innerRenderSize_:Point;
+    var outerRenderSize_:Point;
+
+    function get_innerRenderSize():Point {
+        return innerRenderSize_;
+    }
+
+    function get_outerRenderSize():Point {
+        return outerRenderSize_;
+    }
 
     public function setup():JQuery {
         view_ = cast(view, JSDOMView);
@@ -40,7 +53,12 @@ class JSDOMRenderer implements Renderer {
 
     public function realize(renderable:Dynamic):Void {}
 
-    public function refresh():Void {}
+    public function refresh():Void {
+        innerRenderSize_ = view_.pixelToInchP({ x:(0. + n.innerWidth()),
+                                                y:(0. + n.innerHeight()) });
+        outerRenderSize_ = view_.pixelToInchP({ x:(0. + n.outerWidth()),
+                                                y:(0. + n.outerHeight()) });
+    }
 
     function createMouseEvent(e:JqEvent):MouseEvent {
         return null;
@@ -95,22 +113,27 @@ class JSDOMRenderer implements Renderer {
         this.onPressHandler = null;
         this.onReleaseHandler = null;
         this.onMouseMoveHandler = null;
+        this.onMouseOutHandler = null;
 
         var me = this;
         this.onPress = function (e:JqEvent):Void {
-            me.onPressHandler(me.createMouseEvent(e));
+            if (me.onPressHandler != null)
+                me.onPressHandler(me.createMouseEvent(e));
         };
 
         this.onMouseMove = function(e:JqEvent):Void {
-            me.onMouseMoveHandler(me.createMouseEvent(e));
+            if (me.onMouseMoveHandler != null)
+                me.onMouseMoveHandler(me.createMouseEvent(e));
         };
 
         this.onMouseOut = function(e:JqEvent):Void {
-            me.onMouseOutHandler(me.createMouseEvent(e));
+            if (me.onMouseOutHandler != null)
+                me.onMouseOutHandler(me.createMouseEvent(e));
         };
 
         this.onRelease = function(e:JqEvent):Void {
-            me.onReleaseHandler(me.createMouseEvent(e));
+            if (me.onReleaseHandler != null)
+                me.onReleaseHandler(me.createMouseEvent(e));
         };
     }
 

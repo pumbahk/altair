@@ -11,6 +11,7 @@ class ComponentBase<Tself:Component> implements Component {
     public var renderer(default, null):Renderer;
     public var on(default, null):Dynamic;
     public var position(default, default):Point;
+    public var size(default, default):Point;
     public var parent(default, null):Component;
     public var defaultCursor:MouseCursorKind;
     private var draggable:Bool;
@@ -31,6 +32,7 @@ class ComponentBase<Tself:Component> implements Component {
         this.parent = null;
         this.renderer = renderer;
         this.position = { x: 0., y: 0. };
+        this.size = { x: 0., y: 0. };
         this.previousCursor = null;
         this.defaultCursor = MouseCursorKind.DEFAULT;
 

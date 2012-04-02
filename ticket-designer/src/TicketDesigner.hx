@@ -76,11 +76,10 @@ class TicketDesigner {
 
     public function new(view:View) {
         this.view = view;
-        this.shell = new Shell(view);
         this.rendererFactory = new BasicRendererFactoryImpl(
             view, rendering.js.dom.Spi.rendererRegistry);
-        this.componentFactory = new ComponentFactory(
-            new ComponentRenderingFacade(view.stage, rendererFactory));
+        this.componentFactory = new ComponentFactory(view.stage, rendererFactory);
+        this.shell = new Shell(view, componentFactory);
         this.horizontalRuler = createHorizontalRuler();
         this.verticalRuler = createVerticalRuler();
         this.view.viewport.on.scroll.do_(function(e) {

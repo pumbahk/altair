@@ -54,19 +54,8 @@
     var td = new TicketDesigner(
       new rendering.js.dom.JSDOMView(canvasNode, viewportNode)
     );
-    for (var i = 0; i < 100; i++) {
-      var tc = td.componentFactory.create(TextComponent);
-      tc.on.click.do_(function(a) { console.log(a); });
-      tc.position.x = Math.random() * 8;
-      tc.position.y = Math.random() * 6;
-      tc.text = "test";
-      tc.refresh();
-    }
     $('#view .renderable-horizontal_ruler').replaceWith(td.horizontalRuler.renderer.n);
     $('#view .renderable-vertical_ruler').replaceWith(td.verticalRuler.renderer.n);
-
-    // tc.on.dragstart.do_(function(a) {});
-    // tc.on.dragend.do_(function(a) {});
 
     function getBodyClientSize() {
       var firstChildNode = $("body > :first").get(0);

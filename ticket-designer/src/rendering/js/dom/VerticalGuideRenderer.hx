@@ -15,7 +15,6 @@ class VerticalGuideRenderer extends JSDOMComponentRenderer {
     }
 
     public override function realize(component:Dynamic):Void {
-        component = cast(component, VerticalGuide);
         offset = component.position.x;
         view_.scheduleRefresh(this);
     }

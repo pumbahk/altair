@@ -45,4 +45,10 @@ class BasicStageImpl<Trenderer:ComponentRenderer> implements Stage {
         this.renderers_ = new Hash();
         this.view = view;
     }
+
+    public function captureMouse():Void {}
+
+    public function releaseMouse():Void {}
+
+    public function bind(event_kind:EventKind, handler:Event -> Void):Void {}
 }
