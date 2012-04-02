@@ -17,7 +17,7 @@ class TopcontentForm(form.Form):
     publish_close_on = fields.DateTimeField(label=u"公開終了日")
     text = fields.TextField(label=u"内容", validators=[validators.Required()], widget=widgets.TextArea())
     
-    orderno = fields.IntegerField(label=u"表示順序", default=50)
+    orderno = fields.IntegerField(label=u"表示順序(1〜100)", default=50)
     is_vetoed = fields.BooleanField(label=u"公開禁止")
 
     ##本当は、client.id, site.idでfilteringする必要がある

@@ -38,7 +38,7 @@ class TopicWidgetView(object):
         context = self.request.context
         widget = context.get_widget(self.request.GET.get("pk"))
         form = forms.TopicChoiceForm(**widget.to_dict())
-        form.transform(widget.topic_type)
+        # form.transform(widget.topic_type)
         return {"form": form}
 
     # @view_config(route_name="topic_widget_dialog_form", renderer="altaircms.plugins.widget:topic/form.mako", request_method="GET")

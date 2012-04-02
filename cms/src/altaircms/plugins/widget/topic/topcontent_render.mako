@@ -8,6 +8,7 @@
   %for topcontent in topcontents:
   <div class="topcontent" title="<h2>${topcontent.title}(${h.base.jdate(topcontent.publish_open_on)})</h2><p>${topcontent.text or ""|n}</p>">
     ${topcontent.title}(${h.base.jdate(topcontent.publish_open_on)})
+    <img src="${h.asset.to_show_page(request,topcontent.image_asset)}"/>
   </div>
   %endfor
 </div>

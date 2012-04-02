@@ -68,8 +68,9 @@ class DynamicQueryDefault(object):
     def event(cls, info, qs, field):
         field.query = cls._filter_by_site(qs, info.request)
     @classmethod
-    def image_asset(cls, info, qs, field):
+    def imageasset(cls, info, qs, field):
         field.query = cls._filter_by_site(qs, info.request)
+
     @classmethod
     def widgetdisposition(cls, info, qs, field):
         qs = cls._filter_by_site(info, info.qs, info.request)
