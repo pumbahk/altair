@@ -136,13 +136,11 @@ class UpdateView(object):
     def update(self):
         id_ = self.request.matchdict['id']
         view = PageRESTAPIView(self.request, id_)
-        view.get_rest_action(self.request.POST["_method"])()
+        _, page, _ = view.get_rest_action(self.request.POST["_method"])()
 
         ## flash messsage
         FlashMessage.success("page updated", request=self.request)
-
-        return HTTPFound(location=h.page.to_list_page(self.request))
-
+        return HTTPFound(location=h.page.to_edit_page(self.request, page))
 
 @view_config(route_name='page', renderer='altaircms:templates/page/list.mako', 
              permission='page_read', request_method="GET", decorator=with_bootstrap)
