@@ -74,6 +74,9 @@ with_fanstatic_jqueries = FanstaticDecoratorFactory(
 with_wysiwyg_editor = FanstaticDecoratorFactory(
     tinymce.need
 )
+# with_bootstrap = FanstaticDecoratorFactory(
+#     bootstrap.need
+#  )
 with_bootstrap = FanstaticDecoratorFactory(
-    bootstrap.need
- )
+    jquery.need
+)

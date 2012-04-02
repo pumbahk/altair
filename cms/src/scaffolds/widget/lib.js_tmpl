@@ -28,9 +28,11 @@ widget.configure({
     var load_page = function(we){
         var pk = we.get_pk(we.where);
         var url = "/api/widget/{{package}}/dialog";
+        var params = {}
         if(!!pk){
-            url += "?" + $.param({"pk": pk});
+            params["pk"] = pk;
         }
+        url += "?" + $.param({"pk": pk});   
         return we.dialog.load(url);
     };
 

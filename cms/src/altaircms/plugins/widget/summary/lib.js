@@ -27,10 +27,12 @@ widget.configure({
     var opt = {} //widget local variable
     var load_page = function(we){
         var pk = we.get_pk(we.where);
+        var params={page: get_page()};
         var url = "/api/widget/summary/dialog";
         if(!!pk){
-            url += "?" + $.param({"pk": pk, "page": get_page()});
+            params["pk"] = pk
         }
+        url += "?" + $.param(params);
         return we.dialog.load(url);
     };
 

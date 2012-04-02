@@ -169,11 +169,15 @@
         }, 
 
         collectData: function(){
+			var get_text_or_val = function(e,expr){ 
+			  var e = e.find(expr);
+			  return e.text() || e.val;
+			}
             return _($(this.el).find("#contentlist tr")).map(function(e){
                 var e = $(e);
                 return {
-                    label: e.find(".label").text(), 
-                    content: e.find(".content").text()
+                    label: get_text_or_val(e, ".label"),
+                    content: get_text_or_val(e, ".content")
                 };
             });
         }, 

@@ -22,9 +22,11 @@ if(!widget){
     var load_page = function(we){
         var pk = we.get_pk(we.where);
         var url = "/api/widget/freetext/dialog";
+        var params = {};
         if(!!pk){
-            url += "?" + $.param({"pk": pk});
+            params["Pk"] = pk;
         }
+            url += "?" + $.param(params);
         return we.dialog.load(url);
     };
     var on_dialog = function(we){
