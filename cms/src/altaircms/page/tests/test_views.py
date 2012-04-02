@@ -37,7 +37,7 @@ class PageFunctionalTests(unittest.TestCase):
                  u'keywords': u'keywords',
                  u'layout': u"1",
                  u'title': title, 
-                 u'url': u'/tmp/url'}
+                 u'url': u'tmp/url'}
        self.testapp.post("/page/", params, status=302)
 
    def update(self, obj_id, title="title"):

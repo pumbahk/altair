@@ -3,6 +3,7 @@
 from wtforms.form import Form
 from wtforms import fields
 from wtforms import widgets
+from wtforms import validators
 from altaircms.layout.models import Layout
 from altaircms.lib.formhelpers import dynamic_query_select_field_factory
 
@@ -25,8 +26,13 @@ class PageSchema(colander.MappingSchema):
     #                                 widget=deform.widget.TextAreaWidget())
 """
 
+def url_field_validator(form, field):
+    if field.data.startswith("/") or "://" in field.data :
+        raise validators.ValidationError(u"先頭に/をつけたり, http://foo.bar.comのようなurlにはしないでください.(正しい例:top/music/abc)")
+
 class PageForm(Form):
-    url = fields.TextField()
+    # url = fields.TextField(validators=[url_field_validator], placeholder="top/music/abc")
+    url = fields.TextField(validators=[url_field_validator])
     title = fields.TextField()
     description = fields.TextField()
     keywords = fields.TextField()
