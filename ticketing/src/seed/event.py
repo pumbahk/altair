@@ -3,6 +3,7 @@
 from seed import DataSet
 from datetime import datetime
 from account import AccountData
+from venue import VenueData
 
 from ticketing.models import *
 from ticketing.clients.models import *
@@ -45,3 +46,44 @@ class PerformanceData(DataSet):
         name =  u"シルク・ドゥ・ソレイユ「ZED （ゼッド）TM」Presented by JCB"
         code = u'201207011800'
         owner = AccountData.account_2
+        venue = VenueData.venue_1
+    class performance_2:
+        event = EventData.event_0
+        start_on = datetime(2012,7,2,19,0)
+        end_on = None
+        open_on = datetime(2012,7,2,18,0)
+        no_period = False
+        name =  u"シルク・ドゥ・ソレイユ「ZED （ゼッド）TM」Presented by JCB"
+        code = u'201207011800'
+        owner = AccountData.account_2
+        venue = VenueData.venue_1
+    class performance_3:
+        event = EventData.event_0
+        start_on = datetime(2012,7,3,19,0)
+        end_on = None
+        open_on = datetime(2012,7,3,18,0)
+        no_period = False
+        name =  u"シルク・ドゥ・ソレイユ「ZED （ゼッド）TM」Presented by JCB"
+        code = u'201207011800'
+        owner = AccountData.account_2
+        venue = VenueData.venue_1
+    class performance_4:
+        event = EventData.event_0
+        start_on = datetime(2012,7,4,19,0)
+        end_on = None
+        open_on = datetime(2012,7,4,18,0)
+        no_period = False
+        name =  u"シルク・ドゥ・ソレイユ「ZED （ゼッド）TM」Presented by JCB"
+        code = u'201207011800'
+        owner = AccountData.account_2
+        venue = VenueData.venue_1
+    class performance_5:
+        event = EventData.event_0
+        start_on = datetime(2012,7,5,19,0)
+        end_on = None
+        open_on = datetime(2012,7,5,18,0)
+        no_period = False
+        name =  u"シルク・ドゥ・ソレイユ「ZED （ゼッド）TM」Presented by JCB"
+        code = u'201207011800'
+        owner = AccountData.account_2
+        venue = VenueData.venue_1

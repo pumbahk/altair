@@ -75,6 +75,8 @@ class Performance(Base):
     code = Column(String(12))
     owner_id = Column(BigInteger, ForeignKey('Account.id'))
     owner = relationship('Account')
+    venue_id = Column(BigInteger, ForeignKey('Venue.id'))
+    venue = relationship('Venue')
 
 event_table = Table(
     'Event', Base.metadata,

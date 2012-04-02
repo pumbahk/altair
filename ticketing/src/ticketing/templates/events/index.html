@@ -41,23 +41,21 @@
                 <th class="minwidth">ID</th>
                 <th><a href="#" class="sortable">名称</a></th>
                 <th><a href="#" class="sortable">会場</a></th>
-                <th><a href="#" class="sortable">販売開始日時</a></th>
-                <th><a href="#" class="sortable">販売終了日時</a></th>
-                <th><a href="#" class="sortable">初回公演日時</a></th>
-                <th><a href="#" class="sortable">最終公演日時</a></th>
+                <th><a href="#" class="sortable">開場</a></th>
+                <th><a href="#" class="sortable">開演</a></th>
+                <th><a href="#" class="sortable">閉演</a></th>
               </tr>
             </thead>
             <tbody>
-            % for event in events.items:
+            % for performance in event.performances:
               <tr>
                 <td><input type="checkbox" /></td>
-                <td><a href="${request.route_path('events.show', event_id=1)}">${event.id}</a></td>
-                <td><a href="${request.route_path('events.show', event_id=1)}">${event.title}</a></td>
-                <td><a href="#"></a> / <a href="#"></a></td>
-                <td>2011/11/3 10:00</td>
-                <td>2011/11/30 23:59</td>
-                <td>2012/1/5 10:00</td>
-                <td>2012/1/7 19:00</td>
+                <td><a href="${request.route_path('events.show', event_id=1)}">${performance.id}</a></td>
+                <td><a href="${request.route_path('events.show', event_id=1)}">${performance.name}</a></td>
+                <td><a href="#">${performance.venue.name}</td>
+                <td>${performance.open_on}</td>
+                <td>${performance.start_on}</td>
+                <td>${performance.end_on}</td>
               </tr>
             % endfor
             </tbody>
