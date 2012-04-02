@@ -1,3 +1,14 @@
+import views.View;
+import views.RendererFactory;
+import views.ComponentFactory;
+import views.Ruler;
+import views.HorizontalGuide;
+import views.VerticalGuide;
+import views.MouseEvent;
+import views.MouseCursorKind;
+import views.ComponentRenderer;
+import views.BasicRendererFactoryImpl;
+
 class TicketDesigner {
     public var view(default, null):View;
     public var shell(default, null):Shell;
@@ -77,7 +88,7 @@ class TicketDesigner {
     public function new(view:View) {
         this.view = view;
         this.rendererFactory = new BasicRendererFactoryImpl(
-            view, rendering.js.dom.Spi.rendererRegistry);
+            view, views.rendering.js.dom.Spi.rendererRegistry);
         this.componentFactory = new ComponentFactory(view.stage, rendererFactory);
         this.shell = new Shell(view, componentFactory);
         this.horizontalRuler = createHorizontalRuler();

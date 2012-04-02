@@ -52,7 +52,7 @@
     var canvasNode = $('#view .canvas')
     var viewportNode = $('#view .viewport');
     var td = new TicketDesigner(
-      new rendering.js.dom.JSDOMView(canvasNode, viewportNode)
+      new views.rendering.js.dom.JSDOMView(canvasNode, viewportNode)
     );
     $('#view .renderable-horizontal_ruler').replaceWith(td.horizontalRuler.renderer.n);
     $('#view .renderable-vertical_ruler').replaceWith(td.verticalRuler.renderer.n);
@@ -101,9 +101,9 @@
         toggleToolbarButton('move');
         break;
       case 'PLACE':
-        if (operationMode[2] == TextComponent)
+        if (operationMode[2] == views.TextComponent)
           toggleToolbarButton('text');
-        else if (operationMode[2] == TextComponent)
+        else if (operationMode[2] == views.TextComponent)
           toggleToolbarButton('text');
         break;
       }
@@ -118,10 +118,10 @@
         td.shell.set_operationMode(OperationMode.MOVE);
         break;
       case 'text':
-        td.shell.set_operationMode(OperationMode.PLACE(TextComponent));
+        td.shell.set_operationMode(OperationMode.PLACE(views.TextComponent));
         break;
       case 'image':
-        td.shell.set_operationMode(OperationMode.PLACE(TextComponent));
+        td.shell.set_operationMode(OperationMode.PLACE(views.TextComponent));
         break;
       }
     }

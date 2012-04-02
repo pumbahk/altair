@@ -1,3 +1,11 @@
+import views.View;
+import views.Component;
+import views.ComponentRenderer;
+import views.ComponentFactory;
+import views.MouseCursorKind;
+import views.EventKind;
+import views.MouseEvent;
+
 private enum State {
     NONE;
     DRAGGING(initialScrollPosition:Point, initialPosition:Point);
@@ -26,7 +34,7 @@ class Shell {
             view.stage.cursor = MouseCursorKind.MOVE;
             var state:State = NONE;
             view.stage.bind(PRESS, function(e:Event) {
-                state = DRAGGING(view.viewport.scrollPosition, cast(e).position);
+                state = DRAGGING(view.viewport.scrollPosition, cast(e).screenPosition);
             });
             view.stage.bind(RELEASE, function(e:Event) {
                 state = NONE;
@@ -36,26 +44,36 @@ class Shell {
                 switch (state) {
                 case NONE:
                 case DRAGGING(initialScrollPosition, initialPosition):
-                    var offset = {
-                        x: e_.position.x - initialPosition.x,
-                        y: e_.position.y - initialPosition.y
-                    };
+                    var offset = view.pixelToInchP({
+                        x: e_.screenPosition.x - initialPosition.x,
+                        y: e_.screenPosition.y - initialPosition.y
+                    });
                     var newScrollPosition = {
                         x: initialScrollPosition.x - offset.x,
                         y: initialScrollPosition.y - offset.y
                     };
                     if (newScrollPosition.x < 0.) {
-                        newScrollPosition.x = 0.;
-                        state = DRAGGING(initialScrollPosition, {
-                            x: e_.position.x + newScrollPosition.x,
+                        initialScrollPosition = {
+                            x: 0.,
+                            y: initialScrollPosition.y,
+                        };
+                        initialPosition = {
+                            x: e_.screenPosition.x,
                             y: initialPosition.y
-                        });
+                        };
+                        state = DRAGGING(initialScrollPosition, initialPosition);
+                        newScrollPosition.x = 0.;
                     }
                     if (newScrollPosition.y < 0.) {
-                        state = DRAGGING(initialScrollPosition, {
+                        initialScrollPosition = {
+                            x: initialScrollPosition.x,
+                            y: 0.,
+                        };
+                        initialPosition = {
                             x: initialPosition.x,
-                            y: e_.position.y + newScrollPosition.y
-                        });
+                            y: e_.screenPosition.y
+                        };
+                        state = DRAGGING(initialScrollPosition, initialPosition);
                         newScrollPosition.y = 0.;
                     }
                     view.viewport.scrollPosition = newScrollPosition;

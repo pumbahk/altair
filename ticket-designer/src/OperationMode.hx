@@ -1,5 +1,5 @@
 enum OperationMode {
     CURSOR;
     MOVE;
-    PLACE(item:Class<Component>);
+    PLACE(item:Class<views.Component>);
 }
