@@ -2,10 +2,10 @@
     <li class="nav-header">イベント管理</li>
     <!-- <li><a href="/client">edit client</a></li> -->
     <li><a href="${request.route_path("event_list")}">イベント</a></li>
-    <li><a href="#">パフォーマンス</a></li>
+    <li><a href="${request.route_path("performance_list")}">パフォーマンス</a></li>
+    <li><a href="${request.route_path("ticket_list")}">チケット</a></li>
     <li><a href="${request.route_path("topic_list")}">トピック</a></li>
     <li><a href="${request.route_path("topcontent_list")}">トップコンテンツ</a></li>
-
     <li class="nav-header">ページ管理</li>
     <li><a href="${request.route_path("layout_list")}">レイアウト</a></li>
     <li><a href="${request.route_path("page")}">ページ</a></li>

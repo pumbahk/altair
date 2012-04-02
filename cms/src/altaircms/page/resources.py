@@ -3,7 +3,7 @@ from altaircms.models import DBSession
 from altaircms.layout.models import Layout
 import altaircms.widget.forms as wf
 import altaircms.security as security
-from . import renderable
+from altaircms.layout import renderable
 from . import models
 from altaircms.widget.models import WidgetDisposition
 
@@ -50,9 +50,6 @@ class ForPageMixin(object):
     def get_layout_render(self, page):
         layout = DBSession.query(Layout).filter_by(id=page.layout_id).one()
         return renderable.LayoutRender(layout)
-
-    def get_page_render(self, page):
-        return renderable.PageRender(page)
 
     def get_page(self, page_id):
         return models.Page.query.filter(models.Page.id==page_id).one()

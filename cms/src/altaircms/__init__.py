@@ -66,7 +66,7 @@ def main(global_config, **settings):
     ## include
     config.include('pyramid_tm')
     config.include("pyramid_fanstatic")
-
+    
     config.include("altaircms.auth", route_prefix='/auth')
     config.include("altaircms.front", route_prefix="f")
     config.include("altaircms.widget")
@@ -81,6 +81,10 @@ def main(global_config, **settings):
     config.include("altaircms.base")
 
 
+    ## slack-off
+    config.include("altaircms.lib.crud")
+    config.include("altaircms.slackoff")
+    
     test_re = re.compile('tests$').search
     config.scan(ignore=[test_re])
 
