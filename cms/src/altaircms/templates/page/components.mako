@@ -80,9 +80,19 @@
 
 <%def name="render_blocks(blocks)">
   <div id="wrapped">
-    % for name  in blocks:
-      <div id="${name}" class="block noitem">${name}</div>
-    % endfor
+%for row in blocks.structure:
+    %for name in row:
+      <div class="block noitem size${len(row)} left" id="${name}">
+        ${name}
+      </div>
+    %endfor
+  %if len(row) > 1:
+    <div class="clear"/>
+  %endif
+%endfor
+##    % for name  in blocks:
+##      <div id="${name}" class="block noitem">${name}</div>
+##    % endfor
   </div>
 </%def>
 
