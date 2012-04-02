@@ -5,9 +5,9 @@ Setup
 =====
 ::
 
-  $ mkdir vega-devel
-  $ cd vega-devel
-  $ git clone git+ssh://git@github.com/ticketstar/vega
+  $ mkdir altair-devel
+  $ cd altair-devel
+  $ git clone git+ssh://git@github.com/ticketstar/altair
   $ easy_install virtualenv
   $ virtualenv env
   $ env/bin/easy_install pyramid
