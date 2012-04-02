@@ -5,27 +5,23 @@ import js.JQuery;
 class JSDOMRenderer implements Renderer {
     public var id(default, null):Int;
     public var n(default, null):JQuery;
-    public var view(default, set_view):View;
-
-    public var view_:JSDOMView;
+    public var view(default, null):View;
 
     public var onPress:JqEvent->Void;
     public var onRelease:JqEvent->Void;
     public var onMouseMove:JqEvent->Void;
     public var onMouseOut:JqEvent->Void;
 
+    var view_:JSDOMView;
+
     var onPressHandler:Event->Void;
     var onReleaseHandler:Event->Void;
     var onMouseMoveHandler:Event->Void;
     var onMouseOutHandler:Event->Void;
 
-    private function set_view(value:View):View {
-        view_ = cast(value, JSDOMView);
-        view_.addRenderer(this);
-        return value;
-    }
-
     public function setup():JQuery {
+        view_ = cast(view, JSDOMView);
+        view_.addRenderer(this);
         return null;
     }
 
@@ -91,10 +87,10 @@ class JSDOMRenderer implements Renderer {
         }
     }
 
-    public function new(id:Int) {
+    public function new(id:Int, view:View) {
         this.id = id;
+        this.view = view;
         this.n = setup();
-        setup();
 
         this.onPressHandler = null;
         this.onReleaseHandler = null;

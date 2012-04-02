@@ -6,10 +6,11 @@ class VerticalGuideRenderer extends JSDOMComponentRenderer {
     var offset:Float;
 
     static function __init__() {
-        Spi.rendererFactory.addImplementation(VerticalGuide, VerticalGuideRenderer);
+        Spi.rendererRegistry.addImplementation(VerticalGuide, VerticalGuideRenderer);
     }
 
     public override function setup():JQuery {
+        super.setup();
         return new JQuery('<div class="component-vertical_guide"></div>');
     }
 

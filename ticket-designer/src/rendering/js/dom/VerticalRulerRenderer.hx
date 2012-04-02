@@ -6,10 +6,11 @@ import rendering.js.Html5Dom.CanvasRenderingContext2D;
 
 class VerticalRulerRenderer extends RulerRenderer {
     static function __init__() {
-        Spi.rendererFactory.addImplementation(Ruler, VerticalRulerRenderer, 'vertical');
+        Spi.rendererRegistry.addImplementation(Ruler, VerticalRulerRenderer, 'vertical');
     }
 
     public override function setup():JQuery {
+        super.setup();
         return new JQuery('<div class="renderable-vertical_ruler" style="width:20px;"><canvas width="20"></canvas></div>');
     }
 

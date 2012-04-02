@@ -6,10 +6,11 @@ import rendering.js.Html5Dom.CanvasRenderingContext2D;
 
 class HorizontalRulerRenderer extends RulerRenderer {
     static function __init__() {
-        Spi.rendererFactory.addImplementation(Ruler, HorizontalRulerRenderer, 'horizontal');
+        Spi.rendererRegistry.addImplementation(Ruler, HorizontalRulerRenderer, 'horizontal');
     }
 
     public override function setup():JQuery {
+        super.setup();
         return new JQuery('<div class="renderable-horizontal_ruler" style="height:20px; line-height:20px;"><canvas height="20"></canvas></div>');
     }
 

@@ -1,7 +1,7 @@
-class BasicStageImpl<Trenderer:ComponentRenderer, Tview:View> implements Stage {
+class BasicStageImpl<Trenderer:ComponentRenderer> implements Stage {
+    public var view(default, null):View;
+    public var size(get_size, null):Point;
     public var renderers(get_renderers, null):Iterable<ComponentRenderer>;
-    public var view(get_view, null):View;
-    public var view_:Tview;
     public var cursor(default, set_cursor):MouseCursorKind;
     var renderers_:Hash<Trenderer>;
 
@@ -37,12 +37,12 @@ class BasicStageImpl<Trenderer:ComponentRenderer, Tview:View> implements Stage {
         return renderers_;
     }
 
-    private function get_view():View {
-        return view_;
+    function get_size():Point {
+        return null;
     }
 
-    public function new(view:Tview) {
-        this.view_ = view;
+    public function new(view:View) {
         this.renderers_ = new Hash();
+        this.view = view;
     }
 }

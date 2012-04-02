@@ -6,10 +6,11 @@ class HorizontalGuideRenderer extends JSDOMComponentRenderer {
     var offset:Float;
 
     static function __init__() {
-        Spi.rendererFactory.addImplementation(HorizontalGuide, HorizontalGuideRenderer);
+        Spi.rendererRegistry.addImplementation(HorizontalGuide, HorizontalGuideRenderer);
     }
 
     public override function setup():JQuery {
+        super.setup();
         return new JQuery('<div class="component-horizontal_guide"></div>');
     }
 

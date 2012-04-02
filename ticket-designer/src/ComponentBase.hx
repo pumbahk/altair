@@ -10,7 +10,7 @@ private enum State {
 class ComponentBase<Tself:Component> implements Component {
     public var renderer(default, null):Renderer;
     public var on(default, null):Dynamic;
-    public var position(default, null):Point;
+    public var position(default, default):Point;
     public var parent(default, null):Component;
     public var defaultCursor:MouseCursorKind;
     private var draggable:Bool;

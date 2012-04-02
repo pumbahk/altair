@@ -11,6 +11,7 @@ class JSDOMView implements View {
 
     public var viewport_:JSDOMViewport;
     public var stage_:JSDOMStage;
+
     var capturingRenderer:JSDOMRenderer;
     var eventHandlerHash:Hash<JqEvent->Void>;
     var refreshQueue:Hash<Int>;
@@ -24,7 +25,21 @@ class JSDOMView implements View {
     }
 
     private function set_zoom(value:Float):Float {
-        zoom = value;
+        if (viewport_ != null) {
+            var oldViewportSize = pixelToInchP(viewport_.size);
+            var oldScrollPosition = viewport_.scrollPosition;
+            var center:Point = {
+                x:oldViewportSize.x / 2 + oldScrollPosition.x,
+                y:oldViewportSize.y / 2 + oldScrollPosition.y };
+            zoom = value;
+            var newViewportSize = pixelToInchP(viewport_.size);
+            var newScrollPosition:Point = {
+                x:center.x - newViewportSize.x / 2,
+                y:center.y - newViewportSize.y / 2 };
+            viewport_.scrollPosition = newScrollPosition;
+        } else {
+            zoom = value;
+        }
         refreshAll();
         return value;
     }
@@ -183,28 +198,33 @@ class JSDOMView implements View {
             viewport_.refresh();
         if (stage_ != null)
             stage_.refresh();
-        if (batchRefreshNestCount == 0) {
-            this.refreshQueue = new Hash();
-            for (id in renderers.keys())
-                renderers.get(id).refresh();
-        } else {
-            for (id in renderers.keys())
-                refreshQueue.set(id, 1);
+        if (renderers != null) {
+            if (batchRefreshNestCount == 0) {
+                this.refreshQueue = new Hash();
+                for (id in renderers.keys())
+                    renderers.get(id).refresh();
+            } else {
+                for (id in renderers.keys())
+                    refreshQueue.set(id, 1);
+            }
         }
     }
 
     public function new(base:JQuery, viewport:JQuery) {
+        batchRefreshNestCount = 0;
         capturingRenderer = null;
         eventHandlerHash = new Hash();
         refreshQueue = new Hash();
         renderers = new Hash();
-        viewport_ = new JSDOMViewport(this);
-        stage_ = new JSDOMStage(this);
-        viewport_.n = viewport;
-        stage_.base = base;
-        batchRefreshNestCount = 0;
 
         ppi = 114;
         zoom = 1.;
+
+        viewport_ = new JSDOMViewport(this);
+        viewport_.n = viewport;
+        stage_ = new JSDOMStage(this);
+        stage_.base = base;
+
+        refreshAll();
     }
 }

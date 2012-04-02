@@ -8,10 +8,11 @@ class TextComponentRenderer extends JSDOMComponentRenderer {
     var fontSize:Float;
 
     static function __init__() {
-        Spi.rendererFactory.addImplementation(TextComponent, TextComponentRenderer);
+        Spi.rendererRegistry.addImplementation(TextComponent, TextComponentRenderer);
     }
 
     public override function setup():JQuery {
+        super.setup();
         return new JQuery('<div class="component-text"></div>');
     }
 

@@ -1,7 +1,7 @@
 package rendering.js.dom;
 import js.JQuery;
 
-class JSDOMComponentRenderer extends JSDOMRenderer, implements ComponentRenderer{
+class JSDOMComponentRenderer extends JSDOMRenderer, implements ComponentRenderer {
     var stage_:JSDOMStage;
     public var opacity:Float;
     public var stage(get_stage, set_stage):Stage;
@@ -14,13 +14,13 @@ class JSDOMComponentRenderer extends JSDOMRenderer, implements ComponentRenderer
         if (n != null)
             n.detach();
         stage_ = cast(stage, JSDOMStage);
-        view = stage_.view_;
         if (n != null)
             n.appendTo(stage_.base);
         return stage;
     }
 
     public override function refresh(): Void {
+        super.setup();
         untyped __js__("this.n.css")("opacity", Std.string(opacity));
     }
 
@@ -36,8 +36,8 @@ class JSDOMComponentRenderer extends JSDOMRenderer, implements ComponentRenderer
             right: (e.which & 3) != 0 };
     }
 
-    public function new(id:Int) {
-        super(id);
+    public function new(id:Int, view:View) {
+        super(id, view);
         this.opacity = 1.0;
         this.stage_ = null;
     }

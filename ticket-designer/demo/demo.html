@@ -51,146 +51,90 @@
   $(function() {
     var canvasNode = $('#view .canvas')
     var viewportNode = $('#view .viewport');
-    var view = new rendering.js.dom.JSDOMView(canvasNode, viewportNode);
-    var rf = rendering.js.dom.Spi.get_rendererFactory();
-    var f = new ComponentFactory(new ComponentRenderingFacade(view.get_stage(), rf));
+    var td = new TicketDesigner(
+      new rendering.js.dom.JSDOMView(canvasNode, viewportNode)
+    );
     for (var i = 0; i < 100; i++) {
-      var tc = f.create(TextComponent);
+      var tc = td.componentFactory.create(TextComponent);
       tc.on.click.do_(function(a) { console.log(a); });
       tc.position.x = Math.random() * 8;
       tc.position.y = Math.random() * 6;
       tc.text = "test";
       tc.refresh();
     }
-    {
-      var rr = rf.create(Ruler, { variant: 'horizontal' });
-      rr.set_view(view);
-      $('#view .renderable-horizontal_ruler').replaceWith(rr.n);
-      var horizontalRuler = new Ruler(rr);
-      horizontalRuler.refresh();
-    }
-    {
-      var rr = rf.create(Ruler, { variant: 'vertical' });
-      rr.set_view(view);
-      $('#view .renderable-vertical_ruler').replaceWith(rr.n);
-      var verticalRuler = new Ruler(rr);
-      verticalRuler.refresh();
-    }
-    view.get_viewport().on.scroll.do_(function(e) {
-      horizontalRuler.offset = e.position.x;
-      verticalRuler.offset = e.position.y;
-      horizontalRuler.refresh();
-      verticalRuler.refresh();
-    });
+    $('#view .renderable-horizontal_ruler').replaceWith(td.horizontalRuler.renderer.n);
+    $('#view .renderable-vertical_ruler').replaceWith(td.verticalRuler.renderer.n);
+
     // tc.on.dragstart.do_(function(a) {});
     // tc.on.dragend.do_(function(a) {});
-    (function() {
-      var guide = null;
-      horizontalRuler.on.dragstart.do_(function(e) {
-        var viewport = view.get_viewport();
-        guide = f.create(HorizontalGuide);
-        guide.position = { x: e.position.x + viewport.scrollPosition.x,
-                           y: e.position.y + viewport.scrollPosition.y };
-        view.get_stage().set_cursor(MouseCursorKind.CROSSHAIR);
-        guide.refresh();
-      });
-      horizontalRuler.on.drag.do_(function(e) {
-        var viewport = view.get_viewport();
-        guide.position = { x: e.position.x + viewport.scrollPosition.x,
-                           y: e.position.y + viewport.scrollPosition.y };
-        guide.refresh();
-      });
-      horizontalRuler.on.dragend.do_(function(e) {
-        view.get_stage().set_cursor(MouseCursorKind.DEFAULT);
-        if (e.position.y < 0)
-          view.get_stage().remove(guide.renderer);
-      });
-    })();
-    (function() {
-      var guide = null;
-      verticalRuler.on.dragstart.do_(function(e) {
-        var viewport = view.get_viewport();
-        guide = f.create(VerticalGuide);
-        guide.position = { x: e.position.x + viewport.scrollPosition.x,
-                           y: e.position.y + viewport.scrollPosition.y };
-        view.get_stage().set_cursor(MouseCursorKind.CROSSHAIR);
-        guide.refresh();
-      });
-      verticalRuler.on.drag.do_(function(e) {
-        var viewport = view.get_viewport();
-        guide.position = { x: e.position.x + viewport.scrollPosition.x,
-                           y: e.position.y + viewport.scrollPosition.y };
-        guide.refresh();
-      });
-      verticalRuler.on.dragend.do_(function(e) {
-        view.get_stage().set_cursor(MouseCursorKind.DEFAULT);
-        if (e.position.x < 0)
-          view.get_stage().remove(guide.renderer);
-      });
-    })();
+
     function getBodyClientSize() {
       var firstChildNode = $("body > :first").get(0);
       return {
         width: document.documentElement.clientWidth - firstChildNode.offsetLeft * 2,
         height: document.documentElement.clientHeight - firstChildNode.offsetTop * 2
       };
-    };
+    }
 
     function adjustViewSize() {
       var n = $("#view");
       var size = { width: n.innerWidth(), height: n.innerHeight() };
-      var margin = { x: verticalRuler.renderer.n.outerWidth(), y: horizontalRuler.renderer.n.outerHeight() };
-      view.get_viewport().n
+      var margin = { x: td.verticalRuler.renderer.n.outerWidth(), y: td.horizontalRuler.renderer.n.outerHeight() };
+      td.view.get_viewport().n
         .css({ width: (size.width - margin.x) + "px",
                height: (size.height - margin.y) + "px" });
-      horizontalRuler.renderer.n
+      td.horizontalRuler.renderer.n
         .css({ width: (size.width - margin.x) + "px" });
-      verticalRuler.renderer.n
+      td.verticalRuler.renderer.n
         .css({ height: (size.height - margin.y) + "px" });
-      horizontalRuler.refresh();
+      td.refresh();
     }
 
     adjustViewSize();
     $(window).resize(adjustViewSize);
     $('.ui-action-zoom_in').click(function() {
-      view.set_zoom(view.zoom * 1.1);
+      td.shell.zoomIn();
     });
     $('.ui-action-zoom_out').click(function() {
-      view.set_zoom(view.zoom / 1.1);
+      td.shell.zoomOut();
     });
 
+    function toggleToolbarButton(item) {
+      $(".ui-action-function[value='" + item + "']")[0].checked = true;
+    }
 
-    var selectedFunction = null;
-    var handlers = {
-      cursor: {
-        select: function() {
-        },
-        unselect: function() {}
-      },
-      move: {
-        select: function() {
-          view.get_stage().set_cursor(MouseCursorKind.MOVE);
-        },
-        unselect: function() {
-          view.get_stage().set_cursor(MouseCursorKind.DEFAULT);
-        }
-      },
-      text: {
-        select: function() {},
-        unselect: function() {}
-      },
-      image: {
-        select: function() {},
-        unselect: function() {}
+    td.shell.operationModeCallback = function operationModeCallback(operationMode) {
+      switch (operationMode[0]) {
+      case 'CURSOR':
+        toggleToolbarButton('cursor');
+        break;
+      case 'MOVE':
+        toggleToolbarButton('move');
+        break;
+      case 'PLACE':
+        if (operationMode[2] == TextComponent)
+          toggleToolbarButton('text');
+        else if (operationMode[2] == TextComponent)
+          toggleToolbarButton('text');
+        break;
       }
-    };
+    }
 
     function selectFunction(f) {
-      if (handlers.hasOwnProperty(selectedFunction))
-        handlers[selectedFunction].unselect();
-      selectedFunction = f;
-      handlers[selectedFunction].select();
-      $(".ui-action-function[value='" + f + "']")[0].checked = true;
+      switch (f) {
+      case 'cursor':
+        td.shell.set_operationMode(OperationMode.CURSOR);
+        break;
+      case 'move':
+        td.shell.set_operationMode(OperationMode.MOVE);
+        break;
+      case 'text':
+        td.shell.set_operationMode(OperationMode.PLACE(TextComponent));
+        break;
+      case 'image':
+        td.shell.set_operationMode(OperationMode.PLACE(TextComponent));
+        break;
+      }
     }
 
     $('.ui-action-function').click(function() {
