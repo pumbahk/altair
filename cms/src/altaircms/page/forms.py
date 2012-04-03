@@ -6,6 +6,7 @@ from wtforms import widgets
 from wtforms import validators
 from altaircms.layout.models import Layout
 from altaircms.page.models import Page
+from altaircms.event.models import Event
 from altaircms.lib.formhelpers import dynamic_query_select_field_factory
 
 """
@@ -40,5 +41,6 @@ class PageForm(Form):
     keywords = fields.TextField()
     tags = fields.TextField(label=u"タグ")
     layout = dynamic_query_select_field_factory(Layout, allow_blank=False)
-    event_id = fields.IntegerField(label=u"", widget=widgets.HiddenInput())
+    # event_id = fields.IntegerField(label=u"", widget=widgets.HiddenInput())
+    event = dynamic_query_select_field_factory(Event, allow_blank=True, label=u"イベント")
     parent = dynamic_query_select_field_factory(Page, allow_blank=True, label=u"親ページ")

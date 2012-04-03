@@ -2,7 +2,7 @@
   ## todo refactoring(remove layout setting)
   ## todo performancesの表示する数を調整？
 
-    <div style="TEXT-ALIGN: center">${h.base.nl_to_br(event.subtitle)|n}</div>
+    <div style="TEXT-ALIGN: center">${h.base.nl_to_br(event.subtitle or "")|n}</div>
     <div style="TEXT-ALIGN: center"><font size="4" face="Arial, Verdana"><b>${h.base.nl_to_br(event.title)|n}</b></font></div>
 	<div style="TEXT-ALIGN: left" align="left">${h.base.nl_to_br(event.description)|n}</div>
     <div style="TEXT-ALIGN: left" align="left">&nbsp;</div><font face="Arial, Verdana"><b>

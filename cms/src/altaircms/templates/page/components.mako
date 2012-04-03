@@ -5,6 +5,9 @@
         <th class="span2">ページ名</th><td class="span8">${page.title}</td><td class="span8">${params["title"]}</td>
       </tr>
       <tr>
+        <th class="span2">所属イベント</th><td>${page.event.title if page.event else ""}</td><td class="span8">${params["event"]}</td>
+      </tr>
+      <tr>
         <th class="span2">親ページ</th><td>${page.title}</td><td class="span8">${params["parent"]}</td>
       </tr>
       <tr>

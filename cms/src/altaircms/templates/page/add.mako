@@ -56,13 +56,13 @@
       <table class="table">
         <tbody>
           ${formfield("title")}
+          ${formfield("event")}
           ${formfield("parent")}
           ${formfield("url")}
           ${formfield("description")}
           ${formfield("keywords")}
           ${formfield("tags")}
           ${formfield("layout")}
-          ${h.base.hidden_input("event_id", event.id)|n}
         </tbody>
       </table>
 	  <button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> Create</button>
