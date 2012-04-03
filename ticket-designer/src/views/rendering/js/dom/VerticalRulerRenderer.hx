@@ -33,8 +33,8 @@ class VerticalRulerRenderer extends RulerRenderer {
                 ctx.beginPath();
                 ctx.moveTo(0, y);
                 ctx.lineTo(20, y);
-                var text = Std.string(Std.int(i));
                 ctx.stroke();
+                var text = Std.string(Std.int(i));
                 ctx.fillText(text, 20 - ctx.measureText(text).width, y + 10);
             } else {
                 ctx.beginPath();
