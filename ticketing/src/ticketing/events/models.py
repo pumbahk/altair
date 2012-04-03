@@ -78,6 +78,10 @@ class Performance(Base):
     venue_id = Column(BigInteger, ForeignKey('Venue.id'))
     venue = relationship('Venue')
 
+    @staticmethod
+    def get(performance_id):
+        return session.query(Performance).filter(Performance.id == performance_id).first()
+
 event_table = Table(
     'Event', Base.metadata,
     Column('id', BigInteger, primary_key=True),
