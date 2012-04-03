@@ -178,7 +178,7 @@
                 var e = $(e);
                 return {
                     label: get_text_or_val(e, ".label"),
-                    content: get_text_or_val(e, ".link")
+                    link: get_text_or_val(e, ".link")
                 };
             });
         }, 

@@ -33,9 +33,14 @@ def url_field_validator(form, field):
     if field.data.startswith("/") or "://" in field.data :
         raise validators.ValidationError(u"先頭に/をつけたり, http://foo.bar.comのようなurlにはしないでください.(正しい例:top/music/abc)")
 
+def url_not_conflict(form, field):
+    if Page.query.filter_by(url=field.data).count() > 0:
+        raise validators.ValidationError(u"%sは既に登録されてます" % field.data)
+
 class PageForm(Form):
     # url = fields.TextField(validators=[url_field_validator], placeholder="top/music/abc")
-    url = fields.TextField(validators=[url_field_validator, validators.Required()], label=u"URLの一部(e.g. top/music)")
+    url = fields.TextField(validators=[ validators.Required(), url_field_validator,url_not_conflict],
+                           label=u"URLの一部(e.g. top/music)")
     title = fields.TextField(label=u"ページタイトル", validators=[validators.Required()])
     description = fields.TextField(label=u"概要")
     keywords = fields.TextField()

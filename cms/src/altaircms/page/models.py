@@ -76,7 +76,7 @@ class Page(PublishUnpublishMixin,
     title = Column(Unicode, default=u"")
     keywords = Column(Unicode, default=u"")
     description = Column(Unicode, default=u"")
-    url = Column(String)
+    url = Column(String, unique=True, index=True)
     version = Column(Integer)
 
     site_id = Column(Integer, ForeignKey("site.id"))
