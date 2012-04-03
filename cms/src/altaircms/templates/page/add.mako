@@ -56,6 +56,7 @@
       <table class="table">
         <tbody>
           ${formfield("title")}
+          ${formfield("parent")}
           ${formfield("url")}
           ${formfield("description")}
           ${formfield("keywords")}

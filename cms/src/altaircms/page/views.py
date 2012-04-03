@@ -38,13 +38,22 @@ class AddView(object):
         form = PageForm()
         return {"form":form, "event":event}
 
-    @view_config(request_method="POST")
+    @view_config(request_method="POST", renderer="altaircms:templates/page/add.mako")
     def create_page(self):
-        page_view = CreateView(self.request.context, self.request)
-        return page_view.create(after_finish=self._after_finish)
-
-    def _after_finish(self, request):
-        return HTTPFound(self.request.route_path("event", id=self.event_id))
+        form = PageForm(self.request.POST)
+        if form.validate():
+            PageRESTAPIView(self.request).create()
+            ## flash messsage
+            FlashMessage.success("page created", request=self.request)
+            return HTTPFound(self.request.route_path("event", id=self.event_id))
+        else:
+            event_id = self.request.matchdict["event_id"]
+            event = Event.query.filter(Event.id==event_id).one()
+            return {"form":form, "event":event}
+        return dict(
+            pages=PageRESTAPIView(self.request).read(),
+            form=form
+            )
 
 @view_defaults(permission="page_create", decorator=with_bootstrap)
 class CreateView(object):
@@ -53,14 +62,12 @@ class CreateView(object):
         self.request = request
 
     @view_config(route_name="page", renderer='altaircms:templates/page/list.mako', request_method="POST")
-    def create(self, after_finish=None):
+    def create(self):
         form = PageForm(self.request.POST)
         if form.validate():
             PageRESTAPIView(self.request).create()
             ## flash messsage
             FlashMessage.success("page created", request=self.request)
-            if after_finish:
-                return after_finish(self.request)
             return HTTPFound(self.request.route_path("page"))
         return dict(
             pages=PageRESTAPIView(self.request).read(),

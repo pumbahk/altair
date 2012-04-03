@@ -5,6 +5,9 @@
         <th class="span2">ページ名</th><td class="span8">${page.title}</td><td class="span8">${params["title"]}</td>
       </tr>
       <tr>
+        <th class="span2">親ページ</th><td>${page.title}</td><td class="span8">${params["parent"]}</td>
+      </tr>
+      <tr>
         <th class="span2">description</th><td>${page.description}</td><td  class="span8">${params["description"]}</td>
       </tr>
       <tr>

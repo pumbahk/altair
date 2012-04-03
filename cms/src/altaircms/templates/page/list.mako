@@ -18,6 +18,7 @@
 
   $(function(){
     $("[name='layout']").live("change", render_demo);
+    render_demo.call($("[name='layout']"));
   });
 </script>
 
