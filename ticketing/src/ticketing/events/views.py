@@ -83,6 +83,7 @@ class Events(BaseView):
         app_structs = record_to_multidict(event)
         f = EventForm()
         f.process(app_structs)
+        print app_structs
         return {
             'form' :f,
             'event' : event

@@ -23,10 +23,9 @@ def record_to_multidict(self, filters=dict()):
     app_struct = record_to_appstruct(self)
     print app_struct.items()
     def _convert(key, value):
-        print key
-        print value
+
         if value is None:
-            return (key, None)
+            return (key, '')
         elif isinstance(value, str) or isinstance(value, unicode):
             return (key, value)
         elif isinstance(value, date) or isinstance(value, datetime):
@@ -42,6 +41,7 @@ def merge_session_with_post(session, post, filters={}):
     def _set_attrs(session, values):
         for key,value in values:
             filter = filters.get(key)
+
             if filter is not None:
                 value = filter(session, value)
                 setattr(session, key, value)

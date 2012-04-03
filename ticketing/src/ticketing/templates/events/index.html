@@ -1,6 +1,7 @@
 <%inherit file="../layout.html" />
 <%block name="title">イベント一覧</%block>
 
+
 <div class="row-fluid">
   <span class="span2">
       <div class="well">
@@ -28,7 +29,7 @@
           </button>
           <ul class="dropdown-menu">
               <li><a href=""><i class="icon-plus"></i>コピー</a></li>
-              <li><a href=""><i class="icon-plus"></i>新規パフォーマンス</a></li>
+              <li><a href="${request.route_path('performances.new', event_id=event.id)}" class="new-performance"><i class="icon-plus"></i>新規パフォーマンス</a></li>
               <li><a href=""><i class="icon-minus"></i>削除</a></li>
           </ul>
         </div>
@@ -53,7 +54,7 @@
                 <td><input type="checkbox" /></td>
                 <td><a href="${request.route_path('performances.show', performance_id=performance.id)}">${performance.id}</a></td>
                 <td><a href="${request.route_path('performances.show', performance_id=performance.id)}">${performance.name}</a></td>
-                <td><a href="#">${performance.venue.name}</td>
+                <td><a href="#">${performance.venue.name}</a></td>
                 <td>${performance.open_on}</td>
                 <td>${performance.start_on}</td>
                 <td>${performance.end_on}</td>
@@ -80,7 +81,19 @@
   </span>
 </div>
 
-
+<script type="text/javascript">
+    $('.new-performance').click(function(e) {
+        e.preventDefault();
+        var href = $(e.target).attr('href');
+        if (href.indexOf('#') == 0) {
+            $(href).modal('open');
+        } else {
+            $.get(href, function(data) {
+                $('<div class="modal fade" >' + data + '</div>').modal();
+            });
+        }
+    });
+</script>
 
 <%include file="_list.html" />
 
