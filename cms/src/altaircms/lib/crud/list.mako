@@ -28,11 +28,18 @@
 <div class="row">
 <h4>${master_env.title}一覧</h4>
 <table class="table table-striped">
+  <thead>
+	<tr>
+      %for k in display_fields:
+      <th>${getattr(form,k).label}</th>
+      %endfor
+	</tr>
+  </thead>
     <tbody>
         %for x in xs:
             <tr>
               %for k in display_fields:
-    			  <td>${k}</td><td>${getattr(x,k) or "-"}</td>
+			    <td>${getattr(x,k) or "-"}</td>
               %endfor
               <td>
               <form action="${request.route_path(master_env._join("delete"),id=x.id)}" method="POST">
