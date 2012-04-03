@@ -28,6 +28,7 @@
           </button>
           <ul class="dropdown-menu">
               <li><a href=""><i class="icon-plus"></i>コピー</a></li>
+              <li><a href=""><i class="icon-plus"></i>新規パフォーマンス</a></li>
               <li><a href=""><i class="icon-minus"></i>削除</a></li>
           </ul>
         </div>
@@ -50,8 +51,8 @@
             % for performance in event.performances:
               <tr>
                 <td><input type="checkbox" /></td>
-                <td><a href="${request.route_path('events.show', event_id=1)}">${performance.id}</a></td>
-                <td><a href="${request.route_path('events.show', event_id=1)}">${performance.name}</a></td>
+                <td><a href="${request.route_path('performances.show', performance_id=performance.id)}">${performance.id}</a></td>
+                <td><a href="${request.route_path('performances.show', performance_id=performance.id)}">${performance.name}</a></td>
                 <td><a href="#">${performance.venue.name}</td>
                 <td>${performance.open_on}</td>
                 <td>${performance.start_on}</td>
