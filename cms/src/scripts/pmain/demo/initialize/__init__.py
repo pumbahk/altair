@@ -37,7 +37,6 @@ def init():
         layout_gallery.client_id = 1 ##
         DBSession.add(layout_gallery)
 
-        from altaircms.layout.models import Layout
         layout2 = Layout()
         layout2.id = 3
         layout2.title = "original"
@@ -46,6 +45,23 @@ def init():
         layout2.site_id = 1 ##
         layout2.client_id = 1 ##
         DBSession.add(layout2)
+
+        ## simple
+        layout_col2 = Layout()
+        layout_col2.title = "col2"
+        layout_col2.template_filename = "col2.mako"
+        layout_col2.blocks = '[["header"],["left", "right"],["footer"]]'
+        layout_col2.site_id = 1 ##
+        layout_col2.client_id = 1 ##
+        DBSession.add(layout_col2)
+
+        layout_col3 = Layout()
+        layout_col3.title = "col3"
+        layout_col3.template_filename = "col3.mako"
+        layout_col3.blocks = '[["header"],["left1", "right1"],["left2", "center", "right2"], ["footer"]]'
+        layout_col3.site_id = 1 ##
+        layout_col3.client_id = 1 ##
+        DBSession.add(layout_col3)
 
     from . import demo1
     demo1.init()
