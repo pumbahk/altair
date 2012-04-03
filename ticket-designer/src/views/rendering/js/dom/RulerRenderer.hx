@@ -30,8 +30,8 @@ class RulerRenderer extends JSDOMRenderer {
             source: this,
             cause: e,
             position: view_.pixelToInchP(
-                { x: e.pageX - view_.stage_.basePageOffset.x,
-                  y: e.pageY - view_.stage_.basePageOffset.y }),
+                { x: e.pageX - view_.stage_.screenOffset.x,
+                  y: e.pageY - view_.stage_.screenOffset.y }),
             screenPosition: { x: 0. + e.pageX, y: 0. + e.pageY },
             left: (e.which & 1) != 0,
             middle: (e.which & 2) != 0,

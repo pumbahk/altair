@@ -8,6 +8,7 @@ class JSDOMViewport implements Viewport {
     public var scrollPosition(get_scrollPosition, set_scrollPosition):Point;
     public var size(get_size, null):Point;
     public var n(default, set_n):JQuery;
+    public var screenOffset(default, null):Point;
 
     private var view_:JSDOMView;
     private var onScroll:JqEvent -> Void;
@@ -19,6 +20,8 @@ class JSDOMViewport implements Viewport {
         if (n != null) {
             refresh();
             n.bind('scroll', onScroll);
+            var tmp = n.offset();
+            this.screenOffset = { x: 0. + tmp.left, y: 0. + tmp.top };
         }
         return value;
     }
@@ -62,5 +65,6 @@ class JSDOMViewport implements Viewport {
             refresh();
             on.scroll.call(this, { source:this, cause: null, position: scrollPosition });
         };
+        this.screenOffset = null;
     }
 }

@@ -22,6 +22,8 @@
       <table class="table">
         <tbody>
           ${formfield("title")}
+          ${formfield("event")}
+          ${formfield("parent")}
           ${formfield("url")}
           ${formfield("description")}
           ${formfield("keywords")}

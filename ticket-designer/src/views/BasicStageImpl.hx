@@ -5,6 +5,7 @@ class BasicStageImpl<Trenderer:ComponentRenderer> implements Stage {
     public var size(get_size, null):Point;
     public var renderers(get_renderers, null):Iterable<ComponentRenderer>;
     public var cursor(default, set_cursor):MouseCursorKind;
+    public var screenOffset(default, null):Point;
     var renderers_:Hash<Trenderer>;
 
     function set_cursor(value:MouseCursorKind):MouseCursorKind {

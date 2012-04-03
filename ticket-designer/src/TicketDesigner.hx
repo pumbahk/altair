@@ -21,58 +21,44 @@ class TicketDesigner {
 
     private function horizontalRuler_dragstart(e:MouseEvent) {
         horizontalGuide = componentFactory.create(HorizontalGuide);
-        horizontalGuide.position = {
-            x: e.position.x + view.viewport.scrollPosition.x,
-            y: e.position.y + view.viewport.scrollPosition.y
-        };
+        horizontalGuide.position = e.position;
         view.stage.cursor = MouseCursorKind.CROSSHAIR;
         horizontalGuide.refresh();
     }
 
     private function horizontalRuler_drag(e:MouseEvent) {
-        verticalGuide = componentFactory.create(VerticalGuide);
-        verticalGuide.position = {
-            x: e.position.x + view.viewport.scrollPosition.x,
-            y: e.position.y + view.viewport.scrollPosition.y
-        };
-        verticalGuide.refresh();
+        horizontalGuide.position = e.position;
+        horizontalGuide.refresh();
     }
 
     private function horizontalRuler_dragend(e:MouseEvent) {
         view.stage.cursor = MouseCursorKind.DEFAULT;
-        if (e.position.y < 0)
-            view.stage.remove(cast(verticalGuide.renderer, ComponentRenderer));
+        if (e.screenPosition.y - view.viewport.screenOffset.y < 0)
+            view.stage.remove(cast(horizontalGuide.renderer, ComponentRenderer));
     }
 
     private function verticalRuler_dragstart(e:MouseEvent) {
         verticalGuide = componentFactory.create(VerticalGuide);
-        verticalGuide.position = {
-            x: e.position.x + view.viewport.scrollPosition.x,
-            y: e.position.y + view.viewport.scrollPosition.y
-        };
+        verticalGuide.position = e.position;
         view.stage.cursor = MouseCursorKind.CROSSHAIR;
         verticalGuide.refresh();
     }
 
     private function verticalRuler_drag(e:MouseEvent) {
-        verticalGuide = componentFactory.create(VerticalGuide);
-        verticalGuide.position = {
-            x: e.position.x + view.viewport.scrollPosition.x,
-            y: e.position.y + view.viewport.scrollPosition.y
-        };
+        verticalGuide.position = e.position;
         verticalGuide.refresh();
     }
 
     private function verticalRuler_dragend(e:MouseEvent) {
         view.stage.cursor = MouseCursorKind.DEFAULT;
-        if (e.position.x < 0)
+        if (e.screenPosition.x - view.viewport.screenOffset.x < 0)
             view.stage.remove(cast(verticalGuide.renderer, ComponentRenderer));
     }
 
     private function createHorizontalRuler():Ruler {
         var ruler:Ruler = new Ruler(rendererFactory.create(Ruler, { variant: 'horizontal' }));
         ruler.on.dragstart.do_(this.horizontalRuler_dragstart);
-        ruler.on.drag.do_(this.horizontalRuler_dragend);
+        ruler.on.drag.do_(this.horizontalRuler_drag);
         ruler.on.dragend.do_(this.horizontalRuler_dragend);
         return ruler;
     }
@@ -80,7 +66,7 @@ class TicketDesigner {
     private function createVerticalRuler():Ruler {
         var ruler:Ruler = new Ruler(rendererFactory.create(Ruler, { variant: 'vertical' }));
         ruler.on.dragstart.do_(this.verticalRuler_dragstart);
-        ruler.on.drag.do_(this.verticalRuler_dragend);
+        ruler.on.drag.do_(this.verticalRuler_drag);
         ruler.on.dragend.do_(this.verticalRuler_dragend);
         return ruler;
     }

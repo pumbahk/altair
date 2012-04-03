@@ -36,8 +36,8 @@ class DetailWidget(Widget):
         @not_support_if_keyerror("detail widget: %(err)s")
         def detail_render():
             request = bsettings.extra["request"]
-            performances = bsettings.extra["performances"]
-            event = bsettings.extra["event"]
+            performances = bsettings.extra.get("performances", [])
+            event = bsettings.extra.get("event")
             render =  getattr(renderable, self.kind)
             return render(self, request, ctx={"event": event, "performances": performances}).render()
         bsettings.add(bname, detail_render)

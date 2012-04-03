@@ -5,7 +5,6 @@ import js.JQuery;
 class JSDOMStage extends BasicStageImpl<JSDOMComponentRenderer>, implements MouseEventsHandler {
     public var id(default, null):Int;
     public var n(default, set_n):JQuery;
-    public var basePageOffset(default, null):Point;
     public var virtualSize:Point;
 
     public var onPress:JqEvent->Void;
@@ -35,7 +34,7 @@ class JSDOMStage extends BasicStageImpl<JSDOMComponentRenderer>, implements Mous
 
     public function recalculateBasePageOffset():Void {
         var offset = n.offset();
-        basePageOffset = { x:0. + offset.left, y:0. + offset.top };
+        screenOffset = { x:0. + offset.left, y:0. + offset.top };
     }
 
     override function get_size():Point {
@@ -111,8 +110,8 @@ class JSDOMStage extends BasicStageImpl<JSDOMComponentRenderer>, implements Mous
             source: this,
             cause: e,
             position: cast(view).pixelToInchP(
-                { x: cast(e.pageX, Float) - basePageOffset.x,
-                  y: cast(e.pageY, Float) - basePageOffset.y }),
+                { x: cast(e.pageX, Float) - screenOffset.x,
+                  y: cast(e.pageY, Float) - screenOffset.y }),
             screenPosition: { x: 0. + e.pageX,  y: 0. + e.pageY },
             left: (e.which & 1) != 0,
             middle: (e.which & 2) != 0,

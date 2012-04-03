@@ -34,8 +34,8 @@ class JSDOMComponentRenderer extends JSDOMRenderer, implements ComponentRenderer
             source: this,
             cause: e,
             position: view_.pixelToInchP(
-                { x: e.pageX - stage_.basePageOffset.x,
-                  y: e.pageY - stage_.basePageOffset.y }),
+                { x: e.pageX - stage_.screenOffset.x,
+                  y: e.pageY - stage_.screenOffset.y }),
             screenPosition: { x: 0. + e.pageX,  y: 0. + e.pageY },
             left: (e.which & 1) != 0,
             middle: (e.which & 2) != 0,

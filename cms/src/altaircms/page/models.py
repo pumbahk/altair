@@ -86,9 +86,14 @@ class Page(PublishUnpublishMixin,
     structure = Column(String, default=DEFAULT_STRUCTURE)
     hash_url = Column(String(length=32), default=None)
 
-    def __repr__(self):
-        return '<%s id=%s %s>' % (self.__class__.__name__, self.id, self.url)
+    # def __repr__(self):
+    #     return '<%s id=%s %s>' % (self.__class__.__name__, self.id, self.url)
 
+    def __repr__(self):
+        return unicode(self.title)
+
+    def __unicode__(self):
+        return u'%s(%s)' % (self.title, self.url)
 
     def has_widgets(self):
         return self.structure != self.DEFAULT_STRUCTURE
