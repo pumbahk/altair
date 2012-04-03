@@ -12,8 +12,8 @@ class JSDOMView implements View {
     public var viewport_:JSDOMViewport;
     public var stage_:JSDOMStage;
 
-    var capturing:MouseEventsHandler;
-    var eventHandlerHash:Hash<JqEvent->Void>;
+    public var mouseEventsHandlerManager(default, null):MouseEventsHandlerManager;
+
     var refreshQueue:Hash<Int>;
     var batchRefreshNestCount:Int;
     var renderers:Hash<JSDOMRenderer>;
@@ -57,60 +57,6 @@ class JSDOMView implements View {
             viewport_.dispose();
         if (stage_ != null)
             stage_.dispose();
-    }
-
-    public function captureMouse(handlerObject:MouseEventsHandler):Void {
-        if (capturing != null)
-            throw new IllegalStateException("mouse has already been captured by " + capturing);
-        capturing = handlerObject;
-        if (capturing.onPress != null)
-            new JQuery(Lib.document).bind('mousedown', capturing.onPress);
-        if (capturing.onRelease != null)
-            new JQuery(Lib.document).bind('mouseup', capturing.onRelease);
-        if (capturing.onMouseMove != null)
-            new JQuery(Lib.document).bind('mousemove', capturing.onMouseMove);
-    }
-
-    public function releaseMouse():Void {
-        if (capturing == null)
-            return;
-        if (capturing.onPress != null)
-            new JQuery(Lib.document).unbind('mousedown', capturing.onPress);
-        if (capturing.onRelease != null)
-            new JQuery(Lib.document).unbind('mouseup', capturing.onRelease);
-        if (capturing.onMouseMove != null)
-            new JQuery(Lib.document).unbind('mousemove', capturing.onMouseMove);
-        capturing = null;
-    }
-
-    private static function buildEventHandlerKey(handlerObject:MouseEventsHandler, eventName:String):String {
-        return Std.string(handlerObject.id) + ":" + eventName;
-    }
-
-    public function bindEvent(handlerObject:MouseEventsHandler, eventName:String, handler:JqEvent->Void) {
-        var key = buildEventHandlerKey(handlerObject, eventName);
-        if (eventHandlerHash.get(key) != null)
-            throw new IllegalStateException("event " + eventName + " is already bound");
-
-        var lambda = function(e:JqEvent) {
-            if (capturing == null
-                    || capturing.n[0] == e.target) {
-                handler(e);
-                return false;
-            }
-            return true;
-        };
-        eventHandlerHash.set(key, untyped lambda);
-        handlerObject.n.bind(eventName, untyped lambda);
-    }
-
-    public function unbindEvent(handlerObject:MouseEventsHandler, eventName:String) {
-        var key = buildEventHandlerKey(handlerObject, eventName);
-        var handler = eventHandlerHash.get(key);
-        if (handler == null)
-            throw new IllegalStateException("event " + eventName + " is not bound yet");
-        handlerObject.n.unbind(eventName, handler);
-        eventHandlerHash.remove(key);
     }
 
     public function pixelToInch(value:Float):Float {
@@ -212,10 +158,9 @@ class JSDOMView implements View {
 
     public function new(base:JQuery, viewport:JQuery) {
         batchRefreshNestCount = 0;
-        capturing = null;
-        eventHandlerHash = new Hash();
         refreshQueue = new Hash();
         renderers = new Hash();
+        mouseEventsHandlerManager = new MouseEventsHandlerManager();
 
         ppi = 114;
         zoom = 1.;

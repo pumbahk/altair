@@ -16,6 +16,7 @@ class ComponentBase<Tself:Component> implements Component {
     public var size(default, default):Point;
     public var parent(default, null):Component;
     public var defaultCursor:MouseCursorKind;
+    public var selected(default, set_selected):Bool;
     private var draggable:Bool;
     private var state:State;
     var previousCursor:MouseCursorKind;
@@ -39,6 +40,11 @@ class ComponentBase<Tself:Component> implements Component {
         this.defaultCursor = MouseCursorKind.DEFAULT;
 
         bindEvents();
+    }
+
+    private function set_selected(value:Bool):Bool {
+        selected = value;
+        return value;
     }
 
     function bindEvents() {

@@ -2,24 +2,18 @@ package views.rendering.js.dom;
 
 import js.JQuery;
 
-class JSDOMRenderer implements Renderer, implements MouseEventsHandler {
+class JSDOMRenderer implements Renderer {
     public var id(default, null):Int;
     public var n(default, null):JQuery;
     public var view(default, null):View;
     public var innerRenderSize(get_innerRenderSize, null):Point;
     public var outerRenderSize(get_outerRenderSize, null):Point;
 
-    public var onPress:JqEvent->Void;
-    public var onRelease:JqEvent->Void;
-    public var onMouseMove:JqEvent->Void;
-    public var onMouseOut:JqEvent->Void;
+    var mouseEventsHandler:MouseEventsHandler;
 
     var view_:JSDOMView;
 
-    var onPressHandler:Event->Void;
-    var onReleaseHandler:Event->Void;
-    var onMouseMoveHandler:Event->Void;
-    var onMouseOutHandler:Event->Void;
+    var handlers:Array<Event->Void>;
 
     var innerRenderSize_:Point;
     var outerRenderSize_:Point;
@@ -44,11 +38,11 @@ class JSDOMRenderer implements Renderer, implements MouseEventsHandler {
     }
 
     public function captureMouse():Void {
-        view_.captureMouse(this);
+        view_.mouseEventsHandlerManager.captureMouse(mouseEventsHandler);
     }
 
     public function releaseMouse():Void {
-        view_.releaseMouse();
+        view_.mouseEventsHandlerManager.releaseMouse();
     }
 
     public function realize(renderable:Dynamic):Void {}
@@ -64,77 +58,48 @@ class JSDOMRenderer implements Renderer, implements MouseEventsHandler {
         return null;
     }
 
-    public function bind(event_kind:EventKind, handler:Event -> Void):Void {
-        switch (event_kind) {
-        case PRESS:
-            if (onPressHandler == null) {
-                view_.bindEvent(this, 'mousedown', onPress);
-            } else {
-                if (handler != null)
-                    throw new IllegalStateException("event is already bound");
-                view_.unbindEvent(this, 'mousedown');
-            }
-            onPressHandler = handler;
-        case RELEASE:
-            if (onReleaseHandler == null) {
-                view_.bindEvent(this, 'mouseup', onRelease);
-            } else {
-                if (handler != null)
-                    throw new IllegalStateException("event is already bound");
-                view_.unbindEvent(this, 'mouseup');
-            }
-            onReleaseHandler = handler;
-        case MOUSEMOVE:
-            if (onMouseMoveHandler == null) {
-                view_.bindEvent(this, 'mousemove', onMouseMove);
-            } else {
-                if (handler != null)
-                    throw new IllegalStateException("event is already bound");
-                view_.unbindEvent(this, 'mousemove');
-            }
-            onMouseMoveHandler = handler;
-        case MOUSEOUT:
-            if (onMouseOutHandler == null) {
-                view_.bindEvent(this, 'mouseout', onMouseOut);
-            } else {
-                if (handler != null)
-                    throw new IllegalStateException("event is already bound");
-                view_.unbindEvent(this, 'mouseout');
-            }
-            onMouseOutHandler = handler;
+    public function bind(eventKind:EventKind, handler:Event -> Void):Void {
+        var view_ = cast(view, JSDOMView);
+        var existingHandler = handlers[Type.enumIndex(eventKind)];
+        if (existingHandler == null) {
+            view_.mouseEventsHandlerManager.bindEvent(mouseEventsHandler, eventKind);
+        } else {
+            if (handler != null)
+                throw new IllegalStateException("event is already bound");
+            view_.mouseEventsHandlerManager.unbindEvent(mouseEventsHandler, eventKind);
         }
+        handlers[Type.enumIndex(eventKind)] = handler;
     }
 
     public function new(id:Int, view:View) {
         this.id = id;
         this.view = view;
+        this.handlers = [ null, null, null, null ];
         this.n = setup();
 
-        this.onPressHandler = null;
-        this.onReleaseHandler = null;
-        this.onMouseMoveHandler = null;
-        this.onMouseOutHandler = null;
-
-        var me = this;
-        this.onPress = function (e:JqEvent):Void {
-            if (me.onPressHandler != null)
-                me.onPressHandler(me.createMouseEvent(e));
-        };
-
-        this.onMouseMove = function(e:JqEvent):Void {
-            if (me.onMouseMoveHandler != null)
-                me.onMouseMoveHandler(me.createMouseEvent(e));
-        };
-
-        this.onMouseOut = function(e:JqEvent):Void {
-            if (me.onMouseOutHandler != null)
-                me.onMouseOutHandler(me.createMouseEvent(e));
-        };
-
-        this.onRelease = function(e:JqEvent):Void {
-            if (me.onReleaseHandler != null)
-                me.onReleaseHandler(me.createMouseEvent(e));
-        };
+        this.mouseEventsHandler = cast(view, JSDOMView).mouseEventsHandlerManager.registerHandler(new MouseEventsHandler(
+            n,
+            function (e:JqEvent):Void {
+                var handlerFunction = handlers[Type.enumIndex(EventKind.PRESS)];
+                if (handlerFunction != null)
+                    handlerFunction(createMouseEvent(e));
+            },
+            function(e:JqEvent):Void {
+                var handlerFunction = handlers[Type.enumIndex(EventKind.RELEASE)];
+                if (handlerFunction != null)
+                    handlerFunction(createMouseEvent(e));
+            },
+            function(e:JqEvent):Void {
+                var handlerFunction = handlers[Type.enumIndex(EventKind.MOUSEMOVE)];
+                if (handlerFunction != null)
+                    handlerFunction(createMouseEvent(e));
+            },
+            function(e:JqEvent):Void {
+                var handlerFunction = handlers[Type.enumIndex(EventKind.MOUSEOUT)];
+                if (handlerFunction != null)
+                    handlerFunction(createMouseEvent(e));
+            }
+        ));
     }
 
     public function toString() {

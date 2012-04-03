@@ -2,20 +2,13 @@ package views.rendering.js.dom;
 
 import js.JQuery;
 
-class JSDOMStage extends BasicStageImpl<JSDOMComponentRenderer>, implements MouseEventsHandler {
-    public var id(default, null):Int;
+class JSDOMStage extends BasicStageImpl<JSDOMComponentRenderer> {
     public var n(default, set_n):JQuery;
     public var virtualSize:Point;
 
-    public var onPress:JqEvent->Void;
-    public var onRelease:JqEvent->Void;
-    public var onMouseMove:JqEvent->Void;
-    public var onMouseOut:JqEvent->Void;
+    var mouseEventsHandler:MouseEventsHandler;
 
-    var onPressHandler:Event->Void;
-    var onReleaseHandler:Event->Void;
-    var onMouseMoveHandler:Event->Void;
-    var onMouseOutHandler:Event->Void;
+    var handlers:Array<Event->Void>;
 
     public function refresh():Void {
         var actualSizeInPixel = cast(view, JSDOMView).inchToPixelP(virtualSize);
@@ -26,9 +19,37 @@ class JSDOMStage extends BasicStageImpl<JSDOMComponentRenderer>, implements Mous
     }
 
     private function set_n(value:JQuery):JQuery {
+        if (n != null)
+            cast(view, JSDOMView).mouseEventsHandlerManager.unregisterHandler(mouseEventsHandler);
+
         n = value;
         recalculateBasePageOffset();
         virtualSize = cast(view, JSDOMView).pixelToInchP({ x:0. + n.innerWidth(), y:0. + n.innerHeight() });
+
+        this.mouseEventsHandler = cast(view, JSDOMView).mouseEventsHandlerManager.registerHandler(new MouseEventsHandler(
+            n,
+            function (e:JqEvent):Void {
+                var handlerFunction = handlers[Type.enumIndex(EventKind.PRESS)];
+                if (handlerFunction != null)
+                    handlerFunction(createMouseEvent(e));
+            },
+            function(e:JqEvent):Void {
+                var handlerFunction = handlers[Type.enumIndex(EventKind.RELEASE)];
+                if (handlerFunction != null)
+                    handlerFunction(createMouseEvent(e));
+            },
+            function(e:JqEvent):Void {
+                var handlerFunction = handlers[Type.enumIndex(EventKind.MOUSEMOVE)];
+                if (handlerFunction != null)
+                    handlerFunction(createMouseEvent(e));
+            },
+            function(e:JqEvent):Void {
+                var handlerFunction = handlers[Type.enumIndex(EventKind.MOUSEOUT)];
+                if (handlerFunction != null)
+                    handlerFunction(createMouseEvent(e));
+            }
+        ));
+
         return value;
     }
 
@@ -56,53 +77,24 @@ class JSDOMStage extends BasicStageImpl<JSDOMComponentRenderer>, implements Mous
     }
 
     public override function captureMouse():Void {
-        cast(view, JSDOMView).captureMouse(this);
+        cast(view, JSDOMView).mouseEventsHandlerManager.captureMouse(mouseEventsHandler);
     }
 
     public override function releaseMouse():Void {
-        cast(view, JSDOMView).releaseMouse();
+        cast(view, JSDOMView).mouseEventsHandlerManager.releaseMouse();
     }
 
-    public override function bind(event_kind:EventKind, handler:Event -> Void):Void {
+    public override function bind(eventKind:EventKind, handler:Event -> Void):Void {
         var view_ = cast(view, JSDOMView);
-        switch (event_kind) {
-        case PRESS:
-            if (onPressHandler == null) {
-                view_.bindEvent(this, 'mousedown', onPress);
-            } else {
-                if (handler != null)
-                    throw new IllegalStateException("event is already bound");
-                view_.unbindEvent(this, 'mousedown');
-            }
-            onPressHandler = handler;
-        case RELEASE:
-            if (onReleaseHandler == null) {
-                view_.bindEvent(this, 'mouseup', onRelease);
-            } else {
-                if (handler != null)
-                    throw new IllegalStateException("event is already bound");
-                view_.unbindEvent(this, 'mouseup');
-            }
-            onReleaseHandler = handler;
-        case MOUSEMOVE:
-            if (onMouseMoveHandler == null) {
-                view_.bindEvent(this, 'mousemove', onMouseMove);
-            } else {
-                if (handler != null)
-                    throw new IllegalStateException("event is already bound");
-                view_.unbindEvent(this, 'mousemove');
-            }
-            onMouseMoveHandler = handler;
-        case MOUSEOUT:
-            if (onMouseOutHandler == null) {
-                view_.bindEvent(this, 'mouseout', onMouseOut);
-            } else {
-                if (handler != null)
-                    throw new IllegalStateException("event is already bound");
-                view_.unbindEvent(this, 'mouseout');
-            }
-            onMouseOutHandler = handler;
+        var existingHandler = handlers[Type.enumIndex(eventKind)];
+        if (existingHandler == null) {
+            view_.mouseEventsHandlerManager.bindEvent(mouseEventsHandler, eventKind);
+        } else {
+            if (handler != null)
+                throw new IllegalStateException("event is already bound");
+            view_.mouseEventsHandlerManager.unbindEvent(mouseEventsHandler, eventKind);
         }
+        handlers[Type.enumIndex(eventKind)] = handler;
     }
 
     function createMouseEvent(e:JqEvent):MouseEvent {
@@ -120,32 +112,6 @@ class JSDOMStage extends BasicStageImpl<JSDOMComponentRenderer>, implements Mous
 
     public function new(view:View) {
         super(view);
-        id = -1;
-
-        this.onPressHandler = null;
-        this.onReleaseHandler = null;
-        this.onMouseMoveHandler = null;
-        this.onMouseOutHandler = null;
-
-        var me = this;
-        this.onPress = function (e:JqEvent):Void {
-            if (me.onPressHandler != null)
-                me.onPressHandler(me.createMouseEvent(e));
-        };
-
-        this.onMouseMove = function(e:JqEvent):Void {
-            if (me.onMouseMoveHandler != null)
-                me.onMouseMoveHandler(me.createMouseEvent(e));
-        };
-
-        this.onMouseOut = function(e:JqEvent):Void {
-            if (me.onMouseOutHandler != null)
-                me.onMouseOutHandler(me.createMouseEvent(e));
-        };
-
-        this.onRelease = function(e:JqEvent):Void {
-            if (me.onReleaseHandler != null)
-                me.onReleaseHandler(me.createMouseEvent(e));
-        };
+        this.handlers = [ null, null, null, null ];
     }
 }
