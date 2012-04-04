@@ -48,7 +48,6 @@ class PageFunctionalTests(unittest.TestCase):
                  u'keywords': u'music,rhythm,etc',
                  u'layout': u'1',
                  u'stage': u'execute',
-                 u'tags': u'music',
                  u'title': title,
                  u'url': u'top/music'}
 
