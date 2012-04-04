@@ -13,6 +13,12 @@ def _initTestingDB():
     session = initialize_sql(create_engine('sqlite:///:memory:'))
     return session
 
+def config():
+    return testing.setUp(
+        settings={"altaircms.plugin_static_directory": "altaircms:plugins/static", 
+                  "widget.template_path_format": "%s.mako", 
+                  "altaircms.layout_directory": "."}
+        )
 
 class BaseTest(unittest.TestCase):
     def setUp(self):
@@ -20,12 +26,13 @@ class BaseTest(unittest.TestCase):
         self.session = _initTestingDB()
 
 
-def _create_db(Base, DBSession, engine):
-    if not Base.metadata.is_bound():
-        Base.metadata.bind = engine
-    if not DBSession.bind and not DBSession.registry.has():
-        DBSession.configure(bind=engine)
-    Base.metadata.create_all()
+def _create_db(Base, DBSession, engine, force=True):
+    if force or any([x.bind is None for x in [Base.metadata, DBSession]]):
+        if not Base.metadata.is_bound():
+            Base.metadata.bind = engine
+        if not DBSession.bind and not DBSession.registry.has():
+            DBSession.configure(bind=engine)
+        Base.metadata.create_all()
     # listing_all(Base.metadata)
     return DBSession
 
@@ -35,7 +42,7 @@ def _message(message):
         sys.stderr.write(message)
         sys.stderr.write("\n----------------\n")
 
-def create_db(echo=False, base=None, session=None, message=None):
+def create_db(echo=False, base=None, session=None, message=None, force=True):
     # _message(message)
 
     from sqlalchemy import create_engine
@@ -43,9 +50,9 @@ def create_db(echo=False, base=None, session=None, message=None):
     engine.echo = echo
     if base is None or session is None:
         import altaircms.models as m
-        return _create_db(m.Base, m.DBSession, engine)
+        return _create_db(m.Base, m.DBSession, engine, force)
     else:
-        return _create_db(base, session, engine)
+        return _create_db(base, session, engine, force)
 
 
 def dropall_db(base=None, session=None, message=None):
