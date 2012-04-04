@@ -5,6 +5,6 @@ from wtforms.validators import Required, Email, Length, NumberRange,EqualTo,opti
 from wtforms import Form
 
 class NewsLettersForm(Form):
-    subject             = TextField(u'タイトル', validators=[Required()])
+    subject             = TextField(u'件名', validators=[Required()])
     description         = TextAreaField(u'本文', validators=[Required()])
     start_on            = DateField(u'送信開始日', validators=[Required()])

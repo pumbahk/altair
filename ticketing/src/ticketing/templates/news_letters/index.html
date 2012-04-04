@@ -43,8 +43,8 @@
           % for news_letter in news_letters.items:
             <tr>
               <td><input type="checkbox" /></td>
-              <td><a href="${request.route_path('news_letters.show', news_letter_id=1)}">${news_letter.id}</a></td>
-              <td><a href="${request.route_path('news_letters.show', news_letter_id=1)}">${news_letter.subject}</a></td>
+              <td><a href="${request.route_path('news_letters.show', news_letter_id=news_letter.id)}">${news_letter.id}</a></td>
+              <td><a href="${request.route_path('news_letters.show', news_letter_id=news_letter.id)}">${news_letter.subject}</a></td>
               <td><a href="#"></a>${news_letter.description}<a href="#"></a></td>
               <td>${news_letter.start_on}</td>
               <td>${news_letter.updated_at}</td>

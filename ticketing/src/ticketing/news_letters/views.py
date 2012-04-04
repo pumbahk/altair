@@ -1,4 +1,4 @@
- # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
@@ -12,6 +12,10 @@ from ticketing.fanstatic import with_bootstrap
 from forms import NewsLettersForm
 
 import webhelpers.paginate as paginate
+
+from pprint import pprint
+import logging
+log = logging.getLogger(__name__)
 
 @view_defaults(decorator=with_bootstrap)
 class NewsLetters(BaseView):
@@ -31,9 +35,9 @@ class NewsLetters(BaseView):
         f = NewsLettersForm()
         news_letter_id = int(self.request.GET.get("news_letter_id", 0)) 
         if news_letter_id:
-            news_letter = Event.get(news_letter_id)
+            news_letter = NewsLetter.get(news_letter_id)
             if news_letter is None:
-                return HTTPNotFound('Event not found')
+                return HTTPNotFound('NewsLetter not found')
             f.process(record_to_multidict(news_letter))
 
         return {
@@ -58,13 +62,45 @@ class NewsLetters(BaseView):
     def show(self):
         news_letter_id = int(self.request.matchdict.get("news_letter_id", 0)) 
         news_letter = NewsLetter.get(news_letter_id)
+        log.debug(vars(news_letter))
         if news_letter is None:
             return HTTPNotFound("news_letter id %d is not found" % news_letter_id)
-
-        current_page = int(self.request.params.get("page", 0)) 
-        page_url = paginate.PageURL_WebOb(self.request)
 
         return {
             'news_letter' : news_letter,
         }   
+
+    @view_config(route_name='news_letters.edit', request_method="GET", renderer='ticketing:templates/news_letters/edit.html')
+    def edit_get(self):
+        news_letter_id = int(self.request.matchdict.get("news_letter_id", 0))
+        news_letter = NewsLetter.get(news_letter_id)
+        if news_letter is None:
+            return HTTPNotFound("client id %d is not found" % news_letter_id)
+
+        app_structs = record_to_multidict(news_letter)
+        f = NewsLettersForm()
+        f.process(app_structs)
+        return {
+            'form' :f,
+            'news_letter' : news_letter
+        }
+
+    @view_config(route_name='news_letters.edit', request_method="POST", renderer='ticketing:templates/news_letters/edit.html')
+    def edit_post(self):
+        news_letter_id = int(self.request.matchdict.get("news_letter_id", 0))
+        news_letter = NewsLetter.get(news_letter_id)
+        if news_letter is None:
+            return HTTPNotFound("client id %d is not found" % news_letter_id)
+
+        f = NewsLettersForm(self.request.POST)
+        if f.validate():
+            data = f.data
+            record = merge_session_with_post(news_letter, data)
+            NewsLetter.update(record)
+            return HTTPFound(location=route_path('news_letters.show', self.request, news_letter_id=news_letter.id))
+        else:
+            return {
+                'form':f,
+                'news_letter' : news_letter
+            }
 

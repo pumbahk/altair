@@ -1,5 +1,5 @@
 <%inherit file="../layout.html" />
-<%block name="title">イベント編集</%block>
+<%block name="title">メールマガジン編集</%block>
 
 <%def name="error(f)">
 %if f.errors:
@@ -20,32 +20,22 @@
 % endfor
 </ul>
 
-<form action="${request.route_url('events.edit', event_id=event.id)}" enctype="multipart/form-data" method="POST">
+<form action="${request.route_url('news_letters.edit', news_letter_id=news_letter.id)}" enctype="multipart/form-data" method="POST">
     <table class="table">
         <tr>
-            <th>${form.code.label}</th>
-            <td>${form.code}
-                ${error(form.code)}</td>
+            <th>${form.subject.label}</th>
+            <td>${form.subject}
+                ${error(form.subject)}</td>
         </tr>
         <tr>
-            <th>${form.title.label}</th>
-            <td>${form.title}
-                ${error(form.title)}</td>
-        </tr>
-        <tr>
-            <th>${form.abbreviated_title.label}</th>
-            <td>${form.abbreviated_title}
-                ${error(form.abbreviated_title)}</td>
+            <th>${form.description.label}</th>
+            <td>${form.description}
+                ${error(form.description)}</td>
         </tr>
         <tr>
             <th>${form.start_on.label}</th>
             <td>${form.start_on}
                 ${error(form.start_on)}</td>
-        </tr>
-        <tr>
-            <th>${form.end_on.label}</th>
-            <td>${form.end_on}
-                ${error(form.end_on)}</td>
         </tr>
     </table>
     <input type="submit" name="submit" value="更新">

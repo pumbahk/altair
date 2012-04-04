@@ -56,6 +56,7 @@ def main(global_config, **settings):
     config.include('ticketing.products' , route_prefix='/products')
     config.include('ticketing.users' , route_prefix='/users')
     config.include('ticketing.venues' , route_prefix='/venues')
+    config.include('ticketing.news_letters' , route_prefix='/news_letters')
 
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.add_renderer('json'  , 'ticketing.renderers.json_renderer_factory')
