@@ -1,64 +1,80 @@
-# coding: utf-8
+
+import sqlalchemy as sa
+import sqlalchemy.orm as orm
+import sqlalchemy.schema as saschema
+from altaircms.models import Base
+from altaircms.models import DBSession
+
 from datetime import datetime
 
-from sqlalchemy.orm import mapper
-from sqlalchemy.schema import Column, ForeignKey, Table
-from sqlalchemy.types import Integer, Unicode, DateTime, String
-from altaircms.models import Base
-
-
 __all__ = [ 'EventTag', 'PageTag', 'AssetTag']
+"""
+"""
 
 
-class Tag(object):
-    pass
-
-class PageTag(Tag):
-    pass
-
-class EventTag(Tag):
-    pass
-
-class AssetTag(Tag):
-    pass
+class PageTag2Page(Base):
+    __tablename__ = "pagetag2page"
+    object_id = sa.Column(sa.Integer, sa.ForeignKey("page.id"), primary_key=True)
+    tag_id = sa.Column(sa.Integer, sa.ForeignKey("pagetag.id"))
+    # page = orm.relationship("Page", backref=orm.backref("pagetag2page", cascade="all, delete-orphan"))
 
 
-tags = Table(
-    "tag",
-    Base.metadata,
-    Column("id", Integer, primary_key=True),
-    Column("name", Unicode),
-    Column("is_public", Integer, default=0),
-    Column("site_id", Integer, ForeignKey("site.id")),
-    Column("type", String),
-    Column("created_at", DateTime, default=datetime.now()),
-    Column("updated_at", DateTime, default=datetime.now())
-)
+class PageTag(Base):
+    __tablename__ = "pagetag"
+    query = DBSession.query_property()
+    id = sa.Column(sa.Integer, primary_key=True)
+    label = sa.Column(sa.Unicode(255), unique=True, index=True)
+    pages = orm.relationship("Page", secondary="pagetag2page", backref="tags")
+    publicp = sa.Column(sa.Boolean, default=False)
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
+        
+class EventTag2Event(Base):
+    __tablename__ = "eventtag2event"
+    object_id = sa.Column(sa.Integer, sa.ForeignKey("event.id"), primary_key=True)
+    tag_id = sa.Column(sa.Integer, sa.ForeignKey("eventtag.id"), primary_key=True)
+    event = orm.relationship("Event", backref=orm.backref("eventtag2event", cascade="all, delete-orphan"))
 
-page_tags = Table(
-    "tag_page",
-    Base.metadata,
-    Column("tag_id", Integer, ForeignKey('tag.id'), primary_key=True),
-    Column("page_id", Integer, ForeignKey('page.id'))
-)
+class EventTag(Base):
+    __tablename__ = "eventtag"
+    query = DBSession.query_property()
+    id = sa.Column(sa.Integer, primary_key=True)
+    label = sa.Column(sa.Unicode(255), unique=True, index=True)
+    events = orm.relationship("Event", secondary="eventtag2event", backref="tags")
+    publicp = sa.Column(sa.Boolean, default=False)
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
 
-event_tags = Table(
-    "tag_event",
-    Base.metadata,
-    Column("tag_id", Integer, ForeignKey('tag.id'), primary_key=True),
-    Column("event_id", Integer, ForeignKey("event.id"))
-)
+class AssetTag2Asset(Base):
+    __tablename__ = "assettag2asset"
+    object_id = sa.Column(sa.Integer, sa.ForeignKey("asset.id"), primary_key=True)
+    tag_id = sa.Column(sa.Integer, sa.ForeignKey("assettag.id"), primary_key=True)
+    asset = orm.relationship("Asset", backref=orm.backref("assettag2asset", cascade="all, delete-orphan"))
 
-asset_tags = Table(
-    "tag_asset",
-    Base.metadata,
-    Column("tag_id", Integer, ForeignKey('tag.id'), primary_key=True),
-    Column("asset_id", Integer, ForeignKey('asset.id'))
-)
+class AssetTag(Base):
+    __tablename__ = "assettag"
+    id = sa.Column(sa.Integer, primary_key=True)
+    query = DBSession.query_property()
+    label = sa.Column(sa.Unicode(255), index=True)
+    assets = orm.relationship("Asset", secondary="assettag2asset", backref="tags")
+    publicp = sa.Column(sa.Boolean, default=False)
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
 
+    discriminator = sa.Column("type", sa.String(32), nullable=False)
+    __mapper_args__ = {"polymorphic_on": discriminator}
+    __table_args__ = ((saschema.UniqueConstraint(label, discriminator), ))
 
-mapper(Tag, tags, polymorphic_on=tags.c.type, polymorphic_identity='tag')
-mapper(PageTag, page_tags, inherits=Tag, polymorphic_identity='page_tag')
-mapper(EventTag, event_tags, inherits=Tag, polymorphic_identity='event_tag')
-mapper(AssetTag, asset_tags, inherits=Tag, polymorphic_identity='asset_tag')
+## sigle table inheritance or concreate table inheritance?
+class ImageAssetTag(AssetTag):
+    type = "image"
+    __mapper_args__ = {"polymorphic_identity": type}
+
+class MovieAssetTag(AssetTag):
+    type = "movie"
+    __mapper_args__ = {"polymorphic_identity": type}
+
+class FlashAssetTag(AssetTag):
+    type = "flash"
+    __mapper_args__ = {"polymorphic_identity": type}
 
