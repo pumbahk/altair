@@ -11,6 +11,8 @@ def setUpModule():
 def tearDownModule():
     from altaircms.lib.testutils import dropall_db
     dropall_db(message="test view drop")
+    from altaircms.lib.testutils import create_db
+    create_db()
 
 class UseAssetMixin(object):
     def _getImageAsset(self):
