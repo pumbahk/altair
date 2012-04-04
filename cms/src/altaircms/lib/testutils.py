@@ -16,6 +16,7 @@ def _initTestingDB():
 def config():
     return testing.setUp(
         settings={"altaircms.plugin_static_directory": "altaircms:plugins/static", 
+                  "altaircms.debug.strip_security": "true",
                   "widget.template_path_format": "%s.mako", 
                   "altaircms.layout_directory": "."}
         )
