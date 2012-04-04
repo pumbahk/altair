@@ -25,8 +25,11 @@ class Shell {
     var inMoveMode:Bool;
 
     private function set_operationMode(newOperationMode:OperationMode):OperationMode {
+        if (newOperationMode == operationMode)
+            return newOperationMode;
         discardGhost();
         finishMoveMode();
+        workspace.clearSelection();
         switch (newOperationMode) {
         case CURSOR:
             view.stage.cursor = MouseCursorKind.DEFAULT;  
