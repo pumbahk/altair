@@ -47,11 +47,6 @@ class WidgetTestSourceMixn(object):
         
 class ImageWidgetViewTests(WidgetTestSourceMixn, 
                           unittest.TestCase):
-    create_widget = "/api/widget/image/create"
-    update_widget = "/api/widget/image/update"
-    delete_widget = "/api/widget/image/delete"
-    get_dialog = "/api/widget/image/dialog"
-    
     def setUp(self):
         self.config = config
 
