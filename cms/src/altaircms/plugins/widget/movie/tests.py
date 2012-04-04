@@ -99,7 +99,6 @@ class MovieWidgetViewTests(WidgetTestSourceMixn,
                 "page_id": 1, "pk": pk, "data": {"asset_id": 10}
                 })
         view = self._makeTarget(request)
-        view.update()
         expexted = {"page_id": 1,
                     "asset_id":10,
                     "pk": pk,
