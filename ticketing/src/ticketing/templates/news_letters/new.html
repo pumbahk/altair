@@ -1,0 +1,42 @@
+<%inherit file="../layout.html" />
+<%block name="title">メールマガジン新規登録</%block>
+
+<%def name="error(f)">
+%if f.errors:
+  <ul class="errors">
+  %for error in f.errors:
+      <li>${error}</li>
+  %endfor:
+  </ul>
+% endif:
+</%def>
+<ul class="errors">
+% for field in form:
+%   if field.errors:
+%     for e in field.errors:
+        <li>${field.label}:${e}</li>
+%     endfor:
+%   endif:
+% endfor
+</ul>
+<form action="${request.route_url('news_letters.new')}" enctype="multipart/form-data" method="POST">
+    <table class="table">
+        <tr>
+            <th>${form.subject.label}</th>
+            <td>${form.subject}
+                ${error(form.subject)}</td>
+        </tr>
+        <tr>
+            <th>${form.description.label}</th>
+            <td>${form.description}
+                ${error(form.description)}</td>
+        </tr>
+        <tr>
+            <th>${form.start_on.label}</th>
+            <td>${form.start_on()}
+                ${error(form.start_on)}</td>
+        </tr>
+    </table>
+    <input type="submit" name="submit" value="新規作成">
+</form>
+

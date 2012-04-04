@@ -1,0 +1,52 @@
+<%inherit file="../layout.html" />
+<%block name="title">イベント編集</%block>
+
+<%def name="error(f)">
+%if f.errors:
+  <ul class="errors">
+  %for error in f.errors:
+      <li>${error}</li>
+  %endfor:
+  </ul>
+% endif:
+</%def>
+<ul class="errors">
+% for field in form:
+%   if field.errors:
+%     for e in field.errors:
+        <li>${field.label}:${e}</li>
+%     endfor:
+%   endif:
+% endfor
+</ul>
+
+<form action="${request.route_url('events.edit', event_id=event.id)}" enctype="multipart/form-data" method="POST">
+    <table class="table">
+        <tr>
+            <th>${form.code.label}</th>
+            <td>${form.code}
+                ${error(form.code)}</td>
+        </tr>
+        <tr>
+            <th>${form.title.label}</th>
+            <td>${form.title}
+                ${error(form.title)}</td>
+        </tr>
+        <tr>
+            <th>${form.abbreviated_title.label}</th>
+            <td>${form.abbreviated_title}
+                ${error(form.abbreviated_title)}</td>
+        </tr>
+        <tr>
+            <th>${form.start_on.label}</th>
+            <td>${form.start_on}
+                ${error(form.start_on)}</td>
+        </tr>
+        <tr>
+            <th>${form.end_on.label}</th>
+            <td>${form.end_on}
+                ${error(form.end_on)}</td>
+        </tr>
+    </table>
+    <input type="submit" name="submit" value="更新">
+</form>

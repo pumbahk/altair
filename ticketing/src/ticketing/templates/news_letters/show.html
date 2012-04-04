@@ -1,0 +1,57 @@
+<%inherit file="../layout.html" />
+<h1><%block name="title">${news_letter.subject}</%block></h1>
+
+<%block name="style">
+	<!-- load dojo and provide config via data attribute -->
+	<script src="http://ajax.googleapis.com/ajax/libs/dojo/1.7.1/dojo/dojo.js"
+			data-dojo-config="async: true, parseOnLoad: true">
+	</script>
+	<script>
+		require(["dijit/layout/BorderContainer", "dijit/layout/TabContainer", "dijit/layout/ContentPane", "dijit/layout/AccordionContainer", "dojo/parser"]);
+	</script>
+    <style type="text/css">
+      @import "http://ajax.googleapis.com/ajax/libs/dojo/1.4/dojo/resources/dojo.css";
+      @import "http://ajax.googleapis.com/ajax/libs/dojo/1.4/dijit/themes/soria/soria.css";
+      @import "http://ajax.googleapis.com/ajax/libs/dojo/1.4/dijit/themes/nihilo/nihilo.css";
+      @import "http://ajax.googleapis.com/ajax/libs/dojo/1.4/dijit/themes/tundra/tundra.css";
+    </style>
+</%block>
+<%block name="body_attrs"> class="nihilo"</%block>
+<br><br>
+<div class="row-fluid">
+  <span class="span2">
+    <div class="well">
+      <ul class="nav nav-list">
+          <li class="nav-header">test</li>
+          <li><a href="${request.route_path('news_letters.index')}"><i class="icon-home"></i>メールマガジン一覧</a></li>
+          <li class="divider"></li>
+      </ul>
+    </div>
+  </span>
+  <span class="span10">
+      <div class="well">
+          <table class="vertical-table fullwidth">
+            <tbody>
+              <tr>
+                <th>件名</th>
+                <td>${news_letter.subject}</td>
+              </tr>
+              <tr>
+                <th>本文</th>
+                <td>${news_letter.description}</td>
+              </tr>
+              <tr>
+                <th>送信開始日時</th>
+                <td>${news_letter.start_on}</td>
+              </tr>
+            </tbody>
+          </table>
+      </div>
+  </span>
+</div>
+
+<div class="ui-toolbar">
+  <a href="${request.route_path('news_letters.edit', news_letter_id=news_letter.id)}" class="btn">編集</a>
+  <a href="${request.route_path('news_letters.new',news_letter_id=news_letter.id)}" class="btn">コピーして新規</a>
+  <a href="${request.route_path('news_letters.delete', news_letter_id=news_letter.id)}" class="btn">削除</a>
+</div>

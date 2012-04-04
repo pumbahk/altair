@@ -1,0 +1,62 @@
+<%inherit file="../layout.html" />
+<%block name="title">メールマガジン一覧</%block>
+
+<div class="row-fluid">
+  <span class="span2">
+    <div class="well">
+    <ul class="nav nav-list">
+      <li class="nav-header">test</li>
+      <li><a href="${request.route_path('news_letters.new')}"><i class="icon-home"></i>新規メールマガジン</a></li>
+      <li class="divider"></li>
+    </ul>
+    </div>
+  </span>
+
+  <span class="span10">
+    <div class="well">
+      <h4 style="float: left">メールマガジン配信リスト</h4>
+      <div class="btn-group" style="float: right; margin-right: 20px">
+        <button class="btn"><i class="icon-pencil"></i>編集</button>
+        <button class="btn dropdown-toggle" data-toggle="dropdown">
+          <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+          <li><a href=""><i class="icon-plus"></i>コピー</a></li>
+          <li><a href=""><i class="icon-minus"></i>削除</a></li>
+        </ul>
+      </div>
+      <br style="clear: both" />
+        <span class="label label-important">未配信</span>
+        <span class="label label-success">配信済み</span>
+        <table class="table fullwidth checkboxed_table">
+          <thead>
+            <tr>
+              <th class="minwidth"><input type="checkbox" class="__action__-select_all" /></th>
+              <th class="minwidth">ID</th>
+              <th><a href="#" class="sortable">件名</a></th>
+              <th><a href="#" class="sortable">本文</a></th>
+              <th><a href="#" class="sortable">配信開始日時</a></th>
+              <th><a href="#" class="sortable">配信終了日時</a></th>
+            </tr>
+          </thead>
+          <tbody>
+          % for news_letter in news_letters.items:
+            <tr>
+              <td><input type="checkbox" /></td>
+              <td><a href="${request.route_path('news_letters.show', news_letter_id=1)}">${news_letter.id}</a></td>
+              <td><a href="${request.route_path('news_letters.show', news_letter_id=1)}">${news_letter.subject}</a></td>
+              <td><a href="#"></a>${news_letter.description}<a href="#"></a></td>
+              <td>${news_letter.start_on}</td>
+              <td>${news_letter.updated_at}</td>
+            </tr>
+          % endfor
+          </tbody>
+        </table>
+      <br style="clear: both" />
+    </div>
+  </span>
+</div>
+
+<div class="ui-toolbar">
+  <a href="${request.route_path('news_letters.new')}" class="btn">新規メールマガジン</a>
+</div>
