@@ -6,4 +6,5 @@ typedef MouseEvent = { >Event,
     left:Bool,
     middle:Bool,
     right:Bool,
+    extra:Dynamic
 };

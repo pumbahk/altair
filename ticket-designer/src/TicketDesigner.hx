@@ -8,6 +8,7 @@ import views.MouseEvent;
 import views.MouseCursorKind;
 import views.ComponentRenderer;
 import views.BasicRendererFactoryImpl;
+import views.Workspace;
 
 class TicketDesigner {
     public var view(default, null):View;
@@ -16,6 +17,7 @@ class TicketDesigner {
     public var horizontalRuler(default, null):Ruler;
     public var verticalRuler(default, null):Ruler;
     public var componentFactory(default, null):ComponentFactory;
+    public var workspace(default, null):Workspace;
     private var horizontalGuide:HorizontalGuide;
     private var verticalGuide:VerticalGuide;
 
@@ -76,7 +78,8 @@ class TicketDesigner {
         this.rendererFactory = new BasicRendererFactoryImpl(
             view, views.rendering.js.dom.Spi.rendererRegistry);
         this.componentFactory = new ComponentFactory(view.stage, rendererFactory);
-        this.shell = new Shell(view, componentFactory);
+        this.workspace = new Workspace();
+        this.shell = new Shell(view, componentFactory, workspace);
         this.horizontalRuler = createHorizontalRuler();
         this.verticalRuler = createVerticalRuler();
         this.view.viewport.on.scroll.do_(function(e) {

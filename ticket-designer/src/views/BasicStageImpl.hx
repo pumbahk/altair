@@ -6,7 +6,7 @@ class BasicStageImpl<Trenderer:ComponentRenderer> implements Stage {
     public var renderers(get_renderers, null):Iterable<ComponentRenderer>;
     public var cursor(default, set_cursor):MouseCursorKind;
     public var screenOffset(default, null):Point;
-    var renderers_:Hash<Trenderer>;
+    var renderers_:IdentifiableSet<Trenderer>;
 
     function set_cursor(value:MouseCursorKind):MouseCursorKind {
         cursor = value;
@@ -14,13 +14,13 @@ class BasicStageImpl<Trenderer:ComponentRenderer> implements Stage {
     }
 
     public function add(renderer:ComponentRenderer):Void {
-        renderers_.set(Std.string(renderer.id), untyped renderer);
+        renderers_.add(cast renderer);
         renderer.stage = this;
     }
 
     public function remove(renderer:ComponentRenderer):Void {
         renderer.stage = null;
-        renderers_.remove(Std.string(renderer.id));
+        renderers_.remove(cast renderer);
     }
 
     public function dispose():Void {
@@ -45,7 +45,7 @@ class BasicStageImpl<Trenderer:ComponentRenderer> implements Stage {
     }
 
     public function new(view:View) {
-        this.renderers_ = new Hash();
+        this.renderers_ = new IdentifiableSet();
         this.view = view;
     }
 

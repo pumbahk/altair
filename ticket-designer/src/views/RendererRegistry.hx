@@ -3,7 +3,7 @@ package views;
 class RendererRegistry {
     var klassesMap:Hash<Hash<Class<Renderer>>>;
 
-    public function addImplementation(renderableKlass:Class<Renderable>, rendererKlass:Class<Renderer>, ?variant:String) {
+    public function addImplementation(renderableKlass:Class<Dynamic>, rendererKlass:Class<Renderer>, ?variant:String) {
         var className = Type.getClassName(renderableKlass);
         var klasses = klassesMap.get(className);
         if (klasses == null)
@@ -11,15 +11,25 @@ class RendererRegistry {
         klasses.set(variant == null ? '': variant, rendererKlass);
     }
 
-    public function lookupImplementation(renderableKlass:Class<Renderable>, ?options:Dynamic):Class<Renderer> {
+    function lookupImplementationInternal(renderableKlass:Class<Dynamic>, ?options:Dynamic):Class<Renderer> {
         var className = Type.getClassName(renderableKlass);
         var klasses = klassesMap.get(className);
-        if (klasses == null)
-            throw new IllegalArgumentException("no implementations are registered for " + className);
-        var variant = options != null ? options.variant: '';
-        var klass = klasses.get(variant);
+        if (klasses != null) {
+            var variant = options != null ? options.variant: '';
+            var klass = klasses.get(variant);
+            if (klass != null)
+                return klass;
+        }
+        var superKlass = Type.getSuperClass(renderableKlass);
+        if (superKlass == null)
+            return null;
+        return lookupImplementationInternal(cast superKlass, options);
+    }
+
+    public function lookupImplementation(renderableKlass:Class<Dynamic>, ?options:Dynamic):Class<Renderer> {
+        var klass:Class<Renderer> = lookupImplementationInternal(renderableKlass, options);
         if (klass == null)
-            throw new IllegalArgumentException("no implementation is registered for " + className + ", variant=" + variant);
+            throw new IllegalArgumentException("no implementation is registered for " + Type.getClassName(renderableKlass));
         return klass;
     }
 

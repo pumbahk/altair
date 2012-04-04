@@ -7,13 +7,13 @@ class TextComponentRenderer extends JSDOMComponentRenderer {
     var position:Point;
     var size:Point;
     var fontSize:Float;
+    var selected:Bool;
 
     static function __init__() {
         Spi.rendererRegistry.addImplementation(TextComponent, TextComponentRenderer);
     }
 
     public override function setup():JQuery {
-        super.setup();
         return new JQuery('<div class="component-text"></div>');
     }
 
@@ -22,12 +22,17 @@ class TextComponentRenderer extends JSDOMComponentRenderer {
         position = component.position;
         fontSize = component.fontSize;
         size = component.size;
+        selected = component.selected;
         view_.scheduleRefresh(this);
     }
 
     public override function refresh():Void {
         var position = view_.inchToPixelP(this.position);
         var size = view_.inchToPixelP(this.size);
+        if (selected)
+            this.n.addClass("selected");
+        else
+            this.n.removeClass("selected");
         untyped __js__("this.n.css")(
             { left: Std.string(position.x) + "px",
               top: Std.string(position.y) + "px",

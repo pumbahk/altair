@@ -5,6 +5,7 @@ import views.ComponentFactory;
 import views.MouseCursorKind;
 import views.EventKind;
 import views.MouseEvent;
+import views.Workspace;
 
 private enum State {
     NONE;
@@ -14,72 +15,24 @@ private enum State {
 class Shell {
     public var operationMode(default, set_operationMode):OperationMode;
     public var view(default, null):View;
+    public var workspace(default, null):Workspace;
     public var operationModeCallback:OperationMode->Void;
-    public var ghost:ComponentRenderer;
-    public var ghostData:Dynamic;
-    public var componentFactory:ComponentFactory;
+    public var lastKey:Int;
+
+    var ghost:ComponentRenderer;
+    var ghostData:Dynamic;
+    var componentFactory:ComponentFactory;
+    var inMoveMode:Bool;
 
     private function set_operationMode(newOperationMode:OperationMode):OperationMode {
-        if (operationMode == OperationMode.MOVE) {
-            view.stage.releaseMouse();
-            view.stage.bind(PRESS, null);
-            view.stage.bind(RELEASE, null);
-            view.stage.bind(MOUSEMOVE, null);
-        }
         discardGhost();
+        finishMoveMode();
         switch (newOperationMode) {
         case CURSOR:
             view.stage.cursor = MouseCursorKind.DEFAULT;  
         case MOVE:
             view.stage.cursor = MouseCursorKind.MOVE;
-            var state:State = NONE;
-            view.stage.bind(PRESS, function(e:Event) {
-                state = DRAGGING(view.viewport.scrollPosition, cast(e).screenPosition);
-            });
-            view.stage.bind(RELEASE, function(e:Event) {
-                state = NONE;
-            });
-            view.stage.bind(MOUSEMOVE, function(e:Event) {
-                var e_:MouseEvent = cast(e);
-                switch (state) {
-                case NONE:
-                case DRAGGING(initialScrollPosition, initialPosition):
-                    var offset = view.pixelToInchP({
-                        x: e_.screenPosition.x - initialPosition.x,
-                        y: e_.screenPosition.y - initialPosition.y
-                    });
-                    var newScrollPosition = {
-                        x: initialScrollPosition.x - offset.x,
-                        y: initialScrollPosition.y - offset.y
-                    };
-                    if (newScrollPosition.x < 0.) {
-                        initialScrollPosition = {
-                            x: 0.,
-                            y: initialScrollPosition.y,
-                        };
-                        initialPosition = {
-                            x: e_.screenPosition.x,
-                            y: initialPosition.y
-                        };
-                        state = DRAGGING(initialScrollPosition, initialPosition);
-                        newScrollPosition.x = 0.;
-                    }
-                    if (newScrollPosition.y < 0.) {
-                        initialScrollPosition = {
-                            x: initialScrollPosition.x,
-                            y: 0.,
-                        };
-                        initialPosition = {
-                            x: initialPosition.x,
-                            y: e_.screenPosition.y
-                        };
-                        state = DRAGGING(initialScrollPosition, initialPosition);
-                        newScrollPosition.y = 0.;
-                    }
-                    view.viewport.scrollPosition = newScrollPosition;
-                }
-            });
-            view.stage.captureMouse();
+            beginMoveMode();
         case PLACE(item):
             view.stage.cursor = MouseCursorKind.POINTER;
             prepareGhost(item);
@@ -90,16 +43,16 @@ class Shell {
         return newOperationMode;
     }
 
-    public function discardGhost() {
+    function discardGhost() {
         if (ghost == null)
             return;
-        ghost.releaseMouse();
         view.stage.remove(ghost);
+        ghost.dispose();
         ghost = null;
         ghostData = null;
     }
 
-    public function prepareGhost(klass:Class<Component>) {
+    function prepareGhost(klass:Class<Component>) {
         if (ghost != null)
             throw new IllegalStateException("Ghost already exists");
         ghost = cast componentFactory.rendererFactory.create(cast klass);
@@ -124,10 +77,103 @@ class Shell {
                         Reflect.field(ghostData, field));
                 }
             }
+            attachController(component);
             component.refresh();
         });
         ghost.realize(ghostData);
         ghost.captureMouse();
+    }
+
+    function attachController(component:Component) {
+        component.on.press.do_(function (e) {
+            if (!component.selected && lastKey != 16) {
+                workspace.clearSelection();
+                component.putResizeBox();
+            }
+            if (lastKey == 16) {
+                if (component.selected)
+                    component.unselect();
+                else
+                    component.select();
+            } else {
+                component.select();
+            }
+        });
+        component.on.dragstart.do_(function (e) {
+            component.hideResizeBox();
+        });
+        component.on.dragend.do_(function (e) {
+            if (workspace.numOfSelections == 1)
+                component.putResizeBox();
+        });
+        component.on.blur.do_(function (e) {
+            component.hideResizeBox();
+        });
+        workspace.add(component);
+    }
+
+    function finishMoveMode() {
+        if (!inMoveMode)
+            return;
+        view.stage.releaseMouse();
+        view.stage.bind(PRESS, onStagePressed);
+        view.stage.bind(RELEASE, null);
+        view.stage.bind(MOUSEMOVE, null);
+        inMoveMode = false;
+    }
+
+    function beginMoveMode() {
+        if (inMoveMode)
+            return;
+        var state:State = NONE;
+        view.stage.bind(PRESS, function(e:Event) {
+            state = DRAGGING(view.viewport.scrollPosition, cast(e).screenPosition);
+        });
+        view.stage.bind(RELEASE, function(e:Event) {
+            state = NONE;
+        });
+        view.stage.bind(MOUSEMOVE, function(e:Event) {
+            var e_:MouseEvent = cast(e);
+            switch (state) {
+            case NONE:
+            case DRAGGING(initialScrollPosition, initialPosition):
+                var offset = view.pixelToInchP({
+                    x: e_.screenPosition.x - initialPosition.x,
+                    y: e_.screenPosition.y - initialPosition.y
+                });
+                var newScrollPosition = {
+                    x: initialScrollPosition.x - offset.x,
+                    y: initialScrollPosition.y - offset.y
+                };
+                if (newScrollPosition.x < 0.) {
+                    initialScrollPosition = {
+                        x: 0.,
+                        y: initialScrollPosition.y,
+                    };
+                    initialPosition = {
+                        x: e_.screenPosition.x,
+                        y: initialPosition.y
+                    };
+                    state = DRAGGING(initialScrollPosition, initialPosition);
+                    newScrollPosition.x = 0.;
+                }
+                if (newScrollPosition.y < 0.) {
+                    initialScrollPosition = {
+                        x: initialScrollPosition.x,
+                        y: 0.,
+                    };
+                    initialPosition = {
+                        x: initialPosition.x,
+                        y: e_.screenPosition.y
+                    };
+                    state = DRAGGING(initialScrollPosition, initialPosition);
+                    newScrollPosition.y = 0.;
+                }
+                view.viewport.scrollPosition = newScrollPosition;
+            }
+        });
+        view.stage.captureMouse();
+        inMoveMode = true;
     }
 
     public function zoomIn() {
@@ -138,8 +184,16 @@ class Shell {
       view.zoom /= 1.1;
     }
 
-    public function new(view:View, componentFactory:ComponentFactory) {
+    public function onStagePressed(e:Event) {
+        workspace.clearSelection();
+    }
+
+    public function new(view:View, componentFactory:ComponentFactory, workspace:Workspace) {
         this.view = view;
         this.componentFactory = componentFactory;
+        this.workspace = workspace;
+        this.inMoveMode = false;
+        this.lastKey = 0;
+        view.stage.bind(PRESS, onStagePressed);
     }
 }

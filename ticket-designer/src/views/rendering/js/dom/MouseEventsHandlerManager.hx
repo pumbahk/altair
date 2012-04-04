@@ -22,8 +22,8 @@ class MouseEventsHandlerManager {
             new JQuery(Lib.document).bind('mousemove', capturing.onMouseMove);
     }
 
-    public function releaseMouse():Void {
-        if (capturing == null)
+    public function releaseMouse(mouseEventsHandler:MouseEventsHandler):Void {
+        if (capturing != mouseEventsHandler)
             return;
         if (capturing.onPress != null)
             new JQuery(Lib.document).unbind('mousedown', capturing.onPress);

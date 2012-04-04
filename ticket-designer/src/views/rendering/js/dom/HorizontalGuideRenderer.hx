@@ -11,7 +11,6 @@ class HorizontalGuideRenderer extends JSDOMComponentRenderer {
     }
 
     public override function setup():JQuery {
-        super.setup();
         return new JQuery('<div class="component-horizontal_guide"></div>');
     }
 

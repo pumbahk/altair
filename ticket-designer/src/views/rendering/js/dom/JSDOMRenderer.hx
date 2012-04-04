@@ -13,7 +13,7 @@ class JSDOMRenderer implements Renderer {
 
     var view_:JSDOMView;
 
-    var handlers:Array<Event->Void>;
+    var handlers:Array<MouseEvent->Void>;
 
     var innerRenderSize_:Point;
     var outerRenderSize_:Point;
@@ -27,22 +27,27 @@ class JSDOMRenderer implements Renderer {
     }
 
     public function setup():JQuery {
-        view_ = cast(view, JSDOMView);
-        view_.addRenderer(this);
         return null;
     }
 
     public function dispose():Void {
+        releaseMouse();
+        bind(PRESS, null);
+        bind(RELEASE, null);
+        bind(MOUSEMOVE, null);
+        bind(MOUSEOUT, null);
         if (n != null)
             n.remove();
     }
 
     public function captureMouse():Void {
-        view_.mouseEventsHandlerManager.captureMouse(mouseEventsHandler);
+        if (mouseEventsHandler != null)
+            view_.mouseEventsHandlerManager.captureMouse(mouseEventsHandler);
     }
 
     public function releaseMouse():Void {
-        view_.mouseEventsHandlerManager.releaseMouse();
+        if (mouseEventsHandler != null)
+            view_.mouseEventsHandlerManager.releaseMouse(mouseEventsHandler);
     }
 
     public function realize(renderable:Dynamic):Void {}
@@ -54,29 +59,24 @@ class JSDOMRenderer implements Renderer {
                                                 y:(0. + n.outerHeight()) });
     }
 
-    function createMouseEvent(e:JqEvent):MouseEvent {
+    function createMouseEvent(e:JqEvent, ?extra:Dynamic):MouseEvent {
         return null;
     }
 
-    public function bind(eventKind:EventKind, handler:Event -> Void):Void {
+    public function bind(eventKind:EventKind, handler:MouseEvent -> Void):Void {
         var view_ = cast(view, JSDOMView);
         var existingHandler = handlers[Type.enumIndex(eventKind)];
         if (existingHandler == null) {
-            view_.mouseEventsHandlerManager.bindEvent(mouseEventsHandler, eventKind);
-        } else {
             if (handler != null)
-                throw new IllegalStateException("event is already bound");
-            view_.mouseEventsHandlerManager.unbindEvent(mouseEventsHandler, eventKind);
+                view_.mouseEventsHandlerManager.bindEvent(mouseEventsHandler, eventKind);
+        } else {
+            if (handler == null)
+                view_.mouseEventsHandlerManager.unbindEvent(mouseEventsHandler, eventKind);
         }
         handlers[Type.enumIndex(eventKind)] = handler;
     }
 
-    public function new(id:Int, view:View) {
-        this.id = id;
-        this.view = view;
-        this.handlers = [ null, null, null, null ];
-        this.n = setup();
-
+    function registerMouseEventsHandler() {
         this.mouseEventsHandler = cast(view, JSDOMView).mouseEventsHandlerManager.registerHandler(new MouseEventsHandler(
             n,
             function (e:JqEvent):Void {
@@ -100,6 +100,17 @@ class JSDOMRenderer implements Renderer {
                     handlerFunction(createMouseEvent(e));
             }
         ));
+    }
+
+    public function new(id:Int, view:View) {
+        this.id = id;
+        this.view = view;
+        this.view_ = cast(view, JSDOMView);
+        this.handlers = [ null, null, null, null ];
+        this.n = setup();
+
+        this.view_.addRenderer(this);
+        registerMouseEventsHandler();
     }
 
     public function toString() {

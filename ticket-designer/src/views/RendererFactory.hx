@@ -1,5 +1,5 @@
 package views;
 
 interface RendererFactory {
-    public function create(klass:Class<Renderable>, ?options:Dynamic):Renderer;
+    public function create(klass:Class<Dynamic>, ?options:Dynamic):Renderer;
 }

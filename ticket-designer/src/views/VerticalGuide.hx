@@ -1,8 +1,8 @@
 package views;
 
-class VerticalGuide extends ComponentBase<TextComponent> {
-    public function new(renderer:ComponentRenderer) {
-        super(renderer);
+class VerticalGuide extends Component {
+    override function initialize() {
+        super.initialize();
         defaultCursor = MouseCursorKind.CROSSHAIR;
     }
 }

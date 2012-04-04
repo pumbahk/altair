@@ -10,7 +10,6 @@ class VerticalRulerRenderer extends RulerRenderer {
     }
 
     public override function setup():JQuery {
-        super.setup();
         return new JQuery('<div class="renderable-vertical_ruler" style="width:20px;"><canvas width="20"></canvas></div>');
     }
 

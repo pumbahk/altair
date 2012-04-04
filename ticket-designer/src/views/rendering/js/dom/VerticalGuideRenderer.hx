@@ -10,7 +10,6 @@ class VerticalGuideRenderer extends JSDOMComponentRenderer {
     }
 
     public override function setup():JQuery {
-        super.setup();
         return new JQuery('<div class="component-vertical_guide"></div>');
     }
 

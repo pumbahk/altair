@@ -81,23 +81,23 @@ class JSDOMStage extends BasicStageImpl<JSDOMComponentRenderer> {
     }
 
     public override function releaseMouse():Void {
-        cast(view, JSDOMView).mouseEventsHandlerManager.releaseMouse();
+        cast(view, JSDOMView).mouseEventsHandlerManager.releaseMouse(mouseEventsHandler);
     }
 
     public override function bind(eventKind:EventKind, handler:Event -> Void):Void {
         var view_ = cast(view, JSDOMView);
         var existingHandler = handlers[Type.enumIndex(eventKind)];
         if (existingHandler == null) {
-            view_.mouseEventsHandlerManager.bindEvent(mouseEventsHandler, eventKind);
-        } else {
             if (handler != null)
-                throw new IllegalStateException("event is already bound");
-            view_.mouseEventsHandlerManager.unbindEvent(mouseEventsHandler, eventKind);
+                view_.mouseEventsHandlerManager.bindEvent(mouseEventsHandler, eventKind);
+        } else {
+            if (handler == null)
+                view_.mouseEventsHandlerManager.unbindEvent(mouseEventsHandler, eventKind);
         }
         handlers[Type.enumIndex(eventKind)] = handler;
     }
 
-    function createMouseEvent(e:JqEvent):MouseEvent {
+    function createMouseEvent(e:JqEvent, ?extra:Dynamic):MouseEvent {
         return {
             source: this,
             cause: e,
@@ -107,7 +107,9 @@ class JSDOMStage extends BasicStageImpl<JSDOMComponentRenderer> {
             screenPosition: { x: 0. + e.pageX,  y: 0. + e.pageY },
             left: (e.which & 1) != 0,
             middle: (e.which & 2) != 0,
-            right: (e.which & 3) != 0 };
+            right: (e.which & 3) != 0,
+            extra: extra
+        };
     }
 
     public function new(view:View) {

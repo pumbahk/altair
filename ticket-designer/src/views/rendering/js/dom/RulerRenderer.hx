@@ -25,7 +25,7 @@ class RulerRenderer extends JSDOMRenderer {
         return graduations.length - 1;
     }
 
-    override function createMouseEvent(e:JqEvent):MouseEvent {
+    override function createMouseEvent(e:JqEvent, ?extra:Dynamic):MouseEvent {
         return {
             source: this,
             cause: e,
@@ -35,6 +35,8 @@ class RulerRenderer extends JSDOMRenderer {
             screenPosition: { x: 0. + e.pageX, y: 0. + e.pageY },
             left: (e.which & 1) != 0,
             middle: (e.which & 2) != 0,
-            right: (e.which & 3) != 0 };
+            right: (e.which & 3) != 0,
+            extra: extra
+        };
     }
 }

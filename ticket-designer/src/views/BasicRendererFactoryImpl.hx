@@ -5,7 +5,7 @@ class BasicRendererFactoryImpl implements RendererFactory {
     var registry:RendererRegistry;
     var view:View;
 
-    public function create(renderableKlass:Class<Renderable>, ?options:Dynamic):Renderer {
+    public function create(renderableKlass:Class<Dynamic>, ?options:Dynamic):Renderer {
         return untyped Type.createInstance(
                 registry.lookupImplementation(renderableKlass, options),
                 [ nextId++, view ]);

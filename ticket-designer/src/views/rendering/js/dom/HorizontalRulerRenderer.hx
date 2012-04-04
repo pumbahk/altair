@@ -10,7 +10,6 @@ class HorizontalRulerRenderer extends RulerRenderer {
     }
 
     public override function setup():JQuery {
-        super.setup();
         return new JQuery('<div class="renderable-horizontal_ruler" style="height:20px; line-height:20px;"><canvas height="20"></canvas></div>');
     }
 
