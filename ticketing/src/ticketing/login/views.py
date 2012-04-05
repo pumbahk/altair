@@ -17,6 +17,9 @@ from ticketing.operators.models import Operator
 
 from ticketing.fanstatic import with_bootstrap
 
+import sqlahelper
+session = sqlahelper.get_session()
+
 @view_defaults(decorator=with_bootstrap)
 class Login(BaseView):
 

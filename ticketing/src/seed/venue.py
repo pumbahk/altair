@@ -18,3 +18,15 @@ class VenueData(DataSet):
         tel_1 = u'03-0000-0000'
         tel_2 = u'03-1111-1111'
         fax = u'03-1111-1111'
+    class venue_2:
+        name = u'ブルーマンシアター'
+        sub_name = u'ブルーマンシアター'
+        zip = '151-0000'
+        prefecture = PrefectureMaster.tokyo
+        city = u'目黒区'
+        address = u'目黒本町'
+        street = u'１−１−１'
+        other_address = u''
+        tel_1 = u'03-0000-0000'
+        tel_2 = u'03-1111-1111'
+        fax = u'03-1111-1111'

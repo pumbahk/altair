@@ -87,3 +87,34 @@ class PerformanceData(DataSet):
         code = u'201207011800'
         owner = AccountData.account_2
         venue = VenueData.venue_1
+
+    class performance_6:
+        event = EventData.event_1
+        start_on = datetime(2012,7,5,19,0)
+        end_on = None
+        open_on = datetime(2012,7,5,18,0)
+        no_period = False
+        name =  u"ブルーマングループ IN 東京 2011年"
+        code = u'201207011800'
+        owner = AccountData.account_3
+        venue = VenueData.venue_2
+    class performance_7:
+        event = EventData.event_1
+        start_on = datetime(2012,7,6,19,0)
+        end_on = None
+        open_on = datetime(2012,7,6,18,0)
+        no_period = False
+        name =  u"ブルーマングループ IN 東京 2011年"
+        code = u'201207011800'
+        owner = AccountData.account_3
+        venue = VenueData.venue_2
+    class performance_8:
+        event = EventData.event_1
+        start_on = datetime(2012,7,7,19,0)
+        end_on = None
+        open_on = datetime(2012,7,7,18,0)
+        no_period = False
+        name =  u"ブルーマングループ IN 東京 2011年"
+        code = u'201207011800'
+        owner = AccountData.account_3
+        venue = VenueData.venue_2

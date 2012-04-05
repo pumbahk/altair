@@ -60,6 +60,7 @@ class Performances(BaseView):
         if f.validate():
             data = f.data
             record = Performance()
+            record.event = event
             record = merge_session_with_post(record, data)
             Performance.add(record)
             return HTTPFound(location=route_path('events.index', self.request))

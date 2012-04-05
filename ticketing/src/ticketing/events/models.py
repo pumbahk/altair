@@ -82,6 +82,11 @@ class Performance(Base):
     def get(performance_id):
         return session.query(Performance).filter(Performance.id == performance_id).first()
 
+    @staticmethod
+    def add(performance):
+        session.add(performance)
+
+
 event_table = Table(
     'Event', Base.metadata,
     Column('id', BigInteger, primary_key=True),

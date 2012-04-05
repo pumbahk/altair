@@ -13,6 +13,9 @@ from forms import EventForm
 
 import webhelpers.paginate as paginate
 
+import sqlahelper
+session = sqlahelper.get_session()
+
 @view_defaults(decorator=with_bootstrap)
 class Events(BaseView):
 
@@ -21,6 +24,8 @@ class Events(BaseView):
         current_page = int(self.request.params.get("page", 0))
         page_url = paginate.PageURL_WebOb(self.request)
         query = session.query(Event)
+        if self.request.params.get('by_event'):
+            query = query.filter(Event.id == int(self.request.params.get('by_event')))
         clients = paginate.Page(query.order_by(Event.id), current_page, url=page_url)
         return {
             'events'        : clients

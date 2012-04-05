@@ -36,6 +36,25 @@
     .tabs-above .nav-tabs .active > a:hover {
         border-color: transparent #ddd #ddd  #ddd;
     }
+    .tabs-above-horizontal .nav-tabs {
+        float: none;
+        margin-right: auto;
+        border-right: none;
+    }
+    .tabs-above-horizontal .nav-tabs > li {
+        float: left;
+    }
+    .tabs-above-horizontal .nav-tabs > li > a {
+        -webkit-border-radius:  4px 4px 0 0 ;
+        -moz-border-radius:  4px 4px 0 0 ;
+        border-radius:  4px 4px 0 0 ;
+        margin-right: 2px;
+        margin-bottom: 0;
+    }
+    .tabs-above-horizontal .nav-tabs .active > a,
+    .tabs-above-horizontal .nav-tabs .active > a:hover {
+        border-color:  #ddd #ddd transparent  #ddd;
+    }
 </style>
 </%block>
 <h2><%block name="title">${performance.name}</%block></h2>
@@ -100,8 +119,8 @@
 
 <div class="tabbable tabs-left" id="tabbable-content">
   <ul class="nav nav-tabs">
-      <li class="active"><a href="#seat-allocation" data-toggle="tab">配券/配席</a></li>
-      <li><a href="#venue-designer" data-toggle="tab">会場図</a></li>
+      <li class="active"><a href="#seat-allocation" data-toggle="tab">配券／配席</a></li>
+      <li><a href="#venue-designer" data-toggle="tab">会場／席種</a></li>
       <li><a href="#ticket-designer" data-toggle="tab">チケット券面</a></li>
       <li><a href="#product" data-toggle="tab">商品管理</a></li>
   </ul>
@@ -110,10 +129,10 @@
           <%include file="./_seat_allocation.html" />
       </div>
       <div class="tab-pane" id="venue-designer">
-          <%include file="./_venue-designer.html" />
+          <%include file="./_venue_designer.html" />
       </div>
       <div class="tab-pane" id="ticket-designer">
-          <%include file="./_ticket-designer.html" />
+          <%include file="./_ticket_designer.html" />
       </div>
       <div class="tab-pane" id="product">
           <%include file="./_product.html" />

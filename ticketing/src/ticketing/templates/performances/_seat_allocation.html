@@ -9,6 +9,39 @@
     border-radius: 3px;
     }
 </style>
+
+
+<div class="modal fade" id="modal-report">
+
+    <div class="modal-header">
+        <a class="close" data-dismiss="modal">×</a>
+        <h3>帳票</h3>
+    </div>
+
+    <div class="modal-body">
+        <label class="control-label">帳票の出力タイプを選択</label>
+        <div class="controls">
+          <label class="radio">
+            <input type="radio" name="optionsRadios" id="optionsRadios1" value="option1" checked>
+            Excel
+          </label>
+          <label class="radio">
+            <input type="radio" name="optionsRadios" id="optionsRadios2" value="option2">
+            Csv
+          </label>
+            <label class="radio">
+              <input type="radio" name="optionsRadios" id="optionsRadios3" value="option2">
+              PDF
+            </label>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+        <a href="#" class="btn btn-primary">出力</a>
+    </div>
+</div>
+
 <div class="modal fade" id="modal-new-stock-group-own">
 
     <div class="modal-header">
@@ -40,9 +73,9 @@
         <input type="text" class="span3" placeholder="ラベル">
         <label>配券先</label>
         <select>
-            <option>A</option>
-            <option>B</option>
-            <option>C</option>
+            <option>A社</option>
+            <option>B社</option>
+            <option>C社</option>
         </select>
     </div>
 
@@ -92,6 +125,20 @@
                             <li><a data-toggle="modal" href="#modal-new-stock-group-send" >追券</a></li>
                         </ul>
                       </li>
+                        </li>
+                          <li class="dropdown" id="report">
+                            <a class="dropdown-toggle" data-toggle="dropdown" href="#report">
+                              明細
+                              <b class="caret"></b>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a data-toggle="modal" href="#modal-report" >座席明細（すべて）</a></li>
+                                <li><a data-toggle="modal" href="#modal-report" >配券明細（すべて）</a></li>
+                              <li class="divider"></li>
+                                <li><a data-toggle="modal" href="#modal-report" >座席明細（選択）</a></li>
+                                <li><a data-toggle="modal" href="#modal-report" >配券明細（選択）</a></li>
+                            </ul>
+                          </li>
                     </ul>
                     <table class="table table-striped table-bordered table-condensed">
                         <h4>枠</h4>
@@ -182,6 +229,17 @@
                   <li><a data-toggle="modal" href="#modal-new-stock-group-send" >追券</a></li>
               </ul>
             </li>
+              <li class="dropdown" id="report">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#report">
+                  明細
+                  <b class="caret"></b>
+                </a>
+                <ul class="dropdown-menu">
+                  <li class="divider"></li>
+                    <li><a data-toggle="modal" href="#modal-new-stock-group-send" >返券</a></li>
+                    <li><a data-toggle="modal" href="#modal-new-stock-group-send" >追券</a></li>
+                </ul>
+              </li>
           </ul>
           <div style="width:100%" id="allocated-list">
           <table class="table table-striped table-bordered table-condensed " >

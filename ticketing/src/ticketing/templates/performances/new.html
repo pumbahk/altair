@@ -33,11 +33,11 @@
         <label>${form.code.label}</label>
         ${form.code}
         <label>${form.open_on.label}</label>
-        ${form.code}
+        ${form.open_on(id="open_on")}
         <label>${form.start_on.label}</label>
-        ${form.start_on}
+        ${form.start_on(id="start_on")}
         <label>${form.end_on.label}</label>
-        ${form.end_on}
+        ${form.end_on(id="end_on")}
         <span class="help-inline">オプション</span>
     </div>
 
@@ -46,3 +46,15 @@
         <button type="submit" class="btn btn-primary">保存</button>
     </div>
 </form>
+
+<script type="text/javascript">
+    $("#open_on").live('click', function() {
+        $(this).datepicker({showOn:'focus',dateFormat: 'yy-mm-dd'}).focus();
+    });
+    $("#start_on").live('click', function() {
+        $(this).datepicker({showOn:'focus',dateFormat: 'yy-mm-dd'}).focus();
+    });
+    $("#end_on").live('click', function() {
+            $(this).datepicker({showOn:'focus',dateFormat: 'yy-mm-dd'}).focus();
+        });
+</script>
