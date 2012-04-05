@@ -14,21 +14,26 @@ def config():
     return testing.setUp(
         settings={"altaircms.plugin_static_directory": "altaircms:plugins/static", 
                   "altaircms.debug.strip_security": "true",
+                  "sqlalchemy.url": "sqlite://", 
                   "widget.template_path_format": "%s.mako", 
                   "altaircms.layout_directory": "."}
         )
 
-def functionalTestSetUp():
+def functionalTestSetUp(extra=None):
     DBSession.remove()
     from altaircms import main
-    app = main({}, **{"sqlalchemy.url": "sqlite://", 
-                      "session.secret": "B7gzHVRUqErB1TFgSeLCHH3Ux6ShtI", 
-                      "mako.directories": "altaircms:templates", 
-                      "altaircms.debug.strip_security": 'true', 
-                      "altaircms.plugin_static_directory": "altaircms:plugins/static", 
-                      "altaircms.layout_directory": "."})
-    create_db(force=False)
-    # Base.metadata.create_all()
+    defaults = {"sqlalchemy.url": "sqlite://", 
+                "session.secret": "B7gzHVRUqErB1TFgSeLCHH3Ux6ShtI", 
+                "mako.directories": "altaircms:templates", 
+                "altaircms.debug.strip_security": 'true', 
+                "altaircms.plugin_static_directory": "altaircms:plugins/static", 
+                "altaircms.layout_directory": "."}
+    config = defaults.copy()
+    if extra:
+        config.update(extra)
+    app = main({}, **config)
+    # create_db(force=False)
+    Base.metadata.create_all()
     return app
 
 def functionalTestTearDown():

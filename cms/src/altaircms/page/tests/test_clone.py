@@ -4,15 +4,8 @@ import datetime
 import os.path
 import json
 
-def setUpModule():
-    from altaircms.models import DBSession
-    DBSession.remove()
-
-def tearDownModule():
-    from altaircms.lib.testutils import dropall_db
-    dropall_db(message="test view drop")
-    from altaircms.lib.testutils import create_db
-    create_db()
+from altaircms.lib.testutils import functionalTestSetUp
+from altaircms.lib.testutils import functionalTestTearDown
 
 class UseAssetMixin(object):
     def _getImageAsset(self):
@@ -77,23 +70,14 @@ class WithWidgetPageTest(UseAssetMixin,
                     UsePageEtcMixin, 
                     unittest.TestCase):
     DIR = os.path.dirname(os.path.abspath(__file__))
+
     def setUp(self):
-        from altaircms import main
-        app = main({}, **{"sqlalchemy.url": "sqlite://", 
-                          "mako.directories": os.path.join(self.DIR, "templates"), 
-                          "altaircms.plugin_static_directory": "altaircms:plugins/static", 
-                          "altaircms.debug.strip_security": "true", 
-                          "session.secret": "B7gzHVRUqErB1TFgSeLCHH3Ux6ShtI", 
-                          "altaircms.layout_directory": "."})
-        from altaircms.lib.testutils import create_db
-        create_db()
+        app = functionalTestSetUp()
         from webtest import TestApp
         self.testapp = TestApp(app)
 
     def tearDown(self):
-        import transaction
-        transaction.abort()
-        self._getSession().remove()
+        functionalTestTearDown()
         
     def _addData(self, session):
         structure = u'''
