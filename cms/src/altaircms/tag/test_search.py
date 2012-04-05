@@ -18,8 +18,8 @@ class PageSearchTest(unittest.TestCase):
         return PageTag(**kwargs)
 
     def _getManger(self):
-        from altaircms.tag.manager import TagManager
-        return TagManager.page()
+        from altaircms.tag.api import get_tagsearch
+        return get_tagsearch("page")
 
     def test_empty(self):
         manager = self._getManger()
@@ -55,8 +55,8 @@ class EventSearchTest(unittest.TestCase):
         return EventTag(**kwargs)
 
     def _getManger(self):
-        from altaircms.tag.manager import TagManager
-        return TagManager.event()
+        from altaircms.tag.api import get_tagsearch
+        return get_tagsearch("event")
 
     def test_empty(self):
         manager = self._getManger()
@@ -94,8 +94,8 @@ class ImageAssetSearchTest(unittest.TestCase):
         return ImageAssetTag(**kwargs)
 
     def _getManger(self):
-        from altaircms.tag.manager import TagManager
-        return TagManager.image_asset()
+        from altaircms.tag.api import get_tagsearch
+        return get_tagsearch("image_asset")
 
     def test_empty(self):
         manager = self._getManger()
@@ -126,14 +126,13 @@ class MovieAssetSearchTest(unittest.TestCase):
         from altaircms.asset.models import MovieAsset
         return MovieAsset(**kwargs)
 
-
     def _makeTag(self, **kwargs):
         from altaircms.tag.models import MovieAssetTag
         return MovieAssetTag(**kwargs)
 
     def _getManger(self):
-        from altaircms.tag.manager import TagManager
-        return TagManager.movie_asset()
+        from altaircms.tag.api import get_tagsearch
+        return get_tagsearch("movie_asset")
 
     def test_empty(self):
         manager = self._getManger()
@@ -170,8 +169,8 @@ class FlashAssetSearchTest(unittest.TestCase):
         return FlashAssetTag(**kwargs)
 
     def _getManger(self):
-        from altaircms.tag.manager import TagManager
-        return TagManager.flash_asset()
+        from altaircms.tag.api import get_tagsearch
+        return get_tagsearch("flash_asset")
 
     def test_empty(self):
         manager = self._getManger()
@@ -212,9 +211,9 @@ class AnyKindAssetSearchTests(unittest.TestCase):
         from altaircms.tag.models import AssetTag
         return AssetTag(**kwargs)
 
-    def _getMangerClass(self):
-        from altaircms.tag.manager import TagManager
-        return TagManager
+    def _getManger(self, classfier):
+        from altaircms.tag.api import get_tagsearch
+        return get_tagsearch(classfier)
 
     def test_any_kind(self):
         """ search image. flash, movie asset exist in session"""
@@ -227,20 +226,20 @@ class AnyKindAssetSearchTests(unittest.TestCase):
         movie.tags.append(self._makeTag(label=u"foo", discriminator="movie"))
         session.add(movie)
 
-        manager = self._getMangerClass().image_asset()
+        manager = self._getManger("image_asset")
         self.assertEquals(manager.search(u"foo").count(), 
                           0)
-        manager = self._getMangerClass().movie_asset()
+        manager = self._getManger("movie_asset")
         self.assertEquals(manager.search(u"foo").count(), 
                           1)
-        manager = self._getMangerClass().flash_asset()
+        manager = self._getManger("flash_asset")
         self.assertEquals(manager.search(u"foo").count(), 
                           1)
 
-        manager = self._getMangerClass().page()
+        manager = self._getManger("page")
         self.assertEquals(manager.search(u"foo").count(), 
                           0)
-        manager = self._getMangerClass().event()
+        manager = self._getManger("event")
         self.assertEquals(manager.search(u"foo").count(), 
                           0)
     
@@ -250,14 +249,6 @@ if __name__ == "__main__":
         global config
         from altaircms.lib import testutils
         config = testutils.config()
-        config.scan("altaircms.page.models")
-        config.scan("altaircms.event.models")
-        config.scan("altaircms.asset.models")
-        config.scan("altaircms.tag.models")
+        config.include("altaircms.tag")
         testutils.create_db(force=False)
-
-        # from altaircms.lib.dbinspect import listing_all
-        # from altaircms.models import Base
-        # listing_all(Base.metadata)
-
     unittest.main()
