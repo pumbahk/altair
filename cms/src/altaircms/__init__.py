@@ -67,6 +67,8 @@ def main(global_config, **settings):
     config.include('pyramid_tm')
     config.include("pyramid_fanstatic")
     
+    config.include("altaircms.lib.treat")
+
     config.include("altaircms.auth", route_prefix='/auth')
     config.include("altaircms.front", route_prefix="f")
     config.include("altaircms.widget")

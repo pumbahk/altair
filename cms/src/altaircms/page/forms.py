@@ -1,5 +1,4 @@
 # coding: utf-8
-
 from wtforms.form import Form
 from wtforms import fields
 from wtforms import widgets
@@ -7,6 +6,8 @@ from wtforms import validators
 from altaircms.layout.models import Layout
 from altaircms.page.models import Page
 from altaircms.event.models import Event
+from altaircms.interfaces import IForm
+from altaircms.interfaces import implementer
 from altaircms.lib.formhelpers import dynamic_query_select_field_factory
 
 """
@@ -37,6 +38,7 @@ def url_not_conflict(form, field):
     if Page.query.filter_by(url=field.data).count() > 0:
         raise validators.ValidationError(u"%sは既に登録されてます" % field.data)
 
+@implementer(IForm)
 class PageForm(Form):
     # url = fields.TextField(validators=[url_field_validator], placeholder="top/music/abc")
     url = fields.TextField(validators=[ validators.Required(), url_field_validator,url_not_conflict],
@@ -49,3 +51,4 @@ class PageForm(Form):
     # event_id = fields.IntegerField(label=u"", widget=widgets.HiddenInput())
     event = dynamic_query_select_field_factory(Event, allow_blank=True, label=u"イベント")
     parent = dynamic_query_select_field_factory(Page, allow_blank=True, label=u"親ページ")
+

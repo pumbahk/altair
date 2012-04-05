@@ -11,6 +11,8 @@ from altaircms.page.forms import PageForm
 from altaircms.page.models import Page
 from altaircms.event.models import Event
 
+
+import altaircms.lib.treat.api as treat
 from altaircms.page.mappers import PageMapper, PagesMapper
 
 from altaircms.lib.fanstatic_decorator import with_bootstrap
@@ -42,7 +44,7 @@ class AddView(object):
     def create_page(self):
         form = PageForm(self.request.POST)
         if form.validate():
-            PageRESTAPIView(self.request).create()
+            page = treat.get_creator(form, "page", request=self.request).create()
             ## flash messsage
             FlashMessage.success("page created", request=self.request)
             return HTTPFound(self.request.route_path("event", id=self.event_id))
@@ -65,7 +67,7 @@ class CreateView(object):
     def create(self):
         form = PageForm(self.request.POST)
         if form.validate():
-            PageRESTAPIView(self.request).create()
+            page = treat.get_creator(form, "page", request=self.request).create()
             ## flash messsage
             FlashMessage.success("page created", request=self.request)
             return HTTPFound(self.request.route_path("page"))
@@ -116,39 +118,56 @@ class DeleteView(object):
         return HTTPFound(location=h.page.to_list_page(self.request))
 
 
+class AfterInput(Exception):
+    pass
+
 @view_defaults(route_name="page_update",permission="page_update", decorator=with_bootstrap)
 class UpdateView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
 
-    @view_config(renderer="altaircms:templates/page/input.mako",  request_method="GET")
+    @view_config(context=AfterInput, renderer="altaircms:templates/page/input.mako")
+    def _input(self):
+        page, form = self._store
+        return dict(
+            page=page, form=form,
+        )
+
+    def _input_page(self, page, form):
+        self._store = page, form
+        raise AfterInput
+        
+    @view_config(request_method="GET")
     def input(self):
         id_ = self.request.matchdict['id']
         page = PageRESTAPIView(self.request, id_).read()
         form = PageForm(**page.to_dict())
-        return dict(
-            page=page, form=form,
-        )
+        return self._input_page(page, form)
 
     @view_config(request_method="POST", renderer="altaircms:templates/page/update_confirm.mako",       
                     custom_predicates=[RegisterViewPredicate.confirm])
     def update_confirm(self):
         id_ = self.request.matchdict['id']
+        form = PageForm(self.request.POST)
         page = PageRESTAPIView(self.request, id_).read()
-        return dict(
-            page=page, params=self.request.POST.items()
-        )
+        if form.validate():
+            return dict( page=page, params=self.request.POST.items())
+        else:
+            return self._input_page(page, form)
 
     @view_config(request_method="POST", custom_predicates=[RegisterViewPredicate.execute])
     def update(self):
-        id_ = self.request.matchdict['id']
-        view = PageRESTAPIView(self.request, id_)
-        _, page, _ = view.get_rest_action(self.request.POST["_method"])()
+        page = self.context.get_page( self.request.matchdict['id'])
+        form = PageForm(self.request.POST)
+        if form.validate():
+            page = treat.get_updater(form, "page", request=self.request).update(page)
+            ## flash messsage
+            FlashMessage.success("page updated", request=self.request)
+            return HTTPFound(location=h.page.to_edit_page(self.request, page))
+        else:
+            return self._input_page(page, form)
 
-        ## flash messsage
-        FlashMessage.success("page updated", request=self.request)
-        return HTTPFound(location=h.page.to_edit_page(self.request, page))
 
 @view_config(route_name='page', renderer='altaircms:templates/page/list.mako', 
              permission='page_read', request_method="GET", decorator=with_bootstrap)

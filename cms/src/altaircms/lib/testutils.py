@@ -6,6 +6,7 @@ todo: output meessage via logger
 """
 from sqlalchemy import create_engine
 from altaircms.models import DBSession
+from altaircms.models import Base
 from pyramid import testing
 import transaction
 
@@ -19,15 +20,23 @@ def config():
 
 def functionalTestSetUp():
     DBSession.remove()
+    from altaircms import main
+    app = main({}, **{"sqlalchemy.url": "sqlite://", 
+                      "session.secret": "B7gzHVRUqErB1TFgSeLCHH3Ux6ShtI", 
+                      "mako.directories": "altaircms:templates", 
+                      "altaircms.debug.strip_security": 'true', 
+                      "altaircms.plugin_static_directory": "altaircms:plugins/static", 
+                      "altaircms.layout_directory": "."})
     create_db(force=False)
+    # Base.metadata.create_all()
+    return app
 
 def functionalTestTearDown():
-    transaction.abort()
     dropall_db(message="test view drop")
     create_db(force=True)
+    transaction.abort()
 
 def _initTestingDB():
-    from sqlalchemy import create_engine
     from altaircms.models import initialize_sql
     session = initialize_sql(create_engine('sqlite:///:memory:'))
     return session
@@ -44,7 +53,6 @@ def _create_db(Base, DBSession, engine, force=False):
         if not DBSession.bind and not DBSession.registry.has():
             DBSession.configure(bind=engine)
         Base.metadata.create_all()
-    # listing_all(Base.metadata)
     return DBSession
 
 def _message(message):
@@ -53,15 +61,14 @@ def _message(message):
         sys.stderr.write(message)
         sys.stderr.write("\n----------------\n")
 
-def create_db(echo=False, base=None, session=None, message=None, force=True):
+def create_db(echo=False, base=None, session=None, message=None, force=False):
     # _message(message)
     if base is None or session is None:
         engine = create_engine('sqlite:///')
         engine.echo = echo
         import altaircms.models as m
         return _create_db(m.Base, m.DBSession, engine, force)
-
-    if force:
+    else:
         engine = create_engine('sqlite:///')
         engine.echo = echo
         return _create_db(base, session, engine, force)
