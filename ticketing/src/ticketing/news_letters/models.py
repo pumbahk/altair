@@ -6,9 +6,12 @@ import sqlahelper
 session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
 
-from pprint import pprint
-import logging
+import csv
+import sys
 import os
+import re
+from os.path import dirname
+import logging
 log = logging.getLogger(__name__)
 
 '''
@@ -51,13 +54,30 @@ class NewsLetter(Base):
     @staticmethod
     def save_file(id, form):
         subscriber_file = form.subscriber_file.data.file
+        log.debug(subscriber_file)
         if subscriber_file:
-            count = 0
-            for line in subscriber_file.readlines(): count += 1
-            log.debug(count)
+            csv_dir = os.path.abspath(dirname(dirname(__file__))) + '/csv'
+            log.debug(csv_dir)
+            if not os.path.isdir(csv_dir):
+                os.mkdir(csv_dir)
 
-            open(os.path.join('/tmp', 'altair' + str(id) + '.csv'), 'w').write(subscriber_file.read())
+            fields = ['id', 'name', 'email']
+            csv_file = csv.DictWriter(open(os.path.join(csv_dir, 'altair' + str(id) + '.csv'), 'w'), fields)
+            count = 0
+            for row in csv.DictReader(subscriber_file, fields):
+                if NewsLetter.validateEmail(row['email']):
+                    csv_file.writerow(row)
+                    count += 1
 
             news_letter = NewsLetter.get(id)
             news_letter.subscriber_count = count
             NewsLetter.update(news_letter)
+
+    @staticmethod
+    def validateEmail(email):
+        log.debug(email)
+        if email is not None and len(email) > 6:
+            if re.match('[\w\.-]+@[\w\.-]+\.\w{2,4}', email) != None:
+                return True
+        return False
+

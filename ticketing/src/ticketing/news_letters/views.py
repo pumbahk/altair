@@ -16,7 +16,6 @@ from forms import NewsLettersForm
 
 import webhelpers.paginate as paginate
 
-from pprint import pprint
 import logging
 import os
 log = logging.getLogger(__name__)
