@@ -10,7 +10,9 @@ from datetime import datetime
 
 class PageTag2Page(Base):
     __tablename__ = "pagetag2page"
-    object_id = sa.Column(sa.Integer, sa.ForeignKey("page.id"), primary_key=True)
+    query = DBSession.query_property()
+    id = sa.Column(sa.Integer, primary_key=True)
+    object_id = sa.Column(sa.Integer, sa.ForeignKey("page.id"))
     tag_id = sa.Column(sa.Integer, sa.ForeignKey("pagetag.id"))
     # page = orm.relationship("Page", backref=orm.backref("pagetag2page", cascade="all, delete-orphan"))
 
@@ -27,7 +29,8 @@ class PageTag(Base):
         
 class EventTag2Event(Base):
     __tablename__ = "eventtag2event"
-    object_id = sa.Column(sa.Integer, sa.ForeignKey("event.id"), primary_key=True)
+    query = DBSession.query_property()
+    object_id = sa.Column(sa.Integer, sa.ForeignKey("event.id"))
     tag_id = sa.Column(sa.Integer, sa.ForeignKey("eventtag.id"), primary_key=True)
     event = orm.relationship("Event", backref=orm.backref("eventtag2event", cascade="all, delete-orphan"))
 
@@ -43,8 +46,9 @@ class EventTag(Base):
 
 class AssetTag2Asset(Base):
     __tablename__ = "assettag2asset"
-    object_id = sa.Column(sa.Integer, sa.ForeignKey("asset.id"), primary_key=True)
-    tag_id = sa.Column(sa.Integer, sa.ForeignKey("assettag.id"), primary_key=True)
+    query = DBSession.query_property()
+    object_id = sa.Column(sa.Integer, sa.ForeignKey("asset.id"))
+    tag_id = sa.Column(sa.Integer, sa.ForeignKey("assettag.id"),  primary_key=True)
     asset = orm.relationship("Asset", backref=orm.backref("assettag2asset", cascade="all, delete-orphan"))
 
 class AssetTag(Base):

@@ -6,7 +6,7 @@ from .manager import TagManager
 class TagSearchMap(dict):
     pass
 
-def add_tagsearch(config, classifier, model=None, xref=None, tag=None):
+def add_tagmanager(config, classifier, model=None, xref=None, tag=None):
     tsmap = config.registry.queryUtility(ITagSearchMap)
 
     model = config.maybe_dotted(model)

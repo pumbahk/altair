@@ -7,12 +7,9 @@ def _get_registry(request):
     else:
         return get_current_registry()
 
-def get_tagsearch(classfier=None, request=None):
+def get_tagmanager(classfier, request=None):
     registry = _get_registry(request)
     tsmap = registry.queryUtility(ITagSearchMap, None)
     if tsmap is None:
         return None
-    if classfier:
-        return tsmap[classfier]
-    return tsmap
-
+    return tsmap[classfier]

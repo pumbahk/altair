@@ -29,8 +29,8 @@ class PageSearchTest(unittest.TestCase):
         return PageTag(**kwargs)
 
     def _getManger(self):
-        from altaircms.tag.api import get_tagsearch
-        return get_tagsearch("page")
+        from altaircms.tag.api import get_tagmanager
+        return get_tagmanager("page")
 
     def test_empty(self):
         manager = self._getManger()
@@ -66,8 +66,8 @@ class EventSearchTest(unittest.TestCase):
         return EventTag(**kwargs)
 
     def _getManger(self):
-        from altaircms.tag.api import get_tagsearch
-        return get_tagsearch("event")
+        from altaircms.tag.api import get_tagmanager
+        return get_tagmanager("event")
 
     def test_empty(self):
         manager = self._getManger()
@@ -105,8 +105,8 @@ class ImageAssetSearchTest(unittest.TestCase):
         return ImageAssetTag(**kwargs)
 
     def _getManger(self):
-        from altaircms.tag.api import get_tagsearch
-        return get_tagsearch("image_asset")
+        from altaircms.tag.api import get_tagmanager
+        return get_tagmanager("image_asset")
 
     def test_empty(self):
         manager = self._getManger()
@@ -142,8 +142,8 @@ class MovieAssetSearchTest(unittest.TestCase):
         return MovieAssetTag(**kwargs)
 
     def _getManger(self):
-        from altaircms.tag.api import get_tagsearch
-        return get_tagsearch("movie_asset")
+        from altaircms.tag.api import get_tagmanager
+        return get_tagmanager("movie_asset")
 
     def test_empty(self):
         manager = self._getManger()
@@ -180,8 +180,8 @@ class FlashAssetSearchTest(unittest.TestCase):
         return FlashAssetTag(**kwargs)
 
     def _getManger(self):
-        from altaircms.tag.api import get_tagsearch
-        return get_tagsearch("flash_asset")
+        from altaircms.tag.api import get_tagmanager
+        return get_tagmanager("flash_asset")
 
     def test_empty(self):
         manager = self._getManger()
@@ -223,8 +223,8 @@ class AnyKindAssetSearchTests(unittest.TestCase):
         return AssetTag(**kwargs)
 
     def _getManger(self, classfier):
-        from altaircms.tag.api import get_tagsearch
-        return get_tagsearch(classfier)
+        from altaircms.tag.api import get_tagmanager
+        return get_tagmanager(classfier)
 
     def test_any_kind(self):
         """ search image. flash, movie asset exist in session"""
