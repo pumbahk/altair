@@ -34,6 +34,8 @@ class BaseRESTAPI(object):
     form_object = None
 
     def __init__(self, request, id=None):
+        import warnings
+        warnings.warn("this is deprecated. (in fact, this class is not support for many objects creation.(e.g. with tagging)")
         self.request = request
         self.id = id
         self.session = DBSession()

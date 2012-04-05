@@ -3,14 +3,14 @@ import unittest
 from altaircms.models import DBSession
 from altaircms.page.models import Page
 
+from altaircms.lib.testutils import functionalTestSetUp
+from altaircms.lib.testutils import functionalTestTearDown
+
 def setUpModule():
-    DBSession.remove()
+    functionalTestSetUp()
 
 def tearDownModule():
-    from altaircms.lib.testutils import dropall_db
-    dropall_db(message="test view drop")
-    from altaircms.lib.testutils import create_db
-    create_db()
+    functionalTestTearDown()
 
 class PageFunctionalTests(unittest.TestCase):
    def setUp(self):
@@ -21,9 +21,6 @@ class PageFunctionalTests(unittest.TestCase):
                             "altaircms.debug.strip_security": 'true', 
                             "altaircms.plugin_static_directory": "altaircms:plugins/static", 
                             "altaircms.layout_directory": "."})
-        from altaircms.lib.testutils import create_db
-        create_db()
-
         from webtest import TestApp
         self.testapp = TestApp(app)
         

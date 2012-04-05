@@ -37,8 +37,6 @@ class PageAlterTagTest(unittest.TestCase):
         return get_tagmanager
 
     def test_tagged_when_create(self):
-        """ tag:  => ko, ni, ti, wa
-        """
         page = self._withSession(self._makePage())
         manager = self._getManger()("page")
 
@@ -69,8 +67,6 @@ class PageAlterTagTest(unittest.TestCase):
             self.assertEquals(tag.label, k)
 
     def test_untagged_when_update(self):
-        """ tag: fool, bool, cool => cool
-        """
         # create
         session = self._getSession()
         page = self._withSession(self._makePage())
@@ -85,8 +81,6 @@ class PageAlterTagTest(unittest.TestCase):
         self.assertEquals(page.tags[0].label, u"cool")
 
     def test_double(self):
-        """ tagged 2 page( added tags are same)
-        """
         page = self._withSession(self._makePage())
         another = self._withSession(self._makePage())
         manager = self._getManger()("page")
