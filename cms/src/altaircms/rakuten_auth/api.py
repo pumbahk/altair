@@ -1,6 +1,11 @@
 import urllib
 import urllib2
 
+from .interfaces import IRakutenOpenID
+
+def get_open_id_consumer(request):
+    return request.registry.queryUtility(IRakutenOpenID)
+
 DEFAULT_BASE_URL = 'https://api.id.rakuten.co.jp/openid/auth'
 
 class RakutenOpenID(object):
