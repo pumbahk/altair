@@ -7,10 +7,6 @@ from altaircms.models import DBSession
 
 from datetime import datetime
 
-__all__ = [ 'EventTag', 'PageTag', 'AssetTag']
-"""
-"""
-
 
 class PageTag2Page(Base):
     __tablename__ = "pagetag2page"

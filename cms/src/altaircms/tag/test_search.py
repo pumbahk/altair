@@ -1,5 +1,16 @@
 import unittest
+config  = None
+def setUpModule():
+    global config
+    from altaircms.lib import testutils
+    config = testutils.config()
+    config.include("altaircms.tag")
+    testutils.create_db(force=False)
     
+def tearDownModule():
+    from pyramid.testing import tearDown
+    tearDown()
+
 class PageSearchTest(unittest.TestCase):
     def tearDown(self):
         import transaction
@@ -244,11 +255,4 @@ class AnyKindAssetSearchTests(unittest.TestCase):
                           0)
     
 if __name__ == "__main__":
-    config  = None
-    def setUpModule():
-        global config
-        from altaircms.lib import testutils
-        config = testutils.config()
-        config.include("altaircms.tag")
-        testutils.create_db(force=False)
     unittest.main()

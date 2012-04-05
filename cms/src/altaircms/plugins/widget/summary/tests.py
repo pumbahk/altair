@@ -11,6 +11,11 @@ def setUpModule():
     testutils.create_db(force=False)
     config = testutils.config()
 
+def tearDownModule():
+    from pyramid.testing import tearDown
+    tearDown()
+
+
 class WidgetTestSourceMixn(object):
     def _makePage(self, id=None):
         from altaircms.page.models import Page

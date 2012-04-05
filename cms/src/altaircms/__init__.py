@@ -79,6 +79,7 @@ def main(global_config, **settings):
     config.include("altaircms.topic")
     config.include("altaircms.topcontent")
     config.include("altaircms.base")
+    config.include("altaircms.tag")
 
 
     ## slack-off
