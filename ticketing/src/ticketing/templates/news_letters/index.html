@@ -26,8 +26,6 @@
         </ul>
       </div>
       <br style="clear: both" />
-        <span class="label label-important">未配信</span>
-        <span class="label label-success">配信済み</span>
         <table class="table fullwidth checkboxed_table">
           <thead>
             <tr>
@@ -35,19 +33,33 @@
               <th class="minwidth">ID</th>
               <th><a href="#" class="sortable">件名</a></th>
               <th><a href="#" class="sortable">本文</a></th>
-              <th><a href="#" class="sortable">配信開始日時</a></th>
-              <th><a href="#" class="sortable">配信終了日時</a></th>
+              <th><a href="#">送信リスト</a></th>
+              <th><a href="#">送信件数</a></th>
+              <th><a href="#" class="sortable">状態</a></th>
+              <th><a href="#" class="sortable">配信予定日時</a></th>
             </tr>
           </thead>
           <tbody>
           % for news_letter in news_letters.items:
             <tr>
               <td><input type="checkbox" /></td>
-              <td><a href="${request.route_path('news_letters.show', news_letter_id=news_letter.id)}">${news_letter.id}</a></td>
-              <td><a href="${request.route_path('news_letters.show', news_letter_id=news_letter.id)}">${news_letter.subject}</a></td>
+              <td>${news_letter.id}</td>
+              <td><a href="${request.route_path('news_letters.show', news_letter_id=news_letter.id)}">
+                  ${news_letter.subject}
+              </a></td>
               <td><a href="#"></a>${news_letter.description}<a href="#"></a></td>
+              <td><a href="${request.route_path('news_letters.download', news_letter_id=news_letter.id)}">
+                  ${news_letter.subscriber_file()}
+              </a></td>
+              <td>${news_letter.subscriber_count}</td>
+              <td>
+              % if news_letter.status == 'waiting':
+                  <span class="label label-important">未配信</span>
+              % elif news_letter.status == 'complete':
+                  <span class="label label-success">配信済み</span>
+              % endif
+              </td>
               <td>${news_letter.start_on}</td>
-              <td>${news_letter.updated_at}</td>
             </tr>
           % endfor
           </tbody>

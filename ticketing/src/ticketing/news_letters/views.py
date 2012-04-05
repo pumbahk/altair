@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 
+import urllib
+
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path
+from pyramid.response import Response
 
 from ticketing.models import merge_session_with_post, record_to_multidict
 from models import session, NewsLetter
@@ -15,6 +18,7 @@ import webhelpers.paginate as paginate
 
 from pprint import pprint
 import logging
+import os
 log = logging.getLogger(__name__)
 
 @view_defaults(decorator=with_bootstrap)
@@ -52,6 +56,7 @@ class NewsLetters(BaseView):
             record = NewsLetter()
             record = merge_session_with_post(record, data)
             NewsLetter.add(record)
+            NewsLetter.save_file(1, f)
             return HTTPFound(location=route_path('news_letters.index', self.request))
         else:
             return {
@@ -65,8 +70,10 @@ class NewsLetters(BaseView):
         log.debug(vars(news_letter))
         if news_letter is None:
             return HTTPNotFound("news_letter id %d is not found" % news_letter_id)
+        f = NewsLettersForm()
 
         return {
+            'form' :f,
             'news_letter' : news_letter,
         }   
 
@@ -97,10 +104,28 @@ class NewsLetters(BaseView):
             data = f.data
             record = merge_session_with_post(news_letter, data)
             NewsLetter.update(record)
+            NewsLetter.save_file(news_letter_id, f)
             return HTTPFound(location=route_path('news_letters.show', self.request, news_letter_id=news_letter.id))
         else:
             return {
                 'form':f,
                 'news_letter' : news_letter
             }
+
+    @view_config(route_name='news_letters.download')
+    def download(self):
+        news_letter_id = int(self.request.matchdict.get("news_letter_id", 0)) 
+        news_letter = NewsLetter.get(news_letter_id)
+        log.debug(vars(news_letter))
+
+        fname = news_letter.subscriber_file()
+        f = open(fname)
+        headers = [
+            ('Content-Type', 'application/octet-stream'),
+            ('Content-Disposition', 'attachment; filename=%s' % os.path.basename(fname))
+        ]
+        response = Response(f.read(), headers=headers)
+        f.close()
+
+        return response
 

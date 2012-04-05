@@ -33,15 +33,27 @@
           <table class="vertical-table fullwidth">
             <tbody>
               <tr>
-                <th>件名</th>
+                <th>${form.subject.label}</th>
                 <td>${news_letter.subject}</td>
               </tr>
               <tr>
-                <th>本文</th>
+                <th>${form.description.label}</th>
                 <td>${news_letter.description}</td>
               </tr>
               <tr>
-                <th>送信開始日時</th>
+                <th>${form.status.label}</th>
+                <td>${news_letter.status}</td>
+              </tr>
+              <tr>
+                <th>${form.subscriber_file.label}</th>
+                <td>${news_letter.subscriber_file()}</td>
+              </tr>
+              <tr>
+                <th>${form.subscriber_count.label}</th>
+                <td>${news_letter.subscriber_count}</td>
+              </tr>
+              <tr>
+                <th>${form.start_on.label}</th>
                 <td>${news_letter.start_on}</td>
               </tr>
             </tbody>

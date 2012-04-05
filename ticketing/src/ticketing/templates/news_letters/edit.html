@@ -33,6 +33,16 @@
                 ${error(form.description)}</td>
         </tr>
         <tr>
+            <th>${form.status.label}</th>
+            <td>${form.status}
+                ${error(form.status)}</td>
+        </tr>
+        <tr>
+            <th>${form.subscriber_file.label}</th>
+            <td>${form.subscriber_file()}
+                ${error(form.subscriber_file)}</td>
+        </tr>
+        <tr>
             <th>${form.start_on.label}</th>
             <td>${form.start_on}
                 ${error(form.start_on)}</td>
