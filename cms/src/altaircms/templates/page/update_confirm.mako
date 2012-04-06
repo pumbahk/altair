@@ -2,7 +2,7 @@
 <%namespace name="co" file="components.mako"/>
 
 <div class="row" style="margin-bottom: 9px">
-  <h2 class="span6">削除確認画面 トピックのタイトル - ${page.title} (ID: ${page.id})</h2>
+  <h2 class="span6">更新確認画面 ページのタイトル - ${page.title} (ID: ${page.id})</h2>
 </div>
 
 <div class="row">

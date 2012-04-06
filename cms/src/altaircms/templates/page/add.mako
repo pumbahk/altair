@@ -62,6 +62,7 @@
           ${formfield("description")}
           ${formfield("keywords")}
           ${formfield("tags")}
+          ${formfield("unpublic_tags")}
           ${formfield("layout")}
         </tbody>
       </table>

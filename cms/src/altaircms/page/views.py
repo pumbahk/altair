@@ -121,28 +121,32 @@ class DeleteView(object):
 class AfterInput(Exception):
     pass
 
-@view_defaults(route_name="page_update",permission="page_update", decorator=with_bootstrap)
+@view_config(route_name="page_update", context=AfterInput, renderer="altaircms:templates/page/input.mako", 
+             decorator=with_bootstrap)
+def _input(request):
+    page, form = request._store
+    return dict(
+        page=page, form=form,
+        )
+
+@view_defaults(route_name="page_update", permission="page_update", decorator=with_bootstrap)
 class UpdateView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
 
-    @view_config(context=AfterInput, renderer="altaircms:templates/page/input.mako")
-    def _input(self):
-        page, form = self._store
-        return dict(
-            page=page, form=form,
-        )
-
     def _input_page(self, page, form):
-        self._store = page, form
+        self.request._store = page, form
         raise AfterInput
         
     @view_config(request_method="GET")
     def input(self):
         id_ = self.request.matchdict['id']
-        page = PageRESTAPIView(self.request, id_).read()
-        form = PageForm(**page.to_dict())
+        page = self.context.get_page(id_)
+        params = page.to_dict()
+        params["tags"] = u', '.join(tag.label for tag in page.public_tags)
+        params["unpublic_tags"] = u', '.join([tag.label for tag in page.unpublic_tags])
+        form = PageForm(**params)
         return self._input_page(page, form)
 
     @view_config(request_method="POST", renderer="altaircms:templates/page/update_confirm.mako",       

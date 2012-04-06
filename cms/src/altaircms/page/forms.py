@@ -41,7 +41,7 @@ def url_not_conflict(form, field):
 @implementer(IForm)
 class PageForm(Form):
     # url = fields.TextField(validators=[url_field_validator], placeholder="top/music/abc")
-    url = fields.TextField(validators=[ validators.Required(), url_field_validator,url_not_conflict],
+    url = fields.TextField(validators=[ validators.Required(), url_field_validator],
                            label=u"URLの一部(e.g. top/music)")
     title = fields.TextField(label=u"ページタイトル", validators=[validators.Required()])
     description = fields.TextField(label=u"概要")

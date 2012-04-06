@@ -2,6 +2,7 @@
 from datetime import datetime
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import Column
 from sqlalchemy import Integer
 from sqlalchemy import Unicode
@@ -85,6 +86,15 @@ class Page(PublishUnpublishMixin,
     DEFAULT_STRUCTURE = "{}"
     structure = Column(String, default=DEFAULT_STRUCTURE)
     hash_url = Column(String(length=32), default=None)
+
+    ## todo refactoring?
+    @hybrid_property
+    def public_tags(self):
+        return [tag for tag in self.tags if tag.publicp == True]
+
+    @hybrid_property
+    def unpublic_tags(self):
+        return [tag for tag in self.tags if tag.publicp == False]
 
     def __repr__(self):
         return '<%s id=%s %s>' % (self.__class__.__name__, self.id, self.url)
