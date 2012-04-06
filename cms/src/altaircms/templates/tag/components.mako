@@ -19,6 +19,20 @@
 </div>
 </%def>
 
+<%def name="new_tags(classifier, new_tags)">
+<div class="row">
+  <div class="span10">
+    <ul>
+      %for tag in new_tags:
+        <li><a href="${h.tag.to_search_query(request, classifier, tag)}">${tag.label}</a>(${h.tag.show_public_status(tag)} ${tag.updated_at})</li>
+      %endfor
+    </ul>
+    <table class="table">
+    </table>
+  </div>
+</div>
+</%def>
+
 <%def name="formfield(form, k)">
 	<tr><th>${getattr(form,k).label}</th><td>${getattr(form,k)}
 	%if k in form.errors:

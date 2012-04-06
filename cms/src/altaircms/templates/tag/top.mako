@@ -17,8 +17,13 @@ ${co.menutab(supported)}
 	  <button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> Search</button>
     </form>
   </div>
+
+  <div class="span5">
+	<h3> 最近追加されたタグ page</h3>
+	${co.new_tags("page", new_tags_dict["page"])}
+	<h3> 最近追加されたタグ event</h3>
+	${co.new_tags("event", new_tags_dict["event"])}
+	<h3> 最近追加されたタグ asset</h3>
+	${co.new_tags("asset", new_tags_dict["asset"])}
+  </div>
 </div>
-
-
-
-

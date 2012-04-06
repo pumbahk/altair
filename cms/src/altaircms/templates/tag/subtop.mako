@@ -16,4 +16,9 @@ ${co.menutab(supported, classifier)}
 	  <button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> Search</button>
     </form>
   </div>
+
+  <div class="span5">
+    <h3> 最近追加されたタグ</h3>
+    ${co.new_tags(classifier, new_tags)}
+  </div>
 </div>

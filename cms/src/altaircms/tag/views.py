@@ -13,13 +13,20 @@ def has_query(context, request):
 
 @view_defaults(route_name="tag", decorator=with_bootstrap, permission="tag_read")
 class TopView(object):
+    HISTORY_LIMIT = 5
     def __init__(self, request):
         self.request = request
 
     @view_config(request_method="GET", renderer="altaircms:templates/tag/top.mako")
     def toppage_view_default(self):
         form = forms.TagSearchForm()
-        return {"supported": SUPPORTED_CLASSIFIER, "form": form}
+        new_tags_dict = dict(
+            page=get_tagmanager("page").history(limit=self.HISTORY_LIMIT), 
+            event=get_tagmanager("event").history(limit=self.HISTORY_LIMIT), 
+            asset=get_tagmanager("asset").history(limit=self.HISTORY_LIMIT), 
+            )
+        return {"supported": SUPPORTED_CLASSIFIER, "form": form, 
+                "new_tags_dict": new_tags_dict}
 
     @view_config(request_method="GET",custom_predicates=(has_query, ), 
                  renderer="altaircms:templates/tag/search_result.mako")
@@ -38,7 +45,8 @@ class TopView(object):
     def subtoppage_view(self):
         classifier = self.request.matchdict["classifier"]
         form = forms.TagSearchForm(classifier=classifier)
-        # new_tag_history = get_tagmanager(classifier).history()
+        new_tags = get_tagmanager(classifier).history(limit=self.HISTORY_LIMIT)
         return {"classifier": classifier, 
+                "new_tags": new_tags, 
                 "form": form, 
                 "supported": SUPPORTED_CLASSIFIER}

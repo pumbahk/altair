@@ -1,4 +1,5 @@
 from altaircms.models import DBSession
+import sqlalchemy.sql.expression as saexp
 
 class TagManager(object):
     def __init__(self, Object, XRef, Tag):
@@ -30,6 +31,11 @@ class TagManager(object):
         search matched objects
         """
         return self.query(result).filter(self.Tag.label==label)
+
+    ## history
+    def history(self, limit=None):
+        qs =  self.Tag.query.order_by(saexp.desc(self.Tag.updated_at))
+        return qs.limit(limit) if limit else qs
 
     ## alter
     def delete(self, obj, deletes, public_status=True):
