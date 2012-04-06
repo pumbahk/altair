@@ -1,6 +1,13 @@
+## todo refactoring
 <%def name="menutab(supported, classifier=None)">
 <div class="row">
   <ul class="nav nav-tabs">
+	% if classifier is None:
+   	    <li class="active"><a href="${h.tag.to_search(request)}">top</a></li>
+	% else:
+  	    <li><a href="${h.tag.to_search(request)}">top</a></li>
+	% endif
+
     % for k in supported:
       % if classifier==k:
    	    <li class="active"><a href="${h.tag.to_search(request,k)}">${k}</a></li>
@@ -12,7 +19,7 @@
 </div>
 </%def>
 
-<%def name="formfield(k)">
+<%def name="formfield(form, k)">
 	<tr><th>${getattr(form,k).label}</th><td>${getattr(form,k)}
 	%if k in form.errors:
 	  <br/>

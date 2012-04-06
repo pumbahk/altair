@@ -10,8 +10,8 @@ ${co.menutab(supported)}
 	<form action="#" method="GET">
       <table class="table">
         <tbody>
-          ${co.formfield("classifier")}
-          ${co.formfield("query")}
+          ${co.formfield(form, "classifier")}
+          ${co.formfield(form, "query")}
         </tbody>
       </table>
 	  <button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> Search</button>

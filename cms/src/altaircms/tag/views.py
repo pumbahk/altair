@@ -37,5 +37,8 @@ class TopView(object):
                  renderer="altaircms:templates/tag/subtop.mako")
     def subtoppage_view(self):
         classifier = self.request.matchdict["classifier"]
+        form = forms.TagSearchForm(classifier=classifier)
+        # new_tag_history = get_tagmanager(classifier).history()
         return {"classifier": classifier, 
+                "form": form, 
                 "supported": SUPPORTED_CLASSIFIER}
