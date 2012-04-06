@@ -13,7 +13,7 @@ def has_query(context, request):
 
 @view_defaults(route_name="tag", decorator=with_bootstrap, permission="tag_read")
 class TopView(object):
-    HISTORY_LIMIT = 5
+    RECENT_CHANGE_TAGS_LIMIT = 5
     def __init__(self, request):
         self.request = request
 
@@ -21,9 +21,9 @@ class TopView(object):
     def toppage_view_default(self):
         form = forms.TagSearchForm()
         new_tags_dict = dict(
-            page=get_tagmanager("page").history(limit=self.HISTORY_LIMIT), 
-            event=get_tagmanager("event").history(limit=self.HISTORY_LIMIT), 
-            asset=get_tagmanager("asset").history(limit=self.HISTORY_LIMIT), 
+            page=get_tagmanager("page").recent_change_tags().limit(self.RECENT_CHANGE_TAGS_LIMIT), 
+            event=get_tagmanager("event").recent_change_tags().limit(self.RECENT_CHANGE_TAGS_LIMIT), 
+            asset=get_tagmanager("asset").recent_change_tags().limit(self.RECENT_CHANGE_TAGS_LIMIT), 
             )
         return {"supported": SUPPORTED_CLASSIFIER, "form": form, 
                 "new_tags_dict": new_tags_dict}
@@ -34,7 +34,7 @@ class TopView(object):
         form = forms.TagSearchForm(**self.request.GET)
         classifier = self.request.GET["classifier"]
         query = self.request.GET["query"]
-        query_result = get_tagmanager(classifier).search(query)
+        query_result = get_tagmanager(classifier).search_by_tag_label(query)
         return {"supported": SUPPORTED_CLASSIFIER, 
                 "form": form, 
                 "query_result": query_result, 
@@ -45,7 +45,7 @@ class TopView(object):
     def subtoppage_view(self):
         classifier = self.request.matchdict["classifier"]
         form = forms.TagSearchForm(classifier=classifier)
-        new_tags = get_tagmanager(classifier).history(limit=self.HISTORY_LIMIT)
+        new_tags = get_tagmanager(classifier).recent_change_tags().limit(self.RECENT_CHANGE_TAGS_LIMIT)
         return {"classifier": classifier, 
                 "new_tags": new_tags, 
                 "form": form, 

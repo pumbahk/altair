@@ -36,7 +36,7 @@ class PageTagAlterTest(unittest.TestCase):
         manager = self._makeOne()
 
         tag_label_list = [u"ko", u"ni", u"ti", u"wa"]
-        manager.replace(page, tag_label_list)
+        manager.replace_tags(page, tag_label_list)
 
         self.assertEquals(len(page.tags), 4)
         for tag, k in zip(sorted(page.tags, key=lambda x : x.label),
@@ -49,7 +49,7 @@ class PageTagAlterTest(unittest.TestCase):
 
         ## same word list
         tag_label_list = [u"po", u"po", u"po", u"po", u"po"]
-        manager.replace(page, tag_label_list)
+        manager.replace_tags(page, tag_label_list)
 
         from altaircms.tag.models import PageTag
         self.assertEquals(PageTag.query.count(), 1)
@@ -60,12 +60,12 @@ class PageTagAlterTest(unittest.TestCase):
 
         ## add public
         tag_label_list = [u"pub", u"both", u"公開"]
-        manager.replace(page, tag_label_list, public_status=True)
+        manager.replace_tags(page, tag_label_list, public_status=True)
         self.assertEquals(len(page.tags), 3)
         
         ## add private
         tag_label_list = [u"unpub", u"both", u"非公開"]
-        manager.replace(page, tag_label_list, public_status=False)
+        manager.replace_tags(page, tag_label_list, public_status=False)
         self.assertEquals(len(page.tags), 6)
 
     def test_same_tagged_two_pages(self):
@@ -74,8 +74,8 @@ class PageTagAlterTest(unittest.TestCase):
         manager = self._makeOne()
 
         tag_label_list = [u"ko", u"ni", u"ti", u"wa"]
-        manager.replace(page, tag_label_list)
-        manager.replace(another, tag_label_list)
+        manager.replace_tags(page, tag_label_list)
+        manager.replace_tags(another, tag_label_list)
 
         self.assertEquals(manager.Object.query.count(), 2)
         self.assertEquals(manager.Tag.query.count(), 4)
@@ -91,11 +91,11 @@ class PageTagAlterTest(unittest.TestCase):
         session = self._getSession()
         page = self._withSession(self._makePage())
         manager = self._makeOne()
-        manager.replace(page, [u"fool", u"bool", u"cool"])
+        manager.replace_tags(page, [u"fool", u"bool", u"cool"])
         session.flush()
         # update
         tag_label_list = [u"fool", u"bool", u"kool"]
-        manager.replace(page, tag_label_list)
+        manager.replace_tags(page, tag_label_list)
         
         self.assertEquals(len(page.tags), 3)
         for tag, k in zip(sorted(page.tags, key=lambda x : x.label),
@@ -110,11 +110,11 @@ class PageTagAlterTest(unittest.TestCase):
         session = self._getSession()
         page = self._withSession(self._makePage())
         manager = self._makeOne()
-        manager.replace(page, [u"fool", u"bool", u"cool"])
+        manager.replace_tags(page, [u"fool", u"bool", u"cool"])
         session.flush()
         # untagged
         deletes = [u"fool", u"bool"]
-        manager.delete(page, deletes)
+        manager.delete_tags(page, deletes)
         
         self.assertEquals(len(page.tags), 1)
         self.assertEquals(page.tags[0].label, u"cool")
@@ -125,12 +125,12 @@ class PageTagAlterTest(unittest.TestCase):
         manager = self._makeOne()
 
         tag_label_list = [u"pub", u"both", u"公開"]
-        manager.replace(page, tag_label_list, public_status=True)
+        manager.replace_tags(page, tag_label_list, public_status=True)
         tag_label_list = [u"unpub", u"both", u"非公開"]
-        manager.replace(page, tag_label_list, public_status=False)
+        manager.replace_tags(page, tag_label_list, public_status=False)
 
         ## delete private `both' tag
-        manager.delete(page, [u"both"], public_status=True)
+        manager.delete_tags(page, [u"both"], public_status=True)
         self.assertEquals(len(page.tags), 5)
        
 if __name__ == "__main__":

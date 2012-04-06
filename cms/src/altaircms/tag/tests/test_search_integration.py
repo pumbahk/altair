@@ -39,7 +39,7 @@ class AnyKindAssetSearchTests(unittest.TestCase):
         return get_tagmanager(classifier)
 
     def test_any_kind(self):
-        """ search image. flash, movie asset exist in session"""
+        """ search_by_tag_label image. flash, movie asset exist in session"""
         session = self._getSession()
         flash = self._makeFlashAsset(filepath=u"asset")
         flash.tags.append(self._makeTag(label=u"foo", discriminator="flash"))
@@ -50,20 +50,20 @@ class AnyKindAssetSearchTests(unittest.TestCase):
         session.add(movie)
 
         target = self._makeOne("image_asset")
-        self.assertEquals(target.search(u"foo").count(), 
+        self.assertEquals(target.search_by_tag_label(u"foo").count(), 
                           0)
         target = self._makeOne("movie_asset")
-        self.assertEquals(target.search(u"foo").count(), 
+        self.assertEquals(target.search_by_tag_label(u"foo").count(), 
                           1)
         target = self._makeOne("flash_asset")
-        self.assertEquals(target.search(u"foo").count(), 
+        self.assertEquals(target.search_by_tag_label(u"foo").count(), 
                           1)
 
         target = self._makeOne("page")
-        self.assertEquals(target.search(u"foo").count(), 
+        self.assertEquals(target.search_by_tag_label(u"foo").count(), 
                           0)
         target = self._makeOne("event")
-        self.assertEquals(target.search(u"foo").count(), 
+        self.assertEquals(target.search_by_tag_label(u"foo").count(), 
                           0)
 
 if __name__ == "__main__":

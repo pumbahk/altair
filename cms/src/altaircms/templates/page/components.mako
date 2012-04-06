@@ -66,7 +66,7 @@
         <th class="span2">公開タグ</th>
 		<td>
 		  %for tag in page.public_tags:
-			<a class="tag" href="#">${tag.label}</a> ,
+			<a class="tag" href="${h.tag.to_search_query(request, "page", tag)}">${tag.label}</a> ,
           %endfor
         </td>
       </tr>
@@ -74,7 +74,7 @@
         <th class="span2">非公開タグ</th>
 		<td>
 		  %for tag in page.private_tags:
-			<a class="tag" href="#">${tag.label}</a> ,
+			<a class="tag" href="${h.tag.to_search_query(request, "page", tag)}">${tag.label}</a> ,
           %endfor
         </td>
       </tr>

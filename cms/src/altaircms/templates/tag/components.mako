@@ -57,10 +57,14 @@
 	<tbody>
 	  % for page in query_result:
 		<tr>
-		  <td>${page.title}</td>
-		  <td>${page.url}</td>
-		  <td>${page.event.title if page.event else u"-"}</td>
-		  <td>${page.description[:20] if len(page.description) > 20 else page.description}</td>
+		  <td><a href="${request.route_path("page_edit_", page_id=page.id)}">${page.title}</a></td>
+		  <td><a href="${h.front.to_preview_page(request, page)}">${page.url}</a></td>
+          % if page.event is None:
+            <td>-</td>
+          % else:
+            <td><a href="${request.route_path("event", id=page.event.id)}">${page.event.title}</a></td>
+          % endif
+		  <td>${page.description[:20]+"..." if len(page.description) > 20 else page.description}</td>
 		  <td>${page.updated_at}</td>
 		</tr>
 	  % endfor

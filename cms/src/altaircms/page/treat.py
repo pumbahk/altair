@@ -33,4 +33,4 @@ class PageTreatAdapter(object):
 
     def add_tags(self, page, tags, public_status):
         manager = get_tagmanager("page", request=self.request)
-        manager.replace(page, tags, public_status)
+        manager.replace_tags(page, tags, public_status)

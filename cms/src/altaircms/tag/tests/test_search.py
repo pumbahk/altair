@@ -24,9 +24,9 @@ class PageSearchTest(unittest.TestCase):
         return PageTag(**kwargs)
 
     def test_empty(self):
-        self.assertEquals(self._makeOne().search("foo").count(), 0)
+        self.assertEquals(self._makeOne().search_by_tag_label(u"foo").count(), 0)
 
-    def test_search_by_label(self):
+    def test_search_by_tag_label_by_label(self):
         session = self._getSession()
 
         obj = self._makeSearchedObj(title=u"page")
@@ -34,10 +34,10 @@ class PageSearchTest(unittest.TestCase):
         session.add(obj)
 
         target = self._makeOne()
-        self.assertEquals(target.search(u"foo").count(), 1)
-        self.assertEquals(target.search(u"boo").count(), 0)
+        self.assertEquals(target.search_by_tag_label(u"foo").count(), 1)
+        self.assertEquals(target.search_by_tag_label(u"boo").count(), 0)
 
-    def test_search_by_public_status(self):
+    def test_search_by_tag_label_by_public_status(self):
         session = self._getSession()
 
         obj = self._makeSearchedObj(title=u"page")
@@ -46,13 +46,13 @@ class PageSearchTest(unittest.TestCase):
         session.add(obj)
 
         target = self._makeOne()
-        self.assertEquals(target.search(u"public").count(), 1)
-        self.assertEquals(target.public_search(u"public").count(), 1)
-        self.assertEquals(target.private_search(u"public").count(), 0)
+        self.assertEquals(target.search_by_tag_label(u"public").count(), 1)
+        self.assertEquals(target.public_search_by_tag_label(u"public").count(), 1)
+        self.assertEquals(target.private_search_by_tag_label(u"public").count(), 0)
 
-        self.assertEquals(target.search(u"private").count(), 1)
-        self.assertEquals(target.public_search(u"private").count(), 0)
-        self.assertEquals(target.private_search(u"private").count(), 1)
+        self.assertEquals(target.search_by_tag_label(u"private").count(), 1)
+        self.assertEquals(target.public_search_by_tag_label(u"private").count(), 0)
+        self.assertEquals(target.private_search_by_tag_label(u"private").count(), 1)
 
 
 class EventSearchTest(unittest.TestCase):
@@ -79,9 +79,9 @@ class EventSearchTest(unittest.TestCase):
         return TagManager(Object=Event, XRef=m.EventTag2Event, Tag=m.EventTag)
 
     def test_empty(self):
-        self.assertEquals(self._makeOne().search("foo").count(), 0)
+        self.assertEquals(self._makeOne().search_by_tag_label(u"foo").count(), 0)
 
-    def test_search_by_label(self):
+    def test_search_by_tag_label_by_label(self):
         session = self._getSession()
 
         obj = self._makeSearchedObj(title=u"page")
@@ -89,10 +89,10 @@ class EventSearchTest(unittest.TestCase):
         session.add(obj)
 
         target = self._makeOne()
-        self.assertEquals(target.search(u"foo").count(), 1)
-        self.assertEquals(target.search(u"boo").count(), 0)
+        self.assertEquals(target.search_by_tag_label(u"foo").count(), 1)
+        self.assertEquals(target.search_by_tag_label(u"boo").count(), 0)
 
-    def test_search_by_public_status(self):
+    def test_search_by_tag_label_by_public_status(self):
         session = self._getSession()
 
         obj = self._makeSearchedObj(title=u"page")
@@ -101,13 +101,13 @@ class EventSearchTest(unittest.TestCase):
         session.add(obj)
 
         target = self._makeOne()
-        self.assertEquals(target.search(u"public").count(), 1)
-        self.assertEquals(target.public_search(u"public").count(), 1)
-        self.assertEquals(target.private_search(u"public").count(), 0)
+        self.assertEquals(target.search_by_tag_label(u"public").count(), 1)
+        self.assertEquals(target.public_search_by_tag_label(u"public").count(), 1)
+        self.assertEquals(target.private_search_by_tag_label(u"public").count(), 0)
 
-        self.assertEquals(target.search(u"private").count(), 1)
-        self.assertEquals(target.public_search(u"private").count(), 0)
-        self.assertEquals(target.private_search(u"private").count(), 1)
+        self.assertEquals(target.search_by_tag_label(u"private").count(), 1)
+        self.assertEquals(target.public_search_by_tag_label(u"private").count(), 0)
+        self.assertEquals(target.private_search_by_tag_label(u"private").count(), 1)
 
 class ImageAssetSearchTest(unittest.TestCase):
     def tearDown(self):
@@ -134,9 +134,9 @@ class ImageAssetSearchTest(unittest.TestCase):
         return TagManager(Object=ImageAsset, XRef=m.AssetTag2Asset, Tag=m.AssetTag)
 
     def test_empty(self):
-        self.assertEquals(self._makeOne().search("foo").count(), 0)
+        self.assertEquals(self._makeOne().search_by_tag_label(u"foo").count(), 0)
 
-    def test_search_by_label(self):
+    def test_search_by_tag_label_by_label(self):
         session = self._getSession()
 
         obj = self._makeSearchedObj(filepath=u"page")
@@ -144,10 +144,10 @@ class ImageAssetSearchTest(unittest.TestCase):
         session.add(obj)
 
         target = self._makeOne()
-        self.assertEquals(target.search(u"foo").count(), 1)
-        self.assertEquals(target.search(u"boo").count(), 0)
+        self.assertEquals(target.search_by_tag_label(u"foo").count(), 1)
+        self.assertEquals(target.search_by_tag_label(u"boo").count(), 0)
 
-    def test_search_by_public_status(self):
+    def test_search_by_tag_label_by_public_status(self):
         session = self._getSession()
 
         obj = self._makeSearchedObj(filepath=u"page")
@@ -156,13 +156,13 @@ class ImageAssetSearchTest(unittest.TestCase):
         session.add(obj)
 
         target = self._makeOne()
-        self.assertEquals(target.search(u"public").count(), 1)
-        self.assertEquals(target.public_search(u"public").count(), 1)
-        self.assertEquals(target.private_search(u"public").count(), 0)
+        self.assertEquals(target.search_by_tag_label(u"public").count(), 1)
+        self.assertEquals(target.public_search_by_tag_label(u"public").count(), 1)
+        self.assertEquals(target.private_search_by_tag_label(u"public").count(), 0)
 
-        self.assertEquals(target.search(u"private").count(), 1)
-        self.assertEquals(target.public_search(u"private").count(), 0)
-        self.assertEquals(target.private_search(u"private").count(), 1)
+        self.assertEquals(target.search_by_tag_label(u"private").count(), 1)
+        self.assertEquals(target.public_search_by_tag_label(u"private").count(), 0)
+        self.assertEquals(target.private_search_by_tag_label(u"private").count(), 1)
 
 class MovieAssetSearchTest(unittest.TestCase):
     def tearDown(self):
@@ -189,9 +189,9 @@ class MovieAssetSearchTest(unittest.TestCase):
         return TagManager(Object=MovieAsset, XRef=m.AssetTag2Asset, Tag=m.AssetTag)
 
     def test_empty(self):
-        self.assertEquals(self._makeOne().search("foo").count(), 0)
+        self.assertEquals(self._makeOne().search_by_tag_label(u"foo").count(), 0)
 
-    def test_search_by_label(self):
+    def test_search_by_tag_label_by_label(self):
         session = self._getSession()
 
         obj = self._makeSearchedObj(filepath=u"page")
@@ -199,10 +199,10 @@ class MovieAssetSearchTest(unittest.TestCase):
         session.add(obj)
 
         target = self._makeOne()
-        self.assertEquals(target.search(u"foo").count(), 1)
-        self.assertEquals(target.search(u"boo").count(), 0)
+        self.assertEquals(target.search_by_tag_label(u"foo").count(), 1)
+        self.assertEquals(target.search_by_tag_label(u"boo").count(), 0)
 
-    def test_search_by_public_status(self):
+    def test_search_by_tag_label_by_public_status(self):
         session = self._getSession()
 
         obj = self._makeSearchedObj(filepath=u"page")
@@ -211,13 +211,13 @@ class MovieAssetSearchTest(unittest.TestCase):
         session.add(obj)
 
         target = self._makeOne()
-        self.assertEquals(target.search(u"public").count(), 1)
-        self.assertEquals(target.public_search(u"public").count(), 1)
-        self.assertEquals(target.private_search(u"public").count(), 0)
+        self.assertEquals(target.search_by_tag_label(u"public").count(), 1)
+        self.assertEquals(target.public_search_by_tag_label(u"public").count(), 1)
+        self.assertEquals(target.private_search_by_tag_label(u"public").count(), 0)
 
-        self.assertEquals(target.search(u"private").count(), 1)
-        self.assertEquals(target.public_search(u"private").count(), 0)
-        self.assertEquals(target.private_search(u"private").count(), 1)
+        self.assertEquals(target.search_by_tag_label(u"private").count(), 1)
+        self.assertEquals(target.public_search_by_tag_label(u"private").count(), 0)
+        self.assertEquals(target.private_search_by_tag_label(u"private").count(), 1)
 
 class FlashAssetSearchTest(unittest.TestCase):
     def tearDown(self):
@@ -244,9 +244,9 @@ class FlashAssetSearchTest(unittest.TestCase):
         return TagManager(Object=FlashAsset, XRef=m.AssetTag2Asset, Tag=m.AssetTag)
 
     def test_empty(self):
-        self.assertEquals(self._makeOne().search("foo").count(), 0)
+        self.assertEquals(self._makeOne().search_by_tag_label(u"foo").count(), 0)
 
-    def test_search_by_label(self):
+    def test_search_by_tag_label_by_label(self):
         session = self._getSession()
 
         obj = self._makeSearchedObj(filepath=u"page")
@@ -254,10 +254,10 @@ class FlashAssetSearchTest(unittest.TestCase):
         session.add(obj)
 
         target = self._makeOne()
-        self.assertEquals(target.search(u"foo").count(), 1)
-        self.assertEquals(target.search(u"boo").count(), 0)
+        self.assertEquals(target.search_by_tag_label(u"foo").count(), 1)
+        self.assertEquals(target.search_by_tag_label(u"boo").count(), 0)
 
-    def test_search_by_public_status(self):
+    def test_search_by_tag_label_by_public_status(self):
         session = self._getSession()
 
         obj = self._makeSearchedObj(filepath=u"page")
@@ -266,13 +266,13 @@ class FlashAssetSearchTest(unittest.TestCase):
         session.add(obj)
 
         target = self._makeOne()
-        self.assertEquals(target.search(u"public").count(), 1)
-        self.assertEquals(target.public_search(u"public").count(), 1)
-        self.assertEquals(target.private_search(u"public").count(), 0)
+        self.assertEquals(target.search_by_tag_label(u"public").count(), 1)
+        self.assertEquals(target.public_search_by_tag_label(u"public").count(), 1)
+        self.assertEquals(target.private_search_by_tag_label(u"public").count(), 0)
 
-        self.assertEquals(target.search(u"private").count(), 1)
-        self.assertEquals(target.public_search(u"private").count(), 0)
-        self.assertEquals(target.private_search(u"private").count(), 1)
+        self.assertEquals(target.search_by_tag_label(u"private").count(), 1)
+        self.assertEquals(target.public_search_by_tag_label(u"private").count(), 0)
+        self.assertEquals(target.private_search_by_tag_label(u"private").count(), 1)
 
     
 if __name__ == "__main__":
