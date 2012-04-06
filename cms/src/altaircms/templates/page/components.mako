@@ -73,7 +73,7 @@
       <tr>
         <th class="span2">非公開タグ</th>
 		<td>
-		  %for tag in page.unpublic_tags:
+		  %for tag in page.private_tags:
 			<a class="tag" href="#">${tag.label}</a> ,
           %endfor
         </td>

@@ -93,7 +93,7 @@ class Page(PublishUnpublishMixin,
         return [tag for tag in self.tags if tag.publicp == True]
 
     @hybrid_property
-    def unpublic_tags(self):
+    def private_tags(self):
         return [tag for tag in self.tags if tag.publicp == False]
 
     def __repr__(self):

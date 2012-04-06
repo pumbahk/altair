@@ -145,7 +145,7 @@ class UpdateView(object):
         page = self.context.get_page(id_)
         params = page.to_dict()
         params["tags"] = u', '.join(tag.label for tag in page.public_tags)
-        params["unpublic_tags"] = u', '.join([tag.label for tag in page.unpublic_tags])
+        params["private_tags"] = u', '.join([tag.label for tag in page.private_tags])
         form = forms.PageUpdateForm(**params)
         return self._input_page(page, form)
 

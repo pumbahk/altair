@@ -10,6 +10,14 @@ from altaircms.models import Base
 from pyramid import testing
 import transaction
 
+def db_initialize_for_unittest():
+    import sqlalchemy as sa
+    engine = sa.create_engine("sqlite://")
+    Base.metadata.bind = engine
+    DBSession.configure(bind=engine)
+    Base.metadata.create_all()
+    unittest.main()
+
 def config():
     return testing.setUp(
         settings={"altaircms.plugin_static_directory": "altaircms:plugins/static", 

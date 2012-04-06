@@ -1,4 +1,4 @@
 from zope.interface import Interface
 
-class ITagSearchMap(Interface):
+class ITagManager(Interface):
     pass

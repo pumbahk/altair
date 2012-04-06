@@ -1,13 +1,16 @@
 from altaircms.models import DBSession
 import sqlalchemy.sql.expression as saexp
+from zope.interface import implementer
+from .interfaces import ITagManager
 
+@implementer(ITagManager)
 class TagManager(object):
     def __init__(self, Object, XRef, Tag):
         self.Object = Object
         self.XRef = XRef
         self.Tag = Tag
 
-    def maybe(self, label, public_status=True):
+    def get_or_create(self, label, public_status=True):
         tag = self.Tag.query.filter_by(label=label, publicp=public_status).first()
         if not tag:
             return self.Tag(label=label, publicp=public_status)
@@ -15,27 +18,23 @@ class TagManager(object):
             return tag
 
     ## search
-    def query(self, result=None):
-        result = result or [self.Object]
-        qs = DBSession.query(*result).filter(self.Object.id==self.XRef.object_id)
+    def query(self, query_target=None):
+        query_target = query_target or [self.Object]
+        qs = DBSession.query(*query_target).filter(self.Object.id==self.XRef.object_id)
         return qs.filter(self.Tag.id==self.XRef.tag_id)
 
-    def public_search(self, label, result=None):
-        return self.search(label, result=result).filter(self.Tag.publicp==True)
+    def public_search_by_tag_label(self, label):
+        return self.search_by_tag_label(label).filter(self.Tag.publicp==True)
 
-    def unpublic_search(self, label, result=None):
-        return self.search(label, result=result).filter(self.Tag.publicp==False)
+    def private_search_by_tag_label(self, label):
+        return self.search_by_tag_label(label).filter(self.Tag.publicp==False)
 
-    def search(self, label, result=None):
-        """
-        search matched objects
-        """
-        return self.query(result).filter(self.Tag.label==label)
+    def search_by_tag_label(self, label):
+        return self.query(self.Object).filter(self.Tag.label==label)
 
     ## history
-    def history(self, limit=None):
-        qs =  self.Tag.query.order_by(saexp.desc(self.Tag.updated_at))
-        return qs.limit(limit) if limit else qs
+    def history(self):
+        return self.Tag.query.order_by(saexp.desc(self.Tag.updated_at))
 
     ## alter
     def delete(self, obj, deletes, public_status=True):
@@ -60,13 +59,9 @@ class TagManager(object):
         updates = set(tag_label_list).difference(prev_name_set)
 
         for label in updates:
-            obj.tags.append(self.maybe(label, public_status))
+            obj.tags.append(self.get_or_create(label, public_status))
 
     def add_tags(self, obj, tag_label_list, public_status):
         tags = obj.tags
         for label in tag_label_list:
-            tags.append(self.maybe(label, public_status))
-        
-        
-
-    
+            tags.append(self.get_or_create(label, public_status))

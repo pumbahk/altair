@@ -1,18 +1,7 @@
 # -*- coding:utf-8 -*-
 import unittest
-config  = None
-def setUpModule():
-    global config
-    from altaircms.lib import testutils
-    config = testutils.config()
-    config.include("altaircms.tag")
-    testutils.create_db(force=False)
-    
-def tearDownModule():
-    from pyramid.testing import tearDown
-    tearDown()
 
-class PageAlterTagTest(unittest.TestCase):
+class PageTagAlterTest(unittest.TestCase):
     def tearDown(self):
         import transaction
         transaction.abort()
@@ -33,13 +22,18 @@ class PageAlterTagTest(unittest.TestCase):
         self._getSession().add(o)
         return o
 
-    def _getManger(self):
-        from altaircms.tag.api import get_tagmanager
-        return get_tagmanager
+    def _makeOne(self):
+        from altaircms.tag.manager import TagManager
+        from altaircms.page.models import Page
+        from altaircms.tag import models as m
+        return TagManager(Object=Page, XRef=m.PageTag2Page, Tag=m.PageTag)
+
+    ## create
+    #
 
     def test_tagged_when_create(self):
         page = self._withSession(self._makePage())
-        manager = self._getManger()("page")
+        manager = self._makeOne()
 
         tag_label_list = [u"ko", u"ni", u"ti", u"wa"]
         manager.replace(page, tag_label_list)
@@ -51,7 +45,7 @@ class PageAlterTagTest(unittest.TestCase):
 
     def test_tagged_from_sameword_list(self):
         page = self._withSession(self._makePage())
-        manager = self._getManger()("page")
+        manager = self._makeOne()
 
         ## same word list
         tag_label_list = [u"po", u"po", u"po", u"po", u"po"]
@@ -62,38 +56,41 @@ class PageAlterTagTest(unittest.TestCase):
             
     def test_tagged_when_create_with_public_status(self):
         page = self._withSession(self._makePage())
-        manager = self._getManger()("page")
+        manager = self._makeOne()
 
         ## add public
         tag_label_list = [u"pub", u"both", u"公開"]
         manager.replace(page, tag_label_list, public_status=True)
         self.assertEquals(len(page.tags), 3)
         
-        ## add unpublic
+        ## add private
         tag_label_list = [u"unpub", u"both", u"非公開"]
         manager.replace(page, tag_label_list, public_status=False)
         self.assertEquals(len(page.tags), 6)
 
-    def test_tagged_when_delete_with_public_status(self):
+    def test_same_tagged_two_pages(self):
         page = self._withSession(self._makePage())
-        manager = self._getManger()("page")
+        another = self._withSession(self._makePage())
+        manager = self._makeOne()
 
-        tag_label_list = [u"pub", u"both", u"公開"]
-        manager.replace(page, tag_label_list, public_status=True)
-        tag_label_list = [u"unpub", u"both", u"非公開"]
-        manager.replace(page, tag_label_list, public_status=False)
+        tag_label_list = [u"ko", u"ni", u"ti", u"wa"]
+        manager.replace(page, tag_label_list)
+        manager.replace(another, tag_label_list)
 
-        ## delete unpublic `both' tag
-        manager.delete(page, [u"both"], public_status=True)
-        self.assertEquals(len(page.tags), 5)
+        self.assertEquals(manager.Object.query.count(), 2)
+        self.assertEquals(manager.Tag.query.count(), 4)
+        self.assertEquals(manager.XRef.query.count(), 8)
 
+    ## update
+    ##
+        
     def test_tagged_when_update(self):
         """ tag: bool, cool, tool => bool, kool, tool
         """
         # create
         session = self._getSession()
         page = self._withSession(self._makePage())
-        manager = self._getManger()("page")
+        manager = self._makeOne()
         manager.replace(page, [u"fool", u"bool", u"cool"])
         session.flush()
         # update
@@ -105,11 +102,14 @@ class PageAlterTagTest(unittest.TestCase):
                           sorted(tag_label_list)):
             self.assertEquals(tag.label, k)
 
+    ## delete
+    #
+
     def test_untagged_when_update(self):
         # create
         session = self._getSession()
         page = self._withSession(self._makePage())
-        manager = self._getManger()("page")
+        manager = self._makeOne()
         manager.replace(page, [u"fool", u"bool", u"cool"])
         session.flush()
         # untagged
@@ -119,19 +119,24 @@ class PageAlterTagTest(unittest.TestCase):
         self.assertEquals(len(page.tags), 1)
         self.assertEquals(page.tags[0].label, u"cool")
 
-    def test_same_tagged_2target(self):
+
+    def test_tagged_when_delete_with_public_status(self):
         page = self._withSession(self._makePage())
-        another = self._withSession(self._makePage())
-        manager = self._getManger()("page")
+        manager = self._makeOne()
 
-        tag_label_list = [u"ko", u"ni", u"ti", u"wa"]
-        manager.replace(page, tag_label_list)
-        manager.replace(another, tag_label_list)
+        tag_label_list = [u"pub", u"both", u"公開"]
+        manager.replace(page, tag_label_list, public_status=True)
+        tag_label_list = [u"unpub", u"both", u"非公開"]
+        manager.replace(page, tag_label_list, public_status=False)
 
-        self.assertEquals(manager.Object.query.count(), 2)
-        self.assertEquals(manager.Tag.query.count(), 4)
-        self.assertEquals(manager.XRef.query.count(), 8)
-        
+        ## delete private `both' tag
+        manager.delete(page, [u"both"], public_status=True)
+        self.assertEquals(len(page.tags), 5)
+       
 if __name__ == "__main__":
-    unittest.main()
-    
+    import altaircms.page.models
+    import altaircms.event.models
+    import altaircms.asset.models
+    import altaircms.tag.models
+    from altaircms.lib.testutils import db_initialize_for_unittest
+    db_initialize_for_unittest()

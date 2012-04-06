@@ -1,26 +1,21 @@
 import unittest
-config  = None
-def setUpModule():
-    global config
-    from altaircms.lib import testutils
-    config = testutils.config()
-    config.include("altaircms.tag")
-    testutils.create_db(force=False)
-    
-def tearDownModule():
-    from pyramid.testing import tearDown
-    tearDown()
 
 class PageSearchTest(unittest.TestCase):
     def tearDown(self):
         import transaction
         transaction.abort()
 
+    def _makeOne(self):
+        from altaircms.tag.manager import TagManager
+        from altaircms.page.models import Page
+        from altaircms.tag import models as m
+        return TagManager(Object=Page, XRef=m.PageTag2Page, Tag=m.PageTag)
+
     def _getSession(self):
         from altaircms.models import DBSession
         return DBSession
 
-    def _makeTarget(self, **kwargs):
+    def _makeSearchedObj(self, **kwargs):
         from altaircms.page.models import Page
         return Page(**kwargs)
 
@@ -28,40 +23,36 @@ class PageSearchTest(unittest.TestCase):
         from altaircms.tag.models import PageTag
         return PageTag(**kwargs)
 
-    def _getManger(self):
-        from altaircms.tag.api import get_tagmanager
-        return get_tagmanager("page")
-
     def test_empty(self):
-        manager = self._getManger()
-        self.assertEquals(manager.search(u"foo").count(), 
-                         0)
+        self.assertEquals(self._makeOne().search("foo").count(), 0)
 
-    def test_matched(self):
+    def test_search_by_label(self):
         session = self._getSession()
-        target = self._makeTarget(title=u"page")
-        target.tags.append(self._makeTag(label=u"foo"))
-        session.add(target)
-        manager = self._getManger()
-        self.assertEquals(manager.search(u"foo").count(), 
-                         1)
-        self.assertEquals(manager.search(u"boo").count(), 
-                          0)
 
-    def test_search(self):
+        obj = self._makeSearchedObj(title=u"page")
+        obj.tags.append(self._makeTag(label=u"foo"))
+        session.add(obj)
+
+        target = self._makeOne()
+        self.assertEquals(target.search(u"foo").count(), 1)
+        self.assertEquals(target.search(u"boo").count(), 0)
+
+    def test_search_by_public_status(self):
         session = self._getSession()
-        target = self._makeTarget(title=u"page")
-        target.tags.append(self._makeTag(label=u"public", publicp=True))
-        target.tags.append(self._makeTag(label=u"unpublic", publicp=False))
-        session.add(target)
-        manager = self._getManger()
 
-        self.assertEquals(manager.search(u"public").count(), 1)
-        self.assertEquals(manager.public_search(u"public").count(), 1)
-        self.assertEquals(manager.unpublic_search(u"public").count(), 0)
-        self.assertEquals(manager.search(u"unpublic").count(), 1)
-        self.assertEquals(manager.public_search(u"unpublic").count(), 0)
-        self.assertEquals(manager.unpublic_search(u"unpublic").count(), 1)
+        obj = self._makeSearchedObj(title=u"page")
+        obj.tags.append(self._makeTag(label=u"public", publicp=True))
+        obj.tags.append(self._makeTag(label=u"private", publicp=False))
+        session.add(obj)
+
+        target = self._makeOne()
+        self.assertEquals(target.search(u"public").count(), 1)
+        self.assertEquals(target.public_search(u"public").count(), 1)
+        self.assertEquals(target.private_search(u"public").count(), 0)
+
+        self.assertEquals(target.search(u"private").count(), 1)
+        self.assertEquals(target.public_search(u"private").count(), 0)
+        self.assertEquals(target.private_search(u"private").count(), 1)
 
 
 class EventSearchTest(unittest.TestCase):
@@ -73,7 +64,7 @@ class EventSearchTest(unittest.TestCase):
         from altaircms.models import DBSession
         return DBSession
 
-    def _makeTarget(self, **kwargs):
+    def _makeSearchedObj(self, **kwargs):
         from altaircms.event.models import Event
         return Event(**kwargs)
 
@@ -81,40 +72,42 @@ class EventSearchTest(unittest.TestCase):
         from altaircms.tag.models import EventTag
         return EventTag(**kwargs)
 
-    def _getManger(self):
-        from altaircms.tag.api import get_tagmanager
-        return get_tagmanager("event")
+    def _makeOne(self):
+        from altaircms.tag.manager import TagManager
+        from altaircms.event.models import Event
+        from altaircms.tag import models as m
+        return TagManager(Object=Event, XRef=m.EventTag2Event, Tag=m.EventTag)
 
     def test_empty(self):
-        manager = self._getManger()
-        self.assertEquals(manager.search(u"foo").count(), 
-                         0)
+        self.assertEquals(self._makeOne().search("foo").count(), 0)
 
-    def test_matched(self):
+    def test_search_by_label(self):
         session = self._getSession()
-        target = self._makeTarget(title=u"event")
-        target.tags.append(self._makeTag(label=u"foo"))
-        session.add(target)
-        manager = self._getManger()
-        self.assertEquals(manager.search(u"foo").count(), 
-                         1)
-        self.assertEquals(manager.search(u"boo").count(), 
-                          0)
 
-    def test_search(self):
+        obj = self._makeSearchedObj(title=u"page")
+        obj.tags.append(self._makeTag(label=u"foo"))
+        session.add(obj)
+
+        target = self._makeOne()
+        self.assertEquals(target.search(u"foo").count(), 1)
+        self.assertEquals(target.search(u"boo").count(), 0)
+
+    def test_search_by_public_status(self):
         session = self._getSession()
-        target = self._makeTarget(title=u"event")
-        target.tags.append(self._makeTag(label=u"public", publicp=True))
-        target.tags.append(self._makeTag(label=u"unpublic", publicp=False))
-        session.add(target)
-        manager = self._getManger()
 
-        self.assertEquals(manager.search(u"public").count(), 1)
-        self.assertEquals(manager.public_search(u"public").count(), 1)
-        self.assertEquals(manager.unpublic_search(u"public").count(), 0)
-        self.assertEquals(manager.search(u"unpublic").count(), 1)
-        self.assertEquals(manager.public_search(u"unpublic").count(), 0)
-        self.assertEquals(manager.unpublic_search(u"unpublic").count(), 1)
+        obj = self._makeSearchedObj(title=u"page")
+        obj.tags.append(self._makeTag(label=u"public", publicp=True))
+        obj.tags.append(self._makeTag(label=u"private", publicp=False))
+        session.add(obj)
+
+        target = self._makeOne()
+        self.assertEquals(target.search(u"public").count(), 1)
+        self.assertEquals(target.public_search(u"public").count(), 1)
+        self.assertEquals(target.private_search(u"public").count(), 0)
+
+        self.assertEquals(target.search(u"private").count(), 1)
+        self.assertEquals(target.public_search(u"private").count(), 0)
+        self.assertEquals(target.private_search(u"private").count(), 1)
 
 class ImageAssetSearchTest(unittest.TestCase):
     def tearDown(self):
@@ -125,7 +118,7 @@ class ImageAssetSearchTest(unittest.TestCase):
         from altaircms.models import DBSession
         return DBSession
 
-    def _makeTarget(self, **kwargs):
+    def _makeSearchedObj(self, **kwargs):
         from altaircms.asset.models import ImageAsset
         return ImageAsset(**kwargs)
 
@@ -134,40 +127,42 @@ class ImageAssetSearchTest(unittest.TestCase):
         from altaircms.tag.models import ImageAssetTag
         return ImageAssetTag(**kwargs)
 
-    def _getManger(self):
-        from altaircms.tag.api import get_tagmanager
-        return get_tagmanager("image_asset")
+    def _makeOne(self):
+        from altaircms.tag.manager import TagManager
+        from altaircms.asset.models import ImageAsset
+        from altaircms.tag import models as m
+        return TagManager(Object=ImageAsset, XRef=m.AssetTag2Asset, Tag=m.AssetTag)
 
     def test_empty(self):
-        manager = self._getManger()
-        self.assertEquals(manager.search(u"foo").count(), 
-                         0)
+        self.assertEquals(self._makeOne().search("foo").count(), 0)
 
-    def test_matched(self):
+    def test_search_by_label(self):
         session = self._getSession()
-        target = self._makeTarget(filepath=u"asset")
-        target.tags.append(self._makeTag(label=u"foo"))
-        session.add(target)
-        manager = self._getManger()
-        self.assertEquals(manager.search(u"foo").count(), 
-                          1)
-        self.assertEquals(manager.search(u"boo").count(), 
-                          0)
 
-    def test_search(self):
+        obj = self._makeSearchedObj(filepath=u"page")
+        obj.tags.append(self._makeTag(label=u"foo"))
+        session.add(obj)
+
+        target = self._makeOne()
+        self.assertEquals(target.search(u"foo").count(), 1)
+        self.assertEquals(target.search(u"boo").count(), 0)
+
+    def test_search_by_public_status(self):
         session = self._getSession()
-        target = self._makeTarget(filepath=u"asset")
-        target.tags.append(self._makeTag(label=u"public", publicp=True))
-        target.tags.append(self._makeTag(label=u"unpublic", publicp=False))
-        session.add(target)
-        manager = self._getManger()
 
-        self.assertEquals(manager.search(u"public").count(), 1)
-        self.assertEquals(manager.public_search(u"public").count(), 1)
-        self.assertEquals(manager.unpublic_search(u"public").count(), 0)
-        self.assertEquals(manager.search(u"unpublic").count(), 1)
-        self.assertEquals(manager.public_search(u"unpublic").count(), 0)
-        self.assertEquals(manager.unpublic_search(u"unpublic").count(), 1)
+        obj = self._makeSearchedObj(filepath=u"page")
+        obj.tags.append(self._makeTag(label=u"public", publicp=True))
+        obj.tags.append(self._makeTag(label=u"private", publicp=False))
+        session.add(obj)
+
+        target = self._makeOne()
+        self.assertEquals(target.search(u"public").count(), 1)
+        self.assertEquals(target.public_search(u"public").count(), 1)
+        self.assertEquals(target.private_search(u"public").count(), 0)
+
+        self.assertEquals(target.search(u"private").count(), 1)
+        self.assertEquals(target.public_search(u"private").count(), 0)
+        self.assertEquals(target.private_search(u"private").count(), 1)
 
 class MovieAssetSearchTest(unittest.TestCase):
     def tearDown(self):
@@ -178,33 +173,51 @@ class MovieAssetSearchTest(unittest.TestCase):
         from altaircms.models import DBSession
         return DBSession
 
-    def _makeTarget(self, **kwargs):
+    def _makeSearchedObj(self, **kwargs):
         from altaircms.asset.models import MovieAsset
         return MovieAsset(**kwargs)
+
 
     def _makeTag(self, **kwargs):
         from altaircms.tag.models import MovieAssetTag
         return MovieAssetTag(**kwargs)
 
-    def _getManger(self):
-        from altaircms.tag.api import get_tagmanager
-        return get_tagmanager("movie_asset")
+    def _makeOne(self):
+        from altaircms.tag.manager import TagManager
+        from altaircms.asset.models import MovieAsset
+        from altaircms.tag import models as m
+        return TagManager(Object=MovieAsset, XRef=m.AssetTag2Asset, Tag=m.AssetTag)
 
     def test_empty(self):
-        manager = self._getManger()
-        self.assertEquals(manager.search(u"foo").count(), 
-                         0)
+        self.assertEquals(self._makeOne().search("foo").count(), 0)
 
-    def test_matched(self):
+    def test_search_by_label(self):
         session = self._getSession()
-        target = self._makeTarget(filepath=u"asset")
-        target.tags.append(self._makeTag(label=u"foo"))
-        session.add(target)
-        manager = self._getManger()
-        self.assertEquals(manager.search(u"foo").count(), 
-                          1)
-        self.assertEquals(manager.search(u"boo").count(), 
-                          0)
+
+        obj = self._makeSearchedObj(filepath=u"page")
+        obj.tags.append(self._makeTag(label=u"foo"))
+        session.add(obj)
+
+        target = self._makeOne()
+        self.assertEquals(target.search(u"foo").count(), 1)
+        self.assertEquals(target.search(u"boo").count(), 0)
+
+    def test_search_by_public_status(self):
+        session = self._getSession()
+
+        obj = self._makeSearchedObj(filepath=u"page")
+        obj.tags.append(self._makeTag(label=u"public", publicp=True))
+        obj.tags.append(self._makeTag(label=u"private", publicp=False))
+        session.add(obj)
+
+        target = self._makeOne()
+        self.assertEquals(target.search(u"public").count(), 1)
+        self.assertEquals(target.public_search(u"public").count(), 1)
+        self.assertEquals(target.private_search(u"public").count(), 0)
+
+        self.assertEquals(target.search(u"private").count(), 1)
+        self.assertEquals(target.public_search(u"private").count(), 0)
+        self.assertEquals(target.private_search(u"private").count(), 1)
 
 class FlashAssetSearchTest(unittest.TestCase):
     def tearDown(self):
@@ -215,7 +228,7 @@ class FlashAssetSearchTest(unittest.TestCase):
         from altaircms.models import DBSession
         return DBSession
 
-    def _makeTarget(self, **kwargs):
+    def _makeSearchedObj(self, **kwargs):
         from altaircms.asset.models import FlashAsset
         return FlashAsset(**kwargs)
 
@@ -224,80 +237,48 @@ class FlashAssetSearchTest(unittest.TestCase):
         from altaircms.tag.models import FlashAssetTag
         return FlashAssetTag(**kwargs)
 
-    def _getManger(self):
-        from altaircms.tag.api import get_tagmanager
-        return get_tagmanager("flash_asset")
+    def _makeOne(self):
+        from altaircms.tag.manager import TagManager
+        from altaircms.asset.models import FlashAsset
+        from altaircms.tag import models as m
+        return TagManager(Object=FlashAsset, XRef=m.AssetTag2Asset, Tag=m.AssetTag)
 
     def test_empty(self):
-        manager = self._getManger()
-        self.assertEquals(manager.search(u"foo").count(), 
-                         0)
+        self.assertEquals(self._makeOne().search("foo").count(), 0)
 
-    def test_matched(self):
+    def test_search_by_label(self):
         session = self._getSession()
-        target = self._makeTarget(filepath=u"asset")
-        target.tags.append(self._makeTag(label=u"foo"))
-        session.add(target)
-        manager = self._getManger()
-        self.assertEquals(manager.search(u"foo").count(), 
-                          1)
-        self.assertEquals(manager.search(u"boo").count(), 
-                          0)
 
-class AnyKindAssetSearchTests(unittest.TestCase):
-    def tearDown(self):
-        import transaction
-        transaction.abort()
+        obj = self._makeSearchedObj(filepath=u"page")
+        obj.tags.append(self._makeTag(label=u"foo"))
+        session.add(obj)
 
-    def _getSession(self):
-        from altaircms.models import DBSession
-        return DBSession
+        target = self._makeOne()
+        self.assertEquals(target.search(u"foo").count(), 1)
+        self.assertEquals(target.search(u"boo").count(), 0)
 
-    def _makeImageAsset(self, **kwargs):
-        from altaircms.asset.models import ImageAsset
-        return ImageAsset(**kwargs)
-    def _makeFlashAsset(self, **kwargs):
-        from altaircms.asset.models import FlashAsset
-        return FlashAsset(**kwargs)
-    def _makeMovieAsset(self, **kwargs):
-        from altaircms.asset.models import MovieAsset
-        return MovieAsset(**kwargs)
-
-    def _makeTag(self, **kwargs):
-        from altaircms.tag.models import AssetTag
-        return AssetTag(**kwargs)
-
-    def _getManger(self, classifier):
-        from altaircms.tag.api import get_tagmanager
-        return get_tagmanager(classifier)
-
-    def test_any_kind(self):
-        """ search image. flash, movie asset exist in session"""
+    def test_search_by_public_status(self):
         session = self._getSession()
-        flash = self._makeFlashAsset(filepath=u"asset")
-        flash.tags.append(self._makeTag(label=u"foo", discriminator="flash"))
-        session.add(flash)
 
-        movie = self._makeMovieAsset(filepath=u"asset")
-        movie.tags.append(self._makeTag(label=u"foo", discriminator="movie"))
-        session.add(movie)
+        obj = self._makeSearchedObj(filepath=u"page")
+        obj.tags.append(self._makeTag(label=u"public", publicp=True))
+        obj.tags.append(self._makeTag(label=u"private", publicp=False))
+        session.add(obj)
 
-        manager = self._getManger("image_asset")
-        self.assertEquals(manager.search(u"foo").count(), 
-                          0)
-        manager = self._getManger("movie_asset")
-        self.assertEquals(manager.search(u"foo").count(), 
-                          1)
-        manager = self._getManger("flash_asset")
-        self.assertEquals(manager.search(u"foo").count(), 
-                          1)
+        target = self._makeOne()
+        self.assertEquals(target.search(u"public").count(), 1)
+        self.assertEquals(target.public_search(u"public").count(), 1)
+        self.assertEquals(target.private_search(u"public").count(), 0)
 
-        manager = self._getManger("page")
-        self.assertEquals(manager.search(u"foo").count(), 
-                          0)
-        manager = self._getManger("event")
-        self.assertEquals(manager.search(u"foo").count(), 
-                          0)
+        self.assertEquals(target.search(u"private").count(), 1)
+        self.assertEquals(target.public_search(u"private").count(), 0)
+        self.assertEquals(target.private_search(u"private").count(), 1)
+
     
 if __name__ == "__main__":
-    unittest.main()
+    import altaircms.page.models
+    import altaircms.event.models
+    import altaircms.asset.models
+    import altaircms.tag.models
+    from altaircms.lib.testutils import db_initialize_for_unittest
+    db_initialize_for_unittest()

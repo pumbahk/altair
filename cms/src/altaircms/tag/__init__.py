@@ -32,6 +32,5 @@ def includeme(config):
                          xref=".models.AssetTag2Asset", 
                          tag=".models.MovieAssetTag"
                          )
-    
 
     config.add_route("tag", "/tag/{classifier}")

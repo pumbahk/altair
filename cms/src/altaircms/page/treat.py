@@ -13,22 +13,22 @@ class PageTreatAdapter(object):
     def _divide_data(self):
         params = dict(self.form.data)
         tags = [k.strip() for k in params.pop("tags").split(",")] ##
-        unpublic_tags = [k.strip() for k in params.pop("unpublic_tags").split(",")] ##
-        return tags, unpublic_tags, params
+        private_tags = [k.strip() for k in params.pop("private_tags").split(",")] ##
+        return tags, private_tags, params
 
     def create(self):
-        tags, unpublic_tags, params = self._divide_data()
+        tags, private_tags, params = self._divide_data()
         page = Page.from_dict(params)
         self.add_tags(page, tags, True)
-        self.add_tags(page, unpublic_tags, False)
+        self.add_tags(page, private_tags, False)
         return page
 
     def update(self, page):
-        tags, unpublic_tags, params = self._divide_data()
+        tags, private_tags, params = self._divide_data()
         for k, v in params.iteritems():
             setattr(page, k, v)
         self.add_tags(page, tags, True)
-        self.add_tags(page, unpublic_tags, False)
+        self.add_tags(page, private_tags, False)
         return page
 
     def add_tags(self, page, tags, public_status):
