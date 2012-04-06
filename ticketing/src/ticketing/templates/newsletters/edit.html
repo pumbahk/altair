@@ -1,5 +1,5 @@
 <%inherit file="../layout.html" />
-<%block name="title">メールマガジン新規登録</%block>
+<%block name="title">メールマガジン編集</%block>
 
 <%def name="error(f)">
 %if f.errors:
@@ -19,7 +19,14 @@
 %   endif:
 % endfor
 </ul>
-<form action="${request.route_url('news_letters.new')}" enctype="multipart/form-data" method="POST">
+
+<script>
+    $(function() {
+        $('#start_on').datepicker({dateFormat:'yy-mm-dd'});
+    });
+</script>
+
+<form action="${request.route_url('newsletters.edit', id=newsletter.id)}" enctype="multipart/form-data" method="POST">
     <table class="table">
         <tr>
             <th>${form.subject.label}</th>
@@ -28,7 +35,7 @@
         </tr>
         <tr>
             <th>${form.description.label}</th>
-            <td>${form.description}
+            <td>${form.description(rows=20, cols=100)}
                 ${error(form.description)}</td>
         </tr>
         <tr>
@@ -38,15 +45,16 @@
         </tr>
         <tr>
             <th>${form.subscriber_file.label}</th>
-            <td>${form.subscriber_file}
+            <td>${form.subscriber_file()}
                 ${error(form.subscriber_file)}</td>
         </tr>
         <tr>
             <th>${form.start_on.label}</th>
-            <td>${form.start_on()}
-                ${error(form.start_on)}</td>
+            <td>
+                ${form.start_on}
+                ${error(form.start_on)}
+            </td>
         </tr>
     </table>
-    <input type="submit" name="submit" value="新規作成">
+    <input type="submit" name="submit" value="更新">
 </form>
-

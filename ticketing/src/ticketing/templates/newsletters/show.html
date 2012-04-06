@@ -1,5 +1,5 @@
 <%inherit file="../layout.html" />
-<h1><%block name="title">${news_letter.subject}</%block></h1>
+<h1><%block name="title">${newsletter.subject}</%block></h1>
 
 <%block name="style">
 	<!-- load dojo and provide config via data attribute -->
@@ -23,7 +23,7 @@
     <div class="well">
       <ul class="nav nav-list">
           <li class="nav-header">test</li>
-          <li><a href="${request.route_path('news_letters.index')}"><i class="icon-home"></i>メールマガジン一覧</a></li>
+          <li><a href="${request.route_path('newsletters.index')}"><i class="icon-home"></i>メールマガジン一覧</a></li>
           <li class="divider"></li>
       </ul>
     </div>
@@ -34,27 +34,27 @@
             <tbody>
               <tr>
                 <th>${form.subject.label}</th>
-                <td>${news_letter.subject}</td>
+                <td>${newsletter.subject}</td>
               </tr>
               <tr>
                 <th>${form.description.label}</th>
-                <td>${news_letter.description}</td>
+                <td>${newsletter.description}</td>
               </tr>
               <tr>
                 <th>${form.status.label}</th>
-                <td>${news_letter.status}</td>
+                <td>${newsletter.status}</td>
               </tr>
               <tr>
                 <th>${form.subscriber_file.label}</th>
-                <td>${news_letter.subscriber_file()}</td>
+                <td>${newsletter.subscriber_file()}</td>
               </tr>
               <tr>
                 <th>${form.subscriber_count.label}</th>
-                <td>${news_letter.subscriber_count}</td>
+                <td>${newsletter.subscriber_count}</td>
               </tr>
               <tr>
                 <th>${form.start_on.label}</th>
-                <td>${news_letter.start_on}</td>
+                <td>${newsletter.start_on}</td>
               </tr>
             </tbody>
           </table>
@@ -63,7 +63,7 @@
 </div>
 
 <div class="ui-toolbar">
-  <a href="${request.route_path('news_letters.edit', news_letter_id=news_letter.id)}" class="btn">編集</a>
-  <a href="${request.route_path('news_letters.new',news_letter_id=news_letter.id)}" class="btn">コピーして新規</a>
-  <a href="${request.route_path('news_letters.delete', news_letter_id=news_letter.id)}" class="btn">削除</a>
+  <a href="${request.route_path('newsletters.edit', id=newsletter.id)}" class="btn">編集</a>
+  <a href="${request.route_path('newsletters.new', id=newsletter.id)}" class="btn">コピーして新規</a>
+  <a href="${request.route_path('newsletters.delete', id=newsletter.id)}" class="btn">削除</a>
 </div>

@@ -6,7 +6,7 @@
     <div class="well">
     <ul class="nav nav-list">
       <li class="nav-header">test</li>
-      <li><a href="${request.route_path('news_letters.new')}"><i class="icon-home"></i>新規メールマガジン</a></li>
+      <li><a href="${request.route_path('newsletters.new')}"><i class="icon-home"></i>新規メールマガジン</a></li>
       <li class="divider"></li>
     </ul>
     </div>
@@ -40,26 +40,26 @@
             </tr>
           </thead>
           <tbody>
-          % for news_letter in news_letters.items:
+          % for newsletter in newsletters.items:
             <tr>
               <td><input type="checkbox" /></td>
-              <td>${news_letter.id}</td>
-              <td><a href="${request.route_path('news_letters.show', news_letter_id=news_letter.id)}">
-                  ${news_letter.subject}
+              <td>${newsletter.id}</td>
+              <td><a href="${request.route_path('newsletters.show', id=newsletter.id)}">
+                  ${newsletter.subject}
               </a></td>
-              <td><a href="#"></a>${news_letter.description}<a href="#"></a></td>
-              <td><a href="${request.route_path('news_letters.download', news_letter_id=news_letter.id)}">
-                  ${news_letter.subscriber_file()}
+              <td><a href="#"></a>${newsletter.description}<a href="#"></a></td>
+              <td><a href="${request.route_path('newsletters.download', id=newsletter.id)}">
+                  ${newsletter.subscriber_file()}
               </a></td>
-              <td>${news_letter.subscriber_count}</td>
+              <td>${newsletter.subscriber_count}</td>
               <td>
-              % if news_letter.status == 'waiting':
+              % if newsletter.status == 'waiting':
                   <span class="label label-important">未配信</span>
-              % elif news_letter.status == 'complete':
+              % elif newsletter.status == 'complete':
                   <span class="label label-success">配信済み</span>
               % endif
               </td>
-              <td>${news_letter.start_on}</td>
+              <td>${newsletter.start_on}</td>
             </tr>
           % endfor
           </tbody>
@@ -70,5 +70,5 @@
 </div>
 
 <div class="ui-toolbar">
-  <a href="${request.route_path('news_letters.new')}" class="btn">新規メールマガジン</a>
+  <a href="${request.route_path('newsletters.new')}" class="btn">新規メールマガジン</a>
 </div>

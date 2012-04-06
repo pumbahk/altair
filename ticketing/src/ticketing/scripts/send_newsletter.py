@@ -8,7 +8,7 @@ from paste.deploy import loadapp
 from pyramid.scripting import get_root
 from pyramid_mailer.mailer import Mailer
 from pyramid_mailer.message import Message
-from news_letters.models import NewsLetter
+from newsletters.models import Newsletter
 
 import logging
 logging.basicConfig()
@@ -34,17 +34,17 @@ def main(argv=sys.argv):
     mailer = Mailer()
     print 'mailer:', vars(mailer.smtp_mailer)
 
-    for news_letter in NewsLetter.all():
-        print 'news_letter:', vars(news_letter)
-        recipients = csv.reader(open(news_letter.subscriber_file()))
+    for newsletter in Newsletter.all():
+        print 'newsletter:', vars(newsletter)
+        recipients = csv.reader(open(newsletter.subscriber_file()))
         for row in recipients:
             id, name, email  = row
             if email is None: continue
             message = Message(
-                subject = news_letter.subject,
+                subject = newsletter.subject,
                 sender = "mmatsui@ticketstar.jp",
                 recipients = [email],
-                body = news_letter.description
+                body = newsletter.description
             )
             print 'message:', vars(message)
             mailer.send_immediately(message)

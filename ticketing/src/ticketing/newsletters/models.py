@@ -16,11 +16,11 @@ log = logging.getLogger(__name__)
 
 '''
 
- NewsLetter
+ Newsletter
 
 '''
-class NewsLetter(Base):
-    __tablename__ = 'NewsLetter'
+class Newsletter(Base):
+    __tablename__ = 'Newsletter'
     id = Column(BigInteger, primary_key=True)
     subject = Column(String(255))
     description = Column(String(5000))
@@ -34,22 +34,22 @@ class NewsLetter(Base):
         return '/tmp/altair' + str(self.id) + '.csv'
 
     @staticmethod
-    def add(news_letter):
-        log.debug(vars(news_letter))
-        session.add(news_letter)
+    def add(newsletter):
+        log.debug(vars(newsletter))
+        session.add(newsletter)
 
     @staticmethod
     def get(id):
-        return session.query(NewsLetter).filter(NewsLetter.id==id).first()
+        return session.query(Newsletter).filter(Newsletter.id==id).first()
 
     @staticmethod
-    def update(news_letter):
-        session.merge(news_letter)
+    def update(newsletter):
+        session.merge(newsletter)
         session.flush()
 
     @staticmethod
     def all():
-        return session.query(NewsLetter).all()
+        return session.query(Newsletter).all()
 
     @staticmethod
     def save_file(id, form):
@@ -65,19 +65,19 @@ class NewsLetter(Base):
             csv_file = csv.DictWriter(open(os.path.join(csv_dir, 'altair' + str(id) + '.csv'), 'w'), fields)
             count = 0
             for row in csv.DictReader(subscriber_file, fields):
-                if NewsLetter.validateEmail(row['email']):
+                if Newsletter.validateEmail(row['email']):
                     csv_file.writerow(row)
                     count += 1
 
-            news_letter = NewsLetter.get(id)
-            news_letter.subscriber_count = count
-            NewsLetter.update(news_letter)
+            newsletter = Newsletter.get(id)
+            newsletter.subscriber_count = count
+            Newsletter.update(newsletter)
 
     @staticmethod
     def validateEmail(email):
         log.debug(email)
         if email is not None and len(email) > 6:
-            if re.match('[\w\.-]+@[\w\.-]+\.\w{2,4}', email) != None:
+            if re.match(r'^.+@[^.].*\.[a-z]{2,10}$', email) != None:
                 return True
         return False
 

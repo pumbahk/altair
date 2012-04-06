@@ -7,8 +7,8 @@ from ticketing.models import *
 from ticketing.clients.models import *
 from prefecture import PrefectureMaster
 
-class NewsLetterData(DataSet):
-    class news_letter_1:
+class NewsletterData(DataSet):
+    class newsletter_1:
         subject          = "hoge"
         description      = "foo"
         start_on         = datetime(2012,7,1,19,0)
@@ -16,7 +16,7 @@ class NewsLetterData(DataSet):
         status           = "waiting"
         created_at       = datetime.now()
         updated_at       = datetime.now()
-    class news_letter_2:
+    class newsletter_2:
         subject          = "hoge2"
         description      = "foo2"
         start_on         = datetime(2012,8,1,19,0)

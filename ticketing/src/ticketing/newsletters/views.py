@@ -1,0 +1,130 @@
+# -*- coding: utf-8 -*-
+
+import urllib
+
+from pyramid.view import view_config, view_defaults
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound
+from pyramid.url import route_path
+from pyramid.response import Response
+
+from ticketing.models import merge_session_with_post, record_to_multidict
+from ticketing.views import BaseView
+from ticketing.fanstatic import with_fanstatic_jqueries
+from models import session, Newsletter
+
+from forms import NewslettersForm
+
+import webhelpers.paginate as paginate
+
+import logging
+import os
+log = logging.getLogger(__name__)
+
+@view_defaults(decorator=with_fanstatic_jqueries)
+class Newsletters(BaseView):
+
+    @view_config(route_name='newsletters.index', renderer='ticketing:templates/newsletters/index.html')
+    def index(self):
+        current_page = int(self.request.params.get("page", 0))
+        page_url = paginate.PageURL_WebOb(self.request)
+        query = session.query(Newsletter)
+        newsletters = paginate.Page(query.order_by(Newsletter.id), current_page, url=page_url)
+        return {
+            'newsletters' : newsletters
+        }
+
+    @view_config(route_name='newsletters.new', request_method="GET", renderer='ticketing:templates/newsletters/new.html')
+    def new_get(self):
+        f = NewslettersForm()
+        id = int(self.request.GET.get("id", 0)) 
+        if id:
+            newsletter = Newsletter.get(id)
+            if newsletter is None:
+                return HTTPNotFound('Newsletter not found')
+            f.process(record_to_multidict(newsletter))
+
+        return {
+            'form':f
+        }   
+
+    @view_config(route_name='newsletters.new', request_method="POST", renderer='ticketing:templates/newsletters/new.html')
+    def new_post(self):
+        f = NewslettersForm(self.request.POST)
+        if f.validate():
+            data = f.data
+            record = Newsletter()
+            record = merge_session_with_post(record, data)
+            Newsletter.add(record)
+            Newsletter.save_file(1, f)
+            return HTTPFound(location=route_path('newsletters.index', self.request))
+        else:
+            return {
+                'form':f
+            }
+
+    @view_config(route_name='newsletters.show', renderer='ticketing:templates/newsletters/show.html')
+    def show(self):
+        id = int(self.request.matchdict.get("id", 0)) 
+        newsletter = Newsletter.get(id)
+        log.debug(vars(newsletter))
+        if newsletter is None:
+            return HTTPNotFound("newsletter id %d is not found" % id)
+        f = NewslettersForm()
+
+        return {
+            'form' :f,
+            'newsletter' : newsletter,
+        }   
+
+    @view_config(route_name='newsletters.edit', request_method="GET", renderer='ticketing:templates/newsletters/edit.html')
+    def edit_get(self):
+        id = int(self.request.matchdict.get("id", 0))
+        newsletter = Newsletter.get(id)
+        if newsletter is None:
+            return HTTPNotFound("client id %d is not found" % id)
+
+        app_structs = record_to_multidict(newsletter)
+        f = NewslettersForm()
+        f.process(app_structs)
+        return {
+            'form' :f,
+            'newsletter' : newsletter
+        }
+
+    @view_config(route_name='newsletters.edit', request_method="POST", renderer='ticketing:templates/newsletters/edit.html')
+    def edit_post(self):
+        id = int(self.request.matchdict.get("id", 0))
+        newsletter = Newsletter.get(id)
+        if newsletter is None:
+            return HTTPNotFound("client id %d is not found" % id)
+
+        f = NewslettersForm(self.request.POST)
+        if f.validate():
+            data = f.data
+            record = merge_session_with_post(newsletter, data)
+            Newsletter.update(record)
+            Newsletter.save_file(id, f)
+            return HTTPFound(location=route_path('newsletters.show', self.request, id=newsletter.id))
+        else:
+            return {
+                'form':f,
+                'newsletter' : newsletter
+            }
+
+    @view_config(route_name='newsletters.download')
+    def download(self):
+        id = int(self.request.matchdict.get("id", 0)) 
+        newsletter = Newsletter.get(id)
+        log.debug(vars(newsletter))
+
+        fname = newsletter.subscriber_file()
+        f = open(fname)
+        headers = [
+            ('Content-Type', 'application/octet-stream'),
+            ('Content-Disposition', 'attachment; filename=%s' % os.path.basename(fname))
+        ]
+        response = Response(f.read(), headers=headers)
+        f.close()
+
+        return response
+
