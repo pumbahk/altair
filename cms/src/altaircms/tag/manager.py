@@ -18,6 +18,12 @@ class TagManager(object):
         qs = DBSession.query(*result).filter(self.Object.id==self.XRef.object_id)
         return qs.filter(self.Tag.id==self.XRef.tag_id)
 
+    def public_search(self, label, result=None):
+        return self.search(label, result=result).filter(self.Tag.publicp==True)
+
+    def unpublic_search(self, label, result=None):
+        return self.search(label, result=result).filter(self.Tag.publicp==False)
+
     def search(self, label, result=None):
         """
         search matched objects

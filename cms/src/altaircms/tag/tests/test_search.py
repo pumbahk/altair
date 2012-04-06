@@ -48,6 +48,22 @@ class PageSearchTest(unittest.TestCase):
         self.assertEquals(manager.search(u"boo").count(), 
                           0)
 
+    def test_search(self):
+        session = self._getSession()
+        target = self._makeTarget(title=u"page")
+        target.tags.append(self._makeTag(label=u"public", publicp=True))
+        target.tags.append(self._makeTag(label=u"unpublic", publicp=False))
+        session.add(target)
+        manager = self._getManger()
+
+        self.assertEquals(manager.search(u"public").count(), 1)
+        self.assertEquals(manager.public_search(u"public").count(), 1)
+        self.assertEquals(manager.unpublic_search(u"public").count(), 0)
+        self.assertEquals(manager.search(u"unpublic").count(), 1)
+        self.assertEquals(manager.public_search(u"unpublic").count(), 0)
+        self.assertEquals(manager.unpublic_search(u"unpublic").count(), 1)
+
+
 class EventSearchTest(unittest.TestCase):
     def tearDown(self):
         import transaction
@@ -85,6 +101,20 @@ class EventSearchTest(unittest.TestCase):
         self.assertEquals(manager.search(u"boo").count(), 
                           0)
 
+    def test_search(self):
+        session = self._getSession()
+        target = self._makeTarget(title=u"event")
+        target.tags.append(self._makeTag(label=u"public", publicp=True))
+        target.tags.append(self._makeTag(label=u"unpublic", publicp=False))
+        session.add(target)
+        manager = self._getManger()
+
+        self.assertEquals(manager.search(u"public").count(), 1)
+        self.assertEquals(manager.public_search(u"public").count(), 1)
+        self.assertEquals(manager.unpublic_search(u"public").count(), 0)
+        self.assertEquals(manager.search(u"unpublic").count(), 1)
+        self.assertEquals(manager.public_search(u"unpublic").count(), 0)
+        self.assertEquals(manager.unpublic_search(u"unpublic").count(), 1)
 
 class ImageAssetSearchTest(unittest.TestCase):
     def tearDown(self):
@@ -123,6 +153,21 @@ class ImageAssetSearchTest(unittest.TestCase):
                           1)
         self.assertEquals(manager.search(u"boo").count(), 
                           0)
+
+    def test_search(self):
+        session = self._getSession()
+        target = self._makeTarget(filepath=u"asset")
+        target.tags.append(self._makeTag(label=u"public", publicp=True))
+        target.tags.append(self._makeTag(label=u"unpublic", publicp=False))
+        session.add(target)
+        manager = self._getManger()
+
+        self.assertEquals(manager.search(u"public").count(), 1)
+        self.assertEquals(manager.public_search(u"public").count(), 1)
+        self.assertEquals(manager.unpublic_search(u"public").count(), 0)
+        self.assertEquals(manager.search(u"unpublic").count(), 1)
+        self.assertEquals(manager.public_search(u"unpublic").count(), 0)
+        self.assertEquals(manager.unpublic_search(u"unpublic").count(), 1)
 
 class MovieAssetSearchTest(unittest.TestCase):
     def tearDown(self):
