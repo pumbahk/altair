@@ -18,6 +18,8 @@ class PageTag2Page(Base):
 
 
 class PageTag(Base):
+    CLASSIFIER = "page"
+
     __tablename__ = "pagetag"
     query = DBSession.query_property()
     id = sa.Column(sa.Integer, primary_key=True)
@@ -36,6 +38,8 @@ class EventTag2Event(Base):
     event = orm.relationship("Event", backref=orm.backref("eventtag2event", cascade="all, delete-orphan"))
 
 class EventTag(Base):
+    CLASSIFIER = "event"
+
     __tablename__ = "eventtag"
     query = DBSession.query_property()
     id = sa.Column(sa.Integer, primary_key=True)
@@ -54,6 +58,8 @@ class AssetTag2Asset(Base):
     asset = orm.relationship("Asset", backref=orm.backref("assettag2asset", cascade="all, delete-orphan"))
 
 class AssetTag(Base):
+    CLASSIFIER = "asset"
+
     __tablename__ = "assettag"
     id = sa.Column(sa.Integer, primary_key=True)
     query = DBSession.query_property()

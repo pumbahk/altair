@@ -7,7 +7,7 @@ from pyramid.httpexceptions import HTTPFound
 from altaircms.lib.apiview import BaseRESTAPI
 from altaircms.lib.viewhelpers import RegisterViewPredicate
 from altaircms.lib.viewhelpers import FlashMessage
-from altaircms.page.forms import PageForm
+from . import forms
 from altaircms.page.models import Page
 from altaircms.event.models import Event
 
@@ -37,14 +37,14 @@ class AddView(object):
     def input_form(self):
         event_id = self.request.matchdict["event_id"]
         event = Event.query.filter(Event.id==event_id).one()
-        form = PageForm(event_id=event.id)
+        form = forms.PageForm(event_id=event.id)
         return {"form":form, "event":event}
 
     @view_config(request_method="POST", renderer="altaircms:templates/page/add.mako")
     def create_page(self):
-        form = PageForm(self.request.POST)
+        form = forms.PageForm(self.request.POST)
         if form.validate():
-            page = treat.get_creator(form, "page", request=self.request).create()
+            treat.get_creator(form, "page", request=self.request).create()
             ## flash messsage
             FlashMessage.success("page created", request=self.request)
             return HTTPFound(self.request.route_path("event", id=self.event_id))
@@ -65,9 +65,9 @@ class CreateView(object):
 
     @view_config(route_name="page", renderer='altaircms:templates/page/list.mako', request_method="POST")
     def create(self):
-        form = PageForm(self.request.POST)
+        form = forms.PageForm(self.request.POST)
         if form.validate():
-            page = treat.get_creator(form, "page", request=self.request).create()
+            treat.get_creator(form, "page", request=self.request).create()
             ## flash messsage
             FlashMessage.success("page created", request=self.request)
             return HTTPFound(self.request.route_path("page"))
@@ -146,15 +146,15 @@ class UpdateView(object):
         params = page.to_dict()
         params["tags"] = u', '.join(tag.label for tag in page.public_tags)
         params["unpublic_tags"] = u', '.join([tag.label for tag in page.unpublic_tags])
-        form = PageForm(**params)
+        form = forms.PageUpdateForm(**params)
         return self._input_page(page, form)
 
     @view_config(request_method="POST", renderer="altaircms:templates/page/update_confirm.mako",       
                     custom_predicates=[RegisterViewPredicate.confirm])
     def update_confirm(self):
         id_ = self.request.matchdict['id']
-        form = PageForm(self.request.POST)
-        page = PageRESTAPIView(self.request, id_).read()
+        form = forms.PageUpdateForm(self.request.POST)
+        page = self.context.get_page(id_)
         if form.validate():
             return dict( page=page, params=self.request.POST.items())
         else:
@@ -163,7 +163,7 @@ class UpdateView(object):
     @view_config(request_method="POST", custom_predicates=[RegisterViewPredicate.execute])
     def update(self):
         page = self.context.get_page( self.request.matchdict['id'])
-        form = PageForm(self.request.POST)
+        form = forms.PageUpdateForm(self.request.POST)
         if form.validate():
             page = treat.get_updater(form, "page", request=self.request).update(page)
             ## flash messsage
@@ -176,7 +176,7 @@ class UpdateView(object):
 @view_config(route_name='page', renderer='altaircms:templates/page/list.mako', 
              permission='page_read', request_method="GET", decorator=with_bootstrap)
 def list_(request):
-    form = PageForm()
+    form = forms.PageForm()
     return dict(
         pages=PageRESTAPIView(request).read(),
         form=form
@@ -185,7 +185,7 @@ def list_(request):
 
 class PageRESTAPIView(BaseRESTAPI):
     model = Page
-    form = PageForm
+    form = forms.PageForm
     object_mapper = PageMapper
     objects_mapper = PagesMapper
 

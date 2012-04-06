@@ -40,7 +40,20 @@ def url_not_conflict(form, field):
 
 @implementer(IForm)
 class PageForm(Form):
-    # url = fields.TextField(validators=[url_field_validator], placeholder="top/music/abc")
+    url = fields.TextField(validators=[ validators.Required(), url_field_validator,  url_not_conflict],
+                           label=u"URLの一部(e.g. top/music)")
+    title = fields.TextField(label=u"ページタイトル", validators=[validators.Required()])
+    description = fields.TextField(label=u"概要")
+    keywords = fields.TextField()
+    tags = fields.TextField(label=u"タグ")
+    unpublic_tags = fields.TextField(label=u"非公開タグ")
+    layout = dynamic_query_select_field_factory(Layout, allow_blank=False)
+    # event_id = fields.IntegerField(label=u"", widget=widgets.HiddenInput())
+    event = dynamic_query_select_field_factory(Event, allow_blank=True, label=u"イベント")
+    parent = dynamic_query_select_field_factory(Page, allow_blank=True, label=u"親ページ")
+
+@implementer(IForm)
+class PageUpdateForm(Form):
     url = fields.TextField(validators=[ validators.Required(), url_field_validator],
                            label=u"URLの一部(e.g. top/music)")
     title = fields.TextField(label=u"ページタイトル", validators=[validators.Required()])

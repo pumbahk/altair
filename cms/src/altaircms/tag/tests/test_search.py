@@ -267,9 +267,9 @@ class AnyKindAssetSearchTests(unittest.TestCase):
         from altaircms.tag.models import AssetTag
         return AssetTag(**kwargs)
 
-    def _getManger(self, classfier):
+    def _getManger(self, classifier):
         from altaircms.tag.api import get_tagmanager
-        return get_tagmanager(classfier)
+        return get_tagmanager(classifier)
 
     def test_any_kind(self):
         """ search image. flash, movie asset exist in session"""

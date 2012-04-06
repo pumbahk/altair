@@ -18,5 +18,5 @@
     <li><a href="${request.route_path("operator_list")}">オペレータ</a></li>
     <li><a href="${request.route_path("apikey_list")}">APIKEY</a></li>
     <li><a href="${request.route_path("role_list")}">ロール</a></li>
-    <li>タグ</li>
+    <li><a href="${request.route_path("tag", classifier="top")}">タグ</a></li>
 </ul>

@@ -1,3 +1,5 @@
+SUPPORTED_CLASSIFIER = ("page", "event", "asset")
+
 def includeme(config):
     config.add_directive("add_tagmanager", ".directives.add_tagmanager")
     config.add_tagmanager("page",
@@ -31,3 +33,5 @@ def includeme(config):
                          tag=".models.MovieAssetTag"
                          )
     
+
+    config.add_route("tag", "/tag/{classifier}")
