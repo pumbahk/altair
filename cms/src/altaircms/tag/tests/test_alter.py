@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 import unittest
 config  = None
 def setUpModule():
@@ -48,6 +49,44 @@ class PageAlterTagTest(unittest.TestCase):
                           sorted(tag_label_list)):
             self.assertEquals(tag.label, k)
 
+    def test_tagged_from_sameword_list(self):
+        page = self._withSession(self._makePage())
+        manager = self._getManger()("page")
+
+        ## same word list
+        tag_label_list = [u"po", u"po", u"po", u"po", u"po"]
+        manager.replace(page, tag_label_list)
+
+        from altaircms.tag.models import PageTag
+        self.assertEquals(PageTag.query.count(), 1)
+            
+    def test_tagged_when_create_with_public_status(self):
+        page = self._withSession(self._makePage())
+        manager = self._getManger()("page")
+
+        ## add public
+        tag_label_list = [u"pub", u"both", u"公開"]
+        manager.replace(page, tag_label_list, public_status=True)
+        self.assertEquals(len(page.tags), 3)
+        
+        ## add unpublic
+        tag_label_list = [u"unpub", u"both", u"非公開"]
+        manager.replace(page, tag_label_list, public_status=False)
+        self.assertEquals(len(page.tags), 6)
+
+    def test_tagged_when_delete_with_public_status(self):
+        page = self._withSession(self._makePage())
+        manager = self._getManger()("page")
+
+        tag_label_list = [u"pub", u"both", u"公開"]
+        manager.replace(page, tag_label_list, public_status=True)
+        tag_label_list = [u"unpub", u"both", u"非公開"]
+        manager.replace(page, tag_label_list, public_status=False)
+
+        ## delete unpublic `both' tag
+        manager.delete(page, [u"both"], public_status=True)
+        self.assertEquals(len(page.tags), 5)
+
     def test_tagged_when_update(self):
         """ tag: bool, cool, tool => bool, kool, tool
         """
@@ -80,7 +119,7 @@ class PageAlterTagTest(unittest.TestCase):
         self.assertEquals(len(page.tags), 1)
         self.assertEquals(page.tags[0].label, u"cool")
 
-    def test_double(self):
+    def test_same_tagged_2target(self):
         page = self._withSession(self._makePage())
         another = self._withSession(self._makePage())
         manager = self._getManger()("page")
