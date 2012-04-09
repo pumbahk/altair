@@ -95,12 +95,12 @@ class RakutenOpenID(object):
         f.close()
 
         is_valid = response_body.split("\n")[0].split(":")[1]
-        oauth_consumer = oauth.Consumer(self.consumer_key, self.secret)
-        client = oauth.Client(oauth_consumer, oauth.Token(request_token, self.secret))
-        res, content = client.request('https://api.id.rakuten.co.jp/openid/oauth/accesstoken', 'GET')
-        print content
-        request_token = urlparse.parse_qsl(content)
-        print request_token
+        #oauth_consumer = oauth.Consumer(self.consumer_key, self.secret)
+        #client = oauth.Client(oauth_consumer, oauth.Token(request_token, self.secret))
+        #res, content = client.request('https://api.id.rakuten.co.jp/openid/oauth/accesstoken', 'GET')
+        #print content
+        #request_token = urlparse.parse_qsl(content)
+        #print request_token
 
         if is_valid == "true":
             return claimed_id

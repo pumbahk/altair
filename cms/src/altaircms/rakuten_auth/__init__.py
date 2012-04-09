@@ -39,8 +39,8 @@ def includeme(config):
             ),
                         IRakutenOpenID)
 
-    config.add_view('.views.RootView', attr="login", route_name="login")
-    config.add_view('.views.RootView', attr="verify", route_name="verify")
+    config.add_view('.views.RootView', attr="login", route_name="rakuten_auth.login")
+    config.add_view('.views.RootView', attr="verify", route_name="rakuten_auth.verify")
     
 
 def main(global_conf, **settings):
@@ -50,9 +50,10 @@ def main(global_conf, **settings):
                           authorization_policy=ACLAuthorizationPolicy(),
                           authentication_policy=AuthTktAuthenticationPolicy("secret"))
     config.add_route('top', '/')
-    config.add_route('login', '/login')
-    config.add_route('verify', '/verify')
     config.add_view('.index', route_name="top")
+
+    config.add_route('rakuten_auth.login', '/login')
+    config.add_route('rakuten_auth.verify', '/verify')
 
     config.include(".")
 

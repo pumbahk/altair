@@ -13,7 +13,7 @@ class RakutenOpenIDTests(unittest.TestCase):
     @mock.patch('urllib2.urlopen')
     def test_it(self, mock_urlopen):
 
-        target = self._makeOne('https://api.id.rakuten.co.jp/openid/auth', 'http://www.example.com/', 'akfjakldjfakldjfkalsdjfklasdjfklajdf')
+        target = self._makeOne('https://api.id.rakuten.co.jp/openid/auth', 'http://www.example.com/', 'akfjakldjfakldjfkalsdjfklasdjfklajdf', 'secret')
 
         response = """\
 is_valid:true
@@ -62,7 +62,7 @@ ns:http://specs.openid.net/auth/2.0"""
     @mock.patch('urllib2.urlopen')
     def test_invalid(self, mock_urlopen):
 
-        target = self._makeOne('https://api.id.rakuten.co.jp/openid/auth', 'http://www.example.com/', 'akfjakldjfakldjfkalsdjfklasdjfklajdf')
+        target = self._makeOne('https://api.id.rakuten.co.jp/openid/auth', 'http://www.example.com/', 'akfjakldjfakldjfkalsdjfklasdjfklajdf', 'secret')
 
         response = """\
 is_valid:false
