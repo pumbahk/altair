@@ -1,69 +1,54 @@
 <%inherit file="../layout.html" />
-<h1><%block name="title">${newsletter.subject}</%block></h1>
 
-<%block name="style">
-	<!-- load dojo and provide config via data attribute -->
-	<script src="http://ajax.googleapis.com/ajax/libs/dojo/1.7.1/dojo/dojo.js"
-			data-dojo-config="async: true, parseOnLoad: true">
-	</script>
-	<script>
-		require(["dijit/layout/BorderContainer", "dijit/layout/TabContainer", "dijit/layout/ContentPane", "dijit/layout/AccordionContainer", "dojo/parser"]);
-	</script>
-    <style type="text/css">
-      @import "http://ajax.googleapis.com/ajax/libs/dojo/1.4/dojo/resources/dojo.css";
-      @import "http://ajax.googleapis.com/ajax/libs/dojo/1.4/dijit/themes/soria/soria.css";
-      @import "http://ajax.googleapis.com/ajax/libs/dojo/1.4/dijit/themes/nihilo/nihilo.css";
-      @import "http://ajax.googleapis.com/ajax/libs/dojo/1.4/dijit/themes/tundra/tundra.css";
-    </style>
-</%block>
-<%block name="body_attrs"> class="nihilo"</%block>
-<br><br>
 <div class="row-fluid">
-  <span class="span2">
-    <div class="well">
-      <ul class="nav nav-list">
-          <li class="nav-header">test</li>
-          <li><a href="${request.route_path('newsletters.index')}"><i class="icon-home"></i>メールマガジン一覧</a></li>
-          <li class="divider"></li>
-      </ul>
-    </div>
-  </span>
+  <%include file="_menu.html" />
+
   <span class="span10">
-      <div class="well">
-          <table class="vertical-table fullwidth">
-            <tbody>
-              <tr>
-                <th>${form.subject.label}</th>
-                <td>${newsletter.subject}</td>
-              </tr>
-              <tr>
-                <th>${form.description.label}</th>
-                <td>${newsletter.description}</td>
-              </tr>
-              <tr>
-                <th>${form.status.label}</th>
-                <td>${newsletter.status}</td>
-              </tr>
-              <tr>
-                <th>${form.subscriber_file.label}</th>
-                <td>${newsletter.subscriber_file()}</td>
-              </tr>
-              <tr>
-                <th>${form.subscriber_count.label}</th>
-                <td>${newsletter.subscriber_count}</td>
-              </tr>
-              <tr>
-                <th>${form.start_on.label}</th>
-                <td>${newsletter.start_on}</td>
-              </tr>
-            </tbody>
-          </table>
-      </div>
+    <div class="page-header">
+      <h3>${newsletter.subject}</h3> 
+    </div>
+
+    <div class="well">
+      <table class="table">
+        <tbody>
+          <tr>
+            <th>${form.subject.label}</th>
+            <td>${newsletter.subject}</td>
+          </tr>
+          <tr>
+            <th>${form.description.label}</th>
+            <td>${newsletter.description}</td>
+          </tr>
+          <tr>
+            <th>${form.status.label}</th>
+            <td>${newsletter.status}</td>
+          </tr>
+          <tr>
+            <th>${form.subscriber_file.label}</th>
+            <td>${newsletter.subscriber_file()}</td>
+          </tr>
+          <tr>
+            <th>${form.subscriber_count.label}</th>
+            <td>${newsletter.subscriber_count}</td>
+          </tr>
+          <tr>
+            <th>${form.start_on.label}</th>
+            <td>${newsletter.start_on}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </span>
 </div>
 
 <div class="ui-toolbar">
-  <a href="${request.route_path('newsletters.edit', id=newsletter.id)}" class="btn">編集</a>
-  <a href="${request.route_path('newsletters.new', id=newsletter.id)}" class="btn">コピーして新規</a>
-  <a href="${request.route_path('newsletters.delete', id=newsletter.id)}" class="btn">削除</a>
+  <div class="btn-group pull-right">
+    <button class="btn">
+      <a href="${request.route_path('newsletters.edit', id=newsletter.id)}"><i class="icon-pencil"></i> 編集</a>
+    </button>
+    <button class="btn"><a href="${request.route_path('newsletters.new')}"><i class="icon-plus"></i> 新規</a></button>
+    <button class="btn"><a href=""><i class="icon-plus"></i> コピー</a></button>
+    <button class="btn"><a href=""><i class="icon-minus"></i> 削除</a></button>
+  </div>
 </div>
+

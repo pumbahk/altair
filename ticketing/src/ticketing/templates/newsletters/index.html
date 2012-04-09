@@ -1,42 +1,25 @@
 <%inherit file="../layout.html" />
-<%block name="title">メールマガジン一覧</%block>
+<%namespace file="/common/helpers.html" import="pager"/>
 
 <div class="row-fluid">
-  <span class="span2">
-    <div class="well">
-    <ul class="nav nav-list">
-      <li class="nav-header">test</li>
-      <li><a href="${request.route_path('newsletters.new')}"><i class="icon-home"></i>新規メールマガジン</a></li>
-      <li class="divider"></li>
-    </ul>
-    </div>
-  </span>
+  <%include file="_menu.html" />
 
   <span class="span10">
+    <div class="page-header">
+      <h3>メールマガジン配信リスト</h3>
+    </div>
     <div class="well">
-      <h4 style="float: left">メールマガジン配信リスト</h4>
-      <div class="btn-group" style="float: right; margin-right: 20px">
-        <button class="btn"><i class="icon-pencil"></i>編集</button>
-        <button class="btn dropdown-toggle" data-toggle="dropdown">
-          <span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu">
-          <li><a href=""><i class="icon-plus"></i>コピー</a></li>
-          <li><a href=""><i class="icon-minus"></i>削除</a></li>
-        </ul>
-      </div>
       <br style="clear: both" />
         <table class="table fullwidth checkboxed_table">
           <thead>
             <tr>
               <th class="minwidth"><input type="checkbox" class="__action__-select_all" /></th>
               <th class="minwidth">ID</th>
-              <th><a href="#" class="sortable">件名</a></th>
-              <th><a href="#" class="sortable">本文</a></th>
-              <th><a href="#">送信リスト</a></th>
-              <th><a href="#">送信件数</a></th>
-              <th><a href="#" class="sortable">状態</a></th>
-              <th><a href="#" class="sortable">配信予定日時</a></th>
+              <th>${self.sortable('subject')}</th>
+              <th>${form.subscriber_file.label.text}</th>
+              <th>${form.subscriber_count.label.text}</th>
+              <th>${self.sortable('status')}</th>
+              <th>${self.sortable('start_on')}</th>
             </tr>
           </thead>
           <tbody>
@@ -44,19 +27,18 @@
             <tr>
               <td><input type="checkbox" /></td>
               <td>${newsletter.id}</td>
-              <td><a href="${request.route_path('newsletters.show', id=newsletter.id)}">
-                  ${newsletter.subject}
-              </a></td>
-              <td><a href="#"></a>${newsletter.description}<a href="#"></a></td>
+              <td><a href="${request.route_path('newsletters.show', id=newsletter.id)}">${newsletter.subject}</a></td>
               <td><a href="${request.route_path('newsletters.download', id=newsletter.id)}">
-                  ${newsletter.subscriber_file()}
-              </a></td>
+                <span class="label label-info"><i class="icon-download-alt"></i> ${newsletter.subscriber_file()}</span></a>
+              </td>
               <td>${newsletter.subscriber_count}</td>
               <td>
-              % if newsletter.status == 'waiting':
-                  <span class="label label-important">未配信</span>
-              % elif newsletter.status == 'complete':
-                  <span class="label label-success">配信済み</span>
+              % if newsletter.status == 'editing':
+                  <span class="label label-important">作成中</span>
+              % elif newsletter.status == 'waiting':
+                  <span class="label label-success">配信予約中</span>
+              % elif newsletter.status == 'completed':
+                  <span class="label label-success">配信完了</span>
               % endif
               </td>
               <td>${newsletter.start_on}</td>
@@ -64,11 +46,34 @@
           % endfor
           </tbody>
         </table>
-      <br style="clear: both" />
     </div>
+    ${pager(newsletters)}
   </span>
 </div>
 
 <div class="ui-toolbar">
-  <a href="${request.route_path('newsletters.new')}" class="btn">新規メールマガジン</a>
+  <div class="btn-group pull-right">                                                                     
+    <button class="btn"><i class="icon-pencil"></i> 編集</button>
+    <button class="btn"><a href="${request.route_path('newsletters.new')}"><i class="icon-plus"></i> 新規</a></button>
+    <button class="btn"><a href=""><i class="icon-plus"></i> コピー</a></button>
+    <button class="btn"><a href=""><i class="icon-minus"></i> 削除</a></button>
+  </div>
 </div>
+
+<%def name="sortable(column)">
+    <% column_name = form[column].label.text %>
+    <% sort_column = request.GET.get("sort") if request.GET.get("sort") else "name" %>
+    <% sort_direction = request.GET.get("direction") if request.GET.get("direction") else "asc" %>  
+    <% css_class = "" %>
+    % if (column == sort_column):
+        <% css_class = "current " + sort_direction %>
+    % endif
+    
+    <% direction = "asc" %>
+    % if (column == sort_column and sort_direction == "asc"):
+        <% direction = "desc" %>
+    % endif
+
+    <a href="${request.route_path('newsletters.index')}?sort=${column}&direction=${direction}" class="${css_class}">${column_name}</a>
+</%def>
+

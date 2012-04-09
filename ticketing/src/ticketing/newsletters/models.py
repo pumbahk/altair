@@ -10,6 +10,7 @@ import csv
 import sys
 import os
 import re
+from datetime import datetime
 from os.path import dirname
 import logging
 log = logging.getLogger(__name__)
@@ -21,6 +22,7 @@ log = logging.getLogger(__name__)
 '''
 class Newsletter(Base):
     __tablename__ = 'Newsletter'
+    __table_args__ = {'extend_existing': True}
     id = Column(BigInteger, primary_key=True)
     subject = Column(String(255))
     description = Column(String(5000))
@@ -31,7 +33,11 @@ class Newsletter(Base):
     created_at = Column(DateTime)
 
     def subscriber_file(self):
-        return '/tmp/altair' + str(self.id) + '.csv'
+        return 'altair' + str(self.id) + '.csv'
+
+    @staticmethod
+    def subscriber_dir():
+        return os.path.abspath(dirname(dirname(__file__))) + '/csv'
 
     @staticmethod
     def add(newsletter):
@@ -52,12 +58,17 @@ class Newsletter(Base):
         return session.query(Newsletter).all()
 
     @staticmethod
+    def get_reservations():
+        return session.query(Newsletter).\
+               filter(Newsletter.status == 'waiting').\
+               filter(Newsletter.start_on < datetime.now())
+
+    @staticmethod
     def save_file(id, form):
         subscriber_file = form.subscriber_file.data.file
         log.debug(subscriber_file)
         if subscriber_file:
-            csv_dir = os.path.abspath(dirname(dirname(__file__))) + '/csv'
-            log.debug(csv_dir)
+            csv_dir = Newsletter.subscriber_dir()
             if not os.path.isdir(csv_dir):
                 os.mkdir(csv_dir)
 

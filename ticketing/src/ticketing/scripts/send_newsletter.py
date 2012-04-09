@@ -34,9 +34,11 @@ def main(argv=sys.argv):
     mailer = Mailer()
     print 'mailer:', vars(mailer.smtp_mailer)
 
-    for newsletter in Newsletter.all():
+    for newsletter in Newsletter.get_reservations():
         print 'newsletter:', vars(newsletter)
-        recipients = csv.reader(open(newsletter.subscriber_file()))
+        csv_file = os.path.join(Newsletter.subscriber_dir(), newsletter.subscriber_file())
+        if not os.path.exists(csv_file): continue
+        recipients = csv.reader(open(csv_file))
         for row in recipients:
             id, name, email  = row
             if email is None: continue

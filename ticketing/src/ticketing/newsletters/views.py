@@ -25,11 +25,21 @@ class Newsletters(BaseView):
 
     @view_config(route_name='newsletters.index', renderer='ticketing:templates/newsletters/index.html')
     def index(self):
-        current_page = int(self.request.params.get("page", 0))
+        f = NewslettersForm()
+        current_page = int(self.request.params.get("page", 1))
         page_url = paginate.PageURL_WebOb(self.request)
-        query = session.query(Newsletter)
-        newsletters = paginate.Page(query.order_by(Newsletter.id), current_page, url=page_url)
+
+        sort = 'id'
+        if self.request.GET.get("sort"):
+            sort = self.request.GET.get("sort")
+        direction = 'asc'
+        if self.request.GET.get("direction") and self.request.GET.get("direction") in ["asc", "desc"]:
+            direction = self.request.GET.get("direction")
+        query = session.query(Newsletter).order_by(sort + ' ' + direction)
+        newsletters = paginate.Page(query, page=current_page, items_per_page=4, url=page_url)
+
         return {
+            'form' : f,
             'newsletters' : newsletters
         }
 
@@ -44,7 +54,7 @@ class Newsletters(BaseView):
             f.process(record_to_multidict(newsletter))
 
         return {
-            'form':f
+            'form' : f
         }   
 
     @view_config(route_name='newsletters.new', request_method="POST", renderer='ticketing:templates/newsletters/new.html')
@@ -59,7 +69,7 @@ class Newsletters(BaseView):
             return HTTPFound(location=route_path('newsletters.index', self.request))
         else:
             return {
-                'form':f
+                'form' : f
             }
 
     @view_config(route_name='newsletters.show', renderer='ticketing:templates/newsletters/show.html')
@@ -72,7 +82,7 @@ class Newsletters(BaseView):
         f = NewslettersForm()
 
         return {
-            'form' :f,
+            'form' : f,
             'newsletter' : newsletter,
         }   
 
@@ -87,7 +97,7 @@ class Newsletters(BaseView):
         f = NewslettersForm()
         f.process(app_structs)
         return {
-            'form' :f,
+            'form' : f,
             'newsletter' : newsletter
         }
 
@@ -107,7 +117,7 @@ class Newsletters(BaseView):
             return HTTPFound(location=route_path('newsletters.show', self.request, id=newsletter.id))
         else:
             return {
-                'form':f,
+                'form' : f,
                 'newsletter' : newsletter
             }
 
@@ -117,7 +127,7 @@ class Newsletters(BaseView):
         newsletter = Newsletter.get(id)
         log.debug(vars(newsletter))
 
-        fname = newsletter.subscriber_file()
+        fname = os.path.join(Newsletter.subscriber_dir(), newsletter.subscriber_file())
         f = open(fname)
         headers = [
             ('Content-Type', 'application/octet-stream'),
