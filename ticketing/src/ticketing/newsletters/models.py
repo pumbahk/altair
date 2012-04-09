@@ -33,7 +33,9 @@ class Newsletter(Base):
     created_at = Column(DateTime)
 
     def subscriber_file(self):
-        return 'altair' + str(self.id) + '.csv'
+        fname = 'altair' + str(self.id) + '.csv'
+        csv_file = os.path.join(Newsletter.subscriber_dir(), fname)
+        return fname if os.path.exists(csv_file) else None
 
     @staticmethod
     def subscriber_dir():

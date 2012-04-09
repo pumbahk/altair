@@ -30,8 +30,11 @@
               <td><input name="checked_id" type="radio" value=${newsletter.id} ${checked} /></td>
               <td>${newsletter.id}</td>
               <td><a href="${request.route_path('newsletters.show', id=newsletter.id)}">${newsletter.subject}</a></td>
-              <td><a href="${request.route_path('newsletters.download', id=newsletter.id)}">
-                <span class="label label-info"><i class="icon-download-alt"></i> ${newsletter.subscriber_file()}</span></a>
+              <td>
+                % if newsletter.subscriber_file() is not None:
+                  <a href="${request.route_path('newsletters.download', id=newsletter.id)}">
+                  <span class="label label-info"><i class="icon-download-alt"></i> ${newsletter.subscriber_file()}</span></a>
+                % endif
               </td>
               <td>${newsletter.subscriber_count}</td>
               <td>
