@@ -43,15 +43,25 @@ class Newsletters(BaseView):
             'newsletters' : newsletters
         }
 
-    @view_config(route_name='newsletters.new', request_method="GET", renderer='ticketing:templates/newsletters/new.html')
-    def new_get(self):
+    @view_config(route_name='newsletters.copy', request_method="GET", renderer='ticketing:templates/newsletters/new.html')
+    def copy(self):
         f = NewslettersForm()
-        id = int(self.request.GET.get("id", 0)) 
+        id = int(self.request.matchdict.get("id", 0)) 
         if id:
             newsletter = Newsletter.get(id)
             if newsletter is None:
                 return HTTPNotFound('Newsletter not found')
-            f.process(record_to_multidict(newsletter))
+            newsletter = record_to_multidict(newsletter)
+            newsletter.pop('id')
+            f.process(newsletter)
+
+        return {
+            'form' : f
+        }   
+
+    @view_config(route_name='newsletters.new', request_method="GET", renderer='ticketing:templates/newsletters/new.html')
+    def new_get(self):
+        f = NewslettersForm()
 
         return {
             'form' : f
@@ -76,7 +86,6 @@ class Newsletters(BaseView):
     def show(self):
         id = int(self.request.matchdict.get("id", 0)) 
         newsletter = Newsletter.get(id)
-        log.debug(vars(newsletter))
         if newsletter is None:
             return HTTPNotFound("newsletter id %d is not found" % id)
         f = NewslettersForm()
@@ -121,11 +130,20 @@ class Newsletters(BaseView):
                 'newsletter' : newsletter
             }
 
+    @view_config(route_name='newsletters.delete')
+    def delete(self):
+        id = int(self.request.matchdict.get("id", 0)) 
+        newsletter = Newsletter.get(id)
+        if newsletter is None:
+            return HTTPNotFound("newsletter id %d is not found" % id)
+        Newsletter.delete(newsletter)
+
+        return HTTPFound(location=route_path('newsletters.index', self.request))
+
     @view_config(route_name='newsletters.download')
     def download(self):
         id = int(self.request.matchdict.get("id", 0)) 
         newsletter = Newsletter.get(id)
-        log.debug(vars(newsletter))
 
         fname = os.path.join(Newsletter.subscriber_dir(), newsletter.subscriber_file())
         f = open(fname)

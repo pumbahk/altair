@@ -54,6 +54,10 @@ class Newsletter(Base):
         session.flush()
 
     @staticmethod
+    def delete(newsletter):
+        session.delete(newsletter)
+
+    @staticmethod
     def all():
         return session.query(Newsletter).all()
 
@@ -65,7 +69,8 @@ class Newsletter(Base):
 
     @staticmethod
     def save_file(id, form):
-        subscriber_file = form.subscriber_file.data.file
+        log.debug(form.subscriber_file.data)
+        subscriber_file = form.subscriber_file.data.file if form.subscriber_file.data != "" else None
         log.debug(subscriber_file)
         if subscriber_file:
             csv_dir = Newsletter.subscriber_dir()

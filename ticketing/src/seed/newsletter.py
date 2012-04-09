@@ -10,7 +10,7 @@ from prefecture import PrefectureMaster
 class NewsletterData(DataSet):
     class newsletter_1:
         subject          = "hoge"
-        description      = "foo"
+        description      = "foo ${name} bar ${name}"
         start_on         = datetime(2012,4,1,19,0)
         subscriber_count = 1
         status           = "waiting"

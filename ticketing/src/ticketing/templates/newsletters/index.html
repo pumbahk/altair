@@ -1,5 +1,6 @@
 <%inherit file="../layout.html" />
 <%namespace file="/common/helpers.html" import="pager"/>
+<%namespace file="/common/confirm_modal.html" import="delete_modal"/>
 
 <div class="row-fluid">
   <%include file="_menu.html" />
@@ -13,7 +14,7 @@
         <table class="table fullwidth checkboxed_table">
           <thead>
             <tr>
-              <th class="minwidth"><input type="checkbox" class="__action__-select_all" /></th>
+              <th class="minwidth"></th>
               <th class="minwidth">ID</th>
               <th>${self.sortable('subject')}</th>
               <th>${form.subscriber_file.label.text}</th>
@@ -23,9 +24,10 @@
             </tr>
           </thead>
           <tbody>
-          % for newsletter in newsletters.items:
+          % for i, newsletter in enumerate(newsletters.items):
             <tr>
-              <td><input type="checkbox" /></td>
+              <% checked = 'checked=checked' if i == 0 else '' %>
+              <td><input name="checked_id" type="radio" value=${newsletter.id} ${checked} /></td>
               <td>${newsletter.id}</td>
               <td><a href="${request.route_path('newsletters.show', id=newsletter.id)}">${newsletter.subject}</a></td>
               <td><a href="${request.route_path('newsletters.download', id=newsletter.id)}">
@@ -53,27 +55,36 @@
 
 <div class="ui-toolbar">
   <div class="btn-group pull-right">                                                                     
-    <button class="btn"><i class="icon-pencil"></i> 編集</button>
     <button class="btn"><a href="${request.route_path('newsletters.new')}"><i class="icon-plus"></i> 新規</a></button>
-    <button class="btn"><a href=""><i class="icon-plus"></i> コピー</a></button>
-    <button class="btn"><a href=""><i class="icon-minus"></i> 削除</a></button>
+    <button class="btn">
+      <a href="javascript:;" onclick="$(location).attr('href', '/newsletters/edit/' + $('input[name=checked_id]:checked').val());">
+      <i class="icon-pencil"></i> 編集</a></button>
+    <a class="btn" data-controls-modal="confirm-modal" data-backdrop="true" data-keyboard="true"
+        href="javascript:$('#confirm-modal').modal('toggle');"
+        onclick="$('#confirm-modal #delete').attr('href', '/newsletters/delete/' + $('input[name=checked_id]:checked').val());">
+      <i class="icon-minus"></i> 削除
+    </a>
+    <button class="btn">
+      <a href="javascript:;" onclick="$(location).attr('href', '/newsletters/copy/' + $('input[name=checked_id]:checked').val());">
+      <i class="icon-plus"></i> コピー</a></button>
   </div>
+  ${delete_modal("Are you sure you want to delete this id?")}
 </div>
 
 <%def name="sortable(column)">
-    <% column_name = form[column].label.text %>
-    <% sort_column = request.GET.get("sort") if request.GET.get("sort") else "name" %>
-    <% sort_direction = request.GET.get("direction") if request.GET.get("direction") else "asc" %>  
-    <% css_class = "" %>
-    % if (column == sort_column):
-        <% css_class = "current " + sort_direction %>
-    % endif
+  <% column_name = form[column].label.text %>
+  <% sort_column = request.GET.get("sort") if request.GET.get("sort") else "name" %>
+  <% sort_direction = request.GET.get("direction") if request.GET.get("direction") else "asc" %>  
+  <% css_class = "" %>
+  % if (column == sort_column):
+    <% css_class = "current " + sort_direction %>
+  % endif
     
-    <% direction = "asc" %>
-    % if (column == sort_column and sort_direction == "asc"):
-        <% direction = "desc" %>
-    % endif
+  <% direction = "asc" %>
+  % if (column == sort_column and sort_direction == "asc"):
+    <% direction = "desc" %>
+  % endif
 
-    <a href="${request.route_path('newsletters.index')}?sort=${column}&direction=${direction}" class="${css_class}">${column_name}</a>
+  <a href="${request.route_path('newsletters.index')}?sort=${column}&direction=${direction}" class="${css_class}">${column_name}</a>
 </%def>
 
