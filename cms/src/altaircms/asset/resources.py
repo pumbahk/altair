@@ -26,8 +26,7 @@ class AssetResource(object):
             raise Exception
 
     def get_asset_storepath(self):
-        today = date.today().strftime('%Y-%m-%d')
-        return os.path.join(get_storepath(self.request), today)
+        return get_storepath(self.request)
 
     def write_asset_file(self, storepath, original_filename, buf):
         awriter = treat.AssetFileWriter(storepath)
@@ -40,4 +39,10 @@ class AssetResource(object):
 
         return treat.AssetCreator(size=len(bufstring), filepath=filepath)
 
+    def delete_asset_file(self, storepath, filename):
+        filepath = os.path.join(storepath, filename)
+        if os.path.exists(filepath):
+            os.remove(filepath)
+
+        
     

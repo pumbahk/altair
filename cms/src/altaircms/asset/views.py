@@ -44,10 +44,10 @@ class DeleteView(object):
     @view_config(request_method="POST", renderer="altaircms:templates/asset/delete_confirm.mako")
     def execute(self):
         # 削除処理
-        asset = self.request.context.get_asset(self.request.matchdict["asset_id"])
-        filename = os.path.join(get_storepath(self.request), asset.filepath)
-        if os.path.exists(filename):
-            os.remove(filename)
+        context = self.request.context
+        asset = context.get_asset(self.request.matchdict["asset_id"])
+        storepath = context.get_asset_storepath()
+        context.delete_asset_file(storepath, asset.filepath)
         asset = self.request.context.get_asset(self.request.matchdict["asset_id"])
         self.request.context.DBSession.delete(asset)
         FlashMessage.success("asset deleted", request=self.request)

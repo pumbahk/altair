@@ -58,7 +58,9 @@ class AssetFileWriter(object): ##
             os.makedirs(self.storepath)
 
     def get_writename(self, original_filename):
-        return '%s.%s' % (uuid4(), original_filename[original_filename.rfind('.') + 1:])
+        today = date.today().strftime('%Y-%m-%d')
+        ext = original_filename[original_filename.rfind('.') + 1:]
+        return '%s/%s.%s' % (today, uuid4(), ext)
 
     def _write_file(self, writename, buf):
         """ return size"""
