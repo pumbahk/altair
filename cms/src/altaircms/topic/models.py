@@ -6,7 +6,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.declarative import declared_attr
 from datetime import datetime
 
-from altaircms.models import Base
+from altaircms.models import Base, BaseOriginalMixin
 from altaircms.models import DBSession
 from altaircms.page.models import Page
 from altaircms.event.models import Event
@@ -45,7 +45,8 @@ topic widget(移動予定):
 """
 
 class Topic(AboutPublishMixin, 
-            Base):    
+            BaseOriginalMixin,
+            Base):
     """
     トピック
     """

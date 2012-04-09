@@ -1,6 +1,10 @@
 # coding: utf-8
 from datetime import datetime
 import urlparse
+import urllib
+import urllib2
+import sqlahelper
+
 
 from pyramid.exceptions import Forbidden
 from pyramid.httpexceptions import HTTPFound, HTTPBadRequest, HTTPUnauthorized, HTTPNotFound
@@ -16,12 +20,11 @@ import transaction
 import json
 
 from altaircms.lib.apiview import BaseRESTAPI
-from altaircms.models import DBSession
+#from altaircms.models import DBSession
 from altaircms.lib.fanstatic_decorator import with_bootstrap
 from altaircms.auth.errors import AuthenticationError
 from altaircms.auth.forms import RoleForm
 from .models import Operator, Role, Permission, RolePermission, DEFAULT_ROLE
-
 
 @view_config(route_name='login', renderer='altaircms:templates/login.mako')
 @view_config(context='pyramid.httpexceptions.HTTPForbidden', renderer='altaircms:templates/login.mako',
@@ -57,11 +60,11 @@ class OAuthLogin(object):
 
         self._stub_client = _stub_client
 
-    def _oauth_request(self, client, url, method):
-        if self._stub_client:
-            return self._stub_client.request(url, method)
+    # def _oauth_request(self, client, url, method):
+    #     if self._stub_client:
+    #         return self._stub_client.request(url, method)
 
-        return client.request(url, method)
+    #     return client.request(url, method)
 
     @view_config(route_name='oauth_entry')
     def oauth_entry(self):
@@ -70,8 +73,6 @@ class OAuthLogin(object):
 
     @view_config(route_name='oauth_callback')
     def oauth_callback(self):
-        import urlparse
-        import urllib
 
         data = None
         try:
@@ -80,20 +81,19 @@ class OAuthLogin(object):
                 client_secret=self.secret_key,
                 code=self.request.GET.get("code"),
                 grant_type='authorization_code')
-            data = json.loads(urllib.urlopen(
+            data = json.loads(urllib2.urlopen(
                 self.access_token_url +
                 "?" + urllib.urlencode(args)).read())
         except IOError, e:
-            print e
-
-        print data
+            self.request.response.body = str(e)
+            return self.request.response
 
         try:
-            operator = DBSession.query(Operator).filter_by(auth_source='oauth', user_id=data['user_id']).one()
+            operator = Operator.query.filter_by(auth_source='oauth', user_id=data['user_id']).one()
             operator.last_login = datetime.now()
             DBSession.add(operator)
         except NoResultFound:
-            role = DBSession.query(Role).filter_by(name=data.get('role', DEFAULT_ROLE)).one()
+            role = Role.query.filter_by(name=data.get('role', DEFAULT_ROLE)).one()
             
             operator = Operator(
                 auth_source='oauth',
@@ -103,13 +103,12 @@ class OAuthLogin(object):
                 oauth_token_secret='',
                 role_id=role.id
             )
-            DBSession.add(operator)
+            sqlahelper.get_session().add(operator)
+
 
         headers = remember(self.request, operator.user_id)
-        transaction.commit()
 
-        # url = self.request.route_path("dashboard")
-        url = self.request.registry.settings.get('oauth.callback_success_url', '/')
+        url = self.request.route_url('oauth.callback_success_url')
         return HTTPFound(url, headers=headers)
 
 

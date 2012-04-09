@@ -17,7 +17,7 @@ from zope.interface import implements
 from altaircms.interfaces import IHasSite
 from altaircms.interfaces import IHasTimeHistory
 
-from altaircms.models import Base
+from altaircms.models import Base, BaseOriginalMixin
 from altaircms.models import DBSession
 from altaircms.layout.models import Layout
 
@@ -53,6 +53,7 @@ class HasAncestorMixin(object):
     
 class Page(PublishUnpublishMixin, 
            HasAncestorMixin, 
+           BaseOriginalMixin,
            Base):
     """
     ページ

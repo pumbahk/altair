@@ -2,9 +2,9 @@
 from datetime import datetime
 from altaircms.models import DBSession
 from sqlalchemy import Column, Integer, DateTime, Unicode, String, ForeignKey
-from altaircms.models import Base
+from altaircms.models import Base, BaseOriginalMixin
 
-class Layout(Base):
+class Layout(BaseOriginalMixin, Base):
     """
     テンプレートレイアウトマスタ
     """

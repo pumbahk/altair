@@ -7,7 +7,7 @@ import json
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 
-from altaircms.models import Base, DBSession
+from altaircms.models import Base, DBSession, BaseOriginalMixin
 
 from datetime import datetime
 from zope.interface import implements
@@ -22,7 +22,7 @@ __all__ = [
     "AssetWidgetResourceMixin"
 ]
 
-class Widget(Base):
+class Widget(BaseOriginalMixin, Base):
     implements(IHasTimeHistory, IHasSite)
 
     query = DBSession.query_property()
@@ -56,7 +56,7 @@ class Widget(Base):
         session.add(ins)
         return ins
 
-class WidgetDisposition(Base): #todo: rename
+class WidgetDisposition(BaseOriginalMixin, Base): #todo: rename
     """ widgetの利用内容を記録しておくためのモデル
     以下を記録する。
     * 利用しているwidgetの位置

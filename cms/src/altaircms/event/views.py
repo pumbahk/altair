@@ -16,7 +16,8 @@ from altaircms.lib.fanstatic_decorator import with_bootstrap
 
 from altaircms.event.forms import EventForm, EventRegisterForm
 from altaircms.event.mappers import EventMapper, EventsMapper
-from altaircms.event.api import parse_and_save_event, validate_apikey
+from altaircms.event.api import parse_and_save_event
+from . import helpers as h
 
 
 ##
@@ -99,17 +100,20 @@ class EventRESTAPIView(BaseRESTAPI):
 def event_register(request):
     form = EventRegisterForm(request.POST)
     apikey = request.headers.get('X-Altair-Authorization', None)
-    if not validate_apikey(apikey):
+    if not h.validate_apikey(request, apikey):
         return HTTPForbidden()
 
     if form.validate():
+        jsonstring = request.POST['jsonstring']
         try:
-            parse_and_save_event(request.POST['jsonstring'])
-        except Exception as e:
+            data = json.loads(jsonstring)
+            h.parse_and_save_event(request, data)
+            return HTTPCreated()
+        except ValueError as e:
             return Response(json.dumps({
                 'error':str(e)
             }), status=400, content_type='application/json')
-        return HTTPCreated()
+
     else:
         return Response(
             json.dumps(form.errors),

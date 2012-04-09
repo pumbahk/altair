@@ -1,7 +1,7 @@
 # coding: utf-8
 
 
-from altaircms.models import Base
+from altaircms.models import Base, BaseOriginalMixin
 from altaircms.models import DBSession
 
 from datetime import datetime
@@ -25,7 +25,7 @@ import os
 DIR = os.path.dirname(os.path.abspath(__file__))
 # import sqlalchemy.orm as orm
 
-class Asset(Base):
+class Asset(BaseOriginalMixin, Base):
     implements(IHasTimeHistory, IHasSite)
     query = DBSession.query_property()
     __tablename__ = "asset"

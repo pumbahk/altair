@@ -88,17 +88,13 @@ def main(global_config, **settings):
     config.include("altaircms.lib.crud")
     config.include("altaircms.slackoff")
     
+    config.scan('.subscribers')
     test_re = re.compile('tests$').search
-    config.scan(ignore=[test_re])
 
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)
     config.add_static_view('plugins/static', 'altaircms:plugins/static', cache_max_age=3600)
 
     engine = engine_from_config(settings, 'sqlalchemy.')
-    from altaircms.models import DBSession
-    from altaircms.models import Base
-    DBSession.bind=engine
-    Base.metadata.bind=engine
     sqlahelper.add_engine(engine)
 
     ## 設定ファイルを読み込んで追加でinclude.(debug用)
@@ -112,4 +108,3 @@ def main(global_config, **settings):
             warnings.warn("------------additional include " + m)
             config.include(m); config.scan(m)
     return config.make_wsgi_app()
-

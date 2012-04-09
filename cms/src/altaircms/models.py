@@ -1,18 +1,10 @@
 # coding: utf-8
 from datetime import datetime
+import sqlahelper
 import sqlalchemy.orm as orm
-from sqlalchemy import Column
-from sqlalchemy import Integer
-from sqlalchemy import Unicode
-from sqlalchemy import String
-from sqlalchemy import ForeignKey
-from sqlalchemy import DateTime
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.ext.declarative import  declared_attr
+from sqlalchemy import (Column, Integer, Unicode, String, ForeignKey, DateTime)
 from sqlalchemy.orm import relationship
-from sqlalchemy.ext.declarative import declarative_base
-from zope.sqlalchemy import ZopeTransactionExtension
-import transaction
+
 
 class BaseOriginalMixin(object):
     def to_dict(self):
@@ -41,48 +33,29 @@ class BaseOriginalMixin(object):
         return instance
 
     
-Base = declarative_base(cls=BaseOriginalMixin)
-DBSession = orm.scoped_session(orm.sessionmaker(extension=[ZopeTransactionExtension()]))
+Base = sqlahelper.get_base()
+DBSession = sqlahelper.get_session()
 
-
-def populate():
-    session = DBSession()
-    session.flush()
-    transaction.commit()
 
 
 def initialize_sql(engine, dropall=False):
-    Base.metadata.bind = engine
-    DBSession.bind = engine
+
+    DBSession.remove()
+    DBSession.configure(bind=engine)
     if dropall:
         Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
-    try:
-        populate()
-    except IntegrityError:
-        transaction.abort()
-
+    return DBSession
 
 ###
 ### ここからCMS用モデル
 ###
 
-class BaseMixin(object):
-    @declared_attr
-    def __tablename__(self):
-        return self.__name__.lower()
-
-    id = Column(Integer, primary_key=True)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
-
-
-
 """
 このあたりevent/models.pyに移動した方が良い。
 """
 from altaircms.event.models import Event
-class Performance(Base):
+class Performance(BaseOriginalMixin, Base):
     """
     パフォーマンス
     """
@@ -94,8 +67,8 @@ class Performance(Base):
     event_id = Column(Integer, ForeignKey('event.id'))
     client_id = Column(Integer, ForeignKey("client.id"))
 
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now)
 
     title = Column(Unicode)
     venue = Column(Unicode) #開催地

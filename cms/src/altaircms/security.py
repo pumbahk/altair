@@ -5,6 +5,11 @@ from sqlalchemy.orm.exc import NoResultFound
 from altaircms.models import DBSession
 from altaircms.auth.models import Operator, Role, RolePermission, Permission
 
+from zope.interface import implements
+from pyramid.interfaces import IAuthorizationPolicy
+from pyramid.location import lineage
+from pyramid.security import ACLAllowed
+
 
 def rolefinder(userid, request):
     """
@@ -47,10 +52,6 @@ class SecurityAllOK(list):
         return self.roles
 
 
-from zope.interface import implements
-from pyramid.interfaces import IAuthorizationPolicy
-from pyramid.location import lineage
-from pyramid.security import ACLAllowed
 class DummyAuthorizationPolicy(object):
     implements(IAuthorizationPolicy)
     def permits(self, context, principals, permission):

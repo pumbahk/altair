@@ -2,11 +2,11 @@
 
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
-from altaircms.models import Base
+from altaircms.models import Base, BaseOriginalMixin
 from altaircms.models import DBSession
 from datetime import datetime
 
-class Event(Base):
+class Event(BaseOriginalMixin, Base):
     """
     イベント
 
