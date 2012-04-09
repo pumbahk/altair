@@ -1,7 +1,29 @@
+# -*- coding:utf-8 -*-
 from altaircms.models import DBSession
 import sqlalchemy.sql.expression as saexp
 from zope.interface import implementer
 from .interfaces import ITagManager
+import re
+
+class QueryParser(object):
+    """ support and search only
+    e.g. "abc def" => a object has abc and def.
+    """
+    def __init__(self, query):
+        self.query = query
+    
+    def parse(self):
+        return re.split(u"[　\s]+", self.query.strip())
+
+    def and_search_by_manager(self, manager):
+        words = self.parse()
+        if len(words) <= 1:
+            return manager.search_by_tag_label(words[0])
+        else:
+            where = manager.Object.tags.any(label=words[0])
+            for w in words[1:]:
+                where = where & (manager.Object.tags.any(label=w))
+            return manager.joined_query().filter(where)
 
 @implementer(ITagManager)
 class TagManager(object):

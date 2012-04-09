@@ -10,9 +10,9 @@ from altaircms.models import Base
 from pyramid import testing
 import transaction
 
-def db_initialize_for_unittest():
+def db_initialize_for_unittest(echo=False):
     import sqlalchemy as sa
-    engine = sa.create_engine("sqlite://")
+    engine = sa.create_engine("sqlite://", echo=echo)
     Base.metadata.bind = engine
     DBSession.configure(bind=engine)
     Base.metadata.create_all()

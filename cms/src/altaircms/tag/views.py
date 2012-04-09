@@ -2,6 +2,7 @@ from pyramid.view import view_config
 from pyramid.view import view_defaults
 from altaircms.lib.fanstatic_decorator import with_bootstrap
 from altaircms.tag.api import get_tagmanager
+from .manager import QueryParser
 from . import SUPPORTED_CLASSIFIER
 from . import forms
 
@@ -34,7 +35,7 @@ class TopView(object):
         form = forms.TagSearchForm(**self.request.GET)
         classifier = self.request.GET["classifier"]
         query = self.request.GET["query"]
-        query_result = get_tagmanager(classifier).search_by_tag_label(query)
+        query_result = QueryParser(query).and_search_by_manager(get_tagmanager(classifier))
         return {"supported": SUPPORTED_CLASSIFIER, 
                 "form": form, 
                 "query_result": query_result, 
