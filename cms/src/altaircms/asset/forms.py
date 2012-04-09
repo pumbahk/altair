@@ -47,14 +47,17 @@ class ImageAssetSchema(BaseAssetSchema):
     )
 
 
+def only_image_file(form, field):
+    EXTS =  (".jpg", ".jpeg", ".png", ".gif")
+    fname = field.data.filename
+    if not any(fname.endswith(ext) for ext in EXTS):
+        fmt = "invalid file type: fielname=%s [support format is %s]"
+        raise validators.ValidationError(fmt % (fname, EXTS))
+
 class ImageAssetForm(Form):
-    type = fields.TextField('asset type', [validators.Required()])
+    type = "image"
     alt = fields.TextField(default='')
-    width = fields.IntegerField(default=None)
-    height = fields.IntegerField(default=None)
-    mimetype = fields.TextField(default='image/jpeg')
-    # uploadfile = fields.FileField('upload file', [validators.regexp(r'^[^/\\]\.jpg$')])
-    filepath = fields.FileField('upload file')
+    filepath = fields.FileField(label='upload file', validators=[only_image_file])
 
     def validate_filepath(form, field):
         if field.data:

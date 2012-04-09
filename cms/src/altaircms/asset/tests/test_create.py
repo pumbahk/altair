@@ -1,31 +1,31 @@
 import unittest
 
-class FunctionalViewTests(unittest.TestCase):
-    def setUp(self):
-        self._getSession().remove()
-        from altaircms import main_with_strip_secret
-        settings = {"sqlalchemy.url": "sqlite://", 
-                    "altaircms.plugin_static_directory": "altaircms:plugins/static", 
-                    "altaircms.asset.storepath": " %(here)s/data/assets"
-                    }
-        self.app = main_app_with_strip_secret({}, settings)
-        from webtest import TestApp
-        self.testapp = TestApp(self.app)
+# class FunctionalViewTests(unittest.TestCase):
+#     def setUp(self):
+#         self._getSession().remove()
+#         from altaircms import main_with_strip_secret
+#         settings = {"sqlalchemy.url": "sqlite://", 
+#                     "altaircms.plugin_static_directory": "altaircms:plugins/static", 
+#                     "altaircms.asset.storepath": " %(here)s/data/assets"
+#                     }
+#         self.app = main_app_with_strip_secret({}, settings)
+#         from webtest import TestApp
+#         self.testapp = TestApp(self.app)
 
-    def tearDown(self):
-        self._getSession().remove()
-        from altaircms.lib.testutils import dropall_db
-        dropall_db()
-        del self.app
+#     def tearDown(self):
+#         self._getSession().remove()
+#         from altaircms.lib.testutils import dropall_db
+#         dropall_db()
+#         del self.app
     
-    def _getSession(self):
-        from altaircms.models import DBSession
-        return DBSession
+#     def _getSession(self):
+#         from altaircms.models import DBSession
+#         return DBSession
 
-    def _callFUT(self):
-        import transaction
-        transaction.commit()
-        return self.testapp
+#     def _callFUT(self):
+#         import transaction
+#         transaction.commit()
+#         return self.testapp
 
     # def test_create_image_asset(self):
         

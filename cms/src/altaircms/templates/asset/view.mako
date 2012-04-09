@@ -11,8 +11,5 @@
 </div>
 
 <div class="row">
-    <form action="${request.route_path("asset_edit", asset_id=asset.id)}" method="post">
-        <input type="hidden" name="_method" value="delete"/>
-        <button class="span4 btn" type="submit"><i class="icon-trash"> </i> このアセットを削除</button>
-    </form>
+    <a class="btn btn-danger" href="${request.route_path("asset_delete",asset_id=asset.id)}"><i class="icon-trash icon-white"></i> このアセットを削除</a>
 </div>
