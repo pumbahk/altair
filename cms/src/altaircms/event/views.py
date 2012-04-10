@@ -103,20 +103,17 @@ def event_register(request):
     if not h.validate_apikey(request, apikey):
         return HTTPForbidden()
 
-    if form.validate():
-        jsonstring = request.POST['jsonstring']
-        try:
-            data = json.loads(jsonstring)
-            h.parse_and_save_event(request, data)
-            return HTTPCreated()
-        except ValueError as e:
-            return Response(json.dumps({
-                'error':str(e)
-            }), status=400, content_type='application/json')
+    if not form.validate():
+        return h.json_error_response(form.errors)
 
-    else:
-        return Response(
-            json.dumps(form.errors),
-            content_type='application/json',
-            status=400
-        )
+    jsonstring = request.POST['jsonstring']
+
+    try:
+        data = json.loads(jsonstring)
+        h.parse_and_save_event(request, data)
+        return HTTPCreated()
+
+    except ValueError as e:
+        return h.json_error_response({'error': str(e)})
+
+
