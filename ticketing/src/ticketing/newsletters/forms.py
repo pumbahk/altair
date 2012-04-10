@@ -23,6 +23,10 @@ class NewslettersForm(Form):
                               Required(u'入力してください'),
                               Length(max=50000, message=u'50000文字以内で入力してください'),
                           ])
+    type                = SelectField(u'メール種別', validators=[], choices=[
+                              ('text', u'テキスト'),
+                              ('html', u'HTML'),
+                          ], default='text')
     status              = SelectField(u'状態', validators=[], choices=[
                               ('editing', u'作成中'),
                               ('waiting', u'送信予約中'),
@@ -73,12 +77,8 @@ class NewslettersForm(Form):
 
     def validate_subscriber_file(form, field):
         if hasattr(field.data, 'file'):
-            print '=========================================='
-            print vars(field.data)
             fields = ['id', 'name', 'email']
             for row in csv.DictReader(field.data.file, fields):
-                print '=========================================='
-                print row
                 if not row['id'].isdigit() or len(row['name']) == 0 or not Newsletter.validateEmail(row['email']):
                     raise ValidationError(u'CSVデータが不正です')
             else:

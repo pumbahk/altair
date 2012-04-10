@@ -2,12 +2,20 @@
 <%namespace file="/common/confirm_modal.html" import="delete_modal"/>
 <%namespace file="/common/helpers.html" import="flash_messages" />
 
+
+<script>
+  $(function() {
+    $('#htmlmail').collapse({
+    })
+  });
+</script>
+
 <div class="row-fluid">
   <%include file="_menu.html" />
 
   <span class="span10">
     <div class="page-header">
-      <h3>${newsletter.subject}</h3> 
+      <h3>メールマガジン詳細</h3> 
     </div>
 
     <div class="content">
@@ -21,8 +29,25 @@
           <td>${newsletter.subject}</td>
         </tr>
         <tr>
+          <th>${form.type.label}</th>
+          <td>${newsletter.type}</td>
+        </tr>
+        <tr>
           <th>${form.description.label}</th>
-          <td>${newsletter.description.replace("\n", "<br />")|n}</td>
+          <td>
+            % if newsletter.type == 'text':
+              ${newsletter.description.replace("\n", "<br />")|n}
+            % elif newsletter.type == 'html':
+              <a class="btn btn-info" data-toggle="collapse" data-target="#htmlmail">
+                HTMLメール本文
+              </a>
+              <div id="htmlmail" class="collapse in">
+              <iframe src="${request.route_path('newsletters.htmlmail', id=newsletter.id)}"
+                      width=100% height=600 border=0 frameborder=0>
+              </iframe>
+              </div>
+            % endif
+          </td>
         </tr>
         <tr>
           <th>${form.status.label}</th>

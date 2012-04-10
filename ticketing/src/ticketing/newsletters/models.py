@@ -23,14 +23,15 @@ log = logging.getLogger(__name__)
 class Newsletter(Base):
     __tablename__ = 'Newsletter'
     __table_args__ = {'extend_existing': True}
-    id = Column(BigInteger, primary_key=True)
-    subject = Column(String(255))
-    description = Column(Text())
-    start_on = Column(DateTime)
+    id               = Column(BigInteger, primary_key=True)
+    subject          = Column(String(255))
+    description      = Column(Text())
+    type             = Column(String(255))
+    start_on         = Column(DateTime)
     subscriber_count = Column(BigInteger)
-    status = Column(String(255))
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
+    status           = Column(String(255))
+    updated_at       = Column(DateTime)
+    created_at       = Column(DateTime)
 
     def subscriber_file(self):
         fname = 'altair' + str(self.id) + '.csv'

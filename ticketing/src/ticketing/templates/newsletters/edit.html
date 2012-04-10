@@ -16,10 +16,10 @@
   $(function() {
     $('#start_date').datepicker({dateFormat:'yy-mm-dd'});
     $('#subject').load(function(){
-      $(this).css({width:"500px"});
+      $(this).css({width:"600px"});
     }).load();
     $('#description').load(function(){
-      $(this).css({width:"500px",height:"400px"});
+      $(this).css({width:"600px",height:"400px"});
     }).load();
   });
 </script>
@@ -41,6 +41,7 @@
       <form class="form-horizontal" action="${route_url}" enctype="multipart/form-data" method="POST">
         <fieldset>
           ${form_item('subject')}
+          ${form_item('type')}
           ${form_item('description')}
           ${form_item('status')}
           ${form_item('subscriber_file')}

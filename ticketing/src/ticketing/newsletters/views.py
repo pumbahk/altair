@@ -161,3 +161,11 @@ class Newsletters(BaseView):
 
         return response
 
+    @view_config(route_name='newsletters.htmlmail')
+    def htmlmail(self):
+        id = int(self.request.matchdict.get("id", 0)) 
+        newsletter = Newsletter.get(id)
+        response = Response(newsletter.description)
+
+        return response
+

@@ -49,11 +49,19 @@ def main(argv=sys.argv):
         for row in recipients:
             id, name, email  = row
             if email is None: continue
+
+            body = html = None
+            if newsletter.type == 'html':
+                html = newsletter.description.replace('${name}', name)
+            else:
+                body = newsletter.description.replace('${name}', name)
+
             message = Message(
                 subject = newsletter.subject,
                 sender = "mmatsui@ticketstar.jp",
                 recipients = [email],
-                body = newsletter.description.replace('${name}', name)
+                body = body,
+                html = html,
             )
             print 'message:', vars(message)
             mailer.send_immediately(message)
