@@ -1,87 +1,50 @@
 # coding: utf-8
 import re
-
-import colander
-import deform
 from wtforms import form, fields, validators
 from wtforms.form import Form
 
-__all__ = [
-    'ASSET_TYPE',
-    'ImageAssetSchema',
-    'MovieAssetSchema',
-    'FlashAssetSchema',
-    'CssAssetSchema',
-]
+class OnlyExtsFileGen(object):
+    def __init__(self, exts, fmt=None):
+        self.exts = exts
+        self.fmt = "invalid file type: fielname=%s [support format is %s]"
 
-ASSET_TYPE = [
-    'image',
-    'movie',
-    'flash',
-]
+    def __call__(self, form, field):
+        fname = field.data.filename
+        if not any(fname.endswith(ext) for ext in self.exts):
+            raise validators.ValidationError(self.fmt % (fname, self.exts))
 
-class Store(dict):
-    def preview_url(self, name):
-        return None
+def validate_filepath(form, field):
+    if field.data:
+        field.data = re.sub(r'[^a-z0-9_.-]', '_', field.data)
 
-tmpstore = Store()
-
-
-class BaseAssetSchema(colander.MappingSchema):
-    type = colander.SchemaNode(
-        colander.String(),
-        validator=colander.OneOf(ASSET_TYPE),
-        widget=deform.widget.HiddenWidget()
-    )
-
-
-#@TODO: 画像フォーマットやサイズのバリデーションを行う
-class ImageAssetSchema(BaseAssetSchema):
-    alt = colander.SchemaNode(colander.String(), missing='', default='')
-    # width = colander.SchemaNode(colander.Integer(), missing=colander.null)
-    # height = colander.SchemaNode(colander.Integer(), missing=colander.null)
-    uploadfile = colander.SchemaNode(
-        deform.schema.FileData(),
-        title='画像ファイル',
-        widget=deform.widget.FileUploadWidget(tmpstore)
-    )
-
-
-def only_image_file(form, field):
-    EXTS =  (".jpg", ".jpeg", ".png", ".gif")
-    fname = field.data.filename
-    if not any(fname.endswith(ext) for ext in EXTS):
-        fmt = "invalid file type: fielname=%s [support format is %s]"
-        raise validators.ValidationError(fmt % (fname, EXTS))
-
+only_image_file = OnlyExtsFileGen((".jpg", ".jpeg", ".png", ".gif"))
 class ImageAssetForm(Form):
     type = "image"
     alt = fields.TextField(default='')
-    filepath = fields.FileField(label='upload file', validators=[only_image_file])
+    filepath = fields.FileField(label=u'画像を投稿', validators=[only_image_file, validate_filepath])
 
-    def validate_filepath(form, field):
-        if field.data:
-            field.data = re.sub(r'[^a-z0-9_.-]', '_', field.data)
+only_movie_file = OnlyExtsFileGen((".mov", ".mp4"))
+class MovieAssetForm(Form):
+    type = "movie"
+    alt = fields.TextField(default='')
+    filepath = fields.FileField(label=u'動画を投稿', validators=[only_movie_file, validate_filepath])
 
-class FlashAssetSchema(BaseAssetSchema):
-    uploadfile = colander.SchemaNode(
-        deform.FileData(),
-        title='Flashファイル',
-        widget=deform.widget.FileUploadWidget(tmpstore)
-    )
+only_flash_file = OnlyExtsFileGen((".swf", ))
+class FlashAssetForm(Form):
+    type = "flash"
+    alt = fields.TextField(default='')
+    filepath = fields.FileField(label=u'flashを投稿', validators=[only_flash_file, validate_filepath])
 
-
-class MovieAssetSchema(BaseAssetSchema):
-    # width = colander.SchemaNode(colander.Integer(), missing=colander.null)
-    # height = colander.SchemaNode(colander.Integer(), missing=colander.null)
-    # length = colander.SchemaNode(colander.Integer(), missing=colander.null)
-    # mimetype = colander.SchemaNode(colander.String(), missing=colander.null)
-    uploadfile = colander.SchemaNode(
-        deform.FileData(),
-        title='動画ファイル',
-        widget=deform.widget.FileUploadWidget(tmpstore)
-    )
-
-
-class CssAssetSchema(BaseAssetSchema):
-    pass
+class NoValidAssetForm(Form):
+    type = "image" # default
+    alt = fields.TextField(default='')
+    filepath = fields.FileField(label='upload file')
+    
+def get_confirm_asset_form_by_asset_type(asset_type=None):
+    if asset_type == "image":
+        return ImageAssetForm
+    elif asset_type == "movie":
+        return MovieAssetForm
+    elif asset_type == "flash":
+        return FlashAssetForm
+    raise Exception("asset type %s is not supported")

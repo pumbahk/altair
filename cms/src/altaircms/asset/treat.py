@@ -23,8 +23,10 @@ def get_storepath(request=None, registry=None):
         return registry.settings["altaircms.asset.storepath"]
 
 class AssetCreator(object):
-    def __init__(self, **kwargs):
-        self.kwargs = kwargs
+    def __init__(self, filepath, size):
+        self.filepath = filepath
+        self.size = size
+        self.kwargs = dict(filepath=filepath, size=size)
 
     def create_asset_function(self, asset_type):
         if asset_type == "image":
@@ -38,24 +40,24 @@ class AssetCreator(object):
 
     def _image_asset(self, data):
         self.kwargs.update(data)
-        return ImageAsset(**self.kwargs)
+        width, height = Image.open(self.filepath).size
+        return ImageAsset(width=width, height=height, **data)
 
-    def _movie_asset(self, fname, data):
-        data = self.kwargs.update(data)
-        width, height = Image.open(fname).size
-        return MovieAsset(width=width, height=height, **data)
+    def _movie_asset(self, data):
+        self.kwargs.update(data)
+        return MovieAsset(**self.kwargs)
 
     def _flash_asset(self, data):
-        data = self.kwargs.update(data)
+        self.kwargs.update(data)
         return FlashAsset(**data)
 
 class AssetFileWriter(object): ##
     def __init__(self, storepath):
         self.storepath = storepath
 
-    def _build_dirpath(self):
-        if not os.path.exists(self.storepath):
-            os.makedirs(self.storepath)
+    def _build_dirpath(self, dirpath):
+        if not os.path.exists(dirpath):
+            os.makedirs(dirpath)
 
     def get_writename(self, original_filename):
         today = date.today().strftime('%Y-%m-%d')
@@ -64,9 +66,13 @@ class AssetFileWriter(object): ##
 
     def _write_file(self, writename, buf):
         """ return size"""
-        dst_file = open(os.path.join(self.storepath, writename), "w+b")
-        dst_file.write(buf)
-        dst_file.seek(0)
+        self._build_dirpath(self.storepath)
+        write_filepath = os.path.join(self.storepath, writename)
+        self._build_dirpath(os.path.dirname(write_filepath))
+
+        with open(write_filepath, "w+b") as dst_file:
+            dst_file.write(buf)
+            dst_file.seek(0)
 
 def create_asset(captured, request=None, cb=None):
     """captured["type"], captured["filename"], captured["fp"]

@@ -1,11 +1,7 @@
 # coding: utf-8
-import json
 import os
-from datetime import date
-from uuid import uuid4
-from .models import ImageAsset #boo
 from altaircms.lib.viewhelpers import FlashMessage
-
+from . import forms
 from pyramid.exceptions import NotFound
 from pyramid.httpexceptions import HTTPFound
 from pyramid.response import Response
@@ -18,8 +14,8 @@ from altaircms.asset import get_storepath, detect_mimetype
              decorator=with_bootstrap,)
 def list(request):
     assets = request.context.get_assets()
-    form = request.context.get_form()
-    return {"assets": assets, "form": form}
+    form_list = request.context.get_form_list()
+    return {"assets": assets, "form_list": form_list}
 
 @view_config(route_name="asset_view", renderer='altaircms:templates/asset/view.mako', 
              decorator=with_bootstrap, request_method='GET')
@@ -67,12 +63,14 @@ class CreateView(object):
     @view_config(request_method="POST")
     def execute(self):
         context = self.request.context
-        form = context.get_form(data=self.request.POST)
+        asset_type = self.request.matchdict["asset_type"]
+        form = context.get_confirm_form(asset_type, data=self.request.POST)
+
         if form.validate():
             original_filename = form.data["filepath"].filename
             storepath = context.get_asset_storepath()
             creator = context.write_asset_file(storepath, original_filename, form.data["filepath"].file)
-            create = creator.create_asset_function(self.request.matchdict["asset_type"])
+            create = creator.create_asset_function(asset_type)
             asset = create(dict(alt=form.data["alt"], mimetype=detect_mimetype(original_filename))) ## tag
 
             self.request.context.DBSession.add(asset)

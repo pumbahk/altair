@@ -18,12 +18,14 @@ class AssetResource(object):
     def get_asset(self, id_):
         return Asset.query.filter(Asset.id==id_).one()
 
-    def get_form(self, asset_type=None, data=None):
-        return forms.ImageAssetForm(formdata=data) 
-        if asset_type == "image":
-            return forms.ImageAssetForm()
-        else:
-            raise Exception
+    def get_form_list(self):
+        return (forms.ImageAssetForm(), 
+                forms.MovieAssetForm(), 
+                forms.FlashAssetForm())
+
+    def get_confirm_form(self, asset_type, data=None):
+        formclass = forms.get_confirm_asset_form_by_asset_type(asset_type)
+        return formclass(data)
 
     def get_asset_storepath(self):
         return get_storepath(self.request)
@@ -31,9 +33,7 @@ class AssetResource(object):
     def write_asset_file(self, storepath, original_filename, buf):
         awriter = treat.AssetFileWriter(storepath)
 
-        awriter._build_dirpath()
         filepath = awriter.get_writename(original_filename)
-
         bufstring = buf.read()
         awriter._write_file(filepath, bufstring)
 
