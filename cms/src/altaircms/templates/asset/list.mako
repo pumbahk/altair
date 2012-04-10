@@ -10,8 +10,21 @@
     </form>
 </%def>
 
-<h4>アセットの追加</h4>
+<h2>asset</h2>
+
+
 <div class="row">
+  <ul class="nav nav-tabs">
+	<li class="active"><a href="${request.route_path("asset_list")}">all</a></li>
+	<li ><a href="${request.route_path("asset_sub_list", asset_type="image")}">image</a></li>
+	<li><a href="${request.route_path("asset_sub_list", asset_type="movie")}">movie</a></li>
+	<li><a href="${request.route_path("asset_sub_list", asset_type="flash")}">flash</a></li>
+  </ul>
+</div>
+
+<div class="row">
+  <h4>アセットの追加</h4>
+
   <div class="span6">
     % for form in form_list:
       ${asset_form(form)}

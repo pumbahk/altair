@@ -1,5 +1,6 @@
 def includeme(config):
-    config.add_route('asset_list', '/asset/', factory=".resources.AssetResource")
+    config.add_route('asset_list', '/asset', factory=".resources.AssetResource")
+    config.add_route('asset_sub_list', '/asset/{asset_type}', factory=".resources.AssetResource")
     config.add_route('asset_display', '/asset/display/{asset_id}', factory=".resources.AssetResource")
     config.add_route('asset_view', '/asset/{asset_id}', factory=".resources.AssetResource")
     config.add_route('asset_delete', '/asset/{asset_id}/delete', factory=".resources.AssetResource")

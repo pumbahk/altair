@@ -16,6 +16,14 @@ def list(request):
     form_list = request.context.get_form_list()
     return {"assets": assets, "form_list": form_list}
 
+@view_config(route_name="asset_sub_list", renderer="altaircms:templates/asset/sub_list.mako", 
+             decorator=with_bootstrap)
+def sub_list(request):
+    asset_type = request.matchdict["asset_type"]
+    assets = request.context.get_assets(asset_type)
+    form = request.context.get_form(asset_type)
+    return {"assets": assets, "form": form, "asset_type": asset_type}
+
 @view_config(route_name="asset_view", renderer='altaircms:templates/asset/view.mako', 
              decorator=with_bootstrap, request_method='GET')
 def view(request):
