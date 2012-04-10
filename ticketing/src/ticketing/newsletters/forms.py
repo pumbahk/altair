@@ -72,7 +72,7 @@ class NewslettersForm(Form):
             raise ValidationError(u'送信先リストが0件なので送信予約できません')
 
     def validate_start_on(form, field):
-        if field.data < datetime.now():
+        if field.data != None and field.data < datetime.now():
             raise ValidationError(u'過去の日付を指定することはできません')
 
     def validate_subscriber_file(form, field):
