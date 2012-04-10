@@ -77,30 +77,19 @@ class AssetFileWriter(object): ##
             dst_file.write(buf)
             dst_file.seek(0)
 
-def create_asset(captured, request=None, cb=None):
+def create_asset(captured, request=None):
     """captured["type"], captured["filename"], captured["fp"]
     """
-    today = date.today().strftime('%Y-%m-%d')
-    storepath = os.path.join(get_storepath(request),  today)
-    # @TODO: S3に対応する
-    if not os.path.exists(storepath):
-        os.makedirs(storepath)
-    original_filename = captured['uploadfile']['filename']
-    filename = '%s.%s' % (uuid4(), original_filename[original_filename.rfind('.') + 1:])
-    f = open(os.path.join(storepath, filename), 'wb')
-    f.write(captured['uploadfile']['fp'].read())
+    storepath = get_storepath(request)
+
+    awriter = AssetFileWriter(storepath)
+    original_filename = captured["uploadfile"]["filename"]
+    filepath = awriter.get_writename(original_filename)
+    bufstring = captured['uploadfile']['fp'].read()
+    awriter._write_file(filepath, bufstring)
+
+    creator = AssetCreator(storepath, filepath, len(bufstring))
+    create = creator.create_asset_function(captured["type"])
+    return create(dict(mimetype=detect_mimetype(filepath)))
     
-    mimetype = detect_mimetype(filename)
-
-    if captured['type'] == 'image':
-        asset = ImageAsset(filepath=os.path.join(today, filename), mimetype=mimetype)
-    elif captured['type'] == 'movie':
-        asset = MovieAsset(filepath=os.path.join(today, filename), mimetype=mimetype)
-    elif captured['type'] == 'flash':
-        asset = FlashAsset(filepath=os.path.join(today, filename))
-
-    if cb:
-        cb(asset)
-    else:
-        return asset
 

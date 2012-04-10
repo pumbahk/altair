@@ -35,7 +35,6 @@ class RootFactory(object):
             .filter(Role.id==RolePermission.role_id)\
             .filter(Permission.id==RolePermission.permission_id):
             lst.append((Allow,) + (str(role), str(perm)))
-
         return lst
 
 

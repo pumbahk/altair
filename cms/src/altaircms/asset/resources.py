@@ -6,8 +6,9 @@ import sqlalchemy as sa
 from datetime import date
 from altaircms.asset import get_storepath
 import os
+from altaircms.security import RootFactory
 
-class AssetResource(object):
+class AssetResource(RootFactory):
     DBSession = DBSession
     def __init__(self, request):
         self.request = request
