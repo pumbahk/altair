@@ -17,9 +17,11 @@ from wtforms.form import Form
 def after_form_initialize(event):
     request = event["request"]
     rendering_val = event.rendering_val
-    for k, v in rendering_val.iteritems():
-        if isinstance(v, Form):
-            request.registry.notify(AfterFormInitialize(v, request, rendering_val))
+    if hasattr(rendering_val, "iteritems"):
+        for k, v in rendering_val.iteritems():
+            if isinstance(v, Form):
+                request.registry.notify(AfterFormInitialize(v, request, rendering_val))
+
 
 @subscriber(AfterFormInitialize)
 def add_choices_query_refinement(event): #todo:refactoring

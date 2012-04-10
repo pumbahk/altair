@@ -26,8 +26,6 @@ class SeatType(Base):
 class Venue(Base):
     __tablename__ = "Venue"
     id = Column(BigInteger, primary_key=True)
-    performance_id = Column(BigInteger, ForeignKey('Performance.id'))
-    performance = relationship('Performance', uselist=False)
 
     name = Column(String(255))
     sub_name = Column(String(255))

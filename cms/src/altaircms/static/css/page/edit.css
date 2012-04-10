@@ -18,10 +18,6 @@
     background-color: #eee;
 }
 
-.edited {
-    background-color: #ccf;
-}
-
 .noitem {
     height: 60px;
 }
@@ -49,8 +45,14 @@
     margin-top: 1%;
     margin-bottom: 1%;
 	width: 95%;
-    style: center;
     background-color: #ffffaa;
+}
+
+.edited {
+    background-color: #ccf;
+}
+.dropped-widget+.edited {
+    background-color: #ccf;
 }
 
 /* container */
@@ -123,6 +125,7 @@ img.selected {
 	margin-left: 20px;
 	margin-top: 20px;
 }
+
 
 .simple_overlay h1{
     color:#fff

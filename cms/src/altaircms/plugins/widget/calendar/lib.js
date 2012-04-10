@@ -27,9 +27,11 @@ widget.configure({
     var opt = {} //widget local variable
     var _with_pk = function(we, url){
         var pk = we.get_pk(we.where);
+        var params = {};
         if(!!pk){
-            url += "?" + $.param({"pk": pk});
+            params["pk"] = pk;
         }
+            url += "?" + $.param(params);
         return url;
     }
 

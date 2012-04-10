@@ -28,9 +28,11 @@ widget.configure({
     var load_page = function(we){
         var pk = we.get_pk(we.where);
         var url = "/api/widget/detail/dialog";
+        var params = {"page": get_page()};// todo:move get_page
         if(!!pk){
-            url += "?" + $.param({"pk": pk, "page": get_page()}); // todo:move get_page
+            params["pk"] = pk;
         }
+        url += "?" + $.param(params); 
         return we.dialog.load(url);
     };
     var _has_click_event = "#submit";

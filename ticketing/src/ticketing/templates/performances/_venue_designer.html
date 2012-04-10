@@ -1,0 +1,38 @@
+<div class="container-fluid">
+  <div class="row-fluid">
+      <div class="span8" style="background-color: #999999">
+          <div style="width:100%;  margin: 0 0 0 5px;" id="venue-map">
+          </div>
+      </div>
+    <div class="span4">
+        <table class="table table-striped table-bordered table-condensed">
+            <tbody>
+               <tr>
+                 <th><span class="swatch" style="background-color: #049cdb;"></span>S席</th>
+                 <td>1000席</td>
+               </tr>
+               <tr>
+                 <th><span class="swatch" style="background-color: #46a546;"></span>A席</th>
+                 <td>1000席</td>
+               </tr>
+               <tr>
+                 <th><span class="swatch" style="background-color: #9d261d;"></span>B席</th>
+                 <td>1000席</td>
+               </tr>
+             </tbody>
+           </table>
+    </div>
+
+  </div>
+</div>
+
+<script>
+
+$( window ).resize(function(api){
+    $("#venue-map").height($(window).height()-230);
+});
+$(document).ready(function(){
+    $("#venue-map").height($(window).height()-230);
+});
+
+</script>

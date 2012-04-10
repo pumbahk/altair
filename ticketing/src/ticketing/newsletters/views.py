@@ -36,14 +36,14 @@ class Newsletters(BaseView):
         if self.request.GET.get("direction") and self.request.GET.get("direction") in ["asc", "desc"]:
             direction = self.request.GET.get("direction")
         query = session.query(Newsletter).order_by(sort + ' ' + direction)
-        newsletters = paginate.Page(query, page=current_page, items_per_page=4, url=page_url)
+        newsletters = paginate.Page(query, page=current_page, items_per_page=10, url=page_url)
 
         return {
             'form' : f,
             'newsletters' : newsletters
         }
 
-    @view_config(route_name='newsletters.copy', request_method="GET", renderer='ticketing:templates/newsletters/new.html')
+    @view_config(route_name='newsletters.copy', request_method="GET", renderer='ticketing:templates/newsletters/edit.html')
     def copy(self):
         f = NewslettersForm()
         id = int(self.request.matchdict.get("id", 0)) 
@@ -59,7 +59,7 @@ class Newsletters(BaseView):
             'form' : f
         }   
 
-    @view_config(route_name='newsletters.new', request_method="GET", renderer='ticketing:templates/newsletters/new.html')
+    @view_config(route_name='newsletters.new', request_method="GET", renderer='ticketing:templates/newsletters/edit.html')
     def new_get(self):
         f = NewslettersForm()
 
@@ -67,7 +67,7 @@ class Newsletters(BaseView):
             'form' : f
         }   
 
-    @view_config(route_name='newsletters.new', request_method="POST", renderer='ticketing:templates/newsletters/new.html')
+    @view_config(route_name='newsletters.new', request_method="POST", renderer='ticketing:templates/newsletters/edit.html')
     def new_post(self):
         f = NewslettersForm(self.request.POST)
         if f.validate():
@@ -76,6 +76,8 @@ class Newsletters(BaseView):
             record = merge_session_with_post(record, data)
             Newsletter.add(record)
             Newsletter.save_file(1, f)
+
+            self.request.session.flash(u'メールマガジンを登録しました')
             return HTTPFound(location=route_path('newsletters.index', self.request))
         else:
             return {
@@ -123,6 +125,8 @@ class Newsletters(BaseView):
             record = merge_session_with_post(newsletter, data)
             Newsletter.update(record)
             Newsletter.save_file(id, f)
+
+            self.request.session.flash(u'メールマガジンを保存しました')
             return HTTPFound(location=route_path('newsletters.show', self.request, id=newsletter.id))
         else:
             return {
@@ -138,6 +142,7 @@ class Newsletters(BaseView):
             return HTTPNotFound("newsletter id %d is not found" % id)
         Newsletter.delete(newsletter)
 
+        self.request.session.flash(u'メールマガジンを削除しました')
         return HTTPFound(location=route_path('newsletters.index', self.request))
 
     @view_config(route_name='newsletters.download')

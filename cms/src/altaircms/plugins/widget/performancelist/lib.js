@@ -28,9 +28,11 @@ widget.configure({
     var load_page = function(we){
         var pk = we.get_pk(we.where);
         var url = "/api/widget/performancelist/dialog";
+        var params = {};
         if(!!pk){
-            url += "?" + $.param({"pk": pk});
+            params["pk"]  = pk;
         }
+        url += "?" + $.param(params);
         return we.dialog.load(url);
     };
     var _has_click_event = "#submit";

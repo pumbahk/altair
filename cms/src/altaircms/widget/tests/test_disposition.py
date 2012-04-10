@@ -2,15 +2,13 @@
 from altaircms.widget.models import WidgetDisposition
 from altaircms.plugins.widget.image.models import ImageWidget
 from altaircms.plugins.widget.freetext.models import FreetextWidget
-# -*- coding:utf-8 -*-
+from altaircms.lib.testutils import functionalTestSetUp
+from altaircms.lib.testutils import functionalTestTearDown
+
 import unittest
 import datetime
 import os.path
 import json
-
-def setUpModule():
-    from altaircms.lib.testutils import dropall_db
-    dropall_db()
 
 class UseAssetMixin(object):
     def _getImageAsset(self):
@@ -67,24 +65,14 @@ class WidgetDispositionTest(UseAssetMixin,
                                   UseWidgetMixin, 
                                   UsePageEtcMixin, 
                                   unittest.TestCase):
-    DIR = os.path.dirname(os.path.abspath(__file__))
     def setUp(self):
-        self._getSession().remove()
-        from altaircms import main
-        app = main({}, **{"sqlalchemy.url": "sqlite://", 
-                            "mako.directories": os.path.join(self.DIR, "templates"), 
-                            "altaircms.plugin_static_directory": "altaircms:plugins/static", 
-                            "altaircms.layout_directory": "."})
-        from altaircms.lib.testutils import create_db
-        create_db()
+        DIR = os.path.dirname(os.path.abspath(__file__))
+        app = functionalTestSetUp({"mako.directories": os.path.join(DIR, "templates"), })
         from webtest import TestApp
         self.testapp = TestApp(app)
 
     def tearDown(self):
-        import transaction
-        transaction.abort()
-        from altaircms.lib.testutils import dropall_db
-        dropall_db(message="test view drop")
+        functionalTestTearDown()
 
     def test_create_from_page(self):
         session = self._getSession()

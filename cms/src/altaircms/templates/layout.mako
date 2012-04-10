@@ -34,7 +34,7 @@
     <script type="text/javascript">
       ## jQuery depended javascript code
       $(document).ready(function() {
-            $().dropdown();
+            //$().dropdown();
 	        $(".datepicker").datepicker({
 	           weekStart: 1,
 	           format: "yyyy-mm-dd HH:MM:SS"

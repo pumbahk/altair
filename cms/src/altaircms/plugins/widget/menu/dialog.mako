@@ -170,11 +170,15 @@
         }, 
 
         collectData: function(){
+			var get_text_or_val = function(e,expr){ 
+			  var e = e.find(expr);
+			  return e.text() || e.val();
+			}
             return _($(this.el).find("#menulist tr")).map(function(e){
                 var e = $(e);
                 return {
-                    label: e.find(".label").text(), 
-                    link: e.find(".link").text()
+                    label: get_text_or_val(e, ".label"),
+                    link: get_text_or_val(e, ".link")
                 };
             });
         }, 

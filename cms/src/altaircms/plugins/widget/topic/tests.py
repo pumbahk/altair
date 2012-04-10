@@ -1,46 +1,27 @@
-# -*- coding:utf-8 -*-
+# -*- coding:utf-8 -*- 
+
 import unittest
-import json
 from altaircms.plugins.widget.topic.models import TopicWidget
 
-class FunctionalViewTests(unittest.TestCase):
-    create_widget = "/api/widget/topic/create"
-    update_widget = "/api/widget/topic/update"
-    delete_widget = "/api/widget/topic/delete"
-    get_dialog = "/api/widget/topic/dialog"
-    
-    def setUp(self):
-        self._getSession().remove()
-        from altaircms import main
-        self.app = main({}, **{"sqlalchemy.url": "sqlite://", 
-                            "altaircms.plugin_static_directory": "altaircms:plugins/static", 
-                            "altaircms.debug.strip_security": "true",
-                            "widget.template_path_format": "%s.mako", 
-                            "altaircms.layout_directory": "."})
-        from altaircms.lib.testutils import create_db
-        create_db()
+config  = None
+def setUpModule():
+    global config
+    from altaircms.lib import testutils
+    testutils.create_db(force=False)
+    config = testutils.config()
 
-        from webtest import TestApp
-        self.testapp = TestApp(self.app)
+def tearDownModule():
+    from pyramid.testing import tearDown
+    tearDown()
 
-    def tearDown(self):
-        self._getSession().remove()
-        from altaircms.lib.testutils import dropall_db
-        dropall_db()
-        del self.app
-
+class WidgetTestSourceMixn(object):
     def _makePage(self, id=None):
         from altaircms.page.models import Page
         return Page.from_dict({"id": id})
-    
+
     def _getSession(self):
         from altaircms.models import DBSession
         return DBSession
-
-    def _callFUT(self):
-        import transaction
-        transaction.commit()
-        return self.testapp
 
     def _with_session(self, session, *args):
         for e in args:
@@ -48,91 +29,121 @@ class FunctionalViewTests(unittest.TestCase):
         session.flush()
         return session
 
+    def _makeRequest(self, **kwargs):
+        from pyramid.testing import DummyRequest
+        request = DummyRequest()
+        for k, v in kwargs.iteritems():
+            setattr(request, k, v)
+        return request
+        
+class TopicWidgetViewTests(WidgetTestSourceMixn, 
+                          unittest.TestCase):
+    def setUp(self):
+        self.config = config
+
+    def tearDown(self):
+        import transaction
+        transaction.abort()
+
+    def _makeTarget(self, request):
+        from altaircms.plugins.widget.topic.views import TopicWidgetView
+        from altaircms.plugins.widget.topic.models import TopicWidgetResource
+        request.context = TopicWidgetResource(request)
+        return TopicWidgetView(request)
+
     def test_create(self):
         """ test creating TopicWidget.
         check:
           1. Topic Widget is created,  successfully.
-          2. topic Widget and Page object is bounded
+          2. Topic Widget and Page object is bounded
         """
         session = self._getSession()
-        page_id = 1
-        self._with_session(session, self._makePage(id=page_id))
+
+        self._with_session(session, self._makePage(id=1))
         data = {"kind": u"その他", 
                 "topic_type": "topic", 
                 "display_count": 5, 
                 "display_global": True, 
                 "display_event": True, 
                 "display_page": True}
-        res = self._callFUT().post_json(
-            self.create_widget, 
-            {"page_id": page_id, "pk": None, "data": data }, 
-            status=200)
-        expexted = {u'data': {u'display_count': 5,
-                              "topic_type": "topic", 
-                              u'display_event': True,
-                              u'display_global': True,
-                              u'display_page': True,
-                              u'kind': u'その他'},
-                    u'page_id': 1,
-                    u'pk': 1}
-        self.assertEquals(json.loads(res.body), expexted)
+        request = self._makeRequest(json_body={
+                "page_id": 1, "pk": None, "data": data
+                })
+        view = self._makeTarget(request)
+        expexted = {"page_id": 1,
+                    "pk": 1,
+                    "data": data}
+        self.assertEquals(view.create(), expexted)
+
+        created = TopicWidget.query.one()
         self.assertEquals(TopicWidget.query.count(), 1)
-        self.assertEquals(TopicWidget.query.first().topic_type, "topic")
-        self.assertEquals(TopicWidget.query.first().page.id, page_id)
+        self.assertEquals(created.page.id, 1)
+        self.assertEquals(created.kind, u"その他")
+        self.assertEquals(created.topic_type, u"topic")
+        self.assertEquals(created.display_count, 5)
+        self.assertEquals(created.display_event, True)
 
 
+    def _create_widget(self, session, page_id=1, data=None):
+        self._with_session(session, self._makePage(id=1))
+        request = self._makeRequest(json_body={
+                "page_id": 1, "pk": None, "data": data or {}
+                })
+        view = self._makeTarget(request)
+        return view.create()["pk"]
 
-    def _create_widget(self, session, page_id=1, id=1):
+    def test_update(self):
+        session = self._getSession()
         dummy = {"kind": u"その他", 
                  "display_count": 5, 
                  "display_global": True, 
                  "display_event": True, 
                  "display_page": True}
-        self._with_session(session, self._makePage(id=page_id))
-        self._callFUT().post_json(self.create_widget,
-                                  {"page_id": page_id, "pk": None, "data": dummy }, 
-                                  status=200)        
-
-    def test_update(self):
-        session = self._getSession()
-        page_id = 10
-        self._create_widget(session, id=1, page_id=page_id)
-        updated = {"kind": u"その他", 
+        pk = self._create_widget(session, page_id=1, data=dummy)
+        data = {"kind": u"その他", 
                  "display_count": 3, 
-                 "display_global": True, 
+                 "display_global": False, 
                  "display_event": True, 
                  "display_page": True}
-        res = self._callFUT().post_json(
-            self.update_widget, 
-            {"page_id": page_id, "pk":1, "data": updated }, 
-            status=200)
+        request = self._makeRequest(json_body={
+                "page_id": 1, "pk": pk, "data": data
+                })
+        view = self._makeTarget(request)
+        expexted = {"page_id": 1,
+                    "pk": pk,
+                    "data": data }
+        self.assertEquals(view.update(), expexted)
 
-        expexted = {u'data': {u'display_count': 3,
-                              u'display_event': True,
-                              u'display_global': True,
-                              u'display_page': True,
-                              u'kind': u'その他'},
-                    u'page_id': 10,
-                    u'pk': 1}
-        self.assertEquals(json.loads(res.body), expexted)
+        updated = TopicWidget.query.one()
         self.assertEquals(TopicWidget.query.count(), 1)
-        self.assertEquals(TopicWidget.query.first().display_count, int(updated["display_count"]))
-
+        self.assertEquals(updated.page.id, 1)
+        self.assertEquals(updated.display_count, 3)
+        self.assertEquals(updated.display_global, False)
 
     def test_delete(self):
         session = self._getSession()
-        self._create_widget(session, id=1)
+        pk = self._create_widget(session, page_id=1, data={})
 
-        res = self._callFUT().post_json(self.delete_widget,{"pk":1},  status=200)
-        self.assertEquals(json.loads(res.body), {"status": "ok"})
-        self.assertEquals(TopicWidget.query.count(), 0)    
+        request = self._makeRequest(json_body={"pk": pk})
+        view = self._makeTarget(request)
+        expexted = {"status": "ok"}
+        self.assertEquals(view.delete(), expexted)
+
+        self.assertEquals(TopicWidget.query.count(), 0)
 
         from altaircms.page.models import Page
         self.assertNotEquals(Page.query.count(), 0)
 
-
     def test_getdialog(self):
-        self._callFUT().get(self.get_dialog, status=200)
+        """ add asset env,  then dialog.mako is rendered successfully or not
+        (this test is not checking about html format)
+        """
+        session = self._getSession()
+        self._with_session(session, self._makePage(id=1))
+
+        request = self._makeRequest(GET={"page_id": 1})
+        view = self._makeTarget(request)
+        self.assertTrue("form" in view.dialog())
 
 if __name__ == "__main__":
     unittest.main()

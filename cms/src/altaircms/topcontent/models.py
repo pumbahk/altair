@@ -40,7 +40,7 @@ class Topcontent(AboutPublishMixin,
     image_asset = orm.relationship(ImageAsset, backref="topcontent")
     page_id = sa.Column(sa.Integer, sa.ForeignKey("page.id"))
     page = orm.relationship(Page)
-    countdown_type = sa.Column(sa.String(255))
+    countdown_type = sa.Column(sa.String(255)) #todo: fixme
     is_global = sa.Column(sa.Boolean, default=True)
 
     def __repr__(self):

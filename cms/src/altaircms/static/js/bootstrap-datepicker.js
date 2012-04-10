@@ -359,9 +359,9 @@
 				m: date.getMonth() + 1,
 				yy: date.getFullYear().toString().substring(2),
 				yyyy: date.getFullYear(), 
-          HH: date.getHours(), 
-          MM: date.getMinutes(), 
-          SS: date.getSeconds()
+                HH: date.getHours(), 
+                MM: date.getMinutes(), 
+                SS: date.getSeconds()
 			};
 			val.dd = (val.d < 10 ? '0' : '') + val.d;
 			val.mm = (val.m < 10 ? '0' : '') + val.m;

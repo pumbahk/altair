@@ -38,15 +38,22 @@
         </tr>
         <tr>
             <th>${form.start_on.label}</th>
-            <td>${form.start_on()}
+            <td>${form.start_on(id="start_on")}
                 ${error(form.start_on)}</td>
         </tr>
         <tr>
             <th>${form.end_on.label}</th>
-            <td>${form.end_on()}
+            <td>${form.end_on(id="end_on")}
                 ${error(form.end_on)}</td>
         </tr>
     </table>
     <input type="submit" name="submit" value="新規作成">
 </form>
-
+<script type="text/javascript">
+    $("#start_on").live('click', function() {
+        $(this).datepicker({showOn:'focus',dateFormat: 'yy-mm-dd'}).focus();
+    });
+    $("#end_on").live('click', function() {
+        $(this).datepicker({showOn:'focus',dateFormat: 'yy-mm-dd'}).focus();
+    });
+</script>

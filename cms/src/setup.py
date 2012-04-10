@@ -8,32 +8,16 @@ README = open(os.path.join(here, 'README.txt')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 
 requires = [
-    "PIL",
-    "gunicorn",
-    "venusian>=1.0a3", 
     'pyramid',
     'pyramid_tm',
-    'transaction',
-    'SQLAlchemy',
-    'SQLAHelper',
-    "webtest", 
-    'alembic',
-    'zope.interface',
-    # 'zope.sqlalchemy',
-    ## utility
+    'pyramid_openid',
+    "pyramid_fanstatic", 
+    'sqlahelper',
+    "pil",
     "bpmappers",
     'isodate',
-    ## auth
     'oauth2',
-    'pyramid_openid',
-    ## form
     "WTForms",
-    'deform',
-    'pyramid_deform',
-    ## fanstatic
-    'fa.jquery',
-    "fanstatic", 
-    "pyramid_fanstatic", 
     "js.jquery", 
     "js.bootstrap", 
     "js.json2", 
@@ -41,6 +25,11 @@ requires = [
     "js.jquery_tools", 
     "js.underscore",
     'js.backbone',
+    'js.tinymce',
+
+    #deprecate
+    'deform',
+    'colander',
     ]
 
 if sys.version_info[:3] < (2,5,0):

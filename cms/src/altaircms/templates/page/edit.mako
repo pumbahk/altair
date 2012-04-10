@@ -18,6 +18,14 @@
 
 	### widget追加する度に変更する必要(internal.css.mako)
     ${css.container_layout()}
+<style type="text/css">
+  .alert{ margin:1%  }
+  .size1{ width:100%;  }
+  .size2{ width:44%; }
+  .size3{ width:28%; }
+  .left{ float:left; }
+  .clear{ clear:both; }
+</style>
 </%block>
 
 %if page and event:

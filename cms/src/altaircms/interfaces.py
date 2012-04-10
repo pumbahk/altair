@@ -1,5 +1,14 @@
 from zope.interface import Interface
 from zope.interface import Attribute
+from zope.interface import implementer
+
+## 
+class IForm(Interface):
+    def validate():
+        pass
+    
+
+##
 
 class IConcrete(Interface):
     def concrete():

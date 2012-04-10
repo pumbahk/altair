@@ -10,6 +10,7 @@ def page_clone(page, session=None):
     """
     params = page.to_dict()
     params["title"] = u"%s(コピー)" % page.title
+    params["url"] = None
     del params["id"]
 
     new_page = models.Page.from_dict(params)

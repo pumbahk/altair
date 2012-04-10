@@ -14,7 +14,7 @@ from altaircms.layout.models import Layout
 from altaircms.layout.forms import LayoutForm
 from altaircms.layout.mappers import LayoutMapper, LayoutsMapper
 from altaircms.lib.fanstatic_decorator import with_bootstrap
-
+from .renderable import LayoutRender
 
 @view_config(route_name='layout', renderer='altaircms:templates/layout/view.mako', permission='layout_read', 
              decorator=with_bootstrap)
@@ -24,6 +24,12 @@ def view(request):
     return dict(
         layout=layout
     )
+
+@view_config(route_name="layout_demo", renderer="altaircms:templates/layout/demo.mako")
+def demo(request):
+    id_ = request.GET["id"]
+    layout = DBSession.query(Layout).get(id_)
+    return dict(layout_image=LayoutRender(layout).blocks_image())
 
 
 @view_config(route_name='layout_list', renderer='altaircms:templates/layout/list.mako', permission='layout_read', 

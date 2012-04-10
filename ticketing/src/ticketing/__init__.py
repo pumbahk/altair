@@ -6,6 +6,7 @@ from .resources import RootFactory, groupfinder
 
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
+from pyramid.session import UnencryptedCookieSessionFactoryConfig
 
 import sqlahelper
 
@@ -34,7 +35,8 @@ def main(global_config, **settings):
     config = Configurator(settings=settings,
                           root_factory='ticketing.resources.RootFactory',
                           authentication_policy=authn_policy,
-                          authorization_policy=authz_policy)
+                          authorization_policy=authz_policy,
+                          session_factory=UnencryptedCookieSessionFactoryConfig('altair'))
 
     config.add_static_view('static', 'ticketing:static', cache_max_age=3600)
 
@@ -57,6 +59,7 @@ def main(global_config, **settings):
     config.include('ticketing.users' , route_prefix='/users')
     config.include('ticketing.venues' , route_prefix='/venues')
     config.include('ticketing.newsletters' , route_prefix='/newsletters')
+    config.include('ticketing.dashboard' , route_prefix='/dashboard')
 
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.add_renderer('json'  , 'ticketing.renderers.json_renderer_factory')

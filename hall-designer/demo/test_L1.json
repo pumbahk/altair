@@ -1,0 +1,61 @@
+{
+  "40": {"type": "area", "area-type": "block", "name": "Aブロック", "included":["6"]},
+  "41": {"type": "area", "area-type": "block", "name": "Bブロック", "included":["5"]},
+  "42": {"type": "area", "area-type": "block", "name": "Cブロック", "included":["7"]},
+
+  "5": {"type": "area", "area-type": "gate", "name": "西扉", "included": ["51"]},
+  "6": {"type": "area", "area-type": "gate", "name": "南扉", "included": ["50"]},
+  "7": {"type": "area", "area-type": "gate", "name": "東扉", "included": ["51"]},
+
+  "8":  {"type": "seat", "included": ["40","100","110"]},
+  "9":  {"type": "seat", "included": ["40","100","111"]},
+  "10": {"type": "seat", "included": ["40","100","112"]},
+  "11": {"type": "seat", "included": ["40","100","113"]},
+  "12": {"type": "seat", "included": ["40","100","114"]},
+  "13": {"type": "seat", "included": ["40","100","115"]},
+  "14": {"type": "seat", "included": ["40","100","116"]},
+  "15": {"type": "seat", "included": ["40","100","117"]},
+  "16": {"type": "seat", "included": ["40","100","118"]},
+
+  "17": {"type": "seat", "included": ["40","101","110"]},
+  "18": {"type": "seat", "included": ["40","101","111"]},
+  "19": {"type": "seat", "included": ["40","101","112"]},
+  "20": {"type": "seat", "included": ["40","101","113"]},
+  "21": {"type": "seat", "included": ["40","101","114"]},
+  "22": {"type": "seat", "included": ["40","101","115"]},
+  "23": {"type": "seat", "included": ["40","101","116"]},
+
+  "24": {"type": "seat", "included": ["40","102","110"]},
+  "25": {"type": "seat", "included": ["40","102","111"]},
+  "26": {"type": "seat", "included": ["40","102","112"]},
+  "27": {"type": "seat", "included": ["40","102","113"]},
+  "28": {"type": "seat", "included": ["40","102","114"]},
+
+
+  "29": {"type": "seat", "included": ["41","100","110"]},
+  "30": {"type": "seat", "included": ["41","101","110"]},
+  "31": {"type": "seat", "included": ["41","101","111"]},
+
+
+  "32": {"type": "seat", "included": ["42","100","110"]},
+  "33": {"type": "seat", "included": ["42","101","110"]},
+  "34": {"type": "seat", "included": ["42","101","111"]},
+
+
+  "50": {"type": "area", "area-type": "floor", "name": "1階", "included": []},
+  "51": {"type": "area", "area-type": "floor", "name": "2階", "included": []},
+
+  "100": {"type": "area", "area-type": "row", "name": "1列", "included":[]},
+  "101": {"type": "area", "area-type": "row", "name": "2列", "included":[]},
+  "102": {"type": "area", "area-type": "row", "name": "3列", "included":[]},
+
+  "110": {"type": "area", "area-type": "col", "name": "1番", "included":[]},
+  "111": {"type": "area", "area-type": "col", "name": "2番", "included":[]},
+  "112": {"type": "area", "area-type": "col", "name": "3番", "included":[]},
+  "113": {"type": "area", "area-type": "col", "name": "4番", "included":[]},
+  "114": {"type": "area", "area-type": "col", "name": "5番", "included":[]},
+  "115": {"type": "area", "area-type": "col", "name": "6番", "included":[]},
+  "116": {"type": "area", "area-type": "col", "name": "7番", "included":[]},
+  "117": {"type": "area", "area-type": "col", "name": "8番", "included":[]},
+  "118": {"type": "area", "area-type": "col", "name": "9番", "included":[]}
+}

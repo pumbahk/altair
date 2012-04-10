@@ -5,6 +5,12 @@
         <th class="span2">ページ名</th><td class="span8">${page.title}</td><td class="span8">${params["title"]}</td>
       </tr>
       <tr>
+        <th class="span2">所属イベント</th><td>${page.event.title if page.event else ""}</td><td class="span8">${params["event"]}</td>
+      </tr>
+      <tr>
+        <th class="span2">親ページ</th><td>${page.title}</td><td class="span8">${params["parent"]}</td>
+      </tr>
+      <tr>
         <th class="span2">description</th><td>${page.description}</td><td  class="span8">${params["description"]}</td>
       </tr>
       <tr>
@@ -56,6 +62,22 @@
           %endfor
         </td>
       </tr>
+      <tr>
+        <th class="span2">公開タグ</th>
+		<td>
+		  %for tag in page.public_tags:
+			<a class="tag" href="${h.tag.to_search_query(request, "page", tag)}">${tag.label}</a> ,
+          %endfor
+        </td>
+      </tr>
+      <tr>
+        <th class="span2">非公開タグ</th>
+		<td>
+		  %for tag in page.private_tags:
+			<a class="tag" href="${h.tag.to_search_query(request, "page", tag)}">${tag.label}</a> ,
+          %endfor
+        </td>
+      </tr>
     </table>
 </%def>
 
@@ -80,9 +102,19 @@
 
 <%def name="render_blocks(blocks)">
   <div id="wrapped">
-    % for name  in blocks:
-      <div id="${name}" class="block noitem">${name}</div>
-    % endfor
+%for row in blocks.structure:
+    %for name in row:
+      <div class="block noitem size${len(row)} left" id="${name}">
+        ${name}
+      </div>
+    %endfor
+  %if len(row) > 1:
+    <div class="clear"/>
+  %endif
+%endfor
+##    % for name  in blocks:
+##      <div id="${name}" class="block noitem">${name}</div>
+##    % endfor
   </div>
 </%def>
 

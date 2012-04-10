@@ -3,25 +3,20 @@ import unittest
 from altaircms.models import DBSession
 from altaircms.page.models import Page
 
+from altaircms.lib.testutils import functionalTestSetUp
+from altaircms.lib.testutils import functionalTestTearDown
+
+app = None
 def setUpModule():
-    DBSession.remove()
+    global app
+    app = functionalTestSetUp()
+    ## listing
 
 def tearDownModule():
-    from altaircms.lib.testutils import dropall_db
-    dropall_db(message="test view drop")
+    functionalTestTearDown()
 
 class PageFunctionalTests(unittest.TestCase):
    def setUp(self):
-        from altaircms import main
-        app = main({}, **{"sqlalchemy.url": "sqlite://", 
-                            "session.secret": "B7gzHVRUqErB1TFgSeLCHH3Ux6ShtI", 
-                            "mako.directories": "altaircms:templates", 
-                            "altaircms.debug.strip_security": 'true', 
-                            "altaircms.plugin_static_directory": "altaircms:plugins/static", 
-                            "altaircms.layout_directory": "."})
-        from altaircms.lib.testutils import create_db
-        create_db()
-
         from webtest import TestApp
         self.testapp = TestApp(app)
         
@@ -37,7 +32,8 @@ class PageFunctionalTests(unittest.TestCase):
                  u'keywords': u'keywords',
                  u'layout': u"1",
                  u'title': title, 
-                 u'url': u'/tmp/url'}
+                 u"tags": u"foo, bar, baz", 
+                 u'url': u'tmp/url'}
        self.testapp.post("/page/", params, status=302)
 
    def update(self, obj_id, title="title"):
@@ -45,8 +41,8 @@ class PageFunctionalTests(unittest.TestCase):
                  u'description': u'music page',
                  u'keywords': u'music,rhythm,etc',
                  u'layout': u'1',
+                 u"tags": u"foo, bar, boo", 
                  u'stage': u'execute',
-                 u'tags': u'music',
                  u'title': title,
                  u'url': u'top/music'}
 
@@ -84,6 +80,4 @@ class PageFunctionalTests(unittest.TestCase):
        ## delete
        self.delete(obj.id)
        self.assertEquals(Page.query.count(), 1)
-       
-if __name__ == "__main__":
-    unittest.main()
+

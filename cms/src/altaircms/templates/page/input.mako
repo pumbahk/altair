@@ -22,10 +22,13 @@
       <table class="table">
         <tbody>
           ${formfield("title")}
+          ${formfield("event")}
+          ${formfield("parent")}
           ${formfield("url")}
           ${formfield("description")}
           ${formfield("keywords")}
           ${formfield("tags")}
+          ${formfield("private_tags")}
           ${formfield("layout")}
           ${h.base.confirm_stage()|n}
         </tbody>

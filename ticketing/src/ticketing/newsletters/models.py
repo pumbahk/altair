@@ -1,5 +1,5 @@
 from ticketing.utils import StandardEnum
-from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL
+from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL, Text
 from sqlalchemy.orm import relationship, join, backref, column_property
 
 import sqlahelper
@@ -25,7 +25,7 @@ class Newsletter(Base):
     __table_args__ = {'extend_existing': True}
     id = Column(BigInteger, primary_key=True)
     subject = Column(String(255))
-    description = Column(String(5000))
+    description = Column(Text())
     start_on = Column(DateTime)
     subscriber_count = Column(BigInteger)
     status = Column(String(255))
@@ -43,7 +43,6 @@ class Newsletter(Base):
 
     @staticmethod
     def add(newsletter):
-        log.debug(vars(newsletter))
         session.add(newsletter)
 
     @staticmethod
@@ -71,9 +70,7 @@ class Newsletter(Base):
 
     @staticmethod
     def save_file(id, form):
-        log.debug(form.subscriber_file.data)
         subscriber_file = form.subscriber_file.data.file if form.subscriber_file.data != "" else None
-        log.debug(subscriber_file)
         if subscriber_file:
             csv_dir = Newsletter.subscriber_dir()
             if not os.path.isdir(csv_dir):
@@ -81,19 +78,11 @@ class Newsletter(Base):
 
             fields = ['id', 'name', 'email']
             csv_file = csv.DictWriter(open(os.path.join(csv_dir, 'altair' + str(id) + '.csv'), 'w'), fields)
-            count = 0
             for row in csv.DictReader(subscriber_file, fields):
-                if Newsletter.validateEmail(row['email']):
-                    csv_file.writerow(row)
-                    count += 1
-
-            newsletter = Newsletter.get(id)
-            newsletter.subscriber_count = count
-            Newsletter.update(newsletter)
+                if Newsletter.validateEmail(row['email']): csv_file.writerow(row)
 
     @staticmethod
     def validateEmail(email):
-        log.debug(email)
         if email is not None and len(email) > 6:
             if re.match(r'^.+@[^.].*\.[a-z]{2,10}$', email) != None:
                 return True

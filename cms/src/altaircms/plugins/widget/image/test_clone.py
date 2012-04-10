@@ -1,5 +1,8 @@
 # -*- coding:utf-8 -*-
 
+##
+#NoDB
+
 import unittest
 from altaircms.models import DBSession
 from altaircms.models import Base
@@ -8,11 +11,7 @@ from models import ImageWidget
 def setUpModule():
     DBSession.remove()
     from altaircms.lib.testutils import create_db
-    create_db(base=Base, session=DBSession)
-
-def tearDownModule():
-    from altaircms.lib.testutils import dropall_db
-    dropall_db(base=Base, session=DBSession)
+    create_db(base=Base, session=DBSession, force=False)
 
 class WidgetCloneTest(unittest.TestCase):
     """ widgetのcloneのテスト

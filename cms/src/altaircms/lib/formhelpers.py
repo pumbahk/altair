@@ -2,21 +2,31 @@
 import wtforms.fields as fields
 import wtforms.ext.sqlalchemy.fields as extfields
 
+
+##
+from wtforms.widgets.core import HTMLString
+from wtforms.widgets.core import TextInput
+
+class DatePickerInput(TextInput):
+    """ a widget using bootstrap datepicker component
+    """
+    def __call__(self, field, **kwargs):
+        kwargs.setdefault('id', field.id)
+        kwargs.setdefault('type', self.input_type)
+        if 'value' not in kwargs:
+            kwargs['value'] = field._value()
+            fmt = u"""
+ <div class="date datepicker" data-date="">
+  <input %s>
+  <span class="add-on"><i class="icon-th"></i></span>
+ </div>"""
+            return HTMLString(fmt % self.html_params(name=field.name, **kwargs))
+##
 def datetime_pick_patch(): #slack-off
     """datetime field にclass="datepicker"をつける
     """ 
-    _kwargs_defaults = {"class_": "datepicker"}
-
-    from functools import wraps
-    def with_args(method):
-        @wraps(method)
-        def wrapped(self, **kwargs):
-            if not "class_" in kwargs:
-                kwargs.update(_kwargs_defaults)
-            return method(self, **kwargs)
-        return wrapped
     target = fields.DateTimeField
-    target.__call__ = with_args(target.__call__)
+    target.widget = DatePickerInput()
 
 
 ##
@@ -68,8 +78,9 @@ class DynamicQueryDefault(object):
     def event(cls, info, qs, field):
         field.query = cls._filter_by_site(qs, info.request)
     @classmethod
-    def image_asset(cls, info, qs, field):
+    def imageasset(cls, info, qs, field):
         field.query = cls._filter_by_site(qs, info.request)
+
     @classmethod
     def widgetdisposition(cls, info, qs, field):
         qs = cls._filter_by_site(info, info.qs, info.request)

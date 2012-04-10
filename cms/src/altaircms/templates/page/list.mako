@@ -1,7 +1,35 @@
 <%inherit file='../layout_2col.mako'/>
+<%block name='style'>
+<style type="text/css">
+  .alert{ margin:1%  }
+  .size1{ width:100%;  }
+  .size2{ width:34.5%; }
+  .size3{ width:17.8%; }
+  .left{ float:left; }
+  .clear{ clear:both; }
+</style>
+</%block>
+
+<script type="text/javascript">
+  var render_demo = function(){
+    var layout_id = $(this).val();
+    $("#layout_demo").load("${request.route_path("layout_demo")}"+"?id="+layout_id);
+  };
+
+  $(function(){
+    $("[name='layout']").live("change", render_demo);
+    render_demo.call($("[name='layout']"));
+  });
+</script>
 
 <div class="row">
-    <h3>ページ追加・一覧</h3>
+    <div class="span5">
+      <h3>ページ追加・一覧</h3>
+	</div>
+    <div class="span5">
+      <h3>layout image</h3>
+	</div>
+    <div class="span5">
     <%include file="../parts/formerror.mako"/>
     <form action="#" method="POST">
         <table class="table">
@@ -28,6 +56,9 @@
         </table>
         <button class="btn" type="submit">保存</button>
     </form>
+	</div>
+	<div class="span5" id="layout_demo">
+	</div>
 </div>
 
 <div class="row">

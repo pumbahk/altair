@@ -75,6 +75,17 @@ class Performance(Base):
     code = Column(String(12))
     owner_id = Column(BigInteger, ForeignKey('Account.id'))
     owner = relationship('Account')
+    venue_id = Column(BigInteger, ForeignKey('Venue.id'))
+    venue = relationship('Venue')
+
+    @staticmethod
+    def get(performance_id):
+        return session.query(Performance).filter(Performance.id == performance_id).first()
+
+    @staticmethod
+    def add(performance):
+        session.add(performance)
+
 
 event_table = Table(
     'Event', Base.metadata,

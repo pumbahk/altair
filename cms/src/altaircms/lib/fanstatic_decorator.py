@@ -77,3 +77,7 @@ with_wysiwyg_editor = FanstaticDecoratorFactory(
 with_bootstrap = FanstaticDecoratorFactory(
     bootstrap.need
  )
+
+# with_bootstrap = FanstaticDecoratorFactory(
+#     jquery.need
+# )

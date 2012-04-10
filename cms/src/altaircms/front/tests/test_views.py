@@ -10,13 +10,18 @@ Page.structure{} # widget id
 Widget
 """
 
+from altaircms.lib.testutils import functionalTestSetUp
+from altaircms.lib.testutils import functionalTestTearDown
+
+app = None
 def setUpModule():
-    from altaircms.models import DBSession
-    DBSession.remove()
+    global app
+    DIR = os.path.dirname(os.path.abspath(__file__))
+    app = functionalTestSetUp({"mako.directories": os.path.join(DIR, "templates"), })
 
 def tearDownModule():
-    from altaircms.lib.testutils import dropall_db
-    dropall_db(message="test view drop")
+    functionalTestTearDown()
+
 
 class UseAssetMixin(object):
     def _getImageAsset(self):
@@ -123,31 +128,18 @@ class FunctionalPageRenderingTest(UseAssetMixin,
                                   UseWidgetMixin, 
                                   UsePageEtcMixin, 
                                   unittest.TestCase):
-    DIR = os.path.dirname(os.path.abspath(__file__))
     def setUp(self):
-        from altaircms import main
-        app = main({}, **{"sqlalchemy.url": "sqlite://", 
-                            "mako.directories": os.path.join(self.DIR, "templates"), 
-                            "altaircms.plugin_static_directory": "altaircms:plugins/static", 
-                            "altaircms.layout_directory": "."})
-
-        from altaircms.lib.testutils import create_db
-        create_db()
-
         from webtest import TestApp
         self.testapp = TestApp(app)
 
-    def tearDown(self):
-        import transaction
-        transaction.abort()
-        self._getSession().remove()
+    def test_it(self):
+        """ functional test front
+        """
 
-    def test_it_nodata(self):
         """ pageのデータが存在しない場合のレンダリング 404
         """
         self.testapp.get("/f/publish/sample_page", status=404)
 
-    def test_it_simple(self):
         """ widgetなしページのレンダリング
         """
         session = self._getSession()
@@ -155,16 +147,19 @@ class FunctionalPageRenderingTest(UseAssetMixin,
         self.testapp.get("/f/publish/sample_page", status=200)
 
 
-    def test_it(self):
         """ widgetありページのレンダリング
         """
-        session = self._getSession()
         structure = u'''
 {"content": [{"pk": 1, "name": "freetext"}, {"pk": 3, "name": "movie"}, {"pk": 4, "name": "calendar"}, {"pk": 5, "name": "flash"}, {"pk": 52,  "name": "flash"}],
  "footer": [{"pk": 2, "name": "image"}]}
 '''
-        self._addData(session, structure)
+        from altaircms.page.models import Page
+        page = Page.query.first()
+        page.structure = structure
+        session.add(page)
         self._addWidget(session)
+        import transaction
+        transaction.commit()
 
         result = self.testapp.get("/f/publish/sample_page", status=200)
         text = result.text
