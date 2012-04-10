@@ -1,14 +1,13 @@
 # coding: utf-8
 import os
 from altaircms.lib.viewhelpers import FlashMessage
-from . import forms
 from pyramid.exceptions import NotFound
 from pyramid.httpexceptions import HTTPFound
 from pyramid.response import Response
 from pyramid.view import view_config
 from pyramid.view import view_defaults
 from altaircms.lib.fanstatic_decorator import with_bootstrap
-from altaircms.asset import get_storepath, detect_mimetype
+import altaircms.lib.treat.api as treat
 
 @view_config(route_name="asset_list", renderer="altaircms:templates/asset/list.mako", 
              decorator=with_bootstrap)
@@ -62,14 +61,8 @@ class CreateView(object):
         context = self.request.context
         asset_type = self.request.matchdict["asset_type"]
         form = context.get_confirm_form(asset_type, data=self.request.POST)
-
         if form.validate():
-            original_filename = form.data["filepath"].filename
-            storepath = context.get_asset_storepath()
-            creator = context.write_asset_file(storepath, original_filename, form.data["filepath"].file)
-            create = creator.create_asset_function(asset_type)
-            asset = create(dict(alt=form.data["alt"], mimetype=detect_mimetype(original_filename))) ## tag
-
+            asset = treat.get_creator(form, "asset", request=self.request).create()
             self.request.context.DBSession.add(asset)
             FlashMessage.success("%s asset created" % asset_type, request=self.request)    
         else:
@@ -85,7 +78,8 @@ def asset_display(request):
 
     attr = request.GET.get("filepath") or "filepath"
     filepath = getattr(asset, attr)
-    filepath = os.path.join(get_storepath(request), filepath)
+    storepath = request.context.get_asset_storepath()
+    filepath = os.path.join(storepath, filepath)
     content_type = asset.mimetype if asset.mimetype else 'application/octet-stream'
     if os.path.exists(filepath):
         return Response(file(filepath).read(), content_type=content_type)

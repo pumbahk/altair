@@ -44,7 +44,8 @@ class AddView(object):
     def create_page(self):
         form = forms.PageForm(self.request.POST)
         if form.validate():
-            treat.get_creator(form, "page", request=self.request).create()
+            page = treat.get_creator(form, "page", request=self.request).create()
+            self.context.add(page)
             ## flash messsage
             FlashMessage.success("page created", request=self.request)
             return HTTPFound(self.request.route_path("event", id=self.event_id))
@@ -67,7 +68,8 @@ class CreateView(object):
     def create(self):
         form = forms.PageForm(self.request.POST)
         if form.validate():
-            treat.get_creator(form, "page", request=self.request).create()
+            page = treat.get_creator(form, "page", request=self.request).create()
+            self.context.add(page)
             ## flash messsage
             FlashMessage.success("page created", request=self.request)
             return HTTPFound(self.request.route_path("page"))
@@ -166,6 +168,7 @@ class UpdateView(object):
         form = forms.PageUpdateForm(self.request.POST)
         if form.validate():
             page = treat.get_updater(form, "page", request=self.request).update(page)
+            self.context.add(page)
             ## flash messsage
             FlashMessage.success("page updated", request=self.request)
             return HTTPFound(location=h.page.to_edit_page(self.request, page))

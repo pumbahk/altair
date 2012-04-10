@@ -1,9 +1,7 @@
 from altaircms.models import DBSession
 from .models import Asset
-from . import treat
 from . import forms
 import sqlalchemy as sa
-from datetime import date
 from altaircms.asset import get_storepath
 import os
 from altaircms.security import RootFactory
@@ -31,19 +29,7 @@ class AssetResource(RootFactory):
     def get_asset_storepath(self):
         return get_storepath(self.request)
 
-    def write_asset_file(self, storepath, original_filename, buf):
-        awriter = treat.AssetFileWriter(storepath)
-
-        filepath = awriter.get_writename(original_filename)
-        bufstring = buf.read()
-        awriter._write_file(filepath, bufstring)
-
-        return treat.AssetCreator(storepath, filepath, len(bufstring))
-
     def delete_asset_file(self, storepath, filename):
         filepath = os.path.join(storepath, filename)
         if os.path.exists(filepath):
             os.remove(filepath)
-
-        
-    

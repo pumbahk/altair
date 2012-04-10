@@ -9,12 +9,63 @@ from uuid import uuid4
 
 from pyramid.threadlocal import get_current_registry
 
-from altaircms.asset.views import detect_mimetype
+from altaircms.asset import detect_mimetype
 import Image
 from altaircms.asset.models import ImageAsset
 from altaircms.asset.models import MovieAsset
 from altaircms.asset.models import FlashAsset
 from .swfrect import get_swf_rect, rect_to_size, in_pixel
+from altaircms.lib.treat.decorators import creator_from_form
+from altaircms.lib.treat.decorators import updater_from_form
+from altaircms.tag.api import get_tagmanager
+
+@updater_from_form(name="asset", use_request=True)
+@creator_from_form(name="asset", use_request=True)
+class AssetTagAdapter(object):
+    def __init__(self, form, request=None):
+        self.form = form
+        self.request = request
+
+    def _divide_data(self):
+        params = dict(self.form.data)
+        tags = [k.strip() for k in params.pop("tags").split(",")] ##
+        private_tags = [k.strip() for k in params.pop("private_tags").split(",")] ##
+        return tags, private_tags, params
+
+    def _create_asset(self, params):
+        original_filename = params["filepath"].filename
+        storepath = get_storepath(self.request)
+
+        ## write file
+        awriter = AssetFileWriter(storepath)
+        filepath = awriter.get_writename(original_filename)
+        buf = params["filepath"].file
+        bufstring = buf.read()
+        awriter._write_file(filepath, bufstring)
+
+        ## create asset
+        creator = AssetCreator(storepath, filepath, len(bufstring))
+        create = creator.create_asset_function(self.form.type)
+        return create(dict(alt=params["alt"], mimetype=detect_mimetype(original_filename))) ## tag
+        
+    def create(self):
+        tags, private_tags, params = self._divide_data()
+        asset = self._create_asset(params)
+        self.replace_tags(asset, tags, True)
+        self.replace_tags(asset, private_tags, False)
+        return asset
+
+    def update(self, asset):
+        tags, private_tags, params = self._divide_data()
+        for k, v in params.iteritems():
+            setattr(asset, k, v)
+        self.replace_tags(asset, tags, True)
+        self.replace_tags(asset, private_tags, False)
+        return asset
+
+    def replace_tags(self, asset, tags, public_status):
+        manager = get_tagmanager(self.form.type+"_asset", request=self.request)
+        manager.replace_tags(asset, tags, public_status)
 
 def get_storepath(request=None, registry=None):
     if request:
