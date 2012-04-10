@@ -44,6 +44,8 @@ class Newsletter(Base):
 
     @staticmethod
     def add(newsletter):
+        newsletter.created_at = datetime.now()
+        newsletter.updated_at = datetime.now()
         session.add(newsletter)
 
     @staticmethod
@@ -52,6 +54,7 @@ class Newsletter(Base):
 
     @staticmethod
     def update(newsletter):
+        newsletter.updated_at = datetime.now()
         session.merge(newsletter)
         session.flush()
 

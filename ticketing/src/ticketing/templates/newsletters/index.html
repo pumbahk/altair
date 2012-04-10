@@ -1,7 +1,7 @@
 <%inherit file="../layout.html" />
 <%namespace file="/common/helpers.html" import="pager"/>
-<%namespace file="/common/confirm_modal.html" import="delete_modal"/>
 <%namespace file="/common/helpers.html" import="flash_messages" />
+<%namespace file="/common/confirm_modal.html" import="delete_modal"/>
 
 <div class="row-fluid">
   <%include file="_menu.html" />
@@ -20,11 +20,12 @@
         <tr>
           <th class="minwidth"></th>
           <th class="minwidth">ID</th>
-          <th class="span4">${self.sortable('subject')}</th>
-          <th>${form.subscriber_file.label.text}</th>
-          <th>${form.subscriber_count.label.text}</th>
-          <th>${self.sortable('status')}</th>
-          <th>${self.sortable('start_on')}</th>
+          <th class="span5">${self.sortable('subject')}</th>
+          <th class="minwidth">${form.subscriber_file.label.text}</th>
+          <th class="minwidth">${form.subscriber_count.label.text}</th>
+          <th class="minwidth">${self.sortable('status')}</th>
+          <th class="minwidth">${self.sortable('start_on')}</th>
+          <th class="minwidth">${self.sortable('updated_at')}</th>
         </tr>
       </thead>
       <tbody>
@@ -51,6 +52,7 @@
             % endif
           </td>
           <td>${newsletter.start_on}</td>
+          <td>${newsletter.updated_at}</td>
         </tr>
       % endfor
       </tbody>

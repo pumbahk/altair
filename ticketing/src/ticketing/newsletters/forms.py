@@ -37,6 +37,8 @@ class NewslettersForm(Form):
     start_on            = DateTimeField(u'送信日時', validators=[], format='%Y-%m-%d %H:%M:%S')
     subscriber_file     = FileField(u'送信先リスト', validators=[])
     subscriber_count    = TextField(u'送信件数', validators=[])
+    updated_at          = DateTimeField(u'更新日時')
+    created_at          = DateTimeField(u'作成日時')
 
     def __init__(self, *args, **kw):
         if args:

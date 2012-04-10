@@ -53,6 +53,7 @@ class Newsletters(BaseView):
                 return HTTPNotFound('Newsletter not found')
             newsletter = record_to_multidict(newsletter)
             newsletter.pop('id')
+            newsletter.pop('status')
             f.process(newsletter)
 
         return {

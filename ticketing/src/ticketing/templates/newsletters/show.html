@@ -63,7 +63,12 @@
         </tr>
         <tr>
           <th>${form.subscriber_file.label}</th>
-          <td>${newsletter.subscriber_file()}</td>
+          <td>
+            % if newsletter.subscriber_file() is not None:
+              <a href="${request.route_path('newsletters.download', id=newsletter.id)}">
+              <span class="label label-info"><i class="icon-download-alt"></i> ${newsletter.subscriber_file()}</span></a>
+            % endif
+          </td>
         </tr>
         <tr>
           <th>${form.subscriber_count.label}</th>
@@ -72,6 +77,14 @@
         <tr>
           <th>${form.start_on.label}</th>
           <td>${newsletter.start_on}</td>
+        </tr>
+        <tr>
+          <th>${form.updated_at.label}</th>
+          <td>${newsletter.updated_at}</td>
+        </tr>
+        <tr>
+          <th>${form.created_at.label}</th>
+          <td>${newsletter.created_at}</td>
         </tr>
       </tbody>
     </table>
