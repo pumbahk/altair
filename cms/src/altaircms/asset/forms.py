@@ -9,6 +9,9 @@ class OnlyExtsFileGen(object):
         self.fmt = "invalid file type: fielname=%s [support format is %s]"
 
     def __call__(self, form, field):
+        if not field.data:
+            raise validators.ValidationError("%s file not found" % form.type)
+
         fname = field.data.filename
         if not any(fname.endswith(ext) for ext in self.exts):
             raise validators.ValidationError(self.fmt % (fname, self.exts))

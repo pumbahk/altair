@@ -14,6 +14,7 @@ import Image
 from altaircms.asset.models import ImageAsset
 from altaircms.asset.models import MovieAsset
 from altaircms.asset.models import FlashAsset
+from .swfrect import get_swf_rect, rect_to_size, in_pixel
 
 def get_storepath(request=None, registry=None):
     if request:
@@ -23,7 +24,8 @@ def get_storepath(request=None, registry=None):
         return registry.settings["altaircms.asset.storepath"]
 
 class AssetCreator(object):
-    def __init__(self, filepath, size):
+    def __init__(self, storepath, filepath, size):
+        self.storepath = storepath
         self.filepath = filepath
         self.size = size
         self.kwargs = dict(filepath=filepath, size=size)
@@ -40,8 +42,8 @@ class AssetCreator(object):
 
     def _image_asset(self, data):
         self.kwargs.update(data)
-        width, height = Image.open(self.filepath).size
-        return ImageAsset(width=width, height=height, **data)
+        width, height = Image.open(os.path.join(self.storepath, self.filepath)).size
+        return ImageAsset(width=width, height=height, **self.kwargs)
 
     def _movie_asset(self, data):
         self.kwargs.update(data)
@@ -49,7 +51,8 @@ class AssetCreator(object):
 
     def _flash_asset(self, data):
         self.kwargs.update(data)
-        return FlashAsset(**data)
+        width, height = in_pixel(rect_to_size(get_swf_rect(os.path.join(self.storepath, self.filepath))))
+        return FlashAsset(width=width, height=height, **self.kwargs)
 
 class AssetFileWriter(object): ##
     def __init__(self, storepath):

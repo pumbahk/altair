@@ -37,7 +37,7 @@ class AssetResource(object):
         bufstring = buf.read()
         awriter._write_file(filepath, bufstring)
 
-        return treat.AssetCreator(size=len(bufstring), filepath=filepath)
+        return treat.AssetCreator(storepath, filepath, len(bufstring))
 
     def delete_asset_file(self, storepath, filename):
         filepath = os.path.join(storepath, filename)

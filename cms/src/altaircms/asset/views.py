@@ -74,8 +74,9 @@ class CreateView(object):
             asset = create(dict(alt=form.data["alt"], mimetype=detect_mimetype(original_filename))) ## tag
 
             self.request.context.DBSession.add(asset)
-            FlashMessage.success("asset deleted", request=self.request)    
+            FlashMessage.success("%s asset created" % asset_type, request=self.request)    
         else:
+            # import pdb; pdb.set_trace()
             FlashMessage.error(str(form.errors), request=self.request)    
         return HTTPFound(self.request.route_path("asset_list"))
 
