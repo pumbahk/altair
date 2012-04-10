@@ -1,7 +1,17 @@
 <%inherit file='../layout_2col.mako'/>
 
-<div class="row" style="margin-bottom: 9px">
-  <h2 class="span6">削除確認画面 トピックのタイトル - ${topic['title']} (ID: ${topic['id']})</h2>
+<h2>削除確認 ${topcotent['title']} (ID: ${topcotent['id']})</h2>
+
+<div class="row-fluid">
+  <div class="span10">
+    ${nco.breadcrumbs(
+	    names=["Top", "Topic", topic["title"], u"削除確認"],
+	    urls=[request.route_path("dashboard"),
+              request.route_path("topic_list"),
+              request.route_path("topic", id=topic["id"]),
+              ]
+	)}
+  </div>
 </div>
 
 <div class="row">

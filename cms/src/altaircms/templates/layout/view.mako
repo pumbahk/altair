@@ -1,4 +1,17 @@
 <%inherit file='../layout_2col.mako'/>
+<%namespace name="nco" file="../navcomponents.mako"/>
+
+<h2>layout</h2>
+
+<div class="row-fluid">
+  <div class="span10">
+    ${nco.breadcrumbs(
+	    names=["Top", "Layout", layout.title], 
+	    urls=[request.route_path("dashboard"),
+              request.route_path("layout_list")]
+	)}
+  </div>
+</div>
 
 <div>
     <h1 class="page-header">レイアウト - ${layout}</h1>

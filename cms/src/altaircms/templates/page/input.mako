@@ -1,38 +1,25 @@
 <%inherit file='../layout_2col.mako'/>
+<%namespace name="fco" file="../formcomponents.mako"/>
+<%namespace name="nco" file="../navcomponents.mako"/>
 
-<div class="row" style="margin-bottom: 9px">
-  <h2 class="span6">更新 ページのタイトル - ${page.title} (ID: ${page.id})</h2>
+<h2>更新 ページのタイトル - ${page.title} (ID: ${page.id})</h2>
+  
+<div class="row-fluid">
+  <div class="span10">
+    ${nco.breadcrumbs(
+	    names=["Top", "Page", page.title, u"更新"], 
+	    urls=[request.route_path("dashboard"),
+              request.route_path("page"),
+              h.page.to_edit_page(request,page)]
+	)}
+  </div>
 </div>
-
-<%def name="formfield(k)">
-	<tr><th>${getattr(form,k).label}</th><td>${getattr(form,k)}
-	%if k in form.errors:
-	  <br/>
-	  %for error in form.errors[k]:
-		<span class="btn btn-danger">${error}</span>
-	  %endfor
-	%endif
-	</td></tr>
-</%def>
-
 
 <div class="row">
   <div class="span5">
 	<form action="${h.page.to_update(request,page)}" method="POST">
-      <table class="table">
-        <tbody>
-          ${formfield("title")}
-          ${formfield("event")}
-          ${formfield("parent")}
-          ${formfield("url")}
-          ${formfield("description")}
-          ${formfield("keywords")}
-          ${formfield("tags")}
-          ${formfield("private_tags")}
-          ${formfield("layout")}
-          ${h.base.confirm_stage()|n}
-        </tbody>
-      </table>
+	  ${fco.form_as_table_strict(form, ["title", "event", "parent", "url", "description", "keywords", "tags", "private_tags","layout"])}
+	  ${h.base.confirm_stage()|n}
 	  <button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> Update</button>
     </form>
   </div>

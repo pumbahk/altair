@@ -9,13 +9,13 @@ from altaircms.lib.formhelpers import dynamic_query_select_field_factory
 from altaircms.page.models import Page
 from altaircms.asset.models import ImageAsset
 from .models import Topcontent
+from altaircms.helpers.formhelpers import required_field
 
 class TopcontentForm(form.Form):
-    title = fields.TextField(label=u"タイトル", validators=[validators.Required()])
-    # is_global = fields.BooleanField(label=u"全体に公開", default=True)
-    publish_open_on = fields.DateTimeField(label=u"公開開始日")
-    publish_close_on = fields.DateTimeField(label=u"公開終了日")
-    text = fields.TextField(label=u"内容", validators=[validators.Required()], widget=widgets.TextArea())
+    title = fields.TextField(label=u"タイトル", validators=[required_field()])
+    publish_open_on = fields.DateTimeField(label=u"公開開始日", validators=[required_field()])
+    publish_close_on = fields.DateTimeField(label=u"公開終了日", validators=[required_field()])
+    text = fields.TextField(label=u"内容", validators=[required_field()], widget=widgets.TextArea())
     
     orderno = fields.IntegerField(label=u"表示順序(1〜100)", default=50)
     is_vetoed = fields.BooleanField(label=u"公開禁止")

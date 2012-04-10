@@ -1,53 +1,32 @@
 <%inherit file='../layout_2col.mako'/>
+<%namespace name="nco" file="../navcomponents.mako"/>
+<%namespace name="fco" file="../formcomponents.mako"/>
+<%namespace name="mco" file="../modelcomponents.mako"/>
+
+<h2>topcontent</h2>
+
+<div class="row-fluid">
+  <div class="span10">
+    ${nco.breadcrumbs(
+	    names=["Top", "Topcontent"], 
+	    urls=[request.route_path("dashboard")]
+	)}
+  </div>
+</div>
 
 <div class="row-fluid">
   <div>
       <h4>トップコンテンツ追加</h4>
-      <%include file="parts/form.mako"/>
+      <form id="topcontent_add_form" action="${request.route_path("topcontent_list")}?html=t" method="POST">
+	  ${fco.form_as_table_strict(form, ["title","kind","publish_open_on","publish_close_on","text","orderno","is_vetoed","page","image_asset","countdown_type"])}
+	  <button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> 保存</button>
+	  </form>
   </div>
 </div>
 
 <hr/>
 
 <div class="row-fluid">
-    <h4>トップコンテンツ</h4>
-
-    %if topcontents:
-        <table class="table table-striped">
-            <thead>
-            <tr>
-              <th>タイトル</th>
-              <th>種別</th>
-              <th>公開開始日</th>
-              <th>公開終了日</th>
-              <th>内容</th>
-              <th>表示順序</th>
-              <th>公開禁止</th>
-              <th>ページ</th>
-              <th>画像</th>
-              <th>カウントダウンの種別</th>
-            </tr>
-            </thead>
-        <tbody>
-        %for topcontent in topcontents['topcontents']:
-        <tr>
-            <td><a href="${request.route_path("topcontent", id=topcontent['id'])}">${topcontent['title']}</a></td>
-            <td>${topcontent["kind"]}</td>
-            <td>${topcontent["publish_open_on"]}</td>
-            <td>${topcontent["publish_close_on"]}</td>
-            <td>${topcontent['text'] if len(topcontent['text']) <= 20 else topcontent['text'][:20]+"..."}</td>
-            <td>${topcontent["orderno"]}</td>
-            <td>${topcontent["is_vetoed"]}</td>
-            <td>${topcontent["page"].title if topcontent["page"] else "-"}</td>
-            <td><a href="${request.route_path("asset_view", asset_id=topcontent["image_asset"].id)}">${topcontent["image_asset"]}</a></td>
-			<td>${topcontent["countdown_type" ]}</td>
-        </tr>
-        %endfor
-        </tbody>
-        </table>
-    %else:
-		<div class="alert alert-info">
-			トップコンテンツは登録されていません。
-		</div>
-    %endif
+    <h4>トップコンテンツ一覧</h4>
+	${mco.model_list(topcontents["topcontents"], mco.topcontent_list, u"トップコンテンツは登録されていません")}
 </div>

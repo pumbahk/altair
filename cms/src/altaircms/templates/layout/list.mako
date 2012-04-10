@@ -1,22 +1,23 @@
 <%inherit file='../layout_2col.mako'/>
+<%namespace name="nco" file="../navcomponents.mako"/>
+<%namespace name="fco" file="../formcomponents.mako"/>
+
+<h2>layout</h2>
+
+<div class="row-fluid">
+  <div class="span10">
+    ${nco.breadcrumbs(
+	    names=["Top", "Layout"], 
+	    urls=[request.route_path("dashboard")]
+	)}
+  </div>
+</div>
+
 <div class="row">
     <div class="span6">
         <h4>レイアウト</h4>
         <form action="#" method="POST">
-            <%include file="../parts/formerror.mako"/>
-        <table class="table">
-            <tbody>
-            <tr>
-                <th>${form.title.label}</th><td>${form.title}</td>
-            </tr>
-            <tr>
-                <th>${form.blocks.label}</th><td>${form.blocks}</td>
-            </tr>
-            <tr>
-                <th>${form.template_filename.label}</th><td>${form.template_filename}</td>
-            </tr>
-            </tbody>
-        </table>
+        ${fco.form_as_table_strict(form, ["title", "blocks", "template_filename"])}
             <button class="btn" type="submit">保存</button>
         </form>
     </div>

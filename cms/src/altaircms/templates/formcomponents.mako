@@ -11,8 +11,32 @@
 </table>
 </%def>
 
+<%def name="form_as_table_strict(form, keys)">
+<table class="table table-striped">
+  <tbody>
+  % for k in keys:
+    ${formfield(form, k)}
+  % endfor
+  </tbody>
+</table>
+</%def>
+
+<%def name="label_with_required_mark(field)">
+  %if field.flags.required:
+    <%
+      field.label.text += "*"
+     %>
+  %endif
+
+ ${field.label}
+</%def>
+
 <%def name="formfield(form, k)">
-	<tr><th>${getattr(form,k).label}</th><td>${getattr(form,k)}
+    <%
+      field = getattr(form,k)
+    %>
+
+	<tr><th>${label_with_required_mark(field)}</th><td>${field}
 	%if k in form.errors:
 	  <br/>
 	  %for error in form.errors[k]:

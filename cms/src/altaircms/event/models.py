@@ -33,3 +33,10 @@ class Event(BaseOriginalMixin, Base):
 
     client_id = sa.Column(sa.Integer, sa.ForeignKey("client.id"))
 
+    @property
+    def short_title(self):
+        if len(self.title) > 20:
+            return u"%s..." % self.title[:20]
+        else:
+            return self.title
+

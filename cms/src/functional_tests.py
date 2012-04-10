@@ -10,7 +10,7 @@ import webtest
 
 test_settings = {
     "sqlalchemy.url": "sqlite:///",
-    #"sqlalchemy.echo": "true",
+    "sqlalchemy.echo": "false",
     "altaircms.debug.strip_security": "false",
     "altaircms.layout_directory": "altaircms:templates/front/layout",
     "altaircms.plugin_static_directory":  "altaircms:plugins/static",

@@ -5,6 +5,7 @@ import wtforms.validators as validators
 import wtforms.widgets as widgets
 
 from altaircms.lib.formhelpers import dynamic_query_select_field_factory
+from altaircms.helpers.formhelpers import required_field
 from .models import Topic
 from altaircms.page.models import Page
 from altaircms.event.models import Event
@@ -16,12 +17,14 @@ def existing_pages():
     return Page.query.filter(Page.event_id==None)
 
 class TopicForm(form.Form):
-    title = fields.TextField(label=u"タイトル", validators=[validators.Required()])
-    kind = fields.SelectField(label=u"トピックの種別", choices=[(x, x) for x in Topic.KIND_CANDIDATES])
+    title = fields.TextField(label=u"タイトル", validators=[required_field()])
+    kind = fields.SelectField(label=u"トピックの種別", 
+                              choices=[(x, x) for x in Topic.KIND_CANDIDATES],
+                              validators=[required_field()])
     is_global = fields.BooleanField(label=u"全体に公開", default=True)
-    publish_open_on = fields.DateTimeField(label=u"公開開始日")
-    publish_close_on = fields.DateTimeField(label=u"公開終了日")
-    text = fields.TextField(label=u"内容", validators=[validators.Required()], widget=widgets.TextArea())
+    publish_open_on = fields.DateTimeField(label=u"公開開始日", validators=[required_field()])
+    publish_close_on = fields.DateTimeField(label=u"公開終了日", validators=[required_field()])
+    text = fields.TextField(label=u"内容", validators=[required_field()], widget=widgets.TextArea())
     
     orderno = fields.IntegerField(label=u"表示順序(1〜100)", default=50)
     is_vetoed = fields.BooleanField(label=u"公開禁止")

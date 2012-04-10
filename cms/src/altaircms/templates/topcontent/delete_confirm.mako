@@ -1,12 +1,22 @@
 <%inherit file='../layout_2col.mako'/>
 
-<div class="row" style="margin-bottom: 9px">
-  <h2 class="span6">削除確認画面 トピックのタイトル - ${topcontent['title']} (ID: ${topcontent['id']})</h2>
+<h2>削除確認 ${topcotent['title']} (ID: ${topcotent['id']})</h2>
+
+<div class="row-fluid">
+  <div class="span10">
+    ${nco.breadcrumbs(
+	    names=["Top", "Topcontent", topcontent["title"], u"削除確認"],
+	    urls=[request.route_path("dashboard"),
+              request.route_path("topcontent_list"),
+              request.route_path("topcontent", id=topcontent["id"]),
+              ]
+	)}
+  </div>
 </div>
 
 <div class="row">
   <div class="alert alert-error">
-	以下の内容のトピックを削除します。良いですか？
+	以下の内容のトップコンテンツを削除します。良いですか？
   </div>
   <div class="span5">
     <table class="table table-striped">

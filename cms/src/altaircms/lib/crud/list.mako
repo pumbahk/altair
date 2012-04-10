@@ -1,26 +1,11 @@
 <%inherit file='../../templates/layout_2col.mako'/>
 
-<%def name="formfield(form,k)">
-	<tr><th>${getattr(form,k).label}</th><td>${getattr(form,k)}
-	%if k in form.errors:
-	  <br/>
-	  %for error in form.errors[k]:
-		<span class="btn btn-danger">${error}</span>
-	  %endfor
-	%endif
-	</td></tr>
-</%def>
+<%namespace name="fco" file="../../templates/formcomponents.mako"/>
 
 <div class="row">
     <h3>${master_env.title}追加・一覧</h3>
     <form action="${request.route_path(master_env._join("create"))}" method="POST">
-        <table class="table">
-            <tbody>
-              %for k in display_fields:
-    			  ${formfield(form, k)}
-              %endfor
-            </tbody>
-        </table>
+       ${fco.form_as_table_strict(form, display_fields)}
         <button class="btn" type="submit">保存</button>
     </form>
 </div>

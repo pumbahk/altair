@@ -1,7 +1,17 @@
 <%inherit file='../../layout_2col.mako'/>
-<%namespace name="fco" file="../../formcomponents.mako"/>
+<%namespace name="nco" file="../../navcomponents.mako"/>
 
 <h2>movie asset</h2>
+
+<div class="row-fluid">
+  <div class="span10">
+    ${nco.breadcrumbs(
+	    names=["Top", "Asset"], 
+	    urls=[request.route_path("dashboard")]
+	)}
+  </div>
+</div>
+
 
 <div class="row">
   <ul class="nav nav-tabs">

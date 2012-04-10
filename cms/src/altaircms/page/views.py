@@ -38,7 +38,7 @@ class PageAddView(object):
     def input_form(self):
         event_id = self.request.matchdict["event_id"]
         event = Event.query.filter(Event.id==event_id).one()
-        form = forms.PageForm(event_id=event.id)
+        form = forms.PageForm(event=event)
         return {"form":form, "event":event}
 
     @view_config(request_method="POST", renderer="altaircms:templates/page/add.mako")

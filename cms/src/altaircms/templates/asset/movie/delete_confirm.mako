@@ -1,4 +1,5 @@
 <%inherit file='../../layout_2col.mako'/>
+<%namespace name="co" file="../components.mako"/>
 
 <div class="row">
     <div class="span10">
@@ -14,7 +15,7 @@
 </div>
 
 <div class="row">
-  <%include file='../parts/movie.mako'/>
+   ${co.movie_asset_describe(request, asset)}
 </div>
 
 <div class="row">

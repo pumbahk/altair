@@ -1,9 +1,12 @@
 <%inherit file='../../layout_2col.mako'/>
+<%namespace name="co" file="../components.mako"/>
 
+<h2>画像アセット詳細</h2>
 <div class="row">
     <div class="span10">
         <ul class="breadcrumb">
-            <li><a href="${request.route_path("asset_list")}">asset</a> <span class="divider">/</span></li>
+            <li><a href="${request.route_path("dashboard")}">Top</a> <span class="divider">/</span></li>
+            <li><a href="${request.route_path("asset_list")}">Asset</a> <span class="divider">/</span></li>
             <li><a href="${request.route_path("asset_image_list")}">image</a> <span class="divider">/</span></li>
             <li>${asset.filepath}</li>
         </ul>
@@ -12,7 +15,7 @@
 
 
 <div class="row">
-    <%include file='../parts/image.mako'/>
+    ${co.image_asset_describe(request, asset)}
 </div>
 
 <div class="row">

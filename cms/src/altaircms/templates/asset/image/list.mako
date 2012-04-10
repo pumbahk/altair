@@ -3,6 +3,15 @@
 
 <h2>image asset</h2>
 
+<div class="row-fluid">
+  <div class="span10">
+    ${nco.breadcrumbs(
+	    names=["Top", "Asset"], 
+	    urls=[request.route_path("dashboard")]
+	)}
+  </div>
+</div>
+
 <div class="row">
   <ul class="nav nav-tabs">
 	<li><a href="${request.route_path("asset_list")}">all</a></li>

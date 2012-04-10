@@ -1,8 +1,18 @@
 <%inherit file='../layout_2col.mako'/>
 <%namespace name="co" file="components.mako"/>
+<%namespace name="nco" file="../navcomponents.mako"/>
 
-<div class="row" style="margin-bottom: 9px">
-  <h2 class="span6">削除確認画面 トピックのタイトル - ${page.title} (ID: ${page.id})</h2>
+<h2>削除確認画面 ページのタイトル - ${page.title} (ID: ${page.id})</h2>
+
+<div class="row-fluid">
+  <div class="span10">
+    ${nco.breadcrumbs(
+	    names=["Top", "Page", page.title, u"削除"], 
+	    urls=[request.route_path("dashboard"),
+              request.route_path("page"),
+              h.page.to_edit_page(request,page)]
+	)}
+  </div>
 </div>
 
 <div class="row">

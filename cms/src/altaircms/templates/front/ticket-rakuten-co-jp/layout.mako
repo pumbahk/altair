@@ -25,7 +25,7 @@
 </head>
 <body>
 <div class="page page-two_columns">
-    <%block name="page"><%include file="../parts/header.mako"/></%block>
+    <%block name="page">${nco.header()}<%include file="../parts/header.mako"/></%block>
 
     <div class="page-main">
         <div class="page-main-header">

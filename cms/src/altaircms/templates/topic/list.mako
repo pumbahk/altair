@@ -1,53 +1,32 @@
 <%inherit file='../layout_2col.mako'/>
+<%namespace name="nco" file="../navcomponents.mako"/>
+<%namespace name="fco" file="../formcomponents.mako"/>
+<%namespace name="mco" file="../modelcomponents.mako"/>
+
+<h2>topic</h2>
+
+<div class="row-fluid">
+  <div class="span10">
+    ${nco.breadcrumbs(
+	    names=["Top", "Topic"], 
+	    urls=[request.route_path("dashboard")]
+	)}
+  </div>
+</div>
 
 <div class="row-fluid">
   <div>
       <h4>トピック追加</h4>
-      <%include file="parts/form.mako"/>
+      <form id="topic_add_form" action="${request.route_path("topic_list")}?html=t" method="POST">
+	  ${fco.form_as_table_strict(form, ["title","kind","publish_open_on","publish_close_on","text","orderno","is_vetoed","page","event","is_global"])}
+	  <button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> 保存</button>
+	  </form>
   </div>
 </div>
 
 <hr/>
 
 <div class="row-fluid">
-    <h4>トピック</h4>
-
-    %if topics:
-        <table class="table table-striped">
-            <thead>
-            <tr>
-              <th>タイトル</th>
-              <th>トピックの種別</th>
-              <th>公開開始日</th>
-              <th>公開終了日</th>
-              <th>内容</th>
-              <th>表示順序</th>
-              <th>公開禁止</th>
-              <th>イベント以外のページ</th>
-              <th>イベント</th>
-              <th>全体に公開</th>
-            </tr>
-            </thead>
-        <tbody>
-        %for topic in topics['topics']:
-        <tr>
-            <td><a href="${request.route_path("topic", id=topic['id'])}">${topic['title']}</a></td>
-            <td>${topic["kind"]}</td>
-            <td>${topic["publish_open_on"]}</td>
-            <td>${topic["publish_close_on"]}</td>
-            <td>${topic['text'] if len(topic['text']) <= 20 else topic['text'][:20]+"..."}</td>
-            <td>${topic["orderno"]}</td>
-            <td>${topic["is_vetoed"]}</td>
-            <td>${topic["page"].title if topic["page"] else "-"}</td>
-            <td>${topic["event"].title if topic["event"] else "-"}</td>
-            <td>${topic["is_global"]}</td>
-        </tr>
-        %endfor
-        </tbody>
-        </table>
-    %else:
-		<div class="alert alert-info">
-			トピックは登録されていません。
-		</div>
-    %endif
+    <h4>トピック一覧</h4>
+	${mco.model_list(topics["topics"], mco.topic_list, u"トピックは登録されていません")}
 </div>

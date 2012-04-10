@@ -1,5 +1,6 @@
 <%inherit file='../../layout_2col.mako'/>
 <%namespace name="fco" file="../../formcomponents.mako"/>
+<%namespace name="co" file="../components.mako"/>
 
 <h2>flash asset</h2>
 
@@ -15,7 +16,7 @@
 </div>
 
 <div class="row">
-    <%include file='../parts/flash.mako'/>
+    ${co.flash_asset_describe(request, asset)}
 </div>
 
 <div class="row">

@@ -1,14 +1,21 @@
-##
-##
-##
 <%inherit file='../layout_2col.mako'/>
-##<%inherit file='../layout.mako'/>
+<%namespace name="nco" file="../navcomponents.mako"/>
+<%namespace name="fco" file="../formcomponents.mako"/>
+<%namespace name="mco" file="../modelcomponents.mako"/>
 <%namespace name="co" file="components.mako"/>
 <%namespace name="css" file="internal.css.mako"/>
 
-<%block name="breadcrumbs">
-  <a href="${h.page.to_list_page(request)}">page</a> &raquo; ${page.title}
-</%block>
+<h2>page編集</h2>
+
+<div class="row-fluid">
+  <div class="span10">
+    ${nco.breadcrumbs(
+        names=["Top", "Page", page.title], 
+        urls=[request.route_path("dashboard"),
+              h.page.to_list_page(request)]
+    )}
+  </div>
+</div>
 
 <%block name='style'>
     <link rel="stylesheet" type="text/css" href="/static/css/overlay-basic.css"/>
@@ -29,11 +36,9 @@
 </%block>
 
 %if page and event:
-<h1>イベント${event}の${page}の編集</h1>
-%elif event:
-<h1>イベント${event}のページ追加</h1>
+  <h4>イベント"${event.title}"の"${page.title}"の編集</h4>
 %elif page:
-<h1>${page}ページの編集</h1>
+  <h4>${page.title}ページの編集</h4>
 %endif
 
 <div class="row" style="margin-bottom: 9px">
@@ -83,10 +88,6 @@
      <a href="${h.widget.to_disposition_list(request)}">widget layout一覧へ</a>
   </div>
 </div>
-
-%if event:
-<a href="${request.route_path('event', id=event.id)}">back</a>
-%endif
 
 <div id="pagecontentform">
   <!-- <div id="pagelayout">レイアウト選択</div>

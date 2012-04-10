@@ -1,4 +1,7 @@
 <%inherit file='../layout_2col.mako'/>
+<%namespace name="nco" file="../navcomponents.mako"/>
+<%namespace name="fco" file="../formcomponents.mako"/>
+<%namespace name="mco" file="../modelcomponents.mako"/>
 
 <%block name='style'>
 <style type="text/css">
@@ -23,26 +26,18 @@
   });
 </script>
 
-<%def name="formfield(k)">
-	<tr><th>${getattr(form,k).label}</th><td>${getattr(form,k)}
-	%if k in form.errors:
-	  <br/>
-	  %for error in form.errors[k]:
-		<span class="btn btn-danger">${error}</span>
-	  %endfor
-	%endif
-	</td></tr>
-</%def>
+<h2>ページの追加(event: ${event.title})</h2>
 
-<div class="row" style="margin-bottom: 9px">
-  <h2 class="span6">ページの追加</h2>
+<div class="row-fluid">
+  <div class="span10">
+    ${nco.breadcrumbs(
+	    names=["Top", "Event", event.short_title, u"新しいページの追加"], 
+	    urls=[request.route_path("dashboard"),
+              request.route_path("event_list"),
+              request.route_path("event", id=event.id)]
+	)}
+  </div>
 </div>
-
-<h2>event</h2>
-<div>
-  ${event.title}
-</div>
-
 
 <div class="row">
   <div class="span5">
@@ -53,19 +48,7 @@
   </div>
   <div class="span5">
 	<form action="${request.route_path("page_add",event_id=event.id)}" method="POST">
-      <table class="table">
-        <tbody>
-          ${formfield("title")}
-          ${formfield("event")}
-          ${formfield("parent")}
-          ${formfield("url")}
-          ${formfield("description")}
-          ${formfield("keywords")}
-          ${formfield("tags")}
-          ${formfield("private_tags")}
-          ${formfield("layout")}
-        </tbody>
-      </table>
+     ${fco.form_as_table_strict(form, ["url","title","event", "parent","description","keywords","tags","private_tags","layout"])}
 	  <button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> Create</button>
     </form>
   </div>

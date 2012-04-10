@@ -1,20 +1,21 @@
 <%inherit file='../layout_2col.mako'/>
+<%namespace name="nco" file="../navcomponents.mako"/>
+<%namespace name="fco" file="../formcomponents.mako"/>
+<%namespace name="mco" file="../modelcomponents.mako"/>
 
-<div class="row" style="margin-bottom: 9px">
-  <h2 class="span6">更新 トピックのタイトル - ${topcontent['title']} (ID: ${topcontent['id']})</h2>
+<h2>更新 ${topcotent['title']} (ID: ${topcotent['id']})</h2>
+
+<div class="row-fluid">
+  <div class="span10">
+    ${nco.breadcrumbs(
+	    names=["Top", "Topcontent", topcontent["title"], u"更新"],
+	    urls=[request.route_path("dashboard"),
+              request.route_path("topcontent_list"),
+              request.route_path("topcontent", id=topcontent["id"]),
+              ]
+	)}
+  </div>
 </div>
-
-<%def name="formfield(k)">
-	<tr><th>${getattr(form,k).label}</th><td>${getattr(form,k)}
-	%if k in form.errors:
-	  <br/>
-	  %for error in form.errors[k]:
-		<span class="btn btn-danger">${error}</span>
-	  %endfor
-	%endif
-	</td></tr>
-</%def>
-
 
 <div class="row">
   <div class="alert alert-info">
@@ -22,19 +23,7 @@
   </div>
   <div class="span5">
 	<form action="${request.route_path("topcontent", id=topcontent["id"])}" method="POST">
-      <table class="table">
-        <tbody>
-          ${formfield("title")}
-          ${formfield("kind")}
-          ${formfield("publish_open_on")}
-          ${formfield("publish_close_on")}
-          ${formfield("text")}
-          ${formfield("orderno")}
-          ${formfield("is_vetoed")}
-          ${formfield("image_asset")}
-          ${formfield("countdown_type")}
-        </tbody>
-      </table>
+	  ${fco.form_as_table_strict(form, ["title","kind","publish_open_on","publish_close_on","text","orderno","is_vetoed","page","image_asset","countdown_type"])}
  	  <input id="_method" name="_method" type="hidden" value="put" />
 	  <button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> Update</button>
     </form>
