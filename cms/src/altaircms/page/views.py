@@ -29,8 +29,9 @@ import altaircms.helpers as h
 class AddView(object):
     """ eventの中でeventに紐ついたpageの作成
     """
-    def __init__(self, request):
+    def __init__(self, context, request):
         self.request = request
+        self.context = context
         self.event_id = request.matchdict["event_id"]
 
     @view_config(request_method="GET", renderer="altaircms:templates/page/add.mako")
