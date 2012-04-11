@@ -12,7 +12,8 @@ from hashlib import md5
 
 import os
 import sys
-sys.path.append(os.path.abspath(dirname(__file__)))
+from os.path import abspath, dirname
+sys.path.append(abspath(dirname(dirname(__file__))) + '/newsletter')
 from newsletters.models import *
 #from newsletter.newsletters.models import *
 
