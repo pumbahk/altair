@@ -26,10 +26,6 @@ requires = [
     "js.underscore",
     'js.backbone',
     'js.tinymce',
-
-    #deprecate
-    'deform',
-    'colander',
     ]
 
 if sys.version_info[:3] < (2,5,0):

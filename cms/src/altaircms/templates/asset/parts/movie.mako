@@ -26,8 +26,20 @@
             <td>${asset.size}</td>
         </tr>
         <tr>
-            <td>タグ</td>
-            <td>TBD</td>
+            <td>公開タグ</td>
+            <td>
+                %for tag in asset.public_tags:
+                    <a class="tag" href="${h.tag.to_search_query(request, "asset", tag)}">${tag.label}</a> ,
+                %endfor
+            </td>
+        </tr>
+        <tr>
+            <td>非公開タグ</td>
+            <td>
+                %for tag in asset.private_tags:
+                    <a class="tag" href="${h.tag.to_search_query(request, "asset", tag)}">${tag.label}</a> ,
+                %endfor
+            </td>
         </tr>
         </tbody>
     </table>

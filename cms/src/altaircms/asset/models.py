@@ -5,6 +5,7 @@ from altaircms.models import Base
 from altaircms.models import DBSession
 
 from datetime import datetime
+from sqlalchemy.ext.hybrid import hybrid_property
 from zope.interface import implements
 from altaircms.interfaces import IAsset
 from altaircms.interfaces import IHasMedia
@@ -39,6 +40,15 @@ class Asset(Base):
 
     def __repr__(self):
         return '<%s %s %s>' % (self.__class__.__name__, self.id, self.filepath)
+
+    ## todo refactoring?
+    @hybrid_property
+    def public_tags(self):
+        return [tag for tag in self.tags if tag.publicp == True]
+
+    @hybrid_property
+    def private_tags(self):
+        return [tag for tag in self.tags if tag.publicp == False]
 
 class MediaAssetColumnsMixin(object):
     alt = sa.Column(sa.Integer)
