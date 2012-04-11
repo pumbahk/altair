@@ -19,7 +19,6 @@ from ticketing.orders.models import *
 from ticketing.products.models import *
 from ticketing.users.models import *
 from ticketing.venues.models import *
-from ticketing.newsletters.models import *
 
 try:
     import pymysql_sa
@@ -41,7 +40,6 @@ from account    import AccountData
 from permission import PermissionData
 from operator   import OperatorData, OperatorRoleData
 from event import EventData,PerformanceData
-from newsletter import NewsletterData
 from venue import VenueData
 
 from ticketing.oauth2.models import Service
@@ -61,7 +59,6 @@ db_fixture = SQLAlchemyFixture(
          'ClientData'       : Client,
          'EventData'        : Event,
          'PerformanceData'  : Performance,
-         'NewsletterData'   : Newsletter,
          'VenueData'        : Venue
      },
      engine=engine,
@@ -86,7 +83,6 @@ data = db_fixture.data(
     OperatorData,
     EventData,
     PerformanceData,
-    NewsletterData,
     VenueData
 )
 data.setup()

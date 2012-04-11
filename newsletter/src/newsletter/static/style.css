@@ -1,0 +1,13 @@
+#wrapper {
+    width: 100%;
+    margin: 0 auto;
+}
+#column-left {
+
+}
+#column-right {
+    width: 300px;
+}
+.clear {
+    clear:both;
+}

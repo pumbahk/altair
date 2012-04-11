@@ -69,11 +69,12 @@ with_fanstatic_jqueries = FanstaticDecoratorFactory(
     smoothness.need, 
     underscore.need,
     backbone.need
-    )
+)
 
 with_wysiwyg_editor = FanstaticDecoratorFactory(
     tinymce.need
 )
+
 with_bootstrap = FanstaticDecoratorFactory(
     jquery.need,
     jquery_tools.need,
@@ -83,6 +84,5 @@ with_bootstrap = FanstaticDecoratorFactory(
     smoothness.need,
     underscore.need,
     backbone.need,
-
     bootstrap.need
- )
+)

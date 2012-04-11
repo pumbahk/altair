@@ -1,0 +1,130 @@
+.seat-icon-consecutive:after {
+  display: inline-block;
+  background-color: #58e;
+  color: #fff;
+  padding: 2px 2px;
+  line-height: 10px;
+  height: 10px;
+  font-size: 10px;
+  margin: 0 0;
+  border: 1px outset #fff;
+  font-family: Sans-Serif;
+  font-weight: bold;
+  content: '連番';
+}
+
+.seat-icon-front_row:after {
+  display: inline-block;
+  background-color: #e80;
+  color: #fff;
+  padding: 2px 2px;
+  line-height: 10px;
+  height: 10px;
+  font-size: 10px;
+  margin: 0 0;
+  border: 1px outset #fff;
+  font-family: Sans-Serif;
+  font-weight: bold;
+  content: '最前列';
+}
+
+.seat-icon-isle_side:after {
+  display: inline-block;
+  background-color: #3a5;
+  color: #fff;
+  padding: 2px 2px;
+  line-height: 10px;
+  height: 10px;
+  font-size: 10px;
+  margin: 0 0;
+  border: 1px outset #fff;
+  font-family: Sans-Serif;
+  font-weight: bold;
+  content: '通路側';
+}
+
+.seat-icon-corner:after {
+  display: inline-block;
+  background-color: #e5a;
+  color: #fff;
+  padding: 2px 2px;
+  line-height: 10px;
+  height: 10px;
+  font-size: 10px;
+  margin: 0 0;
+  border: 1px outset #fff;
+  font-family: Sans-Serif;
+  font-weight: bold;
+  content: 'カド';
+}
+
+.seat-icon-premier:after {
+  display: inline-block;
+  background-color: #d23;
+  color: #fff;
+  padding: 2px 2px;
+  line-height: 10px;
+  height: 10px;
+  font-size: 10px;
+  margin: 0 0;
+  border: 1px outset #fff;
+  font-family: Sans-Serif;
+  font-weight: bold;
+  content: 'プレミア';
+}
+
+.minwidth {
+  width: 1px;
+}
+
+.fullwidth {
+  width: 100%;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+table.nowrappingcells td,
+table.nowrappingcells th {
+  white-space: nowrap;
+}
+
+.twocolumns {
+  overflow: hidden;
+}
+
+.twocolumns .column {
+  width: 50%;
+  margin: 0 0;
+  padding: 0 0;
+  float: left;
+}
+
+.twocolumns .column-header {
+  padding-left: 8px;
+  padding-right: 0px;
+}
+
+.twocolumns .first .column-header {
+  padding-left: 0px;
+  padding-right: 8px;
+}
+
+.twocolumns .column-main {
+  padding-left: 8px;
+  padding-right: 0px;
+}
+
+.twocolumns .first .column-main {
+  padding-left: 0px;
+  padding-right: 8px;
+}
+
+.__template__ {
+  display: none;
+}
+
+.right_aligned {
+  text-align: right;
+}
