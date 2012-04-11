@@ -37,7 +37,7 @@ def _get_policies(settings):
     if asbool(settings.get("altaircms.debug.strip_security", 'false')):
         from altaircms.security import SecurityAllOK
         from altaircms.security import DummyAuthorizationPolicy
-        return AuthTktAuthenticationPolicy(settings.get('session.secret'), callback=SecurityAllOK()), \
+        return AuthTktAuthenticationPolicy(settings.get('authtkt.secret'), callback=SecurityAllOK()), \
             DummyAuthorizationPolicy()
     else:
         from pyramid.authorization import ACLAuthorizationPolicy
@@ -95,6 +95,7 @@ def main(global_config, **settings):
     config.add_static_view('plugins/static', 'altaircms:plugins/static', cache_max_age=3600)
 
     engine = engine_from_config(settings, 'sqlalchemy.')
+    sqlahelper.get_session().remove()
     sqlahelper.add_engine(engine)
 
     ## 設定ファイルを読み込んで追加でinclude.(debug用)
