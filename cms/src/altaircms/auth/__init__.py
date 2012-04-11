@@ -15,3 +15,5 @@ def includeme(config):
 
     config.add_route('role_permission_list', '/role/{role_id}/permission/')
     config.add_route('role_permission', '/role/{role_id}/permission/{id}')
+
+    config.scan()

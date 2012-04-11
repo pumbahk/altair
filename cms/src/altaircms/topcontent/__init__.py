@@ -12,3 +12,5 @@ def includeme(config):
 
     config.add_route('api_topcontent_object', '/api/topcontent/{id}')
     config.add_route('api_topcontent', '/api/topcontent/')
+
+    config.scan()

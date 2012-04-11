@@ -20,7 +20,7 @@ import transaction
 import json
 
 from altaircms.lib.apiview import BaseRESTAPI
-#from altaircms.models import DBSession
+from altaircms.models import DBSession
 from altaircms.lib.fanstatic_decorator import with_bootstrap
 from altaircms.auth.errors import AuthenticationError
 from altaircms.auth.forms import RoleForm

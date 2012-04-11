@@ -34,3 +34,5 @@ def includeme(config):
                          )
 
     config.add_route("tag", "/tag/{classifier}")
+
+    config.scan()

@@ -7,6 +7,7 @@ def includeme(config):
     config.add_route('asset_create', '/asset/{asset_type}/create', factory=".resources.AssetResource")
     # config.add_route('asset_form', '/asset/form/{asset_type}')
     # config.add_route('asset_edit', '/asset/{asset_id}')
+    config.scan()
 
 EXT_MAP = {
     'jpg':'image/jpeg',

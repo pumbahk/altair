@@ -18,3 +18,5 @@ def includeme(config):
     reg.registerUtility(validate_apikey, IAPIKEYValidator)
     event_repository = config.maybe_dotted('.api.EventRepositry')
     reg.registerUtility(event_repository, IEventRepositiry)
+
+    config.scan()
