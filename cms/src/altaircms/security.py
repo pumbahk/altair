@@ -1,4 +1,5 @@
 # coding: utf-8
+import logging
 from pyramid.security import Allow, Authenticated, Everyone, Deny, DENY_ALL
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -18,9 +19,10 @@ def rolefinder(userid, request):
     :return: list ユーザのロールリスト
     """
     try:
-        operator = DBSession.query(Operator).filter_by(user_id=userid).one()
+        operator = Operator.query.filter_by(user_id=userid).one()
         return [operator.role.name]
-    except NoResultFound:
+    except NoResultFound, e:
+        logging.error(e)
         return []
 
 

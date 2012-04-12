@@ -1,4 +1,5 @@
 # coding: utf-8
+import logging
 from datetime import datetime
 import urlparse
 import urllib
@@ -85,13 +86,13 @@ class OAuthLogin(object):
                 self.access_token_url +
                 "?" + urllib.urlencode(args)).read())
         except IOError, e:
+            logging.error(e)
             self.request.response.body = str(e)
             return self.request.response
 
         try:
             operator = Operator.query.filter_by(auth_source='oauth', user_id=data['user_id']).one()
             operator.last_login = datetime.now()
-            DBSession.add(operator)
         except NoResultFound:
             role = Role.query.filter_by(name=data.get('role', DEFAULT_ROLE)).one()
             
@@ -101,14 +102,13 @@ class OAuthLogin(object):
                 screen_name=data['screen_name'],
                 oauth_token=data['access_token'],
                 oauth_token_secret='',
-                role_id=role.id
+                role=role,
             )
-            sqlahelper.get_session().add(operator)
-
+            DBSession.add(operator)
 
         headers = remember(self.request, operator.user_id)
 
-        url = self.request.route_url('oauth.callback_success_url')
+        url = self.request.route_url('dashboard')
         return HTTPFound(url, headers=headers)
 
 

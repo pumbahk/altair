@@ -41,7 +41,7 @@ def _get_policies(settings):
             DummyAuthorizationPolicy()
     else:
         from pyramid.authorization import ACLAuthorizationPolicy
-        return  AuthTktAuthenticationPolicy(settings.get('auth.secret'), callback=rolefinder), \
+        return  AuthTktAuthenticationPolicy(settings.get('authtkt.secret'), callback=rolefinder), \
             ACLAuthorizationPolicy()
 
 def main(global_config, **settings):
