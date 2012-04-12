@@ -67,7 +67,7 @@ class OAuthLoginTests(unittest.TestCase):
         from StringIO import StringIO
         import json
 
-        self.config.add_route('oauth.callback_success_url', '/')
+        self.config.add_route('dashboard', '/')
 
         mock_urlopen.return_value = StringIO(json.dumps({
                     "user_id": "dummy-user-id",
