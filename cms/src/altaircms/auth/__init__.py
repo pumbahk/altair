@@ -1,4 +1,6 @@
 def includeme(config):
+
+    config.add_route('oauth.callback_success_url', '/')
     config.add_route('login', '/login')
     config.add_route('logout', '/logout')
 
@@ -13,3 +15,5 @@ def includeme(config):
 
     config.add_route('role_permission_list', '/role/{role_id}/permission/')
     config.add_route('role_permission', '/role/{role_id}/permission/{id}')
+
+    config.scan()

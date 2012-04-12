@@ -1,5 +1,6 @@
 # coding: utf-8
 from datetime import datetime
+import sqlahelper
 from sqlalchemy.orm import relationship, backref
 
 from sqlalchemy.orm.mapper import Mapper
@@ -7,6 +8,7 @@ from sqlalchemy.schema import Table, Column, ForeignKey, UniqueConstraint
 from sqlalchemy.types import String, DateTime, Integer, BigInteger, Unicode
 
 from altaircms.models import Base
+_session = sqlahelper.get_session()
 
 ## 認証時初期ロール
 DEFAULT_ROLE = 'administrator'
@@ -16,7 +18,7 @@ DEFAULT_ROLE = 'administrator'
 ##
 class OAuthToken(Base):
     __tablename__ = 'oauth_token'
-
+    query = _session.query_property()
     token = Column(String, primary_key=True)
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=datetime.now())
@@ -32,6 +34,7 @@ class Operator(Base):
     サイト管理者
     """
     __tablename__ = 'operator'
+    query = _session.query_property()
 
     id = Column(Integer, primary_key=True)
 
@@ -59,6 +62,7 @@ class Operator(Base):
 
 class RolePermission(Base):
     __tablename__ = 'role2permission'
+    query = _session.query_property()
 
     id = Column(Integer, primary_key=True)
     role_id = Column(Integer, ForeignKey('role.id'))
@@ -72,6 +76,7 @@ class RolePermission(Base):
 
 class Role(Base):
     __tablename__ = 'role'
+    query = _session.query_property()
 
     id = Column(Integer, primary_key=True)
     name = Column(String)
@@ -81,6 +86,7 @@ class Role(Base):
 
 class Permission(Base):
     __tablename__ = 'permission'
+    query = _session.query_property()
 
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
@@ -91,6 +97,7 @@ class Client(Base):
     顧客マスタ
     """
     __tablename__ = 'client'
+    query = _session.query_property()
 
     id = Column(Integer, primary_key=True)
     created_at = Column(DateTime, default=datetime.now())
@@ -109,6 +116,7 @@ class Client(Base):
 
 class APIKey(Base):
     __tablename__ = 'apikey'
+    query = _session.query_property()
 
     def generate_apikey(self):
         from uuid import uuid4

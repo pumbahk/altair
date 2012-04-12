@@ -7,3 +7,5 @@ def includeme(config):
     ## api
     config.add_route('api_layout_object', '/api/layout/{id}')
     config.add_route('api_layout', '/api/layout/')
+
+    config.scan()

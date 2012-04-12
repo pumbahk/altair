@@ -13,3 +13,6 @@ def includeme(config):
     ## todo: move bellow
     config.add_route("disposition_list", "/disposition", factory="altaircms.page.resources.PageResource")
     config.add_route("disposition_alter", "/disposition/{id}/alter", factory="altaircms.page.resources.PageResource")
+
+    config.scan('.views')
+    config.scan('.treat')

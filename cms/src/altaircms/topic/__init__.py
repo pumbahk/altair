@@ -12,3 +12,5 @@ def includeme(config):
 
     config.add_route('api_topic_object', '/api/topic/{id}')
     config.add_route('api_topic', '/api/topic/')
+
+    config.scan()

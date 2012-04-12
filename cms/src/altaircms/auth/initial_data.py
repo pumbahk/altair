@@ -1,7 +1,6 @@
 # coding: utf-8
-import transaction
+import sqlahelper
 from sqlalchemy.sql.functions import max
-from altaircms.models import DBSession
 from altaircms.auth.models import Role, RolePermission, Permission, DEFAULT_ROLE
 
 
@@ -17,6 +16,8 @@ def insert_initial_authdata():
     """
     ロールとパーミッションを登録する
     """
+
+    DBSession = sqlahelper.get_session()
 
     # administrator
     role = Role(id=1, name=DEFAULT_ROLE)

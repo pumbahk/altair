@@ -1,12 +1,13 @@
 def includeme(config):
-    config.add_route('asset_list', '/asset', factory=".resources.AssetResource")
-    config.add_route('asset_sub_list', '/asset/{asset_type}', factory=".resources.AssetResource")
+    config.add_route('asset_list', '/asset/list', factory=".resources.AssetResource")
+    config.add_route('asset_sub_list', '/asset/list/{asset_type}', factory=".resources.AssetResource")
     config.add_route('asset_display', '/asset/display/{asset_id}', factory=".resources.AssetResource")
     config.add_route('asset_view', '/asset/{asset_id}', factory=".resources.AssetResource")
     config.add_route('asset_delete', '/asset/{asset_id}/delete', factory=".resources.AssetResource")
     config.add_route('asset_create', '/asset/{asset_type}/create', factory=".resources.AssetResource")
     # config.add_route('asset_form', '/asset/form/{asset_type}')
     # config.add_route('asset_edit', '/asset/{asset_id}')
+    config.scan()
 
 EXT_MAP = {
     'jpg':'image/jpeg',

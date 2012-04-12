@@ -50,8 +50,14 @@ def functionalTestTearDown():
     transaction.abort()
 
 def _initTestingDB():
+    DBSession.remove()
     from altaircms.models import initialize_sql
-    session = initialize_sql(create_engine('sqlite:///:memory:'))
+    engine = create_engine('sqlite:///:memory:')
+    engine.echo = True
+    import sqlahelper
+
+    sqlahelper.add_engine(engine)
+    session = initialize_sql(engine, dropall=True)
     return session
 
 class BaseTest(unittest.TestCase):

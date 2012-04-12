@@ -6,7 +6,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.declarative import declared_attr
 from datetime import datetime
 
-from altaircms.models import Base
+from altaircms.models import Base, BaseOriginalMixin
 from altaircms.models import DBSession
 from altaircms.page.models import Page
 from altaircms.asset.models import ImageAsset
@@ -15,6 +15,7 @@ from altaircms.lib.modelmixin import AboutPublishMixin
 
 #ugly
 class Topcontent(AboutPublishMixin,
+                 BaseOriginalMixin,
                  Base):
     """
     Topページの画像つきtopicのようなもの
