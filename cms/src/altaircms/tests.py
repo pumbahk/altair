@@ -99,26 +99,6 @@ class BaseFunctionalTests(unittest.TestCase):
         import shutil
         shutil.rmtree(self.store)
 
-    def _add_role(self, name):
-        import sqlahelper
-        from altaircms.auth.models import Role
-        role = Role(name=name)
-        session = sqlahelper.get_session()
-        session.add(role)
-        session.flush()
-        role_id = role.id
-        import transaction
-        transaction.commit()
-
-        return role_id
-
-    def _delete_role(self, name):
-        import sqlahelper
-        from altaircms.auth.models import Role
-        Role.query.filter(Role.name==name).delete()
-        import transaction
-        transaction.commit()
-
 
     def _add_api_key(self, name):
         import sqlahelper
