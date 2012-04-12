@@ -14,6 +14,7 @@ from pyramid_mailer.message import Message
 from newsletter.models import merge_session_with_post
 from newsletter.newsletters.models import Newsletter
 
+import ConfigParser
 import logging
 logging.basicConfig()
 
@@ -36,7 +37,9 @@ def main(argv=sys.argv):
         return
     app = loadapp('config:%s' % config, 'main')
 
-    mailer = Mailer()
+    parser = ConfigParser.SafeConfigParser()
+    parser.read(config)
+    mailer = Mailer.from_settings(dict(parser.items('mailer')))
     print 'mailer:', vars(mailer.smtp_mailer)
 
     # send mail magazine
