@@ -81,7 +81,7 @@ class Performance(BaseOriginalMixin, Base):
     # client = relationship("Client", backref=orm.backref("performances", order_by=id))
 
 
-class Sale(Base):
+class Sale(BaseOriginalMixin, Base):
     __tablename__ = 'sale'
     query = DBSession.query_property()
 
@@ -98,7 +98,7 @@ class Sale(Base):
     updated_at = Column(DateTime, default=datetime.now())
 
 
-class Ticket(Base):
+class Ticket(BaseOriginalMixin, Base):
     """
     券種
     """
@@ -120,7 +120,7 @@ class Ticket(Base):
     seattype = Column(Unicode(255))
 
 
-class Seatfigure(Base):
+class Seatfigure(BaseOriginalMixin, Base):
     """
     席図
     """
@@ -139,7 +139,7 @@ class Seatfigure(Base):
 
 
 
-class Site(Base):
+class Site(BaseOriginalMixin, Base):
     __tablename__ = "site"
     query = DBSession.query_property()
 
