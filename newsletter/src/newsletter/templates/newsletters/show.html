@@ -53,9 +53,11 @@
           <th>${form.status.label}</th>
           <td>
             % if newsletter.status == 'editing':
-              <span class="label label-important">作成中</span>
+              <span class="label label-primary">作成中</span>
             % elif newsletter.status == 'waiting':
-              <span class="label label-warning">配信予約中</span>
+              <span class="label label-warning">配信予約</span>
+            % elif newsletter.status == 'sending':
+              <span class="label label-important">配信中</span>
             % elif newsletter.status == 'completed':
               <span class="label label-success">配信完了</span>
             % endif
@@ -106,5 +108,5 @@
       <a href="${request.route_path('newsletters.copy', id=newsletter.id)}"><i class="icon-plus"></i> コピー</a>
     </button>
   </div>
-  ${delete_modal("Are you sure you want to delete this id?")}
+  ${delete_modal(u'選択したメールマガジンを削除します。よろしいですか？')}
 </div>

@@ -39,7 +39,7 @@ requires = [
     'js.bootstrap',
     'simplejson',
     'waitress'
-]
+    ]
 
 setup(name='newsletter',
     version='0.0',
@@ -50,7 +50,7 @@ setup(name='newsletter',
         "Framework :: Pylons",
         "Topic :: Internet :: WWW/HTTP",
         "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
-    ],
+        ],
     author='',
     author_email='',
     url='',
@@ -66,5 +66,5 @@ setup(name='newsletter',
     main = newsletter:main
     """,
     paster_plugins=['pyramid'],
-)
+    )
 

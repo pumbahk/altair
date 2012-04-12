@@ -5,7 +5,7 @@ import os
 from datetime import datetime
 
 from wtforms import (TextField, PasswordField, TextAreaField, DateField, DateTimeField,
-                     SelectField, SubmitField, HiddenField, BooleanField, FileField)
+                     SelectField, SubmitField, HiddenField, BooleanField, FileField, IntegerField)
 from wtforms.validators import Required, Email, Length, NumberRange, EqualTo, optional, ValidationError
 from wtforms import Form
 
@@ -16,30 +16,31 @@ import logging
 log = logging.getLogger(__name__)
 
 class NewslettersForm(Form):
-    subject             = TextField(u'件名', validators=[
-                              Required(u'入力してください'),
-                              Length(max=60, message=u'60文字以内で入力してください'),
-                          ])
-    description         = TextAreaField(u'本文', validators=[
-                              Required(u'入力してください'),
-                              Length(max=50000, message=u'50000文字以内で入力してください'),
-                          ])
-    type                = SelectField(u'メール種別', validators=[], choices=[
-                              ('text', u'テキスト'),
-                              ('html', u'HTML'),
-                          ], default='text')
-    status              = SelectField(u'状態', validators=[], choices=[
-                              ('editing', u'作成中'),
-                              ('waiting', u'送信予約中'),
-                              ('completed', u'送信完了'),
-                          ], default='editing')
-    subscriber_file     = FileField(u'送信先リスト', validators=[])
-    subscriber_count    = TextField(u'送信件数', validators=[])
-    start_date          = DateField(u'送信日', validators=[Required(u'入力してください')], format='%Y-%m-%d')
-    start_time          = DateTimeField(u'送信時間', validators=[], format='%H:%M')
-    start_on            = DateTimeField(u'送信日時', validators=[], format='%Y-%m-%d %H:%M:%S')
-    created_at          = DateTimeField(u'作成日時')
-    updated_at          = DateTimeField(u'更新日時')
+    id = IntegerField(u'ID')
+    subject = TextField(u'件名', validators=[
+        Required(u'入力してください'),
+        Length(max=60, message=u'60文字以内で入力してください'),
+        ])
+    description = TextAreaField(u'本文', validators=[
+        Required(u'入力してください'),
+        Length(max=50000, message=u'50000文字以内で入力してください'),
+        ])
+    type = SelectField(u'メール種別', validators=[], choices=[
+        ('text', u'テキスト'),
+        ('html', u'HTML'),
+        ], default='text')
+    status = SelectField(u'状態', validators=[], choices=[
+        ('editing', u'作成中'),
+        ('waiting', u'送信予約中'),
+        ('completed', u'送信完了'),
+        ], default='editing')
+    subscriber_file = FileField(u'送信先リスト', validators=[])
+    subscriber_count = TextField(u'送信件数', validators=[])
+    start_date = DateField(u'送信日', validators=[Required(u'入力してください')], format='%Y-%m-%d')
+    start_time = DateTimeField(u'送信時間', validators=[], format='%H:%M')
+    start_on   = DateTimeField(u'送信日時', validators=[], format='%Y-%m-%d %H:%M:%S')
+    created_at = DateTimeField(u'作成日時')
+    updated_at = DateTimeField(u'更新日時')
 
     def __init__(self, *args, **kw):
         if args:

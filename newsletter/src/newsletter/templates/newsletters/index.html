@@ -19,10 +19,10 @@
       <thead>
         <tr>
           <th class="minwidth"></th>
-          <th class="minwidth">ID</th>
+          <th class="minwidth">${self.sortable('id')}</th>
           <th class="span5">${self.sortable('subject')}</th>
           <th class="minwidth">${form.subscriber_file.label.text}</th>
-          <th class="minwidth">${form.subscriber_count.label.text}</th>
+          <th class="minwidth">${self.sortable('subscriber_count')}</th>
           <th class="minwidth">${self.sortable('status')}</th>
           <th class="minwidth">${self.sortable('start_on')}</th>
           <th class="minwidth">${self.sortable('updated_at')}</th>
@@ -44,9 +44,11 @@
           <td>${newsletter.subscriber_count}</td>
           <td>
             % if newsletter.status == 'editing':
-              <span class="label label-important">作成中</span>
+              <span class="label label-primary">作成中</span>
             % elif newsletter.status == 'waiting':
-              <span class="label label-warning">配信予約中</span>
+              <span class="label label-warning">配信予約</span>
+            % elif newsletter.status == 'sending':
+              <span class="label label-important">配信中</span>
             % elif newsletter.status == 'completed':
               <span class="label label-success">配信完了</span>
             % endif

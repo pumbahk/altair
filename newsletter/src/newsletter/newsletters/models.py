@@ -48,6 +48,8 @@ class Newsletter(Base):
         newsletter.created_at = datetime.now()
         newsletter.updated_at = datetime.now()
         session.add(newsletter)
+        session.flush()
+        return newsletter.id
 
     @staticmethod
     def get(id):

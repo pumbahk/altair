@@ -32,25 +32,28 @@ def main(argv=sys.argv):
 
     # configuration
     config = options.config
-    print 'options:', options
     if config is None:
         return
     app = loadapp('config:%s' % config, 'main')
 
+    # mailer setup
     parser = ConfigParser.SafeConfigParser()
     parser.read(config)
-    mailer = Mailer.from_settings(dict(parser.items('mailer')))
-    print 'mailer:', vars(mailer.smtp_mailer)
+    settings = dict(parser.items('mailer'))
+    mailer = Mailer.from_settings(settings)
 
     # send mail magazine
     report = {'success':[], 'fail':[]}
     for newsletter in Newsletter.get_reservations():
-        print 'newsletter:', vars(newsletter)
 
         csv_file = os.path.join(Newsletter.subscriber_dir(), newsletter.subscriber_file())
         if not os.path.exists(csv_file):
             report['fail'].append(newsletter.subject)
             continue
+
+        # update Newsletter.status to 'sending'
+        record = merge_session_with_post(newsletter, {'status':'sending'})
+        Newsletter.update(record)
 
         count = 0
         fields = ['id', 'name', 'email']
@@ -62,13 +65,12 @@ def main(argv=sys.argv):
                 body = newsletter.description.replace('${name}', row['name'])
 
             message = Message(
+                sender = settings['message.sender'],
                 subject = newsletter.subject,
-                sender = "mmatsui@ticketstar.jp",
                 recipients = [row['email']],
                 body = body,
                 html = html,
             )
-            print 'message:', vars(message)
             mailer.send_immediately(message)
             count += 1
 
@@ -80,16 +82,16 @@ def main(argv=sys.argv):
     # report
     body = ''
     for key, subject in report.items():
-        body += '# %s\n%s\n' % (key, '\n'.join(subject))
+        body += '[%s]\n%s\n' % (key, '\n'.join(subject))
 
-    message = Message(
-        subject = 'mail magazine report',
-        sender = "mmatsui@ticketstar.jp",
-        recipients = ['mmatsui@ticketstar.jp'],
-        body = body
-    )
-    print 'report:', vars(message)
-    mailer.send_immediately(message)
+    if report['success'] or report['fail']:
+        message = Message(
+            subject = 'mail magazine report',
+            sender = settings['report.sender'],
+            recipients = [settings['report.recipients']],
+            body = body
+        )
+        mailer.send_immediately(message)
 
 if __name__ == '__main__':
     main()

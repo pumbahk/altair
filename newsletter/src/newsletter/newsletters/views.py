@@ -71,10 +71,10 @@ class Newsletters(BaseView):
 
         if f.validate():
             record = merge_session_with_post(Newsletter(), f.data)
-            Newsletter.add(record)
+            id = Newsletter.add(record)
 
             file = f.subscriber_file.data.file if f.subscriber_file.data != '' else None
-            Newsletter.save_file(1, file)
+            Newsletter.save_file(id, file)
 
             self.request.session.flash(u'メールマガジンを登録しました')
             return HTTPFound(location=route_path('newsletters.index', self.request))
