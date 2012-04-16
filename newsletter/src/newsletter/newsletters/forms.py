@@ -34,6 +34,11 @@ class NewslettersForm(Form):
         ('waiting', u'送信予約中'),
         ('completed', u'送信完了'),
         ], default='editing')
+    sender_address = TextField(u'送信者アドレス', validators=[
+        Required(u'入力してください'),
+        Email(u'正しいメールアドレスを入力してください'),
+        ])
+    sender_name = TextField(u'送信者名', validators=[])
     subscriber_file = FileField(u'送信先リスト', validators=[])
     subscriber_count = TextField(u'送信件数', validators=[])
     start_date = DateField(u'送信日', validators=[Required(u'入力してください')], format='%Y-%m-%d')
@@ -61,7 +66,7 @@ class NewslettersForm(Form):
         Form.__init__(self, *args, **kw)
 
     def process(self, formdata=None, obj=None, **kwargs):
-        if formdata != None and formdata.get('start_on') != None:
+        if formdata is not None and formdata.get('start_on') is not None:
             try:
                 start_on = datetime.strptime(formdata.get('start_on'), '%Y-%m-%d %H:%M:%S')
                 formdata.update({'start_date' : start_on.strftime('%Y-%m-%d')})
@@ -76,7 +81,7 @@ class NewslettersForm(Form):
             raise ValidationError(u'送信先リストが0件なので送信予約できません')
 
     def validate_start_on(form, field):
-        if field.data != None and field.data < datetime.now() and form.status.data != 'completed':
+        if field.data is not None and field.data < datetime.now() and form.status.data != 'completed':
             raise ValidationError(u'過去の日付を指定することはできません')
 
     def validate_subscriber_file(form, field):

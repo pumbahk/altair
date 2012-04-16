@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import csv
 import sys
 import os
@@ -12,6 +14,10 @@ from sqlalchemy.orm import relationship, join, backref, column_property
 import sqlahelper
 session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
+
+from pyramid import threadlocal
+from pyramid_mailer.mailer import Mailer
+from pyramid_mailer.message import Message
 
 from newsletter.utils import StandardEnum
 
@@ -29,6 +35,8 @@ class Newsletter(Base):
     description      = Column(Text())
     type             = Column(String(255))
     status           = Column(String(255))
+    sender_address   = Column(String(255))
+    sender_name      = Column(String(255))
     subscriber_count = Column(BigInteger)
     start_on         = Column(DateTime)
     created_at       = Column(DateTime)
@@ -89,8 +97,34 @@ class Newsletter(Base):
 
     @staticmethod
     def validate_email(email):
-        if email != None and len(email) > 6:
-            if re.match(r'^.+@[^.].*\.[a-z]{2,10}$', email) != None:
+        if email is not None and len(email) > 6:
+            if re.match(r'^.+@[^.].*\.[a-z]{2,10}$', email) is not None:
                 return True
         return False
+
+    @staticmethod
+    def test_mail(id, recipient=None):
+        newsletter = Newsletter.get(id)
+
+        registry = threadlocal.get_current_registry()
+        settings = registry.settings
+        mailer = Mailer.from_settings(settings)
+
+        recipient = recipient if recipient else settings['mail.report.recipients']
+        sender = newsletter.sender_address if newsletter.sender_address else settings['mail.message.sender']
+        body = html = None
+        if newsletter.type == 'html':
+            html = newsletter.description.replace('${name}', u'テスト')
+        else:
+            body = newsletter.description.replace('${name}', u'テスト')
+
+        message = Message(
+            sender = sender,
+            subject = u'【テスト送信】' + newsletter.subject,
+            recipients = [recipient],
+            body = body,
+            html = html,
+        )
+        print vars(message)
+        mailer.send_immediately(message)
 

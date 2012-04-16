@@ -6,10 +6,10 @@
 <%
   if request.matched_route.name == 'newsletters.edit':
     route_name = u'更新'
-    route_url = request.route_url('newsletters.edit', id=newsletter.id)
+    route_path = request.route_path('newsletters.edit', id=newsletter.id)
   else:
     route_name = u'新規作成'
-    route_url = request.route_url('newsletters.new')
+    route_path = request.route_path('newsletters.new')
 %>
 
 <script>
@@ -21,6 +21,7 @@
     $('#description').load(function(){
       $(this).css({width:"600px",height:"400px"});
     }).load();
+    $('[rel=popover]').popover()
   });
 </script>
 
@@ -38,13 +39,41 @@
     </div>
 
     <div class="well">
-      <form class="form-horizontal" action="${route_url}" enctype="multipart/form-data" method="POST">
+      <form class="form-horizontal" action="${route_path}" enctype="multipart/form-data" method="POST">
         <fieldset>
           ${form_item('subject')}
           ${form_item('type')}
-          ${form_item('description')}
-          ${form_item('status')}
-          ${form_item('subscriber_file')}
+          <% help = u'''
+            <span class="help-inline">
+              <a href="#" rel="popover" data-original-title="名前を差し込む" data-content="${name}と書くとメール送信時にCSVファイルのname列の値で置換されます" >
+                <i class="icon-question-sign"></i>
+              </a>
+            </span>
+          ''' %>
+          ${form_item('description', help)}
+          <% help = u'''
+            <span class="help-inline">
+              <a href="#" rel="popover" data-original-title="状態について" data-content="
+                <ul>
+                  <li>作成中  : メールマガジンを編集している間はこの状態にします</li>
+                  <li>送信予約: この状態にすると予約した時間にメール配信が開始されます</li>
+                </ul>
+                ">
+                <i class="icon-question-sign"></i>
+              </a>
+            </span>
+          ''' %>
+          ${form_item('status', help)}
+          ${form_item('sender_address')}
+          ${form_item('sender_name')}
+          <% help = u'''
+            <span class="help-inline">
+              <a href="#" rel="popover" data-original-title="CSVファイルフォーマット" data-content="id, name, email<br>(例) 1, 'なまえ', 'user@example.com'">
+                <i class="icon-question-sign"></i>
+              </a>
+            </span>
+          ''' %>
+          ${form_item('subscriber_file', help)}
           ${form_item('start_date')}
           ${form_item('start_time')}
         </fieldset>
@@ -56,9 +85,9 @@
   </span>
 </div>
 
-<%def name="form_item(key)">
+<%def name="form_item(key, help='')">
   <div class="control-group ${'error' if form[key].errors else ''}">
-    <label class="control-label">${form[key].label.text}</label>
+    <label class="control-label">${help|n} ${form[key].label.text}</label>
     <div class="controls">
       ${form[key]}
       ${validate_errors(form[key])}

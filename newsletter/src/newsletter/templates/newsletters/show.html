@@ -1,6 +1,8 @@
 <%inherit file="../layout.html" />
 <%namespace file="/common/helpers.html" import="flash_messages" />
 <%namespace file="/common/confirm_modal.html" import="delete_modal"/>
+<%namespace file="/common/confirm_modal.html" import="download_modal"/>
+<%namespace file="/common/confirm_modal.html" import="testmail_modal"/>
 
 <script>
   $(function() {
@@ -64,12 +66,24 @@
           </td>
         </tr>
         <tr>
+          <th>${form.sender_address.label}</th>
+          <td>${newsletter.sender_address}</td>
+        </tr>
+        <tr>
+          <th>${form.sender_name.label}</th>
+          <td>${newsletter.sender_name}</td>
+        </tr>
+        <tr>
           <th>${form.subscriber_file.label}</th>
           <td>
             % if newsletter.subscriber_file() is not None:
-              <a href="${request.route_path('newsletters.download', id=newsletter.id)}">
-              <span class="label label-info"><i class="icon-download-alt"></i> ${newsletter.subscriber_file()}</span></a>
+              <a data-controls-modal="download-modal" data-backdrop="true" data-keyboard="true"
+                  href="javascript:$('#download-modal').modal('toggle');"
+                  onclick="$('#download-modal #download').attr('href', '/newsletters/download/${newsletter.id}');">
+                <span class="label label-info"><i class="icon-download-alt"></i> ${newsletter.subscriber_file()}</span>
+              </a>
             % endif
+            ${download_modal(u'送信データファイルをダウンロードします。よろしいですか？')} 
           </td>
         </tr>
         <tr>
@@ -90,6 +104,13 @@
         </tr>
       </tbody>
     </table>
+    <button class="btn">
+      <a data-controls-modal="testmail-modal" data-backdrop="true" data-keyboard="true"
+          href="javascript:$('#testmail-modal').modal('toggle');"
+          onclick="$('#testmail-modal #testmail').attr('action', '/newsletters/test_mail/${newsletter.id}');">テスト送信
+      </a>
+    </button>
+    ${testmail_modal(u'テスト送信します。よろしいですか？')} 
   </span>
 </div>
 

@@ -161,6 +161,15 @@ class Newsletters(BaseView):
 
         return response
 
+    @view_config(route_name='newsletters.test_mail')
+    def test_mail(self):
+        id = int(self.request.matchdict.get('id', 0)) 
+        recipient= self.request.POST.get('recipient')
+        Newsletter.test_mail(id, recipient)
+
+        self.request.session.flash(u'テスト送信しました')
+        return HTTPFound(location=route_path('newsletters.show', self.request, id=id))
+
     @view_config(route_name='newsletters.htmlmail')
     def htmlmail(self):
         id = int(self.request.matchdict.get('id', 0)) 
