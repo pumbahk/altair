@@ -14,6 +14,34 @@ fileConfig(config.config_file_name)
 # add your model's MetaData object here
 # for 'autogenerate' support
 from altaircms import models
+from altaircms.asset import models
+from altaircms.auth import models
+from altaircms.event import models
+from altaircms.layout import models
+from altaircms.page import models
+from altaircms.tag import models
+from altaircms.topcontent import models
+from altaircms.topic import models
+from altaircms.usersetting import models
+from altaircms.widget import models
+# altaircms/widget/tests/models.py
+
+from altaircms.plugins.widget.breadcrumbs import models
+from altaircms.plugins.widget.calendar import models
+from altaircms.plugins.widget.countdown import models
+from altaircms.plugins.widget.detail import models
+from altaircms.plugins.widget.flash import models
+from altaircms.plugins.widget.freetext import models
+from altaircms.plugins.widget.image import models
+from altaircms.plugins.widget.menu import models
+from altaircms.plugins.widget.movie import models
+from altaircms.plugins.widget.performancelist import models
+from altaircms.plugins.widget.reuse import models
+from altaircms.plugins.widget.summary import models
+from altaircms.plugins.widget.ticketlist import models
+from altaircms.plugins.widget.topic import models
+
+from altaircms import models
 target_metadata = models.Base.metadata
 # target_metadata = None
 
