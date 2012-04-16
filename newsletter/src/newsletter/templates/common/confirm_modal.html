@@ -1,1 +1,65 @@
-<%doc>  delete confirm dialog with confirm question</%doc> <%def name="delete_modal(question)">  <div id="delete-modal" class="modal hide fade">    <div class="modal-header">      <a href="#" class="close">&times;</a>      <h3>確認</h3>    </div>    <div class="modal-body">      <p>${question}</p>    </div>    <div class="modal-footer">      <a href="javascript:;" class="btn secondary" onclick="$('#delete-modal').modal('hide')">キャンセル</a>      <a id="delete" href="" class="btn danger">削除</a>    </div>  </div></%def><%doc>  download confirm dialog with confirm question</%doc> <%def name="download_modal(question)">  <div id="download-modal" class="modal hide fade">    <div class="modal-header">      <a href="#" class="close">&times;</a>      <h3>確認</h3>    </div>    <div class="modal-body">      <p>${question}</p>    </div>    <div class="modal-footer">      <a href="javascript:;" class="btn secondary" onclick="$('#download-modal').modal('hide')">キャンセル</a>      <a id="download" href="" class="btn danger" onclick="$('#download-modal').modal('hide')">ダウンロード</a>    </div>  </div></%def><%doc>  test mail confirm dialog with confirm question</%doc> <%def name="testmail_modal(question)">  <div id="testmail-modal" class="modal hide fade">    <div class="modal-header">      <a href="#" class="close">&times;</a>      <h3>確認</h3>    </div>    <form id="testmail" action="" method="POST">      <div class="modal-body">        <p>${question}</p>        <input id="recipient" name="recipient" type="text" placeholder="メールアドレスを入力" value="">      </div>      <div class="modal-footer">        <a href="javascript:;" class="btn secondary" onclick="$('#testmail-modal').modal('hide')">キャンセル</a>        <input class="btn" type="submit" value="送信する">      </div>    </form>  </div></%def>
+<%doc>
+  delete confirm dialog with confirm question
+</%doc> 
+<%def name="delete_modal(question)">
+  <div id="delete-modal" class="modal hide fade">
+    <div class="modal-header">
+      <a href="#" class="close">&times;</a>
+      <h3>確認</h3>
+    </div>
+
+    <div class="modal-body">
+      <p>${question}</p>
+    </div>
+
+    <div class="modal-footer">
+      <a href="javascript:$('#delete-modal').modal('hide');" class="btn secondary">キャンセル</a>
+      <a id="delete" href="" class="btn danger">削除</a>
+    </div>
+  </div>
+</%def>
+
+<%doc>
+  download confirm dialog with confirm question
+</%doc> 
+<%def name="download_modal(question)">
+  <div id="download-modal" class="modal hide fade">
+    <div class="modal-header">
+      <a href="#" class="close">&times;</a>
+      <h3>確認</h3>
+    </div>
+
+    <div class="modal-body">
+      <p>${question}</p>
+    </div>
+
+    <div class="modal-footer">
+      <a href="javascript:$('#download-modal').modal('hide');" class="btn secondary">キャンセル</a>
+      <a id="download" href="javascript:$('#download-modal').modal('hide');" class="btn danger">ダウンロード</a>
+    </div>
+  </div>
+</%def>
+
+<%doc>
+  test mail confirm dialog with confirm question
+</%doc> 
+<%def name="testmail_modal(question)">
+  <div id="testmail-modal" class="modal hide fade">
+    <div class="modal-header">
+      <a href="#" class="close">&times;</a>
+      <h3>確認</h3>
+    </div>
+
+    <form id="testmail" action="" method="POST">
+      <div class="modal-body">
+        <p>${question}</p>
+        <input id="recipient" name="recipient" type="text" placeholder="メールアドレスを入力" value="">
+      </div>
+
+      <div class="modal-footer">
+        <a href="javascript:$('#testmail-modal').modal('hide');" class="btn secondary">キャンセル</a>
+        <input class="btn" type="submit" value="送信する">
+      </div>
+    </form>
+  </div>
+</%def>

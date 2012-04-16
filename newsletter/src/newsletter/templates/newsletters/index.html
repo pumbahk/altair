@@ -4,6 +4,31 @@
 <%namespace file="/common/confirm_modal.html" import="delete_modal"/>
 <%namespace file="/common/confirm_modal.html" import="download_modal"/>
 
+<script>
+  $(function() {
+    $('#delete').click(function(){
+      $('#delete-modal').modal('toggle');
+      $('#delete-modal #delete').attr('href', '/newsletters/delete/' + $('input[name=checked_id]:checked').val());
+    });
+
+    $('#edit').click(function(){
+      $(location).attr('href', '/newsletters/edit/' + $('input[name=checked_id]:checked').val());
+    });
+
+    $('#copy').click(function(){
+      $(location).attr('href', '/newsletters/copy/' + $('input[name=checked_id]:checked').val());
+    });
+  });
+
+  function download(id) {
+    $('#download-modal').modal('toggle');
+    $('#download-modal #download').click(function(){
+      $(location).attr('href', '/newsletters/download/' + id);
+      $('#download-modal').modal('hide');
+    });
+  } 
+</script>
+
 <div class="row-fluid">
   <%include file="_menu.html" />
 
@@ -38,13 +63,10 @@
           <td><a href="${request.route_path('newsletters.show', id=newsletter.id)}">${newsletter.subject}</a></td>
           <td>
             % if newsletter.subscriber_file() is not None:
-              <a data-controls-modal="download-modal" data-backdrop="true" data-keyboard="true"
-                  href="javascript:$('#download-modal').modal('toggle');"
-                  onclick="$('#download-modal #download').attr('href', '/newsletters/download/${newsletter.id}');">
+              <a href="javascript:download(${newsletter.id})" data-controls-modal="download-modal" data-backdrop="true" data-keyboard="true">
                 <span class="label label-info"><i class="icon-download-alt"></i> ${newsletter.subscriber_file()}</span>
               </a>
             % endif
-            ${download_modal(u'送信データファイルをダウンロードします。よろしいですか？')}
           </td>
           <td>${newsletter.subscriber_count}</td>
           <td>
@@ -74,21 +96,19 @@
       <a href="${request.route_path('newsletters.new')}"><i class="icon-plus"></i> 新規</a>
     </button>
     <button class="btn">
-      <a href="javascript:;" onclick="$(location).attr('href', '/newsletters/edit/' + $('input[name=checked_id]:checked').val());">
-      <i class="icon-pencil"></i> 編集</a>
+      <a id="edit"><i class="icon-pencil"></i> 編集</a>
     </button>
-    <a class="btn" data-controls-modal="delete-modal" data-backdrop="true" data-keyboard="true"
-        href="javascript:$('#delete-modal').modal('toggle');"
-        onclick="$('#delete-modal #delete').attr('href', '/newsletters/delete/' + $('input[name=checked_id]:checked').val());">
+    <a id="delete" class="btn" data-controls-modal="delete-modal" data-backdrop="true" data-keyboard="true">
       <i class="icon-minus"></i> 削除
     </a>
     <button class="btn">
-      <a href="javascript:;" onclick="$(location).attr('href', '/newsletters/copy/' + $('input[name=checked_id]:checked').val());">
-      <i class="icon-plus"></i> コピー</a>
+      <a id="copy"><i class="icon-plus"></i> コピー</a>
     </button>
   </div>
-  ${delete_modal(u'選択したメールマガジンを削除します。よろしいですか？')}
 </div>
+
+${download_modal(u'送信データファイルをダウンロードします。よろしいですか？')}
+${delete_modal(u'選択したメールマガジンを削除します。よろしいですか？')}
 
 <%def name="sortable(column)">
   <% column_name = form[column].label.text %>
