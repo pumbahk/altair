@@ -6,7 +6,7 @@
 
 <script>
   $(function() {
-    $('#htmlmail').collapse()
+    $('#html_mail').collapse()
   });
 </script>
 
@@ -38,12 +38,12 @@
             % if newsletter.type == 'text':
               ${newsletter.description.replace("\n", "<br />")|n}
             % elif newsletter.type == 'html':
-              <a class="btn btn-info" data-toggle="collapse" data-target="#htmlmail">
+              <a class="btn btn-info" data-toggle="collapse" data-target="#html_mail">
                 HTMLメール本文
               </a>
-              <div id="htmlmail" class="collapse in">
+              <div id="html_mail" class="collapse in">
                 <div class="thumbnail">
-                  <iframe src="${request.route_path('newsletters.htmlmail', id=newsletter.id)}"
+                  <iframe src="${request.route_path('newsletters.html_mail', id=newsletter.id)}"
                           width=100% height=600 border=0 frameborder=0>
                   </iframe>
                 </div>

@@ -9,5 +9,5 @@ def includeme(config):
     config.add_route('newsletters.delete' ,'/delete/{id}')
     config.add_route('newsletters.download' ,'/download/{id}')
     config.add_route('newsletters.test_mail' ,'/test_mail/{id}')
-    config.add_route('newsletters.htmlmail', '/htmlmail/{id}')
+    config.add_route('newsletters.html_mail', '/html_mail/{id}')
 

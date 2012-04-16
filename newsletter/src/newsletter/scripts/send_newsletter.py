@@ -37,9 +37,9 @@ def main(argv=sys.argv):
     settings = app.registry.settings
     mailer = Mailer.from_settings(settings)
 
+    # send mail magazine
     report = {'success':[], 'fail':[]}
     for newsletter in Newsletter.get_reservations():
-
         csv_file = os.path.join(Newsletter.subscriber_dir(), newsletter.subscriber_file())
         if not os.path.exists(csv_file):
             report['fail'].append(newsletter.subject)
@@ -49,25 +49,9 @@ def main(argv=sys.argv):
         record = merge_session_with_post(newsletter, {'status':'sending'})
         Newsletter.update(record)
 
-        # send mail magazine
-        sender = newsletter.sender_address if newsletter.sender_address else settings['mail.message.sender']
-        body = html = None
-        if newsletter.type == 'html':
-            html = newsletter.description.replace('${name}', row['name'])
-        else:
-            body = newsletter.description.replace('${name}', row['name'])
-
         count = 0
-        fields = ['id', 'name', 'email']
-        for row in csv.DictReader(open(csv_file), fields):
-            message = Message(
-                sender = sender,
-                subject = newsletter.subject,
-                recipients = [row['email']],
-                body = body,
-                html = html,
-            )
-            mailer.send_immediately(message)
+        for row in csv.DictReader(open(csv_file), Newsletter.csv_fields):
+            newsletter.send(recipient=row['email'], name=row['name'])
             count += 1
 
         # update Newsletter.status to 'completed'

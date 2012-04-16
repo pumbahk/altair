@@ -42,6 +42,8 @@ class Newsletter(Base):
     created_at       = Column(DateTime)
     updated_at       = Column(DateTime)
 
+    csv_fields = ('id', 'name', 'email')
+
     def subscriber_file(self):
         fname = 'altair' + str(self.id) + '.csv'
         csv_file = os.path.join(Newsletter.subscriber_dir(), fname)
@@ -90,9 +92,8 @@ class Newsletter(Base):
             if not os.path.isdir(csv_dir):
                 os.mkdir(csv_dir)
 
-            fields = ['id', 'name', 'email']
-            csv_file = csv.DictWriter(open(os.path.join(csv_dir, 'altair' + str(id) + '.csv'), 'w'), fields)
-            for row in csv.DictReader(file, fields):
+            csv_file = csv.DictWriter(open(os.path.join(csv_dir, 'altair' + str(id) + '.csv'), 'w'), Newsletter.csv_fields)
+            for row in csv.DictReader(file, Newsletter.csv_fields):
                 if Newsletter.validate_email(row['email']): csv_file.writerow(row)
 
     @staticmethod
@@ -102,29 +103,51 @@ class Newsletter(Base):
                 return True
         return False
 
-    @staticmethod
-    def test_mail(id, recipient=None):
-        newsletter = Newsletter.get(id)
+    def test_mail(self, recipient=None):
+        subject = u'【テスト送信】' + self.subject
+        self.send(recipient=recipient, name=u'テスト', subject=subject)
 
+    def send(self, **options):
         registry = threadlocal.get_current_registry()
         settings = registry.settings
         mailer = Mailer.from_settings(settings)
 
-        recipient = recipient if recipient else settings['mail.report.recipients']
-        sender = newsletter.sender_address if newsletter.sender_address else settings['mail.message.sender']
-        body = html = None
-        if newsletter.type == 'html':
-            html = newsletter.description.replace('${name}', u'テスト')
+        # sender
+        if self.sender_address:
+            if self.sender_name:
+                sender = '%s <%s>' % (self.sender_name, self.sender_address)
+            else:
+                sender = self.sender_address
         else:
-            body = newsletter.description.replace('${name}', u'テスト')
+            sender = settings['mail.message.sender']
+
+        # recipient
+        if 'recipient' in options:
+            recipient = options['recipient']
+        else:
+            recipient = settings['mail.report.recipients']
+
+        # body, html
+        description = self.description.replace('${name}', options['name'])
+        body = html = None
+        if self.type == 'html':
+            html = description
+        else:
+            body = description
+
+        # subject
+        if 'subject' in options:
+            subject = options['subject']
+        else:
+            subject = self.subject
+        subject = subject.replace('${name}', options['name'])
 
         message = Message(
             sender = sender,
-            subject = u'【テスト送信】' + newsletter.subject,
+            subject = subject,
             recipients = [recipient],
             body = body,
             html = html,
         )
-        print vars(message)
         mailer.send_immediately(message)
 

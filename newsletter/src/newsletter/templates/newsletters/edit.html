@@ -41,6 +41,9 @@
     <div class="well">
       <form class="form-horizontal" action="${route_path}" enctype="multipart/form-data" method="POST">
         <fieldset>
+          % if request.matched_route.name == 'newsletters.edit':
+            <input id="id" name="id" type="hidden" value="${newsletter.id}">
+          % endif
           ${form_item('subject')}
           ${form_item('type')}
           <% help = u'''

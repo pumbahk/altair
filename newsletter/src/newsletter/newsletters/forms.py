@@ -41,7 +41,9 @@ class NewslettersForm(Form):
     sender_name = TextField(u'送信者名', validators=[])
     subscriber_file = FileField(u'送信先リスト', validators=[])
     subscriber_count = TextField(u'送信件数', validators=[])
-    start_date = DateField(u'送信日', validators=[Required(u'入力してください')], format='%Y-%m-%d')
+    start_date = DateField(u'送信日', validators=[
+        Required(u'入力してください')
+        ], format='%Y-%m-%d')
     start_time = DateTimeField(u'送信時間', validators=[], format='%H:%M')
     start_on   = DateTimeField(u'送信日時', validators=[], format='%Y-%m-%d %H:%M:%S')
     created_at = DateTimeField(u'作成日時')
@@ -56,11 +58,17 @@ class NewslettersForm(Form):
             subscriber_file = args[0].get('subscriber_file')
             count = 0 
             if hasattr(subscriber_file, 'file'):
-                fields = ['id', 'name', 'email']
-                for row in csv.DictReader(subscriber_file.file, fields):
+                for row in csv.DictReader(subscriber_file.file, Newsletter.csv_fields):
                     if Newsletter.validate_email(row['email']): count += 1
                 else:
                     subscriber_file.file.seek(0)
+            elif 'id' in args[0]:
+                newsletter = Newsletter.get(args[0].get('id'))
+                csv_file = os.path.join(Newsletter.subscriber_dir(), newsletter.subscriber_file())
+                if os.path.exists(csv_file):
+                    for row in csv.DictReader(open(csv_file), Newsletter.csv_fields):
+                        count += 1
+
             args[0].add('subscriber_count', str(count))
 
         Form.__init__(self, *args, **kw)
@@ -86,9 +94,8 @@ class NewslettersForm(Form):
 
     def validate_subscriber_file(form, field):
         if hasattr(field.data, 'file'):
-            fields = ['id', 'name', 'email']
-            for row in csv.DictReader(field.data.file, fields):
-                if not row['id'].isdigit() or len(row['name']) == 0 or not Newsletter.validate_email(row['email']):
+            for row in csv.DictReader(field.data.file, Newsletter.csv_fields):
+                if not Newsletter.validate_email(row['email']):
                     raise ValidationError(u'CSVデータが不正です')
             else:
                 field.data.file.seek(0)
