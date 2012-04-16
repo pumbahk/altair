@@ -2,8 +2,9 @@
 <html>
   <head>
     <title><%block name="fulltitle">Altair Backend</%block></title>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0, minimum-scale=1.0" />
+    <meta charset="UTF-8">
     <link rel="shortcut icon" href="/static/favicon.ico">
     <style>
           body {
@@ -34,6 +35,7 @@
       $(document).ready(function() {
             $().dropdown();
             <%block name="jquery"/>
+                  setTimeout(scrollTo, 100, 0, 1);
       });
     </script>
     <%block name="js_foot"/>
