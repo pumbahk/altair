@@ -53,7 +53,7 @@ def _initTestingDB():
     DBSession.remove()
     from altaircms.models import initialize_sql
     engine = create_engine('sqlite:///:memory:')
-    engine.echo = True
+    # engine.echo = True
     import sqlahelper
 
     sqlahelper.add_engine(engine)

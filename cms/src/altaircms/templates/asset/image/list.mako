@@ -1,18 +1,14 @@
-<%inherit file='../layout_2col.mako'/>
-<%namespace name="fco" file="../formcomponents.mako"/>
+<%inherit file='../../layout_2col.mako'/>
+<%namespace name="fco" file="../../formcomponents.mako"/>
 
-<h2>asset</h2>
+<h2>image asset</h2>
 
 <div class="row">
   <ul class="nav nav-tabs">
 	<li><a href="${request.route_path("asset_list")}">all</a></li>
-    % for k in ("image", "movie", "flash"):
-      % if asset_type == k:
-    	<li class="active"><a href="${request.route_path("asset_sub_list", asset_type=k)}">${k}</a></li>
-      % else:
-      	<li><a href="${request.route_path("asset_sub_list", asset_type=k)}">${k}</a></li>
-      % endif
-    % endfor
+    <li class="active"><a href="${request.route_path("asset_image_list")}">image</a></li>
+  	<li><a href="${request.route_path("asset_movie_list")}">movie</a></li>
+   	<li><a href="${request.route_path("asset_flash_list")}">flash</a></li>
   </ul>
 </div>
 
@@ -20,7 +16,7 @@
   <h4>アセットの追加</h4>
 
   <div class="span6">
-	<form action="${request.route_path("asset_create", asset_type=form.type)}" method="POST" enctype="multipart/form-data">
+	<form action="${request.route_path("asset_image_create")}" method="POST" enctype="multipart/form-data">
       ${fco.formfield(form, "filepath")}
       ${fco.formfield(form, "tags")}
       ${fco.formfield(form, "private_tags")}
@@ -36,7 +32,7 @@
             <tr>
                 <td>${asset.created_at}</td>
                 <td>${asset.discriminator}</td>
-                <td><a href="${request.route_path("asset_view", asset_id=asset.id)}">${asset}</a></td>
+                <td><a href="${request.route_path("asset_image_detail", asset_id=asset.id)}">${asset}</a></td>
             </tr>
             %endfor
     </tbody>

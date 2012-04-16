@@ -28,10 +28,13 @@ class PageForm(Form):
     keywords = fields.TextField()
     tags = fields.TextField(label=u"タグ")
     private_tags = fields.TextField(label=u"非公開タグ")
-    layout = dynamic_query_select_field_factory(Layout, allow_blank=False)
+    layout = dynamic_query_select_field_factory(Layout, allow_blank=False, 
+                                                get_label=lambda obj: u"%s(%s)" % (obj.title, obj.template_filename))
     # event_id = fields.IntegerField(label=u"", widget=widgets.HiddenInput())
-    event = dynamic_query_select_field_factory(Event, allow_blank=True, label=u"イベント")
-    parent = dynamic_query_select_field_factory(Page, allow_blank=True, label=u"親ページ")
+    event = dynamic_query_select_field_factory(Event, allow_blank=True, label=u"イベント", 
+                                               get_label=lambda obj:  obj.title)
+    parent = dynamic_query_select_field_factory(Page, allow_blank=True, label=u"親ページ", 
+                                                get_label=lambda obj:  u'%s(%s)' % (obj.title, obj.url))
 
 @implementer(IForm)
 class PageUpdateForm(Form):
@@ -42,8 +45,12 @@ class PageUpdateForm(Form):
     keywords = fields.TextField()
     tags = fields.TextField(label=u"タグ")
     private_tags = fields.TextField(label=u"非公開タグ")
-    layout = dynamic_query_select_field_factory(Layout, allow_blank=False)
-    # event_id = fields.IntegerField(label=u"", widget=widgets.HiddenInput())
-    event = dynamic_query_select_field_factory(Event, allow_blank=True, label=u"イベント")
-    parent = dynamic_query_select_field_factory(Page, allow_blank=True, label=u"親ページ")
+    layout = dynamic_query_select_field_factory(Layout, allow_blank=False, 
+                                                get_label=lambda obj: u"%s(%s)" % (obj.title, obj.template_filename))
+    event = dynamic_query_select_field_factory(Event, allow_blank=True, label=u"イベント", 
+                                               get_label=lambda obj:  obj.title)
+    parent = dynamic_query_select_field_factory(Page, allow_blank=True, label=u"親ページ", 
+                                                get_label=lambda obj:  u'%s(%s)' % (obj.title, obj.url))
+
+
 

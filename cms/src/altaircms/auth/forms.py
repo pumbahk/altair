@@ -1,6 +1,7 @@
 # coding: utf-8
 from wtforms.form import Form
 from wtforms import fields, widgets, validators
+from wtforms.ext.sqlalchemy import fields as sa_fields
 
 from altaircms.auth.models import Permission
 from altaircms.models import DBSession
@@ -17,8 +18,8 @@ class APIKeyForm(Form):
     )
 
 class RoleForm(Form):
-    permission = fields.SelectField(
-        choices=DBSession.query(Permission.id, Permission.name),
+    permission = sa_fields.QuerySelectField(
+        query_factory=lambda: Permission.query,
+        get_label=lambda p: p.name,
         validators=[validators.Required()],
-        coerce=int
     )

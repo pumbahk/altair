@@ -1,6 +1,5 @@
 import struct
 import zlib
-import itertools
 
 class bitstream(object):
     def __init__(self, buf):
@@ -20,9 +19,6 @@ class bitstream(object):
         return retval
 
 def get_swf_rect(swf):
-    if isinstance(swf, basestring):
-        swf = open(swf)
-
     data = swf.read()
 
     signature, version, size = struct.unpack('<3s1b1I', data[0:8])
@@ -31,7 +27,7 @@ def get_swf_rect(swf):
     else:
         body = data[8:]
     if size != len(body) + 8:
-        raise "invalid format"
+        raise Exception("invalid format")
     bs = bitstream(body)
     nbits = bs.fetch(5)
     return (bs.fetch(nbits), bs.fetch(nbits), bs.fetch(nbits), bs.fetch(nbits))
@@ -42,6 +38,9 @@ def rect_to_size(rect):
 def in_pixel(values):
     return tuple((value / 20 for value in values))
 
-if __name__ == '__main__':
-    import sys
-    print in_pixel(rect_to_size(get_swf_rect(sys.argv[1])))
+def swf_width_and_height(flashio):
+    return in_pixel(rect_to_size(get_swf_rect(flashio)))
+
+# if __name__ == '__main__':
+#     import sys
+#     print in_pixel(rect_to_size(get_swf_rect(sys.argv[1])))

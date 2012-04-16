@@ -12,7 +12,7 @@ from altaircms.page.models import Page
 from altaircms.event.models import Event
 
 
-import altaircms.lib.treat.api as treat
+import altaircms.tag.api as tag
 from altaircms.page.mappers import PageMapper, PagesMapper
 
 from altaircms.lib.fanstatic_decorator import with_bootstrap
@@ -26,7 +26,7 @@ import altaircms.helpers as h
 ##
 
 @view_defaults(route_name="page_add", decorator=with_bootstrap.merge(with_jquery))
-class AddView(object):
+class PageAddView(object):
     """ eventの中でeventに紐ついたpageの作成
     """
     def __init__(self, context, request):
@@ -45,7 +45,7 @@ class AddView(object):
     def create_page(self):
         form = forms.PageForm(self.request.POST)
         if form.validate():
-            page = treat.get_creator(form, "page", request=self.request).create()
+            page = self.context.crate_page(form)
             self.context.add(page)
             ## flash messsage
             FlashMessage.success("page created", request=self.request)
@@ -60,7 +60,7 @@ class AddView(object):
             )
 
 @view_defaults(permission="page_create", decorator=with_bootstrap)
-class CreateView(object):
+class PageCreateView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
@@ -69,7 +69,7 @@ class CreateView(object):
     def create(self):
         form = forms.PageForm(self.request.POST)
         if form.validate():
-            page = treat.get_creator(form, "page", request=self.request).create()
+            page = self.context.crate_page(form)
             self.context.add(page)
             ## flash messsage
             FlashMessage.success("page created", request=self.request)
@@ -97,7 +97,7 @@ class CreateView(object):
         return HTTPFound(self.request.route_path("page"))
 
 @view_defaults(route_name="page_delete", permission="page_delete", decorator=with_bootstrap)
-class DeleteView(object):
+class PageDeleteView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
@@ -133,7 +133,7 @@ def _input(request):
         )
 
 @view_defaults(route_name="page_update", permission="page_update", decorator=with_bootstrap)
-class UpdateView(object):
+class PageUpdateView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
@@ -147,8 +147,8 @@ class UpdateView(object):
         id_ = self.request.matchdict['id']
         page = self.context.get_page(id_)
         params = page.to_dict()
-        params["tags"] = u', '.join(tag.label for tag in page.public_tags)
-        params["private_tags"] = u', '.join([tag.label for tag in page.private_tags])
+        params["tags"] = tag.tags_to_string(page.public_tags)
+        params["private_tags"] = tag.tags_to_string(page.private_tags)
         form = forms.PageUpdateForm(**params)
         return self._input_page(page, form)
 
@@ -168,7 +168,7 @@ class UpdateView(object):
         page = self.context.get_page( self.request.matchdict['id'])
         form = forms.PageUpdateForm(self.request.POST)
         if form.validate():
-            page = treat.get_updater(form, "page", request=self.request).update(page)
+            page = self.context.update_page(page, form)
             self.context.add(page)
             ## flash messsage
             FlashMessage.success("page updated", request=self.request)

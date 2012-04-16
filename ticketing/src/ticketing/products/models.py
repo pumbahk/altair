@@ -6,6 +6,8 @@ import sqlahelper
 session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
 
+from ticketing.utils import StandardEnum
+
 from ticketing.venues.models import SeatMasterL2
 from ticketing.events.models import Account, Event
 
@@ -121,7 +123,6 @@ class ProductItem(Base):
     product_id = Column(BigInteger, ForeignKey('Product.id'))
     product = relationship('Product', uselist=False)
 
-    price = Column(BigInteger)
     item_type = Column(Integer)
 
     performance_id = Column(BigInteger, ForeignKey('Performance.id'))
@@ -131,12 +132,17 @@ class ProductItem(Base):
     seat_type_id = Column(BigInteger, ForeignKey('SeatType.id'))
     seat_type = relationship('SeatType', uselist=False)
 
-    product_id = Column(BigInteger, ForeignKey('Product.id'))
-    product = relationship('Product', uselist=False)
-
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
     status = Column(Integer)
+
+    def get_for_update(self):
+        self.stock = Stock.get_for_update(self.performance_id, self.seat_type_id)
+        if self.stock != None:
+            self.seatStock = SeatStock.get_for_update(self.stock.id)
+            return self.seatStock
+        else:
+            return None
 
 class StockHolder(Base):
     __tablename__ = "StockHolder"
@@ -161,8 +167,8 @@ class Stock(Base):
 
     performance_id = Column(BigInteger, ForeignKey('Performance.id'))
     performance = relationship('Performance', uselist=False)
-    stock_folder_id = Column(BigInteger, ForeignKey('StockHolder.id'))
-    stock_folder = relationship('StockHolder', uselist=False)
+    stock_holder_id = Column(BigInteger, ForeignKey('StockHolder.id'))
+    stock_holder = relationship('StockHolder', uselist=False)
 
     seat_type_id = Column(BigInteger, ForeignKey('SeatType.id'))
     seat_type = relationship('SeatType', uselist=False)
@@ -175,15 +181,24 @@ class Stock(Base):
 
     @staticmethod
     def get_for_update(pid, stid):
-        return session.query(Stock).with_lockmode("update").filter(Stock.performance_id==pid, Stock.seat_type_id==stid).first()
+        return session.query(Stock).with_lockmode("update").filter(Stock.performance_id==pid, Stock.seat_type_id==stid, Stock.quantity>0).first()
+
+class SeatStatusEnum(StandardEnum):
+    Vacant = 1
+    InCart = 2
+    Ordered = 3
+    Confirmed = 4
+    Shipped = 5
+    Canceled = 6
+    Reserved = 7
 
 # stock based on phisical seat positions
 class SeatStock(Base):
     __tablename__ = "SeatStock"
     id = Column(BigInteger, primary_key=True)
 
-    stock = Column(BigInteger, ForeignKey('Stock.id'))
-    stock_id = relationship('Stock', uselist=False, backref="seatStocks")
+    stock_id = Column(BigInteger, ForeignKey('Stock.id'))
+    stock = relationship('Stock', uselist=False)
 
     seat_id = Column(BigInteger, ForeignKey("SeatMasterL2.seat_id"))
     seat = relationship('SeatMasterL2', uselist=False, backref="seat_stock_id") # 1:1
@@ -192,6 +207,10 @@ class SeatStock(Base):
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
     status = Column(Integer)
+
+    @staticmethod
+    def get_for_update(stock_id):
+        return session.query(SeatStock).with_lockmode("update").filter(SeatStock.stock_id==stock_id, SeatStock.status==SeatStatusEnum.Vacant.v).first()
 
     # @TODO
     @staticmethod
@@ -220,10 +239,36 @@ class Product(Base):
     name = Column(String(255))
     price = Column(BigInteger)
 
-
-
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
     status = Column(Integer)
 
     items = relationship('ProductItem')
+
+    def get_for_update(self):
+        for item in self.items:
+            if item.get_for_update() == None:
+                return False
+        return True
+
+    def get_out_cart(self):
+        if self.get_for_update() == False:
+            return False
+        for item in self.items:
+            item.stock.quantity += 1
+            item.seatStock.status = SeatStatusEnum.Vacant.v
+        session.flush()
+        return True
+
+    def put_in_cart(self):
+        if self.get_for_update() == False:
+            return False
+        for item in self.items:
+            item.stock.quantity -= 1
+            item.seatStock.status = SeatStatusEnum.InCart.v
+        session.flush()
+        return True
+
+    @staticmethod
+    def get(product_id):
+        return session.query(Product).filter(Product.id==product_id).first()

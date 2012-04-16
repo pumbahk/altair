@@ -33,9 +33,3 @@ class Event(BaseOriginalMixin, Base):
 
     client_id = sa.Column(sa.Integer, sa.ForeignKey("client.id"))
 
-    def __unicode__(self):
-        return self.title
-
-    def __html__(self):
-        return self.title
-

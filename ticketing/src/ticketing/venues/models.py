@@ -77,8 +77,9 @@ class SeatMasterL2(Base):
     seat_type_id = Column(BigInteger, ForeignKey('SeatType.id'))
     seat_type = relationship('SeatType', uselist=False)
     seat_id = Column(BigInteger, ForeignKey('SeatMaster.id'))
+    seat = relationship('SeatMaster', uselist=False)
     # @TODO have some attributes regarding Layer2
-    venue_id = Column(BigInteger)
+    #venue_id = Column(BigInteger)
 
     updated_at = Column(DateTime)
     created_at = Column(DateTime)

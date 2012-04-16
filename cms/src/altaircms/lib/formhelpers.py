@@ -86,7 +86,26 @@ class DynamicQueryDefault(object):
         qs = cls._filter_by_site(info, info.qs, info.request)
         from altaircms.widget.models import WidgetDisposition
         field.query = WidgetDisposition.enable_only_query(info.request.user, qs=qs)
-        
+
+
+class myQuerySelectField(extfields.QuerySelectField):
+    """ wtformsのfieldではdataのNoneの場合、常にblankが初期値として設定されてしまっていた。
+    　　それへの対応
+    """
+    def iter_choices(self):
+        if self.allow_blank:
+            yield (u'__None', self.blank_text, False)
+
+        for pk, obj in self._get_object_list():
+            status = self._get_selected_status(obj, self.data)
+            yield (pk, self.get_label(obj), status)
+
+    def _get_selected_status(self, obj, data):
+        if data is None:
+            return obj == data
+        else:
+            return obj.id == data.id or obj == data
+
 def dynamic_query_select_field_factory(model, dynamic_query_factory=None, factory_name=None, **kwargs):
     """
     dynamic_query_factory: lambda field, form=None, rendering_val=None, request=None : ...
@@ -104,7 +123,7 @@ def dynamic_query_select_field_factory(model, dynamic_query_factory=None, factor
         kwargs["query_factory"] = _query_factory
     factory_name = factory_name or model.__name__.lower()
 
-    field = extfields.QuerySelectField(**kwargs)
+    field = myQuerySelectField(**kwargs)
     field._dynamic_query = DynamicQueryChoicesDispatcher.dispatch(
         factory_name, 
         dynamic_query_factory)

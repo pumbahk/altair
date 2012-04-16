@@ -30,7 +30,7 @@ def block(message):
 here = os.path.abspath(os.path.dirname(__file__))
 
 def _image_asset():
-    from altaircms.asset.treat import create_asset
+    from altaircms.asset.helpers import create_asset
     fname = os.path.join(here, "data/original5.image.jpg")
     captured = dict(type="image", 
                     uploadfile=dict(filename=fname, 

@@ -114,57 +114,6 @@ class OAuthLogin(object):
 
 
 
-"""
-__all__ = [
-    'login',
-    'logout'
-]
-
-@view_config(name='login', renderer='altaircms:templates/login.mako')
-@view_config(context='pyramid.httpexceptions.HTTPForbidden', renderer='altaircms:templates/login.mako')
-def login(request):
-    login_url = request.resource_url(request.context, 'login')
-    referrer = request.url
-
-    if referrer == login_url:
-        referrer = '/' # never use the login form itself as came_from
-
-    came_from = request.params.get('came_from', referrer)
-    message = ''
-    login = ''
-    password = ''
-
-    if 'form.submitted' in request.params:
-        login = request.params['login']
-        password = request.params['password']
-        if USERS.get(login) == password:
-            headers = remember(request, login)
-            return HTTPFound(location = came_from, headers = headers)
-        message = 'Failed login'
-
-    return dict(
-        message = message,
-        url = request.application_url + '/login',
-        came_from = came_from,
-        login = login,
-        password = password,
-        logged_in = authenticated_userid(request)
-    )
-
-
-@view_config(context='velruse.api.AuthenticationComplete', renderer='json')
-def auth_complete_view(context, request):
-    return {
-        'profile': context.profile,
-        'credentials': context.credentials,
-        }
-
-
-@view_config(context='velruse.exceptions.AuthenticationDenied', renderer='json')
-def auth_denied_view(context, request):
-    return context.args
-"""
-
 @view_defaults(decorator=with_bootstrap)
 class OperatorView(object):
     def __init__(self, request):
@@ -233,9 +182,10 @@ class RoleView(object):
         if self.request.method == "POST":
             form = RoleForm(self.request.POST)
             if form.validate():
-                perm = Permission(id=form.data.get('permission'))
+                perm = form.data.get('permission')
                 DBSession.add(RolePermission(role_id=self.id, permission_id=perm.id))
-                return HTTPFound(self.request.route_path('role', id=self.id))
+                
+                return HTTPFound(location=self.request.route_path('role', id=self.id))
         else:
             form = RoleForm()
         return dict(
@@ -259,17 +209,11 @@ class RolePermissionAPI(BaseRESTAPI):
 class RolePermissionView(object):
     def __init__(self, request):
         self.request = request
-        self.role_id = request.matchdict.get('role_id', None)
-        self.role_permission_id = request.matchdict.get('id', None)
-        if self.role_id:
-            self.role = RoleAPI(self.request, self.role_id).read()
-        if self.role_permission_id:
-            self.role_permission = DBSession.query(RolePermission).filter_by(role_id=self.role_id, permission_id=self.role_permission_id).one()
 
     def create(self):
         pass
 
-    @view_config(route_name='role_permission_list', request_method="GET")
+    @view_config(route_name='role_permission_list', request_method="GET", renderer="string") # deprecated? とりあえず string rendererつけとく
     def read(self):
         return dict(
             permissions=DBSession.query(RolePermission)
@@ -280,8 +224,9 @@ class RolePermissionView(object):
 
     @view_config(route_name='role_permission', request_method="POST", request_param="_method=delete")
     def delete(self):
-        try:
-            DBSession.delete(self.role_permission)
-        except:
-            raise
-        return HTTPFound(self.request.route_path("role", id=self.role.id))
+        role_id = self.request.matchdict.get('role_id', None)
+        role_permission_id = self.request.matchdict.get('id', None)
+
+        RolePermission.query.filter_by(role_id=role_id, permission_id=role_permission_id).delete()
+
+        return HTTPFound(self.request.route_path("role", id=role_id))

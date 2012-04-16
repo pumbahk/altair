@@ -2,16 +2,21 @@
 
 ##
 #NoDB
+from altaircms.models import DBSession
 
 import unittest
-from altaircms.models import DBSession
-from altaircms.models import Base
 from models import ImageWidget
 
+config  = None
 def setUpModule():
-    DBSession.remove()
-    from altaircms.lib.testutils import create_db
-    create_db(base=Base, session=DBSession, force=False)
+    global config
+    from altaircms.lib import testutils
+    testutils.create_db(force=False)
+    config = testutils.config()
+
+def tearDownModule():
+    from pyramid.testing import tearDown
+    tearDown()
 
 class WidgetCloneTest(unittest.TestCase):
     """ widgetのcloneのテスト
@@ -19,9 +24,6 @@ class WidgetCloneTest(unittest.TestCase):
     def _makeAsset(self, id=None):
         from altaircms.asset.models import ImageAsset
         return ImageAsset.from_dict({"id": id, "filepath": "test.jpg"})
-
-    def setUp(self):
-        self._getSession().remove()
 
     def tearDown(self):
         import transaction
