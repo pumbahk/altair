@@ -9,6 +9,8 @@ class NewsletterData(DataSet):
         description      = 'foo ${name} bar ${name}'
         type             = 'html'
         status           = 'waiting'
+        sender_address   = 'mmatsui@ticketstar.jp'
+        sender_name      = '送信者名'
         subscriber_count = 1
         start_on         = datetime(2012,4,1,19,0)
         created_at       = datetime.now()
@@ -18,6 +20,8 @@ class NewsletterData(DataSet):
         description      = 'foo ${name} bar ${name}'
         type             = 'text'
         status           = 'completed'
+        sender_address   = 'mmatsui@ticketstar.jp'
+        sender_name      = ''
         subscriber_count = 2
         start_on         = datetime(2012,8,1,19,0)
         created_at       = datetime.now()

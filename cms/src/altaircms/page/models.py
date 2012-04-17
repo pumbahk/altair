@@ -103,9 +103,6 @@ class Page(PublishUnpublishMixin,
     # def __repr__(self):
     #     return unicode(self.title)
 
-    def __unicode__(self):
-        return u'%s(%s)' % (self.title, self.url)
-
     def has_widgets(self):
         return self.structure != self.DEFAULT_STRUCTURE
 

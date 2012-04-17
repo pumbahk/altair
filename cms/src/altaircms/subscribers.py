@@ -37,3 +37,4 @@ def add_choices_query_refinement(event): #todo:refactoring
             dynamic_query = getattr(getattr(form_class, k), "_dynamic_query", None)
             if dynamic_query:
                 dynamic_query(v, form=form, rendering_val=rendering_val, request=request)
+

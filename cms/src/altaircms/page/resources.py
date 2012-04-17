@@ -4,10 +4,14 @@ from altaircms.layout.models import Layout
 import altaircms.widget.forms as wf
 import altaircms.security as security
 from altaircms.layout import renderable
-from . import models
-from altaircms.widget.models import WidgetDisposition
 
-class ForDispositionMixin(object):
+from altaircms.widget.models import WidgetDisposition
+from altaircms.tag.api import put_tags
+
+from . import helpers as h
+from . import models
+
+class PageResource(security.RootFactory):
     def get_confirmed_form(self, postdata):
         form = wf.WidgetDispositionSaveForm(postdata)
         return form
@@ -46,7 +50,6 @@ class ForDispositionMixin(object):
         wdisposition.delete_widgets()
         self.delete(wdisposition)
         
-class ForPageMixin(object):
     def get_layout_render(self, page):
         layout = DBSession.query(Layout).filter_by(id=page.layout_id).one()
         return renderable.LayoutRender(layout)
@@ -54,12 +57,21 @@ class ForPageMixin(object):
     def get_page(self, page_id):
         return models.Page.query.filter(models.Page.id==page_id).one()
 
+    def crate_page(self, form):
+        tags, private_tags, params =  h.divide_data(form.data)
+        page = models.Page.from_dict(params)
+        put_tags(page, "page", tags, private_tags, self.request)
+        return page
+
+    def update_page(self, page, form):
+        tags, private_tags, params =  h.divide_data(form.data)
+        for k, v in params.iteritems():
+            setattr(page, k, v)
+        put_tags(page, "page", tags, private_tags, self.request)
+        return page
+
     def page_clone(self, page):
         return page.clone(DBSession)
-
-class PageResource(ForPageMixin, 
-                   ForDispositionMixin, 
-                   security.RootFactory):
 
     def add(self, data, flush=False):
         DBSession.add(data)

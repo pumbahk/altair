@@ -1,81 +1,267 @@
 # coding: utf-8
 import os
+
 from altaircms.lib.viewhelpers import FlashMessage
-from pyramid.exceptions import NotFound
-from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import (
+    HTTPFound
+)
 from pyramid.response import Response
-from pyramid.view import view_config
-from pyramid.view import view_defaults
+from pyramid.view import (
+    view_config, 
+    view_defaults
+)
 from altaircms.lib.fanstatic_decorator import with_bootstrap
-import altaircms.lib.treat.api as treat
+from . import helpers as h
 
-@view_config(route_name="asset_list", renderer="altaircms:templates/asset/list.mako", 
-             decorator=with_bootstrap)
-def list(request):
-    assets = request.context.get_assets()
-    form_list = request.context.get_form_list()
-    return {"assets": assets, "form_list": form_list}
+@view_defaults(permission="asset_read", decorator=with_bootstrap)
+class AssetListView(object):
+    def __init__(self, request):
+        self.request = request
+        self.context = request.context
 
-@view_config(route_name="asset_sub_list", renderer="altaircms:templates/asset/sub_list.mako", 
-             decorator=with_bootstrap)
-def sub_list(request):
-    asset_type = request.matchdict["asset_type"]
-    assets = request.context.get_assets(asset_type)
-    form = request.context.get_form(asset_type)
-    return {"assets": assets, "form": form, "asset_type": asset_type}
+    @view_config(route_name="asset_list", renderer="altaircms:templates/asset/list.mako", 
+                 decorator=with_bootstrap)
+    def all_asset_list(self):
+        assets = self.request.context.get_assets_all()
+        return {"assets": assets, 
+                "image_asset_form": self.context.forms.ImageAssetForm(), 
+                "movie_asset_form": self.context.forms.MovieAssetForm(), 
+                "flash_asset_form": self.context.forms.FlashAssetForm()
+                }
 
-@view_config(route_name="asset_view", renderer='altaircms:templates/asset/view.mako', 
-             decorator=with_bootstrap, request_method='GET')
-def view(request):
-    if not "asset_id" in request.matchdict:
-        return NotFound()
-    asset = request.context.get_asset(request.matchdict["asset_id"])
-    return {"asset": asset}
+    @view_config(route_name="asset_image_list", renderer="altaircms:templates/asset/image/list.mako", 
+                 decorator=with_bootstrap)
+    def image_asset_list(self):
+        assets = self.request.context.get_image_assets()
+        form = self.context.forms.ImageAssetForm()
+        return {"assets": assets, "form": form}
 
-@view_defaults(route_name="asset_delete", permission="asset_delete", decorator=with_bootstrap)
-class DeleteView(object):
+    @view_config(route_name="asset_movie_list", renderer="altaircms:templates/asset/movie/list.mako", 
+                 decorator=with_bootstrap)
+    def movie_asset_list(self):
+        assets = self.request.context.get_movie_assets()
+        form = self.context.forms.MovieAssetForm()
+        return {"assets": assets, "form": form}
+
+
+    @view_config(route_name="asset_flash_list", renderer="altaircms:templates/asset/flash/list.mako", 
+                 decorator=with_bootstrap)
+    def flash_asset_list(self):
+        assets = self.request.context.get_flash_assets()
+        form = self.context.forms.FlashAssetForm()
+        return {"assets": assets, "form": form}
+
+@view_defaults(permission="asset_read", decorator=with_bootstrap)
+class AssetDetailView(object):
     def __init__(self, request):
         self.request = request
 
-    @view_config(request_method="GET", renderer="altaircms:templates/asset/delete_confirm.mako")
-    def confirm(self):
-        asset = self.request.context.get_asset(self.request.matchdict["asset_id"])
+    @view_config(route_name="asset_image_detail", renderer="altaircms:templates/asset/image/detail.mako")
+    def image_asset_detail(self):
+        asset_id = self.request.matchdict["asset_id"]
+        asset = self.request.context.get_image_asset(asset_id)
         return {"asset": asset}
 
-    @view_config(request_method="POST", renderer="altaircms:templates/asset/delete_confirm.mako")
-    def execute(self):
-        # 削除処理
-        context = self.request.context
-        asset = context.get_asset(self.request.matchdict["asset_id"])
-        storepath = context.get_asset_storepath()
-        context.delete_asset_file(storepath, asset.filepath)
-        asset = self.request.context.get_asset(self.request.matchdict["asset_id"])
-        self.request.context.DBSession.delete(asset)
-        FlashMessage.success("asset deleted", request=self.request)
-        return HTTPFound(self.request.route_path("asset_list"))
-    
-@view_defaults(route_name="asset_create", permission="asset_create", decorator=with_bootstrap)
-class CreateView(object):
+    @view_config(route_name="asset_movie_detail", renderer="altaircms:templates/asset/movie/detail.mako")
+    def movie_asset_detail(self):
+        asset_id = self.request.matchdict["asset_id"]
+        asset = self.request.context.get_movie_asset(asset_id)
+        return {"asset": asset}
+
+    @view_config(route_name="asset_flash_detail", renderer="altaircms:templates/asset/flash/detail.mako")
+    def flash_asset_detail(self):
+        asset_id = self.request.matchdict["asset_id"]
+        asset = self.request.context.get_flash_asset(asset_id)
+        return {"asset": asset}
+
+@view_defaults(permission="asset_update", decorator=with_bootstrap)
+class AssetInputView(object):
     def __init__(self, request):
         self.request = request
+        self.context = request.context
 
-    # @view_config(request_method="GET", renderer="altaircms:templates/asset/create_confirm.mako")
-    # def confirm(self):
-    #     form = self.request.context.get_form(data=self.request.GET)
-    #     return {"form": form}
+    @view_config(route_name="asset_image_input", renderer="altaircms:templates/asset/image/input.mako")
+    def image_asset_input(self):
+        asset_id = self.request.matchdict["asset_id"]
+        asset = self.request.context.get_image_asset(asset_id)
 
-    @view_config(request_method="POST")
-    def execute(self):
-        context = self.request.context
-        asset_type = self.request.matchdict["asset_type"]
-        form = context.get_confirm_form(asset_type, data=self.request.POST)
-        if form.validate():
-            asset = treat.get_creator(form, "asset", request=self.request).create()
-            self.request.context.DBSession.add(asset)
-            FlashMessage.success("%s asset created" % asset_type, request=self.request)    
-        else:
+        params = h.get_form_params_from_asset(asset)
+        form = self.context.forms.ImageAssetUpdateForm(**params)
+        return {"asset": asset, "form": form}
+
+    @view_config(route_name="asset_movie_input", renderer="altaircms:templates/asset/movie/input.mako")
+    def movie_asset_input(self):
+        asset_id = self.request.matchdict["asset_id"]
+        asset = self.request.context.get_movie_asset(asset_id)
+
+        params = h.get_form_params_from_asset(asset)
+        form = self.context.forms.MovieAssetUpdateForm(**params)
+        return {"asset": asset, "form": form}
+
+    @view_config(route_name="asset_flash_input", renderer="altaircms:templates/asset/flash/input.mako")
+    def flash_asset_input(self):
+        asset_id = self.request.matchdict["asset_id"]
+        asset = self.request.context.get_flash_asset(asset_id)
+
+        params = h.get_form_params_from_asset(asset)
+        form = self.context.forms.FlashAssetUpdateForm(**params)
+        return {"asset": asset, "form": form}
+
+@view_defaults(permission="asset_update", decorator=with_bootstrap)
+class AssetUpdateView(object):
+    def __init__(self, request):
+        self.request = request
+        self.context = request.context
+
+    @view_config(route_name="asset_image_update", request_method="POST")
+    def update_image_asset(self):
+        form = self.context.forms.ImageAssetUpdateForm(self.request.POST)
+        asset_id = self.request.matchdict["asset_id"]
+        asset = self.request.context.get_image_asset(asset_id)
+
+        if not form.validate():
             FlashMessage.error(str(form.errors), request=self.request)    
-        return HTTPFound(self.request.route_path("asset_list"))
+            return HTTPFound(self.request.route_path("asset_image_input", asset_id=asset.id))
+        else:
+            updated_asset = self.context.update_image_asset(asset, form)
+            self.context.add(updated_asset)
+
+            FlashMessage.success("image asset updated", request=self.request)    
+            return HTTPFound(self.request.route_path("asset_image_detail", asset_id=updated_asset.id))
+
+    @view_config(route_name="asset_movie_update", request_method="POST")
+    def update_movie_asset(self):
+        form = self.context.forms.MovieAssetUpdateForm(self.request.POST)
+        asset_id = self.request.matchdict["asset_id"]
+        asset = self.request.context.get_movie_asset(asset_id)
+
+        if not form.validate():
+            FlashMessage.error(str(form.errors), request=self.request)    
+            return HTTPFound(self.request.route_path("asset_movie_input", asset_id=asset.id))
+        else:
+
+            updated_asset = self.context.update_movie_asset(asset, form)
+            self.context.add(updated_asset)
+
+            FlashMessage.success("movie asset updated", request=self.request)    
+            return HTTPFound(self.request.route_path("asset_movie_detail", asset_id=updated_asset.id))
+
+    @view_config(route_name="asset_flash_update", request_method="POST")
+    def update_flash_asset(self):
+        form = self.context.forms.FlashAssetUpdateForm(self.request.POST)
+        asset_id = self.request.matchdict["asset_id"]
+        asset = self.request.context.get_flash_asset(asset_id)
+
+        if not form.validate():
+            FlashMessage.error(str(form.errors), request=self.request)    
+            return HTTPFound(self.request.route_path("asset_flash_input", asset_id=asset.id))
+        else:
+
+            updated_asset = self.context.update_flash_asset(asset, form)
+            self.context.add(updated_asset)
+
+            FlashMessage.success("flash asset updated", request=self.request)    
+            return HTTPFound(self.request.route_path("asset_flash_detail", asset_id=updated_asset.id))
+        
+@view_defaults(permission="asset_create", decorator=with_bootstrap)
+class AssetCreateView(object):
+    def __init__(self, request):
+        self.request = request
+        self.context = request.context        
+
+    @view_config(route_name="asset_image_create", request_method="POST")
+    def create_image_asset(self):
+        form = self.context.forms.ImageAssetForm(self.request.POST)
+
+        if not form.validate():
+            FlashMessage.error(str(form.errors), request=self.request)    
+            return HTTPFound(self.request.route_path("asset_image_list"))
+        else:
+            asset = self.context.create_image_asset(form)
+            self.context.add(asset)
+
+            FlashMessage.success("image asset created", request=self.request)    
+            return HTTPFound(self.request.route_path("asset_image_list"))
+
+    @view_config(route_name="asset_movie_create", request_method="POST")
+    def create_movie_asset(self):
+        form = self.context.forms.MovieAssetForm(self.request.POST)
+
+        if not form.validate():
+            FlashMessage.error(str(form.errors), request=self.request)    
+            return HTTPFound(self.request.route_path("asset_movie_list"))
+        else:
+            asset = self.context.create_movie_asset(form)
+            self.context.add(asset)
+
+            FlashMessage.success("movie asset created", request=self.request)    
+            return HTTPFound(self.request.route_path("asset_movie_list"))
+
+    @view_config(route_name="asset_flash_create", request_method="POST")
+    def create_flash_asset(self):
+        form = self.context.forms.FlashAssetForm(self.request.POST)
+
+        if not form.validate():
+            FlashMessage.error(str(form.errors), request=self.request)    
+            return HTTPFound(self.request.route_path("asset_flash_list"))
+        else:
+            asset = self.context.create_flash_asset(form)
+            self.context.add(asset)
+
+            FlashMessage.success("flash asset created", request=self.request)    
+            return HTTPFound(self.request.route_path("asset_flash_list"))
+
+@view_defaults(route_name="asset_delete", permission="asset_delete",
+               decorator=with_bootstrap)
+class AssetDeleteView(object):
+    def __init__(self, request):
+        self.request = request
+        self.context = request.context
+
+    @view_config(route_name="asset_image_delete", request_method="GET", renderer="altaircms:templates/asset/image/delete_confirm.mako")
+    def image_delete_confirm(self):
+        asset = self.context.get_image_asset(self.request.matchdict["asset_id"])
+        return {"asset": asset}
+        
+    @view_config(route_name="asset_image_delete", request_method="POST")
+    def delete_image_asset(self):
+        asset = self.context.get_image_asset(self.request.matchdict["asset_id"])
+
+        self.context.delete_asset_file(asset.filepath)
+        self.context.delete(asset)
+
+        FlashMessage.success("asset deleted", request=self.request)
+        return HTTPFound(self.request.route_path("asset_image_list"))
+    
+    @view_config(route_name="asset_movie_delete", request_method="GET", renderer="altaircms:templates/asset/movie/delete_confirm.mako")
+    def movie_delete_confirm(self):
+        asset = self.context.get_movie_asset(self.request.matchdict["asset_id"])
+        return {"asset": asset}
+
+    @view_config(route_name="asset_movie_delete", request_method="POST")
+    def delete_movie_asset(self):
+        asset = self.context.get_movie_asset(self.request.matchdict["asset_id"])
+
+        self.context.delete_asset_file(asset.filepath)
+        self.context.delete(asset)
+
+        FlashMessage.success("asset deleted", request=self.request)
+        return HTTPFound(self.request.route_path("asset_movie_list"))
+
+    @view_config(route_name="asset_flash_delete", request_method="GET", renderer="altaircms:templates/asset/flash/delete_confirm.mako")
+    def flash_delete_confirm(self):
+        asset = self.context.get_flash_asset(self.request.matchdict["asset_id"])
+        return {"asset": asset}
+
+    @view_config(route_name="asset_flash_delete", request_method="POST")
+    def delete_flash_asset(self):
+        asset = self.context.get_flash_asset(self.request.matchdict["asset_id"])
+
+        self.context.delete_asset_file(asset.filepath)
+        self.context.delete(asset)
+
+        FlashMessage.success("asset deleted", request=self.request)
+        return HTTPFound(self.request.route_path("asset_flash_list"))
 
 @view_config(route_name="asset_display", permission="asset_read", request_method="GET")
 def asset_display(request):
@@ -84,12 +270,7 @@ def asset_display(request):
     ## todo refactoring
     asset = request.context.get_asset(request.matchdict["asset_id"])
 
-    attr = request.GET.get("filepath") or "filepath"
-    filepath = getattr(asset, attr)
-    storepath = request.context.get_asset_storepath()
-    filepath = os.path.join(storepath, filepath)
+    storepath = request.context.storepath
+    filepath = os.path.join(storepath, asset.filepath)
     content_type = asset.mimetype if asset.mimetype else 'application/octet-stream'
-    if os.path.exists(filepath):
-        return Response(file(filepath).read(), content_type=content_type)
-    else:
-        return Response("", content_type=content_type)
+    return Response(request.context.display_asset(filepath), content_type=content_type)

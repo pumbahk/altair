@@ -1,11 +1,36 @@
 <%inherit file="../layout.html" />
 <%namespace file="/common/helpers.html" import="flash_messages" />
 <%namespace file="/common/confirm_modal.html" import="delete_modal"/>
+<%namespace file="/common/confirm_modal.html" import="download_modal"/>
+<%namespace file="/common/confirm_modal.html" import="testmail_modal"/>
 
 <script>
   $(function() {
-    $('#htmlmail').collapse()
+    $('#delete').click(function(){
+      $('#delete-modal').modal('toggle');
+      $('#delete-modal #delete').attr('href', '/newsletters/delete/' + ${newsletter.id});
+    });
+
+    $('#edit').click(function(){
+      $(location).attr('href', '/newsletters/edit/' + ${newsletter.id});
+    });
+
+    $('#copy').click(function(){
+      $(location).attr('href', '/newsletters/copy/' + ${newsletter.id});
+    });
+
+    $('#test_mail').click(function(){
+      $('#testmail-modal').modal('toggle');
+      $('#testmail-modal #testmail').attr('action', '/newsletters/test_mail/${newsletter.id}');
+    });
+
+    $('#html_mail').collapse()
   });
+
+  function download(id) {
+    $('#download-modal').modal('toggle');
+    $('#download-modal #download').attr('href', '/newsletters/download/' + id);
+  } 
 </script>
 
 <div class="row-fluid">
@@ -36,12 +61,12 @@
             % if newsletter.type == 'text':
               ${newsletter.description.replace("\n", "<br />")|n}
             % elif newsletter.type == 'html':
-              <a class="btn btn-info" data-toggle="collapse" data-target="#htmlmail">
+              <a class="btn btn-info" data-toggle="collapse" data-target="#html_mail">
                 HTMLメール本文
               </a>
-              <div id="htmlmail" class="collapse in">
+              <div id="html_mail" class="collapse in">
                 <div class="thumbnail">
-                  <iframe src="${request.route_path('newsletters.htmlmail', id=newsletter.id)}"
+                  <iframe src="${request.route_path('newsletters.html_mail', id=newsletter.id)}"
                           width=100% height=600 border=0 frameborder=0>
                   </iframe>
                 </div>
@@ -64,12 +89,22 @@
           </td>
         </tr>
         <tr>
+          <th>${form.sender_address.label}</th>
+          <td>${newsletter.sender_address}</td>
+        </tr>
+        <tr>
+          <th>${form.sender_name.label}</th>
+          <td>${newsletter.sender_name}</td>
+        </tr>
+        <tr>
           <th>${form.subscriber_file.label}</th>
           <td>
             % if newsletter.subscriber_file() is not None:
-              <a href="${request.route_path('newsletters.download', id=newsletter.id)}">
-              <span class="label label-info"><i class="icon-download-alt"></i> ${newsletter.subscriber_file()}</span></a>
+              <a href="javascript:download(${newsletter.id})" data-controls-modal="download-modal" data-backdrop="true" data-keyboard="true">
+                <span class="label label-info"><i class="icon-download-alt"></i> ${newsletter.subscriber_file()}</span>
+              </a>
             % endif
+            ${download_modal(u'送信データファイルをダウンロードします。よろしいですか？')} 
           </td>
         </tr>
         <tr>
@@ -90,6 +125,9 @@
         </tr>
       </tbody>
     </table>
+    <button class="btn">
+      <a id="test_mail" data-controls-modal="testmail-modal" data-backdrop="true" data-keyboard="true">テスト送信</a>
+    </button>
   </span>
 </div>
 
@@ -97,16 +135,18 @@
   <div class="btn-group pull-right">
     <button class="btn"><a href="${request.route_path('newsletters.new')}"><i class="icon-plus"></i> 新規</a></button>
     <button class="btn">
-      <a href="${request.route_path('newsletters.edit', id=newsletter.id)}"><i class="icon-pencil"></i> 編集</a>
+      <a id="edit"><i class="icon-pencil"></i> 編集</a>
     </button>
-    <a class="btn" data-controls-modal="confirm-modal" data-backdrop="true" data-keyboard="true"
-        href="javascript:$('#confirm-modal').modal('toggle');"
-        onclick="$('#confirm-modal #delete').attr('href', '/newsletters/delete/${newsletter.id}');">
+    <a id="delete" class="btn" data-controls-modal="delete-modal" data-backdrop="true" data-keyboard="true">
       <i class="icon-minus"></i> 削除
     </a>
     <button class="btn">
-      <a href="${request.route_path('newsletters.copy', id=newsletter.id)}"><i class="icon-plus"></i> コピー</a>
+      <a id="copy"><i class="icon-plus"></i> コピー</a>
     </button>
   </div>
-  ${delete_modal(u'選択したメールマガジンを削除します。よろしいですか？')}
 </div>
+
+${download_modal(u'送信データファイルをダウンロードします。よろしいですか？')}
+${testmail_modal(u'テスト送信します。よろしいですか？')} 
+${delete_modal(u'選択したメールマガジンを削除します。よろしいですか？')}
+

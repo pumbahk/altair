@@ -15,7 +15,7 @@ warnings.warn("oauth2 view is replaced. but test have not existed, yet")
 def setup_module():
     _initTestingDB()
     import sqlahelper
-    sqlahelper.get_engine().echo = True
+    sqlahelper.get_engine().echo = False
 
 def teardown_module():
     import transaction
@@ -92,6 +92,10 @@ class TestSecurity(BaseTest):
     def tearDown(self):
         from altaircms.lib.testutils import dropall_db
         dropall_db()
+        from altaircms.lib.testutils import create_db
+        create_db()
+        import transaction
+        transaction.abort()
 
     def test_user_notfound(self):
         from altaircms.security import rolefinder

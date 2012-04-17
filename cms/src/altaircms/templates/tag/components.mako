@@ -98,7 +98,7 @@
 	<tbody>
 	  % for asset in query_result:
 		<tr>
-		  <td>${asset.filepath}</td>
+		  <td><a href="${request.route_path("asset_detail", asset_id=asset.id, asset_type=asset.discriminator)}">${asset.filepath}</a></td>
 		  <td>${asset.updated_at}</td>
 		</tr>
 	  % endfor

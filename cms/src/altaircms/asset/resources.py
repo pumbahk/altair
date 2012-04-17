@@ -1,52 +1,179 @@
-from altaircms.models import DBSession
-from .models import (
-    Asset, 
-    ImageAsset, 
-    FlashAsset, 
-    MovieAsset
-    )
-from . import forms
-import sqlalchemy as sa
-from altaircms.asset import get_storepath
+# -*- coding:utf-8 -*-
 import os
+import sqlalchemy as sa
+
+
+from altaircms.models import DBSession
 from altaircms.security import RootFactory
+from . import models
+from . import helpers as h
+from altaircms.tag.api import put_tags
+from pyramid.decorator import reify
+from . import forms
+
+def _setattrs(asset, params):
+    for k, v in params.iteritems():
+        if v:
+            setattr(asset, k, v)
+## pyramid 
+def get_storepath(request):
+    return request.registry.settings['altaircms.asset.storepath']
 
 class AssetResource(RootFactory):
-    DBSession = DBSession
+    forms = forms
+    def add(self, o, flush=False):
+        DBSession.add(o)
+        if flush:
+            DBSession.flush()
+
+    def delete(self, o):
+        DBSession.delete(o)
+
+    @reify
+    def storepath(self):
+        return get_storepath(self.request)
+
+    def display_asset(self, filepath): ## not found imageを表示した方が良い？
+        if os.path.exists(filepath):
+            return file(filepath).read()
+        else:
+            return ""
+
     def __init__(self, request):
         self.request = request
 
-    def get_assets(self, asset_type=None):
-        if asset_type:
-            if asset_type == "image":
-                return ImageAsset.query.order_by(sa.desc(Asset.id))
-            elif asset_type == "flash":
-                return FlashAsset.query.order_by(sa.desc(Asset.id))
-            elif asset_type == "movie":
-                return MovieAsset.query.order_by(sa.desc(Asset.id))
-        else:
-            return Asset.query.order_by(sa.desc(Asset.id))
+    def get_image_assets(self):
+        return models.ImageAsset.query.order_by(sa.desc(models.ImageAsset.id))
+    def get_movie_assets(self):
+        return models.MovieAsset.query.order_by(sa.desc(models.MovieAsset.id))
+    def get_flash_assets(self):
+        return models.FlashAsset.query.order_by(sa.desc(models.FlashAsset.id))
+    def get_assets_all(self):
+        return models.Asset.query.order_by(sa.desc(models.Asset.id))
 
+    def get_image_asset(self, id_):
+        return models.ImageAsset.query.filter(models.ImageAsset.id==id_).one()
+    def get_movie_asset(self, id_):
+        return models.MovieAsset.query.filter(models.MovieAsset.id==id_).one()
+    def get_flash_asset(self, id_):
+        return models.FlashAsset.query.filter(models.FlashAsset.id==id_).one()
     def get_asset(self, id_):
-        return Asset.query.filter(Asset.id==id_).one()
+        return models.Asset.query.filter(models.Asset.id==id_).one()
+    
+    ## delete
+    def delete_asset_file(self, asset, _delete_file=h.delete_file_if_exist):
+        path = os.path.join(self.storepath, asset.filepath)
+        _delete_file(path)
 
-    def get_form_list(self):
-        return (forms.ImageAssetForm(), 
-                forms.MovieAssetForm(), 
-                forms.FlashAssetForm())
+    ## create
+    def create_image_asset(self, form,
+                           _write_buf=h.write_buf,
+                           _get_extra_status=h.get_image_status_extra, 
+                           _put_tags=put_tags):
+        
+        tags, private_tags, form_params =  h.divide_data(form.data)
+        
+        params = h.get_asset_params_from_form_data(form_params)
+        params.update(_get_extra_status(form_params, form_params["filepath"].file))
+        params["filepath"] = h.get_writename(form_params["filepath"].filename)
 
-    def get_form(self, asset_type):
-        formclass = forms.get_confirm_asset_form_by_asset_type(asset_type)
-        return formclass()
+        _write_buf(self.storepath, params["filepath"], params["bufstring"])
 
-    def get_confirm_form(self, asset_type, data=None):
-        formclass = forms.get_confirm_asset_form_by_asset_type(asset_type)
-        return formclass(data)
+        asset = models.ImageAsset.from_dict(params)
+        _put_tags(asset, "image_asset", tags, private_tags, self.request)
+        return asset
 
-    def get_asset_storepath(self):
-        return get_storepath(self.request)
+    def create_movie_asset(self, form,
+                           _write_buf=h.write_buf, 
+                           _get_extra_status=h.get_movie_status_extra, 
+                           _put_tags=put_tags):
+        tags, private_tags, form_params =  h.divide_data(form.data)
 
-    def delete_asset_file(self, storepath, filename):
-        filepath = os.path.join(storepath, filename)
-        if os.path.exists(filepath):
-            os.remove(filepath)
+        params = h.get_asset_params_from_form_data(form_params)
+        params.update(_get_extra_status(form_params, form_params["filepath"].file))
+        params["filepath"] = h.get_writename(form_params["filepath"].filename)
+
+        _write_buf(self.storepath, params["filepath"], params["bufstring"])
+
+        asset = models.MovieAsset.from_dict(params)
+        _put_tags(asset, "movie_asset", tags, private_tags, self.request)
+        return asset
+
+    def create_flash_asset(self, form,
+                           _write_buf=h.write_buf, 
+                           _get_extra_status=h.get_flash_status_extra, 
+                           _put_tags=put_tags):
+        tags, private_tags, form_params =  h.divide_data(form.data)
+
+        params = h.get_asset_params_from_form_data(form_params)
+        params.update(_get_extra_status(form_params, form_params["filepath"].file))
+        params["filepath"] = h.get_writename(form_params["filepath"].filename)
+
+        _write_buf(self.storepath, params["filepath"], params["bufstring"])
+
+        asset = models.FlashAsset.from_dict(params)
+        _put_tags(asset, "flash_asset", tags, private_tags, self.request)
+        return asset
+
+    ## update
+    def update_image_asset(self, asset, form,
+                           _write_buf=h.write_buf,
+                           _get_extra_status=h.get_image_status_extra, 
+                           _put_tags=put_tags):
+        tags, private_tags, form_params =  h.divide_data(form.data)
+
+        if  form_params["filepath"] == u"":
+            params = form_params
+        else:
+            params = h.get_asset_params_from_form_data(form_params)
+            params.update(_get_extra_status(form_params, form_params["filepath"].file))
+            params["filepath"] = h.get_writename(form_params["filepath"].filename)
+
+            _write_buf(self.storepath, params["filepath"], params["bufstring"])
+
+        _setattrs(asset, params)
+        _put_tags(asset, "image_asset", tags, private_tags, self.request)
+        return asset
+
+
+    def update_movie_asset(self, asset, form,
+                           _write_buf=h.write_buf,
+                           _get_extra_status=h.get_movie_status_extra, 
+                           _put_tags=put_tags):
+
+        tags, private_tags, form_params =  h.divide_data(form.data)
+
+        if  form_params["filepath"] == u"":
+            params = form_params
+        else:
+            params = h.get_asset_params_from_form_data(form_params)
+            params.update(_get_extra_status(form_params, form_params["filepath"].file))
+            params["filepath"] = h.get_writename(form_params["filepath"].filename)
+
+            _write_buf(self.storepath, params["filepath"], params["bufstring"])
+
+        _setattrs(asset, params)
+        _put_tags(asset, "movie_asset", tags, private_tags, self.request)
+        return asset
+
+
+    def update_flash_asset(self, asset, form,
+                           _write_buf=h.write_buf,
+                           _get_extra_status=h.get_flash_status_extra, 
+                           _put_tags=put_tags):
+
+        tags, private_tags, form_params =  h.divide_data(form.data)
+
+        if  form_params["filepath"] == u"":
+            params = form_params
+        else:
+            params = h.get_asset_params_from_form_data(form_params)
+            params.update(_get_extra_status(form_params, form_params["filepath"].file))
+            params["filepath"] = h.get_writename(form_params["filepath"].filename)
+
+            _write_buf(self.storepath, params["filepath"], params["bufstring"])
+
+        _setattrs(asset, params)
+        _put_tags(asset, "flash_asset", tags, private_tags, self.request)
+        return asset
+

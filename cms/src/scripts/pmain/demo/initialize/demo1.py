@@ -6,17 +6,25 @@ import os
 from pyramid.testing import DummyRequest
 import transaction
 
-from altaircms.models import DBSession
+from altaircms.models import (
+    DBSession, 
+    model_from_dict, 
+    model_to_dict
+    )
+
 from . import append_to_json_structure
 from . import block
 
 here = os.path.abspath(os.path.dirname(__file__))
+class Objlike(dict):
+    __getattr__ = dict.__getitem__
+
 def _image_asset():
-    from altaircms.asset.treat import create_asset
+    from altaircms.asset.helpers import create_asset
     fname = os.path.join(here, "data/original5.image.jpg")
     captured = dict(type="image", 
-                    uploadfile=dict(filename=fname, 
-                                    fp = open(fname, "rb")))
+                    filepath=Objlike(filename=fname, 
+                                     file= open(fname, "rb")))
     asset = create_asset(captured)
     DBSession.add(asset)
     DBSession.flush()
@@ -275,7 +283,7 @@ def init():
             "price": 6300, 
             "seattype": u"全席指定"
             }
-        ticket = Ticket.from_dict(D)
+        ticket = model_from_dict(Ticket, D)
         DBSession.add(ticket)
 
         ## performance

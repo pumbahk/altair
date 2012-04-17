@@ -1,28 +1,36 @@
+# -*- coding:utf-8 -*-
+
+import functools
 def includeme(config):
-    config.add_route('asset_list', '/asset/list', factory=".resources.AssetResource")
-    config.add_route('asset_sub_list', '/asset/list/{asset_type}', factory=".resources.AssetResource")
-    config.add_route('asset_display', '/asset/display/{asset_id}', factory=".resources.AssetResource")
-    config.add_route('asset_view', '/asset/{asset_id}', factory=".resources.AssetResource")
-    config.add_route('asset_delete', '/asset/{asset_id}/delete', factory=".resources.AssetResource")
-    config.add_route('asset_create', '/asset/{asset_type}/create', factory=".resources.AssetResource")
-    # config.add_route('asset_form', '/asset/form/{asset_type}')
-    # config.add_route('asset_edit', '/asset/{asset_id}')
+    add_route = functools.partial(config.add_route, factory=".resources.AssetResource")
+    add_route('asset_list', '')
+    add_route("asset_image_list", "/image")
+    add_route('asset_movie_list', '/movie')
+    add_route('asset_flash_list', '/flash')
+
+    add_route('asset_image_create', '/image/create')
+    add_route('asset_movie_create', '/movie/create')
+    add_route('asset_flash_create', '/flash/create')
+
+    add_route('asset_image_delete', '/image/{asset_id}/delete')
+    add_route('asset_movie_delete', '/movie/{asset_id}/delete')
+    add_route('asset_flash_delete', '/flash/{asset_id}/delete')
+    
+    add_route('asset_display', '/display/{asset_id}')
+
+    add_route('asset_image_detail', '/image/{asset_id}')
+    add_route('asset_movie_detail', '/movie/{asset_id}')
+    add_route('asset_flash_detail', '/flash/{asset_id}')
+    add_route('asset_detail', '/{asset_type}/{asset_id}')
+
+    add_route('asset_image_input', '/image/{asset_id}/input')
+    add_route('asset_movie_input', '/movie/{asset_id}/input')
+    add_route('asset_flash_input', '/flash/{asset_id}/input')
+
+    add_route('asset_image_update', '/image/{asset_id}/update')
+    add_route('asset_movie_update', '/movie/{asset_id}/update')
+    add_route('asset_flash_update', '/flash/{asset_id}/update')
+
+    # add_route('asset_form', '/form/{asset_type}')
+    # add_route('asset_edit', '/{asset_id}')
     config.scan()
-
-EXT_MAP = {
-    'jpg':'image/jpeg',
-    'jpeg':'image/jpeg',
-    'png':'image/png',
-    'gif':'image/gif',
-    'mov':'video/quicktime',
-    'mp4':'video/quicktime',
-    'swf':'application/x-shockwave-flash',
-}
-
-def detect_mimetype(filename):
-    ext = filename[filename.rfind('.') + 1:].lower()
-    return EXT_MAP[ext] if ext in EXT_MAP else 'application/octet-stream'
-
-def get_storepath(request):
-    return request.registry.settings['altaircms.asset.storepath']
-

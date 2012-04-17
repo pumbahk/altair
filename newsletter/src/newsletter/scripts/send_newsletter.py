@@ -14,7 +14,6 @@ from pyramid_mailer.message import Message
 from newsletter.models import merge_session_with_post
 from newsletter.newsletters.models import Newsletter
 
-import ConfigParser
 import logging
 logging.basicConfig()
 
@@ -35,17 +34,12 @@ def main(argv=sys.argv):
     if config is None:
         return
     app = loadapp('config:%s' % config, 'main')
-
-    # mailer setup
-    parser = ConfigParser.SafeConfigParser()
-    parser.read(config)
-    settings = dict(parser.items('mailer'))
+    settings = app.registry.settings
     mailer = Mailer.from_settings(settings)
 
     # send mail magazine
     report = {'success':[], 'fail':[]}
     for newsletter in Newsletter.get_reservations():
-
         csv_file = os.path.join(Newsletter.subscriber_dir(), newsletter.subscriber_file())
         if not os.path.exists(csv_file):
             report['fail'].append(newsletter.subject)
@@ -56,22 +50,8 @@ def main(argv=sys.argv):
         Newsletter.update(record)
 
         count = 0
-        fields = ['id', 'name', 'email']
-        for row in csv.DictReader(open(csv_file), fields):
-            body = html = None
-            if newsletter.type == 'html':
-                html = newsletter.description.replace('${name}', row['name'])
-            else:
-                body = newsletter.description.replace('${name}', row['name'])
-
-            message = Message(
-                sender = settings['message.sender'],
-                subject = newsletter.subject,
-                recipients = [row['email']],
-                body = body,
-                html = html,
-            )
-            mailer.send_immediately(message)
+        for row in csv.DictReader(open(csv_file), Newsletter.csv_fields):
+            newsletter.send(recipient=row['email'], name=row['name'])
             count += 1
 
         # update Newsletter.status to 'completed'
@@ -87,8 +67,8 @@ def main(argv=sys.argv):
     if report['success'] or report['fail']:
         message = Message(
             subject = 'mail magazine report',
-            sender = settings['report.sender'],
-            recipients = [settings['report.recipients']],
+            sender = settings['mail.report.sender'],
+            recipients = [settings['mail.report.recipients']],
             body = body
         )
         mailer.send_immediately(message)

@@ -1,6 +1,5 @@
 ## Flashウィジェットテンプレート
 ## todo remove it
-<script type="text/javascript" src="/fanstatic/jquery/jquery.js"></script> 
 <script type="text/javascript" src="/static/swfobject.js"></script>
 <script type="text/javascript">
 $(document).ready(function(){

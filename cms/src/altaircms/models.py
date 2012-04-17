@@ -5,37 +5,45 @@ import sqlalchemy.orm as orm
 from sqlalchemy import (Column, Integer, Unicode, String, ForeignKey, DateTime)
 from sqlalchemy.orm import relationship
 
+from sqlalchemy.sql.operators import ColumnOperators
 
+def model_to_dict(obj):
+    return {k: getattr(obj, k) for k, v in obj.__class__.__dict__.iteritems() \
+                if isinstance(v, ColumnOperators)}
+
+def model_from_dict(modelclass, D):
+    instance = modelclass()
+    items_fn = D.iteritems if hasattr(D, "iteritems") else D.items
+    for k, v in items_fn():
+        setattr(instance, k, v)
+    return instance
+
+def model_column_items(obj):
+    return [(k, v) for k, v in obj.__class__.__dict__.items()\
+                if isinstance(v, ColumnOperators)]
+
+def model_column_iters(modelclass, D):
+    for k, v in modelclass.__dict__.items():
+        if isinstance(v, ColumnOperators):
+            yield k, D.get(k)
+            
 class BaseOriginalMixin(object):
     def to_dict(self):
-        from sqlalchemy.sql.operators import ColumnOperators
-        return {k: getattr(self, k) for k, v in self.__class__.__dict__.iteritems() \
-                    if isinstance(v, ColumnOperators)}
+        return model_to_dict(self)
 
     def column_items(self):
-        from sqlalchemy.sql.operators import ColumnOperators
-        return [(k, v) for k, v in self.__class__.__dict__.items()\
-                    if isinstance(v, ColumnOperators)]
+        return model_column_items(self)
 
     @classmethod
     def column_iters(cls, D):
-        from sqlalchemy.sql.operators import ColumnOperators
-        for k, v in cls.__dict__.items():
-            if isinstance(v, ColumnOperators):
-                yield k, D.get(k)
+        return model_column_iters(cls, D)
 
     @classmethod
     def from_dict(cls, D):
-        instance = cls()
-        items_fn = D.iteritems if hasattr(D, "iteritems") else D.items
-        for k, v in items_fn():
-            setattr(instance, k, v)
-        return instance
-
+        return model_from_dict(cls, D)
     
 Base = sqlahelper.get_base()
 DBSession = sqlahelper.get_session()
-
 
 
 def initialize_sql(engine, dropall=False):

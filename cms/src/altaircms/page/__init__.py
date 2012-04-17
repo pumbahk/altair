@@ -15,4 +15,3 @@ def includeme(config):
     config.add_route("disposition_alter", "/disposition/{id}/alter", factory="altaircms.page.resources.PageResource")
 
     config.scan('.views')
-    config.scan('.treat')

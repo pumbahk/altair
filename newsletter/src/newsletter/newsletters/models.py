@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import csv
 import sys
 import os
@@ -12,6 +14,10 @@ from sqlalchemy.orm import relationship, join, backref, column_property
 import sqlahelper
 session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
+
+from pyramid import threadlocal
+from pyramid_mailer.mailer import Mailer
+from pyramid_mailer.message import Message
 
 from newsletter.utils import StandardEnum
 
@@ -29,10 +35,14 @@ class Newsletter(Base):
     description      = Column(Text())
     type             = Column(String(255))
     status           = Column(String(255))
+    sender_address   = Column(String(255))
+    sender_name      = Column(String(255))
     subscriber_count = Column(BigInteger)
     start_on         = Column(DateTime)
     created_at       = Column(DateTime)
     updated_at       = Column(DateTime)
+
+    csv_fields = ('id', 'name', 'email')
 
     def subscriber_file(self):
         fname = 'altair' + str(self.id) + '.csv'
@@ -82,15 +92,62 @@ class Newsletter(Base):
             if not os.path.isdir(csv_dir):
                 os.mkdir(csv_dir)
 
-            fields = ['id', 'name', 'email']
-            csv_file = csv.DictWriter(open(os.path.join(csv_dir, 'altair' + str(id) + '.csv'), 'w'), fields)
-            for row in csv.DictReader(file, fields):
+            csv_file = csv.DictWriter(open(os.path.join(csv_dir, 'altair' + str(id) + '.csv'), 'w'), Newsletter.csv_fields)
+            for row in csv.DictReader(file, Newsletter.csv_fields):
                 if Newsletter.validate_email(row['email']): csv_file.writerow(row)
 
     @staticmethod
     def validate_email(email):
-        if email != None and len(email) > 6:
-            if re.match(r'^.+@[^.].*\.[a-z]{2,10}$', email) != None:
+        if email is not None and len(email) > 6:
+            if re.match(r'^.+@[^.].*\.[a-z]{2,10}$', email) is not None:
                 return True
         return False
+
+    def test_mail(self, recipient=None):
+        subject = u'【テスト送信】' + self.subject
+        self.send(recipient=recipient, name=u'テスト', subject=subject)
+
+    def send(self, **options):
+        registry = threadlocal.get_current_registry()
+        settings = registry.settings
+        mailer = Mailer.from_settings(settings)
+
+        # sender
+        if self.sender_address:
+            if self.sender_name:
+                sender = '%s <%s>' % (self.sender_name, self.sender_address)
+            else:
+                sender = self.sender_address
+        else:
+            sender = settings['mail.message.sender']
+
+        # recipient
+        if 'recipient' in options:
+            recipient = options['recipient']
+        else:
+            recipient = settings['mail.report.recipients']
+
+        # body, html
+        description = self.description.replace('${name}', options['name'])
+        body = html = None
+        if self.type == 'html':
+            html = description
+        else:
+            body = description
+
+        # subject
+        if 'subject' in options:
+            subject = options['subject']
+        else:
+            subject = self.subject
+        subject = subject.replace('${name}', options['name'])
+
+        message = Message(
+            sender = sender,
+            subject = subject,
+            recipients = [recipient],
+            body = body,
+            html = html,
+        )
+        mailer.send_immediately(message)
 
