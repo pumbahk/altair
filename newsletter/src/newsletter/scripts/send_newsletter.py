@@ -7,11 +7,9 @@ from os.path import abspath, dirname
 sys.path.append(abspath(dirname(dirname(__file__))))
 
 from paste.deploy import loadapp
-from pyramid.scripting import get_root
 from pyramid_mailer.mailer import Mailer
 from pyramid_mailer.message import Message
 
-from newsletter.models import merge_session_with_post
 from newsletter.newsletters.models import Newsletter, session
 
 import logging
@@ -22,7 +20,7 @@ def main(argv=sys.argv):
 
     parser = optparse.OptionParser(
         description=__doc__,
-        usage='%prog [options] [limit]',
+        usage='%prog [options]',
     )
     parser.add_option('-C', '--config',
         dest='config',
@@ -53,20 +51,18 @@ def main(argv=sys.argv):
 
         csv_file = os.path.join(Newsletter.subscriber_dir(), newsletter.subscriber_file())
         log_file = open(csv_file + '.log', 'w')
-        count = {'send':0, 'error':0} 
+        count = {'sent':0, 'error':0} 
         for row in csv.DictReader(open(csv_file), Newsletter.csv_fields):
             result = newsletter.send(recipient=row['email'], name=row['name'])
+            result = 'sent' if result else 'error'
             log_file.write('%s,%s\n' % (row['email'], result))
-            if result:
-                count['send'] += 1
-            else:
-                count['error'] += 1
+            count[result] += 1
         log_file.close()
 
         # update Newsletter.status to 'completed'
         newsletter.status = 'completed'
         Newsletter.update(newsletter)
-        report.append('id=%d: %s (%s)' % (newsletter.id, count, newsletter.subject[:40]))
+        report.append('id=%d: sent=%d, error=%d (%s)' % (newsletter.id, count['sent'], count['error'], newsletter.subject[:40]))
 
     # report
     if report:

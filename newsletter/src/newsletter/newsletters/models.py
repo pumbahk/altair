@@ -41,7 +41,7 @@ class Newsletter(Base):
     created_at       = Column(DateTime)
     updated_at       = Column(DateTime)
 
-    csv_fields = ('id', 'name', 'email')
+    csv_fields = ('email', 'id', 'name')
 
     def subscriber_file(self):
         fname = 'altair' + str(self.id) + '.csv'
