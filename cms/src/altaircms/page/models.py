@@ -7,6 +7,7 @@ from sqlalchemy import Column
 from sqlalchemy import Integer
 from sqlalchemy import Unicode
 from sqlalchemy import String
+from sqlalchemy import Text
 from sqlalchemy import ForeignKey
 from sqlalchemy import DateTime
 
@@ -85,7 +86,7 @@ class Page(PublishUnpublishMixin,
     layout_id = Column(Integer, ForeignKey("layout.id"))
     layout = relationship(Layout, backref='page', uselist=False)
     DEFAULT_STRUCTURE = "{}"
-    structure = Column(String(255), default=DEFAULT_STRUCTURE)
+    structure = Column(Text, default=DEFAULT_STRUCTURE)
     hash_url = Column(String(length=32), default=None)
 
     ## todo refactoring?

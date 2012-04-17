@@ -71,7 +71,7 @@ class SummaryWidget(Widget):
     query = DBSession.query_property()
 
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
-    items = sa.Column(sa.Unicode(255)) #json string
+    items = sa.Column(sa.UnicodeText) #json string
     """
     items attribute structure::
 
@@ -82,6 +82,7 @@ class SummaryWidget(Widget):
     def merge_settings(self, bname, bsettings):
         bsettings.need_extra_in_scan("request")
         items = json.loads(self.items)
+
         content = render(self.template_name, {"widget": self,  "items": items}) 
         bsettings.add(bname, content)
 

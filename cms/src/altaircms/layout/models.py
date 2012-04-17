@@ -1,7 +1,7 @@
 # coding: utf-8
 from datetime import datetime
 from altaircms.models import DBSession
-from sqlalchemy import Column, Integer, DateTime, Unicode, String, ForeignKey
+from sqlalchemy import Column, Integer, DateTime, Unicode, String, ForeignKey, Text
 from altaircms.models import Base, BaseOriginalMixin
 
 class Layout(BaseOriginalMixin, Base):
@@ -18,7 +18,7 @@ class Layout(BaseOriginalMixin, Base):
     title = Column(String(255))
     template_filename = Column(String(255))
     DEFAULT_BLOCKS = "[]"
-    blocks = Column(String(255), default=DEFAULT_BLOCKS)
+    blocks = Column(Text, default=DEFAULT_BLOCKS)
 
     site_id = Column(Integer(), ForeignKey("site.id"))
     client_id = Column(Integer(), ForeignKey("client.id"))
