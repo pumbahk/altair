@@ -29,7 +29,6 @@ Newsletter
 '''
 class Newsletter(Base):
     __tablename__ = 'Newsletter'
-    #__table_args__ = {'extend_existing': True}
     id               = Column(BigInteger, primary_key=True)
     subject          = Column(String(255))
     description      = Column(Text())
@@ -149,5 +148,9 @@ class Newsletter(Base):
             body = body,
             html = html,
         )
-        mailer.send_immediately(message)
+        try:
+            mailer.send_immediately(message)
+        except:
+            return False
+        return True
 

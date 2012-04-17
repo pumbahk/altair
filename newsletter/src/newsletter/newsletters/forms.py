@@ -64,8 +64,8 @@ class NewslettersForm(Form):
                     subscriber_file.file.seek(0)
             elif 'id' in args[0]:
                 newsletter = Newsletter.get(args[0].get('id'))
-                csv_file = os.path.join(Newsletter.subscriber_dir(), newsletter.subscriber_file())
-                if os.path.exists(csv_file):
+                if newsletter.subscriber_file():
+                    csv_file = os.path.join(Newsletter.subscriber_dir(), newsletter.subscriber_file())
                     for row in csv.DictReader(open(csv_file), Newsletter.csv_fields):
                         count += 1
 

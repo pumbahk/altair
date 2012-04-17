@@ -12,12 +12,14 @@ from pyramid_mailer.mailer import Mailer
 from pyramid_mailer.message import Message
 
 from newsletter.models import merge_session_with_post
-from newsletter.newsletters.models import Newsletter
+from newsletter.newsletters.models import Newsletter, session
 
 import logging
 logging.basicConfig()
 
 def main(argv=sys.argv):
+    session.configure(autocommit=True, extension=[])
+
     parser = optparse.OptionParser(
         description=__doc__,
         usage='%prog [options] [limit]',
@@ -32,44 +34,47 @@ def main(argv=sys.argv):
     # configuration
     config = options.config
     if config is None:
+        print 'You must give a config file'
         return
     app = loadapp('config:%s' % config, 'main')
     settings = app.registry.settings
     mailer = Mailer.from_settings(settings)
 
     # send mail magazine
-    report = {'success':[], 'fail':[]}
+    report = []
     for newsletter in Newsletter.get_reservations():
-        csv_file = os.path.join(Newsletter.subscriber_dir(), newsletter.subscriber_file())
-        if not os.path.exists(csv_file):
-            report['fail'].append(newsletter.subject)
+        if not newsletter.subscriber_file():
+            report.append('id=%d: ERROR csv file not found. (%s)' % (newsletter.id, newsletter.subject[:40]))
             continue
 
         # update Newsletter.status to 'sending'
-        record = merge_session_with_post(newsletter, {'status':'sending'})
-        Newsletter.update(record)
+        newsletter.status = 'sending'
+        Newsletter.update(newsletter)
 
-        count = 0
+        csv_file = os.path.join(Newsletter.subscriber_dir(), newsletter.subscriber_file())
+        log_file = open(csv_file + '.log', 'w')
+        count = {'send':0, 'error':0} 
         for row in csv.DictReader(open(csv_file), Newsletter.csv_fields):
-            newsletter.send(recipient=row['email'], name=row['name'])
-            count += 1
+            result = newsletter.send(recipient=row['email'], name=row['name'])
+            log_file.write('%s,%s\n' % (row['email'], result))
+            if result:
+                count['send'] += 1
+            else:
+                count['error'] += 1
+        log_file.close()
 
         # update Newsletter.status to 'completed'
-        record = merge_session_with_post(newsletter, {'status':'completed'})
-        Newsletter.update(record)
-        report['success'].append(str(count) + ':' + newsletter.subject)
+        newsletter.status = 'completed'
+        Newsletter.update(newsletter)
+        report.append('id=%d: %s (%s)' % (newsletter.id, count, newsletter.subject[:40]))
 
     # report
-    body = ''
-    for key, subject in report.items():
-        body += '[%s]\n%s\n' % (key, '\n'.join(subject))
-
-    if report['success'] or report['fail']:
+    if report:
         message = Message(
             subject = 'mail magazine report',
             sender = settings['mail.report.sender'],
             recipients = [settings['mail.report.recipients']],
-            body = body
+            body = '\n'.join(report)
         )
         mailer.send_immediately(message)
 
