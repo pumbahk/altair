@@ -33,8 +33,8 @@ class Topcontent(AboutPublishMixin,
     client_id = sa.Column(sa.Integer, sa.ForeignKey("client.id")) #?
     site_id = sa.Column(sa.Integer, sa.ForeignKey("site.id"))   
     kind = sa.Column(sa.Unicode(255))
-    title = sa.Column(sa.Unicode)
-    text = sa.Column(sa.Unicode)
+    title = sa.Column(sa.Unicode(255))
+    text = sa.Column(sa.Unicode(255))
 
     ## extend
     image_asset_id = sa.Column(sa.Integer, sa.ForeignKey("image_asset.id"), nullable=True)

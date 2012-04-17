@@ -24,8 +24,8 @@ class ImageWidget(Widget):
     __mapper_args__ = {"polymorphic_identity": type}
     query = DBSession.query_property()
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
-    href = sa.Column(sa.String)
-    alt = sa.Column(sa.Unicode)
+    href = sa.Column(sa.String(255))
+    alt = sa.Column(sa.Unicode(255))
     asset_id = sa.Column(sa.Integer, sa.ForeignKey("asset.id"))
     asset = orm.relationship(ImageAsset, backref="widget", uselist=False)
     nowrap = sa.Column(sa.Boolean, default=False)

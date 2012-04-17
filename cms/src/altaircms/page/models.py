@@ -75,17 +75,17 @@ class Page(PublishUnpublishMixin,
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
-    title = Column(Unicode, default=u"")
-    keywords = Column(Unicode, default=u"")
-    description = Column(Unicode, default=u"")
-    url = Column(String, unique=True, index=True)
+    title = Column(Unicode(255), default=u"")
+    keywords = Column(Unicode(255), default=u"")
+    description = Column(Unicode(255), default=u"")
+    url = Column(String(255), unique=True, index=True)
     version = Column(Integer)
 
     site_id = Column(Integer, ForeignKey("site.id"))
     layout_id = Column(Integer, ForeignKey("layout.id"))
     layout = relationship(Layout, backref='page', uselist=False)
     DEFAULT_STRUCTURE = "{}"
-    structure = Column(String, default=DEFAULT_STRUCTURE)
+    structure = Column(String(255), default=DEFAULT_STRUCTURE)
     hash_url = Column(String(length=32), default=None)
 
     ## todo refactoring?

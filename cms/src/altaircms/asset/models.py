@@ -55,8 +55,8 @@ class MediaAssetColumnsMixin(object):
     size = sa.Column(sa.Integer)
     width = sa.Column(sa.Integer)
     height = sa.Column(sa.Integer)
-    filepath = sa.Column(sa.String)
-    mimetype = sa.Column(sa.String, default="")
+    filepath = sa.Column(sa.String(255))
+    mimetype = sa.Column(sa.String(255), default="")
 
     ## has default constractor. so this class is called at `Treat' rather than `mixin'.
     def __init__(self, filepath='', alt='', size=None, width=None, height=None, mimetype=None):
@@ -88,8 +88,8 @@ class FlashAsset(MediaAssetColumnsMixin, Asset):
     __mapper_args__ = {"polymorphic_identity": type}
 
     id = sa.Column(sa.Integer, sa.ForeignKey("asset.id"), primary_key=True)
-    mimetype = sa.Column(sa.String, default='application/x-shockwave-flash')
-    imagepath = sa.Column(sa.String, default=DEFAULT_IMAGE_PATH)
+    mimetype = sa.Column(sa.String(255), default='application/x-shockwave-flash')
+    imagepath = sa.Column(sa.String(255), default=DEFAULT_IMAGE_PATH)
 
 class MovieAsset(MediaAssetColumnsMixin, Asset):
     DEFAULT_IMAGE_PATH = os.path.join(DIR, "img/not_found.jpg")
@@ -101,7 +101,7 @@ class MovieAsset(MediaAssetColumnsMixin, Asset):
     __mapper_args__ = {"polymorphic_identity": type}
 
     id = sa.Column(sa.Integer, sa.ForeignKey("asset.id"), primary_key=True)
-    imagepath = sa.Column(sa.String, default=DEFAULT_IMAGE_PATH)
+    imagepath = sa.Column(sa.String(255), default=DEFAULT_IMAGE_PATH)
 
 # class CssAsset(Asset):
 #     pass

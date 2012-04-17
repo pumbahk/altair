@@ -19,7 +19,7 @@ DEFAULT_ROLE = 'administrator'
 class OAuthToken(Base):
     __tablename__ = 'oauth_token'
     query = _session.query_property()
-    token = Column(String, primary_key=True)
+    token = Column(String(255), primary_key=True)
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=datetime.now())
 
@@ -38,12 +38,12 @@ class Operator(Base):
 
     id = Column(Integer, primary_key=True)
 
-    auth_source = Column(String, nullable=False)
+    auth_source = Column(String(255), nullable=False)
     user_id = Column(Integer)
-    screen_name = Column(Unicode)
+    screen_name = Column(Unicode(255))
 
-    oauth_token = Column(String)
-    oauth_token_secret = Column(String)
+    oauth_token = Column(String(255))
+    oauth_token_secret = Column(String(255))
 
     date_joined = Column(DateTime, default=datetime.now())
     last_login = Column(DateTime, default=datetime.now())
@@ -79,7 +79,7 @@ class Role(Base):
     query = _session.query_property()
 
     id = Column(Integer, primary_key=True)
-    name = Column(String)
+    name = Column(String(255))
 
     permissions = relationship("Permission", secondary=RolePermission.__table__, backref='role')
 
@@ -89,7 +89,7 @@ class Permission(Base):
     query = _session.query_property()
 
     id = Column(Integer, primary_key=True)
-    name = Column(String, unique=True)
+    name = Column(String(255), unique=True)
 
 
 class Client(Base):
@@ -103,10 +103,10 @@ class Client(Base):
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=datetime.now())
 
-    name = Column(Unicode)
-    prefecture = Column(Unicode)
-    address = Column(Unicode)
-    email = Column(String)
+    name = Column(Unicode(255))
+    prefecture = Column(Unicode(255))
+    address = Column(Unicode(255))
+    email = Column(String(255))
     contract_status = Column(Integer)
 
     operators = relationship("Operator", backref="client")
@@ -126,8 +126,8 @@ class APIKey(Base):
         return hash.hexdigest()
 
     id = Column(Integer, primary_key=True)
-    name = Column(String)
-    apikey = Column(String, default=generate_apikey)
+    name = Column(String(255))
+    apikey = Column(String(255), default=generate_apikey)
     client = relationship("Client", backref=backref("apikeys", order_by=id))
     client_id = Column(Integer, ForeignKey("client.id"))
 

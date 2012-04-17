@@ -71,7 +71,7 @@ class SummaryWidget(Widget):
     query = DBSession.query_property()
 
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
-    items = sa.Column(sa.Unicode) #json string
+    items = sa.Column(sa.Unicode(255)) #json string
     """
     items attribute structure::
 

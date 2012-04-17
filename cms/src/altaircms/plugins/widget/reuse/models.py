@@ -21,7 +21,7 @@ class ReuseWidget(Widget):
 
     template_name = "altaircms.plugins.widget:reuse/render.mako"
 
-    attrs = sa.Column(sa.String(), default='{"class": "reuse-widget"}') #json'{"class": "foo" "id": "bar"}'
+    attrs = sa.Column(sa.String(255), default='{"class": "reuse-widget"}') #json'{"class": "foo" "id": "bar"}'
     source_page_id = sa.Column(sa.Integer, sa.ForeignKey("page.id"))
     source_page = orm.relationship("Page", backref="reuse_widgets")
     width = sa.Column(sa.Integer, nullable=True)

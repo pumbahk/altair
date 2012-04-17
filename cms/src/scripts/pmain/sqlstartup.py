@@ -9,13 +9,13 @@ from contextlib import contextmanager
 def block(message):
     yield
 
-def setup():
-    Base.metadata.bind.echo = True
-    Base.metadata.drop_all();
-    Base.metadata.create_all();
+# def setup():
+#     Base.metadata.bind.echo = True
+#     Base.metadata.drop_all();
+#     Base.metadata.create_all();
 
 def main(env):
-    setup()
+    #setup()
     with block("create client"):
         import altaircms.auth.models as m
         client = m.Client()

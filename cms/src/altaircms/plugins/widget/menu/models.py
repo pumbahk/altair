@@ -24,7 +24,7 @@ class MenuWidget(Widget):
     query = DBSession.query_property()
 
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
-    items = sa.Column(sa.String) #json string
+    items = sa.Column(sa.String(255)) #json string
     
 
     def merge_settings(self, bname, bsettings):

@@ -28,6 +28,26 @@ requires = [
     'js.tinymce',
     ]
 
+tests_require = [
+    "nose",
+    "coverage",
+    "webtest",
+    "mock",
+]
+
+devtools_require = [
+    "sadisplay",
+    "alembic",
+    "sphinx",
+]
+
+extras_require = {
+    "mysql": ["pymysql"],
+    "testing": tests_require,
+    "gunicorn": ["gunicorn", "gunicorn-console"],
+    "devtools": devtools_require,
+}
+
 if sys.version_info[:3] < (2,5,0):
     requires.append('pysqlite')
 
@@ -50,6 +70,8 @@ setup(name='altair-cms',
       zip_safe=False,
       test_suite='altaircms',
       install_requires = requires,
+      tests_require=tests_require,
+      extras_require=extras_require,
       entry_points = """\
       [paste.app_factory]
       main = altaircms:main

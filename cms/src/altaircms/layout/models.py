@@ -15,10 +15,10 @@ class Layout(BaseOriginalMixin, Base):
     created_at = Column(DateTime(), default=datetime.now())
     updated_at = Column(DateTime(), default=datetime.now())
 
-    title = Column(String())
-    template_filename = Column(String())
+    title = Column(String(255))
+    template_filename = Column(String(255))
     DEFAULT_BLOCKS = "[]"
-    blocks = Column(String(), default=DEFAULT_BLOCKS)
+    blocks = Column(String(255), default=DEFAULT_BLOCKS)
 
     site_id = Column(Integer(), ForeignKey("site.id"))
     client_id = Column(Integer(), ForeignKey("client.id"))

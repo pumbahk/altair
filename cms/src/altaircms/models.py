@@ -78,8 +78,8 @@ class Performance(BaseOriginalMixin, Base):
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now)
 
-    title = Column(Unicode)
-    venue = Column(Unicode) #開催地
+    title = Column(Unicode(255))
+    venue = Column(Unicode(255)) #開催地
     open_on = Column(DateTime)  # 開場
     start_on = Column(DateTime)  # 開始
     close_on = Column(DateTime)  # 終了
@@ -97,7 +97,7 @@ class Sale(BaseOriginalMixin, Base):
     performance_id = Column(Integer, ForeignKey('performance.id'))
     performance = relationship("Performance", backref=orm.backref("sales", order_by=id))
 
-    name = Column(String)
+    name = Column(String(255))
     start_on = Column(DateTime)
     close_on = Column(DateTime)
 
@@ -139,8 +139,8 @@ class Seatfigure(BaseOriginalMixin, Base):
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=datetime.now())
 
-    figure_url = Column(String)
-    controller_url = Column(String)
+    figure_url = Column(String(255))
+    controller_url = Column(String(255))
 
     client_id = Column(Integer, ForeignKey("event.id"))
 
@@ -155,8 +155,8 @@ class Site(BaseOriginalMixin, Base):
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=datetime.now())
 
-    name = Column(Unicode)
-    description = Column(Unicode)
-    url = Column(String)
+    name = Column(Unicode(255))
+    description = Column(Unicode(255))
+    url = Column(String(255))
 
     client_id = Column(Integer, ForeignKey("client.id")) #@TODO: サイトにくっつけるべき？
