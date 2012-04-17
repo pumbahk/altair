@@ -3,6 +3,7 @@ from ticketing.resources import *
 
 def includeme(config):
     config.include('ticketing.events.performances' , route_prefix='performances')
+    config.include('ticketing.events.ticketers' , route_prefix='ticketers')
     config.add_route('events.index'   , '/')
     config.add_route('events.new'     , '/new')
     config.add_route('events.show'    , '/show/{event_id}')

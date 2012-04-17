@@ -20,6 +20,8 @@ from ticketing.fanstatic import with_bootstrap
 import sqlahelper
 session = sqlahelper.get_session()
 
+from hashlib import md5
+
 @view_defaults(decorator=with_bootstrap)
 class Login(BaseView):
 

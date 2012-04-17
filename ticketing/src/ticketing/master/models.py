@@ -19,6 +19,10 @@ class Prefecture(Base):
         return session.query(Prefecture).all()
 
     @staticmethod
+    def all_tuple():
+        return [(p.id, p.name) for p in session.query(Prefecture).all()]
+
+    @staticmethod
     def get(prefecture_id):
         return session.query(Prefecture).filter(Prefecture.id == prefecture_id).first()
 
@@ -28,6 +32,10 @@ class Bank(Base):
     id = Column(BigInteger, primary_key=True)
     code = Column(BigInteger)
     name = Column(String(255))
+
+    @staticmethod
+    def all_tuple():
+        return [(p.id, p.name) for p in session.query(BankAccount).all()]
 
 class BankAccount(Base):
     __tablename__ = 'BankAccount'
@@ -40,6 +48,7 @@ class BankAccount(Base):
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
     status = Column(Integer)
+
 
 class PostCode(Base):
     """

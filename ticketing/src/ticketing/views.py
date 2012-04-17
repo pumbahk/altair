@@ -10,6 +10,7 @@ from pyramid.view import view_config
 from ticketing.fanstatic import with_bootstrap
 from ticketing.fanstatic import bootstrap_need
 
+from pyramid.url import route_path
 class BaseView(object):
 
     def __init__(self, context, request):
@@ -17,6 +18,8 @@ class BaseView(object):
         self.context = context
         self.request = request
 
+    def location(self, route_name):
+        return HTTPFound(location=route_path(route_name, self.request))
 
 @view_defaults(decorator=with_bootstrap)
 class CommonView(BaseView):
@@ -34,3 +37,5 @@ class CommonView(BaseView):
         loc = self.request.route_url('login.index', _query=(('next', self.request.url),))
 
         return HTTPFound(location=loc)
+
+

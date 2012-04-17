@@ -34,7 +34,6 @@ def record_to_multidict(self, filters=dict()):
         else:
             return (key, str(value))
 
-    print [ _convert (k, v) for k,v in app_struct.items()]
     return MultiDict([ _convert (k, v) for k,v in app_struct.items()])
 
 def merge_session_with_post(session, post, filters={}):
