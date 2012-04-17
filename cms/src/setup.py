@@ -87,6 +87,9 @@ setup(name='altair-cms',
       [pyramid.scaffold]
       cms_widget = scaffolds:WidgetPluginTemplate
       cms_asset_widget = scaffolds:AssetWidgetPluginTemplate
+
+      [distutils.commands]
+      migrate_db = altaircms.distext.migrate:MigrateCommand
       """,
       paster_plugins=['pyramid'],
       )
