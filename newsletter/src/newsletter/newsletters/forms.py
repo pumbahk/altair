@@ -94,6 +94,10 @@ class NewslettersForm(Form):
 
     def validate_subscriber_file(form, field):
         if hasattr(field.data, 'file'):
+            if Newsletter.encode(field.data.file.read()) == False:
+                 raise ValidationError(u'CSVデータが不正です')
+            field.data.file.seek(0)
+
             for row in csv.DictReader(field.data.file, Newsletter.csv_fields):
                 if not Newsletter.validate_email(row['email']):
                     raise ValidationError(u'CSVデータが不正です')

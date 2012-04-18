@@ -7,6 +7,11 @@ import re
 from datetime import datetime
 from os.path import dirname
 
+import smtplib
+from email.MIMEText import MIMEText
+from email.Header import Header
+from email.Utils import formatdate
+
 from sqlalchemy import (Table, Column, Boolean, BigInteger, Integer, Float,
                         String, Date, DateTime, ForeignKey, DECIMAL, Text)
 from sqlalchemy.orm import relationship, join, backref, column_property
@@ -16,17 +21,9 @@ session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
 
 from pyramid import threadlocal
-from pyramid_mailer.mailer import Mailer
-from pyramid_mailer.message import Message
-
-from newsletter.utils import StandardEnum
-
 import logging
 log = logging.getLogger(__name__)
 
-'''
-Newsletter
-'''
 class Newsletter(Base):
     __tablename__ = 'Newsletter'
     id               = Column(BigInteger, primary_key=True)
@@ -93,7 +90,25 @@ class Newsletter(Base):
 
             csv_file = csv.DictWriter(open(os.path.join(csv_dir, 'altair' + str(id) + '.csv'), 'w'), Newsletter.csv_fields)
             for row in csv.DictReader(file, Newsletter.csv_fields):
+                row['name'] = Newsletter.encode(row['name'])
                 if Newsletter.validate_email(row['email']): csv_file.writerow(row)
+
+    @staticmethod
+    def encode(string):
+        if not string: return string
+
+        encoded_name = ''
+        codecs = ['utf-8', 'euc_jp', 'cp932', 'shift_jis']
+        for codec in codecs:
+            try:
+                encoded_name = string.decode(codec).encode('utf-8')
+                break
+            except:
+                continue
+        if encoded_name:
+            return encoded_name
+        else:
+            return False
 
     @staticmethod
     def validate_email(email):
@@ -104,29 +119,35 @@ class Newsletter(Base):
 
     def test_mail(self, recipient=None):
         subject = u'【テスト送信】' + self.subject
-        self.send(recipient=recipient, name=u'テスト', subject=subject)
+        self.send(recipient=recipient, name='テスト', subject=subject)
 
     def send(self, **options):
-        registry = threadlocal.get_current_registry()
-        settings = registry.settings
-        mailer = Mailer.from_settings(settings)
+        # settings
+        if 'settings' in options:
+            settings = options['settings']
+        else:
+            registry = threadlocal.get_current_registry()
+            settings = registry.settings
 
         # sender
         if self.sender_address:
+            from_addr = self.sender_address
             if self.sender_name:
-                sender = '%s <%s>' % (self.sender_name, self.sender_address)
+                sender_name = str(Header(self.sender_name, 'ISO-2022-JP'))
+                sender = u'%s <%s>' % (sender_name, self.sender_address)
             else:
                 sender = self.sender_address
         else:
-            sender = settings['mail.message.sender']
+            from_addr = sender = settings['mail.message.sender']
 
         # recipient
         if 'recipient' in options:
             recipient = options['recipient']
         else:
-            recipient = settings['mail.report.recipients']
+            recipient = settings['mail.report.recipient']
 
         # body, html
+        options['name'] = unicode(options['name'], 'utf-8')
         description = self.description.replace('${name}', options['name'])
         body = html = None
         if self.type == 'html':
@@ -141,16 +162,50 @@ class Newsletter(Base):
             subject = self.subject
         subject = subject.replace('${name}', options['name'])
 
-        message = Message(
+        mailer = Mailer(settings)
+        mailer.create_message(
             sender = sender,
+            recipient = recipient,
             subject = subject,
-            recipients = [recipient],
             body = body,
-            html = html,
-        )
+            html = html
+        )   
         try:
-            mailer.send_immediately(message)
+            mailer.send(from_addr, recipient)
         except:
             return False
         return True
+
+
+class Mailer(object):
+    def __init__(self, settings):
+        self.settings = settings
+
+    def create_message(self,
+                       sender=None,
+                       recipient=None,
+                       subject=None,
+                       body=None,
+                       html=None,
+                       encoding=None):
+
+        encoding = self.settings['mail.message.encoding']
+        if html:
+            mime_type = 'html' 
+            mime_text = html
+        else:
+            mime_type = 'plain'
+            mime_text = body
+
+        msg = MIMEText(mime_text.encode(encoding, 'ignore'), mime_type, encoding)
+        msg['Subject'] = Header(subject, encoding)
+        msg['From'] = sender
+        msg['To'] = recipient
+        msg['Date'] = formatdate()
+        self.message = msg
+
+    def send(self, from_addr, to_addr):
+        smtp = smtplib.SMTP(self.settings['mail.host'], self.settings['mail.port'])
+        smtp.sendmail(from_addr, [to_addr], self.message.as_string())
+        smtp.close()
 

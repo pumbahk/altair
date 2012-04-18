@@ -24,6 +24,10 @@
       $('#testmail-modal #testmail').attr('action', '/newsletters/test_mail/${newsletter.id}');
     });
 
+    $('#download-modal #download').click(function(){
+      $('#download-modal').modal('hide');
+    });
+
     $('#html_mail').collapse()
   });
 

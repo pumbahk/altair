@@ -7,10 +7,7 @@ from os.path import abspath, dirname
 sys.path.append(abspath(dirname(dirname(__file__))))
 
 from paste.deploy import loadapp
-from pyramid_mailer.mailer import Mailer
-from pyramid_mailer.message import Message
-
-from newsletter.newsletters.models import Newsletter, session
+from newsletter.newsletters.models import Newsletter, Mailer, session
 
 import logging
 logging.basicConfig()
@@ -36,7 +33,6 @@ def main(argv=sys.argv):
         return
     app = loadapp('config:%s' % config, 'main')
     settings = app.registry.settings
-    mailer = Mailer.from_settings(settings)
 
     # send mail magazine
     report = []
@@ -53,7 +49,7 @@ def main(argv=sys.argv):
         log_file = open(csv_file + '.log', 'w')
         count = {'sent':0, 'error':0} 
         for row in csv.DictReader(open(csv_file), Newsletter.csv_fields):
-            result = newsletter.send(recipient=row['email'], name=row['name'])
+            result = newsletter.send(recipient=row['email'], name=row['name'], settings=settings)
             result = 'sent' if result else 'error'
             log_file.write('%s,%s\n' % (row['email'], result))
             count[result] += 1
@@ -66,13 +62,16 @@ def main(argv=sys.argv):
 
     # report
     if report:
-        message = Message(
+        mailer = Mailer(settings)
+        sender = settings['mail.report.sender']
+        recipient = settings['mail.report.recipient']
+        mailer.create_message(
+            sender = sender,
+            recipient = recipient,
             subject = 'mail magazine report',
-            sender = settings['mail.report.sender'],
-            recipients = [settings['mail.report.recipients']],
             body = '\n'.join(report)
         )
-        mailer.send_immediately(message)
+        mailer.send(sender, recipient)
 
 if __name__ == '__main__':
     main()
