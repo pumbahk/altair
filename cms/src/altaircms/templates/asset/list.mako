@@ -1,9 +1,6 @@
 <%inherit file='../layout_2col.mako'/>
 <%namespace name="fco" file="../formcomponents.mako"/>
-<<<<<<< HEAD
-=======
 <%namespace name="nco" file="../navcomponents.mako"/>
->>>>>>> refine template. add required mark
 
 <h2>asset</h2>
 

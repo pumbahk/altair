@@ -274,3 +274,4 @@ def asset_display(request):
     filepath = os.path.join(storepath, asset.filepath)
     content_type = asset.mimetype if asset.mimetype else 'application/octet-stream'
     return Response(request.context.display_asset(filepath), content_type=content_type)
+

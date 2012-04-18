@@ -1,6 +1,8 @@
 # coding: utf-8
 
 
+import sqlalchemy as sa
+import sqlalchemy.orm as orm
 from altaircms.models import Base, BaseOriginalMixin
 from altaircms.models import DBSession
 
@@ -20,7 +22,6 @@ __all__ = [
     # 'CssAsset'
 ]
 
-import sqlalchemy as sa
 import os
 DIR = os.path.dirname(os.path.abspath(__file__))
 # import sqlalchemy.orm as orm
@@ -32,8 +33,17 @@ class Asset(BaseOriginalMixin, Base):
 
     id = sa.Column(sa.Integer, primary_key=True)
     discriminator = sa.Column("type", sa.String(32), nullable=False)
+
     created_at = sa.Column(sa.DateTime, default=datetime.now())
     updated_at = sa.Column(sa.DateTime, default=datetime.now())
+
+    created_by_id = sa.Column(sa.Integer, sa.ForeignKey("operator.id"))
+    created_by = orm.relationship("Operator", backref="created_assets",
+                                  primaryjoin="Asset.created_by_id==Operator.id")
+    updated_by_id = sa.Column(sa.Integer, sa.ForeignKey("operator.id"))
+    updated_by = orm.relationship("Operator", backref="updated_assets", 
+                                  primaryjoin="Asset.updated_by_id==Operator.id")
+
     site_id =  sa.Column(sa.Integer, sa.ForeignKey("site.id"))
 
     __mapper_args__ = {"polymorphic_on": discriminator}
@@ -50,25 +60,7 @@ class Asset(BaseOriginalMixin, Base):
     def private_tags(self):
         return [tag for tag in self.tags if tag.publicp == False]
 
-class MediaAssetColumnsMixin(object):
-    alt = sa.Column(sa.Integer)
-    size = sa.Column(sa.Integer)
-    width = sa.Column(sa.Integer)
-    height = sa.Column(sa.Integer)
-    filepath = sa.Column(sa.String(255))
-    mimetype = sa.Column(sa.String(255), default="")
-
-    ## has default constractor. so this class is called at `Treat' rather than `mixin'.
-    def __init__(self, filepath='', alt='', size=None, width=None, height=None, mimetype=None):
-        self.alt = alt
-        self.size = size
-        self.width = width
-        self.height = height
-        self.filepath = filepath
-        self.mimetype = mimetype or self.MIMETYPE_DEFAULT
-    MIMETYPE_DEFAULT = ''
-
-class ImageAsset(MediaAssetColumnsMixin, Asset):
+class ImageAsset(Asset):
     implements(IAsset, IHasMedia)
     type = "image"
 
@@ -76,8 +68,14 @@ class ImageAsset(MediaAssetColumnsMixin, Asset):
     __mapper_args__ = {"polymorphic_identity": type}
 
     id = sa.Column(sa.Integer, sa.ForeignKey("asset.id"), primary_key=True)
+    alt = sa.Column(sa.Integer)
+    size = sa.Column(sa.Integer)
+    width = sa.Column(sa.Integer)
+    height = sa.Column(sa.Integer)
+    filepath = sa.Column(sa.String(255))
+    mimetype = sa.Column(sa.String(255), default="")
 
-class FlashAsset(MediaAssetColumnsMixin, Asset):
+class FlashAsset(Asset):
     DEFAULT_IMAGE_PATH = os.path.join(DIR, "img/not_found.jpg")
     
     implements(IAsset, IHasMedia)
@@ -88,10 +86,15 @@ class FlashAsset(MediaAssetColumnsMixin, Asset):
     __mapper_args__ = {"polymorphic_identity": type}
 
     id = sa.Column(sa.Integer, sa.ForeignKey("asset.id"), primary_key=True)
+    alt = sa.Column(sa.Integer)
+    size = sa.Column(sa.Integer)
+    width = sa.Column(sa.Integer)
+    height = sa.Column(sa.Integer)
+    filepath = sa.Column(sa.String(255))
     mimetype = sa.Column(sa.String(255), default='application/x-shockwave-flash')
     imagepath = sa.Column(sa.String(255), default=DEFAULT_IMAGE_PATH)
 
-class MovieAsset(MediaAssetColumnsMixin, Asset):
+class MovieAsset(Asset):
     DEFAULT_IMAGE_PATH = os.path.join(DIR, "img/not_found.jpg")
 
     implements(IAsset, IHasMedia)
@@ -101,6 +104,12 @@ class MovieAsset(MediaAssetColumnsMixin, Asset):
     __mapper_args__ = {"polymorphic_identity": type}
 
     id = sa.Column(sa.Integer, sa.ForeignKey("asset.id"), primary_key=True)
+    alt = sa.Column(sa.Integer)
+    size = sa.Column(sa.Integer)
+    width = sa.Column(sa.Integer)
+    height = sa.Column(sa.Integer)
+    filepath = sa.Column(sa.String(255))
+    mimetype = sa.Column(sa.String(255), default="")
     imagepath = sa.Column(sa.String(255), default=DEFAULT_IMAGE_PATH)
 
 # class CssAsset(Asset):
