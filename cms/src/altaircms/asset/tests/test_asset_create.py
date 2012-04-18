@@ -1,6 +1,10 @@
 import unittest
 import pyramid.testing as testing
 
+def _makeOperator(username):
+    from altaircms.auth.models import Operator
+    return Operator(auth_source="dummy", screen_name=username)
+
 class AssetCreateTests(unittest.TestCase):
     def _getTarget(self):
         from altaircms.asset.resources import AssetResource
@@ -19,6 +23,7 @@ class AssetCreateTests(unittest.TestCase):
                 "private_tags": ""}
 
         dummy_form = testing.DummyResource(data=data)
+        operator = _makeOperator("this-is-operator")
         request = testing.DummyRequest()
         target = self._makeOne(request)
         target.storepath = "."
@@ -27,7 +32,8 @@ class AssetCreateTests(unittest.TestCase):
             dummy_form, 
              _write_buf=lambda *args, **kwargs: setattr(dummy_form, "writedp", True), 
              _get_extra_status=lambda *args: dict(width=300, height=200), 
-             _put_tags = lambda *args: args
+             _put_tags = lambda *args: args, 
+            _add_operator = lambda asset, r: setattr(asset, "created_by", operator)
             )
 
         self.assertEquals(result.discriminator,"image" )

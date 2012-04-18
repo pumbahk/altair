@@ -32,6 +32,7 @@ class Asset(BaseOriginalMixin, Base):
     __tablename__ = "asset"
 
     id = sa.Column(sa.Integer, primary_key=True)
+    title = sa.Column(sa.Unicode(255))
     discriminator = sa.Column("type", sa.String(32), nullable=False)
 
     created_at = sa.Column(sa.DateTime, default=datetime.now())

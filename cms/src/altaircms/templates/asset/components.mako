@@ -31,6 +31,7 @@
 	<div class="span5">
 	  <table class="table">
 		<tbody>
+		${asset_tr_attr(asset, u"タイトル", "title")}
 		${asset_tr_attr(asset, u"ファイル名", "filepath")}
 		${asset_tr_attr(asset, u"ALT", "alt")}
 		${asset_tr_attr(asset, u"幅", "width")}
@@ -49,6 +50,7 @@
 	<div class="span5">
 	  <table class="table">
 		<tbody>
+		${asset_tr_attr(asset, u"タイトル", "title")}
 		${asset_tr_attr(asset, u"ファイル名", "filepath")}
 		${asset_tr_attr(asset, u"ALT", "alt")}
 		${asset_tr_attr(asset, u"幅", "width")}
@@ -97,6 +99,7 @@
 	<div class="span5">
 	  <table class="table">
 		<tbody>
+		${asset_tr_attr(asset, u"タイトル", "title")}
 		${asset_tr_attr(asset, u"ファイル名", "filepath")}
 		${asset_tr_attr(asset, u"ALT", "alt")}
 		${asset_tr_attr(asset, u"幅", "width")}

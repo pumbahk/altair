@@ -13,11 +13,15 @@ class QueryParser(object):
         self.query = query
     
     def parse(self):
-        return re.split(u"[　\s]+", self.query.strip())
+        words = re.split(u"[, 　\s]+", self.query.strip())
+        return [x for x in words if x]
 
     def and_search_by_manager(self, manager):
         words = self.parse()
-        if len(words) <= 1:
+        word_count = len(words)
+        if word_count <= 0:
+            return manager.Object.query
+        elif word_count <= 1:
             return manager.search_by_tag_label(words[0])
         else:
             where = manager.Object.tags.any(label=words[0])

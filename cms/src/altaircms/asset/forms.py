@@ -35,6 +35,7 @@ only_image_file = OnlyExtsFileGen((".jpg", ".jpeg", ".png", ".gif"))
 @implementer(IForm)
 class ImageAssetForm(form.Form):
     type = "image"
+    title = fields.TextField(label=u"タイトル")
     alt = fields.TextField(default='')
     filepath = fields.FileField(label=u'画像を投稿', 
                                 validators=[only_image_file, validate_filepath])
@@ -45,6 +46,7 @@ class ImageAssetForm(form.Form):
 @implementer(IForm)
 class ImageAssetUpdateForm(form.Form):
     type = "image"
+    title = fields.TextField(label=u"タイトル")
     alt = fields.TextField(default='')
     filepath = fields.FileField(label=u'画像を投稿(空欄の場合には以前の画像がそのまま使われます)',
                                 validators=[only_image_file.none_is_ok, validate_filepath])
@@ -56,6 +58,7 @@ only_movie_file = OnlyExtsFileGen((".mov", ".mp4"))
 @implementer(IForm)
 class MovieAssetForm(form.Form):
     type = "movie"
+    title = fields.TextField(label=u"タイトル")
     alt = fields.TextField(default='')
     filepath = fields.FileField(label=u'動画を投稿',
                                 validators=[only_movie_file, validate_filepath])
@@ -68,6 +71,7 @@ class MovieAssetForm(form.Form):
 @implementer(IForm)
 class MovieAssetForm(form.Form):
     type = "movie"
+    title = fields.TextField(label=u"タイトル")
     alt = fields.TextField(default='')
     filepath = fields.FileField(label=u'動画を投稿',
                                 validators=[only_movie_file, validate_filepath])
@@ -80,6 +84,7 @@ class MovieAssetForm(form.Form):
 @implementer(IForm)
 class MovieAssetUpdateForm(form.Form):
     type = "movie"
+    title = fields.TextField(label=u"タイトル")
     alt = fields.TextField(default='')
     filepath = fields.FileField(label=u'動画を投稿(空欄の場合には以前の画像がそのまま使われます)',
                                 validators=[only_movie_file.none_is_ok, validate_filepath])
@@ -93,6 +98,7 @@ only_flash_file = OnlyExtsFileGen((".swf", ))
 @implementer(IForm)
 class FlashAssetForm(form.Form):
     type = "flash"
+    title = fields.TextField(label=u"タイトル")
     alt = fields.TextField(default='')
     filepath = fields.FileField(label=u'flashを投稿',
                                 validators=[only_flash_file, validate_filepath])
@@ -105,6 +111,7 @@ class FlashAssetForm(form.Form):
 @implementer(IForm)
 class FlashAssetUpdateForm(form.Form):
     type = "flash"
+    title = fields.TextField(label=u"タイトル")
     alt = fields.TextField(default='')
     filepath = fields.FileField(label=u'flashを投稿(空欄の場合には以前の画像がそのまま使われます)',
                                 validators=[only_flash_file.none_is_ok, validate_filepath])
@@ -117,16 +124,23 @@ class FlashAssetUpdateForm(form.Form):
 @implementer(IForm)
 class NoValidAssetForm(form.Form):
     type = "image" # default
+    title = fields.TextField(label=u"タイトル")
     alt = fields.TextField(default='')
     filepath = fields.FileField(label='upload file')
     tags = fields.TextField(label=u"タグ")
     private_tags = fields.TextField(label=u"非公開タグ")
     
-def get_confirm_asset_form_by_asset_type(asset_type=None):
-    if asset_type == "image":
-        return ImageAssetForm
-    elif asset_type == "movie":
-        return MovieAssetForm
-    elif asset_type == "flash":
-        return FlashAssetForm
-    raise Exception("asset type %s is not supported")
+from altaircms.lib.formhelpers import dynamic_query_select_field_factory
+from altaircms.auth.models import Operator
+
+class AssetSearchForm(form.Form):
+    created_by = dynamic_query_select_field_factory(
+        Operator, allow_blank=True, 
+        get_label=lambda user: user.screen_name
+        )
+    updated_by = dynamic_query_select_field_factory(
+        Operator, allow_blank=True, 
+        get_label=lambda user: user.screen_name
+        )
+    tags = fields.TextField(label=u"タグ")
+    

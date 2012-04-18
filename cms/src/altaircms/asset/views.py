@@ -34,7 +34,8 @@ class AssetListView(object):
     def image_asset_list(self):
         assets = self.request.context.get_image_assets()
         form = self.context.forms.ImageAssetForm()
-        return {"assets": assets, "form": form}
+        search_form = self.request.context.forms.AssetSearchForm()
+        return {"assets": assets, "form": form, "search_form": search_form}
 
     @view_config(route_name="asset_movie_list", renderer="altaircms:templates/asset/movie/list.mako", 
                  decorator=with_bootstrap)
@@ -275,3 +276,22 @@ def asset_display(request):
     content_type = asset.mimetype if asset.mimetype else 'application/octet-stream'
     return Response(request.context.display_asset(filepath), content_type=content_type)
 
+### asset search
+@view_defaults(permission="asset_read", request_method="GET", 
+               decorator=with_bootstrap)
+class AssetSearchView(object):
+    def __init__(self, request):
+        self.request = request
+        self.context = request.context 
+
+    @view_config(route_name="asset_search_image", renderer="altaircms:templates/asset/image/search.mako")
+    def image_asset_search(self):
+        search_form = self.context.forms.AssetSearchForm(self.request.GET)
+        if not search_form.validate():
+            return HTTPFound(location=self.request.route_url("asset_image_list"))
+        search_result = self.context.search_image_asset_by_query(search_form.data)
+        return {"search_form": search_form, "search_result": search_result}
+
+@view_config(route_name="asset_search", permission="asset_read", request_method="GET")
+def asset_search(request):
+    pass

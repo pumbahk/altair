@@ -3,6 +3,7 @@ from datetime import datetime
 import sqlahelper
 from sqlalchemy.orm import relationship, backref
 
+import mako
 from sqlalchemy.orm.mapper import Mapper
 from sqlalchemy.schema import Table, Column, ForeignKey, UniqueConstraint
 from sqlalchemy.types import String, DateTime, Integer, BigInteger, Unicode

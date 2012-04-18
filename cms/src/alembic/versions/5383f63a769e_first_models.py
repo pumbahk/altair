@@ -335,13 +335,6 @@ def upgrade():
     sa.ForeignKeyConstraint(['id'], ['widget.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('eventtag2event',
-    sa.Column('object_id', sa.Integer(), nullable=True),
-    sa.Column('tag_id', sa.Integer(), nullable=False),
-    sa.ForeignKeyConstraint(['object_id'], ['event.id'], ),
-    sa.ForeignKeyConstraint(['tag_id'], ['eventtag.id'], ),
-    sa.PrimaryKeyConstraint('tag_id')
-    )
     op.create_table('widget_menu',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('items', sa.String(length=255), nullable=True),
@@ -369,11 +362,12 @@ def upgrade():
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('assettag2asset',
+    sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('object_id', sa.Integer(), nullable=True),
     sa.Column('tag_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['object_id'], ['asset.id'], ),
     sa.ForeignKeyConstraint(['tag_id'], ['assettag.id'], ),
-    sa.PrimaryKeyConstraint('tag_id')
+    sa.PrimaryKeyConstraint('id')
     )
     op.create_table('pagetag2page',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -441,15 +435,6 @@ def upgrade():
     sa.CheckConstraint('TODO'),
     sa.ForeignKeyConstraint(['asset_id'], ['asset.id'], ),
     sa.ForeignKeyConstraint(['id'], ['widget.id'], ),
-    sa.PrimaryKeyConstraint('id')
-    )
-    op.create_table('eventtag',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('label', sa.Unicode(length=255), nullable=True),
-    sa.Column('publicp', sa.Boolean(), nullable=True),
-    sa.Column('created_at', sa.DateTime(), nullable=True),
-    sa.Column('updated_at', sa.DateTime(), nullable=True),
-    sa.CheckConstraint('TODO'),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('role2permission',

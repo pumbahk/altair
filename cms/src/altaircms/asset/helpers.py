@@ -7,6 +7,11 @@ import Image #PIL?
 
 import altaircms.tag.api as tag
 from .swfrect import swf_width_and_height
+
+from altaircms.tag.manager import QueryParser
+from altaircms.tag.api import get_tagmanager
+from .import models 
+
 def detect_mimetype(filename):
     mimetype = mimetypes.guess_type(filename)[0]
     return mimetype or 'application/octet-stream'
@@ -75,6 +80,13 @@ def get_form_params_from_asset(asset):
     params["private_tags"] = tag.tags_to_string(asset.private_tags)
     return params
 
+def _image_asset_from_search_params(params):
+    if "tags" in params:
+        manager = get_tagmanager("image_asset")
+        return QueryParser(params["tags"]).and_search_by_manager(manager)
+    else:
+        return models.ImagaAsset.query
+
 ## convenience あとで消す
 def create_asset(captured, request=None):
     """captured["type"], captured["filename"], captured["fp"]
@@ -82,6 +94,11 @@ def create_asset(captured, request=None):
     if request is None:
         from pyramid.threadlocal import get_current_request
         request = get_current_request()
+
+    if not hasattr(request, "user"):
+        from altaircms.auth.models import Operator
+        request.user = Operator.query.first()
+
     from .resources import AssetResource
 
     resource = AssetResource(request)

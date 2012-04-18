@@ -23,32 +23,25 @@
 </div>
 
 <div class="row">
-  <h4>アセットの追加</h4>
-
   <div class="span6">
     ## image asset
+    <h4>画像アセットの追加</h4>
 	<form action="${request.route_path("asset_image_create")}" method="POST" enctype="multipart/form-data">
-      ${fco.formfield(image_asset_form, "filepath")}
-      ${fco.formfield(image_asset_form, "tags")}
-      ${fco.formfield(image_asset_form, "private_tags")}
+      ${fco.form_as_table_strict(image_asset_form, ["filepath","title","tags","private_tags"])}
 	  <button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> Create</button>
     </form>
 
     ## movie asset
+    <h4>動画アセットの追加</h4>
 	<form action="${request.route_path("asset_movie_create")}" method="POST" enctype="multipart/form-data">
-      ${fco.formfield(movie_asset_form, "filepath")}
-      ${fco.formfield(movie_asset_form, "placeholder")}
-      ${fco.formfield(movie_asset_form, "tags")}
-      ${fco.formfield(movie_asset_form, "private_tags")}
+      ${fco.form_as_table_strict(movie_asset_form, ["filepath","title","placeholder","tags","private_tags"])}
 	  <button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> Create</button>
     </form>
 
     ## flash asset
+    <h4>flashアセットの追加</h4>
 	<form action="${request.route_path("asset_flash_create")}" method="POST" enctype="multipart/form-data">
-      ${fco.formfield(flash_asset_form, "filepath")}
-      ${fco.formfield(movie_asset_form, "placeholder")}
-      ${fco.formfield(flash_asset_form, "tags")}
-      ${fco.formfield(flash_asset_form, "private_tags")}
+      ${fco.form_as_table_strict(flash_asset_form, ["filepath","title","placeholder","tags","private_tags"])}
 	  <button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> Create</button>
     </form>
 

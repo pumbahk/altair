@@ -394,6 +394,7 @@ class AssetListViewTests(AssetViewTestBase):
             def __init__(self, request):
                 self.request = request
                 self.forms = testing.DummyResource(
+                    AssetSearchForm=SuccessForm, 
                     ImageAssetForm=SuccessForm)
 
             def get_image_assets(self):
@@ -406,7 +407,7 @@ class AssetListViewTests(AssetViewTestBase):
         result = target.image_asset_list()
 
         self.assertEquals(sorted(result.keys()), 
-                         sorted(["assets", "form"]))
+                          sorted(["assets", "form", "search_form"]))
 
     def test_movie_asset_list(self):
         class DummyContext(object):
@@ -737,7 +738,7 @@ class AssetDisplayViewTests(AssetViewTestBase):
 
     def test_asset_display_not_found(self):
         from altaircms.asset.models import FlashAsset
-        _displayd = FlashAsset(filepath="/foo/bar.jpg")
+        _displayd = FlashAsset(filepath="/foo/bar.swf")
         assertion = self
         class DummyContext(object):
             storepath = "."
@@ -756,7 +757,7 @@ class AssetDisplayViewTests(AssetViewTestBase):
         
         result = self._getTarget()(request)
         self.assertEquals(result.status, "200 OK")
-        self.assertEquals(result.content_type, "application/x-shockwave-flash")
+        self.assertEquals(result.content_type, "application/octet-stream")
         self.assertEquals(result.body, "this-is-image-file")
         
 if __name__ == "__main__":

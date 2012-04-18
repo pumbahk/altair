@@ -24,10 +24,7 @@
 
   <div class="span6">
 	<form action="${request.route_path("asset_flash_update", asset_id=asset.id)}" method="POST" enctype="multipart/form-data">
-      ${fco.formfield(form, "filepath")}
-      ${fco.formfield(form, "placeholder")}
-      ${fco.formfield(form, "tags")}
-      ${fco.formfield(form, "private_tags")}
+      ${fco.form_as_table_strict(form, ["filepath","title","placeholder","tags","private_tags"])}
 	  <button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> Update</button>
     </form>
   </div>

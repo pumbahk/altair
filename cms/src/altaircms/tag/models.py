@@ -33,8 +33,9 @@ class PageTag(Base):
 class AssetTag2Asset(Base):
     __tablename__ = "assettag2asset"
     query = DBSession.query_property()
+    id = sa.Column(sa.Integer, primary_key=True)
     object_id = sa.Column(sa.Integer, sa.ForeignKey("asset.id"))
-    tag_id = sa.Column(sa.Integer, sa.ForeignKey("assettag.id"),  primary_key=True)
+    tag_id = sa.Column(sa.Integer, sa.ForeignKey("assettag.id"))
     asset = orm.relationship("Asset", backref=orm.backref("assettag2asset", cascade="all, delete-orphan"))
 
 class AssetTag(Base):

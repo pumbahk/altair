@@ -83,8 +83,9 @@ class DynamicQueryDefault(object):
     @classmethod
     def pageset(cls, info, qs, field):
         field.query = cls._filter_by_site(qs, info.request)
-
-
+    @classmethod
+    def operator(cls, info, qs, field):
+        field.query = qs
     @classmethod
     def widgetdisposition(cls, info, qs, field):
         qs = cls._filter_by_site(info, info.qs, info.request)

@@ -16,11 +16,14 @@ import sqlalchemy as sa
 
 def upgrade():
     op.add_column("asset", 
+                  sa.Column("title", sa.Unicode(255)))
+    op.add_column("asset", 
                   sa.Column("created_by_id", sa.INTEGER, sa.ForeignKey("operator.id")))
     op.add_column("asset", 
                   sa.Column("updated_by_id", sa.INTEGER, sa.ForeignKey("operator.id")))
 
 def downgrade():
+    op.drop_column("asset", "title")
     op.drop_column("asset", "created_by_id")
     op.drop_column("asset", "updated_by_id")
 
