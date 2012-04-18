@@ -1,12 +1,10 @@
 # coding: utf-8
-import isodate
+import logging
 import json
 import collections
 
 from pyramid.httpexceptions import HTTPFound, HTTPBadRequest, HTTPCreated, HTTPOk, HTTPForbidden
-from pyramid.response import Response
 from pyramid.view import view_config
-import transaction
 
 from altaircms.models import DBSession, Performance
 from altaircms.event.models import Event
@@ -16,7 +14,6 @@ from altaircms.lib.fanstatic_decorator import with_bootstrap
 
 from altaircms.event.forms import EventForm, EventRegisterForm
 from altaircms.event.mappers import EventMapper, EventsMapper
-from altaircms.event.api import parse_and_save_event
 from . import helpers as h
 
 
@@ -114,6 +111,7 @@ def event_register(request):
         return HTTPCreated()
 
     except ValueError as e:
+        logging.exception(e)
         return h.json_error_response({'error': str(e)})
 
 

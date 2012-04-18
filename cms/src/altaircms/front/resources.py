@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+import logging
 
 from altaircms.models import DBSession
 from altaircms.page.models import Page

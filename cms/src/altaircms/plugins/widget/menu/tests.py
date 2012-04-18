@@ -61,49 +61,49 @@ class MenuWidgetViewTests(WidgetTestSourceMixn,
 
         self._with_session(session, self._makePage(id=1))
         request = self._makeRequest(json_body={
-                "page_id": 1, "pk": None, "data": {"items": "[]"}
+                u"page_id": 1, u"pk": None, u"data": {u"items": u"[]"}
                 })
         view = self._makeTarget(request)
-        expexted = {"page_id": 1,
-                    "pk": 1,
-                    "data": {"items": "[]"}}
+        expexted = {u"page_id": 1,
+                    u"pk": 1,
+                    u"data": {u"items": "[]"}}
         self.assertEquals(view.create(), expexted)
 
         created = MenuWidget.query.one()
         self.assertEquals(MenuWidget.query.count(), 1)
         self.assertEquals(created.page.id, 1)
-        self.assertEquals(created.items, "[]")
+        self.assertEquals(created.items, u"[]")
 
     def _create_widget(self, session, page_id=1, data=None):
         self._with_session(session, self._makePage(id=1))
         request = self._makeRequest(json_body={
-                "page_id": 1, "pk": None, "data": data or {}
+                u"page_id": 1, u"pk": None, u"data": data or {}
                 })
         view = self._makeTarget(request)
-        return view.create()["pk"]
+        return view.create()[u"pk"]
 
     def test_update(self):
         session = self._getSession()
-        pk = self._create_widget(session, page_id=1, data={"items": "[]"})
+        pk = self._create_widget(session, page_id=1, data={u"items": u"[]"})
         request = self._makeRequest(json_body={
-                "page_id": 1, "pk": pk, "data": {"items": '[{label:"google", link:"http://www.google.co.jp"}]'}
+                u"page_id": 1, u"pk": pk, u"data": {u"items": u'[{label:"google", link:"http://www.google.co.jp"}]'}
                 })
         view = self._makeTarget(request)
-        expexted = {"page_id": 1,
-                    "pk": pk,
-                    "data": {"items": '[{label:"google", link:"http://www.google.co.jp"}]'} }
+        expexted = {u"page_id": 1,
+                    u"pk": pk,
+                    u"data": {u"items": u'[{label:"google", link:"http://www.google.co.jp"}]'} }
         self.assertEquals(view.update(), expexted)
 
         updated = MenuWidget.query.one()
         self.assertEquals(MenuWidget.query.count(), 1)
         self.assertEquals(updated.page.id, 1)
-        self.assertEquals(updated.items, '[{label:"google", link:"http://www.google.co.jp"}]')
+        self.assertEquals(updated.items, u'[{label:"google", link:"http://www.google.co.jp"}]')
 
     def test_delete(self):
         session = self._getSession()
-        pk = self._create_widget(session, page_id=1, data={"items": "[]"})
+        pk = self._create_widget(session, page_id=1, data={u"items": u"[]"})
 
-        request = self._makeRequest(json_body={"pk": pk})
+        request = self._makeRequest(json_body={u"pk": pk})
         view = self._makeTarget(request)
         expexted = {"status": "ok"}
         self.assertEquals(view.delete(), expexted)

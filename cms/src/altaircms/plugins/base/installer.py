@@ -1,3 +1,4 @@
+import logging
 import os
 import filecmp
 from pyramid.asset import abspath_from_asset_spec
@@ -37,7 +38,8 @@ class _FileLinker(object):
         try:
             if not os.path.exists(os.readlink(dst)):
                 os.remove(dst)
-        except OSError:
+        except OSError as e:
+            logging.warn(str(e))
             pass
         os.symlink(src, dst)
 

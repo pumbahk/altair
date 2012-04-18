@@ -1,31 +1,24 @@
 # coding: utf-8
 import logging
 from datetime import datetime
-import urlparse
 import urllib
 import urllib2
-import sqlahelper
 
 
-from pyramid.exceptions import Forbidden
-from pyramid.httpexceptions import HTTPFound, HTTPBadRequest, HTTPUnauthorized, HTTPNotFound
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.security import forget, remember, authenticated_userid
 from pyramid.view import view_config
 from pyramid.view import view_defaults
-from pyramid.url import route_url
 
 from sqlalchemy.orm.exc import NoResultFound
 
-import oauth2
-import transaction
 import json
 
 from altaircms.lib.apiview import BaseRESTAPI
 from altaircms.models import DBSession
 from altaircms.lib.fanstatic_decorator import with_bootstrap
-from altaircms.auth.errors import AuthenticationError
 from altaircms.auth.forms import RoleForm
-from .models import Operator, Role, Permission, RolePermission, DEFAULT_ROLE
+from .models import Operator, Role, RolePermission, DEFAULT_ROLE
 
 @view_config(route_name='login', renderer='altaircms:templates/login.mako')
 @view_config(context='pyramid.httpexceptions.HTTPForbidden', renderer='altaircms:templates/login.mako',
@@ -72,6 +65,16 @@ class OAuthLogin(object):
         return HTTPFound('%s?client_id=%s&response_type=code' %
                          (self.authorize_url, self.client_id))
 
+    def _create_oauth_model(self, role, data):
+        return Operator(
+                auth_source='oauth',
+                user_id=data['user_id'],
+                screen_name=data['screen_name'],
+                oauth_token=data['access_token'],
+                oauth_token_secret='',
+                role=role,
+            )
+        
     @view_config(route_name='oauth_callback')
     def oauth_callback(self):
 
@@ -86,7 +89,7 @@ class OAuthLogin(object):
                 self.access_token_url +
                 "?" + urllib.urlencode(args)).read())
         except IOError, e:
-            logging.error(e)
+            logging.exception(e)
             self.request.response.body = str(e)
             return self.request.response
 
@@ -94,16 +97,10 @@ class OAuthLogin(object):
             operator = Operator.query.filter_by(auth_source='oauth', user_id=data['user_id']).one()
             operator.last_login = datetime.now()
         except NoResultFound:
+            logging.info("operator is not found. create it")
+
             role = Role.query.filter_by(name=data.get('role', DEFAULT_ROLE)).one()
-            
-            operator = Operator(
-                auth_source='oauth',
-                user_id=data['user_id'],
-                screen_name=data['screen_name'],
-                oauth_token=data['access_token'],
-                oauth_token_secret='',
-                role=role,
-            )
+            operator = self._create_oauth_model(role, data)
             DBSession.add(operator)
 
         headers = remember(self.request, operator.user_id)
@@ -197,7 +194,8 @@ class RoleView(object):
     def delete(self):
         try:
             DBSession.delete(self.role)
-        except:
+        except Exception as e:
+            logging.exception(e)
             raise
         return HTTPFound(self.request.route_path("role_list"))
 

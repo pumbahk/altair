@@ -48,19 +48,19 @@ class UsePageEtcMixin(object):
              'structure': structure, 
              'title': u'fofoo',
              'updated_at': datetime.datetime(2012, 2, 14, 15, 13, 26, 438156),
-             'url': u'sample_page',
+             'url': 'sample_page',
              'version': None}
         return Page.from_dict(D)
 
     def _getLayout(self):
         from altaircms.layout.models import Layout
-        D = {'blocks': u'[["content"],["footer"], ["js_prerender"], ["js_postrender"]]',
+        D = {'blocks': '[["content"],["footer"], ["js_prerender"], ["js_postrender"]]',
              'client_id': None,
              'created_at': datetime.datetime(2012, 2, 16, 11, 26, 55, 755523),
              'id': 2,
              'site_id': None,
              'template_filename': u'layout.mako',
-             'title': u'simple',
+             'title': 'simple',
              'updated_at': datetime.datetime(2012, 2, 16, 11, 26, 55, 755641)}
         return Layout.from_dict(D)
 
@@ -80,7 +80,7 @@ class WithWidgetPageTest(UseAssetMixin,
         functionalTestTearDown()
         
     def _addData(self, session):
-        structure = u'''
+        structure = '''
 {"content": [{"pk": 3,  "name":"menu"}, {"pk": 1, "name": "freetext"}],
  "footer": [{"pk": 2, "name": "image"}]}
 '''

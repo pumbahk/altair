@@ -1,10 +1,7 @@
 # coding: utf-8
-import json
-
+import logging
 import isodate
-import transaction
 from sqlalchemy.orm.exc import NoResultFound
-import sqlahelper
 
 from altaircms.event.models import Event
 from altaircms.models import DBSession, Performance, Sale, Ticket

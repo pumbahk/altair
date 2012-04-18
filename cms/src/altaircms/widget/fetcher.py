@@ -1,3 +1,5 @@
+import logging
+
 class WidgetFetchException(Exception):
     pass
 
@@ -14,7 +16,9 @@ class WidgetFetcher(object):
     def fetch(self, name, pks):
         try:
             return getattr(self, name)(pks)
-        except AttributeError:
+        except AttributeError as e:
+            logging.exception(e)
+
             raise WidgetFetchException("self.%s() fetch method is not defined" % name)
 
     @classmethod

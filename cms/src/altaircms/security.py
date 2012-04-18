@@ -1,6 +1,6 @@
 # coding: utf-8
 import logging
-from pyramid.security import Allow, Authenticated, Everyone, Deny, DENY_ALL
+from pyramid.security import Allow, Authenticated
 from sqlalchemy.orm.exc import NoResultFound
 
 from altaircms.models import DBSession
@@ -22,7 +22,7 @@ def rolefinder(userid, request):
         operator = Operator.query.filter_by(user_id=userid).one()
         return [operator.role.name]
     except NoResultFound, e:
-        logging.error(e)
+        logging.exception(e)
         return []
 
 
@@ -60,10 +60,10 @@ class DummyAuthorizationPolicy(object):
         acl = '<No ACL found on any object in resource lineage>'
         
         for location in lineage(context):
-            try:
-                acl = location.__acl__
-            except AttributeError:
+            if not hasattr(location, "__acl__"):
                 continue
+
+            acl = location.__acl__
 
             for ace in acl:
                 ace_action, ace_principal, ace_permissions = ace
@@ -76,10 +76,10 @@ class DummyAuthorizationPolicy(object):
 
         for location in reversed(list(lineage(context))):
             # NB: we're walking *up* the object graph from the root
-            try:
-                acl = location.__acl__
-            except AttributeError:
+            if not hasattr(location, "__acl__"):
                 continue
+
+            acl = location.__acl__
 
             allowed_here = set()
             denied_here = set()

@@ -1,4 +1,6 @@
 import json
+import logging
+
 from collections import defaultdict
 from altaircms.interfaces import IBlockTree
 from altaircms.interfaces import ICacher
@@ -51,6 +53,8 @@ def _structure_as_dict(page):
     try:
         return json.loads(page.structure)
     except ValueError, e:
+        logging.exception(e)
+
         raise WidgetTreeGenerateException(str(e))
     
 class WidgetCacher(object):
