@@ -71,23 +71,6 @@
 	</tbody>
 </%def>
 
-<%def name="event_search_result(request, query_result)">
-  <thead>
-	<tr>
-	  <th>タイトル</th>
-	  <th>更新日時</th>
-	</tr>
-  </thead>
-	<tbody>
-	  % for event in query_result:
-		<tr>
-		  <td>${event.title}</td>
-		  <td>${event.updated_at}</td>
-		</tr>
-	  % endfor
-	</tbody>
-</%def>
-
 <%def name="asset_search_result(request, query_result)">
   <thead>
 	<tr>

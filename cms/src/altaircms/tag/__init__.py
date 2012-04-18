@@ -1,4 +1,4 @@
-SUPPORTED_CLASSIFIER = ("page", "event", "asset")
+SUPPORTED_CLASSIFIER = ("page", "asset")
 
 def includeme(config):
     config.add_directive("add_tagmanager", ".directives.add_tagmanager")
@@ -6,11 +6,6 @@ def includeme(config):
                          model="altaircms.page.models.Page", 
                          xref=".models.PageTag2Page", 
                          tag=".models.PageTag"
-                         )
-    config.add_tagmanager("event",
-                         model="altaircms.event.models.Event", 
-                         xref=".models.EventTag2Event", 
-                         tag=".models.EventTag"
                          )
     config.add_tagmanager("asset",
                          model="altaircms.asset.models.Asset", 

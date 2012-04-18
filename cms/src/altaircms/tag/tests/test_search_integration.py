@@ -62,9 +62,6 @@ class AnyKindAssetSearchTests(unittest.TestCase):
         target = self._makeOne("page")
         self.assertEquals(target.search_by_tag_label(u"foo").count(), 
                           0)
-        target = self._makeOne("event")
-        self.assertEquals(target.search_by_tag_label(u"foo").count(), 
-                          0)
 
 if __name__ == "__main__":
     unittest.main()

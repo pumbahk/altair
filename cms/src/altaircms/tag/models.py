@@ -30,26 +30,6 @@ class PageTag(Base):
     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
     __table_args__ = ((saschema.UniqueConstraint(label, publicp), ))        
 
-class EventTag2Event(Base):
-    __tablename__ = "eventtag2event"
-    query = DBSession.query_property()
-    object_id = sa.Column(sa.Integer, sa.ForeignKey("event.id"))
-    tag_id = sa.Column(sa.Integer, sa.ForeignKey("eventtag.id"), primary_key=True)
-    event = orm.relationship("Event", backref=orm.backref("eventtag2event", cascade="all, delete-orphan"))
-
-class EventTag(Base):
-    CLASSIFIER = "event"
-
-    __tablename__ = "eventtag"
-    query = DBSession.query_property()
-    id = sa.Column(sa.Integer, primary_key=True)
-    label = sa.Column(sa.Unicode(255), index=True)
-    events = orm.relationship("Event", secondary="eventtag2event", backref="tags")
-    publicp = sa.Column(sa.Boolean, default=False)
-    created_at = sa.Column(sa.DateTime, default=datetime.now)
-    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
-    __table_args__ = ((saschema.UniqueConstraint(label, publicp), ))
-
 class AssetTag2Asset(Base):
     __tablename__ = "assettag2asset"
     query = DBSession.query_property()

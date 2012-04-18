@@ -23,7 +23,6 @@ class TopView(object):
         form = forms.TagSearchForm()
         new_tags_dict = dict(
             page=get_tagmanager("page").recent_change_tags().limit(self.RECENT_CHANGE_TAGS_LIMIT), 
-            event=get_tagmanager("event").recent_change_tags().limit(self.RECENT_CHANGE_TAGS_LIMIT), 
             asset=get_tagmanager("asset").recent_change_tags().limit(self.RECENT_CHANGE_TAGS_LIMIT), 
             )
         return {"supported": SUPPORTED_CLASSIFIER, "form": form, 
