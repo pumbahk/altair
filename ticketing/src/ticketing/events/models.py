@@ -23,9 +23,10 @@ class Account(Base):
     account_type = Column(Integer)
 
     user_id         = Column(BigInteger, ForeignKey("User.id"), nullable=True)
-    user            = relationship('User', uselist=False)
-    ticketer_id     = Column(BigInteger, ForeignKey("Ticketer.id"), nullable=True)
-    ticketer        = relationship("Ticketer", uselist=False)
+    user            = relationship('User')
+
+    client_id       = Column(BigInteger, ForeignKey("Client.id"), nullable=True)
+    client          = relationship('Client', uselist=False)
 
     updated_at      = Column(DateTime, nullable=True)
     created_at      = Column(DateTime)
@@ -35,27 +36,18 @@ class Account(Base):
     def get(account_id):
         return session.query(Account).filter(Account.id == account_id).first()
 
-class Ticketer(Base):
-    __tablename__ = 'Ticketer'
+class AccountOwnerClient(Base):
+
+    __tablename__ = "AccountOwnerClient"
 
     id              = Column(BigInteger, primary_key=True)
-    zip             = Column(String(255))
-    prefecture_id = Column(BigInteger, ForeignKey("Prefecture.id"), nullable=True)
-    prefecture    = relationship("Prefecture", uselist=False)
-    city            = Column(String(255))
-    street          = Column(String(255))
-    address         = Column(String(255))
-    other_address   = Column(String(255))
-    tel_1           = Column(String(32))
-    tel_2           = Column(String(32))
-    fax             = Column(String(32))
-
-    updated_at      = Column(DateTime)
+    account_id      = Column(BigInteger, ForeignKey("Account.id"))
+    account         = relationship('Account', backref="clients")
+    client_id       = Column(BigInteger, ForeignKey("Client.id"), nullable=True)
+    client          = relationship('Client', uselist=False)
+    updated_at      = Column(DateTime, nullable=True)
     created_at      = Column(DateTime)
-    status          = Column(Integer)
-
-    bank_account_id = Column(BigInteger, ForeignKey('BankAccount.id'))
-    bank_account    = relationship('BankAccount')
+    status          = Column(Integer, default=1)
 
 '''
 
