@@ -1,6 +1,6 @@
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL
 from sqlalchemy.orm import relationship, join, backref, column_property
-
+from ticketing.master.models import *
 import sqlahelper
 
 session = sqlahelper.get_session()
@@ -9,9 +9,6 @@ Base = sqlahelper.get_base()
 class User(Base):
     __tablename__ = 'User'
     id = Column(BigInteger, primary_key=True)
-    open_id_identifier = Column(String(255), unique=True)
-    member_ship_id = Column(BigInteger, ForeignKey('MemberShip.id'))
-    member_ship     = relationship("MemberShip", uselist=False)
     email = Column(String(255))
     nick_name = Column(String(255))
     first_name = Column(String(255))
@@ -34,18 +31,44 @@ class User(Base):
     created_at = Column(DateTime)
     status = Column(Integer)
 
-    point_accounts = relationship("UserPointAccount")
+    bank_account_id = Column(BigInteger, ForeignKey('BankAccount.id'))
+    bank_account    = relationship('BankAccount')
 
     @staticmethod
     def get(user_id):
         return session.query(User).filter(User.id == user_id).first()
 
+class UserProfile(Base):
+    __tablename__ = 'UserProfile'
+    id = Column(BigInteger, primary_key=True)
+    user_id = Column(BigInteger, ForeignKey('User.id'))
+    user = relationship('User', backref="user_profile", uselist=False)
+    updated_at = Column(DateTime)
+    created_at = Column(DateTime)
+    status = Column(Integer)
+
+class UserCredential(Base):
+    __tablename__ = 'UserCredential'
+    id = Column(BigInteger, primary_key=True)
+
+    auth_identifier = Column(String(1024), unique=True)
+    auth_secret= Column(String(1024))
+
+    user_id = Column(BigInteger, ForeignKey('User.id'))
+    user = relationship('User', backref="user_credential", uselist=False)
+
+    member_ship_id = Column(BigInteger, ForeignKey('MemberShip.id'))
+    member_ship     = relationship("MemberShip", uselist=False)
+
+    updated_at = Column(DateTime)
+    created_at = Column(DateTime)
+    status = Column(Integer)
 
 class UserPointAccount(Base):
     __tablename__ = 'UserPointAccount'
     id = Column(BigInteger, primary_key=True)
     user_id = Column(BigInteger, ForeignKey("User.id"))
-    user = relationship('User', uselist=False)
+    user = relationship('User', backref="user_point_account", uselist=False)
     point_type_code = Column(Integer)
     account_number = Column(String(255))
     account_expire = Column(String(255))
