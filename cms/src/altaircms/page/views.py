@@ -9,6 +9,7 @@ from altaircms.lib.viewhelpers import RegisterViewPredicate
 from altaircms.lib.viewhelpers import FlashMessage
 from . import forms
 from altaircms.page.models import Page
+from altaircms.page.models import PageSet
 from altaircms.event.models import Event
 
 
@@ -20,6 +21,7 @@ from altaircms.lib.fanstatic_decorator import with_jquery
 from altaircms.lib.fanstatic_decorator import with_fanstatic_jqueries
 from altaircms.lib.fanstatic_decorator import with_wysiwyg_editor
 import altaircms.helpers as h
+
 
 ##
 ## todo: CRUDのview整理する
@@ -43,6 +45,7 @@ class PageAddView(object):
 
     @view_config(request_method="POST", renderer="altaircms:templates/page/add.mako")
     def create_page(self):
+        logging.debug('create_page')
         form = forms.PageForm(self.request.POST)
         if form.validate():
             page = self.context.crate_page(form)
@@ -51,6 +54,7 @@ class PageAddView(object):
             FlashMessage.success("page created", request=self.request)
             return HTTPFound(self.request.route_path("event", id=self.event_id))
         else:
+            logging.debug("%s" % form.errors)
             event_id = self.request.matchdict["event_id"]
             event = Event.query.filter(Event.id==event_id).one()
             return {"form":form, "event":event}
@@ -261,3 +265,18 @@ def disposition_delete(context, request):
     FlashMessage.success(u"%sを消しました" % title, request=request)
     return HTTPFound(h.widget.to_disposition_list(request))
 
+
+class PageSetView(object):
+    def __init__(self, request):
+        self.request = request
+
+    @view_config(route_name='pagesets', renderer="altaircms:templates/pagesets/list.mako", decorator=with_bootstrap)
+    def pageset_list(self):
+        pagesets = PageSet.query.all()
+        return dict(pagesets=pagesets)
+
+    @view_config(route_name='pageset', renderer="altaircms:templates/pagesets/edit.mako", decorator=with_bootstrap)
+    def pageset(self):
+        pageset_id = self.request.matchdict['pageset_id']
+        pageset = PageSet.query.filter_by(id=pageset_id).one()
+        return dict(ps=pageset)

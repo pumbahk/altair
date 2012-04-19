@@ -14,4 +14,10 @@ def includeme(config):
     config.add_route("disposition_list", "/disposition", factory="altaircms.page.resources.PageResource")
     config.add_route("disposition_alter", "/disposition/{id}/alter", factory="altaircms.page.resources.PageResource")
 
+    # PageSet
+    config.add_route('pagesets', '/pagesets')
+    config.add_route('pageset', '/pagesets/{pageset_id}')
+    config.add_route('pageset_delete', '/pagesets/{pageset_id}/delete')
+    config.add_route('pageset_update', '/pagesets/{pageset_id}/update')
+
     config.scan('.views')

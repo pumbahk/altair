@@ -48,7 +48,7 @@
   </div>
   <div class="span5">
 	<form action="${request.route_path("page_add",event_id=event.id)}" method="POST">
-     ${fco.form_as_table_strict(form, ["url","title","event", "parent","description","keywords","tags","private_tags","layout"])}
+     ${fco.form_as_table_strict(form, ["url","pageset","title","event", "parent","description","keywords","tags","private_tags","layout"])}
 	  <button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> Create</button>
     </form>
   </div>

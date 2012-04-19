@@ -45,6 +45,12 @@
   <h2 class="span6"ページのタイトル - ${page.title} (ID: ${page.id})></h2>
 </div>
 
+<select onchange="window.location = this.value">
+%for p in page.pageset.pages:
+<option value="${request.route_url('page_edit_', page_id=p.id)}" ${'selected="selected"' if p.id == page.id else ''}>${p.version} ${p.title}</option>
+%endfor
+</select>
+
 <div class="row-fluid">
   <h4>ページ情報</h4>
   <div class="span5">

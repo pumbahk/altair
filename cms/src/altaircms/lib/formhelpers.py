@@ -80,6 +80,10 @@ class DynamicQueryDefault(object):
     @classmethod
     def imageasset(cls, info, qs, field):
         field.query = cls._filter_by_site(qs, info.request)
+    @classmethod
+    def pageset(cls, info, qs, field):
+        field.query = cls._filter_by_site(qs, info.request)
+
 
     @classmethod
     def widgetdisposition(cls, info, qs, field):

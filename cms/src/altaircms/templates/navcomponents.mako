@@ -22,6 +22,7 @@
     <li class="nav-header">ページ管理</li>
     <li><a href="${request.route_path("layout_list")}">レイアウト</a></li>
     <li><a href="${request.route_path("page")}">ページ</a></li>
+    <li><a href="${request.route_path("pagesets")}">ページセット</a></li>
 
     <li class="nav-header">アセット管理</li>
     <li><a href="${request.route_path("asset_list")}">アセット</a></li>

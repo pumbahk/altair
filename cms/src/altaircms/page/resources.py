@@ -1,4 +1,5 @@
 # coding: utf-8
+import logging
 from altaircms.models import DBSession
 from altaircms.layout.models import Layout
 import altaircms.widget.forms as wf
@@ -7,7 +8,7 @@ from altaircms.layout import renderable
 
 from altaircms.widget.models import WidgetDisposition
 from altaircms.tag.api import put_tags
-
+from sqlalchemy.orm.exc import NoResultFound
 from . import helpers as h
 from . import models
 
@@ -61,6 +62,17 @@ class PageResource(security.RootFactory):
         tags, private_tags, params =  h.divide_data(form.data)
         page = models.Page.from_dict(params)
         put_tags(page, "page", tags, private_tags, self.request)
+        if page.pageset is None:
+            url = page.url
+            pageset = models.PageSet(url=url, name=page.title + u" ページセット")
+            page.pageset = pageset
+        else:
+            pageset = page.pageset
+            page.url = pageset.url
+
+        page.version = pageset.gen_version()
+        logging.debug('create pagset')
+
         return page
 
     def update_page(self, page, form):

@@ -46,7 +46,22 @@
   </div>
   <div class="span5">
 	<form action="#" method="POST">
-    ${fco.form_as_table_strict(form, ["url","title", "parent","description","keywords","tags","private_tags","layout"])}
+	  <script>
+	    $(function() {
+               var on_add_to_pageset_clicked = function() {
+	           if ($('#add_to_pagset').attr('checked')) {
+                       $('#url').attr('disabled', 'disabled');
+                       $('#pageset').attr('disabled', null);
+                   } else {
+                       $('#pageset').attr('disabled', 'disabled');
+                       $('#url').attr('disabled', null);
+                   }
+	       };
+	       $('#add_to_pagset').click(on_add_to_pageset_clicked);
+               on_add_to_pageset_clicked();
+	    })
+	  </script>
+    ${fco.form_as_table_strict(form, ["url", "add_to_pagset", "pageset","title", "publish_begin", "publish_end", "parent","description","keywords","tags","private_tags","layout"])}
 	<button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> 保存</button>
 	</form>
   </div>

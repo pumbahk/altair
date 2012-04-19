@@ -52,6 +52,18 @@ class HasAncestorMixin(object):
             r.pop(0)
         return r
     
+class PageSet(Base):
+    __tablename__ = 'pagesets'
+    query = DBSession.query_property()
+    id = Column(Integer, primary_key=True)
+    name = Column(Unicode(255))
+    version_counter = Column(Integer, default=0)
+    url = Column(String(255), unique=True)
+    
+    def gen_version(self):
+        self.version_counter += 1
+        return self.version_counter
+
 class Page(PublishUnpublishMixin, 
            HasAncestorMixin, 
            BaseOriginalMixin,
@@ -80,7 +92,7 @@ class Page(PublishUnpublishMixin,
     keywords = Column(Unicode(255), default=u"")
     description = Column(Unicode(255), default=u"")
     url = Column(String(255), unique=True, index=True)
-    version = Column(Integer)
+    version = Column(Integer, default=1)
 
     site_id = Column(Integer, ForeignKey("site.id"))
     layout_id = Column(Integer, ForeignKey("layout.id"))
@@ -88,6 +100,15 @@ class Page(PublishUnpublishMixin,
     DEFAULT_STRUCTURE = "{}"
     structure = Column(Text, default=DEFAULT_STRUCTURE)
     hash_url = Column(String(length=32), default=None)
+
+    event_id = Column(Integer, ForeignKey('event.id'))
+    event = relationship('Event', backref='pages')
+
+    pageset_id = Column(Integer, ForeignKey('pagesets.id'))
+    pageset = relationship('PageSet', backref='pages')
+
+    publish_begin = Column(DateTime)
+    publis_end = Column(DateTime)
 
     ## todo refactoring?
     @hybrid_property
