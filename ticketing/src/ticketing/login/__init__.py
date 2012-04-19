@@ -5,7 +5,3 @@ def includeme(config):
     config.add_route('login.info'                   , '/info')
     config.add_route('login.info.edit'              , '/info/edit')
     config.add_route('login.logout'                 , '/logout')
-
-    config.add_route('login.authorize'              , '/authorize')
-    config.add_route('login.access_token'           , '/access_token')
-    config.add_route('login.missing_redirect_url'   , '/missing_redirect_url')
