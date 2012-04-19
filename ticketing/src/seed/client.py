@@ -22,7 +22,6 @@ class ClientData(DataSet):
         updated_at      = datetime.now()
         created_at      = datetime.now()
         status          = 1
-
     class client_1:
         name            = u'クライアント1'
         client_type     = ClientTypeEnum.Standard.v

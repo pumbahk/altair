@@ -45,6 +45,14 @@ class Venue(Base):
     created_at = Column(DateTime)
     status = Column(Integer)
 
+    @staticmethod
+    def get(id):
+        return session.query(Venue).filter(Venue.id==id).first()
+
+    @staticmethod
+    def all():
+        return session.query(Venue).all()
+
 class VenueArea(Base):
     __tablename__ = "VenueArea"
     id = Column(BigInteger, primary_key=True)

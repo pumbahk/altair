@@ -6,6 +6,7 @@ from .resources import RootFactory, groupfinder
 
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
+from pyramid.session import UnencryptedCookieSessionFactoryConfig
 
 import sqlahelper
 
@@ -34,7 +35,9 @@ def main(global_config, **settings):
     config = Configurator(settings=settings,
                           root_factory='ticketing.resources.RootFactory',
                           authentication_policy=authn_policy,
-                          authorization_policy=authz_policy)
+                          authorization_policy=authz_policy,
+                          session_factory=UnencryptedCookieSessionFactoryConfig('altair'))
+
 
     config.add_static_view('static', 'ticketing:static', cache_max_age=3600)
 

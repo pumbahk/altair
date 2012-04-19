@@ -1,279 +1,134 @@
 <%inherit file="../layout.html" />
-<h1><%block name="title">${event.title}</%block></h1>
+<%namespace file="/common/helpers.html" import="flash_messages" />
 
-
-<%block name="style">
-	<!-- load dojo and provide config via data attribute -->
-	<script src="http://ajax.googleapis.com/ajax/libs/dojo/1.7.1/dojo/dojo.js"
-			data-dojo-config="async: true, parseOnLoad: true">
-	</script>
-	<script>
-		require(["dijit/layout/BorderContainer", "dijit/layout/TabContainer", "dijit/layout/ContentPane", "dijit/layout/AccordionContainer", "dojo/parser"]);
-	</script>
-    <style type="text/css">
-      @import "http://ajax.googleapis.com/ajax/libs/dojo/1.4/dojo/resources/dojo.css";
-      @import "http://ajax.googleapis.com/ajax/libs/dojo/1.4/dijit/themes/soria/soria.css";
-      @import "http://ajax.googleapis.com/ajax/libs/dojo/1.4/dijit/themes/nihilo/nihilo.css";
-      @import "http://ajax.googleapis.com/ajax/libs/dojo/1.4/dijit/themes/tundra/tundra.css";
-    </style>
-</%block>
-<%block name="body_attrs"> class="nihilo"</%block>
-<br><br>
 <div class="row-fluid">
-    <div class="tabbable tabs-left">
-        <ul class="nav nav-tabs">
-            <li class="active"><a href="#1" data-toggle="tab">Section 1</a></li>
-            <li><a href="#2" data-toggle="tab">Section 1</a></li>
-        </ul>
-        <div class="tab-content">
-            <div class="tab-pane active" id="1">
-                <table class="vertical-table fullwidth">
-                  <tbody>
-                    <tr>
-                      <th>名称</th>
-                      <td>${event.title}</td>
-                    </tr>
-                    <tr>
-                      <th>略称</th>
-                      <td>${event.abbreviated_title}</td>
-                    </tr>
-                    <tr>
-                      <th>表示名</th>
-                      <td>${event.code}</td>
-                    </tr>
-                    <tr>
-                      <th>クライアント</th>
-                      <td>
-                        <ul>
-                          <li>○○プロモーション株式会社 ○○様</li>
-                        </ul>
-                      </td>
-                    </tr>
-                    <tr>
-                      <th>会場</th>
-                      <td>
-                        <ul>
-                          <li>さいたまスーパーアリーナ (1/5, 1/6)</li>
-                        </ul>
-                      </td>
-                    </tr>
-                    <tr>
-                      <th>販売開始日時</th>
-                      <td>2011/10/1 10:00</td>
-                    </tr>
-                    <tr>
-                      <th>販売終了日時</th>
-                      <td>2011/11/30 23:59</td>
-                    </tr>
-                    <tr>
-                      <th>開演日時</th>
-                      <td>${event.start_on}(<a href="${request.route_path('performances.show', event_id=1, performance_id=1)}">○○○○東京公演</a>)</td>
-                    </tr>
-                    <tr>
-                      <th>最終公演</th>
-                      <td>${event.end_on}(<a href="${request.route_path('performances.show', event_id=1, performance_id=3)}">○○○○大阪公演</a>)</td>
-                    </tr>
-                  </tbody>
-                </table>
-            </div>
-            <div class="tab-pane active" id="2">
+  <%include file="_menu.html" /> 
 
-            </div>
-        </div>
-    </div>
-</div>
-<div class="row-fluid">
-  <span class="span2">
-      <div class="well">
-      <ul class="nav nav-list">
-          <li class="nav-header">test</li>
-          <li><a href=""><i class="icon-home"></i>販売条件</a></li>
-          <li><a href=""><i class="icon-home"></i>チケット券面</a></li>
-          <li><a href=""><i class="icon-home"></i>会場席種マスタ</a></li>
-          <li><a href=""><i class="icon-home"></i>券種</a></li>
-          <li><a href=""><i class="icon-home"></i>パフォーマンス</a></li>
-          <li><a href=""><i class="icon-home"></i>商品</a></li>
-          <li class="divider"></li>
-      </ul>
-      </div>
-  </span>
   <span class="span10">
-      <div class="well">
-          <table class="vertical-table fullwidth">
-            <tbody>
-              <tr>
-                <th>名称</th>
-                <td>${event.title}</td>
-              </tr>
-              <tr>
-                <th>略称</th>
-                <td>${event.abbreviated_title}</td>
-              </tr>
-              <tr>
-                <th>表示名</th>
-                <td>${event.code}</td>
-              </tr>
-              <tr>
-                <th>クライアント</th>
-                <td>
-                  <ul>
-                    <li>○○プロモーション株式会社 ○○様</li>
-                  </ul>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+    <div class="page-header">
+      <h3>${event.title}</h3>
+    </div>
+
+    <div class="content">
+      ${flash_messages(request)}
+    </div>
+
+    <table class="table table-bordered fullwidth">
+      <tbody>
+        <tr>
+          <th>${form.title.label.text}</th>
+          <td>${event.title}</td>
+        </tr>
+        <tr>
+          <th>${form.abbreviated_title.label.text}</th>
+          <td>${event.abbreviated_title}</td>
+        </tr>
+        <tr>
+          <th>${form.code.label.text}</th>
+          <td>${event.code}</td>
+        </tr>
+        <tr>
+          <th>クライアント</th>
+          <td>
+            <ul>
+              <li>○○プロモーション株式会社 ○○様</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <th>会場</th>
+          <td>
+            <ul>
+              <li>さいたまスーパーアリーナ (1/5, 1/6)</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <th>販売開始日時</th>
+          <td>2011/10/1 10:00</td>
+        </tr>
+        <tr>
+          <th>販売終了日時</th>
+          <td>2011/11/30 23:59</td>
+        </tr>
+        <tr>
+          <th>${form.start_on.label.text}</th>
+          <td>${event.start_on}(<a href="${request.route_path('performances.show', event_id=event.id, performance_id=1)}">○○○○東京公演</a>)</td>
+        </tr>
+        <tr>
+          <th>${form.end_on.label.text}</th>
+          <td>${event.end_on}(<a href="${request.route_path('performances.show', event_id=event.id, performance_id=3)}">○○○○大阪公演</a>)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="ui-toolbar">
+      <a href="${request.route_path('events.edit', event_id=event.id)}" class="btn">編集</a>
+      <a href="${request.route_path('events.delete', event_id=event.id)}" class="btn">削除</a>
+      <a href="${request.route_path('events.new',event_id=event.id)}" class="btn">コピー</a>
+      <a href="" class="btn">チケット券面プレビュー</a>
+    </div>
+
+    <hr />
+
+    <div id="performances" class="subsection">
+      <div class="subsection-header">
+        <div class="subsection-header-content">
+          <h3>パフォーマンス</h3>
+        </div>
       </div>
+      <div class="subsection-main">
+        <div class="subsection-main-content">
+          <%include file="../performances/_list.html" />
+        </div>
+      </div>
+    </div>
+
+    <hr />
+
+    <div id="venue-seattype-pairs" class="section">
+      <h3 class="section-header">会場席種</h3>
+      <div class="section-content">
+        <table class="table fullwidth">
+          <thead>
+            <tr>
+              <th class="minwidth">-</th>
+              <th>ID</th>
+              <th>名称</th>
+              <th>会場名</th>
+              <th>元マスタ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><input type="checkbox" /></td>
+              <td>13</td>
+              <td>1/5, 6 さいたまスーパーアリーナ</td>
+              <td>さいたまスーパーアリーナ</td>
+              <td>さいたまスーパーアリーナ</td>
+            </tr>
+            <tr>
+              <td><input type="checkbox" /></td>
+              <td>16</td>
+              <td>1/7 中之島ビッグトップ</td>
+              <td>中之島ビッグトップ</td>
+              <td>中之島ビッグトップ</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <hr />
+
+    <div id="tickettypes">
+      <h3>券種</h3>
+    </div>
+
+    <hr />
+
+    <div id="purchasables">
+      <h3>商品</h3>
+    </div>
   </span>
-</div>
-
-
-<div class="ui-toolbar">
-  <a href="${request.route_path('events.edit', event_id=event.id)}" class="btn">編集</a>
-  <a href="${request.route_path('events.new',event_id=event.id)}" class="btn">コピーして新規</a>
-  <a href="${request.route_path('events.delete', event_id=event.id)}" class="btn">削除</a>
-<a href="" class="btn">チケット券面プレビュー</a>
-</div>
-<hr />
-<div class="section">
-  <div class="section-main">
-    <div class="section-main-content">
-
-      <div class="twocolumns">
-        <div class="first column">
-          <div class="column-main">
-            <div class="column-main-content">
-              <table class="vertical-table fullwidth">
-                <tbody>
-                  <tr>
-                    <th>名称</th>
-                    <td>${event.title}</td>
-                  </tr>
-                  <tr>
-                    <th>略称</th>
-                    <td>${event.abbreviated_title}</td>
-                  </tr>
-                  <tr>
-                    <th>表示名</th>
-                    <td>${event.code}</td>
-                  </tr>
-                  <tr>
-                    <th>クライアント</th>
-                    <td>
-                      <ul>
-                        <li>○○プロモーション株式会社 ○○様</li>
-                      </ul>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-        <div class="column">
-          <div class="column-main">
-            <div class="column-main-content">
-              <table class="vertical-table fullwidth">
-                <tbody>
-                  <tr>
-                    <th>会場</th>
-                    <td>
-                      <ul>
-                        <li>さいたまスーパーアリーナ (1/5, 1/6)</li>
-                      </ul>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th>販売開始日時</th>
-                    <td>2011/10/1 10:00</td>
-                  </tr>
-                  <tr>
-                    <th>販売終了日時</th>
-                    <td>2011/11/30 23:59</td>
-                  </tr>
-                  <tr>
-                    <th>開演日時</th>
-                    <td>${event.start_on}(<a href="${request.route_path('performances.show', event_id=1, performance_id=1)}">○○○○東京公演</a>)</td>
-                  </tr>
-                  <tr>
-                    <th>最終公演</th>
-                    <td>${event.end_on}(<a href="${request.route_path('performances.show', event_id=1, performance_id=3)}">○○○○大阪公演</a>)</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-<div class="section">
-  <div class="section-content">
-    <div class="ui-tabs">
-      <ul>
-        <li><a href="#performances">パフォーマンス</a></li>
-        <li><a href="#venue-seattype-pairs">会場席種マスタ</a></li>
-        <li><a href="#tickettypes">券種</a></li>
-        <li><a href="#purchasables">商品</a></li>
-      </ul>
-      <div id="performances" class="subsection">
-        <div class="subsection-header">
-          <div class="subsection-header-content">
-            <h2>パフォーマンス一覧</h2>
-          </div>
-        </div>
-        <div class="subsection-main">
-          <div class="subsection-main-content">
-            <%include file="../performances/_list.html" />
-          </div>
-        </div>
-      </div>
-      <div id="venue-seattype-pairs" class="section">
-        <h2 class="section-header">会場席種マスタ一覧</h2>
-        <div class="section-content">
-          <div class="ui-toolbar">
-            <a href="${request.route_path('performances.new', event_id=1)}" class="ui-button">新規登録</a>
-            <a href="#" class="ui-button">まとめて編集</a>
-            <a href="#" class="ui-button">まとめて削除</a>
-          </div>
-          <form>
-            <table class="table fullwidth">
-              <thead>
-                <tr>
-                  <th class="minwidth">-</th>
-                  <th>ID</th>
-                  <th>名称</th>
-                  <th>会場名</th>
-                  <th>元マスタ</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><input type="checkbox" /></td>
-                  <td>13</td>
-                  <td>1/5, 6 さいたまスーパーアリーナ</td>
-                  <td>さいたまスーパーアリーナ</td>
-                  <td>さいたまスーパーアリーナ</td>
-                </tr>
-                <tr>
-                  <td><input type="checkbox" /></td>
-                  <td>16</td>
-                  <td>1/7 中之島ビッグトップ</td>
-                  <td>中之島ビッグトップ</td>
-                  <td>中之島ビッグトップ</td>
-                </tr>
-              </tbody>
-            </table>
-          </form>
-        </div>
-      </div>
-      <div id="tickettypes">
-        <h2>券種一覧</h2>
-      </div>
-      <div id="purchasables">
-        <h2>商品一覧</h2>
-      </div>
-    </div>
-  </div>
 </div>

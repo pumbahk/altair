@@ -6,7 +6,6 @@ import sqlahelper
 session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
 
-
 from ticketing.users.models import User, MemberShip
 from ticketing.master.models import BankAccount
 
@@ -35,7 +34,6 @@ class Account(Base):
     @staticmethod
     def get(account_id):
         return session.query(Account).filter(Account.id == account_id).first()
-
 
 class Ticketer(Base):
     __tablename__ = 'Ticketer'
@@ -68,12 +66,12 @@ class Performance(Base):
     __tablename__ = 'Performance'
     id = Column(BigInteger, primary_key=True)
     event_id = Column(BigInteger, ForeignKey('Event.id'))
+    name = Column(String(255))
+    code = Column(String(12))
     open_on = Column(DateTime)
     start_on = Column(DateTime)
     end_on = Column(DateTime)
     no_period = Column(Boolean)
-    name = Column(String(255))
-    code = Column(String(12))
     owner_id = Column(BigInteger, ForeignKey('Account.id'))
     owner = relationship('Account')
     venue_id = Column(BigInteger, ForeignKey('Venue.id'))
@@ -87,15 +85,14 @@ class Performance(Base):
     def add(performance):
         session.add(performance)
 
-
 event_table = Table(
     'Event', Base.metadata,
     Column('id', BigInteger, primary_key=True),
-    Column('start_on', Date, nullable=True),
-    Column('end_on', Date, nullable=True),
     Column('code', String(12)),
     Column('title', String(1024)),
     Column('abbreviated_title', String(1024)),
+    Column('start_on', Date, nullable=True),
+    Column('end_on', Date, nullable=True),
     )
 
 event_detail_table = Table(
@@ -108,6 +105,7 @@ class Event(Base):
     __table__ = join(event_table, event_detail_table, event_table.c.id == event_detail_table.c.id)
     id = column_property(event_table.c.id, event_detail_table.c.id)
     performances = relationship('Performance', backref='event')
+
     @staticmethod
     def add(event):
         session.add(event)

@@ -1,52 +1,60 @@
 <%inherit file="../layout.html" />
-<%block name="title">イベント編集</%block>
+<%namespace file="/common/helpers.html" import="validate_errors" />
+<%namespace file="/common/helpers.html" import="alert_message" />
+<%namespace file="/common/helpers.html" import="flash_messages" />
 
-<%def name="error(f)">
-%if f.errors:
-  <ul class="errors">
-  %for error in f.errors:
-      <li>${error}</li>
-  %endfor:
-  </ul>
-% endif:
+<%def name="form_item(key, help='')">
+  <div class="control-group ${'error' if form[key].errors else ''}">
+    <label class="control-label">${help|n} ${form[key].label.text}</label>
+    <div class="controls">
+      ${form[key]}
+      ${validate_errors(form[key])}                                                                    
+    </div>
+  </div>
 </%def>
-<ul class="errors">
-% for field in form:
-%   if field.errors:
-%     for e in field.errors:
-        <li>${field.label}:${e}</li>
-%     endfor:
-%   endif:
-% endfor
-</ul>
 
-<form action="${request.route_url('events.edit', event_id=event.id)}" enctype="multipart/form-data" method="POST">
-    <table class="table">
-        <tr>
-            <th>${form.code.label}</th>
-            <td>${form.code}
-                ${error(form.code)}</td>
-        </tr>
-        <tr>
-            <th>${form.title.label}</th>
-            <td>${form.title}
-                ${error(form.title)}</td>
-        </tr>
-        <tr>
-            <th>${form.abbreviated_title.label}</th>
-            <td>${form.abbreviated_title}
-                ${error(form.abbreviated_title)}</td>
-        </tr>
-        <tr>
-            <th>${form.start_on.label}</th>
-            <td>${form.start_on}
-                ${error(form.start_on)}</td>
-        </tr>
-        <tr>
-            <th>${form.end_on.label}</th>
-            <td>${form.end_on}
-                ${error(form.end_on)}</td>
-        </tr>
-    </table>
-    <input type="submit" name="submit" value="更新">
-</form>
+<%
+  if request.matched_route.name == 'events.edit':
+    route_name = u'編集'
+    route_path = request.route_path('events.edit', event_id=event.id)
+  else:
+    route_name = u'新規登録'
+    route_path = request.route_path('events.new')
+%>
+
+<script type="text/javascript">
+  $(function() {
+    $('#start_on').datepicker({showOn:'focus', dateFormat:'yy-mm-dd'});
+    $('#end_on').datepicker({showOn:'focus', dateFormat:'yy-mm-dd'});
+  });
+</script>
+
+<div class="row-fluid">
+  <%include file="_menu.html" />                                                                       
+
+  <span class="span10">
+    <div class="page-header">
+      <h3>イベント${route_name}</h3>
+    </div>
+
+    <div class="content">
+      ${flash_messages(request)}
+      ${alert_message(form)}
+    </div>
+
+    <div class="well">
+      <form class="form-horizontal" action="${route_path}" enctype="multipart/form-data" method="POST">
+        <fieldset>
+          ${form_item('code')}
+          ${form_item('title')}
+          ${form_item('abbreviated_title')}
+          ${form_item('start_on')}
+          ${form_item('end_on')}
+        </fieldset>
+        <div class="form-actions">
+          <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">
+        </div>
+      </form>
+    </div>
+  </span>
+</div>

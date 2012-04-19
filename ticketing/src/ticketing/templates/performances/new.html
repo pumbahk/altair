@@ -1,60 +1,53 @@
-<%def name="error(f)">
-%if f.errors:
-  <ul class="errors">
-  %for error in f.errors:
-      <li>${error}</li>
-  %endfor:
-  </ul>
-% endif:
+<%inherit file="../layout.html" />                                                                     
+<%namespace file="/common/helpers.html" import="validate_errors" />
+<%namespace file="/common/helpers.html" import="alert_message" />
+<%namespace file="/common/helpers.html" import="flash_messages" />
+
+<%def name="form_item(key, help='')">                                                                  
+  <div class="control-group ${'error' if form[key].errors else ''}">
+    <label class="control-label">${help|n} ${form[key].label.text}</label>
+    <div class="controls">
+      ${form[key]}
+      ${validate_errors(form[key])}                                                                    
+    </div>
+  </div>
 </%def>
-<ul class="errors">
-% for field in form:
-%   if field.errors:
-%     for e in field.errors:
-        <li>${field.label}:${e}</li>
-%     endfor:
-%   endif:
-% endfor
-</ul>
-
-
-<form action="${request.route_path('performances.new', event_id=event.id)}" method="POST">
-
-    <div class="modal-header">
-        <a class="close" data-dismiss="modal">×</a>
-        <h3>パフォーマンスの編集</h3>
-    </div>
-
-    <div class="modal-body">
-        <label>${form.title.label}</label>
-        ${form.title}
-        <label>${form.abbreviated_title.label}</label>
-        ${form.abbreviated_title}
-        <label>${form.code.label}</label>
-        ${form.code}
-        <label>${form.open_on.label}</label>
-        ${form.open_on(id="open_on")}
-        <label>${form.start_on.label}</label>
-        ${form.start_on(id="start_on")}
-        <label>${form.end_on.label}</label>
-        ${form.end_on(id="end_on")}
-        <span class="help-inline">オプション</span>
-    </div>
-
-    <div class="modal-footer">
-        <a href="#" class="btn" data-dismiss="modal">閉じる</a>
-        <button type="submit" class="btn btn-primary">保存</button>
-    </div>
-</form>
 
 <script type="text/javascript">
-    $("#open_on").live('click', function() {
-        $(this).datepicker({showOn:'focus',dateFormat: 'yy-mm-dd'}).focus();
-    });
-    $("#start_on").live('click', function() {
-        $(this).datepicker({showOn:'focus',dateFormat: 'yy-mm-dd'}).focus();
-    });
-    $("#end_on").live('click', function() {
-            $(this).datepicker({showOn:'focus',dateFormat: 'yy-mm-dd'}).focus();
-        });
+  $(function() {
+    $('#start_on').datepicker({showOn:'focus', dateFormat:'yy-mm-dd'});
+    $('#end_on').datepicker({showOn:'focus', dateFormat:'yy-mm-dd'});
+    $('#open_on').datepicker({showOn:'focus', dateFormat:'yy-mm-dd'});
+  });
 </script>
+
+<div class="row-fluid">
+  <%include file="_menu.html" />
+
+  <span class="span10">
+    <div class="page-header">
+      <h3>パフォーマンス登録</h3>
+    </div>
+
+    <div class="content">
+      ${flash_messages(request)}
+      ${alert_message(form)}
+    </div>
+
+    <div class="well">
+      <form class="form-horizontal" action="${request.route_path('performances.new', event_id=event.id)}" method="POST">
+        <fieldset>
+          ${form_item('name')}
+          ${form_item('code')}
+          ${form_item('open_on')}
+          ${form_item('start_on')}
+          ${form_item('end_on')}
+          ${form_item('venue_id')}
+        </fieldset>
+        <div class="form-actions">
+          <input class="btn btn-primary" type="submit" name="submit" value="新規登録">
+        </div>
+      </form>
+    </div>
+  </span>
+</div>

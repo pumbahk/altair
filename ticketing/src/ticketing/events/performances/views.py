@@ -1,24 +1,25 @@
  # -*- coding: utf-8 -*-
 
+from datetime import datetime
+import webhelpers.paginate as paginate
+
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path
 
 from ticketing.models import merge_session_with_post, record_to_multidict
-from ..models import session, Event, Performance
-from .forms import PerformanceForm
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
-
-from datetime import datetime
-
-import webhelpers.paginate as paginate
+from ticketing.events.models import session, Event, Performance
+from ticketing.events.performances.forms import PerformanceForm
+from ticketing.products.models import Product
+from ticketing.venues.models import Venue
 
 @view_defaults(decorator=with_bootstrap)
 class Performances(BaseView):
     @view_config(route_name='performances.show', renderer='ticketing:templates/performances/show.html')
     def show(self):
-        performance_id = int(self.request.matchdict.get("performance_id", 0))
+        performance_id = int(self.request.matchdict.get('performance_id', 0))
         performance = Performance.get(performance_id)
 
         class product(object):
@@ -36,37 +37,40 @@ class Performances(BaseView):
                 product(4, u'A席 子供', 8000)
             ]
         }
-    @view_config(route_name='performances.new', request_method="GET", renderer='ticketing:templates/performances/new.html')
+
+    @view_config(route_name='performances.new', request_method='GET', renderer='ticketing:templates/performances/new.html')
     def new_get(self):
-        event_id = int(self.request.matchdict.get("event_id", 0))
+        event_id = int(self.request.matchdict.get('event_id', 0))
         event = Event.get(event_id)
         if event is None:
-            return HTTPNotFound("event id %d is not found" % event_id)
+            return HTTPNotFound('event id %d is not found' % event_id)
 
         f = PerformanceForm()
         return {
-            'event' : event,
-            'form' : f
+            'form':f,
+            'event':event,
         }
 
-    @view_config(route_name='performances.new', request_method="POST", renderer='ticketing:templates/performances/new.html')
+    @view_config(route_name='performances.new', request_method='POST', renderer='ticketing:templates/performances/new.html')
     def new_post(self):
-        event_id = int(self.request.matchdict.get("event_id", 0))
+        event_id = int(self.request.matchdict.get('event_id', 0))
         event = Event.get(event_id)
         if event is None:
-            return HTTPNotFound("event id %d is not found" % event_id)
+            return HTTPNotFound('event id %d is not found' % event_id)
 
         f = PerformanceForm(self.request.POST)
         if f.validate():
-            data = f.data
             record = Performance()
             record.event = event
-            record = merge_session_with_post(record, data)
+            record.venue = Venue.get(f.data['venue_id'])
+            record = merge_session_with_post(record, f.data)
             Performance.add(record)
-            return HTTPFound(location=route_path('events.index', self.request))
+
+            self.request.session.flash(u'パフォーマンスを登録しました')
+            return HTTPFound(location=route_path('events.show', self.request))
         return {
-            'event' : event,
-            'form' : f
+            'form':f,
+            'event':event
         }
 
     @view_config(route_name='performances.new', renderer='ticketing:templates/performances/new.html')
