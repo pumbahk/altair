@@ -80,12 +80,21 @@ def get_form_params_from_asset(asset):
     params["private_tags"] = tag.tags_to_string(asset.private_tags)
     return params
 
-def _image_asset_from_search_params(params):
+def _asset_query_from_search_params(model, classifier, params):
     if "tags" in params:
-        manager = get_tagmanager("image_asset")
+        manager = get_tagmanager(classifier)
         return QueryParser(params["tags"]).and_search_by_manager(manager)
     else:
-        return models.ImagaAsset.query
+        return model.query
+    
+def image_asset_query_from_search_params(params):
+    return _asset_query_from_search_params(models.ImageAsset, "image_asset", params)
+
+def movie_asset_query_from_search_params(params):
+    return _asset_query_from_search_params(models.MovieAsset, "movie_asset", params)
+
+def flash_asset_query_from_search_params(params):
+    return _asset_query_from_search_params(models.FlashAsset, "flash_asset", params)
 
 ## convenience あとで消す
 def create_asset(captured, request=None):

@@ -42,15 +42,17 @@ class AssetListView(object):
     def movie_asset_list(self):
         assets = self.request.context.get_movie_assets()
         form = self.context.forms.MovieAssetForm()
-        return {"assets": assets, "form": form}
-
+        search_form = self.request.context.forms.AssetSearchForm()
+        return {"assets": assets, "form": form, "search_form": search_form}
 
     @view_config(route_name="asset_flash_list", renderer="altaircms:templates/asset/flash/list.mako", 
                  decorator=with_bootstrap)
     def flash_asset_list(self):
         assets = self.request.context.get_flash_assets()
         form = self.context.forms.FlashAssetForm()
-        return {"assets": assets, "form": form}
+        search_form = self.request.context.forms.AssetSearchForm()
+        return {"assets": assets, "form": form, "search_form": search_form}
+
 
 @view_defaults(permission="asset_read", decorator=with_bootstrap)
 class AssetDetailView(object):
@@ -170,13 +172,15 @@ class AssetCreateView(object):
         self.request = request
         self.context = request.context        
 
-    @view_config(route_name="asset_image_create", request_method="POST")
+    @view_config(route_name="asset_image_create", renderer="altaircms:templates/asset/image/list.mako", 
+                 request_method="POST")
     def create_image_asset(self):
         form = self.context.forms.ImageAssetForm(self.request.POST)
 
         if not form.validate():
-            FlashMessage.error(str(form.errors), request=self.request)    
-            return HTTPFound(self.request.route_path("asset_image_list"))
+            assets = self.request.context.get_image_assets()
+            search_form = self.request.context.forms.AssetSearchForm()
+            return {"assets": assets, "form": form, "search_form": search_form}
         else:
             asset = self.context.create_image_asset(form)
             self.context.add(asset)
@@ -184,13 +188,15 @@ class AssetCreateView(object):
             FlashMessage.success("image asset created", request=self.request)    
             return HTTPFound(self.request.route_path("asset_image_list"))
 
-    @view_config(route_name="asset_movie_create", request_method="POST")
+    @view_config(route_name="asset_movie_create", renderer="altaircms:templates/asset/movie/list.mako", 
+                 request_method="POST")
     def create_movie_asset(self):
         form = self.context.forms.MovieAssetForm(self.request.POST)
 
         if not form.validate():
-            FlashMessage.error(str(form.errors), request=self.request)    
-            return HTTPFound(self.request.route_path("asset_movie_list"))
+            assets = self.request.context.get_movie_assets()
+            search_form = self.request.context.forms.AssetSearchForm()
+            return {"assets": assets, "form": form, "search_form": search_form}
         else:
             asset = self.context.create_movie_asset(form)
             self.context.add(asset)
@@ -198,13 +204,15 @@ class AssetCreateView(object):
             FlashMessage.success("movie asset created", request=self.request)    
             return HTTPFound(self.request.route_path("asset_movie_list"))
 
-    @view_config(route_name="asset_flash_create", request_method="POST")
+    @view_config(route_name="asset_flash_create", renderer="altaircms:templates/asset/flash/list.mako", 
+                 request_method="POST")
     def create_flash_asset(self):
         form = self.context.forms.FlashAssetForm(self.request.POST)
 
         if not form.validate():
-            FlashMessage.error(str(form.errors), request=self.request)    
-            return HTTPFound(self.request.route_path("asset_flash_list"))
+            assets = self.request.context.get_flash_assets()
+            search_form = self.request.context.forms.AssetSearchForm()
+            return {"assets": assets, "form": form, "search_form": search_form}
         else:
             asset = self.context.create_flash_asset(form)
             self.context.add(asset)
@@ -290,6 +298,22 @@ class AssetSearchView(object):
         if not search_form.validate():
             return HTTPFound(location=self.request.route_url("asset_image_list"))
         search_result = self.context.search_image_asset_by_query(search_form.data)
+        return {"search_form": search_form, "search_result": search_result}
+
+    @view_config(route_name="asset_search_movie", renderer="altaircms:templates/asset/movie/search.mako")
+    def movie_asset_search(self):
+        search_form = self.context.forms.AssetSearchForm(self.request.GET)
+        if not search_form.validate():
+            return HTTPFound(location=self.request.route_url("asset_movie_list"))
+        search_result = self.context.search_movie_asset_by_query(search_form.data)
+        return {"search_form": search_form, "search_result": search_result}
+
+    @view_config(route_name="asset_search_flash", renderer="altaircms:templates/asset/flash/search.mako")
+    def flash_asset_search(self):
+        search_form = self.context.forms.AssetSearchForm(self.request.GET)
+        if not search_form.validate():
+            return HTTPFound(location=self.request.route_url("asset_flash_list"))
+        search_result = self.context.search_flash_asset_by_query(search_form.data)
         return {"search_form": search_form, "search_result": search_result}
 
 @view_config(route_name="asset_search", permission="asset_read", request_method="GET")

@@ -24,7 +24,7 @@ class AssetCreateTests(unittest.TestCase):
 
         dummy_form = testing.DummyResource(data=data)
         operator = _makeOperator("this-is-operator")
-        request = testing.DummyRequest()
+        request = testing.DummyRequest(user=operator)
         target = self._makeOne(request)
         target.storepath = "."
 
@@ -33,7 +33,6 @@ class AssetCreateTests(unittest.TestCase):
              _write_buf=lambda *args, **kwargs: setattr(dummy_form, "writedp", True), 
              _get_extra_status=lambda *args: dict(width=300, height=200), 
              _put_tags = lambda *args: args, 
-            _add_operator = lambda asset, r: setattr(asset, "created_by", operator)
             )
 
         self.assertEquals(result.discriminator,"image" )
@@ -54,7 +53,8 @@ class AssetCreateTests(unittest.TestCase):
                 "private_tags": ""}
 
         dummy_form = testing.DummyResource(data=data)
-        request = testing.DummyRequest()
+        operator = _makeOperator("this-is-operator")
+        request = testing.DummyRequest(user=operator)
         target = self._makeOne(request)
         target.storepath = "."
 
@@ -83,7 +83,8 @@ class AssetCreateTests(unittest.TestCase):
                 "private_tags": ""}
 
         dummy_form = testing.DummyResource(data=data)
-        request = testing.DummyRequest()
+        operator = _makeOperator("this-is-operator")
+        request = testing.DummyRequest(user=operator)
         target = self._makeOne(request)
         target.storepath = "."
 

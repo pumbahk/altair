@@ -43,11 +43,16 @@ class AssetCreateViewTests(AssetViewTestBase):
         request = testing.DummyRequest()
 
         class DummyContext(object):
-            forms = testing.DummyResource(ImageAssetForm=FailForm)
+            forms = testing.DummyResource(
+                ImageAssetForm=FailForm, 
+                AssetSearchForm=SuccessForm)
             storepath = "."
             def __init__(self, request):
                 self.request = request
                 self._asset = "asset-is-not-found"
+
+            def get_image_assets(self):
+                return  [object()]
 
 
         request.context = DummyContext(request)
@@ -55,8 +60,8 @@ class AssetCreateViewTests(AssetViewTestBase):
         target = self._makeOne(request)
         result = target.create_image_asset()
 
-        self.assertEquals(result.location, '/this-is-asset-image-list')
-        self.assertEquals(request.context._asset, "asset-is-not-found")
+        self.assertEquals(sorted(result.keys()), 
+                          sorted(["assets", "form", "search_form"]))
 
     def test_create_image_asset(self):
         self.config.add_route('asset_image_list', '/this-is-asset-image-list')
@@ -88,11 +93,16 @@ class AssetCreateViewTests(AssetViewTestBase):
         self.config.add_route('asset_movie_list', '/this-is-asset-movie-list')
 
         class DummyContext(object):
-            forms = testing.DummyResource(MovieAssetForm=FailForm)
+            forms = testing.DummyResource(
+                MovieAssetForm=FailForm, 
+                AssetSearchForm=SuccessForm)
             storepath = "."
             def __init__(self, request):
                 self.request = request
                 self._asset = "asset-is-not-found"
+
+            def get_movie_assets(self):
+                return  [object()]
 
         request = testing.DummyRequest()
         request.context = DummyContext(request)
@@ -100,8 +110,8 @@ class AssetCreateViewTests(AssetViewTestBase):
         target = self._makeOne(request)
         result = target.create_movie_asset()
 
-        self.assertEquals(result.location, '/this-is-asset-movie-list')
-        self.assertEquals(request.context._asset, "asset-is-not-found")
+        self.assertEquals(sorted(result.keys()), 
+                          sorted(["assets", "form", "search_form"]))
 
     def test_create_movie_asset(self):
         self.config.add_route('asset_movie_list', '/this-is-asset-movie-list')
@@ -133,12 +143,16 @@ class AssetCreateViewTests(AssetViewTestBase):
         self.config.add_route('asset_flash_list', '/this-is-asset-flash-list')
 
         class DummyContext(object):
-            forms = testing.DummyResource(FlashAssetForm=FailForm)
+            forms = testing.DummyResource(
+                FlashAssetForm=FailForm, 
+                AssetSearchForm=SuccessForm)
             storepath = "."
             def __init__(self, request):
                 self.request = request
                 self._asset = "asset-is-not-found"
 
+            def get_flash_assets(self):
+                return  [object()]
 
         request = testing.DummyRequest()
         request.context = DummyContext(request)
@@ -146,8 +160,8 @@ class AssetCreateViewTests(AssetViewTestBase):
         target = self._makeOne(request)
         result = target.create_flash_asset()
 
-        self.assertEquals(result.location, '/this-is-asset-flash-list')
-        self.assertEquals(request.context._asset, "asset-is-not-found")
+        self.assertEquals(sorted(result.keys()), 
+                          sorted(["assets", "form", "search_form"]))
 
     def test_create_flash_asset(self):
         self.config.add_route('asset_flash_list', '/this-is-asset-flash-list')
@@ -414,6 +428,7 @@ class AssetListViewTests(AssetViewTestBase):
             def __init__(self, request):
                 self.request = request
                 self.forms = testing.DummyResource(
+                    AssetSearchForm=SuccessForm, 
                     MovieAssetForm=SuccessForm)
 
             def get_movie_assets(self):
@@ -427,13 +442,14 @@ class AssetListViewTests(AssetViewTestBase):
 
 
         self.assertEquals(sorted(result.keys()), 
-                         sorted(["assets", "form"]))
+                          sorted(["assets", "form", "search_form"]))
 
     def test_flash_asset_list(self):
         class DummyContext(object):
             def __init__(self, request):
                 self.request = request
                 self.forms = testing.DummyResource(
+                    AssetSearchForm=SuccessForm, 
                     FlashAssetForm=SuccessForm)
 
             def get_flash_assets(self):
@@ -446,7 +462,7 @@ class AssetListViewTests(AssetViewTestBase):
         result = target.flash_asset_list()
 
         self.assertEquals(sorted(result.keys()), 
-                         sorted(["assets", "form"]))
+                          sorted(["assets", "form", "search_form"]))
 
 
 class AssetDetailViewTests(AssetViewTestBase):

@@ -26,6 +26,16 @@ def add_operator_when_updated(asset, request):
     asset.updated_by = request.user
     return asset
 
+def query_filter_by_users(qs, data):
+    created_by = data.get("created_by")
+    if created_by:
+        qs = qs.filter(models.Asset.created_by == created_by)
+
+    updated_by = data.get("updated_by")
+    if updated_by:
+        qs = qs.filter(models.Asset.updated_by == updated_by)
+    return qs
+
 ## pyramid 
 def get_storepath(request):
     return request.registry.settings['altaircms.asset.storepath']
@@ -72,15 +82,19 @@ class AssetResource(RootFactory):
         return models.Asset.query.filter(models.Asset.id==id_).one()
 
     def search_image_asset_by_query(self, data,
-                                    _search_query_from_tags_paramater=h._image_asset_from_search_params):
-        qs = _search_query_from_tags_paramater(data)
-        created_by = data.get("created_by")
-        if created_by:
-            qs = qs.filter(models.ImageAsset.created_by == created_by)
-        updated_by = data.get("updated_by")
-        if updated_by:
-            qs = qs.filter(models.ImageAsset.updated_by == updated_by)
-        return qs
+                                    _get_search_query=h.image_asset_query_from_search_params):
+        qs = _get_search_query(data)
+        return query_filter_by_users(qs, data)
+
+    def search_movie_asset_by_query(self, data,
+                                    _get_search_query=h.movie_asset_query_from_search_params):
+        qs = _get_search_query(data)
+        return query_filter_by_users(qs, data)
+
+    def search_flash_asset_by_query(self, data,
+                                    _get_search_query=h.flash_asset_query_from_search_params):
+        qs = _get_search_query(data)
+        return query_filter_by_users(qs, data)
     
     ## delete
     def delete_asset_file(self, asset, _delete_file=h.delete_file_if_exist):
@@ -110,7 +124,8 @@ class AssetResource(RootFactory):
     def create_movie_asset(self, form,
                            _write_buf=h.write_buf, 
                            _get_extra_status=h.get_movie_status_extra, 
-                           _put_tags=put_tags):
+                           _put_tags=put_tags, 
+                           _add_operator=add_operator_when_created):
         tags, private_tags, form_params =  h.divide_data(form.data)
 
         params = h.get_asset_params_from_form_data(form_params)
@@ -121,12 +136,14 @@ class AssetResource(RootFactory):
 
         asset = models.MovieAsset.from_dict(params)
         _put_tags(asset, "movie_asset", tags, private_tags, self.request)
+        _add_operator(asset, self.request)
         return asset
 
     def create_flash_asset(self, form,
                            _write_buf=h.write_buf, 
                            _get_extra_status=h.get_flash_status_extra, 
-                           _put_tags=put_tags):
+                           _put_tags=put_tags, 
+                           _add_operator=add_operator_when_created):
         tags, private_tags, form_params =  h.divide_data(form.data)
 
         params = h.get_asset_params_from_form_data(form_params)
@@ -137,6 +154,7 @@ class AssetResource(RootFactory):
 
         asset = models.FlashAsset.from_dict(params)
         _put_tags(asset, "flash_asset", tags, private_tags, self.request)
+        _add_operator(asset, self.request)
         return asset
 
     ## update
@@ -144,7 +162,7 @@ class AssetResource(RootFactory):
                            _write_buf=h.write_buf,
                            _get_extra_status=h.get_image_status_extra, 
                            _put_tags=put_tags, 
-                           _add_operator=add_operator_when_created):
+                           _add_operator=add_operator_when_updated):
         tags, private_tags, form_params =  h.divide_data(form.data)
 
         if  form_params["filepath"] == u"":
@@ -165,7 +183,8 @@ class AssetResource(RootFactory):
     def update_movie_asset(self, asset, form,
                            _write_buf=h.write_buf,
                            _get_extra_status=h.get_movie_status_extra, 
-                           _put_tags=put_tags):
+                           _put_tags=put_tags, 
+                           _add_operator=add_operator_when_updated):
 
         tags, private_tags, form_params =  h.divide_data(form.data)
 
@@ -180,13 +199,15 @@ class AssetResource(RootFactory):
 
         _setattrs(asset, params)
         _put_tags(asset, "movie_asset", tags, private_tags, self.request)
+        _add_operator(asset, self.request)
         return asset
 
 
     def update_flash_asset(self, asset, form,
                            _write_buf=h.write_buf,
                            _get_extra_status=h.get_flash_status_extra, 
-                           _put_tags=put_tags):
+                           _put_tags=put_tags, 
+                           _add_operator=add_operator_when_updated):
 
         tags, private_tags, form_params =  h.divide_data(form.data)
 
@@ -201,5 +222,5 @@ class AssetResource(RootFactory):
 
         _setattrs(asset, params)
         _put_tags(asset, "flash_asset", tags, private_tags, self.request)
+        _add_operator(asset, self.request)
         return asset
-

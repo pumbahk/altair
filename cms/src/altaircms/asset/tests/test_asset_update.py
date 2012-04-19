@@ -24,6 +24,7 @@ class AssetImageUpdateTests(unittest.TestCase):
         storage = testing.DummyResource(
             filename="foo.jpg",
             file=StringIO.StringIO('hahaha'))
+
         operator = _makeOperator("this-is-operator")
         dummy_form = testing.DummyResource(
             data={
@@ -33,7 +34,6 @@ class AssetImageUpdateTests(unittest.TestCase):
                 "private_tags": "",
                 })
 
-        dummy_form 
         asset = self._makeAsset()
         request = testing.DummyRequest()
         target = self._makeOne(request)
@@ -109,8 +109,8 @@ class AssetMovieUpdateTests(unittest.TestCase):
                 "tags": "", 
                 "private_tags": "",
                 })
+        operator = _makeOperator("this-is-operator")
 
-        dummy_form 
         asset = self._makeAsset()
         request = testing.DummyRequest()
         target = self._makeOne(request)
@@ -118,7 +118,8 @@ class AssetMovieUpdateTests(unittest.TestCase):
                                            dummy_form,
                                            _write_buf=lambda *args, **kwargs: None,
                                            _get_extra_status=lambda *args: dict(width=300, height=200), 
-                                           _put_tags = lambda *args: args)
+                                           _put_tags = lambda *args: args, 
+                                           _add_operator=lambda asset, r: setattr(asset, "updated_by", operator))
         self.assertEqual(result, asset)
 
         self.assertTrue(".mp4" in result.filepath)
@@ -136,10 +137,10 @@ class AssetMovieUpdateTests(unittest.TestCase):
                 "tags": "", 
                 "private_tags": "",
                 })
+        operator = _makeOperator("this-is-operator")
 
         asset = self._makeAsset(filepath="this-is-asset-filepath")
-
-        request = testing.DummyRequest(user="this-is-operator")
+        request = testing.DummyRequest()
         target = self._makeOne(request)
 
         result = target.update_movie_asset(
@@ -147,7 +148,8 @@ class AssetMovieUpdateTests(unittest.TestCase):
             dummy_form, 
             _write_buf=lambda *args, **kwargs: None,
             _get_extra_status=lambda *args: dict(width=300, height=200), 
-            _put_tags = lambda *args: args)
+            _put_tags = lambda *args: args, 
+            _add_operator=lambda asset, r: setattr(asset, "updated_by", operator))
 
         self.assertEqual(result, asset)
         self.assertEqual(result.filepath, 'this-is-asset-filepath')
@@ -181,15 +183,17 @@ class AssetFlashUpdateTests(unittest.TestCase):
                 "private_tags": "",
                 })
 
-        dummy_form 
+        operator = _makeOperator("this-is-operator")
+
         asset = self._makeAsset()
-        request = testing.DummyRequest(user="this-is-operator")
+        request = testing.DummyRequest()
         target = self._makeOne(request)
         result = target.update_flash_asset(asset, 
                                            dummy_form,
                                            _write_buf=lambda *args, **kwargs: None,
                                            _get_extra_status=lambda *args: dict(width=300, height=200), 
-                                           _put_tags = lambda *args: args)
+                                           _put_tags = lambda *args: args, 
+                                           _add_operator=lambda asset, r: setattr(asset, "updated_by", operator))
         self.assertEqual(result, asset)
 
         self.assertTrue(".swf" in result.filepath)
@@ -209,8 +213,9 @@ class AssetFlashUpdateTests(unittest.TestCase):
                 })
 
         asset = self._makeAsset(filepath="this-is-asset-filepath")
+        operator = _makeOperator("this-is-operator")
 
-        request = testing.DummyRequest(user="this-is-operator")
+        request = testing.DummyRequest()
         target = self._makeOne(request)
 
         result = target.update_flash_asset(
@@ -218,7 +223,8 @@ class AssetFlashUpdateTests(unittest.TestCase):
             dummy_form, 
             _write_buf=lambda *args, **kwargs: None,
             _get_extra_status=lambda *args: dict(width=300, height=200), 
-            _put_tags = lambda *args: args)
+            _put_tags = lambda *args: args, 
+            _add_operator=lambda asset, r: setattr(asset, "updated_by", operator))
 
         self.assertEqual(result, asset)
         self.assertEqual(result.filepath, 'this-is-asset-filepath')
