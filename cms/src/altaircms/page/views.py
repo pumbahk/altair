@@ -1,5 +1,5 @@
 # coding: utf-8
-
+import logging
 from pyramid.view import view_config
 from pyramid.view import view_defaults
 from pyramid.httpexceptions import HTTPFound
@@ -275,8 +275,27 @@ class PageSetView(object):
         pagesets = PageSet.query.all()
         return dict(pagesets=pagesets)
 
-    @view_config(route_name='pageset', renderer="altaircms:templates/pagesets/edit.mako", decorator=with_bootstrap)
+    @view_config(route_name='pageset', renderer="altaircms:templates/pagesets/edit.mako", decorator=with_bootstrap, request_method="GET")
     def pageset(self):
         pageset_id = self.request.matchdict['pageset_id']
         pageset = PageSet.query.filter_by(id=pageset_id).one()
-        return dict(ps=pageset)
+        factory = forms.PageSetFormFactory(self.request)
+        form = factory(pageset)
+        return dict(ps=pageset, form=form, f=factory)
+
+    @view_config(route_name='pageset', renderer="altaircms:templates/pagesets/edit.mako", decorator=with_bootstrap, request_method="POST")
+    def update_times(self):
+        logging.debug('post ')
+        pageset_id = self.request.matchdict['pageset_id']
+        pageset = PageSet.query.filter_by(id=pageset_id).one()
+        proxy = forms.PageSetFormProxy(pageset)
+
+        factory = forms.PageSetFormFactory(self.request)
+        form = factory(pageset)
+
+        if form.validate():
+
+            form.populate_obj(proxy)
+
+        return dict(ps=pageset, form=form, f=factory)
+

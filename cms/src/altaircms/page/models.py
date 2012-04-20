@@ -64,6 +64,10 @@ class PageSet(Base):
         self.version_counter += 1
         return self.version_counter
 
+    @property
+    def sorted_pages(self):
+        return sorted(self.pages, key=lambda p: p.publish_begin.strftime('%Y-%m-%d %H:%M:%S') if p.publish_begin else '')
+
 class Page(PublishUnpublishMixin, 
            HasAncestorMixin, 
            BaseOriginalMixin,
@@ -108,7 +112,7 @@ class Page(PublishUnpublishMixin,
     pageset = relationship('PageSet', backref='pages')
 
     publish_begin = Column(DateTime)
-    publis_end = Column(DateTime)
+    publish_end = Column(DateTime)
 
     ## todo refactoring?
     @hybrid_property
