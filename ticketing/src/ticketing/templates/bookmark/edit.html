@@ -1,0 +1,5 @@
+<%inherit file="../layout.html" />
+<%block name="title">ブックマーク編集</%block>
+
+<%namespace file="_form.html" import="*"/>
+${bookmark_form(request.route_path("bookmark.edit", bookmark_id=bookmark_id), u"編集")}
