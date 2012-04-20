@@ -51,8 +51,8 @@ class UserCredential(Base):
     __tablename__ = 'UserCredential'
     id = Column(BigInteger, primary_key=True)
 
-    auth_identifier = Column(String(1024), unique=True)
-    auth_secret= Column(String(1024))
+    auth_identifier = Column(String(255), unique=True)
+    auth_secret= Column(String(255))
 
     user_id = Column(BigInteger, ForeignKey('User.id'))
     user = relationship('User', backref="user_credential", uselist=False)

@@ -35,12 +35,12 @@ from seed.prefecture import PrefectureMaster
 
 from service    import ServiceData
 from client     import ClientData
-from ticket     import TicketerData
 from account    import AccountData
 from permission import PermissionData
 from operator   import OperatorData, OperatorRoleData
 from event import EventData,PerformanceData
 from venue import VenueData
+from product import ProductData, ProductItemData
 
 from ticketing.oauth2.models import Service
 from ticketing.operators.models import Operator, OperatorActionHistory, OperatorRole, Permission
@@ -55,11 +55,12 @@ db_fixture = SQLAlchemyFixture(
          'BankData'         : Bank,
          'BankAccountData'  : BankAccount,
          'AccountData'      : Account,
-         'TicketerData'     : Ticketer,
          'ClientData'       : Client,
          'EventData'        : Event,
          'PerformanceData'  : Performance,
-         'VenueData'        : Venue
+         'VenueData'        : Venue,
+         'ProductData'      : Product,
+         'ProductItemData'  : ProductItem
      },
      engine=engine,
 )
@@ -77,13 +78,14 @@ data = db_fixture.data(
     BankAccountData,
     OperatorRoleData,
     AccountData,
-    TicketerData,
     ClientData,
     OperatorRoleData,
     OperatorData,
     EventData,
     PerformanceData,
-    VenueData
+    VenueData,
+    ProductData,
+    ProductItemData
 )
 data.setup()
 

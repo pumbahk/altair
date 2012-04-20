@@ -76,28 +76,13 @@
     % for event in events.items:
     <div class="well">
       <h4 style="float: left">${event.title}</h4>
-      <div class="btn-group" style="float: right; margin-right: 60px">
-        <a href="${request.route_path('events.edit', event_id=event.id)}" class="btn" ><i class="icon-pencil"></i> 編集</a>
-        <button class="btn dropdown-toggle" data-toggle="dropdown">
-          <span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu">
-          <li><a href=""><i class="icon-plus"></i> コピー</a></li>
-          <li><a href="${request.route_path('performances.new', event_id=event.id)}" class="new-performance">
-            <i class="icon-plus"></i> パフォーマンス追加</a>
-          </li>
-          <li class="divider"></li>
-          <li><a href=""><i class="icon-minus"></i> 料率設定</a></li>
-          <li class="divider"></li>
-          <li><a href=""><i class="icon-minus"></i> 削除</a></li>
-        </ul>
+      <div class="pull-right" style="margin-right: 60px">    
+        <%include file="/events/_action_button.html" args="event=event" /> 
       </div>
       <br style="clear: both" />
       <span class="label label-important">先行</span>
       <span class="label label-success">一般</span>
       <%include file="/performances/_list.html" args="performances=event.performances" /> 
-      <div style="float: right"><a href="${request.route_path('events.show', event_id=event.id)}">このイベントの他の公演を見る</a></div>
-      <br style="clear: both" />
     </div>
     % endfor
   </span>

@@ -36,14 +36,6 @@
           </td>
         </tr>
         <tr>
-          <th>会場</th>
-          <td>
-            <ul>
-              <li>さいたまスーパーアリーナ (1/5, 1/6)</li>
-            </ul>
-          </td>
-        </tr>
-        <tr>
           <th>販売開始日時</th>
           <td>2011/10/1 10:00</td>
         </tr>
@@ -53,22 +45,16 @@
         </tr>
         <tr>
           <th>${form.start_on.label.text}</th>
-          <td>${event.start_on}(<a href="${request.route_path('performances.show', event_id=event.id, performance_id=1)}">○○○○東京公演</a>)</td>
+          <td>${event.start_on} (<a href="${request.route_path('performances.show', event_id=event.id, performance_id=1)}">○○○○東京公演</a>)</td>
         </tr>
         <tr>
           <th>${form.end_on.label.text}</th>
-          <td>${event.end_on}(<a href="${request.route_path('performances.show', event_id=event.id, performance_id=3)}">○○○○大阪公演</a>)</td>
+          <td>${event.end_on} (<a href="${request.route_path('performances.show', event_id=event.id, performance_id=3)}">○○○○大阪公演</a>)</td>
         </tr>
       </tbody>
     </table>
 
-    <div class="ui-toolbar">
-      <a href="${request.route_path('events.edit', event_id=event.id)}" class="btn">編集</a>
-      <a href="${request.route_path('events.delete', event_id=event.id)}" class="btn">削除</a>
-      <a href="${request.route_path('events.new',event_id=event.id)}" class="btn">コピー</a>
-      <a href="" class="btn">チケット券面プレビュー</a>
-    </div>
-
+    <%include file="/events/_action_button.html" args="event=event" /> 
     <hr />
 
     <div id="performances" class="subsection">

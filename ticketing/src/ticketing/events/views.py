@@ -121,6 +121,19 @@ class Events(BaseView):
             return HTTPFound(location=route_path('events.show', self.request, event_id=event.id))
         else:
             return {
-                'form':f
+                'form':f,
+                'event':event
             }
+
+    @view_config(route_name='events.delete')
+    def delete(self):
+        event_id = int(self.request.matchdict.get('event_id', 0))
+        event = Event.get(event_id)
+        if event is None:
+            return HTTPNotFound('event id %d is not found' % id)
+
+        Event.delete(event)
+
+        self.request.session.flash(u'イベントを削除しました')
+        return HTTPFound(location=route_path('events.index', self.request))
 

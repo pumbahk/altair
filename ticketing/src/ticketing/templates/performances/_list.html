@@ -19,10 +19,10 @@
         <td><input type="checkbox" /></td>
         <td><a href="${request.route_path('performances.show', performance_id=performance.id)}">${performance.id}</a></td>
         <td><a href="${request.route_path('performances.show', performance_id=performance.id)}">${performance.name}</a></td>
-        <td><a href=""></a>${performance.venue.name}</td>
+        <td>${performance.venue.name}</td>
         <td>${performance.open_on}</td>
         <td>${performance.start_on}</td>
-        <td>${performance.end_on}</td>
+        <td>${performance.end_on or ''}</td>
       </tr>
     % endfor
     </tbody>

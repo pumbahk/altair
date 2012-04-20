@@ -48,3 +48,13 @@
     </div>
   % endif
 </%def>
+
+<%def name="form_item(item, option={}, help='')">
+  <div class="control-group ${'error' if item.errors else ''}">
+    <label class="control-label">${help|n} ${item.label.text}</label>
+    <div class="controls">
+      ${item(**option)}
+      ${validate_errors(item)}
+    </div>
+  </div>
+</%def>

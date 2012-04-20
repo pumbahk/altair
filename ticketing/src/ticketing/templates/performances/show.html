@@ -24,6 +24,10 @@
             <th>開演</th>
             <td>${performance.start_on}</td>
           </tr>
+          <tr>
+            <th>終演</th>
+            <td>${performance.end_on or ''}</td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -31,6 +35,10 @@
     <div class="span6">
       <table class="table table-bordered table-condensed">
         <tbody>
+          <tr>
+            <th>公演コード</th>
+            <td>${performance.code}</td>
+          </tr>
           <tr>
             <th>会場</th>
             <td>${performance.venue.name}</td>

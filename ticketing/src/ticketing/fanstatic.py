@@ -10,6 +10,7 @@ from js.jqueryui import jqueryui
 from js.tinymce import tinymce
 from js.backbone import backbone
 from js.bootstrap import bootstrap
+from js.jquery_timepicker_addon import timepicker
 
 def bootstrap_need():
     bootstrap.need()
@@ -83,6 +84,6 @@ with_bootstrap = FanstaticDecoratorFactory(
     smoothness.need,
     underscore.need,
     backbone.need,
-
-    bootstrap.need
+    bootstrap.need,
+    timepicker.need
  )

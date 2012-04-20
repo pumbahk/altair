@@ -41,7 +41,6 @@ class Account(Base):
         return session.query(Account).filter(Account.id == account_id).first()
 
 class AccountOwnerClient(Base):
-
     __tablename__ = "AccountOwnerClient"
 
     id              = Column(BigInteger, primary_key=True)
@@ -72,6 +71,7 @@ class Performance(Base):
     owner = relationship('Account')
     venue_id = Column(BigInteger, ForeignKey('Venue.id'))
     venue = relationship('Venue')
+    product_item = relationship('ProductItem')
 
     @staticmethod
     def get(performance_id):
@@ -93,8 +93,8 @@ event_table = Table(
     Column('code', String(12)),
     Column('title', String(1024)),
     Column('abbreviated_title', String(1024)),
-    Column('start_on', Date, nullable=True),
-    Column('end_on', Date, nullable=True),
+    Column('start_on', DateTime, nullable=True),
+    Column('end_on', DateTime, nullable=True),
     )
 
 event_detail_table = Table(
@@ -109,10 +109,6 @@ class Event(Base):
     performances = relationship('Performance', backref='event')
 
     @staticmethod
-    def add(event):
-        session.add(event)
-
-    @staticmethod
     def get(event_id):
         return session.query(Event).filter(Event.id==event_id).first()
 
@@ -121,12 +117,19 @@ class Event(Base):
         return session.query(Event).filter(Event.code==code).first()
 
     @staticmethod
+    def add(event):
+        session.add(event)
+
+    @staticmethod
     def update(event):
         session.merge(event)
         session.flush()
 
     @staticmethod
+    def delete(event):
+        session.delete(event)
+
+    @staticmethod
     def all():
         return session.query(Event).all()
-
 

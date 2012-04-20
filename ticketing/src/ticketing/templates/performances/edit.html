@@ -5,27 +5,28 @@
 <%namespace file="/common/helpers.html" import="form_item" />
 
 <%
-  if request.matched_route.name == 'events.edit':
+  if request.matched_route.name == 'performances.edit':
     route_name = u'編集'
-    route_path = request.route_path('events.edit', event_id=event.id)
+    route_path = request.route_path('performances.edit', performance_id=1)
   else:
     route_name = u'新規登録'
-    route_path = request.route_path('events.new')
+    route_path = request.route_path('performances.new', event_id=1)
 %>
 
 <script type="text/javascript">
   $(function() {
     $('#start_on').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
     $('#end_on').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
+    $('#open_on').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
   });
 </script>
 
 <div class="row-fluid">
-  <%include file="_menu.html" />                                                                       
+  <%include file="_menu.html" />
 
   <span class="span10">
     <div class="page-header">
-      <h3>イベント${route_name}</h3>
+      <h3>パフォーマンス${route_name}</h3>
     </div>
 
     <div class="content">
@@ -34,13 +35,14 @@
     </div>
 
     <div class="well">
-      <form class="form-horizontal" action="${route_path}" enctype="multipart/form-data" method="POST">
+      <form class="form-horizontal" action="${route_path}" method="POST">
         <fieldset>
-          ${form_item(form.code, option={'style':'width:150px'})}
-          ${form_item(form.title, option={'class':'span8'})}
-          ${form_item(form.abbreviated_title, option={'class':'span4'})}
+          ${form_item(form.name, option={'class':'span8'})}
+          ${form_item(form.code, option={'class':'span2'})}
+          ${form_item(form.open_on)}
           ${form_item(form.start_on)}
           ${form_item(form.end_on)}
+          ${form_item(form.venue_id, option={'class':'span6'})}
         </fieldset>
         <div class="form-actions">
           <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">

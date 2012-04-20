@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL
 from sqlalchemy.orm import relationship, join, backref, column_property, mapper, relation

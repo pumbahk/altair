@@ -29,7 +29,7 @@ class Performances(BaseView):
                 self.price = price
 
         return {
-            'performance'   : performance,
+            'performance' : performance,
             'products'      : [
                 product(1, u'S席 大人', 8000),
                 product(2, u'S席 子供', 8000),
@@ -107,4 +107,16 @@ class Performances(BaseView):
                 'form':f,
                 'performance':performance,
             }
+
+    @view_config(route_name='performances.delete')
+    def delete(self):
+        performance_id = int(self.request.matchdict.get('performance_id', 0))
+        performance = Performance.get(performance_id)
+        if performance is None:
+            return HTTPNotFound('performance id %d is not found' % id)
+
+        Performance.delete(performance)
+
+        self.request.session.flash(u'パフォーマンスを削除しました')
+        return HTTPFound(location=route_path('performances.index', self.request))
 
