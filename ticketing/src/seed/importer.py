@@ -41,9 +41,11 @@ from operator   import OperatorData, OperatorRoleData
 from event import EventData,PerformanceData
 from venue import VenueData
 from product import ProductData, ProductItemData
+from ticketing.bookmark.tests.bookmark import BookmarkData
 
 from ticketing.oauth2.models import Service
 from ticketing.operators.models import Operator, OperatorActionHistory, OperatorRole, Permission
+from ticketing.bookmark.models import Bookmark
 
 db_fixture = SQLAlchemyFixture(
      env={
@@ -60,7 +62,8 @@ db_fixture = SQLAlchemyFixture(
          'PerformanceData'  : Performance,
          'VenueData'        : Venue,
          'ProductData'      : Product,
-         'ProductItemData'  : ProductItem
+         'ProductItemData'  : ProductItem,
+         'BookmarkData'     : Bookmark
      },
      engine=engine,
 )
@@ -85,7 +88,8 @@ data = db_fixture.data(
     PerformanceData,
     VenueData,
     ProductData,
-    ProductItemData
+    ProductItemData,
+    BookmarkData
 )
 data.setup()
 
