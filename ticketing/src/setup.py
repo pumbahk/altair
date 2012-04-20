@@ -28,6 +28,7 @@ requires = [
     'pastescript',
     'sadisplay',
     'sqlahelper',
+    'py4j',
     'WebHelpers',
     'fixture',
     'js.jquery',
