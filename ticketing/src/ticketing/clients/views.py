@@ -15,7 +15,8 @@ from deform.exception import ValidationFailure
 import webhelpers.paginate as paginate
 from ticketing.fanstatic import with_bootstrap
 
-@view_defaults(decorator=with_bootstrap, permission="administrator")
+#@view_defaults(decorator=with_bootstrap, permission="administrator")
+@view_defaults(decorator=with_bootstrap)
 class Clients(BaseView):
     @view_config(route_name='clients.index', renderer='ticketing:templates/clients/index.html')
     def index(self):
