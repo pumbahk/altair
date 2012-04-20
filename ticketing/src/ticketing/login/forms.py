@@ -8,8 +8,11 @@ class LoginForm(Form):
     '''
       Login form
     '''
-    login_id    = TextField(u'ユーザー名'         , validators=[Required()])
-    password    = PasswordField(u'パスワード'    , validators=[Required(),Length(4,32)])
+    login_id    = TextField(u'ユーザー名'         , validators=[Required(message=u'必須項目です。')])
+    password    = PasswordField(u'パスワード'    , validators=[Required(message=u'必須項目です。'),Length(4,32,message=u'4文字以上32文字以内で入力してください。')])
+
+class ResetForm(Form):
+    email    = TextField(u'Email'         , validators=[Required(message=u'必須項目です。')])
 
 class OperatorForm(Form):
 

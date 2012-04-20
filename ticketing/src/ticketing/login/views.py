@@ -10,7 +10,7 @@ from pyramid.security import authenticated_userid
 
 from ticketing.oauth2.authorize import Authorizer, MissingRedirectURI, AuthorizationException
 
-from forms import LoginForm, OperatorForm, AuthorizeForm
+from forms import LoginForm, OperatorForm, ResetForm
 from ticketing.models import *
 from ticketing.views import BaseView
 from ticketing.operators.models import Operator
@@ -42,6 +42,7 @@ class Login(BaseView):
             data = form.data
             operator = Operator.login(data.get("login_id"), data.get("password"))
             if operator is None:
+                form.login_id.errors.append(u"ユーザー名またはパスワードが違います。")
                 return {
                     'form':form
                 }
@@ -49,6 +50,26 @@ class Login(BaseView):
             headers = remember(self.request, data.get("login_id"))
             next_url = self.request.GET.get('next')
             return HTTPFound(location=next_url if next_url else route_path("index", self.request), headers=headers)
+        else:
+            return {
+                'form':form
+            }
+
+    @view_config(route_name='login.reset', request_method="GET", renderer='ticketing:templates/login/reset.html')
+    def reset(self):
+        form = ResetForm()
+        return {
+            'form' : form
+        }
+
+    @view_config(route_name='login.reset', request_method="POST", renderer='ticketing:templates/login/reset_commit.html')
+    def reset(self):
+        form = ResetForm()
+        if form.validate():
+            data = form.data
+            operator = Operator.get_by_email(data.get("email"))
+            if operator:
+                pass
         else:
             return {
                 'form':form
@@ -98,6 +119,8 @@ class LoginUser(BaseView):
         headers = forget(self.request)
         loc = self.request.route_url('login.index')
         return HTTPFound(location=loc, headers=headers)
+
+
 
 
 
