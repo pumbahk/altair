@@ -23,6 +23,3 @@ class OperatorForm(Form):
     password2   = PasswordField(u'パスワード確認' , validators=[
                                                         EqualTo('password', message=u'パスワードと確認用パスワードは一致しません。',)])
 
-
-class AuthorizeForm(LoginForm):
-    pass

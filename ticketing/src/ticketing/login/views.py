@@ -1,14 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from pyramid.view import view_config, view_defaults
-from pyramid.renderers import render_to_response
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.security import remember, forget
 
 from pyramid.url import route_path
 from pyramid.security import authenticated_userid
-
-from ticketing.oauth2.authorize import Authorizer, MissingRedirectURI, AuthorizationException
 
 from forms import LoginForm, OperatorForm, ResetForm
 from ticketing.models import *
@@ -83,7 +80,7 @@ class LoginUser(BaseView):
         login_id = authenticated_userid(self.request)
         return {'operator' : session.query(Operator).filter(Operator.login_id == login_id).first()}
 
-    @view_config(route_name='login.info.edit', request_method="GET", renderer='ticketing:templates/login/edit.html')
+    @view_config(route_name='login.info.edit', request_method="GET", renderer='ticketing:templates/login/_form.html')
     def info_edit_get(self):
         operator = self.context.user
         if operator is None:
@@ -95,7 +92,7 @@ class LoginUser(BaseView):
             'form':f
         }
 
-    @view_config(route_name='login.info.edit', request_method="POST", renderer='ticketing:templates/login/edit.html')
+    @view_config(route_name='login.info.edit', request_method="POST", renderer='ticketing:templates/login/_form.html')
     def info_edit_post(self):
         operator = self.context.user
         if operator is None:

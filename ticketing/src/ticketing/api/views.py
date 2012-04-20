@@ -1,7 +1,18 @@
 from pyramid.view import view_config, view_defaults
 from ticketing.views import BaseView
+from pyramid.renderers import render_to_response
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound
+
+from pyramid.url import route_path
+from pyramid.security import authenticated_userid
 
 from ticketing.oauth2.models import Service, AccessToken
+from forms import AuthorizeForm
+from ticketing.oauth2.authorize import Authorizer, MissingRedirectURI, AuthorizationException
+from ticketing.operators.models import Operator
+
+import sqlahelper
+session = sqlahelper.get_session()
 
 @view_config(route_name='api.access_token' , renderer='json')
 def access_token(context, request):
