@@ -11,8 +11,12 @@
                         <ul class="dropdown-menu">
                             <li><a href="${request.route_path('login.info')}">
                                 <i class="icon-cog"> </i>
-                                設定</a>
+                                個人設定</a>
                             </li>
+                            <li><a href="${request.route_path('login.info')}">
+                                  <i class="icon-cog"> </i>
+                                管理メニュー</a>
+                              </li>
                             <li><a href="${request.route_path('login.logout')}">
                                 <i class="icon-off"> </i>
                                 ログアウト</a>
@@ -30,6 +34,7 @@
                 <li class="active"><a href="${request.route_path('dashboard.index')}">Home</a></li>
                 <li><a href="${request.route_path('events.index')}">イベント</a></li>
                 <li><a href="http://127.0.0.1:6543/">CMS</a></li>
+                <li><a href="http://127.0.0.1:6543/">窓口発券</a></li>
               </ul>
             </div>
             <!-- End Navigation -->
