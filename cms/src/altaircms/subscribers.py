@@ -1,19 +1,15 @@
-from pyramid.events import subscriber
-from pyramid.events import BeforeRender
 from altaircms.lib.formevent import AfterFormInitialize
-
+from wtforms.form import Form
 # from altaircms.auth.helpers import user_context
 from . import helpers
 
-@subscriber(BeforeRender)
 def add_renderer_globals(event):
     event['h'] = helpers
     # event['user'] = user_context(event)
     if event["request"]:
         event['user'] = event["request"].user
 
-from wtforms.form import Form
-@subscriber(BeforeRender)
+
 def after_form_initialize(event):
     request = event["request"]
     rendering_val = event.rendering_val
@@ -23,7 +19,6 @@ def after_form_initialize(event):
                 request.registry.notify(AfterFormInitialize(v, request, rendering_val))
 
 
-@subscriber(AfterFormInitialize)
 def add_choices_query_refinement(event): #todo:refactoring
     form = event.form
     form_class = form.__class__

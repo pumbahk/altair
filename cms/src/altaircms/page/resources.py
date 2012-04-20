@@ -11,7 +11,14 @@ from altaircms.tag.api import put_tags
 from sqlalchemy.orm.exc import NoResultFound
 from . import helpers as h
 from . import models
+from . import events
+from altaircms.solr import api as solr
 
+def add_solr(page, request):
+    ftsearch = solr.get_fulltext_search_utility(request)
+    doc = solr.create_doc_from_page(page)
+    ftsearch.register(doc, commit=True)
+    
 class PageResource(security.RootFactory):
     def get_confirmed_form(self, postdata):
         form = wf.WidgetDispositionSaveForm(postdata)
@@ -58,7 +65,7 @@ class PageResource(security.RootFactory):
     def get_page(self, page_id):
         return models.Page.query.filter(models.Page.id==page_id).one()
 
-    def crate_page(self, form):
+    def create_page(self, form):
         tags, private_tags, params =  h.divide_data(form.data)
         page = models.Page.from_dict(params)
         put_tags(page, "page", tags, private_tags, self.request)
@@ -73,6 +80,8 @@ class PageResource(security.RootFactory):
         page.version = pageset.gen_version()
         logging.debug('create pagset')
 
+        self.add(page, flush=True)
+        events.notify_page_create(self.request, page, params)
         return page
 
     def update_page(self, page, form):
@@ -80,10 +89,19 @@ class PageResource(security.RootFactory):
         for k, v in params.iteritems():
             setattr(page, k, v)
         put_tags(page, "page", tags, private_tags, self.request)
+
+        self.add(page, flush=True)
+        events.notify_page_update(self.request, page, params)
         return page
 
-    def page_clone(self, page):
-        return page.clone(DBSession)
+    def delete_page(self, page):
+        events.notify_page_delete(self.request, page)
+        self.delete(page)
+
+    def clone_page(self, page):
+        cloned = page.clone(DBSession)
+        events.notify_page_create(self.request, cloned)
+        return cloned
 
     def add(self, data, flush=False):
         DBSession.add(data)

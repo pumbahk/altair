@@ -64,9 +64,6 @@ def main(global_config, **settings):
         config.set_request_property("altaircms.auth.helpers.get_authenticated_user", "user", reify=True)
     
     ## include
-    config.include('pyramid_tm')
-    config.include("pyramid_fanstatic")
-
     config.include("altaircms.auth", route_prefix='/auth')
     config.include("altaircms.front", route_prefix="f")
     config.include("altaircms.widget")
@@ -81,14 +78,24 @@ def main(global_config, **settings):
     config.include("altaircms.base")
     config.include("altaircms.tag")
 
-
     ## slack-off
     config.include("altaircms.lib.crud")
     config.include("altaircms.slackoff")
-    
-    config.scan('.subscribers')
-    test_re = re.compile('tests$').search
 
+    ## fulltext search
+    config.include("altaircms.solr")
+    search_utility = settings.get("altaircms.solr.search.utility", "altaircms.solr.api.DummySearch")
+    config.add_fulltext_search(search_utility)
+
+    ## bind event
+    config.add_subscriber(".subscribers.add_renderer_globals", 
+                          "pyramid.events.BeforeRender")
+    config.add_subscriber(".subscribers.after_form_initialize", 
+                          "pyramid.events.BeforeRender")
+    config.add_subscriber(".subscribers.add_choices_query_refinement", 
+                          ".lib.formevent.AfterFormInitialize")
+    # config.scan('.subscribers')
+    
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)
     config.add_static_view('plugins/static', 'altaircms:plugins/static', cache_max_age=3600)
 

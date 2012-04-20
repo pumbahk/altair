@@ -193,7 +193,6 @@ def main(app):
 
     request = DummyRequest()
     request.matchdict = dict(page_name="sample_page")
-    import pdb; pdb.set_trace()
     context = PageRenderingResource(request)
     result = rendering_page(context, request)
     sys.stdout.write(result.body)

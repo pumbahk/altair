@@ -38,8 +38,11 @@ class RenderingTest(unittest.TestCase):
         config.registry.settings["mako.input_encoding"] = "utf-8"
         config.registry.settings["altaircms.plugin_static_directory"] = here
         config.include("altaircms.front", route_prefix="f")
-        config.include("altaircms.plugins.widget.reuse") #attach event
-        config.scan("altaircms.subscribers") #attach event
+        config.include("altaircms.plugins.widget.reuse") 
+
+        #attach event
+        config.add_subscriber("altaircms.subscribers.add_renderer_globals", 
+                              "pyramid.events.BeforeRender")
         return config
 
     def _getRequest(self):

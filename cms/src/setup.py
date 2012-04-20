@@ -17,6 +17,7 @@ requires = [
     "bpmappers",
     'isodate',
     'oauth2',
+    "solorpy", 
     "WTForms",
     "js.jquery", 
     "js.bootstrap", 

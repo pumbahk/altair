@@ -8,6 +8,10 @@ class IForm(Interface):
         pass
     
 
+class IModelEvent(Interface):
+    request = Attribute("")
+    obj = Attribute("")
+    params = Attribute("params")
 ##
 
 class IConcrete(Interface):

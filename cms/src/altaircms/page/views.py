@@ -48,8 +48,7 @@ class PageAddView(object):
         logging.debug('create_page')
         form = forms.PageForm(self.request.POST)
         if form.validate():
-            page = self.context.crate_page(form)
-            self.context.add(page)
+            page = self.context.create_page(form)
             ## flash messsage
             FlashMessage.success("page created", request=self.request)
             return HTTPFound(self.request.route_path("event", id=self.event_id))
@@ -73,8 +72,7 @@ class PageCreateView(object):
     def create(self):
         form = forms.PageForm(self.request.POST)
         if form.validate():
-            page = self.context.crate_page(form)
-            self.context.add(page)
+            page = self.context.create_page(form)
             ## flash messsage
             FlashMessage.success("page created", request=self.request)
             return HTTPFound(self.request.route_path("page"))
@@ -94,7 +92,7 @@ class PageCreateView(object):
     @view_config(route_name="page_duplicate", request_method="POST")
     def duplicate(self):
         page = self.context.get_page(self.request.matchdict["id"])
-        self.context.page_clone(page)
+        self.context.clone_page(page)
         ## flash messsage
         FlashMessage.success("page duplicated", request=self.request)
 
@@ -116,8 +114,8 @@ class PageDeleteView(object):
 
     @view_config(request_method="POST")
     def delete(self):
-        id_ = self.request.matchdict['id']
-        PageRESTAPIView(self.request, id_).get_rest_action(self.request.POST["_method"])()
+        page = self.context.get_page( self.request.matchdict['id'])
+        self.context.delete_page(page)
 
         ## flash messsage
         FlashMessage.success("page deleted", request=self.request)
@@ -173,7 +171,6 @@ class PageUpdateView(object):
         form = forms.PageUpdateForm(self.request.POST)
         if form.validate():
             page = self.context.update_page(page, form)
-            self.context.add(page)
             ## flash messsage
             FlashMessage.success("page updated", request=self.request)
             return HTTPFound(location=h.page.to_edit_page(self.request, page))

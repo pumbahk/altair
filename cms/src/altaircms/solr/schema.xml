@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<schema name="example" version="1.4">
+  <types>
+    <!-- The StrField type is not analyzed, but indexed/stored verbatim. -->
+    <fieldType name="string" class="solr.StrField" sortMissingLast="true" omitNorms="true"/>
+    <fieldType name="int" class="solr.TrieIntField" precisionStep="0" omitNorms="true" positionIncrementGap="0"/>
+    <fieldType name="long" class="solr.TrieLongField" precisionStep="0" omitNorms="true" positionIncrementGap="0"/>
+
+    <fieldType name="text_cjk" class="solr.TextField" positionIncrementGap="100">
+      <analyzer>
+        <tokenizer class="solr.CJKTokenizerFactory"/>
+      </analyzer>
+    </fieldType>
+
+  </types>
+  <fields>
+    <field name="id" type="string" indexed="true" stored="true" required="true" /> 
+    <field name="page_id" type="int" indexed="true" stored="true" required="true" /> 
+    <field name="page_title" type="text_cjk" indexed="true" stored="true" />
+    <field name="page_description" type="text_cjk" indexed="true" stored="true" />
+    <field name="page_keywords" type="text_cjk" indexed="true" stored="true" />
+
+    <field name="event_title" type="text_cjk" indexed="true" stored="true" />
+    <field name="event_subtitle" type="text_cjk" indexed="true" stored="true" />
+    <field name="event_place" type="text_cjk" indexed="true" stored="true" />
+
+  </fields>
+
+  <uniqueKey>id</uniqueKey>
+  <defaultSearchField>page_title</defaultSearchField>
+  <solrQueryParser defaultOperator="AND"/>
+</schema>
+
