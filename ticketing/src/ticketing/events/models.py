@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+
+from datetime import datetime
+
 from ticketing.utils import StandardEnum
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL
 from sqlalchemy.orm import relationship, join, backref, column_property
@@ -76,6 +80,12 @@ class Performance(Base):
     @staticmethod
     def add(performance):
         session.add(performance)
+
+    @staticmethod
+    def update(performance):
+        performance.updated_at = datetime.now()
+        session.merge(performance)
+        session.flush()
 
 event_table = Table(
     'Event', Base.metadata,

@@ -1,4 +1,75 @@
 <%inherit file="../layout.html" />
+<%namespace file="/common/helpers.html" import="flash_messages" />
+
+<div class="row-fluid">
+  <%include file="_menu.html" /> 
+
+  <span class="span10">
+    <div class="page-header">
+      <h3>${performance.name}</h3>
+    </div>
+
+    <div class="content">
+      ${flash_messages(request)}
+    </div>
+
+    <div class="span3">
+      <table class="table table-bordered table-condensed">
+        <tbody>
+          <tr>
+            <th>開場</th>
+            <td>${performance.open_on}</td>
+          </tr>
+          <tr>
+            <th>開演</th>
+            <td>${performance.start_on}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="span6">
+      <table class="table table-bordered table-condensed">
+        <tbody>
+          <tr>
+            <th>会場</th>
+            <td>${performance.venue.name}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="span1">
+      <a class="btn" href="${request.route_path('performances.edit', performance_id=performance.id)}" >編集</a>
+    </div>
+  </span>
+
+  <span class="span10">
+    <div class="tabbable tabs-top" id="tabbable-content">
+      <ul class="nav nav-tabs">
+        <li class="active"><a href="#seat-allocation" data-toggle="tab">配券／配席</a></li>
+        <li><a href="#venue-designer" data-toggle="tab">会場／席種</a></li>
+        <li><a href="#ticket-designer" data-toggle="tab">チケット券面</a></li>
+        <li><a href="#product" data-toggle="tab">商品管理</a></li>
+      </ul>
+      <div class="tab-content" id="tabbable-tab-content">
+        <div class="tab-pane active" id="seat-allocation">
+          <%include file="./_seat_allocation.html" />
+        </div>
+        <div class="tab-pane" id="venue-designer">
+          <%include file="./_venue_designer.html" />
+        </div>
+        <div class="tab-pane" id="ticket-designer">
+          <%include file="./_ticket_designer.html" />
+        </div>
+        <div class="tab-pane" id="product">
+          <%include file="./_product.html" />
+        </div>
+      </div>
+    </div>
+  </span>
+</div>
+
 <%block name="style">
 <style>
     .container-fluid {
@@ -59,85 +130,3 @@
 </style>
 </%block>
 
-<h2><%block name="title">${performance.name}</%block></h2>
-<div class="row">
-    <div class="span3">
-        <table class="table  table-bordered table-condensed">
-            <tbody>
-                <tr>
-                    <th>開場</th>
-                    <td>${performance.open_on}</td>
-                </tr>
-                <tr>
-                    <th>開演</th>
-                    <td>${performance.start_on}</td>
-                </tr>
-             </tbody>
-        </table>
-    </div>
-    <div class="span6">
-        <table class="table table-bordered table-condensed">
-            <tbody>
-                <tr>
-                    <th>会場</th>
-                    <td>${performance.venue.name}</td>
-                </tr>
-             </tbody>
-        </table>
-    </div>
-    <div class="span3">
-        <a class="btn" data-toggle="modal" href="#modal-edit" >編集</a>
-    </div>
-</div>
-
-<div class="modal fade" id="modal-edit">
-
-    <div class="modal-header">
-        <a class="close" data-dismiss="modal">×</a>
-        <h3>パフォーマンスの編集</h3>
-    </div>
-
-    <div class="modal-body">
-        <form action="">
-            <label>パフォーマンス名</label>
-            <input type="text" class="span3" placeholder="パフォーマンス名" value="${performance.name}">
-            <label>パフォーマンスコード</label>
-            <input type="text" class="span3" placeholder="パフォーマンスコード" value="${performance.code}">
-            <label>開場</label>
-            <input type="text" class="span3" placeholder="2012/07/01 18:00" value="${performance.open_on}">
-            <label>開演</label>
-            <input type="text" class="span3" placeholder="2012/07/01 18:00" value="${performance.start_on}">
-            <label>終演</label>
-            <input type="text" class="span3" placeholder="2012/07/01 18:00" value="${performance.end_on}">
-            <span class="help-inline">オプション</span>
-        </form>
-    </div>
-
-    <div class="modal-footer">
-        <a href="#" class="btn" data-dismiss="modal">閉じる</a>
-        <a href="#" class="btn btn-primary">保存</a>
-    </div>
-</div>
-
-<div class="tabbable tabs-left" id="tabbable-content">
-  <ul class="nav nav-tabs">
-      <li class="active"><a href="#seat-allocation" data-toggle="tab">配券／配席</a></li>
-      <li><a href="#venue-designer" data-toggle="tab">会場／席種</a></li>
-      <li><a href="#ticket-designer" data-toggle="tab">チケット券面</a></li>
-      <li><a href="#product" data-toggle="tab">商品管理</a></li>
-  </ul>
-  <div class="tab-content" id="tabbable-tab-content" >
-      <div class="tab-pane active" id="seat-allocation">
-          <%include file="./_seat_allocation.html" />
-      </div>
-      <div class="tab-pane" id="venue-designer">
-          <%include file="./_venue_designer.html" />
-      </div>
-      <div class="tab-pane" id="ticket-designer">
-          <%include file="./_ticket_designer.html" />
-      </div>
-      <div class="tab-pane" id="product">
-          <%include file="./_product.html" />
-      </div>
-  </div>
-</div>

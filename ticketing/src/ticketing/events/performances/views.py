@@ -38,7 +38,7 @@ class Performances(BaseView):
             ]
         }
 
-    @view_config(route_name='performances.new', request_method='GET', renderer='ticketing:templates/performances/new.html')
+    @view_config(route_name='performances.new', request_method='GET', renderer='ticketing:templates/performances/edit.html')
     def new_get(self):
         event_id = int(self.request.matchdict.get('event_id', 0))
         event = Event.get(event_id)
@@ -51,7 +51,7 @@ class Performances(BaseView):
             'event':event,
         }
 
-    @view_config(route_name='performances.new', request_method='POST', renderer='ticketing:templates/performances/new.html')
+    @view_config(route_name='performances.new', request_method='POST', renderer='ticketing:templates/performances/edit.html')
     def new_post(self):
         event_id = int(self.request.matchdict.get('event_id', 0))
         event = Event.get(event_id)
@@ -70,11 +70,41 @@ class Performances(BaseView):
             return HTTPFound(location=route_path('events.show', self.request))
         return {
             'form':f,
-            'event':event
+            'event':event,
         }
 
-    @view_config(route_name='performances.new', renderer='ticketing:templates/performances/new.html')
-    def edit(self):
+    @view_config(route_name='performances.edit', request_method='GET', renderer='ticketing:templates/performances/edit.html')
+    def edit_get(self):
+        performance_id = int(self.request.matchdict.get('performance_id', 0))
+        performance = Performance.get(performance_id)
+        if performance is None:
+            return HTTPNotFound('performance id %d is not found' % performance_id)
+
+        f = PerformanceForm()
+        f.process(record_to_multidict(performance))
         return {
-            'form' : PerformanceForm()
+            'form':f,
+            'performance':performance,
         }
+
+    @view_config(route_name='performances.edit', request_method='POST', renderer='ticketing:templates/performances/edit.html')
+    def edit_post(self):
+        performance_id = int(self.request.matchdict.get('performance_id', 0))
+        performance = Performance.get(performance_id)
+        if performance is None:
+            return HTTPNotFound('performance id %d is not found' % performance_id)
+
+        f = PerformanceForm(self.request.POST)
+        if f.validate():
+            performance.venue = Venue.get(f.data['venue_id'])
+            performance = merge_session_with_post(performance, f.data)
+            Performance.update(performance)
+
+            self.request.session.flash(u'パフォーマンスを保存しました')
+            return HTTPFound(location=route_path('performances.show', self.request, performance_id=performance.id))
+        else:
+            return {
+                'form':f,
+                'performance':performance,
+            }
+
