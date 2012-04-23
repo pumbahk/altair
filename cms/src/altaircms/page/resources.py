@@ -71,7 +71,7 @@ class PageResource(security.RootFactory):
         put_tags(page, "page", tags, private_tags, self.request)
         if page.pageset is None:
             url = page.url
-            pageset = models.PageSet(url=url, name=page.title + u" ページセット")
+            pageset = models.PageSet(url=url, name=page.title + u" ページセット", version_counter=0)
             page.pageset = pageset
         else:
             pageset = page.pageset

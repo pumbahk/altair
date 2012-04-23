@@ -67,3 +67,16 @@ Dropbox
 
 dev.ticketstar.jp
 
+install solr
+----------------------------------------
+
+javaが必要::
+
+   sudo apt-get install openjdk-6-jdk #ubuntu
+
+buildout::
+
+   python setup.py dev_solr
+   cd ../deploy
+   buildout init
+   ./bin/buildout -N -v install

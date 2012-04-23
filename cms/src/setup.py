@@ -17,7 +17,7 @@ requires = [
     "bpmappers",
     'isodate',
     'oauth2',
-    "solorpy", 
+    "solrpy", 
     "WTForms",
     "js.jquery", 
     "js.bootstrap", 
@@ -28,6 +28,10 @@ requires = [
     'js.backbone',
     'js.tinymce',
     ]
+
+solr_require = [
+    "collective.recipe.solrinstance", 
+]
 
 tests_require = [
     "nose",
@@ -47,6 +51,7 @@ extras_require = {
     "testing": tests_require,
     "gunicorn": ["gunicorn", "gunicorn-console"],
     "devtools": devtools_require,
+    "solr": solr_require
 }
 
 if sys.version_info[:3] < (2,5,0):
