@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
+from datetime import datetime
 from seed import DataSet
+
 from prefecture import PrefectureMaster
 from ticketing.venues.models import Venue
-from datetime import datetime
 
 class VenueData(DataSet):
     class venue_1:
@@ -30,3 +31,22 @@ class VenueData(DataSet):
         tel_1 = u'03-0000-0000'
         tel_2 = u'03-1111-1111'
         fax = u'03-1111-1111'
+
+class SeatTypeData(DataSet):
+    class seattype_1:
+        name = u'S席'
+        event_id = 1
+        status = 1
+    class seattype_2:
+        name = u'A席'
+        event_id = 1
+        status = 1
+    class seattype_3:
+        name = u'B席'
+        event_id = 1
+        status = 1
+    class seattype_4:
+        name = u'C席'
+        event_id = 1
+        status = 1
+

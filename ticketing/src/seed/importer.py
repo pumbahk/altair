@@ -33,13 +33,13 @@ sqlahelper.add_engine(engine)
 from seed.bank import BankData, BankAccountData
 from seed.prefecture import PrefectureMaster
 
-from service    import ServiceData
-from client     import ClientData
-from account    import AccountData
+from service import ServiceData
+from client import ClientData
+from account import AccountData
 from permission import PermissionData
-from operator   import OperatorData, OperatorRoleData
-from event import EventData,PerformanceData
-from venue import VenueData
+from operator import OperatorData, OperatorRoleData
+from event import EventData, PerformanceData
+from venue import VenueData, SeatTypeData
 from product import ProductData, ProductItemData
 from ticketing.bookmark.tests.bookmark import BookmarkData
 
@@ -61,6 +61,7 @@ db_fixture = SQLAlchemyFixture(
          'EventData'        : Event,
          'PerformanceData'  : Performance,
          'VenueData'        : Venue,
+         'SeatTypeData'     : SeatType,
          'ProductData'      : Product,
          'ProductItemData'  : ProductItem,
          'BookmarkData'     : Bookmark
@@ -87,9 +88,13 @@ data = db_fixture.data(
     EventData,
     PerformanceData,
     VenueData,
+    SeatTypeData,
     ProductData,
     ProductItemData,
+<<<<<<< HEAD
     BookmarkData
+=======
+>>>>>>> added SeatTypeData
 )
 data.setup()
 

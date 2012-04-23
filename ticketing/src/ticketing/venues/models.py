@@ -18,7 +18,7 @@ class SeatType(Base):
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
     event_id = Column(BigInteger, ForeignKey('Event.id'))
-    event = relationship('Event', uselist=False)
+    event = relationship('Event', backref='seat_types')
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
     status = Column(Integer)
