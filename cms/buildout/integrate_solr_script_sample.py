@@ -38,7 +38,7 @@ query =  api.create_query_from_dict(
     )
 print "query: %s" % query
 print "-------------"
-print ftsearch.search(query).results
+print ftsearch.search(query)
 
-print ftsearch.search(api.create_query_from_dict(id=1)).results
-print ftsearch.search(api.create_query_from_dict(page_description=u"何かテキトーに")).results
+print ftsearch.search(api.create_query_from_dict(id=1))
+print ftsearch.search(api.create_query_from_dict(page_description=u"何かテキトーに"))
