@@ -1,4 +1,5 @@
 # coding: utf-8
+import json
 from datetime import datetime
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
@@ -83,7 +84,7 @@ class PageSet(Base,
     def get_or_create(cls, page):
         if page.pageset is None:
             url = page.url
-            pageset = cls(url=url, name=page.title + u" ページセット", event=page.event)
+            pageset = cls(url=url, name=page.title + u" ページセット", event=page.event, version_counter=0)
             page.pageset = pageset
         else:
             pageset = page.pageset
@@ -144,7 +145,7 @@ class Page(PublishUnpublishMixin,
         return sa.sql.and_(sa.sql.or_((self.publish_begin == None), (self.publish_begin <= dt)), 
                            sa.sql.or_((self.publish_end == None), (self.publish_end > dt)))
 
-    ## todo refactoring?
+
     @property
     def public_tags(self):
         return [tag for tag in self.tags if tag.publicp == True]
@@ -156,9 +157,6 @@ class Page(PublishUnpublishMixin,
     def __repr__(self):
         return '<%s id=%s %s>' % (self.__class__.__name__, self.id, self.url)
 
-    # def __repr__(self):
-    #     return unicode(self.title)
-
     def has_widgets(self):
         return self.structure != self.DEFAULT_STRUCTURE
 
@@ -166,10 +164,14 @@ class Page(PublishUnpublishMixin,
         from . import clone
         return clone.page_clone(self, session)
 
-    """
-    def __str__(self):
-        return '%s'  % self.id
-
-    def __unicode__(self):
-        return u'%s' % self.title
-            """
+    @classmethod
+    def get_or_create_by_title(cls, title):
+        page = cls.query.filter_by(title=title).first()
+        if page:
+            return page
+        else:
+            return cls(title=title)
+        
+    @property
+    def service_info_list(self):
+        return ["select", "keep", "official", "goods", "event"]

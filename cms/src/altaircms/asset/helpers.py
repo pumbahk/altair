@@ -96,8 +96,9 @@ def movie_asset_query_from_search_params(params):
 def flash_asset_query_from_search_params(params):
     return _asset_query_from_search_params(models.FlashAsset, "flash_asset", params)
 
+
 ## convenience あとで消す
-def create_asset(captured, request=None):
+def create_asset(captured, request=None, params=None):
     """captured["type"], captured["filename"], captured["fp"]
     """
     if request is None:
@@ -119,4 +120,8 @@ def create_asset(captured, request=None):
         asset = resource.create_movie_asset(DummyForm)
     elif captured['type'] == 'flash':
         asset = resource.create_flash_asset(DummyForm)
+
+    if params:
+        for k, v in params.iteritems():
+            setattr(asset, k, v)
     return asset

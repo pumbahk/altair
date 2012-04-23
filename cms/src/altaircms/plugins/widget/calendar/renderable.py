@@ -1,8 +1,11 @@
 # -*- coding:utf-8 -*-
+import logging
+logger = logging.getLogger(__file__)
 
 from calendar_stream import PackedCalendarStream
 from calendar_stream import CalendarStreamGenerator
 from collections import defaultdict
+from . import CalendarTemplatePathStore
 import itertools
 
 __all__ = ["CalendarOutput", "performances_to_dict"]
@@ -95,26 +98,12 @@ def _collect_months(performances):
     => [((2011, 7), {"start":12, "end":12}), 
         ((2011, 9), {"start":1, "end":1})]
     """
-    # D = {}
-    # for p in performances:
-    #     k = p.start_on.year, p.start_on.month
-    #     term =  D.get(k)
-    #     if term:
-    #         term["start"] = min(p.start_on.day, term["start"])
-    #         term["end"] = max(p.start_on.day, term["start"])
-    #     else:
-    #         term = {"start": p.start_on.day, "end": p.start_on.day}
-    #     D[k] = term
-    # return sorted(D.items(), key=lambda x: x[0])
     from iterools import group_by
     return group_by(performances, lambda p: (p.start_on.year, p.start_on.month))
 
 ### render function ##
 # using these functioins in models.CalendarWidget.merge_settings() via getattr
 
-import os
-# here = os.path.abspath(os.path.dirname(__file__))
-here = "altaircms.plugins.widget:calendar"
 from pyramid.renderers import render
 from datetime import date
 
@@ -128,7 +117,9 @@ def obi(widget, performances, request):
     """講演の開始から終了までを縦に表示するカレンダー
     ※ performancesはstart_onでsortされているとする
     """
-    template_name = os.path.join(here, "rakuten.calendar.mako")
+    template_name = CalendarTemplatePathStore.path("obi")
+    logger.debug("calendar template: "+template_name)
+
     performances = list(performances)
     if performances:
         cal = CalendarOutput.from_performances(performances)
@@ -140,21 +131,22 @@ def obi(widget, performances, request):
 def term(widget, performances, request):
     """開始日／終了日を指定してその範囲のカレンダーを表示
     """
-    template_name = os.path.join(here, "rakuten.calendar.mako")
+    template_name = CalendarTemplatePathStore.path("term")
+    logger.debug("calendar template: "+template_name)
+
     cal = CalendarOutput.from_performances(performances)
     rows = cal.each_rows(widget.from_date, widget.to_date)
     return render(template_name, {"cal":rows, "i":cal.i}, request)
-
 
 def tab(widget, performances, request):
     """月毎のタブが存在するカレンダーを表示
     ※ performancesはstart_onでsortされているとする
     """
-    template_name = os.path.join(here, "rakuten.tab-calendar.mako")
-    if len(set(p.start_on.year for p in performances)) == 1:
-        months = sorted(set(p.start_on.month for p in performances))
-    else:
-        months = sorted(set((p.start_on.year, p.start_on.month) for p in performances))
+    template_name = CalendarTemplatePathStore.path("tab")
+    logger.debug("calendar template: "+template_name)
+
+
+    months = sorted(set((p.start_on.year, p.start_on.month) for p in performances))
     visibilities = itertools.chain([True], itertools.repeat(False))
     monthly_performances = itertools.groupby(performances, lambda p: (p.start_on.year, p.start_on.month))
     cals = (CalendarOutput.from_performances(perfs).each_rows(date(y, m, 1), _next_month_date(date(y, m, 1)))\

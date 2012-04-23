@@ -11,8 +11,9 @@ from altaircms.plugins.base.mixins import HandleWidgetMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
 from altaircms.page.models import Page
-import altaircms.helpers as h
+
 from altaircms.lib.interception import not_support_if_keyerror
+from . import helpers as h
 
 class MenuWidget(Widget):
     implements(IWidget)
@@ -51,11 +52,7 @@ class MenuWidgetResource(HandleSessionMixin,
     def get_widget(self, widget_id):
         return self._get_or_create(MenuWidget, widget_id)
 
-    def _items_from_page(self, page):
-        to_url = h.front.to_preview_page
-        return json.dumps( [{"label": p.title, "link": to_url(self.request, p)} for p in page.event.pages])        
-
     def get_items(self, page_id):
         page = Page.query.filter(Page.id==page_id).one()
-        return self._items_from_page(page) if page.event else "[]"
+        return h.items_from_page(self.request, page) if page.event else "[]"
 

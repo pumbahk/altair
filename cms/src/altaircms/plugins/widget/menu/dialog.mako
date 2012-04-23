@@ -196,6 +196,6 @@
   var root =  $("#app");
   var appview = new AppView({el: root}); 
   root.data("appview",appview);
-  appview.loadData($.parseJSON('${items|n}')); <%doc> items is mako </%doc>
+  appview.loadData(${items|n}); <%doc> items is mako </%doc>
 })();
 </script>

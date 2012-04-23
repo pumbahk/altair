@@ -8,10 +8,7 @@ class MenuWidgetView(object):
 
     def _create_or_update(self):
         page_id = self.request.json_body["page_id"]
-        if self.request.json_body["data"].get("create_by_page"):
-            items = self.request.context.get_items(page_id)
-        else:
-            items = self.request.json_body["data"]["items"]
+        items = self.request.json_body["data"]["items"]
         context = self.request.context
         widget = context.get_widget(self.request.json_body.get("pk"))
         widget = context.update_data(widget, page_id=page_id, items=items)

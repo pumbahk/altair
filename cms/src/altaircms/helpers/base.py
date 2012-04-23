@@ -1,7 +1,10 @@
 # -*- coding:utf-8 -*-
 
 WEEK =[u"月", u"火", u"水", u"木", u"金", u"土", u"日"]
-
+import urllib
+def path_in_string(path, string):
+    path = urllib.unquote_plus(path)
+    return path.endswith(string)
 
 def list_to_attibutes(attr_list):
     """

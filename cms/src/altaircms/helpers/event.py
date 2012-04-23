@@ -21,19 +21,28 @@ def _to_term(p):
 def _to_where(p):
     return p.venue
 
+def performance_describe(performance):
+    """ performanceから公演場所や日時を表示する文字列を返す
+    """
+    return u"　".join([_to_jastr(performance.open_on), 
+                       u"〜", 
+                       _to_jastr(performance.close_on), 
+                       _to_where(performance), 
+                       ])
+
 def performance_description(performance):
-    """ performanceから講演場所や日時を表示する文字列を返す
+    """ performanceから講演場所や日時を表示する文字列を返す(old)
     e.g.
     2012年6月3日（日）　16:30開場／17:00開演　岸和田市立浪切ホール　大ホール
     """
-    return u"　".join([_to_jastr(performance.start_on), _to_term(performance) , _to_where(performance)])
+    return u"　".join([_to_jastr(performance.open_on), _to_term(performance) , _to_where(performance)])
 
 def performance_time(performance):
     """ performanceからその講演が行われる時間を文字列で返す
     e.g. 
     2012年6月3日(日) 17:00
     """
-    d = performance.start_on
+    d = performance.open_on
     datestr = d.strftime(u"%Y年%m月%d日".encode("utf-8")).decode("utf-8")
     timestr = d.strftime("%H:%M")
     return u"%s（%s）%s" % (datestr, unicode(WEEK[d.weekday()]),  timestr)
@@ -44,3 +53,14 @@ def price_format(price):
     """
     return locale.format("%d", price, grouping=True)
 
+def detect_performance_status(performance):
+    """ circle, triangle, cross
+    """
+    import warnings
+    warnings.warn("it is not implemented, yet, that detect performance status logic")
+    return "circle"
+
+def content_string_from_performance_status(status):
+    return {"circle": u"○", 
+            "triangle": u"△", 
+            "cross": u"×"}.get(status, u"?")

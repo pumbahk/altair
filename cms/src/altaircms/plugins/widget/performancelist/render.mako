@@ -1,14 +1,42 @@
 ## performancelist widget output template
 ## 
 
-<div class="performances">
+## todo service icon
+## todo 販売終了した公演も表示
+
+<div class="detailBox">
+  <div class="detailBoxInner">
+	<h2>${event.title}</h2>
+	<ul id ="serviceIcon">
+	  <li>ここにservice icon並べる</li>
+	</ul>
+	<!--
     <form>
       <div class="fields">
         <div class="field">
+		  ## まだ動いていない
           <input type="checkbox" id="form-showUnavailablePerformances"><label for="form-showUnavailablePerformances">販売終了した公演も表示</label>
         </div>
       </div>
     </form>
+	-->
+	<ul>
+      % for p in performances:
+	    <li>${h.event.performance_describe(p)}</li>
+	  % endfor
+	</ul>
+  </div>
+</div>
+
+<%doc> ## obsolete
+<div class="performances">
+     <form>
+       <div class="fields">
+         <div class="field">
+           <input type="checkbox" id="form-showUnavailablePerformances"><label for="form-showUnavailablePerformances">販売終了した公演も表示</label>
+         </div>
+       </div>
+     </form>
     <table>
       <thead>
         <tr>
@@ -20,10 +48,10 @@
         </tr>
       </thead>
       <tbody>
-      % for p in performances:
+       % for p in performances:
         ## あとで修正
         <tr id="performance-${p.id}">
-		  <td class="serial">
+             <td class="serial">
             <span class="serial">${p.id}</span>
           </td>
           <td class="performance_name">
@@ -43,4 +71,5 @@
       % endfor
       </tbody>
     </table>
-</div>
+ </div>;
+</%doc>

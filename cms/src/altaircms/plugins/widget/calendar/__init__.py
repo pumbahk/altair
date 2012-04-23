@@ -2,6 +2,18 @@ from altaircms.plugins.widget import widget_plugin_install
 import os.path
 DIR = os.path.dirname(os.path.abspath(__file__))
 
+## fixme move to ini file
+class CalendarTemplatePathStore(object):
+    #obi = "rakuten.calendar.mako"
+    obi = "ticketstar.calendar.mako"
+    term = "rakuten.calendar.mako"
+    # tab = "rakuten.tab-calendar.mako"
+    tab = "ticketstar.tab-calendar.mako"
+    here = "altaircms.plugins.widget:calendar"
+    @classmethod
+    def path(cls, k):
+        return os.path.join(cls.here, getattr(cls, k))
+
 def includeme(config):
     from .models import CalendarWidget
     from .models import CalendarWidgetResource

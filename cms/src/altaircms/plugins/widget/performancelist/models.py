@@ -26,12 +26,14 @@ class PerformancelistWidget(Widget):
 
     def merge_settings(self, bname, bsettings):
         bsettings.need_extra_in_scan("performances")
+        bsettings.need_extra_in_scan("event")
         bsettings.need_extra_in_scan("request")
         @not_support_if_keyerror("performancelist widget: %(err)s")
         def performancelist_render():
             performances = bsettings.extra["performances"]
+            event = bsettings.extra["event"]
             request = bsettings.extra["request"]
-            return renderable.PfListRenderable(self, performances, request).render()
+            return renderable.PfListRenderable(self, event, performances, request).render()
         bsettings.add(bname, performancelist_render)
 
 class PerformancelistWidgetResource(HandleSessionMixin,
