@@ -365,6 +365,10 @@
 			};
 			val.dd = (val.d < 10 ? '0' : '') + val.d;
 			val.mm = (val.m < 10 ? '0' : '') + val.m;
+			val.HH = (val.HH < 10 ? '0' : '') + val.HH;
+			val.MM = (val.MM < 10 ? '0' : '') + val.MM;
+			val.SS = (val.SS < 10 ? '0' : '') + val.SS;
+
 			var date = [], 
           output = format.original;
 			for (var i=0, cnt = format.parts.length; i < cnt; i++) {
