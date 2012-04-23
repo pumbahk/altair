@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 import logging
-
+from datetime import datetime
 from altaircms.models import DBSession
 from altaircms.page.models import Page
 from altaircms.layout.models import Layout
@@ -11,16 +11,23 @@ import pyramid.exceptions as pyrexc
 from altaircms.security import RootFactory
 
 class PageRenderingResource(RootFactory):
+    def get_preview_date(self):
+        if 'datetime' not in self.request.params:
+            return datetime.now()
+        else:
+            return datetime.strptime('%Y%m%d%H%M%S')
+
     def get_unpublished_page(self, page_id):
         page = Page.query.filter(Page.id==page_id).one()
         page.to_unpublished()
         return page
 
-    def get_page_and_layout(self, url):
+    def get_page_and_layout(self, url, dt):
         try:
-            return DBSession.query(Page, Layout).filter(Page.layout_id==Layout.id).filter_by(url=url).filter_by(hash_url=None).one()
+            page = Page.query.filter(Page.url==url).filter(Page.in_term(dt)).one()
+            return page, page.layout
         except saexc.NoResultFound:
-            raise pyrexc.NotFound(u'レイアウトが設定されていません。')
+            raise pyrexc.NotFound(u'page, url=%s and publish datetime = %s, is not found' % (url, dt))
 
     def get_page_and_layout_preview(self, url):
         try:

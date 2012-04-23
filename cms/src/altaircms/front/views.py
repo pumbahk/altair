@@ -1,4 +1,5 @@
 # coding: utf-8
+
 from pyramid.httpexceptions import HTTPFound
 from pyramid.renderers import render_to_response
 from pyramid.view import view_config
@@ -19,7 +20,8 @@ viewの種類2つ（これは後で綺麗にしたい)
 @view_config(route_name="front", decorator=with_jquery)
 def rendering_page(context, request):
     url = request.matchdict["page_name"]
-    page, layout = context.get_page_and_layout(url)
+    dt = context.get_preview_date()
+    page, layout = context.get_page_and_layout(url, dt)
 
     block_context = context.get_block_context(page)
     block_context.scan(request=request,

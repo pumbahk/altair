@@ -2,14 +2,14 @@
 from datetime import datetime
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
-from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy import Column
-from sqlalchemy import Integer
-from sqlalchemy import Unicode
-from sqlalchemy import String
-from sqlalchemy import Text
-from sqlalchemy import ForeignKey
-from sqlalchemy import DateTime
+from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
+from sqlalchemy import (Column, 
+                        Integer, 
+                        Unicode, 
+                        String, 
+                        Text, 
+                        ForeignKey, 
+                        DateTime)
 
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declared_attr
@@ -114,12 +114,21 @@ class Page(PublishUnpublishMixin,
     publish_begin = Column(DateTime)
     publish_end = Column(DateTime)
 
+    @hybrid_method
+    def in_term(self, dt):
+        return (((self.publish_begin == None) or (self.publish_begin <= dt))
+                and ((self.publish_end == None) or (self.publish_end > dt)))
+    @in_term.expression
+    def in_term(self, dt):
+        return sa.sql.and_(sa.sql.or_((self.publish_begin == None), (self.publish_begin <= dt)), 
+                           sa.sql.or_((self.publish_end == None), (self.publish_end > dt)))
+
     ## todo refactoring?
-    @hybrid_property
+    @property
     def public_tags(self):
         return [tag for tag in self.tags if tag.publicp == True]
 
-    @hybrid_property
+    @property
     def private_tags(self):
         return [tag for tag in self.tags if tag.publicp == False]
 
