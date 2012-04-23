@@ -52,6 +52,10 @@
 ##        <th class="span2">structure</th><td>${page.structure}</td>
 ##      </tr>
       <tr>
+	<th>掲載期間</th>
+	<td>開始: ${page.publish_begin} <br /> 終了: ${page.publish_end}</td>
+      </tr>
+      <tr>
         <th class="span2">公開ステータス</th><td>${h.page.show_publish_status(page)}</td>
       </tr>
       <tr>

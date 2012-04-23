@@ -15,7 +15,8 @@ class PageRenderingResource(RootFactory):
         if 'datetime' not in self.request.params:
             return datetime.now()
         else:
-            return datetime.strptime('%Y%m%d%H%M%S')
+            dt = self.request.params['datetime']
+            return datetime.strptime(dt, '%Y%m%d%H%M%S')
 
     def get_unpublished_page(self, page_id):
         page = Page.query.filter(Page.id==page_id).one()
