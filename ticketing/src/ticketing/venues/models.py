@@ -23,6 +23,27 @@ class SeatType(Base):
     created_at = Column(DateTime)
     status = Column(Integer)
 
+    @staticmethod
+    def get(id):
+        return session.query(SeatType).filter(SeatType.id==id).first()
+
+    @staticmethod
+    def add(seat_type):
+        session.add(seat_type)
+
+    @staticmethod
+    def update(seat_type):
+        session.merge(seat_type)
+        session.flush()
+
+    @staticmethod
+    def delete(seat_type):
+        session.delete(seat_type)
+
+    @staticmethod
+    def all():
+        return session.query(SeatType).all()
+
 class Venue(Base):
     __tablename__ = "Venue"
     id = Column(BigInteger, primary_key=True)

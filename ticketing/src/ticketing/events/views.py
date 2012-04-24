@@ -10,6 +10,7 @@ from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.events.models import session, Event, Performance
+from ticketing.venues.models import SeatType
 from ticketing.events.forms import EventForm
 
 import sqlahelper
@@ -37,7 +38,7 @@ class Events(BaseView):
         f = EventForm()
         return {
             'form' : f,
-            'events' : events
+            'events' : events,
         }
 
     @view_config(route_name='events.show', renderer='ticketing:templates/events/show.html')
@@ -52,11 +53,14 @@ class Events(BaseView):
         query = session.query(Performance).filter(Performance.event_id == event_id)
         performances = paginate.Page(query.order_by(Performance.id), current_page, url=page_url)
 
+        seat_types = session.query(SeatType).filter(SeatType.event_id == event_id)
+
         f = EventForm()
         return {
             'form' : f,
             'event':event,
-            'performances':performances
+            'performances':performances,
+            'seat_types' : seat_types,
         }
 
     @view_config(route_name='events.new', request_method='GET', renderer='ticketing:templates/events/edit.html')

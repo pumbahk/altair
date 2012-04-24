@@ -7,7 +7,7 @@ from pyramid.url import route_path
 from pyramid.security import authenticated_userid
 
 from ticketing.oauth2.models import Service, AccessToken
-from forms import AuthorizeForm
+#from forms import AuthorizeForm
 from ticketing.oauth2.authorize import Authorizer, MissingRedirectURI, AuthorizationException
 from ticketing.operators.models import Operator
 
@@ -39,7 +39,8 @@ class LoginOAuth(BaseView):
 
     def _authorize(self, authorizer, form=None):
         if form is None:
-            form = AuthorizeForm()
+            pass
+            #form = AuthorizeForm()
         return render_to_response(
             'ticketing:templates/login/authorize.html',
             {

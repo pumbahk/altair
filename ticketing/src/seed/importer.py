@@ -91,10 +91,7 @@ data = db_fixture.data(
     SeatTypeData,
     ProductData,
     ProductItemData,
-<<<<<<< HEAD
     BookmarkData
-=======
->>>>>>> added SeatTypeData
 )
 data.setup()
 
