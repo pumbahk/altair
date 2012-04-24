@@ -28,6 +28,39 @@ class Operators(BaseView):
     def _role_id_list_to_role_list(self, role_id_list):
         return [ session.query(OperatorRole).filter(OperatorRole.id==role_id).one() for role_id in role_id_list]
 
+    @view_config(route_name='operators.client.index', renderer='ticketing:templates/operators_client/index.html')
+    def client_index(self):
+        current_page = int(self.request.params.get("page", 0))
+        page_url = paginate.PageURL_WebOb(self.request)
+        query = session.query(Operator)
+        query = query.filter_by(client=self.context.user.client)
+        operators = paginate.Page(query.order_by(Operator.id), current_page, url=page_url)
+        return {
+            'operators': operators
+        }
+
+    @view_config(route_name='operators.client.new', request_method="GET", renderer='ticketing:templates/operators_client/new.html')
+    def client_new_get(self):
+        form = OperatorForm(self.request.POST)
+        return {
+            'form':form
+        }
+
+    @view_config(route_name='operators.client.new', request_method="POST", renderer='ticketing:templates/operators_client/new.html')
+    def client_new_post(self):
+        client=self.context.user.client
+        form = OperatorForm(self.request.POST)
+        if form.validate():
+            data = form.data
+            record = Operator()
+            record = merge_session_with_post(record, data, filters={'roles' : _role_id_list_to_role_list})
+            record.secret_key = md5(record.secret_key).hexdigest()
+            session.add(record)
+            return HTTPFound(location=route_path('operators.index', self.request))
+        return {
+                    'form':form
+                }
+
     @view_config(route_name='operators.index', renderer='ticketing:templates/operators/index.html')
     def index(self):
         current_page = int(self.request.params.get("page", 0))

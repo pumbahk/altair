@@ -11,12 +11,12 @@ from ticketing.bookmark.models import Bookmark
       <li><a href=""><i class="icon-home"></i>クライアント管理</a></li>
       <li class="divider"></li>
       <li class="nav-header">マスタ管理</li>
-      <li><a href=""><i class="icon-home"></i>販売条件</a></li>
+      <li><a href="${request.route_path('products.sales_segments')}"><i class="icon-home"></i>販売条件</a></li>
       <li><a href=""><i class="icon-home"></i>チケット券面</a></li>
       <li><a href=""><i class="icon-home"></i>会場席種マスタ</a></li>
       <li class="divider"></li>
       <li class="nav-header">ユーザー管理</li>
-      <li><a href=""><i class="icon-home"></i>購入情報</a></li>
+      <li><a href="${request.route_path('orders.index')}"><i class="icon-home"></i>購入情報</a></li>
       <li class="nav-header">営業管理</li>
       <li><a href=""><i class="icon-home"></i>売上</a></li>
       <li><a href=""><i class="icon-home"></i>週報／日報設定</a></li>

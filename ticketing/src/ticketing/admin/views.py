@@ -17,3 +17,11 @@ class Admin(BaseView):
     @view_config(route_name='admin.index', renderer='ticketing:templates/admin/index.html')
     def index(self):
         return dict()
+
+    @view_config(route_name='admin.client', renderer='ticketing:templates/admin/client.html')
+    def client(self):
+        return dict()
+
+    @view_config(route_name='admin.super', renderer='ticketing:templates/admin/client.html')
+    def super(self):
+        return dict()

@@ -1,3 +1,3 @@
 
 def includeme(config):
-    pass
+    config.add_route('orders.index'          , '/')

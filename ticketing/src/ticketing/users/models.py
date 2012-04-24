@@ -1,6 +1,7 @@
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL
 from sqlalchemy.orm import relationship, join, backref, column_property
 from ticketing.master.models import *
+from ticketing.clients.models import *
 import sqlahelper
 
 session = sqlahelper.get_session()
@@ -90,12 +91,25 @@ class UserPointHistory(Base):
     created_at = Column(DateTime)
     status = Column(Integer)
 
+class MailPermissionSegment(Base):
+    __tablename__ = 'MailPermissionSegment'
+    id = Column(BigInteger, primary_key=True)
+    name = Column(String(255))
+    client_id = Column(BigInteger, ForeignKey("Client.id"), nullable=True)
+    client = relationship('Client', uselist=False)
+    updated_at = Column(DateTime)
+    created_at = Column(DateTime)
+    status = Column(Integer)
+
 class MailPermission(Base):
     __tablename__ = 'MailPermission'
     id = Column(BigInteger, primary_key=True)
     email = Column(String(255))
     user_id = Column(BigInteger, ForeignKey("User.id"), nullable=True)
     user = relationship('User', uselist=False)
+    segment_id = Column(BigInteger, ForeignKey("MailPermissionSegment.id"), nullable=True)
+    segment = relationship('MailPermissionSegment', uselist=False)
+
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
     status = Column(Integer)

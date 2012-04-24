@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
 
 def includeme(config):
-    pass
+    config.add_route('users.index'          , '/')
+

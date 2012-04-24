@@ -4,28 +4,20 @@ from deform.widget import SelectWidget, PasswordWidget, CheckedPasswordWidget, S
 from colander import deferred, MappingSchema, SequenceSchema, SchemaNode, String, Int, DateTime, Bool,Length, Decimal, Float, null, Email
 import colander
 
-@colander.deferred
-def deferred_role_choices_widget(node, kw):
-    choices = kw.get('role_choices')
-    return SelectWidget(values=choices,min_len=1,max_len=10)
+from wtforms import TextField, PasswordField, HiddenField, DateField
+from wtforms.validators import Required, Email, Length, EqualTo, optional
+from wtforms import Form
 
-@colander.deferred
-def deferred_client_choices_widget(node, kw):
-    choices = kw.get('client_choices')
-    return SelectWidget(values=choices,min_len=1,max_len=10)
+class OperatorRole(Form):
+    pass
+class OperatorForm(Form):
+    client_id   = HiddenField("", validators=[Required()])
+    email       = TextField(u"Email", validators=[Email(),Required()])
+    name        = TextField(u"名前", validators=[Required()])
+    login_id    = TextField(u"ログインID", validators=[Required()])
+    secret_key  = TextField(u"パスワード", validators=[Required()])
+    expire_at   = DateField(u"有効期限", validators=[Required()])
 
-class OperatorRole(SequenceSchema):
-    role_id = SchemaNode(Int(), widget=deferred_role_choices_widget, title=u'ロール')
-
-class OperatorForm(MappingSchema):
-    client_id   = SchemaNode(Int(), widget=deferred_client_choices_widget)
-    email       = SchemaNode(String()   , title=u'Email', validator=Email() )
-    name        = SchemaNode(String()   , title=u'名前')
-    login_id    = SchemaNode(String()   , title=u'ログインID')
-    secret_key  = SchemaNode(String()   , title=u'パスワード', missing=null, widget=CheckedPasswordWidget())
-    expire_at   = SchemaNode(DateTime() , title=u'有効期限')
-    roles       = OperatorRole(title=u'ロール', validator = Length(1, 10))
-
-class OperatorRoleForm(MappingSchema):
-    name = SchemaNode(String())
+class OperatorRoleForm(Form):
+    pass
 

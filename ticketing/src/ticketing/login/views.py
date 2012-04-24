@@ -46,7 +46,7 @@ class Login(BaseView):
             merge_and_flush(operator)
             headers = remember(self.request, data.get("login_id"))
             next_url = self.request.GET.get('next')
-            return HTTPFound(location=next_url if next_url else route_path("index", self.request), headers=headers)
+            return HTTPFound(location=next_url if next_url is None else route_path("index", self.request), headers=headers)
         else:
             return {
                 'form':form
