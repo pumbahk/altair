@@ -68,7 +68,7 @@ class PageForm(Form):
 
 @implementer(IForm)
 class PageUpdateForm(Form):
-    url = fields.TextField(validators=[ validators.Required(), url_field_validator],
+    url = fields.TextField(validators=[url_field_validator],
                            label=u"URLの一部(e.g. top/music)")
     title = fields.TextField(label=u"ページタイトル", validators=[validators.Required()])
     description = fields.TextField(label=u"概要")
@@ -81,6 +81,18 @@ class PageUpdateForm(Form):
                                                get_label=lambda obj:  obj.title)
     parent = dynamic_query_select_field_factory(Page, allow_blank=True, label=u"親ページ", 
                                                 get_label=lambda obj:  u'%s(%s)' % (obj.title, obj.url))
+
+
+    def validate(self):
+        """ override to form validation"""
+        result = super(PageUpdateForm, self).validate()
+
+        if (self.data.get('url') and self.data.get('pageset')) or (not self.data.get('url') and not self.data.get('pageset')):
+            urlerrors = self.errors.get('url', [])
+            urlerrors.append(u'URLの一部かページセットのどちらかを指定してください。')
+            self.errors['url'] = urlerrors
+
+        return not bool(self.errors)
 
 begin_regex = re.compile(r'begin_(?P<page_id>\d+)')
 end_regex = re.compile(r'end_(?P<page_id>\d+)')

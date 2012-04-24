@@ -59,6 +59,8 @@ class PageSet(Base):
     name = Column(Unicode(255))
     version_counter = Column(Integer, default=0)
     url = Column(String(255), unique=True)
+    event_id = Column(Integer, ForeignKey('event.id'))
+    event = relationship('Event', backref='pagesets')
     
     def gen_version(self):
         self.version_counter += 1
@@ -67,6 +69,21 @@ class PageSet(Base):
     @property
     def sorted_pages(self):
         return sorted(self.pages, key=lambda p: p.publish_begin.strftime('%Y-%m-%d %H:%M:%S') if p.publish_begin else '')
+
+    @classmethod
+    def get_or_create(cls, page):
+        if page.pageset is None:
+            url = page.url
+            pageset = cls(url=url, name=page.title + u" ページセット", event=page.event)
+            page.pageset = pageset
+        else:
+            pageset = page.pageset
+            page.url = pageset.url
+
+            assert pageset.event == page.event
+
+        page.version = pageset.gen_version()
+        return pageset
 
 class Page(PublishUnpublishMixin, 
            HasAncestorMixin, 

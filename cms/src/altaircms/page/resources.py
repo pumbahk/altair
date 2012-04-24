@@ -69,16 +69,7 @@ class PageResource(security.RootFactory):
         tags, private_tags, params =  h.divide_data(form.data)
         page = models.Page.from_dict(params)
         put_tags(page, "page", tags, private_tags, self.request)
-        if page.pageset is None:
-            url = page.url
-            pageset = models.PageSet(url=url, name=page.title + u" ページセット", version_counter=0)
-            page.pageset = pageset
-        else:
-            pageset = page.pageset
-            page.url = pageset.url
-
-        page.version = pageset.gen_version()
-        logging.debug('create pagset')
+        pageset = models.PageSet.get_or_create(page)
 
         self.add(page, flush=True)
         events.notify_page_create(self.request, page, params)
