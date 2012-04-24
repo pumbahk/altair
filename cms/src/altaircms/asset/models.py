@@ -53,11 +53,11 @@ class Asset(BaseOriginalMixin, Base):
         return '<%s %s %s>' % (self.__class__.__name__, self.id, self.filepath)
 
     ## todo refactoring?
-    @hybrid_property
+    @property
     def public_tags(self):
         return [tag for tag in self.tags if tag.publicp == True]
 
-    @hybrid_property
+    @property
     def private_tags(self):
         return [tag for tag in self.tags if tag.publicp == False]
 
