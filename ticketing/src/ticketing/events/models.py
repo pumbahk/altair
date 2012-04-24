@@ -40,18 +40,6 @@ class Account(Base):
     def get(account_id):
         return session.query(Account).filter(Account.id == account_id).first()
 
-class AccountOwnerClient(Base):
-    __tablename__ = "AccountOwnerClient"
-
-    id              = Column(BigInteger, primary_key=True)
-    account_id      = Column(BigInteger, ForeignKey("Account.id"))
-    account         = relationship('Account', backref="clients")
-    client_id       = Column(BigInteger, ForeignKey("Client.id"), nullable=True)
-    client          = relationship('Client', uselist=False)
-    updated_at      = Column(DateTime, nullable=True)
-    created_at      = Column(DateTime)
-    status          = Column(Integer, default=1)
-
 '''
 
  Event & Performance

@@ -29,17 +29,6 @@ class DeliveryMethodPlugin(Base):
     created_at = Column(DateTime)
     status = Column(Integer)
 
-class Price(Base):
-    __tablename__ = 'Price'
-    id = Column(BigInteger, primary_key=True)
-    name = Column(String(255))
-    event_id = Column(BigInteger, ForeignKey('Event.id'))
-    event = relationship('Event', uselist=False)
-    price = Column(BigInteger)
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
-    status = Column(Integer)
-
 class PaymentMethod(Base):
     __tablename__ = 'PaymentMethod'
     id = Column(BigInteger, primary_key=True)

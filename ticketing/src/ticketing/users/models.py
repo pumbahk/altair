@@ -10,6 +10,23 @@ Base = sqlahelper.get_base()
 class User(Base):
     __tablename__ = 'User'
     id = Column(BigInteger, primary_key=True)
+    updated_at = Column(DateTime)
+    created_at = Column(DateTime)
+    status = Column(Integer)
+
+    bank_account_id = Column(BigInteger, ForeignKey('BankAccount.id'))
+    bank_account    = relationship('BankAccount')
+
+    @staticmethod
+    def get(user_id):
+        return session.query(User).filter(User.id == user_id).first()
+
+class UserProfile(Base):
+    __tablename__ = 'UserProfile'
+    id = Column(BigInteger, primary_key=True)
+    user_id = Column(BigInteger, ForeignKey('User.id'))
+    user = relationship('User', backref="user_profile", uselist=False)
+
     email = Column(String(255))
     nick_name = Column(String(255))
     first_name = Column(String(255))
@@ -28,22 +45,7 @@ class User(Base):
     tel_1 = Column(String(32))
     tel_2 = Column(String(32))
     fax = Column(String(32))
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
-    status = Column(Integer)
 
-    bank_account_id = Column(BigInteger, ForeignKey('BankAccount.id'))
-    bank_account    = relationship('BankAccount')
-
-    @staticmethod
-    def get(user_id):
-        return session.query(User).filter(User.id == user_id).first()
-
-class UserProfile(Base):
-    __tablename__ = 'UserProfile'
-    id = Column(BigInteger, primary_key=True)
-    user_id = Column(BigInteger, ForeignKey('User.id'))
-    user = relationship('User', backref="user_profile", uselist=False)
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
     status = Column(Integer)
@@ -91,24 +93,25 @@ class UserPointHistory(Base):
     created_at = Column(DateTime)
     status = Column(Integer)
 
-class MailPermissionSegment(Base):
-    __tablename__ = 'MailPermissionSegment'
+class MailMagazine(Base):
+    __tablename__ = 'MailMagazine'
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
+    description = Column(String(1024))
     client_id = Column(BigInteger, ForeignKey("Client.id"), nullable=True)
     client = relationship('Client', uselist=False)
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
     status = Column(Integer)
 
-class MailPermission(Base):
-    __tablename__ = 'MailPermission'
+class MailSubscription(Base):
+    __tablename__ = 'MailSubscription'
     id = Column(BigInteger, primary_key=True)
     email = Column(String(255))
     user_id = Column(BigInteger, ForeignKey("User.id"), nullable=True)
     user = relationship('User', uselist=False)
-    segment_id = Column(BigInteger, ForeignKey("MailPermissionSegment.id"), nullable=True)
-    segment = relationship('MailPermissionSegment', uselist=False)
+    segment_id = Column(BigInteger, ForeignKey("MailMagazine.id"), nullable=True)
+    segment = relationship('MailMagazine', uselist=False)
 
     updated_at = Column(DateTime)
     created_at = Column(DateTime)

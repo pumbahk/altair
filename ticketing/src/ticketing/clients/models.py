@@ -4,7 +4,7 @@ from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, For
 from sqlalchemy.orm import relationship
 
 from ticketing.utils import StandardEnum
-
+from ticketing.users.models import User
 import sqlahelper
 
 session = sqlahelper.get_session()
@@ -17,6 +17,8 @@ class ClientTypeEnum(StandardEnum):
 
 class Client(Base):
     __tablename__ = "Client"
+    user_id = Column(BigInteger, ForeignKey("User.id"), nullable=True)
+    user    = relationship("User", uselist=False)
     id          = Column(BigInteger, primary_key=True)
     name        = Column(String(255))
     client_type = Column(Integer)
