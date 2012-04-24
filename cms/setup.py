@@ -37,6 +37,7 @@ tests_require = [
     "nose",
     "coverage",
     "webtest",
+    "nosexcover",
     "mock",
 ]
 
