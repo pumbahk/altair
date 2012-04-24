@@ -45,6 +45,8 @@ devtools_require = [
     "sadisplay",
     "alembic",
     "sphinx",
+    "sphinxcontrib-blockdiag",
+    "sphinxcontrib-seqdiag",
 ]
 
 extras_require = {
