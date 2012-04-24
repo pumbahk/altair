@@ -9,8 +9,25 @@ Base = sqlahelper.get_base()
 
 from ticketing.utils import StandardEnum
 
+from ticketing.clients.models import Client
 from ticketing.venues.models import SeatMasterL2
 from ticketing.events.models import Account, Event
+
+class PaymentMethodPlugin(Base):
+    __tablename__ = 'PaymentMethodPlugin'
+    id = Column(BigInteger, primary_key=True)
+    name = Column(String(255))
+    updated_at = Column(DateTime)
+    created_at = Column(DateTime)
+    status = Column(Integer)
+
+class DeliveryMethodPlugin(Base):
+    __tablename__ = 'DeliveryMethodPlugin'
+    id = Column(BigInteger, primary_key=True)
+    name = Column(String(255))
+    updated_at = Column(DateTime)
+    created_at = Column(DateTime)
+    status = Column(Integer)
 
 class Price(Base):
     __tablename__ = 'Price'
@@ -28,6 +45,10 @@ class PaymentMethod(Base):
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
     fee = Column(DECIMAL)
+    client_id = Column(BigInteger, ForeignKey('Client.id'))
+    client = relationship('Client', uselist=False, backref='payment_method_list')
+    payment_plugin_id = Column(BigInteger, ForeignKey('PaymentMethodPlugin.id'))
+    payment_plugin = relationship('PaymentMethodPlugin', uselist=False)
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
     status = Column(Integer)
@@ -37,6 +58,10 @@ class DeliveryMethod(Base):
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
     fee = Column(DECIMAL)
+    client_id = Column(BigInteger, ForeignKey('Client.id'))
+    client = relationship('Client', uselist=False , backref='delivery_method_list')
+    delivery_plugin_id = Column(BigInteger, ForeignKey('DeliveryMethodPlugin.id'))
+    delivery_plugin = relationship('DeliveryMethodPlugin', uselist=False)
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
     status = Column(Integer)
