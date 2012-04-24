@@ -20,9 +20,7 @@ class RootFactory(object):
     def __init__(self, request):
         if not r.match(request.path):
             user_id = authenticated_userid(request)
-            print user_id
             self.user = Operator.get_by_login_id(user_id) if user_id is not None else None
-            print self.user
 
 def groupfinder(userid, request):
     user = session.query(Operator).filter(Operator.login_id == userid).first()

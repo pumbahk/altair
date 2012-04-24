@@ -273,3 +273,5 @@ class Product(Base):
     @staticmethod
     def get(product_id):
         return session.query(Product).filter(Product.id==product_id).first()
+
+
