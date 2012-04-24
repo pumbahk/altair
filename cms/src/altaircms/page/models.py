@@ -63,6 +63,8 @@ class PageSet(Base):
     event = relationship('Event', backref='pagesets')
     
     def gen_version(self):
+        if self.version_counter is None:
+            self.version_counter = 0
         self.version_counter += 1
         return self.version_counter
 
