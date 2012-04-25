@@ -142,8 +142,7 @@ class ProductItem(Base):
 
     performance_id = Column(BigInteger, ForeignKey('Performance.id'))
     performance = relationship('Performance', uselist=False)
-    price_id = Column(BigInteger, ForeignKey('Price.id'))
-    price = relationship('Price', uselist=False)
+    price = Column(BigInteger)
     seat_type_id = Column(BigInteger, ForeignKey('SeatType.id'))
     seat_type = relationship('SeatType', uselist=False)
 

@@ -75,25 +75,14 @@ class Performance(Base):
         session.merge(performance)
         session.flush()
 
-event_table = Table(
-    'Event', Base.metadata,
-    Column('id', BigInteger, primary_key=True),
-    Column('code', String(12)),
-    Column('title', String(1024)),
-    Column('abbreviated_title', String(1024)),
-    Column('start_on', DateTime, nullable=True),
-    Column('end_on', DateTime, nullable=True),
-    )
-
-event_detail_table = Table(
-    'Event_DETAIL', Base.metadata,
-    Column('id', BigInteger, primary_key=True),
-    Column('seats_and_prices', String(1024))
-    )
-
 class Event(Base):
-    __table__ = join(event_table, event_detail_table, event_table.c.id == event_detail_table.c.id)
-    id = column_property(event_table.c.id, event_detail_table.c.id)
+    __tablename__ = 'Event'
+    id = Column(BigInteger, primary_key=True)
+    code = Column(String(12))
+    title = Column(String(1024))
+    abbreviated_title = Column(String(1024))
+    start_on = Column( DateTime, nullable=True)
+    end_on = Column( DateTime, nullable=True)
     performances = relationship('Performance', backref='event')
 
     @staticmethod
