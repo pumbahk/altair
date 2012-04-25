@@ -27,6 +27,7 @@ requires = [
     "js.underscore",
     'js.backbone',
     'js.tinymce',
+    'pyramid_who',
     ]
 
 solr_require = [
