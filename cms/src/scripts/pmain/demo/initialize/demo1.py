@@ -311,18 +311,21 @@ def init():
 
         ## page
         from altaircms.page.models import Page
+        from altaircms.page.models import PageSet
         D = {'layout_id': 1,
              'title': u'TOP',
              'url': u'top'}
 
         root_page = Page.from_dict(D)
+        root_pageset = PageSet.get_or_create(root_page)
         DBSession.add(root_page)
 
         D = {'layout_id': 1,
              'title': u'音楽',
              'url': u'top/music'}
         category_page = Page.from_dict(D)
-        category_page.parent = root_page
+        cpageset = PageSet.get_or_create(category_page)
+        cpageset.parent = root_pageset
         DBSession.add(category_page)
 
         from altaircms.page.models import Page
@@ -338,7 +341,8 @@ def init():
              "structure": "{}", 
              'version': None}
         page = Page.from_dict(D)
-        page.parent = category_page
+        page_pageset = PageSet.get_or_create(page)
+        page_pageset.parent = cpageset
         DBSession.add(page)
         add_widget(page)
 

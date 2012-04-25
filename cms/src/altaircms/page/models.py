@@ -52,7 +52,8 @@ class HasAncestorMixin(object):
             r.pop(0)
         return r
     
-class PageSet(Base):
+class PageSet(Base, 
+              HasAncestorMixin):
     __tablename__ = 'pagesets'
     query = DBSession.query_property()
     id = Column(Integer, primary_key=True)
@@ -61,6 +62,12 @@ class PageSet(Base):
     url = Column(String(255), unique=True)
     event_id = Column(Integer, ForeignKey('event.id'))
     event = relationship('Event', backref='pagesets')
+
+    parent_id = Column(Integer, ForeignKey('pagesets.id'))
+    @declared_attr
+    def parent(cls):
+        # return relationship(cls, backref=orm.backref("children", remote_side=[cls.id]), uselist=False)
+        return relationship(cls, uselist=False)
     
     def gen_version(self):
         if self.version_counter is None:
@@ -88,7 +95,6 @@ class PageSet(Base):
         return pageset
 
 class Page(PublishUnpublishMixin, 
-           HasAncestorMixin, 
            BaseOriginalMixin,
            Base):
     """
@@ -100,10 +106,6 @@ class Page(PublishUnpublishMixin,
     __tablename__ = "page"
 
     id = Column(Integer, primary_key=True)
-    parent_id = Column(Integer, ForeignKey('page.id'))
-    @declared_attr
-    def parent(cls):
-        return relationship(cls, backref=orm.backref("child", remote_side=[cls.id]), uselist=False)
     event_id = Column(Integer, ForeignKey('event.id'))
     event = relationship('Event', backref='pages')
 
@@ -163,6 +165,7 @@ class Page(PublishUnpublishMixin,
     def clone(self, session):
         from . import clone
         return clone.page_clone(self, session)
+
     """
     def __str__(self):
         return '%s'  % self.id

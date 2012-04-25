@@ -81,3 +81,6 @@ class PageFunctionalTests(unittest.TestCase):
        self.delete(obj.id)
        self.assertEquals(Page.query.count(), 1)
 
+
+if __name__ == "__main__":
+    unittest.main()

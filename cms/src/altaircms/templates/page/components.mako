@@ -61,8 +61,8 @@
       <tr>
         <th class="span2">親ページ</th>
 		<td>
-		  %for p in reversed(page.ancestors):
-			<a class="parent" href="${h.page.to_edit_page(request,p)}">${p.title}</a> &raquo;
+		  %for p in reversed(page.pageset.ancestors if page.pageset else []):
+			<a class="parent" href="${request.route_path("pageset", pageset_id=p.id)}">${p.name}</a> &raquo;
           %endfor
         </td>
       </tr>
