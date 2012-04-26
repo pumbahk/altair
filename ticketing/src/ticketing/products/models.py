@@ -4,32 +4,32 @@ from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, Strin
 from sqlalchemy.orm import relationship, join, backref, column_property, mapper, relation
 
 import sqlahelper
+
 session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
-
 from ticketing.utils import StandardEnum
 
 from ticketing.organizations.models import Organization
 from ticketing.venues.models import SeatMasterL2
 from ticketing.events.models import Account, Event
 
-class PaymentMethodPlugin(Base):
+class BaseModel(object):
+    updated_at  = Column(DateTime)
+    created_at  = Column(DateTime)
+    deleted_at  = Column(DateTime)
+    status      = Column(Integer, default=1)
+
+class PaymentMethodPlugin(BaseModel,Base):
     __tablename__ = 'PaymentMethodPlugin'
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
-    status = Column(Integer)
 
-class DeliveryMethodPlugin(Base):
+class DeliveryMethodPlugin(BaseModel,Base):
     __tablename__ = 'DeliveryMethodPlugin'
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
-    status = Column(Integer)
 
-class PaymentMethod(Base):
+class PaymentMethod(BaseModel,Base):
     __tablename__ = 'PaymentMethod'
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
@@ -38,11 +38,8 @@ class PaymentMethod(Base):
     organization = relationship('Organization', uselist=False, backref='payment_method_list')
     payment_plugin_id = Column(BigInteger, ForeignKey('PaymentMethodPlugin.id'))
     payment_plugin = relationship('PaymentMethodPlugin', uselist=False)
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
-    status = Column(Integer)
 
-class DeliveryMethod(Base):
+class DeliveryMethod(BaseModel,Base):
     __tablename__ = 'DeliveryMethod'
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
@@ -51,11 +48,8 @@ class DeliveryMethod(Base):
     organization = relationship('Organization', uselist=False , backref='delivery_method_list')
     delivery_plugin_id = Column(BigInteger, ForeignKey('DeliveryMethodPlugin.id'))
     delivery_plugin = relationship('DeliveryMethodPlugin', uselist=False)
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
-    status = Column(Integer)
 
-class PaymentDeliveryMethodPair(Base):
+class PaymentDeliveryMethodPair(BaseModel,Base):
     __tablename__ = 'PaymentDeliveryMethodPair'
 
     id = Column(BigInteger, primary_key=True)
@@ -79,11 +73,7 @@ class PaymentDeliveryMethodPair(Base):
     start_at = Column(DateTime)
     end_at = Column(DateTime)
 
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
-    status = Column(Integer)
-
-class SalesSegment(Base):
+class SalesSegment(BaseModel,Base):
     __tablename__ = 'SalesSegment'
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
@@ -94,11 +84,7 @@ class SalesSegment(Base):
     start_at = Column(DateTime)
     end_at = Column(DateTime)
 
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
-    status = Column(Integer)
-
-class SalesSegmentSet(Base):
+class SalesSegmentSet(BaseModel,Base):
     __tablename__ = 'SalesSegmentSet'
     id = Column(BigInteger, primary_key=True)
 
@@ -108,17 +94,13 @@ class SalesSegmentSet(Base):
     event_id = Column(BigInteger, ForeignKey('Event.id'), nullable=True)
     event = relationship('Event', uselist=False)
 
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
-    status = Column(Integer)
-
 buyer_condition_set_table =  Table('BuyerConditionSet', Base.metadata,
     Column('id', Integer, primary_key=True),
     Column('buyer_condition_id', BigInteger, ForeignKey('BuyerCondition.id')),
     Column('product_id', BigInteger, ForeignKey('Product.id'))
 )
 
-class BuyerCondition(Base):
+class BuyerCondition(BaseModel,Base):
     __tablename__ = 'BuyerCondition'
     id = Column(BigInteger, primary_key=True)
 
@@ -127,11 +109,13 @@ class BuyerCondition(Base):
     '''
      Any Conditions.....
     '''
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
-    status = Column(Integer)
 
-class ProductItem(Base):
+stock_reference_from_product_item_table =  Table('StockReferenceFromProductItem', Base.metadata,
+    Column('product_id', BigInteger, ForeignKey('ProductItem.id')),
+    Column('stock_id', BigInteger, ForeignKey('Stock.id'))
+)
+
+class ProductItem(BaseModel,Base):
     __tablename__ = 'ProductItem'
     id = Column(BigInteger, primary_key=True)
 
@@ -146,9 +130,7 @@ class ProductItem(Base):
     seat_type_id = Column(BigInteger, ForeignKey('SeatType.id'))
     seat_type = relationship('SeatType', uselist=False)
 
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
-    status = Column(Integer)
+    stocks = relationship("Stock", secondary=stock_reference_from_product_item_table)
 
     def get_for_update(self):
         self.stock = Stock.get_for_update(self.performance_id, self.seat_type_id)
@@ -158,8 +140,8 @@ class ProductItem(Base):
         else:
             return None
 
-class StockHolder(Base):
-    __tablename__ = "StockHolder"
+class StockFolder(BaseModel,Base):
+    __tablename__ = "StockFolder"
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
 
@@ -169,29 +151,20 @@ class StockHolder(Base):
     account_id = Column(BigInteger, ForeignKey('Account.id'))
     account = relationship('Account', uselist=False)
 
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
-    status = Column(Integer)
-
-
 # stock based on quantity
-class Stock(Base):
+class Stock(BaseModel,Base):
     __tablename__ = "Stock"
     id = Column(BigInteger, primary_key=True)
 
     performance_id = Column(BigInteger, ForeignKey('Performance.id'))
     performance = relationship('Performance', uselist=False)
-    stock_holder_id = Column(BigInteger, ForeignKey('StockHolder.id'))
-    stock_holder = relationship('StockHolder', uselist=False)
+    stock_folder_id = Column(BigInteger, ForeignKey('StockFolder.id'))
+    stock_folder = relationship('StockFolder', uselist=False)
 
     seat_type_id = Column(BigInteger, ForeignKey('SeatType.id'))
     seat_type = relationship('SeatType', uselist=False)
 
     quantity = Column(Integer)
-
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
-    status = Column(Integer)
 
     @staticmethod
     def get_for_update(pid, stid):
@@ -207,7 +180,7 @@ class SeatStatusEnum(StandardEnum):
     Reserved = 7
 
 # stock based on phisical seat positions
-class SeatStock(Base):
+class SeatStock(BaseModel,Base):
     __tablename__ = "SeatStock"
     id = Column(BigInteger, primary_key=True)
 
@@ -217,10 +190,6 @@ class SeatStock(Base):
     seat_id = Column(BigInteger, ForeignKey("SeatMasterL2.seat_id"))
     seat = relationship('SeatMasterL2', uselist=False, backref="seat_stock_id") # 1:1
     sold = Column(Boolean) # sold or not
-
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
-    status = Column(Integer)
 
     @staticmethod
     def get_for_update(stock_id):
@@ -246,18 +215,26 @@ class SeatStock(Base):
         return []
 
 
-class Product(Base):
+class Product(BaseModel,Base):
     __tablename__ = 'Product'
     id = Column(BigInteger, primary_key=True)
 
     name = Column(String(255))
     price = Column(BigInteger)
 
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
-    status = Column(Integer)
-
     items = relationship('ProductItem')
+
+    @staticmethod
+    def find(performance_id = None, event_id = None):
+        query = session.query(Product)
+        if performance_id:
+            query.\
+                join(Product.items).\
+                filter(ProductItem.performance_id==performance_id)
+        elif event_id:
+            # todo
+            pass
+        return query.all()
 
     def get_for_update(self):
         for item in self.items:
