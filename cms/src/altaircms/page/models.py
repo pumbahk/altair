@@ -172,6 +172,3 @@ class Page(PublishUnpublishMixin,
         else:
             return cls(title=title)
         
-    @property
-    def service_info_list(self):
-        return ["select", "keep", "official", "goods", "event"]

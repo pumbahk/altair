@@ -13,4 +13,5 @@ def includeme(config):
     config.include(".widget.summary", route_prefix="api")
     config.include(".widget.countdown", route_prefix="api")
     config.include(".widget.reuse", route_prefix="api")
+    config.include(".widget.iconset", route_prefix="api")
     config.scan(".")

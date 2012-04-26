@@ -127,6 +127,13 @@ add_countdown_widget = functools.partial(
     import_symbol("altaircms.plugins.widget.countdown.models:CountdownWidget").type, 
     )
 
+add_iconset_widget = functools.partial(
+    add_widget, 
+    import_symbol("altaircms.plugins.widget.iconset.views:IconsetWidgetView"), 
+    import_symbol("altaircms.plugins.widget.iconset.models:IconsetWidgetResource"), 
+    import_symbol("altaircms.plugins.widget.iconset.models:IconsetWidget").type, 
+    )
+
 
 
 ## settings
@@ -268,14 +275,16 @@ def add_main_block_widgets(page, asset):
              {"label": u"ブルーマンの秘密",  "link": u"http://google.co.jp"}, 
              {"label": u"フォトギャラリー",  "link": u"http://google.co.jp"}, 
              ])}
+
+    add_iconset_widget(page, "main", dict(kind="ticket_icon"))
+
     add_menu_widget(page, "main", data)
 
-    add_freetext_widget(page, "main", {"freetext": u"ブルーマンもついに千秋楽決定！！これがラストチャンス"})
+    # add_freetext_widget(page, "main", {"freetext": u"ブルーマンもついに千秋楽決定！！これがラストチャンス"})
 
     add_image_widget(page, "main", dict(asset_id=asset.id))
 
     add_performancelist_widget(page, "main", {})
-
 
     add_calendar_widget(page, "main", {"calendar_type":"tab"})
     

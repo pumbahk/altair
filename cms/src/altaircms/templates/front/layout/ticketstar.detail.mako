@@ -19,20 +19,32 @@
 	  width: 80px;
 	  height: 30px;
     }
-	#ticketIcon li.select {
+	#ticketIcon li.icon-select {
 	  background-image: url(/static/ticketstar/img/detail/icon_select.gif);
 	}
-	#ticketIcon li.keep {
+	#ticketIcon li.icon-keep {
 	  background-image: url(/static/ticketstar/img/detail/icon_keep.gif);
 	}
-	#ticketIcon li.official {
+	#ticketIcon li.icon-official {
 	  background-image: url(/static/ticketstar/img/detail/icon_official.gif);
 	}
-	#ticketIcon li.goods {
+	#ticketIcon li.icon-goods {
 	  background-image: url(/static/ticketstar/img/detail/icon_goods.gif);
 	}
-	#ticketIcon li.event {
+	#ticketIcon li.icon-event {
 	  background-image: url(/static/ticketstar/img/detail/icon_event.gif);
+	}
+
+    #serviceIcon li{
+	  background-repeat: no-repeat;
+	  width: 90px;
+	  height: 20px;
+    }
+	#serviceIcon li.icon-fanclub {
+	  background-image: url(/static/ticketstar/img/detail/icon_fanclub.gif);
+	}
+	#serviceIcon li.icon-crecache {
+	  background-image: url(/static/ticketstar/img/detail/icon_creche.gif);
 	}
   </style>
 </%block>
@@ -58,9 +70,6 @@
 
 <%block name="main">
 <ul id="ticketIcon">
-  % for icon_class in page.service_info_list:
-    <li class="${icon_class}"/>    
-  % endfor
 </ul>
       ${widgets("main")}
 </%block>

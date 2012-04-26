@@ -97,6 +97,7 @@
       <div id="performancelist"  class="widget red float-left">講演リスト</div>
       <div id="menu"  class="widget red float-left">メニュー</div>
       <div id="summary"  class="widget red float-left">サマリー</div>
+      <div id="iconset"  class="widget red float-left">アイコンセット</div>
       <div id="topic"  class="widget red float-left">トピック</div>
       <div id="breadcrumbs"  class="widget red float-left">パンくずリスト</div>
       <div id="countdown"  class="widget red float-left">カウントダウン</div>
@@ -152,4 +153,6 @@
 <script type="text/javascript" src="/plugins/static/js/widget/lib/countdown.js"></script>
 ## todo: moveit
 <script type="text/javascript" src="/plugins/static/js/widget/lib/reuse.js"></script>
+## todo: moveit
+<script type="text/javascript" src="/plugins/static/js/widget/lib/iconset.js"></script>
 </%def>

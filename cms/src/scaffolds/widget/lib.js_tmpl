@@ -32,7 +32,7 @@ widget.configure({
         if(!!pk){
             params["pk"] = pk;
         }
-        url += "?" + $.param({"pk": pk});   
+        url += "?" + $.param(params);   
         return we.dialog.load(url);
     };
 

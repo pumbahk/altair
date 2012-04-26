@@ -1,6 +1,7 @@
 from zope.interface import implements
-from altaircms.interfaces import IWidget
+from pyramid.renderers import render
 
+from altaircms.interfaces import IWidget
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 
@@ -28,7 +29,6 @@ class TicketlistWidget(Widget):
         bsettings.need_extra_in_scan("tickets")
         @not_support_if_keyerror("ticketlist widget: %(err)s")
         def ticketlist_render():
-            from pyramid.renderers import render
             request = bsettings.extra["request"]
             tickets = bsettings.extra["tickets"]
             params = {"widget":self, "tickets": tickets}

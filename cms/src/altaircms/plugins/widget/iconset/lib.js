@@ -27,14 +27,15 @@ widget.configure({
     var opt = {} //widget local variable
     var load_page = function(we){
         var pk = we.get_pk(we.where);
-        var url = "/api/widget/performancelist/dialog";
-        var params = {};
+        var url = "/api/widget/iconset/dialog";
+        var params = {}
         if(!!pk){
-            params["pk"]  = pk;
+            params["pk"] = pk;
         }
-        url += "?" + $.param(params);
+        url += "?" + $.param(params);   
         return we.dialog.load(url);
     };
+
     var on_dialog = function(we){
         $("#submit").click(function(){we.finish_dialog(this);});    
     };
@@ -45,7 +46,7 @@ widget.configure({
     var collect_data = function(we, choiced_elt){
         return {}
     };
-    return widget.include("performancelist", {
+    return widget.include("iconset", {
         load_page: load_page, 
         on_dialog: on_dialog, 
         on_close: on_close, 

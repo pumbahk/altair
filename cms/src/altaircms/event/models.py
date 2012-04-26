@@ -40,3 +40,15 @@ class Event(BaseOriginalMixin, Base):
         else:
             return self.title
 
+    @property
+    def service_info_list(self):
+        import warnings
+        warnings.warn("this is dummy for serviceIcon")
+        return ["icon-fanclub", "icon-crecache"]
+
+    @property
+    def ticket_icon_list(self):
+        import warnings
+        warnings.warn("this is dummy for ticketIcon")
+        return ["icon-select", "icon-keep", "icon-official", "icon-goods", "icon-event"]
+

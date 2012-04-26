@@ -3,18 +3,20 @@
 
 ## todo service icon
 ## todo 販売終了した公演も表示
+## serviceIconのrenderingにiconset widgetの機能を使う?
 
 <div class="detailBox">
   <div class="detailBoxInner">
 	<h2>${event.title}</h2>
-	<ul id ="serviceIcon">
-	  <li>ここにservice icon並べる</li>
+	<ul id="serviceIcon">
+	  % for icon in icon_classes:
+	    <li class="${icon}" alt="${icon}"/>
+      % endfor
 	</ul>
 	<!--
     <form>
       <div class="fields">
         <div class="field">
-		  ## まだ動いていない
           <input type="checkbox" id="form-showUnavailablePerformances"><label for="form-showUnavailablePerformances">販売終了した公演も表示</label>
         </div>
       </div>

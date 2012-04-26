@@ -18,4 +18,5 @@
    calendar
    topic
    promotion
+   iconset
    
