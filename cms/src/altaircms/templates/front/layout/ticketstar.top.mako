@@ -2,7 +2,15 @@
 <%namespace file="./components/ticketstar/top/main.mako" name="main_co"/>
 <%namespace file="./components/ticketstar/top/side.mako" name="side_co"/>
 
+<%def name="widgets(name)">
+  % for w in display_blocks[name]:
+      ${w|n}
+  % endfor
+</%def>
+
 <%block name="main">
+   ${widgets("main")}
+<hr/><hr/><hr/><hr/><hr/><hr/>
         ${main_co.slideShow()}
         ${main_co.topics()}
         ${main_co.events()}

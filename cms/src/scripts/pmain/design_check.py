@@ -9,11 +9,15 @@ import transaction
 import altaircms.helpers as h
 from altaircms.models import DBSession
 from altaircms.models import Base
+
 from altaircms.layout.models import Layout
 from altaircms.event.models import Event
 from altaircms.page.models import Page, PageSet
 from altaircms.models import Performance
 from altaircms.models import Ticket
+from altaircms.topic.models import Topic
+from altaircms.topcontent.models import Topcontent
+
 from altaircms.asset.helpers import create_asset
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -134,7 +138,12 @@ add_iconset_widget = functools.partial(
     import_symbol("altaircms.plugins.widget.iconset.models:IconsetWidget").type, 
     )
 
-
+add_topic_widget = functools.partial(
+    add_widget, 
+    import_symbol("altaircms.plugins.widget.topic.views:TopicWidgetView"), 
+    import_symbol("altaircms.plugins.widget.topic.models:TopicWidgetResource"), 
+    import_symbol("altaircms.plugins.widget.topic.models:TopicWidget").type, 
+    )
 
 ## settings
 
@@ -267,7 +276,7 @@ def add_header_widgets(page):
 def add_side_widgets(page):
     add_countdown_widget(page, "side", {"kind": "event_close"})
     
-def add_main_block_widgets(page, asset):
+def add_detail_main_block_widgets(page, asset):
     add_freetext_widget(page, "main", {"freetext": u"ブルーマンもついに千秋楽決定！！これがラストチャンス"})
 
     ## detail tab
@@ -325,7 +334,7 @@ def add_detail_page_settings():
     DBSession.flush()
     add_header_widgets(page)
     add_side_widgets(page)
-    add_main_block_widgets(page, asset)
+    add_detail_main_block_widgets(page, asset)
 
 def help_layout():
     layout = Layout(
@@ -374,10 +383,67 @@ def top_page(layout):
     PageSet.get_or_create(top_page)
     return top_page
 
+def top_topics(page):
+    return [
+        Topic(kind=u"トピックス", 
+              text=u"#", 
+              title=u"ポイント10倍キャンペーン実施中！『大相撲三月場所』マス席の他、希少な溜まり席も販売！", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=True, 
+              orderno=1), 
+        Topic(kind=u"トピックス", 
+              text=u"#", 
+              title=u"きゃりーぱみゅぱみゅ、倖田來未 、CNBLUE ら出演♪「オンタマカーニバル2012」1/14発売！", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=True, 
+              orderno=2), 
+        Topic(kind=u"トピックス", 
+              text=u"#", 
+              title=u"47年ぶりに日本上陸のツタンカーメン展！1/31購入分まで、もれなくポイント10倍！", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=True, 
+              orderno=3), 
+        Topic(kind=u"トピックス", 
+              text=u"#", 
+              title=u"東京、大阪で過去最高の動員を記録したKOOZAが福岡へ上陸！楽チケならポイント10倍！", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=True, 
+              orderno=4), 
+        ]
+
+def top_topcontent(page):
+    return [
+        Topcontent(kind=u"注目のイベント", 
+                   publish_open_on=datetime.datetime(2011, 1, 1),
+                   publish_close_on=datetime.datetime(2013, 1, 1), 
+                   page=page, 
+                   is_global=True, 
+                   text=u"ここになにか説明を加える。これはデフォルトの文章を表示するようにしても良いかもしれない。", 
+                   orderno=50, 
+                   countdown_type = "deal_close"
+                   )
+        ]
+
+def add_top_main_block_widgets(page):
+    params =  {"kind": u"トピックス", 
+               "display_count": 5, 
+               "display_global": True, 
+               "display_event": True, 
+               "display_page": True}
+    add_topic_widget(page, "main", params)
+
 def add_top_page_settings():
     layout = top_layout()
     page = top_page(layout)
+    topics = top_topics(page)
+
     DBSession.add(page)
+    DBSession.add_all(topics)
+    add_top_main_block_widgets(page)
 
 def main(env):
     # setup()

@@ -11,9 +11,6 @@ from altaircms.models import DBSession
 from altaircms.page.models import Page
 from altaircms.event.models import Event
 from altaircms.lib.modelmixin import AboutPublishMixin
-from zope.interface import implements
-from altaircms.interfaces import IHasSite
-from altaircms.interfaces import IHasTimeHistory
 
 
 """

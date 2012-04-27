@@ -8,7 +8,7 @@ from datetime import datetime
 
 from altaircms.models import Base, BaseOriginalMixin
 from altaircms.models import DBSession
-from altaircms.page.models import Page
+from altaircms.page.models import PageSet
 from altaircms.asset.models import ImageAsset
 from altaircms.lib.modelmixin import AboutPublishMixin
 
@@ -22,7 +22,7 @@ class Topcontent(AboutPublishMixin,
     """
     __tablename__ = "topcontent"
     query = DBSession.query_property()
-    COUNTDOWN_CANDIDATES = [("page_open",u"公演開始まで"),("page_close",u"公演終了まで"),
+    COUNTDOWN_CANDIDATES = [("event_open",u"公演開始まで"),("event_close",u"公演終了まで"),
                             ( "deal_open",u"販売開始まで"),( "deal_close",u"販売終了まで")]
     KIND_CANDIDATES = [u"注目のページ"]
 
@@ -39,8 +39,8 @@ class Topcontent(AboutPublishMixin,
     ## extend
     image_asset_id = sa.Column(sa.Integer, sa.ForeignKey("image_asset.id"), nullable=True)
     image_asset = orm.relationship(ImageAsset, backref="topcontent")
-    page_id = sa.Column(sa.Integer, sa.ForeignKey("page.id"))
-    page = orm.relationship(Page)
+    page_id = sa.Column(sa.Integer, sa.ForeignKey("pagesets.id"))
+    page = orm.relationship(PageSet)
     countdown_type = sa.Column(sa.String(255)) #todo: fixme
     is_global = sa.Column(sa.Boolean, default=True)
 

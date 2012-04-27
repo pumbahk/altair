@@ -27,9 +27,7 @@
 
 
 <%block name="main">
-<ul id="ticketIcon">
-</ul>
-      ${widgets("main")}
+   ${widgets("main")}
 </%block>
 
 
