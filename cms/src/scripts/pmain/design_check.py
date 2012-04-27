@@ -415,15 +415,73 @@ def top_topics(page):
               orderno=4), 
         ]
 
-def top_topcontent(page):
+def top_topcontents(page):
+    link_page = list(Page.query.filter(Page.event!=None).all())[-1] ##
     return [
         Topcontent(kind=u"注目のイベント", 
                    publish_open_on=datetime.datetime(2011, 1, 1),
                    publish_close_on=datetime.datetime(2013, 1, 1), 
-                   page=page, 
+                   page=link_page, #本当はpageset
                    is_global=True, 
+                   title=link_page.title, 
                    text=u"ここになにか説明を加える。これはデフォルトの文章を表示するようにしても良いかもしれない。", 
                    orderno=50, 
+                   image_asset_id = 1,  ##
+                   countdown_type = "deal_close"
+                   ), 
+        Topcontent(kind=u"注目のイベント", 
+                   publish_open_on=datetime.datetime(2011, 1, 1),
+                   publish_close_on=datetime.datetime(2013, 1, 1), 
+                   page=link_page, #本当はpageset
+                   is_global=True, 
+                   title=link_page.title, 
+                   text=u"ここになにか説明を加える。これはデフォルトの文章を表示するようにしても良いかもしれない。", 
+                   orderno=50, 
+                   image_asset_id = 1,  ##
+                   countdown_type = "deal_close"
+                   ), 
+        Topcontent(kind=u"注目のイベント", 
+                   publish_open_on=datetime.datetime(2011, 1, 1),
+                   publish_close_on=datetime.datetime(2013, 1, 1), 
+                   page=link_page, #本当はpageset
+                   is_global=True, 
+                   title=link_page.title, 
+                   text=u"ここになにか説明を加える。これはデフォルトの文章を表示するようにしても良いかもしれない。", 
+                   orderno=50, 
+                   image_asset_id = 1,  ##
+                   countdown_type = "deal_close"
+                   ), 
+        Topcontent(kind=u"注目のイベント", 
+                   publish_open_on=datetime.datetime(2011, 1, 1),
+                   publish_close_on=datetime.datetime(2013, 1, 1), 
+                   page=link_page, #本当はpageset
+                   is_global=True, 
+                   title=link_page.title, 
+                   text=u"ここになにか説明を加える。これはデフォルトの文章を表示するようにしても良いかもしれない。", 
+                   orderno=50, 
+                   image_asset_id = 1,  ##
+                   countdown_type = "deal_close"
+                   ), 
+        Topcontent(kind=u"注目のイベント", 
+                   publish_open_on=datetime.datetime(2011, 1, 1),
+                   publish_close_on=datetime.datetime(2013, 1, 1), 
+                   page=link_page, #本当はpageset
+                   is_global=True, 
+                   title=link_page.title, 
+                   text=u"ここになにか説明を加える。これはデフォルトの文章を表示するようにしても良いかもしれない。", 
+                   orderno=50, 
+                   image_asset_id = 1,  ##
+                   countdown_type = "deal_close"
+                   ), 
+        Topcontent(kind=u"注目のイベント", 
+                   publish_open_on=datetime.datetime(2011, 1, 1),
+                   publish_close_on=datetime.datetime(2013, 1, 1), 
+                   page=link_page, #本当はpageset
+                   is_global=True, 
+                   title=link_page.title, 
+                   text=u"ここになにか説明を加える。これはデフォルトの文章を表示するようにしても良いかもしれない。", 
+                   orderno=50, 
+                   image_asset_id = 1,  ##
                    countdown_type = "deal_close"
                    )
         ]
@@ -436,13 +494,22 @@ def add_top_main_block_widgets(page):
                "display_page": True}
     add_topic_widget(page, "main", params)
 
+    params =  {"kind": u"注目のイベント", 
+               "display_count": 6, 
+               "display_global": True, 
+               "display_event": True, 
+               "display_page": True}
+    add_topic_widget(page, "main", params)
+
 def add_top_page_settings():
     layout = top_layout()
     page = top_page(layout)
     topics = top_topics(page)
+    topcontents = top_topcontents(page)
 
     DBSession.add(page)
     DBSession.add_all(topics)
+    DBSession.add_all(topcontents)
     add_top_main_block_widgets(page)
 
 def main(env):

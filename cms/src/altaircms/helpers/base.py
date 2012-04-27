@@ -1,10 +1,27 @@
 # -*- coding:utf-8 -*-
+import datetime
 
 WEEK =[u"月", u"火", u"水", u"木", u"金", u"土", u"日"]
 import urllib
 def path_in_string(path, string):
     path = urllib.unquote_plus(path)
     return path.endswith(string)
+
+
+def countdown_days_from(limit_date, today_fn=datetime.datetime.now):
+    today = today_fn()
+    if today > limit_date:
+        return 0
+    else:
+        return (limit_date-today).days
+
+COUNTDOWN_KIND_MAPPING = dict(event_open=u"公演開始", 
+                              event_close=u"公演終了", 
+                              deal_open=u"販売開始", 
+                              deal_close=u"販売終了")
+
+def countdown_kind_ja(kind):
+    return COUNTDOWN_KIND_MAPPING[kind]
 
 def list_to_attibutes(attr_list):
     """

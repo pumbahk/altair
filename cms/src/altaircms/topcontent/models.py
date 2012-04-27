@@ -2,13 +2,12 @@
 
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
-from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.ext.declarative import declared_attr
 from datetime import datetime
 
+import altaircms.helpers as h
 from altaircms.models import Base, BaseOriginalMixin
 from altaircms.models import DBSession
-from altaircms.page.models import PageSet
+from altaircms.page.models import Page
 from altaircms.asset.models import ImageAsset
 from altaircms.lib.modelmixin import AboutPublishMixin
 
@@ -22,8 +21,7 @@ class Topcontent(AboutPublishMixin,
     """
     __tablename__ = "topcontent"
     query = DBSession.query_property()
-    COUNTDOWN_CANDIDATES = [("event_open",u"公演開始まで"),("event_close",u"公演終了まで"),
-                            ( "deal_open",u"販売開始まで"),( "deal_close",u"販売終了まで")]
+    COUNTDOWN_CANDIDATES = h.base.COUNTDOWN_KIND_MAPPING.items()
     KIND_CANDIDATES = [u"注目のページ"]
 
     id = sa.Column(sa.Integer, primary_key=True)
@@ -39,8 +37,8 @@ class Topcontent(AboutPublishMixin,
     ## extend
     image_asset_id = sa.Column(sa.Integer, sa.ForeignKey("image_asset.id"), nullable=True)
     image_asset = orm.relationship(ImageAsset, backref="topcontent")
-    page_id = sa.Column(sa.Integer, sa.ForeignKey("pagesets.id"))
-    page = orm.relationship(PageSet)
+    page_id = sa.Column(sa.Integer, sa.ForeignKey("page.id"))
+    page = orm.relationship(Page)
     countdown_type = sa.Column(sa.String(255)) #todo: fixme
     is_global = sa.Column(sa.Boolean, default=True)
 
@@ -49,7 +47,11 @@ class Topcontent(AboutPublishMixin,
 
     @property
     def countdown_type_ja(self):
-        return self.COUNTDOWN_CANDIDATES[self.countdown_type]
+        return h.base.countdown_kind_ja(self.countdown_type)
+
+    @property
+    def countdown_limit(self):
+        return getattr(self.page.event, self.countdown_type)
 
     @classmethod
     def has_global(cls):

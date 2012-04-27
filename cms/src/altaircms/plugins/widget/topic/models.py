@@ -78,9 +78,8 @@ def topcontent_merge_settings(template_name, widget, bname, bsettings):
         page = bsettings.extra["page"] if widget.display_page else None
         qs = Topcontent.matched_qs(page=page, d=d, kind=widget.kind)
         qs = _qs_refine(qs, Topcontent, widget)
-        import pdb; pdb.set_trace()
         return render(template_name, 
-                      {"widget": widget, "topcontent": qs}, 
+                      {"widget": widget, "topcontents": qs}, 
                       request)
     bsettings.add(bname, topcontent_render)
        
@@ -89,9 +88,9 @@ MERGE_SETTINGS_DISPATH = {
     u"トピックス": functools.partial(
         topics_merge_settings, 
         "altaircms.plugins.widget:topic/topic_render.mako"), 
-    "topcontent": functools.partial(
+    u"注目のイベント": functools.partial(
         topcontent_merge_settings, 
-        "altaircms.plugins.widget:topic/topcontent_render.mako")
+        "altaircms.plugins.widget:topic/notable_event_render.mako")
     }
 
 class TopicWidgetResource(HandleSessionMixin,

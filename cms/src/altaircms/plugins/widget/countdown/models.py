@@ -7,6 +7,7 @@ from altaircms.interfaces import IWidget
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 
+import altaircms.helpers as h
 from altaircms.widget.models import Widget
 from altaircms.plugins.base import DBSession
 from altaircms.plugins.base.mixins import HandleSessionMixin
@@ -37,13 +38,10 @@ class CountdownWidget(Widget):
     def kind_ja(self):
         return self.KIND_MAPPING[self.kind]
 
+
     def get_limit(self, event, today_fn=datetime.datetime.now):
         limit_date = getattr(event, self.kind)
-        today = today_fn()
-        if today > limit_date:
-            return 0
-        else:
-            return (limit_date-today).days
+        return h.base.countdown_days_from(limit_date, today_fn=today_fn)
 
     def merge_settings(self, bname, bsettings):
         bsettings.need_extra_in_scan("request")

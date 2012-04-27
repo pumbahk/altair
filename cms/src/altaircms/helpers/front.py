@@ -13,6 +13,7 @@ def to_preview_page(request, page):
         return _to_publish_page(request, page)
     else:
         return _to_preview_page(request, page)
+to_publish_page = to_preview_page
 
 def _to_preview_page(request, page):
     logger.debug('preview')
