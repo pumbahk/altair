@@ -10,7 +10,7 @@ import sqlahelper
 session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
 
-from ticketing.clients.models import Client
+from ticketing.organizations.models import Organization
 
 operator_role_association_table = Table('OperatorRole_Operator', Base.metadata,
     Column('id', Integer, primary_key=True),
@@ -64,7 +64,7 @@ operator_table = Table(
     Column('id', BigInteger, primary_key=True),
     Column('name', String(255)),
     Column('email',String(255)),
-    Column('client_id',BigInteger, ForeignKey('Client.id')),
+    Column('client_id',BigInteger, ForeignKey('Organization.id')),
     Column('expire_at',DateTime, nullable=True),
     Column('updated_at',DateTime),
     Column('created_at',DateTime),
@@ -83,7 +83,7 @@ operator_auth_table = Table(
 class Operator(Base):
     __table__ = join(operator_table, operator_auth_table, operator_table.c.id == operator_auth_table.c.id)
     id = column_property(operator_table.c.id, operator_auth_table.c.id)
-    client = relationship('Client',uselist=False)
+    client = relationship('Organization',uselist=False)
     roles = relationship("OperatorRole",
         secondary=operator_role_association_table)
 

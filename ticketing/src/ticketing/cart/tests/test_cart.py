@@ -11,7 +11,7 @@ import datetime
 import transaction
 
 from ticketing.oauth2.models import *
-from ticketing.clients.models import *
+from ticketing.organizations.models import *
 from ticketing.events.models import *
 from ticketing.master.models import *
 from ticketing.oauth2.models import *
@@ -27,7 +27,7 @@ from ticketing.products.models import *
 from seed.bank import BankData, BankAccountData
 from seed.prefecture import PrefectureMaster
 from seed.service    import ServiceData
-from seed.client     import ClientData
+from seed.organization     import OrganizationData
 from seed.ticket     import TicketerData
 from seed.account    import AccountData
 from seed.permission import PermissionData
@@ -89,7 +89,7 @@ class CartBaseTest(unittest.TestCase):
                 'BankAccountData'  : BankAccount,
                 'AccountData'      : Account,
                 'TicketerData'     : Ticketer,
-                'ClientData'       : Client,
+                'ClientData'       : Organization,
                 'EventData'        : Event,
                 'PerformanceData'  : Performance,
                 'VenueData'        : Venue,
@@ -119,7 +119,7 @@ class CartBaseTest(unittest.TestCase):
             OperatorRoleData,
             AccountData,
             TicketerData,
-            ClientData,
+            OrganizationData,
             OperatorRoleData,
             OperatorData,
             EventData,

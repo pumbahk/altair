@@ -18,7 +18,7 @@ model_instances = {}
 
 import ticketing.oauth2.models as models
 add(model_instances, models, dir(models))
-import ticketing.clients.models as models
+import ticketing.organizations.models as models
 add(model_instances, models, dir(models))
 import ticketing.events.models as models
 add(model_instances, models, dir(models))

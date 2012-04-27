@@ -5,7 +5,7 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path
 
 from ticketing.models import merge_session_with_post, record_to_appstruct, merge_and_flush
-from ticketing.clients.models import Client
+from ticketing.organizations.models import Organization
 from ticketing.operators.models import Operator, OperatorRole, Permission
 
 from forms import OperatorForm, OperatorRoleForm
@@ -101,7 +101,7 @@ class Operators(BaseView):
         f = Form(
             OperatorForm().bind(
                 role_choices=[(role.id, role.name) for role in session.query(OperatorRole).all()],
-                client_choices=[(client.id, client.name) for client in session.query(Client).all()]
+                client_choices=[(client.id, client.name) for client in session.query(Organization).all()]
             ),
             buttons=(Button(name='submit',title=u'更新'),)
         )

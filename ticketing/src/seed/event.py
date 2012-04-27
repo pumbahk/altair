@@ -6,7 +6,7 @@ from account import AccountData
 from venue import VenueData
 
 from ticketing.models import *
-from ticketing.clients.models import *
+from ticketing.organizations.models import *
 from prefecture import PrefectureMaster
 
 class EventData(DataSet):

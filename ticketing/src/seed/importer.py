@@ -10,7 +10,7 @@ from datetime import datetime
 from hashlib import md5
 
 from ticketing.oauth2.models import *
-from ticketing.clients.models import *
+from ticketing.organizations.models import *
 from ticketing.events.models import *
 from ticketing.master.models import *
 from ticketing.oauth2.models import *
@@ -34,7 +34,7 @@ from seed.bank import BankData, BankAccountData
 from seed.prefecture import PrefectureMaster
 
 from service import ServiceData
-from client import ClientData
+from organization import OrganizationData
 from account import AccountData
 from permission import PermissionData
 from operator import OperatorData, OperatorRoleData
@@ -60,7 +60,7 @@ db_fixture = SQLAlchemyFixture(
          'BankData'         : Bank,
          'BankAccountData'  : BankAccount,
          'AccountData'      : Account,
-         'ClientData'       : Client,
+         'OrganizationData' : Organization,
          'EventData'        : Event,
          'PerformanceData'  : Performance,
          'VenueData'        : Venue,
@@ -89,7 +89,7 @@ data = db_fixture.data(
     BankAccountData,
     OperatorRoleData,
     AccountData,
-    ClientData,
+    OrganizationData,
     OperatorRoleData,
     OperatorData,
     EventData,

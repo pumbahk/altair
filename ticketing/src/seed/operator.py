@@ -2,10 +2,10 @@
 
 from seed import DataSet
 from ticketing.models import *
-from ticketing.clients.models import *
+from ticketing.organizations.models import *
 from permission import PermissionData
 from datetime import datetime
-from client import ClientData
+from organization import OrganizationData
 
 
 from hashlib import md5
@@ -60,7 +60,7 @@ class OperatorData(DataSet):
     class operator_1:
         name = 'Administrator'
         email = 'admin@ticketstar.com'
-        client = ClientData.client_1
+        client = OrganizationData.organization_1
         updated_at = datetime.now()
         created_at = datetime.now()
         status = 1
@@ -75,7 +75,7 @@ class OperatorData(DataSet):
     class operator_2:
         name = 'オペレーター2'
         email = 'tes2t@test.com'
-        client = ClientData.client_1
+        client = OrganizationData.organization_1
         updated_at = datetime.now()
         created_at = datetime.now()
         status = 1

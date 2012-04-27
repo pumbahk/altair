@@ -50,7 +50,7 @@ def main(global_config, **settings):
 
     config.include('ticketing.operators' , route_prefix='/operators')
     config.include('ticketing.login' , route_prefix='/login')
-    config.include('ticketing.clients' , route_prefix='/clients')
+    config.include('ticketing.organizations' , route_prefix='/organizations')
     config.include('ticketing.api' , route_prefix='/api')
     config.include('ticketing.admin' , route_prefix='/admin')
     config.include('ticketing.events' , route_prefix='/events')

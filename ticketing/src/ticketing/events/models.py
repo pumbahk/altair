@@ -29,8 +29,8 @@ class Account(Base):
     user_id         = Column(BigInteger, ForeignKey("User.id"), nullable=True)
     user            = relationship('User')
 
-    client_id       = Column(BigInteger, ForeignKey("Client.id"), nullable=True)
-    client          = relationship('Client', uselist=False)
+    client_id       = Column(BigInteger, ForeignKey("Organization.id"), nullable=True)
+    client          = relationship('Organization', uselist=False)
 
     updated_at      = Column(DateTime, nullable=True)
     created_at      = Column(DateTime)

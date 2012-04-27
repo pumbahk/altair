@@ -1,7 +1,7 @@
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL
 from sqlalchemy.orm import relationship, join, backref, column_property
 from ticketing.master.models import *
-from ticketing.clients.models import *
+from ticketing.organizations.models import *
 import sqlahelper
 
 session = sqlahelper.get_session()
@@ -98,8 +98,8 @@ class MailMagazine(Base):
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
     description = Column(String(1024))
-    client_id = Column(BigInteger, ForeignKey("Client.id"), nullable=True)
-    client = relationship('Client', uselist=False)
+    client_id = Column(BigInteger, ForeignKey("Organization.id"), nullable=True)
+    client = relationship('Organization', uselist=False)
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
     status = Column(Integer)

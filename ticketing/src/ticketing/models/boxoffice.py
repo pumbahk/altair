@@ -24,11 +24,11 @@ class Prefecture(Base):
     def get(prefecture_id):
         return DBSession.query(Prefecture).filter(Prefecture.id == prefecture_id).first()
 
-class ClientTypeEnum(StandardEnum):
+class OrganizationTypeEnum(StandardEnum):
     Standard        = 1
 
-class Client(Base):
-    __tablename__ = "Client"
+class Organization(Base):
+    __tablename__ = "Organization"
 
     id          = Column(BigInteger, primary_key=True)
     name        = Column(String(255))
@@ -48,7 +48,7 @@ class Client(Base):
 
     @staticmethod
     def get(client_id):
-        return DBSession.query(Client).filter(Client.id == client_id).first()
+        return DBSession.query(Organization).filter(Organization.id == client_id).first()
 
 class AccountTypeEnum(StandardEnum):
     Promoter    = 1
@@ -171,7 +171,7 @@ operator_table = Table(
     Column('id', BigInteger, primary_key=True),
     Column('name', String(255)),
     Column('email',String(255)),
-    Column('client_id',BigInteger, ForeignKey('Client.id')),
+    Column('client_id',BigInteger, ForeignKey('Organization.id')),
     Column('expire_at',DateTime, nullable=True),
     Column('updated_at',DateTime),
     Column('created_at',DateTime),
@@ -190,7 +190,7 @@ operator_auth_table = Table(
 class Operator(Base):
     __table__ = join(operator_table, operator_auth_table, operator_table.c.id == operator_auth_table.c.id)
     id = column_property(operator_table.c.id, operator_auth_table.c.id)
-    client = relationship('Client',uselist=False)
+    client = relationship('Organization',uselist=False)
     roles = relationship("OperatorRole",
         secondary=operator_role_association_table)
 
@@ -255,7 +255,7 @@ class Event(Base):
 
     @staticmethod
     def all():
-        return session.query(Client).all()
+        return session.query(Organization).all()
 
 class SeatType(Base):
     __tablename__ = 'SeatType'

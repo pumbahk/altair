@@ -3,7 +3,7 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path
 
 from ticketing.models import merge_session_with_post, record_to_appstruct, merge_and_flush
-from ticketing.clients.models import Client
+from ticketing.organizations.models import Organization
 from ticketing.operators.models import Operator, OperatorRole, Permission
 
 from ticketing.views import BaseView
