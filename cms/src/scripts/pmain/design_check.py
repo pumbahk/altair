@@ -268,6 +268,8 @@ def add_side_widgets(page):
     add_countdown_widget(page, "side", {"kind": "event_close"})
     
 def add_main_block_widgets(page, asset):
+    add_freetext_widget(page, "main", {"freetext": u"ブルーマンもついに千秋楽決定！！これがラストチャンス"})
+
     ## detail tab
     request = testing.DummyRequest()
     data = {u"items": json.dumps(
@@ -279,8 +281,6 @@ def add_main_block_widgets(page, asset):
     add_iconset_widget(page, "main", dict(kind="ticket_icon"))
 
     add_menu_widget(page, "main", data)
-
-    # add_freetext_widget(page, "main", {"freetext": u"ブルーマンもついに千秋楽決定！！これがラストチャンス"})
 
     add_image_widget(page, "main", dict(asset_id=asset.id))
 
@@ -310,9 +310,7 @@ def add_main_block_widgets(page, asset):
     add_summary_widget(page, "main", data)
 
 
-
-def main(env):
-    # setup()
+def add_detail_page_settings():
     layout = detail_layout()
     event = detail_event()
     detail_performances(event)
@@ -328,4 +326,37 @@ def main(env):
     add_header_widgets(page)
     add_side_widgets(page)
     add_main_block_widgets(page, asset)
+
+
+def help_layout():
+    layout = Layout(
+        title = u"ticketstar.help",
+        template_filename = "ticketstar.help.mako",
+        # blocks = '[["header"], ["main", "side"],["userBox"]]',
+        blocks = '[["topicPath"], ["main", "side"],["userBox"]]',
+        site_id = 1, ##
+        client_id = 1 ##
+        )
+    return layout
+
+def help_page(layout):
+    help_page = Page(description=u'チケットの販売、イベントの予約は楽天チケットで！楽天チケットは演劇、バレエ、ミュージカルなどの舞台、クラシック、オペラ、ロックなどのコンサート、野球、サッカー、格闘技などのスポーツ、その他イベントなどのチケットのオンラインショッピングサイトです。',
+                       keywords= u"チケット,演劇,クラシック,オペラ,コンサート,バレエ,ミュージカル,野球,サッカー,格闘技", 
+                       layout= layout, 
+                       title= u'ヘルプ',
+                       url= u'help',
+                       structure= "{}", 
+                       version= None)
+    PageSet.get_or_create(help_page)
+    return help_page
+
+def add_help_page_settings():
+    layout = help_layout()
+    page = help_page(layout)
+    DBSession.add(page)
+
+def main(env):
+    # setup()
+    add_detail_page_settings()
+    add_help_page_settings()
     transaction.commit()

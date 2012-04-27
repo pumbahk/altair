@@ -1,4 +1,4 @@
-<%block name="header">
+<%block name="master_header">
 		<p id="tagLine">チケット販売・イベント予約</p>
 		<p id="siteID"><a href="http://ticket.rakuten.co.jp/"><img src="/static/ticketstar/img/common/header_logo_01.gif" alt="楽天チケット" class="serviceLogo" width="97" height="35" /></a><a href="http://ticket.rakuten.co.jp/"><img src="/static/ticketstar/img/common/header_logo_02.gif" alt="チケット" class="serviceTitle" width="88" height="23" /></a></p>
 		<dl id="remoteNav">
@@ -28,7 +28,62 @@
 		</dl>
 </%block>
 
-<%block name="footer">
+
+<%block name="global_navigation">
+	<div id="globalNav">
+		<ul id="globalNav1">
+			<li><a href="/static/ticketstar/index.html"><img src="/static/ticketstar/img/common/header_nav_top.gif" alt="チケットトップ" width="132" height="40" /></a></li>
+			<li><a href="/static/ticketstar/music/index.html"><img src="/static/ticketstar/img/common/header_nav_music.gif" alt="音楽" width="67" height="40" /></a></li>
+			<li><a href="/static/ticketstar/theater/index.html"><img src="/static/ticketstar/img/common/header_nav_theater.gif" alt="演劇" width="73" height="40" /></a></li>
+			<li><a href="/static/ticketstar/sports/index.html"><img src="/static/ticketstar/img/common/header_nav_sports.gif" alt="スポーツ" width="102" height="40" /></a></li>
+			<li><a href="/static/ticketstar/event/index.html"><img src="/static/ticketstar/img/common/header_nav_event.gif" alt="イベント・その他" width="157" height="40" /></a></li>
+		</ul>
+		<ul id="globalNav2">
+			<li><a href="#">抽選申込履歴</a></li>
+			<li><a href="#">購入履歴</a></li>
+			<li><a href="#">お気に入り</a></li>
+			<li><a href="#">マイページ</a></li>
+		</ul>
+	</div>
+</%block>
+
+<%block name="section_navigation">
+		<dl id="sectionNav">
+		  <dt>主なカテゴリー</dt>
+		  <dd class="menuList">
+			<ul>
+				<li class="current"><a href="#"><img src="/static/ticketstar/img/detail/tab_individual_active.gif" alt="チケットトップ" width="120" height="30" /></a></li>
+		    </ul>
+		  </dd>
+		</dl>
+</%block>
+
+<%block name="header_search">
+	<div id="headerSearch">
+		<form id="form1" name="form1" method="post" action="">
+			<input name="textfield" type="text" id="textfield" size="40" value="アーティスト名、公演名、会場名など" onblur="if(this.value=='') this.value='アーティスト名、公演名、会場名など';" onfocus="if(this.value=='アーティスト名、公演名、会場名など') this.value='';" />
+			<input name="imageField" type="image" id="imageField" src="/static/ticketstar/img/common/header_search_btn.gif" alt="検索" />
+			<a href="#">詳細検索</a>
+		</form>
+		<dl>
+			<dt><img src="/static/ticketstar/img/common/header_search_hot.gif" alt="ホットワード" width="50" height="45" /></dt>
+			<dd>
+				<ul>
+					<li><a href="#">サッカー</a></li>
+					<li><a href="#">ブルーマン</a></li>
+					<li><a href="#">きゃりーぱみゅぱみゅ</a></li>
+					<li><a href="#">クーザ</a></li>
+					<li><a href="#">オンタマ</a></li>
+					<li><a href="#">ももいろクローバーZ</a></li>
+					<li><a href="#">ディズニー</a></li>
+					<li><a href="#">東京事変</a></li>
+				</ul>
+			</dd>
+		</dl>
+	</div>
+</%block>
+
+<%block name="master_footer">
 	<div id="grpRakutenLinkArea">
 	  <ul id="grpSpelinlk">
 		<li><a href="#">総合トップ</a></li>

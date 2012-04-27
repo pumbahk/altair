@@ -1,11 +1,9 @@
 #### blocks
 ## info {description,keywords,title  }
 ## custom {css_prerender,js_prerender}
-## header{subCategoryMenulist, topicPath}
-## + main
-## + side
-## + userBox
-## + footer
+##
+##
+##
 
 <%namespace file="./components.mako" name="co"/>
 
@@ -21,63 +19,52 @@
         
     <meta http-equiv="content-style-type" content="text/css" />
     <meta http-equiv="content-script-type" content="text/javascript" />
-    <link rel="shortcut icon" href="/static/ticketstar/img/common/favicon.ico" />
+    <link rel="shortcut icon" href="/static/ticketstar/img//common/favicon.ico" />
     <link rel="stylesheet" href="/static/ticketstar/css/import.css" type="text/css" media="all" />
 
 	<%block name="js_prerender"/>
 	<%block name="css_prerender"/>
     <script type="text/javascript" src="/static/ticketstar/js/jquery.js"></script>
   </head>
+<body id="help">
 
-  <body id="detail">
-	<p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="/static/ticketstar/img/common/skip.gif" alt="本文へジャンプ" width="1" height="1" /></a></p>
+<p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="/static/ticketstar/img/common/skip.gif" alt="本文へジャンプ" width="1" height="1" /></a></p>
 
-	<div id="container">
+<div id="container">
 
-	  <!-- ========== header ========== -->
-	  <%block name="header">
-	  <div id="grpheader">
-		${co.master_header()}
-        ${co.section_navigation()}
-		<dl id="subSectionNav">
-		  <dt>サブカテゴリー</dt>
-		  <dd class="menuList">
-			<%block name="subCategoryMenuList"/>
-		  </dd>
-		</dl>
-		<dl id="topicPath">
-		  <dt>現在地</dt>
-		  <dd><%block name="topicPath"/></dd>
-		</dl>
-	  </div>
-	</%block>
+	<!-- ========== header ========== -->
+	<div id="grpheader">
+  	  ${co.master_header()}
+    </div>
+    ${co.global_navigation()}
+    ${co.header_search()}
+
 	<!-- ========== /header ========== -->
-
+	
 	<hr />
-
-	<!-- ========== main ========== --> 
+	
+	<!-- InstanceBeginEditable name="cat" --><h1><img src="/static/ticketstar/img/help/title_help.gif" alt="ヘルプ" width="91" height="60" /></h1><!-- InstanceEndEditable -->
+	
+	<!-- ========== main ========== -->
 	<div id="main">
 	  <%block name="main"/>
-	</div>
+    </div>
 	<!-- ========== /main ========== -->
-
+	
 	<hr />
-
+	
 	<!-- ========== side ========== -->
 	<div id="side">
 	  <%block name="side"/>
 	</div>
 	<!-- ========== /side ========== -->
-
-	<div id="userBox">
-	  <%block name="userBox"/>
-	</div>  
+	
 	<hr />
-
+	
 	<!-- ========== footer ========== -->
 	${co.master_footer()}
 	<!-- ========== /footer ========== -->
 
-	<!-- /container --></div>
-  </body>
-</html>
+<!-- /container --></div>
+</body>
+<!-- InstanceEnd --></html>
