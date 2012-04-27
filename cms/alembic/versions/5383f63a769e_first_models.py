@@ -275,7 +275,7 @@ def upgrade():
     sa.Column('hash_url', sa.String(length=32), nullable=True),
     sa.ForeignKeyConstraint(['event_id'], ['event.id'], ),
     sa.ForeignKeyConstraint(['layout_id'], ['layout.id'], ),
-    sa.ForeignKeyConstraint(['parent_id'], ['page.id'], ),
+    sa.ForeignKeyConstraint(['parent_id'], ['page.id'], name='fk_page_parent_id'),
     sa.ForeignKeyConstraint(['site_id'], ['site.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
