@@ -26,7 +26,6 @@
 
 	<%block name="js_prerender"/>
 	<%block name="css_prerender"/>
-    <script type="text/javascript" src="/static/ticketstar/js/jquery.js"></script>
   </head>
 
   <body id="detail">

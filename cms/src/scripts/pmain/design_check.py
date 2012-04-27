@@ -327,13 +327,11 @@ def add_detail_page_settings():
     add_side_widgets(page)
     add_main_block_widgets(page, asset)
 
-
 def help_layout():
     layout = Layout(
         title = u"ticketstar.help",
         template_filename = "ticketstar.help.mako",
-        # blocks = '[["header"], ["main", "side"],["userBox"]]',
-        blocks = '[["topicPath"], ["main", "side"],["userBox"]]',
+        blocks = '[["main", "side"]]',
         site_id = 1, ##
         client_id = 1 ##
         )
@@ -355,8 +353,35 @@ def add_help_page_settings():
     page = help_page(layout)
     DBSession.add(page)
 
+def top_layout():
+    layout = Layout(
+        title = u"ticketstar.top",
+        template_filename = "ticketstar.top.mako",
+        blocks = '[["main", "side"]]',
+        site_id = 1, ##
+        client_id = 1 ##
+        )
+    return layout
+
+def top_page(layout):
+    top_page = Page(description=u'チケットの販売、イベントの予約は楽天チケットで！楽天チケットは演劇、バレエ、ミュージカルなどの舞台、クラシック、オペラ、ロックなどのコンサート、野球、サッカー、格闘技などのスポーツ、その他イベントなどのチケットのオンラインショッピングサイトです。',
+                       keywords= u"チケット,演劇,クラシック,オペラ,コンサート,バレエ,ミュージカル,野球,サッカー,格闘技", 
+                       layout= layout, 
+                       title= u'トップページ',
+                       url= u'top!',
+                       structure= "{}", 
+                       version= None)
+    PageSet.get_or_create(top_page)
+    return top_page
+
+def add_top_page_settings():
+    layout = top_layout()
+    page = top_page(layout)
+    DBSession.add(page)
+
 def main(env):
     # setup()
     add_detail_page_settings()
     add_help_page_settings()
+    add_top_page_settings()
     transaction.commit()

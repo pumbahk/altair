@@ -2,6 +2,8 @@
 ##<%namespace file="./components/ticketstar/help/header.mako" name="header_co"/>
 ##<%namespace file="./components/ticketstar/help/userbox.mako" name="userbox_co"/>
 
+
+
 <%block name="main">
 		<!-- InstanceBeginEditable name="main" -->
 		<script type="text/javascript">
@@ -86,4 +88,4 @@
 			<li><a href="#"><img src="/static/ticketstar/img/mypage/btn_favorite.gif" alt="お気に入りアーティストを登録" width="202" height="28" /></a></li>
 			<li><a href="#"><img src="/static/ticketstar/img/mypage/btn_magazine.gif" alt="メルマガの購読" width="202" height="28" /></a></li>
 		</ul>
-</%blcok>
+</%block>
