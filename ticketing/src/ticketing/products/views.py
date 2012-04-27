@@ -30,6 +30,6 @@ class PaymentDeliveryMethod(BaseView):
     @view_config(route_name='products.payment_delivery_method.list', renderer='json')
     def list(self):
         return {
-            'delivery_method_list' : self.context.user.client.delivery_method_list,
-            'payment_method_list' : self.context.user.client.payment_method_list
+            'delivery_method_list' : self.context.user.organization.delivery_method_list,
+            'payment_method_list' : self.context.user.organization.payment_method_list
         }

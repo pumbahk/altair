@@ -36,9 +36,9 @@
         <div class="right">
         <%
             user = request.context.user
-            client = user.client
+            organization = user.organization
         %>
-        ようこそ <a href="#">${client.name}</a> <a href="${request.route_path('login.info')}"><strong>${user.name}様</strong></a> |
+        ようこそ <a href="#">${organization.name}</a> <a href="${request.route_path('login.info')}"><strong>${user.name}様</strong></a> |
         <a href="${request.route_path('login.logout')}">ログアウト</a>
         </div>
         % endif

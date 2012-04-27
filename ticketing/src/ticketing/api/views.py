@@ -25,8 +25,8 @@ def access_token(context, request):
         return {
             'access_token'  : token.token,
             'user_id'       : operator.id,
-            'client_id'     : operator.client.id,
-            'client_name'   : operator.client.name,
+            'client_id'     : operator.organization.id,
+            'client_name'   : operator.organization.name,
             'screen_name'   : operator.name,
         }
     else:

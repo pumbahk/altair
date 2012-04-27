@@ -18,7 +18,7 @@ class BookmarkView(BaseView):
     @view_config(route_name='bookmark.index', renderer='ticketing:templates/bookmark/index.html')
     def index(self):
         return {
-            'bookmarks' : Bookmark.find_by_client_id(1)
+            'bookmarks' : Bookmark.find_by_organization_id(1)
         }
 
     @view_config(route_name='bookmark.new', request_method="GET", renderer='ticketing:templates/bookmark/new.html')

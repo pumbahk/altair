@@ -47,8 +47,8 @@ class Organization(Base):
     status = Column(Integer)
 
     @staticmethod
-    def get(client_id):
-        return DBSession.query(Organization).filter(Organization.id == client_id).first()
+    def get(organization_id):
+        return DBSession.query(Organization).filter(Organization.id == organization_id).first()
 
 class AccountTypeEnum(StandardEnum):
     Promoter    = 1
@@ -128,7 +128,7 @@ class Ticketer(Base):
     status          = Column(Integer)
 
     bank_account_id = Column(BigInteger, ForeignKey('BankAccount.id'))
-    bank_account    = relationship('BankAccount', backref='client')
+    bank_account    = relationship('BankAccount', backref='organization')
 
 '''
  Oprerator Role & ticketer
@@ -171,7 +171,7 @@ operator_table = Table(
     Column('id', BigInteger, primary_key=True),
     Column('name', String(255)),
     Column('email',String(255)),
-    Column('client_id',BigInteger, ForeignKey('Organization.id')),
+    Column('organization_id',BigInteger, ForeignKey('Organization.id')),
     Column('expire_at',DateTime, nullable=True),
     Column('updated_at',DateTime),
     Column('created_at',DateTime),
@@ -190,7 +190,7 @@ operator_auth_table = Table(
 class Operator(Base):
     __table__ = join(operator_table, operator_auth_table, operator_table.c.id == operator_auth_table.c.id)
     id = column_property(operator_table.c.id, operator_auth_table.c.id)
-    client = relationship('Organization',uselist=False)
+    organization = relationship('Organization',uselist=False)
     roles = relationship("OperatorRole",
         secondary=operator_role_association_table)
 

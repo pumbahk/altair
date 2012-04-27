@@ -89,7 +89,7 @@ class CartBaseTest(unittest.TestCase):
                 'BankAccountData'  : BankAccount,
                 'AccountData'      : Account,
                 'TicketerData'     : Ticketer,
-                'ClientData'       : Organization,
+                'OrganizationData'       : Organization,
                 'EventData'        : Event,
                 'PerformanceData'  : Performance,
                 'VenueData'        : Venue,

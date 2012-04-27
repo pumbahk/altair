@@ -28,27 +28,27 @@ class Operators(BaseView):
     def _role_id_list_to_role_list(self, role_id_list):
         return [ session.query(OperatorRole).filter(OperatorRole.id==role_id).one() for role_id in role_id_list]
 
-    @view_config(route_name='operators.client.index', renderer='ticketing:templates/operators_client/index.html')
-    def client_index(self):
+    @view_config(route_name='operators.organization.index', renderer='ticketing:templates/operators_organization/index.html')
+    def organization_index(self):
         current_page = int(self.request.params.get("page", 0))
         page_url = paginate.PageURL_WebOb(self.request)
         query = session.query(Operator)
-        query = query.filter_by(client=self.context.user.client)
+        query = query.filter_by(organization=self.context.user.organization)
         operators = paginate.Page(query.order_by(Operator.id), current_page, url=page_url)
         return {
             'operators': operators
         }
 
-    @view_config(route_name='operators.client.new', request_method="GET", renderer='ticketing:templates/operators_client/new.html')
-    def client_new_get(self):
+    @view_config(route_name='operators.organization.new', request_method="GET", renderer='ticketing:templates/operators_organization/new.html')
+    def organization_new_get(self):
         form = OperatorForm(self.request.POST)
         return {
             'form':form
         }
 
-    @view_config(route_name='operators.client.new', request_method="POST", renderer='ticketing:templates/operators_client/new.html')
-    def client_new_post(self):
-        client=self.context.user.client
+    @view_config(route_name='operators.organization.new', request_method="POST", renderer='ticketing:templates/operators_organization/new.html')
+    def organization_new_post(self):
+        organization=self.context.user.organization
         form = OperatorForm(self.request.POST)
         if form.validate():
             data = form.data
@@ -101,7 +101,7 @@ class Operators(BaseView):
         f = Form(
             OperatorForm().bind(
                 role_choices=[(role.id, role.name) for role in session.query(OperatorRole).all()],
-                client_choices=[(client.id, client.name) for client in session.query(Organization).all()]
+                organization_choices=[(organization.id, organization.name) for organization in session.query(Organization).all()]
             ),
             buttons=(Button(name='submit',title=u'更新'),)
         )

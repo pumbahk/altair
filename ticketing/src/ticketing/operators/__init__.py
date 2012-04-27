@@ -12,9 +12,9 @@ def includeme(config):
     config.add_route('operator_roles.edit'           , '/roles/edit/{operator_role_id}')
     config.add_route('operator_roles.edit_multiple'  , '/roles/edit_multiple')
 
-    config.add_route('permissions.index'          , '/permissions')
+    config.add_route('permissions.index'             , '/permissions')
 
-    config.add_route('operators.client.index'          , '/client/')
-    config.add_route('operators.client.new'            , '/client/new')
-    config.add_route('operators.client.show'           , '/client/show/{operator_id}')
-    config.add_route('operators.client.edit'           , '/client/edit/{operator_id}')
+    config.add_route('operators.organization.index'  , '/organization/')
+    config.add_route('operators.organization.new'    , '/organization/new')
+    config.add_route('operators.organization.show'   , '/organization/show/{operator_id}')
+    config.add_route('operators.organization.edit'   , '/organization/edit/{operator_id}')

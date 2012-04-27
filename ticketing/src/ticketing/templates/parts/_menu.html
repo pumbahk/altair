@@ -24,7 +24,7 @@ from ticketing.bookmark.models import Bookmark
       <li class="nav-header">マーケティング</li>
       <li><a href=""><i class="icon-home"></i>メール配信</a></li>
       <li class="nav-header">ブックマーク</li>
-      % for bookmark in Bookmark.find_by_client_id(1):
+      % for bookmark in Bookmark.find_by_organization_id(1):
       <li><a href="${bookmark.url}"><i class="icon-home"></i>${bookmark.name}</a></li>
       % endfor
       <li style="text-align: right;"><a href="${request.route_path('bookmark.index')}"><i class="icon-pencil"></i>編集</a></li>

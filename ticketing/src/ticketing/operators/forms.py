@@ -11,7 +11,7 @@ from wtforms import Form
 class OperatorRole(Form):
     pass
 class OperatorForm(Form):
-    client_id   = HiddenField("", validators=[Required()])
+    organization_id = HiddenField("", validators=[Required()])
     email       = TextField(u"Email", validators=[Email(),Required()])
     name        = TextField(u"名前", validators=[Required()])
     login_id    = TextField(u"ログインID", validators=[Required()])
