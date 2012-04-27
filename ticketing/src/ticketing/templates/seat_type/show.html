@@ -6,19 +6,19 @@
   $(function() {
     $('#delete').click(function(){
       $('#delete-modal').modal('toggle');
-      $('#delete-modal #delete').attr('href', '/seat_types/delete/' + ${event_id} + '/' + $('input[name=checked_id]:checked').val());
+      $('#delete-modal #delete').attr('href', '/seat_types/delete/' + ${performance_id} + '/' + $('input[name=checked_id]:checked').val());
     });
   });
 
   function add() {
     $('#edit-modal').modal('toggle');
-    $('#edit-modal #edit').attr('action', '/seat_types/new/' + ${event_id});
+    $('#edit-modal #edit').attr('action', '/seat_types/new/' + ${performance_id});
   }
 
   function edit(seat_type_id, name) {
     $('#edit-modal').modal('toggle');
     $('#edit-modal #name').val(name);
-    $('#edit-modal #edit').attr('action', '/seat_types/edit/' + ${event_id} + '/' + seat_type_id);
+    $('#edit-modal #edit').attr('action', '/seat_types/edit/' + ${performance_id} + '/' + seat_type_id);
   }
 </script>
 

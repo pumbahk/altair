@@ -20,28 +20,28 @@ class SeatTypes(BaseView):
 
     @view_config(route_name='seat_types.show', renderer='ticketing:templates/seat_type/show.html')
     def show(self):
-        event_id = int(self.request.matchdict.get('event_id', 0))
-        query = session.query(SeatType).filter(SeatType.event_id == event_id)
+        performance_id = int(self.request.matchdict.get('performance_id', 0))
+        query = session.query(SeatType).filter(SeatType.performance_id == performance_id)
         seat_types = paginate.Page(query.order_by(SeatType.id))
 
         f = SeatTypeForm()
         return {
             'form' : f,
             'seat_types' : seat_types,
-            'event_id' : event_id,
+            'performance_id' : performance_id,
         }
 
     @view_config(route_name='seat_types.new', request_method='POST')
     def new_post(self):
-        event_id = int(self.request.matchdict.get('event_id', 0))
+        performance_id = int(self.request.matchdict.get('performance_id', 0))
 
         f = SeatTypeForm(self.request.POST)
         record = merge_session_with_post(SeatType(), f.data)
-        record.event_id = event_id
+        record.performance_id = performance_id
         SeatType.add(record)
 
         self.request.session.flash(u'席種を保存しました')
-        return HTTPFound(location=route_path('seat_types.show', self.request, event_id=event_id))
+        return HTTPFound(location=route_path('seat_types.show', self.request, performance_id=performance_id))
 
     @view_config(route_name='seat_types.edit', request_method='POST')
     def edit_post(self):
@@ -54,8 +54,8 @@ class SeatTypes(BaseView):
         SeatType.update(seat_type)
 
         self.request.session.flash(u'席種を保存しました')
-        event_id = int(self.request.matchdict.get('event_id', 0))
-        return HTTPFound(location=route_path('seat_types.show', self.request, event_id=event_id))
+        performance_id = int(self.request.matchdict.get('performance_id', 0))
+        return HTTPFound(location=route_path('seat_types.show', self.request, performance_id=performance_id))
 
     @view_config(route_name='seat_types.delete')
     def delete(self):
@@ -67,6 +67,6 @@ class SeatTypes(BaseView):
         SeatType.delete(seat_type)
 
         self.request.session.flash(u'席種を削除しました')
-        event_id = int(self.request.matchdict.get('event_id', 0))
-        return HTTPFound(location=route_path('seat_types.show', self.request, event_id=event_id))
+        performance_id = int(self.request.matchdict.get('performance_id', 0))
+        return HTTPFound(location=route_path('seat_types.show', self.request, performance_id=performance_id))
 

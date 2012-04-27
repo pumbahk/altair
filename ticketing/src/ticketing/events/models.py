@@ -20,21 +20,19 @@ class AccountTypeEnum(StandardEnum):
 
 class Account(Base):
     __tablename__ = "Account"
-
     id = Column(BigInteger, primary_key=True)
+    account_type = Column(Integer)  # @see AccountTypeEnum
 
-    # @see AccountTypeEnum
-    account_type = Column(Integer)
-
-    user_id         = Column(BigInteger, ForeignKey("User.id"), nullable=True)
-    user            = relationship('User')
+    user_id = Column(BigInteger, ForeignKey("User.id"), nullable=True)
+    user = relationship('User')
 
     organization_id = Column(BigInteger, ForeignKey("Organization.id"), nullable=True)
-    organization    = relationship('Organization', uselist=False)
+    organization = relationship('Organization', uselist=False)
+    stock_holders = relationship('StockHolder', uselist=False, backref='account')
 
-    updated_at      = Column(DateTime, nullable=True)
-    created_at      = Column(DateTime)
-    status          = Column(Integer, default=1)
+    updated_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime)
+    status = Column(Integer, default=1)
 
     @staticmethod
     def get(account_id):
@@ -48,18 +46,24 @@ class Account(Base):
 class Performance(Base):
     __tablename__ = 'Performance'
     id = Column(BigInteger, primary_key=True)
-    event_id = Column(BigInteger, ForeignKey('Event.id'))
     name = Column(String(255))
     code = Column(String(12))
     open_on = Column(DateTime)
     start_on = Column(DateTime)
     end_on = Column(DateTime)
     no_period = Column(Boolean)
-    owner_id = Column(BigInteger, ForeignKey('Account.id'))
-    owner = relationship('Account')
+
+    event_id = Column(BigInteger, ForeignKey('Event.id'))
     venue_id = Column(BigInteger, ForeignKey('Venue.id'))
-    venue = relationship('Venue')
-    product_item = relationship('ProductItem')
+    owner_id = Column(BigInteger, ForeignKey('Account.id'))
+
+    stock_holders = relationship('StockHolder', uselist=False, backref='performance')
+    stocks = relationship('Stock', backref='performance')
+    product_items = relationship('ProductItem', backref='performance')
+
+    updated_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime)
+    status = Column(Integer, default=1)
 
     @staticmethod
     def get(performance_id):
@@ -83,7 +87,13 @@ class Event(Base):
     abbreviated_title = Column(String(1024))
     start_on = Column( DateTime, nullable=True)
     end_on = Column( DateTime, nullable=True)
+
+    organization_id = Column(BigInteger, ForeignKey('Organization.id'))
     performances = relationship('Performance', backref='event')
+
+    updated_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime)
+    status = Column(Integer, default=1)
 
     @staticmethod
     def get(event_id):

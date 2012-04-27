@@ -53,14 +53,11 @@ class Events(BaseView):
         query = session.query(Performance).filter(Performance.event_id == event_id)
         performances = paginate.Page(query.order_by(Performance.id), current_page, url=page_url)
 
-        seat_types = session.query(SeatType).filter(SeatType.event_id == event_id)
-
         f = EventForm()
         return {
             'form' : f,
             'event':event,
             'performances':performances,
-            'seat_types' : seat_types,
         }
 
     @view_config(route_name='events.new', request_method='GET', renderer='ticketing:templates/events/edit.html')

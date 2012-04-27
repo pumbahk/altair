@@ -35,7 +35,6 @@ class EventData(DataSet):
         start_on = datetime(2012,9,1,19,0)
         end_on = datetime(2012,10,30,19,0)
 
-
 class PerformanceData(DataSet):
     class performance_1:
         event = EventData.event_1
@@ -117,4 +116,3 @@ class PerformanceData(DataSet):
         no_period = False
         owner = AccountData.account_3
         venue = VenueData.venue_2
-

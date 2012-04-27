@@ -118,17 +118,11 @@ stock_reference_from_product_item_table =  Table('StockReferenceFromProductItem'
 class ProductItem(BaseModel,Base):
     __tablename__ = 'ProductItem'
     id = Column(BigInteger, primary_key=True)
+    item_type = Column(Integer)
+    price = Column(BigInteger)
 
     product_id = Column(BigInteger, ForeignKey('Product.id'))
-    product = relationship('Product', uselist=False)
-
-    item_type = Column(Integer)
-
     performance_id = Column(BigInteger, ForeignKey('Performance.id'))
-    performance = relationship('Performance', uselist=False)
-    price = Column(BigInteger)
-    seat_type_id = Column(BigInteger, ForeignKey('SeatType.id'))
-    seat_type = relationship('SeatType', uselist=False)
 
     stocks = relationship("Stock", secondary=stock_reference_from_product_item_table)
 
@@ -140,31 +134,28 @@ class ProductItem(BaseModel,Base):
         else:
             return None
 
-class StockFolder(BaseModel,Base):
-    __tablename__ = "StockFolder"
+class StockHolder(BaseModel,Base):
+    __tablename__ = "StockHolder"
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
 
     performance_id = Column(BigInteger, ForeignKey('Performance.id'))
-    performance = relationship('Performance', uselist=False)
-
     account_id = Column(BigInteger, ForeignKey('Account.id'))
-    account = relationship('Account', uselist=False)
+
+    stocks = relationship('Stock', backref='stock_holder')
 
 # stock based on quantity
 class Stock(BaseModel,Base):
     __tablename__ = "Stock"
     id = Column(BigInteger, primary_key=True)
+    quantity = Column(Integer)
 
     performance_id = Column(BigInteger, ForeignKey('Performance.id'))
-    performance = relationship('Performance', uselist=False)
-    stock_folder_id = Column(BigInteger, ForeignKey('StockFolder.id'))
-    stock_folder = relationship('StockFolder', uselist=False)
+    stock_folder_id = Column(BigInteger, ForeignKey('StockHolder.id'))
 
     seat_type_id = Column(BigInteger, ForeignKey('SeatType.id'))
-    seat_type = relationship('SeatType', uselist=False)
 
-    quantity = Column(Integer)
+    seat_stocks = relationship('SeatStock', backref='stock')
 
     @staticmethod
     def get_for_update(pid, stid):
@@ -183,13 +174,10 @@ class SeatStatusEnum(StandardEnum):
 class SeatStock(BaseModel,Base):
     __tablename__ = "SeatStock"
     id = Column(BigInteger, primary_key=True)
+    sold = Column(Boolean) # sold or not
 
     stock_id = Column(BigInteger, ForeignKey('Stock.id'))
-    stock = relationship('Stock', uselist=False)
-
-    seat_id = Column(BigInteger, ForeignKey("SeatMasterL2.seat_id"))
-    seat = relationship('SeatMasterL2', uselist=False, backref="seat_stock_id") # 1:1
-    sold = Column(Boolean) # sold or not
+    seat = relationship('SeatMasterL2', uselist=False, backref="seat_stock") # 1:1
 
     @staticmethod
     def get_for_update(stock_id):
@@ -218,11 +206,10 @@ class SeatStock(BaseModel,Base):
 class Product(BaseModel,Base):
     __tablename__ = 'Product'
     id = Column(BigInteger, primary_key=True)
-
     name = Column(String(255))
     price = Column(BigInteger)
 
-    items = relationship('ProductItem')
+    items = relationship('ProductItem', backref='product')
 
     @staticmethod
     def find(performance_id = None, event_id = None):

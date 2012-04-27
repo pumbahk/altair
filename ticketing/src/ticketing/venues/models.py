@@ -17,8 +17,12 @@ class SeatType(Base):
     __tablename__ = 'SeatType'
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
-    event_id = Column(BigInteger, ForeignKey('Event.id'))
-    event = relationship('Event', backref='seat_types')
+
+    performance_id = Column(BigInteger, ForeignKey("Performance.id"))
+
+    seats = relationship('SeatMasterL2', backref='seat_type')
+    stocks = relationship('Stock', backref='seat_type')
+
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
     status = Column(Integer)
@@ -47,13 +51,9 @@ class SeatType(Base):
 class Venue(Base):
     __tablename__ = "Venue"
     id = Column(BigInteger, primary_key=True)
-
     name = Column(String(255))
     sub_name = Column(String(255))
-
     zip = Column(String(255))
-    prefecture_id = Column(BigInteger, ForeignKey("Prefecture.id"), nullable=True)
-    prefecture    = relationship("Prefecture", uselist=False)
     city = Column(String(255))
     street = Column(String(255))
     address = Column(String(255))
@@ -61,6 +61,15 @@ class Venue(Base):
     tel_1 = Column(String(32))
     tel_2 = Column(String(32))
     fax = Column(String(32))
+
+    organization_id = Column(BigInteger, ForeignKey("Organization.id"), nullable=True)
+
+    seats = relationship("SeatMaster", backref='venue')
+    areas = relationship("VenueArea", backref='venue')
+    performances = relationship("Performance", backref='venue')
+
+    prefecture_id = Column(BigInteger, ForeignKey("Prefecture.id"), nullable=True)
+    prefecture    = relationship("Prefecture", uselist=False)
 
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
@@ -78,8 +87,9 @@ class VenueArea(Base):
     __tablename__ = "VenueArea"
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
-    venue           = relationship('Venue')
+
     venue_id        = Column(BigInteger, ForeignKey('Venue.id'))
+
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
     status = Column(Integer)
@@ -89,10 +99,11 @@ class SeatMaster(Base):
     __tablename__ = "SeatMaster"
     id              = Column(BigInteger, primary_key=True)
     identifieir     = Column(String(255))
-    venue           = relationship('Venue')
+
     venue_id        = Column(BigInteger, ForeignKey('Venue.id'))
-    areas           = relationship("VenueArea",
-                        secondary=venue_venue_area_table, backref="seats")
+
+    areas           = relationship("VenueArea", secondary=venue_venue_area_table, backref="seats")
+
     updated_at      = Column(DateTime)
     created_at      = Column(DateTime)
     status          = Column(Integer)
@@ -101,12 +112,13 @@ class SeatMaster(Base):
 class SeatMasterL2(Base):
     __tablename__ = "SeatMasterL2"
     id = Column(BigInteger, primary_key=True)
-    performance_id = Column(BigInteger, ForeignKey('Performance.id'))
-    performance = relationship('Performance', uselist=False)
+
     seat_type_id = Column(BigInteger, ForeignKey('SeatType.id'))
-    seat_type = relationship('SeatType', uselist=False)
     seat_id = Column(BigInteger, ForeignKey('SeatMaster.id'))
     seat = relationship('SeatMaster', uselist=False)
+
+    seat_stock_id = Column(BigInteger, ForeignKey('SeatStock.id'))
+
     # @TODO have some attributes regarding Layer2
     #venue_id = Column(BigInteger)
 
