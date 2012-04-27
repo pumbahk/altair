@@ -81,7 +81,7 @@ class SummaryWidget(Widget):
 
     def merge_settings(self, bname, bsettings):
         bsettings.need_extra_in_scan("request")
-        items = json.loads(self.items)
+        items = json.loads(self.items or "[]")
 
         content = render(self.template_name, {"widget": self,  "items": items}) 
         bsettings.add(bname, content)

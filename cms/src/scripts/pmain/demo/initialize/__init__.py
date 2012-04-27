@@ -17,6 +17,15 @@ def block(message):
     yield
 
 def init():
+    from altaircms.auth.models import Client
+    client = Client.query.first()
+    from altaircms.models import Site
+    site = Site(name=u"ticketstar",
+                description=u"ticketstar ticketstar",
+                url="http://example.com",
+                client=client)
+    DBSession.add(site)
+
     with block("create layout model"):
         from altaircms.layout.models import Layout
         layout0 = Layout()
@@ -24,8 +33,8 @@ def init():
         layout0.title = "original"
         layout0.template_filename = "original5.mako"
         layout0.blocks = '[["page_main_title"],["page_main_image","page_main_description"],["page_main_main"],["page_main_footer"]]'
-        layout0.site_id = 1 ##
-        layout0.client_id = 1 ##
+        layout0.site = site ##
+        layout0.client = client ##
         DBSession.add(layout0)
 
         layout_gallery = Layout()
@@ -33,34 +42,34 @@ def init():
         layout_gallery.title = "original_gallery"
         layout_gallery.template_filename = "original5_gallery.mako"
         layout_gallery.blocks = '[["page_header_content"],["notice"],["page_main_header"],["page_main_title"],["page_main_main"],["page_main_footer"]]'
-        layout_gallery.site_id = 1 ##
-        layout_gallery.client_id = 1 ##
+        layout_gallery.site = site ##
+        layout_gallery.client = client ##
         DBSession.add(layout_gallery)
 
         layout2 = Layout()
-        layout2.id = 3
+        layout2.id = 4
         layout2.title = "original"
         layout2.template_filename = "original5.1.mako"
         layout2.blocks = '[["page_header_content"],["notice"],["page_main_header"],["page_main_title"],["page_main_image"],["page_main_description"],["page_main_main"],["page_main_footer"]]'
-        layout2.site_id = 1 ##
-        layout2.client_id = 1 ##
+        layout2.site = site ##
+        layout2.client = client ##
         DBSession.add(layout2)
-
+        
         ## simple
         layout_col2 = Layout()
         layout_col2.title = "col2"
         layout_col2.template_filename = "col2.mako"
         layout_col2.blocks = '[["header"],["left", "right"],["footer"]]'
-        layout_col2.site_id = 1 ##
-        layout_col2.client_id = 1 ##
+        layout_col2.site = site ##
+        layout_col2.client = client ##
         DBSession.add(layout_col2)
 
         layout_col3 = Layout()
         layout_col3.title = "col3"
         layout_col3.template_filename = "col3.mako"
         layout_col3.blocks = '[["header"],["left1", "right1"],["left2", "center", "right2"], ["footer"]]'
-        layout_col3.site_id = 1 ##
-        layout_col3.client_id = 1 ##
+        layout_col3.site = site ##
+        layout_col3.client = client ##
         DBSession.add(layout_col3)
 
     from . import demo1
@@ -69,3 +78,5 @@ def init():
     demo1_tab.init()
     from . import demo2
     demo2.init()
+    import transaction
+    transaction.commit()

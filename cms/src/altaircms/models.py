@@ -76,7 +76,7 @@ class Performance(BaseOriginalMixin, Base):
     client_id = Column(Integer, ForeignKey("client.id"))
 
     created_at = Column(DateTime, default=datetime.now)
-    updated_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
     title = Column(Unicode(255))
     venue = Column(Unicode(255)) #開催地
@@ -102,8 +102,8 @@ class Sale(BaseOriginalMixin, Base):
     close_on = Column(DateTime)
 
 
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
 
 class Ticket(BaseOriginalMixin, Base):
@@ -117,8 +117,8 @@ class Ticket(BaseOriginalMixin, Base):
     orderno = Column(Integer)
     sale_id = Column(Integer, ForeignKey("sale.id"))
     event_id = Column(Integer, ForeignKey("event.id"))
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now)
     price = Column(Integer, default=0)
 
     sale = relationship("Sale", backref=orm.backref("tickets", order_by=orderno))
@@ -136,8 +136,8 @@ class Seatfigure(BaseOriginalMixin, Base):
     query = DBSession.query_property()
 
     id = Column(Integer, primary_key=True)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
     figure_url = Column(String(255))
     controller_url = Column(String(255))
@@ -152,11 +152,12 @@ class Site(BaseOriginalMixin, Base):
     query = DBSession.query_property()
 
     id = Column(Integer, primary_key=True)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
     name = Column(Unicode(255))
     description = Column(Unicode(255))
     url = Column(String(255))
 
     client_id = Column(Integer, ForeignKey("client.id")) #@TODO: サイトにくっつけるべき？
+    client = relationship("Client", backref="site", uselist=False) ##?
