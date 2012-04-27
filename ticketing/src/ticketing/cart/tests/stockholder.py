@@ -10,7 +10,7 @@ class StockHolderData(DataSet):
     class stockholder_1:
         name = u'営業枠'
         performance = PerformanceData.performance_1
-        account = AccountData.account_1
+        account = AccountData.account_2
         updated_at      = datetime.now()
         created_at      = datetime.now()
         status          = 1
