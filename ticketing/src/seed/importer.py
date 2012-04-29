@@ -6,8 +6,6 @@ from fixture import SQLAlchemyFixture
 
 import sqlalchemy as sa
 from sqlalchemy.orm import *
-from datetime import datetime
-from hashlib import md5
 
 from ticketing.oauth2.models import *
 from ticketing.organizations.models import *
@@ -39,8 +37,8 @@ from account import AccountData
 from permission import PermissionData
 from operator import OperatorData, OperatorRoleData
 from event import EventData, PerformanceData
-from venue import VenueData, SeatTypeData
-from product import ProductData, ProductItemData
+from venue import VenueData, SeatMasterData, SeatTypeData, SeatMasterL2Data
+from product import ProductData, ProductItemData, StockData
 from ticketing.bookmark.tests.bookmark import BookmarkData
 from ticketing.products.tests.payment_delivery_method import DeliveryMethodPluginData, PaymentMethodPluginData, DeliveryMethodData, PaymentMethodData
 
@@ -48,7 +46,6 @@ from ticketing.oauth2.models import Service
 from ticketing.operators.models import Operator, OperatorActionHistory, OperatorRole, Permission
 from ticketing.bookmark.models import Bookmark
 from ticketing.products.models import PaymentMethod, DeliveryMethod, PaymentMethodPlugin, DeliveryMethodPlugin
-
 
 db_fixture = SQLAlchemyFixture(
      env={
@@ -64,7 +61,10 @@ db_fixture = SQLAlchemyFixture(
          'EventData'        : Event,
          'PerformanceData'  : Performance,
          'VenueData'        : Venue,
+         'SeatMasterData'   : SeatMaster,
          'SeatTypeData'     : SeatType,
+         'SeatMasterL2Data' : SeatMasterL2,
+         'StockData'        : Stock,
          'ProductData'      : Product,
          'ProductItemData'  : ProductItem,
          'BookmarkData'     : Bookmark,
@@ -95,7 +95,10 @@ data = db_fixture.data(
     EventData,
     PerformanceData,
     VenueData,
+    SeatMasterData,
     SeatTypeData,
+    SeatMasterL2Data,
+    StockData,
     ProductData,
     ProductItemData,
     BookmarkData,

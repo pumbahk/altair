@@ -151,7 +151,7 @@ class Stock(BaseModel,Base):
     quantity = Column(Integer)
 
     performance_id = Column(BigInteger, ForeignKey('Performance.id'))
-    stock_folder_id = Column(BigInteger, ForeignKey('StockHolder.id'))
+    stock_holder_id = Column(BigInteger, ForeignKey('StockHolder.id'))
 
     seat_type_id = Column(BigInteger, ForeignKey('SeatType.id'))
 

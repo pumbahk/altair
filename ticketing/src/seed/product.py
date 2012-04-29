@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from seed import DataSet
-from datetime import datetime
 
-from event import PerformanceData
+from seed.event import PerformanceData
+from seed.venue import SeatTypeData
 
 class ProductData(DataSet):
     class product_1:
@@ -43,3 +43,21 @@ class ProductItemData(DataSet):
         product = ProductData.product_1
         performance = PerformanceData.performance_1
         status = None
+
+class StockData(DataSet):
+    class stock_1:
+        quantity = 1000
+        performance = PerformanceData.performance_1
+        seat_type = SeatTypeData.seat_type_1
+    class stock_2:
+        quantity = 800
+        performance = PerformanceData.performance_1
+        seat_type = SeatTypeData.seat_type_2
+    class stock_3:
+        quantity = 500
+        performance = PerformanceData.performance_1
+        seat_type = SeatTypeData.seat_type_3
+    class stock_4:
+        quantity = 0
+        performance = PerformanceData.performance_1
+        seat_type = SeatTypeData.seat_type_4
