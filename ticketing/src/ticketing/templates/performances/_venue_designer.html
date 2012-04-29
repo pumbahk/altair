@@ -1,38 +1,97 @@
+<%namespace file="/common/confirm_modal.html" import="delete_modal" />
+
+<script>
+  $(function() {
+    $('#delete').click(function(){
+      $('#delete-modal').modal('toggle');
+      $('#delete-modal #delete').attr('href', '/seat_types/delete/' + $('input[name=checked_id]:checked').val());
+    });
+  });
+
+  function add() {
+    $('#edit-modal').modal('toggle');
+    $('#edit-modal #edit').attr('action', '/seat_types/new/' + ${performance.id});
+  }
+
+  function edit(seat_type_id, name) {
+    $('#edit-modal').modal('toggle');
+    $('#edit-modal #name').val(name);
+    $('#edit-modal #edit').attr('action', '/seat_types/edit/' + seat_type_id);
+  }
+
+  $(window).resize(function(api){
+    $("#venue-map").height($(window).height()-230);
+  });
+
+  $(document).ready(function(){
+    $("#venue-map").height($(window).height()-230);
+  });
+</script>
+
 <div class="container-fluid">
   <div class="row-fluid">
-      <div class="span8" style="background-color: #999999">
-          <div style="width:100%;  margin: 0 0 0 5px;" id="venue-map">
-          </div>
-      </div>
-    <div class="span4">
-        <table class="table table-striped table-bordered table-condensed">
-            <tbody>
-               <tr>
-                 <th><span class="swatch" style="background-color: #049cdb;"></span>S席</th>
-                 <td>1000席</td>
-               </tr>
-               <tr>
-                 <th><span class="swatch" style="background-color: #46a546;"></span>A席</th>
-                 <td>1000席</td>
-               </tr>
-               <tr>
-                 <th><span class="swatch" style="background-color: #9d261d;"></span>B席</th>
-                 <td>1000席</td>
-               </tr>
-             </tbody>
-           </table>
+    <div class="span8" style="background-color: #999999">
+      <div style="width:100%;  margin: 0 0 0 5px;" id="venue-map"></div>
     </div>
+    <div class="span4">
+      <div class="tab-pane" id="detail">
+        <ul class="nav nav-pills">
+          <li class="dropdown" id="menu2">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#menu2">
+              席種<b class="caret"></b>
+            </a>
+            <ul class="dropdown-menu">
+              <li>
+                <a href="javascript:add()"><i class="icon-plus"></i> 新規</a>
+              </li>
+              <li>
+                <a id="delete" data-controls-modal="delete-modal" data-backdrop="true" data-keyboard="true">
+                  <i class="icon-minus"></i> 削除
+                </a>
+              </li>
+              <li class="divider"></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
 
+      <table class="table table-striped table-bordered table-condensed">
+        <tbody>
+          <tr>
+          </tr>
+          % for seat_type in performance.seat_types:
+          <tr>
+            <td><input name="checked_id" type="radio" value=${seat_type.id} /></td>
+            <td>
+              <a id="edit" href="javascript:edit(${seat_type.id}, '${seat_type.name|u}')">
+              <span class="swatch" style="background-color: #049cdb;"></span>${seat_type.name}</a>
+            </td>
+            <td>0席</td>
+          </tr>
+          % endfor
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 
-<script>
+<div id="edit-modal" class="modal fade">
+    <div class="modal-header">
+        <a class="close" data-dismiss="modal">×</a>
+        <h3>席種</h3>
+    </div>
 
-$( window ).resize(function(api){
-    $("#venue-map").height($(window).height()-230);
-});
-$(document).ready(function(){
-    $("#venue-map").height($(window).height()-230);
-});
+    <form id="edit" action="" method="POST">
+        <div class="modal-body">
+            <label>席種名</label>
+            <input id="name" name="name" type="text" class="span3" value="">
+        </div>
 
-</script>
+        <div class="modal-footer">
+            <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+            <input class="btn" type="submit" value="保存"></a>
+        </div>
+    </form>
+</div>
+
+${delete_modal(u'選択した席種を削除します。よろしいですか？')}

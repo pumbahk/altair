@@ -54,6 +54,7 @@ class Performance(Base, BaseModel):
     stock_holders = relationship('StockHolder', uselist=False, backref='performance')
     stocks = relationship('Stock', backref='performance')
     product_items = relationship('ProductItem', backref='performance')
+    seat_types = relationship('SeatType', backref='performance')
 
     @staticmethod
     def get(performance_id):
