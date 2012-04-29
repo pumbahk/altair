@@ -3,8 +3,8 @@
 from datetime import datetime
 from seed import DataSet
 
-from prefecture import PrefectureMaster
-from ticketing.venues.models import Venue
+from seed.prefecture import PrefectureMaster
+from seed.organization import OrganizationData
 
 class VenueData(DataSet):
     class venue_1:
@@ -19,6 +19,7 @@ class VenueData(DataSet):
         tel_1 = u'03-0000-0000'
         tel_2 = u'03-1111-1111'
         fax = u'03-1111-1111'
+        organization = OrganizationData.organization_0
     class venue_2:
         name = u'ブルーマンシアター'
         sub_name = u'ブルーマンシアター'
@@ -31,22 +32,22 @@ class VenueData(DataSet):
         tel_1 = u'03-0000-0000'
         tel_2 = u'03-1111-1111'
         fax = u'03-1111-1111'
+        organization = OrganizationData.organization_0
 
 class SeatTypeData(DataSet):
     class seattype_1:
         name = u'S席'
-        event_id = 1
+        performance_id = 1
         status = 1
     class seattype_2:
         name = u'A席'
-        event_id = 1
+        performance_id = 1
         status = 1
     class seattype_3:
         name = u'B席'
-        event_id = 1
+        performance_id = 1
         status = 1
     class seattype_4:
         name = u'C席'
-        event_id = 1
+        performance_id = 1
         status = 1
-

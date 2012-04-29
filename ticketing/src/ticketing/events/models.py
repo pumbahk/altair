@@ -2,23 +2,21 @@
 
 from datetime import datetime
 
-from ticketing.utils import StandardEnum
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL
 from sqlalchemy.orm import relationship, join, backref, column_property
 
+from ticketing.utils import StandardEnum
+from ticketing.models import Base, BaseModel
+
 import sqlahelper
 session = sqlahelper.get_session()
-Base = sqlahelper.get_base()
-
-from ticketing.users.models import User, MemberShip
-from ticketing.master.models import BankAccount
 
 class AccountTypeEnum(StandardEnum):
     Promoter    = 1
     Playguide   = 2
     User        = 3
 
-class Account(Base):
+class Account(Base, BaseModel):
     __tablename__ = "Account"
     id = Column(BigInteger, primary_key=True)
     account_type = Column(Integer)  # @see AccountTypeEnum
@@ -30,10 +28,6 @@ class Account(Base):
     organization = relationship('Organization', uselist=False)
     stock_holders = relationship('StockHolder', uselist=False, backref='account')
 
-    updated_at = Column(DateTime, nullable=True)
-    created_at = Column(DateTime)
-    status = Column(Integer, default=1)
-
     @staticmethod
     def get(account_id):
         return session.query(Account).filter(Account.id == account_id).first()
@@ -43,7 +37,7 @@ class Account(Base):
  Event & Performance
 
 '''
-class Performance(Base):
+class Performance(Base, BaseModel):
     __tablename__ = 'Performance'
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
@@ -61,10 +55,6 @@ class Performance(Base):
     stocks = relationship('Stock', backref='performance')
     product_items = relationship('ProductItem', backref='performance')
 
-    updated_at = Column(DateTime, nullable=True)
-    created_at = Column(DateTime)
-    status = Column(Integer, default=1)
-
     @staticmethod
     def get(performance_id):
         return session.query(Performance).filter(Performance.id == performance_id).first()
@@ -79,7 +69,7 @@ class Performance(Base):
         session.merge(performance)
         session.flush()
 
-class Event(Base):
+class Event(Base, BaseModel):
     __tablename__ = 'Event'
     id = Column(BigInteger, primary_key=True)
     code = Column(String(12))
@@ -90,10 +80,6 @@ class Event(Base):
 
     organization_id = Column(BigInteger, ForeignKey('Organization.id'))
     performances = relationship('Performance', backref='event')
-
-    updated_at = Column(DateTime, nullable=True)
-    created_at = Column(DateTime)
-    status = Column(Integer, default=1)
 
     @staticmethod
     def get(event_id):
@@ -119,4 +105,3 @@ class Event(Base):
     @staticmethod
     def all():
         return session.query(Event).all()
-

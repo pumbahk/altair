@@ -5,16 +5,15 @@ import webhelpers.paginate as paginate
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path
+from pyramid.security import authenticated_userid
 
 from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.events.models import session, Event, Performance
-from ticketing.venues.models import SeatType
 from ticketing.events.forms import EventForm
-
+from ticketing.operators.models import Operator
 import sqlahelper
-session = sqlahelper.get_session()
 
 @view_defaults(decorator=with_bootstrap)
 class Events(BaseView):
@@ -29,6 +28,9 @@ class Events(BaseView):
 
         page_url = paginate.PageURL_WebOb(self.request)
         query = session.query(Event).order_by(sort + ' ' + direction)
+
+        user = Operator.get_by_login_id(authenticated_userid(self.request))
+        query = query.filter(Event.organization_id == int(user.organization_id))
 
         by_event = self.request.params.get('by_event')
         if by_event:
@@ -82,7 +84,9 @@ class Events(BaseView):
         f = EventForm(self.request.POST)
 
         if f.validate():
-            record = merge_session_with_post(Event(), f.data)
+            event = merge_session_with_post(Event(), f.data)
+            user = Operator.get_by_login_id(authenticated_userid(self.request))
+            event.organization_id = user.organization_id
             Event.add(record)
 
             self.request.session.flash(u'イベントを登録しました')
@@ -116,6 +120,8 @@ class Events(BaseView):
         f = EventForm(self.request.POST)
         if f.validate():
             record = merge_session_with_post(event, f.data)
+            user = Operator.get_by_login_id(authenticated_userid(self.request))
+            event.organization_id = user.organization_id
             Event.update(record)
 
             self.request.session.flash(u'イベントを保存しました')

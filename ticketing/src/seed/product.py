@@ -3,8 +3,6 @@
 from seed import DataSet
 from datetime import datetime
 
-from ticketing.models import *
-from ticketing.events.models import *
 from event import PerformanceData
 
 class ProductData(DataSet):
@@ -34,21 +32,14 @@ class ProductItemData(DataSet):
         item_type = 1
         product = ProductData.product_1
         performance = PerformanceData.performance_1
-        seat_type_id = None
-        price_id = None
         status = None
     class productitem_2:
         item_type = 2
         product = ProductData.product_2
         performance = PerformanceData.performance_1
-        seat_type_id = None
-        price_id = None
         status = None
-
     class productitem_3:
         item_type = 1
         product = ProductData.product_1
         performance = PerformanceData.performance_1
-        seat_type_id = None
-        price_id = None
         status = None

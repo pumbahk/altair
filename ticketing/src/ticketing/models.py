@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
+from datetime import datetime, date
 import transaction
 
+from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
@@ -9,7 +11,6 @@ from sqlalchemy.orm.collections import InstrumentedList
 from sqlalchemy.exc import IntegrityError
 from zope.sqlalchemy import ZopeTransactionExtension
 import sqlahelper
-from datetime import  datetime, date
 
 Base = sqlahelper.get_base()
 DBSession = sqlahelper.get_session()
@@ -21,9 +22,7 @@ def record_to_appstruct(self):
 
 def record_to_multidict(self, filters=dict()):
     app_struct = record_to_appstruct(self)
-    print app_struct.items()
     def _convert(key, value):
-
         if value is None:
             return (key, '')
         elif isinstance(value, str) or isinstance(value, unicode):
@@ -61,7 +60,6 @@ def merge_session_with_post(session, post, filters={}):
     else:
         raise Exception(u'Invalid post type type= %s' % type(post))
 
-
 def add_and_flush(session):
     DBSession.add(session)
     DBSession.flush()
@@ -69,3 +67,8 @@ def add_and_flush(session):
 def merge_and_flush(session):
     DBSession.merge(session)
     DBSession.flush()
+
+class BaseModel(object):
+    updated_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime)
+    status = Column(Integer, default=1)
