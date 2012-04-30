@@ -14,28 +14,28 @@ class EventData(DataSet):
         abbreviated_title = u"シルク・ドゥ・ソレイユ「ZED （ゼッド）TM」Presented by JCB"
         start_on = datetime(2012,7,1,19,0)
         end_on = datetime(2012,9,30,19,0)
-        organization_id = OrganizationData.organization_0.id
+        organization = OrganizationData.organization_0
     class event_2:
         code = u"BLUEMAN2011"
         title = u"ブルーマングループ IN 東京 2011年"
         abbreviated_title = u"ブルーマングループ IN 東京 2011年"
         start_on = datetime(2012,8,1,19,0)
         end_on = datetime(2012,10,30,19,0)
-        organization_id = OrganizationData.organization_0.id
+        organization = OrganizationData.organization_0
     class event_3:
         code = u"BLUEMAN2012"
         title = u"ブルーマングループ IN 東京 2012年"
         abbreviated_title = u"ブルーマングループ IN 東京 2012年"
         start_on = datetime(2012,9,1,19,0)
         end_on = datetime(2012,11,30,19,0)
-        organization_id = OrganizationData.organization_0.id
+        organization = OrganizationData.organization_0
     class event_4:
         code = u"DISNEYICE"
         title = u"ディズニー・オン・アイス 「オールスターカーニバル」（名古屋）"
         abbreviated_title = u"ディズニー・オン・アイス 「オールスターカーニバル」（名古屋）"
         start_on = datetime(2012,9,1,19,0)
         end_on = datetime(2012,10,30,19,0)
-        organization_id = OrganizationData.organization_0.id
+        organization = OrganizationData.organization_0
 
 class PerformanceData(DataSet):
     class performance_1:
