@@ -44,7 +44,7 @@ class PerformanceData(DataSet):
         code = u'201207011800'
         open_on = datetime(2012,7,1,18,0)
         start_on = datetime(2012,7,1,19,0)
-        end_on = None
+        end_on = datetime(2012,7,1,21,0)
         no_period = False
         event = EventData.event_1
         venue = VenueData.venue_1
@@ -55,7 +55,7 @@ class PerformanceData(DataSet):
         code = u'201207011800'
         open_on = datetime(2012,7,2,18,0)
         start_on = datetime(2012,7,2,19,0)
-        end_on = None
+        end_on = datetime(2012,7,2,21,0)
         no_period = False
         event = EventData.event_1
         venue = VenueData.venue_1
@@ -66,7 +66,7 @@ class PerformanceData(DataSet):
         code = u'201207011800'
         open_on = datetime(2012,7,3,18,0)
         start_on = datetime(2012,7,3,19,0)
-        end_on = None
+        end_on = datetime(2012,7,3,21,0)
         no_period = False
         event = EventData.event_1
         venue = VenueData.venue_1
@@ -77,7 +77,7 @@ class PerformanceData(DataSet):
         code = u'201207011800'
         open_on = datetime(2012,7,4,18,0)
         start_on = datetime(2012,7,4,19,0)
-        end_on = None
+        end_on = datetime(2012,7,4,21,0)
         no_period = False
         event = EventData.event_1
         venue = VenueData.venue_1
@@ -88,7 +88,7 @@ class PerformanceData(DataSet):
         code = u'201207011800'
         open_on = datetime(2012,7,5,18,0)
         start_on = datetime(2012,7,5,19,0)
-        end_on = None
+        end_on = datetime(2012,7,5,21,0)
         no_period = False
         event = EventData.event_1
         venue = VenueData.venue_1
@@ -99,7 +99,7 @@ class PerformanceData(DataSet):
         code = u'201207011800'
         open_on = datetime(2012,7,5,18,0)
         start_on = datetime(2012,7,5,19,0)
-        end_on = None
+        end_on = datetime(2012,7,5,21,0)
         no_period = False
         event = EventData.event_2
         venue = VenueData.venue_2
@@ -110,7 +110,7 @@ class PerformanceData(DataSet):
         code = u'201207011800'
         open_on = datetime(2012,7,6,18,0)
         start_on = datetime(2012,7,6,19,0)
-        end_on = None
+        end_on = datetime(2012,7,6,21,0)
         no_period = False
         event = EventData.event_2
         venue = VenueData.venue_2
@@ -121,7 +121,7 @@ class PerformanceData(DataSet):
         code = u'201207011800'
         open_on = datetime(2012,7,7,18,0)
         start_on = datetime(2012,7,7,19,0)
-        end_on = None
+        end_on = datetime(2012,7,7,21,0)
         no_period = False
         event = EventData.event_2
         venue = VenueData.venue_2

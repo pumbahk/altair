@@ -1,0 +1,47 @@
+<%inherit file="../layout.html" />
+<%namespace file="/common/helpers.html" import="flash_messages" />
+
+<div class="row-fluid">
+  <%include file="../parts/_menu.html" />
+
+  <span class="span10">
+    <div class="page-header">
+      <h3></h3>
+    </div>
+
+    <div class="content">
+      ${flash_messages(request)}
+    </div>
+
+    <table class="table table-bordered fullwidth">
+      <tbody>
+        <tr>
+          <th>クライアント</th>
+          <td>
+            <ul>
+              <li>${account.name}</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <th></th>
+          <td></td>
+        </tr>
+        <tr>
+          <th></th>
+          <td></td>
+        </tr>
+        <tr>
+          <th></th>
+          <td></td>
+        </tr>
+        <tr>
+          <th></th>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <hr />
+  </span>
+</div>

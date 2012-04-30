@@ -20,6 +20,7 @@ class Account(Base, BaseModel):
     __tablename__ = "Account"
     id = Column(BigInteger, primary_key=True)
     account_type = Column(Integer)  # @see AccountTypeEnum
+    name = Column(String(255))
 
     user_id = Column(BigInteger, ForeignKey("User.id"), nullable=True)
     user = relationship('User')
@@ -76,11 +77,33 @@ class Event(Base, BaseModel):
     code = Column(String(12))
     title = Column(String(1024))
     abbreviated_title = Column(String(1024))
-    start_on = Column( DateTime, nullable=True)
-    end_on = Column( DateTime, nullable=True)
+    start_on = Column(DateTime, nullable=True)
+    end_on = Column(DateTime, nullable=True)
 
     organization_id = Column(BigInteger, ForeignKey('Organization.id'))
     performances = relationship('Performance', backref='event')
+
+    def __init__(self):
+        self._sales_start_on = None
+        self._sales_end_on = None
+        self._start_venue = None
+        self._final_venue = None
+
+    @property
+    def sales_start_on(self):
+        return self._sales_start_on
+
+    @property
+    def sales_end_on(self):
+        return self._sales_end_on
+
+    @property
+    def start_venue(self):
+        return self._start_venue
+
+    @property
+    def final_venue(self):
+        return self._final_venue
 
     @staticmethod
     def get(event_id):
