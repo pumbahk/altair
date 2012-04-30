@@ -81,6 +81,8 @@ class Event(Base, BaseModel):
     end_on = Column(DateTime, nullable=True)
 
     organization_id = Column(BigInteger, ForeignKey('Organization.id'))
+    organization = relationship('Organization', backref='events')
+
     performances = relationship('Performance', backref='event')
 
     def __init__(self):
