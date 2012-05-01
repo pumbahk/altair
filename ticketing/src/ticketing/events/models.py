@@ -52,7 +52,7 @@ class Performance(Base, BaseModel):
     venue_id = Column(BigInteger, ForeignKey('Venue.id'))
     owner_id = Column(BigInteger, ForeignKey('Account.id'))
 
-    stock_holders = relationship('StockHolder', uselist=False, backref='performance')
+    stock_holders = relationship('StockHolder', backref='performance')
     stocks = relationship('Stock', backref='performance')
     product_items = relationship('ProductItem', backref='performance')
     seat_types = relationship('SeatType', backref='performance')

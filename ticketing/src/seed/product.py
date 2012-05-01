@@ -2,6 +2,7 @@
 
 from seed import DataSet
 
+from seed.account import AccountData
 from seed.event import PerformanceData
 from seed.venue import SeatTypeData
 
@@ -44,20 +45,42 @@ class ProductItemData(DataSet):
         performance = PerformanceData.performance_1
         status = None
 
+class StockHolderData(DataSet):
+    class stock_holder_1:
+        name = u'ネット販売'
+        performance = PerformanceData.performance_1
+        account = AccountData.account_1
+    class stock_holder_2:
+        name = u'招待'
+        performance = PerformanceData.performance_1
+        account = AccountData.account_1
+    class stock_holder_3:
+        name = u'先行販売'
+        performance = PerformanceData.performance_1
+        account = AccountData.account_1
+    class stock_holder_4:
+        name = u'一般販売'
+        performance = PerformanceData.performance_1
+        account = AccountData.account_1
+
 class StockData(DataSet):
     class stock_1:
         quantity = 1000
         performance = PerformanceData.performance_1
         seat_type = SeatTypeData.seat_type_1
+        stock_holder = StockHolderData.stock_holder_1
     class stock_2:
         quantity = 800
         performance = PerformanceData.performance_1
         seat_type = SeatTypeData.seat_type_2
+        stock_holder = StockHolderData.stock_holder_1
     class stock_3:
         quantity = 500
         performance = PerformanceData.performance_1
         seat_type = SeatTypeData.seat_type_3
+        stock_holder = StockHolderData.stock_holder_1
     class stock_4:
         quantity = 0
         performance = PerformanceData.performance_1
         seat_type = SeatTypeData.seat_type_4
+        stock_holder = StockHolderData.stock_holder_1
