@@ -379,7 +379,7 @@ def top_layout():
     layout = Layout(
         title = u"ticketstar.top",
         template_filename = "ticketstar.top.mako",
-        blocks = '[["main", "side"]]',
+        blocks = '[["main"], ["main_left", "main_right"], ["main_bottom"], ["side"]]',
         site_id = 1, ##
         client_id = 1 ##
         )

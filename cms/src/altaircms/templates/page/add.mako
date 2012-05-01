@@ -5,8 +5,9 @@
 
 <%block name='style'>
 <style type="text/css">
+
   .alert{ margin:1%  }
-  .size1{ width:100%;  }
+  .size1{ width:84.5%;  }
   .size2{ width:34.5%; }
   .size3{ width:17.8%; }
   .left{ float:left; }
