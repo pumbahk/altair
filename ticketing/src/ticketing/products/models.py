@@ -39,6 +39,10 @@ class PaymentMethod(BaseModel,Base):
     payment_plugin_id = Column(BigInteger, ForeignKey('PaymentMethodPlugin.id'))
     payment_plugin = relationship('PaymentMethodPlugin', uselist=False)
 
+    @staticmethod
+    def all():
+        return session.query(PaymentMethod).all()
+
 class DeliveryMethod(BaseModel,Base):
     __tablename__ = 'DeliveryMethod'
     id = Column(BigInteger, primary_key=True)
@@ -48,6 +52,10 @@ class DeliveryMethod(BaseModel,Base):
     organization = relationship('Organization', uselist=False , backref='delivery_method_list')
     delivery_plugin_id = Column(BigInteger, ForeignKey('DeliveryMethodPlugin.id'))
     delivery_plugin = relationship('DeliveryMethodPlugin', uselist=False)
+
+    @staticmethod
+    def all():
+        return session.query(DeliveryMethod).all()
 
 class PaymentDeliveryMethodPair(BaseModel,Base):
     __tablename__ = 'PaymentDeliveryMethodPair'
@@ -257,5 +265,3 @@ class Product(BaseModel,Base):
     @staticmethod
     def get(product_id):
         return session.query(Product).filter(Product.id==product_id).first()
-
-

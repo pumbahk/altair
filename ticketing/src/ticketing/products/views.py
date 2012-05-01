@@ -4,7 +4,8 @@ from pyramid.view import view_config, view_defaults
 from ticketing.views import BaseView
 
 from ticketing.fanstatic import with_bootstrap
-from models import Product, SalesSegment, session
+from ticketing.products.forms import PaymentDeliveryMethodPairForm
+from ticketing.products.models import Product, SalesSegment, session
 
 @view_defaults(decorator=with_bootstrap)
 class Products(BaseView):
@@ -68,9 +69,20 @@ class ProductSegments(BaseView):
             'sales_segment':sales_segment,
         }
 
-    @view_config(route_name='products.sales_segments.new', renderer='ticketing:templates/products_segments/index.html')
-    def new(self):
-        return {}
+    @view_config(route_name='products.sales_segments.new', request_method='GET', renderer='ticketing:templates/products_segments/edit.html')
+    def new_get(self):
+        sales_segment_id = int(self.request.matchdict.get('sales_segment_id', 0))
+        sales_segment = session.query(SalesSegment).filter(SalesSegment.id == sales_segment_id).first()
+
+        f = PaymentDeliveryMethodPairForm()
+        return {
+            'form':f,
+            'sales_segment':sales_segment,
+        }
+
+    @view_config(route_name='products.sales_segments.new', request_method='POST', renderer='ticketing:templates/products_segments/edit.html')
+    def new_post(self):
+        pass
 
 
 @view_defaults(decorator=with_bootstrap)

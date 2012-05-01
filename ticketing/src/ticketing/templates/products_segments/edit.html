@@ -1,0 +1,39 @@
+<%inherit file="../layout.html"/>
+<%namespace file="/common/helpers.html" import="validate_errors" />
+<%namespace file="/common/helpers.html" import="alert_message" />
+<%namespace file="/common/helpers.html" import="flash_messages" />
+<%namespace file="/common/helpers.html" import="form_item" />
+
+<div class="row-fluid">
+  <%include file="../parts/_menu.html" />
+
+  <span class="span10">
+    <div class="page-header">
+      <h3>販売条件設定</h3>
+    </div>
+
+    <div class="content">
+      ${flash_messages(request)}
+      ${alert_message(form)}
+    </div>
+
+    <div class="well">
+      <form class="form-horizontal" action="" enctype="multipart/form-data" method="POST">
+        <fieldset>
+          ${form_item(form.transaction_fee, option={'style':'width:150px'})}
+          ${form_item(form.delivery_fee, option={'class':'span8'})}
+          ${form_item(form.discount, option={'class':'span4'})}
+          ${form_item(form.discount_unit)}
+          ${form_item(form.discount_type)}
+          ${form_item(form.start_at)}
+          ${form_item(form.end_at)}
+          ${form_item(form.payment_method_id)}
+          ${form_item(form.delivery_method_id)}
+        </fieldset>
+        <div class="form-actions">
+          <input class="btn btn-primary" type="submit" name="submit" value="保存">
+        </div>
+      </form>
+    </div>
+  </span>
+</div>
