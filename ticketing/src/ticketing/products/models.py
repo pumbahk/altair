@@ -94,6 +94,8 @@ class SalesSegmentSet(BaseModel,Base):
     event_id = Column(BigInteger, ForeignKey('Event.id'), nullable=True)
     event = relationship('Event', uselist=False)
 
+    sales_segment = relationship('SalesSegment', uselist=False)
+
 buyer_condition_set_table =  Table('BuyerConditionSet', Base.metadata,
     Column('id', Integer, primary_key=True),
     Column('buyer_condition_id', BigInteger, ForeignKey('BuyerCondition.id')),
@@ -210,6 +212,7 @@ class Product(BaseModel,Base):
     price = Column(BigInteger)
 
     items = relationship('ProductItem', backref='product')
+    sales_segment_set = relationship('SalesSegmentSet', uselist=False)
 
     @staticmethod
     def find(performance_id = None, event_id = None):

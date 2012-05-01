@@ -21,21 +21,11 @@ class Performances(BaseView):
     def show(self):
         performance_id = int(self.request.matchdict.get('performance_id', 0))
         performance = Performance.get(performance_id)
-
-        class product(object):
-            def __init__(self,id,name,price):
-                self.id = id
-                self.name = name
-                self.price = price
+        products = Product.find(performance_id)
 
         return {
-            'performance' : performance,
-            'products'      : [
-                product(1, u'S席 大人', 8000),
-                product(2, u'S席 子供', 8000),
-                product(3, u'A席 大人', 8000),
-                product(4, u'A席 子供', 8000)
-            ]
+            'performance':performance,
+            'products': products,
         }
 
     @view_config(route_name='performances.new', request_method='GET', renderer='ticketing:templates/performances/edit.html')

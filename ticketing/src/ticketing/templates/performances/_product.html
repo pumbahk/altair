@@ -100,15 +100,21 @@
   </thead>
   <tbody>
   % for product in products:
-   <tr>
-     <th class="minwidth"><input type="checkbox" class="__action__-select_all" /></th>
-     <td>${product.id}</td>
-     <td><a data-toggle="modal" href="#modal-product-edit">${product.name}</a></td>
-     <td>${product.price}</td>
-     <td></td>
-     <td></td>
-     <td></td>
-   </tr>
+  <tr>
+    <th class="minwidth"><input type="checkbox" class="__action__-select_all" /></th>
+    <td>${product.id}</td>
+    <td><a data-toggle="modal" href="#modal-product-edit">${product.name}</a></td>
+    <td>${product.price}</td>
+    % if product.sales_segment_set:
+    <td>${product.sales_segment_set.sales_segment.name}</td>
+    <td>${product.sales_segment_set.sales_segment.start_at}</td>
+    <td>${product.sales_segment_set.sales_segment.end_at}</td>
+    % else:
+    <td></td>
+    <td></td>
+    <td></td>
+    % endif
+  </tr>
   % endfor
   </tbody>
 </table>

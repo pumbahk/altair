@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
+from datetime import datetime
 from seed import DataSet
 
 from seed.account import AccountData
-from seed.event import PerformanceData
+from seed.event import PerformanceData, EventData
 from seed.venue import SeatTypeData
 
 class ProductData(DataSet):
@@ -84,3 +85,15 @@ class StockData(DataSet):
         performance = PerformanceData.performance_1
         seat_type = SeatTypeData.seat_type_4
         stock_holder = StockHolderData.stock_holder_1
+
+class SalesSegmentSetData(DataSet):
+    class sales_segment_set_1:
+        product = ProductData.product_1
+        event = EventData.event_1
+
+class SalesSegmentData(DataSet):
+    class sales_segment_1:
+        name = u'販売区分1'
+        sales_segment_set = SalesSegmentSetData.sales_segment_set_1
+        start_at = datetime(2012,5,1,12,0)
+        end_at = datetime(2012,7,1,12,0)
