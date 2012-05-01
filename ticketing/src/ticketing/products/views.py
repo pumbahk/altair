@@ -4,7 +4,7 @@ from pyramid.view import view_config, view_defaults
 from ticketing.views import BaseView
 
 from ticketing.fanstatic import with_bootstrap
-from models import Product, ProductItem
+from models import Product, SalesSegment, session
 
 @view_defaults(decorator=with_bootstrap)
 class Products(BaseView):
@@ -49,17 +49,33 @@ class Products(BaseView):
     def json_update(self):
         return dict()
 
+
 @view_defaults(decorator=with_bootstrap)
 class ProductSegments(BaseView):
+
     @view_config(route_name='products.sales_segments', renderer='ticketing:templates/products_segments/index.html')
     def index(self):
-        return {}
+        sales_segments = session.query(SalesSegment).all()
+        return {
+            'sales_segments':sales_segments,
+        }
+
+    @view_config(route_name='products.sales_segments.show', renderer='ticketing:templates/products_segments/show.html')
+    def show(self):
+        sales_segment_id = int(self.request.matchdict.get('sales_segment_id', 0))
+        sales_segment = session.query(SalesSegment).filter(SalesSegment.id == sales_segment_id).first()
+        return {
+            'sales_segment':sales_segment,
+        }
+
     @view_config(route_name='products.sales_segments.new', renderer='ticketing:templates/products_segments/index.html')
-    def index(self):
+    def new(self):
         return {}
+
 
 @view_defaults(decorator=with_bootstrap)
 class PaymentDeliveryMethod(BaseView):
+
     @view_config(route_name='products.payment_delivery_method', renderer='ticketing:templates/delivery_method/index.html')
     def index(self):
         return {}

@@ -55,7 +55,7 @@ class PaymentDeliveryMethodPair(BaseModel,Base):
     id = Column(BigInteger, primary_key=True)
 
     sales_segment_id = Column(BigInteger, ForeignKey('SalesSegment.id'))
-    sales_segment = relationship('SalesSegment')
+    sales_segment = relationship('SalesSegment', backref='payment_delivery_method_pair')
 
     payment_method_id = Column(BigInteger, ForeignKey('PaymentMethod.id'))
     payment_method = relationship('PaymentMethod')

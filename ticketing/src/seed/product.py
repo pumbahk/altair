@@ -93,7 +93,12 @@ class SalesSegmentSetData(DataSet):
 
 class SalesSegmentData(DataSet):
     class sales_segment_1:
-        name = u'販売区分1'
+        name = u'先行販売'
         sales_segment_set = SalesSegmentSetData.sales_segment_set_1
         start_at = datetime(2012,5,1,12,0)
         end_at = datetime(2012,7,1,12,0)
+    class sales_segment_2:
+        name = u'予約販売'
+        sales_segment_set = SalesSegmentSetData.sales_segment_set_1
+        start_at = datetime(2012,3,1,12,0)
+        end_at = datetime(2012,5,1,12,0)

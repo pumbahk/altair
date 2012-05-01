@@ -1,0 +1,58 @@
+<%inherit file="../layout.html"/>
+<%namespace file="/common/helpers.html" import="pager"/>                                               
+<%namespace file="/common/helpers.html" import="flash_messages" />
+
+<div class="row-fluid">
+  <%include file="../parts/_menu.html" />
+
+  <span class="span10">
+    <div class="page-header">
+      <h3>販売条件設定</h3>
+    </div>
+
+    <div class="content">
+      ${flash_messages(request)}
+    </div>
+
+    <div class="well">
+      <table class="table fullwidth checkboxed_table">
+        <tr>
+          <th>名称</th>
+          <td>${sales_segment.name}</td>
+        </tr>
+        <tr>
+          <th>開始</th>
+          <td>${sales_segment.start_at}</td>
+        </tr>
+        <tr>
+          <th>終了</th>
+          <td>${sales_segment.end_at}</td>
+        </tr>
+      </table>
+    </div>
+    <div class="well">
+      <table class="table fullwidth checkboxed_table">
+        <tr>
+          <th>決済方法</th>
+          <th>配送方法</th>
+          <th>transaction_fee</th>
+          <th>delivery_fee</th>
+          <th>discount</th>
+          <th>discount_unit</th>
+          <th>discount_type</th>
+        </tr>
+        % for i, payment_delivery_method_pair in enumerate(sales_segment.payment_delivery_method_pair):
+        <tr>
+          <td>${payment_delivery_method_pair.payment_method.name}</td>
+          <td>${payment_delivery_method_pair.delivery_method.name}</td>
+          <td>${payment_delivery_method_pair.transaction_fee}</td>
+          <td>${payment_delivery_method_pair.delivery_fee}</td>
+          <td>${payment_delivery_method_pair.discount}</td>
+          <td>${payment_delivery_method_pair.discount_unit}</td>
+          <td>${payment_delivery_method_pair.discount_type}</td>
+        </tr>
+        % endfor
+      </table>
+    </div>
+  </span>
+</div>

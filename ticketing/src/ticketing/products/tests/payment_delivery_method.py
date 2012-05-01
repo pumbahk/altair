@@ -3,6 +3,7 @@
 from fixture import DataSet
 from datetime import datetime
 
+from seed.product import SalesSegmentData
 #from seed.organization import OrganizationData
 
 class PaymentMethodPluginData(DataSet):
@@ -87,6 +88,50 @@ class DeliveryMethodData(DataSet):
         fee         = 100
 #        organization = OrganizationData.organization_0
         delivery_plugin = DeliveryMethodPluginData.CvsSEJ
+        updated_at  = datetime.now()
+        created_at  = datetime.now()
+        status      = 1
+
+class PaymentDeliveryMethodPairData(DataSet):
+    class paiment_delivery_method_pair_1:
+        transaction_fee = 10
+        delivery_fee = 0
+        discount    = 0
+        discount_unit = 0
+        discount_type = 0
+        start_at    = None
+        end_at      = None
+        sales_segment = SalesSegmentData.sales_segment_1
+        payment_method = PaymentMethodData.rakuten_kc
+        delivery_method = DeliveryMethodData.cvs
+        updated_at  = datetime.now()
+        created_at  = datetime.now()
+        status      = 1
+    class paiment_delivery_method_pair_2:
+        transaction_fee = 20
+        delivery_fee = 10
+        discount    = 1
+        discount_unit = 1
+        discount_type = 1
+        start_at    = None
+        end_at      = None
+        sales_segment = SalesSegmentData.sales_segment_1
+        payment_method = PaymentMethodData.rakuten_anshin
+        delivery_method = DeliveryMethodData.send
+        updated_at  = datetime.now()
+        created_at  = datetime.now()
+        status      = 1
+    class paiment_delivery_method_pair_3:
+        transaction_fee = 20
+        delivery_fee = 10
+        discount    = 1
+        discount_unit = 1
+        discount_type = 1
+        start_at    = None
+        end_at      = None
+        sales_segment = SalesSegmentData.sales_segment_2
+        payment_method = PaymentMethodData.rakuten_anshin
+        delivery_method = DeliveryMethodData.send
         updated_at  = datetime.now()
         created_at  = datetime.now()
         status      = 1

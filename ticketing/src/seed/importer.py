@@ -41,7 +41,7 @@ from venue import VenueData, SeatMasterData, SeatTypeData, SeatMasterL2Data
 from product import ProductData, ProductItemData, StockData, StockHolderData, SalesSegmentSetData, SalesSegmentData
 from user import UserData, UserProfileData, UserCredentialData
 from ticketing.bookmark.tests.bookmark import BookmarkData
-from ticketing.products.tests.payment_delivery_method import DeliveryMethodPluginData, PaymentMethodPluginData, DeliveryMethodData, PaymentMethodData
+from ticketing.products.tests.payment_delivery_method import DeliveryMethodPluginData, PaymentMethodPluginData, DeliveryMethodData, PaymentMethodData, PaymentDeliveryMethodPairData
 
 from ticketing.oauth2.models import Service
 from ticketing.operators.models import Operator, OperatorActionHistory, OperatorRole, Permission
@@ -78,7 +78,8 @@ db_fixture = SQLAlchemyFixture(
          'DeliveryMethodPluginData' : DeliveryMethodPlugin,
          'PaymentMethodPluginData'  : PaymentMethodPlugin,
          'DeliveryMethodData'       : DeliveryMethod,
-         'PaymentMethodData'        : PaymentMethod
+         'PaymentMethodData'        : PaymentMethod,
+         'PaymentDeliveryMethodPairData' : PaymentDeliveryMethodPair,
      },
      engine=engine,
 )
@@ -117,7 +118,7 @@ data = db_fixture.data(
     DeliveryMethodPluginData,
     PaymentMethodPluginData,
     DeliveryMethodData,
-    PaymentMethodData
+    PaymentMethodData,
+    PaymentDeliveryMethodPairData
 )
 data.setup()
-
