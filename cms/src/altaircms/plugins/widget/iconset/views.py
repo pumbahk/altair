@@ -36,4 +36,4 @@ class IconsetWidgetView(object):
     def dialog(self):
         context = self.request.context
         widget = context.get_widget(self.request.GET.get("pk"))
-        return {}
+        return {"widget": widget}

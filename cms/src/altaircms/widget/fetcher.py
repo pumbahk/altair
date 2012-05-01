@@ -1,4 +1,5 @@
 import logging
+from altaircms.models import DBSession
 
 class WidgetFetchException(Exception):
     pass
@@ -10,7 +11,6 @@ class WidgetFetcher(object):
     def __init__(self, session=None):
         self.session=session
         if session is None:
-            from altaircms.models import DBSession
             self.session = DBSession
 
     def fetch(self, name, pks):
