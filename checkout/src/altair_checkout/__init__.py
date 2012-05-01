@@ -1,4 +1,7 @@
+# -*- coding:utf-8 -*-
+
 from .interfaces import ISigner
+from . import api
 
 def includeme(config):
     """ 
@@ -10,8 +13,19 @@ def includeme(config):
 
     utilities = config.registry.utilities
 
-    utilities.register(config.maybe_dotted('.api.sign_hmac_sha1'), ISigner, name="hmac-sha1")
-    utilities.register(config.maybe_dotted('.api.sign_hmac_md5'), ISigner, name="hmac-md5")
+    secret = config.registry.settings['altair_checkout.secret']
+    authmethod = config.registry.settings['altair_checkout.authmethod']
+
+    hmac_sha1_signer = api.HMAC_SHA1(secret)
+    hmac_md5_signer = api.HMAC_MD5(secret)
+    utilities.register([], ISigner, "HMAC-SHA1", hmac_sha1_signer)
+    utilities.register([], ISigner, "HMAC-MD5", hmac_md5_signer)
+
+    if authmethod == "HMAC-SHA1":
+        utilities.register([], ISigner, "", hmac_sha1_signer)
+    elif authmethod == "HMAC-MD5":
+        utilities.register([], ISigner, "", hmac_md5_signer)
+
 
     
     
