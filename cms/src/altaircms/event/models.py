@@ -5,6 +5,7 @@ import sqlalchemy.orm as orm
 from altaircms.models import Base, BaseOriginalMixin
 from altaircms.models import DBSession
 from datetime import datetime
+from datetime import timedelta
 
 class Event(BaseOriginalMixin, Base):
     """
@@ -32,6 +33,20 @@ class Event(BaseOriginalMixin, Base):
     is_searchable = sa.Column(sa.Integer, default=0)
 
     client_id = sa.Column(sa.Integer, sa.ForeignKey("client.id"))
+
+    @classmethod
+    def near_the_deal_close_query(cls, today, N=7, qs=None):
+        """ 現在から販売終了N日前までのqueryを返す"""
+        limit_day = today + timedelta(days=N)
+        where = (cls.deal_open >= today) & (cls.deal_close <= limit_day)
+        return (qs or cls.query).filter(where)
+
+    @classmethod
+    def deal_start_this_week_query(cls, today, offset=None, qs=None):
+        """今週販売開始するquery(月曜日を週のはじめとする)"""
+        start_day  = today + timedelta(days=offset or -today.weekday())
+        where = (cls.deal_open >= start_day)
+        return (qs or cls.query).filter(where)
 
     @property
     def short_title(self):

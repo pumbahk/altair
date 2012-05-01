@@ -145,6 +145,13 @@ add_topic_widget = functools.partial(
     import_symbol("altaircms.plugins.widget.topic.models:TopicWidget").type, 
     )
 
+add_linklist_widget = functools.partial(
+    add_widget, 
+    import_symbol("altaircms.plugins.widget.linklist.views:LinklistWidgetView"), 
+    import_symbol("altaircms.plugins.widget.linklist.models:LinklistWidgetResource"), 
+    import_symbol("altaircms.plugins.widget.linklist.models:LinklistWidget").type, 
+    )
+
 ## settings
 
 
@@ -264,8 +271,6 @@ def detail_page(layout, event):
                        version= None)
     detail_page_set = PageSet.get_or_create(detail_page)
     detail_page_set.parent = other_page_set
-    detail_page_set.event = event
-
     return detail_page
 
 
@@ -501,13 +506,44 @@ def add_top_main_block_widgets(page):
                "display_page": True}
     add_topic_widget(page, "main", params)
 
+    params = {"finder_kind": "nearTheEnd", 
+              "delimiter": u"/"}
+    add_linklist_widget(page, "main", params)
+
+    params = {"finder_kind": "thisWeek", 
+              "delimiter": u"/"}
+    add_linklist_widget(page, "main", params)
+
+def top_event_and_page_for_linklist_widget():
+    today = datetime.datetime.today()
+    def create_material(title, offset):
+        delta = datetime.timedelta(days=offset)
+        event = Event(title= title, 
+                      event_open=delta+today, 
+                      event_close=datetime.timedelta(100)+today, 
+                      deal_open=delta+today, 
+                      deal_close=datetime.timedelta(100)+today)
+        page = Page(layout_id=1, ##
+                    url=title,  ##
+                    title=title, 
+                    event=event)
+        PageSet.get_or_create(page)
+        return page
+    return [create_material(u"明日つくられるイベント", 1), 
+            create_material(u"今日作られたイベント", 0), 
+            create_material(u"昨日つくられたイベント", -1), 
+            create_material(u"一昨日つくられたイベント", -2)
+            ]
+
 def add_top_page_settings():
     layout = top_layout()
+    materials = top_event_and_page_for_linklist_widget()
     page = top_page(layout)
     topics = top_topics(page)
     topcontents = top_topcontents(page)
 
     DBSession.add(page)
+    DBSession.add_all(materials)
     DBSession.add_all(topics)
     DBSession.add_all(topcontents)
     add_top_main_block_widgets(page)

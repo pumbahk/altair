@@ -38,7 +38,7 @@ class PublishUnpublishMixin(object):
 class HasAncestorMixin(object):
     ## require self.parent
     @property
-    def ancestors(self, includeme=False): 
+    def ancestors(self, includeme=False): ## fixme rename `includeme' keyword
         """ return ancestors (order: parent, grand parent, ...)
         """
         r = []
