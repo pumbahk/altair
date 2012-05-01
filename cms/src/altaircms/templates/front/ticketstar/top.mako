@@ -42,6 +42,13 @@
 	<!-- ========== main ========== -->
 	<div id="main">
 	  <%block name="main"/>
+	  <div id="mainLeft">
+		<%block name="main_left"/>
+	  </div>
+	  <div id="mainRight">
+		<%block name="main_right"/>
+	  </div>
+	  <%block name="main_bottom"/>
 	</div>
 	<!-- ========== /main ========== -->
 	

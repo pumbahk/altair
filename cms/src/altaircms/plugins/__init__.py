@@ -15,4 +15,5 @@ def includeme(config):
     config.include(".widget.reuse", route_prefix="api")
     config.include(".widget.iconset", route_prefix="api")
     config.include(".widget.linklist", route_prefix="api")
+    config.include(".widget.heading", route_prefix="api")
     config.scan(".")

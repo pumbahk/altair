@@ -1,6 +1,28 @@
 @charset "utf-8";
 
 /*
+ for layout in toppage
+*/
+
+#index #mainLeft {
+	width: 342px;
+    float: left;
+}
+
+#index #mainRight {
+	width: 342px;
+    float: left;
+}
+
+/* using left,right instead of bellows */
+#index #thisWeek {
+	width: auto;
+}
+#index #nearTheEnd {
+	width: auto;
+}
+
+/*
    for calendar widget layout
 */
 #detailSchedule tbody td{
@@ -10,6 +32,19 @@
 #detailSchedule th.month-col {
 	width: 20px;
 }
+
+/* 
+   for heading widget
+*/
+  .index-heading {
+   background-repeat: no-repeat;
+   background-image:url(/static/ticketstar/img/index/bg_heading.gif);
+   color: #fff;
+   padding: 6px;
+   padding-left: 15px;
+   /* font-size: 20px; */
+  }
+
 
 /*
   for ticket icon 

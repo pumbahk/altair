@@ -12,12 +12,22 @@
    ${widgets("main")}
 <hr/><hr/><hr/><hr/><hr/><hr/>
         ${main_co.slideShow()}
-        ${main_co.topics()}
-        ${main_co.events()}
-        ${main_co.eventRecommend()}
-        ${main_co.thisWeek()}
-        ${main_co.nearTheEnd()}
+##        ${main_co.topics()}
+##        ${main_co.events()}
+##        ${main_co.thisWeek()}
+##        ${main_co.nearTheEnd()}
         ${main_co.checkEvent()}
+</%block>
+
+<%block name="main_left">
+   ${widgets("main_left")}
+</%block>
+<%block name="main_right">
+   ${widgets("main_right")}
+</%block>
+<%block name="main_bottom">
+   ${widgets("main_bottom")}
+   ${main_co.eventRecommend()}
 </%block>
 
 <%block name="side">

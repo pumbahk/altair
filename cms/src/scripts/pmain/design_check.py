@@ -152,6 +152,14 @@ add_linklist_widget = functools.partial(
     import_symbol("altaircms.plugins.widget.linklist.models:LinklistWidget").type, 
     )
 
+add_heading_widget = functools.partial(
+    add_widget, 
+    import_symbol("altaircms.plugins.widget.heading.views:HeadingWidgetView"), 
+    import_symbol("altaircms.plugins.widget.heading.models:HeadingWidgetResource"), 
+    import_symbol("altaircms.plugins.widget.heading.models:HeadingWidget").type, 
+    )
+
+
 ## settings
 
 
@@ -492,12 +500,20 @@ def top_topcontents(page):
         ]
 
 def add_top_main_block_widgets(page):
+    params = dict(kind=u"チケットスター：トップページ見出し", 
+                  text=u"トピックス")
+    add_heading_widget(page, "main", params)
+
     params =  {"kind": u"トピックス", 
                "display_count": 5, 
                "display_global": True, 
                "display_event": True, 
                "display_page": True}
     add_topic_widget(page, "main", params)
+
+    params = dict(kind=u"チケットスター：トップページ見出し", 
+                  text=u"注目のイベント")
+    add_heading_widget(page, "main", params)
 
     params =  {"kind": u"注目のイベント", 
                "display_count": 6, 
@@ -506,13 +522,21 @@ def add_top_main_block_widgets(page):
                "display_page": True}
     add_topic_widget(page, "main", params)
 
-    params = {"finder_kind": "nearTheEnd", 
-              "delimiter": u"/"}
-    add_linklist_widget(page, "main", params)
+    params = dict(kind=u"チケットスター：トップページ見出し", 
+                  text=u"今週発売のチケット")
+    add_heading_widget(page, "main_left", params)
 
     params = {"finder_kind": "thisWeek", 
               "delimiter": u"/"}
-    add_linklist_widget(page, "main", params)
+    add_linklist_widget(page, "main_left", params)
+
+    params = dict(kind=u"チケットスター：トップページ見出し", 
+                  text=u"販売終了間近")
+    add_heading_widget(page, "main_right", params)
+
+    params = {"finder_kind": "nearTheEnd", 
+              "delimiter": u"/"}
+    add_linklist_widget(page, "main_right", params)
 
 def top_event_and_page_for_linklist_widget():
     today = datetime.datetime.today()
