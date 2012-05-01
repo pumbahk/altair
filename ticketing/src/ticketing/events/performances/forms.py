@@ -44,3 +44,11 @@ class PerformanceForm(Form):
         coerce=int
     )
 
+class StockHolderForm(Form):
+    name = TextField(
+        label=u'枠名',
+        validators=[
+            Required(u'入力してください'),
+            Length(max=255, message=u'255文字以内で入力してください'),
+            ],
+    )

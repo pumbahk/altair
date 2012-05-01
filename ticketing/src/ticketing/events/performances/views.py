@@ -11,8 +11,8 @@ from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.events.models import session, Event, Performance
-from ticketing.events.performances.forms import PerformanceForm
-from ticketing.products.models import Product
+from ticketing.events.performances.forms import PerformanceForm, StockHolderForm
+from ticketing.products.models import Product, StockHolder
 from ticketing.venues.models import Venue
 
 @view_defaults(decorator=with_bootstrap)
@@ -108,5 +108,20 @@ class Performances(BaseView):
         Performance.delete(performance)
 
         self.request.session.flash(u'パフォーマンスを削除しました')
-        return HTTPFound(location=route_path('performances.index', self.request))
+        return HTTPFound(location=route_path('events.index', self.request))
 
+    @view_config(route_name='performances.stock_holder.new')
+    def new_stock_holder(self):
+        performance_id = int(self.request.matchdict.get('performance_id', 0))
+        performance = Performance.get(performance_id)
+        if performance is None:
+            return HTTPNotFound('performance id %d is not found' % performance_id)
+
+        f = StockHolderForm(self.request.POST)
+        if f.validate():
+            stock_holder = merge_session_with_post(StockHolder(), f.data)
+            stock_holder.performance_id = performance.id
+            StockHolder.add(stock_holder)
+            self.request.session.flash(u'枠を保存しました')
+
+        return HTTPFound(location=route_path('performances.show', self.request, performance_id=performance.id))

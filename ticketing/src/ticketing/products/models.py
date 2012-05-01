@@ -146,6 +146,10 @@ class StockHolder(BaseModel,Base):
 
     stocks = relationship('Stock', backref='stock_holder')
 
+    @staticmethod
+    def add(stock_holder):
+        session.add(stock_holder)
+
 # stock based on quantity
 class Stock(BaseModel,Base):
     __tablename__ = "Stock"

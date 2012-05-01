@@ -11,6 +11,11 @@
 </style>
 
 <script type="text/javascript">
+  function add() {
+    $('#modal-new-stock-group-own').modal('toggle');
+    $('#modal-new-stock-group-own #edit').attr('action', '/events/performances/stock_holder/new/' + ${performance.id});
+  }
+
   $('#modal-edit').on('hidden', function () {
     // do something…
   })
@@ -42,7 +47,7 @@
                   <b class="caret"></b>
                 </a>
                 <ul class="dropdown-menu">
-                  <li><a data-toggle="modal" href="#modal-new-stock-group-own" >新規押さえ</a></li>
+                  <li><a data-toggle="modal" href="javascript:add()" >新規押さえ</a></li>
                   <li><a data-toggle="modal" href="#modal-new-stock-group-send" >新規配券先</a></li>
                   <li class="divider"></li>
                 </ul>
@@ -138,16 +143,11 @@
     <div class="modal-body">
       <label>枠</label>
       <input id="name" name="name" type="text" class="span3" placeholder="先行">
-      <label>席種</label>
-      <select id="seat_type_id" name="seat_type_id" class="span3">
-      </select>
-      <label>席数</label>
-      <input id="quantity" name="quantity" type="text" class="span3"> 席
     </div>
 
     <div class="modal-footer">
       <a href="#" class="btn" data-dismiss="modal">閉じる</a>
-      <a href="#" class="btn btn-primary">保存</a>
+      <input class="btn" type="submit" value="保存"></a>
     </div>
   </form>
 </div>
