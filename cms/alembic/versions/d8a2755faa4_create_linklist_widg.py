@@ -17,8 +17,8 @@ import sqlalchemy as sa
 def upgrade():
     op.create_table('widget_linklist',
                     sa.Column('id', sa.Integer(), nullable=False),
-                    sa.Column('items', sa.Unicode(length=255), nullable=True),
-                    sa.Column("kind", sa.String(length=32), nullable=False), 
+                    sa.Column("max_items", sa.Integer()), 
+                    sa.Column("finder_kind", sa.Unicode(length=32), nullable=False), 
                     sa.ForeignKeyConstraint(['id'], ['widget.id'], ),
                     sa.PrimaryKeyConstraint('id')
                     )

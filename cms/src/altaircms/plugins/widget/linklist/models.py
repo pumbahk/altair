@@ -17,7 +17,7 @@ from altaircms.security import RootFactory
 from .api import get_linklist_candidates_finder
 
 def linklist_render(widget, finder, request=None):
-    candidates = finder.find(request, widget.N, widget._today_function())
+    candidates = finder.find(request, widget.N, widget._today_function(), max_items=widget.max_items)
     content = widget.delimiter.join(candidates)
     return u'<div id="%s"><p>%s</p></div>' % (widget.finder_kind, content)
     
@@ -40,6 +40,7 @@ class LinklistWidget(Widget):
                         u"今週販売のチケット": "thisWeek"}
 
     ## fixme
+    max_items = sa.Column(sa.Integer, default=20)
     N = 7
     
     def merge_settings(self, bname, bsettings):

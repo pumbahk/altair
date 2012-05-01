@@ -91,6 +91,9 @@ class DynamicQueryDefault(object):
         qs = cls._filter_by_site(info, info.qs, info.request)
         from altaircms.widget.models import WidgetDisposition
         field.query = WidgetDisposition.enable_only_query(info.request.user, qs=qs)
+    @classmethod
+    def promotion(cls, info, qs, field):
+        field.query = cls._filter_by_site(qs, info.request)
 
 
 class myQuerySelectField(extfields.QuerySelectField):
