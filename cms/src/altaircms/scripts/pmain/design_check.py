@@ -17,6 +17,9 @@ from altaircms.models import Performance
 from altaircms.models import Ticket
 from altaircms.topic.models import Topic
 from altaircms.topcontent.models import Topcontent
+from altaircms.plugins.widget.promotion.models import (
+    Promotion, PromotionUnit
+)
 
 from altaircms.asset.helpers import create_asset
 
@@ -165,6 +168,9 @@ add_promotion_widget = functools.partial(
     import_symbol("altaircms.plugins.widget.promotion.models:PromotionWidgetResource"), 
     import_symbol("altaircms.plugins.widget.promotion.models:PromotionWidget").type, 
     )
+
+class Objlike(dict):
+    __getattr__ = dict.__getitem__
 
 ## settings
 
@@ -401,6 +407,37 @@ def top_page(layout):
     PageSet.get_or_create(top_page)
     return top_page
 
+
+def make_image_asset(path, **params):
+    from altaircms.asset.helpers import create_asset
+    captured = dict(type="image", 
+                    filepath=Objlike(filename=path, 
+                                     file=open(path, "rb")))
+    return create_asset(captured, params=params)
+
+def top_promotion(layout):
+    img_path = os.path.join(os.path.dirname(__file__), "../../altaircms/static/mock/img/")
+    def make_materials(i, imgname, thumbname):
+        main_image = make_image_asset(os.path.join(img_path, imgname), title=imgname)
+        thumbnail = make_image_asset(os.path.join(img_path, thumbname),title=thumbname)
+
+        page = Page(description=u'for promotion',
+                    keywords= u"promotion", 
+                    layout= layout, 
+                    title= u"%s for promotion" % imgname,
+                    url= imgname,
+                    structure= "{}", 
+                    version= None)
+        pageset = PageSet.get_or_create(page)
+
+        
+        return PromotionUnit(main_image=main_image, thumbnail=thumbnail, 
+                  text=u"何かここにメッセージ書く。ファイル名:%s" % imgname, 
+                  pageset=pageset)
+    punits = [make_materials(i, "%d.jpg" % i, "thumb.%d.jpg" % i) for i in range(1, 16)]
+    return Promotion(promotion_units=punits, 
+                     name=u"トップページ promotioin枠")
+    
 def top_topics(page):
     return [
         Topic(kind=u"トピックス", 
@@ -504,8 +541,9 @@ def top_topcontents(page):
                    )
         ]
 
-def add_top_main_block_widgets(page):
-    add_promotion_widget(page, "main", {})
+def add_top_main_block_widgets(page, promotion):
+    add_promotion_widget(page, "main", {"promotion_id": promotion.id})
+
     params = dict(kind=u"チケットスター：トップページ見出し", 
                   text=u"トピックス")
     add_heading_widget(page, "main", params)
@@ -571,12 +609,16 @@ def add_top_page_settings():
     page = top_page(layout)
     topics = top_topics(page)
     topcontents = top_topcontents(page)
+    promotion = top_promotion(layout)
 
     DBSession.add(page)
     DBSession.add_all(materials)
     DBSession.add_all(topics)
     DBSession.add_all(topcontents)
-    add_top_main_block_widgets(page)
+    DBSession.add(promotion)
+
+    DBSession.flush()
+    add_top_main_block_widgets(page, promotion)
 
 def main(env, args):
     # setup()

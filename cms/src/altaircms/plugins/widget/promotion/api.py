@@ -17,11 +17,10 @@ class RealPromotionManager(object):
         try:
             punit = request.context.PromotionUnit.query.filter_by(id=request.GET["promotion_unit_id"]).one()
             return {"id": punit.id, 
-                    "link": punit.link, 
+                    "link": punit.get_link(request), 
                     "src": h.asset.to_show_page(request, punit.main_image), 
                     "message": punit.text}
         except Exception, e:
-            print e
             logger.exception(e)
             return {}
 

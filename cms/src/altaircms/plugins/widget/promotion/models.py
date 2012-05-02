@@ -31,14 +31,14 @@ class Promotion(Base):
         punits = self.promotion_units
         selected = punits[idx]
         return PromotionInfo(
-            thumbnails=[pu.thumbnail for pu in punits], 
+            thumbnails=[h.asset.to_show_page(request, pu.thumbnail) for pu in punits], 
             idx=idx, 
             message=selected.text, 
-            main=selected.main_image, 
+            main=h.asset.to_show_page(request, selected.main_image), 
             main_link=selected.get_link(request), 
             links=[pu.get_link(request) for pu in punits], 
             interval_time = self.INTERVAL_TIME, 
-            unit_candidates = [pu.id for pu in punits]
+            unit_candidates = [int(pu.id) for pu in punits]
             )
 
 class PromotionUnit(Base):
@@ -88,7 +88,7 @@ class PromotionWidget(Widget):
             ## fixme real implementation
             from . import api
             pm = api.get_promotion_manager(request)
-            params = {"show_image": pm.show_image, "info": pm.promotion_info(request)}
+            params = {"show_image": pm.show_image, "info": pm.promotion_info(request, self.promotion)}
             return render(self.template_name, params, request=request)
 
         bsettings.add(bname, slideshow_render)
