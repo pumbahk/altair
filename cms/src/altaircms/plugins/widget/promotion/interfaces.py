@@ -3,7 +3,7 @@ from zope.interface import (
     )
 
 class IPromotionManager(Interface):
-    def promotion_info(request):
+    def promotion_info(request, *args, **kwargs):
         pass
 
     def main_image_info(request):
