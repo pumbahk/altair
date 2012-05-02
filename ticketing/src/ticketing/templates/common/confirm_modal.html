@@ -1,7 +1,7 @@
 <%doc>
   delete confirm dialog with confirm question
 </%doc> 
-<%def name="delete_modal(question)">
+<%def name="delete_modal(message)">
   <div id="delete-modal" class="modal hide fade">
     <div class="modal-header">
       <a href="#" class="close">&times;</a>
@@ -9,7 +9,7 @@
     </div>
 
     <div class="modal-body">
-      <p>${question}</p>
+      <p>${message}</p>
     </div>
 
     <div class="modal-footer">

@@ -1,4 +1,8 @@
 # -*- coding:utf-8 -*-
+
+from datetime import datetime
+from wtforms import DateTimeField
+
 '''
 http://blog.aodag.jp/2009/10/pythonenum.html
 '''
@@ -16,7 +20,7 @@ class EnumType(type):
 
     def __iter__(cls):
         return iter(cls._values)
-    
+
 class StandardEnum(object):
 
     __metaclass__ = EnumType
@@ -27,3 +31,18 @@ class StandardEnum(object):
 
     def __repr__(self):
         return "<%s.%s value=%s>" % (self.__class__.__name__, self.k, self.v)
+
+'''
+Customized field definition datetime format of "%Y-%m-%d %H:%M"
+'''
+class DateTimeField(DateTimeField):
+
+    def _value(self):
+        if self.raw_data:
+            try:
+                dt = datetime.strptime(self.raw_data[0], '%Y-%m-%d %H:%M:%S')
+                return dt.strftime(self.format)
+            except:
+                return u' '.join(self.raw_data)
+        else:
+            return self.data and self.data.strftime(self.format) or u''

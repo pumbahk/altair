@@ -1,8 +1,14 @@
-<%inherit file="../layout.html"/>
-<%namespace file="/common/helpers.html" import="pager"/>                                               
+<%inherit file="/layout.html"/>
+<%namespace file="/common/helpers.html" import="pager"/>
 <%namespace file="/common/helpers.html" import="flash_messages" />
+<%namespace file="/common/confirm_modal.html" import="delete_modal" />
 
 <script type="text/javascript">
+  function delete_event(id) {
+    $('#delete-modal').modal('toggle');
+    $('#delete-modal #delete').attr('href', '/events/delete/' + id);
+  }
+
   $('.new-performance').click(function(e) {
     e.preventDefault();
     var href = $(e.target).attr('href');
@@ -88,3 +94,5 @@
   </span>
   ${pager(events)}
 </div>
+
+${delete_modal(u'選択したイベントを削除します。よろしいですか？')}

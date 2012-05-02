@@ -2,11 +2,12 @@
 
 from datetime import datetime
 
-from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL
+from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL, func
 from sqlalchemy.orm import relationship, join, backref, column_property
 
 from ticketing.utils import StandardEnum
 from ticketing.models import Base, BaseModel
+from ticketing.products.models import SalesSegment, SalesSegmentSet
 
 import sqlahelper
 session = sqlahelper.get_session()
@@ -77,7 +78,7 @@ class Event(Base, BaseModel):
     code = Column(String(12))
     title = Column(String(1024))
     abbreviated_title = Column(String(1024))
-    start_on = Column(DateTime, nullable=True)
+    start_on = Column(DateTime)
     end_on = Column(DateTime, nullable=True)
 
     organization_id = Column(BigInteger, ForeignKey('Organization.id'))
@@ -85,49 +86,24 @@ class Event(Base, BaseModel):
 
     performances = relationship('Performance', backref='event')
 
-    def __init__(self):
-        self._sales_start_on = None
-        self._sales_end_on = None
-        self._start_venue = None
-        self._final_venue = None
-
     @property
     def sales_start_on(self):
-        return self._sales_start_on
+        data = session.query(func.min(SalesSegment.start_at)).join(SalesSegmentSet)\
+                .filter(SalesSegmentSet.event_id==self.id).first()
+        return data[0] if data else None
 
     @property
     def sales_end_on(self):
-        return self._sales_end_on
+        data = session.query(func.min(SalesSegment.end_at)).join(SalesSegmentSet)\
+                .filter(SalesSegmentSet.event_id==self.id).first()
+        return data[0] if data else None
 
     @property
-    def start_venue(self):
-        return self._start_venue
+    def start_performance(self):
+        return session.query(Performance).filter(Performance.event_id==self.id)\
+                .order_by('Performance.start_on asc').first()
 
     @property
-    def final_venue(self):
-        return self._final_venue
-
-    @staticmethod
-    def get(event_id):
-        return session.query(Event).filter(Event.id==event_id).first()
-
-    @staticmethod
-    def get_by_code(code):
-        return session.query(Event).filter(Event.code==code).first()
-
-    @staticmethod
-    def add(event):
-        session.add(event)
-
-    @staticmethod
-    def update(event):
-        session.merge(event)
-        session.flush()
-
-    @staticmethod
-    def delete(event):
-        session.delete(event)
-
-    @staticmethod
-    def all():
-        return session.query(Event).all()
+    def final_performance(self):
+        return session.query(Performance).filter(Performance.event_id==self.id)\
+                .order_by('Performance.start_on desc').first()

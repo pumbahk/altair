@@ -5,7 +5,6 @@ import webhelpers.paginate as paginate
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path
-from pyramid.security import authenticated_userid
 
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
@@ -27,9 +26,7 @@ class Accounts(BaseView):
 
         page_url = paginate.PageURL_WebOb(self.request)
         query = session.query(Account).order_by(sort + ' ' + direction)
-
-        user = Operator.get_by_login_id(authenticated_userid(self.request))
-        query = query.filter(Account.organization_id == int(user.organization_id))
+        query = query.filter(Account.organization_id == int(self.context.user.organization_id))
 
         accounts = paginate.Page(query.order_by(Account.id), page=current_page, items_per_page=10, url=page_url)
 

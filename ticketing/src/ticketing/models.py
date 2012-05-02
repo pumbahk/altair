@@ -69,6 +69,30 @@ def merge_and_flush(session):
     DBSession.flush()
 
 class BaseModel(object):
-    updated_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime)
+    updated_at = Column(DateTime, nullable=True)
+    deleted_at = Column(DateTime, nullable=True)
     status = Column(Integer, default=1)
+
+    @classmethod
+    def get(cls, id):
+        return DBSession.query(cls).filter(cls.id==id).first()
+
+    @classmethod
+    def all(cls):
+        return DBSession.query(cls).filter(cls.deleted_at==None).all()
+
+    def save(self):
+        if self.id:
+            self.updated_at = datetime.now()
+            DBSession.merge(self)
+        else:
+            self.created_at = datetime.now()
+            self.updated_at = datetime.now()
+            DBSession.add(self)
+        DBSession.flush()
+
+    def delete(self):
+        self.deleted_at = datetime.now()
+        DBSession.merge(self)
+        DBSession.flush()

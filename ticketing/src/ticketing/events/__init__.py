@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from ticketing.resources import *
 
 def includeme(config):
     config.include('ticketing.events.performances', route_prefix='performances')
