@@ -7,6 +7,16 @@ from wtforms.validators import Required, Email, Length, NumberRange,EqualTo,opti
 
 from ticketing.products.models import PaymentMethod, DeliveryMethod
 
+class ProductForm(Form):
+
+    name = TextField(u'商品名',
+        validators=[Required(u'入力してください')]
+    )
+    price = TextField(u'価格',
+        validators=[Required(u'入力してください')]
+    )
+
+
 class PaymentDeliveryMethodPairForm(Form):
 
     transaction_fee = IntegerField(u'決済手数料',

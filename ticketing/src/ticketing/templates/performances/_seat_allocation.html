@@ -11,7 +11,7 @@
 </style>
 
 <script type="text/javascript">
-  function add() {
+  function add_stock_holder() {
     $('#modal-new-stock-group-own').modal('toggle');
     $('#modal-new-stock-group-own #edit').attr('action', '/events/performances/stock_holder/new/' + ${performance.id});
   }
@@ -47,7 +47,7 @@
                   <b class="caret"></b>
                 </a>
                 <ul class="dropdown-menu">
-                  <li><a data-toggle="modal" href="javascript:add()" >新規押さえ</a></li>
+                  <li><a data-toggle="modal" href="javascript:add_stock_holder()" >新規押さえ</a></li>
                   <li><a data-toggle="modal" href="#modal-new-stock-group-send" >新規配券先</a></li>
                   <li class="divider"></li>
                 </ul>

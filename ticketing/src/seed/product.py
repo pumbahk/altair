@@ -86,19 +86,19 @@ class StockData(DataSet):
         seat_type = SeatTypeData.seat_type_4
         stock_holder = StockHolderData.stock_holder_1
 
-class SalesSegmentSetData(DataSet):
-    class sales_segment_set_1:
-        product = ProductData.product_1
-        event = EventData.event_1
-
 class SalesSegmentData(DataSet):
     class sales_segment_1:
         name = u'先行販売'
-        sales_segment_set = SalesSegmentSetData.sales_segment_set_1
         start_at = datetime(2012,5,1,12,0)
         end_at = datetime(2012,7,1,12,0)
     class sales_segment_2:
         name = u'予約販売'
-        sales_segment_set = SalesSegmentSetData.sales_segment_set_1
         start_at = datetime(2012,3,1,12,0)
         end_at = datetime(2012,5,1,12,0)
+
+class SalesSegmentSetData(DataSet):
+    class sales_segment_set_1:
+        product = ProductData.product_1
+        event = EventData.event_1
+        sales_segment = SalesSegmentData.sales_segment_1
+

@@ -1,23 +1,16 @@
 # -*- coding: utf-8 -*-
 
+from datetime import datetime
+
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL
 from sqlalchemy.orm import relationship, join, backref, column_property, mapper, relation
-
 import sqlahelper
 
-session = sqlahelper.get_session()
-Base = sqlahelper.get_base()
+from ticketing.models import Base, BaseModel
 from ticketing.utils import StandardEnum
-
-from ticketing.organizations.models import Organization
 from ticketing.venues.models import SeatMasterL2
-from ticketing.events.models import Account, Event
 
-class BaseModel(object):
-    updated_at  = Column(DateTime)
-    created_at  = Column(DateTime)
-    deleted_at  = Column(DateTime)
-    status      = Column(Integer, default=1)
+session = sqlahelper.get_session()
 
 class PaymentMethodPlugin(BaseModel,Base):
     __tablename__ = 'PaymentMethodPlugin'
@@ -86,9 +79,6 @@ class SalesSegment(BaseModel,Base):
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
 
-    sales_segment_set_id = Column(BigInteger, ForeignKey('SalesSegmentSet.id'), nullable=True)
-    sales_segment_set = relationship('SalesSegmentSet', uselist=False)
-
     start_at = Column(DateTime)
     end_at = Column(DateTime)
 
@@ -98,11 +88,25 @@ class SalesSegmentSet(BaseModel,Base):
 
     product_id = Column(BigInteger, ForeignKey('Product.id'), nullable=True)
     product = relationship('Product', uselist=False)
-
     event_id = Column(BigInteger, ForeignKey('Event.id'), nullable=True)
     event = relationship('Event', uselist=False)
+    sales_segment_id = Column(BigInteger, ForeignKey('SalesSegment.id'), nullable=True)
+    sales_segment = relationship('SalesSegment', uselist=False, backref='sales_segment_set')
 
-    sales_segment = relationship('SalesSegment', uselist=False)
+    @staticmethod
+    def find_by_product_id(product_id):
+        return session.query(SalesSegmentSet).filter(SalesSegmentSet.product_id == product_id).first()
+
+    @staticmethod
+    def add(sales_segment_set):
+        sales_segment_set.updated_at = datetime.now()
+        session.add(sales_segment_set)
+
+    @staticmethod
+    def update(sales_segment_set):
+        sales_segment_set.updated_at = datetime.now()
+        session.merge(sales_segment_set)
+        session.flush
 
 buyer_condition_set_table =  Table('BuyerConditionSet', Base.metadata,
     Column('id', Integer, primary_key=True),
@@ -262,6 +266,12 @@ class Product(BaseModel,Base):
         session.flush()
         return True
 
+    def update(self):
+        self.updated_at = datetime.now()
+        session.merge(self)
+        session.flush()
+
     @staticmethod
     def get(product_id):
         return session.query(Product).filter(Product.id==product_id).first()
+

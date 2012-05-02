@@ -12,7 +12,7 @@ from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.events.models import session, Event, Performance
 from ticketing.events.performances.forms import PerformanceForm, StockHolderForm
-from ticketing.products.models import Product, StockHolder
+from ticketing.products.models import Product, StockHolder, SalesSegment
 from ticketing.venues.models import Venue
 
 @view_defaults(decorator=with_bootstrap)
@@ -22,10 +22,12 @@ class Performances(BaseView):
         performance_id = int(self.request.matchdict.get('performance_id', 0))
         performance = Performance.get(performance_id)
         products = Product.find(performance_id)
+        sales_segments = session.query(SalesSegment).all()
 
         return {
             'performance':performance,
             'products': products,
+            'sales_segments':sales_segments,
         }
 
     @view_config(route_name='performances.new', request_method='GET', renderer='ticketing:templates/performances/edit.html')

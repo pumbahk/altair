@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 
 from pyramid.view import view_config, view_defaults
-from ticketing.views import BaseView
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 
 from ticketing.fanstatic import with_bootstrap
-from ticketing.products.forms import PaymentDeliveryMethodPairForm
-from ticketing.products.models import Product, SalesSegment, session
+from ticketing.models import merge_session_with_post
+from ticketing.views import BaseView
+from ticketing.products.forms import PaymentDeliveryMethodPairForm, ProductForm
+from ticketing.products.models import session, Product, SalesSegment, SalesSegmentSet
+from ticketing.events.models import Performance
 
 @view_defaults(decorator=with_bootstrap)
 class Products(BaseView):
@@ -43,12 +46,38 @@ class Products(BaseView):
     @view_config(route_name='products.json.show', renderer='json')
     def json_show(self):
         return dict()
+
     @view_config(route_name='products.json.new', renderer='json')
     def json_new(self):
         return dict()
+
     @view_config(route_name='products.json.update', renderer='json')
     def json_update(self):
-        return dict()
+        product_id = int(self.request.matchdict.get('product_id', 0))
+        product = Product.get(product_id)
+        if product is None:
+            return HTTPNotFound('product id %d is not found' % product_id)
+
+        performance_id = int(self.request.POST.get('performance_id', 0))
+        performance = Performance.get(performance_id)
+        if performance is None:
+            return HTTPNotFound('performance id %d is not found' % performance_id)
+
+        f = ProductForm(self.request.POST)
+        if f.validate():
+            record = merge_session_with_post(product, f.data)
+            Product.update(record)
+
+            sales_segment_set = SalesSegmentSet.find_by_product_id(product.id) or SalesSegmentSet()
+            sales_segment_set.sales_segment_id = int(self.request.POST.get('sales_segment_id'))
+            sales_segment_set.product_id = product.id
+            sales_segment_set.event_id = performance.event_id
+            SalesSegmentSet.update(sales_segment_set)
+
+            self.request.session.flash(u'商品を保存しました')
+            return {'success':True}
+        else:
+            return {'success':False}
 
 
 @view_defaults(decorator=with_bootstrap)
