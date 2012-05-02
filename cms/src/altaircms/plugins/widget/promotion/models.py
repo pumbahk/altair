@@ -18,24 +18,30 @@ from altaircms.security import RootFactory
 PromotionInfo = namedtuple("PromotionInfo", "idx thumbnails message main main_link links interval_time unit_candidates")
 
 class Promotion(Base):
+    query = DBSession.query_property()
     __tablename__ = "promotion"
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
     name = sa.Column(sa.Unicode(255), index=True)
     site_id = sa.Column(sa.Integer, sa.ForeignKey("site.id"))
     site = orm.relationship("Site")
 
+    INTERVAL_TIME = 5000
     def as_info(self, idx=0, limit=15):
         punits = self.promotion_units
         selected = punits[idx]
         return PromotionInfo(
-            idx=idx, 
             thumbnails=[pu.thunmnails for pu in punits], 
+            idx=idx, 
             message=selected.text, 
-            link=selected.link, 
-            main=selected.main_image
+            main=selected.main_image, 
+            main_link=selected.link, 
+            links=[pu.link for pu in punits], 
+            interval_time = self.INTERVAL_TIME, 
+            unit_candidates = [pu.id for pu in punits]
             )
 
 class PromotionUnit(Base):
+    query = DBSession.query_property()
     __tablename__ = "promotion_unit"
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
     promotion_id = sa.Column(sa.Integer, sa.ForeignKey("promotion.id"))

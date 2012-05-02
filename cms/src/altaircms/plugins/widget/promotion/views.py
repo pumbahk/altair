@@ -44,8 +44,8 @@ def promotion_main_image(context, request):
     pm = api.get_promotion_manager(request)
     return pm.main_image_info(request)
 
-@view_config(route_name="promotion_slideshow", renderer="altaircms.plugins.widget:promotion/slideshow.mako", request_method="GET", 
-             decorator="altaircms.lib.fanstatic_decorator.with_jquery")
-def promotion_slideshow(context, request):
-    pm = api.get_promotion_manager(request)
-    return {"show_image": pm.show_image, "info": pm.promotion_info(request)}
+# @view_config(route_name="promotion_slideshow", renderer="altaircms.plugins.widget:promotion/slideshow.mako", request_method="GET", 
+#              decorator="altaircms.lib.fanstatic_decorator.with_jquery")
+# def promotion_slideshow(context, request):
+#     pm = api.get_promotion_manager(request)
+#     return {"show_image": pm.show_image, "info": pm.promotion_info(request)}

@@ -1,5 +1,5 @@
 from zope.interface import directlyProvides
-
+import altaircms.helpers as h
 from .interfaces import IPromotionManager
 
 def get_promotion_manager(request):
@@ -7,16 +7,20 @@ def get_promotion_manager(request):
 
 class RealPromotionManager(object):
     @classmethod
-    def promotion_info(cls, request):
-        promotion = request.context.Promotion.filter(id=request.GET["promotion_id"])
-        return promotion.as_info(idx=request.GET["promotion_idx"], limit=request.GET.get("limit", None))
+    def promotion_info(cls, request, promotion, idx=0):
+        return promotion.as_info(idx=idx, limit=request.GET.get("limit", None))
     
     @classmethod
     def main_image_info(cls, request):
-        punit = request.context.PromotionUnit.filter_by(id=request.GET["promotion_unit_id"])
+        punit = request.context.PromotionUnit.filter_by(id=request.GET["promotion_unit_id"]).one()
         return {"id": punit.id, 
-                "main_image_id": punit.main_image.id, 
-                "main_message": punit.text}
+                "link": punit.link, 
+                "src": h.asset.to_show_page(request, punit.main_image), 
+                "message": punit.text}
+
+    @classmethod
+    def show_image(cls, image_path, href):
+        return '<a href="%s"><img src="%s"/></a>' % (href, image_path)
 directlyProvides(RealPromotionManager, IPromotionManager)
 
 ## mock
