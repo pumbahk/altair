@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from wtforms import Form
-from wtforms import (TextField, PasswordField, TextAreaField, DateField, DateTimeField,
-                     SelectField, SubmitField, HiddenField, BooleanField, FileField)
-from wtforms.validators import Required, Email, Length, NumberRange, EqualTo, Optional
-from wtforms.widgets import Select
+from wtforms import TextField, SelectField
+from wtforms.validators import Required, Regexp, Length, Optional
+
+from ticketing.utils import DateTimeField
 from ticketing.venues.models import Venue
 
 class PerformanceForm(Form):
@@ -19,6 +19,7 @@ class PerformanceForm(Form):
         label=u'公演コード',
         validators=[
             Required(u'入力してください'),
+            Regexp(u'^[a-zA-Z0-9]*$', message=u'英数字のみ入力できます'),
             Length(max=12, message=u'12文字以内で入力してください'),
         ],
     )
@@ -44,11 +45,19 @@ class PerformanceForm(Form):
         coerce=int
     )
 
+    def validate_start_on(form, field):
+        if field.data is not None and field.data < form.open_on.data:
+            raise ValidationError(u'開場日時より過去の日時は入力できません')
+
+    def validate_end_on(form, field):
+        if field.data is not None and field.data < form.start_on.data:
+            raise ValidationError(u'開演日時より過去の日時は入力できません')
+
 class StockHolderForm(Form):
     name = TextField(
         label=u'枠名',
         validators=[
             Required(u'入力してください'),
             Length(max=255, message=u'255文字以内で入力してください'),
-            ],
+        ],
     )

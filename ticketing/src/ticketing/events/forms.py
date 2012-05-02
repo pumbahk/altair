@@ -2,7 +2,7 @@
 
 from wtforms import Form
 from wtforms import TextField, IntegerField
-from wtforms.validators import Required, Regexp, Length, optional, ValidationError
+from wtforms.validators import Required, Regexp, Length, Optional, ValidationError
 
 from ticketing.utils import DateTimeField
 
@@ -36,10 +36,10 @@ class EventForm(Form):
     )
     end_on = DateTimeField(
         label = u'最終公演日時',
-        validators=[optional()],
+        validators=[Optional()],
         format='%Y-%m-%d %H:%M'
     )
 
     def validate_end_on(form, field):
         if field.data is not None and field.data < form.start_on.data:
-            raise ValidationError(u'開演日時より過去の日付は入力できません')
+            raise ValidationError(u'開演日時より過去の日時は入力できません')

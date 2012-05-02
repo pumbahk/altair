@@ -1,16 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime
-
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL, func
 from sqlalchemy.orm import relationship, join, backref, column_property
 
 from ticketing.utils import StandardEnum
-from ticketing.models import Base, BaseModel
+from ticketing.models import Base, BaseModel, DBSession
 from ticketing.products.models import Product, SalesSegment
-
-import sqlahelper
-session = sqlahelper.get_session()
 
 class AccountTypeEnum(StandardEnum):
     Promoter    = 1
@@ -30,15 +25,6 @@ class Account(Base, BaseModel):
     organization = relationship('Organization', uselist=False)
     stock_holders = relationship('StockHolder', uselist=False, backref='account')
 
-    @staticmethod
-    def get(account_id):
-        return session.query(Account).filter(Account.id == account_id).first()
-
-'''
-
- Event & Performance
-
-'''
 class Performance(Base, BaseModel):
     __tablename__ = 'Performance'
     id = Column(BigInteger, primary_key=True)
@@ -58,20 +44,6 @@ class Performance(Base, BaseModel):
     product_items = relationship('ProductItem', backref='performance')
     seat_types = relationship('SeatType', backref='performance')
 
-    @staticmethod
-    def get(performance_id):
-        return session.query(Performance).filter(Performance.id == performance_id).first()
-
-    @staticmethod
-    def add(performance):
-        session.add(performance)
-
-    @staticmethod
-    def update(performance):
-        performance.updated_at = datetime.now()
-        session.merge(performance)
-        session.flush()
-
 class Event(Base, BaseModel):
     __tablename__ = 'Event'
     id = Column(BigInteger, primary_key=True)
@@ -88,22 +60,22 @@ class Event(Base, BaseModel):
 
     @property
     def sales_start_on(self):
-        data = session.query(func.min(SalesSegment.start_at)).join(Product)\
+        data = DBSession.query(func.min(SalesSegment.start_at)).join(Product)\
         .filter(Product.event_id==self.id).first()
         return data[0] if data else None
 
     @property
     def sales_end_on(self):
-        data = session.query(func.min(SalesSegment.end_at)).join(Product)\
+        data = DBSession.query(func.min(SalesSegment.end_at)).join(Product)\
                 .filter(Product.event_id==self.id).first()
         return data[0] if data else None
 
     @property
     def start_performance(self):
-        return session.query(Performance).filter(Performance.event_id==self.id)\
+        return DBSession.query(Performance).filter(Performance.event_id==self.id)\
                 .order_by('Performance.start_on asc').first()
 
     @property
     def final_performance(self):
-        return session.query(Performance).filter(Performance.event_id==self.id)\
+        return DBSession.query(Performance).filter(Performance.event_id==self.id)\
                 .order_by('Performance.start_on desc').first()

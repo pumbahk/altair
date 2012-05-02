@@ -13,7 +13,7 @@
 <script type="text/javascript">
   function add_stock_holder() {
     $('#modal-new-stock-group-own').modal('toggle');
-    $('#modal-new-stock-group-own #edit').attr('action', '/events/performances/stock_holder/new/' + ${performance.id});
+    $('#modal-new-stock-group-own #edit').attr('action', '/events/performances/stock_holder/' + ${performance.id} + '/new');
   }
 
   $('#modal-edit').on('hidden', function () {

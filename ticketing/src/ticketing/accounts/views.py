@@ -7,11 +7,10 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path
 
 from ticketing.views import BaseView
+from ticketing.models import DBSession
 from ticketing.fanstatic import with_bootstrap
-from ticketing.events.models import session, Account
+from ticketing.events.models import Account
 from ticketing.accounts.forms import AccountForm
-from ticketing.operators.models import Operator
-import sqlahelper
 
 @view_defaults(decorator=with_bootstrap)
 class Accounts(BaseView):
@@ -25,7 +24,7 @@ class Accounts(BaseView):
             direction = 'asc'
 
         page_url = paginate.PageURL_WebOb(self.request)
-        query = session.query(Account).order_by(sort + ' ' + direction)
+        query = DBSession.query(Account).order_by(sort + ' ' + direction)
         query = query.filter(Account.organization_id == int(self.context.user.organization_id))
 
         accounts = paginate.Page(query.order_by(Account.id), page=current_page, items_per_page=10, url=page_url)

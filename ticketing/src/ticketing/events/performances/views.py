@@ -1,6 +1,5 @@
  # -*- coding: utf-8 -*-
 
-from datetime import datetime
 import webhelpers.paginate as paginate
 
 from pyramid.view import view_config, view_defaults
@@ -9,24 +8,26 @@ from pyramid.url import route_path
 
 from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
+from ticketing.models import DBSession
 from ticketing.fanstatic import with_bootstrap
-from ticketing.events.models import session, Event, Performance
+from ticketing.events.models import Event, Performance
 from ticketing.events.performances.forms import PerformanceForm, StockHolderForm
 from ticketing.products.models import Product, StockHolder, SalesSegment
 from ticketing.venues.models import Venue
 
 @view_defaults(decorator=with_bootstrap)
 class Performances(BaseView):
+
     @view_config(route_name='performances.show', renderer='ticketing:templates/performances/show.html')
     def show(self):
         performance_id = int(self.request.matchdict.get('performance_id', 0))
         performance = Performance.get(performance_id)
-        products = Product.find(performance_id)
-        sales_segments = session.query(SalesSegment).all()
+        products = Product.find(performance_id=performance_id)
+        sales_segments = DBSession.query(SalesSegment).join(Product).filter(Product.event_id==performance.event_id).all()
 
         return {
             'performance':performance,
-            'products': products,
+            'products':products,
             'sales_segments':sales_segments,
         }
 
@@ -52,14 +53,14 @@ class Performances(BaseView):
 
         f = PerformanceForm(self.request.POST)
         if f.validate():
-            record = Performance()
-            record.event = event
-            record.venue = Venue.get(f.data['venue_id'])
-            record = merge_session_with_post(record, f.data)
-            Performance.add(record)
+            performance = Performance()
+            performance.event = event
+            performance.venue = Venue.get(f.data['venue_id'])
+            performance = merge_session_with_post(performance, f.data)
+            performance.save()
 
             self.request.session.flash(u'パフォーマンスを登録しました')
-            return HTTPFound(location=route_path('events.show', self.request))
+            return HTTPFound(location=route_path('events.show', self.request, event_id=event.id))
         return {
             'form':f,
             'event':event,
@@ -90,7 +91,7 @@ class Performances(BaseView):
         if f.validate():
             performance.venue = Venue.get(f.data['venue_id'])
             performance = merge_session_with_post(performance, f.data)
-            Performance.update(performance)
+            performance.save()
 
             self.request.session.flash(u'パフォーマンスを保存しました')
             return HTTPFound(location=route_path('performances.show', self.request, performance_id=performance.id))
@@ -107,12 +108,12 @@ class Performances(BaseView):
         if performance is None:
             return HTTPNotFound('performance id %d is not found' % id)
 
-        Performance.delete(performance)
+        performance.delete()
 
         self.request.session.flash(u'パフォーマンスを削除しました')
-        return HTTPFound(location=route_path('events.index', self.request))
+        return HTTPFound(location=route_path('events.show', self.request, event_id=performance.event_id))
 
-    @view_config(route_name='performances.stock_holder.new')
+    @view_config(route_name='performances.stock_holder.new', request_method='POST')
     def new_stock_holder(self):
         performance_id = int(self.request.matchdict.get('performance_id', 0))
         performance = Performance.get(performance_id)
@@ -123,7 +124,7 @@ class Performances(BaseView):
         if f.validate():
             stock_holder = merge_session_with_post(StockHolder(), f.data)
             stock_holder.performance_id = performance.id
-            StockHolder.add(stock_holder)
+            stock_holder.save()
             self.request.session.flash(u'枠を保存しました')
 
         return HTTPFound(location=route_path('performances.show', self.request, performance_id=performance.id))
