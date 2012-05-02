@@ -3,7 +3,115 @@
 import unittest
 from pyramid import testing
 
-class CarXmlVisitor(unittest.TestCase):
+class SignToXml(unittest.TestCase):
+    def setUp(self):
+        self.config = testing.setUp()
+
+    def tearDown(self):
+        testing.tearDown()
+
+    def _callFUT(self, *args, **kwargs):
+        from .api import sign_to_xml
+        return sign_to_xml(*args, **kwargs)
+
+    def test_it(self):
+        from . import interfaces
+        class DummySigner(object):
+            def __call__(self, xml):
+                self.called = xml
+                return "sign!"
+        dummySigner = DummySigner()
+        self.config.registry.utilities.register([], interfaces.ISigner, "", dummySigner)
+
+        request = testing.DummyRequest()
+        xml = object()
+
+        result = self._callFUT(request, xml)
+        self.assertEqual(result, "sign!")
+
+class ItemXmlVisitorTests(unittest.TestCase):
+    def _getTarget(self):
+        from .api import ItemXmlVisitor
+        return ItemXmlVisitor
+
+    def _makeOne(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
+
+
+    def test_it(self):
+        import xml.etree.ElementTree as et
+        xml = et.XML('<item>'
+                     '<itemId>this-is-itemId</itemId>'
+                     '<itemName>なまえ</itemName>'
+                     '<itemNumbers>100</itemNumbers>'
+                     '<itemFee>2112</itemFee>'
+                     '</item>')
+
+        target = self._makeOne()
+        cart = testing.DummyResource(items=[])
+        target.visit_item(xml, cart)
+        item = cart.items[0]
+        self.assertEqual(item.itemId, 'this-is-itemId')
+        self.assertEqual(item.itemName, u'なまえ')
+        self.assertEqual(item.itemNumbers, 100)
+        self.assertEqual(item.itemFee, 2112)
+
+class CompletedOrderXmlVisitor(unittest.TestCase):
+
+    def _getTarget(self):
+        from .api import CompletedOrderXmlVisitor
+        return CompletedOrderXmlVisitor
+
+    def _makeOne(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
+
+    def test_visit_invalid_root(self):
+        import xml.etree.ElementTree as et
+
+        xml = et.XML('<root />')
+
+        target = self._makeOne()
+        result = target.visit(xml)
+
+        self.assertIsNone(result)
+
+
+    def test_visit_valid_root(self):
+        import xml.etree.ElementTree as et
+
+        xml = et.XML('<orderCompletedRequest />')
+
+        target = self._makeOne()
+        result = target.visit(xml)
+
+        self.assertIsNotNone(result)
+
+
+
+    def test_visit_root(self):
+        import xml.etree.ElementTree as et
+
+        xml = et.XML('<orderCompletedRequest>'
+                     '<orderId>this-is-order-id</orderId>'
+                     '<orderControlId>this-is-control-id</orderControlId>'
+                     '<orderCartId>this-is-order-cart-id</orderCartId>'
+                     '<items>'
+                     '<item/>'
+                     '<item/>'
+                     '</items>'
+                     '</orderCompletedRequest>'
+        )
+
+        target = self._makeOne()
+        result = target.visit_root(xml)
+
+        self.assertIsNotNone(result)
+        self.assertEqual(result.orderId, 'this-is-order-id')
+        self.assertEqual(result.orderControlId, 'this-is-control-id')
+        self.assertEqual(result.orderCartId, 'this-is-order-cart-id')
+        self.assertEqual(len(result.items), 2)
+
+class CartXmlVisitorTests(unittest.TestCase):
     def _getTarget(self):
         from .api import CartXmlVisitor
         return CartXmlVisitor
@@ -28,39 +136,6 @@ class CarXmlVisitor(unittest.TestCase):
         result = target.visit(xml)
 
         self.assertIsNotNone(result)
-
-    def test_visit_item(self):
-        import xml.etree.ElementTree as et
-        xml = et.XML('<item>'
-                     '<itemId>this-is-itemId</itemId>'
-                     '<itemName>なまえ</itemName>'
-                     '<itemNumbers>100</itemNumbers>'
-                     '<itemFee>2112</itemFee>'
-                     '</item>')
-
-        target = self._makeOne()
-        cart = testing.DummyResource(items=[])
-        target.visit_item(xml, cart)
-        item = cart.items[0]
-        self.assertEqual(item.itemId, 'this-is-itemId')
-        self.assertEqual(item.itemName, u'なまえ')
-        self.assertEqual(item.itemNumbers, 100)
-        self.assertEqual(item.itemFee, 2112)
-
-
-    def test_visit_items(self):
-        import xml.etree.ElementTree as et
-        xml = et.XML('<items>'
-                     '<item />'
-                     '<item />'
-                     '<item />'
-                     '</items>')
-
-        target = self._makeOne()
-        cart = testing.DummyResource(items=[])
-        target.visit_items(xml, cart)
-
-        self.assertEqual(len(cart.items), 3)
 
 
     def test_visit_cart(self):
@@ -120,10 +195,13 @@ class CarXmlVisitor(unittest.TestCase):
         self.assertEqual(len(result.carts), 2)
         self.assertEqual(result.isTMode, '1')
 
+class GetCartConfirmTests(unittest.TestCase):
+    def _callFUT(self, request):
+        from .api import get_cart_confirm
+        return get_cart_confirm(request)
 
     def test_it(self):
-        import xml.etree.ElementTree as et
-        xml = et.XML("""<?xml version="1.0" encoding="UTF-8"?>
+        xml = """<?xml version="1.0" encoding="UTF-8"?>
 <cartConfirmationRequest>
 <openId>https://myid.rakuten.co.jp/openid/user/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</openId>
 <carts>
@@ -148,11 +226,11 @@ class CarXmlVisitor(unittest.TestCase):
 </cart>
 </carts>
 <isTMode>0</isTMode>
-</cartConfirmationRequest>""")
+</cartConfirmationRequest>"""
 
+        request = testing.DummyRequest(params={'confirmId': xml.encode('base64')})
 
-        target = self._makeOne()
-        result = target.visit(xml)
+        result = self._callFUT(request)
 
         self.assertEqual(result.openid, 'https://myid.rakuten.co.jp/openid/user/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
         self.assertEqual(len(result.carts), 1)
@@ -411,11 +489,3 @@ class CheckoutToXmlTests(unittest.TestCase):
                          '<authMethod>2</authMethod>'
                          '<isTMode>1</isTMode>'
                          '</orderItemsInfo>')
-        
-
-        
-
-
-class TestIt(unittest.TestCase):
-    def test_it(self):
-        pass

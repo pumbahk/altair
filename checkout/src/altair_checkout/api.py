@@ -1,9 +1,12 @@
 # -*- coding:utf-8 -*-
 
-import xml.etree.ElementTree as et
+import hashlib
+import hmac
 import uuid
 import functools
-from .interfaces import ISigner
+import xml.etree.ElementTree as et
+
+from . import interfaces
 from . import models as m
 
 
@@ -16,7 +19,7 @@ def generate_requestid():
     return uuid.uuid4().hex[:16]
 
 def get_cart_confirm(request):
-    confirmId = request.params('confirmId').decode('base64')
+    confirmId = request.params['confirmId'].decode('base64')
 
     tree = et.XML(confirmId)
 
@@ -24,9 +27,63 @@ def get_cart_confirm(request):
     cartInformation = cart_xml_visitor.visit(tree)
     return cartInformation
 
+def sign_to_xml(request, xml):
+    signer = request.registry.utilities.lookup([], interfaces.ISigner, "")
+    return signer(xml)
+
+
+class ItemXmlVisitor(object):
+    """ """
+    def visit_item(self, el, items_folder):
+        item = m.CheckoutItem()
+        items_folder.items.append(item)
+        for e in el:
+            if e.tag == 'itemId':
+                item.itemId = e.text.strip()
+            elif e.tag == 'itemName':
+                item.itemName = e.text.strip()
+            elif e.tag == 'itemNumbers':
+                item.itemNumbers = int(e.text.strip())
+            elif e.tag == 'itemFee':
+                item.itemFee = int(e.text.strip())
+
+
+
+class CompletedOrderXmlVisitor(object):
+    """ """
+
+    item_visitor = ItemXmlVisitor()
+
+    def visit(self, root):
+        if root.tag == 'orderCompletedRequest':
+            return self.visit_root(root)
+        else:
+            return None
+
+
+    def visit_root(self, root):
+        completedOrder = m.CompletedOrder()
+        for e in root:
+            if e.tag == 'orderId':
+                completedOrder.orderId = e.text.strip()
+            elif e.tag == 'orderControlId':
+                completedOrder.orderControlId = e.text.strip()
+            elif e.tag == 'orderCartId':
+                completedOrder.orderCartId = e.text.strip()
+            elif e.tag == 'items':
+                self.visit_items(e, completedOrder)
+
+        return completedOrder
+
+
+    def visit_items(self, el, completedOrder):
+        for item_el in el:
+            if item_el.tag == 'item':
+                self.item_visitor.visit_item(item_el, completedOrder)
+
 class CartXmlVisitor(object):
-    def __init__(self):
-        pass
+
+    item_visitor = ItemXmlVisitor()
 
     def visit(self, root):
 
@@ -69,26 +126,9 @@ class CartXmlVisitor(object):
     def visit_items(self, el, cart):
         for item_el in el:
             if item_el.tag == 'item':
-                self.visit_item(item_el, cart)
-
-    def visit_item(self, el, cart):
-        item = m.CheckoutItem()
-        cart.items.append(item)
-        for e in el:
-            if e.tag == 'itemId':
-                item.itemId = e.text.strip()
-            elif e.tag == 'itemName':
-                item.itemName = e.text.strip()
-            elif e.tag == 'itemNumbers':
-                item.itemNumbers = int(e.text.strip())
-            elif e.tag == 'itemFee':
-                item.itemFee = int(e.text.strip())
+                self.item_visitor.visit_item(item_el, cart)
 
 
-
-def sign_to_xml(request, xml):
-    signer = request.registry.utilities.lookup(ISigner, [], "")
-    return signer(xml)
 
 def checkout_to_xml(checkout):
     root = et.Element(u'orderItemsInfo')
