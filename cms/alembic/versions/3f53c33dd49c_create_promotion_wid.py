@@ -17,7 +17,7 @@ import sqlalchemy as sa
 def upgrade():
     op.create_table("promotion", 
                     sa.Column("id", sa.Integer(), nullable=False), 
-                    sa.Column("kind", sa.Unicode(length=255)), 
+                    sa.Column("name", sa.Unicode(length=255), index=True), 
                     sa.Column("site_id", sa.Integer), 
                     sa.ForeignKeyConstraint(["site_id"], ["site.id"]), 
                     sa.PrimarykeyConstraint("id")
@@ -37,8 +37,9 @@ def upgrade():
     op.create_table('widget_promotion',
                     sa.Column('id', sa.Integer(), nullable=False),
                     sa.Column('items', sa.Unicode(length=255), nullable=True),
-                    sa.Column("kind", sa.String(length=32), nullable=False), 
+                    sa.Column("promotion_id", sa.Integer(), nullable=False), 
                     sa.ForeignKeyConstraint(['id'], ['widget.id'], ),
+                    sa.ForeignKeyConstraint(['promotion_id'], ['promotion.id'], ),
                     sa.PrimaryKeyConstraint('id')
                     )
 
