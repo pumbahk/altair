@@ -24,6 +24,5 @@ def upgrade():
 def downgrade():
     op.alter_column("page",  "structure",  type_=sa.String(length=255), existing_type=sa.Text)
     op.alter_column("layout",  "blocks",  type_=sa.String(length=255), existing_type=sa.Text)
-
-    # op.alter_column("widget_menu",  "items",  type_=sa.String(length=255),  existing_type=sa.UnicodeText)
-    # op.alter_column("widget_summary",  "items", type_=sa.String(length=255), existing_type=sa.UnicodeText )
+    op.alter_column("widget_menu",  "items",  type_=sa.String(length=255),  existing_type=sa.UnicodeText)
+    op.alter_column("widget_summary",  "items", type_=sa.String(length=255), existing_type=sa.UnicodeText )

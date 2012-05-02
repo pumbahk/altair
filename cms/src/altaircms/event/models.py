@@ -55,6 +55,7 @@ class Event(BaseOriginalMixin, Base):
         else:
             return self.title
 
+    ## todo implement 
     @property
     def service_info_list(self):
         import warnings

@@ -15,7 +15,6 @@ from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
 
 """
-まだ、alembicのmigration code書いていない
 kindをもとに絞り込みを行う予定。
 """
 
@@ -55,10 +54,10 @@ class PromotionWidget(Widget):
         # bsettings.add(bname, "content")
 
 class PromotionWidgetResource(HandleSessionMixin,
-                                UpdateDataMixin,
-                                HandleWidgetMixin,
-                                RootFactory
-                          ):
+                              UpdateDataMixin,
+                              HandleWidgetMixin,
+                              RootFactory
+                              ):
     WidgetClass = PromotionWidget
 
     def get_widget(self, widget_id):
