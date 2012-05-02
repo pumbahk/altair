@@ -14,9 +14,9 @@ class Finderize(object):
     def __init__(self, finder):
         self.find = finder
 
-## fixme. if slow query
 def _near_the_end_events(request, N, today, max_items=None):
     qs = DBSession.query(PageSet.name, PageSet.url).filter(PageSet.event_id==Event.id)
+    qs = qs.filter(Event.issearchable==True)
     qs =  Event.near_the_deal_close_query(today, N=N, qs=qs)
     qs = qs.order_by(sa.asc(Event.deal_close))
     if max_items:
@@ -26,6 +26,7 @@ near_the_end_events = Finderize(_near_the_end_events)
 
 def _deal_start_this_week_events(request, N, today, max_items=None):
     qs = DBSession.query(PageSet.name, PageSet.url).filter(PageSet.event_id==Event.id)
+    qs = qs.filter(Event.issearchable==True)
     qs =  Event.deal_start_this_week_query(today, offset=-today.weekday(), qs=qs)
     qs = qs.order_by(sa.desc(Event.deal_open))
     if max_items:

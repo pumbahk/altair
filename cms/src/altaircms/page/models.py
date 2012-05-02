@@ -67,7 +67,6 @@ class PageSet(Base,
     parent_id = Column(Integer, ForeignKey('pagesets.id'))
     @declared_attr
     def parent(cls):
-        # return relationship(cls, backref=orm.backref("children", remote_side=[cls.id]), uselist=False)
         return relationship(cls, uselist=False)
     
     def gen_version(self):
