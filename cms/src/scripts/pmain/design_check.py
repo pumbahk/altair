@@ -159,9 +159,14 @@ add_heading_widget = functools.partial(
     import_symbol("altaircms.plugins.widget.heading.models:HeadingWidget").type, 
     )
 
+add_promotion_widget = functools.partial(
+    add_widget, 
+    import_symbol("altaircms.plugins.widget.promotion.views:PromotionWidgetView"), 
+    import_symbol("altaircms.plugins.widget.promotion.models:PromotionWidgetResource"), 
+    import_symbol("altaircms.plugins.widget.promotion.models:PromotionWidget").type, 
+    )
 
 ## settings
-
 
 def detail_layout():
     layout = Layout(
@@ -500,6 +505,7 @@ def top_topcontents(page):
         ]
 
 def add_top_main_block_widgets(page):
+    add_promotion_widget(page, "main", {})
     params = dict(kind=u"チケットスター：トップページ見出し", 
                   text=u"トピックス")
     add_heading_widget(page, "main", params)

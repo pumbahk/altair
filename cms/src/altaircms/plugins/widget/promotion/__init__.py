@@ -18,3 +18,12 @@ def includeme(config):
         "imgdirectory": os.path.join(DIR, "img")
         }
     widget_plugin_install(config, settings)
+
+    utility = config.registry.settings.get("altaircms.plugins.promotion.imagefetch.utility")
+    if utility:
+        config.registry.registerUtility(config.maybe_dotted(utility), 
+                                        config.maybe_dotted(".interfaces.IPromotionManager"))
+    config.add_route("promotion_slideshow", "/promotion/slideshow")
+    config.add_route("api_promotion_main_image", "/promotion/mainimage")
+
+

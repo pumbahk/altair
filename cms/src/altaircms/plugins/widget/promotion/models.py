@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 from zope.interface import implements
 from altaircms.interfaces import IWidget
 from collections import namedtuple
@@ -15,12 +14,8 @@ from altaircms.plugins.base.mixins import HandleWidgetMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
 
-"""
-kindをもとに絞り込みを行う予定。
-"""
-
 ## fixme: rename **info
-PromotionInfo = namedtuple("PromotionInfo", "idx thumnails message main link")
+PromotionInfo = namedtuple("PromotionInfo", "idx thumbnails message main main_link links interval_time unit_candidates")
 
 class Promotion(Base):
     __tablename__ = "promotion"
@@ -34,7 +29,7 @@ class Promotion(Base):
         selected = punits[idx]
         return PromotionInfo(
             idx=idx, 
-            thumnails=[pu.thunmnails for pu in punits], 
+            thumbnails=[pu.thunmnails for pu in punits], 
             message=selected.text, 
             link=selected.link, 
             main=selected.main_image
@@ -69,7 +64,11 @@ class PromotionWidget(Widget):
         bsettings.need_extra_in_scan("request")
         def slideshow_render():
             request = bsettings.extra["request"]
-            return render(self.template, {"info":self.as_info()}, request=request)
+            ## fixme real implementation
+            from . import api
+            pm = api.get_promotion_manager(request)
+            params = {"show_image": pm.show_image, "info": pm.promotion_info(request)}
+            return render(self.template_name, params, request=request)
         bsettings.add(bname, slideshow_render)
 
 class PromotionWidgetResource(HandleSessionMixin,
@@ -78,6 +77,8 @@ class PromotionWidgetResource(HandleSessionMixin,
                               RootFactory
                               ):
     WidgetClass = PromotionWidget
+    PromotionUnit = PromotionUnit
+    Promotion = Promotion
 
     def get_widget(self, widget_id):
         return self._get_or_create(PromotionWidget, widget_id)
