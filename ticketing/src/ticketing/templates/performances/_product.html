@@ -47,13 +47,13 @@
     <td>${product.id}</td>
     <td><a href="javascript:edit_product('${product.id}', '${product.name|u}', '${product.price}');">${product.name}</a></td>
     <td>${product.price}</td>
-    % if product.sales_segment_set:
+    % if product.sales_segment:
     <td>
-      <a href="${request.route_path('products.sales_segments.show', sales_segment_id=product.sales_segment_set.sales_segment.id)}">
-        ${product.sales_segment_set.sales_segment.name}</a>
+      <a href="${request.route_path('products.sales_segments.show', sales_segment_id=product.sales_segment.id)}">
+        ${product.sales_segment.name}</a>
     </td>
-    <td>${product.sales_segment_set.sales_segment.start_at}</td>
-    <td>${product.sales_segment_set.sales_segment.end_at}</td>
+    <td>${product.sales_segment.start_at}</td>
+    <td>${product.sales_segment.end_at}</td>
     % else:
     <td></td>
     <td></td>

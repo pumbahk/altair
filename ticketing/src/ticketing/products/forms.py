@@ -15,7 +15,9 @@ class ProductForm(Form):
     price = TextField(u'価格',
         validators=[Required(u'入力してください')]
     )
-
+    sales_segment_id = TextField(
+        validators=[Required()]
+    )
 
 class PaymentDeliveryMethodPairForm(Form):
 

@@ -7,7 +7,7 @@ from ticketing.fanstatic import with_bootstrap
 from ticketing.models import merge_session_with_post
 from ticketing.views import BaseView
 from ticketing.products.forms import PaymentDeliveryMethodPairForm, ProductForm
-from ticketing.products.models import session, Product, SalesSegment, SalesSegmentSet
+from ticketing.products.models import session, Product, SalesSegment
 from ticketing.events.models import Performance
 
 @view_defaults(decorator=with_bootstrap)
@@ -67,12 +67,6 @@ class Products(BaseView):
         if f.validate():
             record = merge_session_with_post(product, f.data)
             Product.update(record)
-
-            sales_segment_set = SalesSegmentSet.find_by_product_id(product.id) or SalesSegmentSet()
-            sales_segment_set.sales_segment_id = int(self.request.POST.get('sales_segment_id'))
-            sales_segment_set.product_id = product.id
-            sales_segment_set.event_id = performance.event_id
-            SalesSegmentSet.update(sales_segment_set)
 
             self.request.session.flash(u'商品を保存しました')
             return {'success':True}

@@ -7,7 +7,7 @@ from sqlalchemy.orm import relationship, join, backref, column_property
 
 from ticketing.utils import StandardEnum
 from ticketing.models import Base, BaseModel
-from ticketing.products.models import SalesSegment, SalesSegmentSet
+from ticketing.products.models import Product, SalesSegment
 
 import sqlahelper
 session = sqlahelper.get_session()
@@ -88,14 +88,14 @@ class Event(Base, BaseModel):
 
     @property
     def sales_start_on(self):
-        data = session.query(func.min(SalesSegment.start_at)).join(SalesSegmentSet)\
-                .filter(SalesSegmentSet.event_id==self.id).first()
+        data = session.query(func.min(SalesSegment.start_at)).join(Product)\
+        .filter(Product.event_id==self.id).first()
         return data[0] if data else None
 
     @property
     def sales_end_on(self):
-        data = session.query(func.min(SalesSegment.end_at)).join(SalesSegmentSet)\
-                .filter(SalesSegmentSet.event_id==self.id).first()
+        data = session.query(func.min(SalesSegment.end_at)).join(Product)\
+                .filter(Product.event_id==self.id).first()
         return data[0] if data else None
 
     @property

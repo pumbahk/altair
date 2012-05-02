@@ -46,7 +46,6 @@ from paymentmethod import PaymentMethodData
 from deliverymethod import DeliveryMethodData
 from paymentdeliverymethodpair import PaymentDeliveryMethodPairData
 from salessegment import SalesSegmentData
-from salessegmentset import SalesSegmentSetData
 from productitem import ProductItemData
 from stockholder import StockHolderData
 from stock import StockData
@@ -101,7 +100,6 @@ class CartBaseTest(unittest.TestCase):
                 'DeliveryMethodData'            : DeliveryMethod,
                 'ProductData'                   : Product,
                 'ProductItemData'               : ProductItem,
-                'SalesSegmentSetData'           : SalesSegmentSet,
                 'SalesSegmentData'              : SalesSegment,
                 'PaymentDeliveryMethodPairData' : PaymentDeliveryMethodPair,
                 'StockHolderData'               : StockHolder,
@@ -133,7 +131,6 @@ class CartBaseTest(unittest.TestCase):
             DeliveryMethodData,
             ProductData,
             ProductItemData,
-            SalesSegmentSetData,
             SalesSegmentData,
             PaymentDeliveryMethodPairData,
             StockHolderData,

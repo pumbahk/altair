@@ -82,32 +82,6 @@ class SalesSegment(BaseModel,Base):
     start_at = Column(DateTime)
     end_at = Column(DateTime)
 
-class SalesSegmentSet(BaseModel,Base):
-    __tablename__ = 'SalesSegmentSet'
-    id = Column(BigInteger, primary_key=True)
-
-    product_id = Column(BigInteger, ForeignKey('Product.id'), nullable=True)
-    product = relationship('Product', uselist=False)
-    event_id = Column(BigInteger, ForeignKey('Event.id'), nullable=True)
-    event = relationship('Event', uselist=False)
-    sales_segment_id = Column(BigInteger, ForeignKey('SalesSegment.id'), nullable=True)
-    sales_segment = relationship('SalesSegment', uselist=False, backref='sales_segment_set')
-
-    @staticmethod
-    def find_by_product_id(product_id):
-        return session.query(SalesSegmentSet).filter(SalesSegmentSet.product_id == product_id).first()
-
-    @staticmethod
-    def add(sales_segment_set):
-        sales_segment_set.updated_at = datetime.now()
-        session.add(sales_segment_set)
-
-    @staticmethod
-    def update(sales_segment_set):
-        sales_segment_set.updated_at = datetime.now()
-        session.merge(sales_segment_set)
-        session.flush
-
 buyer_condition_set_table =  Table('BuyerConditionSet', Base.metadata,
     Column('id', Integer, primary_key=True),
     Column('buyer_condition_id', BigInteger, ForeignKey('BuyerCondition.id')),
@@ -227,8 +201,13 @@ class Product(BaseModel,Base):
     name = Column(String(255))
     price = Column(BigInteger)
 
+    sales_segment_id = Column(BigInteger, ForeignKey('SalesSegment.id'), nullable=True)
+    sales_segment = relationship('SalesSegment', uselist=False, backref='product')
+
+    event_id = Column(BigInteger, ForeignKey('Event.id'))
+    event = relationship('Event', uselist=False, backref='product')
+
     items = relationship('ProductItem', backref='product')
-    sales_segment_set = relationship('SalesSegmentSet', uselist=False)
 
     @staticmethod
     def find(performance_id = None, event_id = None):
@@ -270,8 +249,3 @@ class Product(BaseModel,Base):
         self.updated_at = datetime.now()
         session.merge(self)
         session.flush()
-
-    @staticmethod
-    def get(product_id):
-        return session.query(Product).filter(Product.id==product_id).first()
-
