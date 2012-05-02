@@ -117,7 +117,29 @@ def checkout_to_xml(checkout):
 
     return et.tostring(root)
 
+def confirmation_to_xml(confirmation):
+    root = et.Element('cartConfirmationResponse')
+    carts_el = et.SubElement(root, 'carts')
 
+    for cart in confirmation.carts:
+        cart_el = et.SubElement(carts_el, 'cart')
+        subelement = functools.partial(et.SubElement, cart_el)
+        subelement('cartConfirmationId').text = cart.cartConfirmationId
+        subelement('orderCartId').text = cart.orderCartId
+        subelement('orderItemsTotalFee').text = str(cart.orderItemsTotalFee)
+        items_el = subelement('items')
+
+        for item in cart.items:
+            item_el = et.SubElement(items_el, 'item')
+            isublement = functools.partial(et.SubElement, item_el)
+            isublement('itemId').text = item.itemId
+            isublement('itemNumbers').text = str(item.itemNumbers)
+            isublement('itemFee').text = str(item.itemFee)
+            isublement('itemConfirmationResult').text = item.itemConfirmationResult
+            isublement('itemNumbersMessage').text = item.itemNumbersMessage
+            isublement('itemFeeMessage').text = item.itemFeeMessage
+
+    return et.tostring(root)
 
 class HMAC_SHA1(object):
     hash_algorithm = "SHA1"

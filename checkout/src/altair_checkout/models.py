@@ -25,6 +25,12 @@ class CheckoutItem(Base):
     checkout_id = sa.Column(sa.Integer, sa.ForeignKey('checkouts.id'))
     cart_id = sa.Column(sa.Integer, sa.ForeignKey('carts.id'))
 
+    # OrderConfirming機能 out の場合のみ利用
+    itemConfirmationResult = sa.Column(sa.Enum())
+    itemNumbersMessage = sa.Column(sa.Unicode(100))
+    itemFeeMessage = sa.Column(sa.Unicode(100))
+
+
 class CheckoutCart(Base):
     __tablename__ = 'checkout_carts'
     id = sa.Column(sa.Integer, primary_key=True)

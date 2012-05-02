@@ -218,8 +218,100 @@ class IncludeMe(unittest.TestCase):
         self.assertEqual(lookup.hash_algorithm, "MD5")
 
 
+class ConfirmationToXmlTests(unittest.TestCase):
+    def _callFUT(self, *args, **kwargs):
+        from .api import confirmation_to_xml
+        return confirmation_to_xml(*args, **kwargs)
 
-class ChckoutToXmlTests(unittest.TestCase):
+    def test_it_no_carts(self):
+        resource = testing.DummyResource(carts=[])
+
+        result = self._callFUT(resource)
+
+        self.assertEqual(result,
+                         "<cartConfirmationResponse><carts /></cartConfirmationResponse>")
+
+    def test_it_with_carts(self):
+        resource = testing.DummyResource(carts=[
+                testing.DummyResource(
+                    cartConfirmationId="this-is-cart-confirmation-id1",
+                    orderCartId='this-is-order-cart-id1',
+                    orderItemsTotalFee=100,
+                    items=[],
+                    ),
+                testing.DummyResource(
+                    cartConfirmationId="this-is-cart-confirmation-id2",
+                    orderCartId='this-is-order-cart-id2',
+                    orderItemsTotalFee=200,
+                    items=[],
+                    ),
+                ])
+
+        result = self._callFUT(resource)
+
+        self.assertEqual(result,
+                         '<cartConfirmationResponse>'
+                         '<carts>'
+                         '<cart>'
+                         '<cartConfirmationId>this-is-cart-confirmation-id1</cartConfirmationId>'
+                         '<orderCartId>this-is-order-cart-id1</orderCartId>'
+                         '<orderItemsTotalFee>100</orderItemsTotalFee>'
+                         '<items />'
+                         '</cart>'
+                         '<cart>'
+                         '<cartConfirmationId>this-is-cart-confirmation-id2</cartConfirmationId>'
+                         '<orderCartId>this-is-order-cart-id2</orderCartId>'
+                         '<orderItemsTotalFee>200</orderItemsTotalFee>'
+                         '<items />'
+                         '</cart>'
+                         '</carts>'
+                         '</cartConfirmationResponse>')
+
+    def test_it_with_items(self):
+        resource = testing.DummyResource(carts=[
+                testing.DummyResource(
+                    cartConfirmationId="this-is-cart-confirmation-id1",
+                    orderCartId='this-is-order-cart-id1',
+                    orderItemsTotalFee=100,
+                    items=[
+                        testing.DummyResource(
+                            itemId='this-is-itemId1',
+                            itemNumbers=10,
+                            itemFee=1111,
+                            itemConfirmationResult='1',
+                            itemNumbersMessage=u'あああああ',
+                            itemFeeMessage=u'あああああ',
+                            )
+                        ],
+                    ),
+                ])
+
+        result = self._callFUT(resource)
+
+        self.assertEqual(result,
+                         '<cartConfirmationResponse>'
+                         '<carts>'
+                         '<cart>'
+                         '<cartConfirmationId>this-is-cart-confirmation-id1</cartConfirmationId>'
+                         '<orderCartId>this-is-order-cart-id1</orderCartId>'
+                         '<orderItemsTotalFee>100</orderItemsTotalFee>'
+                         '<items>'
+                         '<item>'
+                         '<itemId>this-is-itemId1</itemId>'
+                         '<itemNumbers>10</itemNumbers>'
+                         '<itemFee>1111</itemFee>'
+                         '<itemConfirmationResult>1</itemConfirmationResult>'
+                         '<itemNumbersMessage>&#12354;&#12354;&#12354;&#12354;&#12354;</itemNumbersMessage>'
+                         '<itemFeeMessage>&#12354;&#12354;&#12354;&#12354;&#12354;</itemFeeMessage>'
+                         '</item>'
+                         '</items>'
+                         '</cart>'
+                         '</carts>'
+                         '</cartConfirmationResponse>')
+
+
+
+class CheckoutToXmlTests(unittest.TestCase):
     def _callFUT(self, *args, **kwargs):
         from .api import checkout_to_xml
         return checkout_to_xml(*args, **kwargs)
