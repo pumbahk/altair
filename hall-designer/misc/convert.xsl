@@ -4,6 +4,12 @@
     xmlns:svg="http://www.w3.org/2000/svg"
     xmlns:meta="http://xmlns.ticketstar.jp/2012/venue-meta"
     version="1.0">
+  <xsl:param name="ignore-appearance-styles" select="true()" />
+  <xsl:param name="render-blocks" select="true()" />
+  <xsl:param name="render-row-numbers" select="true()" />
+  <xsl:param name="scale" select="number(.1)" />
+
+  <xsl:output method="xml" encoding="utf-8" indent="yes" />
 
   <!-- override default template -->
   <xsl:template match="text()" />
@@ -85,27 +91,49 @@
     <xsl:param name="command" select="'L'" />
     <xsl:variable name="first-chunk" select="normalize-space(substring-before($value, ','))" />
     <xsl:variable name="remainder" select="normalize-space(substring-after($value, ','))" />
-      <xsl:value-of select="$command" /><xsl:text> </xsl:text><xsl:value-of select="number($first-chunk)" /><xsl:text> </xsl:text><xsl:choose>
+      <xsl:value-of select="$command" /><xsl:text> </xsl:text><xsl:value-of select="number($first-chunk) * $scale" /><xsl:text> </xsl:text><xsl:choose>
       <xsl:when test="contains($remainder, ',')">
-        <xsl:value-of select="number(normalize-space(substring-before($remainder, ',')))" /><xsl:text> </xsl:text>
+        <xsl:value-of select="number(normalize-space(substring-before($remainder, ','))) * $scale" /><xsl:text> </xsl:text>
         <xsl:call-template name="convert-pairs-to-svg-path-data"><xsl:with-param name="value" select="normalize-space(substring-after($remainder, ','))" /></xsl:call-template>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:value-of select="number(normalize-space($remainder))" />
+        <xsl:value-of select="number($remainder) * $scale" />
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
 
   <xsl:template match="/Hall">
-    <xsl:variable name="width" select="number(substring-before(InitialViewStatus/Center, ',')) * 4" />
-    <xsl:variable name="height" select="number(substring-after(InitialViewStatus/Center, ',')) * 6" />
-    <svg:svg version="1.1" viewBox="0 0 {$width} {$height}" preserveAspectRatio="xMinYMin slice">
+    <xsl:variable name="width" select="number(normalize-space(substring-before(InitialViewStatus/Center, ','))) * 4 * $scale" />
+    <xsl:variable name="height" select="number(normalize-space(substring-after(InitialViewStatus/Center, ','))) * 6 * $scale" />
+    <svg:svg version="1.1" viewBox="0 0 {$width} {$height}" preserveAspectRatio="xMinYMin meet">
       <meta:description>
         <meta:gettii-id><xsl:value-of select="ID" /></meta:gettii-id>
         <meta:name><xsl:value-of select="Name" /></meta:name>
       </meta:description>
       <svg:style type="text/css">
-        <xsl:apply-templates select="BlockLayerAttribute|GateLayerAttribute|RowLayerAttribute|SeatLayerAttribute" mode="css" />
+        <xsl:choose>
+          <xsl:when test="$ignore-appearance-styles">
+            <xsl:message>Appearance styles will be ignored.</xsl:message>
+            <xsl:text>
+.block {
+  fill: rgb(255, 255, 192);
+  stroke: rgb(0, 0, 0);
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+}
+
+.seat {
+  fill: rgb(160, 160, 160);
+  stroke: rgb(0, 0, 0);
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+}
+            </xsl:text>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:apply-templates select="BlockLayerAttribute|GateLayerAttribute|RowLayerAttribute|SeatLayerAttribute" mode="css" />
+          </xsl:otherwise>
+        </xsl:choose>
       </svg:style>
       <xsl:apply-templates select="BlockLayers" />
     </svg:svg>
@@ -136,138 +164,164 @@
   </xsl:template>
 
   <xsl:template match="BlockLayers">
-    <xsl:apply-templates select="BlockLayer" />
+    <xsl:param name="indent" select="''" />
+    <xsl:apply-templates select="BlockLayer">
+      <xsl:with-param name="indent" select="$indent" />
+    </xsl:apply-templates>
   </xsl:template>
 
   <xsl:template match="BlockLayer">
-    <xsl:choose>
-      <xsl:when test="@positions">
-        <xsl:variable name="path-data">
-          <xsl:call-template name="convert-pairs-to-svg-path-data">
-            <xsl:with-param name="value" select="@positions" />
-            <xsl:with-param name="command" select="'M'" />
-          </xsl:call-template>
-        </xsl:variable>
-        <svg:path d="{$path-data}" class="block" />
-      </xsl:when>
-      <xsl:when test="@position">
-        <svg:rect x="{normalize-space(substring-before(@position, ','))}" y="{normalize-space(substring-after(@position, ','))}" width="{@width}" height="{@Height}" class="block" />
-      </xsl:when>
-    </xsl:choose>
-    <xsl:apply-templates select="GateLayers" />
+    <xsl:param name="indent" />
+    <xsl:message><xsl:value-of select="$indent" />Processing block layer <xsl:value-of select="@name" /></xsl:message>
+    <svg:g id="{generate-id()}" meta:type="block" meta:name="{@name}">
+      <xsl:if test="$render-blocks">
+        <xsl:choose>
+          <xsl:when test="@positions">
+            <xsl:variable name="path-data">
+              <xsl:call-template name="convert-pairs-to-svg-path-data">
+                <xsl:with-param name="value" select="@positions" />
+                <xsl:with-param name="command" select="'M'" />
+              </xsl:call-template>
+            </xsl:variable>
+            <svg:path d="{$path-data}" class="block" />
+          </xsl:when>
+          <xsl:when test="@position">
+            <xsl:variable name="x" select="number(normalize-space(substring-before(@position, ','))) * $scale" />
+            <xsl:variable name="y" select="number(normalize-space(substring-after(@position, ','))) * $scale" />
+            <xsl:variable name="width" select="number(normalize-space(@width)) * $scale" />
+            <xsl:variable name="height" select="number(normalize-space(@Height)) * $scale" />
+            <xsl:variable name="angle" select="@angle" />
+            <svg:rect x="{$x}" y="{$y}" width="{$width}" height="{$height}" id="{$id}" class="seat" meta:type="seat" meta:name="@name">
+              <xsl:if test="$angle">
+                <xsl:attribute name="transform">
+                  <xsl:text>rotate(</xsl:text>
+                  <xsl:value-of select="$angle" />
+                  <xsl:text> </xsl:text>
+                  <xsl:value-of select="$x" />
+                  <xsl:text> </xsl:text>
+                  <xsl:value-of select="$y" />
+                  <xsl:text>)</xsl:text>
+                </xsl:attribute>
+              </xsl:if>
+            </svg:rect>
+          </xsl:when>
+        </xsl:choose>
+      </xsl:if>
+      <xsl:apply-templates select="GateLayers">
+        <xsl:with-param name="indent" select="concat($indent, '  ')" />
+      </xsl:apply-templates>
+    </svg:g>
   </xsl:template>
 
   <xsl:template match="GateLayers">
-    <xsl:apply-templates select="GateLayer" />
+    <xsl:param name="indent" />
+    <xsl:apply-templates select="GateLayer">
+      <xsl:with-param name="indent" select="$indent" />
+    </xsl:apply-templates>
   </xsl:template>
 
   <xsl:template match="GateLayer">
-    <xsl:choose>
-      <xsl:when test="@positions">
-        <xsl:variable name="path-data">
-          <xsl:call-template name="convert-pairs-to-svg-path-data">
-            <xsl:with-param name="value" select="@positions" />
-            <xsl:with-param name="command" select="'M'" />
-          </xsl:call-template>
-        </xsl:variable>
-        <svg:path d="{$path-data}" class="block" />
-      </xsl:when>
-      <xsl:when test="@position">
-        <svg:rect x="{normalize-space(substring-before(@position, ','))}" y="{normalize-space(substring-after(@position, ','))}" width="{@width}" height="{@Height}" class="block" />
-      </xsl:when>
-    </xsl:choose>
-    <xsl:apply-templates select="NetBlockLayers" />
+    <xsl:param name="indent" />
+    <xsl:message><xsl:value-of select="$indent" />Processing gate layer <xsl:value-of select="@name" /></xsl:message>
+    <xsl:apply-templates select="NetBlockLayers">
+      <xsl:with-param name="indent" select="concat($indent, '  ')" />
+      <xsl:with-param name="gate" select="@name" />
+    </xsl:apply-templates>
   </xsl:template>
 
   <xsl:template match="NetBlockLayers">
-    <xsl:apply-templates select="NetBlockLayer" />
+    <xsl:param name="indent" />
+    <xsl:param name="gate" />
+    <xsl:apply-templates select="NetBlockLayer">
+      <xsl:with-param name="indent" select="$indent" />
+      <xsl:with-param name="gate" select="$gate" />
+    </xsl:apply-templates>
   </xsl:template>
 
   <xsl:template match="NetBlockLayer">
-    <xsl:choose>
-      <xsl:when test="@positions">
-        <xsl:variable name="path-data">
-          <xsl:call-template name="convert-pairs-to-svg-path-data">
-            <xsl:with-param name="value" select="@positions" />
-            <xsl:with-param name="command" select="'M'" />
-          </xsl:call-template>
-        </xsl:variable>
-        <svg:path d="{$path-data}" class="net-block" />
-      </xsl:when>
-      <xsl:when test="@position">
-        <svg:rect x="{normalize-space(substring-before(@position, ','))}" y="{normalize-space(substring-after(@position, ','))}" width="{@width}" height="{@Height}" class="net-block" />
-      </xsl:when>
-    </xsl:choose>
-    <xsl:apply-templates select="FloorLayers" />
+    <xsl:param name="indent" />
+    <xsl:param name="gate" />
+    <xsl:apply-templates select="FloorLayers">
+      <xsl:with-param name="indent" select="$indent" />
+      <xsl:with-param name="gate" select="$gate" />
+    </xsl:apply-templates>
   </xsl:template>
 
   <xsl:template match="FloorLayers">
-    <xsl:apply-templates select="FloorLayer" />
+    <xsl:param name="indent" />
+    <xsl:param name="gate" />
+    <xsl:apply-templates select="FloorLayer">
+      <xsl:with-param name="indent" select="$indent" />
+      <xsl:with-param name="gate" select="$gate" />
+    </xsl:apply-templates>
   </xsl:template>
 
   <xsl:template match="FloorLayer">
-    <xsl:choose>
-      <xsl:when test="@positions">
-        <xsl:variable name="path-data">
-          <xsl:call-template name="convert-pairs-to-svg-path-data">
-            <xsl:with-param name="value" select="@positions" />
-            <xsl:with-param name="command" select="'M'" />
-          </xsl:call-template>
-        </xsl:variable>
-        <svg:path d="{$path-data}" class="floor" />
-      </xsl:when>
-      <xsl:when test="@position">
-        <xsl:variable name="x" select="normalize-space(substring-before(@position, ','))" />
-        <xsl:variable name="y" select="normalize-space(substring-after(@position, ','))" />
-        <xsl:variable name="width" select="@width" />
-        <xsl:variable name="height" select="@Height" />
-        <xsl:variable name="angle" select="@angle" />
-        <svg:rect x="{$x}" y="{$y}" width="{$width}" height="{$height}" class="seat">
-          <xsl:if test="@angle">
-            <xsl:attribute name="transform">translate(<xsl:value-of select="$x" />,<xsl:value-of select="$y" />), rotate(<xsl:value-of select="$angle" />), translate(-<xsl:value-of select="$x" />,-<xsl:value-of select="$y" />), translate(-<xsl:value-of select="$width div 2" />, -<xsl:value-of select="$height div 2" />)</xsl:attribute>
-          </xsl:if>
-        </svg:rect>
-      </xsl:when>
-    </xsl:choose>
-    <xsl:apply-templates select="RowLayers" />
+    <xsl:param name="indent" />
+    <xsl:param name="gate" />
+    <xsl:message><xsl:value-of select="$indent" />Processing floor layer <xsl:value-of select="@name" /></xsl:message>
+    <xsl:apply-templates select="RowLayers">
+      <xsl:with-param name="indent" select="concat($indent, '  ')" />
+      <xsl:with-param name="gate" select="$gate" />
+      <xsl:with-param name="floor" select="@name" />
+    </xsl:apply-templates>
   </xsl:template>
 
   <xsl:template match="RowLayers">
-    <xsl:apply-templates select="RowLayer" />
+    <xsl:param name="indent" />
+    <xsl:param name="gate" />
+    <xsl:param name="floor" />
+    <xsl:apply-templates select="RowLayer">
+      <xsl:with-param name="indent" select="$indent" />
+      <xsl:with-param name="gate" select="$gate" />
+      <xsl:with-param name="floor" select="$floor" />
+    </xsl:apply-templates>
   </xsl:template>
 
   <xsl:template match="RowLayer">
-    <xsl:choose>
-      <xsl:when test="@positions">
-        <xsl:variable name="path-data">
-          <xsl:call-template name="convert-pairs-to-svg-path-data">
-            <xsl:with-param name="value" select="@positions" />
-            <xsl:with-param name="command" select="'M'" />
-          </xsl:call-template>
-        </xsl:variable>
-        <svg:path d="{$path-data}" class="row" />
-      </xsl:when>
-      <xsl:when test="@position">
-        <xsl:variable name="x" select="normalize-space(substring-before(@position, ','))" />
-        <xsl:variable name="y" select="normalize-space(substring-after(@position, ','))" />
-        <xsl:variable name="width" select="@width" />
-        <xsl:variable name="height" select="@Height" />
+    <xsl:param name="indent" />
+    <xsl:param name="gate" />
+    <xsl:param name="floor" />
+    <xsl:message><xsl:value-of select="$indent" />Processing row layer <xsl:value-of select="@name" /></xsl:message>
+    <svg:g id="{generate-id()}" meta:type="row" meta:gate="{$gate}" meta:floor="{$floor}" meta:name="{@name}">
+      <xsl:apply-templates select="SeatLayers">
+        <xsl:with-param name="indent" select="concat($indent, '  ')" />
+      </xsl:apply-templates>
+      <xsl:if test="$render-row-numbers">
+        <xsl:variable name="x" select="number(normalize-space(substring-before(@position, ','))) * $scale" />
+        <xsl:variable name="y" select="number(normalize-space(substring-after(@position, ','))) * $scale" />
+        <xsl:variable name="width" select="number(normalize-space(@width)) * $scale" />
+        <xsl:variable name="height" select="number(normalize-space(@Height)) * $scale" />
         <xsl:variable name="angle" select="@angle" />
-        <svg:rect x="{$x}" y="{$y}" width="{$width}" height="{$height}" class="seat">
-          <xsl:if test="@angle">
-            <xsl:attribute name="transform">translate(<xsl:value-of select="$x" />,<xsl:value-of select="$y" />), rotate(<xsl:value-of select="$angle" />), translate(-<xsl:value-of select="$x" />,-<xsl:value-of select="$y" />), translate(-<xsl:value-of select="$width div 2" />, -<xsl:value-of select="$height div 2" />)</xsl:attribute>
+        <svg:text x="{$x}" y="{$y + $height * .75}" width="{$width}" height="{$height}" class="row" style="font-size: {$height * .75}px" transform="ref(svg)">
+          <xsl:if test="$angle">
+            <xsl:attribute name="transform">
+              <xsl:text>rotate(</xsl:text>
+              <xsl:value-of select="$angle" />
+              <xsl:text> </xsl:text>
+              <xsl:value-of select="$x" />
+              <xsl:text> </xsl:text>
+              <xsl:value-of select="$y" />
+              <xsl:text>)</xsl:text>
+            </xsl:attribute>
           </xsl:if>
-        </svg:rect>
-      </xsl:when>
-    </xsl:choose>
-    <xsl:apply-templates select="SeatLayers" />
+          <xsl:value-of select="@name" />
+        </svg:text>
+      </xsl:if>
+    </svg:g>
   </xsl:template>
 
   <xsl:template match="SeatLayers">
-    <xsl:apply-templates select="SeatLayer" />
+    <xsl:param name="indent" />
+    <xsl:apply-templates select="SeatLayer">
+      <xsl:with-param name="indent" select="$indent" />
+    </xsl:apply-templates>
   </xsl:template>
 
   <xsl:template match="SeatLayer">
+    <xsl:param name="indent" />
+    <xsl:message><xsl:value-of select="$indent" />Processing seat layer <xsl:value-of select="@name" /></xsl:message>
+    <xsl:variable name="id" select="generate-id()" />
     <xsl:choose>
       <xsl:when test="@positions">
         <xsl:variable name="path-data">
@@ -276,17 +330,25 @@
             <xsl:with-param name="command" select="'M'" />
           </xsl:call-template>
         </xsl:variable>
-        <svg:path d="{$path-data}" class="seat" />
+        <svg:path d="{$path-data}" id="{$id}" class="seat" />
       </xsl:when>
       <xsl:when test="@position">
-        <xsl:variable name="x" select="normalize-space(substring-before(@position, ','))" />
-        <xsl:variable name="y" select="normalize-space(substring-after(@position, ','))" />
-        <xsl:variable name="width" select="@width" />
-        <xsl:variable name="height" select="@Height" />
+        <xsl:variable name="x" select="number(normalize-space(substring-before(@position, ','))) * $scale" />
+        <xsl:variable name="y" select="number(normalize-space(substring-after(@position, ','))) * $scale" />
+        <xsl:variable name="width" select="number(@width) * $scale" />
+        <xsl:variable name="height" select="number(@Height) * $scale" />
         <xsl:variable name="angle" select="@angle" />
-        <svg:rect x="{$x}" y="{$y}" width="{$width}" height="{$height}" class="seat">
-          <xsl:if test="@angle">
-            <xsl:attribute name="transform">translate(<xsl:value-of select="$x" />,<xsl:value-of select="$y" />), rotate(<xsl:value-of select="$angle" />), translate(-<xsl:value-of select="$x" />,-<xsl:value-of select="$y" />), translate(-<xsl:value-of select="$width div 2" />, -<xsl:value-of select="$height div 2" />)</xsl:attribute>
+        <svg:rect x="{$x}" y="{$y}" width="{$width}" height="{$height}" id="{$id}" class="seat" meta:type="seat" meta:name="{@name}">
+          <xsl:if test="$angle">
+            <xsl:attribute name="transform">
+              <xsl:text>rotate(</xsl:text>
+              <xsl:value-of select="$angle" />
+              <xsl:text> </xsl:text>
+              <xsl:value-of select="$x" />
+              <xsl:text> </xsl:text>
+              <xsl:value-of select="$y" />
+              <xsl:text>)</xsl:text>
+            </xsl:attribute>
           </xsl:if>
         </svg:rect>
       </xsl:when>
