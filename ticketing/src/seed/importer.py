@@ -37,7 +37,7 @@ from account import AccountData
 from permission import PermissionData
 from operator import OperatorData, OperatorRoleData
 from event import EventData, PerformanceData
-from venue import VenueData, SeatMasterData, SeatTypeData, SeatMasterL2Data
+from venue import SiteData, VenueData, SeatData, SeatTypeData
 from product import ProductData, ProductItemData, StockData, StockHolderData, SalesSegmentData
 from user import UserData, UserProfileData, UserCredentialData
 from ticketing.bookmark.tests.bookmark import BookmarkData
@@ -61,10 +61,10 @@ db_fixture = SQLAlchemyFixture(
          'OrganizationData' : Organization,
          'EventData'        : Event,
          'PerformanceData'  : Performance,
+         'SiteData'         : Site,
          'VenueData'        : Venue,
-         'SeatMasterData'   : SeatMaster,
+         'SeatData'         : Seat,
          'SeatTypeData'     : SeatType,
-         'SeatMasterL2Data' : SeatMasterL2,
          'StockData'        : Stock,
          'StockHolderData'  : StockHolder,
          'SalesSegmentData' : SalesSegment,
@@ -100,10 +100,10 @@ data = db_fixture.data(
     OperatorData,
     EventData,
     PerformanceData,
+    SiteData,
     VenueData,
-    SeatMasterData,
+    SeatData,
     SeatTypeData,
-    SeatMasterL2Data,
     StockData,
     StockHolderData,
     SalesSegmentData,

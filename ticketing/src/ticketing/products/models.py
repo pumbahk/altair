@@ -8,7 +8,7 @@ import sqlahelper
 
 from ticketing.models import Base, BaseModel
 from ticketing.utils import StandardEnum
-from ticketing.venues.models import SeatMasterL2
+from ticketing.venues.models import Seat
 
 session = sqlahelper.get_session()
 
@@ -165,7 +165,7 @@ class SeatStock(BaseModel,Base):
     sold = Column(Boolean) # sold or not
 
     stock_id = Column(BigInteger, ForeignKey('Stock.id'))
-    seat = relationship('SeatMasterL2', uselist=False, backref="seat_stock") # 1:1
+    seat = relationship('Seat', uselist=False, backref="seat_stock") # 1:1
 
     @staticmethod
     def get_for_update(stock_id):
@@ -176,7 +176,7 @@ class SeatStock(BaseModel,Base):
     def get_group_seat(pid, stid, num):
         idx = 0
         con_num = 0
-        grouping_ss = SeatMasterL2.get_grouping_seat_sets(pid, stid)
+        grouping_ss = Seat.get_grouping_seat_sets(pid, stid)
         for grouping_seats in grouping_ss:
             for i, gseat in enumerate(grouping_seats):
                 if not gseat.sold:

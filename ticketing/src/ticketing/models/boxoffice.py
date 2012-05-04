@@ -421,7 +421,7 @@ class VenueFloor(Base):
 class SeatMaster(Base):
     __tablename__ = "SeatMaster"
     id              = Column(BigInteger, primary_key=True)
-    identifieir     = Column(String(255))
+    identifier     = Column(String(255))
     venue           = relationship('Venue')
     venue_id        = Column(BigInteger, ForeignKey('Venue.id'))
     venue           = relationship('Venue')
