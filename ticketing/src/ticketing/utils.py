@@ -46,3 +46,4 @@ class DateTimeField(DateTimeField):
                 return u' '.join(self.raw_data)
         else:
             return self.data and self.data.strftime(self.format) or u''
+

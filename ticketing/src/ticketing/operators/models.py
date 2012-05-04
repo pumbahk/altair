@@ -50,6 +50,10 @@ class OperatorRole(Base):
     created_at = Column(DateTime)
     status = Column('status',Integer, default=1)
 
+    @staticmethod
+    def all():
+        return session.query(OperatorRole).all()
+
 class OperatorActionHistory(Base):
     __tablename__ = 'OperatorActionHistory'
     id = Column(BigInteger, primary_key=True)
@@ -58,6 +62,9 @@ class OperatorActionHistory(Base):
     created_at = Column(DateTime)
     operator_id = Column(BigInteger, ForeignKey('Operator.id'))
     operator = relationship('Operator', uselist=False)
+
+def log_operation(action, model, operator):
+    pass
 
 operator_table = Table(
     'Operator', Base.metadata,

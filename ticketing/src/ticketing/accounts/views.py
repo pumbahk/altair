@@ -12,7 +12,7 @@ from ticketing.fanstatic import with_bootstrap
 from ticketing.events.models import Account
 from ticketing.accounts.forms import AccountForm
 
-@view_defaults(decorator=with_bootstrap)
+@view_defaults(decorator=with_bootstrap, permission="event_editor")
 class Accounts(BaseView):
 
     @view_config(route_name='accounts.index', renderer='ticketing:templates/accounts/index.html')

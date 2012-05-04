@@ -15,7 +15,7 @@ from ticketing.events.performances.forms import PerformanceForm, StockHolderForm
 from ticketing.products.models import Product, StockHolder, SalesSegment
 from ticketing.venues.models import Venue
 
-@view_defaults(decorator=with_bootstrap)
+@view_defaults(decorator=with_bootstrap, permission="event_editor")
 class Performances(BaseView):
 
     @view_config(route_name='performances.show', renderer='ticketing:templates/performances/show.html')

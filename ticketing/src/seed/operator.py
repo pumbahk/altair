@@ -34,20 +34,20 @@ class OperatorRoleData(DataSet):
     class role_super_user:
         name = 'Superuser'
         permissions = [
-            PermissionData.asset_editor,
-            PermissionData.event_viewer,
-            PermissionData.event_editor,
-            PermissionData.topic_viewer,
-            PermissionData.ticket_editor,
-            PermissionData.magazine_viewer,
-            PermissionData.magazine_editor,
-            PermissionData.asset_viewer,
-            PermissionData.asset_editor,
-            PermissionData.page_viewer,
-            PermissionData.page_editor,
-            PermissionData.tag_editor,
-            PermissionData.layout_viewer,
-            PermissionData.layout_editor
+            PermissionData.asset_editor_1,
+            PermissionData.event_viewer_1,
+            PermissionData.event_editor_1,
+            PermissionData.topic_viewer_1,
+            PermissionData.ticket_editor_1,
+            PermissionData.magazine_viewer_1,
+            PermissionData.magazine_editor_1,
+            PermissionData.asset_viewer_1,
+            PermissionData.asset_editor_1,
+            PermissionData.page_viewer_1,
+            PermissionData.page_editor_1,
+            PermissionData.tag_editor_1,
+            PermissionData.layout_viewer_1,
+            PermissionData.layout_editor_1
         ]
         updated_at = datetime.now()
         created_at = datetime.now()

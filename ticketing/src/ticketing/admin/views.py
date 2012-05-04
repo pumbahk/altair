@@ -11,7 +11,7 @@ import webhelpers.paginate as paginate
 import sqlahelper
 session = sqlahelper.get_session()
 
-@view_defaults(decorator=with_bootstrap)
+@view_defaults(decorator=with_bootstrap, permission="administrator")
 class Admin(BaseView):
 
     @view_config(route_name='admin.index', renderer='ticketing:templates/admin/index.html')

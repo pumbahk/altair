@@ -13,7 +13,7 @@ from ticketing.fanstatic import with_bootstrap
 from ticketing.events.models import Event, Performance
 from ticketing.events.forms import EventForm
 
-@view_defaults(decorator=with_bootstrap)
+@view_defaults(decorator=with_bootstrap, permission="event_editor")
 class Events(BaseView):
 
     @view_config(route_name='events.index', renderer='ticketing:templates/events/index.html')
