@@ -38,10 +38,10 @@ class PaymentDeliveryMethodPairForm(Form):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         Form.__init__(self, formdata, obj, prefix, **kwargs)
         if 'organization_id' in kwargs:
-            self.payment_method_id.choices = [
+            self.payment_method_ids.choices = [
                 (pm.id, pm.name) for pm in PaymentMethod.get_by_organization_id(kwargs['organization_id'])
             ]
-            self.delivery_method_id.choices = [
+            self.delivery_method_ids.choices = [
                 (dm.id, dm.name) for dm in DeliveryMethod.get_by_organization_id(kwargs['organization_id'])
             ]
 
@@ -65,16 +65,15 @@ class PaymentDeliveryMethodPairForm(Form):
         label=u'割引区分',
         validators=[Required(u'入力してください')]
     )
-    sales_segment_id = IntegerField(
-        validators=[Required(u'入力してください')]
-    )
-    payment_method_id = SelectMultipleField(
+    payment_method_ids = SelectMultipleField(
         label=u'決済方法',
-        validators=[Required(u'入力してください')],
-        choices=[]
+        validators=[Required(u'選択してください')],
+        choices=[],
+        coerce=int
     )
-    delivery_method_id = SelectMultipleField(
+    delivery_method_ids = SelectMultipleField(
         label=u'配送方法',
-        validators=[Required(u'入力してください')],
-        choices=[]
+        validators=[Required(u'選択してください')],
+        choices=[],
+        coerce=int
     )

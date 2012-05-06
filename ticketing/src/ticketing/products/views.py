@@ -2,12 +2,13 @@
 
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
+from pyramid.url import route_path
 
 from ticketing.fanstatic import with_bootstrap
 from ticketing.models import merge_session_with_post
 from ticketing.views import BaseView
 from ticketing.products.forms import PaymentDeliveryMethodPairForm, ProductForm
-from ticketing.products.models import Product, SalesSegment
+from ticketing.products.models import PaymentDeliveryMethodPair, Product, SalesSegment
 from ticketing.events.models import Performance
 
 @view_defaults(decorator=with_bootstrap)
@@ -114,7 +115,7 @@ class ProductSegments(BaseView):
 
 
 @view_defaults(decorator=with_bootstrap)
-class PaymentDeliveryMethodPair(BaseView):
+class PaymentDeliveryMethodPairs(BaseView):
 
     @view_config(route_name='products.payment_delivery_method_pair.new', request_method='GET', renderer='ticketing:templates/payment_delivery_method_pair/edit.html')
     def new_get(self):
@@ -125,7 +126,31 @@ class PaymentDeliveryMethodPair(BaseView):
         return {
             'form':f,
             'sales_segment':sales_segment,
-            }
+        }
+
+    @view_config(route_name='products.payment_delivery_method_pair.new', request_method='POST', renderer='ticketing:templates/payment_delivery_method_pair/edit.html')
+    def new_post(self):
+        sales_segment_id = int(self.request.matchdict.get('sales_segment_id', 0))
+        sales_segment = SalesSegment.get(sales_segment_id)
+        if sales_segment is None:
+            return HTTPNotFound('sales_segment id %d is not found' % sales_segment_id)
+
+        f = PaymentDeliveryMethodPairForm(self.request.POST, organization_id=self.context.user.organization_id)
+        if f.validate():
+            for payment_method_id in f.data['payment_method_ids']:
+                for delivery_method_id in f.data['delivery_method_ids']:
+                    payment_delivery_method_pair = merge_session_with_post(PaymentDeliveryMethodPair(), f.data)
+                    payment_delivery_method_pair.sales_segment_id = sales_segment_id
+                    payment_delivery_method_pair.payment_method_id = payment_method_id
+                    payment_delivery_method_pair.delivery_method_id = delivery_method_id
+                    payment_delivery_method_pair.save()
+
+            self.request.session.flash(u'販売区分を登録しました')
+            return HTTPFound(location=route_path('products.sales_segments.show', self.request, sales_segment_id=sales_segment.id))
+        return {
+            'form':f,
+            'sales_segment':sales_segment,
+        }
 
     @view_config(route_name='products.payment_delivery_method_pair.list', renderer='json')
     def list(self):

@@ -44,7 +44,8 @@ def merge_session_with_post(session, post, filters={}):
                 value = filter(session, value)
                 setattr(session, key, value)
             elif isinstance(value, str) \
-                or isinstance(value, unicode) \
+                or isinstance(value, unicode)\
+                or isinstance(value, int)\
                 or isinstance(value, datetime) \
                 or isinstance(value, date):
                 setattr(session, key, value)
