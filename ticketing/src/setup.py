@@ -63,6 +63,7 @@ setup(name='ticketing',
       include_package_data=True,
       zip_safe=False,
       install_requires=requires,
+      dependency_links = ['file:../../js.jquery_colorpicker#egg=js.jquery_colorpicker-0.0.0'],
       tests_require=requires,
       test_suite="ticketing",
       entry_points = """\
