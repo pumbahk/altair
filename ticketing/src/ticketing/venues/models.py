@@ -107,8 +107,8 @@ class VenueArea(Base):
 
 class SeatAttribute(Base):
     __tablename__   = "SeatAttribute"
-    seat_id         = Column(BigInteger, ForeignKey('Seat.id'), primary_key=True)
-    name            = Column(String(255), primary_key=True)
+    seat_id         = Column(BigInteger, ForeignKey('Seat.id'), primary_key=True, nullable=False)
+    name            = Column(String(255), primary_key=True, nullable=False)
     value           = Column(String(1023))
 
 class Seat(Base):
@@ -120,7 +120,7 @@ class Seat(Base):
     seat_type_id    = Column(BigInteger, ForeignKey('SeatType.id'))
     seat_stock_id   = Column(BigInteger, ForeignKey('SeatStock.id'))
 
-    attributes      = relationship("SeatAttribute", backref='seat', cascade='merge')
+    attributes      = relationship("SeatAttribute", backref='seat', cascade='save-update, merge')
 
     areas           = relationship("VenueArea", secondary=seat_venue_area_table, backref="seats")
 
@@ -130,6 +130,7 @@ class Seat(Base):
 
     def __setitem__(self, name, value):
         session.add(self)
+        session.flush([self])
         session.merge(SeatAttribute(seat_id=self.id, name=name, value=value))
 
     def __getitem__(self, name):
