@@ -86,7 +86,7 @@ class RakutenOpenID(object):
             #('openid.ns.oauth', identity['ns_oauth']),
             #('openid.oauth.request_token', identity['request_token']),
             #('openid.oauth.scope', identity['oauth_scope']),
-            ('openid.nx.ax', identity['ns_ax']),
+            ('openid.ns.ax', identity['ns_ax']),
             ('openid.ax.mode', identity['ax_mode']),
             ('openid.ax.type.nickname', identity['ax_type_nickname']),
             ('openid.ax.value.nickname', identity['ax_value_nickname']),
