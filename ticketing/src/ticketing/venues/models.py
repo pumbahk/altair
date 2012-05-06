@@ -72,6 +72,7 @@ class Venue(Base):
     name = Column(String(255))
     sub_name = Column(String(255))
     organization_id = Column(BigInteger, ForeignKey("Organization.id"), nullable=True)
+    organization = relationship('Organization')
 
     site = relationship("Site")
     seats = relationship("Seat", backref='venue')
@@ -85,6 +86,10 @@ class Venue(Base):
     @staticmethod
     def get(id):
         return session.query(Venue).filter(Venue.id==id).first()
+
+    @staticmethod
+    def get_by_organization_id(id):
+        return session.query(Venue).filter(Venue.organization_id==id).all()
 
     @staticmethod
     def all():

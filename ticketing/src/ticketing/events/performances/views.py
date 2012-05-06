@@ -1,4 +1,4 @@
- # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import webhelpers.paginate as paginate
 
@@ -38,7 +38,7 @@ class Performances(BaseView):
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
 
-        f = PerformanceForm()
+        f = PerformanceForm(organization_id=self.context.user.organization_id)
         return {
             'form':f,
             'event':event,
@@ -51,12 +51,11 @@ class Performances(BaseView):
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
 
-        f = PerformanceForm(self.request.POST)
+        f = PerformanceForm(self.request.POST, organization_id=self.context.user.organization_id)
         if f.validate():
-            performance = Performance()
-            performance.event = event
-            performance.venue = Venue.get(f.data['venue_id'])
-            performance = merge_session_with_post(performance, f.data)
+            performance = merge_session_with_post(Performance(), f.data)
+            performance.event_id = event_id
+            performance.venue_id = f.data['venue_id']
             performance.save()
 
             self.request.session.flash(u'パフォーマンスを登録しました')
@@ -73,7 +72,7 @@ class Performances(BaseView):
         if performance is None:
             return HTTPNotFound('performance id %d is not found' % performance_id)
 
-        f = PerformanceForm()
+        f = PerformanceForm(organization_id=self.context.user.organization_id)
         f.process(record_to_multidict(performance))
         return {
             'form':f,
@@ -87,10 +86,10 @@ class Performances(BaseView):
         if performance is None:
             return HTTPNotFound('performance id %d is not found' % performance_id)
 
-        f = PerformanceForm(self.request.POST)
+        f = PerformanceForm(self.request.POST, organization_id=self.context.user.organization_id)
         if f.validate():
-            performance.venue = Venue.get(f.data['venue_id'])
             performance = merge_session_with_post(performance, f.data)
+            performance.venue_id = f.data['venue_id']
             performance.save()
 
             self.request.session.flash(u'パフォーマンスを保存しました')
@@ -120,7 +119,7 @@ class Performances(BaseView):
         if performance is None:
             return HTTPNotFound('performance id %d is not found' % performance_id)
 
-        f = StockHolderForm(self.request.POST)
+        f = StockHolderForm(self.request.POST, organization_id=self.context.user.organization_id)
         if f.validate():
             stock_holder = merge_session_with_post(StockHolder(), f.data)
             stock_holder.performance_id = performance.id

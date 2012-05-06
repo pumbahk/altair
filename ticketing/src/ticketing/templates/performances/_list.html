@@ -1,4 +1,5 @@
 <%page args="performances" />
+<%namespace file="/common/helpers.html" import="safe_strftime" />
 
 % if performances:
   <table class="table fullwidth checkboxed_table">
@@ -20,9 +21,9 @@
         <td>${performance.id}</td>
         <td><a href="${request.route_path('performances.show', performance_id=performance.id)}">${performance.name}</a></td>
         <td>${performance.venue.name}</td>
-        <td>${performance.open_on.strftime('%Y/%m/%d %H:%M')}</td>
-        <td>${performance.start_on.strftime('%Y/%m/%d %H:%M')}</td>
-        <td>${performance.end_on.strftime('%Y/%m/%d %H:%M') or ''}</td>
+        <td>${safe_strftime(performance.open_on)}</td>
+        <td>${safe_strftime(performance.start_on)}</td>
+        <td>${safe_strftime(performance.end_on)}</td>
       </tr>
     % endfor
     </tbody>

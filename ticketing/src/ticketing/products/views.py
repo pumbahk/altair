@@ -7,7 +7,7 @@ from ticketing.fanstatic import with_bootstrap
 from ticketing.models import merge_session_with_post
 from ticketing.views import BaseView
 from ticketing.products.forms import PaymentDeliveryMethodPairForm, ProductForm
-from ticketing.products.models import session, Product, SalesSegment
+from ticketing.products.models import Product, SalesSegment
 from ticketing.events.models import Performance
 
 @view_defaults(decorator=with_bootstrap)
@@ -79,7 +79,7 @@ class ProductSegments(BaseView):
 
     @view_config(route_name='products.sales_segments', renderer='ticketing:templates/products_segments/index.html')
     def index(self):
-        sales_segments = session.query(SalesSegment).all()
+        sales_segments = SalesSegment.get_by_organization_id(self.context.user.organization_id)
         return {
             'sales_segments':sales_segments,
         }
@@ -87,17 +87,21 @@ class ProductSegments(BaseView):
     @view_config(route_name='products.sales_segments.show', renderer='ticketing:templates/products_segments/show.html')
     def show(self):
         sales_segment_id = int(self.request.matchdict.get('sales_segment_id', 0))
-        sales_segment = session.query(SalesSegment).filter(SalesSegment.id == sales_segment_id).first()
+        sales_segment = SalesSegment.get(sales_segment_id)
+        if sales_segment is None:
+            return HTTPNotFound('sales_segment id %d is not found' % sales_segment_id)
+
         return {
             'sales_segment':sales_segment,
         }
 
+    '''
     @view_config(route_name='products.sales_segments.new', request_method='GET', renderer='ticketing:templates/products_segments/edit.html')
     def new_get(self):
         sales_segment_id = int(self.request.matchdict.get('sales_segment_id', 0))
-        sales_segment = session.query(SalesSegment).filter(SalesSegment.id == sales_segment_id).first()
+        sales_segment = SalesSegment.get(sales_segment_id)
 
-        f = PaymentDeliveryMethodPairForm()
+        f = PaymentDeliveryMethodPairForm(organization_id=self.context.user.organization_id)
         return {
             'form':f,
             'sales_segment':sales_segment,
@@ -106,16 +110,24 @@ class ProductSegments(BaseView):
     @view_config(route_name='products.sales_segments.new', request_method='POST', renderer='ticketing:templates/products_segments/edit.html')
     def new_post(self):
         pass
+    '''
 
 
 @view_defaults(decorator=with_bootstrap)
-class PaymentDeliveryMethod(BaseView):
+class PaymentDeliveryMethodPair(BaseView):
 
-    @view_config(route_name='products.payment_delivery_method', renderer='ticketing:templates/delivery_method/index.html')
-    def index(self):
-        return {}
+    @view_config(route_name='products.payment_delivery_method_pair.new', request_method='GET', renderer='ticketing:templates/payment_delivery_method_pair/edit.html')
+    def new_get(self):
+        sales_segment_id = int(self.request.matchdict.get('sales_segment_id', 0))
+        sales_segment = SalesSegment.get(sales_segment_id)
 
-    @view_config(route_name='products.payment_delivery_method.list', renderer='json')
+        f = PaymentDeliveryMethodPairForm(organization_id=self.context.user.organization_id)
+        return {
+            'form':f,
+            'sales_segment':sales_segment,
+            }
+
+    @view_config(route_name='products.payment_delivery_method_pair.list', renderer='json')
     def list(self):
         return {
             'delivery_method_list' : self.context.user.organization.delivery_method_list,

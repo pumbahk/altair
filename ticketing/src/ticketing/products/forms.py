@@ -1,57 +1,80 @@
 # -*- coding: utf-8 -*-
 
 from wtforms import Form
-from wtforms import (TextField, PasswordField, TextAreaField, DateField, DateTimeField,
-                     SelectField, SubmitField, HiddenField, BooleanField, FileField, IntegerField, SelectMultipleField)
-from wtforms.validators import Required, Email, Length, NumberRange,EqualTo,optional
+from wtforms import TextField, DateTimeField, SelectField, IntegerField, SelectMultipleField
+from wtforms.validators import Required, Length, NumberRange, EqualTo, Optional
 
 from ticketing.products.models import PaymentMethod, DeliveryMethod
 
 class ProductForm(Form):
 
-    name = TextField(u'商品名',
+    name = TextField(
+        label=u'商品名',
         validators=[Required(u'入力してください')]
     )
-    price = TextField(u'価格',
+    price = TextField(
+        label=u'価格',
         validators=[Required(u'入力してください')]
     )
     sales_segment_id = TextField(
         validators=[Required()]
     )
 
+class SalesSegmentForm(Form):
+
+    start_at = DateTimeField(
+        label=u'販売開始日時',
+        validators=[Required(u'入力してください')],
+        format='%Y-%m-%d %H:%M'
+    )
+    end_at = DateTimeField(
+        label=u'販売終了日時',
+        validators=[Required(u'入力してください')],
+        format='%Y-%m-%d %H:%M'
+    )
+
 class PaymentDeliveryMethodPairForm(Form):
 
-    transaction_fee = IntegerField(u'決済手数料',
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        Form.__init__(self, formdata, obj, prefix, **kwargs)
+        if 'organization_id' in kwargs:
+            self.payment_method_id.choices = [
+                (pm.id, pm.name) for pm in PaymentMethod.get_by_organization_id(kwargs['organization_id'])
+            ]
+            self.delivery_method_id.choices = [
+                (dm.id, dm.name) for dm in DeliveryMethod.get_by_organization_id(kwargs['organization_id'])
+            ]
+
+    transaction_fee = IntegerField(
+        label=u'決済手数料',
         validators=[Required(u'入力してください')]
     )
-    delivery_fee = IntegerField(u'配送手数料',
+    delivery_fee = IntegerField(
+        label=u'配送手数料',
         validators=[Required(u'入力してください')]
     )
-    discount = IntegerField(u'割引？',
+    discount = IntegerField(
+        label=u'割引',
         validators=[Required(u'入力してください')]
     )
-    discount_unit = IntegerField(u'割引数？',
+    discount_unit = IntegerField(
+        label=u'割引数',
         validators=[Required(u'入力してください')]
     )
-    discount_type = IntegerField(u'割引区分？',
+    discount_type = IntegerField(
+        label=u'割引区分',
         validators=[Required(u'入力してください')]
-    )
-    start_at = DateTimeField(u'販売開始日時',
-        validators=[Required(u'入力してください')],
-        format='%Y-%m-%d %H:%M'
-    )
-    end_at = DateTimeField(u'販売終了日時',
-        validators=[Required(u'入力してください')],
-        format='%Y-%m-%d %H:%M'
     )
     sales_segment_id = IntegerField(
         validators=[Required(u'入力してください')]
     )
-    payment_method_id = SelectMultipleField(u'決済方法',
+    payment_method_id = SelectMultipleField(
+        label=u'決済方法',
         validators=[Required(u'入力してください')],
-        choices=[(payment_method.id, payment_method.name) for payment_method in PaymentMethod.all()]
+        choices=[]
     )
-    delivery_method_id = SelectMultipleField(u'配送方法',
+    delivery_method_id = SelectMultipleField(
+        label=u'配送方法',
         validators=[Required(u'入力してください')],
-        choices=[(delivery_method.id, delivery_method.name) for delivery_method in DeliveryMethod.all()]
+        choices=[]
     )

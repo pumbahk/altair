@@ -2,12 +2,19 @@
 
 from wtforms import Form
 from wtforms import TextField, SelectField
-from wtforms.validators import Required, Regexp, Length, Optional
+from wtforms.validators import Required, Regexp, Length, Optional, ValidationError
 
 from ticketing.utils import DateTimeField
 from ticketing.venues.models import Venue
 
 class PerformanceForm(Form):
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        Form.__init__(self, formdata, obj, prefix, **kwargs)
+        if 'organization_id' in kwargs:
+            self.venue_id.choices = [
+                (venue.id, venue.name) for venue in Venue.get_by_organization_id(kwargs['organization_id'])
+            ]
+
     name = TextField(
         label=u'公演名',
         validators=[
@@ -25,12 +32,12 @@ class PerformanceForm(Form):
     )
     open_on = DateTimeField(
         label=u'開場',
-        validators=[Required(u'入力してください')],
+        validators=[Optional()],
         format='%Y-%m-%d %H:%M',
     )
     start_on = DateTimeField(
         label=u'開演',
-        validators=[Required(u'入力してください')],
+        validators=[Optional()],
         format='%Y-%m-%d %H:%M',
     )
     end_on = DateTimeField(
@@ -41,16 +48,16 @@ class PerformanceForm(Form):
     venue_id = SelectField(
         label=u'会場',
         validators=[Required(u'選択してください')],
-        choices=[(venue.id, venue.name) for venue in Venue.all()],
+        choices=[],
         coerce=int
     )
 
     def validate_start_on(form, field):
-        if field.data is not None and field.data < form.open_on.data:
+        if field.data and form.open_on.data and field.data < form.open_on.data:
             raise ValidationError(u'開場日時より過去の日時は入力できません')
 
     def validate_end_on(form, field):
-        if field.data is not None and field.data < form.start_on.data:
+        if field.data and form.start_on.data and field.data < form.start_on.data:
             raise ValidationError(u'開演日時より過去の日時は入力できません')
 
 class StockHolderForm(Form):
