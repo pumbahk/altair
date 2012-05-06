@@ -28,7 +28,7 @@ class CheckoutItem(Base):
     completed_order_id = sa.Column(sa.Integer, sa.ForeignKey("completed_orders.id"))
 
     # OrderConfirming機能 out の場合のみ利用
-    itemConfirmationResult = sa.Column(sa.Enum())
+    itemConfirmationResult = sa.Column(sa.Enum('0', '1', '2', '3'))
     itemNumbersMessage = sa.Column(sa.Unicode(100))
     itemFeeMessage = sa.Column(sa.Unicode(100))
 
@@ -54,7 +54,7 @@ class Checkout(Base):
     orderCompleteUrl = sa.Column(sa.Integer)
     orderFailedUrl = sa.Column(sa.Integer)
     orderTotalFee = sa.Column(sa.Integer) # 最大8桁
-    authMethod = sa.Column(sa.Enum())
+    authMethod = sa.Column(sa.Enum('1', '2'))
     isTMode = sa.Column(sa.Enum('0', '1'))
     created_at = sa.Column(sa.DateTime, default=datetime.now)
 
