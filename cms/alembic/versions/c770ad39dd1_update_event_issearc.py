@@ -15,11 +15,13 @@ import sqlalchemy as sa
 
 
 def upgrade():
-    op.alter_column("event"
-                    "issearchable", type=sa.Boolean, existing_type=sa.Integer)
+    # op.alter_column("event",
+    #                 "issearchable", type_=sa.Boolean, existing_type=sa.Integer)
 
+    op.add_column("event", sa.Column("issearchable", sa.Boolean))
 
 def downgrade():
-    op.alter_column("event"
-                    "issearchable", type=sa.Integer, existing_type=sa.Boolean)
+    # op.alter_column("event",
+    #                 "issearchable", type_=sa.Integer, existing_type=sa.Boolean)
+    op.drop_column("event", "issearchable")
 

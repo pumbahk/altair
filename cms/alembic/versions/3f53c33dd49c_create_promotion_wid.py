@@ -20,7 +20,7 @@ def upgrade():
                     sa.Column("name", sa.Unicode(length=255), index=True), 
                     sa.Column("site_id", sa.Integer), 
                     sa.ForeignKeyConstraint(["site_id"], ["site.id"]), 
-                    sa.PrimarykeyConstraint("id")
+                    sa.PrimaryKeyConstraint("id")
                     )
     op.create_table("promotion_unit", 
                     sa.Column("id", sa.Integer(), nullable=False), 
@@ -32,7 +32,7 @@ def upgrade():
                     sa.ForeignKeyConstraint(["main_image_id"], ["image_asset.id"]), 
                     sa.ForeignKeyConstraint(["thumbnail_id"], ["image_asset.id"]), 
                     sa.ForeignKeyConstraint(["promotion_id"], ["promotion.id"]), 
-                    sa.PrimarykeyConstraint("id")
+                    sa.PrimaryKeyConstraint("id")
                     )
     op.create_table('widget_promotion',
                     sa.Column('id', sa.Integer(), nullable=False),
