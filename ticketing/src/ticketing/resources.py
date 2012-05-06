@@ -21,22 +21,15 @@ class RootFactory(object):
             roles = OperatorRole.all()
             for role in roles:
                 for permission in role.permissions:
-                    print role.name
-                    print role.permissions
                     self.__acl__.append((Allow, role.name, permission.category_name))
-                    print role.name
 
             user_id = authenticated_userid(request)
             self.user = Operator.get_by_login_id(user_id) if user_id is not None else None
-            print "-------"
-            for acl in self.__acl__:
-                print acl
 
 def groupfinder(userid, request):
     user = session.query(Operator).filter(Operator.login_id == userid).first()
     if user is None:
         return []
-    print [role.name for role in user.roles]
     return [role.name for role in user.roles]
 
 class ActingAsBreadcrumb(Interface):
