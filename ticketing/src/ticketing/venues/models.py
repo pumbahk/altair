@@ -139,9 +139,6 @@ class Seat(Base):
             raise KeyError(name)
         return attr.value
 
-    def attributes(self):
-        return session.query(SeatAttribute).filter(SeatAttribute.seat_id == self.id).all()
-
     # @TODO
     @staticmethod
     def get_grouping_seat_sets(pid, stid):
