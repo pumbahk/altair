@@ -28,10 +28,112 @@
   });
 </script>
 
+  <style type="text/css">
+    #canvas {
+    width: 100%;
+    height: 100%;
+    border: 1px solid black;
+    margin: 0;
+    padding: 0;
+    }
+
+    #toolbar {
+    padding: 5px 0 5px 5px;
+    margin: 0;
+    }
+
+    #toolbar input label {
+    height: 10px;
+    }
+    #venue-map {
+    padding: 0;
+    overflow:hidden;
+    }
+  </style>
+
+  <link rel="stylesheet" href="/static/js/demo/development-bundle/themes/base/jquery.ui.all.css">
+  <script type="text/javascript" src="/static/js/demo/development-bundle/ui/jquery.ui.core.js"></script>
+  <script type="text/javascript" src="/static/js/demo/development-bundle/ui/jquery.ui.widget.js"></script>
+  <script type="text/javascript" src="/static/js/demo/development-bundle/ui/jquery.ui.button.js"></script>
+
+  <script type="text/javascript" src="/static/js/demo/fashion.js"></script>
+  <script type="text/javascript" src="/static/js/demo/demo2.js"></script>
+
+  <script type="text/javascript">
+  window.addEventListener('load', function() {
+  var canvasElement = document.getElementById("canvas");
+  var svgStyle = {
+    'fill': new Fashion.Color(0, 0, 0), 'fill-opacity': 1.,
+    'stroke': null, 'stroke-opacity': 1.,
+    'stroke-width': 1
+  };
+
+  {
+    $( "#select1" ).button({
+      text: false,
+      icons: {
+        primary: "ui-icon-arrowthick-1-ne"
+      }
+    }).click(function() {
+      manager.changeTool('select1');
+    });
+
+    $( "#select" ).button({
+      text: false,
+      icons: {
+        primary: "ui-icon-calculator"
+      }
+    }).click(function() {
+      manager.changeTool('select');
+    });
+
+    $( "#zoomin" ).button({
+      text: false,
+      icons: {
+        primary: "ui-icon-zoomin"
+      }
+    }).click(function() {
+      manager.changeTool('zoomin');
+    });
+
+    $( "#zoomout" ).button({
+      text: false,
+      icons: {
+        primary: "ui-icon-zoomout"
+      }
+    }).click(function() {
+      manager.changeTool('zoomout');
+    });
+
+    $("#toolbar").buttonset();
+  }
+
+  loadXml(
+    "${request.route_path('api.get_drawing', venue_id=performance.venue_id)}",
+    function(xml) {
+      canvasElement.removeChild(canvasElement.firstChild);
+      drawable = parseSvg(xml, canvasElement);
+      manager = new DemoManager(drawable);
+    }, function() {
+      canvasElement.firstChild.innerHTML = "Loading failed";
+    }
+  );
+}, false);
+
+  </script>
+
 <div class="container-fluid">
   <div class="row-fluid">
     <div class="span8" style="background-color: #999999">
-      <div style="width:100%;  margin: 0 0 0 5px;" id="venue-map"></div>
+      <div style="width:100%;" id="venue-map">
+      <div id="toolbar" class="ui-widget-header ui-corner-all">
+        <input name="toolbarbtn" type="radio" id="select1" checked="checked"><label for="select1">select1</label>
+        <input name="toolbarbtn" type="radio" id="select"><label for="select">select</label>
+        <input name="toolbarbtn" type="radio" id="zoomin"><label for="zoomin">zoomin</label>
+        <input name="toolbarbtn" type="radio" id="zoomout"><label for="zoomout">zoomout</label>
+      </div>
+        <div id="canvas"><div class="message">Loading...</div></div>
+      </div>
     </div>
     <div class="span4">
       <div class="tab-pane" id="detail">
