@@ -12,7 +12,7 @@ ALTAIR CMS
  pip install .
  pip install -r pip-requirements.txt
  alembic current
- pmain  -c development.ini -s scripts.pmain.sqlstartup
+ pmain  -c development.ini -s altaircms.scripts.pmain.sqlstartup
  pserve development.ini --reload
 
 

@@ -28,6 +28,7 @@ requires = [
     'js.backbone',
     'js.tinymce',
     'pyramid_who',
+    'altair-commons',
     ]
 
 solr_require = [
@@ -81,19 +82,12 @@ setup(name='altair-cms',
       zip_safe=False,
       test_suite='altaircms',
       install_requires = requires,
+      dependency_links = ['file:../commons#egg=altair-commons-0.0'],
       tests_require=tests_require,
       extras_require=extras_require,
       entry_points = """\
       [paste.app_factory]
       main = altaircms:main
-
-      #[paste.paster_command]
-      #pscript = scripts.paster:PScript
-      #pmain = scripts.paster:PMain
-
-      [console_scripts]
-      pscript = scripts.console_scripts:pscript
-      pmain = scripts.console_scripts:pmain
 
       [pyramid.scaffold]
       cms_widget = scaffolds:WidgetPluginTemplate
