@@ -578,7 +578,7 @@ def add_top_page_settings():
     DBSession.add_all(topcontents)
     add_top_main_block_widgets(page)
 
-def main(env):
+def main(env, args):
     # setup()
     add_detail_page_settings()
     add_help_page_settings()

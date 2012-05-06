@@ -14,7 +14,7 @@ def block(message):
 #     Base.metadata.drop_all();
 #     Base.metadata.create_all();
 
-def main(env):
+def main(env, args):
     #setup()
     with block("create client"):
         import altaircms.auth.models as m

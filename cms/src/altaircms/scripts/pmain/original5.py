@@ -185,7 +185,7 @@ def init():
         DBSession.add(layout0)
     transaction.commit()
     
-def main(app):
+def main(app, args):
     init()
     import sys
     from altaircms.front.views import rendering_page

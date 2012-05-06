@@ -1,2 +1,2 @@
-def main(env):
+def main(env, args):
     print env
