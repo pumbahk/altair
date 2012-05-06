@@ -23,6 +23,8 @@ class SeatType(Base):
     seats = relationship('Seat', backref='seat_type')
     stocks = relationship('Stock', backref='seat_type')
 
+    style = Column(String(1024))
+
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
     status = Column(Integer)

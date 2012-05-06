@@ -130,6 +130,8 @@ class StockHolder(BaseModel,Base):
     performance_id = Column(BigInteger, ForeignKey('Performance.id'))
     account_id = Column(BigInteger, ForeignKey('Account.id'))
 
+    style = Column(String(1024))
+
     stocks = relationship('Stock', backref='stock_holder')
 
 # stock based on quantity
