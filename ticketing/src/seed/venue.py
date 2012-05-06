@@ -10,8 +10,8 @@ from seed.organization import OrganizationData
 class SiteData(DataSet):
     class site_1:
         name = u'シルク・ドゥ・ソレイユ　シアター東京（ZED）'
-        zip = '151-0000'
-        prefecture = '東京都'
+        zip = u'151-0000'
+        prefecture = u'東京都'
         city = u'目黒区'
         address = u'目黒本町'
         street = u'１−１−１'
@@ -19,12 +19,12 @@ class SiteData(DataSet):
         tel_1 = u'03-0000-0000'
         tel_2 = u'03-1111-1111'
         fax = u'03-1111-1111'
-        drawing_url = 'file:sample.svg'
+        drawing_url = u'file:sample.svg'
 
     class site_2:
         name = u'ブルーマンシアター'
-        zip = '151-0000'
-        prefecture = '東京都'
+        zip = u'151-0000'
+        prefecture = u'東京都'
         city = u'目黒区'
         address = u'目黒本町'
         street = u'１−１−１'
@@ -32,7 +32,7 @@ class SiteData(DataSet):
         tel_1 = u'03-0000-0000'
         tel_2 = u'03-1111-1111'
         fax = u'03-1111-1111'
-        drawing_url = 'file:sample.svg'
+        drawing_url = u'file:sample.svg'
 
 class VenueData(DataSet):
     class venue_1:
