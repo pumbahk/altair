@@ -2,13 +2,32 @@
 <%namespace file="/common/helpers.html" import="pager"/>                                               
 <%namespace file="/common/helpers.html" import="flash_messages" />
 <%namespace file="/common/helpers.html" import="safe_strftime" />
+<%namespace file="/common/helpers.html" import="form_item" />
+<%namespace file="/common/confirm_modal.html" import="delete_modal" />
+
+<script type="text/javascript">
+  $(function() {
+    $('#start_at').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
+    $('#end_at').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
+  });
+
+  function delete_sales_segment(id) {
+    $('#delete-modal').modal('toggle');
+    $('#delete-modal #delete').attr('href', '/products/segments/delete/' + ${sales_segment.id});
+  }
+
+  function edit_sales_segment() {
+    $('#modal-edit-sales_segment').modal('toggle');
+    $('#modal-edit-sales_segment #edit').attr('action', '/products/segments/edit/' + ${sales_segment.id});
+  }
+</script>
 
 <div class="row-fluid">
   <%include file="/parts/_menu.html" />
 
   <span class="span10">
     <div class="page-header">
-      <h3>販売条件設定</h3>
+      <h3>販売区分設定</h3>
     </div>
 
     <div class="content">
@@ -16,28 +35,36 @@
     </div>
 
     <table class="table table-striped table-bordered table-condensed">
-    <tr>
-        <th>名称</th>
+      <tr>
+        <th>${form_ss.name.label.text}</th>
         <td>${sales_segment.name}</td>
       </tr>
       <tr>
-        <th>販売開始日時</th>
+        <th>${form_ss.start_at.label.text}</th>
         <td>${safe_strftime(sales_segment.start_at)}</td>
       </tr>
       <tr>
-        <th>販売終了日時</th>
+        <th>${form_ss.end_at.label.text}</th>
         <td>${safe_strftime(sales_segment.end_at)}</td>
       </tr>
     </table>
+    <a href="javascript:edit_sales_segment()" class="btn">
+      <i class="icon-pencil"></i> 編集
+    </a>
+    <a href="javascript:delete_sales_segment()" class="btn">
+      <i class="icon-pencil"></i> 削除
+    </a>
+    <hr />
+
     <table class="table table-striped table-bordered table-condensed">
       <tr>
-        <th>決済方法</th>
-        <th>配送方法</th>
-        <th>transaction_fee</th>
-        <th>delivery_fee</th>
-        <th>discount</th>
-        <th>discount_unit</th>
-        <th>discount_type</th>
+        <th>${form_pdmp.payment_method_ids.label.text}</th>
+        <th>${form_pdmp.delivery_method_ids.label.text}</th>
+        <th>${form_pdmp.transaction_fee.label.text}</th>
+        <th>${form_pdmp.delivery_fee.label.text}</th>
+        <th>${form_pdmp.discount.label.text}</th>
+        <th>${form_pdmp.discount_unit.label.text}</th>
+        <th>${form_pdmp.discount_type.label.text}</th>
       </tr>
       % for i, payment_delivery_method_pair in enumerate(sales_segment.payment_delivery_method_pair):
       <tr>
@@ -56,3 +83,25 @@
     </a>
   </span>
 </div>
+
+<div class="modal fade" id="modal-edit-sales_segment">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">×</a>
+    <h3>決済・配送方法の編集</h3>
+  </div>
+
+  <form id="edit" action="" method="POST">
+    <div class="modal-body">
+      ${form_item(form_ss.name)}
+      ${form_item(form_ss.start_at)}
+      ${form_item(form_ss.end_at)}
+    </div>
+
+    <div class="modal-footer">
+      <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+      <input class="btn" type="submit" value="保存"></a>
+    </div>
+  </form>
+</div>
+
+${delete_modal(u'販売区分を削除します。よろしいですか？')}

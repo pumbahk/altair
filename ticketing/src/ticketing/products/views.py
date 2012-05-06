@@ -5,9 +5,9 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path
 
 from ticketing.fanstatic import with_bootstrap
-from ticketing.models import merge_session_with_post
+from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
-from ticketing.products.forms import PaymentDeliveryMethodPairForm, ProductForm
+from ticketing.products.forms import PaymentDeliveryMethodPairForm, ProductForm, SalesSegmentForm
 from ticketing.products.models import PaymentDeliveryMethodPair, Product, SalesSegment
 from ticketing.events.models import Performance
 
@@ -81,7 +81,9 @@ class ProductSegments(BaseView):
     @view_config(route_name='products.sales_segments', renderer='ticketing:templates/products_segments/index.html')
     def index(self):
         sales_segments = SalesSegment.get_by_organization_id(self.context.user.organization_id)
+        form_ss = SalesSegmentForm()
         return {
+            'form_ss':form_ss,
             'sales_segments':sales_segments,
         }
 
@@ -92,26 +94,51 @@ class ProductSegments(BaseView):
         if sales_segment is None:
             return HTTPNotFound('sales_segment id %d is not found' % sales_segment_id)
 
+        form_ss = SalesSegmentForm()
+        form_ss.process(record_to_multidict(sales_segment))
         return {
+            'form_ss':form_ss,
+            'form_pdmp':PaymentDeliveryMethodPairForm(),
             'sales_segment':sales_segment,
         }
 
-    '''
-    @view_config(route_name='products.sales_segments.new', request_method='GET', renderer='ticketing:templates/products_segments/edit.html')
-    def new_get(self):
+    @view_config(route_name='products.sales_segments.new', request_method='POST')
+    def new_post(self):
+        f = SalesSegmentForm(self.request.POST)
+        if f.validate():
+            sales_segment = merge_session_with_post(SalesSegment(), f.data)
+            sales_segment.organization_id = self.context.user.organization_id
+            sales_segment.save()
+            self.request.session.flash(u'販売区分を保存しました')
+
+        return HTTPFound(location=route_path('products.sales_segments.show', self.request, sales_segment_id=sales_segment.id))
+
+    @view_config(route_name='products.sales_segments.edit', request_method='POST')
+    def edit_post(self):
         sales_segment_id = int(self.request.matchdict.get('sales_segment_id', 0))
         sales_segment = SalesSegment.get(sales_segment_id)
+        if sales_segment is None:
+            return HTTPNotFound('sales_segment id %d is not found' % sales_segment_id)
 
-        f = PaymentDeliveryMethodPairForm(organization_id=self.context.user.organization_id)
-        return {
-            'form':f,
-            'sales_segment':sales_segment,
-        }
+        f = SalesSegmentForm(self.request.POST)
+        if f.validate():
+            sales_segment = merge_session_with_post(sales_segment, f.data)
+            sales_segment.save()
+            self.request.session.flash(u'販売区分を保存しました')
 
-    @view_config(route_name='products.sales_segments.new', request_method='POST', renderer='ticketing:templates/products_segments/edit.html')
-    def new_post(self):
-        pass
-    '''
+        return HTTPFound(location=route_path('products.sales_segments.show', self.request, sales_segment_id=sales_segment.id))
+
+    @view_config(route_name='products.sales_segments.delete')
+    def delete(self):
+        sales_segment_id = int(self.request.matchdict.get('sales_segment_id', 0))
+        sales_segment = SalesSegment.get(sales_segment_id)
+        if sales_segment is None:
+            return HTTPNotFound('sales_segment id %d is not found' % sales_segment_id)
+
+        sales_segment.delete()
+
+        self.request.session.flash(u'販売区分を削除しました')
+        return HTTPFound(location=route_path('products.sales_segments', self.request))
 
 
 @view_defaults(decorator=with_bootstrap)

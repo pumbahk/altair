@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from wtforms import Form
-from wtforms import TextField, DateTimeField, SelectField, IntegerField, SelectMultipleField
+from wtforms import TextField, SelectField, IntegerField, SelectMultipleField
 from wtforms.validators import Required, Length, NumberRange, EqualTo, Optional
 
 from ticketing.products.models import PaymentMethod, DeliveryMethod
+from ticketing.utils import DateTimeField
 
 class ProductForm(Form):
 
@@ -16,12 +17,13 @@ class ProductForm(Form):
         label=u'価格',
         validators=[Required(u'入力してください')]
     )
-    sales_segment_id = TextField(
-        validators=[Required()]
-    )
 
 class SalesSegmentForm(Form):
 
+    name = TextField(
+        label=u'販売区分名',
+        validators=[Required(u'入力してください')]
+    )
     start_at = DateTimeField(
         label=u'販売開始日時',
         validators=[Required(u'入力してください')],

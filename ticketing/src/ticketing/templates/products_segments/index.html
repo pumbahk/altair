@@ -2,18 +2,35 @@
 <%namespace file="/common/helpers.html" import="pager"/>                                               
 <%namespace file="/common/helpers.html" import="flash_messages" />
 <%namespace file="/common/helpers.html" import="safe_strftime" />
+<%namespace file="/common/helpers.html" import="form_item" />
+
+<script type="text/javascript">
+  $(function() {
+    $('#start_at').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
+    $('#end_at').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
+  });
+
+  function add_sales_segment() {
+    $('#modal-edit-sales_segment').modal('toggle');
+    $('#modal-edit-sales_segment #edit').attr('action', '/products/segments/new');
+  }
+</script>
 
 <div class="row-fluid">
   <%include file="/parts/_menu.html" />
 
   <span class="span10">
     <div class="page-header">
-      <h3>販売条件設定</h3>
+      <h3>販売区分設定</h3>
     </div>
 
     <div class="content">
       ${flash_messages(request)}
     </div>
+
+    <a href="javascript:add_sales_segment()" class="btn">
+      <i class="icon-pencil"></i> 新規
+    </a>
 
     <table class="table table-striped table-bordered table-condensed">
       <thead>
@@ -47,4 +64,24 @@
       </tbody>
     </table>
   </span>
+</div>
+
+<div class="modal fade" id="modal-edit-sales_segment">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">×</a>
+    <h3>決済・配送方法の編集</h3>
+  </div>
+
+  <form id="edit" action="" method="POST">
+    <div class="modal-body">
+      ${form_item(form_ss.name)}
+      ${form_item(form_ss.start_at)}
+      ${form_item(form_ss.end_at)}
+    </div>
+
+    <div class="modal-footer">
+      <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+      <input class="btn" type="submit" value="保存"></a>
+    </div>
+  </form>
 </div>
