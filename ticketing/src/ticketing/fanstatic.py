@@ -11,7 +11,7 @@ from js.tinymce import tinymce
 from js.backbone import backbone
 from js.bootstrap import bootstrap
 from js.jquery_timepicker_addon import timepicker
-#from js.jquery_colorpicker import jquery_colorpicker
+from js.jquery_colorpicker import jquery_colorpicker
 
 def bootstrap_need():
     bootstrap.need()
@@ -84,7 +84,7 @@ with_bootstrap = FanstaticDecoratorFactory(
     jquery_tools.need,
     json2.need,
     jqueryui.need,
-#    jquery_colorpicker.need,
+    jquery_colorpicker.need,
     # black_tie.need,
     smoothness.need,
     underscore.need,
