@@ -2,6 +2,7 @@ from lxml import etree
 import os
 import sys
 import transaction
+import re
 
 from ticketing.models import DBSession
 from ticketing.venues.models import Site, Venue, VenueArea, Seat, SeatAttribute
@@ -11,6 +12,19 @@ SITE_INFO_NAMESPACE = 'http://xmlns.ticketstar.jp/2012/site-info'
 
 class FormatError(Exception):
     pass
+
+def relativate(a, b):
+    a = os.path.normpath(a)
+    b = os.path.normpath(b)
+    abs_a = os.path.abspath(a)
+    abs_b = os.path.abspath(b)
+    pfx = os.path.commonprefix([abs_a, abs_b])
+    rest_a = abs_a[len(pfx):].lstrip('/')
+    print rest_a
+    if rest_a:
+        return re.sub(r'[^/]+(?=/|$)', '..', rest_a) + abs_b[len(pfx):]
+    else:
+        return abs_b[len(pfx) + 1:]
 
 class ObjectRetriever(object):
     def __init__(self, doc):
@@ -89,10 +103,10 @@ class ObjectRetriever(object):
     def __call__(self):
         return self.retrieve_si_objects([self.doc.getroot()])[0]
 
-def import_tree(tree):
+def import_tree(tree, file):
     if tree['class'] != 'Venue':
         raise FormatError('The root object is not a Venue')
-    site = Site(name=tree['properties']['name'])
+    site = Site(name=tree['properties']['name'], drawing_url='file:'+file)
     venue = Venue(site=site, name=tree['properties']['name'])
     for block_obj in tree['children']:
         block = VenueArea(venue=venue, name=block_obj['properties']['name'])
@@ -126,7 +140,7 @@ def import_svg(file):
         raise FormatError("The document element is not a SVG root element")
     title = root.find('{%s}title' % SVG_NAMESPACE)
     print '  Title: %s' % title.text
-    import_tree(ObjectRetriever(xmldoc)())
+    import_tree(ObjectRetriever(xmldoc)(), file)
     transaction.commit()
  
 def main(env, args):
