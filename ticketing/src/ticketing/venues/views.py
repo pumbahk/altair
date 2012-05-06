@@ -27,7 +27,7 @@ def get_seats(request):
     if venue is None:
         return HTTPNotFound("Venue id #%d not found" % venue_id)
 
-    seats_data = []
+    seats_data = {}
     for seat in DBSession.query(Seat).options(joinedload('attributes'), joinedload('areas')).filter_by(venue=venue):
         seat_datum = {
             'id': seat.l0_id,
@@ -37,12 +37,12 @@ def get_seats(request):
             }
         for attr in seat.attributes:
             seat_datum[attr.name] = attr.value
-        seats_data.append(seat_datum)
+        seats_data[seat.l0_id] = seat_datum
 
     return {
-        'areas': [
-            { 'id': area.id, 'name': area.name } \
+        'areas': dict(
+            (area.id, { 'id': area.id, 'name': area.name }) \
             for area in venue.areas
-            ],
+            ),
         'seats': seats_data
         }
