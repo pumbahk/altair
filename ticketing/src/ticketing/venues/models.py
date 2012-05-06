@@ -8,9 +8,8 @@ Base = sqlahelper.get_base()
 
 seat_venue_area_table = Table(
     'Seat_VenueArea', Base.metadata,
-    Column('id', Integer, primary_key=True),
-    Column('venue_area_id', BigInteger, ForeignKey('VenueArea.id')),
-    Column('seat_id', BigInteger, ForeignKey('Seat.id'))
+    Column('venue_area_id', BigInteger, ForeignKey('VenueArea.id'), primary_key=True),
+    Column('seat_id', BigInteger, ForeignKey('Seat.id'), primary_key=True)
 )
 
 class SeatType(Base):
@@ -121,13 +120,26 @@ class Seat(Base):
     seat_type_id    = Column(BigInteger, ForeignKey('SeatType.id'))
     seat_stock_id   = Column(BigInteger, ForeignKey('SeatStock.id'))
 
-    attributes      = relationship("SeatAttribute", backref='seat')
+    attributes      = relationship("SeatAttribute", backref='seat', cascade='merge')
 
     areas           = relationship("VenueArea", secondary=seat_venue_area_table, backref="seats")
 
     updated_at      = Column(DateTime)
     created_at      = Column(DateTime)
     status          = Column(Integer)
+
+    def __setitem__(self, name, value):
+        session.add(self)
+        session.merge(SeatAttribute(seat_id=self.id, name=name, value=value))
+
+    def __getitem__(self, name):
+        attr = session.query(SeatAttribute).get((self.id, name))
+        if attr is None:
+            raise KeyError(name)
+        return attr.value
+
+    def attributes(self):
+        return session.query(SeatAttribute).filter(SeatAttribute.seat_id == self.id).all()
 
     # @TODO
     @staticmethod

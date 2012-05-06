@@ -9,7 +9,7 @@ CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 requires = [
     'nose',
     'webtest',
-    'pyramid',
+    'pyramid >= 1.3',
     'pyramid_debugtoolbar',
     'pyramid_fanstatic',
     'pyramid_tm',
@@ -42,7 +42,9 @@ requires = [
     'js.jquery_timepicker_addon',
     'js.jquery_colorpicker',
     'simplejson',
-    'waitress'
+    'waitress',
+    'altair-commons',
+    'lxml',
     ]
 
 setup(name='ticketing',
@@ -63,7 +65,7 @@ setup(name='ticketing',
       include_package_data=True,
       zip_safe=False,
       install_requires=requires,
-      dependency_links = ['file:../../js.jquery_colorpicker#egg=js.jquery_colorpicker-0.0.0'],
+      dependency_links = ['file:../../js.jquery_colorpicker#egg=js.jquery_colorpicker-0.0.0', 'file:../commons#egg=altair-commons-0.0'],
       tests_require=requires,
       test_suite="ticketing",
       entry_points = """\
