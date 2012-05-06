@@ -11,6 +11,7 @@ from js.tinymce import tinymce
 from js.backbone import backbone
 from js.bootstrap import bootstrap
 from js.jquery_timepicker_addon import timepicker
+from js.jquery_colorpicker import jquery_colorpicker
 
 def bootstrap_need():
     bootstrap.need()
@@ -23,6 +24,8 @@ class FanstaticDecoratorFactory(object):
         self.fns = fns
     
     def add(self, fn):
+        print "--- add"
+        print fn
         new = FanstaticDecoratorFactory()
         new.fns = list(self.fns[:])
         new.fns.append(fn)
@@ -39,6 +42,7 @@ class FanstaticDecoratorFactory(object):
         def wraps(context, request, *args, **kwargs):
             response = wrapped(context, request, *args, **kwargs)
             for fn in self.fns:
+                print fn
                 if hasattr(fn, "need"):
                     fn.need()
                 else:
@@ -80,10 +84,11 @@ with_bootstrap = FanstaticDecoratorFactory(
     jquery_tools.need,
     json2.need,
     jqueryui.need,
+    jquery_colorpicker.need,
     # black_tie.need,
     smoothness.need,
     underscore.need,
     backbone.need,
     bootstrap.need,
-    timepicker.need
+    timepicker.need,
  )

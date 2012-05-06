@@ -40,6 +40,7 @@ requires = [
     'js.backbone',
     'js.bootstrap',
     'js.jquery_timepicker_addon',
+    'js.jquery_colorpicker',
     'simplejson',
     'waitress'
     ]

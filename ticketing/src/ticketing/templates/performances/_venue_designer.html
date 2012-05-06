@@ -98,6 +98,23 @@
         <div class="modal-body">
             <label>席種名</label>
             <input id="name" name="name" type="text" class="span3" value="">
+            <label>色</label>
+            <input id="line_color" name="name" type="text" class="span3" value="">
+            <label>線の太さ</label>
+            <div class="controls">
+                <label class="checkbox inline"><input type="radio" name="line_thickness" id="line_thickness1" value="option1">1</label>
+                <label class="checkbox inline"><input type="radio" name="line_thickness" id="line_thickness2" value="option2">2</label>
+                <label class="checkbox inline"><input type="radio" name="line_thickness" id="line_thickness3" value="option3">3</label>
+                <label class="checkbox inline"><input type="radio" name="line_thickness" id="line_thickness4" value="option3">4</label>
+                <label class="checkbox inline"><input type="radio" name="line_thickness" id="line_thickness5" value="option3">5</label>
+                <label class="checkbox inline"><input type="radio" name="line_thickness" id="line_thickness6" value="option3">6</label>
+            </div>
+            <label class="control-label" for="inlineCheckboxs">線の種類</label>
+            <div class="controls">
+                <label class="checkbox inline"><input type="radio" name="line_style" id="inlineCheckbox1" value="option1">実線</label>
+                <label class="checkbox inline"><input type="radio" name="line_style" id="inlineCheckbox2" value="option2">破線</label>
+                <label class="checkbox inline"><input type="radio" name="line_style" id="inlineCheckbox3" value="option3">点線</label>
+            </div>
         </div>
 
         <div class="modal-footer">
@@ -106,5 +123,26 @@
         </div>
     </form>
 </div>
+
+<script type="text/javascript">
+$('#line_color').ColorPicker({
+	onSubmit: function(hsb, hex, rgb, el) {
+		$(el).val(hex);
+		$(el).ColorPickerHide();
+	},
+	onBeforeShow: function () {
+		$(this).ColorPickerSetColor(this.value);
+	},
+    onChange: function (hsb, hex, rgb) {
+        $('#line_color').css('backgroundColor', '#' + hex);
+        $('#line_color').val(hex)
+    },
+    zIndex: 9999
+})
+.bind('keyup', function(){
+	$(this).ColorPickerSetColor(this.value);
+});
+
+</script>
 
 ${delete_modal(u'選択した席種を削除します。よろしいですか？')}
