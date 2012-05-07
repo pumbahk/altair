@@ -10,17 +10,19 @@ from pyramid.session import UnencryptedCookieSessionFactoryConfig
 
 import sqlahelper
 
-try:
-    import pymysql_sa
-    pymysql_sa.make_default_mysql_dialect()
-    print 'Using PyMySQL'
-except:
-    pass
-
 import logging
 
 logging.basicConfig()
 logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+
+try:
+    import pymysql_sa
+    pymysql_sa.make_default_mysql_dialect()
+    logging.info('Using PyMySQL')
+except:
+    pass
+
+
 
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.

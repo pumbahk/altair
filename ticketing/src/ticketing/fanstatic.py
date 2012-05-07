@@ -13,6 +13,8 @@ from js.bootstrap import bootstrap
 from js.jquery_timepicker_addon import timepicker
 from js.jquery_colorpicker import jquery_colorpicker
 
+from ticketing.jslib.jquery_validation_engine import validation_engine
+
 def bootstrap_need():
     bootstrap.need()
 
@@ -79,6 +81,7 @@ with_fanstatic_jqueries = FanstaticDecoratorFactory(
 with_wysiwyg_editor = FanstaticDecoratorFactory(
     tinymce.need
 )
+
 with_bootstrap = FanstaticDecoratorFactory(
     jquery.need,
     jquery_tools.need,
@@ -92,3 +95,4 @@ with_bootstrap = FanstaticDecoratorFactory(
     bootstrap.need,
     timepicker.need,
  )
+

@@ -50,6 +50,7 @@ class Products(BaseView):
 
     @view_config(route_name='products.json.new', renderer='json')
     def json_new(self):
+        print self.request.body
         return dict()
 
     @view_config(route_name='products.json.update', renderer='json')
