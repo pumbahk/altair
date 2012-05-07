@@ -8,11 +8,12 @@ class AfterInput(Exception):
     pass
 
 class SimpleCRUDViewFactory(object):
-    def __init__(self, prefix, title, model, form):
+    def __init__(self, prefix, title, model, form, mapper):
         self.prefix = prefix
         self.title = title
         self.model = model
         self.form = form
+        self.mapper = mapper
 
     def _join(self, ac):
         return "%s_%s" % (self.prefix, ac)

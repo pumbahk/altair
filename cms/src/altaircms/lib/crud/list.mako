@@ -22,9 +22,12 @@
   </thead>
     <tbody>
         %for x in xs:
+		    <%
+			 x = master_env.mapper(request, x) if master_env.mapper else x
+			 %>
             <tr>
               %for k in display_fields:
-			    <td>${getattr(x,k) or "-"}</td>
+			    <td>${getattr(x,k, "-")}</td>
               %endfor
               <td>
               <form action="${request.route_path(master_env._join("delete"),id=x.id)}" method="POST">

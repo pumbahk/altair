@@ -42,4 +42,4 @@ class PromotionUnitForm(Form):
 class PromotionForm(Form):
     name = fields.TextField(label=u"プロモーション枠名")
     ## site
-    
+
