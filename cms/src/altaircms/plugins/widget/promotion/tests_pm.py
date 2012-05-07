@@ -75,16 +75,16 @@ class PromotionManagerTests(unittest.TestCase):
         return RealPromotionManager
 
     def test_promotion_info(self):
-        main_image = makeImageasset()
-        thumbnail = makeImageasset()
+        main_image = makeImageasset(id=1)
+        thumbnail = makeImageasset(id=2)
         pu = makePromotionUnit(text=u"text", link=u"http://www.google.co.jp", 
-                               main_image=main_image, thumbnail=thumbnail)
+                               id=1, main_image=main_image, thumbnail=thumbnail)
         promotion = makePromotion(promotion_units=[pu])
         result = self._getTarget().promotion_info(testing.DummyRequest(), promotion)
 
         self.assertEquals(result.message, u"text")
-        self.assertEquals(result.main, main_image)
-        self.assertEquals(result.thumbnails, [thumbnail])
+        self.assertEquals(result.main, "/display/1?")
+        self.assertEquals(result.thumbnails, ["/display/2?"])
         self.assertEquals(result.main_link, "http://www.google.co.jp")
         self.assertEquals(result.links, ["http://www.google.co.jp"])
 
