@@ -36,7 +36,7 @@ def main(env, args):
         DBSession.add(debug_user)
 
 
-    ##
+    
     from . import demo
     demo.add_initial_junk_data()
 

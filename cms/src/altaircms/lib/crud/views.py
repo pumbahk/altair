@@ -2,7 +2,7 @@ from pyramid.httpexceptions import HTTPFound
 from altaircms.lib.viewhelpers import FlashMessage
 from altaircms.lib.fanstatic_decorator import with_bootstrap
 from altaircms.models import DBSession
-import wtforms
+from altaircms.models import model_from_dict
 
 class AfterInput(Exception):
     pass
@@ -40,8 +40,8 @@ class SimpleCRUDViewFactory(object):
         def create(request):
             form = self.form(request.POST)
             if form.validate():
-                x = self.model.from_dict(form.data)
-                DBSession.add(x)
+                obj = model_from_dict(self.model, form.data)
+                DBSession.add(obj)
                 FlashMessage.success("create", request=request)
             else:
                 # FlashMessage.error(form.errors, request=request)
@@ -50,8 +50,8 @@ class SimpleCRUDViewFactory(object):
             return HTTPFound(request.route_path(self._join("list")), request)
 
         def delete(request):
-            x = self.model.query.filter_by(id=request.matchdict["id"]).one()
-            DBSession.delete(x)
+            obj = self.model.query.filter_by(id=request.matchdict["id"]).one()
+            DBSession.delete(obj)
             FlashMessage.success("delete", request=request)
             return HTTPFound(request.route_path(self._join("list")), request)
 

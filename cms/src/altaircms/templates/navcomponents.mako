@@ -17,6 +17,9 @@
     <li><a href="${request.route_path("event_list")}">イベント</a></li>
     <li><a href="${request.route_path("performance_list")}">パフォーマンス</a></li>
     <li><a href="${request.route_path("ticket_list")}">チケット</a></li>
+    <li><a href="${request.route_path("promotion_list")}">プロモーション枠</a></li>
+	## fixme rename promotion_unit
+    <li><a href="${request.route_path("promotion_unit_list")}">プロモーション</a></li>
     <li><a href="${request.route_path("topic_list")}">トピック</a></li>
     <li><a href="${request.route_path("topcontent_list")}">トップコンテンツ</a></li>
     <li class="nav-header">ページ管理</li>

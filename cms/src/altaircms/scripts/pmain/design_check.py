@@ -416,7 +416,7 @@ def make_image_asset(path, **params):
     return create_asset(captured, params=params)
 
 def top_promotion(layout):
-    img_path = os.path.join(os.path.dirname(__file__), "../../altaircms/static/mock/img/")
+    img_path = os.path.join(os.path.dirname(__file__), "../../static/mock/img/")
     def make_materials(i, imgname, thumbname):
         main_image = make_image_asset(os.path.join(img_path, imgname), title=imgname)
         thumbnail = make_image_asset(os.path.join(img_path, thumbname),title=thumbname)
