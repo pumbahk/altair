@@ -224,9 +224,10 @@ class RolePermissionView(object):
 
     @view_config(route_name='role_permission', request_method="POST", request_param="_method=delete")
     def delete(self):
+        permission = self.request.matchdict.get('id')
         role_id = self.request.matchdict.get('role_id', None)
-        role_permission_id = self.request.matchdict.get('id', None)
-
-        RolePermission.query.filter_by(role_id=role_id, permission_id=role_permission_id).delete()
-
+        role = Role.query.filter_by(id=role_id).one()
+        if permission in role.permissions:
+            role.permissions.remove(permission)
+        
         return HTTPFound(self.request.route_path("role", id=role_id))

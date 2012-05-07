@@ -19,7 +19,7 @@ You are <strong>${user.role.name}</strong>.
         <td>${role.name}</td>
         <td>
         %for perm in role.permissions:
-          <span class="label label-info">${perm.name}</span>
+          <span class="label label-info">${perm}</span>
         %endfor
         </td>
         <td><a href="${request.route_path("role", id=role.id)}"><span class="btn"><i class="icon-eye-open"> </i> Show</span></a></td>
