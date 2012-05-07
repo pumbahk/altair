@@ -11,9 +11,11 @@ Setup
   $ easy_install virtualenv
   $ virtualenv env
   $ env/bin/easy_install pyramid
-  $ cd vega
-  $ ../env/bin/python setup.py develop
-  $ ../env/bin/paster serve development.ini --reload
+  $ source env/bin/activate
+  $ cd altair/ticketing/src
+  $ python setup.py develop
+  $ python seed_import.py
+  $ ../../../env/bin/paster serve development.ini --reload
 
 Useful Resources
 ================
