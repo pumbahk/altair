@@ -210,18 +210,6 @@ class RolePermissionView(object):
     def __init__(self, request):
         self.request = request
 
-    def create(self):
-        pass
-
-    @view_config(route_name='role_permission_list', request_method="GET", renderer="string") # deprecated? とりあえず string rendererつけとく
-    def read(self):
-        return dict(
-            permissions=DBSession.query(RolePermission)
-        )
-
-    def update(self):
-        pass
-
     @view_config(route_name='role_permission', request_method="POST", request_param="_method=delete")
     def delete(self):
         permission = self.request.matchdict.get('id')
