@@ -384,7 +384,7 @@ var DemoManager = Fashion._lib._class("DemoManager", {
                   self.originalStyles[i.id] = {
                     fill: i.style().fill,
                     stroke: i.style().fill,
-                    label: i.label.style()
+                    label: i.label ? i.label.style(): void(0)
                   };
                   i.style(selectedSeatStyle);
                   if (i.label) {
