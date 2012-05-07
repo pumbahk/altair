@@ -50,7 +50,7 @@ class Topic(AboutPublishMixin,
     query = DBSession.query_property()
 
     __tablename__ = "topic"
-    KIND_CANDIDATES = [u"公演中止情報", u"お知らせ", u"その他"]
+    KIND_CANDIDATES = [u"公演中止情報", u"お知らせ", u"その他", u"ヘルプ"]
 
     id = sa.Column(sa.Integer, primary_key=True)
     created_at = sa.Column(sa.DateTime, default=datetime.now)
@@ -59,6 +59,7 @@ class Topic(AboutPublishMixin,
     client_id = sa.Column(sa.Integer, sa.ForeignKey("client.id")) #?
     site_id = sa.Column(sa.Integer, sa.ForeignKey("site.id"))   
     kind = sa.Column(sa.Unicode(255))
+    category = sa.Column(sa.Unicode(255))
     title = sa.Column(sa.Unicode(255))
     text = sa.Column(sa.Unicode(255))
     event_id = sa.Column(sa.Integer, sa.ForeignKey("event.id"), nullable=True)
@@ -89,7 +90,7 @@ class Topic(AboutPublishMixin,
             return None
 
     @classmethod
-    def matched_topic_type(cls, page=None, event=None, category=None, qs=None):
+    def matched_topic_type(cls, page=None, event=None, qs=None):
         if qs is None:
             qs = cls.query
         where = (cls.has_global())
@@ -100,10 +101,14 @@ class Topic(AboutPublishMixin,
         return qs.filter(where)
 
     @classmethod
-    def matched_qs(cls, d=None, page=None, event=None, qs=None, kind=None):
+    def matched_qs(cls, d=None, page=None, event=None, qs=None, kind=None, category=None):
         """ 下にある内容の通りのtopicsを返す
         """
         qs = cls.publishing(d=d, qs=qs)
         qs = cls.matched_topic_type(qs=qs, page=page, event=event)
-        return qs.filter(cls.kind==kind) if kind else qs
+        if category:
+            qs =  qs.filter_by(category=category)
+        if kind:
+            qs = qs.filter_by(kind=kind)
+        return qs
 

@@ -11,6 +11,7 @@
   <tbody>
     ${co.formfield(form, "topic_type")}
     ${co.formfield(form, "kind")}
+    ${co.formfield(form, "category")}
     ${co.formfield(form, "display_count")}
     ${co.formfield(form, "display_global")}
     ${co.formfield(form, "display_page")}

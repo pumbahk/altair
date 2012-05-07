@@ -78,6 +78,14 @@
    padding: 6px;
    padding-left: 15px;
 }
+.help-heading {
+   background-repeat: no-repeat;
+   background-image:url(/static/ticketstar/img/help/bg_heading.gif);
+   color: #fff;
+   margin:0;
+   padding: 6px;
+   padding-left: 15px;
+}
 
 /* fixme */
 #thisWeek,#nearTheEnd {
@@ -122,4 +130,12 @@
 }
 #serviceIcon li.icon-crecache {
 	background-image: url(/static/ticketstar/img/detail/icon_creche.gif);
+}
+
+/* help */
+.helpList dt {
+	height: auto;
+}
+.helpList dd {
+	height: auto;
 }

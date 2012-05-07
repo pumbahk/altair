@@ -381,10 +381,239 @@ def help_page(layout):
     PageSet.get_or_create(help_page)
     return help_page
 
+def add_help_topics():
+    return [
+        Topic(kind=u"ヘルプ", 
+              category=u"会員登録・ログイン", 
+              text=u"楽天会員情報の管理よりお手続きください。", 
+              title=u"会員ID忘れてしまいました", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=True), 
+        Topic(kind=u"ヘルプ", 
+              category=u"会員登録・ログイン", 
+              text=u"回答が入ります", 
+              title=u"パスワードを忘れてしまいました。", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=True), 
+        Topic(kind=u"ヘルプ", 
+              category=u"会員登録・ログイン", 
+              text=u"回答が入ります", 
+              title=u"登録している住所やメールアドレスの変更はできますか？", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=True), 
+
+        Topic(kind=u"ヘルプ", 
+              category=u"チケット予約・購入", 
+              text=u"回答が入ります", 
+              title=u"座席を指定しての申し込みはできますか？", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=True), 
+        Topic(kind=u"ヘルプ", 
+              category=u"チケット予約・購入", 
+              text=u"回答が入ります", 
+              title=u"座席はならびで取ることはできますか？", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=True), 
+        Topic(kind=u"ヘルプ", 
+              category=u"チケット予約・購入", 
+              text=u"回答が入ります", 
+              title=u"一般予約の申し込み方法を教えてください。", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=True), 
+        Topic(kind=u"ヘルプ", 
+              category=u"チケット予約・購入", 
+              text=u"回答が入ります", 
+              title=u"申し込みしたチケットの座席番号確認はできますか？", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=True), 
+        Topic(kind=u"ヘルプ", 
+              category=u"チケット予約・購入", 
+              text=u"回答が入ります", 
+              title=u"一度申込みしたチケットの取り消しはできますか？", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=True), 
+        Topic(kind=u"ヘルプ", 
+              category=u"チケット予約・購入", 
+              text=u"回答が入ります", 
+              title=u"ＰＣから、チケットの申込みができませんでした。", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=True), 
+        Topic(kind=u"ヘルプ", 
+              category=u"チケット予約・購入", 
+              text=u"回答が入ります", 
+              title=u"チケットの予約・購入履歴を確認したい。", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=True), 
+
+        Topic(kind=u"ヘルプ", 
+              category=u"支払い方法・引取り方法", 
+              text=u"楽天会員情報の管理よりお手続きください。", 
+              title=u"会員ID忘れてしまいました", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=True), 
+        Topic(kind=u"ヘルプ", 
+              category=u"支払い方法・引取り方法", 
+              text=u"回答が入ります", 
+              title=u"パスワードを忘れてしまいました。", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=True), 
+        Topic(kind=u"ヘルプ", 
+              category=u"支払い方法・引取り方法", 
+              text=u"回答が入ります", 
+              title=u"登録している住所やメールアドレスの変更はできますか？", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=True), 
+
+        Topic(kind=u"ヘルプ", 
+              category=u"ヘルプ：本人認証サービス(3Dセキュアサービス)について", 
+              text=u"楽天会員情報の管理よりお手続きください。", 
+              title=u"会員ID忘れてしまいました", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=True), 
+        Topic(kind=u"ヘルプ", 
+              category=u"ヘルプ：本人認証サービス(3Dセキュアサービス)について", 
+              text=u"回答が入ります", 
+              title=u"パスワードを忘れてしまいました。", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=True), 
+        Topic(kind=u"ヘルプ", 
+              category=u"ヘルプ：本人認証サービス(3Dセキュアサービス)について", 
+              text=u"回答が入ります", 
+              title=u"登録している住所やメールアドレスの変更はできますか？", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=True), 
+
+        Topic(kind=u"ヘルプ", 
+              category=u"本人認証サービス(3Dセキュアサービス)について", 
+              text=u"楽天会員情報の管理よりお手続きください。", 
+              title=u"会員ID忘れてしまいました", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=True), 
+        Topic(kind=u"ヘルプ", 
+              category=u"本人認証サービス(3Dセキュアサービス)について", 
+              text=u"回答が入ります", 
+              title=u"パスワードを忘れてしまいました。", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=True), 
+        Topic(kind=u"ヘルプ", 
+              category=u"本人認証サービス(3Dセキュアサービス)について", 
+              text=u"回答が入ります", 
+              title=u"登録している住所やメールアドレスの変更はできますか？", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=True), 
+
+        Topic(kind=u"ヘルプ", 
+              category=u"セブンーイレブン引取り", 
+              text=u"楽天会員情報の管理よりお手続きください。", 
+              title=u"会員ID忘れてしまいました", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=True), 
+        Topic(kind=u"ヘルプ", 
+              category=u"セブンーイレブン引取り", 
+              text=u"回答が入ります", 
+              title=u"パスワードを忘れてしまいました。", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=True), 
+        Topic(kind=u"ヘルプ", 
+              category=u"セブンーイレブン引取り", 
+              text=u"回答が入ります", 
+              title=u"登録している住所やメールアドレスの変更はできますか？", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=True), 
+
+        ]
+def add_help_main_block_widgets(page):
+    params = dict(kind=u"チケットスター：ヘルプページ見出し", 
+                  text=u"会員登録・ログイン")
+    add_heading_widget(page, "main", params)
+
+    params =  {"kind": u"ヘルプ", 
+               "category": u"会員登録・ログイン", 
+               "display_count": 100, 
+               "display_global": True, 
+               "display_event": True, 
+               "display_page": True}
+    add_topic_widget(page, "main",  params)
+
+    params = dict(kind=u"チケットスター：ヘルプページ見出し", 
+                  text=u"チケット予約・購入")
+    add_heading_widget(page, "main", params)
+
+    params =  {"kind": u"ヘルプ", 
+               "category": u"チケット予約・購入", 
+               "display_count": 100, 
+               "display_global": True, 
+               "display_event": True, 
+               "display_page": True}
+    add_topic_widget(page, "main",  params)
+
+    params = dict(kind=u"チケットスター：ヘルプページ見出し", 
+                  text=u"支払い方法・引取り方法")
+    add_heading_widget(page, "main", params)
+
+    params =  {"kind": u"ヘルプ", 
+               "category": u"支払い方法・引取り方法", 
+               "display_count": 100, 
+               "display_global": True, 
+               "display_event": True, 
+               "display_page": True}
+    add_topic_widget(page, "main",  params)
+
+    params = dict(kind=u"チケットスター：ヘルプページ見出し", 
+                  text=u"本人認証サービス(3Dセキュアサービス)について")
+    add_heading_widget(page, "main", params)
+
+    params =  {"kind": u"ヘルプ", 
+               "category": u"本人認証サービス(3Dセキュアサービス)について", 
+               "display_count": 100, 
+               "display_global": True, 
+               "display_event": True, 
+               "display_page": True}
+    add_topic_widget(page, "main",  params)
+
+    params = dict(kind=u"チケットスター：ヘルプページ見出し", 
+                  text=u"セブンーイレブン引取り")
+    add_heading_widget(page, "main", params)
+
+    params =  {"kind": u"ヘルプ", 
+               "category": u"セブンーイレブン引取り", 
+               "display_count": 100, 
+               "display_global": True, 
+               "display_event": True, 
+               "display_page": True}
+    add_topic_widget(page, "main",  params)
+
+
 def add_help_page_settings():
     layout = help_layout()
+    topics = add_help_topics()
     page = help_page(layout)
+
+    add_help_main_block_widgets(page)
     DBSession.add(page)
+    DBSession.add_all(topics)
 
 def top_layout():
     layout = Layout(

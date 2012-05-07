@@ -38,6 +38,7 @@ class TopicWidgetView(object):
         context = self.request.context
         widget = context.get_widget(self.request.GET.get("pk"))
         form = forms.TopicChoiceForm(**widget.to_dict())
+        form.configure_choices_field()
         # form.transform(widget.topic_type)
         return {"form": form}
 

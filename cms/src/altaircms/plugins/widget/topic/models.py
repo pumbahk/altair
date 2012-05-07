@@ -38,6 +38,7 @@ class TopicWidget(Widget):
     display_event = sa.Column(sa.Boolean)
     display_page = sa.Column(sa.Boolean)
     kind = sa.Column(sa.Unicode(255))
+    category = sa.Column(sa.Unicode(255))
 
     def merge_settings(self, bname, bsettings):
         merge_settings_function = MERGE_SETTINGS_DISPATH[self.kind]
@@ -60,7 +61,8 @@ def topics_merge_settings(template_name, widget, bname, bsettings):
         d = widget.now_date_function()
         request = bsettings.extra["request"]
         page = bsettings.extra["page"] if widget.display_page else None
-        qs = Topic.matched_qs(page=page, d=d, kind=widget.kind)
+
+        qs = Topic.matched_qs(page=page, d=d, kind=widget.kind, category=widget.category)
         qs = _qs_refine(qs, Topic, widget)
         return render(template_name, 
                       {"widget": widget, "topics": qs}, 
@@ -88,6 +90,9 @@ MERGE_SETTINGS_DISPATH = {
     u"トピックス": functools.partial(
         topics_merge_settings, 
         "altaircms.plugins.widget:topic/topic_render.mako"), 
+    u"ヘルプ": functools.partial(
+        topics_merge_settings, 
+        "altaircms.plugins.widget:topic/help_topic_render.mako"), 
     u"注目のイベント": functools.partial(
         topcontent_merge_settings, 
         "altaircms.plugins.widget:topic/notable_event_render.mako")
