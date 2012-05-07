@@ -639,18 +639,33 @@ def sports_page(layout):
 
 def add_sports_topics():
     return [
+        Topic(kind=u"トピックス", 
+              text=u"#", 
+              title=u"ポイント10倍キャンペーン実施中！『大相撲三月場所』マス席の他、希少な溜まり席も販売！", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=True, 
+              orderno=1), 
+        Topic(kind=u"トピックス", 
+              text=u"#", 
+              title=u"きゃりーぱみゅぱみゅ、倖田來未 、CNBLUE ら出演♪「オンタマカーニバル2012」1/14発売！", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=True, 
+              orderno=2), 
+
         ]
 
 def add_sports_main_block_widgets(page, promotion):
-    params =  {"kind": u"注目のイベント", 
-               "category": u"スポーツ", 
+    params =  {"kind": u"トピックス", 
                "display_count": 6, 
                "display_global": True, 
                "display_event": True, 
                "display_page": True}
     add_topic_widget(page, "main", params)
 
-    # add_promotion_widget(page, "main", {"promotion": promotion.id})
+    add_promotion_widget(page, "main", {"promotion": promotion.id, 
+                                        "kind": u"チケットスター:カテゴリTopプロモーション枠"})
 
     params = dict(kind=u"チケットスター：スポーツ見出し", 
                   text=u"トピックス")
@@ -756,6 +771,7 @@ def top_promotion(layout):
 def top_topics(page):
     return [
         Topic(kind=u"トピックス", 
+              category=u"Top", 
               text=u"#", 
               title=u"ポイント10倍キャンペーン実施中！『大相撲三月場所』マス席の他、希少な溜まり席も販売！", 
               publish_open_on=datetime.datetime(2011, 1, 1),
@@ -763,6 +779,7 @@ def top_topics(page):
               is_global=True, 
               orderno=1), 
         Topic(kind=u"トピックス", 
+              category=u"Top", 
               text=u"#", 
               title=u"きゃりーぱみゅぱみゅ、倖田來未 、CNBLUE ら出演♪「オンタマカーニバル2012」1/14発売！", 
               publish_open_on=datetime.datetime(2011, 1, 1),
@@ -770,6 +787,7 @@ def top_topics(page):
               is_global=True, 
               orderno=2), 
         Topic(kind=u"トピックス", 
+              category=u"Top", 
               text=u"#", 
               title=u"47年ぶりに日本上陸のツタンカーメン展！1/31購入分まで、もれなくポイント10倍！", 
               publish_open_on=datetime.datetime(2011, 1, 1),
@@ -777,6 +795,7 @@ def top_topics(page):
               is_global=True, 
               orderno=3), 
         Topic(kind=u"トピックス", 
+              category=u"Top", 
               text=u"#", 
               title=u"東京、大阪で過去最高の動員を記録したKOOZAが福岡へ上陸！楽チケならポイント10倍！", 
               publish_open_on=datetime.datetime(2011, 1, 1),
@@ -857,13 +876,15 @@ def top_topcontents(page):
         ]
 
 def add_top_main_block_widgets(page, promotion):
-    add_promotion_widget(page, "main", {"promotion": promotion.id})
+    add_promotion_widget(page, "main", {"promotion": promotion.id, 
+                                        "kind": u"チケットスター:Topプロモーション枠"})
 
     params = dict(kind=u"チケットスター：トップページ見出し", 
                   text=u"トピックス")
     add_heading_widget(page, "main", params)
 
     params =  {"kind": u"トピックス", 
+               "category": u"Top", 
                "display_count": 5, 
                "display_global": True, 
                "display_event": True, 

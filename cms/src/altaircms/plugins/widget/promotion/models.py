@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 from zope.interface import implements
 from altaircms.interfaces import IWidget
+import functools
 from collections import namedtuple
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
@@ -17,6 +18,30 @@ import altaircms.helpers as h
 
 ## fixme: rename **info
 PromotionInfo = namedtuple("PromotionInfo", "idx thumbnails message main main_link links interval_time unit_candidates")
+
+def promotion_merge_settings(template_name, widget, bname, bsettings):
+    def slideshow_render():
+        request = bsettings.extra["request"]
+            ## fixme real implementation
+        from . import api
+        pm = api.get_promotion_manager(request)
+        params = {"show_image": pm.show_image, "info": pm.promotion_info(request, widget.promotion)}
+        return render(template_name, params, request=request)
+
+    bsettings.add(bname, slideshow_render)
+
+
+PROMOTION_DISPATH = {
+    u"チケットスター:Topプロモーション枠": functools.partial(
+        promotion_merge_settings, 
+        "altaircms.plugins.widget:promotion/render.mako"
+        ), 
+    u"チケットスター:カテゴリTopプロモーション枠":
+        functools.partial(
+        promotion_merge_settings, 
+        "altaircms.plugins.widget:promotion/category_render.mako"
+        )
+    }
 
 class Promotion(Base):
     query = DBSession.query_property()
@@ -72,7 +97,6 @@ class PromotionWidget(Widget):
     implements(IWidget)
     type = "promotion"
 
-    template_name = "altaircms.plugins.widget:promotion/render.mako"
     __tablename__ = "widget_promotion"
     __mapper_args__ = {"polymorphic_identity": type}
     query = DBSession.query_property()
@@ -80,18 +104,11 @@ class PromotionWidget(Widget):
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
     promotion_id = sa.Column(sa.Integer, sa.ForeignKey("promotion.id"))
     promotion = orm.relationship("Promotion", uselist=False)
+    kind = sa.Column(sa.Unicode(length=255))
 
     def merge_settings(self, bname, bsettings):
         bsettings.need_extra_in_scan("request")
-        def slideshow_render():
-            request = bsettings.extra["request"]
-            ## fixme real implementation
-            from . import api
-            pm = api.get_promotion_manager(request)
-            params = {"show_image": pm.show_image, "info": pm.promotion_info(request, self.promotion)}
-            return render(self.template_name, params, request=request)
-
-        bsettings.add(bname, slideshow_render)
+        return PROMOTION_DISPATH[self.kind](self, bname, bsettings)
 
 class PromotionWidgetResource(HandleSessionMixin,
                               UpdateDataMixin,

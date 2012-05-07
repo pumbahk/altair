@@ -45,7 +45,8 @@ widget.configure({
 
     var collect_data = function(we, choiced_elt){
         var root = $(we.dialog);
-        return {"promotion": root.find("#promotion").val()};
+        return {"promotion": root.find("#promotion").val(), 
+                "kind": root.find("#kind").val()};
     };
     return widget.include("promotion", {
         load_page: load_page, 

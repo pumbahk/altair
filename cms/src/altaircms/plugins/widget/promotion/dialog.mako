@@ -9,6 +9,7 @@
 
 <table class="table">
   <tbody>
+    ${co.formfield(form, "kind")}
     ${co.formfield(form, "promotion")}
   </tbody>
 </table>

@@ -78,7 +78,7 @@ def topcontent_merge_settings(template_name, widget, bname, bsettings):
         d = widget.now_date_function()
         request = bsettings.extra["request"]
         page = bsettings.extra["page"] if widget.display_page else None
-        qs = Topcontent.matched_qs(page=page, d=d, kind=widget.kind)
+        qs = Topcontent.matched_qs(page=page, d=d, kind=widget.kind, category=widget.category)
         qs = _qs_refine(qs, Topcontent, widget)
         return render(template_name, 
                       {"widget": widget, "topcontents": qs}, 

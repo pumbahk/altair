@@ -13,6 +13,37 @@
 	width: 342px;
     float: left;
 }
+#sports #mainLeft {
+	width: 342px;
+    float: left;
+}
+
+#sports #mainRight {
+	width: 342px;
+    float: left;
+}
+#sports #mainLeft {
+	width: 342px;
+    float: left;
+}
+
+#theater #mainRight {
+	width: 342px;
+    float: left;
+}
+#theater #mainLeft {
+	width: 342px;
+    float: left;
+}
+
+#music #mainLeft {
+	width: 342px;
+    float: left;
+}
+#music #mainRight {
+	width: 342px;
+    float: left;
+}
 
 /*
   for promotion slideshow
@@ -42,6 +73,31 @@
     height: 60px;
 }
 #slideShow .mainImageMessage {
+    padding-left: 10px;
+    padding-right: 10px;
+	background-color: #000;
+	color: #fff;
+}
+
+#categorySlideShowShow #categorySlideShowShowLeft{
+    float:left;
+    width: 517px;
+	margin-bottom: 20px;
+}
+#categorySlideShowShow #categorySlideShowShowLeft .mainImage img {
+    width: 516px;
+    height: 300px;
+}
+#categorySlideShowShow #categorySlideShowShowRight{
+    float:left;
+    width: 182px;
+	margin-bottom: 20px;
+}
+#categorySlideShowShow #categorySlideShowShowRight .thumbnail img {
+    width: 180px;
+    height: 180px;
+}
+#categorySlideShowShow .mainImageMessage {
     padding-left: 10px;
     padding-right: 10px;
 	background-color: #000;
