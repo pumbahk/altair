@@ -297,6 +297,9 @@ $.fn.venue_editor = function(options) {
             case 'seat-allocation':
               $('#seat-map').venue_editor('load');
               break;
+            case 'ticket-designer':
+              TicketDesigner_adjustViewSize();
+              break;
             }
             active_tab = new_active_tab;
           }
