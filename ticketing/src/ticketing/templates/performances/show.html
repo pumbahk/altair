@@ -152,7 +152,10 @@ $.fn.venue_editor = function(options) {
         function(xml) {
           canvas.empty();
           data.manager = new DemoManager(parseSvg(xml, canvas[0]));
+          document.addEventListener('keydown', data.keydown = function(e) { if (key(e).shift) data.manager.shift = true; });
+          document.addEventListener('keyup', data.keyup = function(e) { if (key(e).shift) data.manager.shift = false; });
           waiter('drawable', drawable);
+
         }, function() {
           canvas.find('.message').text("Loading failed");
         }
@@ -179,6 +182,8 @@ $.fn.venue_editor = function(options) {
     case 'remove':
       toolbar.remove();
       canvas.remove();
+      document.removeEventListener('keydown', data.keydown);
+      document.removeEventListener('keyup', data.keyup);
       this.data('venue_editor_available', null);
       break;
     }

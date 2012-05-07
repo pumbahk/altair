@@ -165,6 +165,11 @@ function buildStyleFromSvgStyle(svgStyle) {
   };
 }
 
+var seatDefaultStyle = {
+  'fill': new Fashion.FloodFill(new Fashion.Color(255, 255, 255)),
+  'stroke': new Fashion.Stroke(new Fashion.Color(0, 100, 200, 255), 2)
+}
+
 function appendShapes(drawable, svgStyle, nodeList) {
   for (var i = 0; i < nodeList.length; i++) {
     var n = nodeList[i];
@@ -186,7 +191,10 @@ function appendShapes(drawable, svgStyle, nodeList) {
       if (!pathDataString)
         throw "Pathdata is not provided for the path element";
       shape = drawable.draw(new Fashion.Path(new Fashion.PathData(pathDataString)));
-      shape.style(buildStyleFromSvgStyle(currentSvgStyle));
+      shape.style({
+        'fill': new Fashion.FloodFill(new Fashion.Color(255, 203, 63)),
+        'stroke': new Fashion.Stroke(new Fashion.Color(90, 190, 205, 255), 30)
+      });
       break;
 
     case 'text':
@@ -204,7 +212,7 @@ function appendShapes(drawable, svgStyle, nodeList) {
           n.firstChild.nodeValue));
       shape.id = idString;
       shape.style({
-        'fill': new Fashion.FloodFill(new Fashion.Color(0, 0, 0)),
+        'fill': new Fashion.FloodFill(new Fashion.Color(0, 30, 60)),
       });
       break;
 
@@ -222,7 +230,7 @@ function appendShapes(drawable, svgStyle, nodeList) {
           parseFloat(heightString)));
       shape.seat = true;
       shape.id = idString;
-      shape.style(buildStyleFromSvgStyle(currentSvgStyle));
+      shape.style(seatDefaultStyle);
       break;
     }
   }
@@ -298,7 +306,8 @@ var DemoManager = Fashion._lib._class("DemoManager", {
     dragging: false,
     start_pos: {x:0,y:0},
     mask: null,
-    d: null
+    d: null,
+    shift: false
   },
 
   methods: {
@@ -306,13 +315,18 @@ var DemoManager = Fashion._lib._class("DemoManager", {
       this.d = d;
       this.mask = new Fashion.Rect(0,0,0,0);
       this.mask.style({
-        'fill': new Fashion.FloodFill(new Fashion.Color(255, 0, 0, 128)),
-        'stroke': new Fashion.Stroke(new Fashion.Color(255, 0, 0, 255), 2)
+        'fill': new Fashion.FloodFill(new Fashion.Color(0, 100, 255, 128)),
+        'stroke': new Fashion.Stroke(new Fashion.Color(0, 128, 255, 255), 2)
       });
     },
 
     changeTool: function(type) {
       var self = this;
+
+      var selectedSeatStyle = {
+        'fill': new Fashion.FloodFill(new Fashion.Color(0, 155, 225, 255)),
+        'stroke': new Fashion.Stroke(new Fashion.Color(255, 255, 255, 255), 3)
+      };
 
       if (this.d.handler)
         this.d.removeEvent("mousedown", "mouseup", "mousemove");
@@ -327,10 +341,13 @@ var DemoManager = Fashion._lib._class("DemoManager", {
                 var p = i.position(), s = i.size();
                 if (p.x < pos.x && pos.x < (p.x + s.width) &&
                     p.y < pos.y && pos.y < (p.y + s.height)) {
-                  i.style({
-                    'fill': new Fashion.FloodFill(new Fashion.Color(255, 0, 255, 128)),
-                    'stroke': new Fashion.Stroke(new Fashion.Color(255, 0, 0, 255), 2)
-                  });
+                  if (i.selecting && !this.shift) {
+                    i.style(seatDefaultStyle);
+                    i.selecting = false;
+                  } else {
+                    i.style(selectedSeatStyle);
+                    i.selecting = true;
+                  }
                 }
               }
             });
@@ -352,10 +369,13 @@ var DemoManager = Fashion._lib._class("DemoManager", {
             var hitTest = makeTester(self.mask);
             self.d.each(function(i) {
               if (i.seat && hitTest(i)) {
-                i.style({
-                  'fill': new Fashion.FloodFill(new Fashion.Color(255, 0, 255, 128)),
-                  'stroke': new Fashion.Stroke(new Fashion.Color(255, 0, 0, 255), 2)
-                });
+                if (i.selecting && !this.shift) {
+                  i.style(seatDefaultStyle);
+                  i.selecting = false;
+                } else {
+                  i.style(selectedSeatStyle);
+                  i.selecting = true;
+                }
               }
             });
             self.d.erase(self.mask);
@@ -399,6 +419,53 @@ var DemoManager = Fashion._lib._class("DemoManager", {
   }
 });
 
+function key(e) {
+  var shift, ctrl;
+
+  // Mozilla(Firefox, NN) and Opera
+  if (e != null) {
+    keycode = e.which;
+    ctrl    = typeof e.modifiers == 'undefined' ? e.ctrlKey : e.modifiers & Event.CONTROL_MASK;
+    shift   = typeof e.modifiers == 'undefined' ? e.shiftKey : e.modifiers & Event.SHIFT_MASK;
+    // イベントの上位伝播を防止
+    e.preventDefault();
+    e.stopPropagation();
+    // Internet Explorer
+  } else {
+    keycode = event.keyCode;
+    ctrl    = event.ctrlKey;
+    shift   = event.shiftKey;
+    // イベントの上位伝播を防止
+    event.returnValue = false;
+    event.cancelBubble = true;
+  }
+
+  // キーコードの文字を取得
+  keychar = String.fromCharCode(keycode).toUpperCase();
+
+  return {
+    ctrl:    (!!ctrl) || keycode === 17,
+    shift:   (!!shift) || keycode === 16,
+    keycode: keycode,
+    keychar: keychar
+  };
+
+  // 27Esc
+  // 8 BackSpace
+  // 9 Tab
+  // 32Space
+  // 45Insert
+  // 46Delete
+  // 35End
+  // 36Home
+  // 33PageUp
+  // 34PageDown
+  // 38↑
+  // 40↓
+  // 37←
+  // 39→
+
+}
 
 var drawable = null;
 var manager = null;
