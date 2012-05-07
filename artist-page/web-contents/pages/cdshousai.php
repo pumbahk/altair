@@ -106,7 +106,7 @@ function plof_get_by_name($dbh,$artist_name) {
 <meta http-equiv="content-style-type" content="text/css" />
 <meta http-equiv="content-script-type" content="text/javascript" />
 <link rel="shortcut icon" href="../design/img/common/favicon.ico" />
-<link rel="stylesheet" href="../design/html/css/import.css" type="text/css" media="all" />
+<link rel="stylesheet" href="./import.css" type="text/css" media="all" />
 <link rel="stylesheet" href="import.css" type="text/css" media="all" />
 
 <script type="text/javascript" src="http://www.google.com/jsapi"></script>
@@ -207,9 +207,9 @@ function plof_get_by_name($dbh,$artist_name) {
                                          if (empty($matches)){
 
                                 ?>
-                                        <a href="/~katosaori/mock/pages/cd.php?photo=<?=urlencode($photo[$o]['photo']);?>"><img src ="<?= $photo[$o]['photo'] ?>"></a>
+                                        <a href="/~katosaori/mock/folda/cd.php?photo=<?=urlencode($photo[$o]['photo']);?>"><img src ="<?= $photo[$o]['photo'] ?>"></a>
 
-                                        <!--<a href="/~katosaori/mock/pages/cd.php?photo=<?=urlencode($img[$o]);?>"><img src ="<?= $img[$o] ?>" ></a>-->
+                                        <!--<a href="/~katosaori/mock/folda/cd.php?photo=<?=urlencode($img[$o]);?>"><img src ="<?= $img[$o] ?>" ></a>-->
                                 <?php
                                          }
                                  }
@@ -276,7 +276,7 @@ function plof_get_by_name($dbh,$artist_name) {
                                          if (empty($matches)){
 
                                                 ?>
-                                                <li onclick="ReWrite(<?= $o ?>)"><a href="/~katosaori/mock/pages/cd.php?photo=<?=urlencode($photo[$o]['photo']);?>"><img src='<?= $photo[$o]['largeImage'] ?>' /></a></li>
+                                                <li onclick="ReWrite(<?= $o ?>)"><a href="/~katosaori/mock/folda/cd.php?photo=<?=urlencode($photo[$o]['photo']);?>"><img src='<?= $photo[$o]['largeImage'] ?>' /></a></li>
                                                 <?php
                                          }
                                  }
@@ -299,7 +299,7 @@ for($o = 0; $o <= $count; $o++){
 <tr>
 
 <td bgcolor="#FF00FF"><?= $photo[$o]['salesDate'] ?></td>
-<td bgcolor ="#C0C0C0"><a href="/~katosaori/mock/pages/cd.php?photo=<?=urlencode($photo[$o]['photo']);?>"><?= $photo[$o]['cdname'] ?></a></td>
+<td bgcolor ="#C0C0C0"><a href="/~katosaori/mock/folda/cd.php?photo=<?=urlencode($photo[$o]['photo']);?>"><?= $photo[$o]['cdname'] ?></a></td>
 
 </tr>
 
@@ -343,7 +343,7 @@ for($o = 0; $o <= $count; $o++){
                         <li id ='#'><a href ='./genre.php?genre=<?=urlencode($t[$q])?>'><?= htmlspecialchars($t[$q]); ?></a></li>
 
                 <? endfor ?>
-                <li><a href="/~katosaori/mock/pages/gyousentaku.php?gyoutou=あ">50音順検索</a></li>
+                <li><a href="/~katosaori/mock/folda/gyousentaku.php?gyoutou=あ">50音順検索</a></li>
 
                 </ul>
                 </div>
