@@ -3,6 +3,8 @@ from sqlalchemy.orm import relationship, join, backref, column_property, mapper
 
 import sqlahelper
 
+from ticketing.models import JSONEncodedDict, MutationDict
+
 session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
 
@@ -22,7 +24,7 @@ class SeatType(Base):
     seats = relationship('Seat', backref='seat_type')
     stocks = relationship('Stock', backref='seat_type')
 
-    style = Column(String(1024))
+    style = Column(MutationDict.as_mutable(JSONEncodedDict(1024)))
 
     updated_at = Column(DateTime)
     created_at = Column(DateTime)

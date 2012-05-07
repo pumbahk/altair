@@ -3,7 +3,7 @@
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL
 from sqlalchemy.orm import relationship, join, backref, column_property, mapper, relation
 
-from ticketing.models import Base, BaseModel, DBSession
+from ticketing.models import Base, BaseModel, DBSession, JSONEncodedDict, MutationDict
 from ticketing.utils import StandardEnum
 from ticketing.venues.models import Seat
 
@@ -125,7 +125,7 @@ class StockHolder(BaseModel, Base):
     performance_id = Column(BigInteger, ForeignKey('Performance.id'))
     account_id = Column(BigInteger, ForeignKey('Account.id'))
 
-    style = Column(String(1024))
+    style = Column(MutationDict.as_mutable(JSONEncodedDict(1024)))
 
     stocks = relationship('Stock', backref='stock_holder')
 

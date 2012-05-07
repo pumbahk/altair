@@ -98,8 +98,12 @@
         <div class="modal-body">
             <label>席種名</label>
             <input id="name" name="name" type="text" class="span3" value="">
-            <label>色</label>
-            <input id="line_color" name="name" type="text" class="span3" value="">
+            <label>記号</label>
+            <input id="signature" name="signature" type="text" class="span3" value="">
+            <label>塗りつぶし色</label>
+            <input id="fill_color" name="fill_color" type="text" class="span3" value="">
+            <label>線の色</label>
+            <input id="line_color" name="line_color" type="text" class="span3" value="">
             <label>線の太さ</label>
             <div class="controls">
                 <label class="checkbox inline"><input type="radio" name="line_thickness" id="line_thickness1" value="option1">1</label>
@@ -134,8 +138,22 @@ $('#line_color').ColorPicker({
 		$(this).ColorPickerSetColor(this.value);
 	},
     onChange: function (hsb, hex, rgb) {
-        $('#line_color').css('backgroundColor', '#' + hex);
+        $(this).css('backgroundColor', '#' + hex);
         $('#line_color').val(hex)
+    },
+    zIndex: 9999
+})
+$('#fill_color').ColorPicker({
+	onSubmit: function(hsb, hex, rgb, el) {
+		$(el).val(hex);
+		$(el).ColorPickerHide();
+	},
+	onBeforeShow: function () {
+		$(this).ColorPickerSetColor(this.value);
+	},
+    onChange: function (hsb, hex, rgb) {
+        $(this).css('backgroundColor', '#' + hex);
+        $('#fill_color').val(hex)
     },
     zIndex: 9999
 })

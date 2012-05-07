@@ -23,7 +23,18 @@ class SeatTypes(BaseView):
         performance_id = int(self.request.matchdict.get('performance_id', 0))
 
         f = SeatTypeForm(self.request.POST)
-        record = merge_session_with_post(SeatType(), f.data)
+        data = f.data
+        style = {
+            'stroke' : {
+                'color'     : data.get('line_color'),
+                'width'     : data.get('line_thickness'),
+                'pattern'   : data.get('line_color'),
+            },
+            'text': data.get('signature'),
+        }
+        record = merge_session_with_post(SeatType(), data)
+        record.style = style
+
         record.performance_id = performance_id
         SeatType.add(record)
 
@@ -37,7 +48,18 @@ class SeatTypes(BaseView):
         if seat_type is None:
             return HTTPNotFound('seat_type id %d is not found' % id)
 
-        seat_type.name = self.request.POST.get('name')
+        f = SeatTypeForm(self.request.POST)
+        data = f.data
+        style = {
+            'stroke' : {
+                'color'     : data.get('line_color'),
+                'width'     : data.get('line_thickness'),
+                'pattern'   : data.get('line_color'),
+            },
+            'text': data.get('signature'),
+        }
+        seat_type.name          = data.get('style')
+        seat_type.style         = style
         SeatType.update(seat_type)
 
         self.request.session.flash(u'席種を保存しました')
