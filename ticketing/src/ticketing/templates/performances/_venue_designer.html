@@ -18,14 +18,25 @@
     $('#edit-modal #name').val(name);
     $('#edit-modal #edit').attr('action', '/seat_types/edit/' + seat_type_id);
   }
+  
+  function readjustMap() {
+    var n = $("#venue-map");
+    n.height($(window).height() - 250);
+    var width = n.width();
+    var height = n.height();
+    var toolbar = n.find(".ui-toolbar");
+    toolbar.width(width - 6);
+    var data = n.data('venue_editor_available');
+    if (data && data.manager) {
+      data.manager.d.viewportSize({
+        width: width,
+        height: height - toolbar[0].offsetHeight
+      });
+    }
+  }
 
-  $(window).resize(function(api){
-    $("#venue-map").height($(window).height()-230);
-  });
-
-  $(document).ready(function(){
-    $("#venue-map").height($(window).height()-230);
-  });
+  $(window).resize(readjustMap);
+  $(document).ready(readjustMap);
 </script>
 
 <div class="container-fluid">

@@ -195,7 +195,8 @@ var _escapeXMLSpecialChars = (function () {
   };
 })();
 
-function _clip(target, min, max) {
+function _clip(target, min, max, max_is_origin) {
+  if (min > max) return (max_is_origin) ? max : min;
   return Math.min(Math.max(target, min), max);
 }_lib._atomic_p             = _atomic_p;
 _lib._clone                = _clone;
@@ -1434,6 +1435,8 @@ var Drawable = _class("DrawableSVG", {
     _vg:          null,
     _viewport:    null,
 
+    _onscroll:    null,
+
     _capturing_shapes: new MultipleKeyHash(),
     _capturing_functions: new MultipleKeyHash()
   },
@@ -1448,6 +1451,9 @@ var Drawable = _class("DrawableSVG", {
       svg.style.margin = "0";
       svg.style.padding = "0";
       svg.style.background = "#CCC";
+      svg.style["-moz-user-select"] = svg.style["-khtml-user-select"] =
+        svg.style["-webkit-user-select"] = svg.style["-ms-user-select"] =
+        svg.style["user-select"] = 'none';
 
       var defs = newNode("defs");
       this._defsManager = new DefsManager(defs);
@@ -1475,8 +1481,10 @@ var Drawable = _class("DrawableSVG", {
       this._svg      = svg;
       this._vg       = root;
 
+      this._onscroll = onscroll || function() {};
+      var self = this;
       this._viewport.addEventListener('scroll', function(evt) {
-        onscroll({x: this.scrollLeft, y:this.scrollTop});
+        self._onscroll({x: this.scrollLeft, y:this.scrollTop});
       }, false);
 
     },
@@ -1491,8 +1499,8 @@ var Drawable = _class("DrawableSVG", {
     viewportSize: function(size)
     {
       if (size) {
-        this._viewport.style.width  = size.width;
-        this._viewport.style.height = size.height;
+        this._viewport.style.width  = size.width + "px";
+        this._viewport.style.height = size.height + "px";
       }
     },
 
@@ -1518,6 +1526,7 @@ var Drawable = _class("DrawableSVG", {
       if (position) {
         this._viewport.scrollLeft = position.x+'';
         this._viewport.scrollTop  = position.y+'';
+        this._onscroll({x: position.x, y: position.y});
       }
     },
 
@@ -3927,8 +3936,8 @@ var Drawable = _class("Drawable", {
 
       this._viewport_size.width  = (size && size.viewport && size.viewport.width)  || (size && size.width)  || target.clientWidth;
       this._viewport_size.height = (size && size.viewport && size.viewport.height) || (size && size.height) || target.clientHeight;
-      this._content_size.width   = (size && size.content  && size.content.width)   || (size && size.width)  || viewport_size.width;
-      this._content_size.height  = (size && size.content  && size.content.height)  || (size && size.height) || viewport_size.height;
+      this._content_size.width   = (size && size.content  && size.content.width)   || (size && size.width)  || this._viewport_size.width;
+      this._content_size.height  = (size && size.content  && size.content.height)  || (size && size.height) || this._viewport_size.height;
 
       if (this._content_size.width < this._viewport_size.width)
         this._content_size.width = this._viewport_size.width;
@@ -4005,8 +4014,8 @@ var Drawable = _class("Drawable", {
         var cs = this._content_size, vs = this._viewport_size;
         var left_limit = cs.width  - (vs.width  / this._zoom_ratio);
         var top_limit  = cs.height - (vs.height / this._zoom_ratio);
-        this._scroll_position.x = _clip(position.x, 0, left_limit);
-        this._scroll_position.y = _clip(position.y, 0, top_limit);
+        this._scroll_position.x = _clip(position.x, 0, left_limit, false);
+        this._scroll_position.y = _clip(position.y, 0, top_limit, false);
         this._scroll_position_real.x = Math.round(this._scroll_position.x * this._zoom_ratio);
         this._scroll_position_real.y = Math.round(this._scroll_position.y * this._zoom_ratio);
         this.impl.scrollPosition(this._scroll_position_real);
