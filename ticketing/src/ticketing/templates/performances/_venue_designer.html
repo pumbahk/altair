@@ -108,16 +108,91 @@
     $("#toolbar").buttonset();
   }
 
+
+ var make_async_set_waiter = function(async_identifiers, after_doing) {
+    var stor = {};
+    for (var i=0,l=async_identifiers.length; i < l; i++) {
+      stor[async_identifiers[i]] = void(0);
+    }
+    return function(idt, data) {
+      stor[idt] = data;
+      for (var i in stor) {
+        if (stor.hasOwnProperty(i)) {
+          if (stor[i] === void(0)) return;
+        }
+      }
+      // if all data has come.
+      after_doing.call(null, stor);
+    }
+  };
+
+  var waiter = make_async_set_waiter(
+    ['drawable', 'metadata', 'rules'],
+    function(data) {
+      var rules = data.rules.seats;
+      var metadata = data.metadata.seats;
+      var drawable = data.drawable;
+      var logged = false;
+      console.log(rules);
+      drawable.each(function(i){
+        if (i.seat) {
+          var id = i.id;
+          var meta = metadata[id];
+          var styles = {};
+          for (var j in rules) {
+            var rule = rules[j];
+            var m = meta[j];
+            var st = (m in rule) ? rule[m] : rule['default'];
+            for (var k in st) {
+              styles[k] = st[k];
+            }
+          }
+          i.style(styles);
+          if (styles.text !== null) {
+            var pos = i.position();
+            var size = i.size();
+            i.label = drawable.draw(
+              new Fashion.Text(
+                pos.x,
+                pos.y + (size.height * 0.75),
+                (size.height * 0.75),
+                styles.text));
+          }
+        }
+      });
+    });
+
   loadXml(
     "${request.route_path('api.get_drawing', venue_id=performance.venue_id)}",
     function(xml) {
       canvasElement.removeChild(canvasElement.firstChild);
       drawable = parseSvg(xml, canvasElement);
       manager = new DemoManager(drawable);
+      waiter('drawable', drawable);
     }, function() {
       canvasElement.firstChild.innerHTML = "Loading failed";
     }
   );
+
+  loadText(
+  "${request.route_path('api.get_seats', venue_id=performance.venue_id)}",
+  function(txt) {
+    eval("var x = " + txt);
+    waiter('metadata', x);
+  }, function() {
+    canvasElement.firstChild.innerHTML = "Loading failed";
+  });
+
+  loadText(
+  "/static/js/demo/renderingRules.json",
+  function(txt) {
+    eval("var x = " + txt);
+    waiter('rules', x);
+  }, function() {
+    canvasElement.firstChild.innerHTML = "Loading failed";
+  });
+
+
 }, false);
 
   </script>

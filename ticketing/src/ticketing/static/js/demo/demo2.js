@@ -30,6 +30,23 @@ function loadXml(url, success, error) {
   xhr.send();
 }
 
+
+function loadText(url, success, error) {
+  var xhr = XHR();
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState == 4) {
+      if (xhr.status == 200 || xhr.status == 0) {
+        var txt = xhr.responseText;
+        success(txt);
+      } else {
+        error();
+      }
+    }
+  };
+  xhr.open("GET", url, true);
+  xhr.send();
+}
+
 var parseCSSRules = (function () {
   var regexp_for_rules = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
 
@@ -163,39 +180,50 @@ function appendShapes(drawable, svgStyle, nodeList) {
     case 'g':
       appendShapes(drawable, currentSvgStyle, n.childNodes);
       break;
+
     case 'path':
       var pathDataString = n.getAttribute('d');
       if (!pathDataString)
         throw "Pathdata is not provided for the path element";
       shape = drawable.draw(new Fashion.Path(new Fashion.PathData(pathDataString)));
+      shape.style(buildStyleFromSvgStyle(currentSvgStyle));
       break;
+
+    case 'text':
+      var xString = n.getAttribute('x');
+      var yString = n.getAttribute('y');
+      var widthString = n.getAttribute('width');
+      var heightString = n.getAttribute('height');
+      var fontSize = n.style.fontSize;
+      var idString = n.getAttribute('id');
+      shape = drawable.draw(
+        new Fashion.Text(
+          parseFloat(xString),
+          parseFloat(yString),
+          parseFloat(fontSize),
+          n.firstChild.nodeValue));
+      shape.id = idString;
+      shape.style({
+        'fill': new Fashion.FloodFill(new Fashion.Color(0, 0, 0)),
+      });
+      break;
+
     case 'rect':
       var xString = n.getAttribute('x');
       var yString = n.getAttribute('y');
       var widthString = n.getAttribute('width');
       var heightString = n.getAttribute('height');
+      var idString = n.getAttribute('id');
       shape = drawable.draw(
         new Fashion.Rect(
           parseFloat(xString),
           parseFloat(yString),
           parseFloat(widthString),
           parseFloat(heightString)));
-      shape2 = drawable.draw(
-        new Fashion.Text(
-          parseFloat(xString),
-          parseFloat(yString) + (parseFloat(heightString) * 0.75),
-          (parseFloat(widthString) * 0.75),
-          "ぴ"));
       shape.seat = true;
-      break;
-    }
-    if (shape !== null) {
-      var x = parseFloat(n.getAttribute('x')),
-      y = parseFloat(n.getAttribute('y'));
+      shape.id = idString;
       shape.style(buildStyleFromSvgStyle(currentSvgStyle));
-    }
-    if (shape2 !== null) {
-      shape2.style(buildStyleFromSvgStyle(currentSvgStyle));
+      break;
     }
   }
 }
