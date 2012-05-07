@@ -615,6 +615,92 @@ def add_help_page_settings():
     DBSession.add(page)
     DBSession.add_all(topics)
 
+##
+def sports_layout():
+    layout = Layout(
+        title = u"ticketstar.sports",
+        template_filename = "ticketstar.sports.mako",
+        blocks = '[["main"], ["main_left", "main_right"], ["main_bottom"], ["side"]]',
+        site_id = 1, ##
+        client_id = 1 ##
+        )
+    return layout
+
+def sports_page(layout):
+    sports_page = Page(description=u'チケットの販売、イベントの予約は楽天チケットで！楽天チケットは演劇、バレエ、ミュージカルなどの舞台、クラシック、オペラ、ロックなどのコンサート、野球、サッカー、格闘技などのスポーツ、その他イベントなどのチケットのオンラインショッピングサイトです。',
+                       keywords= u"チケット,演劇,クラシック,オペラ,コンサート,バレエ,ミュージカル,野球,サッカー,格闘技", 
+                       layout= layout, 
+                       title= u'スポーツ',
+                       url= u'sports',
+                       structure= "{}", 
+                       version= None)
+    PageSet.get_or_create(sports_page)
+    return sports_page
+
+def add_sports_topics():
+    return [
+        ]
+
+def add_sports_main_block_widgets(page, promotion):
+    params =  {"kind": u"注目のイベント", 
+               "category": u"スポーツ", 
+               "display_count": 6, 
+               "display_global": True, 
+               "display_event": True, 
+               "display_page": True}
+    add_topic_widget(page, "main", params)
+
+    # add_promotion_widget(page, "main", {"promotion": promotion.id})
+
+    params = dict(kind=u"チケットスター：スポーツ見出し", 
+                  text=u"トピックス")
+    add_heading_widget(page, "main", params)
+
+    params =  {"kind": u"トピックス", 
+               "category": u"スポーツ", 
+               "display_count": 5, 
+               "display_global": True, 
+               "display_event": True, 
+               "display_page": True}
+    add_topic_widget(page, "main", params)
+
+    params = dict(kind=u"チケットスター：スポーツ見出し", 
+                  text=u"注目のイベント")
+    add_heading_widget(page, "main", params)
+
+    params =  {"kind": u"注目のイベント", 
+               "display_count": 8, 
+               "display_global": True, 
+               "display_event": True, 
+               "display_page": True}
+    add_topic_widget(page, "main", params)
+
+    params = dict(kind=u"チケットスター：スポーツ見出し", 
+                  text=u"今週発売のチケット")
+    add_heading_widget(page, "main_left", params)
+
+    params = {"finder_kind": "thisWeek", 
+              "delimiter": u"/"}
+    add_linklist_widget(page, "main_left", params)
+
+    params = dict(kind=u"チケットスター：スポーツ見出し", 
+                  text=u"販売終了間近")
+    add_heading_widget(page, "main_right", params)
+
+    params = {"finder_kind": "nearTheEnd", 
+              "delimiter": u"/"}
+    add_linklist_widget(page, "main_right", params)
+
+def add_sports_page_settings():
+    layout = sports_layout()
+    # topics = add_sports_topics()
+    page = sports_page(layout)
+
+    add_sports_main_block_widgets(page, None)
+    DBSession.add(page)
+    # DBSession.add_all(topics)
+
+##
 def top_layout():
     layout = Layout(
         title = u"ticketstar.top",
@@ -852,6 +938,7 @@ def add_top_page_settings():
 def main(env, args):
     # setup()
     add_detail_page_settings()
+    add_sports_page_settings()
     add_help_page_settings()
     add_top_page_settings()
     transaction.commit()

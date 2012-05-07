@@ -14,8 +14,9 @@ from altaircms.security import RootFactory
 
 HEADING_DISPATCH = {
     u"チケットスター：イベント詳細見出し": u'<h2>%s</h2>', 
-    u"チケットスター：トップページ見出し": u'<h2 class="index-heading">%s</h2>',  #/static/ticketstar/css/custom.css
-    u"チケットスター：ヘルプページ見出し": u'<h2 class="help-heading">%s</h2>',  #/static/ticketstar/css/custom.css
+    u"チケットスター：トップページ見出し": u'<h2 class="index heading">%s</h2>',  #/static/ticketstar/css/custom.css
+    u"チケットスター：スポーツ見出し": u'<h2 class="sports heading">%s</h2>',  #/static/ticketstar/css/custom.css
+    u"チケットスター：ヘルプページ見出し": u'<h2 class="help heading">%s</h2>',  #/static/ticketstar/css/custom.css
     }
 HEADING_KIND_CHOICES = [(x, x) for x in HEADING_DISPATCH]
 

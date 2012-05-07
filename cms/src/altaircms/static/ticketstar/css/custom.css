@@ -70,21 +70,24 @@
 /* 
    for heading widget
 */
-.index-heading {
+.heading {
    background-repeat: no-repeat;
-   background-image:url(/static/ticketstar/img/index/bg_heading.gif);
    color: #fff;
    margin:0;
    padding: 6px;
    padding-left: 15px;
 }
-.help-heading {
-   background-repeat: no-repeat;
+
+.index,heading {
+   background-image:url(/static/ticketstar/img/index/bg_heading.gif);
+}
+/* todo 変更*/
+.sports,heading {
    background-image:url(/static/ticketstar/img/help/bg_heading.gif);
-   color: #fff;
-   margin:0;
-   padding: 6px;
-   padding-left: 15px;
+}
+
+.help,heading {
+   background-image:url(/static/ticketstar/img/help/bg_heading.gif);
 }
 
 /* fixme */
