@@ -1,4 +1,5 @@
 from pyramid.view import view_config
+from . import forms
 
 class LinklistWidgetView(object):
     def __init__(self, request):
@@ -36,4 +37,6 @@ class LinklistWidgetView(object):
     def dialog(self):
         context = self.request.context
         widget = context.get_widget(self.request.GET.get("pk"))
-        return {"widget": widget}
+        form = forms.LinklistForm(**widget.to_dict())
+        return {"widget": widget, "form": form}
+

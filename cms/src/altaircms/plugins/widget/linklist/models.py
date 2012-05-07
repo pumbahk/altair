@@ -20,7 +20,11 @@ def linklist_render(widget, finder, request=None):
     candidates = finder.find(request, widget.N, widget._today_function(), max_items=widget.max_items)
     content = widget.delimiter.join(candidates)
     return u'<div id="%s"><p>%s</p></div>' % (widget.finder_kind, content)
-    
+
+FINDER_KINDS_DICT= {u"販売終了間近": "nearTheEnd", 
+                    u"今週販売のチケット": "thisWeek"}
+FINDER_KINDS_CHOICES = [(x, x) for x in FINDER_KINDS_DICT.keys()]
+
 class LinklistWidget(Widget):
     _today_function = datetime.now
     implements(IWidget)
@@ -35,9 +39,6 @@ class LinklistWidget(Widget):
 
     delimiter = sa.Column(sa.Unicode(255), default=u"/")
     finder_kind = sa.Column(sa.Unicode(32))
-
-    FINDER_KINDS_DICT= {u"販売終了間近": "nearTheEnd", 
-                        u"今週販売のチケット": "thisWeek"}
 
     ## fixme
     max_items = sa.Column(sa.Integer, default=20)

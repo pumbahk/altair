@@ -102,6 +102,7 @@
       <div id="breadcrumbs"  class="widget red float-left">パンくずリスト</div>
       <div id="countdown"  class="widget red float-left">カウントダウン</div>
       <div id="reuse"  class="widget red float-left">reuse</div>
+      <div id="linklist"  class="widget red float-left">リンクリスト</div>
     </div>
 </%def>
 
@@ -155,4 +156,6 @@
 <script type="text/javascript" src="/plugins/static/js/widget/lib/reuse.js"></script>
 ## todo: moveit
 <script type="text/javascript" src="/plugins/static/js/widget/lib/iconset.js"></script>
+## todo: moveit
+<script type="text/javascript" src="/plugins/static/js/widget/lib/linklist.js"></script>
 </%def>

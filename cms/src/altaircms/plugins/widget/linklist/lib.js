@@ -44,6 +44,11 @@ widget.configure({
     };
 
     var collect_data = function(we, choiced_elt){
+        var root = $(we.dialog);
+        return {"finder_kind": root.find("#finder_kind").val(), 
+                "max_items": root.find("#max_items").val(), 
+                "delimiter": root.find("#delimiter").val()
+               };
     };
     return widget.include("linklist", {
         load_page: load_page, 

@@ -10,8 +10,8 @@
 
 <%block name="main">
    ${widgets("main")}
-<hr/><hr/><hr/><hr/><hr/><hr/>
-        ${main_co.slideShow()}
+## <hr/><hr/><hr/><hr/><hr/><hr/>
+##        ${main_co.slideShow()}
 ##        ${main_co.topics()}
 ##        ${main_co.events()}
 ##        ${main_co.thisWeek()}
