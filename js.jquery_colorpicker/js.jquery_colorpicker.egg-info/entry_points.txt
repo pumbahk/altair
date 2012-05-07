@@ -1,3 +1,0 @@
-[fanstatic.libraries]
-jquery.colorpicker = js.jquery_colorpicker:library
-
