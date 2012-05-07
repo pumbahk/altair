@@ -26,5 +26,5 @@ def downgrade():
     op.drop_column("pagesets", "parent_id")
     op.add_column("page", 
                   sa.Column("parent_id", sa.INTEGER, sa.ForeignKey("page.parent_id")))
-    op.create_woreign_key("fk_page_parent_id", "page", "page", ["parent_id"], ["id"])
+    op.create_foreign_key("fk_page_parent_id", "page", "page", ["parent_id"], ["id"])
 
