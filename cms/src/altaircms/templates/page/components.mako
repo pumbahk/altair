@@ -103,6 +103,8 @@
       <div id="countdown"  class="widget red float-left">カウントダウン</div>
       <div id="reuse"  class="widget red float-left">reuse</div>
       <div id="linklist"  class="widget red float-left">リンクリスト</div>
+      <div id="heading"  class="widget red float-left">見出し</div>
+      <div id="promotion"  class="widget red float-left">プロモーション枠</div>
     </div>
 </%def>
 
@@ -158,4 +160,8 @@
 <script type="text/javascript" src="/plugins/static/js/widget/lib/iconset.js"></script>
 ## todo: moveit
 <script type="text/javascript" src="/plugins/static/js/widget/lib/linklist.js"></script>
+## todo: moveit
+<script type="text/javascript" src="/plugins/static/js/widget/lib/heading.js"></script>
+## todo: moveit
+<script type="text/javascript" src="/plugins/static/js/widget/lib/promotion.js"></script>
 </%def>

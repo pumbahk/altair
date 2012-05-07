@@ -44,7 +44,11 @@ widget.configure({
     };
 
     var collect_data = function(we, choiced_elt){
-    };
+        var root = $(we.dialog);
+        return {"kind": root.find("#kind").val(), 
+                "text": root.find("#widget_text").val()
+               };
+    }; 
     return widget.include("heading", {
         load_page: load_page, 
         on_dialog: on_dialog, 

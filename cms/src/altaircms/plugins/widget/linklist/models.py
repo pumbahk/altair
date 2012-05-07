@@ -21,9 +21,9 @@ def linklist_render(widget, finder, request=None):
     content = widget.delimiter.join(candidates)
     return u'<div id="%s"><p>%s</p></div>' % (widget.finder_kind, content)
 
-FINDER_KINDS_DICT= {u"販売終了間近": "nearTheEnd", 
-                    u"今週販売のチケット": "thisWeek"}
-FINDER_KINDS_CHOICES = [(x, x) for x in FINDER_KINDS_DICT.keys()]
+FINDER_KINDS_DICT= {"nearTheEnd": u"販売終了間近" , 
+                    "thisWeek": u"今週販売のチケット"}
+
 
 class LinklistWidget(Widget):
     _today_function = datetime.now

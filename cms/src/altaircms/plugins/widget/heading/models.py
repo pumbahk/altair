@@ -12,10 +12,11 @@ from altaircms.plugins.base.mixins import HandleWidgetMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
 
-HEADING_DISPATH = {
+HEADING_DISPATCH = {
     u"チケットスター：トップページ見出し": u'<h2 class="index-heading">%s</h2>',  #/static/ticketstar/css/custom.css
     u"チケットスター：イベント詳細見出し": u'<h2>%s</h2>', 
     }
+HEADING_KIND_CHOICES = [(x, x) for x in HEADING_DISPATCH]
 
 class HeadingWidget(Widget):
     implements(IWidget)
@@ -33,7 +34,7 @@ class HeadingWidget(Widget):
 
     def merge_settings(self, bname, bsettings):
         bsettings.need_extra_in_scan("request")
-        fmt = HEADING_DISPATH.get(self.kind)
+        fmt = HEADING_DISPATCH.get(self.kind)
         if fmt:
             content = fmt % self.text
         else:
