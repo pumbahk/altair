@@ -31,7 +31,11 @@ class WidgetTestSourceMixn(object):
         for k, v in kwargs.iteritems():
             setattr(request, k, v)
         return request
-        
+
+def make_promotion(id=1):
+    from .models import Promotion
+    return Promotion(id=id)
+
 class PromotionWidgetViewTests(WidgetTestSourceMixn, 
                           unittest.TestCase):
     def setUp(self):
@@ -55,14 +59,19 @@ class PromotionWidgetViewTests(WidgetTestSourceMixn,
         """
         session = self._getSession()
 
+
+        promotion = make_promotion(id=10)
+        session.add(promotion)
+        session.flush()
+
         self._with_session(session, self._makePage(id=1))
         request = self._makeRequest(json_body={
-                "page_id": 1, "pk": None, "data": {}
+                "page_id": 1, "pk": None, "data": {"promotion": promotion.id}
                 })
         view = self._makeTarget(request)
         expexted = {"page_id": 1,
                     "pk": 1,
-                    "data": {}}
+                    "data": {"promotion": promotion}}
         self.assertEquals(view.create(), expexted)
 
         created = PromotionWidget.query.one()
@@ -80,15 +89,23 @@ class PromotionWidgetViewTests(WidgetTestSourceMixn,
 
     def test_update(self):
         session = self._getSession()
-        pk = self._create_widget(session, page_id=1, data={})
-        promotion = u"updated"
+
+        first_promotion = make_promotion(id=10)
+        session.add(first_promotion)
+        session.flush()
+
+        pk = self._create_widget(session, page_id=1, data={"promotion": first_promotion.id})
+
+        promotion = make_promotion(id=100)
+        session.add(promotion)
+        session.flush()
         request = self._makeRequest(json_body={
-                "page_id": 1, "pk": pk, "data": {}
+                "page_id": 1, "pk": pk, "data": {"promotion": promotion.id}
                 })
         view = self._makeTarget(request)
         expexted = {"page_id": 1,
                     "pk": pk,
-                    "data": {} }
+                    "data": {"promotion": promotion} }
         self.assertEquals(view.update(), expexted)
 
         updated = PromotionWidget.query.one()
@@ -97,7 +114,12 @@ class PromotionWidgetViewTests(WidgetTestSourceMixn,
 
     def test_delete(self):
         session = self._getSession()
-        pk = self._create_widget(session, page_id=1, data={})
+
+        first_promotion = make_promotion(id=10)
+        session.add(first_promotion)
+        session.flush()
+
+        pk = self._create_widget(session, page_id=1, data={"promotion": first_promotion.id})
 
         request = self._makeRequest(json_body={"pk": pk})
         view = self._makeTarget(request)

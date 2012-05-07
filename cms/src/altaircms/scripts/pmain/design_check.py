@@ -542,7 +542,7 @@ def top_topcontents(page):
         ]
 
 def add_top_main_block_widgets(page, promotion):
-    add_promotion_widget(page, "main", {"promotion_id": promotion.id})
+    add_promotion_widget(page, "main", {"promotion": promotion.id})
 
     params = dict(kind=u"チケットスター：トップページ見出し", 
                   text=u"トピックス")
