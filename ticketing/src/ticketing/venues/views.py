@@ -32,7 +32,7 @@ def get_seats(request):
         seat_datum = {
             'id': seat.l0_id,
             'seat_type_id': seat.seat_type_id,
-            'seat_stock_id': seat.seat_stock_id,
+            'stock_holder_id': seat.seat_stock and seat.seat_stock.stock and seat.seat_stock.stock.holder and seat.seat_stock.stock.holder.id,
             'areas': [area.id for area in seat.areas],
             }
         for attr in seat.attributes:
