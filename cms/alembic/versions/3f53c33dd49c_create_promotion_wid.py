@@ -46,7 +46,6 @@ def upgrade():
                     )
 
 def downgrade():
-    op.drop_table("widget_promotion")
-    op.drop_table("promotion_unit")
     op.drop_table("promotion")
-
+    op.drop_table("promotion_unit")
+    op.drop_table("widget_promotion")
