@@ -195,8 +195,7 @@ var _escapeXMLSpecialChars = (function () {
   };
 })();
 
-function _clip(target, min, max, max_is_origin) {
-  if (min > max) return (max_is_origin) ? max : min;
+function _clip(target, min, max) {
   return Math.min(Math.max(target, min), max);
 }_lib._atomic_p             = _atomic_p;
 _lib._clone                = _clone;
@@ -1435,8 +1434,6 @@ var Drawable = _class("DrawableSVG", {
     _vg:          null,
     _viewport:    null,
 
-    _onscroll:    null,
-
     _capturing_shapes: new MultipleKeyHash(),
     _capturing_functions: new MultipleKeyHash()
   },
@@ -1451,9 +1448,6 @@ var Drawable = _class("DrawableSVG", {
       svg.style.margin = "0";
       svg.style.padding = "0";
       svg.style.background = "#CCC";
-      svg.style["-moz-user-select"] = svg.style["-khtml-user-select"] =
-        svg.style["-webkit-user-select"] = svg.style["-ms-user-select"] =
-        svg.style["user-select"] = 'none';
 
       var defs = newNode("defs");
       this._defsManager = new DefsManager(defs);
@@ -1473,10 +1467,6 @@ var Drawable = _class("DrawableSVG", {
       else
         viewport.style.overflow = "scroll";
 
-
-      viewport.style.border = "1px solid #999";
-      viewport.style.margin = "0";
-      viewport.style.padding = "0";
       viewport.appendChild(svg);
 
       node.appendChild(viewport);
@@ -1485,10 +1475,8 @@ var Drawable = _class("DrawableSVG", {
       this._svg      = svg;
       this._vg       = root;
 
-      this._onscroll = onscroll || function() {};
-      var self = this;
       this._viewport.addEventListener('scroll', function(evt) {
-        self._onscroll({x: this.scrollLeft, y:this.scrollTop});
+        onscroll({x: this.scrollLeft, y:this.scrollTop});
       }, false);
 
     },
@@ -1530,7 +1518,6 @@ var Drawable = _class("DrawableSVG", {
       if (position) {
         this._viewport.scrollLeft = position.x+'';
         this._viewport.scrollTop  = position.y+'';
-        this._onscroll({x: position.x, y: position.y});
       }
     },
 
@@ -3174,7 +3161,7 @@ var PathData = (function() {
 
       initWithString: function PathData_initWithString(str) {
         var x, atom, arglen_now, seg, last_idt;
-        var arr = str.match(/-?[0-9.]+|[A-Za-z_]+/g);
+        var arr = str.match(/-?((?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)(?:[eE][-+]?[0-9]+)?)|[A-Za-z_]+/g);
         var builder = new PathDataBuilder(this);
         for (var i = 0, n; i < arr.length; i = n) {
           var op;
@@ -4018,8 +4005,8 @@ var Drawable = _class("Drawable", {
         var cs = this._content_size, vs = this._viewport_size;
         var left_limit = cs.width  - (vs.width  / this._zoom_ratio);
         var top_limit  = cs.height - (vs.height / this._zoom_ratio);
-        this._scroll_position.x = _clip(position.x, 0, left_limit, false);
-        this._scroll_position.y = _clip(position.y, 0, top_limit, false);
+        this._scroll_position.x = _clip(position.x, 0, left_limit);
+        this._scroll_position.y = _clip(position.y, 0, top_limit);
         this._scroll_position_real.x = Math.round(this._scroll_position.x * this._zoom_ratio);
         this._scroll_position_real.y = Math.round(this._scroll_position.y * this._zoom_ratio);
         this.impl.scrollPosition(this._scroll_position_real);
