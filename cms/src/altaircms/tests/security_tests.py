@@ -5,7 +5,6 @@ def setup_module():
     import sqlahelper
     from sqlalchemy import create_engine
     engine = create_engine("sqlite:///")
-    engine.echo = True
     sqlahelper.add_engine(engine)
     
     from ..auth import models
