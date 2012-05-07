@@ -9,11 +9,9 @@ ALTAIR CMS
  git clone git@github.com:ticketstar/altair.git
  cd altair
 
- pip install .
- pip install -r pip-requirements.txt
- alembic current
- pmain  -c development.ini -s altaircms.scripts.pmain.sqlstartup
- pserve development.ini --reload
+ cd cms
+ python setup.py dev
+ python setup.py upgrade_db
 
 
 ドキュメント
@@ -45,6 +43,7 @@ noseを利用
 nosetestsでテスト::
 
  $ nosetests
+ $ python setup.py coverage
 
 
 CI

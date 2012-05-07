@@ -9,6 +9,7 @@ import sqlahelper
 
 session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
+from ticketing.utils import StandardEnum
 
 from ticketing.organizations.models import Organization
 
@@ -54,17 +55,28 @@ class OperatorRole(Base):
     def all():
         return session.query(OperatorRole).all()
 
+class OperatorActionHistoryTypeENum(StandardEnum):
+    View      = 1
+    Create    = 2
+    Update    = 3
+    Delete    = 4
+
 class OperatorActionHistory(Base):
     __tablename__ = 'OperatorActionHistory'
     id = Column(BigInteger, primary_key=True)
-    function = Column(String(255))
-    data = Column(String(1024))
-    created_at = Column(DateTime)
+
     operator_id = Column(BigInteger, ForeignKey('Operator.id'))
-    operator = relationship('Operator', uselist=False)
+    operator = relationship('Operator', uselist=False, backref='histories')
+    function = Column(String(255))
 
 def log_operation(action, model, operator):
     pass
+
+    data   =  Column(String(1024))
+
+    updated_at = Column(DateTime)
+    created_at = Column(DateTime)
+    status = Column('status',Integer, default=1)
 
 operator_table = Table(
     'Operator', Base.metadata,
@@ -104,3 +116,4 @@ class Operator(Base):
                 .filter(Operator.login_id == login_id)\
                 .filter(Operator.password == md5(password).hexdigest()).first()
         return operator
+

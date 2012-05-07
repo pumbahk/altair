@@ -3,8 +3,8 @@
 from fixture import DataSet
 from datetime import datetime
 
-from seed.product import SalesSegmentData
-from seed.organization import OrganizationData
+from ticketing.seed.product import SalesSegmentData
+from ticketing.seed.organization import OrganizationData
 
 class PaymentMethodPluginData(DataSet):
     class RakutenKC:

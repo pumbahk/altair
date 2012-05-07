@@ -126,6 +126,8 @@ class Role(Base):
 
 class RolePermission(Base):
     __tablename__ = 'role_permissions'
+    query = _session.query_property()
+    
     id = Column(Integer, primary_key=True)
     name = Column(Enum(*PERMISSIONS))
     role_id = Column(Integer, ForeignKey('role.id'))

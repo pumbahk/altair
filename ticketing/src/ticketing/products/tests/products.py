@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from seed import DataSet
+from ticketing.seed import DataSet
 #from seed.event import PerformanceData
 
 class ProductData(DataSet):

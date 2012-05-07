@@ -1,6 +1,0 @@
-build/
-temp/
-dist/
-bdist/
-*.pyc
-*.pyo

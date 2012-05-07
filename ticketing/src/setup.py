@@ -32,6 +32,7 @@ requires = [
     'WebHelpers',
     'fixture',
     'js.jquery',
+    'js.jquery_validation_engine',
     'js.underscore',
     'js.jquery_tools',
     'js.json2',
