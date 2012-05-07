@@ -55,7 +55,7 @@ $artist_info= artist_name($dbh,$cds_info['id']);
 <meta http-equiv="content-style-type" content="text/css" />
 <meta http-equiv="content-script-type" content="text/javascript" />
 <link rel="shortcut icon" href="../design/img/common/favicon.ico" />
-<link rel="stylesheet" href="../design/html/css/import.css" type="text/css" media="all" />
+<link rel="stylesheet" href="./import.css" type="text/css" media="all" />
 <link rel="stylesheet" href="import.css" type="text/css" media="all" />
 <script type="text/javascript" src="../js/jquery.js">
 </script>
@@ -197,7 +197,7 @@ $artist_info= artist_name($dbh,$cds_info['id']);
                         <li id ='#'><a href ='./genre.php?genre=<?=urlencode($t[$q])?>'><?= htmlspecialchars($t[$q]); ?></a></li>
 
                 <? endfor ?>
-                <li><a href="/~katosaori/mock/pages/gyousentaku.php?gyoutou=あ">50音順検索</a></li>
+                <li><a href="/~katosaori/mock/folda/gyousentaku.php?gyoutou=あ">50音順検索</a></li>
 
                 </ul>
                 </div>

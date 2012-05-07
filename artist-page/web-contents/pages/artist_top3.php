@@ -1,5 +1,5 @@
 <?php
-$dbh = mysql_connect("127.0.0.1:3306", "artistpage_user", 'artistpage_user_pass');
+$dbh = mysql_connect("127.0.0.1:3306", "root", 'root');
 mysql_selectdb("artistpage");
 mysql_set_charset( "UTF8", $dbh );
 $l = "select * from g where parent_id = 0";
@@ -51,7 +51,7 @@ $rank_set = array();
 <meta http-equiv="content-style-type" content="text/css" />
 <meta http-equiv="content-script-type" content="text/javascript" />
 <link rel="shortcut icon" href="../design/img/common/favicon.ico" />
-<link rel="stylesheet" href="../design/html/css/import.css" type="text/css" media="all" />
+<link rel="stylesheet" href="./import.css" type="text/css" media="all" />
 <link rel="stylesheet" href="import.css" type="text/css" media="all" />
 <script type="text/javascript" src="../js/jquery.js">
 </script>
@@ -190,7 +190,7 @@ $(function(){
                         <li id ='#'><a href ='./genre.php?genre=<?=urlencode($t[$q])?>'><?= htmlspecialchars($t[$q]); ?></a></li>
 
                 <? endfor ?>
-                <li><a href="/~katosaori/mock/pages/gyousentaku.php?gyoutou=あ">50音順検索</a></li>
+                <li><a href="/~katosaori/mock/folda/gyousentaku.php?gyoutou=あ">50音順検索</a></li>
 
 		</ul>
 		</div>
