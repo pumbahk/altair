@@ -114,7 +114,7 @@ class AssetResource(RootFactory):
         params.update(_get_extra_status(form_params, form_params["filepath"].file))
         params["filepath"] = h.get_writename(form_params["filepath"].filename)
 
-        _write_buf(self.storepath, params["filepath"], params["bufstring"])
+        params["size"] = _write_buf(self.storepath, params["filepath"], params["buf"])
 
         asset = models.ImageAsset.from_dict(params)
         _put_tags(asset, "image_asset", tags, private_tags, self.request)
@@ -132,7 +132,7 @@ class AssetResource(RootFactory):
         params.update(_get_extra_status(form_params, form_params["filepath"].file))
         params["filepath"] = h.get_writename(form_params["filepath"].filename)
 
-        _write_buf(self.storepath, params["filepath"], params["bufstring"])
+        params["size"] = _write_buf(self.storepath, params["filepath"], params["buf"])
 
         asset = models.MovieAsset.from_dict(params)
         _put_tags(asset, "movie_asset", tags, private_tags, self.request)
@@ -150,7 +150,7 @@ class AssetResource(RootFactory):
         params.update(_get_extra_status(form_params, form_params["filepath"].file))
         params["filepath"] = h.get_writename(form_params["filepath"].filename)
 
-        _write_buf(self.storepath, params["filepath"], params["bufstring"])
+        params["size"] = _write_buf(self.storepath, params["filepath"], params["buf"])
 
         asset = models.FlashAsset.from_dict(params)
         _put_tags(asset, "flash_asset", tags, private_tags, self.request)
@@ -172,7 +172,7 @@ class AssetResource(RootFactory):
             params.update(_get_extra_status(form_params, form_params["filepath"].file))
             params["filepath"] = h.get_writename(form_params["filepath"].filename)
 
-            _write_buf(self.storepath, params["filepath"], params["bufstring"])
+            params["size"] = _write_buf(self.storepath, params["filepath"], params["buf"])
 
         _setattrs(asset, params)
         _put_tags(asset, "image_asset", tags, private_tags, self.request)
@@ -195,7 +195,7 @@ class AssetResource(RootFactory):
             params.update(_get_extra_status(form_params, form_params["filepath"].file))
             params["filepath"] = h.get_writename(form_params["filepath"].filename)
 
-            _write_buf(self.storepath, params["filepath"], params["bufstring"])
+            params["size"] = _write_buf(self.storepath, params["filepath"], params["buf"])
 
         _setattrs(asset, params)
         _put_tags(asset, "movie_asset", tags, private_tags, self.request)
@@ -218,7 +218,7 @@ class AssetResource(RootFactory):
             params.update(_get_extra_status(form_params, form_params["filepath"].file))
             params["filepath"] = h.get_writename(form_params["filepath"].filename)
 
-            _write_buf(self.storepath, params["filepath"], params["bufstring"])
+            params["size"] = _write_buf(self.storepath, params["filepath"], params["buf"])
 
         _setattrs(asset, params)
         _put_tags(asset, "flash_asset", tags, private_tags, self.request)

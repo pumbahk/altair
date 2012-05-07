@@ -29,7 +29,15 @@ def write_buf(prefix, writename,  buf, _open=open):
         os.makedirs(dirpath)
 
     with _open(write_filepath, "w+b") as dst_file:
-        dst_file.write(buf)
+        buf.seek(0)
+        while 1:
+            data = buf.read(26)
+            if not data:
+                break
+            dst_file.write(data)
+    size = buf.tell()
+    buf.seek(0)
+    return size
 
 def delete_file_if_exist(filepath):
     if os.path.exists(filepath):
@@ -68,7 +76,7 @@ def get_asset_params_from_form_data(params):
     _params = dict(params)
     _params.update({
         "mimetype": mimetype, 
-        "bufstring": bufstring, 
+        "buf": image_io, 
         "size": len(bufstring), 
         "filename": filename
         })

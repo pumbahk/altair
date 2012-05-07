@@ -112,8 +112,10 @@ class helperTests(unittest.TestCase):
         dos = dummy_os(".")
         mocked_os.path = dos.path
 
+        from StringIO import StringIO
 
-        h.write_buf("/a/b/c", "e/d.txt", "content value", _open=dos.open)
+        buf = StringIO("content value")
+        h.write_buf("/a/b/c", "e/d.txt", buf, _open=dos.open)
 
         result = dos._output.pop()
         saved_path, output = result
