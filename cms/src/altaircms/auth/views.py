@@ -44,8 +44,8 @@ class OAuthLogin(object):
     client_id = "fa12a58972626f0597c2faee1454e1"
     secret_key = "c5f20843c65870fad8550e3ad1f868"
     def __init__(self, request,
-                 authorize_url='http://localhost:7654/login/authorize',
-                 access_token_url='http://localhost:7654/api/access_token',
+                 authorize_url='http://altair-demo.ticketstar.jp/api/authorize',
+                 access_token_url='http://localhost:10090/api/access_token',
                  _stub_client=None):
         self.request = request
 

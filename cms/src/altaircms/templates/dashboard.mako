@@ -6,11 +6,11 @@
             <tbody>
             <tr>
                 <td>199x/1/23</td>
-                <td>世界は核の炎に包まれた</td>
+                <td>testtest</td>
             </tr>
             <tr>
                 <td>199x/1/23</td>
-                <td>世界は核の炎に包まれた</td>
+                <td>testtest</td>
             </tr>
             </tbody>
         </table>

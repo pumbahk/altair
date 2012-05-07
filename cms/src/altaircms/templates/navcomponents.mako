@@ -71,7 +71,7 @@
   <div class="navbar navbar-fixed-top">
 	<div class="navbar-inner">
 	  <div class="container">
-		<a class="brand" href="/"><img src="/static/img/altair_logo.png"></a>
+		<a class="brand" href="/cms"><img src="/static/img/altair_logo.png"></a>
 		<div class="nav-collapse">
 		  <ul class="nav pull-right">
 			  % if user:
@@ -97,8 +97,8 @@
 		  <div id="navigation">
 			<ul>
 			  <li><a href=""><span>ダッシュボード</span></a></li>
-			  <li><a href="http://localhost:7654/"><span>票券管理</span></a></li>
-			  <li><a href="http://127.0.0.1:6543/" class="active"><span>CMS</span></a></li>
+			  <li><a href="/"><span>票券管理</span></a></li>
+			  <li><a href="/cms" class="active"><span>CMS</span></a></li>
 			</ul>
 		  </div>
 		  <!-- End Navigation -->
