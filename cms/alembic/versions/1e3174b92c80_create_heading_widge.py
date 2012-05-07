@@ -18,6 +18,7 @@ def upgrade():
     op.create_table('widget_heading',
                     sa.Column('id', sa.Integer(), nullable=False),
                     sa.Column('items', sa.Unicode(length=255), nullable=True),
+                    sa.Column('text', sa.Unicode(length=255), nullable=True),
                     sa.Column("kind", sa.String(length=32), nullable=False), 
                     sa.ForeignKeyConstraint(['id'], ['widget.id'], ),
                     sa.PrimaryKeyConstraint('id')

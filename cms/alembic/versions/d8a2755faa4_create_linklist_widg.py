@@ -19,6 +19,7 @@ def upgrade():
                     sa.Column('id', sa.Integer(), nullable=False),
                     sa.Column("max_items", sa.Integer()), 
                     sa.Column("finder_kind", sa.Unicode(length=32), nullable=False), 
+                    sa.Column("delimiter", sa.Unicode(length=255), nullable=False), 
                     sa.ForeignKeyConstraint(['id'], ['widget.id'], ),
                     sa.PrimaryKeyConstraint('id')
                     )
