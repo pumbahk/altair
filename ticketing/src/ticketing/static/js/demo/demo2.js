@@ -341,7 +341,7 @@ var DemoManager = Fashion._lib._class("DemoManager", {
                 var p = i.position(), s = i.size();
                 if (p.x < pos.x && pos.x < (p.x + s.width) &&
                     p.y < pos.y && pos.y < (p.y + s.height)) {
-                  if (i.selecting && !this.shift) {
+                  if (i.selecting && !self.shift) {
                     i.style(seatDefaultStyle);
                     i.selecting = false;
                   } else {
@@ -369,7 +369,7 @@ var DemoManager = Fashion._lib._class("DemoManager", {
             var hitTest = makeTester(self.mask);
             self.d.each(function(i) {
               if (i.seat && hitTest(i)) {
-                if (i.selecting && !this.shift) {
+                if (i.selecting && !self.shift) {
                   i.style(seatDefaultStyle);
                   i.selecting = false;
                 } else {
