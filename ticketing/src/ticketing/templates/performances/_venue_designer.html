@@ -1,5 +1,5 @@
 <%namespace file="/common/confirm_modal.html" import="delete_modal" />
-
+<% import json %>
 <script>
   $(function() {
     $('#delete').click(function(){
@@ -13,9 +13,17 @@
     $('#edit-modal #edit').attr('action', '/seat_types/new/' + ${performance.id});
   }
 
-  function edit(seat_type_id, name) {
+  function edit(seat_type_id, name, data) {
     $('#edit-modal').modal('toggle');
     $('#edit-modal #name').val(name);
+    $('#edit-modal #signature').val(data.text);
+
+    $('#edit-modal #fill_color').val(data.fill);
+    $('#edit-modal #line_color').val(data.stroke.color);
+
+    $('#edit-modal #line_thickness_' + data.stroke.width).attr('checked', true);
+    $('#edit-modal #line_style_' + data.stroke.pattern).attr('checked', true);
+
     $('#edit-modal #edit').attr('action', '/seat_types/edit/' + seat_type_id);
   }
 
@@ -74,8 +82,24 @@
           <tr>
             <td><input name="checked_id" type="radio" value=${seat_type.id} /></td>
             <td>
-              <a id="edit" href="javascript:edit(${seat_type.id}, '${seat_type.name|u}')">
-              <span class="swatch" style="background-color: #049cdb;"></span>${seat_type.name}</a>
+              <a id="edit" href="javascript:edit(${seat_type.id}, '${seat_type.name|u}', ${json.dumps(seat_type.style)})">
+              <%
+                style = seat_type.style
+                fill_color = 'FFFFFF';
+                text = ''
+                line_width = ''
+                line_pattern = ''
+                line_color = ''
+                if style:
+                    fill_color = style.get('fill')
+                    text  = style.get('text')
+                    stroke = style.get('stroke')
+                    if stroke:
+                        line_width = stroke.get('width')
+                        line_pattern = stroke.get('pattern')
+                        line_color = stroke.get('color')
+              %>
+              <span class="swatch" style="border: ${line_width}px ${line_pattern} #${line_color}; background-color: #${fill_color}; text-align: center">${text}</span>${seat_type.name}</a>
             </td>
             <td>
               ${len(seat_type.seats)}席
@@ -106,18 +130,17 @@
             <input id="line_color" name="line_color" type="text" class="span3" value="">
             <label>線の太さ</label>
             <div class="controls">
-                <label class="checkbox inline"><input type="radio" name="line_thickness" id="line_thickness1" value="option1">1</label>
-                <label class="checkbox inline"><input type="radio" name="line_thickness" id="line_thickness2" value="option2">2</label>
-                <label class="checkbox inline"><input type="radio" name="line_thickness" id="line_thickness3" value="option3">3</label>
-                <label class="checkbox inline"><input type="radio" name="line_thickness" id="line_thickness4" value="option3">4</label>
-                <label class="checkbox inline"><input type="radio" name="line_thickness" id="line_thickness5" value="option3">5</label>
-                <label class="checkbox inline"><input type="radio" name="line_thickness" id="line_thickness6" value="option3">6</label>
+                <label class="checkbox inline"><input type="radio" name="line_thickness" id="line_thickness_1" value="1">1</label>
+                <label class="checkbox inline"><input type="radio" name="line_thickness" id="line_thickness_2" value="2">2</label>
+                <label class="checkbox inline"><input type="radio" name="line_thickness" id="line_thickness_3" value="3">3</label>
+                <label class="checkbox inline"><input type="radio" name="line_thickness" id="line_thickness_4" value="4">4</label>
             </div>
             <label class="control-label" for="inlineCheckboxs">線の種類</label>
             <div class="controls">
-                <label class="checkbox inline"><input type="radio" name="line_style" id="inlineCheckbox1" value="option1">実線</label>
-                <label class="checkbox inline"><input type="radio" name="line_style" id="inlineCheckbox2" value="option2">破線</label>
-                <label class="checkbox inline"><input type="radio" name="line_style" id="inlineCheckbox3" value="option3">点線</label>
+                <label class="checkbox inline"><input type="radio" name="line_style" id="line_style_solid" value="solid">実線</label>
+                <label class="checkbox inline"><input type="radio" name="line_style" id="line_style_double" value="double">2重線</label>
+                <label class="checkbox inline"><input type="radio" name="line_style" id="line_style_dotted" value="dotted">破線</label>
+                <label class="checkbox inline"><input type="radio" name="line_style" id="line_style_dashed" value="dashed">点線</label>
             </div>
         </div>
 

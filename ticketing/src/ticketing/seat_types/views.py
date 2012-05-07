@@ -28,8 +28,9 @@ class SeatTypes(BaseView):
             'stroke' : {
                 'color'     : data.get('line_color'),
                 'width'     : data.get('line_thickness'),
-                'pattern'   : data.get('line_color'),
+                'pattern'   : data.get('line_style'),
             },
+            'fill': data.get('fill_color'),
             'text': data.get('signature'),
         }
         record = merge_session_with_post(SeatType(), data)
@@ -54,11 +55,12 @@ class SeatTypes(BaseView):
             'stroke' : {
                 'color'     : data.get('line_color'),
                 'width'     : data.get('line_thickness'),
-                'pattern'   : data.get('line_color'),
+                'pattern'   : data.get('line_style'),
             },
+            'fill': data.get('fill_color'),
             'text': data.get('signature'),
         }
-        seat_type.name          = data.get('style')
+        seat_type.name          = data.get('name')
         seat_type.style         = style
         SeatType.update(seat_type)
 
