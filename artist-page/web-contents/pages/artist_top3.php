@@ -1,5 +1,5 @@
 <?php
-$dbh = mysql_connect("127.0.0.1:3306", "root", 'root');
+$dbh = mysql_connect("127.0.0.1:3306", "artistpage_user", 'artistpage_user_pass');
 mysql_selectdb("artistpage");
 mysql_set_charset( "UTF8", $dbh );
 $l = "select * from g where parent_id = 0";
