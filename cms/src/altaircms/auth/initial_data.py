@@ -2,7 +2,6 @@
 # alembicに移動して削除
 
 import sqlahelper
-from sqlalchemy.sql.functions import max
 from altaircms.auth.models import Role, DEFAULT_ROLE, PERMISSIONS
 
 

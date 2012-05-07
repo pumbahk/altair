@@ -1,6 +1,7 @@
 from __future__ import with_statement
 from alembic import context
 from sqlalchemy import engine_from_config, pool
+import sqlahelper
 from logging.config import fileConfig
 
 # this is the Alembic Config object, which provides
@@ -80,6 +81,7 @@ def run_migrations_online():
                 prefix='sqlalchemy.', 
                 poolclass=pool.NullPool)
 
+    sqlahelper.add_engine(engine)
     connection = engine.connect()
     context.configure(
                 connection=connection, 
