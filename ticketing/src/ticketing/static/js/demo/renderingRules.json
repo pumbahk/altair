@@ -3,12 +3,11 @@
 
     "seat_type_id": {
       "default": {
-        "fill": "#CCCCCC"
+        "fill": "#fff",
+        "stroke": "#000"
       },
       "1": {
-        "fill": "#99FF99"
-        "stroke": {
-        }
+        "fill": "#99FF99",
       },
       "2": {
         "fill": "#9999FF"
@@ -29,10 +28,12 @@
         "text": null
       },
       "1": {
+        "fill": "#f88",
+        "text-color": "#fff",
         "text": "ぴ"
       },
       "2": {
-        "text": "e"
+        "text": "e+"
       },
       "3": {
         "text": "L"

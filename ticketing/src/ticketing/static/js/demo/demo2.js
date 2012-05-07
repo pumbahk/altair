@@ -307,6 +307,7 @@ var DemoManager = Fashion._lib._class("DemoManager", {
     start_pos: {x:0,y:0},
     mask: null,
     d: null,
+    originalStyles: {},
     shift: false
   },
 
@@ -325,7 +326,10 @@ var DemoManager = Fashion._lib._class("DemoManager", {
 
       var selectedSeatStyle = {
         'fill': new Fashion.FloodFill(new Fashion.Color(0, 155, 225, 255)),
-        'stroke': new Fashion.Stroke(new Fashion.Color(255, 255, 255, 255), 3)
+        'stroke': new Fashion.Stroke(new Fashion.Color(255, 255, 255, 255), 3),
+        'label': {
+          'fill': new Fashion.FloodFill(new Fashion.Color(255, 255, 255))
+        }
       };
 
       if (this.d.handler)
@@ -370,10 +374,22 @@ var DemoManager = Fashion._lib._class("DemoManager", {
             self.d.each(function(i) {
               if (i.seat && hitTest(i)) {
                 if (i.selecting && !self.shift) {
-                  i.style(seatDefaultStyle);
+                  var originalStyle = self.originalStyles[i.id];
+                  i.style(originalStyle);
+                  if (i.label) {
+                    i.label.style(originalStyle.label);
+                  }
                   i.selecting = false;
                 } else {
+                  self.originalStyles[i.id] = {
+                    fill: i.style().fill,
+                    stroke: i.style().fill,
+                    label: i.label.style()
+                  };
                   i.style(selectedSeatStyle);
+                  if (i.label) {
+                    i.label.style(selectedSeatStyle.label);
+                  }
                   i.selecting = true;
                 }
               }

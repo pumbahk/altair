@@ -111,6 +111,12 @@ $.fn.venue_editor = function(options) {
   if (typeof options == 'string' || options instanceof String) {
     switch (options) {
     case 'load':
+      function convertToFashionStyle(style) {
+        return {
+          "fill": style.fill ? new Fashion.FloodFill(new Fashion.Color(style.fill)): null,
+          "stroke": style.stroke ? new Fashion.Stroke(new Fashion.Color(style.stroke), style.strokeWidth ? style.strokeWidth: 1, style.strokePattern): null
+        };
+      }
       var waiter = make_async_set_waiter(
         ['drawable', 'metadata', 'rules'],
         function(data) {
@@ -118,21 +124,21 @@ $.fn.venue_editor = function(options) {
           var metadata = data.metadata.seats;
           var drawable = data.drawable;
           var logged = false;
-          console.log(rules);
           drawable.each(function(i){
             if (i.seat) {
               var id = i.id;
               var meta = metadata[id];
               var styles = {};
-              for (var j in rules) {
+              var rules_to_be_applied = ['seat_type_id', 'stock_holder_id'];
+              for (var jj in rules_to_be_applied) {
+                var j = rules_to_be_applied[jj];
                 var rule = rules[j];
                 var m = meta[j];
                 var st = (m in rule) ? rule[m] : rule['default'];
-                for (var k in st) {
+                for (var k in st)
                   styles[k] = st[k];
-                }
               }
-              i.style(styles);
+              i.style(convertToFashionStyle(styles));
               if (styles.text !== null) {
                 var pos = i.position();
                 var size = i.size();
@@ -141,7 +147,9 @@ $.fn.venue_editor = function(options) {
                     pos.x,
                     pos.y + (size.height * 0.75),
                     (size.height * 0.75),
-                    styles.text));
+                    styles.text))
+                i.label.style({ fill: new Fashion.FloodFill(
+                  new Fashion.Color(styles['text-color'] || "#000")) });
               }
             }
           });
@@ -156,14 +164,14 @@ $.fn.venue_editor = function(options) {
           data.manager.d.zoom(0.4, { x: cs.width / 2, y: cs.height / 2 });
           document.addEventListener('keydown', data.keydown = function(e) { if (key(e).shift) data.manager.shift = true; });
           document.addEventListener('keyup', data.keyup = function(e) { if (key(e).shift) data.manager.shift = false; });
-          waiter('drawable', drawable);
+          waiter('drawable', data.manager.d);
 
         }, function() {
           canvas.find('.message').text("Loading failed");
         }
       );
       loadText(
-        "${request.route_path('api.get_seats', venue_id=performance.venue_id)}",
+        "${request.route_path('api.get_seats', venue_id=performance.venue_id)}" + "?" + Math.random(),
         function(txt) {
           eval("var x = " + txt);
           waiter('metadata', x);
@@ -172,7 +180,7 @@ $.fn.venue_editor = function(options) {
         });
 
       loadText(
-        "/static/js/demo/renderingRules.json",
+        "/static/js/demo/renderingRules.json" + "?" + Math.random(),
         function(txt) {
           eval("var x = " + txt);
           waiter('rules', x);
