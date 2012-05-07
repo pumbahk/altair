@@ -153,7 +153,7 @@ class PaymentDeliveryMethodPairs(BaseView):
         f = PaymentDeliveryMethodPairForm(organization_id=self.context.user.organization_id)
         return {
             'form':f,
-            'sales_segment':sales_segment,
+            'sales_segment':sales_segment
         }
 
     @view_config(route_name='products.payment_delivery_method_pair.new', request_method='POST', renderer='ticketing:templates/payment_delivery_method_pair/edit.html')
@@ -175,10 +175,61 @@ class PaymentDeliveryMethodPairs(BaseView):
 
             self.request.session.flash(u'販売区分を登録しました')
             return HTTPFound(location=route_path('products.sales_segments.show', self.request, sales_segment_id=sales_segment.id))
+        else:
+            return {
+                'form':f,
+                'sales_segment':sales_segment,
+            }
+
+    @view_config(route_name='products.payment_delivery_method_pair.edit', request_method='GET', renderer='ticketing:templates/payment_delivery_method_pair/edit.html')
+    def edit_get(self):
+        id = int(self.request.matchdict.get('payment_delivery_method_pair_id', 0))
+        pdmp = PaymentDeliveryMethodPair.get(id)
+        if pdmp is None:
+            return HTTPNotFound('payment_delivery_method_pair id %d is not found' % pdmp)
+
+        f = PaymentDeliveryMethodPairForm(organization_id=self.context.user.organization_id)
+        f.process(record_to_multidict(pdmp))
+        f.payment_method_ids.data = [pdmp.payment_method_id]
+        f.delivery_method_ids.data = [pdmp.delivery_method_id]
         return {
             'form':f,
-            'sales_segment':sales_segment,
+            'payment_delivery_method_pair':pdmp
         }
+
+    @view_config(route_name='products.payment_delivery_method_pair.edit', request_method='POST', renderer='ticketing:templates/payment_delivery_method_pair/edit.html')
+    def edit_post(self):
+        id = int(self.request.matchdict.get('payment_delivery_method_pair_id', 0))
+        pdmp = PaymentDeliveryMethodPair.get(id)
+        if pdmp is None:
+            return HTTPNotFound('payment_delivery_method_pair id %d is not found' % id)
+
+        f = PaymentDeliveryMethodPairForm(self.request.POST, organization_id=self.context.user.organization_id)
+        f.payment_method_ids.data = [pdmp.payment_method_id]
+        f.delivery_method_ids.data = [pdmp.delivery_method_id]
+        if f.validate():
+            payment_delivery_method_pair = merge_session_with_post(PaymentDeliveryMethodPair(), f.data)
+            payment_delivery_method_pair.save()
+
+            self.request.session.flash(u'販売区分を登録しました')
+            return HTTPFound(location=route_path('products.sales_segments.show', self.request, sales_segment_id=pdmp.sales_segment_id))
+        else:
+            return {
+                'form':f,
+                'payment_delivery_method_pair':pdmp
+            }
+
+    @view_config(route_name='products.payment_delivery_method_pair.delete')
+    def delete(self):
+        id = int(self.request.matchdict.get('payment_delivery_method_pair_id', 0))
+        pdmp = PaymentDeliveryMethodPair.get(id)
+        if pdmp is None:
+            return HTTPNotFound('payment_delivery_method_pair id %d is not found' % id)
+
+        pdmp.delete()
+
+        self.request.session.flash(u'販売区分を削除しました')
+        return HTTPFound(location=route_path('products.sales_segments.show', self.request, sales_segment_id=pdmp.sales_segment_id))
 
     @view_config(route_name='products.payment_delivery_method_pair.list', renderer='json')
     def list(self):

@@ -63,6 +63,13 @@ class PaymentDeliveryMethodPair(BaseModel, Base):
     delivery_method_id = Column(BigInteger, ForeignKey('DeliveryMethod.id'))
     delivery_method = relationship('DeliveryMethod')
 
+    @staticmethod
+    def find(payment_method_id=None, delivery_method_id=None):
+        return DBSession.query(PaymentDeliveryMethodPair)\
+            .filter(PaymentDeliveryMethodPair.payment_method_id==payment_method_id)\
+            .filter(PaymentDeliveryMethodPair.delivery_method_id==delivery_method_id)\
+            .all()
+
 class SalesSegment(BaseModel, Base):
     __tablename__ = 'SalesSegment'
     id = Column(BigInteger, primary_key=True)

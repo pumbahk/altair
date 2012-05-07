@@ -2,9 +2,9 @@
 
 from wtforms import Form
 from wtforms import TextField, SelectField, IntegerField, SelectMultipleField
-from wtforms.validators import Required, Length, NumberRange, EqualTo, Optional
+from wtforms.validators import Required, Length, NumberRange, EqualTo, Optional, ValidationError
 
-from ticketing.products.models import PaymentMethod, DeliveryMethod
+from ticketing.products.models import PaymentMethod, DeliveryMethod, PaymentDeliveryMethodPair
 from ticketing.utils import DateTimeField
 
 class ProductForm(Form):
@@ -79,3 +79,11 @@ class PaymentDeliveryMethodPairForm(Form):
         choices=[],
         coerce=int
     )
+
+    def validate_payment_method_ids(form, field):
+        if field.data is None or form.delivery_method_ids.data is None:
+            return
+        for payment_method_id in field.data:
+            for delivery_method_id in form.delivery_method_ids.data:
+                if PaymentDeliveryMethodPair.find(payment_method_id=payment_method_id, delivery_method_id=delivery_method_id):
+                    raise ValidationError(u'既に設定済みの決済・配送方法の組み合せがあります')

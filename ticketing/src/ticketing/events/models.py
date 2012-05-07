@@ -61,7 +61,7 @@ class Event(Base, BaseModel):
     @property
     def sales_start_on(self):
         data = DBSession.query(func.min(SalesSegment.start_at)).join(Product)\
-        .filter(Product.event_id==self.id).first()
+                .filter(Product.event_id==self.id).first()
         return data[0] if data else None
 
     @property

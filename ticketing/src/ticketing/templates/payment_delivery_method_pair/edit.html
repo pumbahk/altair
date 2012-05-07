@@ -4,12 +4,21 @@
 <%namespace file="/common/helpers.html" import="flash_messages" />
 <%namespace file="/common/helpers.html" import="form_item" />
 
+<%
+  if request.matched_route.name == 'products.payment_delivery_method_pair.edit':
+    route_name = u'編集'
+    route_path = request.route_path('products.payment_delivery_method_pair.edit', payment_delivery_method_pair_id=payment_delivery_method_pair.id)
+  else:
+    route_name = u'登録'
+    route_path = request.route_path('products.payment_delivery_method_pair.new', sales_segment_id=sales_segment.id)
+%>
+
 <div class="row-fluid">
   <%include file="/parts/_menu.html" />
 
   <span class="span10">
     <div class="page-header">
-      <h3>決済・配送方法設定</h3>
+      <h3>決済・配送方法${route_name}</h3>
     </div>
 
     <div class="content">
@@ -18,15 +27,21 @@
     </div>
 
     <div class="well">
-      <form class="form-horizontal" action="" enctype="multipart/form-data" method="POST">
+      <form class="form-horizontal" action="${route_path}" enctype="multipart/form-data" method="POST">
         <fieldset>
           ${form_item(form.transaction_fee, option={'class':'span2'})}
           ${form_item(form.delivery_fee, option={'class':'span2'})}
           ${form_item(form.discount, option={'class':'span2'})}
           ${form_item(form.discount_unit, option={'class':'span2'})}
           ${form_item(form.discount_type, option={'class':'span2'})}
-          ${form_item(form.payment_method_ids)}
-          ${form_item(form.delivery_method_ids)}
+
+          % if request.matched_route.name == 'products.payment_delivery_method_pair.new':
+            ${form_item(form.payment_method_ids)}
+            ${form_item(form.delivery_method_ids)}
+          % else:
+            ${form_item(form.payment_method_ids, option={'disabled':'disabled'})}
+            ${form_item(form.delivery_method_ids, option={'disabled':'disabled'})}
+          % endif
         </fieldset>
         <div class="form-actions">
           <input class="btn btn-primary" type="submit" name="submit" value="保存">
