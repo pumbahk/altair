@@ -26,8 +26,6 @@ class FanstaticDecoratorFactory(object):
         self.fns = fns
     
     def add(self, fn):
-        print "--- add"
-        print fn
         new = FanstaticDecoratorFactory()
         new.fns = list(self.fns[:])
         new.fns.append(fn)
@@ -44,7 +42,6 @@ class FanstaticDecoratorFactory(object):
         def wraps(context, request, *args, **kwargs):
             response = wrapped(context, request, *args, **kwargs)
             for fn in self.fns:
-                print fn
                 if hasattr(fn, "need"):
                     fn.need()
                 else:
