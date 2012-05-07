@@ -117,11 +117,11 @@ class OperatorView(object):
         self.request = request
         self.id = request.matchdict.get('id', None)
         if self.id:
-            self.operator = OperatorAPI(self.request, self.id).read()
+            self.operator = Operator.query.filter_by(id=self.id).one()
 
     @view_config(route_name="operator_list", renderer='altaircms:templates/auth/operator/list.mako', permission="operator_read")
     def list(self):
-        operators = OperatorAPI(self.request).read()
+        operators = Operator.query.all()
 
         return dict(
             operators=operators
@@ -151,49 +151,53 @@ class OperatorView(object):
         if not self.operator:
             return HTTPNotFound()
 
-class OperatorAPI(BaseRESTAPI):
-    validationschema = None
-    model = Operator
-
-
-class RoleAPI(BaseRESTAPI):
-    model = Role
 
 @view_defaults(decorator=with_bootstrap)
 class RoleView(object):
     def __init__(self, request):
         self.request = request
-        self.id = request.matchdict.get('id', None)
-        if self.id:
-            self.role = RoleAPI(self.request, self.id).read()
+
+    def get_role(self):
+        # これはcontextが持つべき
+        role_id = self.request.matchdict.get('id')
+        try:
+            return Role.query.filter_by(id=role_id).one()
+        except NoResultFound:
+            raise HTTPNotFound
 
     @view_config(route_name="role_list", request_method="GET", renderer="altaircms:templates/auth/role/list.mako")
     def list(self):
         return dict(
-            roles=DBSession.query(Role)
+            roles=Role.query.all(),
+        )
+
+    @view_config(route_name="role", request_method="GET", renderer="altaircms:templates/auth/role/view.mako")
+    def read(self):
+        form = RoleForm()
+        return dict(
+            form=form,
+            role=self.get_role(),
         )
 
     @view_config(route_name="role", request_method="POST", renderer="altaircms:templates/auth/role/view.mako")
-    @view_config(route_name="role", request_method="GET", renderer="altaircms:templates/auth/role/view.mako")
-    def read(self):
-        if self.request.method == "POST":
-            form = RoleForm(self.request.POST)
-            if form.validate():
-                perm = form.data.get('permission')
-                DBSession.add(RolePermission(role_id=self.id, permission_id=perm.id))
-                
-                return HTTPFound(location=self.request.route_path('role', id=self.id))
-        else:
-            form = RoleForm()
+    def update(self):
+        form = RoleForm(self.request.POST)
+        if form.validate():
+            role = self.get_role()
+            perm = form.data.get('permission')
+            role.permissions.append(perm)
+            
+            return HTTPFound(location=self.request.route_path('role', id=role.id))
         return dict(
             form=form,
-            role=self.role
+            role=self.get_role(),
         )
 
     @view_config(route_name="role", request_method="POST", request_param="_method=delete")
     def delete(self):
         try:
-            DBSession.delete(self.role)
+            role = self.get_role()
+            DBSession.delete(role)
         except Exception as e:
             logging.exception(e)
             raise

@@ -9,7 +9,8 @@ from sqlalchemy.schema import Table, Column, ForeignKey, UniqueConstraint
 from sqlalchemy.types import String, DateTime, Integer, BigInteger, Unicode, Enum
 from sqlalchemy.ext.associationproxy import association_proxy
 
-from altaircms.models import Base
+#from altaircms.models import Base
+Base = sqlahelper.get_base()
 _session = sqlahelper.get_session()
 
 PERMISSIONS = [
