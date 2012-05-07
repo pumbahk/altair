@@ -6,10 +6,59 @@ from sqlalchemy.orm import relationship, backref
 import mako
 from sqlalchemy.orm.mapper import Mapper
 from sqlalchemy.schema import Table, Column, ForeignKey, UniqueConstraint
-from sqlalchemy.types import String, DateTime, Integer, BigInteger, Unicode
+from sqlalchemy.types import String, DateTime, Integer, BigInteger, Unicode, Enum
+from sqlalchemy.ext.associationproxy import association_proxy
 
 from altaircms.models import Base
 _session = sqlahelper.get_session()
+
+PERMISSIONS = [
+    # event
+    "event_create",
+    "event_read",
+    "event_update",
+    "event_delete",
+    # topic
+    "topic_create",
+    "topic_read",
+    "topic_update",
+    "topic_delete",
+    # ticket
+    "ticket_create",
+    "ticket_read",
+    "ticket_update",
+    "ticket_delete",
+    # magazine
+    "magazine_create",
+    "magazine_read",
+    "magazine_update",
+    "magazine_delete",
+    # asset
+    "asset_create",
+    "asset_read",
+    "asset_update",
+    "asset_delete",
+    # page
+    "page_create",
+    "page_read",
+    "page_update",
+    "page_delete",
+    # tag
+    "tag_create",
+    "tag_read",
+    "tag_update",
+    "tag_delete",
+    # layout
+    "layout_create",
+    "layout_read",
+    "layout_update",
+    "layout_delete",
+    # operator
+    "operator_create",
+    "operator_read",
+    "operator_update",
+    "operator_delete",
+]
 
 ## 認証時初期ロール
 DEFAULT_ROLE = 'administrator'
@@ -61,19 +110,6 @@ class Operator(Base):
         return '%s' % self.user_id
 
 
-class RolePermission(Base):
-    __tablename__ = 'role2permission'
-    query = _session.query_property()
-
-    id = Column(Integer, primary_key=True)
-    role_id = Column(Integer, ForeignKey('role.id'))
-    permission_id = Column(Integer, ForeignKey('permission.id'))
-
-    role = relationship("Role", backref=backref("role2permission", order_by=id))
-    permission = relationship("Permission", backref=backref("role2permission", order_by=id))
-
-    UniqueConstraint('role_id', 'permission_id')
-
 
 class Role(Base):
     __tablename__ = 'role'
@@ -82,15 +118,17 @@ class Role(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(255))
 
-    permissions = relationship("Permission", secondary=RolePermission.__table__, backref='role')
+    #permissions = relationship("Permission", secondary=RolePermission.__table__, backref='role')
+    perms = relationship("RolePermission", backref="role")
+    permissions = association_proxy("perms", "name",
+        creator=lambda name: RolePermission(name=name))
 
-
-class Permission(Base):
-    __tablename__ = 'permission'
-    query = _session.query_property()
-
+class RolePermission(Base):
+    __tablename__ = 'role_permissions'
     id = Column(Integer, primary_key=True)
-    name = Column(String(255), unique=True)
+    name = Column(Enum(*PERMISSIONS))
+    role_id = Column(Integer, ForeignKey('role.id'))
+
 
 
 class Client(Base):

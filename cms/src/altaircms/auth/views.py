@@ -18,7 +18,7 @@ from altaircms.lib.apiview import BaseRESTAPI
 from altaircms.models import DBSession
 from altaircms.lib.fanstatic_decorator import with_bootstrap
 from altaircms.auth.forms import RoleForm
-from .models import Operator, Role, RolePermission, DEFAULT_ROLE
+from .models import Operator, Role, DEFAULT_ROLE
 
 @view_config(route_name='login', renderer='altaircms:templates/login.mako')
 @view_config(context='pyramid.httpexceptions.HTTPForbidden', renderer='altaircms:templates/login.mako',
@@ -200,8 +200,6 @@ class RoleView(object):
         return HTTPFound(self.request.route_path("role_list"))
 
 
-class RolePermissionAPI(BaseRESTAPI):
-    model = RolePermission
 
 
 class RolePermissionView(object):

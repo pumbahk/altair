@@ -3,8 +3,8 @@ from wtforms.form import Form
 from wtforms import fields, widgets, validators
 from wtforms.ext.sqlalchemy import fields as sa_fields
 
-from altaircms.auth.models import Permission
 from altaircms.models import DBSession
+from .models import PERMISSIONS
 
 class OperatorCrudForm(Form):
     pass
@@ -18,8 +18,6 @@ class APIKeyForm(Form):
     )
 
 class RoleForm(Form):
-    permission = sa_fields.QuerySelectField(
-        query_factory=lambda: Permission.query,
-        get_label=lambda p: p.name,
-        validators=[validators.Required()],
+    permission = fields.SelectField(
+        choices=[(p, p) for p in PERMISSIONS],
     )
