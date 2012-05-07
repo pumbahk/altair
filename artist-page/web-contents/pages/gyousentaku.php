@@ -166,16 +166,16 @@ n/skip.gif" alt="本文へジャンプ" width="1" height="1" /></a></p>
 
                 <div id ="tx_main_header">
 
-                        <ul><li><a href="/~katosaori/mock/folda/gyousentaku.php?gyoutou=あ">あ</a></li>
-                                <li><a href="/~katosaori/mock/folda/gyousentaku.php?gyoutou=か">>か</a></li>
-                                <li><a href="/~katosaori/mock/folda/gyousentaku.php?gyoutou=さ">>さ</a></li>
-                                <li><a href="/~katosaori/mock/folda/gyousentaku.php?gyoutou=た">>た</a></li>
-                                <li><a href="/~katosaori/mock/folda/gyousentaku.php?gyoutou=な">>な</a></li>
-                                <li><a href="/~katosaori/mock/folda/gyousentaku.php?gyoutou=は">>は</a></li>
-                                <li><a href="/~katosaori/mock/folda/gyousentaku.php?gyoutou=ま">>ま</a></li>
-                                <li><a href="/~katosaori/mock/folda/gyousentaku.php?gyoutou=や">>や</a></li>
-                                <li><a href="/~katosaori/mock/folda/gyousentaku.php?gyoutou=ら">>ら</a></li>
-                                <li><a href="/~katosaori/mock/folda/gyousentaku.php?gyoutou=わ">>わ</a></li>
+                        <ul><li><a href="/artist-page/pages/gyousentaku.php?gyoutou=あ">あ</a></li>
+                                <li><a href="/artist-page/pages/gyousentaku.php?gyoutou=か">>か</a></li>
+                                <li><a href="/artist-page/pages/gyousentaku.php?gyoutou=さ">>さ</a></li>
+                                <li><a href="/artist-page/pages/gyousentaku.php?gyoutou=た">>た</a></li>
+                                <li><a href="/artist-page/pages/gyousentaku.php?gyoutou=な">>な</a></li>
+                                <li><a href="/artist-page/pages/gyousentaku.php?gyoutou=は">>は</a></li>
+                                <li><a href="/artist-page/pages/gyousentaku.php?gyoutou=ま">>ま</a></li>
+                                <li><a href="/artist-page/pages/gyousentaku.php?gyoutou=や">>や</a></li>
+                                <li><a href="/artist-page/pages/gyousentaku.php?gyoutou=ら">>ら</a></li>
+                                <li><a href="/artist-page/pages/gyousentaku.php?gyoutou=わ">>わ</a></li>
 
                         <ul>
                         <?php
@@ -204,7 +204,7 @@ n/skip.gif" alt="本文へジャンプ" width="1" height="1" /></a></p>
 );
                         ?>
 
-                                                                 <li><a href="/~katosaori/m
+                                                                 <li><a href="/m
 ock/cdshousai.php?artist=<?=$artist_link?>"><?= htmlspecialchars($v)?></a></li>
 
                         <?
@@ -254,7 +254,7 @@ ock/cdshousai.php?artist=<?=$artist_link?>"><?= htmlspecialchars($v)?></a></li>
                         <li id ='#'><a href ='./genre.php?genre=<?=urlencode($p[$q])?>'><?= htmlspecialchars($p[$q]); ?></a></li>
 
                 <? endfor ?>
-                <li><a href="/~katosaori/mock/folda/gyousentaku.php?gyoutou=あ">50音順検索</a></li>
+                <li><a href="/artist-page/pages/gyousentaku.php?gyoutou=あ">50音順検索</a></li>
 
                 </ul>
                 </div>

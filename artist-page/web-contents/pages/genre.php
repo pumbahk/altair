@@ -234,7 +234,7 @@ dth="1" height="1" /></a></p>
                         
 			$link .= $parent_link[$i].'/';
 			?>
-<a href="/~katosaori/mock/folda/genre.php?genre=<?= $link ?>"><?= htmlspecialchars($parent_link[$i])?></a>
+<a href="/artist-page/pages/genre.php?genre=<?= $link ?>"><?= htmlspecialchars($parent_link[$i])?></a>
 <? echo "/";
         }
         
@@ -249,7 +249,7 @@ dth="1" height="1" /></a></p>
 			
 ?>
 
-                   <li><a href="/~katosaori/mock/folda/genre.php?genre=<?=$genre_link?>"><?= htmlspecialchars($genre['genre'])?></a></li>
+                   <li><a href="/artist-page/pages/genre.php?genre=<?=$genre_link?>"><?= htmlspecialchars($genre['genre'])?></a></li>
 
         <?
         }
@@ -272,7 +272,7 @@ dth="1" height="1" /></a></p>
 		for($u=0;$u<=$count_genre_names;$u++){
 			$link .= $genre_names[$u].'/'; 
 			?>
-		<a href="/~katosaori/mock/folda/genre.php?genre=<?=$link?>"><?= htmlspecialchars($genre_names[$u])?></a>
+		<a href="/artist-page/pages/genre.php?genre=<?=$link?>"><?= htmlspecialchars($genre_names[$u])?></a>
 		<?
 	}
 ?>
@@ -281,7 +281,7 @@ dth="1" height="1" /></a></p>
                         for($e=0;$e <= $count_artists; $e++){
                         $artist_link = urlencode($artists[$e]['name']);
                         ?>
-                                 <li><a href="/~katosaori/mock/folda/cdshousai.php?artist=<?=$artist_link?>"><?= htmlspecialchars($artists[$e]['name'])?></a></li>
+                                 <li><a href="/artist-page/pages/cdshousai.php?artist=<?=$artist_link?>"><?= htmlspecialchars($artists[$e]['name'])?></a></li>
                 <?
                         }
                 }
@@ -316,7 +316,7 @@ dth="1" height="1" /></a></p>
                         <li id ='#'><a href ='./genre.php?genre=<?=urlencode($p[$q])?>'><?= htmlspecialchars($p[$q]); ?></a></li>
 
                 <? endfor ?>
-                <li><a href="/~katosaori/mock/folda/gyousentaku.php?gyoutou=あ">50音順検索</a></li>
+                <li><a href="/artist-page/pages/gyousentaku.php?gyoutou=あ">50音順検索</a></li>
 
                 </ul>
 

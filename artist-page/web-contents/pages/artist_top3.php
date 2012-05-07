@@ -190,7 +190,7 @@ $(function(){
                         <li id ='#'><a href ='./genre.php?genre=<?=urlencode($t[$q])?>'><?= htmlspecialchars($t[$q]); ?></a></li>
 
                 <? endfor ?>
-                <li><a href="/~katosaori/mock/folda/gyousentaku.php?gyoutou=あ">50音順検索</a></li>
+                <li><a href="/artist-page/pages/gyousentaku.php?gyoutou=あ">50音順検索</a></li>
 
 		</ul>
 		</div>
