@@ -13,7 +13,6 @@ from ticketing.fanstatic import with_bootstrap
 from ticketing.events.models import Event, Performance
 from ticketing.events.performances.forms import PerformanceForm, StockHolderForm
 from ticketing.products.models import Product, StockHolder, SalesSegment
-from ticketing.venues.models import Venue
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class Performances(BaseView):
@@ -23,7 +22,7 @@ class Performances(BaseView):
         performance_id = int(self.request.matchdict.get('performance_id', 0))
         performance = Performance.get(performance_id)
         products = Product.find(performance_id=performance_id)
-        sales_segments = DBSession.query(SalesSegment).join(Product).filter(Product.event_id==performance.event_id).all()
+        sales_segments = DBSession.query(SalesSegment).filter(SalesSegment.organization_id==self.context.user.organization_id).all()
 
         return {
             'performance':performance,

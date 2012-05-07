@@ -42,6 +42,8 @@
             ${form_item(form.payment_method_ids, option={'disabled':'disabled'})}
             ${form_item(form.delivery_method_ids, option={'disabled':'disabled'})}
           % endif
+
+          ${form_item(form.sales_segment_id)}
         </fieldset>
         <div class="form-actions">
           <input class="btn btn-primary" type="submit" name="submit" value="保存">

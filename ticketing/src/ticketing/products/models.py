@@ -64,8 +64,9 @@ class PaymentDeliveryMethodPair(BaseModel, Base):
     delivery_method = relationship('DeliveryMethod')
 
     @staticmethod
-    def find(payment_method_id=None, delivery_method_id=None):
+    def find(sales_segment_id, payment_method_id, delivery_method_id):
         return DBSession.query(PaymentDeliveryMethodPair)\
+            .filter(PaymentDeliveryMethodPair.sales_segment_id==sales_segment_id)\
             .filter(PaymentDeliveryMethodPair.payment_method_id==payment_method_id)\
             .filter(PaymentDeliveryMethodPair.delivery_method_id==delivery_method_id)\
             .all()

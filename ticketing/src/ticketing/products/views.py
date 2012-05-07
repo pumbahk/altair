@@ -65,10 +65,11 @@ class Products(BaseView):
         if performance is None:
             return HTTPNotFound('performance id %d is not found' % performance_id)
 
-        f = ProductForm(self.request.POST)
+        f = ProductForm(self.request.POST, organization_id=self.context.user.organization_id)
         if f.validate():
-            record = merge_session_with_post(product, f.data)
-            Product.update(record)
+            product = merge_session_with_post(product, f.data)
+            print vars(product)
+            product.save()
 
             self.request.session.flash(u'商品を保存しました')
             return {'success':True}

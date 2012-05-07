@@ -1,13 +1,20 @@
 # -*- coding: utf-8 -*-
 
 from wtforms import Form
-from wtforms import TextField, SelectField, IntegerField, SelectMultipleField
+from wtforms import TextField, SelectField, IntegerField, SelectMultipleField, HiddenField
 from wtforms.validators import Required, Length, NumberRange, EqualTo, Optional, ValidationError
 
-from ticketing.products.models import PaymentMethod, DeliveryMethod, PaymentDeliveryMethodPair
+from ticketing.products.models import PaymentMethod, DeliveryMethod, PaymentDeliveryMethodPair, SalesSegment
 from ticketing.utils import DateTimeField
 
 class ProductForm(Form):
+
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        Form.__init__(self, formdata, obj, prefix, **kwargs)
+        if 'organization_id' in kwargs:
+            self.sales_segment_id.choices = [
+                (sales_segment.id, sales_segment.name) for sales_segment in SalesSegment.get_by_organization_id(kwargs['organization_id'])
+            ]
 
     name = TextField(
         label=u'商品名',
@@ -16,6 +23,12 @@ class ProductForm(Form):
     price = TextField(
         label=u'価格',
         validators=[Required(u'入力してください')]
+    )
+    sales_segment_id = SelectField(
+        label=u'販売区分',
+        validators=[Required(u'選択してください')],
+        choices=[],
+        coerce=int
     )
 
 class SalesSegmentForm(Form):
@@ -79,11 +92,14 @@ class PaymentDeliveryMethodPairForm(Form):
         choices=[],
         coerce=int
     )
+    sales_segment_id = HiddenField(
+        validators=[]
+    )
 
     def validate_payment_method_ids(form, field):
         if field.data is None or form.delivery_method_ids.data is None:
             return
         for payment_method_id in field.data:
             for delivery_method_id in form.delivery_method_ids.data:
-                if PaymentDeliveryMethodPair.find(payment_method_id=payment_method_id, delivery_method_id=delivery_method_id):
+                if PaymentDeliveryMethodPair.find(form.sales_segment_id.data, payment_method_id, delivery_method_id):
                     raise ValidationError(u'既に設定済みの決済・配送方法の組み合せがあります')
