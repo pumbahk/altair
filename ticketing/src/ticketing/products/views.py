@@ -8,7 +8,7 @@ from ticketing.fanstatic import with_bootstrap
 from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
 from ticketing.products.forms import PaymentDeliveryMethodPairForm, ProductForm, SalesSegmentForm
-from ticketing.products.models import PaymentDeliveryMethodPair, Product, SalesSegment
+from ticketing.products.models import PaymentDeliveryMethodPair, Product, ProductItem, SalesSegment, Stock
 from ticketing.events.models import Performance
 
 @view_defaults(decorator=with_bootstrap)
@@ -68,8 +68,13 @@ class Products(BaseView):
         f = ProductForm(self.request.POST, organization_id=self.context.user.organization_id)
         if f.validate():
             product = merge_session_with_post(product, f.data)
-            print vars(product)
             product.save()
+
+            product_item = ProductItem()
+            product_item.stocks = [Stock.get(self.request.POST.get('stock_id'))]
+            product_item.performance_id = performance_id
+            product_item.product_id = product_id
+            product_item.save()
 
             self.request.session.flash(u'商品を保存しました')
             return {'success':True}
