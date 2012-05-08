@@ -115,9 +115,6 @@ class OAuthLogin(object):
 class OperatorView(object):
     def __init__(self, request):
         self.request = request
-        self.id = request.matchdict.get('id', None)
-        if self.id:
-            self.operator = Operator.query.filter_by(id=self.id).one()
 
     @view_config(route_name="operator_list", renderer='altaircms:templates/auth/operator/list.mako', permission="operator_read")
     def list(self):
@@ -129,16 +126,24 @@ class OperatorView(object):
 
     @view_config(route_name="operator", renderer='altaircms:templates/auth/operator/view.mako', permission="operator_read")
     def read(self):
-        self._check_obj()
-        return dict(operator=self.operator)
+        operator_id = self.request.matchdict['id']
+        try:
+            operator = Operator.query.filter_by(id=operator_id).one()
+            return dict(operator=operator)
+        except NoResultFound:
+            raise HTTPNotFound(self.request.url)
 
     @view_config(route_name="operator", permission="operator_delete",
         request_method="POST", request_param="_method=delete")
     def delete(self):
-        self._check_obj()
+        operator_id = self.request.matchdict['id']
+        try:
+            operator = Operator.query.filter_by(id=operator_id).one()
+        except NoResultFound:
+            raise HTTPNotFound(self.request.url)
         logged_in_user_id = authenticated_userid(self.request)
-        user_id = self.operator.user_id
-        DBSession.delete(self.operator)
+        user_id = operator.user_id
+        DBSession.delete(operator)
 
         if user_id == logged_in_user_id:
             return logout(self.request)
@@ -147,9 +152,6 @@ class OperatorView(object):
         return HTTPFound(self.request.route_path("operator_list"))
 
 
-    def _check_obj(self):
-        if not self.operator:
-            return HTTPNotFound()
 
 
 @view_defaults(decorator=with_bootstrap)

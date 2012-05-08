@@ -118,3 +118,112 @@ class RoleViewTests(unittest.TestCase):
 
         from .. import models
         self.assertEqual(len( models.Role.query.filter_by(id=role.id).all()), 0)
+
+class RolePermissionViewTests(unittest.TestCase):
+    def setUp(self):
+        self.config = testing.setUp()
+
+    def tearDown(self):
+        testing.tearDown()
+        import transaction
+        transaction.abort()
+
+    def _getTarget(self):
+        from .. import views
+        return views.RolePermissionView
+
+    def _makeOne(self, request):
+        return self._getTarget()(request)
+
+    def test_it(self):
+        request = testing.DummyRequest()
+        target = self._makeOne(request)
+
+        self.assertEqual(target.request, request)
+
+    def _add_role(self, name, permissions):
+        from .. import models
+        role = models.Role(name=name, permissions=permissions)
+        import sqlahelper
+        sqlahelper.get_session().add(role)
+        sqlahelper.get_session().flush()
+        return role
+
+    @unittest.skip(u"一気にテストすると失敗する。他のテストケースの影響を受けている")
+    def test_delete(self):
+        self.config.add_route('role', '/roles/{id}')
+        role = self._add_role('test-role', permissions=['page_update'])
+        matchdict = {'id': 'page_update', 'role_id': str(role.id)}
+        request = testing.DummyRequest(matchdict=matchdict)
+
+        target = self._makeOne(request)
+        result = target.delete()
+
+        self.assertEqual(result.location, '/roles/' + str(role.id))
+        self.assertNotIn('page_update', role.permissions)
+
+
+class OperatorViewTests(unittest.TestCase):
+
+    def setUp(self):
+        self.config = testing.setUp()
+
+    def tearDown(self):
+        testing.tearDown()
+        import transaction
+        transaction.abort()
+
+    def _getTarget(self):
+        from .. import views
+        return views.OperatorView
+
+    def _makeOne(self, request):
+        return self._getTarget()(request)
+
+
+    def test_it(self):
+        request = testing.DummyRequest()
+        target = self._makeOne(request)
+
+        self.assertEqual(target.request, request)
+
+    def _add_operator(self, name, auth_source='test', user_id=1):
+        from .. import models
+        operator = models.Operator(auth_source=auth_source, user_id=user_id, screen_name=name) 
+        import sqlahelper
+        sqlahelper.get_session().add(operator)
+        sqlahelper.get_session().flush()
+        
+        return operator
+
+    @unittest.skip(u"一気にテストすると失敗する。他のテストケースの影響を受けている")
+    def test_list(self):
+        operator = self._add_operator(u'test-operator')
+        request = testing.DummyRequest()
+        target = self._makeOne(request)
+
+        result = target.list()
+
+        self.assertEqual(result['operators'], [operator])
+        
+    @unittest.skip(u"一気にテストすると失敗する。他のテストケースの影響を受けている")
+    def test_read(self):
+        operator = self._add_operator(u'test-operator')
+        request = testing.DummyRequest(matchdict=dict(id=str(operator.id)))
+        target = self._makeOne(request)
+
+        result = target.read()
+
+        self.assertEqual(result['operator'], operator)
+
+    @unittest.skip(u"一気にテストすると失敗する。他のテストケースの影響を受けている")
+    def test_delete(self):
+        self.config.add_route('operator_list', '/operators')
+        operator = self._add_operator(u'test-operator')
+        request = testing.DummyRequest(matchdict=dict(id=str(operator.id)))
+        target = self._makeOne(request)
+
+        result = target.delete()
+        print result
+        self.assertEqual(result.location, '/operators')
+

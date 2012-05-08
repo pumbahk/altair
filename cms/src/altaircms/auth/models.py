@@ -96,10 +96,10 @@ class Operator(Base):
     oauth_token = Column(String(255))
     oauth_token_secret = Column(String(255))
 
-    date_joined = Column(DateTime, default=datetime.now())
-    last_login = Column(DateTime, default=datetime.now())
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
+    date_joined = Column(DateTime, default=datetime.now)
+    last_login = Column(DateTime, default=datetime.now)
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now)
 
     role = relationship("Role", backref=backref("operators", order_by=id))
     role_id = Column(Integer, ForeignKey("role.id"))
