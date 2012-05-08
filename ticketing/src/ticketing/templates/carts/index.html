@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>チケット販売・イベントの予約 [音楽 / コンサート / 舞台 / スポーツ] - 楽天チケット</title>
+<meta name="description" content="チケットの販売、イベントの予約は楽天チケットで！楽天チケットは演劇、バレエ、ミュージカルなどの舞台、クラシック、オペラ、ロックなどのコンサート、野球、サッカー、格闘技などのスポーツ、その他イベントなどのチケットのオンラインショッピングサイトです。" />
+<meta name="keywords" content="チケット,演劇,クラシック,オペラ,コンサート,バレエ,ミュージカル,野球,サッカー,格闘技" />
+<meta http-equiv="content-style-type" content="text/css" />
+<meta http-equiv="content-script-type" content="text/javascript" />
+<link rel="shortcut icon" href="../img/common/favicon.ico" />
+<link rel="stylesheet" href="../css/import.css" type="text/css" media="all" />
+<script type="text/javascript" src="${request.static_url('ticketing:static/js/jquery-1.6.2.min.js')}"></script>
+<script>
+var venues_selection = ${venues_selection};
+function show_seat_types(get_url) {
+  $.ajax({url:get_url, dataType: 'json', success:function(data) {
+    $('#seat-types-list').empty();
+    $.each(data.seat_types, function(key, value) {
+      var item = $('<li />');
+      item.text(value.name);
+      $('#seat-types-list').append(item);
+    });
+  }});
+};
+
+$(function() {
+  $('#date-select').change(
+    function() {
+      var venues = venues_selection[$('#date-select').val()];
+      $('#venue-select').empty();
+      $.each(venues, function(index, value) {
+        var o = $('<option/>');
+        o.text(value['name']);
+        o.attr('value', value['seat_types_url']);
+        $('#venue-select').append(o);
+        show_seat_types(value['seat_types_url']);
+      });
+    }
+  );
+})
+</script>
+</head>
+<body id="settlement">
+
+<p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="../img/common/skip.gif" alt="本文へジャンプ" width="1" height="1" /></a></p>
+
+<div id="container">
+
+	<!-- ========== header ========== -->
+	<div id="grpheader">
+		<p id="siteID"><a href="http://ticket.rakuten.co.jp/"><img src="../img/common/header_logo_01.gif" alt="楽天チケット" class="serviceLogo" width="97" height="35" /></a><a href="http://ticket.rakuten.co.jp/"><img src="../img/common/header_logo_02.gif" alt="チケット" class="serviceTitle" width="88" height="23" /></a></p>
+	</div>
+	<!-- ========== /header ========== -->
+	
+	<hr />
+
+	<!-- ========== main ========== -->
+	<div id="main">
+		<h1><img src="../img/settlement/title_settlement.gif" alt="チケット購入" width="950" height="40" /></h1>
+		<h2 id="ticketName">${event['title']}</h2>
+		<ul id="ticketIcon">
+			<li><img src="../img/detail/icon_select.gif" alt="座席選択可" width="80" height="30" /></li>
+			<li><img src="../img/detail/icon_keep.gif" alt="おとなりキープ" width="80" height="30" /></li>
+			<li><img src="../img/detail/icon_official.gif" alt="公式2次市場" width="80" height="30" /></li>
+			<li><img src="../img/detail/icon_goods.gif" alt="先行グッズ予約" width="80" height="30" /></li>
+			<li><img src="../img/detail/icon_event.gif" alt="イベントコミュニティ" width="80" height="30" /></li>
+		</ul>
+		<form id="form1" name="form1" method="post" action="">
+			<div id="settlementSelectBox">
+				<div id="settlementSelectBoxInner">
+					<table summary="チケット購入の絞り込み">
+						<tr>
+							<th>日程</th>
+							<td><select name="select" id="date-select">
+							    %for d in dates:
+							    <option>${d}</option>
+							    %endfor
+							</select></td>
+						</tr>
+						<tr>
+							<th>会場</th>
+							<td><select name="select2" id="venue-select">
+								<option>○○○○</option>
+							</select></td>
+						</tr>
+						<tr id="settlementSelectEnd">
+							<th>検索項目名</th>
+							<td><select name="select3" id="search-select">
+								<option>○○○○</option>
+							</select></td>
+						</tr>
+					</table>
+				</div>
+			</div>
+		</form>
+		<div class="settlementBox2">
+			<div class="settlementBoxInner2">
+				<h2 id="hallName"><span>12月3日 14:00 幕張メッセイベントホール</span></h2>
+				<script type="text/javascript" src="../js/jquery.flatheights.js"></script>
+				<script type="text/javascript">
+				$(function() {
+					$('#selectSeat, #selectBuy').flatHeights();
+					$("#selectSeat li:even").addClass("seatEven");
+					$("#selectSeat li:odd").addClass("seatOdd");
+				});
+				</script>
+				<div id="selectSeat">
+					<dl>
+						<dt><img src="../img/settlement/title_select.gif" alt="席種をお選びください" width="380" height="33" /></dt>
+						<dd>
+							<ul id="seat-types-list">
+								<li><img src="../img/settlement/icon_seat_01.gif" alt="" width="16" height="16" />エクストラファミリーシートエクストラファ…<img src="../img/settlement/icon_seat_19.gif" alt="" width="15" height="15" class="seatState" /></li>
+								<li class="selected"><img src="../img/settlement/icon_seat_02.gif" alt="" width="16" height="16" />エクストラファミリーシート<img src="../img/settlement/icon_seat_19.gif" alt="" width="15" height="15" class="seatState" /></li>
+								<li><img src="../img/settlement/icon_seat_03.gif" alt="" width="16" height="16" />エクストラファミリーシート<img src="../img/settlement/icon_seat_19.gif" alt="" width="15" height="15" class="seatState" /></li>
+								<li><img src="../img/settlement/icon_seat_04.gif" alt="" width="16" height="16" />エクストラファミリーシート<img src="../img/settlement/icon_seat_19.gif" alt="" width="15" height="15" class="seatState" /></li>
+								<li><img src="../img/settlement/icon_seat_05.gif" alt="" width="16" height="16" />エクストラファミリーシート<img src="../img/settlement/icon_seat_19.gif" alt="" width="15" height="15" class="seatState" /></li>
+								<li><img src="../img/settlement/icon_seat_06.gif" alt="" width="16" height="16" />エクストラファミリーシート<img src="../img/settlement/icon_seat_19.gif" alt="" width="15" height="15" class="seatState" /></li>
+								<li><img src="../img/settlement/icon_seat_07.gif" alt="" width="16" height="16" />エクストラファミリーシート<img src="../img/settlement/icon_seat_19.gif" alt="" width="15" height="15" class="seatState" /></li>
+								<li><img src="../img/settlement/icon_seat_08.gif" alt="" width="16" height="16" />エクストラファミリーシート<img src="../img/settlement/icon_seat_19.gif" alt="" width="15" height="15" class="seatState" /></li>
+								<li><img src="../img/settlement/icon_seat_09.gif" alt="" width="16" height="16" />エクストラファミリーシート<img src="../img/settlement/icon_seat_19.gif" alt="" width="15" height="15" class="seatState" /></li>
+								<li><img src="../img/settlement/icon_seat_10.gif" alt="" width="16" height="16" />エクストラファミリーシート<img src="../img/settlement/icon_seat_19.gif" alt="" width="15" height="15" class="seatState" /></li>
+								<li><img src="../img/settlement/icon_seat_11.gif" alt="" width="16" height="16" />エクストラファミリーシート<img src="../img/settlement/icon_seat_19.gif" alt="" width="15" height="15" class="seatState" /></li>
+								<li><img src="../img/settlement/icon_seat_12.gif" alt="" width="16" height="16" />エクストラファミリーシート<img src="../img/settlement/icon_seat_19.gif" alt="" width="15" height="15" class="seatState" /></li>
+								<li><img src="../img/settlement/icon_seat_13.gif" alt="" width="16" height="16" />エクストラファミリーシート<img src="../img/settlement/icon_seat_19.gif" alt="" width="15" height="15" class="seatState" /></li>
+								<li><img src="../img/settlement/icon_seat_14.gif" alt="" width="16" height="16" />エクストラファミリーシート<img src="../img/settlement/icon_seat_19.gif" alt="" width="15" height="15" class="seatState" /></li>
+								<li><img src="../img/settlement/icon_seat_15.gif" alt="" width="16" height="16" />エクストラファミリーシート<img src="../img/settlement/icon_seat_19.gif" alt="" width="15" height="15" class="seatState" /></li>
+								<li><img src="../img/settlement/icon_seat_16.gif" alt="" width="16" height="16" />エクストラファミリーシート<img src="../img/settlement/icon_seat_19.gif" alt="" width="15" height="15" class="seatState" /></li>
+								<li><img src="../img/settlement/icon_seat_17.gif" alt="" width="16" height="16" />エクストラファミリーシート<img src="../img/settlement/icon_seat_19.gif" alt="" width="15" height="15" class="seatState" /></li>
+								<li><img src="../img/settlement/icon_seat_18.gif" alt="" width="16" height="16" />エクストラファミリーシート<img src="../img/settlement/icon_seat_19.gif" alt="" width="15" height="15" class="seatState" /></li>
+							</ul>
+						</dd>
+					</dl>
+				</div>
+				<div id="selectBuy">
+					<form id="form2" name="form2" method="post" action="">
+						<h3><img src="../img/settlement/select.gif" alt="購入枚数、購入方法をお選びください" width="246" height="14" /></h3>
+						<dl>
+							<dt>エクストラファミリーシート</dt>
+							<dd>
+								<table summary="チケット枚数選択">
+									<tr>
+										<th scope="row">大人</th>
+										<td>￥5,000
+											<select name="select4" id="select4">
+												<option>00</option>
+											</select>
+											枚</td>
+									</tr>
+									<tr>
+										<th scope="row">子供</th>
+										<td>￥3,000
+											<select name="select5" id="select5">
+												<option>00</option>
+											</select>
+											枚</td>
+									</tr>
+									<tr>
+										<th scope="row">駐車券付</th>
+										<td>￥7,500
+											<select name="select6" id="select6">
+												<option>00</option>
+											</select>
+											枚</td>
+									</tr>
+								</table>
+							</dd>
+						</dl>
+						<ul>
+							<li><a href="#"><img src="../img/settlement/btn_select_buy.gif" alt="座席を選んで購入" width="236" height="46" /></a></li>
+							<li><a href="#"><img src="../img/settlement/btn_entrust_buy.gif" alt="おまかせで購入" width="236" height="46" /></a></li>
+						</ul>
+						<ul>
+							<li><a href="#"><img src="../img/settlement/btn_redo.gif" alt="席種を選択しなおす" width="236" height="46" /></a></li>
+						</ul>
+					</form>
+				</div>
+			</div>
+		</div>
+		<div class="settlementBox2" id="settlementEventDetail">
+			<div class="settlementBoxInner2">
+				<h2><img src="../img/settlement/title_event.gif" alt="イベント詳細" width="106" height="29" /></h2>
+				<table summary="イベント詳細情報">
+					<tr>
+						<th scope="row">開催期間</th>
+						<td>2011年12月4日(日)　開場17時30分　開演18時30分 ${event['start_on']} ${event['end_on']}</td>
+					</tr>
+					<tr>
+						<th scope="row">会場</th>
+						<td>幕張メッセイベントホール ${", ".join(event['venues'])}</td>
+					</tr>
+					<tr>
+						<th scope="row">席種・料金（税込）</th>
+						<td>一般指定　：　6,800円（税込）
+%for p in event['product']:
+${p.name} ： ${h.format_number(p.price)}円 <br/>
+%endfor
+</td>
+					</tr>
+					<tr>
+						<th scope="row">購入可能枚数</th>
+						<td>お一人様4枚まで</td>
+					</tr>
+					<tr>
+						<th scope="row">チケット引取り方法</th>
+						<td>配送のみ　※送料別途630円頂戴いたします。<br />
+						<br />
+						【発送日のご案内】<br />
+						≪10月31日までに購入されたお客様≫ご入金確認後、11月7日以降、随時発送いたします。<br />
+						≪11月5日以降に購入されたお客様≫ご入金確認後、11月28日以降、随時発送いたします。</td>
+					</tr>
+					<tr>
+						<th scope="row">お支払い方法</th>
+						<td>クレジットカード決済・楽天バンク決済</td>
+					</tr>
+					<tr>
+						<th scope="row">販売期間</th>
+						<td>在庫がなくなり次第、販売を終了させていただきます。
+						  ${event['sales_start_on']}
+						  ${event['sales_end_on']}
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">注意事項</th>
+						<td>年齢制限：3歳以下無料（ただし保護者1名に対し1名まで膝の上で。席が必要な場合はチケットをお買い求め下さい）<br />
+						枚数制限：お一人様4枚</td>
+					</tr>
+					<tr>
+						<th scope="row">お問い合わせ先</th>
+						<td>DISK GARAGE 03-5436-9600（平日12:00～19:00）</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+	</div>
+	<!-- ========== /main ========== -->
+	
+<!-- /container --></div>
+
+</body>
+</html>
