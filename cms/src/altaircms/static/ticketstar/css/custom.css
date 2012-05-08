@@ -76,25 +76,25 @@
     font-weight: bold;
 }
 
-#categorySlideShow {
+#subkindSlideShow {
     width: 715px;
     height: 325px;
     background-color: #555;
     padding: 10px;
 }
 
-#categorySlideShow #slideShowLeft {
+#subkindSlideShow #slideShowLeft {
     width: 517px;
     float: left;
     margin-bottom: 20px;
 }
 
-#categorySlideShow #slideShowLeft .mainImage img {
+#subkindSlideShow #slideShowLeft .mainImage img {
     width: 516px;
     height: 300px;
 }
 
-#categorySlideShow #slideShowLeft .mainImageMessage {
+#subkindSlideShow #slideShowLeft .mainImageMessage {
     padding-left: 10px;
     padding-right: 10px;
     background-color: #000;
@@ -102,14 +102,14 @@
     font-weight: bold;
 }
 
-#categorySlideShow #slideShowRight {
+#subkindSlideShow #slideShowRight {
     width: 190px;
     padding-left: 5px;
     float: left;
     margin-bottom: 20px;
 }
 
-#categorySlideShow #slideShowRight .slideBox {
+#subkindSlideShow #slideShowRight .slideBox {
     background-color: #222;
     color: #fff;
     font-size: 10pt;
@@ -120,16 +120,16 @@
     margin-bottom: 5px;
 }
 
-#categorySlideShow #slideShowRight .categoryThumbnail{
+#subkindSlideShow #slideShowRight .subkindThumbnail{
     margin-left: 5px;	
 }
 
-#categorySlideShow #slideShowRight .categoryThumbnail .slideBoxLeft{
+#subkindSlideShow #slideShowRight .subkindThumbnail .slideBoxLeft{
     margin-left: 5px;
     width: 40%;
     float:left;
 }
-#categorySlideShow #slideShowRight .categoryThumbnail .slideBoxRight{
+#subkindSlideShow #slideShowRight .subkindThumbnail .slideBoxRight{
     padding: 5px;
     width: 60%
     float:left;

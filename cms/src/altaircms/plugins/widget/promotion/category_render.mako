@@ -2,7 +2,7 @@
 ## 
 
 <div class="promotion-widget">
-  <div id="categorySlideShow">
+  <div id="subkindSlideShow">
     <div id="slideShowLeft">
       <div class="mainImage">
         ${show_image(info.main,info.main_link)|n}
@@ -12,7 +12,7 @@
       </div>
     </div>
     <div id="slideShowRight">
-      <div class="categoryThumbnail">
+      <div class="subkindThumbnail">
       %for thumb, link, message in zip(info.thumbnails, info.links, info.messages):
 		<div class="slideBox">
 		  <div class="slideBoxLeft">

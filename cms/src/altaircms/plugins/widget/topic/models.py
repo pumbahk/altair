@@ -38,7 +38,7 @@ class TopicWidget(Widget):
     display_event = sa.Column(sa.Boolean)
     display_page = sa.Column(sa.Boolean)
     kind = sa.Column(sa.Unicode(255))
-    category = sa.Column(sa.Unicode(255))
+    subkind = sa.Column(sa.Unicode(255))
 
     def merge_settings(self, bname, bsettings):
         merge_settings_function = MERGE_SETTINGS_DISPATH[self.kind]
@@ -62,7 +62,7 @@ def topics_merge_settings(template_name, widget, bname, bsettings):
         request = bsettings.extra["request"]
         page = bsettings.extra["page"] if widget.display_page else None
 
-        qs = Topic.matched_qs(page=page, d=d, kind=widget.kind, category=widget.category)
+        qs = Topic.matched_qs(page=page, d=d, kind=widget.kind, subkind=widget.subkind)
         qs = _qs_refine(qs, Topic, widget)
         return render(template_name, 
                       {"widget": widget, "topics": qs}, 
@@ -78,7 +78,7 @@ def topcontent_merge_settings(template_name, widget, bname, bsettings):
         d = widget.now_date_function()
         request = bsettings.extra["request"]
         page = bsettings.extra["page"] if widget.display_page else None
-        qs = Topcontent.matched_qs(page=page, d=d, kind=widget.kind, category=widget.category)
+        qs = Topcontent.matched_qs(page=page, d=d, kind=widget.kind, subkind=widget.subkind)
         qs = _qs_refine(qs, Topcontent, widget)
         return render(template_name, 
                       {"widget": widget, "topcontents": qs}, 

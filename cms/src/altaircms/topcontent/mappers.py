@@ -13,7 +13,7 @@ class TopcontentMapper(Mapper):
 
     id = fields.RawField()
     kind = fields.RawField()
-    category = fields.RawField()
+    subkind = fields.RawField()
     title = fields.RawField()
     text = fields.RawField()
     orderno = fields.RawField()

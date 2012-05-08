@@ -7,13 +7,17 @@ from pyramid import testing
 import transaction
 
 import altaircms.helpers as h
-from altaircms.models import DBSession
-from altaircms.models import Base
-
+from altaircms.models import (
+    DBSession, Base
+)
 from altaircms.layout.models import Layout
 from altaircms.event.models import Event
-from altaircms.page.models import Page, PageSet
-from altaircms.models import Performance, Ticket
+from altaircms.page.models import (
+    Page, PageSet
+)
+from altaircms.models import (
+    Performance, Ticket
+)
 from altaircms.asset.models import ImageAsset
 from altaircms.topic.models import Topic
 from altaircms.topcontent.models import Topcontent
@@ -395,21 +399,21 @@ def help_page(layout):
 def help_topics():
     return [
         Topic(kind=u"ヘルプ", 
-              category=u"会員登録・ログイン", 
+              subkind=u"会員登録・ログイン", 
               text=u"楽天会員情報の管理よりお手続きください。", 
               title=u"会員ID忘れてしまいました", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
               is_global=True), 
         Topic(kind=u"ヘルプ", 
-              category=u"会員登録・ログイン", 
+              subkind=u"会員登録・ログイン", 
               text=u"回答が入ります", 
               title=u"パスワードを忘れてしまいました。", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
               is_global=True), 
         Topic(kind=u"ヘルプ", 
-              category=u"会員登録・ログイン", 
+              subkind=u"会員登録・ログイン", 
               text=u"回答が入ります", 
               title=u"登録している住所やメールアドレスの変更はできますか？", 
               publish_open_on=datetime.datetime(2011, 1, 1),
@@ -417,49 +421,49 @@ def help_topics():
               is_global=True), 
 
         Topic(kind=u"ヘルプ", 
-              category=u"チケット予約・購入", 
+              subkind=u"チケット予約・購入", 
               text=u"回答が入ります", 
               title=u"座席を指定しての申し込みはできますか？", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
               is_global=True), 
         Topic(kind=u"ヘルプ", 
-              category=u"チケット予約・購入", 
+              subkind=u"チケット予約・購入", 
               text=u"回答が入ります", 
               title=u"座席はならびで取ることはできますか？", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
               is_global=True), 
         Topic(kind=u"ヘルプ", 
-              category=u"チケット予約・購入", 
+              subkind=u"チケット予約・購入", 
               text=u"回答が入ります", 
               title=u"一般予約の申し込み方法を教えてください。", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
               is_global=True), 
         Topic(kind=u"ヘルプ", 
-              category=u"チケット予約・購入", 
+              subkind=u"チケット予約・購入", 
               text=u"回答が入ります", 
               title=u"申し込みしたチケットの座席番号確認はできますか？", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
               is_global=True), 
         Topic(kind=u"ヘルプ", 
-              category=u"チケット予約・購入", 
+              subkind=u"チケット予約・購入", 
               text=u"回答が入ります", 
               title=u"一度申込みしたチケットの取り消しはできますか？", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
               is_global=True), 
         Topic(kind=u"ヘルプ", 
-              category=u"チケット予約・購入", 
+              subkind=u"チケット予約・購入", 
               text=u"回答が入ります", 
               title=u"ＰＣから、チケットの申込みができませんでした。", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
               is_global=True), 
         Topic(kind=u"ヘルプ", 
-              category=u"チケット予約・購入", 
+              subkind=u"チケット予約・購入", 
               text=u"回答が入ります", 
               title=u"チケットの予約・購入履歴を確認したい。", 
               publish_open_on=datetime.datetime(2011, 1, 1),
@@ -467,21 +471,21 @@ def help_topics():
               is_global=True), 
 
         Topic(kind=u"ヘルプ", 
-              category=u"支払い方法・引取り方法", 
+              subkind=u"支払い方法・引取り方法", 
               text=u"楽天会員情報の管理よりお手続きください。", 
               title=u"会員ID忘れてしまいました", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
               is_global=True), 
         Topic(kind=u"ヘルプ", 
-              category=u"支払い方法・引取り方法", 
+              subkind=u"支払い方法・引取り方法", 
               text=u"回答が入ります", 
               title=u"パスワードを忘れてしまいました。", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
               is_global=True), 
         Topic(kind=u"ヘルプ", 
-              category=u"支払い方法・引取り方法", 
+              subkind=u"支払い方法・引取り方法", 
               text=u"回答が入ります", 
               title=u"登録している住所やメールアドレスの変更はできますか？", 
               publish_open_on=datetime.datetime(2011, 1, 1),
@@ -489,21 +493,21 @@ def help_topics():
               is_global=True), 
 
         Topic(kind=u"ヘルプ", 
-              category=u"ヘルプ：本人認証サービス(3Dセキュアサービス)について", 
+              subkind=u"ヘルプ：本人認証サービス(3Dセキュアサービス)について", 
               text=u"楽天会員情報の管理よりお手続きください。", 
               title=u"会員ID忘れてしまいました", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
               is_global=True), 
         Topic(kind=u"ヘルプ", 
-              category=u"ヘルプ：本人認証サービス(3Dセキュアサービス)について", 
+              subkind=u"ヘルプ：本人認証サービス(3Dセキュアサービス)について", 
               text=u"回答が入ります", 
               title=u"パスワードを忘れてしまいました。", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
               is_global=True), 
         Topic(kind=u"ヘルプ", 
-              category=u"ヘルプ：本人認証サービス(3Dセキュアサービス)について", 
+              subkind=u"ヘルプ：本人認証サービス(3Dセキュアサービス)について", 
               text=u"回答が入ります", 
               title=u"登録している住所やメールアドレスの変更はできますか？", 
               publish_open_on=datetime.datetime(2011, 1, 1),
@@ -511,21 +515,21 @@ def help_topics():
               is_global=True), 
 
         Topic(kind=u"ヘルプ", 
-              category=u"本人認証サービス(3Dセキュアサービス)について", 
+              subkind=u"本人認証サービス(3Dセキュアサービス)について", 
               text=u"楽天会員情報の管理よりお手続きください。", 
               title=u"会員ID忘れてしまいました", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
               is_global=True), 
         Topic(kind=u"ヘルプ", 
-              category=u"本人認証サービス(3Dセキュアサービス)について", 
+              subkind=u"本人認証サービス(3Dセキュアサービス)について", 
               text=u"回答が入ります", 
               title=u"パスワードを忘れてしまいました。", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
               is_global=True), 
         Topic(kind=u"ヘルプ", 
-              category=u"本人認証サービス(3Dセキュアサービス)について", 
+              subkind=u"本人認証サービス(3Dセキュアサービス)について", 
               text=u"回答が入ります", 
               title=u"登録している住所やメールアドレスの変更はできますか？", 
               publish_open_on=datetime.datetime(2011, 1, 1),
@@ -533,21 +537,21 @@ def help_topics():
               is_global=True), 
 
         Topic(kind=u"ヘルプ", 
-              category=u"セブンーイレブン引取り", 
+              subkind=u"セブンーイレブン引取り", 
               text=u"楽天会員情報の管理よりお手続きください。", 
               title=u"会員ID忘れてしまいました", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
               is_global=True), 
         Topic(kind=u"ヘルプ", 
-              category=u"セブンーイレブン引取り", 
+              subkind=u"セブンーイレブン引取り", 
               text=u"回答が入ります", 
               title=u"パスワードを忘れてしまいました。", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
               is_global=True), 
         Topic(kind=u"ヘルプ", 
-              category=u"セブンーイレブン引取り", 
+              subkind=u"セブンーイレブン引取り", 
               text=u"回答が入ります", 
               title=u"登録している住所やメールアドレスの変更はできますか？", 
               publish_open_on=datetime.datetime(2011, 1, 1),
@@ -562,7 +566,7 @@ def add_help_main_block_widgets(page):
     add_heading_widget(page, "main", params)
 
     params =  {"kind": u"ヘルプ", 
-               "category": u"会員登録・ログイン", 
+               "subkind": u"会員登録・ログイン", 
                "display_count": 100, 
                "display_global": True, 
                "display_event": True, 
@@ -574,7 +578,7 @@ def add_help_main_block_widgets(page):
     add_heading_widget(page, "main", params)
 
     params =  {"kind": u"ヘルプ", 
-               "category": u"チケット予約・購入", 
+               "subkind": u"チケット予約・購入", 
                "display_count": 100, 
                "display_global": True, 
                "display_event": True, 
@@ -586,7 +590,7 @@ def add_help_main_block_widgets(page):
     add_heading_widget(page, "main", params)
 
     params =  {"kind": u"ヘルプ", 
-               "category": u"支払い方法・引取り方法", 
+               "subkind": u"支払い方法・引取り方法", 
                "display_count": 100, 
                "display_global": True, 
                "display_event": True, 
@@ -598,7 +602,7 @@ def add_help_main_block_widgets(page):
     add_heading_widget(page, "main", params)
 
     params =  {"kind": u"ヘルプ", 
-               "category": u"本人認証サービス(3Dセキュアサービス)について", 
+               "subkind": u"本人認証サービス(3Dセキュアサービス)について", 
                "display_count": 100, 
                "display_global": True, 
                "display_event": True, 
@@ -610,7 +614,7 @@ def add_help_main_block_widgets(page):
     add_heading_widget(page, "main", params)
 
     params =  {"kind": u"ヘルプ", 
-               "category": u"セブンーイレブン引取り", 
+               "subkind": u"セブンーイレブン引取り", 
                "display_count": 100, 
                "display_global": True, 
                "display_event": True, 
@@ -708,7 +712,7 @@ def add_sports_main_block_widgets(page, promotion):
     add_heading_widget(page, "main", params)
 
     params =  {"kind": u"トピックス", 
-               "category": u"スポーツ", 
+               "subkind": u"スポーツ", 
                "display_count": 5, 
                "display_global": True, 
                "display_event": True, 
@@ -811,7 +815,7 @@ def top_promotion(layout):
 def top_topics(page):
     return [
         Topic(kind=u"トピックス", 
-              category=u"Top", 
+              subkind=u"Top", 
               text=u"#", 
               title=u"ポイント10倍キャンペーン実施中！『大相撲三月場所』マス席の他、希少な溜まり席も販売！", 
               publish_open_on=datetime.datetime(2011, 1, 1),
@@ -819,7 +823,7 @@ def top_topics(page):
               is_global=True, 
               orderno=1), 
         Topic(kind=u"トピックス", 
-              category=u"Top", 
+              subkind=u"Top", 
               text=u"#", 
               title=u"きゃりーぱみゅぱみゅ、倖田來未 、CNBLUE ら出演♪「オンタマカーニバル2012」1/14発売！", 
               publish_open_on=datetime.datetime(2011, 1, 1),
@@ -827,7 +831,7 @@ def top_topics(page):
               is_global=True, 
               orderno=2), 
         Topic(kind=u"トピックス", 
-              category=u"Top", 
+              subkind=u"Top", 
               text=u"#", 
               title=u"47年ぶりに日本上陸のツタンカーメン展！1/31購入分まで、もれなくポイント10倍！", 
               publish_open_on=datetime.datetime(2011, 1, 1),
@@ -835,7 +839,7 @@ def top_topics(page):
               is_global=True, 
               orderno=3), 
         Topic(kind=u"トピックス", 
-              category=u"Top", 
+              subkind=u"Top", 
               text=u"#", 
               title=u"東京、大阪で過去最高の動員を記録したKOOZAが福岡へ上陸！楽チケならポイント10倍！", 
               publish_open_on=datetime.datetime(2011, 1, 1),
@@ -926,7 +930,7 @@ def add_top_main_block_widgets(page, promotion):
     add_heading_widget(page, "main", params)
 
     params =  {"kind": u"トピックス", 
-               "category": u"Top", 
+               "subkind": u"Top", 
                "display_count": 5, 
                "display_global": True, 
                "display_event": True, 

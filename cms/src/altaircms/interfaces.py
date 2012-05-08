@@ -7,11 +7,11 @@ class IForm(Interface):
     def validate():
         pass
     
-
 class IModelEvent(Interface):
     request = Attribute("")
     obj = Attribute("")
     params = Attribute("params")
+
 ##
 
 class IConcrete(Interface):
@@ -108,14 +108,4 @@ class IHasTimeHistory(Interface):
     """
     created_at = Attribute(""" a time at object created""")
     updated_at = Attribute(""" a time at object updated""")
-
-# class IFromDict(Interface):
-#     @classmethod
-#     def from_dict(cls):
-#         pass
-# class IToDict(Interface):
-#     def to_dict():
-#         pass
-# class IWithDict(IFromDict, IToDict):
-#     pass
-
+# 

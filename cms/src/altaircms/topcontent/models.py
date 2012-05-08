@@ -31,7 +31,7 @@ class Topcontent(AboutPublishMixin,
     client_id = sa.Column(sa.Integer, sa.ForeignKey("client.id")) #?
     site_id = sa.Column(sa.Integer, sa.ForeignKey("site.id"))   
     kind = sa.Column(sa.Unicode(255))
-    category = sa.Column(sa.Unicode(255))
+    subkind = sa.Column(sa.Unicode(255))
     title = sa.Column(sa.Unicode(255))
     text = sa.Column(sa.Unicode(255))
 
@@ -59,13 +59,13 @@ class Topcontent(AboutPublishMixin,
         return cls.is_global==True
 
     @classmethod
-    def matched_qs(cls, d=None, page=None, qs=None, kind=None, category=None):
+    def matched_qs(cls, d=None, page=None, qs=None, kind=None, subkind=None):
         """ 下にある内容の通りのtopicsを返す
         """
         qs = cls.publishing(d=d, qs=qs)
         qs = cls.matched_topic_type(qs=qs, page=page)
-        if category:
-            qs =  qs.filter_by(category=category)
+        if subkind:
+            qs =  qs.filter_by(subkind=subkind)
         if kind:
             qs = qs.filter_by(kind=kind)
         return qs

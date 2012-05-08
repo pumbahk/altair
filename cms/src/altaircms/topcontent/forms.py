@@ -25,6 +25,6 @@ class TopcontentForm(form.Form):
                                               get_label=lambda obj: obj.title or u"名前なし")
     image_asset = dynamic_query_select_field_factory(ImageAsset,label=u"画像", allow_blank=True)
     kind = fields.SelectField(label=u"種別", choices=[(x, x) for x in Topcontent.KIND_CANDIDATES])
-    category = fields.TextField(label=u"サブ分類")
+    subkind = fields.TextField(label=u"サブ分類")
     countdown_type = fields.SelectField(label=u"カウントダウンの種別", choices=Topcontent.COUNTDOWN_CANDIDATES)    
     

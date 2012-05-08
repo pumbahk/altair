@@ -323,10 +323,10 @@ def init():
         D = {'layout_id': 1,
              'title': u'音楽',
              'url': u'top/music'}
-        category_page = Page.from_dict(D)
-        cpageset = PageSet.get_or_create(category_page)
+        subkind_page = Page.from_dict(D)
+        cpageset = PageSet.get_or_create(subkind_page)
         cpageset.parent = root_pageset
-        DBSession.add(category_page)
+        DBSession.add(subkind_page)
 
         from altaircms.page.models import Page
         D = {'created_at': datetime.datetime(2012, 2, 14, 15, 13, 26, 438062),

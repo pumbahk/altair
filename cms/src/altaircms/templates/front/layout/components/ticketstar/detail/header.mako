@@ -1,4 +1,4 @@
-<%block name="sub_category_menu_list">
+<%block name="sub_subkind_menu_list">
 	  <ul>
 		<li class="current">音楽</li>
 		<li><a href="#">スポーツ</a></li>

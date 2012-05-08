@@ -23,7 +23,7 @@
   </div>
   <div class="span5">
 	<form action="${request.route_path("topic", id=topic["id"])}" method="POST">
-	  ${fco.form_as_table_strict(form, ["title","kind", "category", "publish_open_on","publish_close_on","text","orderno","is_vetoed","page","event","is_global"])}
+	  ${fco.form_as_table_strict(form, ["title","kind", "subkind", "publish_open_on","publish_close_on","text","orderno","is_vetoed","page","event","is_global"])}
  	  <input id="_method" name="_method" type="hidden" value="put" />
 	  <button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> Update</button>
     </form>

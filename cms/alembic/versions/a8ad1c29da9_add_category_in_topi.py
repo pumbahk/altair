@@ -1,4 +1,4 @@
-"""add category in topic topic widget
+"""add subkind in topic topic widget
 
 Revision ID: a8ad1c29da9
 Revises: 152b9d4cf2a4
@@ -16,14 +16,14 @@ import sqlalchemy as sa
 
 def upgrade():
     op.add_column('topic',
-                  sa.Column('category', sa.Unicode(length=255), nullable=True))
+                  sa.Column('subkind', sa.Unicode(length=255), nullable=True))
     op.add_column('topcontent',
-                  sa.Column('category', sa.Unicode(length=255), nullable=True))
+                  sa.Column('subkind', sa.Unicode(length=255), nullable=True))
     op.add_column('widget_topic',
-                  sa.Column('category', sa.Unicode(length=255), nullable=True))
+                  sa.Column('subkind', sa.Unicode(length=255), nullable=True))
 
 
 def downgrade():
-    op.drop_column("topic", "category")
-    op.drop_column("topcontent", "category")
-    op.drop_column("widget_topic", "category")
+    op.drop_column("topic", "subkind")
+    op.drop_column("topcontent", "subkind")
+    op.drop_column("widget_topic", "subkind")

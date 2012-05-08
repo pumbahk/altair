@@ -50,7 +50,7 @@
     <tr>
       <td><a href="${request.route_path("topic", id=topic.id)}">${topic.title}</a></td>
       <td>${topic.kind}</td>
-      <td>${topic.category}</td>
+      <td>${topic.subkind}</td>
       <td>${topic.publish_open_on}</td>
       <td>${topic.publish_close_on}</td>
       <td>${topic.text if len(topic.text) <= 20 else topic.text[:20]+"..."}</td>
@@ -87,7 +87,7 @@
   <tr>
       <td><a href="${request.route_path("topcontent", id=topcontent['id'])}">${topcontent['title']}</a></td>
       <td>${topcontent["kind"]}</td>
-      <td>${topcontent["category"]}</td>
+      <td>${topcontent["subkind"]}</td>
       <td>${topcontent["publish_open_on"]}</td>
       <td>${topcontent["publish_close_on"]}</td>
       <td>${topcontent['text'] if len(topcontent['text']) <= 20 else topcontent['text'][:20]+"..."}</td>

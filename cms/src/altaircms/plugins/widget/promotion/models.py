@@ -39,7 +39,7 @@ PROMOTION_DISPATH = {
     u"チケットスター:カテゴリTopプロモーション枠":
         functools.partial(
         promotion_merge_settings, 
-        "altaircms.plugins.widget:promotion/category_render.mako", 4, 
+        "altaircms.plugins.widget:promotion/subkind_render.mako", 4, 
         )
     }
 

@@ -25,7 +25,7 @@
       <tr><th class="span2">トピックの種別</th>
         <td>${topic["kind"]}</td></tr>
       <tr><th class="span2">サブ分類</th>
-        <td>${topic["category"]}</td></tr>
+        <td>${topic["subkind"]}</td></tr>
       <tr><th class="span2">公開開始日</th>
         <td>${topic["publish_open_on"]}</td></tr>
       <tr><th class="span2">公開終了日</th>

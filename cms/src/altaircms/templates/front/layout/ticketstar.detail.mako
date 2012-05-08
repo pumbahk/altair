@@ -16,7 +16,7 @@
 ## header
 <%block name="header">
 	<%block name="subCategoryMenuList">
-	  ${header_co.sub_category_menu_list()}
+	  ${header_co.sub_subkind_menu_list()}
 	</%block>
 
 	<%block name="topicPath">

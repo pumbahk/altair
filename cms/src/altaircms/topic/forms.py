@@ -21,7 +21,7 @@ class TopicForm(form.Form):
     kind = fields.SelectField(label=u"トピックの種別", 
                               choices=[(x, x) for x in Topic.KIND_CANDIDATES],
                               validators=[required_field()])
-    category = fields.TextField(label=u"サブ分類")
+    subkind = fields.TextField(label=u"サブ分類")
     is_global = fields.BooleanField(label=u"全体に公開", default=True)
     publish_open_on = fields.DateTimeField(label=u"公開開始日", validators=[required_field()])
     publish_close_on = fields.DateTimeField(label=u"公開終了日", validators=[required_field()])

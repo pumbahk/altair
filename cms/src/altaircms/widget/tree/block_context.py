@@ -51,23 +51,23 @@ class ScannableMixin(object):
         1. 外部コンテキスト情報の注入
         2. 関数化していたレンダリング内容を文字列(html)に変換
     """
-    category_candidates = ("before_scan", "after_scan")
-    def _collect_validators(self, category=None):
-        if category is None:
+    subkind_candidates = ("before_scan", "after_scan")
+    def _collect_validators(self, subkind=None):
+        if subkind is None:
             return (vald for _,  vald in self._validators)
         else:
-            return (vald for c, vald in self._validators if c == category)
+            return (vald for c, vald in self._validators if c == subkind)
 
-    def _do_validate(self, category=None):
-        valds = self._collect_validators(category)
+    def _do_validate(self, subkind=None):
+        valds = self._collect_validators(subkind)
         for v in valds:
             if not v(self):
                 raise BlockContextException(v.__doc__)
 
-    def attach_validator(self, fn, category=None):
-        if category and not category in self.category_candidates:
-            raise BlockContextException("%s is not found in category_candidates" % category)
-        self._validators.append((category, fn))
+    def attach_validator(self, fn, subkind=None):
+        if subkind and not subkind in self.subkind_candidates:
+            raise BlockContextException("%s is not found in subkind_candidates" % subkind)
+        self._validators.append((subkind, fn))
 
     def scan(self, **kwargs):
         self.is_scaned = True
@@ -105,7 +105,7 @@ class BlockContext(StoreableMixin,
             # return settings.extra.get(valname, None) is not None
             return valname in settings.extra
         has_val.__doc__ = "self.extra['%s'] is not found" % valname
-        self.attach_validator(has_val, category="before_scan")        
+        self.attach_validator(has_val, subkind="before_scan")        
 
     def __repr__(self):
         fmt = "%s:blocks=%s"

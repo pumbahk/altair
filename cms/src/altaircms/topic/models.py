@@ -59,7 +59,7 @@ class Topic(AboutPublishMixin,
     client_id = sa.Column(sa.Integer, sa.ForeignKey("client.id")) #?
     site_id = sa.Column(sa.Integer, sa.ForeignKey("site.id"))   
     kind = sa.Column(sa.Unicode(255))
-    category = sa.Column(sa.Unicode(255))
+    subkind = sa.Column(sa.Unicode(255))
     title = sa.Column(sa.Unicode(255))
     text = sa.Column(sa.Unicode(255))
     event_id = sa.Column(sa.Integer, sa.ForeignKey("event.id"), nullable=True)
@@ -101,13 +101,13 @@ class Topic(AboutPublishMixin,
         return qs.filter(where)
 
     @classmethod
-    def matched_qs(cls, d=None, page=None, event=None, qs=None, kind=None, category=None):
+    def matched_qs(cls, d=None, page=None, event=None, qs=None, kind=None, subkind=None):
         """ 下にある内容の通りのtopicsを返す
         """
         qs = cls.publishing(d=d, qs=qs)
         qs = cls.matched_topic_type(qs=qs, page=page, event=event)
-        if category:
-            qs =  qs.filter_by(category=category)
+        if subkind:
+            qs =  qs.filter_by(subkind=subkind)
         if kind:
             qs = qs.filter_by(kind=kind)
         return qs
