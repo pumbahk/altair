@@ -34,6 +34,7 @@
       <tr>
         <th>タイトル</th>
         <th>トピックの種別</th>
+		<th>サブ分類</th>
         <th>公開開始日</th>
         <th>公開終了日</th>
         <th>内容</th>
@@ -47,16 +48,17 @@
   <tbody>
   %for topic in topics:
     <tr>
-      <td><a href="${request.route_path("topic", id=topic['id'])}">${topic['title']}</a></td>
-      <td>${topic["kind"]}</td>
-      <td>${topic["publish_open_on"]}</td>
-      <td>${topic["publish_close_on"]}</td>
-      <td>${topic['text'] if len(topic['text']) <= 20 else topic['text'][:20]+"..."}</td>
-      <td>${topic["orderno"]}</td>
-      <td>${topic["is_vetoed"]}</td>
-      <td>${topic["page"].title if topic["page"] else "-"}</td>
-      <td>${topic["event"].title if topic["event"] else "-"}</td>
-      <td>${topic["is_global"]}</td>
+      <td><a href="${request.route_path("topic", id=topic.id)}">${topic.title}</a></td>
+      <td>${topic.kind}</td>
+      <td>${topic.category}</td>
+      <td>${topic.publish_open_on}</td>
+      <td>${topic.publish_close_on}</td>
+      <td>${topic.text if len(topic.text) <= 20 else topic.text[:20]+"..."}</td>
+      <td>${topic.orderno}</td>
+      <td>${topic.is_vetoed}</td>
+      <td>${topic.page.title if topic.page else "-"}</td>
+      <td>${topic.event.title if topic.event else "-"}</td>
+      <td>${topic.is_global}</td>
     </tr>
   %endfor
   </tbody>
@@ -69,6 +71,7 @@
       <tr>
         <th>タイトル</th>
         <th>種別</th>
+		<th>サブ分類</th>
         <th>公開開始日</th>
         <th>公開終了日</th>
         <th>内容</th>
@@ -84,6 +87,7 @@
   <tr>
       <td><a href="${request.route_path("topcontent", id=topcontent['id'])}">${topcontent['title']}</a></td>
       <td>${topcontent["kind"]}</td>
+      <td>${topcontent["category"]}</td>
       <td>${topcontent["publish_open_on"]}</td>
       <td>${topcontent["publish_close_on"]}</td>
       <td>${topcontent['text'] if len(topcontent['text']) <= 20 else topcontent['text'][:20]+"..."}</td>

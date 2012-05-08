@@ -13,6 +13,8 @@ from . import mappers
 from . import forms
 from . import models
 
+import altaircms.helpers as h
+
 class TopicRESTAPIView(BaseRESTAPI):
     model = models.Topic
     form = forms.TopicForm
@@ -103,9 +105,9 @@ def _post_list_(request):
 @view_config(route_name='topic_list', renderer='altaircms:templates/topic/list.mako', permission='topic_read', request_method="GET", 
              decorator=with_bootstrap)
 def _get_list_(request):
-    topics = TopicRESTAPIView(request).read()
+    topics = models.Topic.query
     form = forms.TopicForm()
     return dict(
         form=form,
-        topics=topics
+        topics=h.paginate(request,topics)
     )

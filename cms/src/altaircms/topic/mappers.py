@@ -11,6 +11,7 @@ class TopicMapper(Mapper):
 
     id = fields.RawField()
     kind = fields.RawField()
+    category = fields.RawField()
     title = fields.RawField()
     text = fields.RawField()
     orderno = fields.RawField()

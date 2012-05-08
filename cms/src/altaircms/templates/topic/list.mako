@@ -18,7 +18,7 @@
   <div>
       <h4>トピック追加</h4>
       <form id="topic_add_form" action="${request.route_path("topic_list")}?html=t" method="POST">
-	  ${fco.form_as_table_strict(form, ["title","kind","publish_open_on","publish_close_on","text","orderno","is_vetoed","page","event","is_global"])}
+	  ${fco.form_as_table_strict(form, ["title","kind", "category", "publish_open_on","publish_close_on","text","orderno","is_vetoed","page","event","is_global"])}
 	  <button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> 保存</button>
 	  </form>
   </div>
@@ -28,5 +28,7 @@
 
 <div class="row-fluid">
     <h4>トピック一覧</h4>
-	${mco.model_list(topics["topics"], mco.topic_list, u"トピックは登録されていません")}
+	${topics.pager()}
+	${mco.model_list(topics.paginated(), mco.topic_list, u"トピックは登録されていません")}
+	${topics.pager()}
 </div>

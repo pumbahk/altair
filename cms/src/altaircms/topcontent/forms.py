@@ -21,8 +21,10 @@ class TopcontentForm(form.Form):
     is_vetoed = fields.BooleanField(label=u"公開禁止")
 
     ##本当は、client.id, site.idでfilteringする必要がある
-    page = dynamic_query_select_field_factory(Page, label=u"ページ", allow_blank=True)
+    page = dynamic_query_select_field_factory(Page, label=u"ページ", allow_blank=True, 
+                                              get_label=lambda obj: obj.title or u"名前なし")
     image_asset = dynamic_query_select_field_factory(ImageAsset,label=u"画像", allow_blank=True)
     kind = fields.SelectField(label=u"種別", choices=[(x, x) for x in Topcontent.KIND_CANDIDATES])
+    category = fields.TextField(label=u"サブ分類")
     countdown_type = fields.SelectField(label=u"カウントダウンの種別", choices=Topcontent.COUNTDOWN_CANDIDATES)    
     

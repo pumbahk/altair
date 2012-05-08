@@ -21,6 +21,7 @@ class TopicForm(form.Form):
     kind = fields.SelectField(label=u"トピックの種別", 
                               choices=[(x, x) for x in Topic.KIND_CANDIDATES],
                               validators=[required_field()])
+    category = fields.TextField(label=u"サブ分類")
     is_global = fields.BooleanField(label=u"全体に公開", default=True)
     publish_open_on = fields.DateTimeField(label=u"公開開始日", validators=[required_field()])
     publish_close_on = fields.DateTimeField(label=u"公開終了日", validators=[required_field()])
@@ -32,9 +33,11 @@ class TopicForm(form.Form):
     page = dynamic_query_select_field_factory(Page, 
                                               label=u"イベント以外のページ",
                                               query_factory=existing_pages, 
-                                              allow_blank=True)
+                                              allow_blank=True, 
+                                              get_label=lambda obj: obj.title or u"名前なし")
     event = dynamic_query_select_field_factory(Event, 
                                                label=u"イベント",
-                                               allow_blank=True)
+                                               allow_blank=True, 
+                                               get_label=lambda obj: obj.title or u"名前なし")
     
     

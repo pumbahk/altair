@@ -23,6 +23,8 @@
         <td><a href="${request.route_path("topic", id=topic['id'])}">${topic['title']}</a></td></tr>
       <tr><th>トピックの種別</th>
         <td>${topic["kind"]}</td></tr>
+      <tr><th>サブ分類</th>
+        <td>${topic["category"]}</td></tr>
       <tr><th>公開開始日</th>
         <td>${topic["publish_open_on"]}</td></tr>
       <tr><th>公開終了日</th>
