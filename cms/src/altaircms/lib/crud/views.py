@@ -3,6 +3,7 @@ from altaircms.lib.viewhelpers import FlashMessage
 from altaircms.lib.fanstatic_decorator import with_bootstrap
 from altaircms.models import DBSession
 from altaircms.models import model_from_dict
+import altaircms.helpers as h
 
 class AfterInput(Exception):
     pass
@@ -23,7 +24,7 @@ class SimpleCRUDViewFactory(object):
         def list(request):
             xs = self.model.query
             form = self.form()
-            return {"xs": xs, 
+            return {"xs": h.paginate(request, xs), 
                     "master_env": self, 
                     "title":self.title, 
                     "form":form, 
@@ -32,7 +33,7 @@ class SimpleCRUDViewFactory(object):
         def reinput_list(request):
             xs = self.model.query
             form = request._form
-            return {"xs": xs, 
+            return {"xs": h.paginate(request, xs), 
                     "master_env": self, 
                     "title":self.title, 
                     "form":form, 

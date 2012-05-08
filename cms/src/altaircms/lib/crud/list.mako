@@ -12,6 +12,8 @@
 
 <div class="row">
 <h4>${master_env.title}一覧</h4>
+
+${xs.pager()}
 <table class="table table-striped">
   <thead>
 	<tr>
@@ -21,7 +23,7 @@
 	</tr>
   </thead>
     <tbody>
-        %for x in xs:
+        %for x in xs.paginated():
 		    <%
 			 x = master_env.mapper(request, x) if master_env.mapper else x
 			 %>
@@ -38,4 +40,5 @@
         %endfor
     </tbody>
 </table>
+${xs.pager()}
 </div>
