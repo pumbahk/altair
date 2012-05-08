@@ -3,7 +3,8 @@ from sqlalchemy.orm import relationship, join, backref, column_property, mapper
 
 import sqlahelper
 
-from ticketing.models import JSONEncodedDict, MutationDict
+from ticketing.utils import StandardEnum
+from ticketing.models import BaseModel, JSONEncodedDict, MutationDict
 
 session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
@@ -13,43 +14,6 @@ seat_venue_area_table = Table(
     Column('venue_area_id', BigInteger, ForeignKey('VenueArea.id'), primary_key=True),
     Column('seat_id', BigInteger, ForeignKey('Seat.id'), primary_key=True)
 )
-
-class SeatType(Base):
-    __tablename__ = 'SeatType'
-    id = Column(BigInteger, primary_key=True)
-    name = Column(String(255))
-
-    performance_id = Column(BigInteger, ForeignKey("Performance.id"))
-
-    seats = relationship('Seat', backref='seat_type')
-    stocks = relationship('Stock', backref='seat_type')
-
-    style = Column(MutationDict.as_mutable(JSONEncodedDict(1024)))
-
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
-    status = Column(Integer)
-
-    @staticmethod
-    def get(id):
-        return session.query(SeatType).filter(SeatType.id==id).first()
-
-    @staticmethod
-    def add(seat_type):
-        session.add(seat_type)
-
-    @staticmethod
-    def update(seat_type):
-        session.merge(seat_type)
-        session.flush()
-
-    @staticmethod
-    def delete(seat_type):
-        session.delete(seat_type)
-
-    @staticmethod
-    def all():
-        return session.query(SeatType).all()
 
 class Site(Base):
     __tablename__ = "Site"
@@ -119,8 +83,7 @@ class Seat(Base):
     l0_id           = Column(String(255))
 
     venue_id        = Column(BigInteger, ForeignKey('Venue.id'))
-    seat_type_id    = Column(BigInteger, ForeignKey('SeatType.id'))
-    seat_stock_id   = Column(BigInteger, ForeignKey('SeatStock.id'))
+    stock_id        = Column(BigInteger, ForeignKey('Stock.id'))
 
     attributes      = relationship("SeatAttribute", backref='seat', cascade='save-update, merge')
 
@@ -128,7 +91,6 @@ class Seat(Base):
 
     updated_at      = Column(DateTime)
     created_at      = Column(DateTime)
-    status          = Column(Integer)
 
     def __setitem__(self, name, value):
         session.add(self)
@@ -145,3 +107,46 @@ class Seat(Base):
     @staticmethod
     def get_grouping_seat_sets(pid, stid):
         return [[]]
+
+class SeatStatusEnum(StandardEnum):
+    Vacant = 1
+    InCart = 2
+    Ordered = 3
+    Confirmed = 4
+    Shipped = 5
+    Canceled = 6
+    Reserved = 7
+
+# stock based on phisical seat positions
+class SeatStatus(BaseModel, Base):
+    __tablename__ = "SeatStatus"
+    seat_id = Column(BigInteger, ForeignKey("Seat.id"), primary_key=True)
+    status = Column(Integer)
+
+    seat = relationship('Seat', uselist=False, backref="status") # 1:1
+
+    @staticmethod
+    def get_for_update(stock_id):
+        return DBSession.query(SeatStock).with_lockmode("update").filter(SeatStatus.seat.stock==stock_id, SeatStatus.status==SeatStatusEnum.Vacant.v).first()
+
+    # @TODO
+    @staticmethod
+    def get_group_seat(pid, stid, num):
+        idx = 0
+        con_num = 0
+        grouping_ss = Seat.get_grouping_seat_sets(pid, stid)
+        for grouping_seats in grouping_ss:
+            for i, gseat in enumerate(grouping_seats):
+                if not gseat.sold:
+                    if con_num == 0:
+                        idx = i
+                    con_num += 1
+                    if con_num == num:
+                        # @TODO return with locked status
+                        return gseat[idx:idx+num]
+                else:
+                    con_num = 0
+        return []
+
+
+

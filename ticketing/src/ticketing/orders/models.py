@@ -7,7 +7,8 @@ session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
 
 from ticketing.users.models import User
-from ticketing.products.models import Product, ProductItem, SeatStock
+from ticketing.products.models import Product, ProductItem
+from ticketing.venues.models import Seat
 
 class ShippingAddress(Base):
     __tablename__ = 'ShippingAddress'
@@ -65,8 +66,8 @@ class AssignedProductItem(Base):
     order = relationship('Order')
     product_item_id = Column(BigInteger, ForeignKey("ProductItem.id"))
     product_item = relationship('ProductItem', uselist=False)
-    seat_stock = relationship('SeatStock', uselist=False)
-    seat_stock_id = Column(BigInteger, ForeignKey('SeatStock.id'))
+    seat = relationship('Seat', uselist=False)
+    seat_id = Column(BigInteger, ForeignKey('Seat.id'))
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
     status = Column(Integer)

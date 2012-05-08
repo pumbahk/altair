@@ -37,8 +37,8 @@ from account import AccountData
 from permission import PermissionData
 from operator import OperatorData, OperatorRoleData
 from event import EventData, PerformanceData
-from venue import SiteData, VenueData, SeatData, SeatTypeData
-from product import ProductData, ProductItemData, StockData, StockHolderData, SalesSegmentData
+from venue import SiteData, VenueData, SeatData, SeatStatusData
+from product import ProductData, ProductItemData, StockData, StockHolderData, SalesSegmentData, SeatTypeData
 from user import UserData, UserProfileData, UserCredentialData
 from ticketing.bookmark.tests.bookmark import BookmarkData
 from ticketing.products.tests.payment_delivery_method import DeliveryMethodPluginData, PaymentMethodPluginData, DeliveryMethodData, PaymentMethodData, PaymentDeliveryMethodPairData
@@ -66,6 +66,7 @@ def import_seed_data():
              'SiteData'         : Site,
              'VenueData'        : Venue,
              'SeatData'         : Seat,
+             'SeatStatusData'   : SeatStatus,
              'SeatTypeData'     : SeatType,
              'StockData'        : Stock,
              'StockHolderData'  : StockHolder,
@@ -105,6 +106,7 @@ def import_seed_data():
         SiteData,
         VenueData,
         SeatData,
+        SeatStatusData,
         SeatTypeData,
         StockData,
         StockHolderData,

@@ -6,7 +6,28 @@ from ticketing.seed import DataSet
 from account import AccountData
 from event import PerformanceData, EventData
 from organization import OrganizationData
-from venue import SeatTypeData
+
+class SeatTypeData(DataSet):
+    class seat_type_1:
+        name = u'S席'
+        performance_id = 1
+        style = {"text": "S", "stroke": {"color": "#000000", "width": "1", "pattern": "solid"}, "fill": "#d8d8d8"}
+        status = 1
+    class seat_type_2:
+        name = u'A席'
+        performance_id = 1
+        style = {"text": "A", "stroke": {"color": "#d8d8d8", "width": "1", "pattern": "solid"}, "fill": "#ffec9f"}
+        status = 1
+    class seat_type_3:
+        name = u'B席'
+        performance_id = 1
+        style = {"text": "B", "stroke": {"color": "#d8d8d8", "width": "1", "pattern": "double"}, "fill": "#99b3e6"}
+        status = 1
+    class seat_type_4:
+        name = u'C席'
+        performance_id = 1
+        style = {"text": "C", "stroke": {"color": "#d8d8d8", "width": "1", "pattern": "dotted"}, "fill": "#cc8080"}
+        status = 1
 
 class SalesSegmentData(DataSet):
     class sales_segment_1:
@@ -98,41 +119,33 @@ class StockHolderData(DataSet):
 class StockData(DataSet):
     class stock_1:
         quantity = 1000
-        performance = PerformanceData.performance_1
         seat_type = SeatTypeData.seat_type_1
         stock_holder = StockHolderData.stock_holder_1
     class stock_2:
         quantity = 800
-        performance = PerformanceData.performance_1
         seat_type = SeatTypeData.seat_type_2
         stock_holder = StockHolderData.stock_holder_1
     class stock_3:
         quantity = 500
-        performance = PerformanceData.performance_1
         seat_type = SeatTypeData.seat_type_3
         stock_holder = StockHolderData.stock_holder_1
     class stock_4:
         quantity = 0
-        performance = PerformanceData.performance_1
         seat_type = SeatTypeData.seat_type_4
         stock_holder = StockHolderData.stock_holder_1
     class stock_5:
         quantity = 60
-        performance = PerformanceData.performance_1
         seat_type = SeatTypeData.seat_type_1
         stock_holder = StockHolderData.stock_holder_5
     class stock_6:
         quantity = 50
-        performance = PerformanceData.performance_1
         seat_type = SeatTypeData.seat_type_2
         stock_holder = StockHolderData.stock_holder_5
     class stock_7:
         quantity = 40
-        performance = PerformanceData.performance_1
         seat_type = SeatTypeData.seat_type_3
         stock_holder = StockHolderData.stock_holder_5
     class stock_8:
         quantity = 30
-        performance = PerformanceData.performance_1
         seat_type = SeatTypeData.seat_type_4
         stock_holder = StockHolderData.stock_holder_5

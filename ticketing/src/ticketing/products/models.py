@@ -4,8 +4,7 @@ from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, Strin
 from sqlalchemy.orm import relationship, join, backref, column_property, mapper, relation
 
 from ticketing.models import Base, BaseModel, DBSession, JSONEncodedDict, MutationDict
-from ticketing.utils import StandardEnum
-from ticketing.venues.models import Seat
+from ticketing.venues.models import Seat, SeatStatusEnum, SeatStatus
 
 class PaymentMethodPlugin(BaseModel, Base):
     __tablename__ = 'PaymentMethodPlugin'
@@ -128,6 +127,42 @@ class ProductItem(BaseModel, Base):
         else:
             return None
 
+class SeatType(Base):
+    __tablename__ = 'SeatType'
+    id = Column(BigInteger, primary_key=True)
+    name = Column(String(255))
+
+    performance_id = Column(BigInteger, ForeignKey("Performance.id"))
+
+    stocks = relationship('Stock', backref='seat_type')
+
+    style = Column(MutationDict.as_mutable(JSONEncodedDict(1024)))
+
+    updated_at = Column(DateTime)
+    created_at = Column(DateTime)
+    status = Column(Integer)
+
+    @staticmethod
+    def get(id):
+        return session.query(SeatType).filter(SeatType.id==id).first()
+
+    @staticmethod
+    def add(seat_type):
+        session.add(seat_type)
+
+    @staticmethod
+    def update(seat_type):
+        session.merge(seat_type)
+        session.flush()
+
+    @staticmethod
+    def delete(seat_type):
+        session.delete(seat_type)
+
+    @staticmethod
+    def all():
+        return session.query(SeatType).all()
+
 class StockHolder(BaseModel, Base):
     __tablename__ = "StockHolder"
     id = Column(BigInteger, primary_key=True)
@@ -146,58 +181,15 @@ class Stock(BaseModel, Base):
     id = Column(BigInteger, primary_key=True)
     quantity = Column(Integer)
 
-    performance_id = Column(BigInteger, ForeignKey('Performance.id'))
     stock_holder_id = Column(BigInteger, ForeignKey('StockHolder.id'))
 
     seat_type_id = Column(BigInteger, ForeignKey('SeatType.id'))
 
-    seat_stocks = relationship('SeatStock', backref='stock')
+    seats = relationship('Seat', backref='stock')
 
     @staticmethod
     def get_for_update(pid, stid):
         return DBSession.query(Stock).with_lockmode("update").filter(Stock.performance_id==pid, Stock.seat_type_id==stid, Stock.quantity>0).first()
-
-class SeatStatusEnum(StandardEnum):
-    Vacant = 1
-    InCart = 2
-    Ordered = 3
-    Confirmed = 4
-    Shipped = 5
-    Canceled = 6
-    Reserved = 7
-
-# stock based on phisical seat positions
-class SeatStock(BaseModel, Base):
-    __tablename__ = "SeatStock"
-    id = Column(BigInteger, primary_key=True)
-    sold = Column(Boolean) # sold or not
-
-    stock_id = Column(BigInteger, ForeignKey('Stock.id'))
-    seat = relationship('Seat', uselist=False, backref="seat_stock") # 1:1
-
-    @staticmethod
-    def get_for_update(stock_id):
-        return DBSession.query(SeatStock).with_lockmode("update").filter(SeatStock.stock_id==stock_id, SeatStock.status==SeatStatusEnum.Vacant.v).first()
-
-    # @TODO
-    @staticmethod
-    def get_group_seat(pid, stid, num):
-        idx = 0
-        con_num = 0
-        grouping_ss = Seat.get_grouping_seat_sets(pid, stid)
-        for grouping_seats in grouping_ss:
-            for i, gseat in enumerate(grouping_seats):
-                if not gseat.sold:
-                    if con_num == 0:
-                        idx = i
-                    con_num += 1
-                    if con_num == num:
-                        # @TODO return with locked status
-                        return gseat[idx:idx+num]
-                else:
-                    con_num = 0
-        return []
-
 
 class Product(BaseModel, Base):
     __tablename__ = 'Product'

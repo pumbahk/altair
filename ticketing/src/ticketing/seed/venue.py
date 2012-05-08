@@ -2,6 +2,7 @@
 
 from ticketing.seed import DataSet
 from organization import OrganizationData
+from ticketing.venues.models import SeatStatusEnum
 
 class SiteData(DataSet):
     class site_1:
@@ -59,6 +60,23 @@ class SeatData(DataSet):
         l0_id = u'A5'
         venue = VenueData.venue_1
 
+class SeatStatusData(DataSet):
+    class seat_status_1:
+        seat = SeatData.seat_1
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_2:
+        seat = SeatData.seat_2
+        status = int(SeatStatusEnum.InCart)
+    class seat_status_3:
+        seat = SeatData.seat_3
+        status = int(SeatStatusEnum.Ordered)
+    class seat_status_4:
+        seat = SeatData.seat_4
+        status = int(SeatStatusEnum.Confirmed)
+    class seat_status_5:
+        seat = SeatData.seat_5
+        status = int(SeatStatusEnum.Shipped)
+
 class SeatAttributeData(DataSet):
     class seat_attribute_1:
         seat = SeatData.seat_1
@@ -109,25 +127,3 @@ class SeatAttributeData(DataSet):
         seat = SeatData.seat_5
         name = u'attr2'
         value = u'seat5-test2'
-
-class SeatTypeData(DataSet):
-    class seat_type_1:
-        name = u'S席'
-        performance_id = 1
-        style = {"text": "S", "stroke": {"color": "#000000", "width": "1", "pattern": "solid"}, "fill": "#d8d8d8"}
-        status = 1
-    class seat_type_2:
-        name = u'A席'
-        performance_id = 1
-        style = {"text": "A", "stroke": {"color": "#d8d8d8", "width": "1", "pattern": "solid"}, "fill": "#ffec9f"}
-        status = 1
-    class seat_type_3:
-        name = u'B席'
-        performance_id = 1
-        style = {"text": "B", "stroke": {"color": "#d8d8d8", "width": "1", "pattern": "double"}, "fill": "#99b3e6"}
-        status = 1
-    class seat_type_4:
-        name = u'C席'
-        performance_id = 1
-        style = {"text": "C", "stroke": {"color": "#d8d8d8", "width": "1", "pattern": "dotted"}, "fill": "#cc8080"}
-        status = 1
