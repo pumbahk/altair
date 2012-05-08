@@ -25,16 +25,27 @@ $(document).ready(function() {
 
         $('#edit-modal').modal('toggle');
         $('#edit-modal #name').val(name);
-        $('#edit-modal #signature').val(data.text);
+        if (data) {
+            $('#edit-modal #signature').val(data.text);
 
-        $('#edit-modal #fill_color').val(data.fill);
-        $('#edit-modal #line_color').val(data.stroke.color);
+            $('#edit-modal #fill_color').val(data.fill);
+            $('#edit-modal #line_color').val(data.stroke.color);
 
-        $('#edit-modal #line_thickness_' + data.stroke.width).attr('checked', true);
-        $('#edit-modal #line_style_' + data.stroke.pattern).attr('checked', true);
+            $('#edit-modal #line_thickness_' + data.stroke.width).attr('checked', true);
+            $('#edit-modal #line_style_' + data.stroke.pattern).attr('checked', true);
+        }
 
         $('#edit-modal #edit').attr('action', '/seat_types/edit/' + seat_type_id);
     });
+
+    $('a[href^=#edit-seat-stock]').click(function() {
+        var vars = /^#edit-seat-stock\[(.+)\]\[(.+)\]$/.exec($(this).attr('href'));
+        var performance_id  = vars[1];
+        var stock_id        = vars[2];
+
+
+    });
+
 
     $(window).resize(function(api){
         $("#venue-map").height($(window).height()-230);
