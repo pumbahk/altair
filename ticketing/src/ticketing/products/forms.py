@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from wtforms import Form
-from wtforms import TextField, SelectField, IntegerField, SelectMultipleField, HiddenField
+from wtforms import TextField, SelectField, IntegerField, DecimalField, SelectMultipleField, HiddenField
 from wtforms.validators import Required, Length, NumberRange, EqualTo, Optional, ValidationError
 
 from ticketing.products.models import PaymentMethod, DeliveryMethod, PaymentDeliveryMethodPair, SalesSegment
@@ -60,25 +60,25 @@ class PaymentDeliveryMethodPairForm(Form):
                 (dm.id, dm.name) for dm in DeliveryMethod.get_by_organization_id(kwargs['organization_id'])
             ]
 
-    transaction_fee = IntegerField(
+    transaction_fee = DecimalField(
         label=u'決済手数料',
-        validators=[Required(u'入力してください')]
+        validators=[NumberRange(min=0.0, max=100.0, message=u'%(min)sから%(max)sの間で設定してください')]
     )
-    delivery_fee = IntegerField(
+    delivery_fee = DecimalField(
         label=u'配送手数料',
-        validators=[Required(u'入力してください')]
+        validators=[NumberRange(min=0.0, max=100.0, message=u'%(min)sから%(max)sの間で設定してください')]
     )
     discount = IntegerField(
         label=u'割引',
-        validators=[Required(u'入力してください')]
+        validators=[Optional()]
     )
     discount_unit = IntegerField(
         label=u'割引数',
-        validators=[Required(u'入力してください')]
+        validators=[Optional()]
     )
     discount_type = IntegerField(
         label=u'割引区分',
-        validators=[Required(u'入力してください')]
+        validators=[Optional()]
     )
     payment_method_ids = SelectMultipleField(
         label=u'決済方法',
@@ -95,11 +95,20 @@ class PaymentDeliveryMethodPairForm(Form):
     sales_segment_id = HiddenField(
         validators=[]
     )
+    id = HiddenField(
+        validators=[]
+    )
 
     def validate_payment_method_ids(form, field):
-        if field.data is None or form.delivery_method_ids.data is None:
+        if field.data is None or form.delivery_method_ids.data is None or form.id is None:
             return
         for payment_method_id in field.data:
             for delivery_method_id in form.delivery_method_ids.data:
-                if PaymentDeliveryMethodPair.find(form.sales_segment_id.data, payment_method_id, delivery_method_id):
+                kwargs = {
+                    'sales_segment_id':form.sales_segment_id.data,
+                    'payment_method_id':payment_method_id,
+                    'delivery_method_id':delivery_method_id,
+                }
+                pdmp = PaymentDeliveryMethodPair.find(**kwargs)
+                if pdmp and (form.id is None or pdmp.id != form.id.data):
                     raise ValidationError(u'既に設定済みの決済・配送方法の組み合せがあります')

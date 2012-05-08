@@ -152,6 +152,7 @@ class PaymentDeliveryMethodPairs(BaseView):
         sales_segment = SalesSegment.get(sales_segment_id)
 
         f = PaymentDeliveryMethodPairForm(organization_id=self.context.user.organization_id)
+        f.sales_segment_id.data = sales_segment_id
         return {
             'form':f,
             'sales_segment':sales_segment
@@ -187,7 +188,7 @@ class PaymentDeliveryMethodPairs(BaseView):
         id = int(self.request.matchdict.get('payment_delivery_method_pair_id', 0))
         pdmp = PaymentDeliveryMethodPair.get(id)
         if pdmp is None:
-            return HTTPNotFound('payment_delivery_method_pair id %d is not found' % pdmp)
+            return HTTPNotFound('payment_delivery_method_pair id %d is not found' % id)
 
         f = PaymentDeliveryMethodPairForm(organization_id=self.context.user.organization_id)
         f.process(record_to_multidict(pdmp))
@@ -206,6 +207,7 @@ class PaymentDeliveryMethodPairs(BaseView):
             return HTTPNotFound('payment_delivery_method_pair id %d is not found' % id)
 
         f = PaymentDeliveryMethodPairForm(self.request.POST, organization_id=self.context.user.organization_id)
+        f.id.data = id
         f.payment_method_ids.data = [pdmp.payment_method_id]
         f.delivery_method_ids.data = [pdmp.delivery_method_id]
         if f.validate():

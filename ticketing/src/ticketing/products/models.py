@@ -64,12 +64,15 @@ class PaymentDeliveryMethodPair(BaseModel, Base):
     delivery_method = relationship('DeliveryMethod')
 
     @staticmethod
-    def find(sales_segment_id, payment_method_id, delivery_method_id):
-        return DBSession.query(PaymentDeliveryMethodPair)\
-            .filter(PaymentDeliveryMethodPair.sales_segment_id==sales_segment_id)\
-            .filter(PaymentDeliveryMethodPair.payment_method_id==payment_method_id)\
-            .filter(PaymentDeliveryMethodPair.delivery_method_id==delivery_method_id)\
-            .all()
+    def find(**kwargs):
+        query = DBSession.query(PaymentDeliveryMethodPair)
+        if 'sales_segment_id' in kwargs:
+            query = query.filter_by(sales_segment_id=kwargs['sales_segment_id'])
+        if 'payment_method_id' in kwargs:
+            query = query.filter_by(payment_method_id=kwargs['payment_method_id'])
+        if 'delivery_method_id' in kwargs:
+            query = query.filter_by(delivery_method_id=kwargs['delivery_method_id'])
+        return query.first()
 
 class SalesSegment(BaseModel, Base):
     __tablename__ = 'SalesSegment'
