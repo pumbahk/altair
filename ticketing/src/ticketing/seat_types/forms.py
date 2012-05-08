@@ -7,8 +7,11 @@ from wtforms.validators import Required, Email, Length, NumberRange,EqualTo,opti
 
 class SeatTypeForm(Form):
     name            = TextField(u'名称', validators=[Required()])
-    signature       = TextField(u'記号', validators=[Required()])
+    text            = TextField(u'記号', validators=[Required()])
+    text_color      = TextField(u'記号色', validators=[Required()])
     fill_color      = TextField(u'色', validators=[Required()])
-    line_color      = TextField(u'線色', validators=[Required()])
-    line_thickness  = RadioField(u'線太さ', validators=[Required()])
-    line_style      = RadioField(u'線種', validators=[Required()])
+    fill_type       = SelectField(u'塗りつぶしパターン')
+    fill_image      = TextField(u'塗りつぶしイメージ', validators=[Required()])
+    stroke_color    = SelectField(u'線の色')
+    stroke_width    = SelectField(u'線の太さ')
+    stroke_patten   = SelectField(u'線の種類')

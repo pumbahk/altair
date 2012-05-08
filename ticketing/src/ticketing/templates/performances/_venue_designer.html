@@ -74,24 +74,39 @@
             <input id="name" name="name" type="text" class="span3" value="">
 
             <label>記号</label>
-            <input id="signature" name="signature" type="text" class="span3" value="">
+            <input id="text" name="text" type="text" class="span3" value="">
+            <label>記号色</label>
+            <input id="text_color" name="text_color" type="text" class="kolorPicker span3" value="">
             <label>塗りつぶし色</label>
             <input id="fill_color" name="fill_color" type="text" class="kolorPicker span3" value="">
+            <label>塗りつぶしパターン</label>
+            <div class="controls">
+                <select name="fill_type">
+                    <option value="FloodFill">べた塗り</option>
+                    <option value="LinearGradientFill">グラデーション（線形）</option>
+                    <option value="RadialGradientFill">グラデーション（放射状）</option>
+                    <option value="ImageTileFill">画像パターン</option>
+                </select>
+            </div>
+            <label>塗りつぶしイメージ</label>
+            <input id="fill_image" name="fill_image" type="text" class="span3" value="">
             <label>線の色</label>
-            <input id="line_color" name="line_color" type="text" class="kolorPicker span3"value="">
+            <input id="stroke_color" name="stroke_color" type="text" class="kolorPicker span3"value="">
             <label>線の太さ</label>
             <div class="controls">
-                <label class="checkbox inline"><input type="radio" name="line_thickness" id="line_thickness_1" value="1">1</label>
-                <label class="checkbox inline"><input type="radio" name="line_thickness" id="line_thickness_2" value="2">2</label>
-                <label class="checkbox inline"><input type="radio" name="line_thickness" id="line_thickness_3" value="3">3</label>
-                <label class="checkbox inline"><input type="radio" name="line_thickness" id="line_thickness_4" value="4">4</label>
+                <select name="stroke_width">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                </select>
             </div>
-            <label class="control-label" for="inlineCheckboxs">線の種類</label>
+            <label class="control-label">線の種類</label>
             <div class="controls">
-                <label class="checkbox inline"><input type="radio" name="line_style" id="line_style_solid" value="solid">実線</label>
-                <label class="checkbox inline"><input type="radio" name="line_style" id="line_style_double" value="double">2重線</label>
-                <label class="checkbox inline"><input type="radio" name="line_style" id="line_style_dotted" value="dotted">破線</label>
-                <label class="checkbox inline"><input type="radio" name="line_style" id="line_style_dashed" value="dashed">点線</label>
+                <select name="stroke_patten">
+                    <option value="solid">実線</option>
+                    <option value="double">2重線</option>
+                    <option value="dashed">点線</option>
+                </select>
             </div>
         </div>
 

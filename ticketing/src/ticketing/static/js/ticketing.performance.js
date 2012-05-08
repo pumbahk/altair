@@ -26,26 +26,21 @@ $(document).ready(function() {
         $('#edit-modal').modal('toggle');
         $('#edit-modal #name').val(name);
         if (data) {
-            $('#edit-modal #signature').val(data.text);
-
-            $('#edit-modal #fill_color').val(data.fill);
-            $('#edit-modal #line_color').val(data.stroke.color);
-
-            $('#edit-modal #line_thickness_' + data.stroke.width).attr('checked', true);
-            $('#edit-modal #line_style_' + data.stroke.pattern).attr('checked', true);
+            $('#edit-modal #text').val(data.text);
+            $('#edit-modal #text_color').val(data.text_color);
+            if (data.fill) {
+                $('#edit-modal #fill_color').val(data.fill.color);
+                $('#edit-modal #fill_type').val(data.fill.type);
+                $('#edit-modal #fill_image').val(data.fill.image);
+            }
+            if (data.stroke) {
+                $('#edit-modal #stroke_color').val(data.stroke.color);
+                $('#edit-modal #stroke_width').val(data.stroke.width);
+                $('#edit-modal #stroke_patten').val(data.stroke.pattern);
+            }
         }
-
         $('#edit-modal #edit').attr('action', '/seat_types/edit/' + seat_type_id);
     });
-
-    $('a[href^=#edit-seat-stock]').click(function() {
-        var vars = /^#edit-seat-stock\[(.+)\]\[(.+)\]$/.exec($(this).attr('href'));
-        var performance_id  = vars[1];
-        var stock_id        = vars[2];
-
-
-    });
-
 
     $(window).resize(function(api){
         $("#venue-map").height($(window).height()-230);

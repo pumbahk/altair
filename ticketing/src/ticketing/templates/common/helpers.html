@@ -67,21 +67,25 @@
 
 <%def name="seat_style(style)">
 <%
-fill_color = 'FFFFFF';
-text = ''
-line_width = ''
-line_pattern = ''
-line_color = ''
+fill_color = '#FFFFFF';
+text = '-'
+text_color = '#000'
+stroke_width = ''
+stroke_pattern = ''
+stroke_color = ''
 if style:
-  fill_color = style.get('fill')
+  fill = style.get('fill')
+  if fill:
+      fill_color = fill.get('color')
   text  = style.get('text')
+  text_color = style.get('text_color')
   stroke = style.get('stroke')
   if stroke:
-      line_width = stroke.get('width')
-      line_pattern = stroke.get('pattern')
-      line_color = stroke.get('color')
+      stroke_width = stroke.get('width')
+      stroke_pattern = stroke.get('pattern')
+      stroke_color = stroke.get('color')
 %>
-<span class="swatch" style="border: ${line_width}px ${line_pattern} ${line_color}; background-color: ${fill_color}; text-align: center">${text}</span>
+<span class="swatch" style="text-color:${text_color}; border: ${stroke_width}px ${stroke_pattern} ${stroke_color}; background-color: ${fill_color}; text-align: center">${text}</span>
 </%def>
 <%def name="json(style)"><% import json %>${json.dumps(style)}
 </%def>
