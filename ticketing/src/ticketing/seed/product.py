@@ -11,22 +11,22 @@ class SeatTypeData(DataSet):
     class seat_type_1:
         name = u'S席'
         performance_id = 1
-        style = {"text": "S", "stroke": {"color": "#000000", "width": "1", "pattern": "solid"}, "fill": "#d8d8d8"}
+        style = {"text": "S", "stroke": {"color": "#000000", "width": "1", "pattern": "solid"}, "fill": {"color": "#d8d8d8"}}
         status = 1
     class seat_type_2:
         name = u'A席'
         performance_id = 1
-        style = {"text": "A", "stroke": {"color": "#d8d8d8", "width": "1", "pattern": "solid"}, "fill": "#ffec9f"}
+        style = {"text": "A", "stroke": {"color": "#d8d8d8", "width": "1", "pattern": "solid"}, "fill": {"color": "#ffec9f"}}
         status = 1
     class seat_type_3:
         name = u'B席'
         performance_id = 1
-        style = {"text": "B", "stroke": {"color": "#d8d8d8", "width": "1", "pattern": "double"}, "fill": "#99b3e6"}
+        style = {"text": "B", "stroke": {"color": "#d8d8d8", "width": "1", "pattern": "double"}, "fill": {"color": "#99b3e6"}}
         status = 1
     class seat_type_4:
         name = u'C席'
         performance_id = 1
-        style = {"text": "C", "stroke": {"color": "#d8d8d8", "width": "1", "pattern": "dotted"}, "fill": "#cc8080"}
+        style = {"text": "C", "stroke": {"color": "#d8d8d8", "width": "1", "pattern": "dotted"}, "fill": {"color": "#cc8080"}}
         status = 1
 
 class SalesSegmentData(DataSet):

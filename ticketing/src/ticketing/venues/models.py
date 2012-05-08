@@ -84,9 +84,9 @@ class Seat(Base):
 
     venue_id        = Column(BigInteger, ForeignKey('Venue.id'))
     stock_id        = Column(BigInteger, ForeignKey('Stock.id'))
+    seat_type_id    = Column(BigInteger, ForeignKey('SeatType.id'))
 
     attributes      = relationship("SeatAttribute", backref='seat', cascade='save-update, merge')
-
     areas           = relationship("VenueArea", secondary=seat_venue_area_table, backref="seats")
 
     updated_at      = Column(DateTime)

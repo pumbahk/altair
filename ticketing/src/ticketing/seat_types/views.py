@@ -6,10 +6,10 @@ from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path
 
-from ticketing.models import merge_session_with_post, record_to_multidict
+from ticketing.models import merge_session_with_post
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
-from ticketing.venues.models import session, SeatType
+from ticketing.products.models import SeatType
 from ticketing.seat_types.forms import SeatTypeForm
 
 import sqlahelper

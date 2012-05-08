@@ -135,6 +135,7 @@ class SeatType(Base):
     performance_id = Column(BigInteger, ForeignKey("Performance.id"))
 
     stocks = relationship('Stock', backref='seat_type')
+    seats = relationship('Seat', backref='seat_type')
 
     style = Column(MutationDict.as_mutable(JSONEncodedDict(1024)))
 

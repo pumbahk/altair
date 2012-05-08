@@ -1,6 +1,5 @@
 # coding: utf-8
-import logging
-import json
+
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.response import Response
@@ -9,7 +8,6 @@ from urllib2 import urlopen
 
 from ticketing.models import DBSession
 from .models import Venue, Seat, SeatAttribute, VenueArea, seat_venue_area_table
-from ticketing.products.models import SeatStock
 
 @view_config(route_name="api.get_drawing", request_method="GET")
 def get_drawing(request):
