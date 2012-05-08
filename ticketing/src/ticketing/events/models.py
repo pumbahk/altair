@@ -90,3 +90,11 @@ class Event(Base, BaseModel):
     def final_performance(self):
         return DBSession.query(Performance).filter(Performance.event_id==self.id)\
                 .order_by('Performance.start_on desc').first()
+
+    def get_accounts(self):
+        return DBSession.query(Account.name).join(StockHolder).join(Performance)\
+                .filter(Account.organization_id==self.organization_id)\
+                .filter(Account.id==StockHolder.account_id)\
+                .filter(StockHolder.performance_id==Performance.id)\
+                .filter(Performance.event_id==self.id)\
+                .distinct()

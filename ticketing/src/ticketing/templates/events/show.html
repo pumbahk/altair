@@ -42,7 +42,9 @@
           <th>クライアント</th>
           <td>
             <ul>
-              <li>○○プロモーション株式会社 ○○様</li>
+              % for account in accounts:
+              <li>${account.name} 様</li>
+              % endfor
             </ul>
           </td>
         </tr>

@@ -127,7 +127,7 @@ class ProductItem(BaseModel, Base):
         else:
             return None
 
-class SeatType(Base):
+class SeatType(BaseModel, Base):
     __tablename__ = 'SeatType'
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
@@ -144,25 +144,13 @@ class SeatType(Base):
     status = Column(Integer)
 
     @staticmethod
-    def get(id):
-        return session.query(SeatType).filter(SeatType.id==id).first()
-
-    @staticmethod
     def add(seat_type):
-        session.add(seat_type)
+        DBSession.add(seat_type)
 
     @staticmethod
     def update(seat_type):
-        session.merge(seat_type)
-        session.flush()
-
-    @staticmethod
-    def delete(seat_type):
-        session.delete(seat_type)
-
-    @staticmethod
-    def all():
-        return session.query(SeatType).all()
+        DBSession.merge(seat_type)
+        DBSession.flush()
 
 class StockHolder(BaseModel, Base):
     __tablename__ = "StockHolder"

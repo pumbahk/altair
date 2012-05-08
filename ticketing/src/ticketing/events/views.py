@@ -52,12 +52,14 @@ class Events(BaseView):
         query = query.order_by(sort + ' ' + direction)
 
         performances = paginate.Page(query, current_page, items_per_page=10, url=page_url)
+        accounts = event.get_accounts()
 
         f = EventForm()
         return {
             'form':f,
             'event':event,
             'performances':performances,
+            'accounts':accounts,
         }
 
     @view_config(route_name='events.new', request_method='GET', renderer='ticketing:templates/events/edit.html')
