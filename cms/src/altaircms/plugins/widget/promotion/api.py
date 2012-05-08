@@ -1,3 +1,5 @@
+# -*- coding:utf-8 -*-
+
 from zope.interface import directlyProvides
 import altaircms.helpers as h
 from .interfaces import IPromotionManager
@@ -9,8 +11,8 @@ def get_promotion_manager(request):
 
 class RealPromotionManager(object):
     @classmethod
-    def promotion_info(cls, request, promotion, idx=0):
-        return promotion.as_info(request, idx=idx, limit=request.GET.get("limit", None))
+    def promotion_info(cls, request, promotion, idx=0, limit=None):
+        return promotion.as_info(request, idx=idx, limit=limit)
     
     @classmethod
     def main_image_info(cls, request):
@@ -42,6 +44,7 @@ class MockPromotionManager(object):
             main = "/static/mock/img/1.jpg", 
             main_link = "http://example.com", 
             links = ["#"] * len(thumbnails), 
+            messages = [u"ここに何かメッセージ"] * len(thumbnails), 
             interval_time= 5000, 
             unit_candidates = range(1, 16)
             )

@@ -12,8 +12,18 @@
       </div>
     </div>
     <div id="slideShowRight">
-      <div class="thumbnail">
-       ${u"".join(show_image(thumb,link) for thumb,link in zip(info.thumbnails, info.links))|n}
+      <div class="categoryThumbnail">
+      %for thumb, link, message in zip(info.thumbnails, info.links, info.messages):
+		<div class="slideBox">
+		  <div class="slideBoxLeft">
+            ${show_image(thumb, link)|n}
+		  </div>
+		  <div class="slideBoxRight">
+			${message}
+		  </div>
+		  <div class="clear"></div>
+		</div>
+      %endfor
       </div>
     </div>
   </div>

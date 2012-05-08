@@ -17,15 +17,15 @@ from altaircms.security import RootFactory
 import altaircms.helpers as h
 
 ## fixme: rename **info
-PromotionInfo = namedtuple("PromotionInfo", "idx thumbnails message main main_link links interval_time unit_candidates")
+PromotionInfo = namedtuple("PromotionInfo", "idx thumbnails message main main_link links messages interval_time unit_candidates")
 
-def promotion_merge_settings(template_name, widget, bname, bsettings):
+def promotion_merge_settings(template_name, limit, widget, bname, bsettings):
     def slideshow_render():
         request = bsettings.extra["request"]
             ## fixme real implementation
         from . import api
         pm = api.get_promotion_manager(request)
-        params = {"show_image": pm.show_image, "info": pm.promotion_info(request, widget.promotion)}
+        params = {"show_image": pm.show_image, "info": pm.promotion_info(request, widget.promotion, limit=limit)}
         return render(template_name, params, request=request)
 
     bsettings.add(bname, slideshow_render)
@@ -34,12 +34,12 @@ def promotion_merge_settings(template_name, widget, bname, bsettings):
 PROMOTION_DISPATH = {
     u"チケットスター:Topプロモーション枠": functools.partial(
         promotion_merge_settings, 
-        "altaircms.plugins.widget:promotion/render.mako"
+        "altaircms.plugins.widget:promotion/render.mako", 15, 
         ), 
     u"チケットスター:カテゴリTopプロモーション枠":
         functools.partial(
         promotion_merge_settings, 
-        "altaircms.plugins.widget:promotion/category_render.mako"
+        "altaircms.plugins.widget:promotion/category_render.mako", 4, 
         )
     }
 
@@ -53,7 +53,7 @@ class Promotion(Base):
 
     INTERVAL_TIME = 5000
     def as_info(self, request, idx=0, limit=15):
-        punits = self.promotion_units
+        punits = self.promotion_units[:limit] if len(self.promotion_units) > limit else self.promotion_units
         selected = punits[idx]
         return PromotionInfo(
             thumbnails=[h.asset.to_show_page(request, pu.thumbnail) for pu in punits], 
@@ -62,6 +62,7 @@ class Promotion(Base):
             main=h.asset.to_show_page(request, selected.main_image), 
             main_link=selected.get_link(request), 
             links=[pu.get_link(request) for pu in punits], 
+            messages=[pu.text for pu in punits], 
             interval_time = self.INTERVAL_TIME, 
             unit_candidates = [int(pu.id) for pu in punits]
             )

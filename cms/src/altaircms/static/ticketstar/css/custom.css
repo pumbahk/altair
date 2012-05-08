@@ -1,53 +1,49 @@
 @charset "utf-8";
 
 /*
- for layout in toppage
-*/
+  for layout in toppage
+  */
 
 #index #mainLeft {
 	width: 342px;
     float: left;
 }
-
 #index #mainRight {
 	width: 342px;
     float: left;
 }
+
 #sports #mainLeft {
-	width: 342px;
+	width: 362px;
     float: left;
 }
-
 #sports #mainRight {
-	width: 342px;
-    float: left;
-}
-#sports #mainLeft {
-	width: 342px;
-    float: left;
+	width: 362px;
+    float: right;
 }
 
-#theater #mainRight {
-	width: 342px;
+#theater #mainLeft {
+	width: 362px;
     float: left;
 }
-#theater #mainLeft {
-	width: 342px;
-    float: left;
+#theater #mainRight {
+	width: 362px;
+    float: right;
 }
 
 #music #mainLeft {
-	width: 342px;
+	width: 362px;
     float: left;
 }
 #music #mainRight {
-	width: 342px;
-    float: left;
+	width: 362px;
+    float: right;
 }
+
 
 /*
   for promotion slideshow
-*/
+  */
 
 #slideShow img{
 	margin: 0;
@@ -68,7 +64,7 @@
     width: 182px;
 	margin-bottom: 20px;
 }
-#slideShow #slideShowRight .thumbnail img {
+#slideShow #slideShowRight .thumbnail img{
     width: 60px;
     height: 60px;
 }
@@ -77,31 +73,69 @@
     padding-right: 10px;
 	background-color: #000;
 	color: #fff;
+    font-weight: bold;
 }
 
-#categorySlideShowShow #categorySlideShowShowLeft{
-    float:left;
-    width: 517px;
-	margin-bottom: 20px;
+#categorySlideShow {
+    width: 715px;
+    height: 325px;
+    background-color: #555;
+    padding: 10px;
 }
-#categorySlideShowShow #categorySlideShowShowLeft .mainImage img {
+
+#categorySlideShow #slideShowLeft {
+    width: 517px;
+    float: left;
+    margin-bottom: 20px;
+}
+
+#categorySlideShow #slideShowLeft .mainImage img {
     width: 516px;
     height: 300px;
 }
-#categorySlideShowShow #categorySlideShowShowRight{
-    float:left;
-    width: 182px;
-	margin-bottom: 20px;
-}
-#categorySlideShowShow #categorySlideShowShowRight .thumbnail img {
-    width: 180px;
-    height: 180px;
-}
-#categorySlideShowShow .mainImageMessage {
+
+#categorySlideShow #slideShowLeft .mainImageMessage {
     padding-left: 10px;
     padding-right: 10px;
-	background-color: #000;
-	color: #fff;
+    background-color: #000;
+    color: #fff;
+    font-weight: bold;
+}
+
+#categorySlideShow #slideShowRight {
+    width: 190px;
+    padding-left: 5px;
+    float: left;
+    margin-bottom: 20px;
+}
+
+#categorySlideShow #slideShowRight .slideBox {
+    background-color: #222;
+    color: #fff;
+    font-size: 10pt;
+    padding-top: 5px;
+    line-height: 110%;
+    font-weight: bold;
+    padding-bottom: 5px;
+    margin-bottom: 5px;
+}
+
+#categorySlideShow #slideShowRight .categoryThumbnail{
+    margin-left: 5px;	
+}
+
+#categorySlideShow #slideShowRight .categoryThumbnail .slideBoxLeft{
+    margin-left: 5px;
+    width: 40%;
+    float:left;
+}
+#categorySlideShow #slideShowRight .categoryThumbnail .slideBoxRight{
+    padding: 5px;
+    width: 60%
+    float:left;
+}
+.clear {
+    clear: both;
 }
 
 /* using left,right instead of bellows */
@@ -113,8 +147,8 @@
 }
 
 /*
-   for calendar widget layout
-*/
+  for calendar widget layout
+  */
 #detailSchedule tbody td{
     height: 59px;
 }
@@ -125,25 +159,26 @@
 
 /* 
    for heading widget
-*/
+   */
 .heading {
-   background-repeat: no-repeat;
-   color: #fff;
-   margin:0;
-   padding: 6px;
-   padding-left: 15px;
+    background-repeat: no-repeat;
+    color: #fff;
+    margin:0;
+    margin-top: 20px;
+    padding: 6px;
+    padding-left: 15px;
 }
 
 .index,heading {
-   background-image:url(/static/ticketstar/img/index/bg_heading.gif);
+    background-image:url(/static/ticketstar/img/index/bg_heading.gif);
 }
 /* todo 変更*/
 .sports,heading {
-   background-image:url(/static/ticketstar/img/help/bg_heading.gif);
+    background-image:url(/static/ticketstar/img/help/bg_heading.gif);
 }
 
 .help,heading {
-   background-image:url(/static/ticketstar/img/help/bg_heading.gif);
+    background-image:url(/static/ticketstar/img/help/bg_heading.gif);
 }
 
 /* fixme */
@@ -153,7 +188,7 @@
 
 /*
   for ticket icon 
-*/
+  */
 #ticketIcon li{
 	background-repeat: no-repeat;
 	width: 80px;
@@ -177,7 +212,7 @@
 
 /*
   for service icon
-*/
+  */
 
 #serviceIcon li{
 	background-repeat: no-repeat;

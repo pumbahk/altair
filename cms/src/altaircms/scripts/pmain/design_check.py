@@ -13,8 +13,8 @@ from altaircms.models import Base
 from altaircms.layout.models import Layout
 from altaircms.event.models import Event
 from altaircms.page.models import Page, PageSet
-from altaircms.models import Performance
-from altaircms.models import Ticket
+from altaircms.models import Performance, Ticket
+from altaircms.asset.models import ImageAsset
 from altaircms.topic.models import Topic
 from altaircms.topcontent.models import Topcontent
 from altaircms.plugins.widget.promotion.models import (
@@ -55,10 +55,10 @@ def append_to_json_structure(page, key, data):
     page.structure = json.dumps(structure)
     return page
 
-def main_image(fpath, params):
+def make_image_asset(path, **params):
     captured = dict(type="image", 
-                    filepath=testing.DummyResource(filename=fpath, 
-                                                   file= open(fpath, "rb")))
+                    filepath=Objlike(filename=path, 
+                                     file=open(path, "rb")))
     return create_asset(captured, params=params)
 
 
@@ -185,6 +185,7 @@ def detail_layout():
         )
     return layout
 
+
 def detail_tickets(event):
     return [
         Ticket(event=event, 
@@ -208,6 +209,7 @@ def detail_tickets(event):
                seattype=u"C席", 
                orderno=5)
     ]
+
 
 def detail_performances(event):
     ## performance
@@ -262,6 +264,7 @@ def detail_performances(event):
                 ), 
     ]
     
+
 def detail_event():
     event = Event(title= u"ブルーマングループ IN 東京", 
                   event_open=u"2011-12-04", 
@@ -269,6 +272,7 @@ def detail_event():
                   deal_open=u"2011-10-1", 
                   deal_close=u"2012-5-17")
     return event
+
 
 def detail_page(layout, event):
     ## for breadcrumbs
@@ -293,13 +297,16 @@ def detail_page(layout, event):
     return detail_page
 
 
+
 def add_header_widgets(page):
     ## bread crumbs
     add_breadcrumbs_widget(page, "topicPath", {})
 
+
 def add_side_widgets(page):
     add_countdown_widget(page, "side", {"kind": "event_close"})
     
+
 def add_detail_main_block_widgets(page, asset):
     add_freetext_widget(page, "main", {"freetext": u"ブルーマンもついに千秋楽決定！！これがラストチャンス"})
 
@@ -343,6 +350,7 @@ def add_detail_main_block_widgets(page, asset):
     add_summary_widget(page, "main", data)
 
 
+
 def add_detail_page_settings():
     layout = detail_layout()
     event = detail_event()
@@ -350,8 +358,8 @@ def add_detail_page_settings():
     detail_tickets(event)
     page = detail_page(layout, event)
     
-    asset = main_image(os.path.join(here, "data/dummy.jpg"), 
-                       dict(created_by_id=1, updated_by_id=1, title=u"イベント詳細トップ画像"))
+    asset = make_image_asset(os.path.join(here, "data/dummy.jpg"), 
+                             created_by_id=1, updated_by_id=1, title=u"イベント詳細トップ画像")
     DBSession.add(page)
     DBSession.add(asset)
 
@@ -359,6 +367,7 @@ def add_detail_page_settings():
     add_header_widgets(page)
     add_side_widgets(page)
     add_detail_main_block_widgets(page, asset)
+
 
 def help_layout():
     layout = Layout(
@@ -369,6 +378,7 @@ def help_layout():
         client_id = 1 ##
         )
     return layout
+
 
 def help_page(layout):
     help_page = Page(description=u'チケットの販売、イベントの予約は楽天チケットで！楽天チケットは演劇、バレエ、ミュージカルなどの舞台、クラシック、オペラ、ロックなどのコンサート、野球、サッカー、格闘技などのスポーツ、その他イベントなどのチケットのオンラインショッピングサイトです。',
@@ -381,7 +391,8 @@ def help_page(layout):
     PageSet.get_or_create(help_page)
     return help_page
 
-def add_help_topics():
+
+def help_topics():
     return [
         Topic(kind=u"ヘルプ", 
               category=u"会員登録・ログイン", 
@@ -544,6 +555,7 @@ def add_help_topics():
               is_global=True), 
 
         ]
+
 def add_help_main_block_widgets(page):
     params = dict(kind=u"チケットスター：ヘルプページ見出し", 
                   text=u"会員登録・ログイン")
@@ -606,9 +618,10 @@ def add_help_main_block_widgets(page):
     add_topic_widget(page, "main",  params)
 
 
+
 def add_help_page_settings():
     layout = help_layout()
-    topics = add_help_topics()
+    topics = help_topics()
     page = help_page(layout)
 
     add_help_main_block_widgets(page)
@@ -616,6 +629,7 @@ def add_help_page_settings():
     DBSession.add_all(topics)
 
 ##
+
 def sports_layout():
     layout = Layout(
         title = u"ticketstar.sports",
@@ -625,6 +639,7 @@ def sports_layout():
         client_id = 1 ##
         )
     return layout
+
 
 def sports_page(layout):
     sports_page = Page(description=u'チケットの販売、イベントの予約は楽天チケットで！楽天チケットは演劇、バレエ、ミュージカルなどの舞台、クラシック、オペラ、ロックなどのコンサート、野球、サッカー、格闘技などのスポーツ、その他イベントなどのチケットのオンラインショッピングサイトです。',
@@ -637,7 +652,8 @@ def sports_page(layout):
     PageSet.get_or_create(sports_page)
     return sports_page
 
-def add_sports_topics():
+
+def sports_topics():
     return [
         Topic(kind=u"トピックス", 
               text=u"#", 
@@ -655,6 +671,26 @@ def add_sports_topics():
               orderno=2), 
 
         ]
+
+
+
+def sports_promotion():
+    img_path = os.path.join(os.path.dirname(__file__), "../../static/mock/img/")
+    N = 6
+    def make_materials(i, imgname, thumbname):
+        main_image = (ImageAsset.query.filter_by(title=imgname).first() or 
+                      make_image_asset(os.path.join(img_path, imgname), title=imgname))
+        thumbnail = (ImageAsset.query.filter_by(title=thumbname).first() or 
+                     make_image_asset(os.path.join(img_path, thumbname),title=thumbname))
+        return PromotionUnit(main_image=main_image,
+                             thumbnail=thumbnail, 
+                             link="http://www.google.com", 
+                             text=u"何かここにメッセージ書く。ファイル名:%s" % imgname, 
+                             )
+    punits = [make_materials(i, "%d.jpg" % i, "thumb.%d.jpg" % i) for i in range(1, N)]
+    return Promotion(promotion_units=punits, 
+                     name=u"スポーツ promotioin枠")
+    
 
 def add_sports_main_block_widgets(page, promotion):
     params =  {"kind": u"トピックス", 
@@ -690,7 +726,7 @@ def add_sports_main_block_widgets(page, promotion):
                "display_page": True}
     add_topic_widget(page, "main", params)
 
-    params = dict(kind=u"チケットスター：スポーツ見出し", 
+    params = dict(kind=u"チケットスター：トップページ見出し", 
                   text=u"今週発売のチケット")
     add_heading_widget(page, "main_left", params)
 
@@ -698,7 +734,7 @@ def add_sports_main_block_widgets(page, promotion):
               "delimiter": u"/"}
     add_linklist_widget(page, "main_left", params)
 
-    params = dict(kind=u"チケットスター：スポーツ見出し", 
+    params = dict(kind=u"チケットスター：トップページ見出し", 
                   text=u"販売終了間近")
     add_heading_widget(page, "main_right", params)
 
@@ -706,16 +742,23 @@ def add_sports_main_block_widgets(page, promotion):
               "delimiter": u"/"}
     add_linklist_widget(page, "main_right", params)
 
+
 def add_sports_page_settings():
     layout = sports_layout()
-    # topics = add_sports_topics()
+    topics = sports_topics()
+    promotion = sports_promotion()
     page = sports_page(layout)
 
-    add_sports_main_block_widgets(page, None)
     DBSession.add(page)
-    # DBSession.add_all(topics)
+    DBSession.add(promotion)
+    DBSession.add_all(topics)
 
-##
+    DBSession.flush()
+    
+    add_sports_main_block_widgets(page, promotion)#
+
+
+
 def top_layout():
     layout = Layout(
         title = u"ticketstar.top",
@@ -725,6 +768,7 @@ def top_layout():
         client_id = 1 ##
         )
     return layout
+
 
 def top_page(layout):
     top_page = Page(description=u'チケットの販売、イベントの予約は楽天チケットで！楽天チケットは演劇、バレエ、ミュージカルなどの舞台、クラシック、オペラ、ロックなどのコンサート、野球、サッカー、格闘技などのスポーツ、その他イベントなどのチケットのオンラインショッピングサイトです。',
@@ -738,19 +782,14 @@ def top_page(layout):
     return top_page
 
 
-def make_image_asset(path, **params):
-    from altaircms.asset.helpers import create_asset
-    captured = dict(type="image", 
-                    filepath=Objlike(filename=path, 
-                                     file=open(path, "rb")))
-    return create_asset(captured, params=params)
-
 def top_promotion(layout):
     img_path = os.path.join(os.path.dirname(__file__), "../../static/mock/img/")
     def make_materials(i, imgname, thumbname):
-        main_image = make_image_asset(os.path.join(img_path, imgname), title=imgname)
-        thumbnail = make_image_asset(os.path.join(img_path, thumbname),title=thumbname)
-
+        main_image = (ImageAsset.query.filter_by(title=imgname).first() or
+                      make_image_asset(os.path.join(img_path, imgname), title=imgname))
+        thumbnail = (ImageAsset.query.filter_by(title=thumbname).first() or 
+                     make_image_asset(os.path.join(img_path, thumbname),title=thumbname))
+        
         page = Page(description=u'for promotion',
                     keywords= u"promotion", 
                     layout= layout, 
@@ -767,7 +806,8 @@ def top_promotion(layout):
     punits = [make_materials(i, "%d.jpg" % i, "thumb.%d.jpg" % i) for i in range(1, 16)]
     return Promotion(promotion_units=punits, 
                      name=u"トップページ promotioin枠")
-    
+
+
 def top_topics(page):
     return [
         Topic(kind=u"トピックス", 
@@ -803,6 +843,7 @@ def top_topics(page):
               is_global=True, 
               orderno=4), 
         ]
+
 
 def top_topcontents(page):
     link_page = list(Page.query.filter(Page.event!=None).all())[-1] ##
@@ -875,6 +916,7 @@ def top_topcontents(page):
                    )
         ]
 
+
 def add_top_main_block_widgets(page, promotion):
     add_promotion_widget(page, "main", {"promotion": promotion.id, 
                                         "kind": u"チケットスター:Topプロモーション枠"})
@@ -918,6 +960,7 @@ def add_top_main_block_widgets(page, promotion):
               "delimiter": u"/"}
     add_linklist_widget(page, "main_right", params)
 
+
 def top_event_and_page_for_linklist_widget():
     today = datetime.datetime.today()
     def create_material(title, offset):
@@ -939,6 +982,7 @@ def top_event_and_page_for_linklist_widget():
             create_material(u"一昨日つくられたイベント", -2)
             ]
 
+
 def add_top_page_settings():
     layout = top_layout()
     materials = top_event_and_page_for_linklist_widget()
@@ -946,15 +990,15 @@ def add_top_page_settings():
     topics = top_topics(page)
     topcontents = top_topcontents(page)
     promotion = top_promotion(layout)
-
     DBSession.add(page)
     DBSession.add_all(materials)
     DBSession.add_all(topics)
     DBSession.add_all(topcontents)
     DBSession.add(promotion)
-
+ 
     DBSession.flush()
     add_top_main_block_widgets(page, promotion)
+
 
 def main(env, args):
     # setup()
