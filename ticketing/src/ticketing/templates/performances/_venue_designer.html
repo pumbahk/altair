@@ -1,40 +1,6 @@
 <%namespace file="/common/confirm_modal.html" import="delete_modal" />
-<% import json %>
-<script>
-  $(function() {
-    $('#delete').click(function(){
-      $('#delete-modal').modal('toggle');
-      $('#delete-modal #delete').attr('href', '/seat_types/delete/' + $('input[name=checked_id]:checked').val());
-    });
-  });
-
-  function add() {
-    $('#edit-modal').modal('toggle');
-    $('#edit-modal #edit').attr('action', '/seat_types/new/' + ${performance.id});
-  }
-
-  function edit(seat_type_id, name, data) {
-    $('#edit-modal').modal('toggle');
-    $('#edit-modal #name').val(name);
-    $('#edit-modal #signature').val(data.text);
-
-    $('#edit-modal #fill_color').val(data.fill);
-    $('#edit-modal #line_color').val(data.stroke.color);
-
-    $('#edit-modal #line_thickness_' + data.stroke.width).attr('checked', true);
-    $('#edit-modal #line_style_' + data.stroke.pattern).attr('checked', true);
-
-    $('#edit-modal #edit').attr('action', '/seat_types/edit/' + seat_type_id);
-  }
-
-  $(window).resize(function(api){
-    $("#venue-map").height($(window).height()-230);
-  });
-
-  $(document).ready(function(){
-    $("#venue-map").height($(window).height()-230);
-  });
-</script>
+<%namespace file="/common/helpers.html" import="seat_style" />
+<%namespace file="/common/helpers.html" import="json" />
 
 <div class="container-fluid">
   <div class="row-fluid">
@@ -50,7 +16,7 @@
             </a>
             <ul class="dropdown-menu">
               <li>
-                <a href="javascript:add()"><i class="icon-plus"></i> 新規</a>
+                <a href="#new-seat-type[${performance.id}]"><i class="icon-plus"></i> 新規</a>
               </li>
               <li>
                 <a id="delete" data-controls-modal="delete-modal" data-backdrop="true" data-keyboard="true">
@@ -82,24 +48,8 @@
           <tr>
             <td><input name="checked_id" type="radio" value=${seat_type.id} /></td>
             <td>
-              <a id="edit" href="javascript:edit(${seat_type.id}, '${seat_type.name|u}', ${json.dumps(seat_type.style)})">
-              <%
-                style = seat_type.style
-                fill_color = 'FFFFFF';
-                text = ''
-                line_width = ''
-                line_pattern = ''
-                line_color = ''
-                if style:
-                    fill_color = style.get('fill')
-                    text  = style.get('text')
-                    stroke = style.get('stroke')
-                    if stroke:
-                        line_width = stroke.get('width')
-                        line_pattern = stroke.get('pattern')
-                        line_color = stroke.get('color')
-              %>
-              <span class="swatch" style="border: ${line_width}px ${line_pattern} #${line_color}; background-color: #${fill_color}; text-align: center">${text}</span>${seat_type.name}</a>
+              <a href="#edit-seat-type[${performance.id}][${seat_type.id}]" name="${seat_type.name}" data="${json(seat_type.style)}">
+              ${seat_style(seat_type.style)}${seat_type.name}</a>
             </td>
             <td>
               ${len(seat_type.seats)}席
@@ -122,12 +72,13 @@
         <div class="modal-body">
             <label>席種名</label>
             <input id="name" name="name" type="text" class="span3" value="">
+
             <label>記号</label>
             <input id="signature" name="signature" type="text" class="span3" value="">
             <label>塗りつぶし色</label>
-            <input id="fill_color" name="fill_color" type="text" class="span3" value="">
+            <input id="fill_color" name="fill_color" type="text" class="kolorPicker span3" value="">
             <label>線の色</label>
-            <input id="line_color" name="line_color" type="text" class="span3" value="">
+            <input id="line_color" name="line_color" type="text" class="kolorPicker span3"value="">
             <label>線の太さ</label>
             <div class="controls">
                 <label class="checkbox inline"><input type="radio" name="line_thickness" id="line_thickness_1" value="1">1</label>
@@ -150,40 +101,5 @@
         </div>
     </form>
 </div>
-
-<script type="text/javascript">
-$('#line_color').ColorPicker({
-	onSubmit: function(hsb, hex, rgb, el) {
-		$(el).val(hex);
-		$(el).ColorPickerHide();
-	},
-	onBeforeShow: function () {
-		$(this).ColorPickerSetColor(this.value);
-	},
-    onChange: function (hsb, hex, rgb) {
-        $(this).css('backgroundColor', '#' + hex);
-        $('#line_color').val(hex)
-    },
-    zIndex: 9999
-})
-$('#fill_color').ColorPicker({
-	onSubmit: function(hsb, hex, rgb, el) {
-		$(el).val(hex);
-		$(el).ColorPickerHide();
-	},
-	onBeforeShow: function () {
-		$(this).ColorPickerSetColor(this.value);
-	},
-    onChange: function (hsb, hex, rgb) {
-        $(this).css('backgroundColor', '#' + hex);
-        $('#fill_color').val(hex)
-    },
-    zIndex: 9999
-})
-.bind('keyup', function(){
-	$(this).ColorPickerSetColor(this.value);
-});
-
-</script>
 
 ${delete_modal(u'選択した席種を削除します。よろしいですか？')}

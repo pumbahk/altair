@@ -1,0 +1,58 @@
+@charset "UTF-8";
+
+
+.container-fluid {
+    height: 100%;
+}
+.tabs-above {
+    border-right: none;
+}
+#seat-allocation-tab-content-navi {
+    width: auto;
+    height: 70px;
+    background: #FFFFFF;
+}
+#footer {
+    background: #FFFFFF;
+    width: 100%;
+    height: 50px;
+}
+.tabs-above .nav-tabs {
+    float: none;
+    margin-right: auto;
+    border-right: none;
+}
+.tabs-above .nav-tabs > li {
+    float: left;
+}
+.tabs-above .nav-tabs > li > a {
+    -webkit-border-radius:  0 0 4px 4px;
+    -moz-border-radius:  0 0 4px 4px;
+    border-radius:  0 0 4px 4px;
+    margin-right: 2px;
+    margin-bottom: 0;
+}
+.tabs-above .nav-tabs .active > a,
+.tabs-above .nav-tabs .active > a:hover {
+    border-color: transparent #ddd #ddd  #ddd;
+}
+
+.tabs-horizontal .nav-tabs {
+    float: none;
+    margin-right: auto;
+    border-right: none;
+}
+.tabs-horizontal .nav-tabs > li {
+    float: left;
+}
+.tabs-horizontal .nav-tabs > li > a {
+    -webkit-border-radius:  4px 4px 0 0 ;
+    -moz-border-radius:  4px 4px 0 0 ;
+    border-radius:  4px 4px 0 0 ;
+    margin-right: 2px;
+    margin-bottom: 0;
+}
+.tabs-horizontal .nav-tabs .active > a,
+.tabs-horizontal .nav-tabs .active > a:hover {
+    border-color:  #ddd #ddd transparent  #ddd;
+}

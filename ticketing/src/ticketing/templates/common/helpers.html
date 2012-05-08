@@ -62,3 +62,24 @@
 <%def name="safe_strftime(str, format='%Y/%m/%d %H:%M')">
   ${str and str.strftime(format) or ''}
 </%def>
+
+<%def name="seat_style(style)">
+<%
+fill_color = 'FFFFFF';
+text = ''
+line_width = ''
+line_pattern = ''
+line_color = ''
+if style:
+  fill_color = style.get('fill')
+  text  = style.get('text')
+  stroke = style.get('stroke')
+  if stroke:
+      line_width = stroke.get('width')
+      line_pattern = stroke.get('pattern')
+      line_color = stroke.get('color')
+%>
+<span class="swatch" style="border: ${line_width}px ${line_pattern} ${line_color}; background-color: ${fill_color}; text-align: center">${text}</span>
+</%def>
+<%def name="json(style)"><% import json %>${json.dumps(style)}
+</%def>
