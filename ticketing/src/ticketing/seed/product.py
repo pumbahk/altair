@@ -71,21 +71,29 @@ class ProductItemData(DataSet):
 
 class StockHolderData(DataSet):
     class stock_holder_1:
-        name = u'ネット販売'
+        name = u'招待枠'
         performance = PerformanceData.performance_1
         account = AccountData.account_1
     class stock_holder_2:
-        name = u'招待'
+        name = u'事故席枠'
         performance = PerformanceData.performance_1
         account = AccountData.account_1
     class stock_holder_3:
-        name = u'先行販売'
+        name = u'ネット販売'
         performance = PerformanceData.performance_1
         account = AccountData.account_1
     class stock_holder_4:
         name = u'一般販売'
         performance = PerformanceData.performance_1
         account = AccountData.account_1
+    class stock_holder_5:
+        name = u'ぴあ配券'
+        performance = PerformanceData.performance_1
+        account = AccountData.account_2
+    class stock_holder_6:
+        name = u'イープラス配券'
+        performance = PerformanceData.performance_1
+        account = AccountData.account_3
 
 class StockData(DataSet):
     class stock_1:
@@ -108,3 +116,23 @@ class StockData(DataSet):
         performance = PerformanceData.performance_1
         seat_type = SeatTypeData.seat_type_4
         stock_holder = StockHolderData.stock_holder_1
+    class stock_5:
+        quantity = 60
+        performance = PerformanceData.performance_1
+        seat_type = SeatTypeData.seat_type_1
+        stock_holder = StockHolderData.stock_holder_5
+    class stock_6:
+        quantity = 50
+        performance = PerformanceData.performance_1
+        seat_type = SeatTypeData.seat_type_2
+        stock_holder = StockHolderData.stock_holder_5
+    class stock_7:
+        quantity = 40
+        performance = PerformanceData.performance_1
+        seat_type = SeatTypeData.seat_type_3
+        stock_holder = StockHolderData.stock_holder_5
+    class stock_8:
+        quantity = 30
+        performance = PerformanceData.performance_1
+        seat_type = SeatTypeData.seat_type_4
+        stock_holder = StockHolderData.stock_holder_5

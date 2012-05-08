@@ -5,7 +5,7 @@ from sqlalchemy.orm import relationship, join, backref, column_property
 
 from ticketing.utils import StandardEnum
 from ticketing.models import Base, BaseModel, DBSession
-from ticketing.products.models import Product, SalesSegment
+from ticketing.products.models import Product, SalesSegment, StockHolder
 
 class AccountTypeEnum(StandardEnum):
     Promoter    = 1
@@ -25,6 +25,10 @@ class Account(Base, BaseModel):
     organization = relationship('Organization', uselist=False)
     stock_holders = relationship('StockHolder', uselist=False, backref='account')
 
+    @staticmethod
+    def get_by_organization_id(id):
+        return DBSession.query(Account).filter(Account.organization_id==id).all()
+
 class Performance(Base, BaseModel):
     __tablename__ = 'Performance'
     id = Column(BigInteger, primary_key=True)
@@ -43,6 +47,14 @@ class Performance(Base, BaseModel):
     stocks = relationship('Stock', backref='performance')
     product_items = relationship('ProductItem', backref='performance')
     seat_types = relationship('SeatType', backref='performance')
+
+    @property
+    def accounts(self):
+        data = DBSession.query(Account).join(StockHolder)\
+                .filter(StockHolder.performance_id==self.id)\
+                .filter(StockHolder.account_id==Account.id)\
+                .all()
+        return data
 
 class Event(Base, BaseModel):
     __tablename__ = 'Event'

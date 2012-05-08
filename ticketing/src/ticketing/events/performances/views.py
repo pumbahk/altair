@@ -8,9 +8,8 @@ from pyramid.url import route_path
 
 from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
-from ticketing.models import DBSession
 from ticketing.fanstatic import with_bootstrap
-from ticketing.events.models import Event, Performance
+from ticketing.events.models import Event, Performance, Account
 from ticketing.events.performances.forms import PerformanceForm, StockHolderForm
 from ticketing.products.models import Product, StockHolder, SalesSegment
 
@@ -22,11 +21,14 @@ class Performances(BaseView):
         performance_id = int(self.request.matchdict.get('performance_id', 0))
         performance = Performance.get(performance_id)
         products = Product.find(performance_id=performance_id)
-        sales_segments = DBSession.query(SalesSegment).filter(SalesSegment.organization_id==self.context.user.organization_id).all()
+        user = self.context.user
+        accounts = Account.get_by_organization_id(user.organization_id)
+        sales_segments = SalesSegment.get_by_organization_id(user.organization_id)
 
         return {
             'performance':performance,
             'products':products,
+            'accounts':accounts,
             'sales_segments':sales_segments,
         }
 
