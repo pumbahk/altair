@@ -1,3 +1,5 @@
+<%namespace file="/common/helpers.html" import="seat_style" />
+
 <style>
   .swatch {
     display: inline-block;
@@ -87,16 +89,18 @@
                 % if stock_holder.account.user.id == account.user.id:
                   <tr>
                     <th style="width:10px" rowspan="${len(stock_holder.stocks)}"><input type="checkbox"></th>
-                    <th class="span2" rowspan="${len(stock_holder.stocks)}"><span class="swatch" style="background-color: #049cdb;"></span>${stock_holder.name}</th>
+                    <th class="span2" rowspan="${len(stock_holder.stocks)}">${stock_holder.name}</th>
                   % if len(stock_holder.stocks) == 0:
-                    <th class="span1"></th>
+                    <th style="width:80px"></th>
                     <td class="span1"></td>
                   % endif
                   % for i, stock in enumerate(stock_holder.stocks):
                     % if i != 0:
                   <tr>
                     % endif
-                    <th class="span1">${stock.seat_type.name}</th>
+                    <th style="width:80px">
+                      ${seat_style(stock.seat_type.style)}${stock.seat_type.name}
+                    </th>
                     <td class="span1">${stock.quantity}席</td>
                   </tr>
                   % endfor

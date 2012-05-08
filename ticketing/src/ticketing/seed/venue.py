@@ -1,11 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime
 from ticketing.seed import DataSet
-
-from prefecture import PrefectureMaster
 from organization import OrganizationData
-
 
 class SiteData(DataSet):
     class site_1:
@@ -118,16 +114,20 @@ class SeatTypeData(DataSet):
     class seat_type_1:
         name = u'S席'
         performance_id = 1
+        style = {"text": "S", "stroke": {"color": "#000000", "width": "1", "pattern": "solid"}, "fill": "#d8d8d8"}
         status = 1
     class seat_type_2:
         name = u'A席'
         performance_id = 1
+        style = {"text": "A", "stroke": {"color": "#d8d8d8", "width": "1", "pattern": "solid"}, "fill": "#ffec9f"}
         status = 1
     class seat_type_3:
         name = u'B席'
         performance_id = 1
+        style = {"text": "B", "stroke": {"color": "#d8d8d8", "width": "1", "pattern": "double"}, "fill": "#99b3e6"}
         status = 1
     class seat_type_4:
         name = u'C席'
         performance_id = 1
+        style = {"text": "C", "stroke": {"color": "#d8d8d8", "width": "1", "pattern": "dotted"}, "fill": "#cc8080"}
         status = 1
