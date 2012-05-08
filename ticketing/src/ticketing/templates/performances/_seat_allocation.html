@@ -49,9 +49,7 @@
                   <b class="caret"></b>
                 </a>
                 <ul class="dropdown-menu">
-                  <li><a data-toggle="modal" href="javascript:add_stock_holder()" >新規押さえ</a></li>
-                  <li><a data-toggle="modal" href="#modal-new-stock-group-send" >新規配券先</a></li>
-                  <li class="divider"></li>
+                  <li><a data-toggle="modal" href="javascript:add_stock_holder()" >新規配券先</a></li>
                 </ul>
               </li>
               <li class="dropdown" id="menu2">
@@ -125,13 +123,19 @@
 <div class="modal fade" id="modal-new-stock-group-own">
   <div class="modal-header">
     <a class="close" data-dismiss="modal">×</a>
-    <h3>新規押さえ</h3>
+    <h3>新規配券先</h3>
   </div>
 
   <form id="edit" action="" method="POST">
     <div class="modal-body">
-      <label>枠</label>
+      <label>枠名</label>
       <input id="name" name="name" type="text" class="span3" placeholder="先行">
+      <label>配券先</label>
+      <select name="account_id">
+        % for account in accounts:
+        <option value="${account.id}">${account.name}</option>
+        % endfor
+      </select>
     </div>
 
     <div class="modal-footer">

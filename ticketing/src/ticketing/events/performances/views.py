@@ -113,8 +113,12 @@ class Performances(BaseView):
         self.request.session.flash(u'パフォーマンスを削除しました')
         return HTTPFound(location=route_path('events.show', self.request, event_id=performance.event_id))
 
+
+@view_defaults(decorator=with_bootstrap, permission="event_editor")
+class StockHolders(BaseView):
+
     @view_config(route_name='performances.stock_holder.new', request_method='POST')
-    def new_stock_holder(self):
+    def new_post(self):
         performance_id = int(self.request.matchdict.get('performance_id', 0))
         performance = Performance.get(performance_id)
         if performance is None:
@@ -126,5 +130,7 @@ class Performances(BaseView):
             stock_holder.performance_id = performance.id
             stock_holder.save()
             self.request.session.flash(u'枠を保存しました')
+        else:
+            self.request.session.flash(u'枠を保存できません')
 
         return HTTPFound(location=route_path('performances.show', self.request, performance_id=performance.id))
