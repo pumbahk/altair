@@ -20,9 +20,8 @@ def upgrade():
                      existing_server_default=1)
 
 def downgrade():
-     pass ## why?
      # op.alter_column("event", 
      #                 "is_searchable", type_=sa.Integer, existing_type=sa.Boolean,
      #                 existing_server_default=1)
-
+     pass
 

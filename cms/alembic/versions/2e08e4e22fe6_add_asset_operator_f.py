@@ -18,13 +18,13 @@ def upgrade():
     op.add_column("asset", 
                   sa.Column("title", sa.Unicode(255)))
     op.add_column("asset", 
-                  sa.Column("created_by_id", sa.INTEGER, sa.ForeignKey("operator.id")))
+                  sa.Column("created_by_id", sa.INTEGER, sa.ForeignKey("operator.id", name="fk_created_by_id")))
     op.add_column("asset", 
-                  sa.Column("updated_by_id", sa.INTEGER, sa.ForeignKey("operator.id")))
+                  sa.Column("updated_by_id", sa.INTEGER, sa.ForeignKey("operator.id", name="fk_updated_by_id")))
 
 def downgrade():
+    op.execute("ALTER TABLE asset DROP FOREIGN KEY fk_created_by_id")
+    op.execute("ALTER TABLE asset DROP FOREIGN KEY fk_updated_by_id")
     op.drop_column("asset", "title")
     op.drop_column("asset", "created_by_id")
     op.drop_column("asset", "updated_by_id")
-
-    

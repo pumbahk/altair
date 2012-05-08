@@ -20,9 +20,10 @@ def upgrade():
                     sa.Column('items', sa.Unicode(length=255), nullable=True),
                     sa.Column('text', sa.Unicode(length=255), nullable=True),
                     sa.Column("kind", sa.String(length=32), nullable=False), 
-                    sa.ForeignKeyConstraint(['id'], ['widget.id'], ),
+                    sa.ForeignKeyConstraint(['id'], ['widget.id'], name="fk_widget_heading_id"),
                     sa.PrimaryKeyConstraint('id')
                     )
 
 def downgrade():
+    op.execute("ALTER TABLE widget_heading DROP FOREIGN KEY fk_widget_heading_id")
     op.drop_table("widget_heading")
