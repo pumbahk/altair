@@ -6,42 +6,33 @@
 
   <span class="span10">
     <div class="page-header">
-      <h3></h3>
+      <h3>${account.name}</h3>
     </div>
 
     <div class="content">
       ${flash_messages(request)}
     </div>
 
-    <table class="table table-bordered fullwidth">
-      <tbody>
-        <tr>
-          <th>クライアント</th>
-          <td>
-            <ul>
-              <li>${account.name}</li>
-            </ul>
-          </td>
-        </tr>
-        <tr>
-          <th></th>
-          <td></td>
-        </tr>
-        <tr>
-          <th></th>
-          <td></td>
-        </tr>
-        <tr>
-          <th></th>
-          <td></td>
-        </tr>
-        <tr>
-          <th></th>
-          <td></td>
-        </tr>
-      </tbody>
+    <div class="page-header">
+      <h3>配券しているパフォーマンス</h3>
+    </div>
+    <table class="table table-striped table-bordered table-condensed">
+      <tr>
+        <th>パフォーマンス名</th>
+        <th>配券先名</th>
+        <th>席名</th>
+        <th>席数</th>
+      </tr>
+      % for stock_holder in account.stock_holders:
+        % for stock in stock_holder.stocks:
+      <tr>
+        <td>${stock_holder.performance.name}</td>
+        <td>${stock_holder.name}</td>
+        <td>${stock.seat_type.name}</td>
+        <td>${stock.quantity}</td>
+      </tr>
+        % endfor
+      % endfor
     </table>
-
-    <hr />
   </span>
 </div>

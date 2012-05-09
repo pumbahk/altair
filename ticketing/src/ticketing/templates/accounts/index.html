@@ -1,23 +1,9 @@
-<%inherit file="../layout.html"/>
+<%inherit file="/layout.html"/>
 <%namespace file="/common/helpers.html" import="pager"/>                                               
 <%namespace file="/common/helpers.html" import="flash_messages" />
 
-<script type="text/javascript">
-  $('.new-performance').click(function(e) {
-    e.preventDefault();
-    var href = $(e.target).attr('href');
-    if (href.indexOf('#') == 0) {
-      $(href).modal('open');
-    } else {
-      $.get(href, function(data) {
-          $('<div class="modal fade" >' + data + '</div>').modal();
-      });
-    }
-  });
-</script>
-
 <div class="row-fluid">
-  <%include file="../parts/_menu.html" />
+  <%include file="/parts/_menu.html" />
 
   <span class="span10">
     <div class="page-header">
@@ -28,37 +14,58 @@
       ${flash_messages(request)}
     </div>
 
-    <ul class="nav nav-pills">
-      <li class="dropdown" id="top-event">
-        <a class="dropdown-toggle" data-toggle="dropdown" href="#top-even1t">
-          クライアント
-          <b class="caret"></b>
-        </a>
-        <ul class="dropdown-menu">
-          <li><a data-toggle="modal" href="" >新規クライアント</a></li>
-          <li class="divider"></li>
-        </ul>
-      </li>
-    </ul>
+    <span class="span6">
+      <ul class="nav nav-pills">
+        <li class="dropdown" id="top-event">
+          <a class="dropdown-toggle" data-toggle="dropdown" href="#top-even1t">
+            クライアント
+            <b class="caret"></b>
+          </a>
+          <ul class="dropdown-menu">
+            <li><a data-toggle="modal" href="#edit-modal">新規クライアント</a></li>
+            <li class="divider"></li>
+          </ul>
+        </li>
+      </ul>
 
-    <table class="table table-striped">
-      <thead>
-      <tr>
-        <th class="minwidth"></th>
-        <th class="minwidth">ID</th>
-        <th class="span5">${form.name.label.text}</th>
-      </tr>
-      </thead>
-      <tbody>
-      % for account in accounts.items:
-      <tr>
-        <td><input name="checked_id" type="radio" value=${account.id} /></td>
-        <td>${account.id}</td>
-        <td><a href="${request.route_path('accounts.show', account_id=account.id)}">${account.name}</a></td>
-      </tr>
-      % endfor
-      </tbody>
-    </table>
+      <table class="table table-striped">
+        <thead>
+        <tr>
+          <th class="minwidth"></th>
+          <th class="minwidth">ID</th>
+          <th class="span5">${form.name.label.text}</th>
+        </tr>
+        </thead>
+        <tbody>
+        % for account in accounts.items:
+        <tr>
+          <td><input name="checked_id" type="radio" value=${account.id} /></td>
+          <td>${account.id}</td>
+          <td><a href="${request.route_path('accounts.show', account_id=account.id)}">${account.name}</a></td>
+        </tr>
+        % endfor
+        </tbody>
+      </table>
+    </span>
   </span>
   ${pager(accounts)}
+</div>
+
+<div id="edit-modal" class="modal fade">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">×</a>
+    <h3>クライアント登録</h3>
+  </div>
+
+  <form id="edit" action="${request.route_path('accounts.new')}" method="POST">
+    <div class="modal-body">
+      <label>クライアント名</label>
+      <input id="name" name="name" type="text" class="span3" value="">
+    </div>
+
+    <div class="modal-footer">
+      <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+      <input class="btn" type="submit" value="保存"></a>
+    </div>
+  </form>
 </div>

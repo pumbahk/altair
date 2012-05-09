@@ -23,7 +23,7 @@ class Account(Base, BaseModel):
 
     organization_id = Column(BigInteger, ForeignKey("Organization.id"), nullable=True)
     organization = relationship('Organization', uselist=False)
-    stock_holders = relationship('StockHolder', uselist=False, backref='account')
+    stock_holders = relationship('StockHolder', backref='account')
 
     @staticmethod
     def get_by_organization_id(id):

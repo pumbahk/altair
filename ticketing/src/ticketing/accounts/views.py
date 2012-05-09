@@ -7,7 +7,7 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path
 
 from ticketing.views import BaseView
-from ticketing.models import DBSession
+from ticketing.models import DBSession, merge_session_with_post
 from ticketing.fanstatic import with_bootstrap
 from ticketing.events.models import Account
 from ticketing.accounts.forms import AccountForm
@@ -47,3 +47,15 @@ class Accounts(BaseView):
             'form':f,
             'account':account,
         }
+
+    @view_config(route_name='accounts.new', request_method='POST')
+    def new_post(self):
+        f = AccountForm(self.request.POST)
+
+        if f.validate():
+            account = merge_session_with_post(Account(), f.data)
+            account.organization_id = self.context.user.organization_id
+            account.save()
+
+            self.request.session.flash(u'アカウントを登録しました')
+        return HTTPFound(location=route_path('accounts.index', self.request))
