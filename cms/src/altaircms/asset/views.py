@@ -272,7 +272,7 @@ class AssetDeleteView(object):
         FlashMessage.success("asset deleted", request=self.request)
         return HTTPFound(self.request.route_path("asset_flash_list"))
 
-@view_config(route_name="asset_display", permission="asset_read", request_method="GET")
+@view_config(route_name="asset_display", request_method="GET")
 def asset_display(request):
     """ display asset as image(image, flash, movie)
     """
@@ -316,6 +316,3 @@ class AssetSearchView(object):
         search_result = self.context.search_flash_asset_by_query(search_form.data)
         return {"search_form": search_form, "search_result": search_result}
 
-@view_config(route_name="asset_search", permission="asset_read", request_method="GET")
-def asset_search(request):
-    pass
