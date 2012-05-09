@@ -24,3 +24,9 @@ def ticket_mapper(request, obj):
     objlike = ObjectLike(**model_to_dict(obj))
     objlike.event = obj.event.title if obj.event else None
     return objlike
+
+def category_mapper(request, obj):
+    objlike = ObjectLike(**model_to_dict(obj))
+    objlike.parent = obj.parent.name if obj.parent else None
+    objlike.pageset = obj.pageset.name if obj.pageset else None
+    return objlike

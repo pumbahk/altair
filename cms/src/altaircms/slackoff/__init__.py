@@ -8,5 +8,5 @@ def includeme(config):
                     form=".forms.PromotionUnitForm",  mapper=".mappers.promotion_unit_mapper")
     config.add_crud("promotion",  title="promotion",  model="..plugins.widget.promotion.models.Promotion",  form=".forms.PromotionForm")
 
-    config.add_crud("category", title="category", model="..models.Category", form=".forms.CategoryForm")
+    config.add_crud("category", title="category", model="..models.Category", form=".forms.CategoryForm", mapper=".mappers.category_mapper")
 

@@ -193,10 +193,10 @@ class Category(Base):
         sa.UniqueConstraint("site_id", "name")
         )
     query = DBSession.query_property()
-    id = sa.Column(sa.Integer, primary_key=True)
+    id = sa.Column(sa.Integer, sa.ForeignKey("category.parent_id"), primary_key=True)
 
     site_id = sa.Column(sa.Integer, sa.ForeignKey("site.id"))
-    parent_id = sa.Column(sa.Integer, sa.ForeignKey("category"))
+    parent_id = sa.Column(sa.Integer)
     @declared_attr
     def parent(cls):
         return orm.relationship(cls, uselist=False)
@@ -206,7 +206,7 @@ class Category(Base):
     
     url = sa.Column(sa.Unicode(length=255))
     pageset_id = sa.Column(sa.Integer, sa.ForeignKey("pagesets.id"))
-    pagesest = orm.relationship("PageSet", backref="category", uselist=False)
+    pageset = orm.relationship("PageSet", backref="category", uselist=False)
     
     def get_link(self, request):
         if self.pageset is None:

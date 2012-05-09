@@ -18,7 +18,7 @@ def upgrade():
     op.execute("ALTER TABLE page DROP FOREIGN KEY fk_page_parent_id")
     op.drop_column("page", "parent_id")
     op.add_column("pagesets",
-                  sa.Column("parent_id", sa.INTEGER, sa.ForeignKey("pagesets.id", name="fk_pagesets_parent_id")))
+                  sa.Column("parent_id", sa.INTEGER, sa.ForeignKey("pagesets.id", name="fk_pagesets_parent_id", onupdate="CASCADE", ondelete="CASCADE"))) ##
 
 
 def downgrade():
