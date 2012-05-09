@@ -42,9 +42,45 @@ class VenueData(DataSet):
         site = SiteData.site_1
         organization = OrganizationData.organization_0
     class venue_2:
+        name = u'シルク・ドゥ・ソレイユ　シアター東京（ZED）'
+        sub_name = u'シルク・ドゥ・ソレイユ　シアター'
+        performance = PerformanceData.performance_2
+        site = SiteData.site_1
+        organization = OrganizationData.organization_0
+    class venue_3:
+        name = u'シルク・ドゥ・ソレイユ　シアター東京（ZED）'
+        sub_name = u'シルク・ドゥ・ソレイユ　シアター'
+        performance = PerformanceData.performance_3
+        site = SiteData.site_1
+        organization = OrganizationData.organization_0
+    class venue_4:
+        name = u'シルク・ドゥ・ソレイユ　シアター東京（ZED）'
+        sub_name = u'シルク・ドゥ・ソレイユ　シアター'
+        performance = PerformanceData.performance_4
+        site = SiteData.site_1
+        organization = OrganizationData.organization_0
+    class venue_5:
+        name = u'シルク・ドゥ・ソレイユ　シアター東京（ZED）'
+        sub_name = u'シルク・ドゥ・ソレイユ　シアター'
+        performance = PerformanceData.performance_5
+        site = SiteData.site_1
+        organization = OrganizationData.organization_0
+    class venue_6:
         name = u'ブルーマンシアター'
         sub_name = u'ブルーマンシアター'
         performance = PerformanceData.performance_6
+        site = SiteData.site_2
+        organization = OrganizationData.organization_0
+    class venue_7:
+        name = u'ブルーマンシアター'
+        sub_name = u'ブルーマンシアター'
+        performance = PerformanceData.performance_7
+        site = SiteData.site_2
+        organization = OrganizationData.organization_0
+    class venue_8:
+        name = u'ブルーマンシアター'
+        sub_name = u'ブルーマンシアター'
+        performance = PerformanceData.performance_8
         site = SiteData.site_2
         organization = OrganizationData.organization_0
 
@@ -241,6 +277,504 @@ class SeatVenue2Data(DataSet):
         l0_id = u'E3'
         venue = VenueData.venue_2
 
+class SeatVenue3Data(DataSet):
+    class seat_v3_a1:
+        l0_id = u'A1'
+        venue = VenueData.venue_3
+    class seat_v3_a2:
+        l0_id = u'A2'
+        venue = VenueData.venue_3
+    class seat_v3_a3:
+        l0_id = u'A3'
+        venue = VenueData.venue_3
+    class seat_v3_a4:
+        l0_id = u'A4'
+        venue = VenueData.venue_3
+    class seat_v3_a5:
+        l0_id = u'A5'
+        venue = VenueData.venue_3
+    class seat_v3_a6:
+        l0_id = u'A6'
+        venue = VenueData.venue_3
+    class seat_v3_a7:
+        l0_id = u'A7'
+        venue = VenueData.venue_3
+    class seat_v3_a8:
+        l0_id = u'A8'
+        venue = VenueData.venue_3
+    class seat_v3_a9:
+        l0_id = u'A9'
+        venue = VenueData.venue_3
+    class seat_v3_b1:
+        l0_id = u'B1'
+        venue = VenueData.venue_3
+    class seat_v3_b2:
+        l0_id = u'B2'
+        venue = VenueData.venue_3
+    class seat_v3_b3:
+        l0_id = u'B3'
+        venue = VenueData.venue_3
+    class seat_v3_b4:
+        l0_id = u'B4'
+        venue = VenueData.venue_3
+    class seat_v3_b5:
+        l0_id = u'B5'
+        venue = VenueData.venue_3
+    class seat_v3_b6:
+        l0_id = u'B6'
+        venue = VenueData.venue_3
+    class seat_v3_b7:
+        l0_id = u'B7'
+        venue = VenueData.venue_3
+    class seat_v3_c1:
+        l0_id = u'C1'
+        venue = VenueData.venue_3
+    class seat_v3_c2:
+        l0_id = u'C2'
+        venue = VenueData.venue_3
+    class seat_v3_c3:
+        l0_id = u'C3'
+        venue = VenueData.venue_3
+    class seat_v3_c4:
+        l0_id = u'C4'
+        venue = VenueData.venue_3
+    class seat_v3_c5:
+        l0_id = u'C5'
+        venue = VenueData.venue_3
+    class seat_v3_d1:
+        l0_id = u'D1'
+        venue = VenueData.venue_3
+    class seat_v3_d2:
+        l0_id = u'D2'
+        venue = VenueData.venue_3
+    class seat_v3_d3:
+        l0_id = u'D3'
+        venue = VenueData.venue_3
+    class seat_v3_e1:
+        l0_id = u'E1'
+        venue = VenueData.venue_3
+    class seat_v3_e2:
+        l0_id = u'E2'
+        venue = VenueData.venue_3
+    class seat_v3_e3:
+        l0_id = u'E3'
+        venue = VenueData.venue_3
+
+class SeatVenue4Data(DataSet):
+    class seat_v4_a1:
+        l0_id = u'A1'
+        venue = VenueData.venue_4
+    class seat_v4_a2:
+        l0_id = u'A2'
+        venue = VenueData.venue_4
+    class seat_v4_a3:
+        l0_id = u'A3'
+        venue = VenueData.venue_4
+    class seat_v4_a4:
+        l0_id = u'A4'
+        venue = VenueData.venue_4
+    class seat_v4_a5:
+        l0_id = u'A5'
+        venue = VenueData.venue_4
+    class seat_v4_a6:
+        l0_id = u'A6'
+        venue = VenueData.venue_4
+    class seat_v4_a7:
+        l0_id = u'A7'
+        venue = VenueData.venue_4
+    class seat_v4_a8:
+        l0_id = u'A8'
+        venue = VenueData.venue_4
+    class seat_v4_a9:
+        l0_id = u'A9'
+        venue = VenueData.venue_4
+    class seat_v4_b1:
+        l0_id = u'B1'
+        venue = VenueData.venue_4
+    class seat_v4_b2:
+        l0_id = u'B2'
+        venue = VenueData.venue_4
+    class seat_v4_b3:
+        l0_id = u'B3'
+        venue = VenueData.venue_4
+    class seat_v4_b4:
+        l0_id = u'B4'
+        venue = VenueData.venue_4
+    class seat_v4_b5:
+        l0_id = u'B5'
+        venue = VenueData.venue_4
+    class seat_v4_b6:
+        l0_id = u'B6'
+        venue = VenueData.venue_4
+    class seat_v4_b7:
+        l0_id = u'B7'
+        venue = VenueData.venue_4
+    class seat_v4_c1:
+        l0_id = u'C1'
+        venue = VenueData.venue_4
+    class seat_v4_c2:
+        l0_id = u'C2'
+        venue = VenueData.venue_4
+    class seat_v4_c3:
+        l0_id = u'C3'
+        venue = VenueData.venue_4
+    class seat_v4_c4:
+        l0_id = u'C4'
+        venue = VenueData.venue_4
+    class seat_v4_c5:
+        l0_id = u'C5'
+        venue = VenueData.venue_4
+    class seat_v4_d1:
+        l0_id = u'D1'
+        venue = VenueData.venue_4
+    class seat_v4_d2:
+        l0_id = u'D2'
+        venue = VenueData.venue_4
+    class seat_v4_d3:
+        l0_id = u'D3'
+        venue = VenueData.venue_4
+    class seat_v4_e1:
+        l0_id = u'E1'
+        venue = VenueData.venue_4
+    class seat_v4_e2:
+        l0_id = u'E2'
+        venue = VenueData.venue_4
+    class seat_v4_e3:
+        l0_id = u'E3'
+        venue = VenueData.venue_4
+
+class SeatVenue5Data(DataSet):
+    class seat_v5_a1:
+        l0_id = u'A1'
+        venue = VenueData.venue_5
+    class seat_v5_a2:
+        l0_id = u'A2'
+        venue = VenueData.venue_5
+    class seat_v5_a3:
+        l0_id = u'A3'
+        venue = VenueData.venue_5
+    class seat_v5_a4:
+        l0_id = u'A4'
+        venue = VenueData.venue_5
+    class seat_v5_a5:
+        l0_id = u'A5'
+        venue = VenueData.venue_5
+    class seat_v5_a6:
+        l0_id = u'A6'
+        venue = VenueData.venue_5
+    class seat_v5_a7:
+        l0_id = u'A7'
+        venue = VenueData.venue_5
+    class seat_v5_a8:
+        l0_id = u'A8'
+        venue = VenueData.venue_5
+    class seat_v5_a9:
+        l0_id = u'A9'
+        venue = VenueData.venue_5
+    class seat_v5_b1:
+        l0_id = u'B1'
+        venue = VenueData.venue_5
+    class seat_v5_b2:
+        l0_id = u'B2'
+        venue = VenueData.venue_5
+    class seat_v5_b3:
+        l0_id = u'B3'
+        venue = VenueData.venue_5
+    class seat_v5_b4:
+        l0_id = u'B4'
+        venue = VenueData.venue_5
+    class seat_v5_b5:
+        l0_id = u'B5'
+        venue = VenueData.venue_5
+    class seat_v5_b6:
+        l0_id = u'B6'
+        venue = VenueData.venue_5
+    class seat_v5_b7:
+        l0_id = u'B7'
+        venue = VenueData.venue_5
+    class seat_v5_c1:
+        l0_id = u'C1'
+        venue = VenueData.venue_5
+    class seat_v5_c2:
+        l0_id = u'C2'
+        venue = VenueData.venue_5
+    class seat_v5_c3:
+        l0_id = u'C3'
+        venue = VenueData.venue_5
+    class seat_v5_c4:
+        l0_id = u'C4'
+        venue = VenueData.venue_5
+    class seat_v5_c5:
+        l0_id = u'C5'
+        venue = VenueData.venue_5
+    class seat_v5_d1:
+        l0_id = u'D1'
+        venue = VenueData.venue_5
+    class seat_v5_d2:
+        l0_id = u'D2'
+        venue = VenueData.venue_5
+    class seat_v5_d3:
+        l0_id = u'D3'
+        venue = VenueData.venue_5
+    class seat_v5_e1:
+        l0_id = u'E1'
+        venue = VenueData.venue_5
+    class seat_v5_e2:
+        l0_id = u'E2'
+        venue = VenueData.venue_5
+    class seat_v5_e3:
+        l0_id = u'E3'
+        venue = VenueData.venue_5
+
+class SeatVenue6Data(DataSet):
+    class seat_v6_a1:
+        l0_id = u'A1'
+        venue = VenueData.venue_6
+    class seat_v6_a2:
+        l0_id = u'A2'
+        venue = VenueData.venue_6
+    class seat_v6_a3:
+        l0_id = u'A3'
+        venue = VenueData.venue_6
+    class seat_v6_a4:
+        l0_id = u'A4'
+        venue = VenueData.venue_6
+    class seat_v6_a5:
+        l0_id = u'A5'
+        venue = VenueData.venue_6
+    class seat_v6_a6:
+        l0_id = u'A6'
+        venue = VenueData.venue_6
+    class seat_v6_a7:
+        l0_id = u'A7'
+        venue = VenueData.venue_6
+    class seat_v6_a8:
+        l0_id = u'A8'
+        venue = VenueData.venue_6
+    class seat_v6_a9:
+        l0_id = u'A9'
+        venue = VenueData.venue_6
+    class seat_v6_b1:
+        l0_id = u'B1'
+        venue = VenueData.venue_6
+    class seat_v6_b2:
+        l0_id = u'B2'
+        venue = VenueData.venue_6
+    class seat_v6_b3:
+        l0_id = u'B3'
+        venue = VenueData.venue_6
+    class seat_v6_b4:
+        l0_id = u'B4'
+        venue = VenueData.venue_6
+    class seat_v6_b5:
+        l0_id = u'B5'
+        venue = VenueData.venue_6
+    class seat_v6_b6:
+        l0_id = u'B6'
+        venue = VenueData.venue_6
+    class seat_v6_b7:
+        l0_id = u'B7'
+        venue = VenueData.venue_6
+    class seat_v6_c1:
+        l0_id = u'C1'
+        venue = VenueData.venue_6
+    class seat_v6_c2:
+        l0_id = u'C2'
+        venue = VenueData.venue_6
+    class seat_v6_c3:
+        l0_id = u'C3'
+        venue = VenueData.venue_6
+    class seat_v6_c4:
+        l0_id = u'C4'
+        venue = VenueData.venue_6
+    class seat_v6_c5:
+        l0_id = u'C5'
+        venue = VenueData.venue_6
+    class seat_v6_d1:
+        l0_id = u'D1'
+        venue = VenueData.venue_6
+    class seat_v6_d2:
+        l0_id = u'D2'
+        venue = VenueData.venue_6
+    class seat_v6_d3:
+        l0_id = u'D3'
+        venue = VenueData.venue_6
+    class seat_v6_e1:
+        l0_id = u'E1'
+        venue = VenueData.venue_6
+    class seat_v6_e2:
+        l0_id = u'E2'
+        venue = VenueData.venue_6
+    class seat_v6_e3:
+        l0_id = u'E3'
+        venue = VenueData.venue_6
+
+class SeatVenue7Data(DataSet):
+    class seat_v7_a1:
+        l0_id = u'A1'
+        venue = VenueData.venue_7
+    class seat_v7_a2:
+        l0_id = u'A2'
+        venue = VenueData.venue_7
+    class seat_v7_a3:
+        l0_id = u'A3'
+        venue = VenueData.venue_7
+    class seat_v7_a4:
+        l0_id = u'A4'
+        venue = VenueData.venue_7
+    class seat_v7_a5:
+        l0_id = u'A5'
+        venue = VenueData.venue_7
+    class seat_v7_a6:
+        l0_id = u'A6'
+        venue = VenueData.venue_7
+    class seat_v7_a7:
+        l0_id = u'A7'
+        venue = VenueData.venue_7
+    class seat_v7_a8:
+        l0_id = u'A8'
+        venue = VenueData.venue_7
+    class seat_v7_a9:
+        l0_id = u'A9'
+        venue = VenueData.venue_7
+    class seat_v7_b1:
+        l0_id = u'B1'
+        venue = VenueData.venue_7
+    class seat_v7_b2:
+        l0_id = u'B2'
+        venue = VenueData.venue_7
+    class seat_v7_b3:
+        l0_id = u'B3'
+        venue = VenueData.venue_7
+    class seat_v7_b4:
+        l0_id = u'B4'
+        venue = VenueData.venue_7
+    class seat_v7_b5:
+        l0_id = u'B5'
+        venue = VenueData.venue_7
+    class seat_v7_b6:
+        l0_id = u'B6'
+        venue = VenueData.venue_7
+    class seat_v7_b7:
+        l0_id = u'B7'
+        venue = VenueData.venue_7
+    class seat_v7_c1:
+        l0_id = u'C1'
+        venue = VenueData.venue_7
+    class seat_v7_c2:
+        l0_id = u'C2'
+        venue = VenueData.venue_7
+    class seat_v7_c3:
+        l0_id = u'C3'
+        venue = VenueData.venue_7
+    class seat_v7_c4:
+        l0_id = u'C4'
+        venue = VenueData.venue_7
+    class seat_v7_c5:
+        l0_id = u'C5'
+        venue = VenueData.venue_7
+    class seat_v7_d1:
+        l0_id = u'D1'
+        venue = VenueData.venue_7
+    class seat_v7_d2:
+        l0_id = u'D2'
+        venue = VenueData.venue_7
+    class seat_v7_d3:
+        l0_id = u'D3'
+        venue = VenueData.venue_7
+    class seat_v7_e1:
+        l0_id = u'E1'
+        venue = VenueData.venue_7
+    class seat_v7_e2:
+        l0_id = u'E2'
+        venue = VenueData.venue_7
+    class seat_v7_e3:
+        l0_id = u'E3'
+        venue = VenueData.venue_7
+
+class SeatVenue8Data(DataSet):
+    class seat_v8_a1:
+        l0_id = u'A1'
+        venue = VenueData.venue_8
+    class seat_v8_a2:
+        l0_id = u'A2'
+        venue = VenueData.venue_8
+    class seat_v8_a3:
+        l0_id = u'A3'
+        venue = VenueData.venue_8
+    class seat_v8_a4:
+        l0_id = u'A4'
+        venue = VenueData.venue_8
+    class seat_v8_a5:
+        l0_id = u'A5'
+        venue = VenueData.venue_8
+    class seat_v8_a6:
+        l0_id = u'A6'
+        venue = VenueData.venue_8
+    class seat_v8_a7:
+        l0_id = u'A7'
+        venue = VenueData.venue_8
+    class seat_v8_a8:
+        l0_id = u'A8'
+        venue = VenueData.venue_8
+    class seat_v8_a9:
+        l0_id = u'A9'
+        venue = VenueData.venue_8
+    class seat_v8_b1:
+        l0_id = u'B1'
+        venue = VenueData.venue_8
+    class seat_v8_b2:
+        l0_id = u'B2'
+        venue = VenueData.venue_8
+    class seat_v8_b3:
+        l0_id = u'B3'
+        venue = VenueData.venue_8
+    class seat_v8_b4:
+        l0_id = u'B4'
+        venue = VenueData.venue_8
+    class seat_v8_b5:
+        l0_id = u'B5'
+        venue = VenueData.venue_8
+    class seat_v8_b6:
+        l0_id = u'B6'
+        venue = VenueData.venue_8
+    class seat_v8_b7:
+        l0_id = u'B7'
+        venue = VenueData.venue_8
+    class seat_v8_c1:
+        l0_id = u'C1'
+        venue = VenueData.venue_8
+    class seat_v8_c2:
+        l0_id = u'C2'
+        venue = VenueData.venue_8
+    class seat_v8_c3:
+        l0_id = u'C3'
+        venue = VenueData.venue_8
+    class seat_v8_c4:
+        l0_id = u'C4'
+        venue = VenueData.venue_8
+    class seat_v8_c5:
+        l0_id = u'C5'
+        venue = VenueData.venue_8
+    class seat_v8_d1:
+        l0_id = u'D1'
+        venue = VenueData.venue_8
+    class seat_v8_d2:
+        l0_id = u'D2'
+        venue = VenueData.venue_8
+    class seat_v8_d3:
+        l0_id = u'D3'
+        venue = VenueData.venue_8
+    class seat_v8_e1:
+        l0_id = u'E1'
+        venue = VenueData.venue_8
+    class seat_v8_e2:
+        l0_id = u'E2'
+        venue = VenueData.venue_8
+    class seat_v8_e3:
+        l0_id = u'E3'
+        venue = VenueData.venue_8
+
 class SeatStatusVenue1Data(DataSet):
     class seat_status_v1_1:
         seat = SeatVenue1Data.seat_v1_a1
@@ -405,6 +939,504 @@ class SeatStatusVenue2Data(DataSet):
         status = int(SeatStatusEnum.Vacant)
     class seat_status_v2_27:
         seat = SeatVenue2Data.seat_v2_e3
+        status = int(SeatStatusEnum.Vacant)
+
+class SeatStatusVenue3Data(DataSet):
+    class seat_status_v3_1:
+        seat = SeatVenue3Data.seat_v3_a1
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v3_2:
+        seat = SeatVenue3Data.seat_v3_a2
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v3_3:
+        seat = SeatVenue3Data.seat_v3_a3
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v3_4:
+        seat = SeatVenue3Data.seat_v3_a4
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v3_5:
+        seat = SeatVenue3Data.seat_v3_a5
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v3_6:
+        seat = SeatVenue3Data.seat_v3_a6
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v3_7:
+        seat = SeatVenue3Data.seat_v3_a7
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v3_8:
+        seat = SeatVenue3Data.seat_v3_a8
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v3_9:
+        seat = SeatVenue3Data.seat_v3_a9
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v3_10:
+        seat = SeatVenue3Data.seat_v3_b1
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v3_11:
+        seat = SeatVenue3Data.seat_v3_b2
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v3_12:
+        seat = SeatVenue3Data.seat_v3_b3
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v3_13:
+        seat = SeatVenue3Data.seat_v3_b4
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v3_14:
+        seat = SeatVenue3Data.seat_v3_b5
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v3_15:
+        seat = SeatVenue3Data.seat_v3_b6
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v3_16:
+        seat = SeatVenue3Data.seat_v3_b7
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v3_17:
+        seat = SeatVenue3Data.seat_v3_c1
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v3_18:
+        seat = SeatVenue3Data.seat_v3_c2
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v3_19:
+        seat = SeatVenue3Data.seat_v3_c3
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v3_20:
+        seat = SeatVenue3Data.seat_v3_c4
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v3_21:
+        seat = SeatVenue3Data.seat_v3_c5
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v3_22:
+        seat = SeatVenue3Data.seat_v3_d1
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v3_23:
+        seat = SeatVenue3Data.seat_v3_d2
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v3_24:
+        seat = SeatVenue3Data.seat_v3_d3
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v3_25:
+        seat = SeatVenue3Data.seat_v3_e1
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v3_26:
+        seat = SeatVenue3Data.seat_v3_e2
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v3_27:
+        seat = SeatVenue3Data.seat_v3_e3
+        status = int(SeatStatusEnum.Vacant)
+
+class SeatStatusVenue4Data(DataSet):
+    class seat_status_v4_1:
+        seat = SeatVenue4Data.seat_v4_a1
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v4_2:
+        seat = SeatVenue4Data.seat_v4_a2
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v4_3:
+        seat = SeatVenue4Data.seat_v4_a3
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v4_4:
+        seat = SeatVenue4Data.seat_v4_a4
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v4_5:
+        seat = SeatVenue4Data.seat_v4_a5
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v4_6:
+        seat = SeatVenue4Data.seat_v4_a6
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v4_7:
+        seat = SeatVenue4Data.seat_v4_a7
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v4_8:
+        seat = SeatVenue4Data.seat_v4_a8
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v4_9:
+        seat = SeatVenue4Data.seat_v4_a9
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v4_10:
+        seat = SeatVenue4Data.seat_v4_b1
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v4_11:
+        seat = SeatVenue4Data.seat_v4_b2
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v4_12:
+        seat = SeatVenue4Data.seat_v4_b3
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v4_13:
+        seat = SeatVenue4Data.seat_v4_b4
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v4_14:
+        seat = SeatVenue4Data.seat_v4_b5
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v4_15:
+        seat = SeatVenue4Data.seat_v4_b6
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v4_16:
+        seat = SeatVenue4Data.seat_v4_b7
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v4_17:
+        seat = SeatVenue4Data.seat_v4_c1
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v4_18:
+        seat = SeatVenue4Data.seat_v4_c2
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v4_19:
+        seat = SeatVenue4Data.seat_v4_c3
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v4_20:
+        seat = SeatVenue4Data.seat_v4_c4
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v4_21:
+        seat = SeatVenue4Data.seat_v4_c5
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v4_22:
+        seat = SeatVenue4Data.seat_v4_d1
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v4_23:
+        seat = SeatVenue4Data.seat_v4_d2
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v4_24:
+        seat = SeatVenue4Data.seat_v4_d3
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v4_25:
+        seat = SeatVenue4Data.seat_v4_e1
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v4_26:
+        seat = SeatVenue4Data.seat_v4_e2
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v4_27:
+        seat = SeatVenue4Data.seat_v4_e3
+        status = int(SeatStatusEnum.Vacant)
+
+class SeatStatusVenue5Data(DataSet):
+    class seat_status_v5_1:
+        seat = SeatVenue5Data.seat_v5_a1
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v5_2:
+        seat = SeatVenue5Data.seat_v5_a2
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v5_3:
+        seat = SeatVenue5Data.seat_v5_a3
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v5_4:
+        seat = SeatVenue5Data.seat_v5_a4
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v5_5:
+        seat = SeatVenue5Data.seat_v5_a5
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v5_6:
+        seat = SeatVenue5Data.seat_v5_a6
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v5_7:
+        seat = SeatVenue5Data.seat_v5_a7
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v5_8:
+        seat = SeatVenue5Data.seat_v5_a8
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v5_9:
+        seat = SeatVenue5Data.seat_v5_a9
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v5_10:
+        seat = SeatVenue5Data.seat_v5_b1
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v5_11:
+        seat = SeatVenue5Data.seat_v5_b2
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v5_12:
+        seat = SeatVenue5Data.seat_v5_b3
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v5_13:
+        seat = SeatVenue5Data.seat_v5_b4
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v5_14:
+        seat = SeatVenue5Data.seat_v5_b5
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v5_15:
+        seat = SeatVenue5Data.seat_v5_b6
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v5_16:
+        seat = SeatVenue5Data.seat_v5_b7
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v5_17:
+        seat = SeatVenue5Data.seat_v5_c1
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v5_18:
+        seat = SeatVenue5Data.seat_v5_c2
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v5_19:
+        seat = SeatVenue5Data.seat_v5_c3
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v5_20:
+        seat = SeatVenue5Data.seat_v5_c4
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v5_21:
+        seat = SeatVenue5Data.seat_v5_c5
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v5_22:
+        seat = SeatVenue5Data.seat_v5_d1
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v5_23:
+        seat = SeatVenue5Data.seat_v5_d2
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v5_24:
+        seat = SeatVenue5Data.seat_v5_d3
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v5_25:
+        seat = SeatVenue5Data.seat_v5_e1
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v5_26:
+        seat = SeatVenue5Data.seat_v5_e2
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v5_27:
+        seat = SeatVenue5Data.seat_v5_e3
+        status = int(SeatStatusEnum.Vacant)
+
+class SeatStatusVenue6Data(DataSet):
+    class seat_status_v6_1:
+        seat = SeatVenue6Data.seat_v6_a1
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v6_2:
+        seat = SeatVenue6Data.seat_v6_a2
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v6_3:
+        seat = SeatVenue6Data.seat_v6_a3
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v6_4:
+        seat = SeatVenue6Data.seat_v6_a4
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v6_5:
+        seat = SeatVenue6Data.seat_v6_a5
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v6_6:
+        seat = SeatVenue6Data.seat_v6_a6
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v6_7:
+        seat = SeatVenue6Data.seat_v6_a7
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v6_8:
+        seat = SeatVenue6Data.seat_v6_a8
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v6_9:
+        seat = SeatVenue6Data.seat_v6_a9
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v6_10:
+        seat = SeatVenue6Data.seat_v6_b1
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v6_11:
+        seat = SeatVenue6Data.seat_v6_b2
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v6_12:
+        seat = SeatVenue6Data.seat_v6_b3
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v6_13:
+        seat = SeatVenue6Data.seat_v6_b4
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v6_14:
+        seat = SeatVenue6Data.seat_v6_b5
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v6_15:
+        seat = SeatVenue6Data.seat_v6_b6
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v6_16:
+        seat = SeatVenue6Data.seat_v6_b7
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v6_17:
+        seat = SeatVenue6Data.seat_v6_c1
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v6_18:
+        seat = SeatVenue6Data.seat_v6_c2
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v6_19:
+        seat = SeatVenue6Data.seat_v6_c3
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v6_20:
+        seat = SeatVenue6Data.seat_v6_c4
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v6_21:
+        seat = SeatVenue6Data.seat_v6_c5
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v6_22:
+        seat = SeatVenue6Data.seat_v6_d1
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v6_23:
+        seat = SeatVenue6Data.seat_v6_d2
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v6_24:
+        seat = SeatVenue6Data.seat_v6_d3
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v6_25:
+        seat = SeatVenue6Data.seat_v6_e1
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v6_26:
+        seat = SeatVenue6Data.seat_v6_e2
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v6_27:
+        seat = SeatVenue6Data.seat_v6_e3
+        status = int(SeatStatusEnum.Vacant)
+
+class SeatStatusVenue7Data(DataSet):
+    class seat_status_v7_1:
+        seat = SeatVenue7Data.seat_v7_a1
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v7_2:
+        seat = SeatVenue7Data.seat_v7_a2
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v7_3:
+        seat = SeatVenue7Data.seat_v7_a3
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v7_4:
+        seat = SeatVenue7Data.seat_v7_a4
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v7_5:
+        seat = SeatVenue7Data.seat_v7_a5
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v7_6:
+        seat = SeatVenue7Data.seat_v7_a6
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v7_7:
+        seat = SeatVenue7Data.seat_v7_a7
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v7_8:
+        seat = SeatVenue7Data.seat_v7_a8
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v7_9:
+        seat = SeatVenue7Data.seat_v7_a9
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v7_10:
+        seat = SeatVenue7Data.seat_v7_b1
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v7_11:
+        seat = SeatVenue7Data.seat_v7_b2
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v7_12:
+        seat = SeatVenue7Data.seat_v7_b3
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v7_13:
+        seat = SeatVenue7Data.seat_v7_b4
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v7_14:
+        seat = SeatVenue7Data.seat_v7_b5
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v7_15:
+        seat = SeatVenue7Data.seat_v7_b6
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v7_16:
+        seat = SeatVenue7Data.seat_v7_b7
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v7_17:
+        seat = SeatVenue7Data.seat_v7_c1
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v7_18:
+        seat = SeatVenue7Data.seat_v7_c2
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v7_19:
+        seat = SeatVenue7Data.seat_v7_c3
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v7_20:
+        seat = SeatVenue7Data.seat_v7_c4
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v7_21:
+        seat = SeatVenue7Data.seat_v7_c5
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v7_22:
+        seat = SeatVenue7Data.seat_v7_d1
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v7_23:
+        seat = SeatVenue7Data.seat_v7_d2
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v7_24:
+        seat = SeatVenue7Data.seat_v7_d3
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v7_25:
+        seat = SeatVenue7Data.seat_v7_e1
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v7_26:
+        seat = SeatVenue7Data.seat_v7_e2
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v7_27:
+        seat = SeatVenue7Data.seat_v7_e3
+        status = int(SeatStatusEnum.Vacant)
+
+class SeatStatusVenue8Data(DataSet):
+    class seat_status_v8_1:
+        seat = SeatVenue8Data.seat_v8_a1
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v8_2:
+        seat = SeatVenue8Data.seat_v8_a2
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v8_3:
+        seat = SeatVenue8Data.seat_v8_a3
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v8_4:
+        seat = SeatVenue8Data.seat_v8_a4
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v8_5:
+        seat = SeatVenue8Data.seat_v8_a5
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v8_6:
+        seat = SeatVenue8Data.seat_v8_a6
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v8_7:
+        seat = SeatVenue8Data.seat_v8_a7
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v8_8:
+        seat = SeatVenue8Data.seat_v8_a8
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v8_9:
+        seat = SeatVenue8Data.seat_v8_a9
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v8_10:
+        seat = SeatVenue8Data.seat_v8_b1
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v8_11:
+        seat = SeatVenue8Data.seat_v8_b2
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v8_12:
+        seat = SeatVenue8Data.seat_v8_b3
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v8_13:
+        seat = SeatVenue8Data.seat_v8_b4
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v8_14:
+        seat = SeatVenue8Data.seat_v8_b5
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v8_15:
+        seat = SeatVenue8Data.seat_v8_b6
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v8_16:
+        seat = SeatVenue8Data.seat_v8_b7
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v8_17:
+        seat = SeatVenue8Data.seat_v8_c1
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v8_18:
+        seat = SeatVenue8Data.seat_v8_c2
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v8_19:
+        seat = SeatVenue8Data.seat_v8_c3
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v8_20:
+        seat = SeatVenue8Data.seat_v8_c4
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v8_21:
+        seat = SeatVenue8Data.seat_v8_c5
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v8_22:
+        seat = SeatVenue8Data.seat_v8_d1
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v8_23:
+        seat = SeatVenue8Data.seat_v8_d2
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v8_24:
+        seat = SeatVenue8Data.seat_v8_d3
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v8_25:
+        seat = SeatVenue8Data.seat_v8_e1
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v8_26:
+        seat = SeatVenue8Data.seat_v8_e2
+        status = int(SeatStatusEnum.Vacant)
+    class seat_status_v8_27:
+        seat = SeatVenue8Data.seat_v8_e3
         status = int(SeatStatusEnum.Vacant)
 
 class SeatAttributeData(DataSet):

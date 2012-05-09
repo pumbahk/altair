@@ -37,7 +37,7 @@ from account import AccountData
 from permission import PermissionData
 from operator import OperatorData, OperatorRoleData
 from event import EventData, PerformanceData
-from venue import SiteData, VenueData, SeatVenue1Data, SeatVenue2Data, SeatStatusVenue1Data, SeatStatusVenue2Data, SeatAttributeData
+from venue import SiteData, VenueData, SeatVenue1Data, SeatVenue2Data, SeatVenue3Data, SeatVenue4Data, SeatVenue5Data, SeatVenue6Data, SeatVenue7Data, SeatVenue8Data, SeatStatusVenue1Data, SeatStatusVenue2Data, SeatStatusVenue3Data, SeatStatusVenue4Data, SeatStatusVenue5Data, SeatStatusVenue6Data, SeatStatusVenue7Data, SeatStatusVenue8Data, SeatAttributeData
 from product import ProductData, ProductItemData, StockData, StockHolderData, SalesSegmentData, SeatTypeData
 from user import UserData, UserProfileData, UserCredentialData
 from ticketing.bookmark.tests.bookmark import BookmarkData
@@ -67,8 +67,20 @@ def import_seed_data():
              'VenueData'        : Venue,
              'SeatVenue1Data'   : Seat,
              'SeatVenue2Data'   : Seat,
+             'SeatVenue3Data'   : Seat,
+             'SeatVenue4Data'   : Seat,
+             'SeatVenue5Data'   : Seat,
+             'SeatVenue6Data'   : Seat,
+             'SeatVenue7Data'   : Seat,
+             'SeatVenue8Data'   : Seat,
              'SeatStatusVenue1Data': SeatStatus,
              'SeatStatusVenue2Data': SeatStatus,
+             'SeatStatusVenue3Data': SeatStatus,
+             'SeatStatusVenue4Data': SeatStatus,
+             'SeatStatusVenue5Data': SeatStatus,
+             'SeatStatusVenue6Data': SeatStatus,
+             'SeatStatusVenue7Data': SeatStatus,
+             'SeatStatusVenue8Data': SeatStatus,
              'SeatAttributeData': SeatAttribute,
              'SeatTypeData'     : SeatType,
              'StockData'        : Stock,
@@ -110,8 +122,20 @@ def import_seed_data():
         VenueData,
         SeatVenue1Data,
         SeatVenue2Data,
+        SeatVenue3Data,
+        SeatVenue4Data,
+        SeatVenue5Data,
+        SeatVenue6Data,
+        SeatVenue7Data,
+        SeatVenue8Data,
         SeatStatusVenue1Data,
         SeatStatusVenue2Data,
+        SeatStatusVenue3Data,
+        SeatStatusVenue4Data,
+        SeatStatusVenue5Data,
+        SeatStatusVenue6Data,
+        SeatStatusVenue7Data,
+        SeatStatusVenue8Data,
         SeatAttributeData,
         SeatTypeData,
         StockData,
