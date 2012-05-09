@@ -35,8 +35,6 @@ class Node(dict):
 
     def add(self, x):
         new_node = Node(x)
-        DBSession.add(x)
-        DBSession.flush()
         self.children.append(new_node)
         return new_node
 
@@ -50,16 +48,16 @@ def upgrade():
     root = Node(None)
     ## 音楽
     lnode = root.add(Category(hierarchy=u"大", name=u"音楽", url="http://example.com"))
-    mnode = lnode.add(Category(hierarchy=u"中", name=u"邦楽", url="http://example.com", parent_id=lnode.root.id))
-    snode = mnode.add(Category(hierarchy=u"小", name=u"ポップス・ロック(邦楽)", url="http://example.com", parent_id=mnode.root.id))
+    mnode = lnode.add(Category(hierarchy=u"中", name=u"邦楽", url="http://example.com", parent=lnode.root))
+    snode = mnode.add(Category(hierarchy=u"小", name=u"ポップス・ロック(邦楽)", url="http://example.com", parent=mnode.root))
 
     mnode = lnode.add(Category(hierarchy=u"中", name=u"洋楽", url="http://example.com"))
-    snode = mnode.add(Category(hierarchy=u"小", name=u"ポップス・ロック(洋楽)", url="http://example.com", parent_id=mnode.root.id))
+    snode = mnode.add(Category(hierarchy=u"小", name=u"ポップス・ロック(洋楽)", url="http://example.com", parent=mnode.root))
 
     ## スポーツ
     lnode = root.add(Category(hierarchy=u"大", name=u"スポーツ", url="http://example.com"))
-    mnode = lnode.add(Category(hierarchy=u"中", name=u"野球", url="http://example.com", parent_id=lnode.root.id))
-    snode = mnode.add(Category(hierarchy=u"小", name=u"プロ野球", url="http://example.com", parent_id=mnode.root.id))
+    mnode = lnode.add(Category(hierarchy=u"中", name=u"野球", url="http://example.com", parent=lnode.root))
+    snode = mnode.add(Category(hierarchy=u"小", name=u"プロ野球", url="http://example.com", parent=mnode.root))
 
     root.add_session(DBSession)
 

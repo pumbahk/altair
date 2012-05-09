@@ -193,13 +193,11 @@ class Category(Base):
         sa.UniqueConstraint("site_id", "name")
         )
     query = DBSession.query_property()
-    id = sa.Column(sa.Integer, sa.ForeignKey("category.parent_id"), primary_key=True)
+    id = sa.Column(sa.Integer, primary_key=True)
 
     site_id = sa.Column(sa.Integer, sa.ForeignKey("site.id"))
-    parent_id = sa.Column(sa.Integer)
-    @declared_attr
-    def parent(cls):
-        return orm.relationship(cls, uselist=False)
+    parent_id = sa.Column(sa.Integer, sa.ForeignKey("category.id"))
+    parent = orm.relationship("Category", remote_side=[id], uselist=False)
 
     name = sa.Column(sa.Unicode(length=255), nullable=False)
     hierarchy = sa.Column(sa.Unicode(length=255), nullable=False)
