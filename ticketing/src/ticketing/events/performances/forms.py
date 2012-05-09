@@ -82,3 +82,11 @@ class StockHolderForm(Form):
         choices=[],
         coerce=int
     )
+    text            = TextField(u'記号', validators=[Required()])
+    text_color      = TextField(u'記号色', validators=[Required()])
+    fill_color      = TextField(u'色', validators=[Required()])
+    fill_type       = SelectField(u'塗りつぶしパターン', validators=[Optional()], choices=[])
+    fill_image      = TextField(u'塗りつぶしイメージ', validators=[Required()])
+    stroke_color    = SelectField(u'線の色', validators=[Optional()], choices=[])
+    stroke_width    = SelectField(u'線の太さ', validators=[Optional()], choices=[])
+    stroke_patten   = SelectField(u'線の種類', validators=[Optional()], choices=[])

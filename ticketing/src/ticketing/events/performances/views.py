@@ -126,12 +126,29 @@ class StockHolders(BaseView):
             return HTTPNotFound('performance id %d is not found' % performance_id)
 
         f = StockHolderForm(self.request.POST, organization_id=self.context.user.organization_id)
-        if f.validate():
-            stock_holder = merge_session_with_post(StockHolder(), f.data)
-            stock_holder.performance_id = performance.id
-            stock_holder.save()
-            self.request.session.flash(u'枠を保存しました')
-        else:
-            self.request.session.flash(u'枠を保存できません')
+        #if f.validate():
+        data = f.data
+        style = {
+            'stroke' : {
+                'color'     : data.get('stroke_color'),
+                'width'     : data.get('stroke_width'),
+                'pattern'   : data.get('stroke_patten'),
+                },
+            'fill': {
+                'color'     : data.get('fill_color'),
+                'type'      : data.get('fill_type'),
+                'image'     : data.get('fill_image'),
+                },
+            'text'          : data.get('text'),
+            'text_color'    : data.get('text_color'),
+        }
+        stock_holder = merge_session_with_post(StockHolder(), data)
+        stock_holder.style = style
+
+        stock_holder.performance_id = performance.id
+        stock_holder.save()
+        self.request.session.flash(u'枠を保存しました')
+        #else:
+        #    self.request.session.flash(u'枠を保存できません')
 
         return HTTPFound(location=route_path('performances.show', self.request, performance_id=performance.id))
