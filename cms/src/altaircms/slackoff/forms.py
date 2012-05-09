@@ -10,7 +10,9 @@ from altaircms.lib.formhelpers import dynamic_query_select_field_factory
 from altaircms.helpers.formhelpers import required_field
 
 from altaircms.plugins.widget.promotion.models import Promotion
+from altaircms.models import Category
 from altaircms.asset.models import ImageAsset
+from altaircms.page.models import PageSet
 
 class PerformanceForm(Form):
     backend_performance_id = fields.IntegerField(validators=[required_field()], label=u"バックエンド管理番号")
@@ -43,3 +45,15 @@ class PromotionForm(Form):
     name = fields.TextField(label=u"プロモーション枠名")
     ## site
 
+class CategoryForm(Form):
+    name = fields.TextField(label=u"カテゴリ名")
+    parent = dynamic_query_select_field_factory(
+        Category, allow_blank=False, label=u"親カテゴリ",
+        get_label=lambda obj: obj.name or u"--なし--")
+
+    hierarchy = fields.SelectField(label=u"階層", choices=[(x, x) for x in [u"大", u"中", u"小"]])
+    url = fields.TextField(label=u"リンク(外部ページのURL)")
+    pageset = dynamic_query_select_field_factory(
+        PageSet, allow_blank=False, label=u"リンク先ページ(CMSで作成したもの)",
+        get_label=lambda obj: obj.name or u"--なし--")
+    ## site

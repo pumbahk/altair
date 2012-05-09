@@ -173,7 +173,7 @@ class Category(Base):
     """
     サイト内カテゴリマスター
 
-    hierarychy:   大      中     小
+    hierarchy:   大      中      小
     　　　　　　  音楽
     　　　　　　　　　　　邦楽
                                   ポップス・ロック（邦楽）
