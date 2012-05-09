@@ -63,6 +63,7 @@ class Venue(Base):
 class VenueArea(Base):
     __tablename__   = "VenueArea"
     id              = Column(BigInteger, primary_key=True)
+    l0_id           = Column(String(255))
     name            = Column(String(255))
 
     venue_id        = Column(BigInteger, ForeignKey('Venue.id'))
