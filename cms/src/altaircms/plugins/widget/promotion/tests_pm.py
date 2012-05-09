@@ -27,7 +27,7 @@ def makeImageasset(*args, **kwargs):
 class PromotionUnitTest(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp()
-        self.config.include("altaircms.front")
+        self.config.include("altairsite.front")
 
     def tearDown(self):
         import transaction
@@ -62,7 +62,7 @@ class PromotionUnitTest(unittest.TestCase):
 class PromotionManagerTests(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp()
-        self.config.include("altaircms.front")
+        self.config.include("altairsite.front")
         self.config.include("altaircms.asset")
 
     def tearDown(self):

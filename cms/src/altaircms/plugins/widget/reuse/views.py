@@ -44,7 +44,7 @@ class ReuseWidgetView(object):
 
 def rendering_source_page(request):
     page = request._reuse_widget.source_page
-    from altaircms.front.resources import PageRenderingResource
+    from altairsite.front.resources import PageRenderingResource
     rendering_context = PageRenderingResource(request)
     layout = page.layout
 

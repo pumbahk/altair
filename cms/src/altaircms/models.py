@@ -1,4 +1,9 @@
 # coding: utf-8
+# -*- coding:utf-8 -*-
+
+import sqlalchemy as sa
+from sqlalchemy.ext.declarative import declared_attr
+
 from datetime import datetime
 import sqlahelper
 import sqlalchemy.orm as orm
@@ -6,6 +11,8 @@ from sqlalchemy import (Column, Integer, Unicode, String, ForeignKey, DateTime)
 from sqlalchemy.orm import relationship
 
 from sqlalchemy.sql.operators import ColumnOperators
+
+import altaircms.helpers as h
 
 def model_to_dict(obj):
     return {k: getattr(obj, k) for k, v in obj.__class__.__dict__.iteritems() \
@@ -161,3 +168,48 @@ class Site(BaseOriginalMixin, Base):
 
     client_id = Column(Integer, ForeignKey("client.id")) #@TODO: サイトにくっつけるべき？
     client = relationship("Client", backref="site", uselist=False) ##?
+
+class Category(Base):
+    """
+    サイト内カテゴリマスター
+
+    hierarychy:   大      中     小
+    　　　　　　  音楽
+    　　　　　　　　　　　邦楽
+                                  ポップス・ロック（邦楽）
+
+                  スポーツ
+　　　　　　　　　　　　　野球
+　　　　　　　　　　　　　　　　　プロ野球
+　　　　　　　　　演劇
+　　　　　　　　　　　　　ミュージカル
+                                  劇団四季
+                  イベント(? static page)
+
+    ※ このオブジェクトは、対応するページへのリンクを持つ(これはCMSで生成されないページへのリンクで有る場合もある)
+    """
+    __tablename__ = "category"
+    __tableargs__ = (
+        sa.UniqueConstraint("site_id", "name")
+        )
+    query = DBSession.query_property()
+    id = sa.Column(sa.Integer, primary_key=True)
+
+    site_id = sa.Column(sa.Integer, sa.ForeignKey("site.id"))
+    parent_id = sa.Column(sa.Integer, sa.ForeignKey("category"))
+    @declared_attr
+    def parent(cls):
+        return orm.relationship(cls, uselist=False)
+
+    name = sa.Column(sa.Unicode(length=255), nullable=False)
+    hierarchy = sa.Column(sa.Unicode(length=255), nullable=False)
+    
+    url = sa.Column(sa.Unicode(length=255))
+    pageset_id = sa.Column(sa.Integer, sa.ForeignKey("pagesets.id"))
+    pagesest = orm.relationship("PageSet", backref="category", uselist=False)
+    
+    def get_link(self, request):
+        if self.pageset is None:
+            return self.url
+        else:
+            return h.front.to_publish_page_from_pageset(request, self.pageset)

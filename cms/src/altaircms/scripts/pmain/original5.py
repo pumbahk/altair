@@ -188,8 +188,8 @@ def init():
 def main(app, args):
     init()
     import sys
-    from altaircms.front.views import rendering_page
-    from altaircms.front.resources import PageRenderingResource
+    from altairsite.front.views import rendering_page
+    from altairsite.front.resources import PageRenderingResource
 
     request = DummyRequest()
     request.matchdict = dict(page_name="sample_page")
