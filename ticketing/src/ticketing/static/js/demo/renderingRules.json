@@ -1,13 +1,12 @@
 {
   "seats": {
-
     "seat_type_id": {
       "default": {
         "fill": "#fff",
         "stroke": "#000"
       },
       "1": {
-        "fill": "#99FF99",
+        "fill": "#99FF99"
       },
       "2": {
         "fill": "#9999FF"

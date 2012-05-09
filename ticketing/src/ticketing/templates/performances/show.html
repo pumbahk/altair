@@ -7,13 +7,12 @@
 <link rel="stylesheet" type="text/css" href="/static/css/performance.css" />
 <link rel="stylesheet" href="/static/js/demo/development-bundle/themes/base/jquery.ui.all.css" />
 <script type="text/javascript" src="/static/js/jquery.kolorpicker.js"></script>
-<script type="text/javascript" src="/static/js/ticketing.performance.js"></script>
-<script type="text/javascript" src="/static/js/ticketing.venue-editor.js"></script>
+<script type="text/javascript" src="/static/js/demo/fashion.js"></script>
 <script type="text/javascript" src="/static/js/demo/development-bundle/ui/jquery.ui.core.js"></script>
 <script type="text/javascript" src="/static/js/demo/development-bundle/ui/jquery.ui.widget.js"></script>
 <script type="text/javascript" src="/static/js/demo/development-bundle/ui/jquery.ui.button.js"></script>
-<script type="text/javascript" src="/static/js/demo/fashion.js"></script>
-<script type="text/javascript" src="/static/js/demo/demo2.js"></script>
+<script type="text/javascript" src="/static/js/ticketing.performance.js"></script>
+<script type="text/javascript" src="/static/js/ticketing.venue-editor.js"></script>
 <style type="text/css">
   .canvas {
     height: 91%;
@@ -33,7 +32,9 @@
 </%block>
 
 <script type="text/javascript">
-var GET_DRAWING_URL = "${request.route_path('api.get_drawing', venue_id=performance.venue.id)}";
+var DRAWING_URL = "${request.route_path('api.get_drawing', venue_id=performance.venue.id)}" + "?" + Math.random();
+var SEAT_DATA_URL = "${request.route_path('api.get_seats', venue_id=performance.venue.id)}" + "?" + Math.random();
+var RENDERING_RULE_URL = "/static/js/demo/renderingRules.json" + "?" + Math.random();
 </script>
 
 <div class="row-fluid">
@@ -126,10 +127,18 @@ var GET_DRAWING_URL = "${request.route_path('api.get_drawing', venue_id=performa
             }
             switch (new_active_tab.attr('id')) {
             case 'venue-designer':
-              $('#venue-map').venue_editor('load');
+              $('#venue-map').venue_editor({
+                drawing_url: DRAWING_URL,
+                seat_data_url: SEAT_DATA_URL,
+                rendering_rule_url: RENDERING_RULE_URL
+              }).venue_editor('load');
               break;
             case 'seat-allocation':
-              $('#seat-map').venue_editor('load');
+              $('#seat-map').venue_editor({
+                drawing_url: DRAWING_URL,
+                seat_data_url: SEAT_DATA_URL,
+                rendering_rule_url: RENDERING_RULE_URL
+              }).venue_editor('load');
               break;
             case 'ticket-designer':
               TicketDesigner_adjustViewSize();

@@ -1,45 +1,6 @@
 <%namespace file="/common/confirm_modal.html" import="delete_modal" />
 <%namespace file="/common/helpers.html" import="seat_style" />
 <%namespace file="/common/helpers.html" import="json" />
-<script type="text/javascript">
-  $(function() {
-    $('#delete').click(function(){
-      $('#delete-modal').modal('toggle');
-      $('#delete-modal #delete').attr('href', '/seat_types/delete/' + $('input[name=checked_id]:checked').val());
-    });
-  });
-
-  function add() {
-    $('#edit-modal').modal('toggle');
-    $('#edit-modal #edit').attr('action', '/seat_types/new/' + ${performance.id});
-  }
-
-  function edit(seat_type_id, name) {
-    $('#edit-modal').modal('toggle');
-    $('#edit-modal #name').val(name);
-    $('#edit-modal #edit').attr('action', '/seat_types/edit/' + seat_type_id);
-  }
-  
-  function readjustMap() {
-    var n = $("#venue-map");
-    n.height($(window).height() - 250);
-    var width = n.width();
-    var height = n.height();
-    var toolbar = n.find(".ui-toolbar");
-    toolbar.width(width - 6);
-    var data = n.data('venue_editor_available');
-    if (data && data.manager) {
-      data.manager.d.viewportSize({
-        width: width,
-        height: height - toolbar[0].offsetHeight
-      });
-    }
-  }
-
-  $(window).resize(readjustMap);
-  $(document).ready(readjustMap);
-</script>
-
 <div class="container-fluid">
   <div class="row-fluid">
     <div class="span8" style="background-color: #999999">
@@ -156,3 +117,40 @@
 </div>
 
 ${delete_modal(u'選択した席種を削除します。よろしいですか？')}
+
+<script type="text/javascript">
+  $('#delete').click(function(){
+    $('#delete-modal').modal('toggle');
+    $('#delete-modal #delete').attr('href', '/seat_types/delete/' + $('input[name=checked_id]:checked').val());
+  });
+
+  function add() {
+    $('#edit-modal').modal('toggle');
+    $('#edit-modal #edit').attr('action', '/seat_types/new/' + ${performance.id});
+  }
+
+  function edit(seat_type_id, name) {
+    $('#edit-modal').modal('toggle');
+    $('#edit-modal #name').val(name);
+    $('#edit-modal #edit').attr('action', '/seat_types/edit/' + seat_type_id);
+  }
+  
+  function readjustMap() {
+    var n = $("#venue-map");
+    n.height($(window).height() - 250);
+    var width = n.width();
+    var height = n.height();
+    var toolbar = n.find(".ui-toolbar");
+    toolbar.width(width - 6);
+    var data = n.data('venue_editor');
+    if (data && data.manager) {
+      data.manager.d.viewportSize({
+        width: width,
+        height: height - toolbar[0].offsetHeight
+      });
+    }
+  }
+
+  $(window).resize(readjustMap);
+  $(document).ready(readjustMap);
+</script>
