@@ -44,7 +44,7 @@ class VenueData(DataSet):
     class venue_2:
         name = u'ブルーマンシアター'
         sub_name = u'ブルーマンシアター'
-        performance = PerformanceData.performance_2
+        performance = PerformanceData.performance_6
         site = SiteData.site_2
         organization = OrganizationData.organization_0
 
