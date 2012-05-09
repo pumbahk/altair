@@ -8,9 +8,18 @@
 <meta name="keywords" content="チケット,演劇,クラシック,オペラ,コンサート,バレエ,ミュージカル,野球,サッカー,格闘技" />
 <meta http-equiv="content-style-type" content="text/css" />
 <meta http-equiv="content-script-type" content="text/javascript" />
-<link rel="shortcut icon" href="../img/common/favicon.ico" />
-<link rel="stylesheet" href="../css/import.css" type="text/css" media="all" />
-<script type="text/javascript" src="${request.static_url('ticketing:static/js/jquery-1.6.2.min.js')}"></script>
+<link rel="shortcut icon" href="${request.static_url('ticketing.cart:static/img/common/favicon.ico')}" />
+<link rel="stylesheet" href="${request.static_url('ticketing.cart:static/css/import.css')}" type="text/css" media="all" />
+<script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/jquery.js')}"></script>
+<script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/jquery.flatheights.js')}"></script>
+<script type="text/javascript">
+$(function() {
+  // $('#selectSeat, #selectBuy').flatHeights();
+  $("#selectSeat li:even").addClass("seatEven");
+  $("#selectSeat li:odd").addClass("seatOdd");
+});
+</script>
+
 <script>
 var venues_selection = ${venues_selection};
 function show_seat_types(get_url) {
@@ -21,6 +30,8 @@ function show_seat_types(get_url) {
       item.text(value.name);
       $('#seat-types-list').append(item);
     });
+    $("#selectSeat li:even").addClass("seatEven");
+    $("#selectSeat li:odd").addClass("seatOdd");
   }});
 };
 
@@ -43,13 +54,13 @@ $(function() {
 </head>
 <body id="settlement">
 
-<p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="../img/common/skip.gif" alt="本文へジャンプ" width="1" height="1" /></a></p>
+<p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="${request.static_url('ticketing.cart:static/img/common/skip.gif')}" alt="本文へジャンプ" width="1" height="1" /></a></p>
 
 <div id="container">
 
 	<!-- ========== header ========== -->
 	<div id="grpheader">
-		<p id="siteID"><a href="http://ticket.rakuten.co.jp/"><img src="../img/common/header_logo_01.gif" alt="楽天チケット" class="serviceLogo" width="97" height="35" /></a><a href="http://ticket.rakuten.co.jp/"><img src="../img/common/header_logo_02.gif" alt="チケット" class="serviceTitle" width="88" height="23" /></a></p>
+		<p id="siteID"><a href="http://ticket.rakuten.co.jp/"><img src="${request.static_url('ticketing.cart:static/img/common/header_logo_01.gif')}" alt="楽天チケット" class="serviceLogo" width="97" height="35" /></a><a href="http://ticket.rakuten.co.jp/"><img src="${request.static_url('ticketing.cart:static/img/common/header_logo_02.gif')}" alt="チケット" class="serviceTitle" width="88" height="23" /></a></p>
 	</div>
 	<!-- ========== /header ========== -->
 	
@@ -57,14 +68,14 @@ $(function() {
 
 	<!-- ========== main ========== -->
 	<div id="main">
-		<h1><img src="../img/settlement/title_settlement.gif" alt="チケット購入" width="950" height="40" /></h1>
+		<h1><img src="${request.static_url('ticketing.cart:static/img/settlement/title_settlement.gif')}" alt="チケット購入" width="950" height="40" /></h1>
 		<h2 id="ticketName">${event['title']}</h2>
 		<ul id="ticketIcon">
-			<li><img src="../img/detail/icon_select.gif" alt="座席選択可" width="80" height="30" /></li>
-			<li><img src="../img/detail/icon_keep.gif" alt="おとなりキープ" width="80" height="30" /></li>
-			<li><img src="../img/detail/icon_official.gif" alt="公式2次市場" width="80" height="30" /></li>
-			<li><img src="../img/detail/icon_goods.gif" alt="先行グッズ予約" width="80" height="30" /></li>
-			<li><img src="../img/detail/icon_event.gif" alt="イベントコミュニティ" width="80" height="30" /></li>
+			<li><img src="${request.static_url('ticketing.cart:static/img/detail/icon_select.gif')}" alt="座席選択可" width="80" height="30" /></li>
+			<li><img src="${request.static_url('ticketing.cart:static/img/detail/icon_keep.gif')}" alt="おとなりキープ" width="80" height="30" /></li>
+			<li><img src="${request.static_url('ticketing.cart:static/img/detail/icon_official.gif')}" alt="公式2次市場" width="80" height="30" /></li>
+			<li><img src="${request.static_url('ticketing.cart:static/img/detail/icon_goods.gif')}" alt="先行グッズ予約" width="80" height="30" /></li>
+			<li><img src="${request.static_url('ticketing.cart:static/img/detail/icon_event.gif')}" alt="イベントコミュニティ" width="80" height="30" /></li>
 		</ul>
 		<form id="form1" name="form1" method="post" action="">
 			<div id="settlementSelectBox">
@@ -97,44 +108,36 @@ $(function() {
 		<div class="settlementBox2">
 			<div class="settlementBoxInner2">
 				<h2 id="hallName"><span>12月3日 14:00 幕張メッセイベントホール</span></h2>
-				<script type="text/javascript" src="../js/jquery.flatheights.js"></script>
-				<script type="text/javascript">
-				$(function() {
-					$('#selectSeat, #selectBuy').flatHeights();
-					$("#selectSeat li:even").addClass("seatEven");
-					$("#selectSeat li:odd").addClass("seatOdd");
-				});
-				</script>
-				<div id="selectSeat">
+				<div id="selectSeat" style="float:left; width: 390px;">
 					<dl>
-						<dt><img src="../img/settlement/title_select.gif" alt="席種をお選びください" width="380" height="33" /></dt>
+						<dt><img src="${request.static_url('ticketing.cart:static/img/settlement/title_select.gif')}" alt="席種をお選びください" width="380" height="33" /></dt>
 						<dd>
 							<ul id="seat-types-list">
-								<li><img src="../img/settlement/icon_seat_01.gif" alt="" width="16" height="16" />エクストラファミリーシートエクストラファ…<img src="../img/settlement/icon_seat_19.gif" alt="" width="15" height="15" class="seatState" /></li>
-								<li class="selected"><img src="../img/settlement/icon_seat_02.gif" alt="" width="16" height="16" />エクストラファミリーシート<img src="../img/settlement/icon_seat_19.gif" alt="" width="15" height="15" class="seatState" /></li>
-								<li><img src="../img/settlement/icon_seat_03.gif" alt="" width="16" height="16" />エクストラファミリーシート<img src="../img/settlement/icon_seat_19.gif" alt="" width="15" height="15" class="seatState" /></li>
-								<li><img src="../img/settlement/icon_seat_04.gif" alt="" width="16" height="16" />エクストラファミリーシート<img src="../img/settlement/icon_seat_19.gif" alt="" width="15" height="15" class="seatState" /></li>
-								<li><img src="../img/settlement/icon_seat_05.gif" alt="" width="16" height="16" />エクストラファミリーシート<img src="../img/settlement/icon_seat_19.gif" alt="" width="15" height="15" class="seatState" /></li>
-								<li><img src="../img/settlement/icon_seat_06.gif" alt="" width="16" height="16" />エクストラファミリーシート<img src="../img/settlement/icon_seat_19.gif" alt="" width="15" height="15" class="seatState" /></li>
-								<li><img src="../img/settlement/icon_seat_07.gif" alt="" width="16" height="16" />エクストラファミリーシート<img src="../img/settlement/icon_seat_19.gif" alt="" width="15" height="15" class="seatState" /></li>
-								<li><img src="../img/settlement/icon_seat_08.gif" alt="" width="16" height="16" />エクストラファミリーシート<img src="../img/settlement/icon_seat_19.gif" alt="" width="15" height="15" class="seatState" /></li>
-								<li><img src="../img/settlement/icon_seat_09.gif" alt="" width="16" height="16" />エクストラファミリーシート<img src="../img/settlement/icon_seat_19.gif" alt="" width="15" height="15" class="seatState" /></li>
-								<li><img src="../img/settlement/icon_seat_10.gif" alt="" width="16" height="16" />エクストラファミリーシート<img src="../img/settlement/icon_seat_19.gif" alt="" width="15" height="15" class="seatState" /></li>
-								<li><img src="../img/settlement/icon_seat_11.gif" alt="" width="16" height="16" />エクストラファミリーシート<img src="../img/settlement/icon_seat_19.gif" alt="" width="15" height="15" class="seatState" /></li>
-								<li><img src="../img/settlement/icon_seat_12.gif" alt="" width="16" height="16" />エクストラファミリーシート<img src="../img/settlement/icon_seat_19.gif" alt="" width="15" height="15" class="seatState" /></li>
-								<li><img src="../img/settlement/icon_seat_13.gif" alt="" width="16" height="16" />エクストラファミリーシート<img src="../img/settlement/icon_seat_19.gif" alt="" width="15" height="15" class="seatState" /></li>
-								<li><img src="../img/settlement/icon_seat_14.gif" alt="" width="16" height="16" />エクストラファミリーシート<img src="../img/settlement/icon_seat_19.gif" alt="" width="15" height="15" class="seatState" /></li>
-								<li><img src="../img/settlement/icon_seat_15.gif" alt="" width="16" height="16" />エクストラファミリーシート<img src="../img/settlement/icon_seat_19.gif" alt="" width="15" height="15" class="seatState" /></li>
-								<li><img src="../img/settlement/icon_seat_16.gif" alt="" width="16" height="16" />エクストラファミリーシート<img src="../img/settlement/icon_seat_19.gif" alt="" width="15" height="15" class="seatState" /></li>
-								<li><img src="../img/settlement/icon_seat_17.gif" alt="" width="16" height="16" />エクストラファミリーシート<img src="../img/settlement/icon_seat_19.gif" alt="" width="15" height="15" class="seatState" /></li>
-								<li><img src="../img/settlement/icon_seat_18.gif" alt="" width="16" height="16" />エクストラファミリーシート<img src="../img/settlement/icon_seat_19.gif" alt="" width="15" height="15" class="seatState" /></li>
+								<li><img src="${request.static_url('ticketing.cart:static/img/settlement/icon_seat_01.gif')}" alt="" width="16" height="16" />エクストラファミリーシートエクストラファ…<img src="${request.static_url('ticketing.cart:static/img/settlement/icon_seat_19.gif')}" alt="" width="15" height="15" class="seatState" /></li>
+								<li><img src="${request.static_url('ticketing.cart:static/img/settlement/icon_seat_02.gif')}" alt="" width="16" height="16" />エクストラファミリーシート<img src="${request.static_url('ticketing.cart:static/img/settlement/icon_seat_19.gif')}" alt="" width="15" height="15" class="seatState" /></li>
+								<li><img src="${request.static_url('ticketing.cart:static/img/settlement/icon_seat_03.gif')}" alt="" width="16" height="16" />エクストラファミリーシート<img src="${request.static_url('ticketing.cart:static/img/settlement/icon_seat_19.gif')}" alt="" width="15" height="15" class="seatState" /></li>
+								<li><img src="${request.static_url('ticketing.cart:static/img/settlement/icon_seat_04.gif')}" alt="" width="16" height="16" />エクストラファミリーシート<img src="${request.static_url('ticketing.cart:static/img/settlement/icon_seat_19.gif')}" alt="" width="15" height="15" class="seatState" /></li>
+								<li><img src="${request.static_url('ticketing.cart:static/img/settlement/icon_seat_05.gif')}" alt="" width="16" height="16" />エクストラファミリーシート<img src="${request.static_url('ticketing.cart:static/img/settlement/icon_seat_19.gif')}" alt="" width="15" height="15" class="seatState" /></li>
+								<li><img src="${request.static_url('ticketing.cart:static/img/settlement/icon_seat_06.gif')}" alt="" width="16" height="16" />エクストラファミリーシート<img src="${request.static_url('ticketing.cart:static/img/settlement/icon_seat_19.gif')}" alt="" width="15" height="15" class="seatState" /></li>
+								<li><img src="${request.static_url('ticketing.cart:static/img/settlement/icon_seat_07.gif')}" alt="" width="16" height="16" />エクストラファミリーシート<img src="${request.static_url('ticketing.cart:static/img/settlement/icon_seat_19.gif')}" alt="" width="15" height="15" class="seatState" /></li>
+								<li><img src="${request.static_url('ticketing.cart:static/img/settlement/icon_seat_08.gif')}" alt="" width="16" height="16" />エクストラファミリーシート<img src="${request.static_url('ticketing.cart:static/img/settlement/icon_seat_19.gif')}" alt="" width="15" height="15" class="seatState" /></li>
+								<li><img src="${request.static_url('ticketing.cart:static/img/settlement/icon_seat_09.gif')}" alt="" width="16" height="16" />エクストラファミリーシート<img src="${request.static_url('ticketing.cart:static/img/settlement/icon_seat_19.gif')}" alt="" width="15" height="15" class="seatState" /></li>
+								<li><img src="${request.static_url('ticketing.cart:static/img/settlement/icon_seat_10.gif')}" alt="" width="16" height="16" />エクストラファミリーシート<img src="${request.static_url('ticketing.cart:static/img/settlement/icon_seat_19.gif')}" alt="" width="15" height="15" class="seatState" /></li>
+								<li><img src="${request.static_url('ticketing.cart:static/img/settlement/icon_seat_11.gif')}" alt="" width="16" height="16" />エクストラファミリーシート<img src="${request.static_url('ticketing.cart:static/img/settlement/icon_seat_19.gif')}" alt="" width="15" height="15" class="seatState" /></li>
+								<li><img src="${request.static_url('ticketing.cart:static/img/settlement/icon_seat_12.gif')}" alt="" width="16" height="16" />エクストラファミリーシート<img src="${request.static_url('ticketing.cart:static/img/settlement/icon_seat_19.gif')}" alt="" width="15" height="15" class="seatState" /></li>
+								<li><img src="${request.static_url('ticketing.cart:static/img/settlement/icon_seat_13.gif')}" alt="" width="16" height="16" />エクストラファミリーシート<img src="${request.static_url('ticketing.cart:static/img/settlement/icon_seat_19.gif')}" alt="" width="15" height="15" class="seatState" /></li>
+								<li><img src="${request.static_url('ticketing.cart:static/img/settlement/icon_seat_14.gif')}" alt="" width="16" height="16" />エクストラファミリーシート<img src="${request.static_url('ticketing.cart:static/img/settlement/icon_seat_19.gif')}" alt="" width="15" height="15" class="seatState" /></li>
+								<li><img src="${request.static_url('ticketing.cart:static/img/settlement/icon_seat_15.gif')}" alt="" width="16" height="16" />エクストラファミリーシート<img src="${request.static_url('ticketing.cart:static/img/settlement/icon_seat_19.gif')}" alt="" width="15" height="15" class="seatState" /></li>
+								<li><img src="${request.static_url('ticketing.cart:static/img/settlement/icon_seat_16.gif')}" alt="" width="16" height="16" />エクストラファミリーシート<img src="${request.static_url('ticketing.cart:static/img/settlement/icon_seat_19.gif')}" alt="" width="15" height="15" class="seatState" /></li>
+								<li><img src="${request.static_url('ticketing.cart:static/img/settlement/icon_seat_17.gif')}" alt="" width="16" height="16" />エクストラファミリーシート<img src="${request.static_url('ticketing.cart:static/img/settlement/icon_seat_19.gif')}" alt="" width="15" height="15" class="seatState" /></li>
+								<li><img src="${request.static_url('ticketing.cart:static/img/settlement/icon_seat_18.gif')}" alt="" width="16" height="16" />エクストラファミリーシート<img src="${request.static_url('ticketing.cart:static/img/settlement/icon_seat_19.gif')}" alt="" width="15" height="15" class="seatState" /></li>
 							</ul>
 						</dd>
 					</dl>
 				</div>
 				<div id="selectBuy">
 					<form id="form2" name="form2" method="post" action="">
-						<h3><img src="../img/settlement/select.gif" alt="購入枚数、購入方法をお選びください" width="246" height="14" /></h3>
+						<h3><img src="${request.static_url('ticketing.cart:static/img/settlement/select.gif')}" alt="購入枚数、購入方法をお選びください" width="246" height="14" /></h3>
 						<dl>
 							<dt>エクストラファミリーシート</dt>
 							<dd>
@@ -167,19 +170,20 @@ $(function() {
 							</dd>
 						</dl>
 						<ul>
-							<li><a href="#"><img src="../img/settlement/btn_select_buy.gif" alt="座席を選んで購入" width="236" height="46" /></a></li>
-							<li><a href="#"><img src="../img/settlement/btn_entrust_buy.gif" alt="おまかせで購入" width="236" height="46" /></a></li>
+							<li><a href="#"><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_select_buy.gif')}" alt="座席を選んで購入" width="236" height="46" /></a></li>
+							<li><a href="#"><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_entrust_buy.gif')}" alt="おまかせで購入" width="236" height="46" /></a></li>
 						</ul>
 						<ul>
-							<li><a href="#"><img src="../img/settlement/btn_redo.gif" alt="席種を選択しなおす" width="236" height="46" /></a></li>
+							<li><a href="#"><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_redo.gif')}" alt="席種を選択しなおす" width="236" height="46" /></a></li>
 						</ul>
 					</form>
 				</div>
 			</div>
+			<div style="clear:both;"></div>
 		</div>
 		<div class="settlementBox2" id="settlementEventDetail">
 			<div class="settlementBoxInner2">
-				<h2><img src="../img/settlement/title_event.gif" alt="イベント詳細" width="106" height="29" /></h2>
+				<h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_event.gif')}" alt="イベント詳細" width="106" height="29" /></h2>
 				<table summary="イベント詳細情報">
 					<tr>
 						<th scope="row">開催期間</th>
