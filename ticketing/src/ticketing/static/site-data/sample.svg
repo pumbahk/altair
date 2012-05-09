@@ -54,17 +54,17 @@
         </g>
       </g>
       <g id="g3078">
+        <path inkscape:connector-curvature="0" id="path72" d="m 445,165 0,115 -95,0 z"/>
         <rect id="D1" height="30" width="30" y="200" x="410"/>
         <rect id="D2" height="30" width="30" y="240" x="370"/>
         <rect id="D3" height="30" width="30" y="240" x="410"/>
-        <path inkscape:connector-curvature="0" id="path72" d="m 445,165 0,115 -95,0 z"/>
         <text id="text4069" y="239.36218" x="385">車椅子席</text>
       </g>
       <g id="g3071">
+        <path inkscape:connector-curvature="0" id="path70" d="m 25,165 95,115 -95,0 z"/>
         <rect id="E1" height="30" width="30" y="200" x="30"/>
         <rect id="E2" height="30" width="30" y="240" x="30"/>
         <rect id="E3" height="30" width="30" y="240" x="70"/>
-        <path inkscape:connector-curvature="0" id="path70" d="m 25,165 95,115 -95,0 z"/>
         <text x="38" y="240.36218" id="text3059">車椅子席</text>
       </g>
     </g>
