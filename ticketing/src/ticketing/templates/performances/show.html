@@ -3,9 +3,35 @@
 <%block name="style">
 <link rel="stylesheet" type="text/css" href="/static/css/kolorpicker.css" />
 <link rel="stylesheet" type="text/css" href="/static/css/performance.css" />
+<link rel="stylesheet" href="/static/js/demo/development-bundle/themes/base/jquery.ui.all.css" />
 <script type="text/javascript" src="/static/js/jquery.kolorpicker.js"></script>
 <script type="text/javascript" src="/static/js/ticketing.performance.js"></script>
+<script type="text/javascript" src="/static/js/ticketing.venue-editor.js"></script>
+<script type="text/javascript" src="/static/js/demo/development-bundle/ui/jquery.ui.core.js"></script>
+<script type="text/javascript" src="/static/js/demo/development-bundle/ui/jquery.ui.widget.js"></script>
+<script type="text/javascript" src="/static/js/demo/development-bundle/ui/jquery.ui.button.js"></script>
+<script type="text/javascript" src="/static/js/demo/fashion.js"></script>
+<script type="text/javascript" src="/static/js/demo/demo2.js"></script>
+<style type="text/css">
+  .canvas {
+    height: 91%;
+    margin: 0 0;
+    padding: 0 0;
+  }
+  .ui-toolbar { padding: 2px 2px 2px 2px; height: 32px; }
+  .ui-toolbar { margin: 0 0; }
+
+  #venue-map {
+    padding: 0;
+  }
+  #seat-map {
+    padding: 0;
+  }
+</style>
 </%block>
+<script type="text/javascript">
+var GET_DRAWING_URL = "${request.route_path('api.get_drawing', venue_id=performance.venue_id)}";
+</script>
 <div class="row-fluid">
   <%include file="../parts/_menu.html" />
 
@@ -79,8 +105,37 @@
           <%include file="./_ticket_designer.html" />
         </div>
       </div>
+      <script type="text/javascript">
+        (function() {
+          var active_tab = null;
+          function activate_tab() {
+            var new_active_tab = $(this).find("#tabbable-tab-content > .tab-pane.active");
+            if (active_tab) {
+              switch (active_tab.attr('id')) {
+              case 'venue-designer':
+                $('#venue-map').venue_editor('remove');
+                break;
+              case 'seat-allocation':
+                $('#seat-map').venue_editor('remove');
+                break;
+              }
+            }
+            switch (new_active_tab.attr('id')) {
+            case 'venue-designer':
+              $('#venue-map').venue_editor('load');
+              break;
+            case 'seat-allocation':
+              $('#seat-map').venue_editor('load');
+              break;
+            case 'ticket-designer':
+              TicketDesigner_adjustViewSize();
+              break;
+            }
+            active_tab = new_active_tab;
+          }
+          activate_tab.call($("#tabbable-content").on('shown', activate_tab));
+        })();
+      </script>
     </div>
   </span>
 </div>
-
-
