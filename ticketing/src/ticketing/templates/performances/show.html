@@ -30,7 +30,7 @@
 </style>
 </%block>
 <script type="text/javascript">
-var GET_DRAWING_URL = "${request.route_path('api.get_drawing', venue_id=performance.venue_id)}";
+var GET_DRAWING_URL = "${request.route_path('api.get_drawing', venue_id=performance.venue.id)}";
 </script>
 <div class="row-fluid">
   <%include file="../parts/_menu.html" />

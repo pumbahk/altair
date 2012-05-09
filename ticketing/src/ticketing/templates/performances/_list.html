@@ -20,7 +20,9 @@
         <td><input type="checkbox" /></td>
         <td>${performance.id}</td>
         <td><a href="${request.route_path('performances.show', performance_id=performance.id)}">${performance.name}</a></td>
-        <td>${performance.venue.name}</td>
+        <td>
+          ${', '.join([venue.name for venue in performance.venues])}
+        </td>
         <td>${safe_strftime(performance.open_on)}</td>
         <td>${safe_strftime(performance.start_on)}</td>
         <td>${safe_strftime(performance.end_on)}</td>

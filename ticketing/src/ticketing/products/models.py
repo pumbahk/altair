@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL
+from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL, func
 from sqlalchemy.orm import relationship, join, backref, column_property, mapper, relation
 
 from ticketing.models import Base, BaseModel, DBSession, JSONEncodedDict, MutationDict
@@ -141,6 +141,10 @@ class SeatType(BaseModel, Base):
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
     status = Column(Integer)
+
+    @property
+    def num_seats(self):
+        return DBSession.query(func.sum(Stock.quantity)).filter_by(seat_type=self).scalar()
 
     @staticmethod
     def add(seat_type):
