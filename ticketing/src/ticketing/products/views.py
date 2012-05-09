@@ -71,7 +71,10 @@ class Products(BaseView):
             product.save()
 
             product_item = ProductItem()
-            product_item.stocks = [Stock.get(self.request.POST.get('stock_id'))]
+            stocks = []
+            for stock_id in list(self.request.POST.get('stock_id')):
+                stocks.append(Stock.get(stock_id))
+            product_item.stocks = stocks
             product_item.performance_id = performance_id
             product_item.product_id = product_id
             product_item.save()
@@ -80,7 +83,6 @@ class Products(BaseView):
             return {'success':True}
         else:
             return {'success':False}
-
 
 @view_defaults(decorator=with_bootstrap)
 class ProductSegments(BaseView):

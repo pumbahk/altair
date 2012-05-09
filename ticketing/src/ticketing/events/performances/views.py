@@ -30,6 +30,7 @@ class Performances(BaseView):
             'products':products,
             'accounts':accounts,
             'sales_segments':sales_segments,
+            'user':user,
         }
 
     @view_config(route_name='performances.new', request_method='GET', renderer='ticketing:templates/performances/edit.html')
