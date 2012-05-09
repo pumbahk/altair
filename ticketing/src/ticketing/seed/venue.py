@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from ticketing.seed import DataSet
-from organization import OrganizationData
 from ticketing.venues.models import SeatStatusEnum
+
+from .event import PerformanceData, EventData
+from .product import StockData
+from .organization import OrganizationData
 
 class SiteData(DataSet):
     class site_1:
@@ -35,11 +38,13 @@ class VenueData(DataSet):
     class venue_1:
         name = u'シルク・ドゥ・ソレイユ　シアター東京（ZED）'
         sub_name = u'シルク・ドゥ・ソレイユ　シアター'
+        performance = PerformanceData.performance_1
         site = SiteData.site_1
         organization = OrganizationData.organization_0
     class venue_2:
         name = u'ブルーマンシアター'
         sub_name = u'ブルーマンシアター'
+        performance = PerformanceData.performance_2
         site = SiteData.site_2
         organization = OrganizationData.organization_0
 
@@ -47,84 +52,111 @@ class SeatVenue1Data(DataSet):
     class seat_v1_a1:
         l0_id = u'A1'
         venue = VenueData.venue_1
+        stock = StockData.stock_1
     class seat_v1_a2:
         l0_id = u'A2'
         venue = VenueData.venue_1
+        stock = StockData.stock_1
     class seat_v1_a3:
         l0_id = u'A3'
         venue = VenueData.venue_1
+        stock = StockData.stock_1
     class seat_v1_a4:
         l0_id = u'A4'
         venue = VenueData.venue_1
+        stock = StockData.stock_1
     class seat_v1_a5:
         l0_id = u'A5'
         venue = VenueData.venue_1
+        stock = StockData.stock_1
     class seat_v1_a6:
         l0_id = u'A6'
         venue = VenueData.venue_1
+        stock = StockData.stock_1
     class seat_v1_a7:
         l0_id = u'A7'
         venue = VenueData.venue_1
+        stock = StockData.stock_5
     class seat_v1_a8:
         l0_id = u'A8'
         venue = VenueData.venue_1
+        stock = StockData.stock_5
     class seat_v1_a9:
         l0_id = u'A9'
         venue = VenueData.venue_1
+        stock = StockData.stock_5
     class seat_v1_b1:
         l0_id = u'B1'
         venue = VenueData.venue_1
+        stock = StockData.stock_2
     class seat_v1_b2:
         l0_id = u'B2'
         venue = VenueData.venue_1
+        stock = StockData.stock_2
     class seat_v1_b3:
         l0_id = u'B3'
         venue = VenueData.venue_1
+        stock = StockData.stock_2
     class seat_v1_b4:
         l0_id = u'B4'
         venue = VenueData.venue_1
+        stock = StockData.stock_6
     class seat_v1_b5:
         l0_id = u'B5'
         venue = VenueData.venue_1
+        stock = StockData.stock_6
     class seat_v1_b6:
         l0_id = u'B6'
         venue = VenueData.venue_1
+        stock = StockData.stock_6
     class seat_v1_b7:
         l0_id = u'B7'
         venue = VenueData.venue_1
+        stock = StockData.stock_6
     class seat_v1_c1:
         l0_id = u'C1'
         venue = VenueData.venue_1
+        stock = StockData.stock_3
     class seat_v1_c2:
         l0_id = u'C2'
         venue = VenueData.venue_1
+        stock = StockData.stock_3
     class seat_v1_c3:
         l0_id = u'C3'
         venue = VenueData.venue_1
+        stock = StockData.stock_7
     class seat_v1_c4:
         l0_id = u'C4'
         venue = VenueData.venue_1
+        stock = StockData.stock_7
     class seat_v1_c5:
         l0_id = u'C5'
         venue = VenueData.venue_1
+        stock = StockData.stock_7
     class seat_v1_d1:
         l0_id = u'D1'
         venue = VenueData.venue_1
+        stock = StockData.stock_4
     class seat_v1_d2:
         l0_id = u'D2'
         venue = VenueData.venue_1
+        stock = StockData.stock_4
     class seat_v1_d3:
         l0_id = u'D3'
         venue = VenueData.venue_1
+        stock = StockData.stock_4
     class seat_v1_e1:
         l0_id = u'E1'
         venue = VenueData.venue_1
+        stock = StockData.stock_8
     class seat_v1_e2:
         l0_id = u'E2'
         venue = VenueData.venue_1
+        stock = StockData.stock_8
     class seat_v1_e3:
         l0_id = u'E3'
         venue = VenueData.venue_1
+        stock = StockData.stock_8
 
 class SeatVenue2Data(DataSet):
     class seat_v2_a1:
@@ -915,5 +947,4 @@ class SeatAttributeData(DataSet):
         seat = SeatVenue2Data.seat_v2_e3
         name = u'attr2'
         value = u'e3-attr2'
-
 

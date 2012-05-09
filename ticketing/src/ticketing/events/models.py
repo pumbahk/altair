@@ -40,12 +40,12 @@ class Performance(Base, BaseModel):
     no_period = Column(Boolean)
 
     event_id = Column(BigInteger, ForeignKey('Event.id'))
-    venue_id = Column(BigInteger, ForeignKey('Venue.id'))
     owner_id = Column(BigInteger, ForeignKey('Account.id'))
 
     stock_holders = relationship('StockHolder', backref='performance')
     product_items = relationship('ProductItem', backref='performance')
     seat_types = relationship('SeatType', backref='performance')
+    venues = relationship('Venue', backref='performance')
 
     @property
     def accounts(self):

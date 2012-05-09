@@ -5,7 +5,6 @@ from datetime import datetime
 
 from account import AccountData
 from organization import OrganizationData
-from venue import VenueData
 
 class EventData(DataSet):
     class event_1:
@@ -47,7 +46,6 @@ class PerformanceData(DataSet):
         end_on = datetime(2012,7,1,21,0)
         no_period = False
         event = EventData.event_1
-        venue = VenueData.venue_1
         owner = AccountData.account_3
     class performance_2:
         event = EventData.event_1
@@ -58,7 +56,6 @@ class PerformanceData(DataSet):
         end_on = datetime(2012,7,2,21,0)
         no_period = False
         event = EventData.event_1
-        venue = VenueData.venue_1
         owner = AccountData.account_3
     class performance_3:
         event = EventData.event_1
@@ -69,7 +66,6 @@ class PerformanceData(DataSet):
         end_on = datetime(2012,7,3,21,0)
         no_period = False
         event = EventData.event_1
-        venue = VenueData.venue_1
         owner = AccountData.account_3
     class performance_4:
         event = EventData.event_1
@@ -80,7 +76,6 @@ class PerformanceData(DataSet):
         end_on = datetime(2012,7,4,21,0)
         no_period = False
         event = EventData.event_1
-        venue = VenueData.venue_1
         owner = AccountData.account_3
     class performance_5:
         event = EventData.event_1
@@ -91,7 +86,6 @@ class PerformanceData(DataSet):
         end_on = datetime(2012,7,5,21,0)
         no_period = False
         event = EventData.event_1
-        venue = VenueData.venue_1
         owner = AccountData.account_3
     class performance_6:
         event = EventData.event_2
@@ -102,7 +96,6 @@ class PerformanceData(DataSet):
         end_on = datetime(2012,7,5,21,0)
         no_period = False
         event = EventData.event_2
-        venue = VenueData.venue_2
         owner = AccountData.account_4
     class performance_7:
         event = EventData.event_2
@@ -113,7 +106,6 @@ class PerformanceData(DataSet):
         end_on = datetime(2012,7,6,21,0)
         no_period = False
         event = EventData.event_2
-        venue = VenueData.venue_2
         owner = AccountData.account_4
     class performance_8:
         event = EventData.event_2
@@ -124,5 +116,4 @@ class PerformanceData(DataSet):
         end_on = datetime(2012,7,7,21,0)
         no_period = False
         event = EventData.event_2
-        venue = VenueData.venue_2
         owner = AccountData.account_4

@@ -122,8 +122,8 @@ class ProductItem(BaseModel, Base):
     def get_for_update(self):
         self.stock = Stock.get_for_update(self.performance_id, self.seat_type_id)
         if self.stock != None:
-            self.seatStock = SeatStock.get_for_update(self.stock.id)
-            return self.seatStock
+            self.seatStatus = SeatStatus.get_for_update(self.stock.id)
+            return self.seatStatus
         else:
             return None
 
@@ -135,7 +135,6 @@ class SeatType(BaseModel, Base):
     performance_id = Column(BigInteger, ForeignKey("Performance.id"))
 
     stocks = relationship('Stock', backref='seat_type')
-    seats = relationship('Seat', backref='seat_type')
 
     style = Column(MutationDict.as_mutable(JSONEncodedDict(1024)))
 
@@ -171,10 +170,9 @@ class Stock(BaseModel, Base):
     quantity = Column(Integer)
 
     stock_holder_id = Column(BigInteger, ForeignKey('StockHolder.id'))
+    seats = relationship("Seat", backref='seat')
 
     seat_type_id = Column(BigInteger, ForeignKey('SeatType.id'))
-
-    seats = relationship('Seat', backref='stock')
 
     @staticmethod
     def get_for_update(pid, stid):
@@ -217,7 +215,7 @@ class Product(BaseModel, Base):
             return False
         for item in self.items:
             item.stock.quantity += 1
-            item.seatStock.status = SeatStatusEnum.Vacant.v
+            item.seatStatus.status = SeatStatusEnum.Vacant.v
         DBSession.flush()
         return True
 
@@ -226,6 +224,6 @@ class Product(BaseModel, Base):
             return False
         for item in self.items:
             item.stock.quantity -= 1
-            item.seatStock.status = SeatStatusEnum.InCart.v
+            item.seatStatus.status = SeatStatusEnum.InCart.v
         DBSession.flush()
         return True

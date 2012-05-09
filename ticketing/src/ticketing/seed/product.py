@@ -4,8 +4,8 @@ from datetime import datetime
 from ticketing.seed import DataSet
 
 from account import AccountData
-from event import PerformanceData, EventData
-from organization import OrganizationData
+from .event import PerformanceData, EventData
+from .organization import OrganizationData
 
 class SeatTypeData(DataSet):
     class seat_type_1:
@@ -118,34 +118,34 @@ class StockHolderData(DataSet):
 
 class StockData(DataSet):
     class stock_1:
-        quantity = 1000
+        quantity = 5
         seat_type = SeatTypeData.seat_type_1
         stock_holder = StockHolderData.stock_holder_1
     class stock_2:
-        quantity = 800
+        quantity = 3
         seat_type = SeatTypeData.seat_type_2
         stock_holder = StockHolderData.stock_holder_1
     class stock_3:
-        quantity = 500
+        quantity = 2
         seat_type = SeatTypeData.seat_type_3
         stock_holder = StockHolderData.stock_holder_1
     class stock_4:
-        quantity = 0
+        quantity = 3
         seat_type = SeatTypeData.seat_type_4
         stock_holder = StockHolderData.stock_holder_1
     class stock_5:
-        quantity = 60
+        quantity = 4
         seat_type = SeatTypeData.seat_type_1
         stock_holder = StockHolderData.stock_holder_5
     class stock_6:
-        quantity = 50
+        quantity = 4
         seat_type = SeatTypeData.seat_type_2
         stock_holder = StockHolderData.stock_holder_5
     class stock_7:
-        quantity = 40
+        quantity = 3
         seat_type = SeatTypeData.seat_type_3
         stock_holder = StockHolderData.stock_holder_5
     class stock_8:
-        quantity = 30
+        quantity = 3
         seat_type = SeatTypeData.seat_type_4
         stock_holder = StockHolderData.stock_holder_5

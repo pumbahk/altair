@@ -33,16 +33,14 @@ class Site(Base):
 class Venue(Base):
     __tablename__ = "Venue"
     id = Column(BigInteger, primary_key=True)
-    site_id = Column(BigInteger, ForeignKey("Site.id"), nullable=True)
+    site_id = Column(BigInteger, ForeignKey("Site.id"), nullable=False)
+    performance_id = Column(BigInteger, ForeignKey("Performance.id"), nullable=False)
     name = Column(String(255))
     sub_name = Column(String(255))
-    organization_id = Column(BigInteger, ForeignKey("Organization.id"), nullable=True)
-    organization = relationship('Organization')
 
-    site = relationship("Site")
+    site = relationship("Site", uselist=False)
     seats = relationship("Seat", backref='venue')
     areas = relationship("VenueArea", backref='venue')
-    performances = relationship("Performance", backref='venue')
 
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
@@ -85,8 +83,8 @@ class Seat(Base):
 
     venue_id        = Column(BigInteger, ForeignKey('Venue.id'))
     stock_id        = Column(BigInteger, ForeignKey('Stock.id'))
-    seat_type_id    = Column(BigInteger, ForeignKey('SeatType.id'))
 
+    stock           = relationship("Stock", uselist=False)
     attributes      = relationship("SeatAttribute", backref='seat', cascade='save-update, merge')
     areas           = relationship("VenueArea", secondary=seat_venue_area_table, backref="seats")
 
