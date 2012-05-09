@@ -3,6 +3,7 @@
 <%namespace file="/common/helpers.html" import="alert_message" />
 <%namespace file="/common/helpers.html" import="flash_messages" />
 <%namespace file="/common/helpers.html" import="form_item" />
+<%namespace file="/common/helpers.html" import="safe_strftime" />
 <%namespace file="/common/confirm_modal.html" import="delete_modal" />
 
 <script>
@@ -50,24 +51,28 @@
         </tr>
         <tr>
           <th>販売開始日時</th>
-          <td>${event.sales_start_on.strftime('%Y/%m/%d %H:%M')}</td>
+          <td>${safe_strftime(event.sales_start_on)}</td>
         </tr>
         <tr>
           <th>販売終了日時</th>
-          <td>${event.sales_end_on.strftime('%Y/%m/%d %H:%M')}</td>
+          <td>${safe_strftime(event.sales_end_on)}</td>
         </tr>
         <tr>
           <th>${form.start_on.label.text}</th>
-          <td>${event.start_on.strftime('%Y/%m/%d %H:%M')}
+          <td>${safe_strftime(event.start_on)}
+            % if event.start_performance:
             (<a href="${request.route_path('performances.show', event_id=event.id, performance_id=event.start_performance.id)}">
              ${event.start_performance.venue.name} 公演 </a>)
+            % endif
           </td>
         </tr>
         <tr>
           <th>${form.end_on.label.text}</th>
-          <td>${event.end_on.strftime('%Y/%m/%d %H:%M')}
+          <td>${safe_strftime(event.end_on)}
+            % if event.final_performance:
             (<a href="${request.route_path('performances.show', event_id=event.id, performance_id=event.final_performance.id)}">
               ${event.final_performance.venue.name} 公演 </a>)
+            % endif
           </td>
         </tr>
       </tbody>

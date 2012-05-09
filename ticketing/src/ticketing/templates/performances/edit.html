@@ -7,10 +7,10 @@
 <%
   if request.matched_route.name == 'performances.edit':
     route_name = u'編集'
-    route_path = request.route_path('performances.edit', performance_id=1)
+    route_path = request.route_path('performances.edit', performance_id=performance.id)
   else:
     route_name = u'新規登録'
-    route_path = request.route_path('performances.new', event_id=1)
+    route_path = request.route_path('performances.new', event_id=event.id)
 %>
 
 <script type="text/javascript">

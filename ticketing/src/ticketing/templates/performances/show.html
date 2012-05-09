@@ -1,5 +1,7 @@
 <%inherit file="../layout.html" />
 <%namespace file="/common/helpers.html" import="flash_messages" />
+<%namespace file="/common/helpers.html" import="safe_strftime" />
+
 <%block name="style">
 <link rel="stylesheet" type="text/css" href="/static/css/kolorpicker.css" />
 <link rel="stylesheet" type="text/css" href="/static/css/performance.css" />
@@ -29,9 +31,11 @@
   }
 </style>
 </%block>
+
 <script type="text/javascript">
 var GET_DRAWING_URL = "${request.route_path('api.get_drawing', venue_id=performance.venue.id)}";
 </script>
+
 <div class="row-fluid">
   <%include file="../parts/_menu.html" />
 
@@ -49,15 +53,15 @@ var GET_DRAWING_URL = "${request.route_path('api.get_drawing', venue_id=performa
         <tbody>
           <tr>
             <th>開場</th>
-            <td>${performance.open_on}</td>
+            <td>${safe_strftime(performance.open_on)}</td>
           </tr>
           <tr>
             <th>開演</th>
-            <td>${performance.start_on}</td>
+            <td>${safe_strftime(performance.start_on)}</td>
           </tr>
           <tr>
             <th>終演</th>
-            <td>${performance.end_on or ''}</td>
+            <td>${safe_strftime(performance.end_on)}</td>
           </tr>
         </tbody>
       </table>
