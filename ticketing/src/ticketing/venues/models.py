@@ -45,8 +45,10 @@ class Venue(BaseModel, Base):
     sub_name = Column(String(255))
 
     original_venue_id = Column(BigInteger, ForeignKey("Venue.id"), nullable=True)
-    original_venue = relationship("Venue", remote_side=[id])
-    derived_venues = relationship("Venue")
+    derived_venues = relationship("Venue",
+                                  backref=backref(
+                                    'original_venue', remote_side=[id]))
+                                  
 
     site = relationship("Site", uselist=False)
     seats = relationship("Seat", backref='venue')
