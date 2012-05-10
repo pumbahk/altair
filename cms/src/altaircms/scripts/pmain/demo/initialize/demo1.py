@@ -321,7 +321,7 @@ def init():
         DBSession.add(root_page)
 
         D = {'layout_id': 1,
-             'title': u'音楽',
+             'title': u'音楽かてごり',
              'url': u'top/music'}
         subkind_page = Page.from_dict(D)
         cpageset = PageSet.get_or_create(subkind_page)

@@ -3,10 +3,12 @@ import logging
 from datetime import datetime
 import sqlalchemy.orm.exc as saexc
 import pyramid.exceptions as pyrexc
+import sqlalchemy as sa
 
 from altaircms.layout.models import Layout
 from altaircms.page.models import Page
 from altaircms.widget.tree.proxy import WidgetTreeProxy
+from altaircms.models import Category
 
 from ..models import DBSession
 from .rendering import genpage as gen
@@ -59,4 +61,7 @@ class PageRenderingResource(object):
 
     def get_layout_template(self, layout, config):
         return gen.get_layout_template(str(layout.template_filename), config)
+
+    def get_categories(self):
+        return Category.get_toplevel_categories(request=self.request).order_by(sa.asc("orderno"))
 

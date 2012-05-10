@@ -921,7 +921,7 @@ def theater_page(layout):
     theater_page = Page(description=u'チケットの販売、イベントの予約は楽天チケットで！楽天チケットは演劇、バレエ、ミュージカルなどの舞台、クラシック、オペラ、ロックなどのコンサート、野球、サッカー、格闘技などの講演、その他イベントなどのチケットのオンラインショッピングサイトです。',
                        keywords= u"チケット,演劇,クラシック,オペラ,コンサート,バレエ,ミュージカル,野球,サッカー,格闘技", 
                        layout= layout, 
-                       title= u'講演',
+                       title= u'演劇',
                        url= u'theater',
                        structure= "{}", 
                        version= None)
@@ -1132,6 +1132,8 @@ def top_topics(page):
 
 def top_topcontents(page):
     link_page = list(Page.query.filter(Page.event!=None).all())[-1] ##
+    img_path = os.path.join(os.path.dirname(__file__), "./data/dummy.jpg")
+    image_asset = make_image_asset(img_path, title="dummy")
     return [
         Topcontent(kind=u"注目のイベント", 
                    publish_open_on=datetime.datetime(2011, 1, 1),
@@ -1141,7 +1143,7 @@ def top_topcontents(page):
                    title=link_page.title, 
                    text=u"ここになにか説明を加える。これはデフォルトの文章を表示するようにしても良いかもしれない。", 
                    orderno=50, 
-                   image_asset_id = 1,  ##
+                   image_asset = image_asset,  ##
                    countdown_type = "deal_close"
                    ), 
         Topcontent(kind=u"注目のイベント", 
@@ -1152,7 +1154,7 @@ def top_topcontents(page):
                    title=link_page.title, 
                    text=u"ここになにか説明を加える。これはデフォルトの文章を表示するようにしても良いかもしれない。", 
                    orderno=50, 
-                   image_asset_id = 1,  ##
+                   image_asset = image_asset,  ##
                    countdown_type = "deal_close"
                    ), 
         Topcontent(kind=u"注目のイベント", 
@@ -1163,7 +1165,7 @@ def top_topcontents(page):
                    title=link_page.title, 
                    text=u"ここになにか説明を加える。これはデフォルトの文章を表示するようにしても良いかもしれない。", 
                    orderno=50, 
-                   image_asset_id = 1,  ##
+                   image_asset = image_asset,  ##
                    countdown_type = "deal_close"
                    ), 
         Topcontent(kind=u"注目のイベント", 
@@ -1174,7 +1176,7 @@ def top_topcontents(page):
                    title=link_page.title, 
                    text=u"ここになにか説明を加える。これはデフォルトの文章を表示するようにしても良いかもしれない。", 
                    orderno=50, 
-                   image_asset_id = 1,  ##
+                   image_asset = image_asset,  ##
                    countdown_type = "deal_close"
                    ), 
         Topcontent(kind=u"注目のイベント", 
@@ -1185,7 +1187,7 @@ def top_topcontents(page):
                    title=link_page.title, 
                    text=u"ここになにか説明を加える。これはデフォルトの文章を表示するようにしても良いかもしれない。", 
                    orderno=50, 
-                   image_asset_id = 1,  ##
+                   image_asset = image_asset,  ##
                    countdown_type = "deal_close"
                    ), 
         Topcontent(kind=u"注目のイベント", 
@@ -1196,7 +1198,7 @@ def top_topcontents(page):
                    title=link_page.title, 
                    text=u"ここになにか説明を加える。これはデフォルトの文章を表示するようにしても良いかもしれない。", 
                    orderno=50, 
-                   image_asset_id = 1,  ##
+                   image_asset = image_asset,  ##
                    countdown_type = "deal_close"
                    )
         ]

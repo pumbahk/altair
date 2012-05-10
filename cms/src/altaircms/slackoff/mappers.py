@@ -29,4 +29,7 @@ def category_mapper(request, obj):
     objlike = ObjectLike(**model_to_dict(obj))
     objlike.parent = obj.parent.name if obj.parent else None
     objlike.pageset = obj.pageset.name if obj.pageset else None
+    for k, v in objlike.iteritems():
+        if v is None:
+            setattr(objlike, k, u"-")
     return objlike

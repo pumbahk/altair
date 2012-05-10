@@ -184,9 +184,13 @@ class Category(Base):
 　　　　　　　　　演劇
 　　　　　　　　　　　　　ミュージカル
                                   劇団四季
-                  イベント(? static page)
+                  イベント(static page)
 
     ※ このオブジェクトは、対応するページへのリンクを持つ(これはCMSで生成されないページへのリンクで有る場合もある)
+
+    labelはhtml要素のclass属性などに使われる(cssで画像を付加するためなどに).
+    labelはascii only
+    nameはカテゴリ名(imgのalt属性に使われることがある)
     """
     __tablename__ = "category"
     __tableargs__ = (
@@ -196,15 +200,25 @@ class Category(Base):
     id = sa.Column(sa.Integer, primary_key=True)
 
     site_id = sa.Column(sa.Integer, sa.ForeignKey("site.id"))
+    site = orm.relationship("Site", backref="categories", uselist=False)
     parent_id = sa.Column(sa.Integer, sa.ForeignKey("category.id"))
     parent = orm.relationship("Category", remote_side=[id], uselist=False, cascade="all")
 
+    label = sa.Column(sa.String(length=255), nullable=False)
+    imgsrc = sa.Column(sa.String(length=255), nullable=False)
     name = sa.Column(sa.Unicode(length=255), nullable=False)
     hierarchy = sa.Column(sa.Unicode(length=255), nullable=False)
     
     url = sa.Column(sa.Unicode(length=255))
     pageset_id = sa.Column(sa.Integer, sa.ForeignKey("pagesets.id"))
     pageset = orm.relationship("PageSet", backref="category", uselist=False)
+    orderno = sa.Column(sa.Integer)
+
+    @classmethod
+    def get_toplevel_categories(cls, hierarchy=u"大", site=None, request=None): ## fixme
+        if site is None and request and hasattr(request,"site"):
+            site = request.site
+        return cls.query.filter(cls.site==site, cls.hierarchy==hierarchy)
     
     def get_link(self, request):
         if self.pageset is None:

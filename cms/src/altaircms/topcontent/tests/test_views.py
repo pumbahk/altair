@@ -59,7 +59,7 @@ class TestTopcontentView(BaseTest):
     def _fill_request_post(self):
         self.request.POST = MultiDict([
                 (u'page', u'__None'),
-                (u'kind', u"注目のページ"),
+                (u'kind', u"注目のイベント"),
                 (u'countdown_type', u"event_open"),
                 (u'orderno', u'50'),
                 (u'page', u'__None'),

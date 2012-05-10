@@ -1,6 +1,44 @@
 @charset "utf-8";
 
 /*
+  for global navigation 
+*/
+
+#globalNav1 li {
+    line-height: 39px;
+}
+
+#globalNav1 .category a:visited{
+    text-decoration:none;
+    line-height:40px;
+    color: #fff;
+}
+#globalNav1 .category a{
+    text-decoration:none;
+    color: #fff;
+}
+/* .category.index {
+ *     background-repeat: no-repeat;
+ *     background-image:url(/static/ticketstar/img/common/header_nav_top.gif);
+ * }
+ * .category.music {
+ *     background-repeat: no-repeat;
+ *     background-image:url(/static/ticketstar/img/common/header_nav_music.gif);
+ * }
+ * .category.theater {
+ *     background-repeat: no-repeat;
+ *     background-image:url(/static/ticketstar/img/common/header_nav_theater.gif);
+ * }
+ * .category.sports {
+ *     background-repeat: no-repeat;
+ *     background-image:url(/static/ticketstar/img/common/header_nav_sports.gif);
+ * }
+ * .category.event {
+ *     background-repeat: no-repeat;
+ *     background-image:url(/static/ticketstar/img/common/header_nav_event.gif);
+ * } */
+
+/*
   for layout in toppage
   */
 
@@ -169,19 +207,19 @@
     padding-left: 15px;
 }
 
-.index,heading {
+.index.heading {
     background-image:url(/static/ticketstar/img/index/bg_heading.gif);
 }
-.sports,heading {
+.sports.heading {
     background-image:url(/static/ticketstar/img/sports/bg_heading.gif);
 }
-.music,heading {
+.music.heading {
     background-image:url(/static/ticketstar/img/music/bg_heading.gif);
 }
-.theater,heading {
+.theater.heading {
     background-image:url(/static/ticketstar/img/theater/bg_heading.gif);
 }
-.help,heading {
+.help.heading {
     background-image:url(/static/ticketstar/img/help/bg_heading.gif);
 }
 

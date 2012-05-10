@@ -47,11 +47,14 @@ class PromotionForm(Form):
 
 class CategoryForm(Form):
     name = fields.TextField(label=u"カテゴリ名")
+    orderno = fields.IntegerField(label=u"表示順序")
     parent = dynamic_query_select_field_factory(
         Category, allow_blank=False, label=u"親カテゴリ",
         get_label=lambda obj: obj.name or u"--なし--")
 
     hierarchy = fields.SelectField(label=u"階層", choices=[(x, x) for x in [u"大", u"中", u"小"]])
+    label = fields.TextField(label=u"label")
+    imgsrc = fields.TextField(imgsrc=u"imgsrc")
     url = fields.TextField(label=u"リンク(外部ページのURL)")
     pageset = dynamic_query_select_field_factory(
         PageSet, allow_blank=False, label=u"リンク先ページ(CMSで作成したもの)",

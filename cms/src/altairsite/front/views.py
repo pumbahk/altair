@@ -30,7 +30,8 @@ def rendering_page(context, request):
                        tickets=context.get_tickets(page), 
                        event=page.event)
     tmpl = context.get_layout_template(layout, context.get_render_config())
-    params = dict(page=page, display_blocks=block_context.blocks)
+    categories = context.get_categories()
+    params = dict(page=page, display_blocks=block_context.blocks, categories=categories)
     return render_to_response(tmpl, params, request)
 
 @view_config(route_name="front_preview", decorator=with_jquery)
@@ -45,7 +46,8 @@ def rendering_preview_page(context, request):
                        tickets=context.get_tickets(page), 
                        event=page.event)
     tmpl = context.get_layout_template(layout, context.get_render_config())
-    params = dict(page=page, display_blocks=block_context.blocks)
+    categories = context.get_categories()
+    params = dict(page=page, display_blocks=block_context.blocks, categories=categories)
     return render_to_response(tmpl, params, request)
 
 @view_config(route_name="front_to_preview") #slack-off
