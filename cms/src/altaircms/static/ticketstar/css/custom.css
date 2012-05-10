@@ -77,6 +77,14 @@
 	width: 362px;
     float: right;
 }
+#event #mainLeft {
+	width: 362px;
+    float: left;
+}
+#event #mainRight {
+	width: 362px;
+    float: right;
+}
 
 
 /*
@@ -215,6 +223,9 @@
 }
 .music.heading {
     background-image:url(/static/ticketstar/img/music/bg_heading.gif);
+}
+.other.heading {
+    background-image:url(/static/ticketstar/img/event/bg_heading.gif);
 }
 .theater.heading {
     background-image:url(/static/ticketstar/img/theater/bg_heading.gif);

@@ -12,6 +12,10 @@ from altaircms.models import (
 )
 from altaircms.layout.models import Layout
 from altaircms.event.models import Event
+from altaircms.auth.models import (
+    Client, 
+    Operator
+)
 from altaircms.page.models import (
     Page, PageSet
 )
@@ -24,7 +28,10 @@ from altaircms.topcontent.models import Topcontent
 from altaircms.plugins.widget.promotion.models import (
     Promotion, PromotionUnit
 )
-from altaircms.models import Category
+from altaircms.models import(
+    Site, 
+    Category
+)
 
 from altaircms.asset.helpers import create_asset
 
@@ -1048,13 +1055,15 @@ def event_layout():
 
 
 def event_page(layout):
-    event_page = Page(description=u'チケットの販売、イベントの予約は楽天チケットで！楽天チケットは演劇、バレエ、ミュージカルなどの舞台、クラシック、オペラ、ロックなどのコンサート、野球、サッカー、格闘技などのその他、その他イベントなどのチケットのオンラインショッピングサイトです。',
-                       keywords= u"チケット,演劇,クラシック,オペラ,コンサート,バレエ,ミュージカル,野球,サッカー,格闘技", 
-                       layout= layout, 
-                       title= u'イベント・その他',
-                       url= u'event',
-                       structure= "{}", 
-                       version= None)
+    event_page = Page.get_or_create_by_title(u'イベント・その他')
+    params = dict (description=u'チケットの販売、イベントの予約は楽天チケットで！楽天チケットは演劇、バレエ、ミュージカルなどの舞台、クラシック、オペラ、ロックなどのコンサート、野球、サッカー、格闘技などのその他、その他イベントなどのチケットのオンラインショッピングサイトです。',
+                   keywords= u"チケット,演劇,クラシック,オペラ,コンサート,バレエ,ミュージカル,野球,サッカー,格闘技", 
+                   layout= layout, 
+                   url= u'event',
+                   structure= "{}", 
+                   version= None)
+    for k, v in params.iteritems():
+        setattr(event_page, k, v)
     PageSet.get_or_create(event_page)
     return event_page
 
@@ -1183,13 +1192,15 @@ def top_layout():
 
 
 def top_page(layout):
-    top_page = Page(description=u'チケットの販売、イベントの予約は楽天チケットで！楽天チケットは演劇、バレエ、ミュージカルなどの舞台、クラシック、オペラ、ロックなどのコンサート、野球、サッカー、格闘技などのスポーツ、その他イベントなどのチケットのオンラインショッピングサイトです。',
-                       keywords= u"チケット,演劇,クラシック,オペラ,コンサート,バレエ,ミュージカル,野球,サッカー,格闘技", 
-                       layout= layout, 
-                       title= u'トップページ',
-                       url= u'top!',
-                       structure= "{}", 
-                       version= None)
+    top_page = Page.get_or_create_by_title(u'トップページ')
+    params = dict(description=u'チケットの販売、イベントの予約は楽天チケットで！楽天チケットは演劇、バレエ、ミュージカルなどの舞台、クラシック、オペラ、ロックなどのコンサート、野球、サッカー、格闘技などのスポーツ、その他イベントなどのチケットのオンラインショッピングサイトです。',
+                  keywords= u"チケット,演劇,クラシック,オペラ,コンサート,バレエ,ミュージカル,野球,サッカー,格闘技", 
+                  layout= layout, 
+                  url= u'top!',
+                  structure= "{}", 
+                  version= None)
+    for k, v in params.iteritems():
+        setattr(top_page, k, v)
     PageSet.get_or_create(top_page)
     return top_page
 
@@ -1258,7 +1269,7 @@ def top_topics(page):
 
 
 def top_topcontents(page):
-    link_page = list(Page.query.filter(Page.event!=None).all())[-1] ##
+    link_page = Page.query.filter(Page.event!=None).first() ##
     img_path = os.path.join(os.path.dirname(__file__), "./data/dummy.jpg")
     image_asset = make_image_asset(img_path, title="dummy")
     return [
@@ -1376,7 +1387,7 @@ def add_top_main_block_widgets(page, promotion):
     add_linklist_widget(page, "main_right", params)
 
 
-def top_event_and_page_for_linklist_widget():
+def top_event_and_page_for_linklist_widget(layout):
     today = datetime.datetime.today()
     def create_material(title, offset):
         delta = datetime.timedelta(days=offset)
@@ -1385,7 +1396,7 @@ def top_event_and_page_for_linklist_widget():
                       event_close=datetime.timedelta(100)+today, 
                       deal_open=delta+today, 
                       deal_close=datetime.timedelta(100)+today)
-        page = Page(layout_id=1, ##
+        page = Page(layout=layout, ##
                     url=title,  ##
                     title=title, 
                     event=event)
@@ -1400,7 +1411,7 @@ def top_event_and_page_for_linklist_widget():
 
 def add_top_page_settings():
     layout = top_layout()
-    materials = top_event_and_page_for_linklist_widget()
+    materials = top_event_and_page_for_linklist_widget(layout)
     page = top_page(layout)
     topics = top_topics(page)
     topcontents = top_topcontents(page)
@@ -1415,16 +1426,41 @@ def add_top_page_settings():
     add_top_main_block_widgets(page, promotion)
 
 
+def add_materials_settings():
+    """ siteなど
+    """
+    client = Client(
+        id = 1,
+        name = u"master",
+        prefecture = u"tokyo",
+        address = u"000",
+        email = "foo@example.jp",
+        contract_status = 0
+        )
+    site = Site(name=u"ticketstar",
+                description=u"ticketstar ticketstar",
+                url="http://example.com",
+                client=client)
+
+    debug_user = Operator(auth_source="debug", user_id=1, id=1, role_id=1, screen_name="debug user")
+
+    DBSession.add(debug_user)
+    DBSession.add(client)
+    DBSession.add(site)
+
+
 def main(env, args):
     # setup()
+    add_materials_settings()
+    transaction.commit()
+
     add_sports_page_settings()
     add_music_page_settings()
     add_theater_page_settings()
     add_help_page_settings()
     add_event_page_settings()
-    add_top_page_settings()
     add_detail_page_settings()
-
+    add_top_page_settings()
     transaction.commit()
 
     ##
