@@ -7,7 +7,7 @@ from sqlalchemy.orm import joinedload, noload
 from urllib2 import urlopen
 
 from ticketing.models import DBSession
-from .models import Venue, Seat, SeatAttribute, VenueArea, seat_venue_area_table
+from .models import Venue, Seat, SeatAttribute, VenueArea, seat_venue_area_table, SeatAdjacency, SeatAdjacencySet
 from ticketing.products.models import Stock, StockHolder
 
 @view_config(route_name="api.get_drawing", request_method="GET")
@@ -38,10 +38,20 @@ def get_seats(request):
             seat_datum[attr.name] = attr.value
         seats_data[seat.l0_id] = seat_datum
 
+    seat_adjacencies_data = {}
+    for seat_adjacency_set in DBSession.query(SeatAdjacencySet).options(joinedload("adjacencies")).filter_by(venue=venue):
+        for seat_adjacency in seat_adjacency_set.adjacencies:
+            seat_adjacencies_data[seat_adjacency_set.seat_count] = [
+                [seat.l0_id for seat in seat_adjacency.seats] \
+                for seat_adjacency in seat_adjacency_set.adjacencies \
+                ]
+
     return {
         'areas': dict(
             (area.id, { 'id': area.id, 'name': area.name }) \
             for area in venue.areas
             ),
-        'seats': seats_data
+        'seats': seats_data,
+        'seat_adjacencies': seat_adjacencies_data,
         }
+
