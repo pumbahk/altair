@@ -77,7 +77,6 @@ class BaseModel(object):
     created_at = Column(DateTime)
     updated_at = Column(DateTime, nullable=True)
     deleted_at = Column(DateTime, nullable=True)
-    status = Column(Integer, default=1)
 
     @classmethod
     def get(cls, id):
@@ -86,6 +85,10 @@ class BaseModel(object):
     @classmethod
     def all(cls):
         return DBSession.query(cls).filter(cls.deleted_at==None).all()
+
+    @classmethod
+    def find_by(cls, **conditions):
+        return DBSession.query(cls).filter_by(**conditions).all()
 
     def save(self):
         if self.id:

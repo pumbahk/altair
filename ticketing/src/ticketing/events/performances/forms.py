@@ -12,13 +12,12 @@ class PerformanceForm(Form):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         Form.__init__(self, formdata, obj, prefix, **kwargs)
         if 'organization_id' in kwargs:
-            '''
+            conditions = {
+                'organization_id':kwargs['organization_id'],
+                'original_venue_id':None,
+            }
             self.venue_id.choices = [
-                (venue.id, venue.name) for venue in Venue.get_by_organization_id(kwargs['organization_id'])
-            ]
-            '''
-            self.venue_id.choices = [
-                (venue.id, venue.name) for venue in Venue.all()
+                (venue.id, venue.name) for venue in Venue.find_by(**conditions)
             ]
 
     name = TextField(

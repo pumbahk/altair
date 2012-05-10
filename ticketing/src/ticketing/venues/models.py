@@ -16,7 +16,7 @@ seat_venue_area_table = Table(
     Column('seat_id', BigInteger, ForeignKey('Seat.id'), primary_key=True)
 )
 
-class Site(Base):
+class Site(BaseModel, Base):
     __tablename__ = "Site"
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
@@ -31,7 +31,7 @@ class Site(Base):
     fax = Column(String(32))
     drawing_url = Column(String(255))
 
-class Venue(Base):
+class Venue(BaseModel, Base):
     """
     Venueは、Performance毎に1個つくられる。
     Venueのテンプレートは、performance_idがNoneになっている。
@@ -45,29 +45,14 @@ class Venue(Base):
     sub_name = Column(String(255))
 
     original_venue_id = Column(BigInteger, ForeignKey("Venue.id"), nullable=True)
+    original_venue = relationship("Venue", remote_side=[id])
     derived_venues = relationship("Venue")
 
     site = relationship("Site", uselist=False)
     seats = relationship("Seat", backref='venue')
     areas = relationship("VenueArea", backref='venue')
 
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
-    status = Column(Integer)
-
-    @staticmethod
-    def get(id):
-        return session.query(Venue).filter(Venue.id==id).first()
-
-    @staticmethod
-    def get_by_organization_id(id):
-        return session.query(Venue).filter(Venue.organization_id==id).all()
-
-    @staticmethod
-    def all():
-        return session.query(Venue).all()
-
-class VenueArea(Base):
+class VenueArea(BaseModel, Base):
     __tablename__   = "VenueArea"
     id              = Column(BigInteger, primary_key=True)
     l0_id           = Column(String(255))
@@ -75,17 +60,13 @@ class VenueArea(Base):
 
     venue_id        = Column(BigInteger, ForeignKey('Venue.id'))
 
-    updated_at      = Column(DateTime)
-    created_at      = Column(DateTime)
-    status          = Column(Integer)
-
-class SeatAttribute(Base):
+class SeatAttribute(BaseModel, Base):
     __tablename__   = "SeatAttribute"
     seat_id         = Column(BigInteger, ForeignKey('Seat.id'), primary_key=True, nullable=False)
     name            = Column(String(255), primary_key=True, nullable=False)
     value           = Column(String(1023))
 
-class Seat(Base):
+class Seat(BaseModel, Base):
     __tablename__   = "Seat"
     id              = Column(BigInteger, primary_key=True)
     l0_id           = Column(String(255))
@@ -96,9 +77,6 @@ class Seat(Base):
     stock           = relationship("Stock", uselist=False)
     attributes      = relationship("SeatAttribute", backref='seat', cascade='save-update, merge')
     areas           = relationship("VenueArea", secondary=seat_venue_area_table, backref="seats")
-
-    updated_at      = Column(DateTime)
-    created_at      = Column(DateTime)
 
     def __setitem__(self, name, value):
         session.add(self)

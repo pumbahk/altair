@@ -12,7 +12,7 @@ class AccountTypeEnum(StandardEnum):
     Playguide   = 2
     User        = 3
 
-class Account(Base, BaseModel):
+class Account(BaseModel, Base):
     __tablename__ = "Account"
     id = Column(BigInteger, primary_key=True)
     account_type = Column(Integer)  # @see AccountTypeEnum
@@ -29,7 +29,7 @@ class Account(Base, BaseModel):
     def get_by_organization_id(id):
         return DBSession.query(Account).filter(Account.organization_id==id).all()
 
-class Performance(Base, BaseModel):
+class Performance(BaseModel, Base):
     __tablename__ = 'Performance'
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
@@ -55,7 +55,7 @@ class Performance(Base, BaseModel):
                 .all()
         return data
 
-class Event(Base, BaseModel):
+class Event(BaseModel, Base):
     __tablename__ = 'Event'
     id = Column(BigInteger, primary_key=True)
     code = Column(String(12))
