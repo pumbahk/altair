@@ -47,6 +47,26 @@
 	</div>
 </%block>
 
+<%doc>
+<%block name="global_navigation">
+	<div id="globalNav">
+		<ul id="globalNav1">
+			<li><a href="/static/ticketstar/index.html"><img src="/static/ticketstar/img/common/header_nav_top.gif" alt="チケットトップ" width="132" height="40" /></a></li>
+			<li><a href="/static/ticketstar/music/index.html"><img src="/static/ticketstar/img/common/header_nav_music.gif" alt="音楽" width="67" height="40" /></a></li>
+			<li><a href="/static/ticketstar/theater/index.html"><img src="/static/ticketstar/img/common/header_nav_theater.gif" alt="演劇" width="73" height="40" /></a></li>
+			<li><a href="/static/ticketstar/sports/index.html"><img src="/static/ticketstar/img/common/header_nav_sports.gif" alt="スポーツ" width="102" height="40" /></a></li>
+			<li><a href="/static/ticketstar/event/index.html"><img src="/static/ticketstar/img/common/header_nav_event.gif" alt="イベント・その他" width="157" height="40" /></a></li>
+		</ul>
+		<ul id="globalNav2">
+			<li><a href="#">抽選申込履歴</a></li>
+			<li><a href="#">購入履歴</a></li>
+			<li><a href="#">お気に入り</a></li>
+			<li><a href="#">マイページ</a></li>
+		</ul>
+	</div>
+</%block>
+</%doc>
+
 <%block name="section_navigation">
 		<dl id="sectionNav">
 		  <dt>主なカテゴリー</dt>

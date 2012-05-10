@@ -26,7 +26,7 @@
 	<%block name="css_prerender"/>
     <script type="text/javascript" src="/static/ticketstar/js/jquery.js"></script>
   </head>
-<body id="music">
+<body id="theater">
 
 <p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="/static/ticketstar/img/common/skip.gif" alt="本文へジャンプ" width="1" height="1" /></a></p>
 
@@ -38,11 +38,12 @@
     </div>
     ${co.global_navigation()}
     ${co.header_search()}
+
 	<!-- ========== /header ========== -->
 	
 	<hr />
 	
-	<!-- InstanceBeginEditable name="cat" --><h1><img src="/static/ticketstar/img/music/title_music.gif" alt="音楽" width="91" height="60" /></h1><!-- InstanceEndEditable -->
+	<!-- InstanceBeginEditable name="cat" --><h1><img src="/static/ticketstar/img/theater/title_theater.gif" alt="講演" width="91" height="60" /></h1><!-- InstanceEndEditable -->
 	
 	<!-- ========== main ========== -->
 	<div id="main">
