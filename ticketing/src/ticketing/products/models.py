@@ -103,11 +103,6 @@ class BuyerCondition(BaseModel, Base):
      Any Conditions.....
     '''
 
-stock_reference_from_product_item_table =  Table('StockReferenceFromProductItem', Base.metadata,
-    Column('product_id', BigInteger, ForeignKey('ProductItem.id')),
-    Column('stock_id', BigInteger, ForeignKey('Stock.id'))
-)
-
 class ProductItem(BaseModel, Base):
     __tablename__ = 'ProductItem'
     id = Column(BigInteger, primary_key=True)
@@ -117,7 +112,8 @@ class ProductItem(BaseModel, Base):
     product_id = Column(BigInteger, ForeignKey('Product.id'))
     performance_id = Column(BigInteger, ForeignKey('Performance.id'))
 
-    stocks = relationship("Stock", secondary=stock_reference_from_product_item_table)
+    stock_id = Column(BigInteger, ForeignKey('Stock.id'))
+    stock = relationship("Stock")
 
     def get_for_update(self):
         self.stock = Stock.get_for_update(self.performance_id, self.seat_type_id)

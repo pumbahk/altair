@@ -12,6 +12,7 @@ from ticketing.fanstatic import with_bootstrap
 from ticketing.events.models import Event, Performance, Account
 from ticketing.events.performances.forms import PerformanceForm, StockHolderForm
 from ticketing.products.models import Product, StockHolder, SalesSegment
+from ticketing.venues.models import Venue
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class Performances(BaseView):

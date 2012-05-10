@@ -106,6 +106,89 @@ class VenueData(DataSet):
         organization = OrganizationData.organization_0
         original_venue = TemplateVenueData.venue_orig_2
 
+class TemplateSeatVenue1Data(DataSet):
+    class seat_v1_a1:
+        l0_id = u'A1'
+        venue = TemplateVenueData.venue_orig_1
+    class seat_v1_a2:
+        l0_id = u'A2'
+        venue = TemplateVenueData.venue_orig_1
+    class seat_v1_a3:
+        l0_id = u'A3'
+        venue = TemplateVenueData.venue_orig_1
+    class seat_v1_a4:
+        l0_id = u'A4'
+        venue = TemplateVenueData.venue_orig_1
+    class seat_v1_a5:
+        l0_id = u'A5'
+        venue = TemplateVenueData.venue_orig_1
+    class seat_v1_a6:
+        l0_id = u'A6'
+        venue = TemplateVenueData.venue_orig_1
+    class seat_v1_a7:
+        l0_id = u'A7'
+        venue = TemplateVenueData.venue_orig_1
+    class seat_v1_a8:
+        l0_id = u'A8'
+        venue = TemplateVenueData.venue_orig_1
+    class seat_v1_a9:
+        l0_id = u'A9'
+        venue = TemplateVenueData.venue_orig_1
+    class seat_v1_b1:
+        l0_id = u'B1'
+        venue = TemplateVenueData.venue_orig_1
+    class seat_v1_b2:
+        l0_id = u'B2'
+        venue = TemplateVenueData.venue_orig_1
+    class seat_v1_b3:
+        l0_id = u'B3'
+        venue = TemplateVenueData.venue_orig_1
+    class seat_v1_b4:
+        l0_id = u'B4'
+        venue = TemplateVenueData.venue_orig_1
+    class seat_v1_b5:
+        l0_id = u'B5'
+        venue = TemplateVenueData.venue_orig_1
+    class seat_v1_b6:
+        l0_id = u'B6'
+        venue = TemplateVenueData.venue_orig_1
+    class seat_v1_b7:
+        l0_id = u'B7'
+        venue = TemplateVenueData.venue_orig_1
+    class seat_v1_c1:
+        l0_id = u'C1'
+        venue = TemplateVenueData.venue_orig_1
+    class seat_v1_c2:
+        l0_id = u'C2'
+        venue = TemplateVenueData.venue_orig_1
+    class seat_v1_c3:
+        l0_id = u'C3'
+        venue = TemplateVenueData.venue_orig_1
+    class seat_v1_c4:
+        l0_id = u'C4'
+        venue = TemplateVenueData.venue_orig_1
+    class seat_v1_c5:
+        l0_id = u'C5'
+        venue = TemplateVenueData.venue_orig_1
+    class seat_v1_d1:
+        l0_id = u'D1'
+        venue = TemplateVenueData.venue_orig_1
+    class seat_v1_d2:
+        l0_id = u'D2'
+        venue = TemplateVenueData.venue_orig_1
+    class seat_v1_d3:
+        l0_id = u'D3'
+        venue = TemplateVenueData.venue_orig_1
+    class seat_v1_e1:
+        l0_id = u'E1'
+        venue = TemplateVenueData.venue_orig_1
+    class seat_v1_e2:
+        l0_id = u'E2'
+        venue = TemplateVenueData.venue_orig_1
+    class seat_v1_e3:
+        l0_id = u'E3'
+        venue = TemplateVenueData.venue_orig_1
+
 class SeatVenue1Data(DataSet):
     class seat_v1_a1:
         l0_id = u'A1'
@@ -1466,539 +1549,649 @@ class SeatAttributeData(DataSet):
         seat = SeatVenue1Data.seat_v1_a1
         name = u'attr1'
         value = u'a1-attr2'
-
     class seat_attribute_2:
         seat = SeatVenue1Data.seat_v1_a1
         name = u'attr2'
         value = u'a1-attr2'
-
     class seat_attribute_3:
         seat = SeatVenue1Data.seat_v1_a2
         name = u'attr1'
         value = u'a2-attr2'
-
     class seat_attribute_4:
         seat = SeatVenue1Data.seat_v1_a2
         name = u'attr2'
         value = u'a2-attr2'
-
     class seat_attribute_5:
         seat = SeatVenue1Data.seat_v1_a3
         name = u'attr1'
         value = u'a3-attr2'
-
     class seat_attribute_6:
         seat = SeatVenue1Data.seat_v1_a3
         name = u'attr2'
         value = u'a3-attr2'
-
     class seat_attribute_7:
         seat = SeatVenue1Data.seat_v1_a4
         name = u'attr1'
         value = u'a4-attr2'
-
     class seat_attribute_8:
         seat = SeatVenue1Data.seat_v1_a4
         name = u'attr2'
         value = u'a4-attr2'
-
     class seat_attribute_9:
         seat = SeatVenue1Data.seat_v1_a5
         name = u'attr1'
         value = u'a5-attr2'
-
     class seat_attribute_10:
         seat = SeatVenue1Data.seat_v1_a5
         name = u'attr2'
         value = u'a5-attr2'
-
     class seat_attribute_11:
         seat = SeatVenue1Data.seat_v1_a6
         name = u'attr1'
         value = u'a6-attr2'
-
     class seat_attribute_12:
         seat = SeatVenue1Data.seat_v1_a6
         name = u'attr2'
         value = u'a6-attr2'
-
     class seat_attribute_13:
         seat = SeatVenue1Data.seat_v1_a7
         name = u'attr1'
         value = u'a7-attr2'
-
     class seat_attribute_14:
         seat = SeatVenue1Data.seat_v1_a7
         name = u'attr2'
         value = u'a7-attr2'
-
     class seat_attribute_15:
         seat = SeatVenue1Data.seat_v1_a8
         name = u'attr1'
         value = u'a8-attr2'
-
     class seat_attribute_16:
         seat = SeatVenue1Data.seat_v1_a8
         name = u'attr2'
         value = u'a8-attr2'
-
     class seat_attribute_17:
         seat = SeatVenue1Data.seat_v1_a9
         name = u'attr1'
         value = u'a9-attr2'
-
     class seat_attribute_18:
         seat = SeatVenue1Data.seat_v1_a9
         name = u'attr2'
         value = u'a9-attr2'
-
     class seat_attribute_19:
         seat = SeatVenue1Data.seat_v1_b1
         name = u'attr1'
         value = u'b1-attr2'
-
     class seat_attribute_20:
         seat = SeatVenue1Data.seat_v1_b1
         name = u'attr2'
         value = u'b1-attr2'
-
     class seat_attribute_21:
         seat = SeatVenue1Data.seat_v1_b2
         name = u'attr1'
         value = u'b2-attr2'
-
     class seat_attribute_22:
         seat = SeatVenue1Data.seat_v1_b2
         name = u'attr2'
         value = u'b2-attr2'
-
     class seat_attribute_23:
         seat = SeatVenue1Data.seat_v1_b3
         name = u'attr1'
         value = u'b3-attr2'
-
     class seat_attribute_24:
         seat = SeatVenue1Data.seat_v1_b3
         name = u'attr2'
         value = u'b3-attr2'
-
     class seat_attribute_25:
         seat = SeatVenue1Data.seat_v1_b4
         name = u'attr1'
         value = u'b4-attr2'
-
     class seat_attribute_26:
         seat = SeatVenue1Data.seat_v1_b4
         name = u'attr2'
         value = u'b4-attr2'
-
     class seat_attribute_27:
         seat = SeatVenue1Data.seat_v1_b5
         name = u'attr1'
         value = u'b5-attr2'
-
     class seat_attribute_28:
         seat = SeatVenue1Data.seat_v1_b5
         name = u'attr2'
         value = u'b5-attr2'
-
     class seat_attribute_29:
         seat = SeatVenue1Data.seat_v1_b6
         name = u'attr1'
         value = u'b6-attr2'
-
     class seat_attribute_30:
         seat = SeatVenue1Data.seat_v1_b6
         name = u'attr2'
         value = u'b6-attr2'
-
     class seat_attribute_31:
         seat = SeatVenue1Data.seat_v1_b7
         name = u'attr1'
         value = u'b7-attr2'
-
     class seat_attribute_32:
         seat = SeatVenue1Data.seat_v1_b7
         name = u'attr2'
         value = u'b7-attr2'
-
     class seat_attribute_33:
         seat = SeatVenue1Data.seat_v1_c1
         name = u'attr1'
         value = u'c1-attr2'
-
     class seat_attribute_34:
         seat = SeatVenue1Data.seat_v1_c1
         name = u'attr2'
         value = u'c1-attr2'
-
     class seat_attribute_35:
         seat = SeatVenue1Data.seat_v1_c2
         name = u'attr1'
         value = u'c2-attr2'
-
     class seat_attribute_36:
         seat = SeatVenue1Data.seat_v1_c2
         name = u'attr2'
         value = u'c2-attr2'
-
     class seat_attribute_37:
         seat = SeatVenue1Data.seat_v1_c3
         name = u'attr1'
         value = u'c3-attr2'
-
     class seat_attribute_38:
         seat = SeatVenue1Data.seat_v1_c3
         name = u'attr2'
         value = u'c3-attr2'
-
     class seat_attribute_39:
         seat = SeatVenue1Data.seat_v1_c4
         name = u'attr1'
         value = u'c4-attr2'
-
     class seat_attribute_40:
         seat = SeatVenue1Data.seat_v1_c4
         name = u'attr2'
         value = u'c4-attr2'
-
     class seat_attribute_41:
         seat = SeatVenue1Data.seat_v1_c5
         name = u'attr1'
         value = u'c5-attr2'
-
     class seat_attribute_42:
         seat = SeatVenue1Data.seat_v1_c5
         name = u'attr2'
         value = u'c5-attr2'
-
     class seat_attribute_43:
         seat = SeatVenue1Data.seat_v1_d1
         name = u'attr1'
         value = u'd1-attr2'
-
     class seat_attribute_44:
         seat = SeatVenue1Data.seat_v1_d1
         name = u'attr2'
         value = u'd1-attr2'
-
     class seat_attribute_45:
         seat = SeatVenue1Data.seat_v1_d2
         name = u'attr1'
         value = u'd2-attr2'
-
     class seat_attribute_46:
         seat = SeatVenue1Data.seat_v1_d2
         name = u'attr2'
         value = u'd2-attr2'
-
     class seat_attribute_47:
         seat = SeatVenue1Data.seat_v1_d3
         name = u'attr1'
         value = u'd3-attr2'
-
     class seat_attribute_48:
         seat = SeatVenue1Data.seat_v1_d3
         name = u'attr2'
         value = u'd3-attr2'
-
     class seat_attribute_49:
         seat = SeatVenue1Data.seat_v1_e1
         name = u'attr1'
         value = u'e1-attr2'
-
     class seat_attribute_50:
         seat = SeatVenue1Data.seat_v1_e1
         name = u'attr2'
         value = u'e1-attr2'
-
     class seat_attribute_51:
         seat = SeatVenue1Data.seat_v1_e2
         name = u'attr1'
         value = u'e2-attr2'
-
     class seat_attribute_52:
         seat = SeatVenue1Data.seat_v1_e2
         name = u'attr2'
         value = u'e2-attr2'
-
     class seat_attribute_53:
         seat = SeatVenue1Data.seat_v1_e3
         name = u'attr1'
         value = u'e3-attr2'
-
     class seat_attribute_54:
         seat = SeatVenue1Data.seat_v1_e3
         name = u'attr2'
         value = u'e3-attr2'
-
     class seat_attribute_55:
         seat = SeatVenue2Data.seat_v2_a1
         name = u'attr1'
         value = u'a1-attr2'
-
     class seat_attribute_56:
         seat = SeatVenue2Data.seat_v2_a1
         name = u'attr2'
         value = u'a1-attr2'
-
     class seat_attribute_57:
         seat = SeatVenue2Data.seat_v2_a2
         name = u'attr1'
         value = u'a2-attr2'
-
     class seat_attribute_58:
         seat = SeatVenue2Data.seat_v2_a2
         name = u'attr2'
         value = u'a2-attr2'
-
     class seat_attribute_59:
         seat = SeatVenue2Data.seat_v2_a3
         name = u'attr1'
         value = u'a3-attr2'
-
     class seat_attribute_60:
         seat = SeatVenue2Data.seat_v2_a3
         name = u'attr2'
         value = u'a3-attr2'
-
     class seat_attribute_61:
         seat = SeatVenue2Data.seat_v2_a4
         name = u'attr1'
         value = u'a4-attr2'
-
     class seat_attribute_62:
         seat = SeatVenue2Data.seat_v2_a4
         name = u'attr2'
         value = u'a4-attr2'
-
     class seat_attribute_63:
         seat = SeatVenue2Data.seat_v2_a5
         name = u'attr1'
         value = u'a5-attr2'
-
     class seat_attribute_64:
         seat = SeatVenue2Data.seat_v2_a5
         name = u'attr2'
         value = u'a5-attr2'
-
     class seat_attribute_65:
         seat = SeatVenue2Data.seat_v2_a6
         name = u'attr1'
         value = u'a6-attr2'
-
     class seat_attribute_66:
         seat = SeatVenue2Data.seat_v2_a6
         name = u'attr2'
         value = u'a6-attr2'
-
     class seat_attribute_67:
         seat = SeatVenue2Data.seat_v2_a7
         name = u'attr1'
         value = u'a7-attr2'
-
     class seat_attribute_68:
         seat = SeatVenue2Data.seat_v2_a7
         name = u'attr2'
         value = u'a7-attr2'
-
     class seat_attribute_69:
         seat = SeatVenue2Data.seat_v2_a8
         name = u'attr1'
         value = u'a8-attr2'
-
     class seat_attribute_70:
         seat = SeatVenue2Data.seat_v2_a8
         name = u'attr2'
         value = u'a8-attr2'
-
     class seat_attribute_71:
         seat = SeatVenue2Data.seat_v2_a9
         name = u'attr1'
         value = u'a9-attr2'
-
     class seat_attribute_72:
         seat = SeatVenue2Data.seat_v2_a9
         name = u'attr2'
         value = u'a9-attr2'
-
     class seat_attribute_73:
         seat = SeatVenue2Data.seat_v2_b1
         name = u'attr1'
         value = u'b1-attr2'
-
     class seat_attribute_74:
         seat = SeatVenue2Data.seat_v2_b1
         name = u'attr2'
         value = u'b1-attr2'
-
     class seat_attribute_75:
         seat = SeatVenue2Data.seat_v2_b2
         name = u'attr1'
         value = u'b2-attr2'
-
     class seat_attribute_76:
         seat = SeatVenue2Data.seat_v2_b2
         name = u'attr2'
         value = u'b2-attr2'
-
     class seat_attribute_77:
         seat = SeatVenue2Data.seat_v2_b3
         name = u'attr1'
         value = u'b3-attr2'
-
     class seat_attribute_78:
         seat = SeatVenue2Data.seat_v2_b3
         name = u'attr2'
         value = u'b3-attr2'
-
     class seat_attribute_79:
         seat = SeatVenue2Data.seat_v2_b4
         name = u'attr1'
         value = u'b4-attr2'
-
     class seat_attribute_80:
         seat = SeatVenue2Data.seat_v2_b4
         name = u'attr2'
         value = u'b4-attr2'
-
     class seat_attribute_81:
         seat = SeatVenue2Data.seat_v2_b5
         name = u'attr1'
         value = u'b5-attr2'
-
     class seat_attribute_82:
         seat = SeatVenue2Data.seat_v2_b5
         name = u'attr2'
         value = u'b5-attr2'
-
     class seat_attribute_83:
         seat = SeatVenue2Data.seat_v2_b6
         name = u'attr1'
         value = u'b6-attr2'
-
     class seat_attribute_84:
         seat = SeatVenue2Data.seat_v2_b6
         name = u'attr2'
         value = u'b6-attr2'
-
     class seat_attribute_85:
         seat = SeatVenue2Data.seat_v2_b7
         name = u'attr1'
         value = u'b7-attr2'
-
     class seat_attribute_86:
         seat = SeatVenue2Data.seat_v2_b7
         name = u'attr2'
         value = u'b7-attr2'
-
     class seat_attribute_87:
         seat = SeatVenue2Data.seat_v2_c1
         name = u'attr1'
         value = u'c1-attr2'
-
     class seat_attribute_88:
         seat = SeatVenue2Data.seat_v2_c1
         name = u'attr2'
         value = u'c1-attr2'
-
     class seat_attribute_89:
         seat = SeatVenue2Data.seat_v2_c2
         name = u'attr1'
         value = u'c2-attr2'
-
     class seat_attribute_90:
         seat = SeatVenue2Data.seat_v2_c2
         name = u'attr2'
         value = u'c2-attr2'
-
     class seat_attribute_91:
         seat = SeatVenue2Data.seat_v2_c3
         name = u'attr1'
         value = u'c3-attr2'
-
     class seat_attribute_92:
         seat = SeatVenue2Data.seat_v2_c3
         name = u'attr2'
         value = u'c3-attr2'
-
     class seat_attribute_93:
         seat = SeatVenue2Data.seat_v2_c4
         name = u'attr1'
         value = u'c4-attr2'
-
     class seat_attribute_94:
         seat = SeatVenue2Data.seat_v2_c4
         name = u'attr2'
         value = u'c4-attr2'
-
     class seat_attribute_95:
         seat = SeatVenue2Data.seat_v2_c5
         name = u'attr1'
         value = u'c5-attr2'
-
     class seat_attribute_96:
         seat = SeatVenue2Data.seat_v2_c5
         name = u'attr2'
         value = u'c5-attr2'
-
     class seat_attribute_97:
         seat = SeatVenue2Data.seat_v2_d1
         name = u'attr1'
         value = u'd1-attr2'
-
     class seat_attribute_98:
         seat = SeatVenue2Data.seat_v2_d1
         name = u'attr2'
         value = u'd1-attr2'
-
     class seat_attribute_99:
         seat = SeatVenue2Data.seat_v2_d2
         name = u'attr1'
         value = u'd2-attr2'
-
     class seat_attribute_100:
         seat = SeatVenue2Data.seat_v2_d2
         name = u'attr2'
         value = u'd2-attr2'
-
     class seat_attribute_101:
         seat = SeatVenue2Data.seat_v2_d3
         name = u'attr1'
         value = u'd3-attr2'
-
     class seat_attribute_102:
         seat = SeatVenue2Data.seat_v2_d3
         name = u'attr2'
         value = u'd3-attr2'
-
     class seat_attribute_103:
         seat = SeatVenue2Data.seat_v2_e1
         name = u'attr1'
         value = u'e1-attr2'
-
     class seat_attribute_104:
         seat = SeatVenue2Data.seat_v2_e1
         name = u'attr2'
         value = u'e1-attr2'
-
     class seat_attribute_105:
         seat = SeatVenue2Data.seat_v2_e2
         name = u'attr1'
         value = u'e2-attr2'
-
     class seat_attribute_106:
         seat = SeatVenue2Data.seat_v2_e2
         name = u'attr2'
         value = u'e2-attr2'
-
     class seat_attribute_107:
         seat = SeatVenue2Data.seat_v2_e3
         name = u'attr1'
         value = u'e3-attr2'
-
     class seat_attribute_108:
         seat = SeatVenue2Data.seat_v2_e3
         name = u'attr2'
         value = u'e3-attr2'
 
+class TemplateSeatAttributeData(DataSet):
+    class template_seat_attribute_1:
+        seat = TemplateSeatVenue1Data.seat_v1_a1
+        name = u'attr1'
+        value = u'a1-attr2'
+    class template_seat_attribute_2:
+        seat = TemplateSeatVenue1Data.seat_v1_a1
+        name = u'attr2'
+        value = u'a1-attr2'
+    class template_seat_attribute_3:
+        seat = TemplateSeatVenue1Data.seat_v1_a2
+        name = u'attr1'
+        value = u'a2-attr2'
+    class template_seat_attribute_4:
+        seat = TemplateSeatVenue1Data.seat_v1_a2
+        name = u'attr2'
+        value = u'a2-attr2'
+    class template_seat_attribute_5:
+        seat = TemplateSeatVenue1Data.seat_v1_a3
+        name = u'attr1'
+        value = u'a3-attr2'
+    class template_seat_attribute_6:
+        seat = TemplateSeatVenue1Data.seat_v1_a3
+        name = u'attr2'
+        value = u'a3-attr2'
+    class template_seat_attribute_7:
+        seat = TemplateSeatVenue1Data.seat_v1_a4
+        name = u'attr1'
+        value = u'a4-attr2'
+    class template_seat_attribute_8:
+        seat = TemplateSeatVenue1Data.seat_v1_a4
+        name = u'attr2'
+        value = u'a4-attr2'
+    class template_seat_attribute_9:
+        seat = TemplateSeatVenue1Data.seat_v1_a5
+        name = u'attr1'
+        value = u'a5-attr2'
+    class template_seat_attribute_10:
+        seat = TemplateSeatVenue1Data.seat_v1_a5
+        name = u'attr2'
+        value = u'a5-attr2'
+    class template_seat_attribute_11:
+        seat = TemplateSeatVenue1Data.seat_v1_a6
+        name = u'attr1'
+        value = u'a6-attr2'
+    class template_seat_attribute_12:
+        seat = TemplateSeatVenue1Data.seat_v1_a6
+        name = u'attr2'
+        value = u'a6-attr2'
+    class template_seat_attribute_13:
+        seat = TemplateSeatVenue1Data.seat_v1_a7
+        name = u'attr1'
+        value = u'a7-attr2'
+    class template_seat_attribute_14:
+        seat = TemplateSeatVenue1Data.seat_v1_a7
+        name = u'attr2'
+        value = u'a7-attr2'
+    class template_seat_attribute_15:
+        seat = TemplateSeatVenue1Data.seat_v1_a8
+        name = u'attr1'
+        value = u'a8-attr2'
+    class template_seat_attribute_16:
+        seat = TemplateSeatVenue1Data.seat_v1_a8
+        name = u'attr2'
+        value = u'a8-attr2'
+    class template_seat_attribute_17:
+        seat = TemplateSeatVenue1Data.seat_v1_a9
+        name = u'attr1'
+        value = u'a9-attr2'
+    class template_seat_attribute_18:
+        seat = TemplateSeatVenue1Data.seat_v1_a9
+        name = u'attr2'
+        value = u'a9-attr2'
+    class template_seat_attribute_19:
+        seat = TemplateSeatVenue1Data.seat_v1_b1
+        name = u'attr1'
+        value = u'b1-attr2'
+    class template_seat_attribute_20:
+        seat = TemplateSeatVenue1Data.seat_v1_b1
+        name = u'attr2'
+        value = u'b1-attr2'
+    class template_seat_attribute_21:
+        seat = TemplateSeatVenue1Data.seat_v1_b2
+        name = u'attr1'
+        value = u'b2-attr2'
+    class template_seat_attribute_22:
+        seat = TemplateSeatVenue1Data.seat_v1_b2
+        name = u'attr2'
+        value = u'b2-attr2'
+    class template_seat_attribute_23:
+        seat = TemplateSeatVenue1Data.seat_v1_b3
+        name = u'attr1'
+        value = u'b3-attr2'
+    class template_seat_attribute_24:
+        seat = TemplateSeatVenue1Data.seat_v1_b3
+        name = u'attr2'
+        value = u'b3-attr2'
+    class template_seat_attribute_25:
+        seat = TemplateSeatVenue1Data.seat_v1_b4
+        name = u'attr1'
+        value = u'b4-attr2'
+    class template_seat_attribute_26:
+        seat = TemplateSeatVenue1Data.seat_v1_b4
+        name = u'attr2'
+        value = u'b4-attr2'
+    class template_seat_attribute_27:
+        seat = TemplateSeatVenue1Data.seat_v1_b5
+        name = u'attr1'
+        value = u'b5-attr2'
+    class template_seat_attribute_28:
+        seat = TemplateSeatVenue1Data.seat_v1_b5
+        name = u'attr2'
+        value = u'b5-attr2'
+    class template_seat_attribute_29:
+        seat = TemplateSeatVenue1Data.seat_v1_b6
+        name = u'attr1'
+        value = u'b6-attr2'
+    class template_seat_attribute_30:
+        seat = TemplateSeatVenue1Data.seat_v1_b6
+        name = u'attr2'
+        value = u'b6-attr2'
+    class template_seat_attribute_31:
+        seat = TemplateSeatVenue1Data.seat_v1_b7
+        name = u'attr1'
+        value = u'b7-attr2'
+    class template_seat_attribute_32:
+        seat = TemplateSeatVenue1Data.seat_v1_b7
+        name = u'attr2'
+        value = u'b7-attr2'
+    class template_seat_attribute_33:
+        seat = TemplateSeatVenue1Data.seat_v1_c1
+        name = u'attr1'
+        value = u'c1-attr2'
+    class template_seat_attribute_34:
+        seat = TemplateSeatVenue1Data.seat_v1_c1
+        name = u'attr2'
+        value = u'c1-attr2'
+    class template_seat_attribute_35:
+        seat = TemplateSeatVenue1Data.seat_v1_c2
+        name = u'attr1'
+        value = u'c2-attr2'
+    class template_seat_attribute_36:
+        seat = TemplateSeatVenue1Data.seat_v1_c2
+        name = u'attr2'
+        value = u'c2-attr2'
+    class template_seat_attribute_37:
+        seat = TemplateSeatVenue1Data.seat_v1_c3
+        name = u'attr1'
+        value = u'c3-attr2'
+    class template_seat_attribute_38:
+        seat = TemplateSeatVenue1Data.seat_v1_c3
+        name = u'attr2'
+        value = u'c3-attr2'
+    class template_seat_attribute_39:
+        seat = TemplateSeatVenue1Data.seat_v1_c4
+        name = u'attr1'
+        value = u'c4-attr2'
+    class template_seat_attribute_40:
+        seat = TemplateSeatVenue1Data.seat_v1_c4
+        name = u'attr2'
+        value = u'c4-attr2'
+    class template_seat_attribute_41:
+        seat = TemplateSeatVenue1Data.seat_v1_c5
+        name = u'attr1'
+        value = u'c5-attr2'
+    class template_seat_attribute_42:
+        seat = TemplateSeatVenue1Data.seat_v1_c5
+        name = u'attr2'
+        value = u'c5-attr2'
+    class template_seat_attribute_43:
+        seat = TemplateSeatVenue1Data.seat_v1_d1
+        name = u'attr1'
+        value = u'd1-attr2'
+    class template_seat_attribute_44:
+        seat = TemplateSeatVenue1Data.seat_v1_d1
+        name = u'attr2'
+        value = u'd1-attr2'
+    class template_seat_attribute_45:
+        seat = TemplateSeatVenue1Data.seat_v1_d2
+        name = u'attr1'
+        value = u'd2-attr2'
+    class template_seat_attribute_46:
+        seat = TemplateSeatVenue1Data.seat_v1_d2
+        name = u'attr2'
+        value = u'd2-attr2'
+    class template_seat_attribute_47:
+        seat = TemplateSeatVenue1Data.seat_v1_d3
+        name = u'attr1'
+        value = u'd3-attr2'
+    class template_seat_attribute_48:
+        seat = TemplateSeatVenue1Data.seat_v1_d3
+        name = u'attr2'
+        value = u'd3-attr2'
+    class template_seat_attribute_49:
+        seat = TemplateSeatVenue1Data.seat_v1_e1
+        name = u'attr1'
+        value = u'e1-attr2'
+    class template_seat_attribute_50:
+        seat = TemplateSeatVenue1Data.seat_v1_e1
+        name = u'attr2'
+        value = u'e1-attr2'
+    class template_seat_attribute_51:
+        seat = TemplateSeatVenue1Data.seat_v1_e2
+        name = u'attr1'
+        value = u'e2-attr2'
+    class template_seat_attribute_52:
+        seat = TemplateSeatVenue1Data.seat_v1_e2
+        name = u'attr2'
+        value = u'e2-attr2'
+    class template_seat_attribute_53:
+        seat = TemplateSeatVenue1Data.seat_v1_e3
+        name = u'attr1'
+        value = u'e3-attr2'
+    class template_seat_attribute_54:
+        seat = TemplateSeatVenue1Data.seat_v1_e3
+        name = u'attr2'
+        value = u'e3-attr2'

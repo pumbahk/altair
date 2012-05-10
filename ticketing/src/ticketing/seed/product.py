@@ -84,11 +84,6 @@ class ProductItemData(DataSet):
         product = ProductData.product_2
         performance = PerformanceData.performance_1
         status = None
-    class productitem_3:
-        item_type = 1
-        product = ProductData.product_1
-        performance = PerformanceData.performance_1
-        status = None
 
 class StockHolderData(DataSet):
     class stock_holder_1:

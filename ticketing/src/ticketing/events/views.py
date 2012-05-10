@@ -20,14 +20,14 @@ class Events(BaseView):
     def index(self):
         current_page = int(self.request.params.get('page', 0))
         sort = self.request.GET.get('sort', 'Event.id')
-        direction = self.request.GET.get('direction', 'asc')
+        direction = self.request.GET.get('direction', 'desc')
         if direction not in ['asc', 'desc']: direction = 'asc'
 
         page_url = paginate.PageURL_WebOb(self.request)
         query = DBSession.query(Event).filter(Event.organization_id == int(self.context.user.organization_id))
         query = query.order_by(sort + ' ' + direction)
 
-        events = paginate.Page(query, page=current_page, items_per_page=3, url=page_url)
+        events = paginate.Page(query, page=current_page, items_per_page=5, url=page_url)
 
         f = EventForm()
         return {

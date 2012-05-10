@@ -29,7 +29,7 @@ def record_to_multidict(self, filters=dict()):
     def _convert(key, value):
         if value is None:
             return (key, '')
-        elif isinstance(value, str) or isinstance(value, unicode):
+        elif isinstance(value, str) or isinstance(value, unicode) or isinstance(value, int) or isinstance(value, long):
             return (key, value)
         elif isinstance(value, date) or isinstance(value, datetime):
             filter = filters.get(key)
@@ -90,21 +90,35 @@ class BaseModel(object):
     def find_by(cls, **conditions):
         return DBSession.query(cls).filter_by(**conditions).all()
 
+    @classmethod
+    def clone(cls, origin):
+        data = record_to_multidict(origin)
+        for column in ['id', 'created_at', 'updated_at', 'deleted_at']:
+            if column in data.keys():
+                data.pop(column)
+        return cls(**data)
+
     def save(self):
-        if self.id:
-            self.updated_at = datetime.now()
-            DBSession.merge(self)
+        if hasattr(self, 'id') and self.id:
+            self.update()
         else:
-            self.created_at = datetime.now()
-            self.updated_at = datetime.now()
-            DBSession.add(self)
+            self.add()
+
+    def add(self):
+        self.created_at = datetime.now()
+        self.updated_at = datetime.now()
+        DBSession.add(self)
+        DBSession.flush()
+
+    def update(self):
+        self.updated_at = datetime.now()
+        DBSession.merge(self)
         DBSession.flush()
 
     def delete(self):
         self.deleted_at = datetime.now()
         DBSession.merge(self)
         DBSession.flush()
-
 
 class JSONEncodedDict(TypeDecorator):
     "Represents an immutable structure as a json-encoded string."

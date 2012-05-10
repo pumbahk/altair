@@ -6,6 +6,7 @@ from sqlalchemy.orm import relationship, join, backref, column_property
 from ticketing.utils import StandardEnum
 from ticketing.models import Base, BaseModel, DBSession
 from ticketing.products.models import Product, SalesSegment, StockHolder
+from ticketing.venues.models import Venue, VenueArea, Seat, SeatAttribute
 
 class AccountTypeEnum(StandardEnum):
     Promoter    = 1
@@ -54,6 +55,42 @@ class Performance(BaseModel, Base):
                 .filter(StockHolder.account_id==Account.id)\
                 .all()
         return data
+
+    def add(self):
+        BaseModel.add(self)
+
+        """
+        Performanceの作成時には, Venueとそれに紐づくVenueArea, Seat, SeatAttributeをコピーする
+        """
+        # create Venue
+        if self.venue_id:
+            original_venue = Venue.get(self.venue_id)
+            venue = Venue.clone(original_venue)
+            venue.original_venue_id = original_venue.id
+            venue.performance_id = self.id
+            venue.save()
+
+            # create VenueArea
+            if len(original_venue.areas) > 0:
+                for original_area in original_venue.areas:
+                    area = VenueArea.clone(original_area)
+                    area.venue_id = venue.id
+                    area.save()
+
+            # create Seat
+            if len(original_venue.seats) > 0:
+                for original_seat in original_venue.seats:
+                    seat = Seat.clone(original_seat)
+                    seat.venue_id = venue.id
+                    seat.stock_id = None
+                    seat.save()
+
+                    # create SeatAttribute
+                    if len(original_seat.attributes) > 0:
+                        for original_attribute in original_seat.attributes:
+                            attribute = SeatAttribute.clone(original_attribute)
+                            attribute.seat_id = seat.id
+                            attribute.save()
 
 class Event(BaseModel, Base):
     __tablename__ = 'Event'

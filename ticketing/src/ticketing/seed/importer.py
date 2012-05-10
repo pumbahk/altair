@@ -37,7 +37,7 @@ from account import AccountData
 from permission import PermissionData
 from operator import OperatorData, OperatorRoleData
 from event import EventData, PerformanceData
-from venue import SiteData, TemplateVenueData, VenueData, SeatVenue1Data, SeatVenue2Data, SeatVenue3Data, SeatVenue4Data, SeatVenue5Data, SeatVenue6Data, SeatVenue7Data, SeatVenue8Data, SeatStatusVenue1Data, SeatStatusVenue2Data, SeatStatusVenue3Data, SeatStatusVenue4Data, SeatStatusVenue5Data, SeatStatusVenue6Data, SeatStatusVenue7Data, SeatStatusVenue8Data, SeatAttributeData
+from venue import SiteData, TemplateVenueData, TemplateSeatVenue1Data, TemplateSeatAttributeData, VenueData, SeatVenue1Data, SeatVenue2Data, SeatVenue3Data, SeatVenue4Data, SeatVenue5Data, SeatVenue6Data, SeatVenue7Data, SeatVenue8Data, SeatStatusVenue1Data, SeatStatusVenue2Data, SeatStatusVenue3Data, SeatStatusVenue4Data, SeatStatusVenue5Data, SeatStatusVenue6Data, SeatStatusVenue7Data, SeatStatusVenue8Data, SeatAttributeData
 from product import ProductData, ProductItemData, StockData, StockHolderData, SalesSegmentData, SeatTypeData
 from user import UserData, UserProfileData, UserCredentialData
 from ticketing.bookmark.tests.bookmark import BookmarkData
@@ -66,6 +66,7 @@ def import_seed_data():
              'SiteData'         : Site,
              'TemplateVenueData': Venue,
              'VenueData'        : Venue,
+             'TemplateSeatVenue1Data':Seat,
              'SeatVenue1Data'   : Seat,
              'SeatVenue2Data'   : Seat,
              'SeatVenue3Data'   : Seat,
@@ -82,6 +83,7 @@ def import_seed_data():
              'SeatStatusVenue6Data': SeatStatus,
              'SeatStatusVenue7Data': SeatStatus,
              'SeatStatusVenue8Data': SeatStatus,
+             'TemplateSeatAttributeData': SeatAttribute,
              'SeatAttributeData': SeatAttribute,
              'SeatTypeData'     : SeatType,
              'StockData'        : Stock,
@@ -122,6 +124,7 @@ def import_seed_data():
         SiteData,
         TemplateVenueData,
         VenueData,
+        TemplateSeatVenue1Data,
         SeatVenue1Data,
         SeatVenue2Data,
         SeatVenue3Data,
@@ -138,6 +141,7 @@ def import_seed_data():
         SeatStatusVenue6Data,
         SeatStatusVenue7Data,
         SeatStatusVenue8Data,
+        TemplateSeatAttributeData,
         SeatAttributeData,
         SeatTypeData,
         StockData,
