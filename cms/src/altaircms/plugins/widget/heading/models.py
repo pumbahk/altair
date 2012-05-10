@@ -17,7 +17,8 @@ HEADING_DISPATCH = {
     u"チケットスター：トップページ見出し": u'<h2 class="index heading">%s</h2>',  #/static/ticketstar/css/custom.css
     u"チケットスター：スポーツ見出し": u'<h2 class="sports heading">%s</h2>',  #/static/ticketstar/css/custom.css
     u"チケットスター：音楽見出し": u'<h2 class="music heading">%s</h2>',  #/static/ticketstar/css/custom.css
-    u"チケットスター：講演見出し": u'<h2 class="theater heading">%s</h2>',  #/static/ticketstar/css/custom.css
+    u"チケットスター：演劇見出し": u'<h2 class="theater heading">%s</h2>',  #/static/ticketstar/css/custom.css
+    u"チケットスター：その他見出し": u'<h2 class="event heading">%s</h2>',  #/static/ticketstar/css/custom.css
     u"チケットスター：ヘルプページ見出し": u'<h2 class="help heading">%s</h2>',  #/static/ticketstar/css/custom.css
     }
 HEADING_KIND_CHOICES = [(x, x) for x in HEADING_DISPATCH]

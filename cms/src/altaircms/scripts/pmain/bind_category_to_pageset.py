@@ -4,7 +4,7 @@ import transaction
 
 from altaircms.page.models import (
     Page, PageSet
-)
+
 from altaircms.models import Category
 def main(*args, **kwargs):
     ## slack off

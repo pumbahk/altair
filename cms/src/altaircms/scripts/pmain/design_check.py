@@ -24,6 +24,7 @@ from altaircms.topcontent.models import Topcontent
 from altaircms.plugins.widget.promotion.models import (
     Promotion, PromotionUnit
 )
+from altaircms.models import Category
 
 from altaircms.asset.helpers import create_asset
 
@@ -281,9 +282,7 @@ def detail_event():
 def detail_page(layout, event):
     ## for breadcrumbs
     top_page = Page.get_or_create_by_title(u"TOP")
-    other_page = Page(layout= layout, 
-                      title= u"イベント・その他", 
-                      url= u"top/other")
+    other_page = Page.get_or_create_by_title(title= u"イベント・その他")
     other_page_set = PageSet.get_or_create(other_page)
     other_page_set.parent = top_page.pageset
     
@@ -902,9 +901,7 @@ def add_music_page_settings():
 
 
 
-### 講演カテゴリ
-
-
+###　演劇演カテゴリ
 
 def theater_layout():
     layout = Layout(
@@ -918,7 +915,7 @@ def theater_layout():
 
 
 def theater_page(layout):
-    theater_page = Page(description=u'チケットの販売、イベントの予約は楽天チケットで！楽天チケットは演劇、バレエ、ミュージカルなどの舞台、クラシック、オペラ、ロックなどのコンサート、野球、サッカー、格闘技などの講演、その他イベントなどのチケットのオンラインショッピングサイトです。',
+    theater_page = Page(description=u'チケットの販売、イベントの予約は楽天チケットで！楽天チケットは演劇、バレエ、ミュージカルなどの舞台、クラシック、オペラ、ロックなどのコンサート、野球、サッカー、格闘技などの演劇、その他イベントなどのチケットのオンラインショッピングサイトです。',
                        keywords= u"チケット,演劇,クラシック,オペラ,コンサート,バレエ,ミュージカル,野球,サッカー,格闘技", 
                        layout= layout, 
                        title= u'演劇',
@@ -932,7 +929,7 @@ def theater_page(layout):
 def theater_topics():
     return [
         Topic(kind=u"トピックス", 
-              subkind=u"講演", 
+              subkind=u"演劇", 
               text=u"#", 
               title=u"ポイント10倍キャンペーン実施中！『大相撲三月場所』マス席の他、希少な溜まり席も販売！", 
               publish_open_on=datetime.datetime(2011, 1, 1),
@@ -940,7 +937,7 @@ def theater_topics():
               is_global=True, 
               orderno=1), 
         Topic(kind=u"トピックス", 
-              subkind=u"講演", 
+              subkind=u"演劇", 
               text=u"#", 
               title=u"きゃりーぱみゅぱみゅ、倖田來未 、CNBLUE ら出演♪「オンタマカーニバル2012」1/14発売！", 
               publish_open_on=datetime.datetime(2011, 1, 1),
@@ -967,7 +964,7 @@ def theater_promotion():
                              )
     punits = [make_materials(i, "%d.jpg" % i, "thumb.%d.jpg" % i) for i in range(1, N)]
     return Promotion(promotion_units=punits, 
-                     name=u"講演 promotioin枠")
+                     name=u"演劇 promotioin枠")
     
 
 def add_theater_main_block_widgets(page, promotion):
@@ -981,19 +978,19 @@ def add_theater_main_block_widgets(page, promotion):
     add_promotion_widget(page, "main", {"promotion": promotion.id, 
                                         "kind": u"チケットスター:カテゴリTopプロモーション枠"})
 
-    params = dict(kind=u"チケットスター：講演見出し", 
+    params = dict(kind=u"チケットスター：演劇見出し", 
                   text=u"トピックス")
     add_heading_widget(page, "main", params)
 
     params =  {"kind": u"トピックス", 
-               "subkind": u"講演", 
+               "subkind": u"演劇", 
                "display_count": 5, 
                "display_global": True, 
                "display_event": False, 
                "display_page": False}
     add_topic_widget(page, "main", params)
 
-    params = dict(kind=u"チケットスター：講演見出し", 
+    params = dict(kind=u"チケットスター：演劇見出し", 
                   text=u"注目のイベント")
     add_heading_widget(page, "main", params)
 
@@ -1037,7 +1034,137 @@ def add_theater_page_settings():
     add_theater_main_block_widgets(page, promotion)#
 
 
+#### イベント・その他
 
+def event_layout():
+    layout = Layout(
+        title = u"ticketstar.event",
+        template_filename = "ticketstar.event.mako",
+        blocks = '[["main"], ["main_left", "main_right"], ["main_bottom"], ["side"]]',
+        site_id = 1, ##
+        client_id = 1 ##
+        )
+    return layout
+
+
+def event_page(layout):
+    event_page = Page(description=u'チケットの販売、イベントの予約は楽天チケットで！楽天チケットは演劇、バレエ、ミュージカルなどの舞台、クラシック、オペラ、ロックなどのコンサート、野球、サッカー、格闘技などのその他、その他イベントなどのチケットのオンラインショッピングサイトです。',
+                       keywords= u"チケット,演劇,クラシック,オペラ,コンサート,バレエ,ミュージカル,野球,サッカー,格闘技", 
+                       layout= layout, 
+                       title= u'イベント・その他',
+                       url= u'event',
+                       structure= "{}", 
+                       version= None)
+    PageSet.get_or_create(event_page)
+    return event_page
+
+
+def event_topics():
+    return [
+        Topic(kind=u"トピックス", 
+              subkind=u"その他", 
+              text=u"#", 
+              title=u"ポイント10倍キャンペーン実施中！『大相撲三月場所』マス席の他、希少な溜まり席も販売！", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=True, 
+              orderno=1), 
+        Topic(kind=u"トピックス", 
+              subkind=u"その他", 
+              text=u"#", 
+              title=u"きゃりーぱみゅぱみゅ、倖田來未 、CNBLUE ら出演♪「オンタマカーニバル2012」1/14発売！", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=True, 
+              orderno=2), 
+
+        ]
+
+
+
+def event_promotion():
+    img_path = os.path.join(os.path.dirname(__file__), "../../static/mock/img/")
+    N = 6
+    def make_materials(i, imgname, thumbname):
+        main_image = (ImageAsset.query.filter_by(title=imgname).first() or 
+                      make_image_asset(os.path.join(img_path, imgname), title=imgname))
+        thumbnail = (ImageAsset.query.filter_by(title=thumbname).first() or 
+                     make_image_asset(os.path.join(img_path, thumbname),title=thumbname))
+        return PromotionUnit(main_image=main_image,
+                             thumbnail=thumbnail, 
+                             link="http://www.google.com", 
+                             text=u"何かここにメッセージ書く。ファイル名:%s" % imgname, 
+                             )
+    punits = [make_materials(i, "%d.jpg" % i, "thumb.%d.jpg" % i) for i in range(1, N)]
+    return Promotion(promotion_units=punits, 
+                     name=u"その他 promotioin枠")
+    
+
+def add_event_main_block_widgets(page, promotion):
+    params =  {"kind": u"トピックス", 
+               "display_count": 2, 
+               "display_global": True, 
+               "display_event": False, 
+               "display_page": False}
+    add_topic_widget(page, "main", params)
+
+    add_promotion_widget(page, "main", {"promotion": promotion.id, 
+                                        "kind": u"チケットスター:カテゴリTopプロモーション枠"})
+
+    params = dict(kind=u"チケットスター：その他見出し", 
+                  text=u"トピックス")
+    add_heading_widget(page, "main", params)
+
+    params =  {"kind": u"トピックス", 
+               "subkind": u"その他", 
+               "display_count": 5, 
+               "display_global": True, 
+               "display_event": False, 
+               "display_page": False}
+    add_topic_widget(page, "main", params)
+
+    params = dict(kind=u"チケットスター：その他見出し", 
+                  text=u"注目のイベント")
+    add_heading_widget(page, "main", params)
+
+    params =  {"kind": u"注目のイベント", 
+               "topic_type": "hasimage", 
+               "display_count": 8, 
+               "display_global": True, 
+               "display_event": True, 
+               "display_page": True}
+    add_topic_widget(page, "main", params)
+
+    params = dict(kind=u"チケットスター：トップページ見出し", 
+                  text=u"今週発売のチケット")
+    add_heading_widget(page, "main_left", params)
+
+    params = {"finder_kind": "thisWeek", 
+              "delimiter": u"/"}
+    add_linklist_widget(page, "main_left", params)
+
+    params = dict(kind=u"チケットスター：トップページ見出し", 
+                  text=u"販売終了間近")
+    add_heading_widget(page, "main_right", params)
+
+    params = {"finder_kind": "nearTheEnd", 
+              "delimiter": u"/"}
+    add_linklist_widget(page, "main_right", params)
+
+
+def add_event_page_settings():
+    layout = event_layout()
+    topics = event_topics()
+    promotion = event_promotion()
+    page = event_page(layout)
+
+    DBSession.add(page)
+    DBSession.add(promotion)
+    DBSession.add_all(topics)
+
+    DBSession.flush()
+    
+    add_event_main_block_widgets(page, promotion)#
 
 
 
@@ -1290,11 +1417,21 @@ def add_top_page_settings():
 
 def main(env, args):
     # setup()
-    add_detail_page_settings()
     add_sports_page_settings()
     add_music_page_settings()
     add_theater_page_settings()
     add_help_page_settings()
+    add_event_page_settings()
     add_top_page_settings()
+    add_detail_page_settings()
+
+    transaction.commit()
+
+    ##
+    Category.query.filter_by(name=u"チケットトップ").update({"pageset_id": PageSet.query.filter_by(name=u"トップページ ページセット").one().id}, synchronize_session="fetch")
+    Category.query.filter_by(name=u"音楽").update({"pageset_id": PageSet.query.filter_by(name=u"音楽 ページセット").first().id}, synchronize_session="fetch")
+    Category.query.filter_by(name=u"スポーツ").update({"pageset_id": PageSet.query.filter_by(name=u"スポーツ ページセット").one().id}, synchronize_session="fetch")
+    Category.query.filter_by(name=u"演劇").update({"pageset_id": PageSet.query.filter_by(name=u"演劇 ページセット").one().id}, synchronize_session="fetch")
+    Category.query.filter_by(name=u"イベント・その他").update({"pageset_id": PageSet.query.filter_by(name=u"イベント・その他 ページセット").one().id}, synchronize_session="fetch")
     transaction.commit()
 
