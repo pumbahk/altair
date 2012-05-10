@@ -8,7 +8,7 @@ from urllib2 import urlopen
 
 from ticketing.models import DBSession
 from .models import Venue, Seat, SeatAttribute, VenueArea, seat_venue_area_table, SeatAdjacency, SeatAdjacencySet
-from ticketing.products.models import Stock, StockHolder
+from ticketing.products.models import Stock, StockHolder, SeatType
 
 @view_config(route_name="api.get_drawing", request_method="GET")
 def get_drawing(request):
@@ -46,6 +46,12 @@ def get_seats(request):
                 for seat_adjacency in seat_adjacency_set.adjacencies \
                 ]
 
+    seat_types_data = {}
+    for seat_type in DBSession.query(SeatType).filter_by(performance_id=venue.performance_id):
+        seat_types_data[seat_type.id] = dict(
+            name=seat_type.name,
+            style=seat_type.style)
+
     return {
         'areas': dict(
             (area.id, { 'id': area.id, 'name': area.name }) \
@@ -53,5 +59,6 @@ def get_seats(request):
             ),
         'seats': seats_data,
         'seat_adjacencies': seat_adjacencies_data,
+        'seat_types': seat_types_data,
         }
 
