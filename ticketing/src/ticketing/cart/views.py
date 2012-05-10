@@ -9,6 +9,8 @@ from pyramid.view import view_config, view_defaults
 from ticketing.models import DBSession
 import ticketing.events.models as e_models
 import ticketing.venues.models as v_models
+import ticketing.products.models as p_models
+from . import helpers as h
 
 logger = logging.getLogger(__name__)
 
@@ -56,17 +58,43 @@ class IndexView(object):
     def get_seat_types(self):
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.matchdict['performance_id']
-        seat_types = DBSession.query(v_models.SeatType).filter(
+        seat_types = DBSession.query(p_models.SeatType).filter(
             e_models.Performance.event_id==event_id).filter(
             e_models.Performance.id==performance_id).filter(
-                v_models.SeatType.performance_id==e_models.Performance.id).all()
+                p_models.SeatType.performance_id==e_models.Performance.id).all()
             
         data = dict(seat_types=[
-                dict(id=s.id, name=s.name)
+                dict(id=s.id, name=s.name,
+                    products_url=self.request.route_url('cart.products',
+                        event_id=event_id, performance_id=performance_id, seat_type_id=s.id),
+                    )
                 for s in seat_types
                 ])
         print data
         return data
+
+    @view_config(route_name='cart.products', renderer="json")
+    def get_products(self):
+        """ 席種別ごとの購入単位 
+        SeatType -> ProductItem -> Product
+        """
+        seat_type_id = self.request.matchdict['seat_type_id']
+        performance_id = self.request.matchdict['performance_id']
+
+        seat_type = DBSession.query(p_models.SeatType).filter_by(id=seat_type_id).one()
+
+        q = DBSession.query(p_models.ProductItem.product_id).filter(
+            p_models.ProductItem.seat_type_id==seat_type_id).filter(
+            p_models.ProductItem.performance_id==performance_id)
+            
+        query = DBSession.query(p_models.Product).filter(
+            p_models.Product.id.in_(q))
+
+        products = [dict(id=p.id, name=p.name, price=h.format_number(p.price, ","))
+            for p in query]
+        print products
+        return dict(products=products,
+            seat_type=dict(id=seat_type.id, name=seat_type.name))
 
 class ErrorView(object):
     """ 座席確保エラーページ """

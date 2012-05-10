@@ -22,12 +22,57 @@ $(function() {
 
 <script>
 var venues_selection = ${venues_selection};
+
+function on_seat_type_selected() {
+  $('#seat-types-list').children('li').each(function(key, value) {
+    $(value).removeClass("selected");
+  });
+  $(this).parent().addClass("selected");
+  var get_url = $(this).val();
+  show_products(get_url);
+}
+
+function show_products(get_url) {
+  $.ajax({url: get_url, dataType: 'json', success: function(data) {
+    $('#payment-seat-type').text(data.seat_type.name);
+    $('#payment-seat-products').empty();
+    $.each(data.products, function(key, value) {
+      var name = $('<th scope="row" />');
+      name.text(value.name);
+      var payment = $('<td />');
+      var price = $('<span/>');
+      price.text('￥' + value.price);
+      payment.append(price);
+      var amount = $('<select/>');
+      amount.attr('name', value.id);
+      for (var i=0; i < 99; i++) { // TODO 枚数制限
+        opt = $('<option/>');
+        opt.text(i);
+        opt.val(i);
+        amount.append(opt);
+      }
+      payment.append(amount);
+      payment.append('<span>枚</span>');
+      var row = $('<tr/>');
+      row.append(name).append(payment);
+      $('#payment-seat-products').append(row);
+      
+    });
+  }});
+}
+
 function show_seat_types(get_url) {
   $.ajax({url:get_url, dataType: 'json', success:function(data) {
     $('#seat-types-list').empty();
     $.each(data.seat_types, function(key, value) {
       var item = $('<li />');
-      item.text(value.name);
+      var select = $('<input type="radio" name="seat_type" />');
+      select.attr('value', value.products_url);
+      select.change(on_seat_type_selected);
+      var name = $('<span />');
+      name.text(value.name);
+      item.append(select);
+      item.append(name);
       $('#seat-types-list').append(item);
     });
     $("#selectSeat li:even").addClass("seatEven");
@@ -139,9 +184,9 @@ $(function() {
 					<form id="form2" name="form2" method="post" action="">
 						<h3><img src="${request.static_url('ticketing.cart:static/img/settlement/select.gif')}" alt="購入枚数、購入方法をお選びください" width="246" height="14" /></h3>
 						<dl>
-							<dt>エクストラファミリーシート</dt>
+							<dt id="payment-seat-type">エクストラファミリーシート</dt>
 							<dd>
-								<table summary="チケット枚数選択">
+								<table summary="チケット枚数選択" id="payment-seat-products">
 									<tr>
 										<th scope="row">大人</th>
 										<td>￥5,000
