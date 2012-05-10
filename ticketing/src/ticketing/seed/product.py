@@ -73,18 +73,6 @@ class ProductData(DataSet):
         sales_segment = SalesSegmentData.sales_segment_2
         event = EventData.event_1
 
-class ProductItemData(DataSet):
-    class productitem_1:
-        item_type = 1
-        product = ProductData.product_1
-        performance = PerformanceData.performance_1
-        status = None
-    class productitem_2:
-        item_type = 2
-        product = ProductData.product_2
-        performance = PerformanceData.performance_1
-        status = None
-
 class StockHolderData(DataSet):
     class stock_holder_1:
         name = u'招待枠'
@@ -144,3 +132,19 @@ class StockData(DataSet):
         quantity = 3
         seat_type = SeatTypeData.seat_type_4
         stock_holder = StockHolderData.stock_holder_5
+
+class ProductItemData(DataSet):
+    class productitem_1:
+        item_type = 1
+        product = ProductData.product_1
+        performance = PerformanceData.performance_1
+        stock = StockData.stock_1
+        seat_type = SeatTypeData.seat_type_1
+        status = None
+    class productitem_2:
+        item_type = 2
+        product = ProductData.product_2
+        performance = PerformanceData.performance_1
+        stock = StockData.stock_2
+        seat_type = SeatTypeData.seat_type_2
+        status = None

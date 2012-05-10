@@ -115,6 +115,9 @@ class ProductItem(BaseModel, Base):
     stock_id = Column(BigInteger, ForeignKey('Stock.id'))
     stock = relationship("Stock")
 
+    seat_type_id = Column(BigInteger, ForeignKey('SeatType.id'))
+    seat_type = relationship('SeatType', backref='product_items')
+
     def get_for_update(self):
         self.stock = Stock.get_for_update(self.performance_id, self.seat_type_id)
         if self.stock != None:
