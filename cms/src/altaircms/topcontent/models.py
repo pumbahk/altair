@@ -22,7 +22,7 @@ class Topcontent(AboutPublishMixin,
     __tablename__ = "topcontent"
     query = DBSession.query_property()
     COUNTDOWN_CANDIDATES = h.base.COUNTDOWN_KIND_MAPPING.items()
-    KIND_CANDIDATES = [u"注目のページ"]
+    KIND_CANDIDATES = [u"注目のイベント"]
 
     id = sa.Column(sa.Integer, primary_key=True)
     created_at = sa.Column(sa.DateTime, default=datetime.now)

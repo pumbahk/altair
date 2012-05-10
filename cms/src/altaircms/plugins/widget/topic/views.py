@@ -7,6 +7,8 @@ class TopicWidgetView(object):
 
     def _create_or_update(self):
         data = self.request.json_body["data"]
+        if data.get("subkind") == "None": #fixme
+            data["subkind"] = None
         page_id = self.request.json_body["page_id"]
         context = self.request.context
         widget = context.get_widget(self.request.json_body.get("pk"))

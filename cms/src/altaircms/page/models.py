@@ -65,7 +65,7 @@ class PageSet(Base,
     event = relationship('Event', backref='pagesets')
 
     parent_id = Column(Integer, ForeignKey('pagesets.id'))
-    parent = orm.relationship("Page", remote_side=[id], uselist=False)
+    parent = orm.relationship("PageSet", remote_side=[id], uselist=False)
     
     def gen_version(self):
         if self.version_counter is None:

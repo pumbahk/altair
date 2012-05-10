@@ -660,6 +660,7 @@ def sports_page(layout):
 def sports_topics():
     return [
         Topic(kind=u"トピックス", 
+              subkind=u"スポーツ", 
               text=u"#", 
               title=u"ポイント10倍キャンペーン実施中！『大相撲三月場所』マス席の他、希少な溜まり席も販売！", 
               publish_open_on=datetime.datetime(2011, 1, 1),
@@ -667,6 +668,7 @@ def sports_topics():
               is_global=True, 
               orderno=1), 
         Topic(kind=u"トピックス", 
+              subkind=u"スポーツ", 
               text=u"#", 
               title=u"きゃりーぱみゅぱみゅ、倖田來未 、CNBLUE ら出演♪「オンタマカーニバル2012」1/14発売！", 
               publish_open_on=datetime.datetime(2011, 1, 1),
@@ -698,10 +700,10 @@ def sports_promotion():
 
 def add_sports_main_block_widgets(page, promotion):
     params =  {"kind": u"トピックス", 
-               "display_count": 6, 
+               "display_count": 2, 
                "display_global": True, 
-               "display_event": True, 
-               "display_page": True}
+               "display_event": False, 
+               "display_page": False}
     add_topic_widget(page, "main", params)
 
     add_promotion_widget(page, "main", {"promotion": promotion.id, 
@@ -715,8 +717,8 @@ def add_sports_main_block_widgets(page, promotion):
                "subkind": u"スポーツ", 
                "display_count": 5, 
                "display_global": True, 
-               "display_event": True, 
-               "display_page": True}
+               "display_event": False, 
+               "display_page": False}
     add_topic_widget(page, "main", params)
 
     params = dict(kind=u"チケットスター：スポーツ見出し", 
@@ -724,6 +726,7 @@ def add_sports_main_block_widgets(page, promotion):
     add_heading_widget(page, "main", params)
 
     params =  {"kind": u"注目のイベント", 
+               "topic_type": "hasimage", 
                "display_count": 8, 
                "display_global": True, 
                "display_event": True, 
@@ -762,6 +765,139 @@ def add_sports_page_settings():
     add_sports_main_block_widgets(page, promotion)#
 
 
+
+###
+
+
+def music_layout():
+    layout = Layout(
+        title = u"ticketstar.music",
+        template_filename = "ticketstar.music.mako",
+        blocks = '[["main"], ["main_left", "main_right"], ["main_bottom"], ["side"]]',
+        site_id = 1, ##
+        client_id = 1 ##
+        )
+    return layout
+
+
+def music_page(layout):
+    music_page = Page(description=u'チケットの販売、イベントの予約は楽天チケットで！楽天チケットは演劇、バレエ、ミュージカルなどの舞台、クラシック、オペラ、ロックなどのコンサート、野球、サッカー、格闘技などの音楽、その他イベントなどのチケットのオンラインショッピングサイトです。',
+                       keywords= u"チケット,演劇,クラシック,オペラ,コンサート,バレエ,ミュージカル,野球,サッカー,格闘技", 
+                       layout= layout, 
+                       title= u'音楽',
+                       url= u'music',
+                       structure= "{}", 
+                       version= None)
+    PageSet.get_or_create(music_page)
+    return music_page
+
+
+def music_topics():
+    return [
+        Topic(kind=u"トピックス", 
+              subkind=u"音楽", 
+              text=u"#", 
+              title=u"ポイント10倍キャンペーン実施中！『大相撲三月場所』マス席の他、希少な溜まり席も販売！", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=True, 
+              orderno=1), 
+        Topic(kind=u"トピックス", 
+              subkind=u"音楽", 
+              text=u"#", 
+              title=u"きゃりーぱみゅぱみゅ、倖田來未 、CNBLUE ら出演♪「オンタマカーニバル2012」1/14発売！", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=True, 
+              orderno=2), 
+
+        ]
+
+
+
+def music_promotion():
+    img_path = os.path.join(os.path.dirname(__file__), "../../static/mock/img/")
+    N = 6
+    def make_materials(i, imgname, thumbname):
+        main_image = (ImageAsset.query.filter_by(title=imgname).first() or 
+                      make_image_asset(os.path.join(img_path, imgname), title=imgname))
+        thumbnail = (ImageAsset.query.filter_by(title=thumbname).first() or 
+                     make_image_asset(os.path.join(img_path, thumbname),title=thumbname))
+        return PromotionUnit(main_image=main_image,
+                             thumbnail=thumbnail, 
+                             link="http://www.google.com", 
+                             text=u"何かここにメッセージ書く。ファイル名:%s" % imgname, 
+                             )
+    punits = [make_materials(i, "%d.jpg" % i, "thumb.%d.jpg" % i) for i in range(1, N)]
+    return Promotion(promotion_units=punits, 
+                     name=u"音楽 promotioin枠")
+    
+
+def add_music_main_block_widgets(page, promotion):
+    params =  {"kind": u"トピックス", 
+               "display_count": 2, 
+               "display_global": True, 
+               "display_event": False, 
+               "display_page": False}
+    add_topic_widget(page, "main", params)
+
+    add_promotion_widget(page, "main", {"promotion": promotion.id, 
+                                        "kind": u"チケットスター:カテゴリTopプロモーション枠"})
+
+    params = dict(kind=u"チケットスター：音楽見出し", 
+                  text=u"トピックス")
+    add_heading_widget(page, "main", params)
+
+    params =  {"kind": u"トピックス", 
+               "subkind": u"音楽", 
+               "display_count": 5, 
+               "display_global": True, 
+               "display_event": False, 
+               "display_page": False}
+    add_topic_widget(page, "main", params)
+
+    params = dict(kind=u"チケットスター：音楽見出し", 
+                  text=u"注目のイベント")
+    add_heading_widget(page, "main", params)
+
+    params =  {"kind": u"注目のイベント", 
+               "topic_type": "hasimage", 
+               "display_count": 8, 
+               "display_global": True, 
+               "display_event": True, 
+               "display_page": True}
+    add_topic_widget(page, "main", params)
+
+    params = dict(kind=u"チケットスター：トップページ見出し", 
+                  text=u"今週発売のチケット")
+    add_heading_widget(page, "main_left", params)
+
+    params = {"finder_kind": "thisWeek", 
+              "delimiter": u"/"}
+    add_linklist_widget(page, "main_left", params)
+
+    params = dict(kind=u"チケットスター：トップページ見出し", 
+                  text=u"販売終了間近")
+    add_heading_widget(page, "main_right", params)
+
+    params = {"finder_kind": "nearTheEnd", 
+              "delimiter": u"/"}
+    add_linklist_widget(page, "main_right", params)
+
+
+def add_music_page_settings():
+    layout = music_layout()
+    topics = music_topics()
+    promotion = music_promotion()
+    page = music_page(layout)
+
+    DBSession.add(page)
+    DBSession.add(promotion)
+    DBSession.add_all(topics)
+
+    DBSession.flush()
+    
+    add_music_main_block_widgets(page, promotion)#
 
 def top_layout():
     layout = Layout(
@@ -942,6 +1078,7 @@ def add_top_main_block_widgets(page, promotion):
     add_heading_widget(page, "main", params)
 
     params =  {"kind": u"注目のイベント", 
+               "topic_type": "hasimage", 
                "display_count": 6, 
                "display_global": True, 
                "display_event": True, 
@@ -1008,6 +1145,8 @@ def main(env, args):
     # setup()
     add_detail_page_settings()
     add_sports_page_settings()
+    add_music_page_settings()
     add_help_page_settings()
     add_top_page_settings()
     transaction.commit()
+

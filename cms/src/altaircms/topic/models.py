@@ -50,7 +50,7 @@ class Topic(AboutPublishMixin,
     query = DBSession.query_property()
 
     __tablename__ = "topic"
-    KIND_CANDIDATES = [u"公演中止情報", u"お知らせ", u"その他", u"ヘルプ"]
+    KIND_CANDIDATES = [u"公演中止情報", u"トピックス", u"その他", u"ヘルプ"]
 
     id = sa.Column(sa.Integer, primary_key=True)
     created_at = sa.Column(sa.DateTime, default=datetime.now)

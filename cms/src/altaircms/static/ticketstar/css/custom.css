@@ -172,11 +172,15 @@
 .index,heading {
     background-image:url(/static/ticketstar/img/index/bg_heading.gif);
 }
-/* todo 変更*/
 .sports,heading {
-    background-image:url(/static/ticketstar/img/help/bg_heading.gif);
+    background-image:url(/static/ticketstar/img/sports/bg_heading.gif);
 }
-
+.music,heading {
+    background-image:url(/static/ticketstar/img/music/bg_heading.gif);
+}
+.theater,heading {
+    background-image:url(/static/ticketstar/img/theater/bg_heading.gif);
+}
 .help,heading {
     background-image:url(/static/ticketstar/img/help/bg_heading.gif);
 }

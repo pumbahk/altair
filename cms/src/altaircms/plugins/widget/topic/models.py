@@ -2,6 +2,8 @@
 
 from zope.interface import implements
 from altaircms.interfaces import IWidget
+import logging
+logger = logging.getLogger(__file__)
 import functools
 
 from pyramid.renderers import render
@@ -32,7 +34,7 @@ class TopicWidget(Widget):
     query = DBSession.query_property()
 
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
-    topic_type = sa.Column(sa.String(255), default="topic") #topiccontent or topic
+    topic_type = sa.Column(sa.String(255), default="noimage")
     display_count = sa.Column(sa.Integer)
     display_global = sa.Column(sa.Boolean)
     display_event = sa.Column(sa.Boolean)
@@ -41,12 +43,16 @@ class TopicWidget(Widget):
     subkind = sa.Column(sa.Unicode(255))
 
     def merge_settings(self, bname, bsettings):
-        merge_settings_function = MERGE_SETTINGS_DISPATH[self.kind]
-        merge_settings_function(self, bname, bsettings)
+        try:
+            merge_settings_function = MERGE_SETTINGS_DISPATH[(self.topic_type, self.kind)]
+            merge_settings_function(self, bname, bsettings)
+        except KeyError, e:
+            logger.warn(e)
+            bsettings.add(bname, u"topic widget: topic_type=%s kind=%s is not found" % (self.topic_type, self.kind))
 
 def _qs_refine(qs, model, widget):
     if not widget.display_global:
-        qs = qs.filter(model.is_global == False )
+        qs = qs.filter(model.is_global == False)
     if qs.count() > widget.display_count:
         qs = qs.limit(widget.display_count)
     return qs
@@ -87,13 +93,19 @@ def topcontent_merge_settings(template_name, widget, bname, bsettings):
        
 
 MERGE_SETTINGS_DISPATH = {
-    u"トピックス": functools.partial(
+    ("noimage", u"トピックス"): functools.partial(
         topics_merge_settings, 
         "altaircms.plugins.widget:topic/topic_render.mako"), 
-    u"ヘルプ": functools.partial(
+    ("noimage", u"公演中止情報"): functools.partial( ##
+        topics_merge_settings, 
+        "altaircms.plugins.widget:topic/topic_render.mako"), 
+    ("noimage", u"その他p"): functools.partial( ##
+        topics_merge_settings, 
+        "altaircms.plugins.widget:topic/topic_render.mako"), 
+    ("noimage", u"ヘルプ"): functools.partial(
         topics_merge_settings, 
         "altaircms.plugins.widget:topic/help_topic_render.mako"), 
-    u"注目のイベント": functools.partial(
+    ("hasimage", u"注目のイベント"): functools.partial(
         topcontent_merge_settings, 
         "altaircms.plugins.widget:topic/notable_event_render.mako")
     }
