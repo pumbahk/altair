@@ -33,6 +33,8 @@ class Organization(Base):
     prefecture_id = Column(BigInteger, ForeignKey("Prefecture.id"), nullable=True)
     prefecture = relationship("Prefecture", uselist=False)
 
+    venues = relationship("Venue", backref='organization')
+
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
     status = Column(Integer)

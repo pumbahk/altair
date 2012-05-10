@@ -34,6 +34,20 @@ class SiteData(DataSet):
         fax = u'03-1111-1111'
         drawing_url = u'file:ticketing/static/site-data/sample.svg'
 
+class TemplateVenueData(DataSet):
+    class venue_orig_1:
+        name = u'シルク・ドゥ・ソレイユ　シアター東京（ZED）'
+        sub_name = u'シルク・ドゥ・ソレイユ　シアター'
+        performance = None
+        site = SiteData.site_1
+        organization = OrganizationData.organization_0
+    class venue_orig_2:
+        name = u'ブルーマンシアター'
+        sub_name = u'ブルーマンシアター'
+        performance = None
+        site = SiteData.site_2
+        organization = OrganizationData.organization_0
+
 class VenueData(DataSet):
     class venue_1:
         name = u'シルク・ドゥ・ソレイユ　シアター東京（ZED）'
@@ -41,48 +55,56 @@ class VenueData(DataSet):
         performance = PerformanceData.performance_1
         site = SiteData.site_1
         organization = OrganizationData.organization_0
+        original_venue = TemplateVenueData.venue_orig_1
     class venue_2:
         name = u'シルク・ドゥ・ソレイユ　シアター東京（ZED）'
         sub_name = u'シルク・ドゥ・ソレイユ　シアター'
         performance = PerformanceData.performance_2
         site = SiteData.site_1
         organization = OrganizationData.organization_0
+        original_venue = TemplateVenueData.venue_orig_1
     class venue_3:
         name = u'シルク・ドゥ・ソレイユ　シアター東京（ZED）'
         sub_name = u'シルク・ドゥ・ソレイユ　シアター'
         performance = PerformanceData.performance_3
         site = SiteData.site_1
         organization = OrganizationData.organization_0
+        original_venue = TemplateVenueData.venue_orig_1
     class venue_4:
         name = u'シルク・ドゥ・ソレイユ　シアター東京（ZED）'
         sub_name = u'シルク・ドゥ・ソレイユ　シアター'
         performance = PerformanceData.performance_4
         site = SiteData.site_1
         organization = OrganizationData.organization_0
+        original_venue = TemplateVenueData.venue_orig_1
     class venue_5:
         name = u'シルク・ドゥ・ソレイユ　シアター東京（ZED）'
         sub_name = u'シルク・ドゥ・ソレイユ　シアター'
         performance = PerformanceData.performance_5
         site = SiteData.site_1
         organization = OrganizationData.organization_0
+        original_venue = TemplateVenueData.venue_orig_1
     class venue_6:
         name = u'ブルーマンシアター'
         sub_name = u'ブルーマンシアター'
         performance = PerformanceData.performance_6
         site = SiteData.site_2
         organization = OrganizationData.organization_0
+        original_venue = TemplateVenueData.venue_orig_2
     class venue_7:
         name = u'ブルーマンシアター'
         sub_name = u'ブルーマンシアター'
         performance = PerformanceData.performance_7
         site = SiteData.site_2
         organization = OrganizationData.organization_0
+        original_venue = TemplateVenueData.venue_orig_2
     class venue_8:
         name = u'ブルーマンシアター'
         sub_name = u'ブルーマンシアター'
         performance = PerformanceData.performance_8
         site = SiteData.site_2
         organization = OrganizationData.organization_0
+        original_venue = TemplateVenueData.venue_orig_2
 
 class SeatVenue1Data(DataSet):
     class seat_v1_a1:

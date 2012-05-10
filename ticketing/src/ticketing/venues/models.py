@@ -1,3 +1,4 @@
+# encoding: utf-8
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL
 from sqlalchemy.orm import relationship, join, backref, column_property, mapper
 
@@ -31,12 +32,20 @@ class Site(Base):
     drawing_url = Column(String(255))
 
 class Venue(Base):
+    """
+    Venueは、Performance毎に1個つくられる。
+    Venueのテンプレートは、performance_idがNoneになっている。
+    """
     __tablename__ = "Venue"
     id = Column(BigInteger, primary_key=True)
     site_id = Column(BigInteger, ForeignKey("Site.id"), nullable=False)
-    performance_id = Column(BigInteger, ForeignKey("Performance.id"), nullable=False)
+    performance_id = Column(BigInteger, ForeignKey("Performance.id"), nullable=True)
+    organization_id = Column(BigInteger, ForeignKey("Organization.id"), nullable=False)
     name = Column(String(255))
     sub_name = Column(String(255))
+
+    original_venue_id = Column(BigInteger, ForeignKey("Venue.id"), nullable=True)
+    derived_venues = relationship("Venue")
 
     site = relationship("Site", uselist=False)
     seats = relationship("Seat", backref='venue')
