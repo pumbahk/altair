@@ -270,9 +270,6 @@ function key(e) {
     keycode = e.which;
     ctrl    = typeof e.modifiers == 'undefined' ? e.ctrlKey : e.modifiers & Event.CONTROL_MASK;
     shift   = typeof e.modifiers == 'undefined' ? e.shiftKey : e.modifiers & Event.SHIFT_MASK;
-    // イベントの上位伝播を防止
-    e.preventDefault();
-    e.stopPropagation();
     // Internet Explorer
   } else {
     keycode = event.keyCode;
@@ -451,8 +448,8 @@ $.fn.venue_editor = function(options) {
           data.manager = new VenueEditor(parseSvg(xml, canvas[0]));
           var cs = data.manager.d.contentSize();
           data.manager.d.zoom(0.4, { x: cs.width / 2, y: cs.height / 2 });
-          document.addEventListener('keydown', data.keydown = function(e) { if (key(e).shift) data.manager.shift = true; return true; });
-          document.addEventListener('keyup', data.keyup = function(e) { if (key(e).shift) data.manager.shift = false; return true; });
+          document.addEventListener('keydown', data.keydown = function(e) { if (key(e).shift) data.manager.shift = true; return true; }, false);
+          document.addEventListener('keyup', data.keyup = function(e) { if (key(e).shift) data.manager.shift = false; return true; }, false);
           waiter('drawable', data.manager.d);
         },
         error: function() {
