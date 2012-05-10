@@ -12,9 +12,15 @@ Base = sqlahelper.get_base()
 
 seat_venue_area_table = Table(
     'Seat_VenueArea', Base.metadata,
-    Column('venue_area_id', BigInteger, ForeignKey('VenueArea.id'), primary_key=True),
-    Column('seat_id', BigInteger, ForeignKey('Seat.id'), primary_key=True)
+    Column('venue_area_id', BigInteger, ForeignKey('VenueArea.id'), primary_key=True, nullable=False),
+    Column('seat_id', BigInteger, ForeignKey('Seat.id'), primary_key=True, nullable=False)
 )
+
+seat_seat_adjacency_table = Table(
+    "Seat_SeatAdjacency", Base.metadata,
+    Column('seat_id', BigInteger, ForeignKey("Seat.id"), primary_key=True, nullable=False),
+    Column('seat_adjacency_id', BigInteger, ForeignKey("SeatAdjacency.id"), primary_key=True, nullable=False)
+    )
 
 class Site(BaseModel, Base):
     __tablename__ = "Site"
@@ -49,6 +55,7 @@ class Venue(BaseModel, Base):
                                   backref=backref(
                                     'original_venue', remote_side=[id]))
                                   
+    adjacency_sets = relationship("SeatAdjacencySet", backref='venue')
 
     site = relationship("Site", uselist=False)
     seats = relationship("Seat", backref='venue')
@@ -79,6 +86,7 @@ class Seat(BaseModel, Base):
     stock           = relationship("Stock", uselist=False)
     attributes      = relationship("SeatAttribute", backref='seat', cascade='save-update, merge')
     areas           = relationship("VenueArea", secondary=seat_venue_area_table, backref="seats")
+    adjacencies     = relationship("SeatAdjacency", secondary=seat_seat_adjacency_table, backref="seats")
 
     def __setitem__(self, name, value):
         session.add(self)
@@ -105,7 +113,6 @@ class SeatStatusEnum(StandardEnum):
     Canceled = 6
     Reserved = 7
 
-# stock based on phisical seat positions
 class SeatStatus(BaseModel, Base):
     __tablename__ = "SeatStatus"
     seat_id = Column(BigInteger, ForeignKey("Seat.id"), primary_key=True)
@@ -136,5 +143,15 @@ class SeatStatus(BaseModel, Base):
                     con_num = 0
         return []
 
+class SeatAdjacency(Base):
+    __tablename__ = "SeatAdjacency"
+    id = Column(BigInteger, primary_key=True)
+    adjacency_set_id = Column(BigInteger, ForeignKey('SeatAdjacencySet.id'))
 
+class SeatAdjacencySet(BaseModel, Base):
+    __tablename__ = "SeatAdjacencySet"
+    id = Column(BigInteger, primary_key=True)
+    venue_id = Column(BigInteger, ForeignKey('Venue.id'))
+    seat_count = Column(Integer, nullable=False)
+    adjacencies = relationship("SeatAdjacency", backref='adjacency_set')
 
