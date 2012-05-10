@@ -12,7 +12,7 @@ from ticketing.fanstatic import with_bootstrap
 from ticketing.events.models import Event, Performance, Account
 from ticketing.events.performances.forms import PerformanceForm, StockHolderForm
 from ticketing.products.models import Product, StockHolder, SalesSegment
-from ticketing.venues.models import Venue
+from ticketing.products.forms import SalesSegmentForm
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class Performances(BaseView):
@@ -24,14 +24,17 @@ class Performances(BaseView):
         products = Product.find(performance_id=performance_id)
         user = self.context.user
         accounts = Account.get_by_organization_id(user.organization_id)
-        sales_segments = SalesSegment.get_by_organization_id(user.organization_id)
+        conditions = {'performance_id':performance_id}
+        sales_segments = SalesSegment.find_by(**conditions)
 
+        form_ss = SalesSegmentForm()
         return {
             'performance':performance,
             'products':products,
             'accounts':accounts,
             'sales_segments':sales_segments,
             'user':user,
+            'form_ss':form_ss,
         }
 
     @view_config(route_name='performances.new', request_method='GET', renderer='ticketing:templates/performances/edit.html')

@@ -80,6 +80,8 @@ class SalesSegment(BaseModel, Base):
     start_at = Column(DateTime)
     end_at = Column(DateTime)
 
+    performance_id = Column(BigInteger, ForeignKey('Performance.id'))
+    performance = relationship('Performance')
     organization_id = Column(BigInteger, ForeignKey('Organization.id'))
     organization = relationship('Organization')
 
@@ -199,7 +201,7 @@ class Product(BaseModel, Base):
     def find(performance_id = None, event_id = None):
         query = DBSession.query(Product)
         if performance_id:
-            query.\
+            query = query.\
                 join(Product.items).\
                 filter(ProductItem.performance_id==performance_id)
         elif event_id:

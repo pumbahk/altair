@@ -34,11 +34,13 @@ class SalesSegmentData(DataSet):
         name = u'先行販売'
         start_at = datetime(2012,5,1,12,0)
         end_at = datetime(2012,7,1,12,0)
+        performance = PerformanceData.performance_1
         organization = OrganizationData.organization_0
     class sales_segment_2:
         name = u'予約販売'
         start_at = datetime(2012,3,1,12,0)
         end_at = datetime(2012,5,1,12,0)
+        performance = PerformanceData.performance_1
         organization = OrganizationData.organization_0
 
 class ProductData(DataSet):

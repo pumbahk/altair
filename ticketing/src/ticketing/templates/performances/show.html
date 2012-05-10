@@ -93,6 +93,7 @@ var RENDERING_RULE_URL = "/static/js/demo/renderingRules.json" + "?" + Math.rand
       <ul class="nav nav-tabs">
         <li class="active"><a href="#venue-designer" data-toggle="tab">会場／席種</a></li>
         <li><a href="#seat-allocation" data-toggle="tab">配券／配席</a></li>
+        <li><a href="#sales-segment" data-toggle="tab">販売区分</a></li>
         <li><a href="#product" data-toggle="tab">商品管理</a></li>
         <li><a href="#ticket-designer" data-toggle="tab">チケット券面</a></li>
       </ul>
@@ -102,6 +103,9 @@ var RENDERING_RULE_URL = "/static/js/demo/renderingRules.json" + "?" + Math.rand
         </div>
         <div class="tab-pane" id="seat-allocation">
           <%include file="./_seat_allocation.html" />
+        </div>
+        <div class="tab-pane" id="sales-segment">
+          <%include file="./_sales_segment.html" />
         </div>
         <div class="tab-pane" id="product">
           <%include file="./_product.html" />
