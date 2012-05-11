@@ -15,7 +15,7 @@
 <script type="text/javascript">
   function add_stock_holder() {
     $('#modal-new-stock-group-own').modal('toggle');
-    $('#modal-new-stock-group-own #edit').attr('action', '/events/performances/stock_holder/' + ${performance.id} + '/new');
+    $('#modal-new-stock-group-own #edit').attr('action', '/events/performances/${performance.id}/stock_holder/new');
   }
 
   $('#modal-edit').on('hidden', function () {
@@ -141,37 +141,6 @@
       <input id="text" name="text" type="text" class="span3" value="">
       <label>記号色</label>
       <input id="text_color" name="text_color" type="text" class="kolorPicker span3" value="">
-      <label>塗りつぶし色</label>
-      <input id="fill_color" name="fill_color" type="text" class="kolorPicker span3" value="">
-      <label>塗りつぶしパターン</label>
-      <div class="controls">
-        <select name="fill_type">
-          <option value="FloodFill">べた塗り</option>
-          <option value="LinearGradientFill">グラデーション（線形）</option>
-          <option value="RadialGradientFill">グラデーション（放射状）</option>
-          <option value="ImageTileFill">画像パターン</option>
-        </select>
-      </div>
-      <label>塗りつぶしイメージ</label>
-      <input id="fill_image" name="fill_image" type="text" class="span3" value="">
-      <label>線の色</label>
-      <input id="stroke_color" name="stroke_color" type="text" class="kolorPicker span3"value="">
-      <label>線の太さ</label>
-      <div class="controls">
-        <select name="stroke_width">
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-        </select>
-      </div>
-      <label class="control-label">線の種類</label>
-      <div class="controls">
-        <select name="stroke_patten">
-          <option value="solid">実線</option>
-          <option value="double">2重線</option>
-          <option value="dashed">点線</option>
-        </select>
-      </div>
     </div>
 
     <div class="modal-footer">

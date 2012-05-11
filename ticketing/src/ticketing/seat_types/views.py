@@ -35,8 +35,6 @@ class SeatTypes(BaseView):
                 'type'      : data.get('fill_type'),
                 'image'     : data.get('fill_image'),
             },
-            'text'          : data.get('text'),
-            'text_color'    : data.get('text_color'),
         }
         record = merge_session_with_post(SeatType(), data)
         record.style = style
@@ -67,8 +65,6 @@ class SeatTypes(BaseView):
                 'type'      : data.get('fill_type'),
                 'image'     : data.get('fill_image'),
             },
-            'text'          : data.get('text'),
-            'text_color'    : data.get('text_color'),
         }
         seat_type.name          = data.get('name')
         seat_type.style         = style
