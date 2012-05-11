@@ -1196,7 +1196,7 @@ def top_page(layout):
     params = dict(description=u'チケットの販売、イベントの予約は楽天チケットで！楽天チケットは演劇、バレエ、ミュージカルなどの舞台、クラシック、オペラ、ロックなどのコンサート、野球、サッカー、格闘技などのスポーツ、その他イベントなどのチケットのオンラインショッピングサイトです。',
                   keywords= u"チケット,演劇,クラシック,オペラ,コンサート,バレエ,ミュージカル,野球,サッカー,格闘技", 
                   layout= layout, 
-                  url= u'top!',
+                  url= u'top',
                   structure= "{}", 
                   version= None)
     for k, v in params.iteritems():

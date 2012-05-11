@@ -54,7 +54,7 @@ class CategoryForm(Form):
 
     hierarchy = fields.SelectField(label=u"階層", choices=[(x, x) for x in [u"大", u"中", u"小"]])
     label = fields.TextField(label=u"label")
-    imgsrc = fields.TextField(imgsrc=u"imgsrc")
+    imgsrc = fields.TextField(label=u"imgsrc")
     url = fields.TextField(label=u"リンク(外部ページのURL)")
     pageset = dynamic_query_select_field_factory(
         PageSet, allow_blank=False, label=u"リンク先ページ(CMSで作成したもの)",

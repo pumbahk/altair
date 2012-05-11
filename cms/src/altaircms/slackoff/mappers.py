@@ -29,6 +29,10 @@ def category_mapper(request, obj):
     objlike = ObjectLike(**model_to_dict(obj))
     objlike.parent = obj.parent.name if obj.parent else None
     objlike.pageset = obj.pageset.name if obj.pageset else None
+    class imgRender(object):
+        def __html__(self):
+            return u'<img src="%s"/>' % obj.imgsrc
+    objlike.imgsrc = imgRender()
     for k, v in objlike.iteritems():
         if v is None:
             setattr(objlike, k, u"-")
