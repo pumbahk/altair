@@ -17,6 +17,48 @@
     text-decoration:none;
     color: #fff;
 }
+
+/*
+  for title headings
+*/
+
+#first img#titleImage{
+    width: 182px;
+    height: 60px;
+}
+#help img#titleImage{
+    width: 91px;
+    height: 60px;
+}
+#mypage img#titleImage{
+    width: 149px;
+    height: 60px;
+}
+#sitemap img#titleImage{
+    width: 167px;
+    height: 60px;
+}
+#theater img#titleImage{
+    width: 60px;
+    height: 60px;
+}
+#search img#titleImage{
+    width: 118px;
+    height: 60px;
+}
+#music img#titleImage{
+    width: 59px;
+    height: 60px;
+}
+#event img#titleImage{
+    width: 198px;
+    height: 60px;
+}
+#change img#titleImage{
+    width: 287px;
+    height: 60px;
+}
+
 /* .category.index {
  *     background-repeat: no-repeat;
  *     background-image:url(/static/ticketstar/img/common/header_nav_top.gif);

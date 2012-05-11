@@ -42,7 +42,7 @@
 	
 	<hr />
 	
-	<!-- InstanceBeginEditable name="cat" --><h1><img src="/static/ticketstar/img/event/title_event.gif" alt="イベント・その他" width="91" height="60" /></h1><!-- InstanceEndEditable -->
+	<!-- InstanceBeginEditable name="cat" --><h1><img id="titleImage" src="/static/ticketstar/img/event/title_event.gif" alt="イベント・その他"/></h1><!-- InstanceEndEditable -->
 	
 	<!-- ========== main ========== -->
 	<div id="main">

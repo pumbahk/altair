@@ -386,6 +386,9 @@ def add_detail_page_settings():
     add_detail_main_block_widgets(page, asset)
 
 
+### help
+
+
 def help_layout():
     layout = Layout(
         title = u"ticketstar.help",
@@ -652,7 +655,99 @@ def add_help_page_settings():
     add_help_main_block_widgets(page)
     add_help_side_block_widgets(page)
 
-##
+
+### first
+
+def first_layout():
+    layout = Layout(
+        title = u"ticketstar.first",
+        template_filename = "ticketstar.first.mako",
+        blocks = '[["main", "side"]]',
+        site_id = 1, ##
+        client_id = 1 ##
+        )
+    return layout
+
+
+def first_page(layout):
+    first_page = Page(description=u'チケットの販売、イベントの予約は楽天チケットで！楽天チケットは演劇、バレエ、ミュージカルなどの舞台、クラシック、オペラ、ロックなどのコンサート、野球、サッカー、格闘技などのスポーツ、その他イベントなどのチケットのオンラインショッピングサイトです。',
+                       keywords= u"チケット,演劇,クラシック,オペラ,コンサート,バレエ,ミュージカル,野球,サッカー,格闘技", 
+                       layout= layout, 
+                       title= u'初めての方へ',
+                       url= u'first',
+                       structure= "{}", 
+                       version= None)
+    PageSet.get_or_create(first_page)
+    return first_page
+
+
+def first_topics():
+    return [
+        Topic(kind=u"ヘルプ", 
+              subkind=u"チケット購入・引取", 
+              text=u"楽天会員情報の管理よりお手続きください。", 
+              title=u"会員ID忘れてしまいました", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=True), 
+        ]
+
+def add_first_side_block_widgets(page):
+    add_anchorlist_widget(page, "side", {})
+
+def add_first_main_block_widgets(page):
+    params = dict(kind=u"チケットスター：ヘルプページ見出し", 
+                  text=u"チケット購入・引取")
+    add_heading_widget(page, "main", params)
+
+    params =  {"kind": u"ヘルプ", 
+               "subkind": u"チケット購入・引取", 
+               "display_count": 100, 
+               "display_global": True, 
+               "display_event": True, 
+               "display_page": True}
+    add_topic_widget(page, "main",  params)
+
+    params = dict(kind=u"チケットスター：ヘルプページ見出し", 
+                  text=u"動作環境・セキュリティ")
+    add_heading_widget(page, "main", params)
+
+    params =  {"kind": u"ヘルプ", 
+               "subkind": u"動作環境・セキュリティ", 
+               "display_count": 100, 
+               "display_global": True, 
+               "display_event": True, 
+               "display_page": True}
+    add_topic_widget(page, "main",  params)
+
+    params = dict(kind=u"チケットスター：ヘルプページ見出し", 
+                  text=u"ヘルプ")
+    add_heading_widget(page, "main", params)
+
+    params =  {"kind": u"ヘルプ", 
+               "subkind": u"ヘルプ", 
+               "display_count": 100, 
+               "display_global": True, 
+               "display_event": True, 
+               "display_page": True}
+    add_topic_widget(page, "main",  params)
+
+def add_first_page_settings():
+    layout = first_layout()
+    topics = first_topics()
+    page = first_page(layout)
+
+    DBSession.add(page)
+    DBSession.add_all(topics)
+
+    DBSession.flush()
+
+    add_first_main_block_widgets(page)
+    add_first_side_block_widgets(page)
+
+
+
+### sports
 
 def sports_layout():
     layout = Layout(
@@ -1493,6 +1588,9 @@ def bind_category_to_pageset():
     Category.query.filter_by(name=u"演劇").update({"pageset_id": PageSet.query.filter_by(name=u"演劇 ページセット").one().id}, synchronize_session="fetch")
     Category.query.filter_by(name=u"イベント・その他").update({"pageset_id": PageSet.query.filter_by(name=u"イベント・その他 ページセット").one().id}, synchronize_session="fetch")
 
+    Category.query.filter_by(name=u"ヘルプ").update({"pageset_id": PageSet.query.filter_by(name=u"ヘルプ ページセット").one().id}, synchronize_session="fetch")
+    Category.query.filter_by(name=u"初めての方へ").update({"pageset_id": PageSet.query.filter_by(name=u"初めての方へ ページセット").one().id}, synchronize_session="fetch")
+
 
 
 def main(env, args):
@@ -1504,6 +1602,7 @@ def main(env, args):
     add_music_page_settings()
     add_theater_page_settings()
     add_help_page_settings()
+    add_first_page_settings()
     add_event_page_settings()
     add_detail_page_settings()
     add_top_page_settings()
