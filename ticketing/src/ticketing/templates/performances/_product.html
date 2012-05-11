@@ -104,7 +104,6 @@
       <td></td>
       % endif
     </tr>
-    <%doc>
     % if product.items:
     <tr>
       <td colspan="7">
@@ -113,21 +112,20 @@
             <tr>
               <th>席種</td>
               <th>席数</td>
+              <th>単価</td>
             </tr>
             % for item in product.items:
-              % for stock in item.stocks:
-                  <tr>
-                    <td>${stock.seat_type.name}</td>
-                    <td>${stock.quantity}</td>
-                  </tr>
-              % endfor
+              <tr>
+                <td>${item.stock.seat_type.name}</td>
+                <td>${item.stock.quantity}</td>
+                <td>${item.price}</td>
+              </tr>
             % endfor
           </table>
         </span>
       </td>
     </tr>
     % endif
-    </%doc>
   % endfor
   </tbody>
 </table>

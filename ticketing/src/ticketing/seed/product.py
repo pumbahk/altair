@@ -70,7 +70,7 @@ class ProductData(DataSet):
         event = EventData.event_1
     class product_5:
         name = u"S席大人+駐車場券"
-        price = 8000
+        price = 9000
         status = None
         sales_segment = SalesSegmentData.sales_segment_2
         event = EventData.event_1
@@ -138,6 +138,7 @@ class StockData(DataSet):
 class ProductItemData(DataSet):
     class productitem_1:
         item_type = 1
+        price = 8000
         product = ProductData.product_1
         performance = PerformanceData.performance_1
         stock = StockData.stock_1
@@ -145,8 +146,33 @@ class ProductItemData(DataSet):
         status = None
     class productitem_2:
         item_type = 2
+        price = 4000
         product = ProductData.product_2
         performance = PerformanceData.performance_1
         stock = StockData.stock_2
         seat_type = SeatTypeData.seat_type_2
+        status = None
+    class productitem_3:
+        item_type = 1
+        price = 7000
+        product = ProductData.product_3
+        performance = PerformanceData.performance_1
+        stock = StockData.stock_3
+        seat_type = SeatTypeData.seat_type_3
+        status = None
+    class productitem_4:
+        item_type = 1
+        price = 3000
+        product = ProductData.product_4
+        performance = PerformanceData.performance_1
+        stock = StockData.stock_4
+        seat_type = SeatTypeData.seat_type_4
+        status = None
+    class productitem_5:
+        item_type = 1
+        price = 8000
+        product = ProductData.product_5
+        performance = PerformanceData.performance_1
+        stock = StockData.stock_5
+        seat_type = SeatTypeData.seat_type_1
         status = None
