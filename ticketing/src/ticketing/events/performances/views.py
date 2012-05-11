@@ -155,4 +155,4 @@ class StockHolders(BaseView):
         #else:
         #    self.request.session.flash(u'枠を保存できません')
 
-        return HTTPFound(location=route_path('performances.show', self.request, performance_id=performance.id))
+        return HTTPFound(location=route_path('performances.show', self.request, performance_id=performance.id, _anchor='seat-allocation'))
