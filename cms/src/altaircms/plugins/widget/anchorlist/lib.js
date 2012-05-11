@@ -44,6 +44,7 @@ widget.configure({
     };
 
     var collect_data = function(we, choiced_elt){
+        return {};
     };
     return widget.include("anchorlist", {
         load_page: load_page, 
