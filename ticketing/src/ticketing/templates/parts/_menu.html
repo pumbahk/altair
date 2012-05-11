@@ -1,3 +1,4 @@
+<%page args="event=None" />
 <%
 from ticketing.bookmark.models import Bookmark
 %>
@@ -5,12 +6,19 @@ from ticketing.bookmark.models import Bookmark
   <div class="well">
     <ul class="nav nav-list">
       <li class="nav-header">公演管理</li>
-      <li><a href="${request.route_path('events.index')}"><i class="icon-home"></i>イベント管理</a></li>
+      <li><a href="${request.route_path('events.index')}"><i class="icon-home"></i>イベント</a></li>
+      % if event:
+      <ul>
+        <li><a href="${request.route_path('products.sales_segments', event_id=event.id)}">販売区分</a></li>
+        <li><a href="">商品</a></li>
+        <li><a href="">チケット券面</a></li>
+      </ul>
+      % endif
       <li><a href="${request.route_path('events.new')}"><i class="icon-home"></i>帳票出力</a></li>
       <li><a href="${request.route_path('accounts.index')}"><i class="icon-home"></i>クライアント管理</a></li>
       <li class="divider"></li>
       <li class="nav-header">マスタ管理</li>
-      <li><a href="${request.route_path('products.sales_segments')}"><i class="icon-home"></i>販売区分</a></li>
+      <li><a href=""><i class="icon-home"></i>決済・配送</a></li>
       <li><a href=""><i class="icon-home"></i>チケット券面</a></li>
       <li class="divider"></li>
       <li class="nav-header">ユーザー管理</li>

@@ -11,9 +11,12 @@ class ProductForm(Form):
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         Form.__init__(self, formdata, obj, prefix, **kwargs)
-        if 'organization_id' in kwargs:
+        if 'event_id' in kwargs:
+            conditions ={
+                'event_id':kwargs['event_id'],
+            }
             self.sales_segment_id.choices = [
-                (sales_segment.id, sales_segment.name) for sales_segment in SalesSegment.get_by_organization_id(kwargs['organization_id'])
+                (sales_segment.id, sales_segment.name) for sales_segment in SalesSegment.find_by(**conditions)
             ]
 
     name = TextField(

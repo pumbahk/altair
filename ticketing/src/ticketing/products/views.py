@@ -9,7 +9,7 @@ from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
 from ticketing.products.forms import PaymentDeliveryMethodPairForm, ProductForm, SalesSegmentForm
 from ticketing.products.models import PaymentDeliveryMethodPair, Product, ProductItem, SalesSegment, Stock
-from ticketing.events.models import Performance
+from ticketing.events.models import Event, Performance
 
 @view_defaults(decorator=with_bootstrap)
 class Products(BaseView):
@@ -65,7 +65,7 @@ class Products(BaseView):
         if performance is None:
             return HTTPNotFound('performance id %d is not found' % performance_id)
 
-        f = ProductForm(self.request.POST, organization_id=self.context.user.organization_id)
+        f = ProductForm(self.request.POST, event_id=performance.event_id)
         if f.validate():
             product = merge_session_with_post(product, f.data)
             product.save()
@@ -89,11 +89,17 @@ class ProductSegments(BaseView):
 
     @view_config(route_name='products.sales_segments', renderer='ticketing:templates/products_segments/index.html')
     def index(self):
-        sales_segments = SalesSegment.get_by_organization_id(self.context.user.organization_id)
+        event_id = int(self.request.matchdict.get('event_id', 0))
+        event = Event.get(event_id)
+        conditions = {
+            'event_id':event.id
+        }
+        sales_segments = SalesSegment.find_by(**conditions)
         form_ss = SalesSegmentForm()
         return {
             'form_ss':form_ss,
             'sales_segments':sales_segments,
+            'event':event,
         }
 
     @view_config(route_name='products.sales_segments.show', renderer='ticketing:templates/products_segments/show.html')

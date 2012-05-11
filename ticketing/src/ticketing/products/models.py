@@ -80,14 +80,8 @@ class SalesSegment(BaseModel, Base):
     start_at = Column(DateTime)
     end_at = Column(DateTime)
 
-    performance_id = Column(BigInteger, ForeignKey('Performance.id'))
-    performance = relationship('Performance')
-    organization_id = Column(BigInteger, ForeignKey('Organization.id'))
-    organization = relationship('Organization')
-
-    @staticmethod
-    def get_by_organization_id(id):
-        return DBSession.query(SalesSegment).filter(SalesSegment.organization_id==id).all()
+    event_id = Column(BigInteger, ForeignKey('Event.id'))
+    event = relationship('Event')
 
 buyer_condition_set_table =  Table('BuyerConditionSet', Base.metadata,
     Column('id', Integer, primary_key=True),
