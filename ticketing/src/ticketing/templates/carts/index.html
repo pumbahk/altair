@@ -11,90 +11,12 @@
 <link rel="shortcut icon" href="${request.static_url('ticketing.cart:static/img/common/favicon.ico')}" />
 <link rel="stylesheet" href="${request.static_url('ticketing.cart:static/css/import.css')}" type="text/css" media="all" />
 <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/jquery.js')}"></script>
-<script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/jquery.flatheights.js')}"></script>
-<script type="text/javascript">
-$(function() {
-  // $('#selectSeat, #selectBuy').flatHeights();
-  $("#selectSeat li:even").addClass("seatEven");
-  $("#selectSeat li:odd").addClass("seatOdd");
-});
-</script>
-
+<script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/carts.js')}"></script>
 <script>
-var venues_selection = ${venues_selection};
-
-function on_seat_type_selected() {
-  $('#seat-types-list').children('li').each(function(key, value) {
-    $(value).removeClass("selected");
-  });
-  $(this).parent().addClass("selected");
-  var get_url = $(this).val();
-  show_products(get_url);
-}
-
-function show_products(get_url) {
-  $.ajax({url: get_url, dataType: 'json', success: function(data) {
-    $('#payment-seat-type').text(data.seat_type.name);
-    $('#payment-seat-products').empty();
-    $.each(data.products, function(key, value) {
-      var name = $('<th scope="row" />');
-      name.text(value.name);
-      var payment = $('<td />');
-      var price = $('<span/>');
-      price.text('￥' + value.price);
-      payment.append(price);
-      var amount = $('<select/>');
-      amount.attr('name', value.id);
-      for (var i=0; i < 99; i++) { // TODO 枚数制限
-        opt = $('<option/>');
-        opt.text(i);
-        opt.val(i);
-        amount.append(opt);
-      }
-      payment.append(amount);
-      payment.append('<span>枚</span>');
-      var row = $('<tr/>');
-      row.append(name).append(payment);
-      $('#payment-seat-products').append(row);
-      
-    });
-  }});
-}
-
-function show_seat_types(get_url) {
-  $.ajax({url:get_url, dataType: 'json', success:function(data) {
-    $('#seat-types-list').empty();
-    $.each(data.seat_types, function(key, value) {
-      var item = $('<li />');
-      var select = $('<input type="radio" name="seat_type" />');
-      select.attr('value', value.products_url);
-      select.change(on_seat_type_selected);
-      var name = $('<span />');
-      name.text(value.name);
-      item.append(select);
-      item.append(name);
-      $('#seat-types-list').append(item);
-    });
-    $("#selectSeat li:even").addClass("seatEven");
-    $("#selectSeat li:odd").addClass("seatOdd");
-  }});
-};
-
-$(function() {
-  $('#date-select').change(
-    function() {
-      var venues = venues_selection[$('#date-select').val()];
-      $('#venue-select').empty();
-      $.each(venues, function(index, value) {
-        var o = $('<option/>');
-        o.text(value['name']);
-        o.attr('value', value['seat_types_url']);
-        $('#venue-select').append(o);
-        show_seat_types(value['seat_types_url']);
-      });
-    }
-  );
-})
+    var venues_selection = ${venues_selection};
+    $(function() {
+        carts.init(venues_selection);
+    })
 </script>
 </head>
 <body id="settlement">
