@@ -61,7 +61,7 @@ class Topic(AboutPublishMixin,
     kind = sa.Column(sa.Unicode(255))
     subkind = sa.Column(sa.Unicode(255))
     title = sa.Column(sa.Unicode(255))
-    text = sa.Column(sa.Unicode(255))
+    text = sa.Column(sa.UnicodeText)
     event_id = sa.Column(sa.Integer, sa.ForeignKey("event.id"), nullable=True)
     event = orm.relationship(Event, backref="topic", uselist=False)
     page_id = sa.Column(sa.Integer, sa.ForeignKey("page.id"), nullable=True)
