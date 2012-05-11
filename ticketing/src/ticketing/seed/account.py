@@ -15,7 +15,6 @@ class AccountData(DataSet):
         organization    = OrganizationData.organization_0
         updated_at      = datetime.now()
         created_at      = datetime.now()
-        status          = 1
     class account_2:
         account_type    = AccountTypeEnum.Promoter.v
         name            = u'ぴあ'
@@ -23,7 +22,6 @@ class AccountData(DataSet):
         organization    = OrganizationData.organization_0
         updated_at      = datetime.now()
         created_at      = datetime.now()
-        status          = 1
     class account_3:
         account_type    = AccountTypeEnum.Promoter.v
         name            = u'イープラス'
@@ -31,7 +29,6 @@ class AccountData(DataSet):
         organization    = OrganizationData.organization_0
         updated_at      = datetime.now()
         created_at      = datetime.now()
-        status          = 1
     class account_4:
         account_type    = AccountTypeEnum.Promoter.v
         name            = u'ローソンチケット'
@@ -39,4 +36,3 @@ class AccountData(DataSet):
         organization    = OrganizationData.organization_0
         updated_at      = datetime.now()
         created_at      = datetime.now()
-        status          = 1

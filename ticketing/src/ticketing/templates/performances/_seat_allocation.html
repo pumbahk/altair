@@ -31,6 +31,8 @@
     $("#seat-map").height($(window).height()-230);
     $("#allocated-list").height($(window).height()-230);
   });
+
+  $(".collapse").collapse()
 </script>
 
 <div class="tabbable tabs-below tabs-above" id="seat-allocation-tab">
@@ -80,32 +82,27 @@
             </ul>
 
             % for account in performance.accounts:
-            <table class="table table-striped table-bordered table-condensed">
               <h4>${account.name}</h4>
-              <tbody>
               % for stock_holder in performance.stock_holders:
                 % if stock_holder.account.user.id == account.user.id:
-                  <tr>
-                    <th style="width:10px" rowspan="${len(stock_holder.stocks)}"><input type="checkbox"></th>
-                    <th class="span2" rowspan="${len(stock_holder.stocks)}">${seat_style(stock_holder.style)}${stock_holder.name}</th>
-                  % if len(stock_holder.stocks) == 0:
-                    <th style="width:80px"></th>
-                    <td class="span1"></td>
-                  % endif
-                  % for i, stock in enumerate(stock_holder.stocks):
-                    % if i != 0:
-                  <tr>
-                    % endif
-                    <th style="width:80px">
-                      ${seat_style(stock.seat_type.style)}${stock.seat_type.name}
-                    </th>
-                    <td class="span1">${stock.quantity}席</td>
-                  </tr>
-                  % endfor
+                  <div class="accordion-group">
+                    <div class="accordion-heading">
+                      <a class="accordion-toggle" data-toggle="collapse" href="#collapse-${stock_holder.id}">
+                        ${seat_style(stock_holder.style)}${stock_holder.name}
+                      </a>
+                    </div>
+                    <div id="collapse-${stock_holder.id}" class="accordion-body collapse" style="height: 0px; ">
+                      % for i, stock in enumerate(stock_holder.stocks):
+                        <div class="accordion-inner">
+                          <span class="span2">${seat_style(stock.seat_type.style)}${stock.seat_type.name}</span>
+                          <span>${stock.quantity}席</span>
+                        </div>
+                      % endfor
+                    </div>
+                  </div>
                 % endif
               % endfor
-              <tbody>
-            </table>
+              <div style="margin-bottom: 20px"></div>
             % endfor
 
           </div>
@@ -113,11 +110,6 @@
       </div>
     </div>
   </div>
-
-  <ul class="nav nav-tabs"id="seat-allocation-tab-content-navi">
-    <li class="active"><a href="#map" data-toggle="tab">会場図</a></li>
-    <li><a href="#detail" data-toggle="tab">詳細</a></li>
-  </ul>
 </div>
 
 <div class="modal fade" id="modal-new-stock-group-own">

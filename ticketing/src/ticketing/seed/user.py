@@ -11,22 +11,18 @@ class UserData(DataSet):
         bank_account    = BankAccountData.bank_account_1
         updated_at      = datetime.now()
         created_at      = datetime.now()
-        status          = 1
     class user_2:
         bank_account    = None
         updated_at      = datetime.now()
         created_at      = datetime.now()
-        status          = 1
     class user_3:
         bank_account    = None
         updated_at      = datetime.now()
         created_at      = datetime.now()
-        status          = 1
     class user_4:
         bank_account    = None
         updated_at      = datetime.now()
         created_at      = datetime.now()
-        status          = 1
 
 class UserProfileData(DataSet):
     class user_profile_1:
@@ -50,7 +46,6 @@ class UserProfileData(DataSet):
         fax             = '0000-00-0000'
         updated_at      = datetime.now()
         created_at      = datetime.now()
-        status          = 1
     class user_profile_2:
         user            = UserData.user_2
         email           = u'test2@ticketstar.jp'
@@ -72,7 +67,6 @@ class UserProfileData(DataSet):
         fax             = '0000-00-0000'
         updated_at      = datetime.now()
         created_at      = datetime.now()
-        status          = 1
     class user_profile_3:
         user            = UserData.user_3
         email           = u'test3@ticketstar.jp'
@@ -94,7 +88,6 @@ class UserProfileData(DataSet):
         fax             = '0000-00-0000'
         updated_at      = datetime.now()
         created_at      = datetime.now()
-        status          = 1
     class user_profile_4:
         user            = UserData.user_4
         email           = u'test4@ticketstar.jp'
@@ -116,7 +109,6 @@ class UserProfileData(DataSet):
         fax             = '0000-00-0000'
         updated_at      = datetime.now()
         created_at      = datetime.now()
-        status          = 1
 
 class UserCredentialData(DataSet):
     class user_credential_1:
@@ -125,4 +117,3 @@ class UserCredentialData(DataSet):
         auth_secret     = None
         updated_at      = datetime.now()
         created_at      = datetime.now()
-        status          = 1

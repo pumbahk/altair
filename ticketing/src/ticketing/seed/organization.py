@@ -20,7 +20,6 @@ class OrganizationData(DataSet):
         fax             = u'00-0000-0000'
         updated_at      = datetime.now()
         created_at      = datetime.now()
-        status          = 1
     class organization_1:
         name            = u'クライアント1'
         client_type     = OrganizationTypeEnum.Standard.v
@@ -34,7 +33,6 @@ class OrganizationData(DataSet):
         fax             = u'00-0000-0000'
         updated_at      = datetime.now()
         created_at      = datetime.now()
-        status          = 1
     class organization_2:
         name            = u'クライアント2'
         client_type     = OrganizationTypeEnum.Standard.v
@@ -48,7 +46,6 @@ class OrganizationData(DataSet):
         fax             = u'00-0000-0000'
         updated_at      = datetime.now()
         created_at      = datetime.now()
-        status          = 1
     class organization_3:
         name            = u'クライアント3'
         client_type     = OrganizationTypeEnum.Standard.v
@@ -62,7 +59,6 @@ class OrganizationData(DataSet):
         fax             = u'00-0000-0000'
         updated_at      = datetime.now()
         created_at      = datetime.now()
-        status          = 1
     class organization_4:
         name            = u'クライアント4'
         client_type     = OrganizationTypeEnum.Standard.v
@@ -76,7 +72,6 @@ class OrganizationData(DataSet):
         fax             = u'00-0000-0000'
         updated_at      = datetime.now()
         created_at      = datetime.now()
-        status          = 1
     class organization_5:
         name            = u'クライアント5'
         client_type     = OrganizationTypeEnum.Standard.v
@@ -90,4 +85,3 @@ class OrganizationData(DataSet):
         fax             = u'00-0000-0000'
         updated_at      = datetime.now()
         created_at      = datetime.now()
-        status          = 1

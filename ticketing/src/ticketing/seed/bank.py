@@ -596,7 +596,6 @@ class BankAccountData(DataSet):
         account_owner = u'Test Test'
         updated_at = datetime.now()
         created_at = datetime.now()
-        status = 1
 
     class bank_account_2:
         bank = BankData.bank_code_0134
@@ -605,7 +604,6 @@ class BankAccountData(DataSet):
         account_owner = u'Test Test2'
         updated_at = datetime.now()
         created_at = datetime.now()
-        status = 1
 
     class bank_account_3:
         bank = BankData.bank_code_0573
@@ -614,4 +612,3 @@ class BankAccountData(DataSet):
         account_owner = u'Test Test3'
         updated_at = datetime.now()
         created_at = datetime.now()
-        status = 1

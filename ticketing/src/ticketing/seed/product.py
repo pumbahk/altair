@@ -133,7 +133,6 @@ class ProductItemData(DataSet):
         performance = PerformanceData.performance_1
         stock = StockData.stock_1
         seat_type = SeatTypeData.seat_type_1
-        status = None
     class productitem_2:
         item_type = 2
         price = 4000
@@ -141,7 +140,6 @@ class ProductItemData(DataSet):
         performance = PerformanceData.performance_1
         stock = StockData.stock_2
         seat_type = SeatTypeData.seat_type_2
-        status = None
     class productitem_3:
         item_type = 1
         price = 7000
@@ -149,7 +147,6 @@ class ProductItemData(DataSet):
         performance = PerformanceData.performance_1
         stock = StockData.stock_3
         seat_type = SeatTypeData.seat_type_3
-        status = None
     class productitem_4:
         item_type = 1
         price = 3000
@@ -157,7 +154,6 @@ class ProductItemData(DataSet):
         performance = PerformanceData.performance_1
         stock = StockData.stock_4
         seat_type = SeatTypeData.seat_type_4
-        status = None
     class productitem_5:
         item_type = 1
         price = 8000
@@ -165,4 +161,3 @@ class ProductItemData(DataSet):
         performance = PerformanceData.performance_1
         stock = StockData.stock_5
         seat_type = SeatTypeData.seat_type_1
-        status = None
