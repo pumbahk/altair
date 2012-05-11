@@ -1,3 +1,4 @@
+## required:top_inner_category
 <%block name="master_header">
 		<p id="tagLine">チケット販売・イベント予約</p>
 		<p id="siteID"><a href="http://ticket.rakuten.co.jp/"><img src="/static/ticketstar/img/common/header_logo_01.gif" alt="楽天チケット" class="serviceLogo" width="97" height="35" /></a><a href="http://ticket.rakuten.co.jp/"><img src="/static/ticketstar/img/common/header_logo_02.gif" alt="チケット" class="serviceTitle" width="88" height="23" /></a></p>
@@ -19,37 +20,45 @@
 		  <dt>補助メニュー</dt>
 		  <dd class="siteUtility">
 			<ul>
-			  <li><a href="#">初めての方へ</a></li>
-   	    	  <li><a href="#">公演中止・変更情報</a></li>
-			  <li><a href="#">ヘルプ</a></li>
-			  <li class="last"><a href="#">サイトマップ</a></li>
+			  <% categories = list(top_outer_categories)%>
+			  % for category in categories[:-1]:
+			    <li><a href="${h.link.get_link_from_category(request, category)}" alt="${category.name}">${category.name}</a></li>
+			  % endfor
+			  % if categories:
+			    <li><a href="${h.link.get_link_from_category(request, categories[-1])}" alt="${categories[-1].name}">${categories[-1].name}</a></li>
+			  % endif
    	       </ul>
 		  </dd>
 		</dl>
 </%block>
 
 
+## required:categories
+## required:top_inner_category
 <%block name="global_navigation">
 	<div id="globalNav">
 		<ul id="globalNav1">
 		  % for category in categories:
-		     <li><a href="${h.front.to_publish_page_from_pageset(request,category.pageset) if category.pageset else "#"}">
+		     <li><a href="${h.link.get_link_from_category(request, category)}">
 				 <img src="${category.imgsrc}" alt="${category.name}"/></a>
 			 </li>
-		     ## dirty hack
+		     ## dirty hack(cssのbackground-imageで表示しようとしたが横幅を揃えることができず失敗)
 		     ## <li class="category ${category.label}"><a href="#" alt="${category.name}"><span style="visibility:hidden;">　${category.name}　@</span></a></li>
 		  % endfor
 		</ul>
 		<ul id="globalNav2">
-			<li><a href="#">抽選申込履歴</a></li>
-			<li><a href="#">購入履歴</a></li>
-			<li><a href="#">お気に入り</a></li>
-			<li><a href="#">マイページ</a></li>
+			  <% nav_categories = list(top_inner_categories)%>
+			  % for category in nav_categories[:-1]:
+			    <li><a href="${h.link.get_link_from_category(request, category)}" alt="${category.name}">${category.name}</a></li>
+			  % endfor
+			  % if categories:
+			    <li><a href="${h.link.get_link_from_category(request, nav_categories[-1])}" alt="${nav_categories[-1].name}">${nav_categories[-1].name}</a></li>
+			  % endif
 		</ul>
 	</div>
 </%block>
 
-<%doc>
+<%doc> ## 元々のhtml今は利用していない
 <%block name="global_navigation">
 	<div id="globalNav">
 		<ul id="globalNav1">

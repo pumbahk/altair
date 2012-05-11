@@ -62,6 +62,6 @@ class PageRenderingResource(object):
     def get_layout_template(self, layout, config):
         return gen.get_layout_template(str(layout.template_filename), config)
 
-    def get_categories(self):
-        return Category.get_toplevel_categories(request=self.request).order_by(sa.asc("orderno"))
+    def get_categories(self, hierarchy=u"大"):
+        return Category.get_toplevel_categories(hierarchy=hierarchy, request=self.request).order_by(sa.asc("orderno"))
 

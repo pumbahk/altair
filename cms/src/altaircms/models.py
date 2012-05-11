@@ -202,7 +202,8 @@ class Category(Base):
     site_id = sa.Column(sa.Integer, sa.ForeignKey("site.id"))
     site = orm.relationship("Site", backref="categories", uselist=False)
     parent_id = sa.Column(sa.Integer, sa.ForeignKey("category.id"))
-    parent = orm.relationship("Category", remote_side=[id], uselist=False, cascade="all")
+    parent = orm.relationship("Category", remote_side=[id], uselist=False)
+    #parent = orm.relationship("Category", remote_side=[id], uselist=False, cascade="all")
 
     label = sa.Column(sa.String(length=255), nullable=False)
     imgsrc = sa.Column(sa.String(length=255), nullable=False)
@@ -218,10 +219,9 @@ class Category(Base):
     def get_toplevel_categories(cls, hierarchy=u"大", site=None, request=None): ## fixme
         if site is None and request and hasattr(request,"site"):
             site = request.site
-        return cls.query.filter(cls.site==site, cls.hierarchy==hierarchy)
-    
-    def get_link(self, request):
-        if self.pageset is None:
-            return self.url
+            return cls.query.filter(cls.site==site, cls.hierarchy==hierarchy)
         else:
-            return h.front.to_publish_page_from_pageset(request, self.pageset)
+            ## 本当はこちらは存在しないはず。
+            ## request.siteはまだ未実装。
+            return cls.query.filter(cls.hierarchy==hierarchy)
+    

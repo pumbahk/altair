@@ -1429,18 +1429,24 @@ def add_top_page_settings():
 def add_materials_settings():
     """ siteなど
     """
-    client = Client(
-        id = 1,
-        name = u"master",
-        prefecture = u"tokyo",
-        address = u"000",
-        email = "foo@example.jp",
-        contract_status = 0
-        )
-    site = Site(name=u"ticketstar",
-                description=u"ticketstar ticketstar",
-                url="http://example.com",
-                client=client)
+    client = Client.query.filter_by(name=u"master").first()
+    if client is None:
+        client = Client(
+            id = 1,
+            name = u"master",
+            prefecture = u"tokyo",
+            address = u"000",
+            email = "foo@example.jp",
+            contract_status = 0
+            )
+        DBSession.add(client)
+    site = Site.query.filter_by(name=u"ticketstar").first()
+    if site is None:
+        site = Site(name=u"ticketstar",
+                    description=u"ticketstar ticketstar",
+                    url="http://example.com",
+                    client=client)
+        DBSession.add(site)
 
     debug_user = Operator(auth_source="debug", user_id=1, id=1, role_id=1, screen_name="debug user")
 
@@ -1462,8 +1468,6 @@ def add_materials_settings():
         )
 
     DBSession.add(debug_user)
-    DBSession.add(client)
-    DBSession.add(site)
     DBSession.add(layout_col2)
     DBSession.add(layout_col3)
 
