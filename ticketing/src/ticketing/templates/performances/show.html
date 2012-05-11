@@ -100,7 +100,7 @@ var RENDERING_RULE_URL = "/static/js/demo/renderingRules.json" + "?" + Math.rand
           <%include file="./_seat_allocation.html" />
         </div>
         <div class="tab-pane" id="product">
-          <%include file="./_product.html" />
+          <%include file="/products/_list.html" args="event=performance.event, performance=performance" />
         </div>
         <div class="tab-pane" id="ticket-designer">
           <%include file="./_ticket_designer.html" />

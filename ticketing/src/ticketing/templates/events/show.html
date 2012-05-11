@@ -28,7 +28,7 @@
     <table class="table table-bordered fullwidth">
       <tbody>
         <tr>
-          <th>${form.title.label.text}</th>
+          <th class="span3">${form.title.label.text}</th>
           <td>${event.title}</td>
         </tr>
         <tr>
@@ -77,21 +77,28 @@
         </tr>
       </tbody>
     </table>
-
     <%include file="/events/_action_button.html" args="event=event" />
+
     <hr />
 
-    <div id="performances" class="subsection">
-      <div class="subsection-header">
-        <div class="subsection-header-content">
-          <h3>パフォーマンス</h3>
-        </div>
-      </div>
-      <div class="subsection-main">
-        <div class="subsection-main-content">
-          <%include file="../performances/_list.html" />
-        </div>
-      </div>
+    <div id="performances">
+      <h3>パフォーマンス</h3>
+      <%include file="/performances/_list.html" />
+      <%include file="/performances/_action_button.html" />
+    </div>
+
+    <hr />
+
+    <div id="sales_segments">
+      <h3>販売区分</h3>
+    </div>
+
+    <hr />
+
+    <div id="products">
+      <h3>商品</h3>
+      <%include file="/products/_list.html" args="event=event" />
+      <%include file="/products/_action_button.html" />
     </div>
   </span>
 </div>

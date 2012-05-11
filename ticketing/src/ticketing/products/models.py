@@ -4,7 +4,7 @@ from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, Strin
 from sqlalchemy.orm import relationship, join, backref, column_property, mapper, relation
 
 from ticketing.models import Base, BaseModel, DBSession, JSONEncodedDict, MutationDict
-from ticketing.venues.models import Seat, SeatStatusEnum, SeatStatus
+from ticketing.venues.models import  SeatStatusEnum, SeatStatus
 
 class PaymentMethodPlugin(BaseModel, Base):
     __tablename__ = 'PaymentMethodPlugin'
@@ -45,43 +45,6 @@ class DeliveryMethod(BaseModel, Base):
     @staticmethod
     def get_by_organization_id(id):
         return DBSession.query(DeliveryMethod).filter(DeliveryMethod.organization_id==id).all()
-
-class PaymentDeliveryMethodPair(BaseModel, Base):
-    __tablename__ = 'PaymentDeliveryMethodPair'
-    id = Column(BigInteger, primary_key=True)
-    transaction_fee = Column(DECIMAL)
-    delivery_fee = Column(DECIMAL)
-    discount = Column(DECIMAL)
-    discount_unit = Column(Integer)
-    discount_type = Column(Integer)
-
-    sales_segment_id = Column(BigInteger, ForeignKey('SalesSegment.id'))
-    sales_segment = relationship('SalesSegment', backref='payment_delivery_method_pair')
-    payment_method_id = Column(BigInteger, ForeignKey('PaymentMethod.id'))
-    payment_method = relationship('PaymentMethod')
-    delivery_method_id = Column(BigInteger, ForeignKey('DeliveryMethod.id'))
-    delivery_method = relationship('DeliveryMethod')
-
-    @staticmethod
-    def find(**kwargs):
-        query = DBSession.query(PaymentDeliveryMethodPair)
-        if 'sales_segment_id' in kwargs:
-            query = query.filter_by(sales_segment_id=kwargs['sales_segment_id'])
-        if 'payment_method_id' in kwargs:
-            query = query.filter_by(payment_method_id=kwargs['payment_method_id'])
-        if 'delivery_method_id' in kwargs:
-            query = query.filter_by(delivery_method_id=kwargs['delivery_method_id'])
-        return query.first()
-
-class SalesSegment(BaseModel, Base):
-    __tablename__ = 'SalesSegment'
-    id = Column(BigInteger, primary_key=True)
-    name = Column(String(255))
-    start_at = Column(DateTime)
-    end_at = Column(DateTime)
-
-    event_id = Column(BigInteger, ForeignKey('Event.id'))
-    event = relationship('Event')
 
 buyer_condition_set_table =  Table('BuyerConditionSet', Base.metadata,
     Column('id', Integer, primary_key=True),
@@ -187,7 +150,7 @@ class Product(BaseModel, Base):
     sales_segment = relationship('SalesSegment', uselist=False, backref='product')
 
     event_id = Column(BigInteger, ForeignKey('Event.id'))
-    event = relationship('Event', uselist=False, backref='product')
+    event = relationship('Event', backref='products')
 
     items = relationship('ProductItem', backref='product')
 

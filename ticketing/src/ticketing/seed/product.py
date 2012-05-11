@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime
 from ticketing.seed import DataSet
 
 from account import AccountData
-from .event import PerformanceData, EventData
-from .organization import OrganizationData
+from .event import PerformanceData, EventData, SalesSegmentData
 
 class SeatTypeData(DataSet):
     class seat_type_1:
@@ -28,18 +26,6 @@ class SeatTypeData(DataSet):
         performance_id = 1
         style = {"text": "C", "stroke": {"color": "#d8d8d8", "width": "1", "pattern": "dotted"}, "fill": {"color": "#cc8080"}}
         status = 1
-
-class SalesSegmentData(DataSet):
-    class sales_segment_1:
-        name = u'先行販売'
-        start_at = datetime(2012,5,1,12,0)
-        end_at = datetime(2012,7,1,12,0)
-        event = EventData.event_1
-    class sales_segment_2:
-        name = u'予約販売'
-        start_at = datetime(2012,3,1,12,0)
-        end_at = datetime(2012,5,1,12,0)
-        event = EventData.event_1
 
 class ProductData(DataSet):
     class product_1:
