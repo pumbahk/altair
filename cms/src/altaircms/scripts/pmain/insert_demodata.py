@@ -1444,9 +1444,37 @@ def add_materials_settings():
 
     debug_user = Operator(auth_source="debug", user_id=1, id=1, role_id=1, screen_name="debug user")
 
+    ## simple layout
+    layout_col2 = Layout(
+        title = "col2", 
+        template_filename = "col2.mako", 
+        blocks = '[["header"],["left", "right"],["footer"]]', 
+        site = site,  ##
+        client = client,  ##
+        )
+    
+    layout_col3 = Layout(
+        title = "col3",
+        template_filename = "col3.mako",
+        blocks = '[["header"],["left1", "right1"],["left2", "center", "right2"], ["footer"]]',
+        site = site,  ##
+        client = client,  ##,
+        )
+
     DBSession.add(debug_user)
     DBSession.add(client)
     DBSession.add(site)
+    DBSession.add(layout_col2)
+    DBSession.add(layout_col3)
+
+
+def bind_category_to_pageset():
+    Category.query.filter_by(name=u"チケットトップ").update({"pageset_id": PageSet.query.filter_by(name=u"トップページ ページセット").one().id}, synchronize_session="fetch")
+    Category.query.filter_by(name=u"音楽").update({"pageset_id": PageSet.query.filter_by(name=u"音楽 ページセット").first().id}, synchronize_session="fetch")
+    Category.query.filter_by(name=u"スポーツ").update({"pageset_id": PageSet.query.filter_by(name=u"スポーツ ページセット").one().id}, synchronize_session="fetch")
+    Category.query.filter_by(name=u"演劇").update({"pageset_id": PageSet.query.filter_by(name=u"演劇 ページセット").one().id}, synchronize_session="fetch")
+    Category.query.filter_by(name=u"イベント・その他").update({"pageset_id": PageSet.query.filter_by(name=u"イベント・その他 ページセット").one().id}, synchronize_session="fetch")
+
 
 
 def main(env, args):
@@ -1464,10 +1492,6 @@ def main(env, args):
     transaction.commit()
 
     ##
-    Category.query.filter_by(name=u"チケットトップ").update({"pageset_id": PageSet.query.filter_by(name=u"トップページ ページセット").one().id}, synchronize_session="fetch")
-    Category.query.filter_by(name=u"音楽").update({"pageset_id": PageSet.query.filter_by(name=u"音楽 ページセット").first().id}, synchronize_session="fetch")
-    Category.query.filter_by(name=u"スポーツ").update({"pageset_id": PageSet.query.filter_by(name=u"スポーツ ページセット").one().id}, synchronize_session="fetch")
-    Category.query.filter_by(name=u"演劇").update({"pageset_id": PageSet.query.filter_by(name=u"演劇 ページセット").one().id}, synchronize_session="fetch")
-    Category.query.filter_by(name=u"イベント・その他").update({"pageset_id": PageSet.query.filter_by(name=u"イベント・その他 ページセット").one().id}, synchronize_session="fetch")
+    bind_category_to_pageset()
     transaction.commit()
 
