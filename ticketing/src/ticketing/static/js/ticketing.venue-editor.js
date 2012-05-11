@@ -393,15 +393,15 @@ $.fn.venue_editor = function(options) {
     case 'load':
       function convertToFashionStyle(style) {
         return {
-          "fill": style.fill ? new Fashion.LinearGradientFill([[0, new Fashion.Color("#fff")], [1, new Fashion.Color(style.fill)]], .125): null,
-          "stroke": style.stroke ? new Fashion.Stroke(new Fashion.Color(style.stroke), style.strokeWidth ? style.strokeWidth: 1, style.strokePattern): null
+          "fill": style.fill ? new Fashion.LinearGradientFill([[0, new Fashion.Color("#fff")], [1, new Fashion.Color(style.fill.color || "#fff")]], .125): null,
+          "stroke": style.stroke ? new Fashion.Stroke(new Fashion.Color(style.stroke.color || "#000"), style.stroke.width ? style.stroke.width: 1, style.strokePattern): null
         };
       }
       var waiter = make_async_set_waiter(
-        ['drawable', 'metadata', 'rules'],
+        ['drawable', 'metadata'],
         function(data) {
-          var rules = data.rules.seats;
           var metadata = data.metadata.seats;
+          var seat_type_data = data.metadata.seat_types;
           var drawable = data.drawable;
           var logged = false;
           drawable.each(function(i){
@@ -410,18 +410,15 @@ $.fn.venue_editor = function(options) {
             if (!meta)
               return;
 
-            var styles = {};
-            var rules_to_be_applied = ['seat_type_id', 'stock_holder_id'];
-            for (var jj in rules_to_be_applied) {
-              var j = rules_to_be_applied[jj];
-              var rule = rules[j];
-              if (rule) {
-                var m = meta[j];
-                var st = (m in rule) ? rule[m] : rule['default'];
-                for (var k in st)
-                  styles[k] = st[k];
-              }
-            }
+            var styles = {
+              fill: { color: '#fff' },
+              stroke: { color: '#000', width: 1 }
+            };
+
+            var st = seat_type_data[meta.seat_type_id].style;
+            for (var k in st)
+              styles[k] = st[k];
+
             i.style(convertToFashionStyle(styles));
             if (styles.text !== null) {
               var pos = i.position();
@@ -467,17 +464,6 @@ $.fn.venue_editor = function(options) {
           canvas.find('.message').text("Failed to load seat data");
         }
       });
-
-      $.ajax({
-        url: data.rendering_rule_url,
-        dataType: 'json',
-        success: function(data) {
-          waiter('rules', data);
-        },
-        error: function() {
-          canvas.find('.message').text("Failed to load rendering rule");
-        }
-      });
       break;
 
     case 'remove':
@@ -491,7 +477,6 @@ $.fn.venue_editor = function(options) {
   } else {
     data.drawing_url = options.drawing_url;
     data.seat_data_url = options.seat_data_url;
-    data.rendering_rule_url = options.rendering_rule_url;
   }
   return this;
 };

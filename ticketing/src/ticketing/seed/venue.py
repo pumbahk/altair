@@ -189,6 +189,89 @@ class TemplateSeatVenue1Data(DataSet):
         l0_id = u'E3'
         venue = TemplateVenueData.venue_orig_1
 
+class TemplateSeatVenue2Data(DataSet):
+    class seat_v2_a1:
+        l0_id = u'A1'
+        venue = TemplateVenueData.venue_orig_2
+    class seat_v2_a2:
+        l0_id = u'A2'
+        venue = TemplateVenueData.venue_orig_2
+    class seat_v2_a3:
+        l0_id = u'A3'
+        venue = TemplateVenueData.venue_orig_2
+    class seat_v2_a4:
+        l0_id = u'A4'
+        venue = TemplateVenueData.venue_orig_2
+    class seat_v2_a5:
+        l0_id = u'A5'
+        venue = TemplateVenueData.venue_orig_2
+    class seat_v2_a6:
+        l0_id = u'A6'
+        venue = TemplateVenueData.venue_orig_2
+    class seat_v2_a7:
+        l0_id = u'A7'
+        venue = TemplateVenueData.venue_orig_2
+    class seat_v2_a8:
+        l0_id = u'A8'
+        venue = TemplateVenueData.venue_orig_2
+    class seat_v2_a9:
+        l0_id = u'A9'
+        venue = TemplateVenueData.venue_orig_2
+    class seat_v2_b1:
+        l0_id = u'B1'
+        venue = TemplateVenueData.venue_orig_2
+    class seat_v2_b2:
+        l0_id = u'B2'
+        venue = TemplateVenueData.venue_orig_2
+    class seat_v2_b3:
+        l0_id = u'B3'
+        venue = TemplateVenueData.venue_orig_2
+    class seat_v2_b4:
+        l0_id = u'B4'
+        venue = TemplateVenueData.venue_orig_2
+    class seat_v2_b5:
+        l0_id = u'B5'
+        venue = TemplateVenueData.venue_orig_2
+    class seat_v2_b6:
+        l0_id = u'B6'
+        venue = TemplateVenueData.venue_orig_2
+    class seat_v2_b7:
+        l0_id = u'B7'
+        venue = TemplateVenueData.venue_orig_2
+    class seat_v2_c1:
+        l0_id = u'C1'
+        venue = TemplateVenueData.venue_orig_2
+    class seat_v2_c2:
+        l0_id = u'C2'
+        venue = TemplateVenueData.venue_orig_2
+    class seat_v2_c3:
+        l0_id = u'C3'
+        venue = TemplateVenueData.venue_orig_2
+    class seat_v2_c4:
+        l0_id = u'C4'
+        venue = TemplateVenueData.venue_orig_2
+    class seat_v2_c5:
+        l0_id = u'C5'
+        venue = TemplateVenueData.venue_orig_2
+    class seat_v2_d1:
+        l0_id = u'D1'
+        venue = TemplateVenueData.venue_orig_2
+    class seat_v2_d2:
+        l0_id = u'D2'
+        venue = TemplateVenueData.venue_orig_2
+    class seat_v2_d3:
+        l0_id = u'D3'
+        venue = TemplateVenueData.venue_orig_2
+    class seat_v2_e1:
+        l0_id = u'E1'
+        venue = TemplateVenueData.venue_orig_2
+    class seat_v2_e2:
+        l0_id = u'E2'
+        venue = TemplateVenueData.venue_orig_2
+    class seat_v2_e3:
+        l0_id = u'E3'
+        venue = TemplateVenueData.venue_orig_2
+
 class SeatVenue1Data(DataSet):
     class seat_v1_a1:
         l0_id = u'A1'
@@ -2195,3 +2278,716 @@ class TemplateSeatAttributeData(DataSet):
         seat = TemplateSeatVenue1Data.seat_v1_e3
         name = u'attr2'
         value = u'e3-attr2'
+
+class SeatAdjacencySetData(DataSet):
+    class adjacency_set_vo1_n2:
+        venue = TemplateVenueData.venue_orig_1
+        seat_count = 2
+    class adjacency_set_vo1_n3:
+        venue = TemplateVenueData.venue_orig_1
+        seat_count = 3
+    class adjacency_set_vo1_n4:
+        venue = TemplateVenueData.venue_orig_1
+        seat_count = 4
+    class adjacency_set_vo2_n2:
+        venue = TemplateVenueData.venue_orig_2
+        seat_count = 2
+    class adjacency_set_vo2_n3:
+        venue = TemplateVenueData.venue_orig_2
+        seat_count = 3
+    class adjacency_set_vo2_n4:
+        venue = TemplateVenueData.venue_orig_2
+        seat_count = 4
+    class adjacency_set_v1_n2:
+        venue = VenueData.venue_1
+        seat_count = 2
+    class adjacency_set_v1_n3:
+        venue = VenueData.venue_1
+        seat_count = 3
+    class adjacency_set_v1_n4:
+        venue = VenueData.venue_1
+        seat_count = 4
+    class adjacency_set_v2_n2:
+        venue = VenueData.venue_2
+        seat_count = 2
+    class adjacency_set_v2_n3:
+        venue = VenueData.venue_2
+        seat_count = 3
+    class adjacency_set_v2_n4:
+        venue = VenueData.venue_2
+        seat_count = 4
+    class adjacency_set_v3_n2:
+        venue = VenueData.venue_3
+        seat_count = 2
+    class adjacency_set_v3_n3:
+        venue = VenueData.venue_3
+        seat_count = 3
+    class adjacency_set_v3_n4:
+        venue = VenueData.venue_3
+        seat_count = 4
+    class adjacency_set_v4_n2:
+        venue = VenueData.venue_4
+        seat_count = 2
+    class adjacency_set_v4_n3:
+        venue = VenueData.venue_4
+        seat_count = 3
+    class adjacency_set_v4_n4:
+        venue = VenueData.venue_4
+        seat_count = 4
+    class adjacency_set_v5_n2:
+        venue = VenueData.venue_5
+        seat_count = 2
+    class adjacency_set_v5_n3:
+        venue = VenueData.venue_5
+        seat_count = 3
+    class adjacency_set_v5_n4:
+        venue = VenueData.venue_5
+        seat_count = 4
+    class adjacency_set_v6_n2:
+        venue = VenueData.venue_6
+        seat_count = 2
+    class adjacency_set_v6_n3:
+        venue = VenueData.venue_6
+        seat_count = 3
+    class adjacency_set_v6_n4:
+        venue = VenueData.venue_6
+        seat_count = 4
+    class adjacency_set_v7_n2:
+        venue = VenueData.venue_7
+        seat_count = 2
+    class adjacency_set_v7_n3:
+        venue = VenueData.venue_7
+        seat_count = 3
+    class adjacency_set_v7_n4:
+        venue = VenueData.venue_7
+        seat_count = 4
+    class adjacency_set_v8_n2:
+        venue = VenueData.venue_8
+        seat_count = 2
+    class adjacency_set_v8_n3:
+        venue = VenueData.venue_8
+        seat_count = 3
+    class adjacency_set_v8_n4:
+        venue = VenueData.venue_8
+        seat_count = 4
+
+class SeatAdjacencyTemplateVenue1Count2Data(DataSet):
+    class adjacency_vo1_n2_1:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo1_n2
+        seats = [ TemplateSeatVenue1Data.seat_v1_a1, TemplateSeatVenue1Data.seat_v1_a2 ]
+    class adjacency_vo1_n2_2:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo1_n2
+        seats = [ TemplateSeatVenue1Data.seat_v1_a2, TemplateSeatVenue1Data.seat_v1_a3 ]
+    class adjacency_vo1_n2_3:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo1_n2
+        seats = [ TemplateSeatVenue1Data.seat_v1_a3, TemplateSeatVenue1Data.seat_v1_a4 ]
+    class adjacency_vo1_n2_4:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo1_n2
+        seats = [ TemplateSeatVenue1Data.seat_v1_a4, TemplateSeatVenue1Data.seat_v1_a5 ]
+    class adjacency_vo1_n2_5:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo1_n2
+        seats = [ TemplateSeatVenue1Data.seat_v1_a5, TemplateSeatVenue1Data.seat_v1_a6 ]
+    class adjacency_vo1_n2_6:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo1_n2
+        seats = [ TemplateSeatVenue1Data.seat_v1_a6, TemplateSeatVenue1Data.seat_v1_a7 ]
+    class adjacency_vo1_n2_7:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo1_n2
+        seats = [ TemplateSeatVenue1Data.seat_v1_a7, TemplateSeatVenue1Data.seat_v1_a8 ]
+    class adjacency_vo1_n2_8:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo1_n2
+        seats = [ TemplateSeatVenue1Data.seat_v1_a8, TemplateSeatVenue1Data.seat_v1_a9 ]
+    class adjacency_vo1_n2_9:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo1_n2
+        seats = [ TemplateSeatVenue1Data.seat_v1_b1, TemplateSeatVenue1Data.seat_v1_b2 ]
+    class adjacency_vo1_n2_10:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo1_n2
+        seats = [ TemplateSeatVenue1Data.seat_v1_b2, TemplateSeatVenue1Data.seat_v1_b3 ]
+    class adjacency_vo1_n2_11:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo1_n2
+        seats = [ TemplateSeatVenue1Data.seat_v1_b3, TemplateSeatVenue1Data.seat_v1_b4 ]
+    class adjacency_vo1_n2_12:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo1_n2
+        seats = [ TemplateSeatVenue1Data.seat_v1_b4, TemplateSeatVenue1Data.seat_v1_b5 ]
+    class adjacency_vo1_n2_13:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo1_n2
+        seats = [ TemplateSeatVenue1Data.seat_v1_b5, TemplateSeatVenue1Data.seat_v1_b6 ]
+    class adjacency_vo1_n2_14:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo1_n2
+        seats = [ TemplateSeatVenue1Data.seat_v1_b6, TemplateSeatVenue1Data.seat_v1_b7 ]
+    class adjacency_vo1_n2_15:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo1_n2
+        seats = [ TemplateSeatVenue1Data.seat_v1_c1, TemplateSeatVenue1Data.seat_v1_c2 ]
+    class adjacency_vo1_n2_16:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo1_n2
+        seats = [ TemplateSeatVenue1Data.seat_v1_c2, TemplateSeatVenue1Data.seat_v1_c3 ]
+    class adjacency_vo1_n2_17:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo1_n2
+        seats = [ TemplateSeatVenue1Data.seat_v1_c3, TemplateSeatVenue1Data.seat_v1_c4 ]
+    class adjacency_vo1_n2_18:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo1_n2
+        seats = [ TemplateSeatVenue1Data.seat_v1_c4, TemplateSeatVenue1Data.seat_v1_c5 ]
+    class adjacency_vo1_n2_19:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo1_n2
+        seats = [ TemplateSeatVenue1Data.seat_v1_d1, TemplateSeatVenue1Data.seat_v1_d2 ]
+    class adjacency_vo1_n2_20:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo1_n2
+        seats = [ TemplateSeatVenue1Data.seat_v1_e1, TemplateSeatVenue1Data.seat_v1_e2 ]
+
+class SeatAdjacencyTemplateVenue2Count2Data(DataSet):
+    class adjacency_vo2_n2_1:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo2_n2
+        seats = [ TemplateSeatVenue2Data.seat_v2_a1, TemplateSeatVenue2Data.seat_v2_a2 ]
+    class adjacency_vo2_n2_2:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo2_n2
+        seats = [ TemplateSeatVenue2Data.seat_v2_a2, TemplateSeatVenue2Data.seat_v2_a3 ]
+    class adjacency_vo2_n2_3:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo2_n2
+        seats = [ TemplateSeatVenue2Data.seat_v2_a3, TemplateSeatVenue2Data.seat_v2_a4 ]
+    class adjacency_vo2_n2_4:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo2_n2
+        seats = [ TemplateSeatVenue2Data.seat_v2_a4, TemplateSeatVenue2Data.seat_v2_a5 ]
+    class adjacency_vo2_n2_5:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo2_n2
+        seats = [ TemplateSeatVenue2Data.seat_v2_a5, TemplateSeatVenue2Data.seat_v2_a6 ]
+    class adjacency_vo2_n2_6:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo2_n2
+        seats = [ TemplateSeatVenue2Data.seat_v2_a6, TemplateSeatVenue2Data.seat_v2_a7 ]
+    class adjacency_vo2_n2_7:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo2_n2
+        seats = [ TemplateSeatVenue2Data.seat_v2_a7, TemplateSeatVenue2Data.seat_v2_a8 ]
+    class adjacency_vo2_n2_8:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo2_n2
+        seats = [ TemplateSeatVenue2Data.seat_v2_a8, TemplateSeatVenue2Data.seat_v2_a9 ]
+    class adjacency_vo2_n2_9:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo2_n2
+        seats = [ TemplateSeatVenue2Data.seat_v2_b1, TemplateSeatVenue2Data.seat_v2_b2 ]
+    class adjacency_vo2_n2_10:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo2_n2
+        seats = [ TemplateSeatVenue2Data.seat_v2_b2, TemplateSeatVenue2Data.seat_v2_b3 ]
+    class adjacency_vo2_n2_11:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo2_n2
+        seats = [ TemplateSeatVenue2Data.seat_v2_b3, TemplateSeatVenue2Data.seat_v2_b4 ]
+    class adjacency_vo2_n2_12:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo2_n2
+        seats = [ TemplateSeatVenue2Data.seat_v2_b4, TemplateSeatVenue2Data.seat_v2_b5 ]
+    class adjacency_vo2_n2_13:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo2_n2
+        seats = [ TemplateSeatVenue2Data.seat_v2_b5, TemplateSeatVenue2Data.seat_v2_b6 ]
+    class adjacency_vo2_n2_14:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo2_n2
+        seats = [ TemplateSeatVenue2Data.seat_v2_b6, TemplateSeatVenue2Data.seat_v2_b7 ]
+    class adjacency_vo2_n2_15:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo2_n2
+        seats = [ TemplateSeatVenue2Data.seat_v2_c1, TemplateSeatVenue2Data.seat_v2_c2 ]
+    class adjacency_vo2_n2_16:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo2_n2
+        seats = [ TemplateSeatVenue2Data.seat_v2_c2, TemplateSeatVenue2Data.seat_v2_c3 ]
+    class adjacency_vo2_n2_17:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo2_n2
+        seats = [ TemplateSeatVenue2Data.seat_v2_c3, TemplateSeatVenue2Data.seat_v2_c4 ]
+    class adjacency_vo2_n2_18:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo2_n2
+        seats = [ TemplateSeatVenue2Data.seat_v2_c4, TemplateSeatVenue2Data.seat_v2_c5 ]
+    class adjacency_vo2_n2_19:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo2_n2
+        seats = [ TemplateSeatVenue2Data.seat_v2_d1, TemplateSeatVenue2Data.seat_v2_d2 ]
+    class adjacency_vo2_n2_20:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_vo2_n2
+        seats = [ TemplateSeatVenue2Data.seat_v2_e1, TemplateSeatVenue2Data.seat_v2_e2 ]
+
+class SeatAdjacencyVenue1Count2Data(DataSet):
+    class adjacency_v1_n2_1:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v1_n2
+        seats = [ SeatVenue1Data.seat_v1_a1, SeatVenue1Data.seat_v1_a2 ]
+    class adjacency_v1_n2_2:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v1_n2
+        seats = [ SeatVenue1Data.seat_v1_a2, SeatVenue1Data.seat_v1_a3 ]
+    class adjacency_v1_n2_3:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v1_n2
+        seats = [ SeatVenue1Data.seat_v1_a3, SeatVenue1Data.seat_v1_a4 ]
+    class adjacency_v1_n2_4:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v1_n2
+        seats = [ SeatVenue1Data.seat_v1_a4, SeatVenue1Data.seat_v1_a5 ]
+    class adjacency_v1_n2_5:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v1_n2
+        seats = [ SeatVenue1Data.seat_v1_a5, SeatVenue1Data.seat_v1_a6 ]
+    class adjacency_v1_n2_6:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v1_n2
+        seats = [ SeatVenue1Data.seat_v1_a6, SeatVenue1Data.seat_v1_a7 ]
+    class adjacency_v1_n2_7:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v1_n2
+        seats = [ SeatVenue1Data.seat_v1_a7, SeatVenue1Data.seat_v1_a8 ]
+    class adjacency_v1_n2_8:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v1_n2
+        seats = [ SeatVenue1Data.seat_v1_a8, SeatVenue1Data.seat_v1_a9 ]
+    class adjacency_v1_n2_9:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v1_n2
+        seats = [ SeatVenue1Data.seat_v1_b1, SeatVenue1Data.seat_v1_b2 ]
+    class adjacency_v1_n2_10:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v1_n2
+        seats = [ SeatVenue1Data.seat_v1_b2, SeatVenue1Data.seat_v1_b3 ]
+    class adjacency_v1_n2_11:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v1_n2
+        seats = [ SeatVenue1Data.seat_v1_b3, SeatVenue1Data.seat_v1_b4 ]
+    class adjacency_v1_n2_12:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v1_n2
+        seats = [ SeatVenue1Data.seat_v1_b4, SeatVenue1Data.seat_v1_b5 ]
+    class adjacency_v1_n2_13:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v1_n2
+        seats = [ SeatVenue1Data.seat_v1_b5, SeatVenue1Data.seat_v1_b6 ]
+    class adjacency_v1_n2_14:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v1_n2
+        seats = [ SeatVenue1Data.seat_v1_b6, SeatVenue1Data.seat_v1_b7 ]
+    class adjacency_v1_n2_15:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v1_n2
+        seats = [ SeatVenue1Data.seat_v1_c1, SeatVenue1Data.seat_v1_c2 ]
+    class adjacency_v1_n2_16:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v1_n2
+        seats = [ SeatVenue1Data.seat_v1_c2, SeatVenue1Data.seat_v1_c3 ]
+    class adjacency_v1_n2_17:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v1_n2
+        seats = [ SeatVenue1Data.seat_v1_c3, SeatVenue1Data.seat_v1_c4 ]
+    class adjacency_v1_n2_18:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v1_n2
+        seats = [ SeatVenue1Data.seat_v1_c4, SeatVenue1Data.seat_v1_c5 ]
+    class adjacency_v1_n2_19:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v1_n2
+        seats = [ SeatVenue1Data.seat_v1_d1, SeatVenue1Data.seat_v1_d2 ]
+    class adjacency_v1_n2_20:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v1_n2
+        seats = [ SeatVenue1Data.seat_v1_e1, SeatVenue1Data.seat_v1_e2 ]
+
+class SeatAdjacencyVenue2Count2Data(DataSet):
+    class adjacency_v2_n2_1:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v2_n2
+        seats = [ SeatVenue2Data.seat_v2_a1, SeatVenue2Data.seat_v2_a2 ]
+    class adjacency_v2_n2_2:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v2_n2
+        seats = [ SeatVenue2Data.seat_v2_a2, SeatVenue2Data.seat_v2_a3 ]
+    class adjacency_v2_n2_3:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v2_n2
+        seats = [ SeatVenue2Data.seat_v2_a3, SeatVenue2Data.seat_v2_a4 ]
+    class adjacency_v2_n2_4:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v2_n2
+        seats = [ SeatVenue2Data.seat_v2_a4, SeatVenue2Data.seat_v2_a5 ]
+    class adjacency_v2_n2_5:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v2_n2
+        seats = [ SeatVenue2Data.seat_v2_a5, SeatVenue2Data.seat_v2_a6 ]
+    class adjacency_v2_n2_6:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v2_n2
+        seats = [ SeatVenue2Data.seat_v2_a6, SeatVenue2Data.seat_v2_a7 ]
+    class adjacency_v2_n2_7:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v2_n2
+        seats = [ SeatVenue2Data.seat_v2_a7, SeatVenue2Data.seat_v2_a8 ]
+    class adjacency_v2_n2_8:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v2_n2
+        seats = [ SeatVenue2Data.seat_v2_a8, SeatVenue2Data.seat_v2_a9 ]
+    class adjacency_v2_n2_9:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v2_n2
+        seats = [ SeatVenue2Data.seat_v2_b1, SeatVenue2Data.seat_v2_b2 ]
+    class adjacency_v2_n2_10:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v2_n2
+        seats = [ SeatVenue2Data.seat_v2_b2, SeatVenue2Data.seat_v2_b3 ]
+    class adjacency_v2_n2_11:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v2_n2
+        seats = [ SeatVenue2Data.seat_v2_b3, SeatVenue2Data.seat_v2_b4 ]
+    class adjacency_v2_n2_12:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v2_n2
+        seats = [ SeatVenue2Data.seat_v2_b4, SeatVenue2Data.seat_v2_b5 ]
+    class adjacency_v2_n2_13:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v2_n2
+        seats = [ SeatVenue2Data.seat_v2_b5, SeatVenue2Data.seat_v2_b6 ]
+    class adjacency_v2_n2_14:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v2_n2
+        seats = [ SeatVenue2Data.seat_v2_b6, SeatVenue2Data.seat_v2_b7 ]
+    class adjacency_v2_n2_15:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v2_n2
+        seats = [ SeatVenue2Data.seat_v2_c1, SeatVenue2Data.seat_v2_c2 ]
+    class adjacency_v2_n2_16:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v2_n2
+        seats = [ SeatVenue2Data.seat_v2_c2, SeatVenue2Data.seat_v2_c3 ]
+    class adjacency_v2_n2_17:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v2_n2
+        seats = [ SeatVenue2Data.seat_v2_c3, SeatVenue2Data.seat_v2_c4 ]
+    class adjacency_v2_n2_18:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v2_n2
+        seats = [ SeatVenue2Data.seat_v2_c4, SeatVenue2Data.seat_v2_c5 ]
+    class adjacency_v2_n2_19:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v2_n2
+        seats = [ SeatVenue2Data.seat_v2_d1, SeatVenue2Data.seat_v2_d2 ]
+    class adjacency_v2_n2_20:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v2_n2
+        seats = [ SeatVenue2Data.seat_v2_e1, SeatVenue2Data.seat_v2_e2 ]
+
+class SeatAdjacencyVenue3Count2Data(DataSet):
+    class adjacency_v3_n2_1:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v3_n2
+        seats = [ SeatVenue3Data.seat_v3_a1, SeatVenue3Data.seat_v3_a2 ]
+    class adjacency_v3_n2_2:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v3_n2
+        seats = [ SeatVenue3Data.seat_v3_a2, SeatVenue3Data.seat_v3_a3 ]
+    class adjacency_v3_n2_3:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v3_n2
+        seats = [ SeatVenue3Data.seat_v3_a3, SeatVenue3Data.seat_v3_a4 ]
+    class adjacency_v3_n2_4:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v3_n2
+        seats = [ SeatVenue3Data.seat_v3_a4, SeatVenue3Data.seat_v3_a5 ]
+    class adjacency_v3_n2_5:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v3_n2
+        seats = [ SeatVenue3Data.seat_v3_a5, SeatVenue3Data.seat_v3_a6 ]
+    class adjacency_v3_n2_6:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v3_n2
+        seats = [ SeatVenue3Data.seat_v3_a6, SeatVenue3Data.seat_v3_a7 ]
+    class adjacency_v3_n2_7:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v3_n2
+        seats = [ SeatVenue3Data.seat_v3_a7, SeatVenue3Data.seat_v3_a8 ]
+    class adjacency_v3_n2_8:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v3_n2
+        seats = [ SeatVenue3Data.seat_v3_a8, SeatVenue3Data.seat_v3_a9 ]
+    class adjacency_v3_n2_9:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v3_n2
+        seats = [ SeatVenue3Data.seat_v3_b1, SeatVenue3Data.seat_v3_b2 ]
+    class adjacency_v3_n2_10:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v3_n2
+        seats = [ SeatVenue3Data.seat_v3_b2, SeatVenue3Data.seat_v3_b3 ]
+    class adjacency_v3_n2_11:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v3_n2
+        seats = [ SeatVenue3Data.seat_v3_b3, SeatVenue3Data.seat_v3_b4 ]
+    class adjacency_v3_n2_12:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v3_n2
+        seats = [ SeatVenue3Data.seat_v3_b4, SeatVenue3Data.seat_v3_b5 ]
+    class adjacency_v3_n2_13:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v3_n2
+        seats = [ SeatVenue3Data.seat_v3_b5, SeatVenue3Data.seat_v3_b6 ]
+    class adjacency_v3_n2_14:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v3_n2
+        seats = [ SeatVenue3Data.seat_v3_b6, SeatVenue3Data.seat_v3_b7 ]
+    class adjacency_v3_n2_15:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v3_n2
+        seats = [ SeatVenue3Data.seat_v3_c1, SeatVenue3Data.seat_v3_c2 ]
+    class adjacency_v3_n2_16:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v3_n2
+        seats = [ SeatVenue3Data.seat_v3_c2, SeatVenue3Data.seat_v3_c3 ]
+    class adjacency_v3_n2_17:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v3_n2
+        seats = [ SeatVenue3Data.seat_v3_c3, SeatVenue3Data.seat_v3_c4 ]
+    class adjacency_v3_n2_18:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v3_n2
+        seats = [ SeatVenue3Data.seat_v3_c4, SeatVenue3Data.seat_v3_c5 ]
+    class adjacency_v3_n2_19:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v3_n2
+        seats = [ SeatVenue3Data.seat_v3_d1, SeatVenue3Data.seat_v3_d2 ]
+    class adjacency_v3_n2_20:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v3_n2
+        seats = [ SeatVenue3Data.seat_v3_e1, SeatVenue3Data.seat_v3_e2 ]
+
+class SeatAdjacencyVenue4Count2Data(DataSet):
+    class adjacency_v4_n2_1:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v4_n2
+        seats = [ SeatVenue4Data.seat_v4_a1, SeatVenue4Data.seat_v4_a2 ]
+    class adjacency_v4_n2_2:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v4_n2
+        seats = [ SeatVenue4Data.seat_v4_a2, SeatVenue4Data.seat_v4_a3 ]
+    class adjacency_v4_n2_3:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v4_n2
+        seats = [ SeatVenue4Data.seat_v4_a3, SeatVenue4Data.seat_v4_a4 ]
+    class adjacency_v4_n2_4:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v4_n2
+        seats = [ SeatVenue4Data.seat_v4_a4, SeatVenue4Data.seat_v4_a5 ]
+    class adjacency_v4_n2_5:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v4_n2
+        seats = [ SeatVenue4Data.seat_v4_a5, SeatVenue4Data.seat_v4_a6 ]
+    class adjacency_v4_n2_6:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v4_n2
+        seats = [ SeatVenue4Data.seat_v4_a6, SeatVenue4Data.seat_v4_a7 ]
+    class adjacency_v4_n2_7:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v4_n2
+        seats = [ SeatVenue4Data.seat_v4_a7, SeatVenue4Data.seat_v4_a8 ]
+    class adjacency_v4_n2_8:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v4_n2
+        seats = [ SeatVenue4Data.seat_v4_a8, SeatVenue4Data.seat_v4_a9 ]
+    class adjacency_v4_n2_9:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v4_n2
+        seats = [ SeatVenue4Data.seat_v4_b1, SeatVenue4Data.seat_v4_b2 ]
+    class adjacency_v4_n2_10:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v4_n2
+        seats = [ SeatVenue4Data.seat_v4_b2, SeatVenue4Data.seat_v4_b3 ]
+    class adjacency_v4_n2_11:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v4_n2
+        seats = [ SeatVenue4Data.seat_v4_b3, SeatVenue4Data.seat_v4_b4 ]
+    class adjacency_v4_n2_12:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v4_n2
+        seats = [ SeatVenue4Data.seat_v4_b4, SeatVenue4Data.seat_v4_b5 ]
+    class adjacency_v4_n2_13:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v4_n2
+        seats = [ SeatVenue4Data.seat_v4_b5, SeatVenue4Data.seat_v4_b6 ]
+    class adjacency_v4_n2_14:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v4_n2
+        seats = [ SeatVenue4Data.seat_v4_b6, SeatVenue4Data.seat_v4_b7 ]
+    class adjacency_v4_n2_15:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v4_n2
+        seats = [ SeatVenue4Data.seat_v4_c1, SeatVenue4Data.seat_v4_c2 ]
+    class adjacency_v4_n2_16:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v4_n2
+        seats = [ SeatVenue4Data.seat_v4_c2, SeatVenue4Data.seat_v4_c3 ]
+    class adjacency_v4_n2_17:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v4_n2
+        seats = [ SeatVenue4Data.seat_v4_c3, SeatVenue4Data.seat_v4_c4 ]
+    class adjacency_v4_n2_18:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v4_n2
+        seats = [ SeatVenue4Data.seat_v4_c4, SeatVenue4Data.seat_v4_c5 ]
+    class adjacency_v4_n2_19:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v4_n2
+        seats = [ SeatVenue4Data.seat_v4_d1, SeatVenue4Data.seat_v4_d2 ]
+    class adjacency_v4_n2_20:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v4_n2
+        seats = [ SeatVenue4Data.seat_v4_e1, SeatVenue4Data.seat_v4_e2 ]
+
+class SeatAdjacencyVenue5Count2Data(DataSet):
+    class adjacency_v5_n2_1:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v5_n2
+        seats = [ SeatVenue5Data.seat_v5_a1, SeatVenue5Data.seat_v5_a2 ]
+    class adjacency_v5_n2_2:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v5_n2
+        seats = [ SeatVenue5Data.seat_v5_a2, SeatVenue5Data.seat_v5_a3 ]
+    class adjacency_v5_n2_3:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v5_n2
+        seats = [ SeatVenue5Data.seat_v5_a3, SeatVenue5Data.seat_v5_a4 ]
+    class adjacency_v5_n2_4:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v5_n2
+        seats = [ SeatVenue5Data.seat_v5_a4, SeatVenue5Data.seat_v5_a5 ]
+    class adjacency_v5_n2_5:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v5_n2
+        seats = [ SeatVenue5Data.seat_v5_a5, SeatVenue5Data.seat_v5_a6 ]
+    class adjacency_v5_n2_6:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v5_n2
+        seats = [ SeatVenue5Data.seat_v5_a6, SeatVenue5Data.seat_v5_a7 ]
+    class adjacency_v5_n2_7:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v5_n2
+        seats = [ SeatVenue5Data.seat_v5_a7, SeatVenue5Data.seat_v5_a8 ]
+    class adjacency_v5_n2_8:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v5_n2
+        seats = [ SeatVenue5Data.seat_v5_a8, SeatVenue5Data.seat_v5_a9 ]
+    class adjacency_v5_n2_9:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v5_n2
+        seats = [ SeatVenue5Data.seat_v5_b1, SeatVenue5Data.seat_v5_b2 ]
+    class adjacency_v5_n2_10:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v5_n2
+        seats = [ SeatVenue5Data.seat_v5_b2, SeatVenue5Data.seat_v5_b3 ]
+    class adjacency_v5_n2_11:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v5_n2
+        seats = [ SeatVenue5Data.seat_v5_b3, SeatVenue5Data.seat_v5_b4 ]
+    class adjacency_v5_n2_12:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v5_n2
+        seats = [ SeatVenue5Data.seat_v5_b4, SeatVenue5Data.seat_v5_b5 ]
+    class adjacency_v5_n2_13:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v5_n2
+        seats = [ SeatVenue5Data.seat_v5_b5, SeatVenue5Data.seat_v5_b6 ]
+    class adjacency_v5_n2_14:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v5_n2
+        seats = [ SeatVenue5Data.seat_v5_b6, SeatVenue5Data.seat_v5_b7 ]
+    class adjacency_v5_n2_15:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v5_n2
+        seats = [ SeatVenue5Data.seat_v5_c1, SeatVenue5Data.seat_v5_c2 ]
+    class adjacency_v5_n2_16:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v5_n2
+        seats = [ SeatVenue5Data.seat_v5_c2, SeatVenue5Data.seat_v5_c3 ]
+    class adjacency_v5_n2_17:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v5_n2
+        seats = [ SeatVenue5Data.seat_v5_c3, SeatVenue5Data.seat_v5_c4 ]
+    class adjacency_v5_n2_18:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v5_n2
+        seats = [ SeatVenue5Data.seat_v5_c4, SeatVenue5Data.seat_v5_c5 ]
+    class adjacency_v5_n2_19:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v5_n2
+        seats = [ SeatVenue5Data.seat_v5_d1, SeatVenue5Data.seat_v5_d2 ]
+    class adjacency_v5_n2_20:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v5_n2
+        seats = [ SeatVenue5Data.seat_v5_e1, SeatVenue5Data.seat_v5_e2 ]
+
+class SeatAdjacencyVenue6Count2Data(DataSet):
+    class adjacency_v6_n2_1:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v6_n2
+        seats = [ SeatVenue6Data.seat_v6_a1, SeatVenue6Data.seat_v6_a2 ]
+    class adjacency_v6_n2_2:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v6_n2
+        seats = [ SeatVenue6Data.seat_v6_a2, SeatVenue6Data.seat_v6_a3 ]
+    class adjacency_v6_n2_3:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v6_n2
+        seats = [ SeatVenue6Data.seat_v6_a3, SeatVenue6Data.seat_v6_a4 ]
+    class adjacency_v6_n2_4:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v6_n2
+        seats = [ SeatVenue6Data.seat_v6_a4, SeatVenue6Data.seat_v6_a5 ]
+    class adjacency_v6_n2_5:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v6_n2
+        seats = [ SeatVenue6Data.seat_v6_a5, SeatVenue6Data.seat_v6_a6 ]
+    class adjacency_v6_n2_6:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v6_n2
+        seats = [ SeatVenue6Data.seat_v6_a6, SeatVenue6Data.seat_v6_a7 ]
+    class adjacency_v6_n2_7:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v6_n2
+        seats = [ SeatVenue6Data.seat_v6_a7, SeatVenue6Data.seat_v6_a8 ]
+    class adjacency_v6_n2_8:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v6_n2
+        seats = [ SeatVenue6Data.seat_v6_a8, SeatVenue6Data.seat_v6_a9 ]
+    class adjacency_v6_n2_9:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v6_n2
+        seats = [ SeatVenue6Data.seat_v6_b1, SeatVenue6Data.seat_v6_b2 ]
+    class adjacency_v6_n2_10:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v6_n2
+        seats = [ SeatVenue6Data.seat_v6_b2, SeatVenue6Data.seat_v6_b3 ]
+    class adjacency_v6_n2_11:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v6_n2
+        seats = [ SeatVenue6Data.seat_v6_b3, SeatVenue6Data.seat_v6_b4 ]
+    class adjacency_v6_n2_12:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v6_n2
+        seats = [ SeatVenue6Data.seat_v6_b4, SeatVenue6Data.seat_v6_b5 ]
+    class adjacency_v6_n2_13:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v6_n2
+        seats = [ SeatVenue6Data.seat_v6_b5, SeatVenue6Data.seat_v6_b6 ]
+    class adjacency_v6_n2_14:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v6_n2
+        seats = [ SeatVenue6Data.seat_v6_b6, SeatVenue6Data.seat_v6_b7 ]
+    class adjacency_v6_n2_15:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v6_n2
+        seats = [ SeatVenue6Data.seat_v6_c1, SeatVenue6Data.seat_v6_c2 ]
+    class adjacency_v6_n2_16:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v6_n2
+        seats = [ SeatVenue6Data.seat_v6_c2, SeatVenue6Data.seat_v6_c3 ]
+    class adjacency_v6_n2_17:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v6_n2
+        seats = [ SeatVenue6Data.seat_v6_c3, SeatVenue6Data.seat_v6_c4 ]
+    class adjacency_v6_n2_18:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v6_n2
+        seats = [ SeatVenue6Data.seat_v6_c4, SeatVenue6Data.seat_v6_c5 ]
+    class adjacency_v6_n2_19:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v6_n2
+        seats = [ SeatVenue6Data.seat_v6_d1, SeatVenue6Data.seat_v6_d2 ]
+    class adjacency_v6_n2_20:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v6_n2
+        seats = [ SeatVenue6Data.seat_v6_e1, SeatVenue6Data.seat_v6_e2 ]
+
+class SeatAdjacencyVenue7Count2Data(DataSet):
+    class adjacency_v7_n2_1:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v7_n2
+        seats = [ SeatVenue7Data.seat_v7_a1, SeatVenue7Data.seat_v7_a2 ]
+    class adjacency_v7_n2_2:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v7_n2
+        seats = [ SeatVenue7Data.seat_v7_a2, SeatVenue7Data.seat_v7_a3 ]
+    class adjacency_v7_n2_3:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v7_n2
+        seats = [ SeatVenue7Data.seat_v7_a3, SeatVenue7Data.seat_v7_a4 ]
+    class adjacency_v7_n2_4:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v7_n2
+        seats = [ SeatVenue7Data.seat_v7_a4, SeatVenue7Data.seat_v7_a5 ]
+    class adjacency_v7_n2_5:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v7_n2
+        seats = [ SeatVenue7Data.seat_v7_a5, SeatVenue7Data.seat_v7_a6 ]
+    class adjacency_v7_n2_6:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v7_n2
+        seats = [ SeatVenue7Data.seat_v7_a6, SeatVenue7Data.seat_v7_a7 ]
+    class adjacency_v7_n2_7:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v7_n2
+        seats = [ SeatVenue7Data.seat_v7_a7, SeatVenue7Data.seat_v7_a8 ]
+    class adjacency_v7_n2_8:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v7_n2
+        seats = [ SeatVenue7Data.seat_v7_a8, SeatVenue7Data.seat_v7_a9 ]
+    class adjacency_v7_n2_9:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v7_n2
+        seats = [ SeatVenue7Data.seat_v7_b1, SeatVenue7Data.seat_v7_b2 ]
+    class adjacency_v7_n2_10:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v7_n2
+        seats = [ SeatVenue7Data.seat_v7_b2, SeatVenue7Data.seat_v7_b3 ]
+    class adjacency_v7_n2_11:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v7_n2
+        seats = [ SeatVenue7Data.seat_v7_b3, SeatVenue7Data.seat_v7_b4 ]
+    class adjacency_v7_n2_12:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v7_n2
+        seats = [ SeatVenue7Data.seat_v7_b4, SeatVenue7Data.seat_v7_b5 ]
+    class adjacency_v7_n2_13:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v7_n2
+        seats = [ SeatVenue7Data.seat_v7_b5, SeatVenue7Data.seat_v7_b6 ]
+    class adjacency_v7_n2_14:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v7_n2
+        seats = [ SeatVenue7Data.seat_v7_b6, SeatVenue7Data.seat_v7_b7 ]
+    class adjacency_v7_n2_15:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v7_n2
+        seats = [ SeatVenue7Data.seat_v7_c1, SeatVenue7Data.seat_v7_c2 ]
+    class adjacency_v7_n2_16:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v7_n2
+        seats = [ SeatVenue7Data.seat_v7_c2, SeatVenue7Data.seat_v7_c3 ]
+    class adjacency_v7_n2_17:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v7_n2
+        seats = [ SeatVenue7Data.seat_v7_c3, SeatVenue7Data.seat_v7_c4 ]
+    class adjacency_v7_n2_18:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v7_n2
+        seats = [ SeatVenue7Data.seat_v7_c4, SeatVenue7Data.seat_v7_c5 ]
+    class adjacency_v7_n2_19:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v7_n2
+        seats = [ SeatVenue7Data.seat_v7_d1, SeatVenue7Data.seat_v7_d2 ]
+    class adjacency_v7_n2_20:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v7_n2
+        seats = [ SeatVenue7Data.seat_v7_e1, SeatVenue7Data.seat_v7_e2 ]
+
+class SeatAdjacencyVenue8Count2Data(DataSet):
+    class adjacency_v8_n2_1:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v8_n2
+        seats = [ SeatVenue8Data.seat_v8_a1, SeatVenue8Data.seat_v8_a2 ]
+    class adjacency_v8_n2_2:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v8_n2
+        seats = [ SeatVenue8Data.seat_v8_a2, SeatVenue8Data.seat_v8_a3 ]
+    class adjacency_v8_n2_3:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v8_n2
+        seats = [ SeatVenue8Data.seat_v8_a3, SeatVenue8Data.seat_v8_a4 ]
+    class adjacency_v8_n2_4:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v8_n2
+        seats = [ SeatVenue8Data.seat_v8_a4, SeatVenue8Data.seat_v8_a5 ]
+    class adjacency_v8_n2_5:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v8_n2
+        seats = [ SeatVenue8Data.seat_v8_a5, SeatVenue8Data.seat_v8_a6 ]
+    class adjacency_v8_n2_6:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v8_n2
+        seats = [ SeatVenue8Data.seat_v8_a6, SeatVenue8Data.seat_v8_a7 ]
+    class adjacency_v8_n2_7:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v8_n2
+        seats = [ SeatVenue8Data.seat_v8_a7, SeatVenue8Data.seat_v8_a8 ]
+    class adjacency_v8_n2_8:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v8_n2
+        seats = [ SeatVenue8Data.seat_v8_a8, SeatVenue8Data.seat_v8_a9 ]
+    class adjacency_v8_n2_9:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v8_n2
+        seats = [ SeatVenue8Data.seat_v8_b1, SeatVenue8Data.seat_v8_b2 ]
+    class adjacency_v8_n2_10:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v8_n2
+        seats = [ SeatVenue8Data.seat_v8_b2, SeatVenue8Data.seat_v8_b3 ]
+    class adjacency_v8_n2_11:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v8_n2
+        seats = [ SeatVenue8Data.seat_v8_b3, SeatVenue8Data.seat_v8_b4 ]
+    class adjacency_v8_n2_12:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v8_n2
+        seats = [ SeatVenue8Data.seat_v8_b4, SeatVenue8Data.seat_v8_b5 ]
+    class adjacency_v8_n2_13:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v8_n2
+        seats = [ SeatVenue8Data.seat_v8_b5, SeatVenue8Data.seat_v8_b6 ]
+    class adjacency_v8_n2_14:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v8_n2
+        seats = [ SeatVenue8Data.seat_v8_b6, SeatVenue8Data.seat_v8_b7 ]
+    class adjacency_v8_n2_15:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v8_n2
+        seats = [ SeatVenue8Data.seat_v8_c1, SeatVenue8Data.seat_v8_c2 ]
+    class adjacency_v8_n2_16:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v8_n2
+        seats = [ SeatVenue8Data.seat_v8_c2, SeatVenue8Data.seat_v8_c3 ]
+    class adjacency_v8_n2_17:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v8_n2
+        seats = [ SeatVenue8Data.seat_v8_c3, SeatVenue8Data.seat_v8_c4 ]
+    class adjacency_v8_n2_18:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v8_n2
+        seats = [ SeatVenue8Data.seat_v8_c4, SeatVenue8Data.seat_v8_c5 ]
+    class adjacency_v8_n2_19:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v8_n2
+        seats = [ SeatVenue8Data.seat_v8_d1, SeatVenue8Data.seat_v8_d2 ]
+    class adjacency_v8_n2_20:
+        adjacency_set = SeatAdjacencySetData.adjacency_set_v8_n2
+        seats = [ SeatVenue8Data.seat_v8_e1, SeatVenue8Data.seat_v8_e2 ]
+
