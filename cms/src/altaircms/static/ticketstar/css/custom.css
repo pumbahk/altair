@@ -275,6 +275,9 @@
 .help.heading {
     background-image:url(/static/ticketstar/img/help/bg_heading.gif);
 }
+.change.heading {
+    background-image:url(/static/ticketstar/img/change/bg_heading.gif);
+}
 
 /* fixme */
 #thisWeek,#nearTheEnd {
@@ -327,4 +330,12 @@
 }
 .helpList dd {
 	height: auto;
+}
+
+/*
+  don't hide text in change.html
+*/
+
+.changeText {
+	display: block;
 }

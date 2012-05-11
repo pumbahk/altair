@@ -656,6 +656,184 @@ def add_help_page_settings():
     add_help_side_block_widgets(page)
 
 
+### 公演中止・変更情報
+
+
+def change_layout():
+    layout = Layout(
+        title = u"ticketstar.change",
+        template_filename = "ticketstar.change.mako",
+        blocks = '[["main", "side"]]',
+        site_id = 1, ##
+        client_id = 1 ##
+        )
+    return layout
+
+
+def change_page(layout):
+    change_page = Page(description=u'チケットの販売、イベントの予約は楽天チケットで！楽天チケットは演劇、バレエ、ミュージカルなどの舞台、クラシック、オペラ、ロックなどのコンサート、野球、サッカー、格闘技などのスポーツ、その他イベントなどのチケットのオンラインショッピングサイトです。',
+                       keywords= u"チケット,演劇,クラシック,オペラ,コンサート,バレエ,ミュージカル,野球,サッカー,格闘技", 
+                       layout= layout, 
+                       title= u'公演の中止・変更情報',
+                       url= u'change',
+                       structure= "{}", 
+                       version= None)
+    PageSet.get_or_create(change_page)
+    return change_page
+
+
+def change_topics():
+    return [
+        Topic(kind=u"公演中止情報", 
+              text=u"""平素は楽天チケットをご利用頂き誠にありがとうございます。
+
+4月11日(水)、楽天対西武戦は天候ならびにグラウンドコンディション不良のため、中止が決定しました。
+入場券は下記の要領にて払戻しいたします。
+
+■対象試合
+・4月11日(水)　楽天イーグルスvs埼玉西武ライオンズ
+
+■払戻期間
+・中止翌日より14日間
+
+【クレジットカード決済・セブン-イレブン引取りのお客様】
+◆既にセブン-イレブンでチケットにお引換いただいている場合
+⇒ご購入店舗にて現金で払い戻しとなります。
+
+◆まだセブン-イレブンでチケットをお引換いただいていない場合
+⇒返金時期は、各クレジットカード会社により異なりますので、詳細はカード会社へご確認ください。
+
+【クレジットカード決済・配送引取りのお客様】
+⇒クレジットカード会社よりご登録口座へ自動返金となります。
+返金時期は、各クレジットカード会社により異なりますので、詳細はカード会社へご確認ください。
+
+【クレジットカード決済・窓口引取りのお客様】
+⇒クレジットカード会社よりご登録口座へ自動返金となります。
+返金時期は、各クレジットカード会社により異なりますので、詳細はカード会社へご確認ください。
+
+【セブン-イレブン支払・セブン-イレブン引取りのお客様】
+⇒チケットをご持参頂き、ご購入店舗で払い戻しを行ってください。
+
+※ご購入の際の各種手数料(発券手数料・サービス利用料等)の返金はいたしません。予めご了承ください。""", 
+              title=u"2012/4/11 楽天イーグルス　雨天等中止時の払戻しについて", 
+              subkind=u"2012/4/11 楽天イーグルス　雨天等中止時の払戻しについて", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=True), 
+
+        Topic(kind=u"公演中止情報", 
+              text=u"""平素は楽天チケットをご利用頂き誠にありがとうございます。
+
+4月11日(水)、楽天対西武戦は天候ならびにグラウンドコンディション不良のため、中止が決定しました。
+入場券は下記の要領にて払戻しいたします。
+
+閉じる
+""", 
+              title=u"2012/1/20 『au presents　オンタマカーニバル2012』払い戻しに関するご案内", 
+              subkind=u"2012/1/20 『au presents　オンタマカーニバル2012』払い戻しに関するご案内", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=True), 
+
+        Topic(kind=u"公演中止情報", 
+              text=u"""平素は楽天チケットをご利用頂き誠にありがとうございます。
+
+4月11日(水)、楽天対西武戦は天候ならびにグラウンドコンディション不良のため、中止が決定しました。
+入場券は下記の要領にて払戻しいたします。
+
+閉じる
+""", 
+              title=u"2011/9/28 『ボローニャ歌劇場』2011年9月21日(水)「清教徒」公演 払い戻しに関するご案内", 
+              subkind=u"2011/9/28 『ボローニャ歌劇場』2011年9月21日(水)「清教徒」公演 払い戻しに関するご案内", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=True), 
+
+        Topic(kind=u"公演中止情報", 
+              text=u"""平素は楽天チケットをご利用頂き誠にありがとうございます。
+
+4月11日(水)、楽天対西武戦は天候ならびにグラウンドコンディション不良のため、中止が決定しました。
+入場券は下記の要領にて払戻しいたします。
+
+閉じる
+""", 
+              title=u"2011/9/28 『ボローニャ歌劇場』2011年9月21日(水)「清教徒」公演 払い戻しに関するご案内", 
+              subkind=u"2011/9/28 『ボローニャ歌劇場』2011年9月21日(水)「清教徒」公演 払い戻しに関するご案内", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=True), 
+
+        Topic(kind=u"公演中止情報", 
+              text=u"""平素は楽天チケットをご利用頂き誠にありがとうございます。
+
+4月11日(水)、楽天対西武戦は天候ならびにグラウンドコンディション不良のため、中止が決定しました。
+入場券は下記の要領にて払戻しいたします。
+
+閉じる
+""", 
+              title=u"2011/9/28 『ボローニャ歌劇場』2011年9月21日(水)「清教徒」公演 払い戻しに関するご案内", 
+              subkind=u"2011/9/28 『ボローニャ歌劇場』2011年9月21日(水)「清教徒」公演 払い戻しに関するご案内", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=True), 
+        ]
+
+def add_change_side_block_widgets(page):
+    add_anchorlist_widget(page, "side", {})
+
+def add_change_main_block_widgets(page):
+    params = dict(kind=u"チケットスター：公演中止情報ページ見出し", 
+                  text=u"2012/4/11 楽天イーグルス　雨天等中止時の払戻しについて")
+    add_heading_widget(page, "main", params)
+
+    params =  {"kind": u"公演中止情報", 
+               "subkind": u"2012/4/11 楽天イーグルス　雨天等中止時の払戻しについて", 
+               "display_count": 100, 
+               "display_global": True, 
+               "display_event": True, 
+               "display_page": True}
+    add_topic_widget(page, "main",  params)
+
+    params = dict(kind=u"チケットスター：公演中止情報ページ見出し", 
+                  text=u"2012/1/20 『au presents　オンタマカーニバル2012』払い戻しに関するご案内")
+    add_heading_widget(page, "main", params)
+
+    params =  {"kind": u"公演中止情報", 
+               "subkind": u"2012/1/20 『au presents　オンタマカーニバル2012』払い戻しに関するご案内", 
+               "display_count": 100, 
+               "display_global": True, 
+               "display_event": True, 
+               "display_page": True}
+    add_topic_widget(page, "main",  params)
+
+    params = dict(kind=u"チケットスター：公演中止情報ページ見出し", 
+                  text=u"2011/9/28 『ボローニャ歌劇場』2011年9月21日(水)「清教徒」公演 払い戻しに関するご案内")
+    add_heading_widget(page, "main", params)
+
+    params =  {"kind": u"公演中止情報", 
+               "subkind": u"2011/9/28 『ボローニャ歌劇場』2011年9月21日(水)「清教徒」公演 払い戻しに関するご案内", 
+               "display_count": 100, 
+               "display_global": True, 
+               "display_event": True, 
+               "display_page": True}
+    add_topic_widget(page, "main",  params)
+
+
+
+def add_change_page_settings():
+    layout = change_layout()
+    topics = change_topics()
+    page = change_page(layout)
+
+    DBSession.add(page)
+    DBSession.add_all(topics)
+
+    DBSession.flush()
+
+    add_change_main_block_widgets(page)
+    add_change_side_block_widgets(page)
+
+
 ### first
 
 def first_layout():
@@ -717,7 +895,7 @@ def add_first_main_block_widgets(page):
                "display_count": 100, 
                "display_global": True, 
                "display_event": True, 
-               "display_page": True}
+                "display_page": True}
     add_topic_widget(page, "main",  params)
 
     params = dict(kind=u"チケットスター：ヘルプページ見出し", 
@@ -1590,6 +1768,7 @@ def bind_category_to_pageset():
 
     Category.query.filter_by(name=u"ヘルプ").update({"pageset_id": PageSet.query.filter_by(name=u"ヘルプ ページセット").one().id}, synchronize_session="fetch")
     Category.query.filter_by(name=u"初めての方へ").update({"pageset_id": PageSet.query.filter_by(name=u"初めての方へ ページセット").one().id}, synchronize_session="fetch")
+    Category.query.filter_by(name=u"公演中止・変更情報").update({"pageset_id": PageSet.query.filter_by(name=u"公演の中止・変更情報 ページセット").one().id}, synchronize_session="fetch")
 
 
 
@@ -1605,6 +1784,7 @@ def main(env, args):
     add_first_page_settings()
     add_event_page_settings()
     add_detail_page_settings()
+    add_change_page_settings()
     add_top_page_settings()
     transaction.commit()
 

@@ -61,6 +61,21 @@ def term(beg, end):
         end_str = end.strftime(u"%Y年%m月%d日".encode("utf-8")).decode("utf-8")
     return u"%s(%s) 〜 %s(%s)" % (beg_str, WEEK[beg.weekday()], end_str, WEEK[end.weekday()])
 
+def translate_longtext_to_simple_html(string):
+    """
+    abcdef
+    xyz
+    => <p>abcdef</p><p>xyz</p>
+
+
+    abcdef
+
+    xyz
+    foo
+    => <p>abcdef<br/></p><p>xyz</p><p>foo</p>
+    """
+    return u"<p>%s</p>" % u"</p><p>".join(string.replace("\n\n", "<br/>").split("\n"))
+
 def hidden_input(name, value, id=None):
     fmt = '<input id="%s" name="%s" type="hidden" value="%s" />'
     return fmt % (id or name,  name, value)

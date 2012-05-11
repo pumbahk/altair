@@ -98,7 +98,7 @@ MERGE_SETTINGS_DISPATH = {
         "altaircms.plugins.widget:topic/topic_render.mako"), 
     ("noimage", u"公演中止情報"): functools.partial( ##
         topics_merge_settings, 
-        "altaircms.plugins.widget:topic/topic_render.mako"), 
+        "altaircms.plugins.widget:topic/change_render.mako"), 
     ("noimage", u"その他p"): functools.partial( ##
         topics_merge_settings, 
         "altaircms.plugins.widget:topic/topic_render.mako"), 
