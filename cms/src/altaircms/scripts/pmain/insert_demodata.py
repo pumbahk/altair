@@ -181,6 +181,13 @@ add_promotion_widget = functools.partial(
     import_symbol("altaircms.plugins.widget.promotion.models:PromotionWidget").type, 
     )
 
+add_anchorlist_widget = functools.partial(
+    add_widget, 
+    import_symbol("altaircms.plugins.widget.anchorlist.views:AnchorlistWidgetView"), 
+    import_symbol("altaircms.plugins.widget.anchorlist.models:AnchorlistWidgetResource"), 
+    import_symbol("altaircms.plugins.widget.anchorlist.models:AnchorlistWidget").type, 
+    )
+
 class Objlike(dict):
     __getattr__ = dict.__getitem__
 
@@ -566,6 +573,9 @@ def help_topics():
 
         ]
 
+def add_help_side_block_widgets(page):
+    add_anchorlist_widget(page, "side", {})
+
 def add_help_main_block_widgets(page):
     params = dict(kind=u"チケットスター：ヘルプページ見出し", 
                   text=u"会員登録・ログイン")
@@ -634,9 +644,13 @@ def add_help_page_settings():
     topics = help_topics()
     page = help_page(layout)
 
-    add_help_main_block_widgets(page)
     DBSession.add(page)
     DBSession.add_all(topics)
+
+    DBSession.flush()
+
+    add_help_main_block_widgets(page)
+    add_help_side_block_widgets(page)
 
 ##
 

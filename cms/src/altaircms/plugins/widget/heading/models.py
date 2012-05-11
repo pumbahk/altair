@@ -13,13 +13,13 @@ from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
 
 HEADING_DISPATCH = {
-    u"チケットスター：イベント詳細見出し": u'<h2>%s</h2>', 
-    u"チケットスター：トップページ見出し": u'<h2 class="index heading">%s</h2>',  #/static/ticketstar/css/custom.css
-    u"チケットスター：スポーツ見出し": u'<h2 class="sports heading">%s</h2>',  #/static/ticketstar/css/custom.css
-    u"チケットスター：音楽見出し": u'<h2 class="music heading">%s</h2>',  #/static/ticketstar/css/custom.css
-    u"チケットスター：演劇見出し": u'<h2 class="theater heading">%s</h2>',  #/static/ticketstar/css/custom.css
-    u"チケットスター：その他見出し": u'<h2 class="other heading">%s</h2>',  #/static/ticketstar/css/custom.css
-    u"チケットスター：ヘルプページ見出し": u'<h2 class="help heading">%s</h2>',  #/static/ticketstar/css/custom.css
+    u"チケットスター：イベント詳細見出し": u'<h2 id="%s">%s</h2>', 
+    u"チケットスター：トップページ見出し": u'<h2 id="%s" class="index heading">%s</h2>',  #/static/ticketstar/css/custom.css
+    u"チケットスター：スポーツ見出し": u'<h2 id="%s" class="sports heading">%s</h2>',  #/static/ticketstar/css/custom.css
+    u"チケットスター：音楽見出し": u'<h2 id="%s" class="music heading">%s</h2>',  #/static/ticketstar/css/custom.css
+    u"チケットスター：演劇見出し": u'<h2 id="%s" class="theater heading">%s</h2>',  #/static/ticketstar/css/custom.css
+    u"チケットスター：その他見出し": u'<h2 id="%s" class="other heading">%s</h2>',  #/static/ticketstar/css/custom.css
+    u"チケットスター：ヘルプページ見出し": u'<h2 id="%s" class="help heading">%s</h2>',  #/static/ticketstar/css/custom.css
     }
 HEADING_KIND_CHOICES = [(x, x) for x in HEADING_DISPATCH]
 
@@ -37,11 +37,15 @@ class HeadingWidget(Widget):
     kind = sa.Column(sa.Unicode(255))
     text = sa.Column(sa.Unicode(255))
 
+    @property
+    def html_id(self):
+        return "heading%d" % self.id
+
     def merge_settings(self, bname, bsettings):
         bsettings.need_extra_in_scan("request")
         fmt = HEADING_DISPATCH.get(self.kind)
         if fmt:
-            content = fmt % self.text
+            content = fmt % (self.html_id, self.text)
         else:
             content = u"heading widget: kind=%s is not found" % self.kind
         bsettings.add(bname, content)
