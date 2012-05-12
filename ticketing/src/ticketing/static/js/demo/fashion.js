@@ -2609,8 +2609,10 @@ var Color = (function() {
 /************** src/Stroke.js **************/
 var Stroke = (function() {
   var predefined_patterns = {
+    'solid':  [],
     'dotted': [1, 1],
-    'dashed': [2, 2]
+    'dashed': [2, 2],
+    'double': []
   };
 
   return _class("Stroke", {
@@ -4137,7 +4139,7 @@ var Drawable = _class("Drawable", {
 
     removeEvent: function()
     {
-      if (this.handler === null) throw new NotSupported("EventsHandler has not initialized in this drawable.");
+      if (this.handler === null) return;
       this.handler.remove.apply(this.handler, arguments);
     }
   }

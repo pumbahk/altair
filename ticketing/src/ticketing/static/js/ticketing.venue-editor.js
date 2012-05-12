@@ -22,6 +22,20 @@
         SEAT: {
           fill:   { color: "#fff" },
           stroke: { color: "#000", width: 1 }
+        },
+
+        MASK: {
+          fill:   { color: "#0064ff80" },
+          stroke: { color: "#0080FF", width: 2 }
+        },
+
+        SELECTED_SEAT: {
+          fill:   { color: "#009BE1" },
+          stroke: { color: "#FFF", width: 3 }
+        },
+
+        SELECTED_LABEL: {
+          fill:   { color: "#FFF" }
         }
 
       }
@@ -89,7 +103,7 @@
 
         return {
           "fill": style.fill ? filler(style.fill.color): null,
-          "stroke": style.stroke ? new Fashion.Stroke(new Fashion.Color(style.stroke.color || "#000"), style.stroke.width ? style.stroke.width: 1, style.strokePattern): null
+          "stroke": style.stroke ? new Fashion.Stroke((style.stroke.color || "#000") + " " + (style.stroke.width ? style.stroke.width: 1) + " " + (style.stroke.pattern || "")) : null
         };
       },
 
@@ -162,10 +176,7 @@
         this.initDrawable(metadata);
 
         this.mask = new Fashion.Rect(0,0,0,0);
-        this.mask.style({
-          'fill': new Fashion.FloodFill(new Fashion.Color(0, 100, 255, 128)),
-          'stroke': new Fashion.Stroke(new Fashion.Color(0, 128, 255, 255), 2)
-        });
+        this.mask.style(Util.convertToFashionStyle(CONF.DEFAULT.STYLE.MASK));
       },
 
       dispose: function() {
@@ -253,13 +264,20 @@
 
         var self = this;
         this.drawable.each(function(i){
+
           var id = i.id;
           var meta = self.seat_meta[id];
 
           if (!meta) return;
 
+          i.seat = true;
+
           var styles = Fashion._lib._clone(CONF.DEFAULT.STYLE.SHAPE);
-          var st = self.seat_types[meta.seat_type_id].style;
+          var type_meta = self.seat_types[meta.seat_type_id];
+
+          if (!type_meta) return;
+
+          var st = type_meta.style;
 
           for (var k in st) styles[k] = st[k];
 
@@ -280,11 +298,7 @@
             );
 
             i.label.style(Util.convertToFashionStyle(CONF.DEFAULT.STYLE.TEXT));
-
           }
-
-          i.seat = true;
-
         });
 
         this.addKeyEvent();
@@ -316,14 +330,6 @@
       changeTool: function(type) {
         var self = this;
 
-        var selectedSeatStyle = {
-          fill:   new Fashion.FloodFill(new Fashion.Color(0, 155, 225, 255)),
-          stroke: new Fashion.Stroke(new Fashion.Color(255, 255, 255, 255), 3),
-          label: {
-            fill: new Fashion.FloodFill(new Fashion.Color(255, 255, 255))
-          }
-        };
-
         this.drawable.removeEvent("mousedown", "mouseup", "mousemove");
 
         switch(type) {
@@ -349,7 +355,10 @@
                         stroke: i.style().stroke,
                         label:  i.label ? i.label.style() : void(0)
                       });
-                      i.style(selectedSeatStyle);
+                      i.style(Util.convertToFashionStyle(CONF.DEFAULT.STYLE.SELECTED_SEAT));
+                      if (i.label) {
+                        i.label.style(Util.convertToFashionStyle(CONF.DEFAULT.STYLE.SELECTED_LABEL));
+                      }
                       i.selecting = true;
                     }
                   }
@@ -386,9 +395,9 @@
                       stroke: i.style().stroke,
                       label:  i.label ? i.label.style(): void(0)
                     });
-                    i.style(selectedSeatStyle);
+                    i.style(Util.convertToFashionStyle(CONF.DEFAULT.STYLE.SELECTED_SEAT));
                     if (i.label) {
-                      i.label.style(selectedSeatStyle.label);
+                      i.label.style(Util.convertToFashionStyle(CONF.DEFAULT.STYLE.SELECTED_LABEL));
                     }
                     i.selecting = true;
                   }
