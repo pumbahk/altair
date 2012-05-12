@@ -34,7 +34,6 @@
 <script type="text/javascript">
 var DRAWING_URL = "${request.route_path('api.get_drawing', venue_id=performance.venue.id)}" + "?" + Math.random();
 var SEAT_DATA_URL = "${request.route_path('api.get_seats', venue_id=performance.venue.id)}" + "?" + Math.random();
-var RENDERING_RULE_URL = "/static/js/demo/renderingRules.json" + "?" + Math.random();
 </script>
 
 <div class="row-fluid">
@@ -129,15 +128,13 @@ var RENDERING_RULE_URL = "/static/js/demo/renderingRules.json" + "?" + Math.rand
             case 'venue-designer':
               $('#venue-map').venue_editor({
                 drawing_url: DRAWING_URL,
-                seat_data_url: SEAT_DATA_URL,
-                rendering_rule_url: RENDERING_RULE_URL
+                seat_data_url: SEAT_DATA_URL
               }).venue_editor('load');
               break;
             case 'seat-allocation':
               $('#seat-map').venue_editor({
                 drawing_url: DRAWING_URL,
-                seat_data_url: SEAT_DATA_URL,
-                rendering_rule_url: RENDERING_RULE_URL
+                seat_data_url: SEAT_DATA_URL
               }).venue_editor('load');
               break;
             case 'ticket-designer':
