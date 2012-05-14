@@ -9,6 +9,8 @@ from ticketing.models import merge_session_with_post
 from ticketing.views import BaseView
 from ticketing.products.models import Product
 from ticketing.products.forms import ProductForm
+from ticketing.events.models import Event
+from ticketing.events.forms import EventForm
 
 @view_defaults(decorator=with_bootstrap)
 class Products(BaseView):
@@ -49,8 +51,20 @@ class Products(BaseView):
 
     @view_config(route_name='products.json.new', renderer='json')
     def json_new(self):
-        print self.request.body
-        return dict()
+        event_id = int(self.request.POST.get('event_id', 0))
+        event = Event.get(event_id)
+        if event is None:
+            return HTTPNotFound('event id %d is not found' % event_id)
+
+        f = ProductForm(self.request.POST, event_id=event.id)
+        if f.validate():
+            product = merge_session_with_post(Product(), f.data)
+            product.save()
+
+            self.request.session.flash(u'商品を保存しました')
+            return {'success':True}
+        else:
+            return {'success':False}
 
     @view_config(route_name='products.json.update', renderer='json')
     def json_update(self):

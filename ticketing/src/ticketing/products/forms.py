@@ -31,3 +31,4 @@ class ProductForm(Form):
         choices=[],
         coerce=int
     )
+    event_id = HiddenField("", validators=[Required()])
