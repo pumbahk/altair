@@ -107,6 +107,14 @@ class ReserveView(object):
     def __init__(self, request):
         self.request = request
 
+    def __call__(self):
+        """
+        座席情報から座席グループを検索する
+        """
+        seat_type_id = self.request.matchdict['seat_type_id']
+
+        # 座席グループ取得
+        # 座席グループの空き状況を確認 / 在庫との比較？
 
 class Reserve2View(object):
     """ 座席選択完了画面(ユーザー選択) """

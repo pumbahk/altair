@@ -1,83 +1,62 @@
-from zope.interface import Interface
-from zope.interface import Attribute
-from zope.interface import implements
+# -*- coding:utf-8 -*-
 
-from datetime import datetime
+import sqlalchemy as sa
+import sqlalchemy.orm as orm
+from sqlalchemy.orm.exc import NoResultFound
+import sqlahelper
+from sqlalchemy import sql
 
-from ticketing.products.models import *
-from ticketing.orders.models import *
+Base = sqlahelper.get_base()
+DBSession = sqlahelper.get_session()
 
-class ICart(Interface):
-    order = Attribute("order")
-    orderItems = Attribute("orderItems")
-    assignedProductItems = Attribute("assignedProductItems")
-    def restore(orderId):
-        pass
-    def add(product):
-        pass
-    def remove(orderItemId):
-        pass
-    def abort():
-        pass
-    def commit():
-        pass
-    def list():
-        pass
+"""
+カートアイテム状態
 
-class SimpleCart:
+- 要求
+- 仮押
+- 決済中
+- 決済完了
+"""
 
-    implements(ICart)
+import ticketing.venues.models
+import ticketing.products.models
+import ticketing.events.models
 
-    def __init__(self, order=None):
-        self.order = Order()
-        self.order.created_at = datetime.now()
-        self.order.updated_at = datetime.now()
-        self.orderItems = list()
-        self.assignedProductItems = dict()
+class CartItem(Base):
+    __tablename__ = 'ticketing_cartitems'
 
-    def restore(self, orderId):
-        #@TODO
-        self.order = orderId
+    query = DBSession.query_property()
 
-    def add(self, product):
-        if product.put_in_cart() == True:
-            order = OrderItem()
-            order.product_id = product.id
-            order.created_at = datetime.now()
-            order.updated_at = datetime.now()
-            self.orderItems.append(order)
-            self.assignedProductItems[product.id] = list()
-            for item in product.items:
-                assigned = AssignedProductItem()
-                assigned.product_item_id = item.id
-                assigned.seat_stock_id = item.seatStock.id
-                assigned.created_at = datetime.now()
-                assigned.updated_at = datetime.now()
-                self.assignedProductItems[product.id].append(assigned)
-            return True
-        else:
-            return False
+    id = sa.Column(sa.Integer, primary_key=True)
+    amount = sa.Column(sa.Integer)
+    state = sa.Column(sa.Enum("requested", "reserved", "completed"))
+    product_item_id = sa.Column(sa.Integer, sa.ForeignKey("ProductItem.id"))
+    product_item = orm.relationship("ProductItem")
+    cart_id = sa.Column(sa.Integer, sa.ForeignKey('ticketing_carts.id'))
+    cart = orm.relation("Cart", backref="items")
 
-    def remove(self, orderItemId):
-        #@TODO
-        pass
+    @classmethod
+    def get_reserved_amount(cls, product_item):
+        return DBSession.query(sql.func.sum(cls.amount)).filter(cls.product_item==product_item).filter(cls.state=="reserved").first()[0] or 0
 
-    def abort(self):
-        self.order = None
-        self.orderItems = None
-        self.assignedProductItems = None
 
-    def commit(self):
-        session.add(self.order)
-        session.flush()
-        for order in self.orderItems:
-            order.order_id = self.order.id
-            session.add(order)
-        for k, v in self.assignedProductItems.iteritems():
-            for assigned in v:
-                assigned.order_id = self.order.id
-                session.add(assigned)
-        session.flush()
+class Cart(Base):
+    __tablename__ = 'ticketing_carts'
 
-    def list(self):
-        return self.orderItems
+    query = DBSession.query_property()
+
+    id = sa.Column(sa.Integer, primary_key=True)
+    cart_session_id = sa.Column(sa.Unicode, unique=True)
+
+    @classmethod
+    def get_or_create(cls, cart_session_id):
+        try:
+            return cls.query.filter_by(cart_session_id=cart_session_id).one()
+        except NoResultFound:
+            cart = cls(cart_session_id=cart_session_id)
+            DBSession.add(cart)
+            return cart
+
+    @classmethod
+    def is_existing_cart_session_id(cls, cart_session_id):
+        return cls.query.filter_by(cart_session_id=cart_session_id).count()
