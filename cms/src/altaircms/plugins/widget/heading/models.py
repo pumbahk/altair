@@ -17,7 +17,7 @@ HEADING_DISPATCH = {
     u"チケットスター：トップページ見出し": u'<h2 id="%s" class="index heading">%s</h2>',  #/static/ticketstar/css/custom.css
     u"チケットスター：スポーツ見出し": u'<h2 id="%s" class="sports heading">%s</h2>',  #/static/ticketstar/css/custom.css
     u"チケットスター：音楽見出し": u'<h2 id="%s" class="music heading">%s</h2>',  #/static/ticketstar/css/custom.css
-    u"チケットスター：演劇見出し": u'<h2 id="%s" class="theater heading">%s</h2>',  #/static/ticketstar/css/custom.css
+    u"チケットスター：演劇見出し": u'<h2 id="%s" class="stage heading">%s</h2>',  #/static/ticketstar/css/custom.css
     u"チケットスター：その他見出し": u'<h2 id="%s" class="other heading">%s</h2>',  #/static/ticketstar/css/custom.css
     u"チケットスター：ヘルプページ見出し": u'<h2 id="%s" class="help heading">%s</h2>',  #/static/ticketstar/css/custom.css
     u"チケットスター：公演中止情報ページ見出し":  u'<h2 id="%s" class="change heading">%s</h2>',  #/static/ticketstar/css/custom.css

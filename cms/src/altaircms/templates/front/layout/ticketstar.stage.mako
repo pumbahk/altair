@@ -1,6 +1,6 @@
-<%inherit file="altaircms:templates/front/ticketstar/theater.mako"/>
-##<%namespace file="./components/ticketstar/theater/header.mako" name="header_co"/>
-##<%namespace file="./components/ticketstar/theater/userbox.mako" name="userbox_co"/>
+<%inherit file="altaircms:templates/front/ticketstar/stage.mako"/>
+##<%namespace file="./components/ticketstar/stage/header.mako" name="header_co"/>
+##<%namespace file="./components/ticketstar/stage/userbox.mako" name="userbox_co"/>
 
 <%def name="widgets(name)">
   % for w in display_blocks[name]:

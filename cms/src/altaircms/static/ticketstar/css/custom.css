@@ -38,7 +38,7 @@
     width: 167px;
     height: 60px;
 }
-#theater img#titleImage{
+#stage img#titleImage{
     width: 60px;
     height: 60px;
 }
@@ -67,9 +67,9 @@
  *     background-repeat: no-repeat;
  *     background-image:url(/static/ticketstar/img/common/header_nav_music.gif);
  * }
- * .category.theater {
+ * .category.stage {
  *     background-repeat: no-repeat;
- *     background-image:url(/static/ticketstar/img/common/header_nav_theater.gif);
+ *     background-image:url(/static/ticketstar/img/common/header_nav_stage.gif);
  * }
  * .category.sports {
  *     background-repeat: no-repeat;
@@ -102,11 +102,11 @@
     float: right;
 }
 
-#theater #mainLeft {
+#stage #mainLeft {
 	width: 362px;
     float: left;
 }
-#theater #mainRight {
+#stage #mainRight {
 	width: 362px;
     float: right;
 }
@@ -269,8 +269,8 @@
 .other.heading {
     background-image:url(/static/ticketstar/img/event/bg_heading.gif);
 }
-.theater.heading {
-    background-image:url(/static/ticketstar/img/theater/bg_heading.gif);
+.stage.heading {
+    background-image:url(/static/ticketstar/img/stage/bg_heading.gif);
 }
 .help.heading {
     background-image:url(/static/ticketstar/img/help/bg_heading.gif);

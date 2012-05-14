@@ -1197,10 +1197,10 @@ def add_music_page_settings():
 
 ###　演劇演カテゴリ
 
-def theater_layout():
+def stage_layout():
     layout = Layout(
-        title = u"ticketstar.theater",
-        template_filename = "ticketstar.theater.mako",
+        title = u"ticketstar.stage",
+        template_filename = "ticketstar.stage.mako",
         blocks = '[["main"], ["main_left", "main_right"], ["main_bottom"], ["side"]]',
         site_id = 1, ##
         client_id = 1 ##
@@ -1208,19 +1208,19 @@ def theater_layout():
     return layout
 
 
-def theater_page(layout):
-    theater_page = Page(description=u'チケットの販売、イベントの予約は楽天チケットで！楽天チケットは演劇、バレエ、ミュージカルなどの舞台、クラシック、オペラ、ロックなどのコンサート、野球、サッカー、格闘技などの演劇、その他イベントなどのチケットのオンラインショッピングサイトです。',
+def stage_page(layout):
+    stage_page = Page(description=u'チケットの販売、イベントの予約は楽天チケットで！楽天チケットは演劇、バレエ、ミュージカルなどの舞台、クラシック、オペラ、ロックなどのコンサート、野球、サッカー、格闘技などの演劇、その他イベントなどのチケットのオンラインショッピングサイトです。',
                        keywords= u"チケット,演劇,クラシック,オペラ,コンサート,バレエ,ミュージカル,野球,サッカー,格闘技", 
                        layout= layout, 
                        title= u'演劇',
-                       url= u'theater',
+                       url= u'stage',
                        structure= "{}", 
                        version= None)
-    PageSet.get_or_create(theater_page)
-    return theater_page
+    PageSet.get_or_create(stage_page)
+    return stage_page
 
 
-def theater_topics():
+def stage_topics():
     return [
         Topic(kind=u"トピックス", 
               subkind=u"演劇", 
@@ -1243,7 +1243,7 @@ def theater_topics():
 
 
 
-def theater_promotion():
+def stage_promotion():
     img_path = os.path.join(os.path.dirname(__file__), "../../static/mock/img/")
     N = 6
     def make_materials(i, imgname, thumbname):
@@ -1261,7 +1261,7 @@ def theater_promotion():
                      name=u"演劇 promotioin枠")
     
 
-def add_theater_main_block_widgets(page, promotion):
+def add_stage_main_block_widgets(page, promotion):
     params =  {"kind": u"トピックス", 
                "display_count": 2, 
                "display_global": True, 
@@ -1313,11 +1313,11 @@ def add_theater_main_block_widgets(page, promotion):
     add_linklist_widget(page, "main_right", params)
 
 
-def add_theater_page_settings():
-    layout = theater_layout()
-    topics = theater_topics()
-    promotion = theater_promotion()
-    page = theater_page(layout)
+def add_stage_page_settings():
+    layout = stage_layout()
+    topics = stage_topics()
+    promotion = stage_promotion()
+    page = stage_page(layout)
 
     DBSession.add(page)
     DBSession.add(promotion)
@@ -1325,7 +1325,7 @@ def add_theater_page_settings():
 
     DBSession.flush()
     
-    add_theater_main_block_widgets(page, promotion)#
+    add_stage_main_block_widgets(page, promotion)#
 
 
 #### イベント・その他
@@ -1779,7 +1779,7 @@ def main(env, args):
 
     add_sports_page_settings()
     add_music_page_settings()
-    add_theater_page_settings()
+    add_stage_page_settings()
     add_help_page_settings()
     add_first_page_settings()
     add_event_page_settings()

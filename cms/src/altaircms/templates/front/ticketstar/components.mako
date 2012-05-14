@@ -64,7 +64,7 @@
 		<ul id="globalNav1">
 			<li><a href="/static/ticketstar/index.html"><img src="/static/ticketstar/img/common/header_nav_top.gif" alt="チケットトップ" width="132" height="40" /></a></li>
 			<li><a href="/static/ticketstar/music/index.html"><img src="/static/ticketstar/img/common/header_nav_music.gif" alt="音楽" width="67" height="40" /></a></li>
-			<li><a href="/static/ticketstar/theater/index.html"><img src="/static/ticketstar/img/common/header_nav_theater.gif" alt="演劇" width="73" height="40" /></a></li>
+			<li><a href="/static/ticketstar/stage/index.html"><img src="/static/ticketstar/img/common/header_nav_stage.gif" alt="演劇" width="73" height="40" /></a></li>
 			<li><a href="/static/ticketstar/sports/index.html"><img src="/static/ticketstar/img/common/header_nav_sports.gif" alt="スポーツ" width="102" height="40" /></a></li>
 			<li><a href="/static/ticketstar/event/index.html"><img src="/static/ticketstar/img/common/header_nav_event.gif" alt="イベント・その他" width="157" height="40" /></a></li>
 		</ul>

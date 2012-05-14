@@ -79,8 +79,8 @@ def _create_categories(site):
     snode = mnode.add(Category(site=site, hierarchy=u"小", name=u"プロ野球", parent=mnode.root))
 
     ## 演劇
-    lnode = root.add(Category(site=site, hierarchy=u"大", name=u"演劇", label="theater", orderno=3, 
-                              imgsrc="/static/ticketstar/img/common/header_nav_theater.gif"))
+    lnode = root.add(Category(site=site, hierarchy=u"大", name=u"演劇", label="stage", orderno=3, 
+                              imgsrc="/static/ticketstar/img/common/header_nav_stage.gif"))
     mnode = lnode.add(Category(site=site, hierarchy=u"中", name=u"ミュージカル", parent=lnode.root))
     snode = mnode.add(Category(site=site, hierarchy=u"小", name=u"劇団四季", parent=mnode.root))
     
