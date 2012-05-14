@@ -40,6 +40,22 @@
 	<div id="main">
 		<!-- InstanceBeginEditable name="main" -->
 		<h2><img src="/static/ticketstar/img/search/title_results.gif" alt="チケット検索結果" width="742" height="43" /></h2>
+		% for result in results:
+		<div class="searchResult">
+			<dl>
+				<dt>${result.category_icons}</dt>
+				<dd>
+				    ${result.page_description}
+				</dd>
+			</dl>
+			<ul>
+				<li class="searchRemaining">${result.sales_limit}</li>
+				<li>${result.sales_info_icons}</li>
+				<li class="searchDate">${result.sales_description}</li>
+			</ul>
+			<p><${result.purchase_link}</p>
+		</div>
+		% endfor
 		<div class="searchResult">
 			<dl>
 				<dt><img src="/static/ticketstar/img/search/icon_music.gif" alt="音楽" width="82" height="20" /></dt>
