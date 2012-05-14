@@ -91,6 +91,8 @@
 
     <div id="sales_segments">
       <h3>販売区分</h3>
+      <%include file="/sales_segments/_list.html" args="sales_segments=event.sales_segments" />
+      <%include file="/sales_segments/_action_button.html" args="event=event, form=form_ss" />
     </div>
 
     <hr />
