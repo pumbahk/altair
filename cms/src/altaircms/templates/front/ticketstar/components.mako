@@ -34,7 +34,7 @@
 
 ## required:categories
 ## required:top_inner_category
-<%block name="global_navigation">
+<%def name="global_navigation(top_inner_categories, categories)">
 	<div id="globalNav">
 		<ul id="globalNav1">
 		  % for category in categories:
@@ -55,7 +55,7 @@
 			  % endif
 		</ul>
 	</div>
-</%block>
+</%def>
 
 <%doc> ## 元々のhtml今は利用していない
 <%block name="global_navigation">
