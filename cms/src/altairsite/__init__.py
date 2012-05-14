@@ -17,7 +17,7 @@ def main(global_config, **settings):
     config.include("altaircms.plugins")
     config.include("altairsite.front")
     config.include("altairsite.rakuten_auth")
-
+    config.include("altairsite.search", route_prefix="search")
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)
     config.add_static_view('plugins/static', 'altaircms:plugins/static', cache_max_age=3600)
     config.add_static_view("staticasset", "altaircms:../../data/assets", cache_max_age=3600)
