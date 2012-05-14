@@ -1,5 +1,5 @@
 <%inherit file="altaircms:templates/front/ticketstar/top.mako"/>
-<%namespace file="./components/ticketstar/top/main.mako" name="main_co"/>
+## <%namespace file="./components/ticketstar/top/main.mako" name="main_co"/>
 <%namespace file="./components/ticketstar/top/side.mako" name="side_co"/>
 
 <%def name="widgets(name)">
@@ -16,7 +16,7 @@
 ##        ${main_co.events()}
 ##        ${main_co.thisWeek()}
 ##        ${main_co.nearTheEnd()}
-        ${main_co.checkEvent()}
+##          ${main_co.checkEvent()}
 </%block>
 
 <%block name="main_left">
@@ -27,7 +27,7 @@
 </%block>
 <%block name="main_bottom">
    ${widgets("main_bottom")}
-   ${main_co.eventRecommend()}
+##   ${main_co.eventRecommend()}
 </%block>
 
 <%block name="side">

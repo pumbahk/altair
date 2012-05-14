@@ -5,8 +5,8 @@ from . import event
 from . import page
 from . import widget
 from . import tag
-
-__all__ = ["base", "front", "asset", "event", "page", "widget", "tag"]
+from . import link
+__all__ = ["base", "front", "asset", "event", "page", "widget", "tag",  "link"]
 
 ## pagination
 from webhelpers.paginate import Page

@@ -50,7 +50,7 @@ class Topic(AboutPublishMixin,
     query = DBSession.query_property()
 
     __tablename__ = "topic"
-    KIND_CANDIDATES = [u"公演中止情報", u"お知らせ", u"その他", u"ヘルプ"]
+    KIND_CANDIDATES = [u"公演中止情報", u"トピックス", u"その他", u"ヘルプ"]
 
     id = sa.Column(sa.Integer, primary_key=True)
     created_at = sa.Column(sa.DateTime, default=datetime.now)
@@ -61,7 +61,7 @@ class Topic(AboutPublishMixin,
     kind = sa.Column(sa.Unicode(255))
     subkind = sa.Column(sa.Unicode(255))
     title = sa.Column(sa.Unicode(255))
-    text = sa.Column(sa.Unicode(255))
+    text = sa.Column(sa.UnicodeText)
     event_id = sa.Column(sa.Integer, sa.ForeignKey("event.id"), nullable=True)
     event = orm.relationship(Event, backref="topic", uselist=False)
     page_id = sa.Column(sa.Integer, sa.ForeignKey("page.id"), nullable=True)

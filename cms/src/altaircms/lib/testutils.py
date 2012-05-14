@@ -22,6 +22,7 @@ def config():
     return testing.setUp(
         settings={"altaircms.plugin_static_directory": "altaircms:plugins/static", 
                   "altaircms.debug.strip_security": "true",
+                  "altaircms.asset.storepath": "altaircms:../../data/assets", 
                   "sqlalchemy.url": "sqlite://", 
                   "widget.template_path_format": "%s.mako", 
                   "altaircms.layout_directory": "."}
@@ -33,6 +34,7 @@ def functionalTestSetUp(extra=None):
     defaults = {"sqlalchemy.url": "sqlite://", 
                 "session.secret": "B7gzHVRUqErB1TFgSeLCHH3Ux6ShtI", 
                 "mako.directories": "altaircms:templates", 
+                "altaircms.asset.storepath": "altaircms:../../data/assets", 
                 "altaircms.debug.strip_security": 'true', 
                 "altaircms.plugin_static_directory": "altaircms:plugins/static", 
                 "altaircms.layout_directory": "."}

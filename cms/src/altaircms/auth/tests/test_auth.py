@@ -8,10 +8,6 @@ from pyramid.httpexceptions import HTTPFound, HTTPBadRequest, HTTPUnauthorized
 from altaircms.lib.testutils import BaseTest, _initTestingDB
 from altaircms.auth.initial_data import insert_initial_authdata
 
-
-import warnings
-warnings.warn("oauth2 view is replaced. but test have not existed, yet")
-
 def setup_module():
     _initTestingDB()
     import sqlahelper
@@ -42,7 +38,7 @@ class OAuthLoginTests(unittest.TestCase):
 
     def test_oauth_entry(self):
         request = testing.DummyRequest()
-        target = self._makeOne(request)
+        target = self._makeOne(request, authorize_url="http://localhost:7654/login/authorize")
 
         result = target.oauth_entry()
         

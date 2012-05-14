@@ -65,7 +65,7 @@ def main(global_config, **settings):
     
     ## include
     config.include("altaircms.auth", route_prefix='/auth')
-    config.include("altaircms.front", route_prefix="f")
+    config.include("altairsite.front", route_prefix="f")
     config.include("altaircms.widget")
     config.include("altaircms.plugins")
     config.include("altaircms.event")
@@ -98,6 +98,7 @@ def main(global_config, **settings):
     
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)
     config.add_static_view('plugins/static', 'altaircms:plugins/static', cache_max_age=3600)
+    config.add_static_view("staticasset", settings["altaircms.asset.storepath"], cache_max_age=3600)
 
     engine = engine_from_config(settings, 'sqlalchemy.')
     sqlahelper.get_session().remove()

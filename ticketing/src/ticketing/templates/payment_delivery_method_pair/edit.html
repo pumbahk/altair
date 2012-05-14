@@ -5,12 +5,12 @@
 <%namespace file="/common/helpers.html" import="form_item" />
 
 <%
-  if request.matched_route.name == 'products.payment_delivery_method_pair.edit':
+  if request.matched_route.name == 'payment_delivery_method_pair.edit':
     route_name = u'編集'
-    route_path = request.route_path('products.payment_delivery_method_pair.edit', payment_delivery_method_pair_id=payment_delivery_method_pair.id)
+    route_path = request.route_path('payment_delivery_method_pair.edit', payment_delivery_method_pair_id=payment_delivery_method_pair.id)
   else:
     route_name = u'登録'
-    route_path = request.route_path('products.payment_delivery_method_pair.new', sales_segment_id=sales_segment.id)
+    route_path = request.route_path('payment_delivery_method_pair.new', sales_segment_id=sales_segment.id)
 %>
 
 <div class="row-fluid">
@@ -35,7 +35,7 @@
           ${form_item(form.discount_unit, option={'class':'span2'})}
           ${form_item(form.discount_type, option={'class':'span2'})}
 
-          % if request.matched_route.name == 'products.payment_delivery_method_pair.new':
+          % if request.matched_route.name == 'payment_delivery_method_pair.new':
             ${form_item(form.payment_method_ids)}
             ${form_item(form.delivery_method_ids)}
           % else:

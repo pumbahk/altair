@@ -72,10 +72,6 @@
             <label>席種名</label>
             <input id="name" name="name" type="text" class="span3" value="">
 
-            <label>記号</label>
-            <input id="text" name="text" type="text" class="span3" value="">
-            <label>記号色</label>
-            <input id="text_color" name="text_color" type="text" class="kolorPicker span3" value="">
             <label>塗りつぶし色</label>
             <input id="fill_color" name="fill_color" type="text" class="kolorPicker span3" value="">
             <label>塗りつぶしパターン</label>
@@ -144,7 +140,7 @@ ${delete_modal(u'選択した席種を削除します。よろしいですか？
     toolbar.width(width - 6);
     var data = n.data('venue_editor');
     if (data && data.manager) {
-      data.manager.d.viewportSize({
+      data.manager.drawable.viewportSize({
         width: width,
         height: height - toolbar[0].offsetHeight
       });

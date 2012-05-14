@@ -17,4 +17,5 @@ def includeme(config):
     config.include(".widget.linklist", route_prefix="api")
     config.include(".widget.heading", route_prefix="api")
     config.include(".widget.promotion", route_prefix="api")
+    config.include(".widget.anchorlist", route_prefix="api")
     config.scan(".")

@@ -7,8 +7,6 @@ from wtforms.validators import Required, Email, Length, NumberRange,EqualTo,opti
 
 class SeatTypeForm(Form):
     name            = TextField(u'名称', validators=[Required()])
-    text            = TextField(u'記号', validators=[Required()])
-    text_color      = TextField(u'記号色', validators=[Required()])
     fill_color      = TextField(u'色', validators=[Required()])
     fill_type       = SelectField(u'塗りつぶしパターン')
     fill_image      = TextField(u'塗りつぶしイメージ', validators=[Required()])

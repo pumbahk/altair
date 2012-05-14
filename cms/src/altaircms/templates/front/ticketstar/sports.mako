@@ -43,7 +43,7 @@
 	
 	<hr />
 	
-	<!-- InstanceBeginEditable name="cat" --><h1><img src="/static/ticketstar/img/sports/title_sports.gif" alt="スポーツ" width="91" height="60" /></h1><!-- InstanceEndEditable -->
+	<!-- InstanceBeginEditable name="cat" --><h1><img id="titleImage" src="/static/ticketstar/img/sports/title_sports.gif" alt="スポーツ"/></h1><!-- InstanceEndEditable -->
 	
 	<!-- ========== main ========== -->
 	<div id="main">

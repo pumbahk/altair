@@ -1,6 +1,6 @@
 from pyramid.view import view_config
 from pyramid.renderers import render_to_response
-
+from altairsite.front.resources import PageRenderingResource
 from . import forms
 
 class ReuseWidgetView(object):
@@ -44,7 +44,6 @@ class ReuseWidgetView(object):
 
 def rendering_source_page(request):
     page = request._reuse_widget.source_page
-    from altaircms.front.resources import PageRenderingResource
     rendering_context = PageRenderingResource(request)
     layout = page.layout
 

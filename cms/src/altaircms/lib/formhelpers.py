@@ -84,6 +84,9 @@ class DynamicQueryDefault(object):
     def pageset(cls, info, qs, field):
         field.query = cls._filter_by_site(qs, info.request)
     @classmethod
+    def category(cls, info, qs, field):
+        field.query = cls._filter_by_site(qs, info.request)
+    @classmethod
     def operator(cls, info, qs, field):
         field.query = qs
     @classmethod

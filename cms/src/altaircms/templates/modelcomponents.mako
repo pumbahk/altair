@@ -94,7 +94,7 @@
       <td>${topcontent["orderno"]}</td>
       <td>${topcontent["is_vetoed"]}</td>
       <td>${topcontent["page"].title if topcontent["page"] else "-"}</td>
-      <td><a href="${request.route_path("asset_display", asset_id=topcontent["image_asset"].id)}">${topcontent["image_asset"]}</a></td>
+      <td><a href="${h.asset.to_show_page(request, topcontent["image_asset"])}">${topcontent["image_asset"]}</a></td>
       <td>${topcontent["countdown_type" ]}</td>
   </tr>
   %endfor

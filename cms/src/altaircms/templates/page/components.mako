@@ -105,6 +105,7 @@
       <div id="linklist"  class="widget red float-left">リンクリスト</div>
       <div id="heading"  class="widget red float-left">見出し</div>
       <div id="promotion"  class="widget red float-left">プロモーション枠</div>
+      <div id="anchorlist"  class="widget red float-left">ページ内リンク一覧</div>
     </div>
 </%def>
 
@@ -164,4 +165,6 @@
 <script type="text/javascript" src="/plugins/static/js/widget/lib/heading.js"></script>
 ## todo: moveit
 <script type="text/javascript" src="/plugins/static/js/widget/lib/promotion.js"></script>
+## todo: moveit
+<script type="text/javascript" src="/plugins/static/js/widget/lib/anchorlist.js"></script>
 </%def>

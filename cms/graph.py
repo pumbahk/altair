@@ -40,6 +40,6 @@ for prefix, dirs, files in  os.walk(root):
 desc = sadisplay.describe(model_instances.values())
 open('schema.plantuml', 'w').write(sadisplay.plantuml(desc))
 open('schema.dot', 'w').write(sadisplay.dot(desc))
-os.system("dot -Tpng schema.dot > schema.png")
+os.system("dot -Tsvg schema.dot > dbschema.svg")
 
 

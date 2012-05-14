@@ -11,4 +11,3 @@ class ServiceData(DataSet):
         redirect_uri    = 'http://127.0.0.1:6543/auth/oauth_callback'
         updated_at      = datetime.now()
         created_at      = datetime.now()
-        status          = 1

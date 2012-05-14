@@ -29,8 +29,6 @@ class OperatorRoleData(DataSet):
         ]
         updated_at = datetime.now()
         created_at = datetime.now()
-        status = 1
-
     class role_super_user:
         name = 'Superuser'
         permissions = [
@@ -51,7 +49,6 @@ class OperatorRoleData(DataSet):
         ]
         updated_at = datetime.now()
         created_at = datetime.now()
-        status = 1
 
 class OperatorData(DataSet):
     class operator_1:
@@ -60,7 +57,6 @@ class OperatorData(DataSet):
         organization = OrganizationData.organization_0
         updated_at = datetime.now()
         created_at = datetime.now()
-        status = 1
         login_id = 'admin'
         password =  md5('admin').hexdigest()
         auth_code = 'auth_code'
@@ -75,7 +71,6 @@ class OperatorData(DataSet):
         organization = OrganizationData.organization_0
         updated_at = datetime.now()
         created_at = datetime.now()
-        status = 1
         login_id = 'testtest'
         password =  md5('test').hexdigest()
         auth_code = 'auth_code'

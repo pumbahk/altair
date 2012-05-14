@@ -5,7 +5,7 @@ from sqlalchemy.orm import relationship, join, backref, column_property
 
 from ticketing.utils import StandardEnum
 from ticketing.models import Base, BaseModel, DBSession
-from ticketing.products.models import Product, SalesSegment, StockHolder
+from ticketing.products.models import Product, StockHolder
 from ticketing.venues.models import Venue, VenueArea, Seat, SeatAttribute
 
 class AccountTypeEnum(StandardEnum):
@@ -135,3 +135,42 @@ class Event(BaseModel, Base):
                 .filter(StockHolder.performance_id==Performance.id)\
                 .filter(Performance.event_id==self.id)\
                 .distinct()
+
+
+class SalesSegment(BaseModel, Base):
+    __tablename__ = 'SalesSegment'
+    id = Column(BigInteger, primary_key=True)
+    name = Column(String(255))
+    start_at = Column(DateTime)
+    end_at = Column(DateTime)
+
+    event_id = Column(BigInteger, ForeignKey('Event.id'))
+    event = relationship('Event', backref='sales_segments')
+
+
+class PaymentDeliveryMethodPair(BaseModel, Base):
+    __tablename__ = 'PaymentDeliveryMethodPair'
+    id = Column(BigInteger, primary_key=True)
+    transaction_fee = Column(DECIMAL)
+    delivery_fee = Column(DECIMAL)
+    discount = Column(DECIMAL)
+    discount_unit = Column(Integer)
+    discount_type = Column(Integer)
+
+    sales_segment_id = Column(BigInteger, ForeignKey('SalesSegment.id'))
+    sales_segment = relationship('SalesSegment', backref='payment_delivery_method_pair')
+    payment_method_id = Column(BigInteger, ForeignKey('PaymentMethod.id'))
+    payment_method = relationship('PaymentMethod')
+    delivery_method_id = Column(BigInteger, ForeignKey('DeliveryMethod.id'))
+    delivery_method = relationship('DeliveryMethod')
+
+    @staticmethod
+    def find(**kwargs):
+        query = DBSession.query(PaymentDeliveryMethodPair)
+        if 'sales_segment_id' in kwargs:
+            query = query.filter_by(sales_segment_id=kwargs['sales_segment_id'])
+        if 'payment_method_id' in kwargs:
+            query = query.filter_by(payment_method_id=kwargs['payment_method_id'])
+        if 'delivery_method_id' in kwargs:
+            query = query.filter_by(delivery_method_id=kwargs['delivery_method_id'])
+        return query.first()

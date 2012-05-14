@@ -37,7 +37,7 @@ class RenderingTest(unittest.TestCase):
         config.registry.settings["altaircms.layout_directory"] = "altaircms:plugins/widget/reuse/tests"
         config.registry.settings["mako.input_encoding"] = "utf-8"
         config.registry.settings["altaircms.plugin_static_directory"] = here
-        config.include("altaircms.front", route_prefix="f")
+        config.include("altairsite.front", route_prefix="f")
         config.include("altaircms.plugins.widget.reuse") 
 
         #attach event

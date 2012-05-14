@@ -9,10 +9,10 @@ from pyramid.url import route_path
 from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
-from ticketing.events.models import Event, Performance, Account
+from ticketing.events.models import Event, Performance, Account, SalesSegment
 from ticketing.events.performances.forms import PerformanceForm, StockHolderForm
-from ticketing.products.models import Product, StockHolder, SalesSegment
-from ticketing.products.forms import SalesSegmentForm
+from ticketing.events.sales_segments.forms import SalesSegmentForm
+from ticketing.products.models import Product, StockHolder
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class Performances(BaseView):
@@ -24,7 +24,7 @@ class Performances(BaseView):
         products = Product.find(performance_id=performance_id)
         user = self.context.user
         accounts = Account.get_by_organization_id(user.organization_id)
-        conditions = {'performance_id':performance_id}
+        conditions = {'event_id':performance.event_id}
         sales_segments = SalesSegment.find_by(**conditions)
 
         form_ss = SalesSegmentForm()
@@ -155,4 +155,4 @@ class StockHolders(BaseView):
         #else:
         #    self.request.session.flash(u'枠を保存できません')
 
-        return HTTPFound(location=route_path('performances.show', self.request, performance_id=performance.id))
+        return HTTPFound(location=route_path('performances.show', self.request, performance_id=performance.id, _anchor='seat-allocation'))

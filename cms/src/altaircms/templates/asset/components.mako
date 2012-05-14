@@ -76,7 +76,7 @@
 		var height = $('#asset').height(); // @TODO: 高さ情報をどこから取得するか検討する
 
 		swfobject.embedSWF(
-			"${request.route_path('asset_display', asset_id=asset.id)}",
+			"${h.asset.to_show_page(request, asset)}",
 			"asset",
 			width,
 			"480",
