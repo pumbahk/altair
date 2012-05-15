@@ -105,6 +105,7 @@ class Seat(BaseModel, Base):
         return [[]]
 
 class SeatStatusEnum(StandardEnum):
+    NotOnSale = 0
     Vacant = 1
     InCart = 2
     Ordered = 3

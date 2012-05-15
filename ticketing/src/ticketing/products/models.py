@@ -136,9 +136,17 @@ class Stock(BaseModel, Base):
 
     seat_type_id = Column(BigInteger, ForeignKey('SeatType.id'))
 
+    stock_status = relationship("StockStatus", uselist=False, backref='stock')
+
     @staticmethod
     def get_for_update(pid, stid):
         return DBSession.query(Stock).with_lockmode("update").filter(Stock.performance_id==pid, Stock.seat_type_id==stid, Stock.quantity>0).first()
+
+# stock based on quantity
+class StockStatus(BaseModel, Base):
+    __tablename__ = "StockStatus"
+    stock_id = Column(BigInteger, ForeignKey('Stock.id'), primary_key=True)
+    quantity = Column(Integer)
 
 class Product(BaseModel, Base):
     __tablename__ = 'Product'
