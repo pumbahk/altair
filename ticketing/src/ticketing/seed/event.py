@@ -36,7 +36,7 @@ class EventData(DataSet):
         end_on = datetime(2012,10,30,19,0)
         organization = OrganizationData.organization_0
 
-class PerformanceData(DataSet):
+class PerformanceEvent1Data(DataSet):
     class performance_1:
         event = EventData.event_1
         name = u"シルク・ドゥ・ソレイユ「ZED （ゼッド）TM」Presented by JCB"
@@ -87,7 +87,9 @@ class PerformanceData(DataSet):
         no_period = False
         event = EventData.event_1
         owner = AccountData.account_3
-    class performance_6:
+
+class PerformanceEvent2Data(DataSet):
+    class performance_1:
         event = EventData.event_2
         name = u"ブルーマングループ IN 東京 2011年"
         code = u'201207011800'
@@ -97,7 +99,7 @@ class PerformanceData(DataSet):
         no_period = False
         event = EventData.event_2
         owner = AccountData.account_4
-    class performance_7:
+    class performance_2:
         event = EventData.event_2
         name = u"ブルーマングループ IN 東京 2011年"
         code = u'201207011800'
@@ -107,7 +109,7 @@ class PerformanceData(DataSet):
         no_period = False
         event = EventData.event_2
         owner = AccountData.account_4
-    class performance_8:
+    class performance_3:
         event = EventData.event_2
         name = u"ブルーマングループ IN 東京 2011年"
         code = u'201207011800'
@@ -118,7 +120,7 @@ class PerformanceData(DataSet):
         event = EventData.event_2
         owner = AccountData.account_4
 
-class SalesSegmentData(DataSet):
+class SalesSegmentEvent1Data(DataSet):
     class sales_segment_1:
         name = u'先行販売'
         start_at = datetime(2012,5,1,12,0)
@@ -129,3 +131,16 @@ class SalesSegmentData(DataSet):
         start_at = datetime(2012,3,1,12,0)
         end_at = datetime(2012,5,1,12,0)
         event = EventData.event_1
+
+class SalesSegmentEvent2Data(DataSet):
+    class sales_segment_1:
+        name = u'先行販売'
+        start_at = datetime(2012,5,1,12,0)
+        end_at = datetime(2012,7,1,12,0)
+        event = EventData.event_1
+    class sales_segment_2:
+        name = u'予約販売'
+        start_at = datetime(2012,3,1,12,0)
+        end_at = datetime(2012,5,1,12,0)
+        event = EventData.event_1
+
