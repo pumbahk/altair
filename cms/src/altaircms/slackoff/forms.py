@@ -21,7 +21,7 @@ class LayoutForm(Form):
     title = fields.TextField(u'タイトル', validators=[validators.Required()])
     blocks = fields.TextField(u'ブロック', validators=[validators.Required()])
     template_filename = fields.TextField(u'テンプレートファイル名', validators=[validators.Required()])
-
+    
 class PerformanceForm(Form):
     backend_performance_id = fields.IntegerField(validators=[required_field()], label=u"バックエンド管理番号")
     event = dynamic_query_select_field_factory(Event, allow_blank=False, label=u"イベント", get_label=lambda obj: obj.title)
@@ -75,6 +75,24 @@ def existing_pages():
     ##本当は、日付などでfilteringする必要がある
     ## lib.formhelpersの中で絞り込みを追加してる。
     return Page.query.filter(Page.event_id==None)
+
+
+def as_filter(kwargs):
+    def wrapper(self, qs):
+        for k in kwargs:
+            it = self.data.get(k)
+            if it and "__None" != it:
+                qs = qs.filter_by(**{k: it})
+        return qs
+    return wrapper
+
+class CategoryFilterForm(Form):
+    hierarchy = fields.SelectField(label=u"階層", choices=[("__None", "----------")]+[(x, x) for x in [u"大", u"中", u"小"]])
+    parent = dynamic_query_select_field_factory(
+        Category, allow_blank=True, blank_text=u"----------", label=u"親カテゴリ",
+        get_label=lambda obj: obj.name or u"---名前なし---")
+
+    as_filter = as_filter(["hierarchy", "parent"])
 
 class TopicForm(Form):
     title = fields.TextField(label=u"タイトル", validators=[required_field()])

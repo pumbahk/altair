@@ -11,7 +11,8 @@ def includeme(config):
     config.add_crud("promotion",  title="promotion",  model="..plugins.widget.promotion.models.Promotion",
                     form=".forms.PromotionForm", mapper=".mappers.promotion_mapper")
     config.add_crud("category", title="category", model="..models.Category",
-                    form=".forms.CategoryForm", mapper=".mappers.category_mapper")
+                    form=".forms.CategoryForm", mapper=".mappers.category_mapper", 
+                    filter_form=".forms.CategoryFilterForm")
     config.add_crud("topic", title="topic", model="..topic.models.Topic", 
                     form=".forms.TopicForm", mapper=".mappers.topic_mapper")
     config.add_crud("topcontent", title="topcontent", model="..topcontent.models.Topcontent",

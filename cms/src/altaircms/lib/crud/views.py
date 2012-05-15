@@ -14,17 +14,25 @@ class AfterInput(Exception):
 from altaircms.security import RootFactory
 class CRUDResource(RootFactory): ## fixme
     flow_api = flow_api
-    def __init__(self, prefix, title, model, form, mapper, endpoint, request):
+    def __init__(self, prefix, title, model, form, mapper, endpoint, filter_form, request):
         self.prefix = prefix
         self.title = title
         self.model = model
         self.form = form
         self.mapper = mapper
         self.endpoint = endpoint
+        self.filter_form = filter_form
         self.request = request
 
     def join(self, ac):
         return "%s_%s" % (self.prefix, ac)
+
+    ## search
+    def query_form(self, params):
+        if self.filter_form:
+            return self.filter_form(params)
+        else:
+            return None
 
     ## create
     def input_form(self):
@@ -143,22 +151,30 @@ class DeleteView(object):
         return HTTPFound(self.request.route_url(self.context.endpoint), self.request)
 
 def list_view(context, request):
-    xs = context.get_model_query()
+    qs = context.get_model_query()
     form = context.input_form()
+
+    query_form = context.query_form(request.GET)
+    if query_form and "query" in request.GET:
+        if query_form:
+            qs = query_form.as_filter(qs)
+
     return {"master_env": context,
-            "xs": h.paginate(request, xs),
+            "xs": h.paginate(request, qs),
+            "query_form": query_form, 
             "form": form, 
             "display_fields": form.data.keys()}
 
 ## todo: move it
 class SimpleCRUDFactory(object):
     Resource = CRUDResource
-    def __init__(self, prefix, title, model, form, mapper):
+    def __init__(self, prefix, title, model, form, mapper, filter_form=None):
         self.prefix = prefix
         self.title = title
         self.model = model
         self.form = form
         self.mapper = mapper
+        self.filter_form = filter_form
 
     def _join(self, ac):
         return "%s_%s" % (self.prefix, ac)
@@ -167,7 +183,7 @@ class SimpleCRUDFactory(object):
         endpoint = self._join("list")
         resource = functools.partial(
             self.Resource, 
-            self.prefix, self.title, self.model, self.form, self.mapper, endpoint)
+            self.prefix, self.title, self.model, self.form, self.mapper, endpoint, self.filter_form)
 
         if "list" in bind_actions:
             config.add_route(self._join("list"), "/%s" % self.prefix, factory=resource)
