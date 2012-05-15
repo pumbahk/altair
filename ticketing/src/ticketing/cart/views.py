@@ -1,14 +1,11 @@
 # -*- coding:utf-8 -*-
 import logging
-import itertools
 import json
-import operator
 from markupsafe import Markup
 from pyramid.httpexceptions import HTTPNotFound
-from pyramid.view import view_config, view_defaults
+from pyramid.view import view_config
 from ticketing.models import DBSession
 import ticketing.events.models as e_models
-import ticketing.venues.models as v_models
 import ticketing.products.models as p_models
 from . import helpers as h
 
@@ -25,7 +22,7 @@ class IndexView(object):
         event_id = self.request.matchdict['event_id']
         e = DBSession.query(e_models.Event).filter_by(id=event_id).first()
         if e is None:
-            raise HTTPNotFound(request.url)
+            raise HTTPNotFound(self.request.url)
         # 日程,会場,検索項目のコンボ用
         dates = sorted(list(set([p.start_on.strftime("%Y-%m-%d") for p in e.performances])))
         # 日付ごとの会場リスト
@@ -41,9 +38,9 @@ class IndexView(object):
         # 会場
         venues = set([p.venue.name for p in e.performances])
 
-        # 支払い方法
+        # TODO:支払い方法
         
-        # 引き取り方法
+        # TODO:引き取り方法
         
         return dict(event=dict(id=e.id, code=e.code, title=e.title, abbreviated_title=e.abbreviated_title,
                                start_on=str(e.start_on), end_on=str(e.end_on),
@@ -96,11 +93,6 @@ class IndexView(object):
         return dict(products=products,
             seat_type=dict(id=seat_type.id, name=seat_type.name))
 
-class ErrorView(object):
-    """ 座席確保エラーページ """
-    def __init__(self, request):
-        self.request = request
-
 
 class ReserveView(object):
     """ 座席選択完了画面(おまかせ) """
@@ -113,28 +105,39 @@ class ReserveView(object):
         """
         seat_type_id = self.request.matchdict['seat_type_id']
 
-        # 座席グループ取得
-        # 座席グループの空き状況を確認 / 在庫との比較？
+        # TODO: 選択したProductから必要なProductItemと個数にまとめる
+        # TODO: 在庫確認(Stock)
+        # TODO: 隣接座席で確保する(SeatAdjacency), 確保できない場合は処理中断 -> on_error
+        # TODO: Cart作成,ProductItemに座席割当(Cart,CartedProduct, CartedProductItem)
+        # TODO: Seat状況更新(SeatStatus)
+
+    def on_error(self):
+        """ 座席確保できなかった場合
+        """
 
 class Reserve2View(object):
     """ 座席選択完了画面(ユーザー選択) """
     def __init__(self, request):
         self.request = request
 
+        # TODO: 座席選択コンポーネントへの入力を作る
 
 class PaymentView(object):
     """ 支払い方法、引き取り方法選択 """
     def __init__(self, request):
         self.request = request
 
+        # TODO: PaymentMethodPairあたりを取得
+
 
 class ConfirmView(object):
     """ 決済確認画面 """
     def __init__(self, request):
         self.request = request
-
+        # TODO: Cart内容を表示？
 
 class CompleteView(object):
     """ 決済完了画面"""
     def __init__(self, request):
         self.request = request
+        # TODO: Orderを表示？
