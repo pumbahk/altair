@@ -3,13 +3,19 @@
 
 <script type="text/javascript">
   function show_performance() {
-    $(location).attr('href', '/events/performances/show/' + $('input[name=performance_id]:checked').val());
+    var id = get_id('performance_id');
+    if (!id) return;
+    $(location).attr('href', '/events/performances/show/' + id);
   }
   function edit_performance() {
-    $(location).attr('href', '/events/performances/edit/' + $('input[name=performance_id]:checked').val());
+    var id = get_id('performance_id');
+    if (!id) return;
+    $(location).attr('href', '/events/performances/edit/' + id);
   }
   function delete_performance() {
-    $('#modal-delete #delete').attr('href', '/events/performances/delete/' + $('input[name=performance_id]:checked').val());
+    var id = get_id('performance_id');
+    if (!id) return;
+    $('#modal-delete #delete').attr('href', '/events/performances/delete/' + id);
     $('#modal-delete #message').text("${u'選択したパフォーマンスを削除します。よろしいですか？'}");
     $('#modal-delete').modal('toggle');
   }

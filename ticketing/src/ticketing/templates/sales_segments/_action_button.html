@@ -7,26 +7,32 @@
     $('#start_at').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
     $('#end_at').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
   });
-  function get_sales_segment_id() {
-    return $('input[name=sales_segment_id]:checked').val() || $('#sales_segment_id').val();
-  }
   function show_sales_segment() {
-    var id = get_sales_segment_id();
+    var id = get_id('sales_segment_id');
     if (!id) return;
     $(location).attr('href', '/events/sales_segments/show/' + id);
   }
   function new_sales_segment() {
     $('#modal-edit-sales_segment #edit').attr('action', '/events/${event.id}/sales_segments/new');
+    $('#modal-edit-sales_segment #id').val("");
+    $('#modal-edit-sales_segment #name').val("");
+    $('#modal-edit-sales_segment #start_at').val("");
+    $('#modal-edit-sales_segment #end_at').val("");
     $('#modal-edit-sales_segment').modal('toggle');
   }
   function edit_sales_segment() {
-    var id = get_sales_segment_id();
+    var id = get_id('sales_segment_id');
     if (!id) return;
+    var el = '#sales_segment-' + id;
     $('#modal-edit-sales_segment #edit').attr('action', '/events/sales_segments/edit/' + id);
+    $('#modal-edit-sales_segment #id').val($(el + ' #id').text());
+    $('#modal-edit-sales_segment #name').val($(el + ' #name').text());
+    $('#modal-edit-sales_segment #start_at').val($(el + ' #start_at').text());
+    $('#modal-edit-sales_segment #end_at').val($(el + ' #end_at').text());
     $('#modal-edit-sales_segment').modal('toggle');
   }
   function delete_sales_segment() {
-    var id = get_sales_segment_id();
+    var id = get_id('sales_segment_id');
     if (!id) return;
     $('#modal-delete #delete').attr('href', '/events/sales_segments/delete/' + id);
     $('#modal-delete #message').text("${u'選択した販売区分を削除します。よろしいですか？'}");
@@ -36,7 +42,7 @@
 
 <div class="btn-group">
   <a href="javascript:new_sales_segment()" class="btn">
-    <i class="icon-pencil"></i> 新規
+    <i class="icon-plus"></i> 新規
   </a>
   <button class="btn dropdown-toggle" data-toggle="dropdown">
     <span class="caret"></span>
@@ -68,9 +74,12 @@
 
   <form id="edit" action="" method="POST">
     <div class="modal-body">
-      ${form_item(form.name)}
-      ${form_item(form.start_at)}
-      ${form_item(form.end_at)}
+      <label> 販売区分名</label>
+      <input id="name" type="text">
+      <label> 販売開始日時</label>
+      <input id="start_at" type="text">
+      <label> 販売終了日時</label>
+      <input id="end_at" type="text">
     </div>
 
     <div class="modal-footer">

@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from wtforms import Form
-from wtforms import (TextField, PasswordField, TextAreaField, DateField, DateTimeField,
-                     SelectField, SubmitField, HiddenField, BooleanField, FileField, RadioField)
-from wtforms.validators import Required, Email, Length, NumberRange,EqualTo,optional
+from wtforms import TextField, SelectField
+from wtforms.validators import Required, Length
 
 class SeatTypeForm(Form):
     name            = TextField(u'名称', validators=[Required()])

@@ -174,6 +174,11 @@ class Product(BaseModel, Base):
             pass
         return query.all()
 
+    def items_by_performance_id(self, id):
+        return DBSession.query(ProductItem).\
+            filter_by(performance_id=id).\
+            filter_by(product_id=self.id).all()
+
     def get_for_update(self):
         for item in self.items:
             if item.get_for_update() == None:

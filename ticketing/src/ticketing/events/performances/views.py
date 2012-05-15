@@ -45,15 +45,12 @@ class Performances(BaseView):
         products = Product.find(performance_id=performance_id)
         user = self.context.user
         accounts = Account.get_by_organization_id(user.organization_id)
-        conditions = {'event_id':performance.event_id}
-        sales_segments = SalesSegment.find_by(**conditions)
 
         form_ss = SalesSegmentForm()
         return {
             'performance':performance,
             'products':products,
             'accounts':accounts,
-            'sales_segments':sales_segments,
             'user':user,
             'form_ss':form_ss,
         }

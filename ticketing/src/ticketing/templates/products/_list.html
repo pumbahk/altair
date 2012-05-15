@@ -35,7 +35,7 @@
         <td></td>
         % endif
       </tr>
-      % if performance and product.items:
+      % if performance:
       <tr>
         <td colspan="7">
           <table class="table table-bordered table-condensed" style="width:500px">
@@ -46,7 +46,7 @@
               <th>席数</td>
               <th>単価</td>
             </tr>
-            % for item in product.items:
+            % for item in product.items_by_performance_id(performance.id):
             <tr id="product_item-${item.id}">
               <td>
                 <input class="btn-mini btn-primary" type="button" value="編集" onclick="javascript:edit_product_item('${product.id}', '${item.id}');">

@@ -5,11 +5,6 @@ $(document).ready(function() {
 
     });
 
-    $('#delete').click(function(){
-      $('#modal-delete').modal('toggle');
-      $('#modal-delete #delete').attr('href', '/seat_types/delete/' + $('input[name=checked_id]:checked').val());
-    });
-
     $('a[href^=#new-seat-type]').click(function() {
         var performance_id = /^#new-seat-type\[(.+)\]$/.exec($(this).attr('href'))[1];
         $('#edit-modal').modal('toggle');

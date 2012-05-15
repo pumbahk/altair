@@ -6,14 +6,11 @@ from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path
 
-from ticketing.models import merge_session_with_post, record_to_multidict
+from ticketing.models import merge_session_with_post
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.products.models import SeatType
 from ticketing.seat_types.forms import SeatTypeForm
-
-import sqlahelper
-session = sqlahelper.get_session()
 
 @view_defaults(decorator=with_bootstrap)
 class SeatTypes(BaseView):
@@ -84,4 +81,3 @@ class SeatTypes(BaseView):
 
         self.request.session.flash(u'席種を削除しました')
         return HTTPFound(location=route_path('performances.show', self.request, performance_id=seat_type.performance_id))
-

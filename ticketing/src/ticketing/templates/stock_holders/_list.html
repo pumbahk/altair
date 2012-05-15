@@ -18,6 +18,12 @@
             <span>${stock.quantity}席</span>
           </div>
           % endfor
+          % if len(stock_holder.stocks) == 0:
+          <div class="accordion-inner">
+            <span class="span1">&nbsp;</span>
+            <span>選択されていません</span>
+          </div>
+          % endif
         </div>
       </div>
     % endif
