@@ -90,7 +90,7 @@ class StockType(BaseModel, Base):
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
 
-    performance_id = Column(BigInteger, ForeignKey("Performance.id"))
+    event_id = Column(BigInteger, ForeignKey("Event.id"))
 
     stocks = relationship('Stock', backref='stock_type')
 

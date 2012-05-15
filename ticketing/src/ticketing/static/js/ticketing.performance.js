@@ -6,14 +6,14 @@ $(document).ready(function() {
     });
 
     $('a[href^=#new-seat-type]').click(function() {
-        var performance_id = /^#new-seat-type\[(.+)\]$/.exec($(this).attr('href'))[1];
+        var event_id = /^#new-seat-type\[(.+)\]$/.exec($(this).attr('href'))[1];
         $('#edit-modal').modal('toggle');
-        $('#edit-modal #edit').attr('action', '/stock_types/new/' + performance_id);
+        $('#edit-modal #edit').attr('action', '/stock_types/new/' + event_id);
     });
 
     $('a[href^=#edit-seat-type]').click(function() {
         var vars = /^#edit-seat-type\[(.+)\]\[(.+)\]$/.exec($(this).attr('href'));
-        var performance_id  = vars[1];
+        var event_id  = vars[1];
         var stock_type_id    = vars[2];
         var data = JSON.parse($(this).attr('data'));
         var name = $(this).attr('name');
