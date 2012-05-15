@@ -39,6 +39,7 @@ from operator import OperatorData, OperatorRoleData
 from event import *
 from venue import *
 from product import *
+from order import *
 from user import UserData, UserProfileData, UserCredentialData
 from ticketing.bookmark.tests.bookmark import BookmarkData
 from ticketing.products.tests.payment_delivery_method import DeliveryMethodPluginData, PaymentMethodPluginData, DeliveryMethodData, PaymentMethodData, PaymentDeliveryMethodPairData
@@ -143,6 +144,12 @@ def import_seed_data():
              'ProductItemEvent2Performance1Data'    : ProductItem,
              'ProductItemEvent2Performance2Data'    : ProductItem,
              'ProductItemEvent2Performance3Data'    : ProductItem,
+             'ShippingAddressData'                  : ShippingAddress,
+             'OrderData'                            : Order,
+             'OrderedProductOrder1Data'             : OrderedProduct,
+             'OrderedProductOrder2Data'             : OrderedProduct,
+             'OrderedProductItemOrder1Data'         : OrderedProductItem,
+             'OrderedProductItemOrder2Data'         : OrderedProductItem,
              'BookmarkData'                         : Bookmark,
              'UserData'                             : User,
              'UserProfileData'                      : UserProfile,
@@ -253,6 +260,11 @@ def import_seed_data():
         ProductItemEvent2Performance1Data,
         ProductItemEvent2Performance2Data,
         ProductItemEvent2Performance3Data,
+        OrderData,
+        OrderedProductOrder1Data,
+        OrderedProductOrder2Data,
+        OrderedProductItemOrder1Data,
+        OrderedProductItemOrder2Data,
         BookmarkData,
         UserData,
         UserProfileData,
