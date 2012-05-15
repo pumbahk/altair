@@ -40,15 +40,15 @@ class CartTests(unittest.TestCase):
     def test_is_existing_cart_session_id_not_exsiting(self):
         target = self._getTarget()
 
-        result = target.is_existing_cart_session_id("x")
+        result = target.is_existing_cart_session_id(u"x")
 
         self.assertFalse(result)
 
     def test_is_existing_cart_session_id_exsiting(self):
-        self._add_cart("x")
+        self._add_cart(u"x")
         target = self._getTarget()
 
-        result = target.is_existing_cart_session_id("x")
+        result = target.is_existing_cart_session_id(u"x")
 
         self.assertTrue(result)
 

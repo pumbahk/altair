@@ -99,17 +99,23 @@ class ReserveView(object):
     def __init__(self, request):
         self.request = request
 
+    def get_order_items(self):
+        """ リクエストパラメータから(プロダクトID,数量)タプルのリストを作成する
+        :param self:
+        :return: list of tuple(int, int)
+        """
+        return []
+
     def __call__(self):
         """
         座席情報から座席グループを検索する
         """
-        seat_type_id = self.request.matchdict['seat_type_id']
 
-        # TODO: 選択したProductから必要なProductItemと個数にまとめる
-        # TODO: 在庫確認(Stock)
-        # TODO: 隣接座席で確保する(SeatAdjacency), 確保できない場合は処理中断 -> on_error
-        # TODO: Cart作成,ProductItemに座席割当(Cart,CartedProduct, CartedProductItem)
-        # TODO: Seat状況更新(SeatStatus)
+        seat_type_id = self.request.matchdict['seat_type_id']
+        order_items = self.get_order_items()
+        cart = self.context.order(order_items)
+
+        return dict(cart=cart)
 
     def on_error(self):
         """ 座席確保できなかった場合
