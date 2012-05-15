@@ -20,5 +20,3 @@ def includeme(config):
 
     config.add_directive("define_flow_direction", ".directives.define_flow_direction")
     config.add_directive("add_route_flow", ".directives.add_route_flow")
-    config.set_request_property(".api.next_flow_url", name="next_flow_url", reify=True)
-    config.set_request_property(".api.next_flow_path", name="next_flow_path", reify=True)

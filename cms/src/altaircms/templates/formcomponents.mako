@@ -33,7 +33,7 @@
 
 <%def name="postdata_as_hidden_input(postdata)">
   % for k,v in postdata.items():
-	<input type="hidden" name=${k} value=${v}/>
+	<input type="hidden" name="${k}" value="${v}">
   % endfor
 </%def>
 

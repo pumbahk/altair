@@ -4,33 +4,27 @@ from altaircms.models import DBSession
 from altaircms.models import model_from_dict, model_to_dict
 import functools
 import altaircms.helpers as h
+from ..flow import api as flow_api
 
 class AfterInput(Exception):
-    pass
+    def __init__(self, form=None, context=None):
+        self.form = form
+        self.context = context
 
-class CRUDResourceFactory(object):
-    def __init__(self, title, model, form, mapper, endpoint):
+class CRUDResource(object):
+    flow_api = flow_api
+    def __init__(self, prefix, title, model, form, mapper, endpoint, request):
+        self.prefix = prefix
         self.title = title
         self.model = model
         self.form = form
         self.mapper = mapper
         self.endpoint = endpoint
-        
-    def create(self, name, base=None):
-        base = base or CRUDResource
-        def __init__(self, request):
-            self.request = request
+        self.request = request
 
-        attrs = {"title": self.title, 
-                 "model": self.model, 
-                 "form": self.form, 
-                 "mapper": self.mapper, 
-                 "endpoint": self.endpoint, 
-                 "__init__": __init__}
-        return type(name, (base, ), attrs) ## too-bad
-    
-class CRUDResource(object):
-    title, model, form, mapper, endpoint = None, None, None, None, None
+    def join(self, ac):
+        return "%s_%s" % (self.prefix, ac)
+
     ## create
     def input_form(self):
         return self.form()
@@ -40,7 +34,9 @@ class CRUDResource(object):
         if form.validate():
             return form
         else:
-            raise AfterInput(form=form)
+            ## danger
+            self.request.matchdict["action"] = "input"
+            raise AfterInput(form=form, context=self)
         
     def create_model_from_form(self, form):
         obj = model_from_dict(self.model, form.data)
@@ -48,16 +44,15 @@ class CRUDResource(object):
         return obj
 
     def get_model_obj(self, id):
-        self.model.query.filter_by(id=id).one()
+        return self.model.query.filter_by(id=id).one()
 
     ## listing
     def get_model_query(self):
         return self.model.query
 
     ## update
-    def input_form_from_model(self, id):
-        obj = self.get_model_obj()
-        form = self.form(model_to_dict(obj))
+    def input_form_from_model(self, obj):
+        form = self.form(**model_to_dict(obj))
         return form
 
     update_model_from_form = create_model_from_form
@@ -72,28 +67,29 @@ class CreateView(object):
         self.context = context
         self.request = request
         
-    def _after_input(self):
-        form = self.request._form
-        return {"context": self.context,
-                "title": self.context.title, 
+    def _after_input(self): ## context is AfterInput
+        form = self.context.form
+        return {"master_env": self.context.context,
                 "form": form, 
                 "display_fields": form.data.keys()}
         
     def input(self):
         form = self.context.input_form()
-        self.request._form = form
-        raise AfterInput
+        raise AfterInput(form=form, context=self.context)
 
     def confirm(self):
         form = self.context.confirmed_form()
-        self.request._form = form
-        raise AfterInput
+        obj = model_from_dict(self.context.model, form.data)
+        return {"master_env": self.context,
+                "form": form, 
+                "obj": obj, 
+                "display_fields": form.data.keys()}
 
     def create_model(self):
         form = self.context.confirmed_form()
         self.context.create_model_from_form(form)
         FlashMessage.success("create", request=self.request)
-        return HTTPFound(self.context.endpoint, self.request)
+        return HTTPFound(self.request.route_url(self.context.endpoint), self.request)
 
 class UpdateView(object):
     def __init__(self, context, request):
@@ -101,31 +97,31 @@ class UpdateView(object):
         self.request = request
 
     def _after_input(self):
-        form = self.request._form
-        return {"context": self.context,
-                "title": self.context.title, 
+        form = self.context.form
+        return {"master_env": self.context.context,
                 "form": form, 
                 "display_fields": form.data.keys()}
 
     def input(self):
         obj = self.context.get_model_obj(self.request.matchdict["id"])
         form = self.context.input_form_from_model(obj)
-        self.request._form = form
-        raise AfterInput
+        raise AfterInput(form=form, context=self.context)
 
     def confirm(self):
         form = self.context.confirmed_form()
-        self.request._form = form
-        raise AfterInput
+        obj = self.context.get_model_obj(self.request.matchdict["id"])
+        return {"master_env": self.context,
+                "form": form, 
+                "obj": obj, 
+                "display_fields": form.data.keys()}
 
     def update_model(self):
         form = self.context.confirmed_form()
         self.context.update_model_from_form(form)
         FlashMessage.success("update", request=self.request)
-        return HTTPFound(self.context.endpoint, self.request)
+        return HTTPFound(self.request.route_url(self.context.endpoint), self.request)
 
 class DeleteView(object):
-    endpoint = None
     def __init__(self, context, request):
         self.context = context
         self.request = request
@@ -133,9 +129,8 @@ class DeleteView(object):
     def confirm(self):
         obj = self.context.get_model_obj(self.request.matchdict["id"])
         form = self.context.input_form()
-        return {"context": self.context,
-                "x": obj, 
-                "title": self.context.title, 
+        return {"master_env": self.context,
+                "obj": obj, 
                 "form": form, 
                 "display_fields": form.data.keys()}
 
@@ -144,14 +139,13 @@ class DeleteView(object):
         obj = self.context.get_model_obj(self.request.matchdict["id"])
         self.context.delete_model(obj)
         FlashMessage.success("delete", request=self.request)
-        return HTTPFound(self.context.endpoint, self.request)
+        return HTTPFound(self.request.route_url(self.context.endpoint), self.request)
 
 def list_view(context, request):
     xs = context.get_model_query()
     form = context.input_form()
-    return {"context": context,
+    return {"master_env": context,
             "xs": h.paginate(request, xs),
-            "title": context.title, 
             "form": form, 
             "display_fields": form.data.keys()}
 
@@ -170,37 +164,41 @@ class SimpleCRUDFactory(object):
 
     def bind(self, config):
         endpoint = self._join("list")
-        resource_factory = CRUDResourceFactory(self.title, self.model, self.form, self.mapper, endpoint)
-        resource = resource_factory.create("crud"+self.prefix+"Resource", self.Resource)
-        resource.join = self._join
+        resource = functools.partial(
+            self.Resource, 
+            self.prefix, self.title, self.model, self.form, self.mapper, endpoint)
 
         ## list
-        config.add_route(self._join("list"), "/%s", factory=resource)
+        config.add_route(self._join("list"), "/%s" % self.prefix, factory=resource)
         config.add_view(list_view, 
-                        decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/list.mako")
+                        route_name=self._join("list"), decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/list.mako")
 
         ## create
-        config.add_route(self._join("create"), "/%s/create/{action}", factory=resource)
+        config.add_route(self._join("create"), "/%s/create/{action}" % self.prefix, factory=resource)
         config.add_route_flow(self._join("create"), direction_name="crud-create-flow", match_param="action")
 
-        config.add_view(CreateView, match_param="action=input", attr="input",
+        config.add_view(CreateView, match_param="action=input", attr="input", route_name=self._join("create"))
+        config.add_view(CreateView, context=AfterInput, attr="_after_input", route_name=self._join("create"), 
                         decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/create/input.mako")
+        
         config.add_view(CreateView, match_param="action=confirm", attr="confirm",
-                        decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/create/confirm.mako")
-        config.add_view(CreateView, match_param="action=create", attr="create_model")
+                        route_name=self._join("create"), decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/create/confirm.mako")
+        config.add_view(CreateView, match_param="action=create", attr="create_model", route_name=self._join("create"))
 
         ## update
-        config.add_route(self._join("update"), "/%s/update/{id}/{action}", factory=resource)
+        config.add_route(self._join("update"), "/%s/update/{id}/{action}" % self.prefix, factory=resource)
         config.add_route_flow(self._join("update"), direction_name="crud-update-flow", match_param="action")
         config.add_view(UpdateView, match_param="action=input", attr="input",
+                        route_name=self._join("update"), decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/update/input.mako")
+        config.add_view(UpdateView, context=AfterInput, attr="_after_input", route_name=self._join("update"), 
                         decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/update/input.mako")
         config.add_view(UpdateView, match_param="action=confirm", attr="confirm",
-                        decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/update/confirm.mako")
-        config.add_view(UpdateView, match_param="action=update", attr="update_model")
+                        route_name=self._join("update"), decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/update/confirm.mako")
+        config.add_view(UpdateView, match_param="action=update", attr="update_model", route_name=self._join("update"), )
 
         ## delete
-        config.add_route(self._join("delete"), "/%s/delete/{id}/{action}", factory=resource)
+        config.add_route(self._join("delete"), "/%s/delete/{id}/{action}" % self.prefix, factory=resource)
         config.add_route_flow(self._join("delete"), direction_name="crud-delete-flow", match_param="action")
         config.add_view(DeleteView, match_param="action=confirm", attr="confirm",
-                        decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/delete/confirm.mako")
-        config.add_view(DeleteView, match_param="action=delete", attr="delete_model")
+                        route_name=self._join("delete"), decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/delete/confirm.mako")
+        config.add_view(DeleteView, match_param="action=delete", attr="delete_model", route_name=self._join("delete"))
