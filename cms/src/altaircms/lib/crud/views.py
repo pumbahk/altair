@@ -11,7 +11,8 @@ class AfterInput(Exception):
         self.form = form
         self.context = context
 
-class CRUDResource(object):
+from altaircms.security import RootFactory
+class CRUDResource(RootFactory): ## fixme
     flow_api = flow_api
     def __init__(self, prefix, title, model, form, mapper, endpoint, request):
         self.prefix = prefix
@@ -170,35 +171,60 @@ class SimpleCRUDFactory(object):
 
         if "list" in bind_actions:
             config.add_route(self._join("list"), "/%s" % self.prefix, factory=resource)
+
+            permission = self.prefix+"_read"
+
             config.add_view(list_view, 
-                        route_name=self._join("list"), decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/list.mako")
+                            permission=permission, 
+                            route_name=self._join("list"), decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/list.mako")
 
         if "create" in bind_actions:
+
             config.add_route(self._join("create"), "/%s/create/{action}" % self.prefix, factory=resource)
             config.add_route_flow(self._join("create"), direction_name="crud-create-flow", match_param="action")
 
-            config.add_view(CreateView, match_param="action=input", attr="input", route_name=self._join("create"))
+            permission = self.prefix + "_create"
+
+            config.add_view(CreateView, match_param="action=input", attr="input", route_name=self._join("create"), 
+                           permission=permission
+                            )
             config.add_view(CreateView, context=AfterInput, attr="_after_input", route_name=self._join("create"), 
                             decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/create/input.mako")
 
             config.add_view(CreateView, match_param="action=confirm", attr="confirm",
+                            permission=permission, 
                             route_name=self._join("create"), decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/create/confirm.mako")
-            config.add_view(CreateView, match_param="action=create", attr="create_model", route_name=self._join("create"))
+            config.add_view(CreateView,
+                           permission=permission, 
+                            match_param="action=create", attr="create_model", route_name=self._join("create"))
 
         if "update" in bind_actions:
             config.add_route(self._join("update"), "/%s/update/{id}/{action}" % self.prefix, factory=resource)
             config.add_route_flow(self._join("update"), direction_name="crud-update-flow", match_param="action")
+
+            permission = self.prefix + "_update"
+
             config.add_view(UpdateView, match_param="action=input", attr="input",
+                            permission=permission, 
                             route_name=self._join("update"), decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/update/input.mako")
             config.add_view(UpdateView, context=AfterInput, attr="_after_input", route_name=self._join("update"), 
                             decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/update/input.mako")
             config.add_view(UpdateView, match_param="action=confirm", attr="confirm",
+                            permission=permission, 
                             route_name=self._join("update"), decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/update/confirm.mako")
-            config.add_view(UpdateView, match_param="action=update", attr="update_model", route_name=self._join("update"), )
+            config.add_view(UpdateView, 
+                            permission=permission, 
+                            match_param="action=update", attr="update_model", route_name=self._join("update"), )
 
         if "delete" in bind_actions:
             config.add_route(self._join("delete"), "/%s/delete/{id}/{action}" % self.prefix, factory=resource)
             config.add_route_flow(self._join("delete"), direction_name="crud-delete-flow", match_param="action")
+
+            permission = self.prefix + "_delete"
+
             config.add_view(DeleteView, match_param="action=confirm", attr="confirm",
+                            permission=permission, 
                             route_name=self._join("delete"), decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/delete/confirm.mako")
-            config.add_view(DeleteView, match_param="action=delete", attr="delete_model", route_name=self._join("delete"))
+            config.add_view(DeleteView, 
+                            permission=permission, 
+                            match_param="action=delete", attr="delete_model", route_name=self._join("delete"))

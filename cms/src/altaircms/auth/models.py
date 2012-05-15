@@ -24,6 +24,11 @@ PERMISSIONS = [
     "topic_read",
     "topic_update",
     "topic_delete",
+    # topcontent
+    "topcontent_create",
+    "topcontent_read",
+    "topcontent_update",
+    "topcontent_delete",
     # ticket
     "ticket_create",
     "ticket_read",
@@ -49,6 +54,26 @@ PERMISSIONS = [
     "tag_read",
     "tag_update",
     "tag_delete",
+    # tag
+    "category_create",
+    "category_read",
+    "category_update",
+    "category_delete",
+    # tag
+    "promotion_create",
+    "promotion_read",
+    "promotion_update",
+    "promotion_delete",
+    # tag
+    "promotion_unit_create",
+    "promotion_unit_read",
+    "promotion_unit_update",
+    "promotion_unit_delete",
+    # performance
+    "performance_create",
+    "performance_read",
+    "performance_update",
+    "performance_delete",
     # layout
     "layout_create",
     "layout_read",
@@ -60,6 +85,7 @@ PERMISSIONS = [
     "operator_update",
     "operator_delete",
 ]
+
 
 ## 認証時初期ロール
 DEFAULT_ROLE = 'administrator'

@@ -46,7 +46,7 @@ class SecurityAllOK(list):
     def __init__(self):
         from altaircms.auth.models import DEFAULT_ROLE
         self.roles = [DEFAULT_ROLE]
-
+        
     def __call__(self, user_id, request):
         return self.roles
 
