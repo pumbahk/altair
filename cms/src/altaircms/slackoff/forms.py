@@ -17,6 +17,11 @@ from ..page.models import PageSet, Page
 from ..topic.models import Topic
 from ..topcontent.models import Topcontent
 
+class LayoutForm(Form):
+    title = fields.TextField(u'タイトル', validators=[validators.Required()])
+    blocks = fields.TextField(u'ブロック', validators=[validators.Required()])
+    template_filename = fields.TextField(u'テンプレートファイル名', validators=[validators.Required()])
+
 class PerformanceForm(Form):
     backend_performance_id = fields.IntegerField(validators=[required_field()], label=u"バックエンド管理番号")
     event = dynamic_query_select_field_factory(Event, allow_blank=False, label=u"イベント", get_label=lambda obj: obj.title)
