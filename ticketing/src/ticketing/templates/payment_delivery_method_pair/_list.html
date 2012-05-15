@@ -1,0 +1,28 @@
+<%page args="sales_segment, form" />
+
+% if sales_segment.payment_delivery_method_pair:
+<table class="table table-striped table-bordered table-condensed">
+  <tr>
+    <th></th>
+    <th>${form.payment_method_ids.label.text}</th>
+    <th>${form.delivery_method_ids.label.text}</th>
+    <th>${form.transaction_fee.label.text}</th>
+    <th>${form.delivery_fee.label.text}</th>
+    <th>${form.discount.label.text}</th>
+    <th>${form.discount_unit.label.text}</th>
+    <th>${form.discount_type.label.text}</th>
+  </tr>
+  % for i, pdmp in enumerate(sales_segment.payment_delivery_method_pair):
+  <tr>
+    <td><input type="radio" name="payment_delivery_method_pair_id" value=${pdmp.id} /></td>
+    <td>${pdmp.payment_method.name}</td>
+    <td>${pdmp.delivery_method.name}</td>
+    <td>${pdmp.transaction_fee}</td>
+    <td>${pdmp.delivery_fee}</td>
+    <td>${pdmp.discount}</td>
+    <td>${pdmp.discount_unit}</td>
+    <td>${pdmp.discount_type}</td>
+  </tr>
+  % endfor
+</table>
+% endif

@@ -1,42 +1,17 @@
-<%page args="event=None, performance=None" />
+<%page args="event, performance=None" />
 <%namespace file="/common/helpers.html" import="form_item" />
-<%namespace file="/common/confirm_modal.html" import="delete_modal" />
+<%namespace file="/common/modal.html" import="delete_modal" />
 
 <script type="text/javascript">
-  % if performance:
-    stock_holder2stocks = {
-      % for stock_holder in performance.stock_holders:
-        '${stock_holder.id}':[
-          % for stock in stock_holder.stocks:
-            ['${stock.id}', '${stock.seat_type.name}'],
-          % endfor
-        ],
-      % endfor
-    }
-    $(function() {
-      $('#edit #stock_holders').change(function(){
-        $('#stock_id').children().remove();
-        stock_ids = stock_holder2stocks[$(this).val()];
-        stock_id_node = window.document.getElementById('stock_id');
-        if (stock_ids) {
-          for (var i = 0; i < stock_ids.length; i++ ) {
-            stock_id_node.options[i] = new Option(stock_ids[i][1], stock_ids[i][0]);
-          }
-          stock_id_node.selectedIndex = 0;
-        }
-      });
-    });
-  % endif
-
   function show_product() {
     $(location).attr('href', '/products/show/' + $('input[name=product_id]:checked').val());
   }
-  function add_product() {
+  function new_product() {
     $('#modal-product-edit').modal('toggle');
   }
-  function edit_product(el) {
-    if (!el) el = $('input[name=product_id]:checked').val();
-    el = '#product-' + el;
+  function edit_product(id) {
+    if (!id) id = $('input[name=product_id]:checked').val();
+    var el = '#product-' + id;
     $('#modal-product-edit #id').val($(el + ' #id').text());
     $('#modal-product-edit #name').val($(el + ' #name').text());
     $('#modal-product-edit #price').val($(el + ' #price').text());
@@ -44,11 +19,12 @@
     $('#modal-product-edit').modal('toggle');
   }
   function delete_product() {
-    $('#delete-modal #delete').attr('href', '/products/delete/' + $('input[name=product_id]:checked').val());
-    $('#delete-modal').modal('toggle');
+    $('#modal-delete #delete').attr('href', '/products/delete/' + $('input[name=product_id]:checked').val());
+    $('#modal-delete #message').text("${u'選択した商品を削除します。よろしいですか？'}");
+    $('#modal-delete').modal('toggle');
   }
 
-  function json_save() {
+  function save_product() {
     var id = $('#modal-product-edit #id').val();
     var url = id ? '/products/json.update/' + id : '/products/json.new';
     $.ajax({
@@ -73,16 +49,16 @@
 </script>
 
 <div class="btn-group">
-  <a href="javascript:show_product();" class="btn" >
-    <i class="icon-pencil"></i> 詳細
+  <a href="javascript:new_product();" class="btn">
+    <i class="icon-plus"></i> 新規
   </a>
   <button class="btn dropdown-toggle" data-toggle="dropdown">
     <span class="caret"></span>
   </button>
   <ul class="dropdown-menu">
     <li>
-      <a href="javascript:add_product();">
-        <i class="icon-plus"></i> 新規
+      <a href="javascript:show_product();">
+        <i class="icon-th-list"></i> 詳細
       </a>
     </li>
     <li>
@@ -91,7 +67,7 @@
       </a>
     </li>
     <li>
-      <a href="" data-controls-modal="delete-modal" data-backdrop="true" data-keyboard="true">
+      <a href="javascript:delete_product()" data-controls-modal="modal-delete" data-backdrop="true" data-keyboard="true">
         <i class="icon-minus"></i> 削除
       </a>
     </li>
@@ -104,7 +80,7 @@
     <h3>商品</h3>
   </div>
 
-  <form id="edit" action="javascript:json_save();" method="POST">
+  <form id="edit" action="javascript:save_product();" method="POST">
     <div class="modal-body">
       <fieldset>
         <input id="event_id" type="hidden" value="${event.id}">
@@ -119,17 +95,6 @@
           <option value="${sales_segment.id}">${sales_segment.name}</option>
           % endfor
         </select>
-        % if performance:
-        <label>商品構成</label>
-        <select id="stock_holders">
-          % for stock_holder in performance.stock_holders:
-            % if stock_holder.account.user_id == user.id:
-            <option value="${stock_holder.id}">${stock_holder.name}</option>
-            % endif
-          % endfor
-        </select>
-        <select id="stock_id" multiple></select>
-        % endif
       </fieldset>
     </div>
 
@@ -140,4 +105,6 @@
   </form>
 </div>
 
-${delete_modal(u'商品を削除します。よろしいですか？')}
+${delete_modal()}
+
+<%include file="/product_items/_form.html" args="performance=performance" />

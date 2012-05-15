@@ -9,8 +9,9 @@ from ticketing.bookmark.models import Bookmark
       <li><a href="${request.route_path('events.index')}"><i class="icon-home"></i>イベント</a></li>
       % if event:
       <ul>
+        <li><a href="${request.route_path('performances.index', event_id=event.id)}">パフォーマンス</a></li>
         <li><a href="${request.route_path('sales_segments.index', event_id=event.id)}">販売区分</a></li>
-        <li><a href="">商品</a></li>
+        <li><a href="${request.route_path('products.index', event_id=event.id)}">商品</a></li>
         <li><a href="">チケット券面</a></li>
       </ul>
       % endif

@@ -3,7 +3,9 @@
 from wtforms import Form
 from wtforms import TextField, SelectField, IntegerField, DecimalField, SelectMultipleField, HiddenField
 from wtforms.validators import Required, Length, NumberRange, EqualTo, Optional, ValidationError
+
 from ticketing.events.models import SalesSegment
+from ticketing.products.models import ProductItem
 
 class ProductForm(Form):
 
@@ -32,3 +34,24 @@ class ProductForm(Form):
         coerce=int
     )
     event_id = HiddenField("", validators=[Required()])
+
+
+class ProductItemForm(Form):
+
+    price = TextField(
+        label=u'価格',
+        validators=[Required(u'入力してください')]
+    )
+    stock_id = IntegerField("", validators=[Required()])
+    product_id = HiddenField("", validators=[Required()])
+    performance_id = HiddenField("", validators=[Required()])
+    id = HiddenField("", validators=[Optional()])
+
+    def validate_stock_id(form, field):
+        if field.data and form.product_id.data and not form.id.data:
+            conditions = {
+                'stock_id':field.data,
+                'product_id':form.product_id.data,
+            }
+            if ProductItem.find_by(**conditions):
+                raise ValidationError(u'既に登録済みの在庫です')

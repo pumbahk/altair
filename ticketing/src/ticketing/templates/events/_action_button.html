@@ -1,16 +1,25 @@
 <%page args="event" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+
+<script type="text/javascript">
+  function delete_event() {
+    $('#modal-delete #delete').attr('href', '/events/delete/' + ${event.id});
+    $('#modal-delete #message').text("${u'選択したイベントを削除します。よろしいですか？'}");
+    $('#modal-delete').modal('toggle');
+  }
+</script>
 
 <div class="btn-group">
-  <a href="${request.route_path('events.show', event_id=event.id)}" class="btn" >
-    <i class="icon-pencil"></i> 詳細
+  <a href="${request.route_path('events.new')}" class="btn">
+    <i class="icon-plus"></i> 新規
   </a>
   <button class="btn dropdown-toggle" data-toggle="dropdown">
     <span class="caret"></span>
   </button>
   <ul class="dropdown-menu">
     <li>
-      <a href="${request.route_path('events.new')}">
-        <i class="icon-plus"></i> 新規
+      <a href="${request.route_path('events.show', event_id=event.id)}">
+        <i class="icon-th-list"></i> 詳細
       </a>
     </li>
     <li>
@@ -19,7 +28,7 @@
       </a>
     </li>
     <li>
-      <a href="javascript:delete_event(${event.id})" data-controls-modal="delete-modal" data-backdrop="true" data-keyboard="true">
+      <a href="javascript:delete_event()" data-controls-modal="modal-delete" data-backdrop="true" data-keyboard="true">
         <i class="icon-minus"></i> 削除
       </a>
     </li>
@@ -28,3 +37,5 @@
     <li><a href=""><i class="icon-minus"></i> チケット券面</a></li>
   </ul>
 </div>
+
+${delete_modal()}

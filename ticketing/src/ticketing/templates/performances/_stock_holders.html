@@ -1,0 +1,26 @@
+<%page args="performance" />
+<%namespace file="/common/helpers.html" import="seat_style" />
+
+% for account in performance.accounts:
+  <h4>${account.name}</h4>
+  % for stock_holder in performance.stock_holders:
+    % if stock_holder.account.user.id == account.user.id:
+      <div class="accordion-group">
+        <div class="accordion-heading">
+          <a class="accordion-toggle" data-toggle="collapse" href="#collapse-${stock_holder.id}">
+            ${seat_style(stock_holder.style)}${stock_holder.name}
+          </a>
+        </div>
+        <div id="collapse-${stock_holder.id}" class="accordion-body collapse" style="height: 0px; ">
+          % for i, stock in enumerate(stock_holder.stocks):
+          <div class="accordion-inner">
+            <span class="span2">${seat_style(stock.seat_type.style)}${stock.seat_type.name}</span>
+            <span>${stock.quantity}席</span>
+          </div>
+          % endfor
+        </div>
+      </div>
+    % endif
+  % endfor
+  <div style="margin-bottom: 20px"></div>
+% endfor

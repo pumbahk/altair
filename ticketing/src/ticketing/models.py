@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime, date
+from decimal import Decimal
 import transaction
+import json
 
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL
 from sqlalchemy.orm import scoped_session
@@ -10,10 +12,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm.collections import InstrumentedList
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.types import TypeDecorator, VARCHAR
-import json
-from zope.sqlalchemy import ZopeTransactionExtension
-import collections
 from sqlalchemy.ext.mutable import Mutable
+from zope.sqlalchemy import ZopeTransactionExtension
 import sqlahelper
 
 Base = sqlahelper.get_base()
@@ -50,7 +50,8 @@ def merge_session_with_post(session, post, filters={}):
             elif isinstance(value, str) \
                 or isinstance(value, unicode)\
                 or isinstance(value, int)\
-                or isinstance(value, datetime) \
+                or isinstance(value, Decimal)\
+                or isinstance(value, datetime)\
                 or isinstance(value, date):
                 setattr(session, key, value)
             else:

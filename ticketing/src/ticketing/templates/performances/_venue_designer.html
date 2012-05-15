@@ -1,4 +1,4 @@
-<%namespace file="/common/confirm_modal.html" import="delete_modal" />
+<%namespace file="/common/modal.html" import="delete_modal" />
 <%namespace file="/common/helpers.html" import="seat_style" />
 <%namespace file="/common/helpers.html" import="json" />
 <div class="container-fluid">
@@ -18,7 +18,7 @@
                 <a href="#new-seat-type[${performance.id}]"><i class="icon-plus"></i> 新規</a>
               </li>
               <li>
-                <a id="delete" data-controls-modal="delete-modal" data-backdrop="true" data-keyboard="true">
+                <a id="delete" data-controls-modal="modal-delete" data-backdrop="true" data-keyboard="true">
                   <i class="icon-minus"></i> 削除
                 </a>
               </li>
@@ -41,8 +41,6 @@
 
       <table class="table table-striped table-bordered table-condensed">
         <tbody>
-          <tr>
-          </tr>
           % for seat_type in performance.seat_types:
           <tr>
             <td><input name="checked_id" type="radio" value=${seat_type.id} /></td>
@@ -112,23 +110,21 @@
     </form>
 </div>
 
-${delete_modal(u'選択した席種を削除します。よろしいですか？')}
-
 <script type="text/javascript">
   $('#delete').click(function(){
-    $('#delete-modal').modal('toggle');
-    $('#delete-modal #delete').attr('href', '/seat_types/delete/' + $('input[name=checked_id]:checked').val());
+    $('#modal-delete #delete').attr('href', '/seat_types/delete/' + $('input[name=checked_id]:checked').val());
+    $('#modal-delete').modal('toggle');
   });
 
   function add() {
-    $('#edit-modal').modal('toggle');
     $('#edit-modal #edit').attr('action', '/seat_types/new/' + ${performance.id});
+    $('#edit-modal').modal('toggle');
   }
 
   function edit(seat_type_id, name) {
-    $('#edit-modal').modal('toggle');
     $('#edit-modal #name').val(name);
     $('#edit-modal #edit').attr('action', '/seat_types/edit/' + seat_type_id);
+    $('#edit-modal').modal('toggle');
   }
   
   function readjustMap() {
