@@ -38,7 +38,7 @@ from seed.venue import VenueData
 from ticketing.oauth2.models import Service
 from ticketing.operators.models import Operator, OperatorActionHistory, OperatorRole, Permission
 
-from seattype import SeatTypeData
+from stocktype import StockTypeData
 from seatmaster import SeatMasterData
 from seatmasterl2 import SeatMasterL2Data
 from price import PriceData
@@ -88,11 +88,11 @@ class CartBaseTest(unittest.TestCase):
                 'BankAccountData'  : BankAccount,
                 'AccountData'      : Account,
                 'TicketerData'     : Ticketer,
-                'OrganizationData'       : Organization,
+                'OrganizationData' : Organization,
                 'EventData'        : Event,
                 'PerformanceData'  : Performance,
                 'VenueData'        : Venue,
-                'SeatTypeData'     : SeatType,
+                'StockTypeData'    : StockType,
                 'SeatMasterData'   : SeatMaster,
                 'SeatMasterL2Data' : SeatMasterL2,
                 'PriceData'                     : Price,
@@ -123,7 +123,7 @@ class CartBaseTest(unittest.TestCase):
             EventData,
             PerformanceData,
             VenueData,
-            SeatTypeData,
+            StockTypeData,
             SeatMasterData,
             SeatMasterL2Data,
             PriceData,

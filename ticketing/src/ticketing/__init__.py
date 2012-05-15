@@ -63,7 +63,7 @@ def main(global_config, **settings):
     config.include('ticketing.venues' , route_prefix='/venues')
     config.include('ticketing.dashboard' , route_prefix='/dashboard')
     config.include('ticketing.bookmark' , route_prefix='/bookmark')
-    config.include('ticketing.seat_types' , route_prefix='/seat_types')
+    config.include('ticketing.stock_types' , route_prefix='/stock_types')
     config.include('ticketing.accounts' , route_prefix='/accounts')
 
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')

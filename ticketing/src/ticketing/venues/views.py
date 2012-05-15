@@ -8,7 +8,7 @@ from urllib2 import urlopen
 
 from ticketing.models import DBSession
 from .models import Venue, Seat, SeatAttribute, VenueArea, seat_venue_area_table, SeatAdjacency, SeatAdjacencySet
-from ticketing.products.models import Stock, StockHolder, SeatType
+from ticketing.products.models import Stock, StockHolder, StockType
 
 @view_config(route_name="api.get_drawing", request_method="GET")
 def get_drawing(request):
@@ -30,7 +30,7 @@ def get_seats(request):
     for seat in DBSession.query(Seat).options(joinedload('attributes'), joinedload('areas'), joinedload('stock')).filter_by(venue=venue):
         seat_datum = {
             'id': seat.l0_id,
-            'seat_type_id': seat.stock and seat.stock.seat_type_id,
+            'stock_type_id': seat.stock and seat.stock.stock_type_id,
             'stock_holder_id': seat.stock and seat.stock.stock_holder and seat.stock.stock_holder.id,
             'areas': [area.id for area in seat.areas],
             }
@@ -46,11 +46,11 @@ def get_seats(request):
                 for seat_adjacency in seat_adjacency_set.adjacencies \
                 ]
 
-    seat_types_data = {}
-    for seat_type in DBSession.query(SeatType).filter_by(performance_id=venue.performance_id):
-        seat_types_data[seat_type.id] = dict(
-            name=seat_type.name,
-            style=seat_type.style)
+    stock_types_data = {}
+    for stock_type in DBSession.query(StockType).filter_by(performance_id=venue.performance_id):
+        stock_types_data[stock_type.id] = dict(
+            name=stock_type.name,
+            style=stock_type.style)
 
     return {
         'areas': dict(
@@ -59,6 +59,6 @@ def get_seats(request):
             ),
         'seats': seats_data,
         'seat_adjacencies': seat_adjacencies_data,
-        'seat_types': seat_types_data,
+        'stock_types': stock_types_data,
         }
 

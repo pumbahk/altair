@@ -162,7 +162,7 @@
       shift: false,
       xml: null,
       seat_meta: null,
-      seat_types: null,
+      stock_types: null,
       keyEvents: null
     },
 
@@ -186,7 +186,7 @@
       initDrawable: function(metadata) {
 
         this.seat_meta = metadata.seats;
-        this.seat_types = metadata.seat_types;
+        this.stock_types = metadata.stock_types;
 
         if (this.drawable !== null) return;
         var xml = this.xml;
@@ -273,7 +273,7 @@
           i.seat = true;
 
           var styles = Fashion._lib._clone(CONF.DEFAULT.STYLE.SHAPE);
-          var type_meta = self.seat_types[meta.seat_type_id];
+          var type_meta = self.stock_types[meta.stock_type_id];
 
           if (!type_meta) return;
 

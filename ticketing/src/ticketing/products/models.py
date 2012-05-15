@@ -74,25 +74,25 @@ class ProductItem(BaseModel, Base):
     stock_id = Column(BigInteger, ForeignKey('Stock.id'))
     stock = relationship("Stock")
 
-    seat_type_id = Column(BigInteger, ForeignKey('SeatType.id'))
-    seat_type = relationship('SeatType', backref='product_items')
+    stock_type_id = Column(BigInteger, ForeignKey('StockType.id'))
+    stock_type = relationship('StockType', backref='product_items')
 
     def get_for_update(self):
-        self.stock = Stock.get_for_update(self.performance_id, self.seat_type_id)
+        self.stock = Stock.get_for_update(self.performance_id, self.stock_type_id)
         if self.stock != None:
             self.seatStatus = SeatStatus.get_for_update(self.stock.id)
             return self.seatStatus
         else:
             return None
 
-class SeatType(BaseModel, Base):
-    __tablename__ = 'SeatType'
+class StockType(BaseModel, Base):
+    __tablename__ = 'StockType'
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
 
     performance_id = Column(BigInteger, ForeignKey("Performance.id"))
 
-    stocks = relationship('Stock', backref='seat_type')
+    stocks = relationship('Stock', backref='stock_type')
 
     style = Column(MutationDict.as_mutable(JSONEncodedDict(1024)))
 
@@ -102,15 +102,15 @@ class SeatType(BaseModel, Base):
 
     @property
     def num_seats(self):
-        return DBSession.query(func.sum(Stock.quantity)).filter_by(seat_type=self).scalar()
+        return DBSession.query(func.sum(Stock.quantity)).filter_by(stock_type=self).scalar()
 
     @staticmethod
-    def add(seat_type):
-        DBSession.add(seat_type)
+    def add(stock_type):
+        DBSession.add(stock_type)
 
     @staticmethod
-    def update(seat_type):
-        DBSession.merge(seat_type)
+    def update(stock_type):
+        DBSession.merge(stock_type)
         DBSession.flush()
 
 class StockHolder(BaseModel, Base):
@@ -134,13 +134,13 @@ class Stock(BaseModel, Base):
     stock_holder_id = Column(BigInteger, ForeignKey('StockHolder.id'))
     seats = relationship("Seat", backref='seat')
 
-    seat_type_id = Column(BigInteger, ForeignKey('SeatType.id'))
+    stock_type_id = Column(BigInteger, ForeignKey('StockType.id'))
 
     stock_status = relationship("StockStatus", uselist=False, backref='stock')
 
     @staticmethod
     def get_for_update(pid, stid):
-        return DBSession.query(Stock).with_lockmode("update").filter(Stock.performance_id==pid, Stock.seat_type_id==stid, Stock.quantity>0).first()
+        return DBSession.query(Stock).with_lockmode("update").filter(Stock.performance_id==pid, Stock.stock_type_id==stid, Stock.quantity>0).first()
 
 # stock based on quantity
 class StockStatus(BaseModel, Base):

@@ -45,7 +45,7 @@ class Performance(BaseModel, Base):
 
     stock_holders = relationship('StockHolder', backref='performance')
     product_items = relationship('ProductItem', backref='performance')
-    seat_types = relationship('SeatType', backref='performance')
+    stock_types = relationship('StockType', backref='performance')
     venue = relationship('Venue', uselist=False, backref='performance')
 
     @property

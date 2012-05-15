@@ -53,7 +53,7 @@
                 <input class="btn-mini btn-primary" type="button" value="削除" onclick="javascript:delete_product_item('${item.id}');">
               </td>
               <td><div id="stock_holder" value="${item.stock.stock_holder.id}">${item.stock.stock_holder.name}</div></td>
-              <td><div id="stock" value="${item.stock.id}">${item.stock.seat_type.name}</div></td>
+              <td><div id="stock" value="${item.stock.id}">${item.stock.stock_type.name}</div></td>
               <td>${item.stock.quantity}</td>
               <td id="price">${item.price}</td>
             </tr>
