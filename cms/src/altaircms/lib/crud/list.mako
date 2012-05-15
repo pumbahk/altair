@@ -29,13 +29,12 @@ ${xs.pager()}
 			    <td>${getattr(x,k, "-")}</td>
               %endfor
               <td>
-              <form action="${request.route_path(master_env.join("update"),action="input",id=x.id)}" method="POST">
-              <button type="submit" class="btn btn-small btn-primary"><i class="icon-cog icon-white"> </i> Update</button>
-              </form>
-              <td>
-              <form action="${request.route_path(master_env.join("delete"),action="confirm",id=x.id)}" method="POST">
-              <button type="submit" class="btn btn-small btn-danger"><i class="icon-trash icon-white"> </i> Delete</button>
-              </form>
+			  <a href="${request.route_path(master_env.join("update"),action="input",id=x.id)}" class="btn btn-small btn-primary">
+				<i class="icon-cog icon-white"> </i> Update
+			  </a>
+			  <a href="${request.route_path(master_env.join("delete"),action="confirm",id=x.id)}" class="btn btn-small btn-danger">
+				<i class="icon-trash icon-white"> </i> Delete
+			  </a>
               </td>
             </tr>
         %endfor

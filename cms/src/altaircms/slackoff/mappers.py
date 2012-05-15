@@ -7,6 +7,13 @@ class ObjectLike(dict):
     __getattr__ = dict.get
     __setattr__ = dict.__setitem__
 
+class RawText(object):
+    def __init__(self, text):
+        self.text = text
+
+    def __html__(self):
+        return self.text or u"-"
+
 def promotion_unit_mapper(request, obj):
     objlike = ObjectLike(id=obj.id, text=obj.text)
     objlike.promotion = obj.promotion.name
@@ -38,11 +45,22 @@ def category_mapper(request, obj):
             else:
                 return u"-"
     objlike.pageset = pageLinkRender()
-    class imgRender(object):
-        def __html__(self):
-            return u'<img src="%s"/>' % obj.imgsrc
-    objlike.imgsrc = imgRender()
+    objlike.imgsrc = RawText(u'<img src="%s"/>' % obj.imgsrc)
     for k, v in objlike.iteritems():
         if v is None:
             setattr(objlike, k, u"-")
+    return objlike
+
+def topic_mapper(request, obj):
+    objlike = ObjectLike(**model_to_dict(obj))
+    objlike.event = obj.event.title if obj.event else u"-"
+    objlike.text = obj.text if len(obj.text) <= 20 else obj.text[:20]+u"..."
+    objlike.page = obj.page.title if obj.page else u"-"
+    return objlike
+
+def topcontent_mapper(request, obj):
+    objlike = ObjectLike(**model_to_dict(obj))
+    image_asset = obj.image_asset.title or u"名前なし"
+    objlike.image_asset = RawText(u'<a href="%s">%s</a>' % (h.asset.to_show_page(request, obj.image_asset), image_asset))
+    objlike.page = obj.page.title if obj.page else u"-"
     return objlike

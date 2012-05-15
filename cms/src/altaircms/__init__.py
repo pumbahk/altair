@@ -73,8 +73,6 @@ def main(global_config, **settings):
     config.include("altaircms.page")
     config.include("altaircms.widget")
     config.include("altaircms.asset", route_prefix="/asset")
-    config.include("altaircms.topic")
-    config.include("altaircms.topcontent")
     config.include("altaircms.base")
     config.include("altaircms.tag")
 

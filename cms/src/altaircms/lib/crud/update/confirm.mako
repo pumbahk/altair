@@ -17,6 +17,11 @@
 
 <div class="row">
     <h3>${master_env.title}更新 確認画面</h3>
+
+	<div class="alert alert-info">
+	  以下の内容の${master_env.title}を更新します。良いですか？
+	</div>
+
 	${form_to_table(form, master_env.mapper(request, obj))}
 
     <form action="${master_env.flow_api.next_flow_path(request)}" method="POST">
