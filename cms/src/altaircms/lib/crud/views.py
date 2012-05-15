@@ -161,44 +161,44 @@ class SimpleCRUDFactory(object):
 
     def _join(self, ac):
         return "%s_%s" % (self.prefix, ac)
-
-    def bind(self, config):
+        
+    def bind(self, config, bind_actions):
         endpoint = self._join("list")
         resource = functools.partial(
             self.Resource, 
             self.prefix, self.title, self.model, self.form, self.mapper, endpoint)
 
-        ## list
-        config.add_route(self._join("list"), "/%s" % self.prefix, factory=resource)
-        config.add_view(list_view, 
+        if "list" in bind_actions:
+            config.add_route(self._join("list"), "/%s" % self.prefix, factory=resource)
+            config.add_view(list_view, 
                         route_name=self._join("list"), decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/list.mako")
 
-        ## create
-        config.add_route(self._join("create"), "/%s/create/{action}" % self.prefix, factory=resource)
-        config.add_route_flow(self._join("create"), direction_name="crud-create-flow", match_param="action")
+        if "create" in bind_actions:
+            config.add_route(self._join("create"), "/%s/create/{action}" % self.prefix, factory=resource)
+            config.add_route_flow(self._join("create"), direction_name="crud-create-flow", match_param="action")
 
-        config.add_view(CreateView, match_param="action=input", attr="input", route_name=self._join("create"))
-        config.add_view(CreateView, context=AfterInput, attr="_after_input", route_name=self._join("create"), 
-                        decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/create/input.mako")
-        
-        config.add_view(CreateView, match_param="action=confirm", attr="confirm",
-                        route_name=self._join("create"), decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/create/confirm.mako")
-        config.add_view(CreateView, match_param="action=create", attr="create_model", route_name=self._join("create"))
+            config.add_view(CreateView, match_param="action=input", attr="input", route_name=self._join("create"))
+            config.add_view(CreateView, context=AfterInput, attr="_after_input", route_name=self._join("create"), 
+                            decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/create/input.mako")
 
-        ## update
-        config.add_route(self._join("update"), "/%s/update/{id}/{action}" % self.prefix, factory=resource)
-        config.add_route_flow(self._join("update"), direction_name="crud-update-flow", match_param="action")
-        config.add_view(UpdateView, match_param="action=input", attr="input",
-                        route_name=self._join("update"), decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/update/input.mako")
-        config.add_view(UpdateView, context=AfterInput, attr="_after_input", route_name=self._join("update"), 
-                        decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/update/input.mako")
-        config.add_view(UpdateView, match_param="action=confirm", attr="confirm",
-                        route_name=self._join("update"), decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/update/confirm.mako")
-        config.add_view(UpdateView, match_param="action=update", attr="update_model", route_name=self._join("update"), )
+            config.add_view(CreateView, match_param="action=confirm", attr="confirm",
+                            route_name=self._join("create"), decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/create/confirm.mako")
+            config.add_view(CreateView, match_param="action=create", attr="create_model", route_name=self._join("create"))
 
-        ## delete
-        config.add_route(self._join("delete"), "/%s/delete/{id}/{action}" % self.prefix, factory=resource)
-        config.add_route_flow(self._join("delete"), direction_name="crud-delete-flow", match_param="action")
-        config.add_view(DeleteView, match_param="action=confirm", attr="confirm",
-                        route_name=self._join("delete"), decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/delete/confirm.mako")
-        config.add_view(DeleteView, match_param="action=delete", attr="delete_model", route_name=self._join("delete"))
+        if "update" in bind_actions:
+            config.add_route(self._join("update"), "/%s/update/{id}/{action}" % self.prefix, factory=resource)
+            config.add_route_flow(self._join("update"), direction_name="crud-update-flow", match_param="action")
+            config.add_view(UpdateView, match_param="action=input", attr="input",
+                            route_name=self._join("update"), decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/update/input.mako")
+            config.add_view(UpdateView, context=AfterInput, attr="_after_input", route_name=self._join("update"), 
+                            decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/update/input.mako")
+            config.add_view(UpdateView, match_param="action=confirm", attr="confirm",
+                            route_name=self._join("update"), decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/update/confirm.mako")
+            config.add_view(UpdateView, match_param="action=update", attr="update_model", route_name=self._join("update"), )
+
+        if "delete" in bind_actions:
+            config.add_route(self._join("delete"), "/%s/delete/{id}/{action}" % self.prefix, factory=resource)
+            config.add_route_flow(self._join("delete"), direction_name="crud-delete-flow", match_param="action")
+            config.add_view(DeleteView, match_param="action=confirm", attr="confirm",
+                            route_name=self._join("delete"), decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/delete/confirm.mako")
+            config.add_view(DeleteView, match_param="action=delete", attr="delete_model", route_name=self._join("delete"))

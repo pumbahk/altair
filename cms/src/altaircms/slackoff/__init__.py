@@ -9,7 +9,7 @@ def includeme(config):
     config.add_crud("promotion_unit",  title="promotion_unit",  model="..plugins.widget.promotion.models.PromotionUnit", 
                     form=".forms.PromotionUnitForm",  mapper=".mappers.promotion_unit_mapper")
     config.add_crud("promotion",  title="promotion",  model="..plugins.widget.promotion.models.Promotion",
-                    form=".forms.PromotionForm")
+                    form=".forms.PromotionForm", mapper=".mappers.promotion_mapper")
     config.add_crud("category", title="category", model="..models.Category",
                     form=".forms.CategoryForm", mapper=".mappers.category_mapper")
     config.add_crud("topic", title="topic", model="..topic.models.Topic", 

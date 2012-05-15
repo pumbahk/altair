@@ -15,7 +15,6 @@ from sqlalchemy.orm.exc import NoResultFound
 
 import json
 
-from altaircms.lib.apiview import BaseRESTAPI
 from altaircms.models import DBSession
 from altaircms.lib.fanstatic_decorator import with_bootstrap
 from altaircms.auth.forms import RoleForm

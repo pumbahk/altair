@@ -18,6 +18,10 @@ def layout_mapper(request, obj):
     objlike = ObjectLike(**model_to_dict(obj))
     return objlike
 
+def promotion_mapper(request, obj):
+    objlike = ObjectLike(**model_to_dict(obj))
+    return objlike
+
 def promotion_unit_mapper(request, obj):
     objlike = ObjectLike(id=obj.id, text=obj.text)
     objlike.promotion = obj.promotion.name
