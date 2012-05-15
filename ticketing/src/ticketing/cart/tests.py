@@ -52,7 +52,7 @@ class CartTests(unittest.TestCase):
 
         self.assertTrue(result)
 
-class CartItemTests(unittest.TestCase):
+class CartedProductTests(unittest.TestCase):
     def setUp(self):
         self.session = _setup_db()
 
@@ -65,26 +65,11 @@ class CartItemTests(unittest.TestCase):
 
     def _getTarget(self):
         from . import models
-        return models.CartItem
+        return models.CartedProduct
 
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
 
-    def test_reserved_amount_empty(self):
-        target = self._getTarget()
-        from ticketing.products import models as p_models
-        product_item = p_models.ProductItem()
-        result = target.get_reserved_amount(product_item)
-        self.assertEqual(result, 0)
-
-    def test_reserved_amount(self):
-        target = self._getTarget()
-        from ticketing.products import models as p_models
-        product_item = p_models.ProductItem(id=1)
-        self.session.add(target(product_item=product_item, amount=10, state="reserved"))
-
-        result = target.get_reserved_amount(product_item)
-        self.assertEqual(result, 10)
 
 class TicketingCartResourceTests(unittest.TestCase):
     def setUp(self):
@@ -103,45 +88,3 @@ class TicketingCartResourceTests(unittest.TestCase):
 
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
-
-    def test_has_stock_without_reserved_having(self):
-        from ticketing.products import models as p_models
-        stock = p_models.Stock(id=1, quantity=100)
-        product_item = p_models.ProductItem(id=1, stock=stock)
-        self.session.add(product_item)
-
-        request = testing.DummyRequest()
-
-        target = self._makeOne(request)
-        result = target.has_stock(10, product_item)
-
-        self.assertTrue(result)
-
-    def test_has_stock_without_reserved_not_having(self):
-        from ticketing.products import models as p_models
-        stock = p_models.Stock(id=1, quantity=100)
-        product_item = p_models.ProductItem(id=1, stock=stock)
-        self.session.add(product_item)
-
-        request = testing.DummyRequest()
-
-        target = self._makeOne(request)
-        result = target.has_stock(101, product_item)
-
-        self.assertFalse(result)
-
-    def test_has_stock_wit_reserved_not_having(self):
-        from ticketing.products import models as p_models
-        stock = p_models.Stock(id=1, quantity=100)
-        product_item = p_models.ProductItem(id=1, stock=stock)
-        self.session.add(product_item)
-        from . import models as m
-        cart_item = m.CartItem(product_item=product_item, state="reserved", amount=10)
-        self.session.add(cart_item)
-
-        request = testing.DummyRequest()
-
-        target = self._makeOne(request)
-        result = target.has_stock(91, product_item)
-
-        self.assertFalse(result)

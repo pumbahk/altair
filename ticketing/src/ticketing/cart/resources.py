@@ -15,7 +15,7 @@ class TicketingCartResrouce(object):
             self.acquire_product_item(product_item, amount)
 
     def has_stock(self, amount, product_item):
-        return product_item.stock.quantity - m.CartItem.get_reserved_amount(product_item=product_item) > amount
+        return product_item.stock.quantity - m.CartedProduct.get_reserved_amount(product_item=product_item) > amount
 
     def acquire_product_item(self, product_item, amount):
         # 在庫チェック
