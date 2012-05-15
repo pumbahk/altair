@@ -21,10 +21,12 @@ class PaymentDeliveryMethodPairForm(Form):
 
     transaction_fee = DecimalField(
         label=u'決済手数料',
+        places=2,
         validators=[NumberRange(min=0.0, max=100.0, message=u'%(min)sから%(max)sの間で設定してください')]
     )
     delivery_fee = DecimalField(
         label=u'配送手数料',
+        places=2,
         validators=[NumberRange(min=0.0, max=100.0, message=u'%(min)sから%(max)sの間で設定してください')]
     )
     discount = IntegerField(

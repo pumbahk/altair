@@ -1,0 +1,20 @@
+<%doc>
+  delete confirm dialog with confirm question
+</%doc> 
+<%def name="delete_modal()">
+  <div id="modal-delete" class="modal hide fade">
+    <div class="modal-header">
+      <a href="#" class="close">&times;</a>
+      <h3>確認</h3>
+    </div>
+
+    <div class="modal-body">
+      <p id="message"></p>
+    </div>
+
+    <div class="modal-footer">
+      <a href="javascript:$('#modal-delete').modal('hide');" class="btn secondary">キャンセル</a>
+      <a id="delete" href="" class="btn danger">削除</a>
+    </div>
+  </div>
+</%def>

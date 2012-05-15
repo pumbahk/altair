@@ -6,8 +6,8 @@ $(document).ready(function() {
     });
 
     $('#delete').click(function(){
-      $('#delete-modal').modal('toggle');
-      $('#delete-modal #delete').attr('href', '/seat_types/delete/' + $('input[name=checked_id]:checked').val());
+      $('#modal-delete').modal('toggle');
+      $('#modal-delete #delete').attr('href', '/seat_types/delete/' + $('input[name=checked_id]:checked').val());
     });
 
     $('a[href^=#new-seat-type]').click(function() {

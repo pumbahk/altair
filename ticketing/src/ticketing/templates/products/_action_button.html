@@ -1,1 +1,110 @@
-<div class="btn-group">  <a href="" class="btn" >    <i class="icon-pencil"></i> 詳細  </a>  <button class="btn dropdown-toggle" data-toggle="dropdown">    <span class="caret"></span>  </button>  <ul class="dropdown-menu">    <li>      <a href="">        <i class="icon-pencil"></i> 編集      </a>    </li>    <li>      <a href="" data-controls-modal="delete-modal" data-backdrop="true" data-keyboard="true">        <i class="icon-minus"></i> 削除      </a>    </li>  </ul></div>
+<%page args="event, performance=None" />
+<%namespace file="/common/helpers.html" import="form_item" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+
+<script type="text/javascript">
+  function show_product() {
+    $(location).attr('href', '/products/show/' + $('input[name=product_id]:checked').val());
+  }
+  function new_product() {
+    $('#modal-product-edit').modal('toggle');
+  }
+  function edit_product(id) {
+    if (!id) id = $('input[name=product_id]:checked').val();
+    var el = '#product-' + id;
+    $('#modal-product-edit #id').val($(el + ' #id').text());
+    $('#modal-product-edit #name').val($(el + ' #name').text());
+    $('#modal-product-edit #price').val($(el + ' #price').text());
+    $('#modal-product-edit #sales_segment').val($(el + ' #sales_segment').attr('value'));
+    $('#modal-product-edit').modal('toggle');
+  }
+  function delete_product() {
+    $('#modal-delete #delete').attr('href', '/products/delete/' + $('input[name=product_id]:checked').val());
+    $('#modal-delete #message').text("${u'選択した商品を削除します。よろしいですか？'}");
+    $('#modal-delete').modal('toggle');
+  }
+
+  function save_product() {
+    var id = $('#modal-product-edit #id').val();
+    var url = id ? '/products/json.update/' + id : '/products/json.new';
+    $.ajax({
+      type: "POST",
+      url: url,
+      data:{
+        "event_id":$('#modal-product-edit #event_id').val(),
+        "name":$('#modal-product-edit #name').val(),
+        "price":$('#modal-product-edit #price').val(),
+        "sales_segment_id":$('#modal-product-edit #sales_segment').val(),
+      },
+      dataType:'json',
+      success: function(msg){
+        if (msg['success'] == true) {
+          location.href = '/events/show/' + ${event.id};
+        } else {
+          alert(msg['success'])
+        }
+      }
+    });
+  }
+</script>
+
+<div class="btn-group">
+  <a href="javascript:new_product();" class="btn">
+    <i class="icon-plus"></i> 新規
+  </a>
+  <button class="btn dropdown-toggle" data-toggle="dropdown">
+    <span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu">
+    <li>
+      <a href="javascript:show_product();">
+        <i class="icon-th-list"></i> 詳細
+      </a>
+    </li>
+    <li>
+      <a href="javascript:edit_product();">
+        <i class="icon-pencil"></i> 編集
+      </a>
+    </li>
+    <li>
+      <a href="javascript:delete_product()" data-controls-modal="modal-delete" data-backdrop="true" data-keyboard="true">
+        <i class="icon-minus"></i> 削除
+      </a>
+    </li>
+  </ul>
+</div>
+
+<div class="modal fade" id="modal-product-edit">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">×</a>
+    <h3>商品</h3>
+  </div>
+
+  <form id="edit" action="javascript:save_product();" method="POST">
+    <div class="modal-body">
+      <fieldset>
+        <input id="event_id" type="hidden" value="${event.id}">
+        <input id="id" type="hidden">
+        <label>商品名</label>
+        <input id="name" name="name" type="text" class="span3" placeholder="商品名">
+        <label>価格</label>
+        <input id="price" name="price" type="text" class="span3" placeholder="価格">
+        <label>販売条件</label>
+        <select id="sales_segment">
+          % for sales_segment in event.sales_segments:
+          <option value="${sales_segment.id}">${sales_segment.name}</option>
+          % endfor
+        </select>
+      </fieldset>
+    </div>
+
+    <div class="modal-footer">
+      <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+      <input class="btn" type="submit" value="保存"></a>
+    </div>
+  </form>
+</div>
+
+${delete_modal()}
+
+<%include file="/product_items/_form.html" args="performance=performance" />

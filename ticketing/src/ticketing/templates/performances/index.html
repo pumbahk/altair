@@ -8,14 +8,14 @@
 
   <span class="span10">
     <div class="page-header">
-      <h3>販売区分</h3>
+      <h3>パフォーマンス</h3>
     </div>
 
     <div class="content">
       ${flash_messages(request)}
     </div>
 
-    <%include file="/sales_segments/_list.html" args="sales_segments=sales_segments" />
-    <%include file="/sales_segments/_action_button.html" args="event=event, form=form_ss" />
+    <%include file="/performances/_list.html" args="performances=performances" />
+    <%include file="/performances/_action_button.html" args="event=event" />
   </span>
 </div>

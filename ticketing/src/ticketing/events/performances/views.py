@@ -6,7 +6,7 @@ from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path
 
-from ticketing.models import merge_session_with_post, record_to_multidict
+from ticketing.models import merge_session_with_post, record_to_multidict, DBSession
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.events.models import Event, Performance, Account, SalesSegment
@@ -16,6 +16,27 @@ from ticketing.products.models import Product, StockHolder
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class Performances(BaseView):
+
+    @view_config(route_name='performances.index', renderer='ticketing:templates/performances/index.html')
+    def index(self):
+        event_id = int(self.request.matchdict.get('event_id', 0))
+        event = Event.get(event_id)
+
+        current_page = int(self.request.params.get('page', 0))
+        sort = self.request.GET.get('sort', 'Performance.id')
+        direction = self.request.GET.get('direction', 'desc')
+        if direction not in ['asc', 'desc']: direction = 'asc'
+
+        page_url = paginate.PageURL_WebOb(self.request)
+        query = DBSession.query(Performance).filter(Performance.event_id == event_id)
+        query = query.order_by(sort + ' ' + direction)
+
+        performances = paginate.Page(query, page=current_page, items_per_page=5, url=page_url)
+
+        return {
+            'event':event,
+            'performances':performances,
+        }
 
     @view_config(route_name='performances.show', renderer='ticketing:templates/performances/show.html')
     def show(self):

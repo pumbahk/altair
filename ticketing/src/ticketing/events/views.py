@@ -1,4 +1,4 @@
- # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import webhelpers.paginate as paginate
 
@@ -12,6 +12,7 @@ from ticketing.models import DBSession
 from ticketing.fanstatic import with_bootstrap
 from ticketing.events.models import Event, Performance
 from ticketing.events.forms import EventForm
+from ticketing.events.sales_segments.forms import SalesSegmentForm
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class Events(BaseView):
@@ -54,9 +55,9 @@ class Events(BaseView):
         performances = paginate.Page(query, current_page, items_per_page=10, url=page_url)
         accounts = event.get_accounts()
 
-        f = EventForm()
         return {
-            'form':f,
+            'form':EventForm(),
+            'form_ss':SalesSegmentForm(),
             'event':event,
             'performances':performances,
             'accounts':accounts,

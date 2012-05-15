@@ -1,1 +1,44 @@
-<div class="btn-group">  <a href="" class="btn" >    <i class="icon-pencil"></i> 詳細  </a>  <button class="btn dropdown-toggle" data-toggle="dropdown">    <span class="caret"></span>  </button>  <ul class="dropdown-menu">    <li>      <a href="">        <i class="icon-pencil"></i> 編集      </a>    </li>    <li>      <a href="" data-controls-modal="delete-modal" data-backdrop="true" data-keyboard="true">        <i class="icon-minus"></i> 削除      </a>    </li>  </ul></div>
+<%page args="event" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+
+<script type="text/javascript">
+  function show_performance() {
+    $(location).attr('href', '/events/performances/show/' + $('input[name=performance_id]:checked').val());
+  }
+  function edit_performance() {
+    $(location).attr('href', '/events/performances/edit/' + $('input[name=performance_id]:checked').val());
+  }
+  function delete_performance() {
+    $('#modal-delete #delete').attr('href', '/events/performances/delete/' + $('input[name=performance_id]:checked').val());
+    $('#modal-delete #message').text("${u'選択したパフォーマンスを削除します。よろしいですか？'}");
+    $('#modal-delete').modal('toggle');
+  }
+</script>
+
+<div class="btn-group">
+  <a href="${request.route_path('performances.new', event_id=event.id)}" class="btn">
+    <i class="icon-plus"></i> 新規
+  </a>
+  <button class="btn dropdown-toggle" data-toggle="dropdown">
+    <span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu">
+    <li>
+      <a href="javascript:show_performance();">
+        <i class="icon-th-list"></i> 詳細
+      </a>
+    </li>
+    <li>
+      <a href="javascript:edit_performance();">
+        <i class="icon-pencil"></i> 編集
+      </a>
+    </li>
+    <li>
+      <a href="javascript:delete_performance();" data-controls-modal="modal-delete" data-backdrop="true" data-keyboard="true">
+        <i class="icon-minus"></i> 削除
+      </a>
+    </li>
+  </ul>
+</div>
+
+${delete_modal()}

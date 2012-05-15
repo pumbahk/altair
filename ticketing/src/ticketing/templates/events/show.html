@@ -4,14 +4,6 @@
 <%namespace file="/common/helpers.html" import="flash_messages" />
 <%namespace file="/common/helpers.html" import="form_item" />
 <%namespace file="/common/helpers.html" import="safe_strftime" />
-<%namespace file="/common/confirm_modal.html" import="delete_modal" />
-
-<script>
-  function delete_event(id) {
-    $('#delete-modal').modal('toggle');
-    $('#delete-modal #delete').attr('href', '/events/delete/' + id);
-  }
-</script>
 
 <div class="row-fluid">
   <%include file="/parts/_menu.html" />
@@ -91,6 +83,8 @@
 
     <div id="sales_segments">
       <h3>販売区分</h3>
+      <%include file="/sales_segments/_list.html" args="sales_segments=event.sales_segments" />
+      <%include file="/sales_segments/_action_button.html" args="event=event, form=form_ss" />
     </div>
 
     <hr />
@@ -102,5 +96,3 @@
     </div>
   </span>
 </div>
-
-${delete_modal(u'選択したイベントを削除します。よろしいですか？')}
