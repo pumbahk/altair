@@ -15,29 +15,66 @@
 </style>
 
 % if event.stock_types:
-<table class="table table-striped table-bordered table-condensed">
-  <tbody>
-  <tr>
-    <th></th>
-    <th>席種</th>
-    <th>席数</th>
-  </tr>
-  % for stock_type in event.stock_types:
-  <tr>
-    <td><input type="radio" name="stock_type_id" value=${stock_type.id} /></td>
-    <td>
-      <a href="javascript:edit_stock_type(${stock_type.id});" id="stock_type-${stock_type.id}" name="${stock_type.name}" type="${stock_type.type}" data="${json(stock_type.style)}">
-        ${seat_style(stock_type.style)}${stock_type.name}
-      </a>
-    </td>
-    <td>
-      % if stock_type.is_seat:
-        <% conditions = {'performance_id':performance.id} if performance else {} %>
-        ${stock_type.num_seats(**conditions) or 0}席
+  % if performance:
+  <h4>席種</h4>
+  % endif
+  <table class="table table-striped table-bordered table-condensed">
+    <tbody>
+    <tr>
+      <th></th>
+      <th>名称</th>
+      <th>席数</th>
+    </tr>
+    % for stock_type in event.stock_types:
+      % if stock_type.is_seat or not performance:
+    <tr>
+      <td style="width: 40px">
+        <input type="radio" name="stock_type_id" value=${stock_type.id} />
+      </td>
+      <td>
+        <a href="javascript:edit_stock_type(${stock_type.id});" id="stock_type-${stock_type.id}" name="${stock_type.name}" type="${stock_type.type}" data="${json(stock_type.style)}">
+          ${seat_style(stock_type.style)}${stock_type.name}
+        </a>
+      </td>
+      <td style="width: 60px">
+        % if stock_type.is_seat:
+          <% conditions = {'performance_id':performance.id} if performance else {} %>
+          ${stock_type.num_seats(**conditions) or 0}席
+        % endif
+      </td>
+    </tr>
       % endif
-    </td>
-  </tr>
-  % endfor
-  </tbody>
-</table>
+    % endfor
+    </tbody>
+  </table>
+
+  % if performance:
+  <h4>その他</h4>
+  <table class="table table-striped table-bordered table-condensed">
+    <tbody>
+    <tr>
+      <th></th>
+      <th>名称</th>
+      <th>在庫数</th>
+    </tr>
+    % for stock_type in event.stock_types:
+      % if not stock_type.is_seat:
+    <tr>
+      <td style="width: 40px">
+        <input type="radio" name="stock_type_id" value=${stock_type.id} />
+      </td>
+      <td>
+        <a href="javascript:edit_stock_type(${stock_type.id});" id="stock_type-${stock_type.id}" name="${stock_type.name}" type="${stock_type.type}" data="${json(stock_type.style)}">
+          ${seat_style(stock_type.style)}${stock_type.name}
+        </a>
+      </td>
+      <td style="width: 60px">
+
+      </td>
+    </tr>
+      % endif
+    % endfor
+    </tbody>
+  </table>
+  % endif
 % endif

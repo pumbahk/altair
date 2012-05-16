@@ -1,4 +1,4 @@
-<%page args="event" />
+<%page args="event, performance=None" />
 <%namespace file="/common/modal.html" import="delete_modal" />
 
 <%block name="style">
@@ -64,6 +64,18 @@
         <i class="icon-minus"></i> 削除
       </a>
     </li>
+    % if performance:
+    <li>
+      <a href="#">
+        <i class="icon-ok"></i> 選択した座席を割り当てる
+      </a>
+    </li>
+    <li>
+      <a href="#modal-allocate" data-toggle="modal">
+        <i class="icon-pencil"></i> 在庫数を入力する
+      </a>
+    </li>
+    % endif
   </ul>
 </div>
 
