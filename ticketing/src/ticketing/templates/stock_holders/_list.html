@@ -7,10 +7,24 @@
     % if stock_holder.account.user.id == account.user.id:
       <div class="accordion-group">
         <div class="accordion-heading">
-          <a class="accordion-toggle" data-toggle="collapse" href="#collapse-${stock_holder.id}">
-            ${seat_style(stock_holder.style)}${stock_holder.name}
-          </a>
+          <div style="float: left;">
+            <a class="accordion-toggle" data-toggle="collapse" href="#collapse-${stock_holder.id}">
+              ${seat_style(stock_holder.style)}${stock_holder.name}
+            </a>
+          </div>
+          <div style="float: right; margin-top: 7px; margin-right: 7px">
+            <div class="btn-group">
+              <button class="btn btn-mini btn-primary dropdown-toggle" data-toggle="dropdown">
+                Allocate
+                <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu">
+                <li><a href="#">編集</a></li>
+              </ul>
+            </div>
+          </div>
         </div>
+        <div style="clear: both;"></div>
         <div id="collapse-${stock_holder.id}" class="accordion-body collapse" style="height: 0px; ">
           % for i, stock in enumerate(stock_holder.stocks):
           <div class="accordion-inner">
@@ -19,9 +33,8 @@
           </div>
           % endfor
           % if len(stock_holder.stocks) == 0:
-          <div class="accordion-inner">
+          <div class="accordion-inner" style="text-align: center;">
             選択されていません
-            <input class="btn btn-mini offset1" type="button" value="Allocate">
           </div>
           % endif
         </div>
