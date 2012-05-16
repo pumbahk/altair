@@ -1,9 +1,11 @@
 # -*- coding:utf-8 -*-
 
+from datetime import datetime, timedelta
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from sqlalchemy.orm.exc import NoResultFound
 import sqlahelper
+from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy import sql
 
 Base = sqlahelper.get_base()
@@ -53,6 +55,9 @@ class CartedProductItem(Base):
     carted_product_id = sa.Column(sa.Integer, sa.ForeignKey("ticketing_cartedproducts.id"))
     carted_product = orm.relationship("CartedProduct", backref="items")
 
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, nullable=True, onupdate=datetime.now)
+    deleted_at = sa.Column(sa.DateTime, nullable=True)
 
 class CartedProduct(Base):
     __tablename__ = 'ticketing_cartedproducts'
@@ -63,6 +68,11 @@ class CartedProduct(Base):
     quantity = sa.Column(sa.Integer)
     cart_id = sa.Column(sa.Integer, sa.ForeignKey('ticketing_carts.id'))
     cart = orm.relation("Cart", backref="products")
+
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, nullable=True, onupdate=datetime.now)
+    deleted_at = sa.Column(sa.DateTime, nullable=True)
+
 
     @classmethod
     def get_reserved_amount(cls, product_item):
@@ -77,6 +87,10 @@ class Cart(Base):
     id = sa.Column(sa.Integer, primary_key=True)
     cart_session_id = sa.Column(sa.Unicode, unique=True)
 
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, nullable=True, onupdate=datetime.now)
+    deleted_at = sa.Column(sa.DateTime, nullable=True)
+
     @classmethod
     def get_or_create(cls, cart_session_id):
         try:
@@ -89,3 +103,9 @@ class Cart(Base):
     @classmethod
     def is_existing_cart_session_id(cls, cart_session_id):
         return cls.query.filter_by(cart_session_id=cart_session_id).count()
+
+    @hybrid_method
+    def is_expired(self, expire_span_minutes):
+        """ 決済完了までの時間制限
+        """
+        return self.created_at > datetime.now() - timedelta(minutes=expire_span_minutes)

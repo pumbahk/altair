@@ -4,11 +4,11 @@ from pyramid import testing
 def _setup_db():
     import sqlahelper
     from sqlalchemy import create_engine
+    from . import models
     engine = create_engine("sqlite:///")
     engine.echo = False
     sqlahelper.get_session().remove()
     sqlahelper.add_engine(engine)
-    from . import models
     sqlahelper.get_base().metadata.drop_all()
     sqlahelper.get_base().metadata.create_all()
     return sqlahelper.get_session()
@@ -31,9 +31,12 @@ class CartTests(unittest.TestCase):
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
 
-    def _add_cart(self, cart_session_id):
+    def _add_cart(self, cart_session_id, created_at=None):
+        from datetime import datetime
         from . import models
-        cart = models.Cart(cart_session_id=cart_session_id)
+        if created_at is None:
+            created_at = datetime.now()
+        cart = models.Cart(cart_session_id=cart_session_id, created_at=created_at)
         self.session.add(cart)
         return cart
 
@@ -51,6 +54,33 @@ class CartTests(unittest.TestCase):
         result = target.is_existing_cart_session_id(u"x")
 
         self.assertTrue(result)
+
+    def test_is_expired_instance_expired(self):
+        from datetime import datetime, timedelta
+        created = datetime.now() - timedelta(minutes=16)
+        target = self._makeOne(created_at=created)
+        result = target.is_expired(15)
+        self.assertFalse(result)
+
+    def test_is_expired_instance(self):
+        from datetime import datetime, timedelta
+        created = datetime.now() - timedelta(minutes=14)
+        target = self._makeOne(created_at=created)
+        result = target.is_expired(15)
+        self.assertTrue(result)
+
+    def test_is_expired_class(self):
+        from datetime import datetime, timedelta
+        valid_created = datetime.now() - timedelta(minutes=14)
+        expired_created = datetime.now() - timedelta(minutes=16)
+        self._add_cart(u"valid", created_at=valid_created)
+        self._add_cart(u"expired", created_at=expired_created)
+
+        target = self._getTarget()
+        result = target.query.filter(target.is_expired(expire_span_minutes=15)).all()
+
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].cart_session_id, u'valid')
 
 class CartedProductTests(unittest.TestCase):
     def setUp(self):
