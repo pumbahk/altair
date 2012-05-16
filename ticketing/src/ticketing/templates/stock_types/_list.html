@@ -1,4 +1,4 @@
-<%page args="event" />
+<%page args="event, performance=None" />
 <%namespace file="/common/helpers.html" import="seat_style" />
 <%namespace file="/common/helpers.html" import="json" />
 
@@ -32,7 +32,8 @@
     </td>
     <td>
       % if stock_type.is_seat:
-        ${stock_type.num_seats or 0}席
+        <% conditions = {'performance_id':performance.id} if performance else {} %>
+        ${stock_type.num_seats(**conditions) or 0}席
       % endif
     </td>
   </tr>

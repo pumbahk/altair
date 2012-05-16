@@ -102,9 +102,13 @@ class StockType(BaseModel, Base):
 
     style = Column(MutationDict.as_mutable(JSONEncodedDict(1024)))
 
-    @property
-    def num_seats(self):
-        return DBSession.query(func.sum(Stock.quantity)).filter_by(stock_type=self).scalar()
+    def num_seats(self, performance_id=None):
+        query = DBSession.query(func.sum(Stock.quantity)).filter_by(stock_type=self)
+        if performance_id:
+            query = query.join(StockHolder).\
+                    filter(StockHolder.performance_id==performance_id).\
+                    filter(StockHolder.id==Stock.stock_holder_id)
+        return query.scalar()
 
     @property
     def is_seat(self):
