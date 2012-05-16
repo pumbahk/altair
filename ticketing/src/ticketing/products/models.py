@@ -110,15 +110,6 @@ class StockType(BaseModel, Base):
     def is_seat(self):
         return self.type == StockTypeEnum.Seat.v
 
-    @staticmethod
-    def add(stock_type):
-        DBSession.add(stock_type)
-
-    @staticmethod
-    def update(stock_type):
-        DBSession.merge(stock_type)
-        DBSession.flush()
-
 class StockHolder(BaseModel, Base):
     __tablename__ = "StockHolder"
     id = Column(BigInteger, primary_key=True)

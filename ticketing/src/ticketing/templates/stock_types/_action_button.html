@@ -1,44 +1,42 @@
 <%page args="event" />
 <%namespace file="/common/modal.html" import="delete_modal" />
 
+<%block name="style">
+<link rel="stylesheet" type="text/css" href="/static/css/kolorpicker.css" />
+<script type="text/javascript" src="/static/js/jquery.kolorpicker.js"></script>
+</%block>
+
 <script type="text/javascript">
-  $(function() {
-    $('a[href^=#new-stock-type]').click(function() {
-      var event_id = /^#new-stock-type\[(.+)\]$/.exec($(this).attr('href'))[1];
-      $('#edit-modal #edit').attr('action', '/stock_types/new/' + event_id);
-      $('#edit-modal').modal('toggle');
-    });
-    $('a[href^=#edit-stock-type]').click(function() {
-      var vars = /^#edit-stock-type\[(.+)\]\[(.+)\]$/.exec($(this).attr('href'));
-      var event_id  = vars[1];
-      var stock_type_id    = vars[2];
-      var data = JSON.parse($(this).attr('data'));
-      var name = $(this).attr('name');
-      var type = $(this).attr('type');
-
-      $('#edit-modal #name').val(name);
-      if (type == 2) {
-        $('#edit-modal #type').attr('checked', 'checked').change();
+  function new_stock_type() {
+    $('#edit-modal #edit').attr('action', '/stock_types/new/${event.id}');
+    $('#edit-modal').modal('toggle');
+  }
+  function edit_stock_type(id) {
+    var id = id || get_id('stock_type_id');
+    if (!id) return;
+    var el = '#stock_type-' + id;
+    $('#edit-modal #edit').attr('action', '/stock_types/edit/' + id);
+    $('#edit-modal #name').val($(el).attr('name'));
+    if ($(el).attr('type') == 2) {
+      $('#edit-modal #type').attr('checked', 'checked').change();
+    }
+    var data = JSON.parse($(el).attr('data'));
+    if (data) {
+      $('#edit-modal #text').val(data.text);
+      $('#edit-modal #text_color').val(data.text_color);
+      if (data.fill) {
+        $('#edit-modal #fill_color').val(data.fill.color);
+        $('#edit-modal #fill_type').val(data.fill.type);
+        $('#edit-modal #fill_image').val(data.fill.image);
       }
-      if (data) {
-        $('#edit-modal #text').val(data.text);
-        $('#edit-modal #text_color').val(data.text_color);
-        if (data.fill) {
-          $('#edit-modal #fill_color').val(data.fill.color);
-          $('#edit-modal #fill_type').val(data.fill.type);
-          $('#edit-modal #fill_image').val(data.fill.image);
-        }
-        if (data.stroke) {
-          $('#edit-modal #stroke_color').val(data.stroke.color);
-          $('#edit-modal #stroke_width').val(data.stroke.width);
-          $('#edit-modal #stroke_patten').val(data.stroke.pattern);
-        }
+      if (data.stroke) {
+        $('#edit-modal #stroke_color').val(data.stroke.color);
+        $('#edit-modal #stroke_width').val(data.stroke.width);
+        $('#edit-modal #stroke_patten').val(data.stroke.pattern);
       }
-      $('#edit-modal #edit').attr('action', '/stock_types/edit/' + stock_type_id);
-      $('#edit-modal').modal('toggle');
-    });
-  });
-
+    }
+    $('#edit-modal').modal('toggle');
+  }
   function delete_stock_type() {
     var id = get_id('stock_type_id');
     if (!id) return;
@@ -49,7 +47,7 @@
 </script>
 
 <div class="btn-group">
-  <a href="#new-stock-type[${event.id}]" class="btn">
+  <a href="javascript:new_stock_type()" class="btn">
     <i class="icon-plus"></i> 新規
   </a>
   <button class="btn dropdown-toggle" data-toggle="dropdown">
@@ -57,17 +55,12 @@
   </button>
   <ul class="dropdown-menu">
     <li>
-      <a href="">
-        <i class="icon-th-list"></i> 詳細
-      </a>
-    </li>
-    <li>
-      <a href="">
+      <a href="javascript:edit_stock_type()">
         <i class="icon-pencil"></i> 編集
       </a>
     </li>
     <li>
-      <a href="javascript:delete_stock_type()" data-controls-modal="modal-delete" data-backdrop="true" data-keyboard="true">
+      <a href="javascript:delete_stock_type();" data-controls-modal="modal-delete" data-backdrop="true" data-keyboard="true">
         <i class="icon-minus"></i> 削除
       </a>
     </li>

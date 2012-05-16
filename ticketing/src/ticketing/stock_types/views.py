@@ -10,7 +10,7 @@ from ticketing.models import merge_session_with_post
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.events.models import Event
-from ticketing.products.models import StockType
+from ticketing.products.models import StockType, StockTypeEnum
 from ticketing.stock_types.forms import StockTypeForm
 
 @view_defaults(decorator=with_bootstrap)
@@ -33,23 +33,24 @@ class StockTypes(BaseView):
 
         f = StockTypeForm(self.request.POST)
         data = f.data
-        style = {
-            'stroke' : {
-                'color'     : data.get('stroke_color'),
-                'width'     : data.get('stroke_width'),
-                'pattern'   : data.get('stroke_patten'),
-            },
-            'fill': {
-                'color'     : data.get('fill_color'),
-                'type'      : data.get('fill_type'),
-                'image'     : data.get('fill_image'),
-            },
-        }
-        record = merge_session_with_post(StockType(), data)
-        record.style = style
-
-        record.event_id = event_id
-        StockType.add(record)
+        stock_type = merge_session_with_post(StockType(), data)
+        style = {}
+        if stock_type.type == StockTypeEnum.Seat.v:
+            style = {
+                'stroke' : {
+                    'color'     : data.get('stroke_color'),
+                    'width'     : data.get('stroke_width'),
+                    'pattern'   : data.get('stroke_patten'),
+                },
+                'fill': {
+                    'color'     : data.get('fill_color'),
+                    'type'      : data.get('fill_type'),
+                    'image'     : data.get('fill_image'),
+                },
+            }
+        stock_type.style = style
+        stock_type.event_id = event_id
+        stock_type.save()
 
         self.request.session.flash(u'席種を保存しました')
         return HTTPFound(location=route_path('events.show', self.request, event_id=event_id))
@@ -66,7 +67,7 @@ class StockTypes(BaseView):
         stock_type.name = data.get('name')
         stock_type.type = data.get('type')
         style = {}
-        if not stock_type.type:
+        if stock_type.type == StockTypeEnum.Seat.v:
             style = {
                 'stroke' : {
                     'color'     : data.get('stroke_color'),
@@ -80,7 +81,7 @@ class StockTypes(BaseView):
                 },
             }
         stock_type.style = style
-        StockType.update(stock_type)
+        stock_type.save()
 
         self.request.session.flash(u'席種を保存しました')
         return HTTPFound(location=route_path('events.show', self.request, event_id=stock_type.event_id))

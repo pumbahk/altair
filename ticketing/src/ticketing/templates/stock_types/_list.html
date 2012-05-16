@@ -26,7 +26,7 @@
   <tr>
     <td><input type="radio" name="stock_type_id" value=${stock_type.id} /></td>
     <td>
-      <a href="#edit-stock-type[${event.id}][${stock_type.id}]" name="${stock_type.name}" type="${stock_type.type}" data="${json(stock_type.style)}">
+      <a href="javascript:edit_stock_type(${stock_type.id});" id="stock_type-${stock_type.id}" name="${stock_type.name}" type="${stock_type.type}" data="${json(stock_type.style)}">
         ${seat_style(stock_type.style)}${stock_type.name}
       </a>
     </td>

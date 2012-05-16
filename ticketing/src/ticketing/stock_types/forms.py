@@ -3,10 +3,11 @@
 from wtforms import Form
 from wtforms import TextField, SelectField, IntegerField
 from wtforms.validators import Required, Length
+from ticketing.products.models import StockTypeEnum
 
 class StockTypeForm(Form):
     name            = TextField(u'名称', validators=[Required()])
-    type            = IntegerField(u'')
+    type            = IntegerField(u'区分', default=StockTypeEnum.Seat.v)
     fill_color      = TextField(u'色')
     fill_type       = SelectField(u'塗りつぶしパターン')
     fill_image      = TextField(u'塗りつぶしイメージ')
