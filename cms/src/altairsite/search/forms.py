@@ -5,6 +5,7 @@ from wtforms import widgets
 from wtforms import validators
 
 from .formparts import CheckboxListField
+from .formparts import CheckboxWithLabelInput
 
 import pkg_resources
 def import_symbol(symbol):
@@ -20,7 +21,7 @@ class QueryPartForm(form.Form):
 
 ## todo:ジャンル
 class GanrePartForm(form.Form):
-    music = fields.BooleanField(label=u"音楽")
+    music = fields.BooleanField(label=u"音楽", widget=CheckboxWithLabelInput())
     music_subganre_choices = import_symbol("altaircms.seeds.categories.music:MUSIC_SUBCATEGORY_CHOICES")
     music_subganre = CheckboxListField(choices=music_subganre_choices)
 
@@ -36,18 +37,75 @@ class GanrePartForm(form.Form):
     other_subganre_choices = import_symbol("altaircms.seeds.categories.other:OTHER_SUBCATEGORY_CHOICES")
     other_subganre = CheckboxListField(choices=other_subganre_choices)
 
+    def __html__(self): ## todo refactoring
+        return u"""
+<tr>
+  <td class="mostleft">%(music)s</td>
+  <td>%(music_subganre)s</td>
+</tr>
+<tr>
+  <td class="mostleft">%(stage)s</td>
+  <td>%(stage_subganre)s</td>
+</tr>
+<tr>
+  <td class="mostleft">%(sports)s</td>
+  <td>%(sports_subganre)s</td>
+</tr>
+<tr>
+  <td class="mostleft">%(other)s</td>
+  <td>%(other_subganre)s</td>
+</tr>
+""" % self
             
 ## todo:開催地
-class AreaPartForm(form.Form):
-    area = CheckboxListField
-    
-    area_hokaido = fields.BooleanField(label=u"北海道")
-    area_tohoku = fields.BooleanField(label=u"東北")
-    area_kanto = fields.BooleanField(label=u"関東・甲信越")
-    area_chubu = fields.BooleanField(label=u"中部・東海")
-    area_kinki = fields.BooleanField(label=u"近畿・北陸")
-    area_chugoku = fields.BooleanField(label=u"中国・四国")
-    area_kyushu = fields.BooleanField(label=u"九州沖縄")
+# class AreaPartForm(form.Form):
+#     area_hokkaido = fields.BooleanField(label=u"北海道")
+#     area_tohoku = fields.BooleanField(label=u"東北")
+#     area_kanto = fields.BooleanField(label=u"関東・甲信越")
+#     area_chubu = fields.BooleanField(label=u"中部・東海")
+#     area_kinki = fields.BooleanField(label=u"近畿・北陸")
+#     area_chugoku = fields.BooleanField(label=u"中国・四国")
+#     area_kyushu = fields.BooleanField(label=u"九州沖縄")
+
+#     pref_hokkaido = CheckboxListField(choices=import_symbol("altaircms.seeds.area.hokkaido:HOKKAIDO_CHOICES"))
+#     pref_tohoku = CheckboxListField(choices=import_symbol("altaircms.seeds.area.tohoku:TOHOKU_CHOICES"))
+#     pref_kanto = CheckboxListField(choices=import_symbol("altaircms.seeds.area.kanto:KANTO_CHOICES"))
+#     pref_chubu = CheckboxListField(choices=import_symbol("altaircms.seeds.area.chubu:CHUBU_CHOICES"))
+#     pref_kinki = CheckboxListField(choices=import_symbol("altaircms.seeds.area.kinki:KINKI_CHOICES"))
+#     pref_chugoku = CheckboxListField(choices=import_symbol("altaircms.seeds.area.chugoku:CHUGOKU_CHOICES"))
+#     pref_kyushu = CheckboxListField(choices=import_symbol("altaircms.seeds.area.kyushu:KYUSHU_CHOICES"))
+
+#     def __html__(self): ## todo refactoring
+#         return u"""
+# <tr>
+#   <td class="mostleft">%(area_hokkaido)s</td>
+#   <td>%(preef_hokkaido)s</td>
+# </tr>
+# <tr>
+#   <td class="mostleft">%(area_tohoku)s</td>
+#   <td>%(preef_tohoku)s</td>
+# </tr>
+# <tr>
+#   <td class="mostleft">%(area_kanto)s</td>
+#   <td>%(preef_kanto)s</td>
+# </tr>
+# <tr>
+#   <td class="mostleft">%(area_chubu)s</td>
+#   <td>%(preef_chubu)s</td>
+# </tr>
+# <tr>
+#   <td class="mostleft">%(area_kinki)s</td>
+#   <td>%(preef_kinki)s</td>
+# </tr>
+# <tr>
+#   <td class="mostleft">%(area_chugokou)s</td>
+#   <td>%(preef_chugokou)s</td>
+# </tr>
+# <tr>
+#   <td class="mostleft">%(area_kyushu)s</td>
+#   <td>%(preef_kyushu)s</td>
+# </tr>
+# """ % self
 
 class PerformanceTermPartForm(form.Form):
     years = [(i, unicode(i)) for i in range(2010, 2020)]

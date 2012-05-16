@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-from .mapping import IdNameLabelMapping
+from ..mapping import IdNameLabelMapping
 
 AREA_CHOICES = [
     ## name, label

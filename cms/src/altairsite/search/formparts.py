@@ -3,7 +3,15 @@ import re
 from wtforms import fields
 from wtforms import widgets
 
+#### checkbox with label
+##
+class CheckboxWithLabelInput(widgets.CheckboxInput):
+    def __call__(self, field, **kwargs):
+        return u"%s %s" % (super(CheckboxWithLabelInput, self).__call__(field, **kwargs), field.label.text)
 
+
+#### checkbox list
+##
 class CheckboxListWidget(widgets.Input):
     def _collect_checkbox_elt(self, kwargs):
         elts = []
