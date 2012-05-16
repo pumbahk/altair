@@ -1,3 +1,5 @@
+# -*- coding:utf-8 -*-
+
 import unittest
 from pyramid import testing
 
@@ -135,10 +137,11 @@ class TicketingCartResourceTests(unittest.TestCase):
     def test_get_stock_status(self):
         request = testing.DummyRequest()
         target = self._makeOne(request)
-        product_item = self._add_stock_status()
+        product_item = self._add_stock_status(100)
         result = target.get_stock_status(product_item.id)
 
         self.assertIsNotNone(result)
+        self.assertEqual(result.quantity, 100)
 
     def test_has_stock_just_quantity(self):
         request = testing.DummyRequest()
@@ -163,3 +166,47 @@ class TicketingCartResourceTests(unittest.TestCase):
         result = target.has_stock(product_item.id, 99)
 
         self.assertTrue(result)
+
+    def test_convert_order_product_items(self):
+        request = testing.DummyRequest()
+        target = self._makeOne(request)
+
+        products = [(testing.DummyResource(items=[testing.DummyResource() for j in range(2)]), i) for i in range(5)]
+        result = list(target._convert_order_product_items(products))
+
+        self.assertEqual(len(result), 10)
+        self.assertEqual(result[0][1], 0)
+        self.assertEqual(result[5][1], 2)
+        self.assertEqual(result[9][1], 4)
+
+    def test_quantity_for_stock_id(self):
+        import random
+
+        ordered_products = [
+            # 大人 S席
+            (testing.DummyResource(items=[testing.DummyResource(stock_id=1)]), 2),
+            # 子供 S席
+            (testing.DummyResource(items=[testing.DummyResource(stock_id=1)]), 3),
+            # 大人 S席 + 駐車場
+            (testing.DummyResource(items=[testing.DummyResource(stock_id=1),
+                                          testing.DummyResource(stock_id=2)]), 1),
+            ]
+
+        random.shuffle(ordered_products)
+        request = testing.DummyRequest()
+        target = self._makeOne(request)
+
+        result = list(target.quantity_for_stock_id(ordered_products))
+
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0], (1, 6))
+        self.assertEqual(result[1], (2, 1))
+
+    def test_select_seat(self):
+        request = testing.DummyRequest()
+        target = self._makeOne(request)
+
+        result = target.select_seat(1, 10)
+
+        self.assertEqual(result, [])
+        self.fail()
