@@ -44,6 +44,15 @@
     $('#modal-delete #message').text("${u'選択した席種を削除します。よろしいですか？'}");
     $('#modal-delete').modal('toggle');
   }
+  % if performance:
+  function stock_allocate() {
+    var id = get_id('stock_type_id');
+    if (!id) return;
+    $('#modal-allocate #performance_id').val(${performance.id});
+    $('#modal-allocate #edit').attr('action', '/stock_types/allocate/' + id);
+    $('#modal-allocate').modal('toggle');
+  }
+  % endif
 </script>
 
 <div class="btn-group">
@@ -55,7 +64,7 @@
   </button>
   <ul class="dropdown-menu">
     <li>
-      <a href="javascript:edit_stock_type()">
+      <a href="javascript:edit_stock_type();">
         <i class="icon-pencil"></i> 編集
       </a>
     </li>
@@ -71,7 +80,7 @@
       </a>
     </li>
     <li>
-      <a href="#modal-allocate" data-toggle="modal">
+      <a href="javascript:stock_allocate();">
         <i class="icon-pencil"></i> 在庫数を入力する
       </a>
     </li>

@@ -103,11 +103,9 @@ class StockType(BaseModel, Base):
     style = Column(MutationDict.as_mutable(JSONEncodedDict(1024)))
 
     def num_seats(self, performance_id=None):
-        query = DBSession.query(func.sum(Stock.quantity)).filter_by(stock_type=self)
+        query = DBSession.query(func.sum(StockAllocation.quantity)).filter_by(stock_type=self)
         if performance_id:
-            query = query.join(StockHolder).\
-                    filter(StockHolder.performance_id==performance_id).\
-                    filter(StockHolder.id==Stock.stock_holder_id)
+            query = query.filter_by(performance_id=performance_id)
         return query.scalar()
 
     @property
@@ -118,9 +116,21 @@ class StockAllocation(Base):
     __tablename__ = "StockAllocation"
     stock_type_id = Column(BigInteger, ForeignKey('StockType.id'), primary_key=True)
     performance_id = Column(BigInteger, ForeignKey('Performance.id'), primary_key=True)
-    stock_type = relationship('StockType', uselist=False)
+    stock_type = relationship('StockType', uselist=False, backref='stock_allocations')
     performance = relationship('Performance', uselist=False)
     quantity = Column(Integer, nullable=False)
+
+    def save(self):
+        stock_allocation = DBSession.query(StockAllocation)\
+            .filter_by(performance_id=self.performance_id)\
+            .filter_by(stock_type_id=self.stock_type_id)\
+            .first()
+
+        if stock_allocation:
+            DBSession.merge(self)
+        else:
+            DBSession.add(self)
+        DBSession.flush()
 
 class StockHolder(BaseModel, Base):
     __tablename__ = "StockHolder"

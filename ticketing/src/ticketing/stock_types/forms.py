@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from wtforms import Form
-from wtforms import TextField, SelectField, IntegerField
+from wtforms import TextField, SelectField, IntegerField, HiddenField
 from wtforms.validators import Required, Length
 from ticketing.products.models import StockTypeEnum
 
@@ -14,3 +14,8 @@ class StockTypeForm(Form):
     stroke_color    = SelectField(u'線の色')
     stroke_width    = SelectField(u'線の太さ')
     stroke_patten   = SelectField(u'線の種類')
+
+class StockAllocationForm(Form):
+    stock_type_id  = HiddenField('', validators=[Required()])
+    performance_id = HiddenField('', validators=[Required()])
+    quantity       = TextField(u'在庫数', validators=[Required()])

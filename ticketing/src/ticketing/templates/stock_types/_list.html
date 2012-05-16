@@ -37,10 +37,8 @@
         </a>
       </td>
       <td style="width: 60px">
-        % if stock_type.is_seat:
-          <% conditions = {'performance_id':performance.id} if performance else {} %>
-          ${stock_type.num_seats(**conditions) or 0}席
-        % endif
+        <% conditions = {'performance_id':performance.id} if performance else {} %>
+        ${stock_type.num_seats(**conditions) or 0}
       </td>
     </tr>
       % endif
@@ -69,7 +67,8 @@
         </a>
       </td>
       <td style="width: 60px">
-
+        <% conditions = {'performance_id':performance.id} if performance else {} %>
+        ${stock_type.num_seats(**conditions) or 0}
       </td>
     </tr>
       % endif

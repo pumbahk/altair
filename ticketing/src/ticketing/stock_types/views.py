@@ -9,9 +9,9 @@ from pyramid.url import route_path
 from ticketing.models import merge_session_with_post
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
-from ticketing.events.models import Event
-from ticketing.products.models import StockType, StockTypeEnum
-from ticketing.stock_types.forms import StockTypeForm
+from ticketing.events.models import Event, Performance
+from ticketing.products.models import StockType, StockTypeEnum, StockAllocation
+from ticketing.stock_types.forms import StockTypeForm, StockAllocationForm
 
 @view_defaults(decorator=with_bootstrap)
 class StockTypes(BaseView):
@@ -97,3 +97,21 @@ class StockTypes(BaseView):
 
         self.request.session.flash(u'席種を削除しました')
         return HTTPFound(location=route_path('events.show', self.request, event_id=stock_type.event_id))
+
+    @view_config(route_name='stock_types.allocate', request_method='POST')
+    def allocate(self):
+        performance_id = int(self.request.POST.get('performance_id', 0))
+
+        stock_type_id = int(self.request.matchdict.get('stock_type_id', 0))
+        stock_type = StockType.get(stock_type_id)
+        if stock_type is None:
+            return HTTPNotFound('stock_type id %d is not found' % id)
+
+        f = StockAllocationForm(self.request.POST)
+        f.stock_type_id.data = stock_type_id
+        if f.validate():
+            stock_allocation = merge_session_with_post(StockAllocation(), f.data)
+            stock_allocation.save()
+            self.request.session.flash(u'在庫数を保存しました')
+
+        return HTTPFound(location=route_path('performances.show', self.request, performance_id=performance_id))
