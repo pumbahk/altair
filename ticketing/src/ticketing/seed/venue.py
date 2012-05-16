@@ -3,7 +3,7 @@
 from ticketing.seed import DataSet
 from ticketing.venues.models import SeatStatusEnum
 
-from .event import PerformanceEvent1Data, PerformanceEvent2Data, EventData
+from .event import PerformanceEvent1Data, PerformanceEvent2Data
 from .product import *
 from .organization import OrganizationData
 

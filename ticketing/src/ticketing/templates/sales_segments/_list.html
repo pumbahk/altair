@@ -16,14 +16,14 @@
     </thead>
     <tbody>
     % for sales_segment in sales_segments:
-    <tr>
+    <tr id="sales_segment-${sales_segment.id}">
       <% count = len(sales_segment.payment_delivery_method_pair) %>
       <% rowspan = 'rowspan=%s' % (count) %>
       <td ${rowspan}><input type="radio" name="sales_segment_id" value="${sales_segment.id}" /></td>
-      <td ${rowspan}>${sales_segment.id}</td>
-      <td ${rowspan}><a href="${request.route_path('sales_segments.show', sales_segment_id=sales_segment.id)}">${sales_segment.name}</a></td>
-      <td ${rowspan}>${safe_strftime(sales_segment.start_at)}</td>
-      <td ${rowspan}>${safe_strftime(sales_segment.end_at)}</td>
+      <td ${rowspan} id="id">${sales_segment.id}</td>
+      <td ${rowspan} id="name"><a href="${request.route_path('sales_segments.show', sales_segment_id=sales_segment.id)}">${sales_segment.name}</a></td>
+      <td ${rowspan} id="start_at">${safe_strftime(sales_segment.start_at)}</td>
+      <td ${rowspan} id="end_at">${safe_strftime(sales_segment.end_at)}</td>
       % if count == 0:
       <td></td>
       <td></td>

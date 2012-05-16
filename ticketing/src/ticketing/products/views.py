@@ -36,8 +36,8 @@ class Products(BaseView):
             return [
                 {
                     'price'         : item.price,
-                    'seat_type_id'  : item.seat_type_id,
-                    'seat_type'     : item.seat_type
+                    'stock_type_id'  : item.stock_type_id,
+                    'stock_type'     : item.stock_type
                 } for item in items
             ]
         products = [

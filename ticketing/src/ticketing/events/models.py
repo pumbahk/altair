@@ -45,7 +45,6 @@ class Performance(BaseModel, Base):
 
     stock_holders = relationship('StockHolder', backref='performance')
     product_items = relationship('ProductItem', backref='performance')
-    seat_types = relationship('SeatType', backref='performance')
     venue = relationship('Venue', uselist=False, backref='performance')
 
     @property
@@ -105,6 +104,7 @@ class Event(BaseModel, Base):
     organization = relationship('Organization', backref='events')
 
     performances = relationship('Performance', backref='event')
+    stock_types = relationship('StockType', backref='event')
 
     @property
     def sales_start_on(self):

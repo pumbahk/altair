@@ -1,0 +1,50 @@
+<div id="edit-modal" class="modal fade">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">×</a>
+    <h3>席種</h3>
+  </div>
+
+  <form id="edit" action="" method="POST">
+    <div class="modal-body">
+      <label>席種名</label>
+      <input id="name" name="name" type="text" class="span3" value="">
+
+      <label>塗りつぶし色</label>
+      <input id="fill_color" name="fill_color" type="text" class="kolorPicker span3" value="">
+      <label>塗りつぶしパターン</label>
+      <div class="controls">
+        <select name="fill_type">
+          <option value="FloodFill">べた塗り</option>
+          <option value="LinearGradientFill">グラデーション（線形）</option>
+          <option value="RadialGradientFill">グラデーション（放射状）</option>
+          <option value="ImageTileFill">画像パターン</option>
+        </select>
+      </div>
+      <label>塗りつぶしイメージ</label>
+      <input id="fill_image" name="fill_image" type="text" class="span3" value="">
+      <label>線の色</label>
+      <input id="stroke_color" name="stroke_color" type="text" class="kolorPicker span3"value="">
+      <label>線の太さ</label>
+      <div class="controls">
+        <select name="stroke_width">
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+        </select>
+      </div>
+      <label class="control-label">線の種類</label>
+      <div class="controls">
+        <select name="stroke_patten">
+          <option value="solid">実線</option>
+          <option value="double">2重線</option>
+          <option value="dashed">点線</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+      <input class="btn" type="submit" value="保存"></a>
+    </div>
+  </form>
+</div>

@@ -6,10 +6,14 @@
     $(location).attr('href', '${request.route_path('payment_delivery_method_pair.new', sales_segment_id=sales_segment.id)}');
   }
   function edit_pdmp() {
-    $(location).attr('href', '/events/payment_delivery_method_pair/edit/' + $('input[name=payment_delivery_method_pair_id]:checked').val());
+    var id = get_id('payment_delivery_method_pair_id');
+    if (!id) return;
+    $(location).attr('href', '/events/payment_delivery_method_pair/edit/' + id);
   }
   function delete_pdmp() {
-    $('#modal-delete #delete').attr('href', '/events/payment_delivery_method_pair/delete/' + $('input[name=payment_delivery_method_pair_id]:checked').val());
+    var id = get_id('payment_delivery_method_pair_id');
+    if (!id) return;
+    $('#modal-delete #delete').attr('href', '/events/payment_delivery_method_pair/delete/' + id);
     $('#modal-delete #message').text("${u'選択した決済配送方法を削除します。よろしいですか？'}");
     $('#modal-delete').modal('toggle');
   }

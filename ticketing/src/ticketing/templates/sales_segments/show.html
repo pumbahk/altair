@@ -22,18 +22,18 @@
       ${flash_messages(request)}
     </div>
 
-    <table class="table table-striped table-bordered table-condensed">
+    <table class="table table-striped table-bordered table-condensed" id="sales_segment-${sales_segment.id}">
       <tr>
         <th class="span3">${form_ss.name.label.text}</th>
-        <td>${sales_segment.name}</td>
+        <td id="name">${sales_segment.name}</td>
       </tr>
       <tr>
         <th>${form_ss.start_at.label.text}</th>
-        <td>${safe_strftime(sales_segment.start_at)}</td>
+        <td id="start_at">${safe_strftime(sales_segment.start_at)}</td>
       </tr>
       <tr>
         <th>${form_ss.end_at.label.text}</th>
-        <td>${safe_strftime(sales_segment.end_at)}</td>
+        <td id="end_at">${safe_strftime(sales_segment.end_at)}</td>
       </tr>
     </table>
     <input type="hidden" id="sales_segment_id" value="${sales_segment.id}" />

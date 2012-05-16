@@ -4,13 +4,16 @@
 
 <script type="text/javascript">
   function show_product() {
-    $(location).attr('href', '/products/show/' + $('input[name=product_id]:checked').val());
+    var id = get_id('product_id');
+    if (!id) return;
+    $(location).attr('href', '/products/show/' + id);
   }
   function new_product() {
     $('#modal-product-edit').modal('toggle');
   }
   function edit_product(id) {
-    if (!id) id = $('input[name=product_id]:checked').val();
+    id = id || get_id('product_id');
+    if (!id) return;
     var el = '#product-' + id;
     $('#modal-product-edit #id').val($(el + ' #id').text());
     $('#modal-product-edit #name').val($(el + ' #name').text());
@@ -19,7 +22,9 @@
     $('#modal-product-edit').modal('toggle');
   }
   function delete_product() {
-    $('#modal-delete #delete').attr('href', '/products/delete/' + $('input[name=product_id]:checked').val());
+    var id = get_id('product_id');
+    if (!id) return;
+    $('#modal-delete #delete').attr('href', '/products/delete/' + id);
     $('#modal-delete #message').text("${u'選択した商品を削除します。よろしいですか？'}");
     $('#modal-delete').modal('toggle');
   }

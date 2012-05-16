@@ -6,7 +6,7 @@
     % for stock_holder in performance.stock_holders:
       '${stock_holder.id}':[
         % for stock in stock_holder.stocks:
-          ['${stock.id}', '${stock.seat_type.name}'],
+          ['${stock.id}', '${stock.stock_type.name}'],
         % endfor
       ],
     % endfor

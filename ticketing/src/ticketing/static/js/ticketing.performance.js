@@ -5,21 +5,16 @@ $(document).ready(function() {
 
     });
 
-    $('#delete').click(function(){
-      $('#modal-delete').modal('toggle');
-      $('#modal-delete #delete').attr('href', '/seat_types/delete/' + $('input[name=checked_id]:checked').val());
-    });
-
     $('a[href^=#new-seat-type]').click(function() {
-        var performance_id = /^#new-seat-type\[(.+)\]$/.exec($(this).attr('href'))[1];
+        var event_id = /^#new-seat-type\[(.+)\]$/.exec($(this).attr('href'))[1];
         $('#edit-modal').modal('toggle');
-        $('#edit-modal #edit').attr('action', '/seat_types/new/' + performance_id);
+        $('#edit-modal #edit').attr('action', '/stock_types/new/' + event_id);
     });
 
     $('a[href^=#edit-seat-type]').click(function() {
         var vars = /^#edit-seat-type\[(.+)\]\[(.+)\]$/.exec($(this).attr('href'));
-        var performance_id  = vars[1];
-        var seat_type_id    = vars[2];
+        var event_id  = vars[1];
+        var stock_type_id    = vars[2];
         var data = JSON.parse($(this).attr('data'));
         var name = $(this).attr('name');
 
@@ -39,7 +34,7 @@ $(document).ready(function() {
                 $('#edit-modal #stroke_patten').val(data.stroke.pattern);
             }
         }
-        $('#edit-modal #edit').attr('action', '/seat_types/edit/' + seat_type_id);
+        $('#edit-modal #edit').attr('action', '/stock_types/edit/' + stock_type_id);
     });
 
     $(window).resize(function(api){
