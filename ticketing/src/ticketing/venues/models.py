@@ -82,8 +82,8 @@ class Seat(BaseModel, Base):
 
     venue_id        = Column(BigInteger, ForeignKey('Venue.id'))
     stock_id        = Column(BigInteger, ForeignKey('Stock.id'))
+    stock_type_id   = Column(BigInteger, ForeignKey('StockType.id'))
 
-    stock           = relationship("Stock", uselist=False)
     attributes      = relationship("SeatAttribute", backref='seat', cascade='save-update, merge')
     areas           = relationship("VenueArea", secondary=seat_venue_area_table, backref="seats")
     adjacencies     = relationship("SeatAdjacency", secondary=seat_seat_adjacency_table, backref="seats")

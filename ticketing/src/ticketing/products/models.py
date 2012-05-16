@@ -110,6 +110,14 @@ class StockType(BaseModel, Base):
     def is_seat(self):
         return self.type == StockTypeEnum.Seat.v
 
+class StockAllocation(Base):
+    __tablename__ = "StockAllocation"
+    stock_type_id = Column(BigInteger, ForeignKey('StockType.id'), primary_key=True)
+    performance_id = Column(BigInteger, ForeignKey('Performance.id'), primary_key=True)
+    stock_type = relationship('StockType', uselist=False)
+    performance = relationship('Performance', uselist=False)
+    quantity = Column(Integer, nullable=False)
+
 class StockHolder(BaseModel, Base):
     __tablename__ = "StockHolder"
     id = Column(BigInteger, primary_key=True)
@@ -129,7 +137,7 @@ class Stock(BaseModel, Base):
     quantity = Column(Integer)
 
     stock_holder_id = Column(BigInteger, ForeignKey('StockHolder.id'))
-    seats = relationship("Seat", backref='seat')
+    seats = relationship("Seat", backref='stock')
 
     stock_type_id = Column(BigInteger, ForeignKey('StockType.id'))
 

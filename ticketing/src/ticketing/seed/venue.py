@@ -279,691 +279,907 @@ class SeatEvent1Venue1Data(DataSet):
         l0_id = u'A1'
         venue = VenueEvent1Data.venue_1
         stock = StockEvent1Performance1Data.stock_1
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a2:
         l0_id = u'A2'
         venue = VenueEvent1Data.venue_1
         stock = StockEvent1Performance1Data.stock_1
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a3:
         l0_id = u'A3'
         venue = VenueEvent1Data.venue_1
         stock = StockEvent1Performance1Data.stock_1
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a4:
         l0_id = u'A4'
         venue = VenueEvent1Data.venue_1
         stock = StockEvent1Performance1Data.stock_1
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a5:
         l0_id = u'A5'
         venue = VenueEvent1Data.venue_1
         stock = StockEvent1Performance1Data.stock_1
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a6:
         l0_id = u'A6'
         venue = VenueEvent1Data.venue_1
         stock = StockEvent1Performance1Data.stock_1
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a7:
         l0_id = u'A7'
         venue = VenueEvent1Data.venue_1
         stock = StockEvent1Performance1Data.stock_5
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a8:
         l0_id = u'A8'
         venue = VenueEvent1Data.venue_1
         stock = StockEvent1Performance1Data.stock_5
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a9:
         l0_id = u'A9'
         venue = VenueEvent1Data.venue_1
         stock = StockEvent1Performance1Data.stock_5
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_b1:
         l0_id = u'B1'
         venue = VenueEvent1Data.venue_1
         stock = StockEvent1Performance1Data.stock_2
+        stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b2:
         l0_id = u'B2'
         venue = VenueEvent1Data.venue_1
         stock = StockEvent1Performance1Data.stock_2
+        stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b3:
         l0_id = u'B3'
         venue = VenueEvent1Data.venue_1
         stock = StockEvent1Performance1Data.stock_2
+        stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b4:
         l0_id = u'B4'
         venue = VenueEvent1Data.venue_1
         stock = StockEvent1Performance1Data.stock_6
+        stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b5:
         l0_id = u'B5'
         venue = VenueEvent1Data.venue_1
         stock = StockEvent1Performance1Data.stock_6
+        stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b6:
         l0_id = u'B6'
         venue = VenueEvent1Data.venue_1
         stock = StockEvent1Performance1Data.stock_6
+        stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b7:
         l0_id = u'B7'
         venue = VenueEvent1Data.venue_1
         stock = StockEvent1Performance1Data.stock_6
+        stock_type = StockTypeEvent1Data.stock_type_2
     class seat_c1:
         l0_id = u'C1'
         venue = VenueEvent1Data.venue_1
         stock = StockEvent1Performance1Data.stock_3
+        stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c2:
         l0_id = u'C2'
         venue = VenueEvent1Data.venue_1
         stock = StockEvent1Performance1Data.stock_3
+        stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c3:
         l0_id = u'C3'
         venue = VenueEvent1Data.venue_1
         stock = StockEvent1Performance1Data.stock_7
+        stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c4:
         l0_id = u'C4'
         venue = VenueEvent1Data.venue_1
         stock = StockEvent1Performance1Data.stock_7
+        stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c5:
         l0_id = u'C5'
         venue = VenueEvent1Data.venue_1
         stock = StockEvent1Performance1Data.stock_7
+        stock_type = StockTypeEvent1Data.stock_type_3
     class seat_d1:
         l0_id = u'D1'
         venue = VenueEvent1Data.venue_1
         stock = StockEvent1Performance1Data.stock_4
+        stock_type = StockTypeEvent1Data.stock_type_4
     class seat_d2:
         l0_id = u'D2'
         venue = VenueEvent1Data.venue_1
         stock = StockEvent1Performance1Data.stock_4
+        stock_type = StockTypeEvent1Data.stock_type_4
     class seat_d3:
         l0_id = u'D3'
         venue = VenueEvent1Data.venue_1
         stock = StockEvent1Performance1Data.stock_4
+        stock_type = StockTypeEvent1Data.stock_type_4
     class seat_e1:
         l0_id = u'E1'
         venue = VenueEvent1Data.venue_1
         stock = StockEvent1Performance1Data.stock_8
+        stock_type = StockTypeEvent1Data.stock_type_4
     class seat_e2:
         l0_id = u'E2'
         venue = VenueEvent1Data.venue_1
         stock = StockEvent1Performance1Data.stock_8
+        stock_type = StockTypeEvent1Data.stock_type_4
     class seat_e3:
         l0_id = u'E3'
         venue = VenueEvent1Data.venue_1
         stock = StockEvent1Performance1Data.stock_8
+        stock_type = StockTypeEvent1Data.stock_type_4
 
 class SeatEvent1Venue2Data(DataSet):
     class seat_a1:
         l0_id = u'A1'
         venue = VenueEvent1Data.venue_2
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a2:
         l0_id = u'A2'
         venue = VenueEvent1Data.venue_2
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a3:
         l0_id = u'A3'
         venue = VenueEvent1Data.venue_2
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a4:
         l0_id = u'A4'
         venue = VenueEvent1Data.venue_2
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a5:
         l0_id = u'A5'
         venue = VenueEvent1Data.venue_2
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a6:
         l0_id = u'A6'
         venue = VenueEvent1Data.venue_2
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a7:
         l0_id = u'A7'
         venue = VenueEvent1Data.venue_2
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a8:
         l0_id = u'A8'
         venue = VenueEvent1Data.venue_2
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a9:
         l0_id = u'A9'
         venue = VenueEvent1Data.venue_2
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_b1:
         l0_id = u'B1'
         venue = VenueEvent1Data.venue_2
+        stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b2:
         l0_id = u'B2'
         venue = VenueEvent1Data.venue_2
+        stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b3:
         l0_id = u'B3'
         venue = VenueEvent1Data.venue_2
+        stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b4:
         l0_id = u'B4'
         venue = VenueEvent1Data.venue_2
+        stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b5:
         l0_id = u'B5'
         venue = VenueEvent1Data.venue_2
+        stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b6:
         l0_id = u'B6'
         venue = VenueEvent1Data.venue_2
+        stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b7:
         l0_id = u'B7'
         venue = VenueEvent1Data.venue_2
+        stock_type = StockTypeEvent1Data.stock_type_2
     class seat_c1:
         l0_id = u'C1'
         venue = VenueEvent1Data.venue_2
+        stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c2:
         l0_id = u'C2'
         venue = VenueEvent1Data.venue_2
+        stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c3:
         l0_id = u'C3'
         venue = VenueEvent1Data.venue_2
+        stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c4:
         l0_id = u'C4'
         venue = VenueEvent1Data.venue_2
+        stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c5:
         l0_id = u'C5'
         venue = VenueEvent1Data.venue_2
+        stock_type = StockTypeEvent1Data.stock_type_3
     class seat_d1:
         l0_id = u'D1'
         venue = VenueEvent1Data.venue_2
+        stock_type = StockTypeEvent1Data.stock_type_4
     class seat_d2:
         l0_id = u'D2'
         venue = VenueEvent1Data.venue_2
+        stock_type = StockTypeEvent1Data.stock_type_4
     class seat_d3:
         l0_id = u'D3'
         venue = VenueEvent1Data.venue_2
+        stock_type = StockTypeEvent1Data.stock_type_4
     class seat_e1:
         l0_id = u'E1'
         venue = VenueEvent1Data.venue_2
+        stock_type = StockTypeEvent1Data.stock_type_4
     class seat_e2:
         l0_id = u'E2'
         venue = VenueEvent1Data.venue_2
+        stock_type = StockTypeEvent1Data.stock_type_4
     class seat_e3:
         l0_id = u'E3'
         venue = VenueEvent1Data.venue_2
+        stock_type = StockTypeEvent1Data.stock_type_4
 
 class SeatEvent1Venue3Data(DataSet):
     class seat_a1:
         l0_id = u'A1'
         venue = VenueEvent1Data.venue_3
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a2:
         l0_id = u'A2'
         venue = VenueEvent1Data.venue_3
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a3:
         l0_id = u'A3'
         venue = VenueEvent1Data.venue_3
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a4:
         l0_id = u'A4'
         venue = VenueEvent1Data.venue_3
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a5:
         l0_id = u'A5'
         venue = VenueEvent1Data.venue_3
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a6:
         l0_id = u'A6'
         venue = VenueEvent1Data.venue_3
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a7:
         l0_id = u'A7'
         venue = VenueEvent1Data.venue_3
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a8:
         l0_id = u'A8'
         venue = VenueEvent1Data.venue_3
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a9:
         l0_id = u'A9'
         venue = VenueEvent1Data.venue_3
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_b1:
         l0_id = u'B1'
         venue = VenueEvent1Data.venue_3
+        stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b2:
         l0_id = u'B2'
         venue = VenueEvent1Data.venue_3
+        stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b3:
         l0_id = u'B3'
         venue = VenueEvent1Data.venue_3
+        stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b4:
         l0_id = u'B4'
         venue = VenueEvent1Data.venue_3
+        stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b5:
         l0_id = u'B5'
         venue = VenueEvent1Data.venue_3
+        stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b6:
         l0_id = u'B6'
         venue = VenueEvent1Data.venue_3
+        stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b7:
         l0_id = u'B7'
         venue = VenueEvent1Data.venue_3
+        stock_type = StockTypeEvent1Data.stock_type_2
     class seat_c1:
         l0_id = u'C1'
         venue = VenueEvent1Data.venue_3
+        stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c2:
         l0_id = u'C2'
         venue = VenueEvent1Data.venue_3
+        stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c3:
         l0_id = u'C3'
         venue = VenueEvent1Data.venue_3
+        stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c4:
         l0_id = u'C4'
         venue = VenueEvent1Data.venue_3
+        stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c5:
         l0_id = u'C5'
         venue = VenueEvent1Data.venue_3
+        stock_type = StockTypeEvent1Data.stock_type_3
     class seat_d1:
         l0_id = u'D1'
         venue = VenueEvent1Data.venue_3
+        stock_type = StockTypeEvent1Data.stock_type_4
     class seat_d2:
         l0_id = u'D2'
         venue = VenueEvent1Data.venue_3
+        stock_type = StockTypeEvent1Data.stock_type_4
     class seat_d3:
         l0_id = u'D3'
         venue = VenueEvent1Data.venue_3
+        stock_type = StockTypeEvent1Data.stock_type_4
     class seat_e1:
         l0_id = u'E1'
         venue = VenueEvent1Data.venue_3
+        stock_type = StockTypeEvent1Data.stock_type_4
     class seat_e2:
         l0_id = u'E2'
         venue = VenueEvent1Data.venue_3
+        stock_type = StockTypeEvent1Data.stock_type_4
     class seat_e3:
         l0_id = u'E3'
         venue = VenueEvent1Data.venue_3
+        stock_type = StockTypeEvent1Data.stock_type_4
 
 class SeatEvent1Venue4Data(DataSet):
     class seat_a1:
         l0_id = u'A1'
         venue = VenueEvent1Data.venue_4
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a2:
         l0_id = u'A2'
         venue = VenueEvent1Data.venue_4
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a3:
         l0_id = u'A3'
         venue = VenueEvent1Data.venue_4
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a4:
         l0_id = u'A4'
         venue = VenueEvent1Data.venue_4
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a5:
         l0_id = u'A5'
         venue = VenueEvent1Data.venue_4
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a6:
         l0_id = u'A6'
         venue = VenueEvent1Data.venue_4
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a7:
         l0_id = u'A7'
         venue = VenueEvent1Data.venue_4
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a8:
         l0_id = u'A8'
         venue = VenueEvent1Data.venue_4
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a9:
         l0_id = u'A9'
         venue = VenueEvent1Data.venue_4
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_b1:
         l0_id = u'B1'
         venue = VenueEvent1Data.venue_4
+        stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b2:
         l0_id = u'B2'
         venue = VenueEvent1Data.venue_4
+        stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b3:
         l0_id = u'B3'
         venue = VenueEvent1Data.venue_4
+        stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b4:
         l0_id = u'B4'
         venue = VenueEvent1Data.venue_4
+        stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b5:
         l0_id = u'B5'
         venue = VenueEvent1Data.venue_4
+        stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b6:
         l0_id = u'B6'
         venue = VenueEvent1Data.venue_4
+        stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b7:
         l0_id = u'B7'
         venue = VenueEvent1Data.venue_4
+        stock_type = StockTypeEvent1Data.stock_type_2
     class seat_c1:
         l0_id = u'C1'
         venue = VenueEvent1Data.venue_4
+        stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c2:
         l0_id = u'C2'
         venue = VenueEvent1Data.venue_4
+        stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c3:
         l0_id = u'C3'
         venue = VenueEvent1Data.venue_4
+        stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c4:
         l0_id = u'C4'
         venue = VenueEvent1Data.venue_4
+        stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c5:
         l0_id = u'C5'
         venue = VenueEvent1Data.venue_4
+        stock_type = StockTypeEvent1Data.stock_type_3
     class seat_d1:
         l0_id = u'D1'
         venue = VenueEvent1Data.venue_4
+        stock_type = StockTypeEvent1Data.stock_type_4
     class seat_d2:
         l0_id = u'D2'
         venue = VenueEvent1Data.venue_4
+        stock_type = StockTypeEvent1Data.stock_type_4
     class seat_d3:
         l0_id = u'D3'
         venue = VenueEvent1Data.venue_4
+        stock_type = StockTypeEvent1Data.stock_type_4
     class seat_e1:
         l0_id = u'E1'
         venue = VenueEvent1Data.venue_4
+        stock_type = StockTypeEvent1Data.stock_type_4
     class seat_e2:
         l0_id = u'E2'
         venue = VenueEvent1Data.venue_4
+        stock_type = StockTypeEvent1Data.stock_type_4
     class seat_e3:
         l0_id = u'E3'
         venue = VenueEvent1Data.venue_4
+        stock_type = StockTypeEvent1Data.stock_type_4
 
 class SeatEvent1Venue5Data(DataSet):
     class seat_a1:
         l0_id = u'A1'
         venue = VenueEvent1Data.venue_5
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a2:
         l0_id = u'A2'
         venue = VenueEvent1Data.venue_5
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a3:
         l0_id = u'A3'
         venue = VenueEvent1Data.venue_5
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a4:
         l0_id = u'A4'
         venue = VenueEvent1Data.venue_5
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a5:
         l0_id = u'A5'
         venue = VenueEvent1Data.venue_5
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a6:
         l0_id = u'A6'
         venue = VenueEvent1Data.venue_5
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a7:
         l0_id = u'A7'
         venue = VenueEvent1Data.venue_5
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a8:
         l0_id = u'A8'
         venue = VenueEvent1Data.venue_5
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a9:
         l0_id = u'A9'
         venue = VenueEvent1Data.venue_5
+        stock_type = StockTypeEvent1Data.stock_type_1
     class seat_b1:
         l0_id = u'B1'
         venue = VenueEvent1Data.venue_5
+        stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b2:
         l0_id = u'B2'
         venue = VenueEvent1Data.venue_5
+        stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b3:
         l0_id = u'B3'
         venue = VenueEvent1Data.venue_5
+        stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b4:
         l0_id = u'B4'
         venue = VenueEvent1Data.venue_5
+        stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b5:
         l0_id = u'B5'
         venue = VenueEvent1Data.venue_5
+        stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b6:
         l0_id = u'B6'
         venue = VenueEvent1Data.venue_5
+        stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b7:
         l0_id = u'B7'
         venue = VenueEvent1Data.venue_5
+        stock_type = StockTypeEvent1Data.stock_type_2
     class seat_c1:
         l0_id = u'C1'
         venue = VenueEvent1Data.venue_5
+        stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c2:
         l0_id = u'C2'
         venue = VenueEvent1Data.venue_5
+        stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c3:
         l0_id = u'C3'
         venue = VenueEvent1Data.venue_5
+        stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c4:
         l0_id = u'C4'
         venue = VenueEvent1Data.venue_5
+        stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c5:
         l0_id = u'C5'
         venue = VenueEvent1Data.venue_5
+        stock_type = StockTypeEvent1Data.stock_type_3
     class seat_d1:
         l0_id = u'D1'
         venue = VenueEvent1Data.venue_5
+        stock_type = StockTypeEvent1Data.stock_type_4
     class seat_d2:
         l0_id = u'D2'
         venue = VenueEvent1Data.venue_5
+        stock_type = StockTypeEvent1Data.stock_type_4
     class seat_d3:
         l0_id = u'D3'
         venue = VenueEvent1Data.venue_5
+        stock_type = StockTypeEvent1Data.stock_type_4
     class seat_e1:
         l0_id = u'E1'
         venue = VenueEvent1Data.venue_5
+        stock_type = StockTypeEvent1Data.stock_type_4
     class seat_e2:
         l0_id = u'E2'
         venue = VenueEvent1Data.venue_5
+        stock_type = StockTypeEvent1Data.stock_type_4
     class seat_e3:
         l0_id = u'E3'
         venue = VenueEvent1Data.venue_5
+        stock_type = StockTypeEvent1Data.stock_type_4
 
 class SeatEvent2Venue1Data(DataSet):
     class seat_a1:
         l0_id = u'A1'
         venue = VenueEvent2Data.venue_1
+        stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a2:
         l0_id = u'A2'
         venue = VenueEvent2Data.venue_1
+        stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a3:
         l0_id = u'A3'
         venue = VenueEvent2Data.venue_1
+        stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a4:
         l0_id = u'A4'
         venue = VenueEvent2Data.venue_1
+        stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a5:
         l0_id = u'A5'
         venue = VenueEvent2Data.venue_1
+        stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a6:
         l0_id = u'A6'
         venue = VenueEvent2Data.venue_1
+        stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a7:
         l0_id = u'A7'
         venue = VenueEvent2Data.venue_1
+        stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a8:
         l0_id = u'A8'
         venue = VenueEvent2Data.venue_1
+        stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a9:
         l0_id = u'A9'
         venue = VenueEvent2Data.venue_1
+        stock_type = StockTypeEvent2Data.stock_type_1
     class seat_b1:
         l0_id = u'B1'
         venue = VenueEvent2Data.venue_1
+        stock_type = StockTypeEvent2Data.stock_type_2
     class seat_b2:
         l0_id = u'B2'
         venue = VenueEvent2Data.venue_1
+        stock_type = StockTypeEvent2Data.stock_type_2
     class seat_b3:
         l0_id = u'B3'
         venue = VenueEvent2Data.venue_1
+        stock_type = StockTypeEvent2Data.stock_type_2
     class seat_b4:
         l0_id = u'B4'
         venue = VenueEvent2Data.venue_1
+        stock_type = StockTypeEvent2Data.stock_type_2
     class seat_b5:
         l0_id = u'B5'
         venue = VenueEvent2Data.venue_1
+        stock_type = StockTypeEvent2Data.stock_type_2
     class seat_b6:
         l0_id = u'B6'
         venue = VenueEvent2Data.venue_1
+        stock_type = StockTypeEvent2Data.stock_type_2
     class seat_b7:
         l0_id = u'B7'
         venue = VenueEvent2Data.venue_1
+        stock_type = StockTypeEvent2Data.stock_type_2
     class seat_c1:
         l0_id = u'C1'
         venue = VenueEvent2Data.venue_1
+        stock_type = StockTypeEvent2Data.stock_type_3
     class seat_c2:
         l0_id = u'C2'
         venue = VenueEvent2Data.venue_1
+        stock_type = StockTypeEvent2Data.stock_type_3
     class seat_c3:
         l0_id = u'C3'
         venue = VenueEvent2Data.venue_1
+        stock_type = StockTypeEvent2Data.stock_type_3
     class seat_c4:
         l0_id = u'C4'
         venue = VenueEvent2Data.venue_1
+        stock_type = StockTypeEvent2Data.stock_type_3
     class seat_c5:
         l0_id = u'C5'
         venue = VenueEvent2Data.venue_1
+        stock_type = StockTypeEvent2Data.stock_type_3
     class seat_d1:
         l0_id = u'D1'
         venue = VenueEvent2Data.venue_1
+        stock_type = StockTypeEvent2Data.stock_type_4
     class seat_d2:
         l0_id = u'D2'
         venue = VenueEvent2Data.venue_1
+        stock_type = StockTypeEvent2Data.stock_type_4
     class seat_d3:
         l0_id = u'D3'
         venue = VenueEvent2Data.venue_1
+        stock_type = StockTypeEvent2Data.stock_type_4
     class seat_e1:
         l0_id = u'E1'
         venue = VenueEvent2Data.venue_1
+        stock_type = StockTypeEvent2Data.stock_type_4
     class seat_e2:
         l0_id = u'E2'
         venue = VenueEvent2Data.venue_1
+        stock_type = StockTypeEvent2Data.stock_type_4
     class seat_e3:
         l0_id = u'E3'
         venue = VenueEvent2Data.venue_1
+        stock_type = StockTypeEvent2Data.stock_type_4
 
 class SeatEvent2Venue2Data(DataSet):
     class seat_a1:
         l0_id = u'A1'
         venue = VenueEvent2Data.venue_2
+        stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a2:
         l0_id = u'A2'
         venue = VenueEvent2Data.venue_2
+        stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a3:
         l0_id = u'A3'
         venue = VenueEvent2Data.venue_2
+        stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a4:
         l0_id = u'A4'
         venue = VenueEvent2Data.venue_2
+        stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a5:
         l0_id = u'A5'
         venue = VenueEvent2Data.venue_2
+        stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a6:
         l0_id = u'A6'
         venue = VenueEvent2Data.venue_2
+        stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a7:
         l0_id = u'A7'
         venue = VenueEvent2Data.venue_2
+        stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a8:
         l0_id = u'A8'
         venue = VenueEvent2Data.venue_2
+        stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a9:
         l0_id = u'A9'
         venue = VenueEvent2Data.venue_2
+        stock_type = StockTypeEvent2Data.stock_type_1
     class seat_b1:
         l0_id = u'B1'
         venue = VenueEvent2Data.venue_2
+        stock_type = StockTypeEvent2Data.stock_type_2
     class seat_b2:
         l0_id = u'B2'
         venue = VenueEvent2Data.venue_2
+        stock_type = StockTypeEvent2Data.stock_type_2
     class seat_b3:
         l0_id = u'B3'
         venue = VenueEvent2Data.venue_2
+        stock_type = StockTypeEvent2Data.stock_type_2
     class seat_b4:
         l0_id = u'B4'
         venue = VenueEvent2Data.venue_2
+        stock_type = StockTypeEvent2Data.stock_type_2
     class seat_b5:
         l0_id = u'B5'
         venue = VenueEvent2Data.venue_2
+        stock_type = StockTypeEvent2Data.stock_type_2
     class seat_b6:
         l0_id = u'B6'
         venue = VenueEvent2Data.venue_2
+        stock_type = StockTypeEvent2Data.stock_type_2
     class seat_b7:
         l0_id = u'B7'
         venue = VenueEvent2Data.venue_2
+        stock_type = StockTypeEvent2Data.stock_type_2
     class seat_c1:
         l0_id = u'C1'
         venue = VenueEvent2Data.venue_2
+        stock_type = StockTypeEvent2Data.stock_type_3
     class seat_c2:
         l0_id = u'C2'
         venue = VenueEvent2Data.venue_2
+        stock_type = StockTypeEvent2Data.stock_type_3
     class seat_c3:
         l0_id = u'C3'
         venue = VenueEvent2Data.venue_2
+        stock_type = StockTypeEvent2Data.stock_type_3
     class seat_c4:
         l0_id = u'C4'
         venue = VenueEvent2Data.venue_2
+        stock_type = StockTypeEvent2Data.stock_type_3
     class seat_c5:
         l0_id = u'C5'
         venue = VenueEvent2Data.venue_2
+        stock_type = StockTypeEvent2Data.stock_type_3
     class seat_d1:
         l0_id = u'D1'
         venue = VenueEvent2Data.venue_2
+        stock_type = StockTypeEvent2Data.stock_type_4
     class seat_d2:
         l0_id = u'D2'
         venue = VenueEvent2Data.venue_2
+        stock_type = StockTypeEvent2Data.stock_type_4
     class seat_d3:
         l0_id = u'D3'
         venue = VenueEvent2Data.venue_2
+        stock_type = StockTypeEvent2Data.stock_type_4
     class seat_e1:
         l0_id = u'E1'
         venue = VenueEvent2Data.venue_2
+        stock_type = StockTypeEvent2Data.stock_type_4
     class seat_e2:
         l0_id = u'E2'
         venue = VenueEvent2Data.venue_2
+        stock_type = StockTypeEvent2Data.stock_type_4
     class seat_e3:
         l0_id = u'E3'
         venue = VenueEvent2Data.venue_2
+        stock_type = StockTypeEvent2Data.stock_type_4
 
 class SeatEvent2Venue3Data(DataSet):
     class seat_a1:
         l0_id = u'A1'
         venue = VenueEvent2Data.venue_3
+        stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a2:
         l0_id = u'A2'
         venue = VenueEvent2Data.venue_3
+        stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a3:
         l0_id = u'A3'
         venue = VenueEvent2Data.venue_3
+        stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a4:
         l0_id = u'A4'
         venue = VenueEvent2Data.venue_3
+        stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a5:
         l0_id = u'A5'
         venue = VenueEvent2Data.venue_3
+        stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a6:
         l0_id = u'A6'
         venue = VenueEvent2Data.venue_3
+        stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a7:
         l0_id = u'A7'
         venue = VenueEvent2Data.venue_3
+        stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a8:
         l0_id = u'A8'
         venue = VenueEvent2Data.venue_3
+        stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a9:
         l0_id = u'A9'
         venue = VenueEvent2Data.venue_3
+        stock_type = StockTypeEvent2Data.stock_type_1
     class seat_b1:
         l0_id = u'B1'
         venue = VenueEvent2Data.venue_3
+        stock_type = StockTypeEvent2Data.stock_type_2
     class seat_b2:
         l0_id = u'B2'
         venue = VenueEvent2Data.venue_3
+        stock_type = StockTypeEvent2Data.stock_type_2
     class seat_b3:
         l0_id = u'B3'
         venue = VenueEvent2Data.venue_3
+        stock_type = StockTypeEvent2Data.stock_type_2
     class seat_b4:
         l0_id = u'B4'
         venue = VenueEvent2Data.venue_3
+        stock_type = StockTypeEvent2Data.stock_type_2
     class seat_b5:
         l0_id = u'B5'
         venue = VenueEvent2Data.venue_3
+        stock_type = StockTypeEvent2Data.stock_type_2
     class seat_b6:
         l0_id = u'B6'
         venue = VenueEvent2Data.venue_3
+        stock_type = StockTypeEvent2Data.stock_type_2
     class seat_b7:
         l0_id = u'B7'
         venue = VenueEvent2Data.venue_3
+        stock_type = StockTypeEvent2Data.stock_type_2
     class seat_c1:
         l0_id = u'C1'
         venue = VenueEvent2Data.venue_3
+        stock_type = StockTypeEvent2Data.stock_type_3
     class seat_c2:
         l0_id = u'C2'
         venue = VenueEvent2Data.venue_3
+        stock_type = StockTypeEvent2Data.stock_type_3
     class seat_c3:
         l0_id = u'C3'
         venue = VenueEvent2Data.venue_3
+        stock_type = StockTypeEvent2Data.stock_type_3
     class seat_c4:
         l0_id = u'C4'
         venue = VenueEvent2Data.venue_3
+        stock_type = StockTypeEvent2Data.stock_type_3
     class seat_c5:
         l0_id = u'C5'
         venue = VenueEvent2Data.venue_3
+        stock_type = StockTypeEvent2Data.stock_type_3
     class seat_d1:
         l0_id = u'D1'
         venue = VenueEvent2Data.venue_3
+        stock_type = StockTypeEvent2Data.stock_type_4
     class seat_d2:
         l0_id = u'D2'
         venue = VenueEvent2Data.venue_3
+        stock_type = StockTypeEvent2Data.stock_type_4
     class seat_d3:
         l0_id = u'D3'
         venue = VenueEvent2Data.venue_3
+        stock_type = StockTypeEvent2Data.stock_type_4
     class seat_e1:
         l0_id = u'E1'
         venue = VenueEvent2Data.venue_3
+        stock_type = StockTypeEvent2Data.stock_type_4
     class seat_e2:
         l0_id = u'E2'
         venue = VenueEvent2Data.venue_3
+        stock_type = StockTypeEvent2Data.stock_type_4
     class seat_e3:
         l0_id = u'E3'
         venue = VenueEvent2Data.venue_3
+        stock_type = StockTypeEvent2Data.stock_type_4
 
 class SeatStatusEvent1Venue1Data(DataSet):
     class seat_status_v1_1:
