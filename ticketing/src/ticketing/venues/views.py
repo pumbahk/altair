@@ -47,7 +47,7 @@ def get_seats(request):
                 ]
 
     stock_types_data = {}
-    for stock_type in DBSession.query(StockType).filter_by(performance_id=venue.performance_id):
+    for stock_type in DBSession.query(StockType).filter_by(event=venue.performance.event):
         stock_types_data[stock_type.id] = dict(
             name=stock_type.name,
             style=stock_type.style)

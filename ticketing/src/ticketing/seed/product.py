@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from ticketing.seed import DataSet
+from ticketing.products.models import *
 
 from account import AccountData
 from .event import EventData, SalesSegmentEvent1Data, SalesSegmentEvent2Data, PerformanceEvent1Data, PerformanceEvent2Data
@@ -10,44 +11,44 @@ class StockTypeEvent1Data(DataSet):
         name = u'S席'
         event = EventData.event_1
         style = {"text": "", "stroke": {"color": "#000000", "width": "1", "pattern": "solid"}, "fill": {"color": "#d8d8d8"}}
-        status = 1
+        type = StockTypeEnum.Seat.v
     class stock_type_2:
         name = u'A席'
         event = EventData.event_1
         style = {"text": "", "stroke": {"color": "#d8d8d8", "width": "1", "pattern": "solid"}, "fill": {"color": "#ffec9f"}}
-        status = 1
+        type = StockTypeEnum.Seat.v
     class stock_type_3:
         name = u'B席'
         event = EventData.event_1
         style = {"text": "", "stroke": {"color": "#d8d8d8", "width": "1", "pattern": "double"}, "fill": {"color": "#99b3e6"}}
-        status = 1
+        type = StockTypeEnum.Seat.v
     class stock_type_4:
         name = u'C席'
         event = EventData.event_1
         style = {"text": "", "stroke": {"color": "#d8d8d8", "width": "1", "pattern": "dotted"}, "fill": {"color": "#cc8080"}}
-        status = 1
+        type = StockTypeEnum.Seat.v
 
 class StockTypeEvent2Data(DataSet):
     class stock_type_1:
         name = u'S席'
         event = EventData.event_2
         style = {"text": "", "stroke": {"color": "#000000", "width": "1", "pattern": "solid"}, "fill": {"color": "#d8d8d8"}}
-        status = 1
+        type = StockTypeEnum.Seat.v
     class stock_type_2:
         name = u'A席'
         event = EventData.event_2
         style = {"text": "", "stroke": {"color": "#d8d8d8", "width": "1", "pattern": "solid"}, "fill": {"color": "#ffec9f"}}
-        status = 1
+        type = StockTypeEnum.Seat.v
     class stock_type_3:
         name = u'B席'
         event = EventData.event_2
         style = {"text": "", "stroke": {"color": "#d8d8d8", "width": "1", "pattern": "double"}, "fill": {"color": "#99b3e6"}}
-        status = 1
+        type = StockTypeEnum.Seat.v
     class stock_type_4:
         name = u'C席'
         event = EventData.event_2
         style = {"text": "", "stroke": {"color": "#d8d8d8", "width": "1", "pattern": "dotted"}, "fill": {"color": "#cc8080"}}
-        status = 1
+        type = StockTypeEnum.Seat.v
 
 class ProductEvent1Data(DataSet):
     class product_1:
@@ -848,6 +849,150 @@ class StockStatusEvent2Performance3Data(DataSet):
     class stock_status_8:
         stock = StockEvent2Performance3Data.stock_8
         quantity = 3
+
+class StockAllocationEvent1Performance1Data(DataSet):
+    class stock_allocation_1:
+        stock_type = StockTypeEvent1Data.stock_type_1
+        performance = PerformanceEvent1Data.performance_1
+        quantity = 9
+    class stock_allocation_2:
+        stock_type = StockTypeEvent1Data.stock_type_2
+        performance = PerformanceEvent1Data.performance_1
+        quantity = 7
+    class stock_allocation_3:
+        stock_type = StockTypeEvent1Data.stock_type_3
+        performance = PerformanceEvent1Data.performance_1
+        quantity = 5
+    class stock_allocation_4:
+        stock_type = StockTypeEvent1Data.stock_type_4
+        performance = PerformanceEvent1Data.performance_1
+        quantity = 6
+
+class StockAllocationEvent1Performance2Data(DataSet):
+    class stock_allocation_1:
+        stock_type = StockTypeEvent1Data.stock_type_1
+        performance = PerformanceEvent1Data.performance_2
+        quantity = 9
+    class stock_allocation_2:
+        stock_type = StockTypeEvent1Data.stock_type_2
+        performance = PerformanceEvent1Data.performance_2
+        quantity = 7
+    class stock_allocation_3:
+        stock_type = StockTypeEvent1Data.stock_type_3
+        performance = PerformanceEvent1Data.performance_2
+        quantity = 5
+    class stock_allocation_4:
+        stock_type = StockTypeEvent1Data.stock_type_4
+        performance = PerformanceEvent1Data.performance_2
+        quantity = 6
+
+class StockAllocationEvent1Performance3Data(DataSet):
+    class stock_allocation_1:
+        stock_type = StockTypeEvent1Data.stock_type_1
+        performance = PerformanceEvent1Data.performance_3
+        quantity = 9
+    class stock_allocation_2:
+        stock_type = StockTypeEvent1Data.stock_type_2
+        performance = PerformanceEvent1Data.performance_3
+        quantity = 7
+    class stock_allocation_3:
+        stock_type = StockTypeEvent1Data.stock_type_3
+        performance = PerformanceEvent1Data.performance_3
+        quantity = 5
+    class stock_allocation_4:
+        stock_type = StockTypeEvent1Data.stock_type_4
+        performance = PerformanceEvent1Data.performance_3
+        quantity = 6
+
+class StockAllocationEvent1Performance4Data(DataSet):
+    class stock_allocation_1:
+        stock_type = StockTypeEvent1Data.stock_type_1
+        performance = PerformanceEvent1Data.performance_4
+        quantity = 9
+    class stock_allocation_2:
+        stock_type = StockTypeEvent1Data.stock_type_2
+        performance = PerformanceEvent1Data.performance_4
+        quantity = 7
+    class stock_allocation_3:
+        stock_type = StockTypeEvent1Data.stock_type_3
+        performance = PerformanceEvent1Data.performance_4
+        quantity = 5
+    class stock_allocation_4:
+        stock_type = StockTypeEvent1Data.stock_type_4
+        performance = PerformanceEvent1Data.performance_4
+        quantity = 6
+
+class StockAllocationEvent1Performance5Data(DataSet):
+    class stock_allocation_1:
+        stock_type = StockTypeEvent1Data.stock_type_1
+        performance = PerformanceEvent1Data.performance_5
+        quantity = 9
+    class stock_allocation_2:
+        stock_type = StockTypeEvent1Data.stock_type_2
+        performance = PerformanceEvent1Data.performance_5
+        quantity = 7
+    class stock_allocation_3:
+        stock_type = StockTypeEvent1Data.stock_type_3
+        performance = PerformanceEvent1Data.performance_5
+        quantity = 5
+    class stock_allocation_4:
+        stock_type = StockTypeEvent1Data.stock_type_4
+        performance = PerformanceEvent1Data.performance_5
+        quantity = 6
+
+class StockAllocationEvent2Performance1Data(DataSet):
+    class stock_allocation_1:
+        stock_type = StockTypeEvent2Data.stock_type_1
+        performance = PerformanceEvent2Data.performance_1
+        quantity = 9
+    class stock_allocation_2:
+        stock_type = StockTypeEvent2Data.stock_type_2
+        performance = PerformanceEvent2Data.performance_1
+        quantity = 7
+    class stock_allocation_3:
+        stock_type = StockTypeEvent2Data.stock_type_3
+        performance = PerformanceEvent2Data.performance_1
+        quantity = 5
+    class stock_allocation_4:
+        stock_type = StockTypeEvent2Data.stock_type_4
+        performance = PerformanceEvent2Data.performance_1
+        quantity = 6
+
+class StockAllocationEvent2Performance2Data(DataSet):
+    class stock_allocation_1:
+        stock_type = StockTypeEvent2Data.stock_type_1
+        performance = PerformanceEvent2Data.performance_2
+        quantity = 9
+    class stock_allocation_2:
+        stock_type = StockTypeEvent2Data.stock_type_2
+        performance = PerformanceEvent2Data.performance_2
+        quantity = 7
+    class stock_allocation_3:
+        stock_type = StockTypeEvent2Data.stock_type_3
+        performance = PerformanceEvent2Data.performance_2
+        quantity = 5
+    class stock_allocation_4:
+        stock_type = StockTypeEvent2Data.stock_type_4
+        performance = PerformanceEvent2Data.performance_2
+        quantity = 6
+
+class StockAllocationEvent2Performance3Data(DataSet):
+    class stock_allocation_1:
+        stock_type = StockTypeEvent2Data.stock_type_1
+        performance = PerformanceEvent2Data.performance_3
+        quantity = 9
+    class stock_allocation_2:
+        stock_type = StockTypeEvent2Data.stock_type_2
+        performance = PerformanceEvent2Data.performance_3
+        quantity = 7
+    class stock_allocation_3:
+        stock_type = StockTypeEvent2Data.stock_type_3
+        performance = PerformanceEvent2Data.performance_3
+        quantity = 5
+    class stock_allocation_4:
+        stock_type = StockTypeEvent2Data.stock_type_4
+        performance = PerformanceEvent2Data.performance_3
+        quantity = 6
 
 class ProductItemEvent1Performance1Data(DataSet):
     class productitem_1:

@@ -3,6 +3,7 @@
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL, func
 from sqlalchemy.orm import relationship, join, backref, column_property, mapper, relation
 
+from ticketing.utils import StandardEnum
 from ticketing.models import Base, BaseModel, DBSession, JSONEncodedDict, MutationDict
 from ticketing.venues.models import  SeatStatusEnum, SeatStatus
 
@@ -85,10 +86,15 @@ class ProductItem(BaseModel, Base):
         else:
             return None
 
+class StockTypeEnum(StandardEnum):
+    Seat = 1
+    Other = 2
+
 class StockType(BaseModel, Base):
     __tablename__ = 'StockType'
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
+    type = Column(Integer)  # @see StockTypeEnum
 
     event_id = Column(BigInteger, ForeignKey("Event.id"))
 
@@ -96,21 +102,34 @@ class StockType(BaseModel, Base):
 
     style = Column(MutationDict.as_mutable(JSONEncodedDict(1024)))
 
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
-    status = Column(Integer)
+    def num_seats(self, performance_id=None):
+        query = DBSession.query(func.sum(StockAllocation.quantity)).filter_by(stock_type=self)
+        if performance_id:
+            query = query.filter_by(performance_id=performance_id)
+        return query.scalar()
 
     @property
-    def num_seats(self):
-        return DBSession.query(func.sum(Stock.quantity)).filter_by(stock_type=self).scalar()
+    def is_seat(self):
+        return self.type == StockTypeEnum.Seat.v
 
-    @staticmethod
-    def add(stock_type):
-        DBSession.add(stock_type)
+class StockAllocation(Base):
+    __tablename__ = "StockAllocation"
+    stock_type_id = Column(BigInteger, ForeignKey('StockType.id'), primary_key=True)
+    performance_id = Column(BigInteger, ForeignKey('Performance.id'), primary_key=True)
+    stock_type = relationship('StockType', uselist=False, backref='stock_allocations')
+    performance = relationship('Performance', uselist=False)
+    quantity = Column(Integer, nullable=False)
 
-    @staticmethod
-    def update(stock_type):
-        DBSession.merge(stock_type)
+    def save(self):
+        stock_allocation = DBSession.query(StockAllocation)\
+            .filter_by(performance_id=self.performance_id)\
+            .filter_by(stock_type_id=self.stock_type_id)\
+            .first()
+
+        if stock_allocation:
+            DBSession.merge(self)
+        else:
+            DBSession.add(self)
         DBSession.flush()
 
 class StockHolder(BaseModel, Base):
@@ -132,7 +151,7 @@ class Stock(BaseModel, Base):
     quantity = Column(Integer)
 
     stock_holder_id = Column(BigInteger, ForeignKey('StockHolder.id'))
-    seats = relationship("Seat", backref='seat')
+    seats = relationship("Seat", backref='stock')
 
     stock_type_id = Column(BigInteger, ForeignKey('StockType.id'))
 

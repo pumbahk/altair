@@ -4,8 +4,7 @@
 
 <script type="text/javascript">
   $(function() {
-    $('#start_at').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
-    $('#end_at').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
+    $('#form_start_at, #form_end_at').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
   });
   function show_sales_segment() {
     var id = get_id('sales_segment_id');
@@ -14,10 +13,10 @@
   }
   function new_sales_segment() {
     $('#modal-edit-sales_segment #edit').attr('action', '/events/${event.id}/sales_segments/new');
-    $('#modal-edit-sales_segment #id').val("");
-    $('#modal-edit-sales_segment #name').val("");
-    $('#modal-edit-sales_segment #start_at').val("");
-    $('#modal-edit-sales_segment #end_at').val("");
+    $('#modal-edit-sales_segment #id').val('');
+    $('#modal-edit-sales_segment #name').val('');
+    $('#modal-edit-sales_segment #form_start_at').val('');
+    $('#modal-edit-sales_segment #form_end_at').val('');
     $('#modal-edit-sales_segment').modal('toggle');
   }
   function edit_sales_segment() {
@@ -27,8 +26,8 @@
     $('#modal-edit-sales_segment #edit').attr('action', '/events/sales_segments/edit/' + id);
     $('#modal-edit-sales_segment #id').val($(el + ' #id').text());
     $('#modal-edit-sales_segment #name').val($(el + ' #name').text());
-    $('#modal-edit-sales_segment #start_at').val($(el + ' #start_at').text());
-    $('#modal-edit-sales_segment #end_at').val($(el + ' #end_at').text());
+    $('#modal-edit-sales_segment #form_start_at').val($(el + ' #start_at').text().trim());
+    $('#modal-edit-sales_segment #form_end_at').val($(el + ' #end_at').text().trim());
     $('#modal-edit-sales_segment').modal('toggle');
   }
   function delete_sales_segment() {
@@ -75,11 +74,11 @@
   <form id="edit" action="" method="POST">
     <div class="modal-body">
       <label> 販売区分名</label>
-      <input id="name" type="text">
+      <input id="name" name="name" type="text">
       <label> 販売開始日時</label>
-      <input id="start_at" type="text">
+      <input id="form_start_at" name="start_at" type="text">
       <label> 販売終了日時</label>
-      <input id="end_at" type="text">
+      <input id="form_end_at" name="end_at" type="text">
     </div>
 
     <div class="modal-footer">

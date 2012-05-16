@@ -78,8 +78,8 @@ var SEAT_DATA_URL = "${request.route_path('api.get_seats', venue_id=performance.
       </table>
     </div>
 
-    <div class="span1">
-      <a class="btn" href="${request.route_path('performances.edit', performance_id=performance.id)}" >編集</a>
+    <div class="span3">
+      <%include file="/performances/_action_button.html" args="event=performance.event" />
     </div>
   </span>
 
