@@ -32,6 +32,7 @@ Reserved
 import ticketing.venues.models
 import ticketing.products.models
 import ticketing.events.models
+import ticketing.orders.models
 
 class CartedProductItem(Base):
     """ カート内プロダクトアイテム + 座席 + 座席状況
