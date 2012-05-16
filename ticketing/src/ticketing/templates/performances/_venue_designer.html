@@ -1,3 +1,23 @@
+<script type="text/javascript">
+  function readjustMap() {
+    var n = $("#venue-map");
+    n.height($(window).height() - 250);
+    var width = n.width();
+    var height = n.height();
+    var toolbar = n.find(".ui-toolbar");
+    toolbar.width(width - 6);
+    var data = n.data('venue_editor');
+    if (data && data.manager) {
+      data.manager.drawable.viewportSize({
+        width: width,
+        height: height - toolbar[0].offsetHeight
+      });
+    }
+  }
+  $(window).resize(readjustMap);
+  $(document).ready(readjustMap);
+</script>
+
 <div class="container-fluid">
   <div class="row-fluid">
     <div class="span8" style="background-color: #999999">
@@ -5,10 +25,8 @@
     </div>
 
     <div class="span4">
-      <%include file="/stock_types/_action_button.html" args="event=performance.event" />
       <%include file="/stock_types/_list.html" args="event=performance.event" />
+      <%include file="/stock_types/_action_button.html" args="event=performance.event" />
     </div>
   </div>
 </div>
-
-<%include file="/stock_types/_form.html" />

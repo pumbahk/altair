@@ -3,6 +3,7 @@
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL, func
 from sqlalchemy.orm import relationship, join, backref, column_property, mapper, relation
 
+from ticketing.utils import StandardEnum
 from ticketing.models import Base, BaseModel, DBSession, JSONEncodedDict, MutationDict
 from ticketing.venues.models import  SeatStatusEnum, SeatStatus
 
@@ -85,10 +86,15 @@ class ProductItem(BaseModel, Base):
         else:
             return None
 
+class StockTypeEnum(StandardEnum):
+    Seat = 1
+    Other = 2
+
 class StockType(BaseModel, Base):
     __tablename__ = 'StockType'
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
+    type = Column(Integer)  # @see StockTypeEnum
 
     event_id = Column(BigInteger, ForeignKey("Event.id"))
 
@@ -96,13 +102,13 @@ class StockType(BaseModel, Base):
 
     style = Column(MutationDict.as_mutable(JSONEncodedDict(1024)))
 
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
-    status = Column(Integer)
-
     @property
     def num_seats(self):
         return DBSession.query(func.sum(Stock.quantity)).filter_by(stock_type=self).scalar()
+
+    @property
+    def is_seat(self):
+        return self.type == StockTypeEnum.Seat.v
 
     @staticmethod
     def add(stock_type):

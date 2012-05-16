@@ -2,6 +2,43 @@
 <%namespace file="/common/modal.html" import="delete_modal" />
 
 <script type="text/javascript">
+  $(function() {
+    $('a[href^=#new-stock-type]').click(function() {
+      var event_id = /^#new-stock-type\[(.+)\]$/.exec($(this).attr('href'))[1];
+      $('#edit-modal #edit').attr('action', '/stock_types/new/' + event_id);
+      $('#edit-modal').modal('toggle');
+    });
+    $('a[href^=#edit-stock-type]').click(function() {
+      var vars = /^#edit-stock-type\[(.+)\]\[(.+)\]$/.exec($(this).attr('href'));
+      var event_id  = vars[1];
+      var stock_type_id    = vars[2];
+      var data = JSON.parse($(this).attr('data'));
+      var name = $(this).attr('name');
+      var type = $(this).attr('type');
+
+      $('#edit-modal #name').val(name);
+      if (type == 2) {
+        $('#edit-modal #type').attr('checked', 'checked').change();
+      }
+      if (data) {
+        $('#edit-modal #text').val(data.text);
+        $('#edit-modal #text_color').val(data.text_color);
+        if (data.fill) {
+          $('#edit-modal #fill_color').val(data.fill.color);
+          $('#edit-modal #fill_type').val(data.fill.type);
+          $('#edit-modal #fill_image').val(data.fill.image);
+        }
+        if (data.stroke) {
+          $('#edit-modal #stroke_color').val(data.stroke.color);
+          $('#edit-modal #stroke_width').val(data.stroke.width);
+          $('#edit-modal #stroke_patten').val(data.stroke.pattern);
+        }
+      }
+      $('#edit-modal #edit').attr('action', '/stock_types/edit/' + stock_type_id);
+      $('#edit-modal').modal('toggle');
+    });
+  });
+
   function delete_stock_type() {
     var id = get_id('stock_type_id');
     if (!id) return;
@@ -9,57 +46,34 @@
     $('#modal-delete #message').text("${u'選択した席種を削除します。よろしいですか？'}");
     $('#modal-delete').modal('toggle');
   }
-  function readjustMap() {
-    var n = $("#venue-map");
-    n.height($(window).height() - 250);
-    var width = n.width();
-    var height = n.height();
-    var toolbar = n.find(".ui-toolbar");
-    toolbar.width(width - 6);
-    var data = n.data('venue_editor');
-    if (data && data.manager) {
-      data.manager.drawable.viewportSize({
-        width: width,
-        height: height - toolbar[0].offsetHeight
-      });
-    }
-  }
-  $(window).resize(readjustMap);
-  $(document).ready(readjustMap);
 </script>
 
-<div class="tab-pane">
-  <ul class="nav nav-pills">
-    <li class="dropdown" id="seat-type-menu">
-      <a class="dropdown-toggle" data-toggle="dropdown" href="#seat-type-menu">
-        席種<b class="caret"></b>
+<div class="btn-group">
+  <a href="#new-stock-type[${event.id}]" class="btn">
+    <i class="icon-plus"></i> 新規
+  </a>
+  <button class="btn dropdown-toggle" data-toggle="dropdown">
+    <span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu">
+    <li>
+      <a href="">
+        <i class="icon-th-list"></i> 詳細
       </a>
-      <ul class="dropdown-menu">
-        <li>
-          <a href="#new-seat-type[${event.id}]">
-            <i class="icon-plus"></i> 新規
-          </a>
-        </li>
-        <li>
-          <a href="javascript:delete_stock_type()" data-controls-modal="modal-delete" data-backdrop="true" data-keyboard="true">
-            <i class="icon-minus"></i> 削除
-          </a>
-        </li>
-        <li class="divider"></li>
-      </ul>
     </li>
-    <li class="dropdown" id="venue-menu">
-      <a class="dropdown-toggle" data-toggle="dropdown" href="#venue-menu">
-        会場図<b class="caret"></b>
+    <li>
+      <a href="">
+        <i class="icon-pencil"></i> 編集
       </a>
-      <ul class="dropdown-menu">
-        <li>
-          <i class="icon-plus"></i> 保存
-        </li>
-        <li class="divider"></li>
-      </ul>
+    </li>
+    <li>
+      <a href="javascript:delete_stock_type()" data-controls-modal="modal-delete" data-backdrop="true" data-keyboard="true">
+        <i class="icon-minus"></i> 削除
+      </a>
     </li>
   </ul>
 </div>
+
+<%include file="/stock_types/_form.html" />
 
 ${delete_modal()}

@@ -9,11 +9,23 @@ from pyramid.url import route_path
 from ticketing.models import merge_session_with_post
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
+from ticketing.events.models import Event
 from ticketing.products.models import StockType
 from ticketing.stock_types.forms import StockTypeForm
 
 @view_defaults(decorator=with_bootstrap)
 class StockTypes(BaseView):
+
+    @view_config(route_name='stock_types.index', renderer='ticketing:templates/stock_types/index.html')
+    def index(self):
+        event_id = int(self.request.matchdict.get('event_id', 0))
+        event = Event.get(event_id)
+        if event is None:
+            return HTTPNotFound('event id %d is not found' % event_id)
+
+        return {
+            'event':event,
+        }
 
     @view_config(route_name='stock_types.new', request_method='POST')
     def new_post(self):
@@ -51,20 +63,23 @@ class StockTypes(BaseView):
 
         f = StockTypeForm(self.request.POST)
         data = f.data
-        style = {
-            'stroke' : {
-                'color'     : data.get('stroke_color'),
-                'width'     : data.get('stroke_width'),
-                'pattern'   : data.get('stroke_patten'),
-            },
-            'fill': {
-                'color'     : data.get('fill_color'),
-                'type'      : data.get('fill_type'),
-                'image'     : data.get('fill_image'),
-            },
-        }
-        stock_type.name          = data.get('name')
-        stock_type.style         = style
+        stock_type.name = data.get('name')
+        stock_type.type = data.get('type')
+        style = {}
+        if not stock_type.type:
+            style = {
+                'stroke' : {
+                    'color'     : data.get('stroke_color'),
+                    'width'     : data.get('stroke_width'),
+                    'pattern'   : data.get('stroke_patten'),
+                },
+                'fill': {
+                    'color'     : data.get('fill_color'),
+                    'type'      : data.get('fill_type'),
+                    'image'     : data.get('fill_image'),
+                },
+            }
+        stock_type.style = style
         StockType.update(stock_type)
 
         self.request.session.flash(u'席種を保存しました')
