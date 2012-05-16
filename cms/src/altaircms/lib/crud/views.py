@@ -4,6 +4,9 @@ from altaircms.models import DBSession
 from altaircms.models import model_from_dict, model_to_dict
 import functools
 import altaircms.helpers as h
+import logging
+logger = logging.getLogger(__file__)
+
 from ..flow import api as flow_api
 
 class AfterInput(Exception):

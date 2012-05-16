@@ -1,8 +1,19 @@
 <%inherit file='../../templates/layout_2col.mako'/>
 
 <%namespace name="fco" file="../../templates/formcomponents.mako"/>
+<%namespace name="nco" file="../../templates/navcomponents.mako"/>
+<h2>${master_env.title}</h2>
 
-<div class="row">
+<div class="row-fluid">
+  <div class="span10">
+    ${nco.breadcrumbs(
+        names=["Top", master_env.title], 
+        urls=[request.route_path("dashboard")])
+    }
+  </div>
+</div>
+
+<div class="row-fluid">
     <h3>${master_env.title}追加</h3>
     <a href="${request.route_path(master_env.join("create"), action="input")}"  class="btn btn-success btn-large">新しい${master_env.title}を作成する</a>
 
@@ -18,7 +29,7 @@
     %endif
 </div>
 
-<div class="row">
+<div class="row-fluid">
 <h3>${master_env.title}一覧</h3>
 
 ${xs.pager()}

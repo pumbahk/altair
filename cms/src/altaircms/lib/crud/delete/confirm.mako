@@ -1,6 +1,19 @@
 <%inherit file='../../../templates/layout_2col.mako'/>
 
 <%namespace name="fco" file="../../../templates/formcomponents.mako"/>
+<%namespace name="nco" file="../../../templates/navcomponents.mako"/>
+
+<h2>${master_env.title} 削除確認画面</h2>
+
+<div class="row-fluid">
+  <div class="span10">
+    ${nco.breadcrumbs(
+        names=["Top", master_env.title, u"削除確認画面"], 
+        urls=[request.route_path("dashboard"),
+	          request.route_path(master_env.join("list"))])
+    }
+  </div>
+</div>
 
 <%def name="form_to_table(form, x)">
 <table class="table table-striped">
@@ -15,7 +28,7 @@
 </table>
 </%def>
 
-<div class="row">
+<div class="row-fluid">
     <h3>${master_env.title}削除 確認画面</h3>
 
 	<div class="alert alert-error">
