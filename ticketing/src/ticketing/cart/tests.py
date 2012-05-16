@@ -88,3 +88,43 @@ class TicketingCartResourceTests(unittest.TestCase):
 
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
+
+    def _add_stock_status(self, quantity=100):
+        from ..products import models
+        product_item = models.ProductItem(id=1)
+        stock = models.Stock(id=1, product_items=[product_item])
+        stock_status = models.StockStatus(stock=stock, quantity=quantity)
+        models.DBSession.add(stock_status)
+        return product_item
+
+    def test_get_stock_status(self):
+        request = testing.DummyRequest()
+        target = self._makeOne(request)
+        product_item = self._add_stock_status()
+        result = target.get_stock_status(product_item.id)
+
+        self.assertIsNotNone(result)
+
+    def test_has_stock_just_quantity(self):
+        request = testing.DummyRequest()
+        target = self._makeOne(request)
+        product_item = self._add_stock_status(quantity=100)
+        result = target.has_stock(product_item.id, 100)
+
+        self.assertTrue(result)
+
+    def test_has_stock_1_less(self):
+        request = testing.DummyRequest()
+        target = self._makeOne(request)
+        product_item = self._add_stock_status(quantity=99)
+        result = target.has_stock(product_item.id, 100)
+
+        self.assertFalse(result)
+
+    def test_has_stock_1_greater(self):
+        request = testing.DummyRequest()
+        target = self._makeOne(request)
+        product_item = self._add_stock_status(quantity=100)
+        result = target.has_stock(product_item.id, 99)
+
+        self.assertTrue(result)

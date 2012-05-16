@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
-from . import security
 from pyramid.decorator import reify
+from ticketing.products import models as p_models
+from . import security
 from . import models as m
 
 class TicketingCartResrouce(object):
@@ -14,16 +15,32 @@ class TicketingCartResrouce(object):
         for product_item in product.items:
             self.acquire_product_item(product_item, amount)
 
+    def get_stock_status(self, product_item_id):
+        """
+        ProductItem -> Stock -> StockStatus
+        :param product_item_id: プロダクトアイテムID
+        :return: :class:`ticketing.products.models.StockStatus`
+        """
+        return m.DBSession.query(p_models.StockStatus).filter(
+                p_models.ProductItem.id==product_item_id
+            ).filter(
+                p_models.ProductItem.stock_id==p_models.Stock.id
+            ).filter(
+                p_models.Stock.id==p_models.StockStatus.stock_id
+            ).one()
+
     def has_stock(self, product_item_id, quantity):
         """在庫確認(Stock)
         :param product_item_id:
         :param quantity: 要求数量
         :return: bool
         """
+        stock_status = self.get_stock_status(product_item_id=product_item_id)
+        return stock_status.quantity >= quantity
 
     def acquire_product_item(self, product_item, amount):
         # 在庫チェック
-        if not self.hash_stock(amount, product_item):
+        if not self.has_stock(amount, product_item):
             raise Exception # TODO: 例外クラス定義
 
         self.cart.add_product_item(product_item, amount)

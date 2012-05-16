@@ -72,7 +72,7 @@ class ProductItem(BaseModel, Base):
     performance_id = Column(BigInteger, ForeignKey('Performance.id'))
 
     stock_id = Column(BigInteger, ForeignKey('Stock.id'))
-    stock = relationship("Stock")
+    stock = relationship("Stock", backref="product_items")
 
     stock_type_id = Column(BigInteger, ForeignKey('StockType.id'))
     stock_type = relationship('StockType', backref='product_items')
