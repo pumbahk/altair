@@ -5,6 +5,11 @@ def _setup_db():
     import sqlahelper
     from sqlalchemy import create_engine
     from . import models
+    import ticketing.venues.models
+    import ticketing.products.models
+    import ticketing.events.models
+    import ticketing.orders.models
+
     engine = create_engine("sqlite:///")
     engine.echo = False
     sqlahelper.get_session().remove()

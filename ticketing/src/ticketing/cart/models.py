@@ -1,16 +1,5 @@
 # -*- coding:utf-8 -*-
 
-from datetime import datetime, timedelta
-import sqlalchemy as sa
-import sqlalchemy.orm as orm
-from sqlalchemy.orm.exc import NoResultFound
-import sqlahelper
-from sqlalchemy.ext.hybrid import hybrid_method
-from sqlalchemy import sql
-
-Base = sqlahelper.get_base()
-DBSession = sqlahelper.get_session()
-
 """
 購入フローに関連する座席状態遷移
 
@@ -31,10 +20,18 @@ Reserved
  今回の実装なし
 """
 
-import ticketing.venues.models
-import ticketing.products.models
-import ticketing.events.models
-import ticketing.orders.models
+
+from datetime import datetime, timedelta
+import sqlahelper
+import sqlalchemy as sa
+import sqlalchemy.orm as orm
+from sqlalchemy import sql
+from sqlalchemy.ext.hybrid import hybrid_method
+from sqlalchemy.orm.exc import NoResultFound
+
+Base = sqlahelper.get_base()
+DBSession = sqlahelper.get_session()
+
 
 class CartedProductItem(Base):
     """ カート内プロダクトアイテム + 座席 + 座席状況
