@@ -140,7 +140,7 @@ class Performances(BaseView):
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class StockHolders(BaseView):
 
-    @view_config(route_name='performances.stock_holder.new', request_method='POST')
+    @view_config(route_name='stock_holders.new', request_method='POST')
     def new_post(self):
         performance_id = int(self.request.matchdict.get('performance_id', 0))
         performance = Performance.get(performance_id)
@@ -151,18 +151,8 @@ class StockHolders(BaseView):
         #if f.validate():
         data = f.data
         style = {
-            'stroke' : {
-                'color'     : data.get('stroke_color'),
-                'width'     : data.get('stroke_width'),
-                'pattern'   : data.get('stroke_patten'),
-                },
-            'fill': {
-                'color'     : data.get('fill_color'),
-                'type'      : data.get('fill_type'),
-                'image'     : data.get('fill_image'),
-                },
-            'text'          : data.get('text'),
-            'text_color'    : data.get('text_color'),
+            'text':data.get('text'),
+            'text_color':data.get('text_color'),
         }
         stock_holder = merge_session_with_post(StockHolder(), data)
         stock_holder.style = style
@@ -174,3 +164,36 @@ class StockHolders(BaseView):
         #    self.request.session.flash(u'枠を保存できません')
 
         return HTTPFound(location=route_path('performances.show', self.request, performance_id=performance.id, _anchor='seat-allocation'))
+
+    @view_config(route_name='stock_holders.edit', request_method='POST')
+    def edit_post(self):
+        stock_holder_id = int(self.request.matchdict.get('stock_holder_id', 0))
+        stock_holder = StockHolder.get(stock_holder_id)
+        if stock_holder is None:
+            return HTTPNotFound('stock_holder id %d is not found' % stock_holder_id)
+
+        f = StockHolderForm(self.request.POST, organization_id=self.context.user.organization_id)
+        if f.validate():
+            style = {
+                'text':f.data.get('text'),
+                'text_color':f.data.get('text_color'),
+            }
+            stock_holder = merge_session_with_post(stock_holder, f.data)
+            stock_holder.style = style
+            stock_holder.save()
+
+            self.request.session.flash(u'枠を保存しました')
+
+        return HTTPFound(location=route_path('performances.show', self.request, performance_id=stock_holder.performance.id, _anchor='seat-allocation'))
+
+    @view_config(route_name='stock_holders.delete')
+    def delete(self):
+        stock_holder_id = int(self.request.matchdict.get('stock_holder_id', 0))
+        stock_holder = StockHolder.get(stock_holder_id)
+        if stock_holder is None:
+            return HTTPNotFound('stock_holder id %d is not found' % stock_holder_id)
+
+        stock_holder.delete()
+
+        self.request.session.flash(u'枠を削除しました')
+        return HTTPFound(location=route_path('performances.show', self.request, performance_id=stock_holder.performance.id, _anchor='seat-allocation'))

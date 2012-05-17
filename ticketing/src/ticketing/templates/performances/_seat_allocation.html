@@ -1,13 +1,4 @@
 <script type="text/javascript">
-  function new_stock_holder() {
-    $('#modal-new-stock-group-own #edit').attr('action', '/events/performances/${performance.id}/stock_holder/new');
-    $('#modal-new-stock-group-own').modal('toggle');
-  }
-
-  $('#modal-edit').on('hidden', function () {
-    // do something…
-  })
-
   $(window).resize(function(api){
     $("#seat-map").height($(window).height()-230);
     $("#allocated-list").height($(window).height()-230);
@@ -72,59 +63,6 @@
         </div>
       </div>
     </div>
-  </div>
-</div>
-
-<div class="modal fade" id="modal-new-stock-group-own">
-  <div class="modal-header">
-    <a class="close" data-dismiss="modal">×</a>
-    <h3>新規配券先</h3>
-  </div>
-
-  <form id="edit" action="" method="POST">
-    <div class="modal-body">
-      <label>枠名</label>
-      <input id="name" name="name" type="text" class="span3" placeholder="先行">
-      <label>配券先</label>
-      <select name="account_id">
-        % for account in accounts:
-        <option value="${account.id}">${account.name}</option>
-        % endfor
-      </select>
-
-      <label>記号</label>
-      <input id="text" name="text" type="text" class="span3" value="">
-      <label>記号色</label>
-      <input id="text_color" name="text_color" type="text" class="kolorPicker span3" value="">
-    </div>
-
-    <div class="modal-footer">
-      <a href="#" class="btn" data-dismiss="modal">閉じる</a>
-      <input class="btn" type="submit" value="保存"></a>
-    </div>
-  </form>
-</div>
-
-<div class="modal fade" id="modal-new-stock-group-send">
-  <div class="modal-header">
-    <a class="close" data-dismiss="modal">×</a>
-    <h3>新規配券先</h3>
-  </div>
-
-  <div class="modal-body">
-    <label>ラベル</label>
-    <input type="text" class="span3" placeholder="ラベル">
-    <label>配券先</label>
-    <select>
-      % for account in accounts:
-      <option id="${account.id}">${account.name}</option>
-      % endfor
-    </select>
-  </div>
-
-  <div class="modal-footer">
-    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
-    <a href="#" class="btn btn-primary">保存</a>
   </div>
 </div>
 
