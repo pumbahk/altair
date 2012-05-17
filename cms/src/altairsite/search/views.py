@@ -11,7 +11,9 @@ def detail_page_search_input(request):
 
 @view_config(route_name="detail_page_search", renderer="altaircms:templates/front/ticketstar/search/detail_search_result.mako")
 def detail_page_search(request):
-    return {}
+    params = front_api.get_navigation_categories(request)
+    params.update(results=[mockup_search_result()]*5)
+    return params
 
 @view_config(route_name="page_search", renderer="altaircms:templates/front/ticketstar/search/search_result.mako")
 def page_search(request):

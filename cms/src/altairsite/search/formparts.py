@@ -3,11 +3,23 @@ import re
 from wtforms import fields
 from wtforms import widgets
 
-#### checkbox with label
+#### widgets
 ##
 class CheckboxWithLabelInput(widgets.CheckboxInput):
+    """ [checkbox] label-as-text """
     def __call__(self, field, **kwargs):
-        return u"%s %s" % (super(CheckboxWithLabelInput, self).__call__(field, **kwargs), field.label.text)
+        return u"%s%s" % (super(CheckboxWithLabelInput, self).__call__(field, **kwargs), field.label.text)
+
+class PutOnlyWidget(object):
+    """
+    [elt] [elt] [elt] [elt] [elt]
+    """
+    def __call__(self, field, **kwargs):
+        kwargs.setdefault('id', field.id)
+        html = []
+        for subfield in field:
+            html.append(u'%s%s' % (subfield(), subfield.label.text))
+        return widgets.core.HTMLString(u' '.join(html))
 
 
 #### checkbox list
@@ -19,9 +31,9 @@ class CheckboxListWidget(widgets.Input):
 
         for k, v in kwargs["choices"]:
             if k in checked_box:
-                elts.append(u'<input checked type="checkbox" name="%s" value="y"/> %s' % (k, v))
+                elts.append(u'<input checked type="checkbox" name="%s" value="y"/>%s' % (k, v))
             else:
-                elts.append(u'<input type="checkbox" name="%s"/> %s' % (k, v))
+                elts.append(u'<input type="checkbox" name="%s"/>%s' % (k, v))
         return elts
 
     def __call__(self, field, **kwargs):
@@ -75,13 +87,14 @@ class CheckboxListField(fields.Field):
 
         !! this field doesn't receive selfname's data.(against a usually field class) !!
 
-        request.POST: {"a":"y", "b":"y"}
+        request.POST: {"a":"y", "b":"y", "illegal-key":"illegal-value"}
         form's choices: [("a", "a"), ("b", "b"), ("c", "c")]
         
         proces then => 
-          self.data = {"a": True, "b": True,  "c": False}
+          self.data = {"a": True, "b": True}
         """
-        defaults = {k:False for k, _ in self.choices}
-        defaults.update(self._collected_candidats)
-        self.data = defaults
+        self.data = self._collected_candidats
+        # defaults = {k:False for k, _ in self.choices}
+        # defaults.update(self._collected_candidats)
+        # self.data = defaults
 

@@ -5,6 +5,7 @@ from wtforms import widgets
 from wtforms import validators
 
 from .formparts import CheckboxListField
+from .formparts import PutOnlyWidget
 from .formparts import CheckboxWithLabelInput
 
 import pkg_resources
@@ -13,11 +14,12 @@ def import_symbol(symbol):
 
 ## todo:フリーワード
 class QueryPartForm(form.Form):
-    query = fields.TextField(label=u"")
-    query_cond = fields.RadioField(choices=[("intersection", u"全てを含む"), ("union", u"少なくとも1つを含む")])
+    query = fields.TextField(label=u"",)
+    query_cond = fields.RadioField(choices=[("intersection", u"全てを含む"), ("union", u"少なくとも1つを含む")], 
+                                   widget=PutOnlyWidget())
 
     def __html__(self):
-        return u"%(query)s %(query_cond)s"
+        return u"%(query)s %(query_cond)s" % self
 
 ## todo:ジャンル
 class GanrePartForm(form.Form):
@@ -25,15 +27,15 @@ class GanrePartForm(form.Form):
     music_subganre_choices = import_symbol("altaircms.seeds.categories.music:MUSIC_SUBCATEGORY_CHOICES")
     music_subganre = CheckboxListField(choices=music_subganre_choices)
 
-    stage = fields.BooleanField(label=u"演劇")
+    stage = fields.BooleanField(label=u"演劇", widget=CheckboxWithLabelInput())
     stage_subganre_choices = import_symbol("altaircms.seeds.categories.stage:STAGE_SUBCATEGORY_CHOICES")
     stage_subganre = CheckboxListField(choices=stage_subganre_choices)
 
-    sports = fields.BooleanField(label=u"スポーツ")
+    sports = fields.BooleanField(label=u"スポーツ", widget=CheckboxWithLabelInput())
     sports_subganre_choices = import_symbol("altaircms.seeds.categories.sports:SPORTS_SUBCATEGORY_CHOICES")
     sports_subganre = CheckboxListField(choices=sports_subganre_choices)
 
-    other = fields.BooleanField(label=u"イベント・その他")
+    other = fields.BooleanField(label=u"イベント・その他", widget=CheckboxWithLabelInput())
     other_subganre_choices = import_symbol("altaircms.seeds.categories.other:OTHER_SUBCATEGORY_CHOICES")
     other_subganre = CheckboxListField(choices=other_subganre_choices)
 
@@ -112,11 +114,11 @@ class AreaPartForm(form.Form):
 # """ % self
 
 ## todo:公演日
+years = [(i, unicode(i)) for i in range(2010, 2020)]
+months = [(i, unicode(i)) for i in range(1, 13)]
+days = [(i, unicode(i)) for i in range(1, 32)]
+
 class PerformanceTermPartForm(form.Form):
-    years = [(i, unicode(i)) for i in range(2010, 2020)]
-    months = [(i, unicode(i)) for i in range(1, 13)]
-    days = [(i, unicode(i)) for i in range(1, 32)]
-                  
     start_year = fields.SelectField(choices=years)
     start_month = fields.SelectField(choices=months)
     start_day = fields.SelectField(choices=days)
@@ -131,24 +133,85 @@ class PerformanceTermPartForm(form.Form):
 """ % self
 
 ## todo:販売条件
-class SalesCondPartForm(form.Form):
-    pass
+class DealCondPartForm(form.Form):
+    deal_cond = fields.RadioField(choices=[("early", u"先行"), ("normal", u"一般")], 
+                                   widget=PutOnlyWidget())
+
+    def __html__(self):
+        return u"%(deal_cond)s" % self
 
 ## todo:付加サービス
 class AddedServicePartForm(form.Form):
-    pass
+    choices = [("select-seat", u"座席選択可能"), ("keep-adjust", u"お隣キープ"), ("2d-market", u"2次市場")]
+    added_services = fields.RadioField(choices=choices, widget=PutOnlyWidget())
+
+    def __html__(self):
+        return u"%(added_services)s" % self
 
 ## todo:発売日,  rename
-class AboutSalesDatePartForm(form.Form):
-    pass
+class AboutDealPartForm(form.Form):
+    before_deal_start_flg = fields.BooleanField(label=u"")
+    before_deal_start = fields.SelectField(choices=days)
 
-def get_search_forms():
-    class forms(object):
-        query = QueryPartForm()
-        ganre = GanrePartForm()
-        area = AreaPartForm()
-        performance_term = PerformanceTermPartForm()
-        sales_cond = SalesCondPartForm()
-        added_service = AddedServicePartForm()
-        about_sales_date = AboutSalesDatePartForm()
-    return forms
+    till_deal_end_flg = fields.BooleanField(label=u"")
+    till_deal_end = fields.SelectField(choices=days)
+    
+    closed_only = fields.BooleanField(label=u"販売終了", widget=CheckboxWithLabelInput())
+    canceled_only = fields.BooleanField(label=u"公演中止", widget=CheckboxWithLabelInput())
+
+    def __html__(self):
+        return u"""
+<ul>
+  <li>
+    %(before_deal_start_flg)s%(before_deal_start)s日以内に発送
+  </li>
+  <li>
+    %(till_deal_end_flg)s販売終了まで%(till_deal_end)s日
+  </li>
+  <li>
+    %(closed_only)s %(canceled_only)s
+  </li>
+</ul>
+""" % self
+
+class DetailSearchQueryForm(object):
+    def __init__(self, formdata=None):
+        self._forms = []
+        self.query = self._append_with(QueryPartForm(formdata=formdata))
+        self.ganre = self._append_with(GanrePartForm(formdata=formdata))
+        self.area = self._append_with(AreaPartForm(formdata=formdata))
+        self.performance_term = self._append_with(PerformanceTermPartForm(formdata=formdata))
+        self.deal_cond = self._append_with(DealCondPartForm(formdata=formdata))
+        self.added_service = self._append_with(AddedServicePartForm(formdata=formdata))
+        self.about_deal = self._append_with(AboutDealPartForm(formdata=formdata))
+
+    def _append_with(self, form):
+        self._forms.append(form)
+        return form
+
+    def validate(self):
+        return any(form.validate() for form in self._forms)
+
+    def as_filter(self, qs=None):
+        for form in self._forms:
+            qs = form.as_filter(qs)
+        return qs
+
+def get_search_forms(formdata=None):
+    return DetailSearchQueryForm(formdata)
+
+def form_as_filter(qs, form):
+    return form.as_filter(qs)
+
+
+### search
+"""
+1. free wordが選択
+    全文検索で検索する。copy fieldを使ってsolarで定義してた。取得されるのはpageset.id
+2. ganreで選択。
+2.a 大ジャンルが選択
+
+ganre = "music"
+Category.filter(Category.)
+2.b 中ジャンルが選択
+"""
