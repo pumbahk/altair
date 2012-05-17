@@ -40,6 +40,7 @@ class Order(Base):
     shipping_address = relationship('ShippingAddress', backref='order')
 
     items = relationship('OrderedProduct')
+    total_amount = Column(BigInteger, nullable=False)
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
     status = Column(Integer)
@@ -52,6 +53,7 @@ class OrderedProduct(Base):
     ordered_product_items = relationship('OrderedProductItem', backref='ordered_product')
     product_id = Column(BigInteger, ForeignKey("Product.id"))
     product = relationship('Product', uselist=False)
+    price = Column(BigInteger, nullable=False)
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
     status = Column(Integer)
@@ -64,6 +66,7 @@ class OrderedProductItem(Base):
     product_item = relationship('ProductItem', uselist=False)
     seat = relationship('Seat', uselist=False)
     seat_id = Column(BigInteger, ForeignKey('Seat.id'))
+    price = Column(BigInteger, nullable=False)
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
     status = Column(Integer)
