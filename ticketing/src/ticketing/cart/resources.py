@@ -127,10 +127,9 @@ class TicketingCartResrouce(object):
                 v_models.SeatAdjacency.adjacency_set_id.in_(sub)
             ).all()
 
-        if len(seat_statuses) > 0:
-            m.DBSession.query(v_models.SeatStatus).filter(
-                    v_models.SeatStatus.seat_id.in_([s.seat_id for s in seat_statuses])
-                ).update({v_models.SeatStatus.status: int(v_models.SeatStatusEnum.InCart)})
+        if len(seat_statuses) == quantity:
+            up = sql.update(v_models.SeatStatus.__table__).values({v_models.SeatStatus.status: int(v_models.SeatStatusEnum.InCart)}).where(v_models.SeatStatus.seat_id.in_([s.seat_id for s in seat_statuses]))
+            m.DBSession.bind.execute(up)
 
         return seat_statuses
 
@@ -151,8 +150,8 @@ class TicketingCartResrouce(object):
         cart = m.Cart()
         # このループはSeatTypeであるべき
         for stock_id, quantity in self.quantity_for_stock_id(ordered_products):
-            if not self.has_stock(product_item_id, quantity):
+            if not self.has_stock(stock_id, quantity):
                 return False
-            seats += self.select_seat(product_item_id, quantity)
+            seats += self.select_seat(stock_id, quantity)
         # TODO: Cart作成,CartedProductItemに座席割当(Cart,CartedProduct, CartedProductItem)
         self.take_seats_in_cart(seats)

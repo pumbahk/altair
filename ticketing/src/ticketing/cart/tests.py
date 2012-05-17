@@ -202,11 +202,60 @@ class TicketingCartResourceTests(unittest.TestCase):
         self.assertEqual(result[0], (1, 6))
         self.assertEqual(result[1], (2, 1))
 
-    def test_select_seat(self):
+    def test_select_seat_not_found(self):
+        from ticketing.venues.models import Seat, SeatAdjacency, SeatAdjacencySet, SeatStatus, SeatStatusEnum
+        from ticketing.products.models import Stock
+
+        # S席
+        stock = Stock(id=1)
+        adjacency_set = SeatAdjacencySet(id=1, seat_count=5)
+        seats = []
+        for i in range(5):
+            seat = Seat(id=i, stock=stock)
+            SeatStatus(seat=seat, status=int(SeatStatusEnum.Vacant))
+            seats.append(seat)
+
+        SeatAdjacency(id=1, seats=seats, adjacency_set=adjacency_set)
+
+
+        self.session.add(stock)
+        self.session.add(adjacency_set)
+
         request = testing.DummyRequest()
         target = self._makeOne(request)
 
         result = target.select_seat(1, 10)
 
         self.assertEqual(result, [])
-        self.fail()
+
+        statuses = self.session.query(SeatStatus).filter(SeatStatus.status==int(SeatStatusEnum.InCart)).all()
+        self.assertEqual(len(statuses), 0)
+
+    def test_select_seat_full(self):
+        from ticketing.venues.models import Seat, SeatAdjacency, SeatAdjacencySet, SeatStatus, SeatStatusEnum
+        from ticketing.products.models import Stock
+
+        # S席
+        stock = Stock(id=1)
+        adjacency_set = SeatAdjacencySet(id=1, seat_count=5)
+        seats = []
+        for i in range(5):
+            seat = Seat(id=i, stock=stock)
+            SeatStatus(seat=seat, status=int(SeatStatusEnum.Vacant))
+            seats.append(seat)
+
+        SeatAdjacency(id=1, seats=seats, adjacency_set=adjacency_set)
+
+
+        self.session.add(stock)
+        self.session.add(adjacency_set)
+
+        request = testing.DummyRequest()
+        target = self._makeOne(request)
+
+        result = target.select_seat(stock.id, 5)
+
+        self.assertEqual(len(result), 5)
+
+        statuses = self.session.query(SeatStatus).filter(SeatStatus.status==int(SeatStatusEnum.InCart)).all()
+        self.assertEqual(len(statuses), 5)
