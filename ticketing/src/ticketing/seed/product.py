@@ -996,6 +996,7 @@ class StockAllocationEvent2Performance3Data(DataSet):
 
 class ProductItemEvent1Performance1Data(DataSet):
     class productitem_1:
+        quantity = 1
         item_type = 1
         price = 8000
         product = ProductEvent1Data.product_1
@@ -1003,6 +1004,7 @@ class ProductItemEvent1Performance1Data(DataSet):
         stock = StockEvent1Performance1Data.stock_1
         stock_type = StockTypeEvent1Data.stock_type_1
     class productitem_2:
+        quantity = 1
         item_type = 2
         price = 4000
         product = ProductEvent1Data.product_2
@@ -1010,6 +1012,7 @@ class ProductItemEvent1Performance1Data(DataSet):
         stock = StockEvent1Performance1Data.stock_2
         stock_type = StockTypeEvent1Data.stock_type_2
     class productitem_3:
+        quantity = 1
         item_type = 1
         price = 7000
         product = ProductEvent1Data.product_3
@@ -1017,6 +1020,7 @@ class ProductItemEvent1Performance1Data(DataSet):
         stock = StockEvent1Performance1Data.stock_3
         stock_type = StockTypeEvent1Data.stock_type_3
     class productitem_4:
+        quantity = 1
         item_type = 1
         price = 3000
         product = ProductEvent1Data.product_4
@@ -1024,6 +1028,7 @@ class ProductItemEvent1Performance1Data(DataSet):
         stock = StockEvent1Performance1Data.stock_4
         stock_type = StockTypeEvent1Data.stock_type_4
     class productitem_5:
+        quantity = 1
         item_type = 1
         price = 8000
         product = ProductEvent1Data.product_5
@@ -1033,6 +1038,7 @@ class ProductItemEvent1Performance1Data(DataSet):
 
 class ProductItemEvent1Performance2Data(DataSet):
     class productitem_1:
+        quantity = 1
         item_type = 1
         price = 8000
         product = ProductEvent1Data.product_1
@@ -1040,6 +1046,7 @@ class ProductItemEvent1Performance2Data(DataSet):
         stock = StockEvent1Performance2Data.stock_1
         stock_type = StockTypeEvent1Data.stock_type_1
     class productitem_2:
+        quantity = 1
         item_type = 2
         price = 4000
         product = ProductEvent1Data.product_2
@@ -1047,6 +1054,7 @@ class ProductItemEvent1Performance2Data(DataSet):
         stock = StockEvent1Performance2Data.stock_2
         stock_type = StockTypeEvent1Data.stock_type_2
     class productitem_3:
+        quantity = 1
         item_type = 1
         price = 7000
         product = ProductEvent1Data.product_3
@@ -1054,6 +1062,7 @@ class ProductItemEvent1Performance2Data(DataSet):
         stock = StockEvent1Performance2Data.stock_3
         stock_type = StockTypeEvent1Data.stock_type_3
     class productitem_4:
+        quantity = 1
         item_type = 1
         price = 3000
         product = ProductEvent1Data.product_4
@@ -1061,6 +1070,7 @@ class ProductItemEvent1Performance2Data(DataSet):
         stock = StockEvent1Performance2Data.stock_4
         stock_type = StockTypeEvent1Data.stock_type_4
     class productitem_5:
+        quantity = 1
         item_type = 1
         price = 8000
         product = ProductEvent1Data.product_5
@@ -1070,6 +1080,7 @@ class ProductItemEvent1Performance2Data(DataSet):
 
 class ProductItemEvent1Performance3Data(DataSet):
     class productitem_1:
+        quantity = 1
         item_type = 1
         price = 8000
         product = ProductEvent1Data.product_1
@@ -1077,6 +1088,7 @@ class ProductItemEvent1Performance3Data(DataSet):
         stock = StockEvent1Performance3Data.stock_1
         stock_type = StockTypeEvent1Data.stock_type_1
     class productitem_2:
+        quantity = 1
         item_type = 2
         price = 4000
         product = ProductEvent1Data.product_2
@@ -1084,6 +1096,7 @@ class ProductItemEvent1Performance3Data(DataSet):
         stock = StockEvent1Performance3Data.stock_2
         stock_type = StockTypeEvent1Data.stock_type_2
     class productitem_3:
+        quantity = 1
         item_type = 1
         price = 7000
         product = ProductEvent1Data.product_3
@@ -1091,6 +1104,7 @@ class ProductItemEvent1Performance3Data(DataSet):
         stock = StockEvent1Performance3Data.stock_3
         stock_type = StockTypeEvent1Data.stock_type_3
     class productitem_4:
+        quantity = 1
         item_type = 1
         price = 3000
         product = ProductEvent1Data.product_4
@@ -1098,6 +1112,7 @@ class ProductItemEvent1Performance3Data(DataSet):
         stock = StockEvent1Performance3Data.stock_4
         stock_type = StockTypeEvent1Data.stock_type_4
     class productitem_5:
+        quantity = 1
         item_type = 1
         price = 8000
         product = ProductEvent1Data.product_5
@@ -1107,6 +1122,7 @@ class ProductItemEvent1Performance3Data(DataSet):
 
 class ProductItemEvent1Performance4Data(DataSet):
     class productitem_1:
+        quantity = 1
         item_type = 1
         price = 8000
         product = ProductEvent1Data.product_1
@@ -1114,6 +1130,7 @@ class ProductItemEvent1Performance4Data(DataSet):
         stock = StockEvent1Performance4Data.stock_1
         stock_type = StockTypeEvent1Data.stock_type_1
     class productitem_2:
+        quantity = 1
         item_type = 2
         price = 4000
         product = ProductEvent1Data.product_2
@@ -1121,6 +1138,7 @@ class ProductItemEvent1Performance4Data(DataSet):
         stock = StockEvent1Performance4Data.stock_2
         stock_type = StockTypeEvent1Data.stock_type_2
     class productitem_3:
+        quantity = 1
         item_type = 1
         price = 7000
         product = ProductEvent1Data.product_3
@@ -1128,6 +1146,7 @@ class ProductItemEvent1Performance4Data(DataSet):
         stock = StockEvent1Performance4Data.stock_3
         stock_type = StockTypeEvent1Data.stock_type_3
     class productitem_4:
+        quantity = 1
         item_type = 1
         price = 3000
         product = ProductEvent1Data.product_4
@@ -1135,6 +1154,7 @@ class ProductItemEvent1Performance4Data(DataSet):
         stock = StockEvent1Performance4Data.stock_4
         stock_type = StockTypeEvent1Data.stock_type_4
     class productitem_5:
+        quantity = 1
         item_type = 1
         price = 8000
         product = ProductEvent1Data.product_5
@@ -1144,6 +1164,7 @@ class ProductItemEvent1Performance4Data(DataSet):
 
 class ProductItemEvent1Performance5Data(DataSet):
     class productitem_1:
+        quantity = 1
         item_type = 1
         price = 8000
         product = ProductEvent1Data.product_1
@@ -1151,6 +1172,7 @@ class ProductItemEvent1Performance5Data(DataSet):
         stock = StockEvent1Performance5Data.stock_1
         stock_type = StockTypeEvent1Data.stock_type_1
     class productitem_2:
+        quantity = 1
         item_type = 2
         price = 4000
         product = ProductEvent1Data.product_2
@@ -1158,6 +1180,7 @@ class ProductItemEvent1Performance5Data(DataSet):
         stock = StockEvent1Performance5Data.stock_2
         stock_type = StockTypeEvent1Data.stock_type_2
     class productitem_3:
+        quantity = 1
         item_type = 1
         price = 7000
         product = ProductEvent1Data.product_3
@@ -1165,6 +1188,7 @@ class ProductItemEvent1Performance5Data(DataSet):
         stock = StockEvent1Performance5Data.stock_3
         stock_type = StockTypeEvent1Data.stock_type_3
     class productitem_4:
+        quantity = 1
         item_type = 1
         price = 3000
         product = ProductEvent1Data.product_4
@@ -1172,6 +1196,7 @@ class ProductItemEvent1Performance5Data(DataSet):
         stock = StockEvent1Performance5Data.stock_4
         stock_type = StockTypeEvent1Data.stock_type_4
     class productitem_5:
+        quantity = 1
         item_type = 1
         price = 8000
         product = ProductEvent1Data.product_5
@@ -1181,6 +1206,7 @@ class ProductItemEvent1Performance5Data(DataSet):
 
 class ProductItemEvent2Performance1Data(DataSet):
     class productitem_1:
+        quantity = 1
         item_type = 1
         price = 8000
         product = ProductEvent2Data.product_1
@@ -1188,6 +1214,7 @@ class ProductItemEvent2Performance1Data(DataSet):
         stock = StockEvent2Performance1Data.stock_1
         stock_type = StockTypeEvent2Data.stock_type_1
     class productitem_2:
+        quantity = 1
         item_type = 2
         price = 4000
         product = ProductEvent2Data.product_2
@@ -1195,6 +1222,7 @@ class ProductItemEvent2Performance1Data(DataSet):
         stock = StockEvent2Performance1Data.stock_2
         stock_type = StockTypeEvent2Data.stock_type_2
     class productitem_3:
+        quantity = 1
         item_type = 1
         price = 7000
         product = ProductEvent2Data.product_3
@@ -1202,6 +1230,7 @@ class ProductItemEvent2Performance1Data(DataSet):
         stock = StockEvent2Performance1Data.stock_3
         stock_type = StockTypeEvent2Data.stock_type_3
     class productitem_4:
+        quantity = 1
         item_type = 1
         price = 3000
         product = ProductEvent2Data.product_4
@@ -1209,6 +1238,7 @@ class ProductItemEvent2Performance1Data(DataSet):
         stock = StockEvent2Performance1Data.stock_4
         stock_type = StockTypeEvent2Data.stock_type_4
     class productitem_5:
+        quantity = 1
         item_type = 1
         price = 8000
         product = ProductEvent2Data.product_5
@@ -1218,6 +1248,7 @@ class ProductItemEvent2Performance1Data(DataSet):
 
 class ProductItemEvent2Performance2Data(DataSet):
     class productitem_1:
+        quantity = 1
         item_type = 1
         price = 8000
         product = ProductEvent2Data.product_1
@@ -1225,6 +1256,7 @@ class ProductItemEvent2Performance2Data(DataSet):
         stock = StockEvent2Performance2Data.stock_1
         stock_type = StockTypeEvent2Data.stock_type_1
     class productitem_2:
+        quantity = 1
         item_type = 2
         price = 4000
         product = ProductEvent2Data.product_2
@@ -1232,6 +1264,7 @@ class ProductItemEvent2Performance2Data(DataSet):
         stock = StockEvent2Performance2Data.stock_2
         stock_type = StockTypeEvent2Data.stock_type_2
     class productitem_3:
+        quantity = 1
         item_type = 1
         price = 7000
         product = ProductEvent2Data.product_3
@@ -1239,6 +1272,7 @@ class ProductItemEvent2Performance2Data(DataSet):
         stock = StockEvent2Performance2Data.stock_3
         stock_type = StockTypeEvent2Data.stock_type_3
     class productitem_4:
+        quantity = 1
         item_type = 1
         price = 3000
         product = ProductEvent2Data.product_4
@@ -1246,6 +1280,7 @@ class ProductItemEvent2Performance2Data(DataSet):
         stock = StockEvent2Performance2Data.stock_4
         stock_type = StockTypeEvent2Data.stock_type_4
     class productitem_5:
+        quantity = 1
         item_type = 1
         price = 8000
         product = ProductEvent2Data.product_5
@@ -1255,6 +1290,7 @@ class ProductItemEvent2Performance2Data(DataSet):
 
 class ProductItemEvent2Performance3Data(DataSet):
     class productitem_1:
+        quantity = 1
         item_type = 1
         price = 8000
         product = ProductEvent2Data.product_1
@@ -1262,6 +1298,7 @@ class ProductItemEvent2Performance3Data(DataSet):
         stock = StockEvent2Performance3Data.stock_1
         stock_type = StockTypeEvent2Data.stock_type_1
     class productitem_2:
+        quantity = 1
         item_type = 2
         price = 4000
         product = ProductEvent2Data.product_2
@@ -1269,6 +1306,7 @@ class ProductItemEvent2Performance3Data(DataSet):
         stock = StockEvent2Performance3Data.stock_2
         stock_type = StockTypeEvent2Data.stock_type_2
     class productitem_3:
+        quantity = 1
         item_type = 1
         price = 7000
         product = ProductEvent2Data.product_3
@@ -1276,6 +1314,7 @@ class ProductItemEvent2Performance3Data(DataSet):
         stock = StockEvent2Performance3Data.stock_3
         stock_type = StockTypeEvent2Data.stock_type_3
     class productitem_4:
+        quantity = 1
         item_type = 1
         price = 3000
         product = ProductEvent2Data.product_4
@@ -1283,6 +1322,7 @@ class ProductItemEvent2Performance3Data(DataSet):
         stock = StockEvent2Performance3Data.stock_4
         stock_type = StockTypeEvent2Data.stock_type_4
     class productitem_5:
+        quantity = 1
         item_type = 1
         price = 8000
         product = ProductEvent2Data.product_5

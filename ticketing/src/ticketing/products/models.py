@@ -78,6 +78,8 @@ class ProductItem(BaseModel, Base):
     stock_type_id = Column(BigInteger, ForeignKey('StockType.id'))
     stock_type = relationship('StockType', backref='product_items')
 
+    quantity = Column(Integer, nullable=False)
+
     def get_for_update(self):
         self.stock = Stock.get_for_update(self.performance_id, self.stock_type_id)
         if self.stock != None:
