@@ -1,5 +1,6 @@
+# encoding: utf-8
 
-from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL
+from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, Numeric
 from sqlalchemy.orm import relationship, join, backref, column_property
 
 import sqlahelper
@@ -40,7 +41,7 @@ class Order(Base):
     shipping_address = relationship('ShippingAddress', backref='order')
 
     items = relationship('OrderedProduct')
-    total_amount = Column(BigInteger, nullable=False)
+    total_amount = Column(Numeric(precision=16, scale=2), nullable=False)
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
     status = Column(Integer)
@@ -53,7 +54,7 @@ class OrderedProduct(Base):
     ordered_product_items = relationship('OrderedProductItem', backref='ordered_product')
     product_id = Column(BigInteger, ForeignKey("Product.id"))
     product = relationship('Product', uselist=False)
-    price = Column(BigInteger, nullable=False)
+    price = Column(Numeric(precision=16, scale=2), nullable=False)
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
     status = Column(Integer)
@@ -66,7 +67,7 @@ class OrderedProductItem(Base):
     product_item = relationship('ProductItem', uselist=False)
     seat = relationship('Seat', uselist=False)
     seat_id = Column(BigInteger, ForeignKey('Seat.id'))
-    price = Column(BigInteger, nullable=False)
+    price = Column(Numeric(precision=16, scale=2), nullable=False)
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
     status = Column(Integer)

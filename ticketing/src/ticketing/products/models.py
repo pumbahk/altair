@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL, func
+from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, Numeric, func
 from sqlalchemy.orm import relationship, join, backref, column_property, mapper, relation
 
 from ticketing.utils import StandardEnum
@@ -21,7 +21,7 @@ class PaymentMethod(BaseModel, Base):
     __tablename__ = 'PaymentMethod'
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
-    fee = Column(DECIMAL)
+    fee = Column(Numeric(precision=16, scale=2), nullable=False)
 
     organization_id = Column(BigInteger, ForeignKey('Organization.id'))
     organization = relationship('Organization', uselist=False, backref='payment_method_list')
@@ -36,7 +36,7 @@ class DeliveryMethod(BaseModel, Base):
     __tablename__ = 'DeliveryMethod'
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
-    fee = Column(DECIMAL)
+    fee = Column(Numeric(precision=16, scale=2), nullable=False)
 
     organization_id = Column(BigInteger, ForeignKey('Organization.id'))
     organization = relationship('Organization', uselist=False , backref='delivery_method_list')
@@ -67,7 +67,7 @@ class ProductItem(BaseModel, Base):
     __tablename__ = 'ProductItem'
     id = Column(BigInteger, primary_key=True)
     item_type = Column(Integer)
-    price = Column(BigInteger)
+    price = Column(Numeric(precision=16, scale=2), nullable=False)
 
     product_id = Column(BigInteger, ForeignKey('Product.id'))
     performance_id = Column(BigInteger, ForeignKey('Performance.id'))
@@ -173,7 +173,7 @@ class Product(BaseModel, Base):
     __tablename__ = 'Product'
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
-    price = Column(BigInteger)
+    price = Column(Numeric(precision=16, scale=2), nullable=False)
 
     sales_segment_id = Column(BigInteger, ForeignKey('SalesSegment.id'), nullable=True)
     sales_segment = relationship('SalesSegment', uselist=False, backref='product')
