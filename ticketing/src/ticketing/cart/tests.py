@@ -89,6 +89,16 @@ class CartTests(unittest.TestCase):
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].cart_session_id, u'valid')
 
+    def test_add_seats(self):
+        from ticketing.products.models import Product
+        ordered_products = [(Product(id=i), 1) for i in range(10)]
+        seats = [i for i in range(10)]
+        target = self._makeOne()
+        target.add_seat(seats, ordered_products)
+
+        self.assertEqual(target.products[0].product.id, 0)
+        self.assertEqual(target.products[0].quantity, 1)
+
 class CartedProductTests(unittest.TestCase):
     def setUp(self):
         self.session = _setup_db()
@@ -106,6 +116,50 @@ class CartedProductTests(unittest.TestCase):
 
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
+
+    def test_pop_seats(self):
+        product = testing.DummyResource(items=[testing.DummyResource(stock_id=2),
+                                               testing.DummyResource(stock_id=3)])
+        target = self._makeOne(id=1, product=product, quantity=1)
+        result = target.pop_seats([testing.DummyResource(stock_id=1),
+                                   testing.DummyResource(stock_id=2),
+                                   testing.DummyResource(stock_id=3)])
+
+        self.assertEqual(len(target.items), 2)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].stock_id, 1)
+
+
+class CartedProductItemTests(unittest.TestCase):
+    def setUp(self):
+        self.session = _setup_db()
+
+    def tearDown(self):
+        import transaction
+        transaction.abort()
+        import sqlahelper
+        sqlahelper.get_base().metadata.drop_all()
+
+
+    def _getTarget(self):
+        from . import models
+        return models.CartedProductItem
+
+    def _makeOne(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
+
+    def test_pop_seats(self):
+        product_item = testing.DummyResource(stock_id=2)
+        target = self._makeOne(id=1, product_item=product_item, quantity=2)
+        result = target.pop_seats([testing.DummyResource(stock_id=1),
+                                   testing.DummyResource(stock_id=2),
+                                   testing.DummyResource(stock_id=2),
+                                   testing.DummyResource(stock_id=3)])
+
+        self.assertEqual(len(target.seats), 2)
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0].stock_id, 1)
+        self.assertEqual(result[1].stock_id, 3)
 
 
 class TicketingCartResourceTests(unittest.TestCase):

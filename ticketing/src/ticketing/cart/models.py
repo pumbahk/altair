@@ -32,6 +32,10 @@ from sqlalchemy.orm.exc import NoResultFound
 Base = sqlahelper.get_base()
 DBSession = sqlahelper.get_session()
 
+cart_seat_table = sa.Table("cat_seat", Base.metadata,
+    sa.Column("seat_id", sa.Integer, sa.ForeignKey("Seat.id")),
+    sa.Column("cartproductitem_id", sa.Integer, sa.ForeignKey("ticketing_cartedproductitems.id")),
+)
 
 class CartedProductItem(Base):
     """ カート内プロダクトアイテム + 座席 + 座席状況
@@ -41,12 +45,14 @@ class CartedProductItem(Base):
 
     id = sa.Column(sa.Integer, primary_key=True)
 
+    quantity = sa.Column(sa.Integer)
+
     product_item_id = sa.Column(sa.Integer, sa.ForeignKey("ProductItem.id"))
-    seat_id = sa.Column(sa.Integer, sa.ForeignKey("Seat.id"))
+
     #seat_status_id = sa.Column(sa.Integer, sa.ForeignKey(""))
 
     product_item = orm.relationship("ProductItem")
-    seat = orm.relationship("Seat") # SeatStatusから導出してもよいか？
+    seats = orm.relationship("Seat", secondary=cart_seat_table)
     #seat_status = orm.relationship("SeatStatus")
 
     carted_product_id = sa.Column(sa.Integer, sa.ForeignKey("ticketing_cartedproducts.id"))
@@ -55,6 +61,19 @@ class CartedProductItem(Base):
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, nullable=True, onupdate=datetime.now)
     deleted_at = sa.Column(sa.DateTime, nullable=True)
+
+    def pop_seats(self, seats):
+        """ 必要な座席を取り出して保持する
+
+        必要な座席： :attr:`product_item` の stockが一致する Seat
+        :param seats: list of :class:`ticketing.venues.models.Seat`
+        """
+
+        for i in range(self.quantity):
+            myseat = [seat for seat in seats if seat.stock_id == self.product_item.stock_id][0]
+            seats.remove(myseat)
+            self.seats.append(myseat)
+        return seats
 
 class CartedProduct(Base):
     __tablename__ = 'ticketing_cartedproducts'
@@ -66,10 +85,18 @@ class CartedProduct(Base):
     cart_id = sa.Column(sa.Integer, sa.ForeignKey('ticketing_carts.id'))
     cart = orm.relation("Cart", backref="products")
 
+    product_id = sa.Column(sa.Integer, sa.ForeignKey("Product.id"))
+    product = orm.relationship("Product")
+
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, nullable=True, onupdate=datetime.now)
     deleted_at = sa.Column(sa.DateTime, nullable=True)
 
+    def pop_seats(self, seats):
+        for product_item in self.product.items:
+            cart_product_item = CartedProductItem(carted_product=self, quantity=self.quantity, product_item=product_item)
+            seats = cart_product_item.pop_seats(seats)
+        return seats
 
     @classmethod
     def get_reserved_amount(cls, product_item):
@@ -113,5 +140,8 @@ class Cart(Base):
         :param ordered_products: list of tuple(product, quantity)
         """
         # ordered_productsでループ
-        # ordered_productでCartProductを作成
+        for ordered_product, quantity in ordered_products:
+            # ordered_productでCartProductを作成
+            cart_product = CartedProduct(cart=self, product=ordered_product, quantity=quantity)
+            seats = cart_product.pop_seats(seats)
         # CartProductでseatsから必要な座席を取り出し
