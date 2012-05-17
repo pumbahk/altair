@@ -219,8 +219,6 @@
 }
 #subkindSlideShow #slideShowRight .subkindThumbnail .slideBoxRight{
     padding: 5px;
-    width: 60%
-    float:left;
 }
 .clear {
     clear: both;
@@ -339,3 +337,80 @@
 .changeText {
 	display: block;
 }
+
+/* 
+   for detail search input page
+*/
+
+
+#searchform { /* fixme */
+	background: url(/static/ticketstar/img/first/bg_body.gif) no-repeat 50% 130px;
+}
+
+.searchInput {
+	clear: both;
+	overflow: hidden;
+}
+
+* html .searchInput {
+	height: 1%;
+}
+
+.searchInput {
+    background-color: #e6e6da;
+    margin-bottom: 10px;
+}
+
+.searchInput .searchInputHeader{
+    padding: 15px;
+    width: 820px;
+}
+
+.searchInput dt {
+    background-color: #e6e6da;
+	float: left;
+	width: 123px;}
+
+.searchInput dd {
+	float: right;
+	width: 567px;
+	padding: 15px;
+	background-color: #f7f7ea;
+}
+.searchInput dd {
+    word-spacing: 0.75em;
+    letter-spacing: 0em;
+
+}
+
+.searchInput dd td {
+    line-height: 1.75em;
+}
+
+.searchInput dd td, .searchInput dd th {
+    padding: 13px 7px;
+}
+
+.searchInput dd td.mostleft {
+    width:82px;
+}
+
+.searchInput li {
+    line-height: 2.5em;
+}
+
+#searchFormButton ul{
+    text-align:center;
+}
+
+#searchFormButton li{
+    display:inline-block;
+    padding-right:1em;
+    /display:inline;
+    /zoom:1;
+}
+
+#searchFormButton li input{
+    padding:0.5em;
+}
+

@@ -43,7 +43,7 @@
 	
 	<hr />
 	
-	<!-- InstanceBeginEditable name="cat" --><h1><img id="titleImage" src="/static/ticketstar/img/first/title_first.gif" alt="ヘルプ"b
+	<!-- InstanceBeginEditable name="cat" --><h1><img id="titleImage" src="/static/ticketstar/img/first/title_first.gif" alt="ヘルプ"
 /></h1><!-- InstanceEndEditable -->
 	
 	<!-- ========== main ========== -->

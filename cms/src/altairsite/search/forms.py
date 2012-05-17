@@ -57,13 +57,17 @@ class GanrePartForm(form.Form):
 </tr>
 """ % self
             
-## todo:開催地
+# todo:開催地
+class AreaPartForm(form.Form):
+    def __html__(self):
+        return u"this-is-dummy"
+
 # class AreaPartForm(form.Form):
 #     area_hokkaido = fields.BooleanField(label=u"北海道")
 #     area_tohoku = fields.BooleanField(label=u"東北")
 #     area_kanto = fields.BooleanField(label=u"関東・甲信越")
-#     area_chubu = fields.BooleanField(label=u"中部・東海")
-#     area_kinki = fields.BooleanField(label=u"近畿・北陸")
+#     area_chubu = fields.BooleanField(label=u"中部・東海・北陸")
+#     area_kinki = fields.BooleanField(label=u"近畿")
 #     area_chugoku = fields.BooleanField(label=u"中国・四国")
 #     area_kyushu = fields.BooleanField(label=u"九州沖縄")
 
@@ -107,6 +111,7 @@ class GanrePartForm(form.Form):
 # </tr>
 # """ % self
 
+## todo:公演日
 class PerformanceTermPartForm(form.Form):
     years = [(i, unicode(i)) for i in range(2010, 2020)]
     months = [(i, unicode(i)) for i in range(1, 13)]
@@ -125,8 +130,25 @@ class PerformanceTermPartForm(form.Form):
 %(start_year)s年%(start_month)s月%(start_day)s日 〜 %(end_year)s年%(end_month)s月%(end_day)s日
 """ % self
 
-## todo:公演日
 ## todo:販売条件
-## todo:付加サービス
-## todo:発売日
+class SalesCondPartForm(form.Form):
+    pass
 
+## todo:付加サービス
+class AddedServicePartForm(form.Form):
+    pass
+
+## todo:発売日,  rename
+class AboutSalesDatePartForm(form.Form):
+    pass
+
+def get_search_forms():
+    class forms(object):
+        query = QueryPartForm()
+        ganre = GanrePartForm()
+        area = AreaPartForm()
+        performance_term = PerformanceTermPartForm()
+        sales_cond = SalesCondPartForm()
+        added_service = AddedServicePartForm()
+        about_sales_date = AboutSalesDatePartForm()
+    return forms

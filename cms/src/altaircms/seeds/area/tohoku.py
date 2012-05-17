@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
-TOHO_CHOICES = [
-    ("aoamori", u'青森県'),
+TOHOKU_CHOICES = [
+    ("aomori", u'青森県'),
     ("iwate", u'岩手県'),
     ("miyagi", u'宮城県'),
     ("akita", u'秋田県'),
