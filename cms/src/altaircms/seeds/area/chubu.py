@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-# ("chubu", u"中部・東海・北陸"),##
 
 CHUBU_CHOICES = [
     ("niigata", u'新潟県'),

@@ -13,6 +13,7 @@ def import_symbol(symbol):
     return pkg_resources.EntryPoint.parse("x=%s" % symbol).load(False)
 
 ## todo:フリーワード
+## todo: make query
 class QueryPartForm(form.Form):
     query = fields.TextField(label=u"",)
     query_cond = fields.RadioField(choices=[("intersection", u"全てを含む"), ("union", u"少なくとも1つを含む")], 
@@ -22,6 +23,7 @@ class QueryPartForm(form.Form):
         return u"%(query)s %(query_cond)s" % self
 
 ## todo:ジャンル
+#3 todo: make query
 class GanrePartForm(form.Form):
     music = fields.BooleanField(label=u"音楽", widget=CheckboxWithLabelInput())
     music_subganre_choices = import_symbol("altaircms.seeds.categories.music:MUSIC_SUBCATEGORY_CHOICES")
@@ -38,6 +40,13 @@ class GanrePartForm(form.Form):
     other = fields.BooleanField(label=u"イベント・その他", widget=CheckboxWithLabelInput())
     other_subganre_choices = import_symbol("altaircms.seeds.categories.other:OTHER_SUBCATEGORY_CHOICES")
     other_subganre = CheckboxListField(choices=other_subganre_choices)
+
+    def make_query(self):
+        data = self.data
+        sub_ganres = [data["music_subganre"], data["stage_subganre"], data["sports_subganre"], data["other_subganre"]]
+        return {"top_categories": [k for k in ["music", "stage", "sports", "other"] if data[k]], 
+                "sub_categories": list(set([x for xs in sub_ganres for x in xs]))
+                }
 
     def __html__(self): ## todo refactoring
         return u"""
@@ -60,58 +69,64 @@ class GanrePartForm(form.Form):
 """ % self
             
 # todo:開催地
-class AreaPartForm(form.Form):
-    def __html__(self):
-        return u"this-is-dummy"
-
 # class AreaPartForm(form.Form):
-#     area_hokkaido = fields.BooleanField(label=u"北海道")
-#     area_tohoku = fields.BooleanField(label=u"東北")
-#     area_kanto = fields.BooleanField(label=u"関東・甲信越")
-#     area_chubu = fields.BooleanField(label=u"中部・東海・北陸")
-#     area_kinki = fields.BooleanField(label=u"近畿")
-#     area_chugoku = fields.BooleanField(label=u"中国・四国")
-#     area_kyushu = fields.BooleanField(label=u"九州沖縄")
+#     def __html__(self):
+#         return u"this-is-dummy"
 
-#     pref_hokkaido = CheckboxListField(choices=import_symbol("altaircms.seeds.area.hokkaido:HOKKAIDO_CHOICES"))
-#     pref_tohoku = CheckboxListField(choices=import_symbol("altaircms.seeds.area.tohoku:TOHOKU_CHOICES"))
-#     pref_kanto = CheckboxListField(choices=import_symbol("altaircms.seeds.area.kanto:KANTO_CHOICES"))
-#     pref_chubu = CheckboxListField(choices=import_symbol("altaircms.seeds.area.chubu:CHUBU_CHOICES"))
-#     pref_kinki = CheckboxListField(choices=import_symbol("altaircms.seeds.area.kinki:KINKI_CHOICES"))
-#     pref_chugoku = CheckboxListField(choices=import_symbol("altaircms.seeds.area.chugoku:CHUGOKU_CHOICES"))
-#     pref_kyushu = CheckboxListField(choices=import_symbol("altaircms.seeds.area.kyushu:KYUSHU_CHOICES"))
+class AreaPartForm(form.Form):
+    hokkaido = fields.BooleanField(label=u"北海道", widget=CheckboxWithLabelInput()) 
+    tohoku = fields.BooleanField(label=u"東北", widget=CheckboxWithLabelInput()) 
+    kitakanto = fields.BooleanField(label=u"北関東", widget=CheckboxWithLabelInput()) 
+    shutoken = fields.BooleanField(label=u"首都圏", widget=CheckboxWithLabelInput()) 
+    koshinetsu = fields.BooleanField(label=u"甲信越", widget=CheckboxWithLabelInput()) 
+    hokuriku = fields.BooleanField(label=u"北陸", widget=CheckboxWithLabelInput()) 
+    tokai = fields.BooleanField(label=u"東海", widget=CheckboxWithLabelInput()) 
+    kinki = fields.BooleanField(label=u"近畿", widget=CheckboxWithLabelInput()) 
+    chugoku = fields.BooleanField(label=u"中国", widget=CheckboxWithLabelInput()) 
+    shikoku = fields.BooleanField(label=u"四国", widget=CheckboxWithLabelInput()) 
+    kyushu = fields.BooleanField(label=u"九州", widget=CheckboxWithLabelInput()) 
+    okinawa = fields.BooleanField(label=u"沖縄", widget=CheckboxWithLabelInput()) 
 
-#     def __html__(self): ## todo refactoring
-#         return u"""
-# <tr>
-#   <td class="mostleft">%(area_hokkaido)s</td>
-#   <td>%(preef_hokkaido)s</td>
-# </tr>
-# <tr>
-#   <td class="mostleft">%(area_tohoku)s</td>
-#   <td>%(preef_tohoku)s</td>
-# </tr>
-# <tr>
-#   <td class="mostleft">%(area_kanto)s</td>
-#   <td>%(preef_kanto)s</td>
-# </tr>
-# <tr>
-#   <td class="mostleft">%(area_chubu)s</td>
-#   <td>%(preef_chubu)s</td>
-# </tr>
-# <tr>
-#   <td class="mostleft">%(area_kinki)s</td>
-#   <td>%(preef_kinki)s</td>
-# </tr>
-# <tr>
-#   <td class="mostleft">%(area_chugokou)s</td>
-#   <td>%(preef_chugokou)s</td>
-# </tr>
-# <tr>
-#   <td class="mostleft">%(area_kyushu)s</td>
-#   <td>%(preef_kyushu)s</td>
-# </tr>
-# """ % self
+    pref_hokkaido = CheckboxListField(choices=import_symbol("altaircms.seeds.area.hokkaido:HOKKAIDO_CHOICES"))
+    pref_tohoku = CheckboxListField(choices=import_symbol("altaircms.seeds.area.tohoku:TOHOKU_CHOICES"))
+    pref_kitakanto = CheckboxListField(choices=import_symbol("altaircms.seeds.area.kitakanto:KITAKANTO_CHOICES"))
+    pref_shutoken = CheckboxListField(choices=import_symbol("altaircms.seeds.area.shutoken:SHUTOKEN_CHOICES"))
+    pref_koshinetsu = CheckboxListField(choices=import_symbol("altaircms.seeds.area.koshinetsu:KOSHINETSU_CHOICES"))
+    pref_hokuriku = CheckboxListField(choices=import_symbol("altaircms.seeds.area.hokuriku:HOKURIKU_CHOICES"))
+    pref_tokai = CheckboxListField(choices=import_symbol("altaircms.seeds.area.tokai:TOKAI_CHOICES"))
+    pref_kinki = CheckboxListField(choices=import_symbol("altaircms.seeds.area.kinki:KINKI_CHOICES"))
+    pref_chugoku = CheckboxListField(choices=import_symbol("altaircms.seeds.area.chugoku:CHUGOKU_CHOICES"))
+    pref_shikoku = CheckboxListField(choices=import_symbol("altaircms.seeds.area.shikoku:SHIKOKU_CHOICES"))
+    pref_kyushu = CheckboxListField(choices=import_symbol("altaircms.seeds.area.kyushu:KYUSHU_CHOICES"))
+    pref_okinawa = CheckboxListField(choices=import_symbol("altaircms.seeds.area.okinawa:OKINAWA_CHOICES"))
+
+    areas = ["hokkaido", "tohoku", "kitakanto", "shutoken", "koshinetsu", "hokuriku", "tokai", "kinki", "chugoku", "shikoku", "kyushu", "okinawa"]    
+    def make_query(self):
+        data = self.data
+        prefectures = set()
+        areas = []
+
+        for k in self.areas:
+            if data[k]:
+                areas.append(k)
+                ## areaがチェックされていたら、その区分にある県を全て格納する
+                prefectures.update([p for p, _ in getattr(self, "pref_"+k).choices])
+
+            ## checkされた県の内容がdataの中に入っている(CheckboxListField)
+            prefectures.update(data["pref_"+k])
+
+        return {"areas": areas, 
+                "prefectures": list(prefectures)
+                }
+
+    def __html__(self): ## todo refactoring
+        fmts = (u"""\
+<tr>
+  <td class="mostleft">%%(%s)s</td>
+  <td>%%(pref_%s)s</td>
+</tr>
+""" % (k, k) for k in self.areas)
+        return u"".join(fmts) % self
 
 ## todo:公演日
 years = [(i, unicode(i)) for i in range(2010, 2020)]
@@ -210,8 +225,18 @@ def form_as_filter(qs, form):
     全文検索で検索する。copy fieldを使ってsolarで定義してた。取得されるのはpageset.id
 2. ganreで選択。
 2.a 大ジャンルが選択
-
 ganre = "music"
-Category.filter(Category.)
+Category.filter(Category.name==genre).filter
 2.b 中ジャンルが選択
 """
+from altaircms.models import Category
+from altaircms.models import DBSession
+from altaircms.page.models import PageSet
+import sqlalchemy.orm as orm
+
+def pagesets_by_big_category_name(name):
+    parent_category_stmt = DBSession.query(Category.id).filter_by(name=name).subquery()
+    parents_ids = orm.aliased(Category, parent_category_stmt)
+    category_stmt = Category.query.join(parents_ids, parents_ids.id==Category.parent_id).all()
+
+

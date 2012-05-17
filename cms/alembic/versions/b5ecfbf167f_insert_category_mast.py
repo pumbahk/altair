@@ -69,7 +69,7 @@ def _create_categories(site):
     mnode = lnode.add(Category(site=site, hierarchy=u"中", label=u"邦楽", parent=lnode.root))
     snode = mnode.add(Category(site=site, hierarchy=u"小", label=u"ポップス・ロック(邦楽)", parent=mnode.root))
 
-    mnode = lnode.add(Category(site=site, hierarchy=u"中", label=u"洋楽", url="http://example.com"))
+    mnode = lnode.add(Category(site=site, hierarchy=u"中", label=u"洋楽", url="http://example.com", parent=lnode.root))
     snode = mnode.add(Category(site=site, hierarchy=u"小", label=u"ポップス・ロック(洋楽)", parent=mnode.root))
 
     ## スポーツ

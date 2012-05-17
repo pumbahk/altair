@@ -93,9 +93,7 @@ class CheckBoxFieldValueTest(unittest.TestCase):
         form = self._makeForm(target_field, formdata=postdata)
         
         result = form.data["target"]
-        self.assertEquals(result, 
-                        {u'1': True, u'3': True, u'2': True, u'5': False, u'4': False}
-                         )
+        self.assertEquals(sorted(result), sorted(["1", "2", "3"]))
 
 
 if __name__ == "__main__":

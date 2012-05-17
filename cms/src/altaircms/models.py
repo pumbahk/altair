@@ -203,7 +203,7 @@ class Category(Base):
     site_id = sa.Column(sa.Integer, sa.ForeignKey("site.id"))
     site = orm.relationship("Site", backref="categories", uselist=False)
     parent_id = sa.Column(sa.Integer, sa.ForeignKey("category.id"))
-    parent = orm.relationship("Category", remote_side=[id], uselist=False)
+    parent = orm.relationship("Category", remote_side=[id], backref="children", uselist=False)
     #parent = orm.relationship("Category", remote_side=[id], uselist=False, cascade="all")
 
     label = sa.Column(sa.Unicode(length=255))
