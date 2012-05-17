@@ -37,7 +37,11 @@ var SEAT_DATA_URL = "${request.route_path('api.get_seats', venue_id=performance.
 </script>
 
 <div class="row-fluid">
-  <%include file="../parts/_menu.html"  args="event=performance.event" />
+  <%include file="/parts/_menu.html"  args="event=performance.event" />
+
+  <span class="span10">
+    <%include file="/parts/_breadcrumbs.html" />
+  </span>
 
   <span class="span10">
     <div class="page-header">
@@ -99,7 +103,7 @@ var SEAT_DATA_URL = "${request.route_path('api.get_seats', venue_id=performance.
           <%include file="./_seat_allocation.html" />
         </div>
         <div class="tab-pane" id="product">
-          <%include file="/products/_list.html" args="event=performance.event, performance=performance" />
+          <%include file="/product_items/_list.html" args="event=performance.event, performance=performance" />
           <%include file="/products/_action_button.html" args="event=performance.event, performance=performance" />
         </div>
         <div class="tab-pane" id="ticket-designer">
