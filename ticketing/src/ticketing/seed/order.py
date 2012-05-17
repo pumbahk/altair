@@ -5,6 +5,7 @@ from ticketing.orders.models import Order, OrderedProduct, OrderedProductItem
 from .product import *
 from .venue import *
 from .user import *
+from .organization import *
 
 class ShippingAddressData(DataSet):
     class shipping_address_1:
@@ -46,13 +47,13 @@ class OrderData(DataSet):
         user = UserData.user_1
         shipping_address = ShippingAddressData.shipping_address_1
         total_amount = 12000
-        status = 0
+        ordered_from = OrganizationData.organization_0
 
     class order_2:
         user = UserData.user_2
         shipping_address = ShippingAddressData.shipping_address_2
         total_amount = 7000
-        status = 0
+        ordered_from = OrganizationData.organization_0
 
 class OrderedProductOrder1Data(DataSet):
     class ordered_product_1:

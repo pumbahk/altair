@@ -1,17 +1,14 @@
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, Numeric
 from sqlalchemy.orm import relationship, join, backref, column_property
 
-import sqlahelper
-session = sqlahelper.get_session()
-Base = sqlahelper.get_base()
-
+from ticketing.models import Base, BaseModel
 from ticketing.users.models import User
 from ticketing.products.models import Product, ProductItem
 from ticketing.venues.models import Seat
 
-class ShippingAddress(Base):
+class ShippingAddress(BaseModel, Base):
     __tablename__ = 'ShippingAddress'
     id = Column(BigInteger, primary_key=True)
     user_id = Column(BigInteger, ForeignKey("User.id"))
@@ -28,46 +25,36 @@ class ShippingAddress(Base):
     tel_1 = Column(String(32))
     tel_2 = Column(String(32))
     fax = Column(String(32))
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
-    status = Column(Integer)
 
-class Order(Base):
+class Order(BaseModel, Base):
     __tablename__ = 'Order'
     id = Column(BigInteger, primary_key=True)
     user_id = Column(BigInteger, ForeignKey("User.id"))
-    user = relationship('User', uselist=False)
+    user = relationship('User')
     shipping_address_id = Column(BigInteger, ForeignKey("ShippingAddress.id"))
     shipping_address = relationship('ShippingAddress', backref='order')
+    organization_id = Column(BigInteger, ForeignKey("Organization.id"))
+    ordered_from = relationship('Organization', backref='orders')
 
     items = relationship('OrderedProduct')
     total_amount = Column(Numeric(precision=16, scale=2), nullable=False)
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
-    status = Column(Integer)
 
-class OrderedProduct(Base):
+class OrderedProduct(BaseModel, Base):
     __tablename__ = 'OrderedProduct'
     id = Column(BigInteger, primary_key=True)
     order_id = Column(BigInteger, ForeignKey("Order.id"))
-    order = relationship('Order', backref='order_item')
-    ordered_product_items = relationship('OrderedProductItem', backref='ordered_product')
+    order = relationship('Order', backref='ordered_products')
     product_id = Column(BigInteger, ForeignKey("Product.id"))
-    product = relationship('Product', uselist=False)
+    product = relationship('Product')
     price = Column(Numeric(precision=16, scale=2), nullable=False)
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
-    status = Column(Integer)
 
-class OrderedProductItem(Base):
+class OrderedProductItem(BaseModel, Base):
     __tablename__ = 'OrderedProductItem'
     id = Column(BigInteger, primary_key=True)
     ordered_product_id = Column(BigInteger, ForeignKey("OrderedProduct.id"))
+    ordered_product = relationship('OrderedProduct', backref='ordered_product_items')
     product_item_id = Column(BigInteger, ForeignKey("ProductItem.id"))
-    product_item = relationship('ProductItem', uselist=False)
-    seat = relationship('Seat', uselist=False)
+    product_item = relationship('ProductItem')
     seat_id = Column(BigInteger, ForeignKey('Seat.id'))
+    seat = relationship('Seat')
     price = Column(Numeric(precision=16, scale=2), nullable=False)
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
-    status = Column(Integer)

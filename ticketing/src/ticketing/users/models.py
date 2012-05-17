@@ -27,7 +27,7 @@ class UserProfile(Base):
     __tablename__ = 'UserProfile'
     id = Column(BigInteger, primary_key=True)
     user_id = Column(BigInteger, ForeignKey('User.id'))
-    user = relationship('User', backref="user_profile", uselist=False)
+    user = relationship('User', backref=backref("user_profile", uselist=False))
 
     email = Column(String(255))
     nick_name = Column(String(255))
