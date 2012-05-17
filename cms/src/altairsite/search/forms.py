@@ -1,4 +1,6 @@
 #-*- coding:utf-8 -*-
+from datetime import datetime
+
 from wtforms import form
 from wtforms import fields
 from wtforms import widgets
@@ -23,7 +25,7 @@ class QueryPartForm(form.Form):
         return u"%(query)s %(query_cond)s" % self
 
 ## todo:ジャンル
-#3 todo: make query
+## todo: make query
 class GanrePartForm(form.Form):
     music = fields.BooleanField(label=u"音楽", widget=CheckboxWithLabelInput())
     music_subganre_choices = import_symbol("altaircms.seeds.categories.music:MUSIC_SUBCATEGORY_CHOICES")
@@ -105,7 +107,7 @@ class AreaPartForm(form.Form):
         data = self.data
         prefectures = set()
         areas = []
-
+        
         for k in self.areas:
             if data[k]:
                 areas.append(k)
@@ -147,6 +149,13 @@ class PerformanceTermPartForm(form.Form):
 %(start_year)s年%(start_month)s月%(start_day)s日 〜 %(end_year)s年%(end_month)s月%(end_day)s日
 """ % self
 
+    def make_query(self):
+        data = self.data
+        start_date = datetime(data["start_year"], data["start_month"], data["start_day"])
+        end_date = datetime(data["end_year"], data["end_month"], data["end_day"])
+        return {"start_date": start_date, 
+                "end_date": end_date}
+
 ## todo:販売条件
 class DealCondPartForm(form.Form):
     deal_cond = fields.RadioField(choices=[("early", u"先行"), ("normal", u"一般")], 
@@ -155,6 +164,11 @@ class DealCondPartForm(form.Form):
     def __html__(self):
         return u"%(deal_cond)s" % self
 
+    def make_query(self):
+        import warnings
+        warnigs.warn("this flag is not support yet.")
+        return {}
+
 ## todo:付加サービス
 class AddedServicePartForm(form.Form):
     choices = [("select-seat", u"座席選択可能"), ("keep-adjust", u"お隣キープ"), ("2d-market", u"2次市場")]
@@ -162,6 +176,12 @@ class AddedServicePartForm(form.Form):
 
     def __html__(self):
         return u"%(added_services)s" % self
+
+    def make_query(self):
+        import warnings
+        warnigs.warn("this flag is not support yet.")
+        return {}
+
 
 ## todo:発売日,  rename
 class AboutDealPartForm(form.Form):
@@ -189,6 +209,18 @@ class AboutDealPartForm(form.Form):
 </ul>
 """ % self
 
+    def make_query(self):
+        data = self.data
+        params = {}
+        if data["before_deal_start_flg"]:
+            params["before_deal_start"] = data["before_deal_start"]
+        if data["till_deal_end_flg"]:
+            params["till_deal_end"] = data["till_deal_end"]
+
+        params.update(closed_only=data["closed_only"], 
+                      canceled_only=data["canceled_only"]) ## todo:fix
+        return params
+
 class DetailSearchQueryForm(object):
     def __init__(self, formdata=None):
         self._forms = []
@@ -205,7 +237,13 @@ class DetailSearchQueryForm(object):
         return form
 
     def validate(self):
-        return any(form.validate() for form in self._forms)
+        return all(form.validate() for form in self._forms)
+
+    def make_query(self):
+        params = {}
+        for form in self._form:
+            params.update(form.make_query())
+        return params
 
     def as_filter(self, qs=None):
         for form in self._forms:

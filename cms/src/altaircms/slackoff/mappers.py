@@ -3,6 +3,10 @@
 from altaircms.models import model_to_dict
 import altaircms.helpers as h
 
+import pkg_resources
+def import_symbol(symbol):
+    return pkg_resources.EntryPoint.parse("x=%s" % symbol).load(False)
+
 class ObjectLike(dict):
     __getattr__ = dict.get
     __setattr__ = dict.__setitem__
@@ -31,10 +35,11 @@ def promotion_unit_mapper(request, obj):
     objlike.link = obj.get_link(request)
     return objlike
     
-
+PDICT = import_symbol("altaircms.seeds.prefecture:PrefectureMapping").name_to_label
 def performance_mapper(request, obj):
     objlike = ObjectLike(**model_to_dict(obj))
     objlike.event = obj.event.title if obj.event else None
+    objlike.venue = PDICT.get(obj.venue, u"-")
     return objlike
 
 def ticket_mapper(request, obj):

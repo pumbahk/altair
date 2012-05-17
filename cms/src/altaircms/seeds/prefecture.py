@@ -4,12 +4,12 @@ from .mapping import IdNameLabelMapping
 PREFECTURE_CHOICES = [
     ## name, label
     ("hokkaido", u'北海道'),
-    ("aoamori", u'青森県'),
+    ("aomori", u'青森県'),
     ("iwate", u'岩手県'),
     ("miyagi", u'宮城県'),
     ("akita", u'秋田県'),
     ("yamagata", u'山形県'),
-    ("fukuoka", u'福島県'),
+    ("fukushima", u'福島県'),
     ("ibaraki", u'茨城県'),
     ("tochigi", u'栃木県'),
     ("gunma", u'群馬県'),
@@ -30,7 +30,7 @@ PREFECTURE_CHOICES = [
     ("shiga", u'滋賀県'),
     ("kyoto", u'京都府'),
     ("osaka", u'大阪府'),
-    ("hokkaido", u'兵庫県'),
+    ("hyogo", u'兵庫県'),
     ("nara", u'奈良県'),
     ("wakayama", u'和歌山県'),
     ("tottori ", u'鳥取県'),

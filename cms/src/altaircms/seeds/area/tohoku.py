@@ -5,6 +5,6 @@ TOHOKU_CHOICES = [
     ("miyagi", u'宮城県'),
     ("akita", u'秋田県'),
     ("yamagata", u'山形県'),
-    ("fukuoka", u'福島県'),
+    ("fukushima", u'福島県'),
 ]
 

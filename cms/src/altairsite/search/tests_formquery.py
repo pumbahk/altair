@@ -60,8 +60,10 @@ class AreaPartFormQueryTest(unittest.TestCase):
         target = self._makeOne(params)
         
         result = self._callFUT(target)
+
         self.assertEquals(["tohoku"], result["areas"])
-        self.assertEquals(['fukuoka', 'miyagi', 'aomori', 'akita', 'iwate', 'yamagata'], result["prefectures"])
+        self.assertEquals(sorted(['fukushima', 'miyagi', 'aomori', 'akita', 'iwate', 'yamagata']),
+                          sorted(result["prefectures"]))
 
     def test_prefectures(self):
         params = MultiDict(tokyo="on")
