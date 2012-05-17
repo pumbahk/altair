@@ -82,9 +82,13 @@ class TicketingCartResrouce(object):
         """
 
     def select_seat(self, stock_id, quantity):
-        """ 隣接座席で確保する
+        """ 指定在庫（席種）を隣接座席で確保する
         必要な席種かつ確保されていない座席
         を含む必要数量の連席情報の最初の行
+
+        :param stock_id: 在庫ID
+        :param quantity: 数量
+        :return: list of :class:`ticketing.venues.models.SeatStatus`
         """
 
         sub = m.DBSession.query(v_models.SeatAdjacencySet.id).filter(
@@ -114,18 +118,19 @@ class TicketingCartResrouce(object):
 
 
         seat_statuses = m.DBSession.query(v_models.SeatStatus).filter(
-            v_models.SeatStatus.seat_id==v_models.Seat.id
-        ).filter(
-            v_models.Seat.id==v_models.seat_seat_adjacency_table.c.seat_id
-        ).filter(
-            v_models.SeatAdjacency.id==v_models.seat_seat_adjacency_table.c.seat_adjacency_id
-        ).filter(
-            v_models.SeatAdjacency.adjacency_set_id.in_(sub)
-        ).all()
+                v_models.SeatStatus.seat_id==v_models.Seat.id
+            ).filter(
+                v_models.Seat.id==v_models.seat_seat_adjacency_table.c.seat_id
+            ).filter(
+                v_models.SeatAdjacency.id==v_models.seat_seat_adjacency_table.c.seat_adjacency_id
+            ).filter(
+                v_models.SeatAdjacency.adjacency_set_id.in_(sub)
+            ).all()
 
-        m.DBSession.query(v_models.SeatStatus).filter(
-            v_models.SeatStatus.seat_id.in_([s.seat_id for s in seat_statuses])
-        ).update({v_models.SeatStatus.status: int(v_models.SeatStatusEnum.InCart)})
+        if len(seat_statuses) > 0:
+            m.DBSession.query(v_models.SeatStatus).filter(
+                    v_models.SeatStatus.seat_id.in_([s.seat_id for s in seat_statuses])
+                ).update({v_models.SeatStatus.status: int(v_models.SeatStatusEnum.InCart)})
 
         return seat_statuses
 
