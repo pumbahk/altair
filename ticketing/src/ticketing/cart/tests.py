@@ -154,12 +154,14 @@ class CartedProductItemTests(unittest.TestCase):
         result = target.pop_seats([testing.DummyResource(stock_id=1),
                                    testing.DummyResource(stock_id=2),
                                    testing.DummyResource(stock_id=2),
-                                   testing.DummyResource(stock_id=3)])
+                                   testing.DummyResource(stock_id=3),
+                                   testing.DummyResource(stock_id=2)])
 
         self.assertEqual(len(target.seats), 2)
-        self.assertEqual(len(result), 2)
+        self.assertEqual(len(result), 3)
         self.assertEqual(result[0].stock_id, 1)
         self.assertEqual(result[1].stock_id, 3)
+        self.assertEqual(result[2].stock_id, 2)
 
 
 class TicketingCartResourceTests(unittest.TestCase):
