@@ -188,9 +188,10 @@ class Category(Base):
 
     ※ このオブジェクトは、対応するページへのリンクを持つ(これはCMSで生成されないページへのリンクで有る場合もある)
 
-    labelはhtml要素のclass属性などに使われる(cssで画像を付加するためなどに).
-    labelはascii only
-    nameはカテゴリ名(imgのalt属性に使われることがある)
+    nameはhtml要素のclass属性などに使われる(cssで画像を付加するためなどに).
+    nameはascii only
+    labelはカテゴリ名(imgのalt属性に使われることがある)
+    e.g. name=music,  label=音楽
     """
     __tablename__ = "category"
     __tableargs__ = (
@@ -205,9 +206,9 @@ class Category(Base):
     parent = orm.relationship("Category", remote_side=[id], uselist=False)
     #parent = orm.relationship("Category", remote_side=[id], uselist=False, cascade="all")
 
-    label = sa.Column(sa.String(length=255), nullable=False)
+    label = sa.Column(sa.Unicode(length=255))
     imgsrc = sa.Column(sa.String(length=255), nullable=False)
-    name = sa.Column(sa.Unicode(length=255), nullable=False)
+    name = sa.Column(sa.String(length=255))
     hierarchy = sa.Column(sa.Unicode(length=255), nullable=False)
     
     url = sa.Column(sa.Unicode(length=255))

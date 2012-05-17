@@ -21,10 +21,10 @@
 			<ul>
 			  <% categories = list(top_outer_categories)%>
 			  % for category in categories[:-1]:
-			    <li><a href="${h.link.get_link_from_category(request, category)}" alt="${category.name}">${category.name}</a></li>
+			    <li><a href="${h.link.get_link_from_category(request, category)}" alt="${category.label}">${category.label}</a></li>
 			  % endfor
 			  % if categories:
-			    <li><a href="${h.link.get_link_from_category(request, categories[-1])}" alt="${categories[-1].name}">${categories[-1].name}</a></li>
+			    <li><a href="${h.link.get_link_from_category(request, categories[-1])}" alt="${categories[-1].label}">${categories[-1].label}</a></li>
 			  % endif
    	       </ul>
 		  </dd>
@@ -39,19 +39,19 @@
 		<ul id="globalNav1">
 		  % for category in categories:
 		     <li><a href="${h.link.get_link_from_category(request, category)}">
-				 <img src="${category.imgsrc}" alt="${category.name}"/></a>
+				 <img src="${category.imgsrc}" alt="${category.label}"/></a>
 			 </li>
 		     ## dirty hack(cssのbackground-imageで表示しようとしたが横幅を揃えることができず失敗)
-		     ## <li class="category ${category.label}"><a href="#" alt="${category.name}"><span style="visibility:hidden;">　${category.name}　@</span></a></li>
+		     ## <li class="category ${category.name}"><a href="#" alt="${category.label}"><span style="visibility:hidden;">　${category.label}　</span></a></li>
 		  % endfor
 		</ul>
 		<ul id="globalNav2">
 			  <% nav_categories = list(top_inner_categories)%>
 			  % for category in nav_categories[:-1]:
-			    <li><a href="${h.link.get_link_from_category(request, category)}" alt="${category.name}">${category.name}</a></li>
+			    <li><a href="${h.link.get_link_from_category(request, category)}" alt="${category.label}">${category.label}</a></li>
 			  % endfor
 			  % if categories:
-			    <li><a href="${h.link.get_link_from_category(request, nav_categories[-1])}" alt="${nav_categories[-1].name}">${nav_categories[-1].name}</a></li>
+			    <li><a href="${h.link.get_link_from_category(request, nav_categories[-1])}" alt="${nav_categories[-1].label}">${nav_categories[-1].label}</a></li>
 			  % endif
 		</ul>
 	</div>

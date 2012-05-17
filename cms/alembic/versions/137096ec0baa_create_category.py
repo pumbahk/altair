@@ -18,7 +18,7 @@ def upgrade():
                     sa.Column(u"id",sa.Integer, primary_key=True, nullable=False), 
                     sa.Column(u"site_id", sa.Integer, sa.ForeignKey("site.id", name="fk_category_site_id")),
                     sa.Column(u"parent_id", sa.Integer, sa.ForeignKey("category.id", name="fk_category_parent_id")),
-                    sa.Column(u"name", sa.Unicode(length=255), nullable=False),
+                    sa.Column(u"name", sa.String(length=255)),
                     sa.Column(u"hierarchy", sa.Unicode(length=255), nullable=False),
                     sa.Column(u"url", sa.Unicode(length=255)),
                     sa.Column(u"pageset_id", sa.Integer, sa.ForeignKey("pagesets.id", name="fk_category_pageset_id")), 
