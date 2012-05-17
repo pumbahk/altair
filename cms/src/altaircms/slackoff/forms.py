@@ -17,19 +17,27 @@ from ..page.models import PageSet, Page
 from ..topic.models import Topic
 from ..topcontent.models import Topcontent
 
+
+import pkg_resources
+def import_symbol(symbol):
+    return pkg_resources.EntryPoint.parse("x=%s" % symbol).load(False)
+
+
 class LayoutForm(Form):
     title = fields.TextField(u'タイトル', validators=[validators.Required()])
     blocks = fields.TextField(u'ブロック', validators=[validators.Required()])
     template_filename = fields.TextField(u'テンプレートファイル名', validators=[validators.Required()])
+
     
 class PerformanceForm(Form):
     backend_performance_id = fields.IntegerField(validators=[required_field()], label=u"バックエンド管理番号")
     event = dynamic_query_select_field_factory(Event, allow_blank=False, label=u"イベント", get_label=lambda obj: obj.title)
     title = fields.TextField(label=u"講演タイトル")
-    venue = fields.TextField(label=u"開催場所")
+    venue = fields.SelectField(label=u"開催場所", choices=import_symbol("altaircms.seeds.prefecture:PREFECTURE_JCHOICES"))
     open_on = fields.DateTimeField(label=u"開場時間", validators=[required_field()])
     start_on = fields.DateTimeField(label=u"開始時間", validators=[required_field()])
     close_on = fields.DateTimeField(label=u"終了時間", validators=[required_field()])
+
 
 class TicketForm(Form):
     orderno = fields.IntegerField(label=u"表示順序", validators=[required_field()])
@@ -48,10 +56,12 @@ class PromotionUnitForm(Form):
         ImageAsset, allow_blank=False, label=u"サブ画像(60x60)",
         get_label=lambda obj: obj.title or u"名前なし")
     text = fields.TextField(validators=[required_field()], label=u"画像下のメッセージ")
+
     
 class PromotionForm(Form):
     name = fields.TextField(label=u"プロモーション枠名")
     ## site
+
 
 class CategoryForm(Form):
     name = fields.TextField(label=u"カテゴリ名")
@@ -86,6 +96,7 @@ def as_filter(kwargs):
         return qs
     return wrapper
 
+
 class CategoryFilterForm(Form):
     hierarchy = fields.SelectField(label=u"階層", choices=[("__None", "----------")]+[(x, x) for x in [u"大", u"中", u"小"]])
     parent = dynamic_query_select_field_factory(
@@ -93,6 +104,7 @@ class CategoryFilterForm(Form):
         get_label=lambda obj: obj.name or u"---名前なし---")
 
     as_filter = as_filter(["hierarchy", "parent"])
+
 
 class TopicForm(Form):
     title = fields.TextField(label=u"タイトル", validators=[required_field()])
