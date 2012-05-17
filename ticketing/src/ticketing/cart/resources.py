@@ -77,9 +77,6 @@ class TicketingCartResrouce(object):
         q = itertools.groupby(q, key=lambda x: x[0].stock_id)
         return ((stock_id, sum(quantity for _, quantity in ordered_items)) for stock_id, ordered_items in q)
 
-    def take_seats_in_cart(self, seats):
-        """  Seat状況更新(SeatStatus)
-        """
 
     def select_seat(self, stock_id, quantity):
         """ 指定在庫（席種）を隣接座席で確保する
@@ -141,7 +138,7 @@ class TicketingCartResrouce(object):
         同じ在庫にひもづくプロダクトアイテムを集約して在庫と数量の組に変換
 
 
-        :param order_items: list of tuple(product, quantity)
+        :param ordered_products: list of tuple(product, quantity)
         :returns: :class:`.models.Cart`
         """
 
@@ -154,4 +151,4 @@ class TicketingCartResrouce(object):
                 return False
             seats += self.select_seat(stock_id, quantity)
         # TODO: Cart作成,CartedProductItemに座席割当(Cart,CartedProduct, CartedProductItem)
-        self.take_seats_in_cart(seats)
+        cart.add_seat(seats)

@@ -106,3 +106,12 @@ class Cart(Base):
         """ 決済完了までの時間制限
         """
         return self.created_at > datetime.now() - timedelta(minutes=expire_span_minutes)
+
+    def add_seat(self, seats, ordered_products):
+        """ 確保した座席を追加
+        :param seats: list of Seat
+        :param ordered_products: list of tuple(product, quantity)
+        """
+        # ordered_productsでループ
+        # ordered_productでCartProductを作成
+        # CartProductでseatsから必要な座席を取り出し
