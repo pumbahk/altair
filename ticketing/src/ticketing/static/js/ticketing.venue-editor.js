@@ -162,8 +162,10 @@
       shift: false,
       xml: null,
       seat_meta: null,
-      stock_types: null,
-      keyEvents: null
+      seat_types: null,
+      metadata: null,
+      keyEvents: null,
+      adjacencies: null
     },
 
     methods: {
@@ -172,21 +174,44 @@
         canvas.empty();
         this.xml = xml;
         this.canvas = canvas[0];
+        this.metadata = metadata;
 
-        this.initDrawable(metadata);
+        this.additionalUI();
+        this.initDrawable();
 
         this.mask = new Fashion.Rect(0,0,0,0);
         this.mask.style(Util.convertToFashionStyle(CONF.DEFAULT.STYLE.MASK));
+      },
+
+      additionalUI: function() {
+
+        { // adjacencies
+          this.adjacencies = this.metadata.seat_adjacencies;
+          var holder = $('#adjacencies_selector');
+          for (var i in this.adjacencies) {
+            $('<option value="'+ i +'">'+i+'</option>').appendTo(holder);
+          }
+          if (i) {
+            holder.css("float", "right");
+            holder.css("width", "50");
+            holder.bind('change', function() {
+              console.log($('#adjacencies_selector option:selected').val());
+            });
+          } else {
+            holder.css("display", "none");
+          }
+        }
+
       },
 
       dispose: function() {
         this.removeKeyEvent();
       },
 
-      initDrawable: function(metadata) {
+      initDrawable: function() {
 
-        this.seat_meta = metadata.seats;
-        this.stock_types = metadata.stock_types;
+        this.seat_meta = this.metadata.seats;
+        this.seat_types = this.metadata.seat_types;
 
         if (this.drawable !== null) return;
         var xml = this.xml;
@@ -242,7 +267,6 @@
                   parseFloat(attrs.height)));
 
               shape.style(Util.convertToFashionStyle(CONF.DEFAULT.STYLE.SEAT));
-
               shape.id = attrs.id;
 
               break;
@@ -475,6 +499,7 @@
       retval.button({ text: false, icons: { primary: icon }});
       return retval;
     }
+
     newButton('ui-icon-arrowthick-1-ne').click(
       function() {
         if (data.manager)
@@ -499,6 +524,10 @@
         if (data.manager)
           data.manager.changeTool('zoomout');
       });
+
+    var holder = $('<select id="adjacencies_selector"></select>');
+    holder.appendTo(toolbar);
+    $('<option value="1">1</option>').appendTo(holder);
 
     toolbar.buttonset();
 
