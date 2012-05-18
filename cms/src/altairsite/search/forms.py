@@ -199,7 +199,7 @@ class AboutDealPartForm(form.Form):
     till_deal_end_flg = fields.BooleanField(label=u"")
     till_deal_end = fields.SelectField(choices=days)
     
-    closed_includep = fields.BooleanField(label=u"販売終了", widget=CheckboxWithLabelInput())
+    closed_only = fields.BooleanField(label=u"販売終了", widget=CheckboxWithLabelInput())
     canceled_only = fields.BooleanField(label=u"公演中止", widget=CheckboxWithLabelInput())
 
     def __html__(self):
@@ -212,7 +212,7 @@ class AboutDealPartForm(form.Form):
     %(till_deal_end_flg)s販売終了まで%(till_deal_end)s日
   </li>
   <li>
-    %(closed_includep)s %(canceled_only)s
+    %(closed_only)s %(canceled_only)s
   </li>
 </ul>
 """ % self
@@ -224,7 +224,7 @@ class AboutDealPartForm(form.Form):
             params["before_deal_start"] = data["before_deal_start"] 
         if data["till_deal_end_flg"]:
             params["till_deal_end"] = data["till_deal_end"] 
-        params.update(closed_includep=data.get("closed_includep"), 
+        params.update(closed_only=data.get("closed_only"), 
                       canceled_only=data.get("canceled_only")) ## todo:fix
         return params
 

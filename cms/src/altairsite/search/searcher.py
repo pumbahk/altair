@@ -20,19 +20,20 @@ view/resourceからは、apiを呼び出す
 
 todo: 高速化
 """
-def search_page_set_query(query_params): #api
+def search_page_set_query(query_params): 
     """ 検索する関数.このモジュールのほかの関数は全てこれのためにある。
 
+    0. フリーワード検索追加.
     1. カテゴリトップページから、対応するページを見つける
     2. イベントデータから、対応するページを見つける(sub_qs)
     """
     sub_qs = DBSession.query(Event.id)
     sub_qs = events_by_area(sub_qs, query_params.get("prefectures"))
     sub_qs = events_by_performance_term(sub_qs, query_params.get("start_date"), query_params.get("end_date"))
-    sub_qs = events_by_deal_cond_flags(sub_qs, query_params) ## fixme
-    sub_qs = events_by_added_service(sub_qs, query_params) ## fixme
+    sub_qs = events_by_deal_cond_flags(sub_qs, query_params) ## 未実装
+    sub_qs = events_by_added_service(sub_qs, query_params) ## 未実装
     sub_qs = events_by_about_deal(sub_qs, query_params.get("before_deal_start"), query_params.get("till_deal_end"), 
-                                  query_params.get("closed_includep"), query_params.get("canceld_includep"))
+                                  query_params.get("closed_only"), query_params.get("canceld_only"))
 
     qs = PageSet.query
     qs = search_by_ganre(query_params.get("top_categories"), query_params.get("sub_categories"), qs=qs)
@@ -97,13 +98,9 @@ def events_by_added_service(qs, flags):
     warnings.warn("not implemented, yet")
     return qs
 
-def events_by_about_deal(qs, before_deal_start, till_deal_end, closed_includep, canceld_includep, _nowday=datetime.datetime.now):
-    ## todo closed_includep, canceld_includep support
-    ###
-    import warnings
-    warnings.warn("closed_includep and canceld_includep option is not supported")
-
+def events_by_about_deal(qs, before_deal_start, till_deal_end, closed_only, canceld_only, _nowday=datetime.datetime.now):
     today = _nowday()
+
     if before_deal_start:
         ## 販売開始？本当はN日以内に発送らし
         end_point = today+datetime.timedelta(days=before_deal_start)
@@ -113,6 +110,12 @@ def events_by_about_deal(qs, before_deal_start, till_deal_end, closed_includep, 
         end_point = today+datetime.timedelta(days=till_deal_end)
         qs = qs.filter(today <= Event.deal_close).filter(Event.deal_close <= end_point)
 
-    if not closed_includep:
-        qs = qs.filter((today <= Event.deal_close) | (Event.deal_close == None))
+    ## 通常は、現在の日付よりも未来にあるイベント以外見せない
+    if closed_only:
+        qs = qs.filter(today > Event.deal_close)
+    else:
+        qs = qs.filter((today <= Event.deal_close )|( Event.deal_close == None))
+        
+    if canceld_only:
+        qs = qs.filter(Performance.event_id==Event.id).filter(Performance.canceld==True)
     return qs

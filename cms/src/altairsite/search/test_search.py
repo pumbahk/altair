@@ -21,6 +21,10 @@ def setUpModule():
     sqlahelper.get_base().metadata.drop_all()
     sqlahelper.get_base().metadata.create_all()
 
+def tearDownModule():
+    import transaction
+    transaction.abort()
+
 ##todo: impement
 class SearchByFreewordTests(unittest.TestCase):
     """
@@ -336,7 +340,7 @@ class EventsByAboutDealPartTests(unittest.TestCase):
         self.assertEquals(2, result.count())
         self.assertEquals([ev1, ev2], list(result))
 
-    def test_by_closed_includep(self):
+    def test_by_closed_only(self):
         from altaircms.event.models import Event
         
         ev0 = Event(deal_close=datetime(2012, 1, 1)+timedelta(days=-10))
@@ -350,10 +354,32 @@ class EventsByAboutDealPartTests(unittest.TestCase):
         self.assertEquals(2, result.count())
         self.assertEquals([ev1, ev2], list(result))
 
-        ### チェック入れた場合には終了したものも検索対象に含まれる
+        ### チェック入れた場合には終了したものみが検索対象に含まれる
         result = self._callFUT(Event.query, None, None, True, None, _nowday=lambda : datetime(2012, 1, 1))
-        self.assertEquals(3, result.count())
-        self.assertEquals([ev0, ev1, ev2], list(result))
+        self.assertEquals(1, result.count())
+        self.assertEquals([ev0], list(result))
+
+    def test_by_canceld_only(self):
+          from altaircms.event.models import Event
+          from altaircms.models import Performance
+  
+          ev0 = Event()
+          pef00 = Performance(event=ev0, open_on=datetime(2012, 1, 1), backend_performance_id=0)
+          pef01 = Performance(event=ev0, open_on=datetime(2012, 1, 4), backend_performance_id=1, canceld=True)
+          ev1 = Event()
+          pef10 = Performance(event=ev1, open_on=datetime(2012, 1, 1), backend_performance_id=2)
+          pef11 = Performance(event=ev1, open_on=datetime(2012, 1, 4), backend_performance_id=3)
+  
+          self.session.add_all([ev0, ev1, pef00, pef01, pef10, pef11])
+
+          ## 通常は、キャンセルしたものなど関係なく見える
+          result = self._callFUT(Event.query, None, None, None, False, _nowday=lambda : datetime(2012, 1, 1))
+          self.assertEquals([ev0, ev1], list(result))
+  
+          ## canceld onlyのcheckboxをチェックするとキャンセルが発生したイベントのみを検索対象にする
+          ## キャンセルが発生したイベント = イベント中の公演(performance)の中にキャンセル（公演中止）が発生したイベントのこと
+          result = self._callFUT(Event.query, None, None, None, True, _nowday=lambda : datetime(2012, 1, 1))
+          self.assertEquals([ev0], list(result))
 
 
 if __name__ == "__main__":

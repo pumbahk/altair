@@ -7,7 +7,7 @@ from sqlalchemy.ext.declarative import declared_attr
 from datetime import datetime
 import sqlahelper
 import sqlalchemy.orm as orm
-from sqlalchemy import (Column, Integer, Unicode, String, ForeignKey, DateTime)
+from sqlalchemy import (Column, Integer, Unicode, String, ForeignKey, DateTime, Boolean)
 from sqlalchemy.orm import relationship
 
 from sqlalchemy.sql.operators import ColumnOperators
@@ -89,6 +89,7 @@ class Performance(BaseOriginalMixin, Base):
     start_on = Column(DateTime)  # 開始
     close_on = Column(DateTime)  # 終了
 
+    canceld = Column(Boolean, default=False)
     # sale = relationship("Sale", backref=orm.backref("performances", order_by=id))
     event = relationship("Event", backref=orm.backref("performances", order_by=start_on))
     # client = relationship("Client", backref=orm.backref("performances", order_by=id))
