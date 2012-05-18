@@ -106,8 +106,8 @@ class Products(BaseView):
 @view_defaults(decorator=with_bootstrap)
 class ProductItems(BaseView):
 
-    @view_config(route_name='products.json.new_item', renderer='json')
-    def json_new_item(self):
+    @view_config(route_name='products.json.new_item', renderer='ticketing:templates/product_items/_form.html')
+    def json_new(self):
         product_id = int(self.request.POST.get('product_id', 0))
         product = Product.get(product_id)
         if product is None:
@@ -124,12 +124,16 @@ class ProductItems(BaseView):
             product_item.save()
 
             self.request.session.flash(u'商品を保存しました')
-            return {'success':True}
+            return HTTPFound(location=route_path('performances.show', self.request, performance_id=performance_id, _anchor='product'))
         else:
-            return {'success':False}
+            return {
+                'performance':performance,
+                'user':self.context.user,
+                'form':f,
+            }
 
     @view_config(route_name='products.json.edit_item', renderer='json')
-    def json_edit_item(self):
+    def json_edit(self):
         product_item_id = int(self.request.matchdict.get('product_item_id', 0))
         product_item = ProductItem.get(product_item_id)
         if product_item is None:

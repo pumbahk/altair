@@ -112,4 +112,7 @@
 
 ${delete_modal()}
 
-<%include file="/product_items/_form.html" args="performance=performance" />
+<div id="product_items-form">
+  <%include file="/product_items/_action_button.html" args="performance=performance" />
+  <%include file="/product_items/_form.html" args="performance=performance" />
+</div>
