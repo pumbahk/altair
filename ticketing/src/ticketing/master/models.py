@@ -3,6 +3,9 @@ from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, Strin
 from sqlalchemy.orm import relationship, join, backref, column_property
 
 import sqlahelper
+
+from ticketing.models import WithTimestamp
+
 session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
 
@@ -37,7 +40,7 @@ class Bank(Base):
     def all_tuple():
         return [(p.id, p.name) for p in session.query(BankAccount).all()]
 
-class BankAccount(Base):
+class BankAccount(Base, WithTimestamp):
     __tablename__ = 'BankAccount'
     id = Column(BigInteger, primary_key=True)
     back_id = Column(BigInteger, ForeignKey("Bank.id"))
@@ -45,8 +48,6 @@ class BankAccount(Base):
     account_type = Column(Integer)
     account_number = Column(String(255))
     account_owner = Column(String(255))
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
     status = Column(Integer)
 
 

@@ -16,7 +16,7 @@
       <tr>
         <td><input type="checkbox" /></td>
         <td><a href="${request.route_path('operators.show', operator_id=1)}">${operator.id}</a></td>
-        <td><a href="${request.route_path('operators.show', operator_id=1)}">${operator.login_id}</a></td>
+        <td><a href="${request.route_path('operators.show', operator_id=1)}">${operator.auth.login_id}</a></td>
         <td><a href="${request.route_path('operators.show', operator_id=1)}">${operator.name}</a></td>
         <td><a href="${request.route_path('organizations.show', organization_id=operator.organization.id)}">${operator.organization.name}</a></td>
         <td>

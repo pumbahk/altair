@@ -12,6 +12,7 @@ Base = sqlahelper.get_base()
 from ticketing.utils import StandardEnum
 
 from ticketing.organizations.models import Organization
+from ticketing.models import WithTimestamp, LogicallyDeleted
 
 operator_role_association_table = Table('OperatorRole_Operator', Base.metadata,
     Column('id', Integer, primary_key=True),
@@ -40,15 +41,13 @@ class Permission(Base):
         return session.query(Permission)\
             .filter(Permission.category_name.in_(category_names)).all()
 
-class OperatorRole(Base):
+class OperatorRole(Base, WithTimestamp):
     __tablename__ = 'OperatorRole'
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
     operators = relationship("Operator",
                     secondary=operator_role_association_table)
     permissions = relationship('Permission')
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
     status = Column('status',Integer, default=1)
 
     @staticmethod
@@ -69,51 +68,40 @@ class OperatorActionHistory(Base):
     operator = relationship('Operator', uselist=False, backref='histories')
     function = Column(String(255))
 
-def log_operation(action, model, operator):
-    pass
+class OperatorAuth(Base, WithTimestamp):
+    __tablename__ = 'OperatorAuth'
+    operator_id = Column(BigInteger, ForeignKey('Operator.id'), primary_key=True, nullable=False)
+    login_id = Column(String(32), unique=True)
+    password = Column(String(32))
+    auth_code = Column(String(32), nullable=True)
+    access_token = Column(String(32), nullable=True)
+    secret_key = Column(String(32), nullable=True)
 
-    data   =  Column(String(1024))
+class Operator(Base, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'Operator'
+    id = Column(BigInteger, primary_key=True)
+    name = Column(String(255))
+    email = Column(String(255))
+    organization_id = Column(BigInteger, ForeignKey('Organization.id'))
+    expire_at = Column(DateTime, nullable=True)
+    status = Column(Integer, default=1)
 
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
-    status = Column('status',Integer, default=1)
-
-operator_table = Table(
-    'Operator', Base.metadata,
-    Column('id', BigInteger, primary_key=True),
-    Column('name', String(255)),
-    Column('email',String(255)),
-    Column('organization_id',BigInteger, ForeignKey('Organization.id')),
-    Column('expire_at',DateTime, nullable=True),
-    Column('updated_at',DateTime),
-    Column('created_at',DateTime),
-    Column('status',Integer, default=1)
-)
-operator_auth_table = Table(
-    'Operator_Auth', Base.metadata,
-    Column('id', BigInteger, primary_key=True),
-    Column('login_id', String(32), unique=True),
-    Column('password', String(32)),
-    Column('auth_code', String(32), nullable=True),
-    Column('access_token', String(32), nullable=True),
-    Column('secret_key', String(32), nullable=True),
-)
-
-class Operator(Base):
-    __table__ = join(operator_table, operator_auth_table, operator_table.c.id == operator_auth_table.c.id)
-    id = column_property(operator_table.c.id, operator_auth_table.c.id)
     organization = relationship('Organization',uselist=False)
-    roles = relationship("OperatorRole",
+    roles = relationship('OperatorRole',
         secondary=operator_role_association_table)
+    auth = relationship('OperatorAuth', uselist=False, backref='operator')
 
     @staticmethod
     def get_by_login_id(user_id):
-        return session.query(Operator).filter(Operator.login_id == user_id).first()
+        return session.query(Operator)\
+                .join(OperatorAuth)\
+                .filter(OperatorAuth.login_id == user_id).first()
 
     @staticmethod
     def login(login_id, password):
         operator = session.query(Operator)\
-                .filter(Operator.login_id == login_id)\
-                .filter(Operator.password == md5(password).hexdigest()).first()
+                .join(OperatorAuth)\
+                .filter(OperatorAuth.login_id == login_id)\
+                .filter(OperatorAuth.password == md5(password).hexdigest()).first()
         return operator
 

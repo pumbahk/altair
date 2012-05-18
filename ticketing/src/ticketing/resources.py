@@ -27,7 +27,7 @@ class RootFactory(object):
             self.user = Operator.get_by_login_id(user_id) if user_id is not None else None
 
 def groupfinder(userid, request):
-    user = session.query(Operator).filter(Operator.login_id == userid).first()
+    user = session.query(Operator).join(OperatorAuth).filter(OperatorAuth.login_id == userid).first()
     if user is None:
         return []
     return [role.name for role in user.roles]

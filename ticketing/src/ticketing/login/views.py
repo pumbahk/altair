@@ -78,7 +78,7 @@ class LoginUser(BaseView):
     @view_config(route_name='login.info', renderer='ticketing:templates/login/info.html')
     def info(self):
         login_id = authenticated_userid(self.request)
-        return {'operator' : session.query(Operator).filter(Operator.login_id == login_id).first()}
+        return {'operator' : Operator.get_by_login_id(login_id)}
 
     @view_config(route_name='login.info.edit', request_method="GET", renderer='ticketing:templates/login/_form.html')
     def info_edit_get(self):

@@ -3,12 +3,12 @@
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, Numeric
 from sqlalchemy.orm import relationship, join, backref, column_property
 
-from ticketing.models import Base, BaseModel
+from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted
 from ticketing.users.models import User
 from ticketing.products.models import Product, ProductItem
 from ticketing.venues.models import Seat
 
-class ShippingAddress(BaseModel, Base):
+class ShippingAddress(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'ShippingAddress'
     id = Column(BigInteger, primary_key=True)
     user_id = Column(BigInteger, ForeignKey("User.id"))
@@ -26,7 +26,7 @@ class ShippingAddress(BaseModel, Base):
     tel_2 = Column(String(32))
     fax = Column(String(32))
 
-class Order(BaseModel, Base):
+class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Order'
     id = Column(BigInteger, primary_key=True)
     user_id = Column(BigInteger, ForeignKey("User.id"))
@@ -39,7 +39,7 @@ class Order(BaseModel, Base):
     items = relationship('OrderedProduct')
     total_amount = Column(Numeric(precision=16, scale=2), nullable=False)
 
-class OrderedProduct(BaseModel, Base):
+class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrderedProduct'
     id = Column(BigInteger, primary_key=True)
     order_id = Column(BigInteger, ForeignKey("Order.id"))
@@ -48,7 +48,7 @@ class OrderedProduct(BaseModel, Base):
     product = relationship('Product')
     price = Column(Numeric(precision=16, scale=2), nullable=False)
 
-class OrderedProductItem(BaseModel, Base):
+class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrderedProductItem'
     id = Column(BigInteger, primary_key=True)
     ordered_product_id = Column(BigInteger, ForeignKey("OrderedProduct.id"))

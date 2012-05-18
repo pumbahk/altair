@@ -54,7 +54,7 @@ class LoginOAuth(BaseView):
     def authorize(self):
 
         login_id = authenticated_userid(self.request)
-        operator = session.query(Operator).filter(Operator.login_id == login_id).first()
+        operator = Operator.get_by_login_id(login_id)
 
         user = self.context.user
         authorizer = Authorizer()

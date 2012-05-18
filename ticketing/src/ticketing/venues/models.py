@@ -5,7 +5,7 @@ from sqlalchemy.orm import relationship, join, backref, column_property, mapper
 import sqlahelper
 
 from ticketing.utils import StandardEnum
-from ticketing.models import BaseModel, JSONEncodedDict, MutationDict
+from ticketing.models import BaseModel, JSONEncodedDict, MutationDict, WithTimestamp, LogicallyDeleted
 
 session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
@@ -22,7 +22,7 @@ seat_seat_adjacency_table = Table(
     Column('seat_adjacency_id', BigInteger, ForeignKey("SeatAdjacency.id"), primary_key=True, nullable=False)
     )
 
-class Site(BaseModel, Base):
+class Site(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "Site"
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
@@ -37,7 +37,7 @@ class Site(BaseModel, Base):
     fax = Column(String(32))
     drawing_url = Column(String(255))
 
-class Venue(BaseModel, Base):
+class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     """
     Venueは、Performance毎に1個つくられる。
     Venueのテンプレートは、performance_idがNoneになっている。
@@ -61,7 +61,7 @@ class Venue(BaseModel, Base):
     seats = relationship("Seat", backref='venue')
     areas = relationship("VenueArea", backref='venue')
 
-class VenueArea(BaseModel, Base):
+class VenueArea(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__   = "VenueArea"
     id              = Column(BigInteger, primary_key=True)
     l0_id           = Column(String(255))
@@ -69,13 +69,13 @@ class VenueArea(BaseModel, Base):
 
     venue_id        = Column(BigInteger, ForeignKey('Venue.id'))
 
-class SeatAttribute(BaseModel, Base):
+class SeatAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__   = "SeatAttribute"
     seat_id         = Column(BigInteger, ForeignKey('Seat.id'), primary_key=True, nullable=False)
     name            = Column(String(255), primary_key=True, nullable=False)
     value           = Column(String(1023))
 
-class Seat(BaseModel, Base):
+class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__   = "Seat"
     id              = Column(BigInteger, primary_key=True)
     l0_id           = Column(String(255))
@@ -114,7 +114,7 @@ class SeatStatusEnum(StandardEnum):
     Canceled = 6
     Reserved = 7
 
-class SeatStatus(BaseModel, Base):
+class SeatStatus(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "SeatStatus"
     seat_id = Column(BigInteger, ForeignKey("Seat.id"), primary_key=True)
     status = Column(Integer)
@@ -149,7 +149,7 @@ class SeatAdjacency(Base):
     id = Column(BigInteger, primary_key=True)
     adjacency_set_id = Column(BigInteger, ForeignKey('SeatAdjacencySet.id'))
 
-class SeatAdjacencySet(BaseModel, Base):
+class SeatAdjacencySet(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "SeatAdjacencySet"
     id = Column(BigInteger, primary_key=True)
     venue_id = Column(BigInteger, ForeignKey('Venue.id'))

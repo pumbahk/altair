@@ -35,7 +35,7 @@ from service import ServiceData
 from organization import OrganizationData
 from account import AccountData
 from permission import PermissionData
-from operator import OperatorData, OperatorRoleData
+from operator import OperatorData, OperatorRoleData, OperatorAuthData
 from event import *
 from venue import *
 from product import *
@@ -58,6 +58,7 @@ def import_seed_data():
              'PermissionData'         : Permission,
              'OperatorRoleData'       : OperatorRole,
              'OperatorData'           : Operator,
+             'OperatorAuthData'       : OperatorAuth,
              'BankData'               : Bank,
              'BankAccountData'        : BankAccount,
              'AccountData'            : Account,
@@ -180,6 +181,7 @@ def import_seed_data():
         AccountData,
         OrganizationData,
         OperatorData,
+        OperatorAuthData,
         EventData,
         PerformanceEvent1Data,
         PerformanceEvent2Data,
