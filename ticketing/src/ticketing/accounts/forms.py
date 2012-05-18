@@ -5,6 +5,7 @@ from wtforms import TextField
 from wtforms.validators import Required, Length
 
 class AccountForm(Form):
+
     name = TextField(
         label=u'クライアント名',
         validators=[

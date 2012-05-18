@@ -5,6 +5,7 @@ from ticketing.orders.models import Order, OrderedProduct, OrderedProductItem
 from .product import *
 from .venue import *
 from .user import *
+from .organization import *
 
 class ShippingAddressData(DataSet):
     class shipping_address_1:
@@ -45,43 +46,51 @@ class OrderData(DataSet):
     class order_1:
         user = UserData.user_1
         shipping_address = ShippingAddressData.shipping_address_1
-        status = 0
+        total_amount = 12000
+        ordered_from = OrganizationData.organization_0
 
     class order_2:
         user = UserData.user_2
         shipping_address = ShippingAddressData.shipping_address_2
-        status = 0
+        total_amount = 7000
+        ordered_from = OrganizationData.organization_0
 
 class OrderedProductOrder1Data(DataSet):
     class ordered_product_1:
         order = OrderData.order_1
         product = ProductEvent1Data.product_1
+        price = 8000
         status = 0
 
     class ordered_product_2:
         order = OrderData.order_1
         product = ProductEvent1Data.product_2
+        price = 4000
         status = 0
 
 class OrderedProductOrder2Data(DataSet):
     class ordered_product_1:
         order = OrderData.order_2
         product = ProductEvent1Data.product_3
+        price = 7000
         status = 0
 
 class OrderedProductItemOrder1Data(DataSet):
     class ordered_product_item_1:
         ordered_product = OrderedProductOrder1Data.ordered_product_1
         product_item = ProductItemEvent1Performance1Data.productitem_1
+        price = 8000
         status = 0
 
     class ordered_product_item_2:
         ordered_product = OrderedProductOrder1Data.ordered_product_2
         product_item = ProductItemEvent1Performance1Data.productitem_2
+        price = 4000
         status = 0
 
 class OrderedProductItemOrder2Data(DataSet):
     class ordered_product_item_1:
         ordered_product = OrderedProductOrder2Data.ordered_product_1
         product_item = ProductItemEvent1Performance1Data.productitem_3
+        price = 7000
         status = 0

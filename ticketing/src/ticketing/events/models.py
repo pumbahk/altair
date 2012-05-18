@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL, func
+from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, Numeric, func
 from sqlalchemy.orm import relationship, join, backref, column_property
 
 from ticketing.utils import StandardEnum
@@ -151,9 +151,9 @@ class SalesSegment(BaseModel, Base):
 class PaymentDeliveryMethodPair(BaseModel, Base):
     __tablename__ = 'PaymentDeliveryMethodPair'
     id = Column(BigInteger, primary_key=True)
-    transaction_fee = Column(DECIMAL)
-    delivery_fee = Column(DECIMAL)
-    discount = Column(DECIMAL)
+    transaction_fee = Column(Numeric(precision=16, scale=2), nullable=False)
+    delivery_fee = Column(Numeric(precision=16, scale=2), nullable=False)
+    discount = Column(Numeric(precision=16, scale=2), nullable=False)
     discount_unit = Column(Integer)
     discount_type = Column(Integer)
 
