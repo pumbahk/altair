@@ -2,9 +2,13 @@
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 
-from altaircms.models import Category
+from altaircms.models import (
+    Category, 
+    Performance
+)
 from altaircms.models import DBSession
 from altaircms.page.models import PageSet
+from altaircms.event.models import Event
 
 """
 todo:
@@ -40,8 +44,14 @@ def search_by_ganre(top_categories, sub_categories, qs=None):
     ## サブカテゴリトップのページと紐づいているページを取り出す
     return qs.filter(PageSet.parent_id.in_(category_page_ids))
 
-def pagesets_by_big_category_name(name):
-    parent_category_stmt = DBSession.query(Category.id).filter_by(name=name).subquery()
-    parents_ids = orm.aliased(Category, parent_category_stmt)
-    category_stmt = Category.query.join(parents_ids, parents_ids.id==Category.parent_id).all()
+def search_by_area(prefectures, qs=None):
+    qs = qs or PageSet.query
+    if not prefectures:
+        return qs
 
+    matched_perf_ids = DBSession.query(Performance.event_id).filter(Performance.venue.in_(prefectures))
+    matched_event_ids = DBSession.query(Event.id).filter(Event.id.in_(matched_perf_ids))
+
+    return qs.filter(PageSet.event_id.in_(matched_event_ids))
+
+# def search_by_
