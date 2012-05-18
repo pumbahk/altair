@@ -11,19 +11,10 @@ from altaircms.models import DBSession
 from altaircms.page.models import PageSet
 from altaircms.event.models import Event
 
-"""
-todo:
-
-form でデータを受け取り searcherが検索queryにする。
-そのような昨日を持った関数をapi.pyに書く。
-view/resourceからは、apiを呼び出す
-
-todo: 高速化
-"""
-def search_page_set_query(query_params): 
+def get_pageset_query(query_params): 
     """ 検索する関数.このモジュールのほかの関数は全てこれのためにある。
 
-    0. フリーワード検索追加.
+    0. フリーワード検索追加. ## todo
     1. カテゴリトップページから、対応するページを見つける
     2. イベントデータから、対応するページを見つける(sub_qs)
     """
