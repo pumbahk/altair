@@ -2,74 +2,54 @@
 
 % if performance:
 <script type="text/javascript">
-  stock_holder2stocks = {
-    % for stock_holder in performance.stock_holders:
-      '${stock_holder.id}':[
-        % for stock in stock_holder.stocks:
-          ['${stock.id}', '${stock.stock_type.name}'],
-        % endfor
-      ],
-    % endfor
-  }
-
-  $(function() {
-    $('#modal-product_item-edit #stock_holders').change(function(){
-      $('#modal-product_item-edit #stock_id').children().remove();
-      stock_ids = stock_holder2stocks[$(this).val()];
-      stock_id_node = window.document.getElementById('stock_id');
-      if (stock_ids) {
-        for (var i = 0; i < stock_ids.length; i++ ) {
-          stock_id_node.options[i] = new Option(stock_ids[i][1], stock_ids[i][0]);
-        }
-        stock_id_node.selectedIndex = 0;
-      }
-    }).change();
-  });
-
   function new_product_item(product_id) {
     var el = '#product-' + product_id;
-    $('#modal-product_item-edit #product_id').val($(el + ' #id').text());
     $('#modal-product_item-edit #name').val($(el + ' #name').text());
-    $('#modal-product_item-edit #price').val($(el + ' #price').text());
+    $('#modal-product_item-edit #product #price').val($(el + ' #price').text());
+    $('#modal-product_item-edit #sales_segment_id').val($(el + ' #sales_segment').attr('value'));
     $('#modal-product_item-edit #id').val('');
-    $('#modal-product_item-edit #item_price').val('');
-    $('#modal-product_item-edit #item_quantity').val('');
-    $('#modal-product_item-edit #sales_segment').val($(el + ' #sales_segment').text());
+    $('#modal-product_item-edit #performance_id').val(${performance.id});
+    $('#modal-product_item-edit #product_id').val($(el + ' #id').text());
     $('#modal-product_item-edit #stock_holders').removeAttr('disabled');
     $('#modal-product_item-edit #stock_id').removeAttr('disabled');
+    $('#modal-product_item-edit #product-item #price').val('');
+    $('#modal-product_item-edit #quantity').val('');
     $('#modal-product_item-edit').modal('toggle');
   }
 
   function edit_product_item(product_id, product_item_id) {
     var product = '#product-' + product_id;
-    $('#modal-product_item-edit #product_id').val(product_id);
     $('#modal-product_item-edit #name').val($(product + ' #name').text());
-    $('#modal-product_item-edit #price').val($(product + ' #price').text());
-    $('#modal-product_item-edit #sales_segment').val($(product + ' #sales_segment').text());
+    $('#modal-product_item-edit #product #price').val($(product + ' #price').text());
+    $('#modal-product_item-edit #sales_segment_id').val($(product + ' #sales_segment').attr('value'));
     var product_item = '#product_item-' + product_item_id;
     $('#modal-product_item-edit #id').val(product_item_id);
-    $('#modal-product_item-edit #item_price').val($(product_item + ' #price').text());
-    $('#modal-product_item-edit #item_quantity').val($(product_item + ' #quantity').text());
+    $('#modal-product_item-edit #performance_id').val(${performance.id});
+    $('#modal-product_item-edit #product_id').val(product_id);
     $('#modal-product_item-edit #stock_holders').val($(product_item + ' #stock_holder').attr('value')).change();
     $('#modal-product_item-edit #stock_holders').attr('disabled', 'disabled');
     $('#modal-product_item-edit #stock_id').val($(product_item + ' #stock').attr('value'));
     $('#modal-product_item-edit #stock_id').attr('disabled', 'disabled');
+    $('#modal-product_item-edit #product-item #price').val($(product_item + ' #price').text());
+    $('#modal-product_item-edit #quantity').val($(product_item + ' #quantity').text());
     $('#modal-product_item-edit').modal('toggle');
   }
 
   function delete_product_item(product_item_id) {
-    $('#modal-delete #delete').attr('href', '/products/delete_item/' + product_item_id);
+    $('#modal-delete #delete').attr('href', '/products/items/delete/' + product_item_id);
     $('#modal-delete #message').text("${u'選択した在庫を削除します。よろしいですか？'}");
     $('#modal-delete').modal('toggle');
   }
 
   function save_product_item() {
+    var id = $('#modal-product_item-edit #id').val();
+    var url = id ? '/products/items/edit/' + id : '/products/items/new';
     var param = {};
     $('#modal-product_item-edit :input').each(function(i, v) {
       param[v.name] = v.value;
     });
     $.post(
-        '/products/json.new_item',
+        url,
         param,
         function(data) {
           $('#modal-product_item-edit').modal('hide');

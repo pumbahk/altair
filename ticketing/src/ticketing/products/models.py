@@ -5,7 +5,7 @@ from sqlalchemy.orm import relationship, join, backref, column_property, mapper,
 
 from ticketing.utils import StandardEnum
 from ticketing.models import Base, BaseModel, DBSession, JSONEncodedDict, MutationDict, WithTimestamp, LogicallyDeleted
-from ticketing.venues.models import  SeatStatusEnum, SeatStatus
+from ticketing.venues.models import SeatStatusEnum, SeatStatus
 
 class PaymentMethodPlugin(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentMethodPlugin'

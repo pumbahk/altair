@@ -5,7 +5,7 @@ from wtforms import TextField, SelectField, IntegerField, DecimalField, SelectMu
 from wtforms.validators import Required, Length, NumberRange, EqualTo, Optional, ValidationError
 
 from ticketing.events.models import SalesSegment
-from ticketing.products.models import ProductItem
+from ticketing.products.models import ProductItem, StockHolder, Stock
 
 class ProductForm(Form):
 
@@ -19,6 +19,14 @@ class ProductForm(Form):
                 (sales_segment.id, sales_segment.name) for sales_segment in SalesSegment.find_by(**conditions)
             ]
 
+    id = HiddenField(
+        label='',
+        validators=[Optional()],
+    )
+    event_id = HiddenField(
+        label='',
+        validators=[Required()]
+    )
     name = TextField(
         label=u'商品名',
         validators=[Required(u'入力してください')]
@@ -33,20 +41,61 @@ class ProductForm(Form):
         choices=[],
         coerce=int
     )
-    event_id = HiddenField("", validators=[Required()])
 
 
 class ProductItemForm(Form):
 
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        Form.__init__(self, formdata, obj, prefix, **kwargs)
+        if 'user_id' in kwargs and 'performance_id' in kwargs:
+            conditions ={
+                'performance_id':kwargs['performance_id']
+            }
+            stock_holders = StockHolder.find_by(**conditions)
+            self.stock_holders.choices = []
+            for sh in stock_holders:
+                if sh.account.user_id == kwargs['user_id']:
+                    self.stock_holders.choices.append((sh.id, sh.name))
+        if self.stock_holders.data:
+            conditions ={
+                'stock_holder_id':self.stock_holders.data
+            }
+            self.stock_id.choices = [
+                (stock.id, stock.id) for stock in Stock.find_by(**conditions)
+            ]
+
+    id = HiddenField(
+        label='',
+        validators=[Optional()]
+    )
+    performance_id = HiddenField(
+        label='',
+        validators=[Required()]
+    )
+    product_id = HiddenField(
+        label='',
+        validators=[Required()]
+    )
     price = TextField(
         label=u'価格',
         validators=[Required(u'入力してください')]
     )
-    quantity = IntegerField("", validators=[Required()])
-    stock_id = IntegerField("", validators=[Required()])
-    product_id = HiddenField("", validators=[Required()])
-    performance_id = HiddenField("", validators=[Required()])
-    id = HiddenField("", validators=[Optional()])
+    quantity = IntegerField(
+        label=u'個数',
+        validators=[Required(u'入力してください')]
+    )
+    stock_holders = SelectField(
+        label=u'商品構成',
+        validators=[Required(u'入力してください')],
+        choices=[],
+        coerce=int
+    )
+    stock_id = SelectField(
+        label=u'在庫数',
+        validators=[Required(u'入力してください')],
+        choices=[],
+        coerce=int
+    )
 
     def validate_stock_id(form, field):
         if field.data and form.product_id.data and not form.id.data:
