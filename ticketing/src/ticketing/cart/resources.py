@@ -33,6 +33,7 @@ class TicketingCartResrouce(object):
                 p_models.Stock.id==p_models.StockStatus.stock_id
             ).one()
 
+    #TODO: has_stockにはproduct_item_idではなく stock_id が渡される
     def has_stock(self, product_item_id, quantity):
         """在庫確認(Stock)
         :param product_item_id:
@@ -78,6 +79,7 @@ class TicketingCartResrouce(object):
         return ((stock_id, sum(quantity for _, quantity in ordered_items)) for stock_id, ordered_items in q)
 
 
+    #TODO: 後の処理で必要なのはSeatStatusでなくSeat
     def select_seat(self, stock_id, quantity):
         """ 指定在庫（席種）を隣接座席で確保する
         必要な席種かつ確保されていない座席
@@ -114,7 +116,7 @@ class TicketingCartResrouce(object):
             ).limit(1)
 
 
-        seat_statuses = m.DBSession.query(v_models.SeatStatus).filter(
+        seat_statuses = m.DBSession.query(v_models.Seat).filter(
                 v_models.SeatStatus.seat_id==v_models.Seat.id
             ).filter(
                 v_models.Seat.id==v_models.seat_seat_adjacency_table.c.seat_id
@@ -125,12 +127,14 @@ class TicketingCartResrouce(object):
             ).all()
 
         if len(seat_statuses) == quantity:
-            up = sql.update(v_models.SeatStatus.__table__).values({v_models.SeatStatus.status: int(v_models.SeatStatusEnum.InCart)}).where(v_models.SeatStatus.seat_id.in_([s.seat_id for s in seat_statuses]))
+            up = sql.update(v_models.SeatStatus.__table__).values(
+                    {v_models.SeatStatus.status: int(v_models.SeatStatusEnum.InCart)}).where(
+                v_models.SeatStatus.seat_id.in_([s.id for s in seat_statuses]))
             m.DBSession.bind.execute(up)
 
         return seat_statuses
 
-    def order(self, ordered_products):
+    def order_products(self, ordered_products):
         """
 
         プロダクトと数量の組を受け取る
@@ -142,13 +146,21 @@ class TicketingCartResrouce(object):
         :returns: :class:`.models.Cart`
         """
 
-        # SeatとProductItemとどちらで処理を進めるか検討 座席割当はSeatでないといけない
         seats = []
-        cart = m.Cart()
-        # このループはSeatTypeであるべき
+        # 座席確保
         for stock_id, quantity in self.quantity_for_stock_id(ordered_products):
             if not self.has_stock(stock_id, quantity):
-                return False
+                return None
             seats += self.select_seat(stock_id, quantity)
-        # TODO: Cart作成,CartedProductItemに座席割当(Cart,CartedProduct, CartedProductItem)
-        cart.add_seat(seats)
+            up = sql.update(p_models.StockStatus.__table__).values(
+                    {"quantity": p_models.StockStatus.quantity - quantity}
+                ).where(
+                    p_models.StockStatus.stock_id==stock_id
+                )
+            m.DBSession.bind.execute(up)
+
+        # 注文明細作成
+        cart = m.Cart()
+        cart.add_seat(seats, ordered_products)
+        m.DBSession.add(cart)
+        return cart

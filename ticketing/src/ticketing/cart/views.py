@@ -113,7 +113,7 @@ class ReserveView(object):
 
         seat_type_id = self.request.matchdict['seat_type_id']
         order_items = self.get_order_items()
-        cart = self.context.order(order_items)
+        cart = self.context.order_products(order_items)
 
         return dict(cart=cart)
 

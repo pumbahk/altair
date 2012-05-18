@@ -20,13 +20,16 @@ def _setup_db():
     sqlahelper.get_base().metadata.create_all()
     return sqlahelper.get_session()
 
-
+def _teardown_db():
+    import transaction
+    transaction.abort()
 
 class CartTests(unittest.TestCase):
     def setUp(self):
         self.session = _setup_db()
 
     def tearDown(self):
+        _teardown_db()
         import sqlahelper
         sqlahelper.get_base().metadata.drop_all()
 
@@ -106,8 +109,7 @@ class CartedProductTests(unittest.TestCase):
         self.session = _setup_db()
 
     def tearDown(self):
-        import transaction
-        transaction.abort()
+        _teardown_db()
         import sqlahelper
         sqlahelper.get_base().metadata.drop_all()
 
@@ -137,8 +139,7 @@ class CartedProductItemTests(unittest.TestCase):
         self.session = _setup_db()
 
     def tearDown(self):
-        import transaction
-        transaction.abort()
+        _teardown_db()
         import sqlahelper
         sqlahelper.get_base().metadata.drop_all()
 
@@ -171,8 +172,7 @@ class TicketingCartResourceTests(unittest.TestCase):
         self.session = _setup_db()
 
     def tearDown(self):
-        import transaction
-        transaction.abort()
+        _teardown_db()
         import sqlahelper
         sqlahelper.get_base().metadata.drop_all()
 
@@ -317,3 +317,69 @@ class TicketingCartResourceTests(unittest.TestCase):
 
         statuses = self.session.query(SeatStatus).filter(SeatStatus.status==int(SeatStatusEnum.InCart)).all()
         self.assertEqual(len(statuses), 5)
+
+    def test_order_products_empty(self):
+        request = testing.DummyRequest()
+
+        target = self._makeOne(request)
+
+        ordered_products = []
+        cart = target.order_products(ordered_products)
+
+        self.assertIsNotNone(cart)
+        self.assertEqual(len(cart.products), 0)
+
+    def test_order_products_one_order(self):
+        # TODO 各モデルのIDに同じ値を使わないようにする
+        from ticketing.venues.models import Seat, SeatAdjacency, SeatAdjacencySet, SeatStatus, SeatStatusEnum
+        from ticketing.products.models import Stock, StockStatus, Product, ProductItem
+
+        # 在庫
+        stock = Stock(id=1, quantity=100)
+        stock_status = StockStatus(stock_id=stock.id, quantity=100)
+        seats = [Seat(id=i, stock_id=stock.id) for i in range(5)]
+        seat_statuses = [SeatStatus(seat_id=i, status=int(SeatStatusEnum.Vacant)) for i in range(5)]
+        product_item = ProductItem(id=1, stock_id=stock.id, price=100, quantity=1)
+        product = Product(id=1, price=100, items=[product_item])
+        self.session.add(stock)
+        self.session.add(product)
+        self.session.add(product_item)
+        self.session.add(stock_status)
+        [self.session.add(s) for s in seats]
+        [self.session.add(s) for s in seat_statuses]
+
+        # 座席隣接状態
+        adjacency_set = SeatAdjacencySet(id=1, seat_count=2)
+        adjacency = SeatAdjacency(adjacency_set=adjacency_set, id=1)
+        for seat in seats:
+            seat.adjacencies.append(adjacency)
+        self.session.add(adjacency_set)
+        self.session.add(adjacency)
+        self.session.flush()
+
+
+        # 注文 S席 2枚
+        ordered_products = [(product, 2)]
+
+
+        request = testing.DummyRequest()
+        target = self._makeOne(request)
+        #precondition
+        result = list(target._convert_order_product_items(ordered_products))[0]
+        self.assertEqual(result, (product_item, 2))
+        result = list(target.quantity_for_stock_id(ordered_products))[0]
+        self.assertEqual(result, (stock.id, 2))
+
+        cart = target.order_products(ordered_products)
+
+
+        self.assertIsNotNone(cart)
+        self.assertEqual(len(cart.products), 1)
+        self.assertEqual(len(cart.products[0].items), 1)
+        self.assertEqual(cart.products[0].items[0].quantity, 2)
+
+        from sqlalchemy import sql
+#        stock_status = self.session.query(StockStatus).filter_by(stock_id=stock.id).one()
+        stock_statuses = self.session.bind.execute(sql.select([StockStatus.quantity]).where(StockStatus.stock_id==stock.id))
+        for stock_status in stock_statuses:
+            self.assertEqual(stock_status.quantity, 98)

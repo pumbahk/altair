@@ -70,7 +70,6 @@ class CartedProductItem(Base):
         """
 
         # TODO: ループじゃなくてquantityでスライスするような実装も可能
-
         for i in range(self.quantity):
             myseat = [seat for seat in seats if seat.stock_id == self.product_item.stock_id][0]
             seats.remove(myseat)
