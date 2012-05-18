@@ -43,7 +43,7 @@ class GanrePartForm(form.Form):
     other_subganre_choices = import_symbol("altaircms.seeds.categories.other:OTHER_SUBCATEGORY_CHOICES")
     other_subganre = CheckboxListField(choices=other_subganre_choices)
 
-    def make_query(self):
+    def make_query_params(self):
         data = self.data
         sub_ganres = [data["music_subganre"], data["stage_subganre"], data["sports_subganre"], data["other_subganre"]]
         return {"top_categories": [k for k in ["music", "stage", "sports", "other"] if data[k]], 
@@ -103,7 +103,7 @@ class AreaPartForm(form.Form):
     pref_okinawa = CheckboxListField(choices=import_symbol("altaircms.seeds.area.okinawa:OKINAWA_CHOICES"))
 
     areas = ["hokkaido", "tohoku", "kitakanto", "shutoken", "koshinetsu", "hokuriku", "tokai", "kinki", "chugoku", "shikoku", "kyushu", "okinawa"]    
-    def make_query(self):
+    def make_query_params(self):
         data = self.data
         prefectures = set()
         areas = []
@@ -149,7 +149,7 @@ class PerformanceTermPartForm(form.Form):
 %(start_year)s年%(start_month)s月%(start_day)s日 〜 %(end_year)s年%(end_month)s月%(end_day)s日
 """ % self
 
-    def make_query(self):
+    def make_query_params(self):
         data = self.data
         start_date = datetime(data["start_year"], data["start_month"], data["start_day"])
         end_date = datetime(data["end_year"], data["end_month"], data["end_day"])
@@ -164,7 +164,7 @@ class DealCondPartForm(form.Form):
     def __html__(self):
         return u"%(deal_cond)s" % self
 
-    def make_query(self):
+    def make_query_params(self):
         import warnings
         warnigs.warn("this flag is not support yet.")
         return {}
@@ -177,7 +177,7 @@ class AddedServicePartForm(form.Form):
     def __html__(self):
         return u"%(added_services)s" % self
 
-    def make_query(self):
+    def make_query_params(self):
         import warnings
         warnigs.warn("this flag is not support yet.")
         return {}
@@ -209,7 +209,7 @@ class AboutDealPartForm(form.Form):
 </ul>
 """ % self
 
-    def make_query(self):
+    def make_query_params(self):
         data = self.data
         params = {}
         if data["before_deal_start_flg"]:
@@ -239,10 +239,10 @@ class DetailSearchQueryForm(object):
     def validate(self):
         return all(form.validate() for form in self._forms)
 
-    def make_query(self):
+    def make_query_params(self):
         params = {}
         for form in self._form:
-            params.update(form.make_query())
+            params.update(form.make_query_params())
         return params
 
     def as_filter(self, qs=None):
@@ -255,26 +255,4 @@ def get_search_forms(formdata=None):
 
 def form_as_filter(qs, form):
     return form.as_filter(qs)
-
-
-### search
-"""
-1. free wordが選択
-    全文検索で検索する。copy fieldを使ってsolarで定義してた。取得されるのはpageset.id
-2. ganreで選択。
-2.a 大ジャンルが選択
-ganre = "music"
-Category.filter(Category.name==genre).filter
-2.b 中ジャンルが選択
-"""
-from altaircms.models import Category
-from altaircms.models import DBSession
-from altaircms.page.models import PageSet
-import sqlalchemy.orm as orm
-
-def pagesets_by_big_category_name(name):
-    parent_category_stmt = DBSession.query(Category.id).filter_by(name=name).subquery()
-    parents_ids = orm.aliased(Category, parent_category_stmt)
-    category_stmt = Category.query.join(parents_ids, parents_ids.id==Category.parent_id).all()
-
 

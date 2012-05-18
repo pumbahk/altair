@@ -207,7 +207,7 @@ class Category(Base):
     #parent = orm.relationship("Category", remote_side=[id], uselist=False, cascade="all")
 
     label = sa.Column(sa.Unicode(length=255))
-    imgsrc = sa.Column(sa.String(length=255), nullable=False)
+    imgsrc = sa.Column(sa.String(length=255))
     name = sa.Column(sa.String(length=255))
     hierarchy = sa.Column(sa.Unicode(length=255), nullable=False)
     
