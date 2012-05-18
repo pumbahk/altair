@@ -48,66 +48,6 @@ detail search result
 		% for result in result_seq:
 		  ${result}
 		% endfor
-		<div class="searchResult">
-			<dl>
-				<dt><img src="/static/ticketstar/img/search/icon_music.gif" alt="音楽" width="82" height="20" /></dt>
-				<dd>
-					<p><a href="#">ソ・ジソブ　日本公式ファンクラブ1周年記念！2012 ファンミーティング in 東京</a></p>
-					<p class="align1">2012/3/24(土) 東京ビッグサイト（東京国際展示場）(東京都)</p>
-				</dd>
-			</dl>
-			<ul>
-				<li class="searchRemaining">あと2日</li>
-				<li><img src="/static/ticketstar/img/search/icon_release.gif" alt="一般発売" width="60" height="14" /></li>
-				<li class="searchDate"><strong>チケット発売中</strong> ～2012/3/23(金) 23:59</li>
-			</ul>
-			<p><a href="#"><img src="/static/ticketstar/img/search/btn_buy.gif" alt="購入へ" width="86" height="32" /></a></p>
-		</div>
-		<div class="searchResult">
-			<dl>
-				<dt><img src="/static/ticketstar/img/search/icon_stage.gif" alt="演劇" width="82" height="20" /></dt>
-				<dd>
-					<p><a href="#">ソ・ジソブ　日本公式ファンクラブ1周年記念！2012 ファンミーティング in 東京</a></p>
-					<p class="align1">2012/3/24(土) 東京ビッグサイト（東京国際展示場）(東京都)</p>
-				</dd>
-			</dl>
-			<ul>
-				<li class="searchRemaining">あと2日</li>
-				<li><img src="/static/ticketstar/img/search/icon_lottery.gif" alt="先行抽選" width="60" height="14" /></li>
-				<li class="searchDate"><strong>エントリー受付中</strong> ～2012/3/23(金) 23:59</li>
-			</ul>
-			<p><a href="#"><img src="/static/ticketstar/img/search/btn_detail.gif" alt="詳細へ" width="86" height="32" /></a></p>
-		</div>
-		<div class="searchResult">
-			<dl>
-				<dt><img src="/static/ticketstar/img/search/icon_sports.gif" alt="スポーツ" width="82" height="20" /></dt>
-				<dd>
-					<p><a href="#">ソ・ジソブ　日本公式ファンクラブ1周年記念！2012 ファンミーティング in 東京</a></p>
-					<p class="align1">2012/3/24(土) 東京ビッグサイト（東京国際展示場）(東京都)</p>
-				</dd>
-			</dl>
-			<ul>
-				<li class="searchRemaining">あと2日</li>
-				<li><img src="/static/ticketstar/img/search/icon_release.gif" alt="一般発売" width="60" height="14" /></li>
-				<li class="searchDate"><strong>チケット発売中</strong> ～2012/3/23(金) 23:59</li>
-			</ul>
-			<p><a href="#"><img src="/static/ticketstar/img/search/btn_buy.gif" alt="購入へ" width="86" height="32" /></a></p>
-		</div>
-		<div class="searchResult">
-			<dl>
-				<dt><img src="/static/ticketstar/img/search/icon_event.gif" alt="イベント・その他" width="82" height="20" /></dt>
-				<dd>
-					<p><a href="#">ソ・ジソブ　日本公式ファンクラブ1周年記念！2012 ファンミーティング in 東京</a></p>
-					<p class="align1">2012/3/24(土) 東京ビッグサイト（東京国際展示場）(東京都)</p>
-				</dd>
-			</dl>
-			<ul>
-				<li class="searchRemaining">あと2日</li>
-				<li><img src="/static/ticketstar/img/search/icon_lottery.gif" alt="先行抽選" width="60" height="14" /></li>
-				<li class="searchDate"><strong>エントリー受付中</strong> ～2012/3/23(金) 23:59</li>
-			</ul>
-			<p><a href="#"><img src="/static/ticketstar/img/search/btn_detail.gif" alt="詳細へ" width="86" height="32" /></a></p>
-		</div>
 		<!-- InstanceEndEditable -->
 	</div>
 	<!-- ========== /main ========== -->

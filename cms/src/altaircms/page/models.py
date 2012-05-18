@@ -92,6 +92,18 @@ class PageSet(Base,
         page.version = pageset.gen_version()
         return pageset
 
+    @property
+    def page_proxy(self):
+        if hasattr(self, "_page_proxy"):
+            return self._page_proxy
+        self._page_proxy = self.get_current_page()
+
+    def get_current_page(self):
+        ## not tested
+        ## パフォーマンス上げるために本当はここキャッシュしておけたりすると良いのかなと思う
+        return Page.filter(Page.version==self.version_counter).one()
+
+
 class Page(PublishUnpublishMixin, 
            BaseOriginalMixin,
            Base):

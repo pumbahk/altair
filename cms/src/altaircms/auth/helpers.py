@@ -28,7 +28,6 @@ def get_authenticated_user(request):
 
 def get_debug_user(request):
     try:
-        # return with_log(DBSession.query(Operator).filter_by(user_id=1).one()) 
         return DBSession.query(Operator).filter_by(user_id=1).one() # return debug user iff initial data are added
     except NoResultFound:
         return Operator(auth_source="debug", user_id=1, id=1, role_id=1, screen_name=u"debug user")

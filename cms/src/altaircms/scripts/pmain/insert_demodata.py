@@ -1760,17 +1760,15 @@ def add_materials_settings():
 
 
 def bind_category_to_pageset():
-    Category.query.filter_by(name=u"チケットトップ").update({"pageset_id": PageSet.query.filter_by(name=u"トップページ ページセット").one().id}, synchronize_session="fetch")
-    Category.query.filter_by(name=u"音楽").update({"pageset_id": PageSet.query.filter_by(name=u"音楽 ページセット").first().id}, synchronize_session="fetch")
-    Category.query.filter_by(name=u"スポーツ").update({"pageset_id": PageSet.query.filter_by(name=u"スポーツ ページセット").one().id}, synchronize_session="fetch")
-    Category.query.filter_by(name=u"演劇").update({"pageset_id": PageSet.query.filter_by(name=u"演劇 ページセット").one().id}, synchronize_session="fetch")
-    Category.query.filter_by(name=u"イベント・その他").update({"pageset_id": PageSet.query.filter_by(name=u"イベント・その他 ページセット").one().id}, synchronize_session="fetch")
+    Category.query.filter_by(label=u"チケットトップ").update({"pageset_id": PageSet.query.filter_by(name=u"トップページ ページセット").one().id}, synchronize_session="fetch")
+    Category.query.filter_by(label=u"音楽").update({"pageset_id": PageSet.query.filter_by(name=u"音楽 ページセット").first().id}, synchronize_session="fetch")
+    Category.query.filter_by(label=u"スポーツ").update({"pageset_id": PageSet.query.filter_by(name=u"スポーツ ページセット").one().id}, synchronize_session="fetch")
+    Category.query.filter_by(label=u"演劇").update({"pageset_id": PageSet.query.filter_by(name=u"演劇 ページセット").one().id}, synchronize_session="fetch")
+    Category.query.filter_by(label=u"イベント・その他").update({"pageset_id": PageSet.query.filter_by(name=u"イベント・その他 ページセット").one().id}, synchronize_session="fetch")
 
-    Category.query.filter_by(name=u"ヘルプ").update({"pageset_id": PageSet.query.filter_by(name=u"ヘルプ ページセット").one().id}, synchronize_session="fetch")
-    Category.query.filter_by(name=u"初めての方へ").update({"pageset_id": PageSet.query.filter_by(name=u"初めての方へ ページセット").one().id}, synchronize_session="fetch")
-    Category.query.filter_by(name=u"公演中止・変更情報").update({"pageset_id": PageSet.query.filter_by(name=u"公演の中止・変更情報 ページセット").one().id}, synchronize_session="fetch")
-
-
+    Category.query.filter_by(label=u"ヘルプ").update({"pageset_id": PageSet.query.filter_by(name=u"ヘルプ ページセット").one().id}, synchronize_session="fetch")
+    Category.query.filter_by(label=u"初めての方へ").update({"pageset_id": PageSet.query.filter_by(name=u"初めての方へ ページセット").one().id}, synchronize_session="fetch")
+    Category.query.filter_by(label=u"公演中止・変更情報").update({"pageset_id": PageSet.query.filter_by(name=u"公演の中止・変更情報 ページセット").one().id}, synchronize_session="fetch")
 
 def main(env, args):
     # setup()

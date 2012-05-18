@@ -4,6 +4,7 @@ from collections import namedtuple
 from datetime import datetime
 
 from . import searcher
+import altaircms.helpers as h
 
 # SearchResult = namedtuple("SearchResult", "category_icons page_description deal_limit deal_info_icons deal_description purchase_link")
 class SearchResult(dict):
@@ -12,31 +13,41 @@ class SearchResult(dict):
 class SearchPageResource(object):
     def __init__(self, request):
         self.request = request
+
+    def result_sequence_from_query(self, query, _nowday=datetime.now):
+        """
+        ここでは、検索結果のqueryを表示に適した形式に直す
+        """
+        today = _nowday()    
+        for pageset in query:
+            yield SearchResultRender(pageset, today, self.request)
         
     def get_result_sequence_from_form(self, form):
         query = self._get_pageset_query(form)
-        return result_sequence_from_query(query)
+        return self.result_sequence_from_query(query)
 
     # def _get_pageset_query(self, form):
     #     query_params = form.make_query_params()
     #     return searcher.get_pageset_query(query_params)        
 
     def _get_pageset_query(self, form):
-        return [None, None, None, None, None]
-
-def result_sequence_from_query(query, _nowday=datetime.now):
-    """
-    ここでは、検索結果のqueryを表示に適した形式に直す
-    """
-    today = _nowday()    
-    for pageset in query:
-        yield SearchResultRender(pageset, today)
+        from altaircms.page.models import PageSet, Page
+        from altaircms.event.models import Event
+        event = Event(subtitle=u"ソ・ジソブ　日本公式ファンクラブ1周年記念！2012 ファンミーティング in 東京", 
+                      description=u"2012/3/24(土) 東京ビッグサイト（東京国際展示場）(東京都)", 
+                      event_open=datetime(2012, 5, 1))
+        page_set = PageSet(url="http://www.example.com", version_counter=1, event=event)
+        page = Page(pageset=page_set, version=1, 
+                    description="楽天チケットイベント詳細ページです", 
+                    )
+        return [page_set]*5
 
 
 class SearchResultRender(object):
-    def __init__(self, pageset, today):
+    def __init__(self, pageset, today, request):
         self.pageset = pageset
         self.today = today
+        self.request = request
 
     def __html__(self):
         return u"""\
@@ -67,22 +78,37 @@ class SearchResultRender(object):
             )
 
     def category_icons(self):
-        ## todo: pagesetからカテゴリを取ってくる
+        import warnings
+        warnings.warn("difficult. so supported this function is later.")
         return u'<img src="/static/ticketstar/img/search/icon_music.gif" alt="音楽" width="82" height="20" />'
 
     def page_description(self):
-        return u'''<p><a href="#">ソ・ジソブ　日本公式ファンクラブ1周年記念！2012 ファンミーティング in 東京</a></p>
-<p class="align1">2012/3/24(土) 東京ビッグサイト（東京国際展示場）(東京都)</p>'''
+        fmt =  u"""\
+<p><a href="%s">%s</a></p>
+<p class="align1">%s</p>
+"""
+        link = h.link.to_publish_page_from_pageset(self.request, self.pageset)
+        link_label = self.pageset.event.subtitle
+        description = self.pageset.event.description
+        return fmt % (link, link_label, description)
 
     def deal_limit(self):
-        return u'あと2日'
+        N = (self.today - self.pageset.event.event_open).days
+        return u"あと%d日" % N
+        #return u"開演まであと%d日" % N
     
     def deal_info_icons(self):
+        import warnings
+        warnings.warn("difficult. so supported this function is later.")
         return u'<img src="/static/ticketstar/img/search/icon_release.gif" alt="一般発売" width="60" height="14" />'
 
     def deal_description(self):
+        import warnings
+        warnings.warn("difficult. so supported this function is later.")
         return u'<strong>チケット発売中</strong> ～2012/3/23(金) 23:59'
 
     def purchase_link(self):
+        import warnings
+        warnings.warn("difficult. so supported this function is later.")
         return u'<a href="#"><img src="/static/ticketstar/img/search/btn_buy.gif" alt="購入へ" width="86" height="32" /></a>'
 
