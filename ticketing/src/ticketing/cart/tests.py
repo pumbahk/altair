@@ -90,14 +90,16 @@ class CartTests(unittest.TestCase):
         self.assertEqual(result[0].cart_session_id, u'valid')
 
     def test_add_seats(self):
-        from ticketing.products.models import Product
-        ordered_products = [(Product(id=i), 1) for i in range(10)]
-        seats = [i for i in range(10)]
+        ordered_products = [(testing.DummyResource(id=i, items=[
+            testing.DummyResource(stock_id=1),
+        ]), 1) for i in range(10)]
+        seats = [testing.DummyResource(id=i, stock_id=1) for i in range(10)]
         target = self._makeOne()
         target.add_seat(seats, ordered_products)
 
         self.assertEqual(target.products[0].product.id, 0)
         self.assertEqual(target.products[0].quantity, 1)
+        self.assertEqual(len(target.products[0].items), 1)
 
 class CartedProductTests(unittest.TestCase):
     def setUp(self):
@@ -184,7 +186,7 @@ class TicketingCartResourceTests(unittest.TestCase):
 
     def _add_stock_status(self, quantity=100):
         from ..products import models
-        product_item = models.ProductItem(id=1)
+        product_item = models.ProductItem(id=1, price=0, quantity=0)
         stock = models.Stock(id=1, product_items=[product_item])
         stock_status = models.StockStatus(stock=stock, quantity=quantity)
         models.DBSession.add(stock_status)
