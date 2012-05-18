@@ -2,7 +2,7 @@
 
 <%block name="main">
 		<!-- InstanceBeginEditable name="main" -->
-		<form>
+		<form action="${request.route_path("detail_page_search")}" method="GET">
 		<div class="searchInput">
 		  <dl>
 			<dt><div class="searchInputHeader">フリーワードで探す</div></dt>
@@ -76,7 +76,7 @@
 
 		<div id="searchFormButton">
 		  <ul>
-			<li><input type="image" src="/static/ticketstar/img/search/btn_clear.gif" alt="条件をクリア" name="clear_button"/></li>
+			<li><a href="${request.route_path("detail_page_search_input")}"><img src="/static/ticketstar/img/search/btn_clear.gif" alt="条件をクリア" name="clear_button"/></a></li>
 			<li><input type="image" src="/static/ticketstar/img/search/btn_search.gif" alt="検索" name="cancel_button"/></li>
 		  </ul>
 		</div>

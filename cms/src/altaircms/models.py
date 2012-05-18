@@ -12,8 +12,6 @@ from sqlalchemy.orm import relationship
 
 from sqlalchemy.sql.operators import ColumnOperators
 
-import altaircms.helpers as h
-
 def model_to_dict(obj):
     return {k: getattr(obj, k) for k, v in obj.__class__.__dict__.iteritems() \
                 if isinstance(v, ColumnOperators)}

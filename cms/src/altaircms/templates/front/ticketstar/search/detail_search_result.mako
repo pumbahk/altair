@@ -1,1 +1,2 @@
+${queries}
 detail search result

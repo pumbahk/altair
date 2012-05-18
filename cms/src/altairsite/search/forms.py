@@ -24,6 +24,9 @@ class QueryPartForm(form.Form):
     def __html__(self):
         return u"%(query)s %(query_cond)s" % self
 
+    def make_query_params(self):
+        return {}
+
 ## todo:ジャンル
 ## todo: make query
 class GanrePartForm(form.Form):
@@ -47,7 +50,7 @@ class GanrePartForm(form.Form):
         data = self.data
         sub_ganres = [data["music_subganre"], data["stage_subganre"], data["sports_subganre"], data["other_subganre"]]
         return {"top_categories": [k for k in ["music", "stage", "sports", "other"] if data[k]], 
-                "sub_categories": list(set([x for xs in sub_ganres for x in xs]))
+                "sub_categories": list(set([x for xs in sub_ganres if xs for x in xs]))
                 }
 
     def __html__(self): ## todo refactoring
@@ -115,7 +118,9 @@ class AreaPartForm(form.Form):
                 prefectures.update([p for p, _ in getattr(self, "pref_"+k).choices])
 
             ## checkされた県の内容がdataの中に入っている(CheckboxListField)
-            prefectures.update(data["pref_"+k])
+            vs = data["pref_"+k]
+            if vs:
+                prefectures.update(vs)
 
         return {"areas": areas, 
                 "prefectures": list(prefectures)
@@ -136,13 +141,13 @@ months = [(i, unicode(i)) for i in range(1, 13)]
 days = [(i, unicode(i)) for i in range(1, 32)]
 
 class PerformanceTermPartForm(form.Form):
-    start_year = fields.SelectField(choices=years)
-    start_month = fields.SelectField(choices=months)
-    start_day = fields.SelectField(choices=days)
+    start_year = fields.SelectField(choices=years,coerce=int)
+    start_month = fields.SelectField(choices=months,coerce=int)
+    start_day = fields.SelectField(choices=days,coerce=int)
 
-    end_year = fields.SelectField(choices=years)
-    end_month = fields.SelectField(choices=months)
-    end_day = fields.SelectField(choices=days)
+    end_year = fields.SelectField(choices=years,coerce=int)
+    end_month = fields.SelectField(choices=months,coerce=int)
+    end_day = fields.SelectField(choices=days,coerce=int)
 
     def __html__(self):
         return u"""
@@ -151,8 +156,11 @@ class PerformanceTermPartForm(form.Form):
 
     def make_query_params(self):
         data = self.data
-        start_date = datetime(data["start_year"], data["start_month"], data["start_day"])
-        end_date = datetime(data["end_year"], data["end_month"], data["end_day"])
+        start_date, end_date = None, None
+        if all((data["start_year"], data["start_month"], data["start_day"])):
+            start_date = datetime(*(int(x) for x in (data["start_year"], data["start_month"], data["start_day"])))
+        if all((data["end_year"], data["end_month"], data["end_day"])):
+            end_date = datetime(*(int(x) for x in (data["end_year"], data["end_month"], data["end_day"])))
         return {"start_date": start_date, 
                 "end_date": end_date}
 
@@ -166,7 +174,7 @@ class DealCondPartForm(form.Form):
 
     def make_query_params(self):
         import warnings
-        warnigs.warn("this flag is not support yet.")
+        warnings.warn("this flag is not support yet.")
         return {}
 
 ## todo:付加サービス
@@ -179,7 +187,7 @@ class AddedServicePartForm(form.Form):
 
     def make_query_params(self):
         import warnings
-        warnigs.warn("this flag is not support yet.")
+        warnings.warn("this flag is not support yet.")
         return {}
 
 
@@ -191,20 +199,20 @@ class AboutDealPartForm(form.Form):
     till_deal_end_flg = fields.BooleanField(label=u"")
     till_deal_end = fields.SelectField(choices=days)
     
-    closed_only = fields.BooleanField(label=u"販売終了", widget=CheckboxWithLabelInput())
+    closed_includep = fields.BooleanField(label=u"販売終了", widget=CheckboxWithLabelInput())
     canceled_only = fields.BooleanField(label=u"公演中止", widget=CheckboxWithLabelInput())
 
     def __html__(self):
         return u"""
 <ul>
   <li>
-    %(before_deal_start_flg)s%(before_deal_start)s日以内に発送
+    %(before_deal_start_flg)s%(before_deal_start)s日以内に受付・販売開始
   </li>
   <li>
     %(till_deal_end_flg)s販売終了まで%(till_deal_end)s日
   </li>
   <li>
-    %(closed_only)s %(canceled_only)s
+    %(closed_includep)s %(canceled_only)s
   </li>
 </ul>
 """ % self
@@ -213,12 +221,11 @@ class AboutDealPartForm(form.Form):
         data = self.data
         params = {}
         if data["before_deal_start_flg"]:
-            params["before_deal_start"] = data["before_deal_start"]
+            params["before_deal_start"] = data["before_deal_start"] 
         if data["till_deal_end_flg"]:
-            params["till_deal_end"] = data["till_deal_end"]
-
-        params.update(closed_only=data["closed_only"], 
-                      canceled_only=data["canceled_only"]) ## todo:fix
+            params["till_deal_end"] = data["till_deal_end"] 
+        params.update(closed_includep=data.get("closed_includep"), 
+                      canceled_only=data.get("canceled_only")) ## todo:fix
         return params
 
 class DetailSearchQueryForm(object):
@@ -241,14 +248,9 @@ class DetailSearchQueryForm(object):
 
     def make_query_params(self):
         params = {}
-        for form in self._form:
+        for form in self._forms:
             params.update(form.make_query_params())
         return params
-
-    def as_filter(self, qs=None):
-        for form in self._forms:
-            qs = form.as_filter(qs)
-        return qs
 
 def get_search_forms(formdata=None):
     return DetailSearchQueryForm(formdata)
