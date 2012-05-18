@@ -33,6 +33,7 @@
     $('#modal-product_item-edit #price').val($(el + ' #price').text());
     $('#modal-product_item-edit #id').val('');
     $('#modal-product_item-edit #item_price').val('');
+    $('#modal-product_item-edit #item_quantity').val('');
     $('#modal-product_item-edit #sales_segment').val($(el + ' #sales_segment').text());
     $('#modal-product_item-edit #stock_holders').removeAttr('disabled');
     $('#modal-product_item-edit #stock_id').removeAttr('disabled');
@@ -48,6 +49,7 @@
     var product_item = '#product_item-' + product_item_id;
     $('#modal-product_item-edit #id').val(product_item_id);
     $('#modal-product_item-edit #item_price').val($(product_item + ' #price').text());
+    $('#modal-product_item-edit #item_quantity').val($(product_item + ' #quantity').text());
     $('#modal-product_item-edit #stock_holders').val($(product_item + ' #stock_holder').attr('value')).change();
     $('#modal-product_item-edit #stock_holders').attr('disabled', 'disabled');
     $('#modal-product_item-edit #stock_id').val($(product_item + ' #stock').attr('value'));
@@ -71,6 +73,7 @@
         "id":id,
         "performance_id":${performance.id},
         "price":$('#modal-product_item-edit #item_price').val(),
+        "quantity":$('#modal-product_item-edit #item_quantity').val(),
         "product_id":$('#modal-product_item-edit #product_id').val(),
         "stock_id":$('#modal-product_item-edit #stock_id').val(),
       },
@@ -114,6 +117,8 @@
         <select id="stock_id"></select>
         <label>価格</label>
         <input id="item_price" type="text" class="span3" placeholder="価格">
+        <label>席数</label>
+        <input id="item_quantity" type="text" class="span3">
       </fieldset>
     </div>
 

@@ -42,6 +42,7 @@ class ProductItemForm(Form):
         label=u'価格',
         validators=[Required(u'入力してください')]
     )
+    quantity = IntegerField("", validators=[Required()])
     stock_id = IntegerField("", validators=[Required()])
     product_id = HiddenField("", validators=[Required()])
     performance_id = HiddenField("", validators=[Required()])
