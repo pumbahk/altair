@@ -77,6 +77,19 @@ class CategoryForm(Form):
     pageset = dynamic_query_select_field_factory(
         PageSet, allow_blank=False, label=u"リンク先ページ(CMSで作成したもの)",
         get_label=lambda obj: obj.name or u"--なし--")
+
+    # ## delete validateion
+    # def validate(self, extra_validators=None):
+    #     import sqlalchemy.orm as orm
+    #     super(CategoryForm, self).validate(extra_validators=extra_validators)
+
+    #     data = self.data
+    #     parent = orm.aliased(Category, name="parent")
+    #     if Category.query.filter(Category.parent_id==parent.id).filter(
+    #         parent.name==data["name"], 
+    #         parent.label==data["label"], 
+    #         ).count() > 0:
+    #         self.warns["hierarchy"] = u"まだ子を持ったカテゴリを消そうとしています"
     ## site
 
 

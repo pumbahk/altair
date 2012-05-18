@@ -76,8 +76,10 @@
 
 		<div id="searchFormButton">
 		  <ul>
-			<li><a href="${request.route_path("detail_page_search_input")}"><img src="/static/ticketstar/img/search/btn_clear.gif" alt="条件をクリア" name="clear_button"/></a></li>
-			<li><input type="image" src="/static/ticketstar/img/search/btn_search.gif" alt="検索" name="cancel_button"/></li>
+			<li>
+			  <a href="${request.route_path("detail_page_search_input")}"><img src="/static/ticketstar/img/search/btn_clear.gif" alt="条件をクリア" name="clear_button"/></a>
+			</li>
+			<li><input type="image" src="/static/ticketstar/img/search/btn_search.gif" alt="検索" name="search_button"/></li>
 		  </ul>
 		</div>
 	</form>

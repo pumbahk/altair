@@ -88,12 +88,13 @@
 		</dl>
 </%block>
 
+### require: ${request.route_path("detail_page_search_input")}
 <%block name="header_search">
 	<div id="headerSearch">
 		<form id="form1" name="form1" method="post" action="">
 			<input name="textfield" type="text" id="textfield" size="40" value="アーティスト名、公演名、会場名など" onblur="if(this.value=='') this.value='アーティスト名、公演名、会場名など';" onfocus="if(this.value=='アーティスト名、公演名、会場名など') this.value='';" />
 			<input name="imageField" type="image" id="imageField" src="/static/ticketstar/img/common/header_search_btn.gif" alt="検索" />
-			<a href="#">詳細検索</a>
+			<a href="${request.route_path("detail_page_search_input")}">詳細検索</a>
 		</form>
 		<dl>
 			<dt><img src="/static/ticketstar/img/common/header_search_hot.gif" alt="ホットワード" width="50" height="45" /></dt>
