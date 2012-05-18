@@ -29,7 +29,6 @@ requires = [
     'js.tinymce',
     'pyramid_who',
     'altair-commons',
-    "altair-site"
     ]
 
 solr_require = [
