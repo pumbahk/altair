@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from ticketing.seed import DataSet
-from ticketing.venues.models import SeatStatusEnum
+from ticketing.venues.models import SeatStatusEnum, VenueArea, VenueArea_group_l0_id
 
 from .event import PerformanceEvent1Data, PerformanceEvent2Data
 from .product import *
@@ -112,302 +112,383 @@ class TemplateSeatVenue1Data(DataSet):
     class seat_a1:
         l0_id = u'A1'
         venue = TemplateVenueData.venue_orig_1
+        group_l0_id = u'g3835'
     class seat_a2:
         l0_id = u'A2'
         venue = TemplateVenueData.venue_orig_1
+        group_l0_id = u'g3835'
     class seat_a3:
         l0_id = u'A3'
         venue = TemplateVenueData.venue_orig_1
+        group_l0_id = u'g3835'
     class seat_a4:
         l0_id = u'A4'
         venue = TemplateVenueData.venue_orig_1
+        group_l0_id = u'g3835'
     class seat_a5:
         l0_id = u'A5'
         venue = TemplateVenueData.venue_orig_1
+        group_l0_id = u'g3835'
     class seat_a6:
         l0_id = u'A6'
         venue = TemplateVenueData.venue_orig_1
+        group_l0_id = u'g3835'
     class seat_a7:
         l0_id = u'A7'
         venue = TemplateVenueData.venue_orig_1
+        group_l0_id = u'g3835'
     class seat_a8:
         l0_id = u'A8'
         venue = TemplateVenueData.venue_orig_1
+        group_l0_id = u'g3835'
     class seat_a9:
         l0_id = u'A9'
         venue = TemplateVenueData.venue_orig_1
+        group_l0_id = u'g3835'
     class seat_b1:
         l0_id = u'B1'
         venue = TemplateVenueData.venue_orig_1
+        group_l0_id = u'g3835'
     class seat_b2:
         l0_id = u'B2'
         venue = TemplateVenueData.venue_orig_1
+        group_l0_id = u'g3835'
     class seat_b3:
         l0_id = u'B3'
         venue = TemplateVenueData.venue_orig_1
+        group_l0_id = u'g3835'
     class seat_b4:
         l0_id = u'B4'
         venue = TemplateVenueData.venue_orig_1
+        group_l0_id = u'g3835'
     class seat_b5:
         l0_id = u'B5'
         venue = TemplateVenueData.venue_orig_1
+        group_l0_id = u'g3835'
     class seat_b6:
         l0_id = u'B6'
         venue = TemplateVenueData.venue_orig_1
+        group_l0_id = u'g3835'
     class seat_b7:
         l0_id = u'B7'
         venue = TemplateVenueData.venue_orig_1
+        group_l0_id = u'g3835'
     class seat_c1:
         l0_id = u'C1'
         venue = TemplateVenueData.venue_orig_1
+        group_l0_id = u'g3835'
     class seat_c2:
         l0_id = u'C2'
         venue = TemplateVenueData.venue_orig_1
+        group_l0_id = u'g3835'
     class seat_c3:
         l0_id = u'C3'
         venue = TemplateVenueData.venue_orig_1
+        group_l0_id = u'g3835'
     class seat_c4:
         l0_id = u'C4'
         venue = TemplateVenueData.venue_orig_1
+        group_l0_id = u'g3835'
     class seat_c5:
         l0_id = u'C5'
         venue = TemplateVenueData.venue_orig_1
+        group_l0_id = u'g3835'
     class seat_d1:
         l0_id = u'D1'
         venue = TemplateVenueData.venue_orig_1
+        group_l0_id = u'g3078'
     class seat_d2:
         l0_id = u'D2'
         venue = TemplateVenueData.venue_orig_1
+        group_l0_id = u'g3078'
     class seat_d3:
         l0_id = u'D3'
         venue = TemplateVenueData.venue_orig_1
+        group_l0_id = u'g3078'
     class seat_e1:
         l0_id = u'E1'
         venue = TemplateVenueData.venue_orig_1
+        group_l0_id = u'g3071'
     class seat_e2:
         l0_id = u'E2'
         venue = TemplateVenueData.venue_orig_1
+        group_l0_id = u'g3071'
     class seat_e3:
         l0_id = u'E3'
         venue = TemplateVenueData.venue_orig_1
+        group_l0_id = u'g3071'
 
 class TemplateSeatVenue2Data(DataSet):
     class seat_a1:
         l0_id = u'A1'
         venue = TemplateVenueData.venue_orig_2
+        group_l0_id = u'g3835'
     class seat_a2:
         l0_id = u'A2'
         venue = TemplateVenueData.venue_orig_2
+        group_l0_id = u'g3835'
     class seat_a3:
         l0_id = u'A3'
         venue = TemplateVenueData.venue_orig_2
+        group_l0_id = u'g3835'
     class seat_a4:
         l0_id = u'A4'
         venue = TemplateVenueData.venue_orig_2
+        group_l0_id = u'g3835'
     class seat_a5:
         l0_id = u'A5'
         venue = TemplateVenueData.venue_orig_2
+        group_l0_id = u'g3835'
     class seat_a6:
         l0_id = u'A6'
         venue = TemplateVenueData.venue_orig_2
+        group_l0_id = u'g3835'
     class seat_a7:
         l0_id = u'A7'
         venue = TemplateVenueData.venue_orig_2
+        group_l0_id = u'g3835'
     class seat_a8:
         l0_id = u'A8'
         venue = TemplateVenueData.venue_orig_2
+        group_l0_id = u'g3835'
     class seat_a9:
         l0_id = u'A9'
         venue = TemplateVenueData.venue_orig_2
+        group_l0_id = u'g3835'
     class seat_b1:
         l0_id = u'B1'
         venue = TemplateVenueData.venue_orig_2
+        group_l0_id = u'g3835'
     class seat_b2:
         l0_id = u'B2'
         venue = TemplateVenueData.venue_orig_2
+        group_l0_id = u'g3835'
     class seat_b3:
         l0_id = u'B3'
         venue = TemplateVenueData.venue_orig_2
+        group_l0_id = u'g3835'
     class seat_b4:
         l0_id = u'B4'
         venue = TemplateVenueData.venue_orig_2
+        group_l0_id = u'g3835'
     class seat_b5:
         l0_id = u'B5'
         venue = TemplateVenueData.venue_orig_2
+        group_l0_id = u'g3835'
     class seat_b6:
         l0_id = u'B6'
         venue = TemplateVenueData.venue_orig_2
+        group_l0_id = u'g3835'
     class seat_b7:
         l0_id = u'B7'
         venue = TemplateVenueData.venue_orig_2
+        group_l0_id = u'g3835'
     class seat_c1:
         l0_id = u'C1'
         venue = TemplateVenueData.venue_orig_2
+        group_l0_id = u'g3835'
     class seat_c2:
         l0_id = u'C2'
         venue = TemplateVenueData.venue_orig_2
+        group_l0_id = u'g3835'
     class seat_c3:
         l0_id = u'C3'
         venue = TemplateVenueData.venue_orig_2
+        group_l0_id = u'g3835'
     class seat_c4:
         l0_id = u'C4'
         venue = TemplateVenueData.venue_orig_2
+        group_l0_id = u'g3835'
     class seat_c5:
         l0_id = u'C5'
         venue = TemplateVenueData.venue_orig_2
+        group_l0_id = u'g3835'
     class seat_d1:
         l0_id = u'D1'
         venue = TemplateVenueData.venue_orig_2
+        group_l0_id = u'g3078'
     class seat_d2:
         l0_id = u'D2'
         venue = TemplateVenueData.venue_orig_2
+        group_l0_id = u'g3078'
     class seat_d3:
         l0_id = u'D3'
         venue = TemplateVenueData.venue_orig_2
+        group_l0_id = u'g3078'
     class seat_e1:
         l0_id = u'E1'
         venue = TemplateVenueData.venue_orig_2
+        group_l0_id = u'g3071'
     class seat_e2:
         l0_id = u'E2'
         venue = TemplateVenueData.venue_orig_2
+        group_l0_id = u'g3071'
     class seat_e3:
         l0_id = u'E3'
         venue = TemplateVenueData.venue_orig_2
+        group_l0_id = u'g3071'
 
 class SeatEvent1Venue1Data(DataSet):
     class seat_a1:
         l0_id = u'A1'
         venue = VenueEvent1Data.venue_1
+        group_l0_id = u'g3835'
         stock = StockEvent1Performance1Data.stock_1
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a2:
         l0_id = u'A2'
         venue = VenueEvent1Data.venue_1
+        group_l0_id = u'g3835'
         stock = StockEvent1Performance1Data.stock_1
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a3:
         l0_id = u'A3'
         venue = VenueEvent1Data.venue_1
+        group_l0_id = u'g3835'
         stock = StockEvent1Performance1Data.stock_1
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a4:
         l0_id = u'A4'
         venue = VenueEvent1Data.venue_1
+        group_l0_id = u'g3835'
         stock = StockEvent1Performance1Data.stock_1
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a5:
         l0_id = u'A5'
         venue = VenueEvent1Data.venue_1
+        group_l0_id = u'g3835'
         stock = StockEvent1Performance1Data.stock_1
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a6:
         l0_id = u'A6'
         venue = VenueEvent1Data.venue_1
+        group_l0_id = u'g3835'
         stock = StockEvent1Performance1Data.stock_1
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a7:
         l0_id = u'A7'
         venue = VenueEvent1Data.venue_1
+        group_l0_id = u'g3835'
         stock = StockEvent1Performance1Data.stock_5
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a8:
         l0_id = u'A8'
         venue = VenueEvent1Data.venue_1
+        group_l0_id = u'g3835'
         stock = StockEvent1Performance1Data.stock_5
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a9:
         l0_id = u'A9'
         venue = VenueEvent1Data.venue_1
+        group_l0_id = u'g3835'
         stock = StockEvent1Performance1Data.stock_5
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_b1:
         l0_id = u'B1'
         venue = VenueEvent1Data.venue_1
+        group_l0_id = u'g3835'
         stock = StockEvent1Performance1Data.stock_2
         stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b2:
         l0_id = u'B2'
         venue = VenueEvent1Data.venue_1
+        group_l0_id = u'g3835'
         stock = StockEvent1Performance1Data.stock_2
         stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b3:
         l0_id = u'B3'
         venue = VenueEvent1Data.venue_1
+        group_l0_id = u'g3835'
         stock = StockEvent1Performance1Data.stock_2
         stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b4:
         l0_id = u'B4'
         venue = VenueEvent1Data.venue_1
+        group_l0_id = u'g3835'
         stock = StockEvent1Performance1Data.stock_6
         stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b5:
         l0_id = u'B5'
         venue = VenueEvent1Data.venue_1
+        group_l0_id = u'g3835'
         stock = StockEvent1Performance1Data.stock_6
         stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b6:
         l0_id = u'B6'
         venue = VenueEvent1Data.venue_1
+        group_l0_id = u'g3835'
         stock = StockEvent1Performance1Data.stock_6
         stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b7:
         l0_id = u'B7'
         venue = VenueEvent1Data.venue_1
+        group_l0_id = u'g3835'
         stock = StockEvent1Performance1Data.stock_6
         stock_type = StockTypeEvent1Data.stock_type_2
     class seat_c1:
         l0_id = u'C1'
         venue = VenueEvent1Data.venue_1
+        group_l0_id = u'g3835'
         stock = StockEvent1Performance1Data.stock_3
         stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c2:
         l0_id = u'C2'
         venue = VenueEvent1Data.venue_1
+        group_l0_id = u'g3835'
         stock = StockEvent1Performance1Data.stock_3
         stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c3:
         l0_id = u'C3'
         venue = VenueEvent1Data.venue_1
+        group_l0_id = u'g3835'
         stock = StockEvent1Performance1Data.stock_7
         stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c4:
         l0_id = u'C4'
         venue = VenueEvent1Data.venue_1
+        group_l0_id = u'g3835'
         stock = StockEvent1Performance1Data.stock_7
         stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c5:
         l0_id = u'C5'
         venue = VenueEvent1Data.venue_1
+        group_l0_id = u'g3835'
         stock = StockEvent1Performance1Data.stock_7
         stock_type = StockTypeEvent1Data.stock_type_3
     class seat_d1:
         l0_id = u'D1'
         venue = VenueEvent1Data.venue_1
+        group_l0_id = u'g3078'
         stock = StockEvent1Performance1Data.stock_4
         stock_type = StockTypeEvent1Data.stock_type_4
     class seat_d2:
         l0_id = u'D2'
         venue = VenueEvent1Data.venue_1
+        group_l0_id = u'g3078'
         stock = StockEvent1Performance1Data.stock_4
         stock_type = StockTypeEvent1Data.stock_type_4
     class seat_d3:
         l0_id = u'D3'
         venue = VenueEvent1Data.venue_1
+        group_l0_id = u'g3078'
         stock = StockEvent1Performance1Data.stock_4
         stock_type = StockTypeEvent1Data.stock_type_4
     class seat_e1:
         l0_id = u'E1'
         venue = VenueEvent1Data.venue_1
+        group_l0_id = u'g3071'
         stock = StockEvent1Performance1Data.stock_8
         stock_type = StockTypeEvent1Data.stock_type_4
     class seat_e2:
         l0_id = u'E2'
         venue = VenueEvent1Data.venue_1
+        group_l0_id = u'g3071'
         stock = StockEvent1Performance1Data.stock_8
         stock_type = StockTypeEvent1Data.stock_type_4
     class seat_e3:
         l0_id = u'E3'
         venue = VenueEvent1Data.venue_1
+        group_l0_id = u'g3071'
         stock = StockEvent1Performance1Data.stock_8
         stock_type = StockTypeEvent1Data.stock_type_4
 
@@ -415,770 +496,959 @@ class SeatEvent1Venue2Data(DataSet):
     class seat_a1:
         l0_id = u'A1'
         venue = VenueEvent1Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a2:
         l0_id = u'A2'
         venue = VenueEvent1Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a3:
         l0_id = u'A3'
         venue = VenueEvent1Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a4:
         l0_id = u'A4'
         venue = VenueEvent1Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a5:
         l0_id = u'A5'
         venue = VenueEvent1Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a6:
         l0_id = u'A6'
         venue = VenueEvent1Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a7:
         l0_id = u'A7'
         venue = VenueEvent1Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a8:
         l0_id = u'A8'
         venue = VenueEvent1Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a9:
         l0_id = u'A9'
         venue = VenueEvent1Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_b1:
         l0_id = u'B1'
         venue = VenueEvent1Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b2:
         l0_id = u'B2'
         venue = VenueEvent1Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b3:
         l0_id = u'B3'
         venue = VenueEvent1Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b4:
         l0_id = u'B4'
         venue = VenueEvent1Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b5:
         l0_id = u'B5'
         venue = VenueEvent1Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b6:
         l0_id = u'B6'
         venue = VenueEvent1Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b7:
         l0_id = u'B7'
         venue = VenueEvent1Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_2
     class seat_c1:
         l0_id = u'C1'
         venue = VenueEvent1Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c2:
         l0_id = u'C2'
         venue = VenueEvent1Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c3:
         l0_id = u'C3'
         venue = VenueEvent1Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c4:
         l0_id = u'C4'
         venue = VenueEvent1Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c5:
         l0_id = u'C5'
         venue = VenueEvent1Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_3
     class seat_d1:
         l0_id = u'D1'
         venue = VenueEvent1Data.venue_2
+        group_l0_id = u'g3078'
         stock_type = StockTypeEvent1Data.stock_type_4
     class seat_d2:
         l0_id = u'D2'
         venue = VenueEvent1Data.venue_2
+        group_l0_id = u'g3078'
         stock_type = StockTypeEvent1Data.stock_type_4
     class seat_d3:
         l0_id = u'D3'
         venue = VenueEvent1Data.venue_2
+        group_l0_id = u'g3078'
         stock_type = StockTypeEvent1Data.stock_type_4
     class seat_e1:
         l0_id = u'E1'
         venue = VenueEvent1Data.venue_2
+        group_l0_id = u'g3071'
         stock_type = StockTypeEvent1Data.stock_type_4
     class seat_e2:
         l0_id = u'E2'
         venue = VenueEvent1Data.venue_2
+        group_l0_id = u'g3071'
         stock_type = StockTypeEvent1Data.stock_type_4
     class seat_e3:
         l0_id = u'E3'
         venue = VenueEvent1Data.venue_2
+        group_l0_id = u'g3071'
         stock_type = StockTypeEvent1Data.stock_type_4
 
 class SeatEvent1Venue3Data(DataSet):
     class seat_a1:
         l0_id = u'A1'
         venue = VenueEvent1Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a2:
         l0_id = u'A2'
         venue = VenueEvent1Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a3:
         l0_id = u'A3'
         venue = VenueEvent1Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a4:
         l0_id = u'A4'
         venue = VenueEvent1Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a5:
         l0_id = u'A5'
         venue = VenueEvent1Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a6:
         l0_id = u'A6'
         venue = VenueEvent1Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a7:
         l0_id = u'A7'
         venue = VenueEvent1Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a8:
         l0_id = u'A8'
         venue = VenueEvent1Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a9:
         l0_id = u'A9'
         venue = VenueEvent1Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_b1:
         l0_id = u'B1'
         venue = VenueEvent1Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b2:
         l0_id = u'B2'
         venue = VenueEvent1Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b3:
         l0_id = u'B3'
         venue = VenueEvent1Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b4:
         l0_id = u'B4'
         venue = VenueEvent1Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b5:
         l0_id = u'B5'
         venue = VenueEvent1Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b6:
         l0_id = u'B6'
         venue = VenueEvent1Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b7:
         l0_id = u'B7'
         venue = VenueEvent1Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_2
     class seat_c1:
         l0_id = u'C1'
         venue = VenueEvent1Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c2:
         l0_id = u'C2'
         venue = VenueEvent1Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c3:
         l0_id = u'C3'
         venue = VenueEvent1Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c4:
         l0_id = u'C4'
         venue = VenueEvent1Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c5:
         l0_id = u'C5'
         venue = VenueEvent1Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_3
     class seat_d1:
         l0_id = u'D1'
         venue = VenueEvent1Data.venue_3
+        group_l0_id = u'g3078'
         stock_type = StockTypeEvent1Data.stock_type_4
     class seat_d2:
         l0_id = u'D2'
         venue = VenueEvent1Data.venue_3
+        group_l0_id = u'g3078'
         stock_type = StockTypeEvent1Data.stock_type_4
     class seat_d3:
         l0_id = u'D3'
         venue = VenueEvent1Data.venue_3
+        group_l0_id = u'g3078'
         stock_type = StockTypeEvent1Data.stock_type_4
     class seat_e1:
         l0_id = u'E1'
         venue = VenueEvent1Data.venue_3
+        group_l0_id = u'g3071'
         stock_type = StockTypeEvent1Data.stock_type_4
     class seat_e2:
         l0_id = u'E2'
         venue = VenueEvent1Data.venue_3
+        group_l0_id = u'g3071'
         stock_type = StockTypeEvent1Data.stock_type_4
     class seat_e3:
         l0_id = u'E3'
         venue = VenueEvent1Data.venue_3
+        group_l0_id = u'g3071'
         stock_type = StockTypeEvent1Data.stock_type_4
 
 class SeatEvent1Venue4Data(DataSet):
     class seat_a1:
         l0_id = u'A1'
         venue = VenueEvent1Data.venue_4
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a2:
         l0_id = u'A2'
         venue = VenueEvent1Data.venue_4
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a3:
         l0_id = u'A3'
         venue = VenueEvent1Data.venue_4
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a4:
         l0_id = u'A4'
         venue = VenueEvent1Data.venue_4
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a5:
         l0_id = u'A5'
         venue = VenueEvent1Data.venue_4
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a6:
         l0_id = u'A6'
         venue = VenueEvent1Data.venue_4
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a7:
         l0_id = u'A7'
         venue = VenueEvent1Data.venue_4
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a8:
         l0_id = u'A8'
         venue = VenueEvent1Data.venue_4
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a9:
         l0_id = u'A9'
         venue = VenueEvent1Data.venue_4
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_b1:
         l0_id = u'B1'
         venue = VenueEvent1Data.venue_4
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b2:
         l0_id = u'B2'
         venue = VenueEvent1Data.venue_4
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b3:
         l0_id = u'B3'
         venue = VenueEvent1Data.venue_4
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b4:
         l0_id = u'B4'
         venue = VenueEvent1Data.venue_4
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b5:
         l0_id = u'B5'
         venue = VenueEvent1Data.venue_4
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b6:
         l0_id = u'B6'
         venue = VenueEvent1Data.venue_4
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b7:
         l0_id = u'B7'
         venue = VenueEvent1Data.venue_4
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_2
     class seat_c1:
         l0_id = u'C1'
         venue = VenueEvent1Data.venue_4
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c2:
         l0_id = u'C2'
         venue = VenueEvent1Data.venue_4
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c3:
         l0_id = u'C3'
         venue = VenueEvent1Data.venue_4
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c4:
         l0_id = u'C4'
         venue = VenueEvent1Data.venue_4
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c5:
         l0_id = u'C5'
         venue = VenueEvent1Data.venue_4
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_3
     class seat_d1:
         l0_id = u'D1'
         venue = VenueEvent1Data.venue_4
+        group_l0_id = u'g3078'
         stock_type = StockTypeEvent1Data.stock_type_4
     class seat_d2:
         l0_id = u'D2'
         venue = VenueEvent1Data.venue_4
+        group_l0_id = u'g3078'
         stock_type = StockTypeEvent1Data.stock_type_4
     class seat_d3:
         l0_id = u'D3'
         venue = VenueEvent1Data.venue_4
+        group_l0_id = u'g3078'
         stock_type = StockTypeEvent1Data.stock_type_4
     class seat_e1:
         l0_id = u'E1'
         venue = VenueEvent1Data.venue_4
+        group_l0_id = u'g3071'
         stock_type = StockTypeEvent1Data.stock_type_4
     class seat_e2:
         l0_id = u'E2'
         venue = VenueEvent1Data.venue_4
+        group_l0_id = u'g3071'
         stock_type = StockTypeEvent1Data.stock_type_4
     class seat_e3:
         l0_id = u'E3'
         venue = VenueEvent1Data.venue_4
+        group_l0_id = u'g3071'
         stock_type = StockTypeEvent1Data.stock_type_4
 
 class SeatEvent1Venue5Data(DataSet):
     class seat_a1:
         l0_id = u'A1'
         venue = VenueEvent1Data.venue_5
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a2:
         l0_id = u'A2'
         venue = VenueEvent1Data.venue_5
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a3:
         l0_id = u'A3'
         venue = VenueEvent1Data.venue_5
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a4:
         l0_id = u'A4'
         venue = VenueEvent1Data.venue_5
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a5:
         l0_id = u'A5'
         venue = VenueEvent1Data.venue_5
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a6:
         l0_id = u'A6'
         venue = VenueEvent1Data.venue_5
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a7:
         l0_id = u'A7'
         venue = VenueEvent1Data.venue_5
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a8:
         l0_id = u'A8'
         venue = VenueEvent1Data.venue_5
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_a9:
         l0_id = u'A9'
         venue = VenueEvent1Data.venue_5
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_1
     class seat_b1:
         l0_id = u'B1'
         venue = VenueEvent1Data.venue_5
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b2:
         l0_id = u'B2'
         venue = VenueEvent1Data.venue_5
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b3:
         l0_id = u'B3'
         venue = VenueEvent1Data.venue_5
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b4:
         l0_id = u'B4'
         venue = VenueEvent1Data.venue_5
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b5:
         l0_id = u'B5'
         venue = VenueEvent1Data.venue_5
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b6:
         l0_id = u'B6'
         venue = VenueEvent1Data.venue_5
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_2
     class seat_b7:
         l0_id = u'B7'
         venue = VenueEvent1Data.venue_5
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_2
     class seat_c1:
         l0_id = u'C1'
         venue = VenueEvent1Data.venue_5
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c2:
         l0_id = u'C2'
         venue = VenueEvent1Data.venue_5
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c3:
         l0_id = u'C3'
         venue = VenueEvent1Data.venue_5
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c4:
         l0_id = u'C4'
         venue = VenueEvent1Data.venue_5
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_3
     class seat_c5:
         l0_id = u'C5'
         venue = VenueEvent1Data.venue_5
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent1Data.stock_type_3
     class seat_d1:
         l0_id = u'D1'
         venue = VenueEvent1Data.venue_5
+        group_l0_id = u'g3078'
         stock_type = StockTypeEvent1Data.stock_type_4
     class seat_d2:
         l0_id = u'D2'
         venue = VenueEvent1Data.venue_5
+        group_l0_id = u'g3078'
         stock_type = StockTypeEvent1Data.stock_type_4
     class seat_d3:
         l0_id = u'D3'
         venue = VenueEvent1Data.venue_5
+        group_l0_id = u'g3078'
         stock_type = StockTypeEvent1Data.stock_type_4
     class seat_e1:
         l0_id = u'E1'
         venue = VenueEvent1Data.venue_5
+        group_l0_id = u'g3071'
         stock_type = StockTypeEvent1Data.stock_type_4
     class seat_e2:
         l0_id = u'E2'
         venue = VenueEvent1Data.venue_5
+        group_l0_id = u'g3071'
         stock_type = StockTypeEvent1Data.stock_type_4
     class seat_e3:
         l0_id = u'E3'
         venue = VenueEvent1Data.venue_5
+        group_l0_id = u'g3071'
         stock_type = StockTypeEvent1Data.stock_type_4
 
 class SeatEvent2Venue1Data(DataSet):
     class seat_a1:
         l0_id = u'A1'
         venue = VenueEvent2Data.venue_1
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a2:
         l0_id = u'A2'
         venue = VenueEvent2Data.venue_1
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a3:
         l0_id = u'A3'
         venue = VenueEvent2Data.venue_1
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a4:
         l0_id = u'A4'
         venue = VenueEvent2Data.venue_1
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a5:
         l0_id = u'A5'
         venue = VenueEvent2Data.venue_1
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a6:
         l0_id = u'A6'
         venue = VenueEvent2Data.venue_1
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a7:
         l0_id = u'A7'
         venue = VenueEvent2Data.venue_1
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a8:
         l0_id = u'A8'
         venue = VenueEvent2Data.venue_1
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a9:
         l0_id = u'A9'
         venue = VenueEvent2Data.venue_1
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_1
     class seat_b1:
         l0_id = u'B1'
         venue = VenueEvent2Data.venue_1
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_2
     class seat_b2:
         l0_id = u'B2'
         venue = VenueEvent2Data.venue_1
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_2
     class seat_b3:
         l0_id = u'B3'
         venue = VenueEvent2Data.venue_1
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_2
     class seat_b4:
         l0_id = u'B4'
         venue = VenueEvent2Data.venue_1
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_2
     class seat_b5:
         l0_id = u'B5'
         venue = VenueEvent2Data.venue_1
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_2
     class seat_b6:
         l0_id = u'B6'
         venue = VenueEvent2Data.venue_1
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_2
     class seat_b7:
         l0_id = u'B7'
         venue = VenueEvent2Data.venue_1
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_2
     class seat_c1:
         l0_id = u'C1'
         venue = VenueEvent2Data.venue_1
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_3
     class seat_c2:
         l0_id = u'C2'
         venue = VenueEvent2Data.venue_1
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_3
     class seat_c3:
         l0_id = u'C3'
         venue = VenueEvent2Data.venue_1
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_3
     class seat_c4:
         l0_id = u'C4'
         venue = VenueEvent2Data.venue_1
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_3
     class seat_c5:
         l0_id = u'C5'
         venue = VenueEvent2Data.venue_1
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_3
     class seat_d1:
         l0_id = u'D1'
         venue = VenueEvent2Data.venue_1
+        group_l0_id = u'g3078'
         stock_type = StockTypeEvent2Data.stock_type_4
     class seat_d2:
         l0_id = u'D2'
         venue = VenueEvent2Data.venue_1
+        group_l0_id = u'g3078'
         stock_type = StockTypeEvent2Data.stock_type_4
     class seat_d3:
         l0_id = u'D3'
         venue = VenueEvent2Data.venue_1
+        group_l0_id = u'g3078'
         stock_type = StockTypeEvent2Data.stock_type_4
     class seat_e1:
         l0_id = u'E1'
         venue = VenueEvent2Data.venue_1
+        group_l0_id = u'g3071'
         stock_type = StockTypeEvent2Data.stock_type_4
     class seat_e2:
         l0_id = u'E2'
         venue = VenueEvent2Data.venue_1
+        group_l0_id = u'g3071'
         stock_type = StockTypeEvent2Data.stock_type_4
     class seat_e3:
         l0_id = u'E3'
         venue = VenueEvent2Data.venue_1
+        group_l0_id = u'g3071'
         stock_type = StockTypeEvent2Data.stock_type_4
 
 class SeatEvent2Venue2Data(DataSet):
     class seat_a1:
         l0_id = u'A1'
         venue = VenueEvent2Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a2:
         l0_id = u'A2'
         venue = VenueEvent2Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a3:
         l0_id = u'A3'
         venue = VenueEvent2Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a4:
         l0_id = u'A4'
         venue = VenueEvent2Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a5:
         l0_id = u'A5'
         venue = VenueEvent2Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a6:
         l0_id = u'A6'
         venue = VenueEvent2Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a7:
         l0_id = u'A7'
         venue = VenueEvent2Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a8:
         l0_id = u'A8'
         venue = VenueEvent2Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a9:
         l0_id = u'A9'
         venue = VenueEvent2Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_1
     class seat_b1:
         l0_id = u'B1'
         venue = VenueEvent2Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_2
     class seat_b2:
         l0_id = u'B2'
         venue = VenueEvent2Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_2
     class seat_b3:
         l0_id = u'B3'
         venue = VenueEvent2Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_2
     class seat_b4:
         l0_id = u'B4'
         venue = VenueEvent2Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_2
     class seat_b5:
         l0_id = u'B5'
         venue = VenueEvent2Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_2
     class seat_b6:
         l0_id = u'B6'
         venue = VenueEvent2Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_2
     class seat_b7:
         l0_id = u'B7'
         venue = VenueEvent2Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_2
     class seat_c1:
         l0_id = u'C1'
         venue = VenueEvent2Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_3
     class seat_c2:
         l0_id = u'C2'
         venue = VenueEvent2Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_3
     class seat_c3:
         l0_id = u'C3'
         venue = VenueEvent2Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_3
     class seat_c4:
         l0_id = u'C4'
         venue = VenueEvent2Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_3
     class seat_c5:
         l0_id = u'C5'
         venue = VenueEvent2Data.venue_2
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_3
     class seat_d1:
         l0_id = u'D1'
         venue = VenueEvent2Data.venue_2
+        group_l0_id = u'g3078'
         stock_type = StockTypeEvent2Data.stock_type_4
     class seat_d2:
         l0_id = u'D2'
         venue = VenueEvent2Data.venue_2
+        group_l0_id = u'g3078'
         stock_type = StockTypeEvent2Data.stock_type_4
     class seat_d3:
         l0_id = u'D3'
         venue = VenueEvent2Data.venue_2
+        group_l0_id = u'g3078'
         stock_type = StockTypeEvent2Data.stock_type_4
     class seat_e1:
         l0_id = u'E1'
         venue = VenueEvent2Data.venue_2
+        group_l0_id = u'g3071'
         stock_type = StockTypeEvent2Data.stock_type_4
     class seat_e2:
         l0_id = u'E2'
         venue = VenueEvent2Data.venue_2
+        group_l0_id = u'g3071'
         stock_type = StockTypeEvent2Data.stock_type_4
     class seat_e3:
         l0_id = u'E3'
         venue = VenueEvent2Data.venue_2
+        group_l0_id = u'g3071'
         stock_type = StockTypeEvent2Data.stock_type_4
 
 class SeatEvent2Venue3Data(DataSet):
     class seat_a1:
         l0_id = u'A1'
         venue = VenueEvent2Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a2:
         l0_id = u'A2'
         venue = VenueEvent2Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a3:
         l0_id = u'A3'
         venue = VenueEvent2Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a4:
         l0_id = u'A4'
         venue = VenueEvent2Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a5:
         l0_id = u'A5'
         venue = VenueEvent2Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a6:
         l0_id = u'A6'
         venue = VenueEvent2Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a7:
         l0_id = u'A7'
         venue = VenueEvent2Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a8:
         l0_id = u'A8'
         venue = VenueEvent2Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_1
     class seat_a9:
         l0_id = u'A9'
         venue = VenueEvent2Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_1
     class seat_b1:
         l0_id = u'B1'
         venue = VenueEvent2Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_2
     class seat_b2:
         l0_id = u'B2'
         venue = VenueEvent2Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_2
     class seat_b3:
         l0_id = u'B3'
         venue = VenueEvent2Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_2
     class seat_b4:
         l0_id = u'B4'
         venue = VenueEvent2Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_2
     class seat_b5:
         l0_id = u'B5'
         venue = VenueEvent2Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_2
     class seat_b6:
         l0_id = u'B6'
         venue = VenueEvent2Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_2
     class seat_b7:
         l0_id = u'B7'
         venue = VenueEvent2Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_2
     class seat_c1:
         l0_id = u'C1'
         venue = VenueEvent2Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_3
     class seat_c2:
         l0_id = u'C2'
         venue = VenueEvent2Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_3
     class seat_c3:
         l0_id = u'C3'
         venue = VenueEvent2Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_3
     class seat_c4:
         l0_id = u'C4'
         venue = VenueEvent2Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_3
     class seat_c5:
         l0_id = u'C5'
         venue = VenueEvent2Data.venue_3
+        group_l0_id = u'g3835'
         stock_type = StockTypeEvent2Data.stock_type_3
     class seat_d1:
         l0_id = u'D1'
         venue = VenueEvent2Data.venue_3
+        group_l0_id = u'g3078'
         stock_type = StockTypeEvent2Data.stock_type_4
     class seat_d2:
         l0_id = u'D2'
         venue = VenueEvent2Data.venue_3
+        group_l0_id = u'g3078'
         stock_type = StockTypeEvent2Data.stock_type_4
     class seat_d3:
         l0_id = u'D3'
         venue = VenueEvent2Data.venue_3
+        group_l0_id = u'g3078'
         stock_type = StockTypeEvent2Data.stock_type_4
     class seat_e1:
         l0_id = u'E1'
         venue = VenueEvent2Data.venue_3
+        group_l0_id = u'g3071'
         stock_type = StockTypeEvent2Data.stock_type_4
     class seat_e2:
         l0_id = u'E2'
         venue = VenueEvent2Data.venue_3
+        group_l0_id = u'g3071'
         stock_type = StockTypeEvent2Data.stock_type_4
     class seat_e3:
         l0_id = u'E3'
         venue = VenueEvent2Data.venue_3
+        group_l0_id = u'g3071'
         stock_type = StockTypeEvent2Data.stock_type_4
 
 class SeatStatusEvent1Venue1Data(DataSet):
@@ -1844,6 +2114,238 @@ class SeatStatusEvent2Venue3Data(DataSet):
     class seat_status_v3_27:
         seat = SeatEvent2Venue3Data.seat_e3
         status = int(SeatStatusEnum.Vacant)
+
+class VenueArea_group_l0_idData(DataSet):
+    class venue_area_group_l0_id_vo1_1_1:
+        venue = TemplateVenueData.venue_orig_1
+        group_l0_id = u'g3835'
+    class venue_area_group_l0_id_vo1_2_1:
+        venue = TemplateVenueData.venue_orig_1
+        group_l0_id = u'g3078'
+    class venue_area_group_l0_id_vo1_2_2:
+        venue = TemplateVenueData.venue_orig_1
+        group_l0_id = u'g3071'
+    class venue_area_group_l0_id_vo2_1_1:
+        venue = TemplateVenueData.venue_orig_2
+        group_l0_id = u'g3835'
+    class venue_area_group_l0_id_vo2_2_1:
+        venue = TemplateVenueData.venue_orig_2
+        group_l0_id = u'g3078'
+    class venue_area_group_l0_id_vo2_2_2:
+        venue = TemplateVenueData.venue_orig_2
+        group_l0_id = u'g3071'
+    class venue_area_group_l0_id_e1_v1_1_1:
+        venue = VenueEvent1Data.venue_1
+        group_l0_id = u'g3835'
+    class venue_area_group_l0_id_e1_v1_2_1:
+        venue = VenueEvent1Data.venue_1
+        group_l0_id = u'g3078'
+    class venue_area_group_l0_id_e1_v1_2_2:
+        venue = VenueEvent1Data.venue_1
+        group_l0_id = u'g3071'
+    class venue_area_group_l0_id_e1_v2_1_1:
+        venue = VenueEvent1Data.venue_2
+        group_l0_id = u'g3835'
+    class venue_area_group_l0_id_e1_v2_2_1:
+        venue = VenueEvent1Data.venue_2
+        group_l0_id = u'g3078'
+    class venue_area_group_l0_id_e1_v2_2_2:
+        venue = VenueEvent1Data.venue_2
+        group_l0_id = u'g3071'
+    class venue_area_group_l0_id_e1_v3_1_1:
+        venue = VenueEvent1Data.venue_3
+        group_l0_id = u'g3835'
+    class venue_area_group_l0_id_e1_v3_2_1:
+        venue = VenueEvent1Data.venue_3
+        group_l0_id = u'g3078'
+    class venue_area_group_l0_id_e1_v3_2_2:
+        venue = VenueEvent1Data.venue_3
+        group_l0_id = u'g3071'
+    class venue_area_group_l0_id_e1_v4_1_1:
+        venue = VenueEvent1Data.venue_4
+        group_l0_id = u'g3835'
+    class venue_area_group_l0_id_e1_v4_2_1:
+        venue = VenueEvent1Data.venue_4
+        group_l0_id = u'g3078'
+    class venue_area_group_l0_id_e1_v4_2_2:
+        venue = VenueEvent1Data.venue_4
+        group_l0_id = u'g3071'
+    class venue_area_group_l0_id_e1_v5_1_1:
+        venue = VenueEvent1Data.venue_5
+        group_l0_id = u'g3835'
+    class venue_area_group_l0_id_e1_v5_2_1:
+        venue = VenueEvent1Data.venue_5
+        group_l0_id = u'g3078'
+    class venue_area_group_l0_id_e1_v5_2_2:
+        venue = VenueEvent1Data.venue_5
+        group_l0_id = u'g3071'
+    class venue_area_group_l0_id_e2_v1_1_1:
+        venue = VenueEvent2Data.venue_1
+        group_l0_id = u'g3835'
+    class venue_area_group_l0_id_e2_v1_2_1:
+        venue = VenueEvent2Data.venue_1
+        group_l0_id = u'g3078'
+    class venue_area_group_l0_id_e2_v1_2_2:
+        venue = VenueEvent2Data.venue_1
+        group_l0_id = u'g3071'
+    class venue_area_group_l0_id_e2_v2_1_1:
+        venue = VenueEvent2Data.venue_2
+        group_l0_id = u'g3835'
+    class venue_area_group_l0_id_e2_v2_2_1:
+        venue = VenueEvent2Data.venue_2
+        group_l0_id = u'g3078'
+    class venue_area_group_l0_id_e2_v2_2_2:
+        venue = VenueEvent2Data.venue_2
+        group_l0_id = u'g3071'
+    class venue_area_group_l0_id_e2_v3_1_1:
+        venue = VenueEvent2Data.venue_3
+        group_l0_id = u'g3835'
+    class venue_area_group_l0_id_e2_v3_2_1:
+        venue = VenueEvent2Data.venue_3
+        group_l0_id = u'g3078'
+    class venue_area_group_l0_id_e2_v3_2_2:
+        venue = VenueEvent2Data.venue_3
+        group_l0_id = u'g3071'
+
+class VenueAreaTemplateVenue1Data(DataSet):
+    class venue_area_1:
+        name = u'Aブロック'
+        groups = [
+            VenueArea_group_l0_idData.venue_area_group_l0_id_vo1_1_1,
+            ]
+
+    class venue_area_2:
+        name = u'Bブロック'
+        groups = [
+            VenueArea_group_l0_idData.venue_area_group_l0_id_vo1_2_1,
+            VenueArea_group_l0_idData.venue_area_group_l0_id_vo1_2_2,
+            ]
+
+class VenueAreaTemplateVenue2Data(DataSet):
+    class venue_area_1:
+        name = u'Aブロック'
+        groups = [
+            VenueArea_group_l0_idData.venue_area_group_l0_id_vo2_1_1,
+            ]
+
+    class venue_area_2:
+        name = u'Bブロック'
+        groups = [
+            VenueArea_group_l0_idData.venue_area_group_l0_id_vo2_2_1,
+            VenueArea_group_l0_idData.venue_area_group_l0_id_vo2_2_2,
+            ]
+
+class VenueAreaEvent1Venue1Data(DataSet):
+    class venue_area_1:
+        name = u'Aブロック'
+        groups = [
+            VenueArea_group_l0_idData.venue_area_group_l0_id_e1_v1_1_1,
+            ]
+
+    class venue_area_2:
+        name = u'Bブロック'
+        groups = [
+            VenueArea_group_l0_idData.venue_area_group_l0_id_e1_v1_2_1,
+            VenueArea_group_l0_idData.venue_area_group_l0_id_e1_v1_2_2,
+            ]
+
+class VenueAreaEvent1Venue2Data(DataSet):
+    class venue_area_1:
+        name = u'Aブロック'
+        groups = [
+            VenueArea_group_l0_idData.venue_area_group_l0_id_e1_v2_1_1,
+            ]
+
+    class venue_area_2:
+        name = u'Bブロック'
+        groups = [
+            VenueArea_group_l0_idData.venue_area_group_l0_id_e1_v2_2_1,
+            VenueArea_group_l0_idData.venue_area_group_l0_id_e1_v2_2_2,
+            ]
+
+class VenueAreaEvent1Venue3Data(DataSet):
+    class venue_area_1:
+        name = u'Aブロック'
+        groups = [
+            VenueArea_group_l0_idData.venue_area_group_l0_id_e1_v3_1_1,
+            ]
+
+    class venue_area_2:
+        name = u'Bブロック'
+        groups = [
+            VenueArea_group_l0_idData.venue_area_group_l0_id_e1_v3_2_1,
+            VenueArea_group_l0_idData.venue_area_group_l0_id_e1_v3_2_2,
+            ]
+
+class VenueAreaEvent1Venue4Data(DataSet):
+    class venue_area_1:
+        name = u'Aブロック'
+        groups = [
+            VenueArea_group_l0_idData.venue_area_group_l0_id_e1_v4_1_1,
+            ]
+
+    class venue_area_2:
+        name = u'Bブロック'
+        groups = [
+            VenueArea_group_l0_idData.venue_area_group_l0_id_e1_v4_2_1,
+            VenueArea_group_l0_idData.venue_area_group_l0_id_e1_v4_2_2,
+            ]
+
+class VenueAreaEvent1Venue5Data(DataSet):
+    class venue_area_1:
+        name = u'Aブロック'
+        groups = [
+            VenueArea_group_l0_idData.venue_area_group_l0_id_e1_v5_1_1,
+            ]
+
+    class venue_area_2:
+        name = u'Bブロック'
+        groups = [
+            VenueArea_group_l0_idData.venue_area_group_l0_id_e1_v5_2_1,
+            VenueArea_group_l0_idData.venue_area_group_l0_id_e1_v5_2_2,
+            ]
+
+class VenueAreaEvent2Venue1Data(DataSet):
+    class venue_area_1:
+        name = u'Aブロック'
+        groups = [
+            VenueArea_group_l0_idData.venue_area_group_l0_id_e2_v1_1_1,
+            ]
+
+    class venue_area_2:
+        name = u'Bブロック'
+        groups = [
+            VenueArea_group_l0_idData.venue_area_group_l0_id_e2_v1_2_1,
+            VenueArea_group_l0_idData.venue_area_group_l0_id_e2_v1_2_2,
+            ]
+
+class VenueAreaEvent2Venue2Data(DataSet):
+    class venue_area_1:
+        name = u'Aブロック'
+        groups = [
+            VenueArea_group_l0_idData.venue_area_group_l0_id_e2_v2_1_1,
+            ]
+
+    class venue_area_2:
+        name = u'Bブロック'
+        groups = [
+            VenueArea_group_l0_idData.venue_area_group_l0_id_e2_v2_2_1,
+            VenueArea_group_l0_idData.venue_area_group_l0_id_e2_v2_2_2,
+            ]
+
+class VenueAreaEvent2Venue3Data(DataSet):
+    class venue_area_1:
+        name = u'Aブロック'
+        groups = [
+            VenueArea_group_l0_idData.venue_area_group_l0_id_e2_v3_1_1,
+            ]
+
+    class venue_area_2:
+        name = u'Bブロック'
+        groups = [
+            VenueArea_group_l0_idData.venue_area_group_l0_id_e2_v3_2_1,
+            VenueArea_group_l0_idData.venue_area_group_l0_id_e2_v3_2_2,
+            ]
 
 class SeatAttributeData(DataSet):
     class seat_attribute_1:
