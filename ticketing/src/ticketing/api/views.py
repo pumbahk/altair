@@ -1,7 +1,7 @@
 from pyramid.view import view_config, view_defaults
 from ticketing.views import BaseView
 from pyramid.renderers import render_to_response
-from pyramid.httpexceptions import HTTPFound, HTTPNotFound
+from pyramid.httpexceptions import HTTPFound, HTTPError
 
 from pyramid.url import route_path
 from pyramid.security import authenticated_userid
@@ -37,22 +37,9 @@ def access_token(context, request):
 @view_defaults(permission='authenticated')
 class LoginOAuth(BaseView):
 
-    def _authorize(self, authorizer, form=None):
-        if form is None:
-            pass
-            #form = AuthorizeForm()
-        return render_to_response(
-            'ticketing:templates/login/authorize.html',
-            {
-                'form'          : form,
-                "authorizer"    : authorizer,
-                'form_action'   : route_path('login.authorize',self.request, _query_string=authorizer.query_string)
-            },
-            request=self.request)
-
-    @view_config(route_name='login.authorize', permission='authenticated')
+    @view_config(route_name='login.authorize')
     def authorize(self):
-
+        print "\n\n\n\n -------------------------- \n\n\n"
         login_id = authenticated_userid(self.request)
         operator = Operator.get_by_login_id(login_id)
 
@@ -70,6 +57,6 @@ class LoginOAuth(BaseView):
             if user:
                 return authorizer.grant_redirect()
             else:
-                return self._authorize(authorizer)
+                return HTTPError()
 
         return HTTPFound(location="/")
