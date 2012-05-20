@@ -102,10 +102,3 @@ class PaymentDeliveryMethodPairs(BaseView):
 
         self.request.session.flash(u'販売区分を削除しました')
         return HTTPFound(location=route_path('sales_segments.show', self.request, sales_segment_id=pdmp.sales_segment_id))
-
-    @view_config(route_name='payment_delivery_method_pair.list', renderer='json')
-    def list(self):
-        return {
-            'delivery_method_list' : self.context.user.organization.delivery_method_list,
-            'payment_method_list' : self.context.user.organization.payment_method_list
-        }

@@ -113,11 +113,10 @@ class StockTypes(BaseView):
 
         f = StockAllocationForm(self.request.POST)
         if f.validate():
-            if f.validate():
-                stock_allocation = merge_session_with_post(StockAllocation(), f.data)
-                stock_allocation.save()
-                self.request.session.flash(u'在庫数を保存しました')
+            stock_allocation = merge_session_with_post(StockAllocation(), f.data)
+            stock_allocation.save()
 
+            self.request.session.flash(u'在庫数を保存しました')
             return render_to_response('ticketing:templates/refresh.html', {}, request=self.request)
         else:
             return {

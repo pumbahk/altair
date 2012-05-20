@@ -3,13 +3,6 @@
 <%namespace file="/common/helpers.html" import="flash_messages" />
 <%namespace file="/common/helpers.html" import="safe_strftime" />
 
-<script type="text/javascript">
-  $(function() {
-    $('#start_at').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
-    $('#end_at').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
-  });
-</script>
-
 <div class="row-fluid">
   <%include file="/parts/_menu.html" args="event=sales_segment.event" />
 
@@ -29,15 +22,18 @@
       </tr>
       <tr>
         <th>${form_ss.start_at.label.text}</th>
-        <td id="start_at">${safe_strftime(sales_segment.start_at)}</td>
+        <td id="current_start_at">${safe_strftime(sales_segment.start_at)}</td>
       </tr>
       <tr>
         <th>${form_ss.end_at.label.text}</th>
-        <td id="end_at">${safe_strftime(sales_segment.end_at)}</td>
+        <td id="current_end_at">${safe_strftime(sales_segment.end_at)}</td>
       </tr>
     </table>
     <input type="hidden" id="sales_segment_id" value="${sales_segment.id}" />
-    <%include file="/sales_segments/_action_button.html" args="event=sales_segment.event, form=form_ss" />
+    <%include file="/sales_segments/_action_button.html" />
+    <div id="sales_segments-form">
+      <%include file="/sales_segments/_form.html" args="form=form_ss" />
+    </div>
 
     <hr />
 
