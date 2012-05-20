@@ -27,18 +27,26 @@
     </tr>
     % for stock_type in event.stock_types:
       % if stock_type.is_seat or not performance:
+      <%
+        conditions = {'performance_id':performance.id} if performance else {}
+        quantity = stock_type.num_seats(**conditions) or 0
+      %>
     <tr>
       <td style="width: 40px">
         <input type="radio" name="stock_type_id" value=${stock_type.id} />
       </td>
       <td>
-        <a href="javascript:edit_stock_type(${stock_type.id});" id="stock_type-${stock_type.id}" name="${stock_type.name}" type="${stock_type.type}" data="${json(stock_type.style)}">
+        <a href="javascript:edit_stock_type(${stock_type.id});"
+           id="stock_type-${stock_type.id}"
+           name="${stock_type.name}"
+           type="${stock_type.type}"
+           quantity="${quantity}"
+           data="${json(stock_type.style)}">
           ${seat_style(stock_type.style)}${stock_type.name}
         </a>
       </td>
       <td style="width: 60px">
-        <% conditions = {'performance_id':performance.id} if performance else {} %>
-        ${stock_type.num_seats(**conditions) or 0}
+        ${quantity}
       </td>
     </tr>
       % endif
@@ -57,18 +65,26 @@
     </tr>
     % for stock_type in event.stock_types:
       % if not stock_type.is_seat:
+      <%
+        conditions = {'performance_id':performance.id} if performance else {}
+        quantity = stock_type.num_seats(**conditions) or 0
+      %>
     <tr>
       <td style="width: 40px">
         <input type="radio" name="stock_type_id" value=${stock_type.id} />
       </td>
       <td>
-        <a href="javascript:edit_stock_type(${stock_type.id});" id="stock_type-${stock_type.id}" name="${stock_type.name}" type="${stock_type.type}" data="${json(stock_type.style)}">
+        <a href="javascript:edit_stock_type(${stock_type.id});"
+           id="stock_type-${stock_type.id}"
+           name="${stock_type.name}"
+           type="${stock_type.type}"
+           quantity="${quantity}"
+           data="${json(stock_type.style)}">
           ${seat_style(stock_type.style)}${stock_type.name}
         </a>
       </td>
       <td style="width: 60px">
-        <% conditions = {'performance_id':performance.id} if performance else {} %>
-        ${stock_type.num_seats(**conditions) or 0}
+        ${quantity}
       </td>
     </tr>
       % endif

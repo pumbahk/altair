@@ -14,6 +14,7 @@ from ticketing.events.performances.forms import PerformanceForm, StockHolderForm
 from ticketing.events.sales_segments.forms import SalesSegmentForm
 from ticketing.products.models import Product, StockHolder
 from ticketing.products.forms import ProductForm, ProductItemForm
+from ticketing.stock_types.forms import StockTypeForm, StockAllocationForm
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class Performances(BaseView):
@@ -54,6 +55,8 @@ class Performances(BaseView):
             'user':user,
             'form_product':ProductForm(event_id=performance.event_id),
             'form_product_item':ProductItemForm(user_id=self.context.user.id, performance_id=performance_id),
+            'form_stock_type':StockTypeForm(event_id=performance.event_id),
+            'form_stock_allocation':StockAllocationForm(),
         }
 
     @view_config(route_name='performances.new', request_method='GET', renderer='ticketing:templates/performances/edit.html')

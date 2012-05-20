@@ -89,8 +89,8 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             return None
 
 class StockTypeEnum(StandardEnum):
-    Seat = 1
-    Other = 2
+    Seat = 0
+    Other = 1
 
 class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'StockType'

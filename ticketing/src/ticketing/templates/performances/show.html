@@ -97,7 +97,7 @@ var SEAT_DATA_URL = "${request.route_path('api.get_seats', venue_id=performance.
       </ul>
       <div class="tab-content" id="tabbable-tab-content">
         <div class="tab-pane" id="venue-designer">
-          <%include file="./_venue_designer.html" />
+          <%include file="./_venue_designer.html" args="performance=performance, form_stock_type=form_stock_type, form_stock_allocation=form_stock_allocation" />
         </div>
         <div class="tab-pane" id="seat-allocation">
           <%include file="./_seat_allocation.html" />

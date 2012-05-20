@@ -8,34 +8,33 @@
 
 <script type="text/javascript">
   function new_stock_type() {
-    $('#edit-modal #edit').attr('action', '/stock_types/new/${event.id}');
-    $('#edit-modal').modal('toggle');
+    $('#modal-edit-stock_type').modal('toggle');
   }
   function edit_stock_type(id) {
     var id = id || get_id('stock_type_id');
     if (!id) return;
     var el = '#stock_type-' + id;
-    $('#edit-modal #edit').attr('action', '/stock_types/edit/' + id);
-    $('#edit-modal #name').val($(el).attr('name'));
-    if ($(el).attr('type') == 2) {
-      $('#edit-modal #type').attr('checked', 'checked').change();
+    $('#modal-edit-stock_type #id').val(id);
+    $('#modal-edit-stock_type #name').val($(el).attr('name'));
+    if ($(el).attr('type') == '1') {
+      $('#modal-edit-stock_type #type').attr('checked', 'checked').change();
     }
     var data = JSON.parse($(el).attr('data'));
     if (data) {
-      $('#edit-modal #text').val(data.text);
-      $('#edit-modal #text_color').val(data.text_color);
+      $('#modal-edit-stock_type #text').val(data.text);
+      $('#modal-edit-stock_type #text_color').val(data.text_color);
       if (data.fill) {
-        $('#edit-modal #fill_color').val(data.fill.color);
-        $('#edit-modal #fill_type').val(data.fill.type);
-        $('#edit-modal #fill_image').val(data.fill.image);
+        $('#modal-edit-stock_type #fill_color').val(data.fill.color);
+        $('#modal-edit-stock_type #fill_type').val(data.fill.type);
+        $('#modal-edit-stock_type #fill_image').val(data.fill.image);
       }
       if (data.stroke) {
-        $('#edit-modal #stroke_color').val(data.stroke.color);
-        $('#edit-modal #stroke_width').val(data.stroke.width);
-        $('#edit-modal #stroke_patten').val(data.stroke.pattern);
+        $('#modal-edit-stock_type #stroke_color').val(data.stroke.color);
+        $('#modal-edit-stock_type #stroke_width').val(data.stroke.width);
+        $('#modal-edit-stock_type #stroke_patten').val(data.stroke.pattern);
       }
     }
-    $('#edit-modal').modal('toggle');
+    $('#modal-edit-stock_type').modal('toggle');
   }
   function delete_stock_type() {
     var id = get_id('stock_type_id');
@@ -44,13 +43,52 @@
     $('#modal-delete #message').text("${u'選択した席種を削除します。よろしいですか？'}");
     $('#modal-delete').modal('toggle');
   }
+  function save_stock_type() {
+    var id = $('#modal-edit-stock_type #id').val();
+    var url = id ? '/stock_types/edit/' + id : '/stock_types/new/${event.id}';
+    var param = {};
+    $('#modal-edit-stock_type :input').each(function(i, v) {
+      param[v.name] = v.value;
+    });
+    $.post(
+        url,
+        param,
+        function(data, status, xhr) {
+          $('#modal-edit-stock_type').modal('hide');
+          $('#stock_types-form').html(data);
+          $('#modal-edit-stock_type').modal('show');
+        },
+        "html"
+    );
+  }
+
   % if performance:
   function stock_allocate() {
     var id = get_id('stock_type_id');
     if (!id) return;
-    $('#modal-allocate #performance_id').val(${performance.id});
-    $('#modal-allocate #edit').attr('action', '/stock_types/allocate/' + id);
-    $('#modal-allocate').modal('toggle');
+    var el = '#stock_type-' + id;
+    $('#modal-stock_allocation #stock_type_id').val(id);
+    $('#modal-stock_allocation #performance_id').val(${performance.id});
+    $('#modal-stock_allocation #quantity').val($(el).attr('quantity'));
+    $('#modal-stock_allocation').modal('toggle');
+  }
+  function save_stock_allocation() {
+    var id = $('#modal-stock_allocation #id').val();
+    var url = '/stock_types/allocate/' + id;
+    var param = {};
+    $('#modal-stock_allocation :input').each(function(i, v) {
+      param[v.name] = v.value;
+    });
+    $.post(
+        url,
+        param,
+        function(data, status, xhr) {
+          $('#modal-stock_allocation').modal('hide');
+          $('#stock_allocations-form').html(data);
+          $('#modal-stock_allocation').modal('show');
+        },
+        "html"
+    );
   }
   % endif
 </script>
@@ -87,7 +125,5 @@
     % endif
   </ul>
 </div>
-
-<%include file="/stock_types/_form.html" />
 
 ${delete_modal()}
