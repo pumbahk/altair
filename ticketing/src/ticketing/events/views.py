@@ -13,6 +13,8 @@ from ticketing.fanstatic import with_bootstrap
 from ticketing.events.models import Event, Performance
 from ticketing.events.forms import EventForm
 from ticketing.events.sales_segments.forms import SalesSegmentForm
+from ticketing.events.stock_types.forms import StockTypeForm
+from ticketing.products.forms import ProductForm
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class Events(BaseView):
@@ -56,11 +58,13 @@ class Events(BaseView):
         accounts = event.get_accounts()
 
         return {
-            'form':EventForm(),
-            'form_ss':SalesSegmentForm(),
             'event':event,
             'performances':performances,
             'accounts':accounts,
+            'form':EventForm(),
+            'form_stock_type':StockTypeForm(event_id=event_id),
+            'form_sales_segment':SalesSegmentForm(event_id=event_id),
+            'form_product':ProductForm(event_id=event.id),
         }
 
     @view_config(route_name='events.new', request_method='GET', renderer='ticketing:templates/events/edit.html')

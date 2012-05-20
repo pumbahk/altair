@@ -77,6 +77,9 @@
       <h3>席種</h3>
       <%include file="/stock_types/_list.html" args="event=event" />
       <%include file="/stock_types/_action_button.html" args="event=event" />
+      <div id="stock_types-form">
+        <%include file="/stock_types/_form.html" args="form=form_stock_type" />
+      </div>
     </div>
 
     <hr />
@@ -84,7 +87,10 @@
     <div id="sales_segments">
       <h3>販売区分</h3>
       <%include file="/sales_segments/_list.html" args="sales_segments=event.sales_segments" />
-      <%include file="/sales_segments/_action_button.html" args="event=event, form=form_ss" />
+      <%include file="/sales_segments/_action_button.html" args="event=event, form=form_sales_segment" />
+      <div id="sales_segments-form">
+        <%include file="/sales_segments/_form.html" args="form=form_sales_segment" />
+      </div>
     </div>
 
     <hr />
@@ -93,6 +99,9 @@
       <h3>商品</h3>
       <%include file="/products/_list.html" args="event=event" />
       <%include file="/products/_action_button.html" />
+      <div id="products-form">
+        <%include file="/products/_form.html" args="form=form_product" />
+      </div>
     </div>
 
     <hr />

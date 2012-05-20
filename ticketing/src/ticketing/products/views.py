@@ -103,8 +103,9 @@ class ProductItems(BaseView):
             return render_to_response('ticketing:templates/refresh.html', {}, request=self.request)
         else:
             return {
+                'form':f,
                 'form_product':ProductForm(event_id=performance.event_id),
-                'form_product_item':f,
+                'performance':performance,
             }
 
     @view_config(route_name='product_items.edit', request_method='POST', renderer='ticketing:templates/product_items/_form.html')
@@ -128,8 +129,9 @@ class ProductItems(BaseView):
             return render_to_response('ticketing:templates/refresh.html', {}, request=self.request)
         else:
             return {
+                'form':f,
                 'form_product':ProductForm(event_id=performance.event_id),
-                'form_product_item':f,
+                'performance':performance,
             }
 
     @view_config(route_name='product_items.delete', renderer='ticketing:templates/product_items/_form.html')

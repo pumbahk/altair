@@ -3,6 +3,7 @@
 from wtforms import Form
 from wtforms import TextField, SelectField, IntegerField, HiddenField, BooleanField
 from wtforms.validators import Required, Length, Optional
+from wtforms.widgets import CheckboxInput
 from ticketing.products.models import StockTypeEnum
 
 class StockTypeForm(Form):
@@ -19,9 +20,10 @@ class StockTypeForm(Form):
         label=u'名称',
         validators=[Required(u'入力してください')]
     )
-    type = BooleanField(
+    type = IntegerField(
         label=u'座席以外を登録する',
-        default=StockTypeEnum.Seat.v
+        default=StockTypeEnum.Other.v,
+        widget=CheckboxInput(),
     )
     fill_color = TextField(
         label=u'塗りつぶし色',

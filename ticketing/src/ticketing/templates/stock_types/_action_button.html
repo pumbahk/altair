@@ -39,13 +39,13 @@
   function delete_stock_type() {
     var id = get_id('stock_type_id');
     if (!id) return;
-    $('#modal-delete #delete').attr('href', '/stock_types/delete/' + id);
+    $('#modal-delete #delete').attr('href', '/events/stock_types/delete/' + id);
     $('#modal-delete #message').text('選択した席種を削除します。よろしいですか？');
     $('#modal-delete').modal('toggle');
   }
   function save_stock_type() {
     var id = $('#modal-stock_type #id').val();
-    var url = id ? '/stock_types/edit/' + id : '/stock_types/new/${event.id}';
+    var url = id ? '/events/stock_types/edit/' + id : '/events/stock_types/new/${event.id}';
     var param = {};
     $('#modal-stock_type :input').each(function(i, v) {
       param[v.name] = v.value;
@@ -73,8 +73,7 @@
     $('#modal-stock_allocation').modal('toggle');
   }
   function save_stock_allocation() {
-    var id = $('#modal-stock_allocation #id').val();
-    var url = '/stock_types/allocate/' + id;
+    var url = '/events/stock_types/allocate/';
     var param = {};
     $('#modal-stock_allocation :input').each(function(i, v) {
       param[v.name] = v.value;

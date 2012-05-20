@@ -104,15 +104,32 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     style = Column(MutationDict.as_mutable(JSONEncodedDict(1024)))
 
+    @property
+    def is_seat(self):
+        return self.type == StockTypeEnum.Seat.v
+
     def num_seats(self, performance_id=None):
         query = DBSession.query(func.sum(StockAllocation.quantity)).filter_by(stock_type=self)
         if performance_id:
             query = query.filter_by(performance_id=performance_id)
         return query.scalar()
 
-    @property
-    def is_seat(self):
-        return self.type == StockTypeEnum.Seat.v
+    def set_style(self, data):
+        if self.type.is_seat:
+            self.style = {}
+        else:
+            self.style = {
+                'stroke':{
+                    'color':data.get('stroke_color'),
+                    'width':data.get('stroke_width'),
+                    'pattern':data.get('stroke_patten'),
+                },
+                'fill':{
+                    'color':data.get('fill_color'),
+                    'type':data.get('fill_type'),
+                    'image':data.get('fill_image'),
+                },
+            }
 
 class StockAllocation(Base):
     __tablename__ = "StockAllocation"

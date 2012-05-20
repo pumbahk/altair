@@ -14,9 +14,9 @@ from ticketing.events.models import Event, Performance, Account, SalesSegment
 from ticketing.events.performances.forms import PerformanceForm
 from ticketing.events.stock_holders.forms import StockHolderForm
 from ticketing.events.sales_segments.forms import SalesSegmentForm
+from ticketing.events.stock_types.forms import StockTypeForm, StockAllocationForm
 from ticketing.products.models import Product, StockHolder
 from ticketing.products.forms import ProductForm, ProductItemForm
-from ticketing.stock_types.forms import StockTypeForm, StockAllocationForm
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class StockHolders(BaseView):

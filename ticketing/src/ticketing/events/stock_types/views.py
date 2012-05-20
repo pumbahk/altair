@@ -11,8 +11,8 @@ from ticketing.models import merge_session_with_post
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.events.models import Event, Performance
+from ticketing.events.stock_types.forms import StockTypeForm, StockAllocationForm
 from ticketing.products.models import StockType, StockTypeEnum, StockAllocation
-from ticketing.stock_types.forms import StockTypeForm, StockAllocationForm
 
 @view_defaults(decorator=with_bootstrap)
 class StockTypes(BaseView):
@@ -34,21 +34,7 @@ class StockTypes(BaseView):
         f = StockTypeForm(self.request.POST)
         if f.validate():
             stock_type = merge_session_with_post(StockType(), f.data)
-            style = {}
-            if stock_type.type == StockTypeEnum.Seat.v:
-                style = {
-                    'stroke' : {
-                        'color'  : f.data.get('stroke_color'),
-                        'width'  : f.data.get('stroke_width'),
-                        'pattern': f.data.get('stroke_patten'),
-                    },
-                    'fill': {
-                        'color'  : f.data.get('fill_color'),
-                        'type'   : f.data.get('fill_type'),
-                        'image'  : f.data.get('fill_image'),
-                    },
-                }
-            stock_type.style = style
+            stock_type.set_style(f.data)
             stock_type.save()
 
             self.request.session.flash(u'席種を保存しました')
@@ -68,21 +54,7 @@ class StockTypes(BaseView):
         f = StockTypeForm(self.request.POST)
         if f.validate():
             stock_type = merge_session_with_post(stock_type, f.data)
-            style = {}
-            if stock_type.type == StockTypeEnum.Seat.v:
-                style = {
-                    'stroke' : {
-                        'color'  : f.data.get('stroke_color'),
-                        'width'  : f.data.get('stroke_width'),
-                        'pattern': f.data.get('stroke_patten'),
-                    },
-                    'fill': {
-                        'color'  : f.data.get('fill_color'),
-                        'type'   : f.data.get('fill_type'),
-                        'image'  : f.data.get('fill_image'),
-                    },
-                }
-            stock_type.style = style
+            stock_type.set_style(f.data)
             stock_type.save()
 
             self.request.session.flash(u'席種を保存しました')
