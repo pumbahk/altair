@@ -8,39 +8,39 @@
     $(location).attr('href', '/products/show/' + id);
   }
   function new_product() {
-    $('#modal-product-edit').modal('toggle');
+    $('#modal-product').modal('toggle');
   }
   function edit_product(id) {
     id = id || get_id('product_id');
     if (!id) return;
     var el = '#product-' + id;
-    $('#modal-product-edit #id').val($(el + ' #id').text());
-    $('#modal-product-edit #name').val($(el + ' #name').text());
-    $('#modal-product-edit #price').val($(el + ' #price').text());
-    $('#modal-product-edit #sales_segment').val($(el + ' #sales_segment').attr('value'));
-    $('#modal-product-edit').modal('toggle');
+    $('#modal-product #id').val($(el + ' #id').text());
+    $('#modal-product #name').val($(el + ' #name').text());
+    $('#modal-product #price').val($(el + ' #price').text());
+    $('#modal-product #sales_segment').val($(el + ' #sales_segment').attr('value'));
+    $('#modal-product').modal('toggle');
   }
   function delete_product() {
     var id = get_id('product_id');
     if (!id) return;
     $('#modal-delete #delete').attr('href', '/products/delete/' + id);
-    $('#modal-delete #message').text("${u'選択した商品を削除します。よろしいですか？'}");
+    $('#modal-delete #message').text('選択した商品を削除します。よろしいですか？');
     $('#modal-delete').modal('toggle');
   }
   function save_product() {
-    var id = $('#modal-product-edit #id').val();
+    var id = $('#modal-product #id').val();
     var url = id ? '/products/edit/' + id : '/products/new';
     var param = {};
-    $('#modal-product-edit :input').each(function(i, v) {
+    $('#modal-product :input').each(function(i, v) {
       param[v.name] = v.value;
     });
     $.post(
         url,
         param,
         function(data, status, xhr) {
-          $('#modal-product-edit').modal('hide');
+          $('#modal-product').modal('hide');
           $('#products-form').html(data);
-          $('#modal-product-edit').modal('show');
+          $('#modal-product').modal('show');
         },
         "html"
     );

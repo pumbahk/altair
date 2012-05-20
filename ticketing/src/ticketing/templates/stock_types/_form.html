@@ -3,17 +3,17 @@
 
 <script type="text/javascript">
   $(function() {
-    $('#modal-edit-stock_type #type').change(function() {
+    $('#modal-stock_type #type').change(function() {
       if ($(this).attr('checked')) {
-        $('#modal-edit-stock_type #color-picker').css('display', 'none');
+        $('#modal-stock_type #color-picker').css('display', 'none');
       } else {
-        $('#modal-edit-stock_type #color-picker').css('display', 'block');
+        $('#modal-stock_type #color-picker').css('display', 'block');
       }
     });
   });
 </script>
 
-<div id="modal-edit-stock_type" class="modal fade">
+<div id="modal-stock_type" class="modal fade">
   <div class="modal-header">
     <a class="close" data-dismiss="modal">×</a>
     <h3>席種</h3>

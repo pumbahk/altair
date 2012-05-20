@@ -1,4 +1,4 @@
-<%page args="form_product, form_product_item" />
+<%page args="form, form_product" />
 <%namespace file="/common/helpers.html" import="form_item" />
 
 <script type="text/javascript">
@@ -13,8 +13,8 @@
   }
 
   $(function() {
-    $('#modal-product_item-edit #stock_holders').change(function(){
-      $('#modal-product_item-edit #stock_id').children().remove();
+    $('#modal-product_item #stock_holders').change(function(){
+      $('#modal-product_item #stock_id').children().remove();
       stock_ids = stock_holder2stocks[$(this).val()];
       stock_id_node = window.document.getElementById('stock_id');
       if (stock_ids) {
@@ -27,7 +27,7 @@
   });
 </script>
 
-<div class="modal fade" id="modal-product_item-edit">
+<div id="modal-product_item" class="modal fade">
   <div class="modal-header">
     <a class="close" data-dismiss="modal">×</a>
     <h3>商品</h3>
@@ -41,13 +41,13 @@
           ${form_item(form_product.sales_segment_id, option={'disabled':'disabled', 'class':'span3'})}
         </div>
         <div id="product-item">
-          ${form_item(form_product_item.id)}
-          ${form_item(form_product_item.performance_id)}
-          ${form_item(form_product_item.product_id)}
-          ${form_item(form_product_item.stock_holders)}
-          ${form_item(form_product_item.stock_id)}
-          ${form_item(form_product_item.price)}
-          ${form_item(form_product_item.quantity)}
+          ${form_item(form.id)}
+          ${form_item(form.performance_id)}
+          ${form_item(form.product_id)}
+          ${form_item(form.stock_holders)}
+          ${form_item(form.stock_id)}
+          ${form_item(form.price)}
+          ${form_item(form.quantity)}
         </div>
       </fieldset>
     </div>

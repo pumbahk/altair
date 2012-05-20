@@ -8,55 +8,55 @@
 
 <script type="text/javascript">
   function new_stock_type() {
-    $('#modal-edit-stock_type').modal('toggle');
+    $('#modal-stock_type').modal('toggle');
   }
   function edit_stock_type(id) {
     var id = id || get_id('stock_type_id');
     if (!id) return;
     var el = '#stock_type-' + id;
-    $('#modal-edit-stock_type #id').val(id);
-    $('#modal-edit-stock_type #name').val($(el).attr('name'));
+    $('#modal-stock_type #id').val(id);
+    $('#modal-stock_type #name').val($(el).attr('name'));
     if ($(el).attr('type') == '1') {
-      $('#modal-edit-stock_type #type').attr('checked', 'checked').change();
+      $('#modal-stock_type #type').attr('checked', 'checked').change();
     }
     var data = JSON.parse($(el).attr('data'));
     if (data) {
-      $('#modal-edit-stock_type #text').val(data.text);
-      $('#modal-edit-stock_type #text_color').val(data.text_color);
+      $('#modal-stock_type #text').val(data.text);
+      $('#modal-stock_type #text_color').val(data.text_color);
       if (data.fill) {
-        $('#modal-edit-stock_type #fill_color').val(data.fill.color);
-        $('#modal-edit-stock_type #fill_type').val(data.fill.type);
-        $('#modal-edit-stock_type #fill_image').val(data.fill.image);
+        $('#modal-stock_type #fill_color').val(data.fill.color);
+        $('#modal-stock_type #fill_type').val(data.fill.type);
+        $('#modal-stock_type #fill_image').val(data.fill.image);
       }
       if (data.stroke) {
-        $('#modal-edit-stock_type #stroke_color').val(data.stroke.color);
-        $('#modal-edit-stock_type #stroke_width').val(data.stroke.width);
-        $('#modal-edit-stock_type #stroke_patten').val(data.stroke.pattern);
+        $('#modal-stock_type #stroke_color').val(data.stroke.color);
+        $('#modal-stock_type #stroke_width').val(data.stroke.width);
+        $('#modal-stock_type #stroke_patten').val(data.stroke.pattern);
       }
     }
-    $('#modal-edit-stock_type').modal('toggle');
+    $('#modal-stock_type').modal('toggle');
   }
   function delete_stock_type() {
     var id = get_id('stock_type_id');
     if (!id) return;
     $('#modal-delete #delete').attr('href', '/stock_types/delete/' + id);
-    $('#modal-delete #message').text("${u'選択した席種を削除します。よろしいですか？'}");
+    $('#modal-delete #message').text('選択した席種を削除します。よろしいですか？');
     $('#modal-delete').modal('toggle');
   }
   function save_stock_type() {
-    var id = $('#modal-edit-stock_type #id').val();
+    var id = $('#modal-stock_type #id').val();
     var url = id ? '/stock_types/edit/' + id : '/stock_types/new/${event.id}';
     var param = {};
-    $('#modal-edit-stock_type :input').each(function(i, v) {
+    $('#modal-stock_type :input').each(function(i, v) {
       param[v.name] = v.value;
     });
     $.post(
         url,
         param,
         function(data, status, xhr) {
-          $('#modal-edit-stock_type').modal('hide');
+          $('#modal-stock_type').modal('hide');
           $('#stock_types-form').html(data);
-          $('#modal-edit-stock_type').modal('show');
+          $('#modal-stock_type').modal('show');
         },
         "html"
     );
