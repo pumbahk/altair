@@ -17,3 +17,5 @@ def includeme(config):
     config.add_route('products.index', '/{event_id}/products')
 
     config.include('ticketing.events.payment_delivery_method_pair', route_prefix='payment_delivery_method_pair')
+
+    config.include('ticketing.events.stock_holders', route_prefix='stock_holders')

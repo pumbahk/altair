@@ -1,0 +1,82 @@
+<%page args="performance" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+
+<script type="text/javascript">
+  function new_stock_holder() {
+    $('#modal-stock_holder').modal('toggle');
+  }
+  function edit_stock_holder(id) {
+    var el = '#stock_holder-' + id;
+    $('#modal-stock_holder #id').val(id);
+    $('#modal-stock_holder #name').val($(el).attr('name'));
+    $('#modal-stock_holder #account_id').val($(el + ' #account_id').attr('value'));
+    var data = JSON.parse($(el).attr('data'));
+    if (data) {
+      $('#modal-stock_holder #text').val(data.text);
+      $('#modal-stock_holder #text_color').val(data.text_color);
+    }
+    $('#modal-stock_holder').modal('toggle');
+  }
+  function delete_stock_holder(id) {
+    $('#modal-delete #delete').attr('href', '/events/stock_holders/delete/' + id);
+    $('#modal-delete #message').text('選択した枠を削除します。よろしいですか？');
+    $('#modal-delete').modal('toggle');
+  }
+  function save_stock_holder() {
+    var id = $('#modal-stock_holder #id').val();
+    var url = id ? '/events/stock_holders/edit/' + id : '/events/stock_holders/new';
+    var param = {};
+    $('#modal-stock_holder :input').each(function(i, v) {
+      param[v.name] = v.value;
+    });
+    $.post(
+        url,
+        param,
+        function(data, status, xhr) {
+          $('#modal-stock_holder').modal('hide');
+          $('#stock_holders-form').html(data);
+          $('#modal-stock_holder').modal('show');
+        },
+        "html"
+    );
+  }
+</script>
+
+<ul class="nav nav-pills">
+  <li class="dropdown" id="menu1">
+    <a class="dropdown-toggle" data-toggle="dropdown" href="#menu1">
+      枠/押さえ
+      <b class="caret"></b>
+    </a>
+    <ul class="dropdown-menu">
+      <li><a data-toggle="modal" href="javascript:new_stock_holder()" >新規配券先</a></li>
+    </ul>
+  </li>
+  <li class="dropdown" id="menu2">
+    <a class="dropdown-toggle" data-toggle="dropdown" href="#menu2">
+      配券
+      <b class="caret"></b>
+    </a>
+    <ul class="dropdown-menu">
+      <li class="divider"></li>
+      <li><a data-toggle="modal" href="#modal-new-stock-group-send" >返券</a></li>
+      <li><a data-toggle="modal" href="#modal-new-stock-group-send" >追券</a></li>
+    </ul>
+  </li>
+  </li>
+  <li class="dropdown" id="report">
+    <a class="dropdown-toggle" data-toggle="dropdown" href="#report">
+      明細
+      <b class="caret"></b>
+    </a>
+    <ul class="dropdown-menu">
+      <li><a data-toggle="modal" href="#modal-report" >座席明細（すべて）</a></li>
+      <li><a data-toggle="modal" href="#modal-report" >配券明細（すべて）</a></li>
+      <li class="divider"></li>
+      <li><a data-toggle="modal" href="#modal-report" >座席明細（選択）</a></li>
+      <li><a data-toggle="modal" href="#modal-report" >配券明細（選択）</a></li>
+    </ul>
+  </li>
+</ul>
+
+${delete_modal()}

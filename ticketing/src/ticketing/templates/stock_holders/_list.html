@@ -1,31 +1,6 @@
 <%page args="performance" />
 <%namespace file="/common/helpers.html" import="seat_style" />
 <%namespace file="/common/helpers.html" import="json" />
-<%namespace file="/common/modal.html" import="delete_modal" />
-
-<script type="text/javascript">
-  function new_stock_holder() {
-    $('#modal-edit-stock-holder #edit').attr('action', '/events/performances/${performance.id}/stock_holders/new');
-    $('#modal-edit-stock-holder').modal('toggle');
-  }
-  function edit_stock_holder(id) {
-    var el = '#stock_holder-' + id;
-    $('#modal-edit-stock-holder #edit').attr('action', '/events/performances/stock_holders/edit/' + id);
-    $('#modal-edit-stock-holder #name').val($(el).attr('name'));
-    $('#modal-edit-stock-holder #account_id').val($(el + ' #account_id').attr('value'));
-    var data = JSON.parse($(el).attr('data'));
-    if (data) {
-      $('#modal-edit-stock-holder #text').val(data.text);
-      $('#modal-edit-stock-holder #text_color').val(data.text_color);
-    }
-    $('#modal-edit-stock-holder').modal('toggle');
-  }
-  function delete_stock_holder(id) {
-    $('#modal-delete #delete').attr('href', '/events/performances/stock_holders/delete/' + id);
-    $('#modal-delete #message').text("${u'選択した枠を削除します。よろしいですか？'}");
-    $('#modal-delete').modal('toggle');
-  }
-</script>
 
 % for account in performance.accounts:
   <h4>${account.name}</h4>
@@ -73,35 +48,3 @@
   % endfor
   <div style="margin-bottom: 20px"></div>
 % endfor
-
-<div class="modal fade" id="modal-edit-stock-holder">
-  <div class="modal-header">
-    <a class="close" data-dismiss="modal">×</a>
-    <h3>新規配券先</h3>
-  </div>
-
-  <form id="edit" action="" method="POST">
-    <div class="modal-body">
-      <label>枠名</label>
-      <input id="name" name="name" type="text" class="span3" placeholder="先行">
-      <label>配券先</label>
-      <select id="account_id" name="account_id">
-        % for account in accounts:
-        <option value="${account.id}">${account.name}</option>
-        % endfor
-      </select>
-
-      <label>記号</label>
-      <input id="text" name="text" type="text" class="span3" value="">
-      <label>記号色</label>
-      <input id="text_color" name="text_color" type="text" class="kolorPicker span3" value="">
-    </div>
-
-    <div class="modal-footer">
-      <a href="#" class="btn" data-dismiss="modal">閉じる</a>
-      <input class="btn" type="submit" value="保存"></a>
-    </div>
-  </form>
-</div>
-
-${delete_modal()}
