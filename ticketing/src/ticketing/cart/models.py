@@ -70,10 +70,13 @@ class CartedProductItem(Base):
         """
 
         # TODO: ループじゃなくてquantityでスライスするような実装も可能
-        for i in range(self.quantity):
-            myseat = [seat for seat in seats if seat.stock_id == self.product_item.stock_id][0]
-            seats.remove(myseat)
-            self.seats.append(myseat)
+#        for i in range(self.quantity):
+#            myseat = [seat for seat in seats if seat.stock_id == self.product_item.stock_id][0]
+#            seats.remove(myseat)
+#            self.seats.append(myseat)
+        my_seats = [seat for seat in seats if seat.stock_id == self.product_item.stock_id][:self.quantity]
+        map(seats.remove, my_seats)
+        self.seats.extend(my_seats)
         return seats
 
 class CartedProduct(Base):
