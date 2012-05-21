@@ -332,7 +332,6 @@ class TicketingCartResourceTests(unittest.TestCase):
         return venue
 
     def test_order_products_one_order(self):
-        # TODO 各モデルのIDに同じ値を使わないようにする
         from ticketing.venues.models import Seat, SeatAdjacency, SeatAdjacencySet, SeatStatus, SeatStatusEnum
         from ticketing.products.models import Stock, StockStatus, Product, ProductItem
 
@@ -383,6 +382,136 @@ class TicketingCartResourceTests(unittest.TestCase):
 
         cart = target.order_products(ordered_products)
 
+
+        self.assertIsNotNone(cart)
+        self.assertEqual(len(cart.products), 1)
+        self.assertEqual(len(cart.products[0].items), 1)
+        self.assertEqual(cart.products[0].items[0].quantity, 2)
+
+        from sqlalchemy import sql
+        stock_statuses = self.session.bind.execute(sql.select([StockStatus.quantity]).where(StockStatus.stock_id==stock.id))
+        for stock_status in stock_statuses:
+            self.assertEqual(stock_status.quantity, 98)
+
+class ReserveViewTests(unittest.TestCase):
+    def setUp(self):
+        self.session = _setup_db()
+
+    def tearDown(self):
+        _teardown_db()
+        import sqlahelper
+        sqlahelper.get_base().metadata.drop_all()
+
+    def _getTarget(self):
+        from .views import ReserveView
+        return ReserveView
+
+    def _makeOne(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
+
+    def test_order_items_empty(self):
+        request = testing.DummyRequest()
+        target = self._makeOne(request)
+        result = target.ordered_items
+
+        self.assertEqual(list(result), [])
+
+    def test_order_items(self):
+        from ticketing.products.models import Product
+        p1 = Product(id=1, price=100)
+        p2 = Product(id=2, price=150)
+        self.session.add(p1)
+        self.session.add(p2)
+        params = {
+            "product-1": '10',
+            "a": 'aaa',
+            "product-a": 'x',
+            "product-2": '20',
+            }
+        request = testing.DummyRequest(params=params)
+        target = self._makeOne(request)
+        result = target.iter_ordered_items()
+
+        self.assertEqual(list(result), [("1", 10), ("2", 20)])
+
+    def test_ordered_items(self):
+        from ticketing.products.models import Product
+        p1 = Product(id=1, price=100)
+        p2 = Product(id=2, price=150)
+        self.session.add(p1)
+        self.session.add(p2)
+        params = {
+            "product-1": '10',
+            "a": 'aaa',
+            "product-a": 'x',
+            "product-2": '20',
+            }
+        request = testing.DummyRequest(params=params)
+        target = self._makeOne(request)
+        result = target.ordered_items
+
+        self.assertEqual(list(result), [(p1, 10), (p2, 20)])
+
+
+    def _add_venue(self, organization_id, site_id, venue_id):
+        from ticketing.venues.models import Venue, Site
+        from ticketing.organizations.models import Organization
+        organization = Organization(id=organization_id)
+        site = Site(id=site_id)
+        venue = Venue(id=venue_id, site=site, organization=organization)
+        return venue
+
+    def test_it(self):
+
+
+        from ticketing.venues.models import Seat, SeatAdjacency, SeatAdjacencySet, SeatStatus, SeatStatusEnum
+        from ticketing.products.models import Stock, StockStatus, Product, ProductItem
+        from .resources import TicketingCartResrouce
+
+        # 在庫
+        stock_id = 1
+        product_item_id = 2
+        adjacency_set_id = 3
+        adjacency_id = 4
+        venue_id = 5
+        site_id = 6
+        organization_id = 7
+
+        venue = self._add_venue(organization_id, site_id, venue_id)
+        stock = Stock(id=stock_id, quantity=100)
+        stock_status = StockStatus(stock_id=stock.id, quantity=100)
+        seats = [Seat(id=i, stock_id=stock.id, venue=venue) for i in range(5)]
+        seat_statuses = [SeatStatus(seat_id=i, status=int(SeatStatusEnum.Vacant)) for i in range(5)]
+        product_item = ProductItem(id=product_item_id, stock_id=stock.id, price=100, quantity=1)
+        product = Product(id=1, price=100, items=[product_item])
+        self.session.add(stock)
+        self.session.add(product)
+        self.session.add(product_item)
+        self.session.add(stock_status)
+        [self.session.add(s) for s in seats]
+        [self.session.add(s) for s in seat_statuses]
+
+        # 座席隣接状態
+        adjacency_set = SeatAdjacencySet(id=adjacency_set_id, seat_count=2)
+        adjacency = SeatAdjacency(adjacency_set=adjacency_set, id=adjacency_id)
+        for seat in seats:
+            seat.adjacencies.append(adjacency)
+        self.session.add(adjacency_set)
+        self.session.add(adjacency)
+        self.session.flush()
+
+
+        params = {
+            "product-" + str(product.id): '2',
+            }
+
+        request = testing.DummyRequest(params=params)
+        request.context = TicketingCartResrouce(request)
+        target = self._makeOne(request)
+        result = target()
+
+        cart = target.cart
+        self.assertEqual(result['cart'], cart)
 
         self.assertIsNotNone(cart)
         self.assertEqual(len(cart.products), 1)

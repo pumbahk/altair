@@ -1,9 +1,11 @@
 # -*- coding:utf-8 -*-
 import logging
 import json
+import re
 from markupsafe import Markup
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.view import view_config
+from pyramid.decorator import reify
 from ticketing.models import DBSession
 import ticketing.events.models as e_models
 import ticketing.products.models as p_models
@@ -96,25 +98,44 @@ class IndexView(object):
 
 class ReserveView(object):
     """ 座席選択完了画面(おまかせ) """
+
+    product_id_regex = re.compile(r'product-(?P<product_id>\d+)')
+
     def __init__(self, request):
         self.request = request
+        self.context = request.context
 
-    def get_order_items(self):
+
+    def iter_ordered_items(self):
+        for key, value in self.request.params.iteritems():
+            m = self.product_id_regex.match(key)
+            if m is None:
+                continue
+            yield m.groupdict()['product_id'], int(value)
+
+    @reify
+    def ordered_items(self):
         """ リクエストパラメータから(プロダクトID,数量)タプルのリストを作成する
-        :param self:
-        :return: list of tuple(int, int)
+        :return: list of tuple(ticketing.products.models.Product, int)
         """
-        return []
+
+        controls = list(self.iter_ordered_items())
+        if len(controls) == 0:
+            return []
+
+        products = dict([(p.id, p) for p in DBSession.query(p_models.Product).filter(p_models.Product.id.in_([c[0] for c in controls]))])
+
+        return [(products.get(int(c[0])), c[1]) for c in controls]
+
 
     def __call__(self):
         """
         座席情報から座席グループを検索する
         """
 
-        seat_type_id = self.request.matchdict['seat_type_id']
-        order_items = self.get_order_items()
-        cart = self.context.order_products(order_items)
-
+        #seat_type_id = self.request.matchdict['seat_type_id']
+        cart = self.context.order_products(self.ordered_items)
+        self.cart = cart
         return dict(cart=cart)
 
     def on_error(self):
