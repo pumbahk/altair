@@ -52,6 +52,7 @@ def get_pageset_query(request, query_params):
     if "query" in query_params:
         words = _extract_tags(query_params, "query")
         qs = search_by_freeword(qs, request, words, query_params.get("query_cond"))
+    # import pdb; pdb.set_trace()
     return  qs
 
 

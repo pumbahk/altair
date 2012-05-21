@@ -89,15 +89,18 @@ class SearchResultRender(object):
     def page_description(self):
         fmt =  u"""\
 <p><a href="%s">%s</a></p>
+<p>%s</p>
 <p class="align1">%s</p>
 """
         link = h.link.to_publish_page_from_pageset(self.request, self.pageset)
-        link_label = self.pageset.event.subtitle
+        link_label = self.pageset.event.title
         description = self.pageset.event.description
-        return fmt % (link, link_label, description)
+        ## todo. ticketから開催場所の情報を取り出す
+        performances = self.pageset.event.performances[:5]
+        return fmt % (link, link_label, description, performances)
 
     def deal_limit(self):
-        N = (self.today - self.pageset.event.event_open).days
+        N = (self.pageset.event.event_open - self.today).days
         return u"あと%d日" % N
         #return u"開演まであと%d日" % N
     
@@ -107,12 +110,11 @@ class SearchResultRender(object):
         return u'<img src="/static/ticketstar/img/search/icon_release.gif" alt="一般発売" width="60" height="14" />'
 
     def deal_description(self):
-        import warnings
-        warnings.warn("difficult. so supported this function is later.")
-        return u'<strong>チケット発売中</strong> ～2012/3/23(金) 23:59'
+        event = self.pageset.event
+        return u'<strong>チケット発売中</strong> %s' % (h.base.term(event.deal_open, event.deal_close))
 
     def purchase_link(self):
         import warnings
         warnings.warn("difficult. so supported this function is later.")
-        return u'<a href="#"><img src="/static/ticketstar/img/search/btn_buy.gif" alt="購入へ" width="86" height="32" /></a>'
+        return u'dummy<a href="#"><img src="/static/ticketstar/img/search/btn_buy.gif" alt="購入へ" width="86" height="32" /></a>'
 

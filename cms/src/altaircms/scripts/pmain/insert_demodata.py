@@ -286,10 +286,10 @@ def detail_performances(event):
 
 def detail_event():
     event = Event(title= u"ブルーマングループ IN 東京", 
-                  event_open=u"2011-12-04", 
-                  event_close=u"2012-5-25", 
-                  deal_open=u"2011-10-1", 
-                  deal_close=u"2012-5-17")
+                  event_open=u"2012-12-04", 
+                  event_close=u"2013-5-25", 
+                  deal_open=u"2013-10-1", 
+                  deal_close=u"2013-5-17")
     return event
 
 
