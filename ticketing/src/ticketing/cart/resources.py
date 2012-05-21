@@ -19,6 +19,7 @@ class TicketingCartResrouce(object):
         for product_item in product.items:
             self.acquire_product_item(product_item, amount)
 
+    # もういらない
     def get_stock_status(self, product_item_id):
         """
         ProductItem -> Stock -> StockStatus
@@ -33,14 +34,13 @@ class TicketingCartResrouce(object):
                 p_models.Stock.id==p_models.StockStatus.stock_id
             ).one()
 
-    #TODO: has_stockにはproduct_item_idではなく stock_id が渡される
-    def has_stock(self, product_item_id, quantity):
+    def has_stock(self, stock_id, quantity):
         """在庫確認(Stock)
-        :param product_item_id:
+        :param stock_id:
         :param quantity: 要求数量
         :return: bool
         """
-        stock_status = self.get_stock_status(product_item_id=product_item_id)
+        stock_status = m.DBSession.query(p_models.StockStatus).filter(p_models.StockStatus.stock_id==stock_id).first()
         return stock_status.quantity >= quantity
 
     def acquire_product_item(self, product_item, amount):
@@ -79,7 +79,6 @@ class TicketingCartResrouce(object):
         return ((stock_id, sum(quantity for _, quantity in ordered_items)) for stock_id, ordered_items in q)
 
 
-    #TODO: 後の処理で必要なのはSeatStatusでなくSeat
     def select_seat(self, stock_id, quantity):
         """ 指定在庫（席種）を隣接座席で確保する
         必要な席種かつ確保されていない座席

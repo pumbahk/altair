@@ -335,11 +335,15 @@ class TicketingCartResourceTests(unittest.TestCase):
         from ticketing.products.models import Stock, StockStatus, Product, ProductItem
 
         # 在庫
-        stock = Stock(id=1, quantity=100)
+        stock_id = 1
+        product_item_id = 2
+        adjacency_set_id = 3
+        adjacency_id = 4
+        stock = Stock(id=stock_id, quantity=100)
         stock_status = StockStatus(stock_id=stock.id, quantity=100)
         seats = [Seat(id=i, stock_id=stock.id) for i in range(5)]
         seat_statuses = [SeatStatus(seat_id=i, status=int(SeatStatusEnum.Vacant)) for i in range(5)]
-        product_item = ProductItem(id=1, stock_id=stock.id, price=100, quantity=1)
+        product_item = ProductItem(id=product_item_id, stock_id=stock.id, price=100, quantity=1)
         product = Product(id=1, price=100, items=[product_item])
         self.session.add(stock)
         self.session.add(product)
@@ -349,8 +353,8 @@ class TicketingCartResourceTests(unittest.TestCase):
         [self.session.add(s) for s in seat_statuses]
 
         # 座席隣接状態
-        adjacency_set = SeatAdjacencySet(id=1, seat_count=2)
-        adjacency = SeatAdjacency(adjacency_set=adjacency_set, id=1)
+        adjacency_set = SeatAdjacencySet(id=adjacency_set_id, seat_count=2)
+        adjacency = SeatAdjacency(adjacency_set=adjacency_set, id=adjacency_id)
         for seat in seats:
             seat.adjacencies.append(adjacency)
         self.session.add(adjacency_set)
