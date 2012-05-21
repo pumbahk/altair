@@ -128,6 +128,7 @@ class ReserveView(object):
         return [(products.get(int(c[0])), c[1]) for c in controls]
 
 
+    @view_config(route_name='cart.order', renderer='json')
     def __call__(self):
         """
         座席情報から座席グループを検索する
@@ -135,8 +136,10 @@ class ReserveView(object):
 
         #seat_type_id = self.request.matchdict['seat_type_id']
         cart = self.context.order_products(self.ordered_items)
-        self.cart = cart
-        return dict(cart=cart)
+        if cart is None:
+            return dict(result='NG')
+        self.request.session['ticketing.cart_id'] = cart.id
+        return dict(result='OK')
 
     def on_error(self):
         """ 座席確保できなかった場合

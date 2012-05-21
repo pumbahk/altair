@@ -5,9 +5,11 @@ import sqlahelper
 
 def includeme(config):
     config.add_route('cart.index', '/events/{event_id}')
-    config.add_subscriber('.subscribers.add_helpers', 'pyramid.events.BeforeRender')
     config.add_route('cart.seat_types', 'events/{event_id}/performances/{performance_id}/seat_types')
     config.add_route('cart.products', 'events/{event_id}/performances/{performance_id}/seat_types/{seat_type_id}/products')
+    config.add_route('cart.order', 'order')
+
+    config.add_subscriber('.subscribers.add_helpers', 'pyramid.events.BeforeRender')
 
 def main(global_config, **settings):
     engine = engine_from_config(settings)

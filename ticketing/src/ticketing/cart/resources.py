@@ -148,4 +148,5 @@ class TicketingCartResrouce(object):
         cart = m.Cart()
         cart.add_seat(seats, ordered_products)
         m.DBSession.add(cart)
+        m.DBSession.flush()
         return cart
