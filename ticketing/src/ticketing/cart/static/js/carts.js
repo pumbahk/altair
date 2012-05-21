@@ -60,7 +60,15 @@ carts.AppView.prototype.init = function(presenter) {
             url: order_url,
             dataType: 'json',
             data: values,
-            type: 'POST'
+            type: 'POST',
+            success: function(data, textStatus, jqXHR) {
+                if (data.result == 'OK') {
+                    alert('OK');
+
+                } else {
+                    alert('NG');
+                }
+            }
         })
     });
     this.presenter = presenter;

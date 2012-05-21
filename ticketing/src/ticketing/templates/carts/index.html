@@ -208,6 +208,16 @@ ${p.name} ： ${h.format_number(p.price)}円 <br/>
 	<!-- ========== /main ========== -->
 	
 <!-- /container --></div>
-
+<script id="order-error-template" type="text/template">
+    <dl id="errorTitle">
+        <dt><img src="../img/settlement/error.gif" width="624" height="224" /></dt>
+        <dd>在庫がありません。</dd>
+    </dl>
+    <ul id="errorBtn">
+        <li><a href="#"><img src="../img/settlement/btn_wait.gif" alt="空席待ち" width="206" height="46" /></a></li>
+        <li><a href="#"><img src="../img/settlement/btn_reselect.gif" alt="座席・枚数を選びなおす" width="206" height="46" /></a></li>
+        <li id="errorBtnTop"><a href="#">イベントトップに戻る</a></li>
+    </ul>
+</script>
 </body>
 </html>
