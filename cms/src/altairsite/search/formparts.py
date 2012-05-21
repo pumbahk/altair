@@ -21,6 +21,31 @@ class PutOnlyWidget(object):
             html.append(u'%s%s' % (subfield(), subfield.label.text))
         return widgets.core.HTMLString(u' '.join(html))
 
+#### maybe select fields
+##
+
+class MaybeSelectField(fields.SelectField):
+    NONE_VALUE = "__None"
+    def __init__(self, null_label=u"------", **kwargs):
+        if "choices" in kwargs:
+            choices = [x for x in kwargs["choices"]]
+        else:
+            choices = []
+        choices.insert(0, (self.NONE_VALUE, null_label))
+        kwargs["choices"] = choices
+        super(MaybeSelectField, self).__init__(**kwargs)
+        self.null_label = null_label
+
+    def _value(self):
+        if self.data is None:
+            return self.null_label
+        super(MaybeSelectField, self)._value()
+
+    def process_formdata(self, valuelist):
+        if valuelist[0] == "__None":
+            self.data = None
+        else:
+            super(MaybeSelectField, self).process_formdata(valuelist)
 
 #### checkbox list
 ##

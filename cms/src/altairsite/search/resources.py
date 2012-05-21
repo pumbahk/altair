@@ -1,12 +1,15 @@
 # -*- encoding:utf-8 -*-
 
-from collections import namedtuple
 from datetime import datetime
+# from collections import namedtuple
+# SearchResult = namedtuple("SearchResult", "category_icons page_description deal_limit deal_info_icons deal_description purchase_link")
+import logging
+logger = logging.getLogger(__file__)
 
 from . import searcher
 import altaircms.helpers as h
+import pprint
 
-# SearchResult = namedtuple("SearchResult", "category_icons page_description deal_limit deal_info_icons deal_description purchase_link")
 class SearchResult(dict):
     pass
 
@@ -23,14 +26,16 @@ class SearchPageResource(object):
             yield SearchResultRender(pageset, today, self.request)
         
     def get_result_sequence_from_form(self, form):
-        query = self._get_pageset_query(form)
+        query_params = form.make_query_params()
+        logger.info(pprint.pformat(query_params))
+
+        query = self._get_pageset_query(query_params)
         return self.result_sequence_from_query(query)
 
-    # def _get_pageset_query(self, form):
-    #     query_params = form.make_query_params()
+    # def _get_pageset_query(self, query_parms):
     #     return searcher.get_pageset_query(query_params)        
 
-    def _get_pageset_query(self, form):
+    def _get_pageset_query(self, query_params): ## dummy 
         from altaircms.page.models import PageSet, Page
         from altaircms.event.models import Event
         event = Event(subtitle=u"ソ・ジソブ　日本公式ファンクラブ1周年記念！2012 ファンミーティング in 東京", 

@@ -9,6 +9,7 @@ from wtforms import validators
 from .formparts import CheckboxListField
 from .formparts import PutOnlyWidget
 from .formparts import CheckboxWithLabelInput
+from .formparts import MaybeSelectField
 
 import pkg_resources
 def import_symbol(symbol):
@@ -141,13 +142,13 @@ months = [(i, unicode(i)) for i in range(1, 13)]
 days = [(i, unicode(i)) for i in range(1, 32)]
 
 class PerformanceTermPartForm(form.Form):
-    start_year = fields.SelectField(choices=years,coerce=int)
-    start_month = fields.SelectField(choices=months,coerce=int)
-    start_day = fields.SelectField(choices=days,coerce=int)
+    start_year = MaybeSelectField(choices=years)
+    start_month = MaybeSelectField(choices=months)
+    start_day = MaybeSelectField(choices=days)
 
-    end_year = fields.SelectField(choices=years,coerce=int)
-    end_month = fields.SelectField(choices=months,coerce=int)
-    end_day = fields.SelectField(choices=days,coerce=int)
+    end_year = MaybeSelectField(choices=years)
+    end_month = MaybeSelectField(choices=months)
+    end_day = MaybeSelectField(choices=days)
 
     def __html__(self):
         return u"""
@@ -180,7 +181,7 @@ class DealCondPartForm(form.Form):
 ## todo:付加サービス
 class AddedServicePartForm(form.Form):
     choices = [("select-seat", u"座席選択可能"), ("keep-adjust", u"お隣キープ"), ("2d-market", u"2次市場")]
-    added_services = fields.RadioField(choices=choices, widget=PutOnlyWidget())
+    added_services = CheckboxListField(choices=choices)
 
     def __html__(self):
         return u"%(added_services)s" % self
@@ -193,11 +194,8 @@ class AddedServicePartForm(form.Form):
 
 ## todo:発売日,  rename
 class AboutDealPartForm(form.Form):
-    before_deal_start_flg = fields.BooleanField(label=u"")
-    before_deal_start = fields.SelectField(choices=days)
-
-    till_deal_end_flg = fields.BooleanField(label=u"")
-    till_deal_end = fields.SelectField(choices=days)
+    before_deal_start = MaybeSelectField(choices=days)
+    till_deal_end = MaybeSelectField(choices=days)
     
     closed_only = fields.BooleanField(label=u"販売終了", widget=CheckboxWithLabelInput())
     canceled_only = fields.BooleanField(label=u"公演中止", widget=CheckboxWithLabelInput())
@@ -206,10 +204,10 @@ class AboutDealPartForm(form.Form):
         return u"""
 <ul>
   <li>
-    %(before_deal_start_flg)s%(before_deal_start)s日以内に受付・販売開始
+    %(before_deal_start)s日以内に受付・販売開始
   </li>
   <li>
-    %(till_deal_end_flg)s販売終了まで%(till_deal_end)s日
+    販売終了まで%(till_deal_end)s日
   </li>
   <li>
     %(closed_only)s %(canceled_only)s
@@ -218,15 +216,7 @@ class AboutDealPartForm(form.Form):
 """ % self
 
     def make_query_params(self):
-        data = self.data
-        params = {}
-        if data["before_deal_start_flg"]:
-            params["before_deal_start"] = data["before_deal_start"] 
-        if data["till_deal_end_flg"]:
-            params["till_deal_end"] = data["till_deal_end"] 
-        params.update(closed_only=data.get("closed_only"), 
-                      canceled_only=data.get("canceled_only")) ## todo:fix
-        return params
+        return self.data
 
 class DetailSearchQueryForm(object):
     def __init__(self, formdata=None):
