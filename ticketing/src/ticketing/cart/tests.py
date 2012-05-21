@@ -192,14 +192,6 @@ class TicketingCartResourceTests(unittest.TestCase):
         models.DBSession.add(stock_status)
         return product_item
 
-    def test_get_stock_status(self):
-        request = testing.DummyRequest()
-        target = self._makeOne(request)
-        product_item = self._add_stock_status(100)
-        result = target.get_stock_status(product_item.id)
-
-        self.assertIsNotNone(result)
-        self.assertEqual(result.quantity, 100)
 
     def test_has_stock_just_quantity(self):
         request = testing.DummyRequest()

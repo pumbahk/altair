@@ -19,20 +19,6 @@ class TicketingCartResrouce(object):
         for product_item in product.items:
             self.acquire_product_item(product_item, amount)
 
-    # もういらない
-    def get_stock_status(self, product_item_id):
-        """
-        ProductItem -> Stock -> StockStatus
-        :param product_item_id: プロダクトアイテムID
-        :return: :class:`ticketing.products.models.StockStatus`
-        """
-        return m.DBSession.query(p_models.StockStatus).filter(
-                p_models.ProductItem.id==product_item_id
-            ).filter(
-                p_models.ProductItem.stock_id==p_models.Stock.id
-            ).filter(
-                p_models.Stock.id==p_models.StockStatus.stock_id
-            ).one()
 
     def has_stock(self, stock_id, quantity):
         """在庫確認(Stock)
