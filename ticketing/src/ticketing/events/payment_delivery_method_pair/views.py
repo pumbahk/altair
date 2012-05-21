@@ -65,7 +65,7 @@ class PaymentDeliveryMethodPairs(BaseView):
         f.delivery_method_ids.data = [pdmp.delivery_method_id]
         return {
             'form':f,
-            'payment_delivery_method_pair':pdmp
+            'sales_segment':pdmp.sales_segment
         }
 
     @view_config(route_name='payment_delivery_method_pair.edit', request_method='POST', renderer='ticketing:templates/payment_delivery_method_pair/edit.html')
@@ -88,7 +88,7 @@ class PaymentDeliveryMethodPairs(BaseView):
         else:
             return {
                 'form':f,
-                'payment_delivery_method_pair':pdmp
+                'sales_segment':pdmp.sales_segment
             }
 
     @view_config(route_name='payment_delivery_method_pair.delete')

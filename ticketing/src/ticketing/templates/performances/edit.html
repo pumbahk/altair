@@ -27,12 +27,11 @@
 
   <div class="span10">
     ${breadcrumbs(
-        names=[u'イベント', performance.event.title, u'パフォーマンス', performance.name, u'編集'],
+        names=[u'イベント', event.title, u'パフォーマンス', route_name],
         urls=[
           request.route_path('events.index'),
-          request.route_path('events.show', event_id=performance.event.id),
-          request.route_path('performances.index', event_id=performance.event.id),
-          request.route_path('performances.show', performance_id=performance.id),
+          request.route_path('events.show', event_id=event.id),
+          request.route_path('performances.index', event_id=event.id),
         ]
     )}
   </div>
@@ -50,8 +49,8 @@
     <div class="well">
       <form class="form-horizontal" action="${route_path}" method="POST">
         <fieldset>
-          ${form_item(form.name, option={'class':'span8'})}
-          ${form_item(form.code, option={'class':'span2'})}
+          ${form_item(form.name, option={'class':'span8', 'maxlength':255})}
+          ${form_item(form.code, option={'class':'span2', 'maxlength':12})}
           ${form_item(form.open_on)}
           ${form_item(form.start_on)}
           ${form_item(form.end_on)}

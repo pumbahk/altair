@@ -20,18 +20,19 @@ class ProductForm(Form):
             ]
 
     id = HiddenField(
-        label='',
         validators=[Optional()],
     )
     event_id = HiddenField(
-        label='',
-        validators=[Required()]
+        validators=[Required(u'入力してください')]
     )
     name = TextField(
         label=u'商品名',
-        validators=[Required(u'入力してください')]
+        validators=[
+            Required(u'入力してください'),
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ]
     )
-    price = TextField(
+    price = IntegerField(
         label=u'価格',
         validators=[Required(u'入力してください')]
     )

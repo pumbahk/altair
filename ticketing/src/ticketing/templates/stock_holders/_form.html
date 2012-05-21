@@ -11,7 +11,7 @@
     <div class="modal-body">
       ${form_item(form.id)}
       ${form_item(form.performance_id)}
-      ${form_item(form.name)}
+      ${form_item(form.name, option={'maxlength':255})}
       ${form_item(form.account_id)}
       ${form_item(form.text)}
       ${form_item(form.text_color, option={'class':'kolorPicker span3'})}

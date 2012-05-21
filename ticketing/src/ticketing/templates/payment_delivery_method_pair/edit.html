@@ -3,11 +3,12 @@
 <%namespace file="/common/helpers.html" import="alert_message" />
 <%namespace file="/common/helpers.html" import="flash_messages" />
 <%namespace file="/common/helpers.html" import="form_item" />
+<%namespace file="/common/helpers.html" import="breadcrumbs" />
 
 <%
   if request.matched_route.name == 'payment_delivery_method_pair.edit':
     route_name = u'編集'
-    route_path = request.route_path('payment_delivery_method_pair.edit', payment_delivery_method_pair_id=payment_delivery_method_pair.id)
+    route_path = request.route_path('payment_delivery_method_pair.edit', payment_delivery_method_pair_id=form.id.data)
   else:
     route_name = u'登録'
     route_path = request.route_path('payment_delivery_method_pair.new', sales_segment_id=sales_segment.id)
@@ -15,6 +16,17 @@
 
 <div class="row-fluid">
   <%include file="/parts/_menu.html" />
+
+  <div class="span10">
+    ${breadcrumbs(
+      names=[u'イベント', sales_segment.event.title, u'販売区分', sales_segment.name],
+      urls=[
+        request.route_path('events.index'),
+        request.route_path('events.show', event_id=sales_segment.event.id),
+        request.route_path('sales_segments.index', event_id=sales_segment.event.id),
+      ]
+    )}
+  </div>
 
   <span class="span10">
     <div class="page-header">

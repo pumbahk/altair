@@ -26,8 +26,8 @@
 
   <div class="span10">
     ${breadcrumbs(
-        names=[u'イベント', event.title, u'編集'],
-        urls=[request.route_path('events.index'), request.route_path('events.show', event_id=event.id)]
+        names=[u'イベント', route_name],
+        urls=[request.route_path('events.index')]
     )}
   </div>
 
@@ -44,9 +44,9 @@
     <div class="well">
       <form class="form-horizontal" action="${route_path}" enctype="multipart/form-data" method="POST">
         <fieldset>
-          ${form_item(form.code, option={'style':'width:150px'})}
-          ${form_item(form.title, option={'class':'span8'})}
-          ${form_item(form.abbreviated_title, option={'class':'span4'})}
+          ${form_item(form.code, option={'style':'width:150px', 'maxlength':12})}
+          ${form_item(form.title, option={'class':'span8', 'maxlength':200})}
+          ${form_item(form.abbreviated_title, option={'class':'span4', 'maxlength':100})}
           ${form_item(form.start_on)}
           ${form_item(form.end_on)}
         </fieldset>

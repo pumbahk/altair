@@ -2,9 +2,6 @@
 <%namespace file="/common/modal.html" import="delete_modal" />
 
 <script type="text/javascript">
-  $(function() {
-    $('#start_at, #end_at').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
-  });
   function show_sales_segment() {
     var id = get_id('sales_segment_id');
     if (!id) return;

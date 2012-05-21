@@ -18,7 +18,10 @@ class SalesSegmentForm(Form):
     )
     name = TextField(
         label=u'販売区分名',
-        validators=[Required(u'入力してください')]
+        validators=[
+            Required(u'入力してください'),
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ],
     )
     start_at = DateTimeField(
         label=u'販売開始日時',
@@ -30,3 +33,7 @@ class SalesSegmentForm(Form):
         validators=[Required(u'入力してください')],
         format='%Y-%m-%d %H:%M'
     )
+
+    def validate_end_at(form, field):
+        if field.data is not None and field.data < form.start_at.data:
+            raise ValidationError(u'開演日時より過去の日時は入力できません')

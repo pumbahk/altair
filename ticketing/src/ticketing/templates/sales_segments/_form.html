@@ -1,6 +1,12 @@
 <%page args="form" />
 <%namespace file="/common/helpers.html" import="form_item" />
 
+<script type="text/javascript">
+  $(function() {
+    $('#start_at, #end_at').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
+  });
+</script>
+
 <div id="modal-sales_segment" class="modal fade">
   <div class="modal-header">
     <a class="close" data-dismiss="modal">×</a>
@@ -11,7 +17,7 @@
     <div class="modal-body">
       ${form_item(form.id)}
       ${form_item(form.event_id)}
-      ${form_item(form.name)}
+      ${form_item(form.name, option={'maxlength':255})}
       ${form_item(form.start_at)}
       ${form_item(form.end_at)}
     </div>

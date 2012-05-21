@@ -8,8 +8,8 @@
 
   <div class="span10">
     ${breadcrumbs(
-        names=[u'イベント', u'商品'],
-        urls=[request.route_path('events.index')]
+        names=[u'イベント', event.title, u'商品'],
+        urls=[request.route_path('events.index'), request.route_path('events.show', event_id=event.id)]
     )}
   </div>
 

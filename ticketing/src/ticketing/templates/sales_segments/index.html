@@ -9,8 +9,8 @@
 
   <div class="span10">
     ${breadcrumbs(
-        names=[u'イベント', u'販売区分'],
-        urls=[request.route_path('sales_segments.index', event_id=event.id)]
+        names=[u'イベント', event.title, u'販売区分'],
+        urls=[request.route_path('events.index'), request.route_path('events.show', event_id=event.id)]
     )}
   </div>
 

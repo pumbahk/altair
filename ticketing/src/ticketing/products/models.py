@@ -115,7 +115,7 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return query.scalar()
 
     def set_style(self, data):
-        if self.type.is_seat:
+        if self.is_seat:
             self.style = {}
         else:
             self.style = {
