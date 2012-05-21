@@ -2,7 +2,8 @@
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 import datetime
-
+import logging
+logger = logging.getLogger(__file__)
 from altaircms.models import (
     Category, 
     Performance
@@ -13,32 +14,17 @@ from altaircms.event.models import Event
 from altaircms.solr import api as solrapi
 
 
-def search_by_freeword(qs, request, words, join_op):
-    assert join_op in ("intersection", "union")
-    
+def search_by_freeword(qs, request, words, query_cond):
+    assert query_cond in ("intersection", "union")
+
     fulltext_search = solrapi.get_fulltext_search(request)
-    if join_op == "intersection":
-        pageset_ids = _pageset_ids_by_freeword_intersection(fulltext_search, words)
-    elif join_op == "union":
-        pageset_ids = _pageset_ids_by_freeword_union(fulltext_search, words)
+    solr_query = solrapi.create_query_from_freeword(words, query_cond=query_cond)
+    result = fulltext_search.search(solr_query, fields=["id"])
+    
+    pageset_ids = [f["id"] for f in result]
+    logger.info("pageset_id: %s" % pageset_ids)
     return qs.filter(PageSet.id.in_(pageset_ids))
 
-def _pageset_ids_by_freeword_intersection(fulltext_search, words):
-    pageset_id_set = set()
-    for word in words:
-        query = solrapi.create_query_from_freeword(word)
-        ## todo: implement
-        pageset_id_set = pageset_id_set.intersection(fulltext_search.search(query))
-    return pageset_id_set
-    
-def _pageset_ids_by_freeword_union(fulltext_search, words):
-    pageset_id_set = set()
-    for word in words:
-        query = solrapi.create_query_from_freeword(word)
-        ## todo: implement
-        pageset_id_set.update(fulltext_search.search(query))
-    return pageset_id_set
-        
 def _extract_tags(params, k):
     if k not in params:
         return []
