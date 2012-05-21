@@ -12,17 +12,12 @@ import sqlahelper
 
 import logging
 
-logging.basicConfig()
-logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
-
 try:
     import pymysql_sa
     pymysql_sa.make_default_mysql_dialect()
     logging.info('Using PyMySQL')
 except:
     pass
-
-
 
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
@@ -63,7 +58,6 @@ def main(global_config, **settings):
     config.include('ticketing.venues' , route_prefix='/venues')
     config.include('ticketing.dashboard' , route_prefix='/dashboard')
     config.include('ticketing.bookmark' , route_prefix='/bookmark')
-    config.include('ticketing.stock_types' , route_prefix='/stock_types')
     config.include('ticketing.accounts' , route_prefix='/accounts')
 
     # 上からscanされてしまうためしかたなく追加。scanをinclude先に移動させて、このincludeを削除する。

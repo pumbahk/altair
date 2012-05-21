@@ -29,7 +29,6 @@ requires = [
     'js.tinymce',
     'pyramid_who',
     'altair-commons',
-    "altair-site"
     ]
 
 solr_require = [
@@ -83,8 +82,7 @@ setup(name='altair-cms',
       zip_safe=False,
       test_suite='altaircms',
       install_requires = requires,
-      dependency_links = ['file:../commons#egg=altair-commons-0.0', 
-                          "file:../usersite#egg=altair-site-0.0"],
+      dependency_links = ['file:../commons#egg=altair-commons-0.0'], 
       tests_require=tests_require,
       extras_require=extras_require,
       entry_points = """\

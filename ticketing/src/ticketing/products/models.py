@@ -4,20 +4,20 @@ from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, Strin
 from sqlalchemy.orm import relationship, join, backref, column_property, mapper, relation
 
 from ticketing.utils import StandardEnum
-from ticketing.models import Base, BaseModel, DBSession, JSONEncodedDict, MutationDict
-from ticketing.venues.models import  SeatStatusEnum, SeatStatus
+from ticketing.models import Base, BaseModel, DBSession, JSONEncodedDict, MutationDict, WithTimestamp, LogicallyDeleted
+from ticketing.venues.models import SeatStatusEnum, SeatStatus
 
-class PaymentMethodPlugin(BaseModel, Base):
+class PaymentMethodPlugin(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentMethodPlugin'
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
 
-class DeliveryMethodPlugin(BaseModel, Base):
+class DeliveryMethodPlugin(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'DeliveryMethodPlugin'
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
 
-class PaymentMethod(BaseModel, Base):
+class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentMethod'
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
@@ -32,7 +32,7 @@ class PaymentMethod(BaseModel, Base):
     def get_by_organization_id(id):
         return DBSession.query(PaymentMethod).filter(PaymentMethod.organization_id==id).all()
 
-class DeliveryMethod(BaseModel, Base):
+class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'DeliveryMethod'
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
@@ -53,7 +53,7 @@ buyer_condition_set_table =  Table('BuyerConditionSet', Base.metadata,
     Column('product_id', BigInteger, ForeignKey('Product.id'))
 )
 
-class BuyerCondition(BaseModel, Base):
+class BuyerCondition(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'BuyerCondition'
     id = Column(BigInteger, primary_key=True)
 
@@ -63,7 +63,7 @@ class BuyerCondition(BaseModel, Base):
      Any Conditions.....
     '''
 
-class ProductItem(BaseModel, Base):
+class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'ProductItem'
     id = Column(BigInteger, primary_key=True)
     item_type = Column(Integer)
@@ -78,7 +78,7 @@ class ProductItem(BaseModel, Base):
     stock_type_id = Column(BigInteger, ForeignKey('StockType.id'))
     stock_type = relationship('StockType', backref='product_items')
 
-    quantity = Column(Integer, nullable=False)
+    quantity = Column(Integer, nullable=False, default=1, server_default='1')
 
     def get_for_update(self):
         self.stock = Stock.get_for_update(self.performance_id, self.stock_type_id)
@@ -89,10 +89,10 @@ class ProductItem(BaseModel, Base):
             return None
 
 class StockTypeEnum(StandardEnum):
-    Seat = 1
-    Other = 2
+    Seat = 0
+    Other = 1
 
-class StockType(BaseModel, Base):
+class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'StockType'
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
@@ -104,15 +104,32 @@ class StockType(BaseModel, Base):
 
     style = Column(MutationDict.as_mutable(JSONEncodedDict(1024)))
 
+    @property
+    def is_seat(self):
+        return self.type == StockTypeEnum.Seat.v
+
     def num_seats(self, performance_id=None):
         query = DBSession.query(func.sum(StockAllocation.quantity)).filter_by(stock_type=self)
         if performance_id:
             query = query.filter_by(performance_id=performance_id)
         return query.scalar()
 
-    @property
-    def is_seat(self):
-        return self.type == StockTypeEnum.Seat.v
+    def set_style(self, data):
+        if self.type.is_seat:
+            self.style = {}
+        else:
+            self.style = {
+                'stroke':{
+                    'color':data.get('stroke_color'),
+                    'width':data.get('stroke_width'),
+                    'pattern':data.get('stroke_patten'),
+                },
+                'fill':{
+                    'color':data.get('fill_color'),
+                    'type':data.get('fill_type'),
+                    'image':data.get('fill_image'),
+                },
+            }
 
 class StockAllocation(Base):
     __tablename__ = "StockAllocation"
@@ -134,7 +151,7 @@ class StockAllocation(Base):
             DBSession.add(self)
         DBSession.flush()
 
-class StockHolder(BaseModel, Base):
+class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "StockHolder"
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
@@ -147,7 +164,7 @@ class StockHolder(BaseModel, Base):
     stocks = relationship('Stock', backref='stock_holder')
 
 # stock based on quantity
-class Stock(BaseModel, Base):
+class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "Stock"
     id = Column(BigInteger, primary_key=True)
     quantity = Column(Integer)
@@ -164,12 +181,12 @@ class Stock(BaseModel, Base):
         return DBSession.query(Stock).with_lockmode("update").filter(Stock.performance_id==pid, Stock.stock_type_id==stid, Stock.quantity>0).first()
 
 # stock based on quantity
-class StockStatus(BaseModel, Base):
+class StockStatus(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "StockStatus"
     stock_id = Column(BigInteger, ForeignKey('Stock.id'), primary_key=True)
     quantity = Column(Integer)
 
-class Product(BaseModel, Base):
+class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Product'
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))

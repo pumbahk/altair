@@ -1,20 +1,14 @@
 # encoding: utf-8
-from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL
+from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, ForeignKeyConstraint, Index, DECIMAL
 from sqlalchemy.orm import relationship, join, backref, column_property, mapper
 
 import sqlahelper
 
 from ticketing.utils import StandardEnum
-from ticketing.models import BaseModel, JSONEncodedDict, MutationDict
+from ticketing.models import BaseModel, JSONEncodedDict, MutationDict, WithTimestamp, LogicallyDeleted
 
 session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
-
-seat_venue_area_table = Table(
-    'Seat_VenueArea', Base.metadata,
-    Column('venue_area_id', BigInteger, ForeignKey('VenueArea.id'), primary_key=True, nullable=False),
-    Column('seat_id', BigInteger, ForeignKey('Seat.id'), primary_key=True, nullable=False)
-)
 
 seat_seat_adjacency_table = Table(
     "Seat_SeatAdjacency", Base.metadata,
@@ -22,7 +16,7 @@ seat_seat_adjacency_table = Table(
     Column('seat_adjacency_id', BigInteger, ForeignKey("SeatAdjacency.id"), primary_key=True, nullable=False)
     )
 
-class Site(BaseModel, Base):
+class Site(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "Site"
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
@@ -37,7 +31,14 @@ class Site(BaseModel, Base):
     fax = Column(String(32))
     drawing_url = Column(String(255))
 
-class Venue(BaseModel, Base):
+class VenueArea_group_l0_id(Base):
+    __tablename__   = "VenueArea_group_l0_id"
+    venue_id = Column(BigInteger, ForeignKey('Venue.id'), primary_key=True, nullable=False)
+    group_l0_id = Column(String(255), primary_key=True, nullable=False)
+    venue_area_id = Column(BigInteger, ForeignKey('VenueArea.id'), index=True, primary_key=True, nullable=False)
+    venue = relationship('Venue')
+
+class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     """
     Venueは、Performance毎に1個つくられる。
     Venueのテンプレートは、performance_idがNoneになっている。
@@ -59,33 +60,40 @@ class Venue(BaseModel, Base):
 
     site = relationship("Site", uselist=False)
     seats = relationship("Seat", backref='venue')
-    areas = relationship("VenueArea", backref='venue')
+    areas = relationship("VenueArea", backref='venues', secondary=VenueArea_group_l0_id.__table__)
 
-class VenueArea(BaseModel, Base):
+class VenueArea(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__   = "VenueArea"
     id              = Column(BigInteger, primary_key=True)
-    l0_id           = Column(String(255))
-    name            = Column(String(255))
+    name            = Column(String(255), nullable=False)
+    groups          = relationship('VenueArea_group_l0_id')
 
-    venue_id        = Column(BigInteger, ForeignKey('Venue.id'))
-
-class SeatAttribute(BaseModel, Base):
+class SeatAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__   = "SeatAttribute"
     seat_id         = Column(BigInteger, ForeignKey('Seat.id'), primary_key=True, nullable=False)
     name            = Column(String(255), primary_key=True, nullable=False)
     value           = Column(String(1023))
 
-class Seat(BaseModel, Base):
+class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__   = "Seat"
+    __table_args__  = (
+        ForeignKeyConstraint(
+            ['venue_id', 'group_l0_id'],
+            [VenueArea_group_l0_id.venue_id, VenueArea_group_l0_id.group_l0_id]
+            ),
+        )
+
     id              = Column(BigInteger, primary_key=True)
     l0_id           = Column(String(255))
 
-    venue_id        = Column(BigInteger, ForeignKey('Venue.id'))
     stock_id        = Column(BigInteger, ForeignKey('Stock.id'))
     stock_type_id   = Column(BigInteger, ForeignKey('StockType.id'))
 
+    venue_id        = Column(BigInteger, ForeignKey('Venue.id'), nullable=False)
+    group_l0_id     = Column(String(255))
+
     attributes      = relationship("SeatAttribute", backref='seat', cascade='save-update, merge')
-    areas           = relationship("VenueArea", secondary=seat_venue_area_table, backref="seats")
+    areas           = relationship("VenueArea", secondary=VenueArea_group_l0_id.__table__, backref="seats")
     adjacencies     = relationship("SeatAdjacency", secondary=seat_seat_adjacency_table, backref="seats")
 
     def __setitem__(self, name, value):
@@ -114,7 +122,7 @@ class SeatStatusEnum(StandardEnum):
     Canceled = 6
     Reserved = 7
 
-class SeatStatus(BaseModel, Base):
+class SeatStatus(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "SeatStatus"
     seat_id = Column(BigInteger, ForeignKey("Seat.id"), primary_key=True)
     status = Column(Integer)
@@ -149,7 +157,7 @@ class SeatAdjacency(Base):
     id = Column(BigInteger, primary_key=True)
     adjacency_set_id = Column(BigInteger, ForeignKey('SeatAdjacencySet.id'))
 
-class SeatAdjacencySet(BaseModel, Base):
+class SeatAdjacencySet(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "SeatAdjacencySet"
     id = Column(BigInteger, primary_key=True)
     venue_id = Column(BigInteger, ForeignKey('Venue.id'))

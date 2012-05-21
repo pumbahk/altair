@@ -10,9 +10,12 @@ from ticketing.models import merge_session_with_post, record_to_multidict, DBSes
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.events.models import Event, Performance, Account, SalesSegment
-from ticketing.events.performances.forms import PerformanceForm, StockHolderForm
+from ticketing.events.performances.forms import PerformanceForm
+from ticketing.events.stock_holders.forms import StockHolderForm
 from ticketing.events.sales_segments.forms import SalesSegmentForm
-from ticketing.products.models import Product, StockHolder
+from ticketing.products.models import Product
+from ticketing.products.forms import ProductForm, ProductItemForm
+from ticketing.events.stock_types.forms import StockTypeForm, StockAllocationForm
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class Performances(BaseView):
@@ -46,13 +49,16 @@ class Performances(BaseView):
         user = self.context.user
         accounts = Account.get_by_organization_id(user.organization_id)
 
-        form_ss = SalesSegmentForm()
         return {
             'performance':performance,
             'products':products,
             'accounts':accounts,
             'user':user,
-            'form_ss':form_ss,
+            'form_product':ProductForm(event_id=performance.event_id),
+            'form_product_item':ProductItemForm(user_id=self.context.user.id, performance_id=performance_id),
+            'form_stock_type':StockTypeForm(event_id=performance.event_id),
+            'form_stock_allocation':StockAllocationForm(),
+            'form_stock_holder':StockHolderForm(organization_id=self.context.user.organization_id, performance_id=performance_id),
         }
 
     @view_config(route_name='performances.new', request_method='GET', renderer='ticketing:templates/performances/edit.html')
@@ -135,65 +141,3 @@ class Performances(BaseView):
 
         self.request.session.flash(u'パフォーマンスを削除しました')
         return HTTPFound(location=route_path('events.show', self.request, event_id=performance.event_id))
-
-
-@view_defaults(decorator=with_bootstrap, permission="event_editor")
-class StockHolders(BaseView):
-
-    @view_config(route_name='stock_holders.new', request_method='POST')
-    def new_post(self):
-        performance_id = int(self.request.matchdict.get('performance_id', 0))
-        performance = Performance.get(performance_id)
-        if performance is None:
-            return HTTPNotFound('performance id %d is not found' % performance_id)
-
-        f = StockHolderForm(self.request.POST, organization_id=self.context.user.organization_id)
-        #if f.validate():
-        data = f.data
-        style = {
-            'text':data.get('text'),
-            'text_color':data.get('text_color'),
-        }
-        stock_holder = merge_session_with_post(StockHolder(), data)
-        stock_holder.style = style
-
-        stock_holder.performance_id = performance.id
-        stock_holder.save()
-        self.request.session.flash(u'枠を保存しました')
-        #else:
-        #    self.request.session.flash(u'枠を保存できません')
-
-        return HTTPFound(location=route_path('performances.show', self.request, performance_id=performance.id, _anchor='seat-allocation'))
-
-    @view_config(route_name='stock_holders.edit', request_method='POST')
-    def edit_post(self):
-        stock_holder_id = int(self.request.matchdict.get('stock_holder_id', 0))
-        stock_holder = StockHolder.get(stock_holder_id)
-        if stock_holder is None:
-            return HTTPNotFound('stock_holder id %d is not found' % stock_holder_id)
-
-        f = StockHolderForm(self.request.POST, organization_id=self.context.user.organization_id)
-        if f.validate():
-            style = {
-                'text':f.data.get('text'),
-                'text_color':f.data.get('text_color'),
-            }
-            stock_holder = merge_session_with_post(stock_holder, f.data)
-            stock_holder.style = style
-            stock_holder.save()
-
-            self.request.session.flash(u'枠を保存しました')
-
-        return HTTPFound(location=route_path('performances.show', self.request, performance_id=stock_holder.performance.id, _anchor='seat-allocation'))
-
-    @view_config(route_name='stock_holders.delete')
-    def delete(self):
-        stock_holder_id = int(self.request.matchdict.get('stock_holder_id', 0))
-        stock_holder = StockHolder.get(stock_holder_id)
-        if stock_holder is None:
-            return HTTPNotFound('stock_holder id %d is not found' % stock_holder_id)
-
-        stock_holder.delete()
-
-        self.request.session.flash(u'枠を削除しました')
-        return HTTPFound(location=route_path('performances.show', self.request, performance_id=stock_holder.performance.id, _anchor='seat-allocation'))

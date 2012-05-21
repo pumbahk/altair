@@ -5,6 +5,7 @@ from sqlalchemy.orm import relationship
 
 from ticketing.utils import StandardEnum
 from ticketing.users.models import User
+from ticketing.models import WithTimestamp, LogicallyDeleted
 import sqlahelper
 
 session = sqlahelper.get_session()
@@ -15,7 +16,7 @@ from ticketing.master.models import Prefecture
 class OrganizationTypeEnum(StandardEnum):
     Standard        = 1
 
-class Organization(Base):
+class Organization(Base, WithTimestamp, LogicallyDeleted):
     __tablename__ = "Organization"
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
@@ -34,9 +35,6 @@ class Organization(Base):
     prefecture = relationship("Prefecture", uselist=False)
 
     venues = relationship("Venue", backref='organization')
-
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
     status = Column(Integer)
 
     @staticmethod

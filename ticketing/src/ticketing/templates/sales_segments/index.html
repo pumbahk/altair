@@ -16,6 +16,9 @@
     </div>
 
     <%include file="/sales_segments/_list.html" args="sales_segments=sales_segments" />
-    <%include file="/sales_segments/_action_button.html" args="event=event, form=form_ss" />
+    <%include file="/sales_segments/_action_button.html" />
+    <div id="sales_segments-form">
+      <%include file="/sales_segments/_form.html" args="form=form_sales_segment" />
+    </div>
   </span>
 </div>

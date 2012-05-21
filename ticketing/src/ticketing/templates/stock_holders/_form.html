@@ -1,0 +1,25 @@
+<%page args="form" />
+<%namespace file="/common/helpers.html" import="form_item" />
+
+<div id="modal-stock_holder" class="modal fade">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">×</a>
+    <h3>配券先</h3>
+  </div>
+
+  <form action="javascript:save_stock_holder();" method="POST">
+    <div class="modal-body">
+      ${form_item(form.id)}
+      ${form_item(form.performance_id)}
+      ${form_item(form.name)}
+      ${form_item(form.account_id)}
+      ${form_item(form.text)}
+      ${form_item(form.text_color, option={'class':'kolorPicker span3'})}
+    </div>
+
+    <div class="modal-footer">
+      <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+      <input class="btn" type="submit" value="保存">
+    </div>
+  </form>
+</div>

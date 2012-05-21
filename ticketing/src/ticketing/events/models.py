@@ -4,7 +4,7 @@ from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, Strin
 from sqlalchemy.orm import relationship, join, backref, column_property
 
 from ticketing.utils import StandardEnum
-from ticketing.models import Base, BaseModel, DBSession
+from ticketing.models import Base, BaseModel, DBSession, WithTimestamp, LogicallyDeleted
 from ticketing.products.models import Product, StockHolder
 from ticketing.venues.models import Venue, VenueArea, Seat, SeatAttribute
 
@@ -13,7 +13,7 @@ class AccountTypeEnum(StandardEnum):
     Playguide   = 2
     User        = 3
 
-class Account(BaseModel, Base):
+class Account(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "Account"
     id = Column(BigInteger, primary_key=True)
     account_type = Column(Integer)  # @see AccountTypeEnum
@@ -30,7 +30,7 @@ class Account(BaseModel, Base):
     def get_by_organization_id(id):
         return DBSession.query(Account).filter(Account.organization_id==id).all()
 
-class Performance(BaseModel, Base):
+class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Performance'
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
@@ -91,7 +91,7 @@ class Performance(BaseModel, Base):
                             attribute.seat_id = seat.id
                             attribute.save()
 
-class Event(BaseModel, Base):
+class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Event'
     id = Column(BigInteger, primary_key=True)
     code = Column(String(12))
@@ -137,7 +137,7 @@ class Event(BaseModel, Base):
                 .distinct()
 
 
-class SalesSegment(BaseModel, Base):
+class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'SalesSegment'
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
@@ -148,7 +148,7 @@ class SalesSegment(BaseModel, Base):
     event = relationship('Event', backref='sales_segments')
 
 
-class PaymentDeliveryMethodPair(BaseModel, Base):
+class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentDeliveryMethodPair'
     id = Column(BigInteger, primary_key=True)
     transaction_fee = Column(Numeric(precision=16, scale=2), nullable=False)

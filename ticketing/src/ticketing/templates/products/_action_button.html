@@ -1,5 +1,4 @@
-<%page args="event, performance=None" />
-<%namespace file="/common/helpers.html" import="form_item" />
+<%page args="event" />
 <%namespace file="/common/modal.html" import="delete_modal" />
 
 <script type="text/javascript">
@@ -9,47 +8,42 @@
     $(location).attr('href', '/products/show/' + id);
   }
   function new_product() {
-    $('#modal-product-edit').modal('toggle');
+    $('#modal-product').modal('toggle');
   }
   function edit_product(id) {
     id = id || get_id('product_id');
     if (!id) return;
     var el = '#product-' + id;
-    $('#modal-product-edit #id').val($(el + ' #id').text());
-    $('#modal-product-edit #name').val($(el + ' #name').text());
-    $('#modal-product-edit #price').val($(el + ' #price').text());
-    $('#modal-product-edit #sales_segment').val($(el + ' #sales_segment').attr('value'));
-    $('#modal-product-edit').modal('toggle');
+    $('#modal-product #id').val($(el + ' #id').text());
+    $('#modal-product #name').val($(el + ' #name').text());
+    $('#modal-product #price').val($(el + ' #price').text());
+    $('#modal-product #sales_segment').val($(el + ' #sales_segment').attr('value'));
+    $('#modal-product').modal('toggle');
   }
   function delete_product() {
     var id = get_id('product_id');
     if (!id) return;
     $('#modal-delete #delete').attr('href', '/products/delete/' + id);
-    $('#modal-delete #message').text("${u'選択した商品を削除します。よろしいですか？'}");
+    $('#modal-delete #message').text('選択した商品を削除します。よろしいですか？');
     $('#modal-delete').modal('toggle');
   }
-
   function save_product() {
-    var id = $('#modal-product-edit #id').val();
-    var url = id ? '/products/json.update/' + id : '/products/json.new';
-    $.ajax({
-      type: "POST",
-      url: url,
-      data:{
-        "event_id":$('#modal-product-edit #event_id').val(),
-        "name":$('#modal-product-edit #name').val(),
-        "price":$('#modal-product-edit #price').val(),
-        "sales_segment_id":$('#modal-product-edit #sales_segment').val(),
-      },
-      dataType:'json',
-      success: function(msg){
-        if (msg['success'] == true) {
-          location.href = '/events/show/' + ${event.id};
-        } else {
-          alert(msg['success'])
-        }
-      }
+    var id = $('#modal-product #id').val();
+    var url = id ? '/products/edit/' + id : '/products/new';
+    var param = {};
+    $('#modal-product :input').each(function(i, v) {
+      param[v.name] = v.value;
     });
+    $.post(
+        url,
+        param,
+        function(data, status, xhr) {
+          $('#modal-product').modal('hide');
+          $('#products-form').html(data);
+          $('#modal-product').modal('show');
+        },
+        "html"
+    );
   }
 </script>
 
@@ -79,37 +73,4 @@
   </ul>
 </div>
 
-<div class="modal fade" id="modal-product-edit">
-  <div class="modal-header">
-    <a class="close" data-dismiss="modal">×</a>
-    <h3>商品</h3>
-  </div>
-
-  <form id="edit" action="javascript:save_product();" method="POST">
-    <div class="modal-body">
-      <fieldset>
-        <input id="event_id" type="hidden" value="${event.id}">
-        <input id="id" type="hidden">
-        <label>商品名</label>
-        <input id="name" name="name" type="text" class="span3" placeholder="商品名">
-        <label>価格</label>
-        <input id="price" name="price" type="text" class="span3" placeholder="価格">
-        <label>販売条件</label>
-        <select id="sales_segment">
-          % for sales_segment in event.sales_segments:
-          <option value="${sales_segment.id}">${sales_segment.name}</option>
-          % endfor
-        </select>
-      </fieldset>
-    </div>
-
-    <div class="modal-footer">
-      <a href="#" class="btn" data-dismiss="modal">閉じる</a>
-      <input class="btn" type="submit" value="保存"></a>
-    </div>
-  </form>
-</div>
-
 ${delete_modal()}
-
-<%include file="/product_items/_form.html" args="performance=performance" />

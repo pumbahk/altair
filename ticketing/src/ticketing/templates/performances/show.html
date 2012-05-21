@@ -5,12 +5,7 @@
 <%block name="style">
 <link rel="stylesheet" type="text/css" href="/static/css/kolorpicker.css" />
 <link rel="stylesheet" type="text/css" href="/static/css/performance.css" />
-<link rel="stylesheet" href="/static/js/demo/development-bundle/themes/base/jquery.ui.all.css" />
 <script type="text/javascript" src="/static/js/jquery.kolorpicker.js"></script>
-<script type="text/javascript" src="/static/js/demo/fashion.js"></script>
-<script type="text/javascript" src="/static/js/demo/development-bundle/ui/jquery.ui.core.js"></script>
-<script type="text/javascript" src="/static/js/demo/development-bundle/ui/jquery.ui.widget.js"></script>
-<script type="text/javascript" src="/static/js/demo/development-bundle/ui/jquery.ui.button.js"></script>
 <script type="text/javascript" src="/static/js/ticketing.performance.js"></script>
 <script type="text/javascript" src="/static/js/ticketing.venue-editor.js"></script>
 <style type="text/css">
@@ -97,14 +92,13 @@ var SEAT_DATA_URL = "${request.route_path('api.get_seats', venue_id=performance.
       </ul>
       <div class="tab-content" id="tabbable-tab-content">
         <div class="tab-pane" id="venue-designer">
-          <%include file="./_venue_designer.html" />
+          <%include file="./_venue_designer.html" args="performance=performance, form_stock_type=form_stock_type, form_stock_allocation=form_stock_allocation" />
         </div>
         <div class="tab-pane" id="seat-allocation">
-          <%include file="./_seat_allocation.html" />
+          <%include file="./_seat_allocation.html" args="performance=performance, form_stock_holder=form_stock_holder" />
         </div>
         <div class="tab-pane" id="product">
-          <%include file="/products/_list.html" args="event=performance.event, performance=performance" />
-          <%include file="/products/_action_button.html" args="event=performance.event, performance=performance" />
+          <%include file="./_product.html" args="performance=performance, form_product=form_product, form_product_item=form_product_item" />
         </div>
         <div class="tab-pane" id="ticket-designer">
           <%include file="./_ticket_designer.html" />

@@ -1,10 +1,9 @@
-<%page args="event, form" />
 <%namespace file="/common/helpers.html" import="form_item" />
 <%namespace file="/common/modal.html" import="delete_modal" />
 
 <script type="text/javascript">
   $(function() {
-    $('#form_start_at, #form_end_at').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
+    $('#start_at, #end_at').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
   });
   function show_sales_segment() {
     var id = get_id('sales_segment_id');
@@ -12,30 +11,46 @@
     $(location).attr('href', '/events/sales_segments/show/' + id);
   }
   function new_sales_segment() {
-    $('#modal-edit-sales_segment #edit').attr('action', '/events/${event.id}/sales_segments/new');
-    $('#modal-edit-sales_segment #id').val('');
-    $('#modal-edit-sales_segment #name').val('');
-    $('#modal-edit-sales_segment #form_start_at').val('');
-    $('#modal-edit-sales_segment #form_end_at').val('');
-    $('#modal-edit-sales_segment').modal('toggle');
+    $('#modal-sales_segment #id').val('');
+    $('#modal-sales_segment #name').val('');
+    $('#modal-sales_segment #start_at').val('');
+    $('#modal-sales_segment #end_at').val('');
+    $('#modal-sales_segment').modal('toggle');
   }
   function edit_sales_segment() {
     var id = get_id('sales_segment_id');
     if (!id) return;
     var el = '#sales_segment-' + id;
-    $('#modal-edit-sales_segment #edit').attr('action', '/events/sales_segments/edit/' + id);
-    $('#modal-edit-sales_segment #id').val($(el + ' #id').text());
-    $('#modal-edit-sales_segment #name').val($(el + ' #name').text());
-    $('#modal-edit-sales_segment #form_start_at').val($(el + ' #start_at').text().trim());
-    $('#modal-edit-sales_segment #form_end_at').val($(el + ' #end_at').text().trim());
-    $('#modal-edit-sales_segment').modal('toggle');
+    $('#modal-sales_segment #id').val($(el + ' #id').text());
+    $('#modal-sales_segment #name').val($(el + ' #name').text());
+    $('#modal-sales_segment #start_at').val($(el + ' #current_start_at').text().trim());
+    $('#modal-sales_segment #end_at').val($(el + ' #current_end_at').text().trim());
+    $('#modal-sales_segment').modal('toggle');
   }
   function delete_sales_segment() {
     var id = get_id('sales_segment_id');
     if (!id) return;
     $('#modal-delete #delete').attr('href', '/events/sales_segments/delete/' + id);
-    $('#modal-delete #message').text("${u'選択した販売区分を削除します。よろしいですか？'}");
+    $('#modal-delete #message').text('選択した販売区分を削除します。よろしいですか？');
     $('#modal-delete').modal('toggle');
+  }
+  function save_sales_segment() {
+    var id = $('#modal-sales_segment #id').val();
+    var url = id ? '/events/sales_segments/edit/' + id : '/events/sales_segments/new';
+    var param = {};
+    $('#modal-sales_segment :input').each(function(i, v) {
+      param[v.name] = v.value;
+    });
+    $.post(
+        url,
+        param,
+        function(data, status, xhr) {
+          $('#modal-sales_segment').modal('hide');
+          $('#sales_segments-form').html(data);
+          $('#modal-sales_segment').modal('show');
+        },
+        "html"
+    );
   }
 </script>
 
@@ -63,29 +78,6 @@
       </a>
     </li>
   </ul>
-</div>
-
-<div class="modal fade" id="modal-edit-sales_segment">
-  <div class="modal-header">
-    <a class="close" data-dismiss="modal">×</a>
-    <h3>販売方法の編集</h3>
-  </div>
-
-  <form id="edit" action="" method="POST">
-    <div class="modal-body">
-      <label> 販売区分名</label>
-      <input id="name" name="name" type="text">
-      <label> 販売開始日時</label>
-      <input id="form_start_at" name="start_at" type="text">
-      <label> 販売終了日時</label>
-      <input id="form_end_at" name="end_at" type="text">
-    </div>
-
-    <div class="modal-footer">
-      <a href="#" class="btn" data-dismiss="modal">閉じる</a>
-      <input class="btn" type="submit" value="保存"></a>
-    </div>
-  </form>
 </div>
 
 ${delete_modal()}

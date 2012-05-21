@@ -7,6 +7,7 @@ import urllib2
 
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.security import forget, remember, authenticated_userid
+from pyramid.threadlocal import get_current_registry
 from pyramid.view import view_config
 from pyramid.view import view_defaults
 
@@ -44,14 +45,14 @@ class OAuthLogin(object):
     client_id = "fa12a58972626f0597c2faee1454e1"
     secret_key = "c5f20843c65870fad8550e3ad1f868"
     def __init__(self, request,
-                 authorize_url='http://altair-demo.ticketstar.jp/api/authorize',
-                 access_token_url='http://localhost:10090/api/access_token',
                  _stub_client=None):
         self.request = request
 
-        self.access_token_url = access_token_url
-        self.authorize_url = authorize_url
-
+        settings = get_current_registry().settings
+        self.client_id = settings.get('altair.oauth.client_id')
+        self.secret_key = settings.get('altair.oauth.secret_key')
+        self.authorize_url = settings.get('altair.oauth.authorize_url')
+        self.access_token_url = settings.get('altair.oauth.access_token_url')
         self._stub_client = _stub_client
 
     # def _oauth_request(self, client, url, method):

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from wtforms import Form
-from wtforms import TextField, SelectField
+from wtforms import TextField, SelectField, HiddenField
 from wtforms.validators import Required, Regexp, Length, Optional, ValidationError
 
 from ticketing.utils import DateTimeField
@@ -64,27 +64,3 @@ class PerformanceForm(Form):
     def validate_end_on(form, field):
         if field.data and form.start_on.data and field.data < form.start_on.data:
             raise ValidationError(u'開演日時より過去の日時は入力できません')
-
-class StockHolderForm(Form):
-    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
-        Form.__init__(self, formdata, obj, prefix, **kwargs)
-        if 'organization_id' in kwargs:
-            self.account_id.choices = [
-                (account.id, account.name) for account in Account.get_by_organization_id(kwargs['organization_id'])
-            ]
-
-    name = TextField(
-        label=u'枠名',
-        validators=[
-            Required(u'入力してください'),
-            Length(max=255, message=u'255文字以内で入力してください'),
-        ],
-    )
-    account_id = SelectField(
-        label=u'配券先',
-        validators=[Required(u'入力してください')],
-        choices=[],
-        coerce=int
-    )
-    text = TextField(u'記号', validators=[Required()])
-    text_color = TextField(u'記号色', validators=[Required()])

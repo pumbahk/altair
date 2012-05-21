@@ -5,7 +5,7 @@ from decimal import Decimal
 import transaction
 import json
 
-from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL
+from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, TIMESTAMP
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
@@ -13,6 +13,8 @@ from sqlalchemy.orm.collections import InstrumentedList
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.types import TypeDecorator, VARCHAR
 from sqlalchemy.ext.mutable import Mutable
+from sqlalchemy.sql.expression import text
+import sqlalchemy.sql.functions as sqlfunctions
 from zope.sqlalchemy import ZopeTransactionExtension
 import sqlahelper
 
@@ -74,11 +76,19 @@ def merge_and_flush(session):
     DBSession.merge(session)
     DBSession.flush()
 
-class BaseModel(object):
-    created_at = Column(DateTime)
-    updated_at = Column(DateTime, nullable=True)
-    deleted_at = Column(DateTime, nullable=True)
+class WithTimestamp(object):
+    created_at = Column(TIMESTAMP, nullable=False,
+                                   default=datetime.now,
+                                   server_default=sqlfunctions.current_timestamp())
+    updated_at = Column(TIMESTAMP, nullable=False, default=datetime.now,
+                                   server_default=text('0'),
+                                   onupdate=datetime.now,
+                                   server_onupdate=sqlfunctions.current_timestamp())
 
+class LogicallyDeleted(object):
+    deleted_at = Column(TIMESTAMP, nullable=True)
+
+class BaseModel(object):
     @classmethod
     def get(cls, id):
         return DBSession.query(cls).filter(cls.id==id).first()

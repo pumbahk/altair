@@ -6,6 +6,18 @@ var Fashion = (function() {
 
 
 
+/************** src/constants.js **************/
+var DIRTY_TRANSFORM      = 0x00000001;
+var DIRTY_POSITION       = 0x00000002;
+var DIRTY_SIZE           = 0x00000004;
+var DIRTY_SHAPE          = 0x00000008;
+var DIRTY_ZINDEX         = 0x00000010;
+var DIRTY_STYLE          = 0x00000020;
+var DIRTY_VISIBILITY     = 0x00000040;
+var DIRTY_EVENT_HANDLERS = 0x00000080;
+
+
+
 /************** src/lib/lib.js **************/
 var _lib = {};
 
@@ -191,14 +203,40 @@ var _escapeXMLSpecialChars = (function () {
   var specials = new RegExp("[<>&'\"]"),
       map = ['', '&lt;', '&gt;', '&amp;', '&apos;', '&quot;', ''];
   return function (str) {
+    if (typeof str != 'string')
+      str = str.toString();
     return str.replace(specials, function(x) { return map[special.source.indexOf(x)] });
   };
 })();
 
-function _clip(target, min, max, max_is_origin) {
-  if (min > max) return (max_is_origin) ? max : min;
+function _clip(target, min, max) {
   return Math.min(Math.max(target, min), max);
-}_lib._atomic_p             = _atomic_p;
+}
+
+function _clipPoint(target, min, max) {
+  return { x: _clip(target.x, min.x, max.x),
+           y: _clip(target.y, min.y, max.y) };
+}
+
+function _addPoint(lhs, rhs) {
+  return { x: lhs.x + rhs.x, y: lhs.y + rhs.y };
+}
+
+function _subtractPoint(lhs, rhs) {
+  return { x: lhs.x - rhs.x, y: lhs.y - rhs.y };
+}
+
+function _indexOf(array, elem, fromIndex) {
+  if (array instanceof Array && 'indexOf' in Array.prototype) {
+    return array.indexOf(elem, fromIndex);
+  }
+  for (var i = Math.max(fromIndex || 0, 0); i < array.length; i++) {
+    if (array[i] === elem)
+      return i;
+  }
+  return -1;
+}
+_lib._atomic_p             = _atomic_p;
 _lib._clone                = _clone;
 _lib.xparseInt             = xparseInt;
 _lib._repeat               = _repeat;
@@ -247,32 +285,17 @@ _lib.AlreadyExists         = AlreadyExists;
 
 /************** src/lib/classify.js **************/
 var _class = (function() {
-
-  var CLASS_RELATIONSHIP = [[Object, null]];
-
-  function get_parent(_class) {
-    for (var i = 0, l = CLASS_RELATIONSHIP.length; i < l; i++) {
-      var rel = CLASS_RELATIONSHIP[i];
-      if (rel[0] === _class) return rel[1];
-    }
-    return null;
-  };
-
   function __super__() {
-    var pro = this.__proto__;
-    return ((pro !== void(0)) ?
-            ((this.constructor.prototype === this) ? pro : pro.__proto__ ) :
-            get_parent(this.constructor).prototype);
-  };
+    return this.constructor.__super__.prototype;
+  }
 
   function inherits(_class, parent) {
+    _class.__super__ = parent;
 
-    CLASS_RELATIONSHIP.push([_class, parent]);
-
-    var f = function(){}
+    var f = function() {};
     f.prototype = parent.prototype;
+    f.prototype.constructor = parent;
     _class.prototype = new f();
-    _class.prototype.constructor = _class;
     _class.prototype.__super__ = __super__;
 
     var iiop = _class['%%INIT_INSTANCE_ORIGN_PROPS'];
@@ -288,6 +311,7 @@ var _class = (function() {
   };
 
   function method(_class, name, func) {
+    func.__class__ = _class;
     _class.prototype[name] = func;
   };
 
@@ -384,19 +408,14 @@ var _class = (function() {
         _clone(arg, this); 
     };
 
-    l = 0;
-    for (p in props) {
-      if (props.hasOwnProperty(p)) l++;
-    }
-
-    __class__['%%INIT_INSTANCE_ORIGN_PROPS'] = (
-      ( l > 0 ) ? function(inst) {
+    __class__['%%INIT_INSTANCE_ORIGN_PROPS'] =
+      function(inst) {
         for (var p in props) {
           if (props.hasOwnProperty(p)) {
             inst[p] = _clone(props[p]);
           }
         }
-      } : function(){});
+      };
 
     inherits(__class__, parent);
 
@@ -409,26 +428,24 @@ var _class = (function() {
         method(__class__, i, methods[i]);
       }
     }
+    __class__.prototype.constructor = __class__;
 
     __class__['%%CLASSNAME%%'] = name || genclassid();
-    for(i in class_methods) {
-      if (class_methods.hasOwnProperty(i)) {
-        __class__[i] = class_methods[i];
-      }
-    }
-
-    for(i in class_props) {
-      if (class_props.hasOwnProperty(i)) {
-        __class__[i] = class_props[i];
-      }
+    for (i in class_methods) {
+      __class__[i] = class_methods[i];
     }
 
     for (j=0, l=interfaces.length; j<l; j++) {
       check_interface(__class__, interfaces[j]);
     }
 
-    return __class__;
+    for (i in class_props) {
+      __class__[i] = class_props[i];
+    }
 
+    class_methods['init'] && class_methods.init.call(__class__);
+
+    return __class__;
   };
 
 })();
@@ -553,10 +570,6 @@ var Matrix = (function() {
 
   var PI = Math.PI;
 
-  var rad = function (deg) {
-    return deg % 360 * PI / 180;
-  };
-
   var norm = function(a) {
     return ( a[0] * a[0] ) + ( a[1] * a[1] );
   };
@@ -568,62 +581,66 @@ var Matrix = (function() {
   };
 
   var _Matrix = _class("Matrix", {
-
     props: {
       a: 1, c: 0, e: 0,
       b: 0, d: 1, f: 0
     },
 
-    methods: {
+    class_methods: {
+      translate: function (offset) {
+        return new this(0, 0, 0, 0, offset.x, offset.y)
+      },
 
+      scale: function (degree, anchor) {
+        if (anchor) {
+          return new this(degree, 0, 0, degree, anchor.x, anchor.y)
+                     .multiplyI(1, 0, 0, 1, -anchor.x, -anchor.y);
+        } else {
+          return new this(degree, 0, 0, degree, 0, 0);
+        }
+      },
+
+      rotate: function (r, anchor) {
+        var cos = Math.cos(r), sin = Math.sin(r);
+        if (anchor) {
+          return new this(cos, sin, -sin, cos, anchor.x, anchor.y)
+                     .multiplyI(1, 0, 0, 1, -anchor.x, -anchor.y);
+        } else {
+          return new this(cos, sin, -sin, cos, 0, 0);
+        }
+      }
+    },
+
+    methods: {
       init: function (a, b, c, d, e, f) {
-        if (a) {
+        if (arguments.length == 6) {
           this.a = +a; this.c = +c; this.e = +e;
           this.b = +b; this.d = +d; this.f = +f;
+        } else if (arguments.length != 0) {
+          throw new ArgumentError("0 or 6 arguments expected");
         }
       },
 
-      set: function(tr) {
-        for (i in tr) {
-          if (tr.hasOwnProperty(i)) {
-            if (i === 'scale') {
-              var s = tr.scale;
-              // console.log("scale:"+s.x+","+s.y+","+s.cx+","+s.cy);
-              this.scale(s.x, s.y, s.cx, s.cy);
-
-            } else if (i === 'rotate') {
-              var r = tr.rotate;
-              // console.log("rotate:"+r.angle+","+r.x+","+r.y);
-              this.rotate(r.angle, r.x, r.y);
-
-            } else if (i === 'translate') {
-              var t = tr.translate;
-              // console.log("translate:"+t.x+","+t.y);
-              this.translate(t.x, t.y);
-
-            } else {
-              throw new ArgumentError("transform() expects 'tranlate', 'scale', 'rotate'.");
-
-            }
-          }
-        }
-        return this;
+      multiplyI: function (a2, b2, c2, d2, e2, f2) {
+        return new this.constructor(
+          this.a * a2 + this.c * b2,
+          this.b * a2 + this.d * b2,
+          this.a * c2 + this.c * d2,
+          this.b * c2 + this.d * d2,
+          this.a * e2 + this.c * f2 + this.e,
+          this.b * e2 + this.d * f2 + this.f
+        );
       },
 
-      add: function (a, b, c, d, e, f) {
-        var a1=this.a, b1=this.b, c1=this.c, d1=this.d, e1=this.e, f1=this.f;
-
-        this.a = a1*a+c1*b;
-        this.b = b1*a+d1*b;
-        this.c = a1*c+c1*d;
-        this.d = b1*c+d1*d;
-        this.e = a1*e+c1*f+e1;
-        this.f = b1*e+d1*f+f1;
-
-      },
-
-      combine: function(o) {
-        this.add(o.a, o.b, o.c, o.d, o.e, o.f);
+      multiply: function (that) {
+        return new this.constructor(
+          this.a * that.a + this.c * that.b,
+          this.b * that.a + this.d * that.b,
+          this.a * that.c + this.c * that.d,
+          this.b * that.c + this.d * that.d,
+          this.a * that.e + this.c * that.f + this.e,
+          this.b * that.e + this.d * that.f + this.f
+        );
       },
 
       invert: function () {
@@ -634,36 +651,27 @@ var Matrix = (function() {
           me.a / x, (me.c * me.f - me.d * me.e) / x, (me.b * me.e - me.a * me.f) / x);
       },
 
-      clone: function () {
-        return new this.constructor(this.a, this.b, this.c, this.d, this.e, this.f);
+      translate: function (offset) {
+        return this.multiplyI(1, 0, 0, 1, offset.x, offset.y);
       },
 
-      translate: function (x, y) {
-        this.add(1, 0, 0, 1, x, y);
-        return this;
+      scale: function (degree, anchor) {
+        if (anchor) {
+          return this.multiplyI(degree, 0, 0, degree, anchor.x, anchor.y)
+                     .multiplyI(1, 0, 0, 1, -cx, -cy);
+        } else {
+          return this.multiplyI(degree, 0, 0, degree, 0, 0);
+        }
       },
 
-      scale: function (x, y, cx, cy) {
-        this.add(x, 0, 0, y, cx, cy);
-        this.add(1, 0, 0, 1, -cx, -cy);
-        return this;
-      },
-
-      rotate:  function (a, x, y) {
-        a = rad(a);
-        var cos = +Math.cos(a).toFixed(FLOAT_ACCURACY_ACCURATE);
-        var sin = +Math.sin(a).toFixed(FLOAT_ACCURACY_ACCURATE);
-        this.add(cos, sin, -sin, cos, x, y);
-        this.add(1, 0, 0, 1, -x, -y);
-        return this;
-      },
-
-      x: function (x, y) {
-        return (x * this.a) + (y * this.c) + this.e;
-      },
-
-      y: function (x, y) {
-        return (x * this.b) + (y * this.d) + this.f;
+      rotate:  function (r, anchor) {
+        var cos = Math.cos(r), sin = Math.sin(r);
+        if (anchor) {
+          return this.multiplyI(cos, sin, -sin, cos, x, y)
+                     .multiplyI(1, 0, 0, 1, -x, -y);
+        } else {
+          return this.multiplyI(cos, sin, -sin, cos, 0, 0);
+        }
       },
 
       apply: function(p) {
@@ -672,23 +680,16 @@ var Matrix = (function() {
       },
 
       get: function (i) {
-        return +this[String.fromCharCode(97 + i)].toFixed(FLOAT_ACCURACY);
-      },
-
-      getAll: function() {
-        var rt = [];
-        for(var i=0; i<6; i++) {
-          rt.push(this.get(i));
-        }
-        return rt;
+        return this[String.fromCharCode(97 + i)];
       },
 
       toString: function () {
-        return [this.get(0), this.get(2), this.get(1), this.get(3), 0, 0].join();
+        return '{ ' + this.a + ', ' + this.b + ', ' + this.e + 
+               '  ' + this.c + ', ' + this.d + ', ' + this.f + ' }';
       },
 
       offset: function () {
-        return [this.e.toFixed(FLOAT_ACCURACY), this.f.toFixed(FLOAT_ACCURACY)];
+        return { x: this.e, y: this.f };
       },
 
       split: function () {
@@ -760,7 +761,6 @@ var Matrix = (function() {
 var Backend = (function() {
 
 
-
 /************** src/../backends/UtilImpl.js **************/
 // utils for Impl
 
@@ -783,32 +783,6 @@ var UtilImpl = {
 
     methods: {
       convertToMouseEvt: function convertToMouseEvt(dom_evt) {
-        var which = dom_evt.which;
-        var button = dom_evt.button;
-        if (!which && button !== undefined ) {
-          which = ( button & 1 ? 1 : ( button & 2 ? 3 : ( button & 4 ? 2 : 0 ) ) );
-        }
-        switch(which) {
-        case 0: this.left = this.middle = this.right = false; break;
-        case 1: this.left = true; break;
-        case 2: this.middle = true; break;
-        case 3: this.right = true; break;
-        }
-
-        var pageX = dom_evt.pageX;
-        var pageY = dom_evt.pageY;
-        if ( dom_evt.pageX == null && dom_evt.clientX != null ) {
-          var eventDoc = dom_evt.target.ownerDocument || _window.document;
-          var doc = eventDoc.documentElement;
-          var body = eventDoc.body;
-
-          pageX = dom_evt.clientX + ( doc && doc.scrollLeft || body && body.scrollLeft || 0 ) - ( doc && doc.clientLeft || body && body.clientLeft || 0 );
-          pageY = dom_evt.clientY + ( doc && doc.scrollTop  || body && body.scrollTop  || 0 ) - ( doc && doc.clientTop  || body && body.clientTop  || 0 );
-        }
-
-        this.pagePosition.x = pageX;
-        this.pagePosition.y = pageY;
-
         return this;
       }
     }
@@ -877,28 +851,160 @@ var UtilImpl = {
 
 
 
-/************** src/../backends/MouseEvtImpl.js **************/
-var MouseEvtImpl = _class("MouseEvtImpl", {
+/************** src/../backends/Refresher.js **************/
+var Refresher = _class("Refresher", {
   props: {
-    pagePosition: {x:0,y:0},
-    left:         false,
-    middle:       false,
-    right:        false
+    _preHandler: null,
+    _postHandler: null,
+    _handlers: []
+  },
+
+  methods: {
+    init: function (original) {
+      if (original instanceof this.constructor) {
+        this._preHandler = original._preHandler;
+        this._postHandler = original._postHandler;
+        this._handlers = original._handlers.slice(0);
+      }
+    },
+
+    setup: function(args) {
+      for (var i in args)
+        this[i].call(this, args[i]);
+      return this;
+    },
+
+    preHandler: function(pre) {
+      this._preHandler = pre;
+    },
+
+    postHandler: function(post) {
+      this._postHandler = post;
+    },
+
+    handlers: function(pairs) {
+      this._handlers = pairs;
+    },
+
+    moreHandlers: function(pairs) {
+      this._handlers = this._handlers.concat(pairs);
+    },
+
+    add: function(pair) {
+      this._handlers.push(pair);
+    },
+
+    call: function (target, dirty) {
+      this._preHandler && this._preHandler.call(target, dirty);
+      if (dirty) {
+        for (var i = 0; i < this._handlers.length; i++) {
+          var pair = this._handlers[i];
+          if (dirty & pair[0])
+            pair[1].call(target, dirty);
+        }
+      }
+      this._postHandler && this._postHandler.call(target, dirty);
+    }
+  }
+});
+/*
+ * vim: sts=2 sw=2 ts=2 et
+ */
+
+
+/************** src/../backends/TransformStack.js **************/
+var TransformStack = _class("TransformStack", {
+  props: {
+    stack: [],
+    pairs: {},
+    endOfFirst: 0,
+    beginningOfLast: 0
+  },
+
+  methods: {
+    init: function () {
+    },
+
+    add: function (disposition, key, matrix) {
+      var pair = this.pairs[key];
+      if (pair) {
+        pair[1] = matrix;
+        return false;
+      }
+      switch (disposition.toLowerCase()) {
+      case 'first':
+        pair = [key, matrix];
+        this.pairs[key] = pair;
+        this.stack.unshift(pair);
+        this.endOfFirst++;
+        this.beginningOfLast++;
+        break;
+      case 'afterfirst':
+        pair = [key, matrix];
+        this.pairs[key] = pair;
+        this.stack.splice(this.endOfFirst, 0, pair);
+        this.beginningOfLast++;
+        break;
+      case 'beforelast':
+        pair = [key, matrix];
+        this.pairs[key] = pair;
+        this.stack.splice(this.beginningOfLast, 0, pair);
+        this.beginningOfLast++;
+        break;
+      case 'last':
+        pair = [key, matrix];
+        this.pairs[key] = pair;
+        this.stack.push(pair);
+        break;
+      default:
+        throw new ArgumentError("Invalid disposition: " + disposition);
+      }
+      return true;
+    },
+
+    remove: function (key) {
+
+      if (!(key in this.pairs)) return;
+
+      var i = 0;
+      for (;;) {
+        if (i >= this.stack.length)
+          throw new NotFound("???"); // should not happen
+        if (this.stack[i][0] == key)
+          break;
+        i++;
+      }
+      this.stack.splice(i, 1);
+      if (i < this.endOfFirst)
+        this.endOfFirst--;
+      if (i < this.beginningOfLast)
+        this.beginningOfLast--;
+      delete this.pairs[key];
+    },
+
+    get: function () {
+      if (this.stack.length == 0)
+        return null;
+      var matrix = this.stack[0][1];
+      for (var i = 1; i < this.stack.length; i++)
+        matrix = matrix.multiply(this.stack[i][1]);
+      return matrix;
+    }
+  }
+});
+/*
+ * vim: sts=2 sw=2 ts=2 et
+ */
+
+
+/************** src/../backends/VisualObject.js **************/
+var VisualObject = _class("VisualObject", {
+  methods: {
+    refresh: function(dirty) {},
+    dispose: function() {}
   }
 });
 
-/************** src/../backends/BaseImpl.js **************/
-/*
- * interface class.
- */
-var BaseImpl = _class("BaseImpl", {
-  methods: {
-    transform:         function(matrix) {},
-    style:             function(style)  {},
-    resetStyle:        function()       {},
-    holdEventsHandler: function(handl)  {}
-  }
-});
 
 /************** src/../backends/DrawableImpl.js **************/
 /*
@@ -914,46 +1020,6 @@ var DrawableImpl = _class("DrawableImpl", {
   }
 });
 
-/************** src/../backends/ShapeImpl.js **************/
-/*
- * interface class.
- */
-var ShapeImpl = _class("ShapeImpl", {
-
-  mixins: [BaseImpl],
-
-  methods: {
-    position: function(x, y, width, height) {},
-    size:     function(width, height)       {}
-  }
-});
-
-
-/************** src/../backends/PathImpl.js **************/
-/*
- * interface class.
- */
-var PathImpl = _class("PathImpl", {
-
-  mixins: [BaseImpl],
-
-  methods: {
-    points: function(points) {}
-  }
-});
-
-/************** src/../backends/TextImpl.js **************/
-/*
- * interface class.
- */
-var TextImpl = _class("TextImpl", {
-
-  mixins: [ShapeImpl],
-
-  methods: {
-    fontFamily: function(fam) {}
-  }
-});
 
 
 /************** src/../backends/svg/svg.js **************/
@@ -964,163 +1030,231 @@ var SVG = (function() {
   var SVG_NAMESPACE = "http://www.w3.org/2000/svg";
   var XLINK_NAMESPACE = "http://www.w3.org/1999/xlink";
 
-  function newNode(element_name) {
+  function newElement(element_name) {
     return _window.document.createElementNS(SVG_NAMESPACE, element_name);
   }
 
-
-
-/************** src/../backends/svg/Util.js **************/
-var Util = _class("UtilSVG", {
-  class_methods: {
-    createSvgElement: function(type) {
-      return document.createElementNS("http://www.w3.org/2000/svg", type);
-    },
-    createTextElement: function(str) {
-      return document.createTextNode(str);
-    },
-    matrixString: function(m) {
-      return "matrix(" + [m.get(0), m.get(1), m.get(2), m.get(3), m.get(4), m.get(5)].join() + ")";
-    }
-  }
-});
-
-
-/************** src/../backends/svg/MouseEvt.js **************/
-var MouseEvt = _class("MouseEvtSVG", {
-
-  interfaces: [MouseEvtImpl],
-
-  mixins: [UtilImpl.DomEvt],
-
-  props: {
-    pagePosition: {x:0,y:0},
-    left:         false,
-    middle:       false,
-    right:        false
-  },
-
-  methods: {
-    init: function(dom_evt, shape) {
-      this.convertToMouseEvt(dom_evt);
-    }
+  function newTextNode(text) {
+    return _window.document.createTextNode(text);
   }
 
-});
+  function matrixString(m) {
+    return "matrix(" + [m.get(0), m.get(1), m.get(2), m.get(3), m.get(4), m.get(5)].join() + ")";
+  }
+
+  function pathString(pathData) {
+    return pathData.join(' ').replace(/,/g, ' ');
+  }
+
+  function buildMouseEvt(impl, domEvt) {
+    var retval = new MouseEvt();
+    retval.type = domEvt.type;
+    retval.target = impl.wrapper;
+    var which = domEvt.which;
+    var button = domEvt.button;
+    if (!which && button !== void(0)) {
+      which = ( button & 1 ? 1 : ( button & 2 ? 3 : ( button & 4 ? 2 : 0 ) ) );
+    }
+    switch(which) {
+    case 0: retval.left = retval.middle = retval.right = false; break;
+    case 1: retval.left = true; break;
+    case 2: retval.middle = true; break;
+    case 3: retval.right = true; break;
+    }
+
+    var physicalPagePosition;
+    if (typeof domEvt.pageX != 'number' && typeof domEvt.clientX == 'number') {
+      var eventDoc = domEvt.target.ownerDocument || _window.document;
+      var doc = eventDoc.documentElement;
+      var body = eventDoc.body;
+      physicalPagePosition = {
+        x: domEvt.clientX + (doc && doc.scrollLeft || body && body.scrollLeft || 0) - (doc && doc.clientLeft || body && body.clientLeft || 0),
+        y: domEvt.clientY + (doc && doc.scrollTop  || body && body.scrollTop  || 0) - (doc && doc.clientTop  || body && body.clientTop  || 0)
+      };
+    } else {
+      physicalPagePosition = { x: domEvt.pageX, y: domEvt.pageY };
+    }
+    if (impl instanceof Drawable) {
+      retval.screenPosition   = _subtractPoint(physicalPagePosition, impl.getViewportOffset());
+      retval.logicalPosition  = impl.convertToLogicalPoint(retval.screenPosition);
+      retval.physicalPosition = impl.convertToPhysicalPoint(retval.screenPosition);
+    } else {
+      retval.screenPosition   = _subtractPoint(physicalPagePosition, impl.drawable.getViewportOffset());
+      retval.logicalPosition  = impl.drawable.convertToLogicalPoint(retval.screenPosition);
+      retval.physicalPosition = impl.drawable.convertToPhysicalPoint(retval.screenPosition);
+      retval.offsetPosition   = _subtractPoint(retval.logicalPosition, impl.wrapper._position);
+    }
+
+    return retval;
+  }
+
 
 
 /************** src/../backends/svg/Base.js **************/
 var Base = _class("BaseSVG", {
-
-  interfaces: [BaseImpl],
+  interfaces: [VisualObject],
 
   props : {
-    handler: null,
     drawable: null,
     _elem: null,
-    def: null
+    def: null,
+    wrapper: null,
+    _handledEvents: {
+      mousedown: null,
+      mouseup:   null,
+      mousemove: null,
+      mouseover: null,
+      mouseout:  null
+    },
+    _eventFunc: null,
+    _refresher: null,
+    _transformStack: null,
+    _transformUpdated: false
+  },
+
+  class_props: {
+    _refresher: new Refresher().setup({
+      preHandler: function() {
+        if (!this.drawable)
+          return;
+        if (!this._elem) {
+          this._elem = this.newElement();
+          this.drawable._vg.appendChild(this._elem);
+        }
+      },
+
+      postHandler: function () {
+        this._updateTransform();
+      },
+
+      handlers: [
+        [
+          DIRTY_ZINDEX,
+          function () {
+            this.drawable._depthManager.add(this);
+          }
+        ],
+        [
+          DIRTY_TRANSFORM,
+          function () {
+            if (this.wrapper._transform)
+              this._transformStack.add('last', 'wrapper', this.wrapper._transform);
+            else
+              this._transformStack.remove('wrapper');
+            this._transformUpdated = true;
+          }
+        ],
+        [
+          DIRTY_STYLE,
+          function () {
+            var elem = this._elem;
+            var style = this.wrapper._style;
+            if (style.fill) {
+              if (style.fill instanceof FloodFill) {
+                elem.setAttribute('fill', style.fill.color.toString(true));
+                elem.setAttribute('fill-opacity', style.fill.color.a / 255.0);
+              } else if (style.fill instanceof LinearGradientFill
+                  || style.fill instanceof RadialGradientFill
+                  || style.fill instanceof ImageTileFill) {
+                var def = this.drawable._defsManager.get(style.fill);
+                elem.setAttribute('fill', "url(#" + def.id + ")");
+                if (this.def)
+                  this.def.delRef();
+                this.def = def;
+                def.addRef();
+              }
+            } else {
+              elem.setAttribute('fill', 'none');
+            }
+
+            if (style.stroke) {
+              elem.setAttribute('stroke', style.stroke.color.toString(true));
+              elem.setAttribute('stroke-opacity', style.stroke.color.a / 255.0);
+              elem.setAttribute('stroke-width', style.stroke.width);
+              if (style.stroke.pattern && style.stroke.pattern.length > 1)
+                elem.setAttribute('stroke-dasharray', style.stroke.pattern.join(' '));
+            } else {
+              elem.setAttribute('stroke', 'none');
+            }
+            elem.style.cursor = style.cursor;
+          }
+        ],
+        [
+          DIRTY_VISIBILITY,
+          function () {
+            this._elem.style.display = this.wrapper._visibility ? 'block' : 'none'
+          }
+        ],
+        [
+          DIRTY_EVENT_HANDLERS,
+          function () {
+
+            if (!this.wrapper.handler) return;
+
+            for (var type in this._handledEvents) {
+              var handled = this.wrapper.handler.handles(type);
+              var eventFunc = this._handledEvents[type];
+              if (!eventFunc && handled) {
+                this._elem.addEventListener(type, this._eventFunc, false);
+                this._handledEvents[type] = this._eventFunc;
+              } else if (eventFunc && !handled) {
+                this._elem.removeEventListener(type, eventFunc, false);
+                this._handledEvents[type] = null;
+              }
+            }
+          }
+        ]
+      ]
+    })
   },
 
   methods: {
+    init: function (wrapper) {
+      this.wrapper = wrapper;
+      this._refresher = this.constructor._refresher;
+      this._transformStack = new TransformStack();
+      var self = this;
+      this._eventFunc = function(domEvt) {
+        if (self.drawable._capturingShape &&
+            self.drawable._capturingShape != self)
+          return true;
+        self.wrapper.handler.dispatch(buildMouseEvt(self, domEvt));
+        return false;
+      };
+    },
+
     dispose: function() {
-      if (this.drawable) {
+      if (this.drawable)
         this.drawable.remove(this);
-      }
+      else
+        this._removed();
+    },
+
+    _removed: function () {
       if (this.def) {
         this.def.delRef();
         this.def = null;
       }
+      this._elem = null;
+      this.drawable = null;
     },
 
-    transform: function(matrixes)
-    {
-      if (matrixes.length() > 0) {
-        var mat = new Fashion.Util.Matrix();
-        matrixes.forEach(function(k, v) { mat.combine(k); }, this);
-        this._elem.setAttribute('transform', Util.matrixString(mat));
+    newElement: function() { return null; },
+
+    refresh: function(dirty) {
+      this._refresher.call(this, dirty);
+    },
+
+    _updateTransform: function () {
+      if (!this._transformUpdated)
+        return;
+      var transform = this._transformStack.get();
+      if (transform) {
+        this._elem.setAttribute('transform', matrixString(transform));
       } else {
         this._elem.removeAttribute('transform');
       }
-    },
-
-    style: function(st)
-    {
-      if (st.fill) {
-        if (st.fill instanceof FloodFill) {
-          this._elem.setAttribute('fill', st.fill.color.toString(true));
-          this._elem.setAttribute('fill-opacity', st.fill.color.a / 255.0);
-        } else if (st.fill instanceof LinearGradientFill
-            || st.fill instanceof RadialGradientFill
-            || st.fill instanceof ImageTileFill) {
-          var def = this.drawable._defsManager.get(st.fill);
-          this._elem.setAttribute('fill', "url(#" + def.id + ")");
-          if (this.def)
-            this.def.delRef();
-          this.def = def;
-          def.addRef();
-        }
-      } else {
-        this._elem.setAttribute('fill', 'none');
-      }
-
-      if (st.stroke) {
-        this._elem.setAttribute('stroke', st.stroke.color.toString(true));
-        this._elem.setAttribute('stroke-opacity', st.stroke.color.a / 255.0);
-        this._elem.setAttribute('stroke-width', st.stroke.width);
-        if (st.stroke.pattern && st.stroke.pattern.length > 1)
-          this._elem.setAttribute('stroke-dasharray', st.stroke.pattern.join(' '));
-      } else {
-        this._elem.setAttribute('stroke', 'none');
-      }
-      var visibility = st.visibility;
-      var cursor = st.cursor;
-
-      if (st.zIndex) {
-        this._elem.setAttribute('z-index', st.zIndex);
-      } else {
-        this._elem.setAttribute('z-index', 0);
-      }
-
-      this._elem.style.display = visibility ? 'block' : 'none';
-      this._elem.style.cursor  = cursor;
-
-    },
-
-    resetStyle: function()
-    {
-      this.style(DEFAULT_STYLE);
-    },
-
-    holdEventsHandler: function(handler)
-    {
-      var self = this;
-      if (this.handler === null) {
-        var funcs = new MultipleKeyHash();
-        this.handler = handler;
-        this.handler.holdTrigger('shape-impl', {
-          add:    function(type, raw) {
-            var wrapped = function(dom_evt){
-              var evt = new MouseEvt(dom_evt, self);
-              return raw.call(self, evt);
-            };
-            funcs.put(raw, wrapped);
-            _bindEvent(self._elem, type, wrapped);
-          },
-          remove: function(type, raw) {
-            _unbindEvent(self._elem, type, funcs.pop(raw));
-          }
-        });
-      } else {
-        throw new AlreadyExists("impl already has a events handler.");
-      }
-    },
-
-    releaseEventsHandler: function () {
-      if (this.handler !== null) {
-        this.handler.releaseTriger('shape-impl');
-      } else {
-        throw new NotFound("events handler is not exist yet.");
-      }
+      this._transformUpdated = false;
     }
   }
 });
@@ -1132,117 +1266,155 @@ var Base = _class("BaseSVG", {
 
 /************** src/../backends/svg/Circle.js **************/
 var Circle = _class("CircleSVG", {
+  parent: Base,
 
-  interfaces: [ShapeImpl],
-
-  mixins: [Base],
+  class_props: {
+    _refresher: new Refresher(Base._refresher).setup({
+      moreHandlers: [
+        [
+          DIRTY_POSITION | DIRTY_SIZE,
+          function() {
+            var position = this.wrapper._position, size = this.wrapper._size;
+            this._elem.setAttribute('rx', (size.x / 2) + 'px');
+            this._elem.setAttribute('ry', (size.y / 2) + 'px');
+            this._elem.setAttribute('cx', (position.x + (size.x / 2))+'px');
+            this._elem.setAttribute('cy', (position.y + (size.y / 2))+'px');
+          }
+        ]
+      ]
+    })
+  },
 
   methods: {
-    init: function()
-    {
-      this._elem = Util.createSvgElement('ellipse');
-    },
-
-    position: function(x, y, width, height)
-    {
-      this._elem.setAttribute('cx', (x+(width/2))+'px');
-      this._elem.setAttribute('cy', (y+(height/2))+'px');
-    },
-
-    size: function(width, height)
-    {
-      this._elem.setAttribute('rx', (width/2)+'px');
-      this._elem.setAttribute('ry', (height/2)+'px');
+    newElement: function() {
+      return newElement('ellipse');
     }
   }
 });
+/*
+ * vim: sts=2 sw=2 ts=2 et
+ */
 
 
 /************** src/../backends/svg/Rect.js **************/
 var Rect = _class("RectSVG", {
+  parent: Base,
 
-  interfaces: [ShapeImpl],
-
-  mixins: [Base],
+  class_props: {
+    _refresher: new Refresher(Base._refresher).setup({
+      moreHandlers: [
+        [
+          DIRTY_POSITION,
+          function () {
+            var position = this.wrapper._position;
+            this._elem.setAttribute('x', position.x + 'px');
+            this._elem.setAttribute('y', position.y + 'px');
+          }
+        ],
+        [
+          DIRTY_SIZE,
+          function () {
+            var size = this.wrapper._size;
+            this._elem.setAttribute('width', size.x + 'px');
+            this._elem.setAttribute('height', size.y + 'px');
+          }
+        ]
+      ]
+    })
+  },
 
   methods: {
-    init: function()
-    {
-      this._elem = Util.createSvgElement('rect');
-    },
-
-    position: function(x, y, width, height)
-    {
-      this._elem.setAttribute('x', x+'px');
-      this._elem.setAttribute('y', y+'px');
-    },
-
-    size: function(width, height)
-    {
-      this._elem.setAttribute('width', width+'px');
-      this._elem.setAttribute('height', height+'px');
+    newElement: function() {
+      return newElement('rect');
     }
   }
 });
+/*
+ * vim: sts=2 sw=2 ts=2 et
+ */
 
 
 /************** src/../backends/svg/Path.js **************/
 var Path = _class("PathSVG", {
+  parent: Base,
 
-  interfaces: [PathImpl],
-
-  mixins: [Base],
+  class_props: {
+    _refresher: new Refresher(Base._refresher).setup({
+      moreHandlers: [
+        [
+          DIRTY_SHAPE,
+          function () {
+            this._elem.setAttribute('d', pathString(this.wrapper._points));
+          }
+        ],
+        [
+          DIRTY_POSITION,
+          function () {
+            this._transformStack.add('first', 'path-position', Util.Matrix.translate(this.wrapper.position));
+            this._transformUpdated = true;
+          }
+        ]
+      ]
+    })
+  },
 
   methods: {
-    init: function()
-    {
-      this._elem = Util.createSvgElement('path');
-    },
-
-    points: function(points)
-    {
-      if (points !== void(0)) {
-        this._points = points;
-        this._elem.setAttribute('d', points.join().replace(/,/g, ' '));
-      }
-
-      return this._points;
+    newElement: function() {
+      return newElement('path');
     }
   }
 });
+/*
+ * vim: sts=2 sw=2 ts=2 et
+ */
 
 
 /************** src/../backends/svg/Text.js **************/
 var Text = _class("TextSVG", {
+  parent: Base,
 
-  interfaces: [TextImpl],
-
-  mixins: [Base],
+  class_props: {
+    _refresher: new Refresher(Base._refresher).setup({
+      moreHandlers: [
+        [
+          DIRTY_POSITION,
+          function () {
+            var position = this.wrapper._position;
+            this._elem.setAttribute('x', position.x + 'px');
+            this._elem.setAttribute('y', position.y + 'px');
+          }
+        ],
+        [
+          DIRTY_SIZE,
+          function () {
+            var size = this.wrapper._size;
+            this._elem.setAttribute('width', size.x + 'px');
+            this._elem.setAttribute('height', size.y + 'px');
+          }
+        ],
+        [
+          DIRTY_SHAPE,
+          function () {
+            this._elem.setAttribute('font-size', this.wrapper._fontSize + 'px'); 
+            this._elem.setAttribute('font-family', this.wrapper._fontFamily);
+            if (this._elem.firstChild)
+              this._elem.removeChild(this._elem.firstChild);
+            this._elem.appendChild(newTextNode(this.wrapper._text));
+          }
+        ]
+      ]
+    })
+  },
 
   methods: {
-    init: function(str)
-    {
-      this._elem = Util.createSvgElement('text');
-      this._elem.appendChild(Util.createTextElement(str));
-    },
-
-    position: function(x, y)
-    {
-      this._elem.setAttribute('x', x+'px');
-      this._elem.setAttribute('y', y+'px');
-    },
-
-    size: function(font_size)
-    {
-      this._elem.setAttribute('font-size', font_size+'px');
-    },
-
-    fontFamily: function(font_family)
-    {
-      this._elem.setAttribute('font-family', font_family);
+    newElement: function() {
+      return newElement('text');
     }
   }
 });
+/*
+ * vim: sts=2 sw=2 ts=2 et
+ */
 
 
 /************** src/../backends/svg/DefsManager.js **************/
@@ -1421,242 +1593,273 @@ var DefsManager = (function() {
  */
 
 
-/************** src/../backends/svg/Drawable.js **************/
-var Drawable = _class("DrawableSVG", {
-
-  interfaces : [DrawableImpl],
-
+/************** src/../backends/svg/DepthManager.js **************/
+var DepthManager = _class("DepthManager", {
   props: {
-    prefix: "svg",
-    handler: null,
-    _defsManager: null,
-
-    _svg:         null,
-    _vg:          null,
-    _viewport:    null,
-
-    _onscroll:    null,
-
-    _capturing_shapes: new MultipleKeyHash(),
-    _capturing_functions: new MultipleKeyHash()
+    root: null,
+    shapes: {},
+    depth: []
   },
 
   methods: {
-    init: function(node, content_size, viewport_size, onscroll)
-    {
-      var svg = newNode("svg");
-      svg.setAttribute("version", "1.1");
-      svg.setAttribute("width", content_size.width + "px");
-      svg.setAttribute("height", content_size.height + "px");
-      svg.style.margin = "0";
-      svg.style.padding = "0";
-      svg.style.background = "#CCC";
-      svg.style["-moz-user-select"] = svg.style["-khtml-user-select"] =
-        svg.style["-webkit-user-select"] = svg.style["-ms-user-select"] =
-        svg.style["user-select"] = 'none';
+    init: function(root) {
+      this.root = root;
+    },
 
-      var defs = newNode("defs");
-      this._defsManager = new DefsManager(defs);
-      svg.appendChild(defs);
+    add: function(shape) {
+      var pair = this.shapes[shape.id];
+      if (pair)
+        this.depth.splice(pair[0], 1);
 
-      var root = newNode("g");
-      svg.appendChild(root);
+      var s = 0, e = this.depth.length;
+      while (s != e) {
+        var c = (s + e) >> 1;
+        if (this.shapes[this.depth[c]][1].wrapper.zIndex < shape.wrapper.zIndex) {
+          s = c;
+        } else {
+          e = c;
+        }
+      }
+      this.depth.splice(s, 0, shape.id);
+      if (shape._elem) {
+        var beforeChild = null;
+        for (var i = s + 1; i < this.depth.length; i++) {
+          beforeChild = this.shapes[this.depth[i]][1]._elem;
+          if (beforeChild)
+            break;
+        }
+        shape._elem.parentNode.insertBefore(shape._elem, beforeChild);
+      }
+      this.shapes[shape.id] = [ s, shape ];
+    }
+  }
+});
+/*
+ * vim: sts=2 sw=2 ts=2 et
+ */
 
-      var viewport = _window.document.createElement("div");
-      viewport.style.padding = '0';
-      viewport.style.width  = viewport_size.width + "px";
-      viewport.style.height = viewport_size.height + "px";
 
-      if (content_size.width <= viewport_size.width &&
-          content_size.height <= viewport_size.height)
-        viewport.style.overflow = "hidden";
-      else
-        viewport.style.overflow = "scroll";
+/************** src/../backends/svg/Drawable.js **************/
+var Drawable = _class("DrawableSVG", {
+  interfaces : [VisualObject, DrawableImpl],
 
+  props: {
+    prefix: "svg",
+    wrapper: null,
+    _defsManager: null,
+    _depthManager: null,
+    _svg:         null,
+    _vg:          null,
+    _viewport:    null,
+    _capturingShape: null,
+    _handledEvents: {
+      mousedown: null,
+      mouseup:   null,
+      mousemove: null,
+      mouseout:  null
+    },
+    _eventFunc: null,
+    _captureEventFunc: null,
+    _refresher: null
+  },
+
+  class_props: {
+    _refresher: new Refresher().setup({
+      preHandler: function() {
+        if (!this._viewport.parentNode != this.wrapper.target) {
+          this.wrapper.target.appendChild(this._viewport);
+        }
+      },
+
+      handlers: [
+        [
+          DIRTY_SIZE,
+          function() {
+            var viewportSize = this.wrapper._viewport_size;
+            this._viewport.style.width  = viewportSize.x + 'px';
+            this._viewport.style.height = viewportSize.y + 'px';
+            this._updateContentSize();
+          }
+        ],
+        [
+          DIRTY_TRANSFORM,
+          function() {
+            this._vg.setAttribute("transform", matrixString(this.wrapper._transform));
+            this._updateContentSize();
+          }
+        ],
+        [
+          DIRTY_EVENT_HANDLERS,
+          function() {
+            for (var type in this._handledEvents) {
+              var handled = this.wrapper.handler.handles(type);
+              var eventFunc = this._handledEvents[type];
+              if (!eventFunc && handled) {
+                this._svg.addEventListener(type, this._eventFunc, false);
+                this._handledEvents[type] = this._eventFunc;
+              } else if (eventFunc && !handled) {
+                this._svg.removeEventListener(type, eventFunc, false);
+                this._handledEvents[type] = null;
+              }
+            }
+          }
+        ]
+      ]
+    })
+  },
+
+  methods: {
+    init: function(wrapper) {
+      this.wrapper = wrapper;
+      this._refresher = this.constructor._refresher;
+
+      var self = this;
+      this._eventFunc = function(domEvt) {
+        if (self._capturingShape)
+          return true;
+        domEvt.stopPropagation();
+        self.wrapper.handler.dispatch(buildMouseEvt(self, domEvt));
+        return false;
+      };
+
+      var viewport = this._buildViewportElement();
+
+      var svg = this._buildSvgElement();
       viewport.appendChild(svg);
 
-      node.appendChild(viewport);
+      var defs = newElement("defs");
+      svg.appendChild(defs);
+
+      var root = newElement("g");
+      svg.appendChild(root);
+
+      this._defsManager = new DefsManager(defs);
+      this._depthManager = new DepthManager(root);
 
       this._viewport = viewport;
       this._svg      = svg;
       this._vg       = root;
-
-      this._onscroll = onscroll || function() {};
-      var self = this;
-      this._viewport.addEventListener('scroll', function(evt) {
-        self._onscroll({x: this.scrollLeft, y:this.scrollTop});
-      }, false);
-
     },
 
-    zoom: function(ratio)
-    {
-      if (ratio) {
-        this._vg.setAttribute("transform", "scale(" + ratio + ")");
-      }
+    dispose: function() {
+      if (this._viewport && this._viewport.parentNode)
+        this._viewport.parentNode.removeChild(this._viewport);
+      this._viewport = null;
+      this._svg = null;
+      this._vg = null;
+      this._wrapper = null;
+      this._defsManager = null;
+      this._depthManager = null;
     },
 
-    viewportSize: function(size)
-    {
-      if (size) {
-        this._viewport.style.width  = size.width + "px";
-        this._viewport.style.height = size.height + "px";
-      }
+    refresh: function (dirty) {
+      this._refresher.call(this, dirty);
     },
 
-    contentSize: function(size, scrolling)
-    {
-      if (size) {
-        this._svg.setAttribute("width", size.width + "px");
-        this._svg.setAttribute("height", size.height + "px");
-        this._svg.style.width  = size.width + "px";
-        this._svg.style.height = size.height + "px";
-
-        if (scrolling) {
-          this._viewport.style.overflow = 'scroll';
-        } else {
-          this._viewport.style.overflow = 'hidden';
-        }
-
-      }
-    },
-
-    scrollPosition: function(position)
-    {
+    scrollPosition: function(position) {
       if (position) {
-        this._viewport.scrollLeft = position.x+'';
-        this._viewport.scrollTop  = position.y+'';
-        this._onscroll({x: position.x, y: position.y});
+        position = this.wrapper._transform.apply(position);
+        this._viewport.scrollLeft = position.x;
+        this._viewport.scrollTop  = position.y;
+        return position;
       }
+      return this.wrapper._inverse_transform.apply({ x: this._viewport.scrollLeft, y: this._viewport.scrollTop });
     },
 
-    append: function(shape)
-    {
+    append: function(shape) {
       shape.drawable = this;
-      this._vg.appendChild(shape._elem);
     },
 
-    remove: function(shape)
-    {
-      var child = shape._elem;
-      this._vg.removeChild(child);
-      shape.drawable = null;
+    remove: function(shape) {
+      if (this._capturingShape == shape)
+        this.releaseMouse(shape);
+      if (this._vg && shape._elem)
+        this._vg.removeChild(shape._elem);
+      shape._removed(shape);
     },
 
-    anchor: function()
-    {
+    anchor: function() {
     },
 
-    getOffsetPosition: function()
-    {
+    getViewportOffset: function() {
       return UtilImpl.getDomOffsetPosition(this._viewport);
     },
 
-    captureMouse: function(shape)
-    {
+    captureMouse: function(shape) {
       var self = this;
-      var handler = shape.handler;
 
-      if (this._capturing_shapes.exist_p(shape)) {
+      if (this._capturingShape) {
         throw new AlreadyExists("The shape is already capturing.");
       }
 
-      this._capturing_shapes.put(shape, null);
+      this._captureEventFunc = function (domEvt) {
+        var func = shape._handledEvents[domEvt.type];
+        return func ? func(domEvt): true;
+      };
 
-      var handler_functions = handler.getHandlerFunctionsAll();
+      for (var type in shape._handledEvents)
+        this._viewport.offsetParent.addEventListener(type, this._captureEventFunc, true);
 
-      for (var j in handler_functions) {
-        for (var i=0, l=handler_functions[j].length; i<l; i++) {
-          (function(j, i) {
-            var raw = handler_functions[j][i];
-            var wrapped = function(dom_evt) {
-              if (dom_evt.target !== shape._elem) {
-                var evt = new MouseEvt(dom_evt, shape);
-                return raw.call(shape, evt);
-              }
-            }
-            self._capturing_functions.put(raw, wrapped);
-            self._vg.addEventListener(j, wrapped, false);
-          })(j, i);
-        }
-      }
-
-      var self = this;
-      handler.holdTrigger('drawable-impl', {
-        append: function(type, raw) {
-          var wrapped = function(dom_evt) {
-            if (dom_evt.target !== shape._elem) {
-              var evt = new MouseEvt(dom_evt, shape);
-              return raw.call(shape, evt);
-            }
-          };
-          self._capturing_functions.put(raw, wrapped);
-          self._vg.addEventListener(type, wrapped, false);
-        },
-        remove: function(type, raw) {
-          var wrapped = self._capturing_functions.pop(raw);
-          self._vg.removeEventListener(type, wrapped, false);
-        }
-      });
-
+      this._capturingShape = shape;
     },
 
-    releaseMouse: function(shape)
-    {
+    releaseMouse: function(shape) {
       var handler = shape.handler;
 
-      if (!this._capturing_shapes.exist_p(shape)) {
+      if (this._capturingShape != shape) {
         throw new NotFound("The shape is not capturing.");
       }
 
-      this._capturing_shapes.erace(shape);
+      for (var type in shape._handledEvents)
+        this._viewport.offsetParent.removeEventListener(type, this._captureEventFunc, false);
 
-      var handler_functions = handler.getHandlerFunctionsAll();
-
-      for (var j in handler_functions) {
-        for (var i=0, l=handler_functions[j].length; i<l; i++) {
-          var raw = handler_functions[j][i];
-          var wrapped = this._capturing_functions.pop(raw);
-          this._vg.removeEventListener(j, wrapped, false);
-        }
-      }
-
-      handler.releaseTrigger('drawable-impl');
+      this._capturingShape = null;
     },
 
-    holdEventsHandler: function(handler)
-    {
-      var self = this;
-      if (this.handler === null) {
-        var funcs = new MultipleKeyHash();
-        this.handler = handler;
-        this.handler.holdTrigger('drawable-impl', {
-          add:    function(type, raw) {
-            var wrapped = function(dom_evt){
-              var evt = new MouseEvt(dom_evt, self);
-              return raw.call(self, evt);
-            };
-            funcs.put(raw, wrapped);
-            UtilImpl.DomEvt.addEvt(self._svg, type, wrapped);
-          },
-          remove: function(type, raw) {
-            UtilImpl.DomEvt.remEvt(self._svg, type, funcs.pop(raw));
-          }
-        });
-      } else {
-        throw new AlreadyExists("impl already has a events handler.");
-      }
+    convertToLogicalPoint: function(point) {
+      return _addPoint(this.scrollPosition(), this.wrapper._inverse_transform.apply(point));
     },
 
-    releaseEventsHandler: function ()
-    {
-      if (this.handler !== null) {
-        this.handler.releaseTriger('drawable-impl');
-      } else {
-        throw new NotFound("events handler is not exist yet.");
-      }
+    convertToPhysicalPoint: function(point) {
+      return _addPoint(this.wrapper._transform.apply(this.scrollPosition()), point);
+    },
+
+    _updateContentSize: function () {
+      var viewportSize = this.wrapper._viewport_size;
+      var contentSize = this.wrapper._transform.apply(this.wrapper._content_size);
+      this._svg.setAttribute('width', contentSize.x + 'px');
+      this._svg.setAttribute('height', contentSize.y + 'px');
+      this._svg.style.width = contentSize.x + 'px';
+      this._svg.style.height = contentSize.y + 'px';
+      this._viewport.style.overflow =
+         (contentSize.x <= viewportSize.x &&
+          contentSize.y <= viewportSize.y) ? 'hidden': 'scroll';
+    },
+
+    _buildSvgElement: function() {
+      var svg = newElement("svg");
+      svg.setAttribute('version', '1.1');
+      // svg.style.background = "#ccc";
+      svg.setAttribute('style', [
+        'margin: 0',
+        'padding: 0',
+        '-moz-user-select: none',
+        '-khtml-user-select: none',
+        '-webkit-user-select: none',
+        '-ms-user-select: none',
+        'user-select: none'
+      ].join(';'));
+      return svg;
+    },
+
+    _buildViewportElement: function () {
+      var viewport = _window.document.createElement("div");
+      viewport.setAttribute('style', [
+        'margin: 0',
+        'padding: 0'
+      ].join(';'));
+      return viewport;
     }
-
   }
 });
 /*
@@ -1664,7 +1867,6 @@ var Drawable = _class("DrawableSVG", {
  */
 
   return {
-    MouseEvt : MouseEvt,
     Util     : Util,
     Circle   : Circle,
     Rect     : Rect,
@@ -1686,20 +1888,17 @@ var VML = (function() {
   if ((BROWSER.identifier !== 'ie' || BROWSER.version > 8 )) return null;
 
   var _ = {};
-  var prefix = 'v';
+  var VML_PREFIX = 'v';
 
-  if (!window.console && DEBUG_MODE) {
-    window.console = {
-      log: function(txt) {
-        /*
-        var n = document.getElementById('console');
-        n.value += txt + "\n";
-        var r = n.createTextRange();
-        r.move('character', n.value.length);
-        r.select();
-        */
-      }
-    }
+  function setup() {
+    var namespaces = document.namespaces;
+    if (!namespaces[VML_PREFIX])
+      namespaces.add(VML_PREFIX, 'urn:schemas-microsoft-com:vml', '#default#VML');
+  }
+
+  function newElement(type) {
+    var elem = _window.document.createElement(VML_PREFIX + ':' + type);
+    return elem;
   }
 
 
@@ -1707,12 +1906,6 @@ var VML = (function() {
 /************** src/../backends/vml/Util.js **************/
 var Util = _class("UtilVML", {
   class_methods: {
-    createVmlElement: function(type, attrp) {
-      var elem = document.createElement(prefix + ':' + type);
-      if (!attrp) elem.style.position = 'absolute';
-      return elem;
-    },
-
     matrixString: function(m) {
       return "progid:DXImageTransform.Microsoft.Matrix(" +
         "M11=" + m.get(0) + ", M12=" + m.get(2) + ", M21=" + m.get(1) + ", M22=" + m.get(3) +
@@ -1734,46 +1927,23 @@ var Util = _class("UtilVML", {
     },
 
     convertPathArray: function(path) {
-
-      var str = '';
-      var last_idt = '';
-      var x, y;
-
-      for (var i=0,l=path.length; i<l; i++ ) {
+      var retval = [];
+      for (var i = 0; i < path.length; i++) {
         var p = path[i];
         var idt = p[0];
         switch (idt) {
         case 'M':
-          idt = 'm';
-          x = p[1]; y = p[2];
-          str += ' ' + idt + ' ' + x.toFixed() + ',' + y.toFixed();
+          retval.push('m' + p[1] + ',' + p[2]);
           break;
-
-        case 'H':
-        case 'V':
-          if (idt ==='V') y = p[1]; else x = p[1];
-          p[1] = x; p[2] = y;
         case 'L':
-          idt = 'l';
-          x = p[1]; y = p[2];
-          str += ((last_idt === idt) ? ', ' : ' ' + idt + ' ' ) + x.toFixed() + ',' + y.toFixed();
-
+          retval.push('l' + p[1] + ',' + p[2]);
           break;
-
         case 'C':
-          idt = 'c';
-          x = item[5]; y = item[6];
-          str += (((last_idt === idt) ? ', ' : ' ' + idt + ' ' ) +
-                  p[1].toFixed() + ',' + p[2].toFixed() + ',' + p[3].toFixed() + ',' +
-                  p[4].toFixed() + ',' + x.toFixed() + ',' + y.toFixed());
-
+          retval.push('c' + p[1] + ',' + p[2] + ',' + p[3] + ',' + p[4] + ',' + p[5] + ',' + p[6]);
           break;
-
         case 'Z':
-          idt = 'x';
-          str += idt+' ';
+          retval.push('x');
           break;
-
         // TODO !!!!
         case 'R':
         case 'T':
@@ -1781,11 +1951,9 @@ var Util = _class("UtilVML", {
         case 'Q':
         case 'A':
         }
-
-        last_idt = idt;
       }
-
-      return (str + ' e');
+      retval.push('e');
+      return retval.join('');
     }
   }
 });
@@ -1793,7 +1961,6 @@ var Util = _class("UtilVML", {
 
 /************** src/../backends/vml/MouseEvt.js **************/
 var MouseEvt = _class("MouseEvtVML", {
-
   interfaces: [MouseEvtImpl],
 
   mixins: [UtilImpl.DomEvt],
@@ -1812,10 +1979,11 @@ var MouseEvt = _class("MouseEvtVML", {
   }
 });
 
+
 /************** src/../backends/vml/Base.js **************/
 var Base = _class("BaseVML", {
-
   props : {
+    drawable: null,
     handler: null
   },
 
@@ -1834,67 +2002,119 @@ var Base = _class("BaseVML", {
 
     style: function(st)
     {
-      var node = this._elem;
-      var fill = (node.getElementsByTagName('fill') && node.getElementsByTagName('fill')[0]);
-      var stroke = (node.getElementsByTagName('stroke') && node.getElementsByTagName('stroke')[0]);
-
-      if (st.fill && !st.fill.none) {
-        if (!fill) fill = Util.createVmlElement('fill', true);
-        var color_op = Util.convertColorArray(st.fill.color);
-
-        fill.on = true;
-        fill.color = color_op.color;
-        fill.opacity = color_op.opacity;
-        fill.type = "solid";
-        fill.src = '';
-        // TODO
-        // this._elem.setAttribute('fill-rule', fill.rule);
-        node.appendChild(fill);
-
-      } else {
-        if (fill) {
-          fill.on = false;
-          node.removeChild(fill);
+      var elem = this._elem;
+      var fill = elem.getElementsByTagName('fill'), _fill = null;
+      if (st.fill) {
+        if (st.fill instanceof FloodFill) {
+          if (st.fill.color.a == 255) {
+            if (fill && fill.length > 0)
+              fill[0].parentNode.removeChild(fill[0]);
+            elem.fillColor = st.fill.color.toString(true);
+          } else {
+            if (!fill || !fill.length) {
+              fill = [newElement('fill')];
+              elem.appendChild(fill[0]);
+            }
+            fill.type = "solid";
+            fill.color = st.fill.color.toString(true);
+            fill.opacity = st.fill.color.a / 255.;
+          }
+        } else if (st.fill instanceof LinearGradientFill) {
+          if (!fill || !fill.length) {
+            fill = [newElement('fill')];
+            elem.appendChild(fill[0]);
+          }
+          var firstColor = st.fill.colors[0].toString(true);
+          var lastColor = st.fill.colors[st.fill.colors.length - 1].toString(true);
+          if (firstColor[0] == 0 && lastColor[0] == 1) {
+            fill.color = firstColor[1].toString(true);
+            fill.opacity = firstColor[1].a / 255.;
+            fill.color2 = lastColor[1].toString(true);
+            fill.opacity2 = lastColor[1].a / 255.;
+          }
+          var colors = [];
+          for (var i = 0; i < st.fill.colors.length; i++) {
+            var color = st.fill.colors[i];
+            colors.push((color[0] * 100).toFixed(0) + "% " + color[1].toString(true));
+          }
+          fill.type = "gradient";
+          fill.method = "sigma";
+          fill.colors = colors.join(",");
+          fill.angle = (fill.angle * 360).toFixed(0);
+        } else if (st.fill instanceof RadialGradientFill) {
+          if (!fill || !fill.length) {
+            fill = [newElement('fill')];
+            elem.appendChild(fill[0]);
+          }
+          var firstColor = st.fill.colors[0].toString(true);
+          var lastColor = st.fill.colors[st.fill.colors.length - 1].toString(true);
+          if (firstColor[0] == 0 && lastColor[0] == 1) {
+            fill.color = firstColor[1].toString(true);
+            fill.opacity = firstColor[1].a / 255.;
+            fill.color2 = lastColor[1].toString(true);
+            fill.opacity2 = lastColor[1].a / 255.;
+          }
+          var colors = [];
+          for (var i = 0; i < st.fill.colors.length; i++) {
+            var color = st.fill.colors[i];
+            colors.push((color[0] * 100).toFixed(0) + "% " + color[1].toString(true));
+          }
+          fill.type = "gradientRadial";
+          fill.focusPosition = st.fill.focus.x + " " + st.fill.focus.y;
+          fill.colors = colors.join(",");
+        } else if (st.fill instanceof ImageTileFill) {
+          if (!fill || !fill.length) {
+            fill = [newElement('fill')];
+            elem.appendChild(fill[0]);
+          }
+          fill.src = st.fill.imageData.url;
+          fill.type = "tile";
         }
+        elem.filled = true;
+      } else {
+        if (fill && fill.length > 0)
+          fill[0].parentNode.removeChild(fill[0]);
+        elem.filled = false;
       }
 
-      if (st.stroke && !st.stroke.none) {
-        if (!stroke) stroke = Util.createVmlElement('stroke', true);
-        var color_op = Util.convertColorArray(st.stroke.color);
-
-        stroke.on    = true;
-        stroke.color = color_op.color;
-        stroke.weight = st.stroke.width + 'px';
-        stroke.opacity = color_op.opacity;
-        stroke.dashstyle = Util.convertStrokeDash(st.stroke.dash);
-
-        //params["stroke-linejoin"] && (stroke.joinstyle = params["stroke-linejoin"] || "miter");
-        //stroke.miterlimit = params["stroke-miterlimit"] || 8;
-        //params["stroke-linecap"] && (stroke.endcap = params["stroke-linecap"] == "butt" ? "flat" : params["stroke-linecap"] == "square" ? "square" : "round");
-
-        node.appendChild(stroke);
-
-      } else {
-        var stroke = (node.getElementsByTagName('stroke') && node.getElementsByTagName('stroke')[0]);
-        if (stroke) {
-          stroke.on = false;
-          node.removeChild(stroke);
+      var stroke = elem.getElementsByTagName('');
+      if (st.stroke) {
+        if (st.stroke.color.a == 255 && !st.stroke.pattern) {
+          if (stroke && stroke.length > 0)
+            stroke[0].parentNode.removeChild(stroke[0]);
+          elem.strokeColor = st.stroke.color.toString(true);
+          elem.strokeWeight = st.stroke.width;
+        } else {
+          if (!stroke || !stroke.length) {
+            stroke = [newElement('stroke')];
+            elem.appendChild(stroke[0]);
+          }
+          stroke[0].color = st.stroke.color.toString(true);
+          stroke[0].opacity = st.stroke.color.a / 255.;
+          stroke[0].weight = st.stroke.width;
+          if (st.stroke.pattern)
+            stroke[0].dashStyle = st.stroke.pattern.join(' ');
         }
+        elem.stroked = true;
+      } else {
+        elem.stroked = false;
       }
 
-      //stroke.dasharray  = Util.convertStrokeDash(st.stroke.dash);
-      var visibility = st.visibility;
-      var cursor = st.cursor;
-
-      //this._elem.setAttribute('stroke-dasharray', stroke.dasharray);
-      node.style.display = visibility ? 'block' : 'none';
-      node.style.cursor  = cursor;
-
+      elem.style.display = st.visibility ? 'block' : 'none';
+      elem.style.cursor = st.cursor ? st.cursor: 'normal';
     },
 
     resetStyle: function()
     {
       this.style(DEFAULT_STYLE);
+    },
+
+    _attachedTo: function(drawable) {
+    },
+
+    _detached: function() {
+      shape.drawable._vg.removeChild(this._elem);
+      shape.drawable = null;
     },
 
     holdEventsHandler: function(handler)
@@ -1930,11 +2150,13 @@ var Base = _class("BaseVML", {
     }
   }
 });
+/*
+ * vim: sts=2 sw=2 ts=2 et
+ */
 
 
 /************** src/../backends/vml/Circle.js **************/
 var Circle = _class("CircleVML", {
-
   mixins: [Base],
 
   props: {
@@ -1944,7 +2166,7 @@ var Circle = _class("CircleVML", {
   methods: {
     init: function()
     {
-      this._elem = Util.createVmlElement('oval');
+      this._elem = newElement('oval');
     },
 
     position: function(x, y, width, height)
@@ -1964,7 +2186,6 @@ var Circle = _class("CircleVML", {
 
 /************** src/../backends/vml/Rect.js **************/
 var Rect = _class("RectVML", {
-
   mixins: [Base],
 
   props: {
@@ -1974,7 +2195,7 @@ var Rect = _class("RectVML", {
   methods: {
     init: function()
     {
-      this._elem = Util.createVmlElement('rect');
+      this._elem = newElement('rect');
     },
 
     position: function(x, y, width, height)
@@ -1994,35 +2215,34 @@ var Rect = _class("RectVML", {
 
 /************** src/../backends/vml/Path.js **************/
 var Path = _class("PathVML", {
-
   mixins: [Base],
 
   props: {
-    _elem: null
+    _elem: null,
+    _points: null
   },
 
   methods: {
-
-    init: function()
-    {
-      this._elem = Util.createVmlElement('shape');
+    init: function() {
+      this._elem = newElement('shape');
       this.resetStyle();
     },
 
-    points: function(points, parent)
-    {
+    attachedTo: function(drawable) {
+      this.drawable = drawable;
+      var vml = [
+        '<', VML_PREFIX, ':shape style="position:absolute; width:100px; height:100px; left:0px; top:0px" ',
+        'path="', Util.convertPathArray(this.points), '">',
+        '</', VML_PREFIX, ':shape>'
+      ].join('');
+      drawable._vg.insertAdjacentHTML('beforeEnd', vml);
+      this._elem = drawable._vg.lastChild;
+    },
+
+    points: function(points, parent) {
       if (points !== void(0)) {
-        var s = parent.size();
-        var p = parent.position();
-
         this._points = points;
-        this._elem.setAttribute('path', Util.convertPathArray(points));
-        this._elem.style.width  = '1000px';
-        this._elem.style.height = '1000px';
-        this._elem.style.left = '0';
-        this._elem.style.top  = '0';
       }
-
       return this._points;
     }
   }
@@ -2036,55 +2256,43 @@ var Text = _class("TextVML", {
 
   props : {
     _elem: null,
-    _child: null,
-    _path: null
+    _str: '',
+    _size: 0,
+    _position: { x: 0, y: 0 }
   },
 
   methods: {
-    init: function(str)
-    {
+    init: function(str) {
+      this._str = str;
+    },
 
-      this._elem  = Util.createVmlElement('line');
-      this._path  = Util.createVmlElement('path');
-      this._child = Util.createVmlElement('textpath');
-      this._path.setAttribute('textpathok', 'true');
-      this._child.setAttribute('string', str);
-      this._child.setAttribute('on', 'true');
-      this._elem.appendChild(this._path);
-      this._elem.appendChild(this._child);
-
-      this._elem.style.width = '100px';
-      this._elem.style.height = '100px';
-
-/*
-        <v:line from="50 200" to="400 100">
-        <v:fill on="True" color="red"/>
-        <v:path textpathok="True"/>
-        <v:textpath on="True" string="VML Text"
-           style="font:normal normal normal 36pt Arial"/>
-        </v:line>
-*/
-
+    attachedTo: function(drawable) {
+      this.drawable = drawable;
+      var vml = [
+        '<', VML_PREFIX, ':line style="position:absolute; width:100px; height:100px; left:0px; top:0px">',
+        '<', VML_PREFIX, ':path textpathok="t" />',
+        '<', VML_PREFIX, ':textpath string="', _escapeXMLSpecialChars(this._str), '" />',
+        '</', VML_PREFIX, ':line>'
+      ].join('');
+      drawable._vg.insertAdjacentHTML('beforeEnd', vml);
+      this._elem = drawable._vg.lastChild;
     },
 
     position: function(x, y, width, height)
     {
-      //this._elem.style.left = x + 'px';
-      //this._elem.style.top  = y + 'px';
-
-      this._elem.setAttribute('from', x + ' ' + y);
-      this._elem.setAttribute('to', (x + 1) + ' ' + y);
+      this.position = 
+      this._elem.style.left = x;
+      this._elem.style.top = y;
     },
 
     size: function(font_size)
     {
-      this._child.style.font = "normal normal normal " + font_size + "pt 'Arial'";
-      // this._elem.style.fontSize = font_size + 'px';
+      if (this._elem)
+        this._elem.firstChild.nextSibling.style.font = "normal normal normal " + font_size + "pt 'Arial'";
     },
 
     family: function(font_family)
     {
-      // this._elem.style.fontFamily = font_family;
     }
   }
 });
@@ -2092,22 +2300,14 @@ var Text = _class("TextVML", {
 
 /************** src/../backends/vml/Drawable.js **************/
 var Drawable = _class("DrawableVML", {
-
   props: {
     _vg: null
-  },
-
-  class_methods: {
-    setup: function() {
-      document.write('<xml:namespace ns="urn:schemas-microsoft-com:vml" prefix="' + prefix + '" />\n');
-      document.write('<style type="text/css">\n' + prefix + '\\:*{behavior:url(#default#VML)}\n</style>');
-    }
   },
 
   methods: {
     init: function(node, content_size)
     {
-      var vg = Util.createVmlElement('group');
+      var vg = newElement('group');
       vg.style.left = 0;
       vg.style.top = 0;
       vg.style.width = content_size.width + "px";
@@ -2116,18 +2316,19 @@ var Drawable = _class("DrawableVML", {
       node.appendChild(vg);
     },
 
-    append: function(shape)
-    {
-      this._vg.appendChild(shape._elem);
+    append: function(shape) {
+      shape._attachedTo(this);
     },
 
-    remove: function(shape)
-    {
-      var child = shape._elem;
-      this._vg.removeChild(child);
+    remove: function(shape) {
+      shape._detached();
     }
   }
 });
+
+/*
+ * vim: sts=2 sw=2 ts=2 et
+ */
 
   _.Util       = Util;
   _.MouseEvt   = MouseEvt;
@@ -2136,11 +2337,13 @@ var Drawable = _class("DrawableVML", {
   _.Path       = Path;
   _.Text       = Text;
   _.Drawable   = Drawable;
-  _.Drawable.setup();
+
+  setup();
 
   return _;
 
 })();
+
 
 /************** src/../backends/canvas/canvas.js **************/
 var Canvas = null;
@@ -2341,12 +2544,10 @@ var JS_CANVAS = {
 
   return {
     UtilImpl       : UtilImpl,
-    MouseEvtImpl   : MouseEvtImpl,
-    BaseImpl       : BaseImpl,
+    VisualObject   : VisualObject,
+    Refresher      : Refresher,
+    TransformStack : TransformStack,
     DrawableImpl   : DrawableImpl,
-    ShapeImpl      : ShapeImpl,
-    PathImpl       : PathImpl,
-    TextImpl       : TextImpl,
     SVG            : SVG,
     VML            : VML,
     Canvas         : Canvas,
@@ -2354,7 +2555,8 @@ var JS_CANVAS = {
     determineImplementation : determineImplementation
   };
 
-})();  Fashion.Backend = Backend;
+})();
+  Fashion.Backend = Backend;
 
 
 
@@ -3251,183 +3453,115 @@ var PathData = (function() {
 var MouseEvt = _class("MouseEvt", {
 
   props: {
-    contentPosition: {x:0,y:0},
-    screenPosition:  {x:0,y:0},
-    offsetPosition:  {x:0,y:0},
+    type: null,
+    target: null,
+    logicalPosition:   { x: 0, y: 0 },
+    physicalPosition:  { x: 0, y: 0 },
+    screenPosition:    { x: 0, y: 0 },
+    offsetPosition:    { x: 0, y: 0 },
     left:            false,
     middle:          false,
     right:           false
   },
 
-  methods: {
-    init: function(impl_evt, target) {
-      this.left   = impl_evt.left;
-      this.middle = impl_evt.middle;
-      this.right  = impl_evt.right;
-
-      var px = impl_evt.pagePosition.x;
-      var py = impl_evt.pagePosition.y;
-
-      var shape = null, drawable = null;
-      // drawable
-      if (target instanceof Fashion.Drawable) {
-        drawable = target;
-      } else {
-        shape = target;
-        drawable = shape.drawable;
-      }
-
-      var offset_position = drawable.getOffsetPosition();
-      var scroll_position = drawable.scrollPosition();
-
-      // real size
-      this.screenPosition.x  = px - offset_position.x;
-      this.screenPosition.y  = py - offset_position.y;
-
-      // logical size
-      this.contentPosition.x = scroll_position.x + (this.screenPosition.x / drawable._zoom_ratio);
-      this.contentPosition.y = scroll_position.y + (this.screenPosition.y / drawable._zoom_ratio);
-      this.offsetPosition.x = this.contentPosition.x;
-      this.offsetPosition.y = this.contentPosition.y;
-
-      if (shape) {
-        // logical size
-        var sp = shape.position();
-        this.offsetPosition.x -= sp.x;
-        this.offsetPosition.y -= sp.y;
-      }
-    }
-  }
-});  Fashion.MouseEvt = MouseEvt;
+  methods: {}
+});
+  Fashion.MouseEvt = MouseEvt;
 
 
 
 /************** src/MouseEventsHandler.js **************/
 var MouseEventsHandler = _class("MouseEventsHandler", {
-
-  class_props: {
-    types:  ['mousedown', 'mouseup', 'mousemove', 'mouseout']
-  },
-
   props : {
-    mousedown: new MultipleKeyHash(),
-    mouseup:   new MultipleKeyHash(),
-    mousemove: new MultipleKeyHash(),
-    mouseout:  new MultipleKeyHash(),
-    _triggers: {},
+    _handlersMap: {
+      mousedown: [],
+      mouseup:   [],
+      mousemove: [],
+      mouseover: [],
+      mouseout:  []
+    },
     _target: null
   },
 
   methods: {
-
     init: function(target, h) {
       this._target = target;
-      this._target.impl.holdEventsHandler(this);
 
       if (h) {
         this.add(h);
       }
     },
 
-    getHandlerFunctionsAll: function() {
-      var rt = {}, types = MouseEventsHandler.types;
-      for (var i=types.length; 0<i; i--) {
-        rt[types[i-1]] = this.getHandlerFunctionsFor(types[i-1]);
-      }
-      return rt;
+    getHandlerFunctionsFor: function(type) {
+      var funcs = this._handlersMap[type];
+      if (!funcs)
+        throw new NotSupported("Unexpected keyword '" + type + "'.");
+      return funcs;
     },
 
-    getHandlerFunctionsFor: function(idt) {
-      if (this.hasOwnProperty(idt)) {
-        var funcs = this[idt];
-        return funcs.getAllValues();
-      }
-      throw new NotSupported("Expected keywords are '" + MouseEventsHandler.types.join("', '") + "'.");
-    },
-
-    add: function(h) {
-      var target = this._target;
-      var self = this;
-      for (var type in h) {
-        (function (type) {
-          if (self.hasOwnProperty(type)) {
-            var raw = h[type];
-            var wrapped = function(impl_evt) {
-              var evt = new MouseEvt(impl_evt, target);
-              return raw.call(target, evt);
-            };
-            self[type].put(raw, wrapped);
-            self._triggerAppend(type, wrapped);
-          } else {
-            throw new NotSupported("'" + type + "' cannot add into a MouseEventsHandler. Supported types are '" +
-                                   MouseEventsHandler.types.join("', '") + "'.");
-          }
-        })(type);
+    add: function(type, h) {
+      if (arguments.length == 2 && typeof h == 'function') {
+        var handlers = this._handlersMap[type];
+        if (!handlers)
+          throw new NotSupported("Unsupported event type: '" + type + "'.");
+        if (_indexOf(handlers, h) >= 0)
+          return false;
+        handlers.push(h);
+        return true;
+      } else if (arguments.length == 1) {
+        for (var _type in type)
+          this.add(_type, type[_type]);
+        return true;
+      } else {
+        throw new ArgumentError("Unexpected argument: " + type);
       }
     },
 
-    remove: function(idts) {
+    remove: function(type, h) {
+      var handlers = this._handlersMap[type];
+      var i = _indexOf(handlers, h);
+      if (i < 0)
+        throw new NotFound("The function is not Found in this Handler.");
+      handlers.splice(i, 1);
+    },
 
-      idts = Array.prototype.slice.call(arguments);
-
-      for (var i=0, l=idts.length; i<l; i++) {
-        var idt = idts[i];
-        if (typeof idt === 'string') {
-          if (this.hasOwnProperty(idt)) {
-            var funcs = this[idt];
-            var keys = funcs.getAllKeys();
-            for (var k = keys.length; 0<k; k--) {
-              var wrapped = funcs.pop(keys[k-1]);
-              this._triggerDelete(idt, wrapped);
-            }
-          } else {
-            throw new NotSupported("Expected keywords are '" + MouseEventsHandler.types.join("', '") + "'.");
-          }
-        } else if (typeof idt === 'function') {
-          var h = MouseEventsHandler.types;
-          for (var i=h.length; 0<i; i--) {
-            var type = h[i-1];
-            var wrapped = this[type].pop(idt);
-            if (wrapped !== null) {
-              this._triggerDelete(type, wrapped);
-              return;
-            }
-          }
-          throw new NotFound("The function is not Found in this Handler.");
-
-        } else {
-          throw new NotSupported("remove(idts...) expects string or function.");
+    removeAll: function (types) {
+      var l = arguments.length;
+      if (l == 0) {
+        for (var i in this._handlersMap) this._handlersMap[i] = [];
+      } else {
+        for (var i = 0; i < l; i++) {
+          this._handlersMap[arguments[i]] = [];
         }
       }
     },
 
-    holdTrigger: function(id, trigger) {
-      if (this._triggers.hasOwnProperty(id)) {
-        throw new AlreadyExists("The trigger id is already exists.");
-      }
-      this._triggers[id] = trigger;
+    dispatch: function (evt) {
+      var handlers = this._handlersMap[evt.type];
+      if (handlers === void(0))
+        return false;
+      for (var i = 0; i < handlers.length; i++)
+        handlers[i].call(this._target, evt);
+      return true;
     },
 
-    releaseTrigger: function(id) {
-      delete this._triggers[id];
-    },
-
-    _triggerAppend: function(type, func) {
-      var triggers = this._triggers;
-      for (var i in triggers)
-        if (triggers.hasOwnProperty(i))
-          triggers[i].add(type, func);
-    },
-
-    _triggerDelete: function(type, func) {
-      var triggers = this._triggers;
-      for (var i in triggers)
-        if (triggers.hasOwnProperty(i))
-          triggers[i].remove(type, func);
+    handles: function (type) {
+      var handlers = this._handlersMap[type];
+      return handlers && handlers.length > 0;
     }
   }
-});  Fashion.MouseEventsHandler = MouseEventsHandler;
+});
+  Fashion.MouseEventsHandler = MouseEventsHandler;
 
+
+
+/************** src/Bindable.js **************/
+var Bindable = _class("Bindable", {
+  methods: {
+    addEvent:         function(e) {},
+    removeEvent:      function(e) {}
+  }
+});
 
 
 /************** src/Shape.js **************/
@@ -3435,6 +3569,7 @@ var MouseEventsHandler = _class("MouseEventsHandler", {
  * Shape interface class.
  */
 var Shape = _class("Shape", {
+  parent: Bindable,
   methods: {
     position:         function(d) {},
     size:             function(d) {},
@@ -3442,11 +3577,7 @@ var Shape = _class("Shape", {
     displaySize:      function()  {},
     hitTest:          function(d) {},
     transform:        function(d) {},
-    resetTransform:   function()  {},
-    style:            function(d) {},
-    resetStyle:       function()  {},
-    addEvent:         function(e) {},
-    removeEvent:      function(e) {}
+    style:            function(d) {}
   }
 });
 
@@ -3455,210 +3586,128 @@ var Shape = _class("Shape", {
 var Base = _class("Base", {
 
   props: {
+    id: null,
     impl: null,
     drawable: null,
-    _position: {x:0, y:0},
-    _size: {width:0, height:0},
-    _transform: {},
-    _transform_matrix: null,
-    _matrixes: new MultipleKeyHash(),
-    _style: {},
-    handler: null
+    handler: null,
+    _position: { x: 0, y: 0 },
+    _size: { x: 0, y: 0 },
+    _style: { fill: null, stroke: null },
+    _zIndex: 0,
+    _transform: null,
+    _dirty: DIRTY_POSITION | DIRTY_SIZE | DIRTY_ZINDEX ,
+    _visibility: true
   },
 
   methods: {
-    position: function(d)
-    {
-      if (d) {
-        var x = d.x, y = d.y;
-        this._position.x = x;
-        this._position.y = y;
-        this.impl.position(x, y, this._size.width, this._size.height);
-      }
-      return _clone(this._position);
-    },
-
-    size: function(d)
-    {
-      if (d) {
-        var width = d.width, height = d.height;
-        this._size.width = width;
-        this._size.height = height;
-        this.impl.size(width, height);
-      }
-      return _clone(this._size);
-    },
-
-    transform: function()
-    {
-      var l;
-
-      if ((l = arguments.length) > 0) {
-
-        this._matrixes.pop(this._transform_matrix);
-        this._transform = {};
-
-        var scale, rotate, translate, tr, j, i;
-        var pos = this.position();
-        var x = pos.x, y = pos.y;
-        var m = new Util.Matrix();
-
-        for (j=0; j<l; j++) {
-
-          tr = arguments[j];
-
-          for (i in tr) {
-            if (tr.hasOwnProperty(i)) {
-              switch(i) {
-              case 'scale':
-                scale = tr[i];
-                if (scale.x === void(0) || scale.y === void(0))
-                  throw new ArgumentError("transform() scale needs x, y parameters at least.");
-                if (scale.cx === void(0)) scale.cx = x;
-                if (scale.cy === void(0)) scale.cy = y;
-                this._transform.scale = scale;
-                break;
-
-              case 'rotate':
-                rotate = tr[i];
-                if (rotate.angle === void(0))
-                  throw new ArgumentError("transform() rotate needs angle parameter at least.");
-                if (rotate.x === void(0)) rotate.x = x;
-                if (rotate.y === void(0)) rotate.y = y;
-                this._transform.rotate = rotate;
-                break;
-
-              case 'translate':
-                translate = tr[i];
-                if (translate.x === void(0) || translate.y === void(0))
-                  throw new ArgumentError("transform() translate needs x, y parameters at least.");
-                this._transform.translate = translate;
-                break;
-
-              default:
-                throw new ArgumentError("transform() expects 'translate', 'scale', 'rotate', but '" + i + "' given.");
-
-              }
-            }
-          }
-          m.set(this._transform);
-        }
-
-        this._transform_matrix = m;
-        this._matrixes.put(this._transform_matrix, null);
-        this.impl.transform(this._matrixes);
-      }
-
-      return ({
-        scale:     this._transform.scale,
-        rotate:    this._transform.rotate,
-        translate: this._transform.translate
-      });
-
-    },
-
-    resetTransform: function()
-    {
-
-      var m = this._matrixes.pop(this._transform_matrix);
-
-      if (m) {
-        this.impl.transform(this._matrixes);
-      }
-
-      this._transform = {};
-      this._transform_matrix = null;
-    },
-
-    style: function(st)
-    {
-      if (st !== void(0)) {
-        var i;
-        var stroke = null;
-        visibility=true,
-        fill = null;
-        cursor='default',
-        zIndex=0;
-
-        for (i in st) {
-          if (st.hasOwnProperty(i)) {
-            switch(i) {
-            case 'stroke':
-              stroke = st[i];
-              break;
-            case 'visibility':
-              visibility = st[i];
-              break;
-            case 'fill':
-              fill = st[i];
-              break;
-            case 'cursor':
-              cursor = st[i];
-              break;
-            case 'zIndex':
-              zIndex = st[i];
-              break;
-            }
+    init: function (values) {
+      if (values) {
+        for (var i in values) {
+          switch (typeof this[i]) {
+          case 'function':
+            this[i](values[i]);
+            break;
+          default:
+            throw new ArgumentError('Invalid keyword argument: ' + i);
           }
         }
+      }
+    },
 
-        this._style = {
-          stroke: stroke,
-          visibility: visibility,
-          fill: fill,
-          cursor: cursor,
-          zIndex: zIndex
-        };
-
+    position: function(value) {
+      if (value) {
+        this._position = value;
+        this._dirty |= DIRTY_POSITION;
         if (this.drawable)
-          this.impl.style(this._style);
+          this.drawable._enqueueForUpdate(this);
       }
+      return this._position;
+    },
 
+    size: function(value) {
+      if (value) {
+        this._size = value;
+        this._dirty |= DIRTY_SIZE;
+        if (this.drawable)
+          this.drawable._enqueueForUpdate(this);
+      }
+      return this._size;
+    },
+
+    zIndex: function(value) {
+      if (value !== void(0)) {
+        this._zIndex = value;
+        this._dirty |= DIRTY_ZINDEX;
+        if (this.drawable)
+          this.drawable._enqueueForUpdate(this);
+      }
+      return this._zIndex;
+    },
+
+    transform: function(value) {
+      if (value !== void(0)) {
+        this._transform = value;
+        this._dirty |= DIRTY_TRANSFORM;
+        if (this.drawable)
+          this.drawable._enqueueForUpdate(this);
+      }
+      return this._transform;
+    },
+
+    style: function(value) {
+      if (value !== void(0)) {
+        this._style = value;
+        this._dirty |= DIRTY_STYLE;
+        if (this.drawable)
+          this.drawable._enqueueForUpdate(this);
+      }
       return this._style;
     },
 
-    attachTo: function(drawable) {
+    _attachTo: function(drawable) {
       this.drawable = drawable;
-      this.impl.style(this._style);
-    },
-
-    resetStyle: function()
-    {
-      this._style = {};
-      this.impl.resetStyle();
     },
 
     captureMouse: function() {
-
       if (!this.drawable)
         throw new NotAttached("This Shape is not attached any Drawable yet.");
-
       this.drawable.captureMouse(this);
-
     },
 
     releaseMouse: function() {
-
       if (!this.drawable)
         throw new NotAttached("This Shape is not attached any Drawable yet.");
-
       this.drawable.releaseMouse(this);
-
     },
 
-    addEvent: function(h)
-    {
-      if (this.handler === null) this.handler = new MouseEventsHandler(this);
-      this.handler.add(h);
+    addEvent: function(type, h) {
+      if (this.handler === null)
+        this.handler = new MouseEventsHandler(this);
+      this.handler.add.apply(this.handler, arguments);
+      this._dirty |= DIRTY_EVENT_HANDLERS;
+      if (this.drawable)
+        this.drawable._enqueueForUpdate(this);
     },
 
-    removeEvent: function()
-    {
-      if (this.handler === null) throw new NotSupported("EventsHandler has not initialized in this shape.");
-      this.handler.remove.apply(this.handler, arguments);
+    removeEvent: function(type, h) {
+      if (this.handler === null) return;
+      var arglen = arguments.length;
+      if (arglen === 0) {
+        this.handler.removeAll();
+      } else if (arglen == 1) {
+        this.handler.removeAll.apply(this.handler, type);
+      } else if (arguments.length < 3) {
+        this.handler.remove(type, h);
+      }
+      this._dirty |= DIRTY_EVENT_HANDLERS;
+      if (this.drawable)
+        this.drawable._enqueueForUpdate(this);
     }
   }
 });
+/*
+ * vim: sts=2 sw=2 ts=2 et
+ */
 
 
 
@@ -3672,27 +3721,21 @@ var Circle = _class("Circle", {
   props: {},
 
   methods: {
-    init: function (x, y, width, height)
-    {
-      this.impl = new Fashion.IMPL.Circle();
-      this.size({width: width, height: height});
-      this.position({x: x, y: y});
+    init: function (values) {
+      Base.prototype.init.apply(this, arguments);
+      this.impl = new Fashion.IMPL.Circle(this);
     },
 
-    displayPosition: function()
-    {
+    displayPosition: function() {
     },
 
-    displaySize: function()
-    {
+    displaySize: function() {
     },
 
-    gravityPosition: function()
-    {
+    gravityPosition: function() {
     },
 
-    hitTest: function(d)
-    {
+    hitTest: function(d) {
     }
   }
 });
@@ -3708,27 +3751,21 @@ var Rect = _class("Rect", {
   props: {},
 
   methods: {
-    init: function (x, y, width, height)
-    {
-      this.impl = new Fashion.IMPL.Rect();
-      this.size({width: width, height: height});
-      this.position({x: x, y: y});
+    init: function (values) {
+      Base.prototype.init.apply(this, arguments);
+      this.impl = new Fashion.IMPL.Rect(this);
     },
 
-    displayPosition: function()
-    {
+    displayPosition: function() {
     },
 
-    displaySize: function()
-    {
+    displaySize: function() {
     },
 
-    gravityPosition: function()
-    {
+    gravityPosition: function() {
     },
 
-    hitTest: function(d)
-    {
+    hitTest: function(d) {
     }
   }
 });
@@ -3747,163 +3784,31 @@ var Path = _class("Path", {
   },
 
   methods: {
-    init: function (points)
-    {
-      this.impl = new Fashion.IMPL.Path();
-      this.points(points);
-      this._matrixes.put(this._position_matrix, null);
+    init: function (values) {
+      Base.prototype.init.apply(this, arguments);
+      this.impl = new Fashion.IMPL.Path(this);
     },
 
-    /**
-     *
-     * M   moveto                           (x y)+
-     * Z   closepath                        (none)
-     * L   lineto                           (x y)+
-     * H   horizontal lineto                x+
-     * V   vertical lineto                  y+
-     * C   curveto                          (x1 y1 x2 y2 x y)+
-     * S   smooth curveto                   (x2 y2 x y)+
-     * Q   quadratic Bezier curveto         (x1 y1 x y)+
-     * T   smooth quadratic Bezier curveto  (x y)+
-     * A   elliptical arc                   (rx ry x-axis-rotation large-arc-flag sweep-flag x y)+
-     * R   Catmull-Rom curveto*x1 y1        (x y)+
-     *
-     **/
-    points: function(points)
-    {
-
+    points: function(points) {
       if (points !== void(0)) {
         this._points = points;
-        this.impl.points(this._points, this);
-        this._updateState();
+        this._dirty |= DIRTY_SHAPE;
+        if (this.drawable)
+          this.drawable._enqueueForUpdate(this);
       }
-
       return this._points;
     },
 
-    position: function(d)
-    {
-      if (d) {
-        var last = this._position_matrix.apply(this._position);
-        var xm = d.x - last.x;
-        var ym = d.y - last.y;
-        this._position_matrix.translate(xm, ym);
-        this.impl.transform(this._matrixes);
-      }
-
-      return this._position_matrix.apply(this._position);
+    displayPosition: function() {
     },
 
-    size: function(d)
-    {
-
-      if (d) {
-        var lw = this._size.width;
-        var lh = this._size.height;
-        var wm = d.width / lw;
-        var hm = d.height / lh;
-        var pos = this._position;
-
-        var mat = (new Util.Matrix()).scale(wm, hm, pos.x, pos.y);
-        this.applyMatrix(mat);
-      }
-
-      return {width: this._size.width, height: this._size.height};
+    displaySize: function() {
     },
 
-    applyMatrix: function(d)
-    {
-      if (d === void(0))
-        throw new ArgumentError("applyMatrix expects 1 argument at least.");
-      this._points.applyMatrix(d);
-      this.points(this._points, true);
-      return this;
+    gravityPosition: function() {
     },
 
-    displayPosition: function()
-    {
-    },
-
-    displaySize: function()
-    {
-    },
-
-    gravityPosition: function()
-    {
-    },
-
-    hitTest: function(d)
-    {
-    },
-
-    /* private */
-    _updateState: function()
-    {
-      var x, y, pos = {x_min: Infinity, y_min: Infinity,
-                       x_max: -Infinity, y_max: -Infinity};
-
-      var points = this._points;
-
-      for (var i=0, l=points.length, ll = l-1; i<l; i++) {
-        var item = points[i];
-        var idt = item[0];
-
-        switch (idt) {
-
-        case 'M':
-          if (i < ll) {
-            var next_idt = points[i+1][0];
-            if (next_idt !== 'M') {
-              x = item[1]; y = item[2];
-            }
-          }
-          break;
-
-        case 'L':
-        case 'T': // TODO: consider curving line.
-        case 'R': // TODO: consider curving line.
-          x = item[1]; y = item[2];
-          break;
-
-        case 'C': // TODO: consider curving line.
-          x = item[5]; y = item[6];
-          break;
-
-        case 'Z':
-          break;
-
-        case 'H':
-          x = item[0];
-          break;
-
-        case 'V':
-          y = item[0];
-          break;
-
-        case 'S': // TODO: consider curving line.
-        case 'Q': // TODO: consider curving line.
-          x = item[3]; y = item[4];
-          break;
-
-        case 'A': // TODO: consider curving line.
-          x = item[6]; y = item[7];
-          break;
-        }
-
-        if (pos.x_min > x) pos.x_min = x;
-        if (pos.x_max < x) pos.x_max = x;
-
-        if (pos.y_min > y) pos.y_min = y;
-        if (pos.y_max < y) pos.y_max = y;
-
-      }
-
-      this._position.x = pos.x_min;
-      this._position.y = pos.y_min;
-
-      this._size.width  = pos.x_max - pos.x_min;
-      this._size.height = pos.y_max - pos.y_min;
-
+    hitTest: function(d) {
     }
   }
 });
@@ -3911,142 +3816,82 @@ var Path = _class("Path", {
 
 /************** src/Drawable.js **************/
 var Drawable = _class("Drawable", {
+  interfaces: [Bindable],
 
   props: {
     impl: null,
     handler: null,
+    batchUpdater: null,
+    target: null,
     _id_acc: 0,
-    _target: null,
     _elements: {},
     _capturing_elements: {},
     _numElements: 0,
     _anchor: 'left-top',
-    _content_size:      {width: 0, height: 0},
-    _content_size_real: {width: 0, height: 0},
-    _viewport_size:     {width: 0, height: 0},
-    _scroll_position:      {x: 0, y: 0},
-    _scroll_position_real: {x: 0, y: 0},
+    _content_size:      { x: 0, y: 0 },
+    _viewport_size:     { x: 0, y: 0 },
     _offset_position:      null,
-    _zoom_ratio: 1.0
+    _transform: null,
+    _inverse_transform: null,
+    _dirty: DIRTY_SIZE | DIRTY_TRANSFORM
   },
 
   methods: {
-    init: function(target, size)
-    {
+    init: function(target, options) {
       var self = this;
       this.target = target;
+      this._viewport_size = options && options.viewportSize || { x: target.clientWidth, y: target.clientHeight };
+      this._content_size = options && options.contentSize || this._viewport_size;
 
-      this._viewport_size.width  = (size && size.viewport && size.viewport.width)  || (size && size.width)  || target.clientWidth;
-      this._viewport_size.height = (size && size.viewport && size.viewport.height) || (size && size.height) || target.clientHeight;
-      this._content_size.width   = (size && size.content  && size.content.width)   || (size && size.width)  || this._viewport_size.width;
-      this._content_size.height  = (size && size.content  && size.content.height)  || (size && size.height) || this._viewport_size.height;
-
-      if (this._content_size.width < this._viewport_size.width)
-        this._content_size.width = this._viewport_size.width;
-
-      if (this._content_size.height < this._viewport_size.height)
-        this._content_size.height = this._viewport_size.height;
-
-      this._content_size_real.width  = this._content_size.width * this._zoom_ratio;
-      this._content_size_real.height = this._content_size.height * this._zoom_ratio;
-
-      this.impl = new Fashion.IMPL.Drawable(
-        target,
-        this._content_size_real,
-        this._viewport_size,
-        function(position) {
-          self._scroll_position.x = position.x / self._zoom_ratio;
-          self._scroll_position.y = position.y / self._zoom_ratio;
-        }
-      );
-
+      this.impl = new Fashion.IMPL.Drawable(this);
+      this.transform(Util.Matrix.scale(1.));
     },
 
-    zoom: function(ratio, position)
-    {
-      if (ratio) {
-        this._zoom_ratio = ratio;
-        this.impl.zoom(ratio);
-        this.contentSize(this._content_size);
-        if (position) {
-          this.scrollPosition({
-            x: position.x - ((this._viewport_size.width  / this._zoom_ratio) / 2),
-            y: position.y - ((this._viewport_size.height / this._zoom_ratio) / 2)
-          });
-        } else {
-        }
-      }
-      return this._zoom_ratio;
-    },
-
-    viewportSize: function(size)
-    {
+    viewportSize: function(size) {
       if (size) {
-        size.width  = Math.max(size.width, 0);
-        size.height = Math.max(size.height, 0);
-        this._viewport_size.width  = size.width;
-        this._viewport_size.height = size.height;
-        this.impl.viewportSize(this._viewport_size);
-        this.contentSize(this._content_size);
+        this._viewport_size = size;
+        this._dirty |= DIRTY_SIZE;
+        this._enqueueForUpdate(this);
       }
-      return _clone(this._viewport_size);
+      return this._viewport_size;
     },
 
-    contentSize: function(size)
-    {
+    contentSize: function(size) {
       if (size) {
-        var vs = this._viewport_size;
-        this._content_size.width  = Math.max(size.width,  vs.width);
-        this._content_size.height = Math.max(size.height, vs.height);
-        this._content_size_real.width  = Math.round(Math.max(this._content_size.width  * this._zoom_ratio, vs.width));
-        this._content_size_real.height = Math.round(Math.max(this._content_size.height * this._zoom_ratio, vs.height));
-
-        this.impl.contentSize(this._content_size_real,
-                              (this._content_size_real.width > this._viewport_size.width ||
-                               this._content_size_real.height > this._viewport_size.height));
-
-        this.scrollPosition(this._scroll_position);
+        this._content_size = size;
+        this._dirty |= DIRTY_TRANSFORM;
+        this._enqueueForUpdate(this);
       }
-      return _clone(this._content_size);
+      return this._content_size;
     },
 
-    scrollPosition: function(position)
-    {
-      if (position) {
-        var cs = this._content_size, vs = this._viewport_size;
-        var left_limit = cs.width  - (vs.width  / this._zoom_ratio);
-        var top_limit  = cs.height - (vs.height / this._zoom_ratio);
-        this._scroll_position.x = _clip(position.x, 0, left_limit, false);
-        this._scroll_position.y = _clip(position.y, 0, top_limit, false);
-        this._scroll_position_real.x = Math.round(this._scroll_position.x * this._zoom_ratio);
-        this._scroll_position_real.y = Math.round(this._scroll_position.y * this._zoom_ratio);
-        this.impl.scrollPosition(this._scroll_position_real);
+    scrollPosition: function(position) {
+      if (position)
+        return this.impl.scrollPosition(position);
+      else
+        return this.impl.scrollPosition();
+    },
+
+    transform: function (value) {
+      if (value) {
+        this._transform = value;
+        this._inverse_transform = value.invert();
+        this._dirty |= DIRTY_TRANSFORM;
+        this._enqueueForUpdate(this);
       }
-
-      return _clone(this._scroll_position);
+      return this._transform;
     },
 
-    getOffsetPosition: function(reflesh)
-    {
-      if (reflesh || this._offset_position === null)
-        this._offset_position = this.impl.getOffsetPosition(reflesh);
-
-      return _clone(this._offset_position);
-    },
-
-    gensym: function()
-    {
+    gensym: function() {
       var sym = "G" + (++this._id_acc);
       return sym;
     },
 
-    numElements: function()
-    {
+    numElements: function() {
       return this._numElements;
     },
 
-    each: function(func)
-    {
+    each: function(func) {
       var elems = this._elements;
       for (var i in elems) {
         if (elems.hasOwnProperty(i)) {
@@ -4055,8 +3900,7 @@ var Drawable = _class("Drawable", {
       }
     },
 
-    find: function(func)
-    {
+    find: function(func) {
       var rt = null;
       this.each(function(elem, i) {
         if (rt || !func.call(this, elem, i)) return;
@@ -4065,8 +3909,7 @@ var Drawable = _class("Drawable", {
       return rt;
     },
 
-    collect: function(func)
-    {
+    collect: function(func) {
       var rt = [];
       this.each(function(elem, i) {
         if (func.call(this, elem, i)) rt.push(elem);
@@ -4074,15 +3917,13 @@ var Drawable = _class("Drawable", {
       return rt;
     },
 
-    map: function(func)
-    {
+    map: function(func) {
       var elems = this._elements;
       this.each(function(elem, i) { elems[i] = func.call(this, elem); });
       return this;
     },
 
-    anchor: function(d)
-    {
+    anchor: function(d) {
       if (d) {
         this._anchor = d;
         this.impl.anchor(d);
@@ -4092,10 +3933,11 @@ var Drawable = _class("Drawable", {
 
     draw: function(shape) {
       this.impl.append(shape.impl);
+      shape.impl.refresh(shape._dirty);
       var id = this.gensym();
       this._elements[id] = shape;
-      shape.__id = id;
-      shape.attachTo(this);
+      shape.id = id;
+      shape._attachTo(this);
       this._numElements++;
       return shape;
     },
@@ -4108,18 +3950,17 @@ var Drawable = _class("Drawable", {
     },
 
     erase: function(shape) {
-      var id = shape.__id;
+      var id = shape.id;
 
       if (id && (id in this._elements)) {
         shape.drawable = null;
-        delete shape.__id;
+        shape._dirty = ~0;
+        shape.id = null;
         this.impl.remove(shape.impl);
         delete this._elements[id];
         this._numElements--;
-
       } else {
         throw new NotSupported("Shape " + shape + " is not added yet");
-
       }
       return shape;
     },
@@ -4132,18 +3973,45 @@ var Drawable = _class("Drawable", {
       this.impl.releaseMouse(shape.impl);
     },
 
-    addEvent: function(h) {
-      if (this.handler === null) this.handler = new MouseEventsHandler(this);
-      this.handler.add(h);
+    addEvent: function(type, h) {
+      if (this.handler === null)
+        this.handler = new MouseEventsHandler(this);
+      this.handler.add.apply(this.handler, arguments);
+      this._dirty |= DIRTY_EVENT_HANDLERS;
+      this._enqueueForUpdate(this);
     },
 
-    removeEvent: function()
-    {
+    removeEvent: function(type, h) {
       if (this.handler === null) return;
-      this.handler.remove.apply(this.handler, arguments);
+      var arglen = arguments.length;
+      if (arglen === 0) {
+        this.handler.removeAll();
+      } else if (arglen == 1) {
+        this.handler.removeAll.apply(this.handler, type);
+      } else if (arguments.length < 3) {
+        this.handler.remove(type, h);
+      }
+      this._dirty |= DIRTY_EVENT_HANDLERS;
+      if (this.drawable)
+        this.drawable._enqueueForUpdate(this);
+    },
+
+    _enqueueForUpdate: function (shape) {
+      if (this.batchUpdater) {
+        this.batchUpdater.schedule(shape, function() {
+          shape.impl.refresh(shape._dirty);
+          shape._dirty = 0;
+        });
+      } else {
+        shape.impl.refresh(shape._dirty);
+        shape._dirty = 0;
+      }
     }
   }
 });
+/*
+ * vim: sts=2 sw=2 ts=2 et
+ */
 
 
 /************** src/Text.js **************/
@@ -4151,57 +4019,64 @@ var Text = _class("Text", {
 
   mixins: [Base],
 
-  props: {},
+  props: {
+    _text: '',
+    _fontFamily: 'Sans',
+    _fontSize: 10
+  },
 
   methods: {
-    init: function (x, y, font_size, str)
-    {
-      this.impl = new Fashion.IMPL.Text(str);
-      this.size({font: font_size});
-      this.position({x: x, y: y});
+    init: function (values) {
+      Base.prototype.init.apply(this, arguments);
+      this.impl = new Fashion.IMPL.Text(this);
     },
 
-    fontFamily: function(d)
-    {
-      if (d) {
-        this._family = d;
-        this.impl.family(this._family);
+    fontFamily: function(value) {
+      if (value) {
+        this._fontFamily = value
+        this._dirty |= DIRTY_SHAPE;
+        if (this.drawable)
+          this.drawable._enqueueForUpdate(this);
       }
-      return this._family;
+      return this._fontFamily;
     },
 
-    lineWidth: function()
-    {
-    },
-
-    size: function(d)
-    {
-      if (d) {
-        var font = d.font;
-        this._size.font = font;
-        this.impl.size(font);
+    fontSize: function(value) {
+      if (value) {
+        this._fontSize = value;
+        this._dirty |= DIRTY_SHAPE;
+        if (this.drawable)
+          this.drawable._enqueueForUpdate(this);
       };
-
-      return {font: this._size.font};
+      return this._fontSize;
     },
 
-    displayPosition: function()
-    {
+    text: function (value) {
+      if (value) {
+        this._text = value;
+        this._dirty |= DIRTY_SHAPE;
+        if (this.drawable)
+          this.drawable._enqueueForUpdate(this);
+      };
+      return this._text;
     },
 
-    displaySize: function()
-    {
+    displayPosition: function() {
     },
 
-    gravityPosition: function()
-    {
+    displaySize: function() {
     },
 
-    hitTest: function(d)
-    {
+    gravityPosition: function() {
+    },
+
+    hitTest: function(d) {
     }
   }
 });
+/*
+ * vim: sts=2 sw=2 ts=2 et
+ */
 
 
 /************** src/Image.js **************/
@@ -4210,33 +4085,36 @@ var Image = _class('Image', {
 
   interfaces: [Shape],
 
+  props: {
+    _imageData: null
+  },
+
   methods: {
-    init: function Image_init(imageData, position, size) {
-      this.impl = new Fashion.IMPL.Image(imageData);
-      this.position = position;
-      if (size) {
-        this.size = size;
-      } else {
-        imageData.addEventListener("load", function() {
-          this.size(imageData.size);
-        });
+    init: function Image_init() {
+      Base.prototype.init.apply(this, arguments);
+      this.impl = new Fashion.IMPL.Image(this);
+    },
+
+    imageData: function (value) {
+      if (value !== void(0)) {
+        this._imageData = value;
+        this._dirty |= DIRTY_SHAPE;
+        if (this.drawable)
+          this.drawable._enqueueForUpdate(this);
       }
+      return this._imageData;
     },
 
-    displayPosition: function()
-    {
+    displayPosition: function() {
     },
 
-    displaySize: function()
-    {
+    displaySize: function() {
     },
 
-    gravityPosition: function()
-    {
+    gravityPosition: function() {
     },
 
-    hitTest: function(d)
-    {
+    hitTest: function(d) {
     }
   }
 });
@@ -4245,6 +4123,7 @@ var Image = _class('Image', {
  * vim: sts=2 sw=2 ts=2 et
  */
 
+  Fashion.Bindable = Bindable;
   Fashion.Shape    = Shape;
   Fashion.Circle   = Circle;
   Fashion.Rect     = Rect;

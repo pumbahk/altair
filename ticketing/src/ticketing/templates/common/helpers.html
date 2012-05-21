@@ -61,7 +61,7 @@
   </div>
 </%def>
 
-<%def name="safe_strftime(str, format='%Y/%m/%d %H:%M')">
+<%def name="safe_strftime(str, format='%Y-%m-%d %H:%M')">
   ${str and str.strftime(format) or ''}
 </%def>
 

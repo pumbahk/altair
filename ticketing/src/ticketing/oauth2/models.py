@@ -22,6 +22,7 @@ session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
 
 from ticketing.operators.models import Operator
+from ticketing.models import WithTimestamp
 
 class TimestampGenerator(object):
     """Callable Timestamp Generator that returns a UNIX time integer.
@@ -55,15 +56,13 @@ class KeyGenerator(object):
     def __call__(self):
         return sha512(uuid4().hex).hexdigest()[0:self.length]
 
-class Service(Base):
+class Service(Base, WithTimestamp):
     __tablename__ = 'Service'
     id              = Column(BigInteger, primary_key=True)
     name            = Column(String(255))
     key             = Column(String(CLIENT_KEY_LENGTH), default=KeyGenerator(CLIENT_KEY_LENGTH), index=True, unique=True)
     secret          = Column(String(CLIENT_SECRET_LENGTH), default=KeyGenerator(CLIENT_SECRET_LENGTH),unique=True)
     redirect_uri    = Column(String(1024))
-    updated_at      = Column(DateTime)
-    created_at      = Column(DateTime)
     status          = Column(Integer)
 
     @staticmethod
@@ -71,7 +70,7 @@ class Service(Base):
         return session.query(Service).filter(Service.key == key).first()
 
 
-class AccessToken(Base):
+class AccessToken(Base, WithTimestamp):
     __tablename__ = 'AccessToken'
     id          = Column(BigInteger, primary_key=True)
 
@@ -88,8 +87,6 @@ class AccessToken(Base):
     issue = Column(Integer, default=TimestampGenerator())
     expire = Column(DateTime, default=TimestampGenerator(ACCESS_TOKEN_EXPIRATION))
     refreshable = Column(Boolean, default=REFRESHABLE)
-    updated_at = Column(DateTime, onupdate=datetime.now())
-    created_at = Column(DateTime, default=datetime.now())
     status = Column(Integer, default=1)
 
     @staticmethod
@@ -101,14 +98,12 @@ class AccessToken(Base):
         return session.query(AccessToken).filter(AccessToken.key == key).first()
 
 
-class MACNonce(Base):
+class MACNonce(Base, WithTimestamp):
     __tablename__       = 'MACNonce'
     id                  = Column(BigInteger, primary_key=True)
     access_token        = relationship("AccessToken")
     access_token_id     = Column(BigInteger, ForeignKey("AccessToken.id"))
     nonce               = Column(String(30), index=True)
 
-    updated_at          = Column(DateTime, onupdate=datetime.now())
-    created_at          = Column(DateTime, default=datetime.now())
     status              = Column(Integer, default=1)
 

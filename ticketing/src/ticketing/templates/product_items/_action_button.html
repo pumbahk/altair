@@ -1,0 +1,63 @@
+<%page args="performance" />
+
+% if performance:
+<script type="text/javascript">
+  function new_product_item(product_id) {
+    var el = '#product-' + product_id;
+    $('#modal-product_item #name').val($(el + ' #name').text());
+    $('#modal-product_item #product #price').val($(el + ' #price').text());
+    $('#modal-product_item #sales_segment_id').val($(el + ' #sales_segment').attr('value'));
+    $('#modal-product_item #id').val('');
+    $('#modal-product_item #performance_id').val(${performance.id});
+    $('#modal-product_item #product_id').val($(el + ' #id').text());
+    $('#modal-product_item #stock_holders').removeAttr('disabled');
+    $('#modal-product_item #stock_id').removeAttr('disabled');
+    $('#modal-product_item #product-item #price').val('');
+    $('#modal-product_item #quantity').val('');
+    $('#modal-product_item').modal('toggle');
+  }
+
+  function edit_product_item(product_id, product_item_id) {
+    var product = '#product-' + product_id;
+    $('#modal-product_item #name').val($(product + ' #name').text());
+    $('#modal-product_item #product #price').val($(product + ' #price').text());
+    $('#modal-product_item #sales_segment_id').val($(product + ' #sales_segment').attr('value'));
+    var product_item = '#product_item-' + product_item_id;
+    $('#modal-product_item #id').val(product_item_id);
+    $('#modal-product_item #performance_id').val(${performance.id});
+    $('#modal-product_item #product_id').val(product_id);
+    $('#modal-product_item #stock_holders').val($(product_item + ' #stock_holder').attr('value')).change();
+    $('#modal-product_item #stock_holders').attr('disabled', 'disabled');
+    $('#modal-product_item #stock_id').val($(product_item + ' #stock').attr('value'));
+    $('#modal-product_item #stock_id').attr('disabled', 'disabled');
+    $('#modal-product_item #product-item #price').val($(product_item + ' #price').text());
+    $('#modal-product_item #quantity').val($(product_item + ' #quantity').text());
+    $('#modal-product_item').modal('toggle');
+  }
+
+  function delete_product_item(product_item_id) {
+    $('#modal-delete #delete').attr('href', '/products/items/delete/' + product_item_id);
+    $('#modal-delete #message').text('選択した在庫を削除します。よろしいですか？');
+    $('#modal-delete').modal('toggle');
+  }
+
+  function save_product_item() {
+    var id = $('#modal-product_item #id').val();
+    var url = id ? '/products/items/edit/' + id : '/products/items/new';
+    var param = {};
+    $('#modal-product_item :input').each(function(i, v) {
+      param[v.name] = v.value;
+    });
+    $.post(
+        url,
+        param,
+        function(data) {
+          $('#modal-product_item').modal('hide');
+          $('#product_items-form').html(data);
+          $('#modal-product_item').modal('show');
+        },
+        "html"
+    );
+  }
+</script>
+% endif

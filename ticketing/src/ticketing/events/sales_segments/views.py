@@ -4,6 +4,7 @@ import webhelpers.paginate as paginate
 
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
+from pyramid.renderers import render_to_response
 from pyramid.url import route_path
 
 from ticketing.models import merge_session_with_post, record_to_multidict
@@ -24,9 +25,9 @@ class SalesSegments(BaseView):
             'event_id':event.id
         }
         sales_segments = SalesSegment.find_by(**conditions)
-        form_ss = SalesSegmentForm()
+
         return {
-            'form_ss':form_ss,
+            'form_sales_segment':SalesSegmentForm(event_id=event_id),
             'sales_segments':sales_segments,
             'event':event,
         }
@@ -40,15 +41,16 @@ class SalesSegments(BaseView):
 
         form_ss = SalesSegmentForm()
         form_ss.process(record_to_multidict(sales_segment))
+
         return {
             'form_ss':form_ss,
             'form_pdmp':PaymentDeliveryMethodPairForm(),
             'sales_segment':sales_segment,
         }
 
-    @view_config(route_name='sales_segments.new', request_method='POST')
+    @view_config(route_name='sales_segments.new', request_method='POST', renderer='ticketing:templates/sales_segments/_form.html')
     def new_post(self):
-        event_id = int(self.request.matchdict.get('event_id', 0))
+        event_id = int(self.request.POST.get('event_id', 0))
         if not event_id:
             return HTTPNotFound('event id %d is not found' % event_id)
 
@@ -57,11 +59,15 @@ class SalesSegments(BaseView):
             sales_segment = merge_session_with_post(SalesSegment(), f.data)
             sales_segment.event_id = event_id
             sales_segment.save()
+
             self.request.session.flash(u'販売区分を保存しました')
+            return render_to_response('ticketing:templates/refresh.html', {}, request=self.request)
+        else:
+            return {
+                'form':f,
+            }
 
-        return HTTPFound(location=route_path('sales_segments.show', self.request, sales_segment_id=sales_segment.id))
-
-    @view_config(route_name='sales_segments.edit', request_method='POST')
+    @view_config(route_name='sales_segments.edit', request_method='POST', renderer='ticketing:templates/sales_segments/_form.html')
     def edit_post(self):
         sales_segment_id = int(self.request.matchdict.get('sales_segment_id', 0))
         sales_segment = SalesSegment.get(sales_segment_id)
@@ -72,9 +78,13 @@ class SalesSegments(BaseView):
         if f.validate():
             sales_segment = merge_session_with_post(sales_segment, f.data)
             sales_segment.save()
-            self.request.session.flash(u'販売区分を保存しました')
 
-        return HTTPFound(location=route_path('sales_segments.show', self.request, sales_segment_id=sales_segment.id))
+            self.request.session.flash(u'販売区分を保存しました')
+            return render_to_response('ticketing:templates/refresh.html', {}, request=self.request)
+        else:
+            return {
+                'form':f,
+            }
 
     @view_config(route_name='sales_segments.delete')
     def delete(self):

@@ -35,7 +35,7 @@ from service import ServiceData
 from organization import OrganizationData
 from account import AccountData
 from permission import PermissionData
-from operator import OperatorData, OperatorRoleData
+from operator import OperatorData, OperatorRoleData, OperatorAuthData
 from event import *
 from venue import *
 from product import *
@@ -58,6 +58,7 @@ def import_seed_data():
              'PermissionData'         : Permission,
              'OperatorRoleData'       : OperatorRole,
              'OperatorData'           : Operator,
+             'OperatorAuthData'       : OperatorAuth,
              'BankData'               : Bank,
              'BankAccountData'        : BankAccount,
              'AccountData'            : Account,
@@ -87,6 +88,17 @@ def import_seed_data():
              'SeatStatusEvent2Venue1Data': SeatStatus,
              'SeatStatusEvent2Venue2Data': SeatStatus,
              'SeatStatusEvent2Venue3Data': SeatStatus,
+             'VenueArea_group_l0_idData': VenueArea_group_l0_id,
+             'VenueAreaTemplateVenue1Data': VenueArea,
+             'VenueAreaTemplateVenue2Data': VenueArea,
+             'VenueAreaEvent1Venue1Data': VenueArea,
+             'VenueAreaEvent1Venue2Data': VenueArea,
+             'VenueAreaEvent1Venue3Data': VenueArea,
+             'VenueAreaEvent1Venue4Data': VenueArea,
+             'VenueAreaEvent1Venue5Data': VenueArea,
+             'VenueAreaEvent2Venue1Data': VenueArea,
+             'VenueAreaEvent2Venue2Data': VenueArea,
+             'VenueAreaEvent2Venue3Data': VenueArea,
              'TemplateSeatAttributeData': SeatAttribute,
              'SeatAttributeData': SeatAttribute,
              'SeatAdjacencySetData': SeatAdjacencySet,
@@ -180,6 +192,7 @@ def import_seed_data():
         AccountData,
         OrganizationData,
         OperatorData,
+        OperatorAuthData,
         EventData,
         PerformanceEvent1Data,
         PerformanceEvent2Data,
@@ -187,6 +200,17 @@ def import_seed_data():
         TemplateVenueData,
         VenueEvent1Data,
         VenueEvent2Data,
+        VenueAreaEvent1Venue1Data,
+        VenueAreaEvent1Venue2Data,
+        VenueAreaEvent1Venue3Data,
+        VenueAreaEvent1Venue4Data,
+        VenueAreaEvent1Venue5Data,
+        VenueAreaEvent2Venue1Data,
+        VenueAreaEvent2Venue2Data,
+        VenueAreaEvent2Venue3Data,
+        VenueAreaTemplateVenue1Data,
+        VenueAreaTemplateVenue2Data,
+        VenueArea_group_l0_idData,
         TemplateSeatVenue1Data,
         TemplateSeatVenue2Data,
         SeatEvent1Venue1Data,

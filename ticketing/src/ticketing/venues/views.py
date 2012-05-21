@@ -7,7 +7,7 @@ from sqlalchemy.orm import joinedload, noload
 from urllib2 import urlopen
 
 from ticketing.models import DBSession
-from .models import Venue, Seat, SeatAttribute, VenueArea, seat_venue_area_table, SeatAdjacency, SeatAdjacencySet
+from .models import Venue, Seat, SeatAttribute, VenueArea, SeatAdjacency, SeatAdjacencySet
 from ticketing.products.models import Stock, StockHolder, StockType
 
 @view_config(route_name="api.get_drawing", request_method="GET")
