@@ -253,15 +253,16 @@ class TicketingCartResourceTests(unittest.TestCase):
         self.assertEqual(result[1], (2, 1))
 
     def test_select_seat_not_found(self):
-        from ticketing.venues.models import Seat, SeatAdjacency, SeatAdjacencySet, SeatStatus, SeatStatusEnum
+        from ticketing.venues.models import Seat, SeatAdjacency, SeatAdjacencySet, SeatStatus, SeatStatusEnum, Venue
         from ticketing.products.models import Stock
 
+        venue = self._add_venue(10, 11, 12)
         # S席
         stock = Stock(id=1)
         adjacency_set = SeatAdjacencySet(id=1, seat_count=5)
         seats = []
         for i in range(5):
-            seat = Seat(id=i, stock=stock)
+            seat = Seat(id=i, stock=stock, venue=venue)
             SeatStatus(seat=seat, status=int(SeatStatusEnum.Vacant))
             seats.append(seat)
 
@@ -285,12 +286,13 @@ class TicketingCartResourceTests(unittest.TestCase):
         from ticketing.venues.models import Seat, SeatAdjacency, SeatAdjacencySet, SeatStatus, SeatStatusEnum
         from ticketing.products.models import Stock
 
+        venue = self._add_venue(4, 5, 6)
         # S席
         stock = Stock(id=1)
         adjacency_set = SeatAdjacencySet(id=1, seat_count=5)
         seats = []
         for i in range(5):
-            seat = Seat(id=i, stock=stock)
+            seat = Seat(id=i, stock=stock, venue=venue)
             SeatStatus(seat=seat, status=int(SeatStatusEnum.Vacant))
             seats.append(seat)
 
@@ -321,6 +323,14 @@ class TicketingCartResourceTests(unittest.TestCase):
         self.assertIsNotNone(cart)
         self.assertEqual(len(cart.products), 0)
 
+    def _add_venue(self, organization_id, site_id, venue_id):
+        from ticketing.venues.models import Venue, Site
+        from ticketing.organizations.models import Organization
+        organization = Organization(id=organization_id)
+        site = Site(id=site_id)
+        venue = Venue(id=venue_id, site=site, organization=organization)
+        return venue
+
     def test_order_products_one_order(self):
         # TODO 各モデルのIDに同じ値を使わないようにする
         from ticketing.venues.models import Seat, SeatAdjacency, SeatAdjacencySet, SeatStatus, SeatStatusEnum
@@ -331,9 +341,14 @@ class TicketingCartResourceTests(unittest.TestCase):
         product_item_id = 2
         adjacency_set_id = 3
         adjacency_id = 4
+        venue_id = 5
+        site_id = 6
+        organization_id = 7
+
+        venue = self._add_venue(organization_id, site_id, venue_id)
         stock = Stock(id=stock_id, quantity=100)
         stock_status = StockStatus(stock_id=stock.id, quantity=100)
-        seats = [Seat(id=i, stock_id=stock.id) for i in range(5)]
+        seats = [Seat(id=i, stock_id=stock.id, venue=venue) for i in range(5)]
         seat_statuses = [SeatStatus(seat_id=i, status=int(SeatStatusEnum.Vacant)) for i in range(5)]
         product_item = ProductItem(id=product_item_id, stock_id=stock.id, price=100, quantity=1)
         product = Product(id=1, price=100, items=[product_item])
@@ -375,7 +390,6 @@ class TicketingCartResourceTests(unittest.TestCase):
         self.assertEqual(cart.products[0].items[0].quantity, 2)
 
         from sqlalchemy import sql
-#        stock_status = self.session.query(StockStatus).filter_by(stock_id=stock.id).one()
         stock_statuses = self.session.bind.execute(sql.select([StockStatus.quantity]).where(StockStatus.stock_id==stock.id))
         for stock_status in stock_statuses:
             self.assertEqual(stock_status.quantity, 98)
