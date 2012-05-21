@@ -140,7 +140,7 @@ class Page(PublishUnpublishMixin,
     event = relationship('Event', backref='pages')
 
     pageset_id = Column(Integer, ForeignKey('pagesets.id'))
-    pageset = relationship('PageSet', backref='pages')
+    pageset = relationship('PageSet', backref='pages', uselist=False)
 
     publish_begin = Column(DateTime)
     publish_end = Column(DateTime)

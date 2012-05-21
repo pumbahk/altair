@@ -28,24 +28,23 @@ class SearchPageResource(object):
     def get_result_sequence_from_form(self, form):
         query_params = form.make_query_params()
         logger.info(pprint.pformat(query_params))
-
         query = self._get_pageset_query(query_params)
         return self.result_sequence_from_query(query)
 
-    # def _get_pageset_query(self, query_parms):
-    #     return searcher.get_pageset_query(query_params)        
+    def _get_pageset_query(self, query_params):
+        return searcher.get_pageset_query(self.request, query_params)
 
-    def _get_pageset_query(self, query_params): ## dummy 
-        from altaircms.page.models import PageSet, Page
-        from altaircms.event.models import Event
-        event = Event(subtitle=u"ソ・ジソブ　日本公式ファンクラブ1周年記念！2012 ファンミーティング in 東京", 
-                      description=u"2012/3/24(土) 東京ビッグサイト（東京国際展示場）(東京都)", 
-                      event_open=datetime(2012, 5, 1))
-        page_set = PageSet(url="http://www.example.com", version_counter=1, event=event)
-        page = Page(pageset=page_set, version=1, 
-                    description="楽天チケットイベント詳細ページです", 
-                    )
-        return [page_set]*5
+    # def _get_pageset_query(self, query_params): ## dummy 
+    #     from altaircms.page.models import PageSet, Page
+    #     from altaircms.event.models import Event
+    #     event = Event(subtitle=u"ソ・ジソブ　日本公式ファンクラブ1周年記念！2012 ファンミーティング in 東京", 
+    #                   description=u"2012/3/24(土) 東京ビッグサイト（東京国際展示場）(東京都)", 
+    #                   event_open=datetime(2012, 5, 1))
+    #     page_set = PageSet(url="http://www.example.com", version_counter=1, event=event)
+    #     page = Page(pageset=page_set, version=1, 
+    #                 description="楽天チケットイベント詳細ページです", 
+    #                 )
+    #     return [page_set]*5
 
 
 class SearchResultRender(object):

@@ -10,11 +10,45 @@ from altaircms.models import (
 from altaircms.models import DBSession
 from altaircms.page.models import PageSet
 from altaircms.event.models import Event
+from altaircms.solr import api as solrapi
 
-def get_pageset_query(query_params): 
+
+def search_by_freeword(qs, request, words, join_op):
+    assert join_op in ("intersection", "union")
+    
+    fulltext_search = solrapi.get_fulltext_search(request)
+    if join_op == "intersection":
+        pageset_ids = _pageset_ids_by_freeword_intersection(fulltext_search, words)
+    elif join_op == "union":
+        pageset_ids = _pageset_ids_by_freeword_union(fulltext_search, words)
+    return qs.filter(PageSet.id.in_(pageset_ids))
+
+def _pageset_ids_by_freeword_intersection(fulltext_search, words):
+    pageset_id_set = set()
+    for word in words:
+        query = solrapi.create_query_from_freeword(word)
+        ## todo: implement
+        pageset_id_set = pageset_id_set.intersection(fulltext_search.search(query))
+    return pageset_id_set
+    
+def _pageset_ids_by_freeword_union(fulltext_search, words):
+    pageset_id_set = set()
+    for word in words:
+        query = solrapi.create_query_from_freeword(word)
+        ## todo: implement
+        pageset_id_set.update(fulltext_search.search(query))
+    return pageset_id_set
+        
+def _extract_tags(params, k):
+    if k not in params:
+        return []
+    tags = [e.strip() for e in params.pop(k).split(",")] ##
+    return [k for k in tags if k]
+
+def get_pageset_query(request, query_params): 
     """ 検索する関数.このモジュールのほかの関数は全てこれのためにある。
 
-    0. フリーワード検索追加. ## todo
+    0. フリーワード検索追加. 
     1. カテゴリトップページから、対応するページを見つける
     2. イベントデータから、対応するページを見つける(sub_qs)
     """
@@ -28,7 +62,11 @@ def get_pageset_query(query_params):
 
     qs = PageSet.query
     qs = search_by_ganre(query_params.get("top_categories"), query_params.get("sub_categories"), qs=qs)
-    return search_by_events(qs, sub_qs)
+    qs = search_by_events(qs, sub_qs)
+    if "query" in query_params:
+        words = _extract_tags(query_params, "query")
+        qs = search_by_freeword(qs, request, words, query_params.get("query_cond"))
+    return  qs
 
 
 def search_by_events(qs, event_ids):

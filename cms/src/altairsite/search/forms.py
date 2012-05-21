@@ -26,7 +26,15 @@ class QueryPartForm(form.Form):
         return u"%(query)s %(query_cond)s" % self
 
     def make_query_params(self):
-        return {}
+        params = self.data
+        query = params.get("query")
+        query_cond = params.get("query_cond")
+
+        if not query:
+            return {}
+        if query_cond not in ("intersection", "union"):
+            params["query_cond"] = "intersection"
+        return params
 
 ## todo:ジャンル
 ## todo: make query

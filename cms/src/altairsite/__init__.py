@@ -15,6 +15,10 @@ def main(global_config, **settings):
     config = Configurator(settings=settings)
 
     config.include("altaircms.plugins")
+    config.include("altaircms.solr") ## for fulltext search
+    search_utility = settings.get("altaircms.solr.search.utility", "altaircms.solr.api.DummySearch")
+    config.add_fulltext_search(search_utility)
+
     config.include("altairsite.front")
     config.include("altairsite.rakuten_auth")
     config.include("altairsite.search", route_prefix="search")

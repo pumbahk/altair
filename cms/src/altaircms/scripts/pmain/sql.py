@@ -34,6 +34,7 @@ def main(*args, **kwargs):
     names = ["music"]
     parent_category_ids = DBSession.query(Category.id).filter(Category.name.in_(names))
     category_page_ids = DBSession.query(PageSet.id).join(Category, PageSet.id==Category.pageset_id).filter(Category.parent_id.in_(parent_category_ids))
-    PageSet.query.filter(PageSet.parent_id.in_(category_page_ids)).all()
+    PageSet.query.filter(PageSet.parent_id.in_(set(category_page_ids))).all()
+
 
  

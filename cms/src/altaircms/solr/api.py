@@ -36,12 +36,23 @@ class SolrSearchDoc(object):
     def query_doc(self):
         return self.doc
 
+## query
 def create_query_from_dict(D__=None, **kwargs):
     return SolrSearchQuery(D__ or kwargs)
 
+def create_query_from_freeword(word):
+    return dict(event_title=word, 
+                event_subtitle=word, 
+                event_place=word, 
+                page_description=word, 
+                page_title=word, 
+                page_keywords=word, 
+                )
+
+## doc
 def create_doc_from_dict(D):
     return SolrSearchDoc(D)
-
+                
 def create_doc_from_event(event): ## fixme
     return SolrSearchDoc(
         dict(event_title=event.title, 
@@ -50,18 +61,19 @@ def create_doc_from_event(event): ## fixme
              ))
 
 def create_doc_from_page(page):
-    """ id == page.id 
+    """ id == page.pageset.id 
     """
     if page.event:
         doc = create_doc_from_event(page.event)
     else:
         doc = SolrSearchDoc()
 
-    doc.update(dict(page_description=page.description, 
-                    page_title=page.title, 
-                    page_keywords=page.keywords, 
-                    id=page.id, 
-                    page_id=page.id))
+    doc.update(
+        dict(page_description=page.description, 
+             page_title=page.title, 
+             page_keywords=page.keywords, 
+             id=page.pageset.id, 
+             page_id=page.id))
     return doc
 
 @implementer(IFulltextSearch)
@@ -114,6 +126,3 @@ class DummySearch(object):
 
     def delete(self, doc, *args, **kwargs):
         logger.info(u"fulltext search delete: %s" % doc)
-
-        
-
