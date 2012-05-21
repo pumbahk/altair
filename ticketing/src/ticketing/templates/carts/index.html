@@ -14,6 +14,7 @@
 <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/carts.js')}"></script>
 <script>
     var venues_selection = ${venues_selection};
+    var order_url = "${order_url}";
     $(function() {
         carts.init(venues_selection);
     })
@@ -103,7 +104,7 @@
 					</dl>
 				</div>
 				<div id="selectBuy">
-					<form id="form2" name="form2" method="post" action="">
+					<form id="order-form" name="form2" method="post" action="">
 						<h3><img src="${request.static_url('ticketing.cart:static/img/settlement/select.gif')}" alt="購入枚数、購入方法をお選びください" width="246" height="14" /></h3>
 						<dl>
 							<dt id="payment-seat-type">エクストラファミリーシート</dt>
@@ -138,7 +139,7 @@
 						</dl>
 						<ul>
 							<li><a href="#"><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_select_buy.gif')}" alt="座席を選んで購入" width="236" height="46" /></a></li>
-							<li><a href="#"><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_entrust_buy.gif')}" alt="おまかせで購入" width="236" height="46" /></a></li>
+							<li><a href="javascript:void(0);" id="btn-order"><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_entrust_buy.gif')}" alt="おまかせで購入" width="236" height="46" /></a></li>
 						</ul>
 						<ul>
 							<li><a href="#"><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_redo.gif')}" alt="席種を選択しなおす" width="236" height="46" /></a></li>

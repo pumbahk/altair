@@ -178,6 +178,16 @@ class TicketingCartResrouce(object):
                         v_models.Seat.id==v_models.seat_seat_adjacency_table.c.seat_id,
                     )
                 ).limit(1)
+                adjacency = conn.execute(sub).fetchone()
+                if not adjacency:
+                    trans.rollback() # 確保失敗 ロールバックして戻り
+                    for stock_id, quantity in stock_quantity:
+                        up = p_models.StockStatus.__table__.update().values(
+                                {"quantity": p_models.StockStatus.quantity + quantity}
+                        ).where(p_models.StockStatus.stock_id==stock_id)
+                        affected = conn.execute(up).rowcount
+                    return
+
                 select = sql.select([v_models.SeatStatus.seat_id], for_update=True).where(
                     sql.and_(
                         #確保されていない
@@ -185,7 +195,7 @@ class TicketingCartResrouce(object):
                         v_models.SeatAdjacency.id==v_models.seat_seat_adjacency_table.c.seat_adjacency_id,
                         v_models.Seat.id==v_models.seat_seat_adjacency_table.c.seat_id,
                         v_models.SeatStatus.seat_id == v_models.Seat.id,
-                        v_models.SeatAdjacency.id.in_(sub),
+                        v_models.SeatAdjacency.id==adjacency[0],
                     )
 
                 )

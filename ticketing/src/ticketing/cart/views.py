@@ -52,7 +52,8 @@ class IndexView(object):
                                product=e.products,
                     ),
                     dates=dates,
-                    venues_selection=Markup(json.dumps(select_venues)))
+                    venues_selection=Markup(json.dumps(select_venues)),
+                    order_url=self.request.route_url("cart.order"))
 
     @view_config(route_name='cart.seat_types', renderer="json")
     def get_seat_types(self):
@@ -130,7 +131,7 @@ class ReserveView(object):
         return [(products.get(int(c[0])), c[1]) for c in controls]
 
 
-    @view_config(route_name='cart.order', renderer='json')
+    @view_config(route_name='cart.order', request_method="POST", renderer='json')
     def __call__(self):
         """
         座席情報から座席グループを検索する

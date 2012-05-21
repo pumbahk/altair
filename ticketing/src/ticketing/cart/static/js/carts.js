@@ -53,6 +53,16 @@ carts.AppView.prototype.init = function(presenter) {
             }
         }
     );
+    $('#btn-order').click(function(event) {
+        event.stopPropagation();
+        var values = $("#order-form").serialize();
+        $.ajax({
+            url: order_url,
+            dataType: 'json',
+            data: values,
+            type: 'POST'
+        })
+    });
     this.presenter = presenter;
     this.presenter.init(this);
 };
@@ -88,7 +98,7 @@ carts.AppView.prototype.show_payments = function(seat_type_name, products) {
         price.text('￥' + value.price);
         payment.append(price);
         var amount = $('<select/>');
-        amount.attr('name', value.id);
+        amount.attr('name', "product-" + value.id);
         for (var i=0; i < 99; i++) { // TODO 枚数制限
             opt = $('<option/>');
             opt.text(i);
