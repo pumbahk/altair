@@ -12,6 +12,12 @@
         $('#modal-stock_type #color-picker').css('display', 'block');
       }
     });
+
+    $('#modal-stock_type').on('shown', function(){
+      $(this).css('max-height', '750px')
+          .css('margin-top', ($(this).outerHeight()/2)*-1)
+          .css('margin-left',($(this).outerWidth()/2)*-1);
+    });
   });
 </script>
 

@@ -2,6 +2,8 @@
 <%namespace file="/common/helpers.html" import="pager"/>
 <%namespace file="/common/helpers.html" import="flash_messages" />
 <%namespace file="/common/helpers.html" import="safe_strftime" />
+<%namespace file="/common/helpers.html" import="price_format" />
+<%namespace file="/common/helpers.html" import="breadcrumbs" />
 
 <style>
   .ordered-item {
@@ -22,6 +24,13 @@
 <div class="row-fluid">
   <%include file="/parts/_menu.html" />
 
+  <div class="span10">
+    ${breadcrumbs(
+      names=[u'トップ', u'購入情報'],
+      urls=[request.route_path('index')]
+    )}
+  </div>
+
   <span class="span10">
     <div class="page-header">
       <h3>購入情報</h3>
@@ -37,6 +46,7 @@
         <th class="minwidth"></th>
         <th class="minwidth">ID</th>
         <th class="span2">購入日時</th>
+        <th class="span2">金額</th>
         <th class="span2">ユーザー</th>
         <th>イベント</th>
         <th class="span2">日時</th>
@@ -47,17 +57,18 @@
       % for order in orders:
       <tr>
         <td></td>
-        <td><a href="${request.route_path('orders.show', order_id=order.id)}">${order.id}</a></td>
-        <td>${safe_strftime(order.created_at)}</td>
+        <td>${order.id}</td>
+        <td><a href="${request.route_path('orders.show', order_id=order.id)}">${safe_strftime(order.created_at)}</a></td>
+        <td>${price_format(order.total_amount)}円</td>
         <td>${order.user.user_profile.nick_name}</td>
         <td>${order.ordered_products[0].product.event.title}</td>
         <td>${order.ordered_products[0].ordered_product_items[0].product_item.performance.start_on}</td>
         <td>${order.ordered_products[0].ordered_product_items[0].product_item.performance.venue.name}</td>
       </tr>
       <tr>
-        <td colspan="7">
+        <td colspan="8">
           % for ordered_product in order.ordered_products:
-          <span class="ordered-item">${ordered_product.product.name} ${ordered_product.product.price}</span>
+          <span class="ordered-item">${ordered_product.product.name} ${price_format(ordered_product.product.price)}円</span>
           % endfor
         </td>
       </tr>
