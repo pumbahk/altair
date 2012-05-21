@@ -638,3 +638,7 @@ class ReserveViewTests(unittest.TestCase):
         self.assertEqual(result, dict(result='NG'))
         cart_id = request.session.get('ticketing.cart_id')
         self.assertIsNone(cart_id)
+        from sqlalchemy import sql
+        stock_statuses = self.session.bind.execute(sql.select([StockStatus.quantity]).where(StockStatus.stock_id==stock_id))
+        for stock_status in stock_statuses:
+            self.assertEqual(stock_status.quantity, 100)
