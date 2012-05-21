@@ -348,7 +348,7 @@ class TicketingCartResourceTests(unittest.TestCase):
         stock = Stock(id=stock_id, quantity=100)
         stock_status = StockStatus(stock_id=stock.id, quantity=100)
         seats = [Seat(id=i, stock_id=stock.id, venue=venue) for i in range(5)]
-        seat_statuses = [SeatStatus(seat_id=i, status=int(SeatStatusEnum.Vacant)) for i in range(5)]
+        seat_statuses = [SeatStatus(seat_id=i, status=int(SeatStatusEnum.Vacant)) for i in range(2)]
         product_item = ProductItem(id=product_item_id, stock_id=stock.id, price=100, quantity=1)
         product = Product(id=1, price=100, items=[product_item])
         self.session.add(stock)
@@ -481,8 +481,8 @@ class ReserveViewTests(unittest.TestCase):
         venue = self._add_venue(organization_id, site_id, venue_id)
         stock = Stock(id=stock_id, quantity=100)
         stock_status = StockStatus(stock_id=stock.id, quantity=100)
-        seats = [Seat(id=i, stock_id=stock.id, venue=venue) for i in range(5)]
-        seat_statuses = [SeatStatus(seat_id=i, status=int(SeatStatusEnum.Vacant)) for i in range(5)]
+        seats = [Seat(id=i, stock_id=stock.id, venue=venue) for i in range(2)]
+        seat_statuses = [SeatStatus(seat_id=i, status=int(SeatStatusEnum.Vacant)) for i in range(2)]
         product_item = ProductItem(id=product_item_id, stock_id=stock.id, price=100, quantity=1)
         product = Product(id=1, price=100, items=[product_item])
         self.session.add(stock)
@@ -513,7 +513,9 @@ class ReserveViewTests(unittest.TestCase):
 
         self.assertEqual(result, dict(result='OK'))
         cart_id = request.session['ticketing.cart_id']
-        cart = self.session.query(Cart).filter(Cart.id==cart_id).one()
+
+        #cart = self.session.query(Cart).filter(Cart.id==cart_id).one()
+        cart = target.cart
 
         self.assertIsNotNone(cart)
         self.assertEqual(len(cart.products), 1)
@@ -547,6 +549,60 @@ class ReserveViewTests(unittest.TestCase):
         stock_status = StockStatus(stock_id=stock.id, quantity=0)
         seats = [Seat(id=i, stock_id=stock.id, venue=venue) for i in range(5)]
         seat_statuses = [SeatStatus(seat_id=i, status=int(SeatStatusEnum.InCart)) for i in range(5)]
+        product_item = ProductItem(id=product_item_id, stock_id=stock.id, price=100, quantity=1)
+        product = Product(id=1, price=100, items=[product_item])
+        self.session.add(stock)
+        self.session.add(product)
+        self.session.add(product_item)
+        self.session.add(stock_status)
+        [self.session.add(s) for s in seats]
+        [self.session.add(s) for s in seat_statuses]
+
+        # 座席隣接状態
+        adjacency_set = SeatAdjacencySet(id=adjacency_set_id, seat_count=2)
+        adjacency = SeatAdjacency(adjacency_set=adjacency_set, id=adjacency_id)
+        for seat in seats:
+            seat.adjacencies.append(adjacency)
+        self.session.add(adjacency_set)
+        self.session.add(adjacency)
+        self.session.flush()
+
+
+        params = {
+            "product-" + str(product.id): '2',
+            }
+
+        request = testing.DummyRequest(params=params)
+        request.context = TicketingCartResrouce(request)
+        target = self._makeOne(request)
+        result = target()
+
+        self.assertEqual(result, dict(result='NG'))
+        cart_id = request.session.get('ticketing.cart_id')
+        self.assertIsNone(cart_id)
+
+    def test_it_no_seat(self):
+
+
+        from ticketing.venues.models import Seat, SeatAdjacency, SeatAdjacencySet, SeatStatus, SeatStatusEnum
+        from ticketing.products.models import Stock, StockStatus, Product, ProductItem
+        from .models import Cart
+        from .resources import TicketingCartResrouce
+
+        # 在庫
+        stock_id = 1
+        product_item_id = 2
+        adjacency_set_id = 3
+        adjacency_id = 4
+        venue_id = 5
+        site_id = 6
+        organization_id = 7
+
+        venue = self._add_venue(organization_id, site_id, venue_id)
+        stock = Stock(id=stock_id, quantity=100)
+        stock_status = StockStatus(stock_id=stock.id, quantity=100)
+        seats = [Seat(id=i, stock_id=stock.id, venue=venue) for i in range(2)]
+        seat_statuses = [SeatStatus(seat_id=i, status=int(SeatStatusEnum.InCart)) for i in range(2)]
         product_item = ProductItem(id=product_item_id, stock_id=stock.id, price=100, quantity=1)
         product = Product(id=1, price=100, items=[product_item])
         self.session.add(stock)

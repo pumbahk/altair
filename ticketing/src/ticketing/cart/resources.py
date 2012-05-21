@@ -8,6 +8,8 @@ from ticketing.venues import models as v_models
 from . import security
 from . import models as m
 
+from . import logger
+
 class TicketingCartResrouce(object):
     def __init__(self, request):
         self.request = request
@@ -101,7 +103,7 @@ class TicketingCartResrouce(object):
             ).limit(1)
 
 
-        seat_statuses = m.DBSession.query(v_models.Seat).filter(
+        seat_statuses = m.DBSession.query(v_models.Seat, v_models.SeatStatus).filter(
                 v_models.SeatStatus.seat_id==v_models.Seat.id
             ).filter(
                 v_models.Seat.id==v_models.seat_seat_adjacency_table.c.seat_id
@@ -112,11 +114,14 @@ class TicketingCartResrouce(object):
             ).all()
 
         if len(seat_statuses) == quantity:
-            up = sql.update(v_models.SeatStatus.__table__).values(
-                    {v_models.SeatStatus.status: int(v_models.SeatStatusEnum.InCart)}).where(
-                v_models.SeatStatus.seat_id.in_([s.id for s in seat_statuses]))
-            m.DBSession.bind.execute(up)
 
+#            up = sql.update(v_models.SeatStatus.__table__).values(
+#                    {v_models.SeatStatus.status: int(v_models.SeatStatusEnum.InCart)}).where(
+#                v_models.SeatStatus.seat_id.in_([s.id for s in seat_statuses]))
+#            m.DBSession.bind.execute(up)
+
+            for s in seat_statuses:
+                s[1].status = int(v_models.SeatStatusEnum.InCart)
         return seat_statuses
 
     def order_products(self, ordered_products):
@@ -131,22 +136,90 @@ class TicketingCartResrouce(object):
         :returns: :class:`.models.Cart`
         """
 
-        seats = []
-        # 座席確保
-        for stock_id, quantity in self.quantity_for_stock_id(ordered_products):
-            if not self.has_stock(stock_id, quantity):
-                return None
-            seats += self.select_seat(stock_id, quantity)
-            up = sql.update(p_models.StockStatus.__table__).values(
-                    {"quantity": p_models.StockStatus.quantity - quantity}
+        seat_statuses = []
+        m.DBSession.bind.echo = True
+        conn = m.DBSession.bind.connect()
+        try:
+            trans = conn.begin()
+            # 在庫数確認、確保
+            stock_quantity = list(self.quantity_for_stock_id(ordered_products))
+            for stock_id, quantity in stock_quantity:
+                # 必要数のある在庫を確保しながら確認
+                up = p_models.StockStatus.__table__.update().values(
+                        {"quantity": p_models.StockStatus.quantity - quantity}
                 ).where(
-                    p_models.StockStatus.stock_id==stock_id
+                    sql.and_(p_models.StockStatus.stock_id==stock_id,
+                             p_models.StockStatus.quantity >= quantity)
                 )
-            m.DBSession.bind.execute(up)
+                affected = conn.execute(up).rowcount
+                if not affected:
+                    trans.rollback() # 確保失敗 ロールバックして戻り
+                    return
+            trans.commit()
+            trans = conn.begin()
+            # 座席割当
+            # 必要な席種かつ確保されていない座席
+            # を含む必要数量の連席情報の最初の行
+            for stock_id, quantity in stock_quantity:
+                sub = sql.select([v_models.SeatAdjacency.id]).where(
+                    sql.and_(
+                        #確保されていない
+                        v_models.SeatStatus.status == int(v_models.SeatStatusEnum.Vacant),
+                        #必要な席種
+                        p_models.Stock.id == stock_id,
+                        p_models.Stock.id == v_models.Seat.stock_id,
+                        v_models.SeatStatus.seat_id == v_models.Seat.id,
+                        #必要数量の連席情報
+                        v_models.SeatAdjacencySet.seat_count == quantity,
+                        # 連席情報内の席割当
+                        v_models.SeatAdjacencySet.id==v_models.SeatAdjacency.adjacency_set_id,
+                        # 連席情報と席の紐付け
+                        v_models.SeatAdjacency.id==v_models.seat_seat_adjacency_table.c.seat_adjacency_id,
+                        v_models.Seat.id==v_models.seat_seat_adjacency_table.c.seat_id,
+                    )
+                ).limit(1)
+                select = sql.select([v_models.SeatStatus.seat_id], for_update=True).where(
+                    sql.and_(
+                        #確保されていない
+                        v_models.SeatStatus.status == int(v_models.SeatStatusEnum.Vacant),
+                        v_models.SeatAdjacency.id==v_models.seat_seat_adjacency_table.c.seat_adjacency_id,
+                        v_models.Seat.id==v_models.seat_seat_adjacency_table.c.seat_id,
+                        v_models.SeatStatus.seat_id == v_models.Seat.id,
+                        v_models.SeatAdjacency.id.in_(sub),
+                    )
 
-        # 注文明細作成
-        cart = m.Cart()
-        cart.add_seat(seats, ordered_products)
-        m.DBSession.add(cart)
-        m.DBSession.flush()
-        return cart
+                )
+                seat_statuses = [s.seat_id for s in conn.execute(select)]
+
+                if not seat_statuses:
+                    trans.rollback() # 確保失敗 ロールバックして戻り
+                    return
+
+                up = v_models.SeatStatus.__table__.update().values({
+                    v_models.SeatStatus.status : int(v_models.SeatStatusEnum.InCart)
+                }).where(
+                    sql.and_(
+                        v_models.SeatStatus.status == int(v_models.SeatStatusEnum.Vacant),
+                        v_models.SeatStatus.seat_id.in_(seat_statuses)
+                    )
+                )
+                affected = conn.execute(up).rowcount
+                if affected != quantity:
+                    logger.debug("require %d but affected %d" % (quantity, affected))
+                    trans.rollback() # 確保失敗 ロールバックして戻り
+                    return
+
+
+            trans.commit()
+            # カート作成
+            # 注文明細作成
+            m.DBSession.remove() #ここから通常のORMセッション
+            cart = m.Cart()
+            seats = m.DBSession.query(v_models.Seat).filter(v_models.Seat.id.in_(seat_statuses)).all()
+            cart.add_seat(seats, ordered_products)
+            m.DBSession.add(cart)
+            m.DBSession.flush()
+            logger.info("cart created id = %d" % cart.id)
+            return cart
+        finally:
+            conn.close()

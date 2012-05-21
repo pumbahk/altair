@@ -139,6 +139,7 @@ class ReserveView(object):
         if cart is None:
             return dict(result='NG')
         self.request.session['ticketing.cart_id'] = cart.id
+        self.cart = cart
         return dict(result='OK')
 
     def on_error(self):
