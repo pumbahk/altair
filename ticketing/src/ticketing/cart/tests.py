@@ -396,6 +396,7 @@ class TicketingCartResourceTests(unittest.TestCase):
 class ReserveViewTests(unittest.TestCase):
     def setUp(self):
         self.session = _setup_db()
+        self.config = testing.setUp()
 
     def tearDown(self):
         _teardown_db()
@@ -511,11 +512,15 @@ class ReserveViewTests(unittest.TestCase):
         target = self._makeOne(request)
         result = target()
 
+        import transaction
+        transaction.commit()
+
         self.assertEqual(result, dict(result='OK'))
         cart_id = request.session['ticketing.cart_id']
 
-        #cart = self.session.query(Cart).filter(Cart.id==cart_id).one()
-        cart = target.cart
+        self.session.remove()
+        self.session.add(target.cart)
+        cart = self.session.query(Cart).filter(Cart.id==cart_id).one()
 
         self.assertIsNotNone(cart)
         self.assertEqual(len(cart.products), 1)
@@ -523,12 +528,11 @@ class ReserveViewTests(unittest.TestCase):
         self.assertEqual(cart.products[0].items[0].quantity, 2)
 
         from sqlalchemy import sql
-        stock_statuses = self.session.bind.execute(sql.select([StockStatus.quantity]).where(StockStatus.stock_id==stock.id))
+        stock_statuses = self.session.bind.execute(sql.select([StockStatus.quantity]).where(StockStatus.stock_id==stock_id))
         for stock_status in stock_statuses:
             self.assertEqual(stock_status.quantity, 98)
 
     def test_it_no_stock(self):
-
 
         from ticketing.venues.models import Seat, SeatAdjacency, SeatAdjacencySet, SeatStatus, SeatStatusEnum
         from ticketing.products.models import Stock, StockStatus, Product, ProductItem

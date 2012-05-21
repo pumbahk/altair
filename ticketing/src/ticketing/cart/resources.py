@@ -193,6 +193,7 @@ class TicketingCartResrouce(object):
 
                 if not seat_statuses:
                     trans.rollback() # 確保失敗 ロールバックして戻り
+                    # TODO: 在庫数復活
                     return
 
                 up = v_models.SeatStatus.__table__.update().values({
@@ -207,18 +208,21 @@ class TicketingCartResrouce(object):
                 if affected != quantity:
                     logger.debug("require %d but affected %d" % (quantity, affected))
                     trans.rollback() # 確保失敗 ロールバックして戻り
+                    # TODO: 在庫数復活
                     return
 
 
             trans.commit()
+            trans = conn.begin()
             # カート作成
             # 注文明細作成
-            m.DBSession.remove() #ここから通常のORMセッション
+            #m.DBSession.remove() #ここから通常のORMセッション
             cart = m.Cart()
             seats = m.DBSession.query(v_models.Seat).filter(v_models.Seat.id.in_(seat_statuses)).all()
             cart.add_seat(seats, ordered_products)
             m.DBSession.add(cart)
             m.DBSession.flush()
+            trans.commit()
             logger.info("cart created id = %d" % cart.id)
             return cart
         finally:
