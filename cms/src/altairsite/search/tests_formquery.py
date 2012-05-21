@@ -11,7 +11,7 @@ class GanrePartFormQueryTest(unittest.TestCase):
 
     def _callFUT(self, target, *args, **kwargs):
         self.assertTrue(target.validate())
-        return target.make_query(*args, **kwargs)
+        return target.make_query_params(*args, **kwargs)
         
     def test_top_categories(self):
         params = MultiDict(music="on")
@@ -53,7 +53,7 @@ class AreaPartFormQueryTest(unittest.TestCase):
 
     def _callFUT(self, target, *args, **kwargs):
         self.assertTrue(target.validate())
-        return target.make_query(*args, **kwargs)
+        return target.make_query_params(*args, **kwargs)
         
     def test_area(self):
         params = MultiDict(tohoku="on")
