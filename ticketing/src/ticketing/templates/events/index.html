@@ -74,8 +74,19 @@
         <%include file="/events/_action_button.html" args="event=event" /> 
       </div>
       <br style="clear: both" />
-      <span class="label label-important">先行</span>
-      <span class="label label-success">一般</span>
+      <%
+        label_classes = [
+          'label-important',
+          'label-warning',
+          'label-default',
+          'label-success',
+          'label-info',
+          'label-inverse'
+        ]
+      %>
+      % for i, sales_segment in enumerate(event.sales_segments):
+        <span class="label ${label_classes[i%6]}">${sales_segment.name}</span>
+      % endfor
       <%include file="/performances/_list.html" args="performances=event.performances" /> 
     </div>
     % endfor

@@ -24,6 +24,12 @@
         stock_id_node.selectedIndex = 0;
       }
     }).change();
+
+    $('#modal-product_item').on('shown', function(){
+      $(this).css('max-height', '750px')
+          .css('margin-top', ($(this).outerHeight()/2)*-1)
+          .css('margin-left',($(this).outerWidth()/2)*-1);
+    });
   });
 </script>
 
