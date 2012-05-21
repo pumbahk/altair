@@ -1,6 +1,7 @@
 <%inherit file="/layout.html"/>
 <%namespace file="/common/helpers.html" import="pager"/>
 <%namespace file="/common/helpers.html" import="flash_messages" />
+<%namespace file="/common/helpers.html" import="breadcrumbs" />
 
 <div class="modal fade" id="modal-search">
   <div class="modal-header">
@@ -28,9 +29,16 @@
 <div class="row-fluid">
   <%include file="/parts/_menu.html" />
 
+  <div class="span10">
+    ${breadcrumbs(
+        names=[u'トップ', u'イベント'],
+        urls=[request.route_path('index')]
+    )}
+  </div>
+
   <span class="span10">
     <div class="page-header">
-      <h3>イベント一覧</h3>
+      <h3>イベント</h3>
     </div>
 
     <div class="content">

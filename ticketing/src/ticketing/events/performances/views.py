@@ -88,8 +88,8 @@ class Performances(BaseView):
             performance.venue_id = f.data['venue_id']
             performance.save()
 
-            self.request.session.flash(u'パフォーマンスを登録しました')
-            return HTTPFound(location=route_path('events.show', self.request, event_id=event.id))
+            self.request.session.flash(u'パフォーマンスを保存しました')
+            return HTTPFound(location=route_path('performances.show', self.request, performance_id=performance.id))
         return {
             'form':f,
             'event':event,
@@ -106,6 +106,7 @@ class Performances(BaseView):
         f.process(record_to_multidict(performance))
         return {
             'form':f,
+            'event':performance.event,
             'performance':performance,
         }
 
@@ -127,6 +128,7 @@ class Performances(BaseView):
         else:
             return {
                 'form':f,
+                'event':performance.event,
                 'performance':performance,
             }
 

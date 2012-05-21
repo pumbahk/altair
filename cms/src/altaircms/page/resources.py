@@ -20,6 +20,8 @@ def add_solr(page, request):
     ftsearch.register(doc, commit=True)
     
 class PageResource(security.RootFactory):
+    Page = models.Page
+
     def get_confirmed_form(self, postdata):
         form = wf.WidgetDispositionSaveForm(postdata)
         return form
@@ -63,7 +65,7 @@ class PageResource(security.RootFactory):
         return renderable.LayoutRender(layout)
 
     def get_page(self, page_id):
-        return models.Page.query.filter(models.Page.id==page_id).one()
+        return models.Page.query.filter(models.Page.id==page_id).first()
 
     def create_page(self, form):
         tags, private_tags, params =  h.divide_data(form.data)

@@ -34,16 +34,16 @@
 
 	<!-- ========== header ========== -->
 	<div id="grpheader">
-  	  ${co.master_header()}
+  	  ${co.master_header(top_outer_categories)}
     </div>
-    ${co.global_navigation()}
+    ${co.global_navigation(top_inner_categories, categories)}
     ${co.header_search()}
 
 	<!-- ========== /header ========== -->
 	
 	<hr />
 	
-	<!-- InstanceBeginEditable name="cat" --><h1><img id="titleImage" src="/static/ticketstar/img/first/title_first.gif" alt="ヘルプ"b
+	<!-- InstanceBeginEditable name="cat" --><h1><img id="titleImage" src="/static/ticketstar/img/first/title_first.gif" alt="ヘルプ"
 /></h1><!-- InstanceEndEditable -->
 	
 	<!-- ========== main ========== -->

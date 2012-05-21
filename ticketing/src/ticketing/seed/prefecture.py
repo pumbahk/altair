@@ -15,7 +15,7 @@ class PrefectureMaster(DataSet):
         name = u'秋田県'
     class yamagata:
         name = u'山形県'
-    class fukuoka:
+    class fukuoshima:
         name = u'福島県'
     class ibaraki:
         name = u'茨城県'
@@ -57,7 +57,7 @@ class PrefectureMaster(DataSet):
         name = u'京都府'
     class osaka:
         name = u'大阪府'
-    class hokkaido:
+    class hyogo:
         name = u'兵庫県'
     class nara:
         name = u'奈良県'

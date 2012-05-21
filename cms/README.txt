@@ -2,16 +2,65 @@
 ALTAIR CMS
 =================
 
+deploy方法
 ::
 
- mkvirtualenv altairtest --no-site-packages
- cdvirtualenv
- git clone git@github.com:ticketstar/altair.git
- cd altair
+   mkvirtualenv altairtest --no-site-packages
+   cdvirtualenv
+   git clone git@github.com:ticketstar/altair.git
+   cd altair
 
- cd cms
- python setup.py dev
- python setup.py upgrade_db
+   cd cms
+   python setup.py dev
+   python setup.py upgrade_db
+
+   ## 
+   ## mysqlでdatabase作成altaircms
+   ##
+
+   ## デモデータの投入
+   pmain -c development.ini -s altaircms.scripts.pmain.insert_demodata
+
+   ## 
+   ## solrを利用したい場合はinstall solrの項参照
+   ##
+
+   ## cmsのアプリを立ち上げる
+   pserve development.ini --reload # port:6543
+   ## usersiteのアプリを立ち上げる
+   pserve usersite.development.ini --reload # port:5432
+
+
+
+
+install solr
+----------------------------------------
+
+javaが必要::
+
+   sudo apt-get install openjdk-6-jdk #ubuntu
+
+solrの環境作成にはbuildoutを使っている。
+
+buildout::
+
+   pwd # ./altair/cms
+   python setup.py dev_solr
+   cd ../deploy
+   buildout init
+   ./bin/buildout -N -v install
+
+development.ini,usersite.development.ini::
+
+   ## solr
+   altaircms.solr.server.url = http://localhost:8080/solr
+   altaircms.solr.search.utility = altaircms.solr.api.SolrSearch
+   # altaircms.solr.search.utility = altaircms.solr.api.DummySearch
+
+solrのインスタンスを立ち上げる::
+
+   ./depoly/bin/solr-instance start
+  
 
 
 ドキュメント
@@ -66,16 +115,3 @@ Dropbox
 
 dev.ticketstar.jp
 
-install solr
-----------------------------------------
-
-javaが必要::
-
-   sudo apt-get install openjdk-6-jdk #ubuntu
-
-buildout::
-
-   python setup.py dev_solr
-   cd ../deploy
-   buildout init
-   ./bin/buildout -N -v install

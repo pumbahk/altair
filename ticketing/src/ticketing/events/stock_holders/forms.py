@@ -4,8 +4,7 @@ from wtforms import Form
 from wtforms import TextField, SelectField, HiddenField
 from wtforms.validators import Required, Regexp, Length, Optional, ValidationError
 
-from ticketing.utils import DateTimeField
-from ticketing.venues.models import Venue
+from ticketing.utils import DateTimeField, Translations
 from ticketing.events.models import Account
 
 class StockHolderForm(Form):
@@ -17,13 +16,14 @@ class StockHolderForm(Form):
                 (account.id, account.name) for account in Account.get_by_organization_id(kwargs['organization_id'])
             ]
 
+    def _get_translations(self):
+        return Translations()
+
     id = HiddenField(
-        label='',
         validators=[Optional()],
     )
     performance_id = HiddenField(
-        label='',
-        validators=[Required()],
+        validators=[Required(u'入力してください')],
     )
     name = TextField(
         label=u'枠名',
@@ -40,9 +40,9 @@ class StockHolderForm(Form):
     )
     text = TextField(
         label=u'記号',
-        validators=[Required()]
+        validators=[Required(u'入力してください')]
     )
     text_color = TextField(
         label=u'記号色',
-        validators=[Required()]
+        validators=[Required(u'入力してください')]
     )

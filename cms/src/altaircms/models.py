@@ -7,12 +7,10 @@ from sqlalchemy.ext.declarative import declared_attr
 from datetime import datetime
 import sqlahelper
 import sqlalchemy.orm as orm
-from sqlalchemy import (Column, Integer, Unicode, String, ForeignKey, DateTime)
+from sqlalchemy import (Column, Integer, Unicode, String, ForeignKey, DateTime, Boolean)
 from sqlalchemy.orm import relationship
 
 from sqlalchemy.sql.operators import ColumnOperators
-
-import altaircms.helpers as h
 
 def model_to_dict(obj):
     return {k: getattr(obj, k) for k, v in obj.__class__.__dict__.iteritems() \
@@ -91,6 +89,7 @@ class Performance(BaseOriginalMixin, Base):
     start_on = Column(DateTime)  # 開始
     close_on = Column(DateTime)  # 終了
 
+    canceld = Column(Boolean, default=False)
     # sale = relationship("Sale", backref=orm.backref("performances", order_by=id))
     event = relationship("Event", backref=orm.backref("performances", order_by=start_on))
     # client = relationship("Client", backref=orm.backref("performances", order_by=id))
@@ -188,9 +187,10 @@ class Category(Base):
 
     ※ このオブジェクトは、対応するページへのリンクを持つ(これはCMSで生成されないページへのリンクで有る場合もある)
 
-    labelはhtml要素のclass属性などに使われる(cssで画像を付加するためなどに).
-    labelはascii only
-    nameはカテゴリ名(imgのalt属性に使われることがある)
+    nameはhtml要素のclass属性などに使われる(cssで画像を付加するためなどに).
+    nameはascii only
+    labelはカテゴリ名(imgのalt属性に使われることがある)
+    e.g. name=music,  label=音楽
     """
     __tablename__ = "category"
     __tableargs__ = (
@@ -202,12 +202,12 @@ class Category(Base):
     site_id = sa.Column(sa.Integer, sa.ForeignKey("site.id"))
     site = orm.relationship("Site", backref="categories", uselist=False)
     parent_id = sa.Column(sa.Integer, sa.ForeignKey("category.id"))
-    parent = orm.relationship("Category", remote_side=[id], uselist=False)
+    parent = orm.relationship("Category", remote_side=[id], backref="children", uselist=False)
     #parent = orm.relationship("Category", remote_side=[id], uselist=False, cascade="all")
 
-    label = sa.Column(sa.String(length=255), nullable=False)
-    imgsrc = sa.Column(sa.String(length=255), nullable=False)
-    name = sa.Column(sa.Unicode(length=255), nullable=False)
+    label = sa.Column(sa.Unicode(length=255))
+    imgsrc = sa.Column(sa.String(length=255))
+    name = sa.Column(sa.String(length=255))
     hierarchy = sa.Column(sa.Unicode(length=255), nullable=False)
     
     url = sa.Column(sa.Unicode(length=255))

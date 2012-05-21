@@ -1,40 +1,62 @@
 <%inherit file='../../templates/layout_2col.mako'/>
 
 <%namespace name="fco" file="../../templates/formcomponents.mako"/>
+<%namespace name="nco" file="../../templates/navcomponents.mako"/>
+<h2>${master_env.title}</h2>
 
-<div class="row">
-    <h3>${master_env.title}追加・一覧</h3>
-    <form action="${request.route_path(master_env._join("create"))}" method="POST">
-       ${fco.form_as_table_strict(form, display_fields)}
-        <button class="btn" type="submit">保存</button>
-    </form>
+<div class="row-fluid">
+  <div class="span10">
+    ${nco.breadcrumbs(
+        names=["Top", master_env.title], 
+        urls=[request.route_path("dashboard")])
+    }
+  </div>
 </div>
 
-<div class="row">
-<h4>${master_env.title}一覧</h4>
+<div class="row-fluid">
+    <h3>${master_env.title}追加</h3>
+    <a href="${request.route_path(master_env.join("create"), action="input")}"  class="btn btn-success btn-large">新しい${master_env.title}を作成する</a>
+
+    %if query_form:
+      <h3>絞り込み検索</h3>
+       <form class="well" action="#" method="GET">
+         %for k in query_form.data.keys():
+           ${getattr(query_form,k).label.text} ${getattr(query_form, k)}
+         %endfor
+           <input type="hidden" name="query" value="true">
+           <button class="btn btn-small btn-info"><i class="icon-search icon-white"></i> search</button>
+       </form>
+    %endif
+</div>
+
+<div class="row-fluid">
+<h3>${master_env.title}一覧</h3>
 
 ${xs.pager()}
 <table class="table table-striped">
   <thead>
-	<tr>
+    <tr>
       %for k in display_fields:
       <th>${getattr(form,k).label}</th>
       %endfor
-	</tr>
+    </tr>
   </thead>
     <tbody>
         %for x in xs.paginated():
-		    <%
-			 x = master_env.mapper(request, x) if master_env.mapper else x
-			 %>
+            <%
+             x = master_env.mapper(request, x) if master_env.mapper else x
+             %>
             <tr>
               %for k in display_fields:
-			    <td>${getattr(x,k, "-")}</td>
+                <td>${getattr(x,k, "-")}</td>
               %endfor
               <td>
-              <form action="${request.route_path(master_env._join("delete"),id=x.id)}" method="POST">
-              <button type="submit" class="btn btn-small btn-danger"><i class="icon-trash icon-white"> </i> Delete</button>
-              </form>
+              <a href="${request.route_path(master_env.join("update"),action="input",id=x.id)}" class="btn btn-small btn-primary">
+                <i class="icon-cog icon-white"> </i> Update
+              </a>
+              <a href="${request.route_path(master_env.join("delete"),action="confirm",id=x.id)}" class="btn btn-small btn-danger">
+                <i class="icon-trash icon-white"> </i> Delete
+              </a>
               </td>
             </tr>
         %endfor

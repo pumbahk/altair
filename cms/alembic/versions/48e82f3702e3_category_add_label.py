@@ -16,7 +16,7 @@ from altaircms.models import Category
 
 def upgrade():
     op.add_column("category", 
-                  sa.Column("label", sa.String(255)))
+                  sa.Column("label", sa.Unicode(255)))
     op.add_column("category", 
                   sa.Column("imgsrc", sa.String(255)))
     op.add_column("category", 

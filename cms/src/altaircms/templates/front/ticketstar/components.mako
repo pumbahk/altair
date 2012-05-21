@@ -1,5 +1,4 @@
-## required:top_inner_category
-<%block name="master_header">
+<%def name="master_header(top_ourter_categories)">
 		<p id="tagLine">チケット販売・イベント予約</p>
 		<p id="siteID"><a href="http://ticket.rakuten.co.jp/"><img src="/static/ticketstar/img/common/header_logo_01.gif" alt="楽天チケット" class="serviceLogo" width="97" height="35" /></a><a href="http://ticket.rakuten.co.jp/"><img src="/static/ticketstar/img/common/header_logo_02.gif" alt="チケット" class="serviceTitle" width="88" height="23" /></a></p>
 		<dl id="remoteNav">
@@ -22,41 +21,41 @@
 			<ul>
 			  <% categories = list(top_outer_categories)%>
 			  % for category in categories[:-1]:
-			    <li><a href="${h.link.get_link_from_category(request, category)}" alt="${category.name}">${category.name}</a></li>
+			    <li><a href="${h.link.get_link_from_category(request, category)}" alt="${category.label}">${category.label}</a></li>
 			  % endfor
 			  % if categories:
-			    <li><a href="${h.link.get_link_from_category(request, categories[-1])}" alt="${categories[-1].name}">${categories[-1].name}</a></li>
+			    <li><a href="${h.link.get_link_from_category(request, categories[-1])}" alt="${categories[-1].label}">${categories[-1].label}</a></li>
 			  % endif
    	       </ul>
 		  </dd>
 		</dl>
-</%block>
+</%def>
 
 
 ## required:categories
 ## required:top_inner_category
-<%block name="global_navigation">
+<%def name="global_navigation(top_inner_categories, categories)">
 	<div id="globalNav">
 		<ul id="globalNav1">
 		  % for category in categories:
 		     <li><a href="${h.link.get_link_from_category(request, category)}">
-				 <img src="${category.imgsrc}" alt="${category.name}"/></a>
+				 <img src="${category.imgsrc}" alt="${category.label}"/></a>
 			 </li>
 		     ## dirty hack(cssのbackground-imageで表示しようとしたが横幅を揃えることができず失敗)
-		     ## <li class="category ${category.label}"><a href="#" alt="${category.name}"><span style="visibility:hidden;">　${category.name}　@</span></a></li>
+		     ## <li class="category ${category.name}"><a href="#" alt="${category.label}"><span style="visibility:hidden;">　${category.label}　</span></a></li>
 		  % endfor
 		</ul>
 		<ul id="globalNav2">
 			  <% nav_categories = list(top_inner_categories)%>
 			  % for category in nav_categories[:-1]:
-			    <li><a href="${h.link.get_link_from_category(request, category)}" alt="${category.name}">${category.name}</a></li>
+			    <li><a href="${h.link.get_link_from_category(request, category)}" alt="${category.label}">${category.label}</a></li>
 			  % endfor
 			  % if categories:
-			    <li><a href="${h.link.get_link_from_category(request, nav_categories[-1])}" alt="${nav_categories[-1].name}">${nav_categories[-1].name}</a></li>
+			    <li><a href="${h.link.get_link_from_category(request, nav_categories[-1])}" alt="${nav_categories[-1].label}">${nav_categories[-1].label}</a></li>
 			  % endif
 		</ul>
 	</div>
-</%block>
+</%def>
 
 <%doc> ## 元々のhtml今は利用していない
 <%block name="global_navigation">
@@ -64,7 +63,7 @@
 		<ul id="globalNav1">
 			<li><a href="/static/ticketstar/index.html"><img src="/static/ticketstar/img/common/header_nav_top.gif" alt="チケットトップ" width="132" height="40" /></a></li>
 			<li><a href="/static/ticketstar/music/index.html"><img src="/static/ticketstar/img/common/header_nav_music.gif" alt="音楽" width="67" height="40" /></a></li>
-			<li><a href="/static/ticketstar/theater/index.html"><img src="/static/ticketstar/img/common/header_nav_theater.gif" alt="演劇" width="73" height="40" /></a></li>
+			<li><a href="/static/ticketstar/stage/index.html"><img src="/static/ticketstar/img/common/header_nav_stage.gif" alt="演劇" width="73" height="40" /></a></li>
 			<li><a href="/static/ticketstar/sports/index.html"><img src="/static/ticketstar/img/common/header_nav_sports.gif" alt="スポーツ" width="102" height="40" /></a></li>
 			<li><a href="/static/ticketstar/event/index.html"><img src="/static/ticketstar/img/common/header_nav_event.gif" alt="イベント・その他" width="157" height="40" /></a></li>
 		</ul>
@@ -89,12 +88,13 @@
 		</dl>
 </%block>
 
+### require: ${request.route_path("detail_page_search_input")}
 <%block name="header_search">
 	<div id="headerSearch">
 		<form id="form1" name="form1" method="post" action="">
 			<input name="textfield" type="text" id="textfield" size="40" value="アーティスト名、公演名、会場名など" onblur="if(this.value=='') this.value='アーティスト名、公演名、会場名など';" onfocus="if(this.value=='アーティスト名、公演名、会場名など') this.value='';" />
 			<input name="imageField" type="image" id="imageField" src="/static/ticketstar/img/common/header_search_btn.gif" alt="検索" />
-			<a href="#">詳細検索</a>
+			<a href="${request.route_path("detail_page_search_input")}">詳細検索</a>
 		</form>
 		<dl>
 			<dt><img src="/static/ticketstar/img/common/header_search_hot.gif" alt="ホットワード" width="50" height="45" /></dt>

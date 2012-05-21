@@ -4,6 +4,7 @@ from pyramid.httpexceptions import HTTPFound
 from pyramid.renderers import render_to_response
 from pyramid.view import view_config
 from altaircms.lib.fanstatic_decorator import with_jquery
+from . import api
 
 ## todo refactoring
 """
@@ -31,14 +32,8 @@ def rendering_page(context, request):
                        event=page.event)
     tmpl = context.get_layout_template(layout, context.get_render_config())
 
-    top_outer_categories = context.get_categories(hierarchy=u"top_outer")
-    top_inner_categories = context.get_categories(hierarchy=u"top_inner")
-
-    categories = context.get_categories(hierarchy=u"大")
-    params = dict(page=page, display_blocks=block_context.blocks, 
-                  categories=categories,
-                  top_outer_categories=top_outer_categories,
-                  top_inner_categories=top_inner_categories)
+    params = api.get_navigation_categories(request)
+    params.update(page=page, display_blocks=block_context.blocks)
     return render_to_response(tmpl, params, request)
 
 @view_config(route_name="front_preview", decorator=with_jquery)
@@ -53,15 +48,10 @@ def rendering_preview_page(context, request):
                        tickets=context.get_tickets(page), 
                        event=page.event)
     tmpl = context.get_layout_template(layout, context.get_render_config())
-    top_outer_categories = context.get_categories(hierarchy=u"top_outer")
-    top_inner_categories = context.get_categories(hierarchy=u"top_inner")
-
-    categories = context.get_categories(hierarchy=u"大")
-    params = dict(page=page, display_blocks=block_context.blocks, 
-                  categories=categories,
-                  top_outer_categories=top_outer_categories,
-                  top_inner_categories=top_inner_categories)
+    params = api.get_navigation_categories(request)
+    params.update(page=page, display_blocks=block_context.blocks)
     return render_to_response(tmpl, params, request)
+
 
 @view_config(route_name="front_to_preview") #slack-off
 def to_preview_page(context, request):

@@ -62,7 +62,7 @@
 </%def>
 
 <%def name="safe_strftime(str, format='%Y-%m-%d %H:%M')">
-  ${str and str.strftime(format) or ''}
+${str and str.strftime(format) or ''}
 </%def>
 
 <%def name="seat_style(style)">
@@ -88,4 +88,21 @@ if style:
 <span class="swatch" style="text-color:${text_color}; border: ${stroke_width}px ${stroke_pattern} ${stroke_color}; background-color: ${fill_color}; text-align: center">${text}</span>
 </%def>
 <%def name="json(style)"><% import json %>${json.dumps(style)}
+</%def>
+
+<%!
+  import locale
+  locale.setlocale(locale.LC_ALL, "")
+%>
+<%def name="price_format(price)">
+${locale.format("%d", price, grouping=True)}
+</%def>
+
+<%def name="breadcrumbs(names=[], urls=[], length=20)">
+<ul class="breadcrumb">
+  % for i in xrange(len(urls)):
+  <li><a href="${urls[i]}">${names[i][:length]}${'...' if len(names[i]) > length else ''}</a><span class="divider">/</span></li>
+  % endfor
+  <li>${names[-1]}</li>
+</ul>
 </%def>

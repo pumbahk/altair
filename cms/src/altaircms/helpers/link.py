@@ -6,4 +6,8 @@ def get_link_from_category(request, category):
         return to_publish_page_from_pageset(request, category.pageset)
 
 def to_publish_page_from_pageset(request, pageset):
-    return request.route_path("front", page_name=pageset.url)
+    url = pageset.url
+    if url.startswith("http://") or url.startswith("https://"):
+        return url
+    else:
+        return request.route_path("front", page_name=url)

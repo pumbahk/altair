@@ -12,7 +12,7 @@
       <fieldset>
         ${form_item(form.id)}
         ${form_item(form.event_id)}
-        ${form_item(form.name, option={'class':'span3'})}
+        ${form_item(form.name, option={'class':'span3', 'maxlength':255})}
         ${form_item(form.price, option={'class':'span3'})}
         ${form_item(form.sales_segment_id, option={'class':'span3'})}
       </fieldset>

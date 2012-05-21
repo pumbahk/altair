@@ -6,6 +6,14 @@ from pyramid.security import authenticated_userid
 from altaircms.models import DBSession
 from altaircms.auth.models import Operator
 
+logger = logging.getLogger(__file__)
+
+def with_log(r):
+    logging.info("========================================")
+    logger.info(r)
+    logging.info("========================================")
+    return r
+
 
 def get_authenticated_user(request):
     """
@@ -16,6 +24,7 @@ def get_authenticated_user(request):
     except NoResultFound:
         logging.warn("operator is not found. so request.user is None")
         return None
+
 
 def get_debug_user(request):
     try:

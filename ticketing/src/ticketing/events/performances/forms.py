@@ -4,7 +4,7 @@ from wtforms import Form
 from wtforms import TextField, SelectField, HiddenField
 from wtforms.validators import Required, Regexp, Length, Optional, ValidationError
 
-from ticketing.utils import DateTimeField
+from ticketing.utils import DateTimeField, Translations
 from ticketing.venues.models import Venue
 from ticketing.events.models import Account
 
@@ -19,6 +19,9 @@ class PerformanceForm(Form):
             self.venue_id.choices = [
                 (venue.id, venue.name) for venue in Venue.find_by(**conditions)
             ]
+
+    def _get_translations(self):
+        return Translations()
 
     name = TextField(
         label=u'公演名',
@@ -54,7 +57,7 @@ class PerformanceForm(Form):
         label=u'会場',
         validators=[Required(u'選択してください')],
         choices=[],
-        coerce=int
+        coerce=int,
     )
 
     def validate_start_on(form, field):

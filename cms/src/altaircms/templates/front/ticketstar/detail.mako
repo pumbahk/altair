@@ -36,7 +36,7 @@
 	  <!-- ========== header ========== -->
 	  <%block name="header">
 	  <div id="grpheader">
-		${co.master_header()}
+		${co.master_header(top_outer_categories)}
         ${co.section_navigation()}
 		<dl id="subSectionNav">
 		  <dt>サブカテゴリー</dt>

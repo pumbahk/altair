@@ -3,6 +3,7 @@
 <%namespace file="/common/helpers.html" import="alert_message" />
 <%namespace file="/common/helpers.html" import="flash_messages" />
 <%namespace file="/common/helpers.html" import="form_item" />
+<%namespace file="/common/helpers.html" import="breadcrumbs" />
 
 <%
   if request.matched_route.name == 'events.edit':
@@ -23,6 +24,13 @@
 <div class="row-fluid">
   <%include file="/parts/_menu.html" />
 
+  <div class="span10">
+    ${breadcrumbs(
+        names=[u'イベント', route_name],
+        urls=[request.route_path('events.index')]
+    )}
+  </div>
+
   <span class="span10">
     <div class="page-header">
       <h3>イベント${route_name}</h3>
@@ -36,9 +44,9 @@
     <div class="well">
       <form class="form-horizontal" action="${route_path}" enctype="multipart/form-data" method="POST">
         <fieldset>
-          ${form_item(form.code, option={'style':'width:150px'})}
-          ${form_item(form.title, option={'class':'span8'})}
-          ${form_item(form.abbreviated_title, option={'class':'span4'})}
+          ${form_item(form.code, option={'style':'width:150px', 'maxlength':12})}
+          ${form_item(form.title, option={'class':'span8', 'maxlength':200})}
+          ${form_item(form.abbreviated_title, option={'class':'span4', 'maxlength':100})}
           ${form_item(form.start_on)}
           ${form_item(form.end_on)}
         </fieldset>

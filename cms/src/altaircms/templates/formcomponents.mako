@@ -31,6 +31,12 @@
  ${field.label}
 </%def>
 
+<%def name="postdata_as_hidden_input(postdata)">
+  % for k,v in postdata.items():
+	<input type="hidden" name="${k}" value="${v}">
+  % endfor
+</%def>
+
 <%def name="formfield(form, k)">
     <%
       field = getattr(form,k)

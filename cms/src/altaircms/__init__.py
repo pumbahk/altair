@@ -62,7 +62,10 @@ def main(global_config, **settings):
         config.set_request_property("altaircms.auth.helpers.get_debug_user", "user", reify=True)
     else:
         config.set_request_property("altaircms.auth.helpers.get_authenticated_user", "user", reify=True)
-    
+
+
+    config.include("altaircms.lib.crud")    
+
     ## include
     config.include("altaircms.auth", route_prefix='/auth')
     config.include("altairsite.front", route_prefix="f")
@@ -73,13 +76,10 @@ def main(global_config, **settings):
     config.include("altaircms.page")
     config.include("altaircms.widget")
     config.include("altaircms.asset", route_prefix="/asset")
-    config.include("altaircms.topic")
-    config.include("altaircms.topcontent")
     config.include("altaircms.base")
     config.include("altaircms.tag")
 
     ## slack-off
-    config.include("altaircms.lib.crud")
     config.include("altaircms.slackoff")
 
     ## fulltext search

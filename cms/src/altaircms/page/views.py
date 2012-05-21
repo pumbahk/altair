@@ -4,7 +4,6 @@ from pyramid.view import view_config
 from pyramid.view import view_defaults
 from pyramid.httpexceptions import HTTPFound
 
-from altaircms.lib.apiview import BaseRESTAPI
 from altaircms.lib.viewhelpers import RegisterViewPredicate
 from altaircms.lib.viewhelpers import FlashMessage
 from . import forms
@@ -57,10 +56,6 @@ class PageAddView(object):
             event_id = self.request.matchdict["event_id"]
             event = Event.query.filter(Event.id==event_id).one()
             return {"form":form, "event":event}
-        return dict(
-            pages=PageRESTAPIView(self.request).read(),
-            form=form
-            )
 
 @view_defaults(permission="page_create", decorator=with_bootstrap)
 class PageCreateView(object):
@@ -76,18 +71,16 @@ class PageCreateView(object):
             ## flash messsage
             FlashMessage.success("page created", request=self.request)
             return HTTPFound(self.request.route_path("page"))
-        return dict(
-            pages=PageRESTAPIView(self.request).read(),
-            form=form
-            )
+        else:
+            return dict(
+                pages=self.context.Page.query,
+                form=form
+                )
 
     @view_config(route_name="page_duplicate", request_method="GET", renderer="altaircms:templates/page/duplicate_confirm.mako")
     def duplicate_confirm(self):
-        id_ = self.request.matchdict['id']
-        page = PageRESTAPIView(self.request, id_).read()
-        return dict(
-            page=page,
-        )
+        page = self.context.get_page(self.request.matchdict["id"])
+        return {"page": page}
         
     @view_config(route_name="page_duplicate", request_method="POST")
     def duplicate(self):
@@ -106,11 +99,8 @@ class PageDeleteView(object):
 
     @view_config(renderer="altaircms:templates/page/delete_confirm.mako", request_method="GET")
     def delete_confirm(self):
-        id_ = self.request.matchdict['id']
-        page = PageRESTAPIView(self.request, id_).read()
-        return dict(
-            page=page,
-        )
+        page = self.context.get_page(self.request.matchdict["id"])
+        return {"page": page}
 
     @view_config(request_method="POST")
     def delete(self):
@@ -183,16 +173,9 @@ class PageUpdateView(object):
 def list_(request):
     form = forms.PageForm()
     return dict(
-        pages=PageRESTAPIView(request).read(),
+        pages=request.context.Page.query, 
         form=form
     )
-
-
-class PageRESTAPIView(BaseRESTAPI):
-    model = Page
-    form = forms.PageForm
-    object_mapper = PageMapper
-    objects_mapper = PagesMapper
 
 @view_config(route_name="page_edit_", request_method="POST")
 def to_publish(request):     ## fixme
@@ -209,8 +192,7 @@ def to_publish(request):     ## fixme
 def page_edit(request):
     """pageの中をwidgetを利用して変更する
     """
-    id_ = request.matchdict['page_id']
-    page = PageRESTAPIView(request, id_).read()
+    page = request.context.get_page(request.matchdict["page_id"])
     if not page:
         return HTTPFound(request.route_path("page"))
     

@@ -2,6 +2,7 @@
 
 from datetime import datetime
 from wtforms import DateTimeField
+from wtforms.validators import ValidationError
 
 '''
 http://blog.aodag.jp/2009/10/pythonenum.html
@@ -60,5 +61,29 @@ class DateTimeField(DateTimeField):
             except:
                 return u' '.join(self.raw_data)
         else:
-            return self.data and self.data.strftime(self.format) or u''
+            return self.data.strftime(self.format) if self.data else u''
 
+    def process_formdata(self, valuelist):
+        if valuelist:
+            date_str = u' '.join(valuelist)
+            try:
+                self.data = datetime.strptime(date_str, self.format)
+            except ValueError:
+                self.data = None
+                raise ValidationError(u'日付の形式を確認してください')
+
+class Translations(object):
+
+    def gettext(self, string):
+        if string == 'Not a valid choice':
+            return u'不正な選択です'
+        if string == 'Not a valid decimal value':
+            return u'数字または小数で入力してください'
+        if string == 'Not a valid integer value':
+            return u'数字で入力してください'
+        return string
+
+    def ngettext(self, singular, plural, n):
+        if n == 1:
+            return singular
+        return plural

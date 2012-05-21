@@ -571,7 +571,7 @@
 	background-color: #d0cdf2;
 }
 
-#theater #sideRefineSearch dt {
+#stage #sideRefineSearch dt {
 	border: 1px solid #e5cece;
 	border-bottom: 1px solid #ffcbcb;
 	background-color: #ffe5e5;
@@ -1336,18 +1336,18 @@
 	background: url(../img/sitemap/icon_music.gif) no-repeat 0 6px;
 }
 
-#sitemapTheater dt {
+#sitemapStage dt {
 	border-left: 2px solid #ffb2b2;
 }
 
-#sitemapTheater dd {
+#sitemapStage dd {
 	padding-left: 20px;
 	border-left: 2px solid #ffb2b2;
 }
 
-#sitemapTheater li {
+#sitemapStage li {
 	padding-left: 15px;
-	background: url(../img/sitemap/icon_theater.gif) no-repeat 0 6px;
+	background: url(../img/sitemap/icon_stage.gif) no-repeat 0 6px;
 }
 
 #sitemapSports dt {
