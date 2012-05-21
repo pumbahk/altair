@@ -16,7 +16,7 @@
     var el = '#product-' + id;
     $('#modal-product #id').val($(el + ' #id').text());
     $('#modal-product #name').val($(el + ' #name').text());
-    $('#modal-product #price').val($(el + ' #price').text());
+    $('#modal-product #price').val($(el + ' #price').attr('value'));
     $('#modal-product #sales_segment').val($(el + ' #sales_segment').attr('value'));
     $('#modal-product').modal('toggle');
   }

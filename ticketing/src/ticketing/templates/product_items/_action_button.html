@@ -5,7 +5,7 @@
   function new_product_item(product_id) {
     var el = '#product-' + product_id;
     $('#modal-product_item #name').val($(el + ' #name').text());
-    $('#modal-product_item #product #price').val($(el + ' #price').text());
+    $('#modal-product_item #product #price').val($(el + ' #price').attr('value'));
     $('#modal-product_item #sales_segment_id').val($(el + ' #sales_segment').attr('value'));
     $('#modal-product_item #id').val('');
     $('#modal-product_item #performance_id').val(${performance.id});
@@ -20,7 +20,7 @@
   function edit_product_item(product_id, product_item_id) {
     var product = '#product-' + product_id;
     $('#modal-product_item #name').val($(product + ' #name').text());
-    $('#modal-product_item #product #price').val($(product + ' #price').text());
+    $('#modal-product_item #product #price').val($(product + ' #price').attr('value'));
     $('#modal-product_item #sales_segment_id').val($(product + ' #sales_segment').attr('value'));
     var product_item = '#product_item-' + product_item_id;
     $('#modal-product_item #id').val(product_item_id);
@@ -30,7 +30,7 @@
     $('#modal-product_item #stock_holders').attr('disabled', 'disabled');
     $('#modal-product_item #stock_id').val($(product_item + ' #stock').attr('value'));
     $('#modal-product_item #stock_id').attr('disabled', 'disabled');
-    $('#modal-product_item #product-item #price').val($(product_item + ' #price').text());
+    $('#modal-product_item #product-item #price').val($(product_item + ' #price').attr('value'));
     $('#modal-product_item #quantity').val($(product_item + ' #quantity').text());
     $('#modal-product_item').modal('toggle');
   }

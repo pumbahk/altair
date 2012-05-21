@@ -2,9 +2,17 @@
 <%namespace file="/common/helpers.html" import="pager"/>                                               
 <%namespace file="/common/helpers.html" import="flash_messages" />
 <%namespace file="/common/helpers.html" import="safe_strftime" />
+<%namespace file="/common/helpers.html" import="breadcrumbs" />
 
 <div class="row-fluid">
   <%include file="/parts/_menu.html" />
+
+  <div class="span10">
+    ${breadcrumbs(
+        names=[u'イベント', u'販売区分'],
+        urls=[request.route_path('sales_segments.index', event_id=event.id)]
+    )}
+  </div>
 
   <span class="span10">
     <div class="page-header">

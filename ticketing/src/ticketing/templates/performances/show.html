@@ -1,6 +1,7 @@
 <%inherit file="../layout.html" />
 <%namespace file="/common/helpers.html" import="flash_messages" />
 <%namespace file="/common/helpers.html" import="safe_strftime" />
+<%namespace file="/common/helpers.html" import="breadcrumbs" />
 
 <%block name="style">
 <link rel="stylesheet" type="text/css" href="/static/css/kolorpicker.css" />
@@ -34,9 +35,17 @@ var SEAT_DATA_URL = "${request.route_path('api.get_seats', venue_id=performance.
 <div class="row-fluid">
   <%include file="/parts/_menu.html"  args="event=performance.event" />
 
-  <span class="span10">
-    <%include file="/parts/_breadcrumbs.html" />
-  </span>
+  <div class="span10">
+    ${breadcrumbs(
+        names=[u'イベント', performance.event.title, u'パフォーマンス', performance.name],
+        urls=[
+          request.route_path('events.index'),
+          request.route_path('events.show', event_id=performance.event.id),
+          request.route_path('performances.index', event_id=performance.event.id),
+        ]
+    )}
+  </div>
+
   <span class="span10">
 
     <div class="page-header">

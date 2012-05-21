@@ -4,9 +4,17 @@
 <%namespace file="/common/helpers.html" import="flash_messages" />
 <%namespace file="/common/helpers.html" import="form_item" />
 <%namespace file="/common/helpers.html" import="safe_strftime" />
+<%namespace file="/common/helpers.html" import="breadcrumbs" />
 
 <div class="row-fluid">
   <%include file="/parts/_menu.html" />
+
+  <div class="span10">
+    ${breadcrumbs(
+        names=[u'イベント', event.title],
+        urls=[request.route_path('events.index')]
+    )}
+  </div>
 
   <span class="span10">
     <div class="page-header">

@@ -1,8 +1,16 @@
 <%inherit file="/layout.html" />
 <%namespace file="/common/helpers.html" import="flash_messages" />
+<%namespace file="/common/helpers.html" import="breadcrumbs" />
 
 <div class="row-fluid">
   <%include file="/parts/_menu.html" />
+
+  <div class="span10">
+    ${breadcrumbs(
+        names=[u'クライアント', account.name],
+        urls=[request.route_path('accounts.index')]
+    )}
+  </div>
 
   <span class="span10">
     <div class="page-header">
