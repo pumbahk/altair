@@ -49,7 +49,8 @@ class IndexView(object):
                                sales_start_on=str(e.sales_start_on), 
                                sales_end_on=str(e.sales_end_on),
                                venues=venues,
-                               product=e.product),
+                               product=e.products,
+                    ),
                     dates=dates,
                     venues_selection=Markup(json.dumps(select_venues)))
 
@@ -57,10 +58,12 @@ class IndexView(object):
     def get_seat_types(self):
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.matchdict['performance_id']
-        seat_types = DBSession.query(p_models.SeatType).filter(
+        seat_types = DBSession.query(p_models.StockType).filter(
             e_models.Performance.event_id==event_id).filter(
             e_models.Performance.id==performance_id).filter(
-                p_models.SeatType.performance_id==e_models.Performance.id).all()
+            e_models.Performance.id==p_models.StockHolder.performance_id).filter(
+            p_models.StockHolder.id==p_models.Stock.stock_holder_id).filter(
+            p_models.Stock.stock_type_id==p_models.StockType.id).all()
             
         data = dict(seat_types=[
                 dict(id=s.id, name=s.name,
@@ -69,7 +72,6 @@ class IndexView(object):
                     )
                 for s in seat_types
                 ])
-        print data
         return data
 
     @view_config(route_name='cart.products', renderer="json")
@@ -80,10 +82,10 @@ class IndexView(object):
         seat_type_id = self.request.matchdict['seat_type_id']
         performance_id = self.request.matchdict['performance_id']
 
-        seat_type = DBSession.query(p_models.SeatType).filter_by(id=seat_type_id).one()
+        seat_type = DBSession.query(p_models.StockType).filter_by(id=seat_type_id).one()
 
         q = DBSession.query(p_models.ProductItem.product_id).filter(
-            p_models.ProductItem.seat_type_id==seat_type_id).filter(
+            p_models.ProductItem.stock_type_id==seat_type_id).filter(
             p_models.ProductItem.performance_id==performance_id)
             
         query = DBSession.query(p_models.Product).filter(

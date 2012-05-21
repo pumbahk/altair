@@ -27,5 +27,6 @@ def main(global_config, **settings):
 
     config.include('.')
     config.scan()
+    config.scan('..orders.models')
 
     return config.make_wsgi_app()
