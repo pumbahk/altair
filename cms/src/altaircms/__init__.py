@@ -68,7 +68,7 @@ def main(global_config, **settings):
 
     ## include
     config.include("altaircms.auth", route_prefix='/auth')
-    config.include("altairsite.front", route_prefix="f")
+    config.include("altaircms.front", route_prefix="f")
     config.include("altaircms.widget")
     config.include("altaircms.plugins")
     config.include("altaircms.event")
