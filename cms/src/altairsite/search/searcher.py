@@ -46,13 +46,19 @@ def get_pageset_query(request, query_params):
     sub_qs = events_by_about_deal(sub_qs, query_params.get("before_deal_start"), query_params.get("till_deal_end"), 
                                   query_params.get("closed_only"), query_params.get("canceld_only"))
 
+
     qs = PageSet.query
     qs = search_by_ganre(query_params.get("top_categories"), query_params.get("sub_categories"), qs=qs)
     qs = search_by_events(qs, sub_qs)
+
+    # 検索対象に入っているもののみが検索に引っかかる
+    sub_qs = sub_qs.filter(Event.is_searchable==True)
+    qs = qs.filter(Event.is_searchable==True).filter(Event.id==PageSet.event_id)
+
     if "query" in query_params:
         words = _extract_tags(query_params, "query")
         qs = search_by_freeword(qs, request, words, query_params.get("query_cond"))
-    # import pdb; pdb.set_trace()
+        
     return  qs
 
 

@@ -381,6 +381,12 @@ class EventsByAboutDealPartTests(unittest.TestCase):
           result = self._callFUT(Event.query, None, None, None, True, _nowday=lambda : datetime(2012, 1, 1))
           self.assertEquals([ev0], list(result))
 
+class SearchOnlyIsSearcheableEventTests(unittest.TestCase):
+    def test_it(self):
+        from altairsite.search.searcher import get_pageset_query
+        result =  str(get_pageset_query(None, {}))
+        
+        self.assertIn("event.is_searchable = ? AND event.id = pagesets.event_id", result)
 
 if __name__ == "__main__":
     unittest.main()
