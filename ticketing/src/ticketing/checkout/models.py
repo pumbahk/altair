@@ -34,10 +34,10 @@ class CheckoutItem(Base):
 
     created_at = sa.Column(sa.DateTime, default=datetime.now)
 
-class CheckoutCart(Base):
-    __tablename__ = 'checkout_carts'
-    id = sa.Column(sa.Integer, primary_key=True)
-    created_at = sa.Column(sa.DateTime, default=datetime.now)
+#class CheckoutCart(Base):
+#    __tablename__ = 'checkout_carts'
+#    id = sa.Column(sa.Integer, primary_key=True)
+#    created_at = sa.Column(sa.DateTime, default=datetime.now)
 
 class Checkout(Base):
     """ 購入情報
@@ -66,10 +66,10 @@ class CartConfirm(Base):
 
     id = sa.Column(sa.Integer, primary_key=True)
     openid = sa.Column(sa.Unicode(255))
-    carts = orm.relationship('Cart', backref='cart_confirm')
+    carts = orm.relationship('CheckoutCart', backref='cart_confirm')
     created_at = sa.Column(sa.DateTime, default=datetime.now)
 
-class Cart(Base):
+class CheckoutCart(Base):
     """ 注文情報確認 API
     """
 

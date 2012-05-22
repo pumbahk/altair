@@ -111,7 +111,7 @@ class CartXmlVisitor(object):
                 self.visit_cart(cart_el, cart_confirm)
 
     def visit_cart(self, el, cart_confirm):
-        cart = m.Cart()
+        cart = m.CheckoutCart()
         cart_confirm.carts.append(cart)
         for e in el:
             if e.tag == 'cartConfirmationId':

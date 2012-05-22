@@ -556,3 +556,23 @@ class ReserveViewTests(unittest.TestCase):
         stock_statuses = self.session.bind.execute(sql.select([StockStatus.quantity]).where(StockStatus.stock_id==stock_id))
         for stock_status in stock_statuses:
             self.assertEqual(stock_status.quantity, 100)
+
+class PyamentViewTests(unittest.TestCase):
+
+    def _getTarget(self):
+        from . import views
+        return views.PaymentView
+
+    def _makeOne(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
+
+    def setUp(self):
+        self.config = testing.setUp()
+
+    def tearDown(self):
+        testing.tearDown()
+
+    def test_it(self):
+        request = testing.DummyRequest()
+        target = self._makeOne(request)
+        result = target()

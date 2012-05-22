@@ -13,8 +13,8 @@ def includeme(config):
 
     utilities = config.registry.utilities
 
-    secret = config.registry.settings['altair_checkout.secret']
-    authmethod = config.registry.settings['altair_checkout.authmethod']
+    secret = config.registry.settings.get('altair_checkout.secret')
+    authmethod = config.registry.settings.get('altair_checkout.authmethod')
 
     hmac_sha1_signer = api.HMAC_SHA1(secret)
     hmac_md5_signer = api.HMAC_MD5(secret)
