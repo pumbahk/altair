@@ -14,38 +14,6 @@ class TicketingCartResrouce(object):
     def __init__(self, request):
         self.request = request
 
-    def acquire_product(self, product, amount):
-        """ 商品確保
-        """
-
-        for product_item in product.items:
-            self.acquire_product_item(product_item, amount)
-
-
-    def has_stock(self, stock_id, quantity):
-        """在庫確認(Stock)
-        :param stock_id:
-        :param quantity: 要求数量
-        :return: bool
-        """
-        stock_status = m.DBSession.query(p_models.StockStatus).filter(p_models.StockStatus.stock_id==stock_id).first()
-        return stock_status.quantity >= quantity
-
-    def acquire_product_item(self, product_item, amount):
-        # 在庫チェック
-        if not self.has_stock(amount, product_item):
-            raise Exception # TODO: 例外クラス定義
-
-        self.cart.add_product_item(product_item, amount)
-
-    @reify
-    def cart_session_id(self):
-        return security.cart_session_id(self.request)
-
-    @reify
-    def cart(self):
-        return m.Cart.get_or_create(self.cart_session_id)
-
     def _convert_order_product_items(self, ordered_products):
         """ 選択したProductからProductItemと個数の組に展開する
         :param ordered_products: list of (product, quantity)
@@ -67,62 +35,6 @@ class TicketingCartResrouce(object):
         return ((stock_id, sum(quantity for _, quantity in ordered_items)) for stock_id, ordered_items in q)
 
 
-    def select_seat(self, stock_id, quantity):
-        """ 指定在庫（席種）を隣接座席で確保する
-        必要な席種かつ確保されていない座席
-        を含む必要数量の連席情報の最初の行
-
-        :param stock_id: 在庫ID
-        :param quantity: 数量
-        :return: list of :class:`ticketing.venues.models.SeatStatus`
-        """
-
-        sub = m.DBSession.query(v_models.SeatAdjacencySet.id).filter(
-                # 確保されていない
-                v_models.SeatStatus.status==int(v_models.SeatStatusEnum.Vacant)
-            ).filter(
-                # 確保されてない状態と席の紐付け
-                v_models.SeatStatus.seat_id==v_models.Seat.id
-            ).filter(
-                # 席と在庫の紐付け
-                p_models.Stock.id==v_models.Seat.stock_id
-            ).filter(
-                # 対象とする在庫(席種)
-                p_models.Stock.id==stock_id
-            ).filter(
-                # 必要数量の連席情報
-                v_models.SeatAdjacencySet.seat_count==quantity
-            ).filter(
-                # 連席情報内の席割当
-                v_models.SeatAdjacencySet.id==v_models.SeatAdjacency.adjacency_set_id
-            ).filter(
-                # 連席情報と席の紐付け
-                v_models.SeatAdjacency.id==v_models.seat_seat_adjacency_table.c.seat_adjacency_id
-            ).filter(
-                v_models.Seat.id==v_models.seat_seat_adjacency_table.c.seat_id
-            ).limit(1)
-
-
-        seat_statuses = m.DBSession.query(v_models.Seat, v_models.SeatStatus).filter(
-                v_models.SeatStatus.seat_id==v_models.Seat.id
-            ).filter(
-                v_models.Seat.id==v_models.seat_seat_adjacency_table.c.seat_id
-            ).filter(
-                v_models.SeatAdjacency.id==v_models.seat_seat_adjacency_table.c.seat_adjacency_id
-            ).filter(
-                v_models.SeatAdjacency.adjacency_set_id.in_(sub)
-            ).all()
-
-        if len(seat_statuses) == quantity:
-
-#            up = sql.update(v_models.SeatStatus.__table__).values(
-#                    {v_models.SeatStatus.status: int(v_models.SeatStatusEnum.InCart)}).where(
-#                v_models.SeatStatus.seat_id.in_([s.id for s in seat_statuses]))
-#            m.DBSession.bind.execute(up)
-
-            for s in seat_statuses:
-                s[1].status = int(v_models.SeatStatusEnum.InCart)
-        return seat_statuses
 
     def order_products(self, ordered_products):
         """

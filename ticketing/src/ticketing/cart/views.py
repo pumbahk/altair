@@ -10,6 +10,7 @@ from ticketing.models import DBSession
 import ticketing.events.models as e_models
 import ticketing.products.models as p_models
 from . import helpers as h
+from . import apis
 
 logger = logging.getLogger(__name__)
 
@@ -141,8 +142,9 @@ class ReserveView(object):
         cart = self.context.order_products(self.ordered_items)
         if cart is None:
             return dict(result='NG')
-        self.request.session['ticketing.cart_id'] = cart.id
-        self.cart = cart
+        apis.set_cart(self.request, cart)
+        #self.request.session['ticketing.cart_id'] = cart.id
+        #self.cart = cart
         return dict(result='OK')
 
     def on_error(self):

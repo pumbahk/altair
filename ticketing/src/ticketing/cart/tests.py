@@ -192,31 +192,6 @@ class TicketingCartResourceTests(unittest.TestCase):
         models.DBSession.add(stock_status)
         return product_item
 
-
-    def test_has_stock_just_quantity(self):
-        request = testing.DummyRequest()
-        target = self._makeOne(request)
-        product_item = self._add_stock_status(quantity=100)
-        result = target.has_stock(product_item.id, 100)
-
-        self.assertTrue(result)
-
-    def test_has_stock_1_less(self):
-        request = testing.DummyRequest()
-        target = self._makeOne(request)
-        product_item = self._add_stock_status(quantity=99)
-        result = target.has_stock(product_item.id, 100)
-
-        self.assertFalse(result)
-
-    def test_has_stock_1_greater(self):
-        request = testing.DummyRequest()
-        target = self._makeOne(request)
-        product_item = self._add_stock_status(quantity=100)
-        result = target.has_stock(product_item.id, 99)
-
-        self.assertTrue(result)
-
     def test_convert_order_product_items(self):
         request = testing.DummyRequest()
         target = self._makeOne(request)
@@ -251,66 +226,6 @@ class TicketingCartResourceTests(unittest.TestCase):
         self.assertEqual(len(result), 2)
         self.assertEqual(result[0], (1, 6))
         self.assertEqual(result[1], (2, 1))
-
-    def test_select_seat_not_found(self):
-        from ticketing.venues.models import Seat, SeatAdjacency, SeatAdjacencySet, SeatStatus, SeatStatusEnum, Venue
-        from ticketing.products.models import Stock
-
-        venue = self._add_venue(10, 11, 12)
-        # S席
-        stock = Stock(id=1)
-        adjacency_set = SeatAdjacencySet(id=1, seat_count=5)
-        seats = []
-        for i in range(5):
-            seat = Seat(id=i, stock=stock, venue=venue)
-            SeatStatus(seat=seat, status=int(SeatStatusEnum.Vacant))
-            seats.append(seat)
-
-        SeatAdjacency(id=1, seats=seats, adjacency_set=adjacency_set)
-
-
-        self.session.add(stock)
-        self.session.add(adjacency_set)
-
-        request = testing.DummyRequest()
-        target = self._makeOne(request)
-
-        result = target.select_seat(1, 10)
-
-        self.assertEqual(result, [])
-
-        statuses = self.session.query(SeatStatus).filter(SeatStatus.status==int(SeatStatusEnum.InCart)).all()
-        self.assertEqual(len(statuses), 0)
-
-    def test_select_seat_full(self):
-        from ticketing.venues.models import Seat, SeatAdjacency, SeatAdjacencySet, SeatStatus, SeatStatusEnum
-        from ticketing.products.models import Stock
-
-        venue = self._add_venue(4, 5, 6)
-        # S席
-        stock = Stock(id=1)
-        adjacency_set = SeatAdjacencySet(id=1, seat_count=5)
-        seats = []
-        for i in range(5):
-            seat = Seat(id=i, stock=stock, venue=venue)
-            SeatStatus(seat=seat, status=int(SeatStatusEnum.Vacant))
-            seats.append(seat)
-
-        SeatAdjacency(id=1, seats=seats, adjacency_set=adjacency_set)
-
-
-        self.session.add(stock)
-        self.session.add(adjacency_set)
-
-        request = testing.DummyRequest()
-        target = self._makeOne(request)
-
-        result = target.select_seat(stock.id, 5)
-
-        self.assertEqual(len(result), 5)
-
-        statuses = self.session.query(SeatStatus).filter(SeatStatus.status==int(SeatStatusEnum.InCart)).all()
-        self.assertEqual(len(statuses), 5)
 
     def test_order_products_empty(self):
         request = testing.DummyRequest()
@@ -519,7 +434,6 @@ class ReserveViewTests(unittest.TestCase):
         cart_id = request.session['ticketing.cart_id']
 
         self.session.remove()
-        self.session.add(target.cart)
         cart = self.session.query(Cart).filter(Cart.id==cart_id).one()
 
         self.assertIsNotNone(cart)
