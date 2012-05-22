@@ -163,8 +163,15 @@ class PaymentView(object):
     def __init__(self, request):
         self.request = request
 
-        # TODO: PaymentMethodPairあたりを取得
+    @view_config(route_name='cart.payment', request_method="GET")
+    def __call__(self):
+        """ 支払い方法、引き取り方法選択
+        """
 
+    @view_config(route_name='cart.payment.method', request_method="GET")
+    def paymentmethod(self):
+        """ 支払い方法選択後
+        """
 
 class ConfirmView(object):
     """ 決済確認画面 """

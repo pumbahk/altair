@@ -23,3 +23,6 @@ def remove_cart(request):
     if hasattr(request, '_cart'):
         delattr(request, '_cart')
     del request.session['ticketing.cart_id']
+
+def has_cart(request):
+    return 'ticketing.cart_id' in request.session or hasattr(request, '_cart')
