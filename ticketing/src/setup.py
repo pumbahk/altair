@@ -38,7 +38,7 @@ requires = [
     'js.jqueryui',
     'js.tinymce',
     'js.backbone',
-    'js.bootstrap',
+    'js.bootstrap==2.1.1',
     'js.jquery_timepicker_addon',
     'js.jquery_colorpicker',
     'simplejson',

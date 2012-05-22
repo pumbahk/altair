@@ -1,5 +1,5 @@
 ## drop
-echo  "drop database altaircms; create database altaircms default character set utf8; drop database ticketing; create database ticketing default character set utf8;" | mysql -u root -p
+#echo  "drop database altaircms; create database altaircms default character set utf8; drop database ticketing; create database ticketing default character set utf8;" | mysql -u root -p
 ## create
 pushd ../cms
 python setup.py upgrade_db
