@@ -1,0 +1,63 @@
+<%namespace file="/common/modal.html" import="delete_modal" />
+
+<script type="text/javascript">
+  function new_account() {
+    $('#modal-account').modal('toggle');
+  }
+  function edit_account() {
+    var id = get_id('account_id');
+    if (!id) return;
+    var el = '#account-' + id;
+    $('#modal-account #id').val(id);
+    $('#modal-account #name').val($(el + ' #name').text());
+    $('#modal-account').modal('toggle');
+  }
+  function delete_account() {
+    var id = get_id('account_id');
+    if (!id) return;
+    $('#modal-delete #delete').attr('href', '/accounts/delete/' + id);
+    $('#modal-delete #message').text('選択したクライアントを削除します。よろしいですか？');
+    $('#modal-delete').modal('toggle');
+  }
+  function save_account() {
+    var id = $('#modal-stock_type #id').val();
+    var url = id ? '/accounts/edit/' + id : '/accounts/new';
+    var param = {};
+    $('#modal-account :input').each(function(i, v) {
+      param[v.name] = v.value;
+    });
+    $.post(
+        url,
+        param,
+        function(data, status, xhr) {
+          $('#modal-account').modal('hide');
+          $('#accounts-form').html(data);
+          $('#modal-account').modal('show');
+        },
+        "html"
+    );
+  }
+</script>
+
+<div class="btn-group">
+  <a href="javascript:new_account()" class="btn">
+    <i class="icon-plus"></i> 新規
+  </a>
+  <button class="btn dropdown-toggle" data-toggle="dropdown">
+    <span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu">
+    <li>
+      <a href="javascript:edit_account();">
+        <i class="icon-pencil"></i> 編集
+      </a>
+    </li>
+    <li>
+      <a href="javascript:delete_account();" data-controls-modal="modal-delete" data-backdrop="true" data-keyboard="true">
+        <i class="icon-minus"></i> 削除
+      </a>
+    </li>
+  </ul>
+</div>
+
+${delete_modal()}

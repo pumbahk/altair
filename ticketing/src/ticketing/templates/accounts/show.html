@@ -32,14 +32,23 @@
         <th>席数</th>
       </tr>
       % for stock_holder in account.stock_holders:
-        % for stock in stock_holder.stocks:
       <tr>
-        <td>${stock_holder.performance.name}</td>
-        <td>${stock_holder.name}</td>
+        <td rowspan="${len(stock_holder.stocks)}">${stock_holder.performance.name}</td>
+        <td rowspan="${len(stock_holder.stocks)}">${stock_holder.name}</td>
+        % for i, stock in enumerate(stock_holder.stocks):
+          % if i:
+      <tr>
+          % endif
         <td>${stock.stock_type.name}</td>
         <td>${stock.quantity}</td>
       </tr>
         % endfor
+        % if not stock_holder.stocks:
+        <td></td>
+        <td></td>
+      </tr>
+        % endif
+      </tr>
       % endfor
     </table>
   </span>

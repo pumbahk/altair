@@ -14,11 +14,9 @@ class StockTypeForm(Form):
         return Translations()
 
     id = HiddenField(
-        label='',
         validators=[Optional()],
     )
     event_id = HiddenField(
-        label='',
         validators=[Required(u'入力してください')],
     )
     name = TextField(

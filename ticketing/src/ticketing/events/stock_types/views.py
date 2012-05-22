@@ -49,7 +49,7 @@ class StockTypes(BaseView):
         stock_type_id = int(self.request.matchdict.get('stock_type_id', 0))
         stock_type = StockType.get(stock_type_id)
         if stock_type is None:
-            return HTTPNotFound('stock_type id %d is not found' % id)
+            return HTTPNotFound('stock_type id %d is not found' % stock_type_id)
 
         f = StockTypeForm(self.request.POST)
         if f.validate():

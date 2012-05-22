@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
 
 from wtforms import Form
-from wtforms import TextField
-from wtforms.validators import Required, Length
+from wtforms import TextField, HiddenField
+from wtforms.validators import Required, Length, Optional
 
 class AccountForm(Form):
 
+    id = HiddenField(
+        label=u'ID',
+        validators=[Optional()],
+    )
     name = TextField(
         label=u'クライアント名',
         validators=[

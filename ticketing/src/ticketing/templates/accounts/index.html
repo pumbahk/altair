@@ -22,57 +22,11 @@
       ${flash_messages(request)}
     </div>
 
-    <span class="span6">
-      <ul class="nav nav-pills">
-        <li class="dropdown" id="top-event">
-          <a class="dropdown-toggle" data-toggle="dropdown" href="#top-even1t">
-            クライアント
-            <b class="caret"></b>
-          </a>
-          <ul class="dropdown-menu">
-            <li><a data-toggle="modal" href="#edit-modal">登録</a></li>
-          </ul>
-        </li>
-      </ul>
-
-      <table class="table table-striped table-bordered">
-        <thead>
-        <tr>
-          <th class="minwidth"></th>
-          <th class="minwidth">ID</th>
-          <th class="span5">${form.name.label.text}</th>
-        </tr>
-        </thead>
-        <tbody>
-        % for account in accounts.items:
-        <tr>
-          <td><input name="checked_id" type="radio" value=${account.id} /></td>
-          <td>${account.id}</td>
-          <td><a href="${request.route_path('accounts.show', account_id=account.id)}">${account.name}</a></td>
-        </tr>
-        % endfor
-        </tbody>
-      </table>
-    </span>
+    <%include file="/accounts/_list.html" args="accounts=accounts" />
+    <%include file="/accounts/_action_button.html" />
+    <div id="accounts-form">
+      <%include file="/accounts/_form.html" args="form=form" />
+    </div>
   </span>
   ${pager(accounts)}
-</div>
-
-<div id="edit-modal" class="modal fade">
-  <div class="modal-header">
-    <a class="close" data-dismiss="modal">×</a>
-    <h3>クライアント登録</h3>
-  </div>
-
-  <form id="edit" action="${request.route_path('accounts.new')}" method="POST">
-    <div class="modal-body">
-      <label>クライアント名</label>
-      <input id="name" name="name" type="text" class="span3" value="">
-    </div>
-
-    <div class="modal-footer">
-      <a href="#" class="btn" data-dismiss="modal">閉じる</a>
-      <input class="btn" type="submit" value="保存"></a>
-    </div>
-  </form>
 </div>
