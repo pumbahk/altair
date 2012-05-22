@@ -12,6 +12,8 @@
     $('#modal-sales_segment #name').val('');
     $('#modal-sales_segment #start_at').val('');
     $('#modal-sales_segment #end_at').val('');
+    $('#modal-sales_segment #upper_limit').val('');
+    $('#modal-sales_segment #seat_choice').attr('checked');
     $('#modal-sales_segment').modal('toggle');
   }
   function edit_sales_segment() {
@@ -22,6 +24,10 @@
     $('#modal-sales_segment #name').val($(el + ' #name').text());
     $('#modal-sales_segment #start_at').val($(el + ' #current_start_at').text().trim());
     $('#modal-sales_segment #end_at').val($(el + ' #current_end_at').text().trim());
+    $('#modal-sales_segment #upper_limit').val($(el + ' #upper_limit').text());
+    if ($(el + ' #seat_choice').attr('value')) {
+      $('#modal-sales_segment #seat_choice').attr('checked');
+    }
     $('#modal-sales_segment').modal('toggle');
   }
   function delete_sales_segment() {

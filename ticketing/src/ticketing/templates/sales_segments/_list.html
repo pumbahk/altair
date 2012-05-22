@@ -10,6 +10,8 @@
       <th><a href="#" class="sortable">名称</a></th>
       <th><a href="#" class="sortable">販売開始日時</a></th>
       <th><a href="#" class="sortable">販売終了日時</a></th>
+      <th><a href="#" class="sortable">購入上限枚数</a></th>
+      <th><a href="#" class="sortable">座席選択可否</a></th>
       <th>決済方法</th>
       <th>配送方法</th>
     </tr>
@@ -24,6 +26,8 @@
       <td ${rowspan} id="name"><a href="${request.route_path('sales_segments.show', sales_segment_id=sales_segment.id)}">${sales_segment.name}</a></td>
       <td ${rowspan} id="current_start_at">${safe_strftime(sales_segment.start_at)}</td>
       <td ${rowspan} id="current_end_at">${safe_strftime(sales_segment.end_at)}</td>
+      <td ${rowspan} id="upper_limit">${sales_segment.upper_limit or u''}</td>
+      <td ${rowspan} id="seat_choice" value="${sales_segment.seat_choice}">${u'○' if sales_segment.seat_choice else u'×'}</td>
       % if count == 0:
       <td></td>
       <td></td>

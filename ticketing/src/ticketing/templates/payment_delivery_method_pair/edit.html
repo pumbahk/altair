@@ -45,7 +45,6 @@
           ${form_item(form.delivery_fee, option={'class':'span2'})}
           ${form_item(form.discount, option={'class':'span2'})}
           ${form_item(form.discount_unit, option={'class':'span2'})}
-          ${form_item(form.discount_type, option={'class':'span2'})}
 
           % if request.matched_route.name == 'payment_delivery_method_pair.new':
             ${form_item(form.payment_method_ids)}

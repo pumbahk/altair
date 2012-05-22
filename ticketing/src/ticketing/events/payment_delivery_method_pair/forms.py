@@ -57,10 +57,6 @@ class PaymentDeliveryMethodPairForm(Form):
         label=u'割引数',
         validators=[Optional()]
     )
-    discount_type = IntegerField(
-        label=u'割引区分',
-        validators=[Optional()]
-    )
     payment_method_ids = SelectMultipleField(
         label=u'決済方法',
         validators=[Required(u'選択してください')],

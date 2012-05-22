@@ -54,7 +54,8 @@ def merge_session_with_post(session, post, filters={}):
                 or isinstance(value, int)\
                 or isinstance(value, Decimal)\
                 or isinstance(value, datetime)\
-                or isinstance(value, date):
+                or isinstance(value, date)\
+                or value is None:
                 setattr(session, key, value)
             else:
                 pass

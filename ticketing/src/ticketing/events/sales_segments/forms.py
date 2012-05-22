@@ -1,19 +1,22 @@
 # -*- coding: utf-8 -*-
 
 from wtforms import Form
-from wtforms import TextField, SelectField, HiddenField
+from wtforms import TextField, SelectField, HiddenField, IntegerField, BooleanField
 from wtforms.validators import Required, Regexp, Length, Optional, ValidationError
+from wtforms.widgets import CheckboxInput
 
-from ticketing.utils import DateTimeField
+from ticketing.utils import DateTimeField, Translations
 
 class SalesSegmentForm(Form):
 
+    def _get_translations(self):
+        return Translations()
+
     id = HiddenField(
-        label='',
+        label=u'ID',
         validators=[Optional()],
     )
     event_id = HiddenField(
-        label='',
         validators=[Required(u'入力してください')]
     )
     name = TextField(
@@ -32,6 +35,15 @@ class SalesSegmentForm(Form):
         label=u'販売終了日時',
         validators=[Required(u'入力してください')],
         format='%Y-%m-%d %H:%M'
+    )
+    upper_limit = IntegerField(
+        label=u'購入上限枚数',
+        validators=[Optional()],
+    )
+    seat_choice = IntegerField(
+        label=u'座席選択可否',
+        default=1,
+        widget=CheckboxInput(),
     )
 
     def validate_end_at(form, field):

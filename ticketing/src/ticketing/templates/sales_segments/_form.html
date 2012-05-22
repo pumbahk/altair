@@ -4,6 +4,13 @@
 <script type="text/javascript">
   $(function() {
     $('#start_at, #end_at').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
+    $('#modal-sales_segment #seat_choice').change(function() {
+      if ($(this).attr('checked')) {
+        $(this).val(${form.seat_choice.default});
+      } else {
+        $(this).val(0);
+      }
+    }).change();
   });
 </script>
 
@@ -20,6 +27,8 @@
       ${form_item(form.name, option={'maxlength':255})}
       ${form_item(form.start_at)}
       ${form_item(form.end_at)}
+      ${form_item(form.upper_limit)}
+      ${form_item(form.seat_choice)}
     </div>
 
     <div class="modal-footer">

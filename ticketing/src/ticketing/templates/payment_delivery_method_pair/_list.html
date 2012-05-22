@@ -10,7 +10,6 @@
     <th>${form.delivery_fee.label.text}</th>
     <th>${form.discount.label.text}</th>
     <th>${form.discount_unit.label.text}</th>
-    <th>${form.discount_type.label.text}</th>
   </tr>
   % for i, pdmp in enumerate(sales_segment.payment_delivery_method_pair):
   <tr>
@@ -21,7 +20,6 @@
     <td>${pdmp.delivery_fee}</td>
     <td>${pdmp.discount}</td>
     <td>${pdmp.discount_unit}</td>
-    <td>${pdmp.discount_type}</td>
   </tr>
   % endfor
 </table>

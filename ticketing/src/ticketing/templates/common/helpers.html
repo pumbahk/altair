@@ -54,7 +54,7 @@
     % if item.type != 'HiddenField':
       <label class="control-label">
         % if item.flags.required:
-          <i class="icon-asterisk"></i>
+        <span style="color: #BA0000;padding-left: 5px; padding-right: 5px; font-size: 150%">*</span>
         % endif
         ${help|n} ${item.label.text}
       </label>

@@ -143,6 +143,8 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     name = Column(String(255))
     start_at = Column(DateTime)
     end_at = Column(DateTime)
+    upper_limit = Column(Integer)
+    seat_choice = Column(Boolean, default=True)
 
     event_id = Column(BigInteger, ForeignKey('Event.id'))
     event = relationship('Event', backref='sales_segments')
@@ -155,7 +157,6 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
     delivery_fee = Column(Numeric(precision=16, scale=2), nullable=False)
     discount = Column(Numeric(precision=16, scale=2), nullable=False)
     discount_unit = Column(Integer)
-    discount_type = Column(Integer)
 
     sales_segment_id = Column(BigInteger, ForeignKey('SalesSegment.id'))
     sales_segment = relationship('SalesSegment', backref='payment_delivery_method_pair')
