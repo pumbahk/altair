@@ -1,3 +1,5 @@
+# -*- coding:utf-8 -*-
+
 from webhelpers.html.builder import literal
 from .api import sign_to_xml, checkout_to_xml
 

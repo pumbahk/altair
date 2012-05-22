@@ -1735,7 +1735,9 @@ def add_materials_settings():
                     client=client)
         DBSession.add(site)
 
-    debug_user = Operator(auth_source="debug", user_id=1, id=1, role_id=1, screen_name="debug user")
+    from altaircms.usersetting.models import User
+    user = User(is_administrator=1)
+    debug_user = Operator(auth_source="debug", user=user, role_id=1, screen_name="debug user")
 
     ## simple layout
     layout_col2 = Layout(
