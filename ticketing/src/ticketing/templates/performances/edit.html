@@ -19,6 +19,9 @@
     $('#start_on').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
     $('#end_on').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
     $('#open_on').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
+    $('#open_on').focusout(function(){
+      $('#code').val('${event.code}' + $(this).val().replace(/([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2})/g, '$2$3$4'));
+    });
   });
 </script>
 
@@ -50,10 +53,10 @@
       <form class="form-horizontal" action="${route_path}" method="POST">
         <fieldset>
           ${form_item(form.name, option={'class':'span8', 'maxlength':255})}
-          ${form_item(form.code, option={'class':'span2', 'maxlength':12})}
           ${form_item(form.open_on)}
           ${form_item(form.start_on)}
           ${form_item(form.end_on)}
+          ${form_item(form.code, option={'class':'span3', 'maxlength':12, 'placeholder':event.code})}
           ${form_item(form.venue_id, option={'class':'span6'})}
         </fieldset>
         <div class="form-actions">

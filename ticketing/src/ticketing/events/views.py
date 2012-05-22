@@ -70,18 +70,20 @@ class Events(BaseView):
     @view_config(route_name='events.new', request_method='GET', renderer='ticketing:templates/events/edit.html')
     def new_get(self):
         f = EventForm()
+        event = Event(organization_id=self.context.user.organization_id)
 
         event_id = int(self.request.matchdict.get('event_id', 0))
         if event_id:
             event = Event.get(event_id)
             if event is None:
                 return HTTPNotFound('event id %d is not found' % event_id)
-            event = record_to_multidict(event)
-            event.pop('id')
-            f.process(event)
+
+        event = record_to_multidict(event)
+        if 'id' in event: event.pop('id')
+        f.process(event)
 
         return {
-            'form':f
+            'form':f,
         }
 
     @view_config(route_name='events.new', request_method='POST', renderer='ticketing:templates/events/edit.html')
@@ -89,15 +91,14 @@ class Events(BaseView):
         f = EventForm(self.request.POST)
 
         if f.validate():
-            event = merge_session_with_post(Event(), f.data)
-            event.organization_id = self.context.user.organization_id
+            event = merge_session_with_post(Event(organization_id=self.context.user.organization_id), f.data)
             event.save()
 
             self.request.session.flash(u'イベントを登録しました')
             return HTTPFound(location=route_path('events.index', self.request))
         else:
             return {
-                'form':f
+                'form':f,
             }
 
     @view_config(route_name='events.edit', request_method='GET', renderer='ticketing:templates/events/edit.html')
@@ -111,7 +112,7 @@ class Events(BaseView):
         f.process(record_to_multidict(event))
         return {
             'form':f,
-            'event':event
+            'event':event,
         }
 
     @view_config(route_name='events.edit', request_method='POST', renderer='ticketing:templates/events/edit.html')
@@ -124,7 +125,6 @@ class Events(BaseView):
         f = EventForm(self.request.POST)
         if f.validate():
             event = merge_session_with_post(event, f.data)
-            event.organization_id = self.context.user.organization_id
             event.save()
 
             self.request.session.flash(u'イベントを保存しました')
@@ -132,7 +132,7 @@ class Events(BaseView):
         else:
             return {
                 'form':f,
-                'event':event
+                'event':event,
             }
 
     @view_config(route_name='events.delete')

@@ -136,7 +136,6 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 .filter(Performance.event_id==self.id)\
                 .distinct()
 
-
 class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'SalesSegment'
     id = Column(BigInteger, primary_key=True)
@@ -148,7 +147,6 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     event_id = Column(BigInteger, ForeignKey('Event.id'))
     event = relationship('Event', backref='sales_segments')
-
 
 class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentDeliveryMethodPair'

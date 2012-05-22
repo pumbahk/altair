@@ -18,6 +18,22 @@
   $(function() {
     $('#start_on').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
     $('#end_on').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
+
+    var code_buf = [];
+    $('#title').keyup(function(e){
+      if ($('#code').val() && code_buf.length > 5) return;
+      var char = String.fromCharCode(e.which);
+      if (char && char.match(/[a-z]/i) && !char.match(/[aiueo]/i)) {
+        code_buf.push(char);
+      }
+    });
+    $('#title').focusout(function(){
+      if ($('#code').val() || !code_buf) return;
+      $('#code').val(code_buf.join(''));
+    });
+    $('#title').focusin(function(){
+      code_buf = [];
+    });
   });
 </script>
 
@@ -44,9 +60,9 @@
     <div class="well">
       <form class="form-horizontal" action="${route_path}" enctype="multipart/form-data" method="POST">
         <fieldset>
-          ${form_item(form.code, option={'style':'width:150px', 'maxlength':12})}
           ${form_item(form.title, option={'class':'span8', 'maxlength':200})}
           ${form_item(form.abbreviated_title, option={'class':'span4', 'maxlength':100})}
+          ${form_item(form.code, option={'style':'width:150px', 'maxlength':12})}
           ${form_item(form.start_on)}
           ${form_item(form.end_on)}
         </fieldset>
