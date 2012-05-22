@@ -16,7 +16,6 @@ requires = [
     'pyramid_mailer',
     'pyramid_beaker',
     'pymysql',
-    'pymysql_sa',
     'mako',
     'stucco_evolution',
     'deform',

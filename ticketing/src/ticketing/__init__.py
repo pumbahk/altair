@@ -12,12 +12,6 @@ import sqlahelper
 
 import logging
 
-try:
-    import pymysql_sa
-    pymysql_sa.make_default_mysql_dialect()
-    logging.info('Using PyMySQL')
-except:
-    pass
 
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.

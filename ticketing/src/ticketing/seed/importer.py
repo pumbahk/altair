@@ -25,7 +25,7 @@ try:
 except:
     pass
 
-engine = sa.create_engine('mysql://ticketing:ticketing@127.0.0.1/ticketing?use_unicode=true&charset=utf8', echo=True)
+engine = sa.create_engine('mysql+pymysql://ticketing:ticketing@127.0.0.1/ticketing?use_unicode=true&charset=utf8', echo=True)
 sqlahelper.add_engine(engine)
 
 from bank import BankData, BankAccountData
