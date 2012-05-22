@@ -24,7 +24,7 @@ def main(global_config, **settings):
     config.include("altairsite.search", route_prefix="search")
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)
     config.add_static_view('plugins/static', 'altaircms:plugins/static', cache_max_age=3600)
-    config.add_static_view("staticasset", "altaircms:../../data/assets", cache_max_age=3600)
+    config.add_static_view("staticasset", settings["altaircms.asset.storepath"], cache_max_age=3600)
 
     config.add_route('top', '/')
     config.add_view('altairsite.rakuten_auth.index', route_name="top")
