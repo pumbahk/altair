@@ -3,7 +3,7 @@
 ## create
 pushd ../cms
 python setup.py upgrade_db
-pmain -c production.ini -s altaircms.scripts.pmain.insert_demodata
+pmain -c deploy/production.ini -s altaircms.scripts.pmain.insert_demodata
 popd
 
 pushd ../ticketing/src
