@@ -105,7 +105,7 @@ class OAuthToken(Base):
         self.created_at = datetime.now()
         self.updated_at = datetime.now()
 
-
+from altaircms.usersetting.models import User
 class Operator(Base):
     """
     サイト管理者
@@ -116,7 +116,8 @@ class Operator(Base):
     id = Column(Integer, primary_key=True)
 
     auth_source = Column(String(255), nullable=False)
-    user_id = Column(Integer)
+    user_id = Column(Integer, ForeignKey("user.id"))
+    user = relationship("User", uselist=False)
     screen_name = Column(Unicode(255))
 
     oauth_token = Column(String(255))
