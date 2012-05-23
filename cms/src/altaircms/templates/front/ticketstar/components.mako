@@ -1,3 +1,5 @@
+<%namespace file="./gadgets.mako" name="gadgets"/>
+
 <%def name="master_header(top_ourter_categories)">
 		<p id="tagLine">チケット販売・イベント予約</p>
 		<p id="siteID"><a href="http://ticket.rakuten.co.jp/"><img src="/static/ticketstar/img/common/header_logo_01.gif" alt="楽天チケット" class="serviceLogo" width="97" height="35" /></a><a href="http://ticket.rakuten.co.jp/"><img src="/static/ticketstar/img/common/header_logo_02.gif" alt="チケット" class="serviceTitle" width="88" height="23" /></a></p>
@@ -57,25 +59,6 @@
 	</div>
 </%def>
 
-<%doc> ## 元々のhtml今は利用していない
-<%block name="global_navigation">
-	<div id="globalNav">
-		<ul id="globalNav1">
-			<li><a href="/static/ticketstar/index.html"><img src="/static/ticketstar/img/common/header_nav_top.gif" alt="チケットトップ" width="132" height="40" /></a></li>
-			<li><a href="/static/ticketstar/music/index.html"><img src="/static/ticketstar/img/common/header_nav_music.gif" alt="音楽" width="67" height="40" /></a></li>
-			<li><a href="/static/ticketstar/stage/index.html"><img src="/static/ticketstar/img/common/header_nav_stage.gif" alt="演劇" width="73" height="40" /></a></li>
-			<li><a href="/static/ticketstar/sports/index.html"><img src="/static/ticketstar/img/common/header_nav_sports.gif" alt="スポーツ" width="102" height="40" /></a></li>
-			<li><a href="/static/ticketstar/event/index.html"><img src="/static/ticketstar/img/common/header_nav_event.gif" alt="イベント・その他" width="157" height="40" /></a></li>
-		</ul>
-		<ul id="globalNav2">
-			<li><a href="#">抽選申込履歴</a></li>
-			<li><a href="#">購入履歴</a></li>
-			<li><a href="#">お気に入り</a></li>
-			<li><a href="#">マイページ</a></li>
-		</ul>
-	</div>
-</%block>
-</%doc>
 
 <%block name="section_navigation">
 		<dl id="sectionNav">
@@ -91,11 +74,7 @@
 ### require: ${request.route_path("page_search_input")}
 <%block name="header_search">
 	<div id="headerSearch">
-		<form id="form1" name="form1" method="post" action="">
-			<input name="textfield" type="text" id="textfield" size="40" value="アーティスト名、公演名、会場名など" onblur="if(this.value=='') this.value='アーティスト名、公演名、会場名など';" onfocus="if(this.value=='アーティスト名、公演名、会場名など') this.value='';" />
-			<input name="imageField" type="image" id="imageField" src="/static/ticketstar/img/common/header_search_btn.gif" alt="検索" />
-			<a href="${request.route_path("page_search_input")}">詳細検索</a>
-		</form>
+		${gadgets.search_form_on_header(u"アーティスト名、公演名、会場名など")}
 		<dl>
 			<dt><img src="/static/ticketstar/img/common/header_search_hot.gif" alt="ホットワード" width="50" height="45" /></dt>
 			<dd>
@@ -261,3 +240,26 @@
 	  </div><!-- /div#grpFooter -->
 	</div><!-- /div#grpRakutenLinkArea -->
 </%block>
+
+##
+## used
+##
+<%doc> ## 元々のhtml今は利用していない
+<%block name="global_navigation">
+	<div id="globalNav">
+		<ul id="globalNav1">
+			<li><a href="/static/ticketstar/index.html"><img src="/static/ticketstar/img/common/header_nav_top.gif" alt="チケットトップ" width="132" height="40" /></a></li>
+			<li><a href="/static/ticketstar/music/index.html"><img src="/static/ticketstar/img/common/header_nav_music.gif" alt="音楽" width="67" height="40" /></a></li>
+			<li><a href="/static/ticketstar/stage/index.html"><img src="/static/ticketstar/img/common/header_nav_stage.gif" alt="演劇" width="73" height="40" /></a></li>
+			<li><a href="/static/ticketstar/sports/index.html"><img src="/static/ticketstar/img/common/header_nav_sports.gif" alt="スポーツ" width="102" height="40" /></a></li>
+			<li><a href="/static/ticketstar/event/index.html"><img src="/static/ticketstar/img/common/header_nav_event.gif" alt="イベント・その他" width="157" height="40" /></a></li>
+		</ul>
+		<ul id="globalNav2">
+			<li><a href="#">抽選申込履歴</a></li>
+			<li><a href="#">購入履歴</a></li>
+			<li><a href="#">お気に入り</a></li>
+			<li><a href="#">マイページ</a></li>
+		</ul>
+	</div>
+</%block>
+</%doc>

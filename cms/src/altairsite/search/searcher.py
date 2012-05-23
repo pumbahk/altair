@@ -13,25 +13,33 @@ from altaircms.page.models import PageSet
 from altaircms.event.models import Event
 from altaircms.solr import api as solrapi
 
+## for document
+from zope.interface import Interface, provider
+class ISearchFn(Interface):
+   def __call__(request,  query_params):
+       """ resource.pyでsearchfnを引数に取るメソッドに渡す
+           :param query_params:  form.pyのmake_query_paramsで作られた辞書
+           :return: query set of pageset
+       """
+##
 
-def search_by_freeword(qs, request, words, query_cond):
-    assert query_cond in ("intersection", "union")
+@provider(ISearchFn)
+def get_pageset_query_from_freeword(request, query_params):
+    """ フリーワード検索のみ"""
+    qs = PageSet.query
 
-    fulltext_search = solrapi.get_fulltext_search(request)
-    solr_query = solrapi.create_query_from_freeword(words, query_cond=query_cond)
-    result = fulltext_search.search(solr_query, fields=["id"])
-    
-    pageset_ids = [f["id"] for f in result]
-    logger.info("pageset_id: %s" % pageset_ids)
-    return qs.filter(PageSet.id.in_(pageset_ids))
+    words = _extract_tags(query_params, "query")
+    if words:
+        qs = search_by_freeword(qs, request, words, query_params.get("query_cond"))
 
-def _extract_tags(params, k):
-    if k not in params:
-        return []
-    tags = [e.strip() for e in params.pop(k).split(",")] ##
-    return [k for k in tags if k]
+    # 検索対象に入っているもののみが検索に引っかかる
+    qs = qs.filter(Event.is_searchable==True).filter(Event.id==PageSet.event_id)
+        
+    return  qs
 
-def get_pageset_query(request, query_params): 
+
+@provider(ISearchFn)
+def get_pageset_query_fullset(request, query_params): 
     """ 検索する関数.このモジュールのほかの関数は全てこれのためにある。
 
     0. フリーワード検索追加. 
@@ -60,6 +68,24 @@ def get_pageset_query(request, query_params):
         qs = search_by_freeword(qs, request, words, query_params.get("query_cond"))
         
     return  qs
+
+def search_by_freeword(qs, request, words, query_cond):
+    assert query_cond in ("intersection", "union")
+
+    fulltext_search = solrapi.get_fulltext_search(request)
+    solr_query = solrapi.create_query_from_freeword(words, query_cond=query_cond)
+    result = fulltext_search.search(solr_query, fields=["id"])
+    
+    pageset_ids = [f["id"] for f in result]
+    logger.info("pageset_id: %s" % pageset_ids)
+    return qs.filter(PageSet.id.in_(pageset_ids))
+
+def _extract_tags(params, k):
+    if k not in params:
+        return []
+    tags = [e.strip() for e in params.pop(k).split(",")] ##
+    return [k for k in tags if k]
+
 
 
 def search_by_events(qs, event_ids):

@@ -44,10 +44,7 @@ detail search result
 	<!-- ========== main ========== -->
 	<div id="main">
 		<!-- InstanceBeginEditable name="main" -->
-		<h2><img src="/static/ticketstar/img/search/title_results.gif" alt="チケット検索結果" width="742" height="43" /></h2>
-		% for result in result_seq:
-		  ${result}
-		% endfor
+		<%block name="main"/>
 		<!-- InstanceEndEditable -->
 	</div>
 	<!-- ========== /main ========== -->
