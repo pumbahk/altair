@@ -1,0 +1,345 @@
+{
+  "seat_adjacencies": {
+    "2": [
+      ["A1", "A2"],
+      ["A2", "A3"],
+      ["A3", "A4"],
+      ["A4", "A5"],
+      ["A5", "A6"],
+      ["A6", "A7"],
+      ["A7", "A8"],
+      ["A8", "A9"],
+      ["B1", "B2"],
+      ["B2", "B3"],
+      ["B3", "B4"],
+      ["B4", "B5"],
+      ["B5", "B6"],
+      ["B6", "B7"],
+      ["C1", "C2"],
+      ["C2", "C3"],
+      ["C3", "C4"],
+      ["C4", "C5"],
+      ["D1", "D2"],
+      ["E1", "E2"]
+    ],
+    "3": [
+      ["A1", "A2", "A3"],
+      ["A2", "A3", "A4"],
+      ["A3", "A4", "A5"],
+      ["A4", "A5", "A6"],
+      ["A5", "A6", "A7"],
+      ["A6", "A7", "A8"],
+      ["A7", "A8", "A9"],
+      ["B1", "B2", "B3"],
+      ["B2", "B3", "B4"],
+      ["B3", "B4", "B5"],
+      ["B4", "B5", "B6"],
+      ["B5", "B6", "B7"],
+      ["C1", "C2", "C3"],
+      ["C2", "C3", "C4"],
+      ["C3", "C4", "C5"],
+      ["D1", "D2", "D3"],
+      ["E1", "E2", "E3"]
+    ],
+    "4": [
+      ["A1", "A2", "A3", "A4"],
+      ["A2", "A3", "A4", "A5"],
+      ["A3", "A4", "A5", "A6"],
+      ["A4", "A5", "A6", "A7"],
+      ["A5", "A6", "A7", "A8"],
+      ["A6", "A7", "A8", "A9"],
+      ["B1", "B2", "B3", "B4"],
+      ["B2", "B3", "B4", "B5"],
+      ["B3", "B4", "B5", "B6"],
+      ["B4", "B5", "B6", "B7"],
+      ["C1", "C2", "C3", "C4"],
+      ["C2", "C3", "C4", "C5"]
+    ]
+  },
+  "stock_types": {
+    "1": {
+      "style": {
+        "text": "",
+        "stroke": {
+          "color": "#000000",
+          "width": "1",
+          "pattern": "solid"
+        },
+        "fill": {
+          "color": "#d8d8d8"
+        }
+      },
+      "name": "S\u5e2d"
+    },
+    "2": {
+      "style": {
+        "text": "",
+        "stroke": {
+          "color": "#d8d8d8",
+          "width": "1",
+          "pattern": "solid"
+        },
+        "fill": {
+          "color": "#ffec9f"
+        }
+      },
+      "name": "A\u5e2d"
+    },
+    "3": {
+      "style": {
+        "text": "",
+        "stroke": {
+          "color": "#d8d8d8",
+          "width": "1",
+          "pattern": "double"
+        },
+        "fill": {
+          "color": "#99b3e6"
+        }
+      },
+      "name": "B\u5e2d"
+    },
+    "4": {
+      "style": {
+        "text": "",
+        "stroke": {
+          "color": "#d8d8d8",
+          "width": "1",
+          "pattern": "dotted"
+        },
+        "fill": {
+          "color": "#cc8080"
+        }
+      },
+      "name": "C\u5e2d"
+    }
+  },
+  "seats": {
+    "A1": {
+      "attr2": "a1-attr2",
+      "stock_type_id": 1,
+      "attr1": "a1-attr2",
+      "id": "A1",
+      "stock_holder_id": 1,
+      "areas": [1]
+    },
+    "C5": {
+      "attr2": "c5-attr2",
+      "stock_type_id": 3,
+      "attr1": "c5-attr2",
+      "id": "C5",
+      "stock_holder_id": 5,
+      "areas": [1]
+    },
+    "A3": {
+      "attr2": "a3-attr2",
+      "stock_type_id": 1,
+      "attr1": "a3-attr2",
+      "id": "A3",
+      "stock_holder_id": 1,
+      "areas": [1]
+    },
+    "A2": {
+      "attr2": "a2-attr2",
+      "stock_type_id": 1,
+      "attr1": "a2-attr2",
+      "id": "A2",
+      "stock_holder_id": 1,
+      "areas": [1]
+    },
+    "A5": {
+      "attr2": "a5-attr2",
+      "stock_type_id": 1,
+      "attr1": "a5-attr2",
+      "id": "A5",
+      "stock_holder_id": 1,
+      "areas": [1]
+    },
+    "A4": {
+      "attr2": "a4-attr2",
+      "stock_type_id": 1,
+      "attr1": "a4-attr2",
+      "id": "A4",
+      "stock_holder_id": 1,
+      "areas": [1]
+    },
+    "A7": {
+      "attr2": "a7-attr2",
+      "stock_type_id": 1,
+      "attr1": "a7-attr2",
+      "id": "A7",
+      "stock_holder_id": 5,
+      "areas": [1]
+    },
+    "A6": {
+      "attr2": "a6-attr2",
+      "stock_type_id": 1,
+      "attr1": "a6-attr2",
+      "id": "A6",
+      "stock_holder_id": 1,
+      "areas": [1]
+    },
+    "A9": {
+      "attr2": "a9-attr2",
+      "stock_type_id": 1,
+      "attr1": "a9-attr2",
+      "id": "A9",
+      "stock_holder_id": 5,
+      "areas": [1]
+    },
+    "A8": {
+      "attr2": "a8-attr2",
+      "stock_type_id": 1,
+      "attr1": "a8-attr2",
+      "id": "A8",
+      "stock_holder_id": 5,
+      "areas": [1]
+    },
+    "C1": {
+      "attr2": "c1-attr2",
+      "stock_type_id": 3,
+      "attr1": "c1-attr2",
+      "id": "C1",
+      "stock_holder_id": 1,
+      "areas": [1]
+    },
+    "E1": {
+      "attr2": "e1-attr2",
+      "stock_type_id": 4,
+      "attr1": "e1-attr2",
+      "id": "E1",
+      "stock_holder_id": 5,
+      "areas": [2]
+    },
+    "E3": {
+      "attr2": "e3-attr2",
+      "stock_type_id": 4,
+      "attr1": "e3-attr2",
+      "id": "E3",
+      "stock_holder_id": 5,
+      "areas": [2]
+    },
+    "E2": {
+      "attr2": "e2-attr2",
+      "stock_type_id": 4,
+      "attr1": "e2-attr2",
+      "id": "E2",
+      "stock_holder_id": 5,
+      "areas": [2]
+    },
+    "C3": {
+      "attr2": "c3-attr2",
+      "stock_type_id": 3,
+      "attr1": "c3-attr2",
+      "id": "C3",
+      "stock_holder_id": 5,
+      "areas": [1]
+    },
+    "C2": {
+      "attr2": "c2-attr2",
+      "stock_type_id": 3,
+      "attr1": "c2-attr2",
+      "id": "C2",
+      "stock_holder_id": 1,
+      "areas": [1]
+    },
+    "B4": {
+      "attr2": "b4-attr2",
+      "stock_type_id": 2,
+      "attr1": "b4-attr2",
+      "id": "B4",
+      "stock_holder_id": 5,
+      "areas": [1]
+    },
+    "B5": {
+      "attr2": "b5-attr2",
+      "stock_type_id": 2,
+      "attr1": "b5-attr2",
+      "id": "B5",
+      "stock_holder_id": 5,
+      "areas": [1]
+    },
+    "B6": {
+      "attr2": "b6-attr2",
+      "stock_type_id": 2,
+      "attr1": "b6-attr2",
+      "id": "B6",
+      "stock_holder_id": 5,
+      "areas": [1]
+    },
+    "B7": {
+      "attr2": "b7-attr2",
+      "stock_type_id": 2,
+      "attr1": "b7-attr2",
+      "id": "B7",
+      "stock_holder_id": 5,
+      "areas": [1]
+    },
+    "B1": {
+      "attr2": "b1-attr2",
+      "stock_type_id": 2,
+      "attr1": "b1-attr2",
+      "id": "B1",
+      "stock_holder_id": 1,
+      "areas": [1]
+    },
+    "B2": {
+      "attr2": "b2-attr2",
+      "stock_type_id": 2,
+      "attr1": "b2-attr2",
+      "id": "B2",
+      "stock_holder_id": 1,
+      "areas": [1]
+    },
+    "B3": {
+      "attr2": "b3-attr2",
+      "stock_type_id": 2,
+      "attr1": "b3-attr2",
+      "id": "B3",
+      "stock_holder_id": 1,
+      "areas": [1]
+    },
+    "C4": {
+      "attr2": "c4-attr2",
+      "stock_type_id": 3,
+      "attr1": "c4-attr2",
+      "id": "C4",
+      "stock_holder_id": 5,
+      "areas": [1]
+    },
+    "D2": {
+      "attr2": "d2-attr2",
+      "stock_type_id": 4,
+      "attr1": "d2-attr2",
+      "id": "D2",
+      "stock_holder_id": 1,
+      "areas": [2]
+    },
+    "D3": {
+      "attr2": "d3-attr2",
+      "stock_type_id": 4,
+      "attr1": "d3-attr2",
+      "id": "D3",
+      "stock_holder_id": 1,
+      "areas": [2]
+    },
+    "D1": {
+      "attr2": "d1-attr2",
+      "stock_type_id": 4,
+      "attr1": "d1-attr2",
+      "id": "D1",
+      "stock_holder_id": 1,
+      "areas": [2]
+    }
+  },
+  "areas": {
+    "1": {
+      "id": 1,
+      "name": "A\u30d6\u30ed\u30c3\u30af"
+    },
+    "2": {
+      "id": 2,
+      "name": "B\u30d6\u30ed\u30c3\u30af"
+    }
+  }
+}
