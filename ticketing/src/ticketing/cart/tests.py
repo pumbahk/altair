@@ -572,7 +572,8 @@ class PyamentViewTests(unittest.TestCase):
     def tearDown(self):
         testing.tearDown()
 
-    def test_it(self):
+    def test_it_no_cart(self):
         request = testing.DummyRequest()
         target = self._makeOne(request)
         result = target()
+        self.assertEqual(result.location, '/')

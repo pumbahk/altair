@@ -3,7 +3,7 @@ import logging
 import json
 import re
 from markupsafe import Markup
-from pyramid.httpexceptions import HTTPNotFound
+from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from pyramid.view import view_config
 from pyramid.decorator import reify
 from ticketing.models import DBSession
@@ -167,6 +167,10 @@ class PaymentView(object):
     def __call__(self):
         """ 支払い方法、引き取り方法選択
         """
+        if not apis.has_cart(self.request):
+            return HTTPFound('/')
+
+        cat = apis.get_cart(self.request)
 
     @view_config(route_name='cart.payment.method', request_method="GET")
     def paymentmethod(self):
