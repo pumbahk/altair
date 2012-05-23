@@ -4,7 +4,7 @@ from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, Strin
 from sqlalchemy.orm import relationship, join, backref, column_property
 
 from ticketing.utils import StandardEnum
-from ticketing.models import Base, BaseModel, DBSession, WithTimestamp, LogicallyDeleted
+from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted
 from ticketing.products.models import Product, StockHolder
 from ticketing.venues.models import Venue, VenueArea, Seat, SeatAttribute
 
@@ -28,10 +28,11 @@ class Account(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @staticmethod
     def get_by_organization_id(id):
-        return DBSession.query(Account).filter(Account.organization_id==id).all()
+        return Account.filter(Account.organization_id==id).all()
 
 class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Performance'
+
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
     code = Column(String(12))
@@ -49,7 +50,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def accounts(self):
-        data = DBSession.query(Account).join(StockHolder)\
+        data = Account.filter().join(StockHolder)\
                 .filter(StockHolder.performance_id==self.id)\
                 .filter(StockHolder.account_id==Account.id)\
                 .all()
@@ -93,6 +94,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Event'
+
     id = Column(BigInteger, primary_key=True)
     code = Column(String(12))
     title = Column(String(1024))
@@ -103,33 +105,35 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization_id = Column(BigInteger, ForeignKey('Organization.id'))
     organization = relationship('Organization', backref='events')
 
-    performances = relationship('Performance', backref='event')
+    performances = relationship(
+        'Performance',
+        backref='event',
+        primaryjoin='and_(Event.id==Performance.event_id, Performance.deleted_at==None)',
+    )
     stock_types = relationship('StockType', backref='event')
 
     @property
     def sales_start_on(self):
-        data = DBSession.query(func.min(SalesSegment.start_at)).join(Product)\
-                .filter(Product.event_id==self.id).first()
-        return data[0] if data else None
+        return SalesSegment.filter().with_entities(func.min(SalesSegment.start_at)).join(Product)\
+                .filter(Product.event_id==self.id).scalar()
 
     @property
     def sales_end_on(self):
-        data = DBSession.query(func.min(SalesSegment.end_at)).join(Product)\
-                .filter(Product.event_id==self.id).first()
-        return data[0] if data else None
+        return SalesSegment.filter().with_entities(func.min(SalesSegment.end_at)).join(Product)\
+                .filter(Product.event_id==self.id).scalar()
 
     @property
     def start_performance(self):
-        return DBSession.query(Performance).filter(Performance.event_id==self.id)\
+        return Performance.filter(Performance.event_id==self.id)\
                 .order_by('Performance.start_on asc').first()
 
     @property
     def final_performance(self):
-        return DBSession.query(Performance).filter(Performance.event_id==self.id)\
+        return Performance.filter(Performance.event_id==self.id)\
                 .order_by('Performance.start_on desc').first()
 
     def get_accounts(self):
-        return DBSession.query(Account.name).join(StockHolder).join(Performance)\
+        return Account.filter().with_entities(Account.name).join(StockHolder).join(Performance)\
                 .filter(Account.organization_id==self.organization_id)\
                 .filter(Account.id==StockHolder.account_id)\
                 .filter(StockHolder.performance_id==Performance.id)\
@@ -162,14 +166,3 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
     payment_method = relationship('PaymentMethod')
     delivery_method_id = Column(BigInteger, ForeignKey('DeliveryMethod.id'))
     delivery_method = relationship('DeliveryMethod')
-
-    @staticmethod
-    def find(**kwargs):
-        query = DBSession.query(PaymentDeliveryMethodPair)
-        if 'sales_segment_id' in kwargs:
-            query = query.filter_by(sales_segment_id=kwargs['sales_segment_id'])
-        if 'payment_method_id' in kwargs:
-            query = query.filter_by(payment_method_id=kwargs['payment_method_id'])
-        if 'delivery_method_id' in kwargs:
-            query = query.filter_by(delivery_method_id=kwargs['delivery_method_id'])
-        return query.first()

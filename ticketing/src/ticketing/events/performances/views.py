@@ -6,7 +6,7 @@ from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path
 
-from ticketing.models import merge_session_with_post, record_to_multidict, DBSession
+from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.events.models import Event, Performance, Account, SalesSegment
@@ -28,10 +28,11 @@ class Performances(BaseView):
         current_page = int(self.request.params.get('page', 0))
         sort = self.request.GET.get('sort', 'Performance.id')
         direction = self.request.GET.get('direction', 'desc')
-        if direction not in ['asc', 'desc']: direction = 'asc'
+        if direction not in ['asc', 'desc']:
+            direction = 'asc'
 
         page_url = paginate.PageURL_WebOb(self.request)
-        query = DBSession.query(Performance).filter(Performance.event_id == event_id)
+        query = Performance.filter(Performance.event_id==event_id)
         query = query.order_by(sort + ' ' + direction)
 
         performances = paginate.Page(query, page=current_page, items_per_page=5, url=page_url)
@@ -45,6 +46,9 @@ class Performances(BaseView):
     def show(self):
         performance_id = int(self.request.matchdict.get('performance_id', 0))
         performance = Performance.get(performance_id)
+        if performance is None:
+            return HTTPNotFound('performance id %d is not found' % performance_id)
+
         products = Product.find(performance_id=performance_id)
         user = self.context.user
         accounts = Account.get_by_organization_id(user.organization_id)

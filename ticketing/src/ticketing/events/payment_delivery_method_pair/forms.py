@@ -80,6 +80,6 @@ class PaymentDeliveryMethodPairForm(Form):
                     'payment_method_id':payment_method_id,
                     'delivery_method_id':delivery_method_id,
                 }
-                pdmp = PaymentDeliveryMethodPair.find(**kwargs)
+                pdmp = PaymentDeliveryMethodPair.filter_by(**kwargs).first()
                 if pdmp and (form.id is None or pdmp.id != form.id.data):
                     raise ValidationError(u'既に設定済みの決済・配送方法の組み合せがあります')

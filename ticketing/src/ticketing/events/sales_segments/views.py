@@ -24,7 +24,7 @@ class SalesSegments(BaseView):
         conditions = {
             'event_id':event.id
         }
-        sales_segments = SalesSegment.find_by(**conditions)
+        sales_segments = SalesSegment.filter_by(**conditions).all()
 
         return {
             'form_sales_segment':SalesSegmentForm(event_id=event_id),

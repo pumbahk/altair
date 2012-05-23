@@ -30,7 +30,7 @@ class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @staticmethod
     def get_by_organization_id(id):
-        return DBSession.query(PaymentMethod).filter(PaymentMethod.organization_id==id).all()
+        return PaymentMethod.filter(PaymentMethod.organization_id==id).all()
 
 class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'DeliveryMethod'
@@ -45,7 +45,7 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @staticmethod
     def get_by_organization_id(id):
-        return DBSession.query(DeliveryMethod).filter(DeliveryMethod.organization_id==id).all()
+        return DeliveryMethod.filter(DeliveryMethod.organization_id==id).all()
 
 buyer_condition_set_table =  Table('BuyerConditionSet', Base.metadata,
     Column('id', Integer, primary_key=True),
@@ -178,7 +178,7 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @staticmethod
     def get_for_update(pid, stid):
-        return DBSession.query(Stock).with_lockmode("update").filter(Stock.performance_id==pid, Stock.stock_type_id==stid, Stock.quantity>0).first()
+        return Stock.filter(Stock.performance_id==pid, Stock.stock_type_id==stid, Stock.quantity>0).with_lockmode("update").first()
 
 # stock based on quantity
 class StockStatus(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -202,7 +202,7 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @staticmethod
     def find(performance_id = None, event_id = None):
-        query = DBSession.query(Product)
+        query = Product.filter()
         if performance_id:
             query = query.\
                 join(Product.items).\
@@ -213,9 +213,8 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return query.all()
 
     def items_by_performance_id(self, id):
-        return DBSession.query(ProductItem).\
-            filter_by(performance_id=id).\
-            filter_by(product_id=self.id).all()
+        return ProductItem.filter_by(performance_id=id)\
+                          .filter_by(product_id=self.id).all()
 
     def get_for_update(self):
         for item in self.items:

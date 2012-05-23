@@ -2,8 +2,8 @@
 <%namespace file="/common/modal.html" import="delete_modal" />
 
 <script type="text/javascript">
-  function delete_event() {
-    $('#modal-delete #delete').attr('href', '/events/delete/' + ${event.id});
+  function delete_event(id) {
+    $('#modal-delete #delete').attr('href', '/events/delete/' + id);
     $('#modal-delete #message').text("${u'選択したイベントを削除します。よろしいですか？'}");
     $('#modal-delete').modal('toggle');
   }
@@ -28,7 +28,7 @@
       </a>
     </li>
     <li>
-      <a href="javascript:delete_event()" data-controls-modal="modal-delete" data-backdrop="true" data-keyboard="true">
+      <a href="javascript:delete_event(${event.id})" data-controls-modal="modal-delete" data-backdrop="true" data-keyboard="true">
         <i class="icon-minus"></i> 削除
       </a>
     </li>

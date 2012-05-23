@@ -17,7 +17,7 @@ class PerformanceForm(Form):
                 'original_venue_id':None,
             }
             self.venue_id.choices = [
-                (venue.id, venue.name) for venue in Venue.find_by(**conditions)
+                (venue.id, venue.name) for venue in Venue.filter_by(**conditions).all()
             ]
 
     def _get_translations(self):
