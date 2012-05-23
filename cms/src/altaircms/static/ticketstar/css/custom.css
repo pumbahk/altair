@@ -413,3 +413,10 @@
 #searchFormButton li input{
     padding:0.5em;
 }
+
+#searchQuery {
+    background-color: #f7f7ea;
+    padding:10px;
+    margin-bottom:20px;
+
+}

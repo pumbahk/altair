@@ -1,6 +1,6 @@
 #-*- coding:utf-8 -*-
 from datetime import datetime
-
+from collections import namedtuple
 from wtforms import form
 from wtforms import fields
 from wtforms import widgets
@@ -14,6 +14,18 @@ from .formparts import MaybeSelectField
 import pkg_resources
 def import_symbol(symbol):
     return pkg_resources.EntryPoint.parse("x=%s" % symbol).load(False)
+
+"""
+MarkedTree:検索式の表示に使う
+area_tree = MarkedTree(check_all_list=["関東"], tree=[("関東": [...]), ("北海道", ["hokkaaido"])])
+
+検索条件をhtmlとしてレンダリングするときに(resource.QueryParamsRender)使う
+   「関東 > 全て, 北海道 > 北海道」
+というように表示される
+表示用なので事前に日本語にしておく.
+"""
+MarkedTree = namedtuple("MarkedTree", "check_all_list, tree, translator")
+
 
 ## todo:フリーワード
 ## todo: make query
@@ -55,11 +67,25 @@ class GanrePartForm(form.Form):
     other_subganre_choices = import_symbol("altaircms.seeds.categories.other:OTHER_SUBCATEGORY_CHOICES")
     other_subganre = CheckboxListField(choices=other_subganre_choices)
 
+    ## 日本語へ変換する辞書
+    en_to_ja = {}
+    en_to_ja.update(music_subganre_choices)
+    en_to_ja.update(sports_subganre_choices)
+    en_to_ja.update(stage_subganre_choices)
+    en_to_ja.update(other_subganre_choices)
+    en_to_ja.update(music=u"音楽", stage=u"演劇", sports=u"スポーツ", other=u"イベント・その他")
+    ##
+
     def make_query_params(self):
         data = self.data
+        ganres = ["music", "stage", "sports", "other"]
         sub_ganres = [data["music_subganre"], data["stage_subganre"], data["sports_subganre"], data["other_subganre"]]
-        return {"top_categories": [k for k in ["music", "stage", "sports", "other"] if data[k]], 
-                "sub_categories": list(set([x for xs in sub_ganres if xs for x in xs]))
+        top_categories = [k for k in ganres if data[k]]
+        return {"top_categories": top_categories, 
+                "sub_categories": list(set([x for xs in sub_ganres if xs for x in xs])), 
+                "category_tree": MarkedTree(check_all_list=top_categories,
+                                            translator=self.en_to_ja, 
+                                            tree=zip(ganres, sub_ganres)) ## for rendering html
                 }
 
     def __html__(self): ## todo refactoring
@@ -114,12 +140,19 @@ class AreaPartForm(form.Form):
     pref_kyushu = CheckboxListField(choices=import_symbol("altaircms.seeds.area.kyushu:KYUSHU_CHOICES"))
     pref_okinawa = CheckboxListField(choices=import_symbol("altaircms.seeds.area.okinawa:OKINAWA_CHOICES"))
 
-    areas = ["hokkaido", "tohoku", "kitakanto", "shutoken", "koshinetsu", "hokuriku", "tokai", "kinki", "chugoku", "shikoku", "kyushu", "okinawa"]    
+    areas = ["hokkaido", "tohoku", "kitakanto", "shutoken", "koshinetsu", "hokuriku", "tokai", "kinki", "chugoku", "shikoku", "kyushu", "okinawa"]
+
+    ## 日本語へ変化する辞書
+    en_to_ja = {}
+    en_to_ja.update(import_symbol("altaircms.seeds.area:AREA_CHOICES"))
+    en_to_ja.update(import_symbol("altaircms.seeds.prefecture:PREFECTURE_CHOICES"))
+    ##
+
     def make_query_params(self):
         data = self.data
         prefectures = set()
         areas = []
-        
+        area_tree = []
         for k in self.areas:
             if data[k]:
                 areas.append(k)
@@ -128,11 +161,14 @@ class AreaPartForm(form.Form):
 
             ## checkされた県の内容がdataの中に入っている(CheckboxListField)
             vs = data["pref_"+k]
+            area_tree.append((k, vs))
             if vs:
                 prefectures.update(vs)
 
         return {"areas": areas, 
-                "prefectures": list(prefectures)
+                "prefectures": list(prefectures), 
+                "area_tree": MarkedTree(check_all_list=areas, tree=area_tree, 
+                                        translator=self.en_to_ja)
                 }
 
     def __html__(self): ## todo refactoring
@@ -183,8 +219,8 @@ class DealCondPartForm(form.Form):
 
     def make_query_params(self):
         import warnings
-        warnings.warn("this flag is not support yet.")
-        return {}
+        warnings.warn("these flag are not support yet.")
+        return {"deal_cond": []}
 
 ## todo:付加サービス
 class AddedServicePartForm(form.Form):
@@ -196,8 +232,8 @@ class AddedServicePartForm(form.Form):
 
     def make_query_params(self):
         import warnings
-        warnings.warn("this flag is not support yet.")
-        return {}
+        warnings.warn("these flag are not support yet.")
+        return {"added_service": []}
 
 
 ## todo:発売日,  rename

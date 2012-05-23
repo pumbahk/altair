@@ -66,11 +66,10 @@ def get_pageset_query_fullset(request, query_params):
     if "query" in query_params:
         words = _extract_tags(query_params, "query")
         qs = search_by_freeword(qs, request, words, query_params.get("query_cond"))
-        
+
     return  qs
 
 def search_by_freeword(qs, request, words, query_cond):
-    assert query_cond in ("intersection", "union")
 
     fulltext_search = solrapi.get_fulltext_search(request)
     solr_query = solrapi.create_query_from_freeword(words, query_cond=query_cond)
@@ -83,6 +82,7 @@ def search_by_freeword(qs, request, words, query_cond):
 def _extract_tags(params, k):
     if k not in params:
         return []
+    params = params.copy()
     tags = [e.strip() for e in params.pop(k).split(",")] ##
     return [k for k in tags if k]
 

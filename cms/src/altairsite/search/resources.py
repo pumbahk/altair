@@ -37,18 +37,85 @@ class SearchPageResource(object):
         # for pageset in query:
         #     yield SearchResultRender(pageset, today, self.request)
         return [SearchResultRender(pageset, today, self.request) for pageset in query]
-        
-    def get_result_sequence_from_form(self, form, searchfn=_get_mocked_pageset_query):
-        query_params = form.make_query_params()
-        return self.get_result_sequence_from_query_params(query_params, searchfn=searchfn)
+
+    def get_query_params_as_html(self, query_params):
+        return QueryParamsRender(query_params)
 
     def get_result_sequence_from_query_params(self, query_params, searchfn=_get_mocked_pageset_query):
         logger.info(pprint.pformat(query_params))
         query = searchfn(self.request, query_params)
         return self.result_sequence_from_query(query)
 
+class QueryParamsRender(object):
+    """ 渡された検索式をhtmlとしてレンダリング
+    """
+    def __init__(self, query_params):
+        self.query_params = query_params
+
+    def _listing_from_tree(self, marked_tree):
+        translator = marked_tree.translator
+        for parent, children in marked_tree.tree:
+            if parent in marked_tree.check_all_list:
+                yield u"%s&gt全て" % translator[parent]
+            else:
+                for child in children:
+                    yield u"%s&gt%s" % (translator[parent], translator[child])
+
+    def describe_from_tree(self, marked_tree):
+        """ 「関東 > 全て, 北海道 > 北海道」 のような表示"""
+        return u", ".join(self._listing_from_tree(marked_tree))
+
+    def describe_from_term(self, bdate, edate):
+        """ 「2011/12/12 〜 2011/12/30」のような表示"""
+        if bdate and edate:
+            return u"%s 〜 %s" % (bdate.strftime("%Y/%m/%d"), edate.strftime("%Y/%m/%d"))
+        elif bdate:
+            return u"%s 〜" % bdate.strftime("%Y/%m/%d") 
+        else:
+            return u"〜 %s" % edate.strftime("%Y/%m/%d") 
+
+    def __html__(self):
+        u"""\
+        フリーワード:a, b, cc,
+        ジャンル:音楽 &gt ジャズ・ヒュージョン,演歌・邦楽, スポーツ &gt 野球
+        開催地:北海道 &gt 全て, 東北 &gt 青森,
+        公演日:2011/12/12 〜 2011/12/30,
+        販売条件: 先行,
+        付加サービス: お隣キープ,座席選択可能,
+        受付・販売開始: 10日
+        販売終了まで: 7日前
+        販売終了：含む
+        公演中止：含む
+        """
+
+        r = []
+        qp = self.query_params
+        if "query" in qp:
+            r.append(u"フリーワード: %s" % qp["query"])
+        if qp.get("category_tree") and qp.get("top_categories") or qp.get("sub_categories"):
+            r.append(u"ジャンル: %s " % self.describe_from_tree(qp["category_tree"]))
+        if qp.get("area_tree") and qp.get("prefectures"):
+            r.append(u"開催地: %s" % self.describe_from_tree(qp["area_tree"]))
+        if qp.get("start_date") or qp.get("end_date"):
+            r.append(u"公演日: %s" % self.describe_from_term(qp.get("start_date"), qp.get("end_date")))
+        if qp.get("deal_cond"):
+            r.append(u"販売条件: %s" % "--dummy--")
+        if qp.get("added_service"):
+            r.append(u"付加サービス: %s" % "--dummy--")
+        if qp.get("before_deal_start"):
+            r.append(u"受付・販売開始: %s" % qp["before_deal_start"])
+        if qp.get("till_deal_end"):
+            r.append(u"販売終了まで: %s" % qp["till_deal_end"])
+        if qp.get("closed_only"):
+            r.append(u"販売終了: 含む")
+        if qp.get("cancel_only"):
+            r.append(u"公演中止: 含む")
+        return u", ".join(r)
+     
 
 class SearchResultRender(object):
+    """検索結果をhtmlとしてレンダリング
+    """
     def __init__(self, pageset, today, request):
         self.pageset = pageset
         self.today = today
