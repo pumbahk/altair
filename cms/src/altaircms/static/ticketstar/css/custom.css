@@ -414,9 +414,30 @@
     padding:0.5em;
 }
 
+/*
+  for search result
+*/
 #searchQuery {
     background-color: #f7f7ea;
     padding:10px;
     margin-bottom:20px;
 
+}
+
+.icon-category {
+    width: 82px;
+    height: 20px;
+	background-repeat: no-repeat;
+}
+.icon-category-music {
+	background-image: url(/static/ticketstar/img/search/icon_music.gif);    
+}
+.icon-category-stage {
+	background-image: url(/static/ticketstar/img/search/icon_stage.gif);    
+}
+.icon-category-sports {
+	background-image: url(/static/ticketstar/img/search/icon_sports.gif);    
+}
+.icon-category-other {
+	background-image: url(/static/ticketstar/img/search/icon_event.gif);    
 }

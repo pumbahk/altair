@@ -12,6 +12,10 @@ from sqlalchemy.orm import relationship
 
 from sqlalchemy.sql.operators import ColumnOperators
 
+import pkg_resources
+def import_symbol(symbol):
+    return pkg_resources.EntryPoint.parse("x=%s" % symbol).load(False)
+
 def model_to_dict(obj):
     return {k: getattr(obj, k) for k, v in obj.__class__.__dict__.iteritems() \
                 if isinstance(v, ColumnOperators)}
@@ -68,6 +72,7 @@ def initialize_sql(engine, dropall=False):
 このあたりevent/models.pyに移動した方が良い。
 """
 from altaircms.event.models import Event
+PDICT = import_symbol("altaircms.seeds.prefecture:PrefectureMapping")
 class Performance(BaseOriginalMixin, Base):
     """
     パフォーマンス
@@ -85,6 +90,7 @@ class Performance(BaseOriginalMixin, Base):
 
     title = Column(Unicode(255))
     venue = Column(Unicode(255)) #開催地
+    prefecture = Column(sa.Enum(*import_symbol("altaircms.seeds.prefecture:PREFECTURE_ENUMS"))) #開催地(県)
     open_on = Column(DateTime)  # 開場
     start_on = Column(DateTime)  # 開始
     end_on = Column(DateTime)  # 終了
@@ -94,6 +100,9 @@ class Performance(BaseOriginalMixin, Base):
     event = relationship("Event", backref=orm.backref("performances", order_by=start_on))
     # client = relationship("Client", backref=orm.backref("performances", order_by=id))
 
+    @property
+    def jprefecture(self):
+        return PDICT.name_to_label.get(self.prefecture, u"--")
 
 class Sale(BaseOriginalMixin, Base):
     __tablename__ = 'sale'

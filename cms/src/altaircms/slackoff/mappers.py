@@ -39,7 +39,7 @@ PDICT = import_symbol("altaircms.seeds.prefecture:PrefectureMapping").name_to_la
 def performance_mapper(request, obj):
     objlike = ObjectLike(**model_to_dict(obj))
     objlike.event = obj.event.title if obj.event else None
-    objlike.venue = PDICT.get(obj.venue, u"-")
+    objlike.prefecture = PDICT.get(obj.prefecture, u"-")
     return objlike
 
 def ticket_mapper(request, obj):

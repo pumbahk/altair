@@ -6,6 +6,7 @@ logger = logging.getLogger(__file__)
 
 import altaircms.helpers as h
 import pprint
+from altaircms.lib.structures import Nullable
 
 class SearchResult(dict):
     pass
@@ -110,7 +111,6 @@ class QueryParamsRender(object):
         if qp.get("cancel_only"):
             r.append(u"公演中止: 含む")
         return u", ".join(r)
-     
 
 class SearchResultRender(object):
     """検索結果をhtmlとしてレンダリング
@@ -147,23 +147,27 @@ class SearchResultRender(object):
             deal_description = self.deal_description(),
             purchase_link = self.purchase_link()
             )
-
-    def category_icons(self):
-        import warnings
-        warnings.warn("difficult. so supported this function is later.")
-        return u'<img src="/static/ticketstar/img/search/icon_music.gif" alt="音楽" width="82" height="20" />'
-
+        
+    def category_icons(self): ## fixme: too access DB.
+        v = Nullable(self.pageset).parent.category.name.value
+        if v is None:
+            return u'<div class="icon-category icon-category-other"/>'
+        else:
+            return u'''\
+<div class="icon-category-%s">%s</div>
+''' % (v, v)
+        
     def page_description(self):
         fmt =  u"""\
 <p><a href="%s">%s</a></p>
-<p>%s</p>
+<p class="align1">%s</p>
 <p class="align1">%s</p>
 """
         link = h.link.to_publish_page_from_pageset(self.request, self.pageset)
         link_label = self.pageset.event.title
         description = self.pageset.event.description
         ## todo. ticketから開催場所の情報を取り出す
-        performances = self.pageset.event.performances[:5]
+        performances = u"</p><p class='align1'>".join([u"%s %s(%s)" % (p.start_on, p.venue, p.jprefecture) for p in self.pageset.event.performances[:2]])
         return fmt % (link, link_label, description, performances)
 
     def deal_limit(self):
@@ -174,7 +178,9 @@ class SearchResultRender(object):
     def deal_info_icons(self):
         import warnings
         warnings.warn("difficult. so supported this function is later.")
-        return u'<img src="/static/ticketstar/img/search/icon_release.gif" alt="一般発売" width="60" height="14" />'
+        return u'''\
+<img src="/static/ticketstar/img/search/icon_release.gif" alt="一般発売" width="60" height="14" />
+'''
 
     def deal_description(self):
         event = self.pageset.event

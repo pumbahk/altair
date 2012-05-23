@@ -23,6 +23,10 @@ class ISearchFn(Interface):
        """
 ##
 
+def _refine_pageset_qs(qs):
+    """optimize""" ##TODO:speedup
+    return qs.options(orm.joinedload("event")).options(orm.joinedload("event.performances"))
+
 @provider(ISearchFn)
 def get_pageset_query_from_freeword(request, query_params):
     """ フリーワード検索のみ"""
@@ -35,7 +39,7 @@ def get_pageset_query_from_freeword(request, query_params):
     # 検索対象に入っているもののみが検索に引っかかる
     qs = qs.filter(Event.is_searchable==True).filter(Event.id==PageSet.event_id)
         
-    return  qs
+    return  _refine_pageset_qs(qs)
 
 
 @provider(ISearchFn)
@@ -67,7 +71,7 @@ def get_pageset_query_fullset(request, query_params):
         words = _extract_tags(query_params, "query")
         qs = search_by_freeword(qs, request, words, query_params.get("query_cond"))
 
-    return  qs
+    return  _refine_pageset_qs(qs)
 
 def search_by_freeword(qs, request, words, query_cond):
 
@@ -121,7 +125,7 @@ def events_by_area(qs, prefectures):
     if not prefectures:
         return qs
 
-    matched_perf_ids = DBSession.query(Performance.event_id).filter(Performance.venue.in_(prefectures))
+    matched_perf_ids = DBSession.query(Performance.event_id).filter(Performance.prefecture.in_(prefectures))
     return qs.filter(Event.id.in_(matched_perf_ids))
 
 def events_by_performance_term(qs, start_date, end_date):

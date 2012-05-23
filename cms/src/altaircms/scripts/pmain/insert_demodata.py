@@ -239,6 +239,7 @@ def detail_performances(event):
                 start_on=datetime.datetime(2011, 12, 4, 10), 
                 end_on=datetime.datetime(2011, 12, 4, 18), 
                 backend_id=9999, 
+                prefecture="tokyo", 
                 event=event
                 ), 
     Performance(venue=u"幕張メッセイベントホール", 
@@ -247,6 +248,7 @@ def detail_performances(event):
                 start_on=datetime.datetime(2011, 12, 11, 10), 
                 end_on=datetime.datetime(2011, 12, 11, 18), 
                 backend_id=10000, 
+                prefecture="tokyo", 
                 event=event
                 ), 
     Performance(venue=u"幕張メッセイベントホール", 
@@ -255,6 +257,7 @@ def detail_performances(event):
                 start_on=datetime.datetime(2011, 12, 18, 10), 
                 end_on=datetime.datetime(2011, 12, 18, 18), 
                 backend_id=10001, 
+                prefecture="tokyo", 
                 event=event
                 ), 
     Performance(venue=u"幕張メッセイベントホール", 
@@ -263,6 +266,7 @@ def detail_performances(event):
                 start_on=datetime.datetime(2011, 12, 18, 19), 
                 end_on=datetime.datetime(2011, 12, 18, 23), 
                 backend_id=10001, 
+                prefecture="tokyo", 
                 event=event
                 ), 
     Performance(venue=u"幕張メッセイベントホール", 
@@ -271,6 +275,7 @@ def detail_performances(event):
                 start_on=datetime.datetime(2011, 12, 25, 10), 
                 end_on=datetime.datetime(2011, 12, 25, 18), 
                 backend_id=10002, 
+                prefecture="tokyo", 
                 event=event
                 ), 
     Performance(venue=u"幕張メッセイベントホール", 
@@ -279,6 +284,7 @@ def detail_performances(event):
                 start_on=datetime.datetime(2012, 5, 25, 10), 
                 end_on=datetime.datetime(2012, 5, 25, 18), 
                 backend_id=10002, 
+                prefecture="gunma", 
                 event=event
                 ), 
     ]

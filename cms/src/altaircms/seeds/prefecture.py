@@ -51,5 +51,5 @@ PREFECTURE_CHOICES = [
     ("kagoshima", u'鹿児島県'),
     ("okinawa", u'沖縄県'),
 ]
-PREFECTURE_JCHOICES = [(v, v) for _,  v in PREFECTURE_CHOICES]
+PREFECTURE_ENUMS = [(v) for v, _ in PREFECTURE_CHOICES]
 PrefectureMapping = IdNameLabelMapping.from_choices(PREFECTURE_CHOICES)
