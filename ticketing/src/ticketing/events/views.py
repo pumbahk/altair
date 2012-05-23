@@ -20,20 +20,23 @@ class Events(BaseView):
 
     @view_config(route_name='events.index', renderer='ticketing:templates/events/index.html')
     def index(self):
-        current_page = int(self.request.params.get('page', 0))
         sort = self.request.GET.get('sort', 'Event.id')
         direction = self.request.GET.get('direction', 'desc')
-        if direction not in ['asc', 'desc']: direction = 'asc'
+        if direction not in ['asc', 'desc']:
+            direction = 'asc'
 
-        page_url = paginate.PageURL_WebOb(self.request)
         query = Event.filter(Event.organization_id==int(self.context.user.organization_id))
         query = query.order_by(sort + ' ' + direction)
 
-        events = paginate.Page(query, page=current_page, items_per_page=5, url=page_url)
+        events = paginate.Page(
+            query,
+            page=int(self.request.params.get('page', 0)),
+            items_per_page=10,
+            url=paginate.PageURL_WebOb(self.request)
+        )
 
-        f = EventForm()
         return {
-            'form':f,
+            'form':EventForm(),
             'events':events,
         }
 

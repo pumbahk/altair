@@ -24,9 +24,25 @@ class StockTypes(BaseView):
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
 
+        sort = self.request.GET.get('sort', 'StockType.id')
+        direction = self.request.GET.get('direction', 'asc')
+        if direction not in ['asc', 'desc']:
+            direction = 'asc'
+
+        query = StockType.filter(StockType.event_id==event_id)
+        query = query.order_by(sort + ' ' + direction)
+
+        stock_types = paginate.Page(
+            query,
+            page=int(self.request.params.get('page', 0)),
+            items_per_page=20,
+            url=paginate.PageURL_WebOb(self.request)
+        )
+
         return {
-            'event':event,
             'form':StockTypeForm(event_id=event_id),
+            'stock_types':stock_types,
+            'event':event,
         }
 
     @view_config(route_name='stock_types.new', request_method='POST', renderer='ticketing:templates/stock_types/_form.html')

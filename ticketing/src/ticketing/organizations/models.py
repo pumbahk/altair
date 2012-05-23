@@ -5,18 +5,13 @@ from sqlalchemy.orm import relationship
 
 from ticketing.utils import StandardEnum
 from ticketing.users.models import User
-from ticketing.models import WithTimestamp, LogicallyDeleted
-import sqlahelper
-
-session = sqlahelper.get_session()
-Base = sqlahelper.get_base()
-
+from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted
 from ticketing.master.models import Prefecture
 
 class OrganizationTypeEnum(StandardEnum):
-    Standard        = 1
+    Standard = 1
 
-class Organization(Base, WithTimestamp, LogicallyDeleted):
+class Organization(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "Organization"
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
@@ -36,16 +31,3 @@ class Organization(Base, WithTimestamp, LogicallyDeleted):
 
     venues = relationship("Venue", backref='organization')
     status = Column(Integer)
-
-    @staticmethod
-    def get(id):
-        return session.query(Organization).filter(Organization.id==id).first()
-
-    @staticmethod
-    def update(organization):
-        session.merge(organization)
-        session.flush()
-
-    @staticmethod
-    def all():
-        return session.query(Organization).all()

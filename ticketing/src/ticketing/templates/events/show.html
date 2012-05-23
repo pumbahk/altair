@@ -83,7 +83,7 @@
 
     <div id="stock_types">
       <h3>席種</h3>
-      <%include file="/stock_types/_list.html" args="event=event" />
+      <%include file="/stock_types/_list.html" args="stock_types=event.stock_types" />
       <%include file="/stock_types/_action_button.html" args="event=event" />
       <div id="stock_types-form">
         <%include file="/stock_types/_form.html" args="form=form_stock_type" />

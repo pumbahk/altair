@@ -63,10 +63,20 @@ class Operators(BaseView):
 
     @view_config(route_name='operators.index', renderer='ticketing:templates/operators/index.html')
     def index(self):
-        current_page = int(self.request.params.get("page", 0))
-        page_url = paginate.PageURL_WebOb(self.request)
-        query = session.query(Operator)
-        operators = paginate.Page(query.order_by(Operator.id), current_page, url=page_url)
+        sort = self.request.GET.get('sort', 'Operator.id')
+        direction = self.request.GET.get('direction', 'asc')
+        if direction not in ['asc', 'desc']:
+            direction = 'asc'
+
+        query = Operator.filter().order_by(sort + ' ' + direction)
+
+        operators = paginate.Page(
+            query,
+            page=int(self.request.params.get('page', 0)),
+            items_per_page=20,
+            url=paginate.PageURL_WebOb(self.request)
+        )
+
         return {
             'operators': operators
         }

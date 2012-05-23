@@ -18,17 +18,20 @@ class Accounts(BaseView):
 
     @view_config(route_name='accounts.index', renderer='ticketing:templates/accounts/index.html')
     def index(self):
-        current_page = int(self.request.params.get('page', 0))
         sort = self.request.GET.get('sort', 'Account.id')
         direction = self.request.GET.get('direction', 'asc')
         if direction not in ['asc', 'desc']:
             direction = 'asc'
 
-        page_url = paginate.PageURL_WebOb(self.request)
         query = Account.filter(Account.organization_id==int(self.context.user.organization_id))
         query = query.order_by(sort + ' ' + direction)
 
-        accounts = paginate.Page(query.order_by(Account.id), page=current_page, items_per_page=10, url=page_url)
+        accounts = paginate.Page(
+            query,
+            page=int(self.request.params.get('page', 0)),
+            items_per_page=20,
+            url=paginate.PageURL_WebOb(self.request)
+        )
 
         return {
             'form':AccountForm(),

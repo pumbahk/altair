@@ -1,4 +1,4 @@
-<%page args="event, performance=None" />
+<%page args="stock_types, performance=None" />
 <%namespace file="/common/helpers.html" import="seat_style" />
 <%namespace file="/common/helpers.html" import="json" />
 
@@ -14,7 +14,7 @@
   }
 </style>
 
-% if event.stock_types:
+% if stock_types:
   % if performance:
   <h4>席種</h4>
   % endif
@@ -25,7 +25,7 @@
       <th>名称</th>
       <th>席数</th>
     </tr>
-    % for stock_type in event.stock_types:
+    % for stock_type in stock_types:
       % if stock_type.is_seat or not performance:
       <%
         conditions = {'performance_id':performance.id} if performance else {}
@@ -63,7 +63,7 @@
       <th>名称</th>
       <th>在庫数</th>
     </tr>
-    % for stock_type in event.stock_types:
+    % for stock_type in stock_types:
       % if not stock_type.is_seat:
       <%
         conditions = {'performance_id':performance.id} if performance else {}

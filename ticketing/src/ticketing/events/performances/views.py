@@ -25,17 +25,20 @@ class Performances(BaseView):
         event_id = int(self.request.matchdict.get('event_id', 0))
         event = Event.get(event_id)
 
-        current_page = int(self.request.params.get('page', 0))
         sort = self.request.GET.get('sort', 'Performance.id')
-        direction = self.request.GET.get('direction', 'desc')
+        direction = self.request.GET.get('direction', 'asc')
         if direction not in ['asc', 'desc']:
             direction = 'asc'
 
-        page_url = paginate.PageURL_WebOb(self.request)
         query = Performance.filter(Performance.event_id==event_id)
         query = query.order_by(sort + ' ' + direction)
 
-        performances = paginate.Page(query, page=current_page, items_per_page=5, url=page_url)
+        performances = paginate.Page(
+            query,
+            page=int(self.request.params.get('page', 0)),
+            items_per_page=20,
+            url=paginate.PageURL_WebOb(self.request)
+        )
 
         return {
             'event':event,
