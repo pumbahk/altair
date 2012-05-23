@@ -67,7 +67,7 @@
       <th><input type="radio" name="product_id" value="${product.id}" /></th>
       <td id="id">${product.id}</td>
       <td><a href="javascript:edit_product('${product.id}');" id="name">${product.name}</a></td>
-      <td id="price" value="${int(product.price)}">${price_format(product.price)}円</td>
+      <td id="price" value="${product.price}">${price_format(product.price)}円</td>
       % if product.sales_segment:
       <td>
         <a href="${request.route_path('sales_segments.show', sales_segment_id=product.sales_segment.id)}">
@@ -91,7 +91,7 @@
           <div class="product-item" id="stock_holder" value="${item.stock.stock_holder.id}">${item.stock.stock_holder.name}</div>
           <div class="product-item" id="stock" value="${item.stock.id}">${item.stock.stock_type.name}</div>
           <div class="product-item">${item.stock.quantity}席</div>
-          <div class="product-item" id="price" value="${int(item.price)}">${price_format(item.price)}円</div>
+          <div class="product-item" id="price" value="${item.price}">${price_format(item.price)}円</div>
           <div class="product-item" id="quantity">${item.quantity}</div>
           <div class="product-item">
             <a style="color: white;" href="javascript:edit_product_item('${product.id}', '${item.id}');">編集</a>
