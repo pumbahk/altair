@@ -1,8 +1,6 @@
 # -*- encoding:utf-8 -*-
 
 from datetime import datetime
-# from collections import namedtuple
-# SearchResult = namedtuple("SearchResult", "category_icons page_description deal_limit deal_info_icons deal_description purchase_link")
 import logging
 logger = logging.getLogger(__file__)
 
@@ -18,12 +16,13 @@ def _get_mocked_pageset_query(request, query_params):
     from altaircms.event.models import Event
     event = Event(subtitle=u"ソ・ジソブ　日本公式ファンクラブ1周年記念！2012 ファンミーティング in 東京", 
                   description=u"2012/3/24(土) 東京ビッグサイト（東京国際展示場）(東京都)", 
-                  event_open=datetime(2012, 5, 1))
+                  event_open=datetime(2012, 5, 1), 
+                  deal_open=datetime(2012, 3, 1))
     page_set = PageSet(url="http://www.example.com", version_counter=1, event=event)
     page = Page(pageset=page_set, version=1, 
                 description="楽天チケットイベント詳細ページです", 
                 )
-    return [page_set]*5
+    return [page_set]*20
 
 class SearchPageResource(object):
     def __init__(self, request):

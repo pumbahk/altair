@@ -163,7 +163,7 @@ def list_view(context, request):
             qs = query_form.as_filter(qs)
 
     return {"master_env": context,
-            "xs": h.paginate(request, qs),
+            "xs": h.paginate(request, qs, item_count=qs.count()),
             "query_form": query_form, 
             "form": form, 
             "display_fields": form.data.keys()}

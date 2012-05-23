@@ -55,6 +55,9 @@ def term(beg, end):
     e.g. 2012年3月3日(土)〜7月12日(木) 
     """
     beg_str = beg.strftime(u"%Y年%m月%d日".encode("utf-8")).decode("utf-8")
+    if end is None:
+        return u"%s(%s) 〜" % (beg_str, WEEK[beg.weekday()])
+
     if beg.year == end.year:
         end_str = end.strftime(u"%m月%d日".encode("utf-8")).decode("utf-8")
     else:

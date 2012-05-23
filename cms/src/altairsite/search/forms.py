@@ -22,7 +22,7 @@ area_tree = MarkedTree(check_all_list=["関東"], tree=[("関東": [...]), ("北
 検索条件をhtmlとしてレンダリングするときに(resource.QueryParamsRender)使う
    「関東 > 全て, 北海道 > 北海道」
 というように表示される
-表示用なので事前に日本語にしておく.
+convertorはローマ字->日本語の変換などに使われる
 """
 MarkedTree = namedtuple("MarkedTree", "check_all_list, tree, translator")
 

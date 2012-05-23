@@ -36,10 +36,19 @@ class PagerAdapter(object):
         self.pagination = Page(collection, **self.opts)
         self.collection = collection
 
+    def __getattr__(self, k, v=None):
+        return getattr(self.pagination, k, v)
+
     def paginated(self):
         items_per_page = self.opts["items_per_page"]
         n = (self.opts["page"] - 1) * items_per_page
-        return self.collection.offset(n).limit(items_per_page)
+
+        if hasattr(self.collection, "offset"):
+           ## query object of sqlalchemy
+            return self.collection.offset(n).limit(items_per_page)
+        else:
+           ## list like object
+            return self.collection[n:n+items_per_page]
 
     def pager(self, **kwargs):
         opts = self.DEFAULT_PAGER_OPT.copy()
