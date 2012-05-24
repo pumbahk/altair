@@ -5,6 +5,6 @@ class IAPIKeyValidator(Interface):
     def __call__(apikey):
         """ validate api key"""
 
-class IEventRepositiry(Interface):
+class IEventRepository(Interface):
     def parse_and_save_event(data):
         """ """

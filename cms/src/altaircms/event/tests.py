@@ -4,7 +4,7 @@ from pyramid import testing
 from altaircms import testing as a_testing
 from altaircms.lib.testutils import _initTestingDB
 from .api import EventRepositry
-from .interfaces import IAPIKeyValidator, IEventRepositiry
+from .interfaces import IAPIKeyValidator, IEventRepository
 
 def _to_utc(d):
     return d.replace(tzinfo=None) - d.utcoffset()
@@ -235,7 +235,7 @@ class TestEventRegister(unittest.TestCase):
 
     def test_event_register_ok(self):
         repository = DummyEventRepositry()
-        self.config.registry.registerUtility(repository, IEventRepositiry)
+        self.config.registry.registerUtility(repository, IEventRepository)
         headers = {'X-Altair-Authorization': 'hogehoge'}
         request = a_testing.DummyRequest(registry=self.config.registry,
                                          headers=headers,
@@ -250,7 +250,7 @@ class TestEventRegister(unittest.TestCase):
     def test_event_register_ng(self):
         # 認証パラメタなし
         repository = DummyEventRepositry()
-        self.config.registry.registerUtility(repository, IEventRepositiry)
+        self.config.registry.registerUtility(repository, IEventRepository)
         request = a_testing.DummyRequest(json_body={})
 
         response = self._callFUT(request)
@@ -259,7 +259,7 @@ class TestEventRegister(unittest.TestCase):
 
     def test_event_register_ng2(self):
         # 認証通過、必須パラメタなし
-        self.config.registry.registerUtility(EventRepositry(), IEventRepositiry)
+        self.config.registry.registerUtility(EventRepositry(), IEventRepository)
         headers = {'X-Altair-Authorization': 'hogehoge'}
         request = a_testing.DummyRequest(registry=self.config.registry,
                                          json_body={}, 

@@ -1,6 +1,6 @@
 import json
 from pyramid.response import Response
-from .interfaces import IAPIKeyValidator, IEventRepositiry
+from .interfaces import IAPIKeyValidator, IEventRepository
 
 def validate_apikey(request, apikey):
     reg = request.registry
@@ -9,7 +9,7 @@ def validate_apikey(request, apikey):
     
 def parse_and_save_event(request, data):
     reg = request.registry
-    repository = reg.getUtility(IEventRepositiry)
+    repository = reg.getUtility(IEventRepository)
     return repository.parse_and_save_event(data)
 
 def json_error_response(errors):
