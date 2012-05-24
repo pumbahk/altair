@@ -29,7 +29,10 @@ def _refine_pageset_search_order(qs):
    return qs.order_by(sa.asc("event.deal_close"))
 
 def _refine_pageset_qs(qs):
-    """optimize""" ##TODO:speedup
+    """optimize"""
+    # 検索対象に入っているもののみが検索に引っかかる
+    qs = qs.filter(Event.is_searchable==True).filter(Event.id==PageSet.event_id)
+
     qs = _refine_pageset_search_order(qs)
     return qs.options(orm.joinedload("event")).options(orm.joinedload("event.performances"))
 
@@ -41,11 +44,20 @@ def get_pageset_query_from_freeword(request, query_params):
     words = _extract_tags(query_params, "query")
     if words:
         qs = search_by_freeword(qs, request, words, query_params.get("query_cond"))
+        return  _refine_pageset_qs(qs)
+    else:
+       return []
 
-    # 検索対象に入っているもののみが検索に引っかかる
-    qs = qs.filter(Event.is_searchable==True).filter(Event.id==PageSet.event_id)
-        
-    return  _refine_pageset_qs(qs)
+@provider(ISearchFn)
+def get_pageset_query_from_genre(request, query_params):
+    """ ジャンルのみ"""
+    qs = PageSet.query
+
+    if query_params.get("top_categories") or query_params.get("sub_categories"):
+       qs = search_by_genre(query_params.get("top_categories"), query_params.get("sub_categories"), qs=qs)
+       return  _refine_pageset_qs(qs)
+    else:
+       return []
 
 
 @provider(ISearchFn)
@@ -71,7 +83,6 @@ def get_pageset_query_fullset(request, query_params):
 
     # 検索対象に入っているもののみが検索に引っかかる
     sub_qs = sub_qs.filter(Event.is_searchable==True)
-    qs = qs.filter(Event.is_searchable==True).filter(Event.id==PageSet.event_id)
 
     if "query" in query_params:
         words = _extract_tags(query_params, "query")

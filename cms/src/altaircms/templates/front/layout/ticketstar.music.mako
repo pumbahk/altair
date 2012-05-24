@@ -40,7 +40,7 @@
 		<h2>ジャンル一覧</h2>
 		<ul>
 		    % for c in sub_categories:
-			  <li><a href="${h.link.get_searchpage_from_category(request, c, kind="genre", genre=c.name)}">${c.label} hehehe</a></li>
+			  <li><a href="${h.link.get_searchpage_from_category(request, c, kind="genre", _query={c.name: "on"})}">${c.label} hehehe</a></li>
 			% endfor
 			<li><a href="#">J-POP・ROCK</a></li>
 			<li><a href="#">海外ROCK・POPS</a></li>
