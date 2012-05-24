@@ -2,6 +2,12 @@
 ##<%namespace file="./components/ticketstar/music/header.mako" name="header_co"/>
 ##<%namespace file="./components/ticketstar/music/userbox.mako" name="userbox_co"/>
 
+#### variables
+## subcategories
+## categories
+## top_ourter_categories
+## top_inner_categories
+
 <%def name="widgets(name)">
   % for w in display_blocks[name]:
       ${w|n}
@@ -33,6 +39,9 @@
 		<div class="sideCategoryGenre">
 		<h2>ジャンル一覧</h2>
 		<ul>
+		    % for c in sub_categories:
+			  <li><a href="${h.link.get_searchpage_from_category(request, c, kind="genre", genre=c.name)}">${c.label} hehehe</a></li>
+			% endfor
 			<li><a href="#">J-POP・ROCK</a></li>
 			<li><a href="#">海外ROCK・POPS</a></li>
 			<li><a href="#">フェスティバル</a></li>

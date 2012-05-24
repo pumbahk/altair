@@ -18,7 +18,7 @@
 			<dd>
 			  <table>
 				  <tbody>
-					${forms.ganre}
+					${forms.genre}
 				  </tbody>
 				</table>
 			</dd>

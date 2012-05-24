@@ -50,61 +50,61 @@ class QueryPartForm(form.Form):
 
 ## todo:ジャンル
 ## todo: make query
-class GanrePartForm(form.Form):
+class GenrePartForm(form.Form):
     music = fields.BooleanField(label=u"音楽", widget=CheckboxWithLabelInput())
-    music_subganre_choices = import_symbol("altaircms.seeds.categories.music:MUSIC_SUBCATEGORY_CHOICES")
-    music_subganre = CheckboxListField(choices=music_subganre_choices)
+    music_subgenre_choices = import_symbol("altaircms.seeds.categories.music:MUSIC_SUBCATEGORY_CHOICES")
+    music_subgenre = CheckboxListField(choices=music_subgenre_choices)
 
     stage = fields.BooleanField(label=u"演劇", widget=CheckboxWithLabelInput())
-    stage_subganre_choices = import_symbol("altaircms.seeds.categories.stage:STAGE_SUBCATEGORY_CHOICES")
-    stage_subganre = CheckboxListField(choices=stage_subganre_choices)
+    stage_subgenre_choices = import_symbol("altaircms.seeds.categories.stage:STAGE_SUBCATEGORY_CHOICES")
+    stage_subgenre = CheckboxListField(choices=stage_subgenre_choices)
 
     sports = fields.BooleanField(label=u"スポーツ", widget=CheckboxWithLabelInput())
-    sports_subganre_choices = import_symbol("altaircms.seeds.categories.sports:SPORTS_SUBCATEGORY_CHOICES")
-    sports_subganre = CheckboxListField(choices=sports_subganre_choices)
+    sports_subgenre_choices = import_symbol("altaircms.seeds.categories.sports:SPORTS_SUBCATEGORY_CHOICES")
+    sports_subgenre = CheckboxListField(choices=sports_subgenre_choices)
 
     other = fields.BooleanField(label=u"イベント・その他", widget=CheckboxWithLabelInput())
-    other_subganre_choices = import_symbol("altaircms.seeds.categories.other:OTHER_SUBCATEGORY_CHOICES")
-    other_subganre = CheckboxListField(choices=other_subganre_choices)
+    other_subgenre_choices = import_symbol("altaircms.seeds.categories.other:OTHER_SUBCATEGORY_CHOICES")
+    other_subgenre = CheckboxListField(choices=other_subgenre_choices)
 
     ## 日本語へ変換する辞書
     en_to_ja = {}
-    en_to_ja.update(music_subganre_choices)
-    en_to_ja.update(sports_subganre_choices)
-    en_to_ja.update(stage_subganre_choices)
-    en_to_ja.update(other_subganre_choices)
+    en_to_ja.update(music_subgenre_choices)
+    en_to_ja.update(sports_subgenre_choices)
+    en_to_ja.update(stage_subgenre_choices)
+    en_to_ja.update(other_subgenre_choices)
     en_to_ja.update(music=u"音楽", stage=u"演劇", sports=u"スポーツ", other=u"イベント・その他")
     ##
 
     def make_query_params(self):
         data = self.data
-        ganres = ["music", "stage", "sports", "other"]
-        sub_ganres = [data["music_subganre"], data["stage_subganre"], data["sports_subganre"], data["other_subganre"]]
-        top_categories = [k for k in ganres if data[k]]
+        genres = ["music", "stage", "sports", "other"]
+        sub_genres = [data["music_subgenre"], data["stage_subgenre"], data["sports_subgenre"], data["other_subgenre"]]
+        top_categories = [k for k in genres if data[k]]
         return {"top_categories": top_categories, 
-                "sub_categories": list(set([x for xs in sub_ganres if xs for x in xs])), 
+                "sub_categories": list(set([x for xs in sub_genres if xs for x in xs])), 
                 "category_tree": MarkedTree(check_all_list=top_categories,
                                             translator=self.en_to_ja, 
-                                            tree=zip(ganres, sub_ganres)) ## for rendering html
+                                            tree=zip(genres, sub_genres)) ## for rendering html
                 }
 
     def __html__(self): ## todo refactoring
         return u"""
 <tr>
   <td class="mostleft">%(music)s</td>
-  <td>%(music_subganre)s</td>
+  <td>%(music_subgenre)s</td>
 </tr>
 <tr>
   <td class="mostleft">%(stage)s</td>
-  <td>%(stage_subganre)s</td>
+  <td>%(stage_subgenre)s</td>
 </tr>
 <tr>
   <td class="mostleft">%(sports)s</td>
-  <td>%(sports_subganre)s</td>
+  <td>%(sports_subgenre)s</td>
 </tr>
 <tr>
   <td class="mostleft">%(other)s</td>
-  <td>%(other_subganre)s</td>
+  <td>%(other_subgenre)s</td>
 </tr>
 """ % self
             
@@ -266,7 +266,7 @@ class DetailSearchQueryForm(object):
     def __init__(self, formdata=None):
         self._forms = []
         self.query = self._append_with(QueryPartForm(formdata=formdata))
-        self.ganre = self._append_with(GanrePartForm(formdata=formdata))
+        self.genre = self._append_with(GenrePartForm(formdata=formdata))
         self.area = self._append_with(AreaPartForm(formdata=formdata))
         self.performance_term = self._append_with(PerformanceTermPartForm(formdata=formdata))
         self.deal_cond = self._append_with(DealCondPartForm(formdata=formdata))
@@ -288,7 +288,7 @@ class DetailSearchQueryForm(object):
 
 def get_search_forms(formdata=None):
     return DetailSearchQueryForm(formdata)
-
+    
 def form_as_filter(qs, form):
     return form.as_filter(qs)
 

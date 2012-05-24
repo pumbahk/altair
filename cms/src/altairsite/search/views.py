@@ -38,8 +38,8 @@ class SearchByKindView(object):
         self.request = request
         self.context = context
 
-    @view_config(match_param="kind=freeword")
-    def search_as_freeword(self):
+    @view_config(match_param="kind=freeword", request_param="textfield")
+    def search_by_freeword(self):
         """ フリーワード検索
         """
         ## 全文検索を使って検索。, で区切られた文字はandで結合
@@ -56,8 +56,31 @@ class SearchByKindView(object):
         params.update(result_seq=result_seq, query_params=html_query_params)
         return params
 
+    @view_config(match_param="kind=genre", request_param="genre")
+    def search_by_genre(self):
+        """ ジャンルで検索
+        top_category -> sub_categoryの２段階までしかサポートしていない。
+        sub_category == ジャンル
+        """
+        forms.
+        genre = self.request.GET["genre"]
+        query_params = dict(top_categories=[], 
+                            sub_categories=[], 
+                            category_tree=MarkedTree)
+
+        result_seq = self.context.get_result_sequence_from_query_params(
+            query_params,
+            searchfn=searcher.get_pageset_query_from_freeword
+            )
+        ## query_paramsをhtml化する
+        html_query_params = self.context.get_query_params_as_html(query_params)
+        ### header page用のcategoryを集めてくる
+        params = front_api.get_navigation_categories(self.request)
+        params.update(result_seq=result_seq, query_params=html_query_params)
+        return params
+
     @view_config(match_param="kind=mock")
-    def search_as_mock(self):
+    def search_by_mock(self):
         """ mockup (for testing)
         """
         class mock_query_parms(object):

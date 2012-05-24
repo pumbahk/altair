@@ -1,10 +1,10 @@
 import unittest
 from webob.multidict import MultiDict
 
-class GanrePartFormQueryTest(unittest.TestCase):
+class GenrePartFormQueryTest(unittest.TestCase):
     def _getTarget(self):
-        from altairsite.search.forms import GanrePartForm
-        return GanrePartForm
+        from altairsite.search.forms import GenrePartForm
+        return GenrePartForm
 
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
@@ -26,7 +26,7 @@ class GanrePartFormQueryTest(unittest.TestCase):
     def test_sub_categories(self):
         params = MultiDict(jpop="on")
         target = self._makeOne(params)
-        self.assertIn("jpop", [k for k, _ in target.music_subganre.choices])
+        self.assertIn("jpop", [k for k, _ in target.music_subgenre.choices])
 
         result = self._callFUT(target)
 

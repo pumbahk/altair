@@ -66,7 +66,7 @@ def get_pageset_query_fullset(request, query_params):
 
 
     qs = PageSet.query
-    qs = search_by_ganre(query_params.get("top_categories"), query_params.get("sub_categories"), qs=qs)
+    qs = search_by_genre(query_params.get("top_categories"), query_params.get("sub_categories"), qs=qs)
     qs = search_by_events(qs, sub_qs)
 
     # 検索対象に入っているもののみが検索に引っかかる
@@ -101,7 +101,7 @@ def _extract_tags(params, k):
 def search_by_events(qs, event_ids):
     return qs.filter(PageSet.event_id.in_(event_ids))
 
-def search_by_ganre(top_categories, sub_categories, qs=None):
+def search_by_genre(top_categories, sub_categories, qs=None):
     """ジャンルからページセットを取り出す
     :params qs:
     :return: query set of PageSet

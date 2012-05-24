@@ -40,6 +40,7 @@ def rendering_page(context, request):
     tmpl = context.get_layout_template(layout, context.get_render_config())
 
     params = api.get_navigation_categories(request)
+    params.update(sub_categories=api.get_subcategories_from_page(request, page))
     params.update(page=page, display_blocks=block_context.blocks)
     return render_to_response(tmpl, params, request)
 
@@ -56,6 +57,7 @@ def rendering_preview_page(context, request):
                        event=page.event)
     tmpl = context.get_layout_template(layout, context.get_render_config())
     params = api.get_navigation_categories(request)
+    params.update(sub_categories=api.get_subcategories_from_page(request, page))
     params.update(page=page, display_blocks=block_context.blocks)
     return render_to_response(tmpl, params, request)
 

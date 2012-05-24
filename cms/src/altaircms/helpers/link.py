@@ -1,3 +1,5 @@
+def get_searchpage_from_category(request, category, kind=None, **kwargs):
+    return request.route_path("page_search_by", kind=kind, _query=kwargs)
 
 def get_link_from_category(request, category):
     if category.pageset is None:

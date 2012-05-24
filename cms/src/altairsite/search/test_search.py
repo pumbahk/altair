@@ -44,11 +44,11 @@ class SearchByFreewordTests(unittest.TestCase):
     def test_it(self):
         pass
 
-class SearchByGanreTests(unittest.TestCase):
+class SearchByGenreTests(unittest.TestCase):
     """
 2. ジャンルで選択。
     2.a 大ジャンルが選択
-      ganre = "music"
+      genre = "music"
       Category.filter(Category.name==genre).filter
     2.b 中ジャンルが選択
 
@@ -66,8 +66,8 @@ class SearchByGanreTests(unittest.TestCase):
         self.session = sqlahelper.get_session()
 
     def _callFUT(self, *args,**kwargs):
-        from altairsite.search.searcher import  search_by_ganre
-        return search_by_ganre(*args, **kwargs)
+        from altairsite.search.searcher import  search_by_genre
+        return search_by_genre(*args, **kwargs)
 
     def _category(self, *args, **kwargs):
         from altaircms.models import Category
@@ -100,7 +100,7 @@ class SearchByGanreTests(unittest.TestCase):
 
     def test_not_found_with_top_categories(self):
         music = self._category(name="music", hierarchy=u"top-hierary")
-        other_category = self._category(name="other-ganre-category", hierarchy=u"top-hierarchy")
+        other_category = self._category(name="other-genre-category", hierarchy=u"top-hierarchy")
 
         jpop_top_page = self._pageset()
         jpop = self._category(name="jpop", parent=other_category, pageset=jpop_top_page, hierarchy=u"middle-hierarchy")
