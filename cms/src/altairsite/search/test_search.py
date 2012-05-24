@@ -390,5 +390,51 @@ class SearchOnlyIsSearcheableEventTests(unittest.TestCase):
         
         self.assertIn("event.is_searchable = ? AND event.id = pagesets.event_id", result)
 
+
+class SearchOrderTests(unittest.TestCase):
+    """
+    販売終了間近なものから順に表示される
+    """
+    def _callFUT(self, qs, *args, **kwargs):
+        from altairsite.search.searcher import _refine_pageset_search_order
+        return _refine_pageset_search_order(qs)
+
+    def _make_pageset(self, id=None, deal_close=None):
+        from altaircms.event.models import Event
+        from altaircms.page.models import PageSet
+
+        event = Event(id=id, deal_close=deal_close)
+        pageset = PageSet(event=event, id=id)
+        return pageset
+
+    def _make_query(self):
+        from altaircms.page.models import PageSet        
+        from altaircms.event.models import Event
+        qs = PageSet.query.filter(Event.id==PageSet.event_id)
+        return qs
+
+    def test_it(self):
+        from altaircms.models import DBSession
+
+        deal_closes = [datetime(2011, 1, 1),
+                       datetime(2011, 2, 1),
+                       datetime(2011, 3, 1)]
+
+        ### the order is 1, 3, 2 !!(not 1, 2, 3)
+        pgss = [self._make_pageset(id=1, deal_close=deal_closes[0]), 
+                self._make_pageset(id=2, deal_close=deal_closes[2]), 
+                self._make_pageset(id=3, deal_close=deal_closes[1])
+                ]
+
+        DBSession.add_all(pgss)
+
+        not_sorted_qs = self._make_query()
+        result = self._callFUT(not_sorted_qs)
+
+        self.assertNotEquals(deal_closes, [p.event.deal_close for p in not_sorted_qs])
+        self.assertEquals(deal_closes, [p.event.deal_close for p in result])
+
+        
+
 if __name__ == "__main__":
     unittest.main()

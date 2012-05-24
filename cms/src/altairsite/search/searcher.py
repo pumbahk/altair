@@ -23,8 +23,14 @@ class ISearchFn(Interface):
        """
 ##
 
+def _refine_pageset_search_order(qs):
+   """  検索結果の表示順序を変更。最も販売終了が間近なものを先頭にする
+   """
+   return qs.order_by(sa.asc("event.deal_close"))
+
 def _refine_pageset_qs(qs):
     """optimize""" ##TODO:speedup
+    qs = _refine_pageset_search_order(qs)
     return qs.options(orm.joinedload("event")).options(orm.joinedload("event.performances"))
 
 @provider(ISearchFn)
