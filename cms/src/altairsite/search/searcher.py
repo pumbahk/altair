@@ -59,6 +59,18 @@ def get_pageset_query_from_genre(request, query_params):
     else:
        return []
 
+@provider(ISearchFn)
+def get_pageset_query_from_area(request, query_params):
+    """ エリアのみ"""
+    qs = PageSet.query
+    if query_params.get("prefectures"):
+       sub_qs = events_by_area(DBSession.query(Event.id), query_params.get("prefectures"))
+       sub_qs = sub_qs.filter(Event.is_searchable==True)
+       qs = search_by_events(qs, sub_qs)
+       return  _refine_pageset_qs(qs)
+    else:
+       return []
+
 
 @provider(ISearchFn)
 def get_pageset_query_fullset(request, query_params): 

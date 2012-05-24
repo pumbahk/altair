@@ -30,8 +30,8 @@ from altaircms.seeds.area import AREA_CHOICES
 			<dd>
 				<ul>
 				    % for en,ja in AREA_CHOICES:
-					  <li><a href="#">${ja}</a></li>
-					  ##<li><a href="${h.link.get_seachpage(request, kind="area", _query={en: ""}}">${ja}</a></li>
+					##<li><a href="#">${ja}</a></li>
+					  <li><a href="${h.link.get_searchpage(request, kind="area", value=en)}">${ja}</a></li>
 					% endfor
 				</ul>
 			</dd>
