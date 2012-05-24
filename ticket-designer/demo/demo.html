@@ -3,11 +3,11 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
   <title></title>
-  <link rel="stylesheet" type="text/css" href="lib/jquery-ui.css" />
-  <link rel="stylesheet" href="../components.css" />
-  <script type="text/javascript" src="lib/jquery.min.js" ></script>
-  <script type="text/javascript" src="lib/jquery-ui.min.js"></script>
-  <script type="text/javascript" src="../build/out.js"></script>
+  <link rel="stylesheet" type="text/css" href="js/jquery-ui.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <script type="text/javascript" src="js/jquery.min.js" ></script>
+  <script type="text/javascript" src="js/jquery-ui.min.js"></script>
+  <script type="text/javascript" src="js/ticket-designer.js"></script>
   <style type="text/css">
 .view {
   position: relative;
@@ -45,6 +45,7 @@
   height: 2000px;
   overflow: hidden;
 }
+
   </style>
   <script type="text/javascript">
   if (!window.console) console = { log: function() {} };
@@ -121,7 +122,7 @@
         td.shell.set_operationMode(OperationMode.PLACE(views.TextComponent));
         break;
       case 'image':
-        td.shell.set_operationMode(OperationMode.PLACE(views.TextComponent));
+        td.shell.set_operationMode(OperationMode.PLACE(views.ImageComponent));
         break;
       }
     }
@@ -137,16 +138,17 @@
 </head>
 <body>
   <div class="page">
-    <div class="toolbar ui-widget-header">
+    <div class="ui-toolbar ui-state-default ui-corner-all">
       <span class="ui-button-set toolbar-function">
-        <span class="toggle-button"><input class="ui-action-function ui-button ui-no-text ui-icon-arrow-1-ne" type="radio" name="function" value="cursor" id="toolbar-function-cursor" checked="checked" /><label for="toolbar-function-cursor">Cursor</label></span>
-        <span class="toggle-button"><input class="ui-action-function ui-button ui-no-text ui-icon-arrow-4" type="radio" name="function" value="move" id="toolbar-function-move" /><label for="toolbar-function-move">Move</label></span>
-        <span class="toggle-button"><input class="ui-action-function ui-button ui-no-text ui-icon-pencil" type="radio" name="function" value="text" id="toolbar-function-text" /><label for="toolbar-function-text">Text</label></span>
-        <span class="toggle-button"><input class="ui-action-function ui-button ui-no-text ui-icon-image" type="radio" name="function" value="image" id="toolbar-function-image" /><label for="toolbar-function-image">Image</label></span>
+        <span class="toggle-button"><input class="ui-action-function ui-button ui-no-text ui-icon-primary-arrow-1-ne" type="radio" name="function" value="cursor" id="toolbar-function-cursor" checked="checked" /><label for="toolbar-function-cursor">Cursor</label></span>
+        <span class="toggle-button"><input class="ui-action-function ui-button ui-no-text ui-icon-primary-arrow-4" type="radio" name="function" value="move" id="toolbar-function-move" /><label for="toolbar-function-move">Move</label></span>
+        <span class="toggle-button"><input class="ui-action-function ui-button ui-no-text ui-icon-primary-pencil" type="radio" name="function" value="text" id="toolbar-function-text" /><label for="toolbar-function-text">Text</label></span>
+        <span class="toggle-button"><input class="ui-action-function ui-button ui-no-text ui-icon-primary-image" type="radio" name="function" value="image" id="toolbar-function-image" /><label for="toolbar-function-image">Image</label></span>
       </span>
-      <button class="ui-button ui-action-zoom_in ui-icon-zoomin ui-no-text" id="toolbar-function-zoom_in">Zoom-in</button>
-      <button class="ui-button ui-action-zoom_out ui-icon-zoomout ui-no-text" id="toolbar-function-zoom_out">Zoom-out</button>
+      <button class="ui-button ui-action-zoom_in ui-icon-primary-zoomin ui-no-text" id="toolbar-function-zoom_in">Zoom-in</button>
+      <button class="ui-button ui-action-zoom_out ui-icon-primary-zoomout ui-no-text" id="toolbar-function-zoom_out">Zoom-out</button>
     </div>
+    <div id="main">
     <div id="view" class="view">
       <div class="renderable-vertical_ruler"></div>
       <div class="renderable-horizontal_ruler"></div>
@@ -157,17 +159,21 @@
     </div>
   </div>
   <script type="text/javascript">
-    $('.ui-button').each(function(i, n) {
+    $(".ui-button").each(function (i, n) {
       n = $(n);
-      var params = {};
-      var rex = /ui-icon-\S+/, g;
-      if ((g = rex.exec(n.attr('class')))) {
-        params['icons'] = { primary: g[0] };
+      n.removeClass('ui-button');
+      var cssClass = n.attr("class").split(/\s+/);
+      var options = { icons: {} };
+      for (var i = 0; i < cssClass.length; i++) {
+        var g;
+        if ((g = /ui-icon-primary-(.+)/.exec(cssClass[i])))
+          options.icons.primary = 'ui-icon-' + g[1];
+        if ((g = /ui-icon-secondary-(.+)/.exec(cssClass[i])))
+          options.icons.secondary = 'ui-icon-' + g[1];
+        if (cssClass[i] == 'ui-no-text')
+          options.text = false;
       }
-      if (n.hasClass('ui-no-text')) {
-        params['text'] = false;
-      }
-      n.button(params);
+      n.button(options);
     });
     $('.ui-button-set').buttonset();
   </script>
