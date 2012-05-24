@@ -49,7 +49,7 @@ def event_list(request):
 def event_register(request):
     apikey = request.headers.get('X-Altair-Authorization', None)
     if not h.validate_apikey(request, apikey):
-        return HTTPCreated(body=json.dumps({u'status':u'access denied'}))
+        return HTTPCreated(body=json.dumps({u'status':u'error', u'message':u'access denined'}))
     try:
         h.parse_and_save_event(request, request.json_body)
         return HTTPCreated(body=json.dumps({u'status':u'success'}))
