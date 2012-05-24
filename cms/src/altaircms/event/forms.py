@@ -14,8 +14,3 @@ class EventForm(Form):
     deal_open = fields.DateTimeField(label=u'販売開始日', validators=[required_field()])
     deal_close = fields.DateTimeField(label=u'販売終了日', validators=[required_field()])
     is_searchable = fields.BooleanField(label=u'検索可否フラグ', default=False)
-
-
-
-class EventRegisterForm(Form):
-    jsonstring = fields.TextField(validators=[validators.Required()])

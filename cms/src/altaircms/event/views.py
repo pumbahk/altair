@@ -10,7 +10,7 @@ from .models import Event
 from altaircms.page.models import Page
 from altaircms.lib.fanstatic_decorator import with_bootstrap
 
-from altaircms.event.forms import EventForm, EventRegisterForm
+from altaircms.event.forms import EventForm
 from . import helpers as h
 
 
@@ -47,21 +47,12 @@ def event_list(request):
 ##
 @view_config(route_name="api_event_register", request_method="POST", renderer="json")
 def event_register(request):
-    form = EventRegisterForm(request.POST)
     apikey = request.headers.get('X-Altair-Authorization', None)
     if not h.validate_apikey(request, apikey):
         return HTTPForbidden()
-
-    if not form.validate():
-        return h.json_error_response(form.errors)
-
-    jsonstring = request.POST['jsonstring']
-
     try:
-        data = json.loads(jsonstring)
-        h.parse_and_save_event(request, data)
+        h.parse_and_save_event(request, request.json_body)
         return HTTPCreated()
-
     except ValueError as e:
         logging.exception(e)
         return h.json_error_response({'error': str(e)})
