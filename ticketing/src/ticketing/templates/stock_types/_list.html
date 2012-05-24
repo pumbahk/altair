@@ -1,6 +1,7 @@
-<%page args="stock_types, performance=None" />
+<%page args="stock_types, performance=None, limit=None" />
 <%namespace file="/common/helpers.html" import="seat_style" />
 <%namespace file="/common/helpers.html" import="json" />
+<%namespace file="/common/helpers.html" import="pager"/>
 
 <style>
   .swatch {
@@ -25,7 +26,8 @@
       <th>名称</th>
       <th>席数</th>
     </tr>
-    % for stock_type in stock_types:
+    % for i, stock_type in enumerate(stock_types):
+      <% if limit and i >= limit: break %>
       % if stock_type.is_seat or not performance:
       <%
         conditions = {'performance_id':performance.id} if performance else {}
@@ -92,4 +94,8 @@
     </tbody>
   </table>
   % endif
+% endif
+
+% if paging:
+  ${pager(stock_types)}
 % endif

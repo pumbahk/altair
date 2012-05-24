@@ -23,6 +23,10 @@ class PerformanceForm(Form):
     def _get_translations(self):
         return Translations()
 
+    id = HiddenField(
+        label=u'ID',
+        validators=[Optional()],
+    )
     name = TextField(
         label=u'公演名',
         validators=[

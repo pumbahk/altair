@@ -43,6 +43,7 @@ class Performances(BaseView):
         return {
             'event':event,
             'performances':performances,
+            'form':PerformanceForm(organization_id=self.context.user.organization_id),
         }
 
     @view_config(route_name='performances.show', renderer='ticketing:templates/performances/show.html')

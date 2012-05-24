@@ -9,6 +9,7 @@ from ticketing.models import merge_session_with_post, record_to_appstruct, merge
 from ticketing.organizations.models import Organization
 from ticketing.operators.models import Operator, OperatorRole, Permission
 from ticketing.orders.models import Order
+from ticketing.orders.forms import OrderForm
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 
@@ -33,6 +34,7 @@ class Orders(BaseView):
         )
 
         return {
+            'form':OrderForm(),
             'orders':orders,
         }
 

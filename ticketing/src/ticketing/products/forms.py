@@ -20,6 +20,7 @@ class ProductForm(Form):
             ]
 
     id = HiddenField(
+        label=u'ID',
         validators=[Optional()],
     )
     event_id = HiddenField(

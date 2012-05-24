@@ -11,6 +11,7 @@ from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.events.models import Event, Performance
 from ticketing.events.forms import EventForm
+from ticketing.events.performances.forms import PerformanceForm
 from ticketing.events.sales_segments.forms import SalesSegmentForm
 from ticketing.events.stock_types.forms import StockTypeForm
 from ticketing.products.forms import ProductForm
@@ -37,6 +38,7 @@ class Events(BaseView):
 
         return {
             'form':EventForm(),
+            'form_performance':PerformanceForm(organization_id=self.context.user.organization_id),
             'events':events,
         }
 
@@ -47,23 +49,13 @@ class Events(BaseView):
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
 
-        current_page = int(self.request.params.get('page', 0))
-        sort = self.request.GET.get('sort', 'Performance.id')
-        direction = self.request.GET.get('direction', 'asc')
-        if direction not in ['asc', 'desc']: direction = 'asc'
-
-        page_url = paginate.PageURL_WebOb(self.request)
-        query = Performance.filter(Performance.event_id==event_id)
-        query = query.order_by(sort + ' ' + direction)
-
-        performances = paginate.Page(query, current_page, items_per_page=10, url=page_url)
         accounts = event.get_accounts()
 
         return {
             'event':event,
-            'performances':performances,
             'accounts':accounts,
             'form':EventForm(),
+            'form_performance':PerformanceForm(organization_id=self.context.user.organization_id),
             'form_stock_type':StockTypeForm(event_id=event_id),
             'form_sales_segment':SalesSegmentForm(event_id=event_id),
             'form_product':ProductForm(event_id=event.id),

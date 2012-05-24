@@ -87,7 +87,7 @@
       % for i, sales_segment in enumerate(event.sales_segments):
         <span class="label ${label_classes[i%6]}">${sales_segment.name}</span>
       % endfor
-      <%include file="/performances/_list.html" args="performances=event.performances" /> 
+      <%include file="/performances/_list.html" args="form=form_performance, performances=event.performances, limit=5" />
     </div>
     % endfor
   </span>

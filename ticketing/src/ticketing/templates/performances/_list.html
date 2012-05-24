@@ -1,21 +1,26 @@
-<%page args="performances" />
+<%page args="form, performances, limit=None" />
 <%namespace file="/common/helpers.html" import="safe_strftime" />
+<%namespace file="/common/helpers.html" import="pager"/>
+<%namespace file="/common/helpers.html" import="sortable" />
+
+<% paging = False if limit else True %>
 
 % if performances:
   <table class="table fullwidth checkboxed_table">
     <thead>
       <tr>
         <th class="minwidth"></th>
-        <th><a href="#" class="sortable">ID</a></th>
-        <th><a href="#" class="sortable">名称</a></th>
-        <th><a href="#" class="sortable">会場</a></th>
-        <th><a href="#" class="sortable">開場</a></th>
-        <th><a href="#" class="sortable">開演</a></th>
-        <th><a href="#" class="sortable">閉演</a></th>
+        <th>${sortable(form.id, paging)}</th>
+        <th>${sortable(form.name, paging)}</th>
+        <th>会場</th>
+        <th>${sortable(form.open_on, paging)}</th>
+        <th>${sortable(form.start_on, paging)}</th>
+        <th>${sortable(form.end_on, paging)}</th>
       </tr>
     </thead>
     <tbody>
-    % for performance in performances:
+    % for i, performance in enumerate(performances):
+      <% if limit and i >= limit: break %>
       <tr>
         <td><input type="radio" name="performance_id" value="${performance.id}" /></td>
         <td>${performance.id}</td>
@@ -28,4 +33,8 @@
     % endfor
     </tbody>
   </table>
+% endif
+
+% if paging:
+  ${pager(performances)}
 % endif

@@ -1,9 +1,10 @@
 <%inherit file="/layout.html"/>
-<%namespace file="/common/helpers.html" import="pager"/>
 <%namespace file="/common/helpers.html" import="flash_messages" />
 <%namespace file="/common/helpers.html" import="safe_strftime" />
 <%namespace file="/common/helpers.html" import="price_format" />
 <%namespace file="/common/helpers.html" import="breadcrumbs" />
+<%namespace file="/common/helpers.html" import="pager"/>
+<%namespace file="/common/helpers.html" import="sortable"/>
 
 <style>
   .ordered-item {
@@ -44,9 +45,9 @@
       <thead>
       <tr>
         <th class="minwidth"></th>
-        <th class="minwidth">ID</th>
-        <th class="span2">購入日時</th>
-        <th class="span2">金額</th>
+        <th class="minwidth">${sortable(form.id)}</th>
+        <th class="span2">${sortable(form.created_at)}</th>
+        <th class="span2">${sortable(form.total_amount)}</th>
         <th class="span2">ユーザー</th>
         <th>イベント</th>
         <th class="span2">日時</th>
