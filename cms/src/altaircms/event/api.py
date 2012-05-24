@@ -81,7 +81,7 @@ class Scanner(object):
                 performance.venue = performance_record['venue']
                 performance.open_on = parse_datetime(performance_record['open_on'])
                 performance.start_on = parse_datetime(performance_record['start_on'])
-                performance.close_on = parse_datetime(performance_record.get('close_on'))
+                performance.end_on = parse_datetime(performance_record.get('end_on'))
             except KeyError as e:
                 raise "missing property '%s' in the event record" % e.message
             self.current_performance = performance
@@ -102,8 +102,9 @@ class Scanner(object):
             event = Event()
             try:
                 event.backend_event_id = event_record['id']
-                event.name = event_record['name']
-                event.event_on = parse_datetime(event_record['start_on'])
+                event.title = event_record['title']
+                event.subtitle = event_record.get('subtitle', '')
+                event.event_open = parse_datetime(event_record['start_on'])
                 event.event_close = parse_datetime(event_record['end_on'])
             except KeyError as e:
                 raise "missing property '%s' in the event record" % e.message

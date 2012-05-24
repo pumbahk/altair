@@ -87,7 +87,7 @@ class Performance(BaseOriginalMixin, Base):
     venue = Column(Unicode(255)) #開催地
     open_on = Column(DateTime)  # 開場
     start_on = Column(DateTime)  # 開始
-    close_on = Column(DateTime)  # 終了
+    end_on = Column(DateTime)  # 終了
 
     canceld = Column(Boolean, default=False)
     # sale = relationship("Sale", backref=orm.backref("performances", order_by=id))
@@ -105,7 +105,7 @@ class Sale(BaseOriginalMixin, Base):
 
     name = Column(String(255))
     start_on = Column(DateTime)
-    close_on = Column(DateTime)
+    end_on = Column(DateTime)
 
 
     created_at = Column(DateTime, default=datetime.now)
