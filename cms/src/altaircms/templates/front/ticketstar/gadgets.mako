@@ -54,13 +54,13 @@ from altairsite.search.forms import DealCondPartForm
 	<dt>発売日・受付日で絞込み</dt>
 	<dd>
 		<ul>
-			<li><a href="${h.link.get_searchpage(request, kind="performance_open", value=7) }">7日以内に受付・発売開始</a></li>
-			<li><a href="${h.link.get_searchpage(request, kind="performance_open", value=14) }">14日以内に受付・発売開始</a></li>
-			<li><a href="${h.link.get_searchpage(request, kind="performance_open", value=30) }">30日以内に受付・発売開始</a></li>
+			<li><a href="${h.link.get_searchpage(request, kind="event_open", value=7) }">7日以内に受付・発売開始</a></li>
+			<li><a href="${h.link.get_searchpage(request, kind="event_open", value=14) }">14日以内に受付・発売開始</a></li>
+			<li><a href="${h.link.get_searchpage(request, kind="event_open", value=30) }">30日以内に受付・発売開始</a></li>
 		</ul>
 	</dd>
 </%def>
-<%def name="sidebar_performance_open_listing()">
+<%def name="sidebar_event_open_listing()">
 	<dt>公演日で絞込み</dt>
 	<dd>
 		<ul>

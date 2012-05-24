@@ -115,15 +115,17 @@ class SearchByKindView(object):
         params.update(result_seq=result_seq, query_params=html_query_params)
         return params
 
-    @view_config(match_param="kind=performance_open") #kind, value
-    def search_by_performance_open(self):
+    @view_config(match_param="kind=event_open") #kind, value
+    def search_by_event_open(self):
         """ 公演期間で検索した結果を表示
         **N日以内に公演**
         """
-        query_params = {"ndays": self.request.matchdict["value"]}
+        n = int(self.request.matchdict["value"])
+        query_params = {"ndays": n, 
+                        "query_expr_message": u"%d日以内に公演" % n}
         result_seq = self.context.get_result_sequence_from_query_params(
             query_params,
-            searchfn=searcher.get_pageset_query_from_performance_open_within
+            searchfn=searcher.get_pageset_query_from_event_open_within
             )
 
         ## query_paramsをhtml化する
@@ -137,7 +139,9 @@ class SearchByKindView(object):
     def search_by_deal_open(self):
         """ 販売条件で検索した結果を表示
         """
-        query_params = {"ndays": self.request.matchdict["value"]}
+        n = int(self.request.matchdict["value"])
+        query_params = {"ndays": n, 
+                        "query_expr_message": u"%d日以内に受付・発売開始" % n}
         result_seq = self.context.get_result_sequence_from_query_params(
             query_params,
             searchfn=searcher.get_pageset_query_from_deal_open_within

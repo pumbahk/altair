@@ -111,6 +111,9 @@ class QueryParamsRender(object):
             r.append(u"販売終了: 含む")
         if qp.get("cancel_only"):
             r.append(u"公演中止: 含む")
+
+        if qp.get("query_expr_message"):
+            r.append(qp["query_expr_message"])
         return u", ".join(r)
 
 class SearchResultRender(object):

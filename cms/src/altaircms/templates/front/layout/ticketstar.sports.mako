@@ -23,7 +23,6 @@
 
 <%block name="side">
 		<!-- InstanceBeginEditable name="side" -->
-		<!-- InstanceBeginEditable name="side" -->
 		<div class="sideCategoryGenre">
 		<h2>特集</h2>
 		<ul>
@@ -38,8 +37,8 @@
 		<dl id="sideRefineSearch">
             ${gadgets.sidebar_area_listing(areas)}
             ${gadgets.sidebar_deal_cond_listing()}
-			${gadgets.sidebar_deal_term_listing()}
-			${gadgets.sidebar_performance_term_listing()}
+			${gadgets.sidebar_deal_open_listing()}
+			${gadgets.sidebar_event_open_listing()}
 		</dl>
 
 		${gadgets.sidebar_maintenance()}
