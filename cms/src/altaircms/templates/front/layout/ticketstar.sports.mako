@@ -1,4 +1,6 @@
 <%inherit file="altaircms:templates/front/ticketstar/sports.mako"/>
+<%namespace file="altaircms:templates/front/ticketstar/gadgets.mako" name="gadgets"/>
+
 ##<%namespace file="./components/ticketstar/sports/header.mako" name="header_co"/>
 ##<%namespace file="./components/ticketstar/sports/userbox.mako" name="userbox_co"/>
 
@@ -30,21 +32,9 @@
 			<li><a href="#">アニメぴあ</a></li>
 		</ul>
 		</div>
-		<div class="sideCategoryGenre">
-		<h2>ジャンル一覧</h2>
-		<ul>
-			<li><a href="#">J-POP・ROCK</a></li>
-			<li><a href="#">海外ROCK・POPS</a></li>
-			<li><a href="#">フェスティバル</a></li>
-			<li><a href="#">ジャズ・フュージョン</a></li>
-			<li><a href="#">アニメ音楽</a></li>
-			<li><a href="#">演歌・邦楽</a></li>
-			<li><a href="#">童謡・日本のうた</a></li>
-			<li><a href="#">民族音楽</a></li>
-			<li><a href="#">シャンソン</a></li>
-			<li><a href="#">音楽その他</a></li>
-		</ul>
-		</div>
+
+	    ${gadgets.sidebar_genre_listing(sub_categories)}
+
 		<dl id="sideRefineSearch">
 			<dt>エリアを選択</dt>
 			<dd>

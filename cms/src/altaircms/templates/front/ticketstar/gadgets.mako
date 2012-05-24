@@ -9,4 +9,13 @@
 	</form>
 </%def>
 
-
+<%def name="sidebar_genre_listing(sub_categories)">
+  <div class="sideCategoryGenre">
+	<h2>ジャンル一覧</h2>
+	<ul>
+		% for c in sub_categories:
+		  <li><a href="${h.link.get_searchpage_from_category(request, c, kind="genre", _query={c.name: "on"})}">${c.label}</a></li>
+		% endfor
+	</ul>
+  </div>
+</%def>
