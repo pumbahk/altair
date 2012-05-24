@@ -1,8 +1,7 @@
 from zope.interface import Interface
 
 
-class IAPIKEYValidator(Interface):
-
+class IAPIKeyValidator(Interface):
     def __call__(apikey):
         """ validate api key"""
 

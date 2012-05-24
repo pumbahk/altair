@@ -1,10 +1,10 @@
 import json
 from pyramid.response import Response
-from .interfaces import IAPIKEYValidator, IEventRepositiry
+from .interfaces import IAPIKeyValidator, IEventRepositiry
 
 def validate_apikey(request, apikey):
     reg = request.registry
-    validator = reg.getUtility(IAPIKEYValidator)
+    validator = reg.getUtility(IAPIKeyValidator)
     return validator(apikey)
     
 def parse_and_save_event(request, data):

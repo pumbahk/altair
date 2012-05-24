@@ -318,10 +318,10 @@ class TestEventRegister(unittest.TestCase):
 
 
     def test_event_register_ok(self):
-        from .interfaces import IAPIKEYValidator, IEventRepositiry
+        from .interfaces import IAPIKeyValidator, IEventRepositiry
         validator = DummyValidator('hogehoge')
         repository = DummyEventRepositry()
-        self.config.registry.registerUtility(validator, IAPIKEYValidator)
+        self.config.registry.registerUtility(validator, IAPIKeyValidator)
         self.config.registry.registerUtility(repository, IEventRepositiry)
 
         headers = {'X-Altair-Authorization': 'hogehoge'}
@@ -337,9 +337,9 @@ class TestEventRegister(unittest.TestCase):
 
 
     def test_event_register_ng(self):
-        from .interfaces import IAPIKEYValidator
+        from .interfaces import IAPIKeyValidator
         validator = DummyValidator('hogehoge')
-        self.config.registry.registerUtility(validator, IAPIKEYValidator)
+        self.config.registry.registerUtility(validator, IAPIKeyValidator)
         # 認証パラメタなし
         request = a_testing.DummyRequest(POST={})
 
@@ -348,9 +348,9 @@ class TestEventRegister(unittest.TestCase):
         self.assertEqual(response.status_int, 403)
 
     def test_event_register_ng2(self):
-        from .interfaces import IAPIKEYValidator
+        from .interfaces import IAPIKeyValidator
         validator = DummyValidator('hogehoge')
-        self.config.registry.registerUtility(validator, IAPIKEYValidator)
+        self.config.registry.registerUtility(validator, IAPIKeyValidator)
 
         # 認証通過、必須パラメタなし
         headers = {'X-Altair-Authorization': 'hogehoge'}
@@ -363,9 +363,9 @@ class TestEventRegister(unittest.TestCase):
         self.assertEqual(response.status_int, 400)
 
     def test_event_register_ng3(self):
-        from .interfaces import IAPIKEYValidator
+        from .interfaces import IAPIKeyValidator
         validator = DummyValidator('hogehoge')
-        self.config.registry.registerUtility(validator, IAPIKEYValidator)
+        self.config.registry.registerUtility(validator, IAPIKeyValidator)
 
         # パースできないJSON
         headers = {'X-Altair-Authorization': 'hogehoge'}
