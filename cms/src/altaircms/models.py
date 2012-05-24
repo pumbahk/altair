@@ -233,4 +233,4 @@ class Category(Base):
             ## 本当はこちらは存在しないはず。
             ## request.siteはまだ未実装。
             return cls.query.filter(cls.hierarchy==hierarchy, cls.parent==None)
-    
+

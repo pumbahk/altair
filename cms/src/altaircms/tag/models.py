@@ -67,3 +67,22 @@ class FlashAssetTag(AssetTag):
     type = "flash"
     __mapper_args__ = {"polymorphic_identity": type}
 
+
+class HotWord(Base):
+    query = DBSession.query_property()
+
+    id = sa.Column(sa.Integer, primary_key=True)
+    __tablename__ = "hotword"
+    
+    tag_id =  sa.Column(sa.Integer, sa.ForeignKey("pagetag.id"))
+    tag = orm.relationship("PageTag", uselist=False)
+    name = sa.Column(sa.Unicode(255))
+    orderno = sa.Column(sa.Integer, default=100) # 0~100
+
+    enablep = sa.Column(sa.Boolean, default=True)
+    term_begin = sa.Column(sa.DateTime)
+    term_end = sa.Column(sa.DateTime)
+
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
+    site_id =  sa.Column(sa.Integer, sa.ForeignKey("site.id"))

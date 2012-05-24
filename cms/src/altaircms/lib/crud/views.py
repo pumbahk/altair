@@ -101,6 +101,7 @@ class CreateView(object):
     def confirm(self):
         form = self.context.confirmed_form()
         obj = model_from_dict(self.context.model, form.data)
+
         return {"master_env": self.context,
                 "form": form, 
                 "obj": obj, 

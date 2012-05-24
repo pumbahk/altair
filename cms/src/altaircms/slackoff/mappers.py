@@ -77,3 +77,8 @@ def topcontent_mapper(request, obj):
     objlike.image_asset = RawText(u'<a href="%s">%s</a>' % (h.asset.to_show_page(request, obj.image_asset), image_asset))
     objlike.page = obj.page.title if obj.page else u"-"
     return objlike
+
+def hotword_mapper(request, obj):
+    objlike = ObjectLike(**model_to_dict(obj))
+    objlike.tag = obj.tag.label if obj.tag else u"------"
+    return objlike

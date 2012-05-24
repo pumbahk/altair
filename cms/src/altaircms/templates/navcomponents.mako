@@ -19,6 +19,7 @@
     <li><a href="${request.route_path("ticket_list")}">チケット</a></li>
     <li><a href="${request.route_path("promotion_list")}">プロモーション枠</a></li>
     <li><a href="${request.route_path("category_list")}">カテゴリー</a></li>
+    <li><a href="${request.route_path("hotword_list")}">ホットワード</a></li>
 	## fixme rename promotion_unit
     <li><a href="${request.route_path("promotion_unit_list")}">プロモーション</a></li>
     <li><a href="${request.route_path("topic_list")}">トピック</a></li>

@@ -162,3 +162,16 @@ class TopcontentForm(Form):
     subkind = fields.TextField(label=u"サブ分類")
     countdown_type = fields.SelectField(label=u"カウントダウンの種別", choices=Topcontent.COUNTDOWN_CANDIDATES)    
     
+from altaircms.tag.models import PageTag
+
+class HotWordForm(Form):
+    tag = dynamic_query_select_field_factory(PageTag, label=u"検索用ページタグ", allow_blank=True, 
+                                                 get_label=lambda obj: obj.label or u"名前なし")
+    name = fields.TextField(label=u"ホットワード名")
+    orderno = fields.IntegerField(label=u"表示順序")
+    
+    enablep = fields.BooleanField(label=u"利用する/しない")
+    term_begin = fields.DateTimeField(label=u"利用開始日", validators=[required_field()])
+    term_end = fields.DateTimeField(label=u"利用終了日", validators=[required_field()])
+    
+
