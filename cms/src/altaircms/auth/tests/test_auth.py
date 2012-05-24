@@ -18,7 +18,6 @@ def teardown_module():
     transaction.abort()
 
 class OAuthLoginTests(unittest.TestCase):
-
     def setUp(self):
         self.config = testing.setUp(settings={
             'altair.oauth.client_id': 'fa12a58972626f0597c2faee1454e1',
