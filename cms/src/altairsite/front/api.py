@@ -1,8 +1,11 @@
 # -*- coding:utf-8 -*-
+from datetime import datetime
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
+
 from altaircms.models import Category
 from altaircms.page.models import PageSet
+from altaircms.tag.models import HotWord
 
 def _get_categories(request, hierarchy):
     qs =  Category.get_toplevel_categories(hierarchy=hierarchy, request=request)
@@ -25,4 +28,8 @@ def get_subcategories_from_page(request, page):
     root_category = qs.first()
     return root_category.children if root_category else []
 
-
+def get_current_hotwords(request, _nowday=datetime.now):
+    today = _nowday()
+    qs =  HotWord.query.filter(HotWord.term_begin <= today).filter(HotWord.term_end <= today)
+    qs = qs.filter_by(enablep=True).order_by(sa.asc("orderno"), sa.asc("term_end"))
+    return qs

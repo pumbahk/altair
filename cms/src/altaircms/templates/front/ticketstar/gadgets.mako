@@ -60,6 +60,7 @@ from altairsite.search.forms import DealCondPartForm
 		</ul>
 	</dd>
 </%def>
+
 <%def name="sidebar_event_open_listing()">
 	<dt>公演日で絞込み</dt>
 	<dd>
@@ -101,4 +102,18 @@ from altairsite.search.forms import DealCondPartForm
 	  % endfor
 	</ul>
   </div>
+</%def>
+
+<%def name="hotword_itemize_header()">
+	<ul>
+		<li><a href="#">hohoo</a></li>
+		<li><a href="#">サッカー</a></li>
+		<li><a href="#">ブルーマン</a></li>
+		<li><a href="#">きゃりーぱみゅぱみゅ</a></li>
+		<li><a href="#">クーザ</a></li>
+		<li><a href="#">オンタマ</a></li>
+		<li><a href="#">ももいろクローバーZ</a></li>
+		<li><a href="#">ディズニー</a></li>
+		<li><a href="#">東京事変</a></li>
+	</ul>
 </%def>

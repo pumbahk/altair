@@ -78,16 +78,7 @@
 		<dl>
 			<dt><img src="/static/ticketstar/img/common/header_search_hot.gif" alt="ホットワード" width="50" height="45" /></dt>
 			<dd>
-				<ul>
-					<li><a href="#">サッカー</a></li>
-					<li><a href="#">ブルーマン</a></li>
-					<li><a href="#">きゃりーぱみゅぱみゅ</a></li>
-					<li><a href="#">クーザ</a></li>
-					<li><a href="#">オンタマ</a></li>
-					<li><a href="#">ももいろクローバーZ</a></li>
-					<li><a href="#">ディズニー</a></li>
-					<li><a href="#">東京事変</a></li>
-				</ul>
+			  ${gadgets.hotword_itemize_header()}
 			</dd>
 		</dl>
 	</div>
