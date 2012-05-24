@@ -41,17 +41,13 @@ def logout(request):
 
 
 class OAuthLogin(object):
-    client_id = "fa12a58972626f0597c2faee1454e1"
-    secret_key = "c5f20843c65870fad8550e3ad1f868"
     def __init__(self, request,
-                 _stub_client=None):
+                 _stub_client=None, **kwargs):
         self.request = request
 
         settings = get_current_registry().settings
-        self.client_id = settings.get('altair.oauth.client_id')
-        self.secret_key = settings.get('altair.oauth.secret_key')
-        self.authorize_url = settings.get('altair.oauth.authorize_url')
-        self.access_token_url = settings.get('altair.oauth.access_token_url')
+        for k in ['client_id', 'secret_key', 'authorize_url', 'access_token_url']:
+            setattr(self, k, kwargs.get(k, settings.get('altair.oauth.%s' % k)))
         self._stub_client = _stub_client
 
     # def _oauth_request(self, client, url, method):
