@@ -35,7 +35,7 @@ class ParseAndSaveEventTests(unittest.TestCase):
         self.assertEqual(performance.venue, u"まついZEROホール")
         self.assertEqual(_to_utc(performance.open_on), datetime(2012, 3, 15, 8))
         self.assertEqual(_to_utc(performance.start_on), datetime(2012, 3, 15, 10))
-        self.assertEqual(_to_utc(performance.close_on), datetime(2012, 3, 15, 13))
+        self.assertEqual(_to_utc(performance.end_on), datetime(2012, 3, 15, 13))
 
         self.assertEqual(len(performance.sales), 2)
         
@@ -68,7 +68,7 @@ class ParseAndSaveEventTests(unittest.TestCase):
          "venue": "まついZEROホール",
          "open_on": "2012-03-15T17:00:00+09:00",
          "start_on": "2012-03-15T19:00:00+09:00",
-         "close_on": "2012-03-15T22:00:00+09:00",
+         "end_on": "2012-03-15T22:00:00+09:00",
          "sales": [
            {
              "name": "presale",
@@ -122,7 +122,7 @@ class ParseAndSaveEventTests(unittest.TestCase):
          "venue": "心斎橋まつい会館",
          "open_on": "2012-03-16T17:00:00+09:00",
          "start_on": "2012-03-16T19:00:00+09:00",
-         "close_on": "2012-03-16T22:00:00+09:00",
+         "end_on": "2012-03-16T22:00:00+09:00",
          "sales": [
            {
              "name": "presale",
