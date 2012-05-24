@@ -97,8 +97,8 @@ class QueryParamsRender(object):
             r.append(u"ジャンル: %s " % self.describe_from_tree(qp["category_tree"]))
         if qp.get("area_tree") and qp.get("prefectures"):
             r.append(u"開催地: %s" % self.describe_from_tree(qp["area_tree"]))
-        if qp.get("start_date") or qp.get("end_date"):
-            r.append(u"公演日: %s" % self.describe_from_term(qp.get("start_date"), qp.get("end_date")))
+        if qp.get("performance_open") or qp.get("performance_close"):
+            r.append(u"公演日: %s" % self.describe_from_term(qp.get("performance_open"), qp.get("performance_close")))
         if qp.get("deal_cond"):
             r.append(u"販売条件: %s" % forms.DealCondPartForm.DDICT.get(qp["deal_cond"], u"--dummy--"))
         if qp.get("added_service"):

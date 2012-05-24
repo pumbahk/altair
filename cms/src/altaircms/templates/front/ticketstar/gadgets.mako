@@ -50,27 +50,25 @@ from altairsite.search.forms import DealCondPartForm
 </dd>
 </%def>
 
-<%def name="sidebar_deal_term_listing()">
-		  dummy
-			<dt>発売日・受付日で絞込み</dt>
-			<dd>
-				<ul>
-					<li><a href="#">7日以内に受付・発売開始</a></li>
-					<li><a href="#">14日以内に受付・発売開始</a></li>
-					<li><a href="#">30日以内に受付・発売開始</a></li>
-				</ul>
-			</dd>
+<%def name="sidebar_deal_open_listing()">
+	<dt>発売日・受付日で絞込み</dt>
+	<dd>
+		<ul>
+			<li><a href="${h.link.get_searchpage(request, kind="performance_open", value=7) }">7日以内に受付・発売開始</a></li>
+			<li><a href="${h.link.get_searchpage(request, kind="performance_open", value=14) }">14日以内に受付・発売開始</a></li>
+			<li><a href="${h.link.get_searchpage(request, kind="performance_open", value=30) }">30日以内に受付・発売開始</a></li>
+		</ul>
+	</dd>
 </%def>
-<%def name="sidebar_performance_term_listing()">
-		  dummy
-			<dt>公演日で絞込み</dt>
-			<dd>
-				<ul>
-					<li><a href="#">7日以内に公演</a></li>
-					<li><a href="#">14日以内に公演</a></li>
-					<li><a href="#">30日以内に公演</a></li>
-				</ul>
-			</dd>
+<%def name="sidebar_performance_open_listing()">
+	<dt>公演日で絞込み</dt>
+	<dd>
+		<ul>
+			<li><a href="${h.link.get_searchpage(request, kind="deal_open", value=7) }">7日以内に公演</a></li>
+			<li><a href="${h.link.get_searchpage(request, kind="deal_open", value=14) }">14日以内に公演</a></li>
+			<li><a href="${h.link.get_searchpage(request, kind="deal_open", value=30) }">30日以内に公演</a></li>
+		</ul>
+	</dd>
 </%def>
 
 <%def name="sidebar_maintenance()">

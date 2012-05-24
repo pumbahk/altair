@@ -201,13 +201,13 @@ class PerformanceTermPartForm(form.Form):
 
     def make_query_params(self):
         data = self.data
-        start_date, end_date = None, None
+        performance_open, performance_close = None, None
         if all((data["start_year"], data["start_month"], data["start_day"])):
-            start_date = datetime(*(int(x) for x in (data["start_year"], data["start_month"], data["start_day"])))
+            performance_open = datetime(*(int(x) for x in (data["start_year"], data["start_month"], data["start_day"])))
         if all((data["end_year"], data["end_month"], data["end_day"])):
-            end_date = datetime(*(int(x) for x in (data["end_year"], data["end_month"], data["end_day"])))
-        return {"start_date": start_date, 
-                "end_date": end_date}
+            performance_close = datetime(*(int(x) for x in (data["end_year"], data["end_month"], data["end_day"])))
+        return {"performance_open": performance_open, 
+                "performance_close": performance_close}
 
 ## todo:販売条件
 class DealCondPartForm(form.Form):

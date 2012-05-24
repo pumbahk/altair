@@ -2,7 +2,10 @@
 from pyramid.view import view_config
 from pyramid.view import view_defaults
 from webob.multidict import MultiDict
+from datetime import datetime
+from datetime import timedelta
 import logging
+
 from ..front import api as front_api
 from . import forms
 from . import searcher
@@ -103,6 +106,41 @@ class SearchByKindView(object):
         result_seq = self.context.get_result_sequence_from_query_params(
             query_params,
             searchfn=searcher.get_pageset_query_from_deal_cond
+            )
+
+        ## query_paramsをhtml化する
+        html_query_params = self.context.get_query_params_as_html(query_params)
+        ### header page用のcategoryを集めてくる
+        params = front_api.get_navigation_categories(self.request)
+        params.update(result_seq=result_seq, query_params=html_query_params)
+        return params
+
+    @view_config(match_param="kind=performance_open") #kind, value
+    def search_by_performance_open(self):
+        """ 公演期間で検索した結果を表示
+        **N日以内に公演**
+        """
+        query_params = {"ndays": self.request.matchdict["value"]}
+        result_seq = self.context.get_result_sequence_from_query_params(
+            query_params,
+            searchfn=searcher.get_pageset_query_from_performance_open_within
+            )
+
+        ## query_paramsをhtml化する
+        html_query_params = self.context.get_query_params_as_html(query_params)
+        ### header page用のcategoryを集めてくる
+        params = front_api.get_navigation_categories(self.request)
+        params.update(result_seq=result_seq, query_params=html_query_params)
+        return params
+
+    @view_config(match_param="kind=deal_open") #kind, value
+    def search_by_deal_open(self):
+        """ 販売条件で検索した結果を表示
+        """
+        query_params = {"ndays": self.request.matchdict["value"]}
+        result_seq = self.context.get_result_sequence_from_query_params(
+            query_params,
+            searchfn=searcher.get_pageset_query_from_deal_open_within
             )
         ## query_paramsをhtml化する
 

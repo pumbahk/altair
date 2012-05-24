@@ -85,6 +85,35 @@ def get_pageset_query_from_deal_cond(request, query_params):
     else:
        return []
 
+@provider(ISearchFn)
+def get_pageset_query_from_deal_open_within(request, query_params):
+    """ N日以内の受付販売開始"""
+    qs = PageSet.query
+    if query_params.get("ndays"):
+       sub_qs = DBSession.query(Event.id)
+       sub_qs = events_by_within_n_days_of(Event.deal_open, query_params["ndays"])
+       sub_qs = sub_qs.filter(Event.is_searchable==True)
+       qs = search_by_events(qs, sub_qs)
+       return  _refine_pageset_qs(qs)
+    else:
+       return []
+
+@provider(ISearchFn)
+def get_pageset_query_from_performance_open_within(request, query_params):
+    """ N日以内に公演"""
+##
+## todo: 今、N日以内の公演開始のものを集めている。これはおかしいかもしれない。
+##
+    qs = PageSet.query
+    if query_params.get("ndays"):
+       sub_qs = DBSession.query(Event.id)
+       sub_qs = events_by_within_n_days_of(Event.performance_open, query_params["ndays"])
+       sub_qs = sub_qs.filter(Event.is_searchable==True)
+       qs = search_by_events(qs, sub_qs)
+       return  _refine_pageset_qs(qs)
+    else:
+       return []
+
 
 @provider(ISearchFn)
 def get_pageset_query_fullset(request, query_params): 
@@ -96,7 +125,7 @@ def get_pageset_query_fullset(request, query_params):
     """
     sub_qs = DBSession.query(Event.id)
     sub_qs = events_by_area(sub_qs, query_params.get("prefectures"))
-    sub_qs = events_by_performance_term(sub_qs, query_params.get("start_date"), query_params.get("end_date"))
+    sub_qs = events_by_performance_term(sub_qs, query_params.get("performance_open"), query_params.get("performance_close"))
     sub_qs = events_by_deal_cond_flags(sub_qs, query_params) ## 未実装
     sub_qs = events_by_added_service(sub_qs, query_params) ## 未実装
     sub_qs = events_by_about_deal(sub_qs, query_params.get("before_deal_start"), query_params.get("till_deal_end"), 
@@ -171,14 +200,23 @@ def events_by_area(qs, prefectures):
     matched_perf_ids = DBSession.query(Performance.event_id).filter(Performance.prefecture.in_(prefectures))
     return qs.filter(Event.id.in_(matched_perf_ids))
 
-def events_by_performance_term(qs, start_date, end_date):
-    if not (start_date or end_date):
+
+##日以内に開始系の関数
+def events_by_within_n_days_of(qs, beg_date, n, _nowday=datetime.datetime.now):
+   today = _nowday()
+   start_from = getattr(Event, beg_date)
+   qs = qs.filter(start_from >= today).filter(start_from <= (today+datetime.timedelta(days=n)))
+   return qs
+   
+
+def events_by_performance_term(qs, performance_open, performance_close):
+    if not (performance_open or performance_close):
         return qs
 
-    if start_date:
-        qs = qs.filter(Event.event_open >= start_date)
-    if end_date:
-        qs = qs.filter(Event.event_close <= end_date)
+    if performance_open:
+        qs = qs.filter(Event.event_open >= performance_open)
+    if performance_close:
+        qs = qs.filter(Event.event_close <= performance_close)
     return qs
 
 def events_by_deal_cond_flags(qs, flags):
