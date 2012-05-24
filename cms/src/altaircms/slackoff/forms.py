@@ -69,7 +69,7 @@ class CategoryForm(Form):
     orderno = fields.IntegerField(label=u"表示順序")
     parent = dynamic_query_select_field_factory(
         Category, allow_blank=False, label=u"親カテゴリ",
-        get_label=lambda obj: obj.name or u"--なし--")
+        get_label=lambda obj: obj.label or u"--なし--")
 
     hierarchy = fields.SelectField(label=u"階層", choices=[(x, x) for x in [u"大", u"中", u"小"]])
     label = fields.TextField(label=u"label")
@@ -115,7 +115,7 @@ class CategoryFilterForm(Form):
     hierarchy = fields.SelectField(label=u"階層", choices=[("__None", "----------")]+[(x, x) for x in [u"大", u"中", u"小"]])
     parent = dynamic_query_select_field_factory(
         Category, allow_blank=True, blank_text=u"----------", label=u"親カテゴリ",
-        get_label=lambda obj: obj.name or u"---名前なし---")
+        get_label=lambda obj: obj.label or u"---名前なし---")
 
     as_filter = as_filter(["hierarchy", "parent"])
 

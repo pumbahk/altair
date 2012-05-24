@@ -56,7 +56,11 @@ class CRUDResource(RootFactory): ## fixme
         return obj
 
     def get_model_obj(self, id):
-        return self.model.query.filter_by(id=id).one()
+        pks = self.model.__mapper__.primary_key
+        assert len(pks) == 1
+        
+        pk = pks[0].name
+        return self.model.query.filter_by(**{pk: id}).one()
 
     ## listing
     def get_model_query(self):
@@ -67,7 +71,12 @@ class CRUDResource(RootFactory): ## fixme
         form = self.form(**model_to_dict(obj))
         return form
 
-    update_model_from_form = create_model_from_form
+    def update_model_from_form(self, id, form):
+        obj = self.get_model_obj(id)
+        for k, v in form.data.iteritems():
+            if v: setattr(obj, k, v)
+        DBSession.add(obj)
+        return obj
 
     ## delete
     def delete_model(self, obj):
@@ -122,6 +131,9 @@ class UpdateView(object):
     def confirm(self):
         form = self.context.confirmed_form()
         obj = self.context.get_model_obj(self.request.matchdict["id"])
+        for k, v in form.data.iteritems():
+            if v: setattr(obj, k, v)
+
         return {"master_env": self.context,
                 "form": form, 
                 "obj": obj, 
@@ -129,7 +141,7 @@ class UpdateView(object):
 
     def update_model(self):
         form = self.context.confirmed_form()
-        self.context.update_model_from_form(form)
+        self.context.update_model_from_form(self.request.matchdict["id"], form)
         FlashMessage.success("update", request=self.request)
         return HTTPFound(self.request.route_url(self.context.endpoint), self.request)
 
