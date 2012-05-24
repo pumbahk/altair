@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 from pyramid.view import view_config
 from pyramid.view import view_defaults
+from webob.multidict import MultiDict
 import logging
 from ..front import api as front_api
 from . import forms
@@ -57,13 +58,14 @@ class SearchByKindView(object):
         self.request = request
         self.context = context
 
-    @view_config(match_param="kind=genre")
+    @view_config(match_param="kind=genre") #kind, value
     def search_by_genre(self):
         """ ジャンルで検索
         top_category -> sub_categoryの２段階までしかサポートしていない。
         sub_category == ジャンル
         """
-        query_params = forms.GenrePartForm(self.request.GET).make_query_params()
+        params = MultiDict({self.request.matchdict["value"]: "on"})
+        query_params = forms.GenrePartForm(params).make_query_params()
 
         result_seq = self.context.get_result_sequence_from_query_params(
             query_params,

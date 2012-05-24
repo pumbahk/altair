@@ -1,5 +1,5 @@
-def get_searchpage_from_category(request, category, kind=None, _query=None):
-    return request.route_path("page_search_by", kind=kind, _query=_query)
+def get_searchpage(request, kind=None, value=None):
+    return request.route_path("page_search_by", kind=kind, value=value)
 
 def get_link_from_category(request, category):
     if category.pageset is None:
