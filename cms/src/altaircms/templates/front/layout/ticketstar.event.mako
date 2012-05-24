@@ -36,59 +36,13 @@
 		${gadgets.sidebar_genre_listing(sub_categories)}
 
 		<dl id="sideRefineSearch">
-			<dt>エリアを選択</dt>
-			<dd>
-				<ul>
-					<li><a href="#">北海道</a></li>
-					<li><a href="#">東北</a></li>
-					<li><a href="#">関東甲信越</a></li>
-					<li><a href="#">中部</a></li>
-					<li><a href="#">北陸</a></li>
-					<li><a href="#">関西</a></li>
-					<li><a href="#">中国・四国</a></li>
-					<li><a href="#">九州・沖縄</a></li>
-				</ul>
-			</dd>
-			<dt>販売状態で絞込み</dt>
-			<dd>
-				<ul>
-					<li><a href="#">最速抽選</a></li>
-					<li><a href="#">先行抽選</a></li>
-					<li><a href="#">先行先着</a></li>
-					<li><a href="#">一般発売</a></li>
-					<li><a href="#">追加抽選</a></li>
-				</ul>
-			</dd>
-			<dt>発売日・受付日で絞込み</dt>
-			<dd>
-				<ul>
-					<li><a href="#">7日以内に受付・発売開始</a></li>
-					<li><a href="#">14日以内に受付・発売開始</a></li>
-					<li><a href="#">30日以内に受付・発売開始</a></li>
-				</ul>
-			</dd>
-			<dt>公演日で絞込み</dt>
-			<dd>
-				<ul>
-					<li><a href="#">7日以内に公演</a></li>
-					<li><a href="#">14日以内に公演</a></li>
-					<li><a href="#">30日以内に公演</a></li>
-				</ul>
-			</dd>
+            ${gadgets.sidebar_area_listing(areas)}
+            ${gadgets.sidebar_deal_cond_listing()}
+			${gadgets.sidebar_deal_term_listing()}
+			${gadgets.sidebar_performance_term_listing()}
 		</dl>
-		<dl id="sideInfo">
-			<dt><img src="../img/common/side_info_title.gif" alt="お知らせ" width="190" height="18" /></dt>
-			<dd>
-				<ul>
-					<li>2011年12月4日(日)　～　2011年12月4日(日)　メンテナンスを行います</li>
-					<li>2011年12月4日(日)　～　2011年12月4日(日)　メンテナンスを行います</li>
-				</ul>
-			</dd>
-		</dl>
+
+		${gadgets.sidebar_maintenance()}
 		<!-- InstanceEndEditable -->
-		<ul id="sideBtn">
-			<li><a href="#"><img src="/static/ticketstar/img/mypage/btn_use.gif" alt="楽天チケットの使い方" width="202" height="28" /></a></li>
-			<li><a href="#"><img src="/static/ticketstar/img/mypage/btn_favorite.gif" alt="お気に入りアーティストを登録" width="202" height="28" /></a></li>
-			<li><a href="#"><img src="/static/ticketstar/img/mypage/btn_magazine.gif" alt="メルマガの購読" width="202" height="28" /></a></li>
-		</ul>
+		${gadgets.sidebar_sideBtn()}
 </%block>

@@ -32,29 +32,30 @@ def page_search_result(request):
     params.update(result_seq=result_seq, query_params=html_query_params)
     return params
 
+@view_config(request_param="textfield", route_name="page_search_by_freeword", 
+             renderer="altaircms:templates/front/layout/ticketstar.search.mako")
+def search_by_freeword(context, request):
+    """ フリーワード検索
+    """
+    ## 全文検索を使って検索。, で区切られた文字はandで結合
+    query_params = dict(query=request.GET.get("textfield", u""), query_cond="intersection")
+
+    result_seq = context.get_result_sequence_from_query_params(
+        query_params,
+        searchfn=searcher.get_pageset_query_from_freeword
+        )
+    ## query_paramsをhtml化する
+    html_query_params = context.get_query_params_as_html(query_params)
+    ### header page用のcategoryを集めてくる
+    params = front_api.get_navigation_categories(request)
+    params.update(result_seq=result_seq, query_params=html_query_params)
+    return params
+
 @view_defaults(route_name="page_search_by", renderer="altaircms:templates/front/layout/ticketstar.search.mako")
 class SearchByKindView(object):
     def __init__(self, context, request):
         self.request = request
         self.context = context
-
-    @view_config(match_param="kind=freeword", request_param="textfield")
-    def search_by_freeword(self):
-        """ フリーワード検索
-        """
-        ## 全文検索を使って検索。, で区切られた文字はandで結合
-        query_params = dict(query=self.request.GET.get("textfield", u""), query_cond="intersection")
-
-        result_seq = self.context.get_result_sequence_from_query_params(
-            query_params,
-            searchfn=searcher.get_pageset_query_from_freeword
-            )
-        ## query_paramsをhtml化する
-        html_query_params = self.context.get_query_params_as_html(query_params)
-        ### header page用のcategoryを集めてくる
-        params = front_api.get_navigation_categories(self.request)
-        params.update(result_seq=result_seq, query_params=html_query_params)
-        return params
 
     @view_config(match_param="kind=genre")
     def search_by_genre(self):
