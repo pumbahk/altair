@@ -30,6 +30,13 @@ def config():
 
 def functionalTestSetUp(extra=None):
     DBSession.remove()
+    import sqlahelper
+
+    engine = create_engine("sqlite:///")
+    engine.echo = False
+    sqlahelper.get_session().remove()
+    sqlahelper.add_engine(engine)
+
     from altaircms import main
     defaults = {"sqlalchemy.url": "sqlite://", 
                 "session.secret": "B7gzHVRUqErB1TFgSeLCHH3Ux6ShtI", 
@@ -42,14 +49,16 @@ def functionalTestSetUp(extra=None):
     if extra:
         config.update(extra)
     app = main({}, **config)
-    # create_db(force=False)
-    Base.metadata.create_all()
+
+    sqlahelper.get_base().metadata.drop_all()
+    sqlahelper.get_base().metadata.create_all()
     return app
 
 def functionalTestTearDown():
     dropall_db(message="test view drop")
     create_db(force=True)
     transaction.abort()
+    testing.tearDown()
 
 def _initTestingDB():
     DBSession.remove()
