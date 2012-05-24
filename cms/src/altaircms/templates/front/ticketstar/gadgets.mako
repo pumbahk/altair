@@ -26,30 +26,30 @@
 <%
 from altaircms.seeds.area import AREA_CHOICES
 %>
-			<dt>エリアを選択</dt>
-			<dd>
-				<ul>
-				    % for en,ja in AREA_CHOICES:
-					##<li><a href="#">${ja}</a></li>
-					  <li><a href="${h.link.get_searchpage(request, kind="area", value=en)}">${ja}</a></li>
-					% endfor
-				</ul>
-			</dd>
+  <dt>エリアを選択</dt>
+  <dd>
+	<ul>
+	  % for en,ja in AREA_CHOICES:
+	  <li><a href="${h.link.get_searchpage(request, kind="area", value=en)}">${ja}</a></li>
+	  % endfor
+	</ul>
+  </dd>
 </%def>
 
 <%def name="sidebar_deal_cond_listing()">
-		  dummy
-			<dt>販売状態で絞込み</dt>
-			<dd>
-				<ul>
-					<li><a href="#">最速抽選</a></li>
-					<li><a href="#">先行抽選</a></li>
-					<li><a href="#">先行先着</a></li>
-					<li><a href="#">一般発売</a></li>
-					<li><a href="#">追加抽選</a></li>
-				</ul>
-			</dd>
+<%
+from altairsite.search.forms import DealCondPartForm
+%>
+<dt>販売状態で絞込み</dt>
+<dd>
+  <ul>
+    % for en,ja in DealCondPartForm.deal_cond_choices:
+	  <li><a href="${h.link.get_searchpage(request, kind="deal_cond", value=en)}">${ja}</a></li>
+    % endfor
+  </ul>
+</dd>
 </%def>
+
 <%def name="sidebar_deal_term_listing()">
 		  dummy
 			<dt>発売日・受付日で絞込み</dt>

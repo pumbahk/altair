@@ -211,7 +211,15 @@ class PerformanceTermPartForm(form.Form):
 
 ## todo:販売条件
 class DealCondPartForm(form.Form):
-    deal_cond = fields.RadioField(choices=[("early", u"先行"), ("normal", u"一般")], 
+    #deal_cond_choices=[("early", u"先行"), ("normal", u"一般")]
+    deal_cond_choices=[("first_lottery", u"最速抽選"),
+                       ("early_lottery", u"先行抽選"), 
+                       ("eary_fisrtcome", u"先行先着"), 
+                       ("normal", u"一般販売"), 
+                       ("added_lottery", u"追加抽選")]
+    DDICT = dict(deal_cond_choices)
+
+    deal_cond = fields.RadioField(choices=deal_cond_choices, 
                                    widget=PutOnlyWidget())
 
     def __html__(self):
@@ -220,7 +228,7 @@ class DealCondPartForm(form.Form):
     def make_query_params(self):
         import warnings
         warnings.warn("these flag are not support yet.")
-        return {"deal_cond": []}
+        return self.data
 
 ## todo:付加サービス
 class AddedServicePartForm(form.Form):

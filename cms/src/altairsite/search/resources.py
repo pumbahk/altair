@@ -7,6 +7,7 @@ logger = logging.getLogger(__file__)
 import altaircms.helpers as h
 import pprint
 from altaircms.lib.structures import Nullable
+from . import forms
 
 class SearchResult(dict):
     pass
@@ -99,7 +100,7 @@ class QueryParamsRender(object):
         if qp.get("start_date") or qp.get("end_date"):
             r.append(u"公演日: %s" % self.describe_from_term(qp.get("start_date"), qp.get("end_date")))
         if qp.get("deal_cond"):
-            r.append(u"販売条件: %s" % "--dummy--")
+            r.append(u"販売条件: %s" % forms.DealCondPartForm.DDICT.get(qp["deal_cond"], u"--dummy--"))
         if qp.get("added_service"):
             r.append(u"付加サービス: %s" % "--dummy--")
         if qp.get("before_deal_start"):
