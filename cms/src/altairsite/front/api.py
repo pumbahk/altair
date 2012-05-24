@@ -30,6 +30,7 @@ def get_subcategories_from_page(request, page):
 
 def get_current_hotwords(request, _nowday=datetime.now):
     today = _nowday()
-    qs =  HotWord.query.filter(HotWord.term_begin <= today).filter(HotWord.term_end <= today)
+    qs =  HotWord.query.filter(HotWord.term_begin <= today).filter(today <= HotWord.term_end)
     qs = qs.filter_by(enablep=True).order_by(sa.asc("orderno"), sa.asc("term_end"))
     return qs
+

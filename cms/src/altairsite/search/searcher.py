@@ -9,9 +9,17 @@ from altaircms.models import (
     Performance
 )
 from altaircms.models import DBSession
-from altaircms.page.models import PageSet
+from altaircms.page.models import (
+   PageSet, 
+   Page
+)
 from altaircms.event.models import Event
 from altaircms.solr import api as solrapi
+from altaircms.tag.models import (
+   HotWord, 
+   PageTag, 
+   PageTag2Page
+)
 
 ## for document
 from zope.interface import Interface, provider
@@ -35,6 +43,18 @@ def _refine_pageset_qs(qs):
 
     qs = _refine_pageset_search_order(qs)
     return qs.options(orm.joinedload("event")).options(orm.joinedload("event.performances"))
+
+
+## todo:test
+@provider(ISearchFn)
+def get_pageset_query_from_hotword(request, query_params):
+    """ Hotwordの検索"""
+    if query_params.get("hotword"):
+       qs = PageSet.query
+       hotword = query_params["hotword"]
+       return search_by_hotword(qs, hotword)
+    else:
+       return []
 
 @provider(ISearchFn)
 def get_pageset_query_from_freeword(request, query_params):
@@ -144,6 +164,20 @@ def get_pageset_query_fullset(request, query_params):
         qs = search_by_freeword(qs, request, words, query_params.get("query_cond"))
 
     return  _refine_pageset_qs(qs)
+
+
+def search_by_hotword(qs, hotword):
+   """　hotwordの検索
+   """
+   return qs.filter(
+        (HotWord.tag_id==PageTag.id) & (HotWord.enablep == True) & (PageTag.publicp==True) & (HotWord.name==hotword)
+      ).filter(
+        PageTag.id==PageTag2Page.tag_id
+      ).filter(
+         Page.id==PageTag2Page.object_id
+      ).filter(
+         (Page.pageset_id==PageSet.id) & (PageSet.event != None) #そもそもチケット用の検索なのでeventは必須
+      )
 
 def search_by_freeword(qs, request, words, query_cond):
 

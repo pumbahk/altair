@@ -13,6 +13,8 @@ def setUpModule():
     from sqlalchemy import create_engine
     import altaircms.page.models
     import altaircms.models
+    import altaircms.tag.models
+    import altaircms.asset.models
 
     engine = create_engine("sqlite:///")
     engine.echo = False
@@ -446,7 +448,96 @@ class SearchOrderTests(unittest.TestCase):
         self.assertNotEquals(deal_closes, [p.event.deal_close for p in not_sorted_qs])
         self.assertEquals(deal_closes, [p.event.deal_close for p in result])
 
+
+class HotWordSearchTests(unittest.TestCase):
+    def tearDown(self):
+        import transaction
+        transaction.abort()
+        from altaircms.models import DBSession
+        DBSession.remove()
+
+    def setUp(self):
+        import transaction
+        import sqlahelper
+        transaction.abort()
+        self.session = sqlahelper.get_session()
+
+    def _callFUT(self, *args, **kwargs):
+        from altairsite.search.searcher import search_by_hotword
+        return search_by_hotword(*args, **kwargs)
+
+    def test_hotword_search_has_event(self):
+        """
+        hotword - pagetag - pagetag2page - page - pageset
+        """
+        from altaircms.tag.models import HotWord
+        from altaircms.tag.models import PageTag
+        from altaircms.tag.models import PageTag2Page
+        from altaircms.page.models import Page
+        from altaircms.page.models import PageSet
+        from altaircms.event.models import Event        
+
+        event = Event(title=u"this-is-bound-event")
+        pageset = PageSet(event=event)
+        page = Page(pageset=pageset)
+        _other_page = Page(pageset=pageset) ## orfan
         
+        pagetag = PageTag(label="tag-name-for-hotword", publicp=True)
+        self.session.add(page)
+        self.session.add(_other_page)
+        self.session.add(pageset)
+        self.session.add(pagetag)
+        self.session.flush()
+
+        pagetag2page = PageTag2Page(object_id=page.id, tag_id=pagetag.id)
+        self.session.add(pagetag2page)
+        ## proxyほしい
+
+        hotword = HotWord(name=u"this-is-hotword-name", tag=pagetag, enablep=True, 
+                          orderno=1, 
+                          term_begin=datetime(1900, 1, 1), term_end=datetime(2100, 1, 1))
+        self.session.add(hotword)
+        
+        self.session.flush()
+        result = self._callFUT(PageSet.query,  u"this-is-hotword-name")
+        
+        self.assertEquals([pageset],  list(result))
+
+    def test_hotword_search_hasnt_event(self):
+        """ search by hotword but this pageset hasn't event, so matched items is 0
+
+        """
+        from altaircms.tag.models import HotWord
+        from altaircms.tag.models import PageTag
+        from altaircms.tag.models import PageTag2Page
+        from altaircms.page.models import Page
+        from altaircms.page.models import PageSet
+        
+        pageset = PageSet()
+        page = Page(pageset=pageset)
+        _other_page = Page(pageset=pageset) ## orfan
+        
+        pagetag = PageTag(label="tag-name-for-hotword", publicp=True)
+        self.session.add(page)
+        self.session.add(_other_page)
+        self.session.add(pageset)
+        self.session.add(pagetag)
+        self.session.flush()
+
+        pagetag2page = PageTag2Page(object_id=page.id, tag_id=pagetag.id)
+        self.session.add(pagetag2page)
+        ## proxyほしい
+
+        hotword = HotWord(name=u"this-is-hotword-name", tag=pagetag, enablep=True, 
+                          orderno=1, 
+                          term_begin=datetime(1900, 1, 1), term_end=datetime(2100, 1, 1))
+        self.session.add(hotword)
+        
+        self.session.flush()
+        result = self._callFUT(PageSet.query,  u"this-is-hotword-name")
+        
+        ### not found item!!
+        self.assertEquals([],  list(result))
 
 if __name__ == "__main__":
     unittest.main()

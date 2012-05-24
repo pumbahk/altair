@@ -105,15 +105,14 @@ from altairsite.search.forms import DealCondPartForm
 </%def>
 
 <%def name="hotword_itemize_header()">
+<%
+from altairsite.front.api import get_current_hotwords
+hotwords = get_current_hotwords(request)
+%>
 	<ul>
-		<li><a href="#">hohoo</a></li>
-		<li><a href="#">サッカー</a></li>
-		<li><a href="#">ブルーマン</a></li>
-		<li><a href="#">きゃりーぱみゅぱみゅ</a></li>
-		<li><a href="#">クーザ</a></li>
-		<li><a href="#">オンタマ</a></li>
-		<li><a href="#">ももいろクローバーZ</a></li>
-		<li><a href="#">ディズニー</a></li>
-		<li><a href="#">東京事変</a></li>
+	    % for word in hotwords:
+		  ## dangerous?
+		  <li><a href="${request.route_path("page_search_by", kind="hotword", value=word.name)}">${word.name}</a></li>
+		% endfor
 	</ul>
 </%def>

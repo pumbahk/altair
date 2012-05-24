@@ -143,6 +143,7 @@ class SearchResultRender(object):
         """ % self.make_result()
         
     def make_result(self):
+        # assert self.pageset.event
         return SearchResult(
             category_icons = self.category_icons(), 
             page_description = self.page_description(),
@@ -151,6 +152,7 @@ class SearchResultRender(object):
             deal_description = self.deal_description(),
             purchase_link = self.purchase_link()
             )
+
         
     def category_icons(self): ## fixme: too access DB.
         v = Nullable(self.pageset).parent.category.name.value
@@ -189,6 +191,7 @@ class SearchResultRender(object):
     def deal_description(self):
         event = self.pageset.event
         return u'<strong>チケット発売中</strong> %s' % (h.base.term(event.deal_open, event.deal_close))
+            
 
     def purchase_link(self):
         import warnings
