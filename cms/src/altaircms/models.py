@@ -228,9 +228,9 @@ class Category(Base):
     def get_toplevel_categories(cls, hierarchy=u"大", site=None, request=None): ## fixme
         if site is None and request and hasattr(request,"site"):
             site = request.site
-            return cls.query.filter(cls.site==site, cls.hierarchy==hierarchy)
+            return cls.query.filter(cls.site==site, cls.hierarchy==hierarchy, cls.parent==None)
         else:
             ## 本当はこちらは存在しないはず。
             ## request.siteはまだ未実装。
-            return cls.query.filter(cls.hierarchy==hierarchy)
+            return cls.query.filter(cls.hierarchy==hierarchy, cls.parent==None)
     

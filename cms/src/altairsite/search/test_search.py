@@ -56,6 +56,8 @@ class SearchByGanreTests(unittest.TestCase):
     def tearDown(self):
         import transaction
         transaction.abort()
+        from altaircms.models import DBSession
+        DBSession.remove()
 
     def setUp(self):
         import transaction
@@ -143,6 +145,8 @@ class EventsByAreaTests(unittest.TestCase):
     def tearDown(self):
         import transaction
         transaction.abort()
+        from altaircms.models import DBSession
+        DBSession.remove()
 
     def setUp(self):
         import transaction
@@ -199,6 +203,8 @@ class EventsByPerformanceTermTests(unittest.TestCase):
     def tearDown(self):
         import transaction
         transaction.abort()
+        from altaircms.models import DBSession
+        DBSession.remove()
 
     def setUp(self):
         import transaction
@@ -300,6 +306,8 @@ class EventsByAboutDealPartTests(unittest.TestCase):
     def tearDown(self):
         import transaction
         transaction.abort()
+        from altaircms.models import DBSession
+        DBSession.remove()
 
     def setUp(self):
         import transaction
@@ -398,6 +406,10 @@ class SearchOrderTests(unittest.TestCase):
     def _callFUT(self, qs, *args, **kwargs):
         from altairsite.search.searcher import _refine_pageset_search_order
         return _refine_pageset_search_order(qs)
+
+    def tearDown(self):
+        from altaircms.models import DBSession
+        DBSession.remove()
 
     def _make_pageset(self, id=None, deal_close=None):
         from altaircms.event.models import Event
