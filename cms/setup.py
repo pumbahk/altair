@@ -9,6 +9,7 @@ CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 
 requires = [
     'pyramid >= 1.3',
+    'webhelpers', 
     'pyramid_tm',
     'pyramid_openid',
     "pyramid_fanstatic", 
