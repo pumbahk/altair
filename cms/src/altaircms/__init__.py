@@ -34,15 +34,9 @@ def main_with_strip_secret(global_config, settings):
 
 def _get_policies(settings):
     from pyramid.authentication import AuthTktAuthenticationPolicy
-    if asbool(settings.get("altaircms.debug.strip_security", 'false')):
-        from altaircms.security import SecurityAllOK
-        from altaircms.security import DummyAuthorizationPolicy
-        return AuthTktAuthenticationPolicy(settings.get('authtkt.secret'), callback=SecurityAllOK()), \
-            DummyAuthorizationPolicy()
-    else:
-        from pyramid.authorization import ACLAuthorizationPolicy
-        return  AuthTktAuthenticationPolicy(settings.get('authtkt.secret'), callback=rolefinder, cookie_name='cmstkt'), \
-            ACLAuthorizationPolicy()
+    from pyramid.authorization import ACLAuthorizationPolicy
+    return  AuthTktAuthenticationPolicy(settings.get('authtkt.secret'), callback=rolefinder, cookie_name='cmstkt'), \
+        ACLAuthorizationPolicy()
 
 def main(global_config, **settings):
     """ apprications main

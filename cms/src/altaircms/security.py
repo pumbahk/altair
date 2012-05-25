@@ -51,39 +51,3 @@ class SecurityAllOK(list):
         return self.roles
 
 
-class DummyAuthorizationPolicy(object):
-    implements(IAuthorizationPolicy)
-    def permits(self, context, principals, permission):
-        acl = '<No ACL found on any object in resource lineage>'
-        
-        for location in lineage(context):
-            if not hasattr(location, "__acl__"):
-                continue
-
-            acl = location.__acl__
-
-            for ace in acl:
-                ace_action, ace_principal, ace_permissions = ace
-                return ACLAllowed(ace, acl, permission,
-                                  principals, location)
-                
-
-    def principals_allowed_by_permission(self, context, permission):
-        allowed = set()
-
-        for location in reversed(list(lineage(context))):
-            # NB: we're walking *up* the object graph from the root
-            if not hasattr(location, "__acl__"):
-                continue
-
-            acl = location.__acl__
-
-            allowed_here = set()
-            denied_here = set()
-            for ace_action, ace_principal, ace_permissions in acl:
-                if not hasattr(ace_permissions, '__iter__'):
-                    ace_permissions = [ace_permissions]
-                if not ace_principal in denied_here:
-                    allowed_here.add(ace_principal)
-            allowed.update(allowed_here)
-        return allowed
