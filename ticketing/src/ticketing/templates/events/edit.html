@@ -21,7 +21,7 @@
 
     var code_buf = [];
     $('#title').keyup(function(e){
-      if ($('#code').val() && code_buf.length > 5) return;
+      if ($('#code').val() || code_buf.length > 5) return;
       var char = String.fromCharCode(e.which);
       if (char && char.match(/[a-z]/i) && !char.match(/[aiueo]/i)) {
         code_buf.push(char);

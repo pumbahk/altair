@@ -95,7 +95,7 @@ class Events(BaseView):
             event.save()
 
             self.request.session.flash(u'イベントを登録しました')
-            return HTTPFound(location=route_path('events.index', self.request))
+            return HTTPFound(location=route_path('events.show', self.request, event_id=event.id))
         else:
             return {
                 'form':f,

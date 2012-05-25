@@ -1,7 +1,11 @@
 <%doc>
   pager template
-</%doc> 
+</%doc>
+<%!
+  from webhelpers.paginate import Page
+%>
 <%def name="pager(items)">
+  % if isinstance(items, Page):
   <div class="pagination-centered">
     ${items.pager(format='$link_previous ~2~ $link_next',
                   link_attr={"class": "btn small"},
@@ -9,6 +13,7 @@
                   dotdot_attr={"class": "btn small disabled"},
                   onclick="%s; return false;")}
   </div>
+  % endif
 </%def>
 
 <%doc>

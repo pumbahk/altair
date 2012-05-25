@@ -8,7 +8,6 @@
     $('#modal-delete').modal('toggle');
   }
   function sync_event(id) {
-    var id = get_id('event_id');
     if (!id) return;
     $(location).attr('href', '/events/sync/' + id);
   }

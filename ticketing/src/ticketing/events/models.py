@@ -6,9 +6,9 @@ from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, Strin
 from sqlalchemy.orm import relationship, join, backref, column_property
 
 from ticketing.utils import StandardEnum
-from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted
+from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, DBSession
 from ticketing.products.models import Product, StockHolder
-from ticketing.venues.models import Venue, VenueArea, Seat, SeatAttribute
+from ticketing.venues.models import Venue, VenueArea, VenueArea_group_l0_id, Seat, SeatAttribute
 
 class AccountTypeEnum(StandardEnum):
     Promoter    = 1
@@ -73,26 +73,32 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             venue.save()
 
             # create VenueArea
-            if len(original_venue.areas) > 0:
-                for original_area in original_venue.areas:
-                    area = VenueArea.clone(original_area)
-                    area.venue_id = venue.id
-                    area.save()
+            for original_area in original_venue.areas:
+                area = VenueArea.clone(original_area)
+                area.venue_id = venue.id
+                area.save()
+
+                # create VenueArea_group_l0_id
+                for original_group in original_area.groups:
+                    group = VenueArea_group_l0_id()
+                    group.group_l0_id = original_group.group_l0_id
+                    group.venue_id = venue.id
+                    group.venue_area_id = area.id
+                    DBSession.add(group)
 
             # create Seat
-            if len(original_venue.seats) > 0:
-                for original_seat in original_venue.seats:
-                    seat = Seat.clone(original_seat)
-                    seat.venue_id = venue.id
-                    seat.stock_id = None
-                    seat.save()
+            for original_seat in original_venue.seats:
+                seat = Seat.clone(original_seat)
+                seat.venue_id = venue.id
+                seat.stock_id = None
+                seat.stock_type_id = None
+                seat.save()
 
-                    # create SeatAttribute
-                    if len(original_seat.attributes) > 0:
-                        for original_attribute in original_seat.attributes:
-                            attribute = SeatAttribute.clone(original_attribute)
-                            attribute.seat_id = seat.id
-                            attribute.save()
+                # create SeatAttribute
+                for original_attribute in original_seat.attributes:
+                    attribute = SeatAttribute.clone(original_attribute)
+                    attribute.seat_id = seat.id
+                    attribute.save()
 
     def get_sync_data(self):
         data = {

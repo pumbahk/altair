@@ -128,6 +128,8 @@ class BaseModel(object):
             self.add()
 
     def add(self):
+        if hasattr(self, 'id') and not self.id:
+            del self.id
         self.created_at = datetime.now()
         self.updated_at = datetime.now()
         DBSession.add(self)
