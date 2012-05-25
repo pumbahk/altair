@@ -36,6 +36,7 @@ def page_search_result(request):
     params.update(result_seq=result_seq, query_params=html_query_params)
     return params
 
+
 @view_config(request_param="textfield", route_name="page_search_by_freeword", 
              renderer="altaircms:templates/front/layout/ticketstar.search.mako")
 def search_by_freeword(context, request):
@@ -54,6 +55,25 @@ def search_by_freeword(context, request):
     params = front_api.get_navigation_categories(request)
     params.update(result_seq=result_seq, query_params=html_query_params)
     return params
+
+
+@view_config(route_name="page_search_by_multi", 
+             renderer="altaircms:templates/front/layout/ticketstar.search.mako")
+def search_by_multi(request):
+    """ topページの複数記入できるフォーム。
+    """
+    logger.debug("search GET params: %s" % request.GET)
+    query_params = forms.TopPageSidebarSearchForm(request.GET).make_query_params()
+    result_seq = request.context.get_result_sequence_from_query_params(
+        query_params, 
+        searchfn=searcher.get_pageset_query_from_multi
+        )
+    html_query_params = request.context.get_query_params_as_html(query_params)
+
+    params = front_api.get_navigation_categories(request)
+    params.update(result_seq=result_seq, query_params=html_query_params)
+    return params
+
 
 @view_defaults(route_name="page_search_by", renderer="altaircms:templates/front/layout/ticketstar.search.mako")
 class SearchByKindView(object):
@@ -169,22 +189,6 @@ class SearchByKindView(object):
 
         html_query_params = self.context.get_query_params_as_html(query_params)
         ### header page用のcategoryを集めてくる
-        params = front_api.get_navigation_categories(self.request)
-        params.update(result_seq=result_seq, query_params=html_query_params)
-        return params
-
-
-    @view_config(match_param="kind=multi") #kind, value
-    def search_by_multi(self):
-        """ topページの複数記入できるフォーム。
-        """
-        query_params = forms.get_search_forms(self.request.GET).make_query_params()
-        result_seq = self.context.get_result_sequence_from_query_params(
-            query_params, 
-            searchfn=searcher.get_pageset_query_fullset
-            )
-        html_query_params = self.context.get_query_params_as_html(query_params)
-
         params = front_api.get_navigation_categories(self.request)
         params.update(result_seq=result_seq, query_params=html_query_params)
         return params

@@ -27,6 +27,67 @@ convertorはローマ字->日本語の変換などに使われる
 MarkedTree = namedtuple("MarkedTree", "check_all_list, tree, translator")
 
 
+years = [(i, unicode(i)) for i in range(2010, 2020)]
+months = [(i, unicode(i)) for i in range(1, 13)]
+days = [(i, unicode(i)) for i in range(1, 32)]
+
+PREF_DICT = {
+    "hokkaido": import_symbol("altaircms.seeds.area.hokkaido:HOKKAIDO_CHOICES"),
+    "tohoku": import_symbol("altaircms.seeds.area.tohoku:TOHOKU_CHOICES"),
+    "kitakanto": import_symbol("altaircms.seeds.area.kitakanto:KITAKANTO_CHOICES"),
+    "shutoken": import_symbol("altaircms.seeds.area.shutoken:SHUTOKEN_CHOICES"),
+    "koshinetsu": import_symbol("altaircms.seeds.area.koshinetsu:KOSHINETSU_CHOICES"),
+    "hokuriku": import_symbol("altaircms.seeds.area.hokuriku:HOKURIKU_CHOICES"),
+    "tokai": import_symbol("altaircms.seeds.area.tokai:TOKAI_CHOICES"),
+    "kinki": import_symbol("altaircms.seeds.area.kinki:KINKI_CHOICES"),
+    "chugoku": import_symbol("altaircms.seeds.area.chugoku:CHUGOKU_CHOICES"),
+    "shikoku": import_symbol("altaircms.seeds.area.shikoku:SHIKOKU_CHOICES"),
+    "kyushu": import_symbol("altaircms.seeds.area.kyushu:KYUSHU_CHOICES"),
+    "okinawa": import_symbol("altaircms.seeds.area.okinawa:OKINAWA_CHOICES"),
+}
+
+
+## 日本語へ変化する辞書
+PREF_EN_TO_JA = {}
+PREF_EN_TO_JA.update(import_symbol("altaircms.seeds.area:AREA_CHOICES"))
+PREF_EN_TO_JA.update(import_symbol("altaircms.seeds.prefecture:PREFECTURE_CHOICES"))
+##
+
+
+### toppage sidebar
+class TopPageSidebarSearchForm(form.Form):
+    """ top page のsidebarのform"""
+    start_year = MaybeSelectField(choices=years)
+    start_month = MaybeSelectField(choices=months)
+    start_day = MaybeSelectField(choices=days)
+
+    end_year = MaybeSelectField(choices=years)
+    end_month = MaybeSelectField(choices=months)
+    end_day = MaybeSelectField(choices=days)
+    choices = import_symbol("altaircms.seeds.area:AREA_CHOICES")
+    area = fields.SelectField(choices=choices)
+
+    def make_query_params(self):
+        data = self.data
+        performance_open, performance_close = None, None
+        if all((data["start_year"], data["start_month"], data["start_day"])):
+            performance_open = datetime(*(int(x) for x in (data["start_year"], data["start_month"], data["start_day"])))
+        if all((data["end_year"], data["end_month"], data["end_day"])):
+            performance_close = datetime(*(int(x) for x in (data["end_year"], data["end_month"], data["end_day"])))
+
+        areas, prefs = [data["area"]], [x for x,_ in  PREF_DICT[data["area"]]], 
+        return {"performance_open": performance_open, 
+                "performance_close": performance_close, 
+                "areas": areas, 
+                "prefectures": prefs, 
+                "area_tree": MarkedTree(check_all_list=[data["area"]], 
+                                        translator=PREF_EN_TO_JA, 
+                                        tree=zip(areas, prefs))
+                }
+
+
+
+
 ## todo:フリーワード
 ## todo: make query
 class QueryPartForm(form.Form):
@@ -127,26 +188,21 @@ class AreaPartForm(form.Form):
     kyushu = fields.BooleanField(label=u"九州", widget=CheckboxWithLabelInput()) 
     okinawa = fields.BooleanField(label=u"沖縄", widget=CheckboxWithLabelInput()) 
 
-    pref_hokkaido = CheckboxListField(choices=import_symbol("altaircms.seeds.area.hokkaido:HOKKAIDO_CHOICES"))
-    pref_tohoku = CheckboxListField(choices=import_symbol("altaircms.seeds.area.tohoku:TOHOKU_CHOICES"))
-    pref_kitakanto = CheckboxListField(choices=import_symbol("altaircms.seeds.area.kitakanto:KITAKANTO_CHOICES"))
-    pref_shutoken = CheckboxListField(choices=import_symbol("altaircms.seeds.area.shutoken:SHUTOKEN_CHOICES"))
-    pref_koshinetsu = CheckboxListField(choices=import_symbol("altaircms.seeds.area.koshinetsu:KOSHINETSU_CHOICES"))
-    pref_hokuriku = CheckboxListField(choices=import_symbol("altaircms.seeds.area.hokuriku:HOKURIKU_CHOICES"))
-    pref_tokai = CheckboxListField(choices=import_symbol("altaircms.seeds.area.tokai:TOKAI_CHOICES"))
-    pref_kinki = CheckboxListField(choices=import_symbol("altaircms.seeds.area.kinki:KINKI_CHOICES"))
-    pref_chugoku = CheckboxListField(choices=import_symbol("altaircms.seeds.area.chugoku:CHUGOKU_CHOICES"))
-    pref_shikoku = CheckboxListField(choices=import_symbol("altaircms.seeds.area.shikoku:SHIKOKU_CHOICES"))
-    pref_kyushu = CheckboxListField(choices=import_symbol("altaircms.seeds.area.kyushu:KYUSHU_CHOICES"))
-    pref_okinawa = CheckboxListField(choices=import_symbol("altaircms.seeds.area.okinawa:OKINAWA_CHOICES"))
+    pref_hokkaido = CheckboxListField(choices=PREF_DICT["hokkaido"])
+    pref_tohoku = CheckboxListField(choices=PREF_DICT["tohoku"])
+    pref_kitakanto = CheckboxListField(choices=PREF_DICT["kitakanto"])
+    pref_shutoken = CheckboxListField(choices=PREF_DICT["shutoken"])
+    pref_koshinetsu = CheckboxListField(choices=PREF_DICT["koshinetsu"])
+    pref_hokuriku = CheckboxListField(choices=PREF_DICT["hokuriku"])
+    pref_tokai = CheckboxListField(choices=PREF_DICT["tokai"])
+    pref_kinki = CheckboxListField(choices=PREF_DICT["kinki"])
+    pref_chugoku = CheckboxListField(choices=PREF_DICT["chugoku"])
+    pref_shikoku = CheckboxListField(choices=PREF_DICT["shikoku"])
+    pref_kyushu = CheckboxListField(choices=PREF_DICT["kyushu"])
+    pref_okinawa = CheckboxListField(choices=PREF_DICT["okinawa"])
 
     areas = ["hokkaido", "tohoku", "kitakanto", "shutoken", "koshinetsu", "hokuriku", "tokai", "kinki", "chugoku", "shikoku", "kyushu", "okinawa"]
 
-    ## 日本語へ変化する辞書
-    en_to_ja = {}
-    en_to_ja.update(import_symbol("altaircms.seeds.area:AREA_CHOICES"))
-    en_to_ja.update(import_symbol("altaircms.seeds.prefecture:PREFECTURE_CHOICES"))
-    ##
 
     def make_query_params(self):
         data = self.data
@@ -168,7 +224,7 @@ class AreaPartForm(form.Form):
         return {"areas": areas, 
                 "prefectures": list(prefectures), 
                 "area_tree": MarkedTree(check_all_list=areas, tree=area_tree, 
-                                        translator=self.en_to_ja)
+                                        translator=PREF_EN_TO_JA)
                 }
 
     def __html__(self): ## todo refactoring
@@ -181,9 +237,6 @@ class AreaPartForm(form.Form):
         return u"".join(fmts) % self
 
 ## todo:公演日
-years = [(i, unicode(i)) for i in range(2010, 2020)]
-months = [(i, unicode(i)) for i in range(1, 13)]
-days = [(i, unicode(i)) for i in range(1, 32)]
 
 class PerformanceTermPartForm(form.Form):
     start_year = MaybeSelectField(choices=years)

@@ -148,6 +148,20 @@ def get_pageset_query_from_event_open_within(request, query_params):
 
 
 @provider(ISearchFn)
+def get_pageset_query_from_multi(request, query_params):
+    qs = PageSet.query
+
+    sub_qs = DBSession.query(Event.id)
+    sub_qs = events_by_area(sub_qs, query_params.get("prefectures"))
+    sub_qs = events_by_performance_term(sub_qs, query_params.get("performance_open"), query_params.get("performance_close"))
+
+    #検索対象に入っているもののみが検索に引っかかる
+    sub_qs = sub_qs.filter(Event.is_searchable==True)
+    qs = search_by_events(qs, sub_qs)
+    return _refine_pageset_qs(qs)
+
+
+@provider(ISearchFn)
 def get_pageset_query_fullset(request, query_params): 
     """ 検索する関数.このモジュールのほかの関数は全てこれのためにある。
 
@@ -163,13 +177,13 @@ def get_pageset_query_fullset(request, query_params):
     sub_qs = events_by_about_deal(sub_qs, query_params.get("before_deal_start"), query_params.get("till_deal_end"), 
                                   query_params.get("closed_only"), query_params.get("canceld_only"))
 
+    # 検索対象に入っているもののみが検索に引っかかる
+    sub_qs = sub_qs.filter(Event.is_searchable==True)
 
     qs = PageSet.query
     qs = search_by_genre(query_params.get("top_categories"), query_params.get("sub_categories"), qs=qs)
     qs = search_by_events(qs, sub_qs)
 
-    # 検索対象に入っているもののみが検索に引っかかる
-    sub_qs = sub_qs.filter(Event.is_searchable==True)
 
     if "query" in query_params:
         words = _extract_tags(query_params, "query")

@@ -118,129 +118,33 @@ hotwords = get_current_hotwords(request)
 </%def>
 
 <%def name="top_side_searchform()">
+<%
+from altairsite.search.forms import TopPageSidebarSearchForm
+form = TopPageSidebarSearchForm()
+%>
 		<div id="sideSearch">
 			<h2><img src="/static/ticketstar/img/index/title_search.gif" alt="チケットを探す" width="246" height="36" /></h2>
 			<ul>
-				<li><a href="#"><img src="/static/ticketstar/img/index/btn_presale.gif" alt="先行発売" width="222" height="28" /></a></li>
-				<li><a href="#"><img src="/static/ticketstar/img/index/btn_release.gif" alt="一般発売" width="222" height="28" /></a></li>
-				<li><a href="#"><img src="/static/ticketstar/img/index/btn_now.gif" alt="すぐ見たい" width="222" height="28" /></a></li>
-				<li><a href="#"><img src="/static/ticketstar/img/index/btn_best.gif" alt="お買い得チケット" width="222" height="28" /></a></li>
+				<li><a href="${h.link.get_searchpage(request, kind="deal_cond", value="eary_fisrtcome")}"><img src="/static/ticketstar/img/index/btn_presale.gif" alt="先行抽選" width="222" height="28" /></a></li>
+				<li><a href="${h.link.get_searchpage(request, kind="deal_cond", value="normal")}"><img src="/static/ticketstar/img/index/btn_release.gif" alt="一般発売" width="222" height="28" /></a></li>
+				<li><a href="${h.link.get_searchpage(request, kind="deal_open", value=7)}"><img src="/static/ticketstar/img/index/btn_now.gif" alt="すぐ見たい" width="222" height="28" /></a></li>
+				<li><a href="${request.route_path("page_search_by_freeword",_query=dict(textfield=u"お買い得"))}"><img src="/static/ticketstar/img/index/btn_best.gif" alt="お買い得チケット" width="222" height="28" /></a></li>
 			</ul>
-			<form id="form2" name="form2" method="GET" action="${request.route_path("page_search_by",kind="multi",value="")}">
+			<form id="form2" name="form2" method="GET" action="${request.route_path("page_search_by_multi")}">
 				<dl>
 					<dt><img src="/static/ticketstar/img/index/search_day.gif" alt="開催日" width="37" height="13" /></dt>
 					<dd>
-						<select name="start_year" id="start_year">
-							<option>2012</option>
-							<option>2013</option>
-							<option>2014</option>
-							<option>2015</option>
-							<option>2016</option>
-						</select>
-						<select name="start_month" id="select2">
-							<option>1</option>
-							<option>2</option>
-							<option>3</option>
-							<option>4</option>
-							<option>5</option>
-							<option>6</option>
-							<option>7</option>
-							<option>8</option>
-							<option>9</option>
-							<option>10</option>
-							<option>11</option>
-							<option>12</option>
-						</select>
-						<select name="start_day" id="select3">
-							<option>1</option>
-							<option>2</option>
-							<option>3</option>
-							<option>4</option>
-							<option>5</option>
-							<option>6</option>
-							<option>7</option>
-							<option>8</option>
-							<option>9</option>
-							<option>10</option>
-							<option>11</option>
-							<option>12</option>
-							<option>13</option>
-							<option>14</option>
-							<option>15</option>
-							<option>16</option>
-							<option>17</option>
-							<option>18</option>
-							<option>19</option>
-							<option>20</option>
-							<option>21</option>
-							<option>22</option>
-							<option>23</option>
-							<option>24</option>
-							<option>25</option>
-							<option>26</option>
-							<option>27</option>
-							<option>28</option>
-							<option>29</option>
-							<option>30</option>
-							<option>31</option>
-						</select>
+                       ${form.start_year}
+                       ${form.start_month}
+                       ${form.start_day}
 						<br />
-						<select name="end_year" id="select4">
-							<option>2012</option>
-						</select>
-						<select name="end_month" id="select5">
-							<option>1</option>
-							<option>2</option>
-							<option>3</option>
-							<option>4</option>
-							<option>5</option>
-							<option>6</option>
-							<option>7</option>
-							<option>8</option>
-							<option>9</option>
-							<option>10</option>
-							<option>11</option>
-							<option>12</option>
-						</select>
-						<select name="end_day" id="select6">
-							<option>1</option>
-							<option>2</option>
-							<option>3</option>
-							<option>4</option>
-							<option>5</option>
-							<option>6</option>
-							<option>7</option>
-							<option>8</option>
-							<option>9</option>
-							<option>10</option>
-							<option>11</option>
-							<option>12</option>
-							<option>13</option>
-							<option>14</option>
-							<option>15</option>
-							<option>16</option>
-							<option>17</option>
-							<option>18</option>
-							<option>19</option>
-							<option>20</option>
-							<option>21</option>
-							<option>22</option>
-							<option>23</option>
-							<option>24</option>
-							<option>25</option>
-							<option>26</option>
-							<option>27</option>
-							<option>28</option>
-							<option>29</option>
-							<option>30</option>
-							<option>31</option>
-						</select>
+                       ${form.end_year}
+                       ${form.end_month}
+                       ${form.end_day}
 					</dd>
 					<dt><img src="/static/ticketstar/img/index/search_place.gif" alt="開催場所" width="52" height="13" /></dt>
 					<dd>
-						<select name="select7" id="select7">
-							<option>関東</option>
-						</select>
+                        ${form.area}
 					</dd>
 				</dl>
 				<p><input name="imageField2" type="image" id="imageField2" src="/static/ticketstar/img/index/btn_search.gif" alt="日程・場所で探す" /></p>
