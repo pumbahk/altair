@@ -25,6 +25,9 @@
         <th class="span2">サブタイトル</th><td>${event.subtitle}</td>
       </tr>
       <tr>
+        <th class="span2">バックエンド管理番号</th><td>${event.backend_id}</td>
+      </tr>
+      <tr>
         <th class="span2">概要</th><td>${event.description}</td>
       </tr>
       <tr>

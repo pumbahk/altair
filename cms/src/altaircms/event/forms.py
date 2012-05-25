@@ -6,6 +6,7 @@ from altaircms.helpers.formhelpers import required_field
 class EventForm(Form):
     title = fields.TextField(label=u'タイトル', validators=[required_field()])
     subtitle = fields.TextField(label=u'サブタイトル')
+    backend_id = fields.IntegerField(validators=[required_field()], label=u"バックエンド管理番号")
     description = fields.TextAreaField(label=u'説明')
     place = fields.TextField(label=u'開催場所')
     inquiry_for = fields.TextField(label=u'問い合わせ先')
