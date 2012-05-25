@@ -48,6 +48,8 @@ def event_list(request):
 @view_config(route_name="api_event_register", request_method="POST")
 def event_register(request):
     apikey = request.headers.get('X-Altair-Authorization', None)
+    if apikey is None:
+        return HTTPForbidden("")
     if not h.validate_apikey(request, apikey):
         return HTTPCreated(body=json.dumps({u'status':u'error', u'message':u'access denined'}))
     try:

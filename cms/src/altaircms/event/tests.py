@@ -25,8 +25,8 @@ class ParseAndSaveEventTests(unittest.TestCase):
 
         self.assertEqual(len(result), 1)
         event = result[0]
-        self.assertEqual(event.name, u"マツイ・オン・アイス")
-        self.assertEqual(_to_utc(event.event_on), datetime(2012, 3, 15, 10))
+        self.assertEqual(event.title, u"マツイ・オン・アイス")
+        self.assertEqual(_to_utc(event.event_open), datetime(2012, 3, 15, 10))
         self.assertEqual(_to_utc(event.event_close), datetime(2012, 3, 15, 13))
 
         self.assertEqual(len(event.performances), 2)
@@ -58,7 +58,7 @@ class ParseAndSaveEventTests(unittest.TestCase):
  "events": [
    {
      "id": 1,
-     "name": "マツイ・オン・アイス",
+     "title": "マツイ・オン・アイス",
      "start_on": "2012-03-15T19:00:00+09:00",
      "end_on": "2012-03-15T22:00:00+09:00",
      "performances": [
