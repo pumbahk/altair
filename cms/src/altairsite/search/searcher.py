@@ -21,6 +21,8 @@ from altaircms.tag.models import (
    PageTag2Page
 )
 
+## todo: datetimeの呼び出し回数減らす
+
 ## for document
 from zope.interface import Interface, provider
 class ISearchFn(Interface):
@@ -30,6 +32,10 @@ class ISearchFn(Interface):
            :return: query set of pageset
        """
 ##
+def _refine_pageset_collect_future(qs, _nowday=datetime.datetime.now):
+   today = _nowday()
+   qs = qs.filter((today <= Event.deal_close )|( Event.deal_close == None))
+   return qs
 
 def _refine_pageset_search_order(qs):
    """  検索結果の表示順序を変更。最も販売終了が間近なものを先頭にする
@@ -64,6 +70,7 @@ def get_pageset_query_from_freeword(request, query_params):
     words = _extract_tags(query_params, "query")
     if words:
         qs = search_by_freeword(qs, request, words, query_params.get("query_cond"))
+        qs = _refine_pageset_collect_future(qs)
         return  _refine_pageset_qs(qs)
     else:
        return []
@@ -75,6 +82,7 @@ def get_pageset_query_from_genre(request, query_params):
 
     if query_params.get("top_categories") or query_params.get("sub_categories"):
        qs = search_by_genre(query_params.get("top_categories"), query_params.get("sub_categories"), qs=qs)
+       qs = _refine_pageset_collect_future(qs)
        return  _refine_pageset_qs(qs)
     else:
        return []
@@ -88,6 +96,7 @@ def get_pageset_query_from_area(request, query_params):
        sub_qs = events_by_area(sub_qs, query_params.get("prefectures"))
        sub_qs = sub_qs.filter(Event.is_searchable==True)
        qs = search_by_events(qs, sub_qs)
+       qs = _refine_pageset_collect_future(qs)
        return  _refine_pageset_qs(qs)
     else:
        return []
@@ -101,6 +110,7 @@ def get_pageset_query_from_deal_cond(request, query_params):
        sub_qs = events_by_deal_cond_flags(sub_qs, query_params) ## 未実装
        sub_qs = sub_qs.filter(Event.is_searchable==True)
        qs = search_by_events(qs, sub_qs)
+       qs = _refine_pageset_collect_future(qs)
        return  _refine_pageset_qs(qs)
     else:
        return []
@@ -114,6 +124,7 @@ def get_pageset_query_from_deal_open_within(request, query_params):
        sub_qs = events_by_within_n_days_of(sub_qs, Event.deal_open, query_params["ndays"])
        sub_qs = sub_qs.filter(Event.is_searchable==True)
        qs = search_by_events(qs, sub_qs)
+       qs = _refine_pageset_collect_future(qs)
        return  _refine_pageset_qs(qs)
     else:
        return []
@@ -130,6 +141,7 @@ def get_pageset_query_from_event_open_within(request, query_params):
        sub_qs = events_by_within_n_days_of(sub_qs, Event.event_open, query_params["ndays"])
        sub_qs = sub_qs.filter(Event.is_searchable==True)
        qs = search_by_events(qs, sub_qs)
+       qs = _refine_pageset_collect_future(qs)
        return  _refine_pageset_qs(qs)
     else:
        return []
@@ -238,7 +250,9 @@ def events_by_area(qs, prefectures):
 ##日以内に開始系の関数
 def events_by_within_n_days_of(qs, start_from, n, _nowday=datetime.datetime.now):
    today = _nowday()
-   qs = qs.filter(start_from >= today).filter(start_from <= (today+datetime.timedelta(days=n)))
+   qs = qs.filter(start_from <= (today+datetime.timedelta(days=n)))
+   ## 今日より後のもののみ検索対象とするのは `_refine_pageset_collect_futureでやっている
+   # qs = qs.filter(start_from >= today).filter(start_from <= (today+datetime.timedelta(days=n)))
    return qs
    
 
