@@ -6,6 +6,7 @@ def includeme(config):
     config.add_route('events.show', '/show/{event_id}')
     config.add_route('events.edit', '/edit/{event_id}')
     config.add_route('events.delete', '/delete/{event_id}')
+    config.add_route('events.sync', '/sync/{event_id}')
 
     config.include('ticketing.events.performances', route_prefix='performances')
     config.include('ticketing.events.sales_segments', route_prefix='sales_segments')

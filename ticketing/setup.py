@@ -45,6 +45,7 @@ requires = [
     'waitress',
     'altair-commons',
     'lxml',
+    'isodate',
     ]
 
 setup(name='ticketing',

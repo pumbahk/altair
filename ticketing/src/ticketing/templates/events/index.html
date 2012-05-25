@@ -70,10 +70,10 @@
     % for event in events.items:
     <div class="well">
       <h4 style="word-wrap: break-word;">${event.title}</h4>
-      <div class="pull-right" style="margin-right: 60px">
+      <div class="pull-right">
         <%include file="/events/_action_button.html" args="event=event" /> 
       </div>
-      <br style="clear: both" />
+      <div style="clear: both"></div>
       <%
         label_classes = [
           'label-important',

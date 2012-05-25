@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import isodate
+
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, Numeric, func
 from sqlalchemy.orm import relationship, join, backref, column_property
 
@@ -92,6 +94,18 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                             attribute.seat_id = seat.id
                             attribute.save()
 
+    def get_sync_data(self):
+        data = {
+            'id':self.id,
+            'name':self.name,
+            'venue':self.venue.name,
+            'open_on':isodate.datetime_isoformat(self.open_on),
+            'start_on':isodate.datetime_isoformat(self.start_on),
+            'close_on':isodate.datetime_isoformat(self.end_on),
+            'sales':[s.get_sync_data(self.id) for s in self.event.sales_segments],
+        }
+        return data
+
 class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Event'
 
@@ -140,6 +154,16 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 .filter(Performance.event_id==self.id)\
                 .distinct()
 
+    def get_sync_data(self):
+        data = {
+            'id':self.id,
+            'name':self.title,
+            'start_on':isodate.datetime_isoformat(self.start_on),
+            'end_on':isodate.datetime_isoformat(self.end_on),
+            'performances':[p.get_sync_data() for p in self.performances],
+        }
+        return data
+
 class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'SalesSegment'
     id = Column(BigInteger, primary_key=True)
@@ -151,6 +175,18 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     event_id = Column(BigInteger, ForeignKey('Event.id'))
     event = relationship('Event', backref='sales_segments')
+
+    def get_sync_data(self, performance_id):
+        products = Product.find(performance_id=performance_id, sales_segment_id=self.id)
+        if products:
+            data = {
+                'name':self.name,
+                'start_on':isodate.datetime_isoformat(self.start_at),
+                'end_on':isodate.datetime_isoformat(self.end_at),
+                'tickets':[p.get_sync_data(performance_id) for p in products],
+            }
+            return data
+        return {}
 
 class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentDeliveryMethodPair'

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from math import floor
+
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, Numeric, func
 from sqlalchemy.orm import relationship, join, backref, column_property, mapper, relation
 
@@ -201,15 +203,14 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     items = relationship('ProductItem', backref='product')
 
     @staticmethod
-    def find(performance_id = None, event_id = None):
+    def find(performance_id=None, event_id=None, sales_segment_id=None):
         query = Product.filter()
         if performance_id:
-            query = query.\
-                join(Product.items).\
-                filter(ProductItem.performance_id==performance_id)
-        elif event_id:
-            # todo
-            pass
+            query = query.join(Product.items).filter(ProductItem.performance_id==performance_id)
+        if event_id:
+            query = query.filter(Product.event_id==event_id)
+        if sales_segment_id:
+            query = query.filter(Product.sales_segment_id==sales_segment_id)
         return query.all()
 
     def items_by_performance_id(self, id):
@@ -239,3 +240,11 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             item.seatStatus.status = SeatStatusEnum.InCart.v
         DBSession.flush()
         return True
+
+    def get_sync_data(self, performance_id):
+        data = {
+            'name':self.name,
+            'seat_type':u'TODO',
+            'price':floor(self.price),
+        }
+        return data
