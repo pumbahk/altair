@@ -173,6 +173,22 @@ class SearchByKindView(object):
         params.update(result_seq=result_seq, query_params=html_query_params)
         return params
 
+
+    @view_config(match_param="kind=multi") #kind, value
+    def search_by_multi(self):
+        """ topページの複数記入できるフォーム。
+        """
+        query_params = forms.get_search_forms(self.request.GET).make_query_params()
+        result_seq = self.context.get_result_sequence_from_query_params(
+            query_params, 
+            searchfn=searcher.get_pageset_query_fullset
+            )
+        html_query_params = self.context.get_query_params_as_html(query_params)
+
+        params = front_api.get_navigation_categories(self.request)
+        params.update(result_seq=result_seq, query_params=html_query_params)
+        return params
+
     @view_config(match_param="kind=mock")
     def search_by_mock(self):
         """ mockup (for testing)

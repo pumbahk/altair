@@ -1,4 +1,5 @@
 <%inherit file="altaircms:templates/front/ticketstar/top.mako"/>
+<%namespace file="../ticketstar/gadgets.mako" name="gadgets"/>
 ## <%namespace file="./components/ticketstar/top/main.mako" name="main_co"/>
 <%namespace file="./components/ticketstar/top/side.mako" name="side_co"/>
 
@@ -31,8 +32,9 @@
 </%block>
 
 <%block name="side">
+   ${widgets("side")}
         ${side_co.sideFeature()}
-        ${side_co.sideSearch()}
+        ${gadgets.top_side_searchform()}
         ${side_co.sideMyMenu()}
         ${side_co.sideInfo()}
         ${side_co.sideBtn()}
