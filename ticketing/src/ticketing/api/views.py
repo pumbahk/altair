@@ -21,10 +21,10 @@ def access_token(context, request):
 
     if token and client:
         operator = token.operator
-        print operator
         return {
             'access_token'  : token.token,
             'user_id'       : operator.id,
+            'role'          : operator.roles[0].name,
             'client_id'     : operator.organization.id,
             'client_name'   : operator.organization.name,
             'screen_name'   : operator.name,
@@ -39,7 +39,6 @@ class LoginOAuth(BaseView):
 
     @view_config(route_name='login.authorize')
     def authorize(self):
-        print "\n\n\n\n -------------------------- \n\n\n"
         login_id = authenticated_userid(self.request)
         operator = Operator.get_by_login_id(login_id)
 

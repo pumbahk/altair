@@ -92,9 +92,12 @@ class OAuthLogin(object):
         try:
             operator = Operator.query.filter_by(auth_source='oauth', user_id=data['user_id']).one()
             operator.last_login = datetime.now()
+
+            role = Role.query.filter_by(name=data.get('role', DEFAULT_ROLE)).one()
+            operator.role = role
+
         except NoResultFound:
             logging.info("operator is not found. create it")
-
             role = Role.query.filter_by(name=data.get('role', DEFAULT_ROLE)).one()
             operator = self._create_oauth_model(role, data)
             DBSession.add(operator)
