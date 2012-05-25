@@ -118,8 +118,6 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def set_style(self, data):
         if self.is_seat:
-            self.style = {}
-        else:
             self.style = {
                 'stroke':{
                     'color':data.get('stroke_color'),
@@ -132,6 +130,8 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     'image':data.get('fill_image'),
                 },
             }
+        else:
+            self.style = {}
 
 class StockAllocation(Base):
     __tablename__ = "StockAllocation"

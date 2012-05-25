@@ -19,7 +19,7 @@
     modal.find('#id').val(id);
     modal.find('#name').val($(el).attr('name'));
     if ($(el).attr('type') == '1') {
-      modal.find('#type').attr('checked', 'checked').change();
+      modal.find('#type').attr('checked', 'checked');
     }
     var data = JSON.parse($(el).attr('data'));
     if (data) {

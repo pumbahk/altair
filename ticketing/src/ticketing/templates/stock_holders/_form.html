@@ -1,6 +1,17 @@
 <%page args="form" />
 <%namespace file="/common/helpers.html" import="form_item" />
 
+<script type="text/javascript">
+  $(function() {
+    $('#modal-stock_holder').on('shown', function(){
+      $(this).css('max-height', '750px')
+          .css('height', '620px')
+          .css('margin-top', ($(this).outerHeight()/2)*-1)
+          .css('margin-left',($(this).outerWidth()/2)*-1);
+    });
+  });
+</script>
+
 <div id="modal-stock_holder" class="modal fade">
   <div class="modal-header">
     <a class="close" data-dismiss="modal">×</a>
@@ -17,7 +28,7 @@
       ${form_item(form.text_color, option={'class':'kolorPicker span3'})}
     </div>
 
-    <div class="modal-footer">
+    <div class="modal-footer" style="margin-top: 150px;">
       <a href="#" class="btn" data-dismiss="modal">閉じる</a>
       <input class="btn" type="submit" value="保存">
     </div>
