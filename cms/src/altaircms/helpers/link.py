@@ -9,8 +9,9 @@ def get_purchase_page_from_event(request, event):
     return u"/cart/events/%s" % event.backend_id
 
 def get_purchase_page_from_performance(request, performance):
-    import warnings
-    warnings.warn("this is ad-hoc. please fixme.  <detail-page> => <purchase flow>")
+    if performance.purchase_link:
+        return performance.purchase_link
+
     if performance.backend_id is None:
         logger.warn("event id=%d performance id=%d: performancr backend_id is not found" % (performance.event.id, performance.id))
     return u"/cart/events/%s/performances/%s/seat_types" % (performance.event.backend_id, performance.backend_id)

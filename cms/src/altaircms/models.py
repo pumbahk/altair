@@ -95,6 +95,7 @@ class Performance(BaseOriginalMixin, Base):
     start_on = Column(DateTime)  # 開始
     end_on = Column(DateTime)  # 終了
 
+    purchase_link = Column(sa.UnicodeText)
     canceld = Column(Boolean, default=False)
     # sale = relationship("Sale", backref=orm.backref("performances", order_by=id))
     event = relationship("Event", backref=orm.backref("performances", order_by=start_on))

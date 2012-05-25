@@ -38,6 +38,7 @@ class PerformanceForm(Form):
     open_on = fields.DateTimeField(label=u"開場時間", validators=[required_field()])
     start_on = fields.DateTimeField(label=u"開始時間", validators=[required_field()])
     close_on = fields.DateTimeField(label=u"終了時間", validators=[required_field()])
+    purchase_link = fields.TextField(label=u"購入ページリンク")
 
 
 class TicketForm(Form):
