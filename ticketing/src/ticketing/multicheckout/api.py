@@ -4,6 +4,7 @@
 """
 
 from xml.etree import ElementTree as etree
+import httplib
 
 class Checkout3D(object):
     def __init__(self, auth_id, auth_password, shop_code, api_base_url):
@@ -12,6 +13,9 @@ class Checkout3D(object):
         self.shop_code = shop_code
         self.api_base_url = api_base_url
 
+    @property
+    def auth_header(self):
+        return "Authorization: Basic " + (self.auth_id + ":" + self.auth_password).encode('base64').strip()
 
     def secure3d_enrol_url(self, order_no):
         return self.api_url + "/3D-Secure/OrderNo/%(order_no)s/Enrol" % dict(order_no=order_no)
@@ -36,6 +40,12 @@ class Checkout3D(object):
 
     def card_inquiry_url(self, order_no):
         return self.api_url + "/card/OrderNo/%(order_no)s" % dict(order_no=order_no)
+
+
+    def request_card_check(self, order_no, card_auth):
+        message = self._create_request_card_xml(card_auth, check=True)
+        url = self.card_check_url(order_no)
+        content_type = "application/xhtml+xml;charset=UTF-8"
 
     @property
     def api_url(self):
@@ -104,3 +114,4 @@ SSL CVV 3D
         self._add_param(secure_3d, 'CavvAlgorithm', card_auth.CavvAlgorithm, optional=card_auth.SecureKind != '3')
         self._add_param(secure_3d, 'CardNo', card_auth.CardNo, optional=card_auth.SecureKind != '3')
 
+        return message
