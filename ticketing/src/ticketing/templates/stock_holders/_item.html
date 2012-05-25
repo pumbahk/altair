@@ -1,0 +1,43 @@
+<%page args="stock_holder" />
+<%namespace file="/common/helpers.html" import="seat_style" />
+<%namespace file="/common/helpers.html" import="json" />
+
+<div class="accordion-group" style="width: 350px;">
+  <div class="accordion-heading">
+    <div style="float: left;">
+      <a class="accordion-toggle" data-toggle="collapse" href="#collapse-${stock_holder.id}">
+        ${seat_style(stock_holder.style)}${stock_holder.name}
+      </a>
+    </div>
+    <div style="float: right; margin-top: 7px; margin-right: 7px">
+      <div class="btn-group">
+        <button class="btn btn-mini btn-primary dropdown-toggle" data-toggle="dropdown">
+          席を割当
+          <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+          <li><a href="javascript:edit_stock_holder(${stock_holder.id});">編集</a></li>
+          <li><a href="javascript:delete_stock_holder(${stock_holder.id});">削除</a></li>
+        </ul>
+      </div>
+    </div>
+    <div id="stock_holder-${stock_holder.id}" name="${stock_holder.name}" data='${json(stock_holder.style)}'>
+      <hidden id="account_id" value="${stock_holder.account.id}"></hidden>
+    </div>
+  </div>
+  <div style="clear: both;"></div>
+
+  <div id="collapse-${stock_holder.id}" class="accordion-body collapse" style="height: 0px; ">
+    % for i, stock in enumerate(stock_holder.stocks):
+    <div class="accordion-inner">
+      <span class="span2">${seat_style(stock.stock_type.style)}${stock.stock_type.name}</span>
+      <span>${stock.quantity}席</span>
+    </div>
+    % endfor
+    % if len(stock_holder.stocks) == 0:
+    <div class="accordion-inner" style="text-align: center;">
+      選択されていません
+    </div>
+    % endif
+  </div>
+</div>

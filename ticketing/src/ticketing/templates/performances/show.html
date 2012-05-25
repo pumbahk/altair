@@ -98,6 +98,7 @@ var SEAT_DATA_URL = "${request.route_path('api.get_seats', venue_id=performance.
         <li id="venue-designer-tab"><a href="#venue-designer" data-toggle="tab">会場／席種</a></li>
         <li id="seat-allocation-tab"><a href="#seat-allocation" data-toggle="tab">配券／配席</a></li>
         <li id="product-tab"><a href="#product" data-toggle="tab">商品</a></li>
+        <li id="reservation-tab"><a href="#reservation" data-toggle="tab">予約</a></li>
         <li id="ticket-designer-tab"><a href="#ticket-designer" data-toggle="tab">チケット券面</a></li>
       </ul>
       <div class="tab-content" id="tabbable-tab-content">
@@ -109,6 +110,9 @@ var SEAT_DATA_URL = "${request.route_path('api.get_seats', venue_id=performance.
         </div>
         <div class="tab-pane" id="product">
           <%include file="./_product.html" args="performance=performance, form_product=form_product, form_product_item=form_product_item" />
+        </div>
+        <div class="tab-pane" id="reservation">
+          <%include file="./_reservation.html" args="performance=performance" />
         </div>
         <div class="tab-pane" id="ticket-designer">
           <%include file="./_ticket_designer.html" />
