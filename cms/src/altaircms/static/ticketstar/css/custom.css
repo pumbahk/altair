@@ -441,3 +441,14 @@
 .icon-category-other {
 	background-image: url(/static/ticketstar/img/search/icon_event.gif);    
 }
+
+/*
+  purchase button 
+*/
+
+.purchase-simple {
+    width: 226px;
+    height: 46px;
+	background-repeat: no-repeat;
+    background-image: url(/static/ticketstar/img/settlement/btn_buy.gif);
+}

@@ -188,6 +188,13 @@ add_anchorlist_widget = functools.partial(
     import_symbol("altaircms.plugins.widget.anchorlist.models:AnchorlistWidget").type, 
     )
 
+add_purchase_widget = functools.partial(
+    add_widget, 
+    import_symbol("altaircms.plugins.widget.purchase.views:PurchaseWidgetView"), 
+    import_symbol("altaircms.plugins.widget.purchase.models:PurchaseWidgetResource"), 
+    import_symbol("altaircms.plugins.widget.purchase.models:PurchaseWidget").type, 
+    )
+
 class Objlike(dict):
     __getattr__ = dict.__getitem__
 
@@ -292,6 +299,7 @@ def detail_performances(event):
 
 def detail_event():
     event = Event(title= u"ブルーマングループ IN 東京", 
+                  backend_id=1,  ##todo:バックエンド側のidを保持するはず。ここで直接指定するのはあまりよくない
                   event_open=u"2012-12-04", 
                   event_close=u"2013-5-25", 
                   deal_open=u"2013-10-1", 
@@ -372,6 +380,11 @@ def add_detail_main_block_widgets(page, asset):
             , ensure_ascii=False)}
     add_summary_widget(page, "main", data)
 
+    data = {"external_link": None, "kind": "simple"}
+    add_purchase_widget(page, "main", data)
+
+    # data = {"external_link": "http://example.com", "kind": "simple"}
+    # add_purchase_widget(page, "main", data)
 
 
 def add_detail_page_settings():

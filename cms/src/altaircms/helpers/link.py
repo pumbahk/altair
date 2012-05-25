@@ -1,3 +1,13 @@
+def get_purchase_page_from_event(request, event):
+    import warnings
+    warnings.warn("this is ad-hoc. please fixme.  <detail-page> => <purchase flow>")
+    return u"/cart/events/%d" % event.backend_id
+
+def get_purchase_page_from_performance(request, event):
+    import warnings
+    warnings.warn("this is ad-hoc. please fixme.  <detail-page> => <purchase flow>")
+    return 
+
 def get_searchpage(request, kind=None, value=None):
     return request.route_path("page_search_by", kind=kind, value=value)
 
