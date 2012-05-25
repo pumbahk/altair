@@ -100,7 +100,9 @@ class QueryParamsRender(object):
         if qp.get("performance_open") or qp.get("performance_close"):
             r.append(u"公演日: %s" % self.describe_from_term(qp.get("performance_open"), qp.get("performance_close")))
         if qp.get("deal_cond"):
-            r.append(u"販売条件: %s" % forms.DealCondPartForm.DDICT.get(qp["deal_cond"], u"--dummy--"))
+            cond = qp.get("deal_cond")
+            if cond != "None": ## ad-hox fix
+                r.append(u"販売条件: %s" % forms.DealCondPartForm.DDICT.get(qp["deal_cond"], u"--dummy--"))
         if qp.get("added_service"):
             r.append(u"付加サービス: %s" % "--dummy--")
         if qp.get("before_deal_start"):
@@ -194,7 +196,10 @@ class SearchResultRender(object):
             
 
     def purchase_link(self):
-        import warnings
-        warnings.warn("difficult. so supported this function is later.")
-        return u'dummy<a href="#"><img src="/static/ticketstar/img/search/btn_buy.gif" alt="購入へ" width="86" height="32" /></a>'
+        fmt = u'''\
+<a href="%s"><img src="/static/ticketstar/img/search/btn_detail.gif" alt="詳細へ" width="86" height="32" /></a>
+<a href="%s"><img src="/static/ticketstar/img/search/btn_buy.gif" alt="購入へ" width="86" height="32" /></a>
+'''
+        return fmt % (h.link.to_publish_page_from_pageset(self.request, self.pageset), 
+                      h.link.get_purchase_page_from_event(self.request, self.pageset.event))
 
