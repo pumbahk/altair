@@ -54,7 +54,7 @@
       </tr>
     </table>
     <input type="hidden" id="sales_segment_id" value="${sales_segment.id}" />
-    <%include file="/sales_segments/_action_button.html" />
+    <%include file="/sales_segments/_action_button.html" args="order=['edit', 'delete']" />
     <div id="sales_segments-form">
       <%include file="/sales_segments/_form.html" args="form=form_ss" />
     </div>

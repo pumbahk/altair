@@ -28,7 +28,7 @@
 
     <div class="span4">
       <%include file="/stock_types/_list.html" args="stock_types=performance.event.stock_types" />
-      <%include file="/stock_types/_action_button.html" args="event=performance.event" />
+      <%include file="/stock_types/_action_button.html" args="event=performance.event, order=['new', 'edit', 'delete', 'allocate', 'stock']" />
       <div id="stock_types-form">
         <%include file="/stock_types/_form.html" args="form=form_stock_type" />
       </div>

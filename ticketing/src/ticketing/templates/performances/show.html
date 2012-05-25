@@ -87,7 +87,7 @@ var SEAT_DATA_URL = "${request.route_path('api.get_seats', venue_id=performance.
     </div>
 
     <div class="span3">
-      <%include file="/performances/_action_button.html" args="event=performance.event" />
+      <%include file="/performances/_action_button.html" args="event=performance.event, order=['edit', 'delete']" />
     </div>
   </span>
 

@@ -71,7 +71,7 @@
     <div class="well">
       <h4 style="word-wrap: break-word;">${event.title}</h4>
       <div class="pull-right">
-        <%include file="/events/_action_button.html" args="event=event" /> 
+        <%include file="/events/_action_button.html" args="event=event, order=['show', 'edit', 'delete']" />
       </div>
       <div style="clear: both"></div>
       <%

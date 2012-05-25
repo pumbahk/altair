@@ -133,3 +133,28 @@ ${locale.format("%d", price, grouping=True)}
   ${column.label.text}
 % endif
 </%def>
+
+<%def name="action_button(actions, order)">
+<% key = order.next() %>
+<div class="btn-group">
+  <a href="${actions[key]['url']}" class="btn">
+    <i class="${actions[key]['icon']}"></i> ${actions[key]['label']}
+  </a>
+  <button class="btn dropdown-toggle" data-toggle="dropdown">
+    <span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu">
+    % for key in order:
+    <li>
+      % if key == 'delete':
+      <a href="${actions[key]['url']}" data-controls-modal="modal-delete" data-backdrop="true" data-keyboard="true">
+      % else:
+      <a href="${actions[key]['url']}">
+      % endif
+        <i class="${actions[key]['icon']}"></i> ${actions[key]['label']}
+      </a>
+    </li>
+    % endfor
+  </ul>
+</div>
+</%def>

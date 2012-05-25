@@ -1,4 +1,5 @@
-<%page args="event" />
+<%page args="event, order=None" />
+<%namespace file="/common/helpers.html" import="action_button" />
 <%namespace file="/common/modal.html" import="delete_modal" />
 
 <script type="text/javascript">
@@ -38,30 +39,26 @@
   }
 </script>
 
-<div class="btn-group">
-  <a href="javascript:new_product();" class="btn">
-    <i class="icon-plus"></i> 新規
-  </a>
-  <button class="btn dropdown-toggle" data-toggle="dropdown">
-    <span class="caret"></span>
-  </button>
-  <ul class="dropdown-menu">
-    <li>
-      <a href="javascript:show_product();">
-        <i class="icon-th-list"></i> 詳細
-      </a>
-    </li>
-    <li>
-      <a href="javascript:edit_product();">
-        <i class="icon-pencil"></i> 編集
-      </a>
-    </li>
-    <li>
-      <a href="javascript:delete_product()" data-controls-modal="modal-delete" data-backdrop="true" data-keyboard="true">
-        <i class="icon-minus"></i> 削除
-      </a>
-    </li>
-  </ul>
-</div>
+<%
+  actions = {
+    'new':dict(
+      label=u'新規',
+      url='javascript:new_product();',
+      icon='icon-plus',
+    ),
+    'edit':dict(
+      label=u'編集',
+      url='javascript:edit_product();',
+      icon='icon-pencil',
+    ),
+    'delete':dict(
+      label=u'削除',
+      url='javascript:delete_product();',
+      icon='icon-minus',
+    ),
+  }
+  order = iter(order or ['new', 'edit', 'delete'])
+%>
+${action_button(actions, order)}
 
 ${delete_modal()}

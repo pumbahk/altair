@@ -1,3 +1,4 @@
+<%namespace file="/common/helpers.html" import="action_button" />
 <%namespace file="/common/modal.html" import="delete_modal" />
 
 <script type="text/javascript">
@@ -30,25 +31,26 @@
   }
 </script>
 
-<div class="btn-group">
-  <a href="javascript:new_account()" class="btn">
-    <i class="icon-plus"></i> 新規
-  </a>
-  <button class="btn dropdown-toggle" data-toggle="dropdown">
-    <span class="caret"></span>
-  </button>
-  <ul class="dropdown-menu">
-    <li>
-      <a href="javascript:edit_account();">
-        <i class="icon-pencil"></i> 編集
-      </a>
-    </li>
-    <li>
-      <a href="javascript:delete_account();" data-controls-modal="modal-delete" data-backdrop="true" data-keyboard="true">
-        <i class="icon-minus"></i> 削除
-      </a>
-    </li>
-  </ul>
-</div>
+<%
+  actions = {
+    'new':dict(
+      label=u'新規',
+      url='javascript:new_account();',
+      icon='icon-plus',
+    ),
+    'edit':dict(
+      label=u'編集',
+      url='javascript:edit_account();',
+      icon='icon-pencil',
+    ),
+    'delete':dict(
+      label=u'削除',
+      url='javascript:delete_account();',
+      icon='icon-minus',
+    ),
+  }
+  order = iter(['new', 'edit', 'delete'])
+%>
+${action_button(actions, order)}
 
 ${delete_modal()}
