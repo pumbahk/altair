@@ -7,6 +7,7 @@ import urllib2
 from datetime import datetime
 
 import webhelpers.paginate as paginate
+from sqlalchemy import or_
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPCreated
 from pyramid.threadlocal import get_current_registry
@@ -34,6 +35,13 @@ class Events(BaseView):
 
         query = Event.filter(Event.organization_id==int(self.context.user.organization_id))
         query = query.order_by(sort + ' ' + direction)
+
+        # search condition
+        if self.request.method == 'POST':
+            condition = self.request.POST.get('event')
+            if condition:
+                condition = '%' + condition + '%'
+                query = query.filter(or_(Event.code.like(condition), Event.title.like(condition)))
 
         events = paginate.Page(
             query,

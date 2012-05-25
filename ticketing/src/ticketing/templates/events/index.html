@@ -3,29 +3,6 @@
 <%namespace file="/common/helpers.html" import="flash_messages" />
 <%namespace file="/common/helpers.html" import="breadcrumbs" />
 
-<div class="modal fade" id="modal-search">
-  <div class="modal-header">
-    <a class="close" data-dismiss="modal">×</a>
-    <h3>検索条件設定</h3>
-  </div>
-
-  <div class="modal-body">
-    <form action="">
-      <label>イベント</label>
-        <input type="text" class="span3" placeholder="イベント名">
-        <label>パフォーマンス</label>
-        <input type="text" class="span3" placeholder="パフォーマンスコード">
-        <label>公演日</label>
-        <input type="text" class="span3" placeholder="2012/07/01 18:00">
-    </form>
-  </div>
-
-  <div class="modal-footer">
-    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
-    <a href="#" class="btn btn-primary">検索</a>
-  </div>
-</div>
-
 <div class="row-fluid">
   <%include file="/parts/_menu.html" />
 
@@ -45,27 +22,25 @@
       ${flash_messages(request)}
     </div>
 
-    <ul class="nav nav-pills">
-      <li class="dropdown" id="top-event">
-        <a class="dropdown-toggle" data-toggle="dropdown" href="#top-even1t">
-          イベント
-          <b class="caret"></b>
-        </a>
-        <ul class="dropdown-menu">
-          <li><a data-toggle="modal" href="${request.route_path('events.new')}" >新規イベント</a></li>
-          <li><a data-toggle="modal" href="#modal-new-stock-group-send" >イベントをコピー</a></li>
-          <li class="divider"></li>
-        </ul>
-      </li>
-      <li class="dropdown" id="top-search">
-        <a data-toggle="modal" href="#modal-search">
-        検索条件設定
-        </a>
-      </li>
-      <li class="dropdown" id="top-search-text">
-        <input type="text" class="search-query span2" placeholder="Search">
-      </li>
-    </ul>
+    <span style="float: left;">
+      <ul class="nav nav-pills">
+        <li class="dropdown" id="top-event">
+          <a class="dropdown-toggle" data-toggle="dropdown" href="#top-event">
+            イベント
+            <b class="caret"></b>
+          </a>
+          <ul class="dropdown-menu">
+            <li><a data-toggle="modal" href="${request.route_path('events.new')}" >新規イベント</a></li>
+            <li><a data-toggle="modal" href="#modal-new-stock-group-send" >イベントをコピー</a></li>
+            <li class="divider"></li>
+          </ul>
+        </li>
+      </ul>
+    </span>
+    <span style="float: left;">
+      <%include file="/events/_search.html" />
+    </span>
+    <div style="clear: left;"></div>
 
     % for event in events.items:
     <div class="well">

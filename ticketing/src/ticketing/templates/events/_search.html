@@ -1,0 +1,33 @@
+<ul class="nav nav-pills">
+  <li class="dropdown" id="top-search">
+    <a data-toggle="modal" href="#modal-search">
+      検索条件設定
+    </a>
+  </li>
+  <li class="dropdown" id="top-search-text">
+    <input type="text" class="search-query span2" placeholder="Search">
+  </li>
+</ul>
+
+<div class="modal fade" id="modal-search">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">×</a>
+    <h3>検索条件設定</h3>
+  </div>
+
+  <div class="modal-body">
+    <form id="search" action="/events/" method="POST">
+      <label>イベント</label>
+      <input name="event" type="text" class="span3" placeholder="イベント名 または コード">
+      <label>パフォーマンス</label>
+      <input name="performance" type="text" class="span3" placeholder="パフォーマンス名 または コード">
+      <label>公演日</label>
+      <input name="date" type="text" class="span3" placeholder="2012/07/01 18:00">
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+    <a href="javascript:$('#search').submit();" class="btn btn-primary">検索</a>
+  </div>
+</div>
