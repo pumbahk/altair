@@ -76,7 +76,7 @@ class Performance(BaseOriginalMixin, Base):
     query = DBSession.query_property()
 
     id = Column(Integer, primary_key=True)
-    backend_performance_id = Column(Integer, nullable=False)
+    backend_id = Column(Integer, nullable=False)
     event_id = Column(Integer, ForeignKey('event.id'))
     client_id = Column(Integer, ForeignKey("client.id"))
 

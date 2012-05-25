@@ -76,7 +76,7 @@ class Scanner(object):
             performance = Performance()
             performance.event = self.current_event
             try:
-                performance.backend_performance_id = performance_record['id']
+                performance.backend_id = performance_record['id']
                 performance.title = performance_record['name']
                 performance.venue = performance_record['venue']
                 performance.open_on = parse_datetime(performance_record['open_on'])

@@ -163,8 +163,8 @@ class EventsByAreaTests(unittest.TestCase):
         from altaircms.models import Performance
         from altaircms.event.models import Event
         event = Event()
-        p0 = Performance(venue=u"hokkaido", event=event, backend_performance_id=1111)
-        p1 = Performance(venue=u"hokkaido", event=event, backend_performance_id=1112)
+        p0 = Performance(venue=u"hokkaido", event=event, backend_id=1111)
+        p1 = Performance(venue=u"hokkaido", event=event, backend_id=1112)
 
         self.session.add_all([event, p0, p1])
         self.session.flush()
@@ -177,9 +177,9 @@ class EventsByAreaTests(unittest.TestCase):
         from altaircms.models import Performance
         from altaircms.event.models import Event
         event = Event()
-        p0 = Performance(venue=u"tokyo", event=event, backend_performance_id=1111)
-        p1 = Performance(venue=u"tokyo", event=event, backend_performance_id=1112)
-        p2 = Performance(venue=u"hokkaido", backend_performance_id=1113) #orphan
+        p0 = Performance(venue=u"tokyo", event=event, backend_id=1111)
+        p1 = Performance(venue=u"tokyo", event=event, backend_id=1112)
+        p2 = Performance(venue=u"hokkaido", backend_id=1113) #orphan
 
         self.session.add_all([event, p0, p1, p2])
         self.session.flush()
@@ -364,11 +364,11 @@ class EventsByAboutDealPartTests(unittest.TestCase):
           from altaircms.models import Performance
   
           ev0 = Event()
-          pef00 = Performance(event=ev0, open_on=datetime(2012, 1, 1), backend_performance_id=0)
-          pef01 = Performance(event=ev0, open_on=datetime(2012, 1, 4), backend_performance_id=1, canceld=True)
+          pef00 = Performance(event=ev0, open_on=datetime(2012, 1, 1), backend_id=0)
+          pef01 = Performance(event=ev0, open_on=datetime(2012, 1, 4), backend_id=1, canceld=True)
           ev1 = Event()
-          pef10 = Performance(event=ev1, open_on=datetime(2012, 1, 1), backend_performance_id=2)
-          pef11 = Performance(event=ev1, open_on=datetime(2012, 1, 4), backend_performance_id=3)
+          pef10 = Performance(event=ev1, open_on=datetime(2012, 1, 1), backend_id=2)
+          pef11 = Performance(event=ev1, open_on=datetime(2012, 1, 4), backend_id=3)
   
           self.session.add_all([ev0, ev1, pef00, pef01, pef10, pef11])
 
