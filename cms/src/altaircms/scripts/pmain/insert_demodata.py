@@ -237,7 +237,7 @@ def detail_performances(event):
                 title=event.title, 
                 open_on=datetime.datetime(2011, 12, 4, 10), 
                 start_on=datetime.datetime(2011, 12, 4, 10), 
-                close_on=datetime.datetime(2011, 12, 4, 18), 
+                end_on=datetime.datetime(2011, 12, 4, 18), 
                 backend_performance_id=9999, 
                 event=event
                 ), 
@@ -245,7 +245,7 @@ def detail_performances(event):
                 title=event.title, 
                 open_on=datetime.datetime(2011, 12, 11, 10), 
                 start_on=datetime.datetime(2011, 12, 11, 10), 
-                close_on=datetime.datetime(2011, 12, 11, 18), 
+                end_on=datetime.datetime(2011, 12, 11, 18), 
                 backend_performance_id=10000, 
                 event=event
                 ), 
@@ -253,7 +253,7 @@ def detail_performances(event):
                 title=event.title, 
                 open_on=datetime.datetime(2011, 12, 18, 10), 
                 start_on=datetime.datetime(2011, 12, 18, 10), 
-                close_on=datetime.datetime(2011, 12, 18, 18), 
+                end_on=datetime.datetime(2011, 12, 18, 18), 
                 backend_performance_id=10001, 
                 event=event
                 ), 
@@ -261,7 +261,7 @@ def detail_performances(event):
                 title=event.title, 
                 open_on=datetime.datetime(2011, 12, 18, 19), 
                 start_on=datetime.datetime(2011, 12, 18, 19), 
-                close_on=datetime.datetime(2011, 12, 18, 23), 
+                end_on=datetime.datetime(2011, 12, 18, 23), 
                 backend_performance_id=10001, 
                 event=event
                 ), 
@@ -269,7 +269,7 @@ def detail_performances(event):
                 title=event.title, 
                 open_on=datetime.datetime(2011, 12, 25, 10), 
                 start_on=datetime.datetime(2011, 12, 25, 10), 
-                close_on=datetime.datetime(2011, 12, 25, 18), 
+                end_on=datetime.datetime(2011, 12, 25, 18), 
                 backend_performance_id=10002, 
                 event=event
                 ), 
@@ -277,7 +277,7 @@ def detail_performances(event):
                 title=event.title, 
                 open_on=datetime.datetime(2012, 5, 25, 10), 
                 start_on=datetime.datetime(2012, 5, 25, 10), 
-                close_on=datetime.datetime(2012, 5, 25, 18), 
+                end_on=datetime.datetime(2012, 5, 25, 18), 
                 backend_performance_id=10002, 
                 event=event
                 ), 
