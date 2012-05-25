@@ -48,10 +48,15 @@
   </div>
 </div>
 
+<%
+seq = h.paginate(request, assets, item_count=assets.count())
+%>
+
 <h4>登録済みのアセット一覧</h4>
+${seq.pager()}
 <table class="table table-striped">
     <tbody>
-        %for asset in assets:
+        %for asset in seq.paginated():
         <tr>
             <td>${asset.created_at}</td>
             <td>${asset.discriminator}</td>
@@ -60,3 +65,4 @@
         %endfor
     </tbody>
 </table>
+${seq.pager()}

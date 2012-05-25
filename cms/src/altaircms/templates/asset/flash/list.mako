@@ -48,4 +48,9 @@
 </div>
 
 <h4>登録済みのアセット一覧</h4>
-${mco.model_list(assets, mco.asset_list, u"アセットは登録されていません")}
+<%
+seq = h.paginate(request, assets, item_count=assets.count())
+%>
+${seq.pager()}
+${mco.model_list(seq.paginated(), mco.asset_list, u"アセットは登録されていません")}
+${seq.pager()}

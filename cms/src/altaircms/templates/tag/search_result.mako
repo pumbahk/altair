@@ -19,14 +19,12 @@ ${co.menutab(supported, classifier)}
   </div>
 </div>
 
-<h3> 検索結果一覧 (query: ${request.GET["query"]})</h3>
+<h3> 「${request.GET["query"]}」のタグを含むページの一覧 (query: ${request.GET["query"]})</h3>
 <div class="row">
-  <div class="span10">
-    <table class="table">
-	  ## これひどい
-	  ${getattr(co, classifier+"_search_result")(request, query_result)}
-    </table>
-  </div>
+  <table class="table">
+	## これひどい
+	${getattr(co, classifier+"_search_result")(request, query_result)}
+  </table>
 </div>
 
 

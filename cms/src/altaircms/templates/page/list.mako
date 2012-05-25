@@ -71,5 +71,10 @@
 
 <div class="row-fluid">
   <h4>ページ一覧</h4>
-  ${mco.model_list(pages, mco.page_list, u"ページは登録されていません")}
+<%
+seq = h.paginate(request, pages, item_count=pages.count())
+%>
+  ${seq.pager()}
+  ${mco.model_list(seq.paginated(), mco.page_list, u"ページは登録されていません")}
+  ${seq.pager()}
 </div>

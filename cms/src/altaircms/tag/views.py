@@ -45,8 +45,10 @@ class TopView(object):
     def subtoppage_view(self):
         classifier = self.request.matchdict["classifier"]
         form = forms.TagSearchForm(classifier=classifier)
-        new_tags = get_tagmanager(classifier).recent_change_tags().limit(self.RECENT_CHANGE_TAGS_LIMIT)
+        tags = get_tagmanager(classifier).recent_change_tags()
+        new_tags = tags.limit(self.RECENT_CHANGE_TAGS_LIMIT)
         return {"classifier": classifier, 
                 "new_tags": new_tags, 
+                "tags": tags, 
                 "form": form, 
                 "supported": SUPPORTED_CLASSIFIER}
