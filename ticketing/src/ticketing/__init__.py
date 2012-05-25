@@ -20,6 +20,7 @@ def main(global_config, **settings):
     sqlahelper.add_engine(engine)
 
     authn_policy = AuthTktAuthenticationPolicy('secretstring',
+        cookie_name='backendtkt',
                                                callback=groupfinder)
     authz_policy = ACLAuthorizationPolicy()
 
