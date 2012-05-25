@@ -9,7 +9,7 @@ from organization import OrganizationData
 
 class OperatorRoleData(DataSet):
     class role_admin_admin:
-        name = 'Administrator'
+        name = 'administrator'
         permissions = [
             PermissionData.administrator,
             PermissionData.asset_editor,
