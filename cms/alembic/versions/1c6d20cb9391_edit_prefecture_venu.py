@@ -1,14 +1,14 @@
 """edit prefecture venue
 
 Revision ID: 1c6d20cb9391
-Revises: 2cbf959ed694
+Revises: 45f630875cfa
 Create Date: 2012-05-23 20:17:44.187547
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '1c6d20cb9391'
-down_revision = '2cbf959ed694'
+down_revision = '45f630875cfa'
 
 from alembic import op
 import sqlalchemy as sa

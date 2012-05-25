@@ -169,8 +169,8 @@ class EventsByAreaTests(unittest.TestCase):
         from altaircms.models import Performance
         from altaircms.event.models import Event
         event = Event()
-        p0 = Performance(venue=u"hokkaido", event=event, backend_id=1111)
-        p1 = Performance(venue=u"hokkaido", event=event, backend_id=1112)
+        p0 = Performance(prefecture=u"hokkaido", event=event, backend_id=1111)
+        p1 = Performance(prefecture=u"hokkaido", event=event, backend_id=1112)
 
         self.session.add_all([event, p0, p1])
         self.session.flush()
@@ -184,9 +184,9 @@ class EventsByAreaTests(unittest.TestCase):
         from altaircms.event.models import Event
         event = Event()
 
-        p0 = Performance(venue=u"tokyo", event=event, backend_id=1111)
-        p1 = Performance(venue=u"tokyo", event=event, backend_id=1112)
-        p2 = Performance(venue=u"hokkaido", backend_id=1113) #orphan
+        p0 = Performance(prefecture=u"tokyo", event=event, backend_id=1111)
+        p1 = Performance(prefecture=u"tokyo", event=event, backend_id=1112)
+        p2 = Performance(prefecture=u"hokkaido", backend_id=1113) #orphan
 
         self.session.add_all([event, p0, p1, p2])
         self.session.flush()
