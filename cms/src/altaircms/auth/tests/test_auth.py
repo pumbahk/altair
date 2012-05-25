@@ -18,9 +18,14 @@ def teardown_module():
     transaction.abort()
 
 class OAuthLoginTests(unittest.TestCase):
-
     def setUp(self):
-        self.config = testing.setUp()
+        self.config = testing.setUp(settings={
+            'altair.oauth.client_id': 'fa12a58972626f0597c2faee1454e1',
+            'altair.oauth.secret_key': 'c5f20843c65870fad8550e3ad1f868',
+            'altair.oauth.authorize_url': 'http://localhost:7654/api/authorize',
+            'altair.oauth.access_token_url': 'http://localhost:7654/api/access_token'
+            })
+
         insert_initial_authdata()
 
     def tearDown(self):

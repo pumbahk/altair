@@ -30,10 +30,11 @@ class LayoutForm(Form):
 
     
 class PerformanceForm(Form):
-    backend_performance_id = fields.IntegerField(validators=[required_field()], label=u"バックエンド管理番号")
+    backend_id = fields.IntegerField(validators=[required_field()], label=u"バックエンド管理番号")
     event = dynamic_query_select_field_factory(Event, allow_blank=False, label=u"イベント", get_label=lambda obj: obj.title)
     title = fields.TextField(label=u"講演タイトル")
-    venue = fields.SelectField(label=u"開催場所", choices=import_symbol("altaircms.seeds.prefecture:PREFECTURE_CHOICES"))
+    prefecture = fields.SelectField(label=u"開催県", choices=import_symbol("altaircms.seeds.prefecture:PREFECTURE_CHOICES"))
+    venue = fields.TextField(label=u"開催場所(詳細)")
     open_on = fields.DateTimeField(label=u"開場時間", validators=[required_field()])
     start_on = fields.DateTimeField(label=u"開始時間", validators=[required_field()])
     close_on = fields.DateTimeField(label=u"終了時間", validators=[required_field()])
@@ -68,7 +69,7 @@ class CategoryForm(Form):
     orderno = fields.IntegerField(label=u"表示順序")
     parent = dynamic_query_select_field_factory(
         Category, allow_blank=False, label=u"親カテゴリ",
-        get_label=lambda obj: obj.name or u"--なし--")
+        get_label=lambda obj: obj.label or u"--なし--")
 
     hierarchy = fields.SelectField(label=u"階層", choices=[(x, x) for x in [u"大", u"中", u"小"]])
     label = fields.TextField(label=u"label")
@@ -114,7 +115,7 @@ class CategoryFilterForm(Form):
     hierarchy = fields.SelectField(label=u"階層", choices=[("__None", "----------")]+[(x, x) for x in [u"大", u"中", u"小"]])
     parent = dynamic_query_select_field_factory(
         Category, allow_blank=True, blank_text=u"----------", label=u"親カテゴリ",
-        get_label=lambda obj: obj.name or u"---名前なし---")
+        get_label=lambda obj: obj.label or u"---名前なし---")
 
     as_filter = as_filter(["hierarchy", "parent"])
 
@@ -161,3 +162,16 @@ class TopcontentForm(Form):
     subkind = fields.TextField(label=u"サブ分類")
     countdown_type = fields.SelectField(label=u"カウントダウンの種別", choices=Topcontent.COUNTDOWN_CANDIDATES)    
     
+from altaircms.tag.models import PageTag
+
+class HotWordForm(Form):
+    tag = dynamic_query_select_field_factory(PageTag, label=u"検索用ページタグ", allow_blank=True, 
+                                                 get_label=lambda obj: obj.label or u"名前なし")
+    name = fields.TextField(label=u"ホットワード名")
+    orderno = fields.IntegerField(label=u"表示順序")
+    
+    enablep = fields.BooleanField(label=u"利用する/しない")
+    term_begin = fields.DateTimeField(label=u"利用開始日", validators=[required_field()])
+    term_end = fields.DateTimeField(label=u"利用終了日", validators=[required_field()])
+    
+

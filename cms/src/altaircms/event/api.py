@@ -11,80 +11,127 @@ class EventRepositry(object):
     def parse_and_save_event(self, parsed):
         return parse_and_save_event(parsed)
 
-def event_from_dict(d):
-    event_obj = Event()
-    event_obj.backend_event_id = d['id']
-    event_obj.name = d['name']
-    event_obj.event_on = isodate.parse_datetime(d['start_on'])
-    event_obj.event_close = isodate.parse_datetime(d['end_on'])
-    return event_obj
+def parse_datetime(dtstr):
+    if dtstr is None:
+        return None
+    try:
+        return isodate.parse_datetime(dtstr)
+    except ValueError:
+        raise "Invalid ISO8601 datetime: %s" % dtstr
 
-def performance_from_dict(d):
-    performance_obj = Performance()
-    performance_obj.backend_performance_id = d['id']
-    performance_obj.title = d['name']
-    performance_obj.venue = d['venue']
-    performance_obj.open_on = isodate.parse_datetime(d['open_on'])
-    performance_obj.start_on = isodate.parse_datetime(d['start_on'])
-    performance_obj.close_on = isodate.parse_datetime(d['close_on']) if 'close_on' in d else None
-    return performance_obj
+class Scanner(object):
+    def __init__(self, session):
+        self.session = session
+        self.current_event = None
+        self.current_performance = None
+        self.current_sale = None
+        self.current_ticket = None
+        self.events = []
 
-def sale_from_dict(d):
-    sale_obj = Sale()
-    sale_obj.name = d['name']
-    sale_obj.start_on = isodate.parse_datetime(d['start_on'])
-    sale_obj.end_on = isodate.parse_datetime(d['end_on'])
-
-    return sale_obj
-
-def ticket_from_dict(d):
-
-    ticket_obj = Ticket()
-    ticket_obj.name = d['name']
-    ticket_obj.price = d['price']
-    ticket_obj.seat_type = d['seat_type']
-
-    return ticket_obj
-    
-def parse_and_save_event(parsed):
-
-    events = []
-    # @FIXME: 再帰にした方がいいかも
-    for event in parsed['events']:
-        if 'deleted' in event and event['deleted'] is True:
-            event_obj = DBSession.query(Event).filter_by(id=event['id']).one()
-            DBSession.delete(event_obj)
+    def scan_ticket_record(self, ticket_record):
+        deleted = ticket_record.get('deleted', False)
+        if deleted:
+            DBSession.query(Ticket).filter_by(id=ticket['id']).delete()
         else:
-            event_obj = event_from_dict(event)
-            DBSession.add(event_obj)
-            events.append(event_obj)
+            ticket = Ticket()
+            ticket.sale = self.current_sale
+            try:
+                ticket.name = ticket_record['name']
+                ticket.price = ticket_record['price']
+                ticket.seat_type = ticket_record['seat_type']
+            except KeyError as e:
+                raise "missing property '%s' in the ticket record" % e.message
+            self.current_ticket = ticket
+            self.session.add(ticket)
 
-        for performance in event.get('performances', []):
-            if 'deleted' in performance and performance['deleted'] is True:
-                performance_obj = DBSession.query(Performance).filter_by(id=performance['id']).one()
-                DBSession.delete(performance_obj)
-            else:
-                performance_obj = performance_from_dict(performance)
-                performance_obj.event = event_obj
+    def scan_sales_segment_record(self, sales_segment_record):
+        deleted = sales_segment_record.get('deleted', False)
+        if deleted:
+            DBSession.query(Sale).filter_by(id=sale['id']).delete()
+        else:
+            sale = Sale()
+            sale.performance = self.current_performance
+            try:
+                sale.name = sales_segment_record['name']
+                sale.start_on = parse_datetime(sales_segment_record['start_on'])
+                sale.end_on = parse_datetime(sales_segment_record['end_on'])
+            except KeyError as e:
+                raise "missing property '%s' in the sales record" % e.message
 
-            for sale in performance.get('sales', []):
-                if 'deleted' in sale and sale['deleted'] is True:
-                    sale_obj = DBSession.query(Sale).filter_by(id=sale['id']).one()
-                    DBSession.delete(sale_obj)
-                else:
-                    sale_obj = sale_from_dict(sale)
-                    sale_obj.performance = performance_obj
+            self.current_sale = sale
 
-                for ticket in sale.get('tickets', []):
-                    if 'deleted' in ticket and ticket['deleted'] is True:
-                        ticket_obj = DBSession.query(Ticket).filter_by(id=ticket['id']).one()
-                        DBSession.delete(ticket_obj)
-                    else:
-                        ticket_obj = ticket_from_dict(ticket)
-                        ticket_obj.sale = sale_obj
+            ticket_records = sales_segment_record.get('tickets')
+            if ticket_records is None:
+                raise ValueError("'tickets' property not present in the sales segment record")
+            for ticket_record in ticket_records:
+                self.scan_ticket_record(ticket_record)
 
-    return events
+            self.session.add(sale)
 
+    def scan_performance_record(self, performance_record):
+        deleted = performance_record.get('deleted', False)
+        if deleted:
+            DBSession.query(Performance).filter_by(id=performance['id']).delete()
+        else:
+            performance = Performance()
+            performance.event = self.current_event
+            try:
+                performance.backend_id = performance_record['id']
+                performance.title = performance_record['name']
+                performance.venue = performance_record['venue']
+                performance.open_on = parse_datetime(performance_record['open_on'])
+                performance.start_on = parse_datetime(performance_record['start_on'])
+                performance.end_on = parse_datetime(performance_record.get('end_on'))
+            except KeyError as e:
+                raise "missing property '%s' in the event record" % e.message
+            self.current_performance = performance
+
+            sales_segment_records = performance_record.get('sales')
+            if sales_segment_records is None:
+                raise ValueError("'sales' property not present in the performance record")
+            for sales_segment_record in sales_segment_records:
+                self.scan_sales_segment_record(sales_segment_record)
+
+            self.session.add(performance)
+
+    def scan_event_record(self, event_record):
+        deleted = event_record.get('deleted', False)
+        if deleted:
+            DBSession.query(Event).filter_by(id=event_record['id']).delete()
+        else:
+            event = Event()
+            try:
+                event.backend_event_id = event_record['id']
+                event.title = event_record['title']
+                event.subtitle = event_record.get('subtitle', '')
+                event.event_open = parse_datetime(event_record['start_on'])
+                event.event_close = parse_datetime(event_record['end_on'])
+            except KeyError as e:
+                raise "missing property '%s' in the event record" % e.message
+            self.current_event = event
+
+            performance_records = event_record.get('performances')
+            if performance_records is None:
+                raise ValueError("'performances' property not present in the event record")
+            for performance_record in performance_records:
+                self.scan_performance_record(performance_record)
+
+            self.session.add(event)
+            self.events.append(event)
+
+    def scan_toplevel(self, parsed):
+        event_records = parsed.get('events')
+        if event_records is None:
+            raise ValueError("'events' property not present in the toplevel of the payload")
+        for event_record in event_records:
+            self.scan_event_record(event_record)
+
+    def __call__(self, parsed):
+        self.scan_toplevel(parsed)
+        return self.events
+
+def parse_and_save_event(parsed):
+    return Scanner(DBSession)(parsed)
 
 def validate_apikey(apikey):
     try:

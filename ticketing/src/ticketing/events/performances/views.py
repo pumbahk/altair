@@ -6,7 +6,7 @@ from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path
 
-from ticketing.models import merge_session_with_post, record_to_multidict, DBSession
+from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.events.models import Event, Performance, Account, SalesSegment
@@ -25,26 +25,34 @@ class Performances(BaseView):
         event_id = int(self.request.matchdict.get('event_id', 0))
         event = Event.get(event_id)
 
-        current_page = int(self.request.params.get('page', 0))
         sort = self.request.GET.get('sort', 'Performance.id')
-        direction = self.request.GET.get('direction', 'desc')
-        if direction not in ['asc', 'desc']: direction = 'asc'
+        direction = self.request.GET.get('direction', 'asc')
+        if direction not in ['asc', 'desc']:
+            direction = 'asc'
 
-        page_url = paginate.PageURL_WebOb(self.request)
-        query = DBSession.query(Performance).filter(Performance.event_id == event_id)
+        query = Performance.filter(Performance.event_id==event_id)
         query = query.order_by(sort + ' ' + direction)
 
-        performances = paginate.Page(query, page=current_page, items_per_page=5, url=page_url)
+        performances = paginate.Page(
+            query,
+            page=int(self.request.params.get('page', 0)),
+            items_per_page=20,
+            url=paginate.PageURL_WebOb(self.request)
+        )
 
         return {
             'event':event,
             'performances':performances,
+            'form':PerformanceForm(organization_id=self.context.user.organization_id),
         }
 
     @view_config(route_name='performances.show', renderer='ticketing:templates/performances/show.html')
     def show(self):
         performance_id = int(self.request.matchdict.get('performance_id', 0))
         performance = Performance.get(performance_id)
+        if performance is None:
+            return HTTPNotFound('performance id %d is not found' % performance_id)
+
         products = Product.find(performance_id=performance_id)
         user = self.context.user
         accounts = Account.get_by_organization_id(user.organization_id)

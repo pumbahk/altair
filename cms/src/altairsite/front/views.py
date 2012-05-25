@@ -18,6 +18,13 @@ viewの種類2つ（これは後で綺麗にしたい)
 
 """
 
+
+"""
+todo:
+カテゴリトップかイベント詳細ページかで表示方法を分ける必要がある
+カテゴリトップの場合には、サブジャンルを取得できる必要がある。
+"""
+
 @view_config(route_name="front", decorator=with_jquery)
 def rendering_page(context, request):
     url = request.matchdict["page_name"]
@@ -33,6 +40,7 @@ def rendering_page(context, request):
     tmpl = context.get_layout_template(layout, context.get_render_config())
 
     params = api.get_navigation_categories(request)
+    params.update(sub_categories=api.get_subcategories_from_page(request, page))
     params.update(page=page, display_blocks=block_context.blocks)
     return render_to_response(tmpl, params, request)
 
@@ -49,6 +57,7 @@ def rendering_preview_page(context, request):
                        event=page.event)
     tmpl = context.get_layout_template(layout, context.get_render_config())
     params = api.get_navigation_categories(request)
+    params.update(sub_categories=api.get_subcategories_from_page(request, page))
     params.update(page=page, display_blocks=block_context.blocks)
     return render_to_response(tmpl, params, request)
 
@@ -58,4 +67,3 @@ def to_preview_page(context, request):
     page_id = request.matchdict["page_id"]
     page = context.get_unpublished_page(page_id)
     return HTTPFound(request.route_path("front_preview", page_name=page.hash_url))
-

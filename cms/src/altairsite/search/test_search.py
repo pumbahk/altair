@@ -13,6 +13,8 @@ def setUpModule():
     from sqlalchemy import create_engine
     import altaircms.page.models
     import altaircms.models
+    import altaircms.tag.models
+    import altaircms.asset.models
 
     engine = create_engine("sqlite:///")
     engine.echo = False
@@ -44,11 +46,11 @@ class SearchByFreewordTests(unittest.TestCase):
     def test_it(self):
         pass
 
-class SearchByGanreTests(unittest.TestCase):
+class SearchByGenreTests(unittest.TestCase):
     """
 2. ジャンルで選択。
     2.a 大ジャンルが選択
-      ganre = "music"
+      genre = "music"
       Category.filter(Category.name==genre).filter
     2.b 中ジャンルが選択
 
@@ -56,6 +58,8 @@ class SearchByGanreTests(unittest.TestCase):
     def tearDown(self):
         import transaction
         transaction.abort()
+        from altaircms.models import DBSession
+        DBSession.remove()
 
     def setUp(self):
         import transaction
@@ -64,8 +68,8 @@ class SearchByGanreTests(unittest.TestCase):
         self.session = sqlahelper.get_session()
 
     def _callFUT(self, *args,**kwargs):
-        from altairsite.search.searcher import  search_by_ganre
-        return search_by_ganre(*args, **kwargs)
+        from altairsite.search.searcher import  search_by_genre
+        return search_by_genre(*args, **kwargs)
 
     def _category(self, *args, **kwargs):
         from altaircms.models import Category
@@ -98,7 +102,7 @@ class SearchByGanreTests(unittest.TestCase):
 
     def test_not_found_with_top_categories(self):
         music = self._category(name="music", hierarchy=u"top-hierary")
-        other_category = self._category(name="other-ganre-category", hierarchy=u"top-hierarchy")
+        other_category = self._category(name="other-genre-category", hierarchy=u"top-hierarchy")
 
         jpop_top_page = self._pageset()
         jpop = self._category(name="jpop", parent=other_category, pageset=jpop_top_page, hierarchy=u"middle-hierarchy")
@@ -143,6 +147,8 @@ class EventsByAreaTests(unittest.TestCase):
     def tearDown(self):
         import transaction
         transaction.abort()
+        from altaircms.models import DBSession
+        DBSession.remove()
 
     def setUp(self):
         import transaction
@@ -163,8 +169,8 @@ class EventsByAreaTests(unittest.TestCase):
         from altaircms.models import Performance
         from altaircms.event.models import Event
         event = Event()
-        p0 = Performance(venue=u"hokkaido", event=event, backend_performance_id=1111)
-        p1 = Performance(venue=u"hokkaido", event=event, backend_performance_id=1112)
+        p0 = Performance(prefecture=u"hokkaido", event=event, backend_id=1111)
+        p1 = Performance(prefecture=u"hokkaido", event=event, backend_id=1112)
 
         self.session.add_all([event, p0, p1])
         self.session.flush()
@@ -177,9 +183,10 @@ class EventsByAreaTests(unittest.TestCase):
         from altaircms.models import Performance
         from altaircms.event.models import Event
         event = Event()
-        p0 = Performance(venue=u"tokyo", event=event, backend_performance_id=1111)
-        p1 = Performance(venue=u"tokyo", event=event, backend_performance_id=1112)
-        p2 = Performance(venue=u"hokkaido", backend_performance_id=1113) #orphan
+
+        p0 = Performance(prefecture=u"tokyo", event=event, backend_id=1111)
+        p1 = Performance(prefecture=u"tokyo", event=event, backend_id=1112)
+        p2 = Performance(prefecture=u"hokkaido", backend_id=1113) #orphan
 
         self.session.add_all([event, p0, p1, p2])
         self.session.flush()
@@ -198,6 +205,8 @@ class EventsByPerformanceTermTests(unittest.TestCase):
     def tearDown(self):
         import transaction
         transaction.abort()
+        from altaircms.models import DBSession
+        DBSession.remove()
 
     def setUp(self):
         import transaction
@@ -299,6 +308,8 @@ class EventsByAboutDealPartTests(unittest.TestCase):
     def tearDown(self):
         import transaction
         transaction.abort()
+        from altaircms.models import DBSession
+        DBSession.remove()
 
     def setUp(self):
         import transaction
@@ -364,11 +375,11 @@ class EventsByAboutDealPartTests(unittest.TestCase):
           from altaircms.models import Performance
   
           ev0 = Event()
-          pef00 = Performance(event=ev0, open_on=datetime(2012, 1, 1), backend_performance_id=0)
-          pef01 = Performance(event=ev0, open_on=datetime(2012, 1, 4), backend_performance_id=1, canceld=True)
+          pef00 = Performance(event=ev0, open_on=datetime(2012, 1, 1), backend_id=0)
+          pef01 = Performance(event=ev0, open_on=datetime(2012, 1, 4), backend_id=1, canceld=True)
           ev1 = Event()
-          pef10 = Performance(event=ev1, open_on=datetime(2012, 1, 1), backend_performance_id=2)
-          pef11 = Performance(event=ev1, open_on=datetime(2012, 1, 4), backend_performance_id=3)
+          pef10 = Performance(event=ev1, open_on=datetime(2012, 1, 1), backend_id=2)
+          pef11 = Performance(event=ev1, open_on=datetime(2012, 1, 4), backend_id=3)
   
           self.session.add_all([ev0, ev1, pef00, pef01, pef10, pef11])
 
@@ -382,11 +393,151 @@ class EventsByAboutDealPartTests(unittest.TestCase):
           self.assertEquals([ev0], list(result))
 
 class SearchOnlyIsSearcheableEventTests(unittest.TestCase):
+
     def test_it(self):
-        from altairsite.search.searcher import get_pageset_query
-        result =  str(get_pageset_query(None, {}))
+        from altairsite.search.searcher import get_pageset_query_fullset
+        result =  str(get_pageset_query_fullset(None, {}))
         
         self.assertIn("event.is_searchable = ? AND event.id = pagesets.event_id", result)
+
+
+class SearchOrderTests(unittest.TestCase):
+    """
+    販売終了間近なものから順に表示される
+    """
+    def _callFUT(self, qs, *args, **kwargs):
+        from altairsite.search.searcher import _refine_pageset_search_order
+        return _refine_pageset_search_order(qs)
+
+    def tearDown(self):
+        from altaircms.models import DBSession
+        DBSession.remove()
+
+    def _make_pageset(self, id=None, deal_close=None):
+        from altaircms.event.models import Event
+        from altaircms.page.models import PageSet
+
+        event = Event(id=id, deal_close=deal_close)
+        pageset = PageSet(event=event, id=id)
+        return pageset
+
+    def _make_query(self):
+        from altaircms.page.models import PageSet        
+        from altaircms.event.models import Event
+        qs = PageSet.query.filter(Event.id==PageSet.event_id)
+        return qs
+
+    def test_it(self):
+        from altaircms.models import DBSession
+
+        deal_closes = [datetime(2011, 1, 1),
+                       datetime(2011, 2, 1),
+                       datetime(2011, 3, 1)]
+
+        ### the order is 1, 3, 2 !!(not 1, 2, 3)
+        pgss = [self._make_pageset(id=1, deal_close=deal_closes[0]), 
+                self._make_pageset(id=2, deal_close=deal_closes[2]), 
+                self._make_pageset(id=3, deal_close=deal_closes[1])
+                ]
+
+        DBSession.add_all(pgss)
+
+        not_sorted_qs = self._make_query()
+        result = self._callFUT(not_sorted_qs)
+
+        self.assertNotEquals(deal_closes, [p.event.deal_close for p in not_sorted_qs])
+        self.assertEquals(deal_closes, [p.event.deal_close for p in result])
+
+
+class HotWordSearchTests(unittest.TestCase):
+    def tearDown(self):
+        import transaction
+        transaction.abort()
+        from altaircms.models import DBSession
+        DBSession.remove()
+
+    def setUp(self):
+        import transaction
+        import sqlahelper
+        transaction.abort()
+        self.session = sqlahelper.get_session()
+
+    def _callFUT(self, *args, **kwargs):
+        from altairsite.search.searcher import search_by_hotword
+        return search_by_hotword(*args, **kwargs)
+
+    def test_hotword_search_has_event(self):
+        """
+        hotword - pagetag - pagetag2page - page - pageset
+        """
+        from altaircms.tag.models import HotWord
+        from altaircms.tag.models import PageTag
+        from altaircms.tag.models import PageTag2Page
+        from altaircms.page.models import Page
+        from altaircms.page.models import PageSet
+        from altaircms.event.models import Event        
+
+        event = Event(title=u"this-is-bound-event")
+        pageset = PageSet(event=event)
+        page = Page(pageset=pageset)
+        _other_page = Page(pageset=pageset) ## orfan
+        
+        pagetag = PageTag(label="tag-name-for-hotword", publicp=True)
+        self.session.add(page)
+        self.session.add(_other_page)
+        self.session.add(pageset)
+        self.session.add(pagetag)
+        self.session.flush()
+
+        pagetag2page = PageTag2Page(object_id=page.id, tag_id=pagetag.id)
+        self.session.add(pagetag2page)
+        ## proxyほしい
+
+        hotword = HotWord(name=u"this-is-hotword-name", tag=pagetag, enablep=True, 
+                          orderno=1, 
+                          term_begin=datetime(1900, 1, 1), term_end=datetime(2100, 1, 1))
+        self.session.add(hotword)
+        
+        self.session.flush()
+        result = self._callFUT(PageSet.query,  u"this-is-hotword-name")
+        
+        self.assertEquals([pageset],  list(result))
+
+    def test_hotword_search_hasnt_event(self):
+        """ search by hotword but this pageset hasn't event, so matched items is 0
+
+        """
+        from altaircms.tag.models import HotWord
+        from altaircms.tag.models import PageTag
+        from altaircms.tag.models import PageTag2Page
+        from altaircms.page.models import Page
+        from altaircms.page.models import PageSet
+        
+        pageset = PageSet()
+        page = Page(pageset=pageset)
+        _other_page = Page(pageset=pageset) ## orfan
+        
+        pagetag = PageTag(label="tag-name-for-hotword", publicp=True)
+        self.session.add(page)
+        self.session.add(_other_page)
+        self.session.add(pageset)
+        self.session.add(pagetag)
+        self.session.flush()
+
+        pagetag2page = PageTag2Page(object_id=page.id, tag_id=pagetag.id)
+        self.session.add(pagetag2page)
+        ## proxyほしい
+
+        hotword = HotWord(name=u"this-is-hotword-name", tag=pagetag, enablep=True, 
+                          orderno=1, 
+                          term_begin=datetime(1900, 1, 1), term_end=datetime(2100, 1, 1))
+        self.session.add(hotword)
+        
+        self.session.flush()
+        result = self._callFUT(PageSet.query,  u"this-is-hotword-name")
+        
+        ### not found item!!
+        self.assertEquals([],  list(result))
 
 if __name__ == "__main__":
     unittest.main()

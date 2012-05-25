@@ -1,3 +1,5 @@
 <%inherit file="../layout.html" />
+<%namespace file="/common/helpers.html" import="pager"/>
 <%block name="title">クライアント一覧</%block>
 <%include file="_list.html" />
+${pager(organizations)}

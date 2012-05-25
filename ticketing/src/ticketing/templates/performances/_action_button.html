@@ -15,9 +15,10 @@
   function delete_performance() {
     var id = get_id('performance_id');
     if (!id) return;
-    $('#modal-delete #delete').attr('href', '/events/performances/delete/' + id);
-    $('#modal-delete #message').text("${u'選択したパフォーマンスを削除します。よろしいですか？'}");
-    $('#modal-delete').modal('toggle');
+    var modal = $('#modal-delete');
+    modal.find('#delete').attr('href', '/events/performances/delete/' + id);
+    modal.find('#message').text('選択したパフォーマンスを削除します。よろしいですか？');
+    modal.modal('toggle');
   }
 </script>
 

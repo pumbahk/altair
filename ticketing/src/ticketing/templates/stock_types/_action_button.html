@@ -14,52 +14,43 @@
     var id = id || get_id('stock_type_id');
     if (!id) return;
     var el = '#stock_type-' + id;
-    $('#modal-stock_type #id').val(id);
-    $('#modal-stock_type #name').val($(el).attr('name'));
+    var modal = $('#modal-stock_type');
+    modal.find('#id').val(id);
+    modal.find('#name').val($(el).attr('name'));
     if ($(el).attr('type') == '1') {
-      $('#modal-stock_type #type').attr('checked', 'checked').change();
+      modal.find('#type').attr('checked', 'checked').change();
     }
     var data = JSON.parse($(el).attr('data'));
     if (data) {
-      $('#modal-stock_type #text').val(data.text);
-      $('#modal-stock_type #text_color').val(data.text_color);
+      modal.find('#text').val(data.text);
+      modal.find('#text_color').val(data.text_color);
       if (data.fill) {
-        $('#modal-stock_type #fill_color').val(data.fill.color);
-        $('#modal-stock_type #fill_type').val(data.fill.type);
-        $('#modal-stock_type #fill_image').val(data.fill.image);
+        modal.find('#fill_color').val(data.fill.color);
+        modal.find('#fill_type').val(data.fill.type);
+        modal.find('#fill_image').val(data.fill.image);
       }
       if (data.stroke) {
-        $('#modal-stock_type #stroke_color').val(data.stroke.color);
-        $('#modal-stock_type #stroke_width').val(data.stroke.width);
-        $('#modal-stock_type #stroke_patten').val(data.stroke.pattern);
+        modal.find('#stroke_color').val(data.stroke.color);
+        modal.find('#stroke_width').val(data.stroke.width);
+        modal.find('#stroke_patten').val(data.stroke.pattern);
       }
     }
-    $('#modal-stock_type').modal('toggle');
+    modal.modal('toggle');
   }
   function delete_stock_type() {
     var id = get_id('stock_type_id');
     if (!id) return;
-    $('#modal-delete #delete').attr('href', '/events/stock_types/delete/' + id);
-    $('#modal-delete #message').text('選択した席種を削除します。よろしいですか？');
-    $('#modal-delete').modal('toggle');
+    var modal = $('#modal-delete');
+    modal.find('#delete').attr('href', '/events/stock_types/delete/' + id);
+    modal.find('#message').text('選択した席種を削除します。よろしいですか？');
+    modal.modal('toggle');
   }
   function save_stock_type() {
-    var id = $('#modal-stock_type #id').val();
+    var modal = '#modal-stock_type';
+    var form = '#stock_types-form';
+    var id = $(modal + ' #id').val();
     var url = id ? '/events/stock_types/edit/' + id : '/events/stock_types/new/${event.id}';
-    var param = {};
-    $('#modal-stock_type :input').each(function(i, v) {
-      param[v.name] = v.value;
-    });
-    $.post(
-        url,
-        param,
-        function(data, status, xhr) {
-          $('#modal-stock_type').modal('hide');
-          $('#stock_types-form').html(data);
-          $('#modal-stock_type').modal('show');
-        },
-        "html"
-    );
+    post_modal_form(modal, form, url);
   }
 
   % if performance:
@@ -67,27 +58,17 @@
     var id = get_id('stock_type_id');
     if (!id) return;
     var el = '#stock_type-' + id;
-    $('#modal-stock_allocation #stock_type_id').val(id);
-    $('#modal-stock_allocation #performance_id').val(${performance.id});
-    $('#modal-stock_allocation #quantity').val($(el).attr('quantity'));
-    $('#modal-stock_allocation').modal('toggle');
+    var modal = $('#modal-stock_allocation');
+    modal.find('#stock_type_id').val(id);
+    modal.find('#performance_id').val(${performance.id});
+    modal.find('#quantity').val($(el).attr('quantity'));
+    modal.modal('toggle');
   }
   function save_stock_allocation() {
+    var modal = '#modal-stock_allocation';
+    var form = '#stock_allocations-form';
     var url = '/events/stock_types/allocate/';
-    var param = {};
-    $('#modal-stock_allocation :input').each(function(i, v) {
-      param[v.name] = v.value;
-    });
-    $.post(
-        url,
-        param,
-        function(data, status, xhr) {
-          $('#modal-stock_allocation').modal('hide');
-          $('#stock_allocations-form').html(data);
-          $('#modal-stock_allocation').modal('show');
-        },
-        "html"
-    );
+    post_modal_form(modal, form, url);
   }
   % endif
 </script>

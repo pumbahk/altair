@@ -3,7 +3,7 @@
 <%namespace name="fco" file="../formcomponents.mako"/>
 <%namespace name="mco" file="../modelcomponents.mako"/>
 
-<h2>asset</h2>
+<h2>event</h2>
 
 <div class="row-fluid">
   <div class="span10">
@@ -18,7 +18,7 @@
   <div>
     <h4>イベント追加</h4>
 	<form action="${request.route_path("event_create", action="confirm")}" method="POST">
-	  ${fco.form_as_table_strict(form, ["title", "subtitle","description","inquiry_for","event_open","event_close","deal_open","deal_close","is_searchable"])}
+	  ${fco.form_as_table_strict(form, ["title", "subtitle","backend_id","description","inquiry_for","event_open","event_close","deal_open","deal_close","is_searchable"])}
 	  <button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> イベントを作成</button>
     </form>
   </div>

@@ -21,10 +21,24 @@ class SalesSegments(BaseView):
     def index(self):
         event_id = int(self.request.matchdict.get('event_id', 0))
         event = Event.get(event_id)
+
+        sort = self.request.GET.get('sort', 'SalesSegment.id')
+        direction = self.request.GET.get('direction', 'asc')
+        if direction not in ['asc', 'desc']:
+            direction = 'asc'
+
         conditions = {
             'event_id':event.id
         }
-        sales_segments = SalesSegment.find_by(**conditions)
+        query = SalesSegment.filter_by(**conditions)
+        query = query.order_by(sort + ' ' + direction)
+
+        sales_segments = paginate.Page(
+            query,
+            page=int(self.request.params.get('page', 0)),
+            items_per_page=20,
+            url=paginate.PageURL_WebOb(self.request)
+        )
 
         return {
             'form_sales_segment':SalesSegmentForm(event_id=event_id),

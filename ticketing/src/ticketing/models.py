@@ -90,17 +90,28 @@ class LogicallyDeleted(object):
     deleted_at = Column(TIMESTAMP, nullable=True)
 
 class BaseModel(object):
+    query = DBSession.query_property()
+
+    @classmethod
+    def filter(cls, expr=None):
+        q = cls.query
+        if hasattr(cls, 'deleted_at'):
+            q = q.filter(cls.deleted_at==None)
+        if expr is not None:
+            q = q.filter(expr)
+        return q
+
+    @classmethod
+    def filter_by(cls, **conditions):
+        return cls.filter().filter_by(**conditions)
+
     @classmethod
     def get(cls, id):
-        return DBSession.query(cls).filter(cls.id==id).first()
+        return cls.filter(cls.id==id).first()
 
     @classmethod
     def all(cls):
-        return DBSession.query(cls).filter(cls.deleted_at==None).all()
-
-    @classmethod
-    def find_by(cls, **conditions):
-        return DBSession.query(cls).filter_by(**conditions).all()
+        return cls.filter().all()
 
     @classmethod
     def clone(cls, origin):
@@ -117,6 +128,8 @@ class BaseModel(object):
             self.add()
 
     def add(self):
+        if hasattr(self, 'id') and not self.id:
+            del self.id
         self.created_at = datetime.now()
         self.updated_at = datetime.now()
         DBSession.add(self)

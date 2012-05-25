@@ -18,7 +18,7 @@ def perf(id_, title, beg, end):
     p = Performance.from_dict(
         {"title": title, 
          "start_on": beg, 
-         "close_on": end, 
+         "end_on": end, 
          "event_id": 1, 
          "id": id_
          })

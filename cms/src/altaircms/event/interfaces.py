@@ -1,11 +1,10 @@
 from zope.interface import Interface
 
 
-class IAPIKEYValidator(Interface):
-
+class IAPIKeyValidator(Interface):
     def __call__(apikey):
         """ validate api key"""
 
-class IEventRepositiry(Interface):
+class IEventRepository(Interface):
     def parse_and_save_event(data):
         """ """

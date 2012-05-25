@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from math import floor
+
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, Numeric, func
 from sqlalchemy.orm import relationship, join, backref, column_property, mapper, relation
 
@@ -30,7 +32,7 @@ class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @staticmethod
     def get_by_organization_id(id):
-        return DBSession.query(PaymentMethod).filter(PaymentMethod.organization_id==id).all()
+        return PaymentMethod.filter(PaymentMethod.organization_id==id).all()
 
 class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'DeliveryMethod'
@@ -45,7 +47,7 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @staticmethod
     def get_by_organization_id(id):
-        return DBSession.query(DeliveryMethod).filter(DeliveryMethod.organization_id==id).all()
+        return DeliveryMethod.filter(DeliveryMethod.organization_id==id).all()
 
 buyer_condition_set_table =  Table('BuyerConditionSet', Base.metadata,
     Column('id', Integer, primary_key=True),
@@ -178,7 +180,7 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @staticmethod
     def get_for_update(pid, stid):
-        return DBSession.query(Stock).with_lockmode("update").filter(Stock.performance_id==pid, Stock.stock_type_id==stid, Stock.quantity>0).first()
+        return Stock.filter(Stock.performance_id==pid, Stock.stock_type_id==stid, Stock.quantity>0).with_lockmode("update").first()
 
 # stock based on quantity
 class StockStatus(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -201,21 +203,19 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     items = relationship('ProductItem', backref='product')
 
     @staticmethod
-    def find(performance_id = None, event_id = None):
-        query = DBSession.query(Product)
+    def find(performance_id=None, event_id=None, sales_segment_id=None):
+        query = Product.filter()
         if performance_id:
-            query = query.\
-                join(Product.items).\
-                filter(ProductItem.performance_id==performance_id)
-        elif event_id:
-            # todo
-            pass
+            query = query.join(Product.items).filter(ProductItem.performance_id==performance_id)
+        if event_id:
+            query = query.filter(Product.event_id==event_id)
+        if sales_segment_id:
+            query = query.filter(Product.sales_segment_id==sales_segment_id)
         return query.all()
 
     def items_by_performance_id(self, id):
-        return DBSession.query(ProductItem).\
-            filter_by(performance_id=id).\
-            filter_by(product_id=self.id).all()
+        return ProductItem.filter_by(performance_id=id)\
+                          .filter_by(product_id=self.id).all()
 
     def get_for_update(self):
         for item in self.items:
@@ -240,3 +240,11 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             item.seatStatus.status = SeatStatusEnum.InCart.v
         DBSession.flush()
         return True
+
+    def get_sync_data(self, performance_id):
+        data = {
+            'name':self.name,
+            'seat_type':u'TODO',
+            'price':floor(self.price),
+        }
+        return data

@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
+import isodate
+
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, Numeric, func
 from sqlalchemy.orm import relationship, join, backref, column_property
 
 from ticketing.utils import StandardEnum
-from ticketing.models import Base, BaseModel, DBSession, WithTimestamp, LogicallyDeleted
+from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, DBSession
 from ticketing.products.models import Product, StockHolder
-from ticketing.venues.models import Venue, VenueArea, Seat, SeatAttribute
+from ticketing.venues.models import Venue, VenueArea, VenueArea_group_l0_id, Seat, SeatAttribute
 
 class AccountTypeEnum(StandardEnum):
     Promoter    = 1
@@ -28,10 +30,11 @@ class Account(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @staticmethod
     def get_by_organization_id(id):
-        return DBSession.query(Account).filter(Account.organization_id==id).all()
+        return Account.filter(Account.organization_id==id).all()
 
 class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Performance'
+
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
     code = Column(String(12))
@@ -49,7 +52,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def accounts(self):
-        data = DBSession.query(Account).join(StockHolder)\
+        data = Account.filter().join(StockHolder)\
                 .filter(StockHolder.performance_id==self.id)\
                 .filter(StockHolder.account_id==Account.id)\
                 .all()
@@ -70,29 +73,48 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             venue.save()
 
             # create VenueArea
-            if len(original_venue.areas) > 0:
-                for original_area in original_venue.areas:
-                    area = VenueArea.clone(original_area)
-                    area.venue_id = venue.id
-                    area.save()
+            for original_area in original_venue.areas:
+                area = VenueArea.clone(original_area)
+                area.venue_id = venue.id
+                area.save()
+
+                # create VenueArea_group_l0_id
+                for original_group in original_area.groups:
+                    group = VenueArea_group_l0_id()
+                    group.group_l0_id = original_group.group_l0_id
+                    group.venue_id = venue.id
+                    group.venue_area_id = area.id
+                    DBSession.add(group)
 
             # create Seat
-            if len(original_venue.seats) > 0:
-                for original_seat in original_venue.seats:
-                    seat = Seat.clone(original_seat)
-                    seat.venue_id = venue.id
-                    seat.stock_id = None
-                    seat.save()
+            for original_seat in original_venue.seats:
+                seat = Seat.clone(original_seat)
+                seat.venue_id = venue.id
+                seat.stock_id = None
+                seat.stock_type_id = None
+                seat.save()
 
-                    # create SeatAttribute
-                    if len(original_seat.attributes) > 0:
-                        for original_attribute in original_seat.attributes:
-                            attribute = SeatAttribute.clone(original_attribute)
-                            attribute.seat_id = seat.id
-                            attribute.save()
+                # create SeatAttribute
+                for original_attribute in original_seat.attributes:
+                    attribute = SeatAttribute.clone(original_attribute)
+                    attribute.seat_id = seat.id
+                    attribute.save()
+
+    def get_sync_data(self):
+        data = {
+            'id':self.id,
+            'name':self.name,
+            'venue':self.venue.name,
+            'open_on':isodate.datetime_isoformat(self.open_on),
+            'start_on':isodate.datetime_isoformat(self.start_on),
+            'close_on':isodate.datetime_isoformat(self.end_on),
+            'sales':[s.get_sync_data(self.id) for s in self.event.sales_segments],
+        }
+        return data
 
 class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Event'
+
     id = Column(BigInteger, primary_key=True)
     code = Column(String(12))
     title = Column(String(1024))
@@ -103,38 +125,50 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization_id = Column(BigInteger, ForeignKey('Organization.id'))
     organization = relationship('Organization', backref='events')
 
-    performances = relationship('Performance', backref='event')
+    performances = relationship(
+        'Performance',
+        backref='event',
+        primaryjoin='and_(Event.id==Performance.event_id, Performance.deleted_at==None)',
+    )
     stock_types = relationship('StockType', backref='event')
 
     @property
     def sales_start_on(self):
-        data = DBSession.query(func.min(SalesSegment.start_at)).join(Product)\
-                .filter(Product.event_id==self.id).first()
-        return data[0] if data else None
+        return SalesSegment.filter().with_entities(func.min(SalesSegment.start_at)).join(Product)\
+                .filter(Product.event_id==self.id).scalar()
 
     @property
     def sales_end_on(self):
-        data = DBSession.query(func.min(SalesSegment.end_at)).join(Product)\
-                .filter(Product.event_id==self.id).first()
-        return data[0] if data else None
+        return SalesSegment.filter().with_entities(func.min(SalesSegment.end_at)).join(Product)\
+                .filter(Product.event_id==self.id).scalar()
 
     @property
     def start_performance(self):
-        return DBSession.query(Performance).filter(Performance.event_id==self.id)\
+        return Performance.filter(Performance.event_id==self.id)\
                 .order_by('Performance.start_on asc').first()
 
     @property
     def final_performance(self):
-        return DBSession.query(Performance).filter(Performance.event_id==self.id)\
+        return Performance.filter(Performance.event_id==self.id)\
                 .order_by('Performance.start_on desc').first()
 
     def get_accounts(self):
-        return DBSession.query(Account.name).join(StockHolder).join(Performance)\
+        return Account.filter().with_entities(Account.name).join(StockHolder).join(Performance)\
                 .filter(Account.organization_id==self.organization_id)\
                 .filter(Account.id==StockHolder.account_id)\
                 .filter(StockHolder.performance_id==Performance.id)\
                 .filter(Performance.event_id==self.id)\
                 .distinct()
+
+    def get_sync_data(self):
+        data = {
+            'id':self.id,
+            'name':self.title,
+            'start_on':isodate.datetime_isoformat(self.start_on),
+            'end_on':isodate.datetime_isoformat(self.end_on),
+            'performances':[p.get_sync_data() for p in self.performances],
+        }
+        return data
 
 class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'SalesSegment'
@@ -147,6 +181,18 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     event_id = Column(BigInteger, ForeignKey('Event.id'))
     event = relationship('Event', backref='sales_segments')
+
+    def get_sync_data(self, performance_id):
+        products = Product.find(performance_id=performance_id, sales_segment_id=self.id)
+        if products:
+            data = {
+                'name':self.name,
+                'start_on':isodate.datetime_isoformat(self.start_at),
+                'end_on':isodate.datetime_isoformat(self.end_at),
+                'tickets':[p.get_sync_data(performance_id) for p in products],
+            }
+            return data
+        return {}
 
 class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentDeliveryMethodPair'
@@ -162,14 +208,3 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
     payment_method = relationship('PaymentMethod')
     delivery_method_id = Column(BigInteger, ForeignKey('DeliveryMethod.id'))
     delivery_method = relationship('DeliveryMethod')
-
-    @staticmethod
-    def find(**kwargs):
-        query = DBSession.query(PaymentDeliveryMethodPair)
-        if 'sales_segment_id' in kwargs:
-            query = query.filter_by(sales_segment_id=kwargs['sales_segment_id'])
-        if 'payment_method_id' in kwargs:
-            query = query.filter_by(payment_method_id=kwargs['payment_method_id'])
-        if 'delivery_method_id' in kwargs:
-            query = query.filter_by(delivery_method_id=kwargs['delivery_method_id'])
-        return query.first()

@@ -3,14 +3,14 @@ import logging
 import json
 
 from pyramid.view import view_config
-from pyramid.httpexceptions import HTTPCreated, HTTPForbidden
+from pyramid.httpexceptions import HTTPCreated, HTTPForbidden, HTTPBadRequest
 
 from altaircms.models import Performance
 from .models import Event
 from altaircms.page.models import Page
 from altaircms.lib.fanstatic_decorator import with_bootstrap
 
-from altaircms.event.forms import EventForm, EventRegisterForm
+from altaircms.event.forms import EventForm
 from . import helpers as h
 
 
@@ -45,25 +45,16 @@ def event_list(request):
 ##
 ## バックエンドとの通信用
 ##
-@view_config(route_name="api_event_register", request_method="POST", renderer="json")
+@view_config(route_name="api_event_register", request_method="POST")
 def event_register(request):
-    form = EventRegisterForm(request.POST)
     apikey = request.headers.get('X-Altair-Authorization', None)
+    if apikey is None:
+        return HTTPForbidden("")
     if not h.validate_apikey(request, apikey):
-        return HTTPForbidden()
-
-    if not form.validate():
-        return h.json_error_response(form.errors)
-
-    jsonstring = request.POST['jsonstring']
-
+        return HTTPCreated(body=json.dumps({u'status':u'error', u'message':u'access denined'}))
     try:
-        data = json.loads(jsonstring)
-        h.parse_and_save_event(request, data)
-        return HTTPCreated()
-
+        h.parse_and_save_event(request, request.json_body)
+        return HTTPCreated(body=json.dumps({u'status':u'success'}))
     except ValueError as e:
         logging.exception(e)
-        return h.json_error_response({'error': str(e)})
-
-
+        return HTTPBadRequest(body=json.dumps({u'status':u'error', u'message':unicode(e)}))

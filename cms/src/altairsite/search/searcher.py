@@ -9,13 +9,189 @@ from altaircms.models import (
     Performance
 )
 from altaircms.models import DBSession
-from altaircms.page.models import PageSet
+from altaircms.page.models import (
+   PageSet, 
+   Page
+)
 from altaircms.event.models import Event
 from altaircms.solr import api as solrapi
+from altaircms.tag.models import (
+   HotWord, 
+   PageTag, 
+   PageTag2Page
+)
 
+## todo: datetimeの呼び出し回数減らす
+
+## for document
+from zope.interface import Interface, provider
+class ISearchFn(Interface):
+   def __call__(request,  query_params):
+       """ resource.pyでsearchfnを引数に取るメソッドに渡す
+           :param query_params:  form.pyのmake_query_paramsで作られた辞書
+           :return: query set of pageset
+       """
+##
+def _refine_pageset_collect_future(qs, _nowday=datetime.datetime.now):
+   today = _nowday()
+   qs = qs.filter((today <= Event.deal_close )|( Event.deal_close == None))
+   return qs
+
+def _refine_pageset_search_order(qs):
+   """  検索結果の表示順序を変更。最も販売終了が間近なものを先頭にする
+   """
+   return qs.order_by(sa.asc("event.deal_close"))
+
+def _refine_pageset_qs(qs):
+    """optimize"""
+    # 検索対象に入っているもののみが検索に引っかかる
+    qs = qs.filter(Event.is_searchable==True).filter(Event.id==PageSet.event_id)
+
+    qs = _refine_pageset_search_order(qs)
+    return qs.options(orm.joinedload("event")).options(orm.joinedload("event.performances"))
+
+
+## todo:test
+@provider(ISearchFn)
+def get_pageset_query_from_hotword(request, query_params):
+    """ Hotwordの検索"""
+    if query_params.get("hotword"):
+       qs = PageSet.query
+       hotword = query_params["hotword"]
+       return search_by_hotword(qs, hotword)
+    else:
+       return []
+
+@provider(ISearchFn)
+def get_pageset_query_from_freeword(request, query_params):
+    """ フリーワード検索のみ"""
+    qs = PageSet.query
+
+    words = _extract_tags(query_params, "query")
+    if words:
+        qs = search_by_freeword(qs, request, words, query_params.get("query_cond"))
+        qs = _refine_pageset_collect_future(qs)
+        return  _refine_pageset_qs(qs)
+    else:
+       return []
+
+@provider(ISearchFn)
+def get_pageset_query_from_genre(request, query_params):
+    """ ジャンルのみ"""
+    qs = PageSet.query
+
+    if query_params.get("top_categories") or query_params.get("sub_categories"):
+       qs = search_by_genre(query_params.get("top_categories"), query_params.get("sub_categories"), qs=qs)
+       qs = _refine_pageset_collect_future(qs)
+       return  _refine_pageset_qs(qs)
+    else:
+       return []
+
+@provider(ISearchFn)
+def get_pageset_query_from_area(request, query_params):
+    """ エリアのみ"""
+    qs = PageSet.query
+    if query_params.get("prefectures"):
+       sub_qs = DBSession.query(Event.id)
+       sub_qs = events_by_area(sub_qs, query_params.get("prefectures"))
+       sub_qs = sub_qs.filter(Event.is_searchable==True)
+       qs = search_by_events(qs, sub_qs)
+       qs = _refine_pageset_collect_future(qs)
+       return  _refine_pageset_qs(qs)
+    else:
+       return []
+
+@provider(ISearchFn)
+def get_pageset_query_from_deal_cond(request, query_params):
+    """ 販売条件のみ"""
+    qs = PageSet.query
+    if query_params.get("prefectures"):
+       sub_qs = DBSession.query(Event.id)
+       sub_qs = events_by_deal_cond_flags(sub_qs, query_params) ## 未実装
+       sub_qs = sub_qs.filter(Event.is_searchable==True)
+       qs = search_by_events(qs, sub_qs)
+       qs = _refine_pageset_collect_future(qs)
+       return  _refine_pageset_qs(qs)
+    else:
+       return []
+
+@provider(ISearchFn)
+def get_pageset_query_from_deal_open_within(request, query_params):
+    """ N日以内の受付販売開始"""
+    qs = PageSet.query
+    if query_params.get("ndays"):
+       sub_qs = DBSession.query(Event.id)
+       sub_qs = events_by_within_n_days_of(sub_qs, Event.deal_open, query_params["ndays"])
+       sub_qs = sub_qs.filter(Event.is_searchable==True)
+       qs = search_by_events(qs, sub_qs)
+       qs = _refine_pageset_collect_future(qs)
+       return  _refine_pageset_qs(qs)
+    else:
+       return []
+
+@provider(ISearchFn)
+def get_pageset_query_from_event_open_within(request, query_params):
+    """ N日以内に公演"""
+##
+## todo: 今、N日以内の公演開始のものを集めている。これはおかしいかもしれない。
+##
+    qs = PageSet.query
+    if query_params.get("ndays"):
+       sub_qs = DBSession.query(Event.id)
+       sub_qs = events_by_within_n_days_of(sub_qs, Event.event_open, query_params["ndays"])
+       sub_qs = sub_qs.filter(Event.is_searchable==True)
+       qs = search_by_events(qs, sub_qs)
+       qs = _refine_pageset_collect_future(qs)
+       return  _refine_pageset_qs(qs)
+    else:
+       return []
+
+
+@provider(ISearchFn)
+def get_pageset_query_fullset(request, query_params): 
+    """ 検索する関数.このモジュールのほかの関数は全てこれのためにある。
+
+    0. フリーワード検索追加. 
+    1. カテゴリトップページから、対応するページを見つける
+    2. イベントデータから、対応するページを見つける(sub_qs)
+    """
+    sub_qs = DBSession.query(Event.id)
+    sub_qs = events_by_area(sub_qs, query_params.get("prefectures"))
+    sub_qs = events_by_performance_term(sub_qs, query_params.get("performance_open"), query_params.get("performance_close"))
+    sub_qs = events_by_deal_cond_flags(sub_qs, query_params) ## 未実装
+    sub_qs = events_by_added_service(sub_qs, query_params) ## 未実装
+    sub_qs = events_by_about_deal(sub_qs, query_params.get("before_deal_start"), query_params.get("till_deal_end"), 
+                                  query_params.get("closed_only"), query_params.get("canceld_only"))
+
+
+    qs = PageSet.query
+    qs = search_by_genre(query_params.get("top_categories"), query_params.get("sub_categories"), qs=qs)
+    qs = search_by_events(qs, sub_qs)
+
+    # 検索対象に入っているもののみが検索に引っかかる
+    sub_qs = sub_qs.filter(Event.is_searchable==True)
+
+    if "query" in query_params:
+        words = _extract_tags(query_params, "query")
+        qs = search_by_freeword(qs, request, words, query_params.get("query_cond"))
+
+    return  _refine_pageset_qs(qs)
+
+
+def search_by_hotword(qs, hotword):
+   """　hotwordの検索
+   """
+   return qs.filter(
+        (HotWord.tag_id==PageTag.id) & (HotWord.enablep == True) & (PageTag.publicp==True) & (HotWord.name==hotword)
+      ).filter(
+        PageTag.id==PageTag2Page.tag_id
+      ).filter(
+         Page.id==PageTag2Page.object_id
+      ).filter(
+         (Page.pageset_id==PageSet.id) & (PageSet.event != None) #そもそもチケット用の検索なのでeventは必須
+      )
 
 def search_by_freeword(qs, request, words, query_cond):
-    assert query_cond in ("intersection", "union")
 
     fulltext_search = solrapi.get_fulltext_search(request)
     solr_query = solrapi.create_query_from_freeword(words, query_cond=query_cond)
@@ -28,44 +204,16 @@ def search_by_freeword(qs, request, words, query_cond):
 def _extract_tags(params, k):
     if k not in params:
         return []
+    params = params.copy()
     tags = [e.strip() for e in params.pop(k).split(",")] ##
     return [k for k in tags if k]
 
-def get_pageset_query(request, query_params): 
-    """ 検索する関数.このモジュールのほかの関数は全てこれのためにある。
-
-    0. フリーワード検索追加. 
-    1. カテゴリトップページから、対応するページを見つける
-    2. イベントデータから、対応するページを見つける(sub_qs)
-    """
-    sub_qs = DBSession.query(Event.id)
-    sub_qs = events_by_area(sub_qs, query_params.get("prefectures"))
-    sub_qs = events_by_performance_term(sub_qs, query_params.get("start_date"), query_params.get("end_date"))
-    sub_qs = events_by_deal_cond_flags(sub_qs, query_params) ## 未実装
-    sub_qs = events_by_added_service(sub_qs, query_params) ## 未実装
-    sub_qs = events_by_about_deal(sub_qs, query_params.get("before_deal_start"), query_params.get("till_deal_end"), 
-                                  query_params.get("closed_only"), query_params.get("canceld_only"))
-
-
-    qs = PageSet.query
-    qs = search_by_ganre(query_params.get("top_categories"), query_params.get("sub_categories"), qs=qs)
-    qs = search_by_events(qs, sub_qs)
-
-    # 検索対象に入っているもののみが検索に引っかかる
-    sub_qs = sub_qs.filter(Event.is_searchable==True)
-    qs = qs.filter(Event.is_searchable==True).filter(Event.id==PageSet.event_id)
-
-    if "query" in query_params:
-        words = _extract_tags(query_params, "query")
-        qs = search_by_freeword(qs, request, words, query_params.get("query_cond"))
-        
-    return  qs
 
 
 def search_by_events(qs, event_ids):
     return qs.filter(PageSet.event_id.in_(event_ids))
 
-def search_by_ganre(top_categories, sub_categories, qs=None):
+def search_by_genre(top_categories, sub_categories, qs=None):
     """ジャンルからページセットを取り出す
     :params qs:
     :return: query set of PageSet
@@ -95,17 +243,27 @@ def events_by_area(qs, prefectures):
     if not prefectures:
         return qs
 
-    matched_perf_ids = DBSession.query(Performance.event_id).filter(Performance.venue.in_(prefectures))
+    matched_perf_ids = DBSession.query(Performance.event_id).filter(Performance.prefecture.in_(prefectures))
     return qs.filter(Event.id.in_(matched_perf_ids))
 
-def events_by_performance_term(qs, start_date, end_date):
-    if not (start_date or end_date):
+
+##日以内に開始系の関数
+def events_by_within_n_days_of(qs, start_from, n, _nowday=datetime.datetime.now):
+   today = _nowday()
+   qs = qs.filter(start_from <= (today+datetime.timedelta(days=n)))
+   ## 今日より後のもののみ検索対象とするのは `_refine_pageset_collect_futureでやっている
+   # qs = qs.filter(start_from >= today).filter(start_from <= (today+datetime.timedelta(days=n)))
+   return qs
+   
+
+def events_by_performance_term(qs, performance_open, performance_close):
+    if not (performance_open or performance_close):
         return qs
 
-    if start_date:
-        qs = qs.filter(Event.event_open >= start_date)
-    if end_date:
-        qs = qs.filter(Event.event_close <= end_date)
+    if performance_open:
+        qs = qs.filter(Event.event_open >= performance_open)
+    if performance_close:
+        qs = qs.filter(Event.event_close <= performance_close)
     return qs
 
 def events_by_deal_cond_flags(qs, flags):

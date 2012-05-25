@@ -31,7 +31,7 @@
                   <% status= h.event.detect_performance_status(p)%>
 	              <p class="${status}">
 					<strong>${h.event.content_string_from_performance_status(status)}</strong>
-					<a target="_blank" href="#">${p.start_on.strftime("%H:%M")}</a>
+					<a target="_blank" href="${h.link.get_purchase_page_from_performance(request,p)}">${p.start_on.strftime("%H:%M")}</a>
 				  </p>
 			%endfor
 		  </td>   

@@ -14,8 +14,8 @@ def _to_term(p):
         r.append(u"%s開場" % p.open_on.strftime("%H:%M"))
     if p.start_on:
         r.append(u"%s開演" % p.start_on.strftime("%H:%M"))
-    if p.close_on:
-        r.append(u"%s終了" % p.close_on.strftime("%H:%M"))
+    if p.end_on:
+        r.append(u"%s終了" % p.end_on.strftime("%H:%M"))
     return u"／".join(r)
 
 def _to_where(p):
@@ -26,7 +26,7 @@ def performance_describe(performance):
     """
     return u"　".join([_to_jastr(performance.open_on), 
                        u"〜", 
-                       _to_jastr(performance.close_on), 
+                       _to_jastr(performance.end_on), 
                        _to_where(performance), 
                        ])
 

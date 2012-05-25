@@ -188,6 +188,13 @@ add_anchorlist_widget = functools.partial(
     import_symbol("altaircms.plugins.widget.anchorlist.models:AnchorlistWidget").type, 
     )
 
+add_purchase_widget = functools.partial(
+    add_widget, 
+    import_symbol("altaircms.plugins.widget.purchase.views:PurchaseWidgetView"), 
+    import_symbol("altaircms.plugins.widget.purchase.models:PurchaseWidgetResource"), 
+    import_symbol("altaircms.plugins.widget.purchase.models:PurchaseWidget").type, 
+    )
+
 class Objlike(dict):
     __getattr__ = dict.__getitem__
 
@@ -237,48 +244,54 @@ def detail_performances(event):
                 title=event.title, 
                 open_on=datetime.datetime(2011, 12, 4, 10), 
                 start_on=datetime.datetime(2011, 12, 4, 10), 
-                close_on=datetime.datetime(2011, 12, 4, 18), 
-                backend_performance_id=9999, 
+                end_on=datetime.datetime(2011, 12, 4, 18), 
+                backend_id=9999, 
+                prefecture="tokyo", 
                 event=event
                 ), 
     Performance(venue=u"幕張メッセイベントホール", 
                 title=event.title, 
                 open_on=datetime.datetime(2011, 12, 11, 10), 
                 start_on=datetime.datetime(2011, 12, 11, 10), 
-                close_on=datetime.datetime(2011, 12, 11, 18), 
-                backend_performance_id=10000, 
+                end_on=datetime.datetime(2011, 12, 11, 18), 
+                backend_id=10000, 
+                prefecture="tokyo", 
                 event=event
                 ), 
     Performance(venue=u"幕張メッセイベントホール", 
                 title=event.title, 
                 open_on=datetime.datetime(2011, 12, 18, 10), 
                 start_on=datetime.datetime(2011, 12, 18, 10), 
-                close_on=datetime.datetime(2011, 12, 18, 18), 
-                backend_performance_id=10001, 
+                end_on=datetime.datetime(2011, 12, 18, 18), 
+                backend_id=10001, 
+                prefecture="tokyo", 
                 event=event
                 ), 
     Performance(venue=u"幕張メッセイベントホール", 
                 title=event.title, 
                 open_on=datetime.datetime(2011, 12, 18, 19), 
                 start_on=datetime.datetime(2011, 12, 18, 19), 
-                close_on=datetime.datetime(2011, 12, 18, 23), 
-                backend_performance_id=10001, 
+                end_on=datetime.datetime(2011, 12, 18, 23), 
+                backend_id=10001, 
+                prefecture="tokyo", 
                 event=event
                 ), 
     Performance(venue=u"幕張メッセイベントホール", 
                 title=event.title, 
                 open_on=datetime.datetime(2011, 12, 25, 10), 
                 start_on=datetime.datetime(2011, 12, 25, 10), 
-                close_on=datetime.datetime(2011, 12, 25, 18), 
-                backend_performance_id=10002, 
+                end_on=datetime.datetime(2011, 12, 25, 18), 
+                backend_id=10002, 
+                prefecture="tokyo", 
                 event=event
                 ), 
     Performance(venue=u"幕張メッセイベントホール", 
                 title=event.title, 
                 open_on=datetime.datetime(2012, 5, 25, 10), 
                 start_on=datetime.datetime(2012, 5, 25, 10), 
-                close_on=datetime.datetime(2012, 5, 25, 18), 
-                backend_performance_id=10002, 
+                end_on=datetime.datetime(2012, 5, 25, 18), 
+                backend_id=10002, 
+                prefecture="gunma", 
                 event=event
                 ), 
     ]
@@ -286,6 +299,7 @@ def detail_performances(event):
 
 def detail_event():
     event = Event(title= u"ブルーマングループ IN 東京", 
+                  backend_id=1,  ##todo:バックエンド側のidを保持するはず。ここで直接指定するのはあまりよくない
                   event_open=u"2012-12-04", 
                   event_close=u"2013-5-25", 
                   deal_open=u"2013-10-1", 
@@ -366,6 +380,11 @@ def add_detail_main_block_widgets(page, asset):
             , ensure_ascii=False)}
     add_summary_widget(page, "main", data)
 
+    data = {"external_link": None, "kind": "simple"}
+    add_purchase_widget(page, "main", data)
+
+    # data = {"external_link": "http://example.com", "kind": "simple"}
+    # add_purchase_widget(page, "main", data)
 
 
 def add_detail_page_settings():

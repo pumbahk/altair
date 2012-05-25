@@ -5,10 +5,11 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path
 import webhelpers.paginate as paginate
 
-from ticketing.models import merge_session_with_post, record_to_appstruct, merge_and_flush, DBSession
+from ticketing.models import merge_session_with_post, record_to_appstruct, merge_and_flush
 from ticketing.organizations.models import Organization
 from ticketing.operators.models import Operator, OperatorRole, Permission
 from ticketing.orders.models import Order
+from ticketing.orders.forms import OrderForm
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 
@@ -17,19 +18,23 @@ class Orders(BaseView):
 
     @view_config(route_name='orders.index', renderer='ticketing:templates/orders/index.html')
     def index(self):
-        current_page = int(self.request.params.get('page', 0))
         sort = self.request.GET.get('sort', 'Order.id')
         direction = self.request.GET.get('direction', 'asc')
         if direction not in ['asc', 'desc']:
             direction = 'asc'
 
-        page_url = paginate.PageURL_WebOb(self.request)
-        query = DBSession.query(Order).order_by(sort + ' ' + direction)
-        query = query.filter(Order.organization_id == int(self.context.user.organization_id))
+        query = Order.filter(Order.organization_id==int(self.context.user.organization_id))
+        query = query.order_by(sort + ' ' + direction)
 
-        orders = paginate.Page(query.order_by(Order.id), page=current_page, items_per_page=10, url=page_url)
+        orders = paginate.Page(
+            query,
+            page=int(self.request.params.get('page', 0)),
+            items_per_page=20,
+            url=paginate.PageURL_WebOb(self.request)
+        )
 
         return {
+            'form':OrderForm(),
             'orders':orders,
         }
 

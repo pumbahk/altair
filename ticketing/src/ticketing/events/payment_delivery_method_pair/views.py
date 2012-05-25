@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import webhelpers.paginate as paginate
-
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path

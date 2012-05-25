@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import webhelpers.paginate as paginate
-
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.renderers import render_to_response
 from pyramid.url import route_path
 
-from ticketing.models import merge_session_with_post, record_to_multidict, DBSession
+from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.events.models import Event, Performance, Account, SalesSegment

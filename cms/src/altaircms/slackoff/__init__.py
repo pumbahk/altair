@@ -17,4 +17,6 @@ def includeme(config):
                     form=".forms.TopicForm", mapper=".mappers.topic_mapper")
     config.add_crud("topcontent", title="topcontent", model="..topcontent.models.Topcontent",
                     form=".forms.TopcontentForm", mapper=".mappers.topcontent_mapper")
+    config.add_crud("hotword", title="hotword", model="..tag.models.HotWord",
+                    form=".forms.HotWordForm", mapper=".mappers.hotword_mapper")
 

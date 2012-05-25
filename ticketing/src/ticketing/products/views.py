@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import webhelpers.paginate as paginate
+
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.renderers import render_to_response
@@ -22,8 +24,27 @@ class Products(BaseView):
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
 
+        sort = self.request.GET.get('sort', 'Product.id')
+        direction = self.request.GET.get('direction', 'asc')
+        if direction not in ['asc', 'desc']:
+            direction = 'asc'
+
+        conditions = {
+            'event_id':event.id
+        }
+        query = Product.filter_by(**conditions)
+        query = query.order_by(sort + ' ' + direction)
+
+        products = paginate.Page(
+            query,
+            page=int(self.request.params.get('page', 0)),
+            items_per_page=20,
+            url=paginate.PageURL_WebOb(self.request)
+        )
+
         return {
             'form':ProductForm(event_id=event.id),
+            'products':products,
             'event':event,
         }
 

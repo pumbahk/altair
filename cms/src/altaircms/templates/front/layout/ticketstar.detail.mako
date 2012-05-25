@@ -19,10 +19,10 @@
     <ul>
       <% nav_categories = list(categories)%>
         % for category in nav_categories[:-1]:
-          <li><a href="${h.link.get_link_from_category(request, category)}" alt="${category.name}">${category.name}</a></li>
+          <li><a href="${h.link.get_link_from_category(request, category)}" alt="${category.label}">${category.label}</a></li>
         % endfor
         % if categories:
-          <li><a href="${h.link.get_link_from_category(request, nav_categories[-1])}" alt="${nav_categories[-1].name}">${nav_categories[-1].name}</a></li>
+          <li><a href="${h.link.get_link_from_category(request, nav_categories[-1])}" alt="${nav_categories[-1].label}">${nav_categories[-1].label}</a></li>
         % endif
     </ul>
     </%block>

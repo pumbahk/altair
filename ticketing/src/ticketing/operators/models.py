@@ -5,14 +5,10 @@ from sqlalchemy.orm import relationship, join, column_property, mapper
 
 from hashlib import md5
 
-import sqlahelper
-
-session = sqlahelper.get_session()
-Base = sqlahelper.get_base()
 from ticketing.utils import StandardEnum
 
 from ticketing.organizations.models import Organization
-from ticketing.models import WithTimestamp, LogicallyDeleted
+from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, DBSession
 
 operator_role_association_table = Table('OperatorRole_Operator', Base.metadata,
     Column('id', Integer, primary_key=True),
@@ -30,15 +26,15 @@ class Permission(Base):
 
     @staticmethod
     def all():
-        return session.query(Permission).all()
+        return DBSession.query(Permission).all()
 
     @staticmethod
     def get_by_key(category_name):
-        return session.query(Permission).filter(Permission.category_name == category_name).first()
+        return DBSession.query(Permission).filter(Permission.category_name == category_name).first()
 
     @staticmethod
     def list_in(category_names):
-        return session.query(Permission)\
+        return DBSession.query(Permission)\
             .filter(Permission.category_name.in_(category_names)).all()
 
 class OperatorRole(Base, WithTimestamp):
@@ -52,7 +48,7 @@ class OperatorRole(Base, WithTimestamp):
 
     @staticmethod
     def all():
-        return session.query(OperatorRole).all()
+        return DBSession.query(OperatorRole).all()
 
 class OperatorActionHistoryTypeENum(StandardEnum):
     View      = 1
@@ -77,7 +73,7 @@ class OperatorAuth(Base, WithTimestamp):
     access_token = Column(String(32), nullable=True)
     secret_key = Column(String(32), nullable=True)
 
-class Operator(Base, WithTimestamp, LogicallyDeleted):
+class Operator(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Operator'
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
@@ -93,15 +89,12 @@ class Operator(Base, WithTimestamp, LogicallyDeleted):
 
     @staticmethod
     def get_by_login_id(user_id):
-        return session.query(Operator)\
-                .join(OperatorAuth)\
+        return Operator.query.join(OperatorAuth)\
                 .filter(OperatorAuth.login_id == user_id).first()
 
     @staticmethod
     def login(login_id, password):
-        operator = session.query(Operator)\
-                .join(OperatorAuth)\
+        operator = Operator.query.join(OperatorAuth)\
                 .filter(OperatorAuth.login_id == login_id)\
                 .filter(OperatorAuth.password == md5(password).hexdigest()).first()
         return operator
-

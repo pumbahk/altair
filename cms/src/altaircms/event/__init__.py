@@ -1,5 +1,5 @@
 # coding: utf-8
-from .interfaces import IAPIKEYValidator, IEventRepositiry
+from .interfaces import IAPIKeyValidator, IEventRepository
 
 def includeme(config):
     config.add_route('event', '/event/{id}')
@@ -14,8 +14,8 @@ def includeme(config):
 
     reg = config.registry
     validate_apikey = config.maybe_dotted('.api.validate_apikey')
-    reg.registerUtility(validate_apikey, IAPIKEYValidator)
+    reg.registerUtility(validate_apikey, IAPIKeyValidator)
     event_repository = config.maybe_dotted('.api.EventRepositry')
-    reg.registerUtility(event_repository, IEventRepositiry)
+    reg.registerUtility(event_repository(), IEventRepository)
 
     config.scan()

@@ -1,5 +1,4 @@
 <%inherit file="/layout.html"/>
-<%namespace file="/common/helpers.html" import="pager"/>                                               
 <%namespace file="/common/helpers.html" import="flash_messages" />
 <%namespace file="/common/helpers.html" import="breadcrumbs" />
 
@@ -22,11 +21,10 @@
       ${flash_messages(request)}
     </div>
 
-    <%include file="/accounts/_list.html" args="accounts=accounts" />
+    <%include file="/accounts/_list.html" args="form=form, accounts=accounts" />
     <%include file="/accounts/_action_button.html" />
     <div id="accounts-form">
       <%include file="/accounts/_form.html" args="form=form" />
     </div>
   </span>
-  ${pager(accounts)}
 </div>

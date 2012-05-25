@@ -83,7 +83,7 @@
 
     <div id="stock_types">
       <h3>席種</h3>
-      <%include file="/stock_types/_list.html" args="event=event" />
+      <%include file="/stock_types/_list.html" args="stock_types=event.stock_types, limit=5" />
       <%include file="/stock_types/_action_button.html" args="event=event" />
       <div id="stock_types-form">
         <%include file="/stock_types/_form.html" args="form=form_stock_type" />
@@ -94,8 +94,8 @@
 
     <div id="sales_segments">
       <h3>販売区分</h3>
-      <%include file="/sales_segments/_list.html" args="sales_segments=event.sales_segments" />
-      <%include file="/sales_segments/_action_button.html" args="event=event, form=form_sales_segment" />
+      <%include file="/sales_segments/_list.html" args="form=form_sales_segment, sales_segments=event.sales_segments, limit=5" />
+      <%include file="/sales_segments/_action_button.html" args="form=form_sales_segment, event=event" />
       <div id="sales_segments-form">
         <%include file="/sales_segments/_form.html" args="form=form_sales_segment" />
       </div>
@@ -105,7 +105,7 @@
 
     <div id="products">
       <h3>商品</h3>
-      <%include file="/products/_list.html" args="event=event" />
+      <%include file="/products/_list.html" args="form=form_product, products=event.products, limit=5" />
       <%include file="/products/_action_button.html" />
       <div id="products-form">
         <%include file="/products/_form.html" args="form=form_product" />
@@ -116,8 +116,8 @@
 
     <div id="performances">
       <h3>パフォーマンス</h3>
-      <%include file="/performances/_list.html" />
-      <%include file="/performances/_action_button.html" />
+      <%include file="/performances/_list.html" args="form=form_performance, performances=event.performances, limit=5" />
+      <%include file="/performances/_action_button.html"  args="event=event" />
     </div>
 
   </span>

@@ -3,7 +3,6 @@
 import unittest
 import datetime
 import os.path
-from altairsite.models import Base, DBSession
 
 """
 Page -> Layout
@@ -16,20 +15,29 @@ from altaircms.lib.testutils import functionalTestTearDown
 app = None
 def setUpModule():
     global app
+    import sqlahelper
+    from sqlalchemy import create_engine
+
     DIR = os.path.dirname(os.path.abspath(__file__))
-    DBSession.remove()
+
+    engine = create_engine("sqlite:///")
+    engine.echo = False
+    sqlahelper.get_session().remove()
+    sqlahelper.add_engine(engine)
+
     from altairsite import main
     defaults = {"sqlalchemy.url": "sqlite://", 
                 "session.secret": "B7gzHVRUqErB1TFgSeLCHH3Ux6ShtI", 
                 "mako.directories": os.path.join(DIR, "templates"), 
-                "pyramid_who.config": "usersite_who.ini", 
+                "pyramid_who.config": "usersite_who.ini",  ##
                 "altaircms.asset.storepath": "altaircms:../../data/assets", 
                 "altaircms.debug.strip_security": 'true', 
                 "altaircms.plugin_static_directory": "altaircms:plugins/static", 
                 "altaircms.layout_directory": "."}
     config = defaults.copy()
     app = main({}, **config)
-    Base.metadata.create_all()
+    sqlahelper.get_base().metadata.drop_all()
+    sqlahelper.get_base().metadata.create_all()
     return app
 
 
@@ -158,6 +166,7 @@ class FunctionalPageRenderingTest(UseAssetMixin,
         """
         session = self._getSession()
         self._addData(session, u"{}")
+        session.flush()
         self.testapp.get("/sample_page", status=200)
 
 
@@ -172,8 +181,7 @@ class FunctionalPageRenderingTest(UseAssetMixin,
         page.structure = structure
         session.add(page)
         self._addWidget(session)
-        import transaction
-        transaction.commit()
+        self._getSession().flush()
 
         result = self.testapp.get("/sample_page", status=200)
         text = result.text
@@ -196,14 +204,12 @@ class FunctionalPageRenderingTest(UseAssetMixin,
         session.add(self._getCalendarWidget())
         session.add(self._getFlashWidget())
         session.add(self._getFlashWidget2())
-        import transaction
-        transaction.commit()
+        self._getSession().flush()
+
         
     def _addData(self, session, structure=u""):
         session.add(self._getPage(structure))
         session.add(self._getLayout())
-        import transaction
-        transaction.commit()
 
     def _getSession(self):
         from altaircms.models import DBSession

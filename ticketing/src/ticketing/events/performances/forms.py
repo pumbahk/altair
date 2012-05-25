@@ -6,7 +6,7 @@ from wtforms.validators import Required, Regexp, Length, Optional, ValidationErr
 
 from ticketing.utils import DateTimeField, Translations
 from ticketing.venues.models import Venue
-from ticketing.events.models import Account
+from ticketing.events.models import Account, Performance
 
 class PerformanceForm(Form):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
@@ -17,12 +17,16 @@ class PerformanceForm(Form):
                 'original_venue_id':None,
             }
             self.venue_id.choices = [
-                (venue.id, venue.name) for venue in Venue.find_by(**conditions)
+                (venue.id, venue.name) for venue in Venue.filter_by(**conditions).all()
             ]
 
     def _get_translations(self):
         return Translations()
 
+    id = HiddenField(
+        label=u'ID',
+        validators=[Optional()],
+    )
     name = TextField(
         label=u'公演名',
         validators=[
@@ -67,3 +71,7 @@ class PerformanceForm(Form):
     def validate_end_on(form, field):
         if field.data and form.start_on.data and field.data < form.start_on.data:
             raise ValidationError(u'開演日時より過去の日時は入力できません')
+
+    def validate_code(form, field):
+        if field.data and Performance.filter_by(code=field.data).count():
+            raise ValidationError(u'既に使用されています')

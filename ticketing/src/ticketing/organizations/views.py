@@ -1,33 +1,43 @@
 # -*- coding: utf-8 -*-
 
+import webhelpers.paginate as paginate
+
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path
 
-from ticketing.models import merge_session_with_post, record_to_appstruct
-from .models import Organization, session
-from ticketing.views import BaseView
-
-from forms import OrganizationForm
 from deform.form import Form,Button
 from deform.exception import ValidationFailure
 
-import webhelpers.paginate as paginate
 from ticketing.fanstatic import with_bootstrap
+from ticketing.models import merge_session_with_post, record_to_appstruct
+from ticketing.views import BaseView
+from ticketing.organizations.models import Organization
+from ticketing.organizations.forms import OrganizationForm
 
 #@view_defaults(decorator=with_bootstrap, permission="administrator")
 @view_defaults(decorator=with_bootstrap)
 class Organizations(BaseView):
     @view_config(route_name='organizations.index', renderer='ticketing:templates/organizations/index.html')
     def index(self):
-        current_page = int(self.request.params.get("page", 0))
-        page_url = paginate.PageURL_WebOb(self.request)
-        query = session.query(Organization)
-        organizations = paginate.Page(query.order_by(Organization.id), current_page, url=page_url)
+        sort = self.request.GET.get('sort', 'Organization.id')
+        direction = self.request.GET.get('direction', 'asc')
+        if direction not in ['asc', 'desc']:
+            direction = 'asc'
+
+        query = Organization.filter()
+        query = query.order_by(sort + ' ' + direction)
+
+        organizations = paginate.Page(
+            query,
+            page=int(self.request.params.get('page', 0)),
+            items_per_page=20,
+            url=paginate.PageURL_WebOb(self.request)
+        )
+
         return {
             'organizations': organizations
         }
-
 
     @view_config(route_name='organizations.show', renderer='ticketing:templates/organizations/show.html')
     def show(self):
@@ -46,9 +56,9 @@ class Organizations(BaseView):
             controls = self.request.POST.items()
             try:
                 data = f.validate(controls)
-                record = Organization()
-                record = merge_session_with_post(record, data)
-                Organization.add(record)
+                organization = merge_session_with_post(Organization(), data)
+                organization.save()
+
                 return HTTPFound(location=route_path('organizations.index', self.request))
             except ValidationFailure, e:
                 return {'form':e.render()}
@@ -68,8 +78,9 @@ class Organizations(BaseView):
             controls = self.request.POST.items()
             try:
                 data = f.validate(controls)
-                record = merge_session_with_post(organization, data)
-                Organization.update(record)
+                organization = merge_session_with_post(organization, data)
+                organization.save()
+
                 return HTTPFound(location=route_path('organizations.index', self.request))
             except ValidationFailure, e:
                 return {'form':e.render()}

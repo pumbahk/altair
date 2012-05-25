@@ -8,7 +8,7 @@ from pyramid.renderers import render_to_response
 from pyramid.url import route_path
 
 from ticketing.views import BaseView
-from ticketing.models import DBSession, merge_session_with_post, record_to_multidict
+from ticketing.models import merge_session_with_post, record_to_multidict, LogicallyDeleted
 from ticketing.fanstatic import with_bootstrap
 from ticketing.events.models import Account
 from ticketing.accounts.forms import AccountForm
@@ -18,17 +18,20 @@ class Accounts(BaseView):
 
     @view_config(route_name='accounts.index', renderer='ticketing:templates/accounts/index.html')
     def index(self):
-        current_page = int(self.request.params.get('page', 0))
         sort = self.request.GET.get('sort', 'Account.id')
         direction = self.request.GET.get('direction', 'asc')
         if direction not in ['asc', 'desc']:
             direction = 'asc'
 
-        page_url = paginate.PageURL_WebOb(self.request)
-        query = DBSession.query(Account).order_by(sort + ' ' + direction)
-        query = query.filter(Account.organization_id == int(self.context.user.organization_id))
+        query = Account.filter(Account.organization_id==int(self.context.user.organization_id))
+        query = query.order_by(sort + ' ' + direction)
 
-        accounts = paginate.Page(query.order_by(Account.id), page=current_page, items_per_page=10, url=page_url)
+        accounts = paginate.Page(
+            query,
+            page=int(self.request.params.get('page', 0)),
+            items_per_page=20,
+            url=paginate.PageURL_WebOb(self.request)
+        )
 
         return {
             'form':AccountForm(),

@@ -16,10 +16,11 @@ class ProductForm(Form):
                 'event_id':kwargs['event_id'],
             }
             self.sales_segment_id.choices = [
-                (sales_segment.id, sales_segment.name) for sales_segment in SalesSegment.find_by(**conditions)
+                (sales_segment.id, sales_segment.name) for sales_segment in SalesSegment.filter_by(**conditions).all()
             ]
 
     id = HiddenField(
+        label=u'ID',
         validators=[Optional()],
     )
     event_id = HiddenField(
@@ -52,7 +53,7 @@ class ProductItemForm(Form):
             conditions ={
                 'performance_id':kwargs['performance_id']
             }
-            stock_holders = StockHolder.find_by(**conditions)
+            stock_holders = StockHolder.filter_by(**conditions).all()
             self.stock_holders.choices = []
             for sh in stock_holders:
                 if sh.account.user_id == kwargs['user_id']:
@@ -62,7 +63,7 @@ class ProductItemForm(Form):
                 'stock_holder_id':self.stock_holders.data
             }
             self.stock_id.choices = [
-                (stock.id, stock.id) for stock in Stock.find_by(**conditions)
+                (stock.id, stock.id) for stock in Stock.filter_by(**conditions).all()
             ]
 
     id = HiddenField(
@@ -104,5 +105,5 @@ class ProductItemForm(Form):
                 'stock_id':field.data,
                 'product_id':form.product_id.data,
             }
-            if ProductItem.find_by(**conditions):
+            if ProductItem.filter_by(**conditions).first():
                 raise ValidationError(u'既に登録済みの在庫です')

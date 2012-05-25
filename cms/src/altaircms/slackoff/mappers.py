@@ -39,7 +39,7 @@ PDICT = import_symbol("altaircms.seeds.prefecture:PrefectureMapping").name_to_la
 def performance_mapper(request, obj):
     objlike = ObjectLike(**model_to_dict(obj))
     objlike.event = obj.event.title if obj.event else None
-    objlike.venue = PDICT.get(obj.venue, u"-")
+    objlike.prefecture = PDICT.get(obj.prefecture, u"-")
     return objlike
 
 def ticket_mapper(request, obj):
@@ -76,4 +76,9 @@ def topcontent_mapper(request, obj):
     image_asset = obj.image_asset.title or u"名前なし"
     objlike.image_asset = RawText(u'<a href="%s">%s</a>' % (h.asset.to_show_page(request, obj.image_asset), image_asset))
     objlike.page = obj.page.title if obj.page else u"-"
+    return objlike
+
+def hotword_mapper(request, obj):
+    objlike = ObjectLike(**model_to_dict(obj))
+    objlike.tag = obj.tag.label if obj.tag else u"------"
     return objlike

@@ -97,6 +97,9 @@ class DynamicQueryDefault(object):
     @classmethod
     def promotion(cls, info, qs, field):
         field.query = cls._filter_by_site(qs, info.request)
+    @classmethod
+    def pagetag(cls, info, qs, field):
+        field.query = cls._filter_by_site(qs, info.request)
 
 
 class myQuerySelectField(extfields.QuerySelectField):
