@@ -220,7 +220,7 @@ var _escapeXMLSpecialChars = (function () {
   };
 })();
 
-function _clip(target, min, max, max_is_origin) {
+function _clip(target, min, max) {
   return Math.min(Math.max(target, min), max);
 }
 
@@ -1127,6 +1127,7 @@ var Base = _class("BaseSVG", {
       mousedown: null,
       mouseup:   null,
       mousemove: null,
+      mouseover: null,
       mouseout:  null
     },
     _eventFunc: null,
@@ -4024,6 +4025,7 @@ var MouseEventsHandler = _class("MouseEventsHandler", {
       mousedown: [],
       mouseup:   [],
       mousemove: [],
+      mouseover: [],
       mouseout:  []
     },
     _target: null
@@ -4281,7 +4283,7 @@ var Base = _class("Base", {
       if (this.handler === null)
         this.handler = new MouseEventsHandler(this);
       this.handler.add.apply(this.handler, arguments);
-      this._dirty |= DIRTY_EVENT_HANDLERS; 
+      this._dirty |= DIRTY_EVENT_HANDLERS;
       if (this.drawable)
         this.drawable._enqueueForUpdate(this);
     },

@@ -193,7 +193,6 @@
         mousedown: function(evt) {
           var pos = evt.logicalPosition;
           for (var i in self.seats) {
-            console.log(self.seats[i].shape);
             var seat = self.seats[i];
             var p = seat.shape.position(), s = seat.shape.size();
             if (p.x < pos.x && pos.x < (p.x + s.x) &&
@@ -341,6 +340,10 @@
 
         case 'uimode':
           aux.manager.changeUIMode(arguments[1]);
+          break;
+
+        case 'adjacency':
+          aux.manager.adjacencyLength(arguments[1]|0);
           break;
         }
       }
