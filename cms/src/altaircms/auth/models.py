@@ -136,7 +136,7 @@ class Operator(Base):
 
     #role = relationship("Role", backref=backref("operators", order_by=id))
     #role_id = Column(Integer, ForeignKey("role.id"))
-    roles = relationship("Role", backref=("operators"), secondary=operator_role)
+    roles = relationship("Role", backref=("operators"), secondary=operator_role, cascade='all')
     client_id = Column(Integer, ForeignKey("client.id"))
 
     # quick fix!
