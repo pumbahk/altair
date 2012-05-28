@@ -55,7 +55,7 @@ def _qs_refine(qs, model, widget):
         qs = qs.filter(model.is_global == False)
     if qs.count() > widget.display_count:
         qs = qs.limit(widget.display_count)
-    raise Exception
+
     return qs
 
 ## todo: refactoring
