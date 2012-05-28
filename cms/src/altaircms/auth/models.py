@@ -139,6 +139,12 @@ class Operator(Base):
     roles = relationship("Role", backref=("operators"), secondary=operator_role)
     client_id = Column(Integer, ForeignKey("client.id"))
 
+    # quick fix!
+    @property
+    def role(self):
+        if self.roles:
+            return self.roles[0]
+
     UniqueConstraint('auth_source', 'user_id')
 
     def __unicode__(self):
