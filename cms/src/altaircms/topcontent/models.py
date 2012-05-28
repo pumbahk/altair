@@ -55,19 +55,15 @@ class Topcontent(AboutPublishMixin,
         return getattr(self.page.event, self.countdown_type)
 
     @classmethod
-    def has_global(cls):
-        return cls.is_global==True
-
-    @classmethod
     def matched_qs(cls, d=None, page=None, qs=None, kind=None, subkind=None):
         """ 下にある内容の通りのtopicsを返す
         """
         qs = cls.publishing(d=d, qs=qs)
         qs = cls.matched_topic_type(qs=qs, page=page)
-        if subkind:
-            qs =  qs.filter_by(subkind=subkind)
         if kind:
             qs = qs.filter_by(kind=kind)
+        if subkind:
+            qs =  qs.filter_by(subkind=subkind)
         return qs
 
     @property
@@ -83,10 +79,18 @@ class Topcontent(AboutPublishMixin,
             return None
 
     @classmethod
-    def matched_topic_type(cls, page=None, event=None, qs=None):
+    def matched_topcontent_type(cls, page=None, event=None, qs=None):
         if qs is None:
             qs = cls.query
-        where = (cls.has_global())
+
+        where = _where
         if page:
-            where = where & (Topcontent.page==page)
-        return qs.filter(where)
+            where = (Topcontent.page==page) if where  == _where else where & (Topcontent.page==page)
+        if event:
+            where = (Topcontent.event==event) if where   == _where else where & (Topcontent.event==event)
+
+        if where  == _where: 
+            return qs.filter(cls.is_global==True)
+        else:
+            return qs.filter(where | (cls.is_global==True))
+

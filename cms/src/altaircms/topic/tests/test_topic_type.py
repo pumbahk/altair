@@ -38,9 +38,9 @@ class TopicTypeTests(unittest.TestCase):
         self.assertEquals(Topic.matched_topic_type().count(), 0)
         
     def test_has_page(self):
-        from altaircms.page.models import Page
-        page = self._makeObj(Page, id=1)
-        target = Topic(page=page)
+        from altaircms.page.models import PageSet
+        page = self._makeObj(PageSet, id=1)
+        target = Topic(bound_page=page)
 
         DBSession.flush()
 
@@ -48,8 +48,8 @@ class TopicTypeTests(unittest.TestCase):
         self.assertEquals(Topic.matched_topic_type(page=page).count(), 1)
 
     def test_has_not_page(self):
-        from altaircms.page.models import Page
-        page = self._makeObj(Page, id=1)
+        from altaircms.page.models import PageSet
+        page = self._makeObj(PageSet, id=1)
         target = Topic()
         DBSession.flush()
 

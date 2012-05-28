@@ -431,9 +431,10 @@ def help_page(layout):
     return help_page
 
 
-def help_topics():
+def help_topics(pageset):
     return [
         Topic(kind=u"ヘルプ", 
+              
               subkind=u"会員登録・ログイン", 
               text=u"楽天会員情報の管理よりお手続きください。", 
               title=u"会員ID忘れてしまいました", 

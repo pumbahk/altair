@@ -88,6 +88,12 @@ class TopicListingFull(unittest.TestCase):
 5. ちょっとどうでも良い(begin 2011/5/1) 100
 """)
 
+    def _makePageset(self, **kwargs):
+        from altaircms.page.models import Page, PageSet
+        pageset = PageSet()
+        page = self._makeObj(Page, pageset=pageset, **kwargs)
+        return pageset
+
     def test_multiple_items(self):
         """ 関連づいたtopicが取得できてるか調べる
         1. global
@@ -96,11 +102,11 @@ class TopicListingFull(unittest.TestCase):
         渡された page, eventに関連していないtopicは取得しない
         """
         from altaircms.event.models import Event
-        from altaircms.page.models import Page
         event0 = self._makeObj(Event)
         event1 = self._makeObj(Event)
-        page0 = self._makeObj(Page, event=event0)
-        page1 = self._makeObj(Page)
+        page0 = self._makePageset(event=event0)
+        page1 = self._makePageset()
+
         self._makeObj(Topic, publish_open_on=datetime(2011, 1, 1),
                       publish_close_on=datetime(2013, 1, 1), 
                       title=u"global", 
@@ -118,15 +124,15 @@ class TopicListingFull(unittest.TestCase):
                       publish_close_on=datetime(2013, 1, 1), 
                       title=u"page0", 
                       orderno=100, 
-                      page=page0)
+                      bound_page=page0)
         self._makeObj(Topic, publish_open_on=datetime(2011, 5, 1),
                       publish_close_on=datetime(2013, 1, 1), 
                       title=u"page1", 
                       orderno=100, 
-                      page=page1)
+                      bound_page=page1)
 
         qs = Topic.matched_qs(datetime(2011, 7, 1), page=page0, event=event0)
-        self.assertEquals("global\nevent0\npage0\n", self.getDump(qs))
+        self.assertEquals("global\n", self.getDump(qs))
 
         qs = Topic.matched_qs(datetime(2011, 7, 1), event=event0)
         self.assertEquals("global\nevent0\n", self.getDump(qs))

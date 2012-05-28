@@ -68,7 +68,8 @@ def topic_mapper(request, obj):
     objlike = ObjectLike(**model_to_dict(obj))
     objlike.event = obj.event.title if obj.event else u"-"
     objlike.text = obj.text if len(obj.text) <= 20 else obj.text[:20]+u"..."
-    objlike.page = obj.page.title if obj.page else u"-"
+    objlike.bound_page = obj.bound_page.name if obj.bound_page else u"-"
+    objlike.linked_page = obj.linked_page.name if obj.linked_page else u"-"
     return objlike
 
 def topcontent_mapper(request, obj):

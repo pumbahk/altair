@@ -135,13 +135,18 @@ class TopicForm(Form):
     orderno = fields.IntegerField(label=u"表示順序(1〜100)", default=50)
     is_vetoed = fields.BooleanField(label=u"公開禁止")
 
-    page = dynamic_query_select_field_factory(Page, 
-                                              label=u"イベント以外のページ",
-                                              query_factory=existing_pages, 
-                                              allow_blank=True, 
-                                              get_label=lambda obj: obj.title or u"名前なし")
+    bound_page = dynamic_query_select_field_factory(PageSet, 
+                                                    label=u"表示ページ",
+                                                    query_factory=existing_pages, 
+                                                    allow_blank=True, 
+                                                    get_label=lambda obj: obj.title or u"名前なし")
+    linked_page = dynamic_query_select_field_factory(PageSet, 
+                                                    label=u"リンク先ページ",
+                                                    query_factory=existing_pages, 
+                                                    allow_blank=True, 
+                                                    get_label=lambda obj: obj.title or u"名前なし")
     event = dynamic_query_select_field_factory(Event, 
-                                               label=u"イベント",
+                                               label=u"関連イベント",
                                                allow_blank=True, 
                                                get_label=lambda obj: obj.title or u"名前なし")
 

@@ -8,7 +8,7 @@ from datetime import datetime
 
 from altaircms.models import Base, BaseOriginalMixin
 from altaircms.models import DBSession
-from altaircms.page.models import Page
+from altaircms.page.models import PageSet
 from altaircms.event.models import Event
 from altaircms.lib.modelmixin import AboutPublishMixin
 
@@ -63,8 +63,14 @@ class Topic(AboutPublishMixin,
     text = sa.Column(sa.UnicodeText)
     event_id = sa.Column(sa.Integer, sa.ForeignKey("event.id"), nullable=True)
     event = orm.relationship(Event, backref="topic")
-    page_id = sa.Column(sa.Integer, sa.ForeignKey("page.id"), nullable=True)
-    page = orm.relationship(Page, backref="topic")
+    
+    ## topic をlinkとして利用したときの飛び先
+    linked_page_id = sa.Column(sa.Integer, sa.ForeignKey("pagesets.id"), nullable=True)
+    linked_page = orm.relationship(PageSet, backref="linked_topics", primaryjoin="Topic.linked_page_id==PageSet.id")
+
+    ## topicが表示されるページ
+    bound_page_id = sa.Column(sa.Integer, sa.ForeignKey("pagesets.id"), nullable=True)
+    bound_page = orm.relationship(PageSet, backref="bound_topics", primaryjoin="Topic.bound_page_id==PageSet.id")
     is_global = sa.Column(sa.Boolean, default=False)
 
     def __repr__(self):
@@ -79,8 +85,8 @@ class Topic(AboutPublishMixin,
             return "global"
         elif self.event:
             return "event:%d" % self.event.id
-        elif self.page:
-            return "page:%d" % self.page_id
+        elif self.bound_page:
+            return "page:%d" % self.bound_page_id
         else:
             return None
 
@@ -91,7 +97,7 @@ class Topic(AboutPublishMixin,
 
         where = _where
         if page:
-            where = (Topic.page==page) if where  == _where else where & (Topic.page==page)
+            where = (Topic.bound_page==page) if where  == _where else where & (Topic.bound_page==page)
         if event:
             where = (Topic.event==event) if where   == _where else where & (Topic.event==event)
 
