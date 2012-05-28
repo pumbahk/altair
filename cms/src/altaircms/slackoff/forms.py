@@ -145,6 +145,12 @@ class TopicForm(Form):
                                                allow_blank=True, 
                                                get_label=lambda obj: obj.title or u"名前なし")
 
+class TopicFilterForm(Form):
+    kind = fields.SelectField(label=u"トピックの種類", choices=[("__None", "----------")]+[(x, x) for x in Topic.KIND_CANDIDATES])
+    subkind = fields.TextField(label=u"サブ分類")    
+
+    as_filter = as_filter(["kind", "subkind"])
+
 
 class TopcontentForm(Form):
     title = fields.TextField(label=u"タイトル", validators=[required_field()])

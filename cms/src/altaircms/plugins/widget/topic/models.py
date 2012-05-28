@@ -55,6 +55,7 @@ def _qs_refine(qs, model, widget):
         qs = qs.filter(model.is_global == False)
     if qs.count() > widget.display_count:
         qs = qs.limit(widget.display_count)
+    raise Exception
     return qs
 
 ## todo: refactoring
@@ -96,9 +97,12 @@ MERGE_SETTINGS_DISPATH = {
     ("noimage", u"トピックス"): functools.partial(
         topics_merge_settings, 
         "altaircms.plugins.widget:topic/topic_render.mako"), 
-    ("noimage", u"特集（サイドバー)"): functools.partial(
+    ("noimage", u"特集"): functools.partial(
         topics_merge_settings, 
-        "altaircms.plugins.widget:topic/sidebar_special_render.mako"), 
+        "altaircms.plugins.widget:topic/sidebar_feature_render.mako"), 
+    ("noimage", u"特集(サブカテゴリ)"): functools.partial(
+        topics_merge_settings, 
+        "altaircms.plugins.widget:topic/sidebar_category_genre.mako"), 
     ("noimage", u"公演中止情報"): functools.partial( ##
         topics_merge_settings, 
         "altaircms.plugins.widget:topic/change_render.mako"), 

@@ -1062,6 +1062,18 @@ def add_sports_main_block_widgets(page, promotion):
     add_linklist_widget(page, "main_right", params)
 
 
+    ## sidebar
+    params = dict(kind=u"チケットスター：サイドバー見出し", 
+                  text=u"特集")
+    add_heading_widget(page, "side", params)
+
+    params =  {"kind": u"特集(サブカテゴリ)", 
+               "display_count": 3, 
+               "display_global": False, 
+               "display_event": False, 
+               "display_page": True}
+    add_topic_widget(page, "side", params)
+
 def add_sports_page_settings():
     layout = sports_layout()
     topics = sports_topics()
@@ -1104,7 +1116,7 @@ def music_page(layout):
     return music_page
 
 
-def music_topics():
+def music_topics(page):
     return [
         Topic(kind=u"トピックス", 
               subkind=u"音楽", 
@@ -1123,9 +1135,32 @@ def music_topics():
               is_global=True, 
               orderno=2), 
 
+        ## sidebar
+        Topic(kind=u"特集(サブカテゴリ)", 
+              text=u"#", 
+              page=page, 
+              title=u"特集/ライブハウスへ行こう!!", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=False, 
+              orderno=1), 
+        Topic(kind=u"特集(サブカテゴリ)", 
+              text=u"#", 
+              page=page, 
+              title=u"ロックフェス特集", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=False, 
+              orderno=2), 
+        Topic(kind=u"特集(サブカテゴリ)", 
+              text=u"#", 
+              page=page, 
+              title=u"アニメぴあ", 
+              publish_open_on=datetime.datetime(2011, 1, 1),
+              publish_close_on=datetime.datetime(2013, 1, 1), 
+              is_global=False, 
+              orderno=3), 
         ]
-
-
 
 def music_promotion():
     img_path = os.path.join(os.path.dirname(__file__), "../../static/mock/img/")
@@ -1197,11 +1232,25 @@ def add_music_main_block_widgets(page, promotion):
     add_linklist_widget(page, "main_right", params)
 
 
+    ## sidebar
+    params = dict(kind=u"チケットスター：サイドバー見出し", 
+                  text=u"特集")
+    add_heading_widget(page, "side", params)
+
+    params =  {"kind": u"特集(サブカテゴリ)", 
+               "display_count": 3, 
+               "display_global": False, 
+               "display_event": False, 
+               "display_page": True}
+    add_topic_widget(page, "side", params)
+
+    
+
 def add_music_page_settings():
     layout = music_layout()
-    topics = music_topics()
     promotion = music_promotion()
     page = music_page(layout)
+    topics = music_topics(page)
 
     DBSession.add(page)
     DBSession.add(promotion)
@@ -1330,6 +1379,19 @@ def add_stage_main_block_widgets(page, promotion):
     params = {"finder_kind": "nearTheEnd", 
               "delimiter": u"/"}
     add_linklist_widget(page, "main_right", params)
+
+
+    ## sidebar
+    params = dict(kind=u"チケットスター：サイドバー見出し", 
+                  text=u"特集")
+    add_heading_widget(page, "side", params)
+
+    params =  {"kind": u"特集(サブカテゴリ)", 
+               "display_count": 3, 
+               "display_global": False, 
+               "display_event": False, 
+               "display_page": True}
+    add_topic_widget(page, "side", params)
 
 
 def add_stage_page_settings():
@@ -1466,6 +1528,18 @@ def add_event_main_block_widgets(page, promotion):
               "delimiter": u"/"}
     add_linklist_widget(page, "main_right", params)
 
+    ## sidebar
+    params = dict(kind=u"チケットスター：サイドバー見出し", 
+                  text=u"特集")
+    add_heading_widget(page, "side", params)
+
+    params =  {"kind": u"特集(サブカテゴリ)", 
+               "display_count": 3, 
+               "display_global": False, 
+               "display_event": False, 
+               "display_page": True}
+    add_topic_widget(page, "side", params)
+
 
 def add_event_page_settings():
     layout = event_layout()
@@ -1490,7 +1564,7 @@ def top_layout():
     layout = Layout(
         title = u"ticketstar.top",
         template_filename = "ticketstar.top.mako",
-        blocks = '[["main"], ["main_left", "main_right"], ["main_bottom"], ["side"]]',
+        blocks = '[["main"], ["main_left", "main_right"], ["main_bottom"], ["side_top"], ["side_bottom"]]',
         site_id = 1, ##
         client_id = 1 ##
         )
@@ -1791,6 +1865,7 @@ def bind_category_to_pageset():
     Category.query.filter_by(label=u"初めての方へ").update({"pageset_id": PageSet.query.filter_by(name=u"初めての方へ ページセット").one().id}, synchronize_session="fetch")
     Category.query.filter_by(label=u"公演中止・変更情報").update({"pageset_id": PageSet.query.filter_by(name=u"公演の中止・変更情報 ページセット").one().id}, synchronize_session="fetch")
 
+    
 def main(env, args):
     # setup()
     add_materials_settings()
@@ -1805,6 +1880,7 @@ def main(env, args):
     add_detail_page_settings()
     add_change_page_settings()
     add_top_page_settings()
+
     transaction.commit()
 
     ##

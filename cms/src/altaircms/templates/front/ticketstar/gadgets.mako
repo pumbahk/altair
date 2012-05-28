@@ -12,8 +12,8 @@
 </%def>
 
 <%def name="sidebar_genre_listing(sub_categories)">
+  <h2 class="sidebar-heading">ジャンル一覧</h2>
   <div class="sideCategoryGenre">
-	<h2>ジャンル一覧</h2>
 	<ul>
 		% for c in sub_categories:
 		  <li><a href="${h.link.get_searchpage(request, kind="genre", value=c.name)}">${c.label}</a></li>

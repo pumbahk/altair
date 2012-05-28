@@ -41,6 +41,9 @@ topic widget(移動予定):
 2. この時、tagでアセットから絞りこまれた内容の画像から選択できるようにする。
 """
 
+## 
+_where = object()
+
 class Topic(AboutPublishMixin, 
             BaseOriginalMixin,
             Base):
@@ -50,7 +53,7 @@ class Topic(AboutPublishMixin,
     query = DBSession.query_property()
 
     __tablename__ = "topic"
-    KIND_CANDIDATES = [u"公演中止情報", u"トピックス", u"その他", u"ヘルプ"]
+    KIND_CANDIDATES = [u"公演中止情報", u"トピックス", u"その他", u"ヘルプ", u"特集", u"特集(サブカテゴリ)"]
 
     id = sa.Column(sa.Integer, primary_key=True)
     created_at = sa.Column(sa.DateTime, default=datetime.now)
@@ -63,17 +66,13 @@ class Topic(AboutPublishMixin,
     title = sa.Column(sa.Unicode(255))
     text = sa.Column(sa.UnicodeText)
     event_id = sa.Column(sa.Integer, sa.ForeignKey("event.id"), nullable=True)
-    event = orm.relationship(Event, backref="topic", uselist=False)
+    event = orm.relationship(Event, backref="topic")
     page_id = sa.Column(sa.Integer, sa.ForeignKey("page.id"), nullable=True)
-    page = orm.relationship(Page, backref="topic", uselist=False)
+    page = orm.relationship(Page, backref="topic")
     is_global = sa.Column(sa.Boolean, default=False)
 
     def __repr__(self):
         return "topic: %s title=%s" % (self.kind, self.title)
-
-    @classmethod
-    def has_global(cls):
-        return cls.is_global==True
 
     @property
     def topic_type(self):
@@ -93,12 +92,17 @@ class Topic(AboutPublishMixin,
     def matched_topic_type(cls, page=None, event=None, qs=None):
         if qs is None:
             qs = cls.query
-        where = (cls.has_global())
+
+        where = _where
         if page:
-            where = where | (Topic.page==page)
+            where = (Topic.page==page) if where  == _where else where & (Topic.page==page)
         if event:
-            where = where | (Topic.event==event)
-        return qs.filter(where)
+            where = (Topic.event==event) if where   == _where else where & (Topic.event==event)
+
+        if where  == _where: 
+            return qs.filter(cls.is_global==True)
+        else:
+            return qs.filter(where | (cls.is_global==True))
 
     @classmethod
     def matched_qs(cls, d=None, page=None, event=None, qs=None, kind=None, subkind=None):
@@ -106,9 +110,10 @@ class Topic(AboutPublishMixin,
         """
         qs = cls.publishing(d=d, qs=qs)
         qs = cls.matched_topic_type(qs=qs, page=page, event=event)
-        if subkind:
-            qs =  qs.filter_by(subkind=subkind)
+
         if kind:
             qs = qs.filter_by(kind=kind)
+        if subkind:
+            qs = qs.filter_by(subkind=subkind)
         return qs
 

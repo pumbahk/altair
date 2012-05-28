@@ -31,13 +31,16 @@
 ##   ${main_co.eventRecommend()}
 </%block>
 
-<%block name="side">
-   ${widgets("side")}
-        ${side_co.sideFeature()}
-        ${gadgets.top_side_searchform()}
-        ${side_co.sideMyMenu()}
-        ${side_co.sideInfo()}
-        ${side_co.sideBtn()}
-        ${side_co.facebook()}
-        ${side_co.twitter()}
+<%block name="side_top">
+   ${widgets("side_top")}
+  ${side_co.sideFeature()}
+</%block>
+
+<%block name="side_bottom">
+   ${widgets("side_bottom")}
+<!-- ${side_co.sideMyMenu()} -->
+<!-- ${side_co.sideInfo()} -->
+<!-- ${side_co.sideBtn()}
+     !-- ${side_co.facebook()}
+     !-- ${side_co.twitter()} -->
 </%block>

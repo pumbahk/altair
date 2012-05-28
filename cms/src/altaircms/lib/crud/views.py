@@ -102,6 +102,10 @@ class CreateView(object):
         form = self.context.confirmed_form()
         obj = model_from_dict(self.context.model, form.data)
 
+        ## for don't add to db.
+        import transaction
+        transaction.abort()
+
         return {"master_env": self.context,
                 "form": form, 
                 "obj": obj, 

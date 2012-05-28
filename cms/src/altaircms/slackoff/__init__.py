@@ -14,7 +14,8 @@ def includeme(config):
                     form=".forms.CategoryForm", mapper=".mappers.category_mapper", 
                     filter_form=".forms.CategoryFilterForm")
     config.add_crud("topic", title="topic", model="..topic.models.Topic", 
-                    form=".forms.TopicForm", mapper=".mappers.topic_mapper")
+                    form=".forms.TopicForm", mapper=".mappers.topic_mapper", 
+                    filter_form=".forms.TopicFilterForm")
     config.add_crud("topcontent", title="topcontent", model="..topcontent.models.Topcontent",
                     form=".forms.TopcontentForm", mapper=".mappers.topcontent_mapper")
     config.add_crud("hotword", title="hotword", model="..tag.models.HotWord",

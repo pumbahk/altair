@@ -88,5 +88,5 @@ class Topcontent(AboutPublishMixin,
             qs = cls.query
         where = (cls.has_global())
         if page:
-            where = where | (Topcontent.page==page)
+            where = where & (Topcontent.page==page)
         return qs.filter(where)

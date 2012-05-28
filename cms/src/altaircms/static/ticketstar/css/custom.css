@@ -452,3 +452,13 @@
 	background-repeat: no-repeat;
     background-image: url(/static/ticketstar/img/settlement/btn_buy.gif);
 }
+
+/*
+  sidebar
+*/
+h2.sidebar-heading {
+    height: 24px;
+	padding: 7px 10px 0;
+	color: #ffffff;
+	background: url(../img/search/side_title.gif) no-repeat 0 0;
+}

@@ -36,11 +36,12 @@ class TopicTypeTests(unittest.TestCase):
 
         self.assertEquals(target.topic_type, None)
         self.assertEquals(Topic.matched_topic_type().count(), 0)
-
+        
     def test_has_page(self):
         from altaircms.page.models import Page
         page = self._makeObj(Page, id=1)
         target = Topic(page=page)
+
         DBSession.flush()
 
         self.assertEquals(target.topic_type, "page:1")
@@ -72,20 +73,6 @@ class TopicTypeTests(unittest.TestCase):
 
         self.assertNotEquals(target.topic_type, "event:1")
         self.assertEquals(Topic.matched_topic_type(event=event).count(), 0)
-
-    # def test_has_subkind(self):
-    #     target = self._makeObj(Topic, subkind="foo")
-
-    #     self.assertEquals(target.topic_type, "foo")
-    #     self.assertEquals(Topic.query.filter(Topic.has_subkind("foo")).count(), 1)
-    #     self.assertEquals(Topic.matched_topic_type(subkind="foo").count(), 1)
-
-    # def test_hasnot_matched_subkind(self):
-    #     target = self._makeObj(Topic, subkind="boo")
-
-    #     self.assertEquals(target.topic_type, "boo")
-    #     self.assertEquals(Topic.query.filter(Topic.has_subkind("foo")).count(), 0)
-    #     self.assertEquals(Topic.matched_topic_type(subkind="foo").count(), 0)
 
 if __name__ == "__main__":
     unittest.main()

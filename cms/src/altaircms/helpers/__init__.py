@@ -11,10 +11,13 @@ __all__ = ["base", "front", "asset", "event", "page", "widget", "tag",  "link"]
 ## pagination
 from webhelpers.paginate import Page
 
-def url_generate_default(request, **kwargs):
-    curpath = request.current_route_path(**kwargs)
+def url_generate_default(request, **kwargs): #ugly
+    curpath = request.current_route_path(_query=kwargs.pop("_query", request.params), **kwargs)
     def _url(page=None, **kwargs):
-        return "%s?page=%s" % (curpath, page)
+        if curpath.endswith("?"):
+            return "%spage=%s" % (curpath, page)
+        else:
+            return "%s&page=%s" % (curpath, page)
     return _url
 
 class PagerAdapter(object):

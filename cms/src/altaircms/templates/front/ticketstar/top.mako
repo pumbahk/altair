@@ -6,6 +6,7 @@
 ##
 
 <%namespace file="./components.mako" name="co"/>
+<%namespace file="./gadgets.mako" name="gadgets"/>
 
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -56,7 +57,9 @@
 	
 	<!-- ========== side ========== -->
 	<div id="side">
-	  <%block name="side"/>
+	  <%block name="side_top"/>
+       ${gadgets.top_side_searchform()}
+	  <%block name="side_bottom"/>
 	</div>
 	<!-- ========== /side ========== -->
 	

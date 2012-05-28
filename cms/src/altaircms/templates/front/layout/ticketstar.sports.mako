@@ -23,16 +23,8 @@
 
 <%block name="side">
 		<!-- InstanceBeginEditable name="side" -->
-		<div class="sideCategoryGenre">
-		<h2>特集</h2>
-		<ul>
-			<li><a href="#">特集/ライブハウスへ行こう!!</a></li>
-			<li><a href="#">ロックフェス特集</a></li>
-			<li><a href="#">アニメぴあ</a></li>
-		</ul>
-		</div>
-
-	    ${gadgets.sidebar_genre_listing(sub_categories)}
+		${widgets("side")}
+  	    ${gadgets.sidebar_genre_listing(sub_categories)}
 
 		<dl id="sideRefineSearch">
             ${gadgets.sidebar_area_listing(areas)}
