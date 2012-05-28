@@ -368,7 +368,7 @@
             url: aux.dataSource.drawing,
             dataType: 'xml',
             success: function(xml) { waiter.charge('drawing', xml); },
-            error: function(xhr, text) { aux.callbacks.message("Failed to load drawing data (reason: " + text + ")"); }
+            error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load drawing data (reason: " + text + ")"); }
           });
 
           // Load metadata
@@ -376,7 +376,7 @@
             url: aux.dataSource.metadata,
             dataType: 'json',
             success: function(data) { waiter.charge('metadata', data); },
-            error: function(xhr, text) { aux.callbacks.message("Failed to load seat data (reason: " + text + ")"); }
+            error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load seat data (reason: " + text + ")"); }
           });
 
           break;
