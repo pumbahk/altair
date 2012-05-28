@@ -1,15 +1,15 @@
 # coding: utf-8
+
+#raise Exception, __name__
+
 from datetime import datetime
 import sqlahelper
 from sqlalchemy.orm import relationship, backref
 
-import mako
-from sqlalchemy.orm.mapper import Mapper
 from sqlalchemy.schema import Table, Column, ForeignKey, UniqueConstraint
-from sqlalchemy.types import String, DateTime, Integer, BigInteger, Unicode, Enum
+from sqlalchemy.types import String, DateTime, Integer, Unicode, Enum
 from sqlalchemy.ext.associationproxy import association_proxy
 
-#from altaircms.models import Base
 Base = sqlahelper.get_base()
 _session = sqlahelper.get_session()
 
@@ -97,15 +97,21 @@ class OAuthToken(Base):
     __tablename__ = 'oauth_token'
     query = _session.query_property()
     token = Column(String(255), primary_key=True)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
-    def __init__(self, oauth_token):
-        self.token = oauth_token
-        self.created_at = datetime.now()
-        self.updated_at = datetime.now()
 
 from altaircms.usersetting.models import User
+
+
+
+operator_role = Table(
+    "operator_role", Base.metadata,
+    Column("operator_id", Integer, ForeignKey("operator.id")),
+    Column("role_id", Integer, ForeignKey("role.id")),
+)
+
+
 class Operator(Base):
     """
     サイト管理者
@@ -128,15 +134,15 @@ class Operator(Base):
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now)
 
-    role = relationship("Role", backref=backref("operators", order_by=id))
-    role_id = Column(Integer, ForeignKey("role.id"))
+    #role = relationship("Role", backref=backref("operators", order_by=id))
+    #role_id = Column(Integer, ForeignKey("role.id"))
+    roles = relationship("Role", backref=("operators"), secondary=operator_role)
     client_id = Column(Integer, ForeignKey("client.id"))
 
     UniqueConstraint('auth_source', 'user_id')
 
     def __unicode__(self):
         return '%s' % self.user_id
-
 
 
 class Role(Base):

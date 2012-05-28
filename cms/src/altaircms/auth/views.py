@@ -68,7 +68,7 @@ class OAuthLogin(object):
                 screen_name=data['screen_name'],
                 oauth_token=data['access_token'],
                 oauth_token_secret='',
-                role=role,
+                roles=[role],
             )
         
     @view_config(route_name='oauth_callback')
