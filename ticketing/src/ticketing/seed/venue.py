@@ -19,7 +19,7 @@ class SiteData(DataSet):
         tel_1 = u'03-0000-0000'
         tel_2 = u'03-1111-1111'
         fax = u'03-1111-1111'
-        drawing_url = u'file:ticketing/static/site-data/sample.svg'
+        drawing_url = u'file:src/ticketing/static/site-data/sample.svg'
 
     class site_2:
         name = u'ブルーマンシアター'
@@ -32,7 +32,7 @@ class SiteData(DataSet):
         tel_1 = u'03-0000-0000'
         tel_2 = u'03-1111-1111'
         fax = u'03-1111-1111'
-        drawing_url = u'file:ticketing/static/site-data/sample.svg'
+        drawing_url = u'file:src/ticketing/static/site-data/sample.svg'
 
 class TemplateVenueData(DataSet):
     class venue_orig_1:
