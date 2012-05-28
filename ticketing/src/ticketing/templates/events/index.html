@@ -23,23 +23,17 @@
     </div>
 
     <span style="float: left;">
-      <ul class="nav nav-pills">
-        <li class="dropdown" id="top-event">
-          <a class="dropdown-toggle" data-toggle="dropdown" href="#top-event">
-            イベント
-            <b class="caret"></b>
-          </a>
-          <ul class="dropdown-menu">
-            <li><a data-toggle="modal" href="${request.route_path('events.new')}" >新規イベント</a></li>
-            <li><a data-toggle="modal" href="#modal-new-stock-group-send" >イベントをコピー</a></li>
-            <li class="divider"></li>
-          </ul>
-        </li>
-      </ul>
-    </span>
-    <span style="float: left;">
       <%include file="/events/_search.html" />
     </span>
+
+    <span style="float: right; margin-right: 20px;">
+      <div class="btn-group">
+        <a class="btn" href="/events/new">
+          <i class="icon-plus"></i>新規イベント
+        </a>
+      </div>
+    </span>
+
     <div style="clear: left;"></div>
 
     % for event in events.items:

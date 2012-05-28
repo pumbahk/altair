@@ -138,7 +138,7 @@ class StockAllocation(Base):
     stock_type_id = Column(BigInteger, ForeignKey('StockType.id'), primary_key=True)
     performance_id = Column(BigInteger, ForeignKey('Performance.id'), primary_key=True)
     stock_type = relationship('StockType', uselist=False, backref='stock_allocations')
-    performance = relationship('Performance', uselist=False)
+    performance = relationship('Performance', uselist=False, backref='stock_allocations')
     quantity = Column(Integer, nullable=False)
 
     def save(self):

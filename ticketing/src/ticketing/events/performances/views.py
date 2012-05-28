@@ -104,6 +104,7 @@ class Performances(BaseView):
         }
 
     @view_config(route_name='performances.edit', request_method='GET', renderer='ticketing:templates/performances/edit.html')
+    @view_config(route_name='performances.copy', request_method='GET', renderer='ticketing:templates/performances/edit.html')
     def edit_get(self):
         performance_id = int(self.request.matchdict.get('performance_id', 0))
         performance = Performance.get(performance_id)
@@ -112,13 +113,18 @@ class Performances(BaseView):
 
         f = PerformanceForm(organization_id=self.context.user.organization_id)
         f.process(record_to_multidict(performance))
+
+        if self.request.matched_route.name == 'performances.copy':
+            f.original_id.data = f.id.data
+            f.id.data = None
+
         return {
             'form':f,
             'event':performance.event,
-            'performance':performance,
         }
 
     @view_config(route_name='performances.edit', request_method='POST', renderer='ticketing:templates/performances/edit.html')
+    @view_config(route_name='performances.copy', request_method='POST', renderer='ticketing:templates/performances/edit.html')
     def edit_post(self):
         performance_id = int(self.request.matchdict.get('performance_id', 0))
         performance = Performance.get(performance_id)
@@ -127,7 +133,12 @@ class Performances(BaseView):
 
         f = PerformanceForm(self.request.POST, organization_id=self.context.user.organization_id)
         if f.validate():
-            performance = merge_session_with_post(performance, f.data)
+            if self.request.matched_route.name == 'performances.copy':
+                event_id = performance.event_id
+                performance = merge_session_with_post(Performance(), f.data)
+                performance.event_id = event_id
+            else:
+                performance = merge_session_with_post(performance, f.data)
             performance.venue_id = f.data['venue_id']
             performance.save()
 
@@ -137,7 +148,6 @@ class Performances(BaseView):
             return {
                 'form':f,
                 'event':performance.event,
-                'performance':performance,
             }
 
     @view_config(route_name='performances.delete')

@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import isodate
+import logging
 
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, Numeric, func
 from sqlalchemy.orm import relationship, join, backref, column_property
 
 from ticketing.utils import StandardEnum
 from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, DBSession
-from ticketing.products.models import Product, StockHolder
+from ticketing.products.models import Product, ProductItem, StockHolder, Stock, StockAllocation
 from ticketing.venues.models import Venue, VenueArea, VenueArea_group_l0_id, Seat, SeatAttribute
 
 class AccountTypeEnum(StandardEnum):
@@ -59,48 +60,100 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return data
 
     def add(self):
-        BaseModel.add(self)
+        connection = DBSession.bind.connect()
+        try:
+            tran = connection.begin()
+            BaseModel.add(self)
 
-        """
-        Performanceの作成時には, Venueとそれに紐づくVenueArea, Seat, SeatAttributeをコピーする
-        """
-        # create Venue
-        if self.venue_id:
-            original_venue = Venue.get(self.venue_id)
-            venue = Venue.clone(original_venue)
-            venue.original_venue_id = original_venue.id
-            venue.performance_id = self.id
-            venue.save()
+            """
+            Performanceの作成時は以下のモデルをcloneする
+              -Venue
+                - VenueArea
+                - Seat
+                  - SeatAttribute
+            """
+            # create Venue
+            if self.venue_id:
+                original_venue = Venue.get(self.venue_id)
+                venue = Venue.clone(original_venue)
+                venue.original_venue_id = original_venue.id
+                venue.performance_id = self.id
+                venue.save()
 
-            # create VenueArea
-            for original_area in original_venue.areas:
-                area = VenueArea.clone(original_area)
-                area.venue_id = venue.id
-                area.save()
+                # create VenueArea
+                for original_area in original_venue.areas:
+                    area = VenueArea.clone(original_area)
+                    area.venue_id = venue.id
+                    area.save()
 
-                # create VenueArea_group_l0_id
-                for original_group in original_area.groups:
-                    group = VenueArea_group_l0_id()
-                    group.group_l0_id = original_group.group_l0_id
-                    group.venue_id = venue.id
-                    group.venue_area_id = area.id
-                    DBSession.add(group)
+                    # create VenueArea_group_l0_id
+                    for original_group in original_area.groups:
+                        group = VenueArea_group_l0_id()
+                        group.group_l0_id = original_group.group_l0_id
+                        group.venue_id = venue.id
+                        group.venue_area_id = area.id
+                        DBSession.add(group)
 
-            # create Seat
-            for original_seat in original_venue.seats:
-                seat = Seat.clone(original_seat)
-                seat.venue_id = venue.id
-                seat.stock_id = None
-                seat.stock_type_id = None
-                seat.save()
+                # create Seat
+                for original_seat in original_venue.seats:
+                    seat = Seat.clone(original_seat)
+                    seat.venue_id = venue.id
+                    seat.stock_id = None
+                    seat.stock_type_id = None
+                    seat.save()
 
-                # create SeatAttribute
-                for original_attribute in original_seat.attributes:
-                    attribute = SeatAttribute.clone(original_attribute)
-                    attribute.seat_id = seat.id
-                    attribute.save()
+                    # create SeatAttribute
+                    for original_attribute in original_seat.attributes:
+                        attribute = SeatAttribute.clone(original_attribute)
+                        attribute.seat_id = seat.id
+                        attribute.save()
 
-    def get_sync_data(self):
+            """
+            Performanceのコピー時は以下のモデルをcloneする
+              - StockHolder
+                - Stock
+                  - ProductItem
+              - StockAllocation
+            """
+            if self.original_id:
+                original_performance = Performance.get(self.original_id)
+
+                # create StockHolder
+                for original_stock_holder in original_performance.stock_holders:
+                    stock_holder = StockHolder.clone(original_stock_holder)
+                    stock_holder.performance_id = self.id
+                    stock_holder.save()
+
+                    # create Stock
+                    for original_stock in original_stock_holder.stocks:
+                        stock = Stock.clone(original_stock)
+                        stock.stock_holder_id = stock_holder.id
+                        stock.save()
+
+                        # create ProductItem
+                        for original_product_item in original_stock.product_items:
+                            product_item = ProductItem.clone(original_product_item)
+                            product_item.performance_id = self.id
+                            product_item.stock_id = stock.id
+                            product_item.save()
+
+                # create StockAllocation
+                for original_stock_allocation in original_performance.stock_allocations:
+                    stock_allocation = StockAllocation()
+                    stock_allocation.performance_id = self.id
+                    stock_allocation.stock_type_id = original_stock_allocation.stock_type_id
+                    stock_allocation.quantity = original_stock_allocation.quantity
+                    DBSession.add(stock_allocation)
+
+            tran.commit()
+            logging.debug('performance add success')
+        except Exception, e:
+            tran.rollback()
+            logging.error('performance add failed %s' % e.message)
+        finally:
+            tran.close()
+
+def get_sync_data(self):
         start_on = isodate.datetime_isoformat(self.start_on) if self.start_on else ''
         end_on = isodate.datetime_isoformat(self.end_on) if self.end_on else ''
         data = {

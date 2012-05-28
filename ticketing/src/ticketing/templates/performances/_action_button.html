@@ -21,6 +21,11 @@
     modal.find('#message').text('選択したパフォーマンスを削除します。よろしいですか？');
     modal.modal('toggle');
   }
+  function copy_performance() {
+    var id = get_id('performance_id');
+    if (!id) return;
+    $(location).attr('href', '/events/performances/copy/' + id);
+  }
 </script>
 
 <%
@@ -45,8 +50,13 @@
       url='javascript:show_performance();',
       icon='icon-th-list',
     ),
+    'copy':dict(
+      label=u'コピーして新規作成',
+      url='javascript:copy_performance();',
+      icon='icon-plus',
+    ),
   }
-  order = iter(order or ['new', 'show', 'edit', 'delete'])
+  order = iter(order or ['new', 'show', 'edit', 'delete', 'copy'])
 %>
 ${action_button(actions, order)}
 

@@ -31,7 +31,11 @@ def record_to_multidict(self, filters=dict()):
     def _convert(key, value):
         if value is None:
             return (key, '')
-        elif isinstance(value, str) or isinstance(value, unicode) or isinstance(value, int) or isinstance(value, long):
+        elif isinstance(value, str)\
+             or isinstance(value, unicode)\
+             or isinstance(value, int)\
+             or isinstance(value, long)\
+             or isinstance(value, MutationDict):
             return (key, value)
         elif isinstance(value, date) or isinstance(value, datetime):
             filter = filters.get(key)
@@ -49,7 +53,7 @@ def merge_session_with_post(session, post, filters={}):
             if filter is not None:
                 value = filter(session, value)
                 setattr(session, key, value)
-            elif isinstance(value, str) \
+            elif isinstance(value, str)\
                 or isinstance(value, unicode)\
                 or isinstance(value, int)\
                 or isinstance(value, Decimal)\

@@ -3,7 +3,7 @@
 % for account in performance.accounts:
   <h4>${account.name}</h4>
   % for stock_holder in performance.stock_holders:
-    % if stock_holder.account.user.id == account.user.id:
+  % if stock_holder.account.user.id == account.user.id:
       <%include file="/stock_holders/_item.html" args="stock_holder=stock_holder" />
     % endif
   % endfor

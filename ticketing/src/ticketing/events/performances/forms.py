@@ -63,6 +63,9 @@ class PerformanceForm(Form):
         choices=[],
         coerce=int,
     )
+    original_id = HiddenField(
+        validators=[Optional()],
+    )
 
     def validate_start_on(form, field):
         if field.data and form.open_on.data and field.data < form.open_on.data:

@@ -13,7 +13,7 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPCreated
 from pyramid.threadlocal import get_current_registry
 from pyramid.url import route_path
 
-from ticketing.models import merge_session_with_post, record_to_multidict
+from ticketing.models import merge_session_with_post, record_to_multidict, DBSession
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.events.models import Event, Performance
