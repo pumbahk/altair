@@ -89,6 +89,10 @@ class ResizeBoxRenderer extends JSDOMComponentRenderer {
     public override function refresh():Void {
         var position = view_.inchToPixelP(this.position);
         var size = view_.inchToPixelP(this.size);
+        size.x -= Utils.toPixel(Utils.getComputedStyle(this.n[0], 'border-left-width'))
+                + Utils.toPixel(Utils.getComputedStyle(this.n[0], 'border-right-width'));
+        size.y -= Utils.toPixel(Utils.getComputedStyle(this.n[0], 'border-top-width'))
+                + Utils.toPixel(Utils.getComputedStyle(this.n[0], 'border-bottom-width'));
         untyped __js__("this.n.css")(
             { left: Std.string(position.x) + "px",
               top: Std.string(position.y) + "px",

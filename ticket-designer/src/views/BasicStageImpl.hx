@@ -21,6 +21,7 @@ class BasicStageImpl<Trenderer:ComponentRenderer> implements Stage {
     public function remove(renderer:ComponentRenderer):Void {
         renderer.stage = null;
         renderers_.remove(cast renderer);
+        renderer.dispose();
     }
 
     public function dispose():Void {
@@ -53,5 +54,5 @@ class BasicStageImpl<Trenderer:ComponentRenderer> implements Stage {
 
     public function releaseMouse():Void {}
 
-    public function bind(event_kind:EventKind, handler:Event -> Void):Void {}
+    public function bind(event_kind:EventKind, handler:MouseEvent -> Void):Void {}
 }

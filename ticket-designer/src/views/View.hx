@@ -13,5 +13,7 @@ interface View implements Disposable {
     public function anyToPixel(unit:UnitKind, value:Float):Float;
     public function anyToPixelP(unit:UnitKind, value:Point):Point;
 
+    public function refresh():Void;
+
     public function dispose():Void;
 }

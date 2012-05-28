@@ -7,12 +7,10 @@ class ComponentFactory {
 
     public function create<T>(klass:Class<T>, ?options:Dynamic):T {
         var renderer = cast(rendererFactory.create(untyped klass, options), ComponentRenderer);
-        stage.add(renderer);
-        return Type.createInstance(klass, [this, nextId++, renderer]);
+        return Type.createInstance(klass, [nextId++, renderer]);
     }
 
-    public function new(stage:Stage, rendererFactory:RendererFactory) {
-        this.stage = stage;
+    public function new(rendererFactory:RendererFactory) {
         this.rendererFactory = rendererFactory;
         this.nextId = 1;
     }

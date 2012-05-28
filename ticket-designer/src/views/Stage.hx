@@ -8,5 +8,5 @@ interface Stage implements Disposable, implements MouseCapture {
     public var screenOffset(default, null):Point;
     public function add(renderer:ComponentRenderer):Void;
     public function remove(renderer:ComponentRenderer):Void;
-    public function bind(event_kind:EventKind, handler:Event -> Void):Void;
+    public function bind(event_kind:EventKind, handler:MouseEvent -> Void):Void;
 }

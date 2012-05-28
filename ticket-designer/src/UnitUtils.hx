@@ -116,4 +116,42 @@ class UnitUtils {
     public static function inchToPicaP(inch:Point):Point {
         return { x: inch.x * 12., y: inch.y * 12. };
     }
+
+    public static function inchToAnyP(unit:UnitKind, inch:Point):Point {
+        switch (unit) {
+        case INCH:
+            return inch;
+        case MILLIMETER:
+            return inchToMmP(inch);
+        case CENTIMETER:
+            return inchToCmP(inch);
+        case METER:
+            return inchToMeterP(inch);
+        case POINT:
+            return inchToPointP(inch);
+        case PICA:
+            return inchToPicaP(inch);
+        default:
+            throw new IllegalArgumentException();
+        }
+    }
+
+    public static function unitAsString(unit:UnitKind):String {
+        switch (unit) {
+        case INCH:
+            return 'in';
+        case MILLIMETER:
+            return 'mm';
+        case CENTIMETER:
+            return 'cm';
+        case METER:
+            return 'm';
+        case POINT:
+            return 'pt';
+        case PICA:
+            return 'pc'; 
+        default:
+            throw new IllegalArgumentException();
+        }
+    }
 }

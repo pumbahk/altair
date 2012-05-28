@@ -8,7 +8,7 @@ class JSDOMStage extends BasicStageImpl<JSDOMComponentRenderer> {
 
     var mouseEventsHandler:MouseEventsHandler;
 
-    var handlers:Array<Event->Void>;
+    var handlers:Array<MouseEvent->Void>;
 
     public function refresh():Void {
         var actualSizeInPixel = cast(view, JSDOMView).inchToPixelP(virtualSize);
@@ -84,7 +84,7 @@ class JSDOMStage extends BasicStageImpl<JSDOMComponentRenderer> {
         cast(view, JSDOMView).mouseEventsHandlerManager.releaseMouse(mouseEventsHandler);
     }
 
-    public override function bind(eventKind:EventKind, handler:Event -> Void):Void {
+    public override function bind(eventKind:EventKind, handler:MouseEvent -> Void):Void {
         var view_ = cast(view, JSDOMView);
         var existingHandler = handlers[Type.enumIndex(eventKind)];
         if (existingHandler == null) {
@@ -110,6 +110,10 @@ class JSDOMStage extends BasicStageImpl<JSDOMComponentRenderer> {
             right: (e.which & 3) != 0,
             extra: extra
         };
+    }
+
+    public function toString():String {
+        return "stage";
     }
 
     public function new(view:View) {

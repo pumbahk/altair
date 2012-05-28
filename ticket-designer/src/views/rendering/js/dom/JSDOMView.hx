@@ -20,7 +20,7 @@ class JSDOMView implements View {
 
     private function set_ppi(value:Int):Int {
         ppi = value;
-        refreshAll();
+        refresh();
         return value;
     }
 
@@ -40,7 +40,7 @@ class JSDOMView implements View {
         } else {
             zoom = value;
         }
-        refreshAll();
+        refresh();
         return value;
     }
 
@@ -117,6 +117,10 @@ class JSDOMView implements View {
         renderers.set(Std.string(renderer.id), renderer);
     }
 
+    public function removeRenderer(renderer:JSDOMRenderer) {
+        renderers.remove(Std.string(renderer.id));
+    }
+
     public function beginBatchRefresh() {
         batchRefreshNestCount++;
     }
@@ -139,7 +143,7 @@ class JSDOMView implements View {
             refreshQueue.set(Std.string(what.id), 1);
     }
 
-    public function refreshAll() {
+    public function refresh() {
         if (viewport_ != null)
             viewport_.refresh();
         if (stage_ != null)
@@ -170,6 +174,6 @@ class JSDOMView implements View {
         stage_ = new JSDOMStage(this);
         stage_.n = base;
 
-        refreshAll();
+        refresh();
     }
 }

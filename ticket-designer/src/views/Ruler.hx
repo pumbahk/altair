@@ -6,7 +6,7 @@ private enum State {
     DRAGGING(pof:Point);
 }
 
-class Ruler {
+class Ruler implements Renderable {
     public var renderer(default, null):Renderer;
     public var on(default, null):Dynamic;
     public var offset:Int;

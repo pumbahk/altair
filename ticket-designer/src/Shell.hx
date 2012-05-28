@@ -6,6 +6,9 @@ import views.MouseCursorKind;
 import views.EventKind;
 import views.MouseEvent;
 import views.Workspace;
+import views.RubberBand;
+import views.Renderer;
+import views.Tooltip;
 
 private enum State {
     NONE;
@@ -13,31 +16,32 @@ private enum State {
 }
 
 class Shell {
+    public var application(default, null):DiagramEditorApplication;
     public var operationMode(default, set_operationMode):OperationMode;
-    public var view(default, null):View;
-    public var workspace(default, null):Workspace;
     public var operationModeCallback:OperationMode->Void;
     public var lastKey:Int;
 
     var ghost:ComponentRenderer;
     var ghostData:Dynamic;
-    var componentFactory:ComponentFactory;
-    var inMoveMode:Bool;
+    var rubberBand:RubberBand;
+    var tooltip:Tooltip;
+    var resizeBox:Renderer;
+    var workspaceController:WorkspaceController;
 
     private function set_operationMode(newOperationMode:OperationMode):OperationMode {
         if (newOperationMode == operationMode)
             return newOperationMode;
         discardGhost();
-        finishMoveMode();
-        workspace.clearSelection();
+        endMoveMode();
+        application.workspace.clearSelection();
         switch (newOperationMode) {
         case CURSOR:
-            view.stage.cursor = MouseCursorKind.DEFAULT;  
+            application.view.stage.cursor = MouseCursorKind.DEFAULT;  
         case MOVE:
-            view.stage.cursor = MouseCursorKind.MOVE;
+            application.view.stage.cursor = MouseCursorKind.MOVE;
             beginMoveMode();
         case PLACE(item):
-            view.stage.cursor = MouseCursorKind.POINTER;
+            application.view.stage.cursor = MouseCursorKind.POINTER;
             prepareGhost(item);
         }
         if (operationModeCallback != null)
@@ -49,49 +53,141 @@ class Shell {
     function discardGhost() {
         if (ghost == null)
             return;
-        view.stage.remove(ghost);
+        application.view.stage.remove(ghost);
         ghost.dispose();
         ghost = null;
         ghostData = null;
     }
 
+    function createGhostData(klass:Class<Component>) {
+        var ghostData:Dynamic = {
+            position: { x: 0, y: -30 }
+        };
+
+        switch (klass) {
+        case views.ImageComponent:
+            ghostData.size = { x: 0.5, y: 0.5 };
+            ghostData.preferredUnit = application.configuration.preferredUnit;
+        case views.TextComponent:
+            ghostData.text = "text";
+            ghostData.fontSize = 10.5;
+            ghostData.size = { x: 0.25, y: 0.16 };
+        }
+        return ghostData;
+    }
+
     function prepareGhost(klass:Class<Component>) {
         if (ghost != null)
             throw new IllegalStateException("Ghost already exists");
-        ghost = cast componentFactory.rendererFactory.create(cast klass);
+        ghost = cast application.rendererFactory.create(cast klass);
         ghost.opacity = .5;
-        ghostData = {
-            position: { x: 0, y: -30 },
-            text: "text",
-            fontSize: 10.5,
-            size: { x: 0.25, y: 0.16 }
-        };
-        view.stage.add(ghost);
+        ghostData = createGhostData(klass);
+        application.view.stage.add(ghost);
         ghost.opacity = .5;
         ghost.bind(EventKind.MOUSEMOVE, function(e:Event) {
             ghostData.position = { x:(cast e).position.x - ghost.innerRenderSize.x / 2, y:(cast e).position.y - ghost.innerRenderSize.y / 2 };
             ghost.realize(ghostData);
         });
-        ghost.bind(EventKind.PRESS, function(e:Event) {
-            var component:Component = componentFactory.create(klass);
-            for (field in Reflect.fields(ghostData)) {
-                if (Reflect.hasField(component, field)) {
-                    Reflect.setField(component, field,
-                        Reflect.field(ghostData, field));
+        ghost.bind(EventKind.PRESS, function(e:MouseEvent) {
+            if (Utils.pointWithinRect(e.screenPosition, { position:application.view.viewport.screenOffset, size:application.view.viewport.size })) {
+                var component:Component = application.componentFactory.create(klass);
+                for (field in Reflect.fields(ghostData)) {
+                    if (Reflect.hasField(component, field)) {
+                        Reflect.setField(component, field,
+                            Reflect.field(ghostData, field));
+                    }
                 }
+                attachController(component);
+                component.refresh();
             }
-            attachController(component);
-            component.refresh();
         });
         ghost.realize(ghostData);
         ghost.captureMouse();
     }
 
+    public function putResizeBox(component:Component) {
+        if (resizeBox != null)
+            return;
+        var resizeBox = application.rendererFactory.create(cast Type.getClass(component), { variant: "resize_box" });
+        application.workspace.stage.add(cast resizeBox);
+        resizeBox.bind(PRESS, function(e) {
+            var corner = cast(e.extra, Direction);
+            var startPosition = e.position;
+            var initialPosition = component.position;
+            var initialSize = component.size;
+            resizeBox.bind(MOUSEMOVE, function(e) {
+                switch (corner) {
+                case NORTH_WEST:
+                    component.position = {
+                        x: initialPosition.x + (e.position.x - startPosition.x),
+                        y: initialPosition.y + (e.position.y - startPosition.y)
+                    };
+                    component.size = {
+                        x: initialSize.x - (e.position.x - startPosition.x),
+                        y: initialSize.y - (e.position.y - startPosition.y),
+                    };
+                case NORTH_EAST:
+                    component.position = {
+                        x: initialPosition.x,
+                        y: initialPosition.y + (e.position.y - startPosition.y)
+                    };
+                    component.size = {
+                        x: initialSize.x + (e.position.x - startPosition.x),
+                        y: initialSize.y - (e.position.y - startPosition.y),
+                    };
+                case SOUTH_WEST:
+                    component.position = {
+                        x: initialPosition.x + (e.position.x - startPosition.x),
+                        y: initialPosition.y
+                    };
+                    component.size = {
+                        x: initialSize.x - (e.position.x - startPosition.x),
+                        y: initialSize.y + (e.position.y - startPosition.y),
+                    };
+                case SOUTH_EAST:
+                    component.size = {
+                        x: initialSize.x + (e.position.x - startPosition.x),
+                        y: initialSize.y + (e.position.y - startPosition.y),
+                    };
+                default:
+                }
+                resizeBox.realize(component);
+                component.refresh();
+            });
+            resizeBox.bind(RELEASE, function(e) {
+                resizeBox.releaseMouse();
+                resizeBox.bind(MOUSEMOVE, null);
+                resizeBox.bind(RELEASE, null);
+            });
+            resizeBox.captureMouse();
+        });
+        resizeBox.realize(component);
+        this.resizeBox = resizeBox;
+    }
+
+    public function hideResizeBox() {
+        if (resizeBox == null)
+            return;
+        application.workspace.stage.remove(cast resizeBox);
+        resizeBox.dispose();
+        resizeBox = null;
+    }
+
+    public function beginMoveMode() {
+        workspaceController.inMoveMode = true;
+    }
+
+    public function endMoveMode() {
+        workspaceController.inMoveMode = false;
+    }
+
     function attachController(component:Component) {
         component.on.press.do_(function (e) {
+            if (workspaceController.inMoveMode)
+                return;
             if (!component.selected && lastKey != 16) {
-                workspace.clearSelection();
-                component.putResizeBox();
+                application.workspace.clearSelection();
+                putResizeBox(component);
             }
             if (lastKey == 16) {
                 if (component.selected)
@@ -102,101 +198,75 @@ class Shell {
                 component.select();
             }
         });
-        component.on.dragstart.do_(function (e) {
-            component.hideResizeBox();
-        });
-        component.on.dragend.do_(function (e) {
-            if (workspace.numOfSelections == 1)
-                component.putResizeBox();
-        });
         component.on.blur.do_(function (e) {
-            component.hideResizeBox();
+            hideResizeBox();
         });
-        workspace.add(component);
+        application.workspace.add(component);
     }
 
-    function finishMoveMode() {
-        if (!inMoveMode)
-            return;
-        view.stage.releaseMouse();
-        view.stage.bind(PRESS, onStagePressed);
-        view.stage.bind(RELEASE, null);
-        view.stage.bind(MOUSEMOVE, null);
-        inMoveMode = false;
-    }
-
-    function beginMoveMode() {
-        if (inMoveMode)
-            return;
-        var state:State = NONE;
-        view.stage.bind(PRESS, function(e:Event) {
-            state = DRAGGING(view.viewport.scrollPosition, cast(e).screenPosition);
-        });
-        view.stage.bind(RELEASE, function(e:Event) {
-            state = NONE;
-        });
-        view.stage.bind(MOUSEMOVE, function(e:Event) {
-            var e_:MouseEvent = cast(e);
-            switch (state) {
-            case NONE:
-            case DRAGGING(initialScrollPosition, initialPosition):
-                var offset = view.pixelToInchP({
-                    x: e_.screenPosition.x - initialPosition.x,
-                    y: e_.screenPosition.y - initialPosition.y
-                });
-                var newScrollPosition = {
-                    x: initialScrollPosition.x - offset.x,
-                    y: initialScrollPosition.y - offset.y
-                };
-                if (newScrollPosition.x < 0.) {
-                    initialScrollPosition = {
-                        x: 0.,
-                        y: initialScrollPosition.y,
-                    };
-                    initialPosition = {
-                        x: e_.screenPosition.x,
-                        y: initialPosition.y
-                    };
-                    state = DRAGGING(initialScrollPosition, initialPosition);
-                    newScrollPosition.x = 0.;
-                }
-                if (newScrollPosition.y < 0.) {
-                    initialScrollPosition = {
-                        x: initialScrollPosition.x,
-                        y: 0.,
-                    };
-                    initialPosition = {
-                        x: initialPosition.x,
-                        y: e_.screenPosition.y
-                    };
-                    state = DRAGGING(initialScrollPosition, initialPosition);
-                    newScrollPosition.y = 0.;
-                }
-                view.viewport.scrollPosition = newScrollPosition;
+    function beginRubberBand(position:Point) {
+        if (rubberBand != null)
+            throw new IllegalStateException("Rubberband already exists");
+        rubberBand = new RubberBand(
+            cast application.rendererFactory.create(RubberBand));
+        rubberBand.initialPosition = rubberBand.position = position;
+        cast(rubberBand.renderer).opacity = .5;
+        rubberBand.renderer.captureMouse();
+        rubberBand.on.release.do_(function (e) {
+            for (component in application.workspace.components) {
+                if (Utils.rectWithinRect(component, rubberBand))
+                    component.select();
             }
+            endRubberBand();
         });
-        view.stage.captureMouse();
-        inMoveMode = true;
+        application.view.stage.add(cast rubberBand.renderer);
+    }
+
+    function endRubberBand() {
+        if (rubberBand == null)
+            return;
+        rubberBand.renderer.releaseMouse();
+        application.view.stage.remove(cast rubberBand.renderer);
+        rubberBand.renderer.dispose();
+        rubberBand = null;
     }
 
     public function zoomIn() {
-      view.zoom *= 1.1;
+      application.view.zoom *= 1.1;
     }
 
     public function zoomOut() {
-      view.zoom /= 1.1;
+      application.view.zoom /= 1.1;
     }
 
-    public function onStagePressed(e:Event) {
-        workspace.clearSelection();
+    public function deleteSelected() {
+        for (component in application.workspace.selection) {
+            application.workspace.remove(component);
+        }
     }
 
-    public function new(view:View, componentFactory:ComponentFactory, workspace:Workspace) {
-        this.view = view;
-        this.componentFactory = componentFactory;
-        this.workspace = workspace;
-        this.inMoveMode = false;
+    public function new(application:DiagramEditorApplication) {
+        this.application = application;
+        this.workspaceController = new WorkspaceController(
+                application.workspace,
+                application.view,
+                application.rendererFactory);
         this.lastKey = 0;
-        view.stage.bind(PRESS, onStagePressed);
+        application.workspace.on.press.do_(function (e) {
+            if (workspaceController.inMoveMode || e.target != null)
+                return;
+            application.workspace.clearSelection();
+            beginRubberBand(e.position);
+        });
+        application.workspace.on.release.do_(function (e) {
+            endRubberBand();
+        });
+        workspaceController.on.dragstart.do_(function (e) {
+            hideResizeBox();
+        });
+        workspaceController.on.dragend.do_(function (e) {
+            if (application.workspace.selectionCount == 1)
+                putResizeBox(application.workspace.selection[0]);
+        });
     }
 }

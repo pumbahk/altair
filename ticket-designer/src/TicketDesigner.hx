@@ -9,8 +9,12 @@ import views.MouseCursorKind;
 import views.ComponentRenderer;
 import views.BasicRendererFactoryImpl;
 import views.Workspace;
+import views.BoundingBox;
+import views.Tooltip;
+import models.Document;
+import models.Text;
 
-class TicketDesigner {
+class TicketDesigner implements DiagramEditorApplication {
     public var view(default, null):View;
     public var shell(default, null):Shell;
     public var rendererFactory(default, null):RendererFactory;
@@ -18,8 +22,11 @@ class TicketDesigner {
     public var verticalRuler(default, null):Ruler;
     public var componentFactory(default, null):ComponentFactory;
     public var workspace(default, null):Workspace;
+    public var configuration(default, null):Configuration;
     private var horizontalGuide:HorizontalGuide;
     private var verticalGuide:VerticalGuide;
+    private var boundingBox:BoundingBox;
+    private var currentDocument:Document;
 
     private function horizontalRuler_dragstart(e:MouseEvent) {
         horizontalGuide = componentFactory.create(HorizontalGuide);
@@ -73,13 +80,19 @@ class TicketDesigner {
         return ruler;
     }
 
+    public function showTooltip() {
+    }
+
     public function new(view:View) {
+        this.configuration = {
+          preferredUnit: UnitKind.MILLIMETER
+        };
         this.view = view;
         this.rendererFactory = new BasicRendererFactoryImpl(
             view, views.rendering.js.dom.Spi.rendererRegistry);
-        this.componentFactory = new ComponentFactory(view.stage, rendererFactory);
-        this.workspace = new Workspace();
-        this.shell = new Shell(view, componentFactory, workspace);
+        this.componentFactory = new ComponentFactory(rendererFactory);
+        this.workspace = new Workspace(view.stage);
+        this.shell = new Shell(this);
         this.horizontalRuler = createHorizontalRuler();
         this.verticalRuler = createVerticalRuler();
         this.view.viewport.on.scroll.do_(function(e) {
@@ -88,10 +101,15 @@ class TicketDesigner {
             this.horizontalRuler.refresh();
             this.verticalRuler.refresh();
         });
+        this.boundingBox = new BoundingBox(
+            cast rendererFactory.create(BoundingBox));
+        this.view.stage.add(cast boundingBox.renderer);
     }
 
     public function refresh() {
         this.horizontalRuler.refresh();
         this.verticalRuler.refresh();
+        this.boundingBox.refresh();
+        this.view.refresh();
     }
 }

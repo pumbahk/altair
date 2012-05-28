@@ -5,12 +5,14 @@ import js.Lib;
 import views.rendering.js.Html5Dom.Window;
 import views.rendering.js.Html5Dom.HTMLCanvasElement;
 import views.rendering.js.Html5Dom.CanvasRenderingContext2D;
+import Utils;
 
 class ImageComponentRenderer extends JSDOMComponentRenderer {
     var imageUrl:String;
     var position:Point;
     var size:Point;
     var selected:Bool;
+    var preferredUnit:UnitKind;
 
     var canvasNode:HTMLCanvasElement;
     var textNode:JQuery;
@@ -31,6 +33,7 @@ class ImageComponentRenderer extends JSDOMComponentRenderer {
         position = component.position;
         size = component.size;
         selected = component.selected;
+        preferredUnit = component.preferredUnit;
         view_.scheduleRefresh(this);
     }
 
@@ -41,6 +44,11 @@ class ImageComponentRenderer extends JSDOMComponentRenderer {
             this.n.addClass("selected");
         else
             this.n.removeClass("selected");
+
+        position.x -= views.rendering.js.dom.Utils.toPixel(cast views.rendering.js.dom.Utils.getComputedStyle(this.n[0], 'borderLeftWidth'))
+                      + views.rendering.js.dom.Utils.toPixel(cast views.rendering.js.dom.Utils.getComputedStyle(this.n[0], 'marginLeft')) + 1;
+        position.y -= views.rendering.js.dom.Utils.toPixel(cast views.rendering.js.dom.Utils.getComputedStyle(this.n[0], 'borderTopWidth'))
+                      + views.rendering.js.dom.Utils.toPixel(cast views.rendering.js.dom.Utils.getComputedStyle(this.n[0], 'marginTop')) + 1;
 
         canvasNode.width = Std.int(size.x);
         canvasNode.height = Std.int(size.y);
@@ -60,7 +68,6 @@ class ImageComponentRenderer extends JSDOMComponentRenderer {
             ctx.lineTo(canvasNode.width, 0);
             ctx.stroke();
         }
-        var preferredUnit = UnitKind.MILLIMETER;
         var sizeInPreferredUnit = UnitUtils.inchToAnyP(preferredUnit, this.size);
         textNode.text(Utils.numberAsStringWithPrec(sizeInPreferredUnit.x, 4) + "×" + Utils.numberAsStringWithPrec(sizeInPreferredUnit.y, 4) + UnitUtils.unitAsString(preferredUnit));
 

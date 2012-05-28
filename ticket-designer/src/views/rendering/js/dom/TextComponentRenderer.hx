@@ -29,10 +29,17 @@ class TextComponentRenderer extends JSDOMComponentRenderer {
     public override function refresh():Void {
         var position = view_.inchToPixelP(this.position);
         var size = view_.inchToPixelP(this.size);
+
         if (selected)
             this.n.addClass("selected");
         else
             this.n.removeClass("selected");
+
+        position.x -= Utils.toPixel(cast Utils.getComputedStyle(this.n[0], 'borderLeftWidth'))
+                      + Utils.toPixel(cast Utils.getComputedStyle(this.n[0], 'marginLeft')) + 1;
+        position.y -= Utils.toPixel(cast Utils.getComputedStyle(this.n[0], 'borderTopWidth'))
+                      + Utils.toPixel(cast Utils.getComputedStyle(this.n[0], 'marginTop')) + 1;
+
         untyped __js__("this.n.css")(
             { left: Std.string(position.x) + "px",
               top: Std.string(position.y) + "px",

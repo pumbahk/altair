@@ -36,6 +36,7 @@ class JSDOMRenderer implements Renderer {
         bind(RELEASE, null);
         bind(MOUSEMOVE, null);
         bind(MOUSEOUT, null);
+        this.view_.removeRenderer(this);
         if (n != null)
             n.remove();
     }
