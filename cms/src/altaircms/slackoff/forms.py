@@ -95,13 +95,6 @@ class CategoryForm(Form):
     ## site
 
 
-def existing_pages():
-    ##本当は、client.id, site.idでfilteringする必要がある
-    ##本当は、日付などでfilteringする必要がある
-    ## lib.formhelpersの中で絞り込みを追加してる。
-    return Page.query.filter(Page.event_id==None)
-
-
 def as_filter(kwargs):
     def wrapper(self, qs):
         for k in kwargs:
@@ -137,14 +130,14 @@ class TopicForm(Form):
 
     bound_page = dynamic_query_select_field_factory(PageSet, 
                                                     label=u"表示ページ",
-                                                    query_factory=existing_pages, 
+                                                    query_factory=lambda : PageSet.query.filter(PageSet.event_id==None), 
                                                     allow_blank=True, 
-                                                    get_label=lambda obj: obj.title or u"名前なし")
+                                                    get_label=lambda obj: obj.name or u"名前なし")
     linked_page = dynamic_query_select_field_factory(PageSet, 
-                                                    label=u"リンク先ページ",
-                                                    query_factory=existing_pages, 
-                                                    allow_blank=True, 
-                                                    get_label=lambda obj: obj.title or u"名前なし")
+                                                     label=u"リンク先ページ",
+                                                     query_factory=lambda : PageSet.query, 
+                                                     allow_blank=True, 
+                                                     get_label=lambda obj: obj.name or u"名前なし")
     event = dynamic_query_select_field_factory(Event, 
                                                label=u"関連イベント",
                                                allow_blank=True, 

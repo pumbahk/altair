@@ -434,165 +434,186 @@ def help_page(layout):
 def help_topics(pageset):
     return [
         Topic(kind=u"ヘルプ", 
-              
+              bound_page=pageset, 
               subkind=u"会員登録・ログイン", 
               text=u"楽天会員情報の管理よりお手続きください。", 
               title=u"会員ID忘れてしまいました", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
-              is_global=True), 
+              is_global=False), 
         Topic(kind=u"ヘルプ", 
+              bound_page=pageset,
               subkind=u"会員登録・ログイン", 
               text=u"回答が入ります", 
               title=u"パスワードを忘れてしまいました。", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
-              is_global=True), 
+              is_global=False), 
         Topic(kind=u"ヘルプ", 
+              bound_page=pageset,
               subkind=u"会員登録・ログイン", 
               text=u"回答が入ります", 
               title=u"登録している住所やメールアドレスの変更はできますか？", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
-              is_global=True), 
+              is_global=False), 
 
         Topic(kind=u"ヘルプ", 
+              bound_page=pageset,
               subkind=u"チケット予約・購入", 
               text=u"回答が入ります", 
               title=u"座席を指定しての申し込みはできますか？", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
-              is_global=True), 
+              is_global=False), 
         Topic(kind=u"ヘルプ", 
+              bound_page=pageset,
               subkind=u"チケット予約・購入", 
               text=u"回答が入ります", 
               title=u"座席はならびで取ることはできますか？", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
-              is_global=True), 
+              is_global=False), 
         Topic(kind=u"ヘルプ", 
+              bound_page=pageset,
               subkind=u"チケット予約・購入", 
               text=u"回答が入ります", 
               title=u"一般予約の申し込み方法を教えてください。", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
-              is_global=True), 
+              is_global=False), 
         Topic(kind=u"ヘルプ", 
+              bound_page=pageset,
               subkind=u"チケット予約・購入", 
               text=u"回答が入ります", 
               title=u"申し込みしたチケットの座席番号確認はできますか？", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
-              is_global=True), 
+              is_global=False), 
         Topic(kind=u"ヘルプ", 
+              bound_page=pageset,
               subkind=u"チケット予約・購入", 
               text=u"回答が入ります", 
               title=u"一度申込みしたチケットの取り消しはできますか？", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
-              is_global=True), 
+              is_global=False), 
         Topic(kind=u"ヘルプ", 
+              bound_page=pageset,
               subkind=u"チケット予約・購入", 
               text=u"回答が入ります", 
               title=u"ＰＣから、チケットの申込みができませんでした。", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
-              is_global=True), 
+              is_global=False), 
         Topic(kind=u"ヘルプ", 
+              bound_page=pageset,
               subkind=u"チケット予約・購入", 
               text=u"回答が入ります", 
               title=u"チケットの予約・購入履歴を確認したい。", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
-              is_global=True), 
+              is_global=False), 
 
         Topic(kind=u"ヘルプ", 
+              bound_page=pageset,
               subkind=u"支払い方法・引取り方法", 
               text=u"楽天会員情報の管理よりお手続きください。", 
               title=u"会員ID忘れてしまいました", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
-              is_global=True), 
+              is_global=False), 
         Topic(kind=u"ヘルプ", 
+              bound_page=pageset,
               subkind=u"支払い方法・引取り方法", 
               text=u"回答が入ります", 
               title=u"パスワードを忘れてしまいました。", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
-              is_global=True), 
+              is_global=False), 
         Topic(kind=u"ヘルプ", 
+              bound_page=pageset,
               subkind=u"支払い方法・引取り方法", 
               text=u"回答が入ります", 
               title=u"登録している住所やメールアドレスの変更はできますか？", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
-              is_global=True), 
+              is_global=False), 
 
         Topic(kind=u"ヘルプ", 
+              bound_page=pageset,
               subkind=u"ヘルプ：本人認証サービス(3Dセキュアサービス)について", 
               text=u"楽天会員情報の管理よりお手続きください。", 
               title=u"会員ID忘れてしまいました", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
-              is_global=True), 
+              is_global=False), 
         Topic(kind=u"ヘルプ", 
+              bound_page=pageset,
               subkind=u"ヘルプ：本人認証サービス(3Dセキュアサービス)について", 
               text=u"回答が入ります", 
               title=u"パスワードを忘れてしまいました。", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
-              is_global=True), 
+              is_global=False), 
         Topic(kind=u"ヘルプ", 
+              bound_page=pageset,
               subkind=u"ヘルプ：本人認証サービス(3Dセキュアサービス)について", 
               text=u"回答が入ります", 
               title=u"登録している住所やメールアドレスの変更はできますか？", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
-              is_global=True), 
+              is_global=False), 
 
         Topic(kind=u"ヘルプ", 
+              bound_page=pageset,
               subkind=u"本人認証サービス(3Dセキュアサービス)について", 
               text=u"楽天会員情報の管理よりお手続きください。", 
               title=u"会員ID忘れてしまいました", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
-              is_global=True), 
+              is_global=False), 
         Topic(kind=u"ヘルプ", 
+              bound_page=pageset,
               subkind=u"本人認証サービス(3Dセキュアサービス)について", 
               text=u"回答が入ります", 
               title=u"パスワードを忘れてしまいました。", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
-              is_global=True), 
+              is_global=False), 
         Topic(kind=u"ヘルプ", 
+              bound_page=pageset,
               subkind=u"本人認証サービス(3Dセキュアサービス)について", 
               text=u"回答が入ります", 
               title=u"登録している住所やメールアドレスの変更はできますか？", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
-              is_global=True), 
+              is_global=False), 
 
         Topic(kind=u"ヘルプ", 
+              bound_page=pageset,
               subkind=u"セブンーイレブン引取り", 
               text=u"楽天会員情報の管理よりお手続きください。", 
               title=u"会員ID忘れてしまいました", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
-              is_global=True), 
+              is_global=False), 
         Topic(kind=u"ヘルプ", 
+              bound_page=pageset,
               subkind=u"セブンーイレブン引取り", 
               text=u"回答が入ります", 
               title=u"パスワードを忘れてしまいました。", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
-              is_global=True), 
+              is_global=False), 
         Topic(kind=u"ヘルプ", 
+              bound_page=pageset,
               subkind=u"セブンーイレブン引取り", 
               text=u"回答が入ります", 
               title=u"登録している住所やメールアドレスの変更はできますか？", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
-              is_global=True), 
+              is_global=False), 
 
         ]
 
@@ -607,8 +628,8 @@ def add_help_main_block_widgets(page):
     params =  {"kind": u"ヘルプ", 
                "subkind": u"会員登録・ログイン", 
                "display_count": 100, 
-               "display_global": True, 
-               "display_event": True, 
+               "display_global": False, 
+               "display_event": False, 
                "display_page": True}
     add_topic_widget(page, "main",  params)
 
@@ -619,8 +640,8 @@ def add_help_main_block_widgets(page):
     params =  {"kind": u"ヘルプ", 
                "subkind": u"チケット予約・購入", 
                "display_count": 100, 
-               "display_global": True, 
-               "display_event": True, 
+               "display_global": False, 
+               "display_event": False, 
                "display_page": True}
     add_topic_widget(page, "main",  params)
 
@@ -631,8 +652,8 @@ def add_help_main_block_widgets(page):
     params =  {"kind": u"ヘルプ", 
                "subkind": u"支払い方法・引取り方法", 
                "display_count": 100, 
-               "display_global": True, 
-               "display_event": True, 
+               "display_global": False, 
+               "display_event": False, 
                "display_page": True}
     add_topic_widget(page, "main",  params)
 
@@ -643,8 +664,8 @@ def add_help_main_block_widgets(page):
     params =  {"kind": u"ヘルプ", 
                "subkind": u"本人認証サービス(3Dセキュアサービス)について", 
                "display_count": 100, 
-               "display_global": True, 
-               "display_event": True, 
+               "display_global": False, 
+               "display_event": False, 
                "display_page": True}
     add_topic_widget(page, "main",  params)
 
@@ -655,8 +676,8 @@ def add_help_main_block_widgets(page):
     params =  {"kind": u"ヘルプ", 
                "subkind": u"セブンーイレブン引取り", 
                "display_count": 100, 
-               "display_global": True, 
-               "display_event": True, 
+               "display_global": False, 
+               "display_event": False, 
                "display_page": True}
     add_topic_widget(page, "main",  params)
 
@@ -664,9 +685,8 @@ def add_help_main_block_widgets(page):
 
 def add_help_page_settings():
     layout = help_layout()
-    topics = help_topics()
     page = help_page(layout)
-
+    topics = help_topics(page.pageset)
     DBSession.add(page)
     DBSession.add_all(topics)
 
@@ -702,7 +722,7 @@ def change_page(layout):
     return change_page
 
 
-def change_topics():
+def change_topics(pageset):
     return [
         Topic(kind=u"公演中止情報", 
               text=u"""平素は楽天チケットをご利用頂き誠にありがとうございます。
@@ -739,7 +759,7 @@ def change_topics():
               subkind=u"2012/4/11 楽天イーグルス　雨天等中止時の払戻しについて", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
-              is_global=True), 
+              bound_page=pageset), 
 
         Topic(kind=u"公演中止情報", 
               text=u"""平素は楽天チケットをご利用頂き誠にありがとうございます。
@@ -753,7 +773,7 @@ def change_topics():
               subkind=u"2012/1/20 『au presents　オンタマカーニバル2012』払い戻しに関するご案内", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
-              is_global=True), 
+              bound_page=pageset), 
 
         Topic(kind=u"公演中止情報", 
               text=u"""平素は楽天チケットをご利用頂き誠にありがとうございます。
@@ -767,7 +787,7 @@ def change_topics():
               subkind=u"2011/9/28 『ボローニャ歌劇場』2011年9月21日(水)「清教徒」公演 払い戻しに関するご案内", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
-              is_global=True), 
+              bound_page=pageset), 
 
         Topic(kind=u"公演中止情報", 
               text=u"""平素は楽天チケットをご利用頂き誠にありがとうございます。
@@ -781,7 +801,7 @@ def change_topics():
               subkind=u"2011/9/28 『ボローニャ歌劇場』2011年9月21日(水)「清教徒」公演 払い戻しに関するご案内", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
-              is_global=True), 
+              bound_page=pageset), 
 
         Topic(kind=u"公演中止情報", 
               text=u"""平素は楽天チケットをご利用頂き誠にありがとうございます。
@@ -795,7 +815,7 @@ def change_topics():
               subkind=u"2011/9/28 『ボローニャ歌劇場』2011年9月21日(水)「清教徒」公演 払い戻しに関するご案内", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
-              is_global=True), 
+              bound_page=pageset), 
         ]
 
 def add_change_side_block_widgets(page):
@@ -809,8 +829,8 @@ def add_change_main_block_widgets(page):
     params =  {"kind": u"公演中止情報", 
                "subkind": u"2012/4/11 楽天イーグルス　雨天等中止時の払戻しについて", 
                "display_count": 100, 
-               "display_global": True, 
-               "display_event": True, 
+               "display_global": False, 
+               "display_event": False, 
                "display_page": True}
     add_topic_widget(page, "main",  params)
 
@@ -821,8 +841,8 @@ def add_change_main_block_widgets(page):
     params =  {"kind": u"公演中止情報", 
                "subkind": u"2012/1/20 『au presents　オンタマカーニバル2012』払い戻しに関するご案内", 
                "display_count": 100, 
-               "display_global": True, 
-               "display_event": True, 
+               "display_global": False, 
+               "display_event": False, 
                "display_page": True}
     add_topic_widget(page, "main",  params)
 
@@ -833,8 +853,8 @@ def add_change_main_block_widgets(page):
     params =  {"kind": u"公演中止情報", 
                "subkind": u"2011/9/28 『ボローニャ歌劇場』2011年9月21日(水)「清教徒」公演 払い戻しに関するご案内", 
                "display_count": 100, 
-               "display_global": True, 
-               "display_event": True, 
+               "display_global": False, 
+               "display_event": False, 
                "display_page": True}
     add_topic_widget(page, "main",  params)
 
@@ -842,8 +862,8 @@ def add_change_main_block_widgets(page):
 
 def add_change_page_settings():
     layout = change_layout()
-    topics = change_topics()
     page = change_page(layout)
+    topics = change_topics(page.pageset)
 
     DBSession.add(page)
     DBSession.add_all(topics)
@@ -879,7 +899,7 @@ def first_page(layout):
     return first_page
 
 
-def first_topics():
+def first_topics(pageset):
     return [
         Topic(kind=u"ヘルプ", 
               subkind=u"チケット購入・引取", 
@@ -887,7 +907,7 @@ def first_topics():
               title=u"会員ID忘れてしまいました", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
-              is_global=True), 
+              bound_page=pageset), 
         ]
 
 def add_first_side_block_widgets(page):
@@ -901,8 +921,8 @@ def add_first_main_block_widgets(page):
     params =  {"kind": u"ヘルプ", 
                "subkind": u"チケット購入・引取", 
                "display_count": 100, 
-               "display_global": True, 
-               "display_event": True, 
+               "display_global": False, 
+               "display_event": False, 
                "display_page": True}
     add_topic_widget(page, "main",  params)
 
@@ -913,9 +933,9 @@ def add_first_main_block_widgets(page):
     params =  {"kind": u"ヘルプ", 
                "subkind": u"動作環境・セキュリティ", 
                "display_count": 100, 
-               "display_global": True, 
-               "display_event": True, 
-                "display_page": True}
+               "display_global": False, 
+               "display_event": False, 
+               "display_page": True}
     add_topic_widget(page, "main",  params)
 
     params = dict(kind=u"チケットスター：ヘルプページ見出し", 
@@ -925,16 +945,15 @@ def add_first_main_block_widgets(page):
     params =  {"kind": u"ヘルプ", 
                "subkind": u"ヘルプ", 
                "display_count": 100, 
-               "display_global": True, 
-               "display_event": True, 
+               "display_global": False, 
+               "display_event": False, 
                "display_page": True}
     add_topic_widget(page, "main",  params)
 
 def add_first_page_settings():
     layout = first_layout()
-    topics = first_topics()
     page = first_page(layout)
-
+    topics = first_topics(page.pageset)
     DBSession.add(page)
     DBSession.add_all(topics)
 
@@ -970,23 +989,21 @@ def sports_page(layout):
     return sports_page
 
 
-def sports_topics():
+def sports_topics(pageset):
     return [
         Topic(kind=u"トピックス", 
-              subkind=u"スポーツ", 
               text=u"#", 
               title=u"ポイント10倍キャンペーン実施中！『大相撲三月場所』マス席の他、希少な溜まり席も販売！", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
-              is_global=True, 
+              bound_page=pageset, 
               orderno=1), 
         Topic(kind=u"トピックス", 
-              subkind=u"スポーツ", 
               text=u"#", 
               title=u"きゃりーぱみゅぱみゅ、倖田來未 、CNBLUE ら出演♪「オンタマカーニバル2012」1/14発売！", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
-              is_global=True, 
+              bound_page=pageset, 
               orderno=2), 
 
         ]
@@ -1014,9 +1031,9 @@ def sports_promotion():
 def add_sports_main_block_widgets(page, promotion):
     params =  {"kind": u"トピックス", 
                "display_count": 2, 
-               "display_global": True, 
+               "display_global": False, 
                "display_event": False, 
-               "display_page": False}
+               "display_page": True}
     add_topic_widget(page, "main", params)
 
     add_promotion_widget(page, "main", {"promotion": promotion.id, 
@@ -1042,7 +1059,7 @@ def add_sports_main_block_widgets(page, promotion):
                "topic_type": "hasimage", 
                "display_count": 8, 
                "display_global": True, 
-               "display_event": True, 
+               "display_event": False, 
                "display_page": True}
     add_topic_widget(page, "main", params)
 
@@ -1077,9 +1094,9 @@ def add_sports_main_block_widgets(page, promotion):
 
 def add_sports_page_settings():
     layout = sports_layout()
-    topics = sports_topics()
     promotion = sports_promotion()
     page = sports_page(layout)
+    topics = sports_topics(page.pageset)
 
     DBSession.add(page)
     DBSession.add(promotion)
@@ -1117,10 +1134,9 @@ def music_page(layout):
     return music_page
 
 
-def music_topics(page):
+def music_topics(pageset):
     return [
         Topic(kind=u"トピックス", 
-              subkind=u"音楽", 
               text=u"#", 
               title=u"ポイント10倍キャンペーン実施中！『大相撲三月場所』マス席の他、希少な溜まり席も販売！", 
               publish_open_on=datetime.datetime(2011, 1, 1),
@@ -1128,7 +1144,6 @@ def music_topics(page):
               is_global=True, 
               orderno=1), 
         Topic(kind=u"トピックス", 
-              subkind=u"音楽", 
               text=u"#", 
               title=u"きゃりーぱみゅぱみゅ、倖田來未 、CNBLUE ら出演♪「オンタマカーニバル2012」1/14発売！", 
               publish_open_on=datetime.datetime(2011, 1, 1),
@@ -1139,7 +1154,7 @@ def music_topics(page):
         ## sidebar
         Topic(kind=u"特集(サブカテゴリ)", 
               text=u"#", 
-              page=page, 
+              bound_page=pageset, 
               title=u"特集/ライブハウスへ行こう!!", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
@@ -1147,7 +1162,7 @@ def music_topics(page):
               orderno=1), 
         Topic(kind=u"特集(サブカテゴリ)", 
               text=u"#", 
-              page=page, 
+              bound_page=pageset, 
               title=u"ロックフェス特集", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
@@ -1155,7 +1170,7 @@ def music_topics(page):
               orderno=2), 
         Topic(kind=u"特集(サブカテゴリ)", 
               text=u"#", 
-              page=page, 
+              bound_page=pageset, 
               title=u"アニメぴあ", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
@@ -1251,7 +1266,7 @@ def add_music_page_settings():
     layout = music_layout()
     promotion = music_promotion()
     page = music_page(layout)
-    topics = music_topics(page)
+    topics = music_topics(page.pageset)
 
     DBSession.add(page)
     DBSession.add(promotion)
@@ -1289,23 +1304,21 @@ def stage_page(layout):
     return stage_page
 
 
-def stage_topics():
+def stage_topics(pageset):
     return [
         Topic(kind=u"トピックス", 
-              subkind=u"演劇", 
               text=u"#", 
               title=u"ポイント10倍キャンペーン実施中！『大相撲三月場所』マス席の他、希少な溜まり席も販売！", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
-              is_global=True, 
+              bound_page=pageset, 
               orderno=1), 
         Topic(kind=u"トピックス", 
-              subkind=u"演劇", 
               text=u"#", 
               title=u"きゃりーぱみゅぱみゅ、倖田來未 、CNBLUE ら出演♪「オンタマカーニバル2012」1/14発売！", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
-              is_global=True, 
+              bound_page=pageset, 
               orderno=2), 
 
         ]
@@ -1361,7 +1374,7 @@ def add_stage_main_block_widgets(page, promotion):
                "topic_type": "hasimage", 
                "display_count": 8, 
                "display_global": True, 
-               "display_event": True, 
+               "display_event": False, 
                "display_page": True}
     add_topic_widget(page, "main", params)
 
@@ -1397,9 +1410,9 @@ def add_stage_main_block_widgets(page, promotion):
 
 def add_stage_page_settings():
     layout = stage_layout()
-    topics = stage_topics()
     promotion = stage_promotion()
     page = stage_page(layout)
+    topics = stage_topics(page.pageset)
 
     DBSession.add(page)
     DBSession.add(promotion)
@@ -1437,23 +1450,21 @@ def event_page(layout):
     return event_page
 
 
-def event_topics():
+def event_topics(pageset):
     return [
         Topic(kind=u"トピックス", 
-              subkind=u"その他", 
               text=u"#", 
               title=u"ポイント10倍キャンペーン実施中！『大相撲三月場所』マス席の他、希少な溜まり席も販売！", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
-              is_global=True, 
+              bound_page=pageset, 
               orderno=1), 
         Topic(kind=u"トピックス", 
-              subkind=u"その他", 
               text=u"#", 
               title=u"きゃりーぱみゅぱみゅ、倖田來未 、CNBLUE ら出演♪「オンタマカーニバル2012」1/14発売！", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
-              is_global=True, 
+              bound_page=pageset, 
               orderno=2), 
 
         ]
@@ -1494,11 +1505,10 @@ def add_event_main_block_widgets(page, promotion):
     add_heading_widget(page, "main", params)
 
     params =  {"kind": u"トピックス", 
-               "subkind": u"その他", 
                "display_count": 5, 
                "display_global": True, 
                "display_event": False, 
-               "display_page": False}
+               "display_page": True}
     add_topic_widget(page, "main", params)
 
     params = dict(kind=u"チケットスター：その他見出し", 
@@ -1509,7 +1519,7 @@ def add_event_main_block_widgets(page, promotion):
                "topic_type": "hasimage", 
                "display_count": 8, 
                "display_global": True, 
-               "display_event": True, 
+               "display_event": False, 
                "display_page": True}
     add_topic_widget(page, "main", params)
 
@@ -1544,9 +1554,9 @@ def add_event_main_block_widgets(page, promotion):
 
 def add_event_page_settings():
     layout = event_layout()
-    topics = event_topics()
     promotion = event_promotion()
     page = event_page(layout)
+    topics = event_topics(page.pageset)
 
     DBSession.add(page)
     DBSession.add(promotion)
