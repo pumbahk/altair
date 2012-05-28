@@ -216,3 +216,152 @@ class OperatorViewTests(unittest.TestCase):
         result = target.delete()
         print result
         self.assertEqual(result.location, '/operators')
+
+class OAuthLoginTests(unittest.TestCase):
+    def setUp(self):
+        self.config = testing.setUp()
+
+    def tearDown(self):
+        import transaction
+        transaction.abort()
+        testing.tearDown()
+
+    def _getTarget(self):
+        from .. import views
+        return views.OAuthLogin
+
+    def _makeOne(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
+
+    def _add_role(self, name):
+        import sqlahelper
+        from .. import models as m
+        role = m.Role(name=name)
+        sqlahelper.get_session().add(role)
+        return role
+
+    def _get_opeartor(self, user_id):
+        from .. import models as m
+        import sqlahelper
+        session = sqlahelper.get_session()
+        return session.query(m.Operator).filter(m.Operator.user_id==user_id).first()
+
+    def _add_operator(self, user_id):
+        from .. import models as m
+        import sqlahelper
+        session = sqlahelper.get_session()
+        operator = m.Operator(user_id=user_id, auth_source='oauth')
+        session.add(operator)
+        return operator
+
+    def test_init(self):
+        request = testing.DummyRequest(GET={'code': 'code'})
+        request.registry.settings = {
+            'altair.oauth.client_id': 'client-id',
+            'altair.oauth.secret_key': 'secret-key',
+            'altair.oauth.authorize_url': 'authorized-url',
+            'altair.oauth.access_token_url': 'access-token',
+            }
+
+        target = self._makeOne(request)
+        self.assertEqual(target.access_token_url, 'access-token')
+
+
+    def test_oauth_callback_without_operator(self):
+        import json
+        self.config.add_route('dashboard', '/')
+        self._add_role(u'administrator')
+        self._add_role(u'staff')
+
+        request = testing.DummyRequest(GET={'code': 'code'})
+        request.registry.settings = {
+            'altair.oauth.client_id': 'client-id',
+            'altair.oauth.secret_key': 'secret-key',
+            'altair.oauth.authorize_url': 'authorized-url',
+            'altair.oauth.access_token_url': 'http://example.com/access-token',
+        }
+
+
+        res_data = json.dumps({
+            'user_id': '99999999',
+            'roles': [
+                'administrator',
+                'staff'
+            ],
+            'screen_name': u'管理者',
+            'access_token': 'this-is-token',
+        })
+        target = self._makeOne(request)
+        target._urllib2 = DummyURLLib2(res_data)
+
+        result = target.oauth_callback()
+
+        self.assertTrue(target._urllib2.called)
+        self.assertEqual(target._urllib2.called[0], 'http://example.com/access-token?client_secret=secret-key&code=code&client_id=client-id&grant_type=authorization_code')
+        self.assertEqual(result.location, 'http://example.com/')
+
+        # operator data
+        operator = self._get_opeartor('99999999')
+        self.assertIsNotNone(operator)
+        self.assertEqual(operator.auth_source, 'oauth')
+        self.assertEqual(operator.screen_name, u'管理者')
+        self.assertEqual(operator.oauth_token, 'this-is-token')
+        self.assertEqual(len(operator.roles), 2)
+        self.assertEqual(operator.roles[0].name, 'administrator')
+        self.assertEqual(operator.roles[1].name, 'staff')
+
+    def test_oauth_callback_with_operator(self):
+        import json
+        self.config.add_route('dashboard', '/')
+        self._add_role(u'administrator')
+        self._add_role(u'staff')
+
+        request = testing.DummyRequest(GET={'code': 'code'})
+        request.registry.settings = {
+            'altair.oauth.client_id': 'client-id',
+            'altair.oauth.secret_key': 'secret-key',
+            'altair.oauth.authorize_url': 'authorized-url',
+            'altair.oauth.access_token_url': 'http://example.com/access-token',
+            }
+
+
+        res_data = json.dumps({
+            'user_id': '888888888',
+            'roles': [
+                'administrator',
+                'staff'
+            ],
+            'screen_name': u'管理者',
+            'access_token': 'this-is-token',
+            })
+
+        operator = self._add_operator('888888888')
+        target = self._makeOne(request)
+        target._urllib2 = DummyURLLib2(res_data)
+
+        result = target.oauth_callback()
+
+        self.assertTrue(target._urllib2.called)
+        self.assertEqual(target._urllib2.called[0], 'http://example.com/access-token?client_secret=secret-key&code=code&client_id=client-id&grant_type=authorization_code')
+        self.assertEqual(result.location, 'http://example.com/')
+
+        # operator data
+        self.assertIsNotNone(operator)
+        self.assertEqual(operator.auth_source, 'oauth')
+        self.assertEqual(operator.screen_name, u'管理者')
+        self.assertEqual(operator.oauth_token, 'this-is-token')
+        self.assertEqual(len(operator.roles), 2)
+        self.assertEqual(operator.roles[0].name, 'administrator')
+        self.assertEqual(operator.roles[1].name, 'staff')
+        self.assertIsNotNone(operator.last_login)
+
+
+class DummyURLLib2(object):
+    def __init__(self, response_data):
+        self.response_data = response_data
+        self.called = []
+
+    def urlopen(self, url):
+        self.called.append(url)
+        from io import BytesIO
+        return BytesIO(self.response_data)

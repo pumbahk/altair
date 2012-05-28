@@ -7,7 +7,6 @@ import urllib2
 
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.security import forget, remember, authenticated_userid
-from pyramid.threadlocal import get_current_registry
 from pyramid.view import view_config
 from pyramid.view import view_defaults
 
@@ -41,11 +40,12 @@ def logout(request):
 
 
 class OAuthLogin(object):
+    _urllib2 = urllib2
     def __init__(self, request,
                  _stub_client=None, **kwargs):
         self.request = request
 
-        settings = get_current_registry().settings
+        settings = request.registry.settings
         for k in ['client_id', 'secret_key', 'authorize_url', 'access_token_url']:
             setattr(self, k, kwargs.get(k, settings.get('altair.oauth.%s' % k)))
         self._stub_client = _stub_client
@@ -61,14 +61,14 @@ class OAuthLogin(object):
         return HTTPFound('%s?client_id=%s&response_type=code' %
                          (self.authorize_url, self.client_id))
 
-    def _create_oauth_model(self, role, data):
+    def _create_oauth_model(self, roles, data):
         return Operator(
                 auth_source='oauth',
                 user_id=data['user_id'],
                 screen_name=data['screen_name'],
                 oauth_token=data['access_token'],
                 oauth_token_secret='',
-                roles=[role],
+                roles=roles,
             )
         
     @view_config(route_name='oauth_callback')
@@ -81,7 +81,7 @@ class OAuthLogin(object):
                 client_secret=self.secret_key,
                 code=self.request.GET.get("code"),
                 grant_type='authorization_code')
-            data = json.loads(urllib2.urlopen(
+            data = json.loads(self._urllib2.urlopen(
                 self.access_token_url +
                 "?" + urllib.urlencode(args)).read())
         except IOError, e:
@@ -89,17 +89,22 @@ class OAuthLogin(object):
             self.request.response.body = str(e)
             return self.request.response
 
+        role_names = data.get('roles')
+        if role_names is not None:
+            roles = Role.query.filter(Role.name.in_(role_names)).order_by(Role.id).all()
+        else:
+            roles = []
         try:
             operator = Operator.query.filter_by(auth_source='oauth', user_id=data['user_id']).one()
             operator.last_login = datetime.now()
-
-            role = Role.query.filter_by(name=data.get('role', DEFAULT_ROLE)).one()
-            operator.role = role
+            operator.roles = roles
+            operator.screen_name=data['screen_name']
+            operator.oauth_token=data['access_token']
+            operator.oauth_token_secret=''
 
         except NoResultFound:
             logging.info("operator is not found. create it")
-            role = Role.query.filter_by(name=data.get('role', DEFAULT_ROLE)).one()
-            operator = self._create_oauth_model(role, data)
+            operator = self._create_oauth_model(roles, data)
             DBSession.add(operator)
 
         headers = remember(self.request, operator.user_id)
