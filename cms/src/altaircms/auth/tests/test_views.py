@@ -9,6 +9,7 @@ def setup_module():
     import sqlahelper
     from sqlalchemy import create_engine
     engine = create_engine("sqlite:///")
+    sqlahelper.get_session().remove()
     sqlahelper.add_engine(engine)
     from .. import models
     sqlahelper.get_base().metadata.create_all()
@@ -48,7 +49,6 @@ class RoleViewTests(unittest.TestCase):
         sqlahelper.get_session().flush()
         return role
 
-    @unittest.skip(u"一気にテストすると失敗する。他のテストケースの影響を受けている")
     def test_get_role(self):
         role = self.add_role('test-role', ['page_update'])
         request = testing.DummyRequest(matchdict=dict(id=role.id))
@@ -56,7 +56,6 @@ class RoleViewTests(unittest.TestCase):
         result = target.get_role()
         self.assertEqual(result, role)
 
-    @unittest.skip(u"一気にテストすると失敗する。他のテストケースの影響を受けている")
     def test_list(self):
         role = self.add_role('test-role', ['page_update'])
         request = testing.DummyRequest()
@@ -64,7 +63,6 @@ class RoleViewTests(unittest.TestCase):
         result = target.list()
         self.assertEqual(result['roles'], [role])
 
-    @unittest.skip(u"一気にテストすると失敗する。他のテストケースの影響を受けている")
     def test_read(self):
         role = self.add_role('test-role', ['page_update'])
         request = testing.DummyRequest(matchdict=dict(id=role.id))
@@ -74,7 +72,6 @@ class RoleViewTests(unittest.TestCase):
         from ..forms import RoleForm
         self.assertTrue(isinstance(result['form'], RoleForm))
 
-    @unittest.skip(u"一気にテストすると失敗する。他のテストケースの影響を受けている")
     def test_read_not_found(self):
         from pyramid.httpexceptions import HTTPNotFound
         request = testing.DummyRequest(matchdict=dict(id="99999999999999"))
@@ -85,7 +82,6 @@ class RoleViewTests(unittest.TestCase):
         except HTTPNotFound:
             pass
 
-    @unittest.skip(u"一気にテストすると失敗する。他のテストケースの影響を受けている")
     def test_update(self):
         self.config.add_route('role', '/roles/{id}')
         role = self.add_role('test-role', ['page_update'])
@@ -96,7 +92,6 @@ class RoleViewTests(unittest.TestCase):
         self.assertEqual(result.location, '/roles/' + str(role.id))
         self.assertEqual(role.permissions, ['page_update', 'page_delete'])
 
-    @unittest.skip(u"一気にテストすると失敗する。他のテストケースの影響を受けている")
     def test_update_invalid(self):
         self.config.add_route('role', '/roles/{id}')
         role = self.add_role('test-role', ['page_update'])
@@ -106,7 +101,6 @@ class RoleViewTests(unittest.TestCase):
         result = target.update()
         self.assertEqual(result['role'], role)
 
-    @unittest.skip(u"一気にテストすると失敗する。他のテストケースの影響を受けている")
     def test_delete(self):
         self.config.add_route('role_list', '/roles')
         role = self.add_role('test-role', ['page_update'])
@@ -149,7 +143,6 @@ class RolePermissionViewTests(unittest.TestCase):
         sqlahelper.get_session().flush()
         return role
 
-    @unittest.skip(u"一気にテストすると失敗する。他のテストケースの影響を受けている")
     def test_delete(self):
         self.config.add_route('role', '/roles/{id}')
         role = self._add_role('test-role', permissions=['page_update'])
@@ -196,7 +189,6 @@ class OperatorViewTests(unittest.TestCase):
         
         return operator
 
-    @unittest.skip(u"一気にテストすると失敗する。他のテストケースの影響を受けている")
     def test_list(self):
         operator = self._add_operator(u'test-operator')
         request = testing.DummyRequest()
@@ -206,7 +198,6 @@ class OperatorViewTests(unittest.TestCase):
 
         self.assertEqual(result['operators'], [operator])
         
-    @unittest.skip(u"一気にテストすると失敗する。他のテストケースの影響を受けている")
     def test_read(self):
         operator = self._add_operator(u'test-operator')
         request = testing.DummyRequest(matchdict=dict(id=str(operator.id)))
@@ -216,7 +207,6 @@ class OperatorViewTests(unittest.TestCase):
 
         self.assertEqual(result['operator'], operator)
 
-    @unittest.skip(u"一気にテストすると失敗する。他のテストケースの影響を受けている")
     def test_delete(self):
         self.config.add_route('operator_list', '/operators')
         operator = self._add_operator(u'test-operator')
@@ -226,4 +216,3 @@ class OperatorViewTests(unittest.TestCase):
         result = target.delete()
         print result
         self.assertEqual(result.location, '/operators')
-
