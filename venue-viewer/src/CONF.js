@@ -1,50 +1,45 @@
 exports.DEFAULT = {
   ZOOM_RATIO: 0.8,
-  STYLE: {
-    SHAPE: {
-      fill: { color: '#fff' },
-      stroke: { color: '#000', width: 1 }
-    },
+  SHAPE_STYLE: {
+    fill: new Fashion.FloodFill(new Fashion.Color('#fff')),
+    stroke: new Fashion.Stroke(new Fashion.Color("#000"), 1)
+  },
 
-    TEXT: {
-      fill: { color: '#000' }
-    },
+  TEXT_STYLE: {
+    fill: new Fashion.FloodFill(new Fashion.Color('#000')),
+    stroke: null
+  },
 
-    VENUE: {
-      fill:   { color: "#FFCB3F" },
-      stroke: { color: "#5ABECD", width: 1 }
-    },
+  VENUE_STYLE: {
+    fill: new Fashion.FloodFill(new Fashion.Color('#FFCB3F')),
+    stroke: new Fashion.Stroke(new Fashion.Color('#5ABECD'), 1)
+  },
 
-    SEAT: {
-      fill:   { color: "#fff" },
-      stroke: { color: "#000", width: 1 }
-    },
+  MASK_STYLE: {
+    fill:   new Fashion.FloodFill(new Fashion.Color("#0064ff80")),
+    stroke: new Fashion.Stroke(new Fashion.Color("#0080FF"), 2)
+  },
 
-    LABEL: {
-      fill: { color: '#000' }
-    },
+  SEAT_STYLE: {
+    text_color: "#000",
+    fill:   { color: "#fff" },
+    stroke: { color: "#000", width: 1 }
+  },
 
-    MASK: {
-      fill:   { color: "#0064ff80" },
-      stroke: { color: "#0080FF", width: 2 }
-    },
-
-    SELECTED_SEAT: {
+  AUGMENTED_STYLE: {
+    selected: {
+      text_color: "#FFF",
       fill:   { color: "#009BE1" },
       stroke: { color: "#FFF", width: 3 }
     },
-
-    SELECTED_LABEL: {
-      fill:   { color: "#FFF" }
+    highlighted: {
+      fill: null,
+      stroke: { color: "#F63", width: 3, pattern: 'solid' }
     },
-
-    SELECTABLE_SEAT: {
-      fill:   { color: "#FF0" },
-      stroke: { color: "#000", width: 1 }
-    },
-
-    SELECTABLE_LABEL: {
-      fill:   { color: "#00F" }
+    unselectable: {
+      text_color: "#888",
+      fill:   { color: "#eee" },
+      stroke: { color: "#ccc", width: 1 }
     }
   }
 };

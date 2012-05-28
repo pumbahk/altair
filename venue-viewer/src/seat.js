@@ -5,31 +5,14 @@ function clone(obj) {
   return $.extend({}, obj); 
 }
 
-var default_styles = {
-  styles: {
-    neutral : {
-      shape: util.convertToFashionStyle(CONF.DEFAULT.STYLE.SEAT),
-      label: util.convertToFashionStyle(CONF.DEFAULT.STYLE.LABEL)
-    },
-    selected: {
-      shape: util.convertToFashionStyle(CONF.DEFAULT.STYLE.SELECTED_SEAT),
-      label: util.convertToFashionStyle(CONF.DEFAULT.STYLE.SELECTED_LABEL)
-    }
-  },
-  additional: {
-    free: {
-      shape: { fill: null, stroke: null },
-      label: { fill: null, stroke: null }
-    },
-    mouseover: {
-      shape: util.convertToFashionStyle({
-        fill: null,
-        stroke: { color: "#F63", width: 3, pattern: 'solid' }
-      }),
-      label: { fill: null, stroke: null }
-    }
-  }
-};
+function mergeStyle(a, b) {
+  return {
+    text: (b.text ? b.text: a.text) || null,
+    text_color: (b.text_color ? b.text_color: a.text_color) || null,
+    fill: (b.fill ? b.fill: a.fill) || null,
+    stroke: (b.stroke ? b.stroke: a.stroke) || null
+  };
+}
 
 var Seat = exports.Seat = function Seat () {
   this.id = null;
@@ -39,12 +22,12 @@ var Seat = exports.Seat = function Seat () {
   this.gate = null;
   this.block = null;
   this.events = {};
-  this._status = 'neutral';
-  this._condition = 'free';
+  this._styleTypes = [];
   this.mata = null;
   this.shape = null;
-  this.original_style = null;
-  this._mouseoveredSeats = [];
+  this.originalStyle = null;
+  this._highlightedSeats = [];
+  this._selected = false;
 
   this.init.apply(this, arguments);
 };
@@ -57,28 +40,14 @@ Seat.prototype.init = function Seat_init(id, shape, meta, parent, events) {
   this.meta   = meta;
 
   this.type = this.parent.metadata.stock_types[meta.stock_type_id];
+  this.holder = this.parent.metadata.stock_holders ?
+      this.parent.metadata.stock_holders[meta.stock_holder_id]: null;
 
-  if (this.type) {
-    if (this.type.style.text) {
+  var style = mergeStyle(CONF.DEFAULT.SEAT_STYLE, this.type.style);
+  if (this.holder)
+    style = mergeStyle(style, this.holder.style);
 
-      var style = this.type.style,
-      p = this.shape.position(),
-      s = this.shape.size();
-
-      this.label = this.parent.drawable.draw(
-        new Fashion.Text({
-          position: {
-            x: p.x,
-            y: p.y + (s.y * 0.75),
-          },
-          fontSize: (s.y * 0.75),
-          text: style.text
-        })
-      );
-    }
-
-    this.original_style = util.convertToFashionStyle(this.type.style, true);
-  }
+  this.originalStyle = style;
 
   if (events) {
     for (var i in events) {
@@ -91,109 +60,83 @@ Seat.prototype.init = function Seat_init(id, shape, meta, parent, events) {
     this.shape.addEvent(this.events);
   }
 
+  if (!this.selectable())
+    this.addStyleType('unselectable');
+
   this.stylize();
 };
 
 Seat.prototype.stylize = function Seat_stylize() {
-  var shape_style = clone(default_styles.styles[this._status].shape);
-  var label_style = clone(default_styles.styles[this._status].label);
-  var add_shape = default_styles.additional[this._condition].shape;
-  var add_label = default_styles.additional[this._condition].label;
-
-  if (this._status == 'neutral' && this.original_style)
-    shape_style = clone(this.original_style);
-
-  if (add_shape.fill) shape_style.fill = add_shape.fill;
-  if (add_shape.stroke) shape_style.stroke = add_shape.stroke;
-  if (add_label.fill)   label_style.fill = add_label.fill;
-  if (add_label.stroke) label_style.stroke = add_label.stroke;
-
-  this.shape.style(shape_style);
-  if (this.label) this.label.style(label_style);
-};
-
-Seat.prototype.condition = function Seat_condition(cond) {
-  switch (cond) {
-  case 'mouseover':
-  case 'free':
-    this._condition = cond;
-    this.stylize();
-  default:
+  var style = this.originalStyle;
+  for (var i = 0; i < this._styleTypes.length; i++) {
+    var styleType = this._styleTypes[i];
+    style = mergeStyle(style, CONF.DEFAULT.AUGMENTED_STYLE[styleType]);
   }
-  return this._condition;
-};
+  this.shape.style(util.convertToFashionStyle(style));
 
-Seat.prototype.status = function Seat_status(st) {
-  switch (st) {
-  case 'neutral':
-  case 'selected':
-    this._status = st;
-    this.stylize();
-    break;
-  default:
-  }
-
-  return this._status;
-};
-
-Seat.prototype.getAdjacency = function Seat_getAdjacency() {
-  var candidates = this.parent.seatAdjacencies.getCandidates(this.id, this.parent.adjacencyLength());
-  var seats = this.parent.seats;
-
-  outer:
-  for (var i = 0,l = candidates.length; i < l; i++) {
-    var candidate = candidates[i];
-    var prev_status = null;
-    for (var j = 0; j < candidate.length; j++) {
-      var id = candidate[j];
-      var seat = seats[id];
-      if (prev_status && prev_status !== seat.status()) {
-        // if statuses of all Seats in this candidate are not same, go next candidate.
-        continue outer;
-      }
-      prev_status = seat.status();
+  if (style.text) {
+    if (!this.label) {
+      var p = this.shape.position(),
+          s = this.shape.size();
+      this.label = this.parent.drawable.draw(
+        new Fashion.Text({
+          position: {
+            x: p.x,
+            y: p.y + (s.y * 0.75),
+          },
+          fontSize: (s.y * 0.75),
+          text: style.text,
+          style: { fill: new Fashion.FloodFill(new Fashion.Color(style.text_color)) }
+        })
+      );
+      this.label.addEvent(this.events);
+    } else {
+      this.label.text(style.text);
+      this.label.style({ fill: new Fashion.FloodFill(new Fashion.Color(style.text_color)) });
     }
-    return candidate;
-  }
-
-  return [];
-};
-
-Seat.prototype.forEachAdjacency = function Seat_forEachAdjacency(fn) {
-  var pair = this.getAdjacency();
-  for (var i = 0,l = pair.length; i < l; i++) {
-    var id = pair[i];
-    fn.call(this, this.parent.seats[id], id);
+  } else {
+    if (this.label) {
+      this.parent.drawable.erase(this.label);
+      this.label = null;
+    }
   }
 };
 
-Seat.prototype.selected = function Seat_selected() {
-  this.forEachAdjacency(function(seat) {
-    seat.status('selected');
-  });
+Seat.prototype.addStyleType = function Seat_addStyleType(value) {
+  this._styleTypes.push(value);
+  this.stylize();
 };
 
-Seat.prototype.neutral = function Seat_neutral() {
-  this.forEachAdjacency(function(seat) {
-    seat.status('neutral');
-  });
-};
-
-Seat.prototype.mouseover = function Seat_mouseover() {
-  var self = this;
-  this.forEachAdjacency(function(seat) {
-    seat.condition('mouseover');
-    self._mouseoveredSeats.push(seat);
-  });
-};
-
-Seat.prototype.free = function Seat_free() {
-  var mouseoveredSeats = this._mouseoveredSeats;
-  this._mouseoveredSeats = [];
-  for (var i = 0, l = mouseoveredSeats.length; i < l; i++) {
-    mouseoveredSeats[i].condition('free');
+Seat.prototype.removeStyleType = function Seat_removeStyleType(value) {
+  for (var i = 0; i < this._styleTypes.length;) {
+    if (this._styleTypes[i] == value)
+      this._styleTypes.splice(i, 1);
+    else
+      i++;
   }
-}
+  this.stylize();
+};
+
+Seat.prototype.__selected = function Seat___selected() {
+  this.addStyleType('selected');
+  this._selected = true;
+};
+
+Seat.prototype.__unselected = function Seat___unselected() {
+  this.removeStyleType('selected');
+  this._selected = false;
+};
+
+Seat.prototype.selected = function Seat_selected(value) {
+  if (value !== void(0))
+    this.parent._select(this, value);
+  return this._selected;
+};
+
+Seat.prototype.selectable = function Seat_selectable() {
+  return !this.parent.callbacks.selectable ||
+    this.parent.callbacks.selectable(this.parent, this);
+};
 
 var SeatAdjacencies = exports.SeatAdjacencies = function SeatAdjacencies(src) {
   this.tbl = {};

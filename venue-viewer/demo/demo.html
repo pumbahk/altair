@@ -72,6 +72,9 @@ var venue = $('#venue').venueviewer({
         $("#toolbar-action-select-zoomout").attr("checked", "checked");
         break;
       }
+    },
+    selectable: function (viewer, seat) {
+      return seat.id != "A4";
     }
   }
 }).venueviewer("load");

@@ -8,7 +8,10 @@
     this.callbacks = {
       uimodeselect: options.callbacks && options.callbacks.uimodeselect || null,
       message: options.callbacks && options.callbacks.message || null,
-      load: options.callbacks && options.callbacks.load || null 
+      load: options.callbacks && options.callbacks.load || null,
+      click: options.callbacks && options.callbacks.click || null,
+      selectable: options.callbacks && options.callbacks.selectable || null,
+      click: options.callbacks && options.callbacks.click || null
     };
     this.zoomRatio = options.zoomRatio || CONF.DEFAULT.ZOOM_RATIO;
     this.dragging = false;
@@ -36,13 +39,15 @@
     this.uiMode = 'select1';
     this.shapes = {};
     this.seats = {};
+    this.selection = {};
+    this.highlighted = {};
     this._adjacencyLength = 1;
     this.addKeyEvent();
     this.rubberBand = new Fashion.Rect({
       position: {x: 0, y: 0},
       size: {x: 0, y: 0}
     });
-    this.rubberBand.style(util.convertToFashionStyle(CONF.DEFAULT.STYLE.MASK));
+    this.rubberBand.style(CONF.DEFAULT.MASK_STYLE);
     canvas.empty();
   };
 
@@ -72,7 +77,7 @@
     vb = [0, 0, 1000, 1000];
 
     var size = ((vb || w || h) ? {
-      x:  ((vb && vb[2]) || w || h),
+      x: ((vb && vb[2]) || w || h),
       y: ((vb && vb[3]) || h || w)
     } : null);
 
@@ -96,7 +101,7 @@
         case 'path':
           if (!attrs.d) throw "Pathdata is not provided for the path element";
           shape = this.drawable.draw(new Fashion.Path({points: new Fashion.PathData(attrs.d)}));
-          shape.style(util.convertToFashionStyle(CONF.DEFAULT.STYLE.SHAPE));
+          shape.style(CONF.DEFAULT.SHAPE_STYLE);
           break;
 
         case 'text':
@@ -107,9 +112,10 @@
                 y: parseFloat(attrs.y)
               },
               fontSize: parseFloat(n.style.fontSize),
-              text: n.firstChild.nodeValue
+              text: n.firstChild.nodeValue,
+              zIndex: 99,
             }));
-          shape.style(util.convertToFashionStyle(CONF.DEFAULT.STYLE.TEXT));
+          shape.style(CONF.DEFAULT.TEXT_STYLE);
           break;
 
         case 'rect':
@@ -124,7 +130,7 @@
                 y: parseFloat(attrs.height)
               }
             }));
-          shape.style(util.convertToFashionStyle(CONF.DEFAULT.STYLE.SHAPE));
+          shape.style(CONF.DEFAULT.SHAPE_STYLE);
           break;
 
         default:
@@ -153,10 +159,45 @@
       var meta  = this.metadata.seats[id];
       if (!meta) continue;
       this.seats[id] = new seat.Seat(id, shape, meta, this, {
-        mouseover: function(evt) { this.mouseover(); },
-        mouseout: function(evt)  { this.free(); }
+        mouseover: function(evt) {
+          if (self.uiMode == 'select')
+            return;
+          var candidates = self.seatAdjacencies.getCandidates(this.id, self.adjacencyLength());
+          if (candidates.length == 0)
+            return;
+          var candidate = null;
+          for (var i = 0; i < candidates.length; i++) {
+            candidate = candidates[i];
+            for (var j = 0; j < candidate.length; j++) {
+              if (!self.seats[candidate[j]].selectable()) {
+                candidate = null;
+                break;
+              }
+            }
+            if (candidate) {
+              break;
+            }
+          }
+          if (!candidate)
+            return;
+          for (var i = 0; i < candidate.length; i++) {
+            var seat = self.seats[candidate[i]];
+            seat.addStyleType('highlighted');
+            self.highlighted[seat.id] = seat;
+          }
+        },
+        mouseout: function(evt) {
+          if (self.uiMode == 'select')
+            return;
+          var highlighted = self.highlighted;
+          self.highlighted = {};
+          for (var i in highlighted)
+            highlighted[i].removeStyleType('highlighted');
+        },
+        mousedown: function(evt) {
+          self.callbacks.click && self.callbacks.click(self, this);
+        }
       });
-
     }
   };
 
@@ -189,23 +230,6 @@
 
     switch(type) {
     case 'select1':
-      this.drawable.addEvent({
-        mousedown: function(evt) {
-          var pos = evt.logicalPosition;
-          for (var i in self.seats) {
-            var seat = self.seats[i];
-            var p = seat.shape.position(), s = seat.shape.size();
-            if (p.x < pos.x && pos.x < (p.x + s.x) &&
-                p.y < pos.y && pos.y < (p.y + s.y)) {
-              if (seat.status() === 'selected' && !self.shift) {
-                seat.neutral();
-              } else {
-                seat.selected();
-              }
-            }
-          }
-        }
-      });
       break;
 
     case 'select':
@@ -220,18 +244,20 @@
 
         mouseup: function(evt) {
           self.dragging = false;
+          var selection = []; 
           var hitTest = util.makeHitTester(self.rubberBand);
-          for (var i in self.seats) {
-            var seat = self.seats[i];
-            if (hitTest(seat.shape)) {
-              if (seat.status() === 'selected' && !self.shift) {
-                seat.status('neutral');
-              } else {
-                seat.status('selected');
-              }
+          for (var id in self.seats) {
+            var seat = self.seats[id];
+            if ((hitTest(seat.shape) || (self.shift && seat.selected())) &&
+                (!self.callbacks.selectable
+                    || self.callbacks.selectable(this, seat))) {
+              selection.push(seat);
             }
           }
+          self.unselectAll();
           self.drawable.erase(self.rubberBand);
+          for (var i = 0; i < selection.length; i++)
+            selection[i].selected(true);
         },
 
         mousemove: function(evt) {
@@ -279,7 +305,29 @@
     this.callbacks.uimodeselect && this.callbacks.uimodeselect(this, type);
   };
 
-  VenueViewer.prototype.adjacencyLength = function(value) {
+  VenueViewer.prototype.unselectAll = function VenueViewer_unselectAll() {
+    var prevSelection = this.selection;
+    this.selection = {};
+    for (var id in prevSelection) {
+      this.seats[id].__unselected();
+    }
+  };
+
+  VenueViewer.prototype._select = function VenueViewer__select(seat, value) {
+    if (value) {
+      if (!(seat.id in this.selection)) {
+        this.selection[seat.id] = seat;
+        seat.__selected();
+      }
+    } else {
+      if (seat.id in this.selection) {
+        delete this.selection[seat.id];
+        seat.__unselected();
+      }
+    }
+  };
+
+  VenueViewer.prototype.adjacencyLength = function VenueViewer_adjacencyLength(value) {
     if (value !== void(0)) {
       this._adjacencyLength = value;
     }
