@@ -60,17 +60,7 @@ class OAuthLogin(object):
     def oauth_entry(self):
         return HTTPFound('%s?client_id=%s&response_type=code' %
                          (self.authorize_url, self.client_id))
-
-    def _create_oauth_model(self, roles, data):
-        return Operator(
-                auth_source='oauth',
-                user_id=data['user_id'],
-                screen_name=data['screen_name'],
-                oauth_token=data['access_token'],
-                oauth_token_secret='',
-                roles=roles,
-            )
-        
+ 
     @view_config(route_name='oauth_callback')
     def oauth_callback(self):
 
@@ -96,16 +86,16 @@ class OAuthLogin(object):
             roles = []
         try:
             operator = Operator.query.filter_by(auth_source='oauth', user_id=data['user_id']).one()
-            operator.last_login = datetime.now()
-            operator.roles = roles
-            operator.screen_name=data['screen_name']
-            operator.oauth_token=data['access_token']
-            operator.oauth_token_secret=''
-
         except NoResultFound:
             logging.info("operator is not found. create it")
-            operator = self._create_oauth_model(roles, data)
-            DBSession.add(operator)
+            operator = Operator(auth_source='oauth', user_id=data['user_id'])
+        operator.last_login = datetime.now()
+        operator.screen_name = data['screen_name']
+        operator.oauth_token = data['access_token']
+        operator.oauth_token_secret = ''
+        operator.roles = roles
+
+        DBSession.add(operator)
 
         headers = remember(self.request, operator.user_id)
 
