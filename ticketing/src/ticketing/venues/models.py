@@ -1,6 +1,7 @@
 # encoding: utf-8
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, ForeignKeyConstraint, Index, DECIMAL
 from sqlalchemy.orm import relationship, join, backref, column_property, mapper
+from sqlalchemy.ext.associationproxy import association_proxy
 
 import sqlahelper
 
@@ -95,6 +96,9 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     attributes      = relationship("SeatAttribute", backref='seat', cascade='save-update, merge')
     areas           = relationship("VenueArea", secondary=VenueArea_group_l0_id.__table__, backref="seats")
     adjacencies     = relationship("SeatAdjacency", secondary=seat_seat_adjacency_table, backref="seats")
+    _status = relationship('SeatStatus', uselist=False) # 1:1
+
+    status = association_proxy('_status', 'status')
 
     def __setitem__(self, name, value):
         session.add(self)
@@ -126,8 +130,6 @@ class SeatStatus(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "SeatStatus"
     seat_id = Column(BigInteger, ForeignKey("Seat.id"), primary_key=True)
     status = Column(Integer)
-
-    seat = relationship('Seat', uselist=False, backref="status") # 1:1
 
     @staticmethod
     def get_for_update(stock_id):

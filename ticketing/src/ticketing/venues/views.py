@@ -32,6 +32,7 @@ def get_seats(request):
             'id': seat.l0_id,
             'stock_type_id': seat.stock and seat.stock.stock_type_id,
             'stock_holder_id': seat.stock and seat.stock.stock_holder and seat.stock.stock_holder.id,
+            'status': seat.status,
             'areas': [area.id for area in seat.areas],
             }
         for attr in seat.attributes:
@@ -52,13 +53,20 @@ def get_seats(request):
             name=stock_type.name,
             style=stock_type.style)
 
+    stock_holders_data = {}
+    for stock_holder in DBSession.query(StockHolder).filter_by(performance=venue.performance):
+        stock_holders_data[stock_holder.id] = dict(
+            name=stock_holder.name,
+            style=stock_holder.style)
+
     return {
         'areas': dict(
             (area.id, { 'id': area.id, 'name': area.name }) \
-            for area in venue.areas
+            for area in venue.areas \
             ),
         'seats': seats_data,
         'seat_adjacencies': seat_adjacencies_data,
         'stock_types': stock_types_data,
+        'stock_holders': stock_holders_data
         }
 
