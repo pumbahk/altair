@@ -21,7 +21,7 @@ def rolefinder(userid, request):
     """
     try:
         operator = Operator.query.filter_by(user_id=userid).one()
-        return [operator.role.name]
+        return [role.name for role in operator.roles]
     except NoResultFound, e:
         logging.exception(e)
         return []
