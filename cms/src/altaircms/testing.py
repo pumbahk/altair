@@ -22,3 +22,25 @@ def dummy_form_factory(name="DummyForm", validate=False, errors=None):
                  validate = _validate, 
                  __init__=__init__)
     return type(name, (object, ), attrs)
+
+
+def setup_db(models=[]):
+    from pyramid.path import DottedNameResolver
+    resolver = DottedNameResolver(package='altaircms')
+    for m in models:
+        resolver.maybe_resolve(m)
+
+    import sqlahelper
+    from sqlalchemy import create_engine
+    engine = create_engine("sqlite:///")
+    sqlahelper.get_session().remove()
+    sqlahelper.add_engine(engine)
+    sqlahelper.get_base().metadata.create_all()
+    from ..models import Base
+    assert Base == sqlahelper.get_base()
+
+def teardown_db():
+    import transaction
+    transaction.abort()
+    import sqlahelper
+    sqlahelper.get_base().metadata.drop_all()

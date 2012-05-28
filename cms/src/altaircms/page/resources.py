@@ -13,7 +13,7 @@ from . import helpers as h
 from . import models
 from . import events
 from altaircms.solr import api as solr
-
+from .clone import page_clone
 def add_solr(page, request):
     ftsearch = solr.get_fulltext_search_utility(request)
     doc = solr.create_doc_from_page(page)
@@ -92,7 +92,7 @@ class PageResource(security.RootFactory):
         self.delete(page)
 
     def clone_page(self, page):
-        cloned = page.clone(DBSession)
+        cloned = page_clone(self.request, DBSession)
         events.notify_page_create(self.request, cloned)
         return cloned
 
