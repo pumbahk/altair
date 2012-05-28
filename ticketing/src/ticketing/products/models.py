@@ -244,7 +244,14 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def get_sync_data(self, performance_id):
         data = {
             'name':self.name,
-            'seat_type':u'TODO',
+            'seat_type':self.seat_type(performance_id),
             'price':floor(self.price),
         }
         return data
+
+    def seat_type(self, performance_id):
+        item = ProductItem.filter_by(performance_id=performance_id)\
+                          .filter_by(product_id=self.id)\
+                          .join(ProductItem.stock_type)\
+                          .filter(StockType.type==StockTypeEnum.Seat.v).first()
+        return item.stock_type.name if item else ''

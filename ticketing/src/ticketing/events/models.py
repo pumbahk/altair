@@ -101,14 +101,17 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     attribute.save()
 
     def get_sync_data(self):
+        start_on = isodate.datetime_isoformat(self.start_on) if self.start_on else ''
+        end_on = isodate.datetime_isoformat(self.end_on) if self.end_on else ''
         data = {
             'id':self.id,
             'name':self.name,
             'venue':self.venue.name,
             'open_on':isodate.datetime_isoformat(self.open_on),
-            'start_on':isodate.datetime_isoformat(self.start_on),
-            'close_on':isodate.datetime_isoformat(self.end_on),
+            'start_on':start_on,
+            'end_on':end_on,
             'sales':[s.get_sync_data(self.id) for s in self.event.sales_segments],
+            'deleted':'true' if self.deleted_at else 'false',
         }
         return data
 
@@ -161,12 +164,17 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 .distinct()
 
     def get_sync_data(self):
+        start_on = isodate.datetime_isoformat(self.start_on) if self.start_on else ''
+        end_on = isodate.datetime_isoformat(self.end_on) if self.end_on else ''
+        performances = Performance.query.filter_by(event_id=self.id).all()
         data = {
             'id':self.id,
-            'name':self.title,
-            'start_on':isodate.datetime_isoformat(self.start_on),
-            'end_on':isodate.datetime_isoformat(self.end_on),
-            'performances':[p.get_sync_data() for p in self.performances],
+            'title':self.title,
+            'subtitle':self.abbreviated_title,
+            'start_on':start_on,
+            'end_on':end_on,
+            'performances':[p.get_sync_data() for p in performances],
+            'deleted':'true' if self.deleted_at else 'false',
         }
         return data
 
@@ -185,10 +193,12 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def get_sync_data(self, performance_id):
         products = Product.find(performance_id=performance_id, sales_segment_id=self.id)
         if products:
+            start_at = isodate.datetime_isoformat(self.start_at) if self.start_at else ''
+            end_at = isodate.datetime_isoformat(self.end_at) if self.end_at else ''
             data = {
                 'name':self.name,
-                'start_on':isodate.datetime_isoformat(self.start_at),
-                'end_on':isodate.datetime_isoformat(self.end_at),
+                'start_on':start_at,
+                'end_on':end_at,
                 'tickets':[p.get_sync_data(performance_id) for p in products],
             }
             return data

@@ -42,6 +42,11 @@ class Events(BaseView):
             if condition:
                 condition = '%' + condition + '%'
                 query = query.filter(or_(Event.code.like(condition), Event.title.like(condition)))
+            condition = self.request.POST.get('performance')
+            if condition:
+                condition = '%' + condition + '%'
+                query = query.join(Event.performances)\
+                            .filter(or_(Performance.code.like(condition), Performance.name.like(condition)))
 
         events = paginate.Page(
             query,
@@ -158,7 +163,7 @@ class Events(BaseView):
     @view_config(route_name='events.sync')
     def sync(self):
         event_id = int(self.request.matchdict.get('event_id', 0))
-        event = Event.get(event_id)
+        event = Event.query.filter(Event.id==event_id).first()
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
 
@@ -171,7 +176,7 @@ class Events(BaseView):
         settings = get_current_registry().settings
         url = settings.get('altaircms.event.notification_url') + 'api/event/register'
         req = urllib2.Request(url, json.dumps(data))
-        req.add_header('X-Altair-Authorization', '')  # TODO:apikey
+        req.add_header('X-Altair-Authorization', 'hogehoge')  # @TODO : apikey
         req.add_header('Connection', 'close')
 
         try:

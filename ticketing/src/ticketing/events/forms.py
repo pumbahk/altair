@@ -1,13 +1,18 @@
 # -*- coding: utf-8 -*-
 
 from wtforms import Form
-from wtforms import TextField, IntegerField
+from wtforms import TextField, IntegerField, HiddenField
 from wtforms.validators import Required, Regexp, Length, Optional, ValidationError
 
 from ticketing.utils import DateTimeField
 from ticketing.events.models import Event
 
 class EventForm(Form):
+
+    id = HiddenField(
+        label=u'ID',
+        validators=[Optional()],
+    )   
     code = TextField(
         label = u'公演コード',
         validators=[
@@ -46,5 +51,7 @@ class EventForm(Form):
             raise ValidationError(u'開演日時より過去の日時は入力できません')
 
     def validate_code(form, field):
+        if form.id and form.id.data:
+            return
         if field.data and Event.filter_by(code=field.data).count():
             raise ValidationError(u'既に使用されています')

@@ -51,7 +51,7 @@ def event_register(request):
     if apikey is None:
         return HTTPForbidden("")
     if not h.validate_apikey(request, apikey):
-        return HTTPCreated(body=json.dumps({u'status':u'error', u'message':u'access denined'}))
+        return HTTPForbidden(body=json.dumps({u'status':u'error', u'message':u'access denined'}))
     try:
         h.parse_and_save_event(request, request.json_body)
         return HTTPCreated(body=json.dumps({u'status':u'success'}))

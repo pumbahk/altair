@@ -4,13 +4,15 @@
 
 <script type="text/javascript">
   function delete_event(id) {
-    $('#modal-delete #delete').attr('href', '/events/delete/' + id);
-    $('#modal-delete #message').text("${u'選択したイベントを削除します。よろしいですか？'}");
-    $('#modal-delete').modal('toggle');
+    modal = $('#modal-delete');
+    modal.find('#delete').attr('href', '/events/delete/' + id);
+    modal.find('#message').text("${u'選択したイベントを削除します。よろしいですか？'}");
+    modal.modal('toggle');
   }
   function sync_event(id) {
-    if (!id) return;
-    $(location).attr('href', '/events/sync/' + id);
+    modal = $('#modal-sync');
+    modal.find('#sync').attr('href', '/events/sync/' + id);
+    modal.modal('toggle');
   }
 </script>
 
@@ -44,7 +46,7 @@
 </div>
 
 <div class="btn-group" style="float: left;">
-  <a class="btn btn-inverse" data-toggle="modal" href="#modal-sync" style="margin-left: 10px;">
+  <a class="btn btn-inverse" href="javascript:sync_event(${event.id});" style="margin-left: 10px;">
     <i class="icon-refresh icon-white"></i> CMSへ送信
   </a>
 </div>
@@ -63,7 +65,7 @@
 
   <div class="modal-footer">
     <a href="javascript:$('#modal-sync').modal('hide');" class="btn secondary">キャンセル</a>
-    <a id="sync" href="javascript:sync_event(${event.id});" class="btn danger">送信</a>
+    <a id="sync" href="" class="btn danger">送信</a>
   </div>
 </div>
 

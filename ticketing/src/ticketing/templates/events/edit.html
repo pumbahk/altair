@@ -60,6 +60,7 @@
     <div class="well">
       <form class="form-horizontal" action="${route_path}" enctype="multipart/form-data" method="POST">
         <fieldset>
+          ${form_item(form.id)}
           ${form_item(form.title, option={'class':'span8', 'maxlength':200})}
           ${form_item(form.abbreviated_title, option={'class':'span4', 'maxlength':100})}
           ${form_item(form.code, option={'style':'width:150px', 'maxlength':12})}

@@ -73,5 +73,7 @@ class PerformanceForm(Form):
             raise ValidationError(u'開演日時より過去の日時は入力できません')
 
     def validate_code(form, field):
+        if form.id and form.id.data:
+            return
         if field.data and Performance.filter_by(code=field.data).count():
             raise ValidationError(u'既に使用されています')
