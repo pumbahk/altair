@@ -9,6 +9,15 @@ header("Status:404");
 exit("photo_url not found");
 }
 
+$id_zero = 0;
+function parent_get_genre($dbh, $id_zero) {
+        $stmt_parent = $dbh->prepare("select genre  from g where parent_id = ?");
+        $stmt_parent->bind_param('i', $id_zero);
+        $stmt_parent->execute();
+        $stmt_parent->bind_result($parent_genres);        $parent_genres_array = array();        while ($stmt_parent->fetch()) {                $parent_genres_array[] = $parent_genres;        }        $stmt_parent->close();         return $parent_genres_array;}
+
+
+
 $photo_url = urldecode($photo_url);
 
 function playlist_limg_saldate($dbh,$photo_url){
@@ -57,8 +66,9 @@ $artist_info= artist_name($dbh,$cds_info['id']);
 <link rel="shortcut icon" href="../design/img/common/favicon.ico" />
 <link rel="stylesheet" href="./import.css" type="text/css" media="all" />
 <link rel="stylesheet" href="import.css" type="text/css" media="all" />
-<script type="text/javascript" src="../js/jquery.js">
-</script>
+<script type="text/javascript" src="http://www.google.com/jsapi"></script>
+<script type="text/javascript">google.load("jquery", "1.6.1");</script>
+
 <!-- InstanceParam name="id" type="text" value="theater" -->
 </head>
 <body id="theater">
@@ -142,38 +152,39 @@ $artist_info= artist_name($dbh,$cds_info['id']);
 
         <!-- ========== main ========== -->
 <div id="main">
-<img src = '<?= $cds_info[largephoto] ?>'/>
-    <?php
-
-                                $playList_songs_array = explode("###",$cds_info['playList']);
-                                $count_songs = count($playList_songs_array);
-
-                ?>
-
-
-                        <table>
+	<div id = "cd">
+		<img src = '<?= $cds_info[largephoto] ?>'/>
+		<div id = "cddetail">
+			<?= $cds_info['cdname'] ?>
+		</div>
+   		 <?php
+		$playList_songs_array = explode("###",$cds_info['playList']);
+		$count_songs = count($playList_songs_array);
+		
+		?>
+	
+		<table>
                 <?php
-                                for($o=0;$o<=$count_songs-1;$o++){
-
-
-                ?>
-
-                                <tr>
-                                        <td>
-                                        曲名
-                                        </td>
-                                        <td>
-                                        <?= $playList_songs_array[$o] ?>
-                                        </td>
-                                </tr>
+		
+                for($o=0;$o<=$count_songs-1;$o++){
+		?>
+                      <tr>
+                              <td>
+                                    
+                              </td>
+                              <td>
+                                  <?= $playList_songs_array[$o] ?>
+                              </td>
+                      </tr>
 
                 <?php
 
-                                }
+                 }
                 ?>
-                        </table>
+                </table>
 
         </div>
+</div>
         <!-- ========== /main ========== -->
 
         <hr />
@@ -182,26 +193,36 @@ $artist_info= artist_name($dbh,$cds_info['id']);
         <div id="side">
                 <!-- InstanceBeginEditable name="side" -->
                 <div class="sideCategoryGenre">
-                <h2>特集</h2>
-                <ul>
-                        <li><a href="#">特集/ライブハウスへ行こう!!</a></li>
-                        <li><a href="#">ロックフェス特集</a></li>
-                        <li><a href="#">アニメぴあ</a></li>
-                </ul>
-                </div>
-                <div class="sideCategoryGenre">
-                <h2>ジャンル一覧</h2>
-                <ul>
-                        <? for($q=0;$q<=11;$q++): ?>
+                 <h2>検索</h2>
+        <ul>
+        <li>
+        <form id="form1" name="form1" method="post" action="">
+                <input name="textfield" type="text" id="textfield" size="20" value="" onblur="if(this.value=='') this.value='';" onfocus="if(this.value=
+='アーティスト名、公演名、会場名など') this.value='';" />
+                <input name="imageField" type="image" id="imageField" src="../img/common/header_search_btn.
+gif" alt="検索" />
+        </form></li>
 
-                        <li id ='#'><a href ='./genre.php?genre=<?=urlencode($t[$q])?>'><?= htmlspecialchars($t[$q]); ?></a></li>
+                <li> <a href="/artist-page/pages/gojyuon.php?domestic=1">邦楽50音順検索</a></li>
 
-                <? endfor ?>
-                <li><a href="/~katosaori/mock/folda/gyousentaku.php?gyoutou=あ">50音順検索</a></li>
+		<li><a href="/~katosaori/web-contents/pages/gojyuon.php?overseas=1">洋楽ABC検索</a></li>
 
-                </ul>
-                </div>
-                <dl id="sideRefineSearch">
+
+       	 </ul>
+	</div>
+        <div class="sideCategoryGenre">
+        <h2>ジャンル一覧</h2>
+        <ul>
+        <? $p = parent_get_genre($dbh,$id_zero) ?>
+                <? for($q=0;$q<=11;$q++): ?>
+
+                <li id ='#'><a href ='./genre.php?genre=<?=urlencode($p[$q])?>'><?= htmlspecialchars($p[$q]); ?></a></li>
+
+        <? endfor ?>
+
+        </ul>
+        </div>       
+	 <dl id="sideRefineSearch">
                         <dt>エリアを選択</dt>
                         <dd>
                                 <ul>

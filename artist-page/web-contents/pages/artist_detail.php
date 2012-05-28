@@ -1,64 +1,35 @@
 <?php
-$dbh = new mysqli("127.0.0.1:3306", "root", 'root');
-$dbh->select_db("artistpage");
-$dbh->set_charset("UTF8");
-$genre_name = isset($_GET['genre']) ? $_GET['genre'] : null;
+$dbh = new mysqli("127.0.0.1:3306","root",'root');
+$dbh -> select_db("artistpage");
+$dbh -> set_charset("UTF8");
+$artist_name = isset($_GET['artist_rank']) ? $_GET['artist_rank'] :null;
+if(!($artist_name)){
+	$artist_name = isset($_GET['artist']) ? $_GET['artist'] :null;
 
-
+}
 $id_zero = 0;
-
 function parent_get_genre($dbh, $id_zero) {
         $stmt_parent = $dbh->prepare("select genre  from genre where parent_id = ?");
         $stmt_parent->bind_param('i', $id_zero);
         $stmt_parent->execute();
-        $stmt_parent->bind_result($parent_genres);
-	$parent_genres_array = array();
-        while ($stmt_parent->fetch()) {
-                $parent_genres_array[] = $parent_genres;
-        }
-        $stmt_parent->close();
-        return $parent_genres_array;
-}
-
-$rank_set_jap = array();
-$rank_set = array();
-        $xml_str = file_get_contents('http://api.rakuten.co.jp/rws/3.0/rest?developerId=12657057e6e263dfe5dd57b5565078da&operation=ItemRanking&version=2010-08-05&genreId=200533');
-        $xml_str = str_replace('header:Header','Header',$xml_str);
-        $xml_str = str_replace('itemRanking:ItemRanking xmlns:itemRanking="http://api.rakuten.co.jp/rws/rest/ItemRanking/2011-12-01"', 'itemRanking', $xml_str);
-        $xml_str = str_replace('itemRanking:ItemRanking', 'itemRanking', $xml_str);        $xml  = simplexml_load_string($xml_str);
-        echo "\n";
-        for ($x =0;$x<=9;$x++){                $rank_set_jap[$x+1] =  $xml->Body->itemRanking->Item[$x]->itemName;
-                $imgurl_jap[$x+1] = $xml->Body->itemRanking->Item[$x]->smallImageUrl;
-                $artist_long_jap[$x+1] = $xml->Body->itemRanking->Item[$x]->itemCaption;
-                $artist_jap[$x+1] = explode("発売日",$artist_long_jap[$x+1]);
-
-        }
-        $xml_str = file_get_contents('http://api.rakuten.co.jp/rws/3.0/rest?developerId=12657057e6e263dfe5dd57b5565078da&operation=ItemRanking&version=2010-08-05&genreId=200534');
-        $xml_str = str_replace('header:Header','Header',$xml_str);
-        $xml_str = str_replace('itemRanking:ItemRanking xmlns:itemRanking="http://api.rakuten.co.jp/rws/rest/ItemRanking/2011-12-01"', 'itemRanking', $xml_str);
-        $xml_str = str_replace('itemRanking:ItemRanking', 'itemRanking', $xml_str);
-        $xml  = simplexml_load_string($xml_str);
-        echo "\n";        for ($x =0;$x<=9;$x++){
-                $rank_set[$x+1] = $xml->Body->itemRanking->Item[$x]->itemName;               
-		 $imgurl[$x+1] = $xml->Body->itemRanking->Item[$x]->smallImageUrl;
-                $artist_long[$x+1] = $xml->Body->itemRanking->Item[$x]->itemCaption;
-                $artist[$x+1] = explode("発売日",$artist_long[$x+1]);
-
-        }
+      	$stmt_parent->bind_result($parent_genres);       
+	$parent_genres_array = array();       
+	 while ($stmt_parent->fetch()) {              
+		  $parent_genres_array[] = $parent_genres;       
+	 }     
+	$stmt_parent->close();         
+	return $parent_genres_array;}
 
 
 
 
 
-if (!$genre_name) {
+if(!($artist_name)){
 	var_dump($_GET);
-	header("Status: 404");
-	exit("Genre not found");	
-} 
-
-		$genre_name = rtrim($genre_name,"/");
-
-	
+	header("Status:404");
+	exit("artist not found");
+}
+$artist_name = rtrim($artist_name,"/");
 function genre_get_by_name($dbh, $genre_name) {
 	$stmt_genre = $dbh->prepare("select id, genre, parent_id from genre where genre = ?");
 	$stmt_genre->bind_param('s', $genre_name);
@@ -83,209 +54,87 @@ function genre_get_child_by_id($dbh, $genre_id) {
 	return $retval;
 }
 
-function artist_get_by_genre($dbh,$genre_name) {
-        $stmt_genre = $dbh->prepare("select artist.name,artist.yomigana from artist_genre inner join artist on artist_genre.artist_id = artist.id left join genre on artist_genre.genre_id = genre.id where genre.genre = ?" );
-        $stmt_genre->bind_param('s',$genre_name);
-        $stmt_genre->execute();
-        $stmt_genre->bind_result($name,$yomigana);
-        while($stmt_genre->fetch()){
-	        $names[] = compact('name','yomigana');
-		}
 
-        $stmt_genre->close();
-        return $names;
-
-}
-
-
-function photo_get_by_genre($dbh,$genre_name) {
-        $stmt_genre = $dbh->prepare("select cds.photo from cd_artist inner join cds on cds.id=cd_artist.cds_id inner join artist on artist.id = cd_artist.artist_id  inner join artist_genre on artist_genre.artist_id = artist.id inner join genre on genre.id = artist_genre.genre_id where genre.genre = ?" );
-        $stmt_genre->bind_param('s',$genre_name);
-        $stmt_genre->execute();
-        $stmt_genre->bind_result($photo);
-        while($stmt_genre->fetch()){
-                $photos[] = compact('photo');
-        }
-
-        $stmt_genre->close();
-        return $photos;
-
-}
-
-$genre = genre_get_by_name($dbh, $genre_name);
-$genre_link = "";
-foreach ($genre['tree'] as $idx => $tree_genre) {
-	$genre_link .= urlencode($tree_genre).'/';
-	
-
-/* ランキングのUPDOWN */
-/* (邦楽) */
-        $l=0;
-
-        $stmt_new_rank = $dbh->prepare("select rank, itemname from domestic_ranking DESK limit 10 offset 10");
-        $stmt_new_rank->execute();
-        $stmt_new_rank->bind_result($rank,$itemname);
-        $new_rank_array = array();
-        while ($stmt_new_rank->fetch()) {
-                $new_rank_array[$l]['rank'] = $rank;
-
-                $new_rank_array[$l]['itemname'] = $itemname;
-                $l++;
-         }
-        $stmt_new_rank->close();
-
-
-
-
-        $l=0;
-
-        $stmt_old_rank = $dbh->prepare("select rank, itemname from domestic_ranking DESK limit 10");
-        $stmt_old_rank->execute();
-        $stmt_old_rank->bind_result($rank,$itemname);
-        $old_rank_array = array();
-        while ($stmt_old_rank->fetch()) {
-                $old_rank_array[$l]['rank'] = $rank;
-                $old_rank_array[$l]['itemname'] = $itemname;
-                $l++;
-                 }
-        $stmt_old_rank->close();
-        echo "\n";
-
-
-        $img = "new";
-        for($i=0;$i<=9;$i++){
-                for($e=0;$e<=9;$e++){
-                        if($old_rank_array[$i][itemname]==$new_rank_array[$e][itemname]){
-                                if($old_rank_array[$e]['rank'] == $new_rank_array[$i]['rank']){
-                                        $img = "plane";
-                                }
-                                else if($old_rank_array[$i]['rank'] <= $new_rank_array[$e]['rank']){
-                                        $img = "down";
-                                }
-                                else if($old_rank_array[$i]['rank'] >= $new_rank_array[$e]['rank']){
-                                        $img = "up";
-                                }
-
-                        }
-                }
-         $new_rank_updown_imgs[] =$img;
-        }
-
-
-
-/*（洋楽) */
-
-        $l=0;
-
-        $stmt_new_rank_overseas = $dbh->prepare("select rank, itemname from overseas_ranking DESK limit 10 offset 10");
-        $stmt_new_rank_overseas->execute();
-        $stmt_new_rank_overseas->bind_result($rank,$itemname);
-        $new_rank_array_overseas = array();
-        while ($stmt_new_rank_overseas->fetch()) {
-                $new_rank_overseas_array[$l]['rank'] = $rank;
-
-                $new_rank_overseas_array[$l]['itemname'] = $itemname;
-                $l++;
-         }
-        $stmt_new_rank_overseas->close();
-
-
-
-
-
-        $l=0;
-
-        $stmt_old_rank_overseas = $dbh->prepare("select rank, itemname from overseas_ranking DESK limit 10");
-        $stmt_old_rank_overseas->execute();
-        $stmt_old_rank_overseas->bind_result($rank,$itemname);
-        $old_rank_array_overseas = array();
-        while ($stmt_old_rank_overseas->fetch()) {
-                $old_rank_overseas_array[$l]['rank'] = $rank;
-                $old_rank_overseas_array[$l]['itemname'] = $itemname;
-                $l++;
-                 }
-        $stmt_old_rank_overseas->close();
-        echo "\n";
-
-
-        $img = "new";
-        for($i=0;$i<=9;$i++){
-                for($e=0;$e<=9;$e++){
-                        if($old_rank_overseas_array[$i][itemname]==$new_rank_overseas_array[$e][itemname]){
-                                if($old_rank_overseas_array[$e]['rank'] == $new_rank_overseas_array[$i]['rank']){
-                                        $img = "plane";
-                                }
-                                else if($old_rank_overseas_array[$i]['rank'] <= $new_rank_overseas_array[$e]['rank']){
-                                        $img = "down";
-                                }
-                                else if($old_rank_overseas_array[$i]['rank'] >= $new_rank_overseas_array[$e]['rank']){
-                                        $img = "up";
-                                }
-
-                        }
-                }
-         $new_rank_updown_imgs_overseas[] =$img;
-        }
-
-?>
-
-<?
-}
-
-
-
-	$child_genre_list = genre_get_child_by_id($dbh, $genre['id']);
-	$num = 0;
-	$links_array = array();
-	foreach ($child_genre_list as $genre) {
-		$genre_tree = split('/', $genre['genre']);
-		$genre_link = "";
-		$parent_link = array();
-		$z=0;
-		foreach ($genre_tree as $g) {
-			$genre_link .= urlencode($g).'/';
-			$parent_link[$z]=$g;
-			$z++;
-		}
-		$links_array[$num]=htmlspecialchars($genre['genre']);
-		$num++;
+function photo_get_by_name($dbh,$artist_name) {
+	$stmt_genre = $dbh->prepare("select cds.photo,cds.salesDate,cds.largephoto,cds.cdname from cd_artist inner join cds on cds.id = cd_artist.cds_id inner join artist on artist.id = cd_artist.artist_id where artist.name = ?");
+ 	$stmt_genre->bind_param('s',$artist_name);
+	 $stmt_genre->execute();
+	 $stmt_genre->bind_result($photo,$salesDate,$largeImage,$cdname);
+	 while ($stmt_genre->fetch()) {
+		$photos[] = compact('photo','salesDate','largeImage','cdname');
 	}
+	$stmt_genre->close();
+	 return $photos;
+}
+
+$photo = photo_get_by_name($dbh,$artist_name);
 
 
+$artist_name = isset($_GET['artist']) ? $_GET['artist'] :null;
+$artist = urlencode($artist_name);
+$xml_str = file_get_contents('http://api.rakuten.co.jp/rws/3.0/rest?developerId=12657057e6e263dfe5dd57b5565078da&operation=BooksCDSearch&version=2011-12-01&artistName='.$artist);
+$count=0;
+$gyouu = explode(">",$xml_str);
+$forcount = count($gyouu);
+for($r=0;$r<=$forcount;$r++){
+	// title文字列カウント
+	if(stristr($gyouu[$r], 'title')){
+		$count++;
+	 }
+}
+$count = $count/4;
+if($count != 0){
+	$xml_str = str_replace('header:Header', 'Header', $xml_str);
+	$xml_str = str_replace('booksCDSearch:BooksCDSearch xmlns:booksCDSearch="http://api.rakuten.co.jp/rws/rest/BooksCDSearch/2011-12-01"', 'booksCDSearch', $xml_str);
+	$xml_str = str_replace('booksCDSearch:BooksCDSearch', 'booksCDSearch', $xml_str);
+	$xml  = simplexml_load_string($xml_str);
+	echo "\n";
+	for ($x=0;$x<=$count;$x++){
+		$img[$x]=$xml->Body->booksCDSearch->Items->Item[$x]->smallImageUrl;
+		$playlist[$x] =$xml->Body->booksCDSearch->Items->Item[$x]->playList;
+		$salesDate[$x]=$xml->Body->booksCDSearch->Items->Item[$x]->salesDate;
+		$largeImageUrl[$x]=$xml->Body->booksCDSearch->Items->Item[$x]->largeImage;
+		$cdname[$x]= $xml->Body->booksCDSearch->Items->Item[$x]->title;
+	 }
+}
+
+function plof_get_by_name($dbh,$artist_name) {
+        $stmt_profs = $dbh->prepare("select prof from artist  where name = ?");
+        $stmt_profs->bind_param('s',$artist_name);
+        $stmt_profs->execute();
+        $stmt_profs->bind_result($prof);
+	$stmt_profs->fetch();
+	$profs = $prof; 
+	$stmt_profs->close(); 
+	return $profs;
+}
 
 
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transition//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja"><!- InstanceBegin template="/Template/template.dwt" codeOutsideHTMLslocked="false" --><head>
-<meta http-equiv="content-type" content="text/html; charset=utf-8" /><!-- InstanceBeginEditable name="doctitle" --><title>ジャンルページ</title>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja"><!- InstanceBegin template="/Template/template.dwt" codeOutsideHTMLslocked="false" -->
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<!-- InstanceBeginEditable name="doctitle" --><title>アーティストページ　トップ</title>
 <!-- InstanceEndEditable -->
-<meta name="description" content="チケットの販売、イベントの予約は楽天チケットで！楽天チケ>ットは演劇、バレエ、ミュージカルな>
-どの舞台、クラシック、オペラ、ロックなどのコンサート、野>球、サッカー、格闘技などのスポーツ、その他イベントなどのチケットのオ>
-ンラインショッピングサ>イトです。" />
+<meta name="description" content="チケットの販売、イベントの予約は楽天チケットで！楽天チケ>ットは演劇、バレエ、ミュージカルな>どの舞台、クラシック、オペラ、ロックなどのコンサート、野>球、サッカー、格闘技などのスポーツ、その他イベントなどのチケットのオ>ンラインショッピングサ>イトです。" />
 <meta name="keywords" content="チケット,演劇,クラシック,オペラ,コンサート,バレエ,ミュージカル,野球,サッカー,格闘技" />
 <meta http-equiv="content-style-type" content="text/css" />
 <meta http-equiv="content-script-type" content="text/javascript" />
 <link rel="shortcut icon" href="../design/img/common/favicon.ico" />
-<link rel="stylesheet" href="../design/html/css/import.css" type="text/css" media="all" />
+<link rel="stylesheet" href="./import.css" type="text/css" media="all" />
 <link rel="stylesheet" href="import.css" type="text/css" media="all" />
+
 <script type="text/javascript" src="http://www.google.com/jsapi"></script>
-<script type="text/javascript">google.load("jquery", "1.6.1");</script>
-<script type ="text/javascript">
-$(function(){
-     $("tr:odd").addClass("odd");
-});
+<script type="text/javascript">google.load("jquery", "1.2");</script>
+<script type="text/javascript" src="./js/cdshousai.js"></script>
 
-
-
-
-</script>
 
 <!-- InstanceParam name="id" type="text" value="theater" -->
 </head>
 <body id="theater">
 
-<p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="../img/common/skip.gif" alt="本文へジャンプ" wi
-dth="1" height="1" /></a></p>
+<p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="../img/common/skip.gif" alt="本文へジャンプ" width="1" height="1" /></a></p>
 
 <div id="container">
 
@@ -319,15 +168,13 @@ dth="1" height="1" /></a></p>
                 <ul id="globalNav1">
                         <li><a href="../index.html"><img src="../img/common/header_nav_top.gif" alt="チケットトップ" width="132" height="40" /></a></li>
                         <li><a href="../music/index.html"><img src="../img/common/header_nav_music.gif" alt="音楽" width="67" height="40" /></a></li>
-               		 <li><a href="index.html"><img src="../img/common/header_nav_theater.gif" alt="演劇" width="73" height="40" /></a></li> 
-		       <li><a href="../sports/index.html"><img src="../img/common/header_nav_sports.gif" alt="スポーツ" width="102" height="40" /></a></li>
+                        <li><a href="index.html"><img src="../img/common/header_nav_theater.gif" alt="演劇" width="73" height="40" /></a></li>
+                        <li><a href="../sports/index.html"><img src="../img/common/header_nav_sports.gif" alt="スポーツ" width="102" height="40" /></a></li>
                         <li><a href="../event/index.html"><img src="../img/common/header_nav_event.gif" alt="イベント・その他" width="157" height="40" /></a></li>
-
-
-               </ul>
+                </ul>
                 <ul id="globalNav2">
                         <li><a href="#">抽選申込履歴</a></li>
-                        <li><a href="#">購入履歴</a></li>
+                       <li><a href="#">購入履歴</a></li>
                         <li><a href="#">お気に入り</a></li>
                         <li><a href="#">マイページ</a></li>
                 </ul>
@@ -335,9 +182,9 @@ dth="1" height="1" /></a></p>
         <div id="headerSearch">
                 <form id="form1" name="form1" method="post" action="">
                         <input name="textfield" type="text" id="textfield" size="40" value="アーティスト名、公演名、会場名など
-" onblur="if(this.value=='') this.value='アーティスト名、公演名、会場名など';" onfocus="if(this.value=='アーティスト名、公演名、会場名など') this.value='';" />
-                        <input name="imageField" type="image" id="imageField" src="../img/common/header_search_btn.gif" alt=">
-検索" />
+" onblur="if(this.value=='') this.value='アーティスト名、公演名、会場名など';" onfocus="if(this.value=='アーティスト名、公演名
+、会場名など') this.value='';" />
+                        <input name="imageField" type="image" id="imageField" src="../img/common/header_search_btn.gif" alt=">検索" />
                         <a href="#">詳細検索</a>
                 </form>
                 <dl>
@@ -359,163 +206,191 @@ dth="1" height="1" /></a></p>
         <!-- ========== /header ========== -->
 
         <hr />
-<!-- InstanceBeginEditable name="cat" --><h1>ジャンルページ<!--<img src="../img/theater/title_theater.gif" alt="演劇" width="60" height="60" />--></h1>
+
+        <!-- InstanceBeginEditable name="cat" --><h1><img src="../img/theater/title_theater.gif" alt="演劇" width="60" height="60" /></h1>
 <!-- InstanceEndEditable -->
 
-
         <!-- ========== main ========== -->
-	<div id ="main">
-	<div id ="genre">
-	 <ul> <?  $genre = genre_get_by_name($dbh, $genre_name);
-                        $child_genre_list = genre_get_child_by_id($dbh, $genre['id']);
-                        $links_array = array();
-			$genre_tree = split('/', $genre['genre']);
-                        $genre_link = "";
+       <div id ="main">
+		<h1><?= $artist_name ?></h1>	
+                                <div id = "photos">
+                                <?php 
+					if($photo){
 
-                        foreach ($genre_tree as $g) {
-                                        $genre_link .= urlencode($g).'/';
-                        }
-		?>
-	 <div id ="genre_links">
-		<?
-			$link ="";
-			for($i=0;$i<=$z-2;$i++){
-                        
-				$link .= $parent_link[$i].'/';
-		?>
+                               		 $count = count($photo);
 
-	<a href="/~katosaori/web-contents/pages/genre.php?genre=<?= $link ?>"><?= htmlspecialchars($parent_link[$i])?></a>
-		<? echo "/";
-       			 }
-		?>
-	</div>
-	<div id = "genre_appear_links">
-		<?
-        
+                                	 for($o = 0; $o <= $count; $o++){
+                                        	 $pattern = '/noimage/';
+                                        	 preg_match ($pattern,$photo[$o]['photo'],$matches);
+                                        	 if (empty($matches)){
 
-                        foreach ($child_genre_list as $genre) {
-                       		 $genre_tree = split('/', $genre['genre']);
-                       		 $genre_link = "";
-				 foreach ($genre_tree as $g) {
-                                        $genre_link .= urlencode($g)."/";
-					$appear_link = $g;
-                       		 }
-			
-		?>
+                               	 ?>
+                                        <a href="/~katosaori/web-contents/pages/cd.php?photo=<?=urlencode($photo[$o]['photo']);?>"><img src ="<?= $photo[$o]['photo'] ?>"></a>
 
-                   			<li><a href="/~katosaori/web-contents/pages/genre.php?genre=<?=$genre_link?>"><?= $appear_link?></a></li>
+                                        <!--<a href="/~katosaori/web-contents/pages/cd.php?photo=<?=urlencode($img[$o]);?>"><img src ="<?= $img[$o] ?>" ></a>-->
+                                <?php
+                                        	 }
+                                	 }
+					}
+					else{
+						echo "データがありません";
+						
+					}
 
-       		 <?
-       			 }
-
-
-		?>
-          </div>
-                </ul>
- 	</div>
- <div id = "ranks">
-                          <div id = "rank_border">
-                                <div class="sideCategoryGenre">
-                                         <h2> 邦楽CDシングルランキング</h2>
-
-                                        <table>
-                                         <? for($k = 1; $k<=10; $k++): ?>
-                                                 <tr><td><a href='./artist_detail.php?artist=<?=urlencode($artist_jap[$k][0])?>'><?=  $k.$rank_set_jap[$k]; ?></a></td></tr>
-
-                                         <? endfor ?>
-                                        </table>
-
-
+                                ?>
                                 </div>
-                        </div>
-                         <div id = "rank_border">
-                                 <div class="sideCategoryGenre">
+                <!--<div id ="sichou">
+                <?php
+                        for($i=0;$i<=$count;$i++){
+                                $playList_songs_array = explode("###",$playlist[$i]);
+                                $count_songs = count($playList_songs_array);
 
-                                        <h2>洋楽CDシングルランキング</h2>
-                                         <table>
+                ?>
 
-                                         <? for($k = 1; $k<=10; $k++): ?>
-                                                 <tr><td><a href='./artist_detail.php?artist=<?=urlencode($artist[$k][0])?>'><?=  $k.$rank_set[$k]; ?></a></td></tr>
+                        <?= $cdname[$i] ?>
+                        <table>
+                <?php
+                                for($o=0;$o<=$count_songs-1;$o++){
 
-                                         <? endfor ?>
 
-                                         </table>
-                                 </div>
-                        </div>
-                </div>
-	
-	<?php
+                ?>
 
-                if(empty($child_genre_list)){
-                $artists = artist_get_by_genre($dbh,$genre_name);
-                $count_artists = count($artists);
-		$genre_names = explode("/",$genre_name);
-		$count_genre_names= count($genre_names);
-		$link = "";
-	?>
-	
-		<div id ="genre_links">
-	<?
-		for($u=0;$u<=$count_genre_names;$u++){
-			$link .= $genre_names[$u].'/'; 
-			?>
-		<a href="/~katosaori/web-contents/pages/genre.php?genre=<?=$link?>"><?= htmlspecialchars($genre_names[$u])?></a>
-		<?
-	}
-?>
-	</div>
-	<div id = "artist_links">
-<?
-	
-		for($e=0;$e <= $count_artists; $e++){
-		$artist_link = urlencode($artists[$e]['name']);
-		?>
-			 <li><a href="/~katosaori/web-contents/pages/artist_detail.php?artist=<?=$artist_link?>"><?= htmlspecialchars($artists[$e]['name'])?></a></li>
-	<?
-		}
-	}
+                                <tr>
+                                        <td>
+                                        曲名
+                                        </td>
+                                        <td>
+                                        <?= $playList_songs_array[$o] ?>
+                                        </td>
+                                </tr>
 
-	?>
-	</div>
+                <?php
 
-<!-- ========== /main ========== -->
+                                }
+                ?>
+                        </table>
 
-<hr />
 
-<!-- ========== side ========== -->
-<div id="side">
-	<!-- InstanceBeginEditable name="side" -->
-	<div class="sideCategoryGenre">
-<h2>検索</h2>
-<ul>
-<li>
-<form id="form1" name="form1" method="post" action="">
-	<input name="textfield" type="text" id="textfield" size="20" value="" onblur="if(this.value=='') this.value='';" onfocus="if(this.value=
-='アーティスト名、公演名、会場名など') this.value='';" />
-	<input name="imageField" type="image" id="imageField" src="../img/common/header_search_btn.
-gif" alt="検索" />
-</form></li>
+                <?php
+                        }
 
-	<li> <a href="/~katosaori/web-contents/pages/gojyuon.php?domestic=1">邦楽50音順検索</a></li>
-	<li><a href="/~katosaori/web-contents/pages/gojyuon.php?overseas=1">洋楽ABC検索</a></li>
+                ?>
+                </div>-->
 
-</ul>
-</div>
-<div class="sideCategoryGenre">
-		<h2>ジャンル一覧</h2>
-                <? $p= parent_get_genre($dbh,$id_zero); 
+
+                <div id = "tx_center_c_l">
+
+
+                <h2>アーティストプロフィール</h2>
+                <?php
+                                        $plofs = plof_get_by_name($dbh,$artist_name);
+                                        if($plofs){
 		
-		?>
-<ul>
-                        <? for($q=0;$q<=11;$q++): ?>
+						echo $plofs;
+					}
+					else{
+						echo "プロフィール情報がありません";
+					}
+
+                        ?>
+            <div id='carousel_container'>
+      <div id='left_scroll'><img src='left.png' /></div>
+      <div id='carousel_inner'>
+            <ul id='carousel_ul'>
+
+                         <?php
+				if($photo){
+			
+                                $count_photos = count($photo);
+                               		 for($o = 0; $o <= $count; $o++){
+                                        	 $pattern = '/noimage/';
+                                       		  preg_match ($pattern,$img[$o],$matches);
+                                        	 if (empty($matches)){
+
+                        ?>
+                                               		 <li onclick="ReWrite(<?= $o ?>)"><a href="/~katosaori/web-contents/pages/cd.php?photo=<?=urlencode($photo[$o]['photo']);?>"><img src='<?= $photo[$o]['largeImage'] ?>' /></a></li>
+                         <?php
+                                        	 }
+                                	 }
+                       		 }	
+				else{
+					echo "CD画像がありません";
+				}
+
+			?>
 
 
-                        <li id ='#'><a href ='./genre.php?genre=<?=urlencode($p[$q])?>'><?= htmlspecialchars($p[$q]); ?></a></li>
+            </ul> 
+      </div> 
+      <div id='right_scroll'><img src='right.png' /></div>
+    </div>
+        <div id ="botm">
+<table>
+<?php
 
+
+for($o = 0; $o <= $count; $o++){
+
+?>
+
+<tr>
+
+<td bgcolor="#FF00FF"><?= $photo[$o]['salesDate'] ?></td>
+<td bgcolor ="#C0C0C0"><a href="/~katosaori/web-contents/pages/cd.php?photo=<?=urlencode($photo[$o]['photo']);?>"><?= $photo[$o]['cdname'] ?></a></td>
+
+</tr>
+
+<?php
+
+}
+
+?>
+
+
+
+</table>
+        <iframe src="https://www.google.com/calendar/embed?src=hgnfk9ogah7q5bc460r1d7mir4%40group.calendar.google.com&ctz=Asia/Tokyo" style="border: 0" width="200" height="200" frameborder="0" scrolling="no"></iframe>
+</div>
+
+
+        </div>
+
+
+</div>
+<!-- ======= /main ========== -->
+
+        <hr />
+
+        <!-- ========== side ========== -->
+        <div id="side">
+                <!-- InstanceBeginEditable name="side" -->
+                <div class="sideCategoryGenre">
+                 <h2>検索</h2>
+        <ul>
+        <li>
+        <form id="form1" name="form1" method="post" action="">
+                <input name="textfield" type="text" id="textfield" size="20" value="" onblur="if(this.value=='') this.value='';" onfocus="if(this.value=
+='アーティスト名、公演名、会場名など') this.value='';" />
+                <input name="imageField" type="image" id="imageField" src="../img/common/header_search_btn.
+gif" alt="検索" />
+        </form></li>
+
+                <li> <a href="/~katosaori/web-contents/pages/gojyuon.php?domestic=1">邦楽50音順検索</a></li>
+		<li><a href="/~katosaori/web-contents/pages/abcsearch.php?overseas=1">洋楽ABC検索</a></li>
+
+        </ul>
+
+		</div>
+                <div class="sideCategoryGenre">
+                <h2>ジャンル一覧</h2>
+                <ul>
+ <? $p = parent_get_genre($dbh,$id_zero) ?>
+                <? for($q=0;$q<=11;$q++): ?>
+
+                <li id ='#'><a href ='./genre.php?genre=<?=urlencode($p[$q])?>'><?= htmlspecialchars($p[$q]); ?></a></li>
                 <? endfor ?>
 
                 </ul>
-
                 </div>
                 <dl id="sideRefineSearch">
                         <dt>エリアを選択</dt>
@@ -556,23 +431,23 @@ gif" alt="検索" />
                                         <li><a href="#">14日以内に公演</a></li>
                                         <li><a href="#">30日以内に公演</a></li>
                                 </ul>
-
                         </dd>
                 </dl>
                 <dl id="sideInfo">
                         <dt><img src="../img/common/side_info_title.gif" alt="お知らせ" width="190" height="18" /></dt>
-                        <dd>
+
+                       <dd>
                                 <ul>
                                         <li>2011年12月4日(日)　～　2011年12月4日(日)　メンテナンスを行います</li>
                                         <li>2011年12月4日(日)　～　2011年12月4日(日)　メンテナンスを行います</li>
                                 </ul>
                         </dd>
                 </dl>
-                <!-- InstanceEndEditable -->                <ul id="sideBtn">
+                <!-- InstanceEndEditable -->
+                <ul id="sideBtn">
                         <li><a href="#"><img src="../img/mypage/btn_use.gif" alt="楽天チケットの使い方" width="202" height="28" /></a></li>
                         <li><a href="#"><img src="../img/mypage/btn_favorite.gif" alt="お気に入りアーティストを登録" width="202" height="28" /></a></li>
-                        <li><a href="#"><img src="../img/mypage/btn_magazine.gif" alt="メルマガの購読" width="202" height="28"
- /></a></li>
+                        <li><a href="#"><img src="../img/mypage/btn_magazine.gif" alt="メルマガの購読" width="202" height="28" /></a></li>
                 </ul>
         </div>
         <!-- ========== /side ========== -->
@@ -607,23 +482,24 @@ gif" alt="検索" />
 
                 <div id="grpFooter">
                         <div id="groupServiceFooter">
-                                <dl class="title">                                        <dt>楽天グループのサービス</dt>
+                                <dl class="title">
+                                        <dt>楽天グループのサービス</dt>
                                         <dd class="allService"><span><a href="http://www.rakuten.co.jp/sitemap/" onclick="s.gclick('sitemap','ftr')">全サービス一覧へ</a></span></dd>
-                                        <dd class="csr"><a href="http://corp.rakuten.co.jp/csr/" rel="nofollow"><img src="//jp
-.rakuten-static.com/1/im/ci/csr/w80.gif" alt="社会的責任[CSR]" width="80" height="20" /></a></dd>
+                                        <dd class="csr"><a href="http://corp.rakuten.co.jp/csr/" rel="nofollow"><img src="//jp.rakuten-static.com/1/im/ci/csr/w80.gif" alt="社会的責任[CSR]" width="80" height="20" /></a></dd>
                                 </dl>
-                                <ul id="selectedService" class="serviceCol3">                                        <li><dl>
-                                        <dt><a href="#########" onclick="s.gclick('#########','ftr-rel')">DVD・CDをレンタルす>
-る</a></dt>
+                                <ul id="selectedService" class="serviceCol3">
+                                        <li><dl>
+                                        <dt><a href="#########" onclick="s.gclick('#########','ftr-rel')">DVD・CDをレンタルす>る</a></dt>
                                         <dd>楽天レンタル</dd>
                                         </dl></li>
                                         <li><dl>
                                         <dt><a href="#########" onclick="s.gclick('#########','ftr-rel')">映画・ドラマ・スポー
 ツ動画もっと見る</a></dt>
                                         <dd>楽天VIDEO</dd>
-                                        </dl></li>                                        <li><dl>
+                                        </dl></li>
+                                        <li><dl>
                                         <dt><a href="#########" onclick="s.gclick('#########','ftr-rel')">本・CD・DVDを購入す>る</a></dt>
-                                        <dd>楽天ブックス</dd>
+                                       <dd>楽天ブックス</dd>
                                         </dl></li>
                                         <!--
                                         <li><dl>
@@ -674,7 +550,7 @@ gif" alt="検索" />
                                                 </ul>
                                                 </dd>
                                         </dl>
-                                       <dl>
+                                        <dl>
                                                 <dt>マネー</dt>
                                                 <dd><ul>
                                                 <li><a href="https://www.rakuten-sec.co.jp/" onclick="s.gclick('sec','ftr')">>ネット証券（株・FX・投資信託）</a></li>
@@ -725,7 +601,7 @@ gif" alt="検索" />
                                         </dl>
                                 </div><!-- /div#serviceList -->
                         </div><!-- /div#groupServiceFooter -->
-                       <div id="companyFooter">
+                        <div id="companyFooter">
                                 <ul>
                                         <li><a href="http://corp.rakuten.co.jp/" rel="nofollow">会社概要</a></li>
                                         <li><a href="http://privacy.rakuten.co.jp/" rel="nofollow">個人情報保護方針</a></li>
@@ -742,4 +618,5 @@ gif" alt="検索" />
 
 </body>
 <!-- InstanceEnd --></html>
+
 
