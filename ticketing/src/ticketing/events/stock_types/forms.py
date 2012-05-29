@@ -34,39 +34,8 @@ class StockTypeForm(Form):
     fill_color = TextField(
         label=u'塗りつぶし色',
     )
-    fill_type = SelectField(
-        label=u'塗りつぶしパターン',
-        choices=[
-            ('FloodFill', u'べた塗り'),
-            ('LinearGradientFill', u'グラデーション（線形）'),
-            ('RadialGradientFill', u'グラデーション（放射状）'),
-            ('ImageTileFill', u'画像パターン'),
-        ],
-        coerce=str,
-    )
-    fill_image = TextField(
-        label=u'塗りつぶしイメージ',
-    )
     stroke_color = TextField(
         label=u'線の色',
-    )
-    stroke_width = SelectField(
-        label=u'線の太さ',
-        choices=[
-            (1, '1'),
-            (2, '2'),
-            (3, '3'),
-        ],
-        coerce=int,
-    )
-    stroke_patten = SelectField(
-        label=u'線の種類',
-        choices=[
-            ('solid', u'実線'),
-            ('double', u'2重線'),
-            ('dashed', u'点線'),
-        ],
-        coerce=str,
     )
 
 

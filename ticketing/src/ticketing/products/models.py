@@ -126,8 +126,6 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 },
                 'fill':{
                     'color':data.get('fill_color'),
-                    'type':data.get('fill_type'),
-                    'image':data.get('fill_image'),
                 },
             }
         else:
