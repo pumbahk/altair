@@ -59,10 +59,11 @@ class Checkout3DTests(unittest.TestCase):
         self.assertEqual(etree.tostring(result), '<param1>value</param1>')
 
     def test_create_request_card_xml(self):
+        from . import models
         target = self._makeOne(None, None, None, None)
 
-        params = testing.DummyModel(
-            ItemCD='this-is-item-cd',
+        params = models.MultiCheckoutRequestCard(
+            ItemCd='this-is-item-cd',
             ItemName=u'商品名',
             OrderYMD='20120520',
             SalesAmount=100,
@@ -88,10 +89,11 @@ class Checkout3DTests(unittest.TestCase):
         result = target._create_request_card_xml(params)
 
     def test_create_request_card_xml_cvv(self):
+        from . import models
         target = self._makeOne(None, None, None, None)
 
-        params = testing.DummyModel(
-            ItemCD='this-is-item-cd',
+        params = models.MultiCheckoutRequestCard(
+            ItemCd='this-is-item-cd',
             ItemName=u'商品名',
             OrderYMD='20120520',
             SalesAmount=100,
@@ -118,10 +120,11 @@ class Checkout3DTests(unittest.TestCase):
 
 
     def test_create_request_secure3d(self):
+        from . import models
         target = self._makeOne(None, None, None, None)
 
-        params = testing.DummyModel(
-            ItemCD='this-is-item-cd',
+        params = models.MultiCheckoutRequestCard(
+            ItemCd='this-is-item-cd',
             ItemName=u'商品名',
             OrderYMD='20120520',
             SalesAmount=100,

@@ -80,7 +80,7 @@ SSL CVV 3D
         # 注文情報 <Message><Auth><Order>
         order = etree.SubElement(auth, 'Order')
         # 商品コード
-        self._add_param(order, 'ItemCD', card_auth.ItemCD, optional=True)
+        self._add_param(order, 'ItemCd', card_auth.ItemCd, optional=True)
         self._add_param(order, 'ItemName', card_auth.ItemName, optional=True)
         self._add_param(order, 'OrderYMD', card_auth.OrderYMD, optional=check)
         self._add_param(order, 'SalesAmount', card_auth.SalesAmount, optional=check)
