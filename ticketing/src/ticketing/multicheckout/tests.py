@@ -153,3 +153,41 @@ class Checkout3DTests(unittest.TestCase):
         target = self._makeOne(None, None, api_base_url="http://example.com/", shop_code="SHOP")
 
         self.assertEqual(target.api_url, 'http://example.com/SHOP')
+
+    def test_parse_response_card_xml(self):
+        import xml.etree.ElementTree as etree
+        data = """<?xml version="1.0"?>
+        <Message>
+            <Request>
+                <BizClassCd>AA</BizClassCd>
+                <Storecd>1111111111</Storecd>
+            </Request>
+            <Result>
+                <SettlementInfo>
+                    <OrderNo>01234567890123456789012345678901</OrderNo>
+                    <Status>012</Status>
+                    <PublicTranId>0123456789012345678901</PublicTranId>
+                    <AheadComCd>0123456</AheadComCd>
+                    <ApprovalNo>0123456</ApprovalNo>
+                    <CardErrorCd>012345</CardErrorCd>
+                    <ReqYmd>20120529</ReqYmd>
+                    <CmnErrorCd>012345</CmnErrorCd>
+                </SettlementInfo>
+            </Result>
+        </Message>
+        """
+        target = self._makeOne(None, None, api_base_url="http://example.com/", shop_code="SHOP")
+
+        el = etree.XML(data)
+        result = target._parse_response_card_xml(el)
+
+        self.assertEqual(result.BizClassCd, "AA")
+        self.assertEqual(result.Storecd, "1111111111")
+        self.assertEqual(result.OrderNo, "01234567890123456789012345678901")
+        self.assertEqual(result.Status, "012")
+        self.assertEqual(result.PublicTranId, "0123456789012345678901")
+        self.assertEqual(result.AheadComCd, "0123456")
+        self.assertEqual(result.ApprovalNo, "0123456")
+        self.assertEqual(result.CardErrorCd, "012345")
+        self.assertEqual(result.ReqYmd, "20120529")
+        self.assertEqual(result.CmnErrorCd, "012345")

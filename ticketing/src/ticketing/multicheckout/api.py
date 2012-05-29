@@ -5,6 +5,7 @@
 
 from xml.etree import ElementTree as etree
 import httplib
+from . import models as m
 
 class Checkout3D(object):
     def __init__(self, auth_id, auth_password, shop_code, api_base_url):
@@ -115,3 +116,38 @@ SSL CVV 3D
         self._add_param(secure_3d, 'CardNo', card_auth.CardNo, optional=card_auth.SecureKind != '3')
 
         return message
+
+    def _parse_response_card_xml(self, element):
+        card_response = m.MultiCheckoutResponseCard()
+        assert element.tag == "Message"
+        for e in element:
+            if e.tag == "Request":
+                for sube in e:
+                    if sube.tag == "BizClassCd":
+                        card_response.BizClassCd = sube.text
+                    elif sube.tag == "Storecd":
+                        card_response.Storecd = sube.text
+            if e.tag == "Result":
+                for sube in e:
+                    if sube.tag == "SettlementInfo":
+                        for ssube in sube:
+                            if ssube.tag == "OrderNo":
+                                card_response.OrderNo = ssube.text
+                            elif ssube.tag == "Status":
+                                card_response.Status = ssube.text
+                            elif ssube.tag == "PublicTranId":
+                                card_response.PublicTranId = ssube.text
+                            elif ssube.tag == "AheadComCd":
+                                card_response.AheadComCd = ssube.text
+                            elif ssube.tag == "ApprovalNo":
+                                card_response.ApprovalNo = ssube.text
+                            elif ssube.tag == "CardErrorCd":
+                                card_response.CardErrorCd = ssube.text
+                            elif ssube.tag == "ReqYmd":
+                                card_response.ReqYmd = ssube.text
+                            elif ssube.tag == "CmnErrorCd":
+                                card_response.CmnErrorCd = ssube.text
+        return card_response
+
+    def _parse_inquiry_response_card_xml(self, element):
+        return m.MultiCheckoutInquiryResponseCard()
