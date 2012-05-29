@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from ticketing.models import BaseModel, MutationDict, JSONEncodedDict
-from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, ForeignKey, Enum
 from sqlalchemy.orm import relationship, join, column_property, mapper
 
+from datetime import datetime
 from hashlib import md5
 
 import sqlahelper
@@ -12,14 +13,14 @@ session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
 
 from ticketing.venues.models import Seat, SeatStatusEnum, SeatStatus
-
+from ticketing.utils import StandardEnum
 
 class SejTicket(BaseModel, Base):
     __tablename__       = 'SejTicketHistory'
     id                  = Column(BigInteger, primary_key=True)
 
     # shop_order_id
-    order_id            = Column(BigInteger, ForeignKey("Order.id"))
+    order_id            = Column(String(12))
     # 払込票番号(haraikomi_no)
     haraikomi_no        = Column(String(13))
     # 引換票番号(hikae_no)
@@ -35,5 +36,16 @@ class SejTicket(BaseModel, Base):
 
     attributes          = Column(MutationDict.as_mutable(JSONEncodedDict(1024)))
 
-    updated_at          = Column(DateTime)
-    created_at          = Column(DateTime)
+    shori_kbn         = Column(Enum('1', '2', '3', '4'))
+
+    # 決済に伊地知
+    order_at            = Column(DateTime, nullable=True)
+    # 支払日時間
+    pay_at              = Column(DateTime, nullable=True)
+    # 発券日時
+    issue_at            = Column(DateTime, nullable=True)
+    # キャンセル日時
+    cancel_at           = Column(DateTime, nullable=True)
+
+    updated_at          = Column(DateTime, nullable=True)
+    created_at          = Column(DateTime, default=datetime.now)

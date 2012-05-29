@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Ant-Version: Apache Ant 1.5.3 
+Created-By: Apache Jakarta Maven
+Built-By: y-iijima
+Package: jp.ossc
+Build-Jdk: 1.4.2_06
+Extension-Name: INKessaiWEB-client
+Specification-Title: 7Dream Enhances Altostratus Module
+Specification-Vendor: Nomura Research Institute, Inc
+Implementation-Title: jp.ossc
+Implementation-Vendor: Nomura Research Institute, Inc
+Implementation-Version: dev-0.1
+

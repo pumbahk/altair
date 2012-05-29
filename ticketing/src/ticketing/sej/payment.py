@@ -5,8 +5,14 @@ import time
 import re
 from datetime import datetime
 import urllib2
+from ticketing.utils import JavaHashMap
+from ticketing.utils import StandardEnum
 
 from models import SejTicket
+
+import sqlahelper
+
+DBSession = sqlahelper.get_session()
 
 
 class SejFileParser(object):
@@ -57,12 +63,9 @@ class SejFileParser(object):
         return values
 
 class SejInstantPaymentFileParser(SejFileParser):
-    '''
-        1, 5, 12, 2, 2, 13, 13, 6, 2, 2, 2, 2, 14, 32
 
-    '''
     def parse_row(self, row):
-        row = SejFileParserRow(row)
+        row = SejFileParser.SejFileParserRow(row)
         data = {
             'segment' : row.get_col(1),
             'shop_id' : row.get_col(5),
@@ -83,7 +86,7 @@ class SejInstantPaymentFileParser(SejFileParser):
 class SejExpiredFileParser(SejFileParser):
 
     def parse_row(self, row):
-        row = SejFileParserRow(row)
+        row = SejFileParser.SejFileParserRow(row)
         data = {
             'segment' : row.get_col(1),
             'shop_id' : row.get_col(5),
@@ -99,49 +102,6 @@ class SejExpiredFileParser(SejFileParser):
         return data
 
 class SejPayment(object):
-    '''
-        payment = SejPayment(secret_key = '.......')
-        payment.request({
-            ## ショップIDを設定
-            u"X_shop_id": u"myshopid",
-            ## 注文IDを設定
-            "X_shop_order_id": u"orderid00001",
-            ## お客様氏名を設定
-            u"user_namek": u"お客様氏名",
-            ## お客様氏名カナを設定
-            u"user_name_kana": u"フリガナ",
-            ## お客様電話番号を設定
-            u"X_user_tel_no": u"myusertelno",
-            ## 処理区分を設定(例:代引き)
-            u"X_shori_kbn": u"01",
-            ## 合計金額を設定(例:\12,000)
-            u"X_goukei_kingaku": u"012000",
-            ## 支払期限日時を設定(例:2010年2月28日 10時45分)
-            u"X_pay_lmt": u"201002281045",
-            ## チケット代金を設定(例:\9,000)
-            u"X_ticket_daikin": u"009000",
-            ## チケット購入代金を設定(例:\1,000)
-            u"X_ticket_kounyu_daikin": u"001000",
-            ## 発券代金を設定(例:\2,000)
-            u"X_hakken_daikin": u"002000",
-            ## チケット枚数を設定(例:1枚)
-            u"X_ticket_cnt": u"01",
-            ## 本券購入枚数を設定(例:1枚)
-            u"X_ticket_hon_cnt": u"01",
-            ## チケット区分を設定(例:1[本券（チケットバーコード有り）])
-            u"X_ticket_kbn_01": u"1",
-            ## 興行名を設定
-            u"kougyo_mei_01": u"興行名称",
-            ## 公演名を設定
-            u"kouen_mei_01": u"公演名",
-            ## 公演日時を設定(例:2010年3月1日9時)
-            u"X_kouen_date_01": u"201003010900",
-            ## チケットテンプレートを設定
-            u"X_ticket_template_01": u"mytemplate",
-            ## 券面情報を設定
-            u"ticket_text_01": u"<?xml version='1.0' encoding='Shift_JIS' ?><TICKET><MR01>…",
-        }, 0 ,1)
-    '''
 
     url = ''
     secret_key = ''
@@ -173,30 +133,35 @@ class SejPayment(object):
         params['xcode'] = xcode
         return params
 
-    def create_md5hash_from_dict(self, keys, private_key):
-        tmp_keys = {}
-        key_array = keys.keys()
-        for key,value in keys:
-            tmp_keys[key.lowercase()] = value
+    def create_md5hash_from_dict(self, kv, private_key):
+        tmp_keys = JavaHashMap()
+        key_array = list(kv.iterkeys())
+        for key, value in kv.iteritems():
+            # print value
+            tmp_keys[key.lower()] = value
         key_array.sort()
-        buffer = ''
-        for key in key_array:
-            buffer += tmp_keys[key.lowercase()] + ','
-        buffer + private_key
-        return hashlib.md5(buffer).hexdigest()
+        buffer = [tmp_keys[key.lower()] for key in key_array]
+        buffer.append(private_key)
+        buffer = u','.join(buffer)
+        print buffer
+        return hashlib.md5(buffer.encode(encoding="UTF-8")).hexdigest()
 
     def create_hash_from_x_start_params(self, params, salt_key):
-        falsifyProps = []
-        for param in params:
-            if param.startswith('X_'):
-                falsifyProps.append(param)
-        hash = self.create_md5hash_from_dict(falsifyProps, salt_key)
+
+        falsify_props = dict()
+        for name,param in params.iteritems():
+            if name.startswith('X_'):
+                falsify_props[name] = param
+
+        hash = self.create_md5hash_from_dict(falsify_props, salt_key)
+
+        return hash
 
     def send_request(self, request_params, mode, retry_flg):
         for count in range(self.retry_count):
             if count > 0:
                 time.sleep(self.retry_interval)
-            ret_val = self._send_request(mode, mode, retry_flg);
+            ret_val = self._send_request(request_params, mode, retry_flg);
             if ret_val != 120 and ret_val != 5:
                 return ret_val
 
@@ -208,12 +173,29 @@ class SejPayment(object):
             request_params['retry_cnt'] = '1'
 
         req = urllib2.Request(self.url)
+        buffer = ["%s=%s" % (name, urllib2.quote(param.encode('shift_jis'))) for name, param in request_params.iteritems()]
+        data = "&".join(buffer)
+
+        req.add_data(data)
         req.add_header('User-Agent', 'SejPaymentForJava/2.00')
         req.add_header('Connection', 'close')
-        res = urllib2.urlopen(req)
 
-        status = res.status
-        reason = res.reason
+        status = 0
+        reason = ''
+        res = None
+        try:
+            res = urllib2.urlopen(req)
+        except urllib2.HTTPError, e:
+            res = e
+        except urllib2.URLError, e:
+            print e.args
+            return
+
+        status = res.code
+        reason = res.msg
+
+        print status
+        print reason
 
         if status == 200:
 #           status = 900;
@@ -246,18 +228,217 @@ class SejPayment(object):
                 key_value[key] = val
         return key_value
 
-secret_key ='';
+class SejError(Exception):
 
-def set_secret_key(key):
-    secret_key = key
+    error_type  = 0
+    error_msg   = ''
+    error_field = ''
 
-def request_order(params):
+    def __init__(self, error_type, error_msg, error_field):
+
+        self.error_type = error_type
+        self.error_field = error_field
+        self.error_msg = error_msg
+
+    def __str__(self):
+        return "Error_Type=%d&Error_Msg=%s&Error_Field=%s" % (self.error_type, self.error_type, self.error_field)
+
+
+class SejPaymentType(StandardEnum):
+    # 01:代引き
+    CashOnDelivery  = 1
+    # 02:前払い(後日発券)
+    Prepayment      = 2
+    # 03:代済発券
+    Paid            = 3
+    # 04:前払いのみ
+    PrepaymentOnly  = 4
+
+def need_ticketing(type):
+    if SejPaymentType.CashOnDelivery == type \
+        or SejPaymentType.Prepayment == type \
+        or SejPaymentType.Paid == type:
+        return True
+    else:
+        return False
+
+
+
+class SejTicketType(StandardEnum):
+    # 1:本券(チケットバーコード有り)
+    Ticket                  = 1
+    # 2:本券(チケットバーコード無し)
+    TicketWithBarcode       = 2
+    # 3:本券以外(チケットバーコード有り)
+    ExtraTicket             = 3
+    # 4:本券以外(チケットバーコード無し)
+    ExtraTicketWithBarcode  = 4
+
+def is_ticket(type):
+    if type.v == SejTicketType.Ticket or \
+       type.v == SejTicketType.TicketWithBarcode:
+        return True
+    else:
+        return False
+
+def request_order(
+        shop_name,
+        contact_01,
+        contact_02,
+        order_id,
+        username,
+        username_kana,
+        tel,
+        zip,
+        email,
+        total,
+        ticket_total,
+        commission_fee,
+        ticketing_fee,
+        payment_type,
+        payment_due_datetime = None,
+        ticketing_start_datetime = None,
+        ticketing_due_datetime = None,
+        ticketing_sub_due_datetime = None,
+        tickets = [],
+        shop_id = u'30520',
+        secret_key = u'E6PuZ7Vhe7nWraFW',
+        ):
     '''
-    決済要求 https://inticket.sej.co.jp/order/order.do
+        決済要求 https://inticket.sej.co.jp/order/order.do
     '''
-    payment = SejPayment(secret_key = secret_key, url="https://inticket.sej.co.jp/order/order.do")
-    return payment.request(params)
 
+    if type(payment_type) is not SejPaymentType:
+        raise ValueError('payment_type')
+
+    if tickets is list:
+        raise ValueError('tickets')
+
+    # payment = SejPayment(url = u'https://pay.r1test.com/order/order.do', secret_key = secret_key)
+    payment = SejPayment(url = u'http://sv2.ticketstar.jp/test.php', secret_key = secret_key)
+    params = JavaHashMap()
+    # ショップID Sejから割り当てられるshop_id
+    params['X_shop_id']         = shop_id
+    # ショップ名称
+    params['shop_namek']        = shop_name
+    # 連絡先1
+    params['X_renraku_saki']    = contact_01
+    # 連絡先2
+    params['renraku_saki']      = contact_02
+    # 注文ID
+    params['X_shop_order_id']   = order_id
+    # お客様氏名
+    params['user_namek']        = username
+    # お客様氏名カナ
+    params['user_name_kana']    = username_kana
+    # お客様電話番号
+    params['X_user_tel_no']     = tel
+    #　お客様郵便番号
+    params['X_user_post']       = zip
+    # お客様メールアドレス
+    params['X_user_email']      = email
+    # 処理区分
+    params['X_shori_kbn']       = u'%02d' % payment_type.v
+
+    # 合計金額 = チケット代金 + チケット購入代金+発券代金の場合
+    params['X_goukei_kingaku']  = u'%06d' % total
+
+    if payment_type != SejPaymentType.Paid:
+        # コンビニでの決済を行う場合の支払い期限の設定
+        params['X_pay_lmt']         = payment_due_datetime.strftime('%Y%m%d%H%M')
+
+    # チケット代金
+    params['X_ticket_daikin']   = u'%06d' % ticket_total
+    # チケット購入代金
+    params['X_ticket_kounyu_daikin'] = u'%06d' % commission_fee
+
+    if payment_type == SejPaymentType.Prepayment or payment_type == SejPaymentType.Paid:
+        # 支払いと発券が異なる場合、発券開始日時と発券期限を指定できる。
+        if ticketing_start_datetime is not None:
+            params['X_hakken_mise_date'] = ticketing_start_datetime.strftime('%Y%m%d%H%M')
+            # 発券開始日時状態フラグ
+            params['X_hakken_mise_date_sts'] = u'01'
+        if ticketing_due_datetime is not None:
+            # 発券開始日時状態フラグ
+            params['X_hakken_lmt']      = ticketing_due_datetime.strftime('%Y%m%d%H%M')
+            # 発券期限日時状態フラグ
+            params['X_hakken_lmt_sts']  = u'01'
+
+    ticket_num = 0
+    e_ticket_num = 0
+
+    for ticket in tickets:
+        if type(ticket['ticket_type']) is not SejTicketType:
+            raise ValueError('ticket_type : %s' % ticket['ticket_type'])
+        if type(ticket['performance_datetime']) is not datetime:
+            raise ValueError('performance_datetime : %s' % ticket['performance_datetime'])
+        if is_ticket(ticket['ticket_type']):
+            ticket_num+=1
+        else:
+            e_ticket_num+=1
+
+    if need_ticketing(payment_type):
+        params['X_saifuban_hakken_lmt'] = ticketing_sub_due_datetime.strftime('%Y%m%d%H%M')
+
+    params['X_hakken_daikin']       = u'%06d' % ticketing_fee
+    params['X_ticket_cnt']          = u'%02d' % len(tickets)
+    params['X_ticket_hon_cnt']      = u'%02d' % ticket_num
+
+    for ticket in tickets:
+        if not need_ticketing(payment_type):
+            # 発券がある場合
+            params['X_ticket_kbn_01']       = u'%d' % ticket['ticket_type'].v
+
+        if is_ticket(ticket['ticket_type']):
+            # 本券の場合必須項目
+            if ticket['event_name'] is None or len(ticket['event_name']) == 0:
+                raise ValueError('event_name is required')
+            params['kougyo_mei_01']     = ticket['event_name']
+
+        params['kouen_mei_01']          = ticket['performance_name']
+        params['X_kouen_date_01']       = ticket['performance_datetime'].strftime('%Y%m%d%H%M')
+        params['X_ticket_template_01']  = ticket['ticket_template_id']
+        params['ticket_text_01']        = ticket['xml']
+
+    if not payment.request(params, 0):
+        raise SejError(0,'','')
+    ret = payment.response
+    # example response
+    # {
+    #   'X_haraikomi_no': '2306667473026',
+    #   'X_ticket_cnt': '03',
+    #   'X_url_info': 'https://www.r1test.com/order/hi.do',
+    #   'X_shop_order_id': 'orderid00001',
+    #   'iraihyo_id_00': '3052030666747302c21b35696fdd51ca',
+    #   'DATA': 'END',
+    #   'X_ticket_hon_cnt': '01'
+    # }
+
+    error_type = ret.get('Error_Type', None)
+    if error_type:
+        raise SejError(
+            error_type=int(error_type),
+            error_msg=ret.get('Error_Msg', None),
+            error_field=ret.get('Error_Field', None))
+
+    sejTicket = SejTicket()
+
+    sejTicket.shori_kbn     = payment_type.v
+    sejTicket.haraikomi_no  = ret.get('X_haraikomi_no')
+    sejTicket.ticket_count  = int(ret.get('X_ticket_cnt', 0))
+    sejTicket.url_info      = ret.get('url_info')
+    sejTicket.order_id      = ret.get('X_shop_order_id')
+    sejTicket.iraihyo_id_00 = ret.get('iraihyo_id_00')
+    sejTicket.order_at      = datetime.now()
+    for idx in range(1,sejTicket.ticket_count):
+        code = ret.get('X_barcode_no_%02d' % idx)
+        if code:
+            sejTicket.attributes['X_barcode_no_%02d' % idx] = code
+
+    DBSession.add(sejTicket)
+    DBSession.flush()
+
+    return sejTicket
 
 def request_cancel(params):
     '''

@@ -1,9 +1,11 @@
 # -*- coding:utf-8 -*-
 import unittest
-from ..payment import SejInstantPaymentFileParser
-
+#from ..payment import SejInstantPaymentFileParser
+from ticketing.sej.payment import SejPayment, SejPaymentType, SejTicketType, request_order
+import datetime
 import cgi
 import BaseHTTPServer,CGIHTTPServer
+from ticketing.utils import JavaHashMap
 
 class SejTest(unittest.TestCase):
 
@@ -14,87 +16,88 @@ class SejTest(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_sej_file_parse(self):
+    def _test_request_file_get(self):
 
-        # BaseHTTPServer.HTTPServer(( '127.0.0.1', 8080 ), CGIHTTPServer.CGIHTTPRequestHandler
+        '''
+        https://inticket.sej.co.jp/order/getfile.do
+        '''
 
-        parse = SejInstantPaymentFileParser()
-#
-        data = '''
-H00001FILENAME0000000000000000000000201205050108
-D23456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678
-D23456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678
+        payment = SejPayment(url = u'https://pay.r1test.com/order/getfile.do', secret_key = u'E6PuZ7Vhe7nWraFW')
+        params = JavaHashMap()
+        # ショップID
+        params['X_shop_id']  = u'30520'
+        params['X_tuchi_kbn'] = u'01'
+        params['X_date'] = u'20120527'
+
+        # 連絡先2
+        payment.request(params, 0)
+
+    def _test_request_order_cancel(self):
+        payment = SejPayment(url = u'https://pay.r1test.com/order/cancelorder.do', secret_key = u'E6PuZ7Vhe7nWraFW')
+        params = JavaHashMap()
+        # ショップID
+        params['X_shop_id']         = u'30520'
+        # ショップ名称
+        params['X_shop_order_id']   = u'orderid00001'
+        # 連絡先1
+        params['X_haraikomi_no']    = u'2347462348670'
+        #params['X_hikikae_no']      = u'contact'
+        # 連絡先2
+        payment.request(params, 0)
+
+        # 該当が無い場合
+        # <SENBDATA>Error_Type=21&Error_Msg=Not Found&Error_Field=X_shop_order_id&</SENBDATA><SENBDATA>DATA=END</SENBDATA>
+
+
+    def test_request_order(self):
+        '''
+            決済要求 https://inticket.sej.co.jp/order/order.do
+        '''
+        sejTicketOrder = request_order(
+            shop_name       = u'楽天チケット',
+            contact_01      = u'contact',
+            contact_02      = u'連絡先2',
+            order_id        = u"orderid00001",
+            username        = u"お客様氏名",
+            username_kana   = u'コイズミモリヨシ',
+            tel             = u'0312341234',
+            zip             = u'1070062',
+            email           = u'dev@ticketstar.jp',
+            total           = 15000,
+            ticket_total    = 13000,
+            commission_fee  = 1000,
+            ticketing_fee   = 1000,
+
+            payment_type    = SejPaymentType.CashOnDelivery,
+            payment_due_datetime = datetime.datetime(2012,3,30,7,00), #u'201207300700',
+            ticketing_sub_due_datetime = datetime.datetime(2012,7,30,7,00), # u'201207300700',
+
+            tickets = [
+                dict(
+                    ticket_type         = SejTicketType.TicketWithBarcode,
+                    event_name          = u'イベント名',
+                    performance_name    = u'パフォーマンス名',
+                    ticket_template_id  = u'TTTS000001',
+                    performance_datetime= datetime.datetime(2012,8,31,18,00),
+                    xml = u'''<?xml version="1.0" encoding="Shift_JIS" ?>
+                    <TICKET>
+                      <TEST1>test&#x20;test</TEST1>
+                      <TEST2><![CDATA[TEST [] >M>J TEST@&nbsp;]]></TEST2>
+                      <TEST3>&#x3000;</TEST3>
+                      <FIXTAG01></FIXTAG01>
+                      <FIXTAG02></FIXTAG02>
+                      <FIXTAG03></FIXTAG03>
+                      <FIXTAG04></FIXTAG04>
+                      <FIXTAG05></FIXTAG05>
+                      <FIXTAG06></FIXTAG06>
+                    </TICKET>'''
+                )
+            ]
+        )
+
+        print sejTicketOrder
+
 '''
-        parse.parse(data, 108)
-
-'''
-    def test_sej_order(self):
-
-        payment = SejPayment(url ='https//....', secret_key = '.......')
-        payment.request({
-            ## ショップIDを設定
-            u"X_shop_id": u"myshopid",
-            ## 注文IDを設定
-            "X_shop_order_id": u"orderid00001",
-            ## お客様氏名を設定
-            u"user_namek": u"お客様氏名",
-            ## お客様氏名カナを設定
-            u"user_name_kana": u"フリガナ",
-            ## お客様電話番号を設定
-            u"X_user_tel_no": u"myusertelno",
-            ## 処理区分を設定(例:代引き)
-            u"X_shori_kbn": u"01",
-            ## 合計金額を設定(例:\12,000)
-            u"X_goukei_kingaku": u"012000",
-            ## 支払期限日時を設定(例:2010年2月28日 10時45分)
-            u"X_pay_lmt": u"201002281045",
-            ## チケット代金を設定(例:\9,000)
-            u"X_ticket_daikin": u"009000",
-            ## チケット購入代金を設定(例:\1,000)
-            u"X_ticket_kounyu_daikin": u"001000",
-            ## 発券代金を設定(例:\2,000)
-            u"X_hakken_daikin": u"002000",
-            ## チケット枚数を設定(例:1枚)
-            u"X_ticket_cnt": u"01",
-            ## 本券購入枚数を設定(例:1枚)
-            u"X_ticket_hon_cnt": u"01",
-            ## チケット区分を設定(例:1[本券（チケットバーコード有り）])
-            u"X_ticket_kbn_01": u"1",
-            ## 興行名を設定
-            u"kougyo_mei_01": u"興行名称",
-            ## 公演名を設定
-            u"kouen_mei_01": u"公演名",
-            ## 公演日時を設定(例:2010年3月1日9時)
-            u"X_kouen_date_01": u"201003010900",
-            ## チケットテンプレートを設定
-            u"X_ticket_template_01": u"mytemplate",
-            ## 券面情報を設定
-            u"ticket_text_01": u"<?xml version='1.0' encoding='Shift_JIS' ?><TICKET><MR01>…",
-        }, 0 ,1)
-
-        data = payment.response
-        print data
-
-
-  
-        ##---------------------------------------------
-        ## ６．戻り値取得
-        ##---------------------------------------------
-        ## 注文IDを取得
-        #sOrderId = sejPayment.GetOutput(u"X_shop_order_id")
-        ## 払込票番号を取得
-        #sHaraikomiNo = sejPayment.GetOutput(u"X_haraikomi_no")
-        ## URL情報を取得
-        #sUrlInfo = sejPayment.GetOutput(u"X_url_info")
-        ## 依頼表番号を取得
-        #sIraihyoId = sejPayment.GetOutput(u"iraihyo_id_00")
-        ## チケット枚数を取得
-        #sTicketCnt = sejPayment.GetOutput(u"X_ticket_cnt")
-        ## 本券購入枚数を取得
-        #sTicketHonCnt = sejPayment.GetOutput(u"X_ticket_hon_cnt")
-        ## チケットバーコード番号_01
-        #sBarcodeNo = sejPayment.GetOutput(u"X_barcode_no_01")
-
     def test_sej_update(self):
         gw = JavaGateway()
         jString = gw.jvm.java.lang.String
