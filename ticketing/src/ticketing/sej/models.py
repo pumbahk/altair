@@ -12,12 +12,9 @@ import sqlahelper
 session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
 
-from ticketing.venues.models import Seat, SeatStatusEnum, SeatStatus
-from ticketing.utils import StandardEnum
-
 class SejTicket(BaseModel, Base):
-    __tablename__       = 'SejTicketHistory'
-    id                  = Column(BigInteger, primary_key=True)
+    __tablename__       = 'SejTicket'
+    id                  = Column(Integer, primary_key=True)
 
     # shop_order_id
     order_id            = Column(String(12))
@@ -34,9 +31,10 @@ class SejTicket(BaseModel, Base):
     # チケットの発券枚数(ticket_hon_count)
     ticket_hon_count    = Column(Integer)
 
+    request_params      = Column(MutationDict.as_mutable(JSONEncodedDict(4000)))
     attributes          = Column(MutationDict.as_mutable(JSONEncodedDict(1024)))
 
-    shori_kbn         = Column(Enum('1', '2', '3', '4'))
+    shori_kbn           = Column(Enum('1', '2', '3', '4'))
 
     # 決済に伊地知
     order_at            = Column(DateTime, nullable=True)
