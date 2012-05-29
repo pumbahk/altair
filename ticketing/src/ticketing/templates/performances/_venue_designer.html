@@ -8,8 +8,8 @@
     var height = n.height();
     var toolbar = n.find(".ui-toolbar");
     toolbar.width(width - 6);
-    var data = n.data('venue_editor');
-    if (data && data.manager) {
+    var data = n.data('venueviewer');
+    if (data && data.manager && data.manager.drawable) {
       data.manager.drawable.viewportSize({
         width: width,
         height: height - toolbar[0].offsetHeight

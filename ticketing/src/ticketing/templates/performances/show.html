@@ -8,7 +8,8 @@
 <link rel="stylesheet" type="text/css" href="/static/css/performance.css" />
 <script type="text/javascript" src="/static/js/jquery.kolorpicker.js"></script>
 <script type="text/javascript" src="/static/js/ticketing.performance.js"></script>
-<script type="text/javascript" src="/static/js/ticketing.venue-editor.js"></script>
+<script type="text/javascript" src="/static/js/fashion.js"></script>
+<script type="text/javascript" src="/static/js/ticketing.venue-viewer.js"></script>
 <style type="text/css">
   .canvas {
     height: 91%;
@@ -28,8 +29,10 @@
 </%block>
 
 <script type="text/javascript">
-var DRAWING_URL = "${request.route_path('api.get_drawing', venue_id=performance.venue.id)}" + "?" + Math.random();
-var SEAT_DATA_URL = "${request.route_path('api.get_seats', venue_id=performance.venue.id)}" + "?" + Math.random();
+var dataSource = {
+  drawing: "${request.route_path('api.get_drawing', venue_id=performance.venue.id)}" + "?" + Math.random(),
+  metadata: "${request.route_path('api.get_seats', venue_id=performance.venue.id)}" + "?" + Math.random()
+};
 </script>
 
 <div class="row-fluid">
@@ -119,6 +122,61 @@ var SEAT_DATA_URL = "${request.route_path('api.get_seats', venue_id=performance.
         </div>
       </div>
       <script type="text/javascript">
+        var callbacks = {
+          message: function (msg) {
+            $("<div></div>").text(msg).dialog({
+              modal: true,
+              buttons: {
+                "Ok": function () { $(this).dialog('destroy'); }
+              }
+            });
+          }
+        };
+
+        function buildViewerArea() {
+          var viewer = $('<div></div>')
+            .venueviewer({
+              dataSource: dataSource,
+              callbacks: callbacks,
+              uimode: 'select'
+            });
+          var n = $([
+          '<div class="ui-widget-header ui-corner-all ui-toolbar">',
+            '<span class="ui-buttonset">',
+              '<input type="radio" name="function" value="select" class="ui-button ui-icon-primary-arrowthick-1-ne ui-no-text action-function action-select" id="toolbar-action-select" /><label for="toolbar-action-select">Select</label>',
+              '<input type="radio" name="function" value="zoomin" class="ui-button ui-icon-primary-zoomin ui-no-text action-function action-zoomin" id="toolbar-action-zoomin" /><label for="toolbar-action-zoomin">Zoom-in</label>',
+              '<input type="radio" name="function" value="zoomout" class="ui-button ui-icon-primary-zoomout ui-no-text action-function action-zoomout" id="toolbar-action-zoomout" /><label for="toolbar-action-zoomout">Zoom-out</label>',
+            '</span>',
+          '</div>',
+          ].join(""));
+          n.find(".ui-button").each(function (i, n) {
+            n = $(n);
+            n.removeClass('ui-button');
+            var cssClass = n.attr("class").split(/\s+/);
+            var options = { icons: {} }; 
+            for (var i = 0; i < cssClass.length; i++) {
+              var g;
+              if ((g = /ui-icon-primary-(.+)/.exec(cssClass[i])))
+                options.icons.primary = 'ui-icon-' + g[1];
+              if ((g = /ui-icon-secondary-(.+)/.exec(cssClass[i])))
+                options.icons.secondary = 'ui-icon-' + g[1];
+              if ('ui-no-text' == cssClass[i])
+                options.text = false;
+            }
+            n.button(options);
+          });
+          n.find(".ui-buttonset").remove('ui-buttonset').buttonset();
+          n.find(".action-function").on('click', function () {
+            viewer.venueviewer('uimode', this.value);
+          }).each(function (i, n) {
+            if (n.checked)
+              viewer.venueviewer('uimode', n.value);
+          });
+          viewer.venueviewer('load');
+          n.push(viewer[0]);
+          return n;
+        }
+
         (function() {
           anchor = location.hash || '#venue-designer';
           $(anchor + '-tab').addClass('active');
@@ -130,25 +188,26 @@ var SEAT_DATA_URL = "${request.route_path('api.get_seats', venue_id=performance.
             if (active_tab) {
               switch (active_tab.attr('id')) {
               case 'venue-designer':
-                $('#venue-map').venue_editor('remove');
+                try {
+                  $('#venue-map > :eq(1)').venueviewer('remove');
+                } catch (e) {}
+                $('#venue-map').empty();
                 break;
               case 'seat-allocation':
-                $('#seat-map').venue_editor('remove');
+                try {
+                  $('#seat-map > :eq(1)').venueviewer('remove');
+                } catch (e) {}
+                $('#seat-map').empty();
                 break;
               }
             }
+
             switch (new_active_tab.attr('id')) {
             case 'venue-designer':
-              $('#venue-map').venue_editor({
-                drawing_url: DRAWING_URL,
-                seat_data_url: SEAT_DATA_URL
-              }).venue_editor('load');
+              $("#venue-map").append(buildViewerArea());
               break;
             case 'seat-allocation':
-              $('#seat-map').venue_editor({
-                drawing_url: DRAWING_URL,
-                seat_data_url: SEAT_DATA_URL
-              }).venue_editor('load');
+              $("#seat-map").append(buildViewerArea());
               break;
             case 'ticket-designer':
               TicketDesigner_adjustViewSize();

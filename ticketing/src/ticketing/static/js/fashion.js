@@ -118,6 +118,17 @@ var BROWSER = detectBrowser(typeof window == 'undefined' ? void(0): window);
 
 
 
+/************** src/lib/assert.js **************/
+function __assert__(predicate) {
+  if (!predicate)
+    throw new AssertionFailure();
+}
+/*
+ * vim: sts=2 sw=2 ts=2 et
+ */
+
+
+
 /************** src/lib/misc.js **************/
 // detect atomic or not
 function _atomic_p(obj) {
@@ -270,6 +281,7 @@ var NotAttached      = createExceptionClass.call(this, 'NotAttached');
 var NotFound         = createExceptionClass.call(this, 'NotFound');
 var AlreadyExists    = createExceptionClass.call(this, 'AlreadyExists');
 var DeclarationError = createExceptionClass.call(this, 'DeclarationError');
+var AssertionFailure = createExceptionClass.call(this, 'AssertionFailure');
 _lib.FashionError          = FashionError;
 _lib.createExceptionClass  = createExceptionClass;
 _lib.NotImplemented        = NotImplemented;
@@ -674,6 +686,14 @@ var Matrix = (function() {
         }
       },
 
+      isUnit: function () {
+        return this.a == 1 && this.b == 0 && this.c == 0 && this.d == 1;
+      },
+
+      isScaling: function() {
+        return this.b == 0 && this.c == 0 && { x: this.a, y: this. d } || null;
+      },
+
       apply: function(p) {
         return { x: (p.x * this.a) + (p.y * this.c) + this.e,
                  y: (p.x * this.b) + (p.y * this.d) + this.f };
@@ -895,7 +915,11 @@ var Refresher = _class("Refresher", {
     },
 
     call: function (target, dirty) {
-      this._preHandler && this._preHandler.call(target, dirty);
+      if (this._preHandler) {
+        var _dirty = this._preHandler.call(target, dirty);
+        if (_dirty !== void(0))
+          dirty = _dirty;
+      }
       if (dirty) {
         for (var i = 0; i < this._handlers.length; i++) {
           var pair = this._handlers[i];
@@ -1597,7 +1621,6 @@ var DefsManager = (function() {
 var DepthManager = _class("DepthManager", {
   props: {
     root: null,
-    shapes: {},
     depth: []
   },
 
@@ -1607,30 +1630,33 @@ var DepthManager = _class("DepthManager", {
     },
 
     add: function(shape) {
-      var pair = this.shapes[shape.id];
-      if (pair)
-        this.depth.splice(pair[0], 1);
-
       var s = 0, e = this.depth.length;
       while (s != e) {
         var c = (s + e) >> 1;
-        if (this.shapes[this.depth[c]][1].wrapper.zIndex < shape.wrapper.zIndex) {
-          s = c;
+        if (this.depth[c].wrapper._zIndex < shape.wrapper._zIndex) {
+          s = c + 1;
         } else {
           e = c;
         }
       }
-      this.depth.splice(s, 0, shape.id);
+      var exists = false;
+      while (s < this.depth.length && this.depth[s].wrapper._zIndex == shape.wrapper._zIndex) {
+        if (this.depth[s].wrapper.id == shape.wrapper.id) {
+          exists = true;
+          break;
+        }
+        s++;
+      }
+      this.depth.splice(s, exists, shape);
       if (shape._elem) {
         var beforeChild = null;
         for (var i = s + 1; i < this.depth.length; i++) {
-          beforeChild = this.shapes[this.depth[i]][1]._elem;
+          beforeChild = this.depth[i]._elem;
           if (beforeChild)
             break;
         }
         shape._elem.parentNode.insertBefore(shape._elem, beforeChild);
       }
-      this.shapes[shape.id] = [ s, shape ];
     }
   }
 });
@@ -1722,6 +1748,11 @@ var Drawable = _class("DrawableSVG", {
         return false;
       };
 
+      this._captureEventFunc = function (domEvt) {
+        var func = self._capturingShape._handledEvents[domEvt.type];
+        return func ? func(domEvt): true;
+      };
+
       var viewport = this._buildViewportElement();
 
       var svg = this._buildSvgElement();
@@ -1758,9 +1789,9 @@ var Drawable = _class("DrawableSVG", {
 
     scrollPosition: function(position) {
       if (position) {
-        position = this.wrapper._transform.apply(position);
-        this._viewport.scrollLeft = position.x;
-        this._viewport.scrollTop  = position.y;
+        var _position = this.wrapper._transform.apply(position);
+        this._viewport.scrollLeft = _position.x;
+        this._viewport.scrollTop  = _position.y;
         return position;
       }
       return this.wrapper._inverse_transform.apply({ x: this._viewport.scrollLeft, y: this._viewport.scrollTop });
@@ -1791,11 +1822,6 @@ var Drawable = _class("DrawableSVG", {
       if (this._capturingShape) {
         throw new AlreadyExists("The shape is already capturing.");
       }
-
-      this._captureEventFunc = function (domEvt) {
-        var func = shape._handledEvents[domEvt.type];
-        return func ? func(domEvt): true;
-      };
 
       for (var type in shape._handledEvents)
         this._viewport.offsetParent.addEventListener(type, this._captureEventFunc, true);
@@ -1889,11 +1915,14 @@ var VML = (function() {
 
   var _ = {};
   var VML_PREFIX = 'v';
+  var VML_NAMESPACE_URL = 'urn:schemas-microsoft-com:vml';
+  var VML_BEHAVIOR_URL = '#default#VML';
 
   function setup() {
-    var namespaces = document.namespaces;
+    var namespaces = _window.document.namespaces;
     if (!namespaces[VML_PREFIX])
-      namespaces.add(VML_PREFIX, 'urn:schemas-microsoft-com:vml', '#default#VML');
+      namespaces.add(VML_PREFIX, VML_NAMESPACE_URL);
+    _window.document.createStyleSheet().addRule(VML_PREFIX + '\\:*', "behavior:url(#default#VML)");
   }
 
   function newElement(type) {
@@ -1901,252 +1930,588 @@ var VML = (function() {
     return elem;
   }
 
+  function matrixString(m) {
+    return [m.a, m.c, m.b, m.d, m.e, m.f].join(',');
+  }
 
-
-/************** src/../backends/vml/Util.js **************/
-var Util = _class("UtilVML", {
-  class_methods: {
-    matrixString: function(m) {
-      return "progid:DXImageTransform.Microsoft.Matrix(" +
-        "M11=" + m.get(0) + ", M12=" + m.get(2) + ", M21=" + m.get(1) + ", M22=" + m.get(3) +
-        ", Dx=" + m.get(4) + ", Dy=" + m.get(5) + ", sizingmethod='auto expand')";
-    },
-
-    convertStrokePattern: function(pattern) {
-      return pattern.join(' ');
-    },
-
-    convertColorArray: function(color) {
-      var r = color.r.toString(16);
-      if (r.length < 2) r = '0' + r;
-      var g = color.g.toString(16);
-      if (g.length < 2) g = '0' + g;
-      var b = color.b.toString(16);
-      if (b.length < 2) b = '0' + b;
-      return { color: '#' + r + g + b, opacity: (color.a / 255.0) };
-    },
-
-    convertPathArray: function(path) {
-      var retval = [];
-      for (var i = 0; i < path.length; i++) {
-        var p = path[i];
-        var idt = p[0];
-        switch (idt) {
-        case 'M':
-          retval.push('m' + p[1] + ',' + p[2]);
-          break;
-        case 'L':
-          retval.push('l' + p[1] + ',' + p[2]);
-          break;
-        case 'C':
-          retval.push('c' + p[1] + ',' + p[2] + ',' + p[3] + ',' + p[4] + ',' + p[5] + ',' + p[6]);
-          break;
-        case 'Z':
-          retval.push('x');
-          break;
-        // TODO !!!!
-        case 'R':
-        case 'T':
-        case 'S':
-        case 'Q':
-        case 'A':
-        }
+  function pathString(path) {
+    var retval = [];
+    for (var i = 0; i < path.length; i++) {
+      var p = path[i];
+      switch (p[0]) {
+      case 'M':
+        retval.push('m', (p[1] * VML_FLOAT_PRECISION).toFixed(0),
+                         (p[2] * VML_FLOAT_PRECISION).toFixed(0));
+        break;
+      case 'L':
+        retval.push('l', (p[1] * VML_FLOAT_PRECISION).toFixed(0),
+                         (p[2] * VML_FLOAT_PRECISION).toFixed(0));
+        break;
+      case 'C':
+        retval.push('c', (p[1] * VML_FLOAT_PRECISION).toFixed(0),
+                         (p[2] * VML_FLOAT_PRECISION).toFixed(0),
+                         (p[3] * VML_FLOAT_PRECISION).toFixed(0),
+                         (p[4] * VML_FLOAT_PRECISION).toFixed(0),
+                         (p[5] * VML_FLOAT_PRECISION).toFixed(0),
+                         (p[6] * VML_FLOAT_PRECISION).toFixed(0));
+        break;
+      case 'Z':
+        retval.push('x');
+        break;
+      // TODO !!!!
+      case 'R':
+      case 'T':
+      case 'S':
+      case 'Q':
+      case 'A':
       }
-      retval.push('e');
-      return retval.join('');
     }
+    retval.push('e');
+    return retval.join(' ');
   }
-});
 
+  function strokePattern(pattern) {
+    return pattern.join(' ');
+  }
 
-/************** src/../backends/vml/MouseEvt.js **************/
-var MouseEvt = _class("MouseEvtVML", {
-  interfaces: [MouseEvtImpl],
-
-  mixins: [UtilImpl.DomEvt],
-
-  props: {
-    pagePosition: {x:0,y:0},
-    left:         false,
-    middle:       false,
-    right:        false
-  },
-
-  methods: {
-    init: function(dom_evt, shape) {
-      this.convertToMouseEvt(dom_evt);
+  function buildMouseEvt(impl, msieEvt) {
+    var retval = new MouseEvt();
+    retval.type = msieEvt.type;
+    retval.target = impl.wrapper;
+    var which = msieEvt.which;
+    var button = msieEvt.button;
+    if (!which && button !== void(0)) {
+      which = ( button & 1 ? 1 : ( button & 2 ? 3 : ( button & 4 ? 2 : 0 ) ) );
     }
+    switch(which) {
+    case 0: retval.left = retval.middle = retval.right = false; break;
+    case 1: retval.left = true; break;
+    case 2: retval.middle = true; break;
+    case 3: retval.right = true; break;
+    }
+
+    var physicalPagePosition;
+
+    var doc = _window.document, body = doc.body;
+    physicalPagePosition = {
+      x: msieEvt.clientX + body.scrollLeft,
+      y: msieEvt.clientY + body.scrollTop
+    };
+
+    if (impl instanceof Drawable) {
+      retval.physicalPosition = _subtractPoint(physicalPagePosition, impl.getViewportOffset());
+      retval.logicalPosition = impl.convertToLogicalPoint(retval.physicalPosition);
+    } else {
+      retval.physicalPosition = _subtractPoint(physicalPagePosition, impl.drawable.getViewportOffset());
+      retval.logicalPosition = impl.drawable.convertToLogicalPoint(retval.physicalPosition);
+      retval.offsetPosition = _subtractPoint(retval.logicalPosition, impl.wrapper._position);
+    }
+
+    return retval;
   }
-});
+
 
 
 /************** src/../backends/vml/Base.js **************/
-var Base = _class("BaseVML", {
-  props : {
-    drawable: null,
-    handler: null
+var Base = (function() { 
+  function toVMLOMString(value) {
+    if (typeof value == 'string') {
+      return value;
+    } else if (typeof value == 'boolean') {
+      return value ? 't': 'f'
+    } else {
+      return value.toString();
+    }
+  }
+
+  var VMLOMMarkupBuilder = _class('VMLOMMarkupBuilder', {
+    props: {
+      innerAttrs: null,
+      outerAttrs: null
+    },
+
+    methods: {
+      init: function (tagName) {
+        this.tagName = tagName;
+      },
+
+      setInnerAttribute: function (name, value) {
+        if (!this.innerAttrs)
+          this.innerAttrs = {};
+        this.innerAttrs[name] = value;
+      },
+
+      setOuterAttribute: function (name, value) {
+        if (!this.outerAttrs)
+          this.outerAttrs = {};
+        this.outerAttrs[name] = value;
+      },
+
+      appendHTML: function (bufferPair) {
+        if (this.outerAttrs) {
+          for (var name in this.outerAttrs)
+            bufferPair.outer.push(' ', name, '="', _escapeXMLSpecialChars(toVMLOMString(this.outerAttrs[name])), '"');
+        }
+        if (this.innerAttrs) {
+          bufferPair.inner.push('<', VML_PREFIX, ':', this.tagName);
+          for (var name in this.innerAttrs)
+            bufferPair.inner.push(' ', name, '="', _escapeXMLSpecialChars(toVMLOMString(this.innerAttrs[name])), '"');
+          bufferPair.inner.push(' />');
+        }
+      },
+
+      assign: function (nodePair) {
+        if (this.outerAttrs) {
+          for (var name in this.outerAttrs)
+            nodePair.outer[name] = this.outerAttrs[name];
+        }
+        if (this.innerAttrs) {
+          for (var name in this.innerAttrs)
+            nodePair.inner[name] = this.innerAttrs[name];
+        }
+      }
+    }
+  });
+
+  VMLFillAndStroke = _class('VMLFillAndStroke', {
+    props: {
+      fill: null,
+      stroke: null,
+      styles: {}
+    },
+
+    methods: {
+      init: function () {
+        this.fill = new VMLOMMarkupBuilder('fill');
+        this.stroke = new VMLOMMarkupBuilder('stroke');
+      },
+
+      setStyle: function (name, value) {
+        if (typeof name == 'object' && value === void(0)) {
+          for (var _name in name)
+            this.styles[_name] = name[_name];
+        } else {
+          this.styles[name] = value;
+        }
+      },
+
+      assignToElement: function (elem) {
+        if (this.fill) {
+          var fillNode = elem.fill;
+          if (this.fill.innerAttrs && !fillNode)
+            fillNode = newElement(this.fill.tagName);
+          this.fill.assign({ outer: elem.node, inner: fillNode });
+          if (fillNode && !elem.fill) {
+            elem.node.appendChild(fillNode);
+            elem.fill = fillNode;
+          }
+        }
+        if (this.stroke) {
+          var strokeNode = elem.stroke;
+          if (this.stroke.innerAttrs && !strokeNode)
+            strokeNode = newElement(this.stroke.tagName);
+          this.stroke.assign({ outer: elem.node, inner: strokeNode });
+          if (strokeNode && !elem.stroke) {
+            elem.node.appendChild(strokeNode);
+            elem.stroke = strokeNode;
+          }
+        }
+        for (var name in this.styles)
+          elem.node.style[name] = this.styles[name];
+      },
+
+      appendHTML: function (buf) {
+        var innerBuf = [];
+        this.fill.appendHTML({ outer: buf, inner: innerBuf });
+        this.stroke.appendHTML({ outer: buf, inner: innerBuf });
+        if (this.styles) {
+          var attrChunks = [];
+          for (var name in this.styles)
+            attrChunks.push(name.replace(/[A-Z]/, function ($0) { return '-' + $0.toLowerCase(); }), ':', this.styles[name], ';');
+          buf.push(' style', '="', _escapeXMLSpecialChars(attrChunks.join('')), '"');
+        }
+        buf.push(">");
+        buf.push.apply(buf, innerBuf);
+      }
+    }
+  });
+
+  return _class("BaseVML", {
+    props : {
+      drawable: null,
+      _elem: null,
+      wrapper: null,
+      _refresher: null,
+      _handledEvents: {
+        mousedown: false,
+        mouseup: false,
+        mousemove: false,
+        mouseout: false
+      }
+    },
+
+    class_props: {
+      _refresher: new Refresher().setup({
+        preHandler: function (dirty) {
+          if (!this.drawable)
+            return dirty;
+          if (!this._elem) {
+            this._elem = this.newElement(this.drawable._vg);
+            return dirty & DIRTY_EVENT_HANDLERS;
+          }
+          return dirty;
+        },
+
+        handlers: [
+          [
+            DIRTY_TRANSFORM,
+            function () {
+              var transform = this.wrapper._transform;
+              if (transform) {
+                var scale = this.wrapper._transform.isScaling();
+                if (scale) {
+                  if (this._elem.skew) {
+                    this._elem.node.removeChild(this._elem.skew);
+                    this._elem.skew = null;
+                  }
+                  this._elem.node.coordOrigin = (-transform.e * VML_FLOAT_PRECISION).toFixed(0) + ',' + (-transform.f * VML_FLOAT_PRECISION).toFixed(0);
+                  this._elem.node.coordSize = (VML_FLOAT_PRECISION / scale.x).toFixed(0) + ',' + (VML_FLOAT_PRECISION / scale.y).toFixed(0);
+                } else {
+                  if (!this._elem.skew) {
+                    this._elem.skew = newElement('skew');
+                    this._elem.node.appendChild(this._elem.skew);
+                  }
+                  this._elem.node.coordOrigin = null;
+                  this._elem.node.coordSize = VML_FLOAT_PRECISION + ',' + VML_FLOAT_PRECISION;
+                  this._elem.skew.matrix = matrixString(transform);
+                  this._elem.skew.on = true;
+                }
+              } else {
+                this._elem.node.removeChild(this._elem.skew);
+                this._elem.skew = null;
+              }
+            }
+          ],
+          [
+            DIRTY_STYLE,
+            function () {
+              var fillAndStroke = new VMLFillAndStroke();
+              this._buildVMLStyle(fillAndStroke);
+              fillAndStroke.assignToElement(this._elem);
+            }
+          ],
+          [
+            DIRTY_VISIBILITY,
+            function () {
+              this._elem.node.style.display = st.visibility ? 'block' : 'none';
+            }
+          ],
+          [
+            DIRTY_EVENT_HANDLERS,
+            function () {
+              for (var type in this._handledEvents) {
+                var beingHandled = this._handledEvents[type];
+                var toHandle = this.wrapper.handler.handles(type);
+                if (!beingHandled && toHandle) {
+                  this.drawable._handleEvent(type);
+                  this._handledEvents[type] = true;
+                } else if (beingHandled && !toHandle) {
+                  this.drawable._unhandleEvent(type);
+                  this._handledEvents[type] = false;
+                }
+              }
+            }
+          ]
+        ]
+      })
+    },
+
+    methods: {
+      init: function (wrapper) {
+        this.wrapper = wrapper;
+        this._refresher = this.constructor._refresher;
+        var self = this;
+      },
+
+      dispose: function() {
+        if (this.drawable)
+          this.drawable.remove(this);
+        else
+          this._removed();
+      },
+
+      _removed: function () {
+        if (this._elem) {
+          for (var type in this._handledEvents) {
+            if (this._handledEvents[type])
+              this.drawable._unhandleEvent(type);
+          }
+          this._elem.__fashion__id = null;
+          this._elem = null;
+        }
+        this.drawable = null;
+      },
+
+      newElement: function (vg) {
+        return null;
+      },
+
+      refresh: function (dirty) {
+        this._refresher.call(this, dirty);
+      },
+
+      _buildVMLStyle: function (fillAndStroke) {
+        var st = this.wrapper._style;
+        function populateWithGradientAttributes(fill) {
+          var firstColor = st.fill.colors[0];
+          var lastColor = st.fill.colors[st.fill.colors.length - 1];
+          // The order is reverse.
+          fill.setInnerAttribute('color2', firstColor[1]._toString(true));
+          fill.setInnerAttribute('color', lastColor[1]._toString(true));
+          if (firstColor[0] == 0 && lastColor[0] == 1) {
+            fill.setInnerAttribute('opacity2', firstColor[1].a / 255.);
+            fill.setInnerAttribute('opacity', lastColor[1].a / 255.);
+          }
+          var colors = [];
+          for (var i = st.fill.colors.length; --i >= 0; ) {
+            var color = st.fill.colors[i];
+            colors.push((color[0] * 100).toFixed(0) + "% " + color[1]._toString(true));
+          }
+          fill.setInnerAttribute('colors', colors.join(","));
+        }
+
+        var fill = fillAndStroke.fill, stroke = fillAndStroke.stroke;
+        if (st.fill) {
+          if (st.fill instanceof FloodFill) {
+            if (st.fill.color.a == 255) {
+              fill.setOuterAttribute('fillColor', st.fill.color._toString(true));
+            } else {
+              fill.setInnerAttribute('type', "solid");
+              fill.setInnerAttribute('color', st.fill.color._toString(true));
+              fill.setInnerAttribute('opacity', st.fill.color.a / 255.);
+            }
+          } else if (st.fill instanceof LinearGradientFill) {
+            populateWithGradientAttributes(fill);
+            fill.setInnerAttribute('type', "gradient");
+            fill.setInnerAttribute('method', "sigma");
+            fill.setInnerAttribute('angle', (st.fill.angle * 360).toFixed(0));
+          } else if (st.fill instanceof RadialGradientFill) {
+            populateWithGradientAttributes(fill);
+            fill.setInnerAttribute('type', "gradientRadial");
+            fill.setInnerAttribute('focusPosition', st.fill.focus.x + " " + st.fill.focus.y);
+          } else if (st.fill instanceof ImageTileFill) {
+            fill.setInnerAttribute('type', "tile");
+            fill.setInnerAttribute('src', st.fill.imageData.url);
+          }
+          fill.setOuterAttribute('filled', true);
+        } else {
+          fill.setOuterAttribute('filled', false);
+        }
+
+        if (st.stroke) {
+          if (st.stroke.color.a == 255 && !st.stroke.pattern) {
+            stroke.setOuterAttribute('strokeColor', st.stroke.color._toString(true));
+            stroke.setOuterAttribute('strokeWeight', st.stroke.width);
+          } else {
+            stroke.setInnerAttribute('color', st.stroke.color._toString(true));
+            stroke.setInnerAttribute('opacity', st.stroke.color.a / 255.);
+            stroke.setInnerAttribute('weight', st.stroke.width);
+            if (st.stroke.pattern)
+              stroke.setInnerAttribute('dashStyle', st.stroke.pattern.join(' '));
+          }
+          stroke.setOuterAttribute('stroked', true);
+        } else {
+          stroke.setOuterAttribute('stroked', false);
+        }
+        fillAndStroke.setStyle('cursor', st.cursor ? st.cursor: 'normal');
+      }
+    }
+  });
+})();
+/*
+ * vim: sts=2 sw=2 ts=2 et
+ */
+
+
+/************** src/../backends/vml/Circle.js **************/
+var Circle = _class("CircleVML", {
+  parent: Base,
+
+  class_props: {
+    _refresher: new Refresher(Base._refresher).setup({
+      moreHandlers: [
+        [
+          DIRTY_POSITION,
+          function() {
+            var position = this.wrapper._position;
+            this._elem.node.style.left = position.x + 'px';
+            this._elem.node.style.top = position.y + 'px';
+          }
+        ],
+        [
+          DIRTY_SIZE,
+          function() {
+            var size = this.wrapper._size;
+            this._elem.node.style.width = size.x + 'px';
+            this._elem.node.style.height = size.y + 'px';
+          }
+        ]
+      ]
+    })
   },
 
   methods: {
+    newElement: function(vg) {
+      var position = this.wrapper._position;
+      var size = this.wrapper._size;
+      var vml = [
+        '<', VML_PREFIX, ':oval',
+        ' __fashion__id="', this.wrapper.id, '"'
+      ];
+      var fillAndStroke = new VMLFillAndStroke();
+      this._buildVMLStyle(fillAndStroke);
+      fillAndStroke.setStyle({
+        position: 'absolute',
+        display: 'block',
+        margin: 0,
+        padding: 0,
+        width: size.x + 'px',
+        height: size.y + 'px',
+        left: position.x + 'px',
+        top: position.y + 'px'
+      });
+      fillAndStroke.appendHTML(vml);
+      vml.push('</', VML_PREFIX, ':oval', '>');
+      vg.node.insertAdjacentHTML('beforeEnd', vml.join(''));
+      return {
+        node: vg.node.lastChild,
+        fill: null,
+        stroke: null,
+        skew: null
+      };
+    }
+  }
+});
 
-    transform: function(matrixes)
-    {
-      if (matrixes.length() > 0) {
-        var mat = new Fashion.Util.Matrix();
-        matrixes.forEach(function(k, v) { mat.combine(k); }, this);
-        this._elem.style.filter = Util.matrixString(mat);
-      } else {
-        this._elem.style.filter = '';
-      }
-    },
 
-    style: function(st)
-    {
-      var elem = this._elem;
-      var fill = elem.getElementsByTagName('fill'), _fill = null;
-      if (st.fill) {
-        if (st.fill instanceof FloodFill) {
-          if (st.fill.color.a == 255) {
-            if (fill && fill.length > 0)
-              fill[0].parentNode.removeChild(fill[0]);
-            elem.fillColor = st.fill.color.toString(true);
-          } else {
-            if (!fill || !fill.length) {
-              fill = [newElement('fill')];
-              elem.appendChild(fill[0]);
-            }
-            fill.type = "solid";
-            fill.color = st.fill.color.toString(true);
-            fill.opacity = st.fill.color.a / 255.;
-          }
-        } else if (st.fill instanceof LinearGradientFill) {
-          if (!fill || !fill.length) {
-            fill = [newElement('fill')];
-            elem.appendChild(fill[0]);
-          }
-          var firstColor = st.fill.colors[0].toString(true);
-          var lastColor = st.fill.colors[st.fill.colors.length - 1].toString(true);
-          if (firstColor[0] == 0 && lastColor[0] == 1) {
-            fill.color = firstColor[1].toString(true);
-            fill.opacity = firstColor[1].a / 255.;
-            fill.color2 = lastColor[1].toString(true);
-            fill.opacity2 = lastColor[1].a / 255.;
-          }
-          var colors = [];
-          for (var i = 0; i < st.fill.colors.length; i++) {
-            var color = st.fill.colors[i];
-            colors.push((color[0] * 100).toFixed(0) + "% " + color[1].toString(true));
-          }
-          fill.type = "gradient";
-          fill.method = "sigma";
-          fill.colors = colors.join(",");
-          fill.angle = (fill.angle * 360).toFixed(0);
-        } else if (st.fill instanceof RadialGradientFill) {
-          if (!fill || !fill.length) {
-            fill = [newElement('fill')];
-            elem.appendChild(fill[0]);
-          }
-          var firstColor = st.fill.colors[0].toString(true);
-          var lastColor = st.fill.colors[st.fill.colors.length - 1].toString(true);
-          if (firstColor[0] == 0 && lastColor[0] == 1) {
-            fill.color = firstColor[1].toString(true);
-            fill.opacity = firstColor[1].a / 255.;
-            fill.color2 = lastColor[1].toString(true);
-            fill.opacity2 = lastColor[1].a / 255.;
-          }
-          var colors = [];
-          for (var i = 0; i < st.fill.colors.length; i++) {
-            var color = st.fill.colors[i];
-            colors.push((color[0] * 100).toFixed(0) + "% " + color[1].toString(true));
-          }
-          fill.type = "gradientRadial";
-          fill.focusPosition = st.fill.focus.x + " " + st.fill.focus.y;
-          fill.colors = colors.join(",");
-        } else if (st.fill instanceof ImageTileFill) {
-          if (!fill || !fill.length) {
-            fill = [newElement('fill')];
-            elem.appendChild(fill[0]);
-          }
-          fill.src = st.fill.imageData.url;
-          fill.type = "tile";
-        }
-        elem.filled = true;
-      } else {
-        if (fill && fill.length > 0)
-          fill[0].parentNode.removeChild(fill[0]);
-        elem.filled = false;
-      }
+/************** src/../backends/vml/Rect.js **************/
+var Rect = _class("RectVML", {
+  parent: Base,
 
-      var stroke = elem.getElementsByTagName('');
-      if (st.stroke) {
-        if (st.stroke.color.a == 255 && !st.stroke.pattern) {
-          if (stroke && stroke.length > 0)
-            stroke[0].parentNode.removeChild(stroke[0]);
-          elem.strokeColor = st.stroke.color.toString(true);
-          elem.strokeWeight = st.stroke.width;
-        } else {
-          if (!stroke || !stroke.length) {
-            stroke = [newElement('stroke')];
-            elem.appendChild(stroke[0]);
+  class_props: {
+    _refresher: new Refresher(Base._refresher).setup({
+      moreHandlers: [
+        [
+          DIRTY_POSITION,
+          function() {
+            var position = this.wrapper._position;
+            this._elem.node.style.left = position.x + 'px';
+            this._elem.node.style.top = position.y + 'px';
           }
-          stroke[0].color = st.stroke.color.toString(true);
-          stroke[0].opacity = st.stroke.color.a / 255.;
-          stroke[0].weight = st.stroke.width;
-          if (st.stroke.pattern)
-            stroke[0].dashStyle = st.stroke.pattern.join(' ');
-        }
-        elem.stroked = true;
-      } else {
-        elem.stroked = false;
-      }
-
-      elem.style.display = st.visibility ? 'block' : 'none';
-      elem.style.cursor = st.cursor ? st.cursor: 'normal';
-    },
-
-    resetStyle: function()
-    {
-      this.style(DEFAULT_STYLE);
-    },
-
-    _attachedTo: function(drawable) {
-    },
-
-    _detached: function() {
-      shape.drawable._vg.removeChild(this._elem);
-      shape.drawable = null;
-    },
-
-    holdEventsHandler: function(handler)
-    {
-      var self = this;
-      if (this.handler === null) {
-        var funcs = new MultipleKeyHash();
-        this.handler = handler;
-        this.handler.holdTrigger('shape-impl', {
-          add:    function(type, raw) {
-            var wrapped = function(dom_evt){
-              var evt = new MouseEvt(dom_evt, self);
-              return raw.call(self, evt);
-            };
-            funcs.put(raw, wrapped);
-            _bindEvent(self._elem, type, wrapped);
-          },
-          remove: function(type, raw) {
-            _unbindEvent(self._elem, type, funcs.pop(raw));
+        ],
+        [
+          DIRTY_SIZE,
+          function() {
+            var size = this.wrapper._size;
+            this._elem.node.style.width = size.x + 'px';
+            this._elem.node.style.height = size.y + 'px';
           }
-        });
-      } else {
-        throw new AlreadyExists("impl already has a events handler.");
-      }
-    },
+        ]
+      ]
+    })
+  },
 
-    releaseEventsHandler: function () {
-      if (this.handler !== null) {
-        this.handler.releaseTriger('shape-impl');
-      } else {
-        throw new NotFound("events handler is not exist yet.");
-      }
+  methods: {
+    newElement: function(vg) {
+      var position = this.wrapper._position;
+      var size = this.wrapper._size;
+      var vml = [
+        '<', VML_PREFIX, ':rect',
+        ' __fashion__id="', this.wrapper.id, '"'
+      ];
+      var fillAndStroke = new VMLFillAndStroke();
+      this._buildVMLStyle(fillAndStroke);
+      fillAndStroke.setStyle({
+        position: 'absolute',
+        display: 'block',
+        margin: 0,
+        padding: 0,
+        width: size.x + 'px',
+        height: size.y + 'px',
+        left: position.x + 'px',
+        top: position.y + 'px'
+      });
+      fillAndStroke.appendHTML(vml);
+      vml.push('</', VML_PREFIX, ':rect', '>');
+      vg.node.insertAdjacentHTML('beforeEnd', vml.join(''));
+      return {
+        node: vg.node.lastChild,
+        fill: null,
+        stroke: null,
+        skew: null
+      };
+    }
+  }
+});
+
+
+/************** src/../backends/vml/Path.js **************/
+var Path = _class("PathVML", {
+  parent: Base,
+
+  class_props: {
+    _refresher: new Refresher(Base._refresher).setup({
+      moreHandlers: [
+        [
+          DIRTY_SHAPE,
+          function () {
+            this._elem.node.setAttribute('path', pathString(this.wrapper._points));
+          }
+        ],
+        [
+          DIRTY_POSITION,
+          function () {
+            var position = this.wrapper._position;
+            this._elem.node.style.left = position.x + 'px';
+            this._elem.node.style.top = position.y + 'px';
+          }
+        ]
+      ]
+    })
+  },
+
+  methods: {
+    newElement: function(vg) {
+      var position = this.wrapper._position;
+      var vml = [
+        '<', VML_PREFIX, ':shape',
+        ' __fashion__id="', this.wrapper.id, '"',
+        ' coordsize="',
+            VML_FLOAT_PRECISION, ',',
+            VML_FLOAT_PRECISION, '" ',
+        ' path="', pathString(this.wrapper._points), '"'
+      ];
+      var fillAndStroke = new VMLFillAndStroke();
+      this._buildVMLStyle(fillAndStroke);
+      fillAndStroke.setStyle({
+        position: 'absolute',
+        display: 'block',
+        width: '1px',
+        height: '1px',
+        margin: 0,
+        padding: 0,
+        left: position.x + 'px',
+        top: position.y + 'px'
+      });
+      fillAndStroke.appendHTML(vml);
+      vml.push('</', VML_PREFIX, ':shape', '>');
+      vg.node.insertAdjacentHTML('beforeEnd', vml.join(''));
+      return {
+        node: vg.node.lastChild,
+        fill: null,
+        stroke: null,
+        skew: null
+      };
     }
   }
 });
@@ -2155,144 +2520,73 @@ var Base = _class("BaseVML", {
  */
 
 
-/************** src/../backends/vml/Circle.js **************/
-var Circle = _class("CircleVML", {
-  mixins: [Base],
-
-  props: {
-    _elem: null
-  },
-
-  methods: {
-    init: function()
-    {
-      this._elem = newElement('oval');
-    },
-
-    position: function(x, y, width, height)
-    {
-      this._elem.style.left = x + 'px';
-      this._elem.style.top  = y + 'px';
-    },
-
-    size: function(width, height)
-    {
-      this._elem.style.width  = width + 'px';
-      this._elem.style.height = height + 'px';
-    }
-  }
-});
-
-
-/************** src/../backends/vml/Rect.js **************/
-var Rect = _class("RectVML", {
-  mixins: [Base],
-
-  props: {
-    _elem: null
-  },
-
-  methods: {
-    init: function()
-    {
-      this._elem = newElement('rect');
-    },
-
-    position: function(x, y, width, height)
-    {
-      this._elem.style.left = x + 'px';
-      this._elem.style.top  = y + 'px';
-    },
-
-    size: function(width, height)
-    {
-      this._elem.style.width  = width + 'px';
-      this._elem.style.height = height + 'px';
-    }
-  }
-});
-
-
-/************** src/../backends/vml/Path.js **************/
-var Path = _class("PathVML", {
-  mixins: [Base],
-
-  props: {
-    _elem: null,
-    _points: null
-  },
-
-  methods: {
-    init: function() {
-      this._elem = newElement('shape');
-      this.resetStyle();
-    },
-
-    attachedTo: function(drawable) {
-      this.drawable = drawable;
-      var vml = [
-        '<', VML_PREFIX, ':shape style="position:absolute; width:100px; height:100px; left:0px; top:0px" ',
-        'path="', Util.convertPathArray(this.points), '">',
-        '</', VML_PREFIX, ':shape>'
-      ].join('');
-      drawable._vg.insertAdjacentHTML('beforeEnd', vml);
-      this._elem = drawable._vg.lastChild;
-    },
-
-    points: function(points, parent) {
-      if (points !== void(0)) {
-        this._points = points;
-      }
-      return this._points;
-    }
-  }
-});
-
-
-
 /************** src/../backends/vml/Text.js **************/
 var Text = _class("TextVML", {
-  mixins: [Base],
+  parent: Base,
 
-  props : {
-    _elem: null,
-    _str: '',
-    _size: 0,
-    _position: { x: 0, y: 0 }
+  class_props: {
+    _refresher: new Refresher(Base._refresher).setup({
+      moreHandlers: [
+        [
+          DIRTY_POSITION,
+          function () {
+            var position = this.wrapper._position;
+            this._elem.node.style.left = position.x + 'px';
+            this._elem.node.style.top = position.y + 'px';
+          }
+        ],
+        [
+          DIRTY_SIZE,
+          function () {
+            var size = this.wrapper._size;
+            this._elem.node.style.width = size.x + 'px';
+            this._elem.node.style.height = size.y + 'px';
+          }
+        ],
+        [
+          DIRTY_SHAPE,
+          function () {
+            this._elem.textpath.fontSize = this.wrapper._fontSize + 'px'; 
+            this._elem.textpath.fontFamily = this.wrapper._fontFamily;
+            this._elem.textpath.string = this.wrapper._text;
+          }
+        ]
+      ]
+    })
   },
 
   methods: {
-    init: function(str) {
-      this._str = str;
-    },
-
-    attachedTo: function(drawable) {
-      this.drawable = drawable;
+    newElement: function(vg) {
       var vml = [
-        '<', VML_PREFIX, ':line style="position:absolute; width:100px; height:100px; left:0px; top:0px">',
+        '<', VML_PREFIX, ':line',
+        ' __fashion__id="', this.wrapper.id, '"',
+        ' from="0,0" to="1,0"'
+      ];
+      var fillAndStroke = new VMLFillAndStroke();
+      fillAndStroke.setStyle({
+        position: 'absolute',
+        width: '1px',
+        height: '1px',
+        left: this.wrapper._position.x + 'px',
+        top: this.wrapper._position.y + 'px'
+      });
+      this._buildVMLStyle(fillAndStroke);
+      fillAndStroke.appendHTML(vml);
+      vml.push(
         '<', VML_PREFIX, ':path textpathok="t" />',
-        '<', VML_PREFIX, ':textpath string="', _escapeXMLSpecialChars(this._str), '" />',
-        '</', VML_PREFIX, ':line>'
-      ].join('');
-      drawable._vg.insertAdjacentHTML('beforeEnd', vml);
-      this._elem = drawable._vg.lastChild;
-    },
-
-    position: function(x, y, width, height)
-    {
-      this.position = 
-      this._elem.style.left = x;
-      this._elem.style.top = y;
-    },
-
-    size: function(font_size)
-    {
-      if (this._elem)
-        this._elem.firstChild.nextSibling.style.font = "normal normal normal " + font_size + "pt 'Arial'";
-    },
-
-    family: function(font_family)
-    {
+        '<', VML_PREFIX, ':textpath string="', _escapeXMLSpecialChars(this.wrapper._text), '" on="t"',
+        ' style="', 'font-size:', this.wrapper._fontSize, 'px;',
+                    'font-family:', _escapeXMLSpecialChars(this.wrapper._fontFamily), ';',
+                    'v-text-align:left" />',
+        '</', VML_PREFIX, ':line', '>');
+      vg.node.insertAdjacentHTML('beforeEnd', vml.join(''));
+      return {
+        node: vg.node.lastChild,
+        fill: null,
+        stroke: null,
+        skew: null,
+        textpath: vg.node.lastChild.lastChild
+      };
     }
   }
 });
@@ -2301,27 +2595,270 @@ var Text = _class("TextVML", {
 /************** src/../backends/vml/Drawable.js **************/
 var Drawable = _class("DrawableVML", {
   props: {
-    _vg: null
+    _vg: null,
+    _content: null,
+    _viewport: null,
+    _capturingShape: null,
+    _handledEvents: {
+      mousedown: [ false, 0, null ],
+      mouseup: [ false, 0, null ],
+      mousemove: [ false, 0, null ],
+      mouseout: [ false, 0, null ]
+    },
+    _scrollPosition: { x: 0, y: 0 },
+    _currentEvent: null,
+    _eventFunc: null,
+    _captureEventFunc: null,
+    _scrollEventFunc: null,
+    _refresher: null
+  },
+
+  class_props: {
+    _refresher: new Refresher().setup({
+      preHandler: function () {
+        if (!this._viewport.parentNode != this.wrapper.target) {
+          this.wrapper.target.appendChild(this._viewport);
+        }
+      },
+      handlers: [
+        [
+          DIRTY_SIZE,
+          function() {
+            var viewportSize = this.wrapper._viewport_size;
+            this._viewport.style.width  = viewportSize.x + 'px';
+            this._viewport.style.height = viewportSize.y + 'px';
+            this._updateContentSize();
+          }
+        ],
+        [
+          DIRTY_TRANSFORM,
+          function () {
+            var transform = this.wrapper._transform;
+            if (transform) {
+              var scale = this.wrapper._transform.isScaling();
+              if (scale) {
+                if (this._vg.skew) {
+                  this._vg.node.removeChild(this._vg.skew);
+                  this._vg.skew = null;
+                }
+                var contentSize = this.wrapper._transform.apply(this.wrapper._content_size);
+                this._vg.node.coordOrigin = (-transform.e * VML_FLOAT_PRECISION) + ',' + (-transform.f * VML_FLOAT_PRECISION);
+                this._vg.node.coordSize = (VML_FLOAT_PRECISION / scale.x) + ',' + (VML_FLOAT_PRECISION / scale.y);
+              } else {
+                if (!this._vg.skew) {
+                  this._vg.skew = newElement('skew');
+                  this._vg.node.appendChild(this._vg.skew);
+                }
+                this._vg.node.coordOrigin = null;
+                this._vg.node.coordSize = VML_FLOAT_PRECISION + ',' + VML_FLOAT_PRECISION;
+                this._vg.skew.matrix = matrixString(transform);
+                this._vg.skew.on = true;
+              }
+            } else {
+              this._vg.node.removeChild(this._vg.skew);
+              this._vg.skew = null;
+            }
+            this._updateContentSize();
+          }
+        ],
+        [
+          DIRTY_EVENT_HANDLERS,
+          function () {
+            for (var type in this._handledEvents) {
+              var beingHandled = this._handledEvents[type][0];
+              var toHandle = this.wrapper.handler.handles(type);
+              if (!beingHandled && toHandle) {
+                this._handleEvent(type);
+                this._handledEvents[type][0] = true;
+              } else if (beingHandled && !toHandle) {
+                this._unhandleEvent(type);
+                this._handledEvents[type][0] = false;
+              }
+            }
+          }
+        ]
+      ]
+    })
   },
 
   methods: {
-    init: function(node, content_size)
-    {
-      var vg = newElement('group');
-      vg.style.left = 0;
-      vg.style.top = 0;
-      vg.style.width = content_size.width + "px";
-      vg.style.height = content_size.height + "px";
-      this._vg = vg;
-      node.appendChild(vg);
+    init: function(wrapper) {
+      this.wrapper = wrapper;
+      this._refresher = this.constructor._refresher;
+
+      var self = this;
+      this._eventFunc = function(msieEvt) {
+        if (self._capturingShape)
+          return false;
+        var target = msieEvt.srcElement;
+        var fashionId = target.__fashion__id;
+        var retval = void(0);
+        self._currentEvent = msieEvt;
+        if (fashionId) {
+          var targetShape = self.wrapper._elements[fashionId];
+          if (targetShape.handler)
+            retval = targetShape.handler.dispatch(buildMouseEvt(targetShape.impl, msieEvt));
+        }
+        if (retval !== false) {
+          if (self._handledEvents[msieEvt.type][0]) {
+            if (self.wrapper.handler)
+              retval = self.wrapper.handler.dispatch(buildMouseEvt(self, msieEvt));
+          }
+        }
+        self._currentEvent = null;
+        return retval;
+      };
+
+      this._captureEventFunc = function (msieEvt) {
+        return self._capturingShape.wrapper.handler.dispatch(buildMouseEvt(self._capturingShape, msieEvt));
+      };
+
+      this._scrollEventFunc = function (msieEvt) {
+        self._scrollPosition = self.wrapper._inverse_transform.apply({ x: parseInt(self._viewport.scrollLeft), y: parseInt(self._viewport.scrollTop) });
+      };
+
+      this._viewport = this._buildViewportElement();
+      _bindEvent(this._viewport, 'scroll', this._scrollEventFunc);
+      this._content = this._buildContentElement();
+      this._viewport.appendChild(this._content);
+      this._vg = this._buildRoot();
+      this._content.appendChild(this._vg.node);
+    },
+
+    dispose: function() {
+      if (this._viewport && this._viewport.parentNode)
+        this._viewport.parentNode.removeChild(this._viewport);
+      this._viewport = null;
+      this._content = null;
+      this._vg = null;
+      this._wrapper = null;
+    },
+
+    refresh: function (dirty) {
+      this._refresher.call(this, dirty);
+    },
+
+    scrollPosition: function(position) {
+      if (position) {
+        this._scrollPosition = position;
+        if (_window.readyState == 'complete') {
+          var _position = this.wrapper._transform.apply(position);
+          this._viewport.scrollLeft = _position.x;
+          this._viewport.scrollTop  = _position.y;
+        } else {
+          var self = this;
+          _bindEvent(_window, 'load', function () {
+            _unbindEvent(_window, 'load', arguments.callee);
+            var _position = self.wrapper._transform.apply(self._scrollPosition);
+            self._viewport.scrollLeft = _position.x;
+            self._viewport.scrollTop  = _position.y;
+          });
+        }
+        return position;
+      }
+      return this._scrollPosition;
     },
 
     append: function(shape) {
-      shape._attachedTo(this);
+      shape.drawable = this;
     },
 
     remove: function(shape) {
-      shape._detached();
+      if (this._capturingShape == shape)
+        this.releaseMouse(shape);
+      if (this._vg && shape._elem)
+        this._vg.node.removeChild(shape._elem.node);
+      shape._removed(shape);
+    },
+
+    anchor: function () {
+    },
+
+    getViewportOffset: function() {
+      return UtilImpl.getDomOffsetPosition(this._viewport);
+    },
+
+    captureMouse: function(shape) {
+      var self = this;
+
+      if (this._capturingShape) {
+        throw new AlreadyExists("The shape is already capturing.");
+      }
+
+      var self = this;
+
+      self._currentEvent.cancelBubble = true;
+      for (var type in shape._handledEvents)
+        this._viewport.offsetParent.attachEvent('on' + type, this._captureEventFunc);
+
+      this._capturingShape = shape;
+    },
+
+    releaseMouse: function(shape) {
+      var handler = shape.handler;
+
+      if (this._capturingShape != shape) {
+        throw new NotFound("The shape is not capturing.");
+      }
+
+      for (var type in shape._handledEvents)
+        this._viewport.offsetParent.detachEvent('on' + type, this._captureEventFunc);
+
+      this._capturingShape = null;
+    },
+
+    convertToLogicalPoint: function(point) {
+      return _addPoint(this.scrollPosition(), this.wrapper._inverse_transform.apply(point));
+    },
+
+    _updateContentSize: function () {
+      var viewportSize = this.wrapper._viewport_size;
+      var _scrollPosition = this.wrapper._transform.apply(this._scrollPosition);
+      var contentSize = this.wrapper._transform.apply(this.wrapper._content_size);
+      this._content.style.width = contentSize.x + 'px';
+      this._content.style.height = contentSize.y + 'px';
+      this._viewport.scrollLeft = _scrollPosition.x;
+      this._viewport.scrollTop  = _scrollPosition.y;
+      this._viewport.style.overflow =
+         (contentSize.x <= viewportSize.x &&
+          contentSize.y <= viewportSize.y) ? 'hidden': 'scroll';
+    },
+
+    _buildRoot: function () {
+      var vg = newElement('group');
+      vg.style.cssText = 'position:absolute;display:block;margin:0;padding:0;width:' + VML_FLOAT_PRECISION + 'px;height:' + VML_FLOAT_PRECISION + 'px';
+      vg.coordSize = VML_FLOAT_PRECISION + ',' + VML_FLOAT_PRECISION;
+      return { node: vg, skew: null };
+    },
+
+    _buildContentElement: function () {
+      var content = _window.document.createElement("div");
+      content.style.cssText = 'position:absolute;left:0px;top:0px;display:block;margin:0;padding:0;overflow:hidden;';
+      return content;
+    },
+
+    _buildViewportElement: function () {
+      var viewport = _window.document.createElement("div");
+      viewport.style.cssText = 'position:absolute;display:block;margin:0;padding:0;overflow:hidden;';
+      return viewport;
+    },
+
+    _handleEvent: function (type) {
+      var triple = this._handledEvents[type];
+      __assert__(triple);
+      if (triple[1]++ == 0)
+        this._content.attachEvent('on' + type, triple[2] = this._eventFunc);
+    },
+
+    _unhandleEvent: function (type) {
+      var triple = this._handledEvents[type];
+      __assert__(triple);
+      if (triple[1] == 0)
+        return;
+      if (--triple[1] == 0) {
+        this._content.detachEvent('on' + type, triple[2]);
+        triple[2] = null;
+      }
     }
   }
 });
@@ -2331,7 +2868,6 @@ var Drawable = _class("DrawableVML", {
  */
 
   _.Util       = Util;
-  _.MouseEvt   = MouseEvt;
   _.Circle     = Circle;
   _.Rect       = Rect;
   _.Path       = Path;
@@ -2343,6 +2879,9 @@ var Drawable = _class("DrawableVML", {
   return _;
 
 })();
+/*
+ * vim: sts=2 sw=2 ts=2 et
+ */
 
 
 /************** src/../backends/canvas/canvas.js **************/
@@ -2791,6 +3330,10 @@ var Color = (function() {
       },
 
       toString: function(without_alpha) {
+        return this._toString(without_alpha);
+      },
+
+      _toString: function(without_alpha) {
         return '#' + _lpad(this.r.toString(16), 2, '0')
                    + _lpad(this.g.toString(16), 2, '0')
                    + _lpad(this.b.toString(16), 2, '0')
@@ -3360,11 +3903,12 @@ var PathData = (function() {
   };
 
   return _class('PathData', {
-    parent: Array,
+    props: {
+      length: 0
+    },
 
     methods: {
       init: function PathData_init(points) {
-        Array.call(this);
         if (typeof points === 'string' || points instanceof String) {
           this.initWithString(points);
         } else if (points instanceof Array) {
@@ -3441,7 +3985,13 @@ var PathData = (function() {
             break;
           }
         }
-      }
+      },
+
+      push: Array.prototype.push,
+
+      join: Array.prototype.join,
+
+      slice: Array.prototype.slice
     }
   });
 })();
@@ -3555,6 +4105,49 @@ var MouseEventsHandler = _class("MouseEventsHandler", {
 
 
 
+/************** src/BatchUpdater.js **************/
+var BatchUpdater = _class('BatchUpdater', {
+  methods: {
+    schedule: function (shape, updateFunc) {}
+  }
+});
+
+var BasicBatchUpdater = _class('BasicBatchUpdater', {
+  interfaces: [BatchUpdater],
+
+  props: {
+    queue: []
+  },
+
+  methods: {
+    schedule: function (shape, updateFunc) {
+      for (var i = 0; i < this.queue.length; i++) {
+        if (this.queue[i][0] === shape &&
+            this.queue[i][1] === updateFunc) {
+          this.queue.splice(i, 1);
+          break;
+        }
+      }
+      this.queue.push([shape, updateFunc]);
+    },
+
+    update: function () {
+      for (var i = 0; i < this.queue.length; i++) {
+        var entry = this.queue[i];
+        entry[1].call(entry[0]);
+      }
+    }
+  }
+});
+
+/*
+ * vim: sts=2 sw=2 ts=2 et
+ */
+  Fashion.BatchUpdater = BatchUpdater;
+  Fashion.BasicBatchUpdater = BasicBatchUpdater;
+
+
+
 /************** src/Bindable.js **************/
 var Bindable = _class("Bindable", {
   methods: {
@@ -3564,12 +4157,20 @@ var Bindable = _class("Bindable", {
 });
 
 
+/************** src/VisualObject.js **************/
+var VisualObject = _class("VisualObject", {
+  methods: {
+    _refresh:         function() {}
+  }
+});
+
+
 /************** src/Shape.js **************/
 /*
  * Shape interface class.
  */
 var Shape = _class("Shape", {
-  parent: Bindable,
+  parent: VisualObject,
   methods: {
     position:         function(d) {},
     size:             function(d) {},
@@ -3577,14 +4178,14 @@ var Shape = _class("Shape", {
     displaySize:      function()  {},
     hitTest:          function(d) {},
     transform:        function(d) {},
-    style:            function(d) {}
+    style:            function(d) {},
+    _refresh:         function() {}
   }
 });
 
 
 /************** src/Base.js **************/
 var Base = _class("Base", {
-
   props: {
     id: null,
     impl: null,
@@ -3702,6 +4303,11 @@ var Base = _class("Base", {
       this._dirty |= DIRTY_EVENT_HANDLERS;
       if (this.drawable)
         this.drawable._enqueueForUpdate(this);
+    },
+
+    _refresh: function () {
+      this.impl.refresh(this._dirty);
+      this._dirty = 0;
     }
   }
 });
@@ -3713,13 +4319,9 @@ var Base = _class("Base", {
 
 /************** src/Circle.js **************/
 var Circle = _class("Circle", {
-
   mixins: [Base],
-
-  interfaces: [Shape],
-
+  interfaces: [Bindable, Shape],
   props: {},
-
   methods: {
     init: function (values) {
       Base.prototype.init.apply(this, arguments);
@@ -3743,13 +4345,9 @@ var Circle = _class("Circle", {
 
 /************** src/Rect.js **************/
 var Rect = _class("Rect", {
-
   mixins: [Base],
-
-  interfaces: [Shape],
-
+  interfaces: [Bindable, Shape],
   props: {},
-
   methods: {
     init: function (values) {
       Base.prototype.init.apply(this, arguments);
@@ -3773,16 +4371,12 @@ var Rect = _class("Rect", {
 
 /************** src/Path.js **************/
 var Path = _class("Path", {
-
   mixins: [Base],
-
-  interfaces: [Shape],
-
+  interfaces: [Bindable, Shape],
   props: {
     _points: [],
     _position_matrix: new Util.Matrix()
   },
-
   methods: {
     init: function (values) {
       Base.prototype.init.apply(this, arguments);
@@ -3816,8 +4410,7 @@ var Path = _class("Path", {
 
 /************** src/Drawable.js **************/
 var Drawable = _class("Drawable", {
-  interfaces: [Bindable],
-
+  interfaces: [Bindable, VisualObject],
   props: {
     impl: null,
     handler: null,
@@ -3833,18 +4426,35 @@ var Drawable = _class("Drawable", {
     _offset_position:      null,
     _transform: null,
     _inverse_transform: null,
-    _dirty: DIRTY_SIZE | DIRTY_TRANSFORM
+    _dirty: 0
   },
-
   methods: {
     init: function(target, options) {
-      var self = this;
       this.target = target;
-      this._viewport_size = options && options.viewportSize || { x: target.clientWidth, y: target.clientHeight };
-      this._content_size = options && options.contentSize || this._viewport_size;
-
       this.impl = new Fashion.IMPL.Drawable(this);
       this.transform(Util.Matrix.scale(1.));
+      if (options && options.viewportSize) {
+        this.viewportSize(options.viewportSize);
+      } else {
+        var self = this;
+        _bindEvent(_window, 'load', function () {
+          _unbindEvent(_window, 'load', arguments.callee);
+          var size = { x: target.clientWidth, y: target.clientHeight };
+          self.viewportSize(size);
+          if (!options || !options.contentSize)
+            self.contentSize(size);
+        });
+      }
+      if (options) {
+        if (options.contentSize)
+          this.contentSize(options.contentSize);
+        else if (options.viewportSize)
+          this.contentSize(options.viewportSize);
+      }
+    },
+
+    dispose: function () {
+      this.impl.dispose();
     },
 
     viewportSize: function(size) {
@@ -3932,12 +4542,12 @@ var Drawable = _class("Drawable", {
     },
 
     draw: function(shape) {
-      this.impl.append(shape.impl);
-      shape.impl.refresh(shape._dirty);
       var id = this.gensym();
-      this._elements[id] = shape;
       shape.id = id;
+      this.impl.append(shape.impl);
       shape._attachTo(this);
+      shape.impl.refresh(shape._dirty);
+      this._elements[id] = shape;
       this._numElements++;
       return shape;
     },
@@ -3996,15 +4606,16 @@ var Drawable = _class("Drawable", {
         this.drawable._enqueueForUpdate(this);
     },
 
+    _refresh: function () {
+      this.impl.refresh(this._dirty);
+      this._dirty = 0;
+    },
+
     _enqueueForUpdate: function (shape) {
       if (this.batchUpdater) {
-        this.batchUpdater.schedule(shape, function() {
-          shape.impl.refresh(shape._dirty);
-          shape._dirty = 0;
-        });
+        this.batchUpdater.schedule(shape, shape._refresh);
       } else {
-        shape.impl.refresh(shape._dirty);
-        shape._dirty = 0;
+        shape._refresh();
       }
     }
   }
@@ -4016,15 +4627,13 @@ var Drawable = _class("Drawable", {
 
 /************** src/Text.js **************/
 var Text = _class("Text", {
-
   mixins: [Base],
-
+  interfaces: [Bindable, Shape],
   props: {
     _text: '',
     _fontFamily: 'Sans',
     _fontSize: 10
   },
-
   methods: {
     init: function (values) {
       Base.prototype.init.apply(this, arguments);
@@ -4124,7 +4733,9 @@ var Image = _class('Image', {
  */
 
   Fashion.Bindable = Bindable;
+  Fashion.VisualObject = VisualObject;
   Fashion.Shape    = Shape;
+  Fashion.Base     = Base;
   Fashion.Circle   = Circle;
   Fashion.Rect     = Rect;
   Fashion.Path     = Path;
@@ -4139,8 +4750,7 @@ var DEBUG_MODE = true;
 
 var DEFAULT_PRIORITY = ['svg', 'vml', 'canvas'];
 
-var FLOAT_ACCURACY = 4;
-var FLOAT_ACCURACY_ACCURATE = 9;
+var VML_FLOAT_PRECISION = 1e4;
 var SEPARATOR = /\s|,/;
 
 var DEFAULT_STYLE = {
