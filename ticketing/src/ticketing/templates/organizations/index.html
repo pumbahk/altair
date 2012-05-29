@@ -1,5 +1,25 @@
-<%inherit file="../layout.html" />
-<%namespace file="/common/helpers.html" import="pager"/>
-<%block name="title">クライアント一覧</%block>
-<%include file="_list.html" />
-${pager(organizations)}
+<%inherit file="/layout.html"/>
+<%namespace file="/common/helpers.html" import="flash_messages" />
+<%namespace file="/common/helpers.html" import="safe_strftime" />
+<%namespace file="/common/helpers.html" import="breadcrumbs" />
+
+<div class="row-fluid">
+  <div class="span12">
+    ${breadcrumbs(
+        names=[u'トップ', u'配券元／配券先 マスタ'],
+        urls=[request.route_path('index')]
+    )}
+  </div>
+
+  <span class="span12">
+    <div class="page-header">
+      <h3>配券元／配券先 マスタ</h3>
+    </div>
+
+    <div class="content">
+      ${flash_messages(request)}
+    </div>
+
+    <%include file="/organizations/_list.html" args="form=form, organizations=organizations" />
+  </span>
+</div>

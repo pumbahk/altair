@@ -1,9 +1,10 @@
+<%namespace file="/common/helpers.html" import="pager"/>
+
 <form>
   <div class="ui-toolbar">
     <a href="${request.route_path('organizations.new')}" class="ui-button">新規クライアント</a>
     <a href="#" class="ui-button">まとめて削除</a>
   </div>
-  ${organizations.pager(u'$link_previous ~3~ $link_next ( $pageページ目 $page_count ページ中)')}
   <table class="table fullwidth checkboxed_table">
     <thead>
       <tr>
@@ -24,5 +25,5 @@
     % endfor
     </tbody>
   </table>
-  ${organizations.pager(u'$link_previous ~3~ $link_next ( $pageページ目 $page_count ページ中)')}
+  ${pager(organizations)}
 </form>
