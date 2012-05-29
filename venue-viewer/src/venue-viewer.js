@@ -64,8 +64,13 @@
 
   VenueViewer.prototype.dispose = function VenueViewer_dispose() {
     this.removeKeyEvent();
-    this.drawable.dispose();
-    this.drawable = null;
+    if (this.drawable) {
+      this.drawable.dispose();
+      this.drawable = null;
+    }
+    this.seats = null;
+    this.selection = null;
+    this.highlighted = null;
   };
 
   VenueViewer.prototype.initDrawable = function VenueViewer_initDrawable() {
@@ -150,6 +155,7 @@
     };
 
     this.drawable.transform(Fashion.Util.Matrix.scale(this.zoomRatio));
+    this.changeUIMode(this.uiMode);
   };
 
   VenueViewer.prototype.initSeats = function VenueViewer_initSeats() {
@@ -224,82 +230,83 @@
   };
 
   VenueViewer.prototype.changeUIMode = function VenueViewer_changeUIMode(type) {
-    var self = this;
+    if (this.drawable) {
+      var self = this;
+      this.drawable.removeEvent(["mousedown", "mouseup", "mousemove"]);
 
-    this.drawable.removeEvent(["mousedown", "mouseup", "mousemove"]);
+      switch(type) {
+      case 'select1':
+        break;
 
-    switch(type) {
-    case 'select1':
-      break;
+      case 'select':
+        this.drawable.addEvent({
+          mousedown: function(evt) {
+            self.startPos = evt.logicalPosition;
+            self.rubberBand.position({x: self.startPos.x, y: self.startPos.y});
+            self.rubberBand.size({x: 0, y: 0});
+            self.drawable.draw(self.rubberBand);
+            self.dragging = true;
+          },
 
-    case 'select':
-      this.drawable.addEvent({
-        mousedown: function(evt) {
-          self.startPos = evt.logicalPosition;
-          self.rubberBand.position({x: self.startPos.x, y: self.startPos.y});
-          self.rubberBand.size({x: 0, y: 0});
-          self.drawable.draw(self.rubberBand);
-          self.dragging = true;
-        },
+          mouseup: function(evt) {
+            self.dragging = false;
+            var selection = []; 
+            var hitTest = util.makeHitTester(self.rubberBand);
+            for (var id in self.seats) {
+              var seat = self.seats[id];
+              if ((hitTest(seat.shape) || (self.shift && seat.selected())) &&
+                  (!self.callbacks.selectable
+                      || self.callbacks.selectable(this, seat))) {
+                selection.push(seat);
+              }
+            }
+            self.unselectAll();
+            self.drawable.erase(self.rubberBand);
+            for (var i = 0; i < selection.length; i++)
+              selection[i].selected(true);
+          },
 
-        mouseup: function(evt) {
-          self.dragging = false;
-          var selection = []; 
-          var hitTest = util.makeHitTester(self.rubberBand);
-          for (var id in self.seats) {
-            var seat = self.seats[id];
-            if ((hitTest(seat.shape) || (self.shift && seat.selected())) &&
-                (!self.callbacks.selectable
-                    || self.callbacks.selectable(this, seat))) {
-              selection.push(seat);
+          mousemove: function(evt) {
+            if (self.dragging) {
+              var pos = evt.logicalPosition;
+              var w = Math.abs(pos.x - self.startPos.x);
+              var h = Math.abs(pos.y - self.startPos.y);
+
+              var origin = {
+                x: (pos.x < self.startPos.x) ? pos.x : self.startPos.x,
+                y: (pos.y < self.startPos.y) ? pos.y : self.startPos.y
+              };
+
+              if (origin.x !== self.startPos.x || origin.y !== self.startPos.y)
+                self.rubberBand.position(origin);
+
+              self.rubberBand.size({x: w, y: h});
             }
           }
-          self.unselectAll();
-          self.drawable.erase(self.rubberBand);
-          for (var i = 0; i < selection.length; i++)
-            selection[i].selected(true);
-        },
+        });
+        break;
 
-        mousemove: function(evt) {
-          if (self.dragging) {
-            var pos = evt.logicalPosition;
-            var w = Math.abs(pos.x - self.startPos.x);
-            var h = Math.abs(pos.y - self.startPos.y);
-
-            var origin = {
-              x: (pos.x < self.startPos.x) ? pos.x : self.startPos.x,
-              y: (pos.y < self.startPos.y) ? pos.y : self.startPos.y
-            };
-
-            if (origin.x !== self.startPos.x || origin.y !== self.startPos.y)
-              self.rubberBand.position(origin);
-
-            self.rubberBand.size({x: w, y: h});
+      case 'zoomin':
+        this.drawable.addEvent({
+          mouseup: function(evt) {
+            self.zoomRatio*=1.2;
+            this.transform(Fashion.Util.Matrix.scale(self.zoomRatio));
           }
-        }
-      });
-      break;
+        });
+        break;
 
-    case 'zoomin':
-      this.drawable.addEvent({
-        mouseup: function(evt) {
-          self.zoomRatio*=1.2;
-          this.transform(Fashion.Util.Matrix.scale(self.zoomRatio));
-        }
-      });
-      break;
+      case 'zoomout':
+        this.drawable.addEvent({
+          mouseup: function(evt) {
+            self.zoomRatio/=1.2;
+            this.transform(Fashion.Util.Matrix.scale(self.zoomRatio));
+          }
+        });
+        break;
 
-    case 'zoomout':
-      this.drawable.addEvent({
-        mouseup: function(evt) {
-          self.zoomRatio/=1.2;
-          this.transform(Fashion.Util.Matrix.scale(self.zoomRatio));
-        }
-      });
-      break;
-
-    default:
-      throw new Error("Invalid ui mode: " + type);
+      default:
+        throw new Error("Invalid ui mode: " + type);
+      }
     }
     this.uiMode = type;
     this.callbacks.uimodeselect && this.callbacks.uimodeselect(this, type);
@@ -350,6 +357,8 @@
         callbacks: { message: options.callbacks && options.callbacks.message || null }
       };
       this.data('venueviewer', aux);
+      if (options.uimode)
+        aux.manager.changeUIMode(options.uimode);
     } else {
       if (typeof options == 'string' || options instanceof String) {
         switch (options) {
