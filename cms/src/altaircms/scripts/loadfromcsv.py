@@ -3,6 +3,7 @@ import sys
 import argparse
 import inspect
 import os.path
+import csv
 from pkg_resources import resource_filename, EntryPoint
 
 
@@ -106,9 +107,31 @@ def model_columns(model):
         return _CACHE[model]
 
 
-def load_from_csv(args):
-    pass
+def setup(args):
+    import sqlahelper
+    import sqlalchemy as sa
 
+    engine = sa.create_engine(args.dburl)
+    sqlahelper.add_engine(engine)
+    sqlahelper.get_base().metadata.create_all()
+    return sqlahelper.get_session()
+
+
+def load_from_csv(args):
+    reader = csv.reader(args.infile)
+    model = import_symbol(args.target)
+    cols = [c.name for c in model_columns(model)]
+
+    session = setup(args)
+
+    obj = model()
+    for row in reader:
+        for c, v in  zip(cols, row):
+            setattr(obj, c, v)
+    session.add(obj)
+
+    import transaction
+    transaction.commit()
 
 def main(args):
     if args.list:
