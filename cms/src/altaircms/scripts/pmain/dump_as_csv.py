@@ -86,5 +86,3 @@ def main(*args, **kwargs):
 
                 with open(m.__tablename__+".csv", "w") as w:
                     model_dump_as_csv(m, w)
-
-    
