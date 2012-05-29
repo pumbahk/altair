@@ -206,6 +206,9 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     start_on = Column(DateTime)
     end_on = Column(DateTime, nullable=True)
 
+    account_id = Column(BigInteger, ForeignKey('Account.id'))
+    account = relationship('Account', backref='events')
+
     organization_id = Column(BigInteger, ForeignKey('Organization.id'))
     organization = relationship('Organization', backref='events')
 

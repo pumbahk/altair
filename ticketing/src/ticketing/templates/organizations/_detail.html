@@ -1,0 +1,46 @@
+<%page args="form, organization" />
+
+<table class="table table-bordered fullwidth">
+  <tbody>
+  <tr>
+    <th class="span3">${form.name.label.text}</th>
+    <td>${form.name.data}</td>
+  </tr>
+  <tr>
+    <th class="span3">${form.client_type.label.text}</th>
+    <td>${organization.client_type}</td>
+  </tr>
+  <tr>
+    <th class="span3">${form.prefecture_id.label.text}</th>
+    <td>${organization.prefecture.name}</td>
+  </tr>
+  <tr>
+    <th class="span3">${form.city.label.text}</th>
+    <td>${organization.city}</td>
+  </tr>
+  <tr>
+    <th class="span3">${form.address.label.text}</th>
+    <td>${organization.address}</td>
+  </tr>
+  <tr>
+    <th class="span3">${form.street.label.text}</th>
+    <td>${organization.street}</td>
+  </tr>
+  <tr>
+    <th class="span3">${form.other_address.label.text}</th>
+    <td>${organization.other_address}</td>
+  </tr>
+  <tr>
+    <th class="span3">${form.tel_1.label.text}</th>
+    <td>${organization.tel_1}</td>
+  </tr>
+  <tr>
+    <th class="span3">${form.tel_2.label.text}</th>
+    <td>${organization.tel_2}</td>
+  </tr>
+  <tr>
+    <th class="span3">${form.fax.label.text}</th>
+    <td>${organization.fax}</td>
+  </tr>
+  </tbody>
+</table>

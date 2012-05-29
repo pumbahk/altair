@@ -21,35 +21,28 @@
       ${flash_messages(request)}
     </div>
 
+    <%include file="/organizations/_detail.html" args="form=form_organization, organization=account.organization" />
+
+    % if account.events:
     <div class="page-header">
-      <h3>配券状況</h3>
+      <h3>イベント</h3>
     </div>
     <table class="table table-striped table-bordered table-condensed">
       <tr>
-        <th>パフォーマンス名</th>
-        <th>配券先名</th>
-        <th>席名</th>
-        <th>席数</th>
+        <th>イベントコード</th>
+        <th>イベント名</th>
+        <th>開始</th>
+        <th>終了</th>
       </tr>
-      % for stock_holder in account.stock_holders:
+      % for event in account.events:
       <tr>
-        <td rowspan="${len(stock_holder.stocks)}">${stock_holder.performance.name}</td>
-        <td rowspan="${len(stock_holder.stocks)}">${stock_holder.name}</td>
-        % for i, stock in enumerate(stock_holder.stocks):
-          % if i:
-      <tr>
-          % endif
-        <td>${stock.stock_type.name}</td>
-        <td>${stock.quantity}</td>
-      </tr>
-        % endfor
-        % if not stock_holder.stocks:
-        <td></td>
-        <td></td>
-      </tr>
-        % endif
+        <td>${event.code}</td>
+        <td>${event.title}</td>
+        <td>${event.start_on}</td>
+        <td>${event.end_on}</td>
       </tr>
       % endfor
     </table>
+    % endif
   </span>
 </div>

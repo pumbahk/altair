@@ -17,8 +17,6 @@ class User(Base):
     bank_account_id = Column(BigInteger, ForeignKey('BankAccount.id'))
     bank_account    = relationship('BankAccount')
 
-    shipping_addresses = relationship('ShippingAddress', backref='user')
-
     @staticmethod
     def get(user_id):
         return session.query(User).filter(User.id == user_id).first()

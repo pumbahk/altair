@@ -12,6 +12,7 @@ from ticketing.models import merge_session_with_post, record_to_multidict, Logic
 from ticketing.fanstatic import with_bootstrap
 from ticketing.events.models import Account
 from ticketing.accounts.forms import AccountForm
+from ticketing.organizations.forms import OrganizationForm
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class Accounts(BaseView):
@@ -45,10 +46,9 @@ class Accounts(BaseView):
         if account is None:
             return HTTPNotFound('account id %d is not found' % account_id)
 
-        form = AccountForm()
-        form.process(record_to_multidict(account))
         return {
-            'form':form,
+            'form':AccountForm(record_to_multidict(account)),
+            'form_organization':OrganizationForm(),
             'account':account
         }
 

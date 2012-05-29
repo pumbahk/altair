@@ -40,14 +40,8 @@
           <td>${event.code}</td>
         </tr>
         <tr>
-          <th>クライアント</th>
-          <td>
-            <ul>
-              % for account in accounts:
-              <li>${account.name} 様</li>
-              % endfor
-            </ul>
-          </td>
+          <th>${form.account_id.label.text}</th>
+          <td>${event.account.name} 様</td>
         </tr>
         <tr>
           <th>販売開始日時</th>

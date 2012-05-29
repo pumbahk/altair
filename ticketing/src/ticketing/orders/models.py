@@ -12,6 +12,7 @@ class ShippingAddress(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'ShippingAddress'
     id = Column(BigInteger, primary_key=True)
     user_id = Column(BigInteger, ForeignKey("User.id"))
+    user = relationship('User', backref='shipping_addresses')
     first_name = Column(String(255))
     last_name = Column(String(255))
     first_name_kana = Column(String(255))
