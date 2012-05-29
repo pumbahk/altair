@@ -23,6 +23,18 @@ class UserData(DataSet):
         bank_account    = None
         updated_at      = datetime.now()
         created_at      = datetime.now()
+    class user_5:
+        bank_account    = None
+        updated_at      = datetime.now()
+        created_at      = datetime.now()
+    class user_6:
+        bank_account    = None
+        updated_at      = datetime.now()
+        created_at      = datetime.now()
+    class user_7:
+        bank_account    = None
+        updated_at      = datetime.now()
+        created_at      = datetime.now()
 
 class UserProfileData(DataSet):
     class user_profile_1:
@@ -96,6 +108,69 @@ class UserProfileData(DataSet):
         last_name       = u'ローソン'
         first_name_kana = u'チケット'
         last_name_kana  = u'ローソン'
+        birth_day       = date(1955,1,1)
+        sex             = 1
+        zip             = '251-0036'
+        prefecture      = PrefectureMaster.tokyo
+        city            = u'五反田'
+        street          = u'１−２'
+        address         = u'３４５'
+        other_address   = u'その他住所'
+        tel_1           = '00-0000-0000'
+        tel_2           = '000-0000-0000'
+        fax             = '0000-00-0000'
+        updated_at      = datetime.now()
+        created_at      = datetime.now()
+    class user_profile_5:
+        user            = UserData.user_5
+        email           = u'test5@ticketstar.jp'
+        nick_name       = u'クライアント4'
+        first_name      = u'アント'
+        last_name       = u'クライ'
+        first_name_kana = u'アント'
+        last_name_kana  = u'クライ'
+        birth_day       = date(1955,1,1)
+        sex             = 1
+        zip             = '251-0036'
+        prefecture      = PrefectureMaster.tokyo
+        city            = u'五反田'
+        street          = u'１−２'
+        address         = u'３４５'
+        other_address   = u'その他住所'
+        tel_1           = '00-0000-0000'
+        tel_2           = '000-0000-0000'
+        fax             = '0000-00-0000'
+        updated_at      = datetime.now()
+        created_at      = datetime.now()
+    class user_profile_6:
+        user            = UserData.user_6
+        email           = u'test5@ticketstar.jp'
+        nick_name       = u'クライアント5'
+        first_name      = u'アント'
+        last_name       = u'クライ'
+        first_name_kana = u'アント'
+        last_name_kana  = u'クライ'
+        birth_day       = date(1955,1,1)
+        sex             = 1
+        zip             = '251-0036'
+        prefecture      = PrefectureMaster.tokyo
+        city            = u'五反田'
+        street          = u'１−２'
+        address         = u'３４５'
+        other_address   = u'その他住所'
+        tel_1           = '00-0000-0000'
+        tel_2           = '000-0000-0000'
+        fax             = '0000-00-0000'
+        updated_at      = datetime.now()
+        created_at      = datetime.now()
+    class user_profile_7:
+        user            = UserData.user_7
+        email           = u'test6@ticketstar.jp'
+        nick_name       = u'クライアント6'
+        first_name      = u'アント'
+        last_name       = u'クライ'
+        first_name_kana = u'アント'
+        last_name_kana  = u'クライ'
         birth_day       = date(1955,1,1)
         sex             = 1
         zip             = '251-0036'

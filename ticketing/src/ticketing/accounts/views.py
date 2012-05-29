@@ -23,7 +23,7 @@ class Accounts(BaseView):
         if direction not in ['asc', 'desc']:
             direction = 'asc'
 
-        query = Account.filter(Account.organization_id==int(self.context.user.organization_id))
+        query = Account.filter(Account.user_id==int(self.context.user.id))
         query = query.order_by(sort + ' ' + direction)
 
         accounts = paginate.Page(
@@ -57,7 +57,7 @@ class Accounts(BaseView):
         f = AccountForm(self.request.POST)
         if f.validate():
             account = merge_session_with_post(Account(), f.data)
-            account.organization_id = self.context.user.organization_id
+            account.user_id = self.context.user.id
             account.save()
 
             self.request.session.flash(u'アカウントを保存しました')
@@ -77,7 +77,7 @@ class Accounts(BaseView):
         f = AccountForm(self.request.POST)
         if f.validate():
             account = merge_session_with_post(account, f.data)
-            account.organization_id = self.context.user.organization_id
+            account.user_id = self.context.user.id
             account.save()
 
             self.request.session.flash(u'アカウントを保存しました')

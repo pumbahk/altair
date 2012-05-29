@@ -10,6 +10,7 @@
   <form action="javascript:save_account();" method="POST">
     <div class="modal-body">
       ${form_item(form.id)}
+      ${form_item(form.organization_id, option={'class':'span6'})}
       ${form_item(form.name, option={'maxlength':255})}
     </div>
 
