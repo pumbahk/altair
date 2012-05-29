@@ -9,6 +9,7 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy.schema import Table, Column, ForeignKey, UniqueConstraint
 from sqlalchemy.types import String, DateTime, Integer, Unicode, Enum
 from sqlalchemy.ext.associationproxy import association_proxy
+from zope.deprecation import deprecation
 
 Base = sqlahelper.get_base()
 _session = sqlahelper.get_session()
@@ -134,8 +135,6 @@ class Operator(Base):
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now)
 
-    #role = relationship("Role", backref=backref("operators", order_by=id))
-    #role_id = Column(Integer, ForeignKey("role.id"))
     roles = relationship("Role", backref=("operators"), secondary=operator_role, cascade='all')
     client_id = Column(Integer, ForeignKey("client.id"))
 
@@ -144,6 +143,7 @@ class Operator(Base):
     def role(self):
         if self.roles:
             return self.roles[0]
+    role = deprecation.deprecated(role, "role is no more, use `Operator.roles`")
 
     UniqueConstraint('auth_source', 'user_id')
 
@@ -158,7 +158,6 @@ class Role(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(255))
 
-    #permissions = relationship("Permission", secondary=RolePermission.__table__, backref='role')
     perms = relationship("RolePermission", backref="role")
     permissions = association_proxy("perms", "name",
         creator=lambda name: RolePermission(name=name))

@@ -5,6 +5,7 @@ from pyramid.security import authenticated_userid
 
 from altaircms.models import DBSession
 from altaircms.auth.models import Operator, Role
+from zope.deprecation import deprecation
 
 logger = logging.getLogger(__file__)
 
@@ -25,7 +26,7 @@ def get_authenticated_user(request):
         logging.warn("operator is not found. so request.user is None")
         return None
 
-
+@deprecation.deprecate("no more use dummy user")
 def get_debug_user(request):
     try:
         return DBSession.query(Operator).filter_by(user_id=1).one() # return debug user if initial data are added
