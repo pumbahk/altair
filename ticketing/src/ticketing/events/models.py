@@ -297,7 +297,7 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
     discount_unit = Column(Integer)
 
     sales_segment_id = Column(BigInteger, ForeignKey('SalesSegment.id'))
-    sales_segment = relationship('SalesSegment', backref='payment_delivery_method_pair')
+    sales_segment = relationship('SalesSegment', backref='payment_delivery_method_pairs')
     payment_method_id = Column(BigInteger, ForeignKey('PaymentMethod.id'))
     payment_method = relationship('PaymentMethod')
     delivery_method_id = Column(BigInteger, ForeignKey('DeliveryMethod.id'))

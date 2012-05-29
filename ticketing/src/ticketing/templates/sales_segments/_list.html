@@ -24,7 +24,7 @@
     % for i, sales_segment in enumerate(sales_segments):
       <% if limit and i >= limit: break %>
     <tr id="sales_segment-${sales_segment.id}">
-      <% count = len(sales_segment.payment_delivery_method_pair) %>
+      <% count = len(sales_segment.payment_delivery_method_pairs) %>
       <% rowspan = 'rowspan=%s' % (count) %>
       <td ${rowspan}><input type="radio" name="sales_segment_id" value="${sales_segment.id}" /></td>
       <td ${rowspan} id="id">${sales_segment.id}</td>
@@ -37,7 +37,7 @@
       <td></td>
       <td></td>
       % endif
-      % for i, payment_delivery_method_pair in enumerate(sales_segment.payment_delivery_method_pair):
+      % for i, payment_delivery_method_pair in enumerate(sales_segment.payment_delivery_method_pairs):
         % if i != 0:
     <tr>
         % endif

@@ -8,12 +8,12 @@ from ticketing.events.models import SalesSegment, PaymentDeliveryMethodPair
 from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
-from ticketing.events.payment_delivery_method_pair.forms import PaymentDeliveryMethodPairForm
+from ticketing.events.payment_delivery_method_pairs.forms import PaymentDeliveryMethodPairForm
 
 @view_defaults(decorator=with_bootstrap)
 class PaymentDeliveryMethodPairs(BaseView):
 
-    @view_config(route_name='payment_delivery_method_pair.new', request_method='GET', renderer='ticketing:templates/payment_delivery_method_pair/edit.html')
+    @view_config(route_name='payment_delivery_method_pairs.new', request_method='GET', renderer='ticketing:templates/payment_delivery_method_pairs/edit.html')
     def new_get(self):
         sales_segment_id = int(self.request.matchdict.get('sales_segment_id', 0))
         sales_segment = SalesSegment.get(sales_segment_id)
@@ -25,7 +25,7 @@ class PaymentDeliveryMethodPairs(BaseView):
             'sales_segment':sales_segment
         }
 
-    @view_config(route_name='payment_delivery_method_pair.new', request_method='POST', renderer='ticketing:templates/payment_delivery_method_pair/edit.html')
+    @view_config(route_name='payment_delivery_method_pairs.new', request_method='POST', renderer='ticketing:templates/payment_delivery_method_pairs/edit.html')
     def new_post(self):
         sales_segment_id = int(self.request.matchdict.get('sales_segment_id', 0))
         sales_segment = SalesSegment.get(sales_segment_id)
@@ -50,7 +50,7 @@ class PaymentDeliveryMethodPairs(BaseView):
                 'sales_segment':sales_segment,
             }
 
-    @view_config(route_name='payment_delivery_method_pair.edit', request_method='GET', renderer='ticketing:templates/payment_delivery_method_pair/edit.html')
+    @view_config(route_name='payment_delivery_method_pairs.edit', request_method='GET', renderer='ticketing:templates/payment_delivery_method_pairs/edit.html')
     def edit_get(self):
         id = int(self.request.matchdict.get('payment_delivery_method_pair_id', 0))
         pdmp = PaymentDeliveryMethodPair.get(id)
@@ -66,7 +66,7 @@ class PaymentDeliveryMethodPairs(BaseView):
             'sales_segment':pdmp.sales_segment
         }
 
-    @view_config(route_name='payment_delivery_method_pair.edit', request_method='POST', renderer='ticketing:templates/payment_delivery_method_pair/edit.html')
+    @view_config(route_name='payment_delivery_method_pairs.edit', request_method='POST', renderer='ticketing:templates/payment_delivery_method_pairs/edit.html')
     def edit_post(self):
         id = int(self.request.matchdict.get('payment_delivery_method_pair_id', 0))
         pdmp = PaymentDeliveryMethodPair.get(id)
@@ -89,7 +89,7 @@ class PaymentDeliveryMethodPairs(BaseView):
                 'sales_segment':pdmp.sales_segment
             }
 
-    @view_config(route_name='payment_delivery_method_pair.delete')
+    @view_config(route_name='payment_delivery_method_pairs.delete')
     def delete(self):
         id = int(self.request.matchdict.get('payment_delivery_method_pair_id', 0))
         pdmp = PaymentDeliveryMethodPair.get(id)

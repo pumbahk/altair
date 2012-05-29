@@ -33,8 +33,9 @@ class ProductForm(Form):
             Length(max=255, message=u'255文字以内で入力してください'),
         ]
     )
-    price = IntegerField(
+    price = DecimalField(
         label=u'価格',
+        places=2,
         validators=[Required(u'入力してください')]
     )
     sales_segment_id = SelectField(

@@ -34,7 +34,6 @@ class PaymentDeliveryMethodPairForm(Form):
         places=2,
         validators=[
             Required(u'入力してください'),
-            NumberRange(min=0.0, max=100.0, message=u'%(min)sから%(max)sの間で設定してください')
         ]
     )
     delivery_fee = DecimalField(
@@ -42,15 +41,13 @@ class PaymentDeliveryMethodPairForm(Form):
         places=2,
         validators=[
             Required(u'入力してください'),
-            NumberRange(min=0.0, max=100.0, message=u'%(min)sから%(max)sの間で設定してください')
         ]
     )
     discount = DecimalField(
         label=u'割引',
         places=2,
         validators=[
-            Optional(),
-            NumberRange(min=0.0, max=100.0, message=u'%(min)sから%(max)sの間で設定してください')
+            Required(u'入力してください'),
         ]
     )
     discount_unit = IntegerField(

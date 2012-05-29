@@ -1,6 +1,8 @@
 <%page args="stock_types, performance=None, limit=None" />
 <%namespace file="/common/helpers.html" name='h' />
 
+<% paging = False if limit else True %>
+
 <style>
   .swatch {
     display: inline-block;
