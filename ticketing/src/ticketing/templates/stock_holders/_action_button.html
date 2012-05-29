@@ -27,7 +27,7 @@
   function save_stock_holder() {
     var modal = '#modal-stock_holder';
     var form = '#stock_holders-form';
-    var id = $(modal + ' #id').val();
+    var id = $(modal).find('#id').val();
     var url = id ? '/events/stock_holders/edit/' + id : '/events/stock_holders/new';
     post_modal_form(modal, form, url);
   }

@@ -3,18 +3,29 @@ function get_id(id) {
 }
 
 function post_modal_form(modal, form, url) {
-  var param = {};
-  $(modal + ' :input').each(function(i, v) {
-    param[v.name] = v.value;
+  var param = {}, counts = {};
+  $(modal).find(':input').each(function(i, v) {
+    var count = counts[v.name];
+    if (count === void(0)) {
+      param[v.name] = v.value;
+      counts[v.name] = 1;
+    } else {
+      var pv = param[v.name];
+      delete param[v.name];
+      param[v.name + '-0'] = pv;
+      param[v.name + '-' + (counts[v.name]++)] = v.value;
+    }
   });
-  $.post(
-    url,
-    param,
-    function(data) {
+  $.ajax({
+    type: 'post',
+    url: url,
+    data: param,
+    traditional: true,
+    success: function(data) {
       $(modal).modal('hide');
       $(form).html(data);
       $(modal).modal('show');
     },
-    'html'
-  );
+    dataType: 'html'
+  });
 }

@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['C9E5_RITKF7W52KC'] = (function (exports) { (function () { 
+__LIBS__['AVO0FJ0_C9IDO61G'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -89,7 +89,7 @@ AsyncDataWaiter.prototype.charge = function AsyncDataWaiter_charge(id, data) {
   // fire!! if all data has come.
   this.after.call(window, this.store);
 };
- })(); return exports; })({});__LIBS__['TN4WUL3M6VUKO9JE'] = (function (exports) { (function () { 
+ })(); return exports; })({});__LIBS__['REVBX181GQ0A_GE8'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -178,7 +178,7 @@ AsyncDataWaiter.prototype.charge = function AsyncDataWaiter_charge(id, data) {
   // fire!! if all data has come.
   this.after.call(window, this.store);
 };
- })(); return exports; })({});__LIBS__['y7SQEXBLASEDJZ9S'] = (function (exports) { (function () { 
+ })(); return exports; })({});__LIBS__['uD3YZG5NVZPKMB6Y'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -226,7 +226,7 @@ exports.DEFAULT = {
     }
   }
 };
- })(); return exports; })({});__LIBS__['wPNQD2J68FLGUBKK'] = (function (exports) { (function () { 
+ })(); return exports; })({});__LIBS__['dOOYANEQSMUE3NH5'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -274,11 +274,11 @@ exports.DEFAULT = {
     }
   }
 };
- })(); return exports; })({});__LIBS__['XQQ0_8H61FZIR_1F'] = (function (exports) { (function () { 
+ })(); return exports; })({});__LIBS__['dJAVQPMYPNPHGG75'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['C9E5_RITKF7W52KC'];
-var CONF = __LIBS__['y7SQEXBLASEDJZ9S'];
+var util = __LIBS__['AVO0FJ0_C9IDO61G'];
+var CONF = __LIBS__['uD3YZG5NVZPKMB6Y'];
 
 function clone(obj) {
   return $.extend({}, obj); 
@@ -484,9 +484,9 @@ console.log(ad2);
 
 /************** venue-viewer.js **************/
 (function ($) {
-  var CONF = __LIBS__['wPNQD2J68FLGUBKK'];
-  var seat = __LIBS__['XQQ0_8H61FZIR_1F'];
-  var util = __LIBS__['TN4WUL3M6VUKO9JE'];
+  var CONF = __LIBS__['dOOYANEQSMUE3NH5'];
+  var seat = __LIBS__['dJAVQPMYPNPHGG75'];
+  var util = __LIBS__['REVBX181GQ0A_GE8'];
 
   var VenueViewer = function VenueViewer(canvas, options) {
     this.canvas = canvas;
@@ -883,6 +883,9 @@ console.log(ad2);
         case 'uimode':
           aux.manager.changeUIMode(arguments[1]);
           break;
+
+        case 'selection':
+          return aux.manager.selection;
 
         case 'adjacency':
           aux.manager.adjacencyLength(arguments[1]|0);

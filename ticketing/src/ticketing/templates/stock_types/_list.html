@@ -1,7 +1,5 @@
 <%page args="stock_types, performance=None, limit=None" />
-<%namespace file="/common/helpers.html" import="seat_style" />
-<%namespace file="/common/helpers.html" import="json" />
-<%namespace file="/common/helpers.html" import="pager"/>
+<%namespace file="/common/helpers.html" name='h' />
 
 <style>
   .swatch {
@@ -32,6 +30,7 @@
       <%
         conditions = {'performance_id':performance.id} if performance else {}
         quantity = stock_type.num_seats(**conditions) or 0
+        allocated = 0
       %>
     <tr>
       <td style="width: 40px">
@@ -43,8 +42,10 @@
            name="${stock_type.name}"
            type="${stock_type.type}"
            quantity="${quantity}"
-           data="${json(stock_type.style)}">
-          ${seat_style(stock_type.style)}${stock_type.name}
+           data="${h.json(stock_type.style)}">
+          <%h:seat_style style="${stock_type.style}">
+            ${stock_type.name}
+          </%h:seat_style>
         </a>
       </td>
       <td style="width: 60px">
@@ -81,8 +82,10 @@
            name="${stock_type.name}"
            type="${stock_type.type}"
            quantity="${quantity}"
-           data="${json(stock_type.style)}">
-          ${seat_style(stock_type.style)}${stock_type.name}
+           data="${h.json(stock_type.style)}">
+          <%h:seat_style style="${stock_type.style}">
+            ${stock_type.name}
+          </%h:seat_style>
         </a>
       </td>
       <td style="width: 60px">
@@ -97,5 +100,5 @@
 % endif
 
 % if paging:
-  ${pager(stock_types)}
+  ${h.pager(stock_types)}
 % endif

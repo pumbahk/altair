@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from wtforms import Form
-from wtforms import TextField, SelectField, IntegerField, HiddenField, BooleanField
+from wtforms import TextField, SelectField, IntegerField, HiddenField, BooleanField, FieldList
 from wtforms.validators import Required, Length, Optional
 from wtforms.widgets import CheckboxInput
 
@@ -40,16 +40,20 @@ class StockTypeForm(Form):
 
 
 class StockAllocationForm(Form):
-
     stock_type_id = HiddenField(
         label='',
         validators=[Required()]
     )
+    venue_id = HiddenField(
+        label='',
+        validators=[]
+    )
     performance_id = HiddenField(
         label='',
-        validators=[Required()]
+        validators=[]
     )
     quantity = TextField(
         label=u'在庫数',
         validators=[Required(u'入力してください')]
     )
+    seat_l0_id = FieldList(TextField(label=u'シートID'))

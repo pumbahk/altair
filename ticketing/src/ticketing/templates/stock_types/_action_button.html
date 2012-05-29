@@ -49,7 +49,7 @@
   function save_stock_type() {
     var modal = '#modal-stock_type';
     var form = '#stock_types-form';
-    var id = $(modal + ' #id').val();
+    var id = $(modal).find('#id').val();
     var url = id ? '/events/stock_types/edit/' + id : '/events/stock_types/new/${event.id}';
     post_modal_form(modal, form, url);
   }
@@ -66,9 +66,25 @@
     modal.modal('toggle');
   }
   function save_stock_allocation() {
-    var modal = '#modal-stock_allocation';
-    var form = '#stock_allocations-form';
+    var id = get_id('stock_type_id');
+    if (!id) return;
+    var el = '#stock_type-' + id;
+    var modal = $('#modal-stock_allocation');
+    var form = $('#stock_allocations-form');
     var url = '/events/stock_types/allocate/';
+    var n = $('#seat_l0_id');
+    modal.find('#stock_type_id').val(id);
+    modal.find('#venue_id').val(${performance.venue.id});
+    modal.find('#performance_id').val(${performance.id});
+    modal.find('#quantity').val($(el).attr('quantity'));
+    for (var seat_l0_id in $('#venue-map > :eq(1)').venueviewer('selection')) {
+      n.append(
+        $('<input type="text" />').attr({
+          name: "seat_l0_id",
+          value: seat_l0_id
+        })
+      );
+    }
     post_modal_form(modal, form, url);
   }
   % endif
@@ -93,7 +109,7 @@
     ),
     'allocate':dict(
       label=u'選択した座席を割り当てる',
-      url='',
+      url='javascript:save_stock_allocation()',
       icon='icon-ok',
     ),
     'stock':dict(

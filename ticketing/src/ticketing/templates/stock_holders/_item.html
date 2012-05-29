@@ -1,12 +1,13 @@
 <%page args="stock_holder" />
-<%namespace file="/common/helpers.html" import="seat_style" />
-<%namespace file="/common/helpers.html" import="json" />
+<%namespace file="/common/helpers.html" name="h" />
 
 <div class="accordion-group" style="width: 350px;">
   <div class="accordion-heading">
     <div style="float: left;">
       <a class="accordion-toggle" data-toggle="collapse" href="#collapse-${stock_holder.id}">
-        ${seat_style(stock_holder.style)}${stock_holder.name}
+        <%h:seat_style style="${stock_holder.style}">
+          ${stock_holder.name}
+        </%h:seat_style>
       </a>
     </div>
     <div style="float: right; margin-top: 7px; margin-right: 7px">
@@ -21,7 +22,7 @@
         </ul>
       </div>
     </div>
-    <div id="stock_holder-${stock_holder.id}" name="${stock_holder.name}" data='${json(stock_holder.style)}'>
+    <div id="stock_holder-${stock_holder.id}" name="${stock_holder.name}" data='${h.json(stock_holder.style)}'>
       <hidden id="account_id" value="${stock_holder.account.id}"></hidden>
     </div>
   </div>
@@ -30,7 +31,11 @@
   <div id="collapse-${stock_holder.id}" class="accordion-body collapse" style="height: 0px; ">
     % for i, stock in enumerate(stock_holder.stocks):
     <div class="accordion-inner">
-      <span class="span2">${seat_style(stock.stock_type.style)}${stock.stock_type.name}</span>
+      <span class="span2">
+        <%h:seat_style style="${stock.stock_type.style}">
+          ${stock.stock_type.name}
+        </%h:seat_style>
+      </span>
       <span>${stock.quantity}席</span>
     </div>
     % endfor

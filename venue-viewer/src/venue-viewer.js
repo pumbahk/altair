@@ -399,6 +399,9 @@
           aux.manager.changeUIMode(arguments[1]);
           break;
 
+        case 'selection':
+          return aux.manager.selection;
+
         case 'adjacency':
           aux.manager.adjacencyLength(arguments[1]|0);
           break;
