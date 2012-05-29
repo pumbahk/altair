@@ -116,9 +116,9 @@
                 x: parseFloat(attrs.x),
                 y: parseFloat(attrs.y)
               },
-              fontSize: parseFloat(n.style.fontSize),
+              fontSize: 10,
               text: n.firstChild.nodeValue,
-              zIndex: 99,
+              zIndex: 99
             }));
           shape.style(CONF.DEFAULT.TEXT_STYLE);
           break;
@@ -217,16 +217,16 @@
       up:   function(e) { if (util.eventKey(e).shift) self.shift = false; return true; }
     };
 
-    document.addEventListener('keydown', this.keyEvents.down, false);
-    document.addEventListener('keyup',   this.keyEvents.up,   false);
+    $(document).bind('keydown', this.keyEvents.down);
+    $(document).bind('keyup',   this.keyEvents.up);
 
   };
 
   VenueViewer.prototype.removeKeyEvent = function VenueViewer_removeKeyEvent() {
     if (!this.keyEvents) return;
 
-    document.removeEventListener('keydown', this.keyEvents.down, false);
-    document.removeEventListener('keyup',   this.keyEvents.up,   false);
+    $(document).unbind('keydown', this.keyEvents.down);
+    $(document).unbind('keyup',   this.keyEvents.up);
   };
 
   VenueViewer.prototype.changeUIMode = function VenueViewer_changeUIMode(type) {

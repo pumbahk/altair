@@ -85,7 +85,7 @@ Seat.prototype.stylize = function Seat_stylize() {
         new Fashion.Text({
           position: {
             x: p.x,
-            y: p.y + (s.y * 0.75),
+            y: p.y + (s.y * 0.75)
           },
           fontSize: (s.y * 0.75),
           text: style.text,
