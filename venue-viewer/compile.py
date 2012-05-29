@@ -48,7 +48,7 @@ class Processor(object):
                     raise ApplicationException("Relative path specified but no includer given")
                 path = os.path.join(os.path.dirname(includer), dir, file)
             if os.path.exists(path):
-                return path
+                return os.path.normpath(path)
         return None
 
     def compose_source(self, file, out):
@@ -63,13 +63,14 @@ class Processor(object):
                         required = self.lookup_file(required_file_name, file)
                         if required is None:
                             raise ApplicationException("File not found: %s" % required_file_name)
-                        id = self.libs.get(required)
-                        if id is None:
+                        pair = self.libs.get(required)
+                        if pair is None:
                             id = self.idgen()
+                            self.libs[required] = (id, None)
                             out = StringIO()
                             self.compose_source(required, out)
-                            self.libs[required] = (id, out.getvalue())
-                        return "__LIBS__['%s']" % id
+                            pair = self.libs[required] = (id, out.getvalue())
+                        return "__LIBS__['%s']" % pair[0]
 
                     line = re.sub(r'''require\s*\((["'])(.+)(\1)\)''', repl, line)
                     out.write(line)
@@ -90,7 +91,7 @@ class Processor(object):
         out.write("(function () {\n")
         out.write("var __LIBS__ = {};\n")
         for path, pair in self.libs.iteritems():
-            out.write("__LIBS__['%s'] = (function (exports) { (function () { %s })(); return exports; })({});" % pair)
+            out.write("__LIBS__['%s'] = (function (exports) { (function () { %s })(); return exports; })({});\n" % pair)
             first = False
         out.write(self.out.getvalue())
         out.write("})();\n")
