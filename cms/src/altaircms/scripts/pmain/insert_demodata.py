@@ -1661,13 +1661,14 @@ def top_topics(page):
 
 def top_topcontents(page):
     link_page = Page.query.filter(Page.event!=None).first() ##
+    link_pageset = PageSet.get_or_create(link_page)
     img_path = os.path.join(os.path.dirname(__file__), "./data/dummy.jpg")
     image_asset = make_image_asset(img_path, title="dummy")
     return [
         Topcontent(kind=u"注目のイベント", 
                    publish_open_on=datetime.datetime(2011, 1, 1),
                    publish_close_on=datetime.datetime(2013, 1, 1), 
-                   page=link_page, #本当はpageset
+                   linked_page=link_pageset, #本当はpageset
                    is_global=True, 
                    title=link_page.title, 
                    text=u"ここになにか説明を加える。これはデフォルトの文章を表示するようにしても良いかもしれない。", 
@@ -1678,7 +1679,7 @@ def top_topcontents(page):
         Topcontent(kind=u"注目のイベント", 
                    publish_open_on=datetime.datetime(2011, 1, 1),
                    publish_close_on=datetime.datetime(2013, 1, 1), 
-                   page=link_page, #本当はpageset
+                   linked_page=link_pageset, #本当はpageset
                    is_global=True, 
                    title=link_page.title, 
                    text=u"ここになにか説明を加える。これはデフォルトの文章を表示するようにしても良いかもしれない。", 
@@ -1689,7 +1690,7 @@ def top_topcontents(page):
         Topcontent(kind=u"注目のイベント", 
                    publish_open_on=datetime.datetime(2011, 1, 1),
                    publish_close_on=datetime.datetime(2013, 1, 1), 
-                   page=link_page, #本当はpageset
+                   linked_page=link_pageset, #本当はpageset
                    is_global=True, 
                    title=link_page.title, 
                    text=u"ここになにか説明を加える。これはデフォルトの文章を表示するようにしても良いかもしれない。", 
@@ -1700,7 +1701,7 @@ def top_topcontents(page):
         Topcontent(kind=u"注目のイベント", 
                    publish_open_on=datetime.datetime(2011, 1, 1),
                    publish_close_on=datetime.datetime(2013, 1, 1), 
-                   page=link_page, #本当はpageset
+                   linked_page=link_pageset, #本当はpageset
                    is_global=True, 
                    title=link_page.title, 
                    text=u"ここになにか説明を加える。これはデフォルトの文章を表示するようにしても良いかもしれない。", 
@@ -1711,7 +1712,7 @@ def top_topcontents(page):
         Topcontent(kind=u"注目のイベント", 
                    publish_open_on=datetime.datetime(2011, 1, 1),
                    publish_close_on=datetime.datetime(2013, 1, 1), 
-                   page=link_page, #本当はpageset
+                   linked_page=link_pageset, #本当はpageset
                    is_global=True, 
                    title=link_page.title, 
                    text=u"ここになにか説明を加える。これはデフォルトの文章を表示するようにしても良いかもしれない。", 
@@ -1722,7 +1723,7 @@ def top_topcontents(page):
         Topcontent(kind=u"注目のイベント", 
                    publish_open_on=datetime.datetime(2011, 1, 1),
                    publish_close_on=datetime.datetime(2013, 1, 1), 
-                   page=link_page, #本当はpageset
+                   linked_page=link_pageset, #本当はpageset
                    is_global=True, 
                    title=link_page.title, 
                    text=u"ここになにか説明を加える。これはデフォルトの文章を表示するようにしても良いかもしれない。", 

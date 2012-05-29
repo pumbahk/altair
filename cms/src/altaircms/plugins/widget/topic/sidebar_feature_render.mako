@@ -1,7 +1,7 @@
 <div id="sideFeature">
   <ul>
 	%for topic in topics:
-	  <li><a href="${topic.text}">${topic.title}</a></li>
+	  <li><a href="${h.link.get_link_from_topic(request,topic)}">${topic.title}</a></li>
 	%endfor
   </ul>
 </div>

@@ -204,7 +204,7 @@ class Topcontent(AboutPublishMixin,
 
     @property
     def countdown_limit(self):
-        return getattr(self.page.event, self.countdown_type)
+        return getattr(self.linked_page.event, self.countdown_type)
 
     @classmethod
     def matched_qs(cls, d=None, page=None, qs=None, kind=None, subkind=None):
@@ -225,8 +225,8 @@ class Topcontent(AboutPublishMixin,
         """
         if self.is_global:
             return "global"
-        elif self.page:
-            return "page:%d" % self.page_id
+        elif self.bound_page:
+            return "page:%d" % self.bound_page_id
         else:
             return None
 
@@ -237,7 +237,7 @@ class Topcontent(AboutPublishMixin,
 
         where = _where
         if page:
-            where = (Topcontent.page==page) if where  == _where else where & (Topcontent.page==page)
+            where = (Topcontent.bound_page==page) if where  == _where else where & (Topcontent.bound_page==page)
         if event:
             where = (Topcontent.event==event) if where   == _where else where & (Topcontent.event==event)
 

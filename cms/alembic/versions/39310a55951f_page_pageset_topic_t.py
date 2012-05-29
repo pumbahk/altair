@@ -24,6 +24,15 @@ def upgrade():
     op.execute("ALTER TABLE topic DROP FOREIGN KEY topic_ibfk_3")
     op.drop_column('topic', u'page_id')
 
+    ## topcontent
+    op.add_column('topcontent', sa.Column('linked_page_id', sa.Integer(), sa.ForeignKey("pagesets.id", use_alter=True, name="topcontent_ibfk_5"), nullable=True))
+    op.add_column('topcontent', sa.Column('bound_page_id', sa.Integer(), sa.ForeignKey("pagesets.id", use_alter=True, name="topcontent_ibfk_6"),nullable=True))
+
+    op.execute("alter table topcontent add constraint topcontent_ibfk_5 foreign key (linked_page_id) references pagesets(id);")
+    op.execute("alter table topcontent add constraint topcontent_ibfk_6 foreign key (bound_page_id) references pagesets(id);")
+
+    op.execute("ALTER TABLE topcontent DROP FOREIGN KEY topcontent_ibfk_3")
+    op.drop_column('topcontent', u'page_id')
 
 def downgrade():
     op.add_column('topic', sa.Column(u'page_id', sa.Integer(), sa.ForeignKey("page.id", use_alter=True, name="topic_ibfk_3"), nullable=True))
@@ -33,3 +42,13 @@ def downgrade():
     op.execute("ALTER TABLE topic DROP FOREIGN KEY topic_ibfk_6")
     op.drop_column('topic', 'bound_page_id')
     op.drop_column('topic', 'linked_page_id')
+
+    ## topcontent
+    op.add_column('topcontent', sa.Column(u'page_id', sa.Integer(), sa.ForeignKey("page.id", use_alter=True, name="topcontent_ibfk_3"), nullable=True))
+    op.execute("alter table topcontent add constraint topcontent_ibfk_3 foreign key (page_id) references page(id);")
+
+    op.execute("ALTER TABLE topcontent DROP FOREIGN KEY topcontent_ibfk_5")
+    op.execute("ALTER TABLE topcontent DROP FOREIGN KEY topcontent_ibfk_6")
+    op.drop_column('topcontent', 'bound_page_id')
+    op.drop_column('topcontent', 'linked_page_id')
+

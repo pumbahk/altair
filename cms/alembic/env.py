@@ -21,7 +21,6 @@ from altaircms.event import models
 from altaircms.layout import models
 from altaircms.page import models
 from altaircms.tag import models
-from altaircms.topcontent import models
 from altaircms.topic import models
 from altaircms.usersetting import models
 from altaircms.widget import models

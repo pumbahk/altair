@@ -25,9 +25,17 @@ def get_link_from_category(request, category):
     else:
         return to_publish_page_from_pageset(request, category.pageset)
 
+def get_link_from_topic(request, topic):
+    if topic.linked_page:
+        return to_publish_page_from_pageset(request, topic.linked_page)
+    else:
+        return topic.text
+
 def to_publish_page_from_pageset(request, pageset):
     url = pageset.url
     if url.startswith("http://") or url.startswith("https://"):
         return url
     else:
         return request.route_path("front", page_name=url)
+
+
