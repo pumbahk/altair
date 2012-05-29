@@ -59,11 +59,11 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 .all()
         return data
 
-    def add(self):
+    def save(self):
         connection = DBSession.bind.connect()
         try:
             tran = connection.begin()
-            BaseModel.add(self)
+            BaseModel.save(self)
 
             """
             Performanceの作成時は以下のモデルをcloneする
@@ -107,6 +107,34 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                         attribute = SeatAttribute.clone(original_attribute)
                         attribute.seat_id = seat.id
                         attribute.save()
+
+            """
+            Performanceの編集時にVenueの変更があったら以下のモデルをdeleteする
+              -Venue
+                - VenueArea
+                - Seat
+                  - SeatAttribute
+            """
+            # delete Venue
+            if self.delete_venue_id:
+                venue = Venue.get(self.delete_venue_id)
+                venue.delete()
+
+                # delete VenueArea
+                for area in venue.areas:
+                    area.delete()
+
+                    # delete VenueArea_group_l0_id
+                    for group in area.groups:
+                        DBSession.delete(group)
+
+                # delete Seat
+                for seat in venue.seats:
+                    seat.delete()
+
+                    # delete SeatAttribute
+                    for attribute in seat.attributes:
+                        DBSession.delete(attribute)
 
             """
             Performanceのコピー時は以下のモデルをcloneする
