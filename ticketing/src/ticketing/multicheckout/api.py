@@ -66,10 +66,7 @@ class Checkout3D(object):
     def _create_request_card_xml(self, card_auth, check=False):
         """
         :param card_auth: :class:`.models.MultiCheckoutRequestCard`
-        区分 内容
-1 2 3
-認証なし セキュリティコード 3D セキュア
-SSL CVV 3D
+
         """
 
         # メッセージタグ <Message>

@@ -16,6 +16,14 @@ DBSession = sqlahelper.get_session()
 
 
 class MultiCheckoutRequestCard(Base):
+    """
+
+    セキュリティ区分
+
+    - 1: 認証無し SSL
+    - 2: セキュリティコード CVV
+    - 3: 3Dセキュア 3D
+    """
     __tablename__ = 'multicheckout_request_card'
     id = sa.Column(sa.Integer, primary_key=True)
 

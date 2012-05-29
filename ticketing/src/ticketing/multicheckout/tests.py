@@ -22,6 +22,8 @@ class IncludeMeTests(unittest.TestCase):
     def test_it(self):
         from . import interfaces
         settings = {
+            'altair_checkout3d.base_url': 'http://example.com/api/',
+            'altair_checkout3d.shop_id': 'this-is-shop',
             'altair_checkout3d.auth_id': 'auth_id',
             'altair_checkout3d.auth_password': 'auth_password',
             }
@@ -32,6 +34,7 @@ class IncludeMeTests(unittest.TestCase):
 
         result = self.config.registry.utilities.lookup([], interfaces.IMultiCheckout, name="")
 
+        self.assertEqual(result.api_base_url, 'http://example.com/api/this-is-shop')
         self.assertEqual(result.auth_id, 'auth_id')
         self.assertEqual(result.auth_password, 'auth_password')
 
