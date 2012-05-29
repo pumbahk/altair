@@ -1,0 +1,23 @@
+<%page args="events" />
+
+% if events:
+  <div class="page-header">
+    <h3>配券しているイベント</h3>
+  </div>
+  <table class="table table-striped table-bordered table-condensed">
+    <tr>
+      <th>イベントコード</th>
+      <th>イベント名</th>
+      <th>開始</th>
+      <th>終了</th>
+    </tr>
+    % for event in events:
+    <tr>
+      <td><a href="${request.route_path('events.show', event_id=event.id)}">${event.code}</a></td>
+      <td><a href="${request.route_path('events.show', event_id=event.id)}">${event.title}</a></td>
+      <td>${event.start_on}</td>
+      <td>${event.end_on}</td>
+    </tr>
+    % endfor
+  </table>
+% endif

@@ -1,15 +1,26 @@
 <%page args="form, organization" />
 
+<div class="page-header">
+  <h4>基本情報</h4>
+</div>
 <table class="table table-bordered fullwidth">
   <tbody>
   <tr>
     <th class="span3">${form.name.label.text}</th>
-    <td>${form.name.data}</td>
+    <td>${organization.name}</td>
   </tr>
   <tr>
     <th class="span3">${form.client_type.label.text}</th>
     <td>${organization.client_type}</td>
   </tr>
+  </tbody>
+</table>
+
+<div class="page-header">
+  <h4>連絡先</h4>
+</div>
+<table class="table table-bordered fullwidth">
+  <tbody>
   <tr>
     <th class="span3">${form.prefecture_id.label.text}</th>
     <td>${organization.prefecture.name}</td>
@@ -44,3 +55,29 @@
   </tr>
   </tbody>
 </table>
+
+% if organization.user.bank_account:
+<div class="page-header">
+  <h4>振込先</h4>
+</div>
+<table class="table table-bordered fullwidth">
+  <tbody>
+  <tr>
+    <th class="span3">銀行名</th>
+    <td>${organization.user.bank_account.bank_id}</td>
+  </tr>
+  <tr>
+    <th class="span3">口座種別</th>
+    <td>${organization.user.bank_account.account_type}</td>
+  </tr>
+  <tr>
+    <th class="span3">口座番号</th>
+    <td>${organization.user.bank_account.account_number}</td>
+  </tr>
+  <tr>
+    <th class="span3">口座名義</th>
+    <td>${organization.user.bank_account.account_owner}</td>
+  </tr>
+  </tbody>
+</table>
+% endif

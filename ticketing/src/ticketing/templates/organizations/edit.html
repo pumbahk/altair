@@ -1,3 +1,55 @@
-<%inherit file="../layout.html" />
-<%block name="title">クライアント編集</%block>
-${form|n}
+<%inherit file="/layout.html" />
+<%namespace file="/common/helpers.html" name="h" />
+
+<%
+  if request.matched_route.name == 'organizations.new':
+    route_name = u'登録'
+    route_path = request.route_path('organizations.new')
+  else:
+    route_name = u'編集'
+    route_path = request.route_path('organizations.edit', organization_id=form.id.data)
+%>
+
+<div class="container row">
+  <div class="span12">
+    ${h.breadcrumbs(
+        names=[u'トップ', u'配券先／配券元', route_name],
+        urls=[
+          request.route_path('index'),
+          request.route_path('organizations.index'),
+        ]
+    )}
+  </div>
+
+  <div class="span12">
+    <div class="page-header">
+      <h3>配券先／配券元 ${route_name}</h3>
+    </div>
+
+    <div class="content">
+      ${h.flash_messages(request)}
+      ${h.alert_message(form)}
+    </div>
+
+    <div class="well">
+      <form class="form-horizontal" action="${route_path}" method="POST">
+        <fieldset>
+          ${h.form_item(form.id)}
+          ${h.form_item(form.name, option={'class':'span5', 'maxlength':255})}
+          ${h.form_item(form.client_type)}
+          ${h.form_item(form.prefecture_id)}
+          ${h.form_item(form.city, option={'class':'span5'})}
+          ${h.form_item(form.address, option={'class':'span5'})}
+          ${h.form_item(form.street, option={'class':'span5'})}
+          ${h.form_item(form.other_address, option={'class':'span5'})}
+          ${h.form_item(form.tel_1)}
+          ${h.form_item(form.tel_2)}
+          ${h.form_item(form.fax)}
+        </fieldset>
+        <div class="form-actions">
+          <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">
+        </div>
+      </form>
+    </div>
+  </span>
+</div>

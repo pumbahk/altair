@@ -1,4 +1,14 @@
 <%namespace file="/common/helpers.html" import="pager"/>
+<%namespace file="/common/modal.html" import="delete_modal" />
+
+<script type="text/javascript">
+  function delete_organization(id) {
+    var modal = $('#modal-delete');
+    modal.find('#delete').attr('href', '/organizations/delete/' + id);
+    modal.find('#message').text('選択した配券元／配券先を削除します。よろしいですか？');
+    modal.modal('toggle');
+  }
+</script>
 
 <form>
   <div class="ui-toolbar">
@@ -20,10 +30,15 @@
         <td><input type="checkbox" /></td>
         <td><a href="${request.route_path('organizations.show', organization_id=organization.id)}">${organization.id}</a></td>
         <td><a href="${request.route_path('organizations.show', organization_id=organization.id)}">${organization.name}</a></td>
-        <td><a href="${request.route_path('organizations.edit', organization_id=organization.id)}">編集</a></td>
+        <td>
+          <a class="btn btn-small" href="${request.route_path('organizations.edit', organization_id=organization.id)}">編集</a>
+          <a class="btn btn-small btn-danger" href="javascript:delete_organization(${organization.id});">削除</a>
+        </td>
       </tr>
     % endfor
     </tbody>
   </table>
   ${pager(organizations)}
 </form>
+
+${delete_modal()}

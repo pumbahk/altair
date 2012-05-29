@@ -239,6 +239,14 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return Performance.filter(Performance.event_id==self.id)\
                 .order_by('Performance.start_on desc').first()
 
+    @staticmethod
+    def get_distributing(organization_id):
+        return Event.filter().join(Event.account).filter(Account.organization_id==organization_id).all()
+
+    @staticmethod
+    def get_distributed(user_id):
+        return Event.filter().join(Event.account).filter(Account.user_id==user_id).all()
+
     def get_accounts(self):
         return Account.filter().with_entities(Account.name).join(StockHolder).join(Performance)\
                 .filter(Account.organization_id==self.organization_id)\
