@@ -40,12 +40,13 @@ class TopicTypeTests(unittest.TestCase):
     def test_has_page(self):
         from altaircms.page.models import PageSet
         page = self._makeObj(PageSet, id=1)
-        target = Topic(bound_page=page)
+        target = self._makeObj(Topic, bound_page=page)
 
         DBSession.flush()
 
         self.assertEquals(target.topic_type, "page:1")
-        self.assertEquals(Topic.matched_topic_type(page=page).count(), 1)
+        result = Topic.matched_topic_type(page=page)
+        self.assertEquals(result.count(), 1)
 
     def test_has_not_page(self):
         from altaircms.page.models import PageSet

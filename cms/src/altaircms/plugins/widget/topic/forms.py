@@ -3,7 +3,7 @@ import wtforms.form as form
 import wtforms.fields as fields
 import wtforms.validators as validators
 from altaircms.topic.models import Topic
-from altaircms.topcontent.models import Topcontent
+from altaircms.topic.models import Topcontent
 from altaircms.models import DBSession
 
 class TopicChoiceForm(form.Form):

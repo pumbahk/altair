@@ -14,8 +14,8 @@ from ..plugins.widget.promotion.models import Promotion
 from ..models import Category
 from ..asset.models import ImageAsset
 from ..page.models import PageSet, Page
-from ..topic.models import Topic
-from ..topcontent.models import Topcontent
+from ..topic.models import Topic, Topcontent
+
 
 
 import pkg_resources

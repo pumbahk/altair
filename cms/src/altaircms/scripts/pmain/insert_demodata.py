@@ -24,7 +24,7 @@ from altaircms.models import (
 )
 from altaircms.asset.models import ImageAsset
 from altaircms.topic.models import Topic
-from altaircms.topcontent.models import Topcontent
+from altaircms.topic.models import Topcontent
 from altaircms.plugins.widget.promotion.models import (
     Promotion, PromotionUnit
 )
