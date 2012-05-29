@@ -101,15 +101,25 @@ def list_modelnames(args):
 
 
 ### load csv
-
 _CACHE = {}
 def model_columns(model):
     if model in _CACHE:
         return _CACHE[model]
     else:
-        _CACHE[model] = sorted((c for c in model.__mapper__.columns), key=lambda c: c.name)
-        return _CACHE[model]
+        ## フィールドはアルファベット順に取り出す。ただしidは先頭
+        ## e.g. id, boolean,  point, score
 
+        id_index = None
+        cs = sorted((c for c in model.__mapper__.columns), key=lambda c: c.name)
+
+        for i, c in enumerate(cs):
+            if  c.name == "id":
+                id_index = i
+
+        if id_index:
+            cs.insert(0, cs.pop(id_index))
+        _CACHE[model] = cs
+        return _CACHE[model]
 
 def setup(args):
     import sqlahelper
@@ -146,13 +156,13 @@ def load_from_csv(mapper, args):
 
     session = setup(args)
 
-    obj = model()
     for row in reader:
+        obj = model()
         for c, v in  zip(cols, row):
             setattr(obj, c, mapper(obj, c, v))
 
         session.add(obj)
-        #session.flush()
+
 
 def main(args):
     if args.list:

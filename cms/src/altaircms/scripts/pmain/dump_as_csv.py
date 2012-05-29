@@ -46,7 +46,19 @@ def model_columns(model):
     if model in _CACHE:
         return _CACHE[model]
     else:
-        _CACHE[model] = sorted((c for c in model.__mapper__.columns), key=lambda c: c.name)
+        ## フィールドはアルファベット順に取り出す。ただしidは先頭
+        ## e.g. id, boolean,  point, score
+
+        id_index = None
+        cs = sorted((c for c in model.__mapper__.columns), key=lambda c: c.name)
+
+        for i, c in enumerate(cs):
+            if  c.name == "id":
+                id_index = i
+
+        if id_index:
+            cs.insert(0, cs.pop(id_index))
+        _CACHE[model] = cs
         return _CACHE[model]
 
 def model_dump_as_csv(model, oport):
