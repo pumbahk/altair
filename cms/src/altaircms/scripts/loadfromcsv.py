@@ -4,6 +4,10 @@ import argparse
 import inspect
 import os.path
 import csv
+import transaction
+from datetime import datetime
+import re
+
 from pkg_resources import resource_filename, EntryPoint
 
 
@@ -88,7 +92,7 @@ def list_modelnames(args):
     if args.verbose:
         for m, modelname in sorted(models, key=lambda x : x[1]):
             colms = u", ".join([c.name for c in model_columns(m)])
-            print modelname, colms
+            print modelname, m.__tablename__, "@", colms
     else:
         for m, modelname in sorted(models, key=lambda x : x[1]):
             print modelname
@@ -112,12 +116,30 @@ def setup(args):
     import sqlalchemy as sa
 
     engine = sa.create_engine(args.dburl)
+    engine.echo = True
+
     sqlahelper.add_engine(engine)
-    sqlahelper.get_base().metadata.create_all()
+
+    args.modelbase = import_symbol(args.modelbase)
+    collect_model_mapping(args.rootmodule, args.modelbase)
+
+    # sqlahelper.get_base().metadata.create_all()
     return sqlahelper.get_session()
 
+DATETIME_RX = re.compile("\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}")  # 2012-05-25 22:34:35
+def string_to_value(obj, colname, v):
+    if "None" == v:
+        return None
+    elif "True" == v:
+        return True
+    elif "False" == v:
+        return False
+    elif DATETIME_RX.search(v):
+        return datetime.strptime(v, "%Y-%m-%d %H:%M:%S")
+    else:
+        return v.decode("utf-8")
 
-def load_from_csv(args):
+def load_from_csv(mapper, args):
     reader = csv.reader(args.infile)
     model = import_symbol(args.target)
     cols = [c.name for c in model_columns(model)]
@@ -127,17 +149,20 @@ def load_from_csv(args):
     obj = model()
     for row in reader:
         for c, v in  zip(cols, row):
-            setattr(obj, c, v)
-    session.add(obj)
+            setattr(obj, c, mapper(obj, c, v))
 
-    import transaction
-    transaction.commit()
+        session.add(obj)
+        #session.flush()
 
 def main(args):
     if args.list:
-        list_modelnames(args)
-    else:
-        load_from_csv(args)
+        return list_modelnames(args)
+
+    try:
+        load_from_csv(string_to_value, args)
+        transaction.commit()
+    except:
+        transaction.abort()
 
 
 args = parser.parse_args()

@@ -36,5 +36,9 @@ def main(*args, **kwargs):
     category_page_ids = DBSession.query(PageSet.id).join(Category, PageSet.id==Category.pageset_id).filter(Category.parent_id.in_(parent_category_ids))
     PageSet.query.filter(PageSet.parent_id.in_(set(category_page_ids))).all()
 
+def main(*args, **kwargs):
+    from altaircms.event.models import Event
+    for e in Event.query:
+        print e.title
 
  
