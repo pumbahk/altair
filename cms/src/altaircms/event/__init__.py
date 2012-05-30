@@ -6,7 +6,11 @@ def includeme(config):
     config.add_route('event_list', '/event/')
     config.add_crud("event", title="event", model=".models.Event",
                     form=".forms.EventForm", mapper=".mappers.event_mapper", 
-                    bind_actions=["create", "delete", "update"])
+                    bind_actions=["create", "delete", "update"], 
+                    events=dict(create_event=config.maybe_dotted(".subscribers.EventCreate"), 
+                                update_event=config.maybe_dotted(".subscribers.EventUpdate"), 
+                                delete_event=config.maybe_dotted(".subscribers.EventDelete"), 
+                                ))
 
     ## bind event
     config.add_subscriber(".subscribers.event_register_solr", ".subscribers.EventCreate")

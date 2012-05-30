@@ -48,6 +48,7 @@
   ## operation
   <div class="span6">
     <a class="btn" href="${request.route_path("page_add", event_id=event.id)}"><i class="icon-plus"> </i> ページ追加</a>
+    <a href="${request.route_path("event_update",action="input",id=event.id)}" class="btn "><i class="icon-cog "> </i> Update</a>
     <a class="btn" href=""><i class="icon-eye-open"> </i> Preview</a>
     <a class="btn" href=""><i class="icon-refresh"> </i> Sync</a>
   </div>

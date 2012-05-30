@@ -1,6 +1,7 @@
 from zope.interface import implementer
 from altaircms.interfaces import IModelEvent
-from . import api
+from ..solr import api as solr
+from ..page import api as pageapi
 
 def notify_event_create(request, event, params=None):
     registry = request.registry
@@ -38,11 +39,13 @@ class EventDelete(object):
 ## need async
 ##
 def event_register_solr(self): # self is EventCreate/EventUpdate
+    ftsearch = solr.get_fulltext_search(self.request)
     event = self.obj
     for page in event.pages:
-        api.ftsearch_register_from_page(self.request, page)
+        pageapi.ftsearch_register_from_page(self.request, page, ftsearch=ftsearch)
  
 def event_delete_solr(self):
+    ftsearch = solr.get_fulltext_search(self.request)
     event = self.obj
     for page in event.pages:
-        api.ftsearch_delete_register_from_page(self.request, page)
+        pageapi.ftsearch_delete_register_from_page(self.request, page, ftsearch=ftsearch)

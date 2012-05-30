@@ -37,13 +37,13 @@ def doc_from_page(page):
     return doc
 
 
-def ftsearch_register_from_page(request, page):
-    ftsearch = solr.get_fulltext_search(request)
+def ftsearch_register_from_page(request, page, ftsearch=None):
+    ftsearch = ftsearch or solr.get_fulltext_search(request)
     doc = doc_from_page(page)
     ftsearch.register(doc, commit=True)
 
 
-def ftsearch_delete_register_from_page(request, page):
-    ftsearch = solr.get_fulltext_search(request)
+def ftsearch_delete_register_from_page(request, page, ftsearch=None):
+    ftsearch = ftsearch or solr.get_fulltext_search(request)
     doc = solr.create_doc_from_dict({"page_id": page.id})
     ftsearch.delete(doc, commit=True)

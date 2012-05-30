@@ -17,7 +17,9 @@ class AfterInput(Exception):
 from altaircms.security import RootFactory
 class CRUDResource(RootFactory): ## fixme
     flow_api = flow_api
-    def __init__(self, prefix, title, model, form, mapper, endpoint, filter_form, request):
+    def __init__(self, prefix, title, model, form, mapper, endpoint, filter_form,
+                 request,
+                 create_event=None, update_event=None, delete_event=None):
         self.prefix = prefix
         self.title = title
         self.model = model
@@ -26,6 +28,10 @@ class CRUDResource(RootFactory): ## fixme
         self.endpoint = endpoint
         self.filter_form = filter_form
         self.request = request
+
+        self.create_event = create_event
+        self.update_event = update_event
+        self.delete_event = delete_event
 
     def join(self, ac):
         return "%s_%s" % (self.prefix, ac)
@@ -53,6 +59,10 @@ class CRUDResource(RootFactory): ## fixme
     def create_model_from_form(self, form):
         obj = model_from_dict(self.model, form.data)
         DBSession.add(obj)
+
+        if self.create_event:
+            ## IModelEvent
+            self.request.registry.notify(self.create_event(self.request, obj, form.data))
         return obj
 
     def get_model_obj(self, id):
@@ -76,10 +86,15 @@ class CRUDResource(RootFactory): ## fixme
         for k, v in form.data.iteritems():
             if v: setattr(obj, k, v)
         DBSession.add(obj)
+
+        if self.update_event:
+            self.request.registry.notify(self.update_event(self.request, obj, form.data))
         return obj
 
     ## delete
     def delete_model(self, obj):
+        if self.delete_event:
+            self.request.registry.notify(self.delete_event(self.request, obj, {}))
         DBSession.delete(obj)
 
 
@@ -203,7 +218,8 @@ class SimpleCRUDFactory(object):
         endpoint = self._join("list")
         resource = functools.partial(
             self.Resource, 
-            self.prefix, self.title, self.model, self.form, self.mapper, endpoint, self.filter_form)
+            self.prefix, self.title, self.model, self.form, self.mapper, endpoint, self.filter_form, 
+            **(events or {})) #events. e.g create_event, update_event, delete_event
 
         if "list" in bind_actions:
             config.add_route(self._join("list"), "/%s" % self.prefix, factory=resource)
