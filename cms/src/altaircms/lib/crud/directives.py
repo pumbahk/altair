@@ -2,9 +2,14 @@ from .views import SimpleCRUDFactory
 import logging
 logger = logging.getLogger(__file__)
 
-def add_crud(config, prefix, title=None, model=None, form=None, mapper=None, bind_actions=None, filter_form=None):
+def add_crud(config, prefix, title=None, model=None, form=None, mapper=None, bind_actions=None, filter_form=None, events=None):
     bind_actions = bind_actions or ["create", "update", "delete", "list"]
     logger.debug("crud: auto generate view route = %s" % [u"%s_%s" % (prefix, a)for a in bind_actions])
+
+    if events:
+        assert len(bind_actions) == len(events) ## zipped
+    else:
+        events = [None] * len(bind_actions)
 
     model = config.maybe_dotted(model)
     form = config.maybe_dotted(form)

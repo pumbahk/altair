@@ -199,7 +199,7 @@ class SimpleCRUDFactory(object):
     def _join(self, ac):
         return "%s_%s" % (self.prefix, ac)
         
-    def bind(self, config, bind_actions):
+    def bind(self, config, bind_actions, events=None):
         endpoint = self._join("list")
         resource = functools.partial(
             self.Resource, 
