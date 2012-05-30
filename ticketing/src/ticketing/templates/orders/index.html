@@ -1,10 +1,5 @@
 <%inherit file="/layout.html"/>
-<%namespace file="/common/helpers.html" import="flash_messages" />
-<%namespace file="/common/helpers.html" import="safe_strftime" />
-<%namespace file="/common/helpers.html" import="price_format" />
-<%namespace file="/common/helpers.html" import="breadcrumbs" />
-<%namespace file="/common/helpers.html" import="pager"/>
-<%namespace file="/common/helpers.html" import="sortable"/>
+<%namespace file="/common/helpers.html" name="h" />
 
 <style>
   .ordered-item {
@@ -26,7 +21,7 @@
   <%include file="/parts/_menu.html" />
 
   <div class="span10">
-    ${breadcrumbs(
+    ${h.breadcrumbs(
       names=[u'トップ', u'購入情報'],
       urls=[request.route_path('index')]
     )}
@@ -38,16 +33,20 @@
     </div>
 
     <div class="content">
-      ${flash_messages(request)}
+      ${h.flash_messages(request)}
     </div>
+
+    <span style="float: left;">
+      <%include file="/orders/_search.html" />
+    </span>
 
     <table class="table table-striped table-bordered">
       <thead>
       <tr>
         <th class="minwidth"></th>
-        <th class="minwidth">${sortable(form.id)}</th>
-        <th class="span2">${sortable(form.created_at)}</th>
-        <th class="span2">${sortable(form.total_amount)}</th>
+        <th class="minwidth">${h.sortable(form.id)}</th>
+        <th class="span2">${h.sortable(form.created_at)}</th>
+        <th class="span2">${h.sortable(form.total_amount)}</th>
         <th class="span2">ユーザー</th>
         <th>イベント</th>
         <th class="span2">日時</th>
@@ -59,8 +58,8 @@
       <tr>
         <td></td>
         <td>${order.id}</td>
-        <td><a href="${request.route_path('orders.show', order_id=order.id)}">${safe_strftime(order.created_at)}</a></td>
-        <td>${price_format(order.total_amount)}円</td>
+        <td><a href="${request.route_path('orders.show', order_id=order.id)}">${h.safe_strftime(order.created_at)}</a></td>
+        <td>${h.price_format(order.total_amount)}円</td>
         <td>${order.user.user_profile.nick_name}</td>
         <td>${order.ordered_products[0].product.event.title}</td>
         <td>${order.ordered_products[0].ordered_product_items[0].product_item.performance.start_on}</td>
@@ -69,7 +68,7 @@
       <tr>
         <td colspan="8">
           % for ordered_product in order.ordered_products:
-          <span class="ordered-item">${ordered_product.product.name} ${price_format(ordered_product.product.price)}円</span>
+          <span class="ordered-item">${ordered_product.product.name} ${h.price_format(ordered_product.product.price)}円</span>
           % endfor
         </td>
       </tr>
@@ -77,5 +76,5 @@
       </tbody>
     </table>
   </span>
-  ${pager(orders)}
+  ${h.pager(orders)}
 </div>

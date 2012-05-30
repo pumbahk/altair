@@ -26,6 +26,18 @@ class Orders(BaseView):
         query = Order.filter(Order.organization_id==int(self.context.user.organization_id))
         query = query.order_by(sort + ' ' + direction)
 
+        # search condition
+        if self.request.method == 'POST':
+            condition = self.request.POST.get('order_number')
+            if condition:
+                query = query.filter(Order.id==condition)
+            condition = self.request.POST.get('order_datetime_from')
+            if condition:
+                query = query.filter(Order.created_at>=condition)
+            condition = self.request.POST.get('order_datetime_to')
+            if condition:
+                query = query.filter(Order.created_at<=condition)
+
         orders = paginate.Page(
             query,
             page=int(self.request.params.get('page', 0)),
