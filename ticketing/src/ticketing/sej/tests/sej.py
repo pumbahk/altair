@@ -72,6 +72,57 @@ class SejTest(unittest.TestCase):
             assert row['notification_type'] == 92
         assert len(data) == 4
 
+    def test_file_payment_info(self):
+        '''支払い案内:SEITIS94_30516_20111008'''
+        import os
+        from ticketing.sej.payment import SejPaymentInfoFileParser
+        body = open(os.path.dirname(__file__)+ '/data/SEITIS94_30516_20111008', 'r').read()
+        parser = SejPaymentInfoFileParser()
+        data = parser.parse(body)
+        for row in data:
+            assert row['notification_type'] == 94
+        assert len(data) == 30
+
+    def test_file_check_cancel_pay(self):
+        '''□会計取消（入金）:SEITIS95_30516_20110915'''
+        import os
+        from ticketing.sej.payment import SejCheckFileParser
+        body = open(os.path.dirname(__file__)+ '/data/SEITIS95_30516_20110915', 'r').read()
+        parser = SejCheckFileParser()
+        data = parser.parse(body)
+        for row in data:
+            assert row['notification_type'] == 95
+
+
+    def test_file_check_cancel_ticketing(self):
+        '''□会計取消（発券）:SEITIS96_30516_20110915'''
+        import os
+        from ticketing.sej.payment import SejCheckFileParser
+        body = open(os.path.dirname(__file__)+ '/data/SEITIS96_30516_20110915', 'r').read()
+        parser = SejCheckFileParser()
+        data = parser.parse(body)
+        for row in data:
+            assert row['notification_type'] == 96
+
+    def test_file_refund_commit(self):
+        '''□払戻確定:SEITIS97_30516_20110916'''
+        import os
+        from ticketing.sej.payment import SejRefundFileParser
+        body = open(os.path.dirname(__file__)+ '/data/SEITIS97_30516_20110916', 'r').read()
+        parser = SejRefundFileParser()
+        data = parser.parse(body)
+        for row in data:
+            assert row['notification_type'] == 97
+    def _test_file_refund_cancel(self):
+        '''□払戻取消:SEITIS98_30516_20110916'''
+        import os
+        from ticketing.sej.payment import SejRefundFileParser
+        body = open(os.path.dirname(__file__)+ '/data/SEITIS98_30516_20110916', 'r').read()
+        parser = SejRefundFileParser()
+        data = parser.parse(body)
+        for row in data:
+            assert row['notification_type'] == 98
+
     def test_callback_pay_notification(self):
         '''入金発券完了通知'''
         import sqlahelper
@@ -442,7 +493,7 @@ class SejTest(unittest.TestCase):
         sejTicket.process_type     = SejOrderUpdateReason.Change.v
         sejTicket.billing_number  = u'00000001'
         sejTicket.ticket_count  = 1
-        sejTicket.url_info      = u'https://www.r1test.com/order/hi.do&iraihyo_id_00=11111111'
+        sejTicket.exchange_sheet_url      = u'https://www.r1test.com/order/hi.do&iraihyo_id_00=11111111'
         sejTicket.order_id      = u'orderid00001'
         sejTicket.exchange_sheet_number = u'11111111'
         sejTicket.order_at      = datetime.datetime.now()

@@ -33,7 +33,7 @@ class SejInstantPaymentFileParser(SejFileParser):
             ticket_count        = row.get_int(2),
             return_count        = row.get_int(2),
             cancel_reason       = row.get_col(2),
-            process_date        = row.get_datetime(14),
+            process_at          = row.get_datetime(14),
             checksum            = row.get_col(32)
         )
         return data
@@ -50,6 +50,22 @@ class SejExpiredFileParser(SejFileParser):
             bill_number         = row.get_col(13),
             exchange_number     = row.get_col(13),
             checksum            = row.get_col(32),
+        )
+        return data
+
+class SejPaymentInfoFileParser(SejFileParser):
+    def parse_row(self, row):
+        data = dict(
+            segment             = 'D',
+            notification_type   = row.get_int(2),
+            ticket_barcode_number
+                                = row.get_col(13),
+            order_id            = row.get_col(12),
+            credit_price        = row.get_col(6),
+            recieved_at         = row.get_datetime(14),
+            close_at            = row.get_datetime(14),
+            pay_at              = row.get_datetime(14),
+            payment_for         = row.get_int(2),
         )
         return data
 
@@ -71,6 +87,44 @@ class SejRefundFileParser(SejFileParser):
             refund_cancel_reason= row.get_int(2), # 02:払戻取消のとき
             refund_cancel_datetime
                                 = row.get_datetime(14)
+        )
+        return data
+
+class SejCheckFileParser(SejFileParser):
+    def parse_row(self, row):
+        data = dict(
+            segment             = 'D',
+            shop_id             = row.get_col(5),
+            order_id            = row.get_col(12),
+            notification_type   = int(row.get_col(2)),
+            payment_type        = row.get_int(2),
+            billing_number      = row.get_col(13),
+            exchnage_number     = row.get_col(13),
+            receipt_amount      = row.get_int(6),
+            ticket_total_count  = row.get_int(2),
+            ticket_count        = row.get_int(2),
+            return_count        = row.get_int(2),
+            cancel_readon       = row.get_int(2),
+            process_at         = row.get_datetime(14),
+        )
+        return data
+
+class SejRefundFileParser(SejFileParser):
+    def parse_row(self, row):
+        data = dict(
+            segment             = 'D',
+            notification_type   = int(row.get_col(2)),
+            ticket_barcode_number
+                                = row.get_col(13),
+            order_id            = row.get_col(12),
+            ticket_refund_amount= row.get_int(6),
+            other_refund_amount = row.get_int(6),
+            recieved_at         = row.get_datetime(14),
+            payment_type        = row.get_int(2),
+            refund_status       = row.get_int(2),
+            refund_reason       = row.get_int(2),
+            refund_at           = row.get_datetime(14),
+
         )
         return data
 
