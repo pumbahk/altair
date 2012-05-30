@@ -194,3 +194,86 @@ class Checkout3DTests(unittest.TestCase):
         self.assertEqual(result.CardErrorCd, "012345")
         self.assertEqual(result.ReqYmd, "20120529")
         self.assertEqual(result.CmnErrorCd, "012345")
+
+    def test_parse_inquiry_response_card_xml(self):
+        import xml.etree.ElementTree as etree
+        data = """<?xml version="1.0"?>
+        <Message>
+            <Request>
+                <Storecd>1111111111</Storecd>
+            </Request>
+            <Result>
+                <Info>
+                    <EventDate>20120529</EventDate>
+                    <Status>012</Status>
+                    <CardErrorCd>012345</CardErrorCd>
+                    <ApprovalNo>0123456</ApprovalNo>
+                    <CmnErrorCd>012345</CmnErrorCd>
+                </Info>
+                <Order>
+                    <OrderNo>0123456789012345678901</OrderNo>
+                    <ItemName>01234567890123456789012345678901234567890123</ItemName>
+                    <OrderYMD>20120530</OrderYMD>
+                    <SalesAmount>7777777</SalesAmount>
+                    <FreeData>NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN</FreeData>
+                </Order>
+                <ClientInfo>
+                    <ClientName>Ticket Star</ClientName>
+                    <MailAddress>ticketstar@example.com</MailAddress>
+                    <MailSend>1</MailSend>
+                </ClientInfo>
+                <CardInfo>
+                    <CardNo>XXXXXXXXXXXXXXXX</CardNo>
+                    <CardLimit>1211</CardLimit>
+                    <CardHolderName>RAKUTEN TAROU</CardHolderName>
+                    <PayKindCd>2</PayKindCd>
+                    <PayCount>10</PayCount>
+                    <SecureKind>1</SecureKind>
+                </CardInfo>
+                <History>
+                    <BizClassCd>AA</BizClassCd>
+                    <EventDate>20120530</EventDate>
+                    <SalesAmount>9999999</SalesAmount>
+                </History>
+                <History>
+                    <BizClassCd>AA</BizClassCd>
+                    <EventDate>20120529</EventDate>
+                    <SalesAmount>8888888</SalesAmount>
+                </History>
+            </Result>
+        </Message>
+        """
+        target = self._makeOne(None, None, api_base_url="http://example.com/", shop_code="SHOP")
+
+        el = etree.XML(data)
+        result = target._parse_inquiry_response_card_xml(el)
+        self.assertEqual(result.Storecd, "1111111111")
+
+        self.assertEqual(result.EventDate, "20120529")
+        self.assertEqual(result.Status, "012")
+        self.assertEqual(result.CardErrorCd, "012345")
+        self.assertEqual(result.ApprovalNo, "0123456")
+        self.assertEqual(result.CmnErrorCd, "012345")
+
+        self.assertEqual(result.OrderNo, "0123456789012345678901")
+        self.assertEqual(result.ItemName, "01234567890123456789012345678901234567890123")
+        self.assertEqual(result.OrderYMD, "20120530")
+        self.assertEqual(result.SalesAmount, "7777777")
+        self.assertEqual(result.FreeData, "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN")
+
+        self.assertEqual(result.ClientName, "Ticket Star")
+        self.assertEqual(result.MailAddress, "ticketstar@example.com")
+        self.assertEqual(result.MailSend, "1")
+
+        self.assertEqual(result.CardNo, "XXXXXXXXXXXXXXXX")
+        self.assertEqual(result.CardLimit, "1211")
+        self.assertEqual(result.CardHolderName, "RAKUTEN TAROU")
+        self.assertEqual(result.PayKindCd, "2")
+        self.assertEqual(result.PayCount, "10")
+        self.assertEqual(result.SecureKind, "1")
+
+        self.assertEqual(len(result.histories), 2)
+        h1 = result.histories[0]
+        self.assertEqual(h1.BizClassCd, "AA")
+        self.assertEqual(h1.EventDate, "20120530")
+        self.assertEqual(h1.SalesAmount, 9999999)

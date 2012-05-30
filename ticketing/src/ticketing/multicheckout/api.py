@@ -147,4 +147,69 @@ class Checkout3D(object):
         return card_response
 
     def _parse_inquiry_response_card_xml(self, element):
-        return m.MultiCheckoutInquiryResponseCard()
+        inquiry_card_response = m.MultiCheckoutInquiryResponseCard()
+        assert element.tag == "Message"
+        for e in element:
+            if e.tag == "Request":
+                for sube in e:
+                    if sube.tag == "Storecd":
+                        inquiry_card_response.Storecd = sube.text
+            if e.tag == "Result":
+                for sube in e:
+                    if sube.tag == "Info":
+                        for ssube in sube:
+                            if ssube.tag == "EventDate":
+                                inquiry_card_response.EventDate = ssube.text
+                            elif ssube.tag == "Status":
+                                inquiry_card_response.Status = ssube.text
+                            elif ssube.tag == "CardErrorCd":
+                                inquiry_card_response.CardErrorCd = ssube.text
+                            elif ssube.tag == "ApprovalNo":
+                                inquiry_card_response.ApprovalNo = ssube.text
+                            elif ssube.tag == "CmnErrorCd":
+                                inquiry_card_response.CmnErrorCd = ssube.text
+                    elif sube.tag == "Order":
+                        for ssube in sube:
+                            if ssube.tag == "OrderNo":
+                                inquiry_card_response.OrderNo = ssube.text
+                            elif ssube.tag == "ItemName":
+                                inquiry_card_response.ItemName = ssube.text
+                            elif ssube.tag == "OrderYMD":
+                                inquiry_card_response.OrderYMD = ssube.text
+                            elif ssube.tag == "SalesAmount":
+                                inquiry_card_response.SalesAmount = ssube.text
+                            elif ssube.tag == "FreeData":
+                                inquiry_card_response.FreeData = ssube.text
+                    elif sube.tag == "ClientInfo":
+                        for ssube in sube:
+                            if ssube.tag == "ClientName":
+                                inquiry_card_response.ClientName = ssube.text
+                            elif ssube.tag == "MailAddress":
+                                inquiry_card_response.MailAddress = ssube.text
+                            elif ssube.tag == "MailSend":
+                                inquiry_card_response.MailSend = ssube.text
+                    elif sube.tag == "CardInfo":
+                        for ssube in sube:
+                            if ssube.tag == "CardNo":
+                                inquiry_card_response.CardNo = ssube.text
+                            elif ssube.tag == "CardLimit":
+                                inquiry_card_response.CardLimit = ssube.text
+                            elif ssube.tag == "CardHolderName":
+                                inquiry_card_response.CardHolderName = ssube.text
+                            elif ssube.tag == "PayKindCd":
+                                inquiry_card_response.PayKindCd = ssube.text
+                            elif ssube.tag == "PayCount":
+                                inquiry_card_response.PayCount = ssube.text
+                            elif ssube.tag == "SecureKind":
+                                inquiry_card_response.SecureKind = ssube.text
+                    elif sube.tag == "History":
+                        history = m.MultiCheckoutInquiryResponseCardHistory(inquiry=inquiry_card_response)
+                        for ssube in sube:
+                            if ssube.tag == "BizClassCd":
+                                history.BizClassCd = ssube.text
+                            elif ssube.tag == "EventDate":
+                                history.EventDate = ssube.text
+                            elif ssube.tag == "SalesAmount":
+                                history.SalesAmount = int(ssube.text)
+
+        return inquiry_card_response
