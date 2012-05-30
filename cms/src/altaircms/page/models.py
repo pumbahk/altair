@@ -124,6 +124,7 @@ class Page(PublishUnpublishMixin,
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
     title = Column(Unicode(255), default=u"")
+    keywords = Column(Unicode(255), default=u"")
     description = Column(Unicode(255), default=u"")
     url = Column(String(255), unique=True, index=True)
     version = Column(Integer, default=1)

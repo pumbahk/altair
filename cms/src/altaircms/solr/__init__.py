@@ -5,7 +5,7 @@ solrに必要なのはアクセス用のURL.::
 
   altaircms.solr.server_url = http://localhost:8080/solr
   altaircms.solr.search.utility = altaircms.solr.api.DummySearch or\
-    altaircms.solr.search.utility = altaircms.solr.api.SolrSearch
+  altaircms.solr.search.utility = altaircms.solr.api.SolrSearch
 全文検索の機能の利用方法::
 
   ftsearch = api.get_fulltext_search(request)

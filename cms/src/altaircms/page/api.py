@@ -11,16 +11,15 @@ def doc_from_event(doc, event): ## fixme
     doc.update(event_title=event.title, 
                event_subtitle=event.subtitle, 
                event_place=event.place, 
-               event_description=event.description
-               )
+               event_description=event.description)
     return doc 
 
 def _doc_from_page(doc, page):
-    doc.update(
-        dict(page_description=page.description, 
-             page_title=page.title, 
-             id=page.pageset.id, 
-             page_id=page.id))
+    doc.update(page_description=page.description, 
+               page_title=page.title, 
+               id=page.pageset.id, 
+               pageset_id=page.pageset.id, 
+               page_id=page.id)
     return doc
     
 def doc_from_page(page):

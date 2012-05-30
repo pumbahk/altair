@@ -8,6 +8,11 @@ def includeme(config):
                     form=".forms.EventForm", mapper=".mappers.event_mapper", 
                     bind_actions=["create", "delete", "update"])
 
+    ## bind event
+    config.add_subscriber(".subscribers.event_register_solr", ".subscribers.EventCreate")
+    config.add_subscriber(".subscribers.event_register_solr", ".subscribers.EventUpdate")
+    config.add_subscriber(".subscribers.event_delete_solr", ".subscribers.EventDelete") ## fixme
+
     # バックエンドからの受取り用。
     # 認証方式が異なるため独立したインターフェースを設ける。
     config.add_route('api_event_register', '/api/event/register')

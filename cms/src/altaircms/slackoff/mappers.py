@@ -38,7 +38,7 @@ def promotion_unit_mapper(request, obj):
 PDICT = import_symbol("altaircms.seeds.prefecture:PrefectureMapping").name_to_label
 def performance_mapper(request, obj):
     objlike = ObjectLike(**model_to_dict(obj))
-    objlike.event = obj.event.title if obj.event else None
+    objlike.event = RawText(u'<a href="%s">%s</a>' % (request.route_path("event", id=obj.event.id), obj.event.title)) if obj.event else u"-"
     objlike.prefecture = PDICT.get(obj.prefecture, u"-")
     return objlike
 
@@ -51,13 +51,7 @@ def category_mapper(request, obj):
     objlike = ObjectLike(**model_to_dict(obj))
     objlike.parent = obj.parent.name if obj.parent else None
 
-    class pageLinkRender(object):
-        def __html__(self):
-            if obj.pageset:
-                return u'<a href="%s">%s</a>' % (h.link.to_publish_page_from_pageset(request, obj.pageset), obj.pageset.name)
-            else:
-                return u"-"
-    objlike.pageset = pageLinkRender()
+    objlike.pageset = RawText(u'<a href="%s">%s</a>' % (h.link.to_publish_page_from_pageset(request, obj.pageset), obj.pageset.name)) if obj.pageset else u"-"
     objlike.imgsrc = RawText(u'<img src="%s"/>' % obj.imgsrc)
     for k, v in objlike.iteritems():
         if v is None:
@@ -66,7 +60,7 @@ def category_mapper(request, obj):
 
 def topic_mapper(request, obj):
     objlike = ObjectLike(**model_to_dict(obj))
-    objlike.event = obj.event.title if obj.event else u"-"
+    objlike.event = RawText(u'<a href="%s">%s</a>' % (request.route_path("event", id=obj.event.id), obj.event.title)) if obj.event else u"-"
     objlike.text = obj.text if len(obj.text) <= 20 else obj.text[:20]+u"..."
     objlike.bound_page = obj.bound_page.name if obj.bound_page else u"-"
     objlike.linked_page = obj.linked_page.name if obj.linked_page else u"-"

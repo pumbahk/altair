@@ -27,8 +27,7 @@ class PageUpdate(object):
         self.request = request
         self.obj = obj
         self.params = params
-
-
+        
 @implementer(IModelEvent)
 class PageDelete(object):
     def __init__(self, request, obj, params=None):

@@ -24,7 +24,7 @@ def includeme(config):
     ## bind event
     config.add_subscriber(".subscribers.page_register_solr", ".subscribers.PageCreate")
     config.add_subscriber(".subscribers.page_register_solr", ".subscribers.PageUpdate")
-    # config.add_subscriber(".subscribers.page_delete_solr", "subscribers.PageDelete") ## fixme
+    config.add_subscriber(".subscribers.page_delete_solr", ".subscribers.PageDelete") ## fixme
 
 
     config.scan('.views')
