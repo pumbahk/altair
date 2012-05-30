@@ -13,7 +13,6 @@ from altaircms.event.models import Event
 
 
 import altaircms.tag.api as tag
-from altaircms.page.mappers import PageMapper, PagesMapper
 
 from altaircms.lib.fanstatic_decorator import with_bootstrap
 from altaircms.lib.fanstatic_decorator import with_jquery
@@ -197,7 +196,7 @@ def page_edit(request):
         return HTTPFound(request.route_path("page"))
     
     layout_render = request.context.get_layout_render(page)
-    forms = request.context.get_forms(page)
+    forms = request.context.get_disposition_forms(page)
     return {
             'event':page.event,
             'page':page,
@@ -208,8 +207,9 @@ def page_edit(request):
 ## widgetの保存 場所移動？
 @view_config(route_name="disposition", request_method="POST", permission='authenticated')
 def disposition_save(context, request):
-    form = context.get_confirmed_form(request.POST)
-    page = context.get_page(request.matchdict["id"])
+    form = context.Form(request.POST)
+    page = context.Page.query.filter_by(id=request.matchdict["id"]).first()
+
     if form.validate():
         wdisposition = context.get_disposition_from_page(page, form.data)
         context.add(wdisposition)
@@ -221,13 +221,13 @@ def disposition_save(context, request):
 
 @view_config(route_name="disposition", request_method="GET", permission='authenticated')
 def disposition_load(context, request):
-    page = context.get_page(request.matchdict["id"])
+    page = context.Page.query.filter_by(id=request.matchdict["id"]).first()
     wdisposition = context.get_disposition(request.GET["disposition"])
-    page = context.bind_disposition(page, wdisposition)
-    context.add(page)
+    loaded_page = context.bind_disposition(page, wdisposition)
+    context.add(loaded_page)
     
     FlashMessage.success(u"widgetのデータが読み込まれました", request=request)
-    return HTTPFound(h.page.to_edit_page(request, page))
+    return HTTPFound(h.page.to_edit_page(request, loaded_page))
 
 
 @view_config(route_name="disposition_list", renderer="altaircms:templates/widget/disposition/list.mako", 

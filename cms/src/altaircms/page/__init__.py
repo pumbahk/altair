@@ -22,8 +22,8 @@ def includeme(config):
     config.add_route('pageset_update', '/pagesets/{pageset_id}/update')
 
     ## bind event
-    config.add_subscriber(".subscribers.page_register_solr", "subscribers.PageCreate")
-    config.add_subscriber(".subscribers.page_register_solr", "subscribers.PageUpdate")
+    config.add_subscriber(".subscribers.page_register_solr", ".subscribers.PageCreate")
+    config.add_subscriber(".subscribers.page_register_solr", ".subscribers.PageUpdate")
     # config.add_subscriber(".subscribers.page_delete_solr", "subscribers.PageDelete") ## fixme
 
 

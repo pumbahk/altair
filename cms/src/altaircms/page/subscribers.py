@@ -1,6 +1,6 @@
-from altaircms.solr import api as solr
 from zope.interface import implementer
 from altaircms.interfaces import IModelEvent
+from . import api
 
 def notify_page_create(request, page, params=None):
     registry = request.registry
@@ -36,14 +36,10 @@ class PageDelete(object):
         self.obj = obj
         self.params = params
 
-def page_register_solr(self):
+def page_register_solr(self): # self is PageCreate/PageUpdate
     page = self.obj
-    ftsearch = solr.get_fulltext_search(self.request)
-    doc = solr.create_doc_from_page(page)
-    ftsearch.register(doc, commit=True)
+    api.ftsearch_register_from_page(self.request, page)
  
 def page_delete_solr(self):
     page = self.obj
-    ftsearch = solr.get_fulltext_seayrch(self.request)
-    doc = solr.create_doc_from_dict({"page_id": page.id})
-    ftsearch.delete(doc, commit=True)
+    api.ftsearch_delete_register_from_page(self.request, page)

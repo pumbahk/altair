@@ -1,10 +1,12 @@
+# -*- encoding:utf-8 -*-
+
 import solr
 import logging
 logger = logging.getLogger(__name__)
 from zope.interface import implementer
 from pyramid.decorator import reify
 from .interfaces import IFulltextSearch
-
+import random
 
 def get_fulltext_search(request):
     search_cls = request.registry.getUtility(IFulltextSearch)
@@ -93,30 +95,7 @@ def create_query_from_freeword(words, query_cond=None):
 
 ## doc
 def create_doc_from_dict(D):
-    return SolrSearchDoc(D)
-                
-def create_doc_from_event(event): ## fixme
-    return SolrSearchDoc(
-        dict(event_title=event.title, 
-             event_subtitle=event.subtitle, 
-             event_place=event.place
-             ))
-
-def create_doc_from_page(page):
-    """ id == page.pageset.id 
-    """
-    if page.event:
-        doc = create_doc_from_event(page.event)
-    else:
-        doc = SolrSearchDoc()
-
-    doc.update(
-        dict(page_description=page.description, 
-             page_title=page.title, 
-             page_keywords=page.keywords, 
-             id=page.pageset.id, 
-             page_id=page.id))
-    return doc
+    return SolrSearchDoc(D)              
 
 @implementer(IFulltextSearch)
 class SolrSearch(object):
@@ -146,6 +125,10 @@ class SolrSearch(object):
     def register(self, doc, commit=False):
         logger.debug(u"fulltext search register: %s" % doc)
         self.solr.add(doc.query_doc, commit=commit)
+
+        ## 5回に1回位はoptimizeした方が良いらしい。
+        # if 0.2 >= random.random():
+        #     self.solr.optimize()
 
     def delete(self, doc, commit=False):
         logger.debug(u"fulltext search delete: %s" % doc)

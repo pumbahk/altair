@@ -8,32 +8,26 @@ from altaircms.layout import renderable
 
 from altaircms.widget.models import WidgetDisposition
 from altaircms.tag.api import put_tags
-from sqlalchemy.orm.exc import NoResultFound
 from . import helpers as h
 from . import models
-from . import events
-from altaircms.solr import api as solr
-from .clone import page_clone
-def add_solr(page, request):
-    ftsearch = solr.get_fulltext_search_utility(request)
-    doc = solr.create_doc_from_page(page)
-    ftsearch.register(doc, commit=True)
+from . import subscribers
+
+
+def add_data(self, data, flush=False):
+    DBSession.add(data)
+    if flush:
+        DBSession.flush()
+
+def delete_data(self, obj, flush=False):
+    DBSession.delete(obj)
+    if flush:
+        DBSession.flush()
 
 class WDispositionResource(security.RootFactory):
-    def get_confirmed_form(self, postdata):
-        form = wf.WidgetDispositionSaveForm(postdata)
-        return form
-
-    def get_forms(self, page):
-        return {"disposition_select": self._wdp_select_form(page), 
-                "disposition_save": self._wdp_save_form(page)}
-
-    def _wdp_select_form(self, page):
-        return wf.WidgetDispositionSelectForm()
-
-    def _wdp_save_form(self, page):
-        user = self.request.user
-        return wf.WidgetDispositionSaveForm(page=page.id, owner_id=user.id)
+    Page = models.Page
+    Form = wf.WidgetDispositionSaveForm
+    add = add_data
+    delete = delete_data
 
     def get_disposition_from_page(self, page, data=None):
         wd = WidgetDisposition.from_page(page, DBSession)
@@ -60,6 +54,14 @@ class WDispositionResource(security.RootFactory):
     
 class PageResource(security.RootFactory):
     Page = models.Page
+    add = add_data
+    delete = delete_data
+
+    def get_disposition_forms(self, page):
+        user = self.request.user
+        return {"disposition_select": wf.WidgetDispositionSelectForm(), 
+                "disposition_save": wf.WidgetDispositionSaveForm(page=page.id, owner_id=user.id)
+                }
        
     def get_layout_render(self, page):
         layout = DBSession.query(Layout).filter_by(id=page.layout_id).one()
@@ -75,7 +77,7 @@ class PageResource(security.RootFactory):
         pageset = models.PageSet.get_or_create(page)
 
         self.add(page, flush=True)
-        events.notify_page_create(self.request, page, params)
+        subscribers.notify_page_create(self.request, page, params)
         return page
 
     def update_page(self, page, form):
@@ -85,25 +87,15 @@ class PageResource(security.RootFactory):
         put_tags(page, "page", tags, private_tags, self.request)
 
         self.add(page, flush=True)
-        events.notify_page_update(self.request, page, params)
+        subscribers.notify_page_update(self.request, page, params)
         return page
 
     def delete_page(self, page):
-        events.notify_page_delete(self.request, page)
+        subscribers.notify_page_delete(self.request, page)
         self.delete(page)
 
     def clone_page(self, page):
-        cloned = page_clone(self.request, DBSession)
-        events.notify_page_create(self.request, cloned)
+        cloned = page.clone(DBSession)
+        subscribers.notify_page_create(self.request, cloned)
         return cloned
-
-    def add(self, data, flush=False):
-        DBSession.add(data)
-        if flush:
-            DBSession.flush()
-
-    def delete(self, obj, flush=False):
-        DBSession.delete(obj)
-        if flush:
-            DBSession.flush()
 
