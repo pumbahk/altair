@@ -277,3 +277,73 @@ class Checkout3DTests(unittest.TestCase):
         self.assertEqual(h1.BizClassCd, "AA")
         self.assertEqual(h1.EventDate, "20120530")
         self.assertEqual(h1.SalesAmount, 9999999)
+
+    def test_request(self):
+        import xml.etree.ElementTree as etree
+        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP")
+        target._httplib = DummyHTTPLib("<Message />")
+        element = etree.XML('<root />')
+        result = target._request('http://example.com/a/b/c', element)
+
+        self.assertEqual(result.tag, 'Message')
+        self.assertEqual(
+            target._httplib.called,
+            [
+                ('HTTPConnection', ['example.com', None]),
+                ('request', ['POST','/a/b/c','<root />',{
+                    'Authorization': 'Basic dXNlcjpwYXNz',
+                    'Content-Type': 'application/xhtml+xml;charset=UTF-8'}]),
+                ('getresponse', []),
+                ('read', [65536]),
+                ('read', [65536]),
+                ('close', [])]
+        )
+
+    def test_request_with_error(self):
+        import xml.etree.ElementTree as etree
+        from .api import MultiCheckoutAPIError
+        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP")
+        target._httplib = DummyHTTPLib("<Message />", status="401")
+        element = etree.XML('<root />')
+        try:
+            result = target._request('http://example.com/a/b/c', element)
+            self.fail("don't reach")
+
+        except MultiCheckoutAPIError:
+            pass
+
+class DummyHTTPLib(object):
+    def __init__(self, response_body, status="200", reason="OK"):
+        self.called = []
+        self.response_body = response_body
+        self.status = status
+        self.reason = reason
+        from io import BytesIO
+        self.response_body = BytesIO(self.response_body)
+
+    def HTTPConnection(self, host, port):
+        self.host = host
+        self.port = port
+        self.called.append(('HTTPConnection', [host, port]))
+        return self
+
+    def HTTPSConnection(self, host, port):
+        self.host = host
+        self.port = port
+        self.called.append(('HTTPSConnection', [host, port]))
+        return self
+
+    def request(self, method, path, body, headers):
+        self.called.append(('request', [method, path, body, headers]))
+
+    def getresponse(self):
+        self.called.append(('getresponse', []))
+        return self
+
+    def read(self, block=-1):
+        self.called.append(('read', [block]))
+        return self.response_body.read(block)
+
+    def close(self):
+        self.called.append(('close', []))
+        self.response_body.close()

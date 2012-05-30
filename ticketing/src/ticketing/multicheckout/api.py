@@ -5,9 +5,15 @@
 
 from xml.etree import ElementTree as etree
 import httplib
+import urlparse
 from . import models as m
 
+class MultiCheckoutAPIError(Exception):
+    pass
+
 class Checkout3D(object):
+    _httplib = httplib
+
     def __init__(self, auth_id, auth_password, shop_code, api_base_url):
         self.auth_id = auth_id
         self.auth_password = auth_password
@@ -16,7 +22,7 @@ class Checkout3D(object):
 
     @property
     def auth_header(self):
-        return "Authorization: Basic " + (self.auth_id + ":" + self.auth_password).encode('base64').strip()
+        return {"Authorization": "Basic " + (self.auth_id + ":" + self.auth_password).encode('base64').strip()}
 
     def secure3d_enrol_url(self, order_no):
         return self.api_url + "/3D-Secure/OrderNo/%(order_no)s/Enrol" % dict(order_no=order_no)
@@ -46,7 +52,37 @@ class Checkout3D(object):
     def request_card_check(self, order_no, card_auth):
         message = self._create_request_card_xml(card_auth, check=True)
         url = self.card_check_url(order_no)
+        self._request(url, message)
+
+    def _request(self, url, message):
         content_type = "application/xhtml+xml;charset=UTF-8"
+        body = etree.tostring(message, encoding='utf-8')
+        url_parts = urlparse.urlparse(url)
+
+        if url_parts.scheme == "http":
+            http = self._httplib.HTTPConnection(host=url_parts.hostname, port=url_parts.port)
+        elif url_parts.scheme == "https":
+            http = self._httplib.HTTPSConnection(host=url_parts.hostname, port=url_parts.port)
+        else:
+            raise ValueError, "unknown scheme %s" % (url_parts.scheme)
+
+        headers = {
+            "Content-Type": content_type,
+        }
+
+        headers.update(self.auth_header)
+
+        http.request(
+            "POST", url_parts.path, body=body,
+            headers=headers)
+        res = http.getresponse()
+        try:
+            if res.status != "200":
+                raise MultiCheckoutAPIError, res.reason
+
+            return etree.parse(res).getroot()
+        finally:
+            res.close()
 
     @property
     def api_url(self):
