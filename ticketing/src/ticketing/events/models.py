@@ -66,14 +66,27 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             BaseModel.save(self)
 
             """
-            Performanceの作成時は以下のモデルをcloneする
-              -Venue
+            Performanceの作成時は以下のモデルを自動生成する
+              - StockHolder (デフォルト枠)
+              - Venue (originalのVenueからclone)
                 - VenueArea
                 - Seat
                   - SeatAttribute
             """
+            # create StockHolder
+            if hasattr(self, 'id') and self.id:
+                account = Account.filter_by(organization_id=self.event.organization_id)\
+                                 .filter_by(user_id=self.event.organization.user_id).first()
+                stock_holder = StockHolder(**dict(
+                    name=u'自社',
+                    performance_id=self.id,
+                    account_id=account.id,
+                    style=None,
+                ))
+                stock_holder.save()
+
             # create Venue
-            if self.venue_id:
+            if hasattr(self, 'venue_id') and self.venue_id:
                 original_venue = Venue.get(self.venue_id)
                 venue = Venue.clone(original_venue)
                 venue.original_venue_id = original_venue.id
@@ -116,7 +129,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                   - SeatAttribute
             """
             # delete Venue
-            if self.delete_venue_id:
+            if hasattr(self, 'delete_venue_id') and self.delete_venue_id:
                 venue = Venue.get(self.delete_venue_id)
                 venue.delete()
 
@@ -143,7 +156,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                   - ProductItem
               - StockAllocation
             """
-            if self.original_id:
+            if hasattr(self, 'original_id') and self.original_id:
                 original_performance = Performance.get(self.original_id)
 
                 # create StockHolder
@@ -174,10 +187,10 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     DBSession.add(stock_allocation)
 
             tran.commit()
-            logging.debug('performance add success')
+            logging.debug('performance save success')
         except Exception, e:
             tran.rollback()
-            logging.error('performance add failed %s' % e.message)
+            logging.error('performance save failed %s' % e.message)
         finally:
             tran.close()
 
