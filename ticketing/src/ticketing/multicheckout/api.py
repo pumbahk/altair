@@ -42,7 +42,7 @@ class Checkout3D(object):
     def card_sales_url(self, order_no):
         return self.api_url + "/card/OrderNo/%(order_no)s/Sales" % dict(order_no=order_no)
 
-    def card_sales_cancel_url(self, order_no):
+    def card_cancel_sales_url(self, order_no):
         return self.api_url + "/card/OrderNo/%(order_no)s/SalesCan" % dict(order_no=order_no)
 
     def card_inquiry_url(self, order_no):
@@ -52,7 +52,39 @@ class Checkout3D(object):
     def request_card_check(self, order_no, card_auth):
         message = self._create_request_card_xml(card_auth, check=True)
         url = self.card_check_url(order_no)
-        self._request(url, message)
+        res = self._request(url, message)
+        return self._parse_response_card_xml(res)
+
+    def request_card_auth(self, order_no, card_auth):
+        message = self._create_request_card_xml(card_auth, check=True)
+        url = self.card_auth_url(order_no)
+        res = self._request(url, message)
+        return self._parse_response_card_xml(res)
+
+    def request_card_cancel_auth(self, order_no, card_auth):
+        message = self._create_request_card_xml(card_auth, check=True)
+        url = self.card_auth_cancel_url(order_no)
+        res = self._request(url, message)
+        return self._parse_response_card_xml(res)
+
+    def request_card_sales(self, order_no, card_auth):
+        message = self._create_request_card_xml(card_auth, check=True)
+        url = self.card_sales_url(order_no)
+        res = self._request(url, message)
+        return self._parse_response_card_xml(res)
+
+    def request_card_cancel_sales(self, order_no, card_auth):
+        message = self._create_request_card_xml(card_auth, check=True)
+        url = self.card_cancel_sales_url(order_no)
+        res = self._request(url, message)
+        return self._parse_response_card_xml(res)
+
+    def request_card_inquiry(self, order_no, card_auth):
+        message = self._create_request_card_xml(card_auth, check=True)
+        url = self.card_inquiry_url(order_no)
+        res = self._request(url, message)
+        return self._parse_inquiry_response_card_xml(res)
+
 
     def _request(self, url, message):
         content_type = "application/xhtml+xml;charset=UTF-8"
@@ -117,8 +149,8 @@ class Checkout3D(object):
         self._add_param(order, 'ItemCd', card_auth.ItemCd, optional=True)
         self._add_param(order, 'ItemName', card_auth.ItemName, optional=True)
         self._add_param(order, 'OrderYMD', card_auth.OrderYMD, optional=check)
-        self._add_param(order, 'SalesAmount', card_auth.SalesAmount, optional=check)
-        self._add_param(order, 'TaxCarriage', card_auth.TaxCarriage, optional=True)
+        self._add_param(order, 'SalesAmount', str(card_auth.SalesAmount), optional=check)
+        self._add_param(order, 'TaxCarriage', str(card_auth.TaxCarriage), optional=True)
         self._add_param(order, 'FreeData', card_auth.FreeData, optional=True)
         self._add_param(order, 'ClientName', card_auth.ClientName, optional=check)
         self._add_param(order, 'MailAddress', card_auth.MailAddress, optional=card_auth.MailSend=='1')
