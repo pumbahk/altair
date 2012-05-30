@@ -88,6 +88,11 @@ class Checkout3D(object):
     def card_inquiry_url(self, order_no):
         return self.api_url + "/card/OrderNo/%(order_no)s" % dict(order_no=order_no)
 
+    def secure3d_enrol(self, order_no):
+        message = self._create_secure3d_enrol_xml(card_auth, check=True)
+        url = self.secure3d_enrol_url(order_no)
+        res = self._request(url, message)
+        return self._parse_response_card_xml(res)
 
     def request_card_check(self, order_no, card_auth):
         message = self._create_request_card_xml(card_auth, check=True)
@@ -171,6 +176,16 @@ class Checkout3D(object):
         e.text = value
         return e
 
+    def _create_secure3d_enrol_xml(self, secure3denrol):
+        message = etree.Element("Message")
+        self._add_param(message, 'CardNumber', secure3denrol.CardNumber)
+        self._add_param(message, 'ExpYear', secure3denrol.ExpYear)
+        self._add_param(message, 'ExpMonth', secure3denrol.ExpMonth)
+        self._add_param(message, 'TotalAmount', str(secure3denrol.TotalAmount))
+        self._add_param(message, 'Currency', secure3denrol.Currency)
+
+        return message
+
     def _create_request_card_xml(self, card_auth, check=False):
         """
         :param card_auth: :class:`.models.MultiCheckoutRequestCard`
@@ -178,7 +193,7 @@ class Checkout3D(object):
         """
 
         # メッセージタグ <Message>
-        message = etree.Element('<Message>')
+        message = etree.Element('Message')
 
         # オーソリ情報 <Message><Auth>
         auth = etree.SubElement(message, 'Auth')

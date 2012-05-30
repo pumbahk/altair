@@ -764,6 +764,28 @@ class Checkout3DTests(unittest.TestCase):
         self.assertEqual(result.AcsUrl, "http://example.com/acs")
         self.assertEqual(result.PaReq, "this-is-pa-req")
 
+    def test_create_secure3d_enrol_xml(self):
+        import xml.etree.ElementTree as etree
+        from . import models as m
+        enrol = m.Secure3DReqEnrolRequest(
+                CardNumber="0123456789012345",
+                ExpYear="12",
+                ExpMonth="11",
+                TotalAmount=1234567,
+                Currency="392",
+        )
+        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP")
+        result = target._create_secure3d_enrol_xml(enrol)
+
+        self.assertEqual(etree.tostring(result),
+            "<Message>"
+            "<CardNumber>0123456789012345</CardNumber>"
+            "<ExpYear>12</ExpYear>"
+            "<ExpMonth>11</ExpMonth>"
+            "<TotalAmount>1234567</TotalAmount>"
+            "<Currency>392</Currency>"
+            "</Message>")
+
 class DummyHTTPLib(object):
     def __init__(self, response_body, status="200", reason="OK"):
         self.called = []
