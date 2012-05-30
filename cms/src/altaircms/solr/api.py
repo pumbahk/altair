@@ -73,27 +73,6 @@ class SolrSearchDoc(object):
 ## query
 def create_query_from_dict(D__=None, **kwargs):
     return SolrSearchQuery(D__ or kwargs)
-
-def _create_dict_from_word(word):
-    """ 検索用の辞書作る
-    solrに格納される各フィールドはcopyfieldとしてsearchtextが設定されている。
-    (see: buildout.cfg 'solr' section)
-    """
-    return dict(searchtext=word)
-    
-def create_query_from_freeword(words, query_cond=None):
-    assert query_cond in ("intersection", "union")
-    
-    if query_cond == "intersection":
-        cop = u" AND "
-    elif query_cond == "union":
-        cop = u" OR "
-
-    q = SolrSearchQuery(_create_dict_from_word(words[0]))
-    for word in words[1:]:
-        q = q.compose(SolrSearchQuery(_create_dict_from_word(word)), cop)
-    return q
-
 ## doc
 def create_doc_from_dict(D):
     return SolrSearchDoc(D)              
@@ -127,9 +106,9 @@ class SolrSearch(object):
         logger.debug(u"fulltext search register: %s" % doc)
         self.solr.add(doc.query_doc, commit=commit)
 
-        ## 5回に1回位はoptimizeした方が良いらしい。
-        # if 0.2 >= random.random():
-        #     self.solr.optimize()
+        # 5回に1回位はoptimizeした方が良いらしい。
+        if 0.2 >= random.random():
+            self.solr.optimize()
 
     def delete(self, doc, commit=False):
         logger.debug(u"fulltext search delete: %s" % doc)
