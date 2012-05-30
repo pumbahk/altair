@@ -786,6 +786,46 @@ class Checkout3DTests(unittest.TestCase):
             "<Currency>392</Currency>"
             "</Message>")
 
+    def test_secure3d_enrol(self):
+        from . import models as m
+        order_no = "this-is-order-no"
+        enrol = m.Secure3DReqEnrolRequest(
+            CardNumber="0123456789012345",
+            ExpYear="12",
+            ExpMonth="11",
+            TotalAmount=1234567,
+            Currency="392",
+        )
+        res_data = """<?xml version="1.0"?>
+        <Message>
+            <Md>this-is-merchant-data</Md>
+            <ErrorCd>012345</ErrorCd>
+            <RetCd>0</RetCd>
+            <AcsUrl>http://example.com/acs</AcsUrl>
+            <PaReq>this-is-pa-req</PaReq>
+        </Message>
+        """
+
+
+        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP")
+        target._httplib = DummyHTTPLib(res_data)
+
+        result = target.secure3d_enrol(order_no, enrol)
+
+        self.assertEqual(target._httplib.body,
+            "<Message>"
+            "<CardNumber>0123456789012345</CardNumber>"
+            "<ExpYear>12</ExpYear>"
+            "<ExpMonth>11</ExpMonth>"
+            "<TotalAmount>1234567</TotalAmount>"
+            "<Currency>392</Currency>"
+            "</Message>")
+        self.assertEqual(result.Md, "this-is-merchant-data")
+        self.assertEqual(result.ErrorCd, "012345")
+        self.assertEqual(result.RetCd, "0")
+        self.assertEqual(result.AcsUrl, "http://example.com/acs")
+        self.assertEqual(result.PaReq, "this-is-pa-req")
+
 class DummyHTTPLib(object):
     def __init__(self, response_body, status="200", reason="OK"):
         self.called = []

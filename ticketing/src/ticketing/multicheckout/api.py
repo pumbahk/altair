@@ -88,11 +88,11 @@ class Checkout3D(object):
     def card_inquiry_url(self, order_no):
         return self.api_url + "/card/OrderNo/%(order_no)s" % dict(order_no=order_no)
 
-    def secure3d_enrol(self, order_no):
-        message = self._create_secure3d_enrol_xml(card_auth, check=True)
+    def secure3d_enrol(self, order_no, enrol):
+        message = self._create_secure3d_enrol_xml(enrol)
         url = self.secure3d_enrol_url(order_no)
         res = self._request(url, message)
-        return self._parse_response_card_xml(res)
+        return self._parse_secure3d_enrol_response(res)
 
     def request_card_check(self, order_no, card_auth):
         message = self._create_request_card_xml(card_auth, check=True)
