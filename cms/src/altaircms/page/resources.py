@@ -18,10 +18,8 @@ def add_solr(page, request):
     ftsearch = solr.get_fulltext_search_utility(request)
     doc = solr.create_doc_from_page(page)
     ftsearch.register(doc, commit=True)
-    
-class PageResource(security.RootFactory):
-    Page = models.Page
 
+class WDispositionResource(security.RootFactory):
     def get_confirmed_form(self, postdata):
         form = wf.WidgetDispositionSaveForm(postdata)
         return form
@@ -59,7 +57,10 @@ class PageResource(security.RootFactory):
         ## need self.delete()
         wdisposition.delete_widgets()
         self.delete(wdisposition)
-        
+    
+class PageResource(security.RootFactory):
+    Page = models.Page
+       
     def get_layout_render(self, page):
         layout = DBSession.query(Layout).filter_by(id=page.layout_id).one()
         return renderable.LayoutRender(layout)

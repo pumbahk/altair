@@ -10,10 +10,10 @@ def includeme(config):
     add_route('page', '/page/')
 
 
-    config.add_route("disposition", "/page/{id}/disposition", factory="altaircms.page.resources.PageResource")    
+    config.add_route("disposition", "/page/{id}/disposition", factory="altaircms.page.resources.WDispositionResource")    
     ## todo: move bellow
-    config.add_route("disposition_list", "/disposition", factory="altaircms.page.resources.PageResource")
-    config.add_route("disposition_alter", "/disposition/{id}/alter", factory="altaircms.page.resources.PageResource")
+    config.add_route("disposition_list", "/disposition", factory="altaircms.page.resources.WDispositionResource")
+    config.add_route("disposition_alter", "/disposition/{id}/alter", factory="altaircms.page.resources.WDispositionResource")
 
     # PageSet
     config.add_route('pagesets', '/pagesets')
@@ -22,9 +22,9 @@ def includeme(config):
     config.add_route('pageset_update', '/pagesets/{pageset_id}/update')
 
     ## bind event
-    config.add_subscriber(".subscribers.page_register_solr", ".events.PageCreate")
-    config.add_subscriber(".subscribers.page_register_solr", ".events.PageUpdate")
-    # config.add_subscriber(".subscribers.page_delete_solr", ".events.PageDelete") ## fixme
+    config.add_subscriber(".subscribers.page_register_solr", "subscribers.PageCreate")
+    config.add_subscriber(".subscribers.page_register_solr", "subscribers.PageUpdate")
+    # config.add_subscriber(".subscribers.page_delete_solr", "subscribers.PageDelete") ## fixme
 
 
     config.scan('.views')

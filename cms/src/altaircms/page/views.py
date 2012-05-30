@@ -233,7 +233,7 @@ def disposition_load(context, request):
 @view_config(route_name="disposition_list", renderer="altaircms:templates/widget/disposition/list.mako", 
              decorator=with_bootstrap, permission='authenticated') #permission
 def disposition_list(context, request):
-    ds = context.get_disposition_list(request.user)
+    ds = context.get_disposition_list()
     return {"ds":ds}
 
 @view_config(route_name="disposition_alter", request_method="POST", permission='authenticated') #permission
