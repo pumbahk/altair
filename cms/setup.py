@@ -96,6 +96,9 @@ setup(name='altair-cms',
 
       [distutils.commands]
       migrate_db = altaircms.distext.migrate:MigrateCommand
+
+      [console_scripts]
+      loadfromcsv = altaircms.scripts.loadfromcsv:main
       """,
       paster_plugins=['pyramid'],
       )
