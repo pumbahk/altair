@@ -1,3 +1,5 @@
+# -*- encoding:utf-8 -*-
+
 from altaircms.solr import api as solrapi
 
 def pageset_id_list_from_words(request, words, query_cond):
