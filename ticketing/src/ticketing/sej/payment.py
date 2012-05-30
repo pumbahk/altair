@@ -3,128 +3,75 @@
 import hashlib, time, re, urllib2
 import logging
 from datetime import datetime
+from dateutil.parser import parse
+
 from ticketing.utils import JavaHashMap, StandardEnum
 
 from models import SejTicket
+from utils import SejFileParser
 
+from dateutil import parser
 import sqlahelper
 
 DBSession = sqlahelper.get_session()
 
 sej_hostname = u'https://pay.r1test.com/'
 
-class SejError(Exception):
-
-    error_type  = 0
-    error_msg   = ''
-    error_field = ''
-
-    def __init__(self, error_type, error_msg, error_field):
-
-        self.error_type = error_type
-        self.error_field = error_field
-        self.error_msg = error_msg
-
-    def __str__(self):
-        return "Error_Type=%d&Error_Msg=%s&Error_Field=%s" % (self.error_type, self.error_type, self.error_field)
-
-class SejServerError(Exception):
-
-    status_code  = 0
-    reason      = ''
-
-    def __init__(self, status_code, reason):
-
-        self.status_code = status_code
-        self.reason = reason
-
-    def __str__(self):
-        return "status_code=%d&reason=%s" % (self.status_code, self.reason)
-
-class SejFileParser(object):
-
-    class SejFileParserRow(object):
-        cursor = 0
-        #
-        def __init__(self, row):
-            self.row = row
-        #
-        def get_col(self, num):
-            row = self.row[self.cursor:self.cursor+num]
-            self.cursor = self.cursor + num
-            return row
-
-    rec_segment = ''
-    shop_id     = ''
-    filename    = ''
-    date        = ''
-    row_length      = 0
-
-    def parse_header(self, data):
-        row = SejFileParser.SejFileParserRow(data)
-        self.rec_segment = row.get_col(1)
-        if self.rec_segment != 'H':
-            raise Exception("Invalid header type : %s" % self.rec_segment)
-        self.shop_id     = row.get_col(5)
-        self.filename    = row.get_col(30)
-        self.date        = row.get_col(8)
-        self.row_length  = int(row.get_col(4))
-
-    def parse_row(self, row):
-        raise Exception("stub: method not implements.")
-
-    def parse(self, data):
-        self.parse_header(data)
-        total_length = len(data)
-
-        if total_length % self.row_length == 0:
-            raise Exception('Invalid row length  row:%d total:%d' % (self.row_length, total_length))
-
-        values = []
-
-        for start_at in range(start=self.row_length, step=self.row_length, stop=len(data)):
-            row = data[start_at ,start_at + self.row_length]
-            values.append(self.parse_row(row))
-
-        return values
-
 class SejInstantPaymentFileParser(SejFileParser):
 
     def parse_row(self, row):
-        row = SejFileParser.SejFileParserRow(row)
-        data = {
-            'segment' : row.get_col(1),
-            'shop_id' : row.get_col(5),
-            'order_id' : row.get_col(12),
-            'payment_type' : row.get_col(2),
-            'bill_number' : row.get_col(2),
-            'exchange_number' : row.get_col(13),
-            'price' : row.get_col(13),
-            'ticket_total_num' : row.get_col(6),
-            'ticket_num' : row.get_col(2),
-            'return_num' : row.get_col(2),
-            'cancel_reason' : row.get_col(2),
-            'process_date' : row.get_col(14),
-            'checksum' : row.get_col(32)
-        }
+        data = dict(
+            segment             = 'D',
+            shop_id             = row.get_col(5),
+            order_id            = row.get_col(12),
+            notification_type   = row.get_int(2),
+            payment_type        = row.get_int(2),
+            bill_number         = row.get_col(13),
+            exchange_number     = row.get_col(13),
+            price               = row.get_int(6),
+            ticket_total_count  = row.get_col(2),
+            ticket_count        = row.get_int(2),
+            return_count        = row.get_int(2),
+            cancel_reason       = row.get_col(2),
+            process_date        = row.get_datetime(14),
+            checksum            = row.get_col(32)
+        )
         return data
 
 class SejExpiredFileParser(SejFileParser):
+    def parse_row(self, row):
+        data = dict(
+            segment             = 'D',
+            shop_id             = row.get_col(5),
+            order_id            = row.get_col(12),
+            notification_type   = row.get_int(2),
+            payment_type        = row.get_int(2),
+            expired_at          = row.get_datetime(12),
+            bill_number         = row.get_col(13),
+            exchange_number     = row.get_col(13),
+            checksum            = row.get_col(32),
+        )
+        return data
+
+
+class SejRefundFileParser(SejFileParser):
 
     def parse_row(self, row):
-        row = SejFileParser.SejFileParserRow(row)
-        data = {
-            'segment' : row.get_col(1),
-            'shop_id' : row.get_col(5),
-            'order_id' : row.get_col(12),
-            'expire_type' : row.get_col(2),
-            'process_type' : row.get_col(2),
-            'expired_at' : row.get_col(12),
-            'bill_number' : row.get_col(13),
-            'exchange_number' : row.get_col(13),
-            'checksum' : row.get_col(32),
-            'un_use' : row.get_col(8),
-        }
+        data = dict(
+            segment             = 'D',
+            notification_type   = int(row.get_col(2)),
+            ticket_barcode_number
+                                = row.get_col(13),
+            order_id            = row.get_col(12),
+            refund_ticket_price = row.get_int(6),
+            refund_other_price  = row.get_int(6),
+            recieved_at         = row.get_datetime(14),
+            payment_type        = row.get_int(2),
+            refund_status       = row.get_int(2), # 01:払戻済み 02:払戻取消
+            refund_cancel_reason= row.get_int(2), # 02:払戻取消のとき
+            refund_cancel_datetime
+                                = row.get_datetime(14)
+        )
         return data
 
 class SejPayment(object):
@@ -223,10 +170,10 @@ class SejPayment(object):
 
         # ステータス800，902，910以外の場合は終了　戻り値：0
         if status != 800 and status != 902 and status != 910:
-            raise SejServerError(status_code=200, reason=reason)
+            raise SejServerError(status_code=status, reason=reason)
         # キャンセルかつステータス800の場合は終了　戻り値：0
         if status == 800 and mode == 1:
-            raise SejServerError(status_code=200, reason=reason)
+            raise SejServerError(status_code=status, reason=reason)
 
 
         self.response = self.parse(body, "SENBDATA")
@@ -288,6 +235,12 @@ class SejOrderUpdateReason(StandardEnum):
     Change = 1
     # 公演中止
     Stop = 2
+
+class SejNotificationType(StandardEnum):
+    # '01':入金発券完了通知
+    PaymentComplete = 1
+    # '31':SVC強制取消通知
+    CancelFromSVC = 31
 
 def request_order(
         shop_name,
@@ -432,15 +385,16 @@ def request_order(
 
     sejTicket = SejTicket()
 
-    sejTicket.shori_kbn     = payment_type.v
-    sejTicket.haraikomi_no  = ret.get('X_haraikomi_no')
-    sejTicket.ticket_count  = int(ret.get('X_ticket_cnt', 0))
-    sejTicket.ticket_hon_count  \
-                            = int(ret.get('X_ticket_hon_cnt', 0))
-    sejTicket.url_info      = ret.get('X_url_info')
-    sejTicket.order_id      = ret.get('X_shop_order_id')
-    sejTicket.iraihyo_id_00 = ret.get('iraihyo_id_00')
-    sejTicket.order_at      = datetime.now()
+    sejTicket.process_type              = payment_type.v
+    sejTicket.billing_number            = ret.get('X_haraikomi_no')
+    sejTicket.ticket_count              = int(ret.get('X_ticket_cnt', 0))
+    sejTicket.ticket_hon_count          = int(ret.get('X_ticket_hon_cnt', 0))
+    sejTicket.exchange_sheet_url        = ret.get('X_url_info')
+    sejTicket.order_id                  = ret.get('X_shop_order_id')
+    sejTicket.exchange_sheet_number     = ret.get('iraihyo_id_00')
+    sejTicket.exchange_number           = ret.get('X_hikikae_no')
+    sejTicket.order_at                  = datetime.now()
+
     sejTicket.request_params = dict()
     for k, v in params.iteritems():
         sejTicket.request_params[k] = v
@@ -511,7 +465,7 @@ def request_cancel(
             error_msg=ret.get('Error_Msg', None),
             error_field=ret.get('Error_Field', None))
 
-    sejTicket = SejTicket.query.filter_by(order_id = order_id, haraikomi_no = haraikomi_no).one()
+    sejTicket = SejTicket.query.filter_by(order_id = order_id, billing_number = haraikomi_no).one()
     sejTicket.cancel_at = datetime.now()
     DBSession.merge(sejTicket)
     DBSession.flush()
@@ -551,7 +505,7 @@ def request_update_order(
     params = JavaHashMap()
     params['X_upd_riyu']        = update_reason.v
     # ショップID Sejから割り当てられるshop_id
-    params['X_shop_id']         = condition.get('shop_id')
+    params['X_shop_id']         = shop_id
     # 注文ID
     params['X_shop_order_id']   = condition.get('order_id')
     # 払込票番号
@@ -643,13 +597,16 @@ def request_update_order(
 
     sejTicket = SejTicket()
 
-    sejTicket.shori_kbn     = payment_type.v
-    sejTicket.haraikomi_no  = ret.get('X_haraikomi_no')
-    sejTicket.ticket_count  = int(ret.get('X_ticket_cnt', 0))
-    sejTicket.url_info      = ret.get('X_url_info')
-    sejTicket.order_id      = ret.get('X_shop_order_id')
-    sejTicket.iraihyo_id_00 = ret.get('iraihyo_id_00')
-    sejTicket.order_at      = datetime.now()
+    sejTicket.process_type              = payment_type.v
+    sejTicket.billing_number            = ret.get('X_haraikomi_no')
+    sejTicket.ticket_count              = int(ret.get('X_ticket_cnt', 0))
+    sejTicket.ticket_hon_count          = int(ret.get('X_ticket_hon_cnt', 0))
+    sejTicket.url_info                  = ret.get('X_url_info')
+    sejTicket.order_id                  = ret.get('X_shop_order_id')
+    sejTicket.exchange_sheet_number     = ret.get('iraihyo_id_00')
+    sejTicket.exchange_number           = ret.get('X_hikikae_no')
+    sejTicket.order_at                  = datetime.now()
+
     for idx in range(1,sejTicket.ticket_count):
         code = ret.get('X_barcode_no_%02d' % idx)
         if code:
@@ -657,7 +614,7 @@ def request_update_order(
     sejTicket.request_params = dict()
     for k, v in params.iteritems():
         sejTicket.request_params[k] = v
-    DBSession.add(sejTicket)
+    DBSession.merge(sejTicket)
     DBSession.flush()
 
     return sejTicket
@@ -674,3 +631,57 @@ def request_fileget(params):
 
     払込票表示 https://inticket.sej.co.jp/order/hi.do
     '''
+
+
+
+def callback_notification(params,
+                          secret_key = u'E6PuZ7Vhe7nWraFW'):
+    hash_map = JavaHashMap()
+    for k,v in params.items():
+        hash_map[k] = v
+
+    payment = SejPayment(url = '', secret_key = secret_key)
+    hash = payment.create_hash_from_x_start_params(hash_map, secret_key)
+
+    if hash != params['xcode']:
+        raise SejResponseError(400, 'Bad Request',
+            '<SENBDATA>status=400&Error_Type=00&Error_Msg=Bad Value&Error_Field=xcode&</SENBDATA>')
+
+    sejTicket = SejTicket.query.filter_by(
+        order_id = params['X_shop_order_id'],
+        billing_number = params['X_haraikomi_no'],
+        exchange_number = params['X_hikikae_no']).one()
+
+    def process_payment_complete():
+        sejTicket.pay_at = datetime.now()
+        sejTicket.return_ticket_count       = int(params['X_kaishu_cnt'])
+        sejTicket.pay_store_number          = params['X_pay_mise_no']
+        sejTicket.pay_store_name            = params['pay_mise_name']
+        sejTicket.ticketing_store_number    = params['X_hakken_mise_no']
+        sejTicket.ticketing_store_name      = params['hakken_mise_name']
+        return '<SENBDATA>status=800&</SENBDATA>'
+
+    def process_svc_cancel():
+        sejTicket.cancel_at = datetime.now()
+        return '<SENBDATA>status=800&</SENBDATA>'
+
+    ret = {
+        SejNotificationType.PaymentComplete.v : process_payment_complete,
+        SejNotificationType.CancelFromSVC.v : process_svc_cancel
+    }.get(int(params['X_tuchi_type']))()
+
+
+    sejTicket.processed_at = parse(params['X_shori_time'])
+
+    DBSession.merge(sejTicket)
+    DBSession.flush()
+
+    return ret
+
+
+
+
+
+
+
+
