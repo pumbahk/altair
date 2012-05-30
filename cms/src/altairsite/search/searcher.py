@@ -14,13 +14,13 @@ from altaircms.page.models import (
    Page
 )
 from altaircms.event.models import Event
-from altaircms.solr import api as solrapi
 from altaircms.tag.models import (
    HotWord, 
    PageTag, 
    PageTag2Page
 )
 
+from . import api
 ## todo: datetimeの呼び出し回数減らす
 
 ## for document
@@ -206,12 +206,7 @@ def search_by_hotword(qs, hotword):
       )
 
 def search_by_freeword(qs, request, words, query_cond):
-
-    fulltext_search = solrapi.get_fulltext_search(request)
-    solr_query = solrapi.create_query_from_freeword(words, query_cond=query_cond)
-    result = fulltext_search.search(solr_query, fields=["id"])
-    
-    pageset_ids = [f["id"] for f in result]
+    pageset_ids = api.pageset_id_list_from_words(request, words, query_cond)
     logger.info("pageset_id: %s" % pageset_ids)
     return qs.filter(PageSet.id.in_(pageset_ids))
 

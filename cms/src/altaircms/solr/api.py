@@ -61,8 +61,10 @@ class SolrSearchDoc(object):
     def __repr__(self):
         return str(self.doc)
 
-    def update(self, D):
-        self.doc.update(D)
+    def update(self, _D=None, **kwargs):
+        if _D:
+            kwargs.update(_D)
+        self.doc.update(kwargs)
 
     @reify
     def query_doc(self):
@@ -73,12 +75,11 @@ def create_query_from_dict(D__=None, **kwargs):
     return SolrSearchQuery(D__ or kwargs)
 
 def _create_dict_from_word(word):
-    return dict(event_title=word, 
-                event_subtitle=word, 
-                event_place=word, 
-                page_description=word, 
-                page_title=word, 
-                page_keywords=word)
+    """ 検索用の辞書作る
+    solrに格納される各フィールドはcopyfieldとしてsearchtextが設定されている。
+    (see: buildout.cfg 'solr' section)
+    """
+    return dict(searchtext=word)
     
 def create_query_from_freeword(words, query_cond=None):
     assert query_cond in ("intersection", "union")

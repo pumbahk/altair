@@ -54,7 +54,6 @@ class PageRenderingResource(object):
 
     def get_block_context(self, page):
         context =  BlockContext.from_widget_tree(WidgetTreeProxy(page), scan=True)
-        context.blocks["keywords"] = [page.keywords]
         context.blocks["description"] = [page.description]
         context.blocks["title"] = [page.title]
         return context
