@@ -286,7 +286,7 @@ class OAuthLoginTests(unittest.TestCase):
             'user_id': '99999999',
             'roles': [
                 'administrator',
-                'staff'
+                'staff',
             ],
             'screen_name': u'管理者',
             'access_token': 'this-is-token',
@@ -297,7 +297,9 @@ class OAuthLoginTests(unittest.TestCase):
         result = target.oauth_callback()
 
         self.assertTrue(target._urllib2.called)
-        self.assertEqual(target._urllib2.called[0], 'http://example.com/access-token?client_secret=secret-key&code=code&client_id=client-id&grant_type=authorization_code')
+        self.assertEqual(
+            target._urllib2.called[0],
+            'http://example.com/access-token?client_secret=secret-key&code=code&client_id=client-id&grant_type=authorization_code')
         self.assertEqual(result.location, 'http://example.com/')
 
         # operator data
