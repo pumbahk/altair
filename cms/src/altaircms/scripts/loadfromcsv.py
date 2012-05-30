@@ -10,30 +10,6 @@ import re
 
 from pkg_resources import resource_filename, EntryPoint
 
-
-usage = u"""\
-Load data from csv file\n
-
-how to use
----------------
-<program> --target=altaircms.models:Performance --infile=input.csv
-
-"""
-
-parser = argparse.ArgumentParser(description="Load data from csv file", epilog=usage, formatter_class=argparse.RawDescriptionHelpFormatter,)
-
-parser.add_argument('--infile', nargs='?', type=argparse.FileType('r'),
-                     default=sys.stdin)
-parser.add_argument('--outfile', nargs='?', type=argparse.FileType('w'),
-                     default=sys.stdout)
-parser.add_argument("--target")
-parser.add_argument("--dburl", default="sqlite://")
-
-parser.add_argument("--list", action="store_const", const=bool)
-parser.add_argument("--rootmodule", default="altaircms")
-parser.add_argument("--modelbase", default="altaircms.models:Base")
-parser.add_argument("--verbose", default=False, action="store_const", const=bool)
-
 def import_symbol(symbol):
     """import a content of module from a module name string
 
@@ -164,7 +140,45 @@ def load_from_csv(mapper, args):
         session.add(obj)
 
 
-def main(args):
+def main():
+    usage = u"""\
+    Load data from csv file\n
+
+    -----------
+    example
+    -----------
+
+    insert
+    ----------------------------------------
+    %(prog)s --dburl="sqlite://" altaircms.models:Performance #from stdin
+    %(prog)s --dburl="sqlite://" altaircms.models:Performance input.csv #from file
+    
+    listing target candidates
+    ----------------------------------------
+    %(prog)s --list
+    %(prog)s --list --verbose
+    %(prog)s --list --rootmodule=ticketing --modelbase=ticketing.models:Base
+
+    """
+
+    parser = argparse.ArgumentParser(description="Load data from csv file", epilog=usage, formatter_class=argparse.RawDescriptionHelpFormatter,)
+
+    parser.add_argument("target", help=u"target model class name with `some.module:ModelName'", nargs="?")
+    parser.add_argument('infile', help=u"csv file", nargs='?', type=argparse.FileType('r'),
+                         default=sys.stdin)
+    parser.add_argument('--outfile', nargs='?', type=argparse.FileType('w'),
+                         default=sys.stdout)
+    parser.add_argument("--dburl", help="db url. e.g. mysql+pymysql://foo:foo@localhost/foo (default: %(default)s)", default="sqlite://")
+
+    parser.add_argument("--list", help="listing target model class candidates", action="store_const", const=bool)
+    parser.add_argument("--rootmodule", help="root of module (default: %(default)s)", default="altaircms")
+    parser.add_argument("--modelbase", help="model base class name (default: %(default)s)", default="altaircms.models:Base")
+    parser.add_argument("--verbose", default=False, action="store_const", const=bool)
+
+    args = parser.parse_args()
+    _main(args)
+
+def _main(args):
     if args.list:
         return list_modelnames(args)
 
@@ -174,7 +188,5 @@ def main(args):
     except:
         transaction.abort()
 
-
-args = parser.parse_args()
-main(args)
-
+if __name__ == "__main__":
+    main()
