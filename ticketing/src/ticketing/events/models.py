@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import isodate
-import logging
 
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, Numeric, func
 from sqlalchemy.orm import relationship, join, backref, column_property
 
 from ticketing.utils import StandardEnum
-from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, DBSession
+from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted
 from ticketing.products.models import Product, ProductItem, StockHolder, Stock, StockAllocation
 from ticketing.venues.models import Venue, VenueArea, VenueArea_group_l0_id, Seat, SeatAttribute
 
@@ -95,36 +94,25 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             stock_holder.save()
 
     def save(self):
-        connection = DBSession.bind.connect()
-        try:
-            tran = connection.begin()
-            BaseModel.save(self)
+        BaseModel.save(self)
 
-            """
-            Performanceの作成時は以下のモデルを自動生成する
-            また更新時にVenueの変更があったら以下のモデルをdeleteする
-              - Venue
-                - VenueArea
-                - Seat
-                  - SeatAttribute
-            """
-            # create Venue - VenueArea, Seat - SeatAttribute
-            if hasattr(self, 'create_venue_id') and self.venue_id:
-                template_venue = Venue.get(self.venue_id)
-                Venue.create_from_template(template=template_venue, performance_id=self.id)
+        """
+        Performanceの作成時は以下のモデルを自動生成する
+        また更新時にVenueの変更があったら以下のモデルをdeleteする
+          - Venue
+            - VenueArea
+            - Seat
+              - SeatAttribute
+        """
+        # create Venue - VenueArea, Seat - SeatAttribute
+        if hasattr(self, 'create_venue_id') and self.venue_id:
+            template_venue = Venue.get(self.venue_id)
+            Venue.create_from_template(template=template_venue, performance_id=self.id)
 
-            # delete Venue - VenueArea, Seat - SeatAttribute
-            if hasattr(self, 'delete_venue_id') and self.delete_venue_id:
-                venue = Venue.get(self.delete_venue_id)
-                venue.delete_cascade()
-
-            tran.commit()
-            logging.debug('performance save success')
-        except Exception, e:
-            tran.rollback()
-            logging.error('performance save failed %s' % e.message)
-        finally:
-            tran.close()
+        # delete Venue - VenueArea, Seat - SeatAttribute
+        if hasattr(self, 'delete_venue_id') and self.delete_venue_id:
+            venue = Venue.get(self.delete_venue_id)
+            venue.delete_cascade()
 
 def get_sync_data(self):
         start_on = isodate.datetime_isoformat(self.start_on) if self.start_on else ''

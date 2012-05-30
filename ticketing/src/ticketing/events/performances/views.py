@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 
-import webhelpers.paginate as paginate
+import logging
 
+import webhelpers.paginate as paginate
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path
 
-from ticketing.models import merge_session_with_post, record_to_multidict
+from ticketing.models import merge_session_with_post, record_to_multidict, DBSession
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.events.models import Event, Performance, Account, SalesSegment
@@ -134,26 +135,37 @@ class Performances(BaseView):
 
         f = PerformanceForm(self.request.POST, organization_id=self.context.user.organization_id)
         if f.validate():
-            if self.request.matched_route.name == 'performances.copy':
-                event_id = performance.event_id
-                performance = merge_session_with_post(Performance(), f.data)
-                performance.event_id = event_id
-                performance.create_venue_id = f.data['venue_id']
-            else:
-                performance = merge_session_with_post(performance, f.data)
-                if f.data['venue_id'] != performance.venue.original_venue_id:
-                    performance.delete_venue_id = performance.venue.id
+            connection = DBSession.bind.connect()
+            try:
+                tran = connection.begin()
+
+                if self.request.matched_route.name == 'performances.copy':
+                    event_id = performance.event_id
+                    performance = merge_session_with_post(Performance(), f.data)
+                    performance.event_id = event_id
                     performance.create_venue_id = f.data['venue_id']
+                else:
+                    performance = merge_session_with_post(performance, f.data)
+                    if f.data['venue_id'] != performance.venue.original_venue_id:
+                        performance.delete_venue_id = performance.venue.id
+                        performance.create_venue_id = f.data['venue_id']
+                performance.save()
 
-            performance.save()
+                tran.commit()
+                logging.debug('performance save success')
 
-            self.request.session.flash(u'パフォーマンスを保存しました')
-            return HTTPFound(location=route_path('performances.show', self.request, performance_id=performance.id))
-        else:
-            return {
-                'form':f,
-                'event':performance.event,
-            }
+                self.request.session.flash(u'パフォーマンスを保存しました')
+                return HTTPFound(location=route_path('performances.show', self.request, performance_id=performance.id))
+            except Exception, e:
+                tran.rollback()
+                logging.error('performance save failed %s' % e.message)
+            finally:
+                tran.close()
+
+        return {
+            'form':f,
+            'event':performance.event,
+        }
 
     @view_config(route_name='performances.delete')
     def delete(self):
