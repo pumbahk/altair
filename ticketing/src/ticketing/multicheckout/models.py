@@ -14,6 +14,27 @@ import ticketing.events.models
 Base = sqlahelper.get_base()
 DBSession = sqlahelper.get_session()
 
+class Secure3DReqEnrolRequest(Base):
+    """ 3D認証可否確認依頼処理（リクエスト）
+    """
+    __tablename__ = 'secure3d_req_enrol_request'
+    id = sa.Column(sa.Integer, primary_key=True)
+    CardNumber = sa.Column(sa.Unicode(16), doc="カード番号")
+    ExpYear = sa.Column(sa.Unicode(2), doc="カード有効期限(年)")
+    ExpMonth = sa.Column(sa.Unicode(2), doc="カード有効期限(月)")
+    TotalAmount = sa.Column(sa.Integer, doc="決済金額の総額")
+    Currency = sa.Column(sa.Unicode(3), doc="392 を設定 通貨？")
+
+class Secure3DReqEnrolResponse(Base):
+    """ 3D認証可否確認依頼処理（レスポンス）
+    """
+    __tablename__ = 'secure3d_req_enrol_response'
+    id = sa.Column(sa.Integer, primary_key=True)
+    Md = sa.Column(sa.UnicodeText, doc="マーチャントデータ")
+    ErrorCd = sa.Column(sa.Unicode(6), doc="エラーコード")
+    RetCd = sa.Column(sa.Unicode(1), doc="リターンコード")
+    AcsUrl = sa.Column(sa.UnicodeText, doc="3D 認証画面を要求するための ACS の URL")
+    PaReq = sa.Column(sa.UnicodeText, doc="ACS に送信する電文内容")
 
 class MultiCheckoutRequestCard(Base):
     """

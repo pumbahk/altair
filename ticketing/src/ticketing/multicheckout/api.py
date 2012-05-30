@@ -7,6 +7,46 @@ from xml.etree import ElementTree as etree
 import httplib
 import urlparse
 from . import models as m
+from .interfaces import IMultiCheckout
+from datetime import date
+
+DEFAULT_ITEM_CODE = "120" # 通販
+
+def get_multicheckout_service(request):
+    reg = request.registry
+    return reg.utilities.lookup([], IMultiCheckout)
+
+def secure_code_auth(request, order_no, item_name, amount, tax, client_name, mail_address,
+                     card_no, card_limit, card_holder_name,
+                     secure_code,
+                     free_data=None, item_cod=DEFAULT_ITEM_CODE, date=date):
+
+    order_ymd = date.today().strftime('%Y%m%d')
+    params = m.MultiCheckoutRequestCard(
+        ItemCd=item_cod,
+        ItemName=item_name,
+        OrderYMD=order_ymd,
+        SalesAmount=amount,
+        TaxCarriage=tax,
+        FreeData=free_data,
+        ClientName=client_name,
+        MailAddress=mail_address,
+        MailSend='1',
+
+        CardNo=card_no,
+        CardLimit=card_limit,
+        CardHolderName=card_holder_name,
+
+        PayKindCd='10',
+        PayCount=None,
+        SecureKind='2',
+        SecureCode=secure_code,
+    )
+    m.DBSession.add(params)
+    service = get_multicheckout_service(request)
+    result = service.request_card_auth(order_no, params)
+    m.DBSesion.add(result)
+    return result.Status == "110"
 
 class MultiCheckoutAPIError(Exception):
     pass
@@ -281,3 +321,19 @@ class Checkout3D(object):
                                 history.SalesAmount = int(ssube.text)
 
         return inquiry_card_response
+
+    def _parse_secure3d_enrol_response(self, element):
+        enrol_response = m.Secure3DReqEnrolResponse()
+        assert element.tag == "Message"
+        for e in element:
+            if e.tag == 'Md':
+                enrol_response.Md = e.text
+            elif e.tag == 'ErrorCd':
+                enrol_response.ErrorCd = e.text
+            elif e.tag == 'RetCd':
+                enrol_response.RetCd = e.text
+            elif e.tag == 'AcsUrl':
+                enrol_response.AcsUrl = e.text
+            elif e.tag == 'PaReq':
+                enrol_response.PaReq = e.text
+        return enrol_response
