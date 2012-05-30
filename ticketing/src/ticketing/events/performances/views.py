@@ -93,7 +93,7 @@ class Performances(BaseView):
         if f.validate():
             performance = merge_session_with_post(Performance(), f.data)
             performance.event_id = event_id
-            performance.venue_id = f.data['venue_id']
+            performance.create_venue_id = f.data['venue_id']
             performance.save()
 
             self.request.session.flash(u'パフォーマンスを保存しました')
@@ -138,12 +138,12 @@ class Performances(BaseView):
                 event_id = performance.event_id
                 performance = merge_session_with_post(Performance(), f.data)
                 performance.event_id = event_id
-                performance.venue_id = f.data['venue_id']
+                performance.create_venue_id = f.data['venue_id']
             else:
                 performance = merge_session_with_post(performance, f.data)
                 if f.data['venue_id'] != performance.venue.original_venue_id:
                     performance.delete_venue_id = performance.venue.id
-                    performance.venue_id = f.data['venue_id']
+                    performance.create_venue_id = f.data['venue_id']
 
             performance.save()
 

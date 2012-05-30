@@ -90,6 +90,13 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         else:
             return None
 
+    @staticmethod
+    def create_from_template(template, stock_id, performance_id):
+        product_item = ProductItem.clone(template)
+        product_item.performance_id = performance_id
+        product_item.stock_id = stock_id
+        product_item.save()
+
 class StockTypeEnum(StandardEnum):
     Seat = 0
     Other = 1
@@ -151,6 +158,15 @@ class StockAllocation(Base):
             DBSession.add(self)
         DBSession.flush()
 
+    @staticmethod
+    def create_from_template(template, performance_id):
+        stock_allocation = StockAllocation(
+            performance_id=performance_id,
+            stock_type_id=template.stock_type_id,
+            quantity = template.quantity
+        )
+        stock_allocation.save()
+
 class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "StockHolder"
     id = Column(BigInteger, primary_key=True)
@@ -162,6 +178,15 @@ class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     style = Column(MutationDict.as_mutable(JSONEncodedDict(1024)))
 
     stocks = relationship('Stock', backref='stock_holder')
+
+    @staticmethod
+    def create_from_template(template, performance_id):
+        stock_holder = StockHolder.clone(template)
+        stock_holder.performance_id = performance_id
+        stock_holder.save()
+
+        for template_stock in template.stocks:
+            Stock.create_from_template(template=template_stock, stock_holder_id=stock_holder.id)
 
 # stock based on quantity
 class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -175,6 +200,15 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     stock_type_id = Column(BigInteger, ForeignKey('StockType.id'))
 
     stock_status = relationship("StockStatus", uselist=False, backref='stock')
+
+    @staticmethod
+    def create_from_template(template, stock_holder_id):
+        stock = Stock.clone(template)
+        stock.stock_holder_id = stock_holder_id
+        stock.save()
+
+        for template_product_item in template.product_items:
+            ProductItem.create_from_template(template=template_product_item, performance_id=stock.stock_holder.performance_id, stock_id=stock.id)
 
     @staticmethod
     def get_for_update(pid, stid):

@@ -6,7 +6,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 import sqlahelper
 
 from ticketing.utils import StandardEnum
-from ticketing.models import BaseModel, JSONEncodedDict, MutationDict, WithTimestamp, LogicallyDeleted
+from ticketing.models import BaseModel, JSONEncodedDict, MutationDict, WithTimestamp, LogicallyDeleted, DBSession
 
 session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
@@ -63,17 +63,65 @@ class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     seats = relationship("Seat", backref='venue')
     areas = relationship("VenueArea", backref='venues', secondary=VenueArea_group_l0_id.__table__)
 
+    @staticmethod
+    def create_from_template(template, performance_id):
+        venue = Venue.clone(template)
+        venue.original_venue_id = template.id
+        venue.performance_id = performance_id
+        venue.save()
+
+        for template_area in template.areas:
+            VenueArea.create_from_template(template=template_area, venue_id=venue.id)
+
+        for template_seat in template.seats:
+            Seat.create_from_template(template=template_seat, venue_id=venue.id)
+
+    def delete_cascade(self):
+        self.delete()
+
+        for area in self.areas:
+            area.delete_cascade()
+
+        for seat in self.seats:
+            seat.delete_cascade()
+
 class VenueArea(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__   = "VenueArea"
     id              = Column(BigInteger, primary_key=True)
     name            = Column(String(255), nullable=False)
     groups          = relationship('VenueArea_group_l0_id')
 
+    @staticmethod
+    def create_from_template(template, venue_id):
+        area = VenueArea.clone(template)
+        area.venue_id = venue_id
+        area.save()
+
+        for template_group in template.groups:
+            group = VenueArea_group_l0_id(
+                group_l0_id=template_group.group_l0_id,
+                venue_id=venue_id,
+                venue_area_id=area.id
+            )
+            DBSession.add(group)
+
+    def delete_cascade(self):
+        self.delete()
+
+        for group in self.groups:
+            DBSession.delete(group)
+
 class SeatAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__   = "SeatAttribute"
     seat_id         = Column(BigInteger, ForeignKey('Seat.id'), primary_key=True, nullable=False)
     name            = Column(String(255), primary_key=True, nullable=False)
     value           = Column(String(1023))
+
+    @staticmethod
+    def create_from_template(template, seat_id):
+        attribute = SeatAttribute.clone(template)
+        attribute.seat_id = seat_id
+        attribute.save()
 
 class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__   = "Seat"
@@ -110,6 +158,22 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if attr is None:
             raise KeyError(name)
         return attr.value
+
+    @staticmethod
+    def create_from_template(template, venue_id):
+        seat = Seat.clone(template)
+        seat.venue_id = venue_id
+        seat.stock_id = None
+        seat.save()
+
+        for template_attribute in template.attributes:
+            SeatAttribute.create_from_template(template=template_attribute, seat_id=seat.id)
+
+    def delete_cascade(self):
+        self.delete()
+
+        for attribute in self.attributes:
+            attribute.delete()
 
     # @TODO
     @staticmethod

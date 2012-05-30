@@ -59,6 +59,41 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 .all()
         return data
 
+    def add(self):
+        BaseModel.add(self)
+
+        if hasattr(self, 'original_id') and self.original_id:
+            """
+            Performanceのコピー時は以下のモデルをcloneする
+              - StockHolder
+                - Stock
+                  - ProductItem
+              - StockAllocation
+            """
+            template_performance = Performance.get(self.original_id)
+
+            # create StockHolder - Stock - ProductItem
+            for template_stock_holder in template_performance.stock_holders:
+                StockHolder.create_from_template(template=template_stock_holder, performance_id=self.id)
+
+            # create StockAllocation
+            for template_stock_allocation in template_performance.stock_allocations:
+                StockAllocation.create_from_template(template=template_stock_allocation, performance_id=self.id)
+        else:
+            """
+            Performanceの作成時は以下のモデルを自動生成する
+              - StockHolder (デフォルト枠)
+            """
+            account = Account.filter_by(organization_id=self.event.organization.id)\
+                             .filter_by(user_id=self.event.organization.user_id).first()
+            stock_holder = StockHolder(
+                name=u'自社',
+                performance_id=self.id,
+                account_id=account.id,
+                style=None,
+            )
+            stock_holder.save()
+
     def save(self):
         connection = DBSession.bind.connect()
         try:
@@ -67,124 +102,21 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
             """
             Performanceの作成時は以下のモデルを自動生成する
-              - StockHolder (デフォルト枠)
-              - Venue (originalのVenueからclone)
+            また更新時にVenueの変更があったら以下のモデルをdeleteする
+              - Venue
                 - VenueArea
                 - Seat
                   - SeatAttribute
             """
-            # create StockHolder
-            if hasattr(self, 'id') and self.id:
-                account = Account.filter_by(organization_id=self.event.organization_id)\
-                                 .filter_by(user_id=self.event.organization.user_id).first()
-                stock_holder = StockHolder(**dict(
-                    name=u'自社',
-                    performance_id=self.id,
-                    account_id=account.id,
-                    style=None,
-                ))
-                stock_holder.save()
+            # create Venue - VenueArea, Seat - SeatAttribute
+            if hasattr(self, 'create_venue_id') and self.venue_id:
+                template_venue = Venue.get(self.venue_id)
+                Venue.create_from_template(template=template_venue, performance_id=self.id)
 
-            # create Venue
-            if hasattr(self, 'venue_id') and self.venue_id:
-                original_venue = Venue.get(self.venue_id)
-                venue = Venue.clone(original_venue)
-                venue.original_venue_id = original_venue.id
-                venue.performance_id = self.id
-                venue.save()
-
-                # create VenueArea
-                for original_area in original_venue.areas:
-                    area = VenueArea.clone(original_area)
-                    area.venue_id = venue.id
-                    area.save()
-
-                    # create VenueArea_group_l0_id
-                    for original_group in original_area.groups:
-                        group = VenueArea_group_l0_id()
-                        group.group_l0_id = original_group.group_l0_id
-                        group.venue_id = venue.id
-                        group.venue_area_id = area.id
-                        DBSession.add(group)
-
-                # create Seat
-                for original_seat in original_venue.seats:
-                    seat = Seat.clone(original_seat)
-                    seat.venue_id = venue.id
-                    seat.stock_id = None
-                    seat.stock_type_id = None
-                    seat.save()
-
-                    # create SeatAttribute
-                    for original_attribute in original_seat.attributes:
-                        attribute = SeatAttribute.clone(original_attribute)
-                        attribute.seat_id = seat.id
-                        attribute.save()
-
-            """
-            Performanceの編集時にVenueの変更があったら以下のモデルをdeleteする
-              -Venue
-                - VenueArea
-                - Seat
-                  - SeatAttribute
-            """
-            # delete Venue
+            # delete Venue - VenueArea, Seat - SeatAttribute
             if hasattr(self, 'delete_venue_id') and self.delete_venue_id:
                 venue = Venue.get(self.delete_venue_id)
-                venue.delete()
-
-                # delete VenueArea
-                for area in venue.areas:
-                    area.delete()
-
-                    # delete VenueArea_group_l0_id
-                    for group in area.groups:
-                        DBSession.delete(group)
-
-                # delete Seat
-                for seat in venue.seats:
-                    seat.delete()
-
-                    # delete SeatAttribute
-                    for attribute in seat.attributes:
-                        DBSession.delete(attribute)
-
-            """
-            Performanceのコピー時は以下のモデルをcloneする
-              - StockHolder
-                - Stock
-                  - ProductItem
-              - StockAllocation
-            """
-            if hasattr(self, 'original_id') and self.original_id:
-                original_performance = Performance.get(self.original_id)
-
-                # create StockHolder
-                for original_stock_holder in original_performance.stock_holders:
-                    stock_holder = StockHolder.clone(original_stock_holder)
-                    stock_holder.performance_id = self.id
-                    stock_holder.save()
-
-                    # create Stock
-                    for original_stock in original_stock_holder.stocks:
-                        stock = Stock.clone(original_stock)
-                        stock.stock_holder_id = stock_holder.id
-                        stock.save()
-
-                        # create ProductItem
-                        for original_product_item in original_stock.product_items:
-                            product_item = ProductItem.clone(original_product_item)
-                            product_item.performance_id = self.id
-                            product_item.stock_id = stock.id
-                            product_item.save()
-
-                # create StockAllocation
-                for original_stock_allocation in original_performance.stock_allocations:
-                    stock_allocation = StockAllocation()
-                    stock_allocation.performance_id = self.id
-                    stock_allocation.stock_type_id = original_stock_allocation.stock_type_id
-                    stock_allocation.quantity = original_stock_allocation.quantity
-                    DBSession.add(stock_allocation)
+                venue.delete_cascade()
 
             tran.commit()
             logging.debug('performance save success')
