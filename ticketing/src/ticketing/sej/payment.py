@@ -106,6 +106,7 @@ class SejPayment(object):
         body = res.read()
         logging.debug(body)
 
+        from . import SejServerError
         if status == 200:
             raise SejServerError(status_code=200, reason="Script syntax error")
 
@@ -207,9 +208,7 @@ def request_order(
         secret_key = u'E6PuZ7Vhe7nWraFW',
         hostname = sej_hostname
         ):
-    '''
-        決済要求 https://inticket.sej.co.jp/order/order.do
-    '''
+    """済要求 https://inticket.sej.co.jp/order/order.do"""
 
     if type(payment_type) is not SejPaymentType:
         raise ValueError('payment_type')
@@ -319,6 +318,7 @@ def request_order(
 
     error_type = ret.get('Error_Type', None)
     if error_type:
+        from . import SejError
         raise SejError(
             error_type=int(error_type),
             error_msg=ret.get('Error_Msg', None),
@@ -401,6 +401,7 @@ def request_cancel(
 
     error_type = ret.get('Error_Type', None)
     if error_type:
+        from . import SejError
         raise SejError(
             error_type=int(error_type),
             error_msg=ret.get('Error_Msg', None),
@@ -424,14 +425,14 @@ def request_update_order(
         ticketing_start_datetime = None,
         ticketing_due_datetime = None,
         ticketing_sub_due_datetime = None,
-        tickets = [],
-        condition = {},
+        tickets = list(),
+        condition = dict(),
         shop_id = u'30520',
         secret_key = u'E6PuZ7Vhe7nWraFW',
 ):
-    '''
+    """
     注文情報更新 https://inticket.sej.co.jp/order/updateorder.do
-    '''
+    """
     if type(update_reason) is not SejOrderUpdateReason:
         raise ValueError('update_reason')
 
@@ -531,6 +532,7 @@ def request_update_order(
 
     error_type = ret.get('Error_Type', None)
     if error_type:
+        from . import SejError
         raise SejError(
             error_type=int(error_type),
             error_msg=ret.get('Error_Msg', None),
@@ -562,17 +564,15 @@ def request_update_order(
 
 
 def request_fileget(params):
-    '''
-    ファイル取得先 https://inticket.sej.co.jp/order/getfile.do
-    '''
+    """ファイル取得先 https://inticket.sej.co.jp/order/getfile.do
+    """
     payment = SejPayment(secret_key = secret_key, url="https://inticket.sej.co.jp/order/getfile.do")
     return payment.request(params)
 
-'''
-
-    払込票表示 https://inticket.sej.co.jp/order/hi.do
-    '''
-
+def request_exchange_sheet(params):
+    """払込票表示 https://inticket.sej.co.jp/order/hi.do
+    """
+    pass
 
 
 def callback_notification(params,
@@ -585,6 +585,7 @@ def callback_notification(params,
     hash = payment.create_hash_from_x_start_params(hash_map, secret_key)
 
     if hash != params['xcode']:
+        from . import SejResponseError
         raise SejResponseError(400, 'Bad Request',
             '<SENBDATA>status=400&Error_Type=00&Error_Msg=Bad Value&Error_Field=xcode&</SENBDATA>')
 
@@ -606,10 +607,12 @@ def callback_notification(params,
         sejTicket.cancel_at = datetime.now()
         return '<SENBDATA>status=800&</SENBDATA>'
 
+    def dummy():
+        raise Exception('X_tuchi_type is fusei')
     ret = {
         SejNotificationType.PaymentComplete.v : process_payment_complete,
         SejNotificationType.CancelFromSVC.v : process_svc_cancel
-    }.get(int(params['X_tuchi_type']))()
+    }.get(int(params['X_tuchi_type']), dummy)()
 
 
     sejTicket.processed_at = parse(params['X_shori_time'])

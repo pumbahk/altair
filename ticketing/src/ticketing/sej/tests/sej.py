@@ -12,7 +12,6 @@ class SejTest(unittest.TestCase):
         return self._getTarget()(*args, **kwargs)
 
     def setUp(self):
-
         import sqlahelper
         from sqlalchemy import create_engine
         from ticketing.sej.models import SejTicket
@@ -38,7 +37,6 @@ class SejTest(unittest.TestCase):
             assert row['payment_type'] == 1 or row['payment_type'] == 2 or \
                     row['payment_type'] == 3 or row['payment_type'] == 4
         assert len(data) == 27
-
 
     def test_file_payemnt_expire(self):
         '''支払期限切れ:SEITIS51_30516_20110912'''
@@ -353,8 +351,6 @@ class SejTest(unittest.TestCase):
         assert sejTicket.exchange_sheet_number == u'11111111'
         assert sejTicket.billing_number == u'0000000001'
         assert sejTicket.exchange_sheet_url == u'https://www.r1test.com/order/hi.do'
-
-
 
     def test_request_order_prepayment(self):
         '''2-1.決済要求 支払い済み'''
