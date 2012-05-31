@@ -50,7 +50,7 @@ class Organizations(BaseView):
 
         return {
             'form':OrganizationForm(),
-            'organization' : organization,
+            'organization':organization,
             'distributing_events':Event.get_distributing(organization_id=organization_id),
             'distributed_events':Event.get_distributed(user_id=organization.user_id),
         }

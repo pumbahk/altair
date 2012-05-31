@@ -81,6 +81,8 @@ class Translations(object):
             return u'数字または小数で入力してください'
         if string == 'Not a valid integer value':
             return u'数字で入力してください'
+        if string == 'Invalid email address.':
+            return u'不正なメールアドレスです'
         return string
 
     def ngettext(self, singular, plural, n):

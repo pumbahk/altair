@@ -21,7 +21,7 @@ class BookmarkView(BaseView):
             'bookmarks' : Bookmark.find_by_organization_id(1)
         }
 
-    @view_config(route_name='bookmark.new', request_method="GET", renderer='ticketing:templates/bookmark/new.html')
+    @view_config(route_name='bookmark.new', request_method="GET", renderer='ticketing:templates/bookmark/edit.html')
     def new_get(self):
         f = BookmarkForm()
         return {
@@ -29,7 +29,7 @@ class BookmarkView(BaseView):
             'form' : f
         }
 
-    @view_config(route_name='bookmark.new', request_method="POST", renderer='ticketing:templates/bookmark/new.html')
+    @view_config(route_name='bookmark.new', request_method="POST", renderer='ticketing:templates/bookmark/edit.html')
     def new_post(self):
         form = BookmarkForm()
         if form.validate():

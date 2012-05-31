@@ -1,3 +1,55 @@
-<%inherit file="../layout.html" />
-<%block name="title">新規ユーザ登録</%block>
-<%include file="_form.html" />
+<%inherit file="/layout.html" />
+<%namespace file="/common/helpers.html" name="h" />
+
+<script type="text/javascript">
+  $(function() {
+    $('#expire_at').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
+  });
+</script>
+
+<%
+  if request.matched_route.name == 'operators.new':
+    route_name = u'登録'
+    route_path = request.route_path('operators.new')
+  else:
+    route_name = u'編集'
+    route_path = request.route_path('operators.edit', operator_id=form.id.data)
+%>
+
+<div class="container row">
+  <div class="span12">
+    ${h.breadcrumbs(
+        names=[u'トップ', u'オペレーター', route_name],
+        urls=[
+          request.route_path('index'),
+          request.route_path('operators.index'),
+        ]
+    )}
+  </div>
+
+  <div class="span12">
+    <div class="page-header">
+      <h3>オペレーター ${route_name}</h3>
+    </div>
+
+    <div class="content">
+      ${h.flash_messages(request)}
+      ${h.alert_message(form)}
+    </div>
+
+    <div class="well">
+      <form class="form-horizontal" action="${route_path}" method="POST">
+        <fieldset>
+          ${h.form_item(form.id)}
+          ${h.form_item(form.organization_id)}
+          ${h.form_item(form.name, option={'class':'span5', 'maxlength':255})}
+          ${h.form_item(form.email)}
+          ${h.form_item(form.expire_at)}
+        </fieldset>
+        <div class="form-actions">
+          <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

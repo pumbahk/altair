@@ -1,0 +1,22 @@
+<%page args="form, operator" />
+<%namespace file="/common/helpers.html" name="h" />
+
+<div class="page-header">
+  <h4>オペレーター情報</h4>
+</div>
+<table class="table table-bordered fullwidth">
+  <tbody>
+  <tr>
+    <th class="span3">${form.name.label.text}</th>
+    <td>${operator.name}</td>
+  </tr>
+  <tr>
+    <th class="span3">${form.email.label.text}</th>
+    <td>${operator.email}</td>
+  </tr>
+  <tr>
+    <th class="span3">${form.expire_at.label.text}</th>
+    <td>${h.safe_strftime(operator.expire_at)}</td>
+  </tr>
+  </tbody>
+</table>
