@@ -3,8 +3,11 @@
 """ マルチ決済モジュール
 """
 
-from . import api
 from . import interfaces
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 def includeme(config):
     """ 設定値取得など
@@ -20,11 +23,18 @@ def includeme(config):
 
     base_url = config.registry.settings.get('altair_checkout3d.base_url')
     shop_id = config.registry.settings.get('altair_checkout3d.shop_id')
-    api_url = base_url.rstrip('/') + '/' +  shop_id.lstrip('/')
     auth_id = config.registry.settings.get('altair_checkout3d.auth_id')
     password = config.registry.settings.get('altair_checkout3d.auth_password')
-    checkout3d = api.Checkout3D(auth_id, password, shop_code=shop_id, api_base_url=api_url)
+    Checkout3D = config.maybe_dotted(__name__ + '.api.Checkout3D')
+    checkout3d = Checkout3D(auth_id, password, shop_code=shop_id, api_base_url=base_url)
 
     reg = config.registry
 
     reg.utilities.register([], interfaces.IMultiCheckout, "", checkout3d)
+
+def main(global_conf, **settings):
+    from pyramid.config import Configurator
+    config = Configurator(settings=settings)
+    config.include(".")
+    config.include(".demo")
+    return config.make_wsgi_app()

@@ -6,6 +6,31 @@
 import unittest
 from pyramid import testing
 
+class secure3d_acs_form_Tests(unittest.TestCase):
+    def _callFUT(self, *args, **kwargs):
+        from . import helpers
+        return helpers.secure3d_acs_form(*args, **kwargs)
+
+    def test_it(self):
+        from markupsafe import Markup
+        resource = testing.DummyResource(
+            AcsUrl='http://www.example.com/acs',
+            Md="this-is-md",
+            PaReq="this-is-pa-req",
+        )
+        term_url = 'http://localhost/secure3d'
+        request = testing.DummyRequest()
+
+        result = self._callFUT(request, term_url, resource)
+
+        self.assertEqual(result.__html__(),
+            """<form name='PAReqForm' method='POST' action='http://www.example.com/acs'>
+        <input type='hidden' name='PaReq' value='this-is-pa-req'>
+        <input type='hidden' name='TermUrl' value='http://localhost/secure3d'>
+        <input type='hidden' name='MD' value='this-is-md'>
+        </form>
+        <script type='text/javascript'>function onLoadHandler(){document.PAReqForm.submit();};window.onload = onLoadHandler; </script>
+        """)
 
 class IncludeMeTests(unittest.TestCase):
     def setUp(self):
@@ -34,9 +59,82 @@ class IncludeMeTests(unittest.TestCase):
 
         result = self.config.registry.utilities.lookup([], interfaces.IMultiCheckout, name="")
 
-        self.assertEqual(result.api_base_url, 'http://example.com/api/this-is-shop')
+        self.assertEqual(result.api_base_url, 'http://example.com/api/')
         self.assertEqual(result.auth_id, 'auth_id')
         self.assertEqual(result.auth_password, 'auth_password')
+
+
+class get_multicheckout_service_Tests(unittest.TestCase):
+    def setUp(self):
+        self.config = testing.setUp()
+    def tearDown(self):
+        testing.tearDown()
+    def _callFUT(self, *args, **kwargs):
+        from . import api
+        return api.get_multicheckout_service(*args, **kwargs)
+
+    def test_it_none(self):
+        request = testing.DummyRequest()
+        result = self._callFUT(request)
+        self.assertIsNone(result)
+
+    def _register_service(self):
+        from . import api
+        from . import interfaces
+        reg = self.config.registry
+        checkout3d = api.Checkout3D(None, None, None, None)
+        reg.utilities.register([], interfaces.IMultiCheckout, "", checkout3d)
+        return checkout3d
+
+    def test_it(self):
+        request = testing.DummyRequest()
+        service = self._register_service()
+        result = self._callFUT(request)
+        self.assertEqual(result, service)
+
+class secure3d_enrol_Tests(unittest.TestCase):
+    def setUp(self):
+        self.config = testing.setUp()
+    def tearDown(self):
+        testing.tearDown()
+    def _callFUT(self, *args, **kwargs):
+        from . import api
+        return api.secure3d_enrol(*args, **kwargs)
+
+    def _register_service(self, httplib):
+        from . import api
+        from . import interfaces
+        reg = self.config.registry
+        auth_id = "auth"
+        password = "password"
+        shop_id = "shop"
+        api_url = "http://api.example.com/"
+        checkout3d = api.Checkout3D(auth_id, password, shop_code=shop_id, api_base_url=api_url)
+        checkout3d._httplib = httplib
+        reg.utilities.register([], interfaces.IMultiCheckout, "", checkout3d)
+        return checkout3d
+
+    def test_it(self):
+        request = testing.DummyRequest()
+        httplib = DummyHTTPLib("""<?xml version="1.0"?>
+        <Message>
+            <Md>this-is-merchant-data</Md>
+            <ErrorCd>012345</ErrorCd>
+            <RetCd>0</RetCd>
+            <AcsUrl>http://example.com/acs</AcsUrl>
+            <PaReq>this-is-pa-req</PaReq>
+        </Message>""")
+        self._register_service(httplib)
+        result = self._callFUT(
+            request,
+            order_no="order-1",
+            card_number="0123456789012345",
+            exp_year="12",
+            exp_month="11",
+            total_amount=1234567,
+        )
+        self.assertEqual(result.AcsUrl, "http://example.com/acs")
+
 
 class Checkout3DTests(unittest.TestCase):
     def setUp(self):
@@ -827,7 +925,7 @@ class Checkout3DTests(unittest.TestCase):
         self.assertEqual(result.PaReq, "this-is-pa-req")
 
 class DummyHTTPLib(object):
-    def __init__(self, response_body, status="200", reason="OK"):
+    def __init__(self, response_body, status=200, reason="OK"):
         self.called = []
         self.response_body = response_body
         self.status = status

@@ -9,12 +9,25 @@ import urlparse
 from . import models as m
 from .interfaces import IMultiCheckout
 from datetime import date
+from . import logger
 
 DEFAULT_ITEM_CODE = "120" # 通販
 
 def get_multicheckout_service(request):
     reg = request.registry
     return reg.utilities.lookup([], IMultiCheckout)
+
+def secure3d_enrol(request, order_no, card_number, exp_year, exp_month, total_amount):
+    service = get_multicheckout_service(request)
+    enrol = m.Secure3DReqEnrolRequest(
+        CardNumber=card_number,
+        ExpYear=exp_year,
+        ExpMonth=exp_month,
+        TotalAmount=total_amount,
+        Currency="392",
+    )
+
+    return service.secure3d_enrol(order_no, enrol)
 
 def secure_code_auth(request, order_no, item_name, amount, tax, client_name, mail_address,
                      card_no, card_limit, card_holder_name,
@@ -92,42 +105,49 @@ class Checkout3D(object):
         message = self._create_secure3d_enrol_xml(enrol)
         url = self.secure3d_enrol_url(order_no)
         res = self._request(url, message)
+        logger.debug("got response %s" % res)
         return self._parse_secure3d_enrol_response(res)
 
     def request_card_check(self, order_no, card_auth):
         message = self._create_request_card_xml(card_auth, check=True)
         url = self.card_check_url(order_no)
         res = self._request(url, message)
+        logger.debug("got response %s" % res)
         return self._parse_response_card_xml(res)
 
     def request_card_auth(self, order_no, card_auth):
         message = self._create_request_card_xml(card_auth, check=True)
         url = self.card_auth_url(order_no)
         res = self._request(url, message)
+        logger.debug("got response %s" % res)
         return self._parse_response_card_xml(res)
 
     def request_card_cancel_auth(self, order_no, card_auth):
         message = self._create_request_card_xml(card_auth, check=True)
         url = self.card_auth_cancel_url(order_no)
         res = self._request(url, message)
+        logger.debug("got response %s" % res)
         return self._parse_response_card_xml(res)
 
     def request_card_sales(self, order_no, card_auth):
         message = self._create_request_card_xml(card_auth, check=True)
         url = self.card_sales_url(order_no)
         res = self._request(url, message)
+        logger.debug("got response %s" % res)
         return self._parse_response_card_xml(res)
 
     def request_card_cancel_sales(self, order_no, card_auth):
         message = self._create_request_card_xml(card_auth, check=True)
         url = self.card_cancel_sales_url(order_no)
         res = self._request(url, message)
+        logger.debug("got response %s" % res)
         return self._parse_response_card_xml(res)
 
     def request_card_inquiry(self, order_no, card_auth):
         message = self._create_request_card_xml(card_auth, check=True)
         url = self.card_inquiry_url(order_no)
         res = self._request(url, message)
+        logger.debug("got response %s" % res)
         return self._parse_inquiry_response_card_xml(res)
 
 
@@ -154,7 +174,12 @@ class Checkout3D(object):
             headers=headers)
         res = http.getresponse()
         try:
-            if res.status != "200":
+            logger.debug('%(url)s %(status)s %(reason)s' % dict(
+                url=url,
+                status=res.status,
+                reason=res.reason,
+            ))
+            if res.status != 200:
                 raise MultiCheckoutAPIError, res.reason
 
             return etree.parse(res).getroot()
