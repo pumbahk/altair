@@ -18,7 +18,7 @@ class IndexView(object):
     def index(self):
         return dict()
 
-    @view_config(route_name="top", request_method="POST", renderer="string")
+    @view_config(route_name="top", request_method="POST", renderer="redirect_post.mak")
     def require_secure3d(self):
 
         secure3d = api.secure3d_enrol(
@@ -31,4 +31,12 @@ class IndexView(object):
         )
 
         logger.debug("acs_url = %s" % secure3d.AcsUrl)
-        return h.secure3d_acs_form(self.request, self.request.route_url('top'), secure3d)
+        return dict(form=h.secure3d_acs_form(self.request, self.request.route_url('secure3d_result'), secure3d))
+
+class Secure3DResultView(object):
+    def __init__(self, request):
+        self.request = request
+
+    @view_config(route_name="secure3d_result", renderer="string", request_method="POST")
+    def secure3d_results(self):
+        return self.request.params
