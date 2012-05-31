@@ -62,34 +62,4 @@ class SejTicket(BaseModel, Base):
     updated_at          = Column(DateTime, nullable=True)
     created_at          = Column(DateTime, default=datetime.now)
 
-    '''
-    shop_order_id       = order_id
-
-    goukei_kingaku      = total_price
-
-    X_ticket_daikin     = ticket_price
-    X_ticket_kounyu_daikin = commission_fee
-
-    url_info            = exchange_sheet_url
-    iraihyo_id_00       = exchange_sheet_number
-
-    hikikae_no          = exchange_number
-    haraikomi_no        = billing_number
-
-    ticket_count        = total_ticket_count
-    ticket_num          = ticket_count
-    kaishu_cnt          = return_ticket_count
-
-    shori_id            = process_id
-    shori_kbn           = process_type
-    tuchi_type          = notification_type
-
-    pay_mise_no         = pay_store_name
-    pay_mise_name       = pay_store_name
-
-    hakken_mise_no      = ticketing_store_number
-    hakken_mise_name    = ticketing_store_name
-
-    shori_time          = process_time
-    '''
 
