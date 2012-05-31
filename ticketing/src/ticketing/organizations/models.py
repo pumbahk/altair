@@ -29,4 +29,5 @@ class Organization(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     prefecture_id = Column(BigInteger, ForeignKey("Prefecture.id"), nullable=True)
     prefecture = relationship("Prefecture", uselist=False)
 
+    venues = relationship("Venue", backref='organization')
     status = Column(Integer)

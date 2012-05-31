@@ -138,37 +138,25 @@ class Performances(BaseView):
 
         f = PerformanceForm(self.request.POST, organization_id=self.context.user.organization_id)
         if f.validate():
-            connection = DBSession.bind.connect()
-            try:
-                tran = connection.begin()
-
-                if self.request.matched_route.name == 'performances.copy':
-                    event_id = performance.event_id
-                    performance = merge_session_with_post(Performance(), f.data)
-                    performance.event_id = event_id
+            if self.request.matched_route.name == 'performances.copy':
+                event_id = performance.event_id
+                performance = merge_session_with_post(Performance(), f.data)
+                performance.event_id = event_id
+                performance.create_venue_id = f.data['venue_id']
+            else:
+                performance = merge_session_with_post(performance, f.data)
+                if f.data['venue_id'] != performance.venue.original_venue_id:
+                    performance.delete_venue_id = performance.venue.id
                     performance.create_venue_id = f.data['venue_id']
-                else:
-                    performance = merge_session_with_post(performance, f.data)
-                    if f.data['venue_id'] != performance.venue.original_venue_id:
-                        performance.delete_venue_id = performance.venue.id
-                        performance.create_venue_id = f.data['venue_id']
-                performance.save()
 
-                tran.commit()
-                logging.debug('performance save success')
-
-                self.request.session.flash(u'パフォーマンスを保存しました')
-                return HTTPFound(location=route_path('performances.show', self.request, performance_id=performance.id))
-            except Exception, e:
-                tran.rollback()
-                logging.error('performance save failed %s' % e.message)
-            finally:
-                tran.close()
-
-        return {
-            'form':f,
-            'event':performance.event,
-        }
+            performance.save()
+            self.request.session.flash(u'パフォーマンスを保存しました')
+            return HTTPFound(location=route_path('performances.show', self.request, performance_id=performance.id))
+        else:
+            return {
+                'form':f,
+                'event':performance.event,
+            }
 
     @view_config(route_name='performances.delete')
     def delete(self):
