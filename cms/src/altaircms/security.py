@@ -1,5 +1,6 @@
 # coding: utf-8
 import logging
+import itertools
 from pyramid.security import Allow, Authenticated
 from sqlalchemy.orm.exc import NoResultFound
 import sqlalchemy.orm as orm
@@ -28,6 +29,11 @@ class RootFactory(object):
 
     @property
     def __acl__(self):
+        # return [(Allow, Authenticated, 'authenticated')] + list(itertools.chain.from_iterable(
+        #     [[(Allow, str(role.name), perm) 
+        #       for perm in role.permissions] 
+        #      for role in Role.query]))
+
         fst = [(Allow, Authenticated, "authenticated")]
         qs = RolePermission.query.filter(Role.id==RolePermission.role_id).options(orm.joinedload("role"))
         filtered = list([(Allow, str(perm.role.name), perm.name) for perm in qs])

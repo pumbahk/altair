@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 
 from altaircms.models import model_to_dict
+from altaircms.topic.models import Topcontent
 import altaircms.helpers as h
 
 import pkg_resources
@@ -66,11 +67,14 @@ def topic_mapper(request, obj):
     objlike.linked_page = obj.linked_page.name if obj.linked_page else u"-"
     return objlike
 
+CDWN_DICT = dict(Topcontent.COUNTDOWN_CANDIDATES)
 def topcontent_mapper(request, obj):
     objlike = ObjectLike(**model_to_dict(obj))
     image_asset = obj.image_asset.title or u"名前なし"
     objlike.image_asset = RawText(u'<a href="%s">%s</a>' % (h.asset.to_show_page(request, obj.image_asset), image_asset))
-    objlike.page = obj.page.title if obj.page else u"-"
+    objlike.bound_page = obj.bound_page.name if obj.bound_page else u"-"
+    objlike.linked_page = obj.linked_page.name if obj.linked_page else u"-"
+    objlike.countdown_type = CDWN_DICT[obj.countdown_type]
     return objlike
 
 def hotword_mapper(request, obj):
