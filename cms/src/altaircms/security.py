@@ -2,16 +2,8 @@
 import logging
 from pyramid.security import Allow, Authenticated
 from sqlalchemy.orm.exc import NoResultFound
-
-from altaircms.models import DBSession
-from altaircms.auth.models import Operator, Role
-
-from zope.interface import implements
-from pyramid.interfaces import IAuthorizationPolicy
-from pyramid.location import lineage
-from pyramid.security import ACLAllowed
-import itertools
-
+import sqlalchemy.orm as orm
+from altaircms.auth.models import Operator, Role, RolePermission
 
 def rolefinder(userid, request):
     """
@@ -36,18 +28,7 @@ class RootFactory(object):
 
     @property
     def __acl__(self):
-        return [(Allow, Authenticated, 'authenticated')] + list(itertools.chain.from_iterable(
-            [[(Allow, str(role.name), perm) 
-              for perm in role.permissions] 
-             for role in Role.query]))
-
-
-class SecurityAllOK(list):
-    def __init__(self):
-        from altaircms.auth.models import DEFAULT_ROLE
-        self.roles = [DEFAULT_ROLE]
-        
-    def __call__(self, user_id, request):
-        return self.roles
-
-
+        fst = [(Allow, Authenticated, "authenticated")]
+        qs = RolePermission.query.filter(Role.id==RolePermission.role_id).options(orm.joinedload("role"))
+        filtered = list([(Allow, str(perm.role.name), perm.name) for perm in qs])
+        return fst + filtered

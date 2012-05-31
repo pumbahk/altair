@@ -118,7 +118,9 @@ class WidgetDisposition(BaseOriginalMixin, Base): #todo: rename
 
     def delete_widgets(self):
         where = (Widget.disposition_id==self.id) & (Widget.page==None)
-        return DBSession.query(Widget.id).filter(where).delete()
+        for w in Widget.query.filter(where):
+            DBSession.delete(w)
+
 
     @classmethod
     def _snapshot_title(cls):

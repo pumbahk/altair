@@ -39,8 +39,8 @@ class WDispositionResource(security.RootFactory):
     def get_disposition(self, id_):
         return WidgetDisposition.query.filter(WidgetDisposition.id==id_).one()
 
-    def get_disposition_list(self, user):
-        return WidgetDisposition.enable_only_query(user)
+    def get_disposition_list(self):
+        return WidgetDisposition.enable_only_query(self.request.user)
 
     def bind_disposition(self, page, wdisposition):
         WidgetDisposition.snapshot(page, self.request.user, DBSession)
@@ -48,10 +48,11 @@ class WDispositionResource(security.RootFactory):
         return page
 
     def delete_disposition(self, wdisposition):
-        ## need self.delete()
         wdisposition.delete_widgets()
         self.delete(wdisposition)
-    
+
+
+
 class PageResource(security.RootFactory):
     Page = models.Page
     add = add_data
