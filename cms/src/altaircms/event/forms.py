@@ -15,3 +15,10 @@ class EventForm(Form):
     deal_open = fields.DateTimeField(label=u'販売開始日', validators=[required_field()])
     deal_close = fields.DateTimeField(label=u'販売終了日', validators=[required_field()])
     is_searchable = fields.BooleanField(label=u'検索可否フラグ', default=False)
+
+    __display_fields__ = [u"title", u"subtitle", 
+                          u"backend_id", 
+                          u"description", u"place", u"inquiry_for", 
+                          u"event_open", u"event_close", 
+                          u"deal_open", u"deal_close", 
+                          u"is_searchable"]

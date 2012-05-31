@@ -107,7 +107,7 @@ class CreateView(object):
         form = self.context.form
         return {"master_env": self.context.context,
                 "form": form, 
-                "display_fields": form.data.keys()}
+                "display_fields": getattr(form,"__display_fields__", None) or form.data.keys()}
         
     def input(self):
         form = self.context.input_form()
@@ -124,7 +124,7 @@ class CreateView(object):
         return {"master_env": self.context,
                 "form": form, 
                 "obj": obj, 
-                "display_fields": form.data.keys()}
+                "display_fields": getattr(form,"__display_fields__", None) or form.data.keys()}
 
     def create_model(self):
         form = self.context.confirmed_form()
@@ -141,7 +141,7 @@ class UpdateView(object):
         form = self.context.form
         return {"master_env": self.context.context,
                 "form": form, 
-                "display_fields": form.data.keys()}
+                "display_fields": getattr(form,"__display_fields__", None) or form.data.keys()}
 
     def input(self):
         obj = self.context.get_model_obj(self.request.matchdict["id"])
@@ -157,7 +157,7 @@ class UpdateView(object):
         return {"master_env": self.context,
                 "form": form, 
                 "obj": obj, 
-                "display_fields": form.data.keys()}
+                "display_fields": getattr(form,"__display_fields__", None) or form.data.keys()}
 
     def update_model(self):
         form = self.context.confirmed_form()
@@ -176,7 +176,7 @@ class DeleteView(object):
         return {"master_env": self.context,
                 "obj": obj, 
                 "form": form, 
-                "display_fields": form.data.keys()}
+                "display_fields": getattr(form,"__display_fields__", None) or form.data.keys()}
 
 
     def delete_model(self):
@@ -213,7 +213,7 @@ class SimpleCRUDFactory(object):
 
     def _join(self, ac):
         return "%s_%s" % (self.prefix, ac)
-        
+
     def bind(self, config, bind_actions, events=None):
         endpoint = self._join("list")
         resource = functools.partial(
