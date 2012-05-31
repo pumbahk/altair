@@ -85,6 +85,11 @@ PERMISSIONS = [
     "operator_read",
     "operator_update",
     "operator_delete",
+    # hotword
+    "hotword_create",
+    "hotword_read",
+    "hotword_update",
+    "hotword_delete",
 ]
 
 

@@ -198,7 +198,7 @@ def list_view(context, request):
             "xs": h.paginate(request, qs, item_count=qs.count()),
             "query_form": query_form, 
             "form": form, 
-            "display_fields": form.data.keys()}
+            "display_fields": getattr(form, "__display_fields__", None) or form.data.keys()}
 
 ## todo: move it
 class SimpleCRUDFactory(object):

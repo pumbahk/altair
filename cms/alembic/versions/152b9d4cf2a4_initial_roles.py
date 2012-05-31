@@ -25,7 +25,7 @@ def upgrade():
     DBSession.add(role)
 
     perms = ["_create", "_read", "_delete", "_update"]
-    for target in ['event', 'topic', 'topcontent', 'ticket', 'magazine', 'asset', 'page', 'tag', 'promotion', 'promotion_unit', 'performance', 'layout', 'operator']:
+    for target in ['event', 'topic', 'topcontent', 'ticket', 'magazine', 'asset', 'page', 'tag', 'promotion', 'promotion_unit', 'performance', 'layout', 'operator', "hotword"]:
         # viewer
         role = Role(name=target + "_viewer", permissions=[target + "_read"])
         DBSession.add(role)

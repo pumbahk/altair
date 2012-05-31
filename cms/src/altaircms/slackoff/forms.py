@@ -90,7 +90,7 @@ class CategoryForm(Form):
     orderno = fields.IntegerField(label=u"表示順序")
 
     __display_fields__ = [u"name", u"label",
-                          u"parent, "u"hierarchy", 
+                          u"parent", u"hierarchy", 
                           u"imgsrc", u"url", u"pageset", 
                           u"orderno"]
     # ## delete validateion
