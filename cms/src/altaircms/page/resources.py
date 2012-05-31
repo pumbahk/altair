@@ -95,7 +95,7 @@ class PageResource(security.RootFactory):
         self.delete(page)
 
     def clone_page(self, page):
-        cloned = page.clone(DBSession)
+        cloned = page.clone(DBSession, request=self.request)
         subscribers.notify_page_create(self.request, cloned)
         return cloned
 

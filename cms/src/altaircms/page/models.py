@@ -169,9 +169,9 @@ class Page(PublishUnpublishMixin,
     def has_widgets(self):
         return self.structure != self.DEFAULT_STRUCTURE
 
-    def clone(self, session):
+    def clone(self, session, request=None):
         from . import clone
-        return clone.page_clone(self, session)
+        return clone.page_clone(request, self, session)
 
     @classmethod
     def get_or_create_by_title(cls, title):

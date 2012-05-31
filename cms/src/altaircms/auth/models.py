@@ -123,8 +123,8 @@ class Operator(Base):
     id = Column(Integer, primary_key=True)
 
     auth_source = Column(String(255), nullable=False)
-    user_id = Column(Integer, ForeignKey("user.id"))
-    user = relationship("User", uselist=False)
+    user_id = Column(Integer)
+
     screen_name = Column(Unicode(255))
 
     oauth_token = Column(String(255))
@@ -169,7 +169,6 @@ class RolePermission(Base):
     id = Column(Integer, primary_key=True)
     name = Column(Enum(*PERMISSIONS))
     role_id = Column(Integer, ForeignKey('role.id'))
-
 
 
 class Client(Base):

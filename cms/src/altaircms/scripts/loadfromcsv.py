@@ -126,7 +126,7 @@ def string_to_value(obj, colname, v):
         return v.decode("utf-8")
 
 def load_from_csv(mapper, args):
-    reader = csv.reader(args.infile)
+    reader = csv.reader(args.infile, quotechar="'")
     model = import_symbol(args.target)
     cols = [c.name for c in model_columns(model)]
 
@@ -181,11 +181,11 @@ def main():
 def _main(args):
     if args.list:
         return list_modelnames(args)
-
     try:
         load_from_csv(string_to_value, args)
         transaction.commit()
     except:
+        raise 
         transaction.abort()
 
 if __name__ == "__main__":

@@ -18,7 +18,7 @@
 <div class="row">
   <div class="span5">
 	<form action="${h.page.to_update(request,page)}" method="POST">
-	  ${fco.form_as_table_strict(form, ["title", "event", "parent", "url", "description", "keywords", "tags", "private_tags","layout"])}
+	  ${fco.form_as_table_strict(form, ["title", "event", "url", "description", "keywords", "tags", "private_tags","layout"])}
 	  ${h.base.confirm_stage()|n}
 	  <button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> Update</button>
     </form>

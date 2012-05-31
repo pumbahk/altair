@@ -79,8 +79,6 @@ class PageUpdateForm(Form):
                                                 get_label=lambda obj: u"%s(%s)" % (obj.title, obj.template_filename))
     event = dynamic_query_select_field_factory(Event, allow_blank=True, label=u"イベント", 
                                                get_label=lambda obj:  obj.title)
-    parent = dynamic_query_select_field_factory(Page, allow_blank=True, label=u"親ページ", 
-                                                get_label=lambda obj:  u'%s(%s)' % (obj.title, obj.url))
 
 
     def validate(self):
