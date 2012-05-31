@@ -114,7 +114,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             venue = Venue.get(self.delete_venue_id)
             venue.delete_cascade()
 
-def get_sync_data(self):
+    def get_sync_data(self):
         start_on = isodate.datetime_isoformat(self.start_on) if self.start_on else ''
         end_on = isodate.datetime_isoformat(self.end_on) if self.end_on else ''
         data = {
