@@ -22,7 +22,16 @@ class IndexView(object):
     def require_secure3d(self):
 
         order_no = self.gen_order_no()
-        self.request.session['order_no'] = order_no
+        self.request.session['order'] = dict(
+            order_no=order_no,
+            amount=int(self.request.params['total_amount']),
+            card_holder_name=self.request.params['card_holder_name'],
+            card_number=self.request.params['card_number'],
+            exp_year=self.request.params['exp_year'],
+            exp_month=self.request.params['exp_month'],
+            mail_address=self.request.params['mail_address'],
+        )
+
         secure3d = api.secure3d_enrol(
             request=self.request,
             order_no=order_no,
@@ -41,18 +50,35 @@ class Secure3DResultView(object):
 
     @view_config(route_name="secure3d_result", renderer="string", request_method="POST")
     def secure3d_results(self):
-        order_no = self.request.session['order_no']
+        order = self.request.session['order']
+        order_no = order['order_no']
+        amount = order['amount']
+        tax = 0
+        card_holder_name = client_name = order['card_holder_name']
+        card_no = order['card_number']
+        mail_address = order['mail_address']
+        card_limit = order['exp_year'] + order['exp_month']
+        item_name = u'テストアイテム'
+
         pares = self.request.params['PaRes']
         md = self.request.params['MD']
 
+
         auth_result = api.secure3d_auth(self.request, order_no, pares, md)
+        checkout_auth_result = api.checkout_auth_secure3d(
+            self.request, order_no,
+            item_name, amount, tax, client_name, mail_address,
+            card_no, card_limit, card_holder_name,
+            mvn=auth_result.Mvn, xid=auth_result.Xid, ts=auth_result.Ts,
+            eci=auth_result.Eci, cavv=auth_result.Cavv, cavv_algorithm=auth_result.Cavva,
+        )
         return dict(
-            ErrorCd=auth_result.ErrorCd,
-            RetCd=auth_result.RetCd,
-            Xid=auth_result.Xid,
-            Ts=auth_result.Ts,
-            Cavva=auth_result.Cavva,
-            Cavv=auth_result.Cavv,
-            Eci=auth_result.Eci,
-            Mvn=auth_result.Mvn,
+            OrderNo=checkout_auth_result.OrderNo,
+            Status=checkout_auth_result.Status,
+            PublicTranId=checkout_auth_result.PublicTranId,
+            AheadComCd=checkout_auth_result.AheadComCd,
+            ApprovalNo=checkout_auth_result.ApprovalNo,
+            CardErrorCd=checkout_auth_result.CardErrorCd,
+            ReqYmd=checkout_auth_result.ReqYmd,
+            CmnErrorCd=checkout_auth_result.CmnErrorCd,
         )

@@ -38,15 +38,46 @@ def secure3d_auth(request, order_no, pares, md):
     service = get_multicheckout_service(request)
     return service.secure3d_auth(order_no, auth)
 
-
-def secure_code_auth(request, order_no, item_name, amount, tax, client_name, mail_address,
-                     card_no, card_limit, card_holder_name,
-                     secure_code,
-                     free_data=None, item_cod=DEFAULT_ITEM_CODE, date=date):
-
+def checkout_auth_secure3d(request,
+                  order_no, item_name, amount, tax, client_name, mail_address,
+                  card_no, card_limit, card_holder_name,
+                  mvn, xid, ts, eci, cavv, cavv_algorithm,
+                  free_data=None, item_cod=DEFAULT_ITEM_CODE, date=date):
     order_ymd = date.today().strftime('%Y%m%d')
     params = m.MultiCheckoutRequestCard(
         ItemCd=item_cod,
+        ItemName=item_name,
+        OrderYMD=order_ymd,
+        SalesAmount=amount,
+        TaxCarriage=tax,
+        FreeData=free_data,
+        ClientName=client_name,
+        MailAddress=mail_address,
+        MailSend='1',
+        CardNo=card_no,
+        CardLimit=card_limit,
+        CardHolderName=card_holder_name,
+        PayKindCd='61',
+        PayCount='10',
+        SecureKind='3',
+        Mvn=mvn,
+        Xid=xid,
+        Ts=ts,
+        ECI=eci,
+        CAVV=cavv,
+        CavvAlgorithm=cavv_algorithm,
+    )
+    service = get_multicheckout_service(request)
+    return service.request_card_auth(order_no, params)
+
+def checkout_auth_secure_code(request, order_no, item_name, amount, tax, client_name, mail_address,
+                     card_no, card_limit, card_holder_name,
+                     secure_code,
+                     free_data=None, item_cd=DEFAULT_ITEM_CODE, date=date):
+
+    order_ymd = date.today().strftime('%Y%m%d')
+    params = m.MultiCheckoutRequestCard(
+        ItemCd=item_cd,
         ItemName=item_name,
         OrderYMD=order_ymd,
         SalesAmount=amount,
@@ -210,7 +241,7 @@ class Checkout3D(object):
 
     def _add_param(self, parent, name, value, optional=False):
 
-        if not value:
+        if value is None:
             if optional:
                 return None
             else:
