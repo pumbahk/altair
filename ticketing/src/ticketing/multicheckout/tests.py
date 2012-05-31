@@ -924,6 +924,92 @@ class Checkout3DTests(unittest.TestCase):
         self.assertEqual(result.AcsUrl, "http://example.com/acs")
         self.assertEqual(result.PaReq, "this-is-pa-req")
 
+    def test_create_secure3d_auth_xml(self):
+        import xml.etree.ElementTree as etree
+        from . import models as m
+        auth = m.Secure3DAuthRequest(
+            Md="this-is-md",
+            PaRes="this-is-pares",
+        )
+        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP")
+        result = target._create_secure3d_auth_xml(auth)
+
+        self.assertEqual(etree.tostring(result),
+            "<Message>"
+            "<Md>this-is-md</Md>"
+            "<PaRes>this-is-pares</PaRes>"
+            "</Message>")
+
+    def test_parse_secure3d_auth_response(self):
+        import xml.etree.ElementTree as etree
+        data = """<?xml version="1.0"?>
+        <Message>
+        <ErrorCd>012345</ErrorCd>
+        <RetCd>0</RetCd>
+        <Xid>0123456789012345678901234567</Xid>
+        <Ts>1</Ts>
+        <Cavva>2</Cavva>
+        <Cavv>0123456789012345678901234567</Cavv>
+        <Eci>01</Eci>
+        <Mvn>0123456789</Mvn>
+        </Message>
+        """
+
+        element = etree.XML(data)
+        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP")
+        result = target._parse_secure3d_auth_response(element)
+
+        self.assertEqual(result.ErrorCd, "012345")
+        self.assertEqual(result.RetCd, "0")
+        self.assertEqual(result.Xid, "0123456789012345678901234567")
+        self.assertEqual(result.Ts, "1")
+        self.assertEqual(result.Cavva, "2")
+        self.assertEqual(result.Cavv, "0123456789012345678901234567")
+        self.assertEqual(result.Eci, "01")
+        self.assertEqual(result.Mvn, "0123456789")
+
+    def test_secure3d_auth(self):
+        from . import models as m
+        order_no = "this-is-order-no"
+        auth = m.Secure3DAuthRequest(
+            Md="this-is-md",
+            PaRes="this-is-pares",
+        )
+
+        res_data = """<?xml version="1.0"?>
+        <Message>
+        <ErrorCd>012345</ErrorCd>
+        <RetCd>0</RetCd>
+        <Xid>0123456789012345678901234567</Xid>
+        <Ts>1</Ts>
+        <Cavva>2</Cavva>
+        <Cavv>0123456789012345678901234567</Cavv>
+        <Eci>01</Eci>
+        <Mvn>0123456789</Mvn>
+        </Message>
+        """
+
+
+        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP")
+        target._httplib = DummyHTTPLib(res_data)
+
+        result = target.secure3d_auth(order_no, auth)
+
+        self.assertEqual(target._httplib.body,
+            "<Message>"
+            "<Md>this-is-md</Md>"
+            "<PaRes>this-is-pares</PaRes>"
+            "</Message>")
+        self.assertEqual(target._httplib.path, "/SHOP/3D-Secure/OrderNo/this-is-order-no/Auth")
+        self.assertEqual(result.ErrorCd, "012345")
+        self.assertEqual(result.RetCd, "0")
+        self.assertEqual(result.Xid, "0123456789012345678901234567")
+        self.assertEqual(result.Ts, "1")
+        self.assertEqual(result.Cavva, "2")
+        self.assertEqual(result.Cavv, "0123456789012345678901234567")
+        self.assertEqual(result.Eci, "01")
+        self.assertEqual(result.Mvn, "0123456789")
+
 class DummyHTTPLib(object):
     def __init__(self, response_body, status=200, reason="OK"):
         self.called = []

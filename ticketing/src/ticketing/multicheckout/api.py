@@ -29,6 +29,16 @@ def secure3d_enrol(request, order_no, card_number, exp_year, exp_month, total_am
 
     return service.secure3d_enrol(order_no, enrol)
 
+def secure3d_auth(request, order_no, pares, md):
+    auth = m.Secure3DAuthRequest(
+        Md=md,
+        PaRes=pares,
+    )
+
+    service = get_multicheckout_service(request)
+    return service.secure3d_auth(order_no, auth)
+
+
 def secure_code_auth(request, order_no, item_name, amount, tax, client_name, mail_address,
                      card_no, card_limit, card_holder_name,
                      secure_code,
@@ -105,49 +115,56 @@ class Checkout3D(object):
         message = self._create_secure3d_enrol_xml(enrol)
         url = self.secure3d_enrol_url(order_no)
         res = self._request(url, message)
-        logger.debug("got response %s" % res)
+        logger.debug("got response %s" % etree.tostring(res))
         return self._parse_secure3d_enrol_response(res)
+
+    def secure3d_auth(self, order_no, auth):
+        message = self._create_secure3d_auth_xml(auth)
+        url = self.secure3d_auth_url(order_no)
+        res = self._request(url, message)
+        logger.debug("got response %s" % etree.tostring(res))
+        return self._parse_secure3d_auth_response(res)
 
     def request_card_check(self, order_no, card_auth):
         message = self._create_request_card_xml(card_auth, check=True)
         url = self.card_check_url(order_no)
         res = self._request(url, message)
-        logger.debug("got response %s" % res)
+        logger.debug("got response %s" % etree.tostring(res))
         return self._parse_response_card_xml(res)
 
     def request_card_auth(self, order_no, card_auth):
         message = self._create_request_card_xml(card_auth, check=True)
         url = self.card_auth_url(order_no)
         res = self._request(url, message)
-        logger.debug("got response %s" % res)
+        logger.debug("got response %s" % etree.tostring(res))
         return self._parse_response_card_xml(res)
 
     def request_card_cancel_auth(self, order_no, card_auth):
         message = self._create_request_card_xml(card_auth, check=True)
         url = self.card_auth_cancel_url(order_no)
         res = self._request(url, message)
-        logger.debug("got response %s" % res)
+        logger.debug("got response %s" % etree.tostring(res))
         return self._parse_response_card_xml(res)
 
     def request_card_sales(self, order_no, card_auth):
         message = self._create_request_card_xml(card_auth, check=True)
         url = self.card_sales_url(order_no)
         res = self._request(url, message)
-        logger.debug("got response %s" % res)
+        logger.debug("got response %s" % etree.tostring(res))
         return self._parse_response_card_xml(res)
 
     def request_card_cancel_sales(self, order_no, card_auth):
         message = self._create_request_card_xml(card_auth, check=True)
         url = self.card_cancel_sales_url(order_no)
         res = self._request(url, message)
-        logger.debug("got response %s" % res)
+        logger.debug("got response %s" % etree.tostring(res))
         return self._parse_response_card_xml(res)
 
     def request_card_inquiry(self, order_no, card_auth):
         message = self._create_request_card_xml(card_auth, check=True)
         url = self.card_inquiry_url(order_no)
         res = self._request(url, message)
-        logger.debug("got response %s" % res)
+        logger.debug("got response %s" % etree.tostring(res))
         return self._parse_inquiry_response_card_xml(res)
 
 
@@ -169,6 +186,7 @@ class Checkout3D(object):
 
         headers.update(self.auth_header)
 
+        logger.debug("request %s body = %s" % (url, body))
         http.request(
             "POST", url_parts.path, body=body,
             headers=headers)
@@ -201,13 +219,21 @@ class Checkout3D(object):
         e.text = value
         return e
 
-    def _create_secure3d_enrol_xml(self, secure3denrol):
+    def _create_secure3d_enrol_xml(self, secure3d_enrol):
         message = etree.Element("Message")
-        self._add_param(message, 'CardNumber', secure3denrol.CardNumber)
-        self._add_param(message, 'ExpYear', secure3denrol.ExpYear)
-        self._add_param(message, 'ExpMonth', secure3denrol.ExpMonth)
-        self._add_param(message, 'TotalAmount', str(secure3denrol.TotalAmount))
-        self._add_param(message, 'Currency', secure3denrol.Currency)
+        self._add_param(message, 'CardNumber', secure3d_enrol.CardNumber)
+        self._add_param(message, 'ExpYear', secure3d_enrol.ExpYear)
+        self._add_param(message, 'ExpMonth', secure3d_enrol.ExpMonth)
+        self._add_param(message, 'TotalAmount', str(secure3d_enrol.TotalAmount))
+        self._add_param(message, 'Currency', secure3d_enrol.Currency)
+
+        return message
+
+
+    def _create_secure3d_auth_xml(self, secure3d_auth):
+        message = etree.Element("Message")
+        self._add_param(message, 'Md', secure3d_auth.Md)
+        self._add_param(message, 'PaRes', secure3d_auth.PaRes)
 
         return message
 
@@ -377,3 +403,25 @@ class Checkout3D(object):
             elif e.tag == 'PaReq':
                 enrol_response.PaReq = e.text
         return enrol_response
+
+    def _parse_secure3d_auth_response(self, element):
+        auth_response = m.Secure3DAuthResponse()
+        assert element.tag == "Message"
+        for e in element:
+            if e.tag == 'ErrorCd':
+                auth_response.ErrorCd = e.text
+            elif e.tag == 'RetCd':
+                auth_response.RetCd = e.text
+            elif e.tag == 'Xid':
+                auth_response.Xid = e.text
+            elif e.tag == 'Ts':
+                auth_response.Ts = e.text
+            elif e.tag == 'Cavva':
+                auth_response.Cavva = e.text
+            elif e.tag == 'Cavv':
+                auth_response.Cavv = e.text
+            elif e.tag == 'Eci':
+                auth_response.Eci = e.text
+            elif e.tag == 'Mvn':
+                auth_response.Mvn = e.text
+        return auth_response

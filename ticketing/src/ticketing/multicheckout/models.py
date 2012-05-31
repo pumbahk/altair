@@ -36,6 +36,30 @@ class Secure3DReqEnrolResponse(Base):
     AcsUrl = sa.Column(sa.UnicodeText, doc="3D 認証画面を要求するための ACS の URL")
     PaReq = sa.Column(sa.UnicodeText, doc="ACS に送信する電文内容")
 
+class Secure3DAuthRequest(Base):
+    """ 3D認証結果確認依頼処理（リクエスト）
+    """
+    __tablename__ = 'secure3d_req_auth_request'
+    id = sa.Column(sa.Integer, primary_key=True)
+    Md = sa.Column(sa.UnicodeText, doc="マーチャントデータ")
+    PaRes = sa.Column(sa.UnicodeText, doc="PARes 電文")
+
+
+class Secure3DAuthResponse(Base):
+    """ 3D認証結果確認依頼処理（リクエスト）
+    """
+    __tablename__ = 'secure3d_req_auth_response'
+    id = sa.Column(sa.Integer, primary_key=True)
+
+    ErrorCd = sa.Column(sa.Unicode(6), doc="エラーコート")
+    RetCd = sa.Column(sa.Unicode(1), doc="リターンコート")
+    Xid = sa.Column(sa.Unicode(28), doc="トランザクションID")
+    Ts = sa.Column(sa.Unicode(1), doc="トランザクションステータス")
+    Cavva = sa.Column(sa.Unicode(1), doc="CAVV アルゴリズム")
+    Cavv = sa.Column(sa.Unicode(28), doc="CAVV")
+    Eci = sa.Column(sa.Unicode(2), doc="ECI")
+    Mvn = sa.Column(sa.Unicode(10), doc="メッセージバージョンナンバー")
+
 class MultiCheckoutRequestCard(Base):
     """
 

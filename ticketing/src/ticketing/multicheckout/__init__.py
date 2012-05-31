@@ -34,7 +34,11 @@ def includeme(config):
 
 def main(global_conf, **settings):
     from pyramid.config import Configurator
-    config = Configurator(settings=settings)
+    from pyramid.session import UnencryptedCookieSessionFactoryConfig
+    my_session_factory = UnencryptedCookieSessionFactoryConfig("itsaseekreet")
+    config = Configurator(
+        settings=settings,
+        session_factory=my_session_factory)
     config.include(".")
     config.include(".demo")
     return config.make_wsgi_app()

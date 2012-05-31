@@ -21,9 +21,11 @@ class IndexView(object):
     @view_config(route_name="top", request_method="POST", renderer="redirect_post.mak")
     def require_secure3d(self):
 
+        order_no = self.gen_order_no()
+        self.request.session['order_no'] = order_no
         secure3d = api.secure3d_enrol(
             request=self.request,
-            order_no=self.gen_order_no(),
+            order_no=order_no,
             card_number=self.request.params['card_number'],
             exp_year=self.request.params['exp_year'],
             exp_month=self.request.params['exp_month'],
@@ -39,4 +41,18 @@ class Secure3DResultView(object):
 
     @view_config(route_name="secure3d_result", renderer="string", request_method="POST")
     def secure3d_results(self):
-        return self.request.params
+        order_no = self.request.session['order_no']
+        pares = self.request.params['PaRes']
+        md = self.request.params['MD']
+
+        auth_result = api.secure3d_auth(self.request, order_no, pares, md)
+        return dict(
+            ErrorCd=auth_result.ErrorCd,
+            RetCd=auth_result.RetCd,
+            Xid=auth_result.Xid,
+            Ts=auth_result.Ts,
+            Cavva=auth_result.Cavva,
+            Cavv=auth_result.Cavv,
+            Eci=auth_result.Eci,
+            Mvn=auth_result.Mvn,
+        )
