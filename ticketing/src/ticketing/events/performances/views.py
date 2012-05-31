@@ -48,27 +48,30 @@ class Performances(BaseView):
         }
 
     @view_config(route_name='performances.show', renderer='ticketing:templates/performances/show.html')
+    @view_config(route_name='performances.show_tab', renderer='ticketing:templates/performances/show.html')
     def show(self):
         performance_id = int(self.request.matchdict.get('performance_id', 0))
         performance = Performance.get(performance_id)
         if performance is None:
             return HTTPNotFound('performance id %d is not found' % performance_id)
 
-        products = Product.find(performance_id=performance_id)
-        user = self.context.user
-        accounts = Account.get_by_organization_id(user.organization_id)
+        data = {'performance':performance}
 
-        return {
-            'performance':performance,
-            'products':products,
-            'accounts':accounts,
-            'user':user,
-            'form_product':ProductForm(event_id=performance.event_id),
-            'form_product_item':ProductItemForm(user_id=self.context.user.id, performance_id=performance_id),
-            'form_stock_type':StockTypeForm(event_id=performance.event_id),
-            'form_stock_allocation':StockAllocationForm(),
-            'form_stock_holder':StockHolderForm(organization_id=self.context.user.organization_id, performance_id=performance_id),
-        }
+        tab = self.request.matchdict.get('tab', 'venue-designer')
+        if tab == 'seat-allocation':
+            data['form_stock_holder'] = StockHolderForm(organization_id=self.context.user.organization_id, performance_id=performance_id)
+        elif tab == 'product':
+            data['form_product'] = ProductForm(event_id=performance.event_id)
+            data['form_product_item'] = ProductItemForm(user_id=self.context.user.id, performance_id=performance_id)
+        elif tab == 'reservation':
+            pass
+        elif tab == 'ticket-designer':
+            pass
+        else:
+            data['form_stock_type'] = StockTypeForm(event_id=performance.event_id)
+            data['form_stock_allocation'] = StockAllocationForm()
+
+        return data
 
     @view_config(route_name='performances.new', request_method='GET', renderer='ticketing:templates/performances/edit.html')
     def new_get(self):

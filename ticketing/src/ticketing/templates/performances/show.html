@@ -3,6 +3,9 @@
 <%namespace file="/common/helpers.html" import="safe_strftime" />
 <%namespace file="/common/helpers.html" import="breadcrumbs" />
 
+<% tab = request.matchdict.get('tab', 'venue-designer') %>
+<% route_path = request.route_path('performances.show', performance_id=performance.id) %>
+
 <%block name="style">
 <link rel="stylesheet" type="text/css" href="/static/css/kolorpicker.css" />
 <link rel="stylesheet" type="text/css" href="/static/css/performance.css" />
@@ -33,6 +36,11 @@ var dataSource = {
   drawing: "${request.route_path('api.get_drawing', venue_id=performance.venue.id)}" + "?" + Math.random(),
   metadata: "${request.route_path('api.get_seats', venue_id=performance.venue.id)}" + "?" + Math.random()
 };
+$(function() {
+  tab = '#${tab}';
+  $(tab + '-tab').addClass('active');
+  $(tab).addClass('active');
+});
 </script>
 
 <div class="row-fluid">
@@ -98,28 +106,34 @@ var dataSource = {
   <span class="span10">
     <div class="tabbable tabs-top" id="tabbable-content">
       <ul class="nav nav-tabs">
-        <li id="venue-designer-tab"><a href="#venue-designer" data-toggle="tab">会場／席種</a></li>
-        <li id="seat-allocation-tab"><a href="#seat-allocation" data-toggle="tab">配券／配席</a></li>
-        <li id="product-tab"><a href="#product" data-toggle="tab">商品</a></li>
-        <li id="reservation-tab"><a href="#reservation" data-toggle="tab">予約</a></li>
-        <li id="ticket-designer-tab"><a href="#ticket-designer" data-toggle="tab">チケット券面</a></li>
+        <li id="venue-designer-tab"><a href="${route_path}/venue-designer">会場／席種</a></li>
+        <li id="seat-allocation-tab"><a href="${route_path}/seat-allocation">配券／配席</a></li>
+        <li id="product-tab"><a href="${route_path}/product">商品</a></li>
+        <li id="reservation-tab"><a href="${route_path}/reservation">予約</a></li>
+        <li id="ticket-designer-tab"><a href="${route_path}/ticket-designer">チケット券面</a></li>
       </ul>
       <div class="tab-content" id="tabbable-tab-content">
-        <div class="tab-pane" id="venue-designer">
-          <%include file="./_venue_designer.html" args="performance=performance, form_stock_type=form_stock_type, form_stock_allocation=form_stock_allocation" />
-        </div>
+        % if tab == 'seat-allocation':
         <div class="tab-pane" id="seat-allocation">
           <%include file="./_seat_allocation.html" args="performance=performance, form_stock_holder=form_stock_holder" />
         </div>
+        % elif tab == 'product':
         <div class="tab-pane" id="product">
           <%include file="./_product.html" args="performance=performance, form_product=form_product, form_product_item=form_product_item" />
         </div>
+        % elif tab == 'reservation':
         <div class="tab-pane" id="reservation">
           <%include file="./_reservation.html" args="performance=performance" />
         </div>
+        % elif tab == 'ticket-designer':
         <div class="tab-pane" id="ticket-designer">
           <%include file="./_ticket_designer.html" />
         </div>
+        % else:
+        <div class="tab-pane" id="venue-designer">
+          <%include file="./_venue_designer.html" args="performance=performance, form_stock_type=form_stock_type, form_stock_allocation=form_stock_allocation" />
+        </div>
+        % endif
       </div>
       <script type="text/javascript">
         var callbacks = {
@@ -178,10 +192,6 @@ var dataSource = {
         }
 
         (function() {
-          anchor = location.hash || '#venue-designer';
-          $(anchor + '-tab').addClass('active');
-          $(anchor).addClass('active');
-
           var active_tab = null;
           function activate_tab() {
             var new_active_tab = $(this).find("#tabbable-tab-content > .tab-pane.active");
