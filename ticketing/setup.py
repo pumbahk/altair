@@ -46,6 +46,7 @@ requires = [
     'altair-commons',
     'lxml',
     'isodate',
+    'python-dateutil',
     ]
 
 setup(name='ticketing',
