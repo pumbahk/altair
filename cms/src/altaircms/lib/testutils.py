@@ -44,6 +44,7 @@ def functionalTestSetUp(extra=None):
                 "altaircms.asset.storepath": "altaircms:../../data/assets", 
                 "altaircms.debug.strip_security": 'true', 
                 "altaircms.plugin_static_directory": "altaircms:plugins/static", 
+                "altaircms.logout.action": "altaircms.auth.api.LogoutSelfOnly", 
                 "altaircms.layout_directory": "."}
     config = defaults.copy()
     if extra:

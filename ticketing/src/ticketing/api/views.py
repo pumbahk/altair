@@ -4,7 +4,7 @@ from pyramid.renderers import render_to_response
 from pyramid.httpexceptions import HTTPFound, HTTPError
 
 from pyramid.url import route_path
-from pyramid.security import authenticated_userid
+from pyramid.security import authenticated_userid, forget
 
 from ticketing.oauth2.models import Service, AccessToken
 #from forms import AuthorizeForm
@@ -32,6 +32,13 @@ def access_token(context, request):
     else:
         return {}
 
+@view_config(route_name="api.forget_loggedin")
+def forget_loggedin(request):
+    ## todo: added default failback.
+    ## todo: need some validation.
+    return_url = request.params.get("return_to", "/default-fail-back-path")
+    headers = forget(request)
+    return HTTPFound(location=return_url, headers=headers)
 
 # TODO move to oauth2
 @view_defaults(permission='authenticated')

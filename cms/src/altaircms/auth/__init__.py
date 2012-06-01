@@ -1,4 +1,16 @@
+from .interfaces import ILogoutAction
+
 def includeme(config):
+    """
+    requirement in settings:
+    
+    altaircms.logout.external.url
+    altaircms.logout.action
+    """
+    settings = config.registry.settings
+    url = settings.get("altaircms.logout.external.url")
+    logout_action_class = config.maybe_dotted(settings.get("altaircms.logout.action"))
+    config.registry.registerUtility(logout_action_class(url), ILogoutAction)
 
     config.add_route('login', '/login')
     config.add_route('logout', '/logout')

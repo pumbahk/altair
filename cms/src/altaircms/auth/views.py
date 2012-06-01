@@ -19,7 +19,8 @@ from altaircms.lib.fanstatic_decorator import with_bootstrap
 from altaircms.auth.forms import RoleForm
 from .models import Operator, Role, DEFAULT_ROLE
 
-from altaircms.auth.helpers import get_authenticated_user
+from . import api
+
 
 @view_config(route_name='login', renderer='altaircms:templates/login.mako')
 @view_config(context='pyramid.httpexceptions.HTTPForbidden', renderer='altaircms:templates/login.mako',
@@ -39,15 +40,9 @@ def login(request):
 
 @view_config(route_name='logout')
 def logout(request):
-    headers = forget(request)
-
-    ## キャッシュしていたoperatorのデータをリフレッシュ.
-    request.set_property(get_authenticated_user, "user", reify=True)
-
-    return HTTPFound(
-        location=request.resource_url(request.context),
-        headers=headers
-    )
+    action = api.get_logout_action(request)
+    result = action.logout(request)
+    return HTTPFound(location=result.return_to, headers=result.headers)
 
 
 class OAuthLogin(object):
@@ -82,6 +77,8 @@ class OAuthLogin(object):
                 client_secret=self.secret_key,
                 code=self.request.GET.get("code"),
                 grant_type='authorization_code')
+            url = self.access_token_url +"?" + urllib.urlencode(args)
+
             data = json.loads(self._urllib2.urlopen(
                 self.access_token_url +
                 "?" + urllib.urlencode(args)).read())
