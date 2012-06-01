@@ -14,11 +14,11 @@ class IndexView(object):
         now = datetime.now()
         return now.strftime("%Y%m%d%H%M%S")
 
-    @view_config(route_name="top", renderer="index.mak", request_method="GET")
+    #@view_config(route_name="top", renderer="index.mak", request_method="GET")
     def index(self):
         return dict()
 
-    @view_config(route_name="top", request_method="POST", renderer="redirect_post.mak")
+    #@view_config(route_name="top", request_method="POST", renderer="redirect_post.mak")
     def require_secure3d(self):
 
         order_no = self.gen_order_no()
@@ -48,7 +48,7 @@ class Secure3DResultView(object):
     def __init__(self, request):
         self.request = request
 
-    @view_config(route_name="secure3d_result", renderer="string", request_method="POST")
+    #@view_config(route_name="secure3d_result", renderer="string", request_method="POST")
     def secure3d_results(self):
         order = self.request.session['order']
         order_no = order['order_no']

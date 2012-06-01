@@ -176,7 +176,7 @@ class Events(BaseView):
         settings = get_current_registry().settings
         url = settings.get('altaircms.event.notification_url') + 'api/event/register'
         req = urllib2.Request(url, json.dumps(data))
-        req.add_header('X-Altair-Authorization', 'hogehoge')  # @TODO : apikey
+        req.add_header('X-Altair-Authorization', settings.get('altaircms.apikey'))
         req.add_header('Connection', 'close')
 
         try:

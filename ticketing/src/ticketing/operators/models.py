@@ -16,7 +16,7 @@ operator_role_association_table = Table('OperatorRole_Operator', Base.metadata,
     Column('operator_id', BigInteger, ForeignKey('Operator.id'))
 )
 
-class Permission(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+class Permission(Base):
     __tablename__ = 'Permission'
     id = Column(BigInteger, primary_key=True)
     operator_role_id = Column(BigInteger, ForeignKey('OperatorRole.id'))
@@ -25,20 +25,31 @@ class Permission(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     permit = Column(Integer)
 
     @staticmethod
+    def all():
+        return DBSession.query(Permission).all()
+
+    @staticmethod
     def get_by_key(category_name):
-        return Permission.filter(Permission.category_name==category_name).first()
+        #return Permission.filter(Permission.category_name==category_name).first()
+        return DBSession.query(Permission).filter(Permission.category_name == category_name).first()
 
     @staticmethod
     def list_in(category_names):
-        return Permission.filter(Permission.category_name.in_(category_names)).all()
+        #return Permission.filter(Permission.category_name.in_(category_names)).all()
+        return DBSession.query(Permission)\
+            .filter(Permission.category_name.in_(category_names)).all()
 
-class OperatorRole(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+class OperatorRole(Base, WithTimestamp):
     __tablename__ = 'OperatorRole'
     id = Column(BigInteger, primary_key=True)
     name = Column(String(255))
     operators = relationship('Operator', secondary=operator_role_association_table)
     permissions = relationship('Permission')
     status = Column('status',Integer, default=1)
+
+    @staticmethod
+    def all():
+        return DBSession.query(OperatorRole).all()
 
 class OperatorActionHistoryTypeENum(StandardEnum):
     View      = 1

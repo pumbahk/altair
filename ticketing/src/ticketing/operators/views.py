@@ -135,7 +135,7 @@ class OperatorRoles(BaseView):
         if direction not in ['asc', 'desc']:
             direction = 'asc'
 
-        query = OperatorRole.filter().order_by(sort + ' ' + direction)
+        query = session.query(OperatorRole).order_by(sort + ' ' + direction)
 
         roles = paginate.Page(
             query,
@@ -151,7 +151,7 @@ class OperatorRoles(BaseView):
     @view_config(route_name='operator_roles.show', renderer='ticketing:templates/operator_roles/show.html')
     def show(self):
         operator_role_id = int(self.request.matchdict.get('operator_role_id', 0))
-        operator_role = OperatorRole.get(operator_role_id)
+        operator_role = session.query(OperatorRole).filter_by(id=operator_role_id)
         if operator_role is None:
             return HTTPNotFound("operator_role id %d is not found" % operator_role_id)
 
