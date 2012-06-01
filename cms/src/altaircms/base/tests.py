@@ -10,4 +10,7 @@ class TestBaseView(BaseTest):
         from .views import dashboard
         request = testing.DummyRequest()
         resp = dashboard(request)
-        self.assertEqual(resp, {'events':[]})
+
+        self.assertEquals(resp.keys(), ["events"])
+        self.assertEquals(list(resp["events"]), [])
+
