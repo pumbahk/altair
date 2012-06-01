@@ -4,3 +4,4 @@ def includeme(config):
     config.add_route('admin.index'            , '/')
     config.add_route('admin.organization'     , '/organization')
     config.add_route('admin.super'            , '/super')
+    config.scan(".")

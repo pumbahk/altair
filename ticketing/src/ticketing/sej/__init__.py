@@ -2,7 +2,7 @@
 
 def includeme(config):
     config.add_route('sej.callback'                 , '/callback')
-    config.scan()
+    config.scan(".")
 
 
 class SejError(Exception):

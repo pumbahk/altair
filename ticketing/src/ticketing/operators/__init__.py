@@ -18,3 +18,4 @@ def includeme(config):
     config.add_route('operators.organization.new'    , '/organization/new')
     config.add_route('operators.organization.show'   , '/organization/show/{operator_id}')
     config.add_route('operators.organization.edit'   , '/organization/edit/{operator_id}')
+    config.scan(".")

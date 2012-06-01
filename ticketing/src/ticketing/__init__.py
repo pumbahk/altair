@@ -7,6 +7,7 @@ from .resources import RootFactory, groupfinder
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.session import UnencryptedCookieSessionFactoryConfig
+from pyramid.tweens import EXCVIEW
 
 import sqlahelper
 
@@ -57,12 +58,14 @@ def main(global_config, **settings):
     config.include('ticketing.accounts' , route_prefix='/accounts')
 
     # 上からscanされてしまうためしかたなく追加。scanをinclude先に移動させて、このincludeを削除する。
-    config.include('ticketing.cart' , route_prefix='/cart')
+    #config.include('ticketing.cart' , route_prefix='/cart')
 
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.add_renderer('json'  , 'ticketing.renderers.json_renderer_factory')
     config.add_renderer('csv'   , 'ticketing.renderers.csv_renderer_factory')
 
-    config.scan('ticketing') # Bad Code
+    #config.scan('ticketing') # Bad Code
+    config.scan(".views")
+
 
     return config.make_wsgi_app()

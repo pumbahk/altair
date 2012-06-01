@@ -8,3 +8,4 @@ def includeme(config):
     config.add_route('login.missing_redirect_url'   , '/missing_redirect_url')
 
 
+    config.scan(".")

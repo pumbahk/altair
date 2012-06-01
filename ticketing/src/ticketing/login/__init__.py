@@ -6,3 +6,4 @@ def includeme(config):
     config.add_route('login.info.edit'              , '/info/edit')
     config.add_route('login.logout'                 , '/logout')
     config.add_route('login.reset'                  , '/reset')
+    config.scan(".")

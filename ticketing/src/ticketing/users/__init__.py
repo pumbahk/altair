@@ -3,3 +3,4 @@
 def includeme(config):
     config.add_route('users.index'          , '/')
 
+    config.scan(".")

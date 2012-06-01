@@ -6,3 +6,4 @@ def includeme(config):
     config.add_route('organizations.show', '/show/{organization_id}')
     config.add_route('organizations.edit', '/edit/{organization_id}')
     config.add_route('organizations.delete', '/delete/{organization_id}')
+    config.scan(".")
