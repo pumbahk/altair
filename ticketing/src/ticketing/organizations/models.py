@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, ForeignKey
-from sqlalchemy.orm import relationship
 
 from ticketing.utils import StandardEnum
 from ticketing.users.models import User
-from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted
+from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, relationship
 from ticketing.master.models import Prefecture
 
 class OrganizationTypeEnum(StandardEnum):

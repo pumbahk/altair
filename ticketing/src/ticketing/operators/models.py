@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
 from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, ForeignKey
-from sqlalchemy.orm import relationship, join, column_property, mapper
+from sqlalchemy.orm import join, column_property, mapper
 
 from hashlib import md5
 
 from ticketing.utils import StandardEnum
 
 from ticketing.organizations.models import Organization
-from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, DBSession
+from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, DBSession, relationship
 
 operator_role_association_table = Table('OperatorRole_Operator', Base.metadata,
     Column('id', Integer, primary_key=True),

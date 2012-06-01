@@ -9,7 +9,6 @@ from uuid import uuid4
 from datetime import datetime
 
 from sqlalchemy import Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL
-from sqlalchemy.orm import relationship
 
 from ticketing.oauth2.consts import CLIENT_KEY_LENGTH, CLIENT_SECRET_LENGTH,\
                                     ACCESS_TOKEN_LENGTH, REFRESH_TOKEN_LENGTH,\
@@ -22,7 +21,7 @@ session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
 
 from ticketing.operators.models import Operator
-from ticketing.models import WithTimestamp
+from ticketing.models import WithTimestamp, relationship
 
 class TimestampGenerator(object):
     """Callable Timestamp Generator that returns a UNIX time integer.

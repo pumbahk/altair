@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
 from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, ForeignKey
-from sqlalchemy.orm import relationship, join, column_property, mapper
+from sqlalchemy.orm import join, column_property, mapper
 
 from ticketing.organizations.models import Organization
 from hashlib import md5
 
 import sqlahelper
 
-from ticketing.models import WithTimestamp
+from ticketing.models import WithTimestamp, relationship
 
 session = sqlahelper.get_session()
 Base = sqlahelper.get_base()

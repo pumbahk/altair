@@ -1,5 +1,7 @@
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL
-from sqlalchemy.orm import relationship, join, backref, column_property
+from sqlalchemy.orm import join, backref, column_property
+
+from ticketing.models import relationship
 from ticketing.master.models import *
 from ticketing.organizations.models import *
 import sqlahelper

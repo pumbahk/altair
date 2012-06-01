@@ -1,10 +1,10 @@
 from ticketing.utils import StandardEnum
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL
-from sqlalchemy.orm import relationship, join, backref, column_property
+from sqlalchemy.orm import join, backref, column_property
 
 import sqlahelper
 
-from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted
+from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, relationship
 
 '''
  Master Data

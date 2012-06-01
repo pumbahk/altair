@@ -5,11 +5,12 @@ from decimal import Decimal
 import transaction
 import json
 
-from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, TIMESTAMP
+from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, TIMESTAMP, sql
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm.collections import InstrumentedList
+from sqlalchemy.orm.properties import RelationshipProperty
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.types import TypeDecorator, VARCHAR
 from sqlalchemy.ext.mutable import Mutable
@@ -192,3 +193,18 @@ class MutationDict(Mutable, dict):
 
         dict.__delitem__(self, key)
         self.changed()
+
+class CustomizedRelationshipProperty(RelationshipProperty):
+    def _determine_joins(self):
+        RelationshipProperty._determine_joins(self)
+        for column in self.parent.mapped_table.columns:
+            if column.name == 'deleted_at':
+                self.primaryjoin = sql.and_(self.primaryjoin, column==None)
+                break
+        for column in self.target.columns:
+            if column.name == 'deleted_at':
+                self.primaryjoin = sql.and_(self.primaryjoin, column==None)
+                break
+
+def relationship(argument, secondary=None, **kwargs):
+    return CustomizedRelationshipProperty(argument, secondary=secondary, **kwargs)

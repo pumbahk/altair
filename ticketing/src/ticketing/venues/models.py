@@ -1,12 +1,12 @@
 # encoding: utf-8
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, ForeignKeyConstraint, Index, DECIMAL
-from sqlalchemy.orm import relationship, join, backref, column_property, mapper
+from sqlalchemy.orm import join, backref, column_property, mapper
 from sqlalchemy.ext.associationproxy import association_proxy
 
 import sqlahelper
 
 from ticketing.utils import StandardEnum
-from ticketing.models import BaseModel, JSONEncodedDict, MutationDict, WithTimestamp, LogicallyDeleted, DBSession
+from ticketing.models import BaseModel, JSONEncodedDict, MutationDict, WithTimestamp, LogicallyDeleted, DBSession, relationship
 
 session = sqlahelper.get_session()
 Base = sqlahelper.get_base()

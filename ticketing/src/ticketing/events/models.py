@@ -3,10 +3,10 @@
 import isodate
 
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, Numeric, func
-from sqlalchemy.orm import relationship, join, backref, column_property
+from sqlalchemy.orm import join, backref, column_property
 
 from ticketing.utils import StandardEnum
-from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted
+from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, relationship
 from ticketing.products.models import Product, ProductItem, StockHolder, Stock, StockAllocation
 from ticketing.venues.models import Venue, VenueArea, VenueArea_group_l0_id, Seat, SeatAttribute
 
@@ -145,11 +145,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization_id = Column(BigInteger, ForeignKey('Organization.id'))
     organization = relationship('Organization', backref='events')
 
-    performances = relationship(
-        'Performance',
-        backref='event',
-        primaryjoin='and_(Event.id==Performance.event_id, Performance.deleted_at==None)',
-    )
+    performances = relationship('Performance', backref='event')
     stock_types = relationship('StockType', backref='event')
 
     @property

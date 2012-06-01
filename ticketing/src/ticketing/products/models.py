@@ -3,10 +3,10 @@
 from math import floor
 
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, Numeric, func
-from sqlalchemy.orm import relationship, join, backref, column_property, mapper, relation
+from sqlalchemy.orm import join, backref, column_property, mapper, relation
 
 from ticketing.utils import StandardEnum
-from ticketing.models import Base, BaseModel, DBSession, JSONEncodedDict, MutationDict, WithTimestamp, LogicallyDeleted
+from ticketing.models import Base, BaseModel, DBSession, JSONEncodedDict, MutationDict, WithTimestamp, LogicallyDeleted, relationship
 from ticketing.venues.models import SeatStatusEnum, SeatStatus
 
 class PaymentMethodPlugin(Base, BaseModel, WithTimestamp, LogicallyDeleted):

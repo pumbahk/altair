@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, Numeric
-from sqlalchemy.orm import relationship, join, backref, column_property
+from sqlalchemy.orm import join, backref, column_property
 
-from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted
+from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, relationship
 from ticketing.users.models import User
 from ticketing.products.models import Product, ProductItem
 from ticketing.venues.models import Seat

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from ticketing.models import BaseModel, MutationDict, JSONEncodedDict
+from ticketing.models import BaseModel, MutationDict, JSONEncodedDict, relationship
 from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, ForeignKey, Enum, DECIMAL
-from sqlalchemy.orm import relationship, join, column_property, mapper
+from sqlalchemy.orm import join, column_property, mapper
 
 from datetime import datetime
 from hashlib import md5
