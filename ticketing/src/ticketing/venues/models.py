@@ -62,6 +62,7 @@ class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     site = relationship("Site", uselist=False)
     seats = relationship("Seat", backref='venue')
     areas = relationship("VenueArea", backref='venues', secondary=VenueArea_group_l0_id.__table__)
+    organization = relationship("Organization", backref='venues')
 
     @staticmethod
     def create_from_template(template, performance_id):
