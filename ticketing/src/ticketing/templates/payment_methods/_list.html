@@ -1,0 +1,25 @@
+<%page args="form, payment_methods" />
+<%namespace file="/common/helpers.html" name="h"/>
+
+<table class="table table-striped table-bordered">
+  <thead>
+  <tr>
+    <th class="span1"></th>
+    <th class="span1">${h.sortable(form.id)}</th>
+    <th>${h.sortable(form.name)}</th>
+    <th>${h.sortable(form.fee)}</th>
+  </tr>
+  </thead>
+  <tbody>
+  % for payment_method in payment_methods.items:
+  <tr id="payment_method-${payment_method.id}">
+    <td><input name="payment_method_id" type="radio" value=${payment_method.id} /></td>
+    <td id="id">${payment_method.id}</td>
+    <td><a href="javascript:edit_payment_method(${payment_method.id});" id="name">${payment_method.name}</a></td>
+    <td id="fee">${payment_method.fee}</td>
+  </tr>
+  % endfor
+  </tbody>
+</table>
+
+${h.pager(payment_methods)}

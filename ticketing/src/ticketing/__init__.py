@@ -56,6 +56,8 @@ def main(global_config, **settings):
     config.include('ticketing.dashboard' , route_prefix='/dashboard')
     config.include('ticketing.bookmark' , route_prefix='/bookmark')
     config.include('ticketing.accounts' , route_prefix='/accounts')
+    config.include('ticketing.payment_methods' , route_prefix='/payment_methods')
+    config.include('ticketing.delivery_methods' , route_prefix='/delivery_methods')
 
     # 上からscanされてしまうためしかたなく追加。scanをinclude先に移動させて、このincludeを削除する。
     #config.include('ticketing.cart' , route_prefix='/cart')
