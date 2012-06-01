@@ -69,4 +69,3 @@ class Event(BaseOriginalMixin, Base):
         import warnings
         warnings.warn("this is dummy for ticketIcon")
         return ["icon-select", "icon-keep", "icon-official", "icon-goods", "icon-event"]
-

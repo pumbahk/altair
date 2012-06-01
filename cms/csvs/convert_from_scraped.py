@@ -1,9 +1,12 @@
+# -*- encoding:utf-8 -*-
+
 from collections import defaultdict
 from datetime import datetime, timedelta
 import itertools
 
 from altaircms.models import Performance
 from altaircms.event.models import Event
+from altaircms.page.models import Page, PageSet
 
 class ParsedEvent(dict):
     def _parse_date(self, dt, default=None):
@@ -26,6 +29,9 @@ class ParsedEvent(dict):
         self.event_close = self._parse_date(self.event_close, self.event_open)
 
 class Reducer(object):
+    """ event, performance, pageset, pageのオブジェクトを作成。
+    各オブジェクトとのmappingは後で行う。(bound_event_and_performances.py)
+    """
     created_at = datetime(1900, 1, 1)
 
     def __init__(self):
@@ -71,6 +77,7 @@ class Reducer(object):
 
     def choice_perf(self, src):
         self.perfs[src.event_name].append(self.create_perf(src))
+
 
     def do(self, src): #rename
         self.choice_event(src)

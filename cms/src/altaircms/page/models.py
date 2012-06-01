@@ -126,7 +126,7 @@ class Page(PublishUnpublishMixin,
     title = Column(Unicode(255), default=u"")
     keywords = Column(Unicode(255), default=u"")
     description = Column(Unicode(255), default=u"")
-    url = Column(String(255), unique=True, index=True)
+    url = Column(String(255), unique=True, index=True) ##todo: delete
     version = Column(Integer, default=1)
 
     site_id = Column(Integer, ForeignKey("site.id"))
@@ -136,7 +136,7 @@ class Page(PublishUnpublishMixin,
     structure = Column(Text, default=DEFAULT_STRUCTURE)
     hash_url = Column(String(length=32), default=None)
 
-    event_id = Column(Integer, ForeignKey('event.id'))
+    event_id = Column(Integer, ForeignKey('event.id')) ## todo: delete?
     event = relationship('Event', backref='pages')
 
     pageset_id = Column(Integer, ForeignKey('pagesets.id'))

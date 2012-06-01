@@ -49,7 +49,6 @@
   <div class="span6">
     <a class="btn" href="${request.route_path("page_add", event_id=event.id)}"><i class="icon-plus"> </i> ページ追加</a>
     <a href="${request.route_path("event_update",action="input",id=event.id)}" class="btn "><i class="icon-cog "> </i> Update</a>
-    <a class="btn" href=""><i class="icon-eye-open"> </i> Preview</a>
     <a class="btn" href=""><i class="icon-refresh"> </i> Sync</a>
   </div>
 
@@ -60,11 +59,12 @@
 	<h3>配下のページ一覧</h3>
 	  <table class="table">
 		<tbody>
-		  %for page in pages:
+		  %for pageset in event.pagesets:
 			<tr>
 			  <td>
-				<a href="${request.route_path('page_edit', event_id=event.id, page_id=page.id)}">${page.title}</a>
-				<!-- <a href="/f/${page.url|n}" target="_blank">preview</a></td> -->
+				<a href="${request.route_path('pageset', pageset_id=pageset.id)}">${pageset.name}</a>
+				    <a class="btn btn-small" href="${h.link.to_publish_page_from_pageset(request,pageset)}" target="_blank"><i class="icon-eye-open"> </i> </a>
+			  </td>
                </td>
 			</tr>
 		  %endfor

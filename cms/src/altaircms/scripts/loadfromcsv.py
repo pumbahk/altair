@@ -185,9 +185,7 @@ def _main(args):
         load_from_csv(string_to_value, args)
         transaction.commit()
     except:
-        raise 
         transaction.abort()
-    return 0
 
 if __name__ == "__main__":
     main()
