@@ -13,6 +13,16 @@ from . import logger
 
 DEFAULT_ITEM_CODE = "120" # 通販
 
+def get_pares(request):
+    """ get ``PARES`` value from request
+    """
+    return request.params['PaRes']
+
+def get_md(request):
+    """ get ``Md`` value from request
+    """
+    return request.params['MD']
+
 def get_multicheckout_service(request):
     reg = request.registry
     return reg.utilities.lookup([], IMultiCheckout)

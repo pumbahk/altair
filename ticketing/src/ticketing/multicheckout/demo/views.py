@@ -60,9 +60,8 @@ class Secure3DResultView(object):
         card_limit = order['exp_year'] + order['exp_month']
         item_name = u'テストアイテム'
 
-        pares = self.request.params['PaRes']
-        md = self.request.params['MD']
-
+        pares = api.get_pares(self.request)
+        md = api.get_md(self.request)
 
         auth_result = api.secure3d_auth(self.request, order_no, pares, md)
         checkout_auth_result = api.checkout_auth_secure3d(
