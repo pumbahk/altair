@@ -50,6 +50,10 @@ class CartTests(unittest.TestCase):
         self.session.add(cart)
         return cart
 
+    def test_total_amount_empty(self):
+        target = self._makeOne()
+        self.assertEqual(target.total_amount, 0)
+
     def test_is_existing_cart_session_id_not_exsiting(self):
         target = self._getTarget()
 
@@ -243,7 +247,7 @@ class TicketingCartResourceTests(unittest.TestCase):
         from ticketing.organizations.models import Organization
         organization = Organization(id=organization_id)
         site = Site(id=site_id)
-        venue = Venue(id=venue_id, site=site, organization=organization)
+        venue = Venue(id=venue_id, site=site, organization_id=organization.id)
         return venue
 
     def test_order_products_one_order(self):
@@ -374,7 +378,7 @@ class ReserveViewTests(unittest.TestCase):
         from ticketing.organizations.models import Organization
         organization = Organization(id=organization_id)
         site = Site(id=site_id)
-        venue = Venue(id=venue_id, site=site, organization=organization)
+        venue = Venue(id=venue_id, site=site, organization_id=organization.id)
         return venue
 
     def test_it(self):

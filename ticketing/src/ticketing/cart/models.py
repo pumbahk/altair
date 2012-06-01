@@ -119,6 +119,10 @@ class Cart(Base):
     updated_at = sa.Column(sa.DateTime, nullable=True, onupdate=datetime.now)
     deleted_at = sa.Column(sa.DateTime, nullable=True)
 
+    @property
+    def total_amount(self):
+        return 0
+
     @classmethod
     def get_or_create(cls, cart_session_id):
         try:
