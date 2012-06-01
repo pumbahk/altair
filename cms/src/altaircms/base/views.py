@@ -17,7 +17,7 @@ def dashboard(request):
     """
     ログイン後トップページ
     """
-    events = DBSession.query(Event).order_by(desc(Event.event_open)).all()
+    events = DBSession.query(Event).order_by(desc(Event.event_open)).limit(5)
     return dict(
         events=events
     )

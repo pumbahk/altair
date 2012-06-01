@@ -71,7 +71,7 @@ def initialize_sql(engine, dropall=False):
 """
 このあたりevent/models.pyに移動した方が良い。
 """
-from altaircms.event.models import Event
+
 PDICT = import_symbol("altaircms.seeds.prefecture:PrefectureMapping")
 class Performance(BaseOriginalMixin, Base):
     """

@@ -8,12 +8,12 @@
   %endif
 </%def>
 
-<%def name="event_list(objs)">
+<%def name="event_list(events)">
   <table class="table table-striped">
     <thead>
     <tr>
         <th>イベント名</th>
-        <th>開催場所</th>
+        <th>公演数</th>
         <th>公開日</th>
     </tr>
     </thead>
@@ -21,7 +21,7 @@
     %for event in events:
       <tr>
         <td><a href="${request.route_path("event", id=event.id)}">${event.title}</a></td>
-        <td>${event.place}</td>
+        <td>${len(event.performances)}</td>
         <td>${event.event_open} - ${event.event_close}</td>
 		<td>
 		  <a href="${request.route_path("event_update",action="input",id=event.id)}" class="btn btn-small btn-primary">

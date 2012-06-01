@@ -28,5 +28,10 @@
 
 <div class="row-fluid">
     <h4>イベント一覧</h4>
-    ${mco.model_list(events, mco.event_list, u"イベントは登録されていません")}
+<%
+seq = h.paginate(request, events, item_count=events.count())
+%>
+${seq.pager()}
+${mco.model_list(seq.paginated(), mco.event_list, u"イベントは登録されていません")}
+${seq.pager()}
 </div>

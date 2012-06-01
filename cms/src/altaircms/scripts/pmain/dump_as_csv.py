@@ -11,6 +11,7 @@ import csv
 
 from altaircms.models import Base
 from altaircms.models import DBSession
+from datetime import datetime
 
 def moduleformat(root, rootmodule, path):
     """foo/bar/baz.py -> foo.bar.baz"""
@@ -61,11 +62,23 @@ def model_columns(model):
         _CACHE[model] = cs
         return _CACHE[model]
 
-def model_dump_as_csv(model, oport):
+
+def mapping(v):
+    if isinstance(v, datetime):
+        return v.strftime("%Y-%m-%d %H:%M:%S")
+    else:
+        return unicode(v).encode("utf-8")
+
+def query_dump_as_csv(model, qs, oport, noid=False):
     outcsv = csv.writer(oport)
-    for q in model_query(model):
-        cols = [unicode(getattr(q, c.name)).encode("utf-8") for c in model_columns(model)]
+    for q in qs:
+        cols = [mapping(getattr(q, c.name)) for c in model_columns(model)]
+        if noid:
+            cols[0] = "None"
         outcsv.writerow(cols)
+
+def model_dump_as_csv(model, oport, noid=False):
+    return query_dump_as_csv(model, model_query(model), oport)
 
 def model_query(model):
     if hasattr(model, "query"):

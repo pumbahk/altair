@@ -187,6 +187,7 @@ def _main(args):
     except:
         raise 
         transaction.abort()
+    return 0
 
 if __name__ == "__main__":
     main()
