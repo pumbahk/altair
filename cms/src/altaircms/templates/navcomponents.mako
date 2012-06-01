@@ -94,7 +94,7 @@
 				  </ul>
 				</li>
 			  % else:
-				<li><a href="${request.route_path("oauth_entry")}">Login with Twitter (OAuth)</a></li>
+				<li><a href="${request.route_path("oauth_entry")}">Login with OAuth</a></li>
 			  % endif
 		  </ul>
 		</div><!--/.nav-collapse -->

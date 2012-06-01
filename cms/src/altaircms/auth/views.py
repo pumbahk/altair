@@ -19,11 +19,19 @@ from altaircms.lib.fanstatic_decorator import with_bootstrap
 from altaircms.auth.forms import RoleForm
 from .models import Operator, Role, DEFAULT_ROLE
 
+from altaircms.auth.helpers import get_authenticated_user
+
 @view_config(route_name='login', renderer='altaircms:templates/login.mako')
 @view_config(context='pyramid.httpexceptions.HTTPForbidden', renderer='altaircms:templates/login.mako',
              decorator=with_bootstrap)
 def login(request):
-    message = ''
+    logging.info("request user is %s" % request.user)
+
+    if request.user is None:
+        message = u"まだログインしていません。ログインしてください。"
+    else:
+        message = u"このページを閲覧する権限が不足しています。閲覧権限を持ったログインで再ログインしてください"
+
     return dict(
         message=message
     )
@@ -32,6 +40,9 @@ def login(request):
 @view_config(route_name='logout')
 def logout(request):
     headers = forget(request)
+
+    ## キャッシュしていたoperatorのデータをリフレッシュ.
+    request.set_property(get_authenticated_user, "user", reify=True)
 
     return HTTPFound(
         location=request.resource_url(request.context),

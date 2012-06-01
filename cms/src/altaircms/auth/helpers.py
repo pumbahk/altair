@@ -21,7 +21,7 @@ def get_authenticated_user(request):
     認証済みのuserオブジェクトを返す。存在しない場合にはNoneを返す
     """
     try:
-        return DBSession.query(Operator).filter_by(user_id=authenticated_userid(request)).one()
+        return DBSession.query(Operator).filter_by(user_id=authenticated_userid(request)).filter(Operator.auth_source != "debug").one()
     except NoResultFound:
         logging.warn("operator is not found. so request.user is None")
         return None
