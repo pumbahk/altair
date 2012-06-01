@@ -19,7 +19,7 @@
         <td>${operator.user_id}</td>
         <td>${operator.auth_source}</td>
         <td>${operator.screen_name}</td>
-        <td>${operator.role.name}</td>
+        <td>${u",".join([role.name for role in operator.roles])}</td>
         <td><a href="${request.route_path("operator", id=operator.id)}"><span class="btn"><i class="icon-eye-open"> </i> Show</span></a></td>
     </tr>
     %endfor

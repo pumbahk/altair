@@ -107,9 +107,6 @@ class OAuthToken(Base):
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
 
-from altaircms.usersetting.models import User
-
-
 
 operator_role = Table(
     "operator_role", Base.metadata,
@@ -149,6 +146,12 @@ class Operator(Base):
         if self.roles:
             return self.roles[0]
     role = deprecation.deprecated(role, "role is no more, use `Operator.roles`")
+
+    def has_permission(self, perm):
+        for role in self.roles:
+            if any(p == perm for p in role.permissions):
+                return True
+        return False
 
     UniqueConstraint('auth_source', 'user_id')
 

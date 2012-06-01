@@ -11,6 +11,7 @@ from altaircms.models import (
     DBSession, Base
 )
 from altaircms.layout.models import Layout
+from altaircms.auth.models import Role
 from altaircms.event.models import Event
 from altaircms.auth.models import (
     Client, 
@@ -1841,6 +1842,7 @@ def add_materials_settings():
         DBSession.add(site)
 
     debug_user = Operator(auth_source="debug", screen_name="debug user")
+    debug_user.roles.append(Role.query.filter_by(name=u"administrator").first())
 
     ## simple layout
     layout_col2 = Layout(

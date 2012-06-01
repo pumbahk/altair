@@ -17,7 +17,7 @@
     </tr>
     <tr>
         <th>Role</th>
-        <td>${operator.role.name}</td>
+        <td>${u",".join([role.name for role in operator.roles])}</td>
     </tr>
     <tr>
         <th>最終ログイン</th>
@@ -30,7 +30,7 @@
     </tbody>
 </table>
 
-%if 'operator_delete' in [perm.permission for perm in user.role.permissions]:
+%if user.has_permission("operator_delete"):
     <form action="${request.route_path("operator", id=operator.id)}" method="POST">
         <input type="hidden" name="_method" value="delete"/>
         <button class="btn" type="submit">削除</button>
