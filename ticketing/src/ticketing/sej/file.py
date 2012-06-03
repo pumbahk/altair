@@ -88,7 +88,7 @@ class SejInstantPaymentFileParser(SejFileParser):
             price               = row.get_int(6),
             ticket_total_count  = row.get_col(2),
             ticket_count        = row.get_int(2),
-            return_count        = row.get_int(2),
+            return_ticket_coun  = row.get_int(2),
             cancel_reason       = row.get_col(2),
             process_at          = row.get_datetime(14),
             checksum            = row.get_col(32)
@@ -138,12 +138,11 @@ class SejRefundFileParser(SejFileParser):
             order_id            = row.get_col(12),
             refund_ticket_price = row.get_int(6),
             refund_other_price  = row.get_int(6),
-            recieved_at         = row.get_datetime(14),
+            received_at         = row.get_datetime(14),
             payment_type        = row.get_int(2),
             refund_status       = row.get_int(2), # 01:払戻済み 02:払戻取消
             refund_cancel_reason= row.get_int(2), # 02:払戻取消のとき
-            refund_cancel_datetime
-                                = row.get_datetime(14)
+            refund_cancel_at    = row.get_datetime(14)
         )
         return data
 
@@ -161,7 +160,7 @@ class SejCheckFileParser(SejFileParser):
             ticket_total_count  = row.get_int(2),
             ticket_count        = row.get_int(2),
             return_count        = row.get_int(2),
-            cancel_readon       = row.get_int(2),
+            cancel_reason       = row.get_int(2),
             process_at         = row.get_datetime(14),
         )
         return data

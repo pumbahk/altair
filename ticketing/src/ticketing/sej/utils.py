@@ -180,3 +180,29 @@ class JavaHashMap(object):
 
     def __iter__(self):
         return self.iterkeys()
+
+
+def replace_sequence(*transform_rules):
+    """
+    Unicode文字コードで連続した文字の列を対応する別の連続する文字に変換する関数を作る。
+
+    引数:
+    transform_rules 変換ルールを表す文字列を任意個の引数で与える。
+    一つの変換ルールは３文字のUnicode文字で表現されます。
+
+    変換ルール記述例
+    u"AZＡ"  一文字目は変換元の文字列の先頭、二文字目は変換元文字列の末尾、三文字目は変換先文字列の先頭を表します。
+
+    この変換ルールを引数に並べます。
+
+    """
+    import re
+    rules = map(lambda x: (re.compile(u"[%s-%s]" % tuple(x[:2])), x[2], x[0]), transform_rules)
+    def henkan(word):
+        for pattern, start, src_start in rules:
+            word = pattern.sub(lambda m: unichr(ord(start) + ord(m.group(0)) - ord(src_start)), word)
+        return word
+    return henkan
+
+
+alpha_han2zen = replace_sequence(u"AZＡ", u"azａ")
