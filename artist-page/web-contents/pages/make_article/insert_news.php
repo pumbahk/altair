@@ -7,7 +7,7 @@
 <div class="navber navbar-fixed-top">
     <div class="navbar-inner">
       <div class="container">
-      <a class="brand">ニュース予約フォーム</a>
+      <div class="projectname_box"><a class="projectname">ニュース予約フォーム</a></div>
         </div>
    </div>
  </div>
@@ -40,7 +40,6 @@ foreach($_POST as $g){
 }
 if($confirmed_flag){
 	$confirmed_array = $_POST; 
-	var_dump($confirmed_array);
 	if($confirmed_array['confirmed']){
 		/*artistテーブルからidとnameを入れる*/
 		$stmt_artist = $dbh->prepare("select id,name from artist");
@@ -56,7 +55,15 @@ if($confirmed_flag){
 		$stmt_artist ->close();
 		$r=0;
 		$z=0;
-		$news_id =11;
+		foreach($confirmed_array as $c => $f){
+			if($c == "news_content"){
+				$news=$id_or_name;
+			}
+			elseif($c=="news_id"){
+				$news_id=$id_or_name;
+			}
+		}
+		echo "<div class ='insert_done'>artistテーブルとnews_artistテーブルとnewsテーブルを更新しました</div>";
 		foreach($confirmed_array as $name_or_rewrite => $id_or_name){
 			if($name_or_rewrite=="confirmed"){
 			}
@@ -75,11 +82,17 @@ if($confirmed_flag){
 						$count_artist=$count_artist+1;
 						$name[$z]['artist_name']=$id_or_name[$z];
 						$name[$z]['artist_id']=$count_artist;
-						echo $name[$z]['artist_id'];
 						$stmt_insert_news_artist = $dbh->prepare("insert into news_artist  values(?,?)");
                                                 $stmt_insert_news_artist ->bind_param('ii',$name[$z]['artist_id'],$news_id);
                                                 $stmt_insert_news_artist ->execute();
 						$stmt_insert_news_artist ->close();
+						
+
+						/* $stmt_insert_artist = $dbh->prepare(#insert into artist values(?,?,?,?);
+						$stmt_insert_artist -> bind_param('isss', , , , );
+						$stmt_insert_artist ->execute();
+						$stmt_insert_artist ->close();
+						*/
 						$z++;
 
 
@@ -94,8 +107,8 @@ if($confirmed_flag){
 				$news_id=$id_or_name;
 			}
 	        	else{
-				$name[$z]['artist_name']=$name_or_rewrite;
-				$name[$z]['artist_id']= $id_or_name;
+				$name[$z]['artist_name']=$name_or_rewrite[$z];
+				$name[$z]['artist_id']= $id_or_name[$z];
 				$stmt_insert_news_artist = $dbh->prepare("insert into news_artist values(?,?)");
                                 $stmt_insert_news_artist ->bind_param('ii',$name[$z]['artist_id'],$news_id);
                                 $stmt_insert_news_artist ->execute();
@@ -160,8 +173,6 @@ else{
 			if($name_==$a['artist_name']){
 			//	$name_['id']=$a['artist_id'];
 				$with_nonull_id[]=$a['artist_id'];
-				echo $a['artist_id'];	
-				echo "with_nonull_plused";
 				$flag=0;
 				$no_rewrite[$t]['artist_name']=$a['artist_name'];
 				$no_rewrite[$t]['artist_id']=$a['artist_id'];
@@ -183,7 +194,17 @@ else{
 	/*new_artistを表示して書き換えたらもう一度調べるそれで良かったらもう一度insert_news.phpでartistテーブルに新しく登録する*/
 	if($new_artist){
 		?>
-		<p>その名前で新しくartistテーブルに入れる場合でも、もう一度コピペしてフォームを埋めてください。</p>
+		<form method="POST" action="artist_insert.php" target="myWindow">
+		<?
+		foreach($new_artist as $n){?>
+			<input type ="hidden" name="new_artist[]" value=<?= $n['artist_name']?>>
+		
+		<?}
+		?>
+		<input type ="submit" value="artist_insert.phpでartistテーブルを更新する" onClick="newOpen('artist_insert.php','myWindow',500,500);">
+
+		<form>			
+		<!--<p>その名前で新しくartistテーブルに入れる場合でも、もう一度コピペしてフォームを埋めてください。</p>
 		<form method="POST" action="insert_news.php">
 		<?	
 			$r=0;
@@ -193,7 +214,7 @@ else{
 				$r++;
 		?>
 				
-				 <input type="text" name="rewrite[]" >
+				 <input type="text" class ="textarea_name" name="rewrite[]" >
 			
 		<?
 			}
@@ -211,7 +232,7 @@ else{
 				<input type="hidden" name="confirmed" value="confirmed">
 				<input type="submit" class="btn primary" value ="このアーティスト名で良い">
 	
-				</form>
+				</form>-->
 	
 <?
 			
@@ -219,22 +240,26 @@ else{
 	elseif(!$new_artist){
 		
 		$bikou="***";
+		?>
+		<div class="insert_done">
+		<?
 		if($newstopic){
 			$stmt_insert_news = $dbh->prepare("insert into news values(?,?,?)");
 			$stmt_insert_news->bind_param('iss',$news_id,$newstopic['news'],$bikou);
 			$stmt_insert_news->execute();
-			echo "newsテーブルを更新しました"."\n";
+			echo "newsテーブルを更新しました<br />";
 			$stmt_insert_news->close();
-			echo count($with_nonull_id)."###";
 			$count = count($with_nonull_id);
-			for($i=0;$i<=$count;$i++){
+			for($i=0;$i<=$count-1;$i++){
 				$stmt_news_artist = $dbh->prepare("insert into news_artist values(?,?)");
 				$stmt_news_artist ->bind_param('ii',$news_id,$with_nonull_id[$i]);
 				$stmt_news_artist ->execute;
 				echo "news_artistテーブルを更新しました";
 				$stmt_news_artist ->close();
 			}
-		}
+			
+		}?>
+		</div><?
 	}
 }
 

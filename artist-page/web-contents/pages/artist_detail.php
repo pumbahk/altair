@@ -5,9 +5,14 @@ $dbh -> set_charset("UTF8");
 $artist_name = isset($_GET['artist_rank']) ? $_GET['artist_rank'] :null;
 if(!($artist_name)){
 	$artist_name = isset($_GET['artist']) ? $_GET['artist'] :null;
-
 }
 $id_zero = 0;
+if(!($artist_name)){
+	var_dump($_GET);
+	header("Status:404");
+	exit("artist not found");
+}
+
 function parent_get_genre($dbh, $id_zero) {
         $stmt_parent = $dbh->prepare("select genre  from genre where parent_id = ?");
         $stmt_parent->bind_param('i', $id_zero);
@@ -18,17 +23,9 @@ function parent_get_genre($dbh, $id_zero) {
 		  $parent_genres_array[] = $parent_genres;       
 	 }     
 	$stmt_parent->close();         
-	return $parent_genres_array;}
-
-
-
-
-
-if(!($artist_name)){
-	var_dump($_GET);
-	header("Status:404");
-	exit("artist not found");
+	return $parent_genres_array;
 }
+
 $artist_name = rtrim($artist_name,"/");
 function genre_get_by_name($dbh, $genre_name) {
 	$stmt_genre = $dbh->prepare("select id, genre, parent_id from genre where genre = ?");
@@ -70,7 +67,6 @@ function photo_get_by_name($dbh,$artist_name) {
 $photo = photo_get_by_name($dbh,$artist_name);
 
 
-$artist_name = isset($_GET['artist']) ? $_GET['artist'] :null;
 $artist = urlencode($artist_name);
 $xml_str = file_get_contents('http://api.rakuten.co.jp/rws/3.0/rest?developerId=12657057e6e263dfe5dd57b5565078da&operation=BooksCDSearch&version=2011-12-01&artistName='.$artist);
 $count=0;
@@ -111,6 +107,7 @@ function plof_get_by_name($dbh,$artist_name) {
 
 
 ?>
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transition//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja"><!- InstanceBegin template="/Template/template.dwt" codeOutsideHTMLslocked="false" -->
 <head>
@@ -122,8 +119,7 @@ function plof_get_by_name($dbh,$artist_name) {
 <meta http-equiv="content-style-type" content="text/css" />
 <meta http-equiv="content-script-type" content="text/javascript" />
 <link rel="shortcut icon" href="../design/img/common/favicon.ico" />
-<link rel="stylesheet" href="./import.css" type="text/css" media="all" />
-<link rel="stylesheet" href="import.css" type="text/css" media="all" />
+<link rel="stylesheet" href="./css/import.css" type="text/css" media="all" />
 
 <script type="text/javascript" src="http://www.google.com/jsapi"></script>
 <script type="text/javascript">google.load("jquery", "1.2");</script>
@@ -376,7 +372,7 @@ gif" alt="検索" />
         </form></li>
 
                 <li> <a href="/~katosaori/web-contents/pages/gojyuon.php?domestic=1">邦楽50音順検索</a></li>
-		<li><a href="/~katosaori/web-contents/pages/abcsearch.php?overseas=1">洋楽ABC検索</a></li>
+		<li><a href="/~katosaori/web-contents/pages/gojyuon.php?overseas=1">洋楽ABC検索</a></li>
 
         </ul>
 

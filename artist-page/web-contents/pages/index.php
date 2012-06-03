@@ -1,6 +1,5 @@
 <?php
 	
-
 $dbh = new mysqli("127.0.0.1:3306","artistpage_user",'artistpage_user_pass');
 $dbh -> select_db("artistpage");
 $dbh -> set_charset("UTF8");
@@ -87,13 +86,13 @@ $rank_set = array();
 		for($e=0;$e<=9;$e++){
 			if($old_rank_array[$i][itemname]==$new_rank_array[$e][itemname]){
 				if($old_rank_array[$e]['rank'] == $new_rank_array[$i]['rank']){
-					$img = "plane";
+					$img =' <img src="../img/common/plane.jpg">';
 				}
 				else if($old_rank_array[$i]['rank'] <= $new_rank_array[$e]['rank']){
-					$img = "down";
+					$img =' <img src="../img/common/down.jpg">';
 				}
 				else if($old_rank_array[$i]['rank'] >= $new_rank_array[$e]['rank']){
-					$img = "up";
+					$img = '<img src="../img/common/up.jpg">';
 				}
 				
 			}
@@ -139,13 +138,13 @@ $rank_set = array();
                 for($e=0;$e<=9;$e++){
                         if($old_rank_overseas_array[$i][itemname]==$new_rank_overseas_array[$e][itemname]){
                                 if($old_rank_overseas_array[$e]['rank'] == $new_rank_overseas_array[$i]['rank']){
-                                        $img = "plane";
-                                }
+                                $img = '<img src="../img/common/plane.jpg">';
+				}
                                 else if($old_rank_overseas_array[$i]['rank'] <= $new_rank_overseas_array[$e]['rank']){
-                                        $img = "down";
+                                        $img = '<img src="../img/common/down.jpg">';
                                 }
                                 else if($old_rank_overseas_array[$i]['rank'] >= $new_rank_overseas_array[$e]['rank']){
-                                        $img = "up";
+                                        $img = '<img src="../img/common/up.jpg">';
                                 }
 
                         }
@@ -168,7 +167,6 @@ $rank_set = array();
 <meta http-equiv="content-script-type" content="text/javascript" />
 <link rel="shortcut icon" href="../design/img/common/favicon.ico" />
 <link rel="stylesheet" href="./import.css" type="text/css" media="all" />
-<link rel="stylesheet" href="import.css" type="text/css" media="all" />
 
 <script type="text/javascript" src="http://www.google.com/jsapi"></script>
 <script type="text/javascript">google.load("jquery", "1.6.1");</script>
@@ -267,12 +265,14 @@ $(function(){
 			<h2>注目アーティスト</h2>
 
 			 <? for($k = 1; $k<=10; $k++): ?>
+				<? if($k==5){?>
+					<a href='./artist_detail.php?artist=<?=urlencode($artist_jap[$k])?>'> <img src = '<?=  $imgurl_jap[$k]; ?>'></a><img src ='../img/common/artist_border.png'>
+				<? } ?>
+
                                  <a href='./artist_detail.php?artist=<?=urlencode($artist_jap[$k])?>'> <img src = '<?=  $imgurl_jap[$k]; ?>'></a>
          		 <? endfor ?>
 
-	
 			<h2>ニュース</h2>
-	
 
 		</div>
 		<div id = "ranks">
@@ -280,7 +280,7 @@ $(function(){
 				<div class="sideCategoryGenre">
               				 <h2> 邦楽CDシングルランキング</h2>
                 
-					<table>
+					<table id="ranking">
                        			 <? for($k = 1; $k<=10; $k++): ?>
 					 <tr><td><?= $new_rank_updown_imgs[$k-1] ?><a href='./artist_detail.php?artist=<?=urlencode($artist_jap[$k][0])?>'><?=  $k.$rank_set_jap[$k]; ?></a></td></tr>
 
@@ -297,7 +297,7 @@ $(function(){
                				 <table>
 
                         		 <? for($k = 1; $k<=10; $k++): ?>
-                               			 <tr><td><a href='./artist_detail.php?artist=<?=urlencode($artist[$k][0])?>'><?=  $k.$rank_set[$k]; ?></a></td></tr>
+                               			 <tr><td><?= $new_rank_updown_imgs[$k-1] ?><a href='./artist_detail.php?artist=<?=urlencode($artist[$k][0])?>'><?=  $k.$rank_set[$k]; ?></a></td></tr>
 
                         		 <? endfor ?>
 

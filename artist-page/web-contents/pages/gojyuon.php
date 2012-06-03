@@ -3,12 +3,11 @@ $dbh = new mysqli("127.0.0.1:3306","root",'root');
 $dbh -> select_db("artistpage");
 $dbh -> set_charset("UTF8");
 
-
 //サイドバーのジャンル一覧
 
 $id_zero = 0;
 function parent_get_genre($dbh, $id_zero) {
-	$stmt_parent = $dbh->prepare("select genre  from genre where parent_id = ?");       
+	$stmt_parent = $dbh->prepare("select genre from genre where parent_id = ?");       
 	$stmt_parent->bind_param('i', $id_zero);
         $stmt_parent->execute();       
 	$stmt_parent->bind_result($parent_genres);
@@ -20,7 +19,6 @@ function parent_get_genre($dbh, $id_zero) {
 	 return $parent_genres_array;
 }
 //邦楽検索か洋楽検索か
-
 $figure = isset($_GET['figure']) ? $_GET['figure'] :null;
 $moji = isset($_GET['moji']) ? $_GET['moji'] : null;
 $page = isset($_GET['page']) ? $_GET['page'] :1;
@@ -40,7 +38,7 @@ if($figure){
 	  preg_match("*",$figure,$matches); 
 	  if($matches){
 		
-		//洋楽で検索文字列のものを探す
+		//洋楽でカタカナのアーティストを探す
                 $figure_explode=explode("*",$figure);
                 $figure_explode[0] = $figure_explode[0]."%";
 		$figure_explode[1] = $figure_explode[1]."%";
@@ -63,6 +61,7 @@ if($figure){
 		
 	}
 	else{
+		//洋楽で英語のアーティストを探す
                 $page_figure=$page_figure."%";
                 $stmt_artist_overseas = $dbh ->prepare("select name from artist inner join artist_genre on artist.id  = artist_genre.artist_id  where artist_genre.genre_id =3 and artist.name like ?");
                 $stmt_artist_overseas ->bind_param('s',$page_figure);
@@ -88,7 +87,7 @@ if($figure){
 if($page_figure){
 
 	//洋楽ページ送りのページごとのアーティスト検索
-	$page_figure = $page_figure."%";
+	$page_figure = $page_figure."%";	
 	$paging = $count_artist/20;
 	$last_page_artist_count = $count_artist%20;
 	if($last_page_artist_count){
@@ -141,6 +140,7 @@ if($moji){
 
 
         else{
+		//文字がアルファベットの場合　
 		$moji_ = $moji."%";
 	        $stmt_artist_domestic = $dbh ->prepare("select name from artist inner join artist_genre on artist.id  = artist_genre.artist_id  where artist_genre.genre_id =4 and artist.name like ?");
 	        $stmt_artist_domestic ->bind_param('s',$moji_);
@@ -206,7 +206,7 @@ te="/Template/template.dwt" codeOutsideHTMLslocked="false" -->
 <meta http-equiv="content-script-type" content="text/javascript" />
 <link rel="shortcut icon" href="../design/img/common/favicon.ico" />
 <link rel="stylesheet" href="../design/html/css/import.css" type="text/css" media="all" />
-<link rel="stylesheet" href="import.css" type="text/css" media="all" />
+<link rel="stylesheet" href="./import.css" type="text/css" media="all" />
 
 <script type="text/javascript" src="http://www.google.com/jsapi"></script>
 <script type="text/javascript">google.load("jquery", "1.6.1");</script>
@@ -509,10 +509,11 @@ n/skip.gif" alt="本文へジャンプ" width="1" height="1" /></a></p>
 					}
 				}
 				elseif($figure||$page_figure){
+					$figure = urlencode($figure);
 					for($i=0;$i<=$paging;$i++){
 						
 				?>
-                               	 <li><a href ="/~katosaori/web-contents/pages/gojyuon.php?page_figure=<?= $page_figure ?>&page_overseas=<?= $i ?>&count_artist=<?= $count_artist ?>"><?= $i ?></a></li>
+                               	 <li><a href ="/~katosaori/web-contents/pages/gojyuon.php?page_figure=<?= $figure ?>&page_overseas=<?= $i ?>&count_artist=<?= $count_artist ?>"><?= $i ?></a></li>
                                 <?
 	                                        }
 				}
@@ -558,7 +559,7 @@ gif" alt="検索" />
 
 		<li> <a href="/~katosaori/web-contents/pages/gojyuon.php?moji=あ">邦楽50音順検索</a></li>
 
-		<li><a href="/~katosaori/web-contents/pages/abcsearch.php?figure=A">洋楽ABC検索</a></li>
+		<li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=A">洋楽ABC検索</a></li>
 	</ul>
 	</div>
 	<div class="sideCategoryGenre">

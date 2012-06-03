@@ -3,7 +3,11 @@ $dbh = new mysqli("127.0.0.1:3306", "root", 'root');
 $dbh->select_db("artistpage");
 $dbh->set_charset("UTF8");
 $genre_name = isset($_GET['genre']) ? $_GET['genre'] : null;
-
+if (!$genre_name) {
+	var_dump($_GET);
+	header("Status: 404");
+	exit("Genre not found");	
+} 
 
 $id_zero = 0;
 
@@ -45,19 +49,7 @@ $rank_set = array();
                 $artist[$x+1] = explode("発売日",$artist_long[$x+1]);
 
         }
-
-
-
-
-
-if (!$genre_name) {
-	var_dump($_GET);
-	header("Status: 404");
-	exit("Genre not found");	
-} 
-
-		$genre_name = rtrim($genre_name,"/");
-
+$genre_name = rtrim($genre_name,"/");
 	
 function genre_get_by_name($dbh, $genre_name) {
 	$stmt_genre = $dbh->prepare("select id, genre, parent_id from genre where genre = ?");
@@ -96,8 +88,6 @@ function artist_get_by_genre($dbh,$genre_name) {
         return $names;
 
 }
-
-
 function photo_get_by_genre($dbh,$genre_name) {
         $stmt_genre = $dbh->prepare("select cds.photo from cd_artist inner join cds on cds.id=cd_artist.cds_id inner join artist on artist.id = cd_artist.artist_id  inner join artist_genre on artist_genre.artist_id = artist.id inner join genre on genre.id = artist_genre.genre_id where genre.genre = ?" );
         $stmt_genre->bind_param('s',$genre_name);
@@ -118,8 +108,8 @@ foreach ($genre['tree'] as $idx => $tree_genre) {
 	$genre_link .= urlencode($tree_genre).'/';
 	
 
-/* ランキングのUPDOWN */
-/* (邦楽) */
+/* ランキングのUPDOWN画像(邦楽) */
+
         $l=0;
 
         $stmt_new_rank = $dbh->prepare("select rank, itemname from domestic_ranking DESK limit 10 offset 10");
@@ -173,7 +163,7 @@ foreach ($genre['tree'] as $idx => $tree_genre) {
 
 
 
-/*（洋楽) */
+/*ランキングのUPDOWN画像(洋楽) */
 
         $l=0;
 
@@ -227,9 +217,9 @@ foreach ($genre['tree'] as $idx => $tree_genre) {
          $new_rank_updown_imgs_overseas[] =$img;
         }
 
-?>
 
-<?
+
+
 }
 
 
@@ -267,7 +257,7 @@ foreach ($genre['tree'] as $idx => $tree_genre) {
 <meta http-equiv="content-script-type" content="text/javascript" />
 <link rel="shortcut icon" href="../design/img/common/favicon.ico" />
 <link rel="stylesheet" href="../design/html/css/import.css" type="text/css" media="all" />
-<link rel="stylesheet" href="import.css" type="text/css" media="all" />
+<link rel="stylesheet" href="./import.css" type="text/css" media="all" />
 <script type="text/javascript" src="http://www.google.com/jsapi"></script>
 <script type="text/javascript">google.load("jquery", "1.6.1");</script>
 <script type ="text/javascript">

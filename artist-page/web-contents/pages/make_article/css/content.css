@@ -590,31 +590,14 @@
 }
 
 /*index.php*/
-#ranks h2 {
-        height: 24px;
-        padding: 7px 10px 0;
-        color: #ffffff;
-        bakground: url(../img/search/side_title.gif) no-repeat 0 0;
-}
 
 
 table{background: #666}
 tr{background: #fff}
-td{	padding: 5px;
-	font-size:0.7em;
-	  height:30px;
-}
-
-
-#ranking tr{
-	height:35px;}
-
-
-#ranking a {
-	border:1px solid transparent;
-	 margin:0px;
-		}
-
+td{padding: 5px;
+font-size:0.7em;
+  height:40px;
+  	}
 
 #ranks {
 	border: 1px solid #fff;
@@ -629,76 +612,21 @@ td{	padding: 5px;
 .odd{background: #ddd }
 
 #notice {
-	width:500px;
+	width:450px;
 	float:left;
-	border: 1px solid transparent;
+	border: 1px solid #000;
 
 	}
 
 #notice h2{
-	height:24px;
-	padding:7px 10px 0;
-	color:#0088cc;
-        bakground: url(../img/search/side_title_long.gif) no-repeat 0 0;
+	color:#fff;
+	background-color:#336699;
 }
 
-#notice {background-color:#FFFFE0;
-}
 
-#notice img {margin:10px;}
-
-#news { width:500px;
-        border: 1px solid transparent;
-
-	background-color:#FFFFE0;}
-
-#news h2{
-	height:24px;
-	padding:7px 10px 0;
-	color:#0088cc;
-        bakground: url(../img/search/side_title_long.gif) no-repeat 0 0;
-}
 /*genre.php*/
 
 
-.genre_appear_links {
-        width: 200px;
-        margin-bottom: 10px;
-}
-
-.genre_appear_links h2 {
-        height: 24px;
-        padding: 7px 10px 0;
-        color: #ffffff;
-        background: url(../img/search/side_title.gif) no-repeat 0 0;
-}
-
-* html .genre_appear_links h2 {
-        height: 31px;
-}
-
-.genre_appear_links ul {
-        padding: 0 1px 5px;
-        background: url(../img/search/side_bg.gif) no-repeat left bottom;
-}
-
-.genre_appear_links li {
-        background: #f7f7ea url(../img/common/side_nav_line.gif) repeat-x left bottom;
-}
-
-.genre_appear_links a {
-        display: block;
-        height: 1%;
-        padding: 3px 10px 5px 18px;
-        background: url(../img/search/side_icon.gif) no-repeat 10px 9px;
-}
-
-.genre a {
-        height: 24px;
-        padding: 7px 10px 0;
-        color: #ffffff;
-        background: url(../img/common/button.png) no-repeat 0 0;
-}
 #genre_links {
 	background-color:#FAF0E6;
 	font-size:1.5em;
@@ -707,8 +635,6 @@ td{	padding: 5px;
 #genre_appear_links{
 	clear:left;
 }
-
-
 
 #artist_links {
 	clear:left;
@@ -722,7 +648,7 @@ td{	padding: 5px;
 	color:#fff;
 	width:450px;	
 	float:left;
-        border: 1px solid transparent;
+        border: 1px solid #000;
 }
 
 /*cd.php*/

@@ -7,50 +7,55 @@
 <body>
 <div class="navber navbar-fixed-top">
     <div class="navbar-inner">
-      <div class="container">
-      <a class="brand">ニュース予約フォーム</a>
+      <div class="container">	
+	<div class="projectname_box"><a class="projectname">ニュース予約フォーム</a></div>
 	</div>	
    </div>
  </div>
 <div id ="main">
 <?
-$news = isset($_POST['news']) ? $_POST['news']:null;
+$news = isset($_POST['news']) ? $_POST['news']:null; 				//POSTされてきたニュース
 $related_artist=isset($_POST['related_artist'])?$_POST['related_artist']:null;
 $another_artist=isset($_POST['another_artist'])?$_POST['another_artist']:null;
 
 if(!$news||!$related_artist){
 
-	echo "ニュースか関連アーティストが未入力です";
 }
 elseif($another_artist){
 	$related_artist[]=$another_artist;
 }
 if($news && $related_artist){
 ?>
-<div id ="title"><span class ="label label-important">関連アーティストを増やす</span></div>
 
-<p><?= $news ?></p>
 
-<?for($i=0;$i<=count($related_artist);$i++){?>
-<p><?=$related_artist[$i] ?></p>
-<?}?>
+
+
 	
 
 	<form method="POST" action ="news_content.php">
-		<input type="hidden" name= "news" value =<?=$news?>>
-		<input type="text" name="another_artist">
+		<textarea name="news" rows="10" cols="100" value=<?= $news ?>><?= $news ?></textarea>　
+		
+		
+		<div class ="artist_names">
+		<?for($i=0;$i<=count($related_artist);$i++){?>
+		<p><?=$related_artist[$i] ?></p>
+		<?}?>
+
+		</div>
+		<input type="text" class="textarea_name" name="another_artist">
 		<?for($i=0;$i<=count($related_artist)-1;$i++){?>
 		<input type="hidden" name ="related_artist[]" value=<?=$related_artist[$i]?>>
 		<?}?>
-		<input type="submit" class="btn primary"value="この内容で関連アーティストを増やす">
+		
+		<input type="submit" class="btn primary"value="このアーティストを増やす">
 	</form>
 
 	<form method="POST" action="insert_news.php">
 		<input type="hidden" name="news" value=<?=$news?>>
-		<?for($i=0;$i<=count($related_artist)-1;$i++){?>
+		<?for($i=0;$i<=count($related_artist)-1;$i++){?>					
 		<input type="hidden" name ="related_artist[]" value=<?=$related_artist[$i]?>>
 		<?}?>
-		<input type="submit" class="btn primary"value="この内容と関連アーティストで登録する">
+		<input type="submit" class="btn primary"value="登録">
 
 	</form>
 	
@@ -62,13 +67,12 @@ if($news && $related_artist){
 else{
 ?>
 	
-		<div id ="title"><span class ="label label-important">ニュース更新</span></div>	
 		
 	
 		<form method="POST" action="news_content.php">
-			<textarea name="news" rows = "4" cols="100" value="ニュース欄" ></textarea>
+			<textarea name="news" rows = "10" cols="100" ></textarea>
+			<input type="text" class ="textarea_name" name="related_artist[]" size = "50" >　
 			
-			<input type="text" name="related_artist[]" size = "50" >
 			<input type="submit"  class="btn primary" value ="関連アーティストを増やすもしくは登録">	
 		</form>
 	
