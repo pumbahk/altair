@@ -81,7 +81,7 @@
 	 </thead>
 	 <tbody>
 	   %for p in performances:
-	     <tr><td>${p.title}</td><td>${ p.start_on }</td><td>${ p.venue }</td></tr>
+	     <tr><td><a href="${request.route_path("performance_update",id=p.id,action="input")}">${p.title}</a></td><td>${ p.start_on }</td><td>${ p.venue }</td></tr>
 	   %endfor
 	 </tbody>
    </table>
