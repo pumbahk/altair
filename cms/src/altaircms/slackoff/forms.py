@@ -38,12 +38,12 @@ class PerformanceForm(Form):
     venue = fields.TextField(label=u"開催場所(詳細)")
     open_on = fields.DateTimeField(label=u"開場時間", validators=[required_field()])
     start_on = fields.DateTimeField(label=u"開始時間", validators=[required_field()])
-    close_on = fields.DateTimeField(label=u"終了時間", validators=[required_field()])
+    end_on = fields.DateTimeField(label=u"終了時間", validators=[required_field()])
     purchase_link = fields.TextField(label=u"購入ページリンク")
 
     __display_fields__ = [u"title", u"backend_id", u"event",
                           u"prefecture", u"venue", 
-                          u"open_on", u"start_on", u"close_on",
+                          u"open_on", u"start_on", u"end_on",
                           u"purchase_link"]
 
 
