@@ -154,7 +154,7 @@
       y: (cs.y - vs.y) / 2
     };
 
-    this.drawable.transform(Fashion.Util.Matrix.scale(this.zoomRatio));
+    this.drawable.transform(Fashion.Matrix.scale(this.zoomRatio));
     this.changeUIMode(this.uiMode);
   };
 
@@ -290,7 +290,7 @@
         this.drawable.addEvent({
           mouseup: function(evt) {
             self.zoomRatio*=1.2;
-            this.transform(Fashion.Util.Matrix.scale(self.zoomRatio));
+            this.transform(Fashion.Matrix.scale(self.zoomRatio));
           }
         });
         break;
@@ -299,7 +299,7 @@
         this.drawable.addEvent({
           mouseup: function(evt) {
             self.zoomRatio/=1.2;
-            this.transform(Fashion.Util.Matrix.scale(self.zoomRatio));
+            this.transform(Fashion.Matrix.scale(self.zoomRatio));
           }
         });
         break;
@@ -370,7 +370,6 @@
               aux.manager.load(data);
             }
           });
-
           // Load drawing
           $.ajax({
             type: 'get',
