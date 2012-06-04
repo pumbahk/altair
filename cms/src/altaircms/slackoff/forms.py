@@ -7,7 +7,7 @@ import wtforms.ext.sqlalchemy.fields as extfields
 
 
 from altaircms.lib.formhelpers import dynamic_query_select_field_factory
-from altaircms.helpers.formhelpers import required_field
+from altaircms.helpers.formhelpers import required_field, append_errors
 
 from ..event.models import Event
 from ..plugins.widget.promotion.models import Promotion
@@ -38,7 +38,21 @@ class PerformanceForm(Form):
     venue = fields.TextField(label=u"開催場所(詳細)")
     open_on = fields.DateTimeField(label=u"開場時間", validators=[required_field()])
     start_on = fields.DateTimeField(label=u"開始時間", validators=[required_field()])
-    end_on = fields.DateTimeField(label=u"終了時間", validators=[required_field()])
+    end_on = fields.DateTimeField(label=u"終了時間", validators=[])
+
+    def validate(self, **kwargs):
+        data = self.data
+        if data["open_on"] and data["start_on"] is None:
+            data["start_ono"] = data["open_on"]
+        elif data["start_on"] and data["open_on"] is None:
+            data["open_ono"] = data["start_on"]
+
+        if data["open_on"] > data["start_on"]:
+            append_errors(self.errors, "open_on", u"開始時刻よりも後に開場時刻が設定されてます")
+        if data["end_on"] and data["start_on"] > data["end_on"]:
+            append_errors(self.errors, "open_on", u"終了時刻よりも後に開始時刻が設定されてます")
+        return not bool(self.errors)
+
     purchase_link = fields.TextField(label=u"購入ページリンク")
 
     __display_fields__ = [u"title", u"backend_id", u"event",
@@ -163,6 +177,12 @@ class TopicForm(Form):
                           u"orderno", u"is_vetoed", 
                           u"bound_page", u"linked_page", u"event"]
 
+    def validate(self, **kwargs):
+        data = self.data
+        if data["publish_open_on"] > data["publish_close_on"]:
+            append_errors(self.errors, "publish_open_on", u"公開開始日よりも後に終了日が設定されています")
+        return not bool(self.errors)
+
 class TopicFilterForm(Form):
     kind = fields.SelectField(label=u"トピックの種類", choices=[("__None", "----------")]+[(x, x) for x in Topic.KIND_CANDIDATES])
     subkind = fields.TextField(label=u"サブ分類")    
@@ -205,6 +225,11 @@ class TopcontentForm(Form):
                          u"orderno", u"is_vetoed", 
                          u"bound_page", u"linked_page"]
     
+    def validate(self, **kwargs):
+        data = self.data
+        if data["publish_open_on"] > data["publish_close_on"]:
+            append_errors(self.errors, "publish_open_on", u"公開開始日よりも後に終了日が設定されています")
+        return not bool(self.errors)
    
 
 class HotWordForm(Form):
@@ -220,3 +245,9 @@ class HotWordForm(Form):
     __display_fields__ = [u"name", u"tag",
                           u"enablep", u"term_begin", u"term_end", 
                           u"orderno"]
+
+    def validate(self, **kwargs):
+        data = self.data
+        if data["term_begin"] > data["term_end"]:
+            append_errors(self.errors, "term_begin", u"開始日よりも後に終了日が設定されています")
+        return not bool(self.errors)

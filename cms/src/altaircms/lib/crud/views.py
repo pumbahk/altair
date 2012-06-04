@@ -152,7 +152,7 @@ class UpdateView(object):
         form = self.context.confirmed_form()
         obj = self.context.get_model_obj(self.request.matchdict["id"])
         for k, v in form.data.iteritems():
-            if v: setattr(obj, k, v)
+            setattr(obj, k, v)
 
         return {"master_env": self.context,
                 "form": form, 

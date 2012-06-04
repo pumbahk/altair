@@ -14,6 +14,7 @@ from altaircms.event.models import Event
 from altaircms.interfaces import IForm
 from altaircms.interfaces import implementer
 from altaircms.lib.formhelpers import dynamic_query_select_field_factory
+from altaircms.helpers.formhelpers import append_errors
 
 logger = logging.getLogger(__name__)
 
@@ -56,9 +57,12 @@ class PageForm(Form):
 
     add_to_pagset = fields.BooleanField(label=u"既存のページセットに追加")
 
-    def validate(self):
+    def validate(self, **kwargs):
         """ override to form validation"""
-        result = super(PageForm, self).validate()
+        super(PageForm, self).validate()
+        data = self.data
+        if data["publish_begin"] > data["publish_end"]:
+            append_errors(self.errors, "publish_begin", u"開始日よりも後に終了日が設定されています")
 
         if (self.data.get('url') and self.data.get('pageset')) or (not self.data.get('url') and not self.data.get('pageset')):
             urlerrors = self.errors.get('url', [])
@@ -81,11 +85,19 @@ class PageUpdateForm(Form):
                                                 get_label=lambda obj: u"%s(%s)" % (obj.title, obj.template_filename))
     event = dynamic_query_select_field_factory(Event, allow_blank=True, label=u"イベント", 
                                                get_label=lambda obj:  obj.title)
+    pageset = dynamic_query_select_field_factory(PageSet, allow_blank=True, label=u"ページセット",
+                                                 get_label=lambda ps: ps.name)
 
+    publish_begin = fields.DateTimeField(label=u"掲載開始")
+    publish_end = fields.DateTimeField(label=u"掲載終了")
 
     def validate(self):
         """ override to form validation"""
         result = super(PageUpdateForm, self).validate()
+
+        data = self.data
+        if data["publish_begin"] > data["publish_end"]:
+            append_errors(self.errors, "publish_begin", u"開始日よりも後に終了日が設定されています")
 
         if (self.data.get('url') and self.data.get('pageset')) or (not self.data.get('url') and not self.data.get('pageset')):
             urlerrors = self.errors.get('url', [])

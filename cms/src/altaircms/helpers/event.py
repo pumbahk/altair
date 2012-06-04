@@ -1,12 +1,8 @@
 # -*- coding:utf-8 -*-
 import locale
 locale.setlocale(locale.LC_ALL, "")
-
+from .base import jdate
 WEEK =[u"月", u"火", u"水", u"木", u"金", u"土", u"日"]
-def _to_jastr(d):
-    datestr = d.strftime(u"%Y年%m月%d日".encode("utf-8")).decode("utf-8")
-    return u"%s（%s）" % (datestr, unicode(WEEK[d.weekday()]))
-
 
 def _to_term(p):
     r = []
@@ -24,9 +20,9 @@ def _to_where(p):
 def performance_describe(performance):
     """ performanceから公演場所や日時を表示する文字列を返す
     """
-    return u"　".join([_to_jastr(performance.open_on), 
+    return u"　".join([jdate(performance.open_on), 
                        u"〜", 
-                       _to_jastr(performance.end_on), 
+                       jdate(performance.end_on), 
                        _to_where(performance), 
                        ])
 
@@ -35,7 +31,7 @@ def performance_description(performance):
     e.g.
     2012年6月3日（日）　16:30開場／17:00開演　岸和田市立浪切ホール　大ホール
     """
-    return u"　".join([_to_jastr(performance.open_on), _to_term(performance) , _to_where(performance)])
+    return u"　".join([jdate(performance.open_on), _to_term(performance) , _to_where(performance)])
 
 def performance_time(performance):
     """ performanceからその公演が行われる時間を文字列で返す
