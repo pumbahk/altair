@@ -2,7 +2,7 @@
 $dbh = new mysqli("127.0.0.1:3306","root",'root');
 $dbh -> select_db("artistpage");
 $dbh -> set_charset("UTF8");
-
+//
 //サイドバーのジャンル一覧
 $id_zero = 0;
 function parent_get_genre($dbh, $id_zero) {
@@ -18,7 +18,7 @@ function parent_get_genre($dbh, $id_zero) {
 	return $parent_genres_array;
 }
 
-//邦楽検索か洋楽検索か
+//邦楽か洋楽か
 $figure = isset($_GET['figure']) ? $_GET['figure'] :null;
 $moji = isset($_GET['moji']) ? $_GET['moji'] : null;
 $page = isset($_GET['page']) ? $_GET['page'] :1;
