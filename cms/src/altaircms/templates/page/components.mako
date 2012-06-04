@@ -91,7 +91,7 @@
       <div id="calendar"  class="widget green float-left">カレンダー</div>
       <div id="detail"  class="widget blue float-left">イベント詳細</div>
       <div id="ticketlist"  class="widget red float-left">チケットリスト</div>
-      <div id="performancelist"  class="widget red float-left">講演リスト</div>
+      <div id="performancelist"  class="widget red float-left">公演リスト</div>
       <div id="menu"  class="widget red float-left">メニュー</div>
       <div id="summary"  class="widget red float-left">サマリー</div>
       <div id="iconset"  class="widget red float-left">アイコンセット</div>

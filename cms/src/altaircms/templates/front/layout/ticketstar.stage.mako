@@ -51,7 +51,7 @@
 	
 	<hr />
 	
-	<!-- InstanceBeginEditable name="cat" --><h1><img id="titleImage" src="/static/ticketstar/img/stage/title_stage.gif" alt="講演" /></h1><!-- InstanceEndEditable -->
+	<!-- InstanceBeginEditable name="cat" --><h1><img id="titleImage" src="/static/ticketstar/img/stage/title_stage.gif" alt="公演" /></h1><!-- InstanceEndEditable -->
 	
 	<!-- ========== main ========== -->
 	<div id="main">

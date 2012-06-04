@@ -51,7 +51,7 @@
 	
 	<hr />
 	
-	<!-- InstanceBeginEditable name="cat" --><h1><img id="titleImage" src="/static/ticketstar/img/change/title_change.gif" alt="講演の中止・変更情報"/></h1><!-- InstanceEndEditable -->
+	<!-- InstanceBeginEditable name="cat" --><h1><img id="titleImage" src="/static/ticketstar/img/change/title_change.gif" alt="公演の中止・変更情報"/></h1><!-- InstanceEndEditable -->
 	
 	<!-- ========== main ========== -->
 	<div id="main">

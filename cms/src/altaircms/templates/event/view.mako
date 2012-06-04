@@ -77,7 +77,7 @@
 <div class="row">
   <div class="span5">
    <table>
-	 <thead><tr><th>講演名</th><th>講演日時</th><th>場所</th></tr>
+	 <thead><tr><th>公演名</th><th>公演日時</th><th>場所</th></tr>
 	 </thead>
 	 <tbody>
 	   %for p in performances:

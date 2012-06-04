@@ -31,14 +31,14 @@ def performance_describe(performance):
                        ])
 
 def performance_description(performance):
-    """ performanceから講演場所や日時を表示する文字列を返す(old)
+    """ performanceから公演場所や日時を表示する文字列を返す(old)
     e.g.
     2012年6月3日（日）　16:30開場／17:00開演　岸和田市立浪切ホール　大ホール
     """
     return u"　".join([_to_jastr(performance.open_on), _to_term(performance) , _to_where(performance)])
 
 def performance_time(performance):
-    """ performanceからその講演が行われる時間を文字列で返す
+    """ performanceからその公演が行われる時間を文字列で返す
     e.g. 
     2012年6月3日(日) 17:00
     """
