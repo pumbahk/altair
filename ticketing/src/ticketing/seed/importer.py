@@ -48,7 +48,7 @@ from ticketing.oauth2.models import Service
 from ticketing.operators.models import Operator, OperatorActionHistory, OperatorRole, Permission
 from ticketing.bookmark.models import Bookmark
 from ticketing.products.models import PaymentMethod, DeliveryMethod, PaymentMethodPlugin, DeliveryMethodPlugin
-from ticketing.sej.models import SejOrder
+from ticketing.sej.models import SejOrder, SejTicket, SejTicketFile, SejNotification
 
 def import_seed_data():
     db_fixture = SQLAlchemyFixture(
