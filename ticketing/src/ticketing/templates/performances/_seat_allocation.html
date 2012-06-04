@@ -1,0 +1,66 @@
+<%page args="performance, form_stock_holder" />
+
+<script type="text/javascript">
+  $(window).resize(function(api){
+    $("#seat-map").height($(window).height()-230);
+    $("#allocated-list").height($(window).height()-230);
+  });
+
+  $(document).ready(function(){
+    $("#seat-map").height($(window).height()-230);
+    $("#allocated-list").height($(window).height()-230);
+  });
+
+  $(".collapse").collapse();
+</script>
+
+<div class="tabbable tabs-below tabs-above" id="seat-allocation-tab">
+  <div class="tab-content"  id="seat-allocation-tab-content">
+    <div class="tab-pane active" id="map">
+      <div class="container-fluid">
+        <div class="row-fluid">
+          <div class="span8" style="background-color: #999999">
+            <div style="width:100%;" id="seat-map"></div>
+          </div>
+          <div class="span4">
+            <%include file="/stock_holders/_action_button.html" args="performance=performance" />
+            <%include file="/stock_holders/_list.html" args="performance=performance" />
+            <div id="stock_holders-form">
+              <%include file="/stock_holders/_form.html" args="form=form_stock_holder" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modal-report">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">×</a>
+    <h3>帳票</h3>
+  </div>
+
+  <div class="modal-body">
+    <label class="control-label">帳票の出力タイプを選択</label>
+    <div class="controls">
+      <label class="radio">
+        <input type="radio" name="optionsRadios" id="optionsRadios1" value="option1" checked>
+        Excel
+      </label>
+      <label class="radio">
+        <input type="radio" name="optionsRadios" id="optionsRadios2" value="option2">
+        Csv
+      </label>
+      <label class="radio">
+        <input type="radio" name="optionsRadios" id="optionsRadios3" value="option2">
+        PDF
+      </label>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+    <a href="#" class="btn btn-primary">出力</a>
+  </div>
+</div>

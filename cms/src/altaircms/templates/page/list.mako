@@ -1,49 +1,80 @@
 <%inherit file='../layout_2col.mako'/>
+<%namespace name="nco" file="../navcomponents.mako"/>
+<%namespace name="fco" file="../formcomponents.mako"/>
+<%namespace name="mco" file="../modelcomponents.mako"/>
 
-<div class="row">
-    <h3>ページ追加・一覧</h3>
-    <%include file="../parts/formerror.mako"/>
-    <form action="#" method="POST">
-        <table class="table">
-            <tbody>
-            <tr>
-                <th>${form.url.label}</th><td>${form.url}</td>
-            </tr>
-            <tr>
-                <th>${form.title.label}</th><td>${form.title}</td>
-            </tr>
-            <tr>
-                <th>${form.description.label}</th><td>${form.description}</td>
-            </tr>
-            <tr>
-                <th>${form.keyword.label}</th><td>${form.keyword}</td>
-            </tr>
-            <tr>
-                <th>${form.structure.label}</th><td>${form.structure}</td>
-            </tr>
-            <tr>
-                <th>${form.layout_id.label}</th><td>${form.layout_id}</td>
-            </tr>
-            </tbody>
-        </table>
-        <button class="btn" type="submit">保存</button>
-    </form>
+<%block name='style'>
+<style type="text/css">
+  .alert{ margin:1%  }
+  .size1{ width:81%;  }
+  .size2{ width:31%; }
+  .size3{ width:14.3%; }
+  .left{ float:left; }
+  .clear{ clear:both; }
+</style>
+</%block>
+
+<script type="text/javascript">
+  var render_demo = function(){
+    var layout_id = $(this).val();
+    $("#layout_demo").load("${request.route_path("layout_demo")}"+"?id="+layout_id);
+  };
+
+  $(function(){
+    $("[name='layout']").live("change", render_demo);
+    render_demo.call($("[name='layout']"));
+  });
+</script>
+
+<h2>page</h2>
+
+<div class="row-fluid">
+  <div class="span10">
+    ${nco.breadcrumbs(
+	    names=["Top", "Page"], 
+	    urls=[request.route_path("dashboard")]
+	)}
+  </div>
 </div>
 
 <div class="row">
-<h4>ページ一覧</h4>
-<table class="table table-striped">
-    <tbody>
-        %for page in pages:
-            <tr>
-                <td>${page.created_at}</td>
-                <td>${page.url}</td>
-                <td><a href="${request.route_url("page_edit_", page_id=page.id)}">${page}</a></td>
-                <td>
-                    <a href="#" class="btn btn-small"><i class="icon-eye-open"> </i> Preview</a>
-                </td>
-            </tr>
-        %endfor
-    </tbody>
-</table>
+  <div class="span5">
+	<h4>ページ追加</h4>
+  </div>
+  <div class="span5">
+	<h4>layout image</h4>
+  </div>
+  <div class="span5">
+	<form action="#" method="POST">
+	  <script>
+	    $(function() {
+               var on_add_to_pageset_clicked = function() {
+	           if ($('#add_to_pagset').attr('checked')) {
+                       $('#url').attr('disabled', 'disabled');
+                       $('#pageset').attr('disabled', null);
+                   } else {
+                       $('#pageset').attr('disabled', 'disabled');
+                       $('#url').attr('disabled', null);
+                   }
+	       };
+	       $('#add_to_pagset').click(on_add_to_pageset_clicked);
+               on_add_to_pageset_clicked();
+	    })
+	  </script>
+    ${fco.form_as_table_strict(form, ["url", "add_to_pagset", "pageset","title", "publish_begin", "publish_end", "parent","description","keywords","tags","private_tags","layout"])}
+	<button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> 保存</button>
+	</form>
+  </div>
+  <div class="span4" id="layout_demo">
+  </div>
+</div>
+
+<div class="row-fluid">
+  <h4>ページ一覧</h4>
+<%
+seq = h.paginate(request, pages, item_count=pages.count())
+%>
+  ${seq.pager()}
+  ${mco.model_list(seq.paginated(), mco.page_list, u"ページは登録されていません")}
+  ${seq.pager()}
 </div>

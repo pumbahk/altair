@@ -1,0 +1,50 @@
+<%page args="form" />
+<%namespace file="/common/helpers.html" import="form_item" />
+
+<script type="text/javascript">
+  $(function() {
+    $('#modal-stock_type #type').change(function() {
+      if ($(this).attr('checked')) {
+        $(this).val(1);
+        $('#modal-stock_type #color-picker').css('display', 'none');
+      } else {
+        $(this).val(0);
+        $('#modal-stock_type #color-picker').css('display', 'block');
+      }
+    });
+
+    $('#modal-stock_type').on('shown', function(){
+      $(this).css('max-height', '750px')
+          .css('margin-top', ($(this).outerHeight()/2)*-1)
+          .css('margin-left',($(this).outerWidth()/2)*-1);
+    });
+  });
+</script>
+
+<div id="modal-stock_type" class="modal fade">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">×</a>
+    <h3>席種</h3>
+  </div>
+
+  <form action="javascript:save_stock_type();" method="POST">
+    <div class="modal-body">
+      ${form_item(form.id)}
+      ${form_item(form.event_id)}
+      ${form_item(form.name, option={'style':'display: block;','maxlength':255})}
+      ${form_item(form.type, option={'style':'display: inline;'})}
+
+      <hr />
+
+      <div id="color-picker">
+        ${form_item(form.fill_color, option={'class':'kolorPicker span3'})}
+        ${form_item(form.stroke_color, option={'class':'kolorPicker span3'})}
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+      <input class="btn" type="submit" value="保存"></a>
+    </div>
+  </form>
+</div>

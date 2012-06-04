@@ -1,0 +1,44 @@
+<%page args="sales_segment" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+
+<script type="text/javascript">
+  function new_pdmp() {
+    $(location).attr('href', '${request.route_path('payment_delivery_method_pairs.new', sales_segment_id=sales_segment.id)}');
+  }
+  function edit_pdmp() {
+    var id = get_id('payment_delivery_method_pair_id');
+    if (!id) return;
+    $(location).attr('href', '/events/payment_delivery_method_pairs/edit/' + id);
+  }
+  function delete_pdmp() {
+    var id = get_id('payment_delivery_method_pair_id');
+    if (!id) return;
+    var modal = $('#modal-delete');
+    modal.find('#delete').attr('href', '/events/payment_delivery_method_pairs/delete/' + id);
+    modal.find('#message').text('選択した決済配送方法を削除します。よろしいですか？');
+    modal.modal('toggle');
+  }
+</script>
+
+<div class="btn-group">
+  <a href="javascript:new_pdmp()" class="btn">
+    <i class="icon-pencil"></i> 決済・配送方法を追加
+  </a>
+  <button class="btn dropdown-toggle" data-toggle="dropdown">
+    <span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu">
+    <li>
+      <a href="javascript:edit_pdmp()">
+        <i class="icon-pencil"></i> 編集
+      </a>
+    </li>
+    <li>
+      <a href="javascript:delete_pdmp()" data-controls-modal="delete-modal" data-backdrop="true" data-keyboard="true">
+        <i class="icon-minus"></i> 削除
+      </a>
+    </li>
+  </ul>
+</div>
+
+${delete_modal()}

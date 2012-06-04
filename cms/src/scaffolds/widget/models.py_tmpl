@@ -1,13 +1,17 @@
-from altaircms.interfaces import IWidget
+# -*- coding:utf-8 -*-
+
 from zope.interface import implements
-from altaircms.widget.models import Widget
-from altaircms.plugins.base import DBSession
-from altaircms.plugins.base import asset
-from altaircms.plugins.base import HandleSessionMixin
-from altaircms.plugins.base import UpdateDataMixin
+from altaircms.interfaces import IWidget
 
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
+
+from altaircms.widget.models import Widget
+from altaircms.plugins.base import DBSession
+from altaircms.plugins.base.mixins import HandleSessionMixin
+from altaircms.plugins.base.mixins import HandleWidgetMixin
+from altaircms.plugins.base.mixins import UpdateDataMixin
+from altaircms.security import RootFactory
 
 class {{Package}}Widget(Widget):
     implements(IWidget)
@@ -19,23 +23,17 @@ class {{Package}}Widget(Widget):
     query = DBSession.query_property()
 
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
-    asset_id = sa.Column(sa.Integer, sa.ForeignKey("asset.id"))
-    asset = orm.relationship({{Package}}Asset, backref="widget", uselist=False)
 
-    def __init__(self, id=None, asset_id=None):
-        self.id = id
-        self.asset_id = asset_id
+    def merge_settings(self, bname, bsettings):
+        bsettings.need_extra_in_scan("request")
+        # bsettings.add(bname, "content")
 
+class {{Package}}WidgetResource(HandleSessionMixin,
+                                UpdateDataMixin,
+                                HandleWidgetMixin,
+                                RootFactory
+                          ):
+    WidgetClass = {{Package}}Widget
 
-class {{Package}}WidgetResource(HandleSessionMixin, UpdateDataMixin):
-    def __init__(self, request):
-        self.request = request
-
-    def _get_or_create(self, model, widget_id):
-        if widget_id is None:
-            return model()
-        else:
-            return DBSession.query(model).filter(model.id == widget_id).one()
-        
-    def get_{{package}}_widget(self, widget_id):
+    def get_widget(self, widget_id):
         return self._get_or_create({{Package}}Widget, widget_id)

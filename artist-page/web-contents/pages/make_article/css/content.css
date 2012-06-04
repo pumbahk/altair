@@ -1,0 +1,2274 @@
+@charset "utf-8";
+
+/*
+	File Name   : content.css
+	Author      : Kensuke Takahashi
+	Description : コンテンツエリア関係 他
+*/
+
+
+/* 共通
+----------------------------------------------------------- */
+#main h2 {
+	clear: both;
+	position: relative;
+	left: -1px;
+	margin-bottom: 5px;
+}
+
+.align1 {
+	text-align: right;
+}
+
+.align2 {
+	text-align: center;
+}
+
+.attention1 {
+	color: #bf191f;
+}
+
+
+/* トップページ
+----------------------------------------------------------- */
+#index .event {
+	width: 330px;
+}
+
+* html #index .event {
+	width: 350px;
+}
+
+#index .event dl {
+	width: 220px;
+}
+
+* html #index .event dl {
+	width: 235px;
+}
+
+#eventRecommend {
+	clear: both;
+	margin: 0;
+	padding-top: 5px;
+	text-align: right;
+	font-weight: bold;
+}
+
+#eventRecommend a {
+	padding: 1px 0 1px 17px;
+	background: url(../img/first/icon_arrow.gif) no-repeat 0 50%;
+}
+
+#index #thisWeek {
+	width: 342px;
+}
+
+#index #nearTheEnd {
+	width: 342px;
+}
+
+#index #thisWeek p,
+#index #nearTheEnd p {
+	background: url(../img/index/bg_thisweek.gif) no-repeat left bottom;
+}
+
+#index #checkEvent {
+	width: 708px;
+	background: url(../img/index/bg_check.gif) no-repeat left bottom;
+}
+
+#index #checkEvent h2 {
+	left: 1px;
+}
+
+#index .jcarousel-container {
+	padding-left: 31px;
+}
+
+#index .jcarousel-container-horizontal {
+	width: 644px;
+}
+
+#index .jcarousel-clip-horizontal {
+	width: 644px;
+}
+
+#index .jcarousel-item {
+	margin: 0 5px;
+}
+
+#index .jcarousel-next-horizontal {
+	right: -18px;
+}
+
+#index .jcarousel-prev-horizontal {
+	left: 13px;
+}
+
+#index #side a {
+	text-decoration: none;
+}
+
+#index #side a:hover {
+	text-decoration: underline;
+}
+
+#sideFeature {
+	position: relative;
+	left: -2px;
+	width: 246px;
+	margin-bottom: 5px;
+	background: url(../img/index/bg_side.gif) no-repeat left bottom;
+}
+
+#sideFeature ul {
+	padding-bottom: 10px;
+}
+
+#sideFeature li {
+	height: 1%;
+	margin: 0 9px 0 7px;
+	border-bottom: 1px dotted #cccccc;
+	background: url(../img/index/icon_side.gif) no-repeat 0 4px;
+}
+
+#sideFeature a {
+	display: block;
+	height: 1%;
+	padding: 5px 5px 5px 17px;
+}
+
+#sideSearch {
+	position: relative;
+	left: -2px;
+	width: 246px;
+	margin-bottom: 5px;
+	padding-bottom: 12px;
+	background: url(../img/index/bg_side.gif) no-repeat left bottom;
+}
+
+#sideSearch ul {
+	margin: 0 5px 10px 3px;
+	padding: 5px 0;
+	background: url(../img/index/bg_line.gif) repeat-x left bottom;
+}
+
+#sideSearch li {
+	margin-bottom: 5px;
+	text-align: center;
+}
+
+#sideSearch dl {
+	padding: 0 12px;
+}
+
+#sideSearch dt {
+	line-height: 1;
+	margin-bottom: 7px;
+}
+
+#sideSearch dd {
+	margin-bottom: 5px;
+}
+
+#sideSearch select {
+	margin: 0 5px 5px 0;
+}
+
+#sideSearch p {
+	margin: 0;
+	text-align: center;
+}
+
+#sideSearch p input {
+	padding: 0;
+}
+
+#sideMyMenu {
+	position: relative;
+	left: -2px;
+	width: 246px;
+	margin-bottom: 5px;
+	padding-bottom: 12px;
+	background: url(../img/index/bg_side.gif) no-repeat left bottom;
+}
+
+#sideMyMenu li {
+	height: 1%;
+	margin: 0 5px 0 3px;
+	background: url(../img/index/bg_line.gif) repeat-x left bottom;
+}
+
+#sideMyMenu a {
+	display: block;
+	height: 1%;
+	padding: 7px 10px 7px 21px;
+	background: url(../img/index/icon_side.gif) no-repeat 4px 50%;
+}
+
+#index #sideInfo {
+	position: relative;
+	left: -1px;
+	width: 244px;
+	margin-bottom: 10px;
+	font-size: 91.7%;
+	background: url(../img/index/bg_info.gif) no-repeat left bottom;
+}
+
+#index #sideInfo dt {
+	padding: 0;
+	background: none;
+}
+
+#index #sideInfo ul {
+	padding-bottom: 3px;
+}
+
+#index #side iframe {
+	margin: 10px 0;
+}
+
+
+/* 検索結果
+----------------------------------------------------------- */
+.searchResult {
+	clear: both;
+	overflow: hidden;
+	padding: 10px 0 20px;
+	border-bottom: 1px dotted #e5e5e5;
+}
+
+* html .searchResult {
+	height: 1%;
+}
+
+.searchResult dt {
+	float: left;
+	width: 82px;
+}
+
+.searchResult dd {
+	float: right;
+	width: 628px;
+	margin-bottom: 7px;
+	padding: 10px;
+	background-color: #f7f7ea;
+}
+
+.searchResult dd p {
+	float: none;
+}
+
+.searchResult dd a {
+	font-weight: bold;
+}
+
+.searchResult dd .align1 {
+	font-size: 91.7%;
+}
+
+.searchResult ul {
+	clear: both;
+	float: left;
+	width: 650px;
+	padding-top: 5px;
+}
+
+.searchResult li {
+	float: left;
+	margin-right: 10px;
+}
+
+.searchRemaining {
+	width: 82px;
+	margin-right: 10px;
+	color: #ff3399;
+	font-weight: bold;
+	text-align: center;
+}
+
+.searchDate strong {
+	color: #ff3399;
+}
+
+.searchResult p {
+	float: right;
+	margin: 0;
+}
+
+.searchResult img {
+	vertical-align: middle;
+}
+
+.sideCategoryGenre {
+	width: 200px;
+	margin-bottom: 10px;
+}
+
+.sideCategoryGenre h2 {
+	height: 24px;
+	padding: 7px 10px 0;
+	color: #ffffff;
+	background: url(../img/search/side_title.gif) no-repeat 0 0;
+}
+
+* html .sideCategoryGenre h2 {
+	height: 31px;
+}
+
+.sideCategoryGenre ul {
+	padding: 0 1px 5px;
+	background: url(../img/search/side_bg.gif) no-repeat left bottom;
+}
+
+.sideCategoryGenre li {
+	background: #f7f7ea url(../img/common/side_nav_line.gif) repeat-x left bottom;
+}
+
+.sideCategoryGenre a {
+	display: block;
+	height: 1%;
+	padding: 3px 10px 5px 18px;
+	background: url(../img/search/side_icon.gif) no-repeat 10px 9px;
+}
+
+#sideRefineSearch {
+	width: 200px;
+	margin-bottom: 10px;
+	border-bottom: 1px solid #deded2;
+}
+
+#sideRefineSearch dt {
+	padding: 5px 10px;
+	border: 1px solid #c6e5b7;
+	border-bottom: 1px solid #bbff99;
+	font-weight: bold;
+	background-color: #ddffcc;
+}
+
+#sideRefineSearch dd {
+	border-left: 1px solid #deded2;
+	border-right: 1px solid #deded2;
+}
+
+#sideRefineSearch li {
+	background: #f7f7ea url(../img/common/side_nav_line.gif) repeat-x left bottom;
+}
+
+#sideRefineSearch a {
+	display: block;
+	height: 1%;
+	padding: 3px 10px 5px 18px;
+	background: url(../img/search/side_icon.gif) no-repeat 10px 9px;
+}
+
+
+/* 音楽、演劇、スポーツ、イベント・その他
+----------------------------------------------------------- */
+#attention {
+	position: relative;
+	height: 1%;
+	margin-top: -48px;
+}
+
+#attention li {
+	margin-bottom: 2px;
+	padding: 1px 0 1px 20px;
+	background: url(../img/first/icon_arrow.gif) no-repeat 0 0;
+}
+
+#attention a {
+	text-decoration: none;
+}
+
+#attention a:hover {
+	text-decoration: underline;
+}
+
+#slideShow {
+	position: relative;
+	left: -1px;
+	width: 742px;
+	margin-bottom: 20px;
+}
+
+#index #slideShow {
+	position: static;
+	width: auto;
+}
+
+#topics {
+	height: 1%;
+	margin-bottom: 20px;
+}
+
+#topics li {
+	margin-bottom: 5px;
+	padding: 1px 0 5px 25px;
+	border-bottom: 1px dotted #e5e5e5;
+	background: url(../img/first/icon_arrow.gif) no-repeat 5px 0;
+}
+
+#topics a {
+	text-decoration: none;
+}
+
+#topics a:hover {
+	text-decoration: underline;
+}
+
+.event {
+	float: left;
+	width: 350px;
+	overflow: hidden;
+	padding: 0 10px;
+	border-bottom: 1px dotted #cccccc;
+}
+
+* html .event {
+	width: 370px;
+}
+
+.event dl {
+	float: right;
+	width: 240px;
+	padding: 10px 15px 7px 0;
+}
+
+* html .event dl {
+	width: 255px;
+}
+
+.event dt {
+	font-weight: bold;
+}
+
+.event p {
+	margin: 0;
+	width: 82px;
+	padding: 10px 0 7px;
+	font-weight: bold;
+	text-align: center;
+}
+
+.event p img {
+	margin-bottom: 5px;
+	border: 1px solid #e6e6da;
+}
+
+.event p a {
+	color: #ff3399;
+}
+
+#thisWeek {
+	clear: both;
+	float: left;
+	width: 362px;
+	margin: 20px 0;
+}
+
+#nearTheEnd {
+	float: right;
+	width: 362px;
+	margin: 20px 0;
+}
+
+#thisWeek h2,
+#nearTheEnd h2 {
+	left: 0;
+	margin: 0;
+}
+
+#thisWeek p,
+#nearTheEnd p {
+	margin: 0;
+	padding: 10px 15px;
+	background: url(../img/music/bg_thisweek.gif) no-repeat left bottom;
+}
+
+#checkEvent {
+	clear: both;
+	position: relative;
+	left: -3px;
+	width: 748px;
+	margin-bottom: 20px;
+	background: url(../img/music/bg_check.gif) no-repeat left bottom;
+}
+
+#checkEvent h2 {
+	left: 0;
+	margin-bottom: 10px;
+}
+
+#checkEvent li img {
+	margin-bottom: 3px;
+	border: 1px solid #f6f6ef;
+}
+
+#checkEvent p.align1 {
+	margin: 0;
+	padding: 5px 20px 15px 0;
+	font-weight: bold;
+}
+
+.jcarousel-container {
+	padding-left: 37px;
+}
+
+.jcarousel-container-horizontal {
+    width: 672px;
+}
+
+.jcarousel-clip {
+    overflow: hidden;
+}
+
+.jcarousel-clip-horizontal {
+    width: 672px;
+}
+
+.jcarousel-item {
+    width: 82px;
+	margin: 0 7px;
+	font-weight: bold;
+	text-align: center;
+}
+
+.jcarousel-next-horizontal {
+    position: absolute;
+    top: 0;
+    right: -20px;
+    width: 15px;
+    height: 100px;
+    cursor: pointer;
+    background: url(../img/music/btn_check_next.gif) no-repeat 0 0;
+}
+
+.jcarousel-next-disabled-horizontal {
+    cursor: default;
+    background-position: -15px 0;
+}
+
+.jcarousel-prev-horizontal {
+    position: absolute;
+    top: 0;
+    left: 17px;
+    width: 15px;
+    height: 100px;
+    cursor: pointer;
+    background: url(../img/music/btn_check_prev.gif) no-repeat 0 0;
+}
+
+.jcarousel-prev-disabled-horizontal {
+    cursor: default;
+    background-position: -15px 0;
+}
+
+#music #sideRefineSearch dt {
+	border: 1px solid #bbb8d9;
+	border-bottom: 1px solid #a19be5;
+	background-color: #d0cdf2;
+}
+
+#theater #sideRefineSearch dt {
+	border: 1px solid #e5cece;
+	border-bottom: 1px solid #ffcbcb;
+	background-color: #ffe5e5;
+}
+
+#sports #sideRefineSearch dt {
+	border: 1px solid #e1e1b4;
+	border-bottom: 1px solid #f5f591;
+	background-color: #fafac8;
+}
+
+#event #sideRefineSearch dt {
+	border: 1px solid #c3d9e5;
+	border-bottom: 1px solid #b3e5ff;
+	background-color: #d9f2ff;
+}
+
+/*index.php*/
+
+
+table{background: #666}
+tr{background: #fff}
+td{padding: 5px;
+font-size:0.7em;
+  height:40px;
+  	}
+
+#ranks {
+	border: 1px solid #fff;
+	float:right;
+}
+
+#rank_border {
+	border: 1px solid #e5cece;
+	width:200px;
+	
+	}
+.odd{background: #ddd }
+
+#notice {
+	width:450px;
+	float:left;
+	border: 1px solid #000;
+
+	}
+
+#notice h2{
+	color:#fff;
+	background-color:#336699;
+}
+
+
+/*genre.php*/
+
+
+#genre_links {
+	background-color:#FAF0E6;
+	font-size:1.5em;
+	float:left;
+}
+#genre_appear_links{
+	clear:left;
+}
+
+#artist_links {
+	clear:left;
+}
+
+
+
+
+#genre{
+	background-color:#F5F5DC;
+	color:#fff;
+	width:450px;	
+	float:left;
+        border: 1px solid #000;
+}
+
+/*cd.php*/
+
+#cd {
+	width:400px;
+	border:1px solid #000;
+}
+#cddetail {
+	float:right;
+	width:200px;
+	border:1px solid #fff;
+}
+
+
+
+
+/* イベント詳細
+----------------------------------------------------------- */
+#socialButtons {
+	float: right;
+	width: 180px;
+}
+
+#socialButtons li {
+	float: right;
+	margin-left: 5px;
+}
+
+#socialButtons li .twitter-share-button {
+	display: block;
+	width: 70px !important;
+}
+
+#ticketIcon {
+	height: 30px;
+	margin-bottom: 10px;
+}
+
+#detail #ticketIcon {
+	float: left;
+}
+
+#settlement #ticketIcon {
+	padding-left: 9px;
+}
+
+#ticketIcon li {
+	float: left;
+	margin-right: 5px;
+}
+
+#detailTab {
+	clear: both;
+	height: 1%;
+	overflow: hidden;
+	margin-bottom: 10px;
+	padding-top: 10px;
+	border-bottom: 4px solid #cccccc;
+}
+
+#detailTab li {
+	float: left;
+	margin-right: 1px;
+	background: url(../img/detail/bg_tab_left.gif) no-repeat 0 0;
+}
+
+#detailTab li.active {
+	background: url(../img/detail/bg_tab_active_left.gif) no-repeat 0 0;
+}
+
+#detailTab a {
+	display: block;
+	padding: 6px 10px;
+	color: #ffffff;
+	background: url(../img/detail/bg_tab_right.gif) no-repeat top right;
+}
+
+#detailTab li.active a {
+	padding: 6px 15px;
+	color: #000000;
+	font-weight: bold;
+	text-decoration: none;
+	background: url(../img/detail/bg_tab_active_right.gif) no-repeat top right;
+}
+
+.detailBox {
+	margin-bottom: 20px;
+	background: url(../img/detail/bg_box_bottom.gif) no-repeat left bottom;
+}
+
+.detailBoxInner {
+	height: 1%;
+	overflow: hidden;
+	padding: 0 12px 10px;
+	background: url(../img/detail/bg_box_top.gif) no-repeat 0 0;
+}
+
+.detailBox h2 {
+	position: static !important;
+	padding: 8px 0 10px;
+	margin-bottom: 5px;
+}
+
+#settlementEventDetail .detailBoxInner {
+	padding: 0 0 10px;
+}
+
+#settlementEventDetail .detailBoxInner table {
+	width: 670px !important;
+	margin: 0 auto;
+}
+
+#serviceIcon {
+	overflow: hidden;
+	margin-bottom: 10px;
+}
+
+#serviceIcon li {
+	float: left;
+	margin-right: 10px;
+}
+
+#detailSchedule {
+	margin-bottom: 20px;
+}
+
+#detailSchedule h2 {
+	position: static;
+}
+
+#detailSchedule li {
+	float: left;
+	margin-right: 1px;
+	background: url(../img/detail/bg_month_left.gif) no-repeat 0 0;
+}
+
+#detailSchedule li.active {
+	background: url(../img/detail/bg_month_active_left.gif) no-repeat 0 0;
+}
+
+#detailSchedule li a {
+	display: block;
+	padding: 6px 15px;
+	background: url(../img/detail/bg_month_right.gif) no-repeat top right;
+}
+
+#detailSchedule li.active a {
+	color: #000000;
+	font-weight: bold;
+	text-decoration: none;
+	background: url(../img/detail/bg_month_active_right.gif) no-repeat top right;
+}
+
+#detailSchedule table {
+	width: 100%;
+}
+
+#detailSchedule th {
+	width: 14.28%;
+	border: 2px solid #e5e5f2;
+	font-size: 91.7%;
+	text-align: center;
+	background-color: #e5e5f2;
+}
+
+#detailSchedule td {
+	position: relative;
+	padding: 1.2em 1px 0;
+	border: 2px solid #e5e5f2;
+}
+
+#detailSchedule .day {
+	position: absolute;
+	top: 2px;
+	left: 2px;
+	color: #666666;
+	font-weight: bold;
+}
+
+#detailSchedule .lastMonth {
+	color: #cccccc;
+}
+
+#detailSchedule td p {
+	margin: 0 0 1px;
+	padding: 0 3px;
+	border-radius: 3px;
+	text-align: right;
+}
+
+#detailSchedule td p.circle {
+	background-color: #ffe5f2;
+}
+
+#detailSchedule td p.circle strong {
+	color: #ff3399;
+}
+
+#detailSchedule td p.triangle {
+	background-color: #e5ffe5;
+}
+
+#detailSchedule td p.triangle strong {
+	color: #66cc66;
+}
+
+#detailSchedule td p.cross {
+	color: #666666;
+	background-color: #f2f2f2;
+}
+
+#detailSchedule td p.cross strong {
+	color: #666666;
+}
+
+#ticketPrice1 {
+	float: left;
+	width: 325px;
+}
+
+#ticketPrice2 {
+	float: right;
+	width: 327px;
+}
+
+#ticketPrice1 th,
+#ticketPrice2 th {
+	padding: 5px 10px;
+	border-bottom: 1px solid #e6e6e6;
+}
+
+#ticketPrice1 td,
+#ticketPrice2 td {
+	padding: 5px 10px;
+	border-bottom: 1px solid #e6e6e6;
+	text-align: right;
+}
+
+#ticketPrice1 tr:last-child th,
+#ticketPrice1 tr:last-child td,
+#ticketPrice2 tr:last-child th,
+#ticketPrice2 tr:last-child td {
+	border: none;
+}
+
+#userBox {
+	clear: both;
+	height: 1%;
+	margin-bottom: 20px;
+	font-size: 120%;
+	background: url(../img/detail/bg_user_bottom.gif) no-repeat left bottom;
+}
+
+#userBoxInner {
+	background: url(../img/detail/bg_user_top.gif) no-repeat 0 0;
+}
+
+#userBox h2 {
+	padding: 6px;
+	border-bottom: 1px solid #999999;
+	font-weight: normal;
+}
+
+#userBox dt {
+	padding: 6px;
+}
+
+#userBox dd {
+	padding: 0 6px 10px;
+}
+
+#userBox table {
+	width: 938px;
+	background-color: #ececf9;
+}
+
+#userBox th {
+	width: 10%;
+	padding: 10px;
+	border-bottom: 1px dotted #ccc;
+	font-size: 91.7%;
+	font-weight: normal;
+}
+
+#userBox td {
+	padding: 10px;
+	border-bottom: 1px dotted #ccc;
+}
+
+#userBox td a {
+	font-size: 91.7%;
+}
+
+#userBox td strong a {
+	font-size: 100%;
+}
+
+#sideCountDown {
+	position: relative;
+	height: 134px;
+	line-height: 1;
+	margin-bottom: 10px;
+	color: #7f663f;
+	font-size: 116.7%;
+	font-weight: bold;
+	background: url(../img/detail/bg_count_down.gif) no-repeat 0 0;
+}
+
+#sideCountDown dt {
+	padding: 15px;
+}
+
+#sideCountDown dd {
+	position: absolute;
+	right: 15px;
+	bottom: 10px;
+}
+
+#sideCountDown span {
+	color: #bf191f;
+	font-size: 642.9%;
+}
+
+#detail #side iframe {
+	margin-bottom: 10px;
+}
+
+
+/* マイページ
+----------------------------------------------------------- */
+#mypageHistory {
+	margin-bottom: 30px;
+}
+
+#mypageHistory form {
+	height: 40px;
+	padding: 5px 15px 0;
+	background: url(../img/mypage/bg_search.gif) no-repeat 0 0;
+}
+
+#mypageHistory form input {
+	vertical-align: middle;
+}
+
+#mypageHistory div {
+	clear: both;
+	overflow: hidden;
+	padding: 10px 0 5px;
+	border-bottom: 1px dashed #cccccc;
+}
+
+* html #mypageHistory div {
+	height: 1%;
+}
+
+#mypageHistory p {
+	float: left;
+	margin: 0;
+	padding-left: 5px;
+}
+
+#mypageHistory dl {
+	float: left;
+	width: 650px;
+	padding-left: 20px;
+}
+
+#mypageHistory dt {
+	font-size: 116.7%;
+	font-weight: bold;
+}
+
+#mypageHistory dd {
+	padding-bottom: 5px;
+	font-size: 83.3%;
+}
+
+#mypageCancel {
+	margin-bottom: 30px;
+}
+
+#mypageCancel div {
+	clear: both;
+	position: relative;
+	overflow: hidden;
+	padding: 10px 0;
+	border-bottom: 1px dashed #cccccc;
+}
+
+* html #mypageCancel div {
+	height: 1%;
+}
+
+#mypageCancel p {
+	float: left;
+	margin: 0;
+	padding-left: 5px;
+}
+
+#mypageCancel dl {
+	float: left;
+	width: 630px;
+	padding-left: 20px;
+}
+
+#mypageCancel dt {
+	font-size: 116.7%;
+	font-weight: bold;
+}
+
+#mypageCancel dd {
+	font-size: 91.7%;;
+}
+
+.btnCancelDelete {
+	position: absolute;
+	top: 10px;
+	right: 5px;
+	padding: 0;
+}
+
+#mypageAgentMail h3 {
+	float: left;
+}
+
+#mypageAgentMail p {
+	float: right;
+	margin-bottom: 10px;
+}
+
+#mypageAgentMail ul {
+	clear: both;
+	overflow: hidden;
+	padding: 15px 10px 10px;
+	background-color: #f7f7ea;
+}
+
+* html #mypageAgentMail ul {
+	height: 1%;
+}
+
+#mypageAgentMail li {
+	float: left;
+	margin: 0 10px 5px 0;
+	white-space: nowrap;
+}
+
+#mypageAgentMail li img {
+	vertical-align: top;
+}
+
+#mypageAgentMail li a {
+	text-decoration: none;
+}
+
+#mypageAgentMail li a:hover {
+	text-decoration: underline;
+}
+
+.mypagePaging {
+	clear: both;
+	font-weight: bold;
+	text-align: right;
+}
+
+.mypageBox1 {
+	height: 1%;
+	margin-bottom: 30px;
+	padding: 8px;
+	border: 2px solid #cccccc;
+}
+
+.mypageBox1 div {
+	position: relative;
+	float: right;
+	width: 640px;
+	margin-bottom: 15px;
+}
+
+.mypageBox1 h3 {
+	font-size: 116.7%;
+}
+
+.mypageBox1 div dt {
+	margin-bottom: 5px;
+}
+
+.mypageBox1 div dd {
+	font-size: 91.7%;
+}
+
+.mypageBox1 div dd a {
+	padding: 2px 0 2px 15px;
+	background: url(../img/mypage/icon_map.gif) no-repeat 0 0;
+}
+
+.mypageBox1 div ul {
+	position: absolute;
+	right: 0;
+	bottom: 0;
+}
+
+.mypageBox1 div li {
+	float: right;
+	margin-left: 5px;
+}
+
+.mypageBox1 div li .twitter-share-button {
+	display: block;
+	width: 70px !important;
+}
+
+.mypageBox1 table {
+	width: 100%;
+	margin-bottom: 10px;
+	background-color: #fcfcf7;
+}
+
+.mypageBox1 th {
+	width: 20%;
+	padding: 10px;
+	border: 1px solid #e6e6da;
+	font-size: 91.7%;
+	font-weight: normal;
+}
+
+.mypageBox1 td {
+	padding: 10px;
+	border: 1px solid #e6e6da;
+	font-weight: bold;
+}
+
+.mypageBox1 td.align1 {
+	border-left: none;
+	font-weight: normal;
+}
+
+.mypageBox1 td span {
+	font-size: 91.7%;
+	font-weight: normal;
+}
+
+.mypageBox1 th.waitingPayment,
+.mypageBox1 td.waitingPayment {
+	background-color: #fccac6;
+}
+
+.mypageBox1 p {
+	margin: 0;
+}
+
+.mypageBuy {
+	border-right: none !important;
+}
+
+
+/* 公演の中止・変更情報
+----------------------------------------------------------- */
+.changeDate {
+	width: 742px;
+	height: 33px;
+	padding: 10px 15px 0 20px;
+	color: #ffffff;
+	font-size: 116.7%;
+	background: url(../img/change/title_bg.gif) no-repeat 0 0;
+}
+
+* html .changeDate {
+	height: 43px;
+}
+
+.changeTitle {
+	margin: 0 0 5px 10px;
+	font-size: 116.7%;
+}
+
+.changeText {
+	display: none;
+	position: relative;
+	margin: 0 0 20px 10px;
+	padding: 10px 15px 1px;
+	border: 1px solid #e6e6da;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-o-border-radius: 3px;
+	-ms-border-radius: 3px;
+	background-color: #f7f7ea;
+}
+
+.changeClose {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	cursor: pointer;
+}
+
+.changeDetail {
+	margin: 0 0 20px 10px;
+	padding-left: 17px;
+	color: #5353f2;
+	text-decoration: underline;
+	background: url(../img/first/icon_arrow.gif) no-repeat 0 50%;
+	cursor: pointer;
+}
+
+.changeDetail:hover {
+	text-decoration: none;
+}
+
+#changeSideNav {
+	position: relative;
+	left: -3px;
+}
+
+#changeSideNav dl {
+	margin-bottom: 5px;
+}
+
+#changeSideNav dt {
+	padding: 12px 5px 2px 9px;
+	background: url(../img/change/side_nav_bg.png) no-repeat 0 0;
+}
+
+#changeSideNav dt a {
+	display: block;
+	padding: 1px 0 1px 17px;
+	background: url(../img/common/side_nav_icon.gif) no-repeat 0 50%;
+}
+
+#changeSideNav dd {
+	padding: 0 15px 15px 26px;
+	background: url(../img/common/side_nav_bg_01.gif) no-repeat left bottom;
+}
+
+
+/* 初めての方へ
+----------------------------------------------------------- */
+.firstBox {
+	padding-left: 7px;
+	margin-bottom: 30px;
+}
+
+.firstBox ul {
+	margin-bottom: 10px;
+}
+
+.firstBox li {
+	padding: 7px 0 7px 15px;
+	border-bottom: 1px dotted #cccccc;
+	background: url(../img/first/icon_circle.gif) no-repeat 0 11px;
+}
+
+.firstBox p {
+	height: 1%;
+	padding-left: 17px;
+	background: url(../img/first/icon_arrow.gif) no-repeat 0 50%;
+}
+
+
+/* ヘルプ
+----------------------------------------------------------- */
+.helpList {
+	margin-bottom: 30px;
+}
+
+.helpList dt {
+	height: 1%;
+	margin: 0 0 10px 5px;
+	padding: 10px 0 3px 25px;
+	border-top: 1px dotted #cccccc;
+	color: #5252f2;
+	font-weight: bold;
+	text-decoration: underline;
+	background: url(../img/help/icon_q.gif) no-repeat 0 9px;
+}
+
+.helpList dt:hover {
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.helpList dd {
+	position: relative;
+	height: 1%;
+	margin: 0 0 15px 10px;
+	padding: 10px 30px 10px 20px;
+	border: 1px solid #e6e6da;
+	background-color: #f7f7ea;
+}
+
+.helpAnswer {
+	position: absolute;
+	top: -6px;
+	left: -6px;
+}
+
+.helpClose {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	cursor: pointer;
+}
+
+
+/* サイトマップ
+----------------------------------------------------------- */
+#sitemapAboutBuy {
+	margin: 10px 0 20px 10px;
+	padding: 1px 0 1px 17px;
+	background: url(../img/first/icon_arrow.gif) no-repeat 0 50%;
+}
+
+#sitemapSearchGenre {
+	margin: 0 0 10px 10px;
+	padding-left: 15px;
+	background: url(../img/first/icon_circle.gif) no-repeat 0 50%;
+}
+
+#sitemapGenre1 {
+	float: left;
+	width: 350px;
+	margin-bottom: 20px;
+	padding-left: 30px;
+}
+
+* html #sitemapGenre1 {
+	width: 380px;
+}
+
+#sitemapGenre2 {
+	float: right;
+	width: 350px;
+	margin-bottom: 20px;
+}
+
+#sitemapGenre1 dl,
+#sitemapGenre2 dl {
+	margin-bottom: 15px;
+	padding-bottom: 15px;
+	border-bottom: 1px dotted #cccccc;
+}
+
+#sitemapGenre1 dt,
+#sitemapGenre2 dt {
+	padding: 0 0 5px 5px;
+	font-weight: bold;
+}
+
+#sitemapMusic dt {
+	border-left: 2px solid #b3affc;
+}
+
+#sitemapMusic dd {
+	padding-left: 20px;
+	border-left: 2px solid #b3affc;
+}
+
+#sitemapMusic li {
+	padding-left: 15px;
+	background: url(../img/sitemap/icon_music.gif) no-repeat 0 6px;
+}
+
+#sitemapTheater dt {
+	border-left: 2px solid #ffb2b2;
+}
+
+#sitemapTheater dd {
+	padding-left: 20px;
+	border-left: 2px solid #ffb2b2;
+}
+
+#sitemapTheater li {
+	padding-left: 15px;
+	background: url(../img/sitemap/icon_theater.gif) no-repeat 0 6px;
+}
+
+#sitemapSports dt {
+	border-left: 2px solid #e6e672;
+}
+
+#sitemapSports dd {
+	padding-left: 20px;
+	border-left: 2px solid #e6e672;
+}
+
+#sitemapSports li {
+	padding-left: 15px;
+	background: url(../img/sitemap/icon_sports.gif) no-repeat 0 6px;
+}
+
+#sitemapEvent dt {
+	border-left: 2px solid #b2e5ff;
+}
+
+#sitemapEvent dd {
+	padding-left: 20px;
+	border-left: 2px solid #b2e5ff;
+}
+
+#sitemapEvent li {
+	padding-left: 15px;
+	background: url(../img/sitemap/icon_event.gif) no-repeat 0 6px;
+}
+
+#sitemapGuide {
+	padding: 10px 0 0 10px;
+}
+
+#sitemapGuide dl {
+	float: left;
+	width: 230px;
+	margin: 0 10px 20px 0;
+	padding-bottom: 15px;
+	border-bottom: 1px dotted #cccccc;
+}
+
+#sitemapGuide dt {
+	padding: 0 0 5px 5px;
+	border-left: 2px solid #cccccc;
+	font-weight: bold;
+}
+
+#sitemapGuide dd {
+	padding-left: 20px;
+	border-left: 2px solid #cccccc;
+}
+
+#sitemapGuide li {
+	padding-left: 15px;
+	background: url(../img/sitemap/icon_guide.gif) no-repeat 0 6px;
+}
+
+#sitemapGuide li ul {
+	padding-left: 20px;
+}
+
+
+/* チケット購入
+----------------------------------------------------------- */
+#main h1 {
+	margin-bottom: 20px;
+}
+
+#ticketName {
+	position: static;
+	height: 1%;
+	line-height: 46px;
+	margin: 0 8px 10px !important;
+	padding-left: 20px;
+	font-size: 116.7%;
+	background: url(../img/settlement/bg_title.gif) no-repeat 0 0;
+}
+
+#settlementSelectBox {
+	width: 930px;
+	margin: 0 10px 20px;
+	background: url(../img/settlement/bg_select_top.gif) no-repeat 0 0;
+}
+
+#settlementSelectBoxInner {
+	padding: 10px 10px 52px 10px;
+	background: url(../img/settlement/bg_select_bottom.gif) no-repeat left bottom;
+}
+
+#settlementSelectBox table {
+	width: 100%;
+}
+
+#settlementSelectBox th {
+	width: 25%;
+	padding: 5px 10px;
+	color: #bf191f;
+	font-size: 116.7%;
+	background: url(../img/settlement/bg_select_th.gif) no-repeat right bottom;
+}
+
+#settlementSelectBox td {
+	padding: 5px 10px;
+	background: url(../img/settlement/bg_select_td.gif) repeat-x left bottom;
+}
+
+#settlementSelectEnd th {
+	background: url(../img/settlement/bg_select_th2.gif) repeat-y top right;
+}
+
+#settlementSelectEnd td {
+	background: none;
+}
+
+.settlementBox {
+	margin-bottom: 20px;
+	background: url(../img/settlement/bg_box_bottom.gif) no-repeat left bottom;
+}
+
+.settlementBoxInner {
+	overflow: hidden;
+	padding-bottom: 10px;
+	background: url(../img/settlement/bg_box_top.gif) no-repeat 0 0;
+}
+
+.settlementBox2 {
+	margin: 0 10px 20px;
+	background: url(../img/settlement/bg_box_bottom_02.gif) no-repeat left bottom;
+}
+
+.settlementBoxInner2 {
+	height: 1%;
+	overflow: hidden;
+	padding: 0 12px 10px;
+	background: url(../img/settlement/bg_box_top_02.gif) no-repeat 0 0;
+}
+
+.settlementBox h2 {
+	position: static !important;
+	padding: 8px 0 10px 12px;
+	margin-bottom: 5px;
+}
+
+.settlementBox2 h2 {
+	position: static !important;
+	padding: 8px 0 10px;
+	margin-bottom: 5px;
+}
+
+#hallName {
+	margin-bottom: 10px !important;
+}
+
+#hallName span {
+	display: block;
+	padding: 4px 0 4px 5px;
+	border-left: 2px solid #666666;
+	font-size: 116.7%;
+}
+
+#selectSeat {
+	position: absolute;
+	width: 395px;
+	z-index: 100;
+}
+
+#selectSeat dd {
+	padding: 0 0 5px 4px;
+	background: url(../img/settlement/bg_seat.gif) repeat-y 0 0;
+}
+
+#selectSeat li {
+	position: relative;
+	height: 26px;
+	overflow: hidden;
+	line-height: 26px;
+	font-weight: bold;
+	filter: alpha(opacity=50);
+	-moz-opacity: 0.5;
+	opacity: 0.5;
+}
+
+#selectSeat li img {
+	float: left;
+	padding: 5px 13px 0 9px;
+}
+
+#selectSeat li .seatState {
+	position: absolute;
+	top: 0;
+	right: 20px;
+}
+
+#selectSeat li.seatEven {
+	background: url(../img/settlement/bg_seat_even.gif) no-repeat 0 0;
+}
+
+#selectSeat li.seatOdd {
+	background: url(../img/settlement/bg_seat_odd.gif) no-repeat 0 0;
+}
+
+#selectSeat li.selected {
+	filter: alpha(opacity=100);
+	-moz-opacity: 1.0;
+	opacity: 1.0;
+	background: url(../img/settlement/bg_seat_select.png) no-repeat 0 0;
+}
+
+#selectBuy {
+	position: relative;
+	float: right;
+	width: 510px;
+	margin-bottom: 10px;
+	border: 2px solid #cccccc;
+	background-color: #ffffff;
+	z-index: 10;
+}
+
+#selectBuy h3 {
+	padding: 10px 15px;
+}
+
+#selectBuy dl {
+	width: 486px;
+	margin: 0 0 10px 11px;
+	background: url(../img/settlement/bg_select_buy_top.gif) no-repeat 0 0;
+}
+
+#selectBuy dt {
+	padding: 15px 15px 10px;
+	font-weight: bold;
+}
+
+#selectBuy dd {
+	padding: 0 10px 10px;
+	background: url(../img/settlement/bg_select_buy_bottom.gif) no-repeat left bottom;
+}
+
+#selectBuy table {
+	width: 465px;
+	border-top: 1px solid #cccccc;
+}
+
+#selectBuy th {
+	padding: 5px;
+	border-top: 1px dotted #cccccc;
+}
+
+#selectBuy td {
+	padding: 5px;
+	border-top: 1px dotted #cccccc;
+	font-weight: bold;
+	text-align: right;
+}
+
+#selectBuy ul {
+	float: right;
+	padding: 0 13px 10px 0;
+}
+
+#selectBuy li {
+	margin-bottom: 5px;
+}
+
+#seatImage {
+	float: right;
+	width: 280px;
+	margin-bottom: 1em;
+}
+
+#reserveSeatBox {
+	float: left;
+	width: 610px;
+	margin-bottom: 20px;
+	background: url(../img/settlement/bg_seat_top.png) no-repeat 0 0;
+}
+
+#reserveSeatBoxInner {
+	padding: 5px;
+	background: url(../img/settlement/bg_seat_bottom.gif) no-repeat left bottom;
+}
+
+#reserveSeatBox table {
+	width: 100%;
+}
+
+#reserveSeatBox th {
+	padding: 5px 10px;
+	border-bottom: 1px dotted #cccccc;
+	white-space: nowrap;
+}
+
+#reserveSeatBox td {
+	width: 100%;
+	padding: 5px 10px;
+	border-bottom: 1px dotted #cccccc;
+}
+
+#reserveSeatBox tr:last-child th,
+#reserveSeatBox tr:last-child td {
+	border: none;
+}
+
+#reserveSeatBox td a {
+	float: right;
+}
+
+#reserveSeatBox table img {
+	vertical-align: middle;
+}
+
+#reserveSeatBox2 {
+	float: right;
+	width: 286px;
+	background: url(../img/settlement/bg_seat_top2.png) no-repeat 0 0;
+}
+
+#reserveSeatBoxInner2 {
+	padding: 15px;
+	background: url(../img/settlement/bg_seat_bottom2.gif) no-repeat left bottom;
+}
+
+#reserveSeatBoxInner2 p {
+	margin: 0;
+}
+
+#seatBtn {
+	clear: both;
+	overflow: hidden;
+	padding: 20px 0 10px;
+	background: url(../img/common/side_nav_line.gif) repeat-x 0 0;
+}
+
+#seatBtn li {
+	float: left;
+}
+
+#seatBtn #seatProcedure {
+	float: right;
+}
+
+.settlementPayBox {
+	width: 934px;
+	margin: 0 0 5px 7px;
+	background: url(../img/settlement/bg_payment_top.png) no-repeat 0 0;
+}
+
+.settlementPayBoxInner {
+	background: url(../img/settlement/bg_payment_bottom.gif) no-repeat left bottom;
+}
+
+.settlementPayBox table {
+	width: 100%;
+}
+
+.settlementPayBox dl {
+	width: 884px;
+}
+
+.settlementPayBox dt {
+	padding: 15px 10px 10px;
+	border-bottom: 1px solid #ebe4cc;
+	color: #bf191f;
+	font-size: 116.7%;
+	font-weight: bold;
+}
+
+.settlementPayBox dd {
+	overflow: hidden;
+	padding: 10px 10px 15px;
+}
+
+.settlementPayRadio {
+	width: 45px;
+	text-align: center;
+}
+
+.convenience {
+	float: right;
+	margin: 0 0 0 10px;
+}
+
+.settlementPayInput,
+.settlementDeliveryInput {
+	width: 854px;
+	margin: 0 0 10px 5px;
+	background: url(../img/settlement/bg_input_top.gif) no-repeat 0 0;
+}
+
+.settlementPayInputInner,
+.settlementDeliveryInputInner {
+	height: 1%;
+	padding: 5px;
+	background: url(../img/settlement/bg_input_bottom.gif) no-repeat left bottom;
+}
+
+.settlementPayInput dl {
+	width: auto;
+}
+
+.settlementPayInput dt {
+	padding: 10px;
+	border: none;
+}
+
+.settlementPayInput dd {
+	margin: -2.6em 0 0 0;
+	padding: 0 0 10px 10em;
+	border-bottom: 1px dotted #e5e5e5;
+}
+
+.settlementPayInput dd:last-child {
+	border: none;
+}
+
+.settlementDeliveryInput th {
+	vertical-align: top;
+	padding: 10px 20px 10px 10px;
+	color: #bf191f;
+	font-size: 116.7%;
+	font-weight: bold;
+	white-space: nowrap;
+}
+
+.settlementDeliveryInput td {
+	padding: 10px 0;
+	border-left: 1px solid #e5e5e5;
+}
+
+.registered th,
+.registered td {
+	border-bottom: 1px solid #e5e5e5;
+	border-left: none;
+}
+
+.registered td {
+	padding-left: 20px;
+}
+
+.settlementDeliveryInput td dl {
+	width: auto;
+}
+
+.settlementDeliveryInput td dt {
+	padding: 0 0 10px 20px;
+	border: none;
+	color: #000000;
+}
+
+.settlementDeliveryInput td dd {
+	margin: -2.6em 0 10px 0;
+	padding: 0 0 10px 16em;
+	border-bottom: 1px dotted #e5e5e5;
+}
+
+.newAddressEnd {
+	margin-bottom: 0 !important;
+	padding-bottom: 0 !important;
+	border: none !important;
+}
+
+/* イベント詳細 */
+#settlementEventDetail .settlementBoxInner2 {
+	padding: 0 0 10px;
+}
+
+#settlementEventDetail h2 {
+	margin: 0 3px 5px 2px;
+	padding: 8px 0 10px 10px;
+	background: url(../img/settlement/bg_line.gif) repeat-x left bottom;
+}
+
+#settlementEventDetail table {
+	width: 900px;
+	margin: 0 auto;
+}
+
+#settlementEventDetail th {
+	vertical-align: top;
+	padding: 2px 20px 2px 2px;
+	border-bottom: 1px solid #e6e6e6;
+	font-weight: normal;
+	white-space: nowrap;
+}
+
+#settlementEventDetail td {
+	width: 100%;
+	padding: 2px;
+	border-bottom: 1px solid #e6e6e6;
+}
+
+#settlementEventDetail tr:last-child th,
+#settlementEventDetail tr:last-child td {
+	border: none;
+}
+
+/* 確認画面ボックス */
+.confirmBox {
+	margin-bottom: 20px;
+	background: url(../img/settlement/bg_confirm_top.gif) no-repeat 0 0;
+}
+
+.confirmBoxInner {
+	padding: 10px 10px 20px;
+	background: url(../img/settlement/bg_confirm_bottom.gif) no-repeat left bottom;
+}
+
+.confirmBox h2 {
+	position: static !important;
+	margin-bottom: 15px !important;
+}
+
+.confirmBox h3 {
+	margin: 0 10px 15px;
+	font-size: 116.7%;
+}
+
+#name {
+	margin-bottom: 0;
+	padding: 10px 10px 10px 15px;
+	border: 1px solid #f2f2e5;
+	border-bottom: 1px solid #cacac9;
+	background: #fdfdfb url(../img/settlement/bg_confirm_line.gif) no-repeat 7px 50%;
+}
+
+/* お買い物内容 */
+#contentsOfShopping {
+	width: 910px;
+	margin: 0 10px;
+	border: 1px solid #f2f2e5;
+	border-top: none;
+	background-color: #fdfdfb;
+}
+
+#contentsOfShopping th {
+	width: 30%;
+	padding: 5px 10px;
+	white-space: nowrap;
+	border-bottom: 1px dotted #e5e5e5;
+}
+
+#contentsOfShopping th img {
+	vertical-align: middle;
+}
+
+#contentsOfShopping td {
+	padding: 5px 10px;
+	border-bottom: 1px dotted #e5e5e5;
+}
+
+#carriage th,
+#carriage td,
+#commission th,
+#commission td {
+	border-top: 1px solid #e5e5e5;
+}
+
+#total th,
+#total td {
+	padding: 15px 10px;
+	border-top: 1px solid #989897;
+}
+
+#contentsOfShopping td.align1 {
+	font-size: 116.7%;
+	font-weight: bold;
+}
+
+/* お支払い、配送方法 */
+#confirmCard,
+#confirmDelivery {
+	width: 910px;
+	margin: 0 10px;
+	border: 1px solid #f2f2e5;
+}
+
+#confirmCard th,
+#confirmDelivery th {
+	padding: 10px 20px 10px 10px;
+	border-bottom: 1px solid #f2f2e5;
+	font-weight: normal;
+	white-space: nowrap;
+}
+
+#confirmCard td,
+#confirmDelivery td {
+	width: 100%;
+	padding: 10px;
+	border-bottom: 1px solid #f2f2e5;
+	font-weight: bold;
+}
+
+/* メールマガジンの配信 */
+#mailMagazineBox {
+	width: 934px;
+	margin: 0 0 5px 7px;
+	background: url(../img/settlement/bg_payment_top.png) no-repeat 0 0;
+}
+
+#mailMagazineBoxInner {
+	padding: 5px;
+	background: url(../img/settlement/bg_payment_bottom.gif) no-repeat left bottom;
+}
+
+#mailMagazineBoxInner ul {
+	height: 1%;
+	background-color: #fff7e5;
+}
+
+#mailMagazineBoxInner li {
+	padding: 10px;
+	border-bottom: 1px solid #ebe4cc;
+}
+
+#mailMagazineBoxInner li:last-child {
+	border: none
+}
+
+#mailMagazineBoxInner dt {
+	font-weight: bold;
+}
+
+#mailMagazineBoxInner dd ul {
+	overflow: hidden;
+}
+
+#mailMagazineBoxInner dd li {
+	float: left;
+	width: 48%;
+	padding: 10px 0 0;
+	border: none;
+}
+
+/* こんな商品にも興味をもっています */
+.settlementInterest {
+	margin-bottom: 30px;
+	border: 1px solid #ff0101;
+}
+
+.settlementInterest h2 {
+	position: static !important;
+	margin: 0 !important;
+	padding: 5px 10px;
+	color: #ffffff;
+	font-size: 116.7%;
+	background-color: #c01920;
+}
+
+.settlementInterest ul {
+	overflow: hidden;
+	height: 1%;
+	padding: 15px;
+}
+
+.settlementInterest li {
+	float: left;
+	width: 128px;
+	margin-right: 20px;
+	font-weight: bold;
+}
+
+.settlementInterest li img {
+	margin-bottom: 5px;
+}
+
+/* エラー */
+#errorTitle {
+	position: relative;
+	margin-bottom: 20px;
+}
+
+#errorTitle dd {
+	position: absolute;
+	top: 150px;
+	left: 0;
+	width: 624px;
+	font-size: 120%;
+	font-weight: bold;
+	text-align: center;
+}
+
+#errorBtn {
+	padding-left: 50px;
+	font-size: 120%;
+}
+
+#errorBtn li {
+	float: left;
+	margin-right: 10px;
+}
+
+#errorBtnTop {
+	padding-top: 20px;
+}
+
+
+/*cdshousai.php */
+
+    #carousel_inner {
+    float:left; /* important for inline positioning */
+    width:550px; /* important (this width = width of list item(including margin) * items shown */
+    overflow: hidden;  /* important (hide the items outside the div) */
+    /* non-important styling bellow */
+    background: #F0F0F0;
+    }
+
+    #carousel_ul {
+    position:relative;
+    left:-210px; /* important (this should be negative number of list items width(including margin) */
+    list-style-type: none; /* removing the default styling for unordered list items */
+    margin: 0px;
+    padding: 0px;
+    width:9999px; /* important */
+    /* non-important styling bellow */
+    padding-bottom:10px;
+    }
+
+    #carousel_ul li{
+    float: left; /* important for inline positioning of the list items */
+    width:200px;  /* fixed width, important */
+    /* just styling bellow*/
+    padding:0px;
+    height:200px;
+    background: #000000;
+    margin-top:10px;
+    margin-bottom:10px;
+    margin-left:5px;
+    margin-right:5px;
+    }
+
+    #carousel_ul li img {
+    .margin-bottom:-4px; /* IE is making a 4px gap bellow an image inside of an anchor (<a href...>) so this is to fix that*/  
+    /* styling */
+    cursor:pointer;
+    cursor: hand;
+    border:0px;
+    }
+    #left_scroll, #right_scroll{
+    float:left;
+    height:10px;
+    width:15px;
+    background: #C0C0C0;
+    }
+    #left_scroll img, #right_scroll img{
+    /*styling*/
+    cursor: pointer;
+    cursor: hand;
+    }
+
+
+
+#botm {
+        clear:left;
+        width:100%;
+        }
+
+
+
+/*artist_top.css */
+
+#tx_center {
+        font-size: 1em;
+        width:500px;
+        //height:100%;
+	height:auto;
+	float:left;
+        margin:0px 0px 20px 1px;
+        border: 1px solid transparent;
+    	background-image:url("tx_main_bg.png");
+
+}
+
+    
+
+
+/*gojyuon.php*/
+
+
+#accordion{
+     border: 5px #FFEBCD solid;
+     border-top:none;
+     width:530px;
+     }
+#accordion dt{
+     background: #00cc33;
+     padding: 1px;
+     margin-top:5px;
+     border-top: 1px #00cc33 solid;
+     width:530px;
+     }
+     #accordion dt a{color: #000; text-decoration:none;display:block;}
+#accordion dd{}
+
+
+
+#artists ul li {
+	float:left;
+	margin-left: 3px;
+	}
+
+
+
+
+#tx_main_header ul {
+ 	 list-style-type:none;
+       
+}
+#tx_main_header ul li {
+        float:left;
+       	margin-left:5px;
+	margin-bottom:5px;
+	background-color:#99ff33;
+	width:35px;
+	
+}
+
+
+
+
+
+
+
+#artists ul li{
+	float:left;
+	margin-left:8px;
+}
+
+#carouesl {
+	width:100%;
+	clearleft;
+	
+
+}
+
+#carousel ul li {
+	color:#FFF;
+	width:10px;		
+}
+#page_artist {
+	clear:left;
+	width:100%;
+}
+
+
+
+	
+	

@@ -1,0 +1,72 @@
+<%page args="event, order=None" />
+<%namespace file="/common/helpers.html" import="action_button" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+
+<script type="text/javascript">
+  function delete_event(id) {
+    modal = $('#modal-delete');
+    modal.find('#delete').attr('href', '/events/delete/' + id);
+    modal.find('#message').text("${u'選択したイベントを削除します。よろしいですか？'}");
+    modal.modal('toggle');
+  }
+  function sync_event(id) {
+    modal = $('#modal-sync');
+    modal.find('#sync').attr('href', '/events/sync/' + id);
+    modal.modal('toggle');
+  }
+</script>
+
+<%
+  actions = {
+    'new':dict(
+      label=u'新規',
+      url=request.route_path('events.new'),
+      icon='icon-plus',
+    ),
+    'edit':dict(
+      label=u'編集',
+      url=request.route_path('events.edit', event_id=event.id),
+      icon='icon-pencil',
+    ),
+    'delete':dict(
+      label=u'削除',
+      url='javascript:delete_event(%d);' % event.id,
+      icon='icon-minus',
+    ),
+    'show':dict(
+      label=u'詳細',
+      url=request.route_path('events.show', event_id=event.id),
+      icon='icon-th-list',
+    ),
+  }
+  order = iter(order or ['new', 'show', 'edit', 'delete'])
+%>
+<div style="float: left;">
+  ${action_button(actions, order)}
+</div>
+
+<div class="btn-group" style="float: left;">
+  <a class="btn btn-inverse" href="javascript:sync_event(${event.id});" style="margin-left: 10px;">
+    <i class="icon-refresh icon-white"></i> CMSへ送信
+  </a>
+</div>
+
+<div style="clear: left;"></div>
+
+<div id="modal-sync" class="modal hide fade">
+  <div class="modal-header">
+    <a href="#" class="close">&times;</a>
+    <h3>確認</h3>
+  </div>
+
+  <div class="modal-body">
+    <p>CMSへイベントを送信します。よろしいですか？</p>
+  </div>
+
+  <div class="modal-footer">
+    <a href="javascript:$('#modal-sync').modal('hide');" class="btn secondary">キャンセル</a>
+    <a id="sync" href="" class="btn danger">送信</a>
+  </div>
+</div>
+
+${delete_modal()}

@@ -1,0 +1,43 @@
+<%page args="event=None" />
+<%
+from ticketing.bookmark.models import Bookmark
+%>
+<span class="span2">
+  <div class="well">
+    <ul class="nav nav-list">
+      <li class="nav-header">公演管理</li>
+      <li><a href="${request.route_path('events.index')}"><i class="icon-home"></i>イベント</a></li>
+      % if event:
+      <ul>
+        <li><a href="${request.route_path('stock_types.index', event_id=event.id)}">席種</a></li>
+        <li><a href="${request.route_path('sales_segments.index', event_id=event.id)}">販売区分</a></li>
+        <li><a href="${request.route_path('products.index', event_id=event.id)}">商品</a></li>
+        <li><a href="">チケット券面</a></li>
+        <li><a href="${request.route_path('performances.index', event_id=event.id)}">パフォーマンス</a></li>
+      </ul>
+      % endif
+      <li><a href=""><i class="icon-home"></i>帳票出力</a></li>
+      <li><a href="${request.route_path('accounts.index')}"><i class="icon-home"></i>クライアント</a></li>
+      <li class="divider"></li>
+      <li class="nav-header">マスタ管理</li>
+      <li><a href=""><i class="icon-home"></i>会場図</a></li>
+      <li><a href="${request.route_path('payment_methods.index')}"><i class="icon-home"></i>決済方法</a></li>
+      <li><a href="${request.route_path('delivery_methods.index')}"><i class="icon-home"></i>配送方法</a></li>
+      <li><a href=""><i class="icon-home"></i>チケット券面</a></li>
+      <li class="divider"></li>
+      <li class="nav-header">ユーザー管理</li>
+      <li><a href="${request.route_path('orders.index')}"><i class="icon-home"></i>購入情報</a></li>
+      <li class="nav-header">営業管理</li>
+      <li><a href=""><i class="icon-home"></i>売上</a></li>
+      <li><a href=""><i class="icon-home"></i>週報／日報設定</a></li>
+      <li><a href=""><i class="icon-home"></i>ポイント付与履歴</a></li>
+      <li class="nav-header">マーケティング</li>
+      <li><a href=""><i class="icon-home"></i>メール配信</a></li>
+      <li class="nav-header">ブックマーク</li>
+      % for bookmark in Bookmark.find_by_organization_id(1):
+      <li><a href="${bookmark.url}"><i class="icon-home"></i>${bookmark.name}</a></li>
+      % endfor
+      <li style="text-align: right;"><a href="${request.route_path('bookmark.index')}"><i class="icon-pencil"></i>編集</a></li>
+    </ul>
+  </div>
+</span>

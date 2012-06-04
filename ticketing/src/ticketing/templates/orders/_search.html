@@ -1,0 +1,53 @@
+<script type="text/javascript">
+  $(function() {
+    $('input[name=order_datetime_from]').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
+    $('input[name=order_datetime_to]').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
+  });
+</script>
+
+<ul class="nav nav-pills">
+  <li class="dropdown" id="top-search-text">
+    <form id="search-event" action="/orders/" method="POST">
+      <input name="order_number" type="text" class="search-query span2" placeholder="受注番号">
+    </form>
+  </li>
+  <li class="dropdown" id="top-search" style="margin-left: 10px;">
+    <div class="btn-group">
+      <a href="javascript:$('#search-event').submit();" class="btn">
+        <i class="icon-search"></i> 検索
+      </a>
+      <button class="btn dropdown-toggle" data-toggle="dropdown">
+        <span class="caret"></span>
+      </button>
+      <ul class="dropdown-menu">
+        <li>
+          <a data-toggle="modal" href="#modal-search">
+            <i class=""></i> 詳細検索
+          </a>
+        </li>
+      </ul>
+    </div>
+  </li>
+</ul>
+
+<div class="modal fade" id="modal-search">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">×</a>
+    <h3>検索条件設定</h3>
+  </div>
+
+  <div class="modal-body">
+    <form id="search" action="/orders/" method="POST">
+      <label>受注番号</label>
+      <input name="order_number" type="text" class="span3" placeholder="">
+      <label>受注日時</label>
+      <input name="order_datetime_from" type="text" class="span3"> 〜
+      <input name="order_datetime_to" type="text" class="span3">
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+    <a href="javascript:$('#search').submit();" class="btn btn-primary">検索</a>
+  </div>
+</div>

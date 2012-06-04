@@ -1,0 +1,159 @@
+<%doc>
+  pager template
+</%doc>
+<%!
+  from webhelpers.paginate import Page
+%>
+<%def name="pager(items)">
+  % if isinstance(items, Page):
+  <div class="pagination-centered">
+    ${items.pager(format='$link_previous ~2~ $link_next',
+                  link_attr={"class": "btn small"},
+                  curpage_attr={"class": "btn primary small disabled"},
+                  dotdot_attr={"class": "btn small disabled"},
+                  onclick="%s; return false;")}
+  </div>
+  % endif
+</%def>
+
+<%doc>
+  checks validate errors, if any validate errors, adds as span
+</%doc>
+<%def name="validate_errors(f)">
+  % for error in f.errors:
+    <span class="help-inline">${error}</span> 
+  % endfor
+</%def>
+
+<%def name="alert_message(f)">
+  % if f.errors:
+    <div class="alert alert-error">
+      <a class="close" data-dismiss="alert">&times;</a>
+      <h4 class="alert-heading">エラー</h4>
+      % for field in f:
+        % if field.errors:
+          <ul>
+          % for e in field.errors:
+            <li>${field.label.text} : ${e}</li>
+          % endfor
+          </ul>
+        % endif
+      % endfor
+    </div>
+  % endif
+</%def>
+
+<%def name="flash_messages(request)">
+  % if request.session.peek_flash():
+    <div class="alert alert-success">
+      <a class="close" data-dismiss="alert">&times;</a>
+      % for message in request.session.pop_flash():
+        <h4 class="alert-heading">${message}</h4>
+      % endfor
+    </div>
+  % endif
+</%def>
+
+<%def name="form_item(item, option={}, help='')">
+  <div class="control-group ${'error' if item.errors else ''}">
+    % if item.type != 'HiddenField':
+      <label class="control-label">
+        % if item.flags.required:
+        <span style="color: #BA0000;padding-left: 5px; padding-right: 5px; font-size: 150%">*</span>
+        % endif
+        ${help|n} ${item.label.text}
+      </label>
+    % endif
+    <div class="controls">
+      ${item(**option)}
+      ${validate_errors(item)}
+    </div>
+  </div>
+</%def>
+
+<%def name="safe_strftime(str, format='%Y-%m-%d %H:%M')">
+${str and str.strftime(format) or ''}
+</%def>
+
+<%def name="seat_style(style)">
+<%
+  fill_color = '#FFFFFF';
+  text_color = '#000'
+  stroke_width = ''
+  stroke_pattern = ''
+  stroke_color = ''
+  if style:
+    fill = style.get('fill')
+    if fill:
+        fill_color = fill.get('color')
+    text = style.get('text') or ''
+    text_color = style.get('text_color')
+    stroke = style.get('stroke')
+    if stroke:
+        stroke_width = stroke.get('width')
+        stroke_pattern = stroke.get('pattern')
+        stroke_color = stroke.get('color')
+%>
+  <span class="swatch" style="text-color:${text_color}; border: ${stroke_width}px ${stroke_pattern} ${stroke_color}; background-color: ${fill_color}; text-align: center">${caller.body()}</span>
+</%def>
+
+<%def name="json(style)">
+<% import json %>
+${json.dumps(style)}
+</%def>
+
+<%!
+  import locale
+  locale.setlocale(locale.LC_ALL, "")
+%>
+<%def name="price_format(price)">
+${locale.format("%d", price, grouping=True)}
+</%def>
+
+<%def name="breadcrumbs(names=[], urls=[], length=20)">
+<ul class="breadcrumb">
+  % for i in xrange(len(urls)):
+  <li><a href="${urls[i]}">${names[i][:length]}${'...' if len(names[i]) > length else ''}</a><span class="divider">/</span></li>
+  % endfor
+  <li>${names[-1]}</li>
+</ul>
+</%def>
+
+<%def name="sortable(column, paging=True)">
+% if paging:
+<%
+  sort_column = request.GET.get('sort')
+  sort_direction = request.GET.get('direction')
+  direction = 'desc' if (column.name == sort_column and sort_direction == 'asc') else 'asc'
+  css_class = 'current ' + sort_direction if (column.name == sort_column) else ''
+%>
+  <a href="?sort=${column.name}&direction=${direction}" class="${css_class}">${column.label.text}</a>
+% else:
+  ${column.label.text}
+% endif
+</%def>
+
+<%def name="action_button(actions, order)">
+<% key = order.next() %>
+<div class="btn-group">
+  <a href="${actions[key]['url']}" class="btn">
+    <i class="${actions[key]['icon']}"></i> ${actions[key]['label']}
+  </a>
+  <button class="btn dropdown-toggle" data-toggle="dropdown">
+    <span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu">
+    % for key in order:
+    <li>
+      % if key == 'delete':
+      <a href="${actions[key]['url']}" data-controls-modal="modal-delete" data-backdrop="true" data-keyboard="true">
+      % else:
+      <a href="${actions[key]['url']}">
+      % endif
+        <i class="${actions[key]['icon']}"></i> ${actions[key]['label']}
+      </a>
+    </li>
+    % endfor
+  </ul>
+</div>
+</%def>

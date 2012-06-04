@@ -1,0 +1,25 @@
+<%inherit file="../layout.html"/>
+<%namespace file="/common/helpers.html" import="pager"/>
+<%namespace file="/common/helpers.html" import="flash_messages" />
+
+<table class="table fullwidth checkboxed_table">
+  <thead>
+    <tr>
+      <th class="minwidth"><input type="checkbox" class="__action__-select_all" /></th>
+      <th><a href="#" class="sortable">名前</a></th>
+      <th><a href="#" class="sortable">URL</a></th>
+
+    </tr>
+  </thead>
+  <tbody>
+  % for bookmark in bookmarks:
+    <tr>
+      <td><input type="checkbox" /></td>
+      <td><a href="${request.route_path('bookmark.edit', bookmark_id=bookmark.id)}">${bookmark.name}</a></td>
+      <td>${bookmark.url}</td>
+      <td>${bookmark.updated_at}</td>
+      <td>${bookmark.created_at}</td>
+    </tr>
+  % endfor
+  </tbody>
+</table>

@@ -1,91 +1,105 @@
 # coding: utf-8
 import unittest
 from httplib2 import Response
-
+import mock
 from pyramid import testing
 from pyramid.httpexceptions import HTTPFound, HTTPBadRequest, HTTPUnauthorized
 
-from altaircms.base.tests import BaseTest
+from altaircms.lib.testutils import BaseTest, _initTestingDB
+from altaircms.auth.initial_data import insert_initial_authdata
 
+def setup_module():
+    _initTestingDB()
+    import sqlahelper
+    sqlahelper.get_engine().echo = False
 
-class OAuthSuccessMock(object):
-    @staticmethod
-    def request(url, method):
-        response = Response({'status':302, 'location':'http://example.com/'})
-        content = 'oauth_token=hogehoge&oauth_token_secret=fugahoge'
-        return (response, content)
+def teardown_module():
+    import transaction
+    transaction.abort()
 
-
-class OAuthFailureMock(object):
-    @staticmethod
-    def request(url, method):
-        response = Response({'status':401}) # Unauthorized
-        return (response, 'failure')
-
-
-class OAuthCallbackMock(object):
-    @staticmethod
-    def request(url, method):
-        response = Response({'status':200})
-        content = 'user_id=1234&screen_name=hogehoge&oauth_token=token&oauth_token_secret=secret'
-        return (response, content)
-
-
-class TestAuthView(BaseTest):
+class OAuthLoginTests(unittest.TestCase):
     def setUp(self):
-        self.request = testing.DummyRequest()
-        super(TestAuthView, self).setUp()
+        self.config = testing.setUp(settings={
+            'altair.oauth.client_id': 'fa12a58972626f0597c2faee1454e1',
+            'altair.oauth.secret_key': 'c5f20843c65870fad8550e3ad1f868',
+            'altair.oauth.authorize_url': 'http://localhost:7654/api/authorize',
+            'altair.oauth.access_token_url': 'http://localhost:7654/api/access_token'
+            })
 
-    def test_normal_views(self):
-        """
-        ログイン、ログアウトページのテスト
-        """
-        from altaircms.auth.views import login, logout
+        insert_initial_authdata()
 
-        resp = login(self.request)
-        self.assertEqual(resp, {'message':''})
+    def tearDown(self):
+        import transaction
+        transaction.abort()
+        testing.tearDown()
 
-        resp = logout(self.request)
-        self.assertTrue(isinstance(resp, HTTPFound))
-        self.assertEqual(resp.location, 'http://example.com/')
+    def _getTarget(self):
+        from ..views import OAuthLogin
+        return OAuthLogin
+
+    def _makeOne(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
+
 
     def test_oauth_entry(self):
-        """
-        OAuthの認証開始テスト
-        SP側はスタブオブジェクトを渡してテストを行なっている
-        """
-        from altaircms.auth.views import OAuthLogin
+        request = testing.DummyRequest()
+        target = self._makeOne(request, authorize_url="http://localhost:7654/login/authorize")
 
-        view = OAuthLogin(self.request, consumer_key='key', consumer_secret='secret', _stub_client=OAuthFailureMock)
-        resp = view.oauth_entry()
-        self.assertEqual(resp.status_int, 401)
-        self.assertTrue(isinstance(resp, HTTPUnauthorized))
+        result = target.oauth_entry()
+        
+        self.assertEqual(result.location, 
+                         'http://localhost:7654/login/authorize?client_id=fa12a58972626f0597c2faee1454e1&response_type=code')
 
-        view = OAuthLogin(
-            self.request, consumer_key='key', consumer_secret='secret',
-            authorize_url='http://example.com/authorize', _stub_client=OAuthSuccessMock
-        )
-        resp = view.oauth_entry()
-        self.assertTrue(isinstance(resp, HTTPFound))
-        self.assertEqual(resp.status_int, 302)
-        self.assertTrue(resp.location.startswith('http://example.com/authorize'))
 
-    def test_oauth_callback(self):
-        """
-        OAuthコールバックテスト
-        SP側はスタブオブジェクトを渡してテストを行なっている
-        """
-        from altaircms.auth.views import OAuthLogin
+    @mock.patch("urllib2.urlopen")
+    def test_oauth_callback_ioerror(self, mock_urlopen):
+        mock_urlopen.side_effect = IOError
 
-        self.request.session['request_token'] = {
-            'oauth_token':'token',
-            'oauth_token_secret':'secret'
-        }
+        request = testing.DummyRequest(GET={
+                "code": "",
+                })
 
-        view = OAuthLogin(
-            self.request, consumer_key='key', consumer_secret='secret',
-            access_token_url='http://example.com/access_token', _stub_client=OAuthCallbackMock
-        )
-        resp = view.oauth_callback()
-        self.assertTrue(isinstance(resp, HTTPFound))
-        self.assertEqual(resp.location, '/')
+        target = self._makeOne(request)
+
+        result = target.oauth_callback()
+
+    @mock.patch("urllib2.urlopen")
+    def test_oauth_callback_with_register(self, mock_urlopen):
+        from StringIO import StringIO
+        import json
+
+        self.config.add_route('dashboard', '/')
+
+        mock_urlopen.return_value = StringIO(json.dumps({
+                    "user_id": "dummy-user-id",
+                    "screen_name": "dummy_screen_name",
+                    "access_token": "access_token",
+                    
+                    }))
+
+        request = testing.DummyRequest(GET={
+                "code": "",
+                }, registry=self.config)
+
+        target = self._makeOne(request)
+
+        result = target.oauth_callback()
+
+        self.assertEqual(result.location, "http://example.com/")
+
+
+class TestSecurity(BaseTest):
+
+    def tearDown(self):
+        from altaircms.lib.testutils import dropall_db
+        dropall_db()
+        from altaircms.lib.testutils import create_db
+        create_db()
+        import transaction
+        transaction.abort()
+
+    def test_user_notfound(self):
+        from altaircms.security import rolefinder
+        request = testing.DummyRequest()
+        self.assertEqual(rolefinder(1234, request), [])
+

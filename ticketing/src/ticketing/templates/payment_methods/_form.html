@@ -1,0 +1,24 @@
+<%page args="form" />
+<%namespace file="/common/helpers.html" name="h" />
+
+<div id="modal-payment_method" class="modal fade">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">×</a>
+    <h3>決済方法</h3>
+  </div>
+
+  <form action="javascript:save_payment_method();" method="POST">
+    <div class="modal-body">
+      ${h.form_item(form.id)}
+      ${h.form_item(form.organization_id, option={'class':'span6'})}
+      ${h.form_item(form.payment_plugin_id)}
+      ${h.form_item(form.name, option={'maxlength':255})}
+      ${h.form_item(form.fee)}
+    </div>
+
+    <div class="modal-footer">
+      <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+      <input class="btn" type="submit" value="保存"></a>
+    </div>
+  </form>
+</div>

@@ -1,87 +1,60 @@
 # coding: utf-8
+import logging
 import json
-import collections
 
-from pyramid.httpexceptions import HTTPFound, HTTPBadRequest, HTTPCreated, HTTPOk
 from pyramid.view import view_config
+from pyramid.httpexceptions import HTTPCreated, HTTPForbidden, HTTPBadRequest
 
-from altaircms.models import DBSession, Event
-from altaircms.views import BaseRESTAPI
+from altaircms.models import Performance
+from .models import Event
 from altaircms.page.models import Page
+from altaircms.lib.fanstatic_decorator import with_bootstrap
+
 from altaircms.event.forms import EventForm
-from altaircms.event.mappers import EventMapper, EventsMapper
+from . import helpers as h
 
 
 ##
 ## CMS view
 ##
-from altaircms.fanstatic import bootstrap_need
-
-@view_config(route_name='event', renderer='altaircms:templates/event/view.mako', permission='event_viewer')
+@view_config(route_name='event', renderer='altaircms:templates/event/view.mako', permission='event_read',
+             decorator=with_bootstrap)
 def view(request):
     id_ = request.matchdict['id']
 
-    event = EventRESTAPIView(request, id_).read()
-    pages = DBSession.query(Page).filter_by(event_id=event['id'])
-
-    bootstrap_need()
-
+    event = Event.query.filter_by(id=id_).first()
+    pages = Page.query.filter_by(event_id=id_)
+    performances = Performance.query.filter_by(event_id=id_)
     return dict(
         event=event,
-        pages=pages
+        pages=pages, 
+        performances=performances
     )
 
 
-@view_config(route_name='event_list', renderer='altaircms:templates/event/list.mako', permission='event_editor')
-def list_(request):
-    events = EventRESTAPIView(request).read()
-
-    bootstrap_need()
-
-    if request.method == "POST":
-        form = EventForm(request.POST)
-        if form.validate():
-            request.method = "PUT"
-            EventRESTAPIView(request).create()
-            return HTTPFound(request.route_url("event_list"))
-    else:
-        form = EventForm()
-
+@view_config(route_name='event_list', renderer='altaircms:templates/event/list.mako', permission='event_read', request_method="GET", 
+             decorator=with_bootstrap)
+def event_list(request):
+    events = Event.query
+    form = EventForm()
     return dict(
         form=form,
         events=events
     )
 
-
 ##
-## API views
+## バックエンドとの通信用
 ##
-class EventRESTAPIView(BaseRESTAPI):
-    model = Event
-    form = EventForm
-    object_mapper = EventMapper
-    objects_mapper = EventsMapper
-
-    @view_config(route_name='api_event', request_method='PUT')
-    def create(self):
-        (created, object, errors) = super(EventRESTAPIView, self).create()
-        return HTTPCreated() if created else HTTPBadRequest(errors)
-
-    @view_config(route_name='api_event', request_method='GET', renderer='json')
-    @view_config(route_name='api_event_object', request_method='GET', renderer='json')
-    def read(self):
-        resp = super(EventRESTAPIView, self).read()
-        if isinstance(resp, collections.Iterable):
-            return self.objects_mapper({'events': resp}).as_dict()
-        else:
-            return self.object_mapper(resp).as_dict()
-
-    @view_config(route_name='api_event_object', request_method='PUT')
-    def update(self):
-        status = super(EventRESTAPIView, self).update()
-        return HTTPOk() if status else HTTPBadRequest()
-
-    @view_config(route_name='api_event_object', request_method='DELETE')
-    def delete(self):
-        status = super(EventRESTAPIView, self).delete()
-        return HTTPOk() if status else HTTPBadRequest()
+@view_config(route_name="api_event_register", request_method="POST")
+def event_register(request):
+    apikey = request.headers.get('X-Altair-Authorization', None)
+    if apikey is None:
+        return HTTPForbidden("")
+    if not h.validate_apikey(request, apikey):
+        return HTTPForbidden(body=json.dumps({u'status':u'error', u'message':u'access denined'}))
+    try:
+        h.parse_and_save_event(request, request.json_body)
+        return HTTPCreated(body=json.dumps({u'status':u'success'}))
+    except ValueError as e:
+        logging.exception(e)
+        return HTTPBadRequest(body=json.dumps({u'status':u'error', u'message':unicode(e)}))

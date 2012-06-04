@@ -1,0 +1,64 @@
+<%page args="event, order=None" />
+<%namespace file="/common/helpers.html" import="action_button" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+
+<script type="text/javascript">
+  function show_product() {
+    var id = get_id('product_id');
+    if (!id) return;
+    $(location).attr('href', '/products/show/' + id);
+  }
+  function new_product() {
+    $('#modal-product').modal('toggle');
+  }
+  function edit_product(id) {
+    id = id || get_id('product_id');
+    if (!id) return;
+    var el = '#product-' + id;
+    var modal = $('#modal-product');
+    modal.find('#id').val($(el + ' #id').text());
+    modal.find('#name').val($(el + ' #name').text());
+    modal.find('#price').val(Math.floor($(el + ' #price').attr('value')));
+    modal.find('#sales_segment').val($(el + ' #sales_segment').attr('value'));
+    modal.modal('toggle');
+  }
+  function delete_product() {
+    var id = get_id('product_id');
+    if (!id) return;
+    var modal = $('#modal-delete');
+    modal.find('#delete').attr('href', '/products/delete/' + id);
+    modal.find('#message').text('選択した商品を削除します。よろしいですか？');
+    modal.modal('toggle');
+  }
+  function save_product() {
+    var modal = '#modal-product';
+    var form = '#products-form';
+    var id = $(modal + ' #id').val();
+    var url = id ? '/products/edit/' + id : '/products/new';
+    post_modal_form(modal, form, url);
+  }
+</script>
+
+<%
+  actions = {
+    'new':dict(
+      label=u'新規',
+      url='javascript:new_product();',
+      icon='icon-plus',
+    ),
+    'edit':dict(
+      label=u'編集',
+      url='javascript:edit_product();',
+      icon='icon-pencil',
+    ),
+    'delete':dict(
+      label=u'削除',
+      url='javascript:delete_product();',
+      icon='icon-minus',
+    ),
+  }
+  order = iter(order or ['new', 'edit', 'delete'])
+%>
+${action_button(actions, order)}
+
+${delete_modal()}

@@ -1,0 +1,22 @@
+<%page args="form" />
+<%namespace file="/common/helpers.html" import="form_item" />
+
+<div id="modal-account" class="modal fade">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">×</a>
+    <h3>クライアント</h3>
+  </div>
+
+  <form action="javascript:save_account();" method="POST">
+    <div class="modal-body">
+      ${form_item(form.id)}
+      ${form_item(form.organization_id, option={'class':'span6'})}
+      ${form_item(form.name, option={'maxlength':255})}
+    </div>
+
+    <div class="modal-footer">
+      <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+      <input class="btn" type="submit" value="保存"></a>
+    </div>
+  </form>
+</div>

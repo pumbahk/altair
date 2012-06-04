@@ -1,0 +1,156 @@
+<%inherit file="../layout.html" />
+<%namespace file="/common/helpers.html" import="flash_messages" />
+<%namespace file="/common/confirm_modal.html" import="delete_modal"/>
+<%namespace file="/common/confirm_modal.html" import="download_modal"/>
+<%namespace file="/common/confirm_modal.html" import="testmail_modal"/>
+
+<script>
+  $(function() {
+    $('#delete').click(function(){
+      $('#delete-modal').modal('toggle');
+      $('#delete-modal #delete').attr('href', '/newsletters/delete/' + ${newsletter.id});
+    });
+
+    $('#edit').click(function(){
+      $(location).attr('href', '/newsletters/edit/' + ${newsletter.id});
+    });
+
+    $('#copy').click(function(){
+      $(location).attr('href', '/newsletters/copy/' + ${newsletter.id});
+    });
+
+    $('#test_mail').click(function(){
+      $('#testmail-modal').modal('toggle');
+      $('#testmail-modal #testmail').attr('action', '/newsletters/test_mail/${newsletter.id}');
+    });
+
+    $('#download-modal #download').click(function(){
+      $('#download-modal').modal('hide');
+    });
+
+    $('#html_mail').collapse()
+  });
+
+  function download(id) {
+    $('#download-modal').modal('toggle');
+    $('#download-modal #download').attr('href', '/newsletters/download/' + id);
+  } 
+</script>
+
+<div class="row-fluid">
+  <%include file="_menu.html" />
+
+  <span class="span10">
+    <div class="page-header">
+      <h3>メールマガジン詳細</h3> 
+    </div>
+
+    <div class="content">
+      ${flash_messages(request)}
+    </div>
+
+    <table class="table table-striped">
+      <tbody>
+        <tr>
+          <th class="span2">${form.subject.label}</th>
+          <td>${newsletter.subject}</td>
+        </tr>
+        <tr>
+          <th>${form.type.label}</th>
+          <td>${newsletter.type}</td>
+        </tr>
+        <tr>
+          <th>${form.description.label}</th>
+          <td>
+            % if newsletter.type == 'text':
+              ${newsletter.description.replace("\n", "<br />")|n}
+            % elif newsletter.type == 'html':
+              <a class="btn btn-info" data-toggle="collapse" data-target="#html_mail">
+                HTMLメール本文
+              </a>
+              <div id="html_mail" class="collapse in">
+                <div class="thumbnail">
+                  <iframe src="${request.route_path('newsletters.html_mail', id=newsletter.id)}"
+                          width=100% height=600 border=0 frameborder=0>
+                  </iframe>
+                </div>
+              </div>
+            % endif
+          </td>
+        </tr>
+        <tr>
+          <th>${form.status.label}</th>
+          <td>
+            % if newsletter.status == 'editing':
+              <span class="label label-primary">作成中</span>
+            % elif newsletter.status == 'waiting':
+              <span class="label label-warning">配信予約</span>
+            % elif newsletter.status == 'sending':
+              <span class="label label-important">配信中</span>
+            % elif newsletter.status == 'completed':
+              <span class="label label-success">配信完了</span>
+            % endif
+          </td>
+        </tr>
+        <tr>
+          <th>${form.sender_address.label}</th>
+          <td>${newsletter.sender_address}</td>
+        </tr>
+        <tr>
+          <th>${form.sender_name.label}</th>
+          <td>${newsletter.sender_name}</td>
+        </tr>
+        <tr>
+          <th>${form.subscriber_file.label}</th>
+          <td>
+            % if newsletter.subscriber_file() is not None:
+              <a href="javascript:download(${newsletter.id})" data-controls-modal="download-modal" data-backdrop="true" data-keyboard="true">
+                <span class="label label-info"><i class="icon-download-alt"></i> ${newsletter.subscriber_file()}</span>
+              </a>
+            % endif
+            ${download_modal(u'送信データファイルをダウンロードします。よろしいですか？')} 
+          </td>
+        </tr>
+        <tr>
+          <th>${form.subscriber_count.label}</th>
+          <td>${newsletter.subscriber_count}</td>
+        </tr>
+        <tr>
+          <th>${form.start_on.label}</th>
+          <td>${newsletter.start_on}</td>
+        </tr>
+        <tr>
+          <th>${form.updated_at.label}</th>
+          <td>${newsletter.updated_at}</td>
+        </tr>
+        <tr>
+          <th>${form.created_at.label}</th>
+          <td>${newsletter.created_at}</td>
+        </tr>
+      </tbody>
+    </table>
+    <button class="btn">
+      <a id="test_mail" data-controls-modal="testmail-modal" data-backdrop="true" data-keyboard="true">テスト送信</a>
+    </button>
+  </span>
+</div>
+
+<div class="ui-toolbar">
+  <div class="btn-group pull-right">
+    <button class="btn"><a href="${request.route_path('newsletters.new')}"><i class="icon-plus"></i> 新規</a></button>
+    <button class="btn">
+      <a id="edit"><i class="icon-pencil"></i> 編集</a>
+    </button>
+    <a id="delete" class="btn" data-controls-modal="delete-modal" data-backdrop="true" data-keyboard="true">
+      <i class="icon-minus"></i> 削除
+    </a>
+    <button class="btn">
+      <a id="copy"><i class="icon-plus"></i> コピー</a>
+    </button>
+  </div>
+</div>
+
+${download_modal(u'送信データファイルをダウンロードします。よろしいですか？')}
+${testmail_modal(u'テスト送信します。よろしいですか？')} 
+${delete_modal(u'選択したメールマガジンを削除します。よろしいですか？')}
+

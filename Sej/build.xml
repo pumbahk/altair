@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="sej" default="compile" basedir=".">
+    <property name="source" value="./src"/>
+    <property name="build.dir" value="./build"/>
+    <property name="main.class" value="jp.ticketstar.sej.Gateway"/>
+
+    <target name="directory">
+        <mkdir dir="${build.dir}"/>
+    </target>
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+    </target>
+
+    <target name="compile" depends="directory">
+        <jar jarfile="./sej_gateway.jar" basedir="${build.dir}">
+            <zipgroupfileset dir="lib" includes="*.jar" />
+         <manifest>
+          <attribute name="Main-Class" value="${main.class}"/>
+          <attribute name="Implementation-Title"   value="Sej_Gateway"/>
+          <attribute name="Implementation-Version" value="1.0.0"/>
+          <attribute name="Implementation-Vendor"  value="Ticketstar.inc"/>
+          <attribute name="Build-Id" value=" (${user.name} [${os.name} ${os.version} ${os.arch}])"/>
+         </manifest>
+        </jar>
+    </target>
+
+</project>

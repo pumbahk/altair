@@ -1,224 +1,174 @@
 # coding: utf-8
 """
-ウィジェット用のモデルを定義する。
+ウィジェット用のベースモデルを定義する。
 
-設定が必要なウィジェットのみ情報を保持する。
 """
-
+import json
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 
-from altaircms.models import Base, DBSession
+from altaircms.models import Base, DBSession, BaseOriginalMixin
 
 from datetime import datetime
 from zope.interface import implements
 from altaircms.interfaces import IHasSite
 from altaircms.interfaces import IHasTimeHistory
-
-
-# from altaircms.plugins.widget.image.models import ImageWidget
-# from altaircms.plugins.widget.freetext.models import FreetextWidget as TextWidget
+from altaircms.page.models import Page
+from altaircms.layout.models import Layout
 
 __all__ = [
     'Widget',
-    # 'ImageWidget',
-    # 'MovieWidget',
-    # 'FlashWidget',
-    # 'MenuWidget',
-     # 'TextWidget',
-    # 'BreadcrumbsWidget',
-    # 'TopicWidget',
+    "WidgetDisposition", 
+    "AssetWidgetResourceMixin"
 ]
 
-WIDGET_TYPE = [
-    'text',
-    'breadcrumbs',
-    'flash',
-    'movie',
-    'image',
-    'topic',
-    'menu',
-    'billinghistory',
-]
-
-class Widget(Base):
+class Widget(BaseOriginalMixin, Base):
     implements(IHasTimeHistory, IHasSite)
 
     query = DBSession.query_property()
     __tablename__ = "widget"
     page_id = sa.Column(sa.Integer, sa.ForeignKey("page.id"))
-    page = orm.relationship("Page", backref="widgets", 
-                            single_parent = True, 
-                           cascade="save-update, merge, delete, delete-orphan")
+    page = orm.relationship("Page", backref="widgets")
+
+    disposition_id = sa.Column(sa.Integer, sa.ForeignKey("widgetdisposition.id"))
+    disposition = orm.relationship("WidgetDisposition", backref="widgets")
+
     id = sa.Column(sa.Integer, primary_key=True)
     site_id = sa.Column(sa.Integer, sa.ForeignKey("site.id"))
     discriminator = sa.Column("type", sa.String(32), nullable=False)
-    created_at = sa.Column(sa.DateTime, default=datetime.now())
-    updated_at = sa.Column(sa.DateTime, default=datetime.now())
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
 
     __mapper_args__ = {"polymorphic_on": discriminator}
 
     def __repr__(self):
         return '<%s %s>' % (self.__class__.__name__, self.id)
 
-"""
+    def clone(self, session, page): #todo:refactoring model#clone
+        D = self.to_dict()
+        D["id"] = None
+        if page:
+            D["page_id"] = page.id
+            D["page"] = page
+        else:
+            D["page_id"] = D["page"] = None
+        ins = self.__class__.from_dict(D)
+        session.add(ins)
+        return ins
 
-widget = Table(
-    'widget',
-    Base.metadata,
-    Column('id', Integer, primary_key=True),
-    Column('site_id', Integer, ForeignKey("site.id")),
-    Column('type', String, nullable=False)
-)
+class WidgetDisposition(BaseOriginalMixin, Base): #todo: rename
+    """ widgetの利用内容を記録しておくためのモデル
+    以下を記録する。
+    * 利用しているwidgetの位置
+    * 利用しているwidgetのデータ
 
-widget_text = Table(
-    'widget_text',
-    Base.metadata,
-    Column('id', Integer, ForeignKey('widget.id'), primary_key=True),
-    Column('text', Unicode)
-)
+    pageから作成し、pageにbindする
+    """
+    implements(IHasTimeHistory, IHasSite)
+    
+    query = DBSession.query_property()
+    __tablename__ = "widgetdisposition"
+    id = sa.Column(sa.Integer, primary_key=True)
+    title = sa.Column(sa.Unicode(255))
+    site_id = sa.Column(sa.Integer, sa.ForeignKey("site.id"))
 
-widget_breadcrumbs = Table(
-    'widget_breadcrumbs',
-    Base.metadata,
-    Column('id', Integer, ForeignKey('widget.id'), primary_key=True),
-    Column('breadcrumb', String)
-)
+    structure = sa.Column(sa.String(255), default=Page.DEFAULT_STRUCTURE) # same as: Page.structure
+    blocks = sa.Column(sa.String(255), default=Layout.DEFAULT_BLOCKS) # same as: Layout.blocks
 
-widget_flash = Table(
-    'widget_flash',
-    Base.metadata,
-    Column('id', Integer, ForeignKey('widget.id'), primary_key=True),
-    Column('asset_id', Integer, ForeignKey('asset.id'))
-)
+    is_public = sa.Column(sa.Boolean, default=False)
+    owner_id = sa.Column(sa.Integer, sa.ForeignKey("operator.id"))
+    owner = orm.relationship("Operator", backref="widget_dispositions")
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
+    
+    @classmethod
+    def _create_empty_from_page(cls, page, title_fmt=u"%sより"):
+        D = {"title": title_fmt % page.title, 
+             "site_id": page.site_id, 
+             "blocks": page.layout.blocks}
+        return cls.from_dict(D)
 
-widget_movie = Table(
-    'widget_movie',
-    Base.metadata,
-    Column('id', Integer, ForeignKey('widget.id'), primary_key=True),
-    Column('asset_id', Integer, ForeignKey('asset.id'))
-)
+    @classmethod
+    def from_page(cls, page, session):
+        from altaircms.widget.tree.proxy import WidgetTreeProxy
+        import altaircms.widget.tree.clone as wclone
+        wtree = WidgetTreeProxy(page)
+        new_wtree = wclone.clone(session, None, wtree)
+        if session:
+            session.flush()
+        new_structure = wclone.to_structure(new_wtree)
 
-widget_image = Table(
-    'widget_image',
-    Base.metadata,
-    Column('id', Integer, ForeignKey('widget.id'), primary_key=True),
-    Column('asset_id', Integer, ForeignKey('asset.id'))
-)
+        instance = cls._create_empty_from_page(page, title_fmt=u"%sより") ##
+        instance.structure = json.dumps(new_structure)
+        for k, ws in new_wtree.blocks.iteritems():
+            for w in ws:
+                w.disposition = instance
+        return instance
 
-widget_topic = Table(
-    'widget_topic',
-    Base.metadata,
-    Column('id', Integer, ForeignKey('widget.id'), primary_key=True),
-    Column('topic_id', Integer, ForeignKey('topic.id')),
-    Column('title', String)
-)
+    def bind_page(self, page, session):
+        from altaircms.widget.tree.proxy import WidgetTreeProxy
+        import altaircms.widget.tree.clone as wclone
+        ## cleanup
+        wtree = WidgetTreeProxy(self)
+        new_wtree = wclone.clone(session, page, wtree)
+        if session:
+            session.flush()
+        page.structure = json.dumps(wclone.to_structure(new_wtree))
+        return page
 
-widget_menu = Table(
-    'widget_menu',
-    Base.metadata,
-    Column('id', Integer, ForeignKey('widget.id'), primary_key=True),
-    Column('topic_id', Integer, ForeignKey('topic.id')),
-    Column('menu', String)
-)
-
-class TextWidget(Widget):
-    def __init__(self, captured):
-        self.id = captured.get('id', None)
-        self.site_id = captured.get('site_id', None)
-        self.text = captured.get('text', None)
-
-class MenuWidget(Widget):
-    def __init__(self, captured):
-        self.id = captured.get('id', None)
-        self.site_id = captured.get('site_id', None)
-        self.menu = captured.get('menu', None)
-
-class BreadcrumbsWidget(Widget):
-    def __init__(self, captured):
-        self.id = captured.get('id', None)
-        self.site_id = captured.get('site_id', None)
-        self.breadcrumb = captured.get('breadcrumb', None)
+    def delete_widgets(self):
+        where = (Widget.disposition_id==self.id) & (Widget.page==None)
+        for w in Widget.query.filter(where):
+            DBSession.delete(w)
 
 
-class MovieWidget(Widget, AssetWidgetMixin):
-    def __init__(self, captured):
-        self.id = captured.get('id', None)
-        self.site_id = captured.get('site_id', None)
-        self.asset_id = captured.get('asset_id', None)
+    @classmethod
+    def _snapshot_title(cls):
+        return u"%%s(%s)" % str(datetime.now())
 
+    @classmethod
+    def snapshot(cls, page, owner, session):
+        """ move widgets page to widget disposition(as tmpstorage)
+        """
+        dispos = cls._create_empty_from_page(page, title_fmt=cls._snapshot_title()) ##
+        dispos.structure = page.structure
+        dispos.owner = owner
+        page.structure = Page.DEFAULT_STRUCTURE
+        if session:
+            session.add(page)
+            session.add(dispos)
+        Widget.query.filter(Widget.page==page).update(
+            {Widget.page: None,  Widget.disposition:dispos}
+            )
+        return dispos
 
-class FlashWidget(Widget, AssetWidgetMixin):
-    def __init__(self, captured):
-        self.id = captured.get('id', None)
-        self.site_id = captured.get('site_id', None)
-        self.asset_id = captured.get('asset_id', None)
+    @classmethod
+    def same_blocks_query(cls, page):
+        return cls.query.filter(cls.blocks==page.layout.blocks)
 
+    @classmethod
+    def enable_only_query(cls, operator, qs=None):
+        return (qs or cls.query).filter((cls.is_public==True)|(cls.owner==operator))
 
-class ImageWidget(Widget, AssetWidgetMixin):
-    def __init__(self, captured):
-        self.id = captured.get('id', None)
-        self.site_id = captured.get('site_id', None)
-        self.asset_id = captured.get('asset_id', None)
+    def __repr__(self):
+        return self.title
 
+class AssetWidgetResourceMixin(object):
+    WidgetClass = None
+    AssetClass = None
 
-class TopicWidget(Widget):
-    def __init__(self, captured):
-        self.id = captured.get('id', None)
-        self.site_id = captured.get('site_id', None)
-        self.title = captured.get('title', None)
-        self.topic_id = captured.get('topic_id', None)
+    def _get_or_create(self, model, widget_id):
+        if widget_id is None:
+            return model()
+        else:
+            return DBSession.query(model).filter(model.id == widget_id).one()
+        
+    def get_widget(self, widget_id):
+        return self._get_or_create(self.WidgetClass, widget_id)
 
+    def get_asset_query(self):
+        return self.AssetClass.query
 
-mapper(Widget, widget, polymorphic_on=widget.c.type, polymorphic_identity='widget')
-mapper(TextWidget, widget_text, inherits=Widget, polymorphic_identity='text')
-mapper(BreadcrumbsWidget, widget_breadcrumbs, inherits=Widget, polymorphic_identity='breadcrumbs')
-mapper(FlashWidget, widget_flash, inherits=Widget, polymorphic_identity='flash')
-mapper(MovieWidget, widget_movie, inherits=Widget, polymorphic_identity='movie')
-mapper(ImageWidget, widget_image, inherits=Widget, polymorphic_identity='image')
-mapper(TopicWidget, widget_topic, inherits=Widget, polymorphic_identity='topic')
-mapper(MenuWidget, widget_menu, inherits=Widget, polymorphic_identity='menu')
+    def get_asset(self, asset_id):
+        return self.AssetClass.query.filter(self.AssetClass.id == asset_id).one()
 
-
-class TwitterTimelineWidget(Base):
-    __tablename__ = "widget_twitter_timeline"
-
-    id = Column(Integer, ForeignKey("widget.id"), primary_key=True)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
-
-    screen_name = Column(String)
-
-
-class TwitterSearchWidget(Base):
-    __tablename__ = "widget_twitter_search"
-
-    id = Column(Integer, ForeignKey("widget.id"), primary_key=True)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
-
-    search_word = Column(Unicode)
-
-
-class FacebookWidget(Base):
-    __tablename__ = 'widget_facebook'
-
-    id = Column(Integer, ForeignKey("widget.id"), primary_key=True)
-    url = Column(String)
-
-
-class BillingHistoryWidget(Base):
-    __tablename__ = 'widget_billinghistory'
-
-    id = Column(Integer, primary_key=True)
-    widget_id = Column(Integer, ForeignKey("widget.id"))
-
-
-class RakutenPointWidget(Base):
-    __tablename__ = 'widget_rakutenpoint'
-
-    id = Column(Integer, primary_key=True)
-    widget_id = Column(Integer, ForeignKey("widget.id"))
-
-
-"""

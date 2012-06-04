@@ -6,11 +6,11 @@
             <tbody>
             <tr>
                 <td>199x/1/23</td>
-                <td>世界は核の炎に包まれた</td>
+                <td>testtest</td>
             </tr>
             <tr>
                 <td>199x/1/23</td>
-                <td>世界は核の炎に包まれた</td>
+                <td>testtest</td>
             </tr>
             </tbody>
         </table>
@@ -26,7 +26,7 @@
       <table class="table table-striped">
           %for event in events:
         <tr>
-          <td>${event.event_open}</td><td><a href="${request.route_url("event", id=event.id)}">${event.title}</a></td>
+          <td>${event.event_open}</td><td><a href="${request.route_path("event", id=event.id)}">${event.title}</a></td>
         </tr>
           %endfor
       </table>

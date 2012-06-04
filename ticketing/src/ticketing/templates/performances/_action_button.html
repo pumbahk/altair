@@ -1,0 +1,63 @@
+<%page args="event, order=None" />
+<%namespace file="/common/helpers.html" import="action_button" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+
+<script type="text/javascript">
+  function show_performance() {
+    var id = get_id('performance_id');
+    if (!id) return;
+    $(location).attr('href', '/events/performances/show/' + id);
+  }
+  function edit_performance() {
+    var id = get_id('performance_id');
+    if (!id) return;
+    $(location).attr('href', '/events/performances/edit/' + id);
+  }
+  function delete_performance() {
+    var id = get_id('performance_id');
+    if (!id) return;
+    var modal = $('#modal-delete');
+    modal.find('#delete').attr('href', '/events/performances/delete/' + id);
+    modal.find('#message').text('選択したパフォーマンスを削除します。よろしいですか？');
+    modal.modal('toggle');
+  }
+  function copy_performance() {
+    var id = get_id('performance_id');
+    if (!id) return;
+    $(location).attr('href', '/events/performances/copy/' + id);
+  }
+</script>
+
+<%
+  actions = {
+    'new':dict(
+      label=u'新規',
+      url=request.route_path('performances.new', event_id=event.id),
+      icon='icon-plus',
+    ),
+    'edit':dict(
+      label=u'編集',
+      url='javascript:edit_performance();',
+      icon='icon-pencil',
+    ),
+    'delete':dict(
+      label=u'削除',
+      url='javascript:delete_performance();',
+      icon='icon-minus',
+    ),
+    'show':dict(
+      label=u'詳細',
+      url='javascript:show_performance();',
+      icon='icon-th-list',
+    ),
+    'copy':dict(
+      label=u'コピーして新規作成',
+      url='javascript:copy_performance();',
+      icon='icon-plus',
+    ),
+  }
+  order = iter(order or ['new', 'show', 'edit', 'delete', 'copy'])
+%>
+${action_button(actions, order)}
+
+${delete_modal()}

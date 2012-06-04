@@ -1,0 +1,29 @@
+<%inherit file='../../layout_2col.mako'/>
+
+You are <strong>${user.role.name}</strong>.
+
+<hr/>
+
+<h4>ロール一覧</h4>
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Role</th>
+        <th>Permissions</th>
+        <td></td>
+    </tr>
+    </thead>
+    <tbody>
+    %for role in roles:
+    <tr>
+        <td>${role.name}</td>
+        <td>
+        %for perm in role.permissions:
+          <span class="label label-info">${perm}</span>
+        %endfor
+        </td>
+        <td><a href="${request.route_path("role", id=role.id)}"><span class="btn"><i class="icon-eye-open"> </i> Show</span></a></td>
+    </tr>
+    %endfor
+    </tbody>
+</table>

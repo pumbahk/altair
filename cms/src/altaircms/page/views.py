@@ -1,268 +1,280 @@
 # coding: utf-8
-import colander
-import deform
-import json
-
+import logging
 from pyramid.view import view_config
-from pyramid.response import Response
-from pyramid.exceptions import NotFound
+from pyramid.view import view_defaults
 from pyramid.httpexceptions import HTTPFound
 
-import transaction
-
-from altaircms.views import BaseRESTAPI
-from altaircms.page.forms import PageForm
-from altaircms.models import DBSession, Event
+from altaircms.lib.viewhelpers import RegisterViewPredicate
+from altaircms.lib.viewhelpers import FlashMessage
+from . import forms
 from altaircms.page.models import Page
-from altaircms.page.mappers import PageMapper, PagesMapper
-from altaircms.layout.models import Layout
-from altaircms.fanstatic import bootstrap_need
+from altaircms.page.models import PageSet
+from altaircms.event.models import Event
 
 
-"""
-@view_config(route_name='page_object', renderer='altaircms:templates/page/edit.mako', permission='view')
-def view(request):
-    id_ = request.matchdict['id']
+import altaircms.tag.api as tag
 
-    page = PageRESTAPIView(request, id_).read()
-    ## layout render
-    layout_render = request.context.get_layout_render(page)
-    page_render = request.context.get_page_render(page)
-    ## fanstatic
+from altaircms.lib.fanstatic_decorator import with_bootstrap
+from altaircms.lib.fanstatic_decorator import with_jquery
+from altaircms.lib.fanstatic_decorator import with_fanstatic_jqueries
+from altaircms.lib.fanstatic_decorator import with_wysiwyg_editor
+import altaircms.helpers as h
 
-    from altaircms.fanstatic import jqueries_need
-    from altaircms.fanstatic import wysiwyg_editor_need
-    jqueries_need()
-    wysiwyg_editor_need()
 
-    return dict(
-        pages=page,
-        layout_render=layout_render,
-        page_render=page_render,
-    )
-"""
+##
+## todo: CRUDのview整理する
+##
 
-@view_config(route_name='page', renderer='altaircms:templates/page/list.mako')
-def list_(request):
-    bootstrap_need()
-    layout_choices = [(layout.id, layout.title) for layout in DBSession.query(Layout)]
-    if request.method == "POST":
-        form = PageForm(request.POST)
-        form.layout_id.choices = layout_choices
+@view_defaults(route_name="page_add", decorator=with_bootstrap.merge(with_jquery))
+class PageAddView(object):
+    """ eventの中でeventに紐ついたpageの作成
+    """
+    def __init__(self, context, request):
+        self.request = request
+        self.context = context
+        self.event_id = request.matchdict["event_id"]
+
+    @view_config(request_method="GET", renderer="altaircms:templates/page/add.mako")
+    def input_form(self):
+        event_id = self.request.matchdict["event_id"]
+        event = Event.query.filter(Event.id==event_id).one()
+        form = forms.PageForm(event=event)
+        return {"form":form, "event":event}
+
+    @view_config(request_method="POST", renderer="altaircms:templates/page/add.mako")
+    def create_page(self):
+        logging.debug('create_page')
+        form = forms.PageForm(self.request.POST)
         if form.validate():
-            request.method = "PUT"
-            PageRESTAPIView(request).create()
-            return HTTPFound(request.route_url("page"))
-    else:
-        form = PageForm()
-        form.layout_id.choices = layout_choices
+            page = self.context.create_page(form)
+            ## flash messsage
+            FlashMessage.success("page created", request=self.request)
+            return HTTPFound(self.request.route_path("event", id=self.event_id))
+        else:
+            logging.debug("%s" % form.errors)
+            event_id = self.request.matchdict["event_id"]
+            event = Event.query.filter(Event.id==event_id).one()
+            return {"form":form, "event":event}
 
+@view_defaults(permission="page_create", decorator=with_bootstrap)
+class PageCreateView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @view_config(route_name="page", renderer='altaircms:templates/page/list.mako', request_method="POST")
+    def create(self):
+        form = forms.PageForm(self.request.POST)
+        if form.validate():
+            page = self.context.create_page(form)
+            ## flash messsage
+            FlashMessage.success("page created", request=self.request)
+            return HTTPFound(self.request.route_path("page"))
+        else:
+            return dict(
+                pages=self.context.Page.query,
+                form=form
+                )
+
+    @view_config(route_name="page_duplicate", request_method="GET", renderer="altaircms:templates/page/duplicate_confirm.mako")
+    def duplicate_confirm(self):
+        page = self.context.get_page(self.request.matchdict["id"])
+        return {"page": page}
+        
+    @view_config(route_name="page_duplicate", request_method="POST")
+    def duplicate(self):
+        page = self.context.get_page(self.request.matchdict["id"])
+        self.context.clone_page(page)
+        ## flash messsage
+        FlashMessage.success("page duplicated", request=self.request)
+
+        return HTTPFound(self.request.route_path("page"))
+
+@view_defaults(route_name="page_delete", permission="page_delete", decorator=with_bootstrap)
+class PageDeleteView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @view_config(renderer="altaircms:templates/page/delete_confirm.mako", request_method="GET")
+    def delete_confirm(self):
+        page = self.context.get_page(self.request.matchdict["id"])
+        return {"page": page}
+
+    @view_config(request_method="POST")
+    def delete(self):
+        page = self.context.get_page( self.request.matchdict['id'])
+        self.context.delete_page(page)
+
+        ## flash messsage
+        FlashMessage.success("page deleted", request=self.request)
+
+        return HTTPFound(location=h.page.to_list_page(self.request))
+
+
+class AfterInput(Exception):
+    pass
+
+@view_config(route_name="page_update", context=AfterInput, renderer="altaircms:templates/page/input.mako", 
+             decorator=with_bootstrap)
+def _input(request):
+    page, form = request._store
     return dict(
-        pages=PageRESTAPIView(request).read(),
+        page=page, form=form,
+        )
+
+@view_defaults(route_name="page_update", permission="page_update", decorator=with_bootstrap)
+class PageUpdateView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    def _input_page(self, page, form):
+        self.request._store = page, form
+        raise AfterInput
+        
+    @view_config(request_method="GET")
+    def input(self):
+        id_ = self.request.matchdict['id']
+        page = self.context.get_page(id_)
+        params = page.to_dict()
+        params["tags"] = tag.tags_to_string(page.public_tags)
+        params["private_tags"] = tag.tags_to_string(page.private_tags)
+        form = forms.PageUpdateForm(**params)
+        return self._input_page(page, form)
+
+    @view_config(request_method="POST", renderer="altaircms:templates/page/update_confirm.mako",       
+                    custom_predicates=[RegisterViewPredicate.confirm])
+    def update_confirm(self):
+        id_ = self.request.matchdict['id']
+        form = forms.PageUpdateForm(self.request.POST)
+        page = self.context.get_page(id_)
+        if form.validate():
+            return dict( page=page, params=self.request.POST.items())
+        else:
+            return self._input_page(page, form)
+
+    @view_config(request_method="POST", custom_predicates=[RegisterViewPredicate.execute])
+    def update(self):
+        page = self.context.get_page( self.request.matchdict['id'])
+        form = forms.PageUpdateForm(self.request.POST)
+        if form.validate():
+            page = self.context.update_page(page, form)
+            ## flash messsage
+            FlashMessage.success("page updated", request=self.request)
+            return HTTPFound(location=h.page.to_edit_page(self.request, page))
+        else:
+            return self._input_page(page, form)
+
+
+@view_config(route_name='page', renderer='altaircms:templates/page/list.mako', 
+             permission='page_read', request_method="GET", decorator=with_bootstrap)
+def list_(request):
+    form = forms.PageForm()
+    return dict(
+        pages=request.context.Page.query, 
         form=form
     )
-
-
-class PageRESTAPIView(BaseRESTAPI):
-    model = Page
-    form = PageForm
-    object_mapper = PageMapper
-    objects_mapper = PagesMapper
-
-    def _post_form_hook(self):
-        layout_choices = [(layout.id, layout.title) for layout in DBSession.query(Layout)]
-        self.form_object.layout_id.choices = layout_choices
-
 
 @view_config(route_name="page_edit_", request_method="POST")
 def to_publish(request):     ## fixme
     page_id = request.matchdict["page_id"]
     page = Page.query.filter(Page.id==page_id).one()
     page.to_published()
-    return HTTPFound(request.route_url("page_edit_", page_id=page_id))
+    return HTTPFound(request.route_path("page_edit_", page_id=page_id))
 
-class PageEditView(object):
+## todo: persmissionが正しいか確認
+@view_config(route_name='page_edit_', renderer='altaircms:templates/page/edit.mako', permission='authenticated', 
+             decorator=with_fanstatic_jqueries.merge(with_bootstrap).merge(with_wysiwyg_editor))
+@view_config(route_name='page_edit', renderer='altaircms:templates/page/edit.mako', permission='authenticated', 
+             decorator=with_fanstatic_jqueries.merge(with_bootstrap).merge(with_wysiwyg_editor))
+def page_edit(request):
+    """pageの中をwidgetを利用して変更する
+    """
+    page = request.context.get_page(request.matchdict["page_id"])
+    if not page:
+        return HTTPFound(request.route_path("page"))
+    
+    layout_render = request.context.get_layout_render(page)
+    forms = request.context.get_disposition_forms(page)
+    return {
+            'event':page.event,
+            'page':page,
+            "forms": forms, #forms is dict
+            "layout_render":layout_render
+        }
+
+## widgetの保存 場所移動？
+@view_config(route_name="disposition", request_method="POST", permission='authenticated')
+def disposition_save(context, request):
+    form = context.Form(request.POST)
+    page = context.Page.query.filter_by(id=request.matchdict["id"]).first()
+
+    if form.validate():
+        wdisposition = context.get_disposition_from_page(page, form.data)
+        context.add(wdisposition)
+        FlashMessage.success(u"widgetのデータが保存されました", request=request)
+        return HTTPFound(h.page.to_edit_page(request, page))
+    else:
+        FlashMessage.error(u"タイトルを入力してください", request=request)
+        return HTTPFound(h.page.to_edit_page(request, page))
+
+@view_config(route_name="disposition", request_method="GET", permission='authenticated')
+def disposition_load(context, request):
+    page = context.Page.query.filter_by(id=request.matchdict["id"]).first()
+    wdisposition = context.get_disposition(request.GET["disposition"])
+    loaded_page = context.bind_disposition(page, wdisposition)
+    context.add(loaded_page)
+    
+    FlashMessage.success(u"widgetのデータが読み込まれました", request=request)
+    return HTTPFound(h.page.to_edit_page(request, loaded_page))
+
+
+@view_config(route_name="disposition_list", renderer="altaircms:templates/widget/disposition/list.mako", 
+             decorator=with_bootstrap, permission='authenticated') #permission
+def disposition_list(context, request):
+    ds = context.get_disposition_list()
+    return {"ds":ds}
+
+@view_config(route_name="disposition_alter", request_method="POST", permission='authenticated') #permission
+def disposition_delete(context, request):
+    disposition = context.get_disposition(request.matchdict["id"])
+    title = disposition.title
+    context.delete_disposition(disposition)
+    FlashMessage.success(u"%sを消しました" % title, request=request)
+    return HTTPFound(h.widget.to_disposition_list(request))
+
+
+class PageSetView(object):
     def __init__(self, request):
-        dbsession = DBSession()
-
         self.request = request
-        self.page = None
-        self.event = None
 
-        event_id = self.request.matchdict.get('event_id', None)
-        if event_id:
-            self.event = dbsession.query(Event).get(event_id)
-            if not self.event:
-                return NotFound()
+    @view_config(route_name='pagesets', renderer="altaircms:templates/pagesets/list.mako", decorator=with_bootstrap)
+    def pageset_list(self):
+        pagesets = PageSet.query.all()
+        return dict(pagesets=pagesets)
 
-        page_id = self.request.matchdict.get('page_id', None)
-        if page_id:
-            if event_id:
-                self.page = dbsession.query(Page).filter_by(event_id=self.event.id, id=page_id).one()
-            else:
-                self.page = dbsession.query(Page).filter_by(id=page_id).one()
+    @view_config(route_name='pageset', renderer="altaircms:templates/pagesets/edit.mako", decorator=with_bootstrap, request_method="GET")
+    def pageset(self):
+        pageset_id = self.request.matchdict['pageset_id']
+        pageset = PageSet.query.filter_by(id=pageset_id).one()
+        factory = forms.PageSetFormFactory(self.request)
+        form = factory(pageset)
+        return dict(ps=pageset, form=form, f=factory)
 
-            if not self.page:
-                return NotFound()
-            '''
-            results = dbsession.query(Page2Widget, Widget).filter(Page2Widget.widget_id==Widget.id).\
-                filter(Page2Widget.page_id==page_id).order_by(asc(Page2Widget.order)).all()
+    @view_config(route_name='pageset', renderer="altaircms:templates/pagesets/edit.mako", decorator=with_bootstrap, request_method="POST")
+    def update_times(self):
+        logging.debug('post ')
+        pageset_id = self.request.matchdict['pageset_id']
+        pageset = PageSet.query.filter_by(id=pageset_id).one()
+        proxy = forms.PageSetFormProxy(pageset)
 
-            self.display_blocks = {}
-            for p2w, widget in results:
-                key = p2w.block
-                if key in self.display_blocks:
-                    self.display_blocks[key].append(widget)
-                else:
-                    self.display_blocks[key] = [widget]
-            '''
-            self.display_blocks = {}
+        factory = forms.PageSetFormFactory(self.request)
+        form = factory(pageset)
 
-        DBSession.remove()
+        if form.validate():
 
-    def render_form(self, form, appstruct=colander.null, submitted='submit', duplicated='duplicate',
-                    success=None, readonly=False, extra_context=None):
-        captured = None
+            form.populate_obj(proxy)
 
-        if submitted in self.request.POST or duplicated in self.request.POST:
-            # the request represents a form submission
-            try:
-                # try to validate the submitted values
-                controls = self.request.POST.items()
-                captured = form.validate(controls)
-                if success:
-                    duplicate = True if duplicated in self.request.POST else False
-                    response = success(captured, duplicate=duplicate)
-                    if response is not None:
-                        return response
-                html = form.render(captured)
-            except deform.ValidationFailure, e:
-                # the submitted values could not be validated
-                html = e.render()
+        return dict(ps=pageset, form=form, f=factory)
 
-        else:
-            # the request requires a simple form rendering
-            html = form.render(appstruct, readonly=readonly)
-
-        if self.request.is_xhr:
-            return Response(html)
-
-        reqts = form.get_widget_resources()
-
-
-        ctx =  {
-            'form':html,
-            'event':self.event,
-            'page':self.page,
-            'pages':DBSession.query(Page).all(),
-            'captured':repr(captured),
-            'showmenu':True,
-            'css_links':reqts['css'],
-            'js_links':reqts['js'],
-        }
-        
-        if extra_context:
-            ctx.update(extra_context)
-
-        # values passed to template for rendering
-        return ctx
-
-    @view_config(route_name='page_add', renderer='altaircms:templates/page/edit.mako')
-    def page_add(self):
-        appstruct = {
-            'layout_id': 1,
-            'structure': '{}',
-        }
-
-        return self.render_form(PageAddForm, success=self._succeed, appstruct=appstruct)
-
-    @view_config(route_name='page_edit_', renderer='altaircms:templates/page/edit.mako', permission='authenticated')
-    @view_config(route_name='page_edit', renderer='altaircms:templates/page/edit.mako', permission='authenticated')
-    def page_edit(self):
-        if not self.page:
-            return self.render_form(PageEditForm, appstruct={}, success=self._succeed)            
-        else:
-            # @TODO: モデルプロパティとして移したほうがいいかも知れない
-            for key, values in self.display_blocks.iteritems():
-                self.display_blocks[key] = [value.id for value in values]
-
-            appstruct = {
-                'url': self.page.url,
-                'title': self.page.title,
-                'description': self.page.description,
-                'keyword': self.page.keyword,
-                'layout_id': self.page.layout_id if self.page.layout_id else 0,
-                'structure': json.dumps(self.display_blocks)
-            }
-
-            ## layout render
-            layout_render = self.request.context.get_layout_render(self.page)
-            page_render = self.request.context.get_page_render(self.page)
-            ## fanstatic
-
-            from altaircms.fanstatic import jqueries_need
-            from altaircms.fanstatic import bootstrap_need
-            from altaircms.fanstatic import wysiwyg_editor_need
-            jqueries_need()
-            wysiwyg_editor_need()
-            bootstrap_need()
-            ##
-
-            '''
-            return self.render_form(PageEditForm, appstruct=appstruct, success=self._succeed,
-                                    extra_context={"layout_render": layout_render,
-                                                   "page_render": page_render})
-            '''
-            return {
-                'form':'',
-                'page':self.page,
-                "layout_render": layout_render,
-                "page_render": page_render
-            }
-
-
-
-    def _succeed(self, captured, duplicate=False):
-        dbsession = DBSession()
-
-        if duplicate or not self.page:
-            page = Page(
-                event_id=self.event.id if self.event else None,
-                url=captured['url'],
-                title=captured['title'],
-                description=captured['description'],
-                keyword=captured['keyword'],
-                layout_id=captured['layout_id'],
-                # page.tags = captured['tags']
-            )
-        else:
-            self.page.url = captured['url']
-            self.page.title = captured['title']
-            self.page.description = captured['description']
-            self.page.keyword = captured['keyword']
-            self.page.layout_id = captured['layout_id']
-
-            page = self.page
-
-        dbsession.add(page)
-
-        # page_structure = json.loads(captured['structure'])
-
-        # q = dbsession.query(Page2Widget).filter_by(page_id=page.id)
-        # for p2w in q:
-        #     dbsession.delete(p2w)
-
-        # for key, values in page_structure.iteritems():
-        #     for value in values:
-        #         dbsession.add(
-        #             Page2Widget(
-        #                 page_id=page.id,
-        #                 widget_id=value,
-        #                 block=key
-        #             )
-        #         )
-
-        transaction.commit()
-        DBSession.remove()
-
-        return Response('<div id="thanks">Thanks!</div>')

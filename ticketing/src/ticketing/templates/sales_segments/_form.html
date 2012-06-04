@@ -1,0 +1,39 @@
+<%page args="form" />
+<%namespace file="/common/helpers.html" import="form_item" />
+
+<script type="text/javascript">
+  $(function() {
+    $('#start_at, #end_at').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
+    $('#modal-sales_segment #seat_choice').change(function() {
+      if ($(this).attr('checked')) {
+        $(this).val(${form.seat_choice.default});
+      } else {
+        $(this).val(0);
+      }
+    }).change();
+  });
+</script>
+
+<div id="modal-sales_segment" class="modal fade">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">×</a>
+    <h3>販売方法</h3>
+  </div>
+
+  <form id="edit" action="javascript:save_sales_segment();" method="POST">
+    <div class="modal-body">
+      ${form_item(form.id)}
+      ${form_item(form.event_id)}
+      ${form_item(form.name, option={'maxlength':255})}
+      ${form_item(form.start_at)}
+      ${form_item(form.end_at)}
+      ${form_item(form.upper_limit)}
+      ${form_item(form.seat_choice)}
+    </div>
+
+    <div class="modal-footer">
+      <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+      <input class="btn" type="submit" value="保存"></a>
+    </div>
+  </form>
+</div>

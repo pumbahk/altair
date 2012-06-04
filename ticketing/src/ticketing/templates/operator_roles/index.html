@@ -1,3 +1,23 @@
-<%inherit file="../layout.html" />
-<%block name="title">ロール一覧</%block>
-<%include file="_list.mako" />
+<%inherit file="/layout.html"/>
+<%namespace file="/common/helpers.html" name="h" />
+
+<div class="container row">
+  <div class="span12">
+    ${h.breadcrumbs(
+        names=[u'トップ', u'ロール'],
+        urls=[request.route_path('index')]
+    )}
+  </div>
+
+  <span class="span12">
+    <div class="page-header">
+      <h3>ロール</h3>
+    </div>
+
+    <div class="content">
+      ${h.flash_messages(request)}
+    </div>
+
+    <%include file="/operator_roles/_list.html" args="form=form, roles=roles" />
+  </span>
+</div>

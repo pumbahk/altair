@@ -10,6 +10,7 @@ Altair Ticketing System (|today|)
 
 .. toctree::
    spec/model
+   spec/permission
 
 Indices and tables
 ==================

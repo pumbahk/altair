@@ -1,0 +1,66 @@
+<%page args="form, form_product, performance" />
+<%namespace file="/common/helpers.html" import="form_item" />
+
+<script type="text/javascript">
+  stock_holder2stocks = {
+    % for stock_holder in performance.stock_holders:
+      '${stock_holder.id}':[
+        % for stock in stock_holder.stocks:
+          ['${stock.id}', '${stock.stock_type.name}'],
+        % endfor
+      ],
+    % endfor
+  }
+
+  $(function() {
+    $('#modal-product_item #stock_holders').change(function(){
+      $('#modal-product_item #stock_id').children().remove();
+      stock_ids = stock_holder2stocks[$(this).val()];
+      stock_id_node = window.document.getElementById('stock_id');
+      if (stock_ids) {
+        for (var i = 0; i < stock_ids.length; i++ ) {
+          stock_id_node.options[i] = new Option(stock_ids[i][1], stock_ids[i][0]);
+        }
+        stock_id_node.selectedIndex = 0;
+      }
+    }).change();
+
+    $('#modal-product_item').on('shown', function(){
+      $(this).css('max-height', '750px')
+          .css('margin-top', ($(this).outerHeight()/2)*-1)
+          .css('margin-left',($(this).outerWidth()/2)*-1);
+    });
+  });
+</script>
+
+<div id="modal-product_item" class="modal fade">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">×</a>
+    <h3>商品</h3>
+  </div>
+  <form action="javascript:save_product_item();" method="POST">
+    <div class="modal-body">
+      <fieldset>
+        <div id="product">
+          ${form_item(form_product.name, option={'disabled':'disabled', 'class':'span3'})}
+          ${form_item(form_product.price, option={'disabled':'disabled', 'class':'span3'})}
+          ${form_item(form_product.sales_segment_id, option={'disabled':'disabled', 'class':'span3'})}
+        </div>
+        <div id="product-item">
+          ${form_item(form.id)}
+          ${form_item(form.performance_id)}
+          ${form_item(form.product_id)}
+          ${form_item(form.stock_holders)}
+          ${form_item(form.stock_id)}
+          ${form_item(form.price)}
+          ${form_item(form.quantity)}
+        </div>
+      </fieldset>
+    </div>
+
+    <div class="modal-footer">
+      <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+      <input class="btn" type="submit" value="保存"></a>
+    </div>
+  </form>
+</div>

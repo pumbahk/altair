@@ -1,0 +1,128 @@
+<%inherit file="../layout.html" />
+<%namespace file="/common/helpers.html" import="pager"/>
+<%namespace file="/common/helpers.html" import="flash_messages" />
+<%namespace file="/common/confirm_modal.html" import="delete_modal"/>
+<%namespace file="/common/confirm_modal.html" import="download_modal"/>
+
+<script>
+  $(function() {
+    $('#delete').click(function(){
+      $('#delete-modal').modal('toggle');
+      $('#delete-modal #delete').attr('href', '/newsletters/delete/' + $('input[name=checked_id]:checked').val());
+    });
+
+    $('#edit').click(function(){
+      $(location).attr('href', '/newsletters/edit/' + $('input[name=checked_id]:checked').val());
+    });
+
+    $('#copy').click(function(){
+      $(location).attr('href', '/newsletters/copy/' + $('input[name=checked_id]:checked').val());
+    });
+  });
+
+  function download(id) {
+    $('#download-modal').modal('toggle');
+    $('#download-modal #download').click(function(){
+      $(location).attr('href', '/newsletters/download/' + id);
+      $('#download-modal').modal('hide');
+    });
+  } 
+</script>
+
+<div class="row-fluid">
+  <%include file="_menu.html" />
+
+  <span class="span10">
+    <div class="page-header">
+      <h3>メールマガジン配信リスト</h3>
+    </div>
+
+    <div class="content">
+      ${flash_messages(request)}
+    </div>
+
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th class="minwidth"></th>
+          <th class="minwidth">${self.sortable('id')}</th>
+          <th class="span5">${self.sortable('subject')}</th>
+          <th class="minwidth">${form.subscriber_file.label.text}</th>
+          <th class="minwidth">${self.sortable('subscriber_count')}</th>
+          <th class="minwidth">${self.sortable('status')}</th>
+          <th class="minwidth">${self.sortable('start_on')}</th>
+          <th class="minwidth">${self.sortable('updated_at')}</th>
+        </tr>
+      </thead>
+      <tbody>
+      % for i, newsletter in enumerate(newsletters.items):
+        <tr>
+          <% checked = 'checked=checked' if i == 0 else '' %>
+          <td><input name="checked_id" type="radio" value=${newsletter.id} ${checked} /></td>
+          <td>${newsletter.id}</td>
+          <td><a href="${request.route_path('newsletters.show', id=newsletter.id)}">${newsletter.subject}</a></td>
+          <td>
+            % if newsletter.subscriber_file() is not None:
+              <a href="javascript:download(${newsletter.id})" data-controls-modal="download-modal" data-backdrop="true" data-keyboard="true">
+                <span class="label label-info"><i class="icon-download-alt"></i> ${newsletter.subscriber_file()}</span>
+              </a>
+            % endif
+          </td>
+          <td>${newsletter.subscriber_count}</td>
+          <td>
+            % if newsletter.status == 'editing':
+              <span class="label label-primary">作成中</span>
+            % elif newsletter.status == 'waiting':
+              <span class="label label-warning">配信予約</span>
+            % elif newsletter.status == 'sending':
+              <span class="label label-important">配信中</span>
+            % elif newsletter.status == 'completed':
+              <span class="label label-success">配信完了</span>
+            % endif
+          </td>
+          <td>${newsletter.start_on}</td>
+          <td>${newsletter.updated_at}</td>
+        </tr>
+      % endfor
+      </tbody>
+    </table>
+    ${pager(newsletters)}
+  </span>
+</div>
+
+<div class="ui-toolbar">
+  <div class="btn-group pull-right">                                                                     
+    <button class="btn">
+      <a href="${request.route_path('newsletters.new')}"><i class="icon-plus"></i> 新規</a>
+    </button>
+    <button class="btn">
+      <a id="edit"><i class="icon-pencil"></i> 編集</a>
+    </button>
+    <a id="delete" class="btn" data-controls-modal="delete-modal" data-backdrop="true" data-keyboard="true">
+      <i class="icon-minus"></i> 削除
+    </a>
+    <button class="btn">
+      <a id="copy"><i class="icon-plus"></i> コピー</a>
+    </button>
+  </div>
+</div>
+
+${download_modal(u'送信データファイルをダウンロードします。よろしいですか？')}
+${delete_modal(u'選択したメールマガジンを削除します。よろしいですか？')}
+
+<%def name="sortable(column)">
+  <% column_name = form[column].label.text %>
+  <% sort_column = request.GET.get("sort") if request.GET.get("sort") else "name" %>
+  <% sort_direction = request.GET.get("direction") if request.GET.get("direction") else "asc" %>  
+  <% css_class = "" %>
+  % if (column == sort_column):
+    <% css_class = "current " + sort_direction %>
+  % endif
+    
+  <% direction = "asc" %>
+  % if (column == sort_column and sort_direction == "asc"):
+    <% direction = "desc" %>
+  % endif
+
+  <a href="${request.route_path('newsletters.index')}?sort=${column}&direction=${direction}" class="${css_class}">${column_name}</a>
+</%def>

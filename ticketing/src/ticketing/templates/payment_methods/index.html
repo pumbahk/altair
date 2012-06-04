@@ -1,0 +1,29 @@
+<%inherit file="/layout.html"/>
+<%namespace file="/common/helpers.html" name="h" />
+
+<div class="row-fluid">
+  <%include file="/parts/_menu.html" />
+
+  <div class="span10">
+    ${h.breadcrumbs(
+        names=[u'トップ', u'決済方法'],
+        urls=[request.route_path('index')]
+    )}
+  </div>
+
+  <span class="span10">
+    <div class="page-header">
+      <h3>決済方法</h3>
+    </div>
+
+    <div class="content">
+      ${h.flash_messages(request)}
+    </div>
+
+    <%include file="/payment_methods/_list.html" args="form=form, payment_methods=payment_methods" />
+    <%include file="/payment_methods/_action_button.html" />
+    <div id="payment_methods-form">
+      <%include file="/payment_methods/_form.html" args="form=form" />
+    </div>
+  </span>
+</div>

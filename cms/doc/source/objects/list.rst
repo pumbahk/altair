@@ -2,7 +2,9 @@
 オブジェクト
 ============================
 
-フロント側でのビュー、CMS内部、バックエンドとのやり取りで利用するオブジェクトを定義する。
+フロント側でのビュー、CMS内部で利用するオブジェクトを定義する。
+
+.. todo:: このオブジェクトは実装と合っていないのでアップデートする https://dev.ticketstar.jp/redmine-altair/issues/192 （2012/3/16）
 
 フロントビューおよびCMS内部で使用するオブジェクト
 =================================================
@@ -19,21 +21,7 @@
    movie.rst
    flash.rst
    topic.rst
-   facebook.rst
-   twitter_search.rst
-   twitter_usertimeline.rst
 
-バックエンドとのやり取りに使用するオブジェクト
-=================================================
-
-.. toctree::
-
-   user.rst
    client.rst
-   order_history.rst
    event.rst
-   seatfigure.rst
    performance.rst
-   ticket.rst
-   seattype.rst
-   seat.rst

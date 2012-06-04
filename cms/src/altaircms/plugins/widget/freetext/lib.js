@@ -10,8 +10,11 @@ if(!widget){
         if(!is_initialized){
             tinyMCE.init({
                 mode: "none",
-                theme: "simple", 
-                dialog_type: "modal"
+                // theme: "simple", 
+                theme: "advanced", 
+                dialog_type: "modal", 
+                theme_advanced_font_sizes : "10px,12px,14px,16px,24px", 
+                valid_elements : "a[href|target=_blank],strong/b,div[align],br,h1[class|style],h2[class|style],h3[class|style],h4[class|style],h5[class|style]"
             });
             is_initialized = true;
         }
@@ -19,9 +22,11 @@ if(!widget){
     var load_page = function(we){
         var pk = we.get_pk(we.where);
         var url = "/api/widget/freetext/dialog";
+        var params = {};
         if(!!pk){
-            url += "?" + $.param({"pk": pk});
+            params["Pk"] = pk;
         }
+            url += "?" + $.param(params);
         return we.dialog.load(url);
     };
     var on_dialog = function(we){

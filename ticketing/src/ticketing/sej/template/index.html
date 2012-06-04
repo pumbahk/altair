@@ -1,0 +1,301 @@
+<html>
+<head>
+    <style>
+        label {
+            display: block;
+            float: left;
+            width: 300px;
+        }
+        input {
+            display: block;
+            float: left;
+        }
+        form div {
+            clear: both;
+        }
+    </style>
+</head>
+<body>
+<h2>リクエスト</h2>
+
+<h2>通知</h2>
+<h3>■01:入金発券完了通知</h3>
+<pre>
+**********************************************
+X_shori_id[000000022908]
+X_shori_kbn[01]
+X_shori_time[20110906132611]
+xcode[2152561cbe6ac750c5d0761c5d0be0bb]
+X_shop_id[30516]
+X_torikeshi_riyu[]
+X_shop_order_id[FREEDATADZ98]
+X_tuchi_type[01]
+X_haraikomi_no[2383267576135]
+X_kaishu_cnt[00]
+X_hikikae_no[]
+X_goukei_kingaku[011000]
+X_ticket_cnt[01]
+X_ticket_hon_cnt[01]
+**********************************************
+</pre>
+<form action="${request.route_path('sej.callback')}" method="POST">
+    <div>
+        <label>X_shori_id</label>
+        <input type="text" name="X_shori_id" value="000000022908" />
+    </div>
+    <div>
+        <label>X_shori_kbn</label>
+        <input type="text" name="X_shori_kbn" value="01" />
+    </div>
+    <div>
+        <label>X_shori_time</label>
+        <input type="text" name="X_shori_time" value="20110906132611" />
+    </div>
+    <div>
+        <label>X_shop_id</label>
+        <input type="text" name="X_shop_id" value="30516" />
+    </div>
+    <div>
+        <label>X_torikeshi_riyu</label>
+        <input type="text" name="X_torikeshi_riyu" value="" />
+    </div>
+    <div>
+        <label>X_shop_order_id</label>
+        <input type="text" name="X_shop_order_id" value="FREEDATADZ98" />
+    </div>
+    <div>
+        <label>X_tuchi_type</label>
+        <input type="text" name="X_tuchi_type" value="01" />
+    </div>
+    <div>
+        <label>X_haraikomi_no</label>
+        <input type="text" name="X_haraikomi_no" value="2383267576135" />
+    </div>
+    <div>
+        <label>X_kaishu_cnt</label>
+        <input type="text" name="X_kaishu_cnt" value="00" />
+    </div>
+    <div>
+        <label>X_hikikae_no</label>
+        <input type="text" name="X_hikikae_no" value="" />
+    </div>
+    <div>
+        <label>X_goukei_kingaku</label>
+        <input type="text" name="X_goukei_kingaku" value="011000" />
+    </div>
+    <div>
+        <label>X_ticket_cnt</label>
+        <input type="text" name="X_ticket_cnt" value="01" />
+    </div>
+    <div>
+        <label>X_ticket_hon_cnt</label>
+        <input type="text" name="X_ticket_hon_cnt" value="01" />
+    </div>
+    <div>
+        <label>xcode</label>
+        <input type="text" name="xcode" value="2152561cbe6ac750c5d0761c5d0be0bb" />
+    </div>
+    <div>
+        <input type="submit" value="send">
+    </div>
+</form>
+
+<pre>
+■31:ＳＶＣ強制取消通知
+**********************************************
+X_shori_id[000000035639]
+X_shori_kbn[02]
+X_shori_time[20120505154649]
+xcode[96598d2c6c3d46a3ef60d31146112c03]
+X_shop_id[70090]
+X_torikeshi_riyu[]
+X_shop_order_id[MAEGO1007002]
+X_tuchi_type[31]
+X_haraikomi_no[]
+X_kaishu_cnt[00]
+X_hikikae_no[2482488670315]
+X_goukei_kingaku[000100]
+X_ticket_cnt[01]
+X_ticket_hon_cnt[01]
+**********************************************
+</pre>
+
+<form action="${request.route_path('sej.callback')}" method="POST">
+    <div>
+        <label>X_shori_id</label>
+        <input type="text" name="X_shori_id" value="000000035639" />
+    </div>
+    <div>
+        <label>X_shori_kbn</label>
+        <input type="text" name="X_shori_kbn" value="02" />
+    </div>
+    <div>
+        <label>X_shori_time</label>
+        <input type="text" name="X_shori_time" value="20120505154649" />
+    </div>
+    <div>
+        <label>X_shop_id</label>
+        <input type="text" name="X_shop_id" value="70090" />
+    </div>
+    <div>
+        <label>X_torikeshi_riyu</label>
+        <input type="text" name="X_torikeshi_riyu" value="" />
+    </div>
+    <div>
+        <label>X_shop_order_id</label>
+        <input type="text" name="X_shop_order_id" value="MAEGO1007002" />
+    </div>
+    <div>
+        <label>X_tuchi_type</label>
+        <input type="text" name="X_tuchi_type" value="31" />
+    </div>
+    <div>
+        <label>X_haraikomi_no</label>
+        <input type="text" name="X_haraikomi_no" value="2482488670315" />
+    </div>
+    <div>
+        <label>X_kaishu_cnt</label>
+        <input type="text" name="X_kaishu_cnt" value="00" />
+    </div>
+    <div>
+        <label>X_goukei_kingaku</label>
+        <input type="text" name="X_goukei_kingaku" value="000100" />
+    </div>
+    <div>
+        <label>X_ticket_cnt</label>
+        <input type="text" name="X_ticket_cnt" value="01" />
+    </div>
+    <div>
+        <label>X_ticket_hon_cnt</label>
+        <input type="text" name="X_ticket_hon_cnt" value="01" />
+    </div>
+    <div>
+        <label>xcode</label>
+        <input type="text" name="xcode" value="96598d2c6c3d46a3ef60d31146112c03" />
+    </div>
+    <div>
+        <input type="submit" value="send">
+    </div>
+</form>
+<pre>
+■72:再付番通知
+**********************************************
+X_shori_id[000000022909]
+X_shori_kbn[01]
+X_shori_kbn_new[01]
+X_shori_time[20110906133329]
+xcode[f56afa0609e57f9cd1e82e1c8af5c58d]
+X_shop_id[30516]
+X_shop_order_id[FREEDATADZ98]
+X_tuchi_type[72]
+X_haraikomi_no[2383267576135]
+X_haraikomi_no_new[2386267653271]
+X_hikikae_no[]
+X_hikikae_no_new[]
+X_lmt_time_new[201109061500]
+X_barcode_no_new_01[6200003398898]
+**********************************************
+</pre>
+<form action="${request.route_path('sej.callback')}" method="POST">
+    <div>
+        <label>X_shori_id</label>
+        <input type="text" name="X_shori_id" value="000000035639" />
+    </div>
+    <div>
+        <label>X_shori_kbn</label>
+        <input type="text" name="X_shori_kbn" value="01" />
+    </div>
+    <div>
+        <label>X_shori_time</label>
+        <input type="text" name="X_shori_time" value="20120505154649" />
+    </div>
+    <div>
+        <label>X_shop_id</label>
+        <input type="text" name="X_shop_id" value="70090" />
+    </div>
+    <div>
+        <label>X_torikeshi_riyu</label>
+        <input type="text" name="X_torikeshi_riyu" value="" />
+    </div>
+    <div>
+        <label>X_shop_order_id</label>
+        <input type="text" name="X_shop_order_id" value="MAEGO1007002" />
+    </div>
+    <div>
+        <label>X_tuchi_type</label>
+        <input type="text" name="X_tuchi_type" value="31" />
+    </div>
+    <div>
+        <label>X_haraikomi_no</label>
+        <input type="text" name="X_haraikomi_no" value="2482488670315" />
+    </div>
+    <div>
+        <label>X_kaishu_cnt</label>
+        <input type="text" name="X_kaishu_cnt" value="00" />
+    </div>
+    <div>
+        <label>X_goukei_kingaku</label>
+        <input type="text" name="X_goukei_kingaku" value="000100" />
+    </div>
+    <div>
+        <label>X_ticket_cnt</label>
+        <input type="text" name="X_ticket_cnt" value="01" />
+    </div>
+    <div>
+        <label>X_ticket_hon_cnt</label>
+        <input type="text" name="X_ticket_hon_cnt" value="01" />
+    </div>
+    <div>
+        <label>xcode</label>
+        <input type="text" name="xcode" value="96598d2c6c3d46a3ef60d31146112c03" />
+    </div>
+    <div>
+        <input type="submit" value="send">
+    </div>
+</form>
+<pre>
+■73:期限切れ通知
+**********************************************
+X_shori_id[000000022910]
+X_shori_kbn[01]
+X_shori_time[20110906150203]
+xcode[d213cf752723fdfae00339e73dff0c2e]
+X_shop_id[30516]
+X_shop_order_id[FREEDATADZ98]
+X_tuchi_type[73]
+X_lmt_time[201109061500]
+X_hikikae_no[]
+X_haraikomi_no[2386267653271]
+**********************************************
+
+</pre>
+
+<h2>リクエスト済み発券</h2>
+<table class="table fullwidth checkboxed_table">
+  <thead>
+    <tr>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+  % for item in list:
+    <tr>
+      <td>${item.order_id}</td>
+      <td>${item.exchange_number}</td>
+      <td>${item.billing_number}</td>
+      <td>${item.exchange_sheet_url}</td>
+      <td>${item.exchange_sheet_number}</td>
+      <td>
+          <form action="${item.exchange_sheet_url}" method="POST">
+              <input type="hidden" name="iraihyo_id_00" value="${item.exchange_sheet_number}">
+              <input type="submit" name="" value="表示">
+          </form>
+      </td>
+    </tr>
+  % endfor
+</tbody>
+</table>
+
+
+</body>
+</html>

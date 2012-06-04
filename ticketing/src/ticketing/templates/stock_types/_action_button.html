@@ -1,0 +1,125 @@
+<%page args="event, performance=None, order=None" />
+<%namespace file="/common/helpers.html" import="action_button" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+
+<%block name="style">
+<link rel="stylesheet" type="text/css" href="/static/css/kolorpicker.css" />
+<script type="text/javascript" src="/static/js/jquery.kolorpicker.js"></script>
+</%block>
+
+<script type="text/javascript">
+  function new_stock_type() {
+    $('#modal-stock_type').modal('toggle');
+  }
+  function edit_stock_type(id) {
+    var id = id || get_id('stock_type_id');
+    if (!id) return;
+    var el = '#stock_type-' + id;
+    var modal = $('#modal-stock_type');
+    modal.find('#id').val(id);
+    modal.find('#name').val($(el).attr('name'));
+    if ($(el).attr('type') == '1') {
+      modal.find('#type').attr('checked', 'checked');
+    }
+    var data = JSON.parse($(el).attr('data'));
+    if (data) {
+      modal.find('#text').val(data.text);
+      modal.find('#text_color').val(data.text_color);
+      if (data.fill) {
+        modal.find('#fill_color').val(data.fill.color);
+        modal.find('#fill_type').val(data.fill.type);
+        modal.find('#fill_image').val(data.fill.image);
+      }
+      if (data.stroke) {
+        modal.find('#stroke_color').val(data.stroke.color);
+        modal.find('#stroke_width').val(data.stroke.width);
+        modal.find('#stroke_patten').val(data.stroke.pattern);
+      }
+    }
+    modal.modal('toggle');
+  }
+  function delete_stock_type() {
+    var id = get_id('stock_type_id');
+    if (!id) return;
+    var modal = $('#modal-delete');
+    modal.find('#delete').attr('href', '/events/stock_types/delete/' + id);
+    modal.find('#message').text('選択した席種を削除します。よろしいですか？');
+    modal.modal('toggle');
+  }
+  function save_stock_type() {
+    var modal = '#modal-stock_type';
+    var form = '#stock_types-form';
+    var id = $(modal).find('#id').val();
+    var url = id ? '/events/stock_types/edit/' + id : '/events/stock_types/new/${event.id}';
+    post_modal_form(modal, form, url);
+  }
+
+  % if performance:
+  function stock_allocate() {
+    var id = get_id('stock_type_id');
+    if (!id) return;
+    var el = '#stock_type-' + id;
+    var modal = $('#modal-stock_allocation');
+    modal.find('#stock_type_id').val(id);
+    modal.find('#performance_id').val(${performance.id});
+    modal.find('#quantity').val($(el).attr('quantity'));
+    modal.modal('toggle');
+  }
+  function save_stock_allocation() {
+    var id = get_id('stock_type_id');
+    if (!id) return;
+    var el = '#stock_type-' + id;
+    var modal = $('#modal-stock_allocation');
+    var form = $('#stock_allocations-form');
+    var url = '/events/stock_types/allocate/';
+    var n = $('#seat_l0_id');
+    modal.find('#stock_type_id').val(id);
+    modal.find('#venue_id').val(${performance.venue.id});
+    modal.find('#performance_id').val(${performance.id});
+    modal.find('#quantity').val($(el).attr('quantity'));
+    for (var seat_l0_id in $('#venue-map > :eq(1)').venueviewer('selection')) {
+      n.append(
+        $('<input type="text" />').attr({
+          name: "seat_l0_id",
+          value: seat_l0_id
+        })
+      );
+    }
+    post_modal_form(modal, form, url);
+  }
+  % endif
+</script>
+
+<%
+  actions = {
+    'new':dict(
+      label=u'新規',
+      url='javascript:new_stock_type();',
+      icon='icon-plus',
+    ),
+    'edit':dict(
+      label=u'編集',
+      url='javascript:edit_stock_type();',
+      icon='icon-pencil',
+    ),
+    'delete':dict(
+      label=u'削除',
+      url='javascript:delete_stock_type();',
+      icon='icon-minus',
+    ),
+    'allocate':dict(
+      label=u'選択した座席を割り当てる',
+      url='javascript:save_stock_allocation()',
+      icon='icon-ok',
+    ),
+    'stock':dict(
+      label=u'在庫数を入力する',
+      url='javascript:stock_allocate();',
+      icon='icon-pencil',
+    ),
+  }
+  order = iter(order or ['new', 'edit', 'delete'])
+%>
+${action_button(actions, order)}
+
+${delete_modal()}

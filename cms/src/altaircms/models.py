@@ -1,225 +1,237 @@
 # coding: utf-8
+# -*- coding:utf-8 -*-
+
+import sqlalchemy as sa
+from sqlalchemy.ext.declarative import declared_attr
+
 from datetime import datetime
-
-from sqlalchemy import Column
-from sqlalchemy import Integer
-from sqlalchemy import Unicode
-from sqlalchemy import String
-from sqlalchemy import ForeignKey
-from sqlalchemy import DateTime
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.ext.declarative import declarative_base, declared_attr
-from sqlalchemy.orm import relationship
-from zope.sqlalchemy import ZopeTransactionExtension
-
 import sqlahelper
-import transaction
+import sqlalchemy.orm as orm
+from sqlalchemy import (Column, Integer, Unicode, String, ForeignKey, DateTime, Boolean)
+from sqlalchemy.orm import relationship
 
-DBSession = sqlahelper.get_session()
-Base = sqlahelper.get_base()
+from sqlalchemy.sql.operators import ColumnOperators
 
-def to_dict(self):
-    from sqlalchemy.sql.operators import ColumnOperators
-    return {k:getattr(self, k) for k, v in self.__class__.__dict__.items() \
+import pkg_resources
+def import_symbol(symbol):
+    return pkg_resources.EntryPoint.parse("x=%s" % symbol).load(False)
+
+def model_to_dict(obj):
+    return {k: getattr(obj, k) for k, v in obj.__class__.__dict__.iteritems() \
                 if isinstance(v, ColumnOperators)}
-Base.to_dict = to_dict
 
-
-def column_items(self):
-    from sqlalchemy.sql.operators import ColumnOperators
-    return [(k, v) for k, v in self.__class__.__dict__.items()\
-                if isinstance(v, ColumnOperators)]
-Base.column_items = column_items
-
-
-def column_iters(self, D):
-    from sqlalchemy.sql.operators import ColumnOperators
-    for k, v in self.__class__.__dict__.items():
-        if isinstance(v, ColumnOperators):
-            yield k, D.get(k)
-    Base.column_iters = classmethod(column_iters)
-
-
-def from_dict(cls, D):
-    instance = cls()
+def model_from_dict(modelclass, D):
+    instance = modelclass()
     items_fn = D.iteritems if hasattr(D, "iteritems") else D.items
     for k, v in items_fn():
         setattr(instance, k, v)
     return instance
-Base.from_dict = classmethod(from_dict)
+
+def model_column_items(obj):
+    return [(k, v) for k, v in obj.__class__.__dict__.items()\
+                if isinstance(v, ColumnOperators)]
+
+def model_column_iters(modelclass, D):
+    for k, v in modelclass.__dict__.items():
+        if isinstance(v, ColumnOperators):
+            yield k, D.get(k)
+            
+class BaseOriginalMixin(object):
+    def to_dict(self):
+        return model_to_dict(self)
+
+    def column_items(self):
+        return model_column_items(self)
+
+    @classmethod
+    def column_iters(cls, D):
+        return model_column_iters(cls, D)
+
+    @classmethod
+    def from_dict(cls, D):
+        return model_from_dict(cls, D)
+    
+Base = sqlahelper.get_base()
+DBSession = sqlahelper.get_session()
 
 
-def populate():
-    session = DBSession()
-    session.flush()
-    transaction.commit()
+def initialize_sql(engine, dropall=False):
 
-
-def initialize_sql(engine):
-    Base.metadata.bind = engine
-    DBSession.bind = engine
+    DBSession.remove()
+    DBSession.configure(bind=engine)
+    if dropall:
+        Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
-    try:
-        populate()
-    except IntegrityError:
-        transaction.abort()
-
+    return DBSession
 
 ###
 ### ここからCMS用モデル
 ###
 
-class BaseMixin(object):
-    @declared_attr
-    def __tablename__(self):
-        return self.__name__.lower()
+"""
+このあたりevent/models.pyに移動した方が良い。
+"""
 
-    id = Column(Integer, primary_key=True)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
-
-
-class Event(Base):
-    """
-    イベント
-
-    @TODO: 席図、席種、券種をくっつける
-    """
-    __tablename__ = "event"
-
-    id = Column(Integer, primary_key=True)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
-
-    title = Column(Unicode)
-    subtitle = Column(Unicode)
-    description = Column(Unicode)
-    place = Column(Unicode)
-    inquiry_for = Column(Unicode)
-    event_open = Column(DateTime)
-    event_close = Column(DateTime)
-    deal_open = Column(DateTime)
-    deal_close = Column(DateTime)
-
-    is_searchable = Column(Integer, default=0)
-
-    client_id = Column(Integer, ForeignKey("client.id"))
-
-    def __unicode__(self):
-        return self.title
-
-    def __html__(self):
-        return self.title
-
-
-class ClientMixin(object):
-    @declared_attr
-    def client_id(self):
-        Column(Integer, ForeignKey("client.id")) # ForeignKeyはdeclared_attrにしないといかん
-
-    @declared_attr
-    def client(self):
-        relationship("Client")
-
-
-class Performance(Base):
+PDICT = import_symbol("altaircms.seeds.prefecture:PrefectureMapping")
+class Performance(BaseOriginalMixin, Base):
     """
     パフォーマンス
     """
     __tablename__ = "performance"
+    query = DBSession.query_property()
 
     id = Column(Integer, primary_key=True)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
+    backend_id = Column(Integer, nullable=False)
+    event_id = Column(Integer, ForeignKey('event.id'))
+    client_id = Column(Integer, ForeignKey("client.id"))
 
-    title = Column(Unicode)
-    performance_open = Column(DateTime)
-    performance_close = Column(DateTime)
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
-    client_id = Column(Integer, ForeignKey("event.id"))
+    title = Column(Unicode(255))
+    venue = Column(Unicode(255)) #開催地
+    prefecture = Column(sa.Enum(*import_symbol("altaircms.seeds.prefecture:PREFECTURE_ENUMS"))) #開催地(県)
+    open_on = Column(DateTime)  # 開場
+    start_on = Column(DateTime)  # 開始
+    end_on = Column(DateTime)  # 終了
 
+    purchase_link = Column(sa.UnicodeText)
+    canceld = Column(Boolean, default=False)
+    # sale = relationship("Sale", backref=orm.backref("performances", order_by=id))
+    event = relationship("Event", backref=orm.backref("performances", order_by=start_on))
+    # client = relationship("Client", backref=orm.backref("performances", order_by=id))
 
-class Seatfigure(Base):
-    """
-    席図
-    """
-    __tablename__ = "seatfigure"
+    @property
+    def jprefecture(self):
+        return PDICT.name_to_label.get(self.prefecture, u"--")
 
-    id = Column(Integer, primary_key=True)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
-
-    figure_url = Column(String)
-    controller_url = Column(String)
-
-    client_id = Column(Integer, ForeignKey("event.id"))
-
-class Seattype(Base):
-    """
-    席種
-    """
-    __tablename__ = "seattype"
+class Sale(BaseOriginalMixin, Base):
+    __tablename__ = 'sale'
+    query = DBSession.query_property()
 
     id = Column(Integer, primary_key=True)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
+    performance_id = Column(Integer, ForeignKey('performance.id'))
+    performance = relationship("Performance", backref=orm.backref("sales", order_by=id))
 
-    client_id = Column(Integer, ForeignKey("event.id"))
+    name = Column(String(255))
+    start_on = Column(DateTime)
+    end_on = Column(DateTime)
 
 
-class Ticket(Base):
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+
+
+class Ticket(BaseOriginalMixin, Base):
     """
     券種
     """
     __tablename__ = "ticket"
+    query = DBSession.query_property()
 
     id = Column(Integer, primary_key=True)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
+    orderno = Column(Integer)
+    sale_id = Column(Integer, ForeignKey("sale.id"))
+    event_id = Column(Integer, ForeignKey("event.id"))
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now)
     price = Column(Integer, default=0)
 
+    sale = relationship("Sale", backref=orm.backref("tickets", order_by=orderno))
+    event = relationship("Event", backref=orm.backref("tickets", order_by=orderno))
+
     client_id = Column(Integer, ForeignKey("performance.id"))
-    seattype_id = Column(Integer, ForeignKey("seattype.id"))
+    seattype = Column(Unicode(255))
 
 
-class TopicType(Base):
-    __tablename__ = 'topic_type'
-
-    id = Column(Integer, primary_key=True)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
-    client_id = Column(Integer, ForeignKey('client.id'))
-
-    type = Column(Integer)
-
-
-class Topic(Base):
-    __tablename__ = "topic"
+class Seatfigure(BaseOriginalMixin, Base):
+    """
+    席図
+    """
+    __tablename__ = "seatfigure"
+    query = DBSession.query_property()
 
     id = Column(Integer, primary_key=True)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
-    topic_type_id = Column(Integer, ForeignKey('topic_type.id'))
-    title = Column(Unicode)
-    text = Column(Unicode)
+    figure_url = Column(String(255))
+    controller_url = Column(String(255))
 
-    is_public = Column(Integer, default=0)
-    publish_at = Column(DateTime)
+    client_id = Column(Integer, ForeignKey("event.id"))
 
 
-    site_id = Column(Integer, ForeignKey("site.id"))
 
 
-class Site(Base):
+class Site(BaseOriginalMixin, Base):
     __tablename__ = "site"
+    query = DBSession.query_property()
 
     id = Column(Integer, primary_key=True)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
-    name = Column(Unicode)
-    description = Column(Unicode)
-    url = Column(String)
+    name = Column(Unicode(255))
+    description = Column(Unicode(255))
+    url = Column(String(255))
 
     client_id = Column(Integer, ForeignKey("client.id")) #@TODO: サイトにくっつけるべき？
+    client = relationship("Client", backref="site", uselist=False) ##?
+
+class Category(Base):
+    """
+    サイト内カテゴリマスター
+
+    hierarchy:   大      中      小
+    　　　　　　  音楽
+    　　　　　　　　　　　邦楽
+                                  ポップス・ロック（邦楽）
+
+                  スポーツ
+　　　　　　　　　　　　　野球
+　　　　　　　　　　　　　　　　　プロ野球
+　　　　　　　　　演劇
+　　　　　　　　　　　　　ミュージカル
+                                  劇団四季
+                  イベント(static page)
+
+    ※ このオブジェクトは、対応するページへのリンクを持つ(これはCMSで生成されないページへのリンクで有る場合もある)
+
+    nameはhtml要素のclass属性などに使われる(cssで画像を付加するためなどに).
+    nameはascii only
+    labelはカテゴリ名(imgのalt属性に使われることがある)
+    e.g. name=music,  label=音楽
+    """
+    __tablename__ = "category"
+    __tableargs__ = (
+        sa.UniqueConstraint("site_id", "name")
+        )
+    query = DBSession.query_property()
+    id = sa.Column(sa.Integer, primary_key=True)
+
+    site_id = sa.Column(sa.Integer, sa.ForeignKey("site.id"))
+    site = orm.relationship("Site", backref="categories", uselist=False)
+    parent_id = sa.Column(sa.Integer, sa.ForeignKey("category.id"))
+    parent = orm.relationship("Category", remote_side=[id], backref="children", uselist=False)
+    #parent = orm.relationship("Category", remote_side=[id], uselist=False, cascade="all")
+
+    label = sa.Column(sa.Unicode(length=255))
+    imgsrc = sa.Column(sa.String(length=255))
+    name = sa.Column(sa.String(length=255))
+    hierarchy = sa.Column(sa.Unicode(length=255), nullable=False)
+    
+    url = sa.Column(sa.Unicode(length=255))
+    pageset_id = sa.Column(sa.Integer, sa.ForeignKey("pagesets.id"))
+    pageset = orm.relationship("PageSet", backref="category", uselist=False)
+    orderno = sa.Column(sa.Integer)
+
+    @classmethod
+    def get_toplevel_categories(cls, hierarchy=u"大", site=None, request=None): ## fixme
+        if site is None and request and hasattr(request,"site"):
+            site = request.site
+            return cls.query.filter(cls.site==site, cls.hierarchy==hierarchy, cls.parent==None)
+        else:
+            ## 本当はこちらは存在しないはず。
+            ## request.siteはまだ未実装。
+            return cls.query.filter(cls.hierarchy==hierarchy, cls.parent==None)
+

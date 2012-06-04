@@ -6,9 +6,10 @@ class FreetextWidgetView(object):
 
     def _create_or_update(self):
         freetext = self.request.json_body["data"]["freetext"]
+        page_id = self.request.json_body["page_id"]
         context = self.request.context
-        widget = context.get_freetext_widget(self.request.json_body.get("pk"))
-        widget = context.update_data(widget, text=freetext)
+        widget = context.get_widget(self.request.json_body.get("pk"))
+        widget = context.update_data(widget, text=freetext, page_id=page_id)
         context.add(widget, flush=True)
 
         r = self.request.json_body.copy()
@@ -26,12 +27,12 @@ class FreetextWidgetView(object):
     @view_config(route_name="freetext_widget_delete", renderer="json", request_method="POST")
     def delete(self):
         context = self.request.context
-        widget = context.get_freetext_widget(self.request.json_body["pk"])
+        widget = context.get_widget(self.request.json_body["pk"])
         context.delete(widget, flush=True)
         return {"status": "ok"}
 
     @view_config(route_name="freetext_widget_dialog", renderer="altaircms.plugins.widget:freetext/dialog.mako", request_method="GET")
     def dialog(self):
         context = self.request.context
-        widget = context.get_freetext_widget(self.request.GET.get("pk"))
+        widget = context.get_widget(self.request.GET.get("pk"))
         return {"widget": widget}

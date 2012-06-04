@@ -1,0 +1,56 @@
+<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+
+<script type="text/javascript">
+  function new_delivery_method() {
+    $('#modal-delivery_method').modal('toggle');
+  }
+  function edit_delivery_method(id) {
+    id = id || get_id('delivery_method_id');
+    if (!id) return;
+    var el = '#delivery_method-' + id;
+    var modal = $('#modal-delivery_method');
+    modal.find('#id').val(id);
+    modal.find('#name').val($(el + ' #name').text());
+    modal.modal('toggle');
+  }
+  function delete_delivery_method() {
+    var id = get_id('delivery_method_id');
+    if (!id) return;
+    var modal = $('#modal-delete');
+    modal.find('#delete').attr('href', '/delivery_methods/delete/' + id);
+    modal.find('#message').text('選択した配送方法を削除します。よろしいですか？');
+    modal.modal('toggle');
+  }
+  function save_delivery_method() {
+    var modal = '#modal-delivery_method';
+    var form = '#delivery_methods-form';
+    var id = $(modal + ' #id').val();
+    var url = id ? '/delivery_methods/edit/' + id : '/delivery_methods/new';
+    post_modal_form(modal, form, url);
+  }
+</script>
+
+<%
+  actions = {
+    'new':dict(
+      label=u'新規',
+      url='javascript:new_delivery_method();',
+      icon='icon-plus',
+    ),
+    'edit':dict(
+      label=u'編集',
+      url='javascript:edit_delivery_method();',
+      icon='icon-pencil',
+    ),
+    'delete':dict(
+      label=u'削除',
+      url='javascript:delete_delivery_method();',
+      icon='icon-minus',
+    ),
+  }
+  order = iter(['new', 'edit', 'delete'])
+%>
+${h.action_button(actions, order)}
+
+${delete_modal()}

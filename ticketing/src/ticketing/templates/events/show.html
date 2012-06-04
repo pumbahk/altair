@@ -1,149 +1,118 @@
-<%inherit file="../layout.html" />
-<%block name="title">${event.title}</%block>
-<div class="section">
-  <div class="section-main">
-    <div class="section-main-content">
-      <div class="ui-toolbar">
-        <a href="${request.route_path('admin.events.edit', event_id=event.id)}" class="ui-button">編集</a>
-        <a href="${request.route_path('admin.events.new',event_id=event.id)}" class="ui-button">コピーして新規</a>
-        <a href="${request.route_path('admin.events.delete', event_id=event.id)}" class="ui-button">削除</a>
-		<a href="" class="ui-button">チケット券面プレビュー</a>
-      </div>
-      <div class="twocolumns">
-        <div class="first column">
-          <div class="column-main">
-            <div class="column-main-content">
-              <table class="vertical-table fullwidth">
-                <tbody>
-                  <tr>
-                    <th>名称</th>
-                    <td>${event.title}</td>
-                  </tr>
-                  <tr>
-                    <th>略称</th>
-                    <td>${event.abbreviated_title}</td>
-                  </tr>
-                  <tr>
-                    <th>表示名</th>
-                    <td>${event.code}</td>
-                  </tr>
-                  <tr>
-                    <th>クライアント</th>
-                    <td>
-                      <ul>
-                        <li>○○プロモーション株式会社 ○○様</li>
-                      </ul>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-        <div class="column">
-          <div class="column-main">
-            <div class="column-main-content">
-              <table class="vertical-table fullwidth">
-                <tbody>
-                  <tr>
-                    <th>会場</th>
-                    <td>
-                      <ul>
-                        <li>さいたまスーパーアリーナ (1/5, 1/6)</li>
-                      </ul>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th>販売開始日時</th>
-                    <td>2011/10/1 10:00</td>
-                  </tr>
-                  <tr>
-                    <th>販売終了日時</th>
-                    <td>2011/11/30 23:59</td>
-                  </tr>
-                  <tr>
-                    <th>開演日時</th>
-                    <td>${event.start_on}(<a href="${request.route_path('admin.performances.show', event_id=1, performance_id=1)}">○○○○東京公演</a>)</td>
-                  </tr>
-                  <tr>
-                    <th>最終公演</th>
-                    <td>${event.end_on}(<a href="${request.route_path('admin.performances.show', event_id=1, performance_id=3)}">○○○○大阪公演</a>)</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+<%inherit file="/layout.html" />
+<%namespace file="/common/helpers.html" import="validate_errors" />
+<%namespace file="/common/helpers.html" import="alert_message" />
+<%namespace file="/common/helpers.html" import="flash_messages" />
+<%namespace file="/common/helpers.html" import="form_item" />
+<%namespace file="/common/helpers.html" import="safe_strftime" />
+<%namespace file="/common/helpers.html" import="breadcrumbs" />
+
+<div class="row-fluid">
+  <%include file="/parts/_menu.html" />
+
+  <div class="span10">
+    ${breadcrumbs(
+        names=[u'イベント', event.title],
+        urls=[request.route_path('events.index')]
+    )}
+  </div>
+
+  <span class="span10">
+    <div class="page-header">
+      <h3 style="word-wrap: break-word;">${event.title}</h3>
+    </div>
+
+    <div class="content">
+      ${flash_messages(request)}
+    </div>
+
+    <table class="table table-bordered fullwidth">
+      <tbody>
+        <tr>
+          <th class="span3">${form.title.label.text}</th>
+          <td>${event.title}</td>
+        </tr>
+        <tr>
+          <th>${form.abbreviated_title.label.text}</th>
+          <td>${event.abbreviated_title}</td>
+        </tr>
+        <tr>
+          <th>${form.code.label.text}</th>
+          <td>${event.code}</td>
+        </tr>
+        <tr>
+          <th>${form.account_id.label.text}</th>
+          <td>${event.account.name} 様</td>
+        </tr>
+        <tr>
+          <th>販売開始日時</th>
+          <td>${safe_strftime(event.sales_start_on)}</td>
+        </tr>
+        <tr>
+          <th>販売終了日時</th>
+          <td>${safe_strftime(event.sales_end_on)}</td>
+        </tr>
+        <tr>
+          <th>${form.start_on.label.text}</th>
+          <td>${safe_strftime(event.start_on)}
+            % if event.start_performance:
+            (<a href="${request.route_path('performances.show', event_id=event.id, performance_id=event.start_performance.id)}">
+             ${event.start_performance.venue.name} 公演 </a>)
+            % endif
+          </td>
+        </tr>
+        <tr>
+          <th>${form.end_on.label.text}</th>
+          <td>${safe_strftime(event.end_on)}
+            % if event.final_performance:
+            (<a href="${request.route_path('performances.show', event_id=event.id, performance_id=event.final_performance.id)}">
+              ${event.final_performance.venue.name} 公演 </a>)
+            % endif
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <%include file="/events/_action_button.html" args="event=event, order=['edit', 'delete']" />
+
+    <hr />
+
+    <div id="stock_types">
+      <h3>席種</h3>
+      <%include file="/stock_types/_list.html" args="stock_types=event.stock_types, limit=5" />
+      <%include file="/stock_types/_action_button.html" args="event=event" />
+      <div id="stock_types-form">
+        <%include file="/stock_types/_form.html" args="form=form_stock_type" />
       </div>
     </div>
-  </div>
-</div>
-<div class="section">
-  <div class="section-content">
-    <div class="ui-tabs">
-      <ul>
-        <li><a href="#performances">パフォーマンス</a></li>
-        <li><a href="#venue-seattype-pairs">会場席種マスタ</a></li>
-        <li><a href="#tickettypes">券種</a></li>
-        <li><a href="#purchasables">商品</a></li>
-      </ul>
-      <div id="performances" class="subsection">
-        <div class="subsection-header">
-          <div class="subsection-header-content">
-            <h2>パフォーマンス一覧</h2>
-          </div>
-        </div>
-        <div class="subsection-main">
-          <div class="subsection-main-content">
-            <%include file="../performances/_list.mako" />
-          </div>
-        </div>
-      </div>
-      <div id="venue-seattype-pairs" class="section">
-        <h2 class="section-header">会場席種マスタ一覧</h2>
-        <div class="section-content">
-          <div class="ui-toolbar">
-            <a href="${request.route_path('admin.performances.new', event_id=1)}" class="ui-button">新規登録</a>
-            <a href="#" class="ui-button">まとめて編集</a>
-            <a href="#" class="ui-button">まとめて削除</a>
-          </div>
-          <form>
-            <table class="table fullwidth">
-              <thead>
-                <tr>
-                  <th class="minwidth">-</th>
-                  <th>ID</th>
-                  <th>名称</th>
-                  <th>会場名</th>
-                  <th>元マスタ</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><input type="checkbox" /></td>
-                  <td>13</td>
-                  <td>1/5, 6 さいたまスーパーアリーナ</td>
-                  <td>さいたまスーパーアリーナ</td>
-                  <td>さいたまスーパーアリーナ</td>
-                </tr>
-                <tr>
-                  <td><input type="checkbox" /></td>
-                  <td>16</td>
-                  <td>1/7 中之島ビッグトップ</td>
-                  <td>中之島ビッグトップ</td>
-                  <td>中之島ビッグトップ</td>
-                </tr>
-              </tbody>
-            </table>
-          </form>
-        </div>
-      </div>
-      <div id="tickettypes">
-        <h2>券種一覧</h2>
-      </div>
-      <div id="purchasables">
-        <h2>商品一覧</h2>
+
+    <hr />
+
+    <div id="sales_segments">
+      <h3>販売区分</h3>
+      <%include file="/sales_segments/_list.html" args="form=form_sales_segment, sales_segments=event.sales_segments, limit=5" />
+      <%include file="/sales_segments/_action_button.html" args="form=form_sales_segment, event=event" />
+      <div id="sales_segments-form">
+        <%include file="/sales_segments/_form.html" args="form=form_sales_segment" />
       </div>
     </div>
-  </div>
+
+    <hr />
+
+    <div id="products">
+      <h3>商品</h3>
+      <%include file="/products/_list.html" args="form=form_product, products=event.products, limit=5" />
+      <%include file="/products/_action_button.html" />
+      <div id="products-form">
+        <%include file="/products/_form.html" args="form=form_product" />
+      </div>
+    </div>
+
+    <hr />
+
+    <div id="performances">
+      <h3>パフォーマンス</h3>
+      <%include file="/performances/_list.html" args="form=form_performance, performances=event.performances, limit=5" />
+      <%include file="/performances/_action_button.html"  args="event=event" />
+    </div>
+
+  </span>
 </div>

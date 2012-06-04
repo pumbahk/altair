@@ -1,0 +1,14 @@
+<%page args="performance, form_product, form_product_item=None" />
+
+<div style="margin-bottom: 20px;">
+  <%include file="/products/_action_button.html" args="event=performance.event, performance=performance" />
+</div>
+<%include file="/products/_list.html" args="form=form_product, products=performance.event.products, performance=performance" />
+<div id="products-form">
+  <%include file="/products/_form.html" args="form=form_product" />
+</div>
+
+<%include file="/product_items/_action_button.html" args="performance=performance" />
+<div id="product_items-form">
+  <%include file="/product_items/_form.html" args="form=form_product_item, form_product=form_product, performance=performance" />
+</div>

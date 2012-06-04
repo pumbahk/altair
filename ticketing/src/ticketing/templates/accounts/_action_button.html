@@ -1,0 +1,56 @@
+<%namespace file="/common/helpers.html" import="action_button" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+
+<script type="text/javascript">
+  function new_account() {
+    $('#modal-account').modal('toggle');
+  }
+  function edit_account() {
+    var id = get_id('account_id');
+    if (!id) return;
+    var el = '#account-' + id;
+    var modal = $('#modal-account');
+    modal.find('#id').val(id);
+    modal.find('#name').val($(el + ' #name').text());
+    modal.modal('toggle');
+  }
+  function delete_account() {
+    var id = get_id('account_id');
+    if (!id) return;
+    var modal = $('#modal-delete');
+    modal.find('#delete').attr('href', '/accounts/delete/' + id);
+    modal.find('#message').text('選択したクライアントを削除します。よろしいですか？');
+    modal.modal('toggle');
+  }
+  function save_account() {
+    var modal = '#modal-account';
+    var form = '#accounts-form';
+    var id = $(modal + ' #id').val();
+    var url = id ? '/accounts/edit/' + id : '/accounts/new';
+    post_modal_form(modal, form, url);
+  }
+</script>
+
+<%
+  actions = {
+    'new':dict(
+      label=u'新規',
+      url='javascript:new_account();',
+      icon='icon-plus',
+    ),
+    'edit':dict(
+      label=u'編集',
+      url='javascript:edit_account();',
+      icon='icon-pencil',
+    ),
+    'delete':dict(
+      label=u'削除',
+      url='javascript:delete_account();',
+      icon='icon-minus',
+    ),
+  }
+  order = iter(['new', 'edit', 'delete'])
+%>
+${action_button(actions, order)}
+
+${delete_modal()}

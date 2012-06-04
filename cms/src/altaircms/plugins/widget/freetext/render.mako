@@ -1,4 +1,2 @@
 ## フリーテキストウィジェットテンプレート
-<div>
-    ${widget.text|n}
-</div>
+${widget.text|n}

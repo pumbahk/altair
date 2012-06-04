@@ -1,7 +1,29 @@
-#wrapped {
-    width: 600px;
+/* control */
+.clear {
+    clear: both;
+}
+.hidden {
+    display: none;
 }
 
+.float-left {
+    float: left;
+}
+
+.selected {
+	/* border-style: groove;
+	 * boder-width: 5px;
+	 * border-color: blue;
+     */
+    background-color: #eee;
+}
+
+.noitem {
+    height: 60px;
+}
+
+
+/* object */
 .block {
     background-color: #aaa;
     border-style: solid;
@@ -23,37 +45,108 @@
     margin-top: 1%;
     margin-bottom: 1%;
 	width: 95%;
-    style: center;
     background-color: #ffffaa;
 }
-
-/* control */
-.float-left {
-    float: left;
-}
-
-.selected {
-	/* border-style: groove;
-	 * boder-width: 5px;
-	 * border-color: blue;
-     */
-    background-color: #eee;
-}
-
 
 .edited {
     background-color: #ccf;
 }
-
-.noitem {
-    height: 60px;
+.dropped-widget+.edited {
+    background-color: #ccf;
 }
 
-.clear {
-    clear: both;
+/* container */
+.simple_overlay {
+	width:675px;	
 }
 
-.hidden {
-    display: none;
+#wrapped {
+    width: 600px;
 }
 
+/* selected element */
+div.selected {
+	/* border-style: groove;
+	 * boder-width: 5px;
+	 * border-color: blue;
+     */
+    background-color: #ccc;
+}
+
+#selected_layout ul {
+    list-style: none;
+	padding: 0px;
+	margin: 0px;
+}
+
+img.managed {
+    border-style: solid;
+	border-width: 5px;
+	border-color: orange;
+}
+
+img.selected {
+    border-style: solid;
+	border-width: 5px;
+	border-color: #ccc;
+}
+
+
+/* close button */
+.dropped-widget .close, .dropped-widget .edit {
+    visibility: hidden;;
+}
+
+.selected .close, .selected .edit {
+    visibility: visible;
+}
+
+#triggers {
+	text-align:center;
+}
+
+/* styling for elements inside overlay */
+.details {
+	position:absolute;
+	top:15px;
+	right:15px;
+	font-size:11px;
+	color:#fff;
+	width:150px;
+}
+
+.details h3 {
+	color:#aba;
+	font-size:15px;
+	margin:0 0 -10px 0;
+}
+
+.simple_overlay > div{
+	margin-left: 20px;
+	margin-top: 20px;
+}
+
+
+.simple_overlay h1{
+    color:#fff
+}
+.simple_overlay .selected{
+    background-color: #ff0000;
+}
+
+.ui-state-highlight, .ui-widget-content .ui-state-highlight, .ui-widget-header .ui-state-highlight  {border: none;}
+.ui-state-hover, .ui-widget-content .ui-state-hover, .ui-widget-header .ui-state-hover, .ui-state-focus, .ui-widget-content .ui-state-focus, .ui-widget-header .ui-state-focus { border: none;}
+
+.tooltip h2 {
+  background-color:#ee8;
+}
+.tooltip {
+  display:none;
+  background-color:#ffa;
+  border:1px solid #cc9;
+  padding:3px;
+  width: 600px;
+  font-size:13px;
+  -moz-box-shadow: 2px 2px 11px #666;
+  -webkit-box-shadow: 2px 2px 11px #666;
+}

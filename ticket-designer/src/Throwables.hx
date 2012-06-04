@@ -12,6 +12,15 @@ class Throwables implements Throwable {
         this.throwables_.push(throwable);
     }
 
+    public function toString() {
+        var retval:String = "";
+        for (throwable in throwables_) {
+            retval += throwable.toString();
+            retval += "\n--\n";
+        }
+        return retval;
+    }
+
     private function get_message(): String {
         return "multiple throwables";
     }

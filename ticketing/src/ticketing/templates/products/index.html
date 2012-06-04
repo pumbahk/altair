@@ -1,0 +1,30 @@
+<%inherit file="/layout.html"/>
+<%namespace file="/common/helpers.html" import="flash_messages" />
+<%namespace file="/common/helpers.html" import="breadcrumbs" />
+
+<div class="row-fluid">
+  <%include file="/parts/_menu.html" />
+
+  <div class="span10">
+    ${breadcrumbs(
+        names=[u'イベント', event.title, u'商品'],
+        urls=[request.route_path('events.index'), request.route_path('events.show', event_id=event.id)]
+    )}
+  </div>
+
+  <span class="span10">
+    <div class="page-header">
+      <h3>商品</h3>
+    </div>
+
+    <div class="content">
+      ${flash_messages(request)}
+    </div>
+
+    <%include file="/products/_list.html" args="form=form, products=products" />
+    <%include file="/products/_action_button.html" args="event=event" />
+    <div id="products-form">
+      <%include file="/products/_form.html" args="form=form" />
+    </div>
+  </span>
+</div>

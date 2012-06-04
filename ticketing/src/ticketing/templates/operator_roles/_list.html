@@ -1,0 +1,50 @@
+<%page args="form, roles" />
+<%namespace file="/common/helpers.html" name="h"/>
+<%namespace file="/common/modal.html" import="delete_modal" />
+
+<script type="text/javascript">
+  function delete_role(id) {
+    var modal = $('#modal-delete');
+    modal.find('#delete').attr('href', '/operators/delete/' + id);
+    modal.find('#message').text('選択したロールを削除します。よろしいですか？');
+    modal.modal('toggle');
+  }
+</script>
+
+<form>
+  <div class="ui-toolbar">
+    <a href="${request.route_path('operator_roles.new')}" class="btn">新規ロール</a>
+  </div>
+  <table class="table fullwidth table-striped">
+    <thead>
+    <tr>
+      <th class="minwidth"><input type="checkbox" class="__action__-select_all" /></td>
+      <th class="minwidth">ID</th>
+      <th>ロール名</th>
+      <th>パーミッション</th>
+      <th class="span2">操作</th>
+    </tr>
+    </thead>
+    <tbody>
+    % for role in roles.items:
+    <tr>
+      <td><input type="checkbox" /></td>
+      <td><a href="${request.route_path('operator_roles.show', operator_role_id=role.id)}">${role.id}</a></td>
+      <td><a href="${request.route_path('operator_roles.show', operator_role_id=role.id)}">${role.name}</a></td>
+      <td>
+        % for permission in role.permissions:
+          ${permission.category_name}
+        % endfor
+      </td>
+      <td>
+        <a class="btn btn-small" href="${request.route_path('operator_roles.edit', operator_role_id=role.id)}">編集</a>
+        <a class="btn btn-small btn-danger" href="javascript:delete_role(${role.id});">削除</a>
+      </td>
+    </tr>
+    % endfor
+    </tbody>
+  </table>
+  ${h.pager(roles)}
+</form>
+
+${delete_modal()}

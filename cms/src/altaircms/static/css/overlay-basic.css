@@ -20,6 +20,10 @@
 	-webkit-box-shadow: 0 0 90px #000;	
 }
 
+.dialog_overlay label, .dialog_overlay h1, .dialog_overlay h2, .dialog_overlay h3, .dialog_overlay h4, .dialog_overlay a{
+	color: #fff;
+}
+
 /* the overlayed element */
 .dialog_overlay {
 	
@@ -51,7 +55,7 @@
 
 
 /* close button positioned on upper right corner */
-.dropped-widget .close, .simple_overlay .close, .dialog_overlay .close {
+.dropped-widget .close, .simple_overlay .close, .dialog_overlay .close, .item .close{
 	/* background-image:url(/statics/img/overlay/close.png); */
 	background-image:url(/static/img/overlay/close.png);
 	position:absolute;

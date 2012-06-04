@@ -1,5 +1,18 @@
 from zope.interface import Interface
 from zope.interface import Attribute
+from zope.interface import implementer
+
+## 
+class IForm(Interface):
+    def validate():
+        pass
+    
+class IModelEvent(Interface):
+    request = Attribute("")
+    obj = Attribute("")
+    params = Attribute("params")
+
+##
 
 class IConcrete(Interface):
     def concrete():
@@ -12,8 +25,6 @@ class IConcreteNode(IConcrete, INode):
     def concrete(request=None, config=None, extra_context=None):
         pass
 
-class IBlockTree(Interface):
-    blocks = Attribute("blocks")
 
 class ICacher(Interface):
     fetched = Attribute("fetched")
@@ -26,6 +37,28 @@ class ICacher(Interface):
     def fetch():
         pass
 
+class IRenderable(Interface):
+    def render():
+        pass
+
+## page rendering
+class IStruct(Interface):
+    def as_dict():
+        pass
+    def define(keywords, value):
+        pass
+
+class IBlockTree(Interface):
+    blocks = Attribute("blocks")
+
+## resource
+class IHandleWidget(Interface):
+    def _get_or_create(model, widget_id):
+        pass
+        
+    def get_widget(widget_id):
+        pass
+
 class IHandleSession(Interface):
     def add(data, flush=False):
         pass
@@ -35,7 +68,7 @@ class IHandleSession(Interface):
 
 class IUpdateData(Interface):
     def update_data(data, **params):
-        """ update data with keyword paramaters.
+        """ update data with keywords paramaters.
         
         params is dictionary.
         use this method, like a update() of dictionary type.
@@ -75,14 +108,4 @@ class IHasTimeHistory(Interface):
     """
     created_at = Attribute(""" a time at object created""")
     updated_at = Attribute(""" a time at object updated""")
-
-# class IFromDict(Interface):
-#     @classmethod
-#     def from_dict(cls):
-#         pass
-# class IToDict(Interface):
-#     def to_dict():
-#         pass
-# class IWithDict(IFromDict, IToDict):
-#     pass
-
+# 

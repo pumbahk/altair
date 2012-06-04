@@ -1,0 +1,24 @@
+<%page args="form" />
+<%namespace file="/common/helpers.html" import="form_item" />
+
+<div id="modal-stock_allocation" class="modal fade">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">×</a>
+    <h3>在庫数を入力</h3>
+  </div>
+
+  <form action="javascript:save_stock_allocation();" method="POST">
+    <div class="modal-body">
+      ${form_item(form.stock_type_id)}
+      ${form_item(form.venue_id)}
+      ${form_item(form.performance_id)}
+      ${form_item(form.quantity)}
+      ${form_item(form.seat_l0_id)}
+    </div>
+
+    <div class="modal-footer">
+      <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+      <input class="btn" type="submit" value="保存"></a>
+    </div>
+  </form>
+</div>

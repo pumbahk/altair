@@ -1,0 +1,4 @@
+from . import views
+def includeme(config):
+    config.add_route("menudemo", "/menu/demo")
+    config.add_static_view('demo/static', 'altaircms.plugins.widget.menu:app/static', cache_max_age=3600)

@@ -1,10 +1,13 @@
 # coding: utf-8
 
 
-from altaircms.models import Base
+import sqlalchemy as sa
+import sqlalchemy.orm as orm
+from altaircms.models import Base, BaseOriginalMixin
 from altaircms.models import DBSession
 
 from datetime import datetime
+from sqlalchemy.ext.hybrid import hybrid_property
 from zope.interface import implements
 from altaircms.interfaces import IAsset
 from altaircms.interfaces import IHasMedia
@@ -19,20 +22,29 @@ __all__ = [
     # 'CssAsset'
 ]
 
-import sqlalchemy as sa
 import os
 DIR = os.path.dirname(os.path.abspath(__file__))
 # import sqlalchemy.orm as orm
 
-class Asset(Base):
+class Asset(BaseOriginalMixin, Base):
     implements(IHasTimeHistory, IHasSite)
     query = DBSession.query_property()
     __tablename__ = "asset"
 
     id = sa.Column(sa.Integer, primary_key=True)
+    title = sa.Column(sa.Unicode(255))
     discriminator = sa.Column("type", sa.String(32), nullable=False)
+
     created_at = sa.Column(sa.DateTime, default=datetime.now())
     updated_at = sa.Column(sa.DateTime, default=datetime.now())
+
+    created_by_id = sa.Column(sa.Integer, sa.ForeignKey("operator.id"))
+    created_by = orm.relationship("Operator", backref="created_assets",
+                                  primaryjoin="Asset.created_by_id==Operator.id")
+    updated_by_id = sa.Column(sa.Integer, sa.ForeignKey("operator.id"))
+    updated_by = orm.relationship("Operator", backref="updated_assets", 
+                                  primaryjoin="Asset.updated_by_id==Operator.id")
+
     site_id =  sa.Column(sa.Integer, sa.ForeignKey("site.id"))
 
     __mapper_args__ = {"polymorphic_on": discriminator}
@@ -40,25 +52,16 @@ class Asset(Base):
     def __repr__(self):
         return '<%s %s %s>' % (self.__class__.__name__, self.id, self.filepath)
 
-class MediaAssetColumnsMixin(object):
-    alt = sa.Column(sa.Integer)
-    size = sa.Column(sa.Integer)
-    width = sa.Column(sa.Integer)
-    height = sa.Column(sa.Integer)
-    filepath = sa.Column(sa.String)
-    mimetype = sa.Column(sa.String, default="")
+    ## todo refactoring?
+    @property
+    def public_tags(self):
+        return [tag for tag in self.tags if tag.publicp == True]
 
-    ## has default constractor. so this class is called at `Treat' rather than `mixin'.
-    def __init__(self, filepath='', alt='', size=None, width=None, height=None, mimetype=None):
-        self.alt = alt
-        self.size = size
-        self.width = width
-        self.height = height
-        self.filepath = filepath
-        self.mimetype = mimetype or self.MIMETYPE_DEFAULT
-    MIMETYPE_DEFAULT = ''
+    @property
+    def private_tags(self):
+        return [tag for tag in self.tags if tag.publicp == False]
 
-class ImageAsset(MediaAssetColumnsMixin, Asset):
+class ImageAsset(Asset):
     implements(IAsset, IHasMedia)
     type = "image"
 
@@ -66,8 +69,14 @@ class ImageAsset(MediaAssetColumnsMixin, Asset):
     __mapper_args__ = {"polymorphic_identity": type}
 
     id = sa.Column(sa.Integer, sa.ForeignKey("asset.id"), primary_key=True)
+    alt = sa.Column(sa.Integer)
+    size = sa.Column(sa.Integer)
+    width = sa.Column(sa.Integer)
+    height = sa.Column(sa.Integer)
+    filepath = sa.Column(sa.String(255))
+    mimetype = sa.Column(sa.String(255), default="")
 
-class FlashAsset(MediaAssetColumnsMixin, Asset):
+class FlashAsset(Asset):
     DEFAULT_IMAGE_PATH = os.path.join(DIR, "img/not_found.jpg")
     
     implements(IAsset, IHasMedia)
@@ -78,10 +87,15 @@ class FlashAsset(MediaAssetColumnsMixin, Asset):
     __mapper_args__ = {"polymorphic_identity": type}
 
     id = sa.Column(sa.Integer, sa.ForeignKey("asset.id"), primary_key=True)
-    mimetype = sa.Column(sa.String, default='application/x-shockwave-flash')
-    image_path = sa.Column(sa.String, default=DEFAULT_IMAGE_PATH)
+    alt = sa.Column(sa.Integer)
+    size = sa.Column(sa.Integer)
+    width = sa.Column(sa.Integer)
+    height = sa.Column(sa.Integer)
+    filepath = sa.Column(sa.String(255))
+    mimetype = sa.Column(sa.String(255), default='application/x-shockwave-flash')
+    imagepath = sa.Column(sa.String(255), default=DEFAULT_IMAGE_PATH)
 
-class MovieAsset(MediaAssetColumnsMixin, Asset):
+class MovieAsset(Asset):
     DEFAULT_IMAGE_PATH = os.path.join(DIR, "img/not_found.jpg")
 
     implements(IAsset, IHasMedia)
@@ -91,7 +105,13 @@ class MovieAsset(MediaAssetColumnsMixin, Asset):
     __mapper_args__ = {"polymorphic_identity": type}
 
     id = sa.Column(sa.Integer, sa.ForeignKey("asset.id"), primary_key=True)
-    image_path = sa.Column(sa.String, default=DEFAULT_IMAGE_PATH)
+    alt = sa.Column(sa.Integer)
+    size = sa.Column(sa.Integer)
+    width = sa.Column(sa.Integer)
+    height = sa.Column(sa.Integer)
+    filepath = sa.Column(sa.String(255))
+    mimetype = sa.Column(sa.String(255), default="")
+    imagepath = sa.Column(sa.String(255), default=DEFAULT_IMAGE_PATH)
 
 # class CssAsset(Asset):
 #     pass

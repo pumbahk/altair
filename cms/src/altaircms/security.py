@@ -1,74 +1,40 @@
 # coding: utf-8
-from altaircms.models import DBSession
-from altaircms.auth.models import Permission
+import logging
+import itertools
+from pyramid.security import Allow, Authenticated
+from sqlalchemy.orm.exc import NoResultFound
+import sqlalchemy.orm as orm
+from altaircms.auth.models import Operator, Role, RolePermission
 
-def groupfinder(userid, request):
+def rolefinder(userid, request):
     """
-    ユーザIDを受け取ってpermission一覧を返す
+    ユーザIDを受け取ってロール一覧を返す
+
+    :return: list ユーザのロールリスト
     """
-    objects = DBSession.query(Permission).filter_by(operator_id=userid)
-    perms = []
-
-    for obj in objects:
-        perms.append(obj.permission)
-
-    return perms
-
-
-class SecurityAllOK(list):
-    def __init__(self):
-        from altaircms.auth.models import DEFAULT_PERMISSION
-        self.perms_keys = DEFAULT_PERMISSION
-        self.perms = None
-
-    def __call__(self, user_id, request):
-        if self.perms is None:
-            self.perms = self._create_perms()
-        return self.perms
-        
-    def _create_perms(self):
-        return [Permission(operator_id=None, permission=p) \
-                    for p in self.perms_keys]
+    try:
+        operator = Operator.query.filter_by(user_id=userid).one()
+        return [role.name for role in operator.roles]
+    except NoResultFound, e:
+        logging.exception(e)
+        return []
 
 
-from zope.interface import implements
-from pyramid.interfaces import IAuthorizationPolicy
-from pyramid.location import lineage
-from pyramid.security import ACLAllowed
-class DummyAuthorizationPolicy(object):
-    implements(IAuthorizationPolicy)
-    def permits(self, context, principals, permission):
-        acl = '<No ACL found on any object in resource lineage>'
-        
-        for location in lineage(context):
-            try:
-                acl = location.__acl__
-            except AttributeError:
-                continue
+# データモデルから取得したACLをまとめる
+class RootFactory(object):
+    __name__ = None
 
-            for ace in acl:
-                ace_action, ace_principal, ace_permissions = ace
-                return ACLAllowed(ace, acl, permission,
-                                  principals, location)
-                
+    def __init__(self, request):
+        self.request = request
 
-    def principals_allowed_by_permission(self, context, permission):
-        allowed = set()
+    @property
+    def __acl__(self):
+        # return [(Allow, Authenticated, 'authenticated')] + list(itertools.chain.from_iterable(
+        #     [[(Allow, str(role.name), perm) 
+        #       for perm in role.permissions] 
+        #      for role in Role.query]))
 
-        for location in reversed(list(lineage(context))):
-            # NB: we're walking *up* the object graph from the root
-            try:
-                acl = location.__acl__
-            except AttributeError:
-                continue
-
-            allowed_here = set()
-            denied_here = set()
-            
-            for ace_action, ace_principal, ace_permissions in acl:
-                if not hasattr(ace_permissions, '__iter__'):
-                    ace_permissions = [ace_permissions]
-                if not ace_principal in denied_here:
-                    allowed_here.add(ace_principal)
-            allowed.update(allowed_here)
-        return allowed
+        fst = [(Allow, Authenticated, "authenticated")]
+        qs = RolePermission.query.filter(Role.id==RolePermission.role_id).options(orm.joinedload("role"))
+        filtered = list([(Allow, str(perm.role.name), perm.name) for perm in qs])
+        return fst + filtered

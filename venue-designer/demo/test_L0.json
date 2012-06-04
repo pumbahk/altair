@@ -1,0 +1,46 @@
+{
+  "0": {"shape":"rect", "data": {"x": 10, "y": 10, "width": 450, "height": 290 }},
+  "1": {"shape":"rect", "data": {"x": 25, "y": 25, "width": 420, "height": 110 }},
+
+  "40": {"shape":"path", "data": {"points": [["M", 25, 150], ["L", 445, 150], ["L", 335, 280], ["L", 135, 280], ["Z"]]}},
+  "41": {"shape":"path", "data": {"points": [["M", 25, 165], ["L", 120, 280], ["L", 25, 280], ["Z"]]}},
+  "42": {"shape":"path", "data": {"points": [["M", 445, 165], ["L", 445, 280], ["L", 350, 280], ["Z"]]}},
+
+  "5": {"shape":"rect", "data": {"x": -15, "y": 165, "width": 25, "height": 50 }},
+  "6": {"shape":"rect", "data": {"x": 175, "y": 300, "width": 120, "height": 35 }},
+  "7": {"shape":"rect", "data": {"x": 460, "y": 165, "width": 25, "height": 50 }},
+
+  "8":  {"shape":"rect", "data": {"x": 60,  "y": 160, "width": 30, "height": 30 }},
+  "9":  {"shape":"rect", "data": {"x": 100, "y": 160, "width": 30, "height": 30 }},
+  "10": {"shape":"rect", "data": {"x": 140, "y": 160, "width": 30, "height": 30 }},
+  "11": {"shape":"rect", "data": {"x": 180, "y": 160, "width": 30, "height": 30 }},
+  "12": {"shape":"rect", "data": {"x": 220, "y": 160, "width": 30, "height": 30 }},
+  "13": {"shape":"rect", "data": {"x": 260, "y": 160, "width": 30, "height": 30 }},
+  "14": {"shape":"rect", "data": {"x": 300, "y": 160, "width": 30, "height": 30 }},
+  "15": {"shape":"rect", "data": {"x": 340, "y": 160, "width": 30, "height": 30 }},
+  "16": {"shape":"rect", "data": {"x": 380, "y": 160, "width": 30, "height": 30 }},
+
+  "17": {"shape":"rect", "data": {"x": 100, "y": 200, "width": 30, "height": 30 }},
+  "18": {"shape":"rect", "data": {"x": 140, "y": 200, "width": 30, "height": 30 }},
+  "19": {"shape":"rect", "data": {"x": 180, "y": 200, "width": 30, "height": 30 }},
+  "20": {"shape":"rect", "data": {"x": 220, "y": 200, "width": 30, "height": 30 }},
+  "21": {"shape":"rect", "data": {"x": 260, "y": 200, "width": 30, "height": 30 }},
+  "22": {"shape":"rect", "data": {"x": 300, "y": 200, "width": 30, "height": 30 }},
+  "23": {"shape":"rect", "data": {"x": 340, "y": 200, "width": 30, "height": 30 }},
+
+  "24": {"shape":"rect", "data": {"x": 140, "y": 240, "width": 30, "height": 30 }},
+  "25": {"shape":"rect", "data": {"x": 180, "y": 240, "width": 30, "height": 30 }},
+  "26": {"shape":"rect", "data": {"x": 220, "y": 240, "width": 30, "height": 30 }},
+  "27": {"shape":"rect", "data": {"x": 260, "y": 240, "width": 30, "height": 30 }},
+  "28": {"shape":"rect", "data": {"x": 300, "y": 240, "width": 30, "height": 30 }},
+
+
+  "29": {"shape":"rect", "data": {"x": 30, "y": 200, "width": 30, "height": 30 }},
+  "30": {"shape":"rect", "data": {"x": 30, "y": 240, "width": 30, "height": 30 }},
+  "31": {"shape":"rect", "data": {"x": 70, "y": 240, "width": 30, "height": 30 }},
+
+  "32": {"shape":"rect", "data": {"x": 410, "y": 200, "width": 30, "height": 30 }},
+  "33": {"shape":"rect", "data": {"x": 370, "y": 240, "width": 30, "height": 30 }},
+  "34": {"shape":"rect", "data": {"x": 410, "y": 240, "width": 30, "height": 30 }}
+
+}

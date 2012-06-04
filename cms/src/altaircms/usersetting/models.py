@@ -20,7 +20,7 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=datetime.now())
 
-    email = Column(String)
+    email = Column(String(255))
     site_id = Column(Integer, ForeignKey("site.id"))
     is_active = Column(Integer, default=1)
     is_administrator = Column(Integer, default=0)
@@ -50,8 +50,8 @@ class MailMagazine(Base):
     __tablename__ = 'mailmagazine'
     id = Column(Integer, primary_key=True)
 
-    title = Column(Unicode) # メルマガタイトル
-    description = Column(Unicode) # メルマガ説明
+    title = Column(Unicode(255)) # メルマガタイトル
+    description = Column(Unicode(255)) # メルマガ説明
 
     site_id = Column(Integer, ForeignKey("site.id"))
 
@@ -80,8 +80,8 @@ class MailMagazineDistribute(Base):
     id = Column(Integer, primary_key=True)
 
     mailmagazine_id = Column(Integer, ForeignKey('mailmagazine.id'))
-    username = Column(Unicode)
-    email = Column(String)
+    username = Column(Unicode(255))
+    email = Column(String(255))
 
-    status = Column(String) # 配信状態
+    status = Column(String(255)) # 配信状態
     send_at = Column(DateTime) # 配信予定

@@ -167,14 +167,3 @@ Solrを使用して検索を行う。
 
 .. image:: ../images/ticket_detail.png
    :width: 640px
-
-
-パフォーマンス／座席選択
-----------------------------
-
-以下のような画像が入る。
-
-.. image:: ../images/seatfigure.png
-   :width: 640px
-
-TBD

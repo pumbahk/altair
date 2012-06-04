@@ -29,17 +29,13 @@ Ticketstar CMS Document (|today|)
    layout/cms
 
 
-ユースケース
+仕様
 ============
 
 .. toctree::
    :maxdepth: 2
 
    cms
-
-
-仕様
-============
 
 .. toctree::
 

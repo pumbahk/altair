@@ -1,4 +1,4 @@
-class EventListeners implements EventListener {
+class EventListeners {
     private var listeners:Array<EventListener>;
 
     public function new() {
@@ -14,7 +14,7 @@ class EventListeners implements EventListener {
 
         for (listener in listeners) {
             try {
-                listener.call(context, event);
+                Reflect.callMethod(context, listener, [event]);
             } catch (e: Throwable) {
                 throwables.push(e);
             }

@@ -1,0 +1,99 @@
+<%inherit file="../layout.html" />
+<%namespace file="/common/helpers.html" import="validate_errors" />
+<%namespace file="/common/helpers.html" import="alert_message" />
+<%namespace file="/common/helpers.html" import="flash_messages" />
+
+<%
+  if request.matched_route.name == 'newsletters.edit':
+    route_name = u'更新'
+    route_path = request.route_path('newsletters.edit', id=newsletter.id)
+  else:
+    route_name = u'新規作成'
+    route_path = request.route_path('newsletters.new')
+%>
+
+<script>
+  $(function() {
+    $('#start_date').datepicker({dateFormat:'yy-mm-dd'});
+    $('#subject').load(function(){
+      $(this).css({width:"600px"});
+    }).load();
+    $('#description').load(function(){
+      $(this).css({width:"600px",height:"400px"});
+    }).load();
+    $('[rel=popover]').popover()
+  });
+</script>
+
+<div class="row-fluid">
+  <%include file="_menu.html" />
+
+  <span class="span10">
+    <div class="page-header">
+      <h3>メールマガジン${route_name}</h3>
+    </div>
+
+    <div class="content">
+      ${flash_messages(request)}
+      ${alert_message(form)}
+    </div>
+
+    <div class="well">
+      <form class="form-horizontal" action="${route_path}" enctype="multipart/form-data" method="POST">
+        <fieldset>
+          % if request.matched_route.name == 'newsletters.edit':
+            <input id="id" name="id" type="hidden" value="${newsletter.id}">
+          % endif
+          ${form_item('subject')}
+          ${form_item('type')}
+          <% help = u'''
+            <span class="help-inline">
+              <a href="#" rel="popover" data-original-title="名前を差し込む" data-content="${name}と書くとメール送信時にCSVファイルのname列の値で置換されます" >
+                <i class="icon-question-sign"></i>
+              </a>
+            </span>
+          ''' %>
+          ${form_item('description', help)}
+          <% help = u'''
+            <span class="help-inline">
+              <a href="#" rel="popover" data-original-title="状態について" data-content="
+                <ul>
+                  <li>作成中  : メールマガジンを編集している間はこの状態にします</li>
+                  <li>送信予約: この状態にすると予約した時間にメール配信が開始されます</li>
+                </ul>
+                ">
+                <i class="icon-question-sign"></i>
+              </a>
+            </span>
+          ''' %>
+          ${form_item('status', help)}
+          ${form_item('sender_address')}
+          ${form_item('sender_name')}
+          <% help = u'''
+            <span class="help-inline">
+              <a href="#" rel="popover" data-original-title="CSVファイルフォーマット" data-content="email, id, name<br>(例) user@example.com, 1, なまえ">
+                <i class="icon-question-sign"></i>
+              </a>
+            </span>
+          ''' %>
+          ${form_item('subscriber_file', help)}
+          ${form_item('start_date')}
+          ${form_item('start_time')}
+        </fieldset>
+        <div class="form-actions">
+          <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">
+        </div>
+      </form>
+    </div>
+  </span>
+</div>
+
+<%def name="form_item(key, help='')">
+  <div class="control-group ${'error' if form[key].errors else ''}">
+    <label class="control-label">${help|n} ${form[key].label.text}</label>
+    <div class="controls">
+      ${form[key]}
+      ${validate_errors(form[key])}
+    </div>
+  </div>
+</%def>

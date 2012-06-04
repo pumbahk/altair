@@ -3,11 +3,14 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
   <title></title>
-  <link rel="stylesheet" type="text/css" href="lib/jquery-ui.css" />
-  <link rel="stylesheet" href="../components.css" />
-  <script type="text/javascript" src="lib/jquery.min.js" ></script>
-  <script type="text/javascript" src="lib/jquery-ui.min.js"></script>
-  <script type="text/javascript" src="../build/out.js"></script>
+  <link rel="stylesheet" type="text/css" href="js/css/bootstrap/jquery-ui-1.8.16.custom.css" />
+  <link rel="stylesheet" type="text/css" href="js/jquery.wijmo.wijsplitter.css" />
+  <link rel="stylesheet" type="text/css" href="css/components.css" />
+  <script type="text/javascript" src="js/jquery.min.js" ></script>
+  <script type="text/javascript" src="js/jquery-ui.min.js"></script>
+  <script type="text/javascript" src="js/ticket-designer.js"></script>
+  <script type="text/javascript" src="js/jquery.wijmo.wijutil.js"></script>
+  <script type="text/javascript" src="js/jquery.wijmo.wijsplitter.js"></script>
   <style type="text/css">
 .view {
   position: relative;
@@ -45,151 +48,245 @@
   height: 2000px;
   overflow: hidden;
 }
+
+.ui-vsplit {
+  height: 100%;
+  overflow: hidden;
+}
+
+#main {
+  height: 400px;
+}
+
+#property-pane {
+  padding: 4px 4px;
+}
+
+#property-pane table.property-table {
+  border: none;
+}
+
+#property-pane table.property-table tbody th {
+  text-align: left;
+  width: 20%;
+  margin-right: 1em;
+}
+
+#property-pane table.property-table tbody td,
+#property-pane table.property-table tbody th {
+  padding: 4px 4px;
+}
+
+.page {
+  width: 100%;
+}
   </style>
   <script type="text/javascript">
   if (!window.console) console = { log: function() {} };
   $(function() {
     var canvasNode = $('#view .canvas')
     var viewportNode = $('#view .viewport');
-    var view = new rendering.js.dom.JSDOMView(canvasNode, viewportNode);
-    var rf = rendering.js.dom.Spi.get_rendererFactory();
-    var f = new ComponentFactory(new ComponentRenderingFacade(view.get_stage(), rf));
-    for (var i = 0; i < 100; i++) {
-      var tc = f.create(TextComponent);
-      tc.on.click.do_(function(a) { console.log(a); });
-      tc.position.x = Math.random() * 8;
-      tc.position.y = Math.random() * 6;
-      tc.text = "test";
-      tc.refresh();
-    }
-    {
-      var rr = rf.create(Ruler, { variant: 'horizontal' });
-      rr.set_view(view);
-      $('#view .renderable-horizontal_ruler').replaceWith(rr.n);
-      var horizontalRuler = new Ruler(rr);
-      horizontalRuler.refresh();
-    }
-    {
-      var rr = rf.create(Ruler, { variant: 'vertical' });
-      rr.set_view(view);
-      $('#view .renderable-vertical_ruler').replaceWith(rr.n);
-      var verticalRuler = new Ruler(rr);
-      verticalRuler.refresh();
-    }
-    view.get_viewport().on.scroll.do_(function(e) {
-      horizontalRuler.offset = e.position.x;
-      verticalRuler.offset = e.position.y;
-      horizontalRuler.refresh();
-      verticalRuler.refresh();
-    });
-    // tc.on.dragstart.do_(function(a) {});
-    // tc.on.dragend.do_(function(a) {});
-    (function() {
-      var guide = null;
-      horizontalRuler.on.dragstart.do_(function(e) {
-        var viewport = view.get_viewport();
-        guide = f.create(HorizontalGuide);
-        guide.position = { x: e.position.x + viewport.scrollPosition.x,
-                           y: e.position.y + viewport.scrollPosition.y };
-        guide.refresh();
-      });
-      horizontalRuler.on.drag.do_(function(e) {
-        var viewport = view.get_viewport();
-        guide.position = { x: e.position.x + viewport.scrollPosition.x,
-                           y: e.position.y + viewport.scrollPosition.y };
-        guide.refresh();
-      });
-      horizontalRuler.on.dragend.do_(function(e) {
-        if (e.position.y < 0)
-          view.get_stage().remove(guide.renderer);
-      });
-    })();
-    (function() {
-      var guide = null;
-      verticalRuler.on.dragstart.do_(function(e) {
-        var viewport = view.get_viewport();
-        guide = f.create(VerticalGuide);
-        guide.position = { x: e.position.x + viewport.scrollPosition.x,
-                           y: e.position.y + viewport.scrollPosition.y };
-        guide.refresh();
-      });
-      verticalRuler.on.drag.do_(function(e) {
-        var viewport = view.get_viewport();
-        guide.position = { x: e.position.x + viewport.scrollPosition.x,
-                           y: e.position.y + viewport.scrollPosition.y };
-        guide.refresh();
-      });
-      verticalRuler.on.dragend.do_(function(e) {
-        if (e.position.x < 0)
-          view.get_stage().remove(guide.renderer);
-      });
-    })();
-    function getBodyClientSize() {
-      var firstChildNode = $("body > :first").get(0);
-      return {
-        width: document.documentElement.clientWidth - firstChildNode.offsetLeft * 2,
-        height: document.documentElement.clientHeight - firstChildNode.offsetTop * 2
-      };
-    };
+    var td = new TicketDesigner(
+      new views.rendering.js.dom.JSDOMView(canvasNode, viewportNode)
+    );
+    $('#view .renderable-horizontal_ruler').replaceWith(td.horizontalRuler.renderer.n);
+    $('#view .renderable-vertical_ruler').replaceWith(td.verticalRuler.renderer.n);
 
     function adjustViewSize() {
       var n = $("#view");
       var size = { width: n.innerWidth(), height: n.innerHeight() };
-      var margin = { x: verticalRuler.renderer.n.outerWidth(), y: horizontalRuler.renderer.n.outerHeight() };
-      view.get_viewport().n
+      var margin = { x: td.verticalRuler.renderer.n.outerWidth(true), y: td.horizontalRuler.renderer.n.outerHeight(true) };
+      td.view.get_viewport().n
         .css({ width: (size.width - margin.x) + "px",
                height: (size.height - margin.y) + "px" });
-      horizontalRuler.renderer.n
+      td.horizontalRuler.renderer.n
         .css({ width: (size.width - margin.x) + "px" });
-      verticalRuler.renderer.n
+      td.verticalRuler.renderer.n
         .css({ height: (size.height - margin.y) + "px" });
-      horizontalRuler.refresh();
+      td.refresh();
     }
 
-    adjustViewSize();
-    $(window).resize(adjustViewSize);
+    function adjustMainSize() { 
+      var n = $("#main");
+      var tb = $("#toolbar");
+      n.css({ width: n.parent().innerWidth() + "px",
+              height: (n.parent().innerHeight() - tb.outerHeight(true)) + "px" });
+      adjustViewSize();
+    }
+
+    function adjustWidgetSize() {
+      adjustMainSize();
+    }
+
+    function adjustPageSize() {
+      var body = $(document.body);
+      $("#page").css({
+        width: $(window).width() - (body.outerWidth(true) - body.outerWidth()) + "px",
+        height: $(window).height() - (body.outerHeight(true) - body.outerHeight()) + "px"
+      });
+      adjustWidgetSize();
+    }
+
+    $(window).resize(adjustPageSize);
+    adjustPageSize();
+
+    $('#main .ui-vsplit').wijsplitter({
+      orientation: "vertical",
+      collapsingPanel: "panel2",
+      sized: adjustMainSize,
+      collapsed: adjustMainSize,
+      expanded: adjustMainSize,
+      fullSplit: true,
+      splitterDistance: $('#main').width() * .7
+    });
+
+    function showConfigurationDialog() {
+      var template = $(".template .document-settings").clone();
+      template.find(".unit").text(UnitUtils.unitAsString(td.configuration.preferredUnit));
+      $(template).dialog({
+        modal: true,
+        closeOnEscape: true,
+        title: template.attr('title'),
+        close: function () {
+          $(this).dialog('destroy');
+        }
+      });
+    }
+
+    $('.ui-action-delete').click(function() {
+      td.shell.deleteSelected();
+    });
     $('.ui-action-zoom_in').click(function() {
-      view.set_zoom(view.zoom * 1.1);
+      td.shell.zoomIn();
     });
     $('.ui-action-zoom_out').click(function() {
-      view.set_zoom(view.zoom / 1.1);
+      td.shell.zoomOut();
+    });
+    $('.ui-action-configure').click(function() {
+      showConfigurationDialog();
+    });
+
+    function toggleToolbarButton(item) {
+      $(".ui-action-function[value='" + item + "']")[0].checked = true;
+    }
+
+    td.shell.operationModeCallback = function operationModeCallback(operationMode) {
+      switch (operationMode[0]) {
+      case 'CURSOR':
+        toggleToolbarButton('cursor');
+        break;
+      case 'MOVE':
+        toggleToolbarButton('move');
+        break;
+      case 'PLACE':
+        if (operationMode[2] == views.TextComponent)
+          toggleToolbarButton('text');
+        else if (operationMode[2] == views.TextComponent)
+          toggleToolbarButton('text');
+        break;
+      }
+    }
+
+    function selectFunction(f) {
+      switch (f) {
+      case 'cursor':
+        td.shell.set_operationMode(OperationMode.CURSOR);
+        break;
+      case 'move':
+        td.shell.set_operationMode(OperationMode.MOVE);
+        break;
+      case 'text':
+        td.shell.set_operationMode(OperationMode.PLACE(views.TextComponent));
+        break;
+      case 'image':
+        td.shell.set_operationMode(OperationMode.PLACE(views.ImageComponent));
+        break;
+      }
+    }
+
+    $('.ui-action-function').click(function() {
+      selectFunction(this.value);
+    }).each(function(i, n) {
+      if (n.checked)
+        selectFunction(n.value);
     });
   });
   </script>
 </head>
 <body>
-  <div class="page">
-    <div class="toolbar ui-widget-header">
+  <div id="page" class="page">
+    <div id="toolbar" class="ui-toolbar ui-state-default ui-corner-all">
       <span class="ui-button-set toolbar-function">
-        <span class="toggle-button"><input class="ui-action-text" type="radio" name="function" value="text" id="toolbar-function-text" checked="checked" /><label for="toolbar-function-text">Text</label></span>
-        <span class="toggle-button"><input class="ui-action-image" type="radio" name="function" value="image" id="toolbar-function-image" /><label for="toolbar-function-image">Image</label></span>
+        <span class="toggle-button"><input class="ui-action-function ui-button ui-no-text ui-icon-primary-arrow-1-ne" type="radio" name="function" value="cursor" id="toolbar-function-cursor" checked="checked" /><label for="toolbar-function-cursor">Cursor</label></span>
+        <span class="toggle-button"><input class="ui-action-function ui-button ui-no-text ui-icon-primary-arrow-4" type="radio" name="function" value="move" id="toolbar-function-move" /><label for="toolbar-function-move">Move</label></span>
+        <span class="toggle-button"><input class="ui-action-function ui-button ui-no-text ui-icon-primary-pencil" type="radio" name="function" value="text" id="toolbar-function-text" /><label for="toolbar-function-text">Text</label></span>
+        <span class="toggle-button"><input class="ui-action-function ui-button ui-no-text ui-icon-primary-image" type="radio" name="function" value="image" id="toolbar-function-image" /><label for="toolbar-function-image">Image</label></span>
       </span>
-      <button class="ui-button ui-action-zoom_in ui-icon-zoomin ui-no-text" id="toolbar-function-zoom_in">Zoom-in</button>
-      <button class="ui-button ui-action-zoom_out ui-icon-zoomout ui-no-text" id="toolbar-function-zoom_out">Zoom-out</button>
+      <button class="ui-button ui-no-text ui-icon-primary-close ui-action-delete" id="toolbar-function-delete">Delete</button>
+      <button class="ui-button ui-action-zoom_in ui-icon-primary-zoomin ui-no-text" id="toolbar-function-zoom_in">Zoom-in</button>
+      <button class="ui-button ui-action-zoom_out ui-icon-primary-zoomout ui-no-text" id="toolbar-function-zoom_out">Zoom-out</button>
+      <button class="ui-button ui-action-configure ui-icon-primary-gear" id="toolbar-function-configure">Settings</button>
     </div>
-    <div id="view" class="view">
-      <div class="renderable-vertical_ruler"></div>
-      <div class="renderable-horizontal_ruler"></div>
-      <div class="viewport">
-        <div class="canvas">
+    <div id="main">
+      <div class="ui-vsplit">
+        <div id="view" class="view pane">
+          <div class="renderable-vertical_ruler"></div>
+          <div class="renderable-horizontal_ruler"></div>
+          <div class="viewport">
+            <div class="canvas">
+            </div>
+          </div>
         </div>
+        <div id="property-pane" class="pane ui-state-default">
+          <div id="property-pane-content" class="pane-content">
+            <table class="property-table">
+              <tbody>
+                <tr>
+                  <th>Type</th>
+                  <td>Text</td>
+                </tr>
+                <tr>
+                  <th>Value</td>
+                  <th><input type="text" /></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="template">
+      <div class="document-settings" title="Document Settings">
+        <table class="property-table">
+          <tbody>
+            <tr>
+              <th>Document Size</th>
+              <td><input type="text" size="4" /> x <input type="text" size="4" /><span class="unit"></span></td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
   <script type="text/javascript">
-    $('.ui-button').each(function(i, n) {
+    $(".ui-button").each(function (i, n) {
       n = $(n);
-      var params = {};
-      var rex = /ui-icon-\w+/, g;
-      if ((g = rex.exec(n.attr('class')))) {
-        params['icons'] = { primary: g[0] };
+      n.removeClass('ui-button');
+      var cssClass = n.attr("class").split(/\s+/);
+      var options = { icons: {} };
+      for (var i = 0; i < cssClass.length; i++) {
+        var g;
+        if ((g = /ui-icon-primary-(.+)/.exec(cssClass[i])))
+          options.icons.primary = 'ui-icon-' + g[1];
+        if ((g = /ui-icon-secondary-(.+)/.exec(cssClass[i])))
+          options.icons.secondary = 'ui-icon-' + g[1];
+        if (cssClass[i] == 'ui-no-text')
+          options.text = false;
       }
-      if (n.hasClass('ui-no-text')) {
-        params['text'] = false;
-      }
-      n.button(params);
+      n.button(options);
     });
     $('.ui-button-set').buttonset();
+    $('.ui-vsplit').wijsplitter({ orientation: 'vertical' });
   </script>
 </body>
 </html>

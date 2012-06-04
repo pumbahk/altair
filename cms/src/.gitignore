@@ -1,3 +1,6 @@
 altaircms/plugins/static
 *.egg-info
 .coverage
+onetime.db
+my.ini
+sandbox

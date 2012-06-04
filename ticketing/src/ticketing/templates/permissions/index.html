@@ -1,0 +1,38 @@
+<%inherit file="/layout.html"/>
+<%namespace file="/common/helpers.html" name="h" />
+
+<div class="container row">
+  <div class="span12">
+    ${h.breadcrumbs(
+        names=[u'トップ', u'権限'],
+        urls=[request.route_path('index')]
+    )}
+  </div>
+
+  <span class="span12">
+    <div class="page-header">
+      <h3>権限</h3>
+    </div>
+
+    <div class="content">
+      ${h.flash_messages(request)}
+    </div>
+
+    <table class="table table-striped">
+      <thead>
+      <tr>
+        <th>Permissions</th>
+        <td>permit</td>
+      </tr>
+      </thead>
+      <tbody>
+      %for permission in permissions:
+      <tr>
+        <td>${permission.category_name}</td>
+        <td>${permission.permit}</td>
+      </tr>
+      %endfor
+      </tbody>
+    </table>
+  </span>
+</div>

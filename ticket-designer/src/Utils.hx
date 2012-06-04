@@ -36,4 +36,22 @@ class Utils {
         }
         return null; 
     }
+
+    public static function numberAsStringWithPrec(value:Float, prec:Int):String {
+        return untyped __js__('(0. + value)').toFixed(prec);
+    }
+
+    public static function pointWithinRect(point:Point, rect:Rect):Bool {
+        return point.x >= rect.position.x &&
+                point.y >= rect.position.y &&
+                point.x < rect.position.x + rect.size.x &&
+                point.y < rect.position.y + rect.size.y;
+    }
+
+    public static function rectWithinRect(rectA:Rect, rectB:Rect):Bool {
+        var rectAbr = { x:rectA.position.x + rectA.size.x,
+                        y:rectA.position.y + rectA.size.y };
+        return pointWithinRect(rectA.position, rectB) &&
+                pointWithinRect(rectAbr, rectB);
+    }
 }

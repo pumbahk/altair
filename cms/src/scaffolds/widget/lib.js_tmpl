@@ -26,10 +26,18 @@ widget.configure({
 (function(widget){
     var opt = {} //widget local variable
     var load_page = function(we){
-        we.dialog.load("/api/widget/{{package}}/dialog");
+        var pk = we.get_pk(we.where);
+        var url = "/api/widget/{{package}}/dialog";
+        var params = {}
+        if(!!pk){
+            params["pk"] = pk;
+        }
+        url += "?" + $.param(params);   
+        return we.dialog.load(url);
     };
 
     var on_dialog = function(we){
+        $("#submit").click(function(){we.finish_dialog(this);});    
     };
 
     var on_close = function(we){

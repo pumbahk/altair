@@ -1,7 +1,11 @@
-# coding: utf-8
-
 def includeme(config):
-    from .resources import  PageRenderingResource
-    config.add_route('front', '/publish/{page_name:.*}', factory=PageRenderingResource) # fix-url after. implemnt preview
-    config.add_route("front_to_preview", "/to/preview/{page_id}", factory=PageRenderingResource)
-    config.add_route('front_preview', '/preview/{page_name:.*}', factory=PageRenderingResource)
+    if config.registry.settings.get("altaircms.usersite.url") is None: 
+        import warnings
+        warnings.warn("altaircms.usersite.url is not found; defaulting to http://localhost:5432")
+        config.registry.settings["altaircms.usersite.url"] = "http://localhost:5432"
+
+    config.add_route('front', '/publish/{page_name:.*}') # fix-url after. implemnt preview
+    config.add_route("front_to_preview", "/to/preview/{page_id}")
+    config.add_route('front_preview', '/preview/{page_name:.*}')
+    
+    config.scan('.views')

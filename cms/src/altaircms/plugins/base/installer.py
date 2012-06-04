@@ -1,3 +1,4 @@
+import logging
 import os
 import filecmp
 from pyramid.asset import abspath_from_asset_spec
@@ -33,6 +34,13 @@ class _FileLinker(object):
             if self.is_valid_link(src, dst):
                 return
             self._after_invalid(dst)
+        ## dead link
+        try:
+            if not os.path.exists(os.readlink(dst)):
+                os.remove(dst)
+        except OSError as e:
+            logging.warn(str(e))
+            pass
         os.symlink(src, dst)
 
 def _translate_path(dst, plugin_name, filename, file_type, path):
@@ -78,10 +86,10 @@ class BasePluginInstaller(object):
         self.pyramid_settings[self.PLUGIN_KEY] = store
         
     def install_resource(self):
-        dst = self.pyramid_settings.get("plugin.static_directory")
+        dst = self.pyramid_settings.get("altaircms.plugin_static_directory")
         if not dst:
             ## fixme message
-            raise PluginInstallExceptioni("plugin.static_directory is not found in your pyramid_settings'")
+            raise PluginInstallExceptioni("altaircms.plugin_static_directory is not found in your pyramid_settings'")
 
         dst = abspath_from_asset_spec(dst)
         widget_name = self.settings["name"]

@@ -1,0 +1,55 @@
+<%page args="performance" />
+
+% if performance:
+<script type="text/javascript">
+  function new_product_item(product_id) {
+    var el = '#product-' + product_id;
+    var modal = $('#modal-product_item');
+    modal.find('#name').val($(el + ' #name').text());
+    modal.find('#product #price').val(Math.floor($(el + ' #price').attr('value')));
+    modal.find('#sales_segment_id').val($(el + ' #sales_segment').attr('value'));
+    modal.find('#id').val('');
+    modal.find('#performance_id').val(${performance.id});
+    modal.find('#product_id').val($(el + ' #id').text());
+    modal.find('#stock_holders').removeAttr('disabled');
+    modal.find('#stock_id').removeAttr('disabled');
+    modal.find('#product-item #price').val('');
+    modal.find('#quantity').val('');
+    modal.modal('toggle');
+  }
+
+  function edit_product_item(product_id, product_item_id) {
+    var product = '#product-' + product_id;
+    var modal = $('#modal-product_item');
+    modal.find('#name').val($(product + ' #name').text());
+    modal.find('#product #price').val(Math.floor($(product + ' #price').attr('value')));
+    modal.find('#sales_segment_id').val($(product + ' #sales_segment').attr('value'));
+    var product_item = '#product_item-' + product_item_id;
+    modal.find('#id').val(product_item_id);
+    modal.find('#performance_id').val(${performance.id});
+    modal.find('#product_id').val(product_id);
+    modal.find('#stock_holders').val($(product_item + ' #stock_holder').attr('value')).change();
+    modal.find('#stock_holders').attr('disabled', 'disabled');
+    modal.find('#stock_id').val($(product_item + ' #stock').attr('value'));
+    modal.find('#stock_id').attr('disabled', 'disabled');
+    modal.find('#product-item #price').val(Math.floor($(product_item + ' #price').attr('value')));
+    modal.find('#quantity').val($(product_item + ' #quantity').text());
+    modal.modal('toggle');
+  }
+
+  function delete_product_item(product_item_id) {
+    var modal = $('#modal-delete');
+    modal.find('#delete').attr('href', '/products/items/delete/' + product_item_id);
+    modal.find('#message').text('選択した在庫を削除します。よろしいですか？');
+    modal.modal('toggle');
+  }
+
+  function save_product_item() {
+    var modal = '#modal-product_item';
+    var form = '#product_items-form';
+    var id = $(modal + ' #id').val();
+    var url = id ? '/products/items/edit/' + id : '/products/items/new';
+    post_modal_form(modal, form, url);
+  }
+</script>
+% endif

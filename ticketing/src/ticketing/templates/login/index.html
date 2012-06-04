@@ -24,7 +24,7 @@
 
 <div id="login1">
     <div class="box">
-        <form action="${request.route_url('login.index')}" method="POST">
+        <form action="${request.route_url('login.index', _query=(('next',request.GET.get('next')),))}" method="POST">
             <label><span>ログインID</span>${form.login_id(id="email")}</label>
             <label><span>パスワード</span>${form.password(id="password")}</label>
 
@@ -32,5 +32,6 @@
                 <input type="submit" name="submit" value="Login" />
             </div>
         </form>
+        <a href="${request.route_url('login.reset')}">パスワードリセット</a>
     </div>
 </div>
