@@ -15,11 +15,9 @@ class SejHTTPErrorResponse(HTTPClientError):
 
     code = 500
     title = 'Error'
+    empty_body = True
 
     def __init__(self, sej_error):
-        self.code = sej_error.code
-        self.title = sej_error.reason
-
         super(HTTPClientError, self).__init__()
         self.body = sej_error.response()
 
@@ -31,10 +29,6 @@ class SejCallback(BaseView):
         return dict(
             list = list
         )
-
-    @view_config(route_name='sej.request')
-    def request(self):
-        pass
 
     @view_config(route_name='sej.callback')
     def callback(self):

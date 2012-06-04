@@ -3,6 +3,7 @@ import unittest
 import datetime
 
 from ticketing.sej.payment import SejTicketDataXml
+from ticketing.sej.utils import JavaHashMap
 
 class SejTest(unittest.TestCase):
 
@@ -24,6 +25,11 @@ class SejTest(unittest.TestCase):
         Base.metadata.create_all()
 
     def tearDown(self):
+        pass
+
+
+    def test_check_sign(self):
+
         pass
 
     def test_file_payment(self):
@@ -154,7 +160,7 @@ class SejTest(unittest.TestCase):
         DBSession.flush()
 
         m_dict = MultiDict()
-        m_dict.add(u'X_shori_id', u'123456789012')
+        m_dict.add(u'X_shori_id', u'000000000001')
         m_dict.add(u'X_shop_id',u'30520')
         m_dict.add(u'X_shop_order_id',u'orderid00001')
         m_dict.add(u'X_tuchi_type',u'01') # '01':入金発券完了通知 '31':SVC強制取消通知
@@ -179,6 +185,7 @@ class SejTest(unittest.TestCase):
         from ticketing.sej.models import SejNotification
         n = SejNotification.query.filter_by(order_id = u'orderid00001', billing_number=u'00000001').one()
 
+        assert n.process_number        == '000000000001'
         assert int(n.payment_type )         == SejPaymentType.CashOnDelivery.v
 
         assert n.notification_type     == u'1'
@@ -193,6 +200,8 @@ class SejTest(unittest.TestCase):
         assert n.ticketing_store_number== u'000002'
         assert n.ticketing_store_name  == u'西五反田店'
         assert n.cancel_reason         == ''
+
+        assert n.signature             == u'c607ffcafbda1a13f629acce2dea24d5'
         assert n.processed_at          == datetime.datetime(2012,7,1,8,11,00)
 
     def test_callback_svc_cancel_notification(self):
@@ -218,7 +227,7 @@ class SejTest(unittest.TestCase):
         DBSession.flush()
 
         m_dict = MultiDict()
-        m_dict.add(u'X_shori_id', u'123456789012')
+        m_dict.add(u'X_shori_id', u'000000000002')
         m_dict.add(u'X_shop_id',u'30520')
         m_dict.add(u'X_shop_order_id',u'orderid00001')
         m_dict.add(u'X_tuchi_type',u'31') # '01':入金発券完了通知 '31':SVC強制取消通知
@@ -243,7 +252,7 @@ class SejTest(unittest.TestCase):
         from ticketing.sej.models import SejNotification
         n = SejNotification.query.filter_by(order_id = u'orderid00001', billing_number=u'00000001').one()
 
-        assert n.process_number == u'123456789012'
+        assert n.process_number == u'000000000002'
         assert int(n.payment_type )         == SejPaymentType.CashOnDelivery.v
         assert n.notification_type     == u'31'
         assert n.billing_number        == u'00000001'
@@ -257,6 +266,55 @@ class SejTest(unittest.TestCase):
         assert n.ticketing_store_number== u'000002'
         assert n.ticketing_store_name  == u'西五反田店'
         assert n.cancel_reason         == ''
+        assert n.signature             == u'c607ffcafbda1a13f629acce2dea24d5'
+        assert n.processed_at          == datetime.datetime(2012,7,1,8,11,00)
+
+    def test_callback_expire_notification(self):
+        '''CSV'''
+        import sqlahelper
+        from webob.multidict import MultiDict
+        from ticketing.sej.models import SejOrder
+        from ticketing.sej.payment import SejOrderUpdateReason, SejPaymentType, callback_notification
+
+        sej_order = SejOrder()
+
+        sej_order.process_type          = SejOrderUpdateReason.Change.v
+        sej_order.billing_number        = u'00000001'
+        sej_order.ticket_count          = 1
+        sej_order.exchange_sheet_url    = u'https://www.r1test.com/order/hi.do&iraihyo_id_00=11111111'
+        sej_order.order_id              = u'orderid00001'
+        sej_order.exchange_sheet_number = u'11111111'
+        sej_order.exchange_number       = u'22222222'
+        sej_order.order_at              = datetime.datetime.now()
+
+        DBSession = sqlahelper.get_session()
+        DBSession.add(sej_order)
+        DBSession.flush()
+
+        m_dict = MultiDict()
+        m_dict.add(u'X_shori_id', u'000000000003')
+        m_dict.add(u'X_shop_id',u'30520')
+        m_dict.add(u'X_shop_order_id',u'orderid00001')
+        m_dict.add(u'X_tuchi_type',u'72') # '01':入金発券完了通知 '31':SVC強制取消通知
+        m_dict.add(u'X_shori_kbn', u'%02d' % SejPaymentType.CashOnDelivery)
+        m_dict.add(u'X_lmt_time_new',u'201207010811')
+        m_dict.add(u'X_haraikomi_no',u'00000001')
+        m_dict.add(u'X_hikikae_no',u'22222222')
+        m_dict.add(u'X_shori_time',u'201207010811')
+        m_dict.add(u'xcode',u'c607ffcafbda1a13f629acce2dea24d5')
+
+        response = callback_notification(m_dict)
+
+        assert response == '<SENBDATA>status=800&</SENBDATA><SENBDATA>DATA=END</SENBDATA>'
+        from ticketing.sej.models import SejNotification
+        n = SejNotification.query.filter_by(order_id = u'orderid00001', billing_number=u'00000001').one()
+
+        assert n.process_number == u'000000000003'
+        assert int(n.payment_type )         == SejPaymentType.CashOnDelivery.v
+        assert n.notification_type     == u'72'
+        assert n.billing_number        == u'00000001'
+        assert n.exchange_number       == u'22222222'
+        assert n.signature             == u'c607ffcafbda1a13f629acce2dea24d5'
         assert n.processed_at          == datetime.datetime(2012,7,1,8,11,00)
 
     def test_request_order_cancel(self):

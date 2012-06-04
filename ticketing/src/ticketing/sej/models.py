@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from ticketing.models import BaseModel, MutationDict, JSONEncodedDict, relationship
+from ticketing.models import BaseModel, LogicallyDeleted, WithTimestamp, MutationDict, JSONEncodedDict, relationship
 from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, ForeignKey, Enum, DECIMAL
 from sqlalchemy.orm import relationship, join, column_property, mapper, backref
 
@@ -12,12 +12,12 @@ import sqlahelper
 session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
 
-class SejNotification(BaseModel, Base):
+class SejNotification(BaseModel, WithTimestamp, LogicallyDeleted, Base):
     __tablename__           = 'SejNotification'
 
     id                      = Column(Integer, primary_key=True)
 
-    notification_type       = Column(Enum('1', '31', '51', '61', '91', '92', '94', '95', '96', '97', '98'))
+    notification_type       = Column(Enum('1', '31', '72', '73'))
     process_number          = Column(String(12))
     payment_type            = Column(Enum('1', '2', '3', '4'))
     payment_type_new        = Column(Enum('1', '2', '3', '4'), nullable=True)
@@ -54,11 +54,9 @@ class SejNotification(BaseModel, Base):
     barcode_numbers         = Column(MutationDict.as_mutable(JSONEncodedDict(4096)), nullable=True)
 
     processed_at            = Column(DateTime, nullable=True)
-    updated_at              = Column(DateTime, nullable=True)
-    created_at              = Column(DateTime, default=datetime.now)
+    signature               = Column(String(32))
 
-
-class SejTicketFile(BaseModel, Base):
+class SejTicketFile(BaseModel, WithTimestamp, LogicallyDeleted, Base):
     __tablename__           = 'SejTicketFile'
 
     id                      = Column(Integer, primary_key=True)
@@ -95,30 +93,10 @@ class SejTicketFile(BaseModel, Base):
     refund_cancel_at        = Column(DateTime, nullable=True)
 
     attributes              = Column(MutationDict.as_mutable(JSONEncodedDict(4096)))
+    signature               = Column(String(32))
 
-    updated_at              = Column(DateTime, nullable=True)
-    created_at              = Column(DateTime, default=datetime.now)
 
-class SejTicket(BaseModel, Base):
-    __tablename__           = 'SejTicket'
-
-    id                      = Column(Integer, primary_key=True)
-    ticket_type             = Column(Enum('1', '2', '3', '4'))
-    barcode_number          = Column(String(13))
-    event_name              = Column(String(40))
-    performance_name        = Column(String(40))
-    performance_datetime    = Column(DateTime)
-    ticket_template_id      = Column(String(10))
-    ticket_data_xml         = Column(String(5000))
-
-    ticket_id               = Column(BigInteger, ForeignKey("SejOrder.id"), nullable=True)
-    ticket                  = relationship("SejOrder", backref='tickets')
-    ticket_idx              = Column(Integer)
-
-    updated_at              = Column(DateTime, nullable=True)
-    created_at              = Column(DateTime, default=datetime.now)
-
-class SejOrder(BaseModel, Base):
+class SejOrder(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     __tablename__           = 'SejOrder'
     id                      = Column(Integer, primary_key=True)
 
@@ -139,8 +117,6 @@ class SejOrder(BaseModel, Base):
 
     process_id              = Column(String(12))
     payment_type            = Column(Enum('1', '2', '3', '4'))
-
-    notification_type       = Column(Enum('1', '31'))
 
     pay_store_number        = Column(String(6))
     pay_store_name          = Column(String(36))
@@ -165,7 +141,23 @@ class SejOrder(BaseModel, Base):
     request_params          = Column(MutationDict.as_mutable(JSONEncodedDict(4096)))
     callback_params         = Column(MutationDict.as_mutable(JSONEncodedDict(4096)))
 
-    updated_at              = Column(DateTime, nullable=True)
-    created_at              = Column(DateTime, default=datetime.now)
+
+class SejTicket(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
+    __tablename__           = 'SejTicket'
+
+    id                      = Column(Integer, primary_key=True)
+    ticket_type             = Column(Enum('1', '2', '3', '4'))
+    barcode_number          = Column(String(13))
+    event_name              = Column(String(40))
+    performance_name        = Column(String(40))
+    performance_datetime    = Column(DateTime)
+    ticket_template_id      = Column(String(10))
+    ticket_data_xml         = Column(String(5000))
+
+    ticket                  = relationship("SejOrder", backref='tickets')
+    ticket_id               = Column(Integer, ForeignKey("SejOrder.id"), nullable=True)
+
+    ticket_idx              = Column(Integer)
+
 
 

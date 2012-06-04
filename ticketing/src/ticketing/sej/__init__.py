@@ -54,12 +54,10 @@ class SejNotificationType(StandardEnum):
     PaymentComplete = 1
     # '31':SVC強制取消通知
     CancelFromSVC = 31
-    # '51':支払期限切れ
-    PaymentExpire = 51
-    # '61':発券期限切れ
-    TicketingExpire = 61
     # '72':再付番通知
     ReGrant = 72
+    # '73':発券期限切れ
+    TicketingExpire = 73
 
 
 class SejError(Exception):
