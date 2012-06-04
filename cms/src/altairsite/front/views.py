@@ -47,7 +47,7 @@ def rendering_page(context, request):
 @view_config(route_name="front_preview", decorator=with_jquery)
 def rendering_preview_page(context, request):
     url = request.matchdict["page_name"]
-    page, layout = context.get_page_and_layout_preview(url)
+    page, layout = context.get_page_and_layout_preview(url, request.matchdict["page_id"])
 
     block_context = context.get_block_context(page)
     block_context.scan(request=request,

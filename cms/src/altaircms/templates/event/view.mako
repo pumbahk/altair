@@ -63,7 +63,7 @@
 			<tr>
 			  <td>
 				<a href="${request.route_path('pageset', pageset_id=pageset.id)}">${pageset.name}</a>
-				    <a class="btn btn-small" href="${h.link.to_publish_page_from_pageset(request,pageset)}" target="_blank"><i class="icon-eye-open"> </i> </a>
+				    <a class="btn btn-small" href="${h.link.to_preview_page_from_pageset(request,pageset)}" target="_blank"><i class="icon-eye-open"> </i> </a>
 			  </td>
                </td>
 			</tr>

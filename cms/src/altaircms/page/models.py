@@ -23,13 +23,15 @@ from altaircms.models import Base, BaseOriginalMixin
 from altaircms.models import DBSession
 from altaircms.layout.models import Layout
 
+import uuid
+from datetime import datetime
+
 class PublishUnpublishMixin(object):
     def is_published(self):
         return self.hash_url is None
 
     def to_unpublished(self):
         if self.hash_url is None:
-            import uuid
             self.hash_url = uuid.uuid4().hex
 
     def to_published(self):
@@ -92,13 +94,17 @@ class PageSet(Base,
         page.version = pageset.gen_version()
         return pageset
 
+    def current(self, dt=None):
+        dt = dt or datetime.now()
+        return Page.query.filter(Page.pageset==self).filter(Page.in_term(dt)).order_by("page.publish_begin").limit(1).first()
+
     # @property
     # def page_proxy(self):
     #     if hasattr(self, "_page_proxy"):
     #         return self._page_proxy
     #     self._page_proxy = self.get_current_page()
 
-    # def get_current_page(self):
+    # def getc_urrent_page(self):
     #     ## not tested
     #     ## パフォーマンス上げるために本当はここキャッシュしておけたりすると良いのかなと思う
     #     return Page.filter(Page.version==self.version_counter).one()
@@ -134,7 +140,7 @@ class Page(PublishUnpublishMixin,
     layout = relationship(Layout, backref='page', uselist=False)
     DEFAULT_STRUCTURE = "{}"
     structure = Column(Text, default=DEFAULT_STRUCTURE)
-    hash_url = Column(String(length=32), default=None)
+    hash_url = Column(String(length=32), default=lambda : uuid.uuid4().hex)
 
     event_id = Column(Integer, ForeignKey('event.id')) ## todo: delete?
     event = relationship('Event', backref='pages')

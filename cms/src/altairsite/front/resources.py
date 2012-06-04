@@ -32,16 +32,18 @@ class PageRenderingResource(object):
 
     def get_page_and_layout(self, url, dt):
         try:
-            page = Page.query.filter(Page.url==url).filter(Page.in_term(dt)).one()
+            page = Page.query.filter(Page.url==url).filter(Page.in_term(dt)).order_by("page.publish_begin").limit(1).first()
             return page, page.layout
         except saexc.NoResultFound:
             raise pyrexc.NotFound(u'page, url=%s and publish datetime = %s, is not found' % (url, dt))
 
-    def get_page_and_layout_preview(self, url):
+    def get_page_and_layout_preview(self, url, page_id):
         try:
-            return DBSession.query(Page, Layout).filter(Page.layout_id==Layout.id).filter_by(hash_url=url).one()
+            page = Page.query.filter(Page.hash_url==url, Page.id==page_id).one()
+            return page, page.layout
         except saexc.NoResultFound:
-            raise pyrexc.NotFound(u'レイアウトが設定されていません。')
+            raise pyrexc.NotFound(u'page, url=%s and is not found' % (url))
+
 
     def get_render_config(self):
         return gen.get_config(self.request)
