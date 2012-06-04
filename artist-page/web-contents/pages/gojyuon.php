@@ -2,7 +2,7 @@
 $dbh = new mysqli("127.0.0.1:3306","root",'root');
 $dbh -> select_db("artistpage");
 $dbh -> set_charset("UTF8");
-//
+
 //サイドバーのジャンル一覧
 $id_zero = 0;
 function parent_get_genre($dbh, $id_zero) {
