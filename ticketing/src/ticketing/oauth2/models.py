@@ -21,7 +21,7 @@ session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
 
 from ticketing.operators.models import Operator
-from ticketing.models import WithTimestamp, relationship
+from ticketing.models import WithTimestamp, Identifier, relationship
 
 class TimestampGenerator(object):
     """Callable Timestamp Generator that returns a UNIX time integer.
@@ -57,7 +57,7 @@ class KeyGenerator(object):
 
 class Service(Base, WithTimestamp):
     __tablename__ = 'Service'
-    id              = Column(BigInteger, primary_key=True)
+    id              = Column(Identifier, primary_key=True)
     name            = Column(String(255))
     key             = Column(String(CLIENT_KEY_LENGTH), default=KeyGenerator(CLIENT_KEY_LENGTH), index=True, unique=True)
     secret          = Column(String(CLIENT_SECRET_LENGTH), default=KeyGenerator(CLIENT_SECRET_LENGTH),unique=True)
@@ -71,12 +71,12 @@ class Service(Base, WithTimestamp):
 
 class AccessToken(Base, WithTimestamp):
     __tablename__ = 'AccessToken'
-    id          = Column(BigInteger, primary_key=True)
+    id          = Column(Identifier, primary_key=True)
 
     service = relationship("Service")
-    service_id = Column(BigInteger, ForeignKey("Service.id"))
+    service_id = Column(Identifier, ForeignKey("Service.id"))
     operator = relationship("Operator")
-    operator_id = Column(BigInteger, ForeignKey("Operator.id"))
+    operator_id = Column(Identifier, ForeignKey("Operator.id"))
 
     key             = Column(String(CODE_KEY_LENGTH), default=KeyGenerator(CODE_KEY_LENGTH), index=True, unique=True)
     token           = Column(String(ACCESS_TOKEN_LENGTH), default=KeyGenerator(ACCESS_TOKEN_LENGTH), index=True, unique=True)
@@ -99,9 +99,9 @@ class AccessToken(Base, WithTimestamp):
 
 class MACNonce(Base, WithTimestamp):
     __tablename__       = 'MACNonce'
-    id                  = Column(BigInteger, primary_key=True)
+    id                  = Column(Identifier, primary_key=True)
     access_token        = relationship("AccessToken")
-    access_token_id     = Column(BigInteger, ForeignKey("AccessToken.id"))
+    access_token_id     = Column(Identifier, ForeignKey("AccessToken.id"))
     nonce               = Column(String(30), index=True)
 
     status              = Column(Integer, default=1)

@@ -12,7 +12,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm.collections import InstrumentedList
 from sqlalchemy.orm.properties import RelationshipProperty
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.types import TypeDecorator, VARCHAR
+from sqlalchemy.types import TypeEngine, TypeDecorator, VARCHAR
 from sqlalchemy.ext.mutable import Mutable
 from sqlalchemy.sql.expression import text
 import sqlalchemy.sql.functions as sqlfunctions
@@ -21,6 +21,32 @@ import sqlahelper
 
 Base = sqlahelper.get_base()
 DBSession = sqlahelper.get_session()
+
+class Identifier(Integer):
+    def __init__(self, *args, **kwargs):
+        self._inner = None
+        self._args = args
+        self._kwargs = kwargs
+
+    def _compiler_dispatch(self, visitor, **kw):
+        return self.inner._compiler_dispatch(visitor, **kw)
+
+    @property
+    def inner(self):
+        if self._inner is None:
+            self._inner = (BigInteger if sqlahelper.get_engine().dialect.name != 'sqlite' else Interger)(*self._args, **self._kwargs)
+        return self._inner
+
+    def get_dbapi_type(self, dbapi):
+        return self.inner.get_dbapi_type(dbapi)
+
+    @property
+    def python_type(self):
+        return self.inner.python_type
+
+    @property
+    def _expression_adaptations(self):
+        return self.inner._expression_adaptations
 
 from paste.util.multidict import MultiDict
 

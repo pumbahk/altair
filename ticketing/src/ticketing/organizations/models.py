@@ -4,7 +4,7 @@ from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, For
 
 from ticketing.utils import StandardEnum
 from ticketing.users.models import User
-from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, relationship
+from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier, relationship
 from ticketing.master.models import Prefecture
 
 class OrganizationTypeEnum(StandardEnum):
@@ -12,7 +12,7 @@ class OrganizationTypeEnum(StandardEnum):
 
 class Organization(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "Organization"
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Identifier, primary_key=True)
     name = Column(String(255))
     client_type = Column(Integer)
     city = Column(String(255))
@@ -23,9 +23,9 @@ class Organization(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     tel_2 = Column(String(32))
     fax = Column(String(32))
 
-    user_id = Column(BigInteger, ForeignKey("User.id"), nullable=True)
+    user_id = Column(Identifier, ForeignKey("User.id"), nullable=True)
     user = relationship("User", uselist=False)
-    prefecture_id = Column(BigInteger, ForeignKey("Prefecture.id"), nullable=True)
+    prefecture_id = Column(Identifier, ForeignKey("Prefecture.id"), nullable=True)
     prefecture = relationship("Prefecture", uselist=False)
 
     status = Column(Integer)

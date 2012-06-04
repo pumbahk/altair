@@ -4,8 +4,8 @@ import fixture
 from fixture import DataSet
 from fixture import SQLAlchemyFixture
 
-import sqlalchemy as sa
 from sqlalchemy.orm import *
+import sqlahelper
 
 from ticketing.oauth2.models import *
 from ticketing.organizations.models import *
@@ -17,16 +17,6 @@ from ticketing.orders.models import *
 from ticketing.products.models import *
 from ticketing.users.models import *
 from ticketing.venues.models import *
-
-try:
-    import pymysql_sa
-    pymysql_sa.make_default_mysql_dialect()
-    print 'Using PyMySQL'
-except:
-    pass
-
-engine = sa.create_engine('mysql+pymysql://ticketing:ticketing@127.0.0.1/ticketing?use_unicode=true&charset=utf8', echo=True)
-sqlahelper.add_engine(engine)
 
 from bank import BankData, BankAccountData
 from prefecture import PrefectureMaster
@@ -51,6 +41,7 @@ from ticketing.products.models import PaymentMethod, DeliveryMethod, PaymentMeth
 from ticketing.sej.models import SejOrder, SejTicket, SejTicketFile, SejNotification
 
 def import_seed_data():
+    engine = sqlahelper.get_engine()
     db_fixture = SQLAlchemyFixture(
          env={
              'ServiceData'            : Service,
@@ -174,7 +165,7 @@ def import_seed_data():
              'PaymentMethodData'                    : PaymentMethod,
              'PaymentDeliveryMethodPairData'        : PaymentDeliveryMethodPair,
          },
-         engine=engine,
+         engine=engine
     )
 
     metadata = Base.metadata

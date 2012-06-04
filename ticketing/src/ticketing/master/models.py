@@ -4,28 +4,28 @@ from sqlalchemy.orm import join, backref, column_property
 
 import sqlahelper
 
-from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, relationship
+from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier, relationship
 
 '''
  Master Data
 '''
 class Prefecture(Base, BaseModel):
     __tablename__ = 'Prefecture'
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Identifier, primary_key=True)
     name = Column(String(255))
 
 
 class Bank(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Bank'
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Identifier, primary_key=True)
     code = Column(BigInteger)
     name = Column(String(255))
 
 
 class BankAccount(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'BankAccount'
-    id = Column(BigInteger, primary_key=True)
-    bank_id = Column(BigInteger, ForeignKey("Bank.id"))
+    id = Column(Identifier, primary_key=True)
+    bank_id = Column(Identifier, ForeignKey("Bank.id"))
     bank = relationship("Bank", backref=backref('addresses', order_by=id))
     account_type = Column(Integer)
     account_number = Column(String(255))
@@ -56,7 +56,7 @@ Indexes:
 
     __tablename__ = 'PostCode'
 
-    id          = Column(BigInteger, primary_key=True)
+    id          = Column(Identifier, primary_key=True)
     version     = Column(BigInteger,  nullable=False)
     area        = Column(String(255), nullable=False)
     area_kana   = Column(String(255), nullable=False)

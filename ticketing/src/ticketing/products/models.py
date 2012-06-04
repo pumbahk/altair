@@ -6,28 +6,28 @@ from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, Strin
 from sqlalchemy.orm import join, backref, column_property, mapper, relation
 
 from ticketing.utils import StandardEnum
-from ticketing.models import Base, BaseModel, DBSession, JSONEncodedDict, MutationDict, WithTimestamp, LogicallyDeleted, relationship
+from ticketing.models import Base, BaseModel, DBSession, JSONEncodedDict, MutationDict, WithTimestamp, LogicallyDeleted, Identifier, relationship
 from ticketing.venues.models import SeatStatusEnum, SeatStatus
 
 class PaymentMethodPlugin(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentMethodPlugin'
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Identifier, primary_key=True)
     name = Column(String(255))
 
 class DeliveryMethodPlugin(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'DeliveryMethodPlugin'
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Identifier, primary_key=True)
     name = Column(String(255))
 
 class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentMethod'
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Identifier, primary_key=True)
     name = Column(String(255))
     fee = Column(Numeric(precision=16, scale=2), nullable=False)
 
-    organization_id = Column(BigInteger, ForeignKey('Organization.id'))
+    organization_id = Column(Identifier, ForeignKey('Organization.id'))
     organization = relationship('Organization', uselist=False, backref='payment_method_list')
-    payment_plugin_id = Column(BigInteger, ForeignKey('PaymentMethodPlugin.id'))
+    payment_plugin_id = Column(Identifier, ForeignKey('PaymentMethodPlugin.id'))
     payment_plugin = relationship('PaymentMethodPlugin', uselist=False)
 
     @staticmethod
@@ -36,13 +36,13 @@ class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'DeliveryMethod'
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Identifier, primary_key=True)
     name = Column(String(255))
     fee = Column(Numeric(precision=16, scale=2), nullable=False)
 
-    organization_id = Column(BigInteger, ForeignKey('Organization.id'))
+    organization_id = Column(Identifier, ForeignKey('Organization.id'))
     organization = relationship('Organization', uselist=False , backref='delivery_method_list')
-    delivery_plugin_id = Column(BigInteger, ForeignKey('DeliveryMethodPlugin.id'))
+    delivery_plugin_id = Column(Identifier, ForeignKey('DeliveryMethodPlugin.id'))
     delivery_plugin = relationship('DeliveryMethodPlugin', uselist=False)
 
     @staticmethod
@@ -51,15 +51,15 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 buyer_condition_set_table =  Table('BuyerConditionSet', Base.metadata,
     Column('id', Integer, primary_key=True),
-    Column('buyer_condition_id', BigInteger, ForeignKey('BuyerCondition.id')),
-    Column('product_id', BigInteger, ForeignKey('Product.id'))
+    Column('buyer_condition_id', Identifier, ForeignKey('BuyerCondition.id')),
+    Column('product_id', Identifier, ForeignKey('Product.id'))
 )
 
 class BuyerCondition(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'BuyerCondition'
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Identifier, primary_key=True)
 
-    member_ship_id = Column(BigInteger, ForeignKey('MemberShip.id'))
+    member_ship_id = Column(Identifier, ForeignKey('MemberShip.id'))
     member_ship   = relationship('MemberShip')
     '''
      Any Conditions.....
@@ -67,17 +67,17 @@ class BuyerCondition(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'ProductItem'
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Identifier, primary_key=True)
     item_type = Column(Integer)
     price = Column(Numeric(precision=16, scale=2), nullable=False)
 
-    product_id = Column(BigInteger, ForeignKey('Product.id'))
-    performance_id = Column(BigInteger, ForeignKey('Performance.id'))
+    product_id = Column(Identifier, ForeignKey('Product.id'))
+    performance_id = Column(Identifier, ForeignKey('Performance.id'))
 
-    stock_id = Column(BigInteger, ForeignKey('Stock.id'))
+    stock_id = Column(Identifier, ForeignKey('Stock.id'))
     stock = relationship("Stock", backref="product_items")
 
-    stock_type_id = Column(BigInteger, ForeignKey('StockType.id'))
+    stock_type_id = Column(Identifier, ForeignKey('StockType.id'))
     stock_type = relationship('StockType', backref='product_items')
 
     quantity = Column(Integer, nullable=False, default=1, server_default='1')
@@ -103,11 +103,11 @@ class StockTypeEnum(StandardEnum):
 
 class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'StockType'
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Identifier, primary_key=True)
     name = Column(String(255))
     type = Column(Integer)  # @see StockTypeEnum
 
-    event_id = Column(BigInteger, ForeignKey("Event.id"))
+    event_id = Column(Identifier, ForeignKey("Event.id"))
 
     stocks = relationship('Stock', backref='stock_type')
 
@@ -140,8 +140,8 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 class StockAllocation(Base):
     __tablename__ = "StockAllocation"
-    stock_type_id = Column(BigInteger, ForeignKey('StockType.id'), primary_key=True)
-    performance_id = Column(BigInteger, ForeignKey('Performance.id'), primary_key=True)
+    stock_type_id = Column(Identifier, ForeignKey('StockType.id'), primary_key=True)
+    performance_id = Column(Identifier, ForeignKey('Performance.id'), primary_key=True)
     stock_type = relationship('StockType', uselist=False, backref='stock_allocations')
     performance = relationship('Performance', uselist=False, backref='stock_allocations')
     quantity = Column(Integer, nullable=False)
@@ -169,11 +169,11 @@ class StockAllocation(Base):
 
 class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "StockHolder"
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Identifier, primary_key=True)
     name = Column(String(255))
 
-    performance_id = Column(BigInteger, ForeignKey('Performance.id'))
-    account_id = Column(BigInteger, ForeignKey('Account.id'))
+    performance_id = Column(Identifier, ForeignKey('Performance.id'))
+    account_id = Column(Identifier, ForeignKey('Account.id'))
 
     style = Column(MutationDict.as_mutable(JSONEncodedDict(1024)))
 
@@ -191,13 +191,13 @@ class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 # stock based on quantity
 class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "Stock"
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Identifier, primary_key=True)
     quantity = Column(Integer)
 
-    stock_holder_id = Column(BigInteger, ForeignKey('StockHolder.id'))
+    stock_holder_id = Column(Identifier, ForeignKey('StockHolder.id'))
     seats = relationship("Seat", backref='stock')
 
-    stock_type_id = Column(BigInteger, ForeignKey('StockType.id'))
+    stock_type_id = Column(Identifier, ForeignKey('StockType.id'))
 
     stock_status = relationship("StockStatus", uselist=False, backref='stock')
 
@@ -217,19 +217,19 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 # stock based on quantity
 class StockStatus(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "StockStatus"
-    stock_id = Column(BigInteger, ForeignKey('Stock.id'), primary_key=True)
+    stock_id = Column(Identifier, ForeignKey('Stock.id'), primary_key=True)
     quantity = Column(Integer)
 
 class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Product'
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Identifier, primary_key=True)
     name = Column(String(255))
     price = Column(Numeric(precision=16, scale=2), nullable=False)
 
-    sales_segment_id = Column(BigInteger, ForeignKey('SalesSegment.id'), nullable=True)
+    sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'), nullable=True)
     sales_segment = relationship('SalesSegment', uselist=False, backref='product')
 
-    event_id = Column(BigInteger, ForeignKey('Event.id'))
+    event_id = Column(Identifier, ForeignKey('Event.id'))
     event = relationship('Event', backref='products')
 
     items = relationship('ProductItem', backref='product')
