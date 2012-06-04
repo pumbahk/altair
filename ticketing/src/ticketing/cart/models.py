@@ -96,6 +96,12 @@ class CartedProduct(Base):
     updated_at = sa.Column(sa.DateTime, nullable=True, onupdate=datetime.now)
     deleted_at = sa.Column(sa.DateTime, nullable=True)
 
+    @property
+    def amount(self):
+        """ 購入額小計
+        """
+        return self.product.price * self.quantity
+
     def pop_seats(self, seats):
         for product_item in self.product.items:
             cart_product_item = CartedProductItem(carted_product=self, quantity=self.quantity, product_item=product_item)
@@ -121,7 +127,7 @@ class Cart(Base):
 
     @property
     def total_amount(self):
-        return 0
+        return sum(cp.amount for cp in self.products)
 
     @classmethod
     def get_or_create(cls, cart_session_id):

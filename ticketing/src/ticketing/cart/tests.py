@@ -54,6 +54,15 @@ class CartTests(unittest.TestCase):
         target = self._makeOne()
         self.assertEqual(target.total_amount, 0)
 
+    def test_total_amount(self):
+        from . import models
+        target = self._makeOne()
+        target.products = [
+            models.CartedProduct(quantity=10, product=testing.DummyModel(price=10)),
+            models.CartedProduct(quantity=10, product=testing.DummyModel(price=20)),
+            ]
+        self.assertEqual(target.total_amount, 300)
+
     def test_is_existing_cart_session_id_not_exsiting(self):
         target = self._getTarget()
 
@@ -137,6 +146,11 @@ class CartedProductTests(unittest.TestCase):
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].stock_id, 1)
 
+    def test_amount(self):
+        product = testing.DummyResource(price=150)
+        target = self._makeOne(id=1, product=product, quantity=3)
+
+        self.assertEqual(target.amount, 450)
 
 class CartedProductItemTests(unittest.TestCase):
     def setUp(self):
