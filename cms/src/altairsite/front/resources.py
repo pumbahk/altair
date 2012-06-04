@@ -31,11 +31,10 @@ class PageRenderingResource(object):
         return page
 
     def get_page_and_layout(self, url, dt):
-        try:
-            page = Page.query.filter(Page.url==url).filter(Page.in_term(dt)).order_by("page.publish_begin").limit(1).first()
-            return page, page.layout
-        except saexc.NoResultFound:
+        page = Page.query.filter(Page.url==url).filter(Page.in_term(dt)).order_by("page.publish_begin").first()
+        if page is None:
             raise pyrexc.NotFound(u'page, url=%s and publish datetime = %s, is not found' % (url, dt))
+        return page, page.layout
 
     def get_page_and_layout_preview(self, url, page_id):
         try:

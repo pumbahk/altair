@@ -127,6 +127,7 @@ class UsePageEtcMixin(object):
              'parent_id': None,
              'site_id': None,
              'structure': structure, 
+             "publish_begin": datetime.datetime(1900, 1, 1), 
              'title': u'fofoo',
              'updated_at': datetime.datetime(2012, 2, 14, 15, 13, 26, 438156),
              'url': u'sample_page',

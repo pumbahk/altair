@@ -53,6 +53,7 @@ class Promotion(Base):
 
     INTERVAL_TIME = 5000
     def as_info(self, request, idx=0, limit=15):
+        ## todo optimize
         punits = self.promotion_units[:limit] if len(self.promotion_units) > limit else self.promotion_units
         selected = punits[idx]
         return PromotionInfo(
