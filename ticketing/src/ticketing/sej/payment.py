@@ -2,16 +2,18 @@
 
 import hashlib, time, re, urllib2
 import logging
+
 from datetime import datetime
 from dateutil.parser import parse
 
 from .utils import JavaHashMap
 from .models import SejOrder, SejTicket, SejNotification
-from . import SejNotificationType, SejOrderUpdateReason, SejPaymentType, SejTicketType, is_ticket, need_ticketing
+
+from .resources import make_sej_response, is_ticket, need_ticketing
+from .resources import SejNotificationType, SejOrderUpdateReason, SejPaymentType, SejTicketType
+from .resources import SejResponseError, SejServerError
 
 import sqlahelper
-
-DBSession = sqlahelper.get_session()
 
 from lxml import etree
 import re
@@ -19,6 +21,8 @@ import re
 logging.basicConfig()
 log = logging.getLogger(__file__)
 log.setLevel(logging.DEBUG)
+
+DBSession = sqlahelper.get_session()
 
 class SejTicketDataXml():
 
@@ -57,39 +61,35 @@ class SejPayment(object):
         self.retry_interval = retry_interval
 
     def request(self, params, retry_mode):
-        request_params = self.create_request_params(params, self.secret_key)
+        request_params = self.create_request_params(params)
         ret = self.send_request(request_params, 0, retry_mode)
         return ret
 
-    def check_sign(self):
-        pass
-
-    def create_request_params(self, params, private_key):
-        xcode = self.create_hash_from_x_start_params(params, private_key)
+    def create_request_params(self, params):
+        xcode = self.create_hash_from_x_start_params(params)
         params['xcode'] = xcode
         return params
 
-    def create_md5hash_from_dict(self, kv, private_key):
+    def create_md5hash_from_dict(self, kv):
         tmp_keys = JavaHashMap()
         key_array = list(kv.iterkeys())
         for key, value in kv.iteritems():
             tmp_keys[key.lower()] = value
         key_array.sort()
         buffer = [tmp_keys[key.lower()] for key in key_array]
-        buffer.append(private_key)
-        print buffer
+        buffer.append(self.secret_key)
         buffer = u','.join(buffer)
         logging.debug('hash:' + buffer)
         return hashlib.md5(buffer.encode(encoding="UTF-8")).hexdigest()
 
-    def create_hash_from_x_start_params(self, params, salt_key):
+    def create_hash_from_x_start_params(self, params):
 
         falsify_props = dict()
         for name,param in params.iteritems():
             if name.startswith('X_'):
                 falsify_props[name] = param
 
-        hash = self.create_md5hash_from_dict(falsify_props, salt_key)
+        hash = self.create_md5hash_from_dict(falsify_props)
 
         return hash
 
@@ -97,7 +97,7 @@ class SejPayment(object):
         for count in range(self.retry_count):
             if count > 0:
                 time.sleep(self.retry_interval)
-            ret_val = self._send_request(request_params, mode, retry_flg);
+            ret_val = self._send_request(request_params, mode, retry_flg)
             if ret_val != 120 and ret_val != 5:
                 return ret_val
 
@@ -128,7 +128,6 @@ class SejPayment(object):
         body = res.read()
         log.debug(body)
 
-        from . import SejServerError
         if status == 200:
             raise SejServerError(status_code=200, reason="Script syntax error", body=body)
 
@@ -181,10 +180,6 @@ def _create_sej_request(
     # 注文ID
     params['X_shop_order_id']   = order_id
 
-    # 合計金額 = チケット代金 + チケット購入代金+発券代金の場合
-
-    x_goukei_kingaku = total if payment_type != SejPaymentType.Paid else 0
-    params['X_goukei_kingaku']  = u'%06d' % x_goukei_kingaku
 
     if payment_type != SejPaymentType.Paid:
         # コンビニでの決済を行う場合の支払い期限の設定
@@ -196,6 +191,21 @@ def _create_sej_request(
     # チケット購入代金
     x_ticket_kounyu_daikin = commission_fee if payment_type != SejPaymentType.Paid else 0
     params['X_ticket_kounyu_daikin'] = u'%06d' % x_ticket_kounyu_daikin
+    # 発券代金
+    x_hakken_daikin = ticketing_fee if payment_type != SejPaymentType.PrepaymentOnly else 0
+    params['X_hakken_daikin']       = u'%06d' % x_hakken_daikin
+
+    # 合計金額 = チケット代金 + チケット購入代金+発券代金の場合
+    x_goukei_kingaku = x_ticket_daikin + x_ticket_kounyu_daikin + x_hakken_daikin
+    params['X_goukei_kingaku']  = u'%06d' % x_goukei_kingaku
+
+    print 'x_goukei_kingaku %d' % x_goukei_kingaku
+    print 'X_ticket_kounyu_daikin %d' % x_ticket_kounyu_daikin
+    print 'X_ticket_daikin %d' % x_ticket_daikin
+    print 'X_hakken_daikin %d' % x_hakken_daikin
+
+    assert x_goukei_kingaku == x_ticket_daikin + x_ticket_kounyu_daikin + x_hakken_daikin
+    assert x_ticket_daikin + x_ticket_kounyu_daikin == 0
 
     if payment_type == SejPaymentType.Prepayment or payment_type == SejPaymentType.Paid:
         # 支払いと発券が異なる場合、発券開始日時と発券期限を指定できる。
@@ -231,8 +241,7 @@ def _create_sej_request(
         ticket_num = 0
         e_ticket_num = 0
 
-    x_hakken_daikin = ticketing_fee if payment_type != SejPaymentType.Paid and payment_type != SejPaymentType.PrepaymentOnly else 0
-    params['X_hakken_daikin']       = u'%06d' % x_hakken_daikin
+
     params['X_ticket_cnt']          = u'%02d' % len(tickets)
     params['X_ticket_hon_cnt']      = u'%02d' % ticket_num
 
@@ -576,25 +585,36 @@ def request_exchange_sheet(exchange_sheet_number):
 def callback_notification(params,
                           secret_key = u'E6PuZ7Vhe7nWraFW'):
 
-    from . import make_sej_response
 
     hash_map = JavaHashMap()
     for k,v in params.items():
         hash_map[k] = v
 
     payment = SejPayment(url = '', secret_key = secret_key)
-    hash = payment.create_hash_from_x_start_params(hash_map, secret_key)
+    hash = payment.create_hash_from_x_start_params(hash_map)
     '''
     if hash != params.get('xcode'):
-        from . import SejResponseError
         raise SejResponseError(
             400, 'Bad Request',dict(status='400', Error_Type='00', Error_Msg='Bad Value', Error_Field='xcode'))
 
     '''
 
+    process_number = params.get('X_shori_id')
+    if not process_number:
+        raise SejResponseError(
+             400, 'Bad Request',dict(status='400', Error_Type='00', Error_Msg='No Data', Error_Field='X_shori_id'))
+
+    retry_data = False
+    q = SejNotification.query.filter_by(process_number = process_number)
+    if q.count():
+        n = q.one()
+        retry_data = True
+    else:
+        n = SejNotification()
+        DBSession.add(n)
+
     def process_payment_complete(notification_type):
         '''3-1.入金発券完了通知'''
-        n = SejNotification()
         n.notification_type     = notification_type
         n.process_number        = hash_map['X_shori_id']
         n.shop_id               = hash_map['X_shop_id']
@@ -612,13 +632,12 @@ def callback_notification(params,
         n.ticketing_store_name  = hash_map['hakken_mise_name']
         n.cancel_reason         = hash_map['X_torikeshi_riyu']
         n.processed_at          = parse(hash_map['X_shori_time'])
-        DBSession.add(n)
-        DBSession.flush()
-        return make_sej_response(dict(status='800'))
+        n.signature                     = hash_map['xcode']
+
+        return make_sej_response(dict(status='800' if not retry_data else '810'))
 
     def process_re_grant(notification_type):
         '''3-2.SVC強制取消通知'''
-        n = SejNotification()
         n.notification_type             = notification_type
         n.process_number                = hash_map['X_shori_id']
         n.shop_id                       = hash_map['X_shop_id']
@@ -635,14 +654,12 @@ def callback_notification(params,
         for idx in range(1,20):
             n.barcode_numbers['barcodes'].append(hash_map['X_barcode_no_new_%02d' % idx])
         n.processed_at          = parse(hash_map['X_shori_time'])
-        DBSession.add(n)
-        DBSession.flush()
-        return make_sej_response(dict(status='800'))
+        n.signature                     = hash_map['xcode']
 
-    def process_exipre(notification_type):
-        '''3-2.SVC強制取消通知'''
+        return make_sej_response(dict(status='800' if not retry_data else '810'))
 
-        n = SejNotification()
+    def process_expire(notification_type):
+
         n.process_number                = hash_map['X_shori_id']
         n.notification_type             = notification_type
         n.shop_id                       = hash_map['X_shop_id']
@@ -651,6 +668,7 @@ def callback_notification(params,
         n.billing_number                = hash_map['X_haraikomi_no']
         n.exchange_number               = hash_map['X_hikikae_no']
         n.processed_at                  = parse(hash_map['X_shori_time'])
+        n.signature                     = hash_map['xcode']
 
         n.barcode_numbers               = dict()
         n.barcode_numbers['barcodes']   = list()
@@ -658,25 +676,18 @@ def callback_notification(params,
         for idx in range(1,20):
             n.barcode_numbers['barcodes'].append(hash_map['X_barcode_no_new_%02d' % idx])
 
-        DBSession.add(n)
-        DBSession.flush()
-        return make_sej_response(dict(status='800'))
+        return make_sej_response(dict(status='800' if not retry_data else '810'))
 
     def dummy(notification_type):
-        raise Exception('X_tuchi_type is fusei %d', notification_type)
-
+        raise Exception('X_tuchi_type is fusei %d' % notification_type)
     ret = {
         SejNotificationType.PaymentComplete.v   : process_payment_complete,
         SejNotificationType.CancelFromSVC.v     : process_payment_complete,
         SejNotificationType.ReGrant.v           : process_re_grant,
-        SejNotificationType.TicketingExpire.v   : process_exipre,
-        SejNotificationType.PaymentExpire.v     : process_exipre
+        SejNotificationType.TicketingExpire.v   : process_expire,
     }.get(int(params['X_tuchi_type']), dummy)(int(params['X_tuchi_type']))
 
-
-
-    #DBSession.merge(sejTicket)
-    #DBSession.flush()
+    DBSession.flush()
 
     return ret
 

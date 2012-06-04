@@ -6,7 +6,7 @@ from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, Strin
 from sqlalchemy.orm import join, backref, column_property
 
 from ticketing.utils import StandardEnum
-from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, relationship
+from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier, relationship
 from ticketing.products.models import Product, ProductItem, StockHolder, Stock, StockAllocation
 from ticketing.venues.models import Venue, VenueArea, VenueArea_group_l0_id, Seat, SeatAttribute
 
@@ -17,14 +17,14 @@ class AccountTypeEnum(StandardEnum):
 
 class Account(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "Account"
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Identifier, primary_key=True)
     account_type = Column(Integer)  # @see AccountTypeEnum
     name = Column(String(255))
 
-    user_id = Column(BigInteger, ForeignKey("User.id"), nullable=True)
+    user_id = Column(Identifier, ForeignKey("User.id"), nullable=True)
     user = relationship('User')
 
-    organization_id = Column(BigInteger, ForeignKey("Organization.id"), nullable=True)
+    organization_id = Column(Identifier, ForeignKey("Organization.id"), nullable=True)
     organization = relationship('Organization', uselist=False)
     stock_holders = relationship('StockHolder', backref='account')
 
@@ -35,7 +35,7 @@ class Account(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Performance'
 
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Identifier, primary_key=True)
     name = Column(String(255))
     code = Column(String(12))
     open_on = Column(DateTime)
@@ -43,8 +43,8 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     end_on = Column(DateTime)
     no_period = Column(Boolean)
 
-    event_id = Column(BigInteger, ForeignKey('Event.id'))
-    owner_id = Column(BigInteger, ForeignKey('Account.id'))
+    event_id = Column(Identifier, ForeignKey('Event.id'))
+    owner_id = Column(Identifier, ForeignKey('Account.id'))
 
     stock_holders = relationship('StockHolder', backref='performance')
     product_items = relationship('ProductItem', backref='performance')
@@ -132,17 +132,17 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Event'
 
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Identifier, primary_key=True)
     code = Column(String(12))
     title = Column(String(1024))
     abbreviated_title = Column(String(1024))
     start_on = Column(DateTime)
     end_on = Column(DateTime, nullable=True)
 
-    account_id = Column(BigInteger, ForeignKey('Account.id'))
+    account_id = Column(Identifier, ForeignKey('Account.id'))
     account = relationship('Account', backref='events')
 
-    organization_id = Column(BigInteger, ForeignKey('Organization.id'))
+    organization_id = Column(Identifier, ForeignKey('Organization.id'))
     organization = relationship('Organization', backref='events')
 
     performances = relationship('Performance', backref='event')
@@ -201,14 +201,14 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'SalesSegment'
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Identifier, primary_key=True)
     name = Column(String(255))
     start_at = Column(DateTime)
     end_at = Column(DateTime)
     upper_limit = Column(Integer)
     seat_choice = Column(Boolean, default=True)
 
-    event_id = Column(BigInteger, ForeignKey('Event.id'))
+    event_id = Column(Identifier, ForeignKey('Event.id'))
     event = relationship('Event', backref='sales_segments')
 
     def get_sync_data(self, performance_id):
@@ -227,15 +227,15 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentDeliveryMethodPair'
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Identifier, primary_key=True)
     transaction_fee = Column(Numeric(precision=16, scale=2), nullable=False)
     delivery_fee = Column(Numeric(precision=16, scale=2), nullable=False)
     discount = Column(Numeric(precision=16, scale=2), nullable=False)
     discount_unit = Column(Integer)
 
-    sales_segment_id = Column(BigInteger, ForeignKey('SalesSegment.id'))
+    sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'))
     sales_segment = relationship('SalesSegment', backref='payment_delivery_method_pairs')
-    payment_method_id = Column(BigInteger, ForeignKey('PaymentMethod.id'))
+    payment_method_id = Column(Identifier, ForeignKey('PaymentMethod.id'))
     payment_method = relationship('PaymentMethod')
-    delivery_method_id = Column(BigInteger, ForeignKey('DeliveryMethod.id'))
+    delivery_method_id = Column(Identifier, ForeignKey('DeliveryMethod.id'))
     delivery_method = relationship('DeliveryMethod')

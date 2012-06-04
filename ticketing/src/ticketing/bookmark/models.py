@@ -8,7 +8,7 @@ from hashlib import md5
 
 import sqlahelper
 
-from ticketing.models import WithTimestamp, relationship
+from ticketing.models import WithTimestamp, Identifier, relationship
 
 session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
@@ -16,10 +16,10 @@ Base = sqlahelper.get_base()
 class Bookmark(Base, WithTimestamp):
     __tablename__ = "Bookmark"
 
-    id              = Column(BigInteger, primary_key=True)
+    id              = Column(Identifier, primary_key=True)
     name            = Column(String(255))
     url             = Column(String(1024))
-    organization_id = Column(BigInteger, ForeignKey("Organization.id"), nullable=True)
+    organization_id = Column(Identifier, ForeignKey("Organization.id"), nullable=True)
     organization    = relationship("Organization", uselist=False)
     status          = Column(Integer)
 

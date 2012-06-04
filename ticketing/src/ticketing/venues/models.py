@@ -6,20 +6,20 @@ from sqlalchemy.ext.associationproxy import association_proxy
 import sqlahelper
 
 from ticketing.utils import StandardEnum
-from ticketing.models import BaseModel, JSONEncodedDict, MutationDict, WithTimestamp, LogicallyDeleted, DBSession, relationship
+from ticketing.models import BaseModel, JSONEncodedDict, MutationDict, WithTimestamp, LogicallyDeleted, Identifier, DBSession, relationship
 
 session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
 
 seat_seat_adjacency_table = Table(
     "Seat_SeatAdjacency", Base.metadata,
-    Column('seat_id', BigInteger, ForeignKey("Seat.id"), primary_key=True, nullable=False),
-    Column('seat_adjacency_id', BigInteger, ForeignKey("SeatAdjacency.id"), primary_key=True, nullable=False)
+    Column('seat_id', Identifier, ForeignKey("Seat.id"), primary_key=True, nullable=False),
+    Column('seat_adjacency_id', Identifier, ForeignKey("SeatAdjacency.id"), primary_key=True, nullable=False)
     )
 
 class Site(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "Site"
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Identifier, primary_key=True)
     name = Column(String(255))
     zip = Column(String(255))
     prefecture   = Column(String(255))
@@ -34,9 +34,9 @@ class Site(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 class VenueArea_group_l0_id(Base):
     __tablename__   = "VenueArea_group_l0_id"
-    venue_id = Column(BigInteger, ForeignKey('Venue.id'), primary_key=True, nullable=False)
+    venue_id = Column(Identifier, ForeignKey('Venue.id'), primary_key=True, nullable=False)
     group_l0_id = Column(String(255), primary_key=True, nullable=False)
-    venue_area_id = Column(BigInteger, ForeignKey('VenueArea.id'), index=True, primary_key=True, nullable=False)
+    venue_area_id = Column(Identifier, ForeignKey('VenueArea.id'), index=True, primary_key=True, nullable=False)
     venue = relationship('Venue')
 
 class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -45,14 +45,14 @@ class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     Venueのテンプレートは、performance_idがNoneになっている。
     """
     __tablename__ = "Venue"
-    id = Column(BigInteger, primary_key=True)
-    site_id = Column(BigInteger, ForeignKey("Site.id"), nullable=False)
-    performance_id = Column(BigInteger, ForeignKey("Performance.id"), nullable=True)
-    organization_id = Column(BigInteger, ForeignKey("Organization.id"), nullable=False)
+    id = Column(Identifier, primary_key=True)
+    site_id = Column(Identifier, ForeignKey("Site.id"), nullable=False)
+    performance_id = Column(Identifier, ForeignKey("Performance.id"), nullable=True)
+    organization_id = Column(Identifier, ForeignKey("Organization.id"), nullable=False)
     name = Column(String(255))
     sub_name = Column(String(255))
 
-    original_venue_id = Column(BigInteger, ForeignKey("Venue.id"), nullable=True)
+    original_venue_id = Column(Identifier, ForeignKey("Venue.id"), nullable=True)
     derived_venues = relationship("Venue",
                                   backref=backref(
                                     'original_venue', remote_side=[id]))
@@ -88,7 +88,7 @@ class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 class VenueArea(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__   = "VenueArea"
-    id              = Column(BigInteger, primary_key=True)
+    id              = Column(Identifier, primary_key=True)
     name            = Column(String(255), nullable=False)
     groups          = relationship('VenueArea_group_l0_id')
 
@@ -114,7 +114,7 @@ class VenueArea(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 class SeatAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__   = "SeatAttribute"
-    seat_id         = Column(BigInteger, ForeignKey('Seat.id'), primary_key=True, nullable=False)
+    seat_id         = Column(Identifier, ForeignKey('Seat.id'), primary_key=True, nullable=False)
     name            = Column(String(255), primary_key=True, nullable=False)
     value           = Column(String(1023))
 
@@ -133,13 +133,13 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             ),
         )
 
-    id              = Column(BigInteger, primary_key=True)
+    id              = Column(Identifier, primary_key=True)
     l0_id           = Column(String(255))
 
-    stock_id        = Column(BigInteger, ForeignKey('Stock.id'))
-    stock_type_id   = Column(BigInteger, ForeignKey('StockType.id'))
+    stock_id        = Column(Identifier, ForeignKey('Stock.id'))
+    stock_type_id   = Column(Identifier, ForeignKey('StockType.id'))
 
-    venue_id        = Column(BigInteger, ForeignKey('Venue.id'), nullable=False)
+    venue_id        = Column(Identifier, ForeignKey('Venue.id'), nullable=False)
     group_l0_id     = Column(String(255))
 
     attributes      = relationship("SeatAttribute", backref='seat', cascade='save-update, merge')
@@ -193,7 +193,7 @@ class SeatStatusEnum(StandardEnum):
 
 class SeatStatus(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "SeatStatus"
-    seat_id = Column(BigInteger, ForeignKey("Seat.id"), primary_key=True)
+    seat_id = Column(Identifier, ForeignKey("Seat.id"), primary_key=True)
     status = Column(Integer)
 
     @staticmethod
@@ -221,13 +221,13 @@ class SeatStatus(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 class SeatAdjacency(Base):
     __tablename__ = "SeatAdjacency"
-    id = Column(BigInteger, primary_key=True)
-    adjacency_set_id = Column(BigInteger, ForeignKey('SeatAdjacencySet.id'))
+    id = Column(Identifier, primary_key=True)
+    adjacency_set_id = Column(Identifier, ForeignKey('SeatAdjacencySet.id'))
 
 class SeatAdjacencySet(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "SeatAdjacencySet"
-    id = Column(BigInteger, primary_key=True)
-    venue_id = Column(BigInteger, ForeignKey('Venue.id'))
+    id = Column(Identifier, primary_key=True)
+    venue_id = Column(Identifier, ForeignKey('Venue.id'))
     seat_count = Column(Integer, nullable=False)
     adjacencies = relationship("SeatAdjacency", backref='adjacency_set')
 

@@ -45,7 +45,6 @@ def main(global_config, **settings):
     config.include('ticketing.login' , route_prefix='/login')
     config.include('ticketing.organizations' , route_prefix='/organizations')
     config.include('ticketing.api' , route_prefix='/api')
-    config.include('ticketing.sej' , route_prefix='/sej')
     config.include('ticketing.admin' , route_prefix='/admin')
     config.include('ticketing.events' , route_prefix='/events')
     config.include('ticketing.orders' , route_prefix='/orders')

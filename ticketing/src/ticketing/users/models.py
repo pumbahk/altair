@@ -11,12 +11,12 @@ Base = sqlahelper.get_base()
 
 class User(Base):
     __tablename__ = 'User'
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Identifier, primary_key=True)
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
     status = Column(Integer)
 
-    bank_account_id = Column(BigInteger, ForeignKey('BankAccount.id'))
+    bank_account_id = Column(Identifier, ForeignKey('BankAccount.id'))
     bank_account    = relationship('BankAccount')
 
     @staticmethod
@@ -25,8 +25,8 @@ class User(Base):
 
 class UserProfile(Base):
     __tablename__ = 'UserProfile'
-    id = Column(BigInteger, primary_key=True)
-    user_id = Column(BigInteger, ForeignKey('User.id'))
+    id = Column(Identifier, primary_key=True)
+    user_id = Column(Identifier, ForeignKey('User.id'))
     user = relationship('User', backref=backref("user_profile", uselist=False))
 
     email = Column(String(255))
@@ -38,7 +38,7 @@ class UserProfile(Base):
     birth_day = Column(DateTime)
     sex = Column(Integer)
     zip = Column(String(255))
-    prefecture_id = Column(BigInteger, ForeignKey("Prefecture.id"), nullable=True)
+    prefecture_id = Column(Identifier, ForeignKey("Prefecture.id"), nullable=True)
     prefecture    = relationship("Prefecture", uselist=False)
     city = Column(String(255))
     street = Column(String(255))
@@ -54,15 +54,15 @@ class UserProfile(Base):
 
 class UserCredential(Base):
     __tablename__ = 'UserCredential'
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Identifier, primary_key=True)
 
     auth_identifier = Column(String(255), unique=True)
     auth_secret= Column(String(255))
 
-    user_id = Column(BigInteger, ForeignKey('User.id'))
+    user_id = Column(Identifier, ForeignKey('User.id'))
     user = relationship('User', backref="user_credential", uselist=False)
 
-    member_ship_id = Column(BigInteger, ForeignKey('MemberShip.id'))
+    member_ship_id = Column(Identifier, ForeignKey('MemberShip.id'))
     member_ship     = relationship("MemberShip", uselist=False)
 
     updated_at = Column(DateTime)
@@ -71,8 +71,8 @@ class UserCredential(Base):
 
 class UserPointAccount(Base):
     __tablename__ = 'UserPointAccount'
-    id = Column(BigInteger, primary_key=True)
-    user_id = Column(BigInteger, ForeignKey("User.id"))
+    id = Column(Identifier, primary_key=True)
+    user_id = Column(Identifier, ForeignKey("User.id"))
     user = relationship('User', backref="user_point_account", uselist=False)
     point_type_code = Column(Integer)
     account_number = Column(String(255))
@@ -84,10 +84,10 @@ class UserPointAccount(Base):
 
 class UserPointHistory(Base):
     __tablename__ = 'UserPointHistory'
-    id = Column(BigInteger, primary_key=True)
-    user_point_account_id = Column(BigInteger, ForeignKey("UserPointAccount.id"))
+    id = Column(Identifier, primary_key=True)
+    user_point_account_id = Column(Identifier, ForeignKey("UserPointAccount.id"))
     user_point_account = relationship('UserPointAccount', uselist=False)
-    user_id = Column(BigInteger, ForeignKey("User.id"))
+    user_id = Column(Identifier, ForeignKey("User.id"))
     user = relationship('User', uselist=False)
     point = Column(Integer)
     rate = Column(Integer)
@@ -97,10 +97,10 @@ class UserPointHistory(Base):
 
 class MailMagazine(Base):
     __tablename__ = 'MailMagazine'
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Identifier, primary_key=True)
     name = Column(String(255))
     description = Column(String(1024))
-    organization_id = Column(BigInteger, ForeignKey("Organization.id"), nullable=True)
+    organization_id = Column(Identifier, ForeignKey("Organization.id"), nullable=True)
     organization = relationship('Organization', uselist=False)
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
@@ -108,11 +108,11 @@ class MailMagazine(Base):
 
 class MailSubscription(Base):
     __tablename__ = 'MailSubscription'
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Identifier, primary_key=True)
     email = Column(String(255))
-    user_id = Column(BigInteger, ForeignKey("User.id"), nullable=True)
+    user_id = Column(Identifier, ForeignKey("User.id"), nullable=True)
     user = relationship('User', uselist=False)
-    segment_id = Column(BigInteger, ForeignKey("MailMagazine.id"), nullable=True)
+    segment_id = Column(Identifier, ForeignKey("MailMagazine.id"), nullable=True)
     segment = relationship('MailMagazine', uselist=False)
 
     updated_at = Column(DateTime)
@@ -124,7 +124,7 @@ class MemberShip(Base):
       Membership ex) Rakuten Fanclub ....
     '''
     __tablename__ = 'MemberShip'
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Identifier, primary_key=True)
     name = Column(String(255))
 
     updated_at = Column(DateTime, nullable=True)

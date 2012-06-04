@@ -8,18 +8,18 @@ from hashlib import md5
 from ticketing.utils import StandardEnum
 
 from ticketing.organizations.models import Organization
-from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, DBSession, relationship
+from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, DBSession, Identifier, relationship
 
 operator_role_association_table = Table('OperatorRole_Operator', Base.metadata,
     Column('id', Integer, primary_key=True),
-    Column('operator_role_id', BigInteger, ForeignKey('OperatorRole.id')),
-    Column('operator_id', BigInteger, ForeignKey('Operator.id'))
+    Column('operator_role_id', Identifier, ForeignKey('OperatorRole.id')),
+    Column('operator_id', Identifier, ForeignKey('Operator.id'))
 )
 
 class Permission(Base):
     __tablename__ = 'Permission'
-    id = Column(BigInteger, primary_key=True)
-    operator_role_id = Column(BigInteger, ForeignKey('OperatorRole.id'))
+    id = Column(Identifier, primary_key=True)
+    operator_role_id = Column(Identifier, ForeignKey('OperatorRole.id'))
     operator_role = relationship('OperatorRole', uselist=False)
     category_name = Column(String(255), index=True)
     permit = Column(Integer)
@@ -41,7 +41,7 @@ class Permission(Base):
 
 class OperatorRole(Base, WithTimestamp):
     __tablename__ = 'OperatorRole'
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Identifier, primary_key=True)
     name = Column(String(255))
     operators = relationship('Operator', secondary=operator_role_association_table)
     permissions = relationship('Permission')
@@ -59,14 +59,14 @@ class OperatorActionHistoryTypeENum(StandardEnum):
 
 class OperatorActionHistory(Base):
     __tablename__ = 'OperatorActionHistory'
-    id = Column(BigInteger, primary_key=True)
-    operator_id = Column(BigInteger, ForeignKey('Operator.id'))
+    id = Column(Identifier, primary_key=True)
+    operator_id = Column(Identifier, ForeignKey('Operator.id'))
     operator = relationship('Operator', uselist=False, backref='histories')
     function = Column(String(255))
 
 class OperatorAuth(Base, WithTimestamp):
     __tablename__ = 'OperatorAuth'
-    operator_id = Column(BigInteger, ForeignKey('Operator.id'), primary_key=True, nullable=False)
+    operator_id = Column(Identifier, ForeignKey('Operator.id'), primary_key=True, nullable=False)
     login_id = Column(String(32), unique=True)
     password = Column(String(32))
     auth_code = Column(String(32), nullable=True)
@@ -75,10 +75,10 @@ class OperatorAuth(Base, WithTimestamp):
 
 class Operator(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Operator'
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Identifier, primary_key=True)
     name = Column(String(255))
     email = Column(String(255))
-    organization_id = Column(BigInteger, ForeignKey('Organization.id'))
+    organization_id = Column(Identifier, ForeignKey('Organization.id'))
     expire_at = Column(DateTime, nullable=True)
     status = Column(Integer, default=1)
 
