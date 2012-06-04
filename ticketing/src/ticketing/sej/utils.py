@@ -22,7 +22,7 @@ class JavaHasher(object):
             v = struct.unpack(">H", utf16[off:off + 2])[0]
             off += 2
             h = (31 * h + v) & 0xffffffff
-        return h;
+        return h
 
     def __call__(self, obj):
         if isinstance(obj, str):

@@ -1,14 +1,9 @@
 from pyramid.view import view_config, view_defaults
 from pyramid.response import Response
-
-from ticketing.views import BaseView
-
-
 from pyramid.httpexceptions import HTTPClientError
-from string import Template
 
+from .resources import SejResponseError
 from .payment import callback_notification
-from . import SejResponseError
 from .models import SejOrder
 
 class SejHTTPErrorResponse(HTTPClientError):
@@ -21,7 +16,10 @@ class SejHTTPErrorResponse(HTTPClientError):
         super(HTTPClientError, self).__init__()
         self.body = sej_error.response()
 
-class SejCallback(BaseView):
+class SejCallback(object):
+
+    def __init__(self, request):
+        self.request = request
 
     @view_config(route_name='sej.index', renderer='ticketing:sej/template/index.html')
     def index(self):

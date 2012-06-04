@@ -2,16 +2,18 @@
 
 import hashlib, time, re, urllib2
 import logging
+
 from datetime import datetime
 from dateutil.parser import parse
 
 from .utils import JavaHashMap
 from .models import SejOrder, SejTicket, SejNotification
-from . import SejNotificationType, SejOrderUpdateReason, SejPaymentType, SejTicketType, is_ticket, need_ticketing
+
+from .resources import make_sej_response, is_ticket, need_ticketing
+from .resources import SejNotificationType, SejOrderUpdateReason, SejPaymentType, SejTicketType
+from .resources import SejResponseError, SejServerError
 
 import sqlahelper
-
-DBSession = sqlahelper.get_session()
 
 from lxml import etree
 import re
@@ -19,6 +21,8 @@ import re
 logging.basicConfig()
 log = logging.getLogger(__file__)
 log.setLevel(logging.DEBUG)
+
+DBSession = sqlahelper.get_session()
 
 class SejTicketDataXml():
 
@@ -74,7 +78,6 @@ class SejPayment(object):
         key_array.sort()
         buffer = [tmp_keys[key.lower()] for key in key_array]
         buffer.append(self.secret_key)
-        print buffer
         buffer = u','.join(buffer)
         logging.debug('hash:' + buffer)
         return hashlib.md5(buffer.encode(encoding="UTF-8")).hexdigest()
@@ -125,7 +128,6 @@ class SejPayment(object):
         body = res.read()
         log.debug(body)
 
-        from . import SejServerError
         if status == 200:
             raise SejServerError(status_code=200, reason="Script syntax error", body=body)
 
@@ -178,10 +180,6 @@ def _create_sej_request(
     # 注文ID
     params['X_shop_order_id']   = order_id
 
-    # 合計金額 = チケット代金 + チケット購入代金+発券代金の場合
-
-    x_goukei_kingaku = total if payment_type != SejPaymentType.Paid else 0
-    params['X_goukei_kingaku']  = u'%06d' % x_goukei_kingaku
 
     if payment_type != SejPaymentType.Paid:
         # コンビニでの決済を行う場合の支払い期限の設定
@@ -193,6 +191,21 @@ def _create_sej_request(
     # チケット購入代金
     x_ticket_kounyu_daikin = commission_fee if payment_type != SejPaymentType.Paid else 0
     params['X_ticket_kounyu_daikin'] = u'%06d' % x_ticket_kounyu_daikin
+    # 発券代金
+    x_hakken_daikin = ticketing_fee if payment_type != SejPaymentType.PrepaymentOnly else 0
+    params['X_hakken_daikin']       = u'%06d' % x_hakken_daikin
+
+    # 合計金額 = チケット代金 + チケット購入代金+発券代金の場合
+    x_goukei_kingaku = x_ticket_daikin + x_ticket_kounyu_daikin + x_hakken_daikin
+    params['X_goukei_kingaku']  = u'%06d' % x_goukei_kingaku
+
+    print 'x_goukei_kingaku %d' % x_goukei_kingaku
+    print 'X_ticket_kounyu_daikin %d' % x_ticket_kounyu_daikin
+    print 'X_ticket_daikin %d' % x_ticket_daikin
+    print 'X_hakken_daikin %d' % x_hakken_daikin
+
+    assert x_goukei_kingaku == x_ticket_daikin + x_ticket_kounyu_daikin + x_hakken_daikin
+    assert x_ticket_daikin + x_ticket_kounyu_daikin == 0
 
     if payment_type == SejPaymentType.Prepayment or payment_type == SejPaymentType.Paid:
         # 支払いと発券が異なる場合、発券開始日時と発券期限を指定できる。
@@ -228,8 +241,7 @@ def _create_sej_request(
         ticket_num = 0
         e_ticket_num = 0
 
-    x_hakken_daikin = ticketing_fee if payment_type != SejPaymentType.Paid and payment_type != SejPaymentType.PrepaymentOnly else 0
-    params['X_hakken_daikin']       = u'%06d' % x_hakken_daikin
+
     params['X_ticket_cnt']          = u'%02d' % len(tickets)
     params['X_ticket_hon_cnt']      = u'%02d' % ticket_num
 
@@ -573,7 +585,6 @@ def request_exchange_sheet(exchange_sheet_number):
 def callback_notification(params,
                           secret_key = u'E6PuZ7Vhe7nWraFW'):
 
-    from . import make_sej_response, SejResponseError
 
     hash_map = JavaHashMap()
     for k,v in params.items():
@@ -669,8 +680,6 @@ def callback_notification(params,
 
     def dummy(notification_type):
         raise Exception('X_tuchi_type is fusei %d' % notification_type)
-    print params['X_tuchi_type']
-    print SejNotificationType.ReGrant.v
     ret = {
         SejNotificationType.PaymentComplete.v   : process_payment_complete,
         SejNotificationType.CancelFromSVC.v     : process_payment_complete,

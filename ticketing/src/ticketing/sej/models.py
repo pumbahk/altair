@@ -137,7 +137,6 @@ class SejOrder(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     # キャンセル日時
     cancel_at               = Column(DateTime, nullable=True)
 
-
     request_params          = Column(MutationDict.as_mutable(JSONEncodedDict(4096)))
     callback_params         = Column(MutationDict.as_mutable(JSONEncodedDict(4096)))
 
