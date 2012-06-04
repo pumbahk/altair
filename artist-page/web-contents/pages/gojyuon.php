@@ -23,14 +23,6 @@ $figure = isset($_GET['figure']) ? $_GET['figure'] :null;
 $moji = isset($_GET['moji']) ? $_GET['moji'] : null;
 $page = isset($_GET['page']) ? $_GET['page'] :1;
 
-
-//page_figureとpage_overseasの違いがわからない
-//page_figureがそのページの文字で page_overseasがpageだけど　pageにすると洋楽でも邦楽でも文字がかぶるから $pageがわたってきたらの処理がどっちも行われる
-//page_figureがわたってきてるとこではpage_overseasもわたってきている　page_overseasが変数としてはわたってきていない POST['page_overseas']で中身は　page
-//mojiとpage_mojiが一緒にわたってくるときはない
-//figureがpage_figureにかわるとき
-
-
 $page_figure = isset($_GET['page_figure']) ? $_GET['page_figure'] :null;
 $cage_moji = isset($_GET['page_moji']) ? $_GET['page_moji'] :null;
 $domestic = isset($_GET['domestic']) ? $_GET['domestic'] :null;
@@ -82,13 +74,13 @@ if($figure){
                 }
                 $stmt_artist_overseas->close(); 
 		// 洋楽で英語のアーティストの数
+		//＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊
 		$stmt_count_artist = $dbh ->prepare("select count(name) from artist inner join artist_genre on artist.id  = artist_genre.artist_id  where artist_genre.genre_id =3 and artist.name like ?");
                 $stmt_count_artist ->bind_param('s',$page_figure);
                 $stmt_count_artist ->execute();
                 $stmt_count_artist ->bind_result($count_artist);
                 $stmt_count_artist->fetch();
                 $stmt_count_artist->close();
-		echo "count_artist".$count_artist;
 		$paging = $count_artist/20;
 		$last_page_artist_count = $count_artist%20;
 		if($last_page_artist_count){
@@ -117,7 +109,6 @@ if($page_figure){
 	
 	while($stmt_artist_page ->fetch()){
 	        $page_artist_array[]=$page_artist;
-		echo "hello";
 	}
 	
 	$stmt_artist_page ->close();}
@@ -218,7 +209,6 @@ te="/Template/template.dwt" codeOutsideHTMLslocked="false" -->
 <link rel="shortcut icon" href="../design/img/common/favicon.ico" />
 <link rel="stylesheet" href="../design/html/css/import.css" type="text/css" media="all" />
 <link rel="stylesheet" href="./import.css" type="text/css" media="all" />
-
 <script type="text/javascript" src="http://www.google.com/jsapi"></script>
 <script type="text/javascript">google.load("jquery", "1.6.1");</script>
 <script type="text/javascript" src="./js/gojyuon.js"></script>
@@ -464,38 +454,38 @@ n/skip.gif" alt="本文へジャンプ" width="1" height="1" /></a></p>
 
 
 
-                        </ul>
-                        <ul>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=A">A</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=B">B</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=C">C</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=D">D</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=E">E</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=F">F</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=G">G</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=H">H</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=I">I</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=J">J</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=K">K</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=L">L</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=M">M</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=N">N</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=O">O</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=P">P</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=Q">Q</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=R">R</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=S">S</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=T">T</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=U">U</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=V">V</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=W">W</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=X">X</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=Y">Y</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=Z">Z</a></li>
-                        </ul>
-                        <?
-                        }
-                        ?>
+			</ul>	
+			 <ul>
+  				<li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=A">A</a></li>
+				<li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=B">B</a></li>
+				<li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=C">C</a></li>
+				<li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=D">D</a></li>
+				<li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=E">E</a></li>
+				<li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=F">F</a></li>
+				<li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=G">G</a></li>
+				<li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=H">H</a></li>
+				<li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=I">I</a></li>
+				<li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=J">J</a></li>
+				<li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=K">K</a></li>
+				<li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=L">L</a></li>
+				<li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=M">M</a></li>
+				<li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=N">N</a></li>
+				<li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=O">O</a></li>
+				<li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=P">P</a></li>
+				<li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=Q">Q</a></li>
+				<li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=R">R</a></li>
+				<li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=S">S</a></li>
+				<li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=T">T</a></li>
+				<li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=U">U</a></li>
+				<li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=V">V</a></li>
+				<li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=W">W</a></li>
+				<li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=X">X</a></li>
+				<li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=Y">Y</a></li>
+				<li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=Z">Z</a></li>
+			</ul>
+			<?
+			}
+			?>
 
 			</div>
 
@@ -508,7 +498,6 @@ n/skip.gif" alt="本文へジャンプ" width="1" height="1" /></a></p>
 		
 	
 				<?
-				//$iが$pagingよりも多く表示されているかpage_artist_arrayの中身が数字か
 				if($moji||$page_moji){
 					for($i=0;$i<=$paging;$i++){
 				?>
@@ -525,15 +514,12 @@ n/skip.gif" alt="本文へジャンプ" width="1" height="1" /></a></p>
 							$page_figure=$_GET['figure'];
 					}
 
-					echo $figure;
-					echo $count_artist;
 					for($i=0;$i<=$paging;$i++){
-							
-				?>
-                               	 <li><a href ="/~katosaori/web-contents/pages/gojyuon.php?page_figure=<?= $page_figure ?>&page_overseas=<?= $i ?>&count_artist=<?= $count_artist ?>"><?= $i ?></a></li>
-		</ul>
-                                <?
-	                                        }
+					?>
+						<a href ="/~katosaori/web-contents/pages/gojyuon.php?page_figure=<?= $page_figure ?>&page_overseas=<?= $i ?>&count_artist=<?= $count_artist ?>"><?= $i ?></a>
+	
+					?>
+					}
 				}
 				?>
 				
