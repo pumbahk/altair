@@ -65,7 +65,7 @@
 	    })
 	  </script>
 
-     ${fco.form_as_table_strict(form, ["url", "add_to_pagset", "pageset","title","event", "publish_begin", "publish_end", "parent","description","keywords","tags","private_tags","layout"])}
+     ${fco.form_as_table_strict(form, ["parent", "url", "add_to_pagset", "pageset","title","event", "publish_begin", "publish_end","description","keywords","tags","private_tags","layout"])}
 	  <button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> Create</button>
     </form>
   </div>
