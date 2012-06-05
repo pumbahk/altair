@@ -479,6 +479,10 @@ class SejTest(unittest.TestCase):
         order = SejOrder.query.filter_by(order_id = u'orderid00001', billing_number=u'0000000001').one()
 
         assert order is not None
+        assert order.total_price    == 15000
+        assert order.ticket_price   == 13000
+        assert order.commission_fee == 1000
+        assert order.ticketing_fee  == 1000
         assert order.total_ticket_count == 3
         assert order.ticket_count == 2
         assert order.exchange_sheet_number == u'11111111'

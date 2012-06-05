@@ -11,7 +11,7 @@ from .models import SejOrder, SejTicket, SejNotification
 
 from .resources import make_sej_response, is_ticket, need_ticketing
 from .resources import SejNotificationType, SejOrderUpdateReason, SejPaymentType, SejTicketType
-from .resources import SejResponseError, SejServerError
+from .resources import SejResponseError, SejServerError, SejError
 
 import sqlahelper
 
@@ -199,13 +199,9 @@ def _create_sej_request(
     x_goukei_kingaku = x_ticket_daikin + x_ticket_kounyu_daikin + x_hakken_daikin
     params['X_goukei_kingaku']  = u'%06d' % x_goukei_kingaku
 
-    print 'x_goukei_kingaku %d' % x_goukei_kingaku
-    print 'X_ticket_kounyu_daikin %d' % x_ticket_kounyu_daikin
-    print 'X_ticket_daikin %d' % x_ticket_daikin
-    print 'X_hakken_daikin %d' % x_hakken_daikin
-
     assert x_goukei_kingaku == x_ticket_daikin + x_ticket_kounyu_daikin + x_hakken_daikin
-    assert x_ticket_daikin + x_ticket_kounyu_daikin == 0
+    if payment_type == SejPaymentType.Paid:
+        assert x_ticket_daikin + x_ticket_kounyu_daikin == 0
 
     if payment_type == SejPaymentType.Prepayment or payment_type == SejPaymentType.Paid:
         # 支払いと発券が異なる場合、発券開始日時と発券期限を指定できる。
@@ -347,7 +343,6 @@ def request_order(
 
     error_type = ret.get('Error_Type', None)
     if error_type:
-        from . import SejError
         raise SejError(
             error_type=int(error_type),
             error_msg=ret.get('Error_Msg', None),
@@ -364,7 +359,10 @@ def request_order(
     sej_order.exchange_sheet_number     = ret.get('iraihyo_id_00')
     sej_order.exchange_number           = ret.get('X_hikikae_no')
     sej_order.order_at                  = datetime.now()
-
+    sej_order.total_price               = int(params.get('X_goukei_kingaku',0))
+    sej_order.ticket_price              = int(params.get('X_ticket_daikin',0))
+    sej_order.commission_fee            = int(params.get('X_ticket_kounyu_daikin',0))
+    sej_order.ticketing_fee             = int(params.get('X_hakken_daikin',0))
     sej_order.attributes = dict()
     idx = 1
     for ticket in tickets:
@@ -445,7 +443,6 @@ def request_cancel_order(
 
     error_type = ret.get('Error_Type', None)
     if error_type:
-        from . import SejError
         raise SejError(
             error_type=int(error_type),
             error_msg=ret.get('Error_Msg', None),
@@ -531,7 +528,6 @@ def request_update_order(
 
     error_type = ret.get('Error_Type', None)
     if error_type:
-        from . import SejError
         raise SejError(
             error_type=int(error_type),
             error_msg=ret.get('Error_Msg', None),
@@ -547,16 +543,22 @@ def request_update_order(
     sejOrder.exchange_number           = ret.get('X_hikikae_no')
     sejOrder.order_at                  = datetime.now()
 
+    order_buffer = {}
+    for ticket in sejOrder.tickets:
+        order_buffer[ticket.ticket_idx] = ticket
+
     idx = 1
     for ticket in tickets:
-        sej_ticket = sejOrder.tickets.get(idx)
+        sej_ticket = order_buffer.get(idx)
+        if not sej_ticket:
+            break
         sej_ticket.ticket_idx           = idx
-        sej_ticket.ticket_type          = tickets.get('ticket_type').v
-        sej_ticket.event_name           = tickets.get('event_name')
-        sej_ticket.performance_name     = tickets.get('performance_name')
-        sej_ticket.performance_datetime = tickets.get('performance_datetime')
-        sej_ticket.ticket_template_id   = tickets.get('ticket_template_id')
-        sej_ticket.ticket_data_xml      = tickets.get('xml').xml
+        sej_ticket.ticket_type          = ticket.get('ticket_type').v
+        sej_ticket.event_name           = ticket.get('event_name')
+        sej_ticket.performance_name     = ticket.get('performance_name')
+        sej_ticket.performance_datetime = ticket.get('performance_datetime')
+        sej_ticket.ticket_template_id   = ticket.get('ticket_template_id')
+        sej_ticket.ticket_data_xml      = ticket.get('xml').xml
         code = ret.get('X_barcode_no_%02d' % idx)
         if code:
             ticket.barcode_number = code
