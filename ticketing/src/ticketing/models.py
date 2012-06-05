@@ -223,6 +223,12 @@ class MutationDict(Mutable, dict):
 class CustomizedRelationshipProperty(RelationshipProperty):
     def _determine_joins(self):
         RelationshipProperty._determine_joins(self)
+
+        # secondary joinがある場合はdeleted_at条件の自動付加は行わない
+        if hasattr(self, 'secondary') and self.secondary is not None:
+            return
+
+        # primary joinに論理削除レコードを対象外とする条件を自動付加する
         for column in self.parent.mapped_table.columns:
             if column.name == 'deleted_at':
                 self.primaryjoin = sql.and_(self.primaryjoin, column==None)
