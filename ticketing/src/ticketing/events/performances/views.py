@@ -12,12 +12,14 @@ from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.events.models import Event, Performance, Account, SalesSegment
 from ticketing.events.performances.forms import PerformanceForm
+from ticketing.events.stock_types.forms import StockTypeForm, StockAllocationForm
 from ticketing.events.stock_holders.forms import StockHolderForm
 from ticketing.events.stocks.forms import StockForm
 from ticketing.events.sales_segments.forms import SalesSegmentForm
 from ticketing.products.models import Product
 from ticketing.products.forms import ProductForm, ProductItemForm
-from ticketing.events.stock_types.forms import StockTypeForm, StockAllocationForm
+from ticketing.orders.models import Order
+from ticketing.orders.forms import OrderForm
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class Performances(BaseView):
@@ -66,7 +68,8 @@ class Performances(BaseView):
             data['form_product'] = ProductForm(event_id=performance.event_id)
             data['form_product_item'] = ProductItemForm(user_id=self.context.user.id, performance_id=performance_id)
         elif tab == 'reservation':
-            pass
+            data['form_order'] = OrderForm(event_id=performance.event_id)
+            data['orders'] = Order.filter_by_performance_id(performance_id)
         elif tab == 'ticket-designer':
             pass
         else:

@@ -121,7 +121,7 @@ $(function() {
         </div>
         % elif tab == 'reservation':
         <div class="tab-pane" id="reservation">
-          <%include file="./_reservation.html" args="performance=performance" />
+          <%include file="./_reservation.html" args="form=form_order, orders=orders" />
         </div>
         % elif tab == 'ticket-designer':
         <div class="tab-pane" id="ticket-designer">
