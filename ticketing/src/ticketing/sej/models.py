@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from ticketing.models import BaseModel, LogicallyDeleted, WithTimestamp, MutationDict, JSONEncodedDict, relationship
+from ticketing.models import BaseModel, LogicallyDeleted, WithTimestamp, MutationDict, JSONEncodedDict, relationship, Identifier
 from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, ForeignKey, Enum, DECIMAL
 from sqlalchemy.orm import relationship, join, column_property, mapper, backref
 
@@ -15,7 +15,7 @@ Base = sqlahelper.get_base()
 class SejNotification(BaseModel, WithTimestamp, LogicallyDeleted, Base):
     __tablename__           = 'SejNotification'
 
-    id                      = Column(Integer, primary_key=True)
+    id                      = Column(Identifier, primary_key=True)
 
     notification_type       = Column(Enum('1', '31', '72', '73'))
     process_number          = Column(String(12))
@@ -59,7 +59,7 @@ class SejNotification(BaseModel, WithTimestamp, LogicallyDeleted, Base):
 class SejTicketFile(BaseModel, WithTimestamp, LogicallyDeleted, Base):
     __tablename__           = 'SejTicketFile'
 
-    id                      = Column(Integer, primary_key=True)
+    id                      = Column(Identifier, primary_key=True)
 
     notification_type       = Column(Enum('51', '61', '91', '92', '94', '95', '96', '97', '98'))
     payment_type            = Column(Enum('1', '2', '3', '4'))
@@ -98,7 +98,7 @@ class SejTicketFile(BaseModel, WithTimestamp, LogicallyDeleted, Base):
 
 class SejOrder(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     __tablename__           = 'SejOrder'
-    id                      = Column(Integer, primary_key=True)
+    id                      = Column(Identifier, primary_key=True)
 
     order_id                = Column(String(12))
     exchange_number         = Column(String(13))
@@ -110,6 +110,7 @@ class SejOrder(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     total_price             = Column(DECIMAL)
     ticket_price            = Column(DECIMAL)
     commission_fee          = Column(DECIMAL)
+    ticketing_fee           = Column(DECIMAL)
 
     total_ticket_count      = Column(Integer)
     ticket_count            = Column(Integer)
@@ -154,7 +155,7 @@ class SejTicket(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     ticket_data_xml         = Column(String(5000))
 
     ticket                  = relationship("SejOrder", backref='tickets')
-    ticket_id               = Column(Integer, ForeignKey("SejOrder.id"), nullable=True)
+    ticket_id               = Column(Identifier, ForeignKey("SejOrder.id"), nullable=True)
 
     ticket_idx              = Column(Integer)
 

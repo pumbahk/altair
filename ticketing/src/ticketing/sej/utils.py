@@ -162,8 +162,11 @@ class JavaHashMap(object):
         return None
 
     def __getitem__(self, key):
+        return self.get(key)
+
+    def get(self, key, default=None):
         entry = self.find_entry(key)
-        return None if entry is None else entry.value
+        return default if entry is None else entry.value
 
     def iteritems(self):
         i = 0
