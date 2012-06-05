@@ -34,7 +34,7 @@ class Identifier(Integer):
     @property
     def inner(self):
         if self._inner is None:
-            self._inner = (BigInteger if sqlahelper.get_engine().dialect.name != 'sqlite' else Interger)(*self._args, **self._kwargs)
+            self._inner = (BigInteger if sqlahelper.get_engine().dialect.name != 'sqlite' else Integer)(*self._args, **self._kwargs)
         return self._inner
 
     def get_dbapi_type(self, dbapi):
