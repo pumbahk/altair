@@ -29,3 +29,8 @@ function post_modal_form(modal, form, url) {
     dataType: 'html'
   });
 }
+
+function reset_form(form) {
+  form.find('input:text, input:password, input:file, select').val('');
+  form.find('input:radio, input:checkbox').removeAttr('checked').removeAttr('selected');
+}
