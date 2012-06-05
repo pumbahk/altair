@@ -251,17 +251,17 @@ class TicketingCartResourceTests(unittest.TestCase):
 #        self.assertEqual(result[0], (1, 6))
 #        self.assertEqual(result[1], (2, 1))
 
-    def test_order_products_empty(self):
-        request = testing.DummyRequest()
-
-        target = self._makeOne(request)
-        performance_id = 1
-
-        ordered_products = []
-        cart = target.order_products(performance_id, ordered_products)
-
-        self.assertIsNotNone(cart)
-        self.assertEqual(len(cart.products), 0)
+#    def test_order_products_empty(self):
+#        request = testing.DummyRequest()
+#
+#        target = self._makeOne(request)
+#        performance_id = 1
+#
+#        ordered_products = []
+#        cart = target.order_products(performance_id, ordered_products)
+#
+#        self.assertIsNotNone(cart)
+#        self.assertEqual(len(cart.products), 0)
 
     def _add_venue(self, organization_id, site_id, venue_id):
         from ticketing.venues.models import Venue, Site
