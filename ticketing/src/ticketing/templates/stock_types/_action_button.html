@@ -1,5 +1,5 @@
 <%page args="event, performance=None, order=None" />
-<%namespace file="/common/helpers.html" import="action_button" />
+<%namespace file="/common/helpers.html" name="h" />
 <%namespace file="/common/modal.html" import="delete_modal" />
 
 <%block name="style">
@@ -9,7 +9,9 @@
 
 <script type="text/javascript">
   function new_stock_type() {
-    $('#modal-stock_type').modal('toggle');
+    var modal = $('#modal-stock_type');
+    reset_form(modal, '#event_id');
+    modal.modal('toggle');
   }
   function edit_stock_type(id) {
     var id = id || get_id('stock_type_id');
@@ -120,6 +122,6 @@
   }
   order = iter(order or ['new', 'edit', 'delete'])
 %>
-${action_button(actions, order)}
+${h.action_button(actions, order)}
 
 ${delete_modal()}

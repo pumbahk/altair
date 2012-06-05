@@ -199,6 +199,24 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         }
         return data
 
+    def add(self):
+        super(Event, self).add()
+
+        """
+        Eventの作成時は以下のモデルがなければ自動生成する
+          - Account (自社枠)
+        """
+        account = Account.filter_by(organization_id=self.organization.id)\
+                         .filter_by(user_id=self.organization.user_id).first()
+        if not account:
+            account = Account(
+                account_type=AccountTypeEnum.Playguide.v,
+                name=u'自社',
+                user_id=self.organization.user_id,
+                organization_id=self.organization.id,
+            )
+            account.save()
+
 class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'SalesSegment'
     id = Column(Identifier, primary_key=True)

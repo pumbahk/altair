@@ -2,9 +2,9 @@
 
 from wtforms import Form
 from wtforms import TextField, HiddenField, DateField
-from wtforms.validators import Required, Length, Email, Optional
+from wtforms.validators import Length, Email, Optional
 
-from ticketing.utils import DateTimeField, Translations
+from ticketing.formhelpers import DateTimeField, Translations, Required
 from ticketing.master.models import Prefecture
 
 class OperatorRole(Form):
@@ -23,24 +23,24 @@ class OperatorForm(Form):
         validators=[Optional()],
     )
     organization_id = HiddenField(
-        validators=[Required(u'入力してください')],
+        validators=[Required()],
     )
     name = TextField(
         label=u'名前',
         validators=[
-            Required(u'入力してください'),
+            Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
         ]
     )
     email = TextField(
         label=u'Email',
         validators=[
-            Required(u'入力してください'),
+            Required(),
             Email(),
         ]
     )
     expire_at = DateTimeField(
         label=u'有効期限',
-        validators=[Required(u'入力してください')],
+        validators=[Required()],
         format='%Y-%m-%d %H:%M',
     )

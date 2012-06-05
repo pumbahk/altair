@@ -30,7 +30,22 @@ function post_modal_form(modal, form, url) {
   });
 }
 
-function reset_form(form) {
-  form.find('input:text, input:password, input:file, select').val('');
-  form.find('input:radio, input:checkbox').removeAttr('checked').removeAttr('selected');
+function reset_form(form, exclude) {
+  exclude = exclude || '';
+  form.find(':input').not(exclude).each(function() {
+    switch(this.type) {
+      case 'password':
+      case 'select-multiple':
+      case 'select-one':
+      case 'text':
+      case 'textarea':
+      case 'hidden':
+        $(this).val('');
+        break;
+      case 'checkbox':
+      case 'radio':
+        $(this).removeAttr('checked');
+        $(this).removeAttr('selected');
+    }
+  });
 }

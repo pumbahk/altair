@@ -2,9 +2,9 @@
 
 from wtforms import Form
 from wtforms import TextField, IntegerField, HiddenField, SelectField
-from wtforms.validators import Required, Regexp, Length, Optional, ValidationError
+from wtforms.validators import Regexp, Length, Optional, ValidationError
 
-from ticketing.utils import DateTimeField
+from ticketing.formhelpers import DateTimeField, Translations, Required
 from ticketing.events.models import Event, Account
 
 class EventForm(Form):
@@ -15,6 +15,9 @@ class EventForm(Form):
             self.account_id.choices = [
                 (account.id, account.name) for account in Account.filter_by(user_id=kwargs['user_id'])
             ]
+
+    def _get_translations(self):
+        return Translations()
 
     id = HiddenField(
         label=u'ID',
@@ -27,9 +30,9 @@ class EventForm(Form):
         coerce=int
     )
     code = TextField(
-        label = u'公演コード',
+        label = u'イベントコード',
         validators=[
-            Required(u'入力してください'),
+            Required(),
             Regexp(u'^[a-zA-Z0-9]*$', message=u'英数字のみ入力できます'),
             Length(max=12, message=u'12文字以内で入力してください'),
         ]
@@ -37,20 +40,20 @@ class EventForm(Form):
     title = TextField(
         label = u'タイトル',
         validators=[
-            Required(u'入力してください'),
+            Required(),
             Length(max=200, message=u'200文字以内で入力してください'),
         ]
     )
     abbreviated_title = TextField(
         label = u'タイトル略称',
         validators=[
-            Required(u'入力してください'),
+            Required(),
             Length(max=100, message=u'100文字以内で入力してください'),
         ]
     )
     start_on = DateTimeField(
         label = u'開演日時',
-        validators=[Required(u'入力してください')],
+        validators=[Required()],
         format='%Y-%m-%d %H:%M'
     )
     end_on = DateTimeField(

@@ -2,9 +2,9 @@
 
 from wtforms import Form
 from wtforms import TextField, SelectField, DecimalField, IntegerField, SelectMultipleField, HiddenField
-from wtforms.validators import Required, NumberRange, Regexp, Length, Optional, ValidationError
+from wtforms.validators import NumberRange, Regexp, Length, Optional, ValidationError
 
-from ticketing.utils import Translations
+from ticketing.formhelpers import Translations, Required
 from ticketing.products.models import PaymentMethod, DeliveryMethod
 from ticketing.events.models import PaymentDeliveryMethodPair
 
@@ -32,23 +32,17 @@ class PaymentDeliveryMethodPairForm(Form):
     transaction_fee = DecimalField(
         label=u'決済手数料',
         places=2,
-        validators=[
-            Required(u'入力してください'),
-        ]
+        validators=[Required()],
     )
     delivery_fee = DecimalField(
         label=u'配送手数料',
         places=2,
-        validators=[
-            Required(u'入力してください'),
-        ]
+        validators=[Required()],
     )
     discount = DecimalField(
         label=u'割引',
         places=2,
-        validators=[
-            Required(u'入力してください'),
-        ]
+        validators=[Required()],
     )
     discount_unit = IntegerField(
         label=u'割引数',

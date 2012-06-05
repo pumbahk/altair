@@ -1,5 +1,5 @@
 <%page args="order=None" />
-<%namespace file="/common/helpers.html" import="action_button" />
+<%namespace file="/common/helpers.html" name="h" />
 <%namespace file="/common/modal.html" import="delete_modal" />
 
 <script type="text/javascript">
@@ -10,12 +10,7 @@
   }
   function new_sales_segment() {
     var modal = $('#modal-sales_segment');
-    modal.find('#id').val('');
-    modal.find('#name').val('');
-    modal.find('#start_at').val('');
-    modal.find('#end_at').val('');
-    modal.find('#upper_limit').val('');
-    modal.find('#seat_choice').attr('checked');
+    reset_form(modal, '#event_id');
     modal.modal('toggle');
   }
   function edit_sales_segment() {
@@ -75,6 +70,6 @@
   }
   order = iter(order or ['new', 'show', 'edit', 'delete'])
 %>
-${action_button(actions, order)}
+${h.action_button(actions, order)}
 
 ${delete_modal()}

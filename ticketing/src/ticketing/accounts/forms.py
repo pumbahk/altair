@@ -2,8 +2,9 @@
 
 from wtforms import Form
 from wtforms import TextField, HiddenField, SelectField
-from wtforms.validators import Required, Length, Optional
+from wtforms.validators import Length, Optional
 
+from ticketing.formhelpers import Translations, Required
 from ticketing.organizations.models import Organization
 
 class AccountForm(Form):
@@ -13,6 +14,9 @@ class AccountForm(Form):
         self.organization_id.choices = [
             (organization.id, organization.name) for organization in Organization.all()
         ]
+
+    def _get_translations(self):
+        return Translations()
 
     id = HiddenField(
         label=u'ID',
@@ -27,7 +31,7 @@ class AccountForm(Form):
     name = TextField(
         label=u'クライアント名',
         validators=[
-            Required(u'入力してください'),
+            Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
         ]
     )

@@ -19,6 +19,7 @@
         <ul class="dropdown-menu">
           <li><a href="javascript:edit_stock_holder(${stock_holder.id});">編集</a></li>
           <li><a href="javascript:delete_stock_holder(${stock_holder.id});">削除</a></li>
+          <li><a href="javascript:new_stock();">在庫数を入力</a></li>
         </ul>
       </div>
     </div>
@@ -30,7 +31,8 @@
 
   <div id="collapse-${stock_holder.id}" class="accordion-body collapse" style="height: 0px; ">
     % for i, stock in enumerate(stock_holder.stocks):
-    <div class="accordion-inner">
+    <div class="accordion-inner" id="stock-${stock.id}">
+      <span class="pull-left"><input type="radio" id="stock_id"></span>
       <span class="span2">
         <%h:seat_style style="${stock.stock_type.style}">
           ${stock.stock_type.name}

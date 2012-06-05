@@ -2,10 +2,10 @@
 
 from wtforms import Form
 from wtforms import TextField, SelectField, IntegerField, HiddenField, BooleanField, FieldList
-from wtforms.validators import Required, Length, Optional
+from wtforms.validators import Length, Optional
 from wtforms.widgets import CheckboxInput
 
-from ticketing.utils import Translations
+from ticketing.formhelpers import Translations, Required
 from ticketing.products.models import StockTypeEnum
 
 class StockTypeForm(Form):
@@ -17,12 +17,12 @@ class StockTypeForm(Form):
         validators=[Optional()],
     )
     event_id = HiddenField(
-        validators=[Required(u'入力してください')],
+        validators=[Required()],
     )
     name = TextField(
         label=u'名称',
         validators=[
-            Required(u'入力してください'),
+            Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
         ]
     )
@@ -54,6 +54,6 @@ class StockAllocationForm(Form):
     )
     quantity = TextField(
         label=u'在庫数',
-        validators=[Required(u'入力してください')]
+        validators=[Required()]
     )
     seat_l0_id = FieldList(TextField(label=u'シートID'))

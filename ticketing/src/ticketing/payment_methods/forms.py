@@ -2,11 +2,15 @@
 
 from wtforms import Form
 from wtforms import TextField, HiddenField, SelectField, DecimalField
-from wtforms.validators import Required, Length, Optional
+from wtforms.validators import Length, Optional, NumberRange
 
+from ticketing.formhelpers import Translations, Required
 from ticketing.products.models import PaymentMethodPlugin
 
 class PaymentMethodForm(Form):
+
+    def _get_translations(self):
+        return Translations()
 
     id = HiddenField(
         label=u'ID',
@@ -18,20 +22,18 @@ class PaymentMethodForm(Form):
     name = TextField(
         label=u'決済方法名',
         validators=[
-            Required(u'入力してください'),
+            Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
         ]
     )
     fee = DecimalField(
         label=u'決済手数料',
         places=2,
-        validators=[
-            Required(u'入力してください'),
-        ]
+        validators=[Required()],
     )
     payment_plugin_id = SelectField(
         label=u'決済方法',
         validators=[Required(u'選択してください')],
         choices=[(pmp.id, pmp.name) for pmp in PaymentMethodPlugin.all()],
-        coerce=int
+        coerce=int,
     )

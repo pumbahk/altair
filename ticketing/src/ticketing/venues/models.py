@@ -165,6 +165,8 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         seat = Seat.clone(template)
         seat.venue_id = venue_id
         seat.stock_id = None
+        if not seat.stock_type_id:
+            seat.stock_type_id = None
         seat.save()
 
         for template_attribute in template.attributes:

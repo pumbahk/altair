@@ -1,6 +1,7 @@
 <%page args="form, payment_methods" />
 <%namespace file="/common/helpers.html" name="h"/>
 
+% if payment_methods.items:
 <table class="table table-striped table-bordered">
   <thead>
   <tr>
@@ -14,12 +15,13 @@
   % for payment_method in payment_methods.items:
   <tr id="payment_method-${payment_method.id}">
     <td><input name="payment_method_id" type="radio" value=${payment_method.id} /></td>
-    <td id="id">${payment_method.id}</td>
-    <td><a href="javascript:edit_payment_method(${payment_method.id});" id="name">${payment_method.name}</a></td>
-    <td id="fee">${payment_method.fee}</td>
+    <td><span id="id">${payment_method.id}</span></td>
+    <td><a href="javascript:edit_payment_method(${payment_method.id});"><span id="name">${payment_method.name}</span></a></td>
+    <td><span id="fee">${h.price_format(payment_method.fee)}</span>円</td>
   </tr>
   % endfor
   </tbody>
 </table>
+% endif
 
 ${h.pager(payment_methods)}

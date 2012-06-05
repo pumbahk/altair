@@ -9,17 +9,19 @@
     $(location).attr('href', '/products/show/' + id);
   }
   function new_product() {
-    $('#modal-product').modal('toggle');
+    var modal = $('#modal-product');
+    reset_form(modal, "#event_id");
+    modal.modal('toggle');
   }
   function edit_product(id) {
     id = id || get_id('product_id');
     if (!id) return;
     var el = '#product-' + id;
     var modal = $('#modal-product');
-    modal.find('#id').val($(el + ' #id').text());
-    modal.find('#name').val($(el + ' #name').text());
-    modal.find('#price').val(Math.floor($(el + ' #price').attr('value')));
-    modal.find('#sales_segment').val($(el + ' #sales_segment').attr('value'));
+    modal.find('#id').val($(el).find('#id').text());
+    modal.find('#name').val($(el).find('#name').text());
+    modal.find('#price').val(Math.floor($(el).find('#price').attr('value')));
+    modal.find('#sales_segment').val($(el).find('#sales_segment').attr('value'));
     modal.modal('toggle');
   }
   function delete_product() {
@@ -33,7 +35,7 @@
   function save_product() {
     var modal = '#modal-product';
     var form = '#products-form';
-    var id = $(modal + ' #id').val();
+    var id = $(modal).find('#id').val();
     var url = id ? '/products/edit/' + id : '/products/new';
     post_modal_form(modal, form, url);
   }
