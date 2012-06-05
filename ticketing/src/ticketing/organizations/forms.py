@@ -34,6 +34,14 @@ class OrganizationForm(Form):
             Length(max=255, message=u'255文字以内で入力してください'),
         ]
     )
+    code = TextField(
+        label = u'企業コード',
+        validators=[
+            Required(),
+            Regexp(u'^[a-zA-Z0-9]*$', message=u'英数字のみ入力できます'),
+            Length(min=3, max=3, message=u'3文字で入力してください'),
+        ]
+    )
     client_type = SelectField(
         label=u'クライアントタイプ',
         choices=[(1, u'スタンダード')],
