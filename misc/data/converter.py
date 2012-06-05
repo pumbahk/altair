@@ -6,6 +6,7 @@ import os
 import xml.sax
 import io
 import StringIO
+from xml.sax.saxutils import escape
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -78,7 +79,7 @@ class Printer():
                     self.output.write(k[1])
                     self.output.write("=")
                     self.output.write("\"")
-                    self.output.write(v)
+                    self.output.write(escape(v))
                     self.output.write("\"")
                 self.output.write(">")
 
@@ -102,7 +103,7 @@ class Printer():
                     self.printIndent(depth-1)
 
             else:
-                self.output.write(elem)
+                self.output.write(escape(elem))
 
         self.printHeader()
 
