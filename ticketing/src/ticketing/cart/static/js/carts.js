@@ -75,6 +75,10 @@ carts.AppView.prototype.init = function(presenter) {
     this.presenter.init(this);
 };
 
+carts.AppView.prototype.set_performance_id = function(performance_id) {
+    $('#current-performance-id').val(performance_id);
+};
+
 carts.AppView.prototype.show_seat_types = function(seat_types) {
     $('#seat-types-list').empty();
     var presenter = this.presenter;
@@ -135,6 +139,7 @@ carts.Presenter.prototype.show_seat_types = function(get_url) {
     var view = this.view;
     this.model.fetch_seat_types(get_url, function(data) {
         view.show_seat_types(data.seat_types);
+        view.set_performance_id(data.performance_id);
     });
 };
 

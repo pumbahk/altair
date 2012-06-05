@@ -73,7 +73,9 @@ class IndexView(object):
                         event_id=event_id, performance_id=performance_id, seat_type_id=s.id),
                     )
                 for s in seat_types
-                ])
+                ],
+                performance_id=performance_id,
+                )
         return data
 
     @view_config(route_name='cart.products', renderer="json")
@@ -117,7 +119,7 @@ class ReserveView(object):
                 continue
             yield m.groupdict()['product_id'], int(value)
 
-    @reify
+    @property
     def ordered_items(self):
         """ リクエストパラメータから(プロダクトID,数量)タプルのリストを作成する
         :return: list of tuple(ticketing.products.models.Product, int)
@@ -139,7 +141,7 @@ class ReserveView(object):
         """
 
         #seat_type_id = self.request.matchdict['seat_type_id']
-        cart = self.context.order_products(self.ordered_items)
+        cart = self.context.order_products(self.request.params['performance_id'], self.ordered_items)
         if cart is None:
             return dict(result='NG')
         apis.set_cart(self.request, cart)
@@ -175,6 +177,33 @@ class PaymentView(object):
     @view_config(route_name='cart.payment.method', request_method="GET")
     def paymentmethod(self):
         """ 支払い方法選択後
+        """
+
+class MultiCheckoutView(object):
+    """ マルチ決済API
+    """
+
+    def __init__(self, request):
+        self.request = request
+
+    def card_info_secure3d(self):
+        """ カード情報入力(3Dセキュア)
+        """
+
+    def card_info_secure_code(self):
+        """ カード情報入力(セキュアコード)
+        """
+
+    def secure3d_checkout(self):
+        """
+        """
+
+    def secure3d_callback(self):
+        """
+        """
+
+    def multicheckout(self):
+        """ マルチ決済APIで決済確定
         """
 
 class ConfirmView(object):

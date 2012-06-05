@@ -33,7 +33,7 @@ Base = sqlahelper.get_base()
 DBSession = sqlahelper.get_session()
 
 cart_seat_table = sa.Table("cat_seat", Base.metadata,
-    sa.Column("seat_id", sa.Integer, sa.ForeignKey("Seat.id")),
+    sa.Column("seat_id", sa.BigInteger, sa.ForeignKey("Seat.id")),
     sa.Column("cartproductitem_id", sa.Integer, sa.ForeignKey("ticketing_cartedproductitems.id")),
 )
 
@@ -47,7 +47,7 @@ class CartedProductItem(Base):
 
     quantity = sa.Column(sa.Integer)
 
-    product_item_id = sa.Column(sa.Integer, sa.ForeignKey("ProductItem.id"))
+    product_item_id = sa.Column(sa.BigInteger, sa.ForeignKey("ProductItem.id"))
 
     #seat_status_id = sa.Column(sa.Integer, sa.ForeignKey(""))
 
@@ -89,7 +89,7 @@ class CartedProduct(Base):
     cart_id = sa.Column(sa.Integer, sa.ForeignKey('ticketing_carts.id'))
     cart = orm.relation("Cart", backref="products")
 
-    product_id = sa.Column(sa.Integer, sa.ForeignKey("Product.id"))
+    product_id = sa.Column(sa.BigInteger, sa.ForeignKey("Product.id"))
     product = orm.relationship("Product")
 
     created_at = sa.Column(sa.DateTime, default=datetime.now)
@@ -119,7 +119,7 @@ class Cart(Base):
     query = DBSession.query_property()
 
     id = sa.Column(sa.Integer, primary_key=True)
-    cart_session_id = sa.Column(sa.Unicode, unique=True)
+    cart_session_id = sa.Column(sa.Unicode(255), unique=True)
 
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, nullable=True, onupdate=datetime.now)

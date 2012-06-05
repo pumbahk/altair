@@ -14,29 +14,34 @@ class TicketingCartResrouce(object):
     def __init__(self, request):
         self.request = request
 
-    def _convert_order_product_items(self, ordered_products):
+    def _convert_order_product_items(self, performance_id, ordered_products):
         """ 選択したProductからProductItemと個数の組に展開する
         :param ordered_products: list of (product, quantity)
         :return: iter of (product_item_id, quantity)
         """
         for product, quantity in ordered_products:
-            for product_item in product.items:
+            for product_item in m.DBSession.query(p_models.ProductItem).filter(
+                        p_models.ProductItem.product_id==product.id).filter(
+                        p_models.ProductItem.performance_id==performance_id).all():
+                #for product_item in product.items:
                 yield (product_item, quantity)
 
-    def quantity_for_stock_id(self, ordered_products):
+    def quantity_for_stock_id(self, performance_id, ordered_products):
         """ ProductItemと個数の組から、stock_id, 個数の組に集約する
         :param ordered_product_items: iter of (product_item, quantity)
 
         """
 
-        ordered_product_items = self._convert_order_product_items(ordered_products=ordered_products)
+        ordered_product_items = self._convert_order_product_items(performance_id, ordered_products=ordered_products)
+        ordered_product_items = list(ordered_product_items)
+        logger.debug("ordered product items: %s" % ordered_product_items)
         q = sorted(ordered_product_items, key=lambda x: x[0].stock_id)
         q = itertools.groupby(q, key=lambda x: x[0].stock_id)
         return ((stock_id, sum(quantity for _, quantity in ordered_items)) for stock_id, ordered_items in q)
 
 
 
-    def order_products(self, ordered_products):
+    def order_products(self, performance_id, ordered_products):
         """
 
         プロダクトと数量の組を受け取る
@@ -54,8 +59,11 @@ class TicketingCartResrouce(object):
         try:
             trans = conn.begin()
             # 在庫数確認、確保
-            stock_quantity = list(self.quantity_for_stock_id(ordered_products))
+            stock_quantity = list(self.quantity_for_stock_id(performance_id, ordered_products))
             for stock_id, quantity in stock_quantity:
+                if quantity == 0:
+                    continue
+
                 # 必要数のある在庫を確保しながら確認
                 up = p_models.StockStatus.__table__.update().values(
                         {"quantity": p_models.StockStatus.quantity - quantity}
@@ -73,6 +81,20 @@ class TicketingCartResrouce(object):
             # 必要な席種かつ確保されていない座席
             # を含む必要数量の連席情報の最初の行
             for stock_id, quantity in stock_quantity:
+                if quantity == 0:
+                    continue
+                no_vacants = sql.select([v_models.SeatAdjacency.id]).where(
+                    sql.and_(
+                        v_models.SeatAdjacency.id==v_models.seat_seat_adjacency_table.c.seat_adjacency_id,
+                        v_models.Seat.id==v_models.seat_seat_adjacency_table.c.seat_id,
+                        v_models.SeatStatus.seat_id == v_models.Seat.id,
+                        v_models.SeatStatus.status != int(v_models.SeatStatusEnum.Vacant),
+                        v_models.SeatAdjacencySet.seat_count == quantity,
+                        p_models.Stock.id == stock_id,
+                        p_models.Stock.id == v_models.Seat.stock_id,
+                    ),
+                )
+                no_vacants = [r[0] for r in conn.execute(no_vacants)]
                 sub = sql.select([v_models.SeatAdjacency.id]).where(
                     sql.and_(
                         #確保されていない
@@ -88,6 +110,8 @@ class TicketingCartResrouce(object):
                         # 連席情報と席の紐付け
                         v_models.SeatAdjacency.id==v_models.seat_seat_adjacency_table.c.seat_adjacency_id,
                         v_models.Seat.id==v_models.seat_seat_adjacency_table.c.seat_id,
+                        # 確保済みの席と紐づいていない
+                        sql.not_(v_models.SeatAdjacency.id.in_(no_vacants)),
                     )
                 ).limit(1)
                 adjacency = conn.execute(sub).fetchone()
