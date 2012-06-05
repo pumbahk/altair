@@ -13,7 +13,7 @@ function parent_get_genre($dbh, $id_zero) {
         $parent_genres_array = array();        
 	while ($stmt_parent->fetch()) {                
 		$parent_genres_array[] = $parent_genres;
-        }        
+	}        
 	$stmt_parent->close();       
 	return $parent_genres_array;
 }
@@ -34,11 +34,11 @@ $count_artist = isset($_GET['count_artist']) ? $_GET['count_artist'] :null;
 
 
 if($figure){
-	  preg_match("*",$figure,$matches); 
-	  if($matches){		
+	preg_match(",",$figure,$matches); 
+	if($matches){		
 		//洋楽でカタカナのアーティストを探す
-                $figure_explode=explode("*",$figure);
-                $figure_explode[0] = $figure_explode[0]."%";
+		$figure_explode=explode("*",$figure);
+		$figure_explode[0] = $figure_explode[0]."%";
 		$figure_explode[1] = $figure_explode[1]."%";
 		$stmt_artist_overseas = $dbh ->prepare("select name from artist inner join artist_genre on artist.id  = artist_genre.artist_id  where artist_genre.genre_id =3 and artist.name like ? or artist.name like ?");
 		$stmt_artist_overseas ->bind_param('ss',$figure_explode[0],$figure_explode[1]);
@@ -49,38 +49,38 @@ if($figure){
 		}
 		$stmt_artist_overseas->close();
 
-               //洋楽でカタカナのアーティストの数
-                $stmt_count_artist = $dbh ->prepare("select count(name) from artist inner join artist_genre on artist.id  = artist_genre.artist_id  where artist_genre.genre_id =3 and artist.name like ? or artist.name like ?");
-                $stmt_count_artist ->bind_param('ss',$figure_explode[0],$figure_explode[1]);
-                $stmt_count_artist ->execute();
-                $stmt_count_artist ->bind_result($count_artist);
-                $stmt_count_artist->fetch();
-                $stmt_count_artist->close();
-                $paging = $count_artist/20;
-                $last_page_artist_count = $count_artist%20;
-                if($last_page_artist_count){
-                        $paging = $paging+1;
-                }
+		 //洋楽でカタカナのアーティストの数
+		$stmt_count_artist = $dbh ->prepare("select count(name) from artist inner join artist_genre on artist.id  = artist_genre.artist_id  where artist_genre.genre_id =3 and artist.name like ? or artist.name like ?");
+ 		$stmt_count_artist ->bind_param('ss',$figure_explode[0],$figure_explode[1]);
+		$stmt_count_artist ->execute();
+		$stmt_count_artist ->bind_result($count_artist);
+		$stmt_count_artist->fetch();
+		$stmt_count_artist->close();	
+		$paging = $count_artist/20;
+ 		$last_page_artist_count = $count_artist%20;
+		if($last_page_artist_count){
+			 $paging = $paging+1;
+		 }
 	}
 	else{
 		//洋楽で英語のアーティストを探す
-                $page_figure=$page_figure."%";
-                $stmt_artist_overseas = $dbh ->prepare("select name from artist inner join artist_genre on artist.id  = artist_genre.artist_id  where artist_genre.genre_id =4 and artist.name like ?");
-                $stmt_artist_overseas ->bind_param('s',$page_figure);
-                $stmt_artist_overseas ->execute();
-                $stmt_artist_overseas ->bind_result($figure_artist);
-                while($stmt_artist_overseas->fetch()){
-                        $figure_artist_array[]=$figure_artist;
-                }
-                $stmt_artist_overseas->close(); 
+		$figure=$figure."%";
+		$stmt_artist_overseas = $dbh ->prepare("select name from artist inner join artist_genre on artist.id  = artist_genre.artist_id  where artist_genre.genre_id =4 and artist.name like ?");
+		$stmt_artist_overseas ->bind_param('s',$figure);
+		$stmt_artist_overseas ->execute();
+		$stmt_artist_overseas ->bind_result($figure_artist);
+		while($stmt_artist_overseas->fetch()){
+			$figure_artist_array[]=$figure_artist;
+		 }
+		$stmt_artist_overseas->close(); 
 		// 洋楽で英語のアーティストの数
-		//＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊
+		
 		$stmt_count_artist = $dbh ->prepare("select count(name) from artist inner join artist_genre on artist.id  = artist_genre.artist_id  where artist_genre.genre_id =3 and artist.name like ?");
-                $stmt_count_artist ->bind_param('s',$page_figure);
-                $stmt_count_artist ->execute();
-                $stmt_count_artist ->bind_result($count_artist);
-                $stmt_count_artist->fetch();
-                $stmt_count_artist->close();
+		$stmt_count_artist ->bind_param('s',$figure);
+		$stmt_count_artist ->execute();
+		$stmt_count_artist ->bind_result($count_artist);
+		$stmt_count_artist->fetch();
+		$stmt_count_artist->close();
 		$paging = $count_artist/20;
 		$last_page_artist_count = $count_artist%20;
 		if($last_page_artist_count){
@@ -88,6 +88,7 @@ if($figure){
 		}
 
 	}
+
 }
 
 
@@ -98,7 +99,7 @@ if($page_figure){
 	$paging = $count_artist/20;
 	$last_page_artist_count = $count_artist%20;
 	if($last_page_artist_count){
-	        $paging=$paging+1;
+		$paging=$paging+1;
 	}
 	$p = ($page_overseas-1)*20+1;
 	$page_artist_array = array();
@@ -108,7 +109,7 @@ if($page_figure){
 	$stmt_artist_page ->bind_result($page_artist);
 	
 	while($stmt_artist_page ->fetch()){
-	        $page_artist_array[]=$page_artist;
+	$page_artist_array[]=$page_artist;
 	}
 	
 	$stmt_artist_page ->close();}
@@ -118,9 +119,9 @@ if($moji){
 
 	//邦楽で検索文字列のものを探す
 	//文字が日本語の場合カタカナとひらがなで検索する
-	preg_match("*",$moji,$matches);
+	preg_match(",",$moji,$matches);
 	if($matches) {
-		$moji_explode=explode("*",$moji);
+		$moji_explode=explode("o",$moji);
 		$moji_explode[0] = $moji_explode[0]."%";
 		$moji_explode[1] = $moji_explode[1]."%";
 		$stmt_artist_domestic = $dbh ->prepare("select name from artist inner join artist_genre on artist.id  = artist_genre.artist_id  where artist_genre.genre_id =4 and artist.name like ? or artist.name like ?");
@@ -128,7 +129,7 @@ if($moji){
 		$stmt_artist_domestic ->execute();
 		$stmt_artist_domestic ->bind_result($moji_artist);
 		while($stmt_artist_domestic->fetch()){
-	        	$figure_artist_array[]=$moji_artist;
+			$figure_artist_array[]=$moji_artist;
 		}
 		$stmt_artist_domestic->close();
 		$paging = $count_artist/20;
@@ -143,21 +144,21 @@ if($moji){
         else{
 		//文字がアルファベットの場合　
 		$moji_ = $moji."%";
-	        $stmt_artist_domestic = $dbh ->prepare("select name from artist inner join artist_genre on artist.id  = artist_genre.artist_id  where artist_genre.genre_id =4 and artist.name like ?");
-	        $stmt_artist_domestic ->bind_param('s',$moji_);
-	        $stmt_artist_domestic ->execute();
-	        $stmt_artist_domestic ->bind_result($moji_artist);
+		$stmt_artist_domestic = $dbh ->prepare("select name from artist inner join artist_genre on artist.id  = artist_genre.artist_id  where artist_genre.genre_id =4 and artist.name like ?");
+		$stmt_artist_domestic ->bind_param('s',$moji_);
+		$stmt_artist_domestic ->execute();
+		$stmt_artist_domestic ->bind_result($moji_artist);
 	        
 		while($stmt_artist_domestic->fetch()){
-	                $figure_artist_array[]=$moji_artist;
-	        }
-	        $stmt_artist_domestic->close();
+			$figure_artist_array[]=$moji_artist;
+		 }
+		$stmt_artist_domestic->close();
         	
 		$paging = $count_artist/20;
-                $last_page_artist_count = $count_artist%20;
+		$last_page_artist_count = $count_artist%20;
 		if($last_page_artist_count){
-                        $paging=$paging+1;
-                }
+			$paging=$paging+1;
+		 }
 
 	}
 
@@ -172,7 +173,7 @@ if($page_moji){
 	$paging = $count_artist/20;
 	$last_page_artist_count = $count_artist%20;
 	if($last_page_artist_count){
-	        $paging=$paging+1;
+		$paging=$paging+1;
 	}
 	$p = ($page_domestic-1)*20+1;
 	$stmt_artist_page = $dbh -> prepare("select name from artist where name like ? and  name IN ( select name from artist inner join artist_genre on artist.id  = artist_genre.artist_id  where artist_genre.genre_id =3) limit 20 offset ?");
@@ -181,7 +182,7 @@ if($page_moji){
 	$stmt_artist_page ->bind_result($page_artist);
 	
 	while($stmt_artist_page ->fetch()){
-	        $page_artist_array[]=$page_artist;
+		$page_artist_array[]=$page_artist;
 	      
 	}
 	$stmt_artist_page ->close();
@@ -230,7 +231,6 @@ $(function() {
 
 <!-- InstanceParam name="id" type="text" value="theater" -->
 
-$newstopic =isset($_POST['news'])? $_POST['news']:null;
 </head>
 <body id="theater">
 <p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="../img/commo
@@ -319,58 +319,61 @@ n/skip.gif" alt="本文へジャンプ" width="1" height="1" /></a></p>
 			<div id = "search_buttons">
                        	<? if($overseas||$figure||$page_figure){
                         ?>
+	<i class="icon_music"></i>
 			<h1>洋楽検索</h1>
+			<h2>カタカナの始まるアーティスト</h2>
 			 <ul>
-				<li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ア*あ>ア</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=イ*い">イ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ウ*う">ウ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=エ*え">エ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=オ*お">オ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=カ*か">カ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=キ*き">キ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ク*く">ク</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ケ*け">ケ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=コ*こ">コ</a></li>
-				<li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=サ*さ">サ</a></li>
-				<li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=シ*し">シ</a></li>
-				<li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ス*す">ス</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=セ*せ">セ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ソ*そ">ソ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=タ*た">タ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=チ*ち">チ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ツ*つ">ツ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=テ*て">テ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ト*と">ト</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ナ*な">ナ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ニ*に">二</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ヌ*ぬ">ヌ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ネ*ね">ネ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ノ*の">ノ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ハ*は">ハ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ヒ*ひ">ヒ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=フ*ふ">フ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ヘ*へ">ヘ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ホ*ほ">ホ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=マ*ま">マ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ミ*み">ミ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ム*む">ム</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=メ*め">メ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=モ*も">モ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ヤ*や">ヤ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ユ*ゆ">ユ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ヨ*よ">ヨ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ラ*ら">ラ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=リ*り">リ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ル*る">ル</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=レ*れ">レ</a></li>
-                           	<li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ロ*ろ">ロ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ワ*わ">ワ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ヲ*を">ヲ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ン*ん">ン</a></li>
+				<li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ア,あ">ア</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=イ,い">イ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ウ,う">ウ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=エ,え">エ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=オ,お">オ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=カ,か">カ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=キ,き">キ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ク,く">ク</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ケ,け">ケ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=コ,こ">コ</a></li>
+				<li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=サ,さ">サ</a></li>
+				<li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=シ,し">シ</a></li>
+				<li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ス,す">ス</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=セ,せ">セ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ソ,そ">ソ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=タ,た">タ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=チ,ち">チ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ツ,つ">ツ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=テ,て">テ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ト,と">ト</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ナ,な">ナ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ニ,に">二</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ヌ,ぬ">ヌ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ネ,ね">ネ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ノ,の">ノ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ハ,は">ハ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ヒ,ひ">ヒ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=フ,ふ">フ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ヘ,へ">ヘ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ホ,ほ">ホ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=マ,ま">マ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ミ,み">ミ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ム,む">ム</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=メ,め">メ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=モ,も">モ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ヤ,や">ヤ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ユ,ゆ">ユ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ヨ,よ">ヨ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ラ,ら">ラ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=リ,り">リ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ル,る">ル</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=レ,れ">レ</a></li>
+                           	<li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ロ,ろ">ロ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ワ,わ">ワ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ヲ,を">ヲ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=ン,ん">ン</a></li>
 
 
 
                         </ul>
+			<h2>英語のアーティスト名</h2>
 			<ul>
 				<li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=A">A</a></li>
 				<li><a href="/~katosaori/web-contents/pages/gojyuon.php?figure=B">B</a></li>
@@ -405,52 +408,52 @@ n/skip.gif" alt="本文へジャンプ" width="1" height="1" /></a></p>
                         ?>
 			<h1>邦楽検索</h1>
                          <ul>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ア*あ">あ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=イ*い">い</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ウ*う">う</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=エ*え">え</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=オ*お">お</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=カ*か">か</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=キ*き">き</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ク*く">く</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ケ*け">け</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=コ*こ">こ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=サ*さ">さ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=シ*し">し</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ス*す">す</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=セ*せ">せ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ソ*そ">そ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=タ*た">た</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=チ*ち">ち</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ツ*つ">つ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=テ*て">て</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ト*と">と</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ナ*な">な</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ニ*に">に</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ヌ*ぬ">ぬ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ネ*ね">ね</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ノ*の">の</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ハ*は">は</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ヒ*ひ">ひ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=フ*ふ">ふ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ヘ*へ">へ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ホ*ほ">ほ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=マ*ま">ま</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ミ*み">み</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ム*む">む</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=メ*め">め</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=モ*も">も</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ヤ*や">や</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ユ*ゆ">ゆ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ヨ*よ">よ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ラ*ら">ら</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=リ*り">り</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ル*る">る</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=レ*れ">れ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ロ*ろ">ろ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ワ*わ">わ</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ヲ*を">を</a></li>
-                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ン*ん">ん</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ア,あ">あ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=イ,い">い</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ウ,う">う</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=エ,え">え</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=オ,お">お</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=カ,か">か</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=キ,き">き</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ク,く">く</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ケ,け">け</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=コ,こ">こ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=サ,さ">さ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=シ,し">し</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ス,す">す</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=セ,せ">せ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ソ,そ">そ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=タ,た">た</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=チ,ち">ち</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ツ,つ">つ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=テ,て">て</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ト,と">と</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ナ,な">な</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ニ,に">に</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ヌ,ぬ">ぬ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ネ,ね">ね</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ノ,の">の</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ハ,は">は</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ヒ,ひ">ひ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=フ,ふ">ふ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ヘ,へ">へ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ホ,ほ">ほ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=マ,ま">ま</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ミ,み">み</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ム,む">む</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=メ,め">め</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=モ,も">も</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ヤ,や">や</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ユ,ゆ">ゆ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ヨ,よ">よ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ラ,ら">ら</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=リ,り">り</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ル,る">る</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=レ,れ">れ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ロ,ろ">ろ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ワ,わ">わ</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ヲ,を">を</a></li>
+                                <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ン,ん">ん</a></li>
 
 
 
@@ -495,13 +498,12 @@ n/skip.gif" alt="本文へジャンプ" width="1" height="1" /></a></p>
 
 
 	<div id = "artists">
-		
+		<div id ="paging">
 	
 				<?
 				if($moji||$page_moji){
 					for($i=0;$i<=$paging;$i++){
 				?>
-						<!--<a href ="/~katosaori/web-contents/pages/gojyuon.php?page_moji=<?= $page_moji ?>&page_domestic=<?= $i ?>&count_artist=<?= $count_artist ?>"><?= $i ?></a>-->
 				<?
 					}
 				}
@@ -518,17 +520,17 @@ n/skip.gif" alt="本文へジャンプ" width="1" height="1" /></a></p>
 					?>
 						<a href ="/~katosaori/web-contents/pages/gojyuon.php?page_figure=<?= $page_figure ?>&page_overseas=<?= $i ?>&count_artist=<?= $count_artist ?>"><?= $i ?></a>
 	
-					?>
+					<?
 					}
 				}
 				?>
+		</div>
 				
 
 		<div id = "page_artist">	
 		<?
 		for($i=0;$i<=20;$i++){
 		?>
-		
 			<a href ="/~katosaori/web-contents/pages/artist_detail.php?artist=<?= $page_artist_array[$i]?>"><?= $page_artist_array[$i] ?></a>
 		<?
 		}
