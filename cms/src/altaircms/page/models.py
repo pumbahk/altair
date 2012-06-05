@@ -96,7 +96,8 @@ class PageSet(Base,
 
     def current(self, dt=None):
         dt = dt or datetime.now()
-        return Page.query.filter(Page.pageset==self).filter(Page.in_term(dt)).order_by("page.publish_begin").limit(1).first()
+        where = (Page.in_term(dt)) | ((Page.publish_begin==None) & (Page.publish_end==None))
+        return Page.query.filter(Page.pageset==self).filter(where).order_by("page.publish_begin").limit(1).first()
 
     # @property
     # def page_proxy(self):

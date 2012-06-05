@@ -64,6 +64,8 @@ def rendering_preview_page(context, request):
 
 @view_config(route_name="front_to_preview") #slack-off
 def to_preview_page(context, request):
+    import warnings
+    warnings.warn("this-is-obsolute function. don't use it.")
     page_id = request.matchdict["page_id"]
     page = context.get_unpublished_page(page_id)
     return HTTPFound(request.route_path("front_preview", page_name=page.hash_url))

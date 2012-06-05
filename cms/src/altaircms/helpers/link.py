@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 import logging
 logger = logging.getLogger(__file__)
 
@@ -31,16 +32,23 @@ def get_link_from_topic(request, topic):
     else:
         return topic.text
 
+def unquote_path_segment(string):
+    """ request.route_pathの結果"foo/bar"が "foo%2Fbar"になってしまう部分の修正。
+    (request_route_pathは、pyramid.traversal.qoute_path_segmentを実行された結果を利用する)
+    """
+    return string.replace("%2F", "/") #buggy!
+
 def to_publish_page_from_pageset(request, pageset):
     url = pageset.url
     if url.startswith("http://") or url.startswith("https://"):
         return url
     else:
-        return request.route_path("front", page_name=url)
+        return unquote_path_segment(request.route_path("front", page_name=url))
 
 def to_preview_page_from_pageset(request, pageset):
     url = pageset.url
     if url.startswith("http://") or url.startswith("https://"):
         return url
     else:
-        return request.route_path("front_preview_pageset", pageset_id=pageset.id)
+        return unquote_path_segment(request.route_path("front_preview_pageset", pageset_id=pageset.id))
+    
