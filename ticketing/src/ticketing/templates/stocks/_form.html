@@ -1,0 +1,23 @@
+<%page args="form" />
+<%namespace file="/common/helpers.html" name="h" />
+
+<div id="modal-stock" class="modal fade">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">×</a>
+    <h3>席数</h3>
+  </div>
+
+  <form>
+    <div class="modal-body">
+      ${h.form_item(form.id)}
+      ${h.form_item(form.stock_holder_id)}
+      ${h.form_item(form.stock_type_id)}
+      ${h.form_item(form.quantity)}
+    </div>
+  </form>
+
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+    <a href="javascript:save_stock();" class="btn">保存</a>
+  </div>
+</div>
