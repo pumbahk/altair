@@ -57,7 +57,7 @@
      ${co.page_description(page)}
   </div>
   <div class="span1">
-    <a class="btn btn-success" href="${h.front.to_preview_page(request,page)}"><i class="icon-eye-open"> </i> Preview</a>
+    <a class="btn btn-success" href="${h.front.to_preview_page(request,page)}" target="_blank"><i class="icon-eye-open"> </i> Preview</a>
   </div>
   <div class="span1">
     <a class="btn btn-danger" href="${h.page.to_delete(request,page)}"><i class="icon-trash icon-white"></i> Delete</a>
@@ -65,9 +65,11 @@
   <div class="span1">
 	<a class="btn btn-primary" href="${h.page.to_update(request,page)}"><i class="icon-cog"></i> Settings</a>
   </div>
+<!--
   <div class="span1">
       <button class="btn" href=""><i class="icon-refresh"> </i> Publish</button>
   </div>
+-- >
   <div class="span1">
       <a class="btn" href="${h.page.to_duplicate(request,page)}"><i class="icon-repeat"> </i> Duplicate</a>
   </div>
