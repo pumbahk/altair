@@ -31,6 +31,7 @@ def url_not_conflict(form, field):
 
 @implementer(IForm)
 class PageForm(Form):
+    name = fields.TextField(label=u"名前", validators=[validators.Required()])
     url = fields.TextField(validators=[url_field_validator,  url_not_conflict],
                            label=u"URLhttp://stg2.rt.ticketstar.jp/")
     pageset = dynamic_query_select_field_factory(PageSet, allow_blank=True, label=u"ページセット",
@@ -74,6 +75,7 @@ class PageForm(Form):
 
 @implementer(IForm)
 class PageUpdateForm(Form):
+    name = fields.TextField(label=u"名前", validators=[validators.Required()])
     url = fields.TextField(validators=[url_field_validator],
                            label=u"URLの一部(e.g. top/music)")
     title = fields.TextField(label=u"ページタイトル", validators=[validators.Required()])

@@ -10,15 +10,14 @@
 	    names=["Top", "Page", page.title, u"更新"], 
 	    urls=[request.route_path("dashboard"),
               request.route_path("page"),
-              h.page.to_edit_page(request,page)]
-	)}
+	])}
   </div>
 </div>
 
 <div class="row">
   <div class="span5">
 	<form action="${h.page.to_update(request,page)}" method="POST">
-	  ${fco.form_as_table_strict(form, ["url", "pageset","title","event", "publish_begin", "publish_end","description","keywords","tags","private_tags","layout"])}
+	  ${fco.form_as_table_strict(form, ["name","url", "pageset","title","event", "publish_begin", "publish_end","description","keywords","tags","private_tags","layout"])}
 	  ${h.base.confirm_stage()|n}
 	  <button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> Update</button>
     </form>

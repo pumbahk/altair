@@ -129,6 +129,7 @@ class Page(PublishUnpublishMixin,
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
+    name = Column(Unicode(255), default=u"")
     title = Column(Unicode(255), default=u"")
     keywords = Column(Unicode(255), default=u"")
     description = Column(Unicode(255), default=u"")
@@ -180,12 +181,12 @@ class Page(PublishUnpublishMixin,
         return clone.page_clone(request, self, session)
 
     @classmethod
-    def get_or_create_by_title(cls, title):
-        page = cls.query.filter_by(title=title).first()
+    def get_or_create_by_name(cls, name):
+        page = cls.query.filter_by(name=name).first()
         if page:
             return page
         else:
-            return cls(title=title)
+            return cls(name=name)
     
 ## master    
 class PageDefaultInfo(Base):
@@ -229,12 +230,14 @@ class PageDefaultInfo(Base):
         return pageset
 
         
-    def create_page(self, name, category=None, keywords=None, description=None, url=None):
+    def create_page(self, name, category=None, keywords=None, description=None, url=None, layout=None):
         pageset = self.create_pageset(name, category=category, url=url)
         title = self.title(name)
         return Page(pageset=pageset, 
                     url=pageset.url, 
+                    name=name, 
                     title=title, 
+                    layout=layout, 
                     keywords=keywords or self.keywords, 
                     description=description or self.description)
 

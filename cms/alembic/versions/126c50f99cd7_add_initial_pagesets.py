@@ -21,9 +21,8 @@ category,  pagesetは再帰的
 """
 
 from altaircms.page.models import PageDefaultInfo
-from altaircms.page.models import PageSet
-from altaircms.page.models import Page
 from altaircms.models import Category, Site
+from altaircms.layout.models import Layout
 from functools import partial
 import transaction
 
@@ -62,6 +61,58 @@ def O(o):
     DBSession.add(o)
     return o
 
+def top_layout():
+    layout = Layout(
+        title = u"ticketstar.top",
+        template_filename = "ticketstar.top.mako",
+        blocks = '[["main"], ["main_left", "main_right"], ["main_bottom"], ["side_top"], ["side_bottom"]]',
+        site_id = 1, ##
+        client_id = 1 ##
+        )
+    return layout
+
+
+def sports_layout():
+    layout = Layout(
+        title = u"ticketstar.sports",
+        template_filename = "ticketstar.sports.mako",
+        blocks = '[["main"], ["main_left", "main_right"], ["main_bottom"], ["side"]]',
+        site_id = 1, ##
+        client_id = 1 ##
+        )
+    return layout
+
+def music_layout():
+    layout = Layout(
+        title = u"ticketstar.music",
+        template_filename = "ticketstar.music.mako",
+        blocks = '[["main"], ["main_left", "main_right"], ["main_bottom"], ["side"]]',
+        site_id = 1, ##
+        client_id = 1 ##
+        )
+    return layout
+
+def stage_layout():
+    layout = Layout(
+        title = u"ticketstar.stage",
+        template_filename = "ticketstar.stage.mako",
+        blocks = '[["main"], ["main_left", "main_right"], ["main_bottom"], ["side"]]',
+        site_id = 1, ##
+        client_id = 1 ##
+        )
+    return layout
+
+def event_layout():
+    layout = Layout(
+        title = u"ticketstar.event",
+        template_filename = "ticketstar.event.mako",
+        blocks = '[["main"], ["main_left", "main_right"], ["main_bottom"], ["side"]]',
+        site_id = 1, ##
+        client_id = 1 ##
+        )
+    return layout
+
+
 
 def upgrade():
     site = Site.query.filter_by(name=u"ticketstar").one()
@@ -75,9 +126,11 @@ def upgrade():
 
     top_level_pdi = PageDefaultInfo(keywords=keywords, 
                                     description=description, 
-                                    url_fmt="/",
-                                    title_fmt = u"【楽天チケット】%(title)s｜公演・ライブのチケット予約・購入")
-    O(top_level_pdi.create_page(u"トップ", category=root))
+                                    url_fmt="",
+                                    title_fmt = u"【楽天チケット】%(title)s｜公演・ライブのチケット予約・購入"
+                                    )
+    O(top_level_pdi.create_page(u"トップページ", category=root, layout=top_layout()))
+
 
 
 
@@ -87,14 +140,15 @@ def upgrade():
     root = Category.query.filter_by(label=u"音楽").one()
 
     top_level_pdi = O(PageDefaultInfo(keywords=keywords, 
-                                    description=description,
-                                    url_fmt=u"/s/%(url)s", 
-                                    title_fmt=title_fmt))
-    category_page = O(top_level_pdi.create_page(u"音楽", url=u"music", category=root))
+                                      description=description,
+                                      url_fmt=u"s/%(url)s", 
+                                      title_fmt=title_fmt))
+    category_page = O(top_level_pdi.create_page(u"音楽", url=u"music", category=root, layout=music_layout()))
     
 
+
     pdi = top_level_pdi.clone_with_pageset(category_page.pageset, 
-                                           url_fmt=u"/%s/%%(url)s" % category_page.pageset.name, 
+                                           url_fmt=u"%s/%%(url)s" % category_page.pageset.name, 
                                            title_fmt=title_fmt)
     
     subcategory_create = partial(Category, site=site, hierarchy=u"中", parent=root)
@@ -114,14 +168,14 @@ def upgrade():
     root = Category.query.filter_by(label=u"スポーツ").one()
 
     top_level_pdi = O(PageDefaultInfo(keywords=keywords, 
-                                    description=description,
-                                    url_fmt=u"/s/%(url)s", 
-                                    title_fmt=title_fmt))
-    category_page = O(top_level_pdi.create_page(u"スポーツ", url=u"sports", category=root))
+                                      description=description,
+                                      url_fmt=u"s/%(url)s", 
+                                      title_fmt=title_fmt))
+    category_page = O(top_level_pdi.create_page(u"スポーツ", url=u"sports", category=root, layout=sports_layout()))
     
 
     pdi = top_level_pdi.clone_with_pageset(category_page.pageset, 
-                                           url_fmt=u"/%s/%%(url)s" % category_page.pageset.name, 
+                                           url_fmt=u"%s/%%(url)s" % category_page.pageset.name, 
                                            title_fmt=title_fmt)
     
     subcategory_create = partial(Category, site=site, hierarchy=u"中", parent=root)
@@ -142,13 +196,13 @@ def upgrade():
 
     top_level_pdi = O(PageDefaultInfo(keywords=keywords, 
                                     description=description,
-                                    url_fmt=u"/s/%(url)s", 
+                                    url_fmt=u"s/%(url)s", 
                                     title_fmt=title_fmt))
-    category_page = O(top_level_pdi.create_page(u"演劇", url=u"stage", category=root))
+    category_page = O(top_level_pdi.create_page(u"演劇", url=u"stage", category=root, layout=stage_layout()))
     
 
     pdi = top_level_pdi.clone_with_pageset(category_page.pageset, 
-                                           url_fmt=u"/%s/%%(url)s" % category_page.pageset.name, 
+                                           url_fmt=u"%s/%%(url)s" % category_page.pageset.name, 
                                            title_fmt=title_fmt)
     
     subcategory_create = partial(Category, site=site, hierarchy=u"中", parent=root)
@@ -169,13 +223,13 @@ def upgrade():
 
     top_level_pdi = O(PageDefaultInfo(keywords=keywords, 
                                     description=description,
-                                    url_fmt=u"/s/%(url)s", 
+                                    url_fmt=u"s/%(url)s", 
                                     title_fmt=title_fmt))
-    category_page = O(top_level_pdi.create_page(u"イベント・その他", url=u"other", category=root))
+    category_page = O(top_level_pdi.create_page(u"イベント・その他", url=u"other", category=root, layout=event_layout()))
     
 
     pdi = top_level_pdi.clone_with_pageset(category_page.pageset, 
-                                           url_fmt=u"/%s/%%(url)s" % category_page.pageset.name, 
+                                           url_fmt=u"%s/%%(url)s" % category_page.pageset.name, 
                                            title_fmt=title_fmt)
     
     subcategory_create = partial(Category, site=site, hierarchy=u"中", parent=root)

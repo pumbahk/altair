@@ -11,3 +11,13 @@ def includeme(config):
 
     config.scan('.views')
     config.scan("altairsite.front.views")
+
+    #####
+    ## static route for demo page
+    ##
+    config.add_route("page_search_input", "/search/input", static=True)
+    config.add_route("page_search_result", "/search/result/detail", static=True)
+    config.add_route("page_search_by_freeword", "/searach/result/freeword", static=True)
+    config.add_route("page_search_by_multi", "/searach/result/multi", static=True)
+    config.add_route("page_search_by", "/searach/result/{kind}/{value}", static=True)
+

@@ -25,5 +25,9 @@ def upgrade():
                     sa.PrimaryKeyConstraint('id')
                     )
     
+    op.add_column("page", sa.Column("name", sa.Unicode(255)))
+    
 def downgrade():
     op.drop_table('page_default_info')
+
+    op.drop_column("page", "name")

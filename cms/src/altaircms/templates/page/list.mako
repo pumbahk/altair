@@ -61,7 +61,7 @@
                on_add_to_pageset_clicked();
 	    })
 	  </script>
-    ${fco.form_as_table_strict(form, ["parent","url", "add_to_pagset", "pageset","title", "publish_begin", "publish_end","description","keywords","tags","private_tags","layout"])}
+    ${fco.form_as_table_strict(form, ["parent","url", "name","add_to_pagset", "pageset","title", "publish_begin", "publish_end","description","keywords","tags","private_tags","layout"])}
 	<button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> 保存</button>
 	</form>
   </div>

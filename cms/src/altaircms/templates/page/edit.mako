@@ -65,15 +65,18 @@
   <div class="span1">
 	<a class="btn btn-primary" href="${h.page.to_update(request,page)}"><i class="icon-cog"></i> Settings</a>
   </div>
-<!--
-  <div class="span1">
-      <button class="btn" href=""><i class="icon-refresh"> </i> Publish</button>
-  </div>
--- >
+
+  <!-- <div class="span1">
+   !--     <button class="btn" href=""><i class="icon-refresh"> </i> Publish</button>
+   !-- </div> -->
+
   <div class="span1">
       <a class="btn" href="${h.page.to_duplicate(request,page)}"><i class="icon-repeat"> </i> Duplicate</a>
   </div>
+
   <div class="span6">
+	<br/>	<br/> <!-- ひどい -->
+	<h2>layoutの保存</h2>
 	## ここにレイアウト保存用のformが入る
 	<form action="${h.page.to_widget_disposition(request,page)}" method="POST">
        <h4>現在のwidget layoutを保存</h4>
