@@ -1,3 +1,5 @@
+# -*- encoding:utf-8 -*-
+
 from pyramid.config import Configurator
 from sqlalchemy import engine_from_config
 import sqlahelper
@@ -26,12 +28,14 @@ def main(global_config, **settings):
     config.add_static_view('plugins/static', 'altaircms:plugins/static', cache_max_age=3600)
     config.add_static_view("staticasset", settings["altaircms.asset.storepath"], cache_max_age=3600)
 
-    config.add_route('top', '/')
+    ## 楽天ログイン
+    config.add_route('top', '/rakuten/rauth/')
     config.add_view('altairsite.rakuten_auth.index', route_name="top")
-    config.add_route('signout', '/signout')
+    config.add_route('signout', '/rakuten/rauth/signout')
     config.add_view('altairsite.rakuten_auth.signout', route_name='signout')
-    config.add_route('rakuten_auth.login', '/login')
-    config.add_route('rakuten_auth.verify', '/verify')
+    config.add_route('rakuten_auth.login', '/rakuten/rauth/login')
+    config.add_route('rakuten_auth.verify', '/rakuten/rauth/verify')
+
 
     config.add_route('front', '/{page_name:.*}', factory=".front.resources.PageRenderingResource") # fix-url after. implemnt preview
     

@@ -83,7 +83,7 @@ class PageSet(Base,
     def get_or_create(cls, page):
         if page.pageset is None:
             url = page.url
-            pageset = cls(url=url, name=page.title + u" ページセット", event=page.event, version_counter=0)
+            pageset = cls(url=url, name=page.name, event=page.event, version_counter=0)
             page.pageset = pageset
         else:
             pageset = page.pageset
