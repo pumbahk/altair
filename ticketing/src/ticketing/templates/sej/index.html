@@ -1,0 +1,52 @@
+<%inherit file="../layout.html" />
+<%namespace file="/common/helpers.html" name="h"/>
+<%block name="title">SEJ Menu</%block>
+
+  <div class="ui-toolbar">
+    <a href="${request.route_path('orders.sej.request')}" class="btn">手動発券</a>
+    <a href="${request.route_path('operator_roles.index')}" class="btn">ロール設定</a>
+  </div>
+  <table class="table fullwidth checkboxed_table">
+    <thead>
+    <tr>
+      <th class="minwidth"><input type="checkbox" class="__action__-select_all" /></th>
+      <th>支払い方法</th>
+      <th>オーダーID</th>
+      <th>SEJ処理番号</th>
+      <th>引換票番号</th>
+      <th>支払票番号</th>
+      <th>合計金額</th>
+      <th>チケット金額</th>
+      <th>手数料</th>
+      <th>手数料</th>
+      <th>発券枚数</th>
+      <th>合計枚数</th>
+      <th>チケット枚数</th>
+      <th>返却枚数</th>
+      <th>発券金額</th>
+    </tr>
+    </thead>
+    <tbody>
+    % for order in orders.items:
+    <tr>
+      <td>ID:${order.id}<form action="${order.exchange_sheet_url}" method="POST"><input type="hidden" name="iraihyo_id_00" value="${order.exchange_sheet_number}"><input class="button" type='submit' name="" value="引換票"></form>
+      </td>
+      <td>${order.payment_type}</td>
+      <td>${order.order_id}</td>
+      <td>${order.process_id}</td>
+      <td>${order.exchange_number}</td>
+      <td>${order.billing_number}</td>
+      <td>${order.total_price}</td>
+      <td>${order.ticket_price}</td>
+      <td>${order.commission_fee}</td>
+      <td>${order.ticketing_fee}</td>
+      <td>${order.total_ticket_count}</td>
+      <td>${order.ticket_count}</td>
+      <td>${order.return_ticket_count}</td>
+      <td>${order.ticketing_fee}</td>
+      <td>${order.ticketing_fee}</td>
+    </tr>
+    % endfor
+    </tbody>
+  </table>
+  ${h.pager(orders)}

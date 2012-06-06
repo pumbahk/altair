@@ -1,7 +1,4 @@
 # -*- coding:utf-8 -*-
-
-
-
 from pyramid.paster import bootstrap
 import sqlahelper
 
@@ -733,6 +730,10 @@ def payment_test_p_only_r_c_c():
         billing_number      = sejTicketOrder.billing_number,
         exchange_number     = sejTicketOrder.exchange_number
     )
+
+def test_file_get_pay():
+    pass
+
 import csv
 import optparse
 import sys
@@ -775,7 +776,7 @@ def main(argv=sys.argv):
 #    payment_test_pre_r_c_c()
 #    payment_test_paid_r_c_c()
 #    payment_test_p_only_r_c_c()
-    payment_test()
+#    payment_test()
 #    payment_test_pre_2()
 #    payment_test_pay()
 if __name__ == u"__main__":

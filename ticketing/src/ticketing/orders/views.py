@@ -60,3 +60,37 @@ class Orders(BaseView):
         return {
             'order':order,
         }
+
+from ticketing.sej.models import SejOrder
+from ticketing.sej.payment import request_sej_exchange_sheet
+
+@view_defaults(decorator=with_bootstrap)
+class SejAdmin(object):
+
+    def __init__(self, request):
+        self.request = request
+
+    @view_config(route_name='orders.sej', renderer='ticketing:templates/sej/index.html')
+    def index_get(self):
+        sort = self.request.GET.get('sort', 'SejOrder.id')
+        direction = self.request.GET.get('direction', 'asc')
+        if direction not in ['asc', 'desc']:
+            direction = 'asc'
+
+        query = SejOrder.filter().order_by(sort + ' ' + direction)
+
+        orders = paginate.Page(
+            query,
+            page=int(self.request.params.get('page', 0)),
+            items_per_page=20,
+            url=paginate.PageURL_WebOb(self.request)
+        )
+
+        return {
+            'orders': orders
+        }
+
+
+    @view_config(route_name='orders.sej.request', renderer='ticketing:templates/sej/request.html')
+    def request_get(self):
+        return {}

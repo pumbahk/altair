@@ -1,0 +1,33 @@
+<%inherit file="../layout.html" />
+<%block name="title">Admin</%block>
+
+<div class="box">
+
+    <form action="${request.route_path('orders.sej.request')}" method="POST">
+        <label><span>shop_name</span><input id="email" name="login_id" type="text" value=""></label>
+        <label><span>contact_01</span><input id="email" name="login_id" type="text" value=""></label>
+        <label><span>contact_02</span><input id="email" name="login_id" type="text" value=""></label>
+        <label><span>order_id</span><input id="email" name="login_id" type="text" value=""></label>
+        <label><span>username</span><input id="email" name="login_id" type="text" value=""></label>
+        <label><span>username_kana</span><input id="email" name="login_id" type="text" value=""></label>
+        <label><span>tel</span><input id="email" name="login_id" type="text" value=""></label>
+        <label><span>zip</span><input id="email" name="login_id" type="text" value=""></label>
+        <label><span>email</span><input id="email" name="login_id" type="text" value=""></label>
+        <label><span>total</span><input id="email" name="login_id" type="text" value=""></label>
+        <label><span>ticket_total</span><input id="email" name="login_id" type="text" value=""></label>
+        <label><span>commission_fee</span><input id="email" name="login_id" type="text" value=""></label>
+        <label><span>payment_type</span><input id="email" name="login_id" type="text" value=""></label>
+        <label><span>ticketing_fee</span><input id="email" name="login_id" type="text" value=""></label>
+        <label><span>payment_due_datetime</span><input id="email" name="login_id" type="text" value=""></label>
+        <label><span>ticketing_start_datetime</span><input id="email" name="login_id" type="text" value=""></label>
+        <label><span>ticketing_due_datetime</span><input id="email" name="login_id" type="text" value=""></label>
+        <label><span>regrant_number_datetime</span><input id="email" name="login_id" type="text" value=""></label>
+        <label><span>tickets</span><input id="email" name="login_id" type="text" value=""></label>
+
+        <div class="spacer">
+            <input type="submit" name="submit" value="新規リクエスト" />
+        </div>
+    </form>
+</div>
+
+</form>

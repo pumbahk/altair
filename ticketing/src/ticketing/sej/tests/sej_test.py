@@ -28,115 +28,6 @@ class SejTest(unittest.TestCase):
         pass
 
 
-    def test_check_sign(self):
-
-        pass
-
-    def test_file_payment(self):
-        ''' 入金速報:SEITIS91_30516_20110912
-        '''
-        import os
-        from ticketing.sej.file import SejInstantPaymentFileParser
-        body = open(os.path.dirname(__file__)+ '/data/SEITIS91_30516_20110912', 'r').read()
-        parser = SejInstantPaymentFileParser()
-        data = parser.parse(body)
-        for row in data:
-            assert row['notification_type'] == 91
-            assert row['payment_type'] == 1 or row['payment_type'] == 2 or \
-                    row['payment_type'] == 3 or row['payment_type'] == 4
-        assert len(data) == 27
-
-    def test_file_payemnt_expire(self):
-        '''支払期限切れ:SEITIS51_30516_20110912'''
-        import os
-        from ticketing.sej.file import SejExpiredFileParser
-        body = open(os.path.dirname(__file__)+ '/data/SEITIS51_30516_20110912', 'r').read()
-        parser = SejExpiredFileParser()
-        data = parser.parse(body)
-        for row in data:
-            assert row['notification_type'] == 51
-        assert len(data) == 2
-
-    def test_file_ticketing_expire(self):
-        '''発券期限切れ:SEITIS61_30516_201109122'''
-        import os
-        from ticketing.sej.file import SejExpiredFileParser
-        body = open(os.path.dirname(__file__)+ '/data/SEITIS61_30516_20110912', 'r').read()
-        parser = SejExpiredFileParser()
-        data = parser.parse(body)
-        for row in data:
-            assert row['notification_type'] == 61
-        assert len(data) == 1
-
-    def test_file_refund(self):
-        '''払戻速報:SEITIS92_30516_20110914'''
-        import os
-        from ticketing.sej.file import SejRefundFileParser
-        body = open(os.path.dirname(__file__)+ '/data/SEITIS92_30516_20110914', 'r').read()
-        parser = SejRefundFileParser()
-        data = parser.parse(body)
-        for row in data:
-            assert row['notification_type'] == 92
-        assert len(data) == 4
-
-    def test_file_payment_info(self):
-        '''支払い案内:SEITIS94_30516_20111008'''
-        import os
-        from ticketing.sej.file import SejPaymentInfoFileParser
-        body = open(os.path.dirname(__file__)+ '/data/SEITIS94_30516_20111008', 'r').read()
-        parser = SejPaymentInfoFileParser()
-        data = parser.parse(body)
-        for row in data:
-            assert row['notification_type'] == 94
-        assert len(data) == 30
-
-    def test_file_check_cancel_pay(self):
-        '''□会計取消（入金）:SEITIS95_30516_20110915'''
-        import os
-        from ticketing.sej.file import SejCheckFileParser
-        body = open(os.path.dirname(__file__)+ '/data/SEITIS95_30516_20110915', 'r').read()
-        parser = SejCheckFileParser()
-        data = parser.parse(body)
-        for row in data:
-            assert row['notification_type'] == 95
-
-        assert len(data) == 3
-
-    def test_file_check_cancel_ticketing(self):
-        '''□会計取消（発券）:SEITIS96_30516_20110915'''
-        import os
-        from ticketing.sej.file import SejCheckFileParser
-        body = open(os.path.dirname(__file__)+ '/data/SEITIS96_30516_20110915', 'r').read()
-        parser = SejCheckFileParser()
-        data = parser.parse(body)
-        for row in data:
-            assert row['notification_type'] == 96
-
-        assert len(data) == 2
-
-    def test_file_refund_commit(self):
-        '''□払戻確定:SEITIS97_30516_20110916'''
-        import os
-        from ticketing.sej.file import SejRefundFileParser
-        body = open(os.path.dirname(__file__)+ '/data/SEITIS97_30516_20110916', 'r').read()
-        parser = SejRefundFileParser()
-        data = parser.parse(body)
-        for row in data:
-            assert row['notification_type'] == 97
-        assert len(data) == 3
-
-    def test_file_refund_cancel(self):
-        '''□払戻取消:SEITIS98_30516_20110916'''
-        import os
-        from ticketing.sej.file import SejRefundFileParser
-        body = open(os.path.dirname(__file__)+ '/data/SEITIS98_30516_20110916', 'r').read()
-        parser = SejRefundFileParser()
-        data = parser.parse(body)
-        for row in data:
-            assert row['notification_type'] == 98
-
-        assert len(data) == 1
-
     def test_callback_pay_notification(self):
         '''入金発券完了通知'''
         import sqlahelper
@@ -149,7 +40,7 @@ class SejTest(unittest.TestCase):
         sejOrder.process_type          = SejOrderUpdateReason.Change.v
         sejOrder.billing_number        = u'00000001'
         sejOrder.ticket_count          = 1
-        sejOrder.exchange_sheet_url    = u'https://www.r1test.com/order/hi.do&iraihyo_id_00=11111111'
+        sejOrder.exchange_sheet_url    = u'https://www.r1test.com/order/hi.do'
         sejOrder.order_id              = u'orderid00001'
         sejOrder.exchange_sheet_number = u'11111111'
         sejOrder.exchange_number       = u'22222222'
@@ -186,7 +77,7 @@ class SejTest(unittest.TestCase):
         n = SejNotification.query.filter_by(order_id = u'orderid00001', billing_number=u'00000001').one()
 
         assert n.process_number        == '000000000001'
-        assert int(n.payment_type )         == SejPaymentType.CashOnDelivery.v
+        assert int(n.payment_type)         == SejPaymentType.CashOnDelivery.v
 
         assert n.notification_type     == u'1'
         assert n.billing_number        == u'00000001'
@@ -200,6 +91,7 @@ class SejTest(unittest.TestCase):
         assert n.ticketing_store_number== u'000002'
         assert n.ticketing_store_name  == u'西五反田店'
         assert n.cancel_reason         == ''
+
 
         assert n.signature             == u'c607ffcafbda1a13f629acce2dea24d5'
         assert n.processed_at          == datetime.datetime(2012,7,1,8,11,00)
@@ -325,7 +217,7 @@ class SejTest(unittest.TestCase):
         import webob.util
         webob.util.status_reasons[800] = 'OK'
 
-        target = self._makeOne(lambda environ: '<SENBDATA>DATA=END</SENBDATA>', host='127.0.0.1', port=18002, status=800)
+        target = self._makeOne(lambda environ: '<SENBDATA>DATA=END</SENBDATA>', host='127.0.0.1', port=38002, status=800)
         target.start()
 
         sej_order = SejOrder()
@@ -349,11 +241,11 @@ class SejTest(unittest.TestCase):
             order_id=u'orderid00001',
             billing_number=u'00000001',
             exchange_number ='12345678',
-            hostname=u"http://127.0.0.1:18002"
+            hostname=u"http://127.0.0.1:38002"
         )
 
         target.assert_method('POST')
-        target.assert_url('http://127.0.0.1:18002/order/cancelorder.do')
+        target.assert_url('http://127.0.0.1:38002/order/cancelorder.do')
 
         sej_order = SejOrder.query.filter_by(order_id = u'orderid00001', billing_number=u'00000001').one()
 
@@ -387,7 +279,7 @@ class SejTest(unittest.TestCase):
             )
 
         webob.util.status_reasons[800] = 'OK'
-        target = self._makeOne(sej_dummy_response, host='127.0.0.1', port=18001, status=800)
+        target = self._makeOne(sej_dummy_response, host='127.0.0.1', port=38001, status=800)
         target.start()
 
         request_order(
@@ -408,7 +300,7 @@ class SejTest(unittest.TestCase):
             payment_due_datetime = datetime.datetime(2012,7,30,7,00), #u'201207300700',
             regrant_number_datetime = datetime.datetime(2012,7,30,7,00), # u'201207300700',
 
-            hostname=u"http://127.0.0.1:18001",
+            hostname=u"http://127.0.0.1:38001",
 
             tickets = [
                 dict(
@@ -474,7 +366,7 @@ class SejTest(unittest.TestCase):
         )
 
         target.assert_method('POST')
-        target.assert_url('http://127.0.0.1:18001/order/order.do')
+        target.assert_url('http://127.0.0.1:38001/order/order.do')
 
         order = SejOrder.query.filter_by(order_id = u'orderid00001', billing_number=u'0000000001').one()
 
@@ -519,7 +411,7 @@ class SejTest(unittest.TestCase):
             )
 
         webob.util.status_reasons[800] = 'OK'
-        target = self._makeOne(sej_dummy_response, host='127.0.0.1', port=18001, status=800)
+        target = self._makeOne(sej_dummy_response, host='127.0.0.1', port=38001, status=800)
         target.start()
 
         sejTicketOrder = request_order(
@@ -540,7 +432,7 @@ class SejTest(unittest.TestCase):
              payment_due_datetime = datetime.datetime(2012,7,30,7,00), #u'201207300700',
             regrant_number_datetime = datetime.datetime(2012,7,30,7,00), # u'201207300700',
 
-             hostname=u"http://127.0.0.1:18001",
+             hostname=u"http://127.0.0.1:38001",
 
              tickets = [
                  dict(
@@ -606,7 +498,7 @@ class SejTest(unittest.TestCase):
          )
 
         target.assert_method('POST')
-        target.assert_url('http://127.0.0.1:18001/order/order.do')
+        target.assert_url('http://127.0.0.1:38001/order/order.do')
 
         sej_order = SejOrder.query.filter_by(order_id = u'orderid00001', billing_number=u'0000000001').one()
 
@@ -634,7 +526,7 @@ class SejTest(unittest.TestCase):
         from ticketing.sej.payment import SejOrderUpdateReason, request_cancel_order
         webob.util.status_reasons[800] = 'OK'
 
-        target = self._makeOne(lambda environ: '<SENBDATA>DATA=END</SENBDATA>', host='127.0.0.1', port=18002, status=800)
+        target = self._makeOne(lambda environ: '<SENBDATA>DATA=END</SENBDATA>', host='127.0.0.1', port=38002, status=800)
         target.start()
 
         sej_order = SejOrder()
@@ -657,12 +549,12 @@ class SejTest(unittest.TestCase):
             order_id=u'orderid00001',
             billing_number=u'00000001',
             exchange_number=u'00001111',
-            hostname=u"http://127.0.0.1:18002"
+            hostname=u"http://127.0.0.1:38002"
         )
 
         target.assert_body('X_shop_id=30520&xcode=cf0fe9fc34300dd1f946e6c9c33fc020&X_hikikae_no=00001111&X_haraikomi_no=00000001&X_shop_order_id=orderid00001')
         target.assert_method('POST')
-        target.assert_url('http://127.0.0.1:18002/order/cancelorder.do')
+        target.assert_url('http://127.0.0.1:38002/order/cancelorder.do')
 
         sej_order = SejOrder.query.filter_by(order_id = u'orderid00001', billing_number=u'00000001').one()
         assert sej_order.cancel_at is not None

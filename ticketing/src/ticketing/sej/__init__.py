@@ -10,9 +10,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 def includeme(config):
-    config.add_route('sej.index'                    , '/')
-    config.add_route('sej.request'                  , '/request')
     config.add_route('sej.callback'                 , '/callback')
+    config.add_route('sej.callback.form'            , '/callback/form')
 
 def main(global_config, **settings):
     engine = engine_from_config(settings)
@@ -21,9 +20,8 @@ def main(global_config, **settings):
     config = Configurator(settings=settings)
     config.set_root_factory('.resources.TicketingApiResource')
     config.registry['sa.engine'] = engine
+
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
-    config.add_renderer('json'  , 'ticketing.renderers.json_renderer_factory')
-    config.add_renderer('csv'   , 'ticketing.renderers.csv_renderer_factory')
 
     config.include('.', "/altair/sej/")
     config.scan()

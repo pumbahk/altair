@@ -18,10 +18,6 @@ import sqlahelper
 from lxml import etree
 import re
 
-logging.basicConfig()
-log = logging.getLogger(__file__)
-log.setLevel(logging.DEBUG)
-
 DBSession = sqlahelper.get_session()
 
 class SejTicketDataXml():
@@ -53,12 +49,45 @@ class SejPayment(object):
 
     response = {}
 
+    log = logging.getLogger('sej_payment')
+
     def __init__(self, secret_key, url, time_out = 120, retry_count = 3, retry_interval = 5):
         self.secret_key = secret_key
         self.url = url
         self.time_out = time_out
         self.retry_count = retry_count
         self.retry_interval = retry_interval
+
+    def request_file(self, params, retry_mode):
+        request_params = self.create_request_params(params)
+        req = urllib2.Request(self.url)
+        buffer = ["%s=%s" % (name, urllib2.quote(unicode(param).encode('shift_jis', 'xmlcharrefreplace'))) for name, param in request_params.iteritems()]
+        data = "&".join(buffer)
+
+        req.add_data(data)
+        req.add_header('User-Agent', 'SejPaymentForJava/2.00')
+        req.add_header('Connection', 'close')
+
+
+        try:
+            res = urllib2.urlopen(req)
+        except urllib2.HTTPError, e:
+            res = e
+        except urllib2.URLError, e:
+            print e.args
+            return
+
+        status = res.code
+        reason = res.msg
+        body = res.read()
+
+
+        if status != 800:
+            raise SejServerError(status_code=status, reason=reason, body=body)
+
+        return body
+
+
 
     def request(self, params, retry_mode):
         request_params = self.create_request_params(params)
@@ -110,7 +139,9 @@ class SejPayment(object):
         req = urllib2.Request(self.url)
         buffer = ["%s=%s" % (name, urllib2.quote(unicode(param).encode('shift_jis', 'xmlcharrefreplace'))) for name, param in request_params.iteritems()]
         data = "&".join(buffer)
-        log.debug(data)
+
+        self.log.info("[request]%s" % data)
+
         req.add_data(data)
         req.add_header('User-Agent', 'SejPaymentForJava/2.00')
         req.add_header('Connection', 'close')
@@ -126,7 +157,8 @@ class SejPayment(object):
         status = res.code
         reason = res.msg
         body = res.read()
-        log.debug(body)
+
+        self.log.info("[response]%s" % body)
 
         if status == 200:
             raise SejServerError(status_code=200, reason="Script syntax error", body=body)
@@ -180,8 +212,7 @@ def _create_sej_request(
     # 注文ID
     params['X_shop_order_id']   = order_id
 
-
-    if payment_type != SejPaymentType.Paid:
+    if payment_type != SejPaymentType.Paid and payment_due_datetime:
         # コンビニでの決済を行う場合の支払い期限の設定
         params['X_pay_lmt']         = payment_due_datetime.strftime('%Y%m%d%H%M')
 
@@ -203,6 +234,7 @@ def _create_sej_request(
     if payment_type == SejPaymentType.Paid:
         assert x_ticket_daikin + x_ticket_kounyu_daikin == 0
 
+    # 前払い
     if payment_type == SejPaymentType.Prepayment or payment_type == SejPaymentType.Paid:
         # 支払いと発券が異なる場合、発券開始日時と発券期限を指定できる。
         if ticketing_start_datetime is not None:
@@ -350,10 +382,10 @@ def request_order(
 
     sej_order = SejOrder()
 
-    sej_order.process_type              = payment_type.v
+    sej_order.payment_type              = payment_type.v
     sej_order.billing_number            = ret.get('X_haraikomi_no')
     sej_order.total_ticket_count        = int(ret.get('X_ticket_cnt', 0))
-    sej_order.ticket_count             = int(ret.get('X_ticket_hon_cnt', 0))
+    sej_order.ticket_count              = int(ret.get('X_ticket_hon_cnt', 0))
     sej_order.exchange_sheet_url        = ret.get('X_url_info')
     sej_order.order_id                  = ret.get('X_shop_order_id')
     sej_order.exchange_sheet_number     = ret.get('iraihyo_id_00')
@@ -387,13 +419,14 @@ def request_order(
 
     return sej_order
 
-def request_sej_exchange_sheet(order_id, shop_id = u'30520', secret_key = u'E6PuZ7Vhe7nWraFW'):
-    sejOrder = SejOrder.query.filter_by(order_id = order_id).one()
+def request_sej_exchange_sheet(sej_order_id, shop_id = u'30520', secret_key = u'E6PuZ7Vhe7nWraFW'):
+    sej_order = SejOrder.query.filter_by(id = sej_order_id).one()
 
     params = JavaHashMap()
-    params['iraihyo_id_00'] = sejOrder.iraihyo_id_00
+    params['iraihyo_id_00'] = sej_order.exchange_sheet_number
+    url = sej_order.exchange_sheet_url
 
-    req = urllib2.Request(u'order/hi.do')
+    req = urllib2.Request(url)
     buffer = ["%s=%s" % (name, urllib2.quote(param.encode('shift_jis'))) for name, param in params.iteritems()]
     data = "&".join(buffer)
 
@@ -411,6 +444,7 @@ def request_sej_exchange_sheet(order_id, shop_id = u'30520', secret_key = u'E6Pu
 
     status = res.code
     reason = res.msg
+    print res.read()
 
     if status == 200:
         body = res.read()
@@ -448,12 +482,12 @@ def request_cancel_order(
             error_msg=ret.get('Error_Msg', None),
             error_field=ret.get('Error_Field', None))
 
-    sejOrder = SejOrder.query.filter_by(order_id = order_id, billing_number = billing_number, exchange_number=exchange_number).one()
-    sejOrder.cancel_at = datetime.now()
-    DBSession.merge(sejOrder)
+    sej_order = SejOrder.query.filter_by(order_id = order_id, billing_number = billing_number, exchange_number=exchange_number).one()
+    sej_order.cancel_at = datetime.now()
+    DBSession.merge(sej_order)
     DBSession.flush()
 
-    return sejOrder
+    return sej_order
 
 def request_update_order(
         update_reason,
@@ -484,12 +518,12 @@ def request_update_order(
     if tickets is list:
         raise ValueError('tickets')
 
-    sejOrder = SejOrder.query.filter_by(
+    sej_order = SejOrder.query.filter_by(
         order_id = condition.get('order_id'),
         billing_number = condition.get('billing_number'),
         exchange_number=condition.get('exchange_number')).one()
 
-    if not sejOrder:
+    if not sej_order:
         raise ValueError('order not found')
 
     payment = SejPayment(url = hostname + u'/order/updateorder.do', secret_key = secret_key)
@@ -533,18 +567,22 @@ def request_update_order(
             error_msg=ret.get('Error_Msg', None),
             error_field=ret.get('Error_Field', None))
 
-    sejOrder.process_type              = payment_type.v
-    sejOrder.billing_number            = ret.get('X_haraikomi_no')
-    sejOrder.total_ticket_count        = int(ret.get('X_ticket_cnt', 0))
-    sejOrder.ticket_count              = int(ret.get('X_ticket_hon_cnt', 0))
-    sejOrder.exchange_sheet_url        = ret.get('X_url_info')
-    sejOrder.order_id                  = ret.get('X_shop_order_id')
-    sejOrder.exchange_sheet_number     = ret.get('iraihyo_id_00')
-    sejOrder.exchange_number           = ret.get('X_hikikae_no')
-    sejOrder.order_at                  = datetime.now()
+    sej_order.payment_type              = payment_type.v
+    sej_order.billing_number            = ret.get('X_haraikomi_no')
+    sej_order.total_ticket_count        = int(ret.get('X_ticket_cnt', 0))
+    sej_order.ticket_count              = int(ret.get('X_ticket_hon_cnt', 0))
+    sej_order.exchange_sheet_url        = ret.get('X_url_info')
+    sej_order.order_id                  = ret.get('X_shop_order_id')
+    sej_order.exchange_sheet_number     = ret.get('iraihyo_id_00')
+    sej_order.exchange_number           = ret.get('X_hikikae_no')
+    sej_order.total_price               = int(params.get('X_goukei_kingaku',0))
+    sej_order.ticket_price              = int(params.get('X_ticket_daikin',0))
+    sej_order.commission_fee            = int(params.get('X_ticket_kounyu_daikin',0))
+    sej_order.ticketing_fee             = int(params.get('X_hakken_daikin',0))
+    sej_order.updated_at                = datetime.now()
 
     order_buffer = {}
-    for ticket in sejOrder.tickets:
+    for ticket in sej_order.tickets:
         order_buffer[ticket.ticket_idx] = ticket
 
     idx = 1
@@ -566,23 +604,33 @@ def request_update_order(
         idx += 1
 
 
-    DBSession.merge(sejOrder)
+    DBSession.merge(sej_order)
     DBSession.flush()
 
-    return sejOrder
+    return sej_order
 
 
-def request_fileget(params):
+def request_fileget(
+        notification_type,
+        date,
+        shop_id = u'30520',
+        secret_key = u'E6PuZ7Vhe7nWraFW',
+        hostname = sej_hostname):
     """ファイル取得先 https://inticket.sej.co.jp/order/getfile.do
     """
-    payment = SejPayment(secret_key = secret_key, url="https://inticket.sej.co.jp/order/getfile.do")
-    return payment.request(params)
 
-def request_exchange_sheet(exchange_sheet_number):
-    """払込票表示 https://inticket.sej.co.jp/order/hi.do
-    """
-    pass
+    params = JavaHashMap()
 
+    params['X_shop_id'] = shop_id
+    #params['X_tuchi_kbn'] = "%02d" % notification_type.v
+    params['X_data_type'] = "%02d" % notification_type.v
+    params['X_date'] = date.strftime('%Y%m%d')
+
+    payment = SejPayment(url = hostname + u'/order/getfile.do', secret_key = secret_key)
+    body = payment.request_file(params, True)
+
+    from zlib import decompress
+    return decompress(body)
 
 def callback_notification(params,
                           secret_key = u'E6PuZ7Vhe7nWraFW'):
@@ -604,7 +652,7 @@ def callback_notification(params,
     process_number = params.get('X_shori_id')
     if not process_number:
         raise SejResponseError(
-             400, 'Bad Request',dict(status='400', Error_Type='00', Error_Msg='No Data', Error_Field='X_shori_id'))
+             400, 'Bad Request',dict(status='422', Error_Type='01', Error_Msg='No Data', Error_Field='X_shori_id'))
 
     retry_data = False
     q = SejNotification.query.filter_by(process_number = process_number)
@@ -681,7 +729,9 @@ def callback_notification(params,
         return make_sej_response(dict(status='800' if not retry_data else '810'))
 
     def dummy(notification_type):
-        raise Exception('X_tuchi_type is fusei %d' % notification_type)
+        raise SejResponseError(
+             422, 'Bad Request',dict(status='422', Error_Type='01', Error_Msg='Bad Value', Error_Field='X_tuchi_type'))
+
     ret = {
         SejNotificationType.PaymentComplete.v   : process_payment_complete,
         SejNotificationType.CancelFromSVC.v     : process_payment_complete,

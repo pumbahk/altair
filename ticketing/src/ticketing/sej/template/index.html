@@ -1,3 +1,4 @@
+
 <html>
 <head>
     <style>
@@ -38,7 +39,7 @@ X_ticket_cnt[01]
 X_ticket_hon_cnt[01]
 **********************************************
 </pre>
-<form action="${request.route_path('sej.callback')}" method="POST">
+<form action="/altair/sej/callback" method="POST">
     <div>
         <label>X_shori_id</label>
         <input type="text" name="X_shori_id" value="000000022908" />
@@ -120,7 +121,7 @@ X_ticket_hon_cnt[01]
 **********************************************
 </pre>
 
-<form action="${request.route_path('sej.callback')}" method="POST">
+<form action="/altair/sej/callback" method="POST">
     <div>
         <label>X_shori_id</label>
         <input type="text" name="X_shori_id" value="000000035639" />
@@ -196,7 +197,7 @@ X_lmt_time_new[201109061500]
 X_barcode_no_new_01[6200003398898]
 **********************************************
 </pre>
-<form action="${request.route_path('sej.callback')}" method="POST">
+<form action="/altair/sej/callback" method="POST">
     <div>
         <label>X_shori_id</label>
         <input type="text" name="X_shori_id" value="000000035639" />
@@ -269,7 +270,7 @@ X_haraikomi_no[2386267653271]
 **********************************************
 
 </pre>
-<form action="${request.route_path('sej.callback')}" method="POST">
+<form action="/altair/sej/callback" method="POST">
     <div>
         <label>X_shori_id</label>
         <input type="text" name="X_shori_id" value="000000022910" />
@@ -322,21 +323,175 @@ X_haraikomi_no[2386267653271]
     </tr>
   </thead>
   <tbody>
-  % for item in list:
     <tr>
-      <td>${item.order_id}</td>
-      <td>${item.exchange_number}</td>
-      <td>${item.billing_number}</td>
-      <td>${item.exchange_sheet_url}</td>
-      <td>${item.exchange_sheet_number}</td>
+      <td>120605112147</td>
+      <td>None</td>
+      <td>2340019167010</td>
+      <td>https://www.r1test.com/order/hi.do</td>
+      <td>305203400191670174f5ac677fea9423</td>
       <td>
-          <form action="${item.exchange_sheet_url}" method="POST">
-              <input type="hidden" name="iraihyo_id_00" value="${item.exchange_sheet_number}">
+          <form action="https://www.r1test.com/order/hi.do" method="POST">
+              <input type="hidden" name="iraihyo_id_00" value="305203400191670174f5ac677fea9423">
               <input type="submit" name="" value="表示">
           </form>
       </td>
     </tr>
-  % endfor
+    <tr>
+      <td>120605112150</td>
+      <td>None</td>
+      <td>2329359254147</td>
+      <td>https://www.r1test.com/order/hi.do</td>
+      <td>30520329359254143ca516c7acd36c82</td>
+      <td>
+          <form action="https://www.r1test.com/order/hi.do" method="POST">
+              <input type="hidden" name="iraihyo_id_00" value="30520329359254143ca516c7acd36c82">
+              <input type="submit" name="" value="表示">
+          </form>
+      </td>
+    </tr>
+    <tr>
+      <td>120605112153</td>
+      <td>None</td>
+      <td>2379107450727</td>
+      <td>https://www.r1test.com/order/hi.do</td>
+      <td>3052037910745072f5cf768afb8a96f5</td>
+      <td>
+          <form action="https://www.r1test.com/order/hi.do" method="POST">
+              <input type="hidden" name="iraihyo_id_00" value="3052037910745072f5cf768afb8a96f5">
+              <input type="submit" name="" value="表示">
+          </form>
+      </td>
+    </tr>
+    <tr>
+      <td>120605112155</td>
+      <td>None</td>
+      <td>2338963636508</td>
+      <td>https://www.r1test.com/order/hi.do</td>
+      <td>3052033896363650cd25fa0c083a8b01</td>
+      <td>
+          <form action="https://www.r1test.com/order/hi.do" method="POST">
+              <input type="hidden" name="iraihyo_id_00" value="3052033896363650cd25fa0c083a8b01">
+              <input type="submit" name="" value="表示">
+          </form>
+      </td>
+    </tr>
+    <tr>
+      <td>120605112218</td>
+      <td>2459245684229</td>
+      <td>2339225455653</td>
+      <td>https://www.r1test.com/order/hi.do</td>
+      <td>30520339225455656424774c5127b243</td>
+      <td>
+          <form action="https://www.r1test.com/order/hi.do" method="POST">
+              <input type="hidden" name="iraihyo_id_00" value="30520339225455656424774c5127b243">
+              <input type="submit" name="" value="表示">
+          </form>
+      </td>
+    </tr>
+    <tr>
+      <td>120605112228</td>
+      <td>2439322271429</td>
+      <td>2339890364670</td>
+      <td>https://www.r1test.com/order/hi.do</td>
+      <td>30520339890364671862de8d6a493f1f</td>
+      <td>
+          <form action="https://www.r1test.com/order/hi.do" method="POST">
+              <input type="hidden" name="iraihyo_id_00" value="30520339890364671862de8d6a493f1f">
+              <input type="submit" name="" value="表示">
+          </form>
+      </td>
+    </tr>
+    <tr>
+      <td>120605112250</td>
+      <td>2418005703617</td>
+      <td>None</td>
+      <td>https://www.r1test.com/order/hi.do</td>
+      <td>3052041800570361242045eb8ec4c0ce</td>
+      <td>
+          <form action="https://www.r1test.com/order/hi.do" method="POST">
+              <input type="hidden" name="iraihyo_id_00" value="3052041800570361242045eb8ec4c0ce">
+              <input type="submit" name="" value="表示">
+          </form>
+      </td>
+    </tr>
+    <tr>
+      <td>120605112301</td>
+      <td>2409035022700</td>
+      <td>None</td>
+      <td>https://www.r1test.com/order/hi.do</td>
+      <td>30520409035022709c3b640db92c2380</td>
+      <td>
+          <form action="https://www.r1test.com/order/hi.do" method="POST">
+              <input type="hidden" name="iraihyo_id_00" value="30520409035022709c3b640db92c2380">
+              <input type="submit" name="" value="表示">
+          </form>
+      </td>
+    </tr>
+    <tr>
+      <td>120605112301</td>
+      <td>2419138437011</td>
+      <td>None</td>
+      <td>https://www.r1test.com/order/hi.do</td>
+      <td>3052041913843701504f8dfe8289864f</td>
+      <td>
+          <form action="https://www.r1test.com/order/hi.do" method="POST">
+              <input type="hidden" name="iraihyo_id_00" value="3052041913843701504f8dfe8289864f">
+              <input type="submit" name="" value="表示">
+          </form>
+      </td>
+    </tr>
+    <tr>
+      <td>120605112323</td>
+      <td>None</td>
+      <td>2379519749624</td>
+      <td>https://www.r1test.com/order/hi.do</td>
+      <td>3052037951974962864191334dfbd74f</td>
+      <td>
+          <form action="https://www.r1test.com/order/hi.do" method="POST">
+              <input type="hidden" name="iraihyo_id_00" value="3052037951974962864191334dfbd74f">
+              <input type="submit" name="" value="表示">
+          </form>
+      </td>
+    </tr>
+    <tr>
+      <td>120605112326</td>
+      <td>None</td>
+      <td>2301714616432</td>
+      <td>https://www.r1test.com/order/hi.do</td>
+      <td>3052030171461643c0e1a7efea9d1672</td>
+      <td>
+          <form action="https://www.r1test.com/order/hi.do" method="POST">
+              <input type="hidden" name="iraihyo_id_00" value="3052030171461643c0e1a7efea9d1672">
+              <input type="submit" name="" value="表示">
+          </form>
+      </td>
+    </tr>
+    <tr>
+      <td>120605112328</td>
+      <td>None</td>
+      <td>2369780502950</td>
+      <td>https://www.r1test.com/order/hi.do</td>
+      <td>3052036978050295be17d43192ae18ff</td>
+      <td>
+          <form action="https://www.r1test.com/order/hi.do" method="POST">
+              <input type="hidden" name="iraihyo_id_00" value="3052036978050295be17d43192ae18ff">
+              <input type="submit" name="" value="表示">
+          </form>
+      </td>
+    </tr>
+    <tr>
+      <td>120605112331</td>
+      <td>None</td>
+      <td>2330524223837</td>
+      <td>https://www.r1test.com/order/hi.do</td>
+      <td>3052033052422383e969aa1f2227c236</td>
+      <td>
+          <form action="https://www.r1test.com/order/hi.do" method="POST">
+              <input type="hidden" name="iraihyo_id_00" value="3052033052422383e969aa1f2227c236">
+              <input type="submit" name="" value="表示">
+          </form>
+      </td>
+    </tr>
 </tbody>
 </table>
 
