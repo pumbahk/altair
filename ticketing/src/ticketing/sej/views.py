@@ -34,7 +34,7 @@ class SejCallback(object):
     def callback(self):
         try:
 
-            self.log_sej.info('[callback]' % self.request.body)
+            self.log_sej.info('[callback] %s' % self.request.body)
             self.request = self.request.decode('CP932')
 
             response = callback_notification(self.request.POST)
