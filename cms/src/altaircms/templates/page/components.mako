@@ -1,3 +1,46 @@
+<%namespace name="fco" file="../formcomponents.mako"/>
+
+<%def name="setup_info_form()">
+	<script type="text/javascript">
+	  var propagate_data = function(data){
+		var root = $("form#submit_form");
+		root.find("input[name='name']").val(data.name);
+		root.find("textarea[name='url']").val(data.url);
+		root.find("textarea[name='title']").val(data.title);
+		root.find("textarea[name='keywords']").val(data.keywords);
+		root.find("textarea[name='description']").val(data.description);
+
+	    //$('label[for="url"]').text(data.jurl);
+
+		var parent_field = root.find("select[name='parent']");
+		if(data.parent){
+	      parent_field.val(data.parent).removeAttr("disabled");
+		} else {
+	      parent_field.attr("disabled","disabled");
+	    }
+	  }
+	  
+	  var propagete_setup_info = function(){
+	    var root = $("form#setup_form");
+	    var params = {"name": root.find("input[name='name']").val(),
+	                  "parent": root.find("select[name='parent']").val()};
+		$.getJSON("${request.route_path("api_page_setup_info")}",params).done(function(data,status,req){
+		  if (data.error){
+			alert(data.error);
+		  } else {
+	        propagate_data(data);
+	  	    console.log(data);
+		  }
+		}).fail(function(data){console.log(data)})
+	    return false; // kill propagation
+	  };
+	</script>
+	<form id="setup_form" onSubmit="return propagete_setup_info();">
+     ${fco.form_as_table_strict(setup_form, ["parent", "name"])}
+	 <input type="submit" value="初期値をフォームに反映">
+	</form>
+</%def>
+
 <%def name="page_difference(page,params)">
     <table class="table table-striped">
       <tr><th></th><th>変更前</th><th>変更後</th></tr>

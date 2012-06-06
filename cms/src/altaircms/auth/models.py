@@ -90,6 +90,11 @@ PERMISSIONS = [
     "hotword_read",
     "hotword_update",
     "hotword_delete",
+    # pagedefaultinfo
+    "pagedefaultinfo_create",
+    "pagedefaultinfo_read",
+    "pagedefaultinfo_update",
+    "pagedefaultinfo_delete",
 ]
 
 

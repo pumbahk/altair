@@ -20,4 +20,6 @@ def includeme(config):
                     form=".forms.TopcontentForm", mapper=".mappers.topcontent_mapper")
     config.add_crud("hotword", title="hotword", model="..tag.models.HotWord",
                     form=".forms.HotWordForm", mapper=".mappers.hotword_mapper")
+    config.add_crud("pagedefaultinfo", title="pagedefaultinfo", model="..page.models.PageDefaultInfo",
+                    form=".forms.PageDefaultInfoForm", mapper=".mappers.pagedefaultinfo_mapper")
 

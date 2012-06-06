@@ -251,3 +251,16 @@ class HotWordForm(Form):
         if data["term_begin"] > data["term_end"]:
             append_errors(self.errors, "term_begin", u"開始日よりも後に終了日が設定されています")
         return not bool(self.errors)
+
+class PageDefaultInfoForm(Form):
+    url_fmt = fields.TextField(label=u"urlのフォーマット", validators=[required_field()], widget=widgets.TextArea())    
+    title_fmt = fields.TextField(label=u"titleのフォーマット", validators=[required_field()], widget=widgets.TextArea())    
+    description = fields.TextField(label=u"descriptionのデフォルト値",  widget=widgets.TextArea())    
+    keywords = fields.TextField(label=u"keywordsのデフォルト値",  widget=widgets.TextArea())    
+    pageset = dynamic_query_select_field_factory(PageSet, 
+                                                     label=u"親となるページセット",
+                                                     query_factory=lambda : PageSet.query, 
+                                                     allow_blank=True, 
+                                                     get_label=lambda obj: obj.name or u"名前なし")
+
+    __display_fields__ = ["pageset", "title_fmt", "url_fmt", "keywords", "description"]

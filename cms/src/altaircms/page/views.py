@@ -97,9 +97,11 @@ class PageCreateView(object):
             FlashMessage.success("page created", request=self.request)
             return HTTPFound(self.request.route_path("page"))
         else:
+            setup_form = forms.PageInfoSetupForm(name=form.data["name"], parent=form.data["parent"])
             return dict(
                 pages=self.context.Page.query,
-                form=form
+                form=form, 
+                setup_form = setup_form
                 )
 
     @view_config(route_name="page_duplicate", request_method="GET", renderer="altaircms:templates/page/duplicate_confirm.mako")
@@ -197,9 +199,11 @@ class PageUpdateView(object):
              permission='page_read', request_method="GET", decorator=with_bootstrap)
 def list_(request):
     form = forms.PageForm()
+    setup_form = forms.PageInfoSetupForm()
     return dict(
         pages=request.context.Page.query, 
-        form=form
+        form=form, 
+        setup_form=setup_form, 
     )
 
 @view_config(route_name="page_edit_", request_method="POST")

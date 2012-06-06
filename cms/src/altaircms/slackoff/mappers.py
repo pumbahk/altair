@@ -81,3 +81,8 @@ def hotword_mapper(request, obj):
     objlike = ObjectLike(**model_to_dict(obj))
     objlike.tag = obj.tag.label if obj.tag else u"------"
     return objlike
+
+def pagedefaultinfo_mapper(request, obj):
+    objlike = ObjectLike(**model_to_dict(obj))
+    objlike.pageset = RawText(u'<a href="%s">%s</a>' % (h.link.to_preview_page_from_pageset(request, obj.pageset), obj.pageset.name)) if obj.pageset else u"-"
+    return objlike
