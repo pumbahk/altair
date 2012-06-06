@@ -180,7 +180,20 @@ class Element():
                 if mc == c:
                     self.children.pop(i)
                 i+=1
+        return children
 
+    def replaceChild(self, child, new_child=None):
+        if new_child == None:
+            return self.removeChild(child)
+
+        i = 0
+
+        for mc in self.children:
+            if mc == child:
+                self.children[i] = new_child
+            i+=1
+
+        return child
 
 class Attributes():
 
@@ -369,12 +382,23 @@ class Metadatas():
         for x in range(self.last_pushed):
             self.stack.pop(0)
 
+class ConverterHandler():
+
+    def __init__(self):
+        pass
+
+    def onShapeElement(self, elem, metadatas):
+        return elem
+
+    def getViewBox(self, view_box):
+        return view_box
+
 
 class Converter():
 
-    def __init__( self, output=None, input=None, input_string=None, output_file_append=False, indent=2, fn=lambda *args: True):
+    def __init__( self, output=None, input=None, input_string=None, output_file_append=False, indent=2, handler=ConverterHandler()):
 
-        self.filterfn = fn
+        self.handler = handler
         self.reader  = Reader(input=input, input_string=input_string)
         self.printer = Printer(output=output, header='<?xml version="1.0" encoding="utf-8"?>', output_file_append=output_file_append, indent=indent)
 
@@ -415,15 +439,14 @@ class Converter():
                 meta = [m for m in children if isinstance(m, Element) and m.getTagName() == "metadata"]
                 meta = meta[0] if len(meta) > 0 else None
 
-                if (meta != None):
+                if meta != None:
                     stack.push(filter(lambda x: not x.prototype_p(),
                                       map(lambda x: parseMetadata(x),
                                           [o for o in meta.getChildren()
                                            if o.getTagName() == "object" or o.getTagName() == "prototype" ])))
 
                 if elem_name in shape_tags:
-                    if not self.filterfn(elem, stack):
-                        parent.removeChild(elem)
+                    parent.replaceChild(elem, self.handler.onShapeElement(elem, stack))
 
                 elif elem_name == "g" or elem_name == "svg":
                     for child in list(children): # important list(). getting copy list.
@@ -433,3 +456,6 @@ class Converter():
                     stack.pop()
 
         iter(root, None, Metadatas())
+
+        svgattr = root.getAttribute()
+        svgattr.put("viewBox", " ".join(map(str, apply(self.handler.getViewBox, map(float, svgattr.get("viewBox").split(" "))))))
