@@ -24,14 +24,15 @@ class GenrePartFormQueryTest(unittest.TestCase):
         self.assertEquals([], result["sub_categories"])
 
     def test_sub_categories(self):
-        params = MultiDict(jpop="on")
+        params = MultiDict(anime="on")
         target = self._makeOne(params)
-        self.assertIn("jpop", [k for k, _ in target.music_subgenre.choices])
+
+        self.assertIn("anime", [k for k, _ in target.music_subgenre.choices])
 
         result = self._callFUT(target)
 
         self.assertEquals([], result["top_categories"])
-        self.assertEquals(["jpop"], result["sub_categories"])
+        self.assertEquals(["anime"], result["sub_categories"])
 
     def test_with_junk_parameters(self):
         params = MultiDict(foo="on", bar="bar")
