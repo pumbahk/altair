@@ -37,7 +37,10 @@ widget.configure({
     };
 
     var on_dialog = function(we){
-        $("#submit").click(function(){we.finish_dialog(this);});    
+        we.bind_retry(15, 25, 
+                      function(){return $("#submit")}, 
+                      function(elt){elt.click(function(){we.finish_dialog(this);});}
+                     )();
     };
 
     var on_close = function(we){
