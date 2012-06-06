@@ -319,6 +319,7 @@ def detail_page(layout, event):
     detail_page = Page(description=u'チケットの販売、イベントの予約は楽天チケットで！楽天チケットは演劇、バレエ、ミュージカルなどの舞台、クラシック、オペラ、ロックなどのコンサート、野球、サッカー、格闘技などのスポーツ、その他イベントなどのチケットのオンラインショッピングサイトです。',
                        keywords= u"チケット,演劇,クラシック,オペラ,コンサート,バレエ,ミュージカル,野球,サッカー,格闘技", 
                        layout= layout, 
+                       name= u'ブルーマングループ IN 東京 ',
                        title= u'ブルーマングループ IN 東京 ',
                        url= u'event/detail',
                        event= event, 
@@ -424,6 +425,7 @@ def help_page(layout):
     help_page = Page(description=u'チケットの販売、イベントの予約は楽天チケットで！楽天チケットは演劇、バレエ、ミュージカルなどの舞台、クラシック、オペラ、ロックなどのコンサート、野球、サッカー、格闘技などのスポーツ、その他イベントなどのチケットのオンラインショッピングサイトです。',
                        keywords= u"チケット,演劇,クラシック,オペラ,コンサート,バレエ,ミュージカル,野球,サッカー,格闘技", 
                        layout= layout, 
+                       name= u'ヘルプ',
                        title= u'ヘルプ',
                        url= u'help',
                        structure= "{}", 
@@ -715,6 +717,7 @@ def change_page(layout):
     change_page = Page(description=u'チケットの販売、イベントの予約は楽天チケットで！楽天チケットは演劇、バレエ、ミュージカルなどの舞台、クラシック、オペラ、ロックなどのコンサート、野球、サッカー、格闘技などのスポーツ、その他イベントなどのチケットのオンラインショッピングサイトです。',
                        keywords= u"チケット,演劇,クラシック,オペラ,コンサート,バレエ,ミュージカル,野球,サッカー,格闘技", 
                        layout= layout, 
+                       name= u'公演の中止・変更情報',
                        title= u'公演の中止・変更情報',
                        url= u'change',
                        structure= "{}", 
@@ -892,6 +895,7 @@ def first_page(layout):
     first_page = Page(description=u'チケットの販売、イベントの予約は楽天チケットで！楽天チケットは演劇、バレエ、ミュージカルなどの舞台、クラシック、オペラ、ロックなどのコンサート、野球、サッカー、格闘技などのスポーツ、その他イベントなどのチケットのオンラインショッピングサイトです。',
                        keywords= u"チケット,演劇,クラシック,オペラ,コンサート,バレエ,ミュージカル,野球,サッカー,格闘技", 
                        layout= layout, 
+                       name= u'初めての方へ',
                        title= u'初めての方へ',
                        url= u'first',
                        structure= "{}", 
@@ -1233,19 +1237,6 @@ def add_music_page_settings():
 
 
 ###　演劇演カテゴリ
-
-
-def stage_page(layout):
-    stage_page = Page(description=u'チケットの販売、イベントの予約は楽天チケットで！楽天チケットは演劇、バレエ、ミュージカルなどの舞台、クラシック、オペラ、ロックなどのコンサート、野球、サッカー、格闘技などの演劇、その他イベントなどのチケットのオンラインショッピングサイトです。',
-                       keywords= u"チケット,演劇,クラシック,オペラ,コンサート,バレエ,ミュージカル,野球,サッカー,格闘技", 
-                       layout= layout, 
-                       title= u'演劇',
-                       url= u'stage',
-                       structure= "{}", 
-                       version= None)
-    PageSet.get_or_create(stage_page)
-    return stage_page
-
 
 def stage_topics(pageset):
     return [
@@ -1763,9 +1754,10 @@ def bind_category_to_pageset():
     Category.query.filter_by(label=u"演劇").update({"pageset_id": PageSet.query.filter_by(name=u"演劇").one().id}, synchronize_session="fetch")
     Category.query.filter_by(label=u"イベント・その他").update({"pageset_id": PageSet.query.filter_by(name=u"イベント・その他").one().id}, synchronize_session="fetch")
 
-    Category.query.filter_by(label=u"ヘルプ").update({"pageset_id": PageSet.query.filter_by(name=u"ヘルプ ページセット").one().id}, synchronize_session="fetch")
-    Category.query.filter_by(label=u"初めての方へ").update({"pageset_id": PageSet.query.filter_by(name=u"初めての方へ ページセット").one().id}, synchronize_session="fetch")
-    Category.query.filter_by(label=u"公演中止・変更情報").update({"pageset_id": PageSet.query.filter_by(name=u"公演の中止・変更情報 ページセット").one().id}, synchronize_session="fetch")
+
+    Category.query.filter_by(label=u"ヘルプ").update({"pageset_id": PageSet.query.filter_by(name=u"ヘルプ").one().id}, synchronize_session="fetch")
+    Category.query.filter_by(label=u"初めての方へ").update({"pageset_id": PageSet.query.filter_by(name=u"初めての方へ").one().id}, synchronize_session="fetch")
+    Category.query.filter_by(label=u"公演中止・変更情報").update({"pageset_id": PageSet.query.filter_by(name=u"公演の中止・変更情報").one().id}, synchronize_session="fetch")
 
     
 def main(env, args):
