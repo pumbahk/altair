@@ -9,6 +9,7 @@ from altaircms.lib.viewhelpers import FlashMessage
 from . import forms
 from altaircms.page.models import Page
 from altaircms.page.models import PageSet
+from altaircms.page.models import PageDefaultInfo
 from altaircms.event.models import Event
 
 
@@ -28,12 +29,19 @@ import altaircms.helpers as h
 @view_config(route_name="api_page_setup_info", renderer="json")
 def api_page_setup_info(request):
     try:
+        params = request.params
+        pdi = PageDefaultInfo.query.filter(PageDefaultInfo.pageset_id==params["parent"]).one()
+        name = params["name"]
+        title = pdi.title(name)
+        url = pdi.url(name)
+        parent = params["parent"]
         result = {
-            "name": "name", 
-            "title": "title", 
-            "keywords": "keywords", 
-            "description": "description", 
-            "parent": 1
+            "name": name, 
+            "title": title, 
+            "url": url, 
+            "keywords": pdi.keywords, 
+            "description": pdi.description, 
+            "parent": parent
             }
         return result
     except Exception, e:

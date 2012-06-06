@@ -47,7 +47,16 @@ def generate_from_tabular(fn, headings, tabular):
     return [fn(**dict(zip(headings, line))) for line in tabular]
 
 def create_child(page_default_info, name, category, url=None, url_fmt=None, title_fmt=None):
+    """ 子のpageset, page, page_default_infoを作成
+    """
     page = page_default_info.create_page(name, url=url, category=category)
+
+    ## 親ページの名前も追加するように変更
+    ## ポップス -> 音楽 ポップス
+    parent = getattr(category.pageset, "parent", None)
+    if parent:
+        page.name = u"%s %s" % (parent.name ,  page.name)
+        page.pageset.name = u"%s %s" % (parent.name ,  page.pageset.name)
 
     child = page_default_info.clone_with_pageset(page.pageset,
                                    title_fmt=title_fmt or page_default_info.title_fmt, 
@@ -129,8 +138,9 @@ def upgrade():
                                     url_fmt="",
                                     title_fmt = u"【楽天チケット】%(title)s｜公演・ライブのチケット予約・購入"
                                     )
-    O(top_level_pdi.create_page(u"トップページ", category=root, layout=top_layout()))
-
+    top_page = O(top_level_pdi.create_page(u"トップページ", category=root, layout=top_layout()))
+    top_level_pdi.pageset = top_page.pageset
+    
 
 
 
@@ -141,14 +151,14 @@ def upgrade():
 
     top_level_pdi = O(PageDefaultInfo(keywords=keywords, 
                                       description=description,
-                                      url_fmt=u"s/%(url)s", 
+                                      url_fmt=u"%(url)s", 
                                       title_fmt=title_fmt))
     category_page = O(top_level_pdi.create_page(u"音楽", url=u"music", category=root, layout=music_layout()))
-    
+
 
 
     pdi = top_level_pdi.clone_with_pageset(category_page.pageset, 
-                                           url_fmt=u"%s/%%(url)s" % category_page.pageset.name, 
+                                           url_fmt=u"%s/%%(url)s" % top_level_pdi._url(root.label), 
                                            title_fmt=title_fmt)
     
     subcategory_create = partial(Category, site=site, hierarchy=u"中", parent=root)
@@ -158,7 +168,7 @@ def upgrade():
     categories = generate_from_tabular(subcategory_create, headings, tabular)
 
     for category in categories:
-        O(create_child(pdi, category.label, category, url_fmt="u/%s/%%(url)s" % category.label))
+        O(create_child(pdi, category.label, category, url_fmt=u"%s/%%(url)s" % pdi._url(category.label)))
 
 
 
@@ -169,13 +179,13 @@ def upgrade():
 
     top_level_pdi = O(PageDefaultInfo(keywords=keywords, 
                                       description=description,
-                                      url_fmt=u"s/%(url)s", 
+                                      url_fmt=u"%(url)s", 
                                       title_fmt=title_fmt))
     category_page = O(top_level_pdi.create_page(u"スポーツ", url=u"sports", category=root, layout=sports_layout()))
-    
+
 
     pdi = top_level_pdi.clone_with_pageset(category_page.pageset, 
-                                           url_fmt=u"%s/%%(url)s" % category_page.pageset.name, 
+                                           url_fmt=u"%s/%%(url)s" % top_level_pdi._url(root.label), 
                                            title_fmt=title_fmt)
     
     subcategory_create = partial(Category, site=site, hierarchy=u"中", parent=root)
@@ -185,7 +195,8 @@ def upgrade():
     categories = generate_from_tabular(subcategory_create, headings, tabular)
 
     for category in categories:
-        O(create_child(pdi, category.label, category, url_fmt="u/%s/%%(url)s" % category.label))
+        O(create_child(pdi, category.label, category, url_fmt=u"%s/%%(url)s" % pdi._url(category.label)))
+
 
 
 
@@ -196,13 +207,13 @@ def upgrade():
 
     top_level_pdi = O(PageDefaultInfo(keywords=keywords, 
                                     description=description,
-                                    url_fmt=u"s/%(url)s", 
+                                    url_fmt=u"%(url)s", 
                                     title_fmt=title_fmt))
     category_page = O(top_level_pdi.create_page(u"演劇", url=u"stage", category=root, layout=stage_layout()))
-    
+
 
     pdi = top_level_pdi.clone_with_pageset(category_page.pageset, 
-                                           url_fmt=u"%s/%%(url)s" % category_page.pageset.name, 
+                                           url_fmt=u"%s/%%(url)s" % top_level_pdi._url(root.label), 
                                            title_fmt=title_fmt)
     
     subcategory_create = partial(Category, site=site, hierarchy=u"中", parent=root)
@@ -212,7 +223,8 @@ def upgrade():
     categories = generate_from_tabular(subcategory_create, headings, tabular)
 
     for category in categories:
-        O(create_child(pdi, category.label, category, url_fmt="u/%s/%%(url)s" % category.label))
+        O(create_child(pdi, category.label, category, url_fmt=u"%s/%%(url)s" % pdi._url(category.label)))
+
 
 
 
@@ -223,13 +235,13 @@ def upgrade():
 
     top_level_pdi = O(PageDefaultInfo(keywords=keywords, 
                                     description=description,
-                                    url_fmt=u"s/%(url)s", 
+                                    url_fmt=u"%(url)s", 
                                     title_fmt=title_fmt))
     category_page = O(top_level_pdi.create_page(u"イベント・その他", url=u"other", category=root, layout=event_layout()))
-    
+
 
     pdi = top_level_pdi.clone_with_pageset(category_page.pageset, 
-                                           url_fmt=u"%s/%%(url)s" % category_page.pageset.name, 
+                                           url_fmt=u"%s/%%(url)s" % top_level_pdi._url(root.label), 
                                            title_fmt=title_fmt)
     
     subcategory_create = partial(Category, site=site, hierarchy=u"中", parent=root)
@@ -239,7 +251,7 @@ def upgrade():
     categories = generate_from_tabular(subcategory_create, headings, tabular)
 
     for category in categories:
-        O(create_child(pdi, category.label, category, url_fmt="u/%s/%%(url)s" % category.label))
+        O(create_child(pdi, category.label, category, url_fmt=u"%s/%%(url)s" % pdi._url(category.label)))
 
 
     transaction.commit()

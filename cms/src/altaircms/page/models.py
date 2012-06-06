@@ -191,13 +191,14 @@ class Page(PublishUnpublishMixin,
     
 ## master    
 class PageDefaultInfo(Base):
+    query = DBSession.query_property()
     __tablename__ = "page_default_info"
     id = sa.Column(sa.Integer, primary_key=True)
     title_fmt = sa.Column(sa.Unicode(255))
     url_fmt = sa.Column(sa.Unicode(255))
 
     pageset_id = sa.Column(sa.Integer, sa.ForeignKey("pagesets.id"))
-    pageset = orm.relationship("PageSet", uselist=False)
+    pageset = orm.relationship("PageSet", uselist=False, backref="default_info")
 
     keywords = Column(Unicode(255), default=u"")
     description = Column(Unicode(255), default=u"")
@@ -209,10 +210,13 @@ class PageDefaultInfo(Base):
             r.append(category.label)
             category = category.parent
         return connector.join(reversed(r))
- 
+
+    def _url(self, part):
+        return self.url_fmt % {"url": part}
+
     def url(self, part):
         """ pageを作成するときに使う"""
-        string = self.url_fmt % {"url": part}
+        string = self._url(part)
         if isinstance(string, unicode):
             string = string.encode("utf-8")
         return urllib.quote(string)
@@ -220,8 +224,6 @@ class PageDefaultInfo(Base):
 
     def title(self, title):
         return self.title_fmt % {"title": title,  "self": self}
-
-
 
     def create_pageset(self, name, category=None, url=None):
         url = self.url(url or name)

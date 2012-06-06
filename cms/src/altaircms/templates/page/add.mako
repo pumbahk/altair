@@ -67,7 +67,10 @@
 	  }
 	  
 	  var propagete_setup_info = function(){
-		$.getJSON("${request.route_path("api_page_setup_info")}").done(function(data,status,req){
+	    var root = $("form#setup_form");
+	    var params = {"name": root.find("input[name='name']").val(),
+	                  "parent": root.find("select[name='parent']").val()};
+		$.getJSON("${request.route_path("api_page_setup_info")}",params).done(function(data,status,req){
 		  if (data.error){
 			alert(data.error);
 		  } else {
@@ -78,7 +81,7 @@
 	    return false; // kill propagation
 	  };
 	</script>
-	<form onSubmit="return propagete_setup_info();">
+	<form id="setup_form" onSubmit="return propagete_setup_info();">
      ${fco.form_as_table_strict(setup_form, ["parent", "name"])}
 	 <input type="submit" value="初期値をフォームに反映">
 

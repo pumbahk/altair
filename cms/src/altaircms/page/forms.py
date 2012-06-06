@@ -36,9 +36,9 @@ class PageInfoSetupForm(Form):
     name = fields.TextField(label=u"名前", validators=[validators.Required()])
     parent = dynamic_query_select_field_factory(
         PageSet, 
-        query_factory= lambda : PageSet.query.filter(PageSet.category != None), 
+        query_factory= lambda : PageSet.query.filter(PageSet.category != None).filter(PageSet.default_info != None), 
         allow_blank=True, label=u"親ページ", 
-        get_label=lambda obj:  u'%s(%s)' % (obj.name, obj.url))
+        get_label=lambda obj:  u'%s' % obj.name)
 
 
 @implementer(IForm)
@@ -62,7 +62,7 @@ class PageForm(Form):
     parent = dynamic_query_select_field_factory(PageSet, 
                                                 query_factory= lambda : PageSet.query.filter(PageSet.category != None), 
                                                 allow_blank=True, label=u"親ページ", 
-                                                get_label=lambda obj:  u'%s(%s)' % (obj.name, obj.url))
+                                                get_label=lambda obj:  u'%s' % obj.name)
 
     publish_begin = fields.DateTimeField(label=u"掲載開始")
     publish_end = fields.DateTimeField(label=u"掲載終了")
