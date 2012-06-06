@@ -83,6 +83,7 @@ class PageAddView(object):
             setup_form = forms.PageInfoSetupForm(name=form.data["name"])
             return {"form":form, "event":event, "setup_form": setup_form}
 
+
 @view_defaults(permission="page_create", decorator=with_bootstrap)
 class PageCreateView(object):
     def __init__(self, context, request):
