@@ -2,9 +2,9 @@
 
 converting svg.
 
-## 1 Edit function
+## 1 Edit handlerClass
 
-Edit the function convert() in convert.py.
+Edit the function MyConverterHandler() in convert.py.
 
 ## 2 How to convert the svg
 
