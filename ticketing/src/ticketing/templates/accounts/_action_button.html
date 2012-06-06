@@ -3,7 +3,9 @@
 
 <script type="text/javascript">
   function new_account() {
-    $('#modal-account').modal('toggle');
+    var modal = $('#modal-account');
+    reset_form(modal);
+    modal.modal('toggle');
   }
   function edit_account() {
     var id = get_id('account_id');

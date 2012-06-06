@@ -3,7 +3,9 @@
 
 <script type="text/javascript">
   function new_payment_method() {
-    $('#modal-payment_method').modal('toggle');
+    var modal = $('#modal-payment_method');
+    reset_form(modal);
+    modal.modal('toggle');
   }
   function edit_payment_method(id) {
     id = id || get_id('payment_method_id');
@@ -11,7 +13,8 @@
     var el = '#payment_method-' + id;
     var modal = $('#modal-payment_method');
     modal.find('#id').val(id);
-    modal.find('#name').val($(el + ' #name').text());
+    modal.find('#name').val($(el).find('#name').text());
+    modal.find('#fee').val($(el).find('#fee').text());
     modal.modal('toggle');
   }
   function delete_payment_method() {

@@ -55,6 +55,9 @@ class SejNotificationType(StandardEnum):
     ReGrant = 72
     # '73':発券期限切れ
     TicketingExpire = 73
+    # 91
+    InstantPaymentInfo = 91
+
 
 
 class SejError(Exception):

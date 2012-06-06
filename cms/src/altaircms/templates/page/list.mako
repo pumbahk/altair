@@ -2,6 +2,7 @@
 <%namespace name="nco" file="../navcomponents.mako"/>
 <%namespace name="fco" file="../formcomponents.mako"/>
 <%namespace name="mco" file="../modelcomponents.mako"/>
+<%namespace name="co" file="./components.mako"/>
 
 <%block name='style'>
 <style type="text/css">
@@ -45,7 +46,9 @@
 	<h4>layout image</h4>
   </div>
   <div class="span5">
-	<form action="#" method="POST">
+	${co.setup_info_form()}
+
+	<form id="submit_form" action="#" method="POST">
 	  <script>
 	    $(function() {
                var on_add_to_pageset_clicked = function() {
@@ -61,7 +64,7 @@
                on_add_to_pageset_clicked();
 	    })
 	  </script>
-    ${fco.form_as_table_strict(form, ["url", "add_to_pagset", "pageset","title", "publish_begin", "publish_end", "parent","description","keywords","tags","private_tags","layout"])}
+    ${fco.form_as_table_strict(form, ["parent","url", "name","add_to_pagset", "pageset","title", "publish_begin", "publish_end","description","keywords","tags","private_tags","layout"])}
 	<button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> 保存</button>
 	</form>
   </div>

@@ -7,7 +7,7 @@ import wtforms.ext.sqlalchemy.fields as extfields
 
 
 from altaircms.lib.formhelpers import dynamic_query_select_field_factory
-from altaircms.helpers.formhelpers import required_field
+from altaircms.helpers.formhelpers import required_field, append_errors
 
 from ..event.models import Event
 from ..plugins.widget.promotion.models import Promotion
@@ -31,19 +31,33 @@ class LayoutForm(Form):
     __display_fields__ = [u"title", u"template_filename", u"blocks"]
     
 class PerformanceForm(Form):
-    title = fields.TextField(label=u"講演タイトル")
+    title = fields.TextField(label=u"公演タイトル")
     backend_id = fields.IntegerField(validators=[required_field()], label=u"バックエンド管理番号")
     event = dynamic_query_select_field_factory(Event, allow_blank=False, label=u"イベント", get_label=lambda obj: obj.title)
     prefecture = fields.SelectField(label=u"開催県", choices=import_symbol("altaircms.seeds.prefecture:PREFECTURE_CHOICES"))
     venue = fields.TextField(label=u"開催場所(詳細)")
     open_on = fields.DateTimeField(label=u"開場時間", validators=[required_field()])
     start_on = fields.DateTimeField(label=u"開始時間", validators=[required_field()])
-    close_on = fields.DateTimeField(label=u"終了時間", validators=[required_field()])
+    end_on = fields.DateTimeField(label=u"終了時間", validators=[])
+
+    def validate(self, **kwargs):
+        data = self.data
+        if data["open_on"] and data["start_on"] is None:
+            data["start_ono"] = data["open_on"]
+        elif data["start_on"] and data["open_on"] is None:
+            data["open_ono"] = data["start_on"]
+
+        if data["open_on"] > data["start_on"]:
+            append_errors(self.errors, "open_on", u"開始時刻よりも後に開場時刻が設定されてます")
+        if data["end_on"] and data["start_on"] > data["end_on"]:
+            append_errors(self.errors, "open_on", u"終了時刻よりも後に開始時刻が設定されてます")
+        return not bool(self.errors)
+
     purchase_link = fields.TextField(label=u"購入ページリンク")
 
     __display_fields__ = [u"title", u"backend_id", u"event",
                           u"prefecture", u"venue", 
-                          u"open_on", u"start_on", u"close_on",
+                          u"open_on", u"start_on", u"end_on",
                           u"purchase_link"]
 
 
@@ -163,6 +177,12 @@ class TopicForm(Form):
                           u"orderno", u"is_vetoed", 
                           u"bound_page", u"linked_page", u"event"]
 
+    def validate(self, **kwargs):
+        data = self.data
+        if data["publish_open_on"] > data["publish_close_on"]:
+            append_errors(self.errors, "publish_open_on", u"公開開始日よりも後に終了日が設定されています")
+        return not bool(self.errors)
+
 class TopicFilterForm(Form):
     kind = fields.SelectField(label=u"トピックの種類", choices=[("__None", "----------")]+[(x, x) for x in Topic.KIND_CANDIDATES])
     subkind = fields.TextField(label=u"サブ分類")    
@@ -205,6 +225,11 @@ class TopcontentForm(Form):
                          u"orderno", u"is_vetoed", 
                          u"bound_page", u"linked_page"]
     
+    def validate(self, **kwargs):
+        data = self.data
+        if data["publish_open_on"] > data["publish_close_on"]:
+            append_errors(self.errors, "publish_open_on", u"公開開始日よりも後に終了日が設定されています")
+        return not bool(self.errors)
    
 
 class HotWordForm(Form):
@@ -220,3 +245,22 @@ class HotWordForm(Form):
     __display_fields__ = [u"name", u"tag",
                           u"enablep", u"term_begin", u"term_end", 
                           u"orderno"]
+
+    def validate(self, **kwargs):
+        data = self.data
+        if data["term_begin"] > data["term_end"]:
+            append_errors(self.errors, "term_begin", u"開始日よりも後に終了日が設定されています")
+        return not bool(self.errors)
+
+class PageDefaultInfoForm(Form):
+    url_fmt = fields.TextField(label=u"urlのフォーマット", validators=[required_field()], widget=widgets.TextArea())    
+    title_fmt = fields.TextField(label=u"titleのフォーマット", validators=[required_field()], widget=widgets.TextArea())    
+    description = fields.TextField(label=u"descriptionのデフォルト値",  widget=widgets.TextArea())    
+    keywords = fields.TextField(label=u"keywordsのデフォルト値",  widget=widgets.TextArea())    
+    pageset = dynamic_query_select_field_factory(PageSet, 
+                                                     label=u"親となるページセット",
+                                                     query_factory=lambda : PageSet.query, 
+                                                     allow_blank=True, 
+                                                     get_label=lambda obj: obj.name or u"名前なし")
+
+    __display_fields__ = ["pageset", "title_fmt", "url_fmt", "keywords", "description"]

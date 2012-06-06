@@ -1,6 +1,7 @@
 <%page args="form, delivery_methods" />
 <%namespace file="/common/helpers.html" name="h"/>
 
+% if delivery_methods.items:
 <table class="table table-striped table-bordered">
   <thead>
   <tr>
@@ -14,12 +15,13 @@
   % for delivery_method in delivery_methods.items:
   <tr id="delivery_method-${delivery_method.id}">
     <td><input name="delivery_method_id" type="radio" value=${delivery_method.id} /></td>
-    <td id="id">${delivery_method.id}</td>
-    <td><a href="javascript:edit_delivery_method(${delivery_method.id});" id="name">${delivery_method.name}</a></td>
-    <td id="fee">${delivery_method.fee}</td>
+    <td><span id="id">${delivery_method.id}</span></td>
+    <td><a href="javascript:edit_delivery_method(${delivery_method.id});"><span id="name">${delivery_method.name}</span></a></td>
+    <td><span id="fee">${h.price_format(delivery_method.fee)}</span>円</td>
   </tr>
   % endfor
   </tbody>
 </table>
+% endif
 
 ${h.pager(delivery_methods)}

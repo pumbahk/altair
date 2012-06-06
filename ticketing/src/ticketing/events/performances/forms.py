@@ -2,9 +2,9 @@
 
 from wtforms import Form
 from wtforms import TextField, SelectField, HiddenField
-from wtforms.validators import Required, Regexp, Length, Optional, ValidationError
+from wtforms.validators import Regexp, Length, Optional, ValidationError
 
-from ticketing.utils import DateTimeField, Translations
+from ticketing.formhelpers import DateTimeField, Translations, Required
 from ticketing.venues.models import Venue
 from ticketing.events.models import Account, Performance
 
@@ -30,14 +30,14 @@ class PerformanceForm(Form):
     name = TextField(
         label=u'公演名',
         validators=[
-            Required(u'入力してください'),
+            Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
         ],
     )
     code = TextField(
         label=u'公演コード',
         validators=[
-            Required(u'入力してください'),
+            Required(),
             Regexp(u'^[a-zA-Z0-9]*$', message=u'英数字のみ入力できます'),
             Length(max=12, message=u'12文字以内で入力してください'),
         ],

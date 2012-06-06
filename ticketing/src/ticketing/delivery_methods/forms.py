@@ -2,11 +2,15 @@
 
 from wtforms import Form
 from wtforms import TextField, HiddenField, SelectField, DecimalField
-from wtforms.validators import Required, Length, Optional
+from wtforms.validators import Length, Optional
 
+from ticketing.formhelpers import Translations, Required
 from ticketing.products.models import DeliveryMethodPlugin
 
 class DeliveryMethodForm(Form):
+
+    def _get_translations(self):
+        return Translations()
 
     id = HiddenField(
         label=u'ID',
@@ -18,16 +22,14 @@ class DeliveryMethodForm(Form):
     name = TextField(
         label=u'配送方法名',
         validators=[
-            Required(u'入力してください'),
+            Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
         ]
     )
     fee = DecimalField(
         label=u'配送手数料',
         places=2,
-        validators=[
-            Required(u'入力してください'),
-        ]
+        validators=[Required()]
     )
     delivery_plugin_id = SelectField(
         label=u'配送方法',

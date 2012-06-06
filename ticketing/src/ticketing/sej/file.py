@@ -83,7 +83,7 @@ class SejInstantPaymentFileParser(SejFileParser):
             order_id            = row.get_col(12),
             notification_type   = row.get_int(2),
             payment_type        = row.get_int(2),
-            bill_number         = row.get_col(13),
+            bill_number         = row.get_col(13).strip(),
             exchange_number     = row.get_col(13),
             price               = row.get_int(6),
             ticket_total_count  = row.get_col(2),

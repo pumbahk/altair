@@ -18,7 +18,7 @@ class SejNotification(BaseModel, WithTimestamp, LogicallyDeleted, Base):
     id                      = Column(Identifier, primary_key=True)
 
     notification_type       = Column(Enum('1', '31', '72', '73'))
-    process_number          = Column(String(12))
+    process_number          = Column(String(12), index=True, unique=True)
     payment_type            = Column(Enum('1', '2', '3', '4'))
     payment_type_new        = Column(Enum('1', '2', '3', '4'), nullable=True)
 

@@ -1,7 +1,8 @@
 # coding: utf-8
 from wtforms import fields, validators
 from wtforms.form import Form
-from altaircms.helpers.formhelpers import required_field
+from altaircms.helpers.formhelpers import required_field, append_errors
+
 
 class EventForm(Form):
     title = fields.TextField(label=u'タイトル', validators=[required_field()])
@@ -14,7 +15,15 @@ class EventForm(Form):
     event_close = fields.DateTimeField(label=u'イベント終了日', validators=[required_field()])
     deal_open = fields.DateTimeField(label=u'販売開始日', validators=[required_field()])
     deal_close = fields.DateTimeField(label=u'販売終了日', validators=[required_field()])
-    is_searchable = fields.BooleanField(label=u'検索可否フラグ', default=False)
+    is_searchable = fields.BooleanField(label=u'検索対象に含める', default=True)
+
+    def validate(self, **kwargs):
+        data = self.data
+        if data["event_open"] > data["event_close"]:
+            append_errors(self.errors, "event_open", u"イベント終了日よりも後に設定されてます")
+        if data["deal_open"] > data["deal_close"]:
+            append_errors(self.errors, "deal_open", u"販売終了日よりも後に設定されてます")
+        return not bool(self.errors)
 
     __display_fields__ = [u"title", u"subtitle", 
                           u"backend_id", 

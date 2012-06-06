@@ -2,6 +2,8 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <link rel="stylesheet" href="css/bootstrap/css/bootstrap.css" type="text/css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script src="css/bootstrap/js/bootstrap.js"></script>
 </head>
 <body>
 <div class="navber navbar-fixed-top">
@@ -16,6 +18,7 @@
 <?php
 
 if(!$_POST){
+	echo "<a class='btn'><i class='icon-pencil'></i> 黒いアイコンを使うとき</a>";
 	echo "POSTデータがありません news_content.phpから入ってください";
 
 ?>
@@ -264,7 +267,7 @@ else{
 }
 
 ?>
+
 </div>
 </body>
 </html>
-

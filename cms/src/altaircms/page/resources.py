@@ -77,6 +77,9 @@ class PageResource(security.RootFactory):
         put_tags(page, "page", tags, private_tags, self.request)
         pageset = models.PageSet.get_or_create(page)
 
+        if form.data["parent"]:
+            pageset.parent = form.data["parent"]
+
         self.add(page, flush=True)
         subscribers.notify_page_create(self.request, page, params)
         return page
@@ -86,6 +89,9 @@ class PageResource(security.RootFactory):
         for k, v in params.iteritems():
             setattr(page, k, v)
         put_tags(page, "page", tags, private_tags, self.request)
+
+        if form.data["parent"]:
+            page.pageset.parent = form.data["parent"]
 
         self.add(page, flush=True)
         subscribers.notify_page_update(self.request, page, params)

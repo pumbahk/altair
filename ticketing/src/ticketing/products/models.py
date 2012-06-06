@@ -118,9 +118,10 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return self.type == StockTypeEnum.Seat.v
 
     def num_seats(self, performance_id=None):
-        query = DBSession.query(func.sum(StockAllocation.quantity)).filter_by(stock_type=self)
+        query = StockType.filter_by(id=self.id).join(StockType.stock_allocations)\
+                         .with_entities(func.sum(StockAllocation.quantity))
         if performance_id:
-            query = query.filter_by(performance_id=performance_id)
+            query = query.filter(StockAllocation.performance_id==performance_id)
         return query.scalar()
 
     def set_style(self, data):

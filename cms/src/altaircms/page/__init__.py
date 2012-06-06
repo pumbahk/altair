@@ -9,6 +9,8 @@ def includeme(config):
     add_route("page_duplicate", "/page/{id}/duplicate")
     add_route('page', '/page/')
 
+    ## setup api
+    add_route("api_page_setup_info", "/page/api/setupinfo")
 
     config.add_route("disposition", "/page/{id}/disposition", factory="altaircms.page.resources.WDispositionResource")    
     ## todo: move bellow
@@ -25,6 +27,7 @@ def includeme(config):
     config.add_subscriber(".subscribers.page_register_solr", ".subscribers.PageCreate")
     config.add_subscriber(".subscribers.page_register_solr", ".subscribers.PageUpdate")
     config.add_subscriber(".subscribers.page_delete_solr", ".subscribers.PageDelete") ## fixme
+
 
 
     config.scan('.views')

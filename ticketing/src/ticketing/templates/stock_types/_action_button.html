@@ -1,5 +1,5 @@
 <%page args="event, performance=None, order=None" />
-<%namespace file="/common/helpers.html" import="action_button" />
+<%namespace file="/common/helpers.html" name="h" />
 <%namespace file="/common/modal.html" import="delete_modal" />
 
 <%block name="style">
@@ -9,7 +9,9 @@
 
 <script type="text/javascript">
   function new_stock_type() {
-    $('#modal-stock_type').modal('toggle');
+    var modal = $('#modal-stock_type');
+    reset_form(modal, '#event_id');
+    modal.modal('toggle');
   }
   function edit_stock_type(id) {
     var id = id || get_id('stock_type_id');
@@ -55,7 +57,7 @@
   }
 
   % if performance:
-  function stock_allocate() {
+  function allocate_number() {
     var id = get_id('stock_type_id');
     if (!id) return;
     var el = '#stock_type-' + id;
@@ -65,13 +67,18 @@
     modal.find('#quantity').val($(el).attr('quantity'));
     modal.modal('toggle');
   }
-  function save_stock_allocation() {
+  function save_allocate_number() {
+    var modal = $('#modal-stock_allocation');
+    var form = $('#stock_allocations-form');
+    var url = '/events/stock_allocations/allocate_number';
+    post_modal_form(modal, form, url);
+  }
+  function allocate_seat() {
     var id = get_id('stock_type_id');
     if (!id) return;
     var el = '#stock_type-' + id;
     var modal = $('#modal-stock_allocation');
-    var form = $('#stock_allocations-form');
-    var url = '/events/stock_types/allocate/';
+    var url = '/events/stock_allocations/allocate_seat';
     var n = $('#seat_l0_id');
     modal.find('#stock_type_id').val(id);
     modal.find('#venue_id').val(${performance.venue.id});
@@ -79,10 +86,10 @@
     modal.find('#quantity').val($(el).attr('quantity'));
     for (var seat_l0_id in $('#venue-map > :eq(1)').venueviewer('selection')) {
       n.append(
-        $('<input type="text" />').attr({
-          name: "seat_l0_id",
-          value: seat_l0_id
-        })
+          $('<input type="text" />').attr({
+            name: "seat_l0_id",
+            value: seat_l0_id
+          })
       );
     }
     post_modal_form(modal, form, url);
@@ -109,17 +116,17 @@
     ),
     'allocate':dict(
       label=u'選択した座席を割り当てる',
-      url='javascript:save_stock_allocation()',
+      url='javascript:allocate_seat()',
       icon='icon-ok',
     ),
     'stock':dict(
       label=u'在庫数を入力する',
-      url='javascript:stock_allocate();',
+      url='javascript:allocate_number();',
       icon='icon-pencil',
     ),
   }
   order = iter(order or ['new', 'edit', 'delete'])
 %>
-${action_button(actions, order)}
+${h.action_button(actions, order)}
 
 ${delete_modal()}

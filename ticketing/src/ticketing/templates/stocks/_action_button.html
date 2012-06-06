@@ -1,0 +1,16 @@
+<script type="text/javascript">
+  function edit_stock(id) {
+    var el = '#stock_holder-' + id;
+    var modal = $('#modal-stock');
+    modal.find('#stock_type_id').val(id);
+    modal.find('#performance_id').val();
+    modal.find('#quantity').val($(el).attr('quantity'));
+    modal.modal('toggle');
+  }
+  function save_stock() {
+    var modal = $('#modal-stock');
+    var form = $('#stocks-form');
+    var url = '/events/stocks/edit';
+    post_modal_form(modal, form, url);
+  }
+</script>

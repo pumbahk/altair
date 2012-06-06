@@ -1,7 +1,5 @@
 <%page args="form, performances, limit=None" />
-<%namespace file="/common/helpers.html" import="safe_strftime" />
-<%namespace file="/common/helpers.html" import="pager"/>
-<%namespace file="/common/helpers.html" import="sortable" />
+<%namespace file="/common/helpers.html" name="h" />
 
 <% paging = False if limit else True %>
 <% display_only = True if request.matched_route.name == 'events.index' else False %>
@@ -13,12 +11,12 @@
         % if not display_only:
         <th class="minwidth"></th>
         % endif
-        <th>${sortable(form.id, paging)}</th>
-        <th>${sortable(form.name, paging)}</th>
+        <th>${h.sortable(form.id, paging)}</th>
+        <th>${h.sortable(form.name, paging)}</th>
         <th>会場</th>
-        <th>${sortable(form.open_on, paging)}</th>
-        <th>${sortable(form.start_on, paging)}</th>
-        <th>${sortable(form.end_on, paging)}</th>
+        <th>${h.sortable(form.open_on, paging)}</th>
+        <th>${h.sortable(form.start_on, paging)}</th>
+        <th>${h.sortable(form.end_on, paging)}</th>
       </tr>
     </thead>
     <tbody>
@@ -31,9 +29,9 @@
         <td>${performance.id}</td>
         <td style="width:350px"><a href="${request.route_path('performances.show', performance_id=performance.id)}">${performance.name}</a></td>
         <td style="width:200px">${performance.venue.name if performance.venue else u'(なし)'}</td>
-        <td>${safe_strftime(performance.open_on)}</td>
-        <td>${safe_strftime(performance.start_on)}</td>
-        <td>${safe_strftime(performance.end_on)}</td>
+        <td>${h.safe_strftime(performance.open_on)}</td>
+        <td>${h.safe_strftime(performance.start_on)}</td>
+        <td>${h.safe_strftime(performance.end_on)}</td>
       </tr>
     % endfor
     </tbody>
@@ -41,5 +39,5 @@
 % endif
 
 % if paging:
-  ${pager(performances)}
+  ${h.pager(performances)}
 % endif

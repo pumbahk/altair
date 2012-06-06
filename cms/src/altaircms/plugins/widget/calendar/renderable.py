@@ -114,7 +114,7 @@ def _next_month_date(d):
         return date(d.year, d.month+1, 1)
 
 def obi(widget, performances, request):
-    """講演の開始から終了までを縦に表示するカレンダー
+    """公演の開始から終了までを縦に表示するカレンダー
     ※ performancesはstart_onでsortされているとする
     """
     template_name = CalendarTemplatePathStore.path("obi")

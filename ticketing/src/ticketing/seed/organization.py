@@ -11,6 +11,7 @@ class OrganizationData(DataSet):
     class organization_0:
         name            = u'楽天チケット（株式会社チケットスター）'
         user            = UserData.user_1
+        code            = u'RKT'
         client_type     = OrganizationTypeEnum.Standard.v
         prefecture      = PrefectureMaster.tokyo
         city            = u"品川区"
@@ -25,6 +26,7 @@ class OrganizationData(DataSet):
     class organization_1:
         name            = u'ぴあ'
         user            = UserData.user_2
+        code            = u'PIA'
         client_type     = OrganizationTypeEnum.Standard.v
         prefecture      = PrefectureMaster.tokyo
         city            = u"品川区"
@@ -39,6 +41,7 @@ class OrganizationData(DataSet):
     class organization_2:
         name            = u'イープラス'
         user            = UserData.user_3
+        code            = u'EPS'
         client_type     = OrganizationTypeEnum.Standard.v
         prefecture      = PrefectureMaster.tokyo
         city            = u"品川区"
@@ -53,6 +56,7 @@ class OrganizationData(DataSet):
     class organization_3:
         name            = u'ローソンチケット'
         user            = UserData.user_4
+        code            = u'LWS'
         client_type     = OrganizationTypeEnum.Standard.v
         prefecture      = PrefectureMaster.tokyo
         city            = u"品川区"
@@ -67,6 +71,7 @@ class OrganizationData(DataSet):
     class organization_4:
         name            = u'クライアント4'
         user            = UserData.user_5
+        code            = u'CL4'
         client_type     = OrganizationTypeEnum.Standard.v
         prefecture      = PrefectureMaster.tokyo
         city            = u"品川区"
@@ -81,6 +86,7 @@ class OrganizationData(DataSet):
     class organization_5:
         name            = u'クライアント5'
         user            = UserData.user_6
+        code            = u'CL5'
         client_type     = OrganizationTypeEnum.Standard.v
         prefecture      = PrefectureMaster.tokyo
         city            = u"品川区"
@@ -95,6 +101,7 @@ class OrganizationData(DataSet):
     class organization_6:
         name            = u'クライアント6'
         user            = UserData.user_7
+        code            = u'CL6'
         client_type     = OrganizationTypeEnum.Standard.v
         prefecture      = PrefectureMaster.tokyo
         city            = u"品川区"

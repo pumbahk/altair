@@ -14,6 +14,7 @@ class Organization(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "Organization"
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
+    code = Column(String(3))
     client_type = Column(Integer)
     city = Column(String(255))
     street = Column(String(255))

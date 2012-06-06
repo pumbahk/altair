@@ -9,6 +9,7 @@ from altaircms.lib.viewhelpers import FlashMessage
 from . import forms
 from altaircms.page.models import Page
 from altaircms.page.models import PageSet
+from altaircms.page.models import PageDefaultInfo
 from altaircms.event.models import Event
 
 
@@ -25,6 +26,29 @@ import altaircms.helpers as h
 ## todo: CRUDのview整理する
 ##
 
+@view_config(route_name="api_page_setup_info", renderer="json")
+def api_page_setup_info(request):
+    try:
+        params = request.params
+        pdi = PageDefaultInfo.query.filter(PageDefaultInfo.pageset_id==params["parent"]).one()
+        name = params["name"]
+        title = pdi.title(name)
+        jurl = pdi._url(name)
+        url = pdi.url(name)
+        parent = params["parent"]
+        result = {
+            "name": name, 
+            "title": title, 
+            "jurl": jurl, 
+            "url": url, 
+            "keywords": pdi.keywords, 
+            "description": pdi.description, 
+            "parent": parent
+            }
+        return result
+    except Exception, e:
+        return {"error": str(e)}
+
 @view_defaults(route_name="page_add", decorator=with_bootstrap.merge(with_jquery))
 class PageAddView(object):
     """ eventの中でeventに紐ついたpageの作成
@@ -39,22 +63,26 @@ class PageAddView(object):
         event_id = self.request.matchdict["event_id"]
         event = Event.query.filter(Event.id==event_id).one()
         form = forms.PageForm(event=event)
-        return {"form":form, "event":event}
+        setup_form = forms.PageInfoSetupForm()
+        return {"form":form, "setup_form": setup_form, "event":event}
 
     @view_config(request_method="POST", renderer="altaircms:templates/page/add.mako")
     def create_page(self):
         logging.debug('create_page')
         form = forms.PageForm(self.request.POST)
+        event_id = self.request.matchdict["event_id"]
         if form.validate():
             page = self.context.create_page(form)
             ## flash messsage
-            FlashMessage.success("page created", request=self.request)
+            mes = u'page created <a href="%s">作成されたページを編集する</a>' % self.request.route_path("page_edit_", page_id=page.id)
+            FlashMessage.success(mes, request=self.request)
             return HTTPFound(self.request.route_path("event", id=self.event_id))
         else:
             logging.debug("%s" % form.errors)
-            event_id = self.request.matchdict["event_id"]
             event = Event.query.filter(Event.id==event_id).one()
-            return {"form":form, "event":event}
+            setup_form = forms.PageInfoSetupForm(name=form.data["name"])
+            return {"form":form, "event":event, "setup_form": setup_form}
+
 
 @view_defaults(permission="page_create", decorator=with_bootstrap)
 class PageCreateView(object):
@@ -68,12 +96,15 @@ class PageCreateView(object):
         if form.validate():
             page = self.context.create_page(form)
             ## flash messsage
-            FlashMessage.success("page created", request=self.request)
+            mes = u'page created <a href="%s">作成されたページを編集する</a>' % self.request.route_path("page_edit_", page_id=page.id)
+            FlashMessage.success(mes, request=self.request)
             return HTTPFound(self.request.route_path("page"))
         else:
+            setup_form = forms.PageInfoSetupForm(name=form.data["name"], parent=form.data["parent"])
             return dict(
                 pages=self.context.Page.query,
-                form=form
+                form=form, 
+                setup_form = setup_form
                 )
 
     @view_config(route_name="page_duplicate", request_method="GET", renderer="altaircms:templates/page/duplicate_confirm.mako")
@@ -171,9 +202,11 @@ class PageUpdateView(object):
              permission='page_read', request_method="GET", decorator=with_bootstrap)
 def list_(request):
     form = forms.PageForm()
+    setup_form = forms.PageInfoSetupForm()
     return dict(
         pages=request.context.Page.query, 
-        form=form
+        form=form, 
+        setup_form=setup_form, 
     )
 
 @view_config(route_name="page_edit_", request_method="POST")

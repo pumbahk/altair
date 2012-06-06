@@ -1,9 +1,5 @@
 <%inherit file="/layout.html"/>
-<%namespace file="/common/helpers.html" import="validate_errors" />
-<%namespace file="/common/helpers.html" import="alert_message" />
-<%namespace file="/common/helpers.html" import="flash_messages" />
-<%namespace file="/common/helpers.html" import="form_item" />
-<%namespace file="/common/helpers.html" import="breadcrumbs" />
+<%namespace file="/common/helpers.html" name="h" />
 
 <%
   if request.matched_route.name == 'payment_delivery_method_pairs.edit':
@@ -18,7 +14,7 @@
   <%include file="/parts/_menu.html" />
 
   <div class="span10">
-    ${breadcrumbs(
+    ${h.breadcrumbs(
       names=[u'イベント', sales_segment.event.title, u'販売区分', sales_segment.name],
       urls=[
         request.route_path('events.index'),
@@ -34,27 +30,27 @@
     </div>
 
     <div class="content">
-      ${flash_messages(request)}
-      ${alert_message(form)}
+      ${h.flash_messages(request)}
+      ${h.alert_message(form)}
     </div>
 
     <div class="well">
       <form class="form-horizontal" action="${route_path}" enctype="multipart/form-data" method="POST">
         <fieldset>
-          ${form_item(form.transaction_fee, option={'class':'span2'})}
-          ${form_item(form.delivery_fee, option={'class':'span2'})}
-          ${form_item(form.discount, option={'class':'span2'})}
-          ${form_item(form.discount_unit, option={'class':'span2'})}
+          ${h.form_item(form.transaction_fee, option={'class':'span2'})}
+          ${h.form_item(form.delivery_fee, option={'class':'span2'})}
+          ${h.form_item(form.discount, option={'class':'span2'})}
+          ${h.form_item(form.discount_unit, option={'class':'span2'})}
 
           % if request.matched_route.name == 'payment_delivery_method_pairs.new':
-            ${form_item(form.payment_method_ids)}
-            ${form_item(form.delivery_method_ids)}
+            ${h.form_item(form.payment_method_ids)}
+            ${h.form_item(form.delivery_method_ids)}
           % else:
-            ${form_item(form.payment_method_ids, option={'disabled':'disabled'})}
-            ${form_item(form.delivery_method_ids, option={'disabled':'disabled'})}
+            ${h.form_item(form.payment_method_ids, option={'disabled':'disabled'})}
+            ${h.form_item(form.delivery_method_ids, option={'disabled':'disabled'})}
           % endif
 
-          ${form_item(form.sales_segment_id)}
+          ${h.form_item(form.sales_segment_id)}
         </fieldset>
         <div class="form-actions">
           <input class="btn btn-primary" type="submit" name="submit" value="保存">

@@ -1,6 +1,7 @@
 import unittest
 from pyramid import testing
 from altaircms.models import DBSession, Base
+from altaircms import helpers as h
 
 def withDB(o, flush=False):
     DBSession.add(o)
@@ -56,7 +57,7 @@ class PromotionUnitTest(unittest.TestCase):
         request = testing.DummyRequest()
         result = self._callFUT(target, request)
 
-        self.assertEquals(result, request.route_path("front", page_name=pageset.url))
+        self.assertEquals(result, h.link.unquote_path_segment(request.route_path("front", page_name=pageset.url)))
 
 
 class PromotionManagerTests(unittest.TestCase):

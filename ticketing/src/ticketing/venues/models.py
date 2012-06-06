@@ -6,10 +6,10 @@ from sqlalchemy.ext.associationproxy import association_proxy
 import sqlahelper
 
 from ticketing.utils import StandardEnum
-from ticketing.models import BaseModel, JSONEncodedDict, MutationDict, WithTimestamp, LogicallyDeleted, Identifier, DBSession, relationship
+from ticketing.models import Base, BaseModel, JSONEncodedDict, MutationDict, WithTimestamp, LogicallyDeleted, Identifier, DBSession
+from ticketing.models import relationship
 
 session = sqlahelper.get_session()
-Base = sqlahelper.get_base()
 
 seat_seat_adjacency_table = Table(
     "Seat_SeatAdjacency", Base.metadata,
@@ -56,7 +56,7 @@ class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     derived_venues = relationship("Venue",
                                   backref=backref(
                                     'original_venue', remote_side=[id]))
-                                  
+
     adjacency_sets = relationship("SeatAdjacencySet", backref='venue')
 
     site = relationship("Site", uselist=False)
@@ -165,6 +165,8 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         seat = Seat.clone(template)
         seat.venue_id = venue_id
         seat.stock_id = None
+        if not seat.stock_type_id:
+            seat.stock_type_id = None
         seat.save()
 
         for template_attribute in template.attributes:

@@ -142,6 +142,7 @@ class GenrePartForm(form.Form):
         genres = ["music", "stage", "sports", "other"]
         sub_genres = [data["music_subgenre"], data["stage_subgenre"], data["sports_subgenre"], data["other_subgenre"]]
         top_categories = [k for k in genres if data[k]]
+
         return {"top_categories": top_categories, 
                 "sub_categories": list(set([x for xs in sub_genres if xs for x in xs])), 
                 "category_tree": MarkedTree(check_all_list=top_categories,

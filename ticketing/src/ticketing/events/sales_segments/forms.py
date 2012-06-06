@@ -2,10 +2,10 @@
 
 from wtforms import Form
 from wtforms import TextField, SelectField, HiddenField, IntegerField, BooleanField
-from wtforms.validators import Required, Regexp, Length, Optional, ValidationError
+from wtforms.validators import Regexp, Length, Optional, ValidationError
 from wtforms.widgets import CheckboxInput
 
-from ticketing.utils import DateTimeField, Translations
+from ticketing.formhelpers import DateTimeField, Translations, Required
 
 class SalesSegmentForm(Form):
 
@@ -17,23 +17,23 @@ class SalesSegmentForm(Form):
         validators=[Optional()],
     )
     event_id = HiddenField(
-        validators=[Required(u'入力してください')]
+        validators=[Required()]
     )
     name = TextField(
         label=u'販売区分名',
         validators=[
-            Required(u'入力してください'),
+            Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
         ],
     )
     start_at = DateTimeField(
         label=u'販売開始日時',
-        validators=[Required(u'入力してください')],
+        validators=[Required()],
         format='%Y-%m-%d %H:%M'
     )
     end_at = DateTimeField(
         label=u'販売終了日時',
-        validators=[Required(u'入力してください')],
+        validators=[Required()],
         format='%Y-%m-%d %H:%M'
     )
     upper_limit = IntegerField(

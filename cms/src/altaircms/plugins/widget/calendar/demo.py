@@ -53,7 +53,7 @@ def obi():
     cal = CalendarOutput.from_performances(dummy_performances, template=template)
     return {
         "description":  u"""
-一番初めの講演日と一番最後の講演日から縦長のカレンダーを作成。
+一番初めの公演日と一番最後の公演日から縦長のカレンダーを作成。
 """, 
         "renderable": RenderableAdaptor(cal.render,
                                         dummy_performances[0].start_on, 

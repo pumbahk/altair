@@ -1,3 +1,5 @@
+# -*- encoding:utf-8 -*-
+
 from pyramid.httpexceptions import HTTPFound
 from altaircms.lib.viewhelpers import FlashMessage
 from altaircms.models import DBSession
@@ -63,6 +65,7 @@ class CRUDResource(RootFactory): ## fixme
         if self.create_event:
             ## IModelEvent
             self.request.registry.notify(self.create_event(self.request, obj, form.data))
+        DBSession.flush()
         return obj
 
     def get_model_obj(self, id):
@@ -128,8 +131,9 @@ class CreateView(object):
 
     def create_model(self):
         form = self.context.confirmed_form()
-        self.context.create_model_from_form(form)
-        FlashMessage.success("create", request=self.request)
+        obj = self.context.create_model_from_form(form)
+        mes = u'create <a href="%s">新しく作成されたデータを編集</a>' % self.request.route_path(self.context.join("update"), id=obj.id, action="input")
+        FlashMessage.success(mes, request=self.request)
         return HTTPFound(self.request.route_url(self.context.endpoint), self.request)
 
 class UpdateView(object):
@@ -152,7 +156,7 @@ class UpdateView(object):
         form = self.context.confirmed_form()
         obj = self.context.get_model_obj(self.request.matchdict["id"])
         for k, v in form.data.iteritems():
-            if v: setattr(obj, k, v)
+            setattr(obj, k, v)
 
         return {"master_env": self.context,
                 "form": form, 
@@ -161,8 +165,9 @@ class UpdateView(object):
 
     def update_model(self):
         form = self.context.confirmed_form()
-        self.context.update_model_from_form(self.request.matchdict["id"], form)
-        FlashMessage.success("update", request=self.request)
+        obj = self.context.update_model_from_form(self.request.matchdict["id"], form)
+        mes = u'update <a href="%s">変更されたデータを編集</a>' % self.request.route_path(self.context.join("update"), id=obj.id, action="input")
+        FlashMessage.success(mes, request=self.request)
         return HTTPFound(self.request.route_url(self.context.endpoint), self.request)
 
 class DeleteView(object):

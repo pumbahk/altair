@@ -1,4 +1,23 @@
 var widget = (function(){
+    var bind_retry = function(n, d, finder, do_something, failback){
+        // try n times, wait d
+        var iter = function iter(i){
+            if (i > n){
+                alert("error: broken widget. please reload")
+            }
+            var elt = finder();
+            if(elt.length <=0){
+                if(!!failback){
+                    failback(elt);
+                }
+                setTimeout(function(){iter(i+1)}, d);
+            }else {
+                do_something(elt);
+            }   
+        }
+        return function(){iter(0)};
+    };
+
     var env = {};
     var base_opt = {
         dialog: null, 
@@ -10,7 +29,8 @@ var widget = (function(){
         set_data: function(e, data){}, 
         finish_dialog: function(){}, 
         attach_hightlight: function(e){}, 
-        attach_managed: function(e){}
+        attach_managed: function(e){}, 
+        bind_retry: bind_retry
     };
 
     var configure = function(opt){
@@ -20,7 +40,7 @@ var widget = (function(){
                 _.extend(m.opt, base_opt);
             }
         });
-            
+        
     }
 
     var get = function(widget_name){

@@ -3,7 +3,6 @@ if(!widget){
 }
 
 (function(widget){
-    var _has_click_event = "#submit";
     var is_initialized = false;
 
     var _initialize = function(we){
@@ -30,22 +29,26 @@ if(!widget){
         return we.dialog.load(url);
     };
     var on_dialog = function(we){
-        _initialize(we)
-        tinyMCE.execCommand("mceAddControl", true, "freetext_widget_textarea");
-        var freetext = we.get_data(we.where).freetext;            
-        if(!!freetext){
-            setTimeout(function(){ //fixme
-                tinyMCE.get("freetext_widget_textarea").setContent(freetext);
-            }, 200);
-        }
-        $(document).on("click", _has_click_event, function(){
-            we.finish_dialog(this);
-        });
+        setTimeout(function(){ //todo refactoring
+            we.bind_retry(15, 25, 
+                      function(){return $("#freetext_widget_textarea")}, 
+                      function(elt){
+                          _initialize(we)
+                          tinyMCE.execCommand("mceAddControl", true, "freetext_widget_textarea");
+                          var freetext = we.get_data(we.where).freetext;            
+                          if(!!freetext){ //fixme
+                              setTimeout(function(){ //fixme
+                                  tinyMCE.get("freetext_widget_textarea").setContent(freetext);
+                              }, 200);
+                          }
+                          $("#submit").click(function(){we.finish_dialog(this);});
+                      }
+                     )();
+        }, 100);
     };
 
     var on_close = function(we){
         tinyMCE.execCommand("mceRemoveControl", true, "freetext_widget_textarea");
-        $(document).off("click", _has_click_event);
     };
 
     var collect_data = function(we, choiced_elt){

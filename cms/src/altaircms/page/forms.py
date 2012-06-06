@@ -14,6 +14,7 @@ from altaircms.event.models import Event
 from altaircms.interfaces import IForm
 from altaircms.interfaces import implementer
 from altaircms.lib.formhelpers import dynamic_query_select_field_factory
+from altaircms.helpers.formhelpers import append_errors
 
 logger = logging.getLogger(__name__)
 
@@ -28,25 +29,43 @@ def url_not_conflict(form, field):
     if Page.query.filter_by(url=field.data).count() > 0:
         raise validators.ValidationError(u'URL "%s" は既に登録されてます' % field.data)
 
+
+class PageInfoSetupForm(Form):
+    """ このフォームを使って、PageFormへのデフォルト値を挿入する。
+    """
+    name = fields.TextField(label=u"名前", validators=[validators.Required()])
+    parent = dynamic_query_select_field_factory(
+        PageSet, 
+        query_factory= lambda : PageSet.query.filter(PageSet.category != None).filter(PageSet.default_info != None), 
+        allow_blank=True, label=u"親ページ", 
+        get_label=lambda obj:  u'%s' % obj.name)
+
+
 @implementer(IForm)
 class PageForm(Form):
+    name = fields.TextField(label=u"名前", validators=[validators.Required()])
     url = fields.TextField(validators=[url_field_validator,  url_not_conflict],
-                           label=u"URLの一部(e.g. top/music)")
+                           label=u"URLhttp://stg2.rt.ticketstar.jp/", 
+                           widget=widgets.TextArea())
+
     pageset = dynamic_query_select_field_factory(PageSet, allow_blank=True, label=u"ページセット",
                                                  get_label=lambda ps: ps.name)
 
-    title = fields.TextField(label=u"ページタイトル", validators=[validators.Required()])
-    description = fields.TextField(label=u"概要")
-    keywords = fields.TextField()
-    tags = fields.TextField(label=u"タグ")
-    private_tags = fields.TextField(label=u"非公開タグ")
+    title = fields.TextField(label=u"ページタイトル", validators=[validators.Required()], widget=widgets.TextArea())
+
+    description = fields.TextField(label=u"概要", widget=widgets.TextArea())
+    keywords = fields.TextField(widget=widgets.TextArea())
+    tags = fields.TextField(label=u"タグ(区切り文字:\",\")")
+    private_tags = fields.TextField(label=u"非公開タグ(区切り文字:\",\")")
     layout = dynamic_query_select_field_factory(Layout, allow_blank=False, 
                                                 get_label=lambda obj: u"%s(%s)" % (obj.title, obj.template_filename))
     # event_id = fields.IntegerField(label=u"", widget=widgets.HiddenInput())
     event = dynamic_query_select_field_factory(Event, allow_blank=True, label=u"イベント", 
                                                get_label=lambda obj:  obj.title)
-    parent = dynamic_query_select_field_factory(Page, allow_blank=True, label=u"親ページ", 
-                                                get_label=lambda obj:  u'%s(%s)' % (obj.title, obj.url))
+    parent = dynamic_query_select_field_factory(PageSet, 
+                                                query_factory= lambda : PageSet.query.filter(PageSet.category != None), 
+                                                allow_blank=True, label=u"親ページ", 
+                                                get_label=lambda obj:  u'%s' % obj.name)
 
     publish_begin = fields.DateTimeField(label=u"掲載開始")
     publish_end = fields.DateTimeField(label=u"掲載終了")
@@ -54,9 +73,12 @@ class PageForm(Form):
 
     add_to_pagset = fields.BooleanField(label=u"既存のページセットに追加")
 
-    def validate(self):
+    def validate(self, **kwargs):
         """ override to form validation"""
-        result = super(PageForm, self).validate()
+        super(PageForm, self).validate()
+        data = self.data
+        if data["publish_begin"] > data["publish_end"]:
+            append_errors(self.errors, "publish_begin", u"開始日よりも後に終了日が設定されています")
 
         if (self.data.get('url') and self.data.get('pageset')) or (not self.data.get('url') and not self.data.get('pageset')):
             urlerrors = self.errors.get('url', [])
@@ -68,6 +90,7 @@ class PageForm(Form):
 
 @implementer(IForm)
 class PageUpdateForm(Form):
+    name = fields.TextField(label=u"名前", validators=[validators.Required()])
     url = fields.TextField(validators=[url_field_validator],
                            label=u"URLの一部(e.g. top/music)")
     title = fields.TextField(label=u"ページタイトル", validators=[validators.Required()])
@@ -79,11 +102,19 @@ class PageUpdateForm(Form):
                                                 get_label=lambda obj: u"%s(%s)" % (obj.title, obj.template_filename))
     event = dynamic_query_select_field_factory(Event, allow_blank=True, label=u"イベント", 
                                                get_label=lambda obj:  obj.title)
+    pageset = dynamic_query_select_field_factory(PageSet, allow_blank=True, label=u"ページセット",
+                                                 get_label=lambda ps: ps.name)
 
+    publish_begin = fields.DateTimeField(label=u"掲載開始")
+    publish_end = fields.DateTimeField(label=u"掲載終了")
 
     def validate(self):
         """ override to form validation"""
         result = super(PageUpdateForm, self).validate()
+
+        data = self.data
+        if data["publish_begin"] > data["publish_end"]:
+            append_errors(self.errors, "publish_begin", u"開始日よりも後に終了日が設定されています")
 
         if (self.data.get('url') and self.data.get('pageset')) or (not self.data.get('url') and not self.data.get('pageset')):
             urlerrors = self.errors.get('url', [])

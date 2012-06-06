@@ -1,5 +1,5 @@
 <%page args="form" />
-<%namespace file="/common/helpers.html" import="form_item" />
+<%namespace file="/common/helpers.html" name="h" />
 
 <script type="text/javascript">
   $(function() {
@@ -22,13 +22,13 @@
 
   <form id="edit" action="javascript:save_sales_segment();" method="POST">
     <div class="modal-body">
-      ${form_item(form.id)}
-      ${form_item(form.event_id)}
-      ${form_item(form.name, option={'maxlength':255})}
-      ${form_item(form.start_at)}
-      ${form_item(form.end_at)}
-      ${form_item(form.upper_limit)}
-      ${form_item(form.seat_choice)}
+      ${h.form_item(form.id)}
+      ${h.form_item(form.event_id)}
+      ${h.form_item(form.name, option={'maxlength':255})}
+      ${h.form_item(form.start_at)}
+      ${h.form_item(form.end_at)}
+      ${h.form_item(form.upper_limit)}
+      ${h.form_item(form.seat_choice)}
     </div>
 
     <div class="modal-footer">

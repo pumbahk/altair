@@ -17,27 +17,28 @@
     <li><a href="${request.route_path("event_list")}">イベント</a></li>
     <li><a href="${request.route_path("performance_list")}">パフォーマンス</a></li>
     <li><a href="${request.route_path("ticket_list")}">チケット</a></li>
+    <li class="nav-header">ページ管理</li>
+    <li><a href="${request.route_path("page")}">ページ</a></li>
+    <li><a href="${request.route_path("pagesets")}">ページセット</a></li>
+	<li class="nav-header">トピック管理</li>
     <li><a href="${request.route_path("promotion_list")}">プロモーション枠</a></li>
-    <li><a href="${request.route_path("category_list")}">カテゴリー</a></li>
-    <li><a href="${request.route_path("hotword_list")}">ホットワード</a></li>
-	## fixme rename promotion_unit
     <li><a href="${request.route_path("promotion_unit_list")}">プロモーション</a></li>
     <li><a href="${request.route_path("topic_list")}">トピック</a></li>
     <li><a href="${request.route_path("topcontent_list")}">トップコンテンツ</a></li>
-    <li class="nav-header">ページ管理</li>
-    <li><a href="${request.route_path("layout_list")}">レイアウト</a></li>
-    <li><a href="${request.route_path("page")}">ページ</a></li>
-    <li><a href="${request.route_path("pagesets")}">ページセット</a></li>
+    <li><a href="${request.route_path("hotword_list")}">ホットワード</a></li>
 
     <li class="nav-header">アセット管理</li>
     <li><a href="${request.route_path("asset_list")}">アセット</a></li>
-
-    <li class="nav-header">その他</li>
-    <li><a href="#">メールマガジン</a></li>
+    <li><a href="${request.route_path("tag", classifier="top")}">タグ</a></li>
+	<li class="nav-header">マスター</li>
+    <li><a href="${request.route_path("layout_list")}">レイアウト</a></li>
+    <li><a href="${request.route_path("pagedefaultinfo_list")}">ページのurlmapping</a></li>
+	
+    <li><a href="${request.route_path("category_list")}">カテゴリー</a></li>
+    <!-- <li><a href="#">メールマガジン</a></li> -->
     <li><a href="${request.route_path("operator_list")}">オペレータ</a></li>
     <li><a href="${request.route_path("apikey_list")}">APIKEY</a></li>
     <li><a href="${request.route_path("role_list")}">ロール</a></li>
-    <li><a href="${request.route_path("tag", classifier="top")}">タグ</a></li>
   </ul>
 </%def>
 
@@ -49,7 +50,7 @@
 	<div class="${css_kls}">
 	  <a class="close" data-dismiss="alert">×</a>
 	  %for mes in messages:
-		<p>${mes}</p>
+		<p>${mes|n}</p>
 	  %endfor
    </div>
  %endif

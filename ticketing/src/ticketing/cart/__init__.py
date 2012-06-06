@@ -1,10 +1,12 @@
 from pyramid.config import Configurator
+from pyramid.session import UnencryptedCookieSessionFactoryConfig
 from sqlalchemy import engine_from_config
 import sqlahelper
 
 import logging
 
 logger = logging.getLogger(__name__)
+my_session_factory = UnencryptedCookieSessionFactoryConfig('itsaseekreet')
 
 def includeme(config):
     config.add_route('cart.index', '/events/{event_id}')
@@ -20,7 +22,7 @@ def main(global_config, **settings):
     engine = engine_from_config(settings)
     sqlahelper.add_engine(engine)
 
-    config = Configurator(settings=settings)
+    config = Configurator(settings=settings, session_factory=my_session_factory)
     config.set_root_factory('.resources.TicketingCartResrouce')
     config.registry['sa.engine'] = engine
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
@@ -31,6 +33,7 @@ def main(global_config, **settings):
     config.include('.')
     config.scan()
     config.include('..checkout')
+    config.include('..multicheckout')
     config.scan('..orders.models')
 
     return config.make_wsgi_app()

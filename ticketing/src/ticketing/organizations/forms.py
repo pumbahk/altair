@@ -4,9 +4,9 @@ import re
 
 from wtforms import Form
 from wtforms import TextField, IntegerField, HiddenField, SelectField, BooleanField
-from wtforms.validators import Required, Length, Regexp, Optional
+from wtforms.validators import Length, Regexp, Optional
 
-from ticketing.utils import DateTimeField, Translations
+from ticketing.formhelpers import DateTimeField, Translations, Required
 from ticketing.master.models import Prefecture
 
 class Phone(Regexp):
@@ -30,8 +30,16 @@ class OrganizationForm(Form):
     name = TextField(
         label=u'クライアント名',
         validators=[
-            Required(u'入力してください'),
+            Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
+        ]
+    )
+    code = TextField(
+        label = u'企業コード',
+        validators=[
+            Required(),
+            Regexp(u'^[a-zA-Z0-9]*$', message=u'英数字のみ入力できます'),
+            Length(min=3, max=3, message=u'3文字で入力してください'),
         ]
     )
     client_type = SelectField(
@@ -50,28 +58,28 @@ class OrganizationForm(Form):
     city = TextField(
         label=u'市町村区',
         validators=[
-            Required(u'入力してください'),
+            Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
         ]
     )
     address = TextField(
         label=u'町名',
         validators=[
-            Required(u'入力してください'),
+            Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
         ]
     )
     street = TextField(
         label=u'番地',
         validators=[
-            Required(u'入力してください'),
+            Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
         ]
     )
     other_address = TextField(
         label=u'アパート・マンション名',
         validators=[
-            Required(u'入力してください'),
+            Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
         ]
     )

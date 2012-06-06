@@ -2,8 +2,9 @@
 
 from wtforms import Form
 from wtforms import TextField, SelectField, IntegerField, DecimalField, SelectMultipleField, HiddenField
-from wtforms.validators import Required, Length, NumberRange, EqualTo, Optional, ValidationError
+from wtforms.validators import Length, NumberRange, EqualTo, Optional, ValidationError
 
+from ticketing.formhelpers import Translations, Required
 from ticketing.events.models import SalesSegment
 from ticketing.products.models import ProductItem, StockHolder, Stock
 
@@ -19,24 +20,27 @@ class ProductForm(Form):
                 (sales_segment.id, sales_segment.name) for sales_segment in SalesSegment.filter_by(**conditions).all()
             ]
 
+    def _get_translations(self):
+        return Translations()
+
     id = HiddenField(
         label=u'ID',
         validators=[Optional()],
     )
     event_id = HiddenField(
-        validators=[Required(u'入力してください')]
+        validators=[Required()]
     )
     name = TextField(
         label=u'商品名',
         validators=[
-            Required(u'入力してください'),
+            Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
         ]
     )
     price = DecimalField(
         label=u'価格',
         places=2,
-        validators=[Required(u'入力してください')]
+        validators=[Required()]
     )
     sales_segment_id = SelectField(
         label=u'販売区分',
@@ -67,6 +71,9 @@ class ProductItemForm(Form):
                 (stock.id, stock.id) for stock in Stock.filter_by(**conditions).all()
             ]
 
+    def _get_translations(self):
+        return Translations()
+
     id = HiddenField(
         label='',
         validators=[Optional()]
@@ -81,21 +88,21 @@ class ProductItemForm(Form):
     )
     price = TextField(
         label=u'価格',
-        validators=[Required(u'入力してください')]
+        validators=[Required()]
     )
     quantity = IntegerField(
         label=u'個数',
-        validators=[Required(u'入力してください')]
+        validators=[Required()]
     )
     stock_holders = SelectField(
         label=u'商品構成',
-        validators=[Required(u'入力してください')],
+        validators=[Required()],
         choices=[],
         coerce=int
     )
     stock_id = SelectField(
         label=u'在庫数',
-        validators=[Required(u'入力してください')],
+        validators=[Required()],
         choices=[],
         coerce=int
     )

@@ -61,6 +61,13 @@ class OperatorData(DataSet):
         roles = [
             OperatorRoleData.role_super_user
         ]
+    class operator_3:
+        name = 'オペレーター3'
+        email = 'test3@test.com'
+        organization = OrganizationData.organization_1
+        roles = [
+            OperatorRoleData.role_super_user
+        ]
 
 class OperatorAuthData(DataSet):
     class operator_auth_1:
@@ -70,7 +77,6 @@ class OperatorAuthData(DataSet):
         auth_code = 'auth_code'
         access_token = 'access_token'
         secret_key = 'secret_key'
-
     class operator_auth_2:
         operator = OperatorData.operator_2
         login_id = 'testtest'
@@ -78,4 +84,10 @@ class OperatorAuthData(DataSet):
         auth_code = 'auth_code'
         access_token = 'access_token'
         secret_key = 'secret_key'
-
+    class operator_auth_3:
+        operator = OperatorData.operator_3
+        login_id = 'hoge'
+        password =  md5('hoge').hexdigest()
+        auth_code = 'auth_code'
+        access_token = 'access_token'
+        secret_key = 'secret_key'

@@ -5,6 +5,7 @@ from sqlalchemy.orm import join, backref, column_property
 
 from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier, relationship
 from ticketing.users.models import User
+from ticketing.events.models import Performance
 from ticketing.products.models import Product, ProductItem
 from ticketing.venues.models import Seat
 
@@ -39,6 +40,19 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     items = relationship('OrderedProduct')
     total_amount = Column(Numeric(precision=16, scale=2), nullable=False)
+
+    @staticmethod
+    def filter_by_performance_id(id):
+        performance = Performance.get(id)
+        if not performance:
+            return None
+
+        return Order.filter_by(organization_id=performance.event.organization_id)\
+                             .join(Order.ordered_products)\
+                             .join(OrderedProduct.ordered_product_items)\
+                             .join(OrderedProductItem.product_item)\
+                             .filter(ProductItem.performance_id==id)\
+                             .distinct()
 
 class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrderedProduct'

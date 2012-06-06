@@ -6,6 +6,12 @@ def required_field(message=None):
         message = u"このフィールドは必須です。"
     return Required(message=message)
 
+def append_errors(errors, key, v):
+    if key not in errors:
+        errors[key] = []
+    errors[key].append(v)
+    return errors
+
 class Required(object):
     field_flags = ('required', )
 

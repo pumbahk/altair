@@ -4,8 +4,16 @@ def includeme(config):
         warnings.warn("altaircms.usersite.url is not found; defaulting to http://localhost:5432")
         config.registry.settings["altaircms.usersite.url"] = "http://localhost:5432"
 
-    config.add_route('front', '/publish/{page_name:.*}') # fix-url after. implemnt preview
-    config.add_route("front_to_preview", "/to/preview/{page_id}")
-    config.add_route('front_preview', '/preview/{page_name:.*}')
-    
-    config.scan('.views')
+    config.include("altairsite.front")
+    config.add_route("front_preview_pageset", "/preview/pageset/{pageset_id}")
+    config.scan(".views")
+
+    #####
+    ## static route for demo page
+    ##
+    config.add_route("page_search_input", "/search/input", static=True)
+    config.add_route("page_search_result", "/search/result/detail", static=True)
+    config.add_route("page_search_by_freeword", "/searach/result/freeword", static=True)
+    config.add_route("page_search_by_multi", "/searach/result/multi", static=True)
+    config.add_route("page_search_by", "/searach/result/{kind}/{value}", static=True)
+

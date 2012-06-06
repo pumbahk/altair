@@ -38,7 +38,10 @@ widget.configure({
 
     form_change_api_url = "./api/form?";
     var on_dialog = function(we){
-        $("#submit").click(function(){we.finish_dialog(this);});
+        we.bind_retry(15, 25, 
+                      function(){return $("#submit")}, 
+                      function(elt){elt.click(function(){we.finish_dialog(this);});}
+                     )();
 
         //対応したformに変更
         // var self = this;

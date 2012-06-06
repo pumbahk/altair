@@ -16,6 +16,10 @@ from altaircms.interfaces import IHasTimeHistory
 from altaircms.page.models import Page
 from altaircms.layout.models import Layout
 
+from altaircms.widget.tree.proxy import WidgetTreeProxy
+import altaircms.widget.tree.clone as wclone
+
+
 __all__ = [
     'Widget',
     "WidgetDisposition", 
@@ -52,6 +56,7 @@ class Widget(BaseOriginalMixin, Base):
             D["page"] = page
         else:
             D["page_id"] = D["page"] = None
+
         ins = self.__class__.from_dict(D)
         session.add(ins)
         return ins
@@ -90,8 +95,6 @@ class WidgetDisposition(BaseOriginalMixin, Base): #todo: rename
 
     @classmethod
     def from_page(cls, page, session):
-        from altaircms.widget.tree.proxy import WidgetTreeProxy
-        import altaircms.widget.tree.clone as wclone
         wtree = WidgetTreeProxy(page)
         new_wtree = wclone.clone(session, None, wtree)
         if session:
@@ -106,8 +109,6 @@ class WidgetDisposition(BaseOriginalMixin, Base): #todo: rename
         return instance
 
     def bind_page(self, page, session):
-        from altaircms.widget.tree.proxy import WidgetTreeProxy
-        import altaircms.widget.tree.clone as wclone
         ## cleanup
         wtree = WidgetTreeProxy(self)
         new_wtree = wclone.clone(session, page, wtree)

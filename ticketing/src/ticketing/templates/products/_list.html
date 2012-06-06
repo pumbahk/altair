@@ -70,9 +70,9 @@
     <% if limit and i >= limit: break %>
     <tr id="product-${product.id}">
       <th><input type="radio" name="product_id" value="${product.id}" /></th>
-      <td id="id">${product.id}</td>
-      <td><a href="javascript:edit_product('${product.id}');" id="name">${product.name}</a></td>
-      <td id="price" value="${product.price}">${price_format(product.price)}円</td>
+      <td><span id="id">${product.id}</span></td>
+      <td><a href="javascript:edit_product('${product.id}');"><span id="name">${product.name}</span></a></td>
+      <td><span id="price" value="${product.price}">${price_format(product.price)}</span>円</td>
       % if product.sales_segment:
       <td>
         <a href="${request.route_path('sales_segments.show', sales_segment_id=product.sales_segment.id)}">

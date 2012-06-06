@@ -1,6 +1,8 @@
 # -*- coding:utf-8 -*-
 
-
+#
+# SEJとの外部結合の為に使ったスクリプト
+#
 
 from pyramid.paster import bootstrap
 import sqlahelper
@@ -25,7 +27,7 @@ def payment_test():
         contact_01      = u'contact',
         contact_02      = u'連絡先2',
         order_id        = u"%012d" % int(datetime.datetime.now().strftime('%y%m%d%H%M%S')),
-        username        = u"小泉守義",
+        username        = u"１−１注文更新",
         username_kana   = u'コイズミモリヨシ',
         tel             = u'0312341234',
         zip             = u'1070062',
@@ -62,16 +64,16 @@ def payment_test():
     )
 
 def payment_test_cod_r_c_c():
+    """
     ''' 注文受付：【代引き】
-    '''
     # 決済要求
     print ''' 1-①：XXXXXXXXXXXXX(注文更新、注文取消し用)'''
-    sejTicketOrder = request_order(
+    '''sejTicketOrder = request_order(
         shop_name       = u'楽天チケット',
         contact_01      = u'contact',
         contact_02      = u'連絡先2',
         order_id        = u"%012d" % int(datetime.datetime.now().strftime('%y%m%d%H%M%S')),
-        username        = u"小泉守義",
+        username        = u"１−１注文更新",
         username_kana   = u'コイズミモリヨシ',
         tel             = u'0312341234',
         zip             = u'1070062',
@@ -107,12 +109,13 @@ def payment_test_cod_r_c_c():
     )
     time.sleep(2)
     print ''' 1-②：XXXXXXXXXXXXX(入金、払戻用)'''
+    '''
     request_order(
         shop_name       = u'楽天チケット',
         contact_01      = u'contact',
         contact_02      = u'連絡先2',
         order_id        = u"%012d" % int(datetime.datetime.now().strftime('%y%m%d%H%M%S')),
-        username        = u"お客様氏名",
+        username        = u"１−２入金払い戻し",
         username_kana   = u'コイズミモリヨシ',
         tel             = u'0312341234',
         zip             = u'1070062',
@@ -154,7 +157,7 @@ def payment_test_cod_r_c_c():
         contact_01      = u'contact',
         contact_02      = u'連絡先2',
         order_id        = u"%012d" % int(datetime.datetime.now().strftime('%y%m%d%H%M%S')),
-        username        = u"お客様氏名",
+        username        = u"１−３再取り消し",
         username_kana   = u'コイズミモリヨシ',
         tel             = u'0312341234',
         zip             = u'1070062',
@@ -190,13 +193,14 @@ def payment_test_cod_r_c_c():
     )
 
     time.sleep(2)
+"""
     print ''' 1-④：XXXXXXXXXXXXX(発券期限切れ用)'''
     request_order(
         shop_name       = u'楽天チケット',
         contact_01      = u'contact',
         contact_02      = u'連絡先2',
         order_id        = u"%012d" % int(datetime.datetime.now().strftime('%y%m%d%H%M%S')),
-        username        = u"お客様氏名",
+        username        = u"１−４期限切れ",
         username_kana   = u'コイズミモリヨシ',
         tel             = u'0312341234',
         zip             = u'1070062',
@@ -208,6 +212,7 @@ def payment_test_cod_r_c_c():
         payment_type    = SejPaymentType.CashOnDelivery,
         payment_due_datetime = datetime.datetime(2012,7,30,7,00), #u'201207300700',
         regrant_number_datetime = datetime.datetime(2012,7,30,7,00), # u'201207300700',
+        ticketing_due_datetime = datetime.datetime(2012,6,6,20,30),
         tickets = [
             dict(
                 ticket_type         = SejTicketType.TicketWithBarcode,
@@ -230,7 +235,7 @@ def payment_test_cod_r_c_c():
             )
         ]
     )
-
+    return 
     time.sleep(10)
     #注文変更要求
     sejTicketOrder = request_update_order(
@@ -293,7 +298,7 @@ def payment_test_pre_r_c_c():
         contact_01      = u'contact',
         contact_02      = u'連絡先2',
         order_id        = u"%012d" % int(datetime.datetime.now().strftime('%y%m%d%H%M%S')),
-        username        = u"小泉守義",
+        username        = u"２−１注文更新",
         username_kana   = u'コイズミモリヨシ',
         tel             = u'0312341234',
         zip             = u'1070062',
@@ -334,7 +339,7 @@ def payment_test_pre_r_c_c():
         contact_01      = u'contact',
         contact_02      = u'連絡先2',
         order_id        = u"%012d" % int(datetime.datetime.now().strftime('%y%m%d%H%M%S')),
-        username        = u"お客様氏名",
+        username        = u"２−２入金",
         username_kana   = u'コイズミモリヨシ',
         tel             = u'0312341234',
         zip             = u'1070062',
@@ -431,14 +436,14 @@ def payment_test_paid_r_c_c():
         contact_01      = u'contact',
         contact_02      = u'連絡先2',
         order_id        = u"%012d" % int(datetime.datetime.now().strftime('%y%m%d%H%M%S')),
-        username        = u"小泉守義",
+        username        = u"３−１注文更新",
         username_kana   = u'コイズミモリヨシ',
         tel             = u'0312341234',
         zip             = u'1070062',
         email           = u'dev@ticketstar.jp',
         total           = 15000,
-        ticket_total    = 13000,
-        commission_fee  = 1000,
+        ticket_total    = 0,
+        commission_fee  = 0,
         ticketing_fee   = 1000,
         payment_type    = SejPaymentType.Paid,
         payment_due_datetime = datetime.datetime(2012,7,30,7,00), #u'201207300700',
@@ -472,14 +477,14 @@ def payment_test_paid_r_c_c():
         contact_01      = u'contact',
         contact_02      = u'連絡先2',
         order_id        = u"%012d" % int(datetime.datetime.now().strftime('%y%m%d%H%M%S')),
-        username        = u"お客様氏名",
+        username        = u"３−２発券",
         username_kana   = u'コイズミモリヨシ',
         tel             = u'0312341234',
         zip             = u'1070062',
         email           = u'dev@ticketstar.jp',
-        total           = 15000,
-        ticket_total    = 13000,
-        commission_fee  = 1000,
+        total           = 1000,
+        ticket_total    = 0,
+        commission_fee  = 0,
         ticketing_fee   = 1000,
         payment_type    = SejPaymentType.Paid,
         payment_due_datetime = datetime.datetime(2012,7,30,7,00), #u'201207300700',
@@ -512,14 +517,14 @@ def payment_test_paid_r_c_c():
         contact_01      = u'contact',
         contact_02      = u'連絡先2',
         order_id        = u"%012d" % int(datetime.datetime.now().strftime('%y%m%d%H%M%S')),
-        username        = u"お客様氏名",
+        username        = u"３−３発券",
         username_kana   = u'コイズミモリヨシ',
         tel             = u'0312341234',
         zip             = u'1070062',
         email           = u'dev@ticketstar.jp',
-        total           = 15000,
-        ticket_total    = 13000,
-        commission_fee  = 1000,
+        total           = 1000,
+        ticket_total    = 0,
+        commission_fee  = 0,
         ticketing_fee   = 1000,
         payment_type    = SejPaymentType.Paid,
         payment_due_datetime = datetime.datetime(2012,7,30,7,00), #u'201207300700',
@@ -550,9 +555,9 @@ def payment_test_paid_r_c_c():
     #注文変更要求
     sejTicketOrder = request_update_order(
         update_reason   = SejOrderUpdateReason.Change,
-        total           = 15003,
-        ticket_total    = 13001,
-        commission_fee  = 1001,
+        total           = 1001,
+        ticket_total    = 0,
+        commission_fee  = 0,
         ticketing_fee   = 1001,
         payment_type    = SejPaymentType.Paid,
         payment_due_datetime =  datetime.datetime(2012,7,30,8,00) ,
@@ -606,9 +611,9 @@ def payment_test_p_only_r_c_c():
     sejTicketOrder = request_order(
         shop_name       = u'楽天チケット',
         contact_01      = u'contact',
-        contact_02      = u'連絡先2',
+        contact_02      = u'連絡先',
         order_id        = u"%012d" % int(datetime.datetime.now().strftime('%y%m%d%H%M%S')),
-        username        = u"小泉守義",
+        username        = u"４−１注文更新",
         username_kana   = u'コイズミモリヨシ',
         tel             = u'0312341234',
         zip             = u'1070062',
@@ -629,7 +634,7 @@ def payment_test_p_only_r_c_c():
         contact_01      = u'contact',
         contact_02      = u'連絡先2',
         order_id        = u"%012d" % int(datetime.datetime.now().strftime('%y%m%d%H%M%S')),
-        username        = u"お客様氏名",
+        username        = u"４−２入金",
         username_kana   = u'コイズミモリヨシ',
         tel             = u'0312341234',
         zip             = u'1070062',
@@ -650,7 +655,7 @@ def payment_test_p_only_r_c_c():
         contact_01      = u'contact',
         contact_02      = u'連絡先2',
         order_id        = u"%012d" % int(datetime.datetime.now().strftime('%y%m%d%H%M%S')),
-        username        = u"お客様氏名",
+        username        = u"４−３期限きれ",
         username_kana   = u'コイズミモリヨシ',
         tel             = u'0312341234',
         zip             = u'1070062',
@@ -670,7 +675,7 @@ def payment_test_p_only_r_c_c():
         contact_01      = u'contact',
         contact_02      = u'連絡先2',
         order_id        = u"%012d" % int(datetime.datetime.now().strftime('%y%m%d%H%M%S')),
-        username        = u"お客様氏名",
+        username        = u"４−１入金",
         username_kana   = u'コイズミモリヨシ',
         tel             = u'0312341234',
         zip             = u'1070062',
@@ -733,6 +738,155 @@ def payment_test_p_only_r_c_c():
         billing_number      = sejTicketOrder.billing_number,
         exchange_number     = sejTicketOrder.exchange_number
     )
+
+
+def payment_order_update_test_001():
+
+    sejTicketOrder = request_update_order(
+        update_reason   = SejOrderUpdateReason.Change,
+        total           = 15000,
+        ticket_total    = 13000,
+        commission_fee  = 1000,
+        ticketing_fee   = 1000,
+        payment_type    = SejPaymentType.Prepayment,
+        payment_due_datetime =  datetime.datetime(2012,7,30,7,00) ,
+        ticketing_start_datetime = datetime.datetime(2012,6,6,20,00) ,
+        ticketing_due_datetime = datetime.datetime(2012,8,01,8,00) ,
+        regrant_number_datetime = datetime.datetime(2012,8,30,7,00), # u'201207300700',
+	tickets = [
+            dict(
+                ticket_type         = SejTicketType.TicketWithBarcode,
+                event_name          = u'入金、払戻用興行',
+                performance_name    = u'入金、払戻用公演',
+                ticket_template_id  = u'TTTS000001',
+                performance_datetime= datetime.datetime(2012,8,31,18,00),
+                xml = SejTicketDataXml(u'''<?xml version="1.0" encoding="UTF-8" ?>
+                <TICKET>
+                  <TEST1>test&#x20;test</TEST1>
+                  <TEST2><![CDATA[TEST [] >M>J TEST@&nbsp;]]></TEST2>
+                  <TEST3>&#x3000;</TEST3>
+                  <FIXTAG01></FIXTAG01>
+                  <FIXTAG02></FIXTAG02>
+                  <FIXTAG03></FIXTAG03>
+                  <FIXTAG04></FIXTAG04>
+                  <FIXTAG05></FIXTAG05>
+                  <FIXTAG06></FIXTAG06>
+                </TICKET>''')
+            )
+	],
+        condition = dict(
+            order_id = '120605112228',
+            billing_number = '2339890364670',
+            exchange_number = '2439322271429'
+        )
+
+    )
+
+def payment_order_update_test_002():
+    print ''' 3-②：XXXXXXXXXXXXX(発券、払戻、払戻取消用)'''
+    request_update_order(
+        update_reason   = SejOrderUpdateReason.Change,
+        total           = 1000,
+        ticket_total    = 0,
+        commission_fee  = 0,
+        ticketing_fee   = 1000,
+        payment_type    = SejPaymentType.Paid,
+        payment_due_datetime = datetime.datetime(2012,7,30,7,00), #u'201207300700',
+        regrant_number_datetime = datetime.datetime(2012,7,30,7,00), # u'201207300700',
+        ticketing_start_datetime = datetime.datetime(2012,6,6,20,00) ,
+        ticketing_due_datetime = datetime.datetime(2012,8,01,8,00) ,
+        tickets = [
+            dict(
+                ticket_type         = SejTicketType.TicketWithBarcode,
+                event_name          = u'入金、払戻用興行',
+                performance_name    = u'入金、払戻用公演',
+                ticket_template_id  = u'TTTS000001',
+                performance_datetime= datetime.datetime(2012,8,31,18,00),
+                xml = SejTicketDataXml(u'''<?xml version="1.0" encoding="UTF-8" ?>
+                <TICKET>
+                  <TEST1>test&#x20;test</TEST1>
+                  <TEST2><![CDATA[TEST [] >M>J TEST@&nbsp;]]></TEST2>
+                  <TEST3>&#x3000;</TEST3>
+                  <FIXTAG01></FIXTAG01>
+                  <FIXTAG02></FIXTAG02>
+                  <FIXTAG03></FIXTAG03>
+                  <FIXTAG04></FIXTAG04>
+                  <FIXTAG05></FIXTAG05>
+                  <FIXTAG06></FIXTAG06>
+                </TICKET>''')
+            )
+        ],
+        condition = dict(
+            order_id = '120605112301',
+            billing_number = None,
+            exchange_number = '2409035022700'
+        )
+    )
+
+def payment_order_update_test_003():
+    print ''' 1-④：XXXXXXXXXXXXX(発券期限切れ用)'''
+    request_update_order(
+        update_reason   = SejOrderUpdateReason.Change,	
+        total           = 15000,
+        ticket_total    = 13000,
+        commission_fee  = 1000,
+        ticketing_fee   = 1000,
+        payment_type    = SejPaymentType.CashOnDelivery,
+        #payment_due_datetime = datetime.datetime(2012,6,6,20,00), #u'201207300700',
+        regrant_number_datetime = datetime.datetime(2012,7,30,7,00), # u'201207300700',
+        ticketing_start_datetime = datetime.datetime(2012,6,5,20,00) ,
+        ticketing_due_datetime = datetime.datetime(2012,6,6,20,30) ,
+        tickets = [
+            dict(
+                ticket_type         = SejTicketType.TicketWithBarcode,
+                event_name          = u'発券期限切興行',
+                performance_name    = u'発券期限切公演',
+                ticket_template_id  = u'TTTS000001',
+                performance_datetime= datetime.datetime(2012,8,31,18,00),
+                xml = SejTicketDataXml(u'''<?xml version="1.0" encoding="UTF-8" ?>
+                <TICKET>
+                  <TEST1>test&#x20;test</TEST1>
+                  <TEST2><![CDATA[TEST [] >M>J TEST@&nbsp;]]></TEST2>
+                  <TEST3>&#x3000;</TEST3>
+                  <FIXTAG01></FIXTAG01>
+                  <FIXTAG02></FIXTAG02>
+                  <FIXTAG03></FIXTAG03>
+                  <FIXTAG04></FIXTAG04>
+                  <FIXTAG05></FIXTAG05>
+                  <FIXTAG06></FIXTAG06>
+                </TICKET>''')
+            )
+        ],
+
+        condition = dict(
+            order_id = '120605112155',
+            billing_number = '2338963636508',
+            exchange_number = None
+        )
+    )
+    print ''' 4-③：XXXXXXXXXXXXX(入金期限切れデータ用)'''
+    '''
+    request_update_order(
+        update_reason   = SejOrderUpdateReason.Change,
+        total           = 14000,
+        ticket_total    = 13000,
+        commission_fee  = 1000,
+        ticketing_fee   = None,
+        payment_type    = SejPaymentType.PrepaymentOnly,
+        payment_due_datetime = datetime.datetime(2012,6,6,20,00), #u'201207300700',
+        regrant_number_datetime = datetime.datetime(2012,7,30,7,00), # u'201207300700',
+        ticketing_start_datetime = datetime.datetime(2012,6,6,20,00) ,
+        ticketing_due_datetime = datetime.datetime(2012,8,01,8,00) ,
+        condition = dict(
+            order_id = '120605112328',
+            billing_number = '2369780502950',
+            exchange_number = None
+        )
+    )
+ '''
+
+
+
 import csv
 import optparse
 import sys
@@ -771,13 +925,16 @@ def main(argv=sys.argv):
     settings = app.registry.settings
 
     log.debug('test')
-#    payment_test_cod_r_c_c()
+    payment_test_cod_r_c_c()
 #    payment_test_pre_r_c_c()
 #    payment_test_paid_r_c_c()
 #    payment_test_p_only_r_c_c()
-    payment_test()
+#    payment_test()
 #    payment_test_pre_2()
 #    payment_test_pay()
+#    payment_order_update_test_001()
+#    payment_order_update_test_002()
+#    payment_order_update_test_003()
+
 if __name__ == u"__main__":
     main(sys.argv)
-

@@ -8,6 +8,9 @@ if (!$genre_name) {
 	header("Status: 404");
 	exit("Genre not found");	
 } 
+$alternate= isset($_GET['alternate']) ? $_GET['alternate'] : null;
+echo $alternate."altername";;
+
 
 $id_zero = 0;
 
@@ -380,6 +383,7 @@ dth="1" height="1" /></a></p>
 		?>
 	</div>
 	<div id = "genre_appear_links">
+		<ul>
 		<?
         
 
@@ -392,7 +396,6 @@ dth="1" height="1" /></a></p>
                        		 }
 			
 		?>
-
                    			<li><a href="/~katosaori/web-contents/pages/genre.php?genre=<?=$genre_link?>"><?= $appear_link?></a></li>
 
        		 <?
@@ -400,11 +403,16 @@ dth="1" height="1" /></a></p>
 
 
 		?>
+		</ul>
           </div>
-                </ul>
+                
  	</div>
  <div id = "ranks">
-                          <div id = "rank_border">
+        	
+		<?
+		if($alternate=="domestic"){
+		?>          
+	        <div id = "rank_border">
                                 <div class="sideCategoryGenre">
                                          <h2> 邦楽CDシングルランキング</h2>
 
@@ -418,8 +426,12 @@ dth="1" height="1" /></a></p>
 
                                 </div>
                         </div>
-                         <div id = "rank_border">
-                                 <div class="sideCategoryGenre">
+		<?
+		}
+		else if($alternate=="overseas"){
+		?>
+                <div id = "rank_border">
+                           <div class="sideCategoryGenre">
 
                                         <h2>洋楽CDシングルランキング</h2>
                                          <table>
@@ -432,6 +444,9 @@ dth="1" height="1" /></a></p>
                                          </table>
                                  </div>
                         </div>
+		<?
+			}
+		?>
                 </div>
 	
 	<?php
@@ -498,10 +513,24 @@ gif" alt="検索" />
 		?>
 <ul>
                         <? for($q=0;$q<=11;$q++): ?>
-
-
-                        <li id ='#'><a href ='./genre.php?genre=<?=urlencode($p[$q])?>'><?= htmlspecialchars($p[$q]); ?></a></li>
-
+			<?	
+			if(htmlspecialchars($p[$q]) == "洋楽"){
+			?>
+                        <li id ='#'><a href ='./genre.php?genre=<?=urlencode($p[$q])?>&alternate=overseas'><?= htmlspecialchars($p[$q]); ?></a></li>
+			<?
+			}
+			
+			elseif(htmlspecialchars($p[$q]) == "邦楽"){
+			?>
+			 <li id ='#'><a href ='./genre.php?genre=<?=urlencode($p[$q])?>&alternate=domestic'><?= htmlspecialchars($p[$q]); ?></a></li>
+			<?
+			}
+			else{
+			?>
+			 <li id ='#'><a href ='./genre.php?genre=<?=urlencode($p[$q])?>'><?= htmlspecialchars($p[$q]); ?></a></li>
+			<?
+			}
+			?>
                 <? endfor ?>
 
                 </ul>

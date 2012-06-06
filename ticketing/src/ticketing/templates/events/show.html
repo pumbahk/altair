@@ -44,28 +44,30 @@
           <td>${event.account.name} 様</td>
         </tr>
         <tr>
-          <th>販売開始日時</th>
+          <th>${form.sales_start_on.label.text}</th>
           <td>${safe_strftime(event.sales_start_on)}</td>
         </tr>
         <tr>
-          <th>販売終了日時</th>
+          <th>${form.sales_end_on.label.text}</th>
           <td>${safe_strftime(event.sales_end_on)}</td>
         </tr>
         <tr>
-          <th>${form.start_on.label.text}</th>
-          <td>${safe_strftime(event.start_on)}
-            % if event.start_performance:
-            (<a href="${request.route_path('performances.show', event_id=event.id, performance_id=event.start_performance.id)}">
-             ${event.start_performance.venue.name} 公演 </a>)
+          <th>${form.first_start_on.label.text}</th>
+          <td>
+            ${safe_strftime(event.first_start_on)}
+            % if event.first_performance:
+            (<a href="${request.route_path('performances.show', event_id=event.id, performance_id=event.first_performance.id)}">
+             ${event.first_performance.venue.name} 公演 </a>)
             % endif
           </td>
         </tr>
         <tr>
-          <th>${form.end_on.label.text}</th>
-          <td>${safe_strftime(event.end_on)}
+          <th>${form.final_start_on.label.text}</th>
+          <td>
+            ${safe_strftime(event.final_start_on)}
             % if event.final_performance:
             (<a href="${request.route_path('performances.show', event_id=event.id, performance_id=event.final_performance.id)}">
-              ${event.final_performance.venue.name} 公演 </a>)
+             ${event.final_performance.venue.name} 公演 </a>)
             % endif
           </td>
         </tr>

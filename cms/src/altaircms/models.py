@@ -178,6 +178,7 @@ class Site(BaseOriginalMixin, Base):
     client_id = Column(Integer, ForeignKey("client.id")) #@TODO: サイトにくっつけるべき？
     client = relationship("Client", backref="site", uselist=False) ##?
 
+    
 class Category(Base):
     """
     サイト内カテゴリマスター
@@ -216,8 +217,8 @@ class Category(Base):
     #parent = orm.relationship("Category", remote_side=[id], uselist=False, cascade="all")
 
     label = sa.Column(sa.Unicode(length=255))
-    imgsrc = sa.Column(sa.String(length=255))
     name = sa.Column(sa.String(length=255))
+    imgsrc = sa.Column(sa.String(length=255))
     hierarchy = sa.Column(sa.Unicode(length=255), nullable=False)
     
     url = sa.Column(sa.Unicode(length=255))
@@ -234,4 +235,5 @@ class Category(Base):
             ## 本当はこちらは存在しないはず。
             ## request.siteはまだ未実装。
             return cls.query.filter(cls.hierarchy==hierarchy, cls.parent==None)
+
 

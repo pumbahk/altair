@@ -6,7 +6,7 @@
 <style>
   .swatch {
     display: inline-block;
-    width: 30px;
+    width: 20px;
     height: 20px;
     margin: -6px 2px;
     -webkit-border-radius: 3px;
@@ -45,9 +45,8 @@
            type="${stock_type.type}"
            quantity="${quantity}"
            data="${h.json(stock_type.style)}">
-          <%h:seat_style style="${stock_type.style}">
-            ${stock_type.name}
-          </%h:seat_style>
+          ${h.seat_style(stock_type.style)}
+          ${stock_type.name}
         </a>
       </td>
       <td style="width: 60px">
@@ -84,10 +83,9 @@
            name="${stock_type.name}"
            type="${stock_type.type}"
            quantity="${quantity}"
-           data="${h.json(stock_type.style)}">
-          <%h:seat_style style="${stock_type.style}">
-            ${stock_type.name}
-          </%h:seat_style>
+           data='${h.json(stock_type.style)}'>
+          ${h.seat_style(stock_type.style)}
+          ${stock_type.name}
         </a>
       </td>
       <td style="width: 60px">

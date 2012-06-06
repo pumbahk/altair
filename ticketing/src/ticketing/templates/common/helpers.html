@@ -77,16 +77,17 @@ ${str and str.strftime(format) or ''}
 
 <%def name="seat_style(style)">
 <%
-  fill_color = '#FFFFFF';
+  fill_color = '#FFFFFF'
   text_color = '#000'
   stroke_width = ''
   stroke_pattern = ''
   stroke_color = ''
+  text = ''
   if style:
     fill = style.get('fill')
     if fill:
         fill_color = fill.get('color')
-    text = style.get('text') or ''
+    text = style.get('text', '')
     text_color = style.get('text_color')
     stroke = style.get('stroke')
     if stroke:
@@ -94,7 +95,7 @@ ${str and str.strftime(format) or ''}
         stroke_pattern = stroke.get('pattern')
         stroke_color = stroke.get('color')
 %>
-  <span class="swatch" style="text-color:${text_color}; border: ${stroke_width}px ${stroke_pattern} ${stroke_color}; background-color: ${fill_color}; text-align: center">${caller.body()}</span>
+  <span class="swatch" style="text-color:${text_color}; border: ${stroke_width}px ${stroke_pattern} ${stroke_color}; background-color: ${fill_color}; text-align: center">${text}</span>
 </%def>
 
 <%def name="json(style)">

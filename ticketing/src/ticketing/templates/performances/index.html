@@ -1,13 +1,11 @@
 <%inherit file="/layout.html"/>
-<%namespace file="/common/helpers.html" import="flash_messages" />
-<%namespace file="/common/helpers.html" import="safe_strftime" />
-<%namespace file="/common/helpers.html" import="breadcrumbs" />
+<%namespace file="/common/helpers.html" name="h" />
 
 <div class="row-fluid">
   <%include file="/parts/_menu.html" />
 
   <div class="span10">
-    ${breadcrumbs(
+    ${h.breadcrumbs(
         names=[u'イベント', event.title, u'パフォーマンス'],
         urls=[request.route_path('events.index'), request.route_path('events.show', event_id=event.id)]
     )}
@@ -19,7 +17,7 @@
     </div>
 
     <div class="content">
-      ${flash_messages(request)}
+      ${h.flash_messages(request)}
     </div>
 
     <%include file="/performances/_list.html" args="form=form, performances=performances" />

@@ -9,15 +9,15 @@
     <tr>
       <th>イベントコード</th>
       <th>イベント名</th>
-      <th>開始</th>
-      <th>終了</th>
+      <th>初回公演</th>
+      <th>最終公演</th>
     </tr>
     % for event in events:
     <tr>
       <td><a href="${request.route_path('events.show', event_id=event.id)}">${event.code}</a></td>
       <td><a href="${request.route_path('events.show', event_id=event.id)}">${event.title}</a></td>
-      <td>${h.safe_strftime(event.start_on)}</td>
-      <td>${h.safe_strftime(event.end_on)}</td>
+      <td>${h.safe_strftime(event.first_start_on)}</td>
+      <td>${h.safe_strftime(event.final_start_on)}</td>
     </tr>
     % endfor
   </table>

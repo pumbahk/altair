@@ -36,6 +36,7 @@
         <fieldset>
           ${h.form_item(form.id)}
           ${h.form_item(form.name, option={'class':'span5', 'maxlength':255})}
+          ${h.form_item(form.code, option={'maxlength':3})}
           ${h.form_item(form.client_type)}
           ${h.form_item(form.prefecture_id)}
           ${h.form_item(form.city, option={'class':'span5'})}

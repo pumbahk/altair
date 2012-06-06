@@ -63,8 +63,8 @@ class SummaryWidgetViewTests(WidgetTestSourceMixn,
 
         self._with_session(session, self._makePage(id=1))
         items = unicode(json.dumps([
-            {"label": u"講演期間", 
-             "content": u"2012年06月03日(日) 〜 07月16日(月) (講演カレンダーを見る)",
+            {"label": u"公演期間", 
+             "content": u"2012年06月03日(日) 〜 07月16日(月) (公演カレンダーを見る)",
              "attr":"class='performance_period'"}, 
             {"label": u"説明／注意事項",
              "content": u"※未就学児童のご入場はお断りいたします。",

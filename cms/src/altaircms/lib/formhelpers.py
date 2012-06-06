@@ -142,3 +142,4 @@ def dynamic_query_select_field_factory(model, dynamic_query_factory=None, factor
         factory_name, 
         dynamic_query_factory)
     return field
+

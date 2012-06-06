@@ -23,11 +23,9 @@ def view(request):
     id_ = request.matchdict['id']
 
     event = Event.query.filter_by(id=id_).first()
-    pages = Page.query.filter_by(event_id=id_)
     performances = Performance.query.filter_by(event_id=id_)
     return dict(
         event=event,
-        pages=pages, 
         performances=performances
     )
 

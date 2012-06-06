@@ -35,11 +35,12 @@ widget.configure({
         url += "?" + $.param(params); 
         return we.dialog.load(url);
     };
-    var _has_click_event = "#submit";
+
     var on_dialog = function(we){
-        $(document).on("click", _has_click_event, function(){
-            we.finish_dialog(this);
-        });
+        we.bind_retry(15, 25, 
+                      function(){return $("#submit")}, 
+                      function(elt){elt.click(function(){we.finish_dialog(this);});}
+                     )();
     };
 
     var on_close = function(we){

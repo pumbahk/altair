@@ -13,4 +13,5 @@ def includeme(config):
     config.include('ticketing.events.payment_delivery_method_pairs', route_prefix='payment_delivery_method_pairs')
     config.include('ticketing.events.stock_holders', route_prefix='stock_holders')
     config.include('ticketing.events.stock_types' , route_prefix='stock_types')
+    config.include('ticketing.events.stock_allocations' , route_prefix='stock_allocations')
     config.scan(".")
