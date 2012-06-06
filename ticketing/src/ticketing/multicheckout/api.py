@@ -305,7 +305,7 @@ class Checkout3D(object):
 
 
         # カード情報 <Message><Auth><Card>
-        card = etree.SubElement(message, 'Card')
+        card = etree.SubElement(auth, 'Card')
         self._add_param(card, 'CardNo', card_auth.CardNo)
         self._add_param(card, 'CardLimit', card_auth.CardLimit)
         self._add_param(card, 'CardHolderName', card_auth.CardHolderName, optional=check)
@@ -314,11 +314,11 @@ class Checkout3D(object):
         self._add_param(card, 'SecureKind', card_auth.SecureKind)
 
         # CVVチェック
-        secure_code = etree.SubElement(message, 'SecureCode')
+        secure_code = etree.SubElement(auth, 'SecureCode')
         self._add_param(secure_code, 'Code', card_auth.SecureCode, optional=card_auth.SecureKind != '2')
 
         # セキュア3D
-        secure_3d = etree.SubElement(message, 'Secure3D')
+        secure_3d = etree.SubElement(auth, 'Secure3D')
         self._add_param(secure_3d, 'Mvn', card_auth.Mvn, optional=card_auth.SecureKind != '3')
         self._add_param(secure_3d, 'Xid', card_auth.Xid, optional=card_auth.SecureKind != '3')
         self._add_param(secure_3d, 'Ts', card_auth.Ts, optional=card_auth.SecureKind != '3')
