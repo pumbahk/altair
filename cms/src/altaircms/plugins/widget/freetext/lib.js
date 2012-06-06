@@ -31,9 +31,10 @@ if(!widget){
     };
     var on_dialog = function(we){
         _initialize(we)
+        setTimeout(function(){
         tinyMCE.execCommand("mceAddControl", true, "freetext_widget_textarea");
         var freetext = we.get_data(we.where).freetext;            
-        if(!!freetext){
+        if(!!freetext){ //fixme
             setTimeout(function(){ //fixme
                 tinyMCE.get("freetext_widget_textarea").setContent(freetext);
             }, 200);
@@ -41,6 +42,7 @@ if(!widget){
         $(document).on("click", _has_click_event, function(){
             we.finish_dialog(this);
         });
+        }, 200);
     };
 
     var on_close = function(we){

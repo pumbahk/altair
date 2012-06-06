@@ -37,7 +37,19 @@ widget.configure({
     };
 
     var on_dialog = function(we){
-        $("#submit").click(function(){we.finish_dialog(this);});
+        var bind_retry = function bind_retry(n, i, d){
+            if (i > n){
+                alert("error: broken widget. please reload")
+            }
+            var elt = $("#submit");            
+            if(elt.length <=0){
+                console.log(elt.length);
+                setTimeout(function(){bind_retry(n, i+1, d)}, d);
+            }else {
+                elt.click(function(){we.finish_dialog(this);});
+            }
+        };
+        bind_retry(15, 0, 50);
     };
 
     var on_close = function(we){
