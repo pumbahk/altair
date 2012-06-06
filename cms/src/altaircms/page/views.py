@@ -33,11 +33,13 @@ def api_page_setup_info(request):
         pdi = PageDefaultInfo.query.filter(PageDefaultInfo.pageset_id==params["parent"]).one()
         name = params["name"]
         title = pdi.title(name)
+        jurl = pdi._url(name)
         url = pdi.url(name)
         parent = params["parent"]
         result = {
             "name": name, 
             "title": title, 
+            "jurl": jurl, 
             "url": url, 
             "keywords": pdi.keywords, 
             "description": pdi.description, 

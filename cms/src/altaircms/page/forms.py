@@ -45,15 +45,18 @@ class PageInfoSetupForm(Form):
 class PageForm(Form):
     name = fields.TextField(label=u"名前", validators=[validators.Required()])
     url = fields.TextField(validators=[url_field_validator,  url_not_conflict],
-                           label=u"URLhttp://stg2.rt.ticketstar.jp/")
+                           label=u"URLhttp://stg2.rt.ticketstar.jp/", 
+                           widget=widgets.TextArea())
+
     pageset = dynamic_query_select_field_factory(PageSet, allow_blank=True, label=u"ページセット",
                                                  get_label=lambda ps: ps.name)
 
-    title = fields.TextField(label=u"ページタイトル", validators=[validators.Required()])
-    description = fields.TextField(label=u"概要")
-    keywords = fields.TextField()
-    tags = fields.TextField(label=u"タグ")
-    private_tags = fields.TextField(label=u"非公開タグ")
+    title = fields.TextField(label=u"ページタイトル", validators=[validators.Required()], widget=widgets.TextArea())
+
+    description = fields.TextField(label=u"概要", widget=widgets.TextArea())
+    keywords = fields.TextField(widget=widgets.TextArea())
+    tags = fields.TextField(label=u"タグ(区切り文字:\",\")")
+    private_tags = fields.TextField(label=u"非公開タグ(区切り文字:\",\")")
     layout = dynamic_query_select_field_factory(Layout, allow_blank=False, 
                                                 get_label=lambda obj: u"%s(%s)" % (obj.title, obj.template_filename))
     # event_id = fields.IntegerField(label=u"", widget=widgets.HiddenInput())

@@ -158,7 +158,7 @@ def upgrade():
 
 
     pdi = top_level_pdi.clone_with_pageset(category_page.pageset, 
-                                           url_fmt=u"%s/%%(url)s" % top_level_pdi._url(root.label), 
+                                           url_fmt=u"s/%s/%%(url)s" % top_level_pdi._url(root.label), 
                                            title_fmt=title_fmt)
     
     subcategory_create = partial(Category, site=site, hierarchy=u"中", parent=root)
@@ -185,7 +185,7 @@ def upgrade():
 
 
     pdi = top_level_pdi.clone_with_pageset(category_page.pageset, 
-                                           url_fmt=u"%s/%%(url)s" % top_level_pdi._url(root.label), 
+                                           url_fmt=u"s/%s/%%(url)s" % top_level_pdi._url(root.label), 
                                            title_fmt=title_fmt)
     
     subcategory_create = partial(Category, site=site, hierarchy=u"中", parent=root)
@@ -213,7 +213,7 @@ def upgrade():
 
 
     pdi = top_level_pdi.clone_with_pageset(category_page.pageset, 
-                                           url_fmt=u"%s/%%(url)s" % top_level_pdi._url(root.label), 
+                                           url_fmt=u"s/%s/%%(url)s" % top_level_pdi._url(root.label), 
                                            title_fmt=title_fmt)
     
     subcategory_create = partial(Category, site=site, hierarchy=u"中", parent=root)
@@ -241,7 +241,7 @@ def upgrade():
 
 
     pdi = top_level_pdi.clone_with_pageset(category_page.pageset, 
-                                           url_fmt=u"%s/%%(url)s" % top_level_pdi._url(root.label), 
+                                           url_fmt=u"s/%s/%%(url)s" % top_level_pdi._url(root.label), 
                                            title_fmt=title_fmt)
     
     subcategory_create = partial(Category, site=site, hierarchy=u"中", parent=root)

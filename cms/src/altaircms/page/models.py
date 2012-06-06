@@ -217,9 +217,10 @@ class PageDefaultInfo(Base):
     def url(self, part):
         """ pageを作成するときに使う"""
         string = self._url(part)
-        if isinstance(string, unicode):
-            string = string.encode("utf-8")
-        return urllib.quote(string)
+        return string
+        # if isinstance(string, unicode):
+        #     string = string.encode("utf-8")
+        # return urllib.quote(string)
 
 
     def title(self, title):

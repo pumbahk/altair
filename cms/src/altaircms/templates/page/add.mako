@@ -53,10 +53,12 @@
 	  var propagate_data = function(data){
 		var root = $("form#submit_form");
 		root.find("input[name='name']").val(data.name);
-		root.find("input[name='url']").val(data.url);
-		root.find("input[name='title']").val(data.title);
-		root.find("input[name='keywords']").val(data.keywords);
-		root.find("input[name='descripton']").val(data.descripton);
+		root.find("textarea[name='url']").val(data.url);
+		root.find("textarea[name='title']").val(data.title);
+		root.find("textarea[name='keywords']").val(data.keywords);
+		root.find("textarea[name='description']").val(data.description);
+
+	    //$('label[for="url"]').text(data.jurl);
 
 		var parent_field = root.find("select[name='parent']");
 		if(data.parent){
