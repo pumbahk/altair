@@ -37,23 +37,3 @@ class StockTypeForm(Form):
     stroke_color = TextField(
         label=u'線の色',
     )
-
-
-class StockAllocationForm(Form):
-    stock_type_id = HiddenField(
-        label='',
-        validators=[Required()]
-    )
-    venue_id = HiddenField(
-        label='',
-        validators=[]
-    )
-    performance_id = HiddenField(
-        label='',
-        validators=[]
-    )
-    quantity = TextField(
-        label=u'在庫数',
-        validators=[Required()]
-    )
-    seat_l0_id = FieldList(TextField(label=u'シートID'))
