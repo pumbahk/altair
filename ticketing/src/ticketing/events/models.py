@@ -136,8 +136,6 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     code = Column(String(12))
     title = Column(String(1024))
     abbreviated_title = Column(String(1024))
-    start_on = Column(DateTime)
-    end_on = Column(DateTime, nullable=True)
 
     account_id = Column(Identifier, ForeignKey('Account.id'))
     account = relationship('Account', backref='events')
@@ -147,6 +145,9 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     performances = relationship('Performance', backref='event')
     stock_types = relationship('StockType', backref='event')
+
+    _first_performance = None
+    _final_performance = None
 
     @property
     def sales_start_on(self):
@@ -159,14 +160,26 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 .filter(Product.event_id==self.id).scalar()
 
     @property
-    def start_performance(self):
-        return Performance.filter(Performance.event_id==self.id)\
-                .order_by('Performance.start_on asc').first()
+    def first_start_on(self):
+        return self.first_performance.start_on if self.first_performance else ''
+
+    @property
+    def final_start_on(self):
+        return self.final_performance.start_on if self.final_performance else ''
+
+    @property
+    def first_performance(self):
+        if not self._first_performance:
+            self._first_performance = Performance.filter(Performance.event_id==self.id)\
+                                        .order_by('Performance.start_on asc').first()
+        return self._first_performance
 
     @property
     def final_performance(self):
-        return Performance.filter(Performance.event_id==self.id)\
-                .order_by('Performance.start_on desc').first()
+        if not self._final_performance:
+            self._final_performance = Performance.filter(Performance.event_id==self.id)\
+                                        .order_by('Performance.start_on desc').first()
+        return self._final_performance
 
     @staticmethod
     def get_distributing(organization_id):
@@ -185,8 +198,8 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 .distinct()
 
     def get_sync_data(self):
-        start_on = isodate.datetime_isoformat(self.start_on) if self.start_on else ''
-        end_on = isodate.datetime_isoformat(self.end_on) if self.end_on else ''
+        start_on = isodate.datetime_isoformat(self.first_start_on) if self.first_start_on else ''
+        end_on = isodate.datetime_isoformat(self.final_start_on) if self.final_start_on else ''
         performances = Performance.query.filter_by(event_id=self.id).all()
         data = {
             'id':self.id,

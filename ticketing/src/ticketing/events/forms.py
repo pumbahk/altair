@@ -51,20 +51,22 @@ class EventForm(Form):
             Length(max=100, message=u'100文字以内で入力してください'),
         ]
     )
-    start_on = DateTimeField(
-        label = u'開演日時',
-        validators=[Required()],
-        format='%Y-%m-%d %H:%M'
+    sales_start_on = HiddenField(
+        label = u'販売開始日時',
+        validators=[Optional()],
     )
-    end_on = DateTimeField(
+    sales_end_on = HiddenField(
+        label = u'販売終了日時',
+        validators=[Optional()],
+    )
+    first_start_on = HiddenField(
+        label = u'初回開演日時',
+        validators=[Optional()],
+    )
+    final_start_on = HiddenField(
         label = u'最終公演日時',
         validators=[Optional()],
-        format='%Y-%m-%d %H:%M'
     )
-
-    def validate_end_on(form, field):
-        if field.data is not None and field.data < form.start_on.data:
-            raise ValidationError(u'開演日時より過去の日時は入力できません')
 
     def validate_code(form, field):
         if form.id and form.id.data:
