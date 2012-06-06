@@ -41,7 +41,6 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     open_on = Column(DateTime)
     start_on = Column(DateTime)
     end_on = Column(DateTime)
-    no_period = Column(Boolean)
 
     event_id = Column(Identifier, ForeignKey('Event.id'))
     owner_id = Column(Identifier, ForeignKey('Account.id'))

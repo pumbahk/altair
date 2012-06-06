@@ -40,7 +40,6 @@ class PerformanceEvent1Data(DataSet):
         open_on = datetime(2012,7,1,18,0)
         start_on = datetime(2012,7,1,19,0)
         end_on = datetime(2012,7,1,21,0)
-        no_period = False
         event = EventData.event_1
         owner = AccountData.account_3
     class performance_2:
@@ -50,7 +49,6 @@ class PerformanceEvent1Data(DataSet):
         open_on = datetime(2012,7,2,18,0)
         start_on = datetime(2012,7,2,19,0)
         end_on = datetime(2012,7,2,21,0)
-        no_period = False
         event = EventData.event_1
         owner = AccountData.account_3
     class performance_3:
@@ -60,7 +58,6 @@ class PerformanceEvent1Data(DataSet):
         open_on = datetime(2012,7,3,18,0)
         start_on = datetime(2012,7,3,19,0)
         end_on = datetime(2012,7,3,21,0)
-        no_period = False
         event = EventData.event_1
         owner = AccountData.account_3
     class performance_4:
@@ -70,7 +67,6 @@ class PerformanceEvent1Data(DataSet):
         open_on = datetime(2012,7,4,18,0)
         start_on = datetime(2012,7,4,19,0)
         end_on = datetime(2012,7,4,21,0)
-        no_period = False
         event = EventData.event_1
         owner = AccountData.account_3
     class performance_5:
@@ -80,7 +76,6 @@ class PerformanceEvent1Data(DataSet):
         open_on = datetime(2012,7,5,18,0)
         start_on = datetime(2012,7,5,19,0)
         end_on = datetime(2012,7,5,21,0)
-        no_period = False
         event = EventData.event_1
         owner = AccountData.account_3
 
@@ -92,7 +87,6 @@ class PerformanceEvent2Data(DataSet):
         open_on = datetime(2012,7,5,18,0)
         start_on = datetime(2012,7,5,19,0)
         end_on = datetime(2012,7,5,21,0)
-        no_period = False
         event = EventData.event_2
         owner = AccountData.account_4
     class performance_2:
@@ -102,7 +96,6 @@ class PerformanceEvent2Data(DataSet):
         open_on = datetime(2012,7,6,18,0)
         start_on = datetime(2012,7,6,19,0)
         end_on = datetime(2012,7,6,21,0)
-        no_period = False
         event = EventData.event_2
         owner = AccountData.account_4
     class performance_3:
@@ -112,7 +105,6 @@ class PerformanceEvent2Data(DataSet):
         open_on = datetime(2012,7,7,18,0)
         start_on = datetime(2012,7,7,19,0)
         end_on = datetime(2012,7,7,21,0)
-        no_period = False
         event = EventData.event_2
         owner = AccountData.account_4
 
