@@ -25,6 +25,20 @@ import altaircms.helpers as h
 ## todo: CRUDのview整理する
 ##
 
+@view_config(route_name="api_page_setup_info", renderer="json")
+def api_page_setup_info(request):
+    try:
+        result = {
+            "name": "name", 
+            "title": "title", 
+            "keywords": "keywords", 
+            "description": "description", 
+            "parent": 1
+            }
+        return result
+    except Exception, e:
+        return {"error": str(e)}
+
 @view_defaults(route_name="page_add", decorator=with_bootstrap.merge(with_jquery))
 class PageAddView(object):
     """ eventの中でeventに紐ついたpageの作成
@@ -39,7 +53,8 @@ class PageAddView(object):
         event_id = self.request.matchdict["event_id"]
         event = Event.query.filter(Event.id==event_id).one()
         form = forms.PageForm(event=event)
-        return {"form":form, "event":event}
+        setup_form = forms.PageInfoSetupForm()
+        return {"form":form, "setup_form": setup_form, "event":event}
 
     @view_config(request_method="POST", renderer="altaircms:templates/page/add.mako")
     def create_page(self):
@@ -54,7 +69,8 @@ class PageAddView(object):
             logging.debug("%s" % form.errors)
             event_id = self.request.matchdict["event_id"]
             event = Event.query.filter(Event.id==event_id).one()
-            return {"form":form, "event":event}
+            setup_form = forms.PageInfoSetupForm(name=form.data["name"])
+            return {"form":form, "event":event, "setup_form": setup_form}
 
 @view_defaults(permission="page_create", decorator=with_bootstrap)
 class PageCreateView(object):

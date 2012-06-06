@@ -29,6 +29,18 @@ def url_not_conflict(form, field):
     if Page.query.filter_by(url=field.data).count() > 0:
         raise validators.ValidationError(u'URL "%s" は既に登録されてます' % field.data)
 
+
+class PageInfoSetupForm(Form):
+    """ このフォームを使って、PageFormへのデフォルト値を挿入する。
+    """
+    name = fields.TextField(label=u"名前", validators=[validators.Required()])
+    parent = dynamic_query_select_field_factory(
+        PageSet, 
+        query_factory= lambda : PageSet.query.filter(PageSet.category != None), 
+        allow_blank=True, label=u"親ページ", 
+        get_label=lambda obj:  u'%s(%s)' % (obj.name, obj.url))
+
+
 @implementer(IForm)
 class PageForm(Form):
     name = fields.TextField(label=u"名前", validators=[validators.Required()])

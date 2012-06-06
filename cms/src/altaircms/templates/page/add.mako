@@ -42,13 +42,50 @@
 
 <div class="row">
   <div class="span5">
-	<h2>form</h2>
+	<h2>ページの初期値設定フォーム</h2>
   </div>
   <div class="span5">
 	<h2>layout image</h2>
   </div>
+    
   <div class="span5">
-	<form action="${request.route_path("page_add",event_id=event.id)}" method="POST">
+	<script type="text/javascript">
+	  var propagate_data = function(data){
+		var root = $("form#submit_form");
+		root.find("input[name='name']").val(data.name);
+		root.find("input[name='url']").val(data.url);
+		root.find("input[name='title']").val(data.title);
+		root.find("input[name='keywords']").val(data.keywords);
+		root.find("input[name='descripton']").val(data.descripton);
+
+		var parent_field = root.find("select[name='parent']");
+		if(data.parent){
+	      parent_field.val(data.parent).removeAttr("disabled");
+		} else {
+	      parent_field.attr("disabled","disabled");
+	    }
+	  }
+	  
+	  var propagete_setup_info = function(){
+		$.getJSON("${request.route_path("api_page_setup_info")}").done(function(data,status,req){
+		  if (data.error){
+			alert(data.error);
+		  } else {
+	        propagate_data(data);
+	  	    console.log(data);
+		  }
+		}).fail(function(data){console.log(data)})
+	    return false; // kill propagation
+	  };
+	</script>
+	<form onSubmit="return propagete_setup_info();">
+     ${fco.form_as_table_strict(setup_form, ["parent", "name"])}
+	 <input type="submit" value="初期値をフォームに反映">
+
+	</form>
+
+	<h2>form</h2>
+	<form id="submit_form" action="${request.route_path("page_add",event_id=event.id)}" method="POST">
 	  <script>
 	    $(function() {
                var on_add_to_pageset_clicked = function() {
@@ -65,7 +102,7 @@
 	    })
 	  </script>
 
-     ${fco.form_as_table_strict(form, ["parent", "url", "add_to_pagset", "pageset","title","event", "publish_begin", "publish_end","description","keywords","tags","private_tags","layout"])}
+     ${fco.form_as_table_strict(form, ["parent", "name", "url", "add_to_pagset", "pageset","title","event", "publish_begin", "publish_end","description","keywords","tags","private_tags","layout"])}
 	  <button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> Create</button>
     </form>
   </div>
