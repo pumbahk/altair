@@ -79,6 +79,7 @@ class PageResource(security.RootFactory):
 
         self.add(page, flush=True)
         subscribers.notify_page_create(self.request, page, params)
+        DBSession.flush() #flashmessageでpage.id使うので
         return page
 
     def update_page(self, page, form):

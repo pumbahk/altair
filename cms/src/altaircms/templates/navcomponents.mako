@@ -50,7 +50,7 @@
 	<div class="${css_kls}">
 	  <a class="close" data-dismiss="alert">×</a>
 	  %for mes in messages:
-		<p>${mes}</p>
+		<p>${mes|n}</p>
 	  %endfor
    </div>
  %endif

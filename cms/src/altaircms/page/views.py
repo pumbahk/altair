@@ -70,14 +70,15 @@ class PageAddView(object):
     def create_page(self):
         logging.debug('create_page')
         form = forms.PageForm(self.request.POST)
+        event_id = self.request.matchdict["event_id"]
         if form.validate():
             page = self.context.create_page(form)
             ## flash messsage
-            FlashMessage.success("page created", request=self.request)
+            mes = u'page created <a href="%s">作成されたページを編集する</a>' % self.request.route_path("page_edit_", page_id=page.id)
+            FlashMessage.success(mes, request=self.request)
             return HTTPFound(self.request.route_path("event", id=self.event_id))
         else:
             logging.debug("%s" % form.errors)
-            event_id = self.request.matchdict["event_id"]
             event = Event.query.filter(Event.id==event_id).one()
             setup_form = forms.PageInfoSetupForm(name=form.data["name"])
             return {"form":form, "event":event, "setup_form": setup_form}
@@ -94,7 +95,8 @@ class PageCreateView(object):
         if form.validate():
             page = self.context.create_page(form)
             ## flash messsage
-            FlashMessage.success("page created", request=self.request)
+            mes = u'page created <a href="%s">作成されたページを編集する</a>' % self.request.route_path("page_edit_", page_id=page.id)
+            FlashMessage.success(mes, request=self.request)
             return HTTPFound(self.request.route_path("page"))
         else:
             setup_form = forms.PageInfoSetupForm(name=form.data["name"], parent=form.data["parent"])
