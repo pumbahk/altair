@@ -41,7 +41,7 @@ class SalesSegmentForm(Form):
         validators=[Optional()],
     )
     seat_choice = IntegerField(
-        label=u'座席選択可否',
+        label=u'座席選択可',
         default=1,
         widget=CheckboxInput(),
     )

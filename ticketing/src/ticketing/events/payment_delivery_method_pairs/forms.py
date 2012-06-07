@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from wtforms import Form
-from wtforms import TextField, SelectField, DecimalField, IntegerField, SelectMultipleField, HiddenField
+from wtforms import TextField, SelectField, DecimalField, IntegerField, HiddenField
 from wtforms.validators import NumberRange, Regexp, Length, Optional, ValidationError
 
 from ticketing.formhelpers import Translations, Required
@@ -13,10 +13,10 @@ class PaymentDeliveryMethodPairForm(Form):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         Form.__init__(self, formdata, obj, prefix, **kwargs)
         if 'organization_id' in kwargs:
-            self.payment_method_ids.choices = [
+            self.payment_method_id.choices = [
                 (pm.id, pm.name) for pm in PaymentMethod.get_by_organization_id(kwargs['organization_id'])
             ]
-            self.delivery_method_ids.choices = [
+            self.delivery_method_id.choices = [
                 (dm.id, dm.name) for dm in DeliveryMethod.get_by_organization_id(kwargs['organization_id'])
             ]
 
@@ -48,29 +48,27 @@ class PaymentDeliveryMethodPairForm(Form):
         label=u'割引数',
         validators=[Optional()]
     )
-    payment_method_ids = SelectMultipleField(
+    payment_method_id = SelectField(
         label=u'決済方法',
         validators=[Required(u'選択してください')],
         choices=[],
         coerce=int
     )
-    delivery_method_ids = SelectMultipleField(
+    delivery_method_id = SelectField(
         label=u'配送方法',
         validators=[Required(u'選択してください')],
         choices=[],
         coerce=int
     )
 
-    def validate_payment_method_ids(form, field):
-        if field.data is None or form.delivery_method_ids.data is None or form.id is None:
+    def validate_payment_method_id(form, field):
+        if field.data is None or form.delivery_method_id.data is None or form.id is None:
             return
-        for payment_method_id in field.data:
-            for delivery_method_id in form.delivery_method_ids.data:
-                kwargs = {
-                    'sales_segment_id':form.sales_segment_id.data,
-                    'payment_method_id':payment_method_id,
-                    'delivery_method_id':delivery_method_id,
-                }
-                pdmp = PaymentDeliveryMethodPair.filter_by(**kwargs).first()
-                if pdmp and (form.id is None or pdmp.id != form.id.data):
-                    raise ValidationError(u'既に設定済みの決済・配送方法の組み合せがあります')
+        kwargs = {
+            'sales_segment_id':form.sales_segment_id.data,
+            'payment_method_id':field.data,
+            'delivery_method_id':form.delivery_method_id.data,
+        }
+        pdmp = PaymentDeliveryMethodPair.filter_by(**kwargs).first()
+        if pdmp and (form.id is None or pdmp.id != form.id.data):
+            raise ValidationError(u'既に設定済みの決済・配送方法の組み合せがあります')

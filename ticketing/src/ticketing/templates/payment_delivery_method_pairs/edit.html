@@ -10,6 +10,30 @@
     route_path = request.route_path('payment_delivery_method_pairs.new', sales_segment_id=sales_segment.id)
 %>
 
+<script type="text/javascript">
+  var payment_method_data = {
+    % for payment_method in payment_methods:
+      '${payment_method.id}':'${payment_method.fee}',
+    % endfor
+  };
+  var delivery_method_data = {
+    % for delivery_method in delivery_methods:
+      '${delivery_method.id}':'${delivery_method.fee}',
+    % endfor
+  };
+
+  $(function() {
+    $('#payment_method_id').change(function(){
+      $('#transaction_fee').val(Math.floor(payment_method_data[$(this).val()]));
+    }).change();
+  });
+  $(function() {
+    $('#delivery_method_id').change(function(){
+      $('#delivery_fee').val(Math.floor(delivery_method_data[$(this).val()]));
+    }).change();
+  });
+</script>
+
 <div class="row-fluid">
   <%include file="/parts/_menu.html" />
 
@@ -37,19 +61,18 @@
     <div class="well">
       <form class="form-horizontal" action="${route_path}" enctype="multipart/form-data" method="POST">
         <fieldset>
+          % if request.matched_route.name == 'payment_delivery_method_pairs.new':
+          ${h.form_item(form.payment_method_id)}
+          ${h.form_item(form.delivery_method_id)}
+          % else:
+          ${h.form_item(form.payment_method_id, option={'disabled':'disabled'})}
+          ${h.form_item(form.delivery_method_id, option={'disabled':'disabled'})}
+          % endif
+
           ${h.form_item(form.transaction_fee, option={'class':'span2'})}
           ${h.form_item(form.delivery_fee, option={'class':'span2'})}
           ${h.form_item(form.discount, option={'class':'span2'})}
           ${h.form_item(form.discount_unit, option={'class':'span2'})}
-
-          % if request.matched_route.name == 'payment_delivery_method_pairs.new':
-            ${h.form_item(form.payment_method_ids)}
-            ${h.form_item(form.delivery_method_ids)}
-          % else:
-            ${h.form_item(form.payment_method_ids, option={'disabled':'disabled'})}
-            ${h.form_item(form.delivery_method_ids, option={'disabled':'disabled'})}
-          % endif
-
           ${h.form_item(form.sales_segment_id)}
         </fieldset>
         <div class="form-actions">

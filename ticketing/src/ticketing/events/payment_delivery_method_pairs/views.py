@@ -3,12 +3,13 @@
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path
-from ticketing.events.models import SalesSegment, PaymentDeliveryMethodPair
 
 from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
+from ticketing.events.models import SalesSegment, PaymentDeliveryMethodPair
 from ticketing.events.payment_delivery_method_pairs.forms import PaymentDeliveryMethodPairForm
+from ticketing.products.models import PaymentMethod, DeliveryMethod
 
 @view_defaults(decorator=with_bootstrap)
 class PaymentDeliveryMethodPairs(BaseView):
@@ -22,7 +23,9 @@ class PaymentDeliveryMethodPairs(BaseView):
         f.sales_segment_id.data = sales_segment_id
         return {
             'form':f,
-            'sales_segment':sales_segment
+            'sales_segment':sales_segment,
+            'payment_methods':PaymentMethod.filter_by(organization_id=self.context.user.organization_id).all(),
+            'delivery_methods':DeliveryMethod.filter_by(organization_id=self.context.user.organization_id).all(),
         }
 
     @view_config(route_name='payment_delivery_method_pairs.new', request_method='POST', renderer='ticketing:templates/payment_delivery_method_pairs/edit.html')
@@ -34,13 +37,11 @@ class PaymentDeliveryMethodPairs(BaseView):
 
         f = PaymentDeliveryMethodPairForm(self.request.POST, organization_id=self.context.user.organization_id)
         if f.validate():
-            for payment_method_id in f.data['payment_method_ids']:
-                for delivery_method_id in f.data['delivery_method_ids']:
-                    payment_delivery_method_pair = merge_session_with_post(PaymentDeliveryMethodPair(), f.data)
-                    payment_delivery_method_pair.sales_segment_id = sales_segment_id
-                    payment_delivery_method_pair.payment_method_id = payment_method_id
-                    payment_delivery_method_pair.delivery_method_id = delivery_method_id
-                    payment_delivery_method_pair.save()
+            payment_delivery_method_pair = merge_session_with_post(PaymentDeliveryMethodPair(), f.data)
+            payment_delivery_method_pair.sales_segment_id = sales_segment_id
+            payment_delivery_method_pair.payment_method_id = f.data['payment_method_id']
+            payment_delivery_method_pair.delivery_method_id = f.data['delivery_method_id']
+            payment_delivery_method_pair.save()
 
             self.request.session.flash(u'販売区分を登録しました')
             return HTTPFound(location=route_path('sales_segments.show', self.request, sales_segment_id=sales_segment.id))
@@ -48,6 +49,8 @@ class PaymentDeliveryMethodPairs(BaseView):
             return {
                 'form':f,
                 'sales_segment':sales_segment,
+                'payment_methods':PaymentMethod.filter_by(organization_id=self.context.user.organization_id).all(),
+                'delivery_methods':DeliveryMethod.filter_by(organization_id=self.context.user.organization_id).all(),
             }
 
     @view_config(route_name='payment_delivery_method_pairs.edit', request_method='GET', renderer='ticketing:templates/payment_delivery_method_pairs/edit.html')
@@ -59,11 +62,11 @@ class PaymentDeliveryMethodPairs(BaseView):
 
         f = PaymentDeliveryMethodPairForm(organization_id=self.context.user.organization_id)
         f.process(record_to_multidict(pdmp))
-        f.payment_method_ids.data = [pdmp.payment_method_id]
-        f.delivery_method_ids.data = [pdmp.delivery_method_id]
+        f.payment_method_id.data = pdmp.payment_method_id
+        f.delivery_method_id.data = pdmp.delivery_method_id
         return {
             'form':f,
-            'sales_segment':pdmp.sales_segment
+            'sales_segment':pdmp.sales_segment,
         }
 
     @view_config(route_name='payment_delivery_method_pairs.edit', request_method='POST', renderer='ticketing:templates/payment_delivery_method_pairs/edit.html')
@@ -75,8 +78,8 @@ class PaymentDeliveryMethodPairs(BaseView):
 
         f = PaymentDeliveryMethodPairForm(self.request.POST, organization_id=self.context.user.organization_id)
         f.id.data = id
-        f.payment_method_ids.data = [pdmp.payment_method_id]
-        f.delivery_method_ids.data = [pdmp.delivery_method_id]
+        f.payment_method_id.data = pdmp.payment_method_id
+        f.delivery_method_id.data = pdmp.delivery_method_id
         if f.validate():
             payment_delivery_method_pair = merge_session_with_post(PaymentDeliveryMethodPair(), f.data)
             payment_delivery_method_pair.save()
