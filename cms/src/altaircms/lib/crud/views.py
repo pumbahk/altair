@@ -49,15 +49,15 @@ class CRUDResource(RootFactory): ## fixme
     def input_form(self):
         return self.form()
 
-    def confirmed_form(self):
+    def confirmed_form(self, obj=None):
         form = self.form(self.request.POST)
         if form.validate():
-            return form
-        else:
+            if not hasattr(form, "object_validate") or form.object_validate(obj):
+                return form
             ## danger
-            self.request.matchdict["action"] = "input"
-            raise AfterInput(form=form, context=self)
-        
+        self.request.matchdict["action"] = "input"
+        raise AfterInput(form=form, context=self)
+
     def create_model_from_form(self, form):
         obj = model_from_dict(self.model, form.data)
         DBSession.add(obj)
@@ -84,8 +84,7 @@ class CRUDResource(RootFactory): ## fixme
         form = self.form(**model_to_dict(obj))
         return form
 
-    def update_model_from_form(self, id, form):
-        obj = self.get_model_obj(id)
+    def update_model_from_form(self, obj, form):
         for k, v in form.data.iteritems():
             if v: setattr(obj, k, v)
         DBSession.add(obj)
@@ -153,8 +152,9 @@ class UpdateView(object):
         raise AfterInput(form=form, context=self.context)
 
     def confirm(self):
-        form = self.context.confirmed_form()
         obj = self.context.get_model_obj(self.request.matchdict["id"])
+        form = self.context.confirmed_form(obj=obj)
+
         for k, v in form.data.iteritems():
             setattr(obj, k, v)
 
@@ -164,8 +164,10 @@ class UpdateView(object):
                 "display_fields": getattr(form,"__display_fields__", None) or form.data.keys()}
 
     def update_model(self):
-        form = self.context.confirmed_form()
-        obj = self.context.update_model_from_form(self.request.matchdict["id"], form)
+        before_obj = self.context.get_model_obj(self.request.matchdict["id"])
+        form = self.context.confirmed_form(obj=before_obj)
+
+        obj = self.context.update_model_from_form(before_obj, form)
         mes = u'update <a href="%s">変更されたデータを編集</a>' % self.request.route_path(self.context.join("update"), id=obj.id, action="input")
         FlashMessage.success(mes, request=self.request)
         return HTTPFound(self.request.route_url(self.context.endpoint), self.request)

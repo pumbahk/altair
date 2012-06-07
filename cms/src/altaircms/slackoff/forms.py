@@ -10,6 +10,7 @@ from altaircms.lib.formhelpers import dynamic_query_select_field_factory
 from altaircms.helpers.formhelpers import required_field, append_errors
 
 from ..event.models import Event
+from altaircms.models import Performance
 from ..plugins.widget.promotion.models import Promotion
 from ..models import Category
 from ..asset.models import ImageAsset
@@ -40,6 +41,8 @@ class PerformanceForm(Form):
     start_on = fields.DateTimeField(label=u"開始時間", validators=[required_field()])
     end_on = fields.DateTimeField(label=u"終了時間", validators=[])
 
+    purchase_link = fields.TextField(label=u"購入ページリンク")
+
     def validate(self, **kwargs):
         data = self.data
         if data["open_on"] and data["start_on"] is None:
@@ -53,7 +56,14 @@ class PerformanceForm(Form):
             append_errors(self.errors, "open_on", u"終了時刻よりも後に開始時刻が設定されてます")
         return not bool(self.errors)
 
-    purchase_link = fields.TextField(label=u"購入ページリンク")
+    def object_validate(self, obj=None):
+        data = self.data
+        qs = Performance.query.filter(Performance.backend_id == data["backend_id"])
+        if obj:
+            qs = qs.filter(Performance.backend_id != obj.backend_id)
+        if qs.count() >= 1:
+            append_errors(self.errors, "backend_id", u"バックエンドIDが重複しています。(%s)" % data["backend_id"])
+        return not bool(self.errors)
 
     __display_fields__ = [u"title", u"backend_id", u"event",
                           u"prefecture", u"venue", 
