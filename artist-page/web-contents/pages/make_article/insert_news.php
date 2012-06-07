@@ -168,7 +168,7 @@ else{
 	$r=0;
 	$i=0;
 	$t=0;
-	
+	//$with_nonull_idで全員が既存のアーティストか	
 	foreach($newstopic_with_nonull as $n => $name_){ 
 		$flag=1;
 		foreach($artist as $a){
@@ -247,22 +247,42 @@ else{
 		<div class="insert_done">
 		<?
 		if($newstopic){
-			$stmt_insert_news = $dbh->prepare("insert into news values(?,?,?)");
-			$stmt_insert_news->bind_param('iss',$news_id,$newstopic['news'],$bikou);
-			$stmt_insert_news->execute();
-			echo "newsテーブルを更新しました<br />";
-			$stmt_insert_news->close();
-			$count = count($with_nonull_id);
-			for($i=0;$i<=$count-1;$i++){
-				$stmt_news_artist = $dbh->prepare("insert into news_artist values(?,?)");
-				$stmt_news_artist ->bind_param('ii',$news_id,$with_nonull_id[$i]);
-				$stmt_news_artist ->execute;
-				echo "news_artistテーブルを更新しました";
-				$stmt_news_artist ->close();
+			//$stmt_insert_news = $dbh->prepare("insert into news values(?,?,?)");
+			//$stmt_insert_news->bind_param('iss',$news_id,$newstopic['news'],$bikou);
+			//$stmt_insert_news->execute();
+			echo "<h6>登録するニュース</h6>";
+			echo $newstopic['news'];
+			echo "<h6>関連するアーティスト</h6>";
+			foreach($newstopic['artists']as $artists){
+				echo $artists;
 			}
-			
-		}?>
-		</div><?
+			//echo "newsテーブルを更新しました<br />";
+			//$stmt_insert_news->close();
+			//$count = count($with_nonull_id);
+			//for($i=0;$i<=$count-1;$i++){
+			//	$stmt_news_artist = $dbh->prepare("insert into news_artist values(?,?)");
+			//	$stmt_news_artist ->bind_param('ii',$news_id,$with_nonull_id[$i]);
+			//	$stmt_news_artist ->execute;
+			//	echo "news_artistテーブルを更新しました";
+			//	$stmt_news_artist ->close();
+			//}
+		?>
+			<form method="POST" action="register_news.php">
+			<input type ="hidden" name=news  value=<?=$newstopic['news']?>>
+		<?
+			foreach($newstopic['artists'] as $a ){
+		?>
+			<input type="hidden" name =news_id value=<?=$news_id?>>			
+			<input type ="hidden" name=artists[] value=<?=$a?>>
+		<?
+			}
+		?>
+			<input type ="submit" class="btn primary" value="登録">
+			</form>
+		<?}?>
+
+		</div>
+	<?
 	}
 }
 

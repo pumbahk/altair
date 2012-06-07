@@ -33,9 +33,8 @@ if($news && $related_artist){
 	
 
 	<form method="POST" action ="news_content.php">
-		<textarea name="news" rows="10" cols="100" value=<?= $news ?>><?= $news ?></textarea>　
-		
-		
+		<p>ニュースコンテンツ</p>
+		<textarea name="news" rows="10" cols="100" value=<?= $news ?>><?= $news ?></textarea>　	
 		<div class ="artist_names">
 		<?for($i=0;$i<=count($related_artist);$i++){?>
 		<p><?=$related_artist[$i] ?></p>
@@ -46,8 +45,7 @@ if($news && $related_artist){
 		<?for($i=0;$i<=count($related_artist)-1;$i++){?>
 		<input type="hidden" name ="related_artist[]" value=<?=$related_artist[$i]?>>
 		<?}?>
-		
-		<input type="submit" class="btn primary"value="このアーティストを増やす">
+		<input type="submit" class="btn primary"value="確認">
 	</form>
 
 	<form method="POST" action="insert_news.php">
@@ -70,10 +68,12 @@ else{
 		
 	
 		<form method="POST" action="news_content.php">
+			<p>ニュースコンテンツ</p>
 			<textarea name="news" rows = "10" cols="100" ></textarea>
+			<p>アーティスト名</p>
 			<input type="text" class ="textarea_name" name="related_artist[]" size = "50" >　
 			
-			<input type="submit"  class="btn primary" value ="関連アーティストを増やすもしくは登録">	
+			<input type="submit"  class="btn primary" value ="確認">	
 		</form>
 	
 

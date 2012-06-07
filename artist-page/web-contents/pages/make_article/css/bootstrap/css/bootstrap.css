@@ -157,7 +157,7 @@ body {
   font-size: 13px;
   line-height: 18px;
   color: #333333;
-  background-color: #ffffff;
+  background-color: #DCDCDC;
 }
 
 a {
@@ -4963,7 +4963,7 @@ a.badge:hover {
 
 #main{
     margin-top:100px;
-    border: 3px solid #ffffff;
+    border: 3px solid transparent;
     }
     
 #title{
@@ -4986,7 +4986,7 @@ a.badge:hover {
 	
 }
 .insert_done {
-	border: 3px solid #FFFFFF;
+	border: 3px solid transparent;
 	margin:15px;
 }
 

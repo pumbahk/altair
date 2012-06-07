@@ -47,9 +47,9 @@ if($_POST['artist_insert'] != null && $_POST['genre_insert'] !=null && $_POST['y
 		
 		//新しいアーティストをartistテーブルに入れる
 	
-			echo "アーティストテーブル　アーティスト名:".$_POST['artist_insert']."<br >";
-			echo "アーティストテーブル　アーティストプロフィール:".$_POST['prof_insert']."<br >";
-			echo "アーティストテーブル　アーティストよみがな:".$_POST['yomigana_insert']."<br >";
+		echo "アーティストテーブル　アーティスト名:".$_POST['artist_insert']."<br /><br />";
+		echo "アーティストテーブル　アーティストプロフィール:".$_POST['prof_insert']."<br /><br />";
+		echo "アーティストテーブル　アーティストよみがな:".$_POST['yomigana_insert']."<br /><br />";
 			
 			$stmt_insert_artist = $dbh ->prepare("insert into artist values(?,?,?,?)");
 			$stmt_insert_artist -> bind_param('isss',$count,$_POST['artist_insert'],$_POST['prof_insert'],$_POST['yomigana_inesrt']);
@@ -98,9 +98,9 @@ if($_POST['artist_insert'] != null && $_POST['genre_insert'] !=null && $_POST['y
 	
 		for($i=$count_explode-1;$i>=1;$i--){
 		        if($genres[$i]['found'] == 'new'){
-			echo "ジャンルテーブル　ID:".$genres[$i]['id']."<br >";
-			echo "ジャンルテーブル ジャンル:".$genres[$i]['genre']."<br >";
-			echo "ジャンルテーブル パレントID:".$genres[$i]['parent_id']."<br >";
+			echo "ジャンルテーブル　ID:".$genres[$i]['id']."<br /><br />";
+			echo "ジャンルテーブル ジャンル:".$genres[$i]['genre']."<br /><br />";
+			echo "ジャンルテーブル パレントID:".$genres[$i]['parent_id']."<br /><br />";
 		                $genres[$i]['parent_id']=$genres[$i-1]['id'];
 		                $stmt_insert_genre = $dbh->prepare("insert into genre values(?,?,?)");
 		                $stmt_insert_genre -> bind_param('isi',$genres[$i]['id'],$genres[$i]['genre'],$genres[$i]['parent_id']);
@@ -112,8 +112,8 @@ if($_POST['artist_insert'] != null && $_POST['genre_insert'] !=null && $_POST['y
 
 		foreach($genres as  $a => $t){
 
-		echo "アーティストジャンルテーブル　アーティストID:".$count."<br >";
-		echo "アーティストジャンルテーブル　ジャンルID:".$t['id']."<br >";
+		echo "アーティストジャンルテーブル　アーティストID:".$count."<br /><br />";
+		echo "アーティストジャンルテーブル　ジャンルID:".$t['id']."<br /><br />";
 		$count = 700000;
 		$stmt_insert_artist_genre = $dbh->prepare("insert into artist_genre values(?,?)");
 	        $stmt_insert_artist_genre -> bind_param('ii',$count,$t['id']);
@@ -121,7 +121,7 @@ if($_POST['artist_insert'] != null && $_POST['genre_insert'] !=null && $_POST['y
         	$stmt_insert_artist_genre ->close();
 		}	
 
-	echo "アーティストページに新規アーティストを追加しました。　<a href = 'news_content.php'>ニュース更新ページに戻る</a><a href='artist_insert.php'>さらにアーティストを新規登録する</a>";
+	echo "アーティストページに新規アーティストを追加しました。　<a href = 'news_content.php'>ニュース更新ページに戻る</a>                                                   <a href='artist_insert.php'>さらにアーティストを新規登録する</a>";
 
 }
 
