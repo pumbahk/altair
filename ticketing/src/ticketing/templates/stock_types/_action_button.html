@@ -68,8 +68,8 @@
     modal.modal('toggle');
   }
   function save_allocate_number() {
-    var modal = $('#modal-stock_allocation');
-    var form = $('#stock_allocations-form');
+    var modal = '#modal-stock_allocation';
+    var form = '#stock_allocations-form';
     var url = '/events/stock_allocations/allocate_number';
     post_modal_form(modal, form, url);
   }

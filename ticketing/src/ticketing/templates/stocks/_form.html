@@ -1,4 +1,4 @@
-<%page args="form" />
+<%page args="forms" />
 <%namespace file="/common/helpers.html" name="h" />
 
 <div id="modal-stock" class="modal fade">
@@ -9,15 +9,20 @@
 
   <form>
     <div class="modal-body">
-      ${h.form_item(form.id)}
-      ${h.form_item(form.stock_holder_id)}
-      ${h.form_item(form.stock_type_id)}
-      ${h.form_item(form.quantity)}
+    ${h.form_item(forms.stock_holder_id)}
+    % for f in forms.stock_forms:
+      ${f.form.stock_type_name.data}
+      ${h.form_item(f.form.stock_type_name)}
+      ${h.form_item(f.form.id)}
+      ${h.form_item(f.form.stock_holder_id)}
+      ${h.form_item(f.form.stock_type_id)}
+      ${h.form_item(f.form.quantity)}
+    % endfor
     </div>
   </form>
 
   <div class="modal-footer">
     <a href="#" class="btn" data-dismiss="modal">閉じる</a>
-    <a href="javascript:save_stock();" class="btn">保存</a>
+    <a href="javascript:save_allocate_number();" class="btn">保存</a>
   </div>
 </div>

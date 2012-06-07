@@ -88,7 +88,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 name=u'自社',
                 performance_id=self.id,
                 account_id=account.id,
-                style=None,
+                style={"text": u"自", "text_color": "#a62020"},
             )
             stock_holder.save()
 

@@ -1,5 +1,5 @@
 <%page args="form" />
-<%namespace file="/common/helpers.html" import="form_item" />
+<%namespace file="/common/helpers.html" name="h" />
 
 <div id="modal-stock_allocation" class="modal fade">
   <div class="modal-header">
@@ -9,9 +9,9 @@
 
   <form action="javascript:save_allocate_number();" method="POST">
     <div class="modal-body">
-      ${form_item(form.stock_type_id)}
-      ${form_item(form.performance_id)}
-      ${form_item(form.quantity)}
+      ${h.form_item(form.stock_type_id)}
+      ${h.form_item(form.performance_id)}
+      ${h.form_item(form.quantity)}
     </div>
 
     <div class="modal-footer">

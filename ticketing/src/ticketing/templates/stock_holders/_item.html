@@ -10,14 +10,16 @@
     </div>
     <div style="float: right; margin-top: 7px; margin-right: 7px">
       <div class="btn-group">
+        <a href="" class="btn btn-mini btn-primary ">
+          <i class=""></i> 席を割当
+        </a>
         <button class="btn btn-mini btn-primary dropdown-toggle" data-toggle="dropdown">
-          席を割当
           <span class="caret"></span>
         </button>
         <ul class="dropdown-menu">
           <li><a href="javascript:edit_stock_holder(${stock_holder.id});">編集</a></li>
           <li><a href="javascript:delete_stock_holder(${stock_holder.id});">削除</a></li>
-          <li><a href="javascript:edit_stock(${stock_holder.id});">在庫数を入力</a></li>
+          <li><a href="javascript:allocate_number(${stock_holder.id});">在庫数を入力</a></li>
         </ul>
       </div>
     </div>
@@ -27,7 +29,7 @@
   </div>
   <div style="clear: both;"></div>
 
-  <div id="collapse-${stock_holder.id}" class="accordion-body collapse" style="height: 0px; ">
+  <div id="collapse-${stock_holder.id}" class="accordion-body collapse" style="height: 0px;">
     % for i, stock in enumerate(stock_holder.stocks):
     <div class="accordion-inner" id="stock-${stock.id}">
       <span class="span3">

@@ -23,18 +23,16 @@ class StockAllocations(BaseView):
     @view_config(route_name='stock_allocations.allocate_number', request_method='POST', renderer='ticketing:templates/stock_allocations/_form.html')
     def allocate_number(self):
         f = StockAllocationForm(self.request.POST)
-        if not f.validate():
-            return ''
+        if f.validate():
+            stock_allocation = merge_session_with_post(StockAllocation(), f.data)
+            stock_allocation.save()
 
-        stock_type = StockType.get(f.data['stock_type_id'])
-        if stock_type is None:
-            return HTTPNotFound('stock_type id %d is not found' % id)
-
-        stock_allocation = merge_session_with_post(StockAllocation(), f.data)
-        stock_allocation.save()
-
-        self.request.session.flash(u'在庫数を保存しました')
-        return render_to_response('ticketing:templates/refresh.html', {}, request=self.request)
+            self.request.session.flash(u'在庫数を保存しました')
+            return render_to_response('ticketing:templates/refresh.html', {}, request=self.request)
+        else:
+            return {
+                'form':f,
+            }
 
     @view_config(route_name='stock_allocations.allocate_seat', request_method='POST', renderer='ticketing:templates/stock_allocations/_form.html')
     def allocate_seat(self):
