@@ -51,22 +51,6 @@ class EventForm(Form):
             Length(max=100, message=u'100文字以内で入力してください'),
         ]
     )
-    sales_start_on = HiddenField(
-        label = u'販売開始日時',
-        validators=[Optional()],
-    )
-    sales_end_on = HiddenField(
-        label = u'販売終了日時',
-        validators=[Optional()],
-    )
-    first_start_on = HiddenField(
-        label = u'初回開演日時',
-        validators=[Optional()],
-    )
-    final_start_on = HiddenField(
-        label = u'最終公演日時',
-        validators=[Optional()],
-    )
 
     def validate_code(form, field):
         if form.id and form.id.data:

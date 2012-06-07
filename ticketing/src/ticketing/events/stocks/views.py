@@ -37,11 +37,6 @@ class Stocks(BaseView):
     @view_config(route_name='stocks.edit', request_method='GET', renderer='ticketing:templates/stocks/_form.html')
     def edit_get(self):
         stock_holder_id = int(self.request.matchdict.get('stock_holder_id', 0))
-        stock_holder = StockHolder.get(stock_holder_id)
-        if stock_holder is None:
-            return HTTPNotFound('stock_holder id %d is not found' % stock_holder_id)
-
-        f = StockForms(stock_holder_id=stock_holder_id)
         return {
-            'forms':f,
+            'forms':StockForms(stock_holder_id=stock_holder_id),
         }
