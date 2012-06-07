@@ -167,11 +167,16 @@ class Events(BaseView):
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
 
-        data = {
-            'events':[event.get_sync_data()],
-            'created_at':isodate.datetime_isoformat(datetime.now()),
-            'updated_at':isodate.datetime_isoformat(datetime.now()),
-        }
+        try:
+            data = {
+                'events':[event.get_sync_data()],
+                'created_at':isodate.datetime_isoformat(datetime.now()),
+                'updated_at':isodate.datetime_isoformat(datetime.now()),
+            }
+        except Exception, e:
+            logging.info("cms build data error: %s (event_id=%s)" % (e.message, event_id))
+            self.request.session.flash(e.message)
+            return HTTPFound(location=route_path('events.show', self.request, event_id=event.id))
 
         settings = get_current_registry().settings
         url = settings.get('altaircms.event.notification_url') + 'api/event/register'

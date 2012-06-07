@@ -120,6 +120,10 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         end_on = isodate.datetime_isoformat(self.end_on) if self.end_on else ''
         open_on = isodate.datetime_isoformat(self.open_on) if self.open_on else ''
 
+        # cmsでは日付は必須項目
+        if not (start_on and end_on and open_on):
+            raise Exception(u'パフォーマンスの日付を入力してください')
+
         sales = []
         for sales_segment in self.event.sales_segments:
             sync_data = sales_segment.get_sync_data(self.id)
@@ -181,6 +185,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def first_performance(self):
         if not self._first_performance:
             self._first_performance = Performance.filter(Performance.event_id==self.id)\
+                                        .filter(Performance.start_on!=None)\
                                         .order_by('Performance.start_on asc').first()
         return self._first_performance
 
@@ -188,6 +193,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def final_performance(self):
         if not self._final_performance:
             self._final_performance = Performance.filter(Performance.event_id==self.id)\
+                                        .filter(Performance.start_on!=None)\
                                         .order_by('Performance.start_on desc').first()
         return self._final_performance
 
