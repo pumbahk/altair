@@ -172,6 +172,8 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         for template_attribute in template.attributes:
             SeatAttribute.create_from_template(template=template_attribute, seat_id=seat.id)
 
+        SeatStatus.create_default(seat_id=seat.id)
+
     def delete_cascade(self):
         self.delete()
 
@@ -197,6 +199,11 @@ class SeatStatus(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "SeatStatus"
     seat_id = Column(Identifier, ForeignKey("Seat.id"), primary_key=True)
     status = Column(Integer)
+
+    @staticmethod
+    def create_default(seat_id):
+        seat_status = SeatStatus(status=SeatStatusEnum.Vacant.v, seat_id=seat_id)
+        seat_status.save()
 
     @staticmethod
     def get_for_update(stock_id):

@@ -102,6 +102,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             - VenueArea
             - Seat
               - SeatAttribute
+              - SeatStatus
         """
         # create Venue - VenueArea, Seat - SeatAttribute
         if hasattr(self, 'create_venue_id') and self.venue_id:
