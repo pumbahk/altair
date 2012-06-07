@@ -117,11 +117,12 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def get_sync_data(self):
         start_on = isodate.datetime_isoformat(self.start_on) if self.start_on else ''
         end_on = isodate.datetime_isoformat(self.end_on) if self.end_on else ''
+        open_on = isodate.datetime_isoformat(self.open_on) if self.open_on else ''
         data = {
             'id':self.id,
             'name':self.name,
             'venue':self.venue.name,
-            'open_on':isodate.datetime_isoformat(self.open_on),
+            'open_on':open_on,
             'start_on':start_on,
             'end_on':end_on,
             'sales':[s.get_sync_data(self.id) for s in self.event.sales_segments],
