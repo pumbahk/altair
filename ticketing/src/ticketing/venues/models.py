@@ -63,25 +63,31 @@ class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @staticmethod
     def create_from_template(template, performance_id):
+        # create Venue
         venue = Venue.clone(template)
         venue.original_venue_id = template.id
         venue.performance_id = performance_id
         venue.save()
 
+        # create VenueArea
         for template_area in template.areas:
             VenueArea.create_from_template(template=template_area, venue_id=venue.id)
 
+        # create Seat
         for template_seat in template.seats:
             Seat.create_from_template(template=template_seat, venue_id=venue.id)
 
     def delete_cascade(self):
-        self.delete()
+        # delete Seat
+        for seat in self.seats:
+            seat.delete_cascade()
 
+        # delete VenueArea
         for area in self.areas:
             area.delete_cascade()
 
-        for seat in self.seats:
-            seat.delete_cascade()
+        # delete Venue
+        self.delete()
 
 class VenueArea(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__   = "VenueArea"
@@ -91,10 +97,12 @@ class VenueArea(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @staticmethod
     def create_from_template(template, venue_id):
+        # create VenueArea
         area = VenueArea.clone(template)
         area.venue_id = venue_id
         area.save()
 
+        # create VenueArea_group_l0_id
         for template_group in template.groups:
             group = VenueArea_group_l0_id(
                 group_l0_id=template_group.group_l0_id,
@@ -104,10 +112,10 @@ class VenueArea(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             DBSession.add(group)
 
     def delete_cascade(self):
-        self.delete()
+        # VenueArea_group_l0_id cannot delete because LogicallyDeleted Seat
 
-        for group in self.groups:
-            DBSession.delete(group)
+        # delete VenueArea
+        self.delete()
 
 class SeatAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__   = "SeatAttribute"
@@ -117,6 +125,7 @@ class SeatAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @staticmethod
     def create_from_template(template, seat_id):
+        # create SeatAttribute
         attribute = SeatAttribute.clone(template)
         attribute.seat_id = seat_id
         attribute.save()
@@ -162,6 +171,7 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @staticmethod
     def create_from_template(template, venue_id):
+        # create Seat
         seat = Seat.clone(template)
         seat.venue_id = venue_id
         seat.stock_id = None
@@ -169,16 +179,25 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             seat.stock_type_id = None
         seat.save()
 
+        # create SeatAttribute
         for template_attribute in template.attributes:
             SeatAttribute.create_from_template(template=template_attribute, seat_id=seat.id)
 
+        # create SeatStatus
         SeatStatus.create_default(seat_id=seat.id)
 
     def delete_cascade(self):
-        self.delete()
+        # delete SeatStatus
+        seat_status = SeatStatus.filter_by(seat_id=self.id).first()
+        if seat_status:
+            seat_status.delete()
 
+        # delete SeatAttribute
         for attribute in self.attributes:
             attribute.delete()
+
+        # delete Seat
+        self.delete()
 
     # @TODO
     @staticmethod

@@ -100,6 +100,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         また更新時にVenueの変更があったら以下のモデルをdeleteする
           - Venue
             - VenueArea
+              - VenueArea_group_l0_id
             - Seat
               - SeatAttribute
               - SeatStatus
