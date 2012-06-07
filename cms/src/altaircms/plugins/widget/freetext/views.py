@@ -34,5 +34,7 @@ class FreetextWidgetView(object):
     @view_config(route_name="freetext_widget_dialog", renderer="altaircms.plugins.widget:freetext/dialog.mako", request_method="GET")
     def dialog(self):
         context = self.request.context
-        widget = context.get_widget(self.request.GET.get("pk"))
+        pk = self.request.GET.get("pk")
+        widget = context.get_widget(pk)
+
         return {"widget": widget}

@@ -23,7 +23,7 @@ if(!widget){
         var url = "/api/widget/freetext/dialog";
         var params = {};
         if(!!pk){
-            params["Pk"] = pk;
+            params["pk"] = pk;
         }
             url += "?" + $.param(params);
         return we.dialog.load(url);
@@ -39,12 +39,12 @@ if(!widget){
                           if(!!freetext){ //fixme
                               setTimeout(function(){ //fixme
                                   tinyMCE.get("freetext_widget_textarea").setContent(freetext);
-                              }, 200);
+                              }, 20);
                           }
                           $("#submit").click(function(){we.finish_dialog(this);});
                       }
                      )();
-        }, 100);
+        }, 200);
     };
 
     var on_close = function(we){

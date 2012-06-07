@@ -22,7 +22,7 @@ class FreetextWidget(Widget):
     query = DBSession.query_property()
 
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
-    text = sa.Column(sa.Unicode(255))
+    text = sa.Column(sa.UnicodeText)
 
     def __init__(self, id=None, text=None):
         self.id = id
