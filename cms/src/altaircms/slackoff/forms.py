@@ -90,6 +90,7 @@ class PromotionForm(Form):
 
 class CategoryForm(Form):
     name = fields.TextField(label=u"カテゴリ名")
+    origin = fields.TextField(label=u"分類")
     label = fields.TextField(label=u"label")
     parent = dynamic_query_select_field_factory(
         Category, allow_blank=False, label=u"親カテゴリ",
@@ -103,7 +104,7 @@ class CategoryForm(Form):
         get_label=lambda obj: obj.name or u"--なし--")
     orderno = fields.IntegerField(label=u"表示順序")
 
-    __display_fields__ = [u"name", u"label",
+    __display_fields__ = [u"name", u"origin", u"label",
                           u"parent", u"hierarchy", 
                           u"imgsrc", u"url", u"pageset", 
                           u"orderno"]
