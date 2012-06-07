@@ -36,6 +36,12 @@ class Secure3DReqEnrolResponse(Base):
     AcsUrl = sa.Column(sa.UnicodeText, doc="3D 認証画面を要求するための ACS の URL")
     PaReq = sa.Column(sa.UnicodeText, doc="ACS に送信する電文内容")
 
+    def is_enable_secure3d(self):
+        return self.ErrorCd == '000000' and self.RetCd in ('0', '1', '2')
+
+    def is_enable_auth_api(self):
+        return self.ErrorCd == '000000' and self.RetCd == '0'
+
 class Secure3DAuthRequest(Base):
     """ 3D認証結果確認依頼処理（リクエスト）
     """

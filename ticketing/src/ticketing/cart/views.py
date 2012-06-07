@@ -10,7 +10,9 @@ from ticketing.models import DBSession
 import ticketing.events.models as e_models
 import ticketing.products.models as p_models
 from . import helpers as h
-from . import apis
+from ..multicheckout import helpers as m_h
+from ..multicheckout import api as multicheckout_api
+from . import schema
 
 logger = logging.getLogger(__name__)
 
@@ -147,7 +149,7 @@ class ReserveView(object):
         cart = self.context.order_products(self.request.params['performance_id'], self.ordered_items)
         if cart is None:
             return dict(result='NG')
-        apis.set_cart(self.request, cart)
+        h.set_cart(self.request, cart)
         #self.request.session['ticketing.cart_id'] = cart.id
         #self.cart = cart
         return dict(result='OK')
@@ -172,10 +174,10 @@ class PaymentView(object):
     def __call__(self):
         """ 支払い方法、引き取り方法選択
         """
-        if not apis.has_cart(self.request):
+        if not h.has_cart(self.request):
             return HTTPFound('/')
 
-        cat = apis.get_cart(self.request)
+        cart = h.get_cart(self.request)
 
     @view_config(route_name='cart.payment.method', request_method="GET")
     def paymentmethod(self):
@@ -192,10 +194,37 @@ class MultiCheckoutView(object):
     def card_info_secure3d(self):
         """ カード情報入力(3Dセキュア)
         """
+        form = schema.CardForm(formdata=self.request.params)
+        if not form.validate():
+            return
+        card_number = form['card_number'].data
+        exp_year = form['exp_year'].data
+        exp_month = form['exp_month'].data
 
-    def card_info_secure_code(self):
-        """ カード情報入力(セキュアコード)
-        """
+        assert h.has_cart(self.request)
+        cart = h.get_cart(self.request)
+
+        # 変換
+        order_id = cart.id
+        enrol = multicheckout_api.secure3d_enrol(self.request, order_id, card_number, exp_year, exp_month, cart.total_amount)
+        if enrol.is_enable_auth_api():
+            return dict(form=m_h.secure3d_acs_form(self.request, self.request.route_url('cart.secure3d_result'), enrol))
+        elif enrol.is_enable_secure3d():
+            # セキュア3D認証エラーだが決済APIを利用可能
+            pass
+        else:
+            # セキュア3D認証エラー
+            pass
+
+
+    def card_info_secure3d_callback(self):
+        pares = multicheckout_api.get_pares(self.request)
+        md = multicheckout_api.get_md(self.reqeuest)
+        auth = multicheckout_api.secure3d_auth(self.request, self.order_id, pares, md)
+
+def card_info_secure_code(self):
+    """ カード情報入力(セキュアコード)
+    """
 
     def secure3d_checkout(self):
         """
@@ -205,7 +234,7 @@ class MultiCheckoutView(object):
         """
         """
 
-    def multicheckout(self):
+    def multi_checkout(self):
         """ マルチ決済APIで決済確定
         """
 

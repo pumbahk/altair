@@ -640,3 +640,116 @@ class PyamentViewTests(unittest.TestCase):
         target = self._makeOne(request)
         result = target()
         self.assertEqual(result.location, '/')
+
+class MultiCheckoutViewTests(unittest.TestCase):
+    def setUp(self):
+        self.config = testing.setUp()
+
+    def tearDown(self):
+        testing.tearDown()
+
+    def _getTarget(self):
+        from . import views
+        return views.MultiCheckoutView
+
+    def _makeOne(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
+
+    def _register_dummy_secure3d(self, *args, **kwargs):
+        from ..multicheckout import interfaces
+        dummy = DummySecure3D(*args, **kwargs)
+        self.config.registry.utilities.register([], interfaces.IMultiCheckout, "", dummy)
+        return dummy
+
+    def test_card_info_secure3d_enable_api(self):
+        self.config.add_route('cart.secure3d_result', '/this-is-secure3d-callback')
+        dummy_secure3d = self._register_dummy_secure3d(AcsUrl='http://example.com/AcsUrl', PaReq='this-is-pareq', Md='this-is-Md')
+        params = {
+            'card_number': 'XXXXXXXXXXXXXXXX',
+            'exp_year': '13',
+            'exp_month': '07',
+        }
+
+        cart_id = 500
+        dummy_cart = testing.DummyModel(id=cart_id, total_amount=1234)
+
+        request = DummyRequest(params=params, _cart=dummy_cart)
+        target = self._makeOne(request)
+
+        result = target.card_info_secure3d()
+
+        self.assertIsNotNone(result.get('form'))
+        form = result['form']
+        self.assertIn('http://example.com/AcsUrl', form)
+        self.assertIn('this-is-pareq', form)
+        self.assertIn('this-is-Md', form)
+        self.assertIn('/this-is-secure3d-callback', form)
+
+        self.assertEqual(dummy_secure3d.called[0][0], 'secure3d_enrol')
+        self.assertEqual(dummy_secure3d.called[0][1][0], 500)
+        self.assertEqual(dummy_secure3d.called[0][1][1].CardNumber, "XXXXXXXXXXXXXXXX")
+        self.assertEqual(dummy_secure3d.called[0][1][1].ExpYear, "13")
+        self.assertEqual(dummy_secure3d.called[0][1][1].ExpMonth, "07")
+
+        self.assertEqual(dummy_secure3d.called[1],('is_enable_auth_api', (), {}))
+
+    def test_card_info_secure3d_disabled_api(self):
+        self.config.add_route('cart.secure3d_result', '/this-is-secure3d-callback')
+        dummy_secure3d = self._register_dummy_secure3d(AcsUrl='http://example.com/AcsUrl', PaReq='this-is-pareq', Md='this-is-Md', enable_auth_api=False)
+        params = {
+            'card_number': 'XXXXXXXXXXXXXXXX',
+            'exp_year': '13',
+            'exp_month': '07',
+            }
+
+        cart_id = 500
+        dummy_cart = testing.DummyModel(id=cart_id, total_amount=1234)
+
+        request = DummyRequest(params=params, _cart=dummy_cart)
+        target = self._makeOne(request)
+
+        result = target.card_info_secure3d()
+
+#        self.assertIsNotNone(result.get('form'))
+#        form = result['form']
+#        self.assertIn('http://example.com/AcsUrl', form)
+#        self.assertIn('this-is-pareq', form)
+#        self.assertIn('this-is-Md', form)
+#        self.assertIn('/this-is-secure3d-callback', form)
+
+        self.assertEqual(dummy_secure3d.called[0][0], 'secure3d_enrol')
+        self.assertEqual(dummy_secure3d.called[0][1][0], 500)
+        self.assertEqual(dummy_secure3d.called[0][1][1].CardNumber, "XXXXXXXXXXXXXXXX")
+        self.assertEqual(dummy_secure3d.called[0][1][1].ExpYear, "13")
+        self.assertEqual(dummy_secure3d.called[0][1][1].ExpMonth, "07")
+
+        self.assertEqual(dummy_secure3d.called[1],('is_enable_auth_api', (), {}))
+
+        self.assertEqual(dummy_secure3d.called[2],('is_enable_secure3d', (), {}))
+
+class DummyRequest(testing.DummyRequest):
+    def __init__(self, *args, **kwargs):
+        super(DummyRequest, self).__init__(*args, **kwargs)
+        from webob.multidict import MultiDict
+        if hasattr(self, 'params'):
+            self.params = MultiDict(self.params)
+
+class DummySecure3D(object):
+    def __init__(self, AcsUrl, PaReq, Md, enable_auth_api=True):
+        self.called = []
+        self.AcsUrl = AcsUrl
+        self.PaReq = PaReq
+        self.Md = Md
+        self.enable_auth_api = enable_auth_api
+
+    def secure3d_enrol(self, *args, **kwargs):
+        self.called.append(('secure3d_enrol', args, kwargs))
+        return self
+
+    def is_enable_auth_api(self, *args, **kwargs):
+        self.called.append(('is_enable_auth_api', args, kwargs))
+        return self.enable_auth_api
+
+    def is_enable_secure3d(self, *args, **kwargs):
+        self.called.append(('is_enable_secure3d', args, kwargs))
+        return True
