@@ -223,8 +223,9 @@ class Category(Base):
     
     url = sa.Column(sa.Unicode(length=255))
     pageset_id = sa.Column(sa.Integer, sa.ForeignKey("pagesets.id"))
-    pageset = orm.relationship("PageSet", backref="category", uselist=False)
+    pageset = orm.relationship("PageSet", backref=orm.backref("category", uselist=False), uselist=False)
     orderno = sa.Column(sa.Integer)
+    origin = sa.Column(sa.Unicode(length=255))
 
     @classmethod
     def get_toplevel_categories(cls, hierarchy=u"大", site=None, request=None): ## fixme

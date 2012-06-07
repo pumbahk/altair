@@ -157,13 +157,13 @@ class SearchResultRender(object):
 
         
     def category_icons(self): ## fixme: too access DB.
-        v = Nullable(self.pageset).parent.category.name.value
+        v = Nullable(self.pageset).parent.category.origin.value
         if v is None:
-            return u'<div class="icon-category icon-category-other"/>'
+            return u'<div class="icon-category icon-category-other"></div>'
         else:
             return u'''\
-<div class="icon-category-%s">%s</div>
-''' % (v, v)
+<div class="icon-category icon-category-%s"></div>
+''' % v
         
     def page_description(self):
         fmt =  u"""\

@@ -21,9 +21,11 @@ def upgrade():
                   sa.Column("imgsrc", sa.String(255)))
     op.add_column("category", 
                   sa.Column("orderno", sa.Integer))
+    op.add_column("category",
+                  sa.Column("origin", sa.Unicode(255)))
 
 def downgrade():
     op.drop_column("category", "label")
     op.drop_column("category", "imgsrc")
     op.drop_column("category", "orderno")
-
+    op.drop_column("category", "origin")

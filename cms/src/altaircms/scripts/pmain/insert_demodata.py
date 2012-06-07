@@ -310,10 +310,9 @@ def detail_event():
 
 def detail_page(layout, event):
     ## for breadcrumbs
-    top_page = Page.get_or_create_by_name(u"TOP")
-    other_page = Page.get_or_create_by_name(name= u"イベント・その他")
+    other_page = Page.get_or_create_by_name(name= u"演劇 パフォーマンス")
     other_page_set = PageSet.get_or_create(other_page)
-    other_page_set.parent = top_page.pageset
+
     
 
     detail_page = Page(description=u'チケットの販売、イベントの予約は楽天チケットで！楽天チケットは演劇、バレエ、ミュージカルなどの舞台、クラシック、オペラ、ロックなどのコンサート、野球、サッカー、格闘技などのスポーツ、その他イベントなどのチケットのオンラインショッピングサイトです。',
@@ -1758,6 +1757,24 @@ def bind_category_to_pageset():
     Category.query.filter_by(label=u"ヘルプ").update({"pageset_id": PageSet.query.filter_by(name=u"ヘルプ").one().id}, synchronize_session="fetch")
     Category.query.filter_by(label=u"初めての方へ").update({"pageset_id": PageSet.query.filter_by(name=u"初めての方へ").one().id}, synchronize_session="fetch")
     Category.query.filter_by(label=u"公演中止・変更情報").update({"pageset_id": PageSet.query.filter_by(name=u"公演の中止・変更情報").one().id}, synchronize_session="fetch")
+
+
+    ## music
+    root = Category.query.filter(Category.name=="music").one()
+    root.origin = u"music"
+    Category.query.filter(Category.parent==root).update(dict(origin=u"music"))
+    ## stage
+    root = Category.query.filter(Category.name=="stage").one()
+    root.origin = u"stage"
+    Category.query.filter(Category.parent==root).update(dict(origin=u"stage"))
+    ## sports
+    root = Category.query.filter(Category.name=="sports").one()
+    root.origin = u"sports"
+    Category.query.filter(Category.parent==root).update(dict(origin=u"sports"))
+    ## other
+    root = Category.query.filter(Category.name=="event").one()
+    root.origin = u"other"
+    Category.query.filter(Category.parent==root).update(dict(origin=u"other"))
 
 def main(env, args):
     # setup()
