@@ -194,10 +194,7 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "Stock"
     id = Column(Identifier, primary_key=True)
     quantity = Column(Integer)
-
     stock_holder_id = Column(Identifier, ForeignKey('StockHolder.id'))
-    seats = relationship("Seat", backref='stock')
-
     stock_type_id = Column(Identifier, ForeignKey('StockType.id'))
 
     stock_status = relationship("StockStatus", uselist=False, backref='stock')

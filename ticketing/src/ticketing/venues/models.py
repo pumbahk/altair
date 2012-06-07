@@ -57,10 +57,7 @@ class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                                   backref=backref(
                                     'original_venue', remote_side=[id]))
 
-    adjacency_sets = relationship("SeatAdjacencySet", backref='venue')
-
     site = relationship("Site", uselist=False)
-    seats = relationship("Seat", backref='venue')
     areas = relationship("VenueArea", backref='venues', secondary=VenueArea_group_l0_id.__table__)
     organization = relationship("Organization", backref='venues')
 
@@ -141,6 +138,9 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     venue_id        = Column(Identifier, ForeignKey('Venue.id'), nullable=False)
     group_l0_id     = Column(String(255))
+
+    venue           = relationship("Venue", backref='seats')
+    stock           = relationship("Stock", backref='seats')
 
     attributes      = relationship("SeatAttribute", backref='seat', cascade='save-update, merge')
     areas           = relationship("VenueArea", secondary=VenueArea_group_l0_id.__table__, backref="seats")
@@ -232,4 +232,4 @@ class SeatAdjacencySet(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     venue_id = Column(Identifier, ForeignKey('Venue.id'))
     seat_count = Column(Integer, nullable=False)
     adjacencies = relationship("SeatAdjacency", backref='adjacency_set')
-
+    venue = relationship("Venue", backref='adjacency_sets')
