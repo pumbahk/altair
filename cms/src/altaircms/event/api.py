@@ -71,7 +71,7 @@ class Scanner(object):
     def scan_performance_record(self, performance_record):
         deleted = performance_record.get('deleted', False)
         if deleted:
-            DBSession.query(Performance).filter_by(id=performance['id']).delete()
+            DBSession.query(Performance).filter_by(id=performance_record['id']).delete()
         else:
             performance = Performance()
             performance.event = self.current_event

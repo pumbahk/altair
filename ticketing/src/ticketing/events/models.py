@@ -119,6 +119,12 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         start_on = isodate.datetime_isoformat(self.start_on) if self.start_on else ''
         end_on = isodate.datetime_isoformat(self.end_on) if self.end_on else ''
         open_on = isodate.datetime_isoformat(self.open_on) if self.open_on else ''
+
+        sales = []
+        for sales_segment in self.event.sales_segments:
+            sync_data = sales_segment.get_sync_data(self.id)
+            if sync_data:
+                sales.append(sync_data)
         data = {
             'id':self.id,
             'name':self.name,
@@ -126,9 +132,11 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             'open_on':open_on,
             'start_on':start_on,
             'end_on':end_on,
-            'sales':[s.get_sync_data(self.id) for s in self.event.sales_segments],
-            'deleted':'true' if self.deleted_at else 'false',
+            'sales':sales,
         }
+        if self.deleted_at:
+            data['deleted'] = 'true'
+
         return data
 
 class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -203,6 +211,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         start_on = isodate.datetime_isoformat(self.first_start_on) if self.first_start_on else ''
         end_on = isodate.datetime_isoformat(self.final_start_on) if self.final_start_on else ''
         performances = Performance.query.filter_by(event_id=self.id).all()
+
         data = {
             'id':self.id,
             'title':self.title,
@@ -210,8 +219,10 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             'start_on':start_on,
             'end_on':end_on,
             'performances':[p.get_sync_data() for p in performances],
-            'deleted':'true' if self.deleted_at else 'false',
         }
+        if self.deleted_at:
+            data['deleted'] = 'true'
+
         return data
 
     def add(self):
@@ -256,7 +267,7 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 'tickets':[p.get_sync_data(performance_id) for p in products],
             }
             return data
-        return {}
+        return
 
 class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentDeliveryMethodPair'
