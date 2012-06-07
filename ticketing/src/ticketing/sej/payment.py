@@ -3,11 +3,13 @@
 import hashlib, time, re, urllib2
 import logging
 
+import tempfile
+from zlib import decompress, compress
 from datetime import datetime
 from dateutil.parser import parse
 
 from .utils import JavaHashMap
-from .models import SejOrder, SejTicket, SejNotification
+from .models import SejOrder, SejTicket, SejNotification, SejCancelEvent, SejCancelTicket
 
 from .resources import make_sej_response, is_ticket, need_ticketing
 from .resources import SejNotificationType, SejOrderUpdateReason, SejPaymentType, SejTicketType
@@ -139,6 +141,7 @@ class SejPayment(object):
         req = urllib2.Request(self.url)
         buffer = ["%s=%s" % (name, urllib2.quote(unicode(param).encode('shift_jis', 'xmlcharrefreplace'))) for name, param in request_params.iteritems()]
         data = "&".join(buffer)
+        print data
 
         self.log.info("[request]%s" % data)
 
@@ -157,6 +160,7 @@ class SejPayment(object):
         status = res.code
         reason = res.msg
         body = res.read()
+        print body
 
         self.log.info("[response]%s" % body)
 
@@ -629,7 +633,6 @@ def request_fileget(
     payment = SejPayment(url = hostname + u'/order/getfile.do', secret_key = secret_key)
     body = payment.request_file(params, True)
 
-    from zlib import decompress
     return decompress(body)
 
 def callback_notification(params,
@@ -744,9 +747,89 @@ def callback_notification(params,
     return ret
 
 
+def request_cancel_event(cancel_event):
+    from .zip_file import EnhZipFile, ZipInfo
+
+    # YYYYMMDD_TPBKOEN.dat
+    # YYYYMMDD_TPBTICKET.dat
+    # archive.txt
+
+    tpboen_file_name = "%s_TPBKOEN.dat" % datetime.now().strftime('%Y%m%d')
+    tpbticket_file_name = "%s_TPBTICKET.dat" % datetime.now().strftime('%Y%m%d')
+    archive_txt_body = "%s\r\n%s\r\n" % (tpboen_file_name, tpbticket_file_name)
+
+    zip_file_name = "/tmp/refund_file_%s.zip" % datetime.now().strftime('%Y%m%d%H%M')
+    zf = EnhZipFile(zip_file_name, 'w')
+
+    import zipfile
+    import time
+    import csv
+    from utils import UnicodeWriter
+    import StringIO
+
+    zi = ZipInfo('archive.txt', time.localtime()[:6])
+    zi.external_attr = 0666 << 16L
+    w = zf.start_entry(zi)
+    w.write(archive_txt_body)
+    w.close()
+    zf.finish_entry()
+
+    output = StringIO.StringIO()
+    event_tsv = UnicodeWriter(output, delimiter='\t', lineterminator=u'\r\n')
+
+    event_tsv.writerow([
+        unicode(cancel_event.available),
+        cancel_event.shop_id,
+        cancel_event.event_code_01,
+        cancel_event.event_code_02,
+        cancel_event.title,
+        cancel_event.sub_title,
+        cancel_event.event_at.strftime('%Y%m%d%H%M'),
+        cancel_event.start_at.strftime('%Y%m%d%H%M'),
+        cancel_event.end_at.strftime('%Y%m%d%H%M'),
+        cancel_event.expire_at.strftime('%Y%m%d%H%M') ,
+        cancel_event.event_expire_at.strftime('%Y%m%d%H%M'),
+        cancel_event.ticket_expire_at.strftime('%Y%m%d%H%M'),
+        cancel_event.disapproval_reason,
+        unicode(cancel_event.need_stub),
+        cancel_event.remarks,
+        cancel_event.un_use_01,
+        cancel_event.un_use_02,
+        cancel_event.un_use_03,
+        cancel_event.un_use_04,
+        cancel_event.un_use_05,
+    ])
 
 
+    zi = ZipInfo(tpboen_file_name, time.localtime()[:6])
+    zi.external_attr = 0666 << 16L
+    w = zf.start_entry(zi)
+    w.write(unicode(output.getvalue(),'utf8').encode('CP932'))
+    w.close()
+    output.close()
+
+    zf.finish_entry()
+
+    output = StringIO.StringIO()
+    ticket_tsv = UnicodeWriter(output, delimiter='\t', lineterminator=u'\r\n')
+    for ticket in cancel_event.tickets:
+        ticket_tsv.writerow([
+            unicode(ticket.available),
+            ticket.shop_id,
+            ticket.event_code_01,
+            ticket.event_code_02,
+            ticket.order_id,
+            unicode(ticket.ticket_barcode_number),
+            unicode(ticket.refund_ticket_amount),
+            unicode(ticket.refund_amount),
+        ])
+
+    zi = ZipInfo(tpbticket_file_name, time.localtime()[:6])
+    zi.external_attr = 0666 << 16L
+    w = zf.start_entry(zi)
+    w.write(unicode(output.getvalue(),'utf8').encode('CP932'))
+    w.close()
 
 
-
-
+    zf.close()
+    return

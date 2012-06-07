@@ -64,11 +64,11 @@ def payment_test():
     )
 
 def payment_test_cod_r_c_c():
-    """
-    ''' 注文受付：【代引き】
+
+    ''' 注文受付：【代引き】'''
     # 決済要求
     print ''' 1-①：XXXXXXXXXXXXX(注文更新、注文取消し用)'''
-    '''sejTicketOrder = request_order(
+    sejTicketOrder = request_order(
         shop_name       = u'楽天チケット',
         contact_01      = u'contact',
         contact_02      = u'連絡先2',
@@ -109,7 +109,7 @@ def payment_test_cod_r_c_c():
     )
     time.sleep(2)
     print ''' 1-②：XXXXXXXXXXXXX(入金、払戻用)'''
-    '''
+
     request_order(
         shop_name       = u'楽天チケット',
         contact_01      = u'contact',
@@ -193,7 +193,7 @@ def payment_test_cod_r_c_c():
     )
 
     time.sleep(2)
-"""
+
     print ''' 1-④：XXXXXXXXXXXXX(発券期限切れ用)'''
     request_order(
         shop_name       = u'楽天チケット',
@@ -925,7 +925,7 @@ def main(argv=sys.argv):
     settings = app.registry.settings
 
     log.debug('test')
-    payment_test_cod_r_c_c()
+    payment_test()
 #    payment_test_pre_r_c_c()
 #    payment_test_paid_r_c_c()
 #    payment_test_p_only_r_c_c()

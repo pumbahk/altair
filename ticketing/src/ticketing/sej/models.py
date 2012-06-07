@@ -12,6 +12,45 @@ import sqlahelper
 session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
 
+class SejCancelEvent(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
+    __tablename__           = 'SejCancelEvent'
+    id                      = Column(Identifier, primary_key=True)
+    available = Column(Integer)
+    shop_id = Column(String(5))
+    event_code_01  = Column(String(16))
+    event_code_02  = Column(String(16), nullable=True)
+    title = Column(String(200))
+    sub_title = Column(String(600), nullable=True)
+    event_at = Column(DateTime)
+    start_at = Column(DateTime)
+    end_at = Column(DateTime)
+    expire_at = Column(DateTime)
+    event_expire_at = Column(DateTime)
+    ticket_expire_at = Column(DateTime)
+    disapproval_reason = Column(String(2))
+    need_stub = Column(Integer)
+    remarks = Column(String(256))
+    un_use_01 = Column(String(64))
+    un_use_02 = Column(String(64))
+    un_use_03 = Column(String(64))
+    un_use_04 = Column(String(64))
+    un_use_05 = Column(String(64))
+    sent_at = Column(DateTime, nullable=True)
+
+class SejCancelTicket(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
+    __tablename__           = 'SejCancelTicket'
+    id                          = Column(Identifier, primary_key=True)
+    cancel_event_id             = Column(Identifier, ForeignKey("SejCancelEvent.id"), nullable=True)
+    cancel_event                = relationship("SejCancelEvent", backref='tickets')
+    available                   = Column(Integer)
+    event_code_01               = Column(String(16))
+    event_code_02               = Column(String(16), nullable=True)
+    order_id                    = Column(String(12))
+    ticket_barcode_number       = Column(String(13))
+    refund_ticket_amount        = Column(DECIMAL)
+    refund_other_amount         = Column(DECIMAL)
+
+
 class SejNotification(BaseModel, WithTimestamp, LogicallyDeleted, Base):
     __tablename__           = 'SejNotification'
 

@@ -266,7 +266,11 @@ class SejTest(unittest.TestCase):
                 'X_url_info=https://www.r1test.com/order/hi.do&' +\
                 'iraihyo_id_00=%(iraihyo_id_00)s&' + \
                 'X_ticket_cnt=%(ticket_total_num)02d&' + \
-                'X_ticket_hon_cnt=%(ticket_num)02d&</SENBDATA>' + \
+                'X_ticket_hon_cnt=%(ticket_num)02d&' + \
+                'X_barcode_no_01=00001&' + \
+                'X_barcode_no_02=00002&' + \
+                'X_barcode_no_03=00003&' + \
+              '</SENBDATA>' + \
               '<SENBDATA>DATA=END</SENBDATA>'
 
         def sej_dummy_response(environ):
@@ -305,7 +309,7 @@ class SejTest(unittest.TestCase):
             tickets = [
                 dict(
                     ticket_type         = SejTicketType.TicketWithBarcode,
-                    event_name          = u'イベント名',
+                    event_name          = u'イベント名1',
                     performance_name    = u'パフォーマンス名',
                     ticket_template_id  = u'TTTS000001',
                     performance_datetime= datetime.datetime(2012,8,31,18,00),
@@ -325,7 +329,7 @@ class SejTest(unittest.TestCase):
 
                 dict(
                     ticket_type         = SejTicketType.TicketWithBarcode,
-                    event_name          = u'イベント名',
+                    event_name          = u'イベント名2',
                     performance_name    = u'パフォーマンス名',
                     ticket_template_id  = u'TTTS000001',
                     performance_datetime= datetime.datetime(2012,8,31,18,00),
@@ -345,7 +349,7 @@ class SejTest(unittest.TestCase):
 
                 dict(
                     ticket_type         = SejTicketType.ExtraTicketWithBarcode,
-                    event_name          = u'イベント名',
+                    event_name          = u'イベント名3',
                     performance_name    = u'パフォーマンス名',
                     ticket_template_id  = u'TTTS000001',
                     performance_datetime= datetime.datetime(2012,8,31,18,00),
@@ -380,6 +384,19 @@ class SejTest(unittest.TestCase):
         assert order.exchange_sheet_number == u'11111111'
         assert order.billing_number == u'0000000001'
         assert order.exchange_sheet_url == u'https://www.r1test.com/order/hi.do'
+        assert order.tickets[0].barcode_number == '00001'
+
+        assert order.tickets[0].ticket_idx           == 1
+        assert order.tickets[0].ticket_type          == SejTicketType.TicketWithBarcode.v
+        assert order.tickets[0].event_name           == u'イベント名1'
+        assert order.tickets[0].performance_name     == u'パフォーマンス名'
+        assert order.tickets[0].performance_datetime == datetime.datetime(2012,8,31,18,00)
+        assert order.tickets[0].ticket_template_id   == u'TTTS000001'
+        assert order.tickets[0].ticket_data_xml      is not None
+
+        assert order.tickets[1].barcode_number == '00002'
+        assert order.tickets[2].barcode_number == '00003'
+
 
     def test_request_order_prepayment(self):
         '''2-1.決済要求 支払い済み'''
@@ -397,7 +414,11 @@ class SejTest(unittest.TestCase):
             'X_url_info=https://www.r1test.com/order/hi.do&' +\
             'iraihyo_id_00=%(iraihyo_id_00)s&' + \
             'X_ticket_cnt=%(ticket_total_num)02d&' + \
-            'X_ticket_hon_cnt=%(ticket_num)02d&</SENBDATA>' + \
+            'X_ticket_hon_cnt=%(ticket_num)02d&'+ \
+            'X_barcode_no_01=00001&' + \
+            'X_barcode_no_02=00002&' + \
+            'X_barcode_no_03=00003&' + \
+             '</SENBDATA>' + \
             '<SENBDATA>DATA=END</SENBDATA>'
 
         def sej_dummy_response(environ):
@@ -518,6 +539,18 @@ class SejTest(unittest.TestCase):
         assert sej_order.billing_number == u'0000000001'
         assert sej_order.exchange_sheet_url == u'https://www.r1test.com/order/hi.do'
 
+        assert sej_order.tickets[0].barcode_number == '00001'
+        assert sej_order.tickets[1].barcode_number == '00002'
+        assert sej_order.tickets[2].barcode_number == '00003'
+
+        assert sej_order.tickets[0].ticket_idx           == 1
+        assert sej_order.tickets[0].ticket_type          == SejTicketType.TicketWithBarcode.v
+        assert sej_order.tickets[0].event_name           == u'イベント名'
+        assert sej_order.tickets[0].performance_name     == u'パフォーマンス名'
+        assert sej_order.tickets[0].performance_datetime == datetime.datetime(2012,8,31,18,00)
+        assert sej_order.tickets[0].ticket_template_id   == u'TTTS000001'
+        assert sej_order.tickets[0].ticket_data_xml      is not None
+
     def test_request_order_cancel(self):
 
         import webob.util
@@ -559,6 +592,109 @@ class SejTest(unittest.TestCase):
         sej_order = SejOrder.query.filter_by(order_id = u'orderid00001', billing_number=u'00000001').one()
         assert sej_order.cancel_at is not None
 
+    def test_refund_file(self):
+
+        from ticketing.sej.models import SejOrder, SejCancelTicket, SejCancelEvent
+        from ticketing.sej.payment import SejOrderUpdateReason, SejPaymentType, request_cancel_event
+
+        import sqlahelper
+        DBSession = sqlahelper.get_session()
+
+        event = SejCancelEvent()
+        event.available = 1
+        event.shop_id = u'30520'
+        event.event_code_01  = u'EPZED'
+        event.event_code_02  = u'0709A'
+        event.title = u'入金、払戻用興行'
+        event.sub_title = u'入金、払戻用公演'
+        event.event_at = datetime.datetime(2012,8,31,18,00)
+        event.start_at = datetime.datetime(2012,6,7,18,30)
+        event.end_at = datetime.datetime(2012,6,10,18,30)
+        event.expire_at = datetime.datetime(2012,6,10,18,30)
+        event.event_expire_at = datetime.datetime(2012,6,10,18,30)
+        event.ticket_expire_at = datetime.datetime(2012,7,10,18,30)
+        event.disapproval_reason = u''
+        event.need_stub = 1
+        event.remarks = u'備考'
+        event.un_use_01 = u''
+        event.un_use_02 = u''
+        event.un_use_03 = u''
+        event.un_use_04 = u''
+        event.un_use_05 = u''
+
+        event.tickets = list()
+
+        DBSession.add(event)
+
+        ticket = SejCancelTicket()
+        ticket.available = 1
+        ticket.shop_id = u'30520'
+        ticket.event_code_01  = u'EPZED'
+        ticket.event_code_02  = u'0709A'
+        ticket.order_id  = u'120605112150'
+        ticket.ticket_barcode_number = u'2222222222222'
+        ticket.refund_ticket_amount = 13000
+        ticket.refund_amount = 2000
+        DBSession.add(ticket)
+        event.tickets.append(ticket)
+
+
+        DBSession.flush()
+
+
+        request_cancel_event(event)
+
+    def test_refund_file(self):
+
+        from ticketing.sej.models import SejOrder, SejCancelTicket, SejCancelEvent
+        from ticketing.sej.payment import SejOrderUpdateReason, SejPaymentType, request_cancel_event
+
+        import sqlahelper
+        DBSession = sqlahelper.get_session()
+
+        event = SejCancelEvent()
+        event.available = 1
+        event.shop_id = u'30520'
+        event.event_code_01  = u'EPZED'
+        event.event_code_02  = u'0709A'
+        event.title = u'入金、払戻用興行'
+        event.sub_title = u'入金、払戻用公演'
+        event.event_at = datetime.datetime(2012,8,31,18,00)
+        event.start_at = datetime.datetime(2012,6,7,18,30)
+        event.end_at = datetime.datetime(2012,6,10,18,30)
+        event.expire_at = datetime.datetime(2012,6,10,18,30)
+        event.event_expire_at = datetime.datetime(2012,6,10,18,30)
+        event.ticket_expire_at = datetime.datetime(2012,7,10,18,30)
+        event.disapproval_reason = u''
+        event.need_stub = 1
+        event.remarks = u'備考'
+        event.un_use_01 = u''
+        event.un_use_02 = u''
+        event.un_use_03 = u''
+        event.un_use_04 = u''
+        event.un_use_05 = u''
+
+        event.tickets = list()
+
+        DBSession.add(event)
+
+        ticket = SejCancelTicket()
+        ticket.available = 1
+        ticket.shop_id = u'30520'
+        ticket.event_code_01  = u'EPZED'
+        ticket.event_code_02  = u'0709A'
+        ticket.order_id  = u'120605112301'
+        ticket.ticket_barcode_number = u'2222222222222'
+        ticket.refund_ticket_amount = 13000
+        ticket.refund_amount = 2000
+        DBSession.add(ticket)
+        event.tickets.append(ticket)
+
+
+        DBSession.flush()
+
+
+        request_cancel_event(event)
 if __name__ == u"__main__":
     import os
     print os.getpid()

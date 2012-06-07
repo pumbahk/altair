@@ -183,3 +183,8 @@ class SejRefundFileParser(SejFileParser):
 
         )
         return data
+
+class SejReturnFileWriter():
+    pass
+
+

@@ -24,13 +24,13 @@ def need_ticketing(type):
 
 class SejTicketType(StandardEnum):
     # 1:本券(チケットバーコード有り)
-    Ticket                  = 1
+    Ticket                  = 2
     # 2:本券(チケットバーコード無し)
-    TicketWithBarcode       = 2
+    TicketWithBarcode       = 1
     # 3:本券以外(チケットバーコード有り)
-    ExtraTicket             = 3
+    ExtraTicket             = 4
     # 4:本券以外(チケットバーコード無し)
-    ExtraTicketWithBarcode  = 4
+    ExtraTicketWithBarcode  = 3
 
 def is_ticket(type):
 
