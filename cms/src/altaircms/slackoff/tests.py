@@ -19,10 +19,14 @@ def setUpModule():
     sqlahelper.get_base().metadata.drop_all()
     sqlahelper.get_base().metadata.create_all()
 
-class PerformancBackendIdConflictTests(unittest.TestCase):
+class PerformancFormTests(unittest.TestCase):
     def tearDown(self):
         import transaction
         transaction.abort()
+
+    def setUp(self):
+        import sqlahelper
+        self.session = sqlahelper.get_session()
 
     def _getTarget(self):
         from altaircms.slackoff.forms import PerformanceForm
@@ -32,62 +36,54 @@ class PerformancBackendIdConflictTests(unittest.TestCase):
         return self._getTarget()(*args,**kwargs)
 
     def test_no_conflict_create(self):
-        """ create: not conflict
-        """
-        form = self._makeOne(formdata=MultiDict(backend_id=1))
-        self.assertTrue(form.object_validate())
+        target = self._makeOne(formdata=MultiDict(backend_id=1))
+        self.assertTrue(target.object_validate())
 
     def test_conflict_create(self):
-        """ create: not conflict
-        """
         from altaircms.models import Performance
-        import sqlahelper
-        session = sqlahelper.get_session()
-        session.add(Performance(backend_id=1))
+        self.session.add(Performance(backend_id=1))
 
-        form = self._makeOne(formdata=MultiDict(backend_id=1))
-        result = form.object_validate()
+        target = self._makeOne(formdata=MultiDict(backend_id=1))
+        result = target.object_validate()
 
         self.assertFalse(result)
 
     def test_no_conflict_update_selfdata(self):
-        """ update: not conflict
-        """
         from altaircms.models import Performance
-        import sqlahelper
-        session = sqlahelper.get_session()
-        session.add(Performance(backend_id=1))
+        self.session.add(Performance(backend_id=1))
 
-        form = self._makeOne(formdata=MultiDict(backend_id=1))
         obj = Performance(backend_id=1)
-        self.assertTrue(form.object_validate(obj=obj))
 
-    def test_no_conflict_unmatched_parms(self):
-        """ update: not conflict
-        """
+        target = self._makeOne(formdata=MultiDict(backend_id=1))
+        result = target.object_validate(obj=obj)
+
+        self.assertTrue(result)
+
+    def test_no_conflict_update(self):
         from altaircms.models import Performance
-        import sqlahelper
-        session = sqlahelper.get_session()
-        session.add(Performance(backend_id=1))
+        self.session.add(Performance(backend_id=1))
 
-        form = self._makeOne(formdata=MultiDict(backend_id=2))
         obj = Performance(backend_id=1)
-        self.assertTrue(form.object_validate(obj=obj))
+
+        target = self._makeOne(formdata=MultiDict(backend_id=2))
+        result = target.object_validate(obj=obj)
+
+        self.assertTrue(result)
 
     def test_conflict_update(self):
         """ update: not conflict
         """
         from altaircms.models import Performance
-        import sqlahelper
-        session = sqlahelper.get_session()
-        session.add(Performance(backend_id=1))
-        session.add(Performance(backend_id=2))
 
-        ## 1 -> 2
-        form = self._makeOne(formdata=MultiDict(backend_id=2))
+        self.session.add(Performance(backend_id=1))
+        self.session.add(Performance(backend_id=2))
+
         obj = Performance(backend_id=1)
-        self.assertFalse(form.object_validate(obj=obj))
+        ## 1 -> 2
+        target = self._makeOne(formdata=MultiDict(backend_id=2))
+        result = target.object_validate(obj=obj)
 
+        self.assertFalse(result)
 
 
 if __name__ == "__main__":
