@@ -8,6 +8,7 @@
   </div>
   % endfor 
 </%def>
+
 <div class="title">
   <h1>画像(image)</h1>
 </div>
