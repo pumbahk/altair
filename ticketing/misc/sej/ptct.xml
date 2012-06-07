@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+<TICKET>
+  <b><![CDATA[:mm U 10 0 M "テキスト" X 0 0 M 10 10 L 20 20 L Z F "<b>テキスト</b>" X 0 50 M :FIXTAG01|FIXTAG02|FIXTAG03|FIXTAG04|FIXTAG05|FIXTAG06 xn sxn X]]></b>
+  <FIXTAG01>test1</FIXTAG01>
+  <FIXTAG02>test2</FIXTAG02>
+  <FIXTAG03>test3</FIXTAG03>
+  <FIXTAG04>test4</FIXTAG04>
+  <FIXTAG05>test5</FIXTAG05>
+  <FIXTAG06>test6</FIXTAG06>
+</TICKET>
