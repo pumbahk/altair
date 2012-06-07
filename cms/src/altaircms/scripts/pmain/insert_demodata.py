@@ -1759,7 +1759,6 @@ def bind_category_to_pageset():
     Category.query.filter_by(label=u"初めての方へ").update({"pageset_id": PageSet.query.filter_by(name=u"初めての方へ").one().id}, synchronize_session="fetch")
     Category.query.filter_by(label=u"公演中止・変更情報").update({"pageset_id": PageSet.query.filter_by(name=u"公演の中止・変更情報").one().id}, synchronize_session="fetch")
 
-    
 def main(env, args):
     # setup()
     add_materials_settings()
@@ -1779,5 +1778,6 @@ def main(env, args):
 
     ##
     bind_category_to_pageset()
+    Page.query.filter_by(layout=None).update(dict(layout_id=1))
     transaction.commit()
 
