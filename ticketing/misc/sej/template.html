@@ -7,8 +7,33 @@
 body {
   margin: 0 0;
 }
+
+.f0 { font-family: "Arial"; }
+.f1 { font-family: "Arial Black"; }
+.f2 { font-family: "Verdana"; }
+.f3 { font-family: "Impact"; }
+.f4 { font-family: "Comic Sans MS"; }
+.f5 { font-family: "Times New Roman"; }
+.f6 { font-family: "Courier New"; }
+.f7 { font-family: "Lucida Console"; }
+.f8 { font-family: "Lucida Sans Unicode"; }
+.f9 { font-family: "Modern"; }
+.f10 { font-family: "Microsoft Sans Serif"; }
+.f11 { font-family: "Roman"; }
+.f12 { font-family: "Script"; }
+.f13 { font-family: "Symbol"; }
+.f14 { font-family: "Wingdings"; }
+.f15 { font-family: "ＭＳ ゴシック"; }
+.f16 { font-family: "ＭＳ Ｐゴシック"; }
+.f17 { font-family: "ＭＳ 明朝"; }
+.f18 { font-family: "ＭＳ Ｐ明朝"; }
+.f19 { font-family: "MS UI Gothic"; }
+
 </style>
   <script type="text/javascript">
+var fonts = [
+];
+
 function XHR() {
   return typeof ActiveXObject != 'undefined' ?
       new ActiveXObject("Msxml2.XMLHTTP"):
@@ -62,7 +87,7 @@ function parse(text, handlers) {
   handlers.$stack = stack;
   for (var g; g = regexp.exec(text);) {
     if (g[1]) {
-      stack.push(g[1]);
+      stack.push(g[1].replace(/\\(.)/, '$1'));
     } else if (g[2]) {
       stack.push(g[2]);
     } else if (g[3]) {
@@ -144,6 +169,8 @@ function stringizeXmlNode(n) {
 function newHandler(n, xmldoc) {
   var path = [];
   var unit = 'mm';
+  var fontSize = 10;
+  var classes = [];
   var previousCommand = null;
   var currentPoint = { x: 0., y: 0. };
   return {
@@ -158,6 +185,18 @@ function newHandler(n, xmldoc) {
       var nodes = this.$stack.splice(this.$stack.length - l, l);
       this.$stack.push(stringizeXmlNodes(nodes));
     },
+    fs: function fontSize(value) {
+      fontSize = fs;
+    },
+    hc: function pushClass(klass) {
+      classes.push(klass);
+    },
+    pc: function popClass() {
+      classes.pop();
+    },
+    sc: function setClass(klass) {
+      classes = [klass];
+    },
     U: function setUnit(_unit) {
       unit = _unit;
       previousCommand = null;
@@ -165,9 +204,11 @@ function newHandler(n, xmldoc) {
     X: function showText(text) {
       n.insertAdjacentHTML('beforeEnd', [
         '<div style="position:absolute;',
+        'font-size:', fontSize, 'pt', ';',
         'left:', currentPoint.x, unit, ';',
-        'top:', currentPoint.y, unit,
-        '">', text, '</div>'].join(''));
+        'top:', currentPoint.y, unit, '"',
+        ' class="', classes.join(' '), '"',
+        '>', text, '</div>'].join(''));
       previousCommand = null;
     },
     N: function newPath() {

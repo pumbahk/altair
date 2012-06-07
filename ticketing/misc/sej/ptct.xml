@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="Shift_JIS" ?>
 <TICKET>
-  <b><![CDATA[:mm U 10 0 M "テキスト" X 0 0 M 10 10 L 20 20 L Z F "<b>テキスト</b>" X 0 50 M :FIXTAG01|FIXTAG02|FIXTAG03|FIXTAG04|FIXTAG05|FIXTAG06 xn sxn X]]></b>
+  <b><![CDATA[:mm U 10 0 M "テキスト" X 0 0 M 10 10 L 20 20 L Z F "<b>太字テキスト</b>" X 50 20 M :f0 sc "Arial" X 50 25 M :f1 sc "Arial Black" X 50 30 M :f18 sc "ＭＳ Ｐ明朝<b>太字</b>" X :f0 sc 0 50 M :FIXTAG01|FIXTAG02|FIXTAG03|FIXTAG04|FIXTAG05|FIXTAG06 xn sxn X]]></b>
   <FIXTAG01>test1</FIXTAG01>
   <FIXTAG02>test2</FIXTAG02>
   <FIXTAG03>test3</FIXTAG03>
