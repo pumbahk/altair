@@ -48,7 +48,7 @@ class IndexView(object):
         # TODO:引き取り方法
         
         return dict(event=dict(id=e.id, code=e.code, title=e.title, abbreviated_title=e.abbreviated_title,
-                               start_on=str(e.start_on), end_on=str(e.end_on),
+                               first_start_on=str(e.first_start_on), final_start_on=str(e.final_start_on),
                                sales_start_on=str(e.sales_start_on), 
                                sales_end_on=str(e.sales_end_on),
                                venues=venues,
