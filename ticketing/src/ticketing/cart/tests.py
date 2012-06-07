@@ -597,6 +597,29 @@ class ReserveViewTests(unittest.TestCase):
         for stock_status in stock_statuses:
             self.assertEqual(stock_status.quantity, 100)
 
+    def test_iter_ordered_items(self):
+        params = [
+            ("product-10", '2'),
+            ("product-11", '0'),
+            ("product-12", '10'),
+            ]
+
+        class DummyParams(object):
+            def __init__(self, params):
+                self.params = params
+            def iteritems(self):
+                for k, v in self.params:
+                    yield k, v
+
+        request = testing.DummyRequest(params=DummyParams(params))
+        target = self._makeOne(request)
+        result = list(target.iter_ordered_items())
+
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0], ('10', 2))
+        self.assertEqual(result[1], ('12', 10))
+
+
 class PyamentViewTests(unittest.TestCase):
 
     def _getTarget(self):

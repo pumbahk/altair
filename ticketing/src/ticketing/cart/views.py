@@ -117,7 +117,10 @@ class ReserveView(object):
             m = self.product_id_regex.match(key)
             if m is None:
                 continue
-            yield m.groupdict()['product_id'], int(value)
+            quantity = int(value)
+            if quantity == 0:
+                continue
+            yield m.groupdict()['product_id'], quantity
 
     @property
     def ordered_items(self):

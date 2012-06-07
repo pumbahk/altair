@@ -179,6 +179,7 @@ class TicketingCartResrouce(object):
                 return
             trans.commit()
 
+            # TODO: 数受けの場合は座席確保しない
             trans = conn.begin()
             seat_statuses = self._get_seats(conn, stock_quantity)
             if not seat_statuses:
