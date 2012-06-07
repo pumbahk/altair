@@ -2,8 +2,6 @@
 from pyramid.view import view_config
 from pyramid.view import view_defaults
 from webob.multidict import MultiDict
-from datetime import datetime
-from datetime import timedelta
 import logging
 
 from ..front import api as front_api

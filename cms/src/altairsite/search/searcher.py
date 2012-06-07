@@ -32,15 +32,26 @@ class ISearchFn(Interface):
            :return: query set of pageset
        """
 ##
-def _refine_pageset_collect_future(qs, _nowday=datetime.datetime.now):
-   today = _nowday()
-   qs = qs.filter((today <= Event.deal_close )|( Event.deal_close == None))
+def _refine_pageset_collect_future(qs, _nowday=None):
+   if _nowday in None:
+      _nowday = datetime.now()
+
+   qs = qs.filter((_nowday <= Event.deal_close )|( Event.deal_close == None))
    return qs
 
 def _refine_pageset_search_order(qs):
-   """  検索結果の表示順序を変更。最も販売終了が間近なものを先頭にする
+   """  検索結果nの表示順序を変更。最も販売終了が間近なものを先頭にする
    """
    return qs.order_by(sa.asc("event.deal_close"))
+
+def _refine_pageset_only_published_term(qs, now=None):
+   """ 公開期間中のページのみを集める
+   """
+   if now is None:
+      now = datetime.datetime.now()
+   qs = qs.filter(PageSet.id==Page.pageset_id)
+   return qs.filter(Page.publish_begin <= now).filter(now <= Page.publish_end)
+   
 
 def _refine_pageset_qs(qs):
     """optimize"""
@@ -48,6 +59,7 @@ def _refine_pageset_qs(qs):
     qs = qs.filter(Event.is_searchable==True).filter(Event.id==PageSet.event_id)
 
     qs = _refine_pageset_search_order(qs)
+    qs = _refine_pageset_only_published_term(qs)
     return qs.options(orm.joinedload("event")).options(orm.joinedload("event.performances"))
 
 

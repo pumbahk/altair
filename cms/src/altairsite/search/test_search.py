@@ -12,6 +12,7 @@ def setUpModule():
     import sqlahelper
     from sqlalchemy import create_engine
     import altaircms.page.models
+    import altaircms.event.models
     import altaircms.models
     import altaircms.tag.models
     import altaircms.asset.models
@@ -393,7 +394,8 @@ class EventsByAboutDealPartTests(unittest.TestCase):
           self.assertEquals([ev0], list(result))
 
 class SearchOnlyIsSearcheableEventTests(unittest.TestCase):
-
+    """ 検索可能なもののみが取れるようになっているか調べる
+    """
     def test_it(self):
         from altairsite.search.searcher import get_pageset_query_fullset
         result =  str(get_pageset_query_fullset(None, {}))
@@ -449,7 +451,73 @@ class SearchOrderTests(unittest.TestCase):
         self.assertEquals(deal_closes, [p.event.deal_close for p in result])
 
 
+class PagePublishTermOnlySearchableTests(unittest.TestCase):
+    """ ページが公開期間のもののみ検索に引っかかる
+    """
+    def tearDown(self):
+        import transaction
+        transaction.abort()
+        from altaircms.models import DBSession
+        DBSession.remove()
+
+    def setUp(self):
+        import sqlahelper
+        self.session = sqlahelper.get_session()
+
+    def _callFUT(self, *args, **kwargs):
+        from altairsite.search.searcher import _refine_pageset_only_published_term
+        return _refine_pageset_only_published_term(*args, **kwargs)
+
+    def test_it(self):
+        from altaircms.page.models import Page, PageSet
+        
+        page = Page(name="this-is-searchable", 
+                    publish_begin=datetime(2000, 1, 1), 
+                    publish_end=datetime(2100, 1, 1))
+        pageset = PageSet.get_or_create(page)
+        
+        self.session.add(pageset)
+
+        target = PageSet.query
+        result = self._callFUT(target, now=datetime(2012, 5, 5))
+
+        self.assertEquals([pageset], list(result))
+
+    def test_pre_publish_term_not_found(self):
+        from altaircms.page.models import Page, PageSet
+        
+        page = Page(name="this-is-searchable", 
+                    publish_begin=datetime(2000, 1, 1), 
+                    publish_end=datetime(2100, 1, 1))
+        pageset = PageSet.get_or_create(page)
+        
+        self.session.add(pageset)
+
+        target = PageSet.query
+        result = self._callFUT(target, now=datetime(1999, 9, 9))
+
+        self.assertEquals([], list(result))
+
+    def test_post_publish_term_not_found(self):
+        from altaircms.page.models import Page, PageSet
+        
+        page = Page(name="this-is-searchable", 
+                    publish_begin=datetime(2000, 1, 1), 
+                    publish_end=datetime(2100, 1, 1))
+        pageset = PageSet.get_or_create(page)
+        
+        self.session.add(pageset)
+
+        target = PageSet.query
+        result = self._callFUT(target, now=datetime(2200, 1, 1))
+
+        self.assertEquals([], list(result))
+            
+
 class HotWordSearchTests(unittest.TestCase):
+    """ hotwordの検索のテスト
+    """
+
     def tearDown(self):
         import transaction
         transaction.abort()
