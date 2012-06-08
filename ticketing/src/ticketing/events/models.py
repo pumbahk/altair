@@ -43,7 +43,6 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     end_on = Column(DateTime)
 
     event_id = Column(Identifier, ForeignKey('Event.id'))
-    owner_id = Column(Identifier, ForeignKey('Account.id'))
 
     stock_holders = relationship('StockHolder', backref='performance')
     product_items = relationship('ProductItem', backref='performance')
