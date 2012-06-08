@@ -106,21 +106,24 @@ class Performance(BaseOriginalMixin, Base):
         return PDICT.name_to_label.get(self.prefecture, u"--")
 
 class Sale(BaseOriginalMixin, Base):
+    """ 販売条件
+    performance -* sale -* ticketという関連
+    ??? ※ただし、簡略化のためsaleもticketもeventを持つ
+    """
     __tablename__ = 'sale'
     query = DBSession.query_property()
 
     id = Column(Integer, primary_key=True)
+    
     performance_id = Column(Integer, ForeignKey('performance.id'))
     performance = relationship("Performance", backref=orm.backref("sales", order_by=id))
 
-    name = Column(String(255))
+    name = Column(Unicode(length=255), doc=u"saleskind. 販売条件(最速抽選, 先行抽選, 先行先着, 一般販売, 追加抽選.etc)")
     start_on = Column(DateTime)
     end_on = Column(DateTime)
 
-
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
-
 
 class Ticket(BaseOriginalMixin, Base):
     """
@@ -140,25 +143,24 @@ class Ticket(BaseOriginalMixin, Base):
     sale = relationship("Sale", backref=orm.backref("tickets", order_by=orderno))
     event = relationship("Event", backref=orm.backref("tickets", order_by=orderno))
 
-    client_id = Column(Integer, ForeignKey("performance.id"))
     seattype = Column(Unicode(255))
 
 
-class Seatfigure(BaseOriginalMixin, Base):
-    """
-    席図
-    """
-    __tablename__ = "seatfigure"
-    query = DBSession.query_property()
+# class Seatfigure(BaseOriginalMixin, Base):
+#     """
+#     席図
+#     """
+#     __tablename__ = "seatfigure"
+#     query = DBSession.query_property()
 
-    id = Column(Integer, primary_key=True)
-    created_at = Column(DateTime, default=datetime.now)
-    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+#     id = Column(Integer, primary_key=True)
+#     created_at = Column(DateTime, default=datetime.now)
+#     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
-    figure_url = Column(String(255))
-    controller_url = Column(String(255))
+#     figure_url = Column(String(255))
+#     controller_url = Column(String(255))
 
-    client_id = Column(Integer, ForeignKey("event.id"))
+#     client_id = Column(Integer, ForeignKey("event.id"))
 
 
 

@@ -17,7 +17,6 @@ import sqlalchemy as sa
 def upgrade():
     op.alter_column("widget_text", "text", type_=sa.Unicode(length=255), existing_type=sa.UnicodeText)
 
-
 def downgrade():
     op.alter_column("widget_text", "text", existing_type=sa.Unicode(length=255), type_=sa.UnicodeText)
 

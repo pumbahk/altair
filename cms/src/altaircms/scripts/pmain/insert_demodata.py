@@ -1671,6 +1671,7 @@ def top_event_and_page_for_linklist_widget(layout):
                       deal_close=datetime.timedelta(100)+today)
         page = Page(layout=layout, ##
                     url=title,  ##
+                    name= title, 
                     title=title, 
                     event=event)
         PageSet.get_or_create(page)
