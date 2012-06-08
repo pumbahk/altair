@@ -405,7 +405,7 @@ def add_detail_main_block_widgets(page, asset):
 
     add_calendar_widget(page, "main", {"calendar_type":"tab"})
     
-    add_ticketlist_widget(page, "main", {})
+    add_ticketlist_widget(page, "main", {"kind": "first_lottery"})
 
     data = {u"items": json.dumps(
             [{"label": u"開催期間",  "content": u"2011年12月4日(日)　開場17時30分　開演18時30分"}, 

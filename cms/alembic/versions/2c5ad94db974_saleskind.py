@@ -19,8 +19,11 @@ def upgrade():
     op.add_column('sale', sa.Column('kind', sa.Unicode(length=255)))
     op.add_column("sale", sa.Column("event_id", sa.Integer, sa.ForeignKey("event.id")))
 
+    op.add_column('widget_ticketlist', sa.Column('kind', sa.Unicode(length=255)))
+
 def downgrade():
     op.alter_column("sale", "name", existing_type=sa.Unicode(length=255), type_=sa.String(length=255))
     op.drop_column("sale", "kind")
     op.drop_column("sale", "event_id")
 
+    op.drop_column("widget_ticketlist", "kind")
