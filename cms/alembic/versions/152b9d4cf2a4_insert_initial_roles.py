@@ -1,4 +1,4 @@
-"""initial roles
+"""insert initial roles
 
 Revision ID: 152b9d4cf2a4
 Revises: 368ab65b72b1
@@ -8,7 +8,7 @@ Create Date: 2012-05-06 20:40:01.944476
 
 # revision identifiers, used by Alembic.
 revision = '152b9d4cf2a4'
-down_revision = '368ab65b72b1'
+down_revision = '42e1fa2bca08'
 
 from alembic import op
 import sqlalchemy as sa

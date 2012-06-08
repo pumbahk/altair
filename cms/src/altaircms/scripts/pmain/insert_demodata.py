@@ -221,27 +221,27 @@ def detail_tickets(event):
     sale = Sale(event=event, name=sale_name_gen(event, sale_name), kind=sale_kind)
     r = []
     r.extend([
-        Ticket(event=event,
+        Ticket(
                sale=sale, 
                price=30000, 
                seattype=u"SSA席", 
                orderno=1), 
-        Ticket(event=event,
+        Ticket(
                sale=sale, 
                price=15000, 
                seattype=u"SA席", 
                orderno=2), 
-        Ticket(event=event,
+        Ticket(
                sale=sale, 
                price=8000, 
                seattype=u"A席", 
                orderno=3), 
-        Ticket(event=event,
+        Ticket(
                sale=sale, 
                price=5000, 
                seattype=u"B席", 
                orderno=4), 
-        Ticket(event=event,
+        Ticket(
                sale=sale, 
                price=3000, 
                seattype=u"C席", 
@@ -254,27 +254,27 @@ def detail_tickets(event):
     sale = Sale(event=event, name=sale_name_gen(event, sale_name), kind=sale_kind)
 
     r.extend([
-        Ticket(event=event,
+        Ticket(
                sale=sale, 
                price=30003, 
                seattype=u"SSA席", 
                orderno=1), 
-        Ticket(event=event,
+        Ticket(
                sale=sale, 
                price=15003, 
                seattype=u"SA席", 
                orderno=2), 
-        Ticket(event=event,
+        Ticket(
                sale=sale, 
                price=8003, 
                seattype=u"A席", 
                orderno=3), 
-        Ticket(event=event,
+        Ticket(
                sale=sale, 
                price=5003, 
                seattype=u"B席", 
                orderno=4), 
-        Ticket(event=event,
+        Ticket(
                sale=sale, 
                price=3003, 
                seattype=u"C席", 

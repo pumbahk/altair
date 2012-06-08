@@ -43,45 +43,45 @@ class BillingHistory(Base):
     user_id = Column(Integer, ForeignKey("user.id"))
 
 
-class MailMagazine(Base):
-    """
-    メルマガマスタ
-    """
-    __tablename__ = 'mailmagazine'
-    id = Column(Integer, primary_key=True)
+# class MailMagazine(Base):
+#     """
+#     メルマガマスタ
+#     """
+#     __tablename__ = 'mailmagazine'
+#     id = Column(Integer, primary_key=True)
 
-    title = Column(Unicode(255)) # メルマガタイトル
-    description = Column(Unicode(255)) # メルマガ説明
+#     title = Column(Unicode(255)) # メルマガタイトル
+#     description = Column(Unicode(255)) # メルマガ説明
 
-    site_id = Column(Integer, ForeignKey("site.id"))
-
-
-class MailMagazineUser(Base):
-    """
-    メルマガと参加者の対応表
-    """
-    __tablename__ = 'mailmagazine_user'
-
-    id = Column(Integer, primary_key=True)
-
-    mailmagazine_id = Column(Integer, ForeignKey('mailmagazine.id'))
-    user_id = Column(Integer, ForeignKey('user.id'))
-
-    joined_at = Column(DateTime, default=datetime.now())
-    can_distribute = Column(Integer, default=0)
+#     site_id = Column(Integer, ForeignKey("site.id"))
 
 
-class MailMagazineDistribute(Base):
-    """
-    配信ジョブテーブル
-    """
-    __tablename__ = 'mailmagazine_distribute'
+# class MailMagazineUser(Base):
+#     """
+#     メルマガと参加者の対応表
+#     """
+#     __tablename__ = 'mailmagazine_user'
 
-    id = Column(Integer, primary_key=True)
+#     id = Column(Integer, primary_key=True)
 
-    mailmagazine_id = Column(Integer, ForeignKey('mailmagazine.id'))
-    username = Column(Unicode(255))
-    email = Column(String(255))
+#     mailmagazine_id = Column(Integer, ForeignKey('mailmagazine.id'))
+#     user_id = Column(Integer, ForeignKey('user.id'))
 
-    status = Column(String(255)) # 配信状態
-    send_at = Column(DateTime) # 配信予定
+#     joined_at = Column(DateTime, default=datetime.now())
+#     can_distribute = Column(Integer, default=0)
+
+
+# class MailMagazineDistribute(Base):
+#     """
+#     配信ジョブテーブル
+#     """
+#     __tablename__ = 'mailmagazine_distribute'
+
+#     id = Column(Integer, primary_key=True)
+
+#     mailmagazine_id = Column(Integer, ForeignKey('mailmagazine.id'))
+#     username = Column(Unicode(255))
+#     email = Column(String(255))
+
+#     status = Column(String(255)) # 配信状態
+#     send_at = Column(DateTime) # 配信予定
