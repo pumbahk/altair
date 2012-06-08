@@ -5,8 +5,9 @@ import datetime
 import logging
 logger = logging.getLogger(__file__)
 from altaircms.models import (
-    Category, 
-    Performance
+   Sale, 
+   Category, 
+   Performance
 )
 from altaircms.models import DBSession
 from altaircms.page.models import (
@@ -184,7 +185,7 @@ def get_pageset_query_fullset(request, query_params):
     sub_qs = DBSession.query(Event.id)
     sub_qs = events_by_area(sub_qs, query_params.get("prefectures"))
     sub_qs = events_by_performance_term(sub_qs, query_params.get("performance_open"), query_params.get("performance_close"))
-    sub_qs = events_by_deal_cond_flags(sub_qs, query_params) ## 未実装
+    sub_qs = events_by_deal_cond_flags(sub_qs, query_params.get("deal_cond", []))
     sub_qs = events_by_added_service(sub_qs, query_params) ## 未実装
     sub_qs = events_by_about_deal(sub_qs, query_params.get("before_deal_start"), query_params.get("till_deal_end"), 
                                   query_params.get("closed_only"), query_params.get("canceld_only"))
@@ -232,7 +233,10 @@ def _extract_tags(params, k):
 
 
 def search_by_events(qs, event_ids):
-    return qs.filter(PageSet.event_id.in_(event_ids))
+   if event_ids:
+      return qs.filter(PageSet.event_id.in_(event_ids))
+   else:
+      return qs
 
 def search_by_genre(top_categories, sub_categories, qs=None):
     """ジャンルからページセットを取り出す
@@ -288,10 +292,10 @@ def events_by_performance_term(qs, performance_open, performance_close):
     return qs
 
 def events_by_deal_cond_flags(qs, flags):
-    #return qs.filter(Event._flags.in_(flags))
-    import warnings
-    warnings.warn("not implemented, yet")
-    return qs
+   if flags:
+      return qs.filter(Event.id==Sale.event_id).filter(Sale.kind.in_(flags))
+   else:
+      return qs
 
 def events_by_added_service(qs, flags):
     #return qs.filter(Event._flags.in_(flags))

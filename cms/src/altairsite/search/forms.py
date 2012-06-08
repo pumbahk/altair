@@ -269,15 +269,14 @@ class DealCondPartForm(form.Form):
     deal_cond_choices=import_symbol("altaircms.seeds.saleskind:SALESKIND_CHOICES")
     DDICT = dict(deal_cond_choices)
 
-    deal_cond = fields.RadioField(choices=deal_cond_choices, 
-                                   widget=PutOnlyWidget())
+    deal_cond = CheckboxListField(choices=deal_cond_choices)
+    # deal_cond = fields.RadioField(choices=deal_cond_choices, 
+    #                                widget=PutOnlyWidget())
 
     def __html__(self):
         return u"%(deal_cond)s" % self
 
     def make_query_params(self):
-        import warnings
-        warnings.warn("these flag are not support yet.")
         return self.data
 
 ## todo:付加サービス

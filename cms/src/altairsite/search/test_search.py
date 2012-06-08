@@ -90,9 +90,9 @@ class SearchByGenreTests(unittest.TestCase):
         self.assertEquals(qs, result)
 
     def test_found_with_top_categories(self):
-        music = self._category(name="music", hierarchy=u"top-hierarchy")
+        music = self._category(name=u"music", hierarchy=u"top-hierarchy")
         jpop_top_page = self._pageset()
-        jpop = self._category(name="jpop", parent=music, pageset=jpop_top_page, hierarchy=u"middle-hierarchy")
+        jpop = self._category(name=u"jpop", parent=music, pageset=jpop_top_page, hierarchy=u"middle-hierarchy")
         detail_page = self._pageset(parent=jpop_top_page)
 
         self.session.flush()
@@ -102,15 +102,15 @@ class SearchByGenreTests(unittest.TestCase):
         self.assertEquals(detail_page, result[0])
 
     def test_not_found_with_top_categories(self):
-        music = self._category(name="music", hierarchy=u"top-hierary")
-        other_category = self._category(name="other-genre-category", hierarchy=u"top-hierarchy")
+        music = self._category(name=u"music", hierarchy=u"top-hierary")
+        other_category = self._category(name=u"other-genre-category", hierarchy=u"top-hierarchy")
 
         jpop_top_page = self._pageset()
-        jpop = self._category(name="jpop", parent=other_category, pageset=jpop_top_page, hierarchy=u"middle-hierarchy")
+        jpop = self._category(name=u"jpop", parent=other_category, pageset=jpop_top_page, hierarchy=u"middle-hierarchy")
         detail_page = self._pageset(parent=jpop_top_page)
 
         self.session.flush()
-        result = self._callFUT(["music"], [])
+        result = self._callFUT(["umusic"], [])
 
         self.assertEquals([], list(result))
 
@@ -120,14 +120,14 @@ class SearchByGenreTests(unittest.TestCase):
         detail_page = self._pageset(parent=jpop_top_page)
 
         self.session.flush()
-        result = self._callFUT([], ["jpop"])
+        result = self._callFUT([], [u"jpop"])
 
         self.assertEquals(1, result.count())
         self.assertEquals(detail_page, result[0])
 
     def test_not_found_with_sub_categories(self):
         jpop_top_page = self._pageset()
-        jpop = self._category(name="jpop", pageset=jpop_top_page, hierarchy=u"middle-hierarchy")
+        jpop = self._category(name=u"jpop", pageset=jpop_top_page, hierarchy=u"middle-hierarchy")
         other_page = self._pageset()
         detail_page = self._pageset(parent=other_page)
 
@@ -272,14 +272,67 @@ class EventsByDealCondFlagsTests(unittest.TestCase):
 todo: 作成
     """
 
-    def _getTarget(self,*args,**kwargs):
-        return 
+    def _callFUT(self,*args,**kwargs):
+        from altairsite.search.searcher import events_by_deal_cond_flags
+        return events_by_deal_cond_flags(*args, **kwargs)
 
-    def _makeOne(self, *args, **kwargs):
-        return
+    def tearDown(self):
+        import transaction
+        transaction.abort()
+        from altaircms.models import DBSession
+        DBSession.remove()
 
-    def test_it(self):
-        pass
+    def setUp(self):
+        import transaction
+        import sqlahelper
+        transaction.abort()
+        self.session = sqlahelper.get_session()
+
+    def test_nodata_not_found(self):
+        from altaircms.event.models import Event
+        qs = Event.query
+        
+        result = self._callFUT(qs, [u"normal"])
+        self.assertEquals([], list(result))
+
+    def test_unmatched_param__notfound(self):
+        from altaircms.event.models import Event
+        from altaircms.models import Sale
+        qs = Event.query
+
+        event = Event()
+        sale = Sale(event=event, kind=u"normal")
+        self.session.add(sale)
+
+        result = self._callFUT(qs, [u"sales-kind-unmatched"])
+        self.assertEquals([], list(result))
+
+    def test_matched_param__found(self):
+        from altaircms.event.models import Event
+        from altaircms.models import Sale
+        qs = Event.query
+
+        event = Event()
+        sale = Sale(event=event, kind=u"normal")
+        self.session.add(sale)
+
+        result = self._callFUT(qs, [u"normal"])
+        self.assertEquals([event], list(result))
+
+    def test_search_unionly(self):
+        from altaircms.event.models import Event
+        from altaircms.models import Sale
+        qs = Event.query
+
+        event = Event()
+        sale = Sale(event=event, kind=u"normal")
+        self.session.add(sale)
+
+        result = self._callFUT(qs, [u"abc", u"efg", u"hij"])
+        self.assertEquals([], list(result))
+
+        result = self._callFUT(qs, [u"abc", u"efg", u"hij", u"normal"])
+        self.assertEquals([event], list(result))
 
 
 class EventsByAddedServiceFlagsTests(unittest.TestCase):
@@ -471,7 +524,7 @@ class PagePublishTermOnlySearchableTests(unittest.TestCase):
     def test_it(self):
         from altaircms.page.models import Page, PageSet
         
-        page = Page(name="this-is-searchable", 
+        page = Page(name=u"this-is-searchable", 
                     publish_begin=datetime(2000, 1, 1), 
                     publish_end=datetime(2100, 1, 1))
         pageset = PageSet.get_or_create(page)
@@ -486,7 +539,7 @@ class PagePublishTermOnlySearchableTests(unittest.TestCase):
     def test_pre_publish_term_not_found(self):
         from altaircms.page.models import Page, PageSet
         
-        page = Page(name="this-is-searchable", 
+        page = Page(name=u"this-is-searchable", 
                     publish_begin=datetime(2000, 1, 1), 
                     publish_end=datetime(2100, 1, 1))
         pageset = PageSet.get_or_create(page)
@@ -501,7 +554,7 @@ class PagePublishTermOnlySearchableTests(unittest.TestCase):
     def test_post_publish_term_not_found(self):
         from altaircms.page.models import Page, PageSet
         
-        page = Page(name="this-is-searchable", 
+        page = Page(name=u"this-is-searchable", 
                     publish_begin=datetime(2000, 1, 1), 
                     publish_end=datetime(2100, 1, 1))
         pageset = PageSet.get_or_create(page)
@@ -550,7 +603,7 @@ class HotWordSearchTests(unittest.TestCase):
         page = Page(pageset=pageset)
         _other_page = Page(pageset=pageset) ## orfan
         
-        pagetag = PageTag(label="tag-name-for-hotword", publicp=True)
+        pagetag = PageTag(label=u"tag-name-for-hotword", publicp=True)
         self.session.add(page)
         self.session.add(_other_page)
         self.session.add(pageset)
@@ -585,7 +638,7 @@ class HotWordSearchTests(unittest.TestCase):
         page = Page(pageset=pageset)
         _other_page = Page(pageset=pageset) ## orfan
         
-        pagetag = PageTag(label="tag-name-for-hotword", publicp=True)
+        pagetag = PageTag(label=u"tag-name-for-hotword", publicp=True)
         self.session.add(page)
         self.session.add(_other_page)
         self.session.add(pageset)
