@@ -17,6 +17,7 @@ from ticketing.sej.models import SejOrder
 
 import time
 
+<<<<<<< Updated upstream
 
 def payment_test_03_03():
     ''' 注文受付：【代引き】
@@ -24,15 +25,27 @@ def payment_test_03_03():
     # 決済要求
     print ''' 3-③：2419138437011(発券、発券取消用)'''
     sejTicketOrder = request_order(
+=======
+def payment_refund():
+    """
+    print ''' 1-②：XXXXXXXXXXXXX(入金、払戻用)'''
+
+    request_order(
+>>>>>>> Stashed changes
         shop_name       = u'楽天チケット',
         contact_01      = u'contact',
         contact_02      = u'連絡先2',
         order_id        = u"%012d" % int(datetime.datetime.now().strftime('%y%m%d%H%M%S')),
+<<<<<<< Updated upstream
         username        = u"１−１注文更新",
+=======
+        username        = u"１−２入金払い戻し",
+>>>>>>> Stashed changes
         username_kana   = u'コイズミモリヨシ',
         tel             = u'0312341234',
         zip             = u'1070062',
         email           = u'dev@ticketstar.jp',
+<<<<<<< Updated upstream
         # 20000	0	420	20420
         total           = 420,
         ticket_total    = 20000,
@@ -48,6 +61,107 @@ def payment_test_03_03():
                 ticket_type         = SejTicketType.TicketWithBarcode,
                 event_name          = u'注文更新、注文取消し用興行',
                 performance_name    = u'注文更新、注文取消し用公演',
+=======
+        total           = 15000,
+        ticket_total    = 13000,
+        commission_fee  = 1000,
+        ticketing_fee   = 1000,
+        payment_type    = SejPaymentType.CashOnDelivery,
+        payment_due_datetime = datetime.datetime(2012,7,30,7,00), #u'201207300700',
+        regrant_number_datetime = datetime.datetime(2012,7,30,7,00), # u'201207300700',
+        ticketing_start_datetime = datetime.datetime(2012,6,6,20,00) ,
+        ticketing_due_datetime = datetime.datetime(2012,8,01,8,00) ,
+        tickets = [
+            dict(
+                ticket_type         = SejTicketType.TicketWithBarcode,
+                event_name          = u'入金、払戻用興行',
+                performance_name    = u'入金、払戻用公演',
+                ticket_template_id  = u'TTTS000001',
+                performance_datetime= datetime.datetime(2012,8,31,18,00),
+                xml = SejTicketDataXml(u'''<?xml version="1.0" encoding="UTF-8" ?>
+                <TICKET>
+                  <TEST1>test&#x20;test</TEST1>
+                  <TEST2><![CDATA[TEST [] >M>J TEST@&nbsp;]]></TEST2>
+                  <TEST3>&#x3000;</TEST3>
+                  <FIXTAG01></FIXTAG01>
+                  <FIXTAG02></FIXTAG02>
+                  <FIXTAG03></FIXTAG03>
+                  <FIXTAG04></FIXTAG04>
+                  <FIXTAG05></FIXTAG05>
+                  <FIXTAG06></FIXTAG06>
+                </TICKET>''')
+            )
+        ]
+    )
+    print ''' 3-②：XXXXXXXXXXXXX(発券、払戻、払戻取消用)'''
+    request_order(
+        shop_name       = u'楽天チケット',
+        contact_01      = u'contact',
+        contact_02      = u'連絡先2',
+        order_id        = u"%012d" % int(datetime.datetime.now().strftime('%y%m%d%H%M%S')),
+        username        = u"３−２発券",
+        username_kana   = u'コイズミモリヨシ',
+        tel             = u'0312341234',
+        zip             = u'1070062',
+        email           = u'dev@ticketstar.jp',
+        total           = 1000,
+        ticket_total    = 0,
+        commission_fee  = 0,
+        ticketing_fee   = 1000,
+        payment_type    = SejPaymentType.Paid,
+        payment_due_datetime = datetime.datetime(2012,7,30,7,00), #u'201207300700',
+        regrant_number_datetime = datetime.datetime(2012,7,30,7,00), # u'201207300700',
+        ticketing_start_datetime = datetime.datetime(2012,6,6,20,00) ,
+        ticketing_due_datetime = datetime.datetime(2012,8,01,8,00) ,
+        tickets = [
+            dict(
+                ticket_type         = SejTicketType.TicketWithBarcode,
+                event_name          = u'入金、払戻用興行',
+                performance_name    = u'入金、払戻用公演',
+                ticket_template_id  = u'TTTS000001',
+                performance_datetime= datetime.datetime(2012,8,31,18,00),
+                xml = SejTicketDataXml(u'''<?xml version="1.0" encoding="UTF-8" ?>
+                <TICKET>
+                  <TEST1>test&#x20;test</TEST1>
+                  <TEST2><![CDATA[TEST [] >M>J TEST@&nbsp;]]></TEST2>
+                  <TEST3>&#x3000;</TEST3>
+                  <FIXTAG01></FIXTAG01>
+                  <FIXTAG02></FIXTAG02>
+                  <FIXTAG03></FIXTAG03>
+                  <FIXTAG04></FIXTAG04>
+                  <FIXTAG05></FIXTAG05>
+                  <FIXTAG06></FIXTAG06>
+                </TICKET>''')
+            )
+        ]
+    )
+    """
+
+    request_order(
+        shop_name       = u'楽天チケット',
+        contact_01      = u'contact',
+        contact_02      = u'連絡先2',
+        order_id        = u"%012d" % int(datetime.datetime.now().strftime('%y%m%d%H%M%S')),
+        username        = u"２−２入金",
+        username_kana   = u'コイズミモリヨシ',
+        tel             = u'0312341234',
+        zip             = u'1070062',
+        email           = u'dev@ticketstar.jp',
+        total           = 15000,
+        ticket_total    = 13000,
+        commission_fee  = 1000,
+        ticketing_fee   = 1000,
+        payment_type    = SejPaymentType.Prepayment,
+        payment_due_datetime = datetime.datetime(2012,7,30,7,00), #u'201207300700',
+        regrant_number_datetime = datetime.datetime(2012,7,30,7,00), # u'201207300700',
+        ticketing_start_datetime = datetime.datetime(2012,6,6,20,00) ,
+        ticketing_due_datetime = datetime.datetime(2012,8,01,8,00) ,
+        tickets = [
+            dict(
+                ticket_type         = SejTicketType.TicketWithBarcode,
+                event_name          = u'入金、払戻用興行',
+                performance_name    = u'入金、払戻用公演',
+>>>>>>> Stashed changes
                 ticket_template_id  = u'TTTS000001',
                 performance_datetime= datetime.datetime(2012,8,31,18,00),
                 xml = SejTicketDataXml(u'''<?xml version="1.0" encoding="UTF-8" ?>
@@ -66,6 +180,10 @@ def payment_test_03_03():
         ]
     )
 
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 def payment_test():
     ''' 注文受付：【代引き】
     '''
@@ -974,7 +1092,12 @@ def main(argv=sys.argv):
     settings = app.registry.settings
 
     log.debug('test')
+<<<<<<< Updated upstream
     payment_test_03_03()
+=======
+    payment_refund()
+#    payment_test()
+>>>>>>> Stashed changes
 #    payment_test_pre_r_c_c()
 #    payment_test_paid_r_c_c()
 #    payment_test_p_only_r_c_c()

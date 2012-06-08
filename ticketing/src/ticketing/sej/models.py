@@ -22,14 +22,14 @@ class SejCancelEvent(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     title = Column(String(200))
     sub_title = Column(String(600), nullable=True)
     event_at = Column(DateTime)
-    start_at = Column(DateTime)
-    end_at = Column(DateTime)
-    expire_at = Column(DateTime)
-    event_expire_at = Column(DateTime)
-    ticket_expire_at = Column(DateTime)
-    disapproval_reason = Column(String(2))
-    need_stub = Column(Integer)
-    remarks = Column(String(256))
+    start_at = Column(DateTime) #レジ払戻受付開始日
+    end_at = Column(DateTime) #レジ払戻受付終了日
+    event_expire_at = Column(DateTime) #公演レコード有効期限
+    ticket_expire_at = Column(DateTime) #チケット持ち込み期限
+    refund_enabled = Column(Integer) # レジ払戻可能フラグ
+    disapproval_reason = Column(Integer) # 払戻不可理由 2固定 半角[0-9]
+    need_stub = Column(Integer) # 半券要否区分
+    remarks = Column(String(256)) #備考
     un_use_01 = Column(String(64))
     un_use_02 = Column(String(64))
     un_use_03 = Column(String(64))

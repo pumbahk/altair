@@ -747,7 +747,7 @@ def callback_notification(params,
     return ret
 
 
-def request_cancel_event(cancel_event):
+def request_cancel_event(cancel_events):
     from .zip_file import EnhZipFile, ZipInfo
 
     # YYYYMMDD_TPBKOEN.dat
@@ -777,28 +777,29 @@ def request_cancel_event(cancel_event):
     output = StringIO.StringIO()
     event_tsv = UnicodeWriter(output, delimiter='\t', lineterminator=u'\r\n')
 
-    event_tsv.writerow([
-        unicode(cancel_event.available),
-        cancel_event.shop_id,
-        cancel_event.event_code_01,
-        cancel_event.event_code_02,
-        cancel_event.title,
-        cancel_event.sub_title,
-        cancel_event.event_at.strftime('%Y%m%d%H%M'),
-        cancel_event.start_at.strftime('%Y%m%d%H%M'),
-        cancel_event.end_at.strftime('%Y%m%d%H%M'),
-        cancel_event.expire_at.strftime('%Y%m%d%H%M') ,
-        cancel_event.event_expire_at.strftime('%Y%m%d%H%M'),
-        cancel_event.ticket_expire_at.strftime('%Y%m%d%H%M'),
-        cancel_event.disapproval_reason,
-        unicode(cancel_event.need_stub),
-        cancel_event.remarks,
-        cancel_event.un_use_01,
-        cancel_event.un_use_02,
-        cancel_event.un_use_03,
-        cancel_event.un_use_04,
-        cancel_event.un_use_05,
-    ])
+    for cancel_event in cancel_events:
+        event_tsv.writerow([
+            unicode(cancel_event.available),# 有効フラグ ○
+            cancel_event.shop_id,#ショップID ○
+            cancel_event.event_code_01,#公演決定キー1 ○
+            cancel_event.event_code_02,#公演決定キー2 16以下 半角[0-9]
+            cancel_event.title,#メインタイトル ○
+            cancel_event.sub_title,#サブタイトル 600以下 漢字(SJIS)
+            cancel_event.event_at.strftime('%Y%m%d'),#公演日 ○
+            cancel_event.start_at.strftime('%Y%m%d'),#レジ払戻受付開始日 ○
+            cancel_event.end_at.strftime('%Y%m%d'),#レジ払戻受付終了日 ○
+            cancel_event.ticket_expire_at.strftime('%Y%m%d'),#チケット持ち込み期限 ○
+            cancel_event.event_expire_at.strftime('%Y%m%d'),#公演レコード有効期限 ○
+            u"%d" % cancel_event.refund_enabled, #レジ払戻可能フラグ ○
+            u"%02d" % cancel_event.disapproval_reason if cancel_event.disapproval_reason else '',#払戻不可理由 2固定 半角[0-9]
+            u"%d" % cancel_event.need_stub,#半券要否区分 ○
+            cancel_event.remarks,#備考 256以下
+            cancel_event.un_use_01,
+            cancel_event.un_use_02,
+            cancel_event.un_use_03,
+            cancel_event.un_use_04,
+            cancel_event.un_use_05,
+        ])
 
 
     zi = ZipInfo(tpboen_file_name, time.localtime()[:6])
@@ -812,17 +813,18 @@ def request_cancel_event(cancel_event):
 
     output = StringIO.StringIO()
     ticket_tsv = UnicodeWriter(output, delimiter='\t', lineterminator=u'\r\n')
-    for ticket in cancel_event.tickets:
-        ticket_tsv.writerow([
-            unicode(ticket.available),
-            ticket.shop_id,
-            ticket.event_code_01,
-            ticket.event_code_02,
-            ticket.order_id,
-            unicode(ticket.ticket_barcode_number),
-            unicode(ticket.refund_ticket_amount),
-            unicode(ticket.refund_amount),
-        ])
+    for cancel_event in cancel_events:
+        for ticket in cancel_event.tickets:
+            ticket_tsv.writerow([
+                unicode(ticket.available),
+                ticket.shop_id,
+                ticket.event_code_01,
+                ticket.event_code_02,
+                ticket.order_id,
+                unicode(ticket.ticket_barcode_number),
+                unicode(ticket.refund_ticket_amount),
+                unicode(ticket.refund_amount),
+            ])
 
     zi = ZipInfo(tpbticket_file_name, time.localtime()[:6])
     zi.external_attr = 0666 << 16L
