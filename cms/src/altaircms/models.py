@@ -107,16 +107,11 @@ class Performance(BaseOriginalMixin, Base):
 
 class Sale(BaseOriginalMixin, Base):
     """ 販売条件
-    performance -* sale -* ticketという関連
-    ??? ※ただし、簡略化のためsaleもticketもeventを持つ
     """
     __tablename__ = 'sale'
     query = DBSession.query_property()
 
     id = Column(Integer, primary_key=True)
-    
-    # performance_id = Column(Integer, ForeignKey('performance.id'))
-    # performance = relationship("Performance", backref=orm.backref("sales", order_by=id))
 
     event_id = Column(Integer, ForeignKey('event.id'))
     event  = relationship("Event", backref="sales")
@@ -140,13 +135,13 @@ class Ticket(BaseOriginalMixin, Base):
     id = Column(Integer, primary_key=True)
     orderno = Column(Integer)
     sale_id = Column(Integer, ForeignKey("sale.id"))
-    event_id = Column(Integer, ForeignKey("event.id"))
+    # event_id = Column(Integer, ForeignKey("event.id"))
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now)
     price = Column(Integer, default=0)
 
     sale = relationship("Sale", backref=orm.backref("tickets", order_by=orderno))
-    event = relationship("Event", backref=orm.backref("tickets", order_by=orderno))
+    # event = relationship("Event", backref=orm.backref("tickets", order_by=orderno))
 
     seattype = Column(Unicode(255))
 

@@ -334,6 +334,8 @@ todo: 作成
         result = self._callFUT(qs, [u"abc", u"efg", u"hij", u"normal"])
         self.assertEquals([event], list(result))
 
+    ## todo: saleのtodo:公開開始。終了見る
+
 
 class EventsByAddedServiceFlagsTests(unittest.TestCase):
     """
