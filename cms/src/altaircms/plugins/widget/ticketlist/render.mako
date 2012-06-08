@@ -2,10 +2,10 @@
 ## 
 ## todo: link
 
-<h2><img src="/static/ticketstar/img/detail/title_price.gif" alt="チケット価格" width="107" height="30"/>(${widget.jkind})</h2>
+<h2><img src="/static/ticketstar/img/detail/title_price.gif" alt="チケット価格" width="107" height="30"/>(${sale.jkind})</h2>
 <div class="detailBox">
   <div class="detailBoxInner">
-	<table id="ticketPrice1" summary="チケット価格表(${widget.jkind})">
+	<table id="ticketPrice1" summary="チケット価格表(${sale.jkind})">
 	  % for ticket in tickets:
 	    <tr>
 		  <th scope="row"><a href="#">${ ticket.seattype }</a></th>

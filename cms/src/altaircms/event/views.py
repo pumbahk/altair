@@ -6,6 +6,7 @@ from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPCreated, HTTPForbidden, HTTPBadRequest
 
 from altaircms.models import Performance
+from altaircms.models import Sale
 from .models import Event
 from altaircms.page.models import Page
 from altaircms.lib.fanstatic_decorator import with_bootstrap
@@ -24,9 +25,11 @@ def view(request):
 
     event = Event.query.filter_by(id=id_).first()
     performances = Performance.query.filter_by(event_id=id_)
+    sales = Sale.query.filter_by(event_id=id_)
     return dict(
         event=event,
-        performances=performances
+        performances=performances, 
+        sales=sales
     )
 
 

@@ -54,7 +54,7 @@
 
 <hr/>
 
-  <div class="span6">
+  <div class="span5">
 
 	<h3>配下のページ一覧</h3>
 	  <table class="table">
@@ -73,9 +73,9 @@
   </div>
 </div>
 
-<h2>パフォーマンス</h2>
 <div class="row">
   <div class="span5">
+	<h3>パフォーマンス</h3>
    <table>
 	 <thead><tr><th>公演名</th><th>公演日時</th><th>場所</th></tr>
 	 </thead>
@@ -86,6 +86,29 @@
 	 </tbody>
    </table>
   </div>
+
+  <div class="span5">
+  <h3>チケット情報</h3>
+   <table>
+	 <thead><tr><th>販売条件</th><th>開始日</th><th>終了日</th></tr>
+	 </thead>
+	 <tbody>
+	   %for sale in sales:
+	     <tr><td><a href="${request.route_path("sale_update",id=sale.id,action="input")}">　${sale.jkind}　</a></td><td>${ sale.start_on }</td><td>${ sale.end_on }</td></tr>
+		 <tr>
+		   <td colspan=3>
+		   <ul>
+		   % for t in sale.tickets:
+		     <li><a href="${request.route_path("ticket_update",action="input",id=t.id)}">${t.seattype}: ${t.price}</a></li>
+		   % endfor
+		   </ul>
+		   </td>
+		 </tr>
+	   %endfor
+		 
+	 </tbody>
+   </table>
+  </div>
+
 </div>
-<hr/>
 

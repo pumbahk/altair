@@ -2,7 +2,7 @@
 # -*- coding:utf-8 -*-
 
 import sqlalchemy as sa
-from sqlalchemy.ext.declarative import declared_attr
+
 
 from datetime import datetime
 import sqlahelper
@@ -15,6 +15,7 @@ from sqlalchemy.sql.operators import ColumnOperators
 import pkg_resources
 def import_symbol(symbol):
     return pkg_resources.EntryPoint.parse("x=%s" % symbol).load(False)
+from altaircms.seeds.saleskind import SALESKIND_CHOICES
 
 def model_to_dict(obj):
     return {k: getattr(obj, k) for k, v in obj.__class__.__dict__.iteritems() \
@@ -124,6 +125,12 @@ class Sale(BaseOriginalMixin, Base):
 
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+
+    SALESKIND_DICT = dict(SALESKIND_CHOICES)
+    @property
+    def jkind(self):
+        return self.SALESKIND_DICT[self.kind]
+
 
 class Ticket(BaseOriginalMixin, Base):
     """

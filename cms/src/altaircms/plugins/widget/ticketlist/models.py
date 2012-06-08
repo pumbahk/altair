@@ -27,12 +27,6 @@ class TicketlistWidget(Widget):
     kind = sa.Column(sa.Unicode(255))
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
 
-    
-    SALESKIND_DICT = dict(SALESKIND_CHOICES)
-    @property
-    def jkind(self):
-        return self.SALESKIND_DICT[self.kind]
-
     def merge_settings(self, bname, bsettings):
         bsettings.need_extra_in_scan("request")
         bsettings.need_extra_in_scan("event")
@@ -43,7 +37,7 @@ class TicketlistWidget(Widget):
 
             sale = Sale.query.filter(Sale.kind==self.kind).filter(Sale.event==event).first()
             tickets = sale.tickets if sale else []
-            params = {"widget":self, "event": event, "event":sale, "tickets": tickets}
+            params = {"widget":self, "event": event, "sale":sale, "tickets": tickets}
             
             return render(self.template_name, params, request)
         bsettings.add(bname, ticketlist_render)
