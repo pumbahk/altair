@@ -4,6 +4,9 @@ def includeme(config):
                     form=".forms.LayoutForm", mapper=".mappers.layout_mapper")
     config.add_crud("performance", title="performance", model="..models.Performance",
                     form=".forms.PerformanceForm", mapper=".mappers.performance_mapper")
+
+    config.add_crud("sale", title="sale", model="..models.Sale", 
+                    form=".forms.SaleForm", mapper=".mappers.sale_mapper")
     config.add_crud("ticket", title="ticket", model="..models.Ticket", 
                     form=".forms.TicketForm", mapper=".mappers.ticket_mapper")
     config.add_crud("promotion_unit",  title="promotion_unit",  model="..plugins.widget.promotion.models.PromotionUnit", 

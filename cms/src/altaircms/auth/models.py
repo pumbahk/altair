@@ -71,6 +71,12 @@ PERMISSIONS = [
     "promotion_unit_update",
     "promotion_unit_delete",
     # performance
+    "sale_create",
+    "sale_read",
+    "sale_update",
+    "sale_delete",
+
+    # performance
     "performance_create",
     "performance_read",
     "performance_update",

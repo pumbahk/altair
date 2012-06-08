@@ -115,10 +115,15 @@ class Sale(BaseOriginalMixin, Base):
 
     id = Column(Integer, primary_key=True)
     
-    performance_id = Column(Integer, ForeignKey('performance.id'))
-    performance = relationship("Performance", backref=orm.backref("sales", order_by=id))
+    # performance_id = Column(Integer, ForeignKey('performance.id'))
+    # performance = relationship("Performance", backref=orm.backref("sales", order_by=id))
 
-    name = Column(Unicode(length=255), doc=u"saleskind. 販売条件(最速抽選, 先行抽選, 先行先着, 一般販売, 追加抽選.etc)")
+    event_id = Column(Integer, ForeignKey('event.id'))
+    event  = relationship("Event", backref="sales")
+
+    name = Column(Unicode(length=255))
+    kind = Column(Unicode(length=255), doc=u"saleskind. 販売条件(最速抽選, 先行抽選, 先行先着, 一般販売, 追加抽選.etc)")
+
     start_on = Column(DateTime)
     end_on = Column(DateTime)
 

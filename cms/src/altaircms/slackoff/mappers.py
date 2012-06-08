@@ -43,9 +43,19 @@ def performance_mapper(request, obj):
     objlike.prefecture = PDICT.get(obj.prefecture, u"-")
     return objlike
 
-def ticket_mapper(request, obj):
+
+SALES_DICT = dict(import_symbol("altaircms.seeds.saleskind:SALESKIND_CHOICES"))
+def sale_mapper(request, obj):
     objlike = ObjectLike(**model_to_dict(obj))
     objlike.event = obj.event.title if obj.event else None
+    objlike.kind = SALES_DICT[obj.kind]
+    return objlike
+
+
+def ticket_mapper(request, obj):
+    objlike = ObjectLike(**model_to_dict(obj))
+    # objlike.event = obj.event.title if obj.event else None
+    objlike.sale = obj.sale.name if obj.sale else None
     return objlike
 
 def category_mapper(request, obj):

@@ -12,7 +12,7 @@ from altaircms.helpers.formhelpers import required_field, append_errors
 from ..event.models import Event
 from altaircms.models import Performance
 from ..plugins.widget.promotion.models import Promotion
-from ..models import Category
+from ..models import Category, Sale
 from ..asset.models import ImageAsset
 from ..page.models import PageSet
 from ..topic.models import Topic, Topcontent
@@ -71,13 +71,33 @@ class PerformanceForm(Form):
                           u"purchase_link"]
 
 
-class TicketForm(Form):
+class SaleForm(Form):
     event = dynamic_query_select_field_factory(Event, allow_blank=False, label=u"イベント", get_label=lambda obj: obj.title) ## performance?
+    kind = fields.SelectField(label=u"販売条件", choices=import_symbol("altaircms.seeds.saleskind:SALESKIND_CHOICES"))
+    name = fields.TextField(label=u"名前", validators=[required_field()])
+    start_on = fields.DateTimeField(label=u"開始時間（省略可)")
+    end_on = fields.DateTimeField(label=u"終了時間(省略可)")
+       
+    __display_fields__ = [u"event", u"kind", u"name", u"start_on", u"end_on"]
+
+    def validate(self, **kwargs):
+        data = self.data
+        if not data["name"]:
+            data["name"] = data["event"].title
+        return not bool(self.errors)
+
+
+class TicketForm(Form):
+    # event = dynamic_query_select_field_factory(Event, allow_blank=False, label=u"イベント", get_label=lambda obj: obj.title) ## performance?
+    sale = dynamic_query_select_field_factory(Sale, 
+                                              allow_blank=False,
+                                              label=u"イベント販売条件", 
+                                              get_label=lambda obj: obj.name) ## performance?
     seattype = fields.TextField(validators=[required_field()], label=u"席種／グレード")
     price = fields.IntegerField(validators=[required_field()], label=u"料金")
     orderno = fields.IntegerField(label=u"表示順序", validators=[required_field()])
 
-    __display_fields__ = [u"event", u"seattype", u"price", u"orderno"]
+    __display_fields__ = [u"sale", u"seattype", u"price", u"orderno"]
 
 class PromotionUnitForm(Form):
     promotion = extfields.QuerySelectField(id="promotion", label=u"プロモーション枠", 

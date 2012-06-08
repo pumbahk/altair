@@ -16,8 +16,11 @@ import sqlalchemy as sa
 
 def upgrade():
     op.alter_column("sale", "name", type_=sa.Unicode(length=255), existing_type=sa.String(length=255))
+    op.add_column('sale', sa.Column('kind', sa.Unicode(length=255)))
+    op.add_column("sale", sa.Column("event_id", sa.Integer, sa.ForeignKey("event.id")))
 
 def downgrade():
     op.alter_column("sale", "name", existing_type=sa.Unicode(length=255), type_=sa.String(length=255))
-
+    op.drop_column("sale", "kind")
+    op.drop_column("sale", "event_id")
 
