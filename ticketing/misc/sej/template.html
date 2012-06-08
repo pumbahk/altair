@@ -13,6 +13,8 @@ body {
   margin: 0 0;
 }
 
+.pre { white-space: pre; }
+.b { font-weight: 900; }
 .f0 { font-family: "Arial"; }
 .f1 { font-family: "Arial Black"; }
 .f2 { font-family: "Verdana"; }
@@ -86,7 +88,7 @@ function loadXml(url, success, error) {
 }
 
 function parse(text, handlers) {
-  var regexp = /"((?:[^"]|\\.)*)"|:([^\s"]*)|(-?(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)(?:[eE][-+]?[0-9]+)?)|([*+/A-Za-z_-][0-9A-Za-z_-]*)|([ \t]+)|(\r\n|\r|\n)|(.)/g;
+  var regexp = /"((?:[^"]|\\.)*)"|:([^\s"]*)|(-?(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)(?:[eE][-+]?[0-9]+)?)|([*+/A-Za-z_-]+)|([ \t]+)|(\r\n|\r|\n)|(.)/g;
   var stack = [];
   var column = 0, line = 0;
   handlers.$stack = stack;
@@ -349,11 +351,20 @@ function newHandler(n, xmldoc) {
   var fontSize = 10;
   var classes = [];
   var currentPoint = { x: 0., y: 0. };
+  var scale = 1.;
   var style = {
     fillColor: null,
     strokeColor: null,
     strokeWidth: null
   };
+  function initPathData() {
+    if (pathData == null)
+      pathData = [['M', currentPoint.x, currentPoint.y]];
+  }
+  function initDrawable() {
+    if (drawable == null)
+      drawable = new Drawable(n, '1000' + unit, '1000' + unit);
+  }
   return {
     xn: function xmlNode(path) {
       var nodes = findXmlNode(xmldoc, xmldoc.documentElement, path);
@@ -366,8 +377,11 @@ function newHandler(n, xmldoc) {
       var nodes = this.$stack.splice(this.$stack.length - l, l);
       this.$stack.push(stringizeXmlNodes(nodes));
     },
+    S: function _scale(value) {
+      scale = value;
+    },
     fs: function fontSize(value) {
-      fontSize = fs;
+      fontSize = value;
     },
     hc: function pushClass(klass) {
       classes.push(klass);
@@ -378,55 +392,126 @@ function newHandler(n, xmldoc) {
     sc: function setClass(klass) {
       classes = [klass];
     },
-    Fc: function setFillColor(value) {
+    rg: function setFillColor(value) {
       style.fillColor = value;
     },
-    Sc: function setStrokeColor(value) {
+    RG: function setStrokeColor(value) {
       style.strokeColor = value;
     },
     Sw: function setStrokeWidth(value) {
-      style.strokeWidth = value;
+      style.strokeWidth = value * scale;
     },
     U: function setUnit(_unit) {
       unit = _unit;
     },
-    X: function showText(text) {
+    X: function showText(width, height, text) {
       n.insertAdjacentHTML('beforeEnd', [
         '<div style="position:absolute;',
         'font-size:', fontSize, 'pt', ';',
         'left:', currentPoint.x, unit, ';',
-        'top:', currentPoint.y, unit, '"',
+        'top:', currentPoint.y, unit, ';',
+        'width:', width, unit, ';',
+        'height:', height, unit, '"',
         ' class="', classes.join(' '), '"',
         '>', text, '</div>'].join(''));
     },
     N: function newPath() {
-      pathData = [['M', currentPoint.x, currentPoint.y]];
     },
-    M: function moveTo(x, y) {
+    m: function moveTo(x, y) {
+      x *= scale;
+      y *= scale;
       if (pathData != null)
         pathData.push(['M', x, y]);
       currentPoint = { x: x, y: y };
     },
-    L: function lineTo(x, y) {
+    l: function lineTo(x, y) {
+      x *= scale;
+      y *= scale;
+      initPathData();
       pathData.push(['L', x, y]);
       currentPoint = { x: x, y: y };
     },
-    C: function curveTo(x1, y1, x2, y2, x3, y3) {
+    c: function curveTo(x1, y1, x2, y2, x3, y3) {
+      x1 *= scale;
+      y1 *= scale;
+      x2 *= scale;
+      y2 *= scale;
+      x3 *= scale;
+      y3 *= scale;
+      initPathData();
       pathData.push(['C', x1, y1, x2, y2, x3, y3]);  
       currentPoint = { x: x3, y: y3 };
     },
-    Q: function quadraticCurveTo(x1, y1, x2, y2) {
+    v: function curveToS1(x2, y2, x3, y3) {
+      x2 *= scale;
+      y2 *= scale;
+      x3 *= scale;
+      y3 *= scale;
+      initPathData();
+      pathData.push(['C', currentPoint.x, currentPoint.y, x2, y2, x3, y3]);  
+      currentPoint = { x: x3, y: y3 };
+    },
+    y: function curveToS2(x1, y1, x3, y3) {
+      x1 *= scale;
+      y1 *= scale;
+      x3 *= scale;
+      y3 *= scale;
+      if (pathData == null)
+        pathData = [['M', currentPoint.x, currentPoint.y]];
+      pathData.push(['C', x1, y1, x3, y3, x3, y3]);  
+      currentPoint = { x: x3, y: y3 };
+    },
+    q: function quadraticCurveTo(x1, y1, x2, y2) {
+      x1 *= scale;
+      y1 *= scale;
+      x2 *= scale;
+      y2 *= scale;
+      if (pathData == null)
+        pathData = [['M', currentPoint.x, currentPoint.y]];
       pathData.push(['Q', x1, y1, x2, y2]);
       currentPoint = { x: x2, y: y2 };
     },
-    A: function arc(rx, ry, phi, largeArc, sweep, x, y) {
+    a: function arc(rx, ry, phi, largeArc, sweep, x, y) {
+      rx *= scale;
+      ry *= scale;
+      x *= scale;
+      y *= scale;
+      if (pathData == null)
+        pathData = [['M', currentPoint.x, currentPoint.y]];
       pathData.push(['A', rx, ry, phi, largeArc, sweep, x, y]);
       currentPoint = { x: x, y: y };
     },
-    Z: function closePath() {
+    h: function closePath() {
+      if (pathData == null)
+        pathData = [['M', currentPoint.x, currentPoint.y]];
       pathData.push(['Z']);
     },
-    D: function draw() {
+    f: function fill() {
+      if (pathData == null)
+        return;
+      initDrawable();
+      drawable.path(pathData).style({
+        strokeWidth: null,
+        strokeColor: null,
+        fillColor: style.fillColor
+      });
+      pathData = null;
+    },
+    s: function stroke() {
+      if (pathData == null)
+        return;
+      pathData.push(['Z']);
+      initDrawable();
+      drawable.path(pathData).style({
+        strokeWidth: style.strokeWidth,
+        strokeColor: style.strokeColor,
+        fillColor: null
+      });
+      pathData = null;
+    },
+    B: function strokeAndFill() {
+      if (pathData == null)
+        return;
       if (drawable == null)
         drawable = new Drawable(n, '1000' + unit, '1000' + unit);
       drawable.path(pathData).style(style);
