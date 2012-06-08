@@ -3,7 +3,7 @@
 
 <script type="text/javascript">
   stock_holder2stocks = {
-    % for stock_holder in performance.stock_holders:
+    % for stock_holder in performance.event.stock_holders:
       '${stock_holder.id}':[
         % for stock in stock_holder.stocks:
           ['${stock.id}', '${stock.stock_type.name}'],

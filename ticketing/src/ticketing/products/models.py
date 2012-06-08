@@ -173,21 +173,17 @@ class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
 
-    performance_id = Column(Identifier, ForeignKey('Performance.id'))
+    event_id = Column(Identifier, ForeignKey('Event.id'))
     account_id = Column(Identifier, ForeignKey('Account.id'))
 
     style = Column(MutationDict.as_mutable(JSONEncodedDict(1024)))
 
     stocks = relationship('Stock', backref='stock_holder')
 
-    @staticmethod
-    def create_from_template(template, performance_id):
-        stock_holder = StockHolder.clone(template)
-        stock_holder.performance_id = performance_id
-        stock_holder.save()
-
-        for template_stock in template.stocks:
-            Stock.create_from_template(template=template_stock, stock_holder_id=stock_holder.id)
+    def stocks_by_performance(self, performance_id):
+        def performance_filter(stock):
+            return (stock.performance_id == performance_id)
+        return filter(performance_filter, self.stocks)
 
 # stock based on quantity
 class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):

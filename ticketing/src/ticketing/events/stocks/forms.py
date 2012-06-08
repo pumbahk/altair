@@ -43,7 +43,7 @@ class StockForm(Form):
             'stock_type_id':form.stock_type_id.data,
             'performance_id':form.performance_id.data,
         }
-        allocated_quantity = DBSession.query(StockAllocation.quantity).filter_by(**conditions).scalar()
+        allocated_quantity = StockAllocation.filter_by(**conditions).with_entities(StockAllocation.quantity).scalar() or 0
         sum_quantity = Stock.filter(Stock.id!=form.id.data)\
                             .filter_by(**conditions)\
                             .with_entities(func.sum(Stock.quantity))\
@@ -64,14 +64,14 @@ class StockForms(Form):
         if 'stock_types' in kwargs:
             _append_stock_type(kwargs['stock_types'])
         if 'stock_holder_id' in kwargs:
-            stocks = Stock.filter_by(stock_holder_id=kwargs['stock_holder_id']).all()
+            stock_holder = StockHolder.get(kwargs['stock_holder_id'])
+            stocks = stock_holder.stocks_by_performance(kwargs['performance_id'])
             if stocks:
                 for stock in stocks:
                     entry = self.stock_forms.append_entry(stock)
                     entry.form.stock_type_name.data = stock.stock_type.name
             else:
-                stock_holder = StockHolder.get(kwargs['stock_holder_id'])
-                _append_stock_type(stock_holder.performance.event.stock_types)
+                _append_stock_type(stock_holder.event.stock_types)
 
     performance_id = HiddenField(
         validators=[Required()],

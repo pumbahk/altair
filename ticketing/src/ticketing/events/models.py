@@ -3,7 +3,6 @@
 import isodate
 
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, Numeric, func
-from sqlalchemy.orm import join, backref, column_property
 
 from ticketing.utils import StandardEnum
 from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier, relationship
@@ -44,18 +43,13 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     event_id = Column(Identifier, ForeignKey('Event.id'))
 
-    stock_holders = relationship('StockHolder', backref='performance')
     stocks = relationship('Stock', backref='performance')
     product_items = relationship('ProductItem', backref='performance')
     venue = relationship('Venue', uselist=False, backref='performance')
 
     @property
     def accounts(self):
-        data = Account.filter().join(StockHolder)\
-                .filter(StockHolder.performance_id==self.id)\
-                .filter(StockHolder.account_id==Account.id)\
-                .all()
-        return data
+        return Account.filter().join(Account.stock_holders).filter(StockHolder.event_id==self.event_id).all()
 
     def add(self):
         BaseModel.add(self)
@@ -63,34 +57,19 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if hasattr(self, 'original_id') and self.original_id:
             """
             Performanceのコピー時は以下のモデルをcloneする
-              - StockHolder
-                - Stock
-                  - ProductItem
+              - Stock
+                - ProductItem
               - StockAllocation
             """
             template_performance = Performance.get(self.original_id)
 
-            # create StockHolder - Stock - ProductItem
-            for template_stock_holder in template_performance.stock_holders:
-                StockHolder.create_from_template(template=template_stock_holder, performance_id=self.id)
+            # create Stock - ProductItem
+            for template_stock in template_performance.stocks:
+                Stock.create_from_template(template=template_stock, performance_id=self.id)
 
             # create StockAllocation
             for template_stock_allocation in template_performance.stock_allocations:
                 StockAllocation.create_from_template(template=template_stock_allocation, performance_id=self.id)
-        else:
-            """
-            Performanceの作成時は以下のモデルを自動生成する
-              - StockHolder (デフォルト枠)
-            """
-            account = Account.filter_by(organization_id=self.event.organization.id)\
-                             .filter_by(user_id=self.event.organization.user_id).first()
-            stock_holder = StockHolder(
-                name=u'自社',
-                performance_id=self.id,
-                account_id=account.id,
-                style={"text": u"自", "text_color": "#a62020"},
-            )
-            stock_holder.save()
 
     def save(self):
         BaseModel.save(self)
@@ -159,6 +138,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     performances = relationship('Performance', backref='event')
     stock_types = relationship('StockType', backref='event')
+    stock_holders = relationship('StockHolder', backref='event')
 
     _first_performance = None
     _final_performance = None
@@ -206,11 +186,10 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return Event.filter().join(Event.account).filter(Account.user_id==user_id).all()
 
     def get_accounts(self):
-        return Account.filter().with_entities(Account.name).join(StockHolder).join(Performance)\
+        return Account.filter().with_entities(Account.name).join(StockHolder)\
                 .filter(Account.organization_id==self.organization_id)\
                 .filter(Account.id==StockHolder.account_id)\
-                .filter(StockHolder.performance_id==Performance.id)\
-                .filter(Performance.event_id==self.id)\
+                .filter(StockHolder.event_id==self.id)\
                 .distinct()
 
     def get_sync_data(self):
@@ -235,8 +214,9 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         super(Event, self).add()
 
         """
-        Eventの作成時は以下のモデルがなければ自動生成する
-          - Account (自社枠)
+        Eventの作成時は以下のモデルを自動生成する
+          - Account (自社枠、ない場合のみ)
+            - StockHolder (デフォルト枠)
         """
         account = Account.filter_by(organization_id=self.organization.id)\
                          .filter_by(user_id=self.organization.user_id).first()
@@ -248,6 +228,14 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 organization_id=self.organization.id,
             )
             account.save()
+
+        stock_holder = StockHolder(
+            name=u'自社',
+            event_id=self.id,
+            account_id=account.id,
+            style={"text": u"自", "text_color": "#a62020"},
+        )
+        stock_holder.save()
 
 class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'SalesSegment'

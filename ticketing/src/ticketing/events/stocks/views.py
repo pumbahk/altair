@@ -14,7 +14,7 @@ from ticketing.fanstatic import with_bootstrap
 from ticketing.venues.models import Venue, Seat
 from ticketing.events.models import Event, Performance
 from ticketing.events.stocks.forms import StockForms
-from ticketing.products.models import StockType, StockTypeEnum, Stock, StockHolder, StockAllocation
+from ticketing.products.models import Stock, StockAllocation
 
 @view_defaults(decorator=with_bootstrap)
 class Stocks(BaseView):
@@ -55,7 +55,7 @@ class Stocks(BaseView):
             conditions = {
                 'performance_id':performance_id,
                 'stock_type_id':sa.stock_type_id,
-                }
+            }
             sum_quantity = Stock.filter_by(**conditions).with_entities(func.sum(Stock.quantity)).scalar() or 0
             allocation_counts[sa.stock_type_id] = {'total':sa.quantity, 'sum':int(sum_quantity)}
 

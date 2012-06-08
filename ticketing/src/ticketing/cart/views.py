@@ -65,7 +65,7 @@ class IndexView(object):
         seat_types = DBSession.query(p_models.StockType).filter(
             e_models.Performance.event_id==event_id).filter(
             e_models.Performance.id==performance_id).filter(
-            e_models.Performance.id==p_models.StockHolder.performance_id).filter(
+            e_models.Performance.event_id==p_models.StockHolder.event_id).filter(
             p_models.StockHolder.id==p_models.Stock.stock_holder_id).filter(
             p_models.Stock.stock_type_id==p_models.StockType.id).all()
             

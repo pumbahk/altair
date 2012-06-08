@@ -1,4 +1,4 @@
-<%page args="stock_holder" />
+<%page args="stock_holder, stocks" />
 <%namespace file="/common/helpers.html" name="h" />
 
 <div class="accordion-group" style="width: 350px;">
@@ -30,7 +30,7 @@
   <div style="clear: both;"></div>
 
   <div id="collapse-${stock_holder.id}" class="accordion-body collapse" style="height: 0px;">
-    % for i, stock in enumerate(stock_holder.stocks):
+    % for i, stock in enumerate(stocks):
     <div class="accordion-inner" id="stock-${stock.id}">
       <span class="span3">
         <% stock.stock_type.style.update(stock_holder.style) %>
@@ -40,7 +40,7 @@
       <span>${stock.quantity}席</span>
     </div>
     % endfor
-    % if len(stock_holder.stocks) == 0:
+    % if len(stocks) == 0:
     <div class="accordion-inner" style="text-align: center;">
       選択されていません
     </div>

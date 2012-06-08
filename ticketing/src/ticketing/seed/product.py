@@ -114,259 +114,67 @@ class ProductEvent2Data(DataSet):
         sales_segment = SalesSegmentEvent2Data.sales_segment_2
         event = EventData.event_2
 
-class StockHolderEvent1Performance1Data(DataSet):
+class StockHolderEvent1(DataSet):
     class stock_holder_1:
         name = u'招待枠'
-        performance = PerformanceEvent1Data.performance_1
+        event = EventData.event_1
         account = AccountData.account_1
         style = {"text": "招", "text_color": "#d9ccbf"}
     class stock_holder_2:
         name = u'事故席枠'
-        performance = PerformanceEvent1Data.performance_1
+        event = EventData.event_1
         account = AccountData.account_1
         style = {"text": "事", "text_color": "#d9ccbf"}
     class stock_holder_3:
         name = u'ネット販売'
-        performance = PerformanceEvent1Data.performance_1
+        event = EventData.event_1
         account = AccountData.account_1
         style = {"text": "ネ", "text_color": "#d9ccbf"}
     class stock_holder_4:
         name = u'一般販売'
-        performance = PerformanceEvent1Data.performance_1
+        event = EventData.event_1
         account = AccountData.account_1
         style = {"text": "一", "text_color": "#d9ccbf"}
     class stock_holder_5:
         name = u'ぴあ配券'
-        performance = PerformanceEvent1Data.performance_1
+        event = EventData.event_1
         account = AccountData.account_2
         style = {"text": "ぴ", "text_color": "#d9ccbf"}
     class stock_holder_6:
         name = u'イープラス配券'
-        performance = PerformanceEvent1Data.performance_1
+        event = EventData.event_1
         account = AccountData.account_3
         style = {"text": "e", "text_color": "#d9ccbf"}
 
-class StockHolderEvent1Performance2Data(DataSet):
+class StockHolderEvent2(DataSet):
     class stock_holder_1:
         name = u'招待枠'
-        performance = PerformanceEvent1Data.performance_2
+        event = EventData.event_2
         account = AccountData.account_1
         style = {"text": "招", "text_color": "#d9ccbf"}
     class stock_holder_2:
         name = u'事故席枠'
-        performance = PerformanceEvent1Data.performance_2
+        event = EventData.event_2
         account = AccountData.account_1
         style = {"text": "事", "text_color": "#d9ccbf"}
     class stock_holder_3:
         name = u'ネット販売'
-        performance = PerformanceEvent1Data.performance_2
+        event = EventData.event_2
         account = AccountData.account_1
         style = {"text": "ネ", "text_color": "#d9ccbf"}
     class stock_holder_4:
         name = u'一般販売'
-        performance = PerformanceEvent1Data.performance_2
+        event = EventData.event_2
         account = AccountData.account_1
         style = {"text": "一", "text_color": "#d9ccbf"}
     class stock_holder_5:
         name = u'ぴあ配券'
-        performance = PerformanceEvent1Data.performance_2
+        event = EventData.event_2
         account = AccountData.account_2
         style = {"text": "ぴ", "text_color": "#d9ccbf"}
     class stock_holder_6:
         name = u'イープラス配券'
-        performance = PerformanceEvent1Data.performance_2
-        account = AccountData.account_3
-        style = {"text": "e", "text_color": "#d9ccbf"}
-
-class StockHolderEvent1Performance3Data(DataSet):
-    class stock_holder_1:
-        name = u'招待枠'
-        performance = PerformanceEvent1Data.performance_3
-        account = AccountData.account_1
-        style = {"text": "招", "text_color": "#d9ccbf"}
-    class stock_holder_2:
-        name = u'事故席枠'
-        performance = PerformanceEvent1Data.performance_3
-        account = AccountData.account_1
-        style = {"text": "事", "text_color": "#d9ccbf"}
-    class stock_holder_3:
-        name = u'ネット販売'
-        performance = PerformanceEvent1Data.performance_3
-        account = AccountData.account_1
-        style = {"text": "ネ", "text_color": "#d9ccbf"}
-    class stock_holder_4:
-        name = u'一般販売'
-        performance = PerformanceEvent1Data.performance_3
-        account = AccountData.account_1
-        style = {"text": "一", "text_color": "#d9ccbf"}
-    class stock_holder_5:
-        name = u'ぴあ配券'
-        performance = PerformanceEvent1Data.performance_3
-        account = AccountData.account_2
-        style = {"text": "ぴ", "text_color": "#d9ccbf"}
-    class stock_holder_6:
-        name = u'イープラス配券'
-        performance = PerformanceEvent1Data.performance_3
-        account = AccountData.account_3
-        style = {"text": "e", "text_color": "#d9ccbf"}
-
-class StockHolderEvent1Performance4Data(DataSet):
-    class stock_holder_1:
-        name = u'招待枠'
-        performance = PerformanceEvent1Data.performance_4
-        account = AccountData.account_1
-        style = {"text": "招", "text_color": "#d9ccbf"}
-    class stock_holder_2:
-        name = u'事故席枠'
-        performance = PerformanceEvent1Data.performance_4
-        account = AccountData.account_1
-        style = {"text": "事", "text_color": "#d9ccbf"}
-    class stock_holder_3:
-        name = u'ネット販売'
-        performance = PerformanceEvent1Data.performance_4
-        account = AccountData.account_1
-        style = {"text": "ネ", "text_color": "#d9ccbf"}
-    class stock_holder_4:
-        name = u'一般販売'
-        performance = PerformanceEvent1Data.performance_4
-        account = AccountData.account_1
-        style = {"text": "一", "text_color": "#d9ccbf"}
-    class stock_holder_5:
-        name = u'ぴあ配券'
-        performance = PerformanceEvent1Data.performance_4
-        account = AccountData.account_2
-        style = {"text": "ぴ", "text_color": "#d9ccbf"}
-    class stock_holder_6:
-        name = u'イープラス配券'
-        performance = PerformanceEvent1Data.performance_4
-        account = AccountData.account_3
-        style = {"text": "e", "text_color": "#d9ccbf"}
-
-class StockHolderEvent1Performance5Data(DataSet):
-    class stock_holder_1:
-        name = u'招待枠'
-        performance = PerformanceEvent1Data.performance_5
-        account = AccountData.account_1
-        style = {"text": "招", "text_color": "#d9ccbf"}
-    class stock_holder_2:
-        name = u'事故席枠'
-        performance = PerformanceEvent1Data.performance_5
-        account = AccountData.account_1
-        style = {"text": "事", "text_color": "#d9ccbf"}
-    class stock_holder_3:
-        name = u'ネット販売'
-        performance = PerformanceEvent1Data.performance_5
-        account = AccountData.account_1
-        style = {"text": "ネ", "text_color": "#d9ccbf"}
-    class stock_holder_4:
-        name = u'一般販売'
-        performance = PerformanceEvent1Data.performance_5
-        account = AccountData.account_1
-        style = {"text": "一", "text_color": "#d9ccbf"}
-    class stock_holder_5:
-        name = u'ぴあ配券'
-        performance = PerformanceEvent1Data.performance_5
-        account = AccountData.account_2
-        style = {"text": "ぴ", "text_color": "#d9ccbf"}
-    class stock_holder_6:
-        name = u'イープラス配券'
-        performance = PerformanceEvent1Data.performance_5
-        account = AccountData.account_3
-        style = {"text": "e", "text_color": "#d9ccbf"}
-
-class StockHolderEvent2Performance1Data(DataSet):
-    class stock_holder_1:
-        name = u'招待枠'
-        performance = PerformanceEvent2Data.performance_1
-        account = AccountData.account_1
-        style = {"text": "招", "text_color": "#d9ccbf"}
-    class stock_holder_2:
-        name = u'事故席枠'
-        performance = PerformanceEvent2Data.performance_1
-        account = AccountData.account_1
-        style = {"text": "事", "text_color": "#d9ccbf"}
-    class stock_holder_3:
-        name = u'ネット販売'
-        performance = PerformanceEvent2Data.performance_1
-        account = AccountData.account_1
-        style = {"text": "ネ", "text_color": "#d9ccbf"}
-    class stock_holder_4:
-        name = u'一般販売'
-        performance = PerformanceEvent2Data.performance_1
-        account = AccountData.account_1
-        style = {"text": "一", "text_color": "#d9ccbf"}
-    class stock_holder_5:
-        name = u'ぴあ配券'
-        performance = PerformanceEvent2Data.performance_1
-        account = AccountData.account_2
-        style = {"text": "ぴ", "text_color": "#d9ccbf"}
-    class stock_holder_6:
-        name = u'イープラス配券'
-        performance = PerformanceEvent2Data.performance_1
-        account = AccountData.account_3
-        style = {"text": "e", "text_color": "#d9ccbf"}
-
-class StockHolderEvent2Performance2Data(DataSet):
-    class stock_holder_1:
-        name = u'招待枠'
-        performance = PerformanceEvent2Data.performance_2
-        account = AccountData.account_1
-        style = {"text": "招", "text_color": "#d9ccbf"}
-    class stock_holder_2:
-        name = u'事故席枠'
-        performance = PerformanceEvent2Data.performance_2
-        account = AccountData.account_1
-        style = {"text": "事", "text_color": "#d9ccbf"}
-    class stock_holder_3:
-        name = u'ネット販売'
-        performance = PerformanceEvent2Data.performance_2
-        account = AccountData.account_1
-        style = {"text": "ネ", "text_color": "#d9ccbf"}
-    class stock_holder_4:
-        name = u'一般販売'
-        performance = PerformanceEvent2Data.performance_2
-        account = AccountData.account_1
-        style = {"text": "一", "text_color": "#d9ccbf"}
-    class stock_holder_5:
-        name = u'ぴあ配券'
-        performance = PerformanceEvent2Data.performance_2
-        account = AccountData.account_2
-        style = {"text": "ぴ", "text_color": "#d9ccbf"}
-    class stock_holder_6:
-        name = u'イープラス配券'
-        performance = PerformanceEvent2Data.performance_2
-        account = AccountData.account_3
-        style = {"text": "e", "text_color": "#d9ccbf"}
-
-class StockHolderEvent2Performance3Data(DataSet):
-    class stock_holder_1:
-        name = u'招待枠'
-        performance = PerformanceEvent2Data.performance_3
-        account = AccountData.account_1
-        style = {"text": "招", "text_color": "#d9ccbf"}
-    class stock_holder_2:
-        name = u'事故席枠'
-        performance = PerformanceEvent2Data.performance_3
-        account = AccountData.account_1
-        style = {"text": "事", "text_color": "#d9ccbf"}
-    class stock_holder_3:
-        name = u'ネット販売'
-        performance = PerformanceEvent2Data.performance_3
-        account = AccountData.account_1
-        style = {"text": "ネ", "text_color": "#d9ccbf"}
-    class stock_holder_4:
-        name = u'一般販売'
-        performance = PerformanceEvent2Data.performance_3
-        account = AccountData.account_1
-        style = {"text": "一", "text_color": "#d9ccbf"}
-    class stock_holder_5:
-        name = u'ぴあ配券'
-        performance = PerformanceEvent2Data.performance_3
-        account = AccountData.account_2
-        style = {"text": "ぴ", "text_color": "#d9ccbf"}
-    class stock_holder_6:
-        name = u'イープラス配券'
-        performance = PerformanceEvent2Data.performance_3
+        event = EventData.event_2
         account = AccountData.account_3
         style = {"text": "e", "text_color": "#d9ccbf"}
 
@@ -375,336 +183,336 @@ class StockEvent1Performance1Data(DataSet):
         quantity = 6
         performance = PerformanceEvent1Data.performance_1
         stock_type = StockTypeEvent1Data.stock_type_1
-        stock_holder = StockHolderEvent1Performance1Data.stock_holder_1
+        stock_holder = StockHolderEvent1.stock_holder_1
     class stock_2:
         quantity = 3
         performance = PerformanceEvent1Data.performance_1
         stock_type = StockTypeEvent1Data.stock_type_2
-        stock_holder = StockHolderEvent1Performance1Data.stock_holder_1
+        stock_holder = StockHolderEvent1.stock_holder_1
     class stock_3:
         quantity = 2
         performance = PerformanceEvent1Data.performance_1
         stock_type = StockTypeEvent1Data.stock_type_3
-        stock_holder = StockHolderEvent1Performance1Data.stock_holder_1
+        stock_holder = StockHolderEvent1.stock_holder_1
     class stock_4:
         quantity = 3
         performance = PerformanceEvent1Data.performance_1
         stock_type = StockTypeEvent1Data.stock_type_4
-        stock_holder = StockHolderEvent1Performance1Data.stock_holder_1
+        stock_holder = StockHolderEvent1.stock_holder_1
     class stock_5:
         quantity = 3
         performance = PerformanceEvent1Data.performance_1
         stock_type = StockTypeEvent1Data.stock_type_1
-        stock_holder = StockHolderEvent1Performance1Data.stock_holder_5
+        stock_holder = StockHolderEvent1.stock_holder_5
     class stock_6:
         quantity = 4
         performance = PerformanceEvent1Data.performance_1
         stock_type = StockTypeEvent1Data.stock_type_2
-        stock_holder = StockHolderEvent1Performance1Data.stock_holder_5
+        stock_holder = StockHolderEvent1.stock_holder_5
     class stock_7:
         quantity = 3
         performance = PerformanceEvent1Data.performance_1
         stock_type = StockTypeEvent1Data.stock_type_3
-        stock_holder = StockHolderEvent1Performance1Data.stock_holder_5
+        stock_holder = StockHolderEvent1.stock_holder_5
     class stock_8:
         quantity = 3
         performance = PerformanceEvent1Data.performance_1
         stock_type = StockTypeEvent1Data.stock_type_4
-        stock_holder = StockHolderEvent1Performance1Data.stock_holder_5
+        stock_holder = StockHolderEvent1.stock_holder_5
 
 class StockEvent1Performance2Data(DataSet):
     class stock_1:
         quantity = 6
         performance = PerformanceEvent1Data.performance_2
         stock_type = StockTypeEvent1Data.stock_type_1
-        stock_holder = StockHolderEvent1Performance2Data.stock_holder_1
+        stock_holder = StockHolderEvent1.stock_holder_1
     class stock_2:
         quantity = 3
         performance = PerformanceEvent1Data.performance_2
         stock_type = StockTypeEvent1Data.stock_type_2
-        stock_holder = StockHolderEvent1Performance2Data.stock_holder_1
+        stock_holder = StockHolderEvent1.stock_holder_1
     class stock_3:
         quantity = 2
         performance = PerformanceEvent1Data.performance_2
         stock_type = StockTypeEvent1Data.stock_type_3
-        stock_holder = StockHolderEvent1Performance2Data.stock_holder_1
+        stock_holder = StockHolderEvent1.stock_holder_1
     class stock_4:
         quantity = 3
         performance = PerformanceEvent1Data.performance_2
         stock_type = StockTypeEvent1Data.stock_type_4
-        stock_holder = StockHolderEvent1Performance2Data.stock_holder_1
+        stock_holder = StockHolderEvent1.stock_holder_1
     class stock_5:
         quantity = 3
         performance = PerformanceEvent1Data.performance_2
         stock_type = StockTypeEvent1Data.stock_type_1
-        stock_holder = StockHolderEvent1Performance2Data.stock_holder_5
+        stock_holder = StockHolderEvent1.stock_holder_5
     class stock_6:
         quantity = 4
         performance = PerformanceEvent1Data.performance_2
         stock_type = StockTypeEvent1Data.stock_type_2
-        stock_holder = StockHolderEvent1Performance2Data.stock_holder_5
+        stock_holder = StockHolderEvent1.stock_holder_5
     class stock_7:
         quantity = 3
         performance = PerformanceEvent1Data.performance_2
         stock_type = StockTypeEvent1Data.stock_type_3
-        stock_holder = StockHolderEvent1Performance2Data.stock_holder_5
+        stock_holder = StockHolderEvent1.stock_holder_5
     class stock_8:
         quantity = 3
         performance = PerformanceEvent1Data.performance_2
         stock_type = StockTypeEvent1Data.stock_type_4
-        stock_holder = StockHolderEvent1Performance2Data.stock_holder_5
+        stock_holder = StockHolderEvent1.stock_holder_5
 
 class StockEvent1Performance3Data(DataSet):
     class stock_1:
         quantity = 6
         performance = PerformanceEvent1Data.performance_3
         stock_type = StockTypeEvent1Data.stock_type_1
-        stock_holder = StockHolderEvent1Performance3Data.stock_holder_1
+        stock_holder = StockHolderEvent1.stock_holder_1
     class stock_2:
         quantity = 3
         performance = PerformanceEvent1Data.performance_3
         stock_type = StockTypeEvent1Data.stock_type_2
-        stock_holder = StockHolderEvent1Performance3Data.stock_holder_1
+        stock_holder = StockHolderEvent1.stock_holder_1
     class stock_3:
         quantity = 2
         performance = PerformanceEvent1Data.performance_3
         stock_type = StockTypeEvent1Data.stock_type_3
-        stock_holder = StockHolderEvent1Performance3Data.stock_holder_1
+        stock_holder = StockHolderEvent1.stock_holder_1
     class stock_4:
         quantity = 3
         performance = PerformanceEvent1Data.performance_3
         stock_type = StockTypeEvent1Data.stock_type_4
-        stock_holder = StockHolderEvent1Performance3Data.stock_holder_1
+        stock_holder = StockHolderEvent1.stock_holder_1
     class stock_5:
         quantity = 3
         performance = PerformanceEvent1Data.performance_3
         stock_type = StockTypeEvent1Data.stock_type_1
-        stock_holder = StockHolderEvent1Performance3Data.stock_holder_5
+        stock_holder = StockHolderEvent1.stock_holder_5
     class stock_6:
         quantity = 4
         performance = PerformanceEvent1Data.performance_3
         stock_type = StockTypeEvent1Data.stock_type_2
-        stock_holder = StockHolderEvent1Performance3Data.stock_holder_5
+        stock_holder = StockHolderEvent1.stock_holder_5
     class stock_7:
         quantity = 3
         performance = PerformanceEvent1Data.performance_3
         stock_type = StockTypeEvent1Data.stock_type_3
-        stock_holder = StockHolderEvent1Performance3Data.stock_holder_5
+        stock_holder = StockHolderEvent1.stock_holder_5
     class stock_8:
         quantity = 3
         performance = PerformanceEvent1Data.performance_3
         stock_type = StockTypeEvent1Data.stock_type_4
-        stock_holder = StockHolderEvent1Performance3Data.stock_holder_5
+        stock_holder = StockHolderEvent1.stock_holder_5
 
 class StockEvent1Performance4Data(DataSet):
     class stock_1:
         quantity = 6
         performance = PerformanceEvent1Data.performance_4
         stock_type = StockTypeEvent1Data.stock_type_1
-        stock_holder = StockHolderEvent1Performance4Data.stock_holder_1
+        stock_holder = StockHolderEvent1.stock_holder_1
     class stock_2:
         quantity = 3
         performance = PerformanceEvent1Data.performance_4
         stock_type = StockTypeEvent1Data.stock_type_2
-        stock_holder = StockHolderEvent1Performance4Data.stock_holder_1
+        stock_holder = StockHolderEvent1.stock_holder_1
     class stock_3:
         quantity = 2
         performance = PerformanceEvent1Data.performance_4
         stock_type = StockTypeEvent1Data.stock_type_3
-        stock_holder = StockHolderEvent1Performance4Data.stock_holder_1
+        stock_holder = StockHolderEvent1.stock_holder_1
     class stock_4:
         quantity = 3
         performance = PerformanceEvent1Data.performance_4
         stock_type = StockTypeEvent1Data.stock_type_4
-        stock_holder = StockHolderEvent1Performance4Data.stock_holder_1
+        stock_holder = StockHolderEvent1.stock_holder_1
     class stock_5:
         quantity = 3
         performance = PerformanceEvent1Data.performance_4
         stock_type = StockTypeEvent1Data.stock_type_1
-        stock_holder = StockHolderEvent1Performance4Data.stock_holder_5
+        stock_holder = StockHolderEvent1.stock_holder_5
     class stock_6:
         quantity = 4
         performance = PerformanceEvent1Data.performance_4
         stock_type = StockTypeEvent1Data.stock_type_2
-        stock_holder = StockHolderEvent1Performance4Data.stock_holder_5
+        stock_holder = StockHolderEvent1.stock_holder_5
     class stock_7:
         quantity = 3
         performance = PerformanceEvent1Data.performance_4
         stock_type = StockTypeEvent1Data.stock_type_3
-        stock_holder = StockHolderEvent1Performance4Data.stock_holder_5
+        stock_holder = StockHolderEvent1.stock_holder_5
     class stock_8:
         quantity = 3
         performance = PerformanceEvent1Data.performance_4
         stock_type = StockTypeEvent1Data.stock_type_4
-        stock_holder = StockHolderEvent1Performance4Data.stock_holder_5
+        stock_holder = StockHolderEvent1.stock_holder_5
 
 class StockEvent1Performance5Data(DataSet):
     class stock_1:
         quantity = 6
         performance = PerformanceEvent1Data.performance_5
         stock_type = StockTypeEvent1Data.stock_type_1
-        stock_holder = StockHolderEvent1Performance5Data.stock_holder_1
+        stock_holder = StockHolderEvent1.stock_holder_1
     class stock_2:
         quantity = 3
         performance = PerformanceEvent1Data.performance_5
         stock_type = StockTypeEvent1Data.stock_type_2
-        stock_holder = StockHolderEvent1Performance5Data.stock_holder_1
+        stock_holder = StockHolderEvent1.stock_holder_1
     class stock_3:
         quantity = 2
         performance = PerformanceEvent1Data.performance_5
         stock_type = StockTypeEvent1Data.stock_type_3
-        stock_holder = StockHolderEvent1Performance5Data.stock_holder_1
+        stock_holder = StockHolderEvent1.stock_holder_1
     class stock_4:
         quantity = 3
         performance = PerformanceEvent1Data.performance_5
         stock_type = StockTypeEvent1Data.stock_type_4
-        stock_holder = StockHolderEvent1Performance5Data.stock_holder_1
+        stock_holder = StockHolderEvent1.stock_holder_1
     class stock_5:
         quantity = 3
         performance = PerformanceEvent1Data.performance_5
         stock_type = StockTypeEvent1Data.stock_type_1
-        stock_holder = StockHolderEvent1Performance5Data.stock_holder_5
+        stock_holder = StockHolderEvent1.stock_holder_5
     class stock_6:
         quantity = 4
         performance = PerformanceEvent1Data.performance_5
         stock_type = StockTypeEvent1Data.stock_type_2
-        stock_holder = StockHolderEvent1Performance5Data.stock_holder_5
+        stock_holder = StockHolderEvent1.stock_holder_5
     class stock_7:
         quantity = 3
         performance = PerformanceEvent1Data.performance_5
         stock_type = StockTypeEvent1Data.stock_type_3
-        stock_holder = StockHolderEvent1Performance5Data.stock_holder_5
+        stock_holder = StockHolderEvent1.stock_holder_5
     class stock_8:
         quantity = 3
         performance = PerformanceEvent1Data.performance_5
         stock_type = StockTypeEvent1Data.stock_type_4
-        stock_holder = StockHolderEvent1Performance5Data.stock_holder_5
+        stock_holder = StockHolderEvent1.stock_holder_5
 
 class StockEvent2Performance1Data(DataSet):
     class stock_1:
         quantity = 6
         performance = PerformanceEvent2Data.performance_1
         stock_type = StockTypeEvent2Data.stock_type_1
-        stock_holder = StockHolderEvent2Performance1Data.stock_holder_1
+        stock_holder = StockHolderEvent2.stock_holder_1
     class stock_2:
         quantity = 3
         performance = PerformanceEvent2Data.performance_1
         stock_type = StockTypeEvent2Data.stock_type_2
-        stock_holder = StockHolderEvent2Performance1Data.stock_holder_1
+        stock_holder = StockHolderEvent2.stock_holder_1
     class stock_3:
         quantity = 2
         performance = PerformanceEvent2Data.performance_1
         stock_type = StockTypeEvent2Data.stock_type_3
-        stock_holder = StockHolderEvent2Performance1Data.stock_holder_1
+        stock_holder = StockHolderEvent2.stock_holder_1
     class stock_4:
         quantity = 3
         performance = PerformanceEvent2Data.performance_1
         stock_type = StockTypeEvent2Data.stock_type_4
-        stock_holder = StockHolderEvent2Performance1Data.stock_holder_1
+        stock_holder = StockHolderEvent2.stock_holder_1
     class stock_5:
         quantity = 3
         performance = PerformanceEvent2Data.performance_1
         stock_type = StockTypeEvent2Data.stock_type_1
-        stock_holder = StockHolderEvent2Performance1Data.stock_holder_5
+        stock_holder = StockHolderEvent2.stock_holder_5
     class stock_6:
         quantity = 4
         performance = PerformanceEvent2Data.performance_1
         stock_type = StockTypeEvent2Data.stock_type_2
-        stock_holder = StockHolderEvent2Performance1Data.stock_holder_5
+        stock_holder = StockHolderEvent2.stock_holder_5
     class stock_7:
         quantity = 3
         performance = PerformanceEvent2Data.performance_1
         stock_type = StockTypeEvent2Data.stock_type_3
-        stock_holder = StockHolderEvent2Performance1Data.stock_holder_5
+        stock_holder = StockHolderEvent2.stock_holder_5
     class stock_8:
         quantity = 3
         performance = PerformanceEvent2Data.performance_1
         stock_type = StockTypeEvent2Data.stock_type_4
-        stock_holder = StockHolderEvent2Performance1Data.stock_holder_5
+        stock_holder = StockHolderEvent2.stock_holder_5
 
 class StockEvent2Performance2Data(DataSet):
     class stock_1:
         quantity = 6
         performance = PerformanceEvent2Data.performance_2
         stock_type = StockTypeEvent2Data.stock_type_1
-        stock_holder = StockHolderEvent2Performance2Data.stock_holder_1
+        stock_holder = StockHolderEvent2.stock_holder_1
     class stock_2:
         quantity = 3
         performance = PerformanceEvent2Data.performance_2
         stock_type = StockTypeEvent2Data.stock_type_2
-        stock_holder = StockHolderEvent2Performance2Data.stock_holder_1
+        stock_holder = StockHolderEvent2.stock_holder_1
     class stock_3:
         quantity = 2
         performance = PerformanceEvent2Data.performance_2
         stock_type = StockTypeEvent2Data.stock_type_3
-        stock_holder = StockHolderEvent2Performance2Data.stock_holder_1
+        stock_holder = StockHolderEvent2.stock_holder_1
     class stock_4:
         quantity = 3
         performance = PerformanceEvent2Data.performance_2
         stock_type = StockTypeEvent2Data.stock_type_4
-        stock_holder = StockHolderEvent2Performance2Data.stock_holder_1
+        stock_holder = StockHolderEvent2.stock_holder_1
     class stock_5:
         quantity = 3
         performance = PerformanceEvent2Data.performance_2
         stock_type = StockTypeEvent2Data.stock_type_1
-        stock_holder = StockHolderEvent2Performance2Data.stock_holder_5
+        stock_holder = StockHolderEvent2.stock_holder_5
     class stock_6:
         quantity = 4
         performance = PerformanceEvent2Data.performance_2
         stock_type = StockTypeEvent2Data.stock_type_2
-        stock_holder = StockHolderEvent2Performance2Data.stock_holder_5
+        stock_holder = StockHolderEvent2.stock_holder_5
     class stock_7:
         quantity = 3
         performance = PerformanceEvent2Data.performance_2
         stock_type = StockTypeEvent2Data.stock_type_3
-        stock_holder = StockHolderEvent2Performance2Data.stock_holder_5
+        stock_holder = StockHolderEvent2.stock_holder_5
     class stock_8:
         quantity = 3
         performance = PerformanceEvent2Data.performance_2
         stock_type = StockTypeEvent2Data.stock_type_4
-        stock_holder = StockHolderEvent2Performance2Data.stock_holder_5
+        stock_holder = StockHolderEvent2.stock_holder_5
 
 class StockEvent2Performance3Data(DataSet):
     class stock_1:
         quantity = 6
         performance = PerformanceEvent2Data.performance_3
         stock_type = StockTypeEvent2Data.stock_type_1
-        stock_holder = StockHolderEvent2Performance3Data.stock_holder_1
+        stock_holder = StockHolderEvent2.stock_holder_1
     class stock_2:
         quantity = 3
         performance = PerformanceEvent2Data.performance_3
         stock_type = StockTypeEvent2Data.stock_type_2
-        stock_holder = StockHolderEvent2Performance3Data.stock_holder_1
+        stock_holder = StockHolderEvent2.stock_holder_1
     class stock_3:
         quantity = 2
         performance = PerformanceEvent2Data.performance_3
         stock_type = StockTypeEvent2Data.stock_type_3
-        stock_holder = StockHolderEvent2Performance3Data.stock_holder_1
+        stock_holder = StockHolderEvent2.stock_holder_1
     class stock_4:
         quantity = 3
         performance = PerformanceEvent2Data.performance_3
         stock_type = StockTypeEvent2Data.stock_type_4
-        stock_holder = StockHolderEvent2Performance3Data.stock_holder_1
+        stock_holder = StockHolderEvent2.stock_holder_1
     class stock_5:
         quantity = 3
         performance = PerformanceEvent2Data.performance_3
         stock_type = StockTypeEvent2Data.stock_type_1
-        stock_holder = StockHolderEvent2Performance3Data.stock_holder_5
+        stock_holder = StockHolderEvent2.stock_holder_5
     class stock_6:
         quantity = 4
         performance = PerformanceEvent2Data.performance_3
         stock_type = StockTypeEvent2Data.stock_type_2
-        stock_holder = StockHolderEvent2Performance3Data.stock_holder_5
+        stock_holder = StockHolderEvent2.stock_holder_5
     class stock_7:
         quantity = 3
         performance = PerformanceEvent2Data.performance_3
         stock_type = StockTypeEvent2Data.stock_type_3
-        stock_holder = StockHolderEvent2Performance3Data.stock_holder_5
+        stock_holder = StockHolderEvent2.stock_holder_5
     class stock_8:
         quantity = 3
         performance = PerformanceEvent2Data.performance_3
         stock_type = StockTypeEvent2Data.stock_type_4
-        stock_holder = StockHolderEvent2Performance3Data.stock_holder_5
+        stock_holder = StockHolderEvent2.stock_holder_5
 
 class StockStatusEvent1Performance1Data(DataSet):
     class stock_status_1:

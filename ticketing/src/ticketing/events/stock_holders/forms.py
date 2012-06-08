@@ -22,7 +22,7 @@ class StockHolderForm(Form):
     id = HiddenField(
         validators=[Optional()],
     )
-    performance_id = HiddenField(
+    event_id = HiddenField(
         validators=[Required()],
     )
     name = TextField(

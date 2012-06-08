@@ -22,10 +22,10 @@ class StockHolders(BaseView):
 
     @view_config(route_name='stock_holders.new', request_method='POST', renderer='ticketing:templates/stock_holders/_form.html')
     def new_post(self):
-        performance_id = int(self.request.POST.get('performance_id', 0))
-        performance = Performance.get(performance_id)
-        if performance is None:
-            return HTTPNotFound('performance id %d is not found' % performance_id)
+        event_id = int(self.request.POST.get('event_id', 0))
+        event = Event.get(event_id)
+        if event is None:
+            return HTTPNotFound('event id %d is not found' % event_id)
 
         f = StockHolderForm(self.request.POST, organization_id=self.context.user.organization_id)
         if f.validate():
@@ -78,4 +78,4 @@ class StockHolders(BaseView):
         stock_holder.delete()
 
         self.request.session.flash(u'枠を削除しました')
-        return HTTPFound(location=route_path('performances.show', self.request, performance_id=stock_holder.performance.id, _anchor='seat-allocation'))
+        return HTTPFound(location=route_path('events.show', self.request, event_id=stock_holder.event.id))
