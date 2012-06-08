@@ -31,7 +31,8 @@ from altaircms.plugins.widget.promotion.models import (
 )
 from altaircms.models import(
     Site, 
-    Category
+    Category, 
+    Sale
 )
 
 from altaircms.asset.helpers import create_asset
@@ -214,28 +215,72 @@ def detail_layout():
 
 
 def detail_tickets(event):
-    return [
-        Ticket(event=event, 
+    sales_choices = import_symbol("altaircms.seeds.saleskind:SALESKIND_CHOICES")
+    sale_kind,sale_name = sales_choices[0]
+    sale_name_gen = lambda event, sale_name : u"%s(%s)" % (event.title, sale_name)
+    sale = Sale(event=event, name=sale_name_gen(event, sale_name), kind=sale_kind)
+    r = []
+    r.extend([
+        Ticket(event=event,
+               sale=sale, 
                price=30000, 
                seattype=u"SSA席", 
                orderno=1), 
-        Ticket(event=event, 
+        Ticket(event=event,
+               sale=sale, 
                price=15000, 
                seattype=u"SA席", 
                orderno=2), 
-        Ticket(event=event, 
+        Ticket(event=event,
+               sale=sale, 
                price=8000, 
                seattype=u"A席", 
                orderno=3), 
-        Ticket(event=event, 
+        Ticket(event=event,
+               sale=sale, 
                price=5000, 
                seattype=u"B席", 
                orderno=4), 
-        Ticket(event=event, 
+        Ticket(event=event,
+               sale=sale, 
                price=3000, 
                seattype=u"C席", 
                orderno=5)
-    ]
+    ])
+
+    sales_choices = import_symbol("altaircms.seeds.saleskind:SALESKIND_CHOICES")
+    sale_kind,sale_name = sales_choices[1]
+    sale_name_gen = lambda event, sale_name : u"%s(%s)" % (event.title, sale_name)
+    sale = Sale(event=event, name=sale_name_gen(event, sale_name), kind=sale_kind)
+
+    r.extend([
+        Ticket(event=event,
+               sale=sale, 
+               price=30003, 
+               seattype=u"SSA席", 
+               orderno=1), 
+        Ticket(event=event,
+               sale=sale, 
+               price=15003, 
+               seattype=u"SA席", 
+               orderno=2), 
+        Ticket(event=event,
+               sale=sale, 
+               price=8003, 
+               seattype=u"A席", 
+               orderno=3), 
+        Ticket(event=event,
+               sale=sale, 
+               price=5003, 
+               seattype=u"B席", 
+               orderno=4), 
+        Ticket(event=event,
+               sale=sale, 
+               price=3003, 
+               seattype=u"C席", 
+               orderno=5)
+    ])
+    return r
 
 
 def detail_performances(event):
