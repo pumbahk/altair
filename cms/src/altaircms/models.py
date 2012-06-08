@@ -116,6 +116,8 @@ class Sale(BaseOriginalMixin, Base):
 
     event_id = Column(Integer, ForeignKey('event.id'))
     event  = relationship("Event", backref="sales")
+    performance_id = Column(Integer, ForeignKey('performance.id'))
+    performance  = relationship("Performance", backref="sales")
 
     name = Column(Unicode(length=255))
     kind = Column(Unicode(length=255), doc=u"saleskind. 販売条件(最速抽選, 先行抽選, 先行先着, 一般販売, 追加抽選.etc)")
