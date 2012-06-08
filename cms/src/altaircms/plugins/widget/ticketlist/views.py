@@ -38,4 +38,5 @@ class TicketlistWidgetView(object):
         context = self.request.context
         widget = context.get_widget(self.request.GET.get("pk"))
         form = forms.TicketlistChoiceForm(**widget.to_dict())
+        form.refine_kind_choices(self.request.GET.get("page_id"))
         return {"widget": widget, "form": form}
