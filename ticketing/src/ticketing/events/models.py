@@ -121,7 +121,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         open_on = isodate.datetime_isoformat(self.open_on) if self.open_on else ''
 
         # cmsでは日付は必須項目
-        if not (start_on and end_on and open_on):
+        if not (start_on and end_on and open_on) and not self.deleted_at:
             raise Exception(u'パフォーマンスの日付を入力してください')
 
         sales = []
