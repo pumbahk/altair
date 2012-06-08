@@ -24,6 +24,7 @@ class Stocks(BaseView):
         if f.validate():
             for stock_form in f.stock_forms:
                 stock = merge_session_with_post(Stock(), stock_form.form.data)
+                stock.performance_id = f.data.get('performance_id')
                 stock.stock_holder_id = f.data.get('stock_holder_id')
                 stock.save()
 
@@ -36,7 +37,8 @@ class Stocks(BaseView):
 
     @view_config(route_name='stocks.edit', request_method='GET', renderer='ticketing:templates/stocks/_form.html')
     def edit_get(self):
+        performance_id = int(self.request.matchdict.get('performance_id', 0))
         stock_holder_id = int(self.request.matchdict.get('stock_holder_id', 0))
         return {
-            'forms':StockForms(stock_holder_id=stock_holder_id),
+            'forms':StockForms(performance_id=performance_id, stock_holder_id=stock_holder_id),
         }

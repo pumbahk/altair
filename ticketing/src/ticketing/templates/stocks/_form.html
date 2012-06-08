@@ -9,6 +9,7 @@
 
   <form>
     <div class="modal-body">
+    ${h.form_item(forms.performance_id)}
     ${h.form_item(forms.stock_holder_id)}
     % for f in forms.stock_forms:
       ${f.form.stock_type_name.data}

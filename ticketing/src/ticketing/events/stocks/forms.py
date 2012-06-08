@@ -16,6 +16,9 @@ class StockForm(Form):
     id = HiddenField(
         validators=[Optional()],
     )
+    performance_id = HiddenField(
+        validators=[Optional()],
+    )
     stock_holder_id = HiddenField(
         validators=[Optional()],
     )
@@ -52,6 +55,9 @@ class StockForms(Form):
                 stock_holder = StockHolder.get(kwargs['stock_holder_id'])
                 _append_stock_type(stock_holder.performance.event.stock_types)
 
+    performance_id = HiddenField(
+        validators=[Required()],
+    )
     stock_holder_id = HiddenField(
         validators=[Required()],
     )

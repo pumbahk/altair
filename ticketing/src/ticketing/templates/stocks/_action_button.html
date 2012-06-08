@@ -1,3 +1,5 @@
+<%page args="performance" />
+
 <script type="text/javascript">
   function load_modal_form(modal, form, url) {
     $.ajax({
@@ -13,7 +15,7 @@
   function allocate_number(id) {
     var modal = '#modal-stock';
     var form = '#stocks-form';
-    var url = '/events/stocks/edit/' + id;
+    var url = '/events/stocks/edit/${performance.id}/' + id;
     load_modal_form(modal, form, url);
   }
   function save_allocate_number() {

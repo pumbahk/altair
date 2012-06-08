@@ -45,6 +45,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     event_id = Column(Identifier, ForeignKey('Event.id'))
 
     stock_holders = relationship('StockHolder', backref='performance')
+    stocks = relationship('Stock', backref='performance')
     product_items = relationship('ProductItem', backref='performance')
     venue = relationship('Venue', uselist=False, backref='performance')
 
