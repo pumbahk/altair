@@ -12,7 +12,7 @@ class IndexView(object):
 
     def gen_order_no(self):
         now = datetime.now()
-        return now.strftime("%Y%m%d%H%M%S")
+        return now.strftime("%Y%m%d%H%M%S") + "00"
 
     @view_config(route_name="top", renderer="index.mak", request_method="GET")
     def index(self):
