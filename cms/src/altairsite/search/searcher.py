@@ -34,8 +34,8 @@ class ISearchFn(Interface):
        """
 ##
 def _refine_pageset_collect_future(qs, _nowday=None):
-   if _nowday in None:
-      _nowday = datetime.now()
+   if _nowday is None:
+      _nowday = datetime.datetime.now()
 
    qs = qs.filter((_nowday <= Event.deal_close )|( Event.deal_close == None))
    return qs
