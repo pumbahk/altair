@@ -120,6 +120,9 @@ class Cart(Base):
 
     id = sa.Column(sa.Integer, primary_key=True)
     cart_session_id = sa.Column(sa.Unicode(255), unique=True)
+    performance_id = sa.Column(sa.BigInteger, sa.ForeignKey('Performance.id'))
+
+    performance = orm.relationship('Performance')
 
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, nullable=True, onupdate=datetime.now)

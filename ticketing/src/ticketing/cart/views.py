@@ -197,15 +197,23 @@ class MultiCheckoutView(object):
         form = schema.CardForm(formdata=self.request.params)
         if not form.validate():
             return
-        card_number = form['card_number'].data
-        exp_year = form['exp_year'].data
-        exp_month = form['exp_month'].data
-
         assert h.has_cart(self.request)
         cart = h.get_cart(self.request)
 
         # 変換
         order_id = cart.id
+        card_number = form['card_number'].data
+        exp_year = form['exp_year'].data
+        exp_month = form['exp_month'].data
+        self.request.session['order'] = dict(
+            order_no=order_id,
+            client_name=self.request.params['client_name'],
+            card_holder_name=self.request.params['card_holder_name'],
+            card_number=card_number,
+            exp_year=exp_year,
+            exp_month=exp_month,
+            mail_address=self.request.params['mail_address'],
+        )
         enrol = multicheckout_api.secure3d_enrol(self.request, order_id, card_number, exp_year, exp_month, cart.total_amount)
         if enrol.is_enable_auth_api():
             return dict(form=m_h.secure3d_acs_form(self.request, self.request.route_url('cart.secure3d_result'), enrol))
@@ -224,11 +232,33 @@ class MultiCheckoutView(object):
         assert h.has_cart(self.request)
         cart = h.get_cart(self.request)
 
+        order = self.request.session['order']
         # 変換
         order_id = cart.id
         pares = multicheckout_api.get_pares(self.request)
         md = multicheckout_api.get_md(self.request)
-        auth = multicheckout_api.secure3d_auth(self.request, order_id, pares, md)
+        auth_result = multicheckout_api.secure3d_auth(self.request, order_id, pares, md)
+        item_name = h.get_item_name(self.request, cart.performance)
+        # デバッグ用。実際は売上請求をかける
+        checkout_auth_result = multicheckout_api.checkout_auth_secure3d(
+            self.request, order_id,
+            item_name, cart.total_amount, 0, order['client_name'], order['mail_address'],
+            order['card_number'], order['exp_year'] + order['exp_month'], order['card_holder_name'],
+            mvn=auth_result.Mvn, xid=auth_result.Xid, ts=auth_result.Ts,
+            eci=auth_result.Eci, cavv=auth_result.Cavv, cavv_algorithm=auth_result.Cavva,
+        )
+
+
+        return dict(
+            OrderNo=checkout_auth_result.OrderNo,
+            Status=checkout_auth_result.Status,
+            PublicTranId=checkout_auth_result.PublicTranId,
+            AheadComCd=checkout_auth_result.AheadComCd,
+            ApprovalNo=checkout_auth_result.ApprovalNo,
+            CardErrorCd=checkout_auth_result.CardErrorCd,
+            ReqYmd=checkout_auth_result.ReqYmd,
+            CmnErrorCd=checkout_auth_result.CmnErrorCd,
+        )
 
     def card_info_secure_code(self):
         """ カード情報入力(セキュアコード)

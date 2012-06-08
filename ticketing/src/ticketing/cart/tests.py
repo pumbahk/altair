@@ -668,7 +668,10 @@ class MultiCheckoutViewTests(unittest.TestCase):
             'card_number': 'XXXXXXXXXXXXXXXX',
             'exp_year': '13',
             'exp_month': '07',
-        }
+            'client_name': u'楽天太郎',
+            'card_holder_name': u'RAKUTEN TAROU',
+            'mail_address': u'ticketstar@example.com',
+            }
 
         cart_id = 500
         dummy_cart = testing.DummyModel(id=cart_id, total_amount=1234)
@@ -693,6 +696,14 @@ class MultiCheckoutViewTests(unittest.TestCase):
 
         self.assertEqual(dummy_secure3d.called[1],('is_enable_auth_api', (), {}))
 
+        session_order = request.session['order']
+        self.assertEqual(session_order['card_number'], 'XXXXXXXXXXXXXXXX')
+        self.assertEqual(session_order['client_name'], u'楽天太郎')
+        self.assertEqual(session_order['mail_address'], u'ticketstar@example.com')
+        self.assertEqual(session_order['exp_year'], '13')
+        self.assertEqual(session_order['exp_month'], '07')
+        self.assertEqual(session_order['card_holder_name'], u'RAKUTEN TAROU')
+
     def test_card_info_secure3d_disabled_api(self):
         self.config.add_route('cart.secure3d_result', '/this-is-secure3d-callback')
         dummy_secure3d = self._register_dummy_secure3d(AcsUrl='http://example.com/AcsUrl', PaReq='this-is-pareq', Md='this-is-Md', enable_auth_api=False)
@@ -700,7 +711,10 @@ class MultiCheckoutViewTests(unittest.TestCase):
             'card_number': 'XXXXXXXXXXXXXXXX',
             'exp_year': '13',
             'exp_month': '07',
-            }
+            'client_name': u'楽天太郎',
+            'card_holder_name': u'RAKUTEN TAROU',
+            'mail_address': u'ticketstar@example.com',
+        }
 
         cart_id = 500
         dummy_cart = testing.DummyModel(id=cart_id, total_amount=1234)
@@ -729,14 +743,24 @@ class MultiCheckoutViewTests(unittest.TestCase):
 
     def test_card_info_secure3d_callback(self):
         dummy_secure3d = self._register_dummy_secure3d(AcsUrl='http://example.com/AcsUrl', PaReq='this-is-pareq', Md='this-is-Md', enable_auth_api=False)
+        self.config.registry.settings['cart.item_name'] = '楽天チケット' # configはバイト読み取り
         params = {
             'PaRes': 'this-is-pa-res',
             'MD': 'this-is-md',
         }
         cart_id = 500
-        dummy_cart = testing.DummyModel(id=cart_id, total_amount=1234)
+        dummy_cart = testing.DummyModel(id=cart_id, total_amount=1234,
+            performance=testing.DummyModel(name=u'テスト公演'))
 
-        request = DummyRequest(params=params, _cart=dummy_cart)
+        session_order = {
+            'client_name': u'楽天太郎',
+            'mail_address': u'ticketstar@example.com',
+            'card_number': u'XXXXXXXXXXXXXXXX',
+            'exp_year': '12',
+            'exp_month': '06',
+            'card_holder_name': u'RAKUTEN TAROU',
+        }
+        request = DummyRequest(params=params, _cart=dummy_cart, session=dict(order=session_order))
         target = self._makeOne(request)
 
         result = target.card_info_secure3d_callback()
@@ -749,12 +773,32 @@ class DummyRequest(testing.DummyRequest):
             self.params = MultiDict(self.params)
 
 class DummySecure3D(object):
-    def __init__(self, AcsUrl, PaReq, Md, enable_auth_api=True):
+    def __init__(self, AcsUrl, PaReq, Md, enable_auth_api=True,
+                 mvn=None, xid=None, ts=None, eci=None, cavv=None, cavva=None,
+                 order_no=None, status=None, public_tran_id=None,
+                 ahead_com_cd=None, approval_no=None, card_error_cd=None, req_ymd=None, cmd_error_cd=None):
+
         self.called = []
         self.AcsUrl = AcsUrl
         self.PaReq = PaReq
         self.Md = Md
         self.enable_auth_api = enable_auth_api
+
+        self.Mvn = mvn
+        self.Xid = xid
+        self.Ts = ts
+        self.Eci = eci
+        self.Cavv = cavv
+        self.Cavva = cavva
+
+        self.OrderNo = order_no
+        self.Status = status
+        self.PublicTranId=public_tran_id
+        self.AheadComCd=ahead_com_cd
+        self.ApprovalNo=approval_no
+        self.CardErrorCd=card_error_cd
+        self.ReqYmd=req_ymd
+        self.CmnErrorCd=cmd_error_cd
 
     def secure3d_enrol(self, *args, **kwargs):
         self.called.append(('secure3d_enrol', args, kwargs))
@@ -771,3 +815,7 @@ class DummySecure3D(object):
     def is_enable_secure3d(self, *args, **kwargs):
         self.called.append(('is_enable_secure3d', args, kwargs))
         return True
+
+    def request_card_auth(self, *args, **kwargs):
+        self.called.append(('request_card_auth', args, kwargs))
+        return self
