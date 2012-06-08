@@ -727,6 +727,20 @@ class MultiCheckoutViewTests(unittest.TestCase):
 
         self.assertEqual(dummy_secure3d.called[2],('is_enable_secure3d', (), {}))
 
+    def test_card_info_secure3d_callback(self):
+        dummy_secure3d = self._register_dummy_secure3d(AcsUrl='http://example.com/AcsUrl', PaReq='this-is-pareq', Md='this-is-Md', enable_auth_api=False)
+        params = {
+            'PaRes': 'this-is-pa-res',
+            'MD': 'this-is-md',
+        }
+        cart_id = 500
+        dummy_cart = testing.DummyModel(id=cart_id, total_amount=1234)
+
+        request = DummyRequest(params=params, _cart=dummy_cart)
+        target = self._makeOne(request)
+
+        result = target.card_info_secure3d_callback()
+
 class DummyRequest(testing.DummyRequest):
     def __init__(self, *args, **kwargs):
         super(DummyRequest, self).__init__(*args, **kwargs)
@@ -744,6 +758,10 @@ class DummySecure3D(object):
 
     def secure3d_enrol(self, *args, **kwargs):
         self.called.append(('secure3d_enrol', args, kwargs))
+        return self
+
+    def secure3d_auth(self, *args, **kwargs):
+        self.called.append(('secure3d_auth', args, kwargs))
         return self
 
     def is_enable_auth_api(self, *args, **kwargs):

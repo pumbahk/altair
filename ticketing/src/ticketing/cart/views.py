@@ -218,16 +218,24 @@ class MultiCheckoutView(object):
 
 
     def card_info_secure3d_callback(self):
-        pares = multicheckout_api.get_pares(self.request)
-        md = multicheckout_api.get_md(self.reqeuest)
-        auth = multicheckout_api.secure3d_auth(self.request, self.order_id, pares, md)
+        """ カード情報入力(3Dセキュア)コールバック
+        3Dセキュア認証結果取得
+        """
+        assert h.has_cart(self.request)
+        cart = h.get_cart(self.request)
 
-def card_info_secure_code(self):
-    """ カード情報入力(セキュアコード)
-    """
+        # 変換
+        order_id = cart.id
+        pares = multicheckout_api.get_pares(self.request)
+        md = multicheckout_api.get_md(self.request)
+        auth = multicheckout_api.secure3d_auth(self.request, order_id, pares, md)
+
+    def card_info_secure_code(self):
+        """ カード情報入力(セキュアコード)
+        """
 
     def secure3d_checkout(self):
-        """
+        """ マルチ決済（クレジットカード 3Dセキュア認証）
         """
 
     def secure3d_callback(self):
