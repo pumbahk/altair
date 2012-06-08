@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from wtforms import Form
-from wtforms import TextField, SelectField, HiddenField, FormField, FieldList
-from wtforms.validators import Regexp, Length, Optional, ValidationError
+from wtforms import TextField, SelectField, HiddenField, FormField, IntegerField, FieldList
+from wtforms.validators import Regexp, Length, NumberRange, Optional, ValidationError
 from sqlalchemy.sql import func
 
 from ticketing.models import record_to_multidict, DBSession
@@ -29,9 +29,12 @@ class StockForm(Form):
     stock_type_name = HiddenField(
         validators=[Optional()],
     )
-    quantity = TextField(
+    quantity = IntegerField(
         label=u'在庫数',
-        validators=[Required()],
+        validators=[
+            Required(),
+            NumberRange(min=0, message=u'有効な値を入力してください'),
+        ],
     )
 
     def validate_quantity(form, field):
@@ -44,9 +47,9 @@ class StockForm(Form):
         sum_quantity = Stock.filter(Stock.id!=form.id.data)\
                             .filter_by(**conditions)\
                             .with_entities(func.sum(Stock.quantity))\
-                            .scalar()
+                            .scalar() or 0
         if allocated_quantity < (sum_quantity + int(form.quantity.data)):
-            raise ValidationError(u'割り当てている在庫数の以上にはできません')
+            raise ValidationError(u'割り当てられている在庫数以上は入力できません')
 
 
 class StockForms(Form):

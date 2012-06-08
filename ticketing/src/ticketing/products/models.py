@@ -139,7 +139,7 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         else:
             self.style = {}
 
-class StockAllocation(Base):
+class StockAllocation(Base, BaseModel):
     __tablename__ = "StockAllocation"
     stock_type_id = Column(Identifier, ForeignKey('StockType.id'), primary_key=True)
     performance_id = Column(Identifier, ForeignKey('Performance.id'), primary_key=True)

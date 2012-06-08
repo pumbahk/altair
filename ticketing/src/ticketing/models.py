@@ -112,7 +112,8 @@ class WithTimestamp(object):
     created_at = Column(TIMESTAMP, nullable=False,
                                    default=datetime.now,
                                    server_default=sqlfunctions.current_timestamp())
-    updated_at = Column(TIMESTAMP, nullable=False, default=datetime.now,
+    updated_at = Column(TIMESTAMP, nullable=False,
+                                   default=datetime.now,
                                    server_default=text('0'),
                                    onupdate=datetime.now,
                                    server_onupdate=sqlfunctions.current_timestamp())
@@ -161,18 +162,21 @@ class BaseModel(object):
     def add(self):
         if hasattr(self, 'id') and not self.id:
             del self.id
-        self.created_at = datetime.now()
-        self.updated_at = datetime.now()
+        if isinstance(self, WithTimestamp):
+            self.created_at = datetime.now()
+            self.updated_at = datetime.now()
         DBSession.add(self)
         DBSession.flush()
 
     def update(self):
-        self.updated_at = datetime.now()
+        if isinstance(self, WithTimestamp):
+            self.updated_at = datetime.now()
         DBSession.merge(self)
         DBSession.flush()
 
     def delete(self):
-        self.deleted_at = datetime.now()
+        if isinstance(self, LogicallyDeleted):
+            self.deleted_at = datetime.now()
         DBSession.merge(self)
         DBSession.flush()
 
