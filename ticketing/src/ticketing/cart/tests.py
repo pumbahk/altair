@@ -117,6 +117,7 @@ class CartTests(unittest.TestCase):
         self.assertEqual(target.products[0].quantity, 1)
         self.assertEqual(len(target.products[0].items), 1)
 
+
 class CartedProductTests(unittest.TestCase):
     def setUp(self):
         self.session = _setup_db()
@@ -183,6 +184,34 @@ class CartedProductItemTests(unittest.TestCase):
         self.assertEqual(result[0].stock_id, 1)
         self.assertEqual(result[1].stock_id, 3)
         self.assertEqual(result[2].stock_id, 2)
+
+    def _add_seat(self, carted_product_item, quantity):
+        from ..venues import models as v_models
+        from ..organizations import models as o_models
+
+        seat_statuses = []
+        organization = o_models.Organization(id=532)
+        site = v_models.Site(id=899)
+        venue = v_models.Venue(id=100, site=site, organization=organization)
+        for i in range(quantity):
+            seat = v_models.Seat(id=i, venue=venue)
+            status = v_models.SeatStatus(seat=seat, status=int(v_models.SeatStatusEnum.InCart))
+            carted_product_item.seats.append(seat)
+            seat_statuses.append(status)
+            self.session.add(seat)
+        return seat_statuses
+
+    def test_finish(self):
+        target = self._makeOne(id=1)
+        statuses = self._add_seat(target, 10)
+        target.finish()
+
+        self._assertAllOrdered(statuses)
+
+    def _assertAllOrdered(self, statuses):
+        from ..venues import models as v_models
+        for s in statuses:
+            self.assertEqual(s.status, int(v_models.SeatStatusEnum.Ordered))
 
 
 class TicketingCartResourceTests(unittest.TestCase):

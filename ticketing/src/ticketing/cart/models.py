@@ -29,6 +29,7 @@ from sqlalchemy import sql
 from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm.exc import NoResultFound
 
+from ..venues import models as v_models
 Base = sqlahelper.get_base()
 DBSession = sqlahelper.get_session()
 
@@ -61,6 +62,7 @@ class CartedProductItem(Base):
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, nullable=True, onupdate=datetime.now)
     deleted_at = sa.Column(sa.DateTime, nullable=True)
+    finished_at = sa.Column(sa.DateTime)
 
     def pop_seats(self, seats):
         """ 必要な座席を取り出して保持する
@@ -79,6 +81,20 @@ class CartedProductItem(Base):
         self.seats.extend(my_seats)
         return seats
 
+    @property
+    def seat_statuses(self):
+        """ 確保済の座席ステータス
+        """
+        return DBSession.query(v_models.SeatStatus).filter(v_models.SeatStatus.seat_id.in_([s.id for s in self.seats])).all()
+
+    def finish(self):
+        """ 決済処理
+        """
+        for seat_status in self.seat_statuses:
+            seat_status.status = int(v_models.SeatStatusEnum.Ordered)
+        self.finished_at = datetime.now()
+
+
 class CartedProduct(Base):
     __tablename__ = 'ticketing_cartedproducts'
 
@@ -95,6 +111,7 @@ class CartedProduct(Base):
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, nullable=True, onupdate=datetime.now)
     deleted_at = sa.Column(sa.DateTime, nullable=True)
+    finished_at = sa.Column(sa.DateTime)
 
     @property
     def amount(self):
@@ -113,6 +130,14 @@ class CartedProduct(Base):
         return DBSession.query(sql.func.sum(cls.amount)).filter(cls.product_item==product_item).filter(cls.state=="reserved").first()[0] or 0
 
 
+    def finish(self):
+        """ 決済処理
+        """
+        for item in self.items:
+            item.finish()
+        self.finished_at = datetime.now()
+
+
 class Cart(Base):
     __tablename__ = 'ticketing_carts'
 
@@ -127,6 +152,7 @@ class Cart(Base):
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, nullable=True, onupdate=datetime.now)
     deleted_at = sa.Column(sa.DateTime, nullable=True)
+    finished_at = sa.Column(sa.DateTime)
 
     @property
     def total_amount(self):
@@ -162,3 +188,10 @@ class Cart(Base):
             cart_product = CartedProduct(cart=self, product=ordered_product, quantity=quantity)
             seats = cart_product.pop_seats(seats)
         # CartProductでseatsから必要な座席を取り出し
+
+    def finish(self):
+        """ 決済完了
+        """
+        for product in self.products:
+            product.finish()
+        self.finished_at = datetime.now()
