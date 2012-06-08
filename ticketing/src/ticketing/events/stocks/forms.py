@@ -3,10 +3,11 @@
 from wtforms import Form
 from wtforms import TextField, SelectField, HiddenField, FormField, FieldList
 from wtforms.validators import Regexp, Length, Optional, ValidationError
+from sqlalchemy.sql import func
 
-from ticketing.models import record_to_multidict
+from ticketing.models import record_to_multidict, DBSession
 from ticketing.formhelpers import Translations, Required
-from ticketing.products.models import Stock, StockHolder
+from ticketing.products.models import Stock, StockHolder, StockAllocation
 
 class StockForm(Form):
 
@@ -17,10 +18,10 @@ class StockForm(Form):
         validators=[Optional()],
     )
     performance_id = HiddenField(
-        validators=[Optional()],
+        validators=[Required()],
     )
     stock_holder_id = HiddenField(
-        validators=[Optional()],
+        validators=[Required()],
     )
     stock_type_id = HiddenField(
         validators=[Required()],
@@ -32,6 +33,20 @@ class StockForm(Form):
         label=u'在庫数',
         validators=[Required()],
     )
+
+    def validate_quantity(form, field):
+        # 同一Performanceの同一StockTypeにおける合計がStockAllocation.quantityを超えないこと
+        conditions = {
+            'stock_type_id':form.stock_type_id.data,
+            'performance_id':form.performance_id.data,
+        }
+        allocated_quantity = DBSession.query(StockAllocation.quantity).filter_by(**conditions).scalar()
+        sum_quantity = Stock.filter(Stock.id!=form.id.data)\
+                            .filter_by(**conditions)\
+                            .with_entities(func.sum(Stock.quantity))\
+                            .scalar()
+        if allocated_quantity < (sum_quantity + int(form.quantity.data)):
+            raise ValidationError(u'割り当てている在庫数の以上にはできません')
 
 
 class StockForms(Form):

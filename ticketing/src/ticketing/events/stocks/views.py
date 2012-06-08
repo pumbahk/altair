@@ -21,11 +21,13 @@ class Stocks(BaseView):
     @view_config(route_name='stocks.allocate_number', request_method='POST', renderer='ticketing:templates/stocks/_form.html')
     def allocate_number(self):
         f = StockForms(self.request.POST)
+        for stock_form in f.stock_forms:
+            stock_form.form.performance_id.data = f.data.get('performance_id')
+            stock_form.form.stock_holder_id.data = f.data.get('stock_holder_id')
+
         if f.validate():
             for stock_form in f.stock_forms:
                 stock = merge_session_with_post(Stock(), stock_form.form.data)
-                stock.performance_id = f.data.get('performance_id')
-                stock.stock_holder_id = f.data.get('stock_holder_id')
                 stock.save()
 
             self.request.session.flash(u'席数を保存しました')
