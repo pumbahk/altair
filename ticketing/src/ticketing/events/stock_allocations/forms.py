@@ -7,7 +7,7 @@ from wtforms.widgets import CheckboxInput
 from sqlalchemy.sql import func
 
 from ticketing.formhelpers import Translations, Required
-from ticketing.products.models import Stock
+from ticketing.core.models import Stock
 
 class StockAllocationForm(Form):
     stock_type_id = HiddenField(

@@ -5,9 +5,9 @@ from wtforms import TextField, SelectField, HiddenField, FormField, IntegerField
 from wtforms.validators import Regexp, Length, NumberRange, Optional, ValidationError
 from sqlalchemy.sql import func
 
-from ticketing.models import record_to_multidict, DBSession
+from ticketing.core.models import record_to_multidict, DBSession
 from ticketing.formhelpers import Translations, Required
-from ticketing.products.models import Stock, StockHolder, StockAllocation
+from ticketing.core.models import Stock, StockHolder, StockAllocation
 
 class StockForm(Form):
 

@@ -10,7 +10,7 @@ from pyramid.url import route_path
 from ticketing.views import BaseView
 from ticketing.models import merge_session_with_post, record_to_multidict, LogicallyDeleted
 from ticketing.fanstatic import with_bootstrap
-from ticketing.events.models import Account
+from ticketing.core.models import Account
 from ticketing.accounts.forms import AccountForm
 from ticketing.organizations.forms import OrganizationForm
 

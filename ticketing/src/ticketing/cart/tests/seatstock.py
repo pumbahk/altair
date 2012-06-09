@@ -2,7 +2,7 @@
 
 from fixture import DataSet
 from seed.event import PerformanceData
-from ticketing.products.models import SeatStock, SeatStatusEnum
+from ticketing.core.models import SeatStock, SeatStatusEnum
 from datetime import datetime
 from stock import StockData
 from seatmasterl2 import SeatMasterL2Data

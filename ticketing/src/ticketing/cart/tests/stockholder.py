@@ -3,7 +3,7 @@
 from fixture import DataSet
 from seed.account import AccountData
 from seed.event import PerformanceData
-from ticketing.products.models import StockHolder
+from ticketing.core.models import StockHolder
 from datetime import datetime
 
 class StockHolderData(DataSet):

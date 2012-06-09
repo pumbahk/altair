@@ -7,7 +7,7 @@ from hashlib import md5
 
 from ticketing.utils import StandardEnum
 
-from ticketing.organizations.models import Organization
+from ticketing.core.models import Organization
 from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, DBSession, Identifier, relationship
 
 operator_role_association_table = Table('OperatorRole_Operator', Base.metadata,

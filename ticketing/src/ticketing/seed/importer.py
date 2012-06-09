@@ -8,15 +8,12 @@ from sqlalchemy.orm import *
 import sqlahelper
 
 from ticketing.oauth2.models import *
-from ticketing.organizations.models import *
-from ticketing.events.models import *
 from ticketing.master.models import *
 from ticketing.oauth2.models import *
 from ticketing.operators.models import *
 from ticketing.orders.models import *
-from ticketing.products.models import *
 from ticketing.users.models import *
-from ticketing.venues.models import *
+from ticketing.core.models import *
 
 from bank import BankData, BankAccountData
 from prefecture import PrefectureMaster
@@ -37,7 +34,6 @@ from ticketing.products.tests.payment_delivery_method import DeliveryMethodPlugi
 from ticketing.oauth2.models import Service
 from ticketing.operators.models import Operator, OperatorActionHistory, OperatorRole, Permission
 from ticketing.bookmark.models import Bookmark
-from ticketing.products.models import PaymentMethod, DeliveryMethod, PaymentMethodPlugin, DeliveryMethodPlugin
 from ticketing.sej.models import SejOrder, SejTicket, SejTicketFile, SejNotification
 
 def import_seed_data():
@@ -63,6 +59,17 @@ def import_seed_data():
              'VenueEvent2Data'        : Venue,
              'TemplateSeatVenue1Data' : Seat,
              'TemplateSeatVenue2Data' : Seat,
+             'VenueArea_group_l0_idData': VenueArea_group_l0_id,
+             'VenueAreaTemplateVenue1Data': VenueArea,
+             'VenueAreaTemplateVenue2Data': VenueArea,
+             'VenueAreaEvent1Venue1Data': VenueArea,
+             'VenueAreaEvent1Venue2Data': VenueArea,
+             'VenueAreaEvent1Venue3Data': VenueArea,
+             'VenueAreaEvent1Venue4Data': VenueArea,
+             'VenueAreaEvent1Venue5Data': VenueArea,
+             'VenueAreaEvent2Venue1Data': VenueArea,
+             'VenueAreaEvent2Venue2Data': VenueArea,
+             'VenueAreaEvent2Venue3Data': VenueArea,
              'SeatEvent1Venue1Data'   : Seat,
              'SeatEvent1Venue2Data'   : Seat,
              'SeatEvent1Venue3Data'   : Seat,
@@ -79,17 +86,6 @@ def import_seed_data():
              'SeatStatusEvent2Venue1Data': SeatStatus,
              'SeatStatusEvent2Venue2Data': SeatStatus,
              'SeatStatusEvent2Venue3Data': SeatStatus,
-             'VenueArea_group_l0_idData': VenueArea_group_l0_id,
-             'VenueAreaTemplateVenue1Data': VenueArea,
-             'VenueAreaTemplateVenue2Data': VenueArea,
-             'VenueAreaEvent1Venue1Data': VenueArea,
-             'VenueAreaEvent1Venue2Data': VenueArea,
-             'VenueAreaEvent1Venue3Data': VenueArea,
-             'VenueAreaEvent1Venue4Data': VenueArea,
-             'VenueAreaEvent1Venue5Data': VenueArea,
-             'VenueAreaEvent2Venue1Data': VenueArea,
-             'VenueAreaEvent2Venue2Data': VenueArea,
-             'VenueAreaEvent2Venue3Data': VenueArea,
              'TemplateSeatAttributeData': SeatAttribute,
              'SeatAttributeData': SeatAttribute,
              'SeatAdjacencySetData': SeatAdjacencySet,

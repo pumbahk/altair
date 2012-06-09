@@ -5,7 +5,7 @@ from wtforms import TextField, HiddenField, SelectField, DecimalField
 from wtforms.validators import Length, Optional
 
 from ticketing.formhelpers import Translations, Required
-from ticketing.products.models import DeliveryMethodPlugin
+from ticketing.core.models import DeliveryMethodPlugin
 
 class DeliveryMethodForm(Form):
 

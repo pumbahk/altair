@@ -10,7 +10,7 @@ from pyramid.url import route_path
 from ticketing.views import BaseView
 from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.fanstatic import with_bootstrap
-from ticketing.products.models import DeliveryMethod
+from ticketing.core.models import DeliveryMethod
 from ticketing.delivery_methods.forms import DeliveryMethodForm
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")

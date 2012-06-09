@@ -5,7 +5,7 @@ from wtforms import TextField, HiddenField, SelectField
 from wtforms.validators import Length, Optional
 
 from ticketing.formhelpers import Translations, Required
-from ticketing.organizations.models import Organization
+from ticketing.core.models import Organization
 
 class AccountForm(Form):
 

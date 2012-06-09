@@ -4,12 +4,11 @@ from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path
 
-from ticketing.models import merge_session_with_post, record_to_multidict
+from ticketing.core.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
-from ticketing.events.models import SalesSegment, PaymentDeliveryMethodPair
+from ticketing.core.models import SalesSegment, PaymentDeliveryMethodPair, PaymentMethod, DeliveryMethod
 from ticketing.events.payment_delivery_method_pairs.forms import PaymentDeliveryMethodPairForm
-from ticketing.products.models import PaymentMethod, DeliveryMethod
 
 @view_defaults(decorator=with_bootstrap)
 class PaymentDeliveryMethodPairs(BaseView):

@@ -5,7 +5,7 @@ from wtforms import TextField, IntegerField, HiddenField, SelectField
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 
 from ticketing.formhelpers import DateTimeField, Translations, Required
-from ticketing.events.models import Event, Account
+from ticketing.core.models import Event, Account
 
 class EventForm(Form):
 

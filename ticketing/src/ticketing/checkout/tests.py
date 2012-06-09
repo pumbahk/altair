@@ -4,9 +4,7 @@ import unittest
 from pyramid import testing
 
 from . import models
-import ticketing.venues.models
-import ticketing.products.models
-import ticketing.events.models
+import ticketing.models
 import ticketing.orders.models
 
 

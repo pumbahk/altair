@@ -7,9 +7,8 @@ import sqlalchemy as sa
 import sqlalchemy.orm as orm
 
 # for schema dependencies
-import ticketing.venues.models
+import ticketing.core.models
 import ticketing.orders.models
-import ticketing.events.models
 
 Base = sqlahelper.get_base()
 DBSession = sqlahelper.get_session()

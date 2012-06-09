@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from ticketing.seed import DataSet
-from ticketing.products.models import *
+from ..core.models import *
 
 from account import AccountData
 from .event import EventData, SalesSegmentEvent1Data, SalesSegmentEvent2Data, PerformanceEvent1Data, PerformanceEvent2Data

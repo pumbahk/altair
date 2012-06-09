@@ -5,8 +5,7 @@ from wtforms import TextField, SelectField, DecimalField, IntegerField, HiddenFi
 from wtforms.validators import NumberRange, Regexp, Length, Optional, ValidationError
 
 from ticketing.formhelpers import Translations, Required
-from ticketing.products.models import PaymentMethod, DeliveryMethod
-from ticketing.events.models import PaymentDeliveryMethodPair
+from ticketing.core.models import PaymentMethod, DeliveryMethod, PaymentDeliveryMethodPair
 
 class PaymentDeliveryMethodPairForm(Form):
 

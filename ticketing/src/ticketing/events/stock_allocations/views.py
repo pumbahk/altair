@@ -7,13 +7,11 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.renderers import render_to_response
 from pyramid.url import route_path
 
-from ticketing.models import merge_session_with_post
+from ticketing.core.models import merge_session_with_post
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
-from ticketing.venues.models import Venue, Seat
-from ticketing.events.models import Event, Performance
 from ticketing.events.stock_allocations.forms import StockAllocationForm
-from ticketing.products.models import StockType, StockTypeEnum, StockAllocation
+from ticketing.core.models import Venue, Seat, StockType, StockTypeEnum, StockAllocation, Event, Performance
 
 from sqlalchemy import sql
 

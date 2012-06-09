@@ -6,9 +6,8 @@ from markupsafe import Markup
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from pyramid.view import view_config
 from pyramid.decorator import reify
-from ticketing.models import DBSession
-import ticketing.events.models as e_models
-import ticketing.products.models as p_models
+from ..models import DBSession
+from ..core import models as c_models
 from . import helpers as h
 from ..multicheckout import helpers as m_h
 from ..multicheckout import api as multicheckout_api
@@ -25,7 +24,7 @@ class IndexView(object):
     @view_config(route_name='cart.index', renderer='ticketing:templates/carts/index.html', xhr=False)
     def __call__(self):
         event_id = self.request.matchdict['event_id']
-        e = DBSession.query(e_models.Event).filter_by(id=event_id).first()
+        e = DBSession.query(c_models.Event).filter_by(id=event_id).first()
         if e is None:
             raise HTTPNotFound(self.request.url)
         # 日程,会場,検索項目のコンボ用
@@ -62,12 +61,12 @@ class IndexView(object):
     def get_seat_types(self):
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.matchdict['performance_id']
-        seat_types = DBSession.query(p_models.StockType).filter(
-            e_models.Performance.event_id==event_id).filter(
-            e_models.Performance.id==performance_id).filter(
-            e_models.Performance.event_id==p_models.StockHolder.event_id).filter(
-            p_models.StockHolder.id==p_models.Stock.stock_holder_id).filter(
-            p_models.Stock.stock_type_id==p_models.StockType.id).all()
+        seat_types = DBSession.query(c_models.StockType).filter(
+            c_models.Performance.event_id==event_id).filter(
+            c_models.Performance.id==performance_id).filter(
+            c_models.Performance.event_id==c_models.StockHolder.event_id).filter(
+            c_models.StockHolder.id==c_models.Stock.stock_holder_id).filter(
+            c_models.Stock.stock_type_id==c_models.StockType.id).all()
             
         data = dict(seat_types=[
                 dict(id=s.id, name=s.name,
@@ -88,14 +87,14 @@ class IndexView(object):
         seat_type_id = self.request.matchdict['seat_type_id']
         performance_id = self.request.matchdict['performance_id']
 
-        seat_type = DBSession.query(p_models.StockType).filter_by(id=seat_type_id).one()
+        seat_type = DBSession.query(c_models.StockType).filter_by(id=seat_type_id).one()
 
-        q = DBSession.query(p_models.ProductItem.product_id).filter(
-            p_models.ProductItem.stock_type_id==seat_type_id).filter(
-            p_models.ProductItem.performance_id==performance_id)
+        q = DBSession.query(c_models.ProductItem.product_id).filter(
+            c_models.ProductItem.stock_type_id==seat_type_id).filter(
+            c_models.ProductItem.performance_id==performance_id)
             
-        query = DBSession.query(p_models.Product).filter(
-            p_models.Product.id.in_(q))
+        query = DBSession.query(c_models.Product).filter(
+            c_models.Product.id.in_(q))
 
         products = [dict(id=p.id, name=p.name, price=h.format_number(p.price, ","))
             for p in query]
@@ -134,7 +133,7 @@ class ReserveView(object):
         if len(controls) == 0:
             return []
 
-        products = dict([(p.id, p) for p in DBSession.query(p_models.Product).filter(p_models.Product.id.in_([c[0] for c in controls]))])
+        products = dict([(p.id, p) for p in DBSession.query(c_models.Product).filter(c_models.Product.id.in_([c[0] for c in controls]))])
 
         return [(products.get(int(c[0])), c[1]) for c in controls]
 

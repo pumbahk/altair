@@ -2,7 +2,7 @@
 
 from fixture import DataSet
 from seed.event import EventData
-from ticketing.venues.models import StockType
+from ticketing.core.models import StockType
 from datetime import datetime
 
 class StockTypeData(DataSet):

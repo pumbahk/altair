@@ -4,8 +4,7 @@ from ticketing.seed import DataSet
 
 from organization import OrganizationData
 from user import UserData
-from ticketing.models import *
-from ticketing.events.models import *
+from ticketing.core.models import *
 
 class AccountData(DataSet):
     class account_1:

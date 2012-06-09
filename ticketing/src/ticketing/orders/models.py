@@ -4,10 +4,8 @@ from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, Strin
 from sqlalchemy.orm import join, backref, column_property
 
 from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier, relationship
+from ticketing.core.models import Seat, Performance, Product, ProductItem
 from ticketing.users.models import User
-from ticketing.events.models import Performance
-from ticketing.products.models import Product, ProductItem
-from ticketing.venues.models import Seat
 
 class ShippingAddress(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'ShippingAddress'

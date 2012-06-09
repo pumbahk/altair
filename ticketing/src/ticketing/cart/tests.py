@@ -7,9 +7,7 @@ def _setup_db():
     import sqlahelper
     from sqlalchemy import create_engine
     from . import models
-    import ticketing.venues.models
-    import ticketing.products.models
-    import ticketing.events.models
+    import ticketing.models
     import ticketing.orders.models
 
     engine = create_engine("sqlite:///")
@@ -186,16 +184,15 @@ class CartedProductItemTests(unittest.TestCase):
         self.assertEqual(result[2].stock_id, 2)
 
     def _add_seat(self, carted_product_item, quantity):
-        from ..venues import models as v_models
-        from ..organizations import models as o_models
+        from ..core import models as c_models
 
         seat_statuses = []
-        organization = o_models.Organization(id=532)
-        site = v_models.Site(id=899)
-        venue = v_models.Venue(id=100, site=site, organization=organization)
+        organization = c_models.Organization(id=532)
+        site = c_models.Site(id=899)
+        venue = c_models.Venue(id=100, site=site, organization=organization)
         for i in range(quantity):
-            seat = v_models.Seat(id=i, venue=venue)
-            status = v_models.SeatStatus(seat=seat, status=int(v_models.SeatStatusEnum.InCart))
+            seat = c_models.Seat(id=i, venue=venue)
+            status = c_models.SeatStatus(seat=seat, status=int(c_models.SeatStatusEnum.InCart))
             carted_product_item.seats.append(seat)
             seat_statuses.append(status)
             self.session.add(seat)
@@ -209,9 +206,9 @@ class CartedProductItemTests(unittest.TestCase):
         self._assertAllOrdered(statuses)
 
     def _assertAllOrdered(self, statuses):
-        from ..venues import models as v_models
+        from ..core.models import SeatStatusEnum
         for s in statuses:
-            self.assertEqual(s.status, int(v_models.SeatStatusEnum.Ordered))
+            self.assertEqual(s.status, int(SeatStatusEnum.Ordered))
 
 
 class TicketingCartResourceTests(unittest.TestCase):
@@ -293,17 +290,15 @@ class TicketingCartResourceTests(unittest.TestCase):
 #        self.assertEqual(len(cart.products), 0)
 
     def _add_venue(self, organization_id, site_id, venue_id):
-        from ticketing.venues.models import Venue, Site
-        from ticketing.organizations.models import Organization
+        from ticketing.core.models import Venue, Site
+        from ..core.models import Organization
         organization = Organization(id=organization_id)
         site = Site(id=site_id)
         venue = Venue(id=venue_id, site=site, organization_id=organization.id)
         return venue
 
     def test_order_products_one_order(self):
-        from ticketing.venues.models import Seat, SeatAdjacency, SeatAdjacencySet, SeatStatus, SeatStatusEnum
-        from ticketing.products.models import Stock, StockStatus, Product, ProductItem
-        from ticketing.events.models import Performance
+        from ..core. models import Seat, SeatAdjacency, SeatAdjacencySet, SeatStatus, SeatStatusEnum, Stock, StockStatus, Product, ProductItem, Performance
 
         # 在庫
         stock_id = 1
@@ -390,7 +385,7 @@ class ReserveViewTests(unittest.TestCase):
         self.assertEqual(list(result), [])
 
     def test_order_items(self):
-        from ticketing.products.models import Product
+        from ticketing.core.models import Product
         p1 = Product(id=1, price=100)
         p2 = Product(id=2, price=150)
         self.session.add(p1)
@@ -408,7 +403,7 @@ class ReserveViewTests(unittest.TestCase):
         self.assertEqual(list(result), [("1", 10), ("2", 20)])
 
     def test_ordered_items(self):
-        from ticketing.products.models import Product
+        from ticketing.core.models import Product
         p1 = Product(id=1, price=100)
         p2 = Product(id=2, price=150)
         self.session.add(p1)
@@ -427,8 +422,8 @@ class ReserveViewTests(unittest.TestCase):
 
 
     def _add_venue(self, organization_id, site_id, venue_id):
-        from ticketing.venues.models import Venue, Site
-        from ticketing.organizations.models import Organization
+        from ticketing.core.models import Venue, Site
+        from ..core.models import Organization
         organization = Organization(id=organization_id)
         site = Site(id=site_id)
         venue = Venue(id=venue_id, site=site, organization_id=organization.id)
@@ -437,9 +432,7 @@ class ReserveViewTests(unittest.TestCase):
     def test_it(self):
 
 
-        from ticketing.venues.models import Seat, SeatAdjacency, SeatAdjacencySet, SeatStatus, SeatStatusEnum
-        from ticketing.products.models import Stock, StockStatus, Product, ProductItem
-        from ticketing.events.models import Performance
+        from ticketing.core.models import Seat, SeatAdjacency, SeatAdjacencySet, SeatStatus, SeatStatusEnum, Stock, StockStatus, Product, ProductItem, Performance
         from .models import Cart
         from .resources import TicketingCartResrouce
 
@@ -509,9 +502,7 @@ class ReserveViewTests(unittest.TestCase):
 
     def test_it_no_stock(self):
 
-        from ticketing.venues.models import Seat, SeatAdjacency, SeatAdjacencySet, SeatStatus, SeatStatusEnum
-        from ticketing.products.models import Stock, StockStatus, Product, ProductItem
-        from ticketing.events.models import Performance
+        from ticketing.core.models import Seat, SeatAdjacency, SeatAdjacencySet, SeatStatus, SeatStatusEnum, Stock, StockStatus, Product, ProductItem, Performance
         from .models import Cart
         from .resources import TicketingCartResrouce
 
@@ -567,9 +558,7 @@ class ReserveViewTests(unittest.TestCase):
     def test_it_no_seat(self):
 
 
-        from ticketing.venues.models import Seat, SeatAdjacency, SeatAdjacencySet, SeatStatus, SeatStatusEnum
-        from ticketing.products.models import Stock, StockStatus, Product, ProductItem
-        from ticketing.events.models import Performance
+        from ticketing.core.models import Seat, SeatAdjacency, SeatAdjacencySet, SeatStatus, SeatStatusEnum, Stock, StockStatus, Product, ProductItem, Performance
         from .models import Cart
         from .resources import TicketingCartResrouce
 

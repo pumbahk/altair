@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from fixture import DataSet
-from ticketing.products.models import DeliveryMethod
+from ticketing.core.models import DeliveryMethod
 from datetime import datetime
 
 class DeliveryMethodData(DataSet):

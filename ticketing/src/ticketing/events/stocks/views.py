@@ -11,10 +11,8 @@ from sqlalchemy.sql import func
 from ticketing.models import merge_session_with_post
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
-from ticketing.venues.models import Venue, Seat
-from ticketing.events.models import Event, Performance
+from ticketing.core.models import Venue, Seat, Event, Performance, Stock, StockAllocation
 from ticketing.events.stocks.forms import StockForms
-from ticketing.products.models import Stock, StockAllocation
 
 @view_defaults(decorator=with_bootstrap)
 class Stocks(BaseView):

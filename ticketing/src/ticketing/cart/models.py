@@ -29,7 +29,7 @@ from sqlalchemy import sql
 from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm.exc import NoResultFound
 
-from ..venues import models as v_models
+from ..core import models as c_models
 Base = sqlahelper.get_base()
 DBSession = sqlahelper.get_session()
 
@@ -68,7 +68,7 @@ class CartedProductItem(Base):
         """ 必要な座席を取り出して保持する
 
         必要な座席： :attr:`product_item` の stockが一致する Seat
-        :param seats: list of :class:`ticketing.venues.models.Seat`
+        :param seats: list of :class:`ticketing.models.Seat`
         """
 
         # TODO: ループじゃなくてquantityでスライスするような実装も可能
@@ -85,13 +85,13 @@ class CartedProductItem(Base):
     def seat_statuses(self):
         """ 確保済の座席ステータス
         """
-        return DBSession.query(v_models.SeatStatus).filter(v_models.SeatStatus.seat_id.in_([s.id for s in self.seats])).all()
+        return DBSession.query(c_models.SeatStatus).filter(c_models.SeatStatus.seat_id.in_([s.id for s in self.seats])).all()
 
     def finish(self):
         """ 決済処理
         """
         for seat_status in self.seat_statuses:
-            seat_status.status = int(v_models.SeatStatusEnum.Ordered)
+            seat_status.status = int(c_models.SeatStatusEnum.Ordered)
         self.finished_at = datetime.now()
 
 

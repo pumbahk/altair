@@ -4,7 +4,7 @@ from ticketing.seed import DataSet
 
 from bank import BankAccountData
 from prefecture import PrefectureMaster
-from ticketing.models import *
+from ticketing.core.models import *
 
 class UserData(DataSet):
     class user_1:
@@ -48,7 +48,7 @@ class UserProfileData(DataSet):
         birth_day       = date(1955,1,1)
         sex             = 1
         zip             = '251-0036'
-        prefecture      = PrefectureMaster.tokyo
+        prefecture      = u"東京都"
         city            = u'五反田'
         street          = u'１−２'
         address         = u'３４５'
@@ -69,7 +69,7 @@ class UserProfileData(DataSet):
         birth_day       = date(1955,1,1)
         sex             = 1
         zip             = '251-0036'
-        prefecture      = PrefectureMaster.tokyo
+        prefecture      = u"東京都"
         city            = u'五反田'
         street          = u'１−２'
         address         = u'３４５'
@@ -90,7 +90,7 @@ class UserProfileData(DataSet):
         birth_day       = date(1955,1,1)
         sex             = 1
         zip             = '251-0036'
-        prefecture      = PrefectureMaster.tokyo
+        prefecture      = u"東京都"
         city            = u'五反田'
         street          = u'１−２'
         address         = u'３４５'
@@ -111,7 +111,7 @@ class UserProfileData(DataSet):
         birth_day       = date(1955,1,1)
         sex             = 1
         zip             = '251-0036'
-        prefecture      = PrefectureMaster.tokyo
+        prefecture      = u"東京都"
         city            = u'五反田'
         street          = u'１−２'
         address         = u'３４５'
@@ -132,7 +132,7 @@ class UserProfileData(DataSet):
         birth_day       = date(1955,1,1)
         sex             = 1
         zip             = '251-0036'
-        prefecture      = PrefectureMaster.tokyo
+        prefecture      = u"東京都"
         city            = u'五反田'
         street          = u'１−２'
         address         = u'３４５'
@@ -153,7 +153,7 @@ class UserProfileData(DataSet):
         birth_day       = date(1955,1,1)
         sex             = 1
         zip             = '251-0036'
-        prefecture      = PrefectureMaster.tokyo
+        prefecture      = u"東京都"
         city            = u'五反田'
         street          = u'１−２'
         address         = u'３４５'
@@ -174,7 +174,7 @@ class UserProfileData(DataSet):
         birth_day       = date(1955,1,1)
         sex             = 1
         zip             = '251-0036'
-        prefecture      = PrefectureMaster.tokyo
+        prefecture      = u"東京都"
         city            = u'五反田'
         street          = u'１−２'
         address         = u'３４５'

@@ -6,7 +6,7 @@ from pyramid.url import route_path
 import webhelpers.paginate as paginate
 
 from ticketing.models import merge_session_with_post, record_to_appstruct, merge_and_flush
-from ticketing.organizations.models import Organization
+from ..core.models import Organization
 from ticketing.operators.models import Operator, OperatorRole, Permission
 from ticketing.orders.models import Order
 from ticketing.orders.forms import OrderForm

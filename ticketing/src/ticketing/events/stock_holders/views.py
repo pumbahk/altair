@@ -8,14 +8,13 @@ from pyramid.url import route_path
 from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
-from ticketing.events.models import Event, Performance, Account, SalesSegment
 from ticketing.events.performances.forms import PerformanceForm
 from ticketing.events.stock_holders.forms import StockHolderForm
 from ticketing.events.sales_segments.forms import SalesSegmentForm
 from ticketing.events.stock_types.forms import StockTypeForm
 from ticketing.events.stock_allocations.forms import StockAllocationForm
-from ticketing.products.models import Product, StockHolder
 from ticketing.products.forms import ProductForm, ProductItemForm
+from ticketing.core.models import Event, Performance, Account, SalesSegment, Product, StockHolder
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class StockHolders(BaseView):

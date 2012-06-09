@@ -5,7 +5,7 @@ from wtforms import TextField, HiddenField, SelectField, DecimalField
 from wtforms.validators import Length, Optional, NumberRange
 
 from ticketing.formhelpers import Translations, Required
-from ticketing.products.models import PaymentMethodPlugin
+from ticketing.core.models import PaymentMethodPlugin
 
 class PaymentMethodForm(Form):
 

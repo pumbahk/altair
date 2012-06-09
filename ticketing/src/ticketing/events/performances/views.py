@@ -7,17 +7,16 @@ from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path
 
-from ticketing.models import merge_session_with_post, record_to_multidict, DBSession
+from ticketing.core.models import merge_session_with_post, record_to_multidict, DBSession
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
-from ticketing.events.models import Event, Performance, Account, SalesSegment
 from ticketing.events.performances.forms import PerformanceForm
 from ticketing.events.stock_types.forms import StockTypeForm
 from ticketing.events.stock_allocations.forms import StockAllocationForm
 from ticketing.events.stock_holders.forms import StockHolderForm
 from ticketing.events.stocks.forms import StockForms
 from ticketing.events.sales_segments.forms import SalesSegmentForm
-from ticketing.products.models import Product, StockType
+from ticketing.core.models import Product, StockType, Event, Performance, Account, SalesSegment
 from ticketing.products.forms import ProductForm, ProductItemForm
 from ticketing.orders.models import Order
 from ticketing.orders.forms import OrderForm

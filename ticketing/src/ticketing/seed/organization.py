@@ -3,9 +3,8 @@
 from ticketing.seed import DataSet
 from datetime import datetime
 
-from prefecture import PrefectureMaster
 from user import UserData
-from ticketing.organizations.models import *
+from ticketing.core.models import *
 
 class OrganizationData(DataSet):
     class organization_0:
@@ -13,7 +12,7 @@ class OrganizationData(DataSet):
         user            = UserData.user_1
         code            = u'RKT'
         client_type     = OrganizationTypeEnum.Standard.v
-        prefecture      = PrefectureMaster.tokyo
+        prefecture      = u"東京都"
         city            = u"品川区"
         address         = u"東五反田"
         street          = u"1-1-1"
@@ -28,7 +27,7 @@ class OrganizationData(DataSet):
         user            = UserData.user_2
         code            = u'PIA'
         client_type     = OrganizationTypeEnum.Standard.v
-        prefecture      = PrefectureMaster.tokyo
+        prefecture      = u"東京都"
         city            = u"品川区"
         address         = u"東五反田"
         street          = u"1-1-1"
@@ -43,7 +42,7 @@ class OrganizationData(DataSet):
         user            = UserData.user_3
         code            = u'EPS'
         client_type     = OrganizationTypeEnum.Standard.v
-        prefecture      = PrefectureMaster.tokyo
+        prefecture      = u"東京都"
         city            = u"品川区"
         address         = u"東五反田"
         street          = u"1-1-1"
@@ -58,7 +57,7 @@ class OrganizationData(DataSet):
         user            = UserData.user_4
         code            = u'LWS'
         client_type     = OrganizationTypeEnum.Standard.v
-        prefecture      = PrefectureMaster.tokyo
+        prefecture      = u"東京都"
         city            = u"品川区"
         address         = u"東五反田"
         street          = u"1-1-1"
@@ -73,7 +72,7 @@ class OrganizationData(DataSet):
         user            = UserData.user_5
         code            = u'CL4'
         client_type     = OrganizationTypeEnum.Standard.v
-        prefecture      = PrefectureMaster.tokyo
+        prefecture      = u"東京都"
         city            = u"品川区"
         address         = u"東五反田"
         street          = u"1-1-1"
@@ -88,7 +87,7 @@ class OrganizationData(DataSet):
         user            = UserData.user_6
         code            = u'CL5'
         client_type     = OrganizationTypeEnum.Standard.v
-        prefecture      = PrefectureMaster.tokyo
+        prefecture      = u"東京都"
         city            = u"品川区"
         address         = u"東五反田"
         street          = u"1-1-1"
@@ -103,7 +102,7 @@ class OrganizationData(DataSet):
         user            = UserData.user_7
         code            = u'CL6'
         client_type     = OrganizationTypeEnum.Standard.v
-        prefecture      = PrefectureMaster.tokyo
+        prefecture      = u"東京都"
         city            = u"品川区"
         address         = u"東五反田"
         street          = u"1-1-1"

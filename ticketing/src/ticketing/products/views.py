@@ -10,9 +10,8 @@ from pyramid.url import route_path
 from ticketing.fanstatic import with_bootstrap
 from ticketing.models import merge_session_with_post
 from ticketing.views import BaseView
-from ticketing.products.models import Product, ProductItem
+from ticketing.core.models import Product, ProductItem, Event, Performance
 from ticketing.products.forms import ProductForm, ProductItemForm
-from ticketing.events.models import Event, Performance
 
 @view_defaults(decorator=with_bootstrap)
 class Products(BaseView):

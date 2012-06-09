@@ -12,9 +12,9 @@ from deform.exception import ValidationFailure
 from ticketing.fanstatic import with_bootstrap
 from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
-from ticketing.organizations.models import Organization
+from ..core.models import Organization
 from ticketing.organizations.forms import OrganizationForm
-from ticketing.events.models import Event, Account
+from ticketing.core.models import Event, Account
 
 #@view_defaults(decorator=with_bootstrap, permission="administrator")
 @view_defaults(decorator=with_bootstrap)

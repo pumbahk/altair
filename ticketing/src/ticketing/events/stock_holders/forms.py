@@ -5,7 +5,7 @@ from wtforms import TextField, SelectField, HiddenField
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 
 from ticketing.formhelpers import DateTimeField, Translations, Required
-from ticketing.events.models import Account
+from ticketing.core.models import Account
 
 class StockHolderForm(Form):
 

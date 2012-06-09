@@ -5,8 +5,7 @@ from wtforms import TextField, SelectField, IntegerField, DecimalField, SelectMu
 from wtforms.validators import Length, NumberRange, EqualTo, Optional, ValidationError
 
 from ticketing.formhelpers import Translations, Required
-from ticketing.events.models import SalesSegment
-from ticketing.products.models import ProductItem, StockHolder, Stock
+from ticketing.core.models import SalesSegment, ProductItem, StockHolder, Stock
 
 class ProductForm(Form):
 
