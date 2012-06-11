@@ -174,6 +174,7 @@ class TicketingCartResrouce(object):
         :returns: :class:`.models.Cart`
         """
 
+        logger.debug("order performance_id = %s, ordered_products = %s" % (performance_id, ordered_products))
         m.DBSession.bind.echo = True
         conn = m.DBSession.bind.connect()
         try:

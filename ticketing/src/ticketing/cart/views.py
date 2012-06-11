@@ -21,7 +21,7 @@ class IndexView(object):
         self.request = request
 
     
-    @view_config(route_name='cart.index', renderer='ticketing:templates/carts/index.html', xhr=False)
+    @view_config(route_name='cart.index', renderer='carts/index.html', xhr=False)
     def __call__(self):
         event_id = self.request.matchdict['event_id']
         e = DBSession.query(c_models.Event).filter_by(id=event_id).first()
@@ -119,6 +119,7 @@ class ReserveView(object):
             if m is None:
                 continue
             quantity = int(value)
+            logger.debug("key = %s, value = %s" % (key, value))
             if quantity == 0:
                 continue
             yield m.groupdict()['product_id'], quantity
@@ -130,10 +131,12 @@ class ReserveView(object):
         """
 
         controls = list(self.iter_ordered_items())
+        logger.debug('order %s' % controls)
         if len(controls) == 0:
             return []
 
         products = dict([(p.id, p) for p in DBSession.query(c_models.Product).filter(c_models.Product.id.in_([c[0] for c in controls]))])
+        logger.debug('order %s' % products)
 
         return [(products.get(int(c[0])), c[1]) for c in controls]
 
@@ -184,10 +187,6 @@ class PaymentView(object):
             for m in methods
         ])
 
-    @view_config(route_name='cart.payment.method', request_method="GET")
-    def paymentmethod(self):
-        """ 支払い方法選択後
-        """
 
 class MultiCheckoutView(object):
     """ マルチ決済API
