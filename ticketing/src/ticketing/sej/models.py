@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from ticketing.models import BaseModel, LogicallyDeleted, WithTimestamp, MutationDict, JSONEncodedDict, relationship, Identifier
-from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, ForeignKey, Enum, DECIMAL
+from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, Date, ForeignKey, Enum, DECIMAL, Binary
 from sqlalchemy.orm import relationship, join, column_property, mapper, backref
 
 from datetime import datetime
@@ -11,6 +11,18 @@ import sqlahelper
 
 session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
+
+class SejTicketTemplateFile(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
+    __tablename__           = 'SejTicketTemplateFile'
+    id                      = Column(Identifier, primary_key=True)
+    status                  = Column(Enum('1', '2', '3', '4'))
+    template_id             = Column(String(200))
+    template_name           = Column(String(36))
+    ticket_html             = Column(Binary)
+    ticket_css              = Column(Binary)
+    publish_start_date      = Column(Date)
+    publish_end_date        = Column(Date)
+    send_at                 = Column(DateTime)
 
 class SejCancelEvent(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     __tablename__           = 'SejCancelEvent'
@@ -138,6 +150,15 @@ class SejTicketFile(BaseModel, WithTimestamp, LogicallyDeleted, Base):
 class SejOrder(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     __tablename__           = 'SejOrder'
     id                      = Column(Identifier, primary_key=True)
+    shop_id                 = Column(String(5))
+    shop_name               = Column(String(64))
+    contact_01              = Column(String(64))
+    contact_02              = Column(String(64))
+    user_name               = Column(String(40))
+    user_name_kana          = Column(String(40))
+    tel                     = Column(String(12))
+    zip_code                = Column(String(7))
+    email                   = Column(String(64))
 
     order_id                = Column(String(12))
     exchange_number         = Column(String(13))
@@ -166,6 +187,11 @@ class SejOrder(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     ticketing_store_number  = Column(String(6))
     ticketing_store_name    = Column(String(36))
 
+    payment_due_at          = Column(DateTime, nullable=True)
+    ticketing_start_at      = Column(DateTime, nullable=True)
+    ticketing_due_at        = Column(DateTime, nullable=True)
+    regrant_number_due_at   = Column(DateTime, nullable=True)
+
     processed_at            = Column(DateTime, nullable=True)
 
     # 決済に日時
@@ -193,7 +219,7 @@ class SejTicket(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     ticket_template_id      = Column(String(10))
     ticket_data_xml         = Column(String(5000))
 
-    ticket                  = relationship("SejOrder", backref='tickets')
+    ticket                  = relationship("SejOrder", backref='tickets', order_by='SejTicket.ticket_idx')
     ticket_id               = Column(Identifier, ForeignKey("SejOrder.id"), nullable=True)
 
     ticket_idx              = Column(Integer)

@@ -1,34 +1,63 @@
 <%inherit file="../layout.html" />
-<%block name="title">Admin</%block>
+<%namespace file="/common/helpers.html" name="h"/>
+<%namespace file="/common/helpers.html" import="form_item" />
 
-<div class="box">
+<%block name="title">SEJ 手動チケット発券</%block>
+<%namespace file="common.html" name="c"/>
 
-    <form action="${request.route_path('orders.sej.request')}" method="POST">
-        <label><span>shop_name</span><input id="shop_name" name="shop_name" type="text" value=""></label>
-        <label><span>contact_01</span><input id="contact_01" name="contact_01" type="text" value=""></label>
-        <label><span>contact_02</span><input id="contact_02" name="contact_02" type="text" value=""></label>
-        <label><span>order_id</span><input id="order_id" name="order_id" type="text" value=""></label>
-        <label><span>username</span><input id="username" name="username" type="text" value=""></label>
-        <label><span>username_kana</span><input id="username_kana" name="username_kana" type="text" value=""></label>
-        <label><span>tel</span><input id="tel" name="tel" type="text" value=""></label>
-        <label><span>zip</span><input id="zip" name="zip" type="text" value=""></label>
-        <label><span>email</span><input id="email" name="email" type="text" value=""></label>
-        <label><span>total</span><input id="total" name="total" type="text" value=""></label>
-        <label><span>ticket_total</span><input id="ticket_total" name="ticket_total" type="text" value=""></label>
-        <label><span>commission_fee</span><input id="commission_fee" name="commission_fee" type="text" value=""></label>
-        <label><span>payment_type</span><input id="payment_type" name="payment_type" type="text" value=""></label>
-        <label><span>ticketing_fee</span><input id="ticketing_fee" name="ticketing_fee" type="text" value=""></label>
-        <label><span>payment_due_datetime</span><input id="payment_due_datetime" name="payment_due_datetime" type="text" value=""></label>
-        <label><span>ticketing_start_datetime</span><input id="ticketing_start_datetime" name="ticketing_start_datetime" type="text" value=""></label>
-        <label><span>ticketing_due_datetime</span><input id="ticketing_due_datetime" name="ticketing_due_datetime" type="text" value=""></label>
-        <label><span>regrant_number_datetime</span><input id="regrant_number_datetime" name="regrant_number_datetime" type="text" value=""></label>
-        <label><span>tickets</span><input id="tickets" name="tickets" type="text" value=""></label>
+<form action="${request.route_path('orders.sej.order.request')}" method="POST">
 
-        <div class="spacer">
-            <input type="submit" name="submit" value="新規リクエスト" />
-        </div>
-    </form>
-
+<div class="span4">
+    <h3>オーダー情報</h3>
+    ${form_item(form.payment_type)}
+    ${form_item(form.id)}
+    ${form_item(form.shop_id)}
+    ${form_item(form.shop_name)}
+    ${form_item(form.order_id)}
+    ${form_item(form.contact_01)}
+    ${form_item(form.contact_02)}
+    ${form_item(form.user_name)}
+    ${form_item(form.user_name_kana)}
+    ${form_item(form.tel)}
+    ${form_item(form.zip_code)}
+    ${form_item(form.email)}
+    ${form_item(form.total_price)}
+    ${form_item(form.ticket_price)}
+    ${form_item(form.commission_fee)}
+    ${form_item(form.ticketing_fee)}
+    ${form_item(form.payment_due_at)}
+    ${form_item(form.ticketing_start_at)}
+    ${form_item(form.ticketing_due_at)}
+    ${form_item(form.regrant_number_due_at)}
+    <div class="spacer">
+        <input type="submit" name="submit" value="更新リクエスト" />
+    </div>
+</div>
+<% idx = 0 %>
+<div class="span8" id="ticket-folder">
+    <div id="ticket" style="float: left">
+    <h3>チケット</h3>
+    ${form_item(form.ticket_type)}
+    ${form_item(form.event_name)}
+    ${form_item(form.performance_name)}
+    ${form_item(form.performance_datetime)}
+    ${form_item(form.ticket_template_id)}
+    ${form_item(form.ticket_data_xml)}
+    </div>
 </div>
 
+    <input id="add-ticket" type="button" value="チケット追加" />
 </form>
+<script type="text/javascript">
+  $(function() {
+    $('#add-ticket').click(function(){
+        var ticket = $('#ticket').clone(true);
+        $('ticket-folder').append(ticket);
+    });
+    $('#payment_due_at').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
+    $('#ticketing_start_at').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
+    $('#ticketing_due_at').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
+    $('#regrant_number_due_at').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
+    $('#performance_datetime').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
+  });
+</script>

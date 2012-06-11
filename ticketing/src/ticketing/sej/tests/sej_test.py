@@ -288,7 +288,7 @@ class SejTest(unittest.TestCase):
 
         request_order(
             shop_name       = u'楽天チケット',
-            contact_01      = u'contactあ',
+            contact_01      = u'contact',
             contact_02      = u'連絡先2',
             order_id        = u"orderid00001",
             username        = u"お客様氏名",
@@ -301,8 +301,8 @@ class SejTest(unittest.TestCase):
             commission_fee  = 1000,
             ticketing_fee   = 1000,
             payment_type    = SejPaymentType.CashOnDelivery,
-            payment_due_datetime = datetime.datetime(2012,7,30,7,00), #u'201207300700',
-            regrant_number_datetime = datetime.datetime(2012,7,30,7,00), # u'201207300700',
+            payment_due_at = datetime.datetime(2012,7,30,7,00), #u'201207300700',
+            regrant_number_due_at = datetime.datetime(2012,7,30,7,00), # u'201207300700',
 
             hostname=u"http://127.0.0.1:38001",
 
@@ -437,7 +437,7 @@ class SejTest(unittest.TestCase):
 
         sejTicketOrder = request_order(
              shop_name       = u'楽天チケット',
-             contact_01      = u'contactあ',
+             contact_01      = u'contact',
              contact_02      = u'連絡先2',
              order_id        = u"orderid00001",
              username        = u"お客様氏名",
@@ -450,8 +450,8 @@ class SejTest(unittest.TestCase):
              commission_fee  = 1000,
              ticketing_fee   = 1000,
              payment_type    = SejPaymentType.Paid,
-             payment_due_datetime = datetime.datetime(2012,7,30,7,00), #u'201207300700',
-            regrant_number_datetime = datetime.datetime(2012,7,30,7,00), # u'201207300700',
+             payment_due_at = datetime.datetime(2012,7,30,7,00), #u'201207300700',
+             regrant_number_due_at = datetime.datetime(2012,7,30,7,00), # u'201207300700',
 
              hostname=u"http://127.0.0.1:38001",
 
@@ -770,6 +770,324 @@ class SejTest(unittest.TestCase):
 
 
         request_cancel_event([event1, event2, event3])
+
+
+    def test_create_ticket_template(self):
+        from ticketing.sej.models import SejTicketTemplateFile
+        from ticketing.sej.ticket import package_ticket_template_to_zip
+        import sqlahelper
+        DBSession = sqlahelper.get_session()
+
+        st = SejTicketTemplateFile()
+
+        st.status = '1'
+        st.template_id = u'TTTS000001'
+        st.template_name = u'ＴＳテンプレート０１'
+        st.publish_start_date      = datetime.datetime(2012,06,06)
+        st.publish_end_date        = None
+        st.ticket_html = u'''<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+  <title></title>
+  <style type="text/css">
+body {
+  margin: 0 0;
+}
+
+.f0 { font-family: "Arial"; }
+.f1 { font-family: "Arial Black"; }
+.f2 { font-family: "Verdana"; }
+.f3 { font-family: "Impact"; }
+.f4 { font-family: "Comic Sans MS"; }
+.f5 { font-family: "Times New Roman"; }
+.f6 { font-family: "Courier New"; }
+.f7 { font-family: "Lucida Console"; }
+.f8 { font-family: "Lucida Sans Unicode"; }
+.f9 { font-family: "Modern"; }
+.f10 { font-family: "Microsoft Sans Serif"; }
+.f11 { font-family: "Roman"; }
+.f12 { font-family: "Script"; }
+.f13 { font-family: "Symbol"; }
+.f14 { font-family: "Wingdings"; }
+.f15 { font-family: "ＭＳ ゴシック"; }
+.f16 { font-family: "ＭＳ Ｐゴシック"; }
+.f17 { font-family: "ＭＳ 明朝"; }
+.f18 { font-family: "ＭＳ Ｐ明朝"; }
+.f19 { font-family: "MS UI Gothic"; }
+
+</style>
+  <script type="text/javascript">
+var fonts = [
+];
+
+function XHR() {
+  return typeof ActiveXObject != 'undefined' ?
+      new ActiveXObject("Msxml2.XMLHTTP"):
+      new XMLHttpRequest();
+}
+
+function loadXml(url, success, error) {
+  var xhr = XHR();
+  if (typeof xhr.overrideMimeType != 'undefined')
+    xhr.overrideMimeType('text/xml');
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState == 4) {
+      if (xhr.status == 200 || xhr.status == 0) {
+        var xml = xhr.responseXML;
+        try {
+          if ((!xml || !xml.documentElement) && xhr.responseText) {
+            if (window.DOMParser) {
+              var parser = new window.DOMParser();
+              xml = parser.parseFromString(xhr.responseText, "text/xml");
+            } else {
+              var xml = new ActiveXObject("Microsoft.XMLDOM");
+              xml.async = false;
+              xml.load(url);
+            }
+          } else if (!xhr.responseText) {
+            error('General failure');
+            return;
+          }
+        } catch (e) {
+          error(e.message);
+          return;
+        }
+        success(xml);
+      } else {
+        error(xhr.status);
+      }
+    }
+  };
+  try {
+    xhr.open("GET", url, true);
+    xhr.send();
+  } catch (e) {
+    error(e.message);
+  }
+}
+
+function parse(text, handlers) {
+  var regexp = /"((?:[^"]|\\.)*)"|:([^\s"]+)|(-?(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)(?:[eE][-+]?[0-9]+)?)|([*+/A-Za-z_-][0-9A-Za-z_-]*)|([ \t]+)|(\r\n|\r|\n)|(.)/g;
+  var stack = [];
+  var column = 0, line = 0;
+  handlers.$stack = stack;
+  for (var g; g = regexp.exec(text);) {
+    if (g[1]) {
+      stack.push(g[1].replace(/\\(.)/, '$1'));
+    } else if (g[2]) {
+      stack.push(g[2]);
+    } else if (g[3]) {
+      stack.push(parseFloat(g[3]));
+    } else if (g[4]) {
+      switch (g[4]) {
+      case 'D':
+        stack.push(stack[stack.length - 1]);
+        break;
+      default:
+        var handler = handlers[g[4]];
+        if (handler === void(0))
+          throw new Error("TSE00002: Unknown command: " + g[4]);
+        var arity = handler.length;
+        handler.apply(handlers, stack.splice(stack.length - arity, arity));
+        break;
+      }
+    } else if (g[6]) {
+      column = 0;
+      line++;
+      continue;
+    } else if (g[7]) {
+      throw new Error("TSE00001: Syntax error at column " + (column + 1) + " line " + (line + 1));
+    }
+    column += g[0].length;
+  }
+}
+
+function findXmlNode(xmldoc, n, path) {
+  var retval = null;
+  if (typeof ActiveXObject == 'undefined') {
+    var xpathResult = xmldoc.evaluate(path, n, null, XPathResult.ANY_TYPE, null);
+    switch (xpathResult.resultType) {
+    case XPathResult.UNORDERED_NODE_ITERATOR_TYPE:
+    case XPathResult.ORDERED_NODE_ITERATOR_TYPE:
+      retval = [];
+      for (var n = null; (n = xpathResult.iterateNext());)
+        retval.push(n);
+      break;
+    case XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE:
+    case XPathResult.ORDERED_NODE_SNAPSHOT_TYPE:
+      retval = [];
+      for (var i = 0, l = xpathResult.snapshotLength; i < l; i++)
+        retval.push(xpathResult.snapshotItem(i));
+      break;
+    case XPathResult.NUMBER_TYPE:
+      retval = xpathResult.numberValue;
+      break;
+    case XPathResult.STRING_TYPE:
+      retval = xpathResult.stringValue;
+      break;
+    case XPathResult.BOOLEAN_TYPE:
+      retval = xpathResult.booleanValue;
+      break;
+    }
+  } else {
+    retval = n.selectNodes(path);
+  }
+  return retval;
+}
+
+function stringizeXmlNodes(nodes) {
+  var retval = [];
+  for (var i = 0, l = nodes.length; i < l; i++) {
+    retval.push(stringizeXmlNode(nodes[i]));
+  }
+  return retval.join('');
+}
+
+function stringizeXmlNode(n) {
+  switch (n.nodeType) {
+  case 1:
+    return stringizeXmlNodes(n.childNodes);
+  default:
+    return n.nodeValue;
+  }
+}
+
+function newHandler(n, xmldoc) {
+  var path = [];
+  var unit = 'mm';
+  var fontSize = 10;
+  var classes = [];
+  var previousCommand = null;
+  var currentPoint = { x: 0., y: 0. };
+  return {
+    xn: function xmlNode(path) {
+      var nodes = findXmlNode(xmldoc, xmldoc.documentElement, path);
+      for (var i = 0; i < nodes.length; i++)
+        this.$stack.push(nodes[i]);
+      this.$stack.push(nodes.length);
+    },
+    sxn: function _stringizeXmlNodes() {
+      var l = this.$stack.pop();
+      var nodes = this.$stack.splice(this.$stack.length - l, l);
+      this.$stack.push(stringizeXmlNodes(nodes));
+    },
+    fs: function fontSize(value) {
+      fontSize = fs;
+    },
+    hc: function pushClass(klass) {
+      classes.push(klass);
+    },
+    pc: function popClass() {
+      classes.pop();
+    },
+    sc: function setClass(klass) {
+      classes = [klass];
+    },
+    U: function setUnit(_unit) {
+      unit = _unit;
+      previousCommand = null;
+    },
+    X: function showText(text) {
+      n.insertAdjacentHTML('beforeEnd', [
+        '<div style="position:absolute;',
+        'font-size:', fontSize, 'pt', ';',
+        'left:', currentPoint.x, unit, ';',
+        'top:', currentPoint.y, unit, '"',
+        ' class="', classes.join(' '), '"',
+        '>', text, '</div>'].join(''));
+      previousCommand = null;
+    },
+    N: function newPath() {
+      previousCommand = null;
+    },
+    M: function moveTo(x, y) {
+      currentPoint = { x: x, y: y };
+      path.push('M', x, y);
+      previousCommand = 'M';
+    },
+    L: function lineTo(x, y) {
+      if (previousCommand == 'L')
+        path.push(x, y);
+      else
+        path.push('L', x, y);
+      currentPoint = { x: x, y: y };
+      previousCommand = 'L';
+    },
+    C: function curveTo(x1, y1, x2, y2, x3, y3) {
+      path.push('C', x1, y1, x2, y2, x3, y3);
+      currentPoint = { x: x3, y: y3 };
+      previousCommand = 'C';
+    },
+    Q: function quadraticCurveTo(x1, y1) {
+      path.push('Q', x1, y1, x2, y2);
+      currentPoint = { x: x2, y: y2 };
+      previousCommand = 'Q';
+    },
+    A: function arc() {
+    },
+    Z: function closePath() {
+      path.push('Z');
+      previousCommand = null;
+    },
+    F: function fill() {
+    },
+    S: function stroke() {
+    }
+  };
+}
+
+function reportError(msg) {
+  var page = document.getElementById('page');
+  page.innerHTML = '';
+  page.insertAdjacentHTML('beforeEnd', '<b>エラーが発生しました。</b><br/>');
+  var n = document.createElement('pre');
+  n.appendChild(document.createTextNode(msg));
+  page.appendChild(n);
+}
+
+function tryWith(args, f, failure) {
+  var i = 0;
+  function _() {
+    if (i >= args.length)
+      return failure(args);
+    f(args[i++], _);
+  }
+  _();
+}
+
+window.onload = function() {
+  tryWith(
+    ['file:///c:/sejpos/posapl/mmdata/mm60/xml/ptct.xml', 'ptct.xml'],
+    function (dataUrl, next) {
+      loadXml(dataUrl, function (xmldoc) {
+        var page = document.getElementById('page');
+        try {
+          var handler = newHandler(page, xmldoc);
+          parse(stringizeXmlNodes(findXmlNode(xmldoc, xmldoc.documentElement, 'b')), handler);
+        } catch (e) {
+          reportError(e.message);
+        }
+      }, next);
+    },
+    function () {
+      reportError("TS00003: Load failure");
+    }
+  );
+};
+</script>
+</head>
+<body>
+  <div id="page"></div>
+</body>
+</html>'''.encode('utf8')
+        st.ticket_css  = None
+        DBSession.add(st)
+        DBSession.flush()
+
+        filename = package_ticket_template_to_zip('TTTS000001')
+        print filename
+
 if __name__ == u"__main__":
     import os
     print os.getpid()

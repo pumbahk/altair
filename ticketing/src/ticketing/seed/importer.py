@@ -14,6 +14,8 @@ from ticketing.operators.models import *
 from ticketing.orders.models import *
 from ticketing.users.models import *
 from ticketing.core.models import *
+from ticketing.venues.models import *
+from ticketing.sej.models import *
 
 from bank import BankData, BankAccountData
 from prefecture import PrefectureMaster
@@ -30,11 +32,13 @@ from order import *
 from user import UserData, UserProfileData, UserCredentialData
 from ticketing.bookmark.tests.bookmark import BookmarkData
 from ticketing.products.tests.payment_delivery_method import DeliveryMethodPluginData, PaymentMethodPluginData, DeliveryMethodData, PaymentMethodData, PaymentDeliveryMethodPairData
+from ticketing.seed.sej import SejTicketTemplateFileData
 
 from ticketing.oauth2.models import Service
 from ticketing.operators.models import Operator, OperatorActionHistory, OperatorRole, Permission
 from ticketing.bookmark.models import Bookmark
 from ticketing.sej.models import SejOrder, SejTicket, SejTicketFile, SejNotification
+from ticketing.products.models import PaymentMethod, DeliveryMethod, PaymentMethodPlugin, DeliveryMethodPlugin
 
 def import_seed_data():
     engine = sqlahelper.get_engine()
@@ -154,6 +158,7 @@ def import_seed_data():
              'DeliveryMethodData'                   : DeliveryMethod,
              'PaymentMethodData'                    : PaymentMethod,
              'PaymentDeliveryMethodPairData'        : PaymentDeliveryMethodPair,
+             'SejTicketTemplateFileData'            : SejTicketTemplateFile
          },
          engine=engine
     )
@@ -276,6 +281,7 @@ def import_seed_data():
         PaymentMethodPluginData,
         DeliveryMethodData,
         PaymentMethodData,
-        PaymentDeliveryMethodPairData
+        PaymentDeliveryMethodPairData,
+        SejTicketTemplateFileData
     )
     data.setup()

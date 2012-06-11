@@ -15,7 +15,12 @@ class SejPaymentType(StandardEnum):
     Paid            = 3
     # 04:前払いのみ
     PrepaymentOnly  = 4
-
+code_from_payment_type = {
+    SejPaymentType.CashOnDelivery.v : SejPaymentType.CashOnDelivery,
+    SejPaymentType.Prepayment.v : SejPaymentType.Prepayment,
+    SejPaymentType.Paid.v : SejPaymentType.Paid,
+    SejPaymentType.PrepaymentOnly.v : SejPaymentType.PrepaymentOnly,
+}
 def need_ticketing(type):
     if SejPaymentType.PrepaymentOnly == type :
         return False
@@ -31,7 +36,12 @@ class SejTicketType(StandardEnum):
     ExtraTicket             = 4
     # 4:本券以外(チケットバーコード無し)
     ExtraTicketWithBarcode  = 3
-
+code_from_ticket_type = {
+    SejTicketType.Ticket.v : SejTicketType.Ticket,
+    SejTicketType.TicketWithBarcode.v : SejTicketType.TicketWithBarcode,
+    SejTicketType.ExtraTicket.v : SejTicketType.ExtraTicket,
+    SejTicketType.ExtraTicketWithBarcode.v : SejTicketType.ExtraTicketWithBarcode,
+}
 def is_ticket(type):
 
     if type == SejTicketType.Ticket or \
@@ -46,6 +56,10 @@ class SejOrderUpdateReason(StandardEnum):
     # 公演中止
     Stop = 2
 
+code_from_update_reason = {
+    SejOrderUpdateReason.Change.v : SejOrderUpdateReason.Change,
+    SejOrderUpdateReason.Stop.v : SejOrderUpdateReason.Stop,
+}
 class SejNotificationType(StandardEnum):
     # '01':入金発券完了通知
     PaymentComplete = 1
@@ -58,7 +72,28 @@ class SejNotificationType(StandardEnum):
     # 91
     InstantPaymentInfo = 91
 
+code_from_notification_type = {
+    SejNotificationType.PaymentComplete.v : SejNotificationType.PaymentComplete,
+    SejNotificationType.CancelFromSVC.v : SejNotificationType.CancelFromSVC,
+    SejNotificationType.ReGrant.v : SejNotificationType.ReGrant,
+    SejNotificationType.TicketingExpire.v : SejNotificationType.TicketingExpire,
+    SejNotificationType.InstantPaymentInfo.v : SejNotificationType.InstantPaymentInfo
+}
+name_from_notification_type = {
+    'PaymentComplete'    : SejNotificationType.PaymentComplete,
+    'CancelFromSVC'      : SejNotificationType.CancelFromSVC,
+    'ReGrant'            : SejNotificationType.ReGrant,
+    'TicketingExpire'    : SejNotificationType.TicketingExpire,
+    'InstantPaymentInfo' : SejNotificationType.InstantPaymentInfo
+}
 
+class SejRequestError(Exception):
+
+    def __init__(self, message):
+        self.message = message
+
+    def __str__(self):
+        return self.message
 
 class SejError(Exception):
 
@@ -73,7 +108,7 @@ class SejError(Exception):
         self.error_msg = error_msg
 
     def __str__(self):
-        return "Error_Type=%d&Error_Msg=%s&Error_Field=%s" % (self.error_type, self.error_type, self.error_field)
+        return u"Error_Type=%d&Error_Msg=%s&Error_Field=%s" % (self.error_type, self.error_type, self.error_field)
 
 class SejServerError(Exception):
 

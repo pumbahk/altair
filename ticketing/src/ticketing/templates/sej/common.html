@@ -1,0 +1,11 @@
+<%def name="from_payment_type_id(id)">
+<%
+payment_type_name = {
+u'1': u'代引き',
+u'2': u'前払い(後日発券)',
+u'3': u'代済発券',
+u'4': u'前払いのみ'
+}
+%>
+${payment_type_name[id]}
+</%def>

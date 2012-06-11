@@ -1,12 +1,12 @@
 <%inherit file="../layout.html" />
 <%namespace file="/common/helpers.html" name="h"/>
+<%namespace file="common.html" name="c"/>
 <%block name="title">SEJ Menu</%block>
 
-  <div class="ui-toolbar">
-    <a href="${request.route_path('orders.sej.request')}" class="btn">手動発券</a>
-    <a href="${request.route_path('operator_roles.index')}" class="btn">ロール設定</a>
-  </div>
-  <table class="table fullwidth checkboxed_table">
+<div class="ui-toolbar">
+  <a href="${request.route_path('orders.sej.order.request')}" class="btn">手動発券</a>
+</div>
+<table class="table table-striped table-bordered table-condensed">
     <thead>
     <tr>
       <th class="minwidth"><input type="checkbox" class="__action__-select_all" /></th>
@@ -18,20 +18,21 @@
       <th>合計金額</th>
       <th>チケット金額</th>
       <th>手数料</th>
-      <th>手数料</th>
+      <th>発券手数料</th>
       <th>発券枚数</th>
       <th>合計枚数</th>
-      <th>チケット枚数</th>
       <th>返却枚数</th>
-      <th>発券金額</th>
+      <th>支払い期限</th>
+      <th>発券期間</th>
+      <th>SVC再付番期限</th>
+      <th>作成日</th>
     </tr>
     </thead>
     <tbody>
     % for order in orders.items:
     <tr>
-      <td>ID:${order.id}<form action="${order.exchange_sheet_url}" method="POST"><input type="hidden" name="iraihyo_id_00" value="${order.exchange_sheet_number}"><input class="button" type='submit' name="" value="引換票"></form>
-      </td>
-      <td>${order.payment_type}</td>
+      <td>ID:${order.id}</td>
+      <td>${c.from_payment_type_id(order.payment_type)}</td>
       <td>${order.order_id}</td>
       <td>${order.process_id}</td>
       <td>${order.exchange_number}</td>
@@ -43,8 +44,20 @@
       <td>${order.total_ticket_count}</td>
       <td>${order.ticket_count}</td>
       <td>${order.return_ticket_count}</td>
-      <td>${order.ticketing_fee}</td>
-      <td>${order.ticketing_fee}</td>
+      <td>${order.payment_due_at}</td>
+      <td>${order.ticketing_start_at}-<br>${order.ticketing_due_at}</td>
+      <td>${order.regrant_number_due_at}</td>
+      <td>${order.created_at}</td>
+    </tr>
+    <tr>
+      <td colspan="16">
+        <div class="product-item">
+          <a href="${request.route_path('orders.sej.order.update', order_id=order.id)}" class="btn">更新</a>
+          <a href="${request.route_path('orders.sej.order.cancel', order_id=order.id)}" class="btn">発券取り消し</a>
+          <a href="${request.route_path('orders.sej.order.ticket.preview', order_id=order.id)}" class="btn">チケット確認</a>
+          <a href="" class="btn">セブンイレブン引換え票表示</a>
+        </div>
+      </td>
     </tr>
     % endfor
     </tbody>
