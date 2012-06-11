@@ -197,6 +197,13 @@ add_purchase_widget = functools.partial(
     import_symbol("altaircms.plugins.widget.purchase.models:PurchaseWidget").type, 
     )
 
+add_twitter_widget = functools.partial(
+    add_widget, 
+    import_symbol("altaircms.plugins.widget.twitter.views:TwitterWidgetView"), 
+    import_symbol("altaircms.plugins.widget.twitter.models:TwitterWidgetResource"), 
+    import_symbol("altaircms.plugins.widget.twitter.models:TwitterWidget").type, 
+    )
+
 class Objlike(dict):
     __getattr__ = dict.__getitem__
 
@@ -433,6 +440,13 @@ def add_detail_main_block_widgets(page, asset):
     # add_purchase_widget(page, "main", data)
 
 
+def add_detail_side_block_widget(page):
+    data = dict(search_query=u"ブルーマン", 
+                title=u"ブルーマン検索", 
+                subject=u"ブルーマンに言及しているTL"
+                )
+    add_twitter_widget(page, "side", data)
+    
 def add_detail_page_settings():
     layout = detail_layout()
     event = detail_event()
@@ -449,7 +463,7 @@ def add_detail_page_settings():
     add_header_widgets(page)
     add_side_widgets(page)
     add_detail_main_block_widgets(page, asset)
-
+    add_detail_side_block_widget(page)
 
 ### help
 

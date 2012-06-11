@@ -141,6 +141,7 @@ event = page.event or page.pageset.event
       <div id="promotion"  class="widget red float-left">プロモーション枠</div>
       <div id="anchorlist"  class="widget red float-left">ページ内リンク一覧</div>
       <div id="purchase"  class="widget red float-left">購入ボタン</div>
+      <div id="twitter"  class="widget red float-left">twitter</div>
     </div>
 </%def>
 
@@ -204,4 +205,6 @@ event = page.event or page.pageset.event
 <script type="text/javascript" src="/plugins/static/js/widget/lib/anchorlist.js"></script>
 ## todo: moveit
 <script type="text/javascript" src="/plugins/static/js/widget/lib/purchase.js"></script>
+## todo: moveit
+<script type="text/javascript" src="/plugins/static/js/widget/lib/twitter.js"></script>
 </%def>
