@@ -16,16 +16,26 @@ u'4': u'副券'
 ${ticket_type_name[id]}
 </%def>
 
+
+${h.breadcrumbs(
+    names=[u'SEJ Order', order.billing_number],
+    urls=[
+      request.route_path('orders.sej')
+    ]
+)}
 <div class="page-header">
   <h3>${order.id}:${order.order_id}</h3>
 
     <div class="btn-group">
+        %if not order.cancel_at:
       <a  id="update" href="#" class="btn">
         <i class="icon-pencil"></i> 編集
       </a>
+        % endif
     </div>
 
 </div>
+
 
 <div class="row">
 
@@ -77,7 +87,7 @@ ${ticket_type_name[id]}
       </tr>
       <tr>
         <th>チケット金額</th>
-        <td>${order.total_price if order.payment_type!=u'3' else u'-'}</td>
+        <td>${order.ticket_price if order.payment_type!=u'3' else u'-'}</td>
       </tr>
       <tr>
         <th>発券手数料</th>
@@ -89,7 +99,12 @@ ${ticket_type_name[id]}
       </tr>
       <tr>
         <th>発券期間</th>
-        <td>${order.ticketing_start_at}-${order.ticketing_due_at}</td>
+        <td>
+            %if order.payment_type == u'2' or  order.payment_type == u'3':
+            ${order.ticketing_start_at}-${order.ticketing_due_at}</td>
+            % else:
+            -(支払い期限と同じ)
+            % endif
       </tr>
       <tr>
         <th>支払い期限</th>
@@ -117,6 +132,34 @@ ${ticket_type_name[id]}
             <th>Email</th>
             <td>${order.email}</td>
           </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="span6">
+      <table class="table table-bordered table-condensed">
+        <tbody>
+        <tr>
+          <th>決済時日時</th>
+          <td>${order.order_at}</td>
+        </tr>
+        <tr>
+          <th>支払日時</th>
+          <td>${order.pay_at if order.pay_at else '-'}</td>
+        </tr>
+        <tr>
+          <th>発券日時</th>
+          <td>${order.issue_at if order.issue_at else '-'}</td>
+        </tr>
+        <tr>
+          <th>SEJ処理日</th>
+          <td>${order.processed_at if order.processed_at else '-'}</td>
+        </tr>
+        %if order.cancel_at:
+          <tr>
+            <th>キャンセル</th>
+            <td>${order.cancel_at}</td>
+          </tr>
+        % endif
         </tbody>
       </table>
     </div>
@@ -148,9 +191,8 @@ ${ticket_type_name[id]}
       <td>${ticket.performance_datetime}</td>
       <td>${ticket.ticket_template_id}</td>
       <td>
-          <a href="#" class="preview_xml btn" data="${ticket.ticket_data_xml}">
-          <i class="icon-pencil"></i> XML確認
-      </a></td>
+          <a href="#" class="edit-ticket btn" ticket_id="${ticket.id}"><i class="icon-pencil"></i> 編集</a>
+      </td>
     </tr>
   % endfor
   </tbody>
@@ -185,24 +227,57 @@ ${ticket_type_name[id]}
       ${form_item(form.ticket_price)}
       ${form_item(form.commission_fee)}
       ${form_item(form.ticketing_fee)}
+      %if order.payment_type!=u'3':
       ${form_item(form.payment_due_at)}
+      %endif
+      %if order.payment_type == u'2' or  order.payment_type == u'3':
       ${form_item(form.ticketing_start_at)}
       ${form_item(form.ticketing_due_at)}
+      %endif
       ${form_item(form.regrant_number_due_at)}
       <div class="spacer">
         <input type="submit" name="submit" value="更新リクエスト" />
       </div>
     </div>
   </form>
+    <div class="modal-footer">
+      <a href="javascript:$('#modal-delete').modal('hide');" class="btn secondary">キャンセル</a>
+      <a id="delete" href="" class="btn danger">削除</a>
+    </div>
 </div>
 
+<div id="modal-ticket-edit" class="modal hide fade">
+  <form id="ticket-edit-form" action="" method="POST">
+    <div class="modal-header">
+      <a href="#" class="close">&times;</a>
+      <h3>オーダー情報</h3>
+    </div>
 
+    <div class="modal-body">
+      ${form_item(ticket_form.ticket_type)}
+      ${form_item(ticket_form.event_name)}
+      ${form_item(ticket_form.performance_name)}
+      ${form_item(ticket_form.performance_datetime)}
+      ${form_item(ticket_form.ticket_template_id)}
+      ${form_item(ticket_form.ticket_data_xml)}
+      <div class="spacer">
+        <input type="submit" name="submit" value="更新リクエスト" />
+      </div>
+    </div>
+  </form>
+    <div class="modal-footer">
+      <a href="javascript:$('#modal-delete').modal('hide');" class="btn secondary">キャンセル</a>
+    </div>
+</div>
+<form action="${order.exchange_sheet_url}" method="POST">
+    <input type="hidden" name="iraihyo_id_00" value="${order.exchange_sheet_number}">
+    <input type="submit" name="submit" value="引換え票を表示" class="btn"/>
+</form>
 
-<div class="modal-footer">
-  <a href="javascript:$('#modal-delete').modal('hide');" class="btn secondary">キャンセル</a>
-  <a id="delete" href="" class="btn danger">削除</a>
-</div>
-</div>
+%if not order.cancel_at:
+<a href="${request.route_path('orders.sej.order.cancel', order_id=order.id)}" class="btn">発券取り消し</a>
+% endif
+
 
 <script type="text/javascript">
   $(function() {
@@ -210,15 +285,33 @@ ${ticket_type_name[id]}
     $('#ticketing_start_datetime').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
     $('#ticketing_due_datetime').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
     $('#regrant_number_datetime').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
-    $('.preview_xml').click(function() {
-      var modal = $('#modal-xml-preview');
-      modal.find('#xml').text($(this).attr('data'));
-      modal.modal('toggle');
-      }
-    );
     $('#update').click(function () {
         var modal = $('#modal-edit');
         modal.modal('toggle');
     });
+      $('.edit-ticket').click(function () {
+          var ticket_id = $(this).attr('ticket_id')
+          $.ajax({
+             type: "GET",
+             url: "${request.route_path('orders.sej.order.ticket.data', order_id=order.id, ticket_id='AA')}".replace("AA",ticket_id),
+             success: function(msg){
+                 console.log(msg);
+               var modal = $('#modal-ticket-edit');
+               modal.modal('toggle');
+               $('#ticket-edit-form').attr('action', "${request.route_path('orders.sej.order.ticket.data', order_id=order.id, ticket_id='AA')}".replace("AA",ticket_id))
+               $('#ticket_type').val(msg['ticket_type'])
+               $('#event_name').val(msg['event_name'])
+               $('#performance_name').val(msg['performance_name'])
+               $('#performance_datetime').val(msg['performance_datetime'])
+               $('#ticket_template_id').val(msg['ticket_template_id'])
+               $('#ticket_data_xml').val(msg['ticket_data_xml'])
+             }
+           });
+
+
+
+
+      });
+
   });
 </script>

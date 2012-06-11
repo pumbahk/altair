@@ -10,6 +10,7 @@ def includeme(config):
     config.add_route('orders.sej.order.update'   , '/sej/order/{order_id}/update')
     config.add_route('orders.sej.order.cancel'   , '/sej/order/{order_id}/cancel')
     config.add_route('orders.sej.order.ticket.preview'   , '/sej/order/{order_id}/ticket/preview')
+    config.add_route('orders.sej.order.ticket.data'   , '/sej/order/{order_id}/ticket/{ticket_id}/data')
 
 
     config.scan(".")

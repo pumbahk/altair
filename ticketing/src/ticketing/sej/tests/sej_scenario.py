@@ -45,18 +45,20 @@ def ticket_date_xml(event_name, ticket_price, order_id, number,seat_number):
 15 8 m 93 5 "%(event_name)s %(number)s" X
 15 13 m 93 10 "2012年 08月 31日(金)<br /> 12:30 開場 13:00 開演" X
 65 13 m 93 10 "ポンチョ席 1列%(seat_number)s番<br/>\\%(ticket_price)s(税込)" X
-8 fs
+6 fs
 15 25 m 90 10 "主催: ブルーマングループ IN 東京、LLP<br/>お問合せ: ブルーマングループ東京公演事務局 03-5414-3255<br/>後援: 東京都、米国大使館、港区、東京メトロ<br/>営利目的の転売禁止<br/>4歳以下入場不可" X
-8 fs
-15 44 m 40 2 "予約番号 order_id" X
+6 fs
+15 42 m 30 2 "予約番号" X 28 42 m 30 2 "%(order_id)s" X
+15 44 m 20 2 "払込表番号" X 28 44 m 30 2 :FIXTAG05 xn sxn X
 55 44 m 28 2 :FIXTAG04 xn sxn X
-15 48 m 10 2 "店名" X 25 48 m 60 2 :FIXTAG02 xn sxn X
-85 48 m 10 2 "店番" X 95 48 m 10 2 :FIXTAG03 xn sxn X
-10 fs
+15 46 m 6 2 "店名" X 20 46 m 60 2 :FIXTAG02 xn sxn X
+55 46 m 6 2 "店番" X 60 46 m 10 2 :FIXTAG03 xn sxn X
+95 46 m 30 2 :FIXTAG06 xn sxn X
+8 fs
 :b hc 112 5 m 30 11 "BLUE MAN GROUP IN TOKYO" X pc
-112 18 m 30 7.5 "開催日 2012年<br/>7月9日(土)<br/>開場 12:30<br/>開演 13:00<br/>" X
-112 35 m 30 15 "ポンチョ席<br/>1列%(seat_number)s番<br/>\\%(ticket_price)s(税込)" X
-8 fs 112 48 m 30 4 "0509-1234" X
+112 16 m 30 12 "開催日 2012年<br/>7月9日(土)<br/>開場 12:30<br/>開演 13:00<br/>" X
+112 32 m 30 15 "ポンチョ席<br/>1列%(seat_number)s番<br/>\\%(ticket_price)s(税込)" X
+6 fs 112 46 m 30 4 "0509-1234" X
 ]]></b>
 <FIXTAG01></FIXTAG01>
 <FIXTAG02></FIXTAG02>
@@ -78,7 +80,7 @@ payment_type_index = {
 }
 
 def load_tsv_file():
-    csv_file = open(BASE_PATH + '/data/scenario.tsv')
+    csv_file = open(BASE_PATH + '/data/scenario1.tsv')
     order_id = 600
     seat_number = 1
     for row in csv.reader(csv_file, delimiter='\t'):
@@ -87,9 +89,9 @@ def load_tsv_file():
         commission_fee  = row[14].split('→')[0]
         ticketing_fee   = row[15].split('→')[0]
         total = row[16].split('→')[0]
-        if order_id < 566:
-            order_id += 1
-            continue
+#        if order_id < 669:
+#            order_id += 1
+#            continue
         order_number            = u'%012d' % order_id
         order_id += 1
 
@@ -103,8 +105,8 @@ def load_tsv_file():
         for i in range(0,ticket_num):
             ticket = dict(
                 ticket_type         = SejTicketType.TicketWithBarcode,
-                event_name          = u'イベント名',
-                performance_name    = u'パフォーマンス名',
+                event_name          = u'１',
+                performance_name    = u'１',
                 ticket_template_id  = u'TTTS000001',
                 performance_datetime= datetime.datetime(2012,8,31,18,00),
                 xml = SejTicketDataXml(ticket_date_xml(u'テスト:%s' % order_number, '100', order_id, number, seat_number))
@@ -116,7 +118,7 @@ def load_tsv_file():
             ticket = dict(
                 ticket_type         = SejTicketType.ExtraTicketWithBarcode,
                 event_name          = u'イベント名',
-                performance_name    = u'パフォーマンス名',
+                performance_name    = u'１２３４５６７８９０１２３４５６７８９０',
                 ticket_template_id  = u'TTTS000001',
                 performance_datetime= datetime.datetime(2012,8,31,18,00),
                 xml = SejTicketDataXml(ticket_date_xml(u'テスト:%s' % order_number, '100', order_id, number, ''))
