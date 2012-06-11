@@ -102,7 +102,7 @@ class Scanner(object):
         else:
             event = Event()
             try:
-                event.backend_event_id = event_record['id']
+                event.backend_id = event_record['id']
                 event.title = event_record['title']
                 event.subtitle = event_record.get('subtitle', '')
                 event.event_open = parse_datetime(event_record['start_on'])
