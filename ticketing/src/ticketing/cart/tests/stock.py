@@ -2,7 +2,7 @@
 
 from fixture import DataSet
 from seed.event import PerformanceData
-from ticketing.products.models import Stock
+from ticketing.core.models import Stock
 from datetime import datetime
 from stockholder import StockHolderData
 from stocktype import StockTypeData

@@ -11,7 +11,7 @@
       load: options.callbacks && options.callbacks.load || null,
       click: options.callbacks && options.callbacks.click || null,
       selectable: options.callbacks && options.callbacks.selectable || null,
-      click: options.callbacks && options.callbacks.click || null
+      select: options.callbacks && options.callbacks.select || null
     };
     this.zoomRatio = options.zoomRatio || CONF.DEFAULT.ZOOM_RATIO;
     this.dragging = false;
@@ -201,7 +201,7 @@
             highlighted[i].removeStyleType('highlighted');
         },
         mousedown: function(evt) {
-          self.callbacks.click && self.callbacks.click(self, this);
+          self.callbacks.click && self.callbacks.click(self, self, self.highlighted);
         }
       });
     }
@@ -264,6 +264,7 @@
             self.drawable.erase(self.rubberBand);
             for (var i = 0; i < selection.length; i++)
               selection[i].selected(true);
+            self.callbacks.select && self.callbacks.select(self, selection);
           },
 
           mousemove: function(evt) {

@@ -35,7 +35,6 @@ def rendering_page(context, request):
     block_context.scan(request=request,
                        page=page, 
                        performances=context.get_performances(page),
-                       tickets=context.get_tickets(page), 
                        event=page.event)
     tmpl = context.get_layout_template(layout, context.get_render_config())
 
@@ -53,7 +52,6 @@ def rendering_preview_page(context, request):
     block_context.scan(request=request,
                        page=page, 
                        performances=context.get_performances(page),
-                       tickets=context.get_tickets(page), 
                        event=page.event)
     tmpl = context.get_layout_template(layout, context.get_render_config())
     params = api.get_navigation_categories(request)

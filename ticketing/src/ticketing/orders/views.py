@@ -5,11 +5,11 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path
 import webhelpers.paginate as paginate
 
-from ticketing.models import merge_session_with_post, record_to_appstruct, merge_and_flush
-from ticketing.organizations.models import Organization
+from ticketing.models import merge_session_with_post, record_to_appstruct, merge_and_flush, record_to_multidict
+from ..core.models import Organization
 from ticketing.operators.models import Operator, OperatorRole, Permission
 from ticketing.orders.models import Order
-from ticketing.orders.forms import OrderForm
+from ticketing.orders.forms import OrderForm, SejOrderForm
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 
@@ -61,8 +61,9 @@ class Orders(BaseView):
             'order':order,
         }
 
-from ticketing.sej.models import SejOrder
-from ticketing.sej.payment import request_sej_exchange_sheet
+from ticketing.sej.models import SejOrder, SejTicketTemplateFile
+from ticketing.sej.payment import SejTicketDataXml,request_sej_exchange_sheet, request_update_order
+from ticketing.sej.resources import code_from_ticket_type, code_from_update_reason, code_from_payment_type
 
 @view_defaults(decorator=with_bootstrap)
 class SejAdmin(object):
@@ -90,7 +91,100 @@ class SejAdmin(object):
             'orders': orders
         }
 
+    @view_config(route_name='orders.sej.order.request', request_method="GET", renderer='ticketing:templates/sej/request.html')
+    def order_request_get(self):
+        f = SejOrderForm()
+        templates = SejTicketTemplateFile.query.all()
+        return dict(
+            form=f,
+            templates=templates
+        )
 
-    @view_config(route_name='orders.sej.request', renderer='ticketing:templates/sej/request.html')
+    @view_config(route_name='orders.sej.order.request', request_method="POST", renderer='ticketing:templates/sej/request.html')
+    def order_request_post(self):
+        f = SejOrderForm(self.request.POST)
+        templates = SejTicketTemplateFile.query.all()
+        if f.validate():
+            return HTTPFound(location=route_path('orders.sej'))
+        else:
+            return dict(
+                form=f,
+                templates=templates
+            )
+
+    @view_config(route_name='orders.sej.order.update', request_method="GET", renderer='ticketing:templates/sej/order_update.html')
+    def order_update_get(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = SejOrder.query.get(order_id)
+
+
+        templates = SejTicketTemplateFile.query.all()
+        f = SejOrderForm(order_id=order.order_id)
+        f.process(record_to_multidict(order))
+
+        return dict(order=order, form=f, templates=templates)
+
+
+    @view_config(route_name='orders.sej.order.update', request_method="POST",  renderer='ticketing:templates/sej/order_update.html')
+    def order_update_post(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = SejOrder.query.get(order_id)
+
+        tickets = []
+        for ticket in order.tickets:
+            td = dict(
+                idx = ticket.ticket_idx,
+                ticket_type         = code_from_ticket_type[int(ticket.ticket_type)],
+                event_name          = ticket.event_name,
+                performance_name    = ticket.performance_name,
+                ticket_template_id  = ticket.ticket_template_id,
+                performance_datetime= ticket.performance_datetime,
+                xml                 = SejTicketDataXml(ticket.ticket_data_xml)
+            )
+            tickets.append(td)
+
+        templates = SejTicketTemplateFile.query.all()
+        print self.request.POST
+        f = SejOrderForm(self.request.POST, order_id=order.order_id)
+        if f.validate():
+            data = f.data
+            print code_from_ticket_type[int(order.payment_type)]
+
+            order = request_update_order(
+                update_reason   = code_from_update_reason[int(data.get('update_reason'))],
+                total           = int(data.get('total_price')),
+                ticket_total    = int(data.get('ticket_price')),
+                commission_fee  = int(data.get('commission_fee')),
+                ticketing_fee   = int(data.get('ticketing_fee')),
+                payment_type    = code_from_payment_type[int(order.payment_type)],
+                payment_due_at  = data.get('payment_due_at'),
+                ticketing_start_at = data.get('ticketing_start_at'),
+                ticketing_due_at = data.get('ticketing_due_at'),
+                regrant_number_due_at = data.get('regrant_number_due_at'),
+                tickets = tickets,
+                condition=dict(
+                    order_id        = order.order_id,
+                    billing_number  = order.billing_number,
+                    exchange_number = order.exchange_number,
+                )
+            )
+            return dict(order=order, form=f, templates=templates)
+
+
+        return dict(order=order, form=f, templates=templates)
+
+
+    @view_config(route_name='orders.sej.order.cancel', renderer='ticketing:templates/sej/order_update.html')
+    def order_update_cancel(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = SejOrder.query.get(order_id)
+        return dict(order=order)
+
+    @view_config(route_name='orders.sej.order.ticket.preview', renderer='ticketing:templates/sej/order_update.html')
+    def order_ticket_preview(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = SejOrder.query.get(order_id)
+        return dict(order=order)
+
     def request_get(self):
         return {}

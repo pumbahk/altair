@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from fixture import DataSet
-from ticketing.events.models import SalesSegment
+from ticketing.core.models import SalesSegment
 from datetime import datetime
 
 class SalesSegmentData(DataSet):

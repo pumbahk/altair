@@ -52,8 +52,7 @@ class OrganizationForm(Form):
         validators=[
             Required(u'入力してください'),
         ],
-        choices=[(pref.id, pref.name) for pref in Prefecture.all()],
-        coerce=int,
+        choices=[(pref.name, pref.name) for pref in Prefecture.all()]
     )
     city = TextField(
         label=u'市町村区',

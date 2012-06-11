@@ -5,7 +5,7 @@ import transaction
 import re
 
 from ticketing.models import DBSession
-from ticketing.venues.models import Site, Venue, VenueArea, Seat, SeatAttribute
+from ticketing.core.models import Site, Venue, VenueArea, Seat, SeatAttribute
 
 SVG_NAMESPACE = 'http://www.w3.org/2000/svg'
 SITE_INFO_NAMESPACE = 'http://xmlns.ticketstar.jp/2012/site-info'

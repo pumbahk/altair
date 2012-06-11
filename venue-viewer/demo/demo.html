@@ -82,6 +82,16 @@ var venue = $('#venue').venueviewer({
     },
     selectable: function (viewer, seat) {
       return seat.id != "A4";
+    },
+    click: function (viewer, seat, highlighted) {
+      $.each(highlighted, function (id, seat) {
+        console.log(seat);
+      });
+    },
+    select: function (viewer, selection) {
+      $.each(selection, function (i, seat) {
+        console.log(seat);
+      });
     }
   }
 }).venueviewer("load");

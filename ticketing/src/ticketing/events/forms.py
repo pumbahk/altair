@@ -5,7 +5,7 @@ from wtforms import TextField, IntegerField, HiddenField, SelectField
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 
 from ticketing.formhelpers import DateTimeField, Translations, Required
-from ticketing.events.models import Event, Account
+from ticketing.core.models import Event, Account
 
 class EventForm(Form):
 
@@ -50,22 +50,6 @@ class EventForm(Form):
             Required(),
             Length(max=100, message=u'100文字以内で入力してください'),
         ]
-    )
-    sales_start_on = HiddenField(
-        label = u'販売開始日時',
-        validators=[Optional()],
-    )
-    sales_end_on = HiddenField(
-        label = u'販売終了日時',
-        validators=[Optional()],
-    )
-    first_start_on = HiddenField(
-        label = u'初回開演日時',
-        validators=[Optional()],
-    )
-    final_start_on = HiddenField(
-        label = u'最終公演日時',
-        validators=[Optional()],
     )
 
     def validate_code(form, field):

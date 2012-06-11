@@ -53,6 +53,7 @@ class Scanner(object):
             sale.performance = self.current_performance
             try:
                 sale.name = sales_segment_record['name']
+                sale.kind = sales_segment_record['name']
                 sale.start_on = parse_datetime(sales_segment_record['start_on'])
                 sale.end_on = parse_datetime(sales_segment_record['end_on'])
             except KeyError as e:
@@ -71,7 +72,7 @@ class Scanner(object):
     def scan_performance_record(self, performance_record):
         deleted = performance_record.get('deleted', False)
         if deleted:
-            DBSession.query(Performance).filter_by(id=performance['id']).delete()
+            DBSession.query(Performance).filter_by(id=performance_record['id']).delete()
         else:
             performance = Performance()
             performance.event = self.current_event

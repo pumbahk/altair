@@ -7,9 +7,7 @@ def _setup_db():
     import sqlahelper
     from sqlalchemy import create_engine
     from . import models
-    import ticketing.venues.models
-    import ticketing.products.models
-    import ticketing.events.models
+    import ticketing.models
     import ticketing.orders.models
 
     engine = create_engine("sqlite:///")
@@ -117,6 +115,7 @@ class CartTests(unittest.TestCase):
         self.assertEqual(target.products[0].quantity, 1)
         self.assertEqual(len(target.products[0].items), 1)
 
+
 class CartedProductTests(unittest.TestCase):
     def setUp(self):
         self.session = _setup_db()
@@ -183,6 +182,33 @@ class CartedProductItemTests(unittest.TestCase):
         self.assertEqual(result[0].stock_id, 1)
         self.assertEqual(result[1].stock_id, 3)
         self.assertEqual(result[2].stock_id, 2)
+
+    def _add_seat(self, carted_product_item, quantity):
+        from ..core import models as c_models
+
+        seat_statuses = []
+        organization = c_models.Organization(id=532)
+        site = c_models.Site(id=899)
+        venue = c_models.Venue(id=100, site=site, organization=organization)
+        for i in range(quantity):
+            seat = c_models.Seat(id=i, venue=venue)
+            status = c_models.SeatStatus(seat=seat, status=int(c_models.SeatStatusEnum.InCart))
+            carted_product_item.seats.append(seat)
+            seat_statuses.append(status)
+            self.session.add(seat)
+        return seat_statuses
+
+    def test_finish(self):
+        target = self._makeOne(id=1)
+        statuses = self._add_seat(target, 10)
+        target.finish()
+
+        self._assertAllOrdered(statuses)
+
+    def _assertAllOrdered(self, statuses):
+        from ..core.models import SeatStatusEnum
+        for s in statuses:
+            self.assertEqual(s.status, int(SeatStatusEnum.Ordered))
 
 
 class TicketingCartResourceTests(unittest.TestCase):
@@ -264,17 +290,15 @@ class TicketingCartResourceTests(unittest.TestCase):
 #        self.assertEqual(len(cart.products), 0)
 
     def _add_venue(self, organization_id, site_id, venue_id):
-        from ticketing.venues.models import Venue, Site
-        from ticketing.organizations.models import Organization
+        from ticketing.core.models import Venue, Site
+        from ..core.models import Organization
         organization = Organization(id=organization_id)
         site = Site(id=site_id)
         venue = Venue(id=venue_id, site=site, organization_id=organization.id)
         return venue
 
     def test_order_products_one_order(self):
-        from ticketing.venues.models import Seat, SeatAdjacency, SeatAdjacencySet, SeatStatus, SeatStatusEnum
-        from ticketing.products.models import Stock, StockStatus, Product, ProductItem
-        from ticketing.events.models import Performance
+        from ..core. models import Seat, SeatAdjacency, SeatAdjacencySet, SeatStatus, SeatStatusEnum, Stock, StockStatus, Product, ProductItem, Performance
 
         # 在庫
         stock_id = 1
@@ -361,7 +385,7 @@ class ReserveViewTests(unittest.TestCase):
         self.assertEqual(list(result), [])
 
     def test_order_items(self):
-        from ticketing.products.models import Product
+        from ticketing.core.models import Product
         p1 = Product(id=1, price=100)
         p2 = Product(id=2, price=150)
         self.session.add(p1)
@@ -379,7 +403,7 @@ class ReserveViewTests(unittest.TestCase):
         self.assertEqual(list(result), [("1", 10), ("2", 20)])
 
     def test_ordered_items(self):
-        from ticketing.products.models import Product
+        from ticketing.core.models import Product
         p1 = Product(id=1, price=100)
         p2 = Product(id=2, price=150)
         self.session.add(p1)
@@ -398,8 +422,8 @@ class ReserveViewTests(unittest.TestCase):
 
 
     def _add_venue(self, organization_id, site_id, venue_id):
-        from ticketing.venues.models import Venue, Site
-        from ticketing.organizations.models import Organization
+        from ticketing.core.models import Venue, Site
+        from ..core.models import Organization
         organization = Organization(id=organization_id)
         site = Site(id=site_id)
         venue = Venue(id=venue_id, site=site, organization_id=organization.id)
@@ -408,9 +432,7 @@ class ReserveViewTests(unittest.TestCase):
     def test_it(self):
 
 
-        from ticketing.venues.models import Seat, SeatAdjacency, SeatAdjacencySet, SeatStatus, SeatStatusEnum
-        from ticketing.products.models import Stock, StockStatus, Product, ProductItem
-        from ticketing.events.models import Performance
+        from ticketing.core.models import Seat, SeatAdjacency, SeatAdjacencySet, SeatStatus, SeatStatusEnum, Stock, StockStatus, Product, ProductItem, Performance
         from .models import Cart
         from .resources import TicketingCartResrouce
 
@@ -480,9 +502,7 @@ class ReserveViewTests(unittest.TestCase):
 
     def test_it_no_stock(self):
 
-        from ticketing.venues.models import Seat, SeatAdjacency, SeatAdjacencySet, SeatStatus, SeatStatusEnum
-        from ticketing.products.models import Stock, StockStatus, Product, ProductItem
-        from ticketing.events.models import Performance
+        from ticketing.core.models import Seat, SeatAdjacency, SeatAdjacencySet, SeatStatus, SeatStatusEnum, Stock, StockStatus, Product, ProductItem, Performance
         from .models import Cart
         from .resources import TicketingCartResrouce
 
@@ -538,9 +558,7 @@ class ReserveViewTests(unittest.TestCase):
     def test_it_no_seat(self):
 
 
-        from ticketing.venues.models import Seat, SeatAdjacency, SeatAdjacencySet, SeatStatus, SeatStatusEnum
-        from ticketing.products.models import Stock, StockStatus, Product, ProductItem
-        from ticketing.events.models import Performance
+        from ticketing.core.models import Seat, SeatAdjacency, SeatAdjacencySet, SeatStatus, SeatStatusEnum, Stock, StockStatus, Product, ProductItem, Performance
         from .models import Cart
         from .resources import TicketingCartResrouce
 
@@ -597,6 +615,29 @@ class ReserveViewTests(unittest.TestCase):
         for stock_status in stock_statuses:
             self.assertEqual(stock_status.quantity, 100)
 
+    def test_iter_ordered_items(self):
+        params = [
+            ("product-10", '2'),
+            ("product-11", '0'),
+            ("product-12", '10'),
+            ]
+
+        class DummyParams(object):
+            def __init__(self, params):
+                self.params = params
+            def iteritems(self):
+                for k, v in self.params:
+                    yield k, v
+
+        request = testing.DummyRequest(params=DummyParams(params))
+        target = self._makeOne(request)
+        result = list(target.iter_ordered_items())
+
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0], ('10', 2))
+        self.assertEqual(result[1], ('12', 10))
+
+
 class PyamentViewTests(unittest.TestCase):
 
     def _getTarget(self):
@@ -617,3 +658,182 @@ class PyamentViewTests(unittest.TestCase):
         target = self._makeOne(request)
         result = target()
         self.assertEqual(result.location, '/')
+
+class MultiCheckoutViewTests(unittest.TestCase):
+    def setUp(self):
+        self.config = testing.setUp()
+
+    def tearDown(self):
+        testing.tearDown()
+
+    def _getTarget(self):
+        from . import views
+        return views.MultiCheckoutView
+
+    def _makeOne(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
+
+    def _register_dummy_secure3d(self, *args, **kwargs):
+        from ..multicheckout import interfaces
+        dummy = DummySecure3D(*args, **kwargs)
+        self.config.registry.utilities.register([], interfaces.IMultiCheckout, "", dummy)
+        return dummy
+
+    def test_card_info_secure3d_enable_api(self):
+        self.config.add_route('cart.secure3d_result', '/this-is-secure3d-callback')
+        dummy_secure3d = self._register_dummy_secure3d(AcsUrl='http://example.com/AcsUrl', PaReq='this-is-pareq', Md='this-is-Md')
+        params = {
+            'card_number': 'XXXXXXXXXXXXXXXX',
+            'exp_year': '13',
+            'exp_month': '07',
+            'client_name': u'楽天太郎',
+            'card_holder_name': u'RAKUTEN TAROU',
+            'mail_address': u'ticketstar@example.com',
+            }
+
+        cart_id = 500
+        dummy_cart = testing.DummyModel(id=cart_id, total_amount=1234)
+
+        request = DummyRequest(params=params, _cart=dummy_cart)
+        target = self._makeOne(request)
+
+        result = target.card_info_secure3d()
+
+        self.assertIsNotNone(result.get('form'))
+        form = result['form']
+        self.assertIn('http://example.com/AcsUrl', form)
+        self.assertIn('this-is-pareq', form)
+        self.assertIn('this-is-Md', form)
+        self.assertIn('/this-is-secure3d-callback', form)
+
+        self.assertEqual(dummy_secure3d.called[0][0], 'secure3d_enrol')
+        self.assertEqual(dummy_secure3d.called[0][1][0], 500)
+        self.assertEqual(dummy_secure3d.called[0][1][1].CardNumber, "XXXXXXXXXXXXXXXX")
+        self.assertEqual(dummy_secure3d.called[0][1][1].ExpYear, "13")
+        self.assertEqual(dummy_secure3d.called[0][1][1].ExpMonth, "07")
+
+        self.assertEqual(dummy_secure3d.called[1],('is_enable_auth_api', (), {}))
+
+        session_order = request.session['order']
+        self.assertEqual(session_order['card_number'], 'XXXXXXXXXXXXXXXX')
+        self.assertEqual(session_order['client_name'], u'楽天太郎')
+        self.assertEqual(session_order['mail_address'], u'ticketstar@example.com')
+        self.assertEqual(session_order['exp_year'], '13')
+        self.assertEqual(session_order['exp_month'], '07')
+        self.assertEqual(session_order['card_holder_name'], u'RAKUTEN TAROU')
+
+    def test_card_info_secure3d_disabled_api(self):
+        self.config.add_route('cart.secure3d_result', '/this-is-secure3d-callback')
+        dummy_secure3d = self._register_dummy_secure3d(AcsUrl='http://example.com/AcsUrl', PaReq='this-is-pareq', Md='this-is-Md', enable_auth_api=False)
+        params = {
+            'card_number': 'XXXXXXXXXXXXXXXX',
+            'exp_year': '13',
+            'exp_month': '07',
+            'client_name': u'楽天太郎',
+            'card_holder_name': u'RAKUTEN TAROU',
+            'mail_address': u'ticketstar@example.com',
+        }
+
+        cart_id = 500
+        dummy_cart = testing.DummyModel(id=cart_id, total_amount=1234)
+
+        request = DummyRequest(params=params, _cart=dummy_cart)
+        target = self._makeOne(request)
+
+        result = target.card_info_secure3d()
+
+#        self.assertIsNotNone(result.get('form'))
+#        form = result['form']
+#        self.assertIn('http://example.com/AcsUrl', form)
+#        self.assertIn('this-is-pareq', form)
+#        self.assertIn('this-is-Md', form)
+#        self.assertIn('/this-is-secure3d-callback', form)
+
+        self.assertEqual(dummy_secure3d.called[0][0], 'secure3d_enrol')
+        self.assertEqual(dummy_secure3d.called[0][1][0], 500)
+        self.assertEqual(dummy_secure3d.called[0][1][1].CardNumber, "XXXXXXXXXXXXXXXX")
+        self.assertEqual(dummy_secure3d.called[0][1][1].ExpYear, "13")
+        self.assertEqual(dummy_secure3d.called[0][1][1].ExpMonth, "07")
+
+        self.assertEqual(dummy_secure3d.called[1],('is_enable_auth_api', (), {}))
+
+        self.assertEqual(dummy_secure3d.called[2],('is_enable_secure3d', (), {}))
+
+    def test_card_info_secure3d_callback(self):
+        dummy_secure3d = self._register_dummy_secure3d(AcsUrl='http://example.com/AcsUrl', PaReq='this-is-pareq', Md='this-is-Md', enable_auth_api=False)
+        self.config.registry.settings['cart.item_name'] = '楽天チケット' # configはバイト読み取り
+        params = {
+            'PaRes': 'this-is-pa-res',
+            'MD': 'this-is-md',
+        }
+        cart_id = 500
+        dummy_cart = testing.DummyModel(id=cart_id, total_amount=1234,
+            performance=testing.DummyModel(name=u'テスト公演'))
+
+        session_order = {
+            'client_name': u'楽天太郎',
+            'mail_address': u'ticketstar@example.com',
+            'card_number': u'XXXXXXXXXXXXXXXX',
+            'exp_year': '12',
+            'exp_month': '06',
+            'card_holder_name': u'RAKUTEN TAROU',
+        }
+        request = DummyRequest(params=params, _cart=dummy_cart, session=dict(order=session_order))
+        target = self._makeOne(request)
+
+        result = target.card_info_secure3d_callback()
+
+class DummyRequest(testing.DummyRequest):
+    def __init__(self, *args, **kwargs):
+        super(DummyRequest, self).__init__(*args, **kwargs)
+        from webob.multidict import MultiDict
+        if hasattr(self, 'params'):
+            self.params = MultiDict(self.params)
+
+class DummySecure3D(object):
+    def __init__(self, AcsUrl, PaReq, Md, enable_auth_api=True,
+                 mvn=None, xid=None, ts=None, eci=None, cavv=None, cavva=None,
+                 order_no=None, status=None, public_tran_id=None,
+                 ahead_com_cd=None, approval_no=None, card_error_cd=None, req_ymd=None, cmd_error_cd=None):
+
+        self.called = []
+        self.AcsUrl = AcsUrl
+        self.PaReq = PaReq
+        self.Md = Md
+        self.enable_auth_api = enable_auth_api
+
+        self.Mvn = mvn
+        self.Xid = xid
+        self.Ts = ts
+        self.Eci = eci
+        self.Cavv = cavv
+        self.Cavva = cavva
+
+        self.OrderNo = order_no
+        self.Status = status
+        self.PublicTranId=public_tran_id
+        self.AheadComCd=ahead_com_cd
+        self.ApprovalNo=approval_no
+        self.CardErrorCd=card_error_cd
+        self.ReqYmd=req_ymd
+        self.CmnErrorCd=cmd_error_cd
+
+    def secure3d_enrol(self, *args, **kwargs):
+        self.called.append(('secure3d_enrol', args, kwargs))
+        return self
+
+    def secure3d_auth(self, *args, **kwargs):
+        self.called.append(('secure3d_auth', args, kwargs))
+        return self
+
+    def is_enable_auth_api(self, *args, **kwargs):
+        self.called.append(('is_enable_auth_api', args, kwargs))
+        return self.enable_auth_api
+
+    def is_enable_secure3d(self, *args, **kwargs):
+        self.called.append(('is_enable_secure3d', args, kwargs))
+        return True
+
+    def request_card_auth(self, *args, **kwargs):
+        self.called.append(('request_card_auth', args, kwargs))
+        return self

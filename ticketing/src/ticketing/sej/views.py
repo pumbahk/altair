@@ -26,10 +26,6 @@ class SejCallback(object):
     def __init__(self, request):
         self.request = request
 
-    @view_config(route_name='sej.callback.form', renderer="ticketing:sej/template/index.html")
-    def callback_form(self):
-        return {}
-
     @view_config(route_name='sej.callback')
     def callback(self):
         try:

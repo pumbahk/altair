@@ -39,8 +39,8 @@
   function save_sales_segment() {
     var modal = '#modal-sales_segment';
     var form = '#sales_segments-form';
-    var id = $(modal + ' #id').val();
-    var url = id ? '/events/sales_segments/edit/' + id : '/events/sales_segments/new';
+    var id = $(modal).find('#id').val();
+    var url = id ? '/events/sales_segments/edit/' + id : '/events/sales_segments/new/' + $(modal).find('#event_id').val();
     post_modal_form(modal, form, url);
   }
 </script>

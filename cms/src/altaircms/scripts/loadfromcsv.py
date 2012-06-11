@@ -125,12 +125,13 @@ def string_to_value(obj, colname, v):
     else:
         return v.decode("utf-8")
 
-def load_from_csv(mapper, args):
+def load_from_csv(mapper, args, session=None):
     reader = csv.reader(args.infile, quotechar="'")
     model = import_symbol(args.target)
     cols = [c.name for c in model_columns(model)]
 
-    session = setup(args)
+    if session is None:
+        session = setup(args)
 
     for row in reader:
         obj = model()

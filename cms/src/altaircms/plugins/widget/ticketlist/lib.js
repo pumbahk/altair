@@ -28,7 +28,7 @@ widget.configure({
     var load_page = function(we){
         var pk = we.get_pk(we.where);
         var url = "/api/widget/ticketlist/dialog";
-        var params = {};
+        var params = {"page_id": get_page()}; //get_page is global function. it isnt good idea
         if(!!pk){
             params["pk"] = pk;
         }
@@ -46,7 +46,8 @@ widget.configure({
     };
 
     var collect_data = function(we, choiced_elt){
-        return {}
+        var root = $(we.dialog)
+        return {"kind": root.find("#kind").val()}
     };
     return widget.include("ticketlist", {
         load_page: load_page, 

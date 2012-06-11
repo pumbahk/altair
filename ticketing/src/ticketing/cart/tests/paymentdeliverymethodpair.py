@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from fixture import DataSet
-from ticketing.events.models import PaymentDeliveryMethodPair
+from ticketing.core.models import PaymentDeliveryMethodPair
 from datetime import datetime
 from salessegment import SalesSegmentData
 from paymentmethod import PaymentMethodData

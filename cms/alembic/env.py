@@ -14,34 +14,38 @@ fileConfig(config.config_file_name)
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-from altaircms import models
-from altaircms.asset import models
-from altaircms.auth import models
-from altaircms.event import models
-from altaircms.layout import models
-from altaircms.page import models
-from altaircms.tag import models
-from altaircms.topic import models
-from altaircms.usersetting import models
-from altaircms.widget import models
-# altaircms/widget/tests/models.py
+import altaircms.models as models
+import altaircms.auth.models
+import altaircms.asset.models
+import altaircms.widget.models
+import altaircms.page.models
+import altaircms.usersetting.models
+import altaircms.event.models
+import altaircms.topic.models
+import altaircms.layout.models
+import altaircms.tag.models
+import altaircms.plugins.widget.countdown.models
+import altaircms.plugins.widget.image.models
+import altaircms.plugins.widget.menu.models
+import altaircms.plugins.widget.detail.models
+import altaircms.plugins.widget.performancelist.models
+import altaircms.plugins.widget.anchorlist.models
+import altaircms.plugins.widget.reuse.models
+import altaircms.plugins.widget.calendar.models
+import altaircms.plugins.widget.heading.models
+import altaircms.plugins.widget.flash.models
+import altaircms.plugins.widget.breadcrumbs.models
+import altaircms.plugins.widget.summary.models
+import altaircms.plugins.widget.movie.models
+import altaircms.plugins.widget.freetext.models
+import altaircms.plugins.widget.promotion.models
+import altaircms.plugins.widget.ticketlist.models
+import altaircms.plugins.widget.topic.models
+import altaircms.plugins.widget.purchase.models
+import altaircms.plugins.widget.linklist.models
+import altaircms.plugins.widget.iconset.models
 
-from altaircms.plugins.widget.breadcrumbs import models
-from altaircms.plugins.widget.calendar import models
-from altaircms.plugins.widget.countdown import models
-from altaircms.plugins.widget.detail import models
-from altaircms.plugins.widget.flash import models
-from altaircms.plugins.widget.freetext import models
-from altaircms.plugins.widget.image import models
-from altaircms.plugins.widget.menu import models
-from altaircms.plugins.widget.movie import models
-from altaircms.plugins.widget.performancelist import models
-from altaircms.plugins.widget.reuse import models
-from altaircms.plugins.widget.summary import models
-from altaircms.plugins.widget.ticketlist import models
-from altaircms.plugins.widget.topic import models
 
-from altaircms import models
 target_metadata = models.Base.metadata
 # target_metadata = None
 

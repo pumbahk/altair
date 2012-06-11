@@ -7,8 +7,7 @@ from sqlalchemy.orm import joinedload, noload
 from urllib2 import urlopen
 
 from ticketing.models import DBSession
-from .models import Venue, Seat, SeatAttribute, VenueArea, SeatAdjacency, SeatAdjacencySet
-from ticketing.products.models import Stock, StockHolder, StockType
+from ..core.models import Venue, Seat, SeatAttribute, VenueArea, SeatAdjacency, SeatAdjacencySet, Stock, StockHolder, StockType
 
 @view_config(route_name="api.get_drawing", request_method="GET")
 def get_drawing(request):
@@ -54,7 +53,7 @@ def get_seats(request):
             style=stock_type.style)
 
     stock_holders_data = {}
-    for stock_holder in DBSession.query(StockHolder).filter_by(performance=venue.performance):
+    for stock_holder in DBSession.query(StockHolder).filter_by(event=venue.performance.event):
         stock_holders_data[stock_holder.id] = dict(
             name=stock_holder.name,
             style=stock_holder.style)
@@ -69,4 +68,3 @@ def get_seats(request):
         'stock_types': stock_types_data,
         'stock_holders': stock_holders_data
         }
-

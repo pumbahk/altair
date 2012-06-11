@@ -78,6 +78,9 @@ class DynamicQueryDefault(object):
     def event(cls, info, qs, field):
         field.query = cls._filter_by_site(qs, info.request)
     @classmethod
+    def sale(cls, info, qs, field):
+        field.query = qs
+    @classmethod
     def imageasset(cls, info, qs, field):
         field.query = cls._filter_by_site(qs, info.request)
     @classmethod

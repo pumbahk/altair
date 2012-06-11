@@ -11,7 +11,7 @@ from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.models import merge_session_with_post, record_to_appstruct, merge_and_flush, record_to_multidict
 from ticketing.organizations.forms import OrganizationForm
-from ticketing.organizations.models import Organization
+from ..core.models import Organization
 from ticketing.operators.models import Operator, OperatorRole, Permission
 from ticketing.operators.forms import OperatorForm, OperatorRoleForm
 from deform.form import Form,Button

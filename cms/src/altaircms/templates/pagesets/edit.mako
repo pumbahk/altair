@@ -9,7 +9,7 @@
 </table>
 
 <hr />
-${form.errors}
+
 <h4>ページ</h4>
 <table class="table">
   <tr>

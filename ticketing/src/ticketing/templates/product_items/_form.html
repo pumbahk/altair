@@ -3,7 +3,7 @@
 
 <script type="text/javascript">
   stock_holder2stocks = {
-    % for stock_holder in performance.stock_holders:
+    % for stock_holder in performance.event.stock_holders:
       '${stock_holder.id}':[
         % for stock in stock_holder.stocks:
           ['${stock.id}', '${stock.stock_type.name}'],
@@ -42,9 +42,20 @@
     <div class="modal-body">
       <fieldset>
         <div id="product">
-          ${form_item(form_product.name, option={'disabled':'disabled', 'class':'span3'})}
-          ${form_item(form_product.price, option={'disabled':'disabled', 'class':'span3'})}
-          ${form_item(form_product.sales_segment_id, option={'disabled':'disabled', 'class':'span3'})}
+          <table class="table table-bordered">
+            <tr>
+              <th>${form_product.name.label.text}</th>
+              <td><span id="name"></span></td>
+            </tr>
+            <tr>
+              <th>${form_product.price.label.text}</th>
+              <td><span id="price"></span></td>
+            </tr>
+            <tr>
+              <th>${form_product.sales_segment_id.label.text}</th>
+              <td><span id="sales_segment_id"></span></td>
+            </tr>
+          </table>
         </div>
         <div id="product-item">
           ${form_item(form.id)}

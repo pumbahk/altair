@@ -2,6 +2,8 @@ from pyramid.view import view_config
 from pyramid.renderers import render_to_response
 from altairsite.front.resources import PageRenderingResource
 from . import forms
+from altairsite.front import api
+
 
 class ReuseWidgetView(object):
     def __init__(self, request):
@@ -51,8 +53,9 @@ def rendering_source_page(request):
     block_context.scan(request=request,
                        page=page, 
                        performances=rendering_context.get_performances(page),
-                       tickets=rendering_context.get_tickets(page), 
                        event=page.event)
     tmpl = rendering_context.get_layout_template(layout, rendering_context.get_render_config())
-    params = dict(page=page, display_blocks=block_context.blocks)
+    params = api.get_navigation_categories(request)
+    params.update(sub_categories=api.get_subcategories_from_page(request, page))
+    params.update(page=page, display_blocks=block_context.blocks)
     return render_to_response(tmpl, params, request)

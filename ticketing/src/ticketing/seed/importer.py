@@ -8,15 +8,14 @@ from sqlalchemy.orm import *
 import sqlahelper
 
 from ticketing.oauth2.models import *
-from ticketing.organizations.models import *
-from ticketing.events.models import *
 from ticketing.master.models import *
 from ticketing.oauth2.models import *
 from ticketing.operators.models import *
 from ticketing.orders.models import *
-from ticketing.products.models import *
 from ticketing.users.models import *
+from ticketing.core.models import *
 from ticketing.venues.models import *
+from ticketing.sej.models import *
 
 from bank import BankData, BankAccountData
 from prefecture import PrefectureMaster
@@ -33,12 +32,13 @@ from order import *
 from user import UserData, UserProfileData, UserCredentialData
 from ticketing.bookmark.tests.bookmark import BookmarkData
 from ticketing.products.tests.payment_delivery_method import DeliveryMethodPluginData, PaymentMethodPluginData, DeliveryMethodData, PaymentMethodData, PaymentDeliveryMethodPairData
+from ticketing.seed.sej import SejTicketTemplateFileData
 
 from ticketing.oauth2.models import Service
 from ticketing.operators.models import Operator, OperatorActionHistory, OperatorRole, Permission
 from ticketing.bookmark.models import Bookmark
-from ticketing.products.models import PaymentMethod, DeliveryMethod, PaymentMethodPlugin, DeliveryMethodPlugin
 from ticketing.sej.models import SejOrder, SejTicket, SejTicketFile, SejNotification
+from ticketing.products.models import PaymentMethod, DeliveryMethod, PaymentMethodPlugin, DeliveryMethodPlugin
 
 def import_seed_data():
     engine = sqlahelper.get_engine()
@@ -63,6 +63,17 @@ def import_seed_data():
              'VenueEvent2Data'        : Venue,
              'TemplateSeatVenue1Data' : Seat,
              'TemplateSeatVenue2Data' : Seat,
+             'VenueArea_group_l0_idData': VenueArea_group_l0_id,
+             'VenueAreaTemplateVenue1Data': VenueArea,
+             'VenueAreaTemplateVenue2Data': VenueArea,
+             'VenueAreaEvent1Venue1Data': VenueArea,
+             'VenueAreaEvent1Venue2Data': VenueArea,
+             'VenueAreaEvent1Venue3Data': VenueArea,
+             'VenueAreaEvent1Venue4Data': VenueArea,
+             'VenueAreaEvent1Venue5Data': VenueArea,
+             'VenueAreaEvent2Venue1Data': VenueArea,
+             'VenueAreaEvent2Venue2Data': VenueArea,
+             'VenueAreaEvent2Venue3Data': VenueArea,
              'SeatEvent1Venue1Data'   : Seat,
              'SeatEvent1Venue2Data'   : Seat,
              'SeatEvent1Venue3Data'   : Seat,
@@ -79,17 +90,6 @@ def import_seed_data():
              'SeatStatusEvent2Venue1Data': SeatStatus,
              'SeatStatusEvent2Venue2Data': SeatStatus,
              'SeatStatusEvent2Venue3Data': SeatStatus,
-             'VenueArea_group_l0_idData': VenueArea_group_l0_id,
-             'VenueAreaTemplateVenue1Data': VenueArea,
-             'VenueAreaTemplateVenue2Data': VenueArea,
-             'VenueAreaEvent1Venue1Data': VenueArea,
-             'VenueAreaEvent1Venue2Data': VenueArea,
-             'VenueAreaEvent1Venue3Data': VenueArea,
-             'VenueAreaEvent1Venue4Data': VenueArea,
-             'VenueAreaEvent1Venue5Data': VenueArea,
-             'VenueAreaEvent2Venue1Data': VenueArea,
-             'VenueAreaEvent2Venue2Data': VenueArea,
-             'VenueAreaEvent2Venue3Data': VenueArea,
              'TemplateSeatAttributeData': SeatAttribute,
              'SeatAttributeData': SeatAttribute,
              'SeatAdjacencySetData': SeatAdjacencySet,
@@ -121,14 +121,8 @@ def import_seed_data():
              'StockStatusEvent2Performance1Data'    : StockStatus,
              'StockStatusEvent2Performance2Data'    : StockStatus,
              'StockStatusEvent2Performance3Data'    : StockStatus,
-             'StockHolderEvent1Performance1Data'    : StockHolder,
-             'StockHolderEvent1Performance2Data'    : StockHolder,
-             'StockHolderEvent1Performance3Data'    : StockHolder,
-             'StockHolderEvent1Performance4Data'    : StockHolder,
-             'StockHolderEvent1Performance5Data'    : StockHolder,
-             'StockHolderEvent2Performance1Data'    : StockHolder,
-             'StockHolderEvent2Performance2Data'    : StockHolder,
-             'StockHolderEvent2Performance3Data'    : StockHolder,
+             'StockHolderEvent1'                    : StockHolder,
+             'StockHolderEvent2'                    : StockHolder,
              'StockAllocationEvent1Performance1Data': StockAllocation,
              'StockAllocationEvent1Performance2Data': StockAllocation,
              'StockAllocationEvent1Performance3Data': StockAllocation,
@@ -164,6 +158,7 @@ def import_seed_data():
              'DeliveryMethodData'                   : DeliveryMethod,
              'PaymentMethodData'                    : PaymentMethod,
              'PaymentDeliveryMethodPairData'        : PaymentDeliveryMethodPair,
+             'SejTicketTemplateFileData'            : SejTicketTemplateFile
          },
          engine=engine
     )
@@ -251,14 +246,8 @@ def import_seed_data():
         StockStatusEvent2Performance1Data,
         StockStatusEvent2Performance2Data,
         StockStatusEvent2Performance3Data,
-        StockHolderEvent1Performance1Data,
-        StockHolderEvent1Performance2Data,
-        StockHolderEvent1Performance3Data,
-        StockHolderEvent1Performance4Data,
-        StockHolderEvent1Performance5Data,
-        StockHolderEvent2Performance1Data,
-        StockHolderEvent2Performance2Data,
-        StockHolderEvent2Performance3Data,
+        StockHolderEvent1,
+        StockHolderEvent2,
         StockAllocationEvent1Performance1Data,
         StockAllocationEvent1Performance2Data,
         StockAllocationEvent1Performance3Data,
@@ -292,6 +281,7 @@ def import_seed_data():
         PaymentMethodPluginData,
         DeliveryMethodData,
         PaymentMethodData,
-        PaymentDeliveryMethodPairData
+        PaymentDeliveryMethodPairData,
+        SejTicketTemplateFileData
     )
     data.setup()

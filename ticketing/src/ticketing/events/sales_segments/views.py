@@ -10,7 +10,7 @@ from pyramid.url import route_path
 from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
-from ticketing.events.models import Event, SalesSegment
+from ticketing.core.models import Event, SalesSegment
 from ticketing.events.payment_delivery_method_pairs.forms import PaymentDeliveryMethodPairForm
 from ticketing.events.sales_segments.forms import SalesSegmentForm
 

@@ -48,7 +48,7 @@ class Widget(BaseOriginalMixin, Base):
     def __repr__(self):
         return '<%s %s>' % (self.__class__.__name__, self.id)
 
-    def clone(self, session, page): #todo:refactoring model#clone
+    def clone(self, session, page=None): #todo:refactoring model#clone
         D = self.to_dict()
         D["id"] = None
         if page:
@@ -112,6 +112,10 @@ class WidgetDisposition(BaseOriginalMixin, Base): #todo: rename
         ## cleanup
         wtree = WidgetTreeProxy(self)
         new_wtree = wclone.clone(session, page, wtree)
+
+        for w in page.widgets:
+            assert w.page
+
         if session:
             session.flush()
         page.structure = json.dumps(wclone.to_structure(new_wtree))

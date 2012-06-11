@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from ticketing.seed import DataSet
-from ticketing.venues.models import SeatStatusEnum, VenueArea, VenueArea_group_l0_id
+from ticketing.core.models import SeatStatusEnum, VenueArea, VenueArea_group_l0_id
 
 from .event import PerformanceEvent1Data, PerformanceEvent2Data
 from .product import *

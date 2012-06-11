@@ -34,7 +34,13 @@ class Reducer(object):
     """
     created_at = datetime(1900, 1, 1)
 
+    def backend_id_gen(self):
+        v = self.bid
+        self.bid += 1
+        return v
+
     def __init__(self):
+        self.bid = 12222
         self.events = {}
         self.perfs = defaultdict(list)
 
@@ -68,6 +74,7 @@ class Reducer(object):
 
     def create_perf(self, src):
         return Performance(
+            backend_id=self.backend_id_gen(), 
             title=src.event_name, 
             venue=src.venue, 
             created_at = self.created_at, 

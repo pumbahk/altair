@@ -2,7 +2,7 @@
 # -*- coding:utf-8 -*-
 
 import sqlalchemy as sa
-from sqlalchemy.ext.declarative import declared_attr
+
 
 from datetime import datetime
 import sqlahelper
@@ -15,6 +15,7 @@ from sqlalchemy.sql.operators import ColumnOperators
 import pkg_resources
 def import_symbol(symbol):
     return pkg_resources.EntryPoint.parse("x=%s" % symbol).load(False)
+from altaircms.seeds.saleskind import SALESKIND_CHOICES
 
 def model_to_dict(obj):
     return {k: getattr(obj, k) for k, v in obj.__class__.__dict__.iteritems() \
@@ -106,20 +107,31 @@ class Performance(BaseOriginalMixin, Base):
         return PDICT.name_to_label.get(self.prefecture, u"--")
 
 class Sale(BaseOriginalMixin, Base):
+    """ 販売条件
+    """
     __tablename__ = 'sale'
     query = DBSession.query_property()
 
     id = Column(Integer, primary_key=True)
-    performance_id = Column(Integer, ForeignKey('performance.id'))
-    performance = relationship("Performance", backref=orm.backref("sales", order_by=id))
 
-    name = Column(String(255))
+    event_id = Column(Integer, ForeignKey('event.id'))
+    event  = relationship("Event", backref="sales")
+    performance_id = Column(Integer, ForeignKey('performance.id'))
+    performance  = relationship("Performance", backref="sales")
+
+    name = Column(Unicode(length=255))
+    kind = Column(Unicode(length=255), doc=u"saleskind. 販売条件(最速抽選, 先行抽選, 先行先着, 一般販売, 追加抽選.etc)")
+
     start_on = Column(DateTime)
     end_on = Column(DateTime)
 
-
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+
+    SALESKIND_DICT = dict(SALESKIND_CHOICES)
+    @property
+    def jkind(self):
+        return self.SALESKIND_DICT[self.kind]
 
 
 class Ticket(BaseOriginalMixin, Base):
@@ -132,33 +144,32 @@ class Ticket(BaseOriginalMixin, Base):
     id = Column(Integer, primary_key=True)
     orderno = Column(Integer)
     sale_id = Column(Integer, ForeignKey("sale.id"))
-    event_id = Column(Integer, ForeignKey("event.id"))
+    # event_id = Column(Integer, ForeignKey("event.id"))
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now)
     price = Column(Integer, default=0)
 
     sale = relationship("Sale", backref=orm.backref("tickets", order_by=orderno))
-    event = relationship("Event", backref=orm.backref("tickets", order_by=orderno))
+    # event = relationship("Event", backref=orm.backref("tickets", order_by=orderno))
 
-    client_id = Column(Integer, ForeignKey("performance.id"))
     seattype = Column(Unicode(255))
 
 
-class Seatfigure(BaseOriginalMixin, Base):
-    """
-    席図
-    """
-    __tablename__ = "seatfigure"
-    query = DBSession.query_property()
+# class Seatfigure(BaseOriginalMixin, Base):
+#     """
+#     席図
+#     """
+#     __tablename__ = "seatfigure"
+#     query = DBSession.query_property()
 
-    id = Column(Integer, primary_key=True)
-    created_at = Column(DateTime, default=datetime.now)
-    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+#     id = Column(Integer, primary_key=True)
+#     created_at = Column(DateTime, default=datetime.now)
+#     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
-    figure_url = Column(String(255))
-    controller_url = Column(String(255))
+#     figure_url = Column(String(255))
+#     controller_url = Column(String(255))
 
-    client_id = Column(Integer, ForeignKey("event.id"))
+#     client_id = Column(Integer, ForeignKey("event.id"))
 
 
 
@@ -223,8 +234,9 @@ class Category(Base):
     
     url = sa.Column(sa.Unicode(length=255))
     pageset_id = sa.Column(sa.Integer, sa.ForeignKey("pagesets.id"))
-    pageset = orm.relationship("PageSet", backref="category", uselist=False)
+    pageset = orm.relationship("PageSet", backref=orm.backref("category", uselist=False), uselist=False)
     orderno = sa.Column(sa.Integer)
+    origin = sa.Column(sa.Unicode(length=255))
 
     @classmethod
     def get_toplevel_categories(cls, hierarchy=u"大", site=None, request=None): ## fixme

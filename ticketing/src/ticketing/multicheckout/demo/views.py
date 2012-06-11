@@ -12,7 +12,7 @@ class IndexView(object):
 
     def gen_order_no(self):
         now = datetime.now()
-        return now.strftime("%Y%m%d%H%M%S")
+        return now.strftime("%Y%m%d%H%M%S") + "00"
 
     @view_config(route_name="top", renderer="index.mak", request_method="GET")
     def index(self):
@@ -24,6 +24,7 @@ class IndexView(object):
         order_no = self.gen_order_no()
         self.request.session['order'] = dict(
             order_no=order_no,
+            client_name=self.request.params['client_name'],
             amount=int(self.request.params['total_amount']),
             card_holder_name=self.request.params['card_holder_name'],
             card_number=self.request.params['card_number'],
@@ -41,8 +42,12 @@ class IndexView(object):
             total_amount=int(self.request.params['total_amount']),
         )
 
-        logger.debug("acs_url = %s" % secure3d.AcsUrl)
-        return dict(form=h.secure3d_acs_form(self.request, self.request.route_url('secure3d_result'), secure3d))
+        if secure3d.is_enable_auth_api():
+            logger.debug("acs_url = %s" % secure3d.AcsUrl)
+            return dict(form=h.secure3d_acs_form(self.request, self.request.route_url('secure3d_result'), secure3d))
+        else:
+            self.request.response.text = "ErrorCd = %s, RetCd = %s" % (secure3d.ErrorCd, ErrorCd.RetCd)
+            return self.request.response
 
 class Secure3DResultView(object):
     def __init__(self, request):
@@ -54,7 +59,8 @@ class Secure3DResultView(object):
         order_no = order['order_no']
         amount = order['amount']
         tax = 0
-        card_holder_name = client_name = order['card_holder_name']
+        client_name = order['client_name']
+        card_holder_name = order['card_holder_name']
         card_no = order['card_number']
         mail_address = order['mail_address']
         card_limit = order['exp_year'] + order['exp_month']

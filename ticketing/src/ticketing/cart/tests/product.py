@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from fixture import DataSet
-from ticketing.products.models import Product
+from ticketing.core.models import Product
 from datetime import datetime
 
 class ProductData(DataSet):

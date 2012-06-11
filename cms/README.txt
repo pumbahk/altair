@@ -32,6 +32,15 @@ deploy方法
 
 
 
+csvからevent,performanceのデータを取り込む
+-------------------------------------------
+イベントなど作る(400件くらい)::
+
+	$ pwd # altaircms/cms
+	$ cd csvs
+	$ make run
+
+
 
 install solr
 ----------------------------------------

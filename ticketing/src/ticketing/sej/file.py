@@ -127,7 +127,7 @@ class SejPaymentInfoFileParser(SejFileParser):
         return data
 
 
-class SejRefundFileParser(SejFileParser):
+class SejCheckCancelFileParser(SejFileParser):
 
     def parse_row(self, row):
         data = dict(
@@ -183,3 +183,8 @@ class SejRefundFileParser(SejFileParser):
 
         )
         return data
+
+class SejReturnFileWriter():
+    pass
+
+

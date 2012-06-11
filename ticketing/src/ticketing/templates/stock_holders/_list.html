@@ -14,9 +14,9 @@
 
 % for account in performance.accounts:
   <h4>${account.name}</h4>
-  % for stock_holder in performance.stock_holders:
-  % if stock_holder.account.user.id == account.user.id:
-      <%include file="/stock_holders/_item.html" args="stock_holder=stock_holder" />
+  % for stock_holder in performance.event.stock_holders:
+    % if stock_holder.account.user.id == account.user.id:
+      <%include file="/stock_holders/_item.html" args="stock_holder=stock_holder, stocks=stock_holder.stocks_by_performance(performance.id)" />
     % endif
   % endfor
   <div style="margin-bottom: 20px"></div>

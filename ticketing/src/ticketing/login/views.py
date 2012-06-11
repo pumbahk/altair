@@ -8,7 +8,7 @@ from pyramid.url import route_path
 from pyramid.security import authenticated_userid
 
 from forms import LoginForm, OperatorForm, ResetForm
-from ticketing.models import *
+from ticketing.core.models import *
 from ticketing.views import BaseView
 from ticketing.operators.models import Operator
 

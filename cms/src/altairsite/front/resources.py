@@ -49,10 +49,7 @@ class PageRenderingResource(object):
 
     def get_performances(self, page):
         return page.event.performances if page.event else []
-
-    def get_tickets(self, page):
-        return page.event.tickets if page.event else []
-
+    
     def get_block_context(self, page):
         context =  BlockContext.from_widget_tree(WidgetTreeProxy(page), scan=True)
         context.blocks["description"] = [page.description]

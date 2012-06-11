@@ -2,7 +2,7 @@
 
 def includeme(config):
     config.add_route('products.index', '/{event_id}')
-    config.add_route('products.new', '/new')
+    config.add_route('products.new', '/new/{event_id}')
     config.add_route('products.edit', '/edit/{product_id}')
     config.add_route('products.delete', '/delete/{product_id}')
 

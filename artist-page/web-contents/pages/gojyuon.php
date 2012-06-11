@@ -24,7 +24,7 @@ $moji = isset($_GET['moji']) ? $_GET['moji'] : null;
 $page = isset($_GET['page']) ? $_GET['page'] :1;
 
 $page_figure = isset($_GET['page_figure']) ? $_GET['page_figure'] :null;
-$cage_moji = isset($_GET['page_moji']) ? $_GET['page_moji'] :null;
+$page_moji = isset($_GET['page_moji']) ? $_GET['page_moji'] :null;
 $domestic = isset($_GET['domestic']) ? $_GET['domestic'] :null;
 $overseas = isset($_GET['overseas']) ? $_GET['overseas'] :null;
 
@@ -34,10 +34,11 @@ $count_artist = isset($_GET['count_artist']) ? $_GET['count_artist'] :null;
 
 
 if($figure){
-	preg_match(",",$figure,$matches); 
+	$delimitor = '/,/';
+	preg_match($delimitor,$figure,$matches); 
 	if($matches){		
 		//洋楽でカタカナのアーティストを探す
-		$figure_explode=explode("*",$figure);
+		$figure_explode=explode(",",$figure);
 		$figure_explode[0] = $figure_explode[0]."%";
 		$figure_explode[1] = $figure_explode[1]."%";
 		$stmt_artist_overseas = $dbh ->prepare("select name from artist inner join artist_genre on artist.id  = artist_genre.artist_id  where artist_genre.genre_id =3 and artist.name like ? or artist.name like ?");
@@ -93,101 +94,165 @@ if($figure){
 
 
 if($page_figure){
-
-	//洋楽ページ送りのページごとのアーティスト検索
-	$page_figure = $page_figure."%";	
-	$paging = $count_artist/20;
-	$last_page_artist_count = $count_artist%20;
-	if($last_page_artist_count){
-		$paging=$paging+1;
-	}
-	$p = ($page_overseas-1)*20+1;
-	$page_artist_array = array();
-	$stmt_artist_page = $dbh -> prepare("select name from artist where name like ? and  name IN ( select name from artist inner join artist_genre on artist.id  = artist_genre.artist_id  where artist_genre.genre_id =3) limit 20 offset ?");
-	$stmt_artist_page -> bind_param('si',$page_figure,$p);
-	$stmt_artist_page ->execute();
-	$stmt_artist_page ->bind_result($page_artist);
-	
-	while($stmt_artist_page ->fetch()){
-	$page_artist_array[]=$page_artist;
-	}
-	
-	$stmt_artist_page ->close();}
-
-
-if($moji){
-
-	//邦楽で検索文字列のものを探す
-	//文字が日本語の場合カタカナとひらがなで検索する
-	preg_match(",",$moji,$matches);
-	if($matches) {
-		$moji_explode=explode("o",$moji);
-		$moji_explode[0] = $moji_explode[0]."%";
-		$moji_explode[1] = $moji_explode[1]."%";
-		$stmt_artist_domestic = $dbh ->prepare("select name from artist inner join artist_genre on artist.id  = artist_genre.artist_id  where artist_genre.genre_id =4 and artist.name like ? or artist.name like ?");
-		$stmt_artist_domestic ->bind_param('ss',$moji_explode[0],$moji_explode[1]);
-		$stmt_artist_domestic ->execute();
-		$stmt_artist_domestic ->bind_result($moji_artist);
-		while($stmt_artist_domestic->fetch()){
-			$figure_artist_array[]=$moji_artist;
-		}
-		$stmt_artist_domestic->close();
+        $delimitor = '/,/';
+        preg_match($delimitor,$page_figure,$matches);
+        if($matches){
+		$page_figure_explode=explode(",",$page_figure);
+		$page_figure_explode[0] = $page_figure_explode[0]."%";
+		$page_figure_explode[1] = $page_figure_explode[1]."%";
+                
 		$paging = $count_artist/20;
 		$last_page_artist_count = $count_artist%20;
-		if($last_page_artist){
-			$paging=$paging+1;
-		}
+		if($last_page_artist_count){
+		        $paging=$paging+1;
+                }
+                $p = ($page_overseas-1)*20+1;
+                $page_artist_array = array();
+                $stmt_artist_page = $dbh -> prepare("select name from artist where name like ? or artist.name like ? and  name IN ( select name from artist inner join artist_genre on artist.id  = artist_genre.artist_id  where artist_genre.genre_id =3) limit 20 offset ?");
+                $stmt_artist_page -> bind_param('ssi',$page_figure_explode[0],$page_figure_explode[1],$p);
+                $stmt_artist_page ->execute();
+                $stmt_artist_page ->bind_result($page_artist);
+
+                while($stmt_artist_page ->fetch()){
+                $page_artist_array[]=$page_artist;
+                }
+
+		$stmt_artist_page ->close();
 
 	}
-
-
-        else{
-		//文字がアルファベットの場合　
-		$moji_ = $moji."%";
-		$stmt_artist_domestic = $dbh ->prepare("select name from artist inner join artist_genre on artist.id  = artist_genre.artist_id  where artist_genre.genre_id =4 and artist.name like ?");
-		$stmt_artist_domestic ->bind_param('s',$moji_);
-		$stmt_artist_domestic ->execute();
-		$stmt_artist_domestic ->bind_result($moji_artist);
-	        
-		while($stmt_artist_domestic->fetch()){
-			$figure_artist_array[]=$moji_artist;
-		 }
-		$stmt_artist_domestic->close();
-        	
+	else{
+		//洋楽ページ送りのページごとのアーティスト検索
+		$page_figure = $page_figure."%";	
 		$paging = $count_artist/20;
 		$last_page_artist_count = $count_artist%20;
 		if($last_page_artist_count){
 			$paging=$paging+1;
-		 }
-
-	}
-
-}
-
-
-//mojiがわたってきたときのpagingとpage_mojiがわたってきたときの処理がちがうのは　count_artistがわたってきて　$pがその文字のpagingのアーティスト一覧　20人分をとってくるためのsqlのオフセット値
-
-if($page_moji){
-	//邦楽ページ送りのページごとのアーティスト検索
-	$page_moji = $page_moji."%";
-	$paging = $count_artist/20;
-	$last_page_artist_count = $count_artist%20;
-	if($last_page_artist_count){
-		$paging=$paging+1;
-	}
-	$p = ($page_domestic-1)*20+1;
-	$stmt_artist_page = $dbh -> prepare("select name from artist where name like ? and  name IN ( select name from artist inner join artist_genre on artist.id  = artist_genre.artist_id  where artist_genre.genre_id =3) limit 20 offset ?");
-	$stmt_artist_page -> bind_param('si',$page_moji,$p);
-	$stmt_artist_page ->execute();
-	$stmt_artist_page ->bind_result($page_artist);
-	
-	while($stmt_artist_page ->fetch()){
+		}
+		$p = ($page_overseas-1)*20+1;
+		$page_artist_array = array();
+		$stmt_artist_page = $dbh -> prepare("select name from artist where name like ? and  name IN ( select name from artist inner join artist_genre on artist.id  = artist_genre.artist_id  where artist_genre.genre_id =3) limit 20 offset ?");
+		$stmt_artist_page -> bind_param('si',$page_figure,$p);
+		$stmt_artist_page ->execute();
+		$stmt_artist_page ->bind_result($page_artist);
+		
+		while($stmt_artist_page ->fetch()){
 		$page_artist_array[]=$page_artist;
-	      
+		}
+	
+		$stmt_artist_page ->close();
 	}
-	$stmt_artist_page ->close();
 }
 
+
+	if($moji){
+		$delimitor='/,/';	
+		preg_match($delimitor,$moji,$matches);
+		if($matches){		
+			//邦楽でカタカナのアーティストを探す
+			$moji_explode=explode(",",$moji);
+			$moji_explode[0] = $moji_explode[0]."%";
+			$moji_explode[1] = $moji_explode[1]."%";
+			$stmt_artist_overseas = $dbh ->prepare("select name from artist inner join artist_genre on artist.id  = artist_genre.artist_id  where artist_genre.genre_id =4 and artist.name like ? or artist.name like ?");
+			$stmt_artist_overseas ->bind_param('ss',$moji_explode[0],$moji_explode[1]);
+			$stmt_artist_overseas ->execute();
+			$stmt_artist_overseas ->bind_result($moji_artist);
+			while($stmt_artist_overseas->fetch()){
+				$moji_artist_array[]=$moji_artist;
+			}
+			$stmt_artist_overseas->close();
+	
+			 //邦楽でカタカナのアーティストの数
+			$stmt_count_artist = $dbh ->prepare("select count(name) from artist inner join artist_genre on artist.id  = artist_genre.artist_id  where artist_genre.genre_id =4 and artist.name like ? or artist.name like ?");
+	 		$stmt_count_artist ->bind_param('ss',$moji_explode[0],$moji_explode[1]);
+			$stmt_count_artist ->execute();
+			$stmt_count_artist ->bind_result($count_artist);
+			$stmt_count_artist->fetch();
+			$stmt_count_artist->close();	
+			$paging = $count_artist/20;
+ 			$last_page_artist_count = $count_artist%20;
+			if($last_page_artist_count){
+				 $paging = $paging+1;
+			 }
+		}
+		else{
+			//邦楽で英語のアーティストを探す
+			$moji=$moji."%";
+			$stmt_artist_overseas = $dbh ->prepare("select name from artist inner join artist_genre on artist.id  = artist_genre.artist_id  where artist_genre.genre_id =4 and artist.name like ?");
+			$stmt_artist_overseas ->bind_param('s',$moji);
+			$stmt_artist_overseas ->execute();
+			$stmt_artist_overseas ->bind_result($moji_artist);
+			while($stmt_artist_overseas->fetch()){
+				$moji_artist_array[]=$moji_artist;
+			 }
+			$stmt_artist_overseas->close(); 
+			// 邦楽で英語のアーティストの数
+			
+			$stmt_count_artist = $dbh ->prepare("select count(name) from artist inner join artist_genre on artist.id  = artist_genre.artist_id  where artist_genre.genre_id =4 and artist.name like ?");
+			$stmt_count_artist ->bind_param('s',$moji);
+			$stmt_count_artist ->execute();
+			$stmt_count_artist ->bind_result($count_artist);
+			$stmt_count_artist->fetch();
+			$stmt_count_artist->close();
+			$paging = $count_artist/20;
+			$last_page_artist_count = $count_artist%20;
+			if($last_page_artist_count){
+				$paging = $paging+1;
+			}
+	
+		}
+
+	}
+
+
+	if($page_moji){
+
+	        $delimitor = '/,/';
+	        preg_match($delimitor,$page_moji,$matches);
+	        if($matches){
+	                $page_moji_explode=explode(",",$page_moji);
+	                $page_moji_explode[0] = $page_moji_explode[0]."%";
+	                $page_moji_explode[1] = $page_moji_explode[1]."%";
+	                $paging = $count_artist/20;
+	                $last_page_artist_count = $count_artist%20;
+	                if($last_page_artist_count){
+	                        $paging=$paging+1;
+	                }
+	                $p = ($page_domestic-1)*20+1;
+	                $page_artist_array = array();
+	                $stmt_artist_page = $dbh -> prepare("select name from artist where name like ? or artist.name like ? and  name IN ( select name from artist inner join artist_genre on artist.id  = artist_genre.artist_id  where artist_genre.genre_id =3) limit 20 offset ?");
+               		$stmt_artist_page -> bind_param('ssi',$page_moji_explode[0],$page_moji_explode[1],$p);
+                	$stmt_artist_page ->execute();
+                	$stmt_artist_page ->bind_result($page_artist);
+
+                	while($stmt_artist_page ->fetch()){
+                		$page_artist_array[]=$page_artist;
+                	}
+
+                	$stmt_artist_page ->close();
+
+       		 }
+        else{
+                //洋楽ページ送りのページごとのアーティスト検索               
+		 $page_moji = $page_moji."%";
+                $paging = $count_artist/20;
+                $last_page_artist_count = $count_artist%20;
+                if($last_page_artist_count){
+                        $paging=$paging+1;
+                }
+                $p = ($page_domestic-1)*20+1;
+                $page_artist_array = array();
+                $stmt_artist_page = $dbh -> prepare("select name from artist where name like ? and  name IN ( select name from artist inner join artist_genre on artist.id  = artist_genre.artist_id  where artist_genre.genre_id =3) limit 20 offset ?");
+                $stmt_artist_page -> bind_param('si',$page_moji,$p);
+                $stmt_artist_page ->execute();
+                $stmt_artist_page ->bind_result($page_artist);
+
+                while($stmt_artist_page ->fetch()){
+                $page_artist_array[]=$page_artist;
+                }
+
+                $stmt_artist_page ->close();
+        }
+}
 
 ?>
 
@@ -319,7 +384,6 @@ n/skip.gif" alt="本文へジャンプ" width="1" height="1" /></a></p>
 			<div id = "search_buttons">
                        	<? if($overseas||$figure||$page_figure){
                         ?>
-	<i class="icon_music"></i>
 			<h1>洋楽検索</h1>
 			<h2>カタカナの始まるアーティスト</h2>
 			 <ul>
@@ -404,9 +468,10 @@ n/skip.gif" alt="本文へジャンプ" width="1" height="1" /></a></p>
 			</ul>
 			<?
 			}
-			 elseif($domestic||$moij||$page_moji){
-                        ?>
+                        else if($domestic||$moji||$page_moji){
+			?>
 			<h1>邦楽検索</h1>
+			<h2>日本語のアーティスト名</h2>
                          <ul>
                                 <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=ア,あ">あ</a></li>
                                 <li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=イ,い">い</a></li>
@@ -458,6 +523,7 @@ n/skip.gif" alt="本文へジャンプ" width="1" height="1" /></a></p>
 
 
 			</ul>	
+			<h2>英語のアーティスト名</h2>
 			 <ul>
   				<li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=A">A</a></li>
 				<li><a href="/~katosaori/web-contents/pages/gojyuon.php?moji=B">B</a></li>
@@ -501,13 +567,24 @@ n/skip.gif" alt="本文へジャンプ" width="1" height="1" /></a></p>
 		<div id ="paging">
 	
 				<?
+		
 				if($moji||$page_moji){
+					//$figureがわたってきているときはpage_figureにfigureを入れる　page_figureがわたってきているときは　page_figureをもう一回入れる
+					if($_GET['page_moji']){
+							$page_moji=$_GET['page_moji'];
+					}
+					elseif($_GET['moji']){
+							$page_moji=$_GET['moji'];
+					}
+
 					for($i=0;$i<=$paging;$i++){
-				?>
-				<?
+					?>
+						<a href ="/~katosaori/web-contents/pages/gojyuon.php?page_moji=<?= $page_moji ?>&page_domestic=<?= $i ?>&count_artist=<?= $count_artist ?>"><?= $i ?></a>
+	
+					<?
 					}
 				}
-				elseif($figure||$page_figure){
+					if($figure||$page_figure){
 					//$figureがわたってきているときはpage_figureにfigureを入れる　page_figureがわたってきているときは　page_figureをもう一回入れる
 					if($_GET['page_figure']){
 							$page_figure=$_GET['page_figure'];
@@ -523,6 +600,7 @@ n/skip.gif" alt="本文へジャンプ" width="1" height="1" /></a></p>
 					<?
 					}
 				}
+
 				?>
 		</div>
 				
@@ -531,9 +609,11 @@ n/skip.gif" alt="本文へジャンプ" width="1" height="1" /></a></p>
 		<?
 		for($i=0;$i<=20;$i++){
 		?>
-			<a href ="/~katosaori/web-contents/pages/artist_detail.php?artist=<?= $page_artist_array[$i]?>"><?= $page_artist_array[$i] ?></a>
+			<a href ="/~katosaori/web-contents/pages/artist_detail.php?artist=<?= $page_artist_array[$i]?>"><?= $page_artist_array[$i] ?></a><br />
 		<?
 		}
+		?>
+		<?
 		?>
 		</div>
 		

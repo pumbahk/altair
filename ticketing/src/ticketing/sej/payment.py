@@ -3,20 +3,24 @@
 import hashlib, time, re, urllib2
 import logging
 
+import tempfile
+from zlib import decompress, compress
 from datetime import datetime
 from dateutil.parser import parse
 
 from .utils import JavaHashMap
-from .models import SejOrder, SejTicket, SejNotification
+from .models import SejOrder, SejTicket, SejNotification, SejCancelEvent, SejCancelTicket
 
 from .resources import make_sej_response, is_ticket, need_ticketing
 from .resources import SejNotificationType, SejOrderUpdateReason, SejPaymentType, SejTicketType
-from .resources import SejResponseError, SejServerError, SejError
+from .resources import SejResponseError, SejServerError, SejError, SejRequestError
 
 import sqlahelper
 
 from lxml import etree
 import re
+
+ascii_regex = re.compile(r'[^\x20-\x7E]')
 
 DBSession = sqlahelper.get_session()
 
@@ -116,6 +120,10 @@ class SejPayment(object):
         falsify_props = dict()
         for name,param in params.iteritems():
             if name.startswith('X_'):
+                result = ascii_regex.search(param)
+                if result:
+                    raise SejRequestError(u"%s is must be ascii (%s)" % (name, param))
+
                 falsify_props[name] = param
 
         hash = self.create_md5hash_from_dict(falsify_props)
@@ -139,6 +147,7 @@ class SejPayment(object):
         req = urllib2.Request(self.url)
         buffer = ["%s=%s" % (name, urllib2.quote(unicode(param).encode('shift_jis', 'xmlcharrefreplace'))) for name, param in request_params.iteritems()]
         data = "&".join(buffer)
+        print data
 
         self.log.info("[request]%s" % data)
 
@@ -157,6 +166,7 @@ class SejPayment(object):
         status = res.code
         reason = res.msg
         body = res.read()
+        print body
 
         self.log.info("[response]%s" % body)
 
@@ -197,10 +207,10 @@ def _create_sej_request(
         commission_fee,
         payment_type,
         ticketing_fee,
-        payment_due_datetime,
-        ticketing_start_datetime,
-        ticketing_due_datetime,
-        regrant_number_datetime,
+        payment_due_at,
+        ticketing_start_at,
+        ticketing_due_at,
+        regrant_number_due_at,
         tickets,
         shop_id):
 
@@ -212,9 +222,9 @@ def _create_sej_request(
     # 注文ID
     params['X_shop_order_id']   = order_id
 
-    if payment_type != SejPaymentType.Paid and payment_due_datetime:
+    if payment_type != SejPaymentType.Paid and payment_due_at:
         # コンビニでの決済を行う場合の支払い期限の設定
-        params['X_pay_lmt']         = payment_due_datetime.strftime('%Y%m%d%H%M')
+        params['X_pay_lmt']         = payment_due_at.strftime('%Y%m%d%H%M')
 
     # チケット代金
     x_ticket_daikin = ticket_total if payment_type != SejPaymentType.Paid else 0
@@ -237,14 +247,14 @@ def _create_sej_request(
     # 前払い
     if payment_type == SejPaymentType.Prepayment or payment_type == SejPaymentType.Paid:
         # 支払いと発券が異なる場合、発券開始日時と発券期限を指定できる。
-        if ticketing_start_datetime is not None:
-            params['X_hakken_mise_date'] = ticketing_start_datetime.strftime('%Y%m%d%H%M')
+        if ticketing_start_at is not None:
+            params['X_hakken_mise_date'] = ticketing_start_at.strftime('%Y%m%d%H%M')
             # 発券開始日時状態フラグ
         else:
             params['X_hakken_mise_date_sts'] = u'1'
-        if ticketing_due_datetime is not None:
+        if ticketing_due_at is not None:
             # 発券開始日時状態フラグ
-            params['X_hakken_lmt']      = ticketing_due_datetime.strftime('%Y%m%d%H%M')
+            params['X_hakken_lmt']      = ticketing_due_at.strftime('%Y%m%d%H%M')
             # 発券期限日時状態フラグ
         else:
             params['X_hakken_lmt_sts'] = u'1'
@@ -263,7 +273,7 @@ def _create_sej_request(
             e_ticket_num+=1
 
     if need_ticketing(payment_type):
-        params['X_saifuban_hakken_lmt'] = regrant_number_datetime.strftime('%Y%m%d%H%M')
+        params['X_saifuban_hakken_lmt'] = regrant_number_due_at.strftime('%Y%m%d%H%M')
     else:
         tickets=[]
         ticket_num = 0
@@ -309,10 +319,10 @@ def request_order(
         commission_fee,
         payment_type,
         ticketing_fee=0,
-        payment_due_datetime = None,
-        ticketing_start_datetime = None,
-        ticketing_due_datetime = None,
-        regrant_number_datetime = None,
+        payment_due_at = None,
+        ticketing_start_at = None,
+        ticketing_due_at = None,
+        regrant_number_due_at = None,
         tickets = [],
         shop_id = u'30520',
         secret_key = u'E6PuZ7Vhe7nWraFW',
@@ -334,16 +344,17 @@ def request_order(
         commission_fee=commission_fee,
         payment_type=payment_type,
         ticketing_fee=ticketing_fee,
-        payment_due_datetime=payment_due_datetime,
-        ticketing_start_datetime=ticketing_start_datetime,
-        ticketing_due_datetime=ticketing_due_datetime,
-        regrant_number_datetime=regrant_number_datetime,
+        payment_due_at=payment_due_at,
+        ticketing_start_at=ticketing_start_at,
+        ticketing_due_at=ticketing_due_at,
+        regrant_number_due_at=regrant_number_due_at,
         tickets=tickets,
         shop_id=shop_id,
     )
 
     params['shop_namek']        = shop_name
     # 連絡先1
+
     params['X_renraku_saki']    = contact_01
     # 連絡先2
     params['renraku_saki']      = contact_02
@@ -381,6 +392,15 @@ def request_order(
             error_field=ret.get('Error_Field', None))
 
     sej_order = SejOrder()
+    sej_order.shop_id                   = shop_id
+    sej_order.shop_name                 = shop_name
+    sej_order.contact_01                = contact_01
+    sej_order.contact_02                = contact_02
+    sej_order.user_name                 = username
+    sej_order.user_name_kana            = username_kana
+    sej_order.tel                       = tel
+    sej_order.zip_code                  = zip
+    sej_order.email                     = email
 
     sej_order.payment_type              = payment_type.v
     sej_order.billing_number            = ret.get('X_haraikomi_no')
@@ -395,6 +415,12 @@ def request_order(
     sej_order.ticket_price              = int(params.get('X_ticket_daikin',0))
     sej_order.commission_fee            = int(params.get('X_ticket_kounyu_daikin',0))
     sej_order.ticketing_fee             = int(params.get('X_hakken_daikin',0))
+
+    sej_order.payment_due_at            = payment_due_at
+    sej_order.ticketing_start_at        = ticketing_start_at
+    sej_order.ticketing_due_at          = ticketing_due_at
+    sej_order.regrant_number_due_at     = regrant_number_due_at
+
     sej_order.attributes = dict()
     idx = 1
     for ticket in tickets:
@@ -496,10 +522,10 @@ def request_update_order(
         commission_fee,
         ticketing_fee,
         payment_type,
-        payment_due_datetime = None,
-        ticketing_start_datetime = None,
-        ticketing_due_datetime = None,
-        regrant_number_datetime = None,
+        payment_due_at = None,
+        ticketing_start_at = None,
+        ticketing_due_at = None,
+        regrant_number_due_at = None,
         tickets = list(),
         condition = dict(),
         shop_id = u'30520',
@@ -534,10 +560,10 @@ def request_update_order(
         commission_fee=commission_fee,
         payment_type=payment_type,
         ticketing_fee=ticketing_fee,
-        payment_due_datetime=payment_due_datetime,
-        ticketing_start_datetime=ticketing_start_datetime,
-        ticketing_due_datetime=ticketing_due_datetime,
-        regrant_number_datetime=regrant_number_datetime,
+        payment_due_at=payment_due_at,
+        ticketing_start_at=ticketing_start_at,
+        ticketing_due_at=ticketing_due_at,
+        regrant_number_due_at=regrant_number_due_at,
         tickets=tickets,
         shop_id=shop_id,
     )
@@ -567,7 +593,7 @@ def request_update_order(
             error_msg=ret.get('Error_Msg', None),
             error_field=ret.get('Error_Field', None))
 
-    sej_order.payment_type              = payment_type.v
+    sej_order.payment_type              = '%d' % payment_type.v
     sej_order.billing_number            = ret.get('X_haraikomi_no')
     sej_order.total_ticket_count        = int(ret.get('X_ticket_cnt', 0))
     sej_order.ticket_count              = int(ret.get('X_ticket_hon_cnt', 0))
@@ -580,6 +606,11 @@ def request_update_order(
     sej_order.commission_fee            = int(params.get('X_ticket_kounyu_daikin',0))
     sej_order.ticketing_fee             = int(params.get('X_hakken_daikin',0))
     sej_order.updated_at                = datetime.now()
+
+    sej_order.payment_due_at            = payment_due_at
+    sej_order.ticketing_start_at        = ticketing_start_at
+    sej_order.ticketing_due_at          = ticketing_due_at
+    sej_order.regrant_number_due_at     = regrant_number_due_at
 
     order_buffer = {}
     for ticket in sej_order.tickets:
@@ -595,7 +626,7 @@ def request_update_order(
         if not sej_ticket:
             break
         sej_ticket.ticket_idx           = idx
-        sej_ticket.ticket_type          = ticket.get('ticket_type').v
+        sej_ticket.ticket_type          = "%d" % ticket.get('ticket_type').v
         sej_ticket.event_name           = ticket.get('event_name')
         sej_ticket.performance_name     = ticket.get('performance_name')
         sej_ticket.performance_datetime = ticket.get('performance_datetime')
@@ -603,7 +634,7 @@ def request_update_order(
         sej_ticket.ticket_data_xml      = ticket.get('xml').xml
         code = ret.get('X_barcode_no_%02d' % idx)
         if code:
-            ticket.barcode_number = code
+            sej_ticket.barcode_number = code
 
         idx += 1
 
@@ -633,7 +664,6 @@ def request_fileget(
     payment = SejPayment(url = hostname + u'/order/getfile.do', secret_key = secret_key)
     body = payment.request_file(params, True)
 
-    from zlib import decompress
     return decompress(body)
 
 def callback_notification(params,
@@ -702,7 +732,7 @@ def callback_notification(params,
         n.payment_type_new              = hash_map['X_shori_kbn_new']
         n.billing_number_new            = hash_map['X_haraikomi_no_new']
         n.exchange_number_new           = hash_map['X_hikikae_no_new']
-        n.ticketing_due_datetime_new    = parse(hash_map['X_lmt_time_new'])
+        n.ticketing_due_at_new    = parse(hash_map['X_lmt_time_new'])
         n.barcode_numbers = dict()
         n.barcode_numbers['barcodes'] = list()
         for idx in range(1,20):
@@ -718,7 +748,7 @@ def callback_notification(params,
         n.notification_type             = notification_type
         n.shop_id                       = hash_map['X_shop_id']
         n.order_id                      = hash_map['X_shop_order_id']
-        n.ticketing_due_datetime_new    = parse(hash_map['X_lmt_time'])
+        n.ticketing_due_at_new    = parse(hash_map['X_lmt_time'])
         n.billing_number                = hash_map['X_haraikomi_no']
         n.exchange_number               = hash_map['X_hikikae_no']
         n.processed_at                  = parse(hash_map['X_shori_time'])
@@ -748,9 +778,91 @@ def callback_notification(params,
     return ret
 
 
+def request_cancel_event(cancel_events):
+    from .zip_file import EnhZipFile, ZipInfo
+
+    # YYYYMMDD_TPBKOEN.dat
+    # YYYYMMDD_TPBTICKET.dat
+    # archive.txt
+
+    tpboen_file_name = "%s_TPBKOEN.dat" % datetime.now().strftime('%Y%m%d')
+    tpbticket_file_name = "%s_TPBTICKET.dat" % datetime.now().strftime('%Y%m%d')
+    archive_txt_body = "%s\r\n%s\r\n" % (tpboen_file_name, tpbticket_file_name)
+
+    zip_file_name = "/tmp/refund_file_%s.zip" % datetime.now().strftime('%Y%m%d%H%M')
+    zf = EnhZipFile(zip_file_name, 'w')
+
+    import zipfile
+    import time
+    import csv
+    from utils import UnicodeWriter
+    import StringIO
+
+    zi = ZipInfo('archive.txt', time.localtime()[:6])
+    zi.external_attr = 0666 << 16L
+    w = zf.start_entry(zi)
+    w.write(archive_txt_body)
+    w.close()
+    zf.finish_entry()
+
+    output = StringIO.StringIO()
+    event_tsv = UnicodeWriter(output, delimiter='\t', lineterminator=u'\r\n')
+
+    for cancel_event in cancel_events:
+        event_tsv.writerow([
+            unicode(cancel_event.available),# 有効フラグ ○
+            cancel_event.shop_id,#ショップID ○
+            cancel_event.event_code_01,#公演決定キー1 ○
+            cancel_event.event_code_02,#公演決定キー2 16以下 半角[0-9]
+            cancel_event.title,#メインタイトル ○
+            cancel_event.sub_title,#サブタイトル 600以下 漢字(SJIS)
+            cancel_event.event_at.strftime('%Y%m%d'),#公演日 ○
+            cancel_event.start_at.strftime('%Y%m%d'),#レジ払戻受付開始日 ○
+            cancel_event.end_at.strftime('%Y%m%d'),#レジ払戻受付終了日 ○
+            cancel_event.ticket_expire_at.strftime('%Y%m%d'),#チケット持ち込み期限 ○
+            cancel_event.event_expire_at.strftime('%Y%m%d'),#公演レコード有効期限 ○
+            u"%d" % cancel_event.refund_enabled, #レジ払戻可能フラグ ○
+            u"%02d" % cancel_event.disapproval_reason if cancel_event.disapproval_reason else '',#払戻不可理由 2固定 半角[0-9]
+            u"%d" % cancel_event.need_stub,#半券要否区分 ○
+            cancel_event.remarks,#備考 256以下
+            cancel_event.un_use_01,
+            cancel_event.un_use_02,
+            cancel_event.un_use_03,
+            cancel_event.un_use_04,
+            cancel_event.un_use_05,
+        ])
 
 
+    zi = ZipInfo(tpboen_file_name, time.localtime()[:6])
+    zi.external_attr = 0666 << 16L
+    w = zf.start_entry(zi)
+    w.write(unicode(output.getvalue(),'utf8').encode('CP932'))
+    w.close()
+    output.close()
+
+    zf.finish_entry()
+
+    output = StringIO.StringIO()
+    ticket_tsv = UnicodeWriter(output, delimiter='\t', lineterminator=u'\r\n')
+    for cancel_event in cancel_events:
+        for ticket in cancel_event.tickets:
+            ticket_tsv.writerow([
+                unicode(ticket.available),
+                ticket.shop_id,
+                ticket.event_code_01,
+                ticket.event_code_02,
+                ticket.order_id,
+                unicode(ticket.ticket_barcode_number),
+                unicode(ticket.refund_ticket_amount),
+                unicode(ticket.refund_amount),
+            ])
+
+    zi = ZipInfo(tpbticket_file_name, time.localtime()[:6])
+    zi.external_attr = 0666 << 16L
+    w = zf.start_entry(zi)
+    w.write(unicode(output.getvalue(),'utf8').encode('CP932'))
+    w.close()
 
 
-
-
+    zf.close()
+    return

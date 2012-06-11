@@ -3,7 +3,7 @@
 from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, ForeignKey
 from sqlalchemy.orm import join, column_property, mapper
 
-from ticketing.organizations.models import Organization
+from ticketing.core.models import Organization
 from hashlib import md5
 
 import sqlahelper

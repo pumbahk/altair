@@ -12,7 +12,7 @@ args = parser.parse_args()
 from altaircms.page.models import Page, PageSet
 from altaircms.event.models import Event
 from altaircms.layout.models import Layout
-from altaircms.models import Performance
+from altaircms.models import Performance, Sale, Ticket
 
 
 def create_pageset(page, event):
@@ -34,6 +34,41 @@ def create_page(event, layout):
         url = uuid.uuid4().hex #dummy
         )
 
+def create_sale(event):
+    return Sale(event=event, 
+         name=u"%s(一般先行)" % event.title,  
+         kind="normal")
+
+def create_tickets(sale):
+     return [
+         Ticket(
+               sale=sale, 
+               price=30000, 
+               seattype=u"SS席", 
+               orderno=1), 
+        Ticket(
+               sale=sale, 
+               price=15000, 
+               seattype=u"S席", 
+               orderno=2), 
+        Ticket(
+               sale=sale, 
+               price=8000, 
+               seattype=u"A席", 
+               orderno=3), 
+        Ticket(
+               sale=sale, 
+               price=5000, 
+               seattype=u"B席", 
+               orderno=4), 
+        Ticket(
+               sale=sale, 
+               price=3000, 
+               seattype=u"C席", 
+               orderno=5)
+    ]
+
+
 def main(args):
     import sqlalchemy as sa
     import sqlahelper
@@ -47,6 +82,9 @@ def main(args):
     layout = Layout.query.filter_by(template_filename="ticketstar.detail.mako").first()
 
     for event, perf in qs:
+        sys.stderr.write(".")
+        sys.stderr.flush()
+
         perf.event = event
         if not event.pagesets:
             page = create_page(event, layout)
@@ -54,6 +92,10 @@ def main(args):
             event.pagesets.append(pageset)
             event.pages.append(page)
             session.add(page)
+
+            sale = create_sale(event)
+            session.add(sale)
+            session.add_all(create_tickets(sale))
 
         session.add(perf)
 

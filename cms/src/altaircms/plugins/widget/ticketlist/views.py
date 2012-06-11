@@ -1,16 +1,19 @@
 from pyramid.view import view_config
+from . import forms
 
 class TicketlistWidgetView(object):
     def __init__(self, request):
         self.request = request
 
     def _create_or_update(self):
+        data = self.request.json_body["data"]
         page_id = self.request.json_body["page_id"]
         context = self.request.context
         widget = context.get_widget(self.request.json_body.get("pk"))
-        widget = context.update_data(widget, page_id=page_id)
+        widget = context.update_data(widget,
+                                     page_id=page_id, 
+                                     **data)
         context.add(widget, flush=True)
-
         r = self.request.json_body.copy()
         r.update(pk=widget.id)
         return r
@@ -34,4 +37,6 @@ class TicketlistWidgetView(object):
     def dialog(self):
         context = self.request.context
         widget = context.get_widget(self.request.GET.get("pk"))
-        return {"widget": widget}
+        form = forms.TicketlistChoiceForm(**widget.to_dict())
+        form.refine_kind_choices(self.request.GET.get("page_id"))
+        return {"widget": widget, "form": form}

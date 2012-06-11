@@ -7,17 +7,16 @@ from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path
 
-from ticketing.models import merge_session_with_post, record_to_multidict, DBSession
+from ticketing.core.models import merge_session_with_post, record_to_multidict, DBSession
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
-from ticketing.events.models import Event, Performance, Account, SalesSegment
 from ticketing.events.performances.forms import PerformanceForm
 from ticketing.events.stock_types.forms import StockTypeForm
 from ticketing.events.stock_allocations.forms import StockAllocationForm
 from ticketing.events.stock_holders.forms import StockHolderForm
-from ticketing.events.stocks.forms import StockForm
+from ticketing.events.stocks.forms import StockForms
 from ticketing.events.sales_segments.forms import SalesSegmentForm
-from ticketing.products.models import Product
+from ticketing.core.models import Product, StockType, Event, Performance, Account, SalesSegment
 from ticketing.products.forms import ProductForm, ProductItemForm
 from ticketing.orders.models import Order
 from ticketing.orders.forms import OrderForm
@@ -63,11 +62,11 @@ class Performances(BaseView):
 
         tab = self.request.matchdict.get('tab', 'venue-designer')
         if tab == 'seat-allocation':
-            data['form_stock_holder'] = StockHolderForm(organization_id=self.context.user.organization_id, performance_id=performance_id)
-            data['form_stock'] = StockForm()
+            data['form_stock_holder'] = StockHolderForm(organization_id=self.context.user.organization_id, event_id=performance.event_id)
+            data['forms_stock'] = StockForms(performance_id=performance_id, stock_types=performance.event.stock_types)
         elif tab == 'product':
             data['form_product'] = ProductForm(event_id=performance.event_id)
-            data['form_product_item'] = ProductItemForm(user_id=self.context.user.id, performance_id=performance_id)
+            data['form_product_item'] = ProductItemForm(user_id=self.context.user.id, event_id=performance.event_id)
         elif tab == 'reservation':
             data['form_order'] = OrderForm(event_id=performance.event_id)
             data['orders'] = Order.filter_by_performance_id(performance_id)

@@ -16,6 +16,7 @@
     <!-- <li><a href="/client">edit client</a></li> -->
     <li><a href="${request.route_path("event_list")}">イベント</a></li>
     <li><a href="${request.route_path("performance_list")}">パフォーマンス</a></li>
+    <li><a href="${request.route_path("sale_list")}">イベント販売条件</a></li>
     <li><a href="${request.route_path("ticket_list")}">チケット</a></li>
     <li class="nav-header">ページ管理</li>
     <li><a href="${request.route_path("page")}">ページ</a></li>

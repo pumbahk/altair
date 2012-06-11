@@ -36,7 +36,7 @@
     var modal = '#modal-product';
     var form = '#products-form';
     var id = $(modal).find('#id').val();
-    var url = id ? '/products/edit/' + id : '/products/new';
+    var url = id ? '/products/edit/' + id : '/products/new/' + $(modal).find('#event_id').val();
     post_modal_form(modal, form, url);
   }
 </script>

@@ -3,6 +3,10 @@
     <form ${request.route_url('top')} method="post">
         <ul>
             <li>
+                <label>client_name</label>
+                <input name="client_name" />
+            </li>
+            <li>
                 <label>card_number</label>
                 <input name="card_number" />
             </li>

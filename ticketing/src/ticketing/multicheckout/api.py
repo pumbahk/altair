@@ -67,8 +67,8 @@ def checkout_auth_secure3d(request,
         CardNo=card_no,
         CardLimit=card_limit,
         CardHolderName=card_holder_name,
-        PayKindCd='61',
-        PayCount='10',
+        PayKindCd='10',
+        PayCount=None,
         SecureKind='3',
         Mvn=mvn,
         Xid=xid,
@@ -310,7 +310,7 @@ class Checkout3D(object):
         self._add_param(card, 'CardLimit', card_auth.CardLimit)
         self._add_param(card, 'CardHolderName', card_auth.CardHolderName, optional=check)
         self._add_param(card, 'PayKindCd', card_auth.PayKindCd, optional=check)
-        self._add_param(card, 'PayCount', card_auth.PayCount)
+        self._add_param(card, 'PayCount', card_auth.PayCount, optional=card_auth.PayKindCd=='10')
         self._add_param(card, 'SecureKind', card_auth.SecureKind)
 
         # CVVチェック

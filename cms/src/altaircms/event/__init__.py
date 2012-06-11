@@ -17,6 +17,8 @@ def includeme(config):
     config.add_subscriber(".subscribers.event_register_solr", ".subscribers.EventUpdate")
     config.add_subscriber(".subscribers.event_delete_solr", ".subscribers.EventDelete") ## fixme
 
+    config.add_subscriber(".subscribers.flash_view_page_url", ".subscribers.EventCreate")
+    config.add_subscriber(".subscribers.flash_view_page_url", ".subscribers.EventUpdate")
     # バックエンドからの受取り用。
     # 認証方式が異なるため独立したインターフェースを設ける。
     config.add_route('api_event_register', '/api/event/register')

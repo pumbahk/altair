@@ -5,8 +5,7 @@ from wtforms import TextField, SelectField, HiddenField
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 
 from ticketing.formhelpers import DateTimeField, Translations, Required
-from ticketing.venues.models import Venue
-from ticketing.events.models import Account, Performance
+from ticketing.core.models import Venue, Account, Performance
 
 class PerformanceForm(Form):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):

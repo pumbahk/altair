@@ -2,7 +2,7 @@
 
 from fixture import DataSet
 from seed.event import PerformanceData
-from ticketing.venues.models import SeatMaster, SeatMasterL2, StockType
+from ticketing.core.models import SeatMaster, SeatMasterL2, StockType
 from datetime import datetime
 from stocktype import StockTypeData
 from seatmaster import SeatMasterData

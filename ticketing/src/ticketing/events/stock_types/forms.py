@@ -6,7 +6,7 @@ from wtforms.validators import Length, Optional
 from wtforms.widgets import CheckboxInput
 
 from ticketing.formhelpers import Translations, Required
-from ticketing.products.models import StockTypeEnum
+from ticketing.core.models import StockTypeEnum
 
 class StockTypeForm(Form):
 

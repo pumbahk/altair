@@ -8,24 +8,23 @@ from pyramid.url import route_path
 from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
-from ticketing.events.models import Event, Performance, Account, SalesSegment
 from ticketing.events.performances.forms import PerformanceForm
 from ticketing.events.stock_holders.forms import StockHolderForm
 from ticketing.events.sales_segments.forms import SalesSegmentForm
 from ticketing.events.stock_types.forms import StockTypeForm
 from ticketing.events.stock_allocations.forms import StockAllocationForm
-from ticketing.products.models import Product, StockHolder
 from ticketing.products.forms import ProductForm, ProductItemForm
+from ticketing.core.models import Event, Performance, Account, SalesSegment, Product, StockHolder
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class StockHolders(BaseView):
 
     @view_config(route_name='stock_holders.new', request_method='POST', renderer='ticketing:templates/stock_holders/_form.html')
     def new_post(self):
-        performance_id = int(self.request.POST.get('performance_id', 0))
-        performance = Performance.get(performance_id)
-        if performance is None:
-            return HTTPNotFound('performance id %d is not found' % performance_id)
+        event_id = int(self.request.POST.get('event_id', 0))
+        event = Event.get(event_id)
+        if event is None:
+            return HTTPNotFound('event id %d is not found' % event_id)
 
         f = StockHolderForm(self.request.POST, organization_id=self.context.user.organization_id)
         if f.validate():
@@ -78,4 +77,4 @@ class StockHolders(BaseView):
         stock_holder.delete()
 
         self.request.session.flash(u'枠を削除しました')
-        return HTTPFound(location=route_path('performances.show', self.request, performance_id=stock_holder.performance.id, _anchor='seat-allocation'))
+        return HTTPFound(location=route_path('events.show', self.request, event_id=stock_holder.event.id))

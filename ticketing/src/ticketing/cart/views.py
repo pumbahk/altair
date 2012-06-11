@@ -6,11 +6,12 @@ from markupsafe import Markup
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from pyramid.view import view_config
 from pyramid.decorator import reify
-from ticketing.models import DBSession
-import ticketing.events.models as e_models
-import ticketing.products.models as p_models
+from ..models import DBSession
+from ..core import models as c_models
 from . import helpers as h
-from . import apis
+from ..multicheckout import helpers as m_h
+from ..multicheckout import api as multicheckout_api
+from . import schema
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +24,7 @@ class IndexView(object):
     @view_config(route_name='cart.index', renderer='ticketing:templates/carts/index.html', xhr=False)
     def __call__(self):
         event_id = self.request.matchdict['event_id']
-        e = DBSession.query(e_models.Event).filter_by(id=event_id).first()
+        e = DBSession.query(c_models.Event).filter_by(id=event_id).first()
         if e is None:
             raise HTTPNotFound(self.request.url)
         # 日程,会場,検索項目のコンボ用
@@ -46,7 +47,7 @@ class IndexView(object):
         # TODO:引き取り方法
         
         return dict(event=dict(id=e.id, code=e.code, title=e.title, abbreviated_title=e.abbreviated_title,
-                               start_on=str(e.start_on), end_on=str(e.end_on),
+                               first_start_on=str(e.first_start_on), final_start_on=str(e.final_start_on),
                                sales_start_on=str(e.sales_start_on), 
                                sales_end_on=str(e.sales_end_on),
                                venues=venues,
@@ -60,12 +61,12 @@ class IndexView(object):
     def get_seat_types(self):
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.matchdict['performance_id']
-        seat_types = DBSession.query(p_models.StockType).filter(
-            e_models.Performance.event_id==event_id).filter(
-            e_models.Performance.id==performance_id).filter(
-            e_models.Performance.id==p_models.StockHolder.performance_id).filter(
-            p_models.StockHolder.id==p_models.Stock.stock_holder_id).filter(
-            p_models.Stock.stock_type_id==p_models.StockType.id).all()
+        seat_types = DBSession.query(c_models.StockType).filter(
+            c_models.Performance.event_id==event_id).filter(
+            c_models.Performance.id==performance_id).filter(
+            c_models.Performance.event_id==c_models.StockHolder.event_id).filter(
+            c_models.StockHolder.id==c_models.Stock.stock_holder_id).filter(
+            c_models.Stock.stock_type_id==c_models.StockType.id).all()
             
         data = dict(seat_types=[
                 dict(id=s.id, name=s.name,
@@ -86,14 +87,14 @@ class IndexView(object):
         seat_type_id = self.request.matchdict['seat_type_id']
         performance_id = self.request.matchdict['performance_id']
 
-        seat_type = DBSession.query(p_models.StockType).filter_by(id=seat_type_id).one()
+        seat_type = DBSession.query(c_models.StockType).filter_by(id=seat_type_id).one()
 
-        q = DBSession.query(p_models.ProductItem.product_id).filter(
-            p_models.ProductItem.stock_type_id==seat_type_id).filter(
-            p_models.ProductItem.performance_id==performance_id)
+        q = DBSession.query(c_models.ProductItem.product_id).filter(
+            c_models.ProductItem.stock_type_id==seat_type_id).filter(
+            c_models.ProductItem.performance_id==performance_id)
             
-        query = DBSession.query(p_models.Product).filter(
-            p_models.Product.id.in_(q))
+        query = DBSession.query(c_models.Product).filter(
+            c_models.Product.id.in_(q))
 
         products = [dict(id=p.id, name=p.name, price=h.format_number(p.price, ","))
             for p in query]
@@ -117,7 +118,10 @@ class ReserveView(object):
             m = self.product_id_regex.match(key)
             if m is None:
                 continue
-            yield m.groupdict()['product_id'], int(value)
+            quantity = int(value)
+            if quantity == 0:
+                continue
+            yield m.groupdict()['product_id'], quantity
 
     @property
     def ordered_items(self):
@@ -129,7 +133,7 @@ class ReserveView(object):
         if len(controls) == 0:
             return []
 
-        products = dict([(p.id, p) for p in DBSession.query(p_models.Product).filter(p_models.Product.id.in_([c[0] for c in controls]))])
+        products = dict([(p.id, p) for p in DBSession.query(c_models.Product).filter(c_models.Product.id.in_([c[0] for c in controls]))])
 
         return [(products.get(int(c[0])), c[1]) for c in controls]
 
@@ -144,7 +148,7 @@ class ReserveView(object):
         cart = self.context.order_products(self.request.params['performance_id'], self.ordered_items)
         if cart is None:
             return dict(result='NG')
-        apis.set_cart(self.request, cart)
+        h.set_cart(self.request, cart)
         #self.request.session['ticketing.cart_id'] = cart.id
         #self.cart = cart
         return dict(result='OK')
@@ -169,10 +173,10 @@ class PaymentView(object):
     def __call__(self):
         """ 支払い方法、引き取り方法選択
         """
-        if not apis.has_cart(self.request):
+        if not h.has_cart(self.request):
             return HTTPFound('/')
 
-        cat = apis.get_cart(self.request)
+        cart = h.get_cart(self.request)
 
     @view_config(route_name='cart.payment.method', request_method="GET")
     def paymentmethod(self):
@@ -189,20 +193,85 @@ class MultiCheckoutView(object):
     def card_info_secure3d(self):
         """ カード情報入力(3Dセキュア)
         """
+        form = schema.CardForm(formdata=self.request.params)
+        if not form.validate():
+            return
+        assert h.has_cart(self.request)
+        cart = h.get_cart(self.request)
+
+        # 変換
+        order_id = cart.id
+        card_number = form['card_number'].data
+        exp_year = form['exp_year'].data
+        exp_month = form['exp_month'].data
+        self.request.session['order'] = dict(
+            order_no=order_id,
+            client_name=self.request.params['client_name'],
+            card_holder_name=self.request.params['card_holder_name'],
+            card_number=card_number,
+            exp_year=exp_year,
+            exp_month=exp_month,
+            mail_address=self.request.params['mail_address'],
+        )
+        enrol = multicheckout_api.secure3d_enrol(self.request, order_id, card_number, exp_year, exp_month, cart.total_amount)
+        if enrol.is_enable_auth_api():
+            return dict(form=m_h.secure3d_acs_form(self.request, self.request.route_url('cart.secure3d_result'), enrol))
+        elif enrol.is_enable_secure3d():
+            # セキュア3D認証エラーだが決済APIを利用可能
+            pass
+        else:
+            # セキュア3D認証エラー
+            pass
+
+
+    def card_info_secure3d_callback(self):
+        """ カード情報入力(3Dセキュア)コールバック
+        3Dセキュア認証結果取得
+        """
+        assert h.has_cart(self.request)
+        cart = h.get_cart(self.request)
+
+        order = self.request.session['order']
+        # 変換
+        order_id = cart.id
+        pares = multicheckout_api.get_pares(self.request)
+        md = multicheckout_api.get_md(self.request)
+        auth_result = multicheckout_api.secure3d_auth(self.request, order_id, pares, md)
+        item_name = h.get_item_name(self.request, cart.performance)
+        # デバッグ用。実際は売上請求をかける
+        checkout_auth_result = multicheckout_api.checkout_auth_secure3d(
+            self.request, order_id,
+            item_name, cart.total_amount, 0, order['client_name'], order['mail_address'],
+            order['card_number'], order['exp_year'] + order['exp_month'], order['card_holder_name'],
+            mvn=auth_result.Mvn, xid=auth_result.Xid, ts=auth_result.Ts,
+            eci=auth_result.Eci, cavv=auth_result.Cavv, cavv_algorithm=auth_result.Cavva,
+        )
+
+
+        return dict(
+            OrderNo=checkout_auth_result.OrderNo,
+            Status=checkout_auth_result.Status,
+            PublicTranId=checkout_auth_result.PublicTranId,
+            AheadComCd=checkout_auth_result.AheadComCd,
+            ApprovalNo=checkout_auth_result.ApprovalNo,
+            CardErrorCd=checkout_auth_result.CardErrorCd,
+            ReqYmd=checkout_auth_result.ReqYmd,
+            CmnErrorCd=checkout_auth_result.CmnErrorCd,
+        )
 
     def card_info_secure_code(self):
         """ カード情報入力(セキュアコード)
         """
 
     def secure3d_checkout(self):
-        """
+        """ マルチ決済（クレジットカード 3Dセキュア認証）
         """
 
     def secure3d_callback(self):
         """
         """
 
-    def multicheckout(self):
+    def multi_checkout(self):
         """ マルチ決済APIで決済確定
         """
 

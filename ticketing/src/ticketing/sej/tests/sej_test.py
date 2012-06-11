@@ -266,7 +266,11 @@ class SejTest(unittest.TestCase):
                 'X_url_info=https://www.r1test.com/order/hi.do&' +\
                 'iraihyo_id_00=%(iraihyo_id_00)s&' + \
                 'X_ticket_cnt=%(ticket_total_num)02d&' + \
-                'X_ticket_hon_cnt=%(ticket_num)02d&</SENBDATA>' + \
+                'X_ticket_hon_cnt=%(ticket_num)02d&' + \
+                'X_barcode_no_01=00001&' + \
+                'X_barcode_no_02=00002&' + \
+                'X_barcode_no_03=00003&' + \
+              '</SENBDATA>' + \
               '<SENBDATA>DATA=END</SENBDATA>'
 
         def sej_dummy_response(environ):
@@ -284,7 +288,7 @@ class SejTest(unittest.TestCase):
 
         request_order(
             shop_name       = u'楽天チケット',
-            contact_01      = u'contactあ',
+            contact_01      = u'contact',
             contact_02      = u'連絡先2',
             order_id        = u"orderid00001",
             username        = u"お客様氏名",
@@ -297,15 +301,15 @@ class SejTest(unittest.TestCase):
             commission_fee  = 1000,
             ticketing_fee   = 1000,
             payment_type    = SejPaymentType.CashOnDelivery,
-            payment_due_datetime = datetime.datetime(2012,7,30,7,00), #u'201207300700',
-            regrant_number_datetime = datetime.datetime(2012,7,30,7,00), # u'201207300700',
+            payment_due_at = datetime.datetime(2012,7,30,7,00), #u'201207300700',
+            regrant_number_due_at = datetime.datetime(2012,7,30,7,00), # u'201207300700',
 
             hostname=u"http://127.0.0.1:38001",
 
             tickets = [
                 dict(
                     ticket_type         = SejTicketType.TicketWithBarcode,
-                    event_name          = u'イベント名',
+                    event_name          = u'イベント名1',
                     performance_name    = u'パフォーマンス名',
                     ticket_template_id  = u'TTTS000001',
                     performance_datetime= datetime.datetime(2012,8,31,18,00),
@@ -325,7 +329,7 @@ class SejTest(unittest.TestCase):
 
                 dict(
                     ticket_type         = SejTicketType.TicketWithBarcode,
-                    event_name          = u'イベント名',
+                    event_name          = u'イベント名2',
                     performance_name    = u'パフォーマンス名',
                     ticket_template_id  = u'TTTS000001',
                     performance_datetime= datetime.datetime(2012,8,31,18,00),
@@ -345,7 +349,7 @@ class SejTest(unittest.TestCase):
 
                 dict(
                     ticket_type         = SejTicketType.ExtraTicketWithBarcode,
-                    event_name          = u'イベント名',
+                    event_name          = u'イベント名3',
                     performance_name    = u'パフォーマンス名',
                     ticket_template_id  = u'TTTS000001',
                     performance_datetime= datetime.datetime(2012,8,31,18,00),
@@ -380,6 +384,19 @@ class SejTest(unittest.TestCase):
         assert order.exchange_sheet_number == u'11111111'
         assert order.billing_number == u'0000000001'
         assert order.exchange_sheet_url == u'https://www.r1test.com/order/hi.do'
+        assert order.tickets[0].barcode_number == '00001'
+
+        assert order.tickets[0].ticket_idx           == 1
+        assert order.tickets[0].ticket_type          == SejTicketType.TicketWithBarcode.v
+        assert order.tickets[0].event_name           == u'イベント名1'
+        assert order.tickets[0].performance_name     == u'パフォーマンス名'
+        assert order.tickets[0].performance_datetime == datetime.datetime(2012,8,31,18,00)
+        assert order.tickets[0].ticket_template_id   == u'TTTS000001'
+        assert order.tickets[0].ticket_data_xml      is not None
+
+        assert order.tickets[1].barcode_number == '00002'
+        assert order.tickets[2].barcode_number == '00003'
+
 
     def test_request_order_prepayment(self):
         '''2-1.決済要求 支払い済み'''
@@ -397,7 +414,11 @@ class SejTest(unittest.TestCase):
             'X_url_info=https://www.r1test.com/order/hi.do&' +\
             'iraihyo_id_00=%(iraihyo_id_00)s&' + \
             'X_ticket_cnt=%(ticket_total_num)02d&' + \
-            'X_ticket_hon_cnt=%(ticket_num)02d&</SENBDATA>' + \
+            'X_ticket_hon_cnt=%(ticket_num)02d&'+ \
+            'X_barcode_no_01=00001&' + \
+            'X_barcode_no_02=00002&' + \
+            'X_barcode_no_03=00003&' + \
+             '</SENBDATA>' + \
             '<SENBDATA>DATA=END</SENBDATA>'
 
         def sej_dummy_response(environ):
@@ -416,7 +437,7 @@ class SejTest(unittest.TestCase):
 
         sejTicketOrder = request_order(
              shop_name       = u'楽天チケット',
-             contact_01      = u'contactあ',
+             contact_01      = u'contact',
              contact_02      = u'連絡先2',
              order_id        = u"orderid00001",
              username        = u"お客様氏名",
@@ -429,8 +450,8 @@ class SejTest(unittest.TestCase):
              commission_fee  = 1000,
              ticketing_fee   = 1000,
              payment_type    = SejPaymentType.Paid,
-             payment_due_datetime = datetime.datetime(2012,7,30,7,00), #u'201207300700',
-            regrant_number_datetime = datetime.datetime(2012,7,30,7,00), # u'201207300700',
+             payment_due_at = datetime.datetime(2012,7,30,7,00), #u'201207300700',
+             regrant_number_due_at = datetime.datetime(2012,7,30,7,00), # u'201207300700',
 
              hostname=u"http://127.0.0.1:38001",
 
@@ -518,6 +539,18 @@ class SejTest(unittest.TestCase):
         assert sej_order.billing_number == u'0000000001'
         assert sej_order.exchange_sheet_url == u'https://www.r1test.com/order/hi.do'
 
+        assert sej_order.tickets[0].barcode_number == '00001'
+        assert sej_order.tickets[1].barcode_number == '00002'
+        assert sej_order.tickets[2].barcode_number == '00003'
+
+        assert sej_order.tickets[0].ticket_idx           == 1
+        assert sej_order.tickets[0].ticket_type          == SejTicketType.TicketWithBarcode.v
+        assert sej_order.tickets[0].event_name           == u'イベント名'
+        assert sej_order.tickets[0].performance_name     == u'パフォーマンス名'
+        assert sej_order.tickets[0].performance_datetime == datetime.datetime(2012,8,31,18,00)
+        assert sej_order.tickets[0].ticket_template_id   == u'TTTS000001'
+        assert sej_order.tickets[0].ticket_data_xml      is not None
+
     def test_request_order_cancel(self):
 
         import webob.util
@@ -558,6 +591,502 @@ class SejTest(unittest.TestCase):
 
         sej_order = SejOrder.query.filter_by(order_id = u'orderid00001', billing_number=u'00000001').one()
         assert sej_order.cancel_at is not None
+
+    def test_refund_file(self):
+
+        from ticketing.sej.models import SejOrder, SejCancelTicket, SejCancelEvent
+        from ticketing.sej.payment import SejOrderUpdateReason, SejPaymentType, request_cancel_event
+
+        import sqlahelper
+        DBSession = sqlahelper.get_session()
+
+        event = SejCancelEvent()
+        event.available = 1
+        event.shop_id = u'30520'
+        event.event_code_01  = u'EPZED'
+        event.event_code_02  = u'0709A'
+        event.title = u'入金、払戻用興行'
+        event.sub_title = u'入金、払戻用公演'
+        event.event_at = datetime.datetime(2012,8,31,18,00)
+        event.start_at = datetime.datetime(2012,6,7,18,30)
+        event.end_at = datetime.datetime(2012,6,10,18,30)
+        event.expire_at = datetime.datetime(2012,6,10,18,30)
+        event.event_expire_at = datetime.datetime(2012,6,10,18,30)
+        event.ticket_expire_at = datetime.datetime(2012,7,10,18,30)
+        event.disapproval_reason = u''
+        event.need_stub = 1
+        event.remarks = u'備考'
+        event.un_use_01 = u''
+        event.un_use_02 = u''
+        event.un_use_03 = u''
+        event.un_use_04 = u''
+        event.un_use_05 = u''
+
+        event.tickets = list()
+
+        DBSession.add(event)
+
+        ticket = SejCancelTicket()
+        ticket.available = 1
+        ticket.shop_id = u'30520'
+        ticket.event_code_01  = u'EPZED'
+        ticket.event_code_02  = u'0709A'
+        ticket.order_id  = u'120605112150'
+        ticket.ticket_barcode_number = u'2222222222222'
+        ticket.refund_ticket_amount = 13000
+        ticket.refund_amount = 2000
+        DBSession.add(ticket)
+        event.tickets.append(ticket)
+
+
+        DBSession.flush()
+
+
+        request_cancel_event(event)
+
+    def test_refund_file(self):
+
+        from ticketing.sej.models import SejOrder, SejCancelTicket, SejCancelEvent
+        from ticketing.sej.payment import SejOrderUpdateReason, SejPaymentType, request_cancel_event
+
+        import sqlahelper
+        DBSession = sqlahelper.get_session()
+
+        event1 = SejCancelEvent()
+        event1.available = 1
+        event1.shop_id = u'30520'
+        event1.event_code_01  = u'EPZED'
+        event1.event_code_02  = u'0709A'
+        event1.title = u'入金、払戻用興行'
+        event1.sub_title = u'入金、払戻用公演'
+        event1.event_at = datetime.datetime(2012,8,31,18,00)
+        event1.start_at = datetime.datetime(2012,6,7,18,30)
+        event1.end_at = datetime.datetime(2012,6,10,18,30)
+        event1.event_expire_at = datetime.datetime(2012,6,10,18,30)
+        event1.ticket_expire_at = datetime.datetime(2012,7,10,18,30)
+        event1.refund_enabled = 1
+        event1.disapproval_reason = None
+        event1.need_stub = 1
+        event1.remarks = u'備考'
+        event1.un_use_01 = u''
+        event1.un_use_02 = u''
+        event1.un_use_03 = u''
+        event1.un_use_04 = u''
+        event1.un_use_05 = u''
+
+        event1.tickets = list()
+
+        DBSession.add(event1)
+
+        event2 = SejCancelEvent()
+        event2.available = 1
+        event2.shop_id = u'30520'
+        event2.event_code_01  = u'EPZED'
+        event2.event_code_02  = u'0709B'
+        event2.title = u'入金、払戻用興行'
+        event2.sub_title = u'入金、払戻用公演'
+        event2.event_at = datetime.datetime(2012,8,31,18,00)
+        event2.start_at = datetime.datetime(2012,6,7,18,30)
+        event2.end_at = datetime.datetime(2012,6,10,18,30)
+        event2.event_expire_at = datetime.datetime(2012,6,10,18,30)
+        event2.ticket_expire_at = datetime.datetime(2012,7,10,18,30)
+        event2.refund_enabled = 1
+        event2.disapproval_reason = None
+        event2.need_stub = 1
+        event2.remarks = u'備考'
+        event2.un_use_01 = u''
+        event2.un_use_02 = u''
+        event2.un_use_03 = u''
+        event2.un_use_04 = u''
+        event2.un_use_05 = u''
+
+        event2.tickets = list()
+
+        DBSession.add(event2)
+
+        event3 = SejCancelEvent()
+        event3.available = 1
+        event3.shop_id = u'30520'
+        event3.event_code_01  = u'EPZED'
+        event3.event_code_02  = u'0709C'
+        event3.title = u'入金、払戻用興行'
+        event3.sub_title = u'入金、払戻用公演'
+        event3.event_at = datetime.datetime(2012,8,31,18,00)
+        event3.start_at = datetime.datetime(2012,6,7,18,30)
+        event3.end_at = datetime.datetime(2012,6,10,18,30)
+        event3.event_expire_at = datetime.datetime(2012,6,10,18,30)
+        event3.ticket_expire_at = datetime.datetime(2012,7,10,18,30)
+        event3.refund_enabled = 1
+        event3.disapproval_reason = None
+        event3.need_stub = 1
+        event3.remarks = u'備考'
+        event3.un_use_01 = u''
+        event3.un_use_02 = u''
+        event3.un_use_03 = u''
+        event3.un_use_04 = u''
+        event3.un_use_05 = u''
+
+        event3.tickets = list()
+
+        DBSession.add(event2)
+
+        ticket = SejCancelTicket()
+        ticket.available = 1
+        ticket.shop_id = u'30520'
+        ticket.event_code_01  = u'EPZED'
+        ticket.event_code_02  = u'0709A'
+        ticket.order_id  = u'120607195249'
+        ticket.ticket_barcode_number = u'6200004507473'
+        ticket.refund_ticket_amount = 13000
+        ticket.refund_amount = 1000
+        DBSession.add(ticket)
+        event1.tickets.append(ticket)
+
+        ticket = SejCancelTicket()
+        ticket.available = 1
+        ticket.shop_id = u'30520'
+        ticket.event_code_01  = u'EPZED'
+        ticket.event_code_02  = u'0709B'
+        ticket.order_id  = u'120607195250'
+        ticket.ticket_barcode_number = u'6200004507480'
+        ticket.refund_ticket_amount = 13000
+        ticket.refund_amount = 1000
+        DBSession.add(ticket)
+        event2.tickets.append(ticket)
+
+        ticket = SejCancelTicket()
+        ticket.available = 1
+        ticket.shop_id = u'30520'
+        ticket.event_code_01  = u'EPZED'
+        ticket.event_code_02  = u'0709A'
+        ticket.order_id  = u'120607200334'
+        ticket.ticket_barcode_number = u'6200004507497'
+        ticket.refund_ticket_amount = 13000
+        ticket.refund_amount = 1000
+        DBSession.add(ticket)
+        event3.tickets.append(ticket)
+
+        DBSession.flush()
+
+
+        request_cancel_event([event1, event2, event3])
+
+
+    def test_create_ticket_template(self):
+        from ticketing.sej.models import SejTicketTemplateFile
+        from ticketing.sej.ticket import package_ticket_template_to_zip
+        import sqlahelper
+        DBSession = sqlahelper.get_session()
+
+        st = SejTicketTemplateFile()
+
+        st.status = '1'
+        st.template_id = u'TTTS000001'
+        st.template_name = u'ＴＳテンプレート０１'
+        st.publish_start_date      = datetime.datetime(2012,06,06)
+        st.publish_end_date        = None
+        st.ticket_html = u'''<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+  <title></title>
+  <style type="text/css">
+body {
+  margin: 0 0;
+}
+
+.f0 { font-family: "Arial"; }
+.f1 { font-family: "Arial Black"; }
+.f2 { font-family: "Verdana"; }
+.f3 { font-family: "Impact"; }
+.f4 { font-family: "Comic Sans MS"; }
+.f5 { font-family: "Times New Roman"; }
+.f6 { font-family: "Courier New"; }
+.f7 { font-family: "Lucida Console"; }
+.f8 { font-family: "Lucida Sans Unicode"; }
+.f9 { font-family: "Modern"; }
+.f10 { font-family: "Microsoft Sans Serif"; }
+.f11 { font-family: "Roman"; }
+.f12 { font-family: "Script"; }
+.f13 { font-family: "Symbol"; }
+.f14 { font-family: "Wingdings"; }
+.f15 { font-family: "ＭＳ ゴシック"; }
+.f16 { font-family: "ＭＳ Ｐゴシック"; }
+.f17 { font-family: "ＭＳ 明朝"; }
+.f18 { font-family: "ＭＳ Ｐ明朝"; }
+.f19 { font-family: "MS UI Gothic"; }
+
+</style>
+  <script type="text/javascript">
+var fonts = [
+];
+
+function XHR() {
+  return typeof ActiveXObject != 'undefined' ?
+      new ActiveXObject("Msxml2.XMLHTTP"):
+      new XMLHttpRequest();
+}
+
+function loadXml(url, success, error) {
+  var xhr = XHR();
+  if (typeof xhr.overrideMimeType != 'undefined')
+    xhr.overrideMimeType('text/xml');
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState == 4) {
+      if (xhr.status == 200 || xhr.status == 0) {
+        var xml = xhr.responseXML;
+        try {
+          if ((!xml || !xml.documentElement) && xhr.responseText) {
+            if (window.DOMParser) {
+              var parser = new window.DOMParser();
+              xml = parser.parseFromString(xhr.responseText, "text/xml");
+            } else {
+              var xml = new ActiveXObject("Microsoft.XMLDOM");
+              xml.async = false;
+              xml.load(url);
+            }
+          } else if (!xhr.responseText) {
+            error('General failure');
+            return;
+          }
+        } catch (e) {
+          error(e.message);
+          return;
+        }
+        success(xml);
+      } else {
+        error(xhr.status);
+      }
+    }
+  };
+  try {
+    xhr.open("GET", url, true);
+    xhr.send();
+  } catch (e) {
+    error(e.message);
+  }
+}
+
+function parse(text, handlers) {
+  var regexp = /"((?:[^"]|\\.)*)"|:([^\s"]+)|(-?(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)(?:[eE][-+]?[0-9]+)?)|([*+/A-Za-z_-][0-9A-Za-z_-]*)|([ \t]+)|(\r\n|\r|\n)|(.)/g;
+  var stack = [];
+  var column = 0, line = 0;
+  handlers.$stack = stack;
+  for (var g; g = regexp.exec(text);) {
+    if (g[1]) {
+      stack.push(g[1].replace(/\\(.)/, '$1'));
+    } else if (g[2]) {
+      stack.push(g[2]);
+    } else if (g[3]) {
+      stack.push(parseFloat(g[3]));
+    } else if (g[4]) {
+      switch (g[4]) {
+      case 'D':
+        stack.push(stack[stack.length - 1]);
+        break;
+      default:
+        var handler = handlers[g[4]];
+        if (handler === void(0))
+          throw new Error("TSE00002: Unknown command: " + g[4]);
+        var arity = handler.length;
+        handler.apply(handlers, stack.splice(stack.length - arity, arity));
+        break;
+      }
+    } else if (g[6]) {
+      column = 0;
+      line++;
+      continue;
+    } else if (g[7]) {
+      throw new Error("TSE00001: Syntax error at column " + (column + 1) + " line " + (line + 1));
+    }
+    column += g[0].length;
+  }
+}
+
+function findXmlNode(xmldoc, n, path) {
+  var retval = null;
+  if (typeof ActiveXObject == 'undefined') {
+    var xpathResult = xmldoc.evaluate(path, n, null, XPathResult.ANY_TYPE, null);
+    switch (xpathResult.resultType) {
+    case XPathResult.UNORDERED_NODE_ITERATOR_TYPE:
+    case XPathResult.ORDERED_NODE_ITERATOR_TYPE:
+      retval = [];
+      for (var n = null; (n = xpathResult.iterateNext());)
+        retval.push(n);
+      break;
+    case XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE:
+    case XPathResult.ORDERED_NODE_SNAPSHOT_TYPE:
+      retval = [];
+      for (var i = 0, l = xpathResult.snapshotLength; i < l; i++)
+        retval.push(xpathResult.snapshotItem(i));
+      break;
+    case XPathResult.NUMBER_TYPE:
+      retval = xpathResult.numberValue;
+      break;
+    case XPathResult.STRING_TYPE:
+      retval = xpathResult.stringValue;
+      break;
+    case XPathResult.BOOLEAN_TYPE:
+      retval = xpathResult.booleanValue;
+      break;
+    }
+  } else {
+    retval = n.selectNodes(path);
+  }
+  return retval;
+}
+
+function stringizeXmlNodes(nodes) {
+  var retval = [];
+  for (var i = 0, l = nodes.length; i < l; i++) {
+    retval.push(stringizeXmlNode(nodes[i]));
+  }
+  return retval.join('');
+}
+
+function stringizeXmlNode(n) {
+  switch (n.nodeType) {
+  case 1:
+    return stringizeXmlNodes(n.childNodes);
+  default:
+    return n.nodeValue;
+  }
+}
+
+function newHandler(n, xmldoc) {
+  var path = [];
+  var unit = 'mm';
+  var fontSize = 10;
+  var classes = [];
+  var previousCommand = null;
+  var currentPoint = { x: 0., y: 0. };
+  return {
+    xn: function xmlNode(path) {
+      var nodes = findXmlNode(xmldoc, xmldoc.documentElement, path);
+      for (var i = 0; i < nodes.length; i++)
+        this.$stack.push(nodes[i]);
+      this.$stack.push(nodes.length);
+    },
+    sxn: function _stringizeXmlNodes() {
+      var l = this.$stack.pop();
+      var nodes = this.$stack.splice(this.$stack.length - l, l);
+      this.$stack.push(stringizeXmlNodes(nodes));
+    },
+    fs: function fontSize(value) {
+      fontSize = fs;
+    },
+    hc: function pushClass(klass) {
+      classes.push(klass);
+    },
+    pc: function popClass() {
+      classes.pop();
+    },
+    sc: function setClass(klass) {
+      classes = [klass];
+    },
+    U: function setUnit(_unit) {
+      unit = _unit;
+      previousCommand = null;
+    },
+    X: function showText(text) {
+      n.insertAdjacentHTML('beforeEnd', [
+        '<div style="position:absolute;',
+        'font-size:', fontSize, 'pt', ';',
+        'left:', currentPoint.x, unit, ';',
+        'top:', currentPoint.y, unit, '"',
+        ' class="', classes.join(' '), '"',
+        '>', text, '</div>'].join(''));
+      previousCommand = null;
+    },
+    N: function newPath() {
+      previousCommand = null;
+    },
+    M: function moveTo(x, y) {
+      currentPoint = { x: x, y: y };
+      path.push('M', x, y);
+      previousCommand = 'M';
+    },
+    L: function lineTo(x, y) {
+      if (previousCommand == 'L')
+        path.push(x, y);
+      else
+        path.push('L', x, y);
+      currentPoint = { x: x, y: y };
+      previousCommand = 'L';
+    },
+    C: function curveTo(x1, y1, x2, y2, x3, y3) {
+      path.push('C', x1, y1, x2, y2, x3, y3);
+      currentPoint = { x: x3, y: y3 };
+      previousCommand = 'C';
+    },
+    Q: function quadraticCurveTo(x1, y1) {
+      path.push('Q', x1, y1, x2, y2);
+      currentPoint = { x: x2, y: y2 };
+      previousCommand = 'Q';
+    },
+    A: function arc() {
+    },
+    Z: function closePath() {
+      path.push('Z');
+      previousCommand = null;
+    },
+    F: function fill() {
+    },
+    S: function stroke() {
+    }
+  };
+}
+
+function reportError(msg) {
+  var page = document.getElementById('page');
+  page.innerHTML = '';
+  page.insertAdjacentHTML('beforeEnd', '<b>エラーが発生しました。</b><br/>');
+  var n = document.createElement('pre');
+  n.appendChild(document.createTextNode(msg));
+  page.appendChild(n);
+}
+
+function tryWith(args, f, failure) {
+  var i = 0;
+  function _() {
+    if (i >= args.length)
+      return failure(args);
+    f(args[i++], _);
+  }
+  _();
+}
+
+window.onload = function() {
+  tryWith(
+    ['file:///c:/sejpos/posapl/mmdata/mm60/xml/ptct.xml', 'ptct.xml'],
+    function (dataUrl, next) {
+      loadXml(dataUrl, function (xmldoc) {
+        var page = document.getElementById('page');
+        try {
+          var handler = newHandler(page, xmldoc);
+          parse(stringizeXmlNodes(findXmlNode(xmldoc, xmldoc.documentElement, 'b')), handler);
+        } catch (e) {
+          reportError(e.message);
+        }
+      }, next);
+    },
+    function () {
+      reportError("TS00003: Load failure");
+    }
+  );
+};
+</script>
+</head>
+<body>
+  <div id="page"></div>
+</body>
+</html>'''.encode('utf8')
+        st.ticket_css  = None
+        DBSession.add(st)
+        DBSession.flush()
+
+        filename = package_ticket_template_to_zip('TTTS000001')
+        print filename
 
 if __name__ == u"__main__":
     import os

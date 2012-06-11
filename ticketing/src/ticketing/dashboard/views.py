@@ -5,7 +5,7 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path
 
 from ticketing.models import merge_session_with_post, record_to_multidict
-from ticketing.events.models import Event
+from ticketing.core.models import Event
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 

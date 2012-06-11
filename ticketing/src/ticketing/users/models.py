@@ -3,7 +3,6 @@ from sqlalchemy.orm import join, backref, column_property
 
 from ticketing.models import relationship
 from ticketing.master.models import *
-from ticketing.organizations.models import *
 import sqlahelper
 
 session = sqlahelper.get_session()
@@ -38,8 +37,7 @@ class UserProfile(Base):
     birth_day = Column(DateTime)
     sex = Column(Integer)
     zip = Column(String(255))
-    prefecture_id = Column(Identifier, ForeignKey("Prefecture.id"), nullable=True)
-    prefecture    = relationship("Prefecture", uselist=False)
+    prefecture    = Column(String(64), nullable=False, default=u'')
     city = Column(String(255))
     street = Column(String(255))
     address = Column(String(255))

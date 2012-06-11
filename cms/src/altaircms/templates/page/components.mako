@@ -44,28 +44,22 @@
 <%def name="page_difference(page,params)">
     <table class="table table-striped">
       <tr><th></th><th>変更前</th><th>変更後</th></tr>
-      <tr>
-        <th class="span2">ページ名</th><td>${page.title}</td><td>${params["title"]}</td>
-      </tr>
-      <tr>
-        <th class="span2">所属イベント</th><td>${page.event.title if page.event else ""}</td><td>${params["event"]}</td>
-      </tr>
-      <tr>
-        <th class="span2">description</th><td>${page.description}</td><td >${params["description"]}</td>
-      </tr>
-      <tr>
-        <th class="span2">keywords</th><td>${page.keywords}</td><td>${params["keywords"]}</td>
-      </tr>
-      <tr>
-        <th class="span2">url</th><td>${page.url}</td><td>${params["url"]}</td>
-      </tr>
-      <tr>
-        <th class="span2">layout</th><td>${page.layout.title}</td><td>${params["layout"]}</td>
-      </tr>
-##      <tr>
-##        <th class="span2">structure</th><td>${page.structure}</td><td>${params["structure"]}</td>
-##      </tr>
-    </table>
+	  <%
+parent = page.pageset.parent
+event = page.event or page.pageset.event
+%>
+      <tr><th class="span2">親ページ</th><td>${parent.name if parent else u"-"}</td><td>${(parent.name if parent else u"-") if params["parent"] == "__None" else params["parent"] }</td></tr>
+      <tr><th class="span2">所属イベント</th><td>${event.title if event else ""}</td><td>${(event.title if event else "") if params["event"] == "__None" else params["event"]}</td></tr>
+      <tr><th class="span2">ページ名</th><td>${page.name}</td><td>${params["name"]}</td></tr>
+      <tr><th class="span2">URL</th><td>${page.url}</td><td>${params["url"]}</td></tr>
+      <tr><th class="span2">タイトル</th><td>${page.title}</td><td>${params["title"]}</td></tr>
+      <tr><th class="span2">公開開始日</th><td>${page.publish_begin}</td><td>${params["publish_begin"]}</td></tr>
+      <tr><th class="span2">公開終了日</th><td>${page.publish_end}</td><td>${params["publish_end"]}</td></tr>
+      <tr><th class="span2">description</th><td>${page.description}</td><td>${params["description"]}</td></tr>
+      <tr><th class="span2">keywords</th><td>${page.keywords}</td><td>${params["keywords"]}</td></tr>
+      <tr><th class="span2">公開タグ</th><td>${u",".join([t.label for t in page.tags])}</td><td>${params["tags"]}</td></tr>
+      <tr><th class="span2">非公開タグ</th><td>${u",".join([t.label for t in page.private_tags])}</td><td>${params["private_tags"]}</td></tr>
+      <tr><th class="span2">レイアウト</th><td>${page.layout.title}</td><td>${params["layout"]}</td></tr>
 </%def>
 
 <%def name="page_description(page)">

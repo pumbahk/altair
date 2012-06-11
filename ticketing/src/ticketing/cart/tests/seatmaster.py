@@ -3,7 +3,7 @@
 from fixture import DataSet
 from seed.event import EventData
 from seed.venue import VenueData
-from ticketing.venues.models import SeatMaster
+from ticketing.core.models import SeatMaster
 from datetime import datetime
 
 class SeatMasterData(DataSet):

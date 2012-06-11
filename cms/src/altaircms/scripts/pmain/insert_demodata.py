@@ -31,7 +31,8 @@ from altaircms.plugins.widget.promotion.models import (
 )
 from altaircms.models import(
     Site, 
-    Category
+    Category, 
+    Sale
 )
 
 from altaircms.asset.helpers import create_asset
@@ -214,28 +215,72 @@ def detail_layout():
 
 
 def detail_tickets(event):
-    return [
-        Ticket(event=event, 
+    sales_choices = import_symbol("altaircms.seeds.saleskind:SALESKIND_CHOICES")
+    sale_kind,sale_name = sales_choices[0]
+    sale_name_gen = lambda event, sale_name : u"%s(%s)" % (event.title, sale_name)
+    sale = Sale(event=event, name=sale_name_gen(event, sale_name), kind=sale_kind)
+    r = []
+    r.extend([
+        Ticket(
+               sale=sale, 
                price=30000, 
                seattype=u"SSA席", 
                orderno=1), 
-        Ticket(event=event, 
+        Ticket(
+               sale=sale, 
                price=15000, 
                seattype=u"SA席", 
                orderno=2), 
-        Ticket(event=event, 
+        Ticket(
+               sale=sale, 
                price=8000, 
                seattype=u"A席", 
                orderno=3), 
-        Ticket(event=event, 
+        Ticket(
+               sale=sale, 
                price=5000, 
                seattype=u"B席", 
                orderno=4), 
-        Ticket(event=event, 
+        Ticket(
+               sale=sale, 
                price=3000, 
                seattype=u"C席", 
                orderno=5)
-    ]
+    ])
+
+    sales_choices = import_symbol("altaircms.seeds.saleskind:SALESKIND_CHOICES")
+    sale_kind,sale_name = sales_choices[1]
+    sale_name_gen = lambda event, sale_name : u"%s(%s)" % (event.title, sale_name)
+    sale = Sale(event=event, name=sale_name_gen(event, sale_name), kind=sale_kind)
+
+    r.extend([
+        Ticket(
+               sale=sale, 
+               price=30003, 
+               seattype=u"SSA席", 
+               orderno=1), 
+        Ticket(
+               sale=sale, 
+               price=15003, 
+               seattype=u"SA席", 
+               orderno=2), 
+        Ticket(
+               sale=sale, 
+               price=8003, 
+               seattype=u"A席", 
+               orderno=3), 
+        Ticket(
+               sale=sale, 
+               price=5003, 
+               seattype=u"B席", 
+               orderno=4), 
+        Ticket(
+               sale=sale, 
+               price=3003, 
+               seattype=u"C席", 
+               orderno=5)
+    ])
+    return r
 
 
 def detail_performances(event):
@@ -310,10 +355,9 @@ def detail_event():
 
 def detail_page(layout, event):
     ## for breadcrumbs
-    top_page = Page.get_or_create_by_name(u"TOP")
-    other_page = Page.get_or_create_by_name(name= u"イベント・その他")
+    other_page = Page.get_or_create_by_name(name= u"演劇 パフォーマンス")
     other_page_set = PageSet.get_or_create(other_page)
-    other_page_set.parent = top_page.pageset
+
     
 
     detail_page = Page(description=u'チケットの販売、イベントの予約は楽天チケットで！楽天チケットは演劇、バレエ、ミュージカルなどの舞台、クラシック、オペラ、ロックなどのコンサート、野球、サッカー、格闘技などのスポーツ、その他イベントなどのチケットのオンラインショッピングサイトです。',
@@ -361,7 +405,7 @@ def add_detail_main_block_widgets(page, asset):
 
     add_calendar_widget(page, "main", {"calendar_type":"tab"})
     
-    add_ticketlist_widget(page, "main", {})
+    add_ticketlist_widget(page, "main", {"kind": "first_lottery"})
 
     data = {u"items": json.dumps(
             [{"label": u"開催期間",  "content": u"2011年12月4日(日)　開場17時30分　開演18時30分"}, 
@@ -1672,6 +1716,7 @@ def top_event_and_page_for_linklist_widget(layout):
                       deal_close=datetime.timedelta(100)+today)
         page = Page(layout=layout, ##
                     url=title,  ##
+                    name= title, 
                     title=title, 
                     event=event)
         PageSet.get_or_create(page)
@@ -1759,7 +1804,24 @@ def bind_category_to_pageset():
     Category.query.filter_by(label=u"初めての方へ").update({"pageset_id": PageSet.query.filter_by(name=u"初めての方へ").one().id}, synchronize_session="fetch")
     Category.query.filter_by(label=u"公演中止・変更情報").update({"pageset_id": PageSet.query.filter_by(name=u"公演の中止・変更情報").one().id}, synchronize_session="fetch")
 
-    
+
+    ## music
+    root = Category.query.filter(Category.name=="music").one()
+    root.origin = u"music"
+    Category.query.filter(Category.parent==root).update(dict(origin=u"music"))
+    ## stage
+    root = Category.query.filter(Category.name=="stage").one()
+    root.origin = u"stage"
+    Category.query.filter(Category.parent==root).update(dict(origin=u"stage"))
+    ## sports
+    root = Category.query.filter(Category.name=="sports").one()
+    root.origin = u"sports"
+    Category.query.filter(Category.parent==root).update(dict(origin=u"sports"))
+    ## other
+    root = Category.query.filter(Category.name=="event").one()
+    root.origin = u"other"
+    Category.query.filter(Category.parent==root).update(dict(origin=u"other"))
+
 def main(env, args):
     # setup()
     add_materials_settings()
@@ -1779,5 +1841,6 @@ def main(env, args):
 
     ##
     bind_category_to_pageset()
+    Page.query.filter_by(layout=None).update(dict(layout_id=1))
     transaction.commit()
 

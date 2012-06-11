@@ -5,8 +5,7 @@ from wtforms import TextField, SelectField, IntegerField, DecimalField, SelectMu
 from wtforms.validators import Length, NumberRange, EqualTo, Optional, ValidationError
 
 from ticketing.formhelpers import Translations, Required
-from ticketing.events.models import SalesSegment
-from ticketing.products.models import ProductItem, StockHolder, Stock
+from ticketing.core.models import SalesSegment, ProductItem, StockHolder, Stock
 
 class ProductForm(Form):
 
@@ -54,9 +53,9 @@ class ProductItemForm(Form):
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         Form.__init__(self, formdata, obj, prefix, **kwargs)
-        if 'user_id' in kwargs and 'performance_id' in kwargs:
+        if 'user_id' in kwargs and 'event_id' in kwargs:
             conditions ={
-                'performance_id':kwargs['performance_id']
+                'event_id':kwargs['event_id']
             }
             stock_holders = StockHolder.filter_by(**conditions).all()
             self.stock_holders.choices = []

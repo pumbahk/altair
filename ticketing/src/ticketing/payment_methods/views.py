@@ -10,7 +10,7 @@ from pyramid.url import route_path
 from ticketing.views import BaseView
 from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.fanstatic import with_bootstrap
-from ticketing.products.models import PaymentMethod
+from ticketing.core.models import PaymentMethod
 from ticketing.payment_methods.forms import PaymentMethodForm
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")

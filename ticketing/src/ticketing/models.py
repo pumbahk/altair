@@ -2,22 +2,24 @@
 
 from datetime import datetime, date
 from decimal import Decimal
+from math import floor
+import isodate
 import transaction
 import json
 
-from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, TIMESTAMP, sql
-from sqlalchemy.orm import scoped_session
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Table, Column, ForeignKey, ForeignKeyConstraint, Index, func
+from sqlalchemy.types import TypeEngine, TypeDecorator, VARCHAR, BigInteger, Integer, String, TIMESTAMP
+from sqlalchemy.orm import column_property, scoped_session
 from sqlalchemy.orm.collections import InstrumentedList
-from sqlalchemy.orm.properties import RelationshipProperty
+from sqlalchemy.orm.properties import RelationshipProperty  
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.types import TypeEngine, TypeDecorator, VARCHAR
 from sqlalchemy.ext.mutable import Mutable
 from sqlalchemy.sql.expression import text
-import sqlalchemy.sql.functions as sqlfunctions
+from sqlalchemy.sql import functions as sqlf, and_
 from zope.sqlalchemy import ZopeTransactionExtension
 import sqlahelper
+
+from ticketing.utils import StandardEnum
 
 Base = sqlahelper.get_base()
 DBSession = sqlahelper.get_session()
@@ -111,11 +113,12 @@ def merge_and_flush(session):
 class WithTimestamp(object):
     created_at = Column(TIMESTAMP, nullable=False,
                                    default=datetime.now,
-                                   server_default=sqlfunctions.current_timestamp())
-    updated_at = Column(TIMESTAMP, nullable=False, default=datetime.now,
+                                   server_default=sqlf.current_timestamp())
+    updated_at = Column(TIMESTAMP, nullable=False,
+                                   default=datetime.now,
                                    server_default=text('0'),
                                    onupdate=datetime.now,
-                                   server_onupdate=sqlfunctions.current_timestamp())
+                                   server_onupdate=sqlf.current_timestamp())
 
 class LogicallyDeleted(object):
     deleted_at = Column(TIMESTAMP, nullable=True)
@@ -137,8 +140,10 @@ class BaseModel(object):
         return cls.filter().filter_by(**conditions)
 
     @classmethod
-    def get(cls, id):
-        return cls.filter(cls.id==id).first()
+    def get(cls, id=None, **kwargs):
+        if id is not None:
+            kwargs['id'] = id
+        return cls.filter_by(**kwargs).first()
 
     @classmethod
     def all(cls):
@@ -161,18 +166,21 @@ class BaseModel(object):
     def add(self):
         if hasattr(self, 'id') and not self.id:
             del self.id
-        self.created_at = datetime.now()
-        self.updated_at = datetime.now()
+        if isinstance(self, WithTimestamp):
+            self.created_at = datetime.now()
+            self.updated_at = datetime.now()
         DBSession.add(self)
         DBSession.flush()
 
     def update(self):
-        self.updated_at = datetime.now()
+        if isinstance(self, WithTimestamp):
+            self.updated_at = datetime.now()
         DBSession.merge(self)
         DBSession.flush()
 
     def delete(self):
-        self.deleted_at = datetime.now()
+        if isinstance(self, LogicallyDeleted):
+            self.deleted_at = datetime.now()
         DBSession.merge(self)
         DBSession.flush()
 
@@ -231,12 +239,14 @@ class CustomizedRelationshipProperty(RelationshipProperty):
         # primary joinに論理削除レコードを対象外とする条件を自動付加する
         for column in self.parent.mapped_table.columns:
             if column.name == 'deleted_at':
-                self.primaryjoin = sql.and_(self.primaryjoin, column==None)
+                self.primaryjoin = and_(self.primaryjoin, column==None)
                 break
         for column in self.target.columns:
             if column.name == 'deleted_at':
-                self.primaryjoin = sql.and_(self.primaryjoin, column==None)
+                self.primaryjoin = and_(self.primaryjoin, column==None)
                 break
 
 def relationship(argument, secondary=None, **kwargs):
     return CustomizedRelationshipProperty(argument, secondary=secondary, **kwargs)
+
+

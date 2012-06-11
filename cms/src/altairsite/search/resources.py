@@ -75,6 +75,14 @@ class QueryParamsRender(object):
         else:
             return u"〜 %s" % edate.strftime("%Y/%m/%d") 
 
+    def describe_deal_cond(self, deal_cond_list):
+        """最速抽選 or 先行抽選 or 一般販売"""
+        convertor = forms.DealCondPartForm.DDICT
+        if len(deal_cond_list) <= 1:
+            return convertor[deal_cond_list[0]]
+        else:
+            return u" or ".join(convertor[k] for k in deal_cond_list)
+
     def __html__(self):
         u"""\
         フリーワード:a, b, cc,
@@ -100,9 +108,7 @@ class QueryParamsRender(object):
         if qp.get("performance_open") or qp.get("performance_close"):
             r.append(u"公演日: %s" % self.describe_from_term(qp.get("performance_open"), qp.get("performance_close")))
         if qp.get("deal_cond"):
-            cond = qp.get("deal_cond")
-            if cond != "None": ## ad-hox fix
-                r.append(u"販売条件: %s" % forms.DealCondPartForm.DDICT.get(qp["deal_cond"], u"--dummy--"))
+            r.append(u"販売条件: %s" % self.describe_deal_cond(qp.get("deal_cond")))
         if qp.get("added_service"):
             r.append(u"付加サービス: %s" % "--dummy--")
         if qp.get("before_deal_start"):
@@ -157,13 +163,13 @@ class SearchResultRender(object):
 
         
     def category_icons(self): ## fixme: too access DB.
-        v = Nullable(self.pageset).parent.category.name.value
+        v = Nullable(self.pageset).parent.category.origin.value
         if v is None:
-            return u'<div class="icon-category icon-category-other"/>'
+            return u'<div class="icon-category icon-category-other"></div>'
         else:
             return u'''\
-<div class="icon-category-%s">%s</div>
-''' % (v, v)
+<div class="icon-category icon-category-%s"></div>
+''' % v
         
     def page_description(self):
         fmt =  u"""\

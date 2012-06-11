@@ -16,7 +16,7 @@ from pyramid.url import route_path
 from ticketing.models import merge_session_with_post, record_to_multidict, DBSession
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
-from ticketing.events.models import Event, Performance
+from ticketing.core.models import Event, Performance
 from ticketing.events.forms import EventForm
 from ticketing.events.performances.forms import PerformanceForm
 from ticketing.events.sales_segments.forms import SalesSegmentForm
@@ -167,11 +167,16 @@ class Events(BaseView):
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
 
-        data = {
-            'events':[event.get_sync_data()],
-            'created_at':isodate.datetime_isoformat(datetime.now()),
-            'updated_at':isodate.datetime_isoformat(datetime.now()),
-        }
+        try:
+            data = {
+                'events':[event.get_sync_data()],
+                'created_at':isodate.datetime_isoformat(datetime.now()),
+                'updated_at':isodate.datetime_isoformat(datetime.now()),
+            }
+        except Exception, e:
+            logging.info("cms build data error: %s (event_id=%s)" % (e.message, event_id))
+            self.request.session.flash(e.message)
+            return HTTPFound(location=route_path('events.show', self.request, event_id=event.id))
 
         settings = get_current_registry().settings
         url = settings.get('altaircms.event.notification_url') + 'api/event/register'
@@ -189,7 +194,7 @@ class Events(BaseView):
             logging.warn("cms sync http error: response status (%s) %s" % (e.code, e.read()))
             self.request.session.flash(u'イベント送信に失敗しました (%s)' % e.code)
         except Exception, e:
-            logging.error("cms sync error: %s" % e.message)
+            logging.error("cms sync error: %s, %s" % (e.reason, e.message))
             self.request.session.flash(u'イベント送信に失敗しました')
 
         return HTTPFound(location=route_path('events.show', self.request, event_id=event.id))

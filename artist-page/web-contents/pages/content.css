@@ -722,6 +722,10 @@ td{	padding: 5px;
 #artist_links {
 	clear:left;
 }
+#artist_links a {
+	text-decoration:none;
+}
+
 
 
 

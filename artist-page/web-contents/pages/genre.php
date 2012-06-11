@@ -9,7 +9,6 @@ if (!$genre_name) {
 	exit("Genre not found");	
 } 
 $alternate= isset($_GET['alternate']) ? $_GET['alternate'] : null;
-echo $alternate."altername";;
 
 
 $id_zero = 0;
@@ -377,7 +376,7 @@ dth="1" height="1" /></a></p>
 				$link .= $parent_link[$i].'/';
 		?>
 
-	<a href="/~katosaori/web-contents/pages/genre.php?genre=<?= $link ?>"><?= htmlspecialchars($parent_link[$i])?></a>
+	<a href="/~katosaori/web-contents/pages/genre.php?genre=<?= $link ?>&alternate=<?= $alternate ?>"><?= htmlspecialchars($parent_link[$i])?></a>
 		<? echo "/";
        			 }
 		?>
@@ -396,7 +395,7 @@ dth="1" height="1" /></a></p>
                        		 }
 			
 		?>
-                   			<li><a href="/~katosaori/web-contents/pages/genre.php?genre=<?=$genre_link?>"><?= $appear_link?></a></li>
+                   			<li><a href="/~katosaori/web-contents/pages/genre.php?genre=<?=$genre_link?>&alternate=<?= $alternate ?>"><?= $appear_link?></a></li>
 
        		 <?
        			 }
@@ -449,7 +448,7 @@ dth="1" height="1" /></a></p>
 		?>
                 </div>
 	
-	<?php
+	<?
 
                 if(empty($child_genre_list)){
                 $artists = artist_get_by_genre($dbh,$genre_name);
@@ -458,31 +457,35 @@ dth="1" height="1" /></a></p>
 		$count_genre_names= count($genre_names);
 		$link = "";
 	?>
-	
 		<div id ="genre_links">
 	<?
 		for($u=0;$u<=$count_genre_names;$u++){
 			$link .= $genre_names[$u].'/'; 
 			?>
-		<a href="/~katosaori/web-contents/pages/genre.php?genre=<?=$link?>"><?= htmlspecialchars($genre_names[$u])?></a>
+			<a href="/~katosaori/web-contents/pages/genre.php?genre=<?=$link?>"><?= htmlspecialchars($genre_names[$u])?></a>
 		<?
 	}
 ?>
-	</div>
-	<div id = "artist_links">
+			</div>
+			<div id = "artist_links">
 <?
 	
-		for($e=0;$e <= $count_artists; $e++){
-		$artist_link = urlencode($artists[$e]['name']);
+			for($e=0;$e <= $count_artists; $e++){
+				$artist_link = urlencode($artists[$e]['name']);
 		?>
-			 <li><a href="/~katosaori/web-contents/pages/artist_detail.php?artist=<?=$artist_link?>"><?= htmlspecialchars($artists[$e]['name'])?></a></li>
+				 <li><a href="/~katosaori/web-contents/pages/artist_detail.php?artist=<?=$artist_link?>"><?= htmlspecialchars($artists[$e]['name'])?></a></li>
 	<?
+			}
+			?>
+			</div>
+		<?
 		}
-	}
+		
 
 	?>
-	</div>
-
+	
+	
+</div>
 <!-- ========== /main ========== -->
 
 <hr />

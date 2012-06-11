@@ -3,8 +3,7 @@ import itertools
 import operator
 from sqlalchemy import sql
 from pyramid.decorator import reify
-from ticketing.products import models as p_models
-from ticketing.venues import models as v_models
+from ..core import models as c_models
 from . import security
 from . import models as m
 
@@ -20,9 +19,9 @@ class TicketingCartResrouce(object):
         :return: iter of (product_item_id, quantity)
         """
         for product, quantity in ordered_products:
-            for product_item in m.DBSession.query(p_models.ProductItem).filter(
-                        p_models.ProductItem.product_id==product.id).filter(
-                        p_models.ProductItem.performance_id==performance_id).all():
+            for product_item in m.DBSession.query(c_models.ProductItem).filter(
+                        c_models.ProductItem.product_id==product.id).filter(
+                        c_models.ProductItem.performance_id==performance_id).all():
                 yield (product_item, quantity)
 
     def quantity_for_stock_id(self, performance_id, ordered_products):
@@ -50,11 +49,11 @@ class TicketingCartResrouce(object):
                 continue
 
             # 必要数のある在庫を確保しながら確認
-            up = p_models.StockStatus.__table__.update().values(
-                    {"quantity": p_models.StockStatus.quantity - quantity}
+            up = c_models.StockStatus.__table__.update().values(
+                    {"quantity": c_models.StockStatus.quantity - quantity}
             ).where(
-                sql.and_(p_models.StockStatus.stock_id==stock_id,
-                    p_models.StockStatus.quantity >= quantity)
+                sql.and_(c_models.StockStatus.stock_id==stock_id,
+                    c_models.StockStatus.quantity >= quantity)
             )
             affected = conn.execute(up).rowcount
             if not affected:
@@ -72,49 +71,49 @@ class TicketingCartResrouce(object):
         for stock_id, quantity in stock_quantity:
             if quantity == 0:
                 continue
-            no_vacants = sql.select([v_models.SeatAdjacency.id]).where(
+            no_vacants = sql.select([c_models.SeatAdjacency.id]).where(
                 sql.and_(
-                    v_models.SeatAdjacency.id==v_models.seat_seat_adjacency_table.c.seat_adjacency_id,
-                    v_models.Seat.id==v_models.seat_seat_adjacency_table.c.seat_id,
-                    v_models.SeatStatus.seat_id == v_models.Seat.id,
-                    v_models.SeatStatus.status != int(v_models.SeatStatusEnum.Vacant),
-                    v_models.SeatAdjacencySet.seat_count == quantity,
-                    p_models.Stock.id == stock_id,
-                    p_models.Stock.id == v_models.Seat.stock_id,
+                    c_models.SeatAdjacency.id==c_models.seat_seat_adjacency_table.c.seat_adjacency_id,
+                    c_models.Seat.id==c_models.seat_seat_adjacency_table.c.seat_id,
+                    c_models.SeatStatus.seat_id == c_models.Seat.id,
+                    c_models.SeatStatus.status != int(c_models.SeatStatusEnum.Vacant),
+                    c_models.SeatAdjacencySet.seat_count == quantity,
+                    c_models.Stock.id == stock_id,
+                    c_models.Stock.id == c_models.Seat.stock_id,
                 ),
             )
             no_vacants = [r[0] for r in conn.execute(no_vacants)]
-            sub = sql.select([v_models.SeatAdjacency.id]).where(
+            sub = sql.select([c_models.SeatAdjacency.id]).where(
                 sql.and_(
                     #確保されていない
-                    v_models.SeatStatus.status == int(v_models.SeatStatusEnum.Vacant),
+                    c_models.SeatStatus.status == int(c_models.SeatStatusEnum.Vacant),
                     #必要な席種
-                    p_models.Stock.id == stock_id,
-                    p_models.Stock.id == v_models.Seat.stock_id,
-                    v_models.SeatStatus.seat_id == v_models.Seat.id,
+                    c_models.Stock.id == stock_id,
+                    c_models.Stock.id == c_models.Seat.stock_id,
+                    c_models.SeatStatus.seat_id == c_models.Seat.id,
                     #必要数量の連席情報
-                    v_models.SeatAdjacencySet.seat_count == quantity,
+                    c_models.SeatAdjacencySet.seat_count == quantity,
                     # 連席情報内の席割当
-                    v_models.SeatAdjacencySet.id==v_models.SeatAdjacency.adjacency_set_id,
+                    c_models.SeatAdjacencySet.id==c_models.SeatAdjacency.adjacency_set_id,
                     # 連席情報と席の紐付け
-                    v_models.SeatAdjacency.id==v_models.seat_seat_adjacency_table.c.seat_adjacency_id,
-                    v_models.Seat.id==v_models.seat_seat_adjacency_table.c.seat_id,
+                    c_models.SeatAdjacency.id==c_models.seat_seat_adjacency_table.c.seat_adjacency_id,
+                    c_models.Seat.id==c_models.seat_seat_adjacency_table.c.seat_id,
                     # 確保済みの席と紐づいていない
-                    sql.not_(v_models.SeatAdjacency.id.in_(no_vacants)),
+                    sql.not_(c_models.SeatAdjacency.id.in_(no_vacants)),
                 )
             ).limit(1)
             adjacency = conn.execute(sub).fetchone()
             if not adjacency:
                 return False
 
-            select = sql.select([v_models.SeatStatus.seat_id], for_update=True).where(
+            select = sql.select([c_models.SeatStatus.seat_id], for_update=True).where(
                 sql.and_(
                     #確保されていない
-                    v_models.SeatStatus.status == int(v_models.SeatStatusEnum.Vacant),
-                    v_models.SeatAdjacency.id==v_models.seat_seat_adjacency_table.c.seat_adjacency_id,
-                    v_models.Seat.id==v_models.seat_seat_adjacency_table.c.seat_id,
-                    v_models.SeatStatus.seat_id == v_models.Seat.id,
-                    v_models.SeatAdjacency.id==adjacency[0],
+                    c_models.SeatStatus.status == int(c_models.SeatStatusEnum.Vacant),
+                    c_models.SeatAdjacency.id==c_models.seat_seat_adjacency_table.c.seat_adjacency_id,
+                    c_models.Seat.id==c_models.seat_seat_adjacency_table.c.seat_id,
+                    c_models.SeatStatus.seat_id == c_models.Seat.id,
+                    c_models.SeatAdjacency.id==adjacency[0],
                 )
 
             )
@@ -123,12 +122,12 @@ class TicketingCartResrouce(object):
             if not seat_statuses:
                 return False
 
-            up = v_models.SeatStatus.__table__.update().values({
-                v_models.SeatStatus.status : int(v_models.SeatStatusEnum.InCart)
+            up = c_models.SeatStatus.__table__.update().values({
+                c_models.SeatStatus.status : int(c_models.SeatStatusEnum.InCart)
             }).where(
                 sql.and_(
-                    v_models.SeatStatus.status == int(v_models.SeatStatusEnum.Vacant),
-                    v_models.SeatStatus.seat_id.in_(seat_statuses)
+                    c_models.SeatStatus.status == int(c_models.SeatStatusEnum.Vacant),
+                    c_models.SeatStatus.seat_id.in_(seat_statuses)
                 )
             )
             affected = conn.execute(up).rowcount
@@ -136,9 +135,9 @@ class TicketingCartResrouce(object):
                 logger.debug("require %d but affected %d" % (quantity, affected))
                 trans.rollback() # 確保失敗 ロールバックして戻り
                 for stock_id, quantity in stock_quantity:
-                    up = p_models.StockStatus.__table__.update().values(
-                            {"quantity": p_models.StockStatus.quantity + quantity}
-                    ).where(p_models.StockStatus.stock_id==stock_id)
+                    up = c_models.StockStatus.__table__.update().values(
+                            {"quantity": c_models.StockStatus.quantity + quantity}
+                    ).where(c_models.StockStatus.stock_id==stock_id)
                     affected = conn.execute(up).rowcount
                 return
 
@@ -146,7 +145,7 @@ class TicketingCartResrouce(object):
 
     def _create_cart(self, seat_statuses, ordered_products):
         cart = m.Cart()
-        seats = m.DBSession.query(v_models.Seat).filter(v_models.Seat.id.in_(seat_statuses)).all()
+        seats = m.DBSession.query(c_models.Seat).filter(c_models.Seat.id.in_(seat_statuses)).all()
         cart.add_seat(seats, ordered_products)
         m.DBSession.add(cart)
         m.DBSession.flush()
@@ -179,15 +178,16 @@ class TicketingCartResrouce(object):
                 return
             trans.commit()
 
+            # TODO: 数受けの場合は座席確保しない
             trans = conn.begin()
             seat_statuses = self._get_seats(conn, stock_quantity)
             if not seat_statuses:
                 trans.rollback() # 確保失敗 ロールバックして戻り
                 trans = conn.begin()
                 for stock_id, quantity in stock_quantity:
-                    up = p_models.StockStatus.__table__.update().values(
-                            {"quantity": p_models.StockStatus.quantity + quantity}
-                    ).where(p_models.StockStatus.stock_id==stock_id)
+                    up = c_models.StockStatus.__table__.update().values(
+                            {"quantity": c_models.StockStatus.quantity + quantity}
+                    ).where(c_models.StockStatus.stock_id==stock_id)
                     affected = conn.execute(up).rowcount
                 trans.commit()
                 return
