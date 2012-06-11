@@ -24,6 +24,7 @@ def create_pageset(page, event):
 
 def create_page(event, layout):
     return Page(
+        name=event.title, 
         title=event.title, 
         keywords=u"'チケット-演劇-クラシック-オペラ-コンサート-バレエ-ミュージカル-野球-サッカー-格闘技'", 
         description=u"チケットの販売、イベントの予約は楽天チケットで！楽天チケットは演劇、バレエ、ミュージカルなどの舞台、クラシック、オペラ、ロックなどのコンサート、野球、サッカー、格闘技などのスポーツ、その他イベントなどのチケットのオンラインショッピングサイトです。", 
@@ -37,7 +38,7 @@ def create_page(event, layout):
 def create_sale(event):
     return Sale(event=event, 
          name=u"%s(一般先行)" % event.title,  
-         kind="normal")
+         kind="first_lottery'")
 
 def create_tickets(sale):
      return [
