@@ -14,7 +14,6 @@ from ticketing.operators.models import *
 from ticketing.orders.models import *
 from ticketing.users.models import *
 from ticketing.core.models import *
-from ticketing.venues.models import *
 from ticketing.sej.models import *
 
 from bank import BankData, BankAccountData
@@ -38,7 +37,6 @@ from ticketing.oauth2.models import Service
 from ticketing.operators.models import Operator, OperatorActionHistory, OperatorRole, Permission
 from ticketing.bookmark.models import Bookmark
 from ticketing.sej.models import SejOrder, SejTicket, SejTicketFile, SejNotification
-from ticketing.products.models import PaymentMethod, DeliveryMethod, PaymentMethodPlugin, DeliveryMethodPlugin
 
 def import_seed_data():
     engine = sqlahelper.get_engine()

@@ -91,11 +91,11 @@ class SejOrderForm(Form):
     )
     ticketing_start_at = DateTimeField(
         label=u'発券開始',
-        validators=[Required()],
+        validators=[Optional()],
     )
     ticketing_due_at = DateTimeField(
         label=u'発券期限',
-        validators=[Required()],
+        validators=[Optional()],
     )
     regrant_number_due_at = DateTimeField(
         label=u'SVC再付番期限',
@@ -114,4 +114,31 @@ class SejOrderForm(Form):
         validators=[Optional()],
     )
 
+
+class SejTicketForm(Form):
+    ticket_type = SelectField(
+        label=u'チケット区分',
+        choices=[(u'1', u'本券（バーコード付き）'), (u'2', u'本券'), (u'3', u' 副券（バーコード付き）'), (u'4', u' 副券')],
+        validators=[Optional()],
+    )
+    event_name              = TextField(
+        label=u'イベント名',
+        validators=[Required()],
+    )
+    performance_name        = TextField(
+        label=u'パフォーマンス名',
+        validators=[Required()],
+    )
+    performance_datetime    = DateTimeField(
+        label=u'発券期限',
+        validators=[Optional()],
+    )
+    ticket_template_id      = TextField(
+        label=u'テンプレートID',
+        validators=[Required()],
+    )
+    ticket_data_xml         = TextAreaField(
+        label=u'XML',
+        validators=[Required()],
+    )
 

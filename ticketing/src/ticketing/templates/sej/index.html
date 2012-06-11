@@ -6,6 +6,10 @@
 <div class="ui-toolbar">
   <a href="${request.route_path('orders.sej.order.request')}" class="btn">手動発券</a>
 </div>
+<form action="${request.route_path('orders.sej')}" method="GET">
+    <input type='text' name='q' value="${q}">
+    <input type='submit' name='' value="検索" class="btn">
+</form>
 <table class="table table-striped table-bordered table-condensed">
     <thead>
     <tr>
@@ -54,8 +58,6 @@
         <div class="product-item">
           <a href="${request.route_path('orders.sej.order.update', order_id=order.id)}" class="btn">更新</a>
           <a href="${request.route_path('orders.sej.order.cancel', order_id=order.id)}" class="btn">発券取り消し</a>
-          <a href="${request.route_path('orders.sej.order.ticket.preview', order_id=order.id)}" class="btn">チケット確認</a>
-          <a href="" class="btn">セブンイレブン引換え票表示</a>
         </div>
       </td>
     </tr>

@@ -9,7 +9,7 @@ from ticketing.models import merge_session_with_post, record_to_appstruct, merge
 from ..core.models import Organization
 from ticketing.operators.models import Operator, OperatorRole, Permission
 from ticketing.orders.models import Order
-from ticketing.orders.forms import OrderForm, SejOrderForm
+from ticketing.orders.forms import OrderForm, SejOrderForm, SejTicketForm
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 
@@ -61,10 +61,10 @@ class Orders(BaseView):
             'order':order,
         }
 
-from ticketing.sej.models import SejOrder, SejTicketTemplateFile
-from ticketing.sej.payment import SejTicketDataXml,request_sej_exchange_sheet, request_update_order
+from ticketing.sej.models import SejOrder, SejTicket, SejTicketTemplateFile
+from ticketing.sej.payment import SejTicketDataXml,request_sej_exchange_sheet, request_update_order, request_cancel_order
 from ticketing.sej.resources import code_from_ticket_type, code_from_update_reason, code_from_payment_type
-
+from sqlalchemy import or_
 @view_defaults(decorator=with_bootstrap)
 class SejAdmin(object):
 
@@ -78,7 +78,19 @@ class SejAdmin(object):
         if direction not in ['asc', 'desc']:
             direction = 'asc'
 
-        query = SejOrder.filter().order_by(sort + ' ' + direction)
+        filter = None
+        qstr = self.request.GET.get('q', None)
+        if qstr:
+           filter = or_(
+               SejOrder.billing_number.like('%'+ qstr +'%'),
+               SejOrder.exchange_number.like('%'+ qstr + '%'),
+               SejOrder.order_id.like('%'+ qstr + '%'),
+               SejOrder.user_name.like('%'+ qstr + '%'),
+               SejOrder.user_name_kana.like('%'+ qstr + '%'),
+               SejOrder.email.like('%'+ qstr + '%'),
+           )
+
+        query = SejOrder.filter(filter).order_by(sort + ' ' + direction)
 
         orders = paginate.Page(
             query,
@@ -88,6 +100,7 @@ class SejAdmin(object):
         )
 
         return {
+            'q' : qstr if qstr else '',
             'orders': orders
         }
 
@@ -117,12 +130,12 @@ class SejAdmin(object):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = SejOrder.query.get(order_id)
 
-
         templates = SejTicketTemplateFile.query.all()
         f = SejOrderForm(order_id=order.order_id)
+        tf = SejTicketForm()
         f.process(record_to_multidict(order))
 
-        return dict(order=order, form=f, templates=templates)
+        return dict(order=order, form=f,  ticket_form=tf,templates=templates)
 
 
     @view_config(route_name='orders.sej.order.update', request_method="POST",  renderer='ticketing:templates/sej/order_update.html')
@@ -144,12 +157,10 @@ class SejAdmin(object):
             tickets.append(td)
 
         templates = SejTicketTemplateFile.query.all()
-        print self.request.POST
+
         f = SejOrderForm(self.request.POST, order_id=order.order_id)
         if f.validate():
             data = f.data
-            print code_from_ticket_type[int(order.payment_type)]
-
             order = request_update_order(
                 update_reason   = code_from_update_reason[int(data.get('update_reason'))],
                 total           = int(data.get('total_price')),
@@ -168,17 +179,60 @@ class SejAdmin(object):
                     exchange_number = order.exchange_number,
                 )
             )
-            return dict(order=order, form=f, templates=templates)
 
 
-        return dict(order=order, form=f, templates=templates)
+        return HTTPFound(location=self.request.route_path('orders.sej.order.update', order_id=order_id))
+    #
+    @view_config(route_name='orders.sej.order.ticket.data', request_method="GET", renderer='json')
+    def order_ticket_data(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        ticket_id = int(self.request.matchdict.get('ticket_id', 0))
+        order = SejOrder.query.get(order_id)
+        if order:
+            ticket = SejTicket.query.get(ticket_id)
+            return dict(
+                ticket_type = ticket.ticket_type,
+                event_name = ticket.event_name,
+                performance_name = ticket.performance_name,
+                performance_datetime = ticket.performance_datetime.strftime('%Y-%m-%d %H:%M:%S'),
+                ticket_template_id = ticket.ticket_template_id,
+                ticket_data_xml = ticket.ticket_data_xml,
+            )
+        return dict()
 
+    @view_config(route_name='orders.sej.order.ticket.data', request_method="POST", renderer='ticketing:templates/sej/order_update.html')
+    def order_ticket_data_post(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        ticket_id = int(self.request.matchdict.get('ticket_id', 0))
+        order = SejOrder.query.get(order_id)
+        if order:
+            ticket = SejTicket.query.get(ticket_id)
+            f = SejTicketForm(self.request.POST)
+            print self.request.POST
+            if f.validate():
+                data = f.data
+                ticket.event_name = data.get('event_name')
+                ticket.performance_name = data.get('performance_name')
+                ticket.performance_datetime = data.get('performance_datetime')
+                ticket.ticket_template_id = data.get('ticket_template_id')
+                ticket.ticket_data_xml = data.get('ticket_data_xml')
+            else:
+                print 'rrrrrr'
+
+        return HTTPFound(location=self.request.route_path('orders.sej.order.update', order_id=order_id))
 
     @view_config(route_name='orders.sej.order.cancel', renderer='ticketing:templates/sej/order_update.html')
     def order_update_cancel(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = SejOrder.query.get(order_id)
-        return dict(order=order)
+
+        order = request_cancel_order(
+            order.order_id,
+            order.billing_number,
+            order.exchange_number,
+        )
+
+        return HTTPFound(location=self.request.route_path('orders.sej.order.update', order_id=order_id))
 
     @view_config(route_name='orders.sej.order.ticket.preview', renderer='ticketing:templates/sej/order_update.html')
     def order_ticket_preview(self):
