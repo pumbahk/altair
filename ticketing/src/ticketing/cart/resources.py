@@ -209,9 +209,11 @@ class TicketingCartResrouce(object):
             cart = None
             if False: # QAのため数受け処理のみ
                 cart = self._create_cart(seat_statuses, ordered_products)
+                cart.performance_id = performance_id
             else:
                 # 数受けの場合は数量を渡す
                 cart = self._create_cart_with_quantity(stock_quantity, ordered_products)
+                cart.performance_id = performance_id
 
             trans.commit()
             logger.info("cart created id = %d" % cart.id)

@@ -232,7 +232,7 @@ class MultiCheckoutView(object):
             logger.debug("3d secure is failed ErrorCd = %s RetCd = %s" %(enrol.ErrorCd, enrol.RetCd))
             pass
 
-
+    @view_config(route_name='cart.secure3d_result', request_method="POST", renderer="json")
     def card_info_secure3d_callback(self):
         """ カード情報入力(3Dセキュア)コールバック
         3Dセキュア認証結果取得
@@ -242,7 +242,7 @@ class MultiCheckoutView(object):
 
         order = self.request.session['order']
         # 変換
-        order_id = cart.id
+        order_id = str(cart.id) + "00"
         pares = multicheckout_api.get_pares(self.request)
         md = multicheckout_api.get_md(self.request)
         auth_result = multicheckout_api.secure3d_auth(self.request, order_id, pares, md)

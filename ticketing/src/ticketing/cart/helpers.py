@@ -30,7 +30,7 @@ def has_cart(request):
 
 def get_item_name(request, performance):
     base_item_name = request.registry.settings['cart.item_name']
-    return maybe_encoded(base_item_name) + " " + performance.name
+    return maybe_encoded(base_item_name) + " " + str(performance.id)
 
 def maybe_encoded(s, encoding='utf-8'):
     if isinstance(s, unicode):
