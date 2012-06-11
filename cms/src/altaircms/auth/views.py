@@ -1,10 +1,12 @@
 # coding: utf-8
 import logging
+logger = logging.getLogger(__file__)
+
 from datetime import datetime
 import urllib
 import urllib2
 
-
+from altaircms.models import model_to_dict
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.security import forget, remember, authenticated_userid
 from pyramid.view import view_config
@@ -47,14 +49,13 @@ def logout(request):
 
 class OAuthLogin(object):
     _urllib2 = urllib2
-    def __init__(self, request,
-                 _stub_client=None, **kwargs):
+    def __init__(self, request, **kwargs):
         self.request = request
 
         settings = request.registry.settings
         for k in ['client_id', 'secret_key', 'authorize_url', 'access_token_url']:
             setattr(self, k, kwargs.get(k, settings.get('altair.oauth.%s' % k)))
-        self._stub_client = _stub_client
+        
 
     # def _oauth_request(self, client, url, method):
     #     if self._stub_client:
@@ -64,8 +65,9 @@ class OAuthLogin(object):
 
     @view_config(route_name='oauth_entry')
     def oauth_entry(self):
-        return HTTPFound('%s?client_id=%s&response_type=code' %
-                         (self.authorize_url, self.client_id))
+        url = '%s?client_id=%s&response_type=code' %(self.authorize_url, self.client_id)
+        logger.info("*login* oauth entry url: %s" % url)
+        return HTTPFound(url)
  
     @view_config(route_name='oauth_callback')
     def oauth_callback(self):
@@ -77,11 +79,12 @@ class OAuthLogin(object):
                 client_secret=self.secret_key,
                 code=self.request.GET.get("code"),
                 grant_type='authorization_code')
-            url = self.access_token_url +"?" + urllib.urlencode(args)
 
-            data = json.loads(self._urllib2.urlopen(
-                self.access_token_url +
-                "?" + urllib.urlencode(args)).read())
+            url = self.access_token_url +"?" + urllib.urlencode(args)
+            logger.info("*login* access token url: %s" % url)
+            data = json.loads(self._urllib2.urlopen(url).read())
+            logger.info("*login* access token return: %s" % data)
+
         except IOError, e:
             logging.exception(e)
             self.request.response.body = str(e)
@@ -95,8 +98,10 @@ class OAuthLogin(object):
         try:
             operator = Operator.query.filter_by(auth_source='oauth', user_id=data['user_id']).one()
         except NoResultFound:
-            logging.info("operator is not found. create it")
+            logger.info("operator is not found. create it")
             operator = Operator(auth_source='oauth', user_id=data['user_id'])
+            logger.info("*login* created operator: %s" % model_to_dict(operator))
+
         operator.last_login = datetime.now()
         operator.screen_name = data['screen_name']
         operator.oauth_token = data['access_token']
@@ -109,8 +114,6 @@ class OAuthLogin(object):
 
         url = self.request.route_url('dashboard')
         return HTTPFound(url, headers=headers)
-
-
 
 
 @view_defaults(decorator=with_bootstrap)

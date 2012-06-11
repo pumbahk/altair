@@ -1,3 +1,6 @@
+import logging
+logger = logging.getLogger(__file__)
+
 from pyramid.view import view_config, view_defaults
 from ticketing.views import BaseView
 from pyramid.renderers import render_to_response
@@ -16,12 +19,17 @@ session = sqlahelper.get_session()
 
 @view_config(route_name='api.access_token' , renderer='json')
 def access_token(context, request):
-    client = Service.get_key(request.GET.get("client_id"))
-    token = AccessToken.get_by_key(request.GET.get("code"))
+    service_key = request.GET.get("client_id")
+    token_key = request.GET.get("code")
+
+    logger.info("*api login* get api access token: service_key: %s, token_key: %s" % (service_key, token_key))
+
+    client = Service.get_key(service_key)
+    token = AccessToken.get_by_key(token_key)
 
     if token and client:
         operator = token.operator
-        return {
+        params = {
             'access_token'  : token.token,
             'user_id'       : operator.id,
             'roles'         : [role.name for role in operator.roles],
@@ -29,6 +37,8 @@ def access_token(context, request):
             'client_name'   : operator.organization.name,
             'screen_name'   : operator.name,
         }
+        logger.info("*api login* return api access token: %s" % params)
+        return params
     else:
         return {}
 
@@ -37,6 +47,7 @@ def forget_loggedin(request):
     ## todo: added default failback.
     ## todo: need some validation.
     return_url = request.params.get("return_to", "/default-fail-back-path")
+    logger.info("*api logout* logout from external site. return to: %s" % return_url)
     headers = forget(request)
     return HTTPFound(location=return_url, headers=headers)
 
@@ -52,6 +63,8 @@ class LoginOAuth(BaseView):
         user = self.context.user
         authorizer = Authorizer()
 
+        logger.info("*api login* authorize request params %s" % dict(self.request.params))
+
         try:
             authorizer.validate(self.request, self.context)
         except MissingRedirectURI, e:
@@ -59,10 +72,13 @@ class LoginOAuth(BaseView):
         except AuthorizationException, e:
             return authorizer.error_redirect()
 
+        redirect_url = None
         if self.request.method == 'GET':
             if user:
-                return authorizer.grant_redirect()
+                redirect_url = authorizer.grant_redirect()
             else:
-                return HTTPError()
-
-        return HTTPFound(location="/")
+                redirect_url = HTTPError()
+        else:
+            redirect_url = HTTPFound(location="/")
+        logger.info("*api login* authorize redirect url: status:%s location:%s" % (redirect_url.status, redirect_url.location))
+        return redirect_url
