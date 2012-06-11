@@ -88,6 +88,7 @@ class PageResource(security.RootFactory):
         tags, private_tags, params =  h.divide_data(form.data)
         for k, v in params.iteritems():
             setattr(page, k, v)
+        page.pageset.event = params["event"]
         put_tags(page, "page", tags, private_tags, self.request)
 
         if form.data["parent"]:
