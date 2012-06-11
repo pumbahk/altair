@@ -40,7 +40,6 @@ class PerformanceEvent1Data(DataSet):
         open_on = datetime(2012,7,1,18,0)
         start_on = datetime(2012,7,1,19,0)
         end_on = datetime(2012,7,1,21,0)
-        event = EventData.event_1
         owner = AccountData.account_3
     class performance_2:
         event = EventData.event_1
@@ -49,7 +48,6 @@ class PerformanceEvent1Data(DataSet):
         open_on = datetime(2012,7,2,18,0)
         start_on = datetime(2012,7,2,19,0)
         end_on = datetime(2012,7,2,21,0)
-        event = EventData.event_1
         owner = AccountData.account_3
     class performance_3:
         event = EventData.event_1
@@ -58,7 +56,6 @@ class PerformanceEvent1Data(DataSet):
         open_on = datetime(2012,7,3,18,0)
         start_on = datetime(2012,7,3,19,0)
         end_on = datetime(2012,7,3,21,0)
-        event = EventData.event_1
         owner = AccountData.account_3
     class performance_4:
         event = EventData.event_1
@@ -67,7 +64,6 @@ class PerformanceEvent1Data(DataSet):
         open_on = datetime(2012,7,4,18,0)
         start_on = datetime(2012,7,4,19,0)
         end_on = datetime(2012,7,4,21,0)
-        event = EventData.event_1
         owner = AccountData.account_3
     class performance_5:
         event = EventData.event_1
@@ -76,7 +72,6 @@ class PerformanceEvent1Data(DataSet):
         open_on = datetime(2012,7,5,18,0)
         start_on = datetime(2012,7,5,19,0)
         end_on = datetime(2012,7,5,21,0)
-        event = EventData.event_1
         owner = AccountData.account_3
 
 class PerformanceEvent2Data(DataSet):
@@ -87,7 +82,6 @@ class PerformanceEvent2Data(DataSet):
         open_on = datetime(2012,7,5,18,0)
         start_on = datetime(2012,7,5,19,0)
         end_on = datetime(2012,7,5,21,0)
-        event = EventData.event_2
         owner = AccountData.account_4
     class performance_2:
         event = EventData.event_2
@@ -96,7 +90,6 @@ class PerformanceEvent2Data(DataSet):
         open_on = datetime(2012,7,6,18,0)
         start_on = datetime(2012,7,6,19,0)
         end_on = datetime(2012,7,6,21,0)
-        event = EventData.event_2
         owner = AccountData.account_4
     class performance_3:
         event = EventData.event_2
@@ -105,7 +98,16 @@ class PerformanceEvent2Data(DataSet):
         open_on = datetime(2012,7,7,18,0)
         start_on = datetime(2012,7,7,19,0)
         end_on = datetime(2012,7,7,21,0)
-        event = EventData.event_2
+        owner = AccountData.account_4
+
+class PerformanceEvent3Data(DataSet):
+    class performance_1:
+        event = EventData.event_3
+        name = u"ブルーマングループ IN 東京 2012年"
+        code = u'BM2012090518'
+        open_on = datetime(2012,9,5,18,0)
+        start_on = datetime(2012,9,5,19,0)
+        end_on = datetime(2012,9,5,21,0)
         owner = AccountData.account_4
 
 class SalesSegmentEvent1Data(DataSet):
@@ -138,4 +140,13 @@ class SalesSegmentEvent2Data(DataSet):
         end_at = datetime(2012,5,1,12,0)
         event = EventData.event_2
         upper_limit = None
-        seat_choice = True
+        seat_choice = False
+
+class SalesSegmentEvent3Data(DataSet):
+    class sales_segment_1:
+        name = u'先行販売'
+        start_at = datetime(2012,8,1,12,0)
+        end_at = datetime(2012,8,1,12,0)
+        event = EventData.event_3
+        upper_limit = None
+        seat_choice = False
