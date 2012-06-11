@@ -195,12 +195,13 @@ class MultiCheckoutView(object):
     def __init__(self, request):
         self.request = request
 
-    @view_config(route_name='payment.secure3d', request_method="GET")
+    @view_config(route_name='payment.secure3d', request_method="POST", renderer='carts/redirect_post.html')
     def card_info_secure3d(self):
         """ カード情報入力(3Dセキュア)
         """
         form = schema.CardForm(formdata=self.request.params)
         if not form.validate():
+            logger.debug("form error %s" % (form.errors,))
             return
         assert h.has_cart(self.request)
         cart = h.get_cart(self.request)
@@ -224,9 +225,11 @@ class MultiCheckoutView(object):
             return dict(form=m_h.secure3d_acs_form(self.request, self.request.route_url('cart.secure3d_result'), enrol))
         elif enrol.is_enable_secure3d():
             # セキュア3D認証エラーだが決済APIを利用可能
-            pass
+            logger.debug("3d secure is failed ErrorCd = %s RetCd = %s" %(enrol.ErrorCd, enrol.RetCd))
+
         else:
             # セキュア3D認証エラー
+            logger.debug("3d secure is failed ErrorCd = %s RetCd = %s" %(enrol.ErrorCd, enrol.RetCd))
             pass
 
 

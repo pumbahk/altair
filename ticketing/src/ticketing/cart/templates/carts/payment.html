@@ -30,6 +30,19 @@
 	<div id="main">
 		<h1><img src="${request.static_url('ticketing.cart:static/img/settlement/title_settlement.gif')}" alt="チケット購入" width="950" height="40" /></h1>
 		<form id="form1" name="form1" method="post" action="${payments[2]["url"]}"> <!-- TODO: マルチ決済決め打ちなので、画面選択で切り替えるようにする-->
+            <div class="client">
+                <div>
+                    <fieldset>
+                        <legend>購入者情報</legend>
+                        <ul>
+                            <li><label for="client_name">購入者氏名</label></li>
+                            <input type="text" id="client_name" name="client_name" />
+                            <li><label for="mail_address">メールアドレス</label></li>
+                            <input type="text" id="mail_address" name="mail_address" />
+                        </ul>
+                    </fieldset>
+                </div>
+            </div>
 			<div class="settlementBox">
 				<div class="settlementBoxInner">
 					<h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_methods.gif')}" alt="お支払い方法の指定" width="167" height="30" /></h2>
@@ -47,17 +60,11 @@
                                                     <dl>
                                                         <dt>カード番号</dt>
                                                         <dd>
-                                                            <input name="textfield" type="text" id="textfield" size="20" />
-                                                            -
-                                                            <input name="textfield2" type="text" id="textfield2" size="20" />
-                                                            -
-                                                            <input name="textfield3" type="text" id="textfield3" size="20" />
-                                                            -
-                                                            <input name="textfield4" type="text" id="textfield4" size="20" />
+                                                            <input name="card_number" type="text" id="textfield" length="16" />
                                                         </dd>
                                                         <dt>有効期限</dt>
                                                         <dd>
-                                                            <select name="select" id="select">
+                                                            <select name="exp_month" id="select">
                                                                 <option value="01">1</option>
                                                                 <option value="02">2</option>
                                                                 <option value="03">3</option>
@@ -73,7 +80,7 @@
                                                             </select>
                                                             月　
                                                             <!-- TODO: 現在年から算出する-->
-                                                            <select name="select2" id="select2">
+                                                            <select name="exp_year" id="select2">
                                                                 <option value="12">2012</option>
                                                                 <option value="13">2013</option>
                                                                 <option value="14">2014</option>
@@ -87,7 +94,7 @@
                                                             年</dd>
                                                         <dt>名義人</dt>
                                                         <dd>
-                                                            <input name="textfield5" type="text" id="textfield5" size="50" />
+                                                            <input name="card_holder_name" type="text" id="textfield5" size="50" />
                                                         </dd>
                                                     </dl>
                                                 </div>
@@ -159,7 +166,7 @@
 					</div>
 				</div>
 			</div>
-        <p class="align2"><input type="image" src="${request.static_url('ticketing.cart:static/img/settlement/btn_next.gif')}" alt="次へ" width="226" height="46" /></p>
+        <p class="align2"><image onclick="$('#form1').submit()" src="${request.static_url('ticketing.cart:static/img/settlement/btn_next.gif')}" alt="次へ" width="226" height="46" /></p>
         </form>
 	</div>
 	<!-- ========== /main ========== -->

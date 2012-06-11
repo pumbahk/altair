@@ -33,7 +33,7 @@ def secure3d_enrol(request, order_no, card_number, exp_year, exp_month, total_am
         CardNumber=card_number,
         ExpYear=exp_year,
         ExpMonth=exp_month,
-        TotalAmount=total_amount,
+        TotalAmount=int(total_amount),
         Currency="392",
     )
 
