@@ -64,7 +64,7 @@ carts.AppView.prototype.init = function(presenter) {
             success: function(data, textStatus, jqXHR) {
                 if (data.result == 'OK') {
                     alert('OK');
-
+                    window.location.href = data.pyament_url;
                 } else {
                     alert('NG');
                 }

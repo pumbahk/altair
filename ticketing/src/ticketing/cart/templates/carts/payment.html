@@ -8,19 +8,19 @@
 <meta name="keywords" content="チケット,演劇,クラシック,オペラ,コンサート,バレエ,ミュージカル,野球,サッカー,格闘技" />
 <meta http-equiv="content-style-type" content="text/css" />
 <meta http-equiv="content-script-type" content="text/javascript" />
-<link rel="shortcut icon" href="../img/common/favicon.ico" />
-<link rel="stylesheet" href="../css/import.css" type="text/css" media="all" />
-<script type="text/javascript" src="../js/jquery.js"></script>
+<link rel="shortcut icon" href="${request.static_url('ticketing.cart:static/img/common/favicon.ico')}" />
+<link rel="stylesheet" href="${request.static_url('ticketing.cart:static/css/import.css')}" type="text/css" media="all" />
+<script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/jquery.js')}"></script>
 </head>
 <body id="settlement">
 
-<p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="../img/common/skip.gif" alt="本文へジャンプ" width="1" height="1" /></a></p>
+<p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="${request.static_url('ticketing.cart:static/img/common/skip.gif')}" alt="本文へジャンプ" width="1" height="1" /></a></p>
 
 <div id="container">
 
 	<!-- ========== header ========== -->
 	<div id="grpheader">
-		<p id="siteID"><a href="http://ticket.rakuten.co.jp/"><img src="../img/common/header_logo_01.gif" alt="楽天チケット" class="serviceLogo" width="97" height="35" /></a><a href="http://ticket.rakuten.co.jp/"><img src="../img/common/header_logo_02.gif" alt="チケット" class="serviceTitle" width="88" height="23" /></a></p>
+		<p id="siteID"><a href="http://ticket.rakuten.co.jp/"><img src="${request.static_url('ticketing.cart:static/img/common/header_logo_01.gif')}" alt="楽天チケット" class="serviceLogo" width="97" height="35" /></a><a href="http://ticket.rakuten.co.jp/"><img src="../img/common/header_logo_02.gif" alt="チケット" class="serviceTitle" width="88" height="23" /></a></p>
 	</div>
 	<!-- ========== /header ========== -->
 	
@@ -28,11 +28,11 @@
 
 	<!-- ========== main ========== -->
 	<div id="main">
-		<h1><img src="../img/settlement/title_settlement.gif" alt="チケット購入" width="950" height="40" /></h1>
-		<form id="form1" name="form1" method="post" action="${payments[2].url}"> <!-- TODO: マルチ決済決め打ちなので、画面選択で切り替えるようにする-->
+		<h1><img src="${request.static_url('ticketing.cart:static/img/settlement/title_settlement.gif')}" alt="チケット購入" width="950" height="40" /></h1>
+		<form id="form1" name="form1" method="post" action="${payments[2]["url"]}"> <!-- TODO: マルチ決済決め打ちなので、画面選択で切り替えるようにする-->
 			<div class="settlementBox">
 				<div class="settlementBoxInner">
-					<h2><img src="../img/settlement/title_methods.gif" alt="お支払い方法の指定" width="167" height="30" /></h2>
+					<h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_methods.gif')}" alt="お支払い方法の指定" width="167" height="30" /></h2>
 					<div class="settlementPayBox">
 						<div class="settlementPayBoxInner">
 							<table>
@@ -94,7 +94,7 @@
                                             </div>
 
                                             説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明<br />
-											<img src="../img/settlement/card.gif" alt="カードの種類" width="374" height="35" /></dd>
+											<img src="${request.static_url('ticketing.cart:static//img/settlement/card.gif')}" alt="カードの種類" width="374" height="35" /></dd>
 									</dl></td>
 								</tr>
 							</table>
@@ -117,7 +117,7 @@
 			</div>
 			<div class="settlementBox">
 				<div class="settlementBoxInner">
-					<h2><img src="../img/settlement/title_pickup.gif" alt="お引き取り方法の指定" width="180" height="30" /></h2>
+					<h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_pickup.gif')}" alt="お引き取り方法の指定" width="180" height="30" /></h2>
 					<div class="settlementPayBox">
 						<div class="settlementPayBoxInner">
 							<table>
@@ -151,7 +151,7 @@
 									<td class="settlementPayRadio"><input type="radio" name="radio3" id="radio5" value="radio3" /></td>
 									<td><dl>
 										<dt>コンビニエンスストア受取</dt>
-										<dd><img src="../img/settlement/familymart.gif" alt="あなたと、コンビに。ファミリーマート" width="96" height="40" class="convenience" />説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明</dd>
+										<dd><img src="${request.static_url('ticketing.cart:static/img/settlement/familymart.gif')}" alt="あなたと、コンビに。ファミリーマート" width="96" height="40" class="convenience" />説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明</dd>
 									</dl></td>
 								</tr>
 							</table>
@@ -159,7 +159,8 @@
 					</div>
 				</div>
 			</div>
-		</form>
+        <p class="align2"><input type="image" src="${request.static_url('ticketing.cart:static/img/settlement/btn_next.gif')}" alt="次へ" width="226" height="46" /></p>
+        </form>
 	</div>
 	<!-- ========== /main ========== -->
 	
