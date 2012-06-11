@@ -22,6 +22,21 @@ def _teardown_db():
     import transaction
     transaction.abort()
 
+class TestIt(unittest.TestCase):
+    def setUp(self):
+        self.config = testing.setUp()
+        self.config.include('ticketing.cart')
+
+    def tearDown(self):
+        testing.tearDown()
+
+    def test_payment_method_url_multicheckout(self):
+        from . import helpers as h
+        request = DummyRequest()
+        result = h.get_payment_method_url(request, "3")
+
+        self.assertEqual(result, "http://example.com/payment/3d")
+
 class CartTests(unittest.TestCase):
     def setUp(self):
         self.session = _setup_db()
@@ -436,6 +451,7 @@ class ReserveViewTests(unittest.TestCase):
         from .models import Cart
         from .resources import TicketingCartResrouce
 
+        self.config.add_route('cart.payment', 'payment')
         # 在庫
         stock_id = 1
         product_item_id = 2
@@ -484,7 +500,7 @@ class ReserveViewTests(unittest.TestCase):
         import transaction
         transaction.commit()
 
-        self.assertEqual(result, dict(result='OK'))
+        self.assertEqual(result, {'result': 'OK', 'pyament_url': 'http://example.com/payment'} )
         cart_id = request.session['ticketing.cart_id']
 
         self.session.remove()
@@ -638,7 +654,7 @@ class ReserveViewTests(unittest.TestCase):
         self.assertEqual(result[1], ('12', 10))
 
 
-class PyamentViewTests(unittest.TestCase):
+class PaymentViewTests(unittest.TestCase):
 
     def _getTarget(self):
         from . import views
@@ -649,9 +665,26 @@ class PyamentViewTests(unittest.TestCase):
 
     def setUp(self):
         self.config = testing.setUp()
+        self.session = _setup_db()
 
     def tearDown(self):
         testing.tearDown()
+        _teardown_db()
+
+    def _register_starndard_payment_methods(self):
+        from ..core import models
+        self.session.add(models.PaymentMethod(id=1, name=u"セブンイレブン", fee=100))
+        self.session.add(models.PaymentMethod(id=2, name=u"楽天あんしん決済", fee=100))
+        self.session.add(models.PaymentMethod(id=3, name=u"クレジットカード", fee=100))
+        self.config.add_route('route.1', 'sej')
+        self.config.add_route('route.2', 'checkout')
+        self.config.add_route('route.3', 'multi')
+        from . import interfaces
+        class DummyMethodManager(object):
+            def get_route_name(self, id):
+                return 'route.%d' % id
+        dummy_method_manager = DummyMethodManager()
+        self.config.registry.utilities.register([], interfaces.IPaymentMethodManager, "", dummy_method_manager)
 
     def test_it_no_cart(self):
         request = testing.DummyRequest()
@@ -659,12 +692,31 @@ class PyamentViewTests(unittest.TestCase):
         result = target()
         self.assertEqual(result.location, '/')
 
+    def test_it(self):
+        self._register_starndard_payment_methods()
+        request = testing.DummyRequest()
+        request._cart = testing.DummyModel()
+        target = self._makeOne(request)
+        result = target()
+
+        self.assertEqual(result,
+                {'payments': [
+                    {'name': u'セブンイレブン',
+                     'url': 'http://example.com/sej'},
+                    {'name': u'楽天あんしん決済',
+                     'url': 'http://example.com/checkout'},
+                    {'name': u'クレジットカード',
+                     'url': 'http://example.com/multi'}]}
+        )
+
 class MultiCheckoutViewTests(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp()
+        self.session = _setup_db()
 
     def tearDown(self):
         testing.tearDown()
+        _teardown_db()
 
     def _getTarget(self):
         from . import views

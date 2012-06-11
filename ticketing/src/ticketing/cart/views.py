@@ -151,7 +151,7 @@ class ReserveView(object):
         h.set_cart(self.request, cart)
         #self.request.session['ticketing.cart_id'] = cart.id
         #self.cart = cart
-        return dict(result='OK')
+        return dict(result='OK', pyament_url=self.request.route_url("cart.payment"))
 
     def on_error(self):
         """ 座席確保できなかった場合
@@ -169,7 +169,7 @@ class PaymentView(object):
     def __init__(self, request):
         self.request = request
 
-    @view_config(route_name='cart.payment', request_method="GET")
+    @view_config(route_name='cart.payment', request_method="GET", renderer="carts/payment.html")
     def __call__(self):
         """ 支払い方法、引き取り方法選択
         """
@@ -177,6 +177,12 @@ class PaymentView(object):
             return HTTPFound('/')
 
         cart = h.get_cart(self.request)
+
+        methods = c_models.PaymentMethod.query.all()
+        return dict(payments=[
+            dict(url=h.get_payment_method_url(self.request, m.id), name=m.name)
+            for m in methods
+        ])
 
     @view_config(route_name='cart.payment.method', request_method="GET")
     def paymentmethod(self):
@@ -190,6 +196,7 @@ class MultiCheckoutView(object):
     def __init__(self, request):
         self.request = request
 
+    @view_config(route_name='payment.secure3d', request_method="GET")
     def card_info_secure3d(self):
         """ カード情報入力(3Dセキュア)
         """

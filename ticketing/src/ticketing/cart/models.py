@@ -30,6 +30,19 @@ from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm.exc import NoResultFound
 
 from ..core import models as c_models
+
+class PaymentMethodManager(object):
+    def __init__(self):
+        self.route_map = {}
+
+    def add_route_name(self, payment_method_id, route_name):
+        self.route_map[payment_method_id] = route_name
+
+    def get_route_name(self, payment_method_id):
+        return self.route_map.get(payment_method_id)
+
+
+
 Base = sqlahelper.get_base()
 DBSession = sqlahelper.get_session()
 
