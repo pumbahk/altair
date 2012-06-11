@@ -1,5 +1,3 @@
-<%namespace file="./components/ticketstar/detail/userbox.mako" name="userbox_co"/>
-
 <%def name="widgets(name)">
   % for w in display_blocks[name]:
       ${w|n}
@@ -94,7 +92,7 @@
 
 	<div id="userBox">
 <%block name="userBox">
-   ${userbox_co.userbox()}
+    ${widgets("userBox")}
 </%block>
 	</div>  
 	<hr />
