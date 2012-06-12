@@ -8,10 +8,10 @@ import optparse
 import sys
 import sqlahelper
 
-from dateutil import parser as date_parser
+from dateutil.parser import parse
 from os.path import abspath, dirname
 
-from ticketing.sej.payment import request_fileget
+from ticketing.sej.payment import request_fileget_import
 from ticketing.sej.resources import SejNotificationType, code_from_notification_type
 
 sys.path.append(abspath(dirname(dirname(__file__))))
@@ -25,8 +25,7 @@ log = logging.getLogger(__file__)
 
 def file_get_and_import(notification_type, date, hostname):
 
-
-    request_fileget(
+    request_fileget_import(
         notification_type,
         date)
 
@@ -46,12 +45,12 @@ def main(argv=sys.argv):
     )
     parser.add_option('-t', '--type',
         dest='type',
-        help='Path to configuration file (defaults to $CWD/development.ini)',
+        help='must be set type',
         metavar='FILE'
     )
     parser.add_option('-d', '--date',
         dest='date',
-        help='Path to configuration file (defaults to $CWD/development.ini)',
+        help='must be set date',
         metavar='FILE'
     )
     options, args = parser.parse_args(argv[1:])
@@ -73,9 +72,10 @@ def main(argv=sys.argv):
         print 'You must give a config file'
         return
 
-    date = date_parser(date)
-    type = code_from_notification_type.get(type)
-
+    date = parse(date)
+    print type
+    type = code_from_notification_type.get(int(type))
+    print type
     app = loadapp('config:%s' % config, 'main')
     settings = app.registry.settings
 

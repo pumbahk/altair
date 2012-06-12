@@ -17,6 +17,7 @@ def package_ticket_template_to_zip(template_id,
     archive_txt_buffer = list()
     csv_text_buffer = list()
 
+    archive_txt_buffer.append("TTEMPLATE.CSV")
     for sej_ticket in sej_tickets:
         if sej_ticket.ticket_html:
             archive_txt_buffer.append("%s/%s.html" % (template_id, template_id))
@@ -38,7 +39,7 @@ def package_ticket_template_to_zip(template_id,
     archive_txt_body = "\r\n".join(archive_txt_buffer) + "\r\n"
     csv_text_body = "\r\n".join(csv_text_buffer) + "\r\n"
 
-    zip_file_name = "/tmp/%s.zip" % datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+    zip_file_name = "/tmp/%s.zip" % template_id
     zf = EnhZipFile(zip_file_name, 'w')
 
     #

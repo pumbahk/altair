@@ -104,7 +104,9 @@ class SejNotification(BaseModel, WithTimestamp, LogicallyDeleted, Base):
 
     barcode_numbers         = Column(MutationDict.as_mutable(JSONEncodedDict(4096)), nullable=True)
 
+    reflected_at            = Column(DateTime, nullable=True)
     processed_at            = Column(DateTime, nullable=True)
+
     signature               = Column(String(32))
 
 class SejTicketFile(BaseModel, WithTimestamp, LogicallyDeleted, Base):

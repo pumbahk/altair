@@ -71,13 +71,15 @@ class SejNotificationType(StandardEnum):
     TicketingExpire = 73
     # 91
     InstantPaymentInfo = 91
+    PaymentInfo = 94
 
 code_from_notification_type = {
     SejNotificationType.PaymentComplete.v : SejNotificationType.PaymentComplete,
     SejNotificationType.CancelFromSVC.v : SejNotificationType.CancelFromSVC,
     SejNotificationType.ReGrant.v : SejNotificationType.ReGrant,
     SejNotificationType.TicketingExpire.v : SejNotificationType.TicketingExpire,
-    SejNotificationType.InstantPaymentInfo.v : SejNotificationType.InstantPaymentInfo
+    SejNotificationType.InstantPaymentInfo.v : SejNotificationType.InstantPaymentInfo,
+    SejNotificationType.PaymentInfo.v : SejNotificationType.PaymentInfo
 }
 name_from_notification_type = {
     'PaymentComplete'    : SejNotificationType.PaymentComplete,

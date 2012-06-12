@@ -785,16 +785,24 @@ class SejTest(unittest.TestCase):
         st.template_name = u'ＴＳテンプレート０１'
         st.publish_start_date      = datetime.datetime(2012,06,06)
         st.publish_end_date        = None
-        st.ticket_html = u'''<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html lang="en">
+        st.ticket_html = u'''
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en" xmlns:v="urn:schemas-microsoft-com:vml">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
   <title></title>
+<!--[if (lt IE 9)]>
+  <style type="text/css">
+v\:* { behavior: url(#default#VML); }
+</style>
+<![endif]-->
   <style type="text/css">
 body {
   margin: 0 0;
 }
 
+.pre { white-space: pre; }
+.b { font-weight: 900; }
 .f0 { font-family: "Arial"; }
 .f1 { font-family: "Arial Black"; }
 .f2 { font-family: "Verdana"; }
@@ -868,7 +876,7 @@ function loadXml(url, success, error) {
 }
 
 function parse(text, handlers) {
-  var regexp = /"((?:[^"]|\\.)*)"|:([^\s"]+)|(-?(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)(?:[eE][-+]?[0-9]+)?)|([*+/A-Za-z_-][0-9A-Za-z_-]*)|([ \t]+)|(\r\n|\r|\n)|(.)/g;
+  var regexp = /"((?:[^"]|\\.)*)"|:([^\s"]*)|(-?(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)(?:[eE][-+]?[0-9]+)?)|([*+/A-Za-z_-]+)|([ \t]+)|(\r\n|\r|\n)|(.)/g;
   var stack = [];
   var column = 0, line = 0;
   handlers.$stack = stack;
@@ -881,7 +889,7 @@ function parse(text, handlers) {
       stack.push(parseFloat(g[3]));
     } else if (g[4]) {
       switch (g[4]) {
-      case 'D':
+      case 'd':
         stack.push(stack[stack.length - 1]);
         break;
       default:
@@ -953,13 +961,198 @@ function stringizeXmlNode(n) {
   }
 }
 
+function Drawable() {
+  this.initialize.apply(this, arguments);
+}
+
+if (window.ActiveXObject) {
+  function newVmlElement(name) {
+    return document.createElement("v:" + name);
+  }
+
+  Drawable.prototype.initialize = function Drawable_initialize(n, width, height) {
+    this.n = n;
+    this.width = width;
+    this.height = height;
+  };
+
+  Drawable.prototype.path = function Drawable_path(pathData) {
+    var path = newVmlElement('shape');
+    var buf = [];
+    var currentPoint = { x: 0., y: 0. };
+    for (var i in pathData) {
+      var datum = pathData[i];
+      switch (datum[0]) {
+      case 'Z':
+        buf.push('x');
+        break;
+      case 'M':
+        buf.push('m',
+          (datum[1] * 1000).toFixed(0),
+          (datum[2] * 1000).toFixed(0));
+        currentPoint = { x: datum[1], y: datum[2] };
+        break;
+      case 'L':
+        buf.push('l',
+          (datum[1] * 1000).toFixed(0),
+          (datum[2] * 1000).toFixed(0));
+        currentPoint = { x: datum[1], y: datum[2] };
+        break;
+      case 'C':
+        buf.push('c',
+          (datum[1] * 1000).toFixed(0),
+          (datum[2] * 1000).toFixed(0),
+          (datum[3] * 1000).toFixed(0),
+          (datum[4] * 1000).toFixed(0),
+          (datum[5] * 1000).toFixed(0),
+          (datum[6] * 1000).toFixed(0));
+        currentPoint = { x: datum[5], y: datum[6] };
+        break;
+      case 'Q':
+        buf.push('q',
+          (datum[1] * 1000).toFixed(0),
+          (datum[2] * 1000).toFixed(0),
+          (datum[3] * 1000).toFixed(0),
+          (datum[4] * 1000).toFixed(0));
+        currentPoint = { x: datum[3], y: datum[4] };
+        break;
+      case 'A':
+        var rx = Math.abs(datum[1]), ry = Math.abs(datum[2]),
+            phi = Math.abs(datum[3]), largeArc = datum[4], sweep = datum[5],
+            x  = datum[6], y = datum[7];
+        var s = Math.sin(Math.PI * phi / 180),
+            c = Math.cos(Math.PI * phi / 180);
+        var cx = (currentPoint.x - x) / 2, cy = (currentPoint.y - y) / 2;
+        var x1_ = c * cx + s * cy, y1_ = -s * cx + c * cy;
+        var lambda = Math.sqrt((x1_ * x1_) / (rx * rx) + (y1_ * y1_) / (ry * ry));
+        if (lambda > 1)
+          rx *= lambda, ry *= lambda;
+        var c_ = (largeArc == sweep ? -1: 1) * Math.sqrt((rx * rx * ry * ry - rx * rx * y1_ * y1_ - ry * ry * x1_ * x1_) / (rx * rx * y1_ * y1_ + ry * ry * x1_ * x1_));
+        var cx_ = c_ * (rx * y1_) / ry,
+            cy_ = -c_ * (ry * x1_) / rx;
+        var ecx = c * cx_ - s * cy_ + (x + currentPoint.x) / 2,
+            ecy = s * cx_ + c * cy_ + (y + currentPoint.y) / 2;
+        var vx1 = (x1_ - cx_) / rx, vy1 = (y1_ - cy_) / ry;
+        var vx2 = (-x1_ - cx_) / rx, vy2 = (-y1_ - cy_) / ry;
+        var theta1 = (vy1 > 0 ? 1: -1) * Math.acos(vx1 / Math.sqrt(vx1 * vx1 + vy1 * vy1));
+        var thetad = (vx1 * vy2 - vy1 * vx2 > 0 ? 1: -1) * Math.acos((vx1 * vx2 + vy1 * vy2) / Math.sqrt(vx1 * vx1 + vy1 * vy1) / Math.sqrt(vx2 * vx2 + vy2 * vy2));
+        if (sweep && thetad > 0)
+          thetad -= Math.PI * 2;
+        else if (!sweep && thetad < 0)
+          thetad += Math.PI * 2;
+        var rsx = ecx + Math.cos(theta1) * rx,
+            rsy = ecy + Math.sin(theta1) * ry;
+        var rex = ecx + Math.cos(theta1 + thetad) * rx,
+            rey = ecy + Math.sin(theta1 + thetad) * ry;
+        if (thetad < 0) {
+          var tmp;
+          tmp = rsx, rsx = rex, rex = tmp;
+          tmp = rsy, rsy = rey, rey = tmp;
+        }
+        if (phi == 0) {
+          var rsxs = (rsx * 1000).toFixed(0),
+              rsys = (rsy * 1000).toFixed(0);
+          var rexs = (rex * 1000).toFixed(0),
+              reys = (rey * 1000).toFixed(0);
+          buf.push('m', rsxs, rsys);
+          buf.push('at',
+            ((ecx - rx) * 1000).toFixed(0),
+            ((ecy - ry) * 1000).toFixed(0),
+            ((ecx + rx) * 1000).toFixed(0),
+            ((ecy + ry) * 1000).toFixed(0),
+            rsxs, rsys, rexs, reys);
+          buf.push('m', rexs, reys);
+        }
+        break;
+      }
+    }
+    path.style.display = 'block';
+    path.style.position = 'absolute';
+    path.style.left = '0';
+    path.style.top = '0';
+    path.style.width = this.width;
+    path.style.height = this.height;
+    path.coordSize = parseFloat(this.width) * 1000 + "," + parseFloat(this.height) * 1000;
+    path.setAttribute('path', buf.join(' '));
+    this.n.appendChild(path);
+    return {
+      n: path,
+      style: function (value) {
+        if (value.strokeWidth)
+          path.setAttribute('strokeWeight', value.strokeWidth * 2.5);
+        if (value.strokeColor) {
+          path.setAttribute('strokeColor', value.strokeColor || 'none');
+          path.setAttribute('stroked', 't');
+        } else {
+          path.setAttribute('stroked', 'f');
+        }
+        if (value.fillColor) {
+          path.setAttribute('fillColor', value.fillColor);
+          path.setAttribute('filled', 't');
+        } else {
+          path.setAttribute('filled', 'f');
+        }
+      }
+    };
+  };
+} else {
+  var SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
+  function newSvgElement(name) {
+    return document.createElementNS(SVG_NAMESPACE, name);
+  }
+  Drawable.prototype.initialize = function Drawable_initialize(n, width, height) {
+    this.n = n;
+    var svg = newSvgElement('svg');
+    svg.setAttribute('style', 'display:block;position:absolute;left:0;top:0');
+    svg.setAttribute('version', '1.0');
+    svg.setAttribute('width', width);
+    svg.setAttribute('height', height);
+    svg.setAttribute('viewBox', '0 0 ' + parseFloat(width) + ' ' + parseFloat(height));
+    this.n.appendChild(svg);
+    this.svg = svg;
+  };
+
+  Drawable.prototype.path = function Drawable_path(pathData) {
+    var path = newSvgElement('path');
+    var buf = [];
+    for (var i in pathData) {
+      buf.push.apply(buf, pathData[i]);
+    }
+    path.setAttribute('d', buf.join(' '));
+    this.svg.appendChild(path);
+    return {
+      n: path,
+      style: function (value) {
+        if (value.strokeWidth)
+          path.setAttribute('stroke-width', value.strokeWidth);
+        path.setAttribute('stroke', value.strokeColor || 'none');
+        path.setAttribute('fill', value.fillColor || 'none');
+      }
+    };
+  };
+}
+
 function newHandler(n, xmldoc) {
-  var path = [];
+  var pathData = [];
+  var drawable = null;
   var unit = 'mm';
   var fontSize = 10;
   var classes = [];
-  var previousCommand = null;
   var currentPoint = { x: 0., y: 0. };
+  var scale = 1.;
+  var style = {
+    fillColor: null,
+    strokeColor: null,
+    strokeWidth: null
+  };
+  function initPathData() {
+    if (pathData == null)
+      pathData = [['M', currentPoint.x, currentPoint.y]];
+  }
+  function initDrawable() {
+    if (drawable == null)
+      drawable = new Drawable(n, '1000' + unit, '1000' + unit);
+  }
   return {
     xn: function xmlNode(path) {
       var nodes = findXmlNode(xmldoc, xmldoc.documentElement, path);
@@ -972,8 +1165,11 @@ function newHandler(n, xmldoc) {
       var nodes = this.$stack.splice(this.$stack.length - l, l);
       this.$stack.push(stringizeXmlNodes(nodes));
     },
+    S: function _scale(value) {
+      scale = value;
+    },
     fs: function fontSize(value) {
-      fontSize = fs;
+      fontSize = value;
     },
     hc: function pushClass(klass) {
       classes.push(klass);
@@ -984,55 +1180,130 @@ function newHandler(n, xmldoc) {
     sc: function setClass(klass) {
       classes = [klass];
     },
+    rg: function setFillColor(value) {
+      style.fillColor = value;
+    },
+    RG: function setStrokeColor(value) {
+      style.strokeColor = value;
+    },
+    Sw: function setStrokeWidth(value) {
+      style.strokeWidth = value * scale;
+    },
     U: function setUnit(_unit) {
       unit = _unit;
-      previousCommand = null;
     },
-    X: function showText(text) {
+    X: function showText(width, height, text) {
       n.insertAdjacentHTML('beforeEnd', [
         '<div style="position:absolute;',
         'font-size:', fontSize, 'pt', ';',
         'left:', currentPoint.x, unit, ';',
-        'top:', currentPoint.y, unit, '"',
+        'top:', currentPoint.y, unit, ';',
+        'width:', width, unit, ';',
+        'height:', height, unit, '"',
         ' class="', classes.join(' '), '"',
         '>', text, '</div>'].join(''));
-      previousCommand = null;
     },
     N: function newPath() {
-      previousCommand = null;
     },
-    M: function moveTo(x, y) {
+    m: function moveTo(x, y) {
+      x *= scale;
+      y *= scale;
+      if (pathData != null)
+        pathData.push(['M', x, y]);
       currentPoint = { x: x, y: y };
-      path.push('M', x, y);
-      previousCommand = 'M';
     },
-    L: function lineTo(x, y) {
-      if (previousCommand == 'L')
-        path.push(x, y);
-      else
-        path.push('L', x, y);
+    l: function lineTo(x, y) {
+      x *= scale;
+      y *= scale;
+      initPathData();
+      pathData.push(['L', x, y]);
       currentPoint = { x: x, y: y };
-      previousCommand = 'L';
     },
-    C: function curveTo(x1, y1, x2, y2, x3, y3) {
-      path.push('C', x1, y1, x2, y2, x3, y3);
+    c: function curveTo(x1, y1, x2, y2, x3, y3) {
+      x1 *= scale;
+      y1 *= scale;
+      x2 *= scale;
+      y2 *= scale;
+      x3 *= scale;
+      y3 *= scale;
+      initPathData();
+      pathData.push(['C', x1, y1, x2, y2, x3, y3]);
       currentPoint = { x: x3, y: y3 };
-      previousCommand = 'C';
     },
-    Q: function quadraticCurveTo(x1, y1) {
-      path.push('Q', x1, y1, x2, y2);
+    v: function curveToS1(x2, y2, x3, y3) {
+      x2 *= scale;
+      y2 *= scale;
+      x3 *= scale;
+      y3 *= scale;
+      initPathData();
+      pathData.push(['C', currentPoint.x, currentPoint.y, x2, y2, x3, y3]);
+      currentPoint = { x: x3, y: y3 };
+    },
+    y: function curveToS2(x1, y1, x3, y3) {
+      x1 *= scale;
+      y1 *= scale;
+      x3 *= scale;
+      y3 *= scale;
+      if (pathData == null)
+        pathData = [['M', currentPoint.x, currentPoint.y]];
+      pathData.push(['C', x1, y1, x3, y3, x3, y3]);
+      currentPoint = { x: x3, y: y3 };
+    },
+    q: function quadraticCurveTo(x1, y1, x2, y2) {
+      x1 *= scale;
+      y1 *= scale;
+      x2 *= scale;
+      y2 *= scale;
+      if (pathData == null)
+        pathData = [['M', currentPoint.x, currentPoint.y]];
+      pathData.push(['Q', x1, y1, x2, y2]);
       currentPoint = { x: x2, y: y2 };
-      previousCommand = 'Q';
     },
-    A: function arc() {
+    a: function arc(rx, ry, phi, largeArc, sweep, x, y) {
+      rx *= scale;
+      ry *= scale;
+      x *= scale;
+      y *= scale;
+      if (pathData == null)
+        pathData = [['M', currentPoint.x, currentPoint.y]];
+      pathData.push(['A', rx, ry, phi, largeArc, sweep, x, y]);
+      currentPoint = { x: x, y: y };
     },
-    Z: function closePath() {
-      path.push('Z');
-      previousCommand = null;
+    h: function closePath() {
+      if (pathData == null)
+        pathData = [['M', currentPoint.x, currentPoint.y]];
+      pathData.push(['Z']);
     },
-    F: function fill() {
+    f: function fill() {
+      if (pathData == null)
+        return;
+      initDrawable();
+      drawable.path(pathData).style({
+        strokeWidth: null,
+        strokeColor: null,
+        fillColor: style.fillColor
+      });
+      pathData = null;
     },
-    S: function stroke() {
+    s: function stroke() {
+      if (pathData == null)
+        return;
+      pathData.push(['Z']);
+      initDrawable();
+      drawable.path(pathData).style({
+        strokeWidth: style.strokeWidth,
+        strokeColor: style.strokeColor,
+        fillColor: null
+      });
+      pathData = null;
+    },
+    B: function strokeAndFill() {
+      if (pathData == null)
+        return;
+      if (drawable == null)
+        drawable = new Drawable(n, '1000' + unit, '1000' + unit);
+      drawable.path(pathData).style(style);
+      pathData = null;
     }
   };
 }

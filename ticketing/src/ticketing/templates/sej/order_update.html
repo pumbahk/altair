@@ -100,11 +100,11 @@ ${h.breadcrumbs(
       <tr>
         <th>発券期間</th>
         <td>
-            %if order.payment_type == u'2' or  order.payment_type == u'3':
-            ${order.ticketing_start_at}-${order.ticketing_due_at}</td>
+            %if order.ticketing_start_at and order.ticketing_due_at:
+            ${order.ticketing_start_at}-${order.ticketing_due_at}
             % else:
             -(支払い期限と同じ)
-            % endif
+            % endif</td>
       </tr>
       <tr>
         <th>支払い期限</th>
@@ -227,13 +227,9 @@ ${h.breadcrumbs(
       ${form_item(form.ticket_price)}
       ${form_item(form.commission_fee)}
       ${form_item(form.ticketing_fee)}
-      %if order.payment_type!=u'3':
       ${form_item(form.payment_due_at)}
-      %endif
-      %if order.payment_type == u'2' or  order.payment_type == u'3':
       ${form_item(form.ticketing_start_at)}
       ${form_item(form.ticketing_due_at)}
-      %endif
       ${form_item(form.regrant_number_due_at)}
       <div class="spacer">
         <input type="submit" name="submit" value="更新リクエスト" />

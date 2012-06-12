@@ -17,6 +17,10 @@ class SejFileParser(object):
             self.cursor = self.cursor + num
             return row
 
+        def get_col_strip(self, num):
+            col = self.get_col(num).replace(' ', '')
+            return col if len(col) else None
+
         def get_int(self, num):
             col = self.get_col(num).replace(' ', '')
             return int(col) if len(col) else None
@@ -83,15 +87,15 @@ class SejInstantPaymentFileParser(SejFileParser):
             order_id            = row.get_col(12),
             notification_type   = row.get_int(2),
             payment_type        = row.get_int(2),
-            bill_number         = row.get_col(13).strip(),
-            exchange_number     = row.get_col(13),
+            billing_number      = row.get_col_strip(13),
+            exchange_number     = row.get_col_strip(13),
             price               = row.get_int(6),
-            ticket_total_count  = row.get_col(2),
+            total_ticket_count  = row.get_col(2),
             ticket_count        = row.get_int(2),
-            return_ticket_coun  = row.get_int(2),
+            return_ticket_count = row.get_int(2),
             cancel_reason       = row.get_col(2),
             process_at          = row.get_datetime(14),
-            checksum            = row.get_col(32)
+            signature           = row.get_col(32)
         )
         return data
 
@@ -104,7 +108,7 @@ class SejExpiredFileParser(SejFileParser):
             notification_type   = row.get_int(2),
             payment_type        = row.get_int(2),
             expired_at          = row.get_datetime(12),
-            bill_number         = row.get_col(13),
+            billing_number      = row.get_col(13),
             exchange_number     = row.get_col(13),
             checksum            = row.get_col(32),
         )
@@ -154,8 +158,8 @@ class SejCheckFileParser(SejFileParser):
             order_id            = row.get_col(12),
             notification_type   = int(row.get_col(2)),
             payment_type        = row.get_int(2),
-            billing_number      = row.get_col(13),
-            exchnage_number     = row.get_col(13),
+            billing_number      = row.get_col_strip(13),
+            exchnage_number     = row.get_col_strip(13),
             receipt_amount      = row.get_int(6),
             ticket_total_count  = row.get_int(2),
             ticket_count        = row.get_int(2),
