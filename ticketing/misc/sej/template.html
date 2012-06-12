@@ -46,8 +46,8 @@ body {
   font-family: "ＭＳ ゴシック";
   font-size: 6.5pt;
   position: absolute;
+  left: 143px;
   top: 159px;
-  left: 145px;
   font-weight: bold
 }
 
@@ -56,8 +56,8 @@ body {
   font-size: 6pt;
   font-weight: bold;
   position: absolute;
-  top: 170px;
   left: 50px;
+  top: 168px;
 }
 
 /* 発券店：セブン-イレブン */
@@ -66,8 +66,8 @@ body {
   font-size: 6pt;
   font-weight: bold;
   position: absolute;
-  top: 180px;
   left: 50px;
+  top: 178px;
 }
 
 /* 払込票 */
@@ -76,8 +76,8 @@ body {
   font-size: 6pt;
   font-weight: bold;
   position: absolute;
-  top: 189px;
   left: 50px; 
+  top: 187px;
 }
 
 #FIXMSG05 {
@@ -85,8 +85,8 @@ body {
   font-size: 6pt;
   font-weight: bold;
   position: absolute;
-  top: 180px;
   left: 420px;
+  top: 178px;
 }
 
 #FIXMSG06 {
@@ -94,8 +94,8 @@ body {
   font-size: 6pt;
   font-weight: bold;
   position: absolute;
-  top: 189px;
   left: 420px;
+  top: 187px;
 }
 
 /* 再発券印字 使用していない */
@@ -104,8 +104,8 @@ body {
   font-size: 6pt;
   font-weight: bold;
   position: absolute;
-  top: 180px;
   left: 330px;
+  top: 178px;
 }
 
 /* 発券店名 */
@@ -114,8 +114,8 @@ body {
   font-size: 6pt;
   font-weight: bold;
   position: absolute;
-  top: 180px;
   left: 83px; 
+  top: 178px;
 }
 
 /* 発券店番 */
@@ -124,8 +124,8 @@ body {
   font-size: 7pt;
   font-weight: bold;
   position: absolute;
-  top: 180px;
   left: 285px;
+  top: 178px;
 }
 
 /* 発券日時 */
@@ -134,8 +134,8 @@ body {
   font-size: 6pt;
   font-weight: bold;
   position: absolute;
-  top: 189px;
   left: 180px;
+  top: 187px;
 }
 
 /* 払込票番号 */
@@ -144,8 +144,8 @@ body {
   font-size: 7pt;
   font-weight: bold;
   position: absolute;
-  top: 189px;
   left: 83px;
+  top: 187px;
 }
 
 /* 発券枚数 */
@@ -154,8 +154,8 @@ body {
   font-size: 7pt;
   font-weight: bold;
   position: absolute;
-  top: 189px;
   left: 285px;
+  top: 187px;
 }
 </style>
   <script type="text/javascript">
@@ -677,10 +677,7 @@ function populateFixtags(xmldoc) {
 function reportError(msg) {
   var page = document.getElementById('page');
   page.innerHTML = '';
-  page.insertAdjacentHTML('beforeEnd', '<b>エラーが発生しました。</b><br/>');
-  var n = document.createElement('pre');
-  n.appendChild(document.createTextNode(msg));
-  page.appendChild(n);
+  throw new Error(msg);
 }
 
 function tryWith(args, f, failure) {
