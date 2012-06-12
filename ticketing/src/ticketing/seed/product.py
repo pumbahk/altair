@@ -964,7 +964,6 @@ class ProductItemEvent1Performance1Data(DataSet):
         product = ProductEvent1Data.product_1
         performance = PerformanceEvent1Data.performance_1
         stock = StockEvent1Performance1Data.stock_1
-        stock_type = StockTypeEvent1Data.stock_type_1
     class productitem_2:
         quantity = 1
         item_type = 2
@@ -972,7 +971,6 @@ class ProductItemEvent1Performance1Data(DataSet):
         product = ProductEvent1Data.product_2
         performance = PerformanceEvent1Data.performance_1
         stock = StockEvent1Performance1Data.stock_2
-        stock_type = StockTypeEvent1Data.stock_type_2
     class productitem_3:
         quantity = 1
         item_type = 1
@@ -980,7 +978,6 @@ class ProductItemEvent1Performance1Data(DataSet):
         product = ProductEvent1Data.product_3
         performance = PerformanceEvent1Data.performance_1
         stock = StockEvent1Performance1Data.stock_3
-        stock_type = StockTypeEvent1Data.stock_type_3
     class productitem_4:
         quantity = 1
         item_type = 1
@@ -988,7 +985,6 @@ class ProductItemEvent1Performance1Data(DataSet):
         product = ProductEvent1Data.product_4
         performance = PerformanceEvent1Data.performance_1
         stock = StockEvent1Performance1Data.stock_4
-        stock_type = StockTypeEvent1Data.stock_type_4
     class productitem_5:
         quantity = 1
         item_type = 1
@@ -996,7 +992,6 @@ class ProductItemEvent1Performance1Data(DataSet):
         product = ProductEvent1Data.product_5
         performance = PerformanceEvent1Data.performance_1
         stock = StockEvent1Performance1Data.stock_5
-        stock_type = StockTypeEvent1Data.stock_type_1
 
 class ProductItemEvent1Performance2Data(DataSet):
     class productitem_1:
@@ -1006,7 +1001,6 @@ class ProductItemEvent1Performance2Data(DataSet):
         product = ProductEvent1Data.product_1
         performance = PerformanceEvent1Data.performance_2
         stock = StockEvent1Performance2Data.stock_1
-        stock_type = StockTypeEvent1Data.stock_type_1
     class productitem_2:
         quantity = 1
         item_type = 2
@@ -1014,7 +1008,6 @@ class ProductItemEvent1Performance2Data(DataSet):
         product = ProductEvent1Data.product_2
         performance = PerformanceEvent1Data.performance_2
         stock = StockEvent1Performance2Data.stock_2
-        stock_type = StockTypeEvent1Data.stock_type_2
     class productitem_3:
         quantity = 1
         item_type = 1
@@ -1022,7 +1015,6 @@ class ProductItemEvent1Performance2Data(DataSet):
         product = ProductEvent1Data.product_3
         performance = PerformanceEvent1Data.performance_2
         stock = StockEvent1Performance2Data.stock_3
-        stock_type = StockTypeEvent1Data.stock_type_3
     class productitem_4:
         quantity = 1
         item_type = 1
@@ -1030,7 +1022,6 @@ class ProductItemEvent1Performance2Data(DataSet):
         product = ProductEvent1Data.product_4
         performance = PerformanceEvent1Data.performance_2
         stock = StockEvent1Performance2Data.stock_4
-        stock_type = StockTypeEvent1Data.stock_type_4
     class productitem_5:
         quantity = 1
         item_type = 1
@@ -1038,7 +1029,6 @@ class ProductItemEvent1Performance2Data(DataSet):
         product = ProductEvent1Data.product_5
         performance = PerformanceEvent1Data.performance_2
         stock = StockEvent1Performance2Data.stock_5
-        stock_type = StockTypeEvent1Data.stock_type_1
 
 class ProductItemEvent1Performance3Data(DataSet):
     class productitem_1:
@@ -1048,7 +1038,6 @@ class ProductItemEvent1Performance3Data(DataSet):
         product = ProductEvent1Data.product_1
         performance = PerformanceEvent1Data.performance_3
         stock = StockEvent1Performance3Data.stock_1
-        stock_type = StockTypeEvent1Data.stock_type_1
     class productitem_2:
         quantity = 1
         item_type = 2
@@ -1056,7 +1045,6 @@ class ProductItemEvent1Performance3Data(DataSet):
         product = ProductEvent1Data.product_2
         performance = PerformanceEvent1Data.performance_3
         stock = StockEvent1Performance3Data.stock_2
-        stock_type = StockTypeEvent1Data.stock_type_2
     class productitem_3:
         quantity = 1
         item_type = 1
@@ -1064,7 +1052,6 @@ class ProductItemEvent1Performance3Data(DataSet):
         product = ProductEvent1Data.product_3
         performance = PerformanceEvent1Data.performance_3
         stock = StockEvent1Performance3Data.stock_3
-        stock_type = StockTypeEvent1Data.stock_type_3
     class productitem_4:
         quantity = 1
         item_type = 1
@@ -1072,7 +1059,6 @@ class ProductItemEvent1Performance3Data(DataSet):
         product = ProductEvent1Data.product_4
         performance = PerformanceEvent1Data.performance_3
         stock = StockEvent1Performance3Data.stock_4
-        stock_type = StockTypeEvent1Data.stock_type_4
     class productitem_5:
         quantity = 1
         item_type = 1
@@ -1080,7 +1066,6 @@ class ProductItemEvent1Performance3Data(DataSet):
         product = ProductEvent1Data.product_5
         performance = PerformanceEvent1Data.performance_3
         stock = StockEvent1Performance3Data.stock_5
-        stock_type = StockTypeEvent1Data.stock_type_1
 
 class ProductItemEvent1Performance4Data(DataSet):
     class productitem_1:
@@ -1090,7 +1075,6 @@ class ProductItemEvent1Performance4Data(DataSet):
         product = ProductEvent1Data.product_1
         performance = PerformanceEvent1Data.performance_4
         stock = StockEvent1Performance4Data.stock_1
-        stock_type = StockTypeEvent1Data.stock_type_1
     class productitem_2:
         quantity = 1
         item_type = 2
@@ -1098,7 +1082,6 @@ class ProductItemEvent1Performance4Data(DataSet):
         product = ProductEvent1Data.product_2
         performance = PerformanceEvent1Data.performance_4
         stock = StockEvent1Performance4Data.stock_2
-        stock_type = StockTypeEvent1Data.stock_type_2
     class productitem_3:
         quantity = 1
         item_type = 1
@@ -1106,7 +1089,6 @@ class ProductItemEvent1Performance4Data(DataSet):
         product = ProductEvent1Data.product_3
         performance = PerformanceEvent1Data.performance_4
         stock = StockEvent1Performance4Data.stock_3
-        stock_type = StockTypeEvent1Data.stock_type_3
     class productitem_4:
         quantity = 1
         item_type = 1
@@ -1114,7 +1096,6 @@ class ProductItemEvent1Performance4Data(DataSet):
         product = ProductEvent1Data.product_4
         performance = PerformanceEvent1Data.performance_4
         stock = StockEvent1Performance4Data.stock_4
-        stock_type = StockTypeEvent1Data.stock_type_4
     class productitem_5:
         quantity = 1
         item_type = 1
@@ -1122,7 +1103,6 @@ class ProductItemEvent1Performance4Data(DataSet):
         product = ProductEvent1Data.product_5
         performance = PerformanceEvent1Data.performance_4
         stock = StockEvent1Performance4Data.stock_5
-        stock_type = StockTypeEvent1Data.stock_type_1
 
 class ProductItemEvent1Performance5Data(DataSet):
     class productitem_1:
@@ -1132,7 +1112,6 @@ class ProductItemEvent1Performance5Data(DataSet):
         product = ProductEvent1Data.product_1
         performance = PerformanceEvent1Data.performance_5
         stock = StockEvent1Performance5Data.stock_1
-        stock_type = StockTypeEvent1Data.stock_type_1
     class productitem_2:
         quantity = 1
         item_type = 2
@@ -1140,7 +1119,6 @@ class ProductItemEvent1Performance5Data(DataSet):
         product = ProductEvent1Data.product_2
         performance = PerformanceEvent1Data.performance_5
         stock = StockEvent1Performance5Data.stock_2
-        stock_type = StockTypeEvent1Data.stock_type_2
     class productitem_3:
         quantity = 1
         item_type = 1
@@ -1148,7 +1126,6 @@ class ProductItemEvent1Performance5Data(DataSet):
         product = ProductEvent1Data.product_3
         performance = PerformanceEvent1Data.performance_5
         stock = StockEvent1Performance5Data.stock_3
-        stock_type = StockTypeEvent1Data.stock_type_3
     class productitem_4:
         quantity = 1
         item_type = 1
@@ -1156,7 +1133,6 @@ class ProductItemEvent1Performance5Data(DataSet):
         product = ProductEvent1Data.product_4
         performance = PerformanceEvent1Data.performance_5
         stock = StockEvent1Performance5Data.stock_4
-        stock_type = StockTypeEvent1Data.stock_type_4
     class productitem_5:
         quantity = 1
         item_type = 1
@@ -1164,7 +1140,6 @@ class ProductItemEvent1Performance5Data(DataSet):
         product = ProductEvent1Data.product_5
         performance = PerformanceEvent1Data.performance_5
         stock = StockEvent1Performance5Data.stock_5
-        stock_type = StockTypeEvent1Data.stock_type_1
 
 class ProductItemEvent2Performance1Data(DataSet):
     class productitem_1:
@@ -1174,7 +1149,6 @@ class ProductItemEvent2Performance1Data(DataSet):
         product = ProductEvent2Data.product_1
         performance = PerformanceEvent2Data.performance_1
         stock = StockEvent2Performance1Data.stock_1
-        stock_type = StockTypeEvent2Data.stock_type_1
     class productitem_2:
         quantity = 1
         item_type = 2
@@ -1182,7 +1156,6 @@ class ProductItemEvent2Performance1Data(DataSet):
         product = ProductEvent2Data.product_2
         performance = PerformanceEvent2Data.performance_1
         stock = StockEvent2Performance1Data.stock_2
-        stock_type = StockTypeEvent2Data.stock_type_2
     class productitem_3:
         quantity = 1
         item_type = 1
@@ -1190,7 +1163,6 @@ class ProductItemEvent2Performance1Data(DataSet):
         product = ProductEvent2Data.product_3
         performance = PerformanceEvent2Data.performance_1
         stock = StockEvent2Performance1Data.stock_3
-        stock_type = StockTypeEvent2Data.stock_type_3
     class productitem_4:
         quantity = 1
         item_type = 1
@@ -1198,7 +1170,6 @@ class ProductItemEvent2Performance1Data(DataSet):
         product = ProductEvent2Data.product_4
         performance = PerformanceEvent2Data.performance_1
         stock = StockEvent2Performance1Data.stock_4
-        stock_type = StockTypeEvent2Data.stock_type_4
     class productitem_5:
         quantity = 1
         item_type = 1
@@ -1206,7 +1177,6 @@ class ProductItemEvent2Performance1Data(DataSet):
         product = ProductEvent2Data.product_5
         performance = PerformanceEvent2Data.performance_1
         stock = StockEvent2Performance1Data.stock_5
-        stock_type = StockTypeEvent2Data.stock_type_1
 
 class ProductItemEvent2Performance2Data(DataSet):
     class productitem_1:
@@ -1216,7 +1186,6 @@ class ProductItemEvent2Performance2Data(DataSet):
         product = ProductEvent2Data.product_1
         performance = PerformanceEvent2Data.performance_2
         stock = StockEvent2Performance2Data.stock_1
-        stock_type = StockTypeEvent2Data.stock_type_1
     class productitem_2:
         quantity = 1
         item_type = 2
@@ -1224,7 +1193,6 @@ class ProductItemEvent2Performance2Data(DataSet):
         product = ProductEvent2Data.product_2
         performance = PerformanceEvent2Data.performance_2
         stock = StockEvent2Performance2Data.stock_2
-        stock_type = StockTypeEvent2Data.stock_type_2
     class productitem_3:
         quantity = 1
         item_type = 1
@@ -1232,7 +1200,6 @@ class ProductItemEvent2Performance2Data(DataSet):
         product = ProductEvent2Data.product_3
         performance = PerformanceEvent2Data.performance_2
         stock = StockEvent2Performance2Data.stock_3
-        stock_type = StockTypeEvent2Data.stock_type_3
     class productitem_4:
         quantity = 1
         item_type = 1
@@ -1240,7 +1207,6 @@ class ProductItemEvent2Performance2Data(DataSet):
         product = ProductEvent2Data.product_4
         performance = PerformanceEvent2Data.performance_2
         stock = StockEvent2Performance2Data.stock_4
-        stock_type = StockTypeEvent2Data.stock_type_4
     class productitem_5:
         quantity = 1
         item_type = 1
@@ -1248,7 +1214,6 @@ class ProductItemEvent2Performance2Data(DataSet):
         product = ProductEvent2Data.product_5
         performance = PerformanceEvent2Data.performance_2
         stock = StockEvent2Performance2Data.stock_5
-        stock_type = StockTypeEvent2Data.stock_type_1
 
 class ProductItemEvent2Performance3Data(DataSet):
     class productitem_1:
@@ -1258,7 +1223,6 @@ class ProductItemEvent2Performance3Data(DataSet):
         product = ProductEvent2Data.product_1
         performance = PerformanceEvent2Data.performance_3
         stock = StockEvent2Performance3Data.stock_1
-        stock_type = StockTypeEvent2Data.stock_type_1
     class productitem_2:
         quantity = 1
         item_type = 2
@@ -1266,7 +1230,6 @@ class ProductItemEvent2Performance3Data(DataSet):
         product = ProductEvent2Data.product_2
         performance = PerformanceEvent2Data.performance_3
         stock = StockEvent2Performance3Data.stock_2
-        stock_type = StockTypeEvent2Data.stock_type_2
     class productitem_3:
         quantity = 1
         item_type = 1
@@ -1274,7 +1237,6 @@ class ProductItemEvent2Performance3Data(DataSet):
         product = ProductEvent2Data.product_3
         performance = PerformanceEvent2Data.performance_3
         stock = StockEvent2Performance3Data.stock_3
-        stock_type = StockTypeEvent2Data.stock_type_3
     class productitem_4:
         quantity = 1
         item_type = 1
@@ -1282,7 +1244,6 @@ class ProductItemEvent2Performance3Data(DataSet):
         product = ProductEvent2Data.product_4
         performance = PerformanceEvent2Data.performance_3
         stock = StockEvent2Performance3Data.stock_4
-        stock_type = StockTypeEvent2Data.stock_type_4
     class productitem_5:
         quantity = 1
         item_type = 1
@@ -1290,7 +1251,6 @@ class ProductItemEvent2Performance3Data(DataSet):
         product = ProductEvent2Data.product_5
         performance = PerformanceEvent2Data.performance_3
         stock = StockEvent2Performance3Data.stock_5
-        stock_type = StockTypeEvent2Data.stock_type_1
 
 class ProductItemEvent3Performance1Data(DataSet):
     class productitem_1:
@@ -1300,7 +1260,6 @@ class ProductItemEvent3Performance1Data(DataSet):
         product = ProductEvent3Data.product_1
         performance = PerformanceEvent3Data.performance_1
         stock = StockEvent3Performance1Data.stock_1
-        stock_type = StockTypeEvent3Data.stock_type_1
     class productitem_2:
         quantity = 1
         item_type = 2
@@ -1308,7 +1267,6 @@ class ProductItemEvent3Performance1Data(DataSet):
         product = ProductEvent3Data.product_2
         performance = PerformanceEvent3Data.performance_1
         stock = StockEvent3Performance1Data.stock_2
-        stock_type = StockTypeEvent3Data.stock_type_1
     class productitem_3:
         quantity = 1
         item_type = 1
@@ -1316,4 +1274,3 @@ class ProductItemEvent3Performance1Data(DataSet):
         product = ProductEvent3Data.product_3
         performance = PerformanceEvent3Data.performance_1
         stock = StockEvent3Performance1Data.stock_3
-        stock_type = StockTypeEvent3Data.stock_type_2

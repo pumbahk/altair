@@ -599,10 +599,15 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     stock_id = Column(Identifier, ForeignKey('Stock.id'))
     stock = relationship("Stock", backref="product_items")
 
-    stock_type_id = Column(Identifier, ForeignKey('StockType.id'))
-    stock_type = relationship('StockType', backref='product_items')
-
     quantity = Column(Integer, nullable=False, default=1, server_default='1')
+
+    @property
+    def stock_type_id(self):
+        return self.stock.stock_type_id
+
+    @property
+    def stock_type(self):
+        return self.stock.stock_type
 
     def get_for_update(self):
         self.stock = Stock.get_for_update(self.performance_id, self.stock_type_id)
@@ -721,13 +726,13 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     stock_status = relationship("StockStatus", uselist=False, backref='stock')
 
     @staticmethod
-    def create_from_template(template, stock_holder_id):
+    def create_from_template(template, performance_id):
         stock = Stock.clone(template)
-        stock.stock_holder_id = stock_holder_id
+        stock.performance_id = performance_id
         stock.save()
 
         for template_product_item in template.product_items:
-            ProductItem.create_from_template(template=template_product_item, performance_id=stock.stock_holder.performance_id, stock_id=stock.id)
+            ProductItem.create_from_template(template=template_product_item, stock_id=stock.id, performance_id=performance_id)
 
     @staticmethod
     def get_for_update(pid, stid):
