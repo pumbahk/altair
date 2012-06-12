@@ -23,9 +23,9 @@
   <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
     
-    <title><%block name="title"/></title>
-    <meta name="description" content="<%block name="description"/>">
-    <meta name="keywords" content="<%block name="keywords"/>">
+    <title>${page.title}</title>
+    <meta name="description" content="${page.description}">
+    <meta name="keywords" content="${page.keywords}">
         
     <meta http-equiv="content-style-type" content="text/css" />
     <meta http-equiv="content-script-type" content="text/javascript" />
