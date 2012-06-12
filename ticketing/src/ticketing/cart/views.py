@@ -24,6 +24,7 @@ class IndexView(object):
     @view_config(route_name='cart.index', renderer='carts/index.html', xhr=False)
     def __call__(self):
         event_id = self.request.matchdict['event_id']
+        performance_id = self.request.params.get('performance')
         e = DBSession.query(c_models.Event).filter_by(id=event_id).first()
         if e is None:
             raise HTTPNotFound(self.request.url)
@@ -45,15 +46,25 @@ class IndexView(object):
         # TODO:支払い方法
         
         # TODO:引き取り方法
-        
-        return dict(event=dict(id=e.id, code=e.code, title=e.title, abbreviated_title=e.abbreviated_title,
-                               first_start_on=str(e.first_start_on), final_start_on=str(e.final_start_on),
-                               sales_start_on=str(e.sales_start_on), 
-                               sales_end_on=str(e.sales_end_on),
-                               venues=venues,
-                               product=e.products,
-                    ),
+
+        if performance_id:
+            # 指定公演とそれに紐づく会場
+            selected_performance = c_models.Performance.query.filter(c_models.Performance.id==performance_id).first()
+            selected_date = selected_performance.start_on.strftime('%Y-%m-%d')
+            pass
+        else:
+            # １つ目の会場の1つ目の公演
+            selected_performance = e.performances[0]
+            selected_date = selected_performance.start_on.strftime('%Y-%m-%d')
+            pass
+
+        event = dict(id=e.id, code=e.code, title=e.title, abbreviated_title=e.abbreviated_title,
+            first_start_on=str(e.first_start_on), final_start_on=str(e.final_start_on),
+            sales_start_on=str(e.sales_start_on), sales_end_on=str(e.sales_end_on), venues=venues, product=e.products, )
+
+        return dict(event=event,
                     dates=dates,
+                    selected=Markup(json.dumps([selected_performance.id, selected_date])),
                     venues_selection=Markup(json.dumps(select_venues)),
                     order_url=self.request.route_url("cart.order"))
 

@@ -7,11 +7,13 @@
  */
 
 var carts = {};
-carts.init = function(venues_selection) {
+carts.init = function(venues_selection, selected) {
     var model = new carts.Model(venues_selection);
     var presenter = new carts.Presenter(model);
     carts.appView = new carts.AppView();
     carts.appView.init(presenter);
+    $('#date-select').val(selected[1]);
+    $('#date-select').change();
 };
 
 

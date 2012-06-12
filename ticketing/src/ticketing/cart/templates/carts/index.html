@@ -13,10 +13,11 @@
 <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/jquery.js')}"></script>
 <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/carts.js')}"></script>
 <script>
+    var selected = ${selected};
     var venues_selection = ${venues_selection};
     var order_url = "${order_url}";
     $(function() {
-        carts.init(venues_selection);
+        carts.init(venues_selection, selected);
     })
 </script>
 </head>
