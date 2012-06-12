@@ -12,18 +12,19 @@ from altaircms.plugins.base.mixins import HandleWidgetMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
 
-HEADING_DISPATCH = {
-    u"チケットスター：詳細ページタイトル": u'<h1 id="%s" class="detail-title">%s</h1>', 
-    u"チケットスター：トップページ見出し": u'<h2 id="%s" class="index heading">%s</h2>',  #/static/ticketstar/css/custom.css
-    u"チケットスター：スポーツ見出し": u'<h2 id="%s" class="sports heading">%s</h2>',  #/static/ticketstar/css/custom.css
-    u"チケットスター：音楽見出し": u'<h2 id="%s" class="music heading">%s</h2>',  #/static/ticketstar/css/custom.css
-    u"チケットスター：演劇見出し": u'<h2 id="%s" class="stage heading">%s</h2>',  #/static/ticketstar/css/custom.css
-    u"チケットスター：その他見出し": u'<h2 id="%s" class="other heading">%s</h2>',  #/static/ticketstar/css/custom.css
-    u"チケットスター：ヘルプページ見出し": u'<h2 id="%s" class="help heading">%s</h2>',  #/static/ticketstar/css/custom.css
-    u"チケットスター：公演中止情報ページ見出し":  u'<h2 id="%s" class="change heading">%s</h2>',  #/static/ticketstar/css/custom.css
-    u"チケットスター：サイドバー見出し": u'<h2 id="%s" class="sidebar-heading">%s</h2>'
-    }
-HEADING_KIND_CHOICES = [(x, x) for x in HEADING_DISPATCH]
+headings_candidates = [
+    (u"チケットスター：詳細ページタイトル", u'<h1 id="%s" class="detail-title">%s</h1>'), 
+    (u"チケットスター：トップページ見出し", u'<h2 id="%s" class="index heading">%s</h2>'),  #/static/ticketstar/css/custom.css
+    (u"チケットスター：スポーツ見出し", u'<h2 id="%s" class="sports heading">%s</h2>'),  #/static/ticketstar/css/custom.css
+    (u"チケットスター：音楽見出し", u'<h2 id="%s" class="music heading">%s</h2>'),  #/static/ticketstar/css/custom.css
+    (u"チケットスター：演劇見出し", u'<h2 id="%s" class="stage heading">%s</h2>'),  #/static/ticketstar/css/custom.css
+    (u"チケットスター：その他見出し", u'<h2 id="%s" class="other heading">%s</h2>'),  #/static/ticketstar/css/custom.css
+    (u"チケットスター：ヘルプページ見出し", u'<h2 id="%s" class="help heading">%s</h2>'),  #/static/ticketstar/css/custom.css
+    (u"チケットスター：公演中止情報ページ見出し",  u'<h2 id="%s" class="change heading">%s</h2>'),  #/static/ticketstar/css/custom.css
+    (u"チケットスター：サイドバー見出し", u'<h2 id="%s" class="sidebar-heading">%s</h2>')
+]
+HEADING_DISPATCH = dict(headings_candidates)
+HEADING_KIND_CHOICES = [(x, x) for x, _ in headings_candidates]
 
 class HeadingWidget(Widget):
     implements(IWidget)

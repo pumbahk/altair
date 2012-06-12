@@ -10,6 +10,8 @@ def includeme(config):
     config.add_route("heading_widget_update", "/widget/heading/update", factory=HeadingWidgetResource)
     config.add_route("heading_widget_dialog", "/widget/heading/dialog", factory=HeadingWidgetResource)
 
+    config.add_route("api_heading_title", "/widget/heading/api/title", factory=HeadingWidgetResource)
+
     settings = {
         "model": HeadingWidget, 
         "name": HeadingWidget.type, 

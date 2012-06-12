@@ -38,3 +38,13 @@ class HeadingWidgetView(object):
         widget = context.get_widget(self.request.GET.get("pk"))
         form = forms.HeadingForm(**widget.to_dict())
         return {"widget": widget, "form": form}
+
+@view_config(route_name="api_heading_title", renderer="json")
+def api_heading_title(request):
+    from altaircms.page.models import Page
+    page = Page.query.filter_by(id=request.GET.get("page")).first()
+
+    if page:
+        return {"name": page.name}
+    else:
+        return {"name": ""}
