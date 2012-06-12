@@ -4,7 +4,7 @@ from ticketing.seed import DataSet
 from ..core.models import *
 
 from account import AccountData
-from .event import EventData, SalesSegmentEvent1Data, SalesSegmentEvent2Data, PerformanceEvent1Data, PerformanceEvent2Data
+from .event import EventData, SalesSegmentEvent1Data, SalesSegmentEvent2Data, SalesSegmentEvent3Data, PerformanceEvent1Data, PerformanceEvent2Data, PerformanceEvent3Data
 
 class StockTypeEvent1Data(DataSet):
     class stock_type_1:
@@ -48,6 +48,23 @@ class StockTypeEvent2Data(DataSet):
         name = u'C席'
         event = EventData.event_2
         style = {"text": "", "stroke": {"color": "#d8d8d8", "width": "1", "pattern": "dotted"}, "fill": {"color": "#cc8080"}}
+        type = StockTypeEnum.Seat.v
+
+class StockTypeEvent3Data(DataSet):
+    class stock_type_1:
+        name = u'アリーナ席'
+        event = EventData.event_3
+        style = {"text": "", "stroke": {"color": "#000000", "width": "1", "pattern": "solid"}, "fill": {"color": "#d8d8d8"}}
+        type = StockTypeEnum.Seat.v
+    class stock_type_2:
+        name = u'一般席'
+        event = EventData.event_3
+        style = {"text": "", "stroke": {"color": "#d8d8d8", "width": "1", "pattern": "solid"}, "fill": {"color": "#ffec9f"}}
+        type = StockTypeEnum.Seat.v
+    class stock_type_3:
+        name = u'立ち見席'
+        event = EventData.event_3
+        style = {"text": "", "stroke": {"color": "#d8d8d8", "width": "1", "pattern": "double"}, "fill": {"color": "#99b3e6"}}
         type = StockTypeEnum.Seat.v
 
 class ProductEvent1Data(DataSet):
@@ -114,6 +131,38 @@ class ProductEvent2Data(DataSet):
         sales_segment = SalesSegmentEvent2Data.sales_segment_2
         event = EventData.event_2
 
+class ProductEvent3Data(DataSet):
+    class product_1:
+        name = u"アリーナ席大人"
+        price = 5000
+        status = None
+        sales_segment = SalesSegmentEvent3Data.sales_segment_1
+        event = EventData.event_3
+    class product_2:
+        name = u"アリーナ席子供"
+        price = 4000
+        status = None
+        sales_segment = SalesSegmentEvent3Data.sales_segment_1
+        event = EventData.event_3
+    class product_3:
+        name = u"一般席大人"
+        price = 3000
+        status = None
+        sales_segment = SalesSegmentEvent3Data.sales_segment_1
+        event = EventData.event_3
+    class product_4:
+        name = u"一般席子供"
+        price = 2000
+        status = None
+        sales_segment = SalesSegmentEvent3Data.sales_segment_1
+        event = EventData.event_3
+    class product_5:
+        name = u"立ち見席"
+        price = 1000
+        status = None
+        sales_segment = SalesSegmentEvent3Data.sales_segment_1
+        event = EventData.event_3
+
 class StockHolderEvent1(DataSet):
     class stock_holder_1:
         name = u'招待枠'
@@ -177,6 +226,13 @@ class StockHolderEvent2(DataSet):
         event = EventData.event_2
         account = AccountData.account_3
         style = {"text": "e", "text_color": "#d9ccbf"}
+
+class StockHolderEvent3(DataSet):
+    class stock_holder_1:
+        name = u'自社'
+        event = EventData.event_3
+        account = AccountData.account_1
+        style = {"text": "自", "text_color": "#d9ccbf"}
 
 class StockEvent1Performance1Data(DataSet):
     class stock_1:
@@ -513,6 +569,23 @@ class StockEvent2Performance3Data(DataSet):
         performance = PerformanceEvent2Data.performance_3
         stock_type = StockTypeEvent2Data.stock_type_4
         stock_holder = StockHolderEvent2.stock_holder_5
+
+class StockEvent3Performance1Data(DataSet):
+    class stock_1:
+        quantity = 20
+        performance = PerformanceEvent3Data.performance_1
+        stock_type = StockTypeEvent3Data.stock_type_1
+        stock_holder = StockHolderEvent3.stock_holder_1
+    class stock_2:
+        quantity = 30
+        performance = PerformanceEvent3Data.performance_1
+        stock_type = StockTypeEvent3Data.stock_type_2
+        stock_holder = StockHolderEvent3.stock_holder_1
+    class stock_3:
+        quantity = 40
+        performance = PerformanceEvent3Data.performance_1
+        stock_type = StockTypeEvent3Data.stock_type_3
+        stock_holder = StockHolderEvent3.stock_holder_1
 
 class StockStatusEvent1Performance1Data(DataSet):
     class stock_status_1:
@@ -866,6 +939,23 @@ class StockAllocationEvent2Performance3Data(DataSet):
         performance = PerformanceEvent2Data.performance_3
         quantity = 6
 
+class StockAllocationEvent3Performance1Data(DataSet):
+    class stock_allocation_1:
+        stock_type = StockTypeEvent3Data.stock_type_1
+        performance = PerformanceEvent3Data.performance_1
+        quantity = 100
+        quantity_only = True
+    class stock_allocation_2:
+        stock_type = StockTypeEvent3Data.stock_type_2
+        performance = PerformanceEvent3Data.performance_1
+        quantity = 200
+        quantity_only = True
+    class stock_allocation_3:
+        stock_type = StockTypeEvent3Data.stock_type_3
+        performance = PerformanceEvent3Data.performance_1
+        quantity = 300
+        quantity_only = True
+
 class ProductItemEvent1Performance1Data(DataSet):
     class productitem_1:
         quantity = 1
@@ -1202,3 +1292,28 @@ class ProductItemEvent2Performance3Data(DataSet):
         stock = StockEvent2Performance3Data.stock_5
         stock_type = StockTypeEvent2Data.stock_type_1
 
+class ProductItemEvent3Performance1Data(DataSet):
+    class productitem_1:
+        quantity = 1
+        item_type = 1
+        price = 8000
+        product = ProductEvent3Data.product_1
+        performance = PerformanceEvent3Data.performance_1
+        stock = StockEvent3Performance1Data.stock_1
+        stock_type = StockTypeEvent3Data.stock_type_1
+    class productitem_2:
+        quantity = 1
+        item_type = 2
+        price = 4000
+        product = ProductEvent3Data.product_2
+        performance = PerformanceEvent3Data.performance_1
+        stock = StockEvent3Performance1Data.stock_2
+        stock_type = StockTypeEvent3Data.stock_type_1
+    class productitem_3:
+        quantity = 1
+        item_type = 1
+        price = 7000
+        product = ProductEvent3Data.product_3
+        performance = PerformanceEvent3Data.performance_1
+        stock = StockEvent3Performance1Data.stock_3
+        stock_type = StockTypeEvent3Data.stock_type_2

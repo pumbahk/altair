@@ -36,54 +36,195 @@ body {
 .f18 { font-family: "ＭＳ Ｐ明朝"; }
 .f19 { font-family: "MS UI Gothic"; }
 
-</style>
-  <script type="text/javascript">
-var fonts = [
-];
-
-function XHR() {
-  return typeof ActiveXObject != 'undefined' ?
-      new ActiveXObject("Msxml2.XMLHTTP"):
-      new XMLHttpRequest();
+#fixtags {
+  position: absolute;
+  left: 0px;
+  top: 0px;
 }
 
+#FIXMSG01 {
+  font-family: "ＭＳ ゴシック";
+  font-size: 6.5pt;
+  position: absolute;
+  top: 159px;
+  left: 145px;
+  font-weight: bold
+}
+
+#FIXMSG02 {
+  font-family: "ＭＳ ゴシック";
+  font-size: 6pt;
+  font-weight: bold;
+  position: absolute;
+  top: 170px;
+  left: 50px;
+}
+
+/* 発券店：セブン-イレブン */
+#FIXMSG03 {
+  font-family: "ＭＳ ゴシック";
+  font-size: 6pt;
+  font-weight: bold;
+  position: absolute;
+  top: 180px;
+  left: 50px;
+}
+
+/* 払込票 */
+#FIXMSG04 {
+  font-family: "ＭＳ ゴシック";
+  font-size: 6pt;
+  font-weight: bold;
+  position: absolute;
+  top: 189px;
+  left: 50px; 
+}
+
+#FIXMSG05 {
+  font-family: "ＭＳ ゴシック";
+  font-size: 6pt;
+  font-weight: bold;
+  position: absolute;
+  top: 180px;
+  left: 420px;
+}
+
+#FIXMSG06 {
+  font-family: "ＭＳ ゴシック";
+  font-size: 6pt;
+  font-weight: bold;
+  position: absolute;
+  top: 189px;
+  left: 420px;
+}
+
+/* 再発券印字 使用していない */
+#FIXTAG01 {
+  font-family: "ＭＳ ゴシック";
+  font-size: 6pt;
+  font-weight: bold;
+  position: absolute;
+  top: 180px;
+  left: 330px;
+}
+
+/* 発券店名 */
+#FIXTAG02 {
+  font-family: "ＭＳ ゴシック";
+  font-size: 6pt;
+  font-weight: bold;
+  position: absolute;
+  top: 180px;
+  left: 83px; 
+}
+
+/* 発券店番 */
+#FIXTAG03 {
+  font-family: "ＭＳ ゴシック";
+  font-size: 7pt;
+  font-weight: bold;
+  position: absolute;
+  top: 180px;
+  left: 285px;
+}
+
+/* 発券日時 */
+#FIXTAG04 {
+  font-family: "ＭＳ ゴシック";
+  font-size: 6pt;
+  font-weight: bold;
+  position: absolute;
+  top: 189px;
+  left: 180px;
+}
+
+/* 払込票番号 */
+#FIXTAG05 {
+  font-family: "ＭＳ ゴシック";
+  font-size: 7pt;
+  font-weight: bold;
+  position: absolute;
+  top: 189px;
+  left: 83px;
+}
+
+/* 発券枚数 */
+#FIXTAG06 {
+  font-family: "ＭＳ ゴシック";
+  font-size: 7pt;
+  font-weight: bold;
+  position: absolute;
+  top: 189px;
+  left: 285px;
+}
+</style>
+  <script type="text/javascript">
+var FIXTAGS = [
+  'FIXTAG01', 'FIXTAG02', 'FIXTAG03', 'FIXTAG04', 'FIXTAG05', 'FIXTAG06'
+];
+var FIXTAG_PREFIXES = {
+  'FIXTAG02': 'セブン－イレブン　'
+};
+
 function loadXml(url, success, error) {
-  var xhr = XHR();
-  if (typeof xhr.overrideMimeType != 'undefined')
-    xhr.overrideMimeType('text/xml');
-  xhr.onreadystatechange = function() {
-    if (xhr.readyState == 4) {
-      if (xhr.status == 200 || xhr.status == 0) {
+  if (typeof window.ActiveXObject == 'undefined') {
+    var xhr = new XMLHttpRequest();
+    if (typeof xhr.overrideMimeType != 'undefined')
+      xhr.overrideMimeType('text/xml');
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState == 4) {
+        if (xhr.status != 200 && xhr.status != 0) {
+          error(xhr.status);
+          return;
+        }
+
         var xml = xhr.responseXML;
-        try {
-          if ((!xml || !xml.documentElement) && xhr.responseText) {
-            if (window.DOMParser) {
-              var parser = new window.DOMParser();
-              xml = parser.parseFromString(xhr.responseText, "text/xml");
-            } else {
-              var xml = new ActiveXObject("Microsoft.XMLDOM");
-              xml.async = false;
-              xml.load(url);
-            }
-          } else if (!xhr.responseText) {
+        if ((!xml || !xml.documentElement)) {
+          if (!xhr.responseText) {
             error('General failure');
             return;
           }
-        } catch (e) {
-          error(e.message);
-          return;
+          try {
+            var parser = new window.DOMParser();
+            xml = parser.parseFromString(xhr.responseText, "text/xml");
+          } catch (e) {
+            error(e.message);
+            return;
+          }
         }
         success(xml);
-      } else {
-        error(xhr.status);
+      }
+    };
+    try {
+      xhr.open("GET", url, true);
+      xhr.send();
+    } catch (e) {
+      error(e.message);
+    }
+  } else {
+    var xml = new ActiveXObject("Microsoft.XMLDOM");
+    var errorReported = false;
+    xml.async = true;
+    xml.onreadystatechange = function () {
+      if (xml.readyState == 4) {
+        if (xml.parseError.errorCode != 0) {
+          if (!errorReported) {
+            errorReported = true;
+            error(xml.parseError.reason);
+          }
+        } else {
+          success(xml);
+        }
+      }
+    };
+    try {
+      xml.load(url);
+    } catch (e) {
+      if (!errorReported) {
+        errorReported = true;
+        error(e.message);
       }
     }
-  };
-  try {
-    xhr.open("GET", url, true);
-    xhr.send();
-  } catch (e) {
-    error(e.message);
   }
 }
 
@@ -520,6 +661,19 @@ function newHandler(n, xmldoc) {
   };
 }
 
+function populateFixtags(xmldoc) {
+  for (var i = 0; i < FIXTAGS.length; i++) {
+    var name = FIXTAGS[i];
+    var src = xmldoc.getElementsByTagName(name);
+    var tag = document.getElementById(name);
+    var prefix = FIXTAG_PREFIXES[name];
+    if (src.length > 0 && tag != null) {
+      var text = (prefix || "") + src[0].text;
+      tag.appendChild(document.createTextNode(text));
+    }
+  }
+}
+
 function reportError(msg) {
   var page = document.getElementById('page');
   page.innerHTML = '';
@@ -533,7 +687,7 @@ function tryWith(args, f, failure) {
   var i = 0;
   function _() {
     if (i >= args.length)
-      return failure(args);
+      return failure.apply(null, arguments);
     f(args[i++], _);
   }
   _();
@@ -548,19 +702,31 @@ window.onload = function() {
         try {
           var handler = newHandler(page, xmldoc);
           parse(stringizeXmlNodes(findXmlNode(xmldoc, xmldoc.documentElement, 'b')), handler);
+          populateFixtags(xmldoc);
         } catch (e) {
           reportError(e.message);
         }
       }, next);
     },
-    function () {
-      reportError("TS00003: Load failure");
+    function (msg) {
+      reportError("TS00003: Load failure (" + msg.replace(/[\r\n]/, '')+ ")");
     }
   );
 };
 </script>
 </head>
 <body>
-  <div id="page"></div>
+  <div id="page">
+    <div id="fixtags">
+      <div id="FIXMSG03">発券店：</div>
+      <div id="FIXMSG04">払込票：</div>
+      <div id="FIXTAG01"></div>
+      <div id="FIXTAG02"></div>
+      <div id="FIXTAG03"></div>
+      <div id="FIXTAG04"></div>
+      <div id="FIXTAG05"></div>
+      <div id="FIXTAG06"></div>
+    </div>
+  </div>
 </body>
 </html>

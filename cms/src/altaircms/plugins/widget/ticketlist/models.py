@@ -24,7 +24,7 @@ class TicketlistWidget(Widget):
     __mapper_args__ = {"polymorphic_identity": type}
     query = DBSession.query_property()
 
-    kind = sa.Column(sa.Unicode(255))
+    kind = sa.Column(sa.Unicode(255), default="normal")
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
 
     def merge_settings(self, bname, bsettings):

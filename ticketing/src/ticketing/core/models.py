@@ -445,6 +445,10 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         end_on = isodate.datetime_isoformat(self.final_start_on) if self.final_start_on else ''
         performances = Performance.query.filter_by(event_id=self.id).all()
 
+        # cmsでは日付は必須項目
+        if not (start_on and end_on) and not self.deleted_at:
+            raise Exception(u'パフォーマンスが登録されていないイベントは送信できません')
+
         data = {
             'id':self.id,
             'title':self.title,
@@ -506,6 +510,7 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 'name':self.name,
                 'start_on':start_at,
                 'end_on':end_at,
+                'seat_choice':'true' if self.seat_choice else 'false',
                 'tickets':[p.get_sync_data(performance_id) for p in products],
             }
             return data
@@ -663,6 +668,7 @@ class StockAllocation(Base, BaseModel):
     stock_type = relationship('StockType', uselist=False, backref='stock_allocations')
     performance = relationship('Performance', uselist=False, backref='stock_allocations')
     quantity = Column(Integer, nullable=False)
+    quantity_only = Column(Boolean, default=False)
 
     def save(self):
         stock_allocation = DBSession.query(StockAllocation)\
@@ -707,6 +713,7 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "Stock"
     id = Column(Identifier, primary_key=True)
     quantity = Column(Integer)
+    quantity_only = Column(Boolean, default=False)
     performance_id = Column(Identifier, ForeignKey('Performance.id'))
     stock_holder_id = Column(Identifier, ForeignKey('StockHolder.id'))
     stock_type_id = Column(Identifier, ForeignKey('StockType.id'))

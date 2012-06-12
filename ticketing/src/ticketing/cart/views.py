@@ -21,7 +21,7 @@ class IndexView(object):
         self.request = request
 
     
-    @view_config(route_name='cart.index', renderer='ticketing:templates/carts/index.html', xhr=False)
+    @view_config(route_name='cart.index', renderer='carts/index.html', xhr=False)
     def __call__(self):
         event_id = self.request.matchdict['event_id']
         e = DBSession.query(c_models.Event).filter_by(id=event_id).first()
@@ -119,6 +119,7 @@ class ReserveView(object):
             if m is None:
                 continue
             quantity = int(value)
+            logger.debug("key = %s, value = %s" % (key, value))
             if quantity == 0:
                 continue
             yield m.groupdict()['product_id'], quantity
@@ -130,10 +131,12 @@ class ReserveView(object):
         """
 
         controls = list(self.iter_ordered_items())
+        logger.debug('order %s' % controls)
         if len(controls) == 0:
             return []
 
         products = dict([(p.id, p) for p in DBSession.query(c_models.Product).filter(c_models.Product.id.in_([c[0] for c in controls]))])
+        logger.debug('order %s' % products)
 
         return [(products.get(int(c[0])), c[1]) for c in controls]
 
@@ -151,7 +154,7 @@ class ReserveView(object):
         h.set_cart(self.request, cart)
         #self.request.session['ticketing.cart_id'] = cart.id
         #self.cart = cart
-        return dict(result='OK')
+        return dict(result='OK', pyament_url=self.request.route_url("cart.payment"))
 
     def on_error(self):
         """ 座席確保できなかった場合
@@ -169,7 +172,7 @@ class PaymentView(object):
     def __init__(self, request):
         self.request = request
 
-    @view_config(route_name='cart.payment', request_method="GET")
+    @view_config(route_name='cart.payment', request_method="GET", renderer="carts/payment.html")
     def __call__(self):
         """ 支払い方法、引き取り方法選択
         """
@@ -178,10 +181,12 @@ class PaymentView(object):
 
         cart = h.get_cart(self.request)
 
-    @view_config(route_name='cart.payment.method', request_method="GET")
-    def paymentmethod(self):
-        """ 支払い方法選択後
-        """
+        methods = c_models.PaymentMethod.query.all()
+        return dict(payments=[
+            dict(url=h.get_payment_method_url(self.request, m.id), name=m.name)
+            for m in methods
+        ])
+
 
 class MultiCheckoutView(object):
     """ マルチ決済API
@@ -190,11 +195,13 @@ class MultiCheckoutView(object):
     def __init__(self, request):
         self.request = request
 
+    @view_config(route_name='payment.secure3d', request_method="POST", renderer='carts/redirect_post.html')
     def card_info_secure3d(self):
         """ カード情報入力(3Dセキュア)
         """
         form = schema.CardForm(formdata=self.request.params)
         if not form.validate():
+            logger.debug("form error %s" % (form.errors,))
             return
         assert h.has_cart(self.request)
         cart = h.get_cart(self.request)
@@ -218,12 +225,14 @@ class MultiCheckoutView(object):
             return dict(form=m_h.secure3d_acs_form(self.request, self.request.route_url('cart.secure3d_result'), enrol))
         elif enrol.is_enable_secure3d():
             # セキュア3D認証エラーだが決済APIを利用可能
-            pass
+            logger.debug("3d secure is failed ErrorCd = %s RetCd = %s" %(enrol.ErrorCd, enrol.RetCd))
+
         else:
             # セキュア3D認証エラー
+            logger.debug("3d secure is failed ErrorCd = %s RetCd = %s" %(enrol.ErrorCd, enrol.RetCd))
             pass
 
-
+    @view_config(route_name='cart.secure3d_result', request_method="POST", renderer="json")
     def card_info_secure3d_callback(self):
         """ カード情報入力(3Dセキュア)コールバック
         3Dセキュア認証結果取得
@@ -233,7 +242,7 @@ class MultiCheckoutView(object):
 
         order = self.request.session['order']
         # 変換
-        order_id = cart.id
+        order_id = str(cart.id) + "00"
         pares = multicheckout_api.get_pares(self.request)
         md = multicheckout_api.get_md(self.request)
         auth_result = multicheckout_api.secure3d_auth(self.request, order_id, pares, md)

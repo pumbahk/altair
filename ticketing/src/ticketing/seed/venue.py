@@ -108,6 +108,15 @@ class VenueEvent2Data(DataSet):
         organization = OrganizationData.organization_0
         original_venue = TemplateVenueData.venue_orig_2
 
+class VenueEvent3Data(DataSet):
+    class venue_1:
+        name = u'ブルーマンシアター'
+        sub_name = u'ブルーマンシアター'
+        performance = PerformanceEvent3Data.performance_1
+        site = SiteData.site_2
+        organization = OrganizationData.organization_0
+        original_venue = TemplateVenueData.venue_orig_2
+
 class TemplateSeatVenue1Data(DataSet):
     class seat_a1:
         l0_id = u'A1'

@@ -1,0 +1,265 @@
+
+============
+category
+============
+id, hierarchy, imgsrc, label, name, orderno, origin, pageset_id, parent_id, site_id, url
+
+============
+performance
+============
+id, backend_id, canceld, client_id, created_at, end_on, event_id, open_on, prefecture, purchase_link, start_on, title, updated_at, venue
+
+============
+ticket
+============
+id, created_at, orderno, price, sale_id, seattype, updated_at
+
+============
+site
+============
+id, client_id, created_at, description, name, updated_at, url
+
+============
+sale
+============
+id, created_at, end_on, event_id, kind, name, performance_id, start_on, updated_at
+
+============
+widget
+============
+id, created_at, disposition_id, page_id, site_id, type, updated_at
+
+============
+widget_countdown
+============
+id, created_at, disposition_id, kind, page_id, site_id, type, updated_at
+
+============
+image_asset
+============
+id, alt, created_at, created_by_id, filepath, height, mimetype, site_id, size, title, type, updated_at, updated_by_id, width
+
+============
+widget_image
+============
+id, alt, asset_id, created_at, disposition_id, href, nowrap, page_id, site_id, type, updated_at
+
+============
+widget_menu
+============
+id, created_at, disposition_id, items, page_id, site_id, type, updated_at
+
+============
+page
+============
+id, created_at, description, event_id, hash_url, keywords, layout_id, name, pageset_id, publish_begin, publish_end, site_id, structure, title, updated_at, url, version
+
+============
+widget_detail
+============
+id, created_at, disposition_id, kind, page_id, site_id, type, updated_at
+
+============
+widget_performancelist
+============
+id, created_at, disposition_id, page_id, site_id, type, updated_at
+
+============
+widget_anchorlist
+============
+id, created_at, disposition_id, page_id, site_id, type, updated_at
+
+============
+widget_reuse
+============
+id, attrs, created_at, disposition_id, height, page_id, site_id, source_page_id, type, updated_at, width
+
+============
+widget_calendar
+============
+id, calendar_type, created_at, disposition_id, from_date, page_id, site_id, to_date, type, updated_at
+
+============
+widget_heading
+============
+id, created_at, disposition_id, kind, page_id, site_id, text, type, updated_at
+
+============
+flash_asset
+============
+id, alt, created_at, created_by_id, filepath, height, imagepath, mimetype, site_id, size, title, type, updated_at, updated_by_id, width
+
+============
+widget_flash
+============
+id, asset_id, created_at, disposition_id, page_id, site_id, type, updated_at
+
+============
+widget_breadcrumbs
+============
+id, created_at, disposition_id, page_id, site_id, type, updated_at
+
+============
+widget_summary
+============
+id, created_at, disposition_id, items, page_id, site_id, type, updated_at
+
+============
+widget_movie
+============
+id, asset_id, created_at, disposition_id, page_id, site_id, type, updated_at
+
+============
+movie_asset
+============
+id, alt, created_at, created_by_id, filepath, height, imagepath, mimetype, site_id, size, title, type, updated_at, updated_by_id, width
+
+============
+widget_text
+============
+id, created_at, disposition_id, page_id, site_id, text, type, updated_at
+
+============
+widget_promotion
+============
+id, created_at, disposition_id, kind, page_id, promotion_id, site_id, type, updated_at
+
+============
+promotion
+============
+id, name, site_id
+
+============
+promotion_unit
+============
+id, link, main_image_id, pageset_id, promotion_id, text, thumbnail_id
+
+============
+widget_ticketlist
+============
+id, created_at, disposition_id, kind, page_id, site_id, type, updated_at
+
+============
+topcontent
+============
+id, bound_page_id, client_id, countdown_type, created_at, image_asset_id, is_global, is_vetoed, kind, linked_page_id, orderno, publish_close_on, publish_open_on, site_id, subkind, text, title, updated_at
+
+============
+widget_topic
+============
+id, created_at, display_count, display_event, display_global, display_page, disposition_id, kind, page_id, site_id, subkind, topic_type, type, updated_at
+
+============
+topic
+============
+id, bound_page_id, client_id, created_at, event_id, is_global, is_vetoed, kind, linked_page_id, orderno, publish_close_on, publish_open_on, site_id, subkind, text, title, updated_at
+
+============
+widget_purchase
+============
+id, created_at, disposition_id, external_link, kind, page_id, site_id, type, updated_at
+
+============
+widget_linklist
+============
+id, created_at, delimiter, disposition_id, finder_kind, max_items, page_id, site_id, type, updated_at
+
+============
+widget_iconset
+============
+id, created_at, disposition_id, kind, page_id, site_id, type, updated_at
+
+============
+role
+============
+id, name
+
+============
+apikey
+============
+id, apikey, client_id, created_at, name, updated_at
+
+============
+oauth_token
+============
+created_at, token, updated_at
+
+============
+client
+============
+id, address, contract_status, created_at, email, name, prefecture, updated_at
+
+============
+role_permissions
+============
+id, name, role_id
+
+============
+operator
+============
+id, auth_source, client_id, created_at, date_joined, last_login, oauth_token, oauth_token_secret, screen_name, updated_at, user_id
+
+============
+asset
+============
+id, created_at, created_by_id, site_id, title, type, updated_at, updated_by_id
+
+============
+layout
+============
+id, blocks, client_id, created_at, site_id, template_filename, title, updated_at
+
+============
+widgetdisposition
+============
+id, blocks, created_at, is_public, owner_id, site_id, structure, title, updated_at
+
+============
+pagesets
+============
+id, event_id, name, parent_id, url, version_counter
+
+============
+page_default_info
+============
+id, description, keywords, pageset_id, title_fmt, url_fmt
+
+============
+user
+============
+id, created_at, email, is_active, is_administrator, site_id, updated_at
+
+============
+order_history
+============
+id, created_at, ticket_id, updated_at, user_id
+
+============
+event
+============
+id, backend_id, client_id, created_at, deal_close, deal_open, description, event_close, event_open, inquiry_for, is_searchable, place, subtitle, title, updated_at
+
+============
+pagetag2page
+============
+id, object_id, tag_id
+
+============
+assettag
+============
+id, created_at, label, publicp, type, updated_at
+
+============
+hotword
+============
+id, created_at, enablep, name, orderno, site_id, tag_id, term_begin, term_end, updated_at
+
+============
+pagetag
+============
+id, created_at, label, publicp, updated_at
+
+============
+assettag2asset
+============
+id, object_id, tag_id

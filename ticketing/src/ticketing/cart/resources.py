@@ -151,6 +151,13 @@ class TicketingCartResrouce(object):
         m.DBSession.flush()
         return cart
 
+    def _create_cart_with_quantity(self, stock_quantity, ordered_products):
+        cart = m.Cart()
+        cart.add_products(ordered_products)
+        m.DBSession.add(cart)
+        m.DBSession.flush()
+        return cart
+
     # TODO: それぞれのテストパターンを増やす
     # 問題となったパターン (暫定対応の条件追加済)
     # パフォーマンスがことなるプロダクトアイテムまで参照しにいってしまう
@@ -167,6 +174,7 @@ class TicketingCartResrouce(object):
         :returns: :class:`.models.Cart`
         """
 
+        logger.debug("order performance_id = %s, ordered_products = %s" % (performance_id, ordered_products))
         m.DBSession.bind.echo = True
         conn = m.DBSession.bind.connect()
         try:
@@ -179,26 +187,34 @@ class TicketingCartResrouce(object):
             trans.commit()
 
             # TODO: 数受けの場合は座席確保しない
-            trans = conn.begin()
-            seat_statuses = self._get_seats(conn, stock_quantity)
-            if not seat_statuses:
-                trans.rollback() # 確保失敗 ロールバックして戻り
+            seat_statuses = []
+            if False:
                 trans = conn.begin()
-                for stock_id, quantity in stock_quantity:
-                    up = c_models.StockStatus.__table__.update().values(
-                            {"quantity": c_models.StockStatus.quantity + quantity}
-                    ).where(c_models.StockStatus.stock_id==stock_id)
-                    affected = conn.execute(up).rowcount
+                seat_statuses = self._get_seats(conn, stock_quantity)
+                if not seat_statuses:
+                    trans.rollback() # 確保失敗 ロールバックして戻り
+                    trans = conn.begin()
+                    for stock_id, quantity in stock_quantity:
+                        up = c_models.StockStatus.__table__.update().values(
+                                {"quantity": c_models.StockStatus.quantity + quantity}
+                        ).where(c_models.StockStatus.stock_id==stock_id)
+                        affected = conn.execute(up).rowcount
+                    trans.commit()
+                    return
                 trans.commit()
-                return
-            trans.commit()
 
 
             trans = conn.begin()
             # TODO: ここでも例外処理で在庫戻しが必要
             cart = None
-            if seat_statuses:
+            if False: # QAのため数受け処理のみ
                 cart = self._create_cart(seat_statuses, ordered_products)
+                cart.performance_id = performance_id
+            else:
+                # 数受けの場合は数量を渡す
+                cart = self._create_cart_with_quantity(stock_quantity, ordered_products)
+                cart.performance_id = performance_id
+
             trans.commit()
             logger.info("cart created id = %d" % cart.id)
             return cart

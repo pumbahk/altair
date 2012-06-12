@@ -10,6 +10,7 @@
     route_path = request.route_path('payment_delivery_method_pairs.new', sales_segment_id=sales_segment.id)
 %>
 
+% if payment_methods:
 <script type="text/javascript">
   var payment_method_data = {
     % for payment_method in payment_methods:
@@ -33,6 +34,7 @@
     }).change();
   });
 </script>
+% endif
 
 <div class="row-fluid">
   <%include file="/parts/_menu.html" />

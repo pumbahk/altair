@@ -77,7 +77,7 @@ class WidgetDisposition(BaseOriginalMixin, Base): #todo: rename
     title = sa.Column(sa.Unicode(255))
     site_id = sa.Column(sa.Integer, sa.ForeignKey("site.id"))
 
-    structure = sa.Column(sa.String(255), default=Page.DEFAULT_STRUCTURE) # same as: Page.structure
+    structure = sa.Column(sa.Text, default=Page.DEFAULT_STRUCTURE) # same as: Page.structure
     blocks = sa.Column(sa.String(255), default=Layout.DEFAULT_BLOCKS) # same as: Layout.blocks
 
     is_public = sa.Column(sa.Boolean, default=False)

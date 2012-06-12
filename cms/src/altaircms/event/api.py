@@ -38,7 +38,7 @@ class Scanner(object):
             try:
                 ticket.name = ticket_record['name']
                 ticket.price = ticket_record['price']
-                ticket.seat_type = ticket_record['seat_type']
+                ticket.seattype = ticket_record['seat_type']
             except KeyError as e:
                 raise "missing property '%s' in the ticket record" % e.message
             self.current_ticket = ticket
@@ -102,7 +102,7 @@ class Scanner(object):
         else:
             event = Event()
             try:
-                event.backend_event_id = event_record['id']
+                event.backend_id = event_record['id']
                 event.title = event_record['title']
                 event.subtitle = event_record.get('subtitle', '')
                 event.event_open = parse_datetime(event_record['start_on'])

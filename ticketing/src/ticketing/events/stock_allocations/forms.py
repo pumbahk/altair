@@ -11,15 +11,12 @@ from ticketing.core.models import Stock
 
 class StockAllocationForm(Form):
     stock_type_id = HiddenField(
-        label='',
         validators=[Required()]
     )
     venue_id = HiddenField(
-        label='',
         validators=[]
     )
     performance_id = HiddenField(
-        label='',
         validators=[]
     )
     quantity = TextField(

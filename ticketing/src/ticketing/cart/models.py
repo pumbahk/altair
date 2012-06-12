@@ -30,6 +30,19 @@ from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm.exc import NoResultFound
 
 from ..core import models as c_models
+
+class PaymentMethodManager(object):
+    def __init__(self):
+        self.route_map = {}
+
+    def add_route_name(self, payment_method_id, route_name):
+        self.route_map[payment_method_id] = route_name
+
+    def get_route_name(self, payment_method_id):
+        return self.route_map.get(payment_method_id)
+
+
+
 Base = sqlahelper.get_base()
 DBSession = sqlahelper.get_session()
 
@@ -125,6 +138,10 @@ class CartedProduct(Base):
             seats = cart_product_item.pop_seats(seats)
         return seats
 
+    def adjust_items(self):
+        for product_item in self.product.items:
+            cart_product_item = CartedProductItem(carted_product=self, quantity=self.quantity, product_item=product_item)
+
     @classmethod
     def get_reserved_amount(cls, product_item):
         return DBSession.query(sql.func.sum(cls.amount)).filter(cls.product_item==product_item).filter(cls.state=="reserved").first()[0] or 0
@@ -188,6 +205,12 @@ class Cart(Base):
             cart_product = CartedProduct(cart=self, product=ordered_product, quantity=quantity)
             seats = cart_product.pop_seats(seats)
         # CartProductでseatsから必要な座席を取り出し
+
+    def add_products(self, ordered_products):
+        for ordered_product, quantity in ordered_products:
+            # ordered_productでCartProductを作成
+            cart_product = CartedProduct(cart=self, product=ordered_product, quantity=quantity)
+            cart_product.adjust_items()
 
     def finish(self):
         """ 決済完了

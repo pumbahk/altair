@@ -9,6 +9,9 @@ import wtforms.ext.sqlalchemy.fields as extfields
 from altaircms.lib.formhelpers import dynamic_query_select_field_factory
 from altaircms.helpers.formhelpers import required_field, append_errors
 
+
+from altaircms.models import DBSession
+
 from ..event.models import Event
 from altaircms.models import Performance
 from ..plugins.widget.promotion.models import Promotion
@@ -24,6 +27,14 @@ def import_symbol(symbol):
     return pkg_resources.EntryPoint.parse("x=%s" % symbol).load(False)
 
 
+"""
+class ISlackOffForm(Interface):
+    __display_fields__ = Attribute("display fields")
+    def configure(request):
+        pass
+    def object_validate(obj=None):
+        pass
+"""
 class LayoutForm(Form):
     title = fields.TextField(u'タイトル', validators=[validators.Required()])
     template_filename = fields.TextField(u'テンプレートファイル名', validators=[validators.Required()])
@@ -118,6 +129,7 @@ class PromotionForm(Form):
     ## site
     __display_fields__ = [u"name"]
 
+_hierarchy_choices = [(x, x) for x in [u"大", u"中", u"小", "top_couter", "top_inner", "masked"]]
 class CategoryForm(Form):
     name = fields.TextField(label=u"カテゴリ名")
     origin = fields.TextField(label=u"分類")
@@ -126,7 +138,11 @@ class CategoryForm(Form):
         Category, allow_blank=False, label=u"親カテゴリ",
         get_label=lambda obj: obj.label or u"--なし--")
 
-    hierarchy = fields.SelectField(label=u"階層", choices=[(x, x) for x in [u"大", u"中", u"小"]])
+    pageset = dynamic_query_select_field_factory(
+        PageSet, allow_blank=False, label=u"リンク先ページ(CMSで作成したもの)",
+        get_label=lambda obj: obj.name or u"--なし--")
+    hierarchy = fields.SelectField(label=u"階層", choices=_hierarchy_choices)
+    # hierarchy = fields.SelectField(label=u"階層")
     imgsrc = fields.TextField(label=u"imgsrc(e.g. /static/ticketstar/img/common/header_nav_top.gif)")
     url = fields.TextField(label=u"リンク(外部ページのURL)")
     pageset = dynamic_query_select_field_factory(
@@ -138,8 +154,15 @@ class CategoryForm(Form):
                           u"parent", u"hierarchy", 
                           u"imgsrc", u"url", u"pageset", 
                           u"orderno"]
+
+    # def configure(self, request):
+    #     qs = DBSession.query(Category.hierarchy)
+    #     if hasattr(request, "site"):
+    #         qs = qs.filter_by(site=request.site)
+    #     self.hierarchy.choices = qs
+
     # ## delete validateion
-    # def validate(self, extra_validators=None):
+    # def object_validate(self, obj=None):
     #     import sqlalchemy.orm as orm
     #     super(CategoryForm, self).validate(extra_validators=extra_validators)
 
@@ -164,7 +187,7 @@ def as_filter(kwargs):
 
 
 class CategoryFilterForm(Form):
-    hierarchy = fields.SelectField(label=u"階層", choices=[("__None", "----------")]+[(x, x) for x in [u"大", u"中", u"小"]])
+    hierarchy = fields.SelectField(label=u"階層", choices=[("__None", "----------")]+_hierarchy_choices)
     parent = dynamic_query_select_field_factory(
         Category, allow_blank=True, blank_text=u"----------", label=u"親カテゴリ",
         get_label=lambda obj: obj.label or u"---名前なし---")

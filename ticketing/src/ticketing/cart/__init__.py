@@ -1,3 +1,5 @@
+# -*- coding:utf-8 -*-
+
 from pyramid.config import Configurator
 from pyramid.session import UnencryptedCookieSessionFactoryConfig
 from sqlalchemy import engine_from_config
@@ -9,14 +11,36 @@ logger = logging.getLogger(__name__)
 my_session_factory = UnencryptedCookieSessionFactoryConfig('itsaseekreet')
 
 def includeme(config):
-    config.add_route('cart.index', '/events/{event_id}')
+    # ディレクティブ
+    config.add_directive("add_payment_method", ".directives.add_payment_method")
+    # 購入系
+    config.add_route('cart.index', 'events/{event_id}')
     config.add_route('cart.seat_types', 'events/{event_id}/performances/{performance_id}/seat_types')
     config.add_route('cart.products', 'events/{event_id}/performances/{performance_id}/seat_types/{seat_type_id}/products')
     config.add_route('cart.order', 'order')
     config.add_route('cart.payment', 'payment')
-    config.add_route('cart.payment.method', 'payment/{payment_method}')
+
+    # 決済系(マルチ決済)
+    config.add_route("payment.secure3d", 'payment/3d')
+    config.add_route("cart.secure3d_result", 'payment/3d/result')
+
+    # 決済系(あんしん決済)
+    config.add_route("payment.checkout", 'payment/checkout')
+
+    # 決済系(セブンイレブン)
+    config.add_route("payment.sej", 'payment/sej')
+    # 完了／エラー
 
     config.add_subscriber('.subscribers.add_helpers', 'pyramid.events.BeforeRender')
+
+    # 決済方法登録
+    # セブンイレブン
+    # 安心決済
+    # クレジットカード／マルチ決済
+    config.add_payment_method('1', 'payment.sej')
+    config.add_payment_method('2', 'payment.checkout')
+    config.add_payment_method('3', 'payment.secure3d')
+
 
 def main(global_config, **settings):
     engine = engine_from_config(settings)
