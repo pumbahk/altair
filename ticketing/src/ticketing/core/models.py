@@ -295,10 +295,6 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     product_items = relationship('ProductItem', backref='performance')
     venue = relationship('Venue', uselist=False, backref='performance')
 
-    @property
-    def accounts(self):
-        return Account.filter().join(Account.stock_holders).filter(StockHolder.event_id==self.event_id).all()
-
     def add(self):
         BaseModel.add(self)
 
@@ -390,6 +386,10 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     _first_performance = None
     _final_performance = None
+
+    @property
+    def accounts(self):
+        return Account.filter().join(Account.stock_holders).filter(StockHolder.event_id==self.id).all()
 
     @property
     def sales_start_on(self):

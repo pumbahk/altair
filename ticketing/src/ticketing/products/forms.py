@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
+from decimal import Decimal
+
 from wtforms import Form
 from wtforms import TextField, SelectField, IntegerField, DecimalField, SelectMultipleField, HiddenField
 from wtforms.validators import Length, NumberRange, EqualTo, Optional, ValidationError
 
 from ticketing.formhelpers import Translations, Required
-from ticketing.core.models import SalesSegment, ProductItem, StockHolder, Stock
+from ticketing.core.models import SalesSegment, Product, ProductItem, StockHolder, Stock
 
 class ProductForm(Form):
 
@@ -74,33 +76,30 @@ class ProductItemForm(Form):
         return Translations()
 
     id = HiddenField(
-        label='',
         validators=[Optional()]
     )
     performance_id = HiddenField(
-        label='',
         validators=[Required()]
     )
     product_id = HiddenField(
-        label='',
         validators=[Required()]
     )
     price = TextField(
-        label=u'価格',
+        label=u'単価',
         validators=[Required()]
     )
     quantity = IntegerField(
-        label=u'個数',
+        label=u'販売単位 (席数・個数)',
         validators=[Required()]
     )
     stock_holders = SelectField(
-        label=u'商品構成',
+        label=u'配券先',
         validators=[Required()],
         choices=[],
         coerce=int
     )
     stock_id = SelectField(
-        label=u'在庫数',
+        label=u'席種・その他',
         validators=[Required()],
         choices=[],
         coerce=int
@@ -114,3 +113,9 @@ class ProductItemForm(Form):
             }
             if ProductItem.filter_by(**conditions).first():
                 raise ValidationError(u'既に登録済みの在庫です')
+
+    def validate_price(form, field):
+        if field.data and form.product_id.data:
+            product = Product.get(form.product_id.data)
+            if product and product.price < Decimal(field.data):
+                raise ValidationError(u'商品合計金額以内で入力してください')

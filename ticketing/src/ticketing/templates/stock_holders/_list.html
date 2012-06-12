@@ -12,7 +12,7 @@
   }
 </style>
 
-% for account in performance.accounts:
+% for account in performance.event.accounts:
   <h4>${account.name}</h4>
   % for stock_holder in performance.event.stock_holders:
     % if stock_holder.account.user.id == account.user.id:
