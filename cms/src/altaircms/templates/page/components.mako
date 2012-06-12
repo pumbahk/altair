@@ -126,7 +126,7 @@ event = page.event or page.pageset.event
       <div id="flash"  class="widget green float-left">flash</div>
       <div id="movie"  class="widget gray float-left">動画</div>
       <div id="calendar"  class="widget green float-left">カレンダー</div>
-      <div id="detail"  class="widget blue float-left">イベント詳細</div>
+      <!-- <div id="detail"  class="widget blue float-left">イベント詳細</div> -->
       <div id="ticketlist"  class="widget red float-left">チケットリスト</div>
       <div id="performancelist"  class="widget red float-left">公演リスト</div>
       <div id="menu"  class="widget red float-left">メニュー</div>
@@ -135,7 +135,7 @@ event = page.event or page.pageset.event
       <div id="topic"  class="widget red float-left">トピック</div>
       <div id="breadcrumbs"  class="widget red float-left">パンくずリスト</div>
       <div id="countdown"  class="widget red float-left">カウントダウン</div>
-      <div id="reuse"  class="widget red float-left">reuse</div>
+      <!-- <div id="reuse"  class="widget red float-left">reuse</div> -->
       <div id="linklist"  class="widget red float-left">リンクリスト</div>
       <div id="heading"  class="widget red float-left">見出し</div>
       <div id="promotion"  class="widget red float-left">プロモーション枠</div>
@@ -175,7 +175,7 @@ event = page.event or page.pageset.event
 ## todo: moveit
 <script type="text/javascript" src="/plugins/static/js/widget/lib/calendar.js"></script>
 ## todo: moveit
-<script type="text/javascript" src="/plugins/static/js/widget/lib/detail.js"></script>
+##<script type="text/javascript" src="/plugins/static/js/widget/lib/detail.js"></script>
 ## todo: moveit
 <script type="text/javascript" src="/plugins/static/js/widget/lib/ticketlist.js"></script>
 ## todo: moveit
@@ -191,7 +191,7 @@ event = page.event or page.pageset.event
 ## todo: moveit
 <script type="text/javascript" src="/plugins/static/js/widget/lib/countdown.js"></script>
 ## todo: moveit
-<script type="text/javascript" src="/plugins/static/js/widget/lib/reuse.js"></script>
+##<script type="text/javascript" src="/plugins/static/js/widget/lib/reuse.js"></script>
 ## todo: moveit
 <script type="text/javascript" src="/plugins/static/js/widget/lib/iconset.js"></script>
 ## todo: moveit

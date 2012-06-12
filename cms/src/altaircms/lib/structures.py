@@ -12,7 +12,7 @@ class StrictDict(dict):
     def __getitem__(self, k):
         v = super(StrictDict, self).__getitem__(k)
         if v is None:
-            raise KeyError("strict dict not support getting None value")
+            raise KeyError(u".%s is not found (strict dict not support getting None value)" % k)
         return v
         
 

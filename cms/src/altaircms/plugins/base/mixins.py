@@ -21,7 +21,7 @@ class HandleWidgetMixin(object):
     implements(IHandleWidget)
     WidgetClass = None
     def _get_or_create(self, model, widget_id):
-        if widget_id is None:
+        if widget_id is None or widget_id=="null":
             return model()
         else:
             return DBSession.query(model).filter(model.id == widget_id).one()

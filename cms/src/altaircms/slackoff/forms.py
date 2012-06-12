@@ -1,4 +1,6 @@
 # -*- coding:utf-8 -*-
+
+import json
 from wtforms.form import Form
 from wtforms import fields
 from wtforms import widgets
@@ -35,12 +37,25 @@ class ISlackOffForm(Interface):
     def object_validate(obj=None):
         pass
 """
+
+def validate_blocks(form, field):
+    ## + complete json
+    ## + elements of field.data is list like object
+    try:
+        if not all(hasattr(x, "__iter__") for x in json.loads(field.data)):
+            raise ValueError("")
+    except ValueError:
+        raise validators.ValidationError(u'正しいjson形式で入力してください(e.g. [["top"], ["left", "right"], ["bottom"]]) ')
+
 class LayoutForm(Form):
     title = fields.TextField(u'タイトル', validators=[validators.Required()])
     template_filename = fields.TextField(u'テンプレートファイル名', validators=[validators.Required()])
-    blocks = fields.TextField(u'ブロック', validators=[validators.Required()])
+    blocks = fields.TextField(u'ブロック', validators=[validators.Required(), validate_blocks])
 
     __display_fields__ = [u"title", u"template_filename", u"blocks"]
+
+    def validate_template_filename(form, field):
+        pass
     
 class PerformanceForm(Form):
     title = fields.TextField(label=u"公演タイトル")
