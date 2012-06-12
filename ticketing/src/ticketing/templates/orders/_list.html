@@ -4,48 +4,54 @@
 <% paging = False if limit else True %>
 
 % if orders:
-  <table class="table table-striped table-bordered">
-    <thead>
-    <tr>
-      <th class="span1"></th>
-      <th class="span1">${h.sortable(form.id)}</th>
-      <th class="span2">${h.sortable(form.created_at)}</th>
-      <th class="span2">${h.sortable(form.total_amount)}</th>
-      <th class="span2">ユーザー</th>
-      % if detail:
-      <th>イベント</th>
-      <th class="span2">日時</th>
-      <th>会場</th>
-      % endif
-    </tr>
-    </thead>
-    <tbody>
-    % for i, order in enumerate(orders):
+  <% i = 0 %>
+  % for i, order in enumerate(orders):
     <% if limit and i >= limit: break %>
-    <tr>
-      <td></td>
-      <td>${order.id}</td>
-      <td><a href="${request.route_path('orders.show', order_id=order.id)}">${h.safe_strftime(order.created_at)}</a></td>
-      <td>${h.price_format(order.total_amount)}円</td>
-      <td>${order.user.user_profile.nick_name}</td>
-      % if detail:
-      <td>${order.ordered_products[0].product.event.title}</td>
-      <td>${order.ordered_products[0].ordered_product_items[0].product_item.performance.start_on}</td>
-      <td>${order.ordered_products[0].ordered_product_items[0].product_item.performance.venue.name}</td>
-      % endif
-    </tr>
-    % if detail:
-    <tr>
-      <td colspan="8">
-        % for ordered_product in order.ordered_products:
-        <span class="ordered-item">${ordered_product.product.name} ${h.price_format(ordered_product.product.price)}円</span>
-        % endfor
-      </td>
-    </tr>
+    % if i == 0:
+    <table class="table table-striped table-bordered">
+      <thead>
+      <tr>
+        <th class="span1"></th>
+        <th class="span1">${h.sortable(form.id)}</th>
+        <th class="span2">${h.sortable(form.created_at)}</th>
+        <th class="span2">${h.sortable(form.total_amount)}</th>
+        <th class="span2">ユーザー</th>
+        % if detail:
+        <th>イベント</th>
+        <th class="span2">日時</th>
+        <th>会場</th>
+        % endif
+      </tr>
+      </thead>
+      <tbody>
     % endif
-    % endfor
-    </tbody>
-  </table>
+      <tr>
+        <td></td>
+        <td>${order.id}</td>
+        <td><a href="${request.route_path('orders.show', order_id=order.id)}">${h.safe_strftime(order.created_at)}</a></td>
+        <td>${h.price_format(order.total_amount)}円</td>
+        <td>${order.user.user_profile.nick_name}</td>
+        % if detail:
+        <td>${order.ordered_products[0].product.event.title}</td>
+        <td>${order.ordered_products[0].ordered_product_items[0].product_item.performance.start_on}</td>
+        <td>${order.ordered_products[0].ordered_product_items[0].product_item.performance.venue.name}</td>
+        % endif
+      </tr>
+      % if detail:
+      <tr>
+        <td colspan="8">
+          % for ordered_product in order.ordered_products:
+          <span class="ordered-item">${ordered_product.product.name} ${h.price_format(ordered_product.product.price)}円</span>
+          % endfor
+        </td>
+      </tr>
+      % endif
+  % else:
+    % if i > 0:
+      </tbody>
+    </table>
+    % endif
+  % endfor
 % endif
 
 % if paging:
