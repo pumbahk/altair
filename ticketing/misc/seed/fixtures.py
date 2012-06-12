@@ -7,8 +7,11 @@ from itertools import chain
 from fixture import rel, auto, Data as _Data, DataSuite, DataWalker
 from collections import OrderedDict
 import logging
+import hashlib
 
 logger = logging.getLogger('fixtures')
+
+SALT = '5t&a'; # gotanda
 
 stock_type_pairs = [
     (u'S席', 0),
@@ -363,7 +366,6 @@ site_names = [
     u'サンポートホール高松 大ホール',
     u'鹿児島市民文化ホール 第一ホール',
     u'愛知芸術文化センター 愛知県芸術劇場コンサートホール',
-    u'【数字】阪神甲子園球場',
     u'オリンパスホール八王子',
     u'グリーンホール相模大野',
     u'サンケイホールブリーゼ',
@@ -481,6 +483,169 @@ payment_delivery_method_pair_matrix = [
     [ False, False, True ],
     ]
 
+bank_pairs = [
+    (u"0001", u" みずほ銀行"),    
+    (u"0005", u" 三菱東京ＵＦＪ銀行"),    
+    (u"0009", u" 三井住友銀行"),    
+    (u"0010", u" りそな銀行"),    
+    (u"0016", u" みずほコーポレート銀行"),    
+    (u"0017", u" 埼玉りそな銀行"),    
+    (u"0033", u" ジャパンネット銀行"),    
+    (u"0034", u" セブン銀行"),
+    (u"0035", u" ソニー銀行"),
+    (u"0036", u" 楽天銀行"),
+    (u"0037", u" 日本振興銀行"),
+    (u"0116", u" 北海道銀行"),
+    (u"0117", u" 青森銀行"),
+    (u"0118", u" みちのく銀行"),
+    (u"0119", u" 秋田銀行"),
+    (u"0120", u" 北都銀行"),
+    (u"0121", u" 荘内銀行"),    
+    (u"0122", u" 山形銀行"),    
+    (u"0123", u" 岩手銀行"),    
+    (u"0124", u" 東北銀行"),    
+    (u"0125", u" 七十七銀行"),    
+    (u"0126", u" 東邦銀行"),    
+    (u"0128", u" 群馬銀行"),    
+    (u"0129", u" 足利銀行"),    
+    (u"0130", u" 常陽銀行"),    
+    (u"0131", u" 関東つくば銀行"),    
+    (u"0133", u" 武蔵野銀行"),    
+    (u"0134", u" 千葉銀行"),    
+    (u"0135", u" 千葉興業銀行"),    
+    (u"0137", u" 東京都民銀行"),    
+    (u"0138", u" 横浜銀行"),    
+    (u"0140", u" 第四銀行"),    
+    (u"0141", u" 北越銀行"),    
+    (u"0142", u" 山梨中央銀行"),    
+    (u"0143", u" 八十二銀行"),    
+    (u"0144", u" 北陸銀行"),    
+    (u"0145", u" 富山銀行"),    
+    (u"0146", u" 北國銀行"),    
+    (u"0147", u" 福井銀行"),    
+    (u"0149", u" 静岡銀行"),    
+    (u"0150", u" スルガ銀行"),    
+    (u"0151", u" 清水銀行"),    
+    (u"0152", u" 大垣共立銀行"),    
+    (u"0153", u" 十六銀行"),    
+    (u"0154", u" 三重銀行"),    
+    (u"0155", u" 百五銀行"),    
+    (u"0157", u" 滋賀銀行"),    
+    (u"0158", u" 京都銀行"),    
+    (u"0159", u" 近畿大阪銀行"),    
+    (u"0160", u" 泉州銀行"),    
+    (u"0161", u" 池田銀行"),    
+    (u"0162", u" 南都銀行"),    
+    (u"0163", u" 紀陽銀行"),    
+    (u"0164", u" 但馬銀行"),    
+    (u"0166", u" 鳥取銀行"),    
+    (u"0167", u" 山陰合同銀行"),    
+    (u"0168", u" 中国銀行"),    
+    (u"0169", u" 広島銀行"),    
+    (u"0170", u" 山口銀行"),    
+    (u"0172", u" 阿波銀行"),    
+    (u"0173", u" 百十四銀行"),    
+    (u"0174", u" 伊予銀行"),    
+    (u"0175", u" 四国銀行"),    
+    (u"0177", u" 福岡銀行"),    
+    (u"0178", u" 筑邦銀行"),    
+    (u"0179", u" 佐賀銀行"),    
+    (u"0180", u" 十八銀行"),    
+    (u"0181", u" 親和銀行"),    
+    (u"0182", u" 肥後銀行"),    
+    (u"0183", u" 大分銀行"),
+    (u"0184", u" 宮崎銀行"),
+    (u"0185", u" 鹿児島銀行"),    
+    (u"0187", u" 琉球銀行"),    
+    (u"0188", u" 沖縄銀行"),    
+    (u"0190", u" 西日本シティ銀行"),    
+    (u"0401", u" シティバンク銀行"),    
+    (u"0502", u" 札幌銀行"),    
+    (u"0508", u" きらやか銀行"),    
+    (u"0509", u" 北日本銀行"),    
+    (u"0512", u" 仙台銀行"),    
+    (u"0513", u" 福島銀行"),    
+    (u"0514", u" 大東銀行"),    
+    (u"0516", u" 東和銀行"),    
+    (u"0517", u" 栃木銀行"),    
+    (u"0519", u" 茨城銀行"),    
+    (u"0522", u" 京葉銀行"),    
+    (u"0525", u" 東日本銀行"),    
+    (u"0526", u" 東京スター銀行"),    
+    (u"0530", u" 神奈川銀行"),    
+    (u"0532", u" 大光銀行"),    
+    (u"0533", u" 長野銀行"),    
+    (u"0534", u" 富山第一銀行"),    
+    (u"0537", u" 福邦銀行"),    
+    (u"0538", u" 静岡中央銀行"),    
+    (u"0541", u" 岐阜銀行"),    
+    (u"0542", u" 愛知銀行"),    
+    (u"0543", u" 名古屋銀行"),    
+    (u"0544", u" 中京銀行"),    
+    (u"0546", u" 第三銀行"),    
+    (u"0547", u" びわこ銀行"),    
+    (u"0554", u" 関西アーバン銀行"),    
+    (u"0555", u" 大正銀行"),    
+    (u"0562", u" みなと銀行"),    
+    (u"0565", u" 島根銀行"),    
+    (u"0566", u" トマト銀行"),    
+    (u"0569", u" もみじ銀行"),    
+    (u"0570", u" 西京銀行"),    
+    (u"0572", u" 徳島銀行"),    
+    (u"0573", u" 香川銀行"),    
+    (u"0576", u" 愛媛銀行"),    
+    (u"0578", u" 高知銀行"),    
+    (u"0582", u" 福岡中央銀行"),    
+    (u"0583", u" 佐賀共栄銀行"),    
+    (u"0585", u" 長崎銀行"),    
+    (u"0587", u" 熊本ファミリー銀行"),    
+    (u"0590", u" 豊和銀行"),    
+    (u"0591", u" 宮崎太陽銀行"),    
+    (u"0594", u" 南日本銀行"),    
+    (u"0596", u" 沖縄海邦銀行"),    
+    (u"0597", u" 八千代銀行"),
+    ]
+
+role_seeds = {
+    u'administrator': [
+        (u'administrator', 1),
+        (u'asset_editor', 1),
+        (u'event_viewer', 1),
+        (u'event_editor', 1),
+        (u'topic_viewer', 1),
+        (u'ticket_editor', 1),
+        (u'magazine_viewer', 1),
+        (u'magazine_editor', 1),
+        (u'asset_viewer', 1),
+        (u'asset_editor', 1),
+        (u'page_viewer', 1),
+        (u'page_editor', 1),
+        (u'tag_editor', 1),
+        (u'layout_viewer', 1),
+        (u'layout_editor', 1),
+        ],
+    u'superuser': [
+        (u'event_viewer', 1),
+        (u'event_editor', 1),
+        (u'topic_viewer', 1),
+        (u'ticket_editor', 1),
+        (u'magazine_viewer', 1),
+        (u'magazine_editor', 1),
+        (u'asset_viewer', 1),
+        (u'asset_editor', 1),
+        (u'page_viewer', 1),
+        (u'page_editor', 1),
+        (u'tag_editor', 1),
+        (u'layout_viewer', 1),
+        (u'layout_editor', 1),
+        ],
+    }
+
+operator_seeds = {
+    u'Administrator': [ u'administrator' ],
+    u'オペレータ': [ u'superuser' ],
+    }
+
 class Data(_Data):
     def __init__(self, schema, **fields):
         _Data.__init__(self, schema, auto('id'), **fields)
@@ -504,6 +669,15 @@ def build_site_datum(name):
 
 sites = [build_site_datum(name) for name in site_names]
 
+banks = [
+    Data(
+        'Bank',
+        code=code,
+        name=name
+        ) \
+    for code, name in bank_pairs
+    ]
+
 payment_method_plugin_data = [
     Data(
         'PaymentMethodPlugin',
@@ -519,6 +693,28 @@ delivery_method_plugin_data = [
         ) \
     for name in delivery_method_names
     ]
+
+operator_role_map = dict(
+    (
+        name,
+        Data(
+            'OperatorRole',
+            name=name,
+            permissions=rel(
+                [Data(
+                    'Permission',
+                    category_name=category_name,
+                    permit=permit
+                    ) \
+                for category_name, permit in permissions
+                ],
+                'operator_role_id'
+                ),
+            status=1
+            )
+        ) \
+    for name, permissions in role_seeds.iteritems()
+    )
 
 def build_payment_method_datum(organization, payment_method_plugin):
     return Data(
@@ -542,7 +738,8 @@ def build_account_datum(name, type):
     return Data(
         'Account',
         name=name,
-        account_type=type
+        account_type=type,
+        user_id=build_user_datum()
         )
 
 def build_seat_datum(group_l0_id, l0_id, stock):
@@ -655,6 +852,82 @@ def build_venue_datum(organization, site, stock_sets):
         )
     return retval
 
+def build_bank_account_datum():
+    return Data(
+        'BankAccount',
+        bank_id=choice(banks),
+        account_type=1,
+        account_number=u''.join(choice(u'0123456789') for _ in range(0, 7)),
+        account_owner=u'ラクテン タロウ'
+        )
+
+def build_user_datum():
+    return Data(
+        'User',
+        bank_account_id=build_bank_account_datum(),
+        user_profile=rel(
+            [_Data(
+                'UserProfile',
+                'user_id',
+                email=lambda self: "dev+test%03d@ticketstar.jp" % self._id[0],
+                nick_name=lambda self: "dev+test%03d@ticketstar.jp" % self._id[0],
+                first_name=lambda self: u"太郎%d" % self._id[0],
+                last_name=u"楽天",
+                first_name_kana=u"タロウ",
+                last_name_kana=u"ラクテン",
+                birth_day=date(randint(1930, 2000), randint(1, 12), 1) + relativedelta(days=randint(0, 30)),
+                sex=1,
+                zip="251-0036",
+                prefecture=u"東京都",
+                city=u"品川区",
+                street=u"",
+                address=u"東五反田5-21-15'",
+                other_address=u"メタリオンOSビル",
+                tel_1=u"03-9999-9999",
+                tel_2=u"090-0000-0000",
+                fax=u"03-9876-5432"
+                )],
+            'user_id'
+            )
+        )
+
+def build_operator_datum(name, operator_roles):
+    return Data(
+        'Operator',
+        name=name,
+        email=lambda self: 'dev+test%03d@ticketstar.jp' % self._id[0],
+        roles=rel(
+            operator_roles,
+            'operator_id',
+            'operator_role_id',
+            'OperatorRole_Operator'
+            ),
+        expire_at=None,
+        status=1,
+        auth=rel([
+            _Data(
+                'OperatorAuth',
+                'operator_id',
+                login_id=lambda self: 'dev+test%03d@ticketstar.jp' % self._id[0],
+                password=hashlib.md5('admin').hexdigest(),
+                auth_code=u'auth_code',
+                access_token=u'access_token',
+                secret_key=u'secret_key'
+                )],
+            'operator_id'
+            )
+        )
+
+def gendigest(password):
+    return hashlib.sha1(SALT + password).hexdigest()
+
+def build_user_credential(user):
+    return Data(
+        'UserCredential',
+        auth_identifier=user.email,
+        auth_secret=gendigest("asdfasdf")
+        )
+
 def build_organization_datum(name):
     logger.info(u"Building Organization %s" % name)
     retval = Data(
@@ -664,6 +937,17 @@ def build_organization_datum(name):
         accounts=rel(
             [build_account_datum(name, type) for name, type in account_pairs],
             'organization_id'
+            ),
+        operators=rel(
+            [
+                build_operator_datum(
+                    operator_name,
+                    [operator_role_map[role_name] \
+                     for role_name in role_names]
+                    ) \
+                for operator_name, role_names in operator_seeds.iteritems()
+                ],
+            'organization_id',
             )
         )
     payment_method_data = [
@@ -808,7 +1092,8 @@ def build_stock_type_datum(name, type):
     return Data(
         'StockType',
         name=name,
-        type=type
+        type=type,
+        style=u'{}'
         )
 
 def build_product_item(performance, product, stock, price, quantity):
@@ -869,7 +1154,8 @@ def build_event_datum(organization, title):
         Data(
             'StockHolder',
             name=account.name,
-            account_id=account
+            account_id=account,
+            style=u'{}'
             ) \
         for account in organization.accounts
         ]

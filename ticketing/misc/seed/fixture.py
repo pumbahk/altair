@@ -4,6 +4,7 @@ import logging
 import re
 import datetime
 from itertools import chain
+from types import FunctionType
 
 ESCAPE_TABLE = {
     u"\a": u"\\a",
@@ -79,6 +80,10 @@ class Data(object):
         self._fields = {}
         for k, v in fields.iteritems():
             setattr(self, k, v)
+
+    @property
+    def _id(self):
+        return tuple(getattr(self, k) for k in self._id_fields)
 
     def __setattr__(self, k, v):
         if k.startswith('_'):
@@ -240,7 +245,7 @@ class DataWalker(object):
                 elif isinstance(value, Data):
                     self(value)
                     self.digraph.add_reference(data._schema, value._schema)
-                elif not isinstance(value, basestring):
+                elif not isinstance(value, basestring) and value is not None:
                     collection_iter = None
                     try:
                         collection_iter = iter(value)
@@ -270,6 +275,8 @@ class SQLBuilder(object):
             return u"'%s'" % scalar.strftime("%H:%M:%S")
         elif isinstance(scalar, (float, int, long)):
             return u'%d' % scalar
+        elif scalar is None:
+            return u'NULL'
         else:
             raise Exception("Unsupported type: " + type(scalar).__name__)
 
@@ -308,9 +315,11 @@ class SQLSerializer(object):
                                                 else cmp(a[0], b[0]))):
                     if isinstance(v, rel):
                         continue
-                    if isinstance(v, Data):
+                    elif isinstance(v, Data):
                         if len(v._id_fields) != 1:
                             raise Exception("Number of id fields must be 1 when referring to %s" % v._schema)
                         v = getattr(v, v._id_fields[0])
+                    elif isinstance(v, FunctionType):
+                        v = v(data)
                     values.append((k, v))
                 builder.insert(data._schema, values)
