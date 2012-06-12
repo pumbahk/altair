@@ -129,12 +129,6 @@ class SeatAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__   = "Seat"
-    __table_args__  = (
-        ForeignKeyConstraint(
-            ['venue_id', 'group_l0_id'],
-            [VenueArea_group_l0_id.venue_id, VenueArea_group_l0_id.group_l0_id]
-            ),
-        )
 
     id              = Column(Identifier, primary_key=True)
     l0_id           = Column(String(255))
@@ -149,7 +143,13 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     stock           = relationship("Stock", backref='seats')
 
     attributes      = relationship("SeatAttribute", backref='seat', cascade='save-update, merge')
-    areas           = relationship("VenueArea", secondary=VenueArea_group_l0_id.__table__, backref="seats")
+    areas           = relationship("VenueArea",
+                                   primaryjoin=lambda:and_(
+                                        Seat.venue_id==VenueArea_group_l0_id.venue_id,
+                                        Seat.group_l0_id==VenueArea_group_l0_id.group_l0_id),
+                                   secondary=VenueArea_group_l0_id.__table__,
+                                   secondaryjoin=VenueArea_group_l0_id.venue_area_id==VenueArea.id,
+                                   backref="seats")
     adjacencies     = relationship("SeatAdjacency", secondary=seat_seat_adjacency_table, backref="seats")
     _status = relationship('SeatStatus', uselist=False, backref='seat') # 1:1
 
