@@ -5,6 +5,7 @@ from decimal import Decimal
 from wtforms import Form
 from wtforms import TextField, SelectField, IntegerField, DecimalField, SelectMultipleField, HiddenField
 from wtforms.validators import Length, NumberRange, EqualTo, Optional, ValidationError
+from sqlalchemy.sql import func
 
 from ticketing.formhelpers import Translations, Required
 from ticketing.core.models import SalesSegment, Product, ProductItem, StockHolder, Stock
@@ -49,6 +50,20 @@ class ProductForm(Form):
         choices=[],
         coerce=int
     )
+
+    def validate_price(form, field):
+        if field.data and form.id.data:
+            product = Product.get(form.id.data)
+            for performance in product.event.performances:
+                conditions = {
+                    'performance_id':performance.id,
+                    'product_id':form.id.data,
+                }
+                sum_amount = ProductItem.filter_by(**conditions)\
+                                        .with_entities(func.sum(ProductItem.price))\
+                                        .scalar() or 0
+                if Decimal(field.data) < Decimal(sum_amount):
+                    raise ValidationError(u'既に登録された商品合計金額以上で入力してください')
 
 
 class ProductItemForm(Form):
@@ -117,5 +132,14 @@ class ProductItemForm(Form):
     def validate_price(form, field):
         if field.data and form.product_id.data:
             product = Product.get(form.product_id.data)
-            if product and product.price < Decimal(field.data):
+            conditions = {
+                'performance_id':form.performance_id.data,
+                'product_id':form.product_id.data,
+            }
+            sum_amount = ProductItem.filter(ProductItem.id!=form.id.data)\
+                                    .filter_by(**conditions)\
+                                    .with_entities(func.sum(ProductItem.price))\
+                                    .scalar() or 0
+            sum_amount = Decimal(field.data) + Decimal(sum_amount)
+            if product and product.price < sum_amount:
                 raise ValidationError(u'商品合計金額以内で入力してください')
