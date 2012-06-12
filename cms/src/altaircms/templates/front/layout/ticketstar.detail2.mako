@@ -32,6 +32,9 @@
 	<%block name="css_prerender"/>
 
 	<style type="text/css">
+	  h1 {font-size:200%; }
+	  h2 {font-size:170%; }
+
       #main_left img{width:380px;}
       #main_right img{width:250px;}
       #main_left p {width:380px;}

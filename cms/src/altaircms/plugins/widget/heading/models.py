@@ -13,7 +13,7 @@ from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
 
 HEADING_DISPATCH = {
-    u"チケットスター：イベント詳細見出し": u'<h2 id="%s">%s</h2>', 
+    u"チケットスター：詳細ページタイトル": u'<h1 id="%s" class="detail-title">%s</h1>', 
     u"チケットスター：トップページ見出し": u'<h2 id="%s" class="index heading">%s</h2>',  #/static/ticketstar/css/custom.css
     u"チケットスター：スポーツ見出し": u'<h2 id="%s" class="sports heading">%s</h2>',  #/static/ticketstar/css/custom.css
     u"チケットスター：音楽見出し": u'<h2 id="%s" class="music heading">%s</h2>',  #/static/ticketstar/css/custom.css
