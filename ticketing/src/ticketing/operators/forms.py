@@ -5,7 +5,6 @@ from wtforms import TextField, HiddenField, DateField
 from wtforms.validators import Length, Email, Optional
 
 from ticketing.formhelpers import DateTimeField, Translations, Required
-from ticketing.master.models import Prefecture
 
 class OperatorRole(Form):
     pass

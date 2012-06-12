@@ -3,7 +3,6 @@
 from ticketing.seed import DataSet
 
 from bank import BankAccountData
-from prefecture import PrefectureMaster
 from ticketing.core.models import *
 
 class UserData(DataSet):

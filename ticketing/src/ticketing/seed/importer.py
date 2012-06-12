@@ -17,7 +17,6 @@ from ticketing.core.models import *
 from ticketing.sej.models import *
 
 from bank import BankData, BankAccountData
-from prefecture import PrefectureMaster
 
 from service import ServiceData
 from organization import OrganizationData
@@ -44,7 +43,6 @@ def import_seed_data():
     db_fixture = SQLAlchemyFixture(
          env={
              'ServiceData'            : Service,
-             'PrefectureMaster'       : Prefecture,
              'PermissionData'         : Permission,
              'OperatorRoleData'       : OperatorRole,
              'OperatorData'           : Operator,
@@ -178,7 +176,6 @@ def import_seed_data():
 
     data = db_fixture.data(
         ServiceData,
-        PrefectureMaster,
         PermissionData,
         BankData,
         BankAccountData,
