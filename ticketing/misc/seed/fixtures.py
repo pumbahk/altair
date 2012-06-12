@@ -818,7 +818,6 @@ def build_product_item(performance, product, stock, price, quantity):
         price=price,
         stock_id=stock,
         performance_id=performance,
-        stock_type_id=stock.stock_type_id,
         quantity=quantity
         )
 
