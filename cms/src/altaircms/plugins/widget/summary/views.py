@@ -1,4 +1,5 @@
 from pyramid.view import view_config
+from .helpers import _items_from_page
 
 class SummaryWidgetView(object):
     def __init__(self, request):
@@ -38,8 +39,11 @@ class SummaryWidgetView(object):
     def dialog(self):
         context = self.request.context
         widget = context.get_widget(self.request.GET.get("pk"))
-        if widget.items is None:
-            items = context.get_items(self.request.GET["page"])
-        else:
-            items = widget.items
+        items = widget.items or "[]"
         return {"widget": widget, "items": items}
+
+
+@view_config(route_name="api_summary_widget_data_from_db", renderer="json", request_method="GET")
+def api_summary_widget_initial_data(context, request):
+    page_id = request.GET["page"]
+    return _items_from_page(context._get_page(page_id))

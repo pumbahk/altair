@@ -21,7 +21,9 @@
     <hr/>
 
     <div id="contents">
-	  <table>
+	  <button type="button" id="reflesh_button">最初の状態に戻す</button>
+	  <button type="button" url="${request.route_path("api_summary_widget_data_from_db")}" id="load_from_api_button">登録されたデータから内容を取得</button>
+	  <table width="100%">
 		<thead>
 		  <tr><th>見出し</th><th>内容</th><th>削除</th></tr>
 		</thead>
@@ -146,6 +148,7 @@
         initialize: function(){
             this.label_input = this.$("#label_input");
             this.content_input = this.$("#content_input");
+            this._stored_data = null; //loaded data cached
             // model
             this.contentlist = new ItemList();
             this.contentlist.bind("add", this.addOne, this);
@@ -154,19 +157,43 @@
         events: {
             "keypress #label_input": "createOnEnter", 
             "keypress #content_input": "createOnEnter", 
+            "click #reflesh_button": "refleshContent",
+            "click #load_from_api_button": "loadDataFromAPI"
         }, 
         
         addOne: function(item){
             var view = new ItemView({model: item});
-            $(this.el).find("#contentlist").append(view.render().el);
+            $(this.el).find("#contentlist").append($(view.render().el).data("view",view));
         }, 
         
+        loadInitialData: function(params){
+            if(!!params){
+              this._stored_data = params;
+            }
+            return this.loadData(this._stored_data);
+        },
+
         loadData: function(params){
             var contentlist = this.contentlist
             _(params).each(function(param){
                 contentlist.create(param);
             });
         }, 
+
+        refleshContent: function(){
+           _.each($(this.el).find("#contentlist tr"), function(e){
+              var view = $(e).data("view");
+              if(!!view){view.clearSelf();}
+           });
+           this.loadData(this._stored_data);
+        },
+
+        loadDataFromAPI: function(ev){
+           var self = this;
+           // todo: fixme. current url binding is too ad-hoc.
+           var url = $(ev.currentTarget).attr("url");
+           $.getJSON(url, {"page": get_page()}).done(function(data){ self.loadData(data); });
+        },
 
         collectData: function(){
 			var get_text_or_val = function(e,expr){ 
@@ -195,6 +222,6 @@
   var root =  $("#app");
   var appview = new AppView({el: root}); 
   root.data("appview",appview);
-  appview.loadData(${items|n}); <%doc> items is mako </%doc>
+  appview.loadInitialData(${items|n}); <%doc> items is mako </%doc>
 })();
 </script>

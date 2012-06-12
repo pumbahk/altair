@@ -10,6 +10,8 @@ def includeme(config):
     config.add_route("summary_widget_update", "/widget/summary/update", factory=SummaryWidgetResource)
     config.add_route("summary_widget_dialog", "/widget/summary/dialog", factory=SummaryWidgetResource)
 
+    config.add_route("api_summary_widget_data_from_db", "/widget/summary/data_from_db", factory=SummaryWidgetResource)
+
     settings = {
         "model": SummaryWidget, 
         "name": SummaryWidget.type, 
