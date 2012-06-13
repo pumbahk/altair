@@ -6,6 +6,7 @@ from altaircms.models import Base, BaseOriginalMixin
 from altaircms.models import DBSession
 from datetime import datetime
 from datetime import timedelta
+import hashlib
 
 class Event(BaseOriginalMixin, Base):
     """
@@ -69,3 +70,23 @@ class Event(BaseOriginalMixin, Base):
         import warnings
         warnings.warn("this is dummy for ticketIcon")
         return ["icon-select", "icon-keep", "icon-official", "icon-goods", "icon-event"]
+
+
+
+# class APISingleton(Base):
+#     __tablename__ = "apisingleton"
+#     id = sa.Column(sa.Integer, primary_key=True)
+#     hashed_sha1 = sa.Column(sa.Unicode(length=40))
+#     hashed_md5 = sa.Column(sa.Unicode(length=32))
+
+#     created_at = sa.Column(sa.DateTime, default=datetime.now)
+#     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
+
+#     __table_args__ = (
+#         sa.UniqueConstraint('hashed_sha1', 'hashed_md5'),
+#         )
+
+#     def set_hashed(self, data):
+#         string = str(data)
+#         self.hashed_sha1 = hashlib.sha1(string).hexdigest
+#         self.hashed_md5 = hashlib.md5(string).hexdigest

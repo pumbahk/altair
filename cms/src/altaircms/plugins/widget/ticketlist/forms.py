@@ -17,4 +17,4 @@ class TicketlistChoiceForm(form.Form):
         if not page_id:
             return
         qs = Sale.query.filter(Event.id==Page.event_id).filter(Page.id==page_id).filter(Event.id==Sale.event_id)
-        self.kind.choices = [(s.kind, s.jkind) for s in qs]
+        self.kind.choices = [(s.kind, s.jkind) for s in set(qs)]
