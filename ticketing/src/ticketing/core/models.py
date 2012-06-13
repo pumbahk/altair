@@ -806,11 +806,12 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return data
 
     def seat_type(self, performance_id):
-        item = ProductItem.filter_by(performance_id=performance_id)\
-                          .filter_by(product_id=self.id)\
-                          .join(ProductItem.stock_type)\
-                          .filter(StockType.type==StockTypeEnum.Seat.v).first()
-        return item.stock_type.name if item else ''
+        items = ProductItem.filter_by(performance_id=performance_id)\
+                           .filter_by(product_id=self.id).all()
+        for item in items:
+            if item.stock_type.type == StockTypeEnum.Seat.v:
+                return item.stock_type.name
+        return ''
 
 class OrganizationTypeEnum(StandardEnum):
     Standard = 1
