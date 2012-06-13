@@ -8,8 +8,8 @@ from ticketing.core.models import Seat, Performance, Product, ProductItem
 from ticketing.users.models import User
 
 orders_seat_table = Table("orders_seat", Base.metadata,
-    Column("seat_id", BigInteger, ForeignKey("Seat.id")),
-    Column("OrderedProductItem_id", Integer, ForeignKey("OrderedProductItem.id")),
+    Column("seat_id", Identifier, ForeignKey("Seat.id")),
+    Column("OrderedProductItem_id", Identifier, ForeignKey("OrderedProductItem.id")),
 )
 
 

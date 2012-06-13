@@ -98,14 +98,18 @@ class IndexView(object):
         seat_type_id = self.request.matchdict['seat_type_id']
         performance_id = self.request.matchdict['performance_id']
 
+        logger.debug("seat_typeid = %(seat_type_id)s, performance_id = %(performance_id)s"
+            % dict(seat_type_id=seat_type_id, performance_id=performance_id))
+
         seat_type = DBSession.query(c_models.StockType).filter_by(id=seat_type_id).one()
 
-        q = DBSession.query(c_models.ProductItem.product_id).filter(
-            c_models.ProductItem.stock_type_id==seat_type_id).filter(
-            c_models.ProductItem.performance_id==performance_id)
-            
-        query = DBSession.query(c_models.Product).filter(
-            c_models.Product.id.in_(q))
+        q = DBSession.query(c_models.ProductItem.product_id)
+        q = q.filter(c_models.ProductItem.stock_id==c_models.Stock.id)
+        q = q.filter(c_models.Stock.stock_type_id==seat_type_id)
+        q = q.filter(c_models.ProductItem.performance_id==performance_id)
+
+        query = DBSession.query(c_models.Product)
+        query = query.filter(c_models.Product.id.in_(q))
 
         products = [dict(id=p.id, name=p.name, price=h.format_number(p.price, ","))
             for p in query]
