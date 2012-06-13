@@ -1008,13 +1008,6 @@ def build_sales_segment_datum(organization, name, start_at, end_at):
             )
         )
 
-def build_stock_allocation_datum(stock_type, quantity):
-    return Data(
-        'StockAllocation',
-        stock_type_id=stock_type,
-        quantity=quantity,
-        )
-
 def build_stock_datum(stock_type, stock_holder, quantity):
     return Data(
         'Stock',
@@ -1034,6 +1027,14 @@ def build_stock_datum(stock_type, stock_holder, quantity):
 def build_performance_datum(organization, event, name, performance_date):
     logger.info(u"Building Performance %s" % name)
 
+    retval = Data(
+        'Performance',
+        name=name,
+        open_on=datetime.combine(performance_date, time(18, 0, 0)),
+        start_on=datetime.combine(performance_date, time(19, 0, 0)),
+        end_on=datetime.combine(performance_date, time(21, 0, 0))
+        )
+
     site = choice(sites)
     site_config = site._config
     stock_allocation_data = []
@@ -1049,7 +1050,14 @@ def build_performance_datum(organization, event, name, performance_date):
             colgroup_index += 1
         else:
             quantity = randint(10, 100) * 10
-        stock_allocation_datum = build_stock_allocation_datum(stock_type, quantity)
+        stock_allocation_datum = _Data(
+            'StockAllocation',
+            ('stock_type_id', 'performance_id'),
+            stock_type_id=stock_type,
+            performance_id=retval,
+            quantity=quantity,
+            )
+        stock_allocation_data.append(stock_allocation_datum)
         rest = quantity
         for i, stock_holder in enumerate(event.stock_holders):
             assigned = rest if i == len(event.stock_holders) - 1 else randint(0, rest)
@@ -1058,26 +1066,17 @@ def build_performance_datum(organization, event, name, performance_date):
             stock_set.append(stock_datum)
             rest -= assigned
     
-    venue = build_venue_datum(organization, site, stock_sets)
-
-    retval = Data(
-        'Performance',
-        name=name,
-        open_on=datetime.combine(performance_date, time(18, 0, 0)),
-        start_on=datetime.combine(performance_date, time(19, 0, 0)),
-        end_on=datetime.combine(performance_date, time(21, 0, 0)),
-        stock_allocations=rel(
-            stock_allocation_data,
-            'performance_id'
-            ),
-        stocks=rel(
-            stock_data,
-            'performance_id'
-            ),
-        venue=rel(
-            [venue],
-            'performance_id'
-            )
+    retval.venue=rel(
+        [build_venue_datum(organization, site, stock_sets)],
+        'performance_id'
+        )
+    retval.stock_allocations=rel(
+        stock_allocation_data,
+        'performance_id'
+        )
+    retval.stocks=rel(
+        stock_data,
+        'performance_id'
         )
     retval.product_items = rel(
         list(chain(*(
