@@ -52,6 +52,18 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                              .filter(ProductItem.performance_id==id)\
                              .distinct()
 
+    @classmethod
+    def create_from_cart(cls, cart):
+        order = cls()
+        order.total_amount = cart.total_amount
+        for product in cart.products:
+            ordered_product = OrderedProduct(order=order, product=product.product, price=product.product.price, quantity=product.quantity)
+            for item in product.items:
+                ordered_product_item = OrderedProductItem(ordered_product=ordered_product, product_item=item.product_item, price=item.product_item.price)
+
+        return order
+
+
 class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrderedProduct'
     id = Column(Identifier, primary_key=True)
@@ -60,6 +72,7 @@ class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     product_id = Column(Identifier, ForeignKey("Product.id"))
     product = relationship('Product')
     price = Column(Numeric(precision=16, scale=2), nullable=False)
+    quantity = Column(Integer)
 
 class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrderedProductItem'
