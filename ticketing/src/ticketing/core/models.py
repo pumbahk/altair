@@ -495,10 +495,19 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         )
         stock_holder.save()
 
+class SalesSegmentKindEnum(StandardEnum):
+    first_lottery = u'最速抽選'
+    early_lottery = u'先行抽選'
+    eary_fisrtcome = u'先行先着'
+    normal = u'一般販売'
+    added_lottery = u'追加抽選'
+    other = u'その他'
+
 class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'SalesSegment'
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
+    kind = Column(String(255))
     start_at = Column(DateTime)
     end_at = Column(DateTime)
     upper_limit = Column(Integer)
@@ -514,6 +523,7 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             end_at = isodate.datetime_isoformat(self.end_at) if self.end_at else ''
             data = {
                 'name':self.name,
+                'kind':self.kind,
                 'start_on':start_at,
                 'end_on':end_at,
                 'seat_choice':'true' if self.seat_choice else 'false',

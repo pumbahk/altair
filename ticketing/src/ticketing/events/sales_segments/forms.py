@@ -6,6 +6,7 @@ from wtforms.validators import Regexp, Length, Optional, ValidationError
 from wtforms.widgets import CheckboxInput
 
 from ticketing.formhelpers import DateTimeField, Translations, Required
+from ticketing.core.models import SalesSegmentKindEnum
 
 class SalesSegmentForm(Form):
 
@@ -18,6 +19,12 @@ class SalesSegmentForm(Form):
     )
     event_id = HiddenField(
         validators=[Required()]
+    )
+    kind = SelectField(
+        label=u'販売区分',
+        validators=[Required()],
+        choices=[(kind.k, kind.v) for kind in SalesSegmentKindEnum],
+        coerce=str,
     )
     name = TextField(
         label=u'販売区分名',

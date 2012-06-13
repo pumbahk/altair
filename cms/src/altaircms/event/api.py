@@ -55,7 +55,7 @@ class Scanner(object):
                 sale.event = self.current_event
                 sale.performance = self.current_performance
                 sale.name = sales_segment_record['name']
-                sale.kind = sales_segment_record['name']
+                sale.kind = sales_segment_record['kind']
                 sale.start_on = parse_datetime(sales_segment_record['start_on'])
                 sale.end_on = parse_datetime(sales_segment_record['end_on'])
             except KeyError as e:
