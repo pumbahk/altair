@@ -47,8 +47,12 @@ widget.configure({
     };
 
     var collect_data = function(we, choiced_elt){
-        return {};
+        var root = $(we.dialog);
+        return {"search_query": root.find('input[name="search_query"]').val(), 
+                "title": root.find('input[name="title"]').val(), 
+                "subject": root.find('input[name="subject"]').val()};
     };
+
     return widget.include("twitter", {
         load_page: load_page, 
         on_dialog: on_dialog, 

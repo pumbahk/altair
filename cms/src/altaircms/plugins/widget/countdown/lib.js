@@ -47,8 +47,8 @@ widget.configure({
     };
 
     var collect_data = function(we, choiced_elt){
-        var root = $(we.dialog)
-        return {"kind": root.find("#kind").val()}
+        var root = $(we.dialog);
+        return {"kind": root.find("#kind").val()};
     };
     return widget.include("countdown", {
         load_page: load_page, 
