@@ -441,6 +441,7 @@ site_names = [
 
 organization_names= [
     u'楽天チケット',
+    u'楽天野球団',
     ]
 
 account_pairs = [
@@ -658,6 +659,7 @@ def build_site_datum(name):
     return Data(
         'Site',
         name=name,
+        drawing_url=lambda self:'file:src/ticketing/static/site-data/%08d.xml' % self._id[0],
         _config=dict(
             colgroups=[
                 (colgroup, u'colgroup-%s' % colgroup, [u'%s-%d' % (colgroup, i + 1) for i in range(0, randint(1, 50) * 10)]) \
@@ -715,6 +717,16 @@ operator_role_map = dict(
         ) \
     for name, permissions in role_seeds.iteritems()
     )
+
+service_data = [
+    Data(
+        'Service',
+        name=u'Altair CMS',
+        key=u'fa12a58972626f0597c2faee1454e1',
+        secret=u'c5f20843c65870fad8550e3ad1f868',
+        redirect_uri=u'http://127.0.0.1:6543/auth/oauth_callback'
+        )
+    ]
 
 def build_payment_method_datum(organization, payment_method_plugin):
     return Data(

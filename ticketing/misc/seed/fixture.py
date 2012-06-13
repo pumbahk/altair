@@ -292,7 +292,7 @@ class InsertStmtBuilder(object):
             self.flush()
             self.write("INSERT INTO %s (%s) VALUES\n" % (
                 table.encode(encoding),
-                ', '.join(k.encode(encoding) for k, v in values)))
+                ', '.join(self.builder.put_identifier(k) for k, v in values)))
         else:
             self.write(",\n")
 
@@ -318,6 +318,14 @@ class SQLBuilder(object):
 
     def __del__(self):
         self.flush()
+
+    def put_identifier(self, name):
+        if isinstance(name, str):
+            return "`%s`" % name
+        elif isinstance(name, unicode):
+            return "`%s`" % name.encode(self.encoding)
+        else:
+            raise Exception("Unsupported type: " + type(name).__name__)
 
     def put_scalar(self, scalar):
         if isinstance(scalar, str):

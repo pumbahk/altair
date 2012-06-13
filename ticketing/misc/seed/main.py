@@ -1,7 +1,7 @@
 import os
 import sys
 from locale import getpreferredencoding
-from fixtures import sites, organization_names, build_organization_datum
+from fixtures import sites, organization_names, build_organization_datum, build_user_datum, service_data
 from fixture import DataSuite, DataWalker, ReferenceGraph, SQLSerializer
 from svggen import SVGGenerator, NESW
 from lxml.etree import tostring
@@ -14,7 +14,11 @@ def main(argv):
     walker = DataWalker(suite, digraph)
 
     for organization_datum in [build_organization_datum(name) for name in organization_names]:
+        organization_datum.user_id=build_user_datum()
         walker(organization_datum)
+
+    for service_datum in service_data:
+        walker(service_datum)
 
     for site in sites:
         suite[site._schema].add(site)
