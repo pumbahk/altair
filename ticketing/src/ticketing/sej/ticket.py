@@ -20,7 +20,7 @@ def package_ticket_template_to_zip(template_id,
     archive_txt_buffer.append("TTEMPLATE.CSV")
     for sej_ticket in sej_tickets:
         if sej_ticket.ticket_html:
-            archive_txt_buffer.append("%s/%s.html" % (template_id, template_id))
+            archive_txt_buffer.append("%s/%s.htm" % (template_id, template_id))
         if sej_ticket.ticket_css:
             archive_txt_buffer.append("%s/%s.css" % (template_id, template_id))
         sej_ticket.send_at = datetime.datetime.now()
@@ -60,7 +60,7 @@ def package_ticket_template_to_zip(template_id,
 
     for sej_ticket in sej_tickets:
         if sej_ticket.ticket_html:
-            zi = ZipInfo("%s/%s.html" % (template_id, template_id), time.localtime()[:6])
+            zi = ZipInfo("%s/%s.htm" % (template_id, template_id), time.localtime()[:6])
             zi.external_attr = 0666 << 16L
             w = zf.start_entry(zi)
             w.write(sej_ticket.ticket_html)

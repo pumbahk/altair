@@ -25,20 +25,20 @@ logging.basicConfig()
 log = logging.getLogger(__file__)
 
 from sqlalchemy import and_
+from sqlalchemy.orm.exc import NoResultFound
 
 def reflect_ticketing_and_payment(notification):
-    print (
-
-    )
-    order = SejOrder.filter(
-        and_(
-            SejOrder.order_id==notification.order_id,
-            SejOrder.exchange_number==notification.exchange_number,
-            SejOrder.billing_number==notification.billing_number
-        )
-    ).one()
-
-    print order
+    try:
+        order = SejOrder.filter(
+            and_(
+                SejOrder.order_id       ==notification.order_id,
+                SejOrder.exchange_number==notification.exchange_number,
+                SejOrder.billing_number ==notification.billing_number
+            )
+        ).one()
+        print order
+    except NoResultFound, e:
+        print "Not found: %s,%s,%s" % (notification.order_id, notification.exchange_number,notification.billing_number)
 
 def dummy(notification):
     pass

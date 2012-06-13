@@ -773,7 +773,7 @@ def callback_notification(params,
         SejNotificationType.ReGrant.v           : process_re_grant,
         SejNotificationType.TicketingExpire.v   : process_expire,
     }.get(int(params['X_tuchi_type']), dummy)(int(params['X_tuchi_type']))
-    n.notification_type = int(params['X_tuchi_type'])
+    n.notification_type = params['X_tuchi_type']
     DBSession.flush()
 
     return ret
@@ -791,6 +791,7 @@ def request_cancel_event(cancel_events):
     archive_txt_body = "%s\r\n%s\r\n" % (tpboen_file_name, tpbticket_file_name)
 
     zip_file_name = "/tmp/refund_file_%s.zip" % datetime.now().strftime('%Y%m%d%H%M')
+    print zip_file_name
     zf = EnhZipFile(zip_file_name, 'w')
 
     import zipfile
@@ -826,11 +827,11 @@ def request_cancel_event(cancel_events):
             u"%02d" % cancel_event.disapproval_reason if cancel_event.disapproval_reason else '',#払戻不可理由 2固定 半角[0-9]
             u"%d" % cancel_event.need_stub,#半券要否区分 ○
             cancel_event.remarks,#備考 256以下
-            cancel_event.un_use_01,
-            cancel_event.un_use_02,
-            cancel_event.un_use_03,
-            cancel_event.un_use_04,
-            cancel_event.un_use_05,
+            cancel_event.un_use_01 if cancel_event.un_use_01 else u'',
+            cancel_event.un_use_02 if cancel_event.un_use_02 else u'',
+            cancel_event.un_use_03 if cancel_event.un_use_03 else u'',
+            cancel_event.un_use_04 if cancel_event.un_use_04 else u'',
+            cancel_event.un_use_05 if cancel_event.un_use_05 else u'',
         ])
 
 
@@ -849,13 +850,13 @@ def request_cancel_event(cancel_events):
         for ticket in cancel_event.tickets:
             ticket_tsv.writerow([
                 unicode(ticket.available),
-                ticket.shop_id,
+                cancel_event.shop_id,
                 ticket.event_code_01,
                 ticket.event_code_02,
                 ticket.order_id,
                 unicode(ticket.ticket_barcode_number),
                 unicode(ticket.refund_ticket_amount),
-                unicode(ticket.refund_amount),
+                unicode(ticket.refund_other_amount),
             ])
 
     zi = ZipInfo(tpbticket_file_name, time.localtime()[:6])

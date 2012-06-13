@@ -72,118 +72,161 @@ pc
 </TICKET>""") % dict(event_name=event_name, ticket_price=locale.format('%d', ticket_price, grouping=True), order_id=order_id, number=number,seat_number=seat_number, area=area, area_eng=area_eng)
 )
 
-payment_type_index = {
-    u'代引き発券'        : SejPaymentType.CashOnDelivery,
-    u'代引き'        : SejPaymentType.CashOnDelivery,
-    u'代引き　'        : SejPaymentType.CashOnDelivery,
-    u'払戻し（代引き）'        : SejPaymentType.CashOnDelivery,
-    u'代済み'        : SejPaymentType.Paid,
-    u'代済み発券'        : SejPaymentType.Paid,
-    u'前払い後日発券'     : SejPaymentType.Prepayment,
-    u'前払い後日発券・前払い'     : SejPaymentType.Prepayment,
-    u'前払い後日発券（前払い）'     : SejPaymentType.Prepayment,
-    u'前払い後日発券(前払い）'     : SejPaymentType.Prepayment,
-    u'前払い後日発券（発券）'     : SejPaymentType.Prepayment,
-    u'前払い後日発券・発券'     : SejPaymentType.Prepayment,
-    u'前払い後日発券(後日発券）'     : SejPaymentType.Prepayment,
-    u'前払い'          : SejPaymentType.PrepaymentOnly
-}
-
 s = {}
 import codecs
-def load_tsv_file():
-    #csv_file = codecs.open('/Users/mistat/Desktop/xmls/1.csv',"r")
-    csv_file = open('/Users/mistat/Desktop/xmls/2.csv')
-    order_id = 2000
-    seat_number = 101
-    ri = 0
-    for row in list(csv.reader(csv_file, dialect='excel'))[2:]:
-        cols = [unicode(col, 'CP932') for col in row]
-        row = cols
+def request_5():
+    k = u'0-0-0-0-0-0'
+    seq = s.setdefault(k, 0)
+    s[k] = seq + 1
+    price = 5000
+    area, area_eng = choice([(u'大阪', u'OSAKA'), (u'東京', u'TOKYO'), (u'仙台', u'SENDAI'), (u'福岡', u'FUKUOKA'), (u'北海道', u'HOKKAIDO')])
+    key = u'%s.%d' % (k, seq)
 
-        if len(cols) >= 17 and cols[16] != u'':
-            k = u'-'.join(cols[1:6])
-            seq = s.setdefault(k, 0)
-            s[k] = seq + 1
-            price = cols[13].strip()
-            area, area_eng = choice([(u'大阪', u'OSAKA'), (u'東京', u'TOKYO'), (u'仙台', u'SENDAI'), (u'福岡', u'FUKUOKA'), (u'北海道', u'HOKKAIDO')])
-            key = u'%s.%d' % (k, seq)
+    commission_fee  = 210
+    ticketing_fee   = 105
+    order_id = 3569
 
-            ticket_total    = row[12].split(u'→')[0]
-            commission_fee  = row[13].split(u'→')[0]
-            ticketing_fee   = row[14].split(u'→')[0]
-            total = row[15].split(u'→')[0]
+    order_number            = u'%012d' % order_id
 
 
-            order_number            = u'%012d' % order_id
-            order_id += 1
+    tickets = list()
+    seat_number = 1
+    rec = dict(
+        event_name=u'%s公演' % area,
+        area=area,
+        area_eng=area_eng,
+        ticket_price=int(price),
+        order_id=k,
+        number=k,
+        seat_number=int(seat_number)+10,
+        )
+    xml = create_xml(**rec)
+    ticket = dict(
+        ticket_type         = SejTicketType.TicketWithBarcode,
+        event_name          = u'%s公演' % area,
+        performance_name    = u'２０１２年０８月３１日（金）',
+        ticket_template_id  = u'TTTS000001',
+        performance_datetime= datetime.datetime(2012,8,31,18,00),
+        xml = SejTicketDataXml(xml)
+    )
+    tickets.append(ticket)
+    '''
+    seat_number+=1
 
-            total_ticket_num      = int(row[16]if row[16] else 0)
+    rec = dict(
+        event_name=u'%s公演' % area,
+        area=area,
+        area_eng=area_eng,
+        ticket_price=int(price),
+        order_id=k,
+        number=k,
+        seat_number=int(seat_number)+10,
+        )
+    xml = create_xml(**rec)
+    ticket = dict(
+        ticket_type         = SejTicketType.TicketWithBarcode,
+        event_name          = u'%s公演' % area,
+        performance_name    = u'２０１２年０８月３１日（金）',
+        ticket_template_id  = u'TTTS000001',
+        performance_datetime= datetime.datetime(2012,8,31,18,00),
+        xml = SejTicketDataXml(xml)
+    )
+    tickets.append(ticket)
+    seat_number+=1
 
-            ticket_num = total_ticket_num
+    rec = dict(
+        event_name=u'%s公演' % area,
+        area=area,
+        area_eng=area_eng,
+        ticket_price=int(price),
+        order_id=k,
+        number=k,
+        seat_number=int(seat_number)+10,
+        )
+    xml = create_xml(**rec)
+    ticket = dict(
+        ticket_type         = SejTicketType.TicketWithBarcode,
+        event_name          = u'%s公演' % area,
+        performance_name    = u'２０１２年０８月３１日（金）',
+        ticket_template_id  = u'TTTS000001',
+        performance_datetime= datetime.datetime(2012,8,31,18,00),
+        xml = SejTicketDataXml(xml)
+    )
+    tickets.append(ticket)
+    seat_number+=1
 
-            #number = "%d-%d-%d-%d-%d-%d" % (int(row[0]),int(row[1]),int(row[2]),int(row[3]),int(row[4]),int(row[5])),
-            tickets = list()
-            for i in range(0,ticket_num):
+    rec = dict(
+        event_name=u'%s公演' % area,
+        area=area,
+        area_eng=area_eng,
+        ticket_price=int(price),
+        order_id=k,
+        number=k,
+        seat_number=int(seat_number)+10,
+        )
+    xml = create_xml(**rec)
+    ticket = dict(
+        ticket_type         = SejTicketType.TicketWithBarcode,
+        event_name          = u'%s公演' % area,
+        performance_name    = u'２０１２年０８月３１日（金）',
+        ticket_template_id  = u'TTTS000001',
+        performance_datetime= datetime.datetime(2012,8,31,18,00),
+        xml = SejTicketDataXml(xml)
+    )
+    tickets.append(ticket)
+    seat_number+=1
 
-                rec = dict(
-                    event_name=u'%s公演' % area,
-                    area=area,
-                    area_eng=area_eng,
-                    ticket_price=int(price),
-                    order_id=k,
-                    number=k,
-                    seat_number=int(cols[1])+10,
-                    )
-                xml = create_xml(**rec)
-
-                ticket = dict(
-                    ticket_type         = SejTicketType.TicketWithBarcode,
-                    event_name          = u'%s公演' % area,
-                    performance_name    = u'２０１２年０８月３１日（金）',
-                    ticket_template_id  = u'TTTS000001',
-                    performance_datetime= datetime.datetime(2012,8,31,18,00),
-                    xml = SejTicketDataXml(xml)
-                )
-                tickets.append(ticket)
-                seat_number += 1
-
-            pppp =  row[7].split("\r\n")[0]
-            #print pppp
-
-            payment_due_at    = parse(row[17])
-            ticketing_due_at  = parse(row[18])
-            ticketing_start_at= parse(row[19].split(u'→')[0])
-            if payment_type_index[pppp] == SejPaymentType.Prepayment or payment_type_index[pppp] == SejPaymentType.CashOnDelivery:
-                if payment_due_at == ticketing_due_at:
-                    ticketing_due_at = ticketing_due_at + datetime.timedelta(minutes=10)
+    rec = dict(
+        event_name=u'%s公演' % area,
+        area=area,
+        area_eng=area_eng,
+        ticket_price=int(price),
+        order_id=k,
+        number=k,
+        seat_number=int(seat_number)+10,
+        )
+    xml = create_xml(**rec)
+    ticket = dict(
+        ticket_type         = SejTicketType.TicketWithBarcode,
+        event_name          = u'%s公演' % area,
+        performance_name    = u'２０１２年０８月３１日（金）',
+        ticket_template_id  = u'TTTS000001',
+        performance_datetime= datetime.datetime(2012,8,31,18,00),
+        xml = SejTicketDataXml(xml)
+    )
+    tickets.append(ticket)
+    print tickets
+'''
 
 
-            o = request_order(
-                order_id = order_number,
-                total               = int(total),
-                ticket_total        = int(ticket_total),
-                ticketing_fee       = int(ticketing_fee),
-                commission_fee      = int(commission_fee),
-                payment_due_at    = payment_due_at,
-                ticketing_due_at  = ticketing_due_at,
-                ticketing_start_at= ticketing_start_at,
-                shop_name           = u'楽天チケット',
-                contact_01          = u'00-0000-0000',
-                                       #０１２３４５６７８９０１２３４５６７８０
-                contact_02          = u'電話：０３−９８７６−５４３２',
-                username            = u'試験ユーザー',
-                username_kana       = u'テストユーザー',
-                tel                 = u'0000000000',
-                zip                 = u'1070062',
-                email               = u'dev+sejtest@ticketstar.jp',
-                payment_type        = payment_type_index[pppp],
-                regrant_number_due_at = datetime.datetime(2012,7,9,23,59,59),
-                tickets = tickets,
+    payment_due_at    = datetime.datetime(2012,6,20,22,59)
+    ticketing_due_at  = datetime.datetime(2012,6,20,23,59)
+    ticketing_start_at= datetime.datetime(2012,6,13,23,59)
 
-            )
-            print "%s,%s" %(o.billing_number,o.exchange_number)
-            break
+    ticket_total = int(price)*len(tickets)
+    o = request_order(
+        order_id = order_number,
+        total               = ticket_total+ticketing_fee+commission_fee,
+        ticket_total        = ticket_total,
+        ticketing_fee       = int(ticketing_fee),
+        commission_fee      = int(commission_fee),
+        payment_due_at    = payment_due_at,
+        ticketing_due_at  = ticketing_due_at,
+        ticketing_start_at= ticketing_start_at,
+        shop_name           = u'楽天チケット',
+        contact_01          = u'00-0000-0000',
+        contact_02          = u'楽天チケット お問い合わせセンター 050-5830-6860',
+        username            = u'試験ユーザー',
+        username_kana       = u'テストユーザー',
+        tel                 = u'0000000000',
+        zip                 = u'1070062',
+        email               = u'dev+sejtest@ticketstar.jp',
+        payment_type        = SejPaymentType.Paid,
+        regrant_number_due_at = datetime.datetime(2012,7,9,23,59,59),
+        tickets = tickets,
+
+    )
+    print "%s,%s" %(o.billing_number,o.exchange_number)
 
 
 def main(argv=sys.argv):
@@ -211,7 +254,7 @@ def main(argv=sys.argv):
 
     log.debug('test')
 
-    load_tsv_file()
+    request_5()
 
 if __name__ == u"__main__":
     main(sys.argv)

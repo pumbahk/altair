@@ -141,7 +141,7 @@ class SejOrderForm(Form):
         validators=[Optional()],
     )
 
-    tickets = FieldList(FormField(SejTicketForm), min_entries=20)
+    #tickets = FieldList(FormField(SejTicketForm), min_entries=20)
 
 
 
