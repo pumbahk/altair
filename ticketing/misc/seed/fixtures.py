@@ -1102,6 +1102,7 @@ def build_product_item(performance, product, stock, price, quantity):
         item_type=1,
         price=price,
         stock_id=stock,
+        product_id=product,
         performance_id=performance,
         quantity=quantity
         )
