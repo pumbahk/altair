@@ -25,6 +25,7 @@ class OrderTests(unittest.TestCase):
                     items=[
                         c_models.CartedProductItem(
                             product_item=core_models.ProductItem(price=100.00),
+                            seats=[core_models.Seat(id=3333)],
                         ),
                     ],
                     product=core_models.Product(
@@ -46,3 +47,6 @@ class OrderTests(unittest.TestCase):
         self.assertEqual(len(ordered_product.ordered_product_items), 1)
         ordered_product_item = ordered_product.ordered_product_items[0]
         self.assertEqual(ordered_product_item.price, 100.00)
+        self.assertEqual(len(ordered_product_item.seats), 1)
+        seat = ordered_product_item.seats[0]
+        self.assertEqual(seat.id, 3333)

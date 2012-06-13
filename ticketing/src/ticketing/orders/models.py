@@ -7,6 +7,12 @@ from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, I
 from ticketing.core.models import Seat, Performance, Product, ProductItem
 from ticketing.users.models import User
 
+orders_seat_table = Table("orders_seat", Base.metadata,
+    Column("seat_id", BigInteger, ForeignKey("Seat.id")),
+    Column("OrderedProductItem_id", Integer, ForeignKey("OrderedProductItem.id")),
+)
+
+
 class ShippingAddress(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'ShippingAddress'
     id = Column(Identifier, primary_key=True)
@@ -59,9 +65,13 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         order = cls()
         order.total_amount = cart.total_amount
         for product in cart.products:
-            ordered_product = OrderedProduct(order=order, product=product.product, price=product.product.price, quantity=product.quantity)
+            ordered_product = OrderedProduct(
+                order=order, product=product.product, price=product.product.price, quantity=product.quantity)
             for item in product.items:
-                ordered_product_item = OrderedProductItem(ordered_product=ordered_product, product_item=item.product_item, price=item.product_item.price)
+                ordered_product_item = OrderedProductItem(
+                    ordered_product=ordered_product, product_item=item.product_item, price=item.product_item.price,
+                    seats=item.seats,
+                )
 
         return order
 
@@ -83,6 +93,7 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     ordered_product = relationship('OrderedProduct', backref='ordered_product_items')
     product_item_id = Column(Identifier, ForeignKey("ProductItem.id"))
     product_item = relationship('ProductItem')
-    seat_id = Column(Identifier, ForeignKey('Seat.id'))
-    seat = relationship('Seat')
+#    seat_id = Column(Identifier, ForeignKey('Seat.id'))
+#    seat = relationship('Seat')
+    seats = relationship("Seat", secondary=orders_seat_table)
     price = Column(Numeric(precision=16, scale=2), nullable=False)
