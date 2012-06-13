@@ -18,7 +18,7 @@
   <hr size="2" noshade="noshade" color="#bf0000" />
   <br />
   <div style="background-color:#ffffbb" bgcolor="#ffffbb">
-  <form action="${request.route_path("mobile_page_search")}" class="searchbox"><font size="3">
+  <form action="http://ticket.rakuten.co.jp/mobile/s/" class="searchbox"><font size="3">
     &#xe691;チケット検索<br />
     <input class="text_field" type="text" name="q" value="" /><input type="submit" value="検索" />
   </font>
@@ -57,22 +57,22 @@
       <a href="static/features/rakutenopen/index.html?top">楽天・ジャパン・オープン・テニス・チャンピオンシップス2012</a>
        <br clear="all" style="clear:both" />
       <img src="http://rakuten-ticket-static.s3-ap-northeast-1.amazonaws.com/images/uploaded/62e3fcee-143c-48fb-9676-6b0345c281f7.jpg" align="left" width="{$pickItem.mobileImage.width}" height="{$pickItem.mobileImage.height}">
-      <a href="s/259Fウ讌ス/2581%259D2581ョ莉%2596/LOVE-1+FESTIVAL+SEASON+2/!KMLFS">LOVE-1 FESTIVAL SEASON 2</a>
+      <a href="s/�%259F�楽/�%2581%259D�%2581��%2596/LOVE-1+FESTIVAL+SEASON+2/!KMLFS">LOVE-1 FESTIVAL SEASON 2</a>
        <br clear="all" style="clear:both" />
       <img src="http://rakuten-ticket-static.s3-ap-northeast-1.amazonaws.com/images/uploaded/c5da9ff3-fd88-458c-9ae6-5c452df9ebe2.jpg" align="left" width="{$pickItem.mobileImage.width}" height="{$pickItem.mobileImage.height}">
       <a href="static/features/tube/index.html?event">TUBE ROUND SPECIAL 2012</a>
        <br clear="all" style="clear:both" />
       <img src="http://rakuten-ticket-static.s3-ap-northeast-1.amazonaws.com/images/uploaded/bdda4878-49e5-4803-bce9-53c130f2cc64.jpg" align="left" width="{$pickItem.mobileImage.width}" height="{$pickItem.mobileImage.height}">
-      <a href="s/薀259F恰ソ/礇2582%2583❼%2582激%2583%25832582ッ/2583%2587礇2582ｃ%2582冴%2583%258B礇2583若%2583祉%2582⒢%2583潟%2583祉%2582%2583❼%2582激%2583%25832582ッ+2580%259C礇2581障%2581祉%2581%25862581ョ螟%259C礇2581㍼%259F恰ソ篌%259A+2012+Dreams+Come+True/!SPDMD">ディズニー・オン・クラシック 〜まほうの夜の音楽会 2012 Dreams Come True</a>
+      <a href="s/�%259F�楽/�%2582��%2583��%2582��%2583%2583�%2582�/�%2583%2587�%2582��%2582��%2583%258B�%2583��%2583��%2582��%2583��%2583��%2582��%2583��%2582��%2583%2583�%2582�+�%2580%259C�%2581��%2581��%2581%2586�%2581��%259C�%2581��%259F�楽�%259A+2012+Dreams+Come+True/!SPDMD">ディズニー・オン・クラシック 〜まほうの夜の音楽会 2012 Dreams Come True</a>
        <br clear="all" style="clear:both" />
       <img src="http://rakuten-ticket-static.s3-ap-northeast-1.amazonaws.com/images/uploaded/b2b4b220-fca1-45d2-b74f-a6e8e23ef1cb.jpg" align="left" width="{$pickItem.mobileImage.width}" height="{$pickItem.mobileImage.height}">
       <a href="s/!SCSMS">サンドウィッチマン ライブツアー2012《先行販売》</a>
        <br clear="all" style="clear:both" />
       <img src="http://rakuten-ticket-static.s3-ap-northeast-1.amazonaws.com/images/uploaded/e697f052-a498-468f-a4d3-339d0a03203d.jpg" align="left" width="{$pickItem.mobileImage.width}" height="{$pickItem.mobileImage.height}">
-      <a href="s/礇2582ゃ%2583%2599礇2583潟%2583%2588/礇2583%2596礇2583❼%2582鴻%2583%2588鐚%2581鐚%2592鐚%2590鐚%2591鐚%2592鐚%2588筝㊤%259B遵%259C井%2596鴻%2583私259D蟾%259E絅259C井%2596鴻%2583紙2596邵%2584鐚%2589/!KNBLS">ブラスト！２０１２（中国・九州・沖縄）</a>
+      <a href="s/�%2582��%2583%2599�%2583��%2583%2588/�%2583%2596�%2583��%2582��%2583%2588�%2581�%2592�%2590�%2591�%2592�%2588中�%259B��%259C��%2596��%2583��%259D�%259E�%259C��%2596��%2583��%2596�%2584�%2589/!KNBLS">ブラスト！２０１２（中国・九州・沖縄）</a>
        <br clear="all" style="clear:both" />
       <img src="http://rakuten-ticket-static.s3-ap-northeast-1.amazonaws.com/images/uploaded/da3d1ace-b545-47a3-b03f-56f5e5905414.jpg" align="left" width="{$pickItem.mobileImage.width}" height="{$pickItem.mobileImage.height}">
-      <a href="s/2594絅258A%2587礇2583祉%2583%259F礇2583ャ%2583若%2582吾%2582%2583貍%2594258A%2587/2598%258E豐サ蠎ァ2589オ讌ュ1402591ィ蟷エ險%2598蠢オ+258C%2597絣銀2589薀2583%258E腑2589劫%2588ュ%25852594/!MJKSK">譏取イサ蠎ァ蜑オ讌ュ140蜻ィ蟷エ險伜ソオ 蛹怜ウカ荳蛾ヮ迚ケ蛻・蜈ャ貍/a>
+      <a href="s/�%2594�%258A%2587�%2583��%2583%259F�%2583��%2583��%2582��%2582��%2583�/�%2594�%258A%2587/�%2598%258E治座�%2589�業140�%2591�年�%2598念+�%258C%2597島�%2589�%2583%258E�%2589��%2588��%2585��%2594/!MJKSK">明治座創業140周年記念 北島三郎特別公演</a>
        <br clear="all" style="clear:both" />
       <img src="http://rakuten-ticket-static.s3-ap-northeast-1.amazonaws.com/images/uploaded/f408bc44-ea51-4810-853d-078779879fbe.jpg" align="left" width="{$pickItem.mobileImage.width}" height="{$pickItem.mobileImage.height}">
       <a href="mobile/ticket.rakuten.co.jp/s/!RY6RE">楽天イーグルス</a>
