@@ -6,4 +6,4 @@
 </div>
 
 <hr/>
-<button type="button" id="submit">登録</button>
+<button type="button" id="anchorlist_submit">登録</button>

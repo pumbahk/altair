@@ -14,4 +14,4 @@
 <img src="/static/ticketstar/img/detail/icon_event.gif" alt="イベントコミュニティ" width="80" height="30" />
 
 <hr/>
-<button type="button" id="submit">登録</button>
+<button type="button" id="iconset_submit">登録</button>

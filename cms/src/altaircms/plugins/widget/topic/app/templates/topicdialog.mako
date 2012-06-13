@@ -15,5 +15,5 @@
       ${formfield("topic")}
     </tbody>
   </table>
-  <button type="submit" class="btn">保存</button>
+  <button type="topic_submit" class="btn">保存</button>
 </form>

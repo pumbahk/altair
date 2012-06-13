@@ -20,7 +20,7 @@
 %endfor
 </div>
 <hr/>
-<button type="button" id="submit">登録</button>
+<button type="button" id="calendar_submit">登録</button>
 
 <h3>選択されたカレンダーのイメージ</h3>
 

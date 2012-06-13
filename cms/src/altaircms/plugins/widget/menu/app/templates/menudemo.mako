@@ -40,7 +40,7 @@ $(function(){
 		  </table>
 		</div>
 	  </div>
-	  <button id="submit" type="button">登録</button>
+	  <button id="menu_submit" type="button">登録</button>
 	</div>
   </body>
 </html>

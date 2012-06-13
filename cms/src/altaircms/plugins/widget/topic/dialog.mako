@@ -18,4 +18,4 @@
     ${co.formfield(form, "display_event")}
   </tbody>
 </table>
-<button type="button" id="submit">登録</button>
+<button type="button" id="topic_submit">登録</button>

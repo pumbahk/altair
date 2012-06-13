@@ -6,4 +6,4 @@
 ${widget.text or ""}
 </textarea>
 <hr/>
-<button type="button" id="submit">登録</button>
+<button type="button" id="freetext_submit">登録</button>

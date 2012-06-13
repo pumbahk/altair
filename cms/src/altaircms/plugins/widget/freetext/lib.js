@@ -41,7 +41,7 @@ if(!widget){
                                   tinyMCE.get("freetext_widget_textarea").setContent(freetext);
                               }, 20);
                           }
-                          $("#submit").click(function(){we.finish_dialog(this);});
+                          $("#freetext_submit").click(function(){we.finish_dialog(this);});
                       }
                      )();
         }, 200);

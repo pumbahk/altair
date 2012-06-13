@@ -13,4 +13,4 @@
     ${co.formfield(form, "promotion")}
   </tbody>
 </table>
-<button type="button" id="submit">登録</button>
+<button type="button" id="promotion_submit">登録</button>

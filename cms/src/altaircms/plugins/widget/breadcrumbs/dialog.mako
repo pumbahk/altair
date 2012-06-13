@@ -5,4 +5,4 @@
   <h1>パンくずリスト</h1>
 </div>
 
-<button type="button" id="submit">登録</button>
+<button type="button" id="breadcrumbs_submit">登録</button>

@@ -32,7 +32,7 @@
 	  </table>
     </div>
   </div>
-  <button id="submit" type="button">登録</button>
+  <button id="summary_submit" type="button">登録</button>
 </div>
 <script type="text/javascript">
 <%text>

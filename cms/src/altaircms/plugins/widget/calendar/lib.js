@@ -40,7 +40,7 @@ widget.configure({
         return we.dialog.load(_with_pk(we, url));
     };
 
-    var _has_click_event = "#submit";
+    var _has_click_event = "#calendar_submit";
 
     var _draw_demo_api = function(we, type){
         var url = "/api/widget/calendar/dialog/demo/@type@".replace("@type@", type);
@@ -70,7 +70,7 @@ widget.configure({
 
     var on_dialog = function(we){
         we.bind_retry(15, 25, 
-                      function(){return $("#submit")}, 
+                      function(){return $("#calendar_submit")}, 
                       function(elt){
                           $("#calendar").bind("change", function(){_draw_demo_api(we, $(this).val())});
                           _draw_demo_api(we, $("#calendar_type").val());
