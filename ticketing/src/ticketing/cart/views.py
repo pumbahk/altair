@@ -5,9 +5,9 @@ import re
 from markupsafe import Markup
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from pyramid.view import view_config
-from pyramid.decorator import reify
 from ..models import DBSession
 from ..core import models as c_models
+from ..orders import models as o_models
 from . import helpers as h
 from ..multicheckout import helpers as m_h
 from ..multicheckout import api as multicheckout_api
@@ -243,7 +243,7 @@ class MultiCheckoutView(object):
             logger.debug("3d secure is failed ErrorCd = %s RetCd = %s" %(enrol.ErrorCd, enrol.RetCd))
             pass
 
-    @view_config(route_name='cart.secure3d_result', request_method="POST", renderer="json")
+    @view_config(route_name='cart.secure3d_result', request_method="POST", renderer="carts/completion.html")
     def card_info_secure3d_callback(self):
         """ カード情報入力(3Dセキュア)コールバック
         3Dセキュア認証結果取得
@@ -267,6 +267,11 @@ class MultiCheckoutView(object):
             eci=auth_result.Eci, cavv=auth_result.Cavv, cavv_algorithm=auth_result.Cavva,
         )
 
+
+        order = o_models.Order.create_from_cart(cart)
+        order.multicheckout_approval_no = checkout_auth_result.ApprovalNo
+        DBSession.add(checkout_auth_result)
+        DBSession.add(order)
 
         return dict(
             OrderNo=checkout_auth_result.OrderNo,

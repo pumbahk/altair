@@ -9,6 +9,7 @@ def _setup_db():
     from . import models
     import ticketing.models
     import ticketing.orders.models
+    import ticketing.multicheckout.models
 
     engine = create_engine("sqlite:///")
     engine.echo = False
@@ -694,7 +695,7 @@ class PaymentViewTests(unittest.TestCase):
         from . import interfaces
         class DummyMethodManager(object):
             def get_route_name(self, id):
-                return 'route.%d' % id
+                return 'route.%s' % id
         dummy_method_manager = DummyMethodManager()
         self.config.registry.utilities.register([], interfaces.IPaymentMethodManager, "", dummy_method_manager)
 
@@ -832,7 +833,9 @@ class MultiCheckoutViewTests(unittest.TestCase):
         }
         cart_id = 500
         dummy_cart = testing.DummyModel(id=cart_id, total_amount=1234,
-            performance=testing.DummyModel(name=u'テスト公演'))
+            performance=testing.DummyModel(id=100, name=u'テスト公演'),
+            products=[],
+        )
 
         session_order = {
             'client_name': u'楽天太郎',
@@ -858,7 +861,7 @@ class DummySecure3D(object):
     def __init__(self, AcsUrl, PaReq, Md, enable_auth_api=True,
                  mvn=None, xid=None, ts=None, eci=None, cavv=None, cavva=None,
                  order_no=None, status=None, public_tran_id=None,
-                 ahead_com_cd=None, approval_no=None, card_error_cd=None, req_ymd=None, cmd_error_cd=None):
+                 ahead_com_cd=None, approval_no=None, card_error_cd=None, req_ymd=None, cmd_error_cd=None, error_cd=None, ret_cd=None):
 
         self.called = []
         self.AcsUrl = AcsUrl
@@ -872,6 +875,9 @@ class DummySecure3D(object):
         self.Eci = eci
         self.Cavv = cavv
         self.Cavva = cavva
+        self.ErrorCd = error_cd
+
+        self.RetCd = ret_cd
 
         self.OrderNo = order_no
         self.Status = status
@@ -887,8 +893,9 @@ class DummySecure3D(object):
         return self
 
     def secure3d_auth(self, *args, **kwargs):
+        from ..multicheckout import models
         self.called.append(('secure3d_auth', args, kwargs))
-        return self
+        return models.Secure3DAuthResponse(ErrorCd=self.ErrorCd, RetCd=self.RetCd, Xid=self.Xid, Ts=self.Ts, Cavva=self.Cavva, Cavv=self.Cavv, Eci=self.Eci, Mvn=self.Mvn)
 
     def is_enable_auth_api(self, *args, **kwargs):
         self.called.append(('is_enable_auth_api', args, kwargs))
@@ -899,5 +906,6 @@ class DummySecure3D(object):
         return True
 
     def request_card_auth(self, *args, **kwargs):
+        from ..multicheckout import models
         self.called.append(('request_card_auth', args, kwargs))
-        return self
+        return models.MultiCheckoutResponseCard(ApprovalNo=self.ApprovalNo)

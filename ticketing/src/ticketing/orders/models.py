@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, Numeric
+from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, Numeric, Unicode
 from sqlalchemy.orm import join, backref, column_property
 
 from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier, relationship
@@ -38,6 +38,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     items = relationship('OrderedProduct')
     total_amount = Column(Numeric(precision=16, scale=2), nullable=False)
+
+    multicheckout_approval_no = Column(Unicode(255), doc=u"マルチ決済受領番号")
 
     @staticmethod
     def filter_by_performance_id(id):
