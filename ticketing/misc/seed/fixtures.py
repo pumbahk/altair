@@ -908,7 +908,7 @@ def build_operator_datum(name, operator_roles):
             _Data(
                 'OperatorAuth',
                 'operator_id',
-                login_id=lambda self: 'dev+test%03d@ticketstar.jp' % self._id[0],
+                login_id=lambda self: u'dev+test%03d@ticketstar.jp' % self._id[0] if self._id[0] > 1 else u'admin',
                 password=hashlib.md5('admin').hexdigest(),
                 auth_code=u'auth_code',
                 access_token=u'access_token',
