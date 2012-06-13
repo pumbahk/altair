@@ -94,7 +94,7 @@ var DroppedWidget = Backbone.Model.extend({
     }, 
     get_orderno: function(){
         this.trigger("orderno", this);
-        return this.get("roderno");
+        return this.get("orderno");
     }
 });
 
@@ -113,6 +113,8 @@ var CloseWidgetView = Backbone.View.extend({
         $(this.el).remove();
     }
 })
+
+var OnCloseHandler = [];
 
 var WidgetDialogView = Backbone.View.extend({
     initialize: function(){
@@ -154,6 +156,8 @@ var WidgetDialogView = Backbone.View.extend({
         }
         var wmodule = this.prepare_widget_module();
         if(!!wmodule){
+            this.close_dialog_sync();
+            OnCloseHandler.push(this.create_on_close_dialog_thunk(wmodule));
             return wmodule("load_page");
         }
     }, 
@@ -166,15 +170,23 @@ var WidgetDialogView = Backbone.View.extend({
             return setTimeout(function(){wmodule("on_dialog");}, 0);
         }
     }, 
-    on_close_dialog: function(){
-        var wmodule = this.prepare_widget_module();
-        var self = this
-        if(!!wmodule){
-            return setTimeout(function(){
-                wmodule("on_close")
+    create_on_close_dialog_thunk: function(wmodule){
+        var self = this;
+        return function(){
+            if(!!wmodule){
+                wmodule("on_close");
                 _.each(self.dialog.children(), function(e){ $(e).remove();});
-            }, 0);
+            }
+        };
+    },  
+    close_dialog_sync: function(){
+        while(OnCloseHandler.length > 0){
+            var close_fn = OnCloseHandler.shift()
+            if(!!close_fn){close_fn();}
         }
+    }, 
+    on_close_dialog: function(){
+        return setTimeout(this.close_dialog_sync, 0);
     }, 
     on_widget_selected: function(choiced_elt){
         var wmodule = this.prepare_widget_module();
