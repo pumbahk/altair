@@ -57,6 +57,7 @@
       <a href="static/features/rakutenopen/index.html?top">楽天・ジャパン・オープン・テニス・チャンピオンシップス2012</a>
        <br clear="all" style="clear:both" />
       <img src="http://rakuten-ticket-static.s3-ap-northeast-1.amazonaws.com/images/uploaded/62e3fcee-143c-48fb-9676-6b0345c281f7.jpg" align="left" width="{$pickItem.mobileImage.width}" height="{$pickItem.mobileImage.height}">
+
       <a href="s/259Fウ讌ス/2581%259D2581ョ莉%2596/LOVE-1+FESTIVAL+SEASON+2/!KMLFS">LOVE-1 FESTIVAL SEASON 2</a>
        <br clear="all" style="clear:both" />
       <img src="http://rakuten-ticket-static.s3-ap-northeast-1.amazonaws.com/images/uploaded/c5da9ff3-fd88-458c-9ae6-5c452df9ebe2.jpg" align="left" width="{$pickItem.mobileImage.width}" height="{$pickItem.mobileImage.height}">
@@ -87,4 +88,3 @@
 <div><font color="#888888">2010-2011 &copy; TicketStar, Inc. All rights reserved.</font></div>
 </div>
 </font>
-
