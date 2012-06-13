@@ -121,7 +121,7 @@ class WithTimestamp(object):
                                    server_onupdate=sqlf.current_timestamp())
 
 class LogicallyDeleted(object):
-    deleted_at = Column(TIMESTAMP, nullable=True)
+    deleted_at = Column(TIMESTAMP, nullable=True, index=True)
 
 class BaseModel(object):
     query = DBSession.query_property()
