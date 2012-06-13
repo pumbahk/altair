@@ -55,8 +55,6 @@ def process_notification():
         }.get(row.notification_type,dummy)(row)
 
 
-
-
 def main(argv=sys.argv):
 
     session = sqlahelper.get_session()

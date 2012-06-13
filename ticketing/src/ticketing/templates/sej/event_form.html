@@ -1,0 +1,49 @@
+<%inherit file="../layout.html" />
+<%namespace file="/common/helpers.html" name="h"/>
+<%namespace file="/common/helpers.html" import="form_item" />
+<%namespace file="common.html" name="c"/>
+<%block name="title">払い戻し公演登録</%block>
+
+<div class="ui-toolbar">
+  <a href="${request.route_path('orders.sej.event.refund.add')}" class="btn">払い戻し公演登録</a>
+</div>
+
+<form id="refund-form" action="" method="POST">
+  <div class="modal-header">
+    <a href="#" class="close">&times;</a>
+    <h3>オーダー情報</h3>
+  </div>
+  <div class="modal-body">
+    ${form_item(form.available)}
+    ${form_item(form.shop_id)}
+    ${form_item(form.event_code_01)}
+    ${form_item(form.event_code_02)}
+    ${form_item(form.title)}
+    ${form_item(form.sub_title)}
+    ${form_item(form.event_at)}
+    ${form_item(form.start_at)}
+    ${form_item(form.end_at)}
+    ${form_item(form.event_expire_at)}
+    ${form_item(form.ticket_expire_at)}
+    ${form_item(form.refund_enabled)}
+    ${form_item(form.disapproval_reason)}
+    ${form_item(form.need_stub)}
+    ${form_item(form.remarks)}
+    <div class="spacer">
+    </div>
+  </div>
+  <div class="modal-footer">
+  <input type="submit" name="submit" value="更新リクエスト"  class="btn primary"/>
+    <a href="javascript:$('#modal-refund').modal('hide');" class="btn secondary">キャンセル</a>
+  </div>
+</form>
+
+
+<script type="text/javascript">
+
+    $('#event_expire_at').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm:00'});
+    $('#ticket_expire_at').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm:00'});
+    $('#event_at').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm:00'});
+    $('#start_at').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm:00'});
+    $('#end_at').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm:00'});
+</script>

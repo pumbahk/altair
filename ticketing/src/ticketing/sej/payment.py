@@ -149,7 +149,6 @@ class SejPayment(object):
         req = urllib2.Request(self.url)
         buffer = ["%s=%s" % (name, urllib2.quote(unicode(param).encode('shift_jis', 'xmlcharrefreplace'))) for name, param in request_params.iteritems()]
         data = "&".join(buffer)
-        print data
 
         self.log.info("[request]%s" % data)
 
@@ -168,7 +167,6 @@ class SejPayment(object):
         status = res.code
         reason = res.msg
         body = res.read()
-        print body
 
         self.log.info("[response]%s" % body)
 
@@ -479,7 +477,6 @@ def request_sej_exchange_sheet(sej_order_id, shop_id = u'30520', secret_key = u'
 
     status = res.code
     reason = res.msg
-    print res.read()
 
     if status == 200:
         body = res.read()
@@ -670,93 +667,6 @@ def request_fileget(
 
     return decompress(body)
 
-def request_fileget_import(
-        notification_type,
-        date,
-        shop_id = u'30520',
-        secret_key = u'E6PuZ7Vhe7nWraFW',
-        hostname = sej_hostname):
-
-    from .file import SejInstantPaymentFileParser,SejPaymentInfoFileParser
-
-    def instance_payment_info(body):
-        parser = SejInstantPaymentFileParser()
-        data = parser.parse(body)
-        for row in data:
-            print row
-            bill_number     = row.get('bill_number')
-            exchange_number = row.get('exchange_number')
-            process_at      = row.get('process_at')
-            shop_id         = row.get('shop_id')
-            order_id        = row.get('order_id')
-
-            try:
-                file_row = SejTicketFile.filter(
-                    and_(
-                        SejTicketFile.billing_number == bill_number,
-                        SejTicketFile.exchange_number == exchange_number,
-                        SejTicketFile.process_at == process_at,
-                        SejTicketFile.shop_id == shop_id,
-                        SejTicketFile.order_id == order_id
-                    )
-                ).one()
-            except NoResultFound, e:
-                file_row = SejTicketFile()
-                DBSession.add(file_row)
-
-            file_row.shop_id             = row.get('shop_id'),
-            file_row.order_id            = row.get('order_id'),
-            file_row.notification_type   = str(row.get('notification_type')),
-            file_row.payment_type        = row.get('payment_type'),
-            file_row.billing_number      = row.get('billing_number'),
-            file_row.exchange_number     = row.get('exchange_number'),
-            file_row.price               = row.get('price'),
-            file_row.ticket_total_count  = row.get('ticket_total_count'),
-            file_row.ticket_count        = row.get('ticket_count'),
-            file_row.return_ticket_count = row.get('return_ticket_count'),
-            file_row.cancel_reason       = row.get('cancel_reason'),
-            file_row.process_at          = row.get('process_at'),
-            file_row.signature           = row.get('signature')
-        DBSession.flush()
-
-    def payment_info(body):
-
-        parser = SejPaymentInfoFileParser()
-        data = parser.parse(body)
-
-        for row in data:
-            print row
-            ticket_barcode_number    = row.get('ticket_barcode_number')
-            order_id                 = row.get('order_id')
-            process_at               = row.get('process_at')
-            try:
-                file_row = SejTicketFile.filter(
-                    and_(
-                        SejTicketFile.ticket_barcode_number == ticket_barcode_number,
-                        SejTicketFile.order_id == order_id,
-                        SejTicketFile.process_at == process_at
-                    )
-                ).one()
-            except NoResultFound, e:
-                file_row = SejTicketFile()
-                DBSession.add(file_row)
-
-
-            DBSession.flush()
-
-    def dummy(e):
-        pass
-    body = request_fileget(
-            notification_type,
-            date,
-            shop_id,
-            secret_key,
-            hostname)
-    {
-        SejNotificationType.InstantPaymentInfo : instance_payment_info,
-        SejNotificationType.PaymentInfo : payment_info
-    }.get(notification_type, dummy)(body)
-
 def callback_notification(params,
                           secret_key = u'E6PuZ7Vhe7nWraFW'):
 
@@ -863,7 +773,7 @@ def callback_notification(params,
         SejNotificationType.ReGrant.v           : process_re_grant,
         SejNotificationType.TicketingExpire.v   : process_expire,
     }.get(int(params['X_tuchi_type']), dummy)(int(params['X_tuchi_type']))
-
+    n.notification_type = int(params['X_tuchi_type'])
     DBSession.flush()
 
     return ret

@@ -11,8 +11,8 @@ import sqlahelper
 from dateutil.parser import parse
 from os.path import abspath, dirname
 
-from ticketing.sej.payment import request_fileget_import
-from ticketing.sej.resources import SejNotificationType, code_from_notification_type
+from ticketing.sej.payment import request_fileget
+from ticketing.sej.resources import SejNotificationType, code_from_notification_type, SejServerError
 
 sys.path.append(abspath(dirname(dirname(__file__))))
 
@@ -23,11 +23,44 @@ import logging
 logging.basicConfig()
 log = logging.getLogger(__file__)
 
-def file_get_and_import(notification_type, date, hostname):
+import os
 
-    request_fileget_import(
-        notification_type,
-        date)
+def file_get_and_import(date, notification_type = None):
+
+    for notification_type in [
+        # 5-1.入金速報
+        SejNotificationType.FileInstantPaymentInfo,
+        # 5-2.支払期限切れ
+        SejNotificationType.FilePaymentExpire,
+        # 5-3.発券期限切れ
+        SejNotificationType.FileTicketingExpire,
+        # 5-4.払戻速報
+        SejNotificationType.FileRefundExpire,
+        # 6-1.支払い案内
+        SejNotificationType.FileCheckInfo,
+        # 6-2.会計取消(入金)
+        SejNotificationType.FilePaymentCancel,
+        # 6-3.会計取消(発券)
+        SejNotificationType.FileTicketingCancel,
+    ]:
+        try:
+            body = request_fileget(
+                notification_type,
+                date)
+
+            date_str = date.strftime('%Y%m%d')
+            sej_output_path = "/tmp/sej/%s" % date_str
+            if not os.path.exists(sej_output_path):
+                os.makedirs(sej_output_path)
+            file_path = '%s/SEITIS%02d_%s.txt' % (sej_output_path, notification_type.v)
+            print file_path
+            f = open(file_path , 'w')
+            f.write(body)
+            f.close()
+
+        except SejServerError, e:
+            print "No Data"
+
 
 def main(argv=sys.argv):
 
@@ -43,11 +76,6 @@ def main(argv=sys.argv):
         help='Path to configuration file (defaults to $CWD/development.ini)',
         metavar='FILE'
     )
-    parser.add_option('-t', '--type',
-        dest='type',
-        help='must be set type',
-        metavar='FILE'
-    )
     parser.add_option('-d', '--date',
         dest='date',
         help='must be set date',
@@ -60,28 +88,20 @@ def main(argv=sys.argv):
     if config is None:
         print 'You must give a config file'
         return
-    type = options.type
-    if type is None:
 
-        for k,v in code_from_notification_type.items():
-            print "%s %s" % (k,v)
-
-        return
     date = options.date
     if date is None:
         print 'You must give a config file'
         return
 
     date = parse(date)
-    print type
-    type = code_from_notification_type.get(int(type))
-    print type
+
     app = loadapp('config:%s' % config, 'main')
     settings = app.registry.settings
 
     sej_hostname = settings['sej.inticket_api_hostname']
 
-    file_get_and_import(type, date, sej_hostname)
+    file_get_and_import(date)
 
 if __name__ == u"__main__":
     main(sys.argv)

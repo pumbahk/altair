@@ -29,24 +29,14 @@
     ${form_item(form.ticketing_start_at)}
     ${form_item(form.ticketing_due_at)}
     ${form_item(form.regrant_number_due_at)}
+    ${form_item(form.tickets)}
+    <input id="add_another_button" type="button" value="チケット追加" />
     <div class="spacer">
         <input type="submit" name="submit" value="更新リクエスト" />
     </div>
 </div>
-<% idx = 0 %>
-<div class="span8" id="ticket-folder">
-    <div id="ticket" style="float: left">
-    <h3>チケット</h3>
-    ${form_item(form.ticket_type)}
-    ${form_item(form.event_name)}
-    ${form_item(form.performance_name)}
-    ${form_item(form.performance_datetime)}
-    ${form_item(form.ticket_template_id)}
-    ${form_item(form.ticket_data_xml)}
-    </div>
-</div>
 
-    <input id="add-ticket" type="button" value="チケット追加" />
+
 </form>
 <script type="text/javascript">
   $(function() {
@@ -59,5 +49,26 @@
     $('#ticketing_due_at').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
     $('#regrant_number_due_at').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
     $('#performance_datetime').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
+
+    $(document).ready(function () {
+      $('#add_another_button').click(function () {
+          clone_field_list('fieldset:last');
+      });
+    });
+
+    function clone_field_list(selector) {
+      var new_element = $(selector).clone(true);
+      var elem_id = new_element.find(':input')[0].id;
+      var elem_num = parseInt(elem_id.replace(/.*-(\d{1,4})-.*/m, '$1')) + 1;
+      new_element.find(':input').each(function() {
+          var id = $(this).attr('id').replace('-' + (elem_num - 1) + '-', '-' + elem_num + '-');
+          $(this).attr({'name': id, 'id': id}).val('').removeAttr('checked');
+      });
+      new_element.find('label').each(function() {
+          var new_for = $(this).attr('for').replace('-' + (elem_num - 1) + '-', '-' + elem_num + '-');
+          $(this).attr('for', new_for);
+      });
+      $(selector).after(new_element);
+    }
   });
 </script>

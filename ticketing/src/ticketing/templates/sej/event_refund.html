@@ -1,0 +1,110 @@
+<%inherit file="../layout.html" />
+<%namespace file="/common/helpers.html" name="h"/>
+<%namespace file="/common/helpers.html" import="form_item" />
+<%namespace file="common.html" name="c"/>
+<%block name="title">払い戻し公演一覧</%block>
+
+
+${h.breadcrumbs(
+    names=[u'SEJ Order', u'払い戻し公演一覧'],
+    urls=[
+      request.route_path('orders.sej')
+    ]
+)}
+
+<div class="ui-toolbar">
+  <a id="refund"  href="#" class="btn">払い戻し公演登録</a>
+</div>
+
+<table class="table table-striped table-bordered table-condensed">
+<thead>
+<tr>
+  <th class="minwidth"><input type="checkbox" class="__action__-select_all" /></th>
+  <th>有効フラグ</th>
+  <th>ショップID</th>
+  <th>公演決定キー1</th>
+  <th>公演決定キー2</th>
+  <th>メインタイトル</th>
+  <th>サブタイトル</th>
+  <th>公演日</th>
+  <th>レジ払戻受付期間</th>
+  <th>公演レコード有効期限</th>
+  <th>チケット持ち込み期限</th>
+  <th>レジ払戻可能フラグ</th>
+  <th>払戻不可理由</th>
+  <th>半券要否区分</th>
+  <th>備考</th>
+</tr>
+</thead>
+<tbody>
+% for event in events.items:
+<tr>
+  <td><a href="${request.route_path('orders.sej.event.refund.detail', event_id=event.id)}" class="btn">ID:${event.id}</a></td>
+  <td>${event.available}</td>
+  <td>${event.shop_id}</td>
+  <td>${event.event_code_01}</td>
+  <td>${event.event_code_02}</td>
+  <td>${event.title}</td>
+  <td>${event.sub_title}</td>
+  <td>${event.event_at}</td>
+  <td>${event.start_at}-<br>${event.end_at}</td>
+  <td>${event.event_expire_at}</td>
+  <td>${event.ticket_expire_at}</td>
+  <td>${event.refund_enabled}</td>
+  <td>${event.disapproval_reason}</td>
+  <td>${event.need_stub}</td>
+  <td>${event.remarks}</td>ååå
+</tr>
+<tr></tr>
+% endfor
+</tbody>
+</table>
+${h.pager(events)}
+
+
+<div id="modal-refund" class="modal hide fade">
+  <form id="refund-form" action="" method="POST">
+    <div class="modal-header">
+      <a href="#" class="close">&times;</a>
+      <h3>オーダー情報</h3>
+    </div>
+    <div class="modal-body">
+      ${form_item(form.available)}
+      ${form_item(form.shop_id)}
+      ${form_item(form.event_code_01)}
+      ${form_item(form.event_code_02)}
+      ${form_item(form.title)}
+      ${form_item(form.sub_title)}
+      ${form_item(form.event_at)}
+      ${form_item(form.start_at)}
+      ${form_item(form.end_at)}
+      ${form_item(form.event_expire_at)}
+      ${form_item(form.ticket_expire_at)}
+      ${form_item(form.refund_enabled)}
+      ${form_item(form.disapproval_reason)}
+      ${form_item(form.need_stub)}
+      ${form_item(form.remarks)}
+      <div class="spacer">
+      </div>
+    </div>
+    <div class="modal-footer">
+    <input type="submit" name="submit" value="更新リクエスト"  class="btn primary"/>
+      <a href="javascript:$('#modal-refund').modal('hide');" class="btn secondary">キャンセル</a>
+    </div>
+  </form>
+</div>
+
+<script type="text/javascript">
+  $(function() {
+    $('#refund').click(function () {
+        var modal = $('#modal-refund');
+        $('#refund-form').attr('action', "${request.route_path('orders.sej.event.refund.add')}")
+        modal.modal('toggle');
+    });
+  });
+  $('#event_expire_at').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm:00'});
+  $('#ticket_expire_at').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm:00'});
+  $('#event_at').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm:00'});
+  $('#start_at').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm:00'});
+  $('#end_at').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm:00'});
+</script>

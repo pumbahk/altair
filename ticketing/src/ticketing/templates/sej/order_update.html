@@ -28,14 +28,24 @@ ${h.breadcrumbs(
 
     <div class="btn-group">
         %if not order.cancel_at:
-      <a  id="update" href="#" class="btn">
-        <i class="icon-pencil"></i> 編集
-      </a>
+      <a  id="update" href="#" class="btn"><i class="icon-pencil"></i>編集</a>
         % endif
+          %if not order.cancel_at:
+          <a href="${request.route_path('orders.sej.order.cancel', order_id=order.id)}" class="btn">発券取り消し</a>
+        % endif
+        <form action="${order.exchange_sheet_url}" method="POST">
+            <input type="hidden" name="iraihyo_id_00" value="${order.exchange_sheet_number}">
+            <input type="submit" name="submit" value="引換え票を表示" class="btn"/>
+        </form>
+
+
     </div>
 
 </div>
 
+<div class="content">
+  ${h.flash_messages(request)}
+</div>
 
 <div class="row">
 
@@ -174,7 +184,7 @@ ${h.breadcrumbs(
 <table class="table table-striped table-bordered table-condensed">
   <thead>
     <tr>
-      <th class="minwidth">チケット区分</th>
+      <th class="minwidth">idx</th>
       <th class="minwidth">イベント名</th>
       <th class="minwidth">パフォーマンス名</th>
       <th class="minwidth">パフォーマンス開催日</th>
@@ -185,13 +195,15 @@ ${h.breadcrumbs(
   <tbody>
   % for ticket in order.tickets:
     <tr id="product-6">
+      <td>${ticket.ticket_idx}</td>
       <td>${from_ticket_type_id(ticket.ticket_type)}</td>
       <td>${ticket.event_name}</td>
       <td>${ticket.performance_name}</td>
       <td>${ticket.performance_datetime}</td>
       <td>${ticket.ticket_template_id}</td>
       <td>
-          <a href="#" class="edit-ticket btn" ticket_id="${ticket.id}"><i class="icon-pencil"></i> 編集</a>
+          <a href="#" class="edit-ticket btn" ticket_id="${ticket.id}"><i class="icon-pencil"></i>編集</a>
+          <a href="#" class="refund btn" ticket_id="${ticket.id}"><i class="icon-pencil"></i>払戻</a>
       </td>
     </tr>
   % endfor
@@ -265,14 +277,27 @@ ${h.breadcrumbs(
       <a href="javascript:$('#modal-delete').modal('hide');" class="btn secondary">キャンセル</a>
     </div>
 </div>
-<form action="${order.exchange_sheet_url}" method="POST">
-    <input type="hidden" name="iraihyo_id_00" value="${order.exchange_sheet_number}">
-    <input type="submit" name="submit" value="引換え票を表示" class="btn"/>
-</form>
 
-%if not order.cancel_at:
-<a href="${request.route_path('orders.sej.order.cancel', order_id=order.id)}" class="btn">発券取り消し</a>
-% endif
+<div id="modal-refund" class="modal hide fade">
+  <form id="refund-form" action="" method="POST">
+    <div class="modal-header">
+      <a href="javascript:$('#modal-refund').modal('hide');" class="close">&times;</a>
+      <h3>払戻し</h3>
+    </div>
+
+    <div class="modal-body">
+      ${form_item(refund_form.event)}
+      ${form_item(refund_form.refund_ticket_amount)}
+      ${form_item(refund_form.refund_other_amount)}
+      <div class="spacer">
+        <input type="submit" name="submit" value="払い戻し" />
+      </div>
+    </div>
+  </form>
+    <div class="modal-footer">
+      <a href="javascript:$('#modal-refund').modal('hide');" class="btn secondary">キャンセル</a>
+    </div>
+</div>
 
 
 <script type="text/javascript">
@@ -285,29 +310,29 @@ ${h.breadcrumbs(
         var modal = $('#modal-edit');
         modal.modal('toggle');
     });
-      $('.edit-ticket').click(function () {
-          var ticket_id = $(this).attr('ticket_id')
-          $.ajax({
-             type: "GET",
-             url: "${request.route_path('orders.sej.order.ticket.data', order_id=order.id, ticket_id='AA')}".replace("AA",ticket_id),
-             success: function(msg){
-                 console.log(msg);
-               var modal = $('#modal-ticket-edit');
-               modal.modal('toggle');
-               $('#ticket-edit-form').attr('action', "${request.route_path('orders.sej.order.ticket.data', order_id=order.id, ticket_id='AA')}".replace("AA",ticket_id))
-               $('#ticket_type').val(msg['ticket_type'])
-               $('#event_name').val(msg['event_name'])
-               $('#performance_name').val(msg['performance_name'])
-               $('#performance_datetime').val(msg['performance_datetime'])
-               $('#ticket_template_id').val(msg['ticket_template_id'])
-               $('#ticket_data_xml').val(msg['ticket_data_xml'])
-             }
-           });
-
-
-
-
+    $('.edit-ticket').click(function () {
+      var ticket_id = $(this).attr('ticket_id')
+      $.ajax({
+        type: "GET",
+        url: "${request.route_path('orders.sej.order.ticket.data', order_id=order.id, ticket_id='AA')}".replace("AA",ticket_id),
+        success: function(msg){
+          console.log(msg);
+          var modal = $('#modal-ticket-edit');
+          modal.modal('toggle');
+          $('#ticket-edit-form').attr('action', "${request.route_path('orders.sej.order.ticket.data', order_id=order.id, ticket_id='AA')}".replace("AA",ticket_id))
+          $('#ticket_type').val(msg['ticket_type'])
+          $('#event_name').val(msg['event_name'])
+          $('#performance_name').val(msg['performance_name'])
+          $('#performance_datetime').val(msg['performance_datetime'])
+          $('#ticket_template_id').val(msg['ticket_template_id'])
+          $('#ticket_data_xml').val(msg['ticket_data_xml'])
+          }
+        });
       });
-
+      $('.refund').click(function () {
+          var modal = $('#modal-refund');
+          $('#refund-form').attr('action', "${request.route_path('orders.sej.order.ticket.refund', ticket_id='AAA')}".replace('AAA', $(this).attr('ticket_id')))
+          modal.modal('toggle');
+      });
   });
 </script>

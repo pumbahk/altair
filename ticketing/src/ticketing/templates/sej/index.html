@@ -1,11 +1,15 @@
 <%inherit file="../layout.html" />
 <%namespace file="/common/helpers.html" name="h"/>
 <%namespace file="common.html" name="c"/>
-<%block name="title">SEJ Menu</%block>
+<h2><%block name="title">SEJ Menu</%block></h2>
 
 <div class="ui-toolbar">
   <a href="${request.route_path('orders.sej.order.request')}" class="btn">手動発券</a>
+  <a href="${request.route_path('orders.sej.event.refund')}" class="btn">払い戻し公演登録</a>
+  <a href="${request.route_path('orders.sej.ticket_template')}" class="btn">テンプレート管理</a>
 </div>
+
+<h3>オーダー一覧</h3>
 <form action="${request.route_path('orders.sej')}" method="GET">
     <input type='text' name='q' value="${q}">
     <input type='submit' name='' value="検索" class="btn">
@@ -54,10 +58,14 @@
       <td>${order.created_at}</td>
     </tr>
     <tr>
-      <td colspan="16">
-        <div class="product-item">
-          <a href="${request.route_path('orders.sej.order.update', order_id=order.id)}" class="btn">更新</a>
-          <a href="${request.route_path('orders.sej.order.cancel', order_id=order.id)}" class="btn">発券取り消し</a>
+      <td colspan="17">
+          <div class="btn-group">
+          <a href="${request.route_path('orders.sej.order.update', order_id=order.id)}" class="btn">詳細</a>
+          <a href="${request.route_path('orders.sej.order.cancel', order_id=order.id)}" onclick="return confirm('本当に取り消しますか？');" class="btn">発券取り消し</a>
+          <form action="${order.exchange_sheet_url}" method="POST" target="_blank">
+              <input type="hidden" name="iraihyo_id_00" value="${order.exchange_sheet_number}">
+              <input type="submit" name="submit" value="引換え票を表示" class="btn"/>
+          </form>
         </div>
       </td>
     </tr>
