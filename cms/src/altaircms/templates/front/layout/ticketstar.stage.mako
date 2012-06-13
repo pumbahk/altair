@@ -89,9 +89,9 @@
 			${gadgets.sidebar_event_open_listing()}
 		</dl>
 
-		${gadgets.sidebar_maintenance()}
+##		${gadgets.sidebar_maintenance()}
 		<!-- InstanceEndEditable -->
-		${gadgets.sidebar_sideBtn()}
+##		${gadgets.sidebar_sideBtn()}
 </%block>
 	</div>
 	<!-- ========== /side ========== -->

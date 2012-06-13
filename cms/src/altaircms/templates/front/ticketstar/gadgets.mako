@@ -5,7 +5,7 @@
 ## ヘッダーの検索フォーム.jsと連携している
 <%def name="search_form_on_header(placeholder)">
 	<form id="form1" name="form1" method="GET" action="${request.route_path("page_search_by_freeword")}">
-		<input name="textfield" type="text" id="textfield" size="40" value="${placeholder}" onblur="if(this.value=='') this.value='${placeholder}';" onfocus="if(this.value=='${placeholder}') this.value='';" />
+		<input name="q" type="text" id="textfield" size="40" value="${placeholder}" onblur="if(this.value=='') this.value='${placeholder}';" onfocus="if(this.value=='${placeholder}') this.value='';" />
 		<input name="imageField" type="image" id="imageField" src="/static/ticketstar/img/common/header_search_btn.gif" alt="検索" />
 		<a href="${request.route_path("page_search_input")}">詳細検索</a>
 	</form>
@@ -128,7 +128,7 @@ form = TopPageSidebarSearchForm()
 				<li><a href="${h.link.get_searchpage(request, kind="deal_cond", value="eary_fisrtcome")}"><img src="/static/ticketstar/img/index/btn_presale.gif" alt="先行抽選" width="222" height="28" /></a></li>
 				<li><a href="${h.link.get_searchpage(request, kind="deal_cond", value="normal")}"><img src="/static/ticketstar/img/index/btn_release.gif" alt="一般発売" width="222" height="28" /></a></li>
 				<li><a href="${h.link.get_searchpage(request, kind="deal_open", value=7)}"><img src="/static/ticketstar/img/index/btn_now.gif" alt="すぐ見たい" width="222" height="28" /></a></li>
-				<li><a href="${request.route_path("page_search_by_freeword",_query=dict(textfield=u"お買い得"))}"><img src="/static/ticketstar/img/index/btn_best.gif" alt="お買い得チケット" width="222" height="28" /></a></li>
+				<li><a href="${request.route_path("page_search_by_freeword",_query=dict(q=u"お買い得"))}"><img src="/static/ticketstar/img/index/btn_best.gif" alt="お買い得チケット" width="222" height="28" /></a></li>
 			</ul>
 			<form id="form2" name="form2" method="GET" action="${request.route_path("page_search_by_multi")}">
 				<dl>
@@ -151,3 +151,4 @@ form = TopPageSidebarSearchForm()
 			</form>
 		</div>
 </%def>
+nn
