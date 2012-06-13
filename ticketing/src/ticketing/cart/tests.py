@@ -121,10 +121,10 @@ class CartTests(unittest.TestCase):
 
     def test_add_seats(self):
         ordered_products = [(testing.DummyResource(id=i, items=[
-            testing.DummyResource(stock_id=1),
+            testing.DummyResource(stock_id=1, performance_id=1),
         ]), 1) for i in range(10)]
         seats = [testing.DummyResource(id=i, stock_id=1) for i in range(10)]
-        target = self._makeOne()
+        target = self._makeOne(performance_id=1)
         target.add_seat(seats, ordered_products)
 
         self.assertEqual(target.products[0].product.id, 0)
@@ -133,9 +133,9 @@ class CartTests(unittest.TestCase):
 
     def test_add_products(self):
         ordered_products = [(testing.DummyResource(id=i, items=[
-            testing.DummyResource(stock_id=1),
+            testing.DummyResource(stock_id=1, performance_id=1),
             ]), 1) for i in range(10)]
-        target = self._makeOne()
+        target = self._makeOne(performance_id=1)
         target.add_products(ordered_products)
 
         self.assertEqual(target.products[0].product.id, 0)
@@ -161,12 +161,13 @@ class CartedProductTests(unittest.TestCase):
         return self._getTarget()(*args, **kwargs)
 
     def test_pop_seats(self):
-        product = testing.DummyResource(items=[testing.DummyResource(stock_id=2),
-                                               testing.DummyResource(stock_id=3)])
+        product = testing.DummyResource(items=[testing.DummyResource(stock_id=2, performance_id=1),
+                                               testing.DummyResource(stock_id=3, performance_id=1)])
         target = self._makeOne(id=1, product=product, quantity=1)
         result = target.pop_seats([testing.DummyResource(stock_id=1),
                                    testing.DummyResource(stock_id=2),
-                                   testing.DummyResource(stock_id=3)])
+                                   testing.DummyResource(stock_id=3)],
+            performance_id=1)
 
         self.assertEqual(len(target.items), 2)
         self.assertEqual(len(result), 1)
@@ -836,6 +837,7 @@ class MultiCheckoutViewTests(unittest.TestCase):
             performance=testing.DummyModel(id=100, name=u'テスト公演'),
             products=[],
         )
+        dummy_cart.finish = lambda: None
 
         session_order = {
             'client_name': u'楽天太郎',

@@ -143,7 +143,7 @@ class TicketingCartResrouce(object):
 
             return seat_statuses
 
-    def _create_cart(self, seat_statuses, ordered_products):
+    def _create_cart(self, seat_statuses, ordered_products, performance_id):
         cart = m.Cart()
         seats = m.DBSession.query(c_models.Seat).filter(c_models.Seat.id.in_(seat_statuses)).all()
         cart.add_seat(seats, ordered_products)
@@ -151,8 +151,8 @@ class TicketingCartResrouce(object):
         m.DBSession.flush()
         return cart
 
-    def _create_cart_with_quantity(self, stock_quantity, ordered_products):
-        cart = m.Cart()
+    def _create_cart_with_quantity(self, stock_quantity, ordered_products, performance_id):
+        cart = m.Cart(performance_id=performance_id)
         cart.add_products(ordered_products)
         m.DBSession.add(cart)
         m.DBSession.flush()
@@ -174,6 +174,7 @@ class TicketingCartResrouce(object):
         :returns: :class:`.models.Cart`
         """
 
+        performance_id = int(performance_id)
         logger.debug("order performance_id = %s, ordered_products = %s" % (performance_id, ordered_products))
         m.DBSession.bind.echo = True
         conn = m.DBSession.bind.connect()
@@ -208,12 +209,10 @@ class TicketingCartResrouce(object):
             # TODO: ここでも例外処理で在庫戻しが必要
             cart = None
             if False: # QAのため数受け処理のみ
-                cart = self._create_cart(seat_statuses, ordered_products)
-                cart.performance_id = performance_id
+                cart = self._create_cart(seat_statuses, ordered_products, performance_id)
             else:
                 # 数受けの場合は数量を渡す
-                cart = self._create_cart_with_quantity(stock_quantity, ordered_products)
-                cart.performance_id = performance_id
+                cart = self._create_cart_with_quantity(stock_quantity, ordered_products, performance_id)
 
             trans.commit()
             logger.info("cart created id = %d" % cart.id)

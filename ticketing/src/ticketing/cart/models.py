@@ -30,6 +30,7 @@ from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm.exc import NoResultFound
 
 from ..core import models as c_models
+from . import logger
 
 class PaymentMethodManager(object):
     def __init__(self):
@@ -132,14 +133,18 @@ class CartedProduct(Base):
         """
         return self.product.price * self.quantity
 
-    def pop_seats(self, seats):
+    def pop_seats(self, seats, performance_id):
         for product_item in self.product.items:
+            if product_item.performance_id != performance_id:
+                continue
             cart_product_item = CartedProductItem(carted_product=self, quantity=self.quantity, product_item=product_item)
             seats = cart_product_item.pop_seats(seats)
         return seats
 
-    def adjust_items(self):
+    def adjust_items(self, performance_id):
         for product_item in self.product.items:
+            if product_item.performance_id != performance_id:
+                continue
             cart_product_item = CartedProductItem(carted_product=self, quantity=self.quantity, product_item=product_item)
 
     @classmethod
@@ -203,14 +208,14 @@ class Cart(Base):
         for ordered_product, quantity in ordered_products:
             # ordered_productでCartProductを作成
             cart_product = CartedProduct(cart=self, product=ordered_product, quantity=quantity)
-            seats = cart_product.pop_seats(seats)
+            seats = cart_product.pop_seats(seats, self.performance_id)
         # CartProductでseatsから必要な座席を取り出し
 
     def add_products(self, ordered_products):
         for ordered_product, quantity in ordered_products:
             # ordered_productでCartProductを作成
             cart_product = CartedProduct(cart=self, product=ordered_product, quantity=quantity)
-            cart_product.adjust_items()
+            cart_product.adjust_items(self.performance_id)
 
     def finish(self):
         """ 決済完了

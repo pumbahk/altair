@@ -271,22 +271,20 @@ class MultiCheckoutView(object):
             eci=auth_result.Eci, cavv=auth_result.Cavv, cavv_algorithm=auth_result.Cavva,
         )
 
+        auth_result = dict(OrderNo=checkout_auth_result.OrderNo, Status=checkout_auth_result.Status,
+            PublicTranId=checkout_auth_result.PublicTranId, AheadComCd=checkout_auth_result.AheadComCd,
+            ApprovalNo=checkout_auth_result.ApprovalNo, CardErrorCd=checkout_auth_result.CardErrorCd,
+            ReqYmd=checkout_auth_result.ReqYmd, CmnErrorCd=checkout_auth_result.CmnErrorCd, )
+
+        logger.debug("%s" % auth_result)
 
         order = o_models.Order.create_from_cart(cart)
         order.multicheckout_approval_no = checkout_auth_result.ApprovalNo
+        cart.finish()
         DBSession.add(checkout_auth_result)
         DBSession.add(order)
 
-        return dict(
-            OrderNo=checkout_auth_result.OrderNo,
-            Status=checkout_auth_result.Status,
-            PublicTranId=checkout_auth_result.PublicTranId,
-            AheadComCd=checkout_auth_result.AheadComCd,
-            ApprovalNo=checkout_auth_result.ApprovalNo,
-            CardErrorCd=checkout_auth_result.CardErrorCd,
-            ReqYmd=checkout_auth_result.ReqYmd,
-            CmnErrorCd=checkout_auth_result.CmnErrorCd,
-        )
+        return auth_result
 
     def card_info_secure_code(self):
         """ カード情報入力(セキュアコード)
