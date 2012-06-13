@@ -30,7 +30,7 @@ def get_seats(request):
         seat_datum = {
             'id': seat.l0_id,
             'stock_type_id': seat.stock_type_id,
-            'stock_holder_id': seat.stock and seat.stock.stock_holder and seat.stock.stock_holder.id,
+            'stock_holder_id': seat.stock and seat.stock.stock_holder_id,
             'status': seat.status,
             'areas': [area.id for area in seat.areas],
             }
