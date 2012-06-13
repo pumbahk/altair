@@ -69,14 +69,14 @@ widget.configure({
     };
 
     var on_dialog = function(we){
-        $(document).on("change", "#calendar_type", function(){
-            _draw_demo_api(we, $(this).val());
-        });
-        _draw_demo_api(we, $("#calendar_type").val());
-        // $.datepicker.setDefaults( $.datepicker.regional[ "ja" ] );
-        $(document).on("click", _has_click_event, function(){
-            we.finish_dialog(this);
-        });
+        we.bind_retry(15, 25, 
+                      function(){return $("#submit")}, 
+                      function(elt){
+                          $("#calendar").bind("change", function(){_draw_demo_api(we, $(this).val())});
+                          _draw_demo_api(we, $("#calendar_type").val());
+                          elt.click(function(){we.finish_dialog(this);});
+                      }
+                     )();
     };
 
     var on_close = function(we){
