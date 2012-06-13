@@ -52,6 +52,8 @@ class Scanner(object):
             sale = Sale()
             sale.performance = self.current_performance
             try:
+                sale.event = self.current_event
+                sale.performance = self.current_performance
                 sale.name = sales_segment_record['name']
                 sale.kind = sales_segment_record['name']
                 sale.start_on = parse_datetime(sales_segment_record['start_on'])
@@ -74,7 +76,7 @@ class Scanner(object):
         if deleted:
             DBSession.query(Performance).filter_by(id=performance_record['id']).delete()
         else:
-            performance = Performance()
+            performance = DBSession.query(Performance).filter_by(backend_id=performance_record['id']).first() or Performance()
             performance.event = self.current_event
             try:
                 performance.backend_id = performance_record['id']
@@ -100,13 +102,15 @@ class Scanner(object):
         if deleted:
             DBSession.query(Event).filter_by(id=event_record['id']).delete()
         else:
-            event = Event()
+            event = DBSession.query(Event).filter_by(backend_id=event_record['id']).first() or Event()
             try:
                 event.backend_id = event_record['id']
                 event.title = event_record['title']
                 event.subtitle = event_record.get('subtitle', '')
                 event.event_open = parse_datetime(event_record['start_on'])
                 event.event_close = parse_datetime(event_record['end_on'])
+                event.deal_open = parse_datetime(event_record['deal_open'])
+                event.deal_close = parse_datetime(event_record['deal_close'])
             except KeyError as e:
                 raise "missing property '%s' in the event record" % e.message
             self.current_event = event

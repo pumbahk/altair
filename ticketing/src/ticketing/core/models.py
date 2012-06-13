@@ -443,11 +443,15 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def get_sync_data(self):
         start_on = isodate.datetime_isoformat(self.first_start_on) if self.first_start_on else ''
         end_on = isodate.datetime_isoformat(self.final_start_on) if self.final_start_on else ''
+        sales_start_on = isodate.datetime_isoformat(self.sales_start_on) if self.sales_start_on else ''
+        sales_end_on = isodate.datetime_isoformat(self.sales_end_on) if self.sales_end_on else ''
         performances = Performance.query.filter_by(event_id=self.id).all()
 
         # cmsでは日付は必須項目
         if not (start_on and end_on) and not self.deleted_at:
             raise Exception(u'パフォーマンスが登録されていないイベントは送信できません')
+        if not (sales_start_on and sales_end_on) and not self.deleted_at:
+            raise Exception(u'販売期間が登録されていないイベントは送信できません')
 
         data = {
             'id':self.id,
@@ -455,6 +459,8 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             'subtitle':self.abbreviated_title,
             'start_on':start_on,
             'end_on':end_on,
+            'deal_open':sales_start_on,
+            'deal_close':sales_end_on,
             'performances':[p.get_sync_data() for p in performances],
         }
         if self.deleted_at:
