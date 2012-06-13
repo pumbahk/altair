@@ -9,7 +9,7 @@ import json
 
 from sqlalchemy import Table, Column, ForeignKey, ForeignKeyConstraint, Index, func
 from sqlalchemy.types import TypeEngine, TypeDecorator, VARCHAR, BigInteger, Integer, String, TIMESTAMP
-from sqlalchemy.orm import column_property, scoped_session
+from sqlalchemy.orm import column_property, scoped_session, relationship as _relationship
 from sqlalchemy.orm.collections import InstrumentedList
 from sqlalchemy.orm.properties import RelationshipProperty  
 from sqlalchemy.exc import IntegrityError
@@ -246,7 +246,8 @@ class CustomizedRelationshipProperty(RelationshipProperty):
                 self.primaryjoin = and_(self.primaryjoin, column==None)
                 break
 
-def relationship(argument, secondary=None, **kwargs):
-    return CustomizedRelationshipProperty(argument, secondary=secondary, **kwargs)
+relationship = _relationship
+#def relationship(argument, secondary=None, **kwargs):
+#    return CustomizedRelationshipProperty(argument, secondary=secondary, **kwargs)
 
 
