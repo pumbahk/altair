@@ -14,18 +14,13 @@
 <div>
 
 <a href="../index.html">トップ</a>&gt;
-<!-- あとで修正 -->
           <a href="http://ticket.rakuten.co.jp/mobile/s?cid=3">演劇・ミュージカル</a>
     &gt;      オペラ
-
-『${request.GET["q"]}』を含む公演
-
     <div style="background-image:url(http://rakuten-ticket-static.s3.amazonaws.com/public/images/mobile/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000" background="http://rakuten-ticket-static.s3.amazonaws.com/public/images/mobile/bg_bar.gif"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>検索結果</font>
 </div>
 
 <div align="center">
-『${request.GET["q"]}』を含む公演
-カテゴリ『オペラ』</div> <!-- あとで -->
+カテゴリ『オペラ』</div>
 <div>
                          オペラ (0)
           </div>
