@@ -36,34 +36,63 @@ class CascadeDeleteTests(unittest.TestCase):
         from altaircms.event.models import Event
         from altaircms.models import Performance
 
-        ev = Event()
-        self.session.add(ev)
-        per = Performance(event=ev, backend_id=1)
+        target = Event()
+        per = Performance(event=target, backend_id=1)
         self.session.add(per)
 
-        self.session.flush()
-        self.session.delete(ev)
 
-        self.assertTrue(all(p in self.session.deleted for p in ev.performances))
+        self.session.flush()
+        self.session.delete(target)
+
+        self.assertTrue(all(p in self.session.deleted for p in target.performances))
         self.assertEquals(Performance.query.count(), 0)
 
     def test_delete_performance_not_cascade_event(self):
         from altaircms.event.models import Event
         from altaircms.models import Performance
 
-        ev = Event()
-        self.session.add(ev)
-        per = Performance(event=ev, backend_id=1)
+        target = Event()
+        per = Performance(event=target, backend_id=1)
         self.session.add(per)
+
 
         self.session.flush()
         self.session.delete(per)
 
-        self.assertTrue(ev not in self.session.deleted)
+        self.assertTrue(target not in self.session.deleted)
         self.assertEquals(Performance.query.count(), 0)
         self.assertEquals(Event.query.count(), 1)
 
+    def test_delete_cascade_for_event_children(self):
+        """
+        cascade chain: Event -> Performance -> Sale -> Ticket
+        """
+        from altaircms.event.models import Event
+        from altaircms.models import Performance, Sale, Ticket
 
+        target = Event()
+        per = Performance(event=target, backend_id=1)
+        sale0 = Sale(name="a", kind=u"normal", performance=per)
+        sale1 = Sale(name="b", kind=u"normal", performance=per)
+
+        self.session.add_all([Ticket(sale=sale0, price=i) for i in [100, 200, 300, 400, 500]])
+        self.session.add_all([Ticket(sale=sale1, price=i) for i in [100, 200, 300, 400, 500]])
+        self.session.add(target)
+
+
+        ## before delete target event instance check
+        self.assertFalse(target in self.session.deleted)
+
+        ## delete event
+        self.session.flush()
+        self.session.delete(target)
+
+        ## after delete target event instance check
+        self.assertTrue(target in self.session.deleted)
+        self.assertTrue(all(p in self.session.deleted for p in Performance.query))
+        self.assertTrue(all(s in self.session.deleted for s in Sale.query))
+        self.assertTrue(all(t in self.session.deleted for t in Ticket.query))
+        
         
 class ParseAndSaveEventTests(unittest.TestCase):
     def tearDown(self):

@@ -98,8 +98,7 @@ class Performance(BaseOriginalMixin, Base):
 
     purchase_link = Column(sa.UnicodeText)
     canceld = Column(Boolean, default=False)
-    # sale = relationship("Sale", backref=orm.backref("performances", order_by=id))
-    event = relationship("Event", backref=orm.backref("performances", order_by=start_on))
+    event = relationship("Event", backref=orm.backref("performances", order_by=start_on, cascade="all"))
     # client = relationship("Client", backref=orm.backref("performances", order_by=id))
 
     @property
@@ -117,7 +116,7 @@ class Sale(BaseOriginalMixin, Base):
     event_id = Column(Integer, ForeignKey('event.id'))
     event  = relationship("Event", backref="sales")
     performance_id = Column(Integer, ForeignKey('performance.id'))
-    performance  = relationship("Performance", backref="sales")
+    performance  = relationship("Performance", backref=orm.backref("sales", cascade="all"))
 
     name = Column(Unicode(length=255))
     kind = Column(Unicode(length=255), doc=u"saleskind. 販売条件(最速抽選, 先行抽選, 先行先着, 一般販売, 追加抽選.etc)", default=u"normal")
@@ -144,13 +143,13 @@ class Ticket(BaseOriginalMixin, Base):
     id = Column(Integer, primary_key=True)
     orderno = Column(Integer)
     sale_id = Column(Integer, ForeignKey("sale.id"))
-    # event_id = Column(Integer, ForeignKey("event.id"))
+
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now)
     price = Column(Integer, default=0)
 
-    sale = relationship("Sale", backref=orm.backref("tickets", order_by=orderno))
-    # event = relationship("Event", backref=orm.backref("tickets", order_by=orderno))
+    sale = relationship("Sale", backref=orm.backref("tickets", order_by=orderno, cascade="all"))
+
 
     seattype = Column(Unicode(255))
 
