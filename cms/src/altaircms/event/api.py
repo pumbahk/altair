@@ -6,6 +6,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from altaircms.event.models import Event
 from altaircms.models import DBSession, Performance, Sale, Ticket
 from altaircms.auth.models import APIKey
+from altaircms.seeds.prefecture import PREFECTURE_CHOICES
 
 class EventRepositry(object):
     def parse_and_save_event(self, parsed):
@@ -27,6 +28,7 @@ class Scanner(object):
         self.current_sale = None
         self.current_ticket = None
         self.events = []
+        self.prefectures = dict([(v, k) for k, v in PREFECTURE_CHOICES])
 
     def scan_ticket_record(self, ticket_record):
         deleted = ticket_record.get('deleted', False)
@@ -90,6 +92,7 @@ class Scanner(object):
                 performance.backend_id = performance_record['id']
                 performance.title = performance_record['name']
                 performance.venue = performance_record['venue']
+                performance.prefecture = self.prefectures.get(performance_record['prefecture'])
                 performance.open_on = parse_datetime(performance_record['open_on'])
                 performance.start_on = parse_datetime(performance_record['start_on'])
                 performance.end_on = parse_datetime(performance_record.get('end_on'))
