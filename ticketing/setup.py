@@ -36,6 +36,7 @@ requires = [
     'js.jquery_tools',
     'js.json2',
     'js.jqueryui',
+    'js.jqueryui_bootstrap',
     'js.tinymce',
     'js.backbone',
     'js.bootstrap==2.1.1',

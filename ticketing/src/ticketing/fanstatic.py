@@ -5,13 +5,13 @@ from js.underscore import underscore
 from js.jquery_tools import jquery_tools
 from js.json2 import json2
 # from js.jqueryui import black_tie
-from js.jqueryui import smoothness
 from js.jqueryui import jqueryui
 from js.tinymce import tinymce
 from js.backbone import backbone
 from js.bootstrap import bootstrap
 from js.jquery_timepicker_addon import timepicker
 from js.jquery_colorpicker import jquery_colorpicker
+from js.jqueryui_bootstrap import jqueryui_bootstrap
 
 from ticketing.jslib.jquery_validation_engine import validation_engine
 
@@ -69,8 +69,7 @@ with_fanstatic_jqueries = FanstaticDecoratorFactory(
     jquery_tools.need,
     json2.need,
     jqueryui.need,
-    # black_tie.need,
-    smoothness.need, 
+    jqueryui_bootstrap.need,
     underscore.need,
     backbone.need
     )
@@ -85,8 +84,7 @@ with_bootstrap = FanstaticDecoratorFactory(
     json2.need,
     jqueryui.need,
     jquery_colorpicker.need,
-    # black_tie.need,
-    smoothness.need,
+    jqueryui_bootstrap.need,
     underscore.need,
     backbone.need,
     bootstrap.need,
