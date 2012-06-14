@@ -7,7 +7,7 @@ class PluginInstallExceptioni(Exception):
     pass
 
 class _FileLinker(object):
-    def __init__(self, force=False):
+    def __init__(self, force=True):
         self.force = force
 
     def has_file(self, path):
