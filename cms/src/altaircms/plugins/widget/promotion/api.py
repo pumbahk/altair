@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 
-from zope.interface import directlyProvides
+from zope.interface import provider
 import altaircms.helpers as h
 from .interfaces import IPromotionManager
 import logging
@@ -9,6 +9,9 @@ logger = logging.getLogger(__file__)
 def get_promotion_manager(request):
     return request.registry.getUtility(IPromotionManager)
 
+
+
+@provider(IPromotionManager)
 class RealPromotionManager(object):
     @classmethod
     def promotion_info(cls, request, promotion, idx=0, limit=None):
@@ -29,10 +32,11 @@ class RealPromotionManager(object):
     @classmethod
     def show_image(cls, image_path, href):
         return '<a href="%s"><img src="%s"/></a>' % (href, image_path)
-directlyProvides(RealPromotionManager, IPromotionManager)
+
 
 ## mock
 from .models import PromotionInfo
+@provider(IPromotionManager)
 class MockPromotionManager(object):
     @classmethod
     def promotion_info(cls, request):
@@ -61,5 +65,3 @@ class MockPromotionManager(object):
     @classmethod
     def show_image(cls, image_path, href):
         return '<a href="%s"><img src="%s"/></a>' % (href, image_path)
-
-directlyProvides(MockPromotionManager, IPromotionManager)

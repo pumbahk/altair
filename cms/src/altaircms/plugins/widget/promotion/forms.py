@@ -13,5 +13,5 @@ class PromotionWidgetForm(form.Form):
                                            get_label=lambda obj: obj.name, 
                                            query_factory = promotion_exists)
     _choices = [(x, x)for x in  models.PROMOTION_DISPATH.keys()]
-    kind = fields.SelectField(label=u"kind", id="kind", choices=_choices)
+    kind = fields.SelectField(label=u"プロモーション表示の種類", id="kind", choices=_choices)
 

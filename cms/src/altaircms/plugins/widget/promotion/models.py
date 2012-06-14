@@ -25,8 +25,12 @@ def promotion_merge_settings(template_name, limit, widget, bname, bsettings):
             ## fixme real implementation
         from . import api
         pm = api.get_promotion_manager(request)
-        params = {"show_image": pm.show_image, "info": pm.promotion_info(request, widget.promotion, limit=limit)}
-        return render(template_name, params, request=request)
+        info = pm.promotion_info(request, widget.promotion, limit=limit)
+        if info:
+            params = {"show_image": pm.show_image, "info": info}
+            return render(template_name, params, request=request)
+        else:
+            return u'<div class="error">プロモーション枠が空です。表示できません。(promotion widget)</div>'
 
     bsettings.add(bname, slideshow_render)
 
@@ -55,6 +59,9 @@ class Promotion(Base):
     def as_info(self, request, idx=0, limit=15):
         ## todo optimize
         punits = self.promotion_units[:limit] if len(self.promotion_units) > limit else self.promotion_units
+        if not punits:
+            return None
+
         selected = punits[idx]
         return PromotionInfo(
             thumbnails=[h.asset.to_show_page(request, pu.thumbnail) for pu in punits], 
