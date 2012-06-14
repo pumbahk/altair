@@ -11,6 +11,7 @@
   <tbody>
     ${co.formfield(form, "finder_kind")}
     ${co.formfield(form, "max_items")}
+    ${co.formfield(form, "limit_span")}
     ${co.formfield(form, "delimiter")}
   </tbody>
 </table>

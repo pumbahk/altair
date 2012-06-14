@@ -17,7 +17,7 @@ from altaircms.security import RootFactory
 from .api import get_linklist_candidates_finder
 
 def linklist_render(widget, finder, request=None):
-    candidates = finder.find(request, widget.N, widget._today_function(), max_items=widget.max_items)
+    candidates = finder.find(request, widget.limit_span or widget.N, widget._today_function(), max_items=widget.max_items)
     content = widget.delimiter.join(candidates)
     return u'<div id="%s"><p>%s</p></div>' % (widget.finder_kind, content)
 
@@ -42,7 +42,8 @@ class LinklistWidget(Widget):
 
     ## fixme
     max_items = sa.Column(sa.Integer, default=20)
-    N = 7
+    limit_span = sa.Column(sa.Integer, default=7)
+    N = 7 ## default
     
     def merge_settings(self, bname, bsettings):
         bsettings.need_extra_in_scan("request")

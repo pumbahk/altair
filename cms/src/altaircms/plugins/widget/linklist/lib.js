@@ -50,6 +50,7 @@ widget.configure({
         var root = $(we.dialog);
         return {"finder_kind": root.find("#finder_kind").val(), 
                 "max_items": root.find("#max_items").val(), 
+                "limit_span": root.find("#limit_span").val(), 
                 "delimiter": root.find("#delimiter").val()
                };
     };

@@ -41,7 +41,7 @@ class Event(BaseOriginalMixin, Base):
     def near_the_deal_close_query(cls, today, N=7, qs=None):
         """ 現在から販売終了N日前までのqueryを返す"""
         limit_day = today + timedelta(days=N)
-        where = (cls.deal_open >= today) & (cls.deal_close <= limit_day)
+        where = (cls.deal_open <= today) & (cls.deal_close <= limit_day)
         return (qs or cls.query).filter(where)
 
     @classmethod
