@@ -40,9 +40,9 @@ class RakutenOpenID(object):
                 "&openid.claimed_id=http://specs.openid.net/auth/2.0/identifier_select"
                 "&openid.identity=http://specs.openid.net/auth/2.0/identifier_select"
                 "&openid.mode=checkid_setup"
-                #"&openid.ns.oauth=http://specs.openid.net/extenstions/oauth/1.0"
-                #"&openid.oauth.consumer=%(consumer_key)s"
-                #"&openid.oauth.scope=rakutenid_basicinfo,rakutenid_contactinfo"
+                "&openid.ns.oauth=http://specs.openid.net/extenstions/oauth/1.0"
+                "&openid.oauth.consumer=%(consumer_key)s"
+                "&openid.oauth.scope=rakutenid_basicinfo,rakutenid_contactinfo"
                 "&openid.ns.ax=http://openid.net/srv/ax/1.0"
                 "&openid.ax.mode=fetch_request"
                 "&openid.ax.type.nickname=http://schema.openid.net/namePerson/friendly"
@@ -61,9 +61,9 @@ class RakutenOpenID(object):
                     assoc_handle = request_get['openid.assoc_handle'],
                     signed = request_get['openid.signed'],
                     sig = request_get['openid.sig'],
-                    #ns_oauth = 'http://specs.openid.net/extenstions/oauth/1.0',
-                    #request_token = request_get['openid.oauth.request_token'],
-                    #oauth_scope = 'rakutenid_basicinfo,rakutenid_contactinfo',
+                    ns_oauth = 'http://specs.openid.net/extenstions/oauth/1.0',
+                    request_token = request_get['openid.oauth.request_token'],
+                    oauth_scope = 'rakutenid_basicinfo,rakutenid_contactinfo',
                     ns_ax = request_get['openid.ns.ax'],
                     ax_mode = request_get['openid.ax.mode'],
                     ax_type_nickname = request_get['openid.ax.type.nickname'],
@@ -83,9 +83,9 @@ class RakutenOpenID(object):
             ('openid.assoc_handle', identity['assoc_handle']),
             ('openid.signed', identity['signed']),
             ('openid.sig', identity['sig']),
-            #('openid.ns.oauth', identity['ns_oauth']),
-            #('openid.oauth.request_token', identity['request_token']),
-            #('openid.oauth.scope', identity['oauth_scope']),
+            ('openid.ns.oauth', identity['ns_oauth']),
+            ('openid.oauth.request_token', identity['oauth_request_token']),
+            ('openid.oauth.scope', identity['oauth_scope']),
             ('openid.ns.ax', identity['ns_ax']),
             ('openid.ax.mode', identity['ax_mode']),
             ('openid.ax.type.nickname', identity['ax_type_nickname']),

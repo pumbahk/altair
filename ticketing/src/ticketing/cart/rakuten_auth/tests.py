@@ -41,9 +41,9 @@ ns:http://specs.openid.net/auth/2.0"""
             "ax_mode": "",
             "ax_type_nickname": "",
             "ax_value_nickname": "this-is-nickname",
-            #"ns.oauth": "http://specs.openid.net/extenstions/oauth/1.0",
-            #"oauth.request_token": "XXXXXXXXXXXXX",
-            #"oauth.scope": "rakutenid_basicinfo,rakutenid_contactinfo",
+            "ns_oauth": "http://specs.openid.net/extenstions/oauth/1.0",
+            "oauth_request_token": "XXXXXXXXXXXXX",
+            "oauth_scope": "rakutenid_basicinfo,rakutenid_contactinfo",
         }
         result = target.verify_authentication(request, identity)
 
@@ -59,13 +59,13 @@ ns:http://specs.openid.net/auth/2.0"""
             "&openid.assoc_handle=ce1b14fb7941fcd9"
             "&openid.signed=op_endpoint%2Cclaimed_id%2Cidentity%2Creturn_to%2Cresponse_nonce%2Cassoc_handle"
             "&openid.sig=xbWVm2b4Xn4GF4O7v2opgPPrElHltmXokC1xgpjUgGw%3D"
+            "&openid.ns.oauth=http%3A%2F%2Fspecs.openid.net%2Fextenstions%2Foauth%2F1.0"
+            "&openid.oauth.request_token=XXXXXXXXXXXXX"
+            "&openid.oauth.scope=rakutenid_basicinfo%2Crakutenid_contactinfo"
             "&openid.ns.ax="
             "&openid.ax.mode="
             "&openid.ax.type.nickname="
             "&openid.ax.value.nickname=this-is-nickname"
-            #"&openid.ns.oauth=http%3A%2F%2Fspecs.openid.net%2Fextenstions%2Foauth%2F1.0"
-            #"&openid.oauth.request_token=XXXXXXXXXXXXX"
-            #"&openid.oauth.scope=rakutenid_basicinfo%2Crakutenid_contactinfo"
             )
 
     @mock.patch('urllib2.urlopen')
@@ -98,9 +98,9 @@ ns:http://specs.openid.net/auth/2.0"""
             "ax_mode": "",
             "ax_type_nickname": "",
             "ax_value_nickname": "this-is-nickname",
-            #"ns.oauth": "http://specs.openid.net/extenstions/oauth/1.0",
-            #"oauth.request_token": "XXXXXXXXXXXXX",
-            #"oauth.scope": "rakutenid_basicinfo,rakutenid_contactinfo",
+            "ns_oauth": "http://specs.openid.net/extenstions/oauth/1.0",
+            "oauth_request_token": "XXXXXXXXXXXXX",
+            "oauth_scope": "rakutenid_basicinfo,rakutenid_contactinfo",
         }
         result = target.verify_authentication(request, identity)
 
@@ -116,11 +116,11 @@ ns:http://specs.openid.net/auth/2.0"""
             "&openid.assoc_handle=ce1b14fb7941fcd9"
             "&openid.signed=op_endpoint%2Cclaimed_id%2Cidentity%2Creturn_to%2Cresponse_nonce%2Cassoc_handle"
             "&openid.sig=xbWVm2b4Xn4GF4O7v2opgPPrElHltmXokC1xgpjUgGw%3D"
+            "&openid.ns.oauth=http%3A%2F%2Fspecs.openid.net%2Fextenstions%2Foauth%2F1.0"
+            "&openid.oauth.request_token=XXXXXXXXXXXXX"
+            "&openid.oauth.scope=rakutenid_basicinfo%2Crakutenid_contactinfo"
             "&openid.ns.ax="
             "&openid.ax.mode="
             "&openid.ax.type.nickname="
             "&openid.ax.value.nickname=this-is-nickname"
-            # "&openid.ns.oauth=http%3A%2F%2Fspecs.openid.net%2Fextenstions%2Foauth%2F1.0"
-            # "&openid.oauth.request_token=XXXXXXXXXXXXX"
-            # "&openid.oauth.scope=rakutenid_basicinfo%2Crakutenid_contactinfo"
         )
