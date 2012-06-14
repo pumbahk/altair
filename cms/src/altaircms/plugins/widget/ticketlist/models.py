@@ -1,3 +1,5 @@
+# -*- encoding:utf-8 -*-
+
 from zope.interface import implements
 from pyramid.renderers import render
 
@@ -25,6 +27,10 @@ class TicketlistWidget(Widget):
     query = DBSession.query_property()
 
     kind = sa.Column(sa.Unicode(255), default="normal")
+    caption = sa.Column(sa.UnicodeText, doc=u"見出し")
+    target_performance_id = sa.Column(sa.Integer, sa.ForeignKey("performance.id"))
+    target_performance = orm.relationship("Performance")
+
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
 
     def merge_settings(self, bname, bsettings):

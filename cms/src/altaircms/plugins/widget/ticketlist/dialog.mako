@@ -19,7 +19,9 @@
 
 <table class="table">
   <tbody>
+    ${formfield("target_performance")}
     ${formfield("kind")}
+    ${formfield("caption")}
   </tbody>
 </table>
 

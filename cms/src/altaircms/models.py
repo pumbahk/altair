@@ -141,7 +141,7 @@ class Ticket(BaseOriginalMixin, Base):
     query = DBSession.query_property()
 
     id = Column(Integer, primary_key=True)
-    orderno = Column(Integer)
+    orderno = Column(Integer, default=50)
     sale_id = Column(Integer, ForeignKey("sale.id"))
 
     created_at = Column(DateTime, default=datetime.now)

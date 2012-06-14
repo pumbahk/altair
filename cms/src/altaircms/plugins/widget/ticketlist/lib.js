@@ -47,7 +47,9 @@ widget.configure({
 
     var collect_data = function(we, choiced_elt){
         var root = $(we.dialog)
-        return {"kind": root.find("#kind").val()}
+        return {"kind": root.find("#kind").val(), 
+                "target_performance_id": root.find("#target").val(), 
+                "caption": root.find("#caption").val()}
     };
     return widget.include("ticketlist", {
         load_page: load_page, 
