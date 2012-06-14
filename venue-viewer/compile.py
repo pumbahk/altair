@@ -53,28 +53,12 @@ class Processor(object):
 
     def compose_source(self, file, out):
         self.included_files.add(file)
+        mydeps = list()
         with open(file, 'r') as f:
             out.write('\n\n/************** %s **************/\n' % os.path.basename(file))
             for line in f:
                 includes = re.findall(r'include\s*\(\"(.+?)\"\)', line)
-                if not includes:
-                    def repl(match):
-                        required_file_name = match.group(2)
-                        required = self.lookup_file(required_file_name, file)
-                        if required is None:
-                            raise ApplicationException("File not found: %s" % required_file_name)
-                        pair = self.libs.get(required)
-                        if pair is None:
-                            id = self.idgen()
-                            self.libs[required] = (id, None)
-                            out = StringIO()
-                            self.compose_source(required, out)
-                            pair = self.libs[required] = (id, out.getvalue())
-                        return "__LIBS__['%s']" % pair[0]
-
-                    line = re.sub(r'''require\s*\((["'])(.+)(\1)\)''', repl, line)
-                    out.write(line)
-                else:
+                if includes:
                     for included_file_name in includes:
                         included = self.lookup_file(included_file_name, file)
                         if included in self.included_files:
@@ -83,6 +67,28 @@ class Processor(object):
                             raise ApplicationException("File not found: %s" % included_file_name)
                         self.compose_source(included, out)
 
+                else:
+                    def repl(match):
+                        required_file_name = match.group(2)
+                        required = self.lookup_file(required_file_name, file)
+                        if required is None:
+                            raise ApplicationException("File not found: %s" % required_file_name)
+                        pair = self.libs.get(required)
+                        if pair is None:
+                            id = self.idgen()
+                            self.libs[required] = (id, None, None)
+                            out = StringIO()
+                            deps = self.compose_source(required, out)
+                            pair = self.libs[required] = (id, out.getvalue(), deps)
+                        mydeps.append(required)
+                        return "__LIBS__['%s']" % pair[0]
+
+                    line = re.sub(r'''require\s*\((["'])(.+)(\1)\)''', repl, line)
+                    out.write(line)
+
+        return mydeps
+
+
     def read(self, file):
         self.compose_source(file, self.out)
 
@@ -90,9 +96,19 @@ class Processor(object):
         # TODO: dependency resolution
         out.write("(function () {\n")
         out.write("var __LIBS__ = {};\n")
+        has_written = set()
+
+        def write_lib(path, pair):
+            if path not in has_written:
+                has_written.add(path)
+                deps = pair[2]
+                for i in deps:
+                    write_lib(i, self.libs[i])
+                out.write("__LIBS__['%s'] = (function (exports) { (function () { %s })(); return exports; })({});\n" % (pair[0], pair[1]))
+
         for path, pair in self.libs.iteritems():
-            out.write("__LIBS__['%s'] = (function (exports) { (function () { %s })(); return exports; })({});\n" % pair)
-            first = False
+            write_lib(path, pair)
+
         out.write(self.out.getvalue())
         out.write("})();\n")
 
