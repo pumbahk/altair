@@ -12,7 +12,6 @@ def _setup_db():
     import ticketing.multicheckout.models
 
     engine = create_engine("sqlite:///")
-    engine.echo = False
     sqlahelper.get_session().remove()
     sqlahelper.add_engine(engine)
     sqlahelper.get_base().metadata.drop_all()

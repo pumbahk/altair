@@ -4,7 +4,6 @@ import operator
 from sqlalchemy import sql
 from pyramid.decorator import reify
 from ..core import models as c_models
-from . import security
 from . import models as m
 
 from . import logger
@@ -176,7 +175,6 @@ class TicketingCartResrouce(object):
 
         performance_id = int(performance_id)
         logger.debug("order performance_id = %s, ordered_products = %s" % (performance_id, ordered_products))
-        m.DBSession.bind.echo = True
         conn = m.DBSession.bind.connect()
         try:
 

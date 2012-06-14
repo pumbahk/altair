@@ -1,12 +1,12 @@
 # encoding: utf-8
 
-from ticketing.models import *
 from sqlalchemy import Table, Column, ForeignKey, ForeignKeyConstraint, func
 from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric
 from sqlalchemy.orm import join, backref
 from sqlalchemy.ext.associationproxy import association_proxy
 
-from ..users.models import User
+from ticketing.models import *
+from ticketing.users.models import User
 
 seat_seat_adjacency_table = Table(
     "Seat_SeatAdjacency", Base.metadata,
@@ -356,6 +356,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             'id':self.id,
             'name':self.name,
             'venue':self.venue.name,
+            'prefecture':self.venue.site.prefecture,
             'open_on':open_on,
             'start_on':start_on,
             'end_on':end_on,
