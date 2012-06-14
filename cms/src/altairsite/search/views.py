@@ -35,13 +35,13 @@ def page_search_result(request):
     return params
 
 
-@view_config(request_param="textfield", route_name="page_search_by_freeword", 
+@view_config(request_param="q", route_name="page_search_by_freeword", 
              renderer="altaircms:templates/front/layout/ticketstar.search.mako")
 def search_by_freeword(context, request):
     """ フリーワード検索
     """
     ## 全文検索を使って検索。, で区切られた文字はandで結合
-    query_params = dict(query=request.GET.get("textfield", u""), query_cond="intersection")
+    query_params = dict(query=request.GET.get("q", u""), query_cond="intersection")
 
     result_seq = context.get_result_sequence_from_query_params(
         query_params,
