@@ -181,8 +181,8 @@ class ParseAndSaveEventTests(unittest.TestCase):
              ]
            },
            {
-             "name": "normal",
-             "kind": "normal",
+             "name": "added_lottery",
+             "kind": "added_lottery",
              "start_on": "2012-01-23T19:00:00+09:00",
              "end_on": "2012-01-31T19:00:00+09:00",
              "tickets": [
@@ -268,6 +268,22 @@ class ParseAndSaveEventTests(unittest.TestCase):
  ]
 }
     """
+
+    def test_register_multiple(self):
+        import json
+        from ..models import Ticket, Performance, Sale
+
+        result = self._callFUT(json.loads(self.data))
+        fst_performance_count = Performance.query.count()
+        fst_sale_count = Sale.query.count()
+        fst_ticket_count = Ticket.query.count()
+
+        result = self._callFUT(json.loads(self.data))
+        self.assertEquals(fst_performance_count, Performance.query.count())
+        self.assertEquals(fst_sale_count, Sale.query.count())
+        self.assertEquals(fst_ticket_count, Ticket.query.count())
+
+
 
 class ValidateAPIKeyTests(unittest.TestCase):
     def setUp(self):
@@ -361,3 +377,4 @@ class TestEventRegister(unittest.TestCase):
         response = self._callFUT(request)
 
         self.assertEqual(response.status_int, 400)
+        

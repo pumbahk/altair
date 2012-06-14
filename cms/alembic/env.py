@@ -44,6 +44,7 @@ import altaircms.plugins.widget.topic.models
 import altaircms.plugins.widget.purchase.models
 import altaircms.plugins.widget.linklist.models
 import altaircms.plugins.widget.iconset.models
+import altaircms.plugins.widget.twitter.models
 
 
 target_metadata = models.Base.metadata

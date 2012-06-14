@@ -33,29 +33,37 @@ class Scanner(object):
         if deleted:
             DBSession.query(Ticket).filter_by(id=ticket['id']).delete()
         else:
-            ticket = Ticket()
-            ticket.sale = self.current_sale
             try:
-                ticket.name = ticket_record['name']
+                ticket = (Ticket.query.filter_by(sale=self.current_sale, 
+                                                 name = ticket_record['name'], 
+                                                 seattype=ticket_record["seat_type"]).first()
+                          or 
+                          Ticket(sale=self.current_sale, 
+                                 name = ticket_record['name'], 
+                                 seattype=ticket_record["seat_type"]))
                 ticket.price = ticket_record['price']
-                ticket.seattype = ticket_record['seat_type']
+                self.current_ticket = ticket
+                self.session.add(ticket)
             except KeyError as e:
                 raise "missing property '%s' in the ticket record" % e.message
-            self.current_ticket = ticket
-            self.session.add(ticket)
 
     def scan_sales_segment_record(self, sales_segment_record):
         deleted = sales_segment_record.get('deleted', False)
         if deleted:
             DBSession.query(Sale).filter_by(id=sale['id']).delete()
         else:
-            sale = Sale()
-            sale.performance = self.current_performance
+            sale = None
             try:
+                sale = (Sale.query.filter_by(name=sales_segment_record["name"], 
+                                         kind=sales_segment_record["kind"], 
+                                         performance=self.current_performance).first()
+                        or
+                        Sale(name=sales_segment_record["name"], 
+                             kind=sales_segment_record["kind"], 
+                             performance=self.current_performance))
+
                 sale.event = self.current_event
                 sale.performance = self.current_performance
-                sale.name = sales_segment_record['name']
-                sale.kind = sales_segment_record['kind']
                 sale.start_on = parse_datetime(sales_segment_record['start_on'])
                 sale.end_on = parse_datetime(sales_segment_record['end_on'])
             except KeyError as e:

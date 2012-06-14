@@ -150,7 +150,7 @@ class Ticket(BaseOriginalMixin, Base):
 
     sale = relationship("Sale", backref=orm.backref("tickets", order_by=orderno, cascade="all"))
 
-
+    name = Column(Unicode(255))
     seattype = Column(Unicode(255))
 
 
