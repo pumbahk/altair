@@ -2,7 +2,8 @@
 from ..mapping import IdNameLabelMapping
 MUSIC_SUBCATEGORY_CHOICES = [
     ## name, label
-    ("pops-rock", u"ポップス・ロック"), 
+    ("jpops-rock", u"Jポップス・ロック"), 
+    ("pops-rock", u"海外ポップス・ロック"), 
     ("classic-opera", u"クラシック・オペラ"), 
     ("festival", u"フェスティバル"), 
     ("jazz-fusion", u"ジャズ・フュージョン"), 

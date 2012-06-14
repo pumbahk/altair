@@ -30,7 +30,7 @@ def promotion_merge_settings(template_name, limit, widget, bname, bsettings):
             params = {"show_image": pm.show_image, "info": info}
             return render(template_name, params, request=request)
         else:
-            return u'<div class="error">プロモーション枠が空です。表示できません。(promotion widget)</div>'
+            return u''
 
     bsettings.add(bname, slideshow_render)
 
