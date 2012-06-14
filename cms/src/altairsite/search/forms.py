@@ -65,7 +65,7 @@ class TopPageSidebarSearchForm(form.Form):
     end_month = MaybeSelectField(choices=months)
     end_day = MaybeSelectField(choices=days)
     choices = import_symbol("altaircms.seeds.area:AREA_CHOICES")
-    area = fields.SelectField(choices=choices)
+    area = fields.SelectField(choices=[("", "-------")]+choices)
 
     def make_query_params(self):
         data = self.data
@@ -75,16 +75,18 @@ class TopPageSidebarSearchForm(form.Form):
         if all((data["end_year"], data["end_month"], data["end_day"])):
             performance_close = datetime(*(int(x) for x in (data["end_year"], data["end_month"], data["end_day"])))
 
-        areas, prefs = [data["area"]], [x for x,_ in  PREF_DICT[data["area"]]], 
-        return {"performance_open": performance_open, 
-                "performance_close": performance_close, 
-                "areas": areas, 
-                "prefectures": prefs, 
-                "area_tree": MarkedTree(check_all_list=[data["area"]], 
-                                        translator=PREF_EN_TO_JA, 
-                                        tree=zip(areas, prefs))
-                }
-
+        params =  {
+            "performance_open": performance_open, 
+            "performance_close": performance_close, 
+            }
+        
+        if data["area"]:
+            areas = params["areas"] = [data["area"]]
+            prefs = params["prefectures"] = [x for x,_ in  PREF_DICT[data["area"]]]
+            params["area_tree"] = MarkedTree(check_all_list=areas, 
+                                             translator=PREF_EN_TO_JA, 
+                                             tree=zip(areas, prefs))
+        return params
 
 
 
