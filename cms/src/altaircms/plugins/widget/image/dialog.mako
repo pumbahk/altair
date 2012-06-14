@@ -3,7 +3,10 @@
   % for g in assets:
   <div>
      % for image in g:
-       <img pk="${image.id}" src="${h.asset.to_show_page(request,image)}" alt=""/>
+       <div class="item">
+         <img pk="${image.id}" src="${h.asset.to_show_page(request,image)}" alt=""/>
+         <p>title:${image.title} width:${image.width} height:${image.height} </p>
+       </div>
      % endfor          
   </div>
   % endfor 
