@@ -148,7 +148,7 @@ class Ticket(BaseOriginalMixin, Base):
     updated_at = Column(DateTime, default=datetime.now)
     price = Column(Integer, default=0)
 
-    sale = relationship("Sale", backref=orm.backref("tickets", order_by=orderno, cascade="all"))
+    sale = relationship("Sale", backref=orm.backref("tickets", order_by=price, cascade="all"))
 
     name = Column(Unicode(255))
     seattype = Column(Unicode(255))
