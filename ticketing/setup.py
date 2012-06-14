@@ -47,6 +47,7 @@ requires = [
     'lxml',
     'isodate',
     'python-dateutil',
+    'standardenum',
     ]
 
 setup(name='ticketing',
