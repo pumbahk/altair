@@ -142,7 +142,11 @@ class PromotionUnitForm(Form):
         ImageAsset, allow_blank=False, label=u"サブ画像(60x60)",
         get_label=lambda obj: obj.title or u"名前なし")
 
-    __display_fields__ = [u"promotion", u"main_image", u"text", u"thumbnail"]
+    pageset = dynamic_query_select_field_factory(
+        PageSet, allow_blank=True, label=u"リンク先ページ(CMSで作成したもの)",
+        get_label=lambda obj: obj.name or u"--なし--")
+    link = fields.TextField(label=u"外部リンク(ページより優先)")
+    __display_fields__ = [u"promotion", u"main_image", u"text", u"thumbnail", "pageset", "link"]
     
 class PromotionForm(Form):
     name = fields.TextField(label=u"プロモーション枠名")

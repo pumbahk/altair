@@ -32,8 +32,9 @@ def promotion_unit_mapper(request, obj):
     objlike.promotion = obj.promotion.name
     objlike.main_image = obj.main_image.title or u"名前なし"
     objlike.thumbnail = obj.thumbnail.title or u"名前なし"
-    objlike.pageset = obj.pageset.name if obj.pageset else None
-    objlike.link = obj.get_link(request)
+    objlike.pageset = RawText(u'<a href="%s">%s</a>' % (h.link.to_preview_page_from_pageset(request, obj.pageset), obj.pageset.name)) if obj.pageset else u"-"
+    url = obj.get_link(request)
+    objlike.link = RawText(u'<a href="%s">%s</a>' % (url, url))
     return objlike
     
 PDICT = import_symbol("altaircms.seeds.prefecture:PrefectureMapping").name_to_label

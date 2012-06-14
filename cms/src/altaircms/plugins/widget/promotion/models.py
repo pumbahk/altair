@@ -90,10 +90,14 @@ class PromotionUnit(Base):
 
     def get_link(self, request):
         """ promotion枠の画像をクリックし時の飛び先を決める。pageがない場合にはurlを見る"""
-        if self.pageset:
+        if self.link:
+            return self.link
+        elif self.pageset:
             return h.front.to_publish_page_from_pageset(request, self.pageset)
         else:
-            return self.link
+            return u"" #e-
+
+
 
 class PromotionWidget(Widget):
     implements(IWidget)
