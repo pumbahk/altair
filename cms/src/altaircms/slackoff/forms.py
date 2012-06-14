@@ -244,6 +244,7 @@ class TopicForm(Form):
                                                      query_factory=lambda : PageSet.query, 
                                                      allow_blank=True, 
                                                      get_label=lambda obj: obj.name or u"名前なし")
+    link = fields.TextField(label=u"外部リンク(ページより優先)")
     event = dynamic_query_select_field_factory(Event, 
                                                label=u"関連イベント",
                                                allow_blank=True, 
@@ -253,7 +254,7 @@ class TopicForm(Form):
                           u"text", 
                           u"publish_open_on", u"publish_close_on", 
                           u"orderno", u"is_vetoed", 
-                          u"bound_page", u"linked_page", u"event"]
+                          u"bound_page", u"linked_page", u"link", u"event"]
 
     def validate(self, **kwargs):
         data = self.data
@@ -296,12 +297,13 @@ class TopcontentForm(Form):
                                                      query_factory=lambda : PageSet.query, 
                                                      allow_blank=True, 
                                                      get_label=lambda obj: obj.name or u"名前なし")
+    link = fields.TextField(label=u"外部リンク(ページより優先)")
 
     __display_fields__= [u"title", u"kind", u"subkind", u"is_global", 
                          u"text", u"countdown_type", u"image_asset", 
                          u"publish_open_on", u"publish_close_on", 
                          u"orderno", u"is_vetoed", 
-                         u"bound_page", u"linked_page"]
+                         u"bound_page", u"linked_page", u"link"]
     
     def validate(self, **kwargs):
         data = self.data

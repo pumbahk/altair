@@ -26,10 +26,14 @@ def get_link_from_category(request, category):
         return to_publish_page_from_pageset(request, category.pageset)
 
 def get_link_from_topic(request, topic):
-    if topic.linked_page:
+    if topic.link:
+        return topic.link
+    elif topic.linked_page:
         return to_publish_page_from_pageset(request, topic.linked_page)
     else:
-        return topic.text
+        return ""
+
+get_link_from_topcontent = get_link_from_topic
 
 def unquote_path_segment(string):
     """ request.route_pathの結果"foo/bar"が "foo%2Fbar"になってしまう部分の修正。

@@ -186,6 +186,9 @@ topic widgetでは
     bound_page = orm.relationship(PageSet, primaryjoin="Topic.bound_page_id==PageSet.id")
     is_global = sa.Column(sa.Boolean, default=False)
 
+
+    link = sa.Column(sa.Unicode(255), doc="external link")
+
     def __repr__(self):
         return "topic: %s title=%s" % (self.kind, self.title)
 
@@ -257,6 +260,8 @@ class Topcontent(AboutPublishMixin,
     ## topcontent をlinkとして利用したときの飛び先
     linked_page_id = sa.Column(sa.Integer, sa.ForeignKey("pagesets.id"), nullable=True)
     linked_page = orm.relationship(PageSet, primaryjoin="Topcontent.linked_page_id==PageSet.id")
+
+    link = sa.Column(sa.Unicode(255), doc="external link")
 
     ## topcontentが表示されるページ
     bound_page_id = sa.Column(sa.Integer, sa.ForeignKey("pagesets.id"), nullable=True)

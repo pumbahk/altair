@@ -76,6 +76,8 @@ def topic_mapper(request, obj):
     objlike.text = obj.text if len(obj.text) <= 20 else obj.text[:20]+u"..."
     objlike.bound_page = obj.bound_page.name if obj.bound_page else u"-"
     objlike.linked_page = obj.linked_page.name if obj.linked_page else u"-"
+    url = h.link.get_link_from_topic(request, obj)
+    objlike.link = RawText(u'<a href="%s">%s</a>' % (url, url))
     return objlike
 
 CDWN_DICT = dict(Topcontent.COUNTDOWN_CANDIDATES)
@@ -85,6 +87,8 @@ def topcontent_mapper(request, obj):
     objlike.image_asset = RawText(u'<a href="%s">%s</a>' % (h.asset.to_show_page(request, obj.image_asset), image_asset))
     objlike.bound_page = obj.bound_page.name if obj.bound_page else u"-"
     objlike.linked_page = obj.linked_page.name if obj.linked_page else u"-"
+    url = h.link.get_link_from_topcontent(request, obj)
+    objlike.link = RawText(u'<a href="%s">%s</a>' % (url, url))
     objlike.countdown_type = CDWN_DICT[obj.countdown_type]
     return objlike
 
