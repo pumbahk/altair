@@ -125,7 +125,7 @@ form = TopPageSidebarSearchForm()
 		<div id="sideSearch">
 			<h2><img src="/static/ticketstar/img/index/title_search.gif" alt="チケットを探す" width="246" height="36" /></h2>
 			<ul>
-				<li><a href="${h.link.get_searchpage(request, kind="deal_cond", value="eary_fisrtcome")}"><img src="/static/ticketstar/img/index/btn_presale.gif" alt="先行抽選" width="222" height="28" /></a></li>
+				<li><a href="${h.link.get_searchpage(request, kind="deal_cond", value="early_firstcome")}"><img src="/static/ticketstar/img/index/btn_presale.gif" alt="先行抽選" width="222" height="28" /></a></li>
 				<li><a href="${h.link.get_searchpage(request, kind="deal_cond", value="normal")}"><img src="/static/ticketstar/img/index/btn_release.gif" alt="一般発売" width="222" height="28" /></a></li>
 				<li><a href="${h.link.get_searchpage(request, kind="deal_open", value=7)}"><img src="/static/ticketstar/img/index/btn_now.gif" alt="すぐ見たい" width="222" height="28" /></a></li>
 				<li><a href="${request.route_path("page_search_by_freeword",_query=dict(q=u"お買い得"))}"><img src="/static/ticketstar/img/index/btn_best.gif" alt="お買い得チケット" width="222" height="28" /></a></li>

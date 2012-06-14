@@ -117,7 +117,7 @@ class QueryParamsRender(object):
             r.append(u"販売終了まで: %s" % qp["till_deal_end"])
         if qp.get("closed_only"):
             r.append(u"販売終了: 含む")
-        if qp.get("cancel_only"):
+        if qp.get("canceled_only"):
             r.append(u"公演中止: 含む")
 
         if qp.get("query_expr_message"):
