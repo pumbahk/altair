@@ -6,9 +6,65 @@ from altaircms.lib.testutils import _initTestingDB
 from .api import EventRepositry
 from .interfaces import IAPIKeyValidator, IEventRepository
 
+def setUpModule():
+    import sqlahelper
+    from sqlalchemy import create_engine
+    import altaircms.page.models
+    import altaircms.event.models
+    import altaircms.models
+
+    engine = create_engine("sqlite:///")
+    engine.echo = False
+    sqlahelper.get_session().remove()
+    sqlahelper.add_engine(engine)
+    sqlahelper.get_base().metadata.drop_all()
+    sqlahelper.get_base().metadata.create_all()
+
 def _to_utc(d):
     return d.replace(tzinfo=None) - d.utcoffset()
 
+class CascadeDeleteTests(unittest.TestCase):
+    def tearDown(self):
+        import transaction
+        transaction.abort()
+
+    def setUp(self):
+        import sqlahelper
+        self.session = sqlahelper.get_session()
+
+    def test_delete_event_cascade_performance(self):
+        from altaircms.event.models import Event
+        from altaircms.models import Performance
+
+        ev = Event()
+        self.session.add(ev)
+        per = Performance(event=ev, backend_id=1)
+        self.session.add(per)
+
+        self.session.flush()
+        self.session.delete(ev)
+
+        self.assertTrue(all(p in self.session.deleted for p in ev.performances))
+        self.assertEquals(Performance.query.count(), 0)
+
+    def test_delete_performance_not_cascade_event(self):
+        from altaircms.event.models import Event
+        from altaircms.models import Performance
+
+        ev = Event()
+        self.session.add(ev)
+        per = Performance(event=ev, backend_id=1)
+        self.session.add(per)
+
+        self.session.flush()
+        self.session.delete(per)
+
+        self.assertTrue(ev not in self.session.deleted)
+        self.assertEquals(Performance.query.count(), 0)
+        self.assertEquals(Event.query.count(), 1)
+
+
+        
 class ParseAndSaveEventTests(unittest.TestCase):
     def tearDown(self):
         import transaction
@@ -48,7 +104,7 @@ class ParseAndSaveEventTests(unittest.TestCase):
 
         ticket = sale.tickets[0]
         self.assertEqual(ticket.name, u"A席大人")
-        self.assertEqual(ticket.seat_type, u"A席")
+        self.assertEqual(ticket.seattype, u"A席")
         self.assertEqual(ticket.price, 5000)
 
     data = """
@@ -61,6 +117,8 @@ class ParseAndSaveEventTests(unittest.TestCase):
      "title": "マツイ・オン・アイス",
      "start_on": "2012-03-15T19:00:00+09:00",
      "end_on": "2012-03-15T22:00:00+09:00",
+     "deal_open": "2012-03-15T19:00:00+09:00",
+     "deal_close": "2012-03-15T22:00:00+09:00",
      "performances": [
        {
          "id": 2,
@@ -72,6 +130,7 @@ class ParseAndSaveEventTests(unittest.TestCase):
          "sales": [
            {
              "name": "presale",
+             "kind": "first_lottery",
              "start_on": "2012-01-12T19:00:00+09:00",
              "end_on": "2012-01-22T19:00:00+09:00",
              "tickets": [
@@ -94,6 +153,7 @@ class ParseAndSaveEventTests(unittest.TestCase):
            },
            {
              "name": "normal",
+             "kind": "normal",
              "start_on": "2012-01-23T19:00:00+09:00",
              "end_on": "2012-01-31T19:00:00+09:00",
              "tickets": [
@@ -123,9 +183,12 @@ class ParseAndSaveEventTests(unittest.TestCase):
          "open_on": "2012-03-16T17:00:00+09:00",
          "start_on": "2012-03-16T19:00:00+09:00",
          "end_on": "2012-03-16T22:00:00+09:00",
+         "deal_open": "2012-03-15T19:00:00+09:00",
+         "deal_close": "2012-03-15T22:00:00+09:00",  
          "sales": [
            {
              "name": "presale",
+             "kind": "first_lottery",
              "start_on": "2012-01-12T19:00:00+09:00",
              "end_on": "2012-01-22T19:00:00+09:00",
              "tickets": [
@@ -148,6 +211,7 @@ class ParseAndSaveEventTests(unittest.TestCase):
            },
            {
              "name": "normal",
+             "kind": "normal", 
              "start_on": "2012-01-23T19:00:00+09:00",
              "end_on": "2012-01-31T19:00:00+09:00",
              "tickets": [

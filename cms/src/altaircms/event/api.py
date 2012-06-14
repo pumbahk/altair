@@ -59,7 +59,7 @@ class Scanner(object):
                 sale.start_on = parse_datetime(sales_segment_record['start_on'])
                 sale.end_on = parse_datetime(sales_segment_record['end_on'])
             except KeyError as e:
-                raise "missing property '%s' in the sales record" % e.message
+                raise Exception("missing property '%s' in the sales record" % e.message)
 
             self.current_sale = sale
 
@@ -109,10 +109,10 @@ class Scanner(object):
                 event.subtitle = event_record.get('subtitle', '')
                 event.event_open = parse_datetime(event_record['start_on'])
                 event.event_close = parse_datetime(event_record['end_on'])
-                event.deal_open = parse_datetime(event_record['deal_open'])
-                event.deal_close = parse_datetime(event_record['deal_close'])
+                event.deal_open = parse_datetime(event_record.get('deal_open'))
+                event.deal_close = parse_datetime(event_record.get('deal_close'))
             except KeyError as e:
-                raise "missing property '%s' in the event record" % e.message
+                raise Exception("missing property '%s' in the event record" % e.message)
             self.current_event = event
 
             performance_records = event_record.get('performances')
