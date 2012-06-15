@@ -1,6 +1,6 @@
 from pyramid.view import view_config
 from altaircms.lib.itertools import group_by_n
-
+from . import forms
 
 class ImageWidgetView(object):
     def __init__(self, request):
@@ -41,4 +41,6 @@ class ImageWidgetView(object):
     def dialog(self):
         N = 5
         assets = group_by_n(self.request.context.get_asset_query(), N)
-        return {"assets": assets}
+        widget = self.request.context.get_widget(self.request.GET["pk"])
+        form = forms.ImageInfoForm(**widget.to_dict())
+        return {"assets": assets, "form": form}
