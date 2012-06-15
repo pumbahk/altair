@@ -12,6 +12,7 @@ from . import helpers as h
 from ..multicheckout import helpers as m_h
 from ..multicheckout import api as multicheckout_api
 from . import schema
+from .rakuten_auth.api import authenticated_user
 
 logger = logging.getLogger(__name__)
 
@@ -278,6 +279,7 @@ class MultiCheckoutView(object):
 
         logger.debug("%s" % auth_result)
 
+        user = authenticated_user(self.request)
         order = o_models.Order.create_from_cart(cart)
         order.multicheckout_approval_no = checkout_auth_result.ApprovalNo
         cart.finish()

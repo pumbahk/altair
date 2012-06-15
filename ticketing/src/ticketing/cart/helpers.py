@@ -1,6 +1,7 @@
 from webhelpers.number import format_number as _format_number
-from .models import Cart, PaymentMethodManager
+from .models import Cart, PaymentMethodManager, DBSession
 from .interfaces import IPaymentMethodManager
+from ..users.models import User, UserCredential, MemberShip
 
 def format_number(num, thousands=","):
     return _format_number(int(num), thousands)
@@ -51,3 +52,23 @@ def get_payment_method_url(request, payment_method_id, route_args={}):
     payment_method_manager = get_payment_method_manager(request)
     route_name = payment_method_manager.get_route_name(str(payment_method_id))
     return request.route_url(route_name, **route_args)
+
+def get_or_create_user(request, clamed_id):
+    credential = UserCredential.query.filter(
+        UserCredential.auth_identifier==clamed_id
+    ).filter(
+        UserCredential.membership_id==MemberShip.id
+    ).filter(
+        MemberShip.name=='rakuten'
+    ).first()
+    if credential:
+        return credential.user
+    
+    user = User()
+    membership = MemberShip.query.filter(MemberShip.name=='rakuten').first()
+    if membership is None:
+        membership = MemberShip(name='rakuten')
+        DBSession.add(membership)
+    credential = UserCredential(user=user, auth_identifier=clamed_id, membership=membership)
+    DBSession.add(user)
+    return user

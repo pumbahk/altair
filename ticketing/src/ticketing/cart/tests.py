@@ -9,6 +9,7 @@ def _setup_db():
     from . import models
     import ticketing.models
     import ticketing.orders.models
+    import ticketing.users.models
     import ticketing.multicheckout.models
 
     engine = create_engine("sqlite:///")
@@ -26,9 +27,11 @@ class TestIt(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp()
         self.config.include('ticketing.cart')
+        self.session = _setup_db()
 
     def tearDown(self):
         testing.tearDown()
+        _teardown_db()
 
     def test_payment_method_url_multicheckout(self):
         from . import helpers as h
@@ -36,6 +39,33 @@ class TestIt(unittest.TestCase):
         result = h.get_payment_method_url(request, "3")
 
         self.assertEqual(result, "http://example.com/payment/3d")
+
+    def test_get_or_create_user_create(self):
+        from . import helpers as h
+        request = DummyRequest()
+        result = h.get_or_create_user(request, 'http://example.com/clamed_id')
+        self.assertIsNone(result.id)
+        self.assertEqual(result.user_credential[0].auth_identifier, 'http://example.com/clamed_id')
+        self.assertEqual(result.user_credential[0].membership.name, 'rakuten')
+
+    def _add_user(self, clamed_id):
+        from ..users.models import User, UserCredential, MemberShip
+        user = User()
+        membership = MemberShip(name="rakuten")
+        credential = UserCredential(user=user, auth_identifier=clamed_id, membership=membership)
+        self.session.add(user)
+        self.session.flush()
+        return user
+
+    def test_get_or_create_user_get(self):
+        from . import helpers as h
+        
+        user = self._add_user('http://example.com/clamed_id')
+        request = DummyRequest()
+        result = h.get_or_create_user(request, 'http://example.com/clamed_id')
+        self.assertEqual(result.id, user.id)
+        self.assertEqual(result.user_credential[0].auth_identifier, 'http://example.com/clamed_id')
+        self.assertEqual(result.user_credential[0].membership.name, 'rakuten')
 
 class CartTests(unittest.TestCase):
     def setUp(self):
