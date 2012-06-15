@@ -11,6 +11,7 @@
 	/* styling */
 	background-color:#333;
 
+
 	width:675px;	
 	min-height:200px;
 	border:1px solid #666;
@@ -21,7 +22,7 @@
 }
 
 .dialog_overlay label, .dialog_overlay h1, .dialog_overlay h2, .dialog_overlay h3, .dialog_overlay h4, .dialog_overlay a{
-	color: #fff;
+	/* color: #fff; */
 }
 
 /* the overlayed element */
@@ -37,9 +38,10 @@
 	z-index:10000;
 	
 	/* styling */
-	background-color:#333;
-	color: #fff;
-	
+	/* background-color:#333;
+	 * color: #fff; */
+	background-color:#eee;
+	color: #333;
 	/* 
 		width after the growing animation finishes
 		height is automatically calculated
