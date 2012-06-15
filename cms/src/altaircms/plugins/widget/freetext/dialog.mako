@@ -1,3 +1,6 @@
+<script type="text/javascript" src="/static/js/jquery.cleditor.min.js"></script>
+
+
 <div class="title">
   <h1>フリーテキスト</h1>
 </div>

@@ -25,6 +25,9 @@
 
 	### widget追加する度に変更する必要(internal.css.mako)
     ${css.container_layout()}
+
+<link href="/static/css/jquery.cleditor.css" rel="stylesheet" type="text/css"></link>
+
 <style type="text/css">
   .alert{ margin:1%  }
   .size1{ width:100%;  }

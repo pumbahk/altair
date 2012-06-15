@@ -218,9 +218,9 @@ def to_publish(request):     ## fixme
 
 ## todo: persmissionが正しいか確認
 @view_config(route_name='page_edit_', renderer='altaircms:templates/page/edit.mako', permission='authenticated', 
-             decorator=with_fanstatic_jqueries.merge(with_bootstrap).merge(with_wysiwyg_editor))
+             decorator=with_fanstatic_jqueries.merge(with_bootstrap))
 @view_config(route_name='page_edit', renderer='altaircms:templates/page/edit.mako', permission='authenticated', 
-             decorator=with_fanstatic_jqueries.merge(with_bootstrap).merge(with_wysiwyg_editor))
+             decorator=with_fanstatic_jqueries.merge(with_bootstrap))
 def page_edit(request):
     """pageの中をwidgetを利用して変更する
     """
