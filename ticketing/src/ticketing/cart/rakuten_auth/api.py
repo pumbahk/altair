@@ -2,6 +2,10 @@ import urllib
 import urllib2
 import pickle
 import urlparse
+import time
+import uuid
+import hmac
+import hashlib
 
 import oauth2 as oauth
 from pyramid import security
@@ -30,9 +34,11 @@ def get_open_id_consumer(request):
     return request.registry.queryUtility(IRakutenOpenID)
 
 DEFAULT_BASE_URL = 'https://api.id.rakuten.co.jp/openid/auth'
+DEFAULT_OAUTH_URL = 'https://api.id.rakuten.co.jp/openid/oauth/accesstoken'
 
 class RakutenOpenID(object):
-    def __init__(self, base_url, return_to, consumer_key, secret=None, extra_verify_urls=None):
+    def __init__(self, base_url, return_to, consumer_key, 
+            secret=None, access_token_url=None, extra_verify_urls=None):
         self.base_url = base_url
         self.return_to = return_to
         self.consumer_key = consumer_key
@@ -41,6 +47,7 @@ class RakutenOpenID(object):
             self.extra_verify_urls = []
         else:
             self.extra_verify_urls = extra_verify_urls
+        self.access_token_url = access_token_url
 
 
 
@@ -118,3 +125,29 @@ class RakutenOpenID(object):
             return {'clamed_id': identity['claimed_id'], "nickname": identity['ax_value_nickname']}
         else:
             return None
+
+    def get_access_token(self, oauth_consumer_key, oauth_token, secret):
+        method = "GET"
+        url = self.access_token_url
+        oauth_timestamp = int(time() * 1000)
+        oauth_nonce = uuid.uuid4().hex
+        oauth_signature_method = 'HMAC-SHA1'
+        oauth_version = '1.0'
+
+def create_signature_base(method, url, oauth_consumer_key, secret, oauth_token, oauth_signature_method, oauth_timestamp, oauth_nonce, oauth_version, form_params):
+    params = sorted(form_params + [
+        ("oauth_consumer_key", oauth_consumer_key),
+        ("oauth_token", oauth_token),
+        ("oauth_signature_method", oauth_signature_method),
+        ("oauth_timestamp", str(oauth_timestamp)),
+        ("oauth_nonce", oauth_nonce),
+        ("oauth_version", oauth_version), 
+    ])
+
+    msg = method + "&" + urllib.quote(url, safe="") + "&" + urllib.quote(urllib.urlencode(params), safe="")
+    return msg
+
+def create_oauth_sigunature(method, url, oauth_consumer_key, secret, oauth_token, oauth_signature_method, oauth_timestamp, oauth_nonce, oauth_version, form_params):
+    msg = create_signature_base(method, url, oauth_consumer_key, secret, oauth_token, oauth_signature_method, oauth_timestamp, oauth_nonce, oauth_version, form_params)
+    oauth_signature = hmac.new(secret, msg, hashlib.sha1).digest().encode('base64')
+    return oauth_signature.strip()
