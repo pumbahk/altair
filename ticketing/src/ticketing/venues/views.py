@@ -7,7 +7,7 @@ from sqlalchemy.orm import joinedload, noload
 from urllib2 import urlopen
 
 from ticketing.models import DBSession
-from ..core.models import Venue, Seat, SeatAttribute, VenueArea, SeatAdjacency, SeatAdjacencySet, Stock, StockHolder, StockType
+from ..core.models import Venue, Seat, SeatAttribute, VenueArea, SeatAdjacency, SeatAdjacencySet, Stock, StockHolder, StockType, seat_seat_adjacency_table
 
 @view_config(route_name="api.get_drawing", request_method="GET")
 def get_drawing(request):
@@ -26,7 +26,7 @@ def get_seats(request):
         return HTTPNotFound("Venue id #%d not found" % venue_id)
 
     seats_data = {}
-    for seat in DBSession.query(Seat).options(joinedload('attributes'), joinedload('areas'), joinedload('stock')).filter_by(venue=venue):
+    for seat in DBSession.query(Seat).options(joinedload('attributes'), joinedload('areas'), joinedload('stock'), joinedload('_status')).filter_by(venue=venue):
         seat_datum = {
             'id': seat.l0_id,
             'stock_type_id': seat.stock_type_id,
@@ -39,7 +39,7 @@ def get_seats(request):
         seats_data[seat.l0_id] = seat_datum
 
     seat_adjacencies_data = {}
-    for seat_adjacency_set in DBSession.query(SeatAdjacencySet).options(joinedload("adjacencies")).filter_by(venue=venue):
+    for seat_adjacency_set in DBSession.query(SeatAdjacencySet).options(joinedload("adjacencies"), joinedload('adjacencies.seats')).filter(SeatAdjacencySet.venue==venue):
         for seat_adjacency in seat_adjacency_set.adjacencies:
             seat_adjacencies_data[seat_adjacency_set.seat_count] = [
                 [seat.l0_id for seat in seat_adjacency.seats] \
