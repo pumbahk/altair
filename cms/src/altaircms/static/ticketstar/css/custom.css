@@ -277,6 +277,15 @@
     background-image:url(/static/ticketstar/img/change/bg_heading.gif);
 }
 
+/* detail */
+.detail.heading {
+    background-image:url(/static/ticketstar/img/detail/bg_heading.gif);
+    color: #000;
+}
+.detail.heading h2{
+    vertical-align: middle ;
+}
+
 /* fixme */
 #thisWeek,#nearTheEnd {
     margin:0;
