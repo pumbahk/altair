@@ -55,6 +55,7 @@
 			<ul>
 			  <% nav_categories = list(categories)%>
 				% for category in nav_categories[:-1]:
+				  <% if category.name == 'index': continue %>
 				  <li><a href="${h.link.get_link_from_category(request, category)}" alt="${category.label}">${category.label}</a></li>
 				% endfor
 				% if categories:
