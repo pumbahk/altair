@@ -102,12 +102,7 @@ class CheckboxListField(fields.Field):
         """
         if formdata:
             candidates = dict(self.choices)
-            collected_candidats = []
-            for k in formdata:
-                data = formdata.getlist(k)[0]
-                if data in candidates:
-                    collected_candidats.append(data)
-            self._collected_candidats = collected_candidats
+            self._collected_candidats = [k for k in formdata if k in candidates and formdata.getlist(k)]
         else:
             self._collected_candidats = []
         super(CheckboxListField, self).process(formdata, data=data)
