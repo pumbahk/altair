@@ -20,14 +20,16 @@ import re
 def readsql(conn, f):
     buf = ''
     state = 0
+    chunk = ''
     while True:
-        chunk = f.read(4096)
+        _chunk = f.read(4096)
+        chunk += (_chunk or '')
         if not chunk:
             break
         e = -1
-        for m in re.finditer(r"(['`;])", chunk):
+        for m in re.finditer(r"['`;]", chunk):
             s = m.span()
-            c = m.group(0)
+            c = chunk[s[0]]
             if state == 0:
                 if c == "'":
                     state = 1
@@ -38,17 +40,29 @@ def readsql(conn, f):
                     break
             elif state == 1:
                 if c == "'":
-                    if len(buf) <= s[0] + 1 or buf[s[0] + 1] != "'":
+                    if len(chunk) <= s[1]:
+                        state = 0
+                    elif chunk[s[1]] == "'":
+                        state = 3
+                    else:
                         state = 0
             elif state == 2:
                 if c == '`':
-                    if len(buf) <= s[0] + 1 or buf[s[0] + 1] != '`':
+                    if len(chunk) <= s[1]:
                         state = 0
+                    elif chunk[s[1]] == '`':
+                        state = 4
+                    else:
+                        state = 0
+            elif state >= 3:
+                state -= 2
         if state != 0 or e < 0:
             buf += chunk
+            chunk = ''
             continue
         sql = buf + chunk[0:e + 1]
-        buf = chunk[e + 1:]
+        buf = ''
+        chunk = chunk[e + 1:]
         conn.execute(sql) 
 
 parser = argparse.ArgumentParser()
@@ -69,5 +83,5 @@ sqlahelper.get_base().metadata.drop_all()
 sqlahelper.get_base().metadata.create_all()
 
 conn = sqlahelper.get_engine().connect()
-f = open(os.path.dirname(getfile(currentframe())) + '/ticketing.sql')
+f = open(os.path.join(os.path.dirname(getfile(currentframe())), 'ticketing.sql'))
 readsql(conn, f)
