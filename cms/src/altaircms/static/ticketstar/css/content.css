@@ -301,6 +301,10 @@
 	vertical-align: middle;
 }
 
+.searchMessage form input {
+	vertical-align: middle;
+}
+
 .sideCategoryGenre {
 	width: 200px;
 	margin-bottom: 10px;
