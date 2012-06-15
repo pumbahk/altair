@@ -6,7 +6,7 @@
   <div>
      % for image in g:
        <div class="item">
-         <img pk="${image.id}" src="${h.asset.to_show_page(request,image)}" alt=""/>
+         <img pk="${image.id}" src="${h.asset.to_show_page(request,image)}" alt="" class="${"managed" if widget.asset==image else ""}"/>
          <p>title:${image.title} width:${image.width} height:${image.height} </p>
        </div>
      % endfor          
@@ -34,6 +34,9 @@
 <table class="table">
   <tbody>
     ${co.formfield(form, "href")}
+    ${co.formfield(form, "width")}
+    ${co.formfield(form, "height")}
+    ${co.formfield(form, "alt")}
   </tbody>
 </table>
 <button type="button" id="image_submit">登録</button>

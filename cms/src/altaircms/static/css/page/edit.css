@@ -81,13 +81,13 @@ div.selected {
 
 img.managed {
     border-style: solid;
-	border-width: 5px;
+	border-width: 3px;
 	border-color: orange;
 }
 
 img.selected {
     border-style: solid;
-	border-width: 5px;
+	border-width: 3px;
 	border-color: #ccc;
 }
 

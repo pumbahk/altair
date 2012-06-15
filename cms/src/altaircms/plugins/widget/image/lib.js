@@ -4,7 +4,6 @@ if(!widget){
 
 (function(widget){
     var opt = {} //widget local variable
-    var _has_click_event = null;
 
     var load_page = function(we){
         var pk = we.get_pk(we.where);
@@ -24,19 +23,18 @@ if(!widget){
             15, 25, 
             function(){return $(".scrollable")}, 
             function(){
-                _has_click_event = "#@id@ img".replace("@id@", we.dialog .attr("id"));
+                $("#image_submit").click(function(){
+                    we.finish_dialog(this);
+                })
 
-                $(document).on("click", _has_click_event, function(){
+                $(we.dialog).find("img").click(function(){
                     selected = this;
                     $(we.dialog).find(".managed").removeClass("managed")
-                    we.attach_managed(this);
+                    we.attach_managed(selected);
                 });
 
-                $("#image_submit").click(function(){we.finish_dialog(this);})
-
-                we.attach_highlight(_has_click_event);
-                var expr = "img[src='@src@']".replace("@src@", we.get_data(we.where).imagefile)
-                we.attach_managed(we.dialog.find(expr));
+                selected = $(we.dialog).find(".managed");
+                we.attach_highlight(selected);
 
                 // **scroiing**
                 // horizontal scrollables. each one is circular and has its own navigator instance
@@ -52,20 +50,18 @@ if(!widget){
     };
 
     var on_close = function(we){
-        $(document).off("click", _has_click_event);
     };
 
     var collect_data = function(we, choiced_elt){
         var choiced_elt = $(selected); // module global variable
         var root = $(we.dialog);
-
-        console.dir( {imagefile: choiced_elt.attr("src"), 
-                asset_id: choiced_elt.attr("pk"), 
-                      href: root.find("#href").val()});
-
         return {imagefile: choiced_elt.attr("src"), 
                 asset_id: choiced_elt.attr("pk"), 
-                href: root.find("#href").val()};
+                href: root.find("#href").val() || "", 
+                width: root.find("#width").val() || "", 
+                height: root.find("#height").val() || "", 
+                alt: root.find("#alt").val() || "", 
+               };
     };
 
     return widget.include("image", {

@@ -25,6 +25,8 @@ class ImageWidget(Widget):
     query = DBSession.query_property()
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
     href = sa.Column(sa.String(255))
+    width = sa.Column(sa.Integer)
+    height = sa.Column(sa.Integer)
     alt = sa.Column(sa.Unicode(255))
     asset_id = sa.Column(sa.Integer, sa.ForeignKey("asset.id"))
     asset = orm.relationship(ImageAsset, backref="widget", uselist=False)
