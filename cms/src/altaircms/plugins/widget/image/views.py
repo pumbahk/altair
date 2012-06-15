@@ -7,15 +7,20 @@ class ImageWidgetView(object):
         self.request = request
 
     def _create_or_update(self):
+        import pprint
+        pprint.pprint(dict(self.request.json_body))
         asset_id = self.request.json_body["data"]["asset_id"]
         nowrap = self.request.json_body["data"].get("nowrap")
         alt = self.request.json_body["data"].get("alt")
+        width = self.request.json_body["data"].get("width")
+        height = self.request.json_body["data"].get("height")
         href = self.request.json_body["data"].get("href")
         page_id = self.request.json_body["page_id"]
         context = self.request.context
         asset = context.get_asset(asset_id);
         widget = context.get_widget(self.request.json_body.get("pk"))
-        widget = context.update_data(widget, page_id=page_id, asset_id=asset_id, nowrap=nowrap, alt=alt, href=href)
+        widget = context.update_data(widget, page_id=page_id, asset_id=asset_id, nowrap=nowrap, alt=alt, href=href, 
+                                     width=width, height=height)
         context.add(widget, flush=True)
 
         r = self.request.json_body.copy()
@@ -43,4 +48,4 @@ class ImageWidgetView(object):
         assets = group_by_n(self.request.context.get_asset_query(), N)
         widget = self.request.context.get_widget(self.request.GET["pk"])
         form = forms.ImageInfoForm(**widget.to_dict())
-        return {"assets": assets, "form": form}
+        return {"assets": assets, "form": form, "widget": widget}
