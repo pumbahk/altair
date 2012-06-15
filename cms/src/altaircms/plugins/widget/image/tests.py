@@ -138,7 +138,7 @@ class ImageWidgetViewTests(WidgetTestSourceMixn,
         self._with_session(session, 
             self._makeAsset(id=1), self._makePage(id=1))
 
-        request = self._makeRequest(GET={"page_id": 1})
+        request = self._makeRequest(GET={"page_id": 1, "pk": None})
         view = self._makeTarget(request)
         self.assertTrue("assets" in view.dialog())
 
