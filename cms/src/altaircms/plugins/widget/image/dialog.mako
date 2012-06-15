@@ -1,3 +1,5 @@
+<%namespace file="../components.mako" name="co"/>
+
 ## N個ごとに区切られたitreratorを受け取り、divで区切って出力(scrollのため)
 <%def name="render(assets)">
   % for g in assets:
@@ -29,3 +31,10 @@
    ${render(assets)}
    </div>
 </div>
+<table class="table">
+  <tbody>
+    ${co.formfield(form, "href")}
+  </tbody>
+</table>
+<button type="button" id="image_submit">登録</button>
+

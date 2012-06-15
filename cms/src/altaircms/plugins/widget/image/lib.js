@@ -7,8 +7,17 @@ if(!widget){
     var _has_click_event = null;
 
     var load_page = function(we){
-        we.dialog.load("/api/widget/image/dialog");
+        var pk = we.get_pk(we.where);
+        var url = "/api/widget/image/dialog";
+        var params = {};
+        if(!!pk){
+            params["pk"] = pk;
+        }
+            url += "?" + $.param(params);
+        return we.dialog.load(url);
     };
+
+    var selected = null;
 
     var on_dialog = function(we){
         we.bind_retry(
@@ -16,9 +25,15 @@ if(!widget){
             function(){return $(".scrollable")}, 
             function(){
                 _has_click_event = "#@id@ img".replace("@id@", we.dialog .attr("id"));
+
                 $(document).on("click", _has_click_event, function(){
-                    we.finish_dialog(this);
+                    selected = this;
+                    $(we.dialog).find(".managed").removeClass("managed")
+                    we.attach_managed(this);
                 });
+
+                $("#image_submit").click(function(){we.finish_dialog(this);})
+
                 we.attach_highlight(_has_click_event);
                 var expr = "img[src='@src@']".replace("@src@", we.get_data(we.where).imagefile)
                 we.attach_managed(we.dialog.find(expr));
@@ -41,9 +56,16 @@ if(!widget){
     };
 
     var collect_data = function(we, choiced_elt){
-        var choiced_elt = $(choiced_elt);
+        var choiced_elt = $(selected); // module global variable
+        var root = $(we.dialog);
+
+        console.dir( {imagefile: choiced_elt.attr("src"), 
+                asset_id: choiced_elt.attr("pk"), 
+                      href: root.find("#href").val()});
+
         return {imagefile: choiced_elt.attr("src"), 
-                asset_id: choiced_elt.attr("pk")};
+                asset_id: choiced_elt.attr("pk"), 
+                href: root.find("#href").val()};
     };
 
     return widget.include("image", {

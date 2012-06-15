@@ -1,17 +1,7 @@
 ## countdown widget dialog
 ##  view function is views.CountdownWidgetView.dialog
 ##
-
-<%def name="formfield(k)">
-	<tr><th>${getattr(form,k).label}</th><td>${getattr(form,k)}
-	%if k in form.errors:
-	  <br/>
-	  %for error in form.errors[k]:
-		<span class="btn btn-danger">${error}</span>
-	  %endfor
-	%endif
-	</td></tr>
-</%def>
+<%namespace file="../components.mako" name="co"/>
 
 <div class="title">
   <h1>カウントダウン(info)</h1>
@@ -19,7 +9,7 @@
 
 <table class="table">
   <tbody>
-    ${formfield("kind")}
+    ${co.formfield(form, "kind")}
   </tbody>
 </table>
 <button type="button" id="countdown_submit">登録</button>
