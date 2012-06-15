@@ -149,7 +149,7 @@ ns:http://specs.openid.net/auth/2.0"""
                 "&openid.ax.value.nickname=this-is-nickname"
             ),
             call().close(),
-            call('https://api.id.rakuten.co.jp/oauth?oauth_consumer_key=partner001&oauth_token=XXXXXXXXXXXXX&oauth_signature_method=HMAC-SHA1&oauth_timestamp=999999999999&oauth_nonce=nonce-nonce&oauth_version=1.0&oauth_signature=rL%2Fw%2BoE95g10bqiyS6H%2BYMo8b8Y%3D'),
+            call('https://api.id.rakuten.co.jp/oauth?oauth_consumer_key=akfjakldjfakldjfkalsdjfklasdjfklajdf&oauth_token=XXXXXXXXXXXXX&oauth_signature_method=HMAC-SHA1&oauth_timestamp=999999999999&oauth_nonce=nonce-nonce&oauth_version=1.0&oauth_signature=w2sxfyOLggQ%2FtBHjVL64hS%2BKujM%3D'),
             call().close(),
         ])
 
@@ -220,5 +220,5 @@ ns:http://specs.openid.net/auth/2.0"""
                 "&openid.ax.value.nickname=this-is-nickname"
             ),
             call().close(),
-            call('?oauth_consumer_key=partner001&oauth_token=XXXXXXXXXXXXX&oauth_signature_method=HMAC-SHA1&oauth_timestamp=999999999999&oauth_nonce=nonce-nonce&oauth_version=1.0&oauth_signature=fosgI2y0gEQMcuj%2F6HLVLPiYITw%3D'),
+            call('?oauth_consumer_key=akfjakldjfakldjfkalsdjfklasdjfklajdf&oauth_token=XXXXXXXXXXXXX&oauth_signature_method=HMAC-SHA1&oauth_timestamp=999999999999&oauth_nonce=nonce-nonce&oauth_version=1.0&oauth_signature=6ZoBYAQxl6XpQwW540ErEmDJAMc%3D'),
             call().close(),])

@@ -116,7 +116,8 @@ class RakutenOpenID(object):
         is_valid = response_body.split("\n")[0].split(":")[1]
         request_token = identity['oauth_request_token']
 
-        self.get_access_token("partner001", request_token, self.secret)
+        access_token = self.get_access_token(self.consumer_key, request_token, self.secret)
+        logger.debug('access token : %s' % access_token)
 
         if is_valid == "true":
             return {'clamed_id': identity['claimed_id'], "nickname": identity['ax_value_nickname']}
@@ -143,7 +144,9 @@ class RakutenOpenID(object):
             ("oauth_signature", oauth_signature),
         ]
         
-        f = urllib2.urlopen(url+'?'+urllib.urlencode(params))
+        request_url = url + '?' + urllib.urlencode(params)
+        logger.debug("get access token: %s" % request_url)
+        f = urllib2.urlopen(request_url)
         response_body = f.read()
         f.close()
         return response_body
