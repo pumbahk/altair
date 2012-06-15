@@ -2,7 +2,7 @@
 import unittest
 import datetime
 
-from ticketing.sej.nwts import exec_nwts
+from ticketing.sej.nwts import nws_data_send
 
 class SejTestNwts(unittest.TestCase):
 
@@ -12,6 +12,7 @@ class SejTestNwts(unittest.TestCase):
 
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
+
 
     def setUp(self):
         pass
@@ -25,15 +26,18 @@ class SejTestNwts(unittest.TestCase):
         def sej_dummy_response(environ):
             return ''
 
-        #webob.util.status_reasons[800] = 'OK'
-        #target = self._makeOne(sej_dummy_response, host='127.0.0.1', port=48080, status=200)
-        #target.start()
+        webob.util.status_reasons[800] = 'OK'
+        target = self._makeOne(sej_dummy_response, host='127.0.0.1', port=48080, status=200)
+        target.start()
 
-        #
-        #def exec_nwts(server_host, dir_name, terminal_id, password, file_id, file_name, path):
-        exec_nwts('incp.r1test.com', '/cpweb/master/ul', '160022000', '60022a', 'SEIT020U', './data/test', 'tpayback.asp')
+        nws_data_send('http://localhost:48080/', '60022000', '60022a', 'SEIT020U', '1234567890')
 
-        #print target.request.body
+        assert target.request.body == "6002200060022aSE" + \
+                                      "IT020U\x0a\x00\x00\x00\x00\x00\x00\x00\x00\x00" +\
+                                      "\x00\x00\x00\x001234567890"
+
+
+        nws_data_send('http://sv2.ticketstar.jp/test.php', '60022000', '60022a', 'SEIT020U', '1234567890')
 
 if __name__ == u"__main__":
     import os

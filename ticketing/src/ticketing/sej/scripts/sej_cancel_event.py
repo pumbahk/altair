@@ -7,9 +7,13 @@
 import optparse
 import sys
 import sqlahelper
+import logging
+import os
 
 from dateutil.parser import parse
 from os.path import abspath, dirname
+
+from paste.deploy import loadapp
 
 from ticketing.sej.models import SejCancelEvent
 from ticketing.sej.payment import request_fileget, request_cancel_event
@@ -17,21 +21,11 @@ from ticketing.sej.resources import SejNotificationType, code_from_notification_
 
 sys.path.append(abspath(dirname(dirname(__file__))))
 
-from paste.deploy import loadapp
-
-import logging
-
 logging.basicConfig()
 log = logging.getLogger(__file__)
 
-import os
-
 def cancel_event():
-
     request_cancel_event(SejCancelEvent.all())
-
-
-
 
 def main(argv=sys.argv):
 
@@ -55,7 +49,6 @@ def main(argv=sys.argv):
     if config is None:
         print 'You must give a config file'
         return
-
 
 
     app = loadapp('config:%s' % config, 'main')

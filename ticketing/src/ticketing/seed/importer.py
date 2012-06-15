@@ -35,7 +35,7 @@ from ticketing.seed.sej import SejTicketTemplateFileData
 from ticketing.oauth2.models import Service
 from ticketing.operators.models import Operator, OperatorActionHistory, OperatorRole, Permission
 from ticketing.bookmark.models import Bookmark
-from ticketing.sej.models import SejOrder, SejTicket, SejTicketFile, SejNotification
+from ticketing.sej.models import SejOrder, SejTicket, SejFile, SejNotification
 from ticketing.cart.models import Cart, CartedProduct, CartedProductItem
 from ticketing.multicheckout.models import MultiCheckoutRequestCard, MultiCheckoutResponseCard
 
