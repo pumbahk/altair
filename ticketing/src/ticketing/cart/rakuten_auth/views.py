@@ -6,7 +6,7 @@ from pyramid.httpexceptions import HTTPFound, HTTPUnauthorized
 from pyramid.view import view_config
 from pyramid import security
 
-from .api import get_open_id_consumer, authenticated_user, remember_user
+from .api import get_open_id_consumer, authenticated_user, remember_user, get_return_url
 
 logger = logging.getLogger(__name__)
 
@@ -23,5 +23,5 @@ class RootView(object):
         return HTTPUnauthorized()
 
     def verify(self):
-        return HTTPFound(location='/')
+        return HTTPFound(location=get_return_url(self.request))
         

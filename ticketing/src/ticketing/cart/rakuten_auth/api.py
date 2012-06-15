@@ -9,6 +9,10 @@ from ticketing.cart import logger
 
 from .interfaces import IRakutenOpenID
 
+def get_return_url(request):
+    session = request.environ['session.rakuten_openid']
+    return session.get('return_url')
+
 def authenticated_user(request):
     data = security.authenticated_userid(request)
     if data is None:

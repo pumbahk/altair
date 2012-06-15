@@ -51,6 +51,7 @@ requires = [
     'standardenum',
     'pyramid_who',
     'repoze.who',
+    'beaker',
     ]
 
 setup(name='ticketing',

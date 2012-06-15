@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 import pickle
 import logging
+import wsgiref.util
 from .api import RakutenOpenID
 import webob
 from webob.exc import HTTPFound
@@ -113,4 +114,8 @@ class RakutenOpenIDPlugin(object):
 
     # IChallenger
     def challenge(self, environ, status, app_headers, forget_headers):
+        session = environ['session.rakuten_openid']
+        session['return_url'] = wsgiref.util.request_uri(environ)
+        logger.debug('redirect from %s' % session['return_url'])
+        session.save()
         return HTTPFound(location=self.impl.get_redirect_url())
