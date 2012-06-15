@@ -114,12 +114,9 @@ class RakutenOpenID(object):
         f.close()
 
         is_valid = response_body.split("\n")[0].split(":")[1]
-        #oauth_consumer = oauth.Consumer(self.consumer_key, self.secret)
-        #client = oauth.Client(oauth_consumer, oauth.Token(request_token, self.secret))
-        #res, content = client.request('https://api.id.rakuten.co.jp/openid/oauth/accesstoken', 'GET')
-        #print content
-        #request_token = urlparse.parse_qsl(content)
-        #print request_token
+        request_token = identity['oauth_request_token']
+
+        self.get_access_token("partner001", request_token, self.secret)
 
         if is_valid == "true":
             return {'clamed_id': identity['claimed_id'], "nickname": identity['ax_value_nickname']}
@@ -129,10 +126,27 @@ class RakutenOpenID(object):
     def get_access_token(self, oauth_consumer_key, oauth_token, secret):
         method = "GET"
         url = self.access_token_url
-        oauth_timestamp = int(time() * 1000)
+        oauth_timestamp = int(time.time() * 1000)
         oauth_nonce = uuid.uuid4().hex
         oauth_signature_method = 'HMAC-SHA1'
         oauth_version = '1.0'
+        oauth_signature = create_oauth_sigunature(method, url, oauth_consumer_key, secret, 
+            oauth_token, oauth_signature_method, oauth_timestamp, oauth_nonce, oauth_version, [])
+
+        params = [
+            ("oauth_consumer_key", oauth_consumer_key),
+            ("oauth_token", oauth_token),
+            ("oauth_signature_method", oauth_signature_method),
+            ("oauth_timestamp", oauth_timestamp),
+            ("oauth_nonce", oauth_nonce),
+            ("oauth_version", oauth_version),
+            ("oauth_signature", oauth_signature),
+        ]
+        
+        f = urllib2.urlopen(url+'?'+urllib.urlencode(params))
+        response_body = f.read()
+        f.close()
+        return response_body
 
 def create_signature_base(method, url, oauth_consumer_key, secret, oauth_token, oauth_signature_method, oauth_timestamp, oauth_nonce, oauth_version, form_params):
     params = sorted(form_params + [
