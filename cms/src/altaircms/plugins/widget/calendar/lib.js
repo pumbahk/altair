@@ -69,7 +69,7 @@ widget.configure({
     };
 
     var on_dialog = function(we){
-        we.bind_retry(10, 1.43, 15, 
+        we.bind_retry(we, 10, 1.43, 15, 
                       function(){return $("#calendar_submit")}, 
                       function(elt){
                           $("#calendar").bind("change", function(){_draw_demo_api(we, $(this).val())});

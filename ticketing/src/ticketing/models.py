@@ -9,11 +9,12 @@ import json
 
 from sqlalchemy import Table, Column, ForeignKey, ForeignKeyConstraint, Index, func
 from sqlalchemy.types import TypeEngine, TypeDecorator, VARCHAR, BigInteger, Integer, String, TIMESTAMP
-from sqlalchemy.orm import column_property, scoped_session, relationship as _relationship
+from sqlalchemy.orm import column_property, scoped_session, deferred, relationship as _relationship
 from sqlalchemy.orm.collections import InstrumentedList
 from sqlalchemy.orm.properties import RelationshipProperty  
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.mutable import Mutable
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.sql.expression import text
 from sqlalchemy.sql import functions as sqlf, and_
 from zope.sqlalchemy import ZopeTransactionExtension
@@ -111,17 +112,23 @@ def merge_and_flush(session):
     DBSession.flush()
 
 class WithTimestamp(object):
-    created_at = Column(TIMESTAMP, nullable=False,
-                                   default=datetime.now,
-                                   server_default=sqlf.current_timestamp())
-    updated_at = Column(TIMESTAMP, nullable=False,
-                                   default=datetime.now,
-                                   server_default=text('0'),
-                                   onupdate=datetime.now,
-                                   server_onupdate=sqlf.current_timestamp())
+    @declared_attr
+    def created_at(self):
+        return deferred(Column(TIMESTAMP, nullable=False,
+                               default=datetime.now,
+                               server_default=sqlf.current_timestamp()))
+    @declared_attr
+    def updated_at(self):
+        return deferred(Column(TIMESTAMP, nullable=False,
+                               default=datetime.now,
+                               server_default=text('0'),
+                               onupdate=datetime.now,
+                               server_onupdate=sqlf.current_timestamp()))
 
 class LogicallyDeleted(object):
-    deleted_at = Column(TIMESTAMP, nullable=True, index=True)
+    @declared_attr
+    def deleted_at(self):
+        return deferred(Column(TIMESTAMP, nullable=True, index=True))
 
 class BaseModel(object):
     query = DBSession.query_property()

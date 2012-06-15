@@ -74,7 +74,7 @@
 ### require: ${request.route_path("page_search_input")}
 <%block name="header_search">
 	<div id="headerSearch">
-		${gadgets.search_form_on_header(u"アーティスト名、公演名、会場名など")}
+		${gadgets.search_form_on_header(u"アーティスト名、公演名、会場名など", "refineq0","query_id")}
 		<dl>
 			<dt><img src="/static/ticketstar/img/common/header_search_hot.gif" alt="ホットワード" width="50" height="45" /></dt>
 			<dd>

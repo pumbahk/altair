@@ -174,6 +174,7 @@ var WidgetDialogView = Backbone.View.extend({
         var self = this;
         return function(){
             if(!!wmodule){
+                wmodule("cancel");
                 wmodule("on_close");
                 _.each(self.dialog.children(), function(e){ $(e).remove();});
             }

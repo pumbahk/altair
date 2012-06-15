@@ -38,7 +38,7 @@ widget.configure({
 
     form_change_api_url = "./api/form?";
     var on_dialog = function(we){
-        we.bind_retry(10, 1.43, 15, 
+        we.bind_retry(we, 10, 1.43, 15, 
                       function(){return $("#topic_submit")}, 
                       function(elt){elt.click(function(){we.finish_dialog(this);});}
                      )();

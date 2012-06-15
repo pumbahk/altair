@@ -2,6 +2,10 @@ import urllib
 import urllib2
 import pickle
 import urlparse
+import time
+import uuid
+import hmac
+import hashlib
 
 import oauth2 as oauth
 from pyramid import security
@@ -30,9 +34,11 @@ def get_open_id_consumer(request):
     return request.registry.queryUtility(IRakutenOpenID)
 
 DEFAULT_BASE_URL = 'https://api.id.rakuten.co.jp/openid/auth'
+DEFAULT_OAUTH_URL = 'https://api.id.rakuten.co.jp/openid/oauth/accesstoken'
 
 class RakutenOpenID(object):
-    def __init__(self, base_url, return_to, consumer_key, secret=None, extra_verify_urls=None):
+    def __init__(self, base_url, return_to, consumer_key, 
+            secret=None, access_token_url=None, extra_verify_urls=None):
         self.base_url = base_url
         self.return_to = return_to
         self.consumer_key = consumer_key
@@ -41,6 +47,7 @@ class RakutenOpenID(object):
             self.extra_verify_urls = []
         else:
             self.extra_verify_urls = extra_verify_urls
+        self.access_token_url = access_token_url
 
 
 
@@ -107,14 +114,57 @@ class RakutenOpenID(object):
         f.close()
 
         is_valid = response_body.split("\n")[0].split(":")[1]
-        #oauth_consumer = oauth.Consumer(self.consumer_key, self.secret)
-        #client = oauth.Client(oauth_consumer, oauth.Token(request_token, self.secret))
-        #res, content = client.request('https://api.id.rakuten.co.jp/openid/oauth/accesstoken', 'GET')
-        #print content
-        #request_token = urlparse.parse_qsl(content)
-        #print request_token
+        request_token = identity['oauth_request_token']
+
+        access_token = self.get_access_token(self.consumer_key, request_token, self.secret)
+        logger.debug('access token : %s' % access_token)
 
         if is_valid == "true":
             return {'clamed_id': identity['claimed_id'], "nickname": identity['ax_value_nickname']}
         else:
             return None
+
+    def get_access_token(self, oauth_consumer_key, oauth_token, secret):
+        method = "GET"
+        url = self.access_token_url
+        oauth_timestamp = int(time.time() * 1000)
+        oauth_nonce = uuid.uuid4().hex
+        oauth_signature_method = 'HMAC-SHA1'
+        oauth_version = '1.0'
+        oauth_signature = create_oauth_sigunature(method, url, oauth_consumer_key, secret, 
+            oauth_token, oauth_signature_method, oauth_timestamp, oauth_nonce, oauth_version, [])
+
+        params = [
+            ("oauth_consumer_key", oauth_consumer_key),
+            ("oauth_token", oauth_token),
+            ("oauth_signature_method", oauth_signature_method),
+            ("oauth_timestamp", oauth_timestamp),
+            ("oauth_nonce", oauth_nonce),
+            ("oauth_version", oauth_version),
+            ("oauth_signature", oauth_signature),
+        ]
+        
+        request_url = url + '?' + urllib.urlencode(params)
+        logger.debug("get access token: %s" % request_url)
+        f = urllib2.urlopen(request_url)
+        response_body = f.read()
+        f.close()
+        return response_body
+
+def create_signature_base(method, url, oauth_consumer_key, secret, oauth_token, oauth_signature_method, oauth_timestamp, oauth_nonce, oauth_version, form_params):
+    params = sorted(form_params + [
+        ("oauth_consumer_key", oauth_consumer_key),
+        ("oauth_token", oauth_token),
+        ("oauth_signature_method", oauth_signature_method),
+        ("oauth_timestamp", str(oauth_timestamp)),
+        ("oauth_nonce", oauth_nonce),
+        ("oauth_version", oauth_version), 
+    ])
+
+    msg = method + "&" + urllib.quote(url, safe="") + "&" + urllib.quote(urllib.urlencode(params), safe="")
+    return msg
+
+def create_oauth_sigunature(method, url, oauth_consumer_key, secret, oauth_token, oauth_signature_method, oauth_timestamp, oauth_nonce, oauth_version, form_params):
+    msg = create_signature_base(method, url, oauth_consumer_key, secret, oauth_token, oauth_signature_method, oauth_timestamp, oauth_nonce, oauth_version, form_params)
+    oauth_signature = hmac.new(secret, msg, hashlib.sha1).digest().encode('base64')
+    return oauth_signature.strip()

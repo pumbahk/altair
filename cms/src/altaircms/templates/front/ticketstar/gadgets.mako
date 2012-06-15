@@ -3,9 +3,23 @@
 
 
 ## ヘッダーの検索フォーム.jsと連携している
-<%def name="search_form_on_header(placeholder)">
-	<form id="form1" name="form1" method="GET" action="${request.route_path("page_search_by_freeword")}">
-		<input name="q" type="text" id="textfield" size="40" placeholder="${placeholder}" />
+<%def name="search_form_on_header(placeholder, fnname, query_id)">
+    <script type="text/javascript">
+    var ${fnname} = function(){
+      var v = document.getElementById("${query_id}");
+      var s = v.value;
+      if(s.charAt(0)!='"'){
+         s = '"'+s;
+      }
+      if(s.charAt(s.length-1)!='"'){
+         s = s+'"';
+      }
+      v.value = s;
+      return true
+    };  
+    </script>
+	<form onSubmit="return ${fnname}();" id="form1" name="form1" method="GET" action="${request.route_path("page_search_by_freeword")}">
+		<input name="q" type="text" id="${query_id}" size="40" placeholder="${placeholder}" />
 		<input name="imageField" type="image" id="imageField" src="/static/ticketstar/img/common/header_search_btn.gif" alt="検索" />
 		<a href="${request.route_path("page_search_input")}">詳細検索</a>
 	</form>

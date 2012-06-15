@@ -3,7 +3,21 @@
 
 <%block name="main">
 		<!-- InstanceBeginEditable name="main" -->
-		<form action="${request.route_path("page_search_result")}" method="GET">
+    <script type="text/javascript">
+    var refine_query = function(){
+      var v = document.getElementById("freeword_query");
+      var s = v.value;
+      if(s.charAt(0)!='"'){
+         s = '"'+s;
+      }
+      if(s.charAt(s.length-1)!='"'){
+         s = s+'"';
+      }
+      v.value = s;
+      return true
+    };  
+    </script>
+		<form onSubmit="return refine_query();" action="${request.route_path("page_search_result")}" method="GET">
 		<div class="searchInput">
 		  <dl>
 			<dt><div class="searchInputHeader">フリーワードで探す</div></dt>
