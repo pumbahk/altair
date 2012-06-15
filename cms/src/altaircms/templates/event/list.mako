@@ -16,11 +16,8 @@
 
 <div class="row-fluid">
   <div>
-    <h4>イベント追加</h4>
-	<form action="${request.route_path("event_create", action="confirm")}" method="POST">
-	  ${fco.form_as_table_strict(form, ["title", "subtitle","backend_id","description","inquiry_for","event_open","event_close","deal_open","deal_close","is_searchable"])}
-	  <button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> イベントを作成</button>
-    </form>
+    <h3>イベント追加</h3>
+    <a href="${request.route_path("event_create",action="input")}"  class="btn btn-success btn-large">新しいイベントを作成する</a>
   </div>
 </div>
 
