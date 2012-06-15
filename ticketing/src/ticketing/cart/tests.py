@@ -855,6 +855,11 @@ class MultiCheckoutViewTests(unittest.TestCase):
         self.assertEqual(dummy_secure3d.called[2],('is_enable_secure3d', (), {}))
 
     def test_card_info_secure3d_callback(self):
+        # dummy rakuten user
+        userdata = {'clamed_id': 'http://example.com/this-is-openid'}
+        import pickle
+        userdata = pickle.dumps(userdata).encode('base64')
+        self.config.testing_securitypolicy(userid=userdata)
         dummy_secure3d = self._register_dummy_secure3d(AcsUrl='http://example.com/AcsUrl', PaReq='this-is-pareq', Md='this-is-Md', enable_auth_api=False)
         self.config.registry.settings['cart.item_name'] = '楽天チケット' # configはバイト読み取り
         params = {

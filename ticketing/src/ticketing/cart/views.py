@@ -279,9 +279,11 @@ class MultiCheckoutView(object):
 
         logger.debug("%s" % auth_result)
 
-        user = authenticated_user(self.request)
+        openid = authenticated_user(self.request)
+        user = h.get_or_create_user(self.request, openid['clamed_id'])
         order = o_models.Order.create_from_cart(cart)
         order.multicheckout_approval_no = checkout_auth_result.ApprovalNo
+        order.user = user
         cart.finish()
         DBSession.add(checkout_auth_result)
         DBSession.add(order)
