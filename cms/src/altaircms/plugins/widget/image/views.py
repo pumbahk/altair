@@ -7,8 +7,6 @@ class ImageWidgetView(object):
         self.request = request
 
     def _create_or_update(self):
-        import pprint
-        pprint.pprint(dict(self.request.json_body))
         asset_id = self.request.json_body["data"]["asset_id"]
         nowrap = self.request.json_body["data"].get("nowrap")
         alt = self.request.json_body["data"].get("alt")
@@ -46,6 +44,12 @@ class ImageWidgetView(object):
     def dialog(self):
         N = 5
         assets = group_by_n(self.request.context.get_asset_query(), N)
-        widget = self.request.context.get_widget(self.request.GET["pk"])
+        widget = self.request.context.get_widget(self.request.GET.get("pk"))
+
+        if widget.width == 0:
+            widget.width = ""
+        if widget.height == 0:
+            widget.height = ""
         form = forms.ImageInfoForm(**widget.to_dict())
+
         return {"assets": assets, "form": form, "widget": widget}

@@ -9,7 +9,10 @@
 	 src="${h.asset.to_show_page(request,widget.asset)}" alt="${widget.alt}"/>
 </a>
 %else:
-  <img src="${h.asset.to_show_page(request,widget.asset)}" alt="${widget.alt}"/>
+  <img
+	 ${'width="%d"' % widget.width  if widget.width else ""|n}
+	 ${'height="%d"' % widget.height  if widget.height else ""|n}
+	 src="${h.asset.to_show_page(request,widget.asset)}" alt="${widget.alt}"/>
 %endif
 </%def>
 %if widget.nowrap:

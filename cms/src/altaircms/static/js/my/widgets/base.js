@@ -1,9 +1,10 @@
 var widget = (function(){
-    var bind_retry = function(a0, d, n, finder, do_something, failback){
+    var bind_retry = function(we, a0, d, n, finder, do_something, failback){
         // a0 = 10, d = 1.43, n=15
         // 15, 4949.21343937
         var wait_time = a0; // todo: receive as function argument.
         var iter = function iter(i){
+            //console.log(we.canceld)
             if (i > n){
                 alert("error: broken widget. please reload")
             }
@@ -13,8 +14,15 @@ var widget = (function(){
                 if(!!failback){
                     failback(elt);
                 }
-                setTimeout(function(){iter(i+1)}, wait_time);
+                if(we.canceld){
+                    //console.log("canceld");
+                    // clean cancel flag and not call cont
+                }else{
+                    //console.log("retry");
+                    setTimeout(function(){iter(i+1)}, wait_time);
+                }
             }else {
+                //console.log("finished");
                 wait_time = a0;
                 do_something(elt);
             }   
@@ -58,10 +66,18 @@ var widget = (function(){
         if(!!env["create_context"] || env["opt"]){
             console.warn( "nameconflict: `create_with_event' or opt are already defined")
         }
+
+        // cancel event
+        val.cancel = function(we){
+            //console.log("canceld!");
+            we.canceld = true;
+        };
+
         env[name] = val;
 
         var default_opt = _.extend({}, base_opt, env[name].opt);
         env[name].opt = default_opt;
+        
         env[name].create_context= function(opt){
             // env local variable
             var we = _.extend(env[name].opt, opt);
@@ -71,6 +87,8 @@ var widget = (function(){
                 throw("where is not found");
             if(!we.widget_name)
                 throw("widget_name is not found");
+
+            we.canceld = false;
             return we;
         };
         return env;
