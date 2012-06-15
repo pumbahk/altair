@@ -11,23 +11,27 @@ from repoze.who.interfaces import IIdentifier, IChallenger, IAuthenticator
 
 from ticketing.cart import logger
 
-def make_plugin(endpoint, return_to, consumer_key, rememberer_name, extra_verify_urls=None):
+def make_plugin(endpoint, return_to, consumer_key, rememberer_name, oauth_secret, oauth_endpoint, extra_verify_urls=None):
     if extra_verify_urls is not None:
         extra_verify_urls = [e.strip() for e in extra_verify_urls.split()]
         logger.warn('enabled extra_verify_urls for develop mode: %s' % extra_verify_urls)
+
     return RakutenOpenIDPlugin(endpoint, return_to, consumer_key, rememberer_name,
-        extra_verify_urls=extra_verify_urls)
+        extra_verify_urls=extra_verify_urls,
+        secret=oauth_secret,
+        access_token_url=oauth_endpoint)
 
 @implementer(IIdentifier, IAuthenticator, IChallenger)
 class RakutenOpenIDPlugin(object):
 
-    def __init__(self, endpoint, return_to, consumer_key, rememberer_name, extra_verify_urls):
+    def __init__(self, endpoint, return_to, consumer_key, rememberer_name, extra_verify_urls, access_token_url, secret):
         self.endpoint = endpoint
         self.return_to = return_to
         self.consumer_key = consumer_key
         self.rememberer_name = rememberer_name
-        self.impl = RakutenOpenID(endpoint, return_to, consumer_key, extra_verify_urls=extra_verify_urls)
-
+        self.impl = RakutenOpenID(endpoint, return_to, consumer_key, 
+            access_token_url=access_token_url,
+            extra_verify_urls=extra_verify_urls, secret=secret)
 
     def _get_rememberer(self, environ):
 
