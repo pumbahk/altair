@@ -2,7 +2,7 @@
 
 <%def name="master_header(top_ourter_categories)">
 		<p id="tagLine">チケット販売・イベント予約</p>
-		<p id="siteID"><a href="http://www.rakuten.co.jp/"><img src="/static/ticketstar/img/common/header_logo_01.gif" alt="楽天チケット" class="serviceLogo" width="97" height="35" /></a><a href="http://ticket.rakuten.co.jp/"><img src="/static/ticketstar/img/common/header_logo_02.gif" alt="チケット" class="serviceTitle" width="88" height="23" /></a></p>
+		<p id="siteID"><a href="http://www.rakuten.co.jp/"><img src="/static/ticketstar/img/common/header_logo_01.gif" alt="楽天チケット" class="serviceLogo" width="97" height="35" /></a><a href="/"><img src="/static/ticketstar/img/common/header_logo_02.gif" alt="チケット" class="serviceTitle" width="88" height="23" /></a></p>
 		<dl id="remoteNav">
 		  <dt>楽天グループ関連</dt>
 		  <dd class="grpRelation">

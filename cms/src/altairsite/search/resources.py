@@ -185,10 +185,18 @@ class SearchResultRender(object):
         return fmt % (link, link_label, description, performances)
 
     def deal_limit(self):
-        N = (self.pageset.event.event_open - self.today).days
-        return u"あと%d日" % N
-        #return u"開演まであと%d日" % N
-    
+        N = (self.pageset.event.deal_open - self.today).days
+        if N > 0:
+            return u"販売開始まであと%d日" % N
+        elif N == 0:
+            return u"本日販売"
+
+        N = (self.pageset.event.deal_close - self.today).days
+        if N > 0:
+            return u"販売終了まであと%d日" % N
+        else:
+            return u"販売終了"
+
     def deal_info_icons(self):
         import warnings
         warnings.warn("difficult. so supported this function is later.")
@@ -198,8 +206,9 @@ class SearchResultRender(object):
 
     def deal_description(self):
         event = self.pageset.event
-        return u'<strong>チケット発売中</strong> %s' % (h.base.term(event.deal_open, event.deal_close))
-            
+        label = u'<strong>チケット発売中</strong> ' if event.deal_open <= self.today and self.today <= event.deal_close else ''
+        return u'%s%s' % (label, h.base.term(event.deal_open, event.deal_close))
+
 
     def purchase_link(self):
         fmt = u'''\
