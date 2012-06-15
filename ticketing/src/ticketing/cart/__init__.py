@@ -41,6 +41,10 @@ def includeme(config):
     config.add_payment_method('2', 'payment.checkout')
     config.add_payment_method('3', 'payment.secure3d')
 
+    # 楽天認証URL
+    config.add_route('rakuten_auth.login', '/login')
+    config.add_route('rakuten_auth.verify', '/verify')
+
 
 def main(global_config, **settings):
     engine = engine_from_config(settings)
@@ -55,6 +59,7 @@ def main(global_config, **settings):
     config.add_static_view('img', 'ticketing.cart:static', cache_max_age=3600)
 
     config.include('.')
+    config.include('.rakuten_auth')
     config.scan()
     config.include('..checkout')
     config.include('..multicheckout')

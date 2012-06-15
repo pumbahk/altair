@@ -21,7 +21,7 @@ class IndexView(object):
         self.request = request
 
     
-    @view_config(route_name='cart.index', renderer='carts/index.html', xhr=False)
+    @view_config(route_name='cart.index', renderer='carts/index.html', xhr=False, permission="view")
     def __call__(self):
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.params.get('performance')

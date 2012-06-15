@@ -5,6 +5,7 @@ import urlparse
 
 import oauth2 as oauth
 from pyramid import security
+from ticketing.cart import logger
 
 from .interfaces import IRakutenOpenID
 
@@ -27,11 +28,16 @@ def get_open_id_consumer(request):
 DEFAULT_BASE_URL = 'https://api.id.rakuten.co.jp/openid/auth'
 
 class RakutenOpenID(object):
-    def __init__(self, base_url, return_to, consumer_key, secret=None):
+    def __init__(self, base_url, return_to, consumer_key, secret=None, extra_verify_urls=None):
         self.base_url = base_url
         self.return_to = return_to
         self.consumer_key = consumer_key
         self.secret = secret
+        if extra_verify_urls is None:
+            self.extra_verify_urls = []
+        else:
+            self.extra_verify_urls = extra_verify_urls
+
 
 
     def get_redirect_url(self):
@@ -62,7 +68,7 @@ class RakutenOpenID(object):
                     signed = request_get['openid.signed'],
                     sig = request_get['openid.sig'],
                     ns_oauth = 'http://specs.openid.net/extenstions/oauth/1.0',
-                    request_token = request_get['openid.oauth.request_token'],
+                    oauth_request_token = request_get['openid.oauth.request_token'],
                     oauth_scope = 'rakutenid_basicinfo,rakutenid_contactinfo',
                     ns_ax = request_get['openid.ns.ax'],
                     ax_mode = request_get['openid.ax.mode'],

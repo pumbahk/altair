@@ -20,7 +20,7 @@ class RootView(object):
 
 
     def login(self):
-        raise HTTPUnauthorized
+        return HTTPUnauthorized()
 
     def verify(self):
         return HTTPFound(location='/')

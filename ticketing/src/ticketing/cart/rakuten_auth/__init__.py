@@ -41,6 +41,7 @@ def includeme(config):
 
     config.add_view('.views.RootView', attr="login", route_name="rakuten_auth.login")
     config.add_view('.views.RootView', attr="verify", route_name="rakuten_auth.verify")
+    config.set_forbidden_view('.views.RootView', attr="login")
     
     config.set_authorization_policy(ACLAuthorizationPolicy())
     config.set_authentication_policy(WhoV2AuthenticationPolicy(who_config, 'auth_tkt'))

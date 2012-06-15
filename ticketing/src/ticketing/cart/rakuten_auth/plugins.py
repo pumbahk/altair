@@ -8,21 +8,24 @@ from zope.interface import implementer
 from repoze.who.api import get_api as get_who_api
 from repoze.who.interfaces import IIdentifier, IChallenger, IAuthenticator
 
-logger = logging.getLogger(__name__)
+from ticketing.cart import logger
 
-
-def make_plugin(endpoint, return_to, consumer_key, rememberer_name):
-    return RakutenOpenIDPlugin(endpoint, return_to, consumer_key, rememberer_name)
+def make_plugin(endpoint, return_to, consumer_key, rememberer_name, extra_verify_urls=None):
+    if extra_verify_urls is not None:
+        extra_verify_urls = [e.strip() for e in extra_verify_urls.split()]
+        logger.warn('enabled extra_verify_urls for develop mode: %s' % extra_verify_urls)
+    return RakutenOpenIDPlugin(endpoint, return_to, consumer_key, rememberer_name,
+        extra_verify_urls=extra_verify_urls)
 
 @implementer(IIdentifier, IAuthenticator, IChallenger)
 class RakutenOpenIDPlugin(object):
 
-    def __init__(self, endpoint, return_to, consumer_key, rememberer_name):
+    def __init__(self, endpoint, return_to, consumer_key, rememberer_name, extra_verify_urls):
         self.endpoint = endpoint
         self.return_to = return_to
         self.consumer_key = consumer_key
         self.rememberer_name = rememberer_name
-        self.impl = RakutenOpenID(endpoint, return_to, consumer_key)
+        self.impl = RakutenOpenID(endpoint, return_to, consumer_key, extra_verify_urls=extra_verify_urls)
 
 
     def _get_rememberer(self, environ):
@@ -43,10 +46,15 @@ class RakutenOpenIDPlugin(object):
         if req.path_url == self.return_to:
             return self.impl.openid_params(req)
 
+        if req.path_url in self.impl.extra_verify_urls:
+            logger.warn('verify  openid for develop mode: %s' % self.impl.extra_verify_urls)
+            return self.impl.openid_params(req)
+
         identity = self.get_identity(req)
         logging.debug(identity)
 
         if identity is None:
+            logger.debug("identity failed")
             return None
 
         if 'repoze.who.plugins.auth_tkt.userid' in identity:
@@ -62,7 +70,7 @@ class RakutenOpenIDPlugin(object):
 
     # IAuthenticator
     def authenticate(self, environ, identity):
-        logging.debug(identity)
+        logging.debug('authenticate %s' % identity)
         if 'clamed_id' in identity:
             return (pickle.dumps(identity)).encode('base64')
 
@@ -73,6 +81,7 @@ class RakutenOpenIDPlugin(object):
         req = webob.Request(environ)
         userdata = self.impl.verify_authentication(req, identity)
         if userdata == None:
+            logger.debug('authentication failed')
             return None
         
         
@@ -82,6 +91,7 @@ class RakutenOpenIDPlugin(object):
 
     # IIdentifier
     def remember(self, environ, identity):
+        logger.debug('remember identity')
         rememberer = self._get_rememberer(environ)
         return rememberer.remember(environ, identity)
 

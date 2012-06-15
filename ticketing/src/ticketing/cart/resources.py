@@ -3,12 +3,18 @@ import itertools
 import operator
 from sqlalchemy import sql
 from pyramid.decorator import reify
+from pyramid.security import Everyone, Authenticated
+from pyramid.security import Allow
 from ..core import models as c_models
 from . import models as m
 
 from . import logger
 
 class TicketingCartResrouce(object):
+    __acl__ = [
+        (Allow, Authenticated, 'view'),
+    ]
+
     def __init__(self, request):
         self.request = request
 

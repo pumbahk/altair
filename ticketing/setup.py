@@ -49,6 +49,8 @@ requires = [
     'isodate',
     'python-dateutil',
     'standardenum',
+    'pyramid_who',
+    'repoze.who',
     ]
 
 setup(name='ticketing',
