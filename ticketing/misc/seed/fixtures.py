@@ -8,6 +8,7 @@ from fixture import rel, auto, Data as _Data, DataSuite, DataWalker
 from collections import OrderedDict
 import logging
 import hashlib
+import json
 
 logger = logging.getLogger('fixtures')
 
@@ -654,6 +655,9 @@ class Data(_Data):
 def random_date():
     return datetime.now().date().replace(month=1, day=1) + relativedelta(days=randint(0, 364))
 
+def random_color():
+    return u'#%x%x%x' % (randint(0, 15), randint(0, 15), randint(0, 15))
+
 def build_site_datum(name):
     colgroup_seat_schema_pair = [('ABCDEFGHIJKLMNOPQRSTUVWXYZ'[i], _name) for i, (_name, type) in enumerate(stock_type_pairs) if type == 0]
     return Data(
@@ -1104,7 +1108,7 @@ def build_stock_type_datum(name, type):
         'StockType',
         name=name,
         type=type,
-        style=u'{}'
+        style=json.dumps(dict(fill=dict(color=random_color())), ensure_ascii=False)
         )
 
 def build_product_item(performance, product, stock, price, quantity):
@@ -1167,7 +1171,7 @@ def build_event_datum(organization, title):
             'StockHolder',
             name=account.name,
             account_id=account,
-            style=u'{}'
+            style=json.dumps(dict(text=account.name[0]), ensure_ascii=False)
             ) \
         for account in organization.accounts
         ]
