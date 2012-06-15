@@ -30,7 +30,7 @@ if(!widget){
     };
     var on_dialog = function(we){
         setTimeout(function(){ //todo refactoring
-            we.bind_retry(15, 25, 
+            we.bind_retry(10, 1.43, 15, 
                       function(){return $("#freetext_widget_textarea")}, 
                       function(elt){
                           _initialize(we)
