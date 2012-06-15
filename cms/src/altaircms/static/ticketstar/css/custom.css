@@ -456,9 +456,21 @@
 /*
   sidebar
 */
+/* h2.sidebar-heading {
+ *     height: 24px;
+ * 	padding: 7px 10px 0;
+ * 	color: #ffffff;
+ * 	background: url(../img/search/side_title.gif) no-repeat 0 0;
+ * } */
+
 h2.sidebar-heading {
+    background-repeat: no-repeat;
+    color: #fff;
+    margin:0;
+    margin-top: 20px;
+    padding-left: 15px;
     height: 24px;
 	padding: 7px 10px 0;
 	color: #ffffff;
-	background: url(../img/search/side_title.gif) no-repeat 0 0;
+	background: url(../img/search/side_title_long.gif) no-repeat;
 }
