@@ -156,6 +156,7 @@ class ParseAndSaveEventTests(unittest.TestCase):
          "open_on": "2012-03-15T17:00:00+09:00",
          "start_on": "2012-03-15T19:00:00+09:00",
          "end_on": "2012-03-15T22:00:00+09:00",
+         "prefecture": "tokyo", 
          "sales": [
            {
              "name": "presale",
@@ -214,6 +215,7 @@ class ParseAndSaveEventTests(unittest.TestCase):
          "end_on": "2012-03-16T22:00:00+09:00",
          "deal_open": "2012-03-15T19:00:00+09:00",
          "deal_close": "2012-03-15T22:00:00+09:00",  
+         "prefecture": "osaka", 
          "sales": [
            {
              "name": "presale",

@@ -97,7 +97,7 @@ class Scanner(object):
                 performance.start_on = parse_datetime(performance_record['start_on'])
                 performance.end_on = parse_datetime(performance_record.get('end_on'))
             except KeyError as e:
-                raise "missing property '%s' in the event record" % e.message
+                raise Exception("missing property '%s' in the event record" % e.message)
             self.current_performance = performance
 
             sales_segment_records = performance_record.get('sales')
