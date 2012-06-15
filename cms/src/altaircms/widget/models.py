@@ -70,7 +70,7 @@ class WidgetDisposition(BaseOriginalMixin, Base): #todo: rename
     pageから作成し、pageにbindする
     """
     implements(IHasTimeHistory, IHasSite)
-    
+
     query = DBSession.query_property()
     __tablename__ = "widgetdisposition"
     id = sa.Column(sa.Integer, primary_key=True)
