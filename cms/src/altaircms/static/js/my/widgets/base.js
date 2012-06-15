@@ -1,17 +1,21 @@
 var widget = (function(){
-    var bind_retry = function(n, d, finder, do_something, failback){
-        // try n times, wait d
+    var bind_retry = function(a0, d, n, finder, do_something, failback){
+        // a0 = 10, d = 1.43, n=15
+        // 15, 4949.21343937
+        var wait_time = a0; // todo: receive as function argument.
         var iter = function iter(i){
             if (i > n){
                 alert("error: broken widget. please reload")
             }
             var elt = finder();
             if(elt.length <=0){
+                wait_time = wait_time * d;
                 if(!!failback){
                     failback(elt);
                 }
-                setTimeout(function(){iter(i+1)}, d);
+                setTimeout(function(){iter(i+1)}, wait_time);
             }else {
+                wait_time = a0;
                 do_something(elt);
             }   
         }

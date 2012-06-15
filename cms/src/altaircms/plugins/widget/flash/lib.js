@@ -33,7 +33,7 @@ widget.configure({
 
     var on_dialog = function(we){
         we.bind_retry(
-            15, 25, 
+            10, 1.43, 15, 
             function(){return $(".scrollable")}, 
             function(){
 
