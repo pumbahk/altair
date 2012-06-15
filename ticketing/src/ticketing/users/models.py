@@ -10,6 +10,7 @@ Base = sqlahelper.get_base()
 
 class User(Base):
     __tablename__ = 'User'
+    query = session.query_property()
     id = Column(Identifier, primary_key=True)
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
@@ -24,6 +25,7 @@ class User(Base):
 
 class UserProfile(Base):
     __tablename__ = 'UserProfile'
+    query = session.query_property()
     id = Column(Identifier, primary_key=True)
     user_id = Column(Identifier, ForeignKey('User.id'))
     user = relationship('User', backref=backref("user_profile", uselist=False))
@@ -52,16 +54,17 @@ class UserProfile(Base):
 
 class UserCredential(Base):
     __tablename__ = 'UserCredential'
+    query = session.query_property()
     id = Column(Identifier, primary_key=True)
 
-    auth_identifier = Column(String(255), unique=True)
+    auth_identifier = Column(String(1024), unique=True)
     auth_secret= Column(String(255))
 
     user_id = Column(Identifier, ForeignKey('User.id'))
     user = relationship('User', backref="user_credential", uselist=False)
 
-    member_ship_id = Column(Identifier, ForeignKey('MemberShip.id'))
-    member_ship     = relationship("MemberShip", uselist=False)
+    membership_id = Column(Identifier, ForeignKey('MemberShip.id'))
+    membership = relationship("MemberShip", uselist=False)
 
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
@@ -69,6 +72,7 @@ class UserCredential(Base):
 
 class UserPointAccount(Base):
     __tablename__ = 'UserPointAccount'
+    query = session.query_property()
     id = Column(Identifier, primary_key=True)
     user_id = Column(Identifier, ForeignKey("User.id"))
     user = relationship('User', backref="user_point_account", uselist=False)
@@ -82,6 +86,7 @@ class UserPointAccount(Base):
 
 class UserPointHistory(Base):
     __tablename__ = 'UserPointHistory'
+    query = session.query_property()
     id = Column(Identifier, primary_key=True)
     user_point_account_id = Column(Identifier, ForeignKey("UserPointAccount.id"))
     user_point_account = relationship('UserPointAccount', uselist=False)
@@ -95,6 +100,7 @@ class UserPointHistory(Base):
 
 class MailMagazine(Base):
     __tablename__ = 'MailMagazine'
+    query = session.query_property()
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
     description = Column(String(1024))
@@ -106,6 +112,7 @@ class MailMagazine(Base):
 
 class MailSubscription(Base):
     __tablename__ = 'MailSubscription'
+    query = session.query_property()
     id = Column(Identifier, primary_key=True)
     email = Column(String(255))
     user_id = Column(Identifier, ForeignKey("User.id"), nullable=True)
@@ -122,6 +129,7 @@ class MemberShip(Base):
       Membership ex) Rakuten Fanclub ....
     '''
     __tablename__ = 'MemberShip'
+    query = session.query_property()
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
 
