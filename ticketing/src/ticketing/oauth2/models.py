@@ -37,7 +37,7 @@ class TimestampGenerator(object):
         self.seconds = seconds
 
     def __call__(self):
-        return int(time.time()) + self.seconds
+        return datetime.fromtimestamp(int(time.time()) + self.seconds)
 
 
 class KeyGenerator(object):

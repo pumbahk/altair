@@ -10,6 +10,7 @@ from .util.uri import add_parameters, add_fragments, normalize
 
 from ticketing.core.models import *
 from ticketing.oauth2.models import *
+from ticketing.operators.models import Permission
 
 import sqlahelper
 session = sqlahelper.get_session()
