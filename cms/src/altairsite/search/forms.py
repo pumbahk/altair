@@ -93,7 +93,7 @@ class TopPageSidebarSearchForm(form.Form):
 ## todo:フリーワード
 ## todo: make query
 class QueryPartForm(form.Form):
-    query = fields.TextField(label=u"",)
+    query = fields.TextField(id="freeword_query", label=u"",)
     query_cond = fields.RadioField(choices=[("intersection", u"全てを含む"), ("union", u"少なくとも1つを含む")], 
                                    widget=PutOnlyWidget())
 
