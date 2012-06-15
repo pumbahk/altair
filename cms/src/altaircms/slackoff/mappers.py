@@ -34,7 +34,7 @@ def promotion_unit_mapper(request, obj):
     objlike.thumbnail = obj.thumbnail.title or u"名前なし"
     objlike.pageset = RawText(u'<a href="%s">%s</a>' % (h.link.to_preview_page_from_pageset(request, obj.pageset), obj.pageset.name)) if obj.pageset else u"-"
     url = obj.get_link(request)
-    objlike.link = RawText(u'<a href="%s">%s</a>' % (url, url))
+    objlike.link = RawText(u'<a href="%s">リンク先</a>' % url)
     return objlike
     
 PDICT = import_symbol("altaircms.seeds.prefecture:PrefectureMapping").name_to_label
@@ -77,7 +77,7 @@ def topic_mapper(request, obj):
     objlike.bound_page = obj.bound_page.name if obj.bound_page else u"-"
     objlike.linked_page = obj.linked_page.name if obj.linked_page else u"-"
     url = h.link.get_link_from_topic(request, obj)
-    objlike.link = RawText(u'<a href="%s">%s</a>' % (url, url))
+    objlike.link = RawText(u'<a href="%s">リンク先</a>' % url)
     return objlike
 
 CDWN_DICT = dict(Topcontent.COUNTDOWN_CANDIDATES)
@@ -91,7 +91,7 @@ def topcontent_mapper(request, obj):
     objlike.bound_page = obj.bound_page.name if obj.bound_page else u"-"
     objlike.linked_page = obj.linked_page.name if obj.linked_page else u"-"
     url = h.link.get_link_from_topcontent(request, obj)
-    objlike.link = RawText(u'<a href="%s">%s</a>' % (url, url))
+    objlike.link = RawText(u'<a href="%s">リンク先</a>' % url)
     objlike.countdown_type = CDWN_DICT[obj.countdown_type]
     return objlike
 
