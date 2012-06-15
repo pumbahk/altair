@@ -48,22 +48,22 @@ class OperatorRoleData(DataSet):
 
 class OperatorData(DataSet):
     class operator_1:
-        name = 'Administrator'
-        email = 'admin@ticketstar.com'
+        name = u'Administrator'
+        email = u'admin@ticketstar.com'
         organization = OrganizationData.organization_0
         roles = [
             OperatorRoleData.role_admin_admin
         ]
     class operator_2:
-        name = 'オペレーター2'
-        email = 'tes2t@test.com'
+        name = u'オペレーター2'
+        email = u'tes2t@test.com'
         organization = OrganizationData.organization_0
         roles = [
             OperatorRoleData.role_super_user
         ]
     class operator_3:
-        name = 'オペレーター3'
-        email = 'test3@test.com'
+        name = u'オペレーター3'
+        email = u'test3@test.com'
         organization = OrganizationData.organization_1
         roles = [
             OperatorRoleData.role_super_user

@@ -9,7 +9,7 @@ from datetime import datetime
 from dateutil.parser import parse
 
 from .utils import JavaHashMap
-from .models import SejOrder, SejTicket, SejNotification, SejCancelEvent, SejCancelTicket, SejTicketFile
+from .models import SejOrder, SejTicket, SejNotification
 
 from .resources import make_sej_response, is_ticket, need_ticketing
 from .resources import SejNotificationType, SejOrderUpdateReason, SejPaymentType, SejTicketType
@@ -738,6 +738,7 @@ def callback_notification(params,
         n.barcode_numbers['barcodes'] = list()
         for idx in range(1,20):
             n.barcode_numbers['barcodes'].append(hash_map['X_barcode_no_new_%02d' % idx])
+        print n.barcode_numbers
         n.processed_at          = parse(hash_map['X_shori_time'])
         n.signature                     = hash_map['xcode']
 
@@ -759,7 +760,7 @@ def callback_notification(params,
         n.barcode_numbers['barcodes']   = list()
 
         for idx in range(1,20):
-            n.barcode_numbers['barcodes'].append(hash_map['X_barcode_no_new_%02d' % idx])
+            n.barcode_numbers['barcodes'].append(hash_map['X_barcode_no_%02d' % idx])
 
         return make_sej_response(dict(status='800' if not retry_data else '810'))
 

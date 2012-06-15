@@ -100,7 +100,6 @@ class SejNotification(BaseModel, WithTimestamp, LogicallyDeleted, Base):
     ticketing_store_name    = Column(String(36))
 
     cancel_reason           = Column(String(2), nullable=True)
-    processed_at            = Column(DateTime, nullable=True)
 
     barcode_numbers         = Column(MutationDict.as_mutable(JSONEncodedDict(4096)), nullable=True)
 
@@ -109,45 +108,13 @@ class SejNotification(BaseModel, WithTimestamp, LogicallyDeleted, Base):
 
     signature               = Column(String(32))
 
-class SejTicketFile(BaseModel, WithTimestamp, LogicallyDeleted, Base):
-    __tablename__           = 'SejTicketFile'
-
+class SejFile(BaseModel, WithTimestamp, LogicallyDeleted, Base):
+    __tablename__           = 'SejFile'
     id                      = Column(Identifier, primary_key=True)
-
-    notification_type       = Column(Enum('51', '61', '91', '92', '94', '95', '96', '97', '98'))
-    payment_type            = Column(Enum('1', '2', '3', '4'))
-
-    shop_id                 = Column(String(5))
-    order_id                = Column(String(12))
-
-    exchange_number         = Column(String(13), nullable=True)
-    billing_number          = Column(String(13), nullable=True)
-
-    exchange_sheet_url      = Column(String(128), nullable=True)
-    exchange_sheet_number   = Column(String(32), nullable=True)
-
-    total_ticket_count      = Column(Integer, nullable=True)
-    ticket_count            = Column(Integer, nullable=True)
-    return_ticket_count     = Column(Integer, nullable=True)
-
-    ticket_barcode_number   = Column(String(13))
-
-    receipt_amount          = Column(DECIMAL, nullable=True)
-    refund_ticket_price     = Column(DECIMAL, nullable=True)
-    refund_other_price      = Column(DECIMAL, nullable=True)
-
-    received_at             = Column(DateTime, nullable=True)
-    process_at              = Column(DateTime, nullable=True)
-
-    cancel_reason           = Column(Enum('1', '2', '3', '4'))
-    refund_status           = Column(Enum('1', '2', '3', '4'))
-    refund_cancel_reason    = Column(Enum('1', '2', '3', '4'))
-
-    refund_cancel_at        = Column(DateTime, nullable=True)
-
-    attributes              = Column(MutationDict.as_mutable(JSONEncodedDict(4096)))
-    signature               = Column(String(32))
-
+    notification_type       = Column(Enum('94', '51', '61', '92', '94', '95', '96'))
+    file_date               = Column(Date, unique=True)
+    reflected_at            = Column(DateTime, nullable=True)
+    file_url                = Column(String(255))
 
 class SejOrder(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     __tablename__           = 'SejOrder'
