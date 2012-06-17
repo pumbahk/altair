@@ -675,12 +675,10 @@ def callback_notification(params,
 
     payment = SejPayment(url = '', secret_key = secret_key)
     hash = payment.create_hash_from_x_start_params(hash_map)
-    '''
+
     if hash != params.get('xcode'):
         raise SejResponseError(
             400, 'Bad Request',dict(status='400', Error_Type='00', Error_Msg='Bad Value', Error_Field='xcode'))
-
-    '''
 
     process_number = params.get('X_shori_id')
     if not process_number:
@@ -725,7 +723,7 @@ def callback_notification(params,
         n.order_id                      = hash_map['X_shop_order_id']
         n.billing_number                = hash_map['X_haraikomi_no']
         n.exchange_number               = hash_map['X_hikikae_no']
-        n.payment_type_new              = hash_map['X_shori_kbn_new']
+        n.payment_type_new              = str(int(hash_map['X_shori_kbn_new']))
         n.billing_number_new            = hash_map['X_haraikomi_no_new']
         n.exchange_number_new           = hash_map['X_hikikae_no_new']
         n.ticketing_due_at_new    = parse(hash_map['X_lmt_time_new'])
@@ -861,4 +859,6 @@ def request_cancel_event(cancel_events):
 
 
     zf.close()
+
+
     return
