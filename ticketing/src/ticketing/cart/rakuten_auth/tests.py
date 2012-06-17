@@ -81,6 +81,34 @@ class RakutenOpenIDTests(unittest.TestCase):
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
 
+
+    @mock.patch('ticketing.cart.rakuten_auth.api.create_oauth_sigunature')
+    @mock.patch('urllib2.urlopen')
+    def test_get_access_token(self, mock_urlopen, mock_signature):
+        target = self._makeOne('https://api.id.rakuten.co.jp/openid/auth', 
+            'http://www.example.com/', 'akfjakldjfakldjfkalsdjfklasdjfklajdf', 'secret',
+            access_token_url='https://api.id.rakuten.co.jp/oauth',
+            )
+
+        oauth_consumer_key = "consumer"
+        oauth_token = "token"
+        secret = "secret"
+
+        mock_signature.return_value = "signature"
+        mock_response = mock.Mock()
+        mock_response.read.return_value = """\
+oauth_token:fafjfdjfjfsdjfslkdjflaksjd
+oauth_token_secret:fjlkjfajdfkafjalkdjfklsja"""
+        mock_urlopen.return_value = mock_response
+
+        result = target.get_access_token(oauth_consumer_key, oauth_token, secret)
+        
+        self.assertEqual(result,
+            {"oauth_token": "fafjfdjfjfsdjfslkdjflaksjd",
+             "oauth_token_secret": "fjlkjfajdfkafjalkdjfklsja",
+            })
+
+
     @mock.patch('uuid.uuid4')
     @mock.patch('time.time')
     @mock.patch('urllib2.urlopen')
@@ -222,3 +250,23 @@ ns:http://specs.openid.net/auth/2.0"""
             call().close(),
             call('?oauth_consumer_key=akfjakldjfakldjfkalsdjfklasdjfklajdf&oauth_token=XXXXXXXXXXXXX&oauth_signature_method=HMAC-SHA1&oauth_timestamp=999999999999&oauth_nonce=nonce-nonce&oauth_version=1.0&oauth_signature=6ZoBYAQxl6XpQwW540ErEmDJAMc%3D'),
             call().close(),])
+
+class parse_access_token_responseTests(unittest.TestCase):
+
+    def _callFUT(self, *args, **kwargs):
+        from . import api
+        return api.parse_access_token_response(*args, **kwargs)
+
+    def test_it(self):
+        data = """\
+oauth_token:fafjfdjfjfsdjfslkdjflaksjd
+oauth_token_secret:fjlkjfajdfkafjalkdjfklsja"""
+
+        result = self._callFUT(data)
+
+        self.assertEqual(result,
+            {"oauth_token": "fafjfdjfjfsdjfslkdjflaksjd",
+             "oauth_token_secret": "fjlkjfajdfkafjalkdjfklsja",
+            })
+
+    

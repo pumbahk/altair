@@ -149,7 +149,11 @@ class RakutenOpenID(object):
         f = urllib2.urlopen(request_url)
         response_body = f.read()
         f.close()
-        return response_body
+        access_token = parse_access_token_response(response_body)
+        return access_token
+
+def parse_access_token_response(response):
+    return dict([line.split(":", 1) for line in response.split("\n")])
 
 def create_signature_base(method, url, oauth_consumer_key, secret, oauth_token, oauth_signature_method, oauth_timestamp, oauth_nonce, oauth_version, form_params):
     params = sorted(form_params + [
