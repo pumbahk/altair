@@ -114,7 +114,7 @@ class PerformanceEvent3Data(DataSet):
 class SalesSegmentEvent1Data(DataSet):
     class sales_segment_1:
         name = u'先行販売'
-        kind = SalesSegmentKindEnum.eary_fisrtcome.k
+        kind = SalesSegmentKindEnum.early_fisrtcome.k
         start_at = datetime(2012,5,1,12,0)
         end_at = datetime(2012,7,1,12,0)
         event = EventData.event_1
@@ -132,7 +132,7 @@ class SalesSegmentEvent1Data(DataSet):
 class SalesSegmentEvent2Data(DataSet):
     class sales_segment_1:
         name = u'先行販売'
-        kind = SalesSegmentKindEnum.eary_fisrtcome.k
+        kind = SalesSegmentKindEnum.early_fisrtcome.k
         start_at = datetime(2012,5,1,12,0)
         end_at = datetime(2012,7,1,12,0)
         event = EventData.event_2
@@ -150,7 +150,7 @@ class SalesSegmentEvent2Data(DataSet):
 class SalesSegmentEvent3Data(DataSet):
     class sales_segment_1:
         name = u'先行販売'
-        kind = SalesSegmentKindEnum.eary_fisrtcome.k
+        kind = SalesSegmentKindEnum.early_fisrtcome.k
         start_at = datetime(2012,8,1,12,0)
         end_at = datetime(2012,8,1,12,0)
         event = EventData.event_3
