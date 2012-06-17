@@ -45,7 +45,6 @@ class ZipEntryWriter(threading.Thread):
 
             file_size = file_size + len(buf)
             CRC = binascii.crc32(buf, CRC)
-            print CRC
             if cmpr:
                 buf = cmpr.compress(buf)
                 compress_size = compress_size + len(buf)

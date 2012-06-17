@@ -1,11 +1,12 @@
 # -*- coding:utf-8 -*-
 import unittest
 import datetime
+import os
 
 from ticketing.sej.payment import SejTicketDataXml
 from ticketing.sej.utils import JavaHashMap
 
-class SejTest(unittest.TestCase):
+class SejTestFile(unittest.TestCase):
 
     def _getTarget(self):
         import webapi
@@ -29,12 +30,14 @@ class SejTest(unittest.TestCase):
 
     def test_get_file_payment_request(self):
         import webob.util
+        from zlib import compress, decompress
 
         def sej_dummy_response(environ):
-            return open(os.path.dirname(__file__)+ '/data/files/SEITIS91_30516_20110912', 'r').read()
+
+            return compress(open(os.path.dirname(__file__)+ '/data/files/SEITIS91_30516_20110912', 'r').read())
 
         webob.util.status_reasons[800] = 'OK'
-        target = self._makeOne(sej_dummy_response, host='127.0.0.1', port=38004, status=200)
+        target = self._makeOne(sej_dummy_response, host='127.0.0.1', port=18090, status=800)
         target.start()
 
         from ticketing.sej.payment import request_fileget
@@ -43,9 +46,8 @@ class SejTest(unittest.TestCase):
         file = request_fileget(
             date=datetime.datetime(2011,9,12),
             notification_type=SejNotificationType.InstantPaymentInfo,
-            hostname=u"http://127.0.0.1:38004")
-
-        target.assert_body("X_shop_id=30520&xcode=4b285c1d4da8c4a7452aec0b0c412c60&X_tuchi_kbn=91&X_date=20110912")
+            hostname=u"http://127.0.0.1:18090")
+        target.assert_body("X_shop_id=30520&xcode=71493542957ed71cc35e0f8810e018a9&X_data_type=91&X_date=20110912")
         target.assert_method("POST")
 
         parser = SejInstantPaymentFileParser()

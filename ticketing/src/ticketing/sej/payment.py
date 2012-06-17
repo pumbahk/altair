@@ -80,13 +80,11 @@ class SejPayment(object):
         except urllib2.HTTPError, e:
             res = e
         except urllib2.URLError, e:
-            print e.args
             return
 
         status = res.code
         reason = res.msg
         body = res.read()
-
 
         if status != 800:
             raise SejServerError(status_code=status, reason=reason, body=body)
@@ -161,7 +159,7 @@ class SejPayment(object):
         except urllib2.HTTPError, e:
             res = e
         except urllib2.URLError, e:
-            print e.args
+            #print e.args
             return
 
         status = res.code
@@ -472,7 +470,7 @@ def request_sej_exchange_sheet(sej_order_id, shop_id = u'30520', secret_key = u'
     except urllib2.HTTPError, e:
         res = e
     except urllib2.URLError, e:
-        print e.args
+        #print e.args
         return
 
     status = res.code
@@ -698,12 +696,11 @@ def callback_notification(params,
         n = SejNotification()
         DBSession.add(n)
 
-    def process_payment_complete(notification_type):
+    def process_payment_complete():
         '''3-1.入金発券完了通知'''
-        n.notification_type     = notification_type
         n.process_number        = hash_map['X_shori_id']
         n.shop_id               = hash_map['X_shop_id']
-        n.payment_type          = int(hash_map['X_shori_kbn'])
+        n.payment_type          = str(int(hash_map['X_shori_kbn']))
         n.order_id              = hash_map['X_shop_order_id']
         n.billing_number        = hash_map['X_haraikomi_no']
         n.exchange_number       = hash_map['X_hikikae_no']
@@ -717,16 +714,14 @@ def callback_notification(params,
         n.ticketing_store_name  = hash_map['hakken_mise_name']
         n.cancel_reason         = hash_map['X_torikeshi_riyu']
         n.processed_at          = parse(hash_map['X_shori_time'])
-        n.signature                     = hash_map['xcode']
-
+        n.signature             = hash_map['xcode']
         return make_sej_response(dict(status='800' if not retry_data else '810'))
 
-    def process_re_grant(notification_type):
-        '''3-2.SVC強制取消通知'''
-        n.notification_type             = notification_type
+
+    def process_re_grant():
         n.process_number                = hash_map['X_shori_id']
         n.shop_id                       = hash_map['X_shop_id']
-        n.payment_type                  = int(hash_map['X_shori_kbn'])
+        n.payment_type                  = str(int(hash_map['X_shori_kbn']))
         n.order_id                      = hash_map['X_shop_order_id']
         n.billing_number                = hash_map['X_haraikomi_no']
         n.exchange_number               = hash_map['X_hikikae_no']
@@ -736,21 +731,19 @@ def callback_notification(params,
         n.ticketing_due_at_new    = parse(hash_map['X_lmt_time_new'])
         n.barcode_numbers = dict()
         n.barcode_numbers['barcodes'] = list()
+
         for idx in range(1,20):
             n.barcode_numbers['barcodes'].append(hash_map['X_barcode_no_new_%02d' % idx])
-        print n.barcode_numbers
         n.processed_at          = parse(hash_map['X_shori_time'])
         n.signature                     = hash_map['xcode']
 
         return make_sej_response(dict(status='800' if not retry_data else '810'))
 
-    def process_expire(notification_type):
-
+    def process_expire():
         n.process_number                = hash_map['X_shori_id']
-        n.notification_type             = notification_type
         n.shop_id                       = hash_map['X_shop_id']
         n.order_id                      = hash_map['X_shop_order_id']
-        n.ticketing_due_at_new    = parse(hash_map['X_lmt_time'])
+        n.ticketing_due_at_new          = parse(hash_map['X_lmt_time'])
         n.billing_number                = hash_map['X_haraikomi_no']
         n.exchange_number               = hash_map['X_hikikae_no']
         n.processed_at                  = parse(hash_map['X_shori_time'])
@@ -764,7 +757,7 @@ def callback_notification(params,
 
         return make_sej_response(dict(status='800' if not retry_data else '810'))
 
-    def dummy(notification_type):
+    def dummy():
         raise SejResponseError(
              422, 'Bad Request',dict(status='422', Error_Type='01', Error_Msg='Bad Value', Error_Field='X_tuchi_type'))
 
@@ -773,8 +766,9 @@ def callback_notification(params,
         SejNotificationType.CancelFromSVC.v     : process_payment_complete,
         SejNotificationType.ReGrant.v           : process_re_grant,
         SejNotificationType.TicketingExpire.v   : process_expire,
-    }.get(int(params['X_tuchi_type']), dummy)(int(params['X_tuchi_type']))
-    n.notification_type = params['X_tuchi_type']
+    }.get(int(params['X_tuchi_type']), dummy)()
+    n.notification_type = str(int(params['X_tuchi_type']))
+
     DBSession.flush()
 
     return ret
@@ -792,7 +786,6 @@ def request_cancel_event(cancel_events):
     archive_txt_body = "%s\r\n%s\r\n" % (tpboen_file_name, tpbticket_file_name)
 
     zip_file_name = "/tmp/refund_file_%s.zip" % datetime.now().strftime('%Y%m%d%H%M')
-    print zip_file_name
     zf = EnhZipFile(zip_file_name, 'w')
 
     import zipfile

@@ -24,7 +24,6 @@ def package_ticket_template_to_zip(template_id,
         if sej_ticket.ticket_css:
             archive_txt_buffer.append("%s/%s.css" % (template_id, template_id))
         sej_ticket.send_at = datetime.datetime.now()
-        print sej_ticket.template_name
         csv_text_buffer.append(','.join([
             sej_ticket.status,
             shop_id,
@@ -33,8 +32,6 @@ def package_ticket_template_to_zip(template_id,
             sej_ticket.publish_end_date.strftime('%Y%m%d') if sej_ticket.publish_end_date else '99999999',
             sej_ticket.template_name
         ]))
-
-    print csv_text_buffer
 
     archive_txt_body = "\r\n".join(archive_txt_buffer) + "\r\n"
     csv_text_body = "\r\n".join(csv_text_buffer) + "\r\n"

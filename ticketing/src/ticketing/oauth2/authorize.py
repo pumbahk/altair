@@ -210,8 +210,8 @@ class Authorizer(object):
                         fragments["token_type"] = "mac"
                     elif self.authentication_method == BEARER:
                         fragments["token_type"] = "bearer"
-
-                merge_and_flush(access_token)
+                DBSession.flush()
+                #merge_and_flush(access_token)
 
             if self.state is not None:
                 parameters['state'] = self.state

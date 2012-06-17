@@ -1,9 +1,27 @@
 # -*- coding:utf-8 -*-
 import unittest
 import datetime
+from pyramid import testing
 
-from ticketing.sej.payment import SejTicketDataXml
-from ticketing.sej.utils import JavaHashMap
+def _setup_db():
+    import sqlahelper
+    from sqlalchemy import create_engine
+
+    #from . import models
+    from ticketing.sej.models import SejOrder
+    from ticketing.sej.payment import SejOrderUpdateReason, SejPaymentType, callback_notification
+
+    engine = create_engine("sqlite:///")
+    sqlahelper.get_session().remove()
+    sqlahelper.add_engine(engine)
+    sqlahelper.get_base().metadata.drop_all()
+    sqlahelper.get_base().metadata.create_all()
+    return sqlahelper.get_session()
+
+def _teardown_db():
+    import transaction
+    transaction.abort()
+
 
 class SejTest(unittest.TestCase):
 
@@ -15,18 +33,11 @@ class SejTest(unittest.TestCase):
         return self._getTarget()(*args, **kwargs)
 
     def setUp(self):
-        import sqlahelper
-        from sqlalchemy import create_engine
-        from ticketing.sej.models import SejOrder
-        engine = create_engine("sqlite:///")
-        sqlahelper.get_session().remove()
-        sqlahelper.add_engine(engine)
-        Base = sqlahelper.get_base()
-        Base.metadata.create_all()
+        self.session = _setup_db()
 
     def tearDown(self):
-        pass
-
+        testing.tearDown()
+        _teardown_db()
 
     def test_callback_pay_notification(self):
         '''入金発券完了通知'''
@@ -97,7 +108,7 @@ class SejTest(unittest.TestCase):
         assert n.processed_at          == datetime.datetime(2012,7,1,8,11,00)
 
     def test_callback_svc_cancel_notification(self):
-        '''CSV'''
+        '''SVCキャンセル'''
         import sqlahelper
         from webob.multidict import MultiDict
         from ticketing.sej.models import SejOrder
@@ -254,6 +265,7 @@ class SejTest(unittest.TestCase):
     def test_request_order_cash_on_delivery(self):
         '''2-1.決済要求 代引き'''
 
+        from ticketing.sej.payment import SejTicketDataXml
         from ticketing.sej.models import SejOrder
         from ticketing.sej.payment import SejPaymentType, SejTicketType, request_order
 
@@ -401,6 +413,7 @@ class SejTest(unittest.TestCase):
     def test_request_order_prepayment(self):
         '''2-1.決済要求 支払い済み'''
         import sqlahelper
+        from ticketing.sej.payment import SejTicketDataXml
         from ticketing.sej.models import SejOrder
         from ticketing.sej.payment import SejPaymentType, SejTicketType, request_order
 

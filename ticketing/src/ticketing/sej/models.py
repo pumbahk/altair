@@ -9,6 +9,7 @@ from hashlib import md5
 
 import sqlahelper
 
+print 'sql healerfffffff'
 session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
 
@@ -171,9 +172,6 @@ class SejOrder(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     issue_at                = Column(DateTime, nullable=True)
     # キャンセル日時
     cancel_at               = Column(DateTime, nullable=True)
-
-    request_params          = Column(MutationDict.as_mutable(JSONEncodedDict(4096)))
-    callback_params         = Column(MutationDict.as_mutable(JSONEncodedDict(4096)))
 
 
 class SejTicket(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
