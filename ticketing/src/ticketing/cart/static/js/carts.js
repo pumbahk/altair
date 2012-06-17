@@ -68,7 +68,12 @@ carts.AppView.prototype.init = function(presenter) {
                     alert('OK');
                     window.location.href = data.pyament_url;
                 } else {
-                    alert('NG');
+                    $('#order-error-template').overlay({
+                        mask: {
+                            color: "#999",
+                            opacity: 0.5
+                        },
+                        load: true});
                 }
             }
         })

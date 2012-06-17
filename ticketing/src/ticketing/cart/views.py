@@ -5,6 +5,7 @@ import re
 from markupsafe import Markup
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from pyramid.view import view_config
+from js.jquery_tools import jquery_tools
 from ..models import DBSession
 from ..core import models as c_models
 from ..orders import models as o_models
@@ -24,6 +25,7 @@ class IndexView(object):
     
     @view_config(route_name='cart.index', renderer='carts/index.html', xhr=False, permission="view")
     def __call__(self):
+        jquery_tools.need()
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.params.get('performance')
         e = DBSession.query(c_models.Event).filter_by(id=event_id).first()
@@ -290,17 +292,6 @@ class MultiCheckoutView(object):
 
         return auth_result
 
-    def card_info_secure_code(self):
-        """ カード情報入力(セキュアコード)
-        """
-
-    def secure3d_checkout(self):
-        """ マルチ決済（クレジットカード 3Dセキュア認証）
-        """
-
-    def secure3d_callback(self):
-        """
-        """
 
     def multi_checkout(self):
         """ マルチ決済APIで決済確定
