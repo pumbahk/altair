@@ -1,7 +1,6 @@
-<%inherit file="/layout.html"/>
+<%inherit file="/layout_2cols.html"/>
 <%namespace file="/common/helpers.html" name="h" />
-
-<style>
+<style type="text/css">
   .ordered-item {
     text-decoration: none;
     background-color: #EEE;
@@ -17,30 +16,27 @@
   }
 </style>
 
-<div class="row-fluid">
-  <%include file="/parts/_menu.html" />
+<div class="breadcrumbs">
+  ${h.breadcrumbs(
+    names=[u'トップ', u'購入情報'],
+    urls=[request.route_path('index')]
+  )}
+</div>
 
-  <div class="span10">
-    ${h.breadcrumbs(
-      names=[u'トップ', u'購入情報'],
-      urls=[request.route_path('index')]
-    )}
-  </div>
+<div class="page-header">
+  <h1>購入情報</h1>
+</div>
 
-  <span class="span10">
-    <div class="page-header">
-      <h3>購入情報</h3>
-    </div>
+<div class="content">
+  ${h.flash_messages(request)}
+</div>
 
-    <div class="content">
-      ${h.flash_messages(request)}
-    </div>
+<div style="float: left;">
+  <%include file="/orders/_search.html" />
+</div>
 
-    <span style="float: left;">
-      <%include file="/orders/_search.html" />
-    </span>
-
-    <%include file="/orders/_list.html" args="form=form, orders=orders" />
-  </span>
+<div class="orders">
+  ${h.pager(orders)}
+  <%include file="/orders/_list.html" args="form=form, orders=orders" />
   ${h.pager(orders)}
 </div>

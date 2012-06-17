@@ -1,4 +1,4 @@
-<%inherit file="../layout.html" />
+<%inherit file="../layout_2cols.html" />
 <%namespace file="/common/helpers.html" name="h" />
 
 <%
@@ -24,46 +24,40 @@
   });
 </script>
 
-<div class="row-fluid">
-  <%include file="../parts/_menu.html" />
+<div class="breadcrumbs">
+  ${h.breadcrumbs(
+      names=[u'イベント', event.title, u'パフォーマンス', route_name],
+      urls=[
+        request.route_path('events.index'),
+        request.route_path('events.show', event_id=event.id),
+        request.route_path('performances.index', event_id=event.id),
+      ]
+  )}
+</div>
 
-  <div class="span10">
-    ${h.breadcrumbs(
-        names=[u'イベント', event.title, u'パフォーマンス', route_name],
-        urls=[
-          request.route_path('events.index'),
-          request.route_path('events.show', event_id=event.id),
-          request.route_path('performances.index', event_id=event.id),
-        ]
-    )}
-  </div>
+<div class="page-header">
+  <h1>パフォーマンス${route_name}</h1>
+</div>
 
-  <span class="span10">
-    <div class="page-header">
-      <h3>パフォーマンス${route_name}</h3>
+<div class="content">
+  ${h.flash_messages(request)}
+  ${h.alert_message(form)}
+</div>
+
+<div class="well">
+  <form class="form-horizontal" action="${route_path}" method="POST">
+    <fieldset>
+      ${h.form_item(form.id)}
+      ${h.form_item(form.original_id)}
+      ${h.form_item(form.name, option={'class':'span8', 'maxlength':255})}
+      ${h.form_item(form.open_on)}
+      ${h.form_item(form.start_on)}
+      ${h.form_item(form.end_on)}
+      ${h.form_item(form.code, option={'class':'span3', 'maxlength':12, 'placeholder':event.code})}
+      ${h.form_item(form.venue_id, option={'class':'span6'})}
+    </fieldset>
+    <div class="form-actions">
+      <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">
     </div>
-
-    <div class="content">
-      ${h.flash_messages(request)}
-      ${h.alert_message(form)}
-    </div>
-
-    <div class="well">
-      <form class="form-horizontal" action="${route_path}" method="POST">
-        <fieldset>
-          ${h.form_item(form.id)}
-          ${h.form_item(form.original_id)}
-          ${h.form_item(form.name, option={'class':'span8', 'maxlength':255})}
-          ${h.form_item(form.open_on)}
-          ${h.form_item(form.start_on)}
-          ${h.form_item(form.end_on)}
-          ${h.form_item(form.code, option={'class':'span3', 'maxlength':12, 'placeholder':event.code})}
-          ${h.form_item(form.venue_id, option={'class':'span6'})}
-        </fieldset>
-        <div class="form-actions">
-          <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">
-        </div>
-      </form>
-    </div>
-  </span>
+  </form>
 </div>

@@ -1,26 +1,20 @@
-<%inherit file="/layout.html"/>
+<%inherit file="/layout_2cols.html"/>
 <%namespace file="/common/helpers.html" name="h" />
 
-<div class="row-fluid">
-  <%include file="/parts/_menu.html" />
-
-  <div class="span10">
-    ${h.breadcrumbs(
-        names=[u'イベント', event.title, u'パフォーマンス'],
-        urls=[request.route_path('events.index'), request.route_path('events.show', event_id=event.id)]
-    )}
-  </div>
-
-  <span class="span10">
-    <div class="page-header">
-      <h3>パフォーマンス</h3>
-    </div>
-
-    <div class="content">
-      ${h.flash_messages(request)}
-    </div>
-
-    <%include file="/performances/_list.html" args="form=form, performances=performances" />
-    <%include file="/performances/_action_button.html" args="event=event" />
-  </span>
+<div class="breadcrumbs">
+  ${h.breadcrumbs(
+      names=[u'イベント', event.title, u'パフォーマンス'],
+      urls=[request.route_path('events.index'), request.route_path('events.show', event_id=event.id)]
+  )}
 </div>
+
+<div class="page-header">
+  <h1>パフォーマンス</h1>
+</div>
+
+<div class="content">
+  ${h.flash_messages(request)}
+</div>
+
+<%include file="/performances/_list.html" args="form=form, performances=performances" />
+<%include file="/performances/_action_button.html" args="event=event" />

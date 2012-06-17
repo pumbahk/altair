@@ -1,0 +1,10 @@
+<%page args="event=None,performance=None" />
+<%inherit file="layout.html" />
+<div class="row-fluid">
+  <div class="span2">
+    <%include file="/parts/_menu.html" args="performance=performance, event=event" />
+  </div>
+  <div class="span10">
+    ${next.body()}
+  </div>
+</div>

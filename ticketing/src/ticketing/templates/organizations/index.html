@@ -1,23 +1,18 @@
-<%inherit file="/layout.html"/>
+<%inherit file="/layout_2cols.html"/>
 <%namespace file="/common/helpers.html" name="h" />
-
-<div class="container row">
-  <div class="span12">
-    ${h.breadcrumbs(
-        names=[u'トップ', u'配券元／配券先 マスタ'],
-        urls=[request.route_path('index')]
-    )}
-  </div>
-
-  <span class="span12">
-    <div class="page-header">
-      <h3>配券元／配券先 マスタ</h3>
-    </div>
-
-    <div class="content">
-      ${h.flash_messages(request)}
-    </div>
-
-    <%include file="/organizations/_list.html" args="form=form, organizations=organizations" />
-  </span>
+<div class="breadcrumbs">
+  ${h.breadcrumbs(
+      names=[u'トップ', u'配券元／配券先 マスタ'],
+      urls=[request.route_path('index')]
+  )}
 </div>
+
+<div class="page-header">
+  <h1>配券元／配券先 マスタ</h1>
+</div>
+
+<div class="content">
+  ${h.flash_messages(request)}
+</div>
+
+<%include file="/organizations/_list.html" args="form=form, organizations=organizations" />
