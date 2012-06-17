@@ -499,7 +499,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 class SalesSegmentKindEnum(StandardEnum):
     first_lottery   = u'最速抽選'
     early_lottery   = u'先行抽選'
-    early_fisrtcome = u'先行先着'
+    early_firstcome = u'先行先着'
     normal          = u'一般販売'
     added_sales     = u'追加販売'
     added_lottery   = u'追加抽選'
