@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 from pyramid.view import view_config
+<<<<<<< HEAD
 from altaircms.models import Category
 from altaircms.page.models import PageSet
 from altaircms.topic.models import Topic, Topcontent
@@ -75,3 +76,14 @@ def search_by_freeword(context, request):
 
     return {"pagesets": qs, "classifieds": classifieds, "synonym": h.CATEGORY_SYNONYM, 
             "breadcrumbs": breadcrumbs, "freeword":freeword}
+=======
+from altaircms.page.models import PageSet
+from datetime import datetime
+@view_config(route_name="mobile_detail", renderer="altaircms:templates/mobile/detail.mako")
+def mobile_detail(request):
+    pageset = PageSet.query.filter_by(id=40).first()
+    today = datetime.now()
+    return {"page": pageset.current(), "event": pageset.event, "performances": pageset.event.performances, 
+            "today": today}
+
+>>>>>>> mobile詳細画面途中
