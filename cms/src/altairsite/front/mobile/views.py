@@ -70,7 +70,11 @@ def search_by_freeword(context, request):
 
     breadcrumbs = [u'<a href="%s">トップ</a>' % request.route_path("mobile_index")]
     if root:
+<<<<<<< HEAD
         breadcrumbs = breadcrumbs + list(h.category_to_breadcrumbs(request, root, freeword))
+=======
+        breadcrumbs = breadcrumbs + h.category_to_breadcrumbs(request, root, freeword)
+>>>>>>> breadcrumbs追加(search)
     breadcrumbs = gh.base.RawText(u"&gt;".join(breadcrumbs))
 
     return {"pagesets": qs, "classifieds": classifieds, "synonym": h.CATEGORY_SYNONYM, 

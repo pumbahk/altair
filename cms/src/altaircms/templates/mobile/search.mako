@@ -13,12 +13,19 @@
 <div>
 
 ## breadcrumbs
+<%doc>
 <a href="${request.route_path("mobile_index")}">トップ</a>&gt;
           <a href="http://ticket.rakuten.co.jp/mobile/s?cid=3">演劇・ミュージカル</a>
     &gt;      オペラ
     <div style="background-image: url(&quot;/static/mobile/img/bg_bar.gif&quot;); background-color: rgb(191, 0, 0);" bgcolor="#bf0000" background="/static/mobile/img/bg_bar.gif"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>検索結果</font>
 </div></div>
+</%doc>
 
+${breadcrumbs}
+    <div style="background-image: url(&quot;/static/mobile/img/bg_bar.gif&quot;); background-color: rgb(191, 0, 0);" bgcolor="#bf0000" background="/static/mobile/img/bg_bar.gif"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>検索結果</font>
+</div></div>
+
+##
 <div align="center">
 『${freeword}』を含む公演
 </div>
