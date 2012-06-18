@@ -296,9 +296,9 @@ class MultiCheckoutView(object):
         #order.user = user
         #cart.finish()
         DBSession.add(checkout_auth_result)
-        DBSession.add(order)
+        #DBSession.add(order)
 
-        return dict(art=cart, auth_result=checkout_auth_result)
+        return dict(cart=cart, auth_result=checkout_auth_result)
 
 
     def multi_checkout(self):
