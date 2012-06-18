@@ -258,3 +258,17 @@ class Category(Base):
             return cls.query.filter(cls.hierarchy==hierarchy, cls.parent==None)
 
 
+    def ancestors(self, include_self=False): ## fixme rename `include_self' keyword
+        """ return ancestors (order: parent, grand parent, ...)
+        """
+        r = []
+        me = self
+        while me.parent:
+            r.append(me)
+            me = me.parent
+        r.append(me)
+        
+        ## not include self iff include_self is false
+        if not include_self:
+            r.pop(0)
+        return r

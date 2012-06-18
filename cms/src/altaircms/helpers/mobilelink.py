@@ -26,11 +26,7 @@ def get_searchpage(request, kind=None, value=None):
     return request.route_path("page_search_by", kind=kind, value=value)
 
 def get_link_from_category(request, category):
-    warnings.warn("this is ad-hoc definition please fixme!")
-    if category.pageset is None:
-        return category.url
-    else:
-        return to_publish_page_from_pageset(request, category.pageset)
+    return to_publish_page_from_pageset(request, category.pageset)
 
 def get_link_from_topic(request, topic):
     if topic.mobile_link:

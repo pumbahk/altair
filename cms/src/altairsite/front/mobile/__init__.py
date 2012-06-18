@@ -26,6 +26,10 @@ def main(global_config, **settings):
     config = Configurator(settings=settings)
     config.include("altaircms.solr")
 
+    ##
+    search_utility = settings["altaircms.solr.search.utility"]
+    config.add_fulltext_search(search_utility)
+
 
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)
     config.add_static_view('plugins/static', 'altaircms:plugins/static', cache_max_age=3600)

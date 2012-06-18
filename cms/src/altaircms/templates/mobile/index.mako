@@ -63,4 +63,5 @@
   </div>
 <div><font color="#888888">2010-2011 &copy; TicketStar, Inc. All rights reserved.</font></div>
 </div>
-</font>
+</body>
+</html>

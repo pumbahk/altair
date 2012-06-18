@@ -9,6 +9,9 @@ from datetime import datetime
 from . import helpers as h
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> mobile searchの雛形作成
 from altaircms import helpers as gh
 from altairsite.search import api as search_api
 
@@ -159,12 +162,21 @@ def search_by_freeword(context, request):
     """ フリーワード検索 + categoryごとの数
     """
     root_category = request.params.get("r")
-    if root_category is None:
-        children = Category.query.filter_by(parent=None)
-    else:
-        children = Category.query.filter_by(parent=Category.query.filter_by(name=request.params["r"]).first())
-    
-    qs = search_api.search_by_freeword(request, request.params["q"])
+    root = Category.query.filter_by(name=root_category).first() if root_category else None
+    children = Category.query.filter_by(parent=None)
+
+    freeword = request.params["q"]
+    qs = search_api.search_by_freeword(request, freeword)
+
     classifieds = [(c, qs.filter(PageSet.category==c)) for c in children]
+<<<<<<< HEAD
     return {"pagesets": qs, "classifieds": classifieds}
 >>>>>>> mobile検索作成中
+=======
+    if root:
+        breadcrumbs = gh.base.RawText(u"&gt;".join(h.category_to_breadcrumbs(request, root, freeword)))
+    else:
+        breadcrumbs = u""
+
+    return {"pagesets": qs, "classifieds": classifieds, "breadcrumbs": breadcrumbs}
+>>>>>>> mobile searchの雛形作成

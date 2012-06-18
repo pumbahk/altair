@@ -7,14 +7,17 @@
       <font color="red">
         
       </font>
-  <a href="../index.html"><font color="#bf0000" size="3"><img src="http://rakuten-ticket-static.s3.amazonaws.com/public/images/mobile/logo-small.gif" alt="楽天チケット" width="160" height="26"></font></a>
+  <a href="${request.route_path("mobile_index")}"><font color="#bf0000" size="3"><img src="/static/mobile/img/logo-small.gif" alt="楽天チケット" width="160" height="26"></font></a>
   <hr color="#bf0000" size="1" noshade="noshade">
 </div>
 <div>
-<a href="../index.html">トップ</a>&gt;
+${breadcrumbs}
+${classifieds}
+
+<a href="${request.route_path("mobile_index")}">トップ</a>&gt;
           <a href="http://ticket.rakuten.co.jp/mobile/s?cid=3">演劇・ミュージカル</a>
     &gt;      オペラ
-    <div style="background-image: url(&quot;http://rakuten-ticket-static.s3.amazonaws.com/public/images/mobile/bg_bar.gif&quot;); background-color: rgb(191, 0, 0);" bgcolor="#bf0000" background="http://rakuten-ticket-static.s3.amazonaws.com/public/images/mobile/bg_bar.gif"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>検索結果</font>
+    <div style="background-image: url(&quot;/static/mobile/img/bg_bar.gif&quot;); background-color: rgb(191, 0, 0);" bgcolor="#bf0000" background="/static/mobile/img/bg_bar.gif"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>検索結果</font>
 </div>
 
 <div align="center">
