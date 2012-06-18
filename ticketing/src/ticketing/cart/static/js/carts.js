@@ -65,6 +65,22 @@ carts.AppView.prototype.init = function(presenter) {
             type: 'POST',
             success: function(data, textStatus, jqXHR) {
                 if (data.result == 'OK') {
+                    var products = data.cart.products;
+                    $('#contentsOfShopping').empty();
+                    for (var i=0; i < products.length; i++) {
+                        var product = products[i];
+                        alert(product.name + " " + product.quantity);
+                        var item = $('<tr/>');
+                        var name = $('<th/>');
+                        $(name).text(product.name);
+                        var quantity = $('<td/>');
+                        $(quantity).text(product.quantity + " 枚");
+                        item.append(name);
+                        item.append(quantity);
+                        $('#contentsOfShopping').append(item);
+                    }
+                    $('#cart-total-amount').text(data.cart.total_amount);
+
                     $('#reserved-confirm-button').click(function() {
                         window.location.href = data.pyament_url;
                     });

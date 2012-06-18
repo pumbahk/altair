@@ -172,7 +172,15 @@ class ReserveView(object):
         h.set_cart(self.request, cart)
         #self.request.session['ticketing.cart_id'] = cart.id
         #self.cart = cart
-        return dict(result='OK', pyament_url=self.request.route_url("cart.payment"))
+        return dict(result='OK', 
+                    pyament_url=self.request.route_url("cart.payment"),
+                    cart=dict(products=[dict(name=p.product.name, 
+                                             quantity=p.quantity,
+                                             price=int(p.product.price),
+                                        ) 
+                                        for p in cart.products],
+                              total_amount=h.format_number(cart.total_amount),
+                    ))
 
     def on_error(self):
         """ 座席確保できなかった場合

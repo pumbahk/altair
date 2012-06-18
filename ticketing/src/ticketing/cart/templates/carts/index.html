@@ -172,22 +172,16 @@ ${p.name} ： ${h.format_number(p.price)}円 <br/>
 </div>
 <div style="display:none;background:white;color:black;" id="order-reserved">
                     <h3 id="performance-name">ZED 東京公演 12月3日 14:00 幕張メッセイベントホール</h3>
-                    <table id="contentsOfShopping">
-                        <tr>
-                            <th scope="row"><img src="../img/settlement/icon_dummy.gif" alt="" width="21" height="21" /> エクストラファミリーシート</th>
-                            <td>大人　　<strong>2</strong>枚</td>
-                            <td class="align1">￥24,000</td>
-                        </tr>
-                        <tr>
-                            <th scope="row"><img src="../img/settlement/icon_dummy.gif" alt="" width="21" height="21" /> エクストラファミリーシート</th>
-                            <td>子供　　<strong>1</strong>枚</td>
-                            <td class="align1">￥3,000</td>
-                        </tr>
+                    <table>
+                        <thead>
                         <tr id="total">
                             <th scope="row"><img src="../img/settlement/total.gif" alt="合計金額" width="67" height="16" /></th>
                             <td>&nbsp;</td>
-                            <td class="align1">￥38,000</td>
+                            <td class="align1" id="cart-total-amount">￥</td>
                         </tr>
+                        <thead>
+                        <tbody id="contentsOfShopping">
+                        </tbody>
                     </table>
 <button id="reserved-confirm-button">購入する</button>
 </div>
