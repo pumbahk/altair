@@ -42,6 +42,11 @@
 							<td class="align1">￥${h.format_number(product.product.price * product.quantity)}</td>
 						</tr>
                         %endfor
+						<tr id="commission">
+							<th scope="row">システム利用料</th>
+							<td>&nbsp;</td>
+							<td class="align1">￥${h.format_number(cart.system_fee)}</td>
+						</tr>
 <!--
 						<tr id="commission">
 							<th scope="row">手数料</th>
