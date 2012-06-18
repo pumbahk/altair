@@ -348,7 +348,8 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             raise Exception(u'パフォーマンスの日付を入力してください')
 
         sales = []
-        for sales_segment in self.event.sales_segments:
+        sales_segments = SalesSegment.query.filter_by(event_id=self.event_id).all()
+        for sales_segment in sales_segments:
             sync_data = sales_segment.get_sync_data(self.id)
             if sync_data:
                 sales.append(sync_data)
@@ -520,11 +521,12 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     event = relationship('Event', backref='sales_segments')
 
     def get_sync_data(self, performance_id):
-        products = Product.find(performance_id=performance_id, sales_segment_id=self.id)
+        products = Product.find(performance_id=performance_id, sales_segment_id=self.id, include_deleted=True)
         if products:
             start_at = isodate.datetime_isoformat(self.start_at) if self.start_at else ''
             end_at = isodate.datetime_isoformat(self.end_at) if self.end_at else ''
             data = {
+                'id':self.id,
                 'name':self.name,
                 'kind':self.kind,
                 'start_on':start_at,
@@ -532,6 +534,8 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 'seat_choice':'true' if self.seat_choice else 'false',
                 'tickets':[p.get_sync_data(performance_id) for p in products],
             }
+            if self.deleted_at:
+                data['deleted'] = 'true'
             return data
         return
 
@@ -778,14 +782,16 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     items = relationship('ProductItem', backref='product')
 
     @staticmethod
-    def find(performance_id=None, event_id=None, sales_segment_id=None):
-        query = Product.filter()
+    def find(performance_id=None, event_id=None, sales_segment_id=None, include_deleted=False):
+        query = Product.query
         if performance_id:
             query = query.join(Product.items).filter(ProductItem.performance_id==performance_id)
         if event_id:
             query = query.filter(Product.event_id==event_id)
         if sales_segment_id:
             query = query.filter(Product.sales_segment_id==sales_segment_id)
+        if not include_deleted:
+            query = query.filter(Product.deleted_at==None)
         return query.all()
 
     def items_by_performance_id(self, id):
@@ -818,10 +824,13 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def get_sync_data(self, performance_id):
         data = {
+            'id':self.id,
             'name':self.name,
             'seat_type':self.seat_type(performance_id),
             'price':floor(self.price),
         }
+        if self.deleted_at:
+            data['deleted'] = 'true'
         return data
 
     def seat_type(self, performance_id):
