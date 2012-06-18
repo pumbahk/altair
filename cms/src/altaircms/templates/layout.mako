@@ -11,6 +11,11 @@
         body {
             padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
         }
+        .container {
+            width:auto;
+            margin-left: 10px;
+            margin-right: 10px;
+        }
 		// header css
 		#navigation { height:25px; }
 		#navigation ul{ list-style-type: none; padding-top:17px; font-size:11px; }

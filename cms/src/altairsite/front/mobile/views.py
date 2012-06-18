@@ -105,7 +105,15 @@ def mobile_detail(request):
 >>>>>>> mobile詳細画面途中
 =======
 
-@view_config(route_name="mobile_category", renderer="altaircms:templates/mobile/category.mako")
+def enable_categories(info, request):
+    return request.matchdict["category"] in ("music", "sports", "stage", "other")
+@view_config(route_name="mobile_category", custom_predicates=(enable_categories,), 
+             renderer="altaircms:templates/mobile/category.mako")
 def mobile_category(request):
     return {}
+<<<<<<< HEAD
 >>>>>>> カテゴリトップ作成中
+=======
+
+
+>>>>>>> garden

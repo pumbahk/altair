@@ -50,7 +50,8 @@ class Event(BaseOriginalMixin, Base):
         """今週販売開始するquery(月曜日を週のはじめとする)"""
         start_day  = today + timedelta(days=offset or -today.weekday())
         where = (cls.deal_open >= start_day)
-        return (qs or cls.query).filter(where)
+        qs =  (qs or cls.query).filter(where)
+        return qs
 
     @property
     def short_title(self):
