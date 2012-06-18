@@ -7,8 +7,6 @@ from ..users.models import User, UserCredential, MemberShip
 from pyramid.view import render_view_to_response
 from markupsafe import Markup
 from zope.interface import implementer
-from .plugins.interfaces import IMethodSelection
-from .plugins.helpers import payment_plugin_name
 
 def format_number(num, thousands=","):
     return _format_number(int(num), thousands)
@@ -85,9 +83,6 @@ def get_or_create_user(request, clamed_id):
 
 
 
-@implementer(IMethodSelection)
-class MethodSelection(object):
-    pass
 
 def render_payment_plugin_selection_viewlets(request, plugin_id):
     """ 決済方法選択表示のビューレットを取得 """
