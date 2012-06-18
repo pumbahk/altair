@@ -84,7 +84,10 @@ from datetime import datetime
 
 @view_config(route_name="mobile_index", renderer="altaircms:templates/mobile/index.mako")
 def mobile_index(request):
+    import warnings
+    warnings.warn("this is adhoc code. so need fix.")
     pageset = PageSet.query.filter_by(id=1).first()
+
     today = datetime.now()
     topics = Topic.matched_qs(d=today, kind=u"トピックス", page=pageset)
     picks = Topcontent.matched_qs(d=today, kind=u"注目のイベント", page=pageset)
@@ -93,9 +96,16 @@ def mobile_index(request):
 
 @view_config(route_name="mobile_detail", renderer="altaircms:templates/mobile/detail.mako")
 def mobile_detail(request):
-    pageset = PageSet.query.filter_by(id=40).first()
+    pageset = PageSet.query.filter_by(id=request.matchdict["pageset_id"]).first()
     today = datetime.now()
     return {"page": pageset.current(), "event": pageset.event, "performances": pageset.event.performances, 
             "today": today}
 
+<<<<<<< HEAD
 >>>>>>> mobile詳細画面途中
+=======
+
+@view_config(route_name="mobile_category", renderer="altaircms:templates/mobile/category.mako")
+def mobile_category(request):
+    return {}
+>>>>>>> カテゴリトップ作成中
