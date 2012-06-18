@@ -102,6 +102,7 @@ class Performance(BaseOriginalMixin, Base):
     end_on = Column(DateTime)  # 終了
 
     purchase_link = Column(sa.UnicodeText)
+    mobile_purchase_link = sa.Column(sa.UnicodeText)
     canceld = Column(Boolean, default=False)
     event = relationship("Event", backref=orm.backref("performances", order_by=start_on, cascade="all"))
     tickets = relationship("Ticket", secondary=performance_ticket_table, backref="performances")
