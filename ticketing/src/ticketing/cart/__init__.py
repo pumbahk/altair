@@ -4,11 +4,11 @@ from pyramid.config import Configurator
 from pyramid.session import UnencryptedCookieSessionFactoryConfig
 from sqlalchemy import engine_from_config
 import sqlahelper
+from pyramid_beaker import session_factory_from_settings
 
 import logging
 
 logger = logging.getLogger(__name__)
-my_session_factory = UnencryptedCookieSessionFactoryConfig('itsaseekreet')
 
 def includeme(config):
     # ディレクティブ
@@ -49,6 +49,7 @@ def includeme(config):
 
 def main(global_config, **settings):
     engine = engine_from_config(settings)
+    my_session_factory = session_factory_from_settings(settings)
     sqlahelper.add_engine(engine)
 
     config = Configurator(settings=settings, session_factory=my_session_factory)

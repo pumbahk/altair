@@ -69,7 +69,6 @@ carts.AppView.prototype.init = function(presenter) {
                     $('#contentsOfShopping').empty();
                     for (var i=0; i < products.length; i++) {
                         var product = products[i];
-                        alert(product.name + " " + product.quantity);
                         var item = $('<tr/>');
                         var name = $('<th/>');
                         $(name).text(product.name);
