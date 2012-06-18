@@ -28,6 +28,11 @@ class PaymentDeliveryMethodPairForm(Form):
     sales_segment_id = HiddenField(
         validators=[]
     )
+    system_fee = DecimalField(
+        label=u'システム利用料',
+        places=2,
+        validators=[Required()],
+    )
     transaction_fee = DecimalField(
         label=u'決済手数料',
         places=2,

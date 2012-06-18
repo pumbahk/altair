@@ -7,6 +7,7 @@
     <th></th>
     <th>${form.payment_method_id.label.text}</th>
     <th>${form.delivery_method_id.label.text}</th>
+    <th>${form.system_fee.label.text}</th>
     <th>${form.transaction_fee.label.text}</th>
     <th>${form.delivery_fee.label.text}</th>
     <th>${form.discount.label.text}</th>
@@ -17,6 +18,7 @@
     <td><input type="radio" name="payment_delivery_method_pair_id" value=${pdmp.id} /></td>
     <td>${pdmp.payment_method.name}</td>
     <td>${pdmp.delivery_method.name}</td>
+    <td>${h.price_format(pdmp.system_fee)}</td>
     <td>${h.price_format(pdmp.transaction_fee)}</td>
     <td>${h.price_format(pdmp.delivery_fee)}</td>
     <td>${h.price_format(pdmp.discount)}</td>
