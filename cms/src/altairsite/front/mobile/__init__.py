@@ -24,6 +24,9 @@ def main(global_config, **settings):
     sqlahelper.add_engine(engine)
 
     config = Configurator(settings=settings)
+    config.include("altaircms.solr")
+
+
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)
     config.add_static_view('plugins/static', 'altaircms:plugins/static', cache_max_age=3600)
     config.add_static_view("staticasset", settings["altaircms.asset.storepath"], cache_max_age=3600)
@@ -32,9 +35,9 @@ def main(global_config, **settings):
 
     config.add_route("mobile_detail", "/mobile/detail/{pageset_id}")
     config.add_route("mobile_index", "/mobile/index")
-    config.add_route("mobile_category", "/mobile/{category}")
+    config.add_route("mobile_category", "/mobile/genre/{category}")
     config.add_route("mobile_purchase", "/mobile/purchase/event/{event_id}", static=True)
-    config.add_route("mobile_search", "/mobile/search", static=True)
+    config.add_route("mobile_search", "/mobile/search")
 
     config.scan(".views")
     return config.make_wsgi_app()

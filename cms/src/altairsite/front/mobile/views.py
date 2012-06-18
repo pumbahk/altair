@@ -8,6 +8,7 @@ from altaircms.topic.models import Topic, Topcontent
 from datetime import datetime
 from . import helpers as h
 <<<<<<< HEAD
+<<<<<<< HEAD
 from altaircms import helpers as gh
 from altairsite.search import api as search_api
 
@@ -88,6 +89,9 @@ from datetime import datetime
 from .helpers import CATEGORY_SYNONYM
 =======
 >>>>>>> mobileカテゴリトップ、これから販売されるページ,topics。
+=======
+from altairsite.search import api as search_api
+>>>>>>> mobile検索作成中
 
 @view_config(route_name="mobile_index", renderer="altaircms:templates/mobile/index.mako")
 def mobile_index(request):
@@ -140,9 +144,27 @@ def mobile_category(request):
             "topics": topics, 
             "subcategories": Category.query.filter_by(parent=root)}
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> カテゴリトップ上部メニュー変更
 
 
 >>>>>>> garden
 =======
 >>>>>>> mobileカテゴリトップ、これから販売されるページ,topics。
+=======
+
+@view_config(request_param="q", route_name="mobile_search", 
+             renderer="altaircms:templates/mobile/search.mako")
+def search_by_freeword(context, request):
+    """ フリーワード検索 + categoryごとの数
+    """
+    root_category = request.params.get("r")
+    if root_category is None:
+        children = Category.query.filter_by(parent=None)
+    else:
+        children = Category.query.filter_by(parent=Category.query.filter_by(name=request.params["r"]).first())
+    
+    qs = search_api.search_by_freeword(request, request.params["q"])
+    classifieds = [(c, qs.filter(PageSet.category==c)) for c in children]
+    return {"pagesets": qs, "classifieds": classifieds}
+>>>>>>> mobile検索作成中

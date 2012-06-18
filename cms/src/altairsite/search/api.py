@@ -28,3 +28,11 @@ def create_query_from_freeword(words, query_cond=None):
     for word in words[1:]:
         q = q.compose(solrapi.SolrSearchQuery(_create_dict_from_word(word)), cop)
     return q
+
+
+def search_by_freeword(request, freeword, query_cond="intersection"): #query_cond = {union, intersection}
+    """ freeword検索した結果を返す(pageset のquery)"""
+    from . import searcher
+    query_params = dict(query=freeword, query_cond="intersection")
+    qs = searcher.get_pageset_query_from_freeword(request, query_params)
+    return qs
