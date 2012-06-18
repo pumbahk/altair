@@ -6,3 +6,4 @@
   </div>
   %endfor
 </div>
+<div class="clear"></div>
