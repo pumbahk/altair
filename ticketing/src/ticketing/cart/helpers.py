@@ -51,7 +51,10 @@ def get_payment_method_manager(request=None, registry=None):
 def get_payment_method_url(request, payment_method_id, route_args={}):
     payment_method_manager = get_payment_method_manager(request)
     route_name = payment_method_manager.get_route_name(str(payment_method_id))
-    return request.route_url(route_name, **route_args)
+    if route_name:
+        return request.route_url(route_name, **route_args)
+    else:
+        return ""
 
 def get_or_create_user(request, clamed_id):
     credential = UserCredential.query.filter(
