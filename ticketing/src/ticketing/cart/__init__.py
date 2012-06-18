@@ -63,7 +63,6 @@ def main(global_config, **settings):
 
     config.include('.')
     config.include('.rakuten_auth')
-    config.include('.plugins.multicheckout')
     config.scan()
     config.include('..checkout')
     config.include('..multicheckout')

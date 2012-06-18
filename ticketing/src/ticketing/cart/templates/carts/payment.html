@@ -29,7 +29,7 @@
 	<!-- ========== main ========== -->
 	<div id="main">
 		<h1><img src="${request.static_url('ticketing.cart:static/img/settlement/title_settlement.gif')}" alt="チケット購入" width="950" height="40" /></h1>
-		<form id="form1" name="form1" method="post" action="${payments[2]["url"]}"> <!-- TODO: マルチ決済決め打ちなので、画面選択で切り替えるようにする-->
+		<form id="form1" name="form1" method="post" action="${request.url}">
             <div class="client">
                 <div>
                     <fieldset>
@@ -47,7 +47,6 @@
 				<div class="settlementBoxInner">
 					<h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_methods.gif')}" alt="お支払い方法の指定" width="167" height="30" /></h2>
                     <!-- マルチ決済 -->
-                    ${h.render_payment_plugin_selection_viewlets(request, 1)}
 
 					<div class="settlementPayBox">
 						<div class="settlementPayBoxInner">
