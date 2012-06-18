@@ -33,23 +33,15 @@
 			<div class="confirmBox">
 				<div class="confirmBoxInner">
 					<h2><img src="../img/settlement/title_shopping.gif" alt="お買い物内容" width="114" height="30" /></h2>
-					<h3 id="name">ZED 東京公演 12月3日 14:00 幕張メッセイベントホール</h3>
+					<h3 id="name">${cart.performance.name}</h3>
 					<table id="contentsOfShopping" summary="席種、金額などのお買い物内容">
+                        %for product in cart.products:
 						<tr>
-							<th scope="row"><img src="../img/settlement/icon_dummy.gif" alt="" width="21" height="21" /> エクストラファミリーシート</th>
-							<td>大人　　<strong>2</strong>枚</td>
-							<td class="align1">￥24,000</td>
+							<th scope="row"><img src="../img/settlement/icon_dummy.gif" alt="" width="21" height="21" /> ${product.product.name}</th>
+							<td><strong>${product.quantity}</strong>枚</td>
+							<td class="align1">￥${h.format_number(product.product.price * product.quantity)}</td>
 						</tr>
-						<tr>
-							<th scope="row"><img src="../img/settlement/icon_dummy.gif" alt="" width="21" height="21" /> エクストラファミリーシート</th>
-							<td>子供　　<strong>1</strong>枚</td>
-							<td class="align1">￥3,000</td>
-						</tr>
-						<tr id="carriage">
-							<th scope="row">送料</th>
-							<td>&nbsp;</td>
-							<td class="align1">￥600</td>
-						</tr>
+                        %endfor
 						<tr id="commission">
 							<th scope="row">手数料</th>
 							<td>&nbsp;</td>
@@ -58,7 +50,7 @@
 						<tr id="total">
 							<th scope="row"><img src="../img/settlement/total.gif" alt="合計金額" width="67" height="16" /></th>
 							<td>&nbsp;</td>
-							<td class="align1">￥38,000</td>
+							<td class="align1">￥${h.format_number(cart.total_amount)}</td>
 						</tr>
 					</table>
 				</div>
@@ -70,15 +62,11 @@
 					<table id="confirmCard" summary="クレジットカード情報">
 						<tr>
 							<th scope="row">カード番号</th>
-							<td>0000-0000-0000-0000</td>
+							<td>xxxx-xxxx-xxxx-xxxx</td>
 						</tr>
 						<tr>
 							<th scope="row">有効期限</th>
 							<td>2011/12</td>
-						</tr>
-						<tr>
-							<th scope="row">セキュリティーコード</th>
-							<td>****</td>
 						</tr>
 					</table>
 				</div>
@@ -154,7 +142,7 @@
 					</div>
 				</div>
 			</div>
-			<p class="align2"><a href="#"><img src="../img/settlement/btn_buy.gif" alt="購入する" width="226" height="46" /></a></p>
+			<p class="align2"><a href="${request.route_url('cart.finish')}"><img src="../img/settlement/btn_buy.gif" alt="購入する" width="226" height="46" /></a></p>
 		</form>
 	</div>
 	<!-- ========== /main ========== -->

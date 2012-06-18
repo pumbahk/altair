@@ -258,7 +258,7 @@ class MultiCheckoutView(object):
             logger.debug("3d secure is failed ErrorCd = %s RetCd = %s" %(enrol.ErrorCd, enrol.RetCd))
             pass
 
-    @view_config(route_name='cart.secure3d_result', request_method="POST", renderer="carts/completion.html")
+    @view_config(route_name='cart.secure3d_result', request_method="POST", renderer="carts/confirm.html")
     def card_info_secure3d_callback(self):
         """ カード情報入力(3Dセキュア)コールバック
         3Dセキュア認証結果取得
@@ -282,23 +282,23 @@ class MultiCheckoutView(object):
             eci=auth_result.Eci, cavv=auth_result.Cavv, cavv_algorithm=auth_result.Cavva,
         )
 
-        auth_result = dict(OrderNo=checkout_auth_result.OrderNo, Status=checkout_auth_result.Status,
-            PublicTranId=checkout_auth_result.PublicTranId, AheadComCd=checkout_auth_result.AheadComCd,
-            ApprovalNo=checkout_auth_result.ApprovalNo, CardErrorCd=checkout_auth_result.CardErrorCd,
-            ReqYmd=checkout_auth_result.ReqYmd, CmnErrorCd=checkout_auth_result.CmnErrorCd, )
+        #auth_result = dict(OrderNo=checkout_auth_result.OrderNo, Status=checkout_auth_result.Status,
+        #    PublicTranId=checkout_auth_result.PublicTranId, AheadComCd=checkout_auth_result.AheadComCd,
+        #    ApprovalNo=checkout_auth_result.ApprovalNo, CardErrorCd=checkout_auth_result.CardErrorCd,
+        #    ReqYmd=checkout_auth_result.ReqYmd, CmnErrorCd=checkout_auth_result.CmnErrorCd, )
 
-        logger.debug("%s" % auth_result)
+        #logger.debug("%s" % auth_result)
 
         openid = authenticated_user(self.request)
         user = h.get_or_create_user(self.request, openid['clamed_id'])
-        order = o_models.Order.create_from_cart(cart)
-        order.multicheckout_approval_no = checkout_auth_result.ApprovalNo
-        order.user = user
-        cart.finish()
+        #order = o_models.Order.create_from_cart(cart)
+        #order.multicheckout_approval_no = checkout_auth_result.ApprovalNo
+        #order.user = user
+        #cart.finish()
         DBSession.add(checkout_auth_result)
         DBSession.add(order)
 
-        return auth_result
+        return dict(art=cart, auth_result=checkout_auth_result)
 
 
     def multi_checkout(self):
