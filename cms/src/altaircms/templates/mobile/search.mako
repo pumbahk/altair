@@ -31,7 +31,7 @@ ${breadcrumbs}
 </div>
 <div>
 %for c, qs in classifieds:
-  ${c.name}(${qs.count()})
+  ${synonym.get(c.name,c.label)}(${qs.count()})
 %endfor
 </div>
 
