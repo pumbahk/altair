@@ -17,6 +17,7 @@ def includeme(config):
     config.add_route('cart.index', 'events/{event_id}')
     config.add_route('cart.seat_types', 'events/{event_id}/performances/{performance_id}/seat_types')
     config.add_route('cart.products', 'events/{event_id}/performances/{performance_id}/seat_types/{seat_type_id}/products')
+
     config.add_route('cart.order', 'order')
     config.add_route('cart.payment', 'payment')
 
@@ -62,6 +63,7 @@ def main(global_config, **settings):
 
     config.include('.')
     config.include('.rakuten_auth')
+    config.include('.plugins.multicheckout')
     config.scan()
     config.include('..checkout')
     config.include('..multicheckout')

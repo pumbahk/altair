@@ -14,3 +14,4 @@ class IPaymentMethodManager(Interface):
     def add_url(payment_method_id, url):
         """ 決済フォームURL登録
         """
+

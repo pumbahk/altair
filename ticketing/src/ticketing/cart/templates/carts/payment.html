@@ -46,67 +46,9 @@
 			<div class="settlementBox">
 				<div class="settlementBoxInner">
 					<h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_methods.gif')}" alt="お支払い方法の指定" width="167" height="30" /></h2>
-					<div class="settlementPayBox">
-						<div class="settlementPayBoxInner">
-							<table>
-								<tr>
-                                    <!-- TODO: radioで表示きりかえ,POST先変更 -->
-									<td class="settlementPayRadio"><input type="radio" name="radio" id="radio" value="radio"/></td>
-									<td><dl>
-										<dt>クレジットカードでお支払い</dt>
-										<dd>
-                                            <div class="settlementPayInput">
-                                                <div class="settlementPayInputInner">
-                                                    <dl>
-                                                        <dt>カード番号</dt>
-                                                        <dd>
-                                                            <input name="card_number" type="text" id="textfield" length="16" />
-                                                        </dd>
-                                                        <dt>有効期限</dt>
-                                                        <dd>
-                                                            <select name="exp_month" id="select">
-                                                                <option value="01">1</option>
-                                                                <option value="02">2</option>
-                                                                <option value="03">3</option>
-                                                                <option value="04">4</option>
-                                                                <option value="05">5</option>
-                                                                <option value="06">6</option>
-                                                                <option value="07">7</option>
-                                                                <option value="08">8</option>
-                                                                <option value="09">9</option>
-                                                                <option value="10">10</option>
-                                                                <option value="11">11</option>
-                                                                <option value="12">12</option>
-                                                            </select>
-                                                            月　
-                                                            <!-- TODO: 現在年から算出する-->
-                                                            <select name="exp_year" id="select2">
-                                                                <option value="12">2012</option>
-                                                                <option value="13">2013</option>
-                                                                <option value="14">2014</option>
-                                                                <option value="15">2015</option>
-                                                                <option value="16">2016</option>
-                                                                <option value="17">2017</option>
-                                                                <option value="18">2018</option>
-                                                                <option value="19">2019</option>
-                                                                <option value="20">2020</option>
-                                                            </select>
-                                                            年</dd>
-                                                        <dt>名義人</dt>
-                                                        <dd>
-                                                            <input name="card_holder_name" type="text" id="textfield5" size="50" />
-                                                        </dd>
-                                                    </dl>
-                                                </div>
-                                            </div>
+                    <!-- マルチ決済 -->
+                    ${h.render_payment_plugin_selection_viewlets(request, 1)}
 
-                                            説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明<br />
-											<img src="${request.static_url('ticketing.cart:static//img/settlement/card.gif')}" alt="カードの種類" width="374" height="35" /></dd>
-									</dl></td>
-								</tr>
-							</table>
-						</div>
-					</div>
 					<div class="settlementPayBox">
 						<div class="settlementPayBoxInner">
 							<table>

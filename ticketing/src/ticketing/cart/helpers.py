@@ -1,7 +1,14 @@
+# -*- coding:utf-8 -*-
+
 from webhelpers.number import format_number as _format_number
 from .models import Cart, PaymentMethodManager, DBSession
 from .interfaces import IPaymentMethodManager
 from ..users.models import User, UserCredential, MemberShip
+from pyramid.view import render_view_to_response
+from markupsafe import Markup
+from zope.interface import implementer
+from .plugins.interfaces import IMethodSelection
+from .plugins.helpers import payment_plugin_name
 
 def format_number(num, thousands=","):
     return _format_number(int(num), thousands)
@@ -75,3 +82,20 @@ def get_or_create_user(request, clamed_id):
     credential = UserCredential(user=user, auth_identifier=clamed_id, membership=membership)
     DBSession.add(user)
     return user
+
+
+
+@implementer(IMethodSelection)
+class MethodSelection(object):
+    pass
+
+def render_payment_plugin_selection_viewlets(request, plugin_id):
+    """ 決済方法選択表示のビューレットを取得 """
+
+    context = request.context
+    obj = MethodSelection()
+    response = render_view_to_response(obj, request, name=payment_plugin_name(plugin_id))
+    if response is None:
+        return None
+    return Markup(response.text)
+

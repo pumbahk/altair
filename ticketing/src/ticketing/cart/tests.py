@@ -512,7 +512,7 @@ class ReserveViewTests(unittest.TestCase):
         seat_statuses = [SeatStatus(seat_id=i, status=int(SeatStatusEnum.Vacant)) for i in range(2)]
         performance = Performance(id=performance_id)
         product_item = ProductItem(id=product_item_id, stock_id=stock.id, price=100, quantity=1, performance=performance)
-        product = Product(id=1, price=100, items=[product_item])
+        product = Product(id=1, price=100, items=[product_item], name=u"S席")
         self.session.add(stock)
         self.session.add(product)
         self.session.add(product_item)
@@ -543,7 +543,12 @@ class ReserveViewTests(unittest.TestCase):
         import transaction
         transaction.commit()
 
-        self.assertEqual(result, {'result': 'OK', 'pyament_url': 'http://example.com/payment'} )
+        self.assertEqual(result, {'cart': {'products': [{'name': u'S席', 
+                                                         'price': 100, 
+                                                         'quantity': 2}],
+                                           'total_amount': '200'}, 
+                                  'result': 'OK', 
+                                  'pyament_url': 'http://example.com/payment'} )
         cart_id = request.session['ticketing.cart_id']
 
         self.session.remove()
@@ -887,3 +892,33 @@ class MultiCheckoutViewTests(unittest.TestCase):
 
         result = target.card_info_secure3d_callback()
 
+class render_payment_plugin_selection_viewletsTests(unittest.TestCase):
+    def setUp(self):
+        self.config = testing.setUp()
+
+    def tearDown(self):
+        testing.tearDown()
+
+    def _callFUT(self, *args, **kwargs):
+        from . import helpers
+        return helpers.render_payment_plugin_selection_viewlets(*args, **kwargs)
+
+    def test_it(self):
+        self.config.add_view(DummyViewFactory(u'あいうえお'), name='payment-1', context=PaymentContext)
+        request = testing.DummyRequest()
+        request.context = PaymentContext()
+
+        result = self._callFUT(request, 1)
+
+        self.assertEqual(result.__html__(), u'あいうえお')
+
+class PaymentContext(testing.DummyResource):
+    pass
+
+class DummyViewFactory(object):
+    def __init__(self, response_text):
+        self.response_text = response_text
+
+    def __call__(self, request):
+        request.response.text = self.response_text
+        return request.response

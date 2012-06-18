@@ -208,6 +208,7 @@ class PaymentView(object):
         cart = h.get_cart(self.request)
 
         methods = c_models.PaymentMethod.query.all()
+
         return dict(payments=[
             dict(url=h.get_payment_method_url(self.request, m.id), name=m.name)
             for m in methods
@@ -228,7 +229,8 @@ class MultiCheckoutView(object):
         form = schema.CardForm(formdata=self.request.params)
         if not form.validate():
             logger.debug("form error %s" % (form.errors,))
-            return
+            # TODO: 入力エラー表示
+            return 
         assert h.has_cart(self.request)
         cart = h.get_cart(self.request)
 
