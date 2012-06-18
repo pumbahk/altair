@@ -7,30 +7,49 @@
       <font color="red">
         
       </font>
-  <a href="${request.route_path("mobile_index")}"><font color="#bf0000" size="3"><img src="/static/mobile/img/logo-small.gif" alt="楽天チケット" width="160" height="26"></font></a>
+	  <a href="${request.route_path("mobile_index")}"><font color="#bf0000" size="3"><img src="/static/mobile/img/logo-small.gif" alt="楽天チケット" width="160" height="26"></font></a>
   <hr color="#bf0000" size="1" noshade="noshade">
 </div>
 <div>
-${breadcrumbs}
-${classifieds}
 
+## breadcrumbs
 <a href="${request.route_path("mobile_index")}">トップ</a>&gt;
           <a href="http://ticket.rakuten.co.jp/mobile/s?cid=3">演劇・ミュージカル</a>
     &gt;      オペラ
     <div style="background-image: url(&quot;/static/mobile/img/bg_bar.gif&quot;); background-color: rgb(191, 0, 0);" bgcolor="#bf0000" background="/static/mobile/img/bg_bar.gif"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>検索結果</font>
-</div>
+</div></div>
 
 <div align="center">
-カテゴリ『オペラ』</div>
+『${freeword}』を含む公演
+</div>
 <div>
-                         オペラ (0)
-          </div>
+%for c, qs in classifieds:
+  ${c.name}(${qs.count()})
+%endfor
+</div>
+
+<div>
 <hr color="#bf0000" size="1" noshade="noshade">
-      <p>キーワードに該当する公演は見つかりませんでした。</p>
-<p>下記のことをお試しください。</p>
-・絞り込むカテゴリを変えてください。<br>
-・検索キーワードを変えてください。<br>
-<hr color="#bf0000" size="1" noshade="noshade">
+%if pagesets.count() <= 0:
+  <p>キーワードに該当する公演は見つかりませんでした。</p>
+  <p>下記のことをお試しください。</p>
+  ・絞り込むカテゴリを変えてください。<br>
+  ・検索キーワードを変えてください。<br>
+%else:
+  ${pagesets.count()}件見つかりました。<br>
+  <hr color="#bf0000" size="1" noshade="noshade">
+  %for pageset in pagesets:
+  <% event = pageset.event%>
+	%if event:
+	  <a href="${h.mobilelink.to_publish_page_from_pageset(request,pageset)}">${pageset.name}</a><br>
+	  ${h.base.jterm(event.event_open,event.event_close)}<br>
+	  ${event.title}<br>
+	  一般: ${h.base.jdate_with_hour(event.deal_open)}<br>
+	   <hr color="#bf0000" size="1" noshade="noshade">
+	%endif
+  %endfor
+%endif
+
 <div style="background-color: rgb(255, 255, 187);" bgcolor="#ffffbb" align="center">
   <form action="s?cid=21" class="searchbox"><font size="3">
     <img alt="" src="chrome://msim/content/emoji/i/59025.gif" border="0">チケット検索<br>

@@ -63,6 +63,13 @@ def jdate(d):
     else:
         return u"-"
 
+def jdate_with_hour(d):
+    if d:
+        datestr = d.strftime(u"%Y年%-m月%-d日 %-H:%-M".encode("utf-8")).decode("utf-8")
+        return u"%s（%s）" % (datestr, unicode(WEEK[d.weekday()]))
+    else:
+        return u"-"
+
 def term(beg, end):
     """ dateオブジェクトを受け取り期間を表す文字列を返す
     e.g. 2012年3月3日(土)〜7月12日(木) 
