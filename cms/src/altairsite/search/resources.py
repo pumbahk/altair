@@ -1,5 +1,6 @@
 # -*- encoding:utf-8 -*-
 
+from copy import deepcopy
 from datetime import datetime
 import logging
 logger = logging.getLogger(__file__)
@@ -44,7 +45,11 @@ class SearchPageResource(object):
 
     def get_result_sequence_from_query_params(self, query_params, searchfn=_get_mocked_pageset_query):
         logger.info(pprint.pformat(query_params))
-        query = searchfn(self.request, query_params)
+        qp = deepcopy(query_params)
+        # escape query
+        if 'query' in qp:
+            qp['query'] = '"%s"' % qp['query'].replace('"', '\\"').replace("'", "\\'")
+        query = searchfn(self.request, qp)
         return self.result_sequence_from_query(query)
 
 class QueryParamsRender(object):

@@ -1,29 +1,25 @@
-<%inherit file="/layout.html"/>
+<%inherit file="/layout_2cols.html"/>
 <%namespace file="/common/helpers.html" name="h" />
 
-<div class="container row">
-  <div class="span12">
-    ${h.breadcrumbs(
-        names=[u'トップ', u'オペレーター'],
-        urls=[request.route_path('index')]
-    )}
-  </div>
-
-  <div class="span12">
-    <div class="page-header">
-      <h3>オペレーター詳細</h3>
-    </div>
-
-    <div class="content">
-      ${h.flash_messages(request)}
-    </div>
-
-    <div class="ui-toolbar">
-      <a href="${request.route_path('operators.edit', operator_id=operator.id)}" class="ui-button">編集</a>
-      <a href="#" class="ui-button">削除</a>
-    </div>
-
-    <%include file="/operators/_detail.html" args="form=form, operator=operator" />
-    <%include file="/organizations/_detail.html" args="form=form_organization, organization=operator.organization" />
-  </div>
+<div class="breadcrumbs">
+  ${h.breadcrumbs(
+      names=[u'トップ', u'オペレーター'],
+      urls=[request.route_path('index')]
+  )}
 </div>
+
+<div class="page-header">
+  <h3>オペレーター詳細</h3>
+</div>
+
+<div class="content">
+  ${h.flash_messages(request)}
+</div>
+
+<div class="ui-toolbar">
+  <a href="${request.route_path('operators.edit', operator_id=operator.id)}" class="ui-button">編集</a>
+  <a href="#" class="ui-button">削除</a>
+</div>
+
+<%include file="/operators/_detail.html" args="form=form, operator=operator" />
+<%include file="/organizations/_detail.html" args="form=form_organization, organization=operator.organization" />

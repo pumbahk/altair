@@ -497,12 +497,14 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         stock_holder.save()
 
 class SalesSegmentKindEnum(StandardEnum):
-    first_lottery = u'最速抽選'
-    early_lottery = u'先行抽選'
-    eary_fisrtcome = u'先行先着'
-    normal = u'一般販売'
-    added_lottery = u'追加抽選'
-    other = u'その他'
+    first_lottery   = u'最速抽選'
+    early_lottery   = u'先行抽選'
+    early_firstcome = u'先行先着'
+    normal          = u'一般販売'
+    added_sales     = u'追加販売'
+    added_lottery   = u'追加抽選'
+    vip             = u'関係者'
+    other           = u'その他'
 
 class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'SalesSegment'

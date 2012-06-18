@@ -1,29 +1,21 @@
-<%inherit file="/layout.html"/>
+<%inherit file="/layout_2cols.html"/>
 <%namespace file="/common/helpers.html" name="h" />
+<div class="breadcrumbs">
+  ${h.breadcrumbs(
+      names=[u'トップ', u'配送方法'],
+      urls=[request.route_path('index')]
+  )}
+</div>
+<div class="page-header">
+  <h3>配送方法</h3>
+</div>
 
-<div class="row-fluid">
-  <%include file="/parts/_menu.html" />
+<div class="content">
+  ${h.flash_messages(request)}
+</div>
 
-  <div class="span10">
-    ${h.breadcrumbs(
-        names=[u'トップ', u'配送方法'],
-        urls=[request.route_path('index')]
-    )}
-  </div>
-
-  <span class="span10">
-    <div class="page-header">
-      <h3>配送方法</h3>
-    </div>
-
-    <div class="content">
-      ${h.flash_messages(request)}
-    </div>
-
-    <%include file="/delivery_methods/_list.html" args="form=form, delivery_methods=delivery_methods" />
-    <%include file="/delivery_methods/_action_button.html" />
-    <div id="delivery_methods-form">
-      <%include file="/delivery_methods/_form.html" args="form=form" />
-    </div>
-  </span>
+<%include file="/delivery_methods/_list.html" args="form=form, delivery_methods=delivery_methods" />
+<%include file="/delivery_methods/_action_button.html" />
+<div id="delivery_methods-form">
+  <%include file="/delivery_methods/_form.html" args="form=form" />
 </div>

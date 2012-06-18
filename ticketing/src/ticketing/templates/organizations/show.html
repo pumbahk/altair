@@ -1,25 +1,21 @@
-<%inherit file="/layout.html"/>
+<%inherit file="/layout_2cols.html"/>
 <%namespace file="/common/helpers.html" name="h" />
 
-<div class="container row">
-  <div class="span12">
-    ${h.breadcrumbs(
-        names=[u'トップ', u'クライアント詳細'],
-        urls=[request.route_path('index')]
-    )}
-  </div>
-
-  <div class="span12">
-    <div class="page-header">
-      <h3>クライアント詳細</h3>
-    </div>
-
-    <div class="content">
-      ${h.flash_messages(request)}
-    </div>
-
-    <%include file="/organizations/_detail.html" args="form=form, organization=organization" />
-    <%include file="/organizations/_distributing_events.html" args="events=distributing_events" />
-    <%include file="/organizations/_distributed_events.html" args="events=distributed_events" />
-  </div>
+<div class="breadcrumbs">
+${h.breadcrumbs(
+    names=[u'トップ', u'クライアント詳細'],
+    urls=[request.route_path('index')]
+)}
 </div>
+
+<div class="page-header">
+  <h3>クライアント詳細</h3>
+</div>
+
+<div class="content">
+  ${h.flash_messages(request)}
+</div>
+
+<%include file="/organizations/_detail.html" args="form=form, organization=organization" />
+<%include file="/organizations/_distributing_events.html" args="events=distributing_events" />
+<%include file="/organizations/_distributed_events.html" args="events=distributed_events" />

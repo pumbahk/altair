@@ -1,115 +1,105 @@
-<%inherit file="/layout.html" />
+<%inherit file="/layout_2cols.html" />
 <%namespace file="/common/helpers.html" name="h" />
+<div class="breadcrumbs">
+  ${h.breadcrumbs(
+      names=[u'イベント', event.title],
+      urls=[request.route_path('events.index')]
+  )}
+</div>
 
-<div class="row-fluid">
-  <%include file="/parts/_menu.html" />
+<div class="page-header">
+  <h1 style="word-wrap: break-word;">${event.title}</h1>
+</div>
 
-  <div class="span10">
-    ${h.breadcrumbs(
-        names=[u'イベント', event.title],
-        urls=[request.route_path('events.index')]
-    )}
+<div class="content">
+  ${h.flash_messages(request)}
+</div>
+
+<table class="table table-bordered fullwidth">
+  <tbody>
+    <tr>
+      <th class="span3">${form.title.label.text}</th>
+      <td>${event.title}</td>
+    </tr>
+    <tr>
+      <th>${form.abbreviated_title.label.text}</th>
+      <td>${event.abbreviated_title}</td>
+    </tr>
+    <tr>
+      <th>${form.code.label.text}</th>
+      <td>${event.code}</td>
+    </tr>
+    <tr>
+      <th>${form.account_id.label.text}</th>
+      <td>${event.account.name} 様</td>
+    </tr>
+    <tr>
+      <th>販売開始日時</th>
+      <td>${h.safe_strftime(event.sales_start_on)}</td>
+    </tr>
+    <tr>
+      <th>販売終了日時</th>
+      <td>${h.safe_strftime(event.sales_end_on)}</td>
+    </tr>
+    <tr>
+      <th>初回公演日時</th>
+      <td>
+        ${h.safe_strftime(event.first_start_on)}
+        % if event.first_performance:
+        (<a href="${request.route_path('performances.show', event_id=event.id, performance_id=event.first_performance.id)}">
+         ${event.first_performance.venue.name} 公演 </a>)
+        % endif
+      </td>
+    </tr>
+    <tr>
+      <th>最終公演日時</th>
+      <td>
+        ${h.safe_strftime(event.final_start_on)}
+        % if event.final_performance:
+        (<a href="${request.route_path('performances.show', event_id=event.id, performance_id=event.final_performance.id)}">
+         ${event.final_performance.venue.name} 公演 </a>)
+        % endif
+      </td>
+    </tr>
+  </tbody>
+</table>
+<%include file="/events/_action_button.html" args="event=event, order=['edit', 'delete']" />
+
+<div id="stock_types">
+  <h3>席種</h3>
+  <%include file="/stock_types/_list.html" args="stock_types=event.stock_types, limit=5" />
+  <%include file="/stock_types/_action_button.html" args="event=event" />
+  <div id="stock_types-form">
+    <%include file="/stock_types/_form.html" args="form=form_stock_type" />
   </div>
+</div>
 
-  <span class="span10">
-    <div class="page-header">
-      <h3 style="word-wrap: break-word;">${event.title}</h3>
-    </div>
+<hr />
 
-    <div class="content">
-      ${h.flash_messages(request)}
-    </div>
+<div id="sales_segments">
+  <h3>販売区分</h3>
+  <%include file="/sales_segments/_list.html" args="form=form_sales_segment, sales_segments=event.sales_segments, limit=5" />
+  <%include file="/sales_segments/_action_button.html" args="form=form_sales_segment, event=event" />
+  <div id="sales_segments-form">
+    <%include file="/sales_segments/_form.html" args="form=form_sales_segment" />
+  </div>
+</div>
 
-    <table class="table table-bordered fullwidth">
-      <tbody>
-        <tr>
-          <th class="span3">${form.title.label.text}</th>
-          <td>${event.title}</td>
-        </tr>
-        <tr>
-          <th>${form.abbreviated_title.label.text}</th>
-          <td>${event.abbreviated_title}</td>
-        </tr>
-        <tr>
-          <th>${form.code.label.text}</th>
-          <td>${event.code}</td>
-        </tr>
-        <tr>
-          <th>${form.account_id.label.text}</th>
-          <td>${event.account.name} 様</td>
-        </tr>
-        <tr>
-          <th>販売開始日時</th>
-          <td>${h.safe_strftime(event.sales_start_on)}</td>
-        </tr>
-        <tr>
-          <th>販売終了日時</th>
-          <td>${h.safe_strftime(event.sales_end_on)}</td>
-        </tr>
-        <tr>
-          <th>初回公演日時</th>
-          <td>
-            ${h.safe_strftime(event.first_start_on)}
-            % if event.first_performance:
-            (<a href="${request.route_path('performances.show', event_id=event.id, performance_id=event.first_performance.id)}">
-             ${event.first_performance.venue.name} 公演 </a>)
-            % endif
-          </td>
-        </tr>
-        <tr>
-          <th>最終公演日時</th>
-          <td>
-            ${h.safe_strftime(event.final_start_on)}
-            % if event.final_performance:
-            (<a href="${request.route_path('performances.show', event_id=event.id, performance_id=event.final_performance.id)}">
-             ${event.final_performance.venue.name} 公演 </a>)
-            % endif
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <%include file="/events/_action_button.html" args="event=event, order=['edit', 'delete']" />
+<hr />
 
-    <hr />
+<div id="products">
+  <h3>商品</h3>
+  <%include file="/products/_list.html" args="form=form_product, products=event.products, limit=5" />
+  <%include file="/products/_action_button.html" />
+  <div id="products-form">
+    <%include file="/products/_form.html" args="form=form_product" />
+  </div>
+</div>
 
-    <div id="stock_types">
-      <h3>席種</h3>
-      <%include file="/stock_types/_list.html" args="stock_types=event.stock_types, limit=5" />
-      <%include file="/stock_types/_action_button.html" args="event=event" />
-      <div id="stock_types-form">
-        <%include file="/stock_types/_form.html" args="form=form_stock_type" />
-      </div>
-    </div>
+<hr />
 
-    <hr />
-
-    <div id="sales_segments">
-      <h3>販売区分</h3>
-      <%include file="/sales_segments/_list.html" args="form=form_sales_segment, sales_segments=event.sales_segments, limit=5" />
-      <%include file="/sales_segments/_action_button.html" args="form=form_sales_segment, event=event" />
-      <div id="sales_segments-form">
-        <%include file="/sales_segments/_form.html" args="form=form_sales_segment" />
-      </div>
-    </div>
-
-    <hr />
-
-    <div id="products">
-      <h3>商品</h3>
-      <%include file="/products/_list.html" args="form=form_product, products=event.products, limit=5" />
-      <%include file="/products/_action_button.html" />
-      <div id="products-form">
-        <%include file="/products/_form.html" args="form=form_product" />
-      </div>
-    </div>
-
-    <hr />
-
-    <div id="performances">
-      <h3>パフォーマンス</h3>
-      <%include file="/performances/_list.html" args="form=form_performance, performances=event.performances, limit=5" />
-      <%include file="/performances/_action_button.html"  args="event=event" />
-    </div>
-
-  </span>
+<div id="performances">
+  <h3>パフォーマンス</h3>
+  <%include file="/performances/_list.html" args="form=form_performance, performances=event.performances, limit=5" />
+  <%include file="/performances/_action_button.html"  args="event=event" />
 </div>

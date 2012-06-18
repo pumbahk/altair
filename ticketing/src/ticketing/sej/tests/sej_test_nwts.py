@@ -20,7 +20,10 @@ class SejTestNwts(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_nwts(self):
+    def test_nwts_template(self):
+        '''
+        NWTS Template upload
+        '''
         import webob.util
 
         def sej_dummy_response(environ):
@@ -32,12 +35,35 @@ class SejTestNwts(unittest.TestCase):
 
         nws_data_send('http://localhost:48080/', '60022000', '60022a', 'SEIT020U', '1234567890')
 
-        assert target.request.body == "6002200060022aSE" + \
-                                      "IT020U\x0a\x00\x00\x00\x00\x00\x00\x00\x00\x00" +\
-                                      "\x00\x00\x00\x001234567890"
+        target.assert_body("6002200060022aSEIT020U\x0a\0\0\0\0\0\0\0" + "1234567890")
 
+        target.assert_content_type('text/plain')
+        target.assert_method('POST')
+        target.assert_url('http://localhost:48080/?Mode=1&ThreadID=9')
 
-        nws_data_send('http://sv2.ticketstar.jp/test.php', '60022000', '60022a', 'SEIT020U', '1234567890')
+    def test_nwts_refund(self):
+        '''
+        NWTS Refund upload
+        '''
+        '''
+        NWTS Template upload
+        '''
+        import webob.util
+
+        def sej_dummy_response(environ):
+            return ''
+
+        webob.util.status_reasons[800] = 'OK'
+        target = self._makeOne(sej_dummy_response, host='127.0.0.1', port=48081, status=200)
+        target.start()
+
+        nws_data_send('http://localhost:48081/', '60022000', '60022a', 'SDMT010U', '1234567890')
+
+        target.assert_body("6002200060022aSDMT010U\x0a\0\0\0\0\0\0\0" + "1234567890")
+        target.assert_content_type('text/plain')
+        target.assert_method('POST')
+        target.assert_url('http://localhost:48081/?Mode=2&ThreadID=9')
+
 
 if __name__ == u"__main__":
     import os

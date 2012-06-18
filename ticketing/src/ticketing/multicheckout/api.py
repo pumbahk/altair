@@ -80,6 +80,38 @@ def checkout_auth_secure3d(request,
     service = get_multicheckout_service(request)
     return service.request_card_auth(order_no, params)
 
+def checkout_sales_secure3d(request,
+                  order_no, item_name, amount, tax, client_name, mail_address,
+                  card_no, card_limit, card_holder_name,
+                  mvn, xid, ts, eci, cavv, cavv_algorithm,
+                  free_data=None, item_cod=DEFAULT_ITEM_CODE, date=date):
+    order_ymd = date.today().strftime('%Y%m%d')
+    params = m.MultiCheckoutRequestCard(
+        ItemCd=item_cod,
+        ItemName=item_name,
+        OrderYMD=order_ymd,
+        SalesAmount=int(amount),
+        TaxCarriage=tax,
+        FreeData=free_data,
+        ClientName=client_name,
+        MailAddress=mail_address,
+        MailSend='1',
+        CardNo=card_no,
+        CardLimit=card_limit,
+        CardHolderName=card_holder_name,
+        PayKindCd='10',
+        PayCount=None,
+        SecureKind='3',
+        Mvn=mvn,
+        Xid=xid,
+        Ts=ts,
+        ECI=eci,
+        CAVV=cavv,
+        CavvAlgorithm=cavv_algorithm,
+    )
+    service = get_multicheckout_service(request)
+    return service.request_card_sales(order_no, params)
+
 def checkout_auth_secure_code(request, order_no, item_name, amount, tax, client_name, mail_address,
                      card_no, card_limit, card_holder_name,
                      secure_code,

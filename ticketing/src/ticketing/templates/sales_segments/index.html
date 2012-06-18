@@ -1,31 +1,25 @@
-<%inherit file="/layout.html"/>
+<%inherit file="/layout_2cols.html"/>
 <%namespace file="/common/helpers.html" import="flash_messages" />
 <%namespace file="/common/helpers.html" import="safe_strftime" />
 <%namespace file="/common/helpers.html" import="breadcrumbs" />
 
-<div class="row-fluid">
-  <%include file="/parts/_menu.html" />
+<div class="breadcrumbs">
+  ${breadcrumbs(
+      names=[u'イベント', event.title, u'販売区分'],
+      urls=[request.route_path('events.index'), request.route_path('events.show', event_id=event.id)]
+  )}
+</div>
 
-  <div class="span10">
-    ${breadcrumbs(
-        names=[u'イベント', event.title, u'販売区分'],
-        urls=[request.route_path('events.index'), request.route_path('events.show', event_id=event.id)]
-    )}
-  </div>
+<div class="page-header">
+  <h1>販売区分</h1>
+</div>
 
-  <span class="span10">
-    <div class="page-header">
-      <h3>販売区分</h3>
-    </div>
+<div class="content">
+  ${flash_messages(request)}
+</div>
 
-    <div class="content">
-      ${flash_messages(request)}
-    </div>
-
-    <%include file="/sales_segments/_list.html" args="form=form_sales_segment, sales_segments=sales_segments" />
-    <%include file="/sales_segments/_action_button.html" />
-    <div id="sales_segments-form">
-      <%include file="/sales_segments/_form.html" args="form=form_sales_segment" />
-    </div>
-  </span>
+<%include file="/sales_segments/_list.html" args="form=form_sales_segment, sales_segments=sales_segments" />
+<%include file="/sales_segments/_action_button.html" />
+<div id="sales_segments-form">
+  <%include file="/sales_segments/_form.html" args="form=form_sales_segment" />
 </div>

@@ -5,6 +5,7 @@ import re
 from markupsafe import Markup
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from pyramid.view import view_config
+from js.jquery_tools import jquery_tools
 from ..models import DBSession
 from ..core import models as c_models
 from ..orders import models as o_models
@@ -24,6 +25,7 @@ class IndexView(object):
     
     @view_config(route_name='cart.index', renderer='carts/index.html', xhr=False, permission="view")
     def __call__(self):
+        jquery_tools.need()
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.params.get('performance')
         e = DBSession.query(c_models.Event).filter_by(id=event_id).first()
@@ -170,7 +172,15 @@ class ReserveView(object):
         h.set_cart(self.request, cart)
         #self.request.session['ticketing.cart_id'] = cart.id
         #self.cart = cart
-        return dict(result='OK', pyament_url=self.request.route_url("cart.payment"))
+        return dict(result='OK', 
+                    pyament_url=self.request.route_url("cart.payment"),
+                    cart=dict(products=[dict(name=p.product.name, 
+                                             quantity=p.quantity,
+                                             price=int(p.product.price),
+                                        ) 
+                                        for p in cart.products],
+                              total_amount=h.format_number(cart.total_amount),
+                    ))
 
     def on_error(self):
         """ 座席確保できなかった場合
@@ -248,7 +258,7 @@ class MultiCheckoutView(object):
             logger.debug("3d secure is failed ErrorCd = %s RetCd = %s" %(enrol.ErrorCd, enrol.RetCd))
             pass
 
-    @view_config(route_name='cart.secure3d_result', request_method="POST", renderer="carts/completion.html")
+    @view_config(route_name='cart.secure3d_result', request_method="POST", renderer="carts/confirm.html")
     def card_info_secure3d_callback(self):
         """ カード情報入力(3Dセキュア)コールバック
         3Dセキュア認証結果取得
@@ -261,9 +271,13 @@ class MultiCheckoutView(object):
         order_id = str(cart.id) + "00"
         pares = multicheckout_api.get_pares(self.request)
         md = multicheckout_api.get_md(self.request)
+        order['pares'] = pares
+        order['md'] = md
+        order['order_id'] = order_id
+
         auth_result = multicheckout_api.secure3d_auth(self.request, order_id, pares, md)
         item_name = h.get_item_name(self.request, cart.performance)
-        # デバッグ用。実際は売上請求をかける
+
         checkout_auth_result = multicheckout_api.checkout_auth_secure3d(
             self.request, order_id,
             item_name, cart.total_amount, 0, order['client_name'], order['mail_address'],
@@ -271,36 +285,26 @@ class MultiCheckoutView(object):
             mvn=auth_result.Mvn, xid=auth_result.Xid, ts=auth_result.Ts,
             eci=auth_result.Eci, cavv=auth_result.Cavv, cavv_algorithm=auth_result.Cavva,
         )
+        tran = dict(
+            mvn=auth_result.Mvn, xid=auth_result.Xid, ts=auth_result.Ts,
+            eci=auth_result.Eci, cavv=auth_result.Cavv, cavv_algorithm=auth_result.Cavva,
+        )
+        order['tran'] = tran
+        self.request.session['order'] = order
 
-        auth_result = dict(OrderNo=checkout_auth_result.OrderNo, Status=checkout_auth_result.Status,
-            PublicTranId=checkout_auth_result.PublicTranId, AheadComCd=checkout_auth_result.AheadComCd,
-            ApprovalNo=checkout_auth_result.ApprovalNo, CardErrorCd=checkout_auth_result.CardErrorCd,
-            ReqYmd=checkout_auth_result.ReqYmd, CmnErrorCd=checkout_auth_result.CmnErrorCd, )
+        #auth_result = dict(OrderNo=checkout_auth_result.OrderNo, Status=checkout_auth_result.Status,
+        #    PublicTranId=checkout_auth_result.PublicTranId, AheadComCd=checkout_auth_result.AheadComCd,
+        #    ApprovalNo=checkout_auth_result.ApprovalNo, CardErrorCd=checkout_auth_result.CardErrorCd,
+        #    ReqYmd=checkout_auth_result.ReqYmd, CmnErrorCd=checkout_auth_result.CmnErrorCd, )
 
-        logger.debug("%s" % auth_result)
+        #logger.debug("%s" % auth_result)
 
         openid = authenticated_user(self.request)
         user = h.get_or_create_user(self.request, openid['clamed_id'])
-        order = o_models.Order.create_from_cart(cart)
-        order.multicheckout_approval_no = checkout_auth_result.ApprovalNo
-        order.user = user
-        cart.finish()
         DBSession.add(checkout_auth_result)
-        DBSession.add(order)
 
-        return auth_result
+        return dict(cart=cart, auth_result=checkout_auth_result)
 
-    def card_info_secure_code(self):
-        """ カード情報入力(セキュアコード)
-        """
-
-    def secure3d_checkout(self):
-        """ マルチ決済（クレジットカード 3Dセキュア認証）
-        """
-
-    def secure3d_callback(self):
-        """
-        """
 
     def multi_checkout(self):
         """ マルチ決済APIで決済確定
@@ -317,3 +321,35 @@ class CompleteView(object):
     def __init__(self, request):
         self.request = request
         # TODO: Orderを表示？
+
+    @view_config(route_name='payment.finish', request_method="POST", renderer="carts/completion.html")
+    def __call__(self):
+        assert h.has_cart(self.request)
+        cart = h.get_cart(self.request)
+        order = self.request.session['order']
+        # 変換
+        order_id = order['order_id']
+        pares = order['pares']
+        md = order['md']
+        tran = order['tran']
+        item_name = h.get_item_name(self.request, cart.performance)
+
+        checkout_auth_result = multicheckout_api.checkout_sales_secure3d(
+            self.request, order_id,
+            item_name, cart.total_amount, 0, order['client_name'], order['mail_address'],
+            order['card_number'], order['exp_year'] + order['exp_month'], order['card_holder_name'],
+            mvn=tran['mvn'], xid=tran['xid'], ts=tran['ts'],
+            eci=tran['eci'], cavv=tran['cavv'], cavv_algorithm=tran['cavv_algorithm'],
+        )
+
+        openid = authenticated_user(self.request)
+        user = h.get_or_create_user(self.request, openid['clamed_id'])
+
+        order = o_models.Order.create_from_cart(cart)
+        order.multicheckout_approval_no = checkout_auth_result.ApprovalNo
+        order.user = user
+        cart.finish()
+        DBSession.add(order)
+
+        # TODO 予約番号
+        return dict()

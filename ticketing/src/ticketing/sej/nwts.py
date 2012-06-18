@@ -81,7 +81,7 @@ class SejHTTPHandler(HTTPHandler):
 
 class SejHTTPSWithCertHandler(SejHTTPHandler):
 
-    https_request = SejHTTPSWithCertHandler.do_request_
+    https_request = SejHTTPHandler.do_request_
 
     def do_open(self, http_class, req):
         host = req.get_host()
@@ -149,6 +149,5 @@ def nws_data_send(url, terminal_id, password, file_id, data):
         if e.code == 800:
 
             return True
-        print e.read()
         raise e
 

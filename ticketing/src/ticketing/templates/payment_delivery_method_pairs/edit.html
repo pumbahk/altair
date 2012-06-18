@@ -1,4 +1,4 @@
-<%inherit file="/layout.html"/>
+<%inherit file="/layout_2cols.html"/>
 <%namespace file="/common/helpers.html" name="h" />
 
 <%
@@ -36,51 +36,45 @@
 </script>
 % endif
 
-<div class="row-fluid">
-  <%include file="/parts/_menu.html" />
+<div class="breadcrumbs">
+  ${h.breadcrumbs(
+    names=[u'イベント', sales_segment.event.title, u'販売区分', sales_segment.name],
+    urls=[
+      request.route_path('events.index'),
+      request.route_path('events.show', event_id=sales_segment.event.id),
+      request.route_path('sales_segments.index', event_id=sales_segment.event.id),
+    ]
+  )}
+</div>
 
-  <div class="span10">
-    ${h.breadcrumbs(
-      names=[u'イベント', sales_segment.event.title, u'販売区分', sales_segment.name],
-      urls=[
-        request.route_path('events.index'),
-        request.route_path('events.show', event_id=sales_segment.event.id),
-        request.route_path('sales_segments.index', event_id=sales_segment.event.id),
-      ]
-    )}
-  </div>
+<div class="page-header">
+  <h1>決済・配送方法${route_name}</h1>
+</div>
 
-  <span class="span10">
-    <div class="page-header">
-      <h3>決済・配送方法${route_name}</h3>
+<div class="content">
+  ${h.flash_messages(request)}
+  ${h.alert_message(form)}
+</div>
+
+<div class="well">
+  <form class="form-horizontal" action="${route_path}" enctype="multipart/form-data" method="POST">
+    <fieldset>
+      % if request.matched_route.name == 'payment_delivery_method_pairs.new':
+      ${h.form_item(form.payment_method_id)}
+      ${h.form_item(form.delivery_method_id)}
+      % else:
+      ${h.form_item(form.payment_method_id, option={'disabled':'disabled'})}
+      ${h.form_item(form.delivery_method_id, option={'disabled':'disabled'})}
+      % endif
+
+      ${h.form_item(form.transaction_fee, option={'class':'span2'})}
+      ${h.form_item(form.delivery_fee, option={'class':'span2'})}
+      ${h.form_item(form.discount, option={'class':'span2'})}
+      ${h.form_item(form.discount_unit, option={'class':'span2'})}
+      ${h.form_item(form.sales_segment_id)}
+    </fieldset>
+    <div class="form-actions">
+      <input class="btn btn-primary" type="submit" name="submit" value="保存">
     </div>
-
-    <div class="content">
-      ${h.flash_messages(request)}
-      ${h.alert_message(form)}
-    </div>
-
-    <div class="well">
-      <form class="form-horizontal" action="${route_path}" enctype="multipart/form-data" method="POST">
-        <fieldset>
-          % if request.matched_route.name == 'payment_delivery_method_pairs.new':
-          ${h.form_item(form.payment_method_id)}
-          ${h.form_item(form.delivery_method_id)}
-          % else:
-          ${h.form_item(form.payment_method_id, option={'disabled':'disabled'})}
-          ${h.form_item(form.delivery_method_id, option={'disabled':'disabled'})}
-          % endif
-
-          ${h.form_item(form.transaction_fee, option={'class':'span2'})}
-          ${h.form_item(form.delivery_fee, option={'class':'span2'})}
-          ${h.form_item(form.discount, option={'class':'span2'})}
-          ${h.form_item(form.discount_unit, option={'class':'span2'})}
-          ${h.form_item(form.sales_segment_id)}
-        </fieldset>
-        <div class="form-actions">
-          <input class="btn btn-primary" type="submit" name="submit" value="保存">
-        </div>
-      </form>
-    </div>
-  </span>
+  </form>
 </div>

@@ -1,64 +1,60 @@
-<%inherit file="/layout.html"/>
+<%inherit file="/layout_2cols.html"/>
 <%namespace file="/common/helpers.html" import="pager"/>
 <%namespace file="/common/helpers.html" import="flash_messages" />
 <%namespace file="/common/helpers.html" import="breadcrumbs" />
 
-<div class="row-fluid">
-  <%include file="/parts/_menu.html" />
+<div class="breadcrumbs">
+  ${breadcrumbs(
+      names=[u'トップ', u'イベント'],
+      urls=[request.route_path('index')]
+  )}
+</div>
 
-  <div class="span10">
-    ${breadcrumbs(
-        names=[u'トップ', u'イベント'],
-        urls=[request.route_path('index')]
-    )}
+<div class="page-header">
+  <h3>イベント</h3>
+</div>
+
+<div class="content">
+  ${flash_messages(request)}
+</div>
+
+<div style="float: left;">
+  <%include file="/events/_search.html" />
+</div>
+
+<span style="float: right; margin-right: 20px;">
+  <div class="btn-group">
+    <a class="btn" href="/events/new">
+      <i class="icon-plus"></i>新規イベント
+    </a>
   </div>
+</span>
 
-  <span class="span10">
-    <div class="page-header">
-      <h3>イベント</h3>
+<div class="events" style="clear: both">
+  % for event in events.items:
+  <div class="section event">
+    <div class="section-header">
+      <h3 style="word-wrap: break-word;">${event.title}</h3>
     </div>
-
-    <div class="content">
-      ${flash_messages(request)}
+    <div class="pull-right">
+      <%include file="/events/_action_button.html" args="event=event, order=['show', 'edit', 'delete']" />
     </div>
-
-    <span style="float: left;">
-      <%include file="/events/_search.html" />
-    </span>
-
-    <span style="float: right; margin-right: 20px;">
-      <div class="btn-group">
-        <a class="btn" href="/events/new">
-          <i class="icon-plus"></i>新規イベント
-        </a>
-      </div>
-    </span>
-
-    <div style="clear: left;"></div>
-
-    % for event in events.items:
-    <div class="well">
-      <h4 style="word-wrap: break-word;">${event.title}</h4>
-      <div class="pull-right">
-        <%include file="/events/_action_button.html" args="event=event, order=['show', 'edit', 'delete']" />
-      </div>
-      <div style="clear: both"></div>
-      <%
-        label_classes = [
-          'label-important',
-          'label-warning',
-          'label-default',
-          'label-success',
-          'label-info',
-          'label-inverse'
-        ]
-      %>
-      % for i, sales_segment in enumerate(event.sales_segments):
-        <span class="label ${label_classes[i%6]}">${sales_segment.name}</span>
-      % endfor
-      <%include file="/performances/_list.html" args="form=form_performance, performances=event.performances, limit=5" />
-    </div>
+    <div style="clear: both"></div>
+    <%
+      label_classes = [
+        'label-important',
+        'label-warning',
+        'label-default',
+        'label-success',
+        'label-info',
+        'label-inverse'
+      ]
+    %>
+    % for i, sales_segment in enumerate(event.sales_segments):
+      <span class="label ${label_classes[i%6]}">${sales_segment.name}</span>
     % endfor
-  </span>
+    <%include file="/performances/_list.html" args="form=form_performance, performances=event.performances, limit=5" />
+  </div>
+  % endfor
   ${pager(events)}
 </div>

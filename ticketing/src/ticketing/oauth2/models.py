@@ -20,6 +20,7 @@ import sqlahelper
 session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
 
+from ticketing.models import BaseModel
 from ticketing.operators.models import Operator
 from ticketing.models import WithTimestamp, Identifier, relationship
 
@@ -55,7 +56,7 @@ class KeyGenerator(object):
     def __call__(self):
         return sha512(uuid4().hex).hexdigest()[0:self.length]
 
-class Service(Base, WithTimestamp):
+class Service(Base, BaseModel, WithTimestamp):
     __tablename__ = 'Service'
     id              = Column(Identifier, primary_key=True)
     name            = Column(String(255))
@@ -69,7 +70,7 @@ class Service(Base, WithTimestamp):
         return session.query(Service).filter(Service.key == key).first()
 
 
-class AccessToken(Base, WithTimestamp):
+class AccessToken(Base, BaseModel, WithTimestamp):
     __tablename__ = 'AccessToken'
     id          = Column(Identifier, primary_key=True)
 
@@ -97,7 +98,7 @@ class AccessToken(Base, WithTimestamp):
         return session.query(AccessToken).filter(AccessToken.key == key).first()
 
 
-class MACNonce(Base, WithTimestamp):
+class MACNonce(Base, BaseModel, WithTimestamp):
     __tablename__       = 'MACNonce'
     id                  = Column(Identifier, primary_key=True)
     access_token        = relationship("AccessToken")

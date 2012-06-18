@@ -43,9 +43,7 @@ class WDispositionResource(security.RootFactory):
         return WidgetDisposition.enable_only_query(self.request.user)
 
     def bind_disposition(self, page, wdisposition):
-        WidgetDisposition.snapshot(page, self.request.user, DBSession) ##
-        page = wdisposition.bind_page(page, DBSession)
-        return page
+        return wdisposition.bind_page(page, DBSession)
 
     def delete_disposition(self, wdisposition):
         wdisposition.delete_widgets()
