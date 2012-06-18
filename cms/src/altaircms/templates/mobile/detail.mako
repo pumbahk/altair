@@ -22,7 +22,7 @@
   %for p in performances:
 	&#xe67d;${p.title}<br />
 	　公演日:
-	　${p.start_on.strftime(u"%Y年%m月%d日 %H:%M".encode("utf-8")).decode("utf-8")}
+	　${h.base.jdate(p.start_on)}
 	  <br />
 	　会場: ${p.venue}<br/>
     %if today > p.end_on:
@@ -31,46 +31,27 @@
   	→<a href="${request.route_path("mobile_purchase", event_id=event.id, query=dict(performance_id=p.backend_id))}" target="_blank">購入ページへ</a><br />
     %endif
   %endfor
-	<div style="background-image:url(/static/mobile/img/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000" background="/static/mobile/img/bg_bar.gif"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>公演詳細</font></div>
-  【公演期間】<br />
-  ${event.event_open.strftime(u"%Y年%m月%d日".encode("utf-8")).decode("utf-8")}~${event.event_close.strftime(u"%Y年%m月%d日".encode("utf-8")).decode("utf-8")}<br />
-  【説明／注意事項】<br />
 %endif
 
-
-<div style="font-family: Arial, Verdana; font-size: 10pt; line-height: normal; font-variant: normal; font-style: normal; font-weight: normal; "><font size="2" face="Arial">※先行販売では、「S席」・「A席」は販売いたしません。</font></div>
-<div style="font-family: Arial, Verdana; font-size: 10pt; line-height: normal; font-variant: normal; font-style: normal; font-weight: normal; "><font size="2" face="Arial">※予選の試合は無料でご観戦頂けます。但し、ATP Sunday @ Rakuten Openをご覧になる場合はチケットをお買い求め下さい。</font></div>
-<div style="font-family: Arial, Verdana; font-size: 10pt; line-height: normal; font-variant: normal; font-style: normal; font-weight: normal; "><font size="2" face="Arial">※コロシアムの選手席と審判台は西側に設置致します。</font></div>
-<div style="font-family: Arial, Verdana; font-size: 10pt; line-height: normal; font-variant: normal; font-style: normal; font-weight: normal; "><font size="2" face="Arial">※コロシアム西側コートサイド席（G・Hブロック）は審判台設置のため、一部コートが見えにくくなっております。予めご了承下さい。</font></div>
-<div style="font-family: Arial, Verdana; font-size: 10pt; line-height: normal; font-variant: normal; font-style: normal; font-weight: normal; "><font size="2" face="Arial">※プレミアムシートプラスは通常のプレミアムシートに加え、レストラン内占用スペースでのお食事がついた限定サービスとなります。</font></div>
-<div style="font-family: Arial, Verdana; font-size: 10pt; line-height: normal; font-variant: normal; font-style: normal; font-weight: normal; "><font size="2" face="Arial">※フォトグラファーチケットは、観客席よりコートの内側にあるフォトグラファーピットにて写真が撮影できる 、数量限定の特別なプランです。</font></div>
-<div style="font-family: Arial, Verdana; font-size: 10pt; line-height: normal; font-variant: normal; font-style: normal; font-weight: normal; "><font size="2" face="Arial">座席は選手入退場口に最も近い場所で前から2列目までを確保させて頂き、お食事はレストランにて提供させて頂きます。（1パッケージ2席での販売となります）</font></div>
-<div style="font-family: Arial, Verdana; font-size: 10pt; line-height: normal; font-variant: normal; font-style: normal; font-weight: normal; "><font size="2" face="Arial">※コロシアムのチケットは、本戦期間中は全日程指定席になります。</font></div>
-<div style="font-family: Arial, Verdana; font-size: 10pt; line-height: normal; font-variant: normal; font-style: normal; font-weight: normal; "><font size="2" face="Arial">※コロシアムのチケットをお持ちのお客様は、全てのコートで試合をご観戦頂けます。</font></div>
-<div style="font-family: Arial, Verdana; font-size: 10pt; line-height: normal; font-variant: normal; font-style: normal; font-weight: normal; "><font size="2" face="Arial">※中学生以下のお客様は、特別料金で、コロシアムA席でご観戦頂ける他、コロシアム以外の試合も ご覧になれます。</font></div>
-<div style="font-family: Arial, Verdana; font-size: 10pt; line-height: normal; font-variant: normal; font-style: normal; font-weight: normal; "><font size="2" face="Arial">※中学生以下の方は入場時に学生証の提示をお願いする場合がございます。</font></div>
-<div style="font-family: Arial, Verdana; font-size: 10pt; line-height: normal; font-variant: normal; font-style: normal; font-weight: normal; "><font size="2" face="Arial">※グラウンドチケット（￥1,000）は屋外で行われる試合のみご観戦頂けます。購入後、途中降雨で試合が中止になった場合、チケットの払い戻しは致しません。また、コロシアムでの観戦もできません。</font></div>
-<div style="font-family: Arial, Verdana; font-size: 10pt; line-height: normal; font-variant: normal; font-style: normal; font-weight: normal; "><font size="2" face="Arial">※4歳未満のお子さまは、ひざ上観戦の場合に限り無料となります。但し、お席が必要な場合は、チケットをお買い求めください。</font></div>
-<div style="font-family: Arial, Verdana; font-size: 10pt; line-height: normal; font-variant: normal; font-style: normal; font-weight: normal; "><font size="2" face="Arial">※ペット同伴での入場はできません。</font></div>
-<div style="font-family: Arial, Verdana; font-size: 10pt; line-height: normal; font-variant: normal; font-style: normal; font-weight: normal; "><font size="2" face="Arial">※入場券はいかなる事情（紛失・焼失・破損・出場選手変更等）があっても再発行、払戻し、他のチケットとの交換は一切できません。</font></div>
-<div style="font-family: Arial, Verdana; font-size: 10pt; line-height: normal; font-variant: normal; font-style: normal; font-weight: normal; "><font size="2" face="Arial">※雨天の場合は、センターコートのみのご観戦となります。その場合、試合日程は変更になることもありますのであらかじめご了承ください。</font></div>
-<div>
-<div style="font-family: Arial, Verdana; font-size: 10pt; "><font size="2" face="Arial">※ATP Sundayの各席種チケットには、それぞれ＋1000円の大会プログラムが付いてくるお得なチケットタイプもご用意しております。</font></div>
-<div style="font-family: Arial, Verdana; font-size: 10pt; "><font size="2" face="Arial">（大会プログラムは定価2000円ですので、1000円お得！）大会プログラムは当日券売場でのお引き換えになります。チケットを窓口へご提示ください。</font></div>
-<div style="font-family: Arial, Verdana; font-size: 10pt; "><font size="2" face="Arial">※車椅子席はお電話でお申込みください。なお、付添いの方もチケットが必要です。数に限りがありますので、ご用意できない場合がございます。お早めにお申し込みください。</font></div>
-<div style="font-family: Arial, Verdana; font-size: 10pt; "><font size="2" face="Arial">「楽天オープン2012チケットセンター　050-5830-6866（平日10:00～17:00）」</font></div>
-<div style="font-family: Arial, Verdana; font-size: 10pt; "><font size="2" face="Arial"><br></font></div>
-<div style="font-family: Arial, Verdana; font-size: 10pt; "><font size="2" face="Arial">● プレミアムシート・プラス<span style="WHITE-SPACE: pre" class="Apple-tab-span">								</span></font></div>
-<div style="font-family: Arial, Verdana; font-size: 10pt; "><font size="2" face="Arial">通常のプレミアムシートに加え、レストラン内専用スペースでのお食事がついた限定サービスとなります。</font></div>
-<div style="font-family: Arial, Verdana; font-size: 10pt; "><font size="2" face="Arial">● フォトグラファーチケット<span style="WHITE-SPACE: pre" class="Apple-tab-span">								</span></font></div>
-<div><font face="Arial" size="2"><div>観客席よりコートの内側にあるフォトグラファーピット(コートサイドの赤い床の部分)にて写真が撮影できる、数量限定の特別なプランです。</div><div>座席は選手入退場口に最も近い場所で前から2列目までを確保させて頂き、お食事はレストランにて提供させて頂きます。（1パッケージ2席での販売となります）</div></font></div></div><br />
+<div style="background-image:url(/static/mobile/img/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000" background="/static/mobile/img/bg_bar.gif"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>公演詳細</font></div>
+【公演期間】<br />
+${h.base.jdate(event.event_open)}~${h.base.jdate(event.event_close)}<br />
+%if event.performers:
+【出演者】<br />
+${event.performers}
+%endif
+%if event.notice:
+【説明／注意事項】<br />
+${h.base.nl_to_br(event.notice)}<br />
+%endif
+%if event.inquiry_for:
 【お問い合わせ先】<br />
-<p>楽天オープン2012チケットセンター　050-5830-6866（平日10：00〜17：00）</p><br />
+${event.inquiry_for}】<br />
+%endif
 【販売期間】<br />
-  <img src="http://rakuten-ticket-static.s3.amazonaws.com/public/images/icon_presale.gif" alt="先行販売" width="28" height="12"/>    2012年6月10日(日)〜6月25日(月)<br>
-<br />
+[icon]${h.base.jterm(event.deal_open,event.deal_close)}<br />
 
- </div>
+</div>
 <hr size="1" color="#888888" noshade="noshade" />
 <div align="center">
   <div>

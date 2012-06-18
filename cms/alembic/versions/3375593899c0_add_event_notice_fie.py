@@ -16,8 +16,10 @@ import sqlalchemy as sa
 
 def upgrade():
     op.add_column("event", sa.Column("notice", sa.UnicodeText))
+    op.add_column("event", sa.Column("performers", sa.UnicodeText))
 
 
 def downgrade():
     op.drop_column("event", "notice")
+    op.drop_column("event", "performers")
 

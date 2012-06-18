@@ -40,6 +40,9 @@
         <th class="span2">開催場所</th><td>${event.place}</td>
       </tr>
       <tr>
+        <th class="span2">出演者</th><td>${event.performers}</td>
+      </tr>
+      <tr>
         <th class="span2">説明/注意事項</th><td>${event.notice}</td>
       </tr>
       <tr>

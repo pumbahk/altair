@@ -1,6 +1,14 @@
 # -*- coding:utf-8 -*-
 import datetime
 
+
+class RawText(object):
+    def __init__(self, v):
+        self.value = v
+
+    def __html__(self):
+        return self.value
+
 WEEK =[u"月", u"火", u"水", u"木", u"金", u"土", u"日"]
 import urllib
 def path_in_string(path, string):
@@ -40,7 +48,7 @@ def make_link(title, url):
     return u'<a href="%s">%s</a>' % (url, title)
 
 def nl_to_br(string):
-    return string.replace("\n", "<br/>")
+    return RawText(string.replace("\n", "<br/>"))
 
 WEEK =[u"月", u"火", u"水", u"木", u"金", u"土", u"日"]
 def jdate(d):
@@ -50,7 +58,7 @@ def jdate(d):
     u'2011\u5e7401\u670801\u65e5'
     """
     if d:
-        datestr = d.strftime(u"%Y年%m月%d日".encode("utf-8")).decode("utf-8")
+        datestr = d.strftime(u"%Y年%-m月%-d日".encode("utf-8")).decode("utf-8")
         return u"%s（%s）" % (datestr, unicode(WEEK[d.weekday()]))
     else:
         return u"-"
@@ -59,15 +67,17 @@ def term(beg, end):
     """ dateオブジェクトを受け取り期間を表す文字列を返す
     e.g. 2012年3月3日(土)〜7月12日(木) 
     """
-    beg_str = beg.strftime(u"%Y年%m月%d日".encode("utf-8")).decode("utf-8")
+    beg_str = beg.strftime(u"%Y年%-m月%-d日".encode("utf-8")).decode("utf-8")
     if end is None:
         return u"%s(%s) 〜" % (beg_str, WEEK[beg.weekday()])
 
     if beg.year == end.year:
-        end_str = end.strftime(u"%m月%d日".encode("utf-8")).decode("utf-8")
+        end_str = end.strftime(u"%-m月%-d日".encode("utf-8")).decode("utf-8")
     else:
-        end_str = end.strftime(u"%Y年%m月%d日".encode("utf-8")).decode("utf-8")
+        end_str = end.strftime(u"%Y年%-m月%-d日".encode("utf-8")).decode("utf-8")
     return u"%s(%s) 〜 %s(%s)" % (beg_str, WEEK[beg.weekday()], end_str, WEEK[end.weekday()])
+
+jterm = term
 
 def translate_longtext_to_simple_html(string):
     """
