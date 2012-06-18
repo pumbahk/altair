@@ -32,7 +32,7 @@ class Event(BaseOriginalMixin, Base):
     event_close = sa.Column(sa.DateTime)
     deal_open = sa.Column(sa.DateTime)
     deal_close = sa.Column(sa.DateTime)
-
+    notice = sa.Column(sa.UnicodeText)
     is_searchable = sa.Column(sa.Boolean, default=True)
 
     client_id = sa.Column(sa.Integer, sa.ForeignKey("client.id"))

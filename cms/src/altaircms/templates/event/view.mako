@@ -40,6 +40,9 @@
         <th class="span2">開催場所</th><td>${event.place}</td>
       </tr>
       <tr>
+        <th class="span2">説明/注意事項</th><td>${event.notice}</td>
+      </tr>
+      <tr>
         <th class="span2">問い合わせ先</th><td>${event.inquiry_for}</td>
       </tr>
     </table>
