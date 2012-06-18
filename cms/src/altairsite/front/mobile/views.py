@@ -90,9 +90,9 @@ from .helpers import CATEGORY_SYNONYM
 def mobile_index(request):
     import warnings
     warnings.warn("this is adhoc code. so need fix.")
+    today = datetime.now()
     pageset = PageSet.query.filter_by(id=1).first()
 
-    today = datetime.now()
     topics = Topic.matched_qs(d=today, kind=u"トピックス", page=pageset)
     picks = Topcontent.matched_qs(d=today, kind=u"注目のイベント", page=pageset)
     return {"page": pageset.current(), "topics": topics, "picks":picks}
@@ -100,8 +100,8 @@ def mobile_index(request):
 
 @view_config(route_name="mobile_detail", renderer="altaircms:templates/mobile/detail.mako")
 def mobile_detail(request):
-    pageset = PageSet.query.filter_by(id=request.matchdict["pageset_id"]).first()
     today = datetime.now()
+    pageset = PageSet.query.filter_by(id=request.matchdict["pageset_id"]).first()
     return {"page": pageset.current(), "event": pageset.event, "performances": pageset.event.performances, 
             "today": today}
 
@@ -115,14 +115,20 @@ def enable_categories(info, request):
              renderer="altaircms:templates/mobile/category.mako")
 def mobile_category(request):
 <<<<<<< HEAD
+<<<<<<< HEAD
     return {}
 <<<<<<< HEAD
 >>>>>>> カテゴリトップ作成中
 =======
 =======
+=======
+    today = datetime.now()
+>>>>>>> topcontentの表示登録
     category = request.matchdict["category"]
     root = Category.query.filter_by(name=category).first()
+    picks = Topcontent.matched_qs(d=today, kind=u"注目のイベント", page=root.pageset)
     return {"synonym": CATEGORY_SYNONYM.get(category), 
+            "picks": picks, 
             "subcategories": Category.query.filter_by(parent=root)}
 >>>>>>> カテゴリトップ上部メニュー変更
 

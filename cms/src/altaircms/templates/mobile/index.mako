@@ -54,7 +54,7 @@
   <br clear="all" style="clear:both" />
   %endfor 
 %endif
-<div>
+</div>
 
 <hr size="1" color="#888888" noshade="noshade" />
 <div align="center">
