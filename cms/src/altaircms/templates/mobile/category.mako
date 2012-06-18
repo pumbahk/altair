@@ -27,15 +27,25 @@
 </div>
   
 <div>
-  <div style="background-image: url(&quot;/static/mobile/img/bg_bar.gif&quot;); background-color: rgb(191, 0, 0);" bgcolor="#bf0000" background="/static/mobile/img/bg_bar.gif"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>今週発売のチケット</font></div>
-      <a href="d/SPMSF">宮本文昭×新日本フィル〜真夏のチャイコフスキー〜</a>
-  </div>
 
+%if events_on_sale.count() > 0:
+  <div style="background-image: url(&quot;/static/mobile/img/bg_bar.gif&quot;); background-color: rgb(191, 0, 0);" bgcolor="#bf0000" background="/static/mobile/img/bg_bar.gif"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>今週発売のチケット</font></div>
+  %for pageset in events_on_sale:
+	 <a href="${request.route_path("mobile_detail",pageset_id=pageset.id)}">${pageset.name}</a>
+  %endfor
+  </div>
+%endif
+
+%if topics.count() > 0:
 <div style="background-image: url(&quot;/static/mobile/img/bg_bar.gif&quot;); background-color: rgb(191, 0, 0);" bgcolor="#bf0000" background="/static/mobile/img/bg_bar.gif"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>トピックス</font></div>
-  <img src="/static/mobile/img/new.gif" width="23" height="8">
-      <a href="../static/features/tube/index.html?top">TUBE野外ライブを楽チケで購入すると、メンバーサイン入りタオルをプレゼント！</a>
-      <br>
+  %for topic in topics:
+	<img src="/static/mobile/img/new.gif" width="23" height="8">
+		<a href="${h.mobilelink.get_link_from_topic(request,topic)}">${topic.title}</a>
+		<br>
+  %endfor
+%endif
 </div>
+
 <hr color="#bf0000" size="1" noshade="noshade">
 <div style="background-color: rgb(255, 255, 187);" bgcolor="#ffffbb" align="center">
   <form action="http://ticket.rakuten.co.jp/mobile/s" class="searchbox"><font size="3">
@@ -44,7 +54,6 @@
     <input class="text_field" name="q" value="" type="text"><input value="検索" type="submit">
   </font>
 </form></div>
-
 
  
 <hr color="#888888" size="1" noshade="noshade">

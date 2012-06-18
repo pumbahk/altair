@@ -7,6 +7,7 @@ from altaircms.page.models import PageSet
 from altaircms.topic.models import Topic, Topcontent
 from datetime import datetime
 from . import helpers as h
+<<<<<<< HEAD
 from altaircms import helpers as gh
 from altairsite.search import api as search_api
 
@@ -85,6 +86,8 @@ from altaircms.page.models import PageSet
 from altaircms.topic.models import Topic, Topcontent
 from datetime import datetime
 from .helpers import CATEGORY_SYNONYM
+=======
+>>>>>>> mobileカテゴリトップ、これから販売されるページ,topics。
 
 @view_config(route_name="mobile_index", renderer="altaircms:templates/mobile/index.mako")
 def mobile_index(request):
@@ -127,10 +130,18 @@ def mobile_category(request):
     category = request.matchdict["category"]
     root = Category.query.filter_by(name=category).first()
     picks = Topcontent.matched_qs(d=today, kind=u"注目のイベント", page=root.pageset)
-    return {"synonym": CATEGORY_SYNONYM.get(category), 
+
+    topics = Topic.matched_qs(d=today, kind=u"トピックス", page=root.pageset).filter_by(is_global=False)
+    events_on_sale = h.events_on_sale_this_week(request, category, today)
+    return {"synonym": h.CATEGORY_SYNONYM.get(category), 
             "picks": picks, 
+            "events_on_sale": events_on_sale, 
+            "topics": topics, 
             "subcategories": Category.query.filter_by(parent=root)}
+<<<<<<< HEAD
 >>>>>>> カテゴリトップ上部メニュー変更
 
 
 >>>>>>> garden
+=======
+>>>>>>> mobileカテゴリトップ、これから販売されるページ,topics。

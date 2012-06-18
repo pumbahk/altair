@@ -10,3 +10,4 @@ class LinklistForm(form.Form):
     delimiter = fields.TextField(id="delimiter", label=u"区切り文字")
     max_items = fields.IntegerField(id="max_items", label=u"最大表示件数", default=20)
     limit_span = fields.IntegerField(id="limit_span", label=u"何日まで範囲に含めるか", default=7)
+

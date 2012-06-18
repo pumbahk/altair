@@ -44,6 +44,8 @@ class LinklistWidget(Widget):
     ## fixme
     max_items = sa.Column(sa.Integer, default=20)
     limit_span = sa.Column(sa.Integer, default=7)
+    category_origin = sa.Column(sa.Unicode(255))
+
     N = 7 ## default
     
     def merge_settings(self, bname, bsettings):
