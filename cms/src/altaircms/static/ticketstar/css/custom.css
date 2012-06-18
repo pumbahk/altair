@@ -277,6 +277,11 @@
     background-image:url(/static/ticketstar/img/change/bg_heading.gif);
 }
 
+/* for topic widget */
+.topic-widget {
+    float: left;
+}
+
 /* detail */
 .detail.heading {
     background-image:url(/static/ticketstar/img/detail/bg_heading.gif);
