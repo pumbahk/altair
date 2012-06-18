@@ -12,8 +12,6 @@ from altaircms.lib.formhelpers import dynamic_query_select_field_factory
 from altaircms.helpers.formhelpers import required_field, append_errors
 
 
-from altaircms.models import DBSession
-
 from ..event.models import Event
 from altaircms.models import Performance
 from ..plugins.widget.promotion.models import Promotion

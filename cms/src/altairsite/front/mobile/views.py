@@ -114,6 +114,7 @@ def mobile_detail(request):
 
 def enable_categories(info, request):
     return request.matchdict["category"] in ("music", "sports", "stage", "event")
+
 @view_config(route_name="mobile_category", custom_predicates=(enable_categories,), 
              renderer="altaircms:templates/mobile/category.mako")
 def mobile_category(request):
