@@ -7,6 +7,11 @@ def doc_from_tags(doc, tags):
     doc.update(page_tag=vs)
     return doc 
 
+def doc_from_performances(doc, performances):
+    vs = [p.venue for p in performances]
+    doc.update(performance_venue=vs)
+    return doc
+
 def doc_from_event(doc, event): ## fixme
     doc.update(event_title=event.title, 
                event_subtitle=event.subtitle, 
@@ -28,6 +33,7 @@ def doc_from_page(page):
     doc = solr.SolrSearchDoc()
     if page.event:
         doc = doc_from_event(doc, page.event)
+        doc = doc_from_performances(doc, page.event.performances)
 
     tags = page.public_tags
     if tags:
