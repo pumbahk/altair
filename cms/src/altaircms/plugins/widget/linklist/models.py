@@ -17,7 +17,7 @@ from altaircms.security import RootFactory
 from .api import get_linklist_candidates_finder
 
 def linklist_render(widget, finder, request=None):
-    candidates = finder.find(request, widget.limit_span or widget.N, widget._today_function(), max_items=widget.max_items)
+    candidates = finder(request, widget.limit_span or widget.N, widget._today_function(), max_items=widget.max_items)
     content = widget.delimiter.join(candidates)
     element = u'<p>%s</p>' % content if content else ''
     return u'<div id="%s">%s</div>' % (widget.finder_kind, element)

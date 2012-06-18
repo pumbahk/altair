@@ -7,7 +7,7 @@
 	  % for item in items:
 	  <tr>
 	    <th scope="row">${item["label"]}</th>
-		<td>${h.base.nl_to_br(item["content"])|n}</td>
+		<td>${h.base.nl_to_br(item["content"])}</td>
       </tr>
       % endfor
 	</table>
@@ -21,7 +21,7 @@
 	% for item in items:
 	  ##<dt ${item["attr"]|n}>${item["label"]}</td>
       <dt>${item["label"]}</td>
-      <dd>${h.base.nl_to_br(item["content"])|n}</dd>
+      <dd>${h.base.nl_to_br(item["content"])}</dd>
     % endfor
   </dl>
 </div>

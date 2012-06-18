@@ -1,7 +1,8 @@
 from zope.interface import Interface
 
 class IWFinder(Interface):
-    pass
+    def __call__(request, *args, **kwargs):
+        pass
 
 class IWRender(Interface):
     pass
