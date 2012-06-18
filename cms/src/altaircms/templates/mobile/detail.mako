@@ -9,7 +9,7 @@
       <font color="red">
         
       </font>
-  <a href="${request.route_path("mobile_top")}"><font size="3" color="#bf0000"><img src="/static/mobile/img/logo-small.gif" width="160" height="26" alt="楽天チケット" /></font></a>
+  <a href="${request.route_path("mobile_index")}"><font size="3" color="#bf0000"><img src="/static/mobile/img/logo-small.gif" width="160" height="26" alt="楽天チケット" /></font></a>
   <hr size="1" noshade="noshade" color="#bf0000" />
 </div>
 <div>

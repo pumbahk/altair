@@ -79,6 +79,12 @@ def search_by_freeword(context, request):
 =======
 from altaircms.page.models import PageSet
 from datetime import datetime
+
+
+@view_config(route_name="mobile_index", renderer="altaircms:templates/mobile/index.mako")
+def mobile_index(request):
+    return {}
+
 @view_config(route_name="mobile_detail", renderer="altaircms:templates/mobile/detail.mako")
 def mobile_detail(request):
     pageset = PageSet.query.filter_by(id=40).first()

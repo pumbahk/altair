@@ -32,7 +32,7 @@ def main(global_config, **settings):
                           "pyramid.events.BeforeRender")
 
     config.add_route("mobile_detail", "/mobile/detail")
-    config.add_route("mobile_top", "/mobile/top", static=True)
+    config.add_route("mobile_index", "/mobile/index")
     config.add_route("mobile_purchase", "/mobile/purchase/event/{event_id}", static=True)
     config.scan(".views")
     return config.make_wsgi_app()
