@@ -3,16 +3,13 @@
       <font color="red">
         
       </font>
-  <a href="../index.html"><font color="#bf0000" size="3"><img src="/static/mobile/img/logo-small.gif" alt="楽天チケット" width="160" height="26"></font></a>
+  <a href="${request.route_path("mobile_index")}"><font color="#bf0000" size="3"><img src="/static/mobile/img/logo-small.gif" alt="楽天チケット" width="160" height="26"></font></a>
   <hr color="#bf0000" size="1" noshade="noshade">
 </div>
 <div>
-<div style="background-image: url(&quot;/static/mobile/img/bg_bar.gif&quot;); background-color: rgb(191, 0, 0);" bgcolor="#bf0000" background="images/bg_bar.gif"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>liveMusic</font></div>
+<div style="background-image: url(&quot;/static/mobile/img/bg_bar.gif&quot;); background-color: rgb(191, 0, 0);" bgcolor="#bf0000" background="images/bg_bar.gif"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>${synonym}</font></div>
 <div align="center">
-  <a href="s?cid=6">邦楽</a>
-   / <a href="s?cid=7">洋楽</a>
-   / <a href="s?cid=8">クラシック</a>
-   / <a href="s?cid=9">その他</a>
+  ${" / ".join(u'<a href="#">%s</a>' % c.label for c in subcategories)|n}
 </div>
       <img src="http://rakuten-ticket-static.s3-ap-northeast-1.amazonaws.com/images/uploaded/62e3fcee-143c-48fb-9676-6b0345c281f7.jpg" width="114" align="left" height="64">
       <a href="../s/%EF%BF%BD%259F%EF%BF%BD%E6%A5%BD/%EF%BF%BD%2581%259D%EF%BF%BD%2581%EF%BF%BD%EF%BF%BD%2596/LOVE-1+FESTIVAL+SEASON+2/%21KMLFS">LOVE-1 FESTIVAL SEASON 2</a>

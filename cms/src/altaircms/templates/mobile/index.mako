@@ -24,7 +24,7 @@
       </tr>
       <tr>
         <td bgcolor="#cccc88" valign="center" align="center"><font size="1" color="#bf8000">&#xe67c;<a href="${request.route_path("mobile_category",category="stage")}">演劇</a></font></td>
-        <td bgcolor="#cccc88" valign="center" align="center"><font size="1" color="#bf8000">&#xe67d;<a href="${request.route_path("mobile_category",category="other")}">イベント・その他</a></font></td>
+        <td bgcolor="#cccc88" valign="center" align="center"><font size="1" color="#bf8000">&#xe67d;<a href="${request.route_path("mobile_category",category="event")}">イベント・その他</a></font></td>
       </tr>
     </tbody>
   </table>

@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 from pyramid.view import view_config
 <<<<<<< HEAD
+<<<<<<< HEAD
 from altaircms.models import Category
 from altaircms.page.models import PageSet
 from altaircms.topic.models import Topic, Topcontent
@@ -77,10 +78,13 @@ def search_by_freeword(context, request):
     return {"pagesets": qs, "classifieds": classifieds, "synonym": h.CATEGORY_SYNONYM, 
             "breadcrumbs": breadcrumbs, "freeword":freeword}
 =======
+=======
+from altaircms.models import Category
+>>>>>>> カテゴリトップ上部メニュー変更
 from altaircms.page.models import PageSet
 from altaircms.topic.models import Topic, Topcontent
 from datetime import datetime
-
+from .helpers import CATEGORY_SYNONYM
 
 @view_config(route_name="mobile_index", renderer="altaircms:templates/mobile/index.mako")
 def mobile_index(request):
@@ -106,14 +110,21 @@ def mobile_detail(request):
 =======
 
 def enable_categories(info, request):
-    return request.matchdict["category"] in ("music", "sports", "stage", "other")
+    return request.matchdict["category"] in ("music", "sports", "stage", "event")
 @view_config(route_name="mobile_category", custom_predicates=(enable_categories,), 
              renderer="altaircms:templates/mobile/category.mako")
 def mobile_category(request):
+<<<<<<< HEAD
     return {}
 <<<<<<< HEAD
 >>>>>>> カテゴリトップ作成中
 =======
+=======
+    category = request.matchdict["category"]
+    root = Category.query.filter_by(name=category).first()
+    return {"synonym": CATEGORY_SYNONYM.get(category), 
+            "subcategories": Category.query.filter_by(parent=root)}
+>>>>>>> カテゴリトップ上部メニュー変更
 
 
 >>>>>>> garden

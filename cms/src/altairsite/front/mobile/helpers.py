@@ -1,6 +1,6 @@
 CATEGORY_SYNONYM = {
     "music": "LiveMusic", 
     "sports": "Sports", 
-    "other": "Events", 
+    "event": "Events", 
     "stage": "performanceArt"
 }
