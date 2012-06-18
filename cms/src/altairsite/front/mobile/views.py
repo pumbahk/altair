@@ -78,12 +78,18 @@ def search_by_freeword(context, request):
             "breadcrumbs": breadcrumbs, "freeword":freeword}
 =======
 from altaircms.page.models import PageSet
+from altaircms.topic.models import Topic, Topcontent
 from datetime import datetime
 
 
 @view_config(route_name="mobile_index", renderer="altaircms:templates/mobile/index.mako")
 def mobile_index(request):
-    return {}
+    pageset = PageSet.query.filter_by(id=1).first()
+    today = datetime.now()
+    topics = Topic.matched_qs(d=today, kind=u"トピックス", page=pageset)
+    picks = Topcontent.matched_qs(d=today, kind=u"注目のイベント", page=pageset)
+    return {"page": pageset.current(), "topics": topics, "picks":picks}
+
 
 @view_config(route_name="mobile_detail", renderer="altaircms:templates/mobile/detail.mako")
 def mobile_detail(request):

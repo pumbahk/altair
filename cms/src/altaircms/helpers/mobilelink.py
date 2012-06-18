@@ -2,12 +2,17 @@
 import logging
 logger = logging.getLogger(__file__)
 
+import warnings
 def get_purchase_page_from_event(request, event):
+    warnings.warn("this is ad-hoc definition please fixme!")
+
     if event.backend_id is None:
         logger.warn("event id=%d: evnt backend_id is not found" % event.id)
-    return u"/cart/events/%s" % event.backend_id
+    return u"/m/cart/events/%s" % event.backend_id
 
 def get_purchase_page_from_performance(request, performance):
+    warnings.warn("this is ad-hoc definition please fixme!")
+
     if performance.purchase_link:
         return performance.purchase_link
 
@@ -17,15 +22,19 @@ def get_purchase_page_from_performance(request, performance):
 
 
 def get_searchpage(request, kind=None, value=None):
+    warnings.warn("this is ad-hoc definition please fixme!")
     return request.route_path("page_search_by", kind=kind, value=value)
 
 def get_link_from_category(request, category):
+    warnings.warn("this is ad-hoc definition please fixme!")
     if category.pageset is None:
         return category.url
     else:
         return to_publish_page_from_pageset(request, category.pageset)
 
 def get_link_from_topic(request, topic):
+    warnings.warn("this is ad-hoc definition please fixme!")
+    return u"/mobile/detail"
     if topic.link:
         return topic.link
     elif topic.linked_page:
@@ -42,6 +51,7 @@ def unquote_path_segment(string):
     return string.replace("%2F", "/") #buggy!
 
 def to_publish_page_from_pageset(request, pageset):
+    warnings.warn("this is ad-hoc definition please fixme!")
     url = pageset.url
     if url.startswith("http://") or url.startswith("https://"):
         return url
@@ -49,6 +59,7 @@ def to_publish_page_from_pageset(request, pageset):
         return unquote_path_segment(request.route_path("front", page_name=url))
 
 def to_preview_page_from_pageset(request, pageset):
+    warnings.warn("this is ad-hoc definition please fixme!")
     url = pageset.url
     if url.startswith("http://") or url.startswith("https://"):
         return url
