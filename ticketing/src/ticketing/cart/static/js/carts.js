@@ -65,8 +65,15 @@ carts.AppView.prototype.init = function(presenter) {
             type: 'POST',
             success: function(data, textStatus, jqXHR) {
                 if (data.result == 'OK') {
-                    alert('OK');
-                    window.location.href = data.pyament_url;
+                    $('#reserved-confirm-button').click(function() {
+                        window.location.href = data.pyament_url;
+                    });
+                    $('#order-reserved').overlay({
+                        mask: {
+                            color: "#999",
+                            opacity: 0.5
+                        },
+                        load: true});
                 } else {
                     $('#order-error-template').overlay({
                         mask: {
