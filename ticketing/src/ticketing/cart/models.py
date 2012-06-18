@@ -171,6 +171,8 @@ class Cart(Base):
 
     performance = orm.relationship('Performance')
 
+    system_fee = sa.Column(sa.Numeric(precision=16, scale=2))
+
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, nullable=True, onupdate=datetime.now)
     deleted_at = sa.Column(sa.DateTime, nullable=True)
@@ -178,7 +180,7 @@ class Cart(Base):
 
     @property
     def total_amount(self):
-        return sum(cp.amount for cp in self.products)
+        return sum(cp.amount for cp in self.products) + self.system_fee
 
     @classmethod
     def get_or_create(cls, cart_session_id):

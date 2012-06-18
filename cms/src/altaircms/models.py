@@ -112,10 +112,11 @@ class Sale(BaseOriginalMixin, Base):
     query = DBSession.query_property()
 
     id = Column(Integer, primary_key=True)
+    backend_id = Column(Integer)
 
     event_id = Column(Integer, ForeignKey('event.id'))
     event  = relationship("Event", backref="sales")
-    performance_id = Column(Integer, ForeignKey('performance.id'))
+    performance_id = Column(Integer, ForeignKey('performance.id', ondelete='CASCADE'))
     performance  = relationship("Performance", backref=orm.backref("sales", cascade="all"))
 
     name = Column(Unicode(length=255))
@@ -141,8 +142,10 @@ class Ticket(BaseOriginalMixin, Base):
     query = DBSession.query_property()
 
     id = Column(Integer, primary_key=True)
+    backend_id = Column(Integer)
+
     orderno = Column(Integer, default=50)
-    sale_id = Column(Integer, ForeignKey("sale.id"))
+    sale_id = Column(Integer, ForeignKey("sale.id", ondelete='CASCADE'))
 
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now)

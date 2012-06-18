@@ -82,6 +82,7 @@ class DeliveryMethodData(DataSet):
 
 class PaymentDeliveryMethodPairData(DataSet):
     class payment_delivery_method_pair_1:
+        system_fee = 10
         transaction_fee = 10
         delivery_fee = 0
         discount    = 0
@@ -93,6 +94,7 @@ class PaymentDeliveryMethodPairData(DataSet):
         updated_at  = datetime.now()
         created_at  = datetime.now()
     class payment_delivery_method_pair_2:
+        system_fee = 10
         transaction_fee = 20
         delivery_fee = 10
         discount    = 1
@@ -104,6 +106,7 @@ class PaymentDeliveryMethodPairData(DataSet):
         updated_at  = datetime.now()
         created_at  = datetime.now()
     class payment_delivery_method_pair_3:
+        system_fee = 10
         transaction_fee = 20
         delivery_fee = 10
         discount    = 1
@@ -115,6 +118,7 @@ class PaymentDeliveryMethodPairData(DataSet):
         updated_at  = datetime.now()
         created_at  = datetime.now()
     class payment_delivery_method_pair_4:
+        system_fee = 10
         transaction_fee = 300
         delivery_fee = 400
         discount    = 100

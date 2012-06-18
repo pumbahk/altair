@@ -207,10 +207,36 @@ class PaymentView(object):
 
         cart = h.get_cart(self.request)
 
-        methods = c_models.PaymentMethod.query.all()
+        payment_methods = c_models.PaymentMethod.query.all()
+
         return dict(payments=[
             dict(url=h.get_payment_method_url(self.request, m.id), name=m.name)
-            for m in methods
+            for m in payment_methods
+        ])
+
+    @view_config(route_name='cart.payment', request_method="POST", renderer="carts/payment.html")
+    def post(self):
+        """ 支払い方法、引き取り方法選択
+        """
+
+        order = dict(
+            client_name=self.request.params['client_name'],
+            mail_address=self.request.params['mail_address'],
+        )
+        self.request.session['order'] = order
+
+        raise HTTPFound(self.request.route_url("payment.secure3d"))
+
+        if not h.has_cart(self.request):
+            return HTTPFound('/')
+
+        cart = h.get_cart(self.request)
+
+        payment_methods = c_models.PaymentMethod.query.all()
+
+        return dict(payments=[
+            dict(url=h.get_payment_method_url(self.request, m.id), name=m.name)
+            for m in payment_methods
         ])
 
 
@@ -221,6 +247,11 @@ class MultiCheckoutView(object):
     def __init__(self, request):
         self.request = request
 
+    @view_config(route_name='payment.secure3d', request_method="GET", renderer='carts/card_form.html')
+    def card_info_secure3d_form(self):
+        """ カード情報入力"""
+        return dict()
+
     @view_config(route_name='payment.secure3d', request_method="POST", renderer='carts/redirect_post.html')
     def card_info_secure3d(self):
         """ カード情報入力(3Dセキュア)
@@ -228,7 +259,8 @@ class MultiCheckoutView(object):
         form = schema.CardForm(formdata=self.request.params)
         if not form.validate():
             logger.debug("form error %s" % (form.errors,))
-            return
+            # TODO: 入力エラー表示
+            return dict()
         assert h.has_cart(self.request)
         cart = h.get_cart(self.request)
 
@@ -237,15 +269,15 @@ class MultiCheckoutView(object):
         card_number = form['card_number'].data
         exp_year = form['exp_year'].data
         exp_month = form['exp_month'].data
-        self.request.session['order'] = dict(
+        order = self.request.session['order']
+        order.update(
             order_no=order_id,
-            client_name=self.request.params['client_name'],
             card_holder_name=self.request.params['card_holder_name'],
             card_number=card_number,
             exp_year=exp_year,
             exp_month=exp_month,
-            mail_address=self.request.params['mail_address'],
         )
+        self.request.session['order'] = order
         enrol = multicheckout_api.secure3d_enrol(self.request, order_id, card_number, exp_year, exp_month, cart.total_amount)
         if enrol.is_enable_auth_api():
             return dict(form=m_h.secure3d_acs_form(self.request, self.request.route_url('cart.secure3d_result'), enrol))

@@ -139,7 +139,7 @@ class RakutenOpenID(object):
         request_token = identity['oauth_request_token']
 
         access_token = self.get_access_token(self.consumer_key, request_token, self.secret)
-        #logger.debug('access token : %s' % access_token)
+        logger.debug('access token : %s' % access_token)
 
         #user_info = self.get_rakutenid_basicinfo(self.consumer_key, access_token[0], access_token[1])
         #logger.debug('user_info : %s' % user_info)
