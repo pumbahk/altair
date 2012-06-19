@@ -24,6 +24,7 @@ def build_breadcrumbs(request, top, root):
 
 def category_to_breadcrumbs(request, category, url_from_category=url_from_category):
     cands = category.ancestors(include_self=True)
-    breadcrumbs = reversed([u'<a href="%s">%s</a>' % (url_from_category(request, c), CATEGORY_SYNONYM.get(c.name, c.label)) for c in cands])
+    breadcrumbs = reversed([u'<a href="%s">%s</a>' % (url_from_category(request, c), c.label) for c in cands])
+    # breadcrumbs = reversed([u'<a href="%s">%s</a>' % (url_from_category(request, c), CATEGORY_SYNONYM.get(c.name, c.label)) for c in cands])
     return breadcrumbs
 

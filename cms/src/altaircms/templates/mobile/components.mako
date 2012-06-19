@@ -21,6 +21,7 @@
 <%def name="search_form(request)">
   <form action="${request.route_path("mobile_search")}" class="searchbox"><font size="3">
 	&#xe691;チケット検索<br />
+    <input type="hidden" name="r" value="${request.params.get("r","")}"/>
 	<input class="text_field" type="text" name="q" value="" /><input type="submit" value="検索" />
   </font>
   </form>

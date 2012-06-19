@@ -1,15 +1,14 @@
 <%namespace file="./components.mako" name="co"/>
 <%inherit file="./outer.mako"/>
-
-## breadcrumbs
-${breadcrumbs}
-    <div style="background-image: url(&quot;/static/mobile/img/bg_bar.gif&quot;); background-color: rgb(191, 0, 0);" bgcolor="#bf0000" background="/static/mobile/img/bg_bar.gif"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>検索結果</font>
-</div></div>
-
 ##
 <div align="center">
-『${freeword}』を含む公演
+${breadcrumbs} 『${freeword}』を含む公演
 </div>
+
+## breadcrumbs
+    <div align="left" style="background-image: url(&quot;/static/mobile/img/bg_bar.gif&quot;); background-color: rgb(191, 0, 0);" bgcolor="#bf0000" background="/static/mobile/img/bg_bar.gif"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>検索結果</font>
+</div></div>
+
 <div>
 %for c, qs in classifieds:
   ${synonym.get(c.name,c.label)}(${qs.count()})
