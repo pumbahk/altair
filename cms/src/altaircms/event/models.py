@@ -26,7 +26,6 @@ class Event(BaseOriginalMixin, Base):
     title = sa.Column(sa.Unicode(255))
     subtitle = sa.Column(sa.Unicode(255), default=u"")
     description = sa.Column(sa.Unicode(255), default=u"")
-    place = sa.Column(sa.Unicode(255), default=u"")
     inquiry_for = sa.Column(sa.Unicode(255), default=u"")
     event_open = sa.Column(sa.DateTime)
     event_close = sa.Column(sa.DateTime)

@@ -61,6 +61,7 @@ class BuildSolrDocTest(unittest.TestCase):
 
         event = Event(title=u"this-is-event-title", 
                       description=u"this-is-event-description", 
+                      performers=u"abc, bbc, ddc", 
                       subtitle=u"~event is event~")
         perf0 = Performance(event=event, 
                             title=u"this-is-performance-title", 
@@ -80,12 +81,13 @@ class BuildSolrDocTest(unittest.TestCase):
         result = self._callFUT(page).doc
 
         self.assertEquals(result["event_description"], "this-is-event-description")
-        self.assertEquals(result["page_tag"], [u"this-is-page-tag-for-search"])
         self.assertEquals(result["event_title"], "this-is-event-title")
-        self.assertEquals(result["page_description"], "this-is-description-of-page")
-        self.assertEquals(result["performance_venue"], ["this-is-performance-venue"])
-        self.assertEquals(result["page_title"], "this-is-page-title")
         self.assertEquals(result["event_subtitle"], "~event is event~")
+        self.assertEquals(result["event_performer"], ["abc", "bbc", "ddc"])
+        self.assertEquals(result["page_title"], "this-is-page-title")
+        self.assertEquals(result["page_description"], "this-is-description-of-page")
+        self.assertEquals(result["page_tag"], [u"this-is-page-tag-for-search"])
+        self.assertEquals(result["performance_venue"], ["this-is-performance-venue"])
 
         self.assertTrue(result["page_id"])
         self.assertTrue(result["pageset_id"])
