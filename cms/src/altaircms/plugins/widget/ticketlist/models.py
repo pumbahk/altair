@@ -41,7 +41,7 @@ class TicketlistWidget(Widget):
             request = bsettings.extra["request"]
             event = bsettings.extra["event"]
 
-            sale = Sale.query.filter(Sale.kind==self.kind).filter(Sale.performance_id==self.target_performance_id).first()
+            sale = Sale.query.filter(Sale.kind==self.kind).filter(Sale.event_id==self.target_performance.event_id).first()
             tickets = sale.tickets if sale else []
             params = {"widget":self, "event": event, "sale":sale, "tickets": tickets}
             

@@ -873,7 +873,7 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         name = ProductItem.filter_by(product_id=self.id)\
                           .join(Stock).join(StockType)\
                           .filter(StockType.type==StockTypeEnum.Seat.v)\
-                          .with_entities(StockType.name).scalar()
+                          .with_entities(StockType.name).first()
         return name if name else ''
 
 class OrganizationTypeEnum(StandardEnum):
