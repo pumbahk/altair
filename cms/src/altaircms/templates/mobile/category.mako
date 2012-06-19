@@ -5,8 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <title>楽天・ジャパン・オープン・テニス・チャンピオンシップス2012 - 楽天チケット</title>
 </head>
-<body bgcolor="#ffffff">
-<font size="1">
+<body bgcolor="#ffffff"><font size="1">
   <div align="center">
       <font color="red">
       </font>
@@ -14,6 +13,7 @@
   <hr color="#bf0000" size="1" noshade="noshade">
   </div>
 <div>
+<a href="${request.route_path("mobile_index")}">トップ</a>
 <div style="background-image: url(&quot;/static/mobile/img/bg_bar.gif&quot;); background-color: rgb(191, 0, 0);" bgcolor="#bf0000" background="images/bg_bar.gif"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>${synonym}</font></div>
 <div align="center">
   ${" / ".join(u'<a href="%s">%s</a>' % (request.route_path("mobile_search",_query=dict(q=c.label, r=root.name)),c.label) for c in subcategories)|n}

@@ -37,9 +37,6 @@
         <th>販売期間</th><td>${event.deal_open} - ${event.deal_close}</td>
       </tr>
       <tr>
-        <th class="span2">開催場所</th><td>${event.place}</td>
-      </tr>
-      <tr>
         <th class="span2">出演者</th><td>${event.performers}</td>
       </tr>
       <tr>

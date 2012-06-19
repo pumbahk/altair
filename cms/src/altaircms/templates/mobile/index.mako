@@ -3,7 +3,7 @@
 <html lang="ja">
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <title>${page.title}</title>
+  <title>楽天・ジャパン・オープン・テニス・チャンピオンシップス2012 - 楽天チケット</title>
 </head>
 <body bgcolor="#ffffff"><font size="1">
   <div align="center">

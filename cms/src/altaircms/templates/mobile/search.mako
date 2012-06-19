@@ -1,10 +1,11 @@
 <%namespace file="./components.mako" name="co"/>
 
-<html lang="ja"><head>
+<html lang="ja">
+<head>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <title>チケット販売・イベントの予約 [音楽 / コンサート / 舞台 / スポーツ] - 楽天チケット</title>
+  <title>楽天・ジャパン・オープン・テニス・チャンピオンシップス2012 - 楽天チケット</title>
 </head>
-<body style="font-family: monospace; width: 240px; border: 2px solid black;" bgcolor="#ffffff"><font size="1">
+<body bgcolor="#ffffff"><font size="1">
   <div align="center">
       <font color="red">
         
@@ -15,14 +16,6 @@
 <div>
 
 ## breadcrumbs
-<%doc>
-<a href="${request.route_path("mobile_index")}">トップ</a>&gt;
-          <a href="http://ticket.rakuten.co.jp/mobile/s?cid=3">演劇・ミュージカル</a>
-    &gt;      オペラ
-    <div style="background-image: url(&quot;/static/mobile/img/bg_bar.gif&quot;); background-color: rgb(191, 0, 0);" bgcolor="#bf0000" background="/static/mobile/img/bg_bar.gif"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>検索結果</font>
-</div></div>
-</%doc>
-
 ${breadcrumbs}
     <div style="background-image: url(&quot;/static/mobile/img/bg_bar.gif&quot;); background-color: rgb(191, 0, 0);" bgcolor="#bf0000" background="/static/mobile/img/bg_bar.gif"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>検索結果</font>
 </div></div>
@@ -78,4 +71,7 @@ ${seq.pager()}
   </div>
 <div><font color="#888888">2010-2011 © TicketStar, Inc. All rights reserved.</font></div>
 </div>
-</font></body></html>
+</font></body>
+</html>
+
+
