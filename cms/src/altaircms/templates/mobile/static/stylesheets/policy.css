@@ -1,0 +1,29 @@
+/*---------------------------------------------------
+service kiyaku contents templete css: 2007.6.19
+----------------------------------------------------*/
+h3.policy_title{
+	margin:10px 0px 5px 0px;
+	font-size:12px;
+	text-align:left;
+	}
+ul.plicy_list{
+	margin:0px 0px 20px 0px;
+	font-size:12px;
+	}
+ul.plicy_list li{
+	margin:0px 0px 20px 30px;
+	list-style-type:decimal;
+	font-size:12px;
+	text-align:left;
+	line-height:160%;
+	}
+h4.policy_detail{
+	margin:10px 0px 5px 0px;
+	font-size:12px;
+	text-align:left;
+	}
+p.plicy_txt{
+	margin:0px 0px 20px 0px;
+	text-align:left;
+	line-height:160%;
+	}

@@ -1,0 +1,63 @@
+/*---------------------------------------------------
+service buy top contents templete css: 2007.11.30
+----------------------------------------------------*/
+table.shiharai_table{
+	width:100%;
+	margin-bottom:20px;
+	border:1px solid #999999;
+	border-collapse:collapse;
+	}
+table.shiharai_table th{
+	width:50%;
+	padding:8px;
+	border:1px solid #999999;
+	border-collapse:collapse;
+	background:#E9F3F6;
+	font-size:14px;
+	font-weight:normal;
+	}
+table.shiharai_table td{
+	width:50%;
+	padding:8px;
+	border:1px solid #999999;
+	border-collapse:collapse;
+	font-size:12px;
+	font-weight:normal;
+	text-align:left;
+	vertical-align:top;
+	line-height:160%;
+	}
+table.shiharai_table td strong.pay{
+	font-size:14px;
+	color:#881421;
+	}
+div.main_btn_wrapper_2{
+	margin:10px 0px 10px 0px;
+	}
+strong.seven{
+	font-size:12px;
+	}
+ul.cost li{
+	font-size:14px;
+	margin:0px 0px 5px 20px;
+	}
+ul.cost li strong{
+	color:#881421;
+	}
+span.caution{
+	color:#881421;
+	}
+table#page_flow{
+	width:100%;
+	}
+div.buy_flow{
+	margin:10px 0px 20px 0px;
+	}
+div.buy_red_frame{
+	border:solid 2px #ff0000;
+	color:#ff0000;
+	}
+table#lot{
+	width:100%;
+	margin:20px 0px 20px 0px;
+	}

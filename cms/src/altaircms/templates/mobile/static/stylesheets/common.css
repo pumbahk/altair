@@ -1,0 +1,420 @@
+/*---------------------------------------------------
+gettii base templete css: 2007.6.19
+----------------------------------------------------*/
+
+*{
+	margin:0px;
+	padding:0px;
+	}
+body{
+	margin:0px;
+	padding:0px 0px 0px 0px;
+	line-height:100%;
+	text-align:center;
+	font-size:12px;
+	color:#333333;
+	font-family: "Tahoma","MS UI Gothic", "ＭＳ ゴシック","平成角ゴシック",osaka,serif;
+	background-color:#ffffff;
+	}
+a:link{
+	margin:0px;
+	padding:0px;
+	color:#0066CC;
+	text-decoration:underline;
+	}
+a:visited{
+	margin:0px;
+	padding:0px;
+	color:#0066CC;
+	text-decoration:underline;
+	}
+a:hover{
+	margin:0px;
+	padding:0px;
+	color:#3388EE;
+	text-decoration:underline;
+	}
+br.float_clear{
+	clear:both;
+	}
+
+/*---------------------------------------------------
+gettii header css: 2007.6.19
+----------------------------------------------------*/
+div#all_wrapper{
+	width:720px;
+	margin-left:auto;
+	margin-right:auto;
+	text-align:center;
+	padding:0px 0px 10px 0px;
+	}
+div#header_wrapper{
+	width:720px;
+	background:#FFFFFF;
+	}
+div#header_left02{
+	width:500px;
+	text-align:left;
+	float:left;
+	}
+div#header_right_wapper02{
+	width:70px;
+	float:right;
+	}	
+div#header_wrapper_2{
+	width:720px;
+	background:#FF8A00;
+	color:#ffffff;
+	}
+/*---------------------------------------------------
+gettii header detail css: 2007.6.19
+----------------------------------------------------*/
+h1{
+	display:block;
+	text-align:left;
+	padding:15px 0px 15px 0px;
+	font-size:18px;
+	color:#333333;
+	}
+div#header_left02 .logo{
+ margin:0px 5px 0px 0px;
+	padding:0px;
+	width:160px;
+	height:45px;
+	float:left;
+	}	
+h1 span#rogo{
+	color:#F85C10;
+	}
+div#bar_wrapper{
+	height:25px;
+	background:url('../images/bar_bg.gif') repeat-x;
+	}
+div#bar_margin{
+	padding:5px 0px 0px 0px;
+	}
+div#bar_margin a:link{
+	margin:0px;
+	padding:0px;
+	color:#FFFFFF;
+	text-decoration:underline;
+	}
+div#bar_margin a:visited{
+	margin:0px;
+	padding:0px;
+	color:#FFFFFF;
+	text-decoration:underline;
+	}
+div#bar_margin a:hover{
+	margin:0px;
+	padding:0px;
+	color:#f38f07;
+	text-decoration:underline;
+	 }
+
+/*---------------------------------------------------
+gettii base contents templete css: 2007.6.19
+----------------------------------------------------*/
+div.contents_wrapper{
+	margin-top:10px;
+	margin-bottom:10px;
+	margin-left:auto;
+	margin-right:auto;
+	width:630px;
+	}
+/*---------------------------------------------------
+gettii base contents templete css: 2007.6.19
+----------------------------------------------------*/
+h2.main_menu{
+	display:block;
+	background:#EEEEEE;
+	color:#336699;
+	text-align:left;
+	padding:10px;
+	font-size:16px;
+	}
+table#arrow{
+	margin:20px 0px 20px 0px;
+	margin-left:auto;
+	margin-right:auto;
+	border-collapse:collapse;
+	}
+table#arrow td#active{
+	font-size:12px;
+	color:#ffffff;
+	padding:13px 10px 12px 3px;
+	background:url('../images/flow_bg_02.gif') no-repeat right;
+	background-color:#FF6D25;
+	}
+table#arrow td{
+	font-size:12px;
+	color:#ffffff;
+	padding:13px 10px 12px 3px;
+	
+	background:url('../images/flow_bg_01.gif') no-repeat right;
+	background-color:#CCCCCC;
+	}
+p.example{
+	margin:0px 0px 10px 0px;
+	font-size:12px;
+	line-height:160%;
+	text-align:left;
+	}
+p.caution{
+	margin:0px 0px 10px 0px;
+	font-size:12px;
+	color:#CC0000;
+	line-height:160%;
+	text-align:left;
+	}
+h2.title{
+	margin:0px 0px 5px 0px;
+	padding:10px 0px 10px 10px;
+	text-align:left;
+	font-size:16px;
+	color:#666666;
+	background:url('../images/title_bg.gif') no-repeat;
+	}
+
+/*---------------------------------------------------
+gettii base btn templete css: 2007.6.19
+----------------------------------------------------*/
+table.contents_table{
+	margin:5px 0px 15px 0px;
+	width:630px;
+	line-height: 1.5;
+	}
+table.contents_table td.point{
+	width:10px;
+	vertical-align:top;
+	}
+table.contents_table td.pict{
+	width:240px;
+	padding:5px;
+	}
+a.common_btn{
+	margin-left:auto;
+	margin-right:auto;
+	padding:0px;
+	width:290px;
+	height:35px;
+	display:block;
+	color:#ffffff;
+	font-size:14px;
+	text-decoration:none;
+	vertical-align:middle;
+	background:url('../images/top_btn.gif');
+	}
+a.common_btn:visited{
+	margin-left:auto;
+	margin-right:auto;
+	padding:0px;
+	width:290px;
+	height:35px;
+	display:block;
+	color:#ffffff;
+	font-size:14px;
+	text-decoration:none;
+	vertical-align:middle;
+	background:url('../images/top_btn.gif');
+	}
+a.common_btn:hover{
+	margin-left:auto;
+	margin-right:auto;
+	padding:0px;
+	width:290px;
+	height:35px;
+	display:block;
+	color:#ffffff;
+	font-size:14px;
+	text-decoration:underline;
+	vertical-align:middle;
+	background:url('../images/top_btn.gif') left bottom;
+	}
+a.common_btn span{
+	display:block;
+	margin:0px;
+	padding-top:9px;
+	padding-bottom:3px;
+	font-weight:bold;
+	text-align:center;
+	}
+table.contents_table{
+	width:630px;
+	}
+table.contents_table th.buy_header{
+	padding:8px;
+	background:#F0F0F0;
+	text-align:left;
+	font-size:14px;
+	}
+table.contents_table td{
+	text-align:left;
+	vertical-align:top;
+	font-size:14px;
+	line-height:160%;
+	}
+table.contents_table td.aurt_image{
+	padding:10px;
+	text-align:center;
+	vertical-align:top;
+	font-size:14px;
+	line-height:160%;
+	}
+hr#buy_hr{
+	margin:10px 0px 10px 0px;
+	size:1px;
+	color:#CCCCCC;
+	}
+ul.info_top{
+	margin:0px 0px 0px 20px;
+	}
+div.main_btn_wrapper{
+	margin:0px 0px 10px 0px;
+	}
+	
+/*---------------------------------------------------
+gettii base btn templete css: 2007.6.19
+----------------------------------------------------*/
+a.buy_btn{
+	margin-left:auto;
+	margin-right:auto;
+	width:176px;
+	height:35px;
+	display:block;
+	color:#ffffff;
+	font-size:14px;
+	text-decoration:none;
+	vertical-align:middle;
+	background:url('../images/page_btn.gif');
+	}
+a.buy_btn:visited{
+	margin-left:auto;
+	margin-right:auto;
+	width:176px;
+	height:35px;
+	display:block;
+	color:#ffffff;
+	font-size:14px;
+	text-decoration:none;
+	vertical-align:middle;
+	background:url('../images/page_btn.gif');
+	}
+a.buy_btn:hover{
+	margin-left:auto;
+	margin-right:auto;
+	width:176px;
+	height:35px;
+	display:block;
+	color:#ffffff;
+	font-size:14px;
+	text-decoration:underline;
+	vertical-align:middle;
+	background:url('../images/page_btn.gif') left bottom;
+	}
+a.buy_btn_2{
+	margin-left:auto;
+	margin-right:auto;
+	width:176px;
+	height:35px;
+	display:block;
+	color:#ffffff;
+	font-size:14px;
+	text-decoration:none;
+	vertical-align:middle;
+	background:url('../images/page_btn_2.gif');
+	}
+a.buy_btn_2:visited{
+	margin-left:auto;
+	margin-right:auto;
+	width:176px;
+	height:35px;
+	display:block;
+	color:#ffffff;
+	font-size:14px;
+	text-decoration:none;
+	vertical-align:middle;
+	background:url('../images/page_btn_2.gif');
+	}
+a.buy_btn_2:hover{
+	margin-left:auto;
+	margin-right:auto;
+	width:176px;
+	height:35px;
+	display:block;
+	color:#ffffff;
+	font-size:14px;
+	text-decoration:underline;
+	vertical-align:middle;
+	background:url('../images/page_btn_2.gif') left bottom;
+	}
+a.buy_btn span{
+	display:block;
+	padding-top:9px;
+	padding-bottom:6px;
+	font-weight:bold;
+	text-align:center;
+	}
+a.buy_btn_2 span{
+	display:block;
+	padding-top:9px;
+	padding-bottom:6px;
+	font-weight:bold;
+	text-align:center;
+	}
+
+/*---------------------------------------------------
+gettii base footer templete css: 2007.6.19
+----------------------------------------------------*/
+table#footer_table{
+	margin:0px;
+	padding:0px;
+	width:720px;
+	border-top:2px solid #CCCCCC;
+	　　　　　　
+	border-collapse:collapse;
+	background:#FFFFFF;
+	}
+/*---------------------------------------追加分ここから--*/
+table#footer_table p{
+	margin:5px 0px 10px 0px;
+	font-size:92%;
+	color:#333333;
+	}
+/*---------------------------------------追加分ここまで--*/
+table#footer_table td#blank_sell{
+	width:124px;
+	border-collapse:collapse;
+	}
+table#footer_table td#copyright{
+	text-align:center;
+	vertical-align:middle;	
+	border-collapse:collapse;
+	}
+/*---------------------------------------追加分ここから--*/
+table#footer_table td#copyright	a:link{
+	margin:0px;
+	padding:0px;
+	color:#333333;
+	text-decoration:underline;
+	}
+table#footer_table td#copyright a:visited{
+	margin:0px;
+	padding:0px;
+	color:#333333;
+	text-decoration:underline;
+	}
+table#footer_table td#copyright a:hover{
+	margin:0px;
+	padding:0px;
+	color:#333333;
+	text-decoration:underline;
+	}
+/*---------------------------------------追加分ここまで--*/
+table#footer_table td#powered{
+	width:124px;
+	border-collapse:collapse;
+	}
+table#footer_table td#powered a img{
+	border:none;
+	}

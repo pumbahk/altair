@@ -1,0 +1,50 @@
+/*---------------------------------------------------
+service move contents templete css: 2007.6.19
+----------------------------------------------------*/
+div#move_caution{
+	margin:10px 5px 20px 5px;
+	font-size:14px;
+	text-align:left;
+	line-height:160%;
+	}
+table#rule_table{
+	width:100%;
+	margin:20px 0px 20px 0px;
+	border:1px solid #999999;
+	border-collapse:collapse;
+	}
+table#rule_table th{
+	width:20%;
+	padding:8px;
+	border:1px solid #999999;
+	border-collapse:collapse;
+	background:#EEEEEE;
+	font-size:12px;
+	font-weight:bold;
+	}
+table#rule_table td{
+	width:50%;
+	padding:8px;
+	border:1px solid #999999;
+	border-collapse:collapse;
+	font-size:12px;
+	font-weight:normal;
+	text-align:left;
+	vertical-align:top;
+	line-height:160%;
+	}
+table#owner{
+	border:none;
+	}
+table#owner th,table#owner td{
+	padding:2px;
+	border:none;
+	font-size:12px;
+	font-weight:normal;
+	background:#ffffff;
+	}
+ul#place{
+	}
+ul#place li{
+	margin:0px 0px 10px 20px;
+	}
