@@ -9,7 +9,9 @@ def doc_from_tags(doc, tags):
 
 def doc_from_performances(doc, performances):
     vs = [p.venue for p in performances]
-    doc.update(performance_venue=vs)
+    import warnings
+    warnings.warn("need update solr environment, but not a good opotunity, now, so disable it.")
+    # doc.update(performance_venue=vs)
     return doc
 
 def doc_from_event(doc, event): ## fixme
