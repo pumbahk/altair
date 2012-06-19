@@ -27,7 +27,6 @@ class Stocks(BaseView):
         if f.validate():
             for stock_form in f.stock_forms:
                 stock = merge_session_with_post(Stock(), stock_form.form.data)
-                stock.quantity_only = True
                 stock.save()
 
             self.request.session.flash(u'席数を保存しました')

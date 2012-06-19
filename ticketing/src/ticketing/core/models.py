@@ -691,12 +691,10 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
     type = Column(Integer)  # @see StockTypeEnum
-
     event_id = Column(Identifier, ForeignKey("Event.id"))
-
-    stocks = relationship('Stock', backref='stock_type')
-
+    quantity_only = Column(Boolean, default=False)
     style = Column(MutationDict.as_mutable(JSONEncodedDict(1024)))
+    stocks = relationship('Stock', backref='stock_type')
 
     @property
     def is_seat(self):
@@ -731,7 +729,6 @@ class StockAllocation(Base, BaseModel):
     stock_type = relationship('StockType', uselist=False, backref='stock_allocations')
     performance = relationship('Performance', uselist=False, backref='stock_allocations')
     quantity = Column(Integer, nullable=False)
-    quantity_only = Column(Boolean, default=False)
 
     def save(self):
         stock_allocation = DBSession.query(StockAllocation)\
@@ -776,7 +773,6 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "Stock"
     id = Column(Identifier, primary_key=True)
     quantity = Column(Integer)
-    quantity_only = Column(Boolean, default=False)
     performance_id = Column(Identifier, ForeignKey('Performance.id'))
     stock_holder_id = Column(Identifier, ForeignKey('StockHolder.id'))
     stock_type_id = Column(Identifier, ForeignKey('StockType.id'))
