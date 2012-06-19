@@ -56,9 +56,13 @@
 									<td class="settlementPayRadio"><input type="radio" name="radio" id="radio2" value="${m.id}" /></td>
 									<td><dl>
 										<dt>${m.payment_method.name}</dt>
-										<dd>${h.format_currency(m.transaction_fee)}</dd>
+										<dd>${h.format_currency(m.transaction_fee)}
+                                            (${h.fee_type(m.payment_method.fee_type)})
+                                        </dd>
 										<dt>${m.delivery_method.name}</dt>
-										<dd>${h.format_currency(m.delivery_fee)}</dd>
+										<dd>${h.format_currency(m.delivery_fee)}
+                                            (${h.fee_type(m.delivery_method.fee_type)})
+                                        </dd>
 									</dl></td>
 								</tr>
 							</table>

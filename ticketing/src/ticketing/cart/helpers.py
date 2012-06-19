@@ -12,7 +12,13 @@ from ..users.models import User, UserCredential, MemberShip
 from pyramid.view import render_view_to_response
 from markupsafe import Markup
 from zope.interface import implementer
+from ..core.models import FeeTypeEnum
 
+def fee_type(type_enum):
+    if type_enum == int(FeeTypeEnum.Once.v[0]):
+        return u"1回ごと"
+    if type_enum == int(FeeTypeEnum.PerUnit.v[0]):
+        return u"1枚ごと"
 
 def format_number(num, thousands=","):
     return _format_number(int(num), thousands)
