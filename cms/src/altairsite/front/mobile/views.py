@@ -5,6 +5,7 @@ from altaircms.page.models import PageSet
 from altaircms.topic.models import Topic, Topcontent
 from datetime import datetime
 from . import helpers as h
+from . import api
 from altaircms import helpers as gh
 from altairsite.search import api as search_api
 
@@ -41,7 +42,7 @@ def mobile_category(request):
     picks = Topcontent.matched_qs(d=today, kind=u"注目のイベント", page=root.pageset)
 
     topics = Topic.matched_qs(d=today, kind=u"トピックス", page=root.pageset).filter_by(is_global=False)
-    events_on_sale = h.events_on_sale_this_week(request, category, today)
+    events_on_sale = api.events_on_sale_this_week(request, category, today)
     return {"synonym": h.CATEGORY_SYNONYM.get(category), 
             "picks": picks, 
             "events_on_sale": events_on_sale, 
@@ -70,7 +71,7 @@ def search_by_freeword(context, request):
 
     breadcrumbs = [u'<a href="%s">トップ</a>' % request.route_path("mobile_index")]
     if root:
-        breadcrumbs = breadcrumbs + list(h.category_to_breadcrumbs(request, root, freeword))
+        breadcrumbs = breadcrumbs + list(api.category_to_breadcrumbs(request, root, freeword))
     breadcrumbs = gh.base.RawText(u"&gt;".join(breadcrumbs))
 
     return {"pagesets": qs, "classifieds": classifieds, "synonym": h.CATEGORY_SYNONYM, 
