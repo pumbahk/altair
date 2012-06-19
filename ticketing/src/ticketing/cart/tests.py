@@ -3,6 +3,7 @@
 import unittest
 from pyramid import testing
 from .testing import DummyRequest, DummySecure3D
+import mock
 
 def _setup_db():
     import sqlahelper
@@ -293,6 +294,47 @@ class TicketingCartResourceTests(unittest.TestCase):
         stock_status = models.StockStatus(stock=stock, quantity=quantity)
         models.DBSession.add(stock_status)
         return product_item
+
+    def _add_event(self, event_id):
+        from ..core import models
+        event = models.Event(id=event_id)
+        self.session.add(event)
+
+    def _add_sales_segement(self, event_id, start_at, end_at):
+        from ..core import models
+        sales_segment = models.SalesSegment(
+            event_id=event_id,
+            start_at=start_at,
+            end_at=end_at,
+        )
+        self.session.add(sales_segment)
+        return sales_segment
+
+    def test_event_id(self):
+        request = DummyRequest(matchdict={"event_id": "this-is-event"})
+        target = self._makeOne(request)
+
+        result = target.event_id
+
+        self.assertEqual(result, "this-is-event")
+
+    @mock.patch("ticketing.cart.resources.datetime")
+    def test_get_sales_segment(self, mock_datetime):
+        from datetime import datetime
+        mock_datetime.now.return_value = datetime(2012, 6, 20)
+
+        event_id = "99"
+        ss1 = self._add_sales_segement(event_id=event_id, start_at=datetime(2012, 6, 1), end_at=datetime(2012, 6, 30))
+        ss2 = self._add_sales_segement(event_id=event_id, start_at=datetime(2012, 6, 21), end_at=datetime(2012, 6, 30))
+        ss3 = self._add_sales_segement(event_id=event_id, start_at=datetime(2012, 6, 1), end_at=datetime(2012, 6, 19))
+        self.session.flush()
+
+        request = DummyRequest(matchdict={'event_id': event_id})
+        target = self._makeOne(request)
+        result = target.get_sales_segument()
+
+        self.assertIsNotNone(result)
+        self.assertEqual(result.id, ss1.id)
 
     # TODO: ダミーからモデルクラスに変更
 #    def test_convert_order_product_items(self):
