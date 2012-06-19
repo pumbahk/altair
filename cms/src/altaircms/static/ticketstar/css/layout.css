@@ -400,7 +400,8 @@ dl#topicPath dd {
 #detail #side {
 	position: static;
 	float: right;
-	width: 240px;
+	width: 226px;
+        margin-right: 14px;
 }
 
 #sideName {
