@@ -22,18 +22,20 @@ def doc_from_event(doc, event): ## fixme
 def _doc_from_page(doc, page):
     doc.update(page_description=page.description, 
                page_title=page.title, 
-               id=page.pageset.id, 
-               pageset_id=page.pageset.id, 
                page_id=page.id)
+    if page.pageset:
+        doc.update(id=page.pageset.id, 
+                   pageset_id=page.pageset.id)
     return doc
     
 def doc_from_page(page):
     """ id == page.pageset.id 
     """
     doc = solr.SolrSearchDoc()
-    if page.event:
-        doc = doc_from_event(doc, page.event)
-        doc = doc_from_performances(doc, page.event.performances)
+    event = page.event or (page.pageset.event if page.pageset else None) #for safe
+    if event:
+        doc = doc_from_event(doc, event)
+        doc = doc_from_performances(doc, event.performances)
 
     tags = page.public_tags
     if tags:
