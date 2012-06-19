@@ -179,7 +179,7 @@ class ReserveView(object):
                                              price=int(p.product.price),
                                         ) 
                                         for p in cart.products],
-                              total_amount=h.format_number(cart.total_amount),
+                              total_amount=h.format_number(cart.tickets_amount),
                     ))
 
     def on_error(self):

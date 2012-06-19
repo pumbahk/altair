@@ -546,7 +546,7 @@ class ReserveViewTests(unittest.TestCase):
         self.assertEqual(result, {'cart': {'products': [{'name': u'S席', 
                                                          'price': 100, 
                                                          'quantity': 2}],
-                                           'total_amount': '515'},
+                                           'total_amount': '200'},
                                   'result': 'OK', 
                                   'pyament_url': 'http://example.com/payment'} )
         cart_id = request.session['ticketing.cart_id']
