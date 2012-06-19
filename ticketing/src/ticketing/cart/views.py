@@ -21,6 +21,7 @@ class IndexView(object):
     """ 座席選択画面 """
     def __init__(self, request):
         self.request = request
+        self.context = request.context
 
     
     @view_config(route_name='cart.index', renderer='carts/index.html', xhr=False, permission="view")
@@ -65,11 +66,15 @@ class IndexView(object):
             first_start_on=str(e.first_start_on), final_start_on=str(e.final_start_on),
             sales_start_on=str(e.sales_start_on), sales_end_on=str(e.sales_end_on), venues=venues, product=e.products, )
 
+        sales_segment = self.context.get_sales_segument()
+
         return dict(event=event,
                     dates=dates,
                     selected=Markup(json.dumps([selected_performance.id, selected_date])),
                     venues_selection=Markup(json.dumps(select_venues)),
-                    order_url=self.request.route_url("cart.order"))
+                    order_url=self.request.route_url("cart.order"),
+                    upper_limit=sales_segment.upper_limit,
+        )
 
     @view_config(route_name='cart.seat_types', renderer="json")
     def get_seat_types(self):
