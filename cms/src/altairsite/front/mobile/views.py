@@ -6,16 +6,13 @@ from altaircms.topic.models import Topic, Topcontent
 from datetime import datetime
 from . import helpers as h
 from . import api
-from altaircms import helpers as gh
 from altairsite.search import api as search_api
 
 
 @view_config(route_name="mobile_index", renderer="altaircms:templates/mobile/index.mako")
 def mobile_index(request):
-    import warnings
-    warnings.warn("this is adhoc code. so need fix.")
     today = datetime.now()
-    pageset = PageSet.query.filter_by(id=1).first()
+    pageset = PageSet.query.filter(Category.name=="index").filter(PageSet.id==Category.pageset_id).first()
 
     topics = Topic.matched_qs(d=today, kind=u"トピックス", page=pageset)
     picks = Topcontent.matched_qs(d=today, kind=u"注目のイベント", page=pageset)
@@ -56,23 +53,19 @@ def mobile_category(request):
 def search_by_freeword(context, request):
     """ フリーワード検索 + categoryごとの数
     """
+    freeword = request.params["q"]
     root_category = request.params.get("r")
     root = Category.query.filter_by(name=root_category).first() if root_category else None
-    if root is None:
-        ## this is adhoc code. ugly.
-        children = Category.query.filter_by(parent=None, hierarchy=u"大").filter(Category.name!="index")
-    else:
-        children = Category.query.filter_by(parent=root)
 
-    freeword = request.params["q"]
+    children = h.get_children_category_from_root(root)
+
     qs = search_api.search_by_freeword(request, freeword)
-    qs = qs.filter(PageSet.event != None)
+    qs = h.pageset_query_filter_by_root(qs, root)
+
     classifieds = [(c, qs.filter(PageSet.category==c)) for c in children]
 
-    breadcrumbs = [u'<a href="%s">トップ</a>' % request.route_path("mobile_index")]
-    if root:
-        breadcrumbs = breadcrumbs + list(api.category_to_breadcrumbs(request, root, freeword))
-    breadcrumbs = gh.base.RawText(u"&gt;".join(breadcrumbs))
+    top = u'<a href="%s">トップ</a>' % request.route_path("mobile_index")
+    breadcrumbs = api.build_breadcrumbs(request, top, root)
 
     return {"pagesets": qs, "classifieds": classifieds, "synonym": h.CATEGORY_SYNONYM, 
             "breadcrumbs": breadcrumbs, "freeword":freeword}
