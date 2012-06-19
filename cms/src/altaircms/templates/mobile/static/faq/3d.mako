@@ -79,9 +79,9 @@
 					</tr>
 				</table>
 				
-				<div style="background-image:url(${_s('/static/images/btn.gif')});background-repeat: no-repeat;width:250px;height:40px;margin:10px; text-align:center;vertical-align:middle;color:#534842;padding-top:10px;">
+				<div style="background-image:url('/static/mobile/img/btn.gif');background-repeat: no-repeat;width:250px;height:40px;margin:10px; text-align:center;vertical-align:middle;color:#534842;padding-top:10px;">
 					<a href="faq.html" style="color:#534842;display:block;vertical-align:middle;">前のページに戻る</a>
 				</div>
-				
+
 			</div>
 <br />

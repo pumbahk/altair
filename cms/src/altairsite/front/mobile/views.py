@@ -76,13 +76,17 @@ def search_by_freeword(context, request):
     return {"pagesets": qs, "classifieds": classifieds, "synonym": h.CATEGORY_SYNONYM, 
             "breadcrumbs": breadcrumbs, "freeword":freeword}
 
-from pyramid.renderers import render
-@view_config(request_param="filename", route_name="mobile_semi_static")
+from pyramid.renderers import render_to_response
+import os.path
+
+@view_config(route_name="mobile_semi_static")
 def semi_static(request):
     ## normalize
     filename = request.matchdict["filename"]
-    template_path = u"altaircms:templates/mobile/static" + filename.lstrip()
-    if not template_path.endswith(".html"):
-        template_path = template_path + ".html"
+    template_path = os.path.join("altaircms:templates/mobile/static/", filename)
+    if not template_path.endswith(".mako"):
+        template_path = os.path.splitext(template_path)[0]+".mako"
 
-    return render(template_path, {}, request)
+    return render_to_response(template_path, {}, request)
+
+

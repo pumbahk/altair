@@ -53,4 +53,9 @@ def to_preview_page_from_pageset(request, pageset):
     if url.startswith("http://") or url.startswith("https://"):
         return url
     else:
-        return unquote_path_segment(request.route_path("front_preview_pageset", pageset_id=pageset.id))
+        return unquote_path_segment(
+            request.route_path("front_preview_pageset", pageset_id=pageset.id))
+
+def static_page(request, filename):
+    return unquote_path_segment(
+        request.route_path("mobile_semi_static",filename=filename))

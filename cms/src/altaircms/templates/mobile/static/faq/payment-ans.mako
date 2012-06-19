@@ -32,7 +32,7 @@
 						<td >A.</td>
 						<td >
 							カード決済では、楽天KC、VISA、MASTER、JCBの各カードがご利用頂けます。<br />
-							<img src="../images/kc_logo_rakuten.gif" alt="楽天KC" />&nbsp;&nbsp;<img src="../images/visa.gif" alt="VISA" />&nbsp;&nbsp;<img src="../images/master.gif" alt="Master" />&nbsp;&nbsp;<img src="../images/jcb.gif" alt="JCB" />
+							<img src="/static/mobile/img/kc_logo_rakuten.gif" alt="楽天KC" />&nbsp;&nbsp;<img src="/static/mobile/img/visa.gif" alt="VISA" />&nbsp;&nbsp;<img src="/static/mobile/img/master.gif" alt="Master" />&nbsp;&nbsp;<img src="/static/mobile/img/jcb.gif" alt="JCB" />
 						</td>
 					</tr>
 				</table>
