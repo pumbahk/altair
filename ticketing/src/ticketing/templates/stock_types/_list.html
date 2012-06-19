@@ -48,7 +48,9 @@
               ${h.seat_style(stock_type.style)}
               ${stock_type.name}
             </a>
-            <span class="label label-info">${u'数受け' if stock_type.quantity_only else ''}</span>
+            % if stock_type.quantity_only:
+            <span class="label label-info">数受け</span>
+            % endif
           </td>
           <td style="width: 60px">
             ${quantity}
@@ -96,7 +98,9 @@
               ${h.seat_style(stock_type.style)}
               ${stock_type.name}
             </a>
-            <span class="label label-info">${u'数受け' if stock_type.quantity_only else ''}</span>
+            % if stock_type.quantity_only:
+            <span class="label label-info">数受け</span>
+            % endif
           </td>
           <td style="width: 60px">
             ${quantity}
