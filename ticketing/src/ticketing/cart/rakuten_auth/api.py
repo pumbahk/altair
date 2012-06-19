@@ -142,8 +142,9 @@ class RakutenOpenID(object):
         access_token = self.get_access_token(self.consumer_key, request_token, self.secret)
         logger.debug('access token : %s' % access_token)
 
-        #user_info = self.get_rakutenid_basicinfo(self.consumer_key, access_token[0], access_token[1])
-        #logger.debug('user_info : %s' % user_info)
+        user_info = self.get_rakutenid_basicinfo(self.consumer_key, 
+                                                 access_token["oauth_token"], access_token['oauth_token_secret'])
+        logger.debug('user_info : %s' % user_info)
 
         if is_valid == "true":
             logger.debug("authentication OK")
@@ -159,7 +160,7 @@ class RakutenOpenID(object):
         oauth_nonce = uuid.uuid4().hex
         oauth_signature_method = 'HMAC-SHA1'
         oauth_version = '1.0'
-        oauth_signature = create_oauth_sigunature(method, url, oauth_consumer_key, secret, 
+        oauth_signature = create_oauth_sigunature(method, url, oauth_consumer_key, secret + "&", 
             oauth_token, oauth_signature_method, oauth_timestamp, oauth_nonce, oauth_version, [])
 
         params = [
@@ -175,13 +176,13 @@ class RakutenOpenID(object):
         request_url = url + '?' + urllib.urlencode(params)
         logger.debug("get access token: %s" % request_url)
         f = urllib2.urlopen(request_url)
-        access_token = f.read()
+        response_body = f.read()
         f.close()
-        logger.debug('raw access token : %s' % access_token)
-        #access_token = parse_access_token_response(response_body)
+        logger.debug('raw access token : %s' % response_body)
+        access_token = parse_access_token_response(response_body)
         return access_token
 
-    def get_rakutenid_basicinfo(self, access_token, secret):
+    def get_rakutenid_basicinfo(self, oauth_consumer_key, access_token, secret):
         method = "GET"
         url = "https://api.id.rakuten.co.jp/openid/oauth/call"
         oauth_token = access_token
@@ -190,8 +191,9 @@ class RakutenOpenID(object):
         oauth_nonce = uuid.uuid4().hex
         oauth_signature_method = 'HMAC-SHA1'
         oauth_version = '1.0'
-        oauth_signature = create_oauth_sigunature(method, url, oauth_consumer_key, secret, 
-            oauth_token, oauth_signature_method, oauth_timestamp, oauth_nonce, oauth_version, [])
+        oauth_signature = create_oauth_sigunature(method, url, oauth_consumer_key, secret + "&", 
+            oauth_token, oauth_signature_method, oauth_timestamp, oauth_nonce, oauth_version, 
+            [("rakuten_oauth_api", rakuten_oauth_api)])
 
         params = [
             ("oauth_consumer_key", oauth_consumer_key),
@@ -206,14 +208,18 @@ class RakutenOpenID(object):
 
         request_url = url + '?' + urllib.urlencode(params)
         logger.debug("get user_info: %s" % request_url)
-        f = urllib2.urlopen(request_url)
-        response_body = f.read()
-        f.close()
-
-        return response_body
+        try:
+            f = urllib2.urlopen(request_url)
+            response_body = f.read()
+            f.close()
+            return response_body
+        except urllib2.HTTPError as e:
+            logger.debug(e.read())
+            logger.exception(e)
 
 def parse_access_token_response(response):
-    return dict([line.split(":", 1) for line in response.split("\n")])
+    return dict([(key, value[0]) for key, value in urlparse.parse_qs(response).items()])
+    #return dict([line.split(":", 1) for line in response.split("\n")])
 
 def create_signature_base(method, url, oauth_consumer_key, secret, oauth_token, oauth_signature_method, oauth_timestamp, oauth_nonce, oauth_version, form_params):
     params = sorted(form_params + [
@@ -232,5 +238,5 @@ def create_signature_base(method, url, oauth_consumer_key, secret, oauth_token, 
 def create_oauth_sigunature(method, url, oauth_consumer_key, secret, oauth_token, oauth_signature_method, oauth_timestamp, oauth_nonce, oauth_version, form_params):
     msg = create_signature_base(method, url, oauth_consumer_key, secret, oauth_token, oauth_signature_method, oauth_timestamp, oauth_nonce, oauth_version, form_params)
     logger.debug("secret: %s" % secret)
-    oauth_signature = hmac.new("%s&"%secret, msg, hashlib.sha1).digest().encode('base64')
+    oauth_signature = hmac.new(secret, msg, hashlib.sha1).digest().encode('base64')
     return oauth_signature.strip()
