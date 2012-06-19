@@ -1,6 +1,6 @@
 <%namespace file="./components.mako" name="co"/>
+<%inherit file="./footer.mako"/>
 
-<html lang="ja">
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <title>チケット販売・イベントの予約 [音楽 / コンサート / 舞台 / スポーツ] - 楽天チケット</title>
@@ -10,7 +10,7 @@
       <font color="red">
       </font>
   <a href="${request.route_path("mobile_index")}"><font color="#bf0000" size="3"><img src="/static/mobile/img/logo-small.gif" alt="楽天チケット" width="160" height="26"></font></a>
-  <hr color="#bf0000" size="1" noshade="noshade">
+  <hr color="#bf0000" size="2" noshade="noshade">
   </div>
 <div>
 <a href="${request.route_path("mobile_index")}">トップ</a>
@@ -59,13 +59,3 @@
    ${co.search_form(request)}
 </div>
 
- 
-<hr color="#888888" size="1" noshade="noshade">
-<div align="center">
-  <div>
-    <a href="http://ticket.rakuten.co.jp/static/faq/faq.html">ヘルプ</a> | <a href="http://www.ticketstar.jp/corporate">運営会社</a> | <a href="contact/form">お問い合わせ</a> | <a href="http://www.ticketstar.jp/privacy">個人情報保護方針</a> | <a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a>
-  </div>
-<div><font color="#888888">2010-2011 © TicketStar, Inc. All rights reserved.</font></div>
-</div>
-</font>
-</body></html>

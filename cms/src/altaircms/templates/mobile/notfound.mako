@@ -1,3 +1,4 @@
+<%inherit file="./footer.mako"/>
 <html lang="ja"><head>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <title>ページが見つかりません。 - 楽天チケット</title>
@@ -17,11 +18,3 @@
 <p>お探しのページがございますか？</p>
 <br>
  </div>
-<hr color="#888888" size="1" noshade="noshade">
-<div align="center">
-  <div>
-    <a href="/static/faq/faq.html">ヘルプ</a> | <a href="http://www.ticketstar.jp/corporate">運営会社</a> | <a href="https://ticket.rakuten.co.jp/mobile/contact/form">お問い合わせ</a> | <a href="http://www.ticketstar.jp/privacy">個人情報保護方針</a> | <a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a>
-  </div>
-<div><font color="#888888">2010-2011 © TicketStar, Inc. All rights reserved.</font></div>
-</div>
-</font></div></body></html>
