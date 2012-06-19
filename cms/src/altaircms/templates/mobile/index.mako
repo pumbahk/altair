@@ -30,7 +30,7 @@
 %if picks.count() > 0:
   <div style="background-image:url(/static/mobile/img/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000" background="/static/mobile/img/bg_bar.gif"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>おすすめ</font></div>
   %for pick in picks:
-	<img src="${h.asset.to_show_page(request,pick.mobile_image_asset)}" align="left" ${'width="%s"'% pick.mobile_image_asset.width if pick.mobile_image_asset.width else ""|} ${'height="%s"'% pick.mobile_image_asset.height if pick.mobile_image_asset.height else ""|}>
+    ${h.asset.create_show_img(request,pick.mobile_image_asset,align="left")}
   <% url= h.mobilelink.get_link_from_topcontent(request,pick)%>
 	%if url == "":
 	  ${pick.title}

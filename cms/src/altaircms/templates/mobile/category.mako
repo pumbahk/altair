@@ -21,7 +21,8 @@
 
 %if picks.count() > 0:
   %for pick in picks:
-	<img src="${h.asset.to_show_page(request,pick.mobile_image_asset)}" align="left" ${'width="%s"'% pick.mobile_image_asset.width if pick.mobile_image_asset.width else ""|} ${'height="%s"'% pick.mobile_image_asset.height if pick.mobile_image_asset.height else ""|}>
+    ${h.asset.create_show_img(request,pick.mobile_image_asset,align="left")}
+
   <% url= h.mobilelink.get_link_from_topcontent(request,pick)%>
 	%if url == "":
 	  ${pick.title}
