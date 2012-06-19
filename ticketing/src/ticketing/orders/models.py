@@ -86,6 +86,8 @@ class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     price = Column(Numeric(precision=16, scale=2), nullable=False)
     quantity = Column(Integer)
 
+    attributes      = relationship("OrderedProductAttribute", backref='ordered_product', cascade='save-update, merge')
+
 class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrderedProductItem'
     id = Column(Identifier, primary_key=True)
@@ -97,3 +99,9 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 #    seat = relationship('Seat')
     seats = relationship("Seat", secondary=orders_seat_table)
     price = Column(Numeric(precision=16, scale=2), nullable=False)
+
+class OrderedProductAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__   = "OrderedProductAttribute"
+    ordered_product_id  = Column(Identifier, ForeignKey('OrderedProduct.id'), primary_key=True, nullable=False)
+    name = Column(String(255), primary_key=True, nullable=False)
+    value = Column(String(1023))
