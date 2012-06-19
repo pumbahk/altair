@@ -5,6 +5,7 @@ from pyramid.renderers import render_to_response
 from pyramid.view import view_config
 from altaircms.lib.fanstatic_decorator import with_jquery
 from . import api
+from ..mobile import api as mobile_api
 
 from altairsite.mobile.custom_predicates import mobile_access_predicate
 from altairsite.mobile.response import convert_response_for_mobile
@@ -49,16 +50,6 @@ def rendering_page(context, request):
     page, layout = context.get_page_and_layout(url, dt)
     return _rendering(context, request, page, layout)
 
-@view_config(route_name="front", custom_predicates=(mobile_access_predicate,))
-def rendering_page_mobile(context, request):
-    url = request.matchdict["page_name"]
-    dt = context.get_preview_date()
-    page, layout = context.get_page_and_layout(url, dt)
-
-    from altaircms.layout.models import Layout
-    layout = Layout.query.filter_by(template_filename="m."+layout.template_filename).first() ## too ad-hoc. fix after experimentation.
-    return convert_response_for_mobile(_rendering(context, request, page, layout))
-
 @view_config(route_name="front_preview", decorator=with_jquery)
 def rendering_preview_page(context, request):
     url = request.matchdict["page_name"]
@@ -72,3 +63,13 @@ def to_preview_page(context, request):
     page_id = request.matchdict["page_id"]
     page = context.get_unpublished_page(page_id)
     return HTTPFound(request.route_path("front_preview", page_name=page.hash_url))
+
+## for mobile
+
+@view_config(route_name="front", custom_predicates=(mobile_access_predicate,))
+def dispatch_view(context, request):
+    url = request.matchdict["page_name"]
+    dt = context.get_preview_date()
+    pageset = context.get_pageset_query_from_url(url, dt).first()
+
+    raise mobile_api.dispatch_context(request, pageset)

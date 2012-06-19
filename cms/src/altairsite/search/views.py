@@ -35,8 +35,6 @@ def page_search_result(request):
     return params
 
 
-@view_config(request_param="q", route_name="mobile_page_search", 
-             renderer="altaircms:templates/front/layout/m.ticketstar.search.mako")
 @view_config(request_param="q", route_name="page_search_by_freeword", 
              renderer="altaircms:templates/front/layout/ticketstar.search.mako")
 def search_by_freeword(context, request):

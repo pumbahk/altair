@@ -7,6 +7,7 @@ import sqlalchemy as sa
 
 from altaircms.layout.models import Layout
 from altaircms.page.models import Page
+from altaircms.page.models import PageSet
 from altaircms.widget.tree.proxy import WidgetTreeProxy
 from altaircms.models import Category
 
@@ -24,6 +25,12 @@ class PageRenderingResource(object):
         else:
             dt = self.request.params['datetime']
             return datetime.strptime(dt, '%Y%m%d%H%M%S')
+
+    def get_pageset_query_from_url(self, url, dt):
+        return PageSet.query.filter(
+            PageSet.url==url).filter(
+            Page.pageset_id==PageSet.id).filter(
+                Page.in_term(dt))
 
     def get_unpublished_page(self, page_id):
         page = Page.query.filter(Page.id==page_id).one()

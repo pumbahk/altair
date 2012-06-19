@@ -2,7 +2,6 @@ import sqlalchemy as sa
 from altaircms.models import Category
 from altaircms.event.models import Event
 from altaircms.page.models import PageSet
-from .helpers import CATEGORY_SYNONYM
 from altaircms import helpers as gh
 
 def events_on_sale_this_week(request, category_origin, today):
@@ -27,4 +26,28 @@ def category_to_breadcrumbs(request, category, url_from_category=url_from_catego
     breadcrumbs = reversed([u'<a href="%s">%s</a>' % (url_from_category(request, c), c.label) for c in cands])
     # breadcrumbs = reversed([u'<a href="%s">%s</a>' % (url_from_category(request, c), CATEGORY_SYNONYM.get(c.name, c.label)) for c in cands])
     return breadcrumbs
+
+class MobileGotoTop(Exception):
+    pass
+class MobileGotoCategoryTop(Exception):
+    pass
+class MobileGotoEventDetail(Exception):
+    pass
+class MobileGotoStatic(Exception):
+    pass
+
+def dispatch_context(request, pageset):
+    if pageset is None:
+        raise MobileGotoStatic
+
+    request.matchdict["pageset_id"] = pageset.id
+    category = pageset.category
+
+    if category is None:
+        raise MobileGotoEventDetail
+    elif category.name == "index":
+        raise MobileGotoTop
+    else:
+        request.matchdict["category"] = category.name
+        raise MobileGotoCategoryTop
 

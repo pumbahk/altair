@@ -8,7 +8,6 @@ from . import helpers as h
 from . import api
 from altairsite.search import api as search_api
 
-
 @view_config(route_name="mobile_index", renderer="altaircms:templates/mobile/index.mako")
 def mobile_index(request):
     today = datetime.now()
@@ -34,13 +33,13 @@ def enable_categories(info, request):
              renderer="altaircms:templates/mobile/category.mako")
 def mobile_category(request):
     today = datetime.now()
-    category = request.matchdict["category"]
-    root = Category.query.filter_by(name=category).first()
+    category_name = request.matchdict["category"]
+    root = Category.query.filter_by(name=category_name).first()
     picks = Topcontent.matched_qs(d=today, kind=u"注目のイベント", page=root.pageset)
 
     topics = Topic.matched_qs(d=today, kind=u"トピックス", page=root.pageset).filter_by(is_global=False)
-    events_on_sale = api.events_on_sale_this_week(request, category, today)
-    return {"synonym": h.CATEGORY_SYNONYM.get(category), 
+    events_on_sale = api.events_on_sale_this_week(request, category_name, today)
+    return {"synonym": h.CATEGORY_SYNONYM.get(category_name), 
             "picks": picks, 
             "events_on_sale": events_on_sale, 
             "root": root, 
@@ -74,7 +73,7 @@ from pyramid.renderers import render_to_response
 import os.path
 
 @view_config(route_name="mobile_semi_static")
-def semi_static(request):
+def mobile_semi_static(request):
     ## normalize
     filename = request.matchdict["filename"]
     template_path = os.path.join("altaircms:templates/mobile/static/", filename)
@@ -82,5 +81,3 @@ def semi_static(request):
         template_path = os.path.splitext(template_path)[0]+".mako"
 
     return render_to_response(template_path, {}, request)
-
-
