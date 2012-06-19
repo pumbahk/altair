@@ -81,7 +81,7 @@ class RakutenOpenID(object):
                 "&openid.mode=checkid_setup"
                 "&openid.ns.oauth=http://specs.openid.net/extenstions/oauth/1.0"
                 "&openid.oauth.consumer=%(consumer_key)s"
-                "&openid.oauth.scope=rakutenid_basicinfo,rakutenid_contactinfo"
+                "&openid.oauth.scope=rakutenid_basicinfo,rakutenid_contactinfo,rakutenid_pointaccount"
                 "&openid.ns.ax=http://openid.net/srv/ax/1.0"
                 "&openid.ax.mode=fetch_request"
                 "&openid.ax.type.nickname=http://schema.openid.net/namePerson/friendly"
@@ -231,5 +231,5 @@ def create_signature_base(method, url, oauth_consumer_key, secret, oauth_token, 
 def create_oauth_sigunature(method, url, oauth_consumer_key, secret, oauth_token, oauth_signature_method, oauth_timestamp, oauth_nonce, oauth_version, form_params):
     msg = create_signature_base(method, url, oauth_consumer_key, secret, oauth_token, oauth_signature_method, oauth_timestamp, oauth_nonce, oauth_version, form_params)
     logger.debug("secret: %s" % secret)
-    oauth_signature = hmac.new(secret, msg, hashlib.sha1).digest().encode('base64')
+    oauth_signature = hmac.new("%s&"%secret, msg, hashlib.sha1).digest().encode('base64')
     return oauth_signature.strip()
