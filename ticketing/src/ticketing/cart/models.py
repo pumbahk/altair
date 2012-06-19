@@ -180,7 +180,11 @@ class Cart(Base):
 
     @property
     def total_amount(self):
-        return sum(cp.amount for cp in self.products) + self.system_fee
+        return self.tickets_amount + self.system_fee
+
+    @property
+    def tickets_amount(self):
+        return sum(cp.amount for cp in self.products)
 
     @classmethod
     def get_or_create(cls, cart_session_id):
