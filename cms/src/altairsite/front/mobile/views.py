@@ -65,7 +65,7 @@ def search_by_freeword(context, request):
 
     freeword = request.params["q"]
     qs = search_api.search_by_freeword(request, freeword)
-
+    qs = qs.filter(PageSet.event != None)
     classifieds = [(c, qs.filter(PageSet.category==c)) for c in children]
 
     breadcrumbs = [u'<a href="%s">トップ</a>' % request.route_path("mobile_index")]

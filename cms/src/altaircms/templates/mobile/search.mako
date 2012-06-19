@@ -1,3 +1,5 @@
+<%namespace file="./components.mako" name="co"/>
+
 <html lang="ja"><head>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <title>チケット販売・イベントの予約 [音楽 / コンサート / 舞台 / スポーツ] - 楽天チケット</title>
@@ -45,8 +47,16 @@ ${breadcrumbs}
 %else:
   ${pagesets.count()}件見つかりました。<br>
   <hr color="#bf0000" size="1" noshade="noshade">
-  %for pageset in pagesets:
-  <% event = pageset.event%>
+
+  <%
+seq = h.paginate(request,pagesets, item_count=pagesets.count())
+%>
+
+${seq.pager()}
+  %for pageset in seq.paginated():
+
+  <% event = pageset.event %>
+
 	%if event:
 	  <a href="${h.mobilelink.to_publish_page_from_pageset(request,pageset)}">${pageset.name}</a><br>
 	  ${h.base.jterm(event.event_open,event.event_close)}<br>
@@ -55,14 +65,11 @@ ${breadcrumbs}
 	   <hr color="#bf0000" size="1" noshade="noshade">
 	%endif
   %endfor
+${seq.pager()}
 %endif
 
 <div style="background-color: rgb(255, 255, 187);" bgcolor="#ffffbb" align="center">
-  <form action="s?cid=21" class="searchbox"><font size="3">
-    <img alt="" src="chrome://msim/content/emoji/i/59025.gif" border="0">チケット検索<br>
-    <input class="text_field" name="q" value="" type="text"><input value="検索" type="submit">
-  </font>
-</form></div>
+ ${co.search_form(request)}
  </div>
 <hr color="#888888" size="1" noshade="noshade">
 <div align="center">

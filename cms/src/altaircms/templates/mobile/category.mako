@@ -1,7 +1,14 @@
+<%namespace file="./components.mako" name="co"/>
+
+<html lang="ja">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>楽天・ジャパン・オープン・テニス・チャンピオンシップス2012 - 楽天チケット</title>
+</head>
+<body bgcolor="#ffffff">
 <font size="1">
   <div align="center">
       <font color="red">
-        
       </font>
   <a href="${request.route_path("mobile_index")}"><font color="#bf0000" size="3"><img src="/static/mobile/img/logo-small.gif" alt="楽天チケット" width="160" height="26"></font></a>
   <hr color="#bf0000" size="1" noshade="noshade">
@@ -48,12 +55,8 @@
 
 <hr color="#bf0000" size="1" noshade="noshade">
 <div style="background-color: rgb(255, 255, 187);" bgcolor="#ffffbb" align="center">
-  <form action="http://ticket.rakuten.co.jp/mobile/s" class="searchbox"><font size="3">
-    チケット検索<br>
-    <input name="cid" value="2" type="hidden">
-    <input class="text_field" name="q" value="" type="text"><input value="検索" type="submit">
-  </font>
-</form></div>
+   ${co.search_form(request)}
+</div>
 
  
 <hr color="#888888" size="1" noshade="noshade">
