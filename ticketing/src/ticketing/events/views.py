@@ -160,8 +160,8 @@ class Events(BaseView):
         self.request.session.flash(u'イベントを削除しました')
         return HTTPFound(location=route_path('events.index', self.request))
 
-    @view_config(route_name='events.sync')
-    def sync(self):
+    @view_config(route_name='events.send')
+    def send(self):
         event_id = int(self.request.matchdict.get('event_id', 0))
         event = Event.query.filter(Event.id==event_id).first()
         if event is None:
@@ -169,7 +169,7 @@ class Events(BaseView):
 
         try:
             data = {
-                'events':[event.get_sync_data()],
+                'events':[event.get_cms_data()],
                 'created_at':isodate.datetime_isoformat(datetime.now()),
                 'updated_at':isodate.datetime_isoformat(datetime.now()),
             }

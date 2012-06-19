@@ -338,7 +338,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             venue = Venue.get(self.delete_venue_id)
             venue.delete_cascade()
 
-    def get_sync_data(self):
+    def get_cms_data(self):
         start_on = isodate.datetime_isoformat(self.start_on) if self.start_on else ''
         end_on = isodate.datetime_isoformat(self.end_on) if self.end_on else ''
         open_on = isodate.datetime_isoformat(self.open_on) if self.open_on else ''
@@ -347,12 +347,6 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if not (start_on and end_on and open_on) and not self.deleted_at:
             raise Exception(u'パフォーマンスの日付を入力してください')
 
-        sales = []
-        sales_segments = SalesSegment.query.filter_by(event_id=self.event_id).all()
-        for sales_segment in sales_segments:
-            sync_data = sales_segment.get_sync_data(self.id)
-            if sync_data:
-                sales.append(sync_data)
         data = {
             'id':self.id,
             'name':self.name,
@@ -361,7 +355,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             'open_on':open_on,
             'start_on':start_on,
             'end_on':end_on,
-            'sales':sales,
+            'tickets':list(set([pi.product.id for pi in self.product_items])),
         }
         if self.deleted_at:
             data['deleted'] = 'true'
@@ -442,12 +436,47 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 .filter(StockHolder.event_id==self.id)\
                 .distinct()
 
-    def get_sync_data(self):
+    def get_cms_data(self):
+        '''
+        CMSに連携するデータを生成する
+        インターフェースのデータ構造は以下のとおり
+        削除データには "deleted":"true" をいれる
+
+        data = {
+          "created_at": "2012-01-10T13:42:00+09:00",
+          "updated_at": "2012-01-11T15:32:00+09:00",
+          "events":[
+            {
+              "id":1,
+              "title":"イベントタイトル",
+              "subtitle":"サブタイトル",
+              "start_on":"2012-03-15T19:00:00+09:00",,
+              "end_on":"2012-03-15T19:00:00+09:00",,
+              "performances":[
+                "id":1,
+                "title":"タイトル",
+                "venue":"代々木体育館",
+                "open_on":"2012-03-15T19:00:00+09:00",,
+                "start_on":"2012-03-15T19:00:00+09:00",,
+                "end_on":"2012-03-15T19:00:00+09:00",,
+                "tickets":[1,2],
+              ],
+              "tickets":[
+                {"id":1, "sale_id":1, "name":"A席大人", "seat_type":"A席", "price":5000},
+                {"id":2, "sale_id":2, "name":"B席大人", "seat_type":"B席", "price":3000},
+              ],
+              "sales":[
+                {"id":1, "name":"販売区分1", "start_on":~, "end_on":~, "seat_choice":true},
+                {"id":2, "name":"販売区分2", "start_on":~, "end_on":~, "seat_choice":true},
+              ],
+            },
+          ]
+        }
+        '''
         start_on = isodate.datetime_isoformat(self.first_start_on) if self.first_start_on else ''
         end_on = isodate.datetime_isoformat(self.final_start_on) if self.final_start_on else ''
         sales_start_on = isodate.datetime_isoformat(self.sales_start_on) if self.sales_start_on else ''
         sales_end_on = isodate.datetime_isoformat(self.sales_end_on) if self.sales_end_on else ''
-        performances = Performance.query.filter_by(event_id=self.id).all()
 
         # cmsでは日付は必須項目
         if not (start_on and end_on) and not self.deleted_at:
@@ -455,6 +484,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if not (sales_start_on and sales_end_on) and not self.deleted_at:
             raise Exception(u'販売期間が登録されていないイベントは送信できません')
 
+        # 論理削除レコードも含めるので{Model}.query.filter()で取得している
         data = {
             'id':self.id,
             'title':self.title,
@@ -463,7 +493,9 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             'end_on':end_on,
             'deal_open':sales_start_on,
             'deal_close':sales_end_on,
-            'performances':[p.get_sync_data() for p in performances],
+            'performances':[p.get_cms_data() for p in Performance.query.filter_by(event_id=self.id).all()],
+            'tickets':[p.get_cms_data() for p in Product.find(event_id=self.id, include_deleted=True)],
+            'sales':[s.get_cms_data() for s in SalesSegment.query.filter_by(event_id=self.id).all()],
         }
         if self.deleted_at:
             data['deleted'] = 'true'
@@ -520,24 +552,20 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     event_id = Column(Identifier, ForeignKey('Event.id'))
     event = relationship('Event', backref='sales_segments')
 
-    def get_sync_data(self, performance_id):
-        products = Product.find(performance_id=performance_id, sales_segment_id=self.id, include_deleted=True)
-        if products:
-            start_at = isodate.datetime_isoformat(self.start_at) if self.start_at else ''
-            end_at = isodate.datetime_isoformat(self.end_at) if self.end_at else ''
-            data = {
-                'id':self.id,
-                'name':self.name,
-                'kind':self.kind,
-                'start_on':start_at,
-                'end_on':end_at,
-                'seat_choice':'true' if self.seat_choice else 'false',
-                'tickets':[p.get_sync_data(performance_id) for p in products],
-            }
-            if self.deleted_at:
-                data['deleted'] = 'true'
-            return data
-        return
+    def get_cms_data(self):
+        start_at = isodate.datetime_isoformat(self.start_at) if self.start_at else ''
+        end_at = isodate.datetime_isoformat(self.end_at) if self.end_at else ''
+        data = {
+            'id':self.id,
+            'name':self.name,
+            'kind':self.kind,
+            'start_on':start_at,
+            'end_on':end_at,
+            'seat_choice':'true' if self.seat_choice else 'false',
+        }
+        if self.deleted_at:
+            data['deleted'] = 'true'
+        return data
 
 class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentDeliveryMethodPair'
@@ -829,24 +857,24 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         DBSession.flush()
         return True
 
-    def get_sync_data(self, performance_id):
+    def get_cms_data(self):
         data = {
             'id':self.id,
             'name':self.name,
-            'seat_type':self.seat_type(performance_id),
             'price':floor(self.price),
+            'sale_id':self.sales_segment_id,
+            'seat_type':self.seat_type(),
         }
         if self.deleted_at:
             data['deleted'] = 'true'
         return data
 
-    def seat_type(self, performance_id):
-        items = ProductItem.filter_by(performance_id=performance_id)\
-                           .filter_by(product_id=self.id).all()
-        for item in items:
-            if item.stock_type.type == StockTypeEnum.Seat.v:
-                return item.stock_type.name
-        return ''
+    def seat_type(self):
+        name = ProductItem.filter_by(product_id=self.id)\
+                          .join(Stock).join(StockType)\
+                          .filter(StockType.type==StockTypeEnum.Seat.v)\
+                          .with_entities(StockType.name).scalar()
+        return name if name else ''
 
 class OrganizationTypeEnum(StandardEnum):
     Standard = 1
