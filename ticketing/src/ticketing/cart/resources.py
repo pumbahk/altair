@@ -1,4 +1,11 @@
 # -*- coding:utf-8 -*-
+
+"""
+
+TODO: 引き当て処理自体はResourceから分離する。
+TODO: cart取得
+"""
+
 import itertools
 import operator
 from sqlalchemy import sql

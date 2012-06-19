@@ -1,5 +1,9 @@
 # -*- coding:utf-8 -*-
 
+"""
+TODO: cart取得はリソースの役目
+"""
+
 from webhelpers.number import format_number as _format_number
 from .models import Cart, PaymentMethodManager, DBSession
 from .interfaces import IPaymentMethodManager
@@ -10,6 +14,9 @@ from zope.interface import implementer
 
 def format_number(num, thousands=","):
     return _format_number(int(num), thousands)
+
+def format_currency(num, thousands=","):
+    return "￥" + format_number(num, thousands)
 
 def set_cart(request, cart):
     request.session['ticketing.cart_id'] = cart.id

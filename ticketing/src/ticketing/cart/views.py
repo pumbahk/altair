@@ -205,8 +205,6 @@ class PaymentView(object):
         if not h.has_cart(self.request):
             return HTTPFound('/')
 
-        cart = h.get_cart(self.request)
-
         payment_methods = c_models.PaymentMethod.query.all()
 
         return dict(payments=[
@@ -229,8 +227,6 @@ class PaymentView(object):
 
         if not h.has_cart(self.request):
             return HTTPFound('/')
-
-        cart = h.get_cart(self.request)
 
         payment_methods = c_models.PaymentMethod.query.all()
 
@@ -346,7 +342,14 @@ class ConfirmView(object):
     """ 決済確認画面 """
     def __init__(self, request):
         self.request = request
-        # TODO: Cart内容を表示？
+
+    def __call__(self):
+
+        assert h.has_cart(self.request)
+        cart = h.get_cart(self.request)
+
+        return dict(cart=cart)
+
 
 class CompleteView(object):
     """ 決済完了画面"""
