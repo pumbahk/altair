@@ -102,7 +102,7 @@ class RakutenOpenID(object):
                     sig = request_get['openid.sig'],
                     ns_oauth = 'http://specs.openid.net/extenstions/oauth/1.0',
                     oauth_request_token = request_get['openid.oauth.request_token'],
-                    oauth_scope = 'rakutenid_basicinfo,rakutenid_contactinfo',
+                    oauth_scope = 'rakutenid_basicinfo,rakutenid_contactinfo,rakutenid_pointaccount',
                     ns_ax = request_get['openid.ns.ax'],
                     ax_mode = request_get['openid.ax.mode'],
                     ax_type_nickname = request_get['openid.ax.type.nickname'],
@@ -135,6 +135,7 @@ class RakutenOpenID(object):
         response_body = f.read()
         f.close()
 
+        logger.debug('authenticate result : %s' % response_body)
         is_valid = response_body.split("\n")[0].split(":")[1]
         request_token = identity['oauth_request_token']
 
