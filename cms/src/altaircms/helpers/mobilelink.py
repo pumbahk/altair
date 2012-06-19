@@ -13,13 +13,12 @@ def get_purchase_page_from_event(request, event):
 def get_purchase_page_from_performance(request, performance):
     warnings.warn("this is ad-hoc definition please fixme!")
 
-    if performance.purchase_link:
-        return performance.purchase_link
+    if performance.mobile_purchase_link:
+        return performance.mobile_purchase_link
 
     if performance.backend_id is None:
         logger.warn("event id=%d performance id=%d: performancr backend_id is not found" % (performance.event.id, performance.id))
     return u"/cart/events/%s?performance=%s" % (performance.event.backend_id, performance.backend_id)
-
 
 def get_searchpage(request, kind=None, value=None):
     warnings.warn("this is ad-hoc definition please fixme!")

@@ -42,6 +42,7 @@ def main(global_config, **settings):
     config.add_route("mobile_category", "/mobile/genre/{category}")
     config.add_route("mobile_purchase", "/mobile/purchase/event/{event_id}", static=True)
     config.add_route("mobile_search", "/mobile/search")
+    config.add_route("mobile_semi_static", "/mobile/static")
 
     config.scan(".views")
     return config.make_wsgi_app()

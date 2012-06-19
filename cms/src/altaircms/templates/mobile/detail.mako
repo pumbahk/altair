@@ -28,7 +28,7 @@
     %if today > p.end_on:
     販売終了<br />
     %else:      
-  	→<a href="${request.route_path("mobile_purchase", event_id=event.id, query=dict(performance_id=p.backend_id))}" target="_blank">購入ページへ</a><br />
+  	→<a href="${h.mobilelink.get_purchase_page_from_performance(request, p)}" target="_blank">購入ページへ</a><br />
     %endif
   %endfor
 %endif
