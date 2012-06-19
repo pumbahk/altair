@@ -565,11 +565,16 @@ class DeliveryMethodPlugin(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
 
+class FeeTypeEnum(StandardEnum):
+    Once = (0, u'1回あたりの手数料')
+    PerUnit = (1, u'1件あたりの手数料')
+
 class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentMethod'
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
     fee = Column(Numeric(precision=16, scale=2), nullable=False)
+    fee_type = Column(Integer, nullable=False, default=FeeTypeEnum.Once.v[0])
 
     organization_id = Column(Identifier, ForeignKey('Organization.id'))
     organization = relationship('Organization', uselist=False, backref='payment_method_list')
@@ -585,6 +590,7 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
     fee = Column(Numeric(precision=16, scale=2), nullable=False)
+    fee_type = Column(Integer, nullable=False, default=FeeTypeEnum.Once.v[0])
 
     organization_id = Column(Identifier, ForeignKey('Organization.id'))
     organization = relationship('Organization', uselist=False , backref='delivery_method_list')

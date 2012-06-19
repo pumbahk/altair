@@ -5,7 +5,7 @@ from wtforms import TextField, HiddenField, SelectField, DecimalField
 from wtforms.validators import Length, Optional
 
 from ticketing.formhelpers import Translations, Required
-from ticketing.core.models import DeliveryMethodPlugin
+from ticketing.core.models import DeliveryMethodPlugin, FeeTypeEnum
 
 class DeliveryMethodForm(Form):
 
@@ -30,6 +30,12 @@ class DeliveryMethodForm(Form):
         label=u'配送手数料',
         places=2,
         validators=[Required()]
+    )
+    fee_type = SelectField(
+        label=u'手数料計算単位',
+        validators=[Required(u'選択してください')],
+        choices=[fee_type.v for fee_type in FeeTypeEnum],
+        coerce=int
     )
     delivery_plugin_id = SelectField(
         label=u'配送方法',
