@@ -23,13 +23,23 @@ class TicketingCartResrouce(object):
 
     def __init__(self, request):
         self.request = request
+        self.event_id = self.request.matchdict.get('event_id')
 
     def get_system_fee(self):
         return 315
 
-    @property
-    def event_id(self):
-        return self.request.matchdict['event_id']
+
+    def get_payment_delivery_method_pair(self):
+        segment = self.get_sales_segument()
+        pairs = c_models.PaymentDeliveryMethodPair.query.filter(
+            c_models.PaymentDeliveryMethodPair.sales_segment_id==segment.id
+        ).all()
+
+        if pairs:
+            return pairs
+
+        return c_models.PaymentDeliveryMethodPair.query.all()
+
 
     def get_sales_segument(self):
         """ 該当イベントのSalesSegment取得

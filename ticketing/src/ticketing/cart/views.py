@@ -202,6 +202,7 @@ class PaymentView(object):
     """ 支払い方法、引き取り方法選択 """
     def __init__(self, request):
         self.request = request
+        self.context = request.context
 
     @view_config(route_name='cart.payment', request_method="GET", renderer="carts/payment.html")
     def __call__(self):
@@ -209,13 +210,11 @@ class PaymentView(object):
         """
         if not h.has_cart(self.request):
             return HTTPFound('/')
+        cart = h.get_cart(self.request)
+        self.context.event_id = cart.performance.event.id
+        payment_delivery_methods = self.context.get_payment_delivery_method_pair()
 
-        payment_methods = c_models.PaymentMethod.query.all()
-
-        return dict(payments=[
-            dict(url=h.get_payment_method_url(self.request, m.id), name=m.name)
-            for m in payment_methods
-        ])
+        return dict(payment_delivery_methods=payment_delivery_methods)
 
     @view_config(route_name='cart.payment', request_method="POST", renderer="carts/payment.html")
     def post(self):
@@ -229,17 +228,6 @@ class PaymentView(object):
         self.request.session['order'] = order
 
         raise HTTPFound(self.request.route_url("payment.secure3d"))
-
-        if not h.has_cart(self.request):
-            return HTTPFound('/')
-
-        payment_methods = c_models.PaymentMethod.query.all()
-
-        return dict(payments=[
-            dict(url=h.get_payment_method_url(self.request, m.id), name=m.name)
-            for m in payment_methods
-        ])
-
 
 class MultiCheckoutView(object):
     """ マルチ決済API

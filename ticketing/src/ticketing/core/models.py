@@ -569,6 +569,8 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentDeliveryMethodPair'
+    query = DBSession.query_property()
+
     id = Column(Identifier, primary_key=True)
     system_fee = Column(Numeric(precision=16, scale=2), nullable=False)
     transaction_fee = Column(Numeric(precision=16, scale=2), nullable=False)
