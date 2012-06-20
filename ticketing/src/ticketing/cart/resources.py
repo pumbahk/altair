@@ -1,8 +1,14 @@
 # -*- coding:utf-8 -*-
+
+"""
+
+TODO: 引き当て処理自体はResourceから分離する。
+TODO: cart取得
+"""
+
+from datetime import datetime
 import itertools
-import operator
 from sqlalchemy import sql
-from pyramid.decorator import reify
 from pyramid.security import Everyone, Authenticated
 from pyramid.security import Allow
 from ..core import models as c_models
@@ -17,9 +23,36 @@ class TicketingCartResrouce(object):
 
     def __init__(self, request):
         self.request = request
+        self.event_id = self.request.matchdict.get('event_id')
 
     def get_system_fee(self):
         return 315
+
+
+    def get_payment_delivery_method_pair(self):
+        segment = self.get_sales_segument()
+        pairs = c_models.PaymentDeliveryMethodPair.query.filter(
+            c_models.PaymentDeliveryMethodPair.sales_segment_id==segment.id
+        ).all()
+
+        if pairs:
+            return pairs
+
+        return c_models.PaymentDeliveryMethodPair.query.all()
+
+
+    def get_sales_segument(self):
+        """ 該当イベントのSalesSegment取得
+        """
+
+        now = datetime.now()
+        return c_models.SalesSegment.query.filter(
+            c_models.SalesSegment.event_id==self.event_id
+        ).filter(
+            c_models.SalesSegment.start_at<=now
+        ).filter(
+            c_models.SalesSegment.end_at>=now
+        ).first()
 
     def _convert_order_product_items(self, performance_id, ordered_products):
         """ 選択したProductからProductItemと個数の組に展開する

@@ -9,7 +9,6 @@ from hashlib import md5
 
 import sqlahelper
 
-print 'sql healerfffffff'
 session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
 

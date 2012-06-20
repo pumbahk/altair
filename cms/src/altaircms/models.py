@@ -73,6 +73,11 @@ def initialize_sql(engine, dropall=False):
 このあたりevent/models.pyに移動した方が良い。
 """
 
+performance_ticket_table = sa.Table("performance_ticket", Base.metadata,
+    Column("performance_id", Integer, ForeignKey("performance.id")),
+    Column("ticket_id", Integer, ForeignKey("ticket.id")),
+)
+
 PDICT = import_symbol("altaircms.seeds.prefecture:PrefectureMapping")
 class Performance(BaseOriginalMixin, Base):
     """
@@ -82,7 +87,7 @@ class Performance(BaseOriginalMixin, Base):
     query = DBSession.query_property()
 
     id = Column(Integer, primary_key=True)
-    backend_id = Column(Integer, nullable=False)
+    backend_id = Column(Integer)
     event_id = Column(Integer, ForeignKey('event.id'))
     client_id = Column(Integer, ForeignKey("client.id"))
 
@@ -99,6 +104,7 @@ class Performance(BaseOriginalMixin, Base):
     purchase_link = Column(sa.UnicodeText)
     canceld = Column(Boolean, default=False)
     event = relationship("Event", backref=orm.backref("performances", order_by=start_on, cascade="all"))
+    tickets = relationship("Ticket", secondary=performance_ticket_table, backref="performances")
     # client = relationship("Client", backref=orm.backref("performances", order_by=id))
 
     @property
@@ -116,8 +122,6 @@ class Sale(BaseOriginalMixin, Base):
 
     event_id = Column(Integer, ForeignKey('event.id'))
     event  = relationship("Event", backref="sales")
-    performance_id = Column(Integer, ForeignKey('performance.id', ondelete='CASCADE'))
-    performance  = relationship("Performance", backref=orm.backref("sales", cascade="all"))
 
     name = Column(Unicode(length=255))
     kind = Column(Unicode(length=255), doc=u"saleskind. 販売条件(最速抽選, 先行抽選, 先行先着, 一般販売, 追加抽選.etc)", default=u"normal")

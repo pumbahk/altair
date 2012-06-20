@@ -7,9 +7,9 @@
  */
 
 var carts = {};
-carts.init = function(venues_selection, selected) {
+carts.init = function(venues_selection, selected, upper_limit) {
     var model = new carts.Model(venues_selection);
-    var presenter = new carts.Presenter(model);
+    var presenter = new carts.Presenter(model, upper_limit);
     carts.appView = new carts.AppView();
     carts.appView.init(presenter);
     $('#date-select').val(selected[1]);
@@ -128,7 +128,7 @@ carts.AppView.prototype.show_seat_types = function(seat_types) {
 
 };
 
-carts.AppView.prototype.show_payments = function(seat_type_name, products) {
+carts.AppView.prototype.show_payments = function(seat_type_name, products, upper_limit) {
     $('#payment-seat-type').text(seat_type_name);
     $('#payment-seat-products').empty();
     $.each(products, function(key, value) {
@@ -140,7 +140,7 @@ carts.AppView.prototype.show_payments = function(seat_type_name, products) {
         payment.append(price);
         var amount = $('<select/>');
         amount.attr('name', "product-" + value.id);
-        for (var i=0; i < 99; i++) { // TODO 枚数制限
+        for (var i=0; i < upper_limit+1; i++) {
             opt = $('<option/>');
             opt.text(i);
             opt.val(i);
@@ -155,8 +155,9 @@ carts.AppView.prototype.show_payments = function(seat_type_name, products) {
     });
 };
 
-carts.Presenter = function(model) {
+carts.Presenter = function(model, upper_limit) {
     this.model = model;
+    this.upper_limit = upper_limit;
 };
 
 
@@ -183,10 +184,11 @@ carts.Presenter.prototype.on_seat_type_selected = function(selected) {
 
 carts.Presenter.prototype.show_products = function(get_url) {
     var view = this.view;
+    var upper_limit = this.upper_limit;
     this.model.fetch_products(get_url, function(data) {
         var seat_type_name = data.seat_type.name;
         var products = data.products;
-        view.show_payments(seat_type_name, products);
+        view.show_payments(seat_type_name, products, upper_limit);
     });
 };
 

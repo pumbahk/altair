@@ -7,6 +7,13 @@ def doc_from_tags(doc, tags):
     doc.update(page_tag=vs)
     return doc 
 
+def doc_from_performances(doc, performances):
+    vs = [p.venue for p in performances]
+    import warnings
+    warnings.warn("need update solr environment, but not a good opotunity, now, so disable it.")
+    # doc.update(performance_venue=vs)
+    return doc
+
 def doc_from_event(doc, event): ## fixme
     doc.update(event_title=event.title, 
                event_subtitle=event.subtitle, 
@@ -17,17 +24,20 @@ def doc_from_event(doc, event): ## fixme
 def _doc_from_page(doc, page):
     doc.update(page_description=page.description, 
                page_title=page.title, 
-               id=page.pageset.id, 
-               pageset_id=page.pageset.id, 
                page_id=page.id)
+    if page.pageset:
+        doc.update(id=page.pageset.id, 
+                   pageset_id=page.pageset.id)
     return doc
     
 def doc_from_page(page):
     """ id == page.pageset.id 
     """
     doc = solr.SolrSearchDoc()
-    if page.event:
-        doc = doc_from_event(doc, page.event)
+    event = page.event or (page.pageset.event if page.pageset else None) #for safe
+    if event:
+        doc = doc_from_event(doc, event)
+        doc = doc_from_performances(doc, event.performances)
 
     tags = page.public_tags
     if tags:

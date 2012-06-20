@@ -23,7 +23,6 @@ class StockAllocations(BaseView):
         f = StockAllocationForm(self.request.POST)
         if f.validate():
             stock_allocation = merge_session_with_post(StockAllocation(), f.data)
-            stock_allocation.quantity_only = True
             stock_allocation.save()
 
             self.request.session.flash(u'在庫数を保存しました')

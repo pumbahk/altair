@@ -26,6 +26,11 @@ class StockTypeForm(Form):
             Length(max=255, message=u'255文字以内で入力してください'),
         ]
     )
+    quantity_only = IntegerField(
+        label=u'数受け',
+        default=0,
+        widget=CheckboxInput(),
+    )
     type = IntegerField(
         label=u'座席以外を登録する',
         default=StockTypeEnum.Seat.v,

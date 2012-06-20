@@ -15,7 +15,7 @@
 	  <div class="searchMessage">
 		<h3>該当するチケットはありません</h3>
 		<p class="message">他の検索条件で再度検索してみてください</p>
-		${gadgets.search_form_on_header(u"アーティスト名、公演名、会場名など","refineq1","missing_query_id")}
+		${gadgets.search_form_on_header(u"アーティスト名、公演名、会場名など", "missing_query_id")}
 	  </div>
 	% else:
 

@@ -56,16 +56,19 @@ class StockTypeEvent3Data(DataSet):
         event = EventData.event_3
         style = {"text": "", "stroke": {"color": "#000000", "width": "1", "pattern": "solid"}, "fill": {"color": "#d8d8d8"}}
         type = StockTypeEnum.Seat.v
+        quantity_only = True
     class stock_type_2:
         name = u'一般席'
         event = EventData.event_3
         style = {"text": "", "stroke": {"color": "#d8d8d8", "width": "1", "pattern": "solid"}, "fill": {"color": "#ffec9f"}}
         type = StockTypeEnum.Seat.v
+        quantity_only = True
     class stock_type_3:
         name = u'立ち見席'
         event = EventData.event_3
         style = {"text": "", "stroke": {"color": "#d8d8d8", "width": "1", "pattern": "double"}, "fill": {"color": "#99b3e6"}}
         type = StockTypeEnum.Seat.v
+        quantity_only = True
 
 class ProductEvent1Data(DataSet):
     class product_1:
@@ -944,17 +947,14 @@ class StockAllocationEvent3Performance1Data(DataSet):
         stock_type = StockTypeEvent3Data.stock_type_1
         performance = PerformanceEvent3Data.performance_1
         quantity = 100
-        quantity_only = True
     class stock_allocation_2:
         stock_type = StockTypeEvent3Data.stock_type_2
         performance = PerformanceEvent3Data.performance_1
         quantity = 200
-        quantity_only = True
     class stock_allocation_3:
         stock_type = StockTypeEvent3Data.stock_type_3
         performance = PerformanceEvent3Data.performance_1
         quantity = 300
-        quantity_only = True
 
 class ProductItemEvent1Performance1Data(DataSet):
     class productitem_1:

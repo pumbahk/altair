@@ -31,33 +31,31 @@ class Scanner(object):
         self.prefectures = dict([(v, k) for k, v in PREFECTURE_CHOICES])
 
     def scan_ticket_record(self, ticket_record):
-        ticket = Ticket.query.filter_by(sale=self.current_sale, backend_id=ticket_record['id']).first() or Ticket()
+        ticket = Ticket.query.filter_by(backend_id=ticket_record['id']).first() or Ticket()
 
         deleted = ticket_record.get('deleted', False)
         if deleted:
-            Ticket.query.filter_by(sale=self.current_sale, backend_id=ticket_record['id']).delete()
+            Ticket.query.filter_by(backend_id=ticket_record['id']).delete()
         else:
             try:
-                ticket.sale = self.current_sale
+                ticket.sale = Sale.query.filter_by(backend_id=ticket_record['sale_id']).first()
                 ticket.backend_id = ticket_record['id']
                 ticket.name = ticket_record['name']
                 ticket.seattype = ticket_record['seat_type']
                 ticket.price = ticket_record['price']
-                self.current_ticket = ticket
             except KeyError as e:
                 raise "missing property '%s' in the ticket record" % e.message
             self.session.add(ticket)
 
     def scan_sales_segment_record(self, sales_segment_record):
-        sale = Sale.query.filter_by(event=self.current_event,
-                                    performance=self.current_performance,
-                                    backend_id=sales_segment_record['id']).first() or Sale()
+        sale = Sale.query.filter_by(backend_id=sales_segment_record['id']).first() or Sale()
 
         deleted = sales_segment_record.get('deleted', False)
-        if not deleted:
+        if deleted:
+            Sale.query.filter_by(backend_id=sales_segment_record['id']).delete()
+        else:
             try:
                 sale.event = self.current_event
-                sale.performance = self.current_performance
                 sale.backend_id = sales_segment_record["id"]
                 sale.name = sales_segment_record["name"]
                 sale.kind = sales_segment_record["kind"]
@@ -65,29 +63,17 @@ class Scanner(object):
                 sale.end_on = parse_datetime(sales_segment_record['end_on'])
             except KeyError as e:
                 raise Exception("missing property '%s' in the sales record" % e.message)
-
-        self.current_sale = sale
-
-        ticket_records = sales_segment_record.get('tickets')
-        if ticket_records is None:
-            raise ValueError("'tickets' property not present in the sales segment record")
-        for ticket_record in ticket_records:
-            self.scan_ticket_record(ticket_record)
-
-        if deleted:
-            Sale.query.filter_by(event=self.current_event,
-                                 performance=self.current_performance,
-                                 backend_id=sales_segment_record['id']).delete()
-        else:
             self.session.add(sale)
 
     def scan_performance_record(self, performance_record):
         performance = Performance.query.filter_by(backend_id=performance_record['id']).first() or Performance()
 
         deleted = performance_record.get('deleted', False)
-        if not deleted:
-            performance.event = self.current_event
+        if deleted:
+            Performance.query.filter_by(backend_id=performance_record['id']).delete()
+        else:
             try:
+                performance.event = self.current_event
                 performance.backend_id = performance_record['id']
                 performance.title = performance_record['name']
                 performance.venue = performance_record['venue']
@@ -95,20 +81,9 @@ class Scanner(object):
                 performance.open_on = parse_datetime(performance_record['open_on'])
                 performance.start_on = parse_datetime(performance_record['start_on'])
                 performance.end_on = parse_datetime(performance_record.get('end_on'))
+                performance.tickets = [Ticket.query.filter_by(backend_id=id).first() for id in performance_record.get('tickets')]
             except KeyError as e:
                 raise Exception("missing property '%s' in the event record" % e.message)
-
-        self.current_performance = performance
-
-        sales_segment_records = performance_record.get('sales')
-        if sales_segment_records is None:
-            raise ValueError("'sales' property not present in the performance record")
-        for sales_segment_record in sales_segment_records:
-            self.scan_sales_segment_record(sales_segment_record)
-
-        if deleted:
-            Performance.query.filter_by(backend_id=performance_record['id']).delete()
-        else:
             self.session.add(performance)
 
     def scan_event_record(self, event_record):
@@ -134,6 +109,18 @@ class Scanner(object):
             raise ValueError("'performances' property not present in the event record")
         for performance_record in performance_records:
             self.scan_performance_record(performance_record)
+
+        sales_segment_records = event_record.get('sales')
+        if sales_segment_records is None:
+            raise ValueError("'sales' property not present in the event record")
+        for sales_segment_record in sales_segment_records:
+            self.scan_sales_segment_record(sales_segment_record)
+
+        ticket_records = event_record.get('tickets')
+        if ticket_records is None:
+            raise ValueError("'tickets' property not present in the event record")
+        for ticket_record in ticket_records:
+            self.scan_ticket_record(ticket_record)
 
         if deleted:
             Event.query.filter_by(backend_id=event_record['id']).delete()

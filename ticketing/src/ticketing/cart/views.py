@@ -21,6 +21,7 @@ class IndexView(object):
     """ 座席選択画面 """
     def __init__(self, request):
         self.request = request
+        self.context = request.context
 
     
     @view_config(route_name='cart.index', renderer='carts/index.html', xhr=False, permission="view")
@@ -65,11 +66,15 @@ class IndexView(object):
             first_start_on=str(e.first_start_on), final_start_on=str(e.final_start_on),
             sales_start_on=str(e.sales_start_on), sales_end_on=str(e.sales_end_on), venues=venues, product=e.products, )
 
+        sales_segment = self.context.get_sales_segument()
+
         return dict(event=event,
                     dates=dates,
                     selected=Markup(json.dumps([selected_performance.id, selected_date])),
                     venues_selection=Markup(json.dumps(select_venues)),
-                    order_url=self.request.route_url("cart.order"))
+                    order_url=self.request.route_url("cart.order"),
+                    upper_limit=sales_segment.upper_limit,
+        )
 
     @view_config(route_name='cart.seat_types', renderer="json")
     def get_seat_types(self):
@@ -179,7 +184,7 @@ class ReserveView(object):
                                              price=int(p.product.price),
                                         ) 
                                         for p in cart.products],
-                              total_amount=h.format_number(cart.total_amount),
+                              total_amount=h.format_number(cart.tickets_amount),
                     ))
 
     def on_error(self):
@@ -197,6 +202,7 @@ class PaymentView(object):
     """ 支払い方法、引き取り方法選択 """
     def __init__(self, request):
         self.request = request
+        self.context = request.context
 
     @view_config(route_name='cart.payment', request_method="GET", renderer="carts/payment.html")
     def __call__(self):
@@ -204,15 +210,11 @@ class PaymentView(object):
         """
         if not h.has_cart(self.request):
             return HTTPFound('/')
-
         cart = h.get_cart(self.request)
+        self.context.event_id = cart.performance.event.id
+        payment_delivery_methods = self.context.get_payment_delivery_method_pair()
 
-        payment_methods = c_models.PaymentMethod.query.all()
-
-        return dict(payments=[
-            dict(url=h.get_payment_method_url(self.request, m.id), name=m.name)
-            for m in payment_methods
-        ])
+        return dict(payment_delivery_methods=payment_delivery_methods)
 
     @view_config(route_name='cart.payment', request_method="POST", renderer="carts/payment.html")
     def post(self):
@@ -226,19 +228,6 @@ class PaymentView(object):
         self.request.session['order'] = order
 
         raise HTTPFound(self.request.route_url("payment.secure3d"))
-
-        if not h.has_cart(self.request):
-            return HTTPFound('/')
-
-        cart = h.get_cart(self.request)
-
-        payment_methods = c_models.PaymentMethod.query.all()
-
-        return dict(payments=[
-            dict(url=h.get_payment_method_url(self.request, m.id), name=m.name)
-            for m in payment_methods
-        ])
-
 
 class MultiCheckoutView(object):
     """ マルチ決済API
@@ -346,7 +335,14 @@ class ConfirmView(object):
     """ 決済確認画面 """
     def __init__(self, request):
         self.request = request
-        # TODO: Cart内容を表示？
+
+    def __call__(self):
+
+        assert h.has_cart(self.request)
+        cart = h.get_cart(self.request)
+
+        return dict(cart=cart)
+
 
 class CompleteView(object):
     """ 決済完了画面"""

@@ -9,6 +9,7 @@
     <th class="span1">${h.sortable(form.id)}</th>
     <th>${h.sortable(form.name)}</th>
     <th>${h.sortable(form.fee)}</th>
+    <th>${h.sortable(form.fee_type)}</th>
   </tr>
   </thead>
   <tbody>
@@ -18,6 +19,7 @@
     <td><span id="id">${payment_method.id}</span></td>
     <td><a href="javascript:edit_payment_method(${payment_method.id});"><span id="name">${payment_method.name}</span></a></td>
     <td><span id="fee">${h.price_format(payment_method.fee)}</span>円</td>
+    <td><span id="fee_type">${payment_method.fee_type}</span></td>
   </tr>
   % endfor
   </tbody>

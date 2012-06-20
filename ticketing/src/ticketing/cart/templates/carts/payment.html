@@ -48,21 +48,30 @@
 					<h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_methods.gif')}" alt="お支払い方法の指定" width="167" height="30" /></h2>
                     <!-- マルチ決済 -->
 
+%for m in payment_delivery_methods:
 					<div class="settlementPayBox">
 						<div class="settlementPayBoxInner">
 							<table>
 								<tr>
-									<td class="settlementPayRadio"><input type="radio" name="radio" id="radio2" value="radio" /></td>
+									<td class="settlementPayRadio"><input type="radio" name="radio" id="radio2" value="${m.id}" /></td>
 									<td><dl>
-										<dt>楽天安心決済でお支払い</dt>
-										<dd>説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明</dd>
+										<dt>${m.payment_method.name}</dt>
+										<dd>${h.format_currency(m.transaction_fee)}
+                                            (${h.fee_type(m.payment_method.fee_type)})
+                                        </dd>
+										<dt>${m.delivery_method.name}</dt>
+										<dd>${h.format_currency(m.delivery_fee)}
+                                            (${h.fee_type(m.delivery_method.fee_type)})
+                                        </dd>
 									</dl></td>
 								</tr>
 							</table>
 						</div>
 					</div>
+%endfor
 				</div>
 			</div>
+<!--
 			<div class="settlementBox">
 				<div class="settlementBoxInner">
 					<h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_pickup.gif')}" alt="お引き取り方法の指定" width="180" height="30" /></h2>
@@ -119,6 +128,7 @@
 						</div>
 					</div>
 				</div>
+-->
 			</div>
         <p class="align2"><image onclick="$('#form1').submit()" src="${request.static_url('ticketing.cart:static/img/settlement/btn_next.gif')}" alt="次へ" width="226" height="46" /></p>
         </form>

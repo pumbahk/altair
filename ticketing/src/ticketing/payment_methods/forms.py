@@ -5,7 +5,7 @@ from wtforms import TextField, HiddenField, SelectField, DecimalField
 from wtforms.validators import Length, Optional, NumberRange
 
 from ticketing.formhelpers import Translations, Required
-from ticketing.core.models import PaymentMethodPlugin
+from ticketing.core.models import PaymentMethodPlugin, FeeTypeEnum
 
 class PaymentMethodForm(Form):
 
@@ -30,6 +30,12 @@ class PaymentMethodForm(Form):
         label=u'決済手数料',
         places=2,
         validators=[Required()],
+    )
+    fee_type = SelectField(
+        label=u'手数料計算単位',
+        validators=[Required(u'選択してください')],
+        choices=[fee_type.v for fee_type in FeeTypeEnum],
+        coerce=int
     )
     payment_plugin_id = SelectField(
         label=u'決済方法',
