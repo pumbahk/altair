@@ -31,6 +31,7 @@ def includeme(config):
     # 決済系(セブンイレブン)
     config.add_route("payment.sej", 'payment/sej')
     # 完了／エラー
+    config.add_route('payment.confirm', 'confirm')
     config.add_route('payment.finish', 'completed')
 
     config.add_subscriber('.subscribers.add_helpers', 'pyramid.events.BeforeRender')

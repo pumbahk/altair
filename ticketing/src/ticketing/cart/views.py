@@ -221,13 +221,23 @@ class PaymentView(object):
         """ 支払い方法、引き取り方法選択
         """
 
+        payment_delivery_pair_id = self.request.params['payment_delivery_pair_id']
+
         order = dict(
             client_name=self.request.params['client_name'],
             mail_address=self.request.params['mail_address'],
+            payment_delivery_pair_id=payment_delivery_pair_id,
         )
         self.request.session['order'] = order
 
-        raise HTTPFound(self.request.route_url("payment.secure3d"))
+        payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter(
+            c_models.PaymentDeliveryMethodPair.id==payment_delivery_pair_id
+        ).one()
+
+        # TODO: マジックナンバー
+        if payment_delivery_pair.payment_method_id == 3:
+            raise HTTPFound(self.request.route_url("payment.secure3d"))
+        raise HTTPFound(self.request.route_url("payment.confirm"))
 
 class MultiCheckoutView(object):
     """ マルチ決済API
@@ -336,6 +346,7 @@ class ConfirmView(object):
     def __init__(self, request):
         self.request = request
 
+    @view_config(route_name='payment.confirm', renderer="carts/confirm.html")
     def __call__(self):
 
         assert h.has_cart(self.request)
