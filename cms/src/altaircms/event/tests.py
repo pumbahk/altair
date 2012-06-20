@@ -71,9 +71,8 @@ class CascadeDeleteTests(unittest.TestCase):
         from altaircms.models import Performance, Sale, Ticket
 
         target = Event()
-        per = Performance(event=target, backend_id=1)
-        sale0 = Sale(name="a", kind=u"normal", performance=per)
-        sale1 = Sale(name="b", kind=u"normal", performance=per)
+        sale0 = Sale(name="a", kind=u"normal", event=target)
+        sale1 = Sale(name="b", kind=u"normal", event=target)
 
         self.session.add_all([Ticket(sale=sale0, price=i) for i in [100, 200, 300, 400, 500]])
         self.session.add_all([Ticket(sale=sale1, price=i) for i in [100, 200, 300, 400, 500]])
@@ -111,164 +110,98 @@ class ParseAndSaveEventTests(unittest.TestCase):
         self.assertEqual(len(result), 1)
         event = result[0]
         self.assertEqual(event.title, u"マツイ・オン・アイス")
-        self.assertEqual(_to_utc(event.event_open), datetime(2012, 3, 15, 10))
-        self.assertEqual(_to_utc(event.event_close), datetime(2012, 3, 15, 13))
+
+        self.assertEqual(event.event_open, datetime(2012, 3, 15, 10))
+        self.assertEqual(event.event_close, datetime(2012, 3, 15, 13))
 
         self.assertEqual(len(event.performances), 2)
         performance = event.performances[0]
-        self.assertEqual(performance.title, u"マツイ・オン・アイス 東京公演")
+        self.assertEqual(performance.title, u"マツイ・オン・アイス(東京公演)")
         self.assertEqual(performance.venue, u"まついZEROホール")
-        self.assertEqual(_to_utc(performance.open_on), datetime(2012, 3, 15, 8))
-        self.assertEqual(_to_utc(performance.start_on), datetime(2012, 3, 15, 10))
-        self.assertEqual(_to_utc(performance.end_on), datetime(2012, 3, 15, 13))
+        self.assertEqual(performance.open_on, datetime(2012, 3, 15, 8))
+        self.assertEqual(performance.start_on, datetime(2012, 3, 15, 10))
+        self.assertEqual(performance.end_on, datetime(2012, 3, 15, 13))
 
-        self.assertEqual(len(performance.sales), 2)
+        ## todo:change
+        self.assertEqual(len(event.sales), 2)
         
-        sale = performance.sales[0]
-        self.assertEqual(sale.name, u"presale")
-        self.assertEqual(_to_utc(sale.start_on), datetime(2012, 1, 12, 10))
-        self.assertEqual(_to_utc(sale.end_on), datetime(2012, 1, 22, 10))
+        sale = event.sales[0]
+        self.assertEqual(sale.name, u"一般先行")
+        self.assertEqual(sale.start_on, datetime(2012, 1, 12, 10))
+        self.assertEqual(sale.end_on, datetime(2012, 1, 22, 10))
 
-        self.assertEqual(len(sale.tickets), 3)
+
+        self.assertEqual(len(performance.tickets), 4)
 
         ticket = sale.tickets[0]
-        self.assertEqual(ticket.name, u"A席大人")
-        self.assertEqual(ticket.seattype, u"A席")
-        self.assertEqual(ticket.price, 5000)
+        self.assertEqual(ticket.name, u"B席右")
+        # self.assertEqual(ticket.seattype, u"A席")
+        self.assertEqual(ticket.price, 1000)
 
     data = """
-{
- "created_at": "2012-01-10T13:42:00+09:00",
- "updated_at": "2012-01-11T15:32:00+09:00",
- "events": [
-   {
-     "id": 1,
-     "title": "マツイ・オン・アイス",
-     "start_on": "2012-03-15T19:00:00+09:00",
-     "end_on": "2012-03-15T22:00:00+09:00",
-     "deal_open": "2012-03-15T19:00:00+09:00",
-     "deal_close": "2012-03-15T22:00:00+09:00",
-     "performances": [
-       {
-         "id": 2,
-         "name": "マツイ・オン・アイス 東京公演",
-         "venue": "まついZEROホール",
-         "open_on": "2012-03-15T17:00:00+09:00",
-         "start_on": "2012-03-15T19:00:00+09:00",
-         "end_on": "2012-03-15T22:00:00+09:00",
-         "prefecture": "tokyo", 
-         "sales": [
-           {
-             "name": "presale",
-             "kind": "first_lottery",
-             "start_on": "2012-01-12T19:00:00+09:00",
-             "end_on": "2012-01-22T19:00:00+09:00",
-             "tickets": [
-               {
-                 "name": "A席大人",
-                 "seat_type": "A席",
-                 "price": 5000
-               },
-               {
-                 "name": "A席子供",
-                 "seat_type": "A席",
-                 "price": 3000
-               },
-               {
-                 "name": "B席",
-                 "seat_type": "B席",
-                 "price": 3000
-               }
-             ]
-           },
-           {
-             "name": "added_lottery",
-             "kind": "added_lottery",
-             "start_on": "2012-01-23T19:00:00+09:00",
-             "end_on": "2012-01-31T19:00:00+09:00",
-             "tickets": [
-               {
-                 "name": "A席大人",
-                 "seat_type": "A席",
-                 "price": 5000
-               },
-               {
-                 "name": "A席子供",
-                 "seat_type": "A席",
-                 "price": 3000
-               },
-               {
-                 "name": "B席",
-                 "seat_type": "B席",
-                 "price": 3000
-               }
-             ]
-           }
-         ]
-       },
-       {
-         "id": 3,
-         "name": "マツイ・オン・アイス 大阪公演",
-         "venue": "心斎橋まつい会館",
-         "open_on": "2012-03-16T17:00:00+09:00",
-         "start_on": "2012-03-16T19:00:00+09:00",
-         "end_on": "2012-03-16T22:00:00+09:00",
-         "deal_open": "2012-03-15T19:00:00+09:00",
-         "deal_close": "2012-03-15T22:00:00+09:00",  
-         "prefecture": "osaka", 
-         "sales": [
-           {
-             "name": "presale",
-             "kind": "first_lottery",
-             "start_on": "2012-01-12T19:00:00+09:00",
-             "end_on": "2012-01-22T19:00:00+09:00",
-             "tickets": [
-               {
-                 "name": "A席大人",
-                 "seat_type": "A席",
-                 "price": 5000
-               },
-               {
-                 "name": "A席子供",
-                 "seat_type": "A席",
-                 "price": 3000
-               },
-               {
-                 "name": "B席",
-                 "seat_type": "B席",
-                 "price": 3000
-               }
-             ]
-           },
-           {
-             "name": "normal",
-             "kind": "normal", 
-             "start_on": "2012-01-23T19:00:00+09:00",
-             "end_on": "2012-01-31T19:00:00+09:00",
-             "tickets": [
-               {
-                 "name": "A席大人",
-                 "seat_type": "A席",
-                 "price": 5000
-               },
-               {
-                 "name": "A席子供",
-                 "seat_type": "A席",
-                 "price": 3000
-               },
-               {
-                 "name": "B席",
-                 "seat_type": "B席",
-                 "price": 3000
-               }
-             ]
-           }
-         ]
-       }
-     ]
-   }
- ]
-}
+{"created_at": "2012-06-20T10:33:34",
+ "events": [{"deal_close": "2012-12-25T00:00:01",
+              "deal_open": "2012-10-25T10:00:00",
+              "end_on": "2012-03-15T13:00:00",
+              "id": 20,
+              "performances": [{"end_on": "2012-03-15T13:00:00",
+                                 "id": 96,
+                                 "name": "マツイ・オン・アイス(東京公演)",
+                                 "open_on": "2012-03-15T08:00:00",
+                                 "prefecture": "tokyo",
+                                 "start_on": "2012-03-15T10:00:00",
+                                 "tickets": [571,
+                                              572,
+                                              599,
+                                              600],
+                                 "venue": "まついZEROホール"},
+                                {"end_on": "2012-03-26T21:00:00",
+                                 "id": 97,
+                                 "name": "マツイ・オン・アイス(大阪公演)",
+                                 "open_on": "2012-03-26T18:00:00",
+                                 "prefecture": "osaka",
+                                 "start_on": "2012-03-26T19:00:00",
+                                 "tickets": [571,
+                                              572,
+                                              599,
+                                              600],
+                                 "venue": "マツイ市民会館"}],
+              "sales": [{"end_on": "2012-01-22T10:00:00",
+                          "id": 39,
+                          "kind": "first_lottery",
+                          "name": "一般先行",
+                          "seat_choice": false,
+                          "start_on": "2012-01-12T10:00:00"},
+                         {"end_on": "2012-03-12T00:00:00",
+                          "id": 40,
+                          "kind": "normal",
+                          "name": "一般販売",
+                          "seat_choice": true,
+                          "start_on": "2012-01-23T10:00:00"}],
+              "start_on": "2012-03-15T10:00:00",
+              "subtitle": "なし",
+              "tickets": [{"id": 571,
+                            "name": "B席右",
+                            "price": 1000,
+                            "sale_id": 39,
+                            "seat_type": ""},
+                           {"id": 572,
+                            "name": "B席左",
+                            "price": 1000.0,
+                            "sale_id": 39,
+                            "seat_type": ""},
+                           {"id": 599,
+                            "name": "S席",
+                            "price": 10000.0,
+                            "sale_id": 40,
+                            "seat_type": ["S席"]},
+                           {"id": 600,
+                            "name": "A席",
+                            "price": 4000.0,
+                            "sale_id": 40,
+                            "seat_type": ["A席"]}],
+              "title": "マツイ・オン・アイス"}],
+ "updated_at": "2012-06-20T10:33:34"}
     """
 
     def test_register_multiple(self):

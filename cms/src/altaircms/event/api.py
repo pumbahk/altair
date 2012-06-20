@@ -41,7 +41,7 @@ class Scanner(object):
                 ticket.sale = Sale.query.filter_by(backend_id=ticket_record['sale_id']).first()
                 ticket.backend_id = ticket_record['id']
                 ticket.name = ticket_record['name']
-                ticket.seattype = ticket_record['seat_type']
+                # ticket.seattype = ticket_record['seat_type']
                 ticket.price = ticket_record['price']
             except KeyError as e:
                 raise "missing property '%s' in the ticket record" % e.message

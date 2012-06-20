@@ -121,7 +121,7 @@ class Sale(BaseOriginalMixin, Base):
     backend_id = Column(Integer)
 
     event_id = Column(Integer, ForeignKey('event.id'))
-    event  = relationship("Event", backref="sales")
+    event  = relationship("Event", backref=orm.backref("sales", cascade="all"))
 
     name = Column(Unicode(length=255))
     kind = Column(Unicode(length=255), doc=u"saleskind. 販売条件(最速抽選, 先行抽選, 先行先着, 一般発売, 追加抽選.etc)", default=u"normal")
