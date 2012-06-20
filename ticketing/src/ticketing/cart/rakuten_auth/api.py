@@ -143,7 +143,7 @@ class RakutenOpenID(object):
         logger.debug('access token : %s' % access_token)
 
         user_info = self.get_rakutenid_basicinfo(self.consumer_key, 
-                                                 access_token["oauth_token"], access_token['oauth_token_secret'])
+                                                 access_token["oauth_token"], self.secret + "&" + access_token['oauth_token_secret'])
         logger.debug('user_info : %s' % user_info)
 
         if is_valid == "true":
@@ -191,7 +191,7 @@ class RakutenOpenID(object):
         oauth_nonce = uuid.uuid4().hex
         oauth_signature_method = 'HMAC-SHA1'
         oauth_version = '1.0'
-        oauth_signature = create_oauth_sigunature(method, url, oauth_consumer_key, secret + "&", 
+        oauth_signature = create_oauth_sigunature(method, url, oauth_consumer_key, secret, 
             oauth_token, oauth_signature_method, oauth_timestamp, oauth_nonce, oauth_version, 
             [("rakuten_oauth_api", rakuten_oauth_api)])
 
@@ -216,6 +216,7 @@ class RakutenOpenID(object):
         except urllib2.HTTPError as e:
             logger.debug(e.read())
             logger.exception(e)
+            raise
 
 def parse_access_token_response(response):
     return dict([(key, value[0]) for key, value in urlparse.parse_qs(response).items()])
