@@ -64,6 +64,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def create_from_cart(cls, cart):
         order = cls()
         order.total_amount = cart.total_amount
+        order.shipping_address = cart.shipping_address
         for product in cart.products:
             ordered_product = OrderedProduct(
                 order=order, product=product.product, price=product.product.price, quantity=product.quantity)
