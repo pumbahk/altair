@@ -224,14 +224,6 @@
     clear: both;
 }
 
-/* using left,right instead of bellows */
-#index #thisWeek {
-	width: auto;
-}
-#index #nearTheEnd {
-	width: auto;
-}
-
 /*
   for calendar widget layout
   */
