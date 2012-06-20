@@ -110,13 +110,15 @@ class ParseAndSaveEventTests(unittest.TestCase):
         self.assertEqual(len(result), 1)
         event = result[0]
         self.assertEqual(event.title, u"マツイ・オン・アイス")
-
+        self.assertEqual(event.backend_id, 20) #backend id
         self.assertEqual(event.event_open, datetime(2012, 3, 15, 10))
         self.assertEqual(event.event_close, datetime(2012, 3, 15, 13))
 
         self.assertEqual(len(event.performances), 2)
+
         performance = event.performances[0]
         self.assertEqual(performance.title, u"マツイ・オン・アイス(東京公演)")
+        self.assertEqual(performance.backend_id, 96)
         self.assertEqual(performance.venue, u"まついZEROホール")
         self.assertEqual(performance.open_on, datetime(2012, 3, 15, 8))
         self.assertEqual(performance.start_on, datetime(2012, 3, 15, 10))
@@ -127,6 +129,7 @@ class ParseAndSaveEventTests(unittest.TestCase):
         
         sale = event.sales[0]
         self.assertEqual(sale.name, u"一般先行")
+        self.assertEqual(sale.backend_id, 39)
         self.assertEqual(sale.start_on, datetime(2012, 1, 12, 10))
         self.assertEqual(sale.end_on, datetime(2012, 1, 22, 10))
 
@@ -134,9 +137,16 @@ class ParseAndSaveEventTests(unittest.TestCase):
         self.assertEqual(len(performance.tickets), 4)
 
         ticket = sale.tickets[0]
+        self.assertEqual(ticket.backend_id, 571)
         self.assertEqual(ticket.name, u"B席右")
-        # self.assertEqual(ticket.seattype, u"A席")
+        self.assertEqual(ticket.seattype, u"B席")
         self.assertEqual(ticket.price, 1000)
+
+        ### check bound performance to ticket relation
+        self.assertEquals(len(performance.tickets), 4)
+        self.assertIn(ticket, performance.tickets)
+
+
 
     data = """
 {"created_at": "2012-06-20T10:33:34",
@@ -184,22 +194,22 @@ class ParseAndSaveEventTests(unittest.TestCase):
                             "name": "B席右",
                             "price": 1000,
                             "sale_id": 39,
-                            "seat_type": ""},
+                            "seat_type": "B席"},
                            {"id": 572,
                             "name": "B席左",
                             "price": 1000.0,
                             "sale_id": 39,
-                            "seat_type": ""},
+                            "seat_type": "B席"},
                            {"id": 599,
-                            "name": "S席",
+                            "name": "S席大人",
                             "price": 10000.0,
                             "sale_id": 40,
-                            "seat_type": ["S席"]},
+                            "seat_type": "S席"},
                            {"id": 600,
-                            "name": "A席",
+                            "name": "A席大人",
                             "price": 4000.0,
                             "sale_id": 40,
-                            "seat_type": ["A席"]}],
+                            "seat_type": "A席"}],
               "title": "マツイ・オン・アイス"}],
  "updated_at": "2012-06-20T10:33:34"}
     """

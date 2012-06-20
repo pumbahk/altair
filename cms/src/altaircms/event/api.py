@@ -29,6 +29,7 @@ class Scanner(object):
         self.current_ticket = None
         self.events = []
         self.prefectures = dict([(v, k) for k, v in PREFECTURE_CHOICES])
+        self.after_parsed_actions = []
 
     def scan_ticket_record(self, ticket_record):
         ticket = Ticket.query.filter_by(backend_id=ticket_record['id']).first() or Ticket()
@@ -41,7 +42,7 @@ class Scanner(object):
                 ticket.sale = Sale.query.filter_by(backend_id=ticket_record['sale_id']).first()
                 ticket.backend_id = ticket_record['id']
                 ticket.name = ticket_record['name']
-                # ticket.seattype = ticket_record['seat_type']
+                ticket.seattype = ticket_record['seat_type']
                 ticket.price = ticket_record['price']
             except KeyError as e:
                 raise "missing property '%s' in the ticket record" % e.message
@@ -81,7 +82,11 @@ class Scanner(object):
                 performance.open_on = parse_datetime(performance_record['open_on'])
                 performance.start_on = parse_datetime(performance_record['start_on'])
                 performance.end_on = parse_datetime(performance_record.get('end_on'))
-                performance.tickets = [Ticket.query.filter_by(backend_id=id).first() for id in performance_record.get('tickets')]
+                def bound_performance_to_tickets():
+                    """ チケットが生成されてから、performanceとticketを結びつける。"""
+                    performance.tickets = [Ticket.query.filter_by(backend_id=id).first() for id in performance_record.get('tickets')]
+                self.after_parsed_actions.append(bound_performance_to_tickets)
+
             except KeyError as e:
                 raise Exception("missing property '%s' in the event record" % e.message)
             self.session.add(performance)
@@ -137,6 +142,8 @@ class Scanner(object):
 
     def __call__(self, parsed):
         self.scan_toplevel(parsed)
+        for action in self.after_parsed_actions:
+            action()
         return self.events
 
 def parse_and_save_event(parsed):
