@@ -4,43 +4,20 @@ import hashlib, time, re, urllib2
 import logging
 
 import tempfile
-from zlib import decompress, compress
+from zlib import decompress
 from datetime import datetime
 from dateutil.parser import parse
 
 from .utils import JavaHashMap
 from .models import SejOrder, SejTicket, SejNotification
 
-from .resources import make_sej_response, is_ticket, need_ticketing
+from .helpers import make_sej_response, parse_sej_response, create_sej_request, create_request_params, create_sej_request_data, create_hash_from_x_start_params
 from .resources import SejNotificationType, SejOrderUpdateReason, SejPaymentType, SejTicketType
-from .resources import SejResponseError, SejServerError, SejError, SejRequestError
+from .exceptions import SejResponseError, SejServerError, SejError
 
 import sqlahelper
-from sqlalchemy import or_, and_
-from sqlalchemy.orm.exc import NoResultFound
-
-from lxml import etree
-import re
-
-ascii_regex = re.compile(r'[^\x20-\x7E]')
 
 DBSession = sqlahelper.get_session()
-
-class SejTicketDataXml():
-
-    xml = ''
-
-    def __init__(self, xml):
-        self.xml = xml
-
-    def __unicode__(self):
-        from cStringIO import StringIO
-        s = StringIO(self.xml)
-        x = etree.parse(s)
-        xml =  re.sub(
-            r'''(<\?xml[^>]*)encoding=(?:'[^']*'|"[^"]"|[^> ?]*)\?>''',
-            r"\1encoding='Shift_JIS' ?>", etree.tostring(x, encoding='UTF-8', xml_declaration=True))
-        return xml.decode("utf-8")
 
 sej_hostname = u'https://pay.r1test.com/'
 
@@ -65,15 +42,8 @@ class SejPayment(object):
         self.retry_interval = retry_interval
 
     def request_file(self, params, retry_mode):
-        request_params = self.create_request_params(params)
-        req = urllib2.Request(self.url)
-        buffer = ["%s=%s" % (name, urllib2.quote(unicode(param).encode('shift_jis', 'xmlcharrefreplace'))) for name, param in request_params.iteritems()]
-        data = "&".join(buffer)
-
-        req.add_data(data)
-        req.add_header('User-Agent', 'SejPaymentForJava/2.00')
-        req.add_header('Connection', 'close')
-
+        request_params = create_request_params(params, self.secret_key)
+        req = create_sej_request(self.url, request_params)
 
         try:
             res = urllib2.urlopen(req)
@@ -91,68 +61,27 @@ class SejPayment(object):
 
         return body
 
-
-
     def request(self, params, retry_mode):
-        request_params = self.create_request_params(params)
+        request_params = create_request_params(params, self.secret_key)
         ret = self.send_request(request_params, 0, retry_mode)
         return ret
 
-    def create_request_params(self, params):
-        xcode = self.create_hash_from_x_start_params(params)
-        params['xcode'] = xcode
-        return params
-
-    def create_md5hash_from_dict(self, kv):
-        tmp_keys = JavaHashMap()
-        key_array = list(kv.iterkeys())
-        for key, value in kv.iteritems():
-            tmp_keys[key.lower()] = value
-        key_array.sort()
-        buffer = [tmp_keys[key.lower()] for key in key_array]
-        buffer.append(self.secret_key)
-        buffer = u','.join(buffer)
-        logging.debug('hash:' + buffer)
-        return hashlib.md5(buffer.encode(encoding="UTF-8")).hexdigest()
-
-    def create_hash_from_x_start_params(self, params):
-
-        falsify_props = dict()
-        for name,param in params.iteritems():
-            if name.startswith('X_'):
-                result = ascii_regex.search(param)
-                if result:
-                    raise SejRequestError(u"%s is must be ascii (%s)" % (name, param))
-
-                falsify_props[name] = param
-
-        hash = self.create_md5hash_from_dict(falsify_props)
-
-        return hash
 
     def send_request(self, request_params, mode, retry_flg):
         for count in range(self.retry_count):
             if count > 0:
                 time.sleep(self.retry_interval)
-            ret_val = self._send_request(request_params, mode, retry_flg)
-            if ret_val != 120 and ret_val != 5:
-                return ret_val
-
-        return 0
+            if self._send_request(request_params, mode, retry_flg):
+                return True
+            else:
+                retry_flg=1
+        return False
 
     def _send_request(self, request_params, mode, retry_flg):
         if retry_flg:
             request_params['retry_cnt'] = '1'
 
-        req = urllib2.Request(self.url)
-        buffer = ["%s=%s" % (name, urllib2.quote(unicode(param).encode('shift_jis', 'xmlcharrefreplace'))) for name, param in request_params.iteritems()]
-        data = "&".join(buffer)
-
-        self.log.info("[request]%s" % data)
-
-        req.add_data(data)
-        req.add_header('User-Agent', 'SejPaymentForJava/2.00')
-        req.add_header('Connection', 'close')
+        req = create_sej_request(self.url, request_params)
 
         try:
             res = urllib2.urlopen(req)
@@ -169,145 +98,15 @@ class SejPayment(object):
         self.log.info("[response]%s" % body)
 
         if status == 200:
+            # status == 200 はSyntaxErrorなんだって！
             raise SejServerError(status_code=200, reason="Script syntax error", body=body)
 
-        # ステータス800，902，910以外の場合は終了　戻り値：0
-        if status != 800 and status != 902 and status != 910:
-            raise SejServerError(status_code=status, reason=reason, body=body)
-        # キャンセルかつステータス800の場合は終了　戻り値：0
-        if status == 800 and mode == 1:
-            raise SejServerError(status_code=status, reason=reason, body=body)
-
-        self.response = self.parse(body, "SENBDATA")
-
-        if status >= 900:
-            raise SejServerError(status_code=status, reason=reason, body=body)
-        if status != 800:
+        if (status == 800 and mode != 1) or status == 902 or status == 910:
+            self.response = parse_sej_response(body, "SENBDATA")
+        else:
             raise SejServerError(status_code=status, reason=reason, body=body)
 
         return True
-
-    def parse(self, body, tag_name):
-        regex_tags = re.compile(r"<" + tag_name + ">([^<>]+)</"+tag_name+">")
-        regex_params = re.compile(r"([^&=]+)=([^&=]+)")
-        matches = regex_tags.findall(body)
-        key_value = {}
-        for match in matches:
-            for key,val in regex_params.findall(match):
-                key_value[key] = val
-        return key_value
-
-
-def _create_sej_request(
-        order_id,
-        total,
-        ticket_total,
-        commission_fee,
-        payment_type,
-        ticketing_fee,
-        payment_due_at,
-        ticketing_start_at,
-        ticketing_due_at,
-        regrant_number_due_at,
-        tickets,
-        shop_id):
-
-    params = JavaHashMap()
-    # ショップID Sejから割り当てられるshop_id
-
-    params['X_shop_id']         = shop_id
-    # ショップ名称
-    # 注文ID
-    params['X_shop_order_id']   = order_id
-
-    if payment_type != SejPaymentType.Paid and payment_due_at:
-        # コンビニでの決済を行う場合の支払い期限の設定
-        params['X_pay_lmt']         = payment_due_at.strftime('%Y%m%d%H%M')
-
-    # チケット代金
-    x_ticket_daikin = ticket_total if payment_type != SejPaymentType.Paid else 0
-    params['X_ticket_daikin']   = u'%06d' % x_ticket_daikin
-    # チケット購入代金
-    x_ticket_kounyu_daikin = commission_fee if payment_type != SejPaymentType.Paid else 0
-    params['X_ticket_kounyu_daikin'] = u'%06d' % x_ticket_kounyu_daikin
-    # 発券代金
-    x_hakken_daikin = ticketing_fee if payment_type != SejPaymentType.PrepaymentOnly else 0
-    params['X_hakken_daikin']       = u'%06d' % x_hakken_daikin
-
-    # 合計金額 = チケット代金 + チケット購入代金+発券代金の場合
-    x_goukei_kingaku = x_ticket_daikin + x_ticket_kounyu_daikin + x_hakken_daikin
-    params['X_goukei_kingaku']  = u'%06d' % x_goukei_kingaku
-
-    assert x_goukei_kingaku == x_ticket_daikin + x_ticket_kounyu_daikin + x_hakken_daikin
-    if payment_type == SejPaymentType.Paid:
-        assert x_ticket_daikin + x_ticket_kounyu_daikin == 0
-
-    # 前払い
-    if payment_type == SejPaymentType.Prepayment or payment_type == SejPaymentType.Paid:
-        # 支払いと発券が異なる場合、発券開始日時と発券期限を指定できる。
-        if ticketing_start_at is not None:
-            params['X_hakken_mise_date'] = ticketing_start_at.strftime('%Y%m%d%H%M')
-            # 発券開始日時状態フラグ
-        else:
-            params['X_hakken_mise_date_sts'] = u'1'
-
-        if ticketing_due_at is not None:
-            # 発券開始日時状態フラグ
-            params['X_hakken_lmt']      = ticketing_due_at.strftime('%Y%m%d%H%M')
-            # 発券期限日時状態フラグ
-        else:
-            params['X_hakken_lmt_sts'] = u'1'
-    #else:
-    #    if ticketing_start_at is not None:
-    #        params['X_hakken_mise_date'] = ticketing_start_at.strftime('%Y%m%d%H%M')
-    #    if ticketing_due_at is not None:
-    #        # 発券開始日時状態フラグ
-    #        params['X_hakken_lmt']      = ticketing_due_at.strftime('%Y%m%d%H%M')
-
-    ticket_num = 0
-    e_ticket_num = 0
-
-    for ticket in tickets:
-        if type(ticket['ticket_type']) is not SejTicketType:
-            raise ValueError('ticket_type : %s' % ticket['ticket_type'])
-        if type(ticket['performance_datetime']) is not datetime:
-            raise ValueError('performance_datetime : %s' % ticket['performance_datetime'])
-        if is_ticket(ticket['ticket_type']):
-            ticket_num+=1
-        else:
-            e_ticket_num+=1
-
-    if need_ticketing(payment_type):
-        params['X_saifuban_hakken_lmt'] = regrant_number_due_at.strftime('%Y%m%d%H%M')
-    else:
-        tickets=[]
-        ticket_num = 0
-        e_ticket_num = 0
-
-
-    params['X_ticket_cnt']          = u'%02d' % len(tickets)
-    params['X_ticket_hon_cnt']      = u'%02d' % ticket_num
-
-    idx = 1
-
-    if need_ticketing(payment_type):
-        for ticket in tickets:
-            # 発券がある場合
-            params['X_ticket_kbn_%02d' % idx]       = u'%d' % ticket['ticket_type'].v
-
-            if is_ticket(ticket['ticket_type']):
-                # 本券の場合必須項目
-                if ticket['event_name'] is None or len(ticket['event_name']) == 0:
-                    raise ValueError('event_name is required')
-                params['kougyo_mei_%02d' % idx]     = ticket['event_name']
-
-            params['kouen_mei_%02d' % idx]          = ticket['performance_name']
-            params['X_kouen_date_%02d' % idx]       = ticket['performance_datetime'].strftime('%Y%m%d%H%M')
-            params['X_ticket_template_%02d' % idx]  = ticket['ticket_template_id']
-            params['ticket_text_%02d' % idx]        = ticket['xml']
-            idx+=1
-
-    return params
 
 def request_order(
         shop_name,
@@ -342,7 +141,7 @@ def request_order(
         raise ValueError('tickets')
 
     payment = SejPayment(url = hostname + '/order/order.do', secret_key = secret_key)
-    params = _create_sej_request(
+    params = create_sej_request_data(
         order_id=order_id,
         total=total,
         ticket_total=ticket_total,
@@ -450,38 +249,6 @@ def request_order(
 
     return sej_order
 
-def request_sej_exchange_sheet(sej_order_id, shop_id = u'30520', secret_key = u'E6PuZ7Vhe7nWraFW'):
-    sej_order = SejOrder.query.filter_by(id = sej_order_id).one()
-
-    params = JavaHashMap()
-    params['iraihyo_id_00'] = sej_order.exchange_sheet_number
-    url = sej_order.exchange_sheet_url
-
-    req = urllib2.Request(url)
-    buffer = ["%s=%s" % (name, urllib2.quote(param.encode('shift_jis'))) for name, param in params.iteritems()]
-    data = "&".join(buffer)
-
-    req.add_data(data)
-    req.add_header('User-Agent', 'SejPaymentForJava/2.00')
-    req.add_header('Connection', 'close')
-
-    try:
-        res = urllib2.urlopen(req)
-    except urllib2.HTTPError, e:
-        res = e
-    except urllib2.URLError, e:
-        #print e.args
-        return
-
-    status = res.code
-    reason = res.msg
-
-    if status == 200:
-        body = res.read()
-        return body
-
-    raise Exception('not found')
-
 def request_cancel_order(
         order_id,
         billing_number,
@@ -557,7 +324,7 @@ def request_update_order(
         raise ValueError('order not found')
 
     payment = SejPayment(url = hostname + u'/order/updateorder.do', secret_key = secret_key)
-    params = _create_sej_request(
+    params = create_sej_request_data(
         order_id=condition.get('order_id'),
         total=total,
         ticket_total=ticket_total,
@@ -665,111 +432,7 @@ def request_fileget(
 
     return decompress(body)
 
-def callback_notification(params,
-                          secret_key = u'E6PuZ7Vhe7nWraFW'):
 
-
-    hash_map = JavaHashMap()
-    for k,v in params.items():
-        hash_map[k] = v
-
-    payment = SejPayment(url = '', secret_key = secret_key)
-    hash = payment.create_hash_from_x_start_params(hash_map)
-
-    if hash != params.get('xcode'):
-        raise SejResponseError(
-            400, 'Bad Request',dict(status='400', Error_Type='00', Error_Msg='Bad Value', Error_Field='xcode'))
-
-    process_number = params.get('X_shori_id')
-    if not process_number:
-        raise SejResponseError(
-             400, 'Bad Request',dict(status='422', Error_Type='01', Error_Msg='No Data', Error_Field='X_shori_id'))
-
-    retry_data = False
-    q = SejNotification.query.filter_by(process_number = process_number)
-    if q.count():
-        n = q.one()
-        retry_data = True
-    else:
-        n = SejNotification()
-        DBSession.add(n)
-
-    def process_payment_complete():
-        '''3-1.入金発券完了通知'''
-        n.process_number        = hash_map['X_shori_id']
-        n.shop_id               = hash_map['X_shop_id']
-        n.payment_type          = str(int(hash_map['X_shori_kbn']))
-        n.order_id              = hash_map['X_shop_order_id']
-        n.billing_number        = hash_map['X_haraikomi_no']
-        n.exchange_number       = hash_map['X_hikikae_no']
-        n.total_price           = hash_map['X_goukei_kingaku']
-        n.total_ticket_count    = hash_map['X_ticket_cnt']
-        n.ticket_count          = hash_map['X_ticket_hon_cnt']
-        n.return_ticket_count   = hash_map['X_kaishu_cnt']
-        n.pay_store_number      = hash_map['X_pay_mise_no']
-        n.pay_store_name        = hash_map['pay_mise_name']
-        n.ticketing_store_number= hash_map['X_hakken_mise_no']
-        n.ticketing_store_name  = hash_map['hakken_mise_name']
-        n.cancel_reason         = hash_map['X_torikeshi_riyu']
-        n.processed_at          = parse(hash_map['X_shori_time'])
-        n.signature             = hash_map['xcode']
-        return make_sej_response(dict(status='800' if not retry_data else '810'))
-
-
-    def process_re_grant():
-        n.process_number                = hash_map['X_shori_id']
-        n.shop_id                       = hash_map['X_shop_id']
-        n.payment_type                  = str(int(hash_map['X_shori_kbn']))
-        n.order_id                      = hash_map['X_shop_order_id']
-        n.billing_number                = hash_map['X_haraikomi_no']
-        n.exchange_number               = hash_map['X_hikikae_no']
-        n.payment_type_new              = str(int(hash_map['X_shori_kbn_new']))
-        n.billing_number_new            = hash_map['X_haraikomi_no_new']
-        n.exchange_number_new           = hash_map['X_hikikae_no_new']
-        n.ticketing_due_at_new    = parse(hash_map['X_lmt_time_new'])
-        n.barcode_numbers = dict()
-        n.barcode_numbers['barcodes'] = list()
-
-        for idx in range(1,20):
-            n.barcode_numbers['barcodes'].append(hash_map['X_barcode_no_new_%02d' % idx])
-        n.processed_at          = parse(hash_map['X_shori_time'])
-        n.signature                     = hash_map['xcode']
-
-        return make_sej_response(dict(status='800' if not retry_data else '810'))
-
-    def process_expire():
-        n.process_number                = hash_map['X_shori_id']
-        n.shop_id                       = hash_map['X_shop_id']
-        n.order_id                      = hash_map['X_shop_order_id']
-        n.ticketing_due_at_new          = parse(hash_map['X_lmt_time'])
-        n.billing_number                = hash_map['X_haraikomi_no']
-        n.exchange_number               = hash_map['X_hikikae_no']
-        n.processed_at                  = parse(hash_map['X_shori_time'])
-        n.signature                     = hash_map['xcode']
-
-        n.barcode_numbers               = dict()
-        n.barcode_numbers['barcodes']   = list()
-
-        for idx in range(1,20):
-            n.barcode_numbers['barcodes'].append(hash_map['X_barcode_no_%02d' % idx])
-
-        return make_sej_response(dict(status='800' if not retry_data else '810'))
-
-    def dummy():
-        raise SejResponseError(
-             422, 'Bad Request',dict(status='422', Error_Type='01', Error_Msg='Bad Value', Error_Field='X_tuchi_type'))
-
-    ret = {
-        SejNotificationType.PaymentComplete.v   : process_payment_complete,
-        SejNotificationType.CancelFromSVC.v     : process_payment_complete,
-        SejNotificationType.ReGrant.v           : process_re_grant,
-        SejNotificationType.TicketingExpire.v   : process_expire,
-    }.get(int(params['X_tuchi_type']), dummy)()
-    n.notification_type = str(int(params['X_tuchi_type']))
-
-    DBSession.flush()
-
-    return ret
 
 
 def request_cancel_event(cancel_events):
@@ -857,8 +520,6 @@ def request_cancel_event(cancel_events):
     w.write(unicode(output.getvalue(),'utf8').encode('CP932'))
     w.close()
 
-
     zf.close()
-
 
     return

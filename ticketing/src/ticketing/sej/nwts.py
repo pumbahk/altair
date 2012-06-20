@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from urllib2 import Request, HTTPError, urlopen, build_opener
+from urllib2 import Request, HTTPError, build_opener
 import struct
 
 import socket
-from urllib2 import HTTPSHandler, HTTPHandler, URLError, splittype, splithost, addinfourl
-import httplib
+from urllib2 import HTTPHandler, URLError, splittype, splithost, addinfourl
 
 key_file=None
 cert_file=None
+
 class SejHTTPHandler(HTTPHandler):
 
     def do_request_(self, request):
