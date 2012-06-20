@@ -14,6 +14,7 @@ from ..multicheckout import helpers as m_h
 from ..multicheckout import api as multicheckout_api
 from . import schema
 from .rakuten_auth.api import authenticated_user
+from . import plugins
 
 logger = logging.getLogger(__name__)
 
@@ -346,13 +347,24 @@ class ConfirmView(object):
     def __init__(self, request):
         self.request = request
 
-    @view_config(route_name='payment.confirm', renderer="carts/confirm.html")
-    def __call__(self):
+    @view_config(route_name='payment.confirm', request_method="GET", renderer="carts/confirm.html")
+    def get(self):
 
         assert h.has_cart(self.request)
         cart = h.get_cart(self.request)
 
         return dict(cart=cart)
+
+    @view_config(route_name='payment.confirm', request_method="POST", renderer="carts/confirm.html")
+    def get(self):
+
+        assert h.has_cart(self.request)
+        cart = h.get_cart(self.request)
+
+        payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter(
+            c_models.PaymentDeliveryMethodPair.id==payment_delivery_pair_id
+        ).one()
+        raise HTTPFound(self.request.route_url("payment.finish"))
 
 
 class CompleteView(object):
@@ -365,7 +377,30 @@ class CompleteView(object):
     def __call__(self):
         assert h.has_cart(self.request)
         cart = h.get_cart(self.request)
-        order = self.request.session['order']
+        order_session = self.request.session['order']
+
+        payment_delivery_pair_id = order_session['payment_delivery_pair_id']
+        payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter(
+            c_models.PaymentDeliveryMethodPair.id==payment_delivery_pair_id
+        ).one()
+
+        if payment_delivery_pair.payment_method_id == 3:
+            # カード決済
+            order = self.finish_payment_card(cart, order_session)
+            DBSession.add(order)
+
+        if payment_delivery_pair.delivery_method_id == 3:
+            self.finish_reserved_number(cart, order_session)
+
+        # 配送
+        return dict(order=order)
+
+    def finish_reserved_number(self, cart, order_session):
+        # 窓口引き換え番号
+        return plugins.create_reserved_number(self.request, cart)
+
+    # TODO: APIに移動
+    def finish_payment_card(self, cart, order):
         # 変換
         order_id = order['order_id']
         pares = order['pares']
@@ -373,7 +408,7 @@ class CompleteView(object):
         tran = order['tran']
         item_name = h.get_item_name(self.request, cart.performance)
 
-        checkout_auth_result = multicheckout_api.checkout_sales_secure3d(
+        checkout_sales_result = multicheckout_api.checkout_sales_secure3d(
             self.request, order_id,
             item_name, cart.total_amount, 0, order['client_name'], order['mail_address'],
             order['card_number'], order['exp_year'] + order['exp_month'], order['card_holder_name'],
@@ -381,14 +416,13 @@ class CompleteView(object):
             eci=tran['eci'], cavv=tran['cavv'], cavv_algorithm=tran['cavv_algorithm'],
         )
 
+        DBSession.add(checkout_sales_result)
         openid = authenticated_user(self.request)
         user = h.get_or_create_user(self.request, openid['clamed_id'])
 
         order = o_models.Order.create_from_cart(cart)
-        order.multicheckout_approval_no = checkout_auth_result.ApprovalNo
+        order.multicheckout_approval_no = checkout_sales_result.ApprovalNo
         order.user = user
         cart.finish()
-        DBSession.add(order)
 
-        # TODO 予約番号
-        return dict()
+        return order

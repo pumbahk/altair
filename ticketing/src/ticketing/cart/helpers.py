@@ -14,6 +14,12 @@ from markupsafe import Markup
 from zope.interface import implementer
 from ..core.models import FeeTypeEnum
 
+def render_delivery_finished_viewlet(request, order):
+    response = render_view_to_response(request, order, name="delivery-3")
+    if response is None:
+        return u"None"
+    return response.text
+
 def fee_type(type_enum):
     if type_enum == int(FeeTypeEnum.Once.v[0]):
         return u"1回ごと"
