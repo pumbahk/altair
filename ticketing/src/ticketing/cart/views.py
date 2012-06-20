@@ -215,7 +215,11 @@ class PaymentView(object):
         self.context.event_id = cart.performance.event.id
         payment_delivery_methods = self.context.get_payment_delivery_method_pair()
 
-        return dict(payment_delivery_methods=payment_delivery_methods)
+        openid = authenticated_user(self.request)
+        user = h.get_or_create_user(self.request, openid['clamed_id'])
+
+        return dict(payment_delivery_methods=payment_delivery_methods,
+            user=user, user_profile=user.user_profile)
 
     @view_config(route_name='cart.payment', request_method="POST", renderer="carts/payment.html")
     def post(self):
