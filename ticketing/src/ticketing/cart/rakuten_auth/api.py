@@ -1,3 +1,5 @@
+# -*- coding:utf-8 -*-
+
 import urllib
 import urllib2
 import pickle
@@ -7,12 +9,16 @@ import uuid
 import hmac
 import hashlib
 
+from datetime import datetime
 import oauth2 as oauth
 from pyramid import security
 from ticketing.cart import logger
 
 from .interfaces import IRakutenOpenID
 import random
+from .. import helpers as cart_helpers
+from ticketing.models import DBSession
+from ticketing.users.models import UserProfile
 
 def gen_reseve_no(order_no):
     base = "%012d" % order_no
@@ -145,6 +151,22 @@ class RakutenOpenID(object):
         user_info = self.get_rakutenid_basicinfo(self.consumer_key, 
                                                  access_token["oauth_token"], self.secret + "&" + access_token['oauth_token_secret'])
         logger.debug('user_info : %s' % user_info)
+        user = cart_helpers.get_or_create_user(None, identity['claimed_id'])
+        profile = UserProfile(
+            user=user,
+            email=user_info.get('emailAddress'),
+            nick_name=user_info.get('nickName'),
+            first_name=user_info.get('firstName'),
+            last_name=user_info.get('lastName'),
+            first_name_kana=user_info.get('firstNameKataKana'),
+            last_name_kana=user_info.get('lastNameKataKana'),
+            birth_day=datetime.strptime(user_info.get('birthDay'), '%Y/%m/%d'),
+            sex=self.sex_no(user_info.get('sex')),
+        )
+        
+        DBSession.add(user)
+        import transaction
+        transaction.commit()
 
         if is_valid == "true":
             logger.debug("authentication OK")
@@ -152,6 +174,14 @@ class RakutenOpenID(object):
         else:
             logger.debug("authentication NG")
             return None
+
+    def sex_no(self, s):
+        if s == u'男性':
+            return 1
+        elif s == u'女性':
+            return 2
+        else:
+            return 0
 
     def get_access_token(self, oauth_consumer_key, oauth_token, secret):
         method = "GET"
@@ -212,7 +242,7 @@ class RakutenOpenID(object):
             f = urllib2.urlopen(request_url)
             response_body = f.read()
             f.close()
-            return response_body
+            return parse_rakutenid_basicinfo(response_body)
         except urllib2.HTTPError as e:
             logger.debug(e.read())
             logger.exception(e)
@@ -221,6 +251,10 @@ class RakutenOpenID(object):
 def parse_access_token_response(response):
     return dict([(key, value[0]) for key, value in urlparse.parse_qs(response).items()])
     #return dict([line.split(":", 1) for line in response.split("\n")])
+
+def parse_rakutenid_basicinfo(response):
+    
+    return dict([line.split(":", 1) for line in response.split("\n")])
 
 def create_signature_base(method, url, oauth_consumer_key, secret, oauth_token, oauth_signature_method, oauth_timestamp, oauth_nonce, oauth_version, form_params):
     params = sorted(form_params + [

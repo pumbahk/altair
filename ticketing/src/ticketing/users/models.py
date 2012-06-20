@@ -1,6 +1,7 @@
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL
 from sqlalchemy.orm import join, backref, column_property
 
+from standardenum import StandardEnum
 from ticketing.models import relationship
 from ticketing.master.models import *
 import sqlahelper
@@ -22,6 +23,11 @@ class User(Base):
     @staticmethod
     def get(user_id):
         return session.query(User).filter(User.id == user_id).first()
+
+class SexEnum(StandardEnum):
+    Male = 1
+    Female = 2
+    NoAnswer = 0
 
 class UserProfile(Base):
     __tablename__ = 'UserProfile'

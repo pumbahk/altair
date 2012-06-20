@@ -1,3 +1,5 @@
+# -*- coding:utf-8 -*-
+
 import unittest
 import mock
 
@@ -284,3 +286,33 @@ class checkdigitTests(unittest.TestCase):
         data = "456995111617"
         result = self._callFUT(data)
         self.assertEqual(result, '9')
+
+class parse_rakutenid_basicinfoTests(unittest.TestCase):
+    def _callFUT(self, *args, **kwargs):
+        from .api import parse_rakutenid_basicinfo
+        return parse_rakutenid_basicinfo(*args, **kwargs)
+
+    def test_it(self):
+        data = """\
+emailAddress:aodag@beproud.jp
+nickName:aodagbp
+firstName:篤
+lastName:小田切
+firstNameKataKana:アツシ
+lastNameKataKana:オダギリ
+birthDay:1979/08/02
+sex:男性"""
+
+        data = unicode(data, 'utf-8')
+        result = self._callFUT(data)
+        self.assertEqual(result, 
+            {
+"emailAddress": u"aodag@beproud.jp",
+"nickName": u"aodagbp",
+"firstName": u"篤",
+"lastName": u"小田切",
+"firstNameKataKana": u"アツシ",
+"lastNameKataKana": u"オダギリ",
+"birthDay": u"1979/08/02",
+"sex": u"男性",
+            })
