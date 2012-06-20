@@ -23,7 +23,10 @@ class TicketingCartResrouce(object):
 
     def __init__(self, request):
         self.request = request
-        self.event_id = self.request.matchdict.get('event_id')
+        if request.matchdict:
+            self.event_id = self.request.matchdict.get('event_id')
+        else:
+            self.event_id = None
 
     def get_system_fee(self):
         return 315

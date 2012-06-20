@@ -268,6 +268,7 @@ class PaymentView(object):
         payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter(
             c_models.PaymentDeliveryMethodPair.id==payment_delivery_pair_id
         ).one()
+        cart.payment_delivery_pair = payment_delivery_pair
 
         # TODO: マジックナンバー
         if payment_delivery_pair.payment_method_id == 3:
@@ -415,12 +416,12 @@ class CompleteView(object):
             c_models.PaymentDeliveryMethodPair.id==payment_delivery_pair_id
         ).one()
 
-        if payment_delivery_pair.payment_method_id == 3:
+        if payment_delivery_pair.payment_method.payment_plugin_id == 3:
             # カード決済
             order = self.finish_payment_card(cart, order_session)
             DBSession.add(order)
 
-        if payment_delivery_pair.delivery_method_id == 3:
+        if payment_delivery_pair.delivery_method.delivery_plugin_id == 3:
             self.finish_reserved_number(cart, order_session)
 
         # 配送

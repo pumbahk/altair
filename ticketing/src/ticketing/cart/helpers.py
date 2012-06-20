@@ -13,11 +13,20 @@ from pyramid.view import render_view_to_response
 from markupsafe import Markup
 from zope.interface import implementer
 from ..core.models import FeeTypeEnum
+import logging
+from .plugins import OrderDelivery
+
+logger = logging.getLogger(__name__)
 
 def render_delivery_finished_viewlet(request, order):
-    response = render_view_to_response(request, order, name="delivery-3")
+    logger.debug("*" * 80)
+    plugin_id = order.payment_delivery_pair.delivery_method.delivery_plugin_id
+    logger.debug("plugin_id:%d" % plugin_id)
+
+    order = OrderDelivery(order)
+    response = render_view_to_response(order, request, name="delivery-%d" % plugin_id, secure=False)
     if response is None:
-        return u"None"
+        raise ValueError
     return response.text
 
 def fee_type(type_enum):

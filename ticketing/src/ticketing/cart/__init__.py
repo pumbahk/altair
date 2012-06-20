@@ -68,5 +68,6 @@ def main(global_config, **settings):
     config.include('..checkout')
     config.include('..multicheckout')
     config.scan('..orders.models')
+    config.include('.plugins')
 
     return config.make_wsgi_app()
