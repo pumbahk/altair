@@ -14,13 +14,16 @@ logger = logging.getLogger('fixtures')
 
 SALT = '5t&a'; # gotanda
 
-stock_type_pairs = [
-    (u'S席', 0),
-    (u'A席', 0),
-    (u'B席', 0),
-    (u'自由席', 1),
-    (u'駐車券', 1),
-    (u'ノベルティ', 1),
+STOCK_TYPE_TYPE_SEAT = 0
+STOCK_TYPE_TYPE_OTHER = 1
+
+stock_type_triplets = [
+    (u'S席', STOCK_TYPE_TYPE_SEAT, False),
+    (u'A席', STOCK_TYPE_TYPE_SEAT, False),
+    (u'B席', STOCK_TYPE_TYPE_SEAT, False),
+    (u'自由席', STOCK_TYPE_TYPE_SEAT, True),
+    (u'駐車券', STOCK_TYPE_TYPE_OTHER, True),
+    (u'ノベルティ', STOCK_TYPE_TYPE_OTHER, True),
     ]
 
 stock_type_combinations = {
@@ -659,7 +662,7 @@ def random_color():
     return u'#%x%x%x' % (randint(0, 15), randint(0, 15), randint(0, 15))
 
 def build_site_datum(name):
-    colgroups = ['0'] + ['ABCDEFGHIJKLMNOPQRSTUVWXYZ'[i] for i, (_, type) in enumerate(stock_type_pairs) if type == 0]
+    colgroups = ['0'] + ['ABCDEFGHIJKLMNOPQRSTUVWXYZ'[i] for i, (_, type, quantity_only) in enumerate(stock_type_triplets) if type == STOCK_TYPE_TYPE_SEAT and not quantity_only]
     return Data(
         'Site',
         name=name,
@@ -1062,7 +1065,7 @@ def build_performance_datum(organization, event, name, performance_date):
     colgroup_index = 1 # first colgroup is for "unassigned" seats.
     for stock_type in event.stock_types:
         stock_set = []
-        if stock_type.type == 0:
+        if stock_type.type == STOCK_TYPE_TYPE_SEAT and not stock_type.quantity_only:
             colgroup = site_config['colgroups'][colgroup_index]
             quantity = len(colgroup[2])
             stock_sets.append((colgroup_index, stock_set))
@@ -1106,11 +1109,12 @@ def build_performance_datum(organization, event, name, performance_date):
         )
     return retval
 
-def build_stock_type_datum(name, type):
+def build_stock_type_datum(name, type, quantity_only):
     return Data(
         'StockType',
         name=name,
         type=type,
+        quantity_only=quantity_only,
         style=json.dumps(dict(fill=dict(color=random_color())), ensure_ascii=False)
         )
 
@@ -1154,7 +1158,7 @@ def build_product_data(sales_segment):
 def build_event_datum(organization, title):
     logger.info(u"Building Event %s" % title)
     event_date = random_date()
-    stock_type_data = [build_stock_type_datum(_name, type) for _name, type in stock_type_pairs]
+    stock_type_data = [build_stock_type_datum(_name, type, quantity_only) for _name, type, quantity_only in stock_type_triplets]
     sales_segment_data = [
         build_sales_segment_datum(
             organization,
