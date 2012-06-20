@@ -148,21 +148,35 @@ class RakutenOpenID(object):
         access_token = self.get_access_token(self.consumer_key, request_token, self.secret)
         logger.debug('access token : %s' % access_token)
 
-        user_info = self.get_rakutenid_basicinfo(self.consumer_key, 
-                                                 access_token["oauth_token"], self.secret + "&" + access_token['oauth_token_secret'])
+        user_info = parse_rakutenid_basicinfo(self.call_rakutenid_api(self.consumer_key, 
+                                                   access_token["oauth_token"], self.secret + "&" + access_token['oauth_token_secret'],
+                                                   rakuten_oauth_api='rakutenid_basicinfo',
+                                                ))
+        contact_info = parse_rakutenid_basicinfo(self.call_rakutenid_api(self.consumer_key, 
+                                                   access_token["oauth_token"], self.secret + "&" + access_token['oauth_token_secret'],
+                                                   rakuten_oauth_api='rakutenid_contactinfo',
+                                                ))
+
         logger.debug('user_info : %s' % user_info)
         user = cart_helpers.get_or_create_user(None, identity['claimed_id'])
-        profile = UserProfile(
-            user=user,
-            email=user_info.get('emailAddress'),
-            nick_name=user_info.get('nickName'),
-            first_name=user_info.get('firstName'),
-            last_name=user_info.get('lastName'),
-            first_name_kana=user_info.get('firstNameKataKana'),
-            last_name_kana=user_info.get('lastNameKataKana'),
-            birth_day=datetime.strptime(user_info.get('birthDay'), '%Y/%m/%d'),
-            sex=self.sex_no(user_info.get('sex')),
-        )
+        if user.user_profile is None:
+            profile = UserProfile(user=user)
+        else:
+            profile = user.user_profile
+
+        profile.email=user_info.get('emailAddress')
+        profile.nick_name=user_info.get('nickName')
+        profile.first_name=user_info.get('firstName')
+        profile.last_name=user_info.get('lastName')
+        profile.first_name_kana=user_info.get('firstNameKataKana')
+        profile.last_name_kana=user_info.get('lastNameKataKana')
+        profile.birth_day=datetime.strptime(user_info.get('birthDay'), '%Y/%m/%d')
+        profile.sex=self.sex_no(user_info.get('sex'))
+        profile.zip=contact_info.get('zip')
+        profile.prefecture=contact_info.get('prefecture')
+        profile.city=contact_info.get('city')
+        profile.street=contact_info.get('street')
+        profile.tel_1=contact_info.get('tel')
         
         DBSession.add(user)
         import transaction
@@ -212,11 +226,10 @@ class RakutenOpenID(object):
         access_token = parse_access_token_response(response_body)
         return access_token
 
-    def get_rakutenid_basicinfo(self, oauth_consumer_key, access_token, secret):
+    def call_rakutenid_api(self, oauth_consumer_key, access_token, secret, rakuten_oauth_api):
         method = "GET"
         url = "https://api.id.rakuten.co.jp/openid/oauth/call"
         oauth_token = access_token
-        rakuten_oauth_api = 'rakutenid_basicinfo'
         oauth_timestamp = int(time.time() * 1000)
         oauth_nonce = uuid.uuid4().hex
         oauth_signature_method = 'HMAC-SHA1'
@@ -242,7 +255,7 @@ class RakutenOpenID(object):
             f = urllib2.urlopen(request_url)
             response_body = f.read()
             f.close()
-            return parse_rakutenid_basicinfo(response_body)
+            return response_body
         except urllib2.HTTPError as e:
             logger.debug(e.read())
             logger.exception(e)
