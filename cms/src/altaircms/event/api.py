@@ -84,6 +84,7 @@ class Scanner(object):
                 performance.end_on = parse_datetime(performance_record.get('end_on'))
                 def bound_performance_to_tickets():
                     """ チケットが生成されてから、performanceとticketを結びつける。"""
+                    ## 更新により通知されるticket.backend`idsが減ったとき、増えたときのテストしていない。
                     ticket_id_list = performance_record.get("tickets", [])
                     performance.tickets = list(Ticket.query.filter(Ticket.backend_id.in_(ticket_id_list)))
                 self.after_parsed_actions.append(bound_performance_to_tickets)

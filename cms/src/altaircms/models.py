@@ -135,7 +135,7 @@ class Sale(BaseOriginalMixin, Base):
     SALESKIND_DICT = dict(SALESKIND_CHOICES)
     @property
     def jkind(self):
-        return self.SALESKIND_DICT[self.kind]
+        return self.SALESKIND_DICT.get(self.kind, u"-")
 
 
 class Ticket(BaseOriginalMixin, Base):
@@ -155,7 +155,7 @@ class Ticket(BaseOriginalMixin, Base):
     updated_at = Column(DateTime, default=datetime.now)
     price = Column(Integer, default=0)
 
-    sale = relationship("Sale", backref=orm.backref("tickets", order_by=price, cascade="all"))
+    sale = relationship("Sale", backref=orm.backref("tickets", order_by=price.desc(), cascade="all"))
 
     name = Column(Unicode(255))
     seattype = Column(Unicode(255))

@@ -35,8 +35,8 @@
 	  h1 {font-size:200%; }
 	  h2 {font-size:170%; }
 
-      #main_left img{width:380px;}
-      #main_right img{width:250px;}
+      #main_left image-widget img{width:380px;}
+      #main_right image-widget img{width:250px;}
       #main_left p {width:380px;}
       #main_right p {width:250px;}
 
