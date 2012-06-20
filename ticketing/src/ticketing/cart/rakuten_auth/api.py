@@ -313,16 +313,6 @@ class RakutenOpenID(object):
 
 def parse_access_token_response(response):
     return dict([(key, value[0]) for key, value in urlparse.parse_qs(response).items()])
-    #return dict([line.split(":", 1) for line in response.split("\n")])
-=======
-        f = urllib2.urlopen(request_url)
-        response_body = f.read()
-        f.close()
-
-def parse_access_token_response(response):
-    # oauth_token=6cd17f3fe4dbc177ef3c29886f16aa99&oauth_token_secret=682a547e46919032c4f9b68eb6039173
-    return dict([line.split("=", 1) for line in response.split("&")])
->>>>>>> Access Tokenまで取れた
 
 def parse_rakutenid_basicinfo(response):
     
