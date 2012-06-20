@@ -81,7 +81,7 @@ class QueryParamsRender(object):
             return u"〜 %s" % edate.strftime("%Y/%m/%d") 
 
     def describe_deal_cond(self, deal_cond_list):
-        """最速抽選 or 先行抽選 or 一般販売"""
+        """最速抽選 or 先行抽選 or 一般発売"""
         convertor = forms.DealCondPartForm.DDICT
         if len(deal_cond_list) <= 1:
             return convertor[deal_cond_list[0]]
