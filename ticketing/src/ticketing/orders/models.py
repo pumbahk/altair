@@ -47,6 +47,10 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     multicheckout_approval_no = Column(Unicode(255), doc=u"マルチ決済受領番号")
 
+
+    payment_delivery_pair_id = Column(Identifier, ForeignKey("PaymentDeliveryMethodPair.id"))
+    payment_delivery_pair = relationship("PaymentDeliveryMethodPair")
+
     @staticmethod
     def filter_by_performance_id(id):
         performance = Performance.get(id)
@@ -64,6 +68,9 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def create_from_cart(cls, cart):
         order = cls()
         order.total_amount = cart.total_amount
+        order.shipping_address = cart.shipping_address
+        order.payment_delivery_pair = cart.payment_delivery_pair
+
         for product in cart.products:
             ordered_product = OrderedProduct(
                 order=order, product=product.product, price=product.product.price, quantity=product.quantity)

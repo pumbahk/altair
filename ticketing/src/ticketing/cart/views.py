@@ -215,17 +215,51 @@ class PaymentView(object):
         self.context.event_id = cart.performance.event.id
         payment_delivery_methods = self.context.get_payment_delivery_method_pair()
 
-        return dict(payment_delivery_methods=payment_delivery_methods)
+        openid = authenticated_user(self.request)
+        user = h.get_or_create_user(self.request, openid['clamed_id'])
+
+        return dict(payment_delivery_methods=payment_delivery_methods,
+            user=user, user_profile=user.user_profile)
 
     @view_config(route_name='cart.payment', request_method="POST", renderer="carts/payment.html")
     def post(self):
         """ 支払い方法、引き取り方法選択
         """
 
+        if not h.has_cart(self.request):
+            return HTTPFound('/')
+        cart = h.get_cart(self.request)
+
+        openid = authenticated_user(self.request)
+        user = h.get_or_create_user(self.request, openid['clamed_id'])
+
+        params = self.request.params
+        shipping_address = o_models.ShippingAddress(
+            first_name=params['first_name'],
+            last_name=params['last_name'],
+            first_name_kana=params['first_name_kana'],
+            last_name_kana=params['last_name_kana'],
+            zip=params['zip'],
+            prefecture=params['prefecture'],
+            city=params['city'],
+            address_1=params['address_1'],
+            address_2=params['address_2'],
+            #country=params['country'],
+            country=u"日本国",
+            tel_1=params['tel'],
+            #tel_2=params['tel_2'],
+            fax=params['fax'],
+            user=user,
+        )
+
+        DBSession.add(shipping_address)
+        cart.shipping_address = shipping_address
+        DBSession.add(cart)
+        client_name = params['last_name'] + params['first_name']
         payment_delivery_pair_id = self.request.params['payment_delivery_pair_id']
 
         order = dict(
-            client_name=self.request.params['client_name'],
+            client_name=client_name,
             mail_address=self.request.params['mail_address'],
             payment_delivery_pair_id=payment_delivery_pair_id,
         )
@@ -234,11 +268,12 @@ class PaymentView(object):
         payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter(
             c_models.PaymentDeliveryMethodPair.id==payment_delivery_pair_id
         ).one()
+        cart.payment_delivery_pair = payment_delivery_pair
 
         # TODO: マジックナンバー
         if payment_delivery_pair.payment_method_id == 3:
-            raise HTTPFound(self.request.route_url("payment.secure3d"))
-        raise HTTPFound(self.request.route_url("payment.confirm"))
+            return HTTPFound(self.request.route_url("payment.secure3d"))
+        return HTTPFound(self.request.route_url("payment.confirm"))
 
 class MultiCheckoutView(object):
     """ マルチ決済API
@@ -361,9 +396,6 @@ class ConfirmView(object):
         assert h.has_cart(self.request)
         cart = h.get_cart(self.request)
 
-        payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter(
-            c_models.PaymentDeliveryMethodPair.id==payment_delivery_pair_id
-        ).one()
         raise HTTPFound(self.request.route_url("payment.finish"))
 
 
@@ -384,12 +416,12 @@ class CompleteView(object):
             c_models.PaymentDeliveryMethodPair.id==payment_delivery_pair_id
         ).one()
 
-        if payment_delivery_pair.payment_method_id == 3:
+        if payment_delivery_pair.payment_method.payment_plugin_id == 3:
             # カード決済
             order = self.finish_payment_card(cart, order_session)
             DBSession.add(order)
 
-        if payment_delivery_pair.delivery_method_id == 3:
+        if payment_delivery_pair.delivery_method.delivery_plugin_id == 3:
             self.finish_reserved_number(cart, order_session)
 
         # 配送

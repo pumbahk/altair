@@ -35,10 +35,50 @@
                     <fieldset>
                         <legend>購入者情報</legend>
                         <ul>
-                            <li><label for="client_name">購入者氏名</label></li>
-                            <input type="text" id="client_name" name="client_name" />
-                            <li><label for="mail_address">メールアドレス</label></li>
-                            <input type="text" id="mail_address" name="mail_address" />
+                            <li>購入者氏名
+                            <ul>
+                                <li>
+                                <label for="first_name">名</label>
+                                <input type="text" id="first_name" name="first_name" value="${user_profile.first_name}" /></li>
+                                <li>
+                                <label for="last_name">姓</label>
+                                <input type="text" id="last_name" name="last_name" value="${user_profile.last_name}" /></li>
+                                <li>
+                                <label for="first_name_kana">名(カナ)</label>
+                                <input type="text" id="first_name_kana" name="first_name_kana" value="${user_profile.first_name_kana}" /></li>
+                                <li>
+                                <label for="last_name_kana">姓(カナ)</label>
+                                <input type="text" id="last_name_kana" name="last_name_kana" value="${user_profile.last_name_kana}" /></li>
+                            </ul>
+                            <li><label for="mail_address">メールアドレス</label>
+                            <input type="text" id="mail_address" name="mail_address" value="${user_profile.email}" />
+                            </li>
+                            <li>住所
+                            <ul>
+                                <li><label for="zip">郵便番号</label>
+                                <input type="text" id="zip" name="zip" value="${user_profile.zip}" />
+                                </li>
+                                <li><label for="prefecture">都道府県</label>
+                                <input type="text" id="prefecture" name="prefecture" value="${user_profile.prefecture}" />
+                                </li>
+                                <li><label for="city">市区町村</label>
+                                <input type="text" id="city" name="city" value="${user_profile.city}" />
+                                </li>
+                                <li><label for="address_1">住所</label>
+                                <input type="text" id="address_1" name="address_1" value="${user_profile.street}" />
+                                <input type="text" id="address_2" name="address_2" value="${user_profile.address}" />
+                                </li>
+                            </li>
+                            <li>電話番号
+                            <ul>
+                                <li><label for="tel">TEL</label>
+                                <input type="text" id="tel" name="tel" value="${user_profile.tel_1}" />
+                                </li>
+                                <li>FAX
+                                <input type="text" id="fax" name="fax" value="${user_profile.fax}" />
+                                </li>
+                            </ul>
+                            </li>
                         </ul>
                     </fieldset>
                 </div>

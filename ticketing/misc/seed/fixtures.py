@@ -14,13 +14,16 @@ logger = logging.getLogger('fixtures')
 
 SALT = '5t&a'; # gotanda
 
-stock_type_pairs = [
-    (u'S席', 0),
-    (u'A席', 0),
-    (u'B席', 0),
-    (u'自由席', 1),
-    (u'駐車券', 1),
-    (u'ノベルティ', 1),
+STOCK_TYPE_TYPE_SEAT = 0
+STOCK_TYPE_TYPE_OTHER = 1
+
+stock_type_triplets = [
+    (u'S席', STOCK_TYPE_TYPE_SEAT, False),
+    (u'A席', STOCK_TYPE_TYPE_SEAT, False),
+    (u'B席', STOCK_TYPE_TYPE_SEAT, False),
+    (u'自由席', STOCK_TYPE_TYPE_SEAT, True),
+    (u'駐車券', STOCK_TYPE_TYPE_OTHER, True),
+    (u'ノベルティ', STOCK_TYPE_TYPE_OTHER, True),
     ]
 
 stock_type_combinations = {
@@ -659,7 +662,7 @@ def random_color():
     return u'#%x%x%x' % (randint(0, 15), randint(0, 15), randint(0, 15))
 
 def build_site_datum(name):
-    colgroup_seat_schema_pair = [('ABCDEFGHIJKLMNOPQRSTUVWXYZ'[i], _name) for i, (_name, type) in enumerate(stock_type_pairs) if type == 0]
+    colgroups = ['0'] + ['ABCDEFGHIJKLMNOPQRSTUVWXYZ'[i] for i, (_, type, quantity_only) in enumerate(stock_type_triplets) if type == STOCK_TYPE_TYPE_SEAT and not quantity_only]
     return Data(
         'Site',
         name=name,
@@ -667,7 +670,7 @@ def build_site_datum(name):
         _config=dict(
             colgroups=[
                 (colgroup, u'colgroup-%s' % colgroup, [u'%s-%d' % (colgroup, i + 1) for i in range(0, randint(1, 50) * 10)]) \
-                for colgroup, seat_schema in colgroup_seat_schema_pair
+                for colgroup in colgroups
                 ],
             seats_per_row=10
             )
@@ -800,7 +803,7 @@ def build_venue_area_datum(venue, colgroup):
 def build_adjacency_set_datum(l0_id_to_seat, config, n):
     seats_per_row = config['seats_per_row']
     adjacency_data = []
-    for colgroup_name, colgroup_id, seat_ids in config['colgroups']:
+    for _, _, seat_ids in config['colgroups']:
         for row_num in range(0, len(seat_ids), seats_per_row):
             seats_in_row = [
                 l0_id_to_seat[l0_id] \
@@ -1024,9 +1027,10 @@ def build_sales_segment_datum(organization, name, start_at, end_at):
             )
         )
 
-def build_stock_datum(stock_type, stock_holder, quantity):
+def build_stock_datum(performance, stock_type, stock_holder, quantity):
     return Data(
         'Stock',
+        performance_id=performance,
         stock_type_id=stock_type,
         quantity=quantity,
         stock_holder_id=stock_holder,
@@ -1055,11 +1059,13 @@ def build_performance_datum(organization, event, name, performance_date):
     site_config = site._config
     stock_allocation_data = []
     stock_data = []
-    stock_sets = []
-    colgroup_index = 0
+    stock_sets = [
+        (0, [build_stock_datum(retval, None, None, len(site_config['colgroups'][0][2]))]),
+        ]
+    colgroup_index = 1 # first colgroup is for "unassigned" seats.
     for stock_type in event.stock_types:
         stock_set = []
-        if stock_type.type == 0:
+        if stock_type.type == STOCK_TYPE_TYPE_SEAT and not stock_type.quantity_only:
             colgroup = site_config['colgroups'][colgroup_index]
             quantity = len(colgroup[2])
             stock_sets.append((colgroup_index, stock_set))
@@ -1075,9 +1081,9 @@ def build_performance_datum(organization, event, name, performance_date):
             )
         stock_allocation_data.append(stock_allocation_datum)
         rest = quantity
-        for i, stock_holder in enumerate(event.stock_holders):
+        for i, stock_holder in enumerate(chain([None], event.stock_holders)):
             assigned = rest if i == len(event.stock_holders) - 1 else randint(0, rest)
-            stock_datum = build_stock_datum(stock_type, stock_holder, assigned)
+            stock_datum = build_stock_datum(retval, stock_type, stock_holder, assigned)
             stock_data.append(stock_datum)
             stock_set.append(stock_datum)
             rest -= assigned
@@ -1103,11 +1109,12 @@ def build_performance_datum(organization, event, name, performance_date):
         )
     return retval
 
-def build_stock_type_datum(name, type):
+def build_stock_type_datum(name, type, quantity_only):
     return Data(
         'StockType',
         name=name,
         type=type,
+        quantity_only=quantity_only,
         style=json.dumps(dict(fill=dict(color=random_color())), ensure_ascii=False)
         )
 
@@ -1151,7 +1158,7 @@ def build_product_data(sales_segment):
 def build_event_datum(organization, title):
     logger.info(u"Building Event %s" % title)
     event_date = random_date()
-    stock_type_data = [build_stock_type_datum(_name, type) for _name, type in stock_type_pairs]
+    stock_type_data = [build_stock_type_datum(_name, type, quantity_only) for _name, type, quantity_only in stock_type_triplets]
     sales_segment_data = [
         build_sales_segment_datum(
             organization,

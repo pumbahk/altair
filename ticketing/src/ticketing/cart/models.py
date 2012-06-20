@@ -29,6 +29,7 @@ from sqlalchemy import sql
 from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm.exc import NoResultFound
 
+from ticketing.models import Identifier
 from ..core import models as c_models
 from . import logger
 
@@ -177,6 +178,12 @@ class Cart(Base):
     updated_at = sa.Column(sa.DateTime, nullable=True, onupdate=datetime.now)
     deleted_at = sa.Column(sa.DateTime, nullable=True)
     finished_at = sa.Column(sa.DateTime)
+
+    shipping_address_id = sa.Column(Identifier, sa.ForeignKey("ShippingAddress.id"))
+    shipping_address = orm.relationship('ShippingAddress', backref='cart')
+
+    payment_delivery_pair_id = sa.Column(Identifier, sa.ForeignKey("PaymentDeliveryMethodPair.id"))
+    payment_delivery_pair = orm.relationship("PaymentDeliveryMethodPair")
 
     @property
     def total_amount(self):
