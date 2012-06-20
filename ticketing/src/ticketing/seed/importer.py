@@ -38,6 +38,7 @@ from ticketing.bookmark.models import Bookmark
 from ticketing.sej.models import SejOrder, SejTicket, SejFile, SejNotification
 from ticketing.cart.models import Cart, CartedProduct, CartedProductItem
 from ticketing.multicheckout.models import MultiCheckoutRequestCard, MultiCheckoutResponseCard
+from ticketing.cart.plugins import ReservedNumber
 
 def import_seed_data():
     engine = sqlahelper.get_engine()

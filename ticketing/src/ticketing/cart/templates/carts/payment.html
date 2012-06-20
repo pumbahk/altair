@@ -45,15 +45,14 @@
             </div>
 			<div class="settlementBox">
 				<div class="settlementBoxInner">
-					<h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_methods.gif')}" alt="お支払い方法の指定" width="167" height="30" /></h2>
-                    <!-- マルチ決済 -->
+					<h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_methods.gif')}" alt="お支払い、引き取り方法の指定" width="167" height="30" /></h2>
 
 %for m in payment_delivery_methods:
 					<div class="settlementPayBox">
 						<div class="settlementPayBoxInner">
 							<table>
 								<tr>
-									<td class="settlementPayRadio"><input type="radio" name="radio" id="radio2" value="${m.id}" /></td>
+									<td class="settlementPayRadio"><input type="radio" name="payment_delivery_pair_id" id="radio2" value="${m.id}" /></td>
 									<td><dl>
 										<dt>${m.payment_method.name}</dt>
 										<dd>${h.format_currency(m.transaction_fee)}

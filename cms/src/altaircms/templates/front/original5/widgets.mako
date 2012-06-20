@@ -477,7 +477,7 @@
               <dt class="sales_period">販売期間</dt>
               <dd>
                 <dl class="sales_segments">
-                  <dt><img src="http://rakuten-ticket-static.s3.amazonaws.com/public/images/icon_general.gif" alt="一般販売" /></dt>
+                  <dt><img src="http://rakuten-ticket-static.s3.amazonaws.com/public/images/icon_general.gif" alt="一般発売" /></dt>
                   <dd>
                     2012年3月3日(土)〜7月12日(木)
                   </dd>

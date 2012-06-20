@@ -30,6 +30,8 @@
 	<div id="main">
 		<h1><img src="${request.static_url('ticketing.cart:static/img/settlement/title_settlement.gif')}" alt="チケット購入" width="950" height="40" /></h1>
 		<p><img src="${request.static_url('ticketing.cart:static/img/settlement/completion.gif')}" alt="購入を完了いたしました。" width="201" height="50" /></p>
+
+${h.render_delivery_finished_viewlet(request, order)}
 <!--
 		<div class="settlementInterest">
 			<h2>■この商品を買った人は、こんな商品にも興味をもっています。</h2>

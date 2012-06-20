@@ -8,6 +8,8 @@ Setup
   $ mkdir altair-devel
   $ cd altair-devel
   $ git clone git@github.com:ticketstar/altair
+  $ git submodule init 
+  $ git submodule update
   $ easy_install virtualenv
   $ virtualenv env
   $ env/bin/easy_install pyramid
