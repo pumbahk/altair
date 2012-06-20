@@ -42,6 +42,7 @@ requires = [
     'js.bootstrap==2.1.1',
     'js.jquery_timepicker_addon',
     'js.jquery_colorpicker',
+    'js.i18n',
     'simplejson',
     'waitress',
     'altair-commons',

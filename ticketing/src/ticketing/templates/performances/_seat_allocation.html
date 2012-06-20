@@ -1,5 +1,49 @@
 <%page args="performance, form_stock_holder" />
+<%namespace file="./_venue_view.html" name="vv" />
+<style type="text/css">
 
+.assignable {
+  text-decoration: none;
+  color: #000;
+  border-radius: 4px 4px;
+  border: 1px dashed #444;
+  margin: 0 0;
+  padding: 2px 2px;
+}
+
+.assignable:hover {
+  text-decoration: none;
+  color: #000;
+}
+
+.assignable.enabled {
+  border: 1px solid #ccc;
+  background-image: -moz-linear-gradient(top, #ffffff, #e6e6e6);
+  background-image: -ms-linear-gradient(top, #ffffff, #e6e6e6);
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#ffffff), to(#e6e6e6));
+  background-image: -webkit-linear-gradient(top, #ffffff, #e6e6e6);
+  background-image: -o-linear-gradient(top, #ffffff, #e6e6e6);
+  background-image: linear-gradient(top, #ffffff, #e6e6e6);
+  background-repeat: repeat-x;
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#e6e6e6', GradientType=0);
+  font-weight: bold;
+}
+
+.assignable.enabled:hover {
+  background: #888;
+  color: #fff;
+  text-decoration: none;
+}
+
+.assignable.enabled:active {
+  box-shadow: inset 1px 1px 3px #ccc;
+}
+
+span.editable {
+  margin: 0 0;
+}
+
+</style>
 <script type="text/javascript">
   $(window).resize(function(api){
     $("#seat-map").height($(window).height()-230);
@@ -19,16 +63,277 @@
     <div class="tab-pane active" id="map">
       <div class="container-fluid">
         <div class="row-fluid">
-          <div class="span8" style="background-color: #999999">
-            <div style="width:100%;" id="seat-map"></div>
-          </div>
-          <div class="span4">
-            <%include file="/stock_holders/_action_button.html" />
+<%
+data_source = {
+  'drawing': request.route_path('api.get_drawing',
+                                venue_id=performance.venue.id),
+  'metadata': request.route_path('api.get_seats',
+                                 venue_id=performance.venue.id,
+                                 _query={u'n':u'seats|stock_types|stock_holders|stocks'})
+  }
+%>
+          <%vv:venueeditor data_source="${data_source}">
+            <%def name="toolbar_extra()">
+              <div style="float:right">
+                <ul class="nav nav-pills">
+                  <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#menu1">
+                      <span>席種→枠</span>
+                      <i class="caret"></i>
+                    </a>
+                    <ul class="dropdown-menu">
+                      <li><a>席種→枠</a></li>
+                      <li><a>枠→席種</a></li>
+                    </ul>
+                  </li>
+                </ul>
+              </div>
+            </%def>
             <%include file="/stock_holders/_list.html" args="performance=performance" />
-            <div id="stock_holders-form">
-              <%include file="/stock_holders/_form.html" args="form=form_stock_holder" />
-            </div>
-          </div>
+            <%def name="post()">
+        <script type="text/javascript">
+function deepClone(o) {
+  if (o !== null && typeof o == 'object' && o.constructor == Object) {
+    var retval = {};
+    for (var k in o)
+      retval[k] = deepClone(o[k]);
+    return retval;
+  } else {
+    return _.clone(o);
+  }
+}
+
+var outer = venueEditorSide.children();
+
+function gradientStyle(name, colors) {
+  var buf = [], n = colors.length;
+  buf.push(name, ':linear-gradient(top');
+  for (var i = 0; i < n; i++) {
+    var color = colors[i];
+    buf.push(',', color[1], (color[0] * 100).toFixed(0) + '%');
+  }
+  buf.push(');');
+  buf.push(name, ':-moz-linear-gradient(top');
+  for (var i = 0; i < n; i++) {
+    var color = colors[i];
+    buf.push(',', color[1], (color[0] * 100).toFixed(0) + '%');
+  }
+  buf.push(');');
+  buf.push(name, ':-o-linear-gradient(top');
+  for (var i = 0; i < n; i++) {
+    var color = colors[i];
+    buf.push(',', color[1], (color[0] * 100).toFixed(0) + '%');
+  }
+  buf.push(');');
+  buf.push(name, ':-webkit-gradient(linear,left top,left bottom');
+  for (var i = 0; i < n; i++) {
+    var color = colors[i];
+    buf.push(',color-stop(',color[0], ',', color[1], ')');
+  }
+  buf.push(');');
+  return buf.join(' ');
+}
+
+function buildColorButton(model, attr) {
+  var button = $('<button></button>');
+  function refresh() {
+    var style = model.get(attr);
+    if (style && style.fill)
+      button.attr('style', gradientStyle('background', [[0, '#fff'], [.4, style.fill.color]]));
+  }
+  model.on('change:style', refresh);
+  if (model.id != "") {
+    button.decentcolorpicker({
+      value: function () {
+        var style = model.get(attr);
+        return style && style.fill && style.fill.color;
+      },
+      select: function (value) {
+        var style = deepClone(model.get(attr));
+        if (!style.fill)
+          style.fill = {};
+        style.fill.color = value.hash;
+        model.set(attr, style);
+      }
+    });
+  }
+  refresh();
+  return button;
+}
+
+function bind(bindable, model, attr) {
+  function onchange() {
+    bindable.set(this.get(attr));
+  }
+  model.on('change:' + attr, onchange);
+  bindable.bindSave(function (value) {
+    return model.set(attr, value, {
+      error: function (msg) {
+        bindable.element.popover(msg);
+      }
+    });
+  });
+  onchange.call(model);
+}
+
+function makeAssignable(n, model) {
+  var assignable = $('<a class="assignable"></a>').appendTo(n);
+  function refresh() {
+    assignable.text(model.get('quantity'));
+  }
+  model.on('change:quantity', refresh);
+  assignable.click(function () {
+    var selection = venueEditorRoot.venueeditor('selection');
+    var venue = venueEditorRoot.venueeditor('model');
+    selection.each(function (seat) {
+      seat.set('stockType', model);
+    });
+    venueEditorRoot.venueeditor('clearSelection');
+    return false;
+  });
+  refresh();
+}
+
+var makeEditable = (function () {
+  var editing = null;
+  var prevDisplayStyleValue = null;
+
+  return function makeEditable(n) {
+    var editable = $('<span class="editable"></span>').appendTo(n);
+    var editableIcon = $('<i class="icon-pencil" style="margin-left: 4px;"></i>').appendTo(n);
+    var save = function (value) { set(value); };
+    var value = '';
+    function set(_value) {
+      if (editing)
+        editing.val(_value)
+      editable.text(_value);
+      value = _value;
+    }
+    function beginEdit() {
+      if (editing)
+        return;
+      editing = $('<input type="text" class="editable" style="height:1em;margin:0 0; position: absolute;" />');
+      var pos = editable.position();
+      editing.val(value);
+      prevDisplayStyleValue = editable.css('display');
+      editable.css('display', 'none');
+      editableIcon.css('display', 'none');
+      editing.insertAfter(editable);
+      editing.css({
+       width: (n.innerWidth() - 10) + "px",
+       left: '0px',
+       top: (editable.parent().innerHeight() - editing.outerHeight()) / 2 + 'px'
+      });
+      editing.focus();
+      editing.blur(cancel);
+      editing.keydown(function (e) {
+        if (e.which == 13) {
+          var _value = endEdit();
+          save && save(_value);
+          return false;
+        }
+        return true;
+      });
+    }
+
+    function endEdit() {
+      var value = editing.val();
+      editable.css('display', prevDisplayStyleValue);
+      editableIcon.css('display', 'inline-block');
+      editing.remove();
+      editing = null;
+      return value;
+    }
+
+    function cancel() {
+      endEdit();
+    }
+
+    function save() {
+      save();
+    }
+
+    n.click(function () {
+      if (editing)
+        cancel();
+      beginEdit();
+    });
+
+    return {
+      element: editable,
+      set: set,
+      get: function () {
+        return value;     
+      },
+      bindSave: function (_save) {
+        save = _save;
+      }
+    }
+  }
+})();
+
+function buildStockRow(stock) {
+  var tr = $('<tr></tr>');
+  var legend = $('<td class="stock-legend"></td>');
+  buildColorButton(stock, 'style').appendTo(legend);
+  tr.append(legend);
+  var name = $('<td class="stock-name"></td>');
+  var stockType = stock.get('stockType');
+  if (stockType.id != "")
+    bind(makeEditable(name), stockType, 'name');
+  else
+    name.text(stockType.get('name'));
+  tr.append(name);
+  var quantity = $('<td class="stock-quantity"></td>');
+  if (stockType.get('isSeat') && !stockType.get('quantityOnly')) {
+    makeAssignable(quantity, stockType);
+  } else {
+    bind(makeEditable(quantity), stockType, 'quantity');
+  }
+  tr.append(quantity);
+  return tr;
+}
+
+function buildStockHolderTypeTables(venue) {
+  var retval = $('<div></div>');
+  venue.stockHolders.each(function (stockHolder) {
+    var keyedStocks = stockHolder.keyedStocks();
+    var head = $('<h4 class="ui-header"></h4>').text(stockHolder.get('name'));
+    var div = $('<div></div>').css('display', 'none');
+    var table = $('<table class="table table-bordered"></table>');
+    var tbody = $('<tbody></tbody>').appendTo(table);
+    venue.stockTypes.each(function (stockType) {
+      var stock = keyedStocks[stockType.id];
+      if (!stock)
+        return;
+      var row = buildStockRow(stock);
+      tbody.append(row);
+    });
+    head.click(function () {
+      div.css('display', 'block');
+    });
+    table.appendTo(div);
+
+    retval.append(head);
+    retval.append(div);
+  });
+  return retval;
+}
+
+callbacks.load = function (viewer) {
+  outer.empty();
+  outer.append(buildStockHolderTypeTables(viewer.venue));
+};
+
+callbacks.select = function (viewer, selection) {
+  if (selection.length)
+    $(".assignable").addClass("enabled");   
+  else
+    $(".assignable").removeClass("enabled");
+};
+</script>
+            </%def>
+          </%vv:venueeditor>
         </div>
       </div>
     </div>

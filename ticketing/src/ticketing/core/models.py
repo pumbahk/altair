@@ -791,9 +791,9 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "Stock"
     id = Column(Identifier, primary_key=True)
     quantity = Column(Integer)
-    performance_id = Column(Identifier, ForeignKey('Performance.id'))
-    stock_holder_id = Column(Identifier, ForeignKey('StockHolder.id'))
-    stock_type_id = Column(Identifier, ForeignKey('StockType.id'))
+    performance_id = Column(Identifier, ForeignKey('Performance.id'), nullable=False)
+    stock_holder_id = Column(Identifier, ForeignKey('StockHolder.id'), nullable=True)
+    stock_type_id = Column(Identifier, ForeignKey('StockType.id'), nullable=True)
 
     stock_status = relationship("StockStatus", uselist=False, backref='stock')
 

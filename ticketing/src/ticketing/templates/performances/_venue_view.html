@@ -1,0 +1,233 @@
+<%def name="venueeditor(data_source)">
+      <style type="text/css">
+#venue-editor .venue-editor-main {
+  position: relative;
+  border: 1px solid #ccc;
+  overflow: hidden;
+  height: 400px;
+}
+
+#venue-editor .venue-editor-main .venue-editor-main-root {
+  border-right: 1px solid #ccc;
+  width: 60%;
+  height: 100%;
+  float: left;
+}
+
+#venue-editor .venue-editor-main .venue-editor-main-side {
+  width: 40%;
+  height: 100%;
+  overflow: scroll;
+  margin-left: -1px;
+  float: right;
+}
+
+#venue-editor .venue-editor-main .venue-editor-main-side .venue-editor-main-side-inner {
+  height: 800px;
+}
+
+#venue-editor .venue-editor-main .loading-panel {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background: url(/static/images/spinner.gif) center .5em no-repeat #fff;
+  margin-left: -8ex;
+  margin-top: -4em;
+  padding-top: 2em;
+  width: 16ex;
+  height: 2em;
+  text-align: center;
+  border: 1px solid #ccc;
+  border-radius: 4px 4px;
+}
+
+#venue-editor .ui-toolbar {
+  border-radius: 0 0;
+  border: 1px solid #ccc;
+  border-bottom: none;
+  margin-bottom: 0;
+  margin-right: 0;
+}
+
+#venue-editor .ui-toolbar .nav {
+  margin: 0 0 0 0;
+}
+
+#venue-editor .table.table-bordered {
+  border-radius: 0 0;
+  border-collapse: collapse;
+  border-left: none;
+  border-right: none;
+}
+
+#venue-editor .table {
+  margin: 0 0;
+  padding: 0 0;
+}
+
+#venue-editor .table caption {
+  text-align: left;
+  height: 1em;
+  line-height: 1em;
+  padding: 8px 4px;
+  font-weight:bold;
+}
+
+#venue-editor .table td {
+  position: relative;
+  margin: 0 0;
+  padding: 0 4px;
+  height: 32px;
+  vertical-align: middle;
+}
+
+#venue-editor .table td.stock-type-legend {
+  width: 3em;
+  padding: 0 0;
+  text-align: center;
+  vertical-align: middle;
+}
+
+#venue-editor .table td.stock-type-legend button {
+  width: 2em;
+  margin: 0 0;
+  height: 1.25em;
+  border: 1px solid #ccc;
+  border-radius: 4px 4px;
+}
+
+#venue-editor .table td.stock-type-legend button:active {
+  border: 1px inset white;
+}
+
+#venue-editor .table td.stock-type-name {
+  width: 70%;
+}
+
+#venue-editor .table td.stock-type-quantity {
+  width: 20%;
+}
+      </style>
+      <div style="width:100%;" id="venue-editor">
+        <div class="ui-corner-all ui-toolbar clearfix">
+          <div style="float:left">
+            <span class="ui-buttonset">
+              <input type="radio" name="function" value="select" class="ui-button ui-icon-primary-arrowthick-1-ne action-select ui-no-text" id="toolbar-action-select" checked="checked" /><label for="toolbar-action-select">Select One</label>
+              <input type="radio" name="function" value="zoomin" class="ui-button ui-icon-primary-zoomin action-zoomin ui-no-text" id="toolbar-action-zoomin" /><label for="toolbar-action-zoomin">Zoom-in</label>
+              <input type="radio" name="function" value="zoomout" class="ui-button ui-icon-primary-zoomout action-zoomout ui-no-text" id="toolbar-action-zoomout" /><label for="toolbar-action-zoomout">Zoom-out</label>
+            </span>
+          </div>
+          %if hasattr(caller, 'toolbar_extra'):
+            ${caller.toolbar_extra()}
+          %endif
+        </div>
+        <div class="venue-editor-main">
+          <div class="venue-editor-main-root"></div>
+          <div class="venue-editor-main-side">
+            <div class="venue-editor-main-side-inner">${caller.body()}</div>
+          </div>
+        </div>
+      </div>
+      <script type="text/javascript">
+var dataSource = {
+  drawing: "${data_source['drawing']}",
+  metadata: "${data_source['metadata']}"
+};
+
+var venueEditor = $("#venue-editor");
+var venueEditorRoot = venueEditor.find(".venue-editor-main-root");
+var venueEditorSide = venueEditor.find(".venue-editor-main-side");
+
+function readjustMap() {
+  var width = venueEditorRoot.innerWidth();
+  var height = venueEditorRoot.innerHeight();
+  venueEditorRoot.venueeditor('viewportSize', {
+    width: width,
+    height: height
+  });
+}
+$(window).resize(readjustMap);
+
+venueEditor.find(".ui-button").each(function (i, n) {
+  n = $(n);
+  n.removeClass('ui-button');
+  var cssClass = n.attr("class").split(/\s+/);
+  var options = { icons: {} }; 
+  for (var i = 0; i < cssClass.length; i++) {
+    var g;
+    if ((g = /ui-icon-primary-(.+)/.exec(cssClass[i])))
+      options.icons.primary = 'ui-icon-' + g[1];
+    if ((g = /ui-icon-secondary-(.+)/.exec(cssClass[i])))
+      options.icons.secondary = 'ui-icon-' + g[1];
+    if ('ui-no-text' == cssClass[i])
+      options.text = false;
+  }
+  n.button(options);
+});
+venueEditor.find(".ui-buttonset").remove('ui-buttonset').buttonset();
+
+var loadingPanel = null;
+var callbacks = {};
+
+venueEditorRoot.venueeditor({
+  dataSource: dataSource,
+  callbacks: {
+    message: function (msg) {
+      if (loadingPanel) {
+        loadingPanel.remove();
+        loadingPanel = null;
+      }
+      $("<div></div>").text(msg).dialog({
+        modal: true,
+        buttons: {
+          "Ok": function () { $(this).dialog('destroy'); }
+        }
+      });
+    },
+    uimodeselect: function (viewer, mode) {
+      switch (mode) {
+      case 'select':
+        $("#toolbar-action-select").attr("checked", "checked");
+        break;
+      case 'zoomin':
+        $("#toolbar-action-zoomin").attr("checked", "checked");
+        break;
+      case 'zoomout':
+        $("#toolbar-action-zoomout").attr("checked", "checked");
+        break;
+      }
+    },
+    click: function (viewer, seat, highlighted) {
+      callbacks.click && callbacks.click(viewer, seat, highlighted);
+    },
+    select: function (viewer, selection) {
+      callbacks.select && callbacks.select(viewer, selection);
+    },
+    loading: function (viewer) {
+      loadingPanel = $('<div class="loading-panel">Loading...</div>')
+        .appendTo(venueEditor.find(".venue-editor-main"));
+    },
+    load: function (viewer) {
+      if (loadingPanel) {
+        loadingPanel.remove();
+        loadingPanel = null;
+      }
+      callbacks.load && callbacks.load(viewer);
+    }
+  }
+}).venueeditor("load");
+
+venueEditor.find(".action-zoomin").click(function () {
+  venueEditorRoot.venueeditor("uimode", "zoomin");
+});
+venueEditor.find(".action-zoomout").click(function () {
+  venueEditorRoot.venueeditor("uimode", "zoomout");
+});
+venueEditor.find(".action-select").click(function () {
+  venueEditorRoot.venueeditor("uimode", "select");
+}).trigger('click');
+      </script>
+      %if hasattr(caller, 'post'):
+        ${caller.post()}
+      %endif
+</%def>

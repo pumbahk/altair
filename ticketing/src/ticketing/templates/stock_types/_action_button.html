@@ -1,12 +1,6 @@
 <%page args="event, performance=None, order=None" />
 <%namespace file="/common/helpers.html" name="h" />
 <%namespace file="/common/modal.html" import="delete_modal" />
-
-<%block name="style">
-<link rel="stylesheet" type="text/css" href="/static/css/kolorpicker.css" />
-<script type="text/javascript" src="/static/js/jquery.kolorpicker.js"></script>
-</%block>
-
 <script type="text/javascript">
   function new_stock_type() {
     var modal = $('#modal-stock_type');
