@@ -2,15 +2,16 @@
 <%namespace name="nco" file="../navcomponents.mako"/>
 <%namespace name="fco" file="../formcomponents.mako"/>
 <%namespace name="mco" file="../modelcomponents.mako"/>
-<%namespace name="gadgets" file="./gadgets.mako"/>
+<%namespace name="gadgets" file="../gadgets.mako"/>
 
 <div class="row-fluid">
     ${nco.breadcrumbs(
-	    names=["Top", "Event", event.title],
-	    urls=[request.route_path("dashboard"), request.route_path("event_list")]
-	)}
+        names=["Top", "Event", event.title],
+        urls=[request.route_path("dashboard"), request.route_path("event_list")]
+    )}
 
-<h2>${event.title} (ID: ${event.id})</h2>
+
+<h2>${event.title}</h2>
 
 <table class="table table-striped">
       <tr>
@@ -42,63 +43,127 @@
       </tr>
     </table>
 
-  <div class="btn-group" style="float: left;">
-	<a class="btn" href="${request.route_path("page_add", event_id=event.id)}">
-	  <i class="icon-plus"> </i> ページ追加</a>
-	</a>
-  <%doc>
-	<button class="btn dropdown-toggle" data-toggle="dropdown">
-	  <span class="caret"></span>
-	</button>
-	<ul class="dropdown-menu">
-	  <li>
-		<a href="${request.route_path("event_delete",action="confirm",id=event.id)}">
-		  <i class="icon-minus"></i> 削除
-		</a>
-	  </li>
-	</ul>
-  </%doc>
+  <div class="btn-group">
+    <a href="${request.route_path("event_update",action="input",id=event.id)}" class="btn">
+      <i class="icon-pencil"></i> 編集
+    </a>
+    <button class="btn dropdown-toggle" data-toggle="dropdown">
+        <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu">
+      <li>
+        <a href="${request.route_path("event_update",action="input",id=event.id)}">
+          <i class="icon-minus"></i> 編集
+        </a>
+      </li>
+      <li>
+        <a href="${request.route_path("event_create",action="input")}">
+          <i class="icon-minus"></i> 新規作成
+        </a>
+      </li>
+      <li>
+        <a href="${request.route_path("event_delete",action="confirm",id=event.id)}">
+          <i class="icon-minus"></i> 削除
+        </a>
+      </li>
+    </ul>
   </div>
 
-<div style="clear: left;"></div>
 <hr/>
-
 
 <h3>配下のページ一覧</h3>
 <div class="box">
 <table class="table">
   <tbody>
-	%for pageset in event.pagesets:
-	<tr>
-	  <td>
-		<a href="${request.route_path('pageset', pageset_id=pageset.id)}">${pageset.name}</a>
-		<a class="btn btn-small" href="${h.link.to_preview_page_from_pageset(request,pageset)}" target="_blank"><i class="icon-eye-open"> </i> preview</a>
-	  </td>
+    %for pageset in event.pagesets:
+    <tr>
+      <td>
+        <a href="${request.route_path('pageset', pageset_id=pageset.id)}">${pageset.name}</a>
+        <a class="btn btn-small" href="${h.link.to_preview_page_from_pageset(request,pageset)}" target="_blank"><i class="icon-eye-open"> </i> preview</a>
+      </td>
    </tr>
    %endfor
   </tbody>
 </table>
 </div>
+  <div class="btn-group">
+    <a class="btn" href="${request.route_path("page_add", event_id=event.id)}">
+      <i class="icon-plus"> </i> ページ追加</a>
+    </a>
+  <%doc>
+    <button class="btn dropdown-toggle" data-toggle="dropdown">
+      <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu">
+      <li>
+        <a href="${request.route_path("event_delete",action="confirm",id=event.id)}">
+          <i class="icon-minus"></i> 削除
+        </a>
+      </li>
+    </ul>
+  </%doc>
+  </div>
+
+<hr/>
 
 <h3>パフォーマンス</h3>
 <div class="box">
+  <p align="right">※ pc購入URL,mobile購入URLは、個別に飛び先のURLが設定されている場合にy。そうでない場合にはnが付きます。</p>
   <table class="table">
-	<thead><tr><th></th><th>公演名</th><th>バックエンドID</th><th>公演日時</th><th>場所</th></tr>
-	</thead>
-	<tbody>
-		 %for p in performances:
-		   <tr>
-			 <td>
-			   <input type="radio" name="object_id" value="${p.id}">
-			 </td>
-			 <td>${p.title }</td>
-			 <td>${p.backend_id}</td><td>${ p.start_on }</td><td>${ p.venue }</td>
-		   </tr>
-		 %endfor
-	</tbody>
+    <thead><tr><th></th><th>公演名</th><th>バックエンドID</th><th>公演日時</th><th>場所</th><th>pc購入URL</th><th>mobile購入URL</th></tr>
+    </thead>
+    <tbody>
+         %for p in performances:
+           <tr>
+             <td>
+               <input type="radio" name="object_id" value="${p.id}">
+             </td>
+             <td><a href="${request.route_path("performance_update",action="detail",id=p.id)}">${p.title }</a></td>
+             <td>${p.backend_id}</td><td>${ p.start_on }</td><td>${ p.venue }</td>
+             <td>${u'<a href="%s">y</a>' % p.purchase_link if p.purchase_link else "n"|n}</td>
+             <td>${u'<a href="%s">y</a>' % p.mobile_purchase_link if p.mobile_purchase_link else "n"|n}</td>
+           </tr>
+         %endfor
+    </tbody>
   </table>
-  ${gadgets.multiple_action_button(request,"performance")}
+
+  ${gadgets.getti_update_code(performances,"getti_submit")}
+
+  ## button group
+  <div class="btn-group">
+    <a href="${request.route_path("performance_update",action="input",id="__id__")}" class="btn action">
+      <i class="icon-pencil"></i> 編集
+    </a>
+    <button class="btn dropdown-toggle" data-toggle="dropdown">
+        <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu">
+      <li>
+        <a href="${request.route_path("performance_update",action="detail",id="__id__")}" class="action">
+          <i class="icon-pencil"></i> 詳細画面
+        </a>
+      </li>
+      <li>
+        <a href="${request.route_path("performance_update",action="input",id="__id__")}" class="action">
+          <i class="icon-minus"></i> 編集
+        </a>
+      </li>
+      <li>
+        <a href="${request.route_path("performance_create",action="input")}">
+          <i class="icon-minus"></i> 新規作成
+        </a>
+      </li>
+      <li>
+        <a href="${request.route_path("performance_delete",action="confirm",id="__id__")}" class="action">
+          <i class="icon-minus"></i> 削除
+        </a>
+      </li>
+      <li class="divider"></li>
+      <li>${ gadgets.getti_update_code_button()}</li>
+    </ul>
+  </div>
 </div>
+
 
 <hr/>
 
@@ -108,32 +173,32 @@
   <thead><tr><th></th><th>名前</th><th>販売条件</th><th>適用期間</th><th>券種</th><th>席種</th><th>価格</th></tr>
   </thead>
   <tbody>
-	 %for sale in sales:
+     %for sale in sales:
 <%
 tickets = sale.tickets
 tickets_size = len(tickets)
  %>
-	   <tr>
-		 <td rowspan="${ tickets_size }">
-		   <input type="radio" name="object_id" value="${sale.id}">
-		 </td>
-		 <td rowspan="${ tickets_size }">${ sale.name }</td>
-		 <td rowspan="${ tickets_size }">${sale.jkind}</td>
+       <tr>
+         <td rowspan="${ tickets_size }">
+           <input type="radio" name="object_id" value="${sale.id}">
+         </td>
+         <td rowspan="${ tickets_size }">${ sale.name }</td>
+         <td rowspan="${ tickets_size }">${sale.jkind}</td>
          <td rowspan="${ tickets_size }">${ h.base.jterm(sale.start_on,sale.end_on) if sale.start_on and sale.end_on else u"~"}</td>
 %if len(tickets) <= 0:
-	   </tr>
+       </tr>
 %else:
-	     <td><a href="${request.route_path("ticket_update",action="input",id=tickets[0].id)}">${tickets[0].name}</a></td>
-		 <td>${tickets[0].seattype}</td>
-		 <td>${tickets[0].price}</td>
-	   </tr>
-	   %for t in tickets[1:]:
-		 <tr>
-	     <td><a href="${request.route_path("ticket_update",action="input",id=t.id)}">${t.name}</a></td>
-		 <td>${t.seattype}</td>
-		 <td>${t.price}</td>
-		 </tr>
-	   %endfor
+         <td><a href="${request.route_path("ticket_update",action="input",id=tickets[0].id)}">${tickets[0].name}</a></td>
+         <td>${tickets[0].seattype}</td>
+         <td>${tickets[0].price}</td>
+       </tr>
+       %for t in tickets[1:]:
+         <tr>
+         <td><a href="${request.route_path("ticket_update",action="input",id=t.id)}">${t.name}</a></td>
+         <td>${t.seattype}</td>
+         <td>${t.price}</td>
+         </tr>
+       %endfor
 %endif
      %endfor
   </tbody>
@@ -148,21 +213,37 @@ ${gadgets.multiple_action_button(request,"sale")}
   </thead>
   <tbody>
 
-	   %for sale in sales:
-	     <tr><td>${sale.name}</td><td><a href="${request.route_path("sale_update",id=sale.id,action="input")}">　${sale.jkind}　</a></td><td>${ sale.start_on }</td><td>${ sale.end_on }</td></tr>
+       %for sale in sales:
+         <tr><td>${sale.name}</td><td><a href="${request.route_path("sale_update",id=sale.id,action="input")}">　${sale.jkind}　</a></td><td>${ sale.start_on }</td><td>${ sale.end_on }</td></tr>
 
 
-		 <tr>
-		   <td colspan=3>
-		   <ul>
-		   % for t in sale.tickets:
-		     <li><a href="${request.route_path("ticket_update",action="input",id=t.id)}">${t.name}(${t.seattype}): ${t.price}</a></li>
-		   % endfor
-		   </ul>
-		   </td>
-		 </tr>
-	   %endfor		 
+         <tr>
+           <td colspan=3>
+           <ul>
+           % for t in sale.tickets:
+             <li><a href="${request.route_path("ticket_update",action="input",id=t.id)}">${t.name}(${t.seattype}): ${t.price}</a></li>
+           % endfor
+           </ul>
+           </td>
+         </tr>
+       %endfor       
 </%doc>
 
+<script type="text/javascript">
+  $(function(){
+   $(".box .btn-group a.action").click(function(){
+      var  pk = $(this).parents(".box").find("input[name='object_id']:checked").val();
+      if(!pk){ console.log("sorry"); return false; }
+
+      // initialize
+      var $this = $(this);
+      if (!$this.data("href-fmt")){
+        $this.data("href-fmt", this.href);
+      }
+      this.href = $this.data("href-fmt").replace("__id__", pk);
+      return true;;
+    });
+  })
+</script>
+
 </div>
-${gadgets.multiple_action_button_script()}

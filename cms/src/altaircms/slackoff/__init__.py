@@ -2,8 +2,16 @@
 def includeme(config):
     config.add_crud("layout", title="layout", model="..layout.models.Layout",
                     form=".forms.LayoutForm", mapper=".mappers.layout_mapper")
+
     config.add_crud("performance", title="performance", model="..models.Performance",
                     form=".forms.PerformanceForm", mapper=".mappers.performance_mapper")
+    config.add_view(".views.performance_detail", match_param="action=detail", permission="performance_update", 
+                    route_name="performance_update", 
+                    decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", 
+                    renderer="altaircms:templates/performance/view.mako")
+    config.add_view(".views.performance_add_getti_code", match_param="action=getti", permission="performance_update", 
+                     route_name="event_update", 
+                     renderer="json")
 
     config.add_crud("sale", title="sale", model="..models.Sale", 
                     form=".forms.SaleForm", mapper=".mappers.sale_mapper")
@@ -25,4 +33,3 @@ def includeme(config):
                     form=".forms.HotWordForm", mapper=".mappers.hotword_mapper")
     config.add_crud("pagedefaultinfo", title="pagedefaultinfo", model="..page.models.PageDefaultInfo",
                     form=".forms.PageDefaultInfoForm", mapper=".mappers.pagedefaultinfo_mapper")
-

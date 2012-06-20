@@ -31,7 +31,12 @@
 
 		#navigation ul li a:hover span,
 		#navigation ul li a.active span{ background-position:right bottom; }
-    </style>
+		.big-modal{
+		 width:840px;
+		 margin-left:-420px;
+	  }
+
+ </style>
 	## for date picker
 	<link rel="stylesheet" type="text/css" href="/static/css/datepicker.css"/>
 	<script type="text/javascript" src="/static/js/bootstrap-datepicker.js"></script>
