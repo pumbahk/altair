@@ -24,7 +24,7 @@ def view(request):
     id_ = request.matchdict['id']
 
     event = Event.query.filter_by(id=id_).first()
-    performances = Performance.query.filter_by(event_id=id_)
+    performances = event.performances
     sales = Sale.query.filter_by(event_id=id_)
     return dict(
         event=event,

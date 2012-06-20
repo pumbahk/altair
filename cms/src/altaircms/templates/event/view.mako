@@ -91,9 +91,7 @@
 			 <td>
 			   <input type="radio" name="object_id" value="${p.id}">
 			 </td>
-			 <td>
-			   <a href="${request.route_path("performance_update",id="p.id",action="input")}">${p.title}</a>
-			 </td>
+			 <td>${p.title }</td>
 			 <td>${p.backend_id}</td><td>${ p.start_on }</td><td>${ p.venue }</td>
 		   </tr>
 		 %endfor
@@ -107,20 +105,37 @@
 <h3>販売条件情報</h3>
 <div class="box">
 <table class="table">
-  <thead><tr><th></th><th>名前</th><th>販売条件</th><th>開始日</th><th>終了日</th></tr>
+  <thead><tr><th></th><th>名前</th><th>販売条件</th><th>適用期間</th><th>券種</th><th>席種</th><th>価格</th></tr>
   </thead>
   <tbody>
-	   %for sale in sales:
-	     <tr>
-		   <td>
-			 <input type="radio" name="object_id" value="${sale.id}">
-		   </td>
-		   <td>
-			 <a href="${request.route_path("sale_update",id=sale.id,action="input")}">${sale.name}</a>
-		   </td>
-		   <td>${sale.jkind}</td><td>${ sale.start_on }</td><td>${ sale.end_on }</td>
+	 %for sale in sales:
+<%
+tickets = sale.tickets
+tickets_size = len(tickets)
+ %>
+	   <tr>
+		 <td rowspan="${ tickets_size }">
+		   <input type="radio" name="object_id" value="${sale.id}">
+		 </td>
+		 <td rowspan="${ tickets_size }">${ sale.name }</td>
+		 <td rowspan="${ tickets_size }">${sale.jkind}</td>
+         <td rowspan="${ tickets_size }">${ h.base.jterm(sale.start_on,sale.end_on) if sale.start_on and sale.end_on else u"~"}</td>
+%if len(tickets) <= 0:
+	   </tr>
+%else:
+	     <td><a href="${request.route_path("ticket_update",action="input",id=tickets[0].id)}">${tickets[0].name}</a></td>
+		 <td>${tickets[0].seattype}</td>
+		 <td>${tickets[0].price}</td>
+	   </tr>
+	   %for t in tickets[1:]:
+		 <tr>
+	     <td><a href="${request.route_path("ticket_update",action="input",id=t.id)}">${t.name}</a></td>
+		 <td>${t.seattype}</td>
+		 <td>${t.price}</td>
 		 </tr>
-	   %endfor		 
+	   %endfor
+%endif
+     %endfor
   </tbody>
 </table>
 ${gadgets.multiple_action_button(request,"sale")}
