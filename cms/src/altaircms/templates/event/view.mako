@@ -113,7 +113,7 @@
 	   %for sale in sales:
 	     <tr>
 		   <td>
-			 <input type="checkbox" name="sale:"${sale.id} value="">
+			 <input type="radio" name="object_id" value="${sale.id}">
 		   </td>
 		   <td>
 			 <a href="${request.route_path("sale_update",id=sale.id,action="input")}">${sale.name}</a>
@@ -149,4 +149,5 @@ ${gadgets.multiple_action_button(request,"sale")}
 	   %endfor		 
 </%doc>
 
+</div>
 ${gadgets.multiple_action_button_script()}
