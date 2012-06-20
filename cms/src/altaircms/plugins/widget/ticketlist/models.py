@@ -8,7 +8,7 @@ import sqlalchemy as sa
 import sqlalchemy.orm as orm
 
 from altaircms.widget.models import Widget
-from altaircms.models import Sale, Ticket
+from altaircms.models import Sale, Ticket, Performance
 from altaircms.plugins.base import DBSession
 from altaircms.plugins.base.mixins import HandleSessionMixin
 from altaircms.plugins.base.mixins import HandleWidgetMixin
@@ -35,16 +35,13 @@ class TicketlistWidget(Widget):
 
     def merge_settings(self, bname, bsettings):
         bsettings.need_extra_in_scan("request")
-        bsettings.need_extra_in_scan("event")
         @not_support_if_keyerror("ticketlist widget: %(err)s")
         def ticketlist_render():
             request = bsettings.extra["request"]
-            event = bsettings.extra["event"]
-
-            sale = Sale.query.filter(Sale.kind==self.kind).filter(Sale.event_id==self.target_performance.event_id).first()
-            tickets = sale.tickets if sale else []
-            params = {"widget":self, "event": event, "sale":sale, "tickets": tickets}
-            
+            tickets = Ticket.query.filter(Ticket.performances.any(id=self.target_performance.id))
+            tickets = tickets.filter(Sale.kind==self.kind).filter(Sale.id==Ticket.sale_id)
+            tickets = tickets.order_by(sa.desc("price"))
+            params = {"widget":self, "tickets": tickets}
             return render(self.template_name, params, request)
         bsettings.add(bname, ticketlist_render)
 

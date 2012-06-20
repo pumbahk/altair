@@ -7,5 +7,8 @@ None,'[["main", "side"]]',1,2012-06-01 18:48:38,1,ticketstar.help.mako,チケッ
 None,'[["main", "side"]]',1,2012-06-01 18:48:38,1,ticketstar.first.mako,ticketstar.はじめに,2012-06-01 18:48:38
 None,'[["main"], ["main_left", "main_right"], ["main_bottom"], ["side"]]',1,2012-06-01 18:48:38,1,ticketstar.event.mako,チケットスター：イベント・その他,2012-06-01 18:48:38
 None,'[["topicPath"], ["main", "side"],["userBox"]]',1,2012-06-01 18:48:38,1,ticketstar.detail.mako,チケットスター：イベント詳細,2012-06-01 18:48:38
+None,'[["main_top"], ["main_left", "main_right"],["main_bottom"],["side"]]',1,2012-06-01 18:48:38,1,ticketstar.detail2.mako,'チケットスター：イベント詳細(画像+テキスト)',2012-06-01 18:48:38
 None,'[["main", "side"]]',1,2012-06-01 18:48:38,1,ticketstar.change.mako,チケットスター：更新情報,2012-06-01 18:48:38
 None,'[["main"], ["main_left", "main_right"], ["main_bottom"], ["side_top"], ["side_bottom"]]',1,2012-06-01 18:48:38,1,ticketstar.top.mako,チケットスター：トップ,2012-06-01 18:48:38
+
+

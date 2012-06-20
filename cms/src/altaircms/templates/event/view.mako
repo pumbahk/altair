@@ -90,16 +90,16 @@
   <div class="span5">
   <h3>チケット情報</h3>
    <table>
-	 <thead><tr><th>販売条件</th><th>開始日</th><th>終了日</th></tr>
+	 <thead><tr><th>名前</th><th>販売条件</th><th>開始日</th><th>終了日</th></tr>
 	 </thead>
 	 <tbody>
 	   %for sale in sales:
-	     <tr><td><a href="${request.route_path("sale_update",id=sale.id,action="input")}">　${sale.jkind}　</a></td><td>${ sale.start_on }</td><td>${ sale.end_on }</td></tr>
+	     <tr><td>${sale.name}</td><td><a href="${request.route_path("sale_update",id=sale.id,action="input")}">　${sale.jkind}　</a></td><td>${ sale.start_on }</td><td>${ sale.end_on }</td></tr>
 		 <tr>
 		   <td colspan=3>
 		   <ul>
 		   % for t in sale.tickets:
-		     <li><a href="${request.route_path("ticket_update",action="input",id=t.id)}">${t.seattype}: ${t.price}</a></li>
+		     <li><a href="${request.route_path("ticket_update",action="input",id=t.id)}">${t.name}(${t.seattype}): ${t.price}</a></li>
 		   % endfor
 		   </ul>
 		   </td>

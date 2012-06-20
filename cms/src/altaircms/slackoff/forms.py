@@ -120,14 +120,14 @@ class TicketForm(Form):
                                               label=u"イベント販売条件", 
                                               get_label=lambda obj: obj.name) ## performance?
     name = fields.TextField(validators=[required_field()], label=u"券種")
-    seattype = fields.TextField(validators=[required_field()], label=u"席種／グレード")
+    seattype = fields.TextField(validators=[], label=u"席種／グレード")
     price = fields.IntegerField(validators=[required_field()], label=u"料金")
     # orderno = fields.TextField(label=u"表示順序(default:50)")
     def validate_orderno(form, field):
         if not field.data:
             field.data = "50"
 
-    __display_fields__ = [u"sale", u"seattype", u"name", u"price"]
+    __display_fields__ = [u"sale",u"name",  u"seattype", u"price"]
     # __display_fields__ = [u"sale", u"name", u"seattype", u"price", u"orderno"]
 
 class PromotionUnitForm(Form):
