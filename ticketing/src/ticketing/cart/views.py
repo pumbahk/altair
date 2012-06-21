@@ -395,7 +395,7 @@ class ConfirmView(object):
         return dict(cart=cart)
 
     @view_config(route_name='payment.confirm', request_method="POST", renderer="carts/confirm.html")
-    def get(self):
+    def post(self):
 
         assert h.has_cart(self.request)
         cart = h.get_cart(self.request)
@@ -424,6 +424,12 @@ class CompleteView(object):
             # カード決済
             order = self.finish_payment_card(cart, order_session)
             DBSession.add(order)
+        else:
+            # ダミー
+            order = o_models.Order.create_from_cart(cart)
+        openid = authenticated_user(self.request)
+        user = h.get_or_create_user(self.request, openid['clamed_id'])
+        order.user = user
 
         if payment_delivery_pair.delivery_method.delivery_plugin_id == 3:
             self.finish_reserved_number(cart, order_session)
@@ -453,12 +459,9 @@ class CompleteView(object):
         )
 
         DBSession.add(checkout_sales_result)
-        openid = authenticated_user(self.request)
-        user = h.get_or_create_user(self.request, openid['clamed_id'])
 
         order = o_models.Order.create_from_cart(cart)
         order.multicheckout_approval_no = checkout_sales_result.ApprovalNo
-        order.user = user
         cart.finish()
 
         return order

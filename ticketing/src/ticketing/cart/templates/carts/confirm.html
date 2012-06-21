@@ -80,36 +80,38 @@
 				</div>
 			</div>
 -->
-<!--
+<%
+shipping = cart.shipping_address
+%>
 			<div class="confirmBox">
 				<div class="confirmBoxInner">
-					<h2><img src="../img/settlement/title_delivery.gif" alt="配送方法" width="79" height="30" /></h2>
-					<h3>配送</h3>
+					<h3>購入者情報</h3>
 					<table id="confirmDelivery" summary="配送先情報">
 						<tr>
 							<th scope="row">氏名（漢字）</th>
-							<td>山田太郎</td>
+                            <td>${shipping.last_name} ${shipping.first_name}</td>
 						</tr>
 						<tr>
 							<th scope="row">氏名（カナ）</th>
-							<td>ヤマダタロウ</td>
+                            <td>${shipping.last_name_kana} ${shipping.first_name_kana}</td>
 						</tr>
 						<tr>
 							<th scope="row">電話番号（自宅）</th>
-							<td>000-0000-0000</td>
+                            <td>${shipping.tel_1}</td>
 						</tr>
+                        <!--
 						<tr>
 							<th scope="row">電話番号（携帯電話）</th>
 							<td>000-0000-0000</td>
 						</tr>
+                        -->
 						<tr>
 							<th scope="row">配送先住所</th>
-							<td>東京都品川区五反田0-0-0</td>
+                            <td>${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}</td>
 						</tr>
 					</table>
 				</div>
 			</div>
--->
 <!--
 			<div class="settlementBox">
 				<div class="settlementBoxInner">
