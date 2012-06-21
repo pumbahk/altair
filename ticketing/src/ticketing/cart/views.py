@@ -274,10 +274,18 @@ class PaymentView(object):
         #if payment_delivery_pair.payment_method.payment_plugin_id == 1:
         #    return HTTPFound(self.request.route_url("payment.secure3d"))
 
-        payment_plugin = plugins.get_payment_plugin(self.request, payment_delivery_pair.payment_method.payment_plugin_id)
-        res = payment_plugin.prepare(self.request, cart)
-        if res is not None and callable(res):
-            return res
+        payment_delivery_plugin = plugins.get_payment_delivery_plugin(self.request, 
+            payment_delivery_pair.payment_method.payment_plugin_id,
+            payment_delivery_pair.delivery_method.delivery_plugin_id,)
+        if payment_delivery_plugin is not None:
+            res = payment_delivery_plugin.prepare(self.request, cart)
+            if res is not None and callable(res):
+                return res
+        else:
+            payment_plugin = plugins.get_payment_plugin(self.request, payment_delivery_pair.payment_method.payment_plugin_id)
+            res = payment_plugin.prepare(self.request, cart)
+            if res is not None and callable(res):
+                return res
         return HTTPFound(self.request.route_url("payment.confirm"))
 
 
@@ -320,16 +328,21 @@ class CompleteView(object):
             c_models.PaymentDeliveryMethodPair.id==payment_delivery_pair_id
         ).one()
 
-        payment_plugin = plugins.get_payment_plugin(self.request, payment_delivery_pair.payment_method.payment_plugin_id)
-        order = payment_plugin.finish(self.request, cart)
-        DBSession.add(order)
+        payment_delivery_plugin = plugins.get_payment_delivery_plugin(self.request, 
+            payment_delivery_pair.payment_method.payment_plugin_id,
+            payment_delivery_pair.delivery_method.delivery_plugin_id,)
+        if payment_delivery_plugin is not None:
+            order = payment_delivery_plugin.finish(self.request, cart)
+        else:
+            payment_plugin = plugins.get_payment_plugin(self.request, payment_delivery_pair.payment_method.payment_plugin_id)
+            order = payment_plugin.finish(self.request, cart)
+            DBSession.add(order)
+            delivery_plugin = plugins.get_delivery_plugin(self.request, payment_delivery_pair.delivery_method.delivery_plugin_id)
+            delivery_plugin.finish(self.request, cart)
 
         openid = authenticated_user(self.request)
         user = h.get_or_create_user(self.request, openid['clamed_id'])
         order.user = user
 
-        delivery_plugin = plugins.get_delivery_plugin(self.request, payment_delivery_pair.delivery_method.delivery_plugin_id)
-        delivery_plugin.finish(self.request, cart)
 
-        # 配送
         return dict(order=order)

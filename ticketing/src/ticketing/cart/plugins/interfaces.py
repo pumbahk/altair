@@ -36,3 +36,11 @@ class IPaymentPlugin(Interface):
 
     def finish(request, cart):
         """ 確定処理 """
+
+class IPaymentDeliveryPlugin(Interface):
+    """ 決済配送を一度に行うプラグイン"""
+    def prepare(request, cart):
+        """ 前処理 """
+
+    def finish(request, cart):
+        """ 確定処理 """
