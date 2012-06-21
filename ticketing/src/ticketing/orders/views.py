@@ -9,7 +9,7 @@ from ticketing.models import merge_session_with_post, record_to_appstruct, merge
 from ..core.models import Organization
 from ticketing.operators.models import Operator, OperatorRole, Permission
 from ticketing.orders.models import Order
-from ticketing.orders.forms import OrderForm, SejOrderForm, SejTicketForm, SejTicketForm, SejCancelEventForm,SejRefundOrderForm
+from ticketing.orders.forms import OrderForm, SejOrderForm, SejTicketForm, SejTicketForm, SejRefundEventForm,SejRefundOrderForm
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 
@@ -61,9 +61,11 @@ class Orders(BaseView):
             'order':order,
         }
 
-from ticketing.sej.models import SejOrder, SejTicket, SejTicketTemplateFile, SejCancelEvent, SejCancelTicket
-from ticketing.sej.payment import SejTicketDataXml, request_update_order, request_cancel_order
-from ticketing.sej.resources import code_from_ticket_type, code_from_update_reason, code_from_payment_type, SejServerError
+from ticketing.sej.models import SejOrder, SejTicket, SejTicketTemplateFile, SejRefundEvent, SejRefundTicket
+from ticketing.sej.ticket import SejTicketDataXml
+from ticketing.sej.payment import request_update_order, request_cancel_order
+from ticketing.sej.resources import code_from_ticket_type, code_from_update_reason, code_from_payment_type
+from ticketing.sej.exceptions import  SejServerError
 from sqlalchemy import or_, and_
 
 import sqlahelper
@@ -260,12 +262,12 @@ class SejRefundView(BaseView):
     @view_config(route_name='orders.sej.event.refund', renderer='ticketing:templates/sej/event_refund.html')
     def order_event_refund(self):
 
-        sort = self.request.GET.get('sort', 'SejCancelEvent.id')
+        sort = self.request.GET.get('sort', 'SejRefundEvent.id')
         direction = self.request.GET.get('direction', 'asc')
         if direction not in ['asc', 'desc']:
             direction = 'asc'
 
-        query = SejCancelEvent.filter().order_by(sort + ' ' + direction)
+        query = SejRefundEvent.filter().order_by(sort + ' ' + direction)
 
         events = paginate.Page(
             query,
@@ -274,7 +276,7 @@ class SejRefundView(BaseView):
             url=paginate.PageURL_WebOb(self.request)
         )
 
-        f = SejCancelEventForm()
+        f = SejRefundEventForm()
         return dict(
             form = f,
             events = events
@@ -283,14 +285,14 @@ class SejRefundView(BaseView):
     @view_config(route_name='orders.sej.event.refund.detail', renderer='ticketing:templates/sej/event_refund_detail.html')
     def order_event_detail(self):
         event_id = int(self.request.matchdict.get('event_id', 0))
-        event = SejCancelEvent.query.get(event_id)
+        event = SejRefundEvent.query.get(event_id)
         return dict(event=event)
 
     @view_config(route_name='orders.sej.event.refund.add', renderer='ticketing:templates/sej/event_form.html')
     def order_event_refund_add(self):
-        f = SejCancelEventForm(self.request.POST)
+        f = SejRefundEventForm(self.request.POST)
         if f.validate():
-            e = SejCancelEvent()
+            e = SejRefundEvent()
             d = f.data
             e.available = d.get('available')
             e.shop_id = d.get('shop_id')
@@ -327,13 +329,13 @@ class SejRefundView(BaseView):
             event = data.get('event')
             from sqlalchemy.orm.exc import NoResultFound
             try:
-                ct = SejCancelTicket.filter(
+                ct = SejRefundTicket.filter(
                     and_(
-                        SejCancelTicket.order_id == ticket.ticket.order_id,
-                        SejCancelTicket.ticket_barcode_number == ticket.barcode_number
+                        SejRefundTicket.order_id == ticket.ticket.order_id,
+                        SejRefundTicket.ticket_barcode_number == ticket.barcode_number
                     )).one()
             except NoResultFound, e:
-                ct = SejCancelTicket()
+                ct = SejRefundTicket()
                 DBSession.add(ct)
             print event
 

@@ -9,7 +9,8 @@ def _setup_db():
 
     #from . import models
     from ticketing.sej.models import SejOrder
-    from ticketing.sej.payment import SejOrderUpdateReason, SejPaymentType, callback_notification
+    from ticketing.sej.payment import SejOrderUpdateReason, SejPaymentType
+    from ticketing.sej.api import callback_notification
 
     engine = create_engine("sqlite:///")
     sqlahelper.get_session().remove()
@@ -245,7 +246,7 @@ class SejTest(unittest.TestCase):
     def test_request_order_cash_on_delivery(self):
         '''2-1.決済要求 代引き'''
 
-        from ticketing.sej.payment import SejTicketDataXml
+        from ticketing.sej.ticket import SejTicketDataXml
         from ticketing.sej.models import SejOrder
         from ticketing.sej.payment import SejPaymentType, SejTicketType, request_order
 
@@ -393,7 +394,7 @@ class SejTest(unittest.TestCase):
     def test_request_order_prepayment(self):
         '''2-1.決済要求 支払い済み'''
         import sqlahelper
-        from ticketing.sej.payment import SejTicketDataXml
+        from ticketing.sej.ticket import SejTicketDataXml
         from ticketing.sej.models import SejOrder
         from ticketing.sej.payment import SejPaymentType, SejTicketType, request_order
 

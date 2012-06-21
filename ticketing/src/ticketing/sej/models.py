@@ -4,9 +4,6 @@ from ticketing.models import BaseModel, LogicallyDeleted, WithTimestamp, Mutatio
 from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, Date, ForeignKey, Enum, DECIMAL, Binary
 from sqlalchemy.orm import relationship, join, column_property, mapper, backref
 
-from datetime import datetime
-from hashlib import md5
-
 import sqlahelper
 
 session = sqlahelper.get_session()
@@ -24,8 +21,8 @@ class SejTicketTemplateFile(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     publish_end_date        = Column(Date)
     send_at                 = Column(DateTime)
 
-class SejCancelEvent(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
-    __tablename__           = 'SejCancelEvent'
+class SejRefundEvent(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
+    __tablename__           = 'SejRefundEvent'
     id                      = Column(Identifier, primary_key=True)
     available = Column(Integer)
     shop_id = Column(String(5))
@@ -49,11 +46,11 @@ class SejCancelEvent(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     un_use_05 = Column(String(64))
     sent_at = Column(DateTime, nullable=True)
 
-class SejCancelTicket(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
-    __tablename__           = 'SejCancelTicket'
+class SejRefundTicket(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
+    __tablename__               = 'SejRefundTicket'
     id                          = Column(Identifier, primary_key=True)
-    cancel_event_id             = Column(Identifier, ForeignKey("SejCancelEvent.id"), nullable=True)
-    cancel_event                = relationship("SejCancelEvent", backref='tickets')
+    refund_event_id             = Column(Identifier, ForeignKey("SejRefundEvent.id"), nullable=True)
+    refund_event                = relationship("SejRefundEvent", backref='tickets')
     available                   = Column(Integer)
     event_code_01               = Column(String(16))
     event_code_02               = Column(String(16), nullable=True)
@@ -185,8 +182,8 @@ class SejTicket(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     ticket_template_id      = Column(String(10))
     ticket_data_xml         = Column(String(5000))
 
-    ticket                  = relationship("SejOrder", backref='tickets', order_by='SejTicket.ticket_idx')
-    ticket_id               = Column(Identifier, ForeignKey("SejOrder.id"), nullable=True)
+    order                   = relationship("SejOrder", backref='tickets', order_by='SejTicket.ticket_idx')
+    order_id                = Column(Identifier, ForeignKey("SejOrder.id"), nullable=True)
 
     ticket_idx              = Column(Integer)
 

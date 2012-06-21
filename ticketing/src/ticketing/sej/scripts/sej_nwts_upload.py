@@ -44,10 +44,21 @@ def main(argv=sys.argv):
     )
     options, args = parser.parse_args(argv[1:])
 
+    parser.add_option('-c', '--config',
+        dest='config',
+        help='Path to configuration file (defaults to $CWD/development.ini)',
+        metavar='FILE'
+    )
     type = options.type
-    #print type == 'tpayback.asp'
+
     if type is None or (type != 'tpayback.asp' and type != 'ttemplate.asp'):
         print 'You must set type tpayback.asp or ttemplate.asp'
+        return
+
+    # configuration
+    config = options.config
+    if config is None:
+        print 'You must give a config file'
         return
 
     file = options.file
@@ -57,10 +68,14 @@ def main(argv=sys.argv):
 
     data = open(file).read()
 
-    terminal_id = '60022000'
-    password = '60022a'
-    url = 'http://sv2.ticketstar.jp/test.php'
-    #url = 'http://incp.r1test.com/cpweb/master/ul/ttemplate.asp'
+    app = loadapp('config:%s' % config, 'main')
+    settings = app.registry.settings
+
+    nwts_hostname           = settings['sej.nwts.hostname ']
+    terminal_id             = settings['sej.terminal_id']
+    password                = settings['sej.password']
+
+    url = nwts_hostname + "/" + type
     nws_data_send(url=url, data=data, file_id='SDMT010U', terminal_id=terminal_id, password=password)
 
 if __name__ == u"__main__":
