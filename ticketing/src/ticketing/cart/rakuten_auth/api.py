@@ -43,7 +43,9 @@ def checkdigit(numbers):
     return str(check)
     
 def get_return_url(request):
+    print 'get_return_url'
     session = request.environ['session.rakuten_openid']
+    print session
     return session.get('return_url')
 
 def authenticated_user(request):
@@ -187,8 +189,8 @@ class RakutenOpenID(object):
         import transaction
         transaction.commit()
 
-        point_info = self.get_rakutenid_pointacount(self.consumer_key, access_token['oauth_token'], access_token['oauth_token_secret'])
-        logger.debug('point_info : %s' % point_info)
+        #point_info = self.get_rakutenid_pointacount(self.consumer_key, access_token['oauth_token'], access_token['oauth_token_secret'])
+        #logger.debug('point_info : %s' % point_info)
 
         if is_valid == "true":
             logger.debug("authentication OK")
