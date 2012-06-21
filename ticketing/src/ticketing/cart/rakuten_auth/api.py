@@ -189,14 +189,8 @@ class RakutenOpenID(object):
         import transaction
         transaction.commit()
 
-<<<<<<< Updated upstream
         #point_info = self.get_rakutenid_pointacount(self.consumer_key, access_token['oauth_token'], access_token['oauth_token_secret'])
         #logger.debug('point_info : %s' % point_info)
-=======
-        point_info = self.get_rakutenid_pointacount(self.consumer_key,
-                                                 access_token['oauth_token'], self.secret + "&" + access_token['oauth_token_secret'])
-        logger.debug('point_info : %s' % point_info)
->>>>>>> Stashed changes
 
         if is_valid == "true":
             logger.debug("authentication OK")
