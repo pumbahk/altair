@@ -99,6 +99,11 @@ class CRUDResource(RootFactory): ## fixme
             self.request.registry.notify(self.delete_event(self.request, obj, {}))
         DBSession.delete(obj)
 
+    def get_endpoint(self):
+        endpoint =  self.request.GET.get("endpoint")
+        if endpoint:
+            return endpoint
+        return self.request.route_url(self.endpoint)
 
 class CreateView(object):
     def __init__(self, context, request):
@@ -133,7 +138,7 @@ class CreateView(object):
         obj = self.context.create_model_from_form(form)
         mes = u'create <a href="%s">新しく作成されたデータを編集</a>' % self.request.route_path(self.context.join("update"), id=obj.id, action="input")
         FlashMessage.success(mes, request=self.request)
-        return HTTPFound(self.request.route_url(self.context.endpoint), self.request)
+        return HTTPFound(self.context.get_endpoint())
 
 class UpdateView(object):
     def __init__(self, context, request):
@@ -158,6 +163,13 @@ class UpdateView(object):
         for k, v in form.data.iteritems():
             setattr(obj, k, v)
 
+        # for don't add to db.
+        def session_cleaner(request, response):
+            import transaction
+            transaction.abort()
+        self.request.add_response_callback(session_cleaner)
+
+
         return {"master_env": self.context,
                 "form": form, 
                 "obj": obj, 
@@ -170,7 +182,7 @@ class UpdateView(object):
         obj = self.context.update_model_from_form(before_obj, form)
         mes = u'update <a href="%s">変更されたデータを編集</a>' % self.request.route_path(self.context.join("update"), id=obj.id, action="input")
         FlashMessage.success(mes, request=self.request)
-        return HTTPFound(self.request.route_url(self.context.endpoint), self.request)
+        return HTTPFound(self.context.get_endpoint())
 
 class DeleteView(object):
     def __init__(self, context, request):
@@ -190,7 +202,7 @@ class DeleteView(object):
         obj = self.context.get_model_obj(self.request.matchdict["id"])
         self.context.delete_model(obj)
         FlashMessage.success("delete", request=self.request)
-        return HTTPFound(self.request.route_url(self.context.endpoint), self.request)
+        return HTTPFound(self.context.get_endpoint())
 
 def list_view(context, request):
     qs = context.get_model_query()
