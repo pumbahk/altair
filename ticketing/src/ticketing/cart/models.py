@@ -187,11 +187,39 @@ class Cart(Base):
 
     @property
     def total_amount(self):
-        return self.tickets_amount + self.system_fee
+        return self.tickets_amount + self.system_fee + self.transaction_fee_amount + self.delivery_fee_amount
 
     @property
     def tickets_amount(self):
         return sum(cp.amount for cp in self.products)
+
+    @property
+    def total_quantiy(self):
+        return sum(cp.quantity for cp in self.products)
+
+    @property
+    def transaction_fee_amount(self):
+        """ 決済手数料 """
+        payment_fee = self.payment_delivery_pair.transaction_fee
+        payment_method = self.payment_delivery_pair.payment_method
+        if payment_method.fee_type == c_models.FeeTypeEnum.Once.v[0]:
+            return payment_fee
+        elif payment_method.fee_type == c_models.FeeTypeEnum.PerUnit.v[0]:
+            return payment_fee * self.total_quantiy
+        else:
+            return 0
+
+    @property 
+    def delivery_fee_amount(self):
+        """ 配送手数料 """
+        delivery_fee = self.payment_delivery_pair.delivery_fee
+        delivery_method = self.payment_delivery_pair.delivery_method
+        if delivery_method.fee_type == c_models.FeeTypeEnum.Once.v[0]:
+            return delivery_fee
+        elif delivery_method.fee_type == c_models.FeeTypeEnum.PerUnit.v[0]:
+            return delivery_fee * self.total_quantiy
+        else:
+            return 0
 
     @classmethod
     def get_or_create(cls, cart_session_id):
