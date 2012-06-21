@@ -41,14 +41,10 @@ Seat.prototype.init = function Seat_init(id, shape, meta, parent, events) {
 
   this.type = this.parent.metadata.stock_types ?
       this.parent.metadata.stock_types[meta.stock_type_id]: null;
-  this.holder = this.parent.metadata.stock_holders ?
-      this.parent.metadata.stock_holders[meta.stock_holder_id]: null;
 
   var style = CONF.DEFAULT.SEAT_STYLE;
   if (this.type)
     style = mergeStyle(style, this.type.style);
-  if (this.holder)
-    style = mergeStyle(style, this.holder.style);
 
   this.originalStyle = style;
 

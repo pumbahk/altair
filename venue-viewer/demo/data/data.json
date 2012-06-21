@@ -114,50 +114,6 @@
       "name": "C\u5e2d"
     }
   },
-  "stock_holders": {
-    "1": {
-      "style": {
-        "text": "\u62db",
-        "text_color": "#d9ccbf"
-      },
-      "name": "\u62db\u5f85\u67a0"
-    },
-    "2": {
-      "style": {
-        "text": "\u4e8b",
-        "text_color": "#d9ccbf"
-      },
-      "name": "\u4e8b\u6545\u5e2d\u67a0"
-    },
-    "3": {
-      "style": {
-        "text": "\u30cd",
-        "text_color": "#d9ccbf"
-      },
-      "name": "\u30cd\u30c3\u30c8\u8ca9\u58f2"
-    },
-    "4": {
-      "style": {
-        "text": "\u4e00",
-        "text_color": "#d9ccbf"
-      },
-      "name": "\u4e00\u822c\u8ca9\u58f2"
-    },
-    "5": {
-      "style": {
-        "text": "\u3074",
-        "text_color": "#d9ccbf"
-      },
-      "name": "\u3074\u3042\u914d\u5238"
-    },
-    "6": {
-      "style": {
-        "text": "e",
-        "text_color": "#d9ccbf"
-      },
-      "name": "\u30a4\u30fc\u30d7\u30e9\u30b9\u914d\u5238"
-    }
-  },
   "seats": {
     "A1": {
       "attr2": "a1-attr2",
