@@ -289,7 +289,7 @@ class MultiCheckoutView(object):
         """ カード情報入力"""
         return dict()
 
-    @view_config(route_name='payment.secure3d', request_method="POST", renderer='carts/redirect_post.html')
+    @view_config(route_name='payment.secure3d', request_method="POST", renderer='carts/card_form.html')
     def card_info_secure3d(self):
         """ カード情報入力(3Dセキュア)
         """
@@ -317,7 +317,9 @@ class MultiCheckoutView(object):
         self.request.session['order'] = order
         enrol = multicheckout_api.secure3d_enrol(self.request, order_id, card_number, exp_year, exp_month, cart.total_amount)
         if enrol.is_enable_auth_api():
-            return dict(form=m_h.secure3d_acs_form(self.request, self.request.route_url('cart.secure3d_result'), enrol))
+            form=m_h.secure3d_acs_form(self.request, self.request.route_url('cart.secure3d_result'), enrol)
+            self.request.response.text = form
+            return self.request.response
         elif enrol.is_enable_secure3d():
             # セキュア3D認証エラーだが決済APIを利用可能
             logger.debug("3d secure is failed ErrorCd = %s RetCd = %s" %(enrol.ErrorCd, enrol.RetCd))
@@ -325,7 +327,7 @@ class MultiCheckoutView(object):
         else:
             # セキュア3D認証エラー
             logger.debug("3d secure is failed ErrorCd = %s RetCd = %s" %(enrol.ErrorCd, enrol.RetCd))
-            pass
+        return dict()
 
     @view_config(route_name='cart.secure3d_result', request_method="POST", renderer="carts/confirm.html")
     def card_info_secure3d_callback(self):
