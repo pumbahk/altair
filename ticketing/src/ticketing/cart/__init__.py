@@ -21,28 +21,12 @@ def includeme(config):
     config.add_route('cart.order', 'order')
     config.add_route('cart.payment', 'payment')
 
-    # 決済系(マルチ決済)
-    config.add_route("payment.secure3d", 'payment/3d')
-    config.add_route("cart.secure3d_result", 'payment/3d/result')
-
-    # 決済系(あんしん決済)
-    config.add_route("payment.checkout", 'payment/checkout')
-
-    # 決済系(セブンイレブン)
-    config.add_route("payment.sej", 'payment/sej')
     # 完了／エラー
     config.add_route('payment.confirm', 'confirm')
     config.add_route('payment.finish', 'completed')
 
-    config.add_subscriber('.subscribers.add_helpers', 'pyramid.events.BeforeRender')
 
-    # 決済方法登録
-    # セブンイレブン
-    # 安心決済
-    # クレジットカード／マルチ決済
-    config.add_payment_method('1', 'payment.sej')
-    config.add_payment_method('2', 'payment.checkout')
-    config.add_payment_method('3', 'payment.secure3d')
+    config.add_subscriber('.subscribers.add_helpers', 'pyramid.events.BeforeRender')
 
     # 楽天認証URL
     config.add_route('rakuten_auth.login', '/login')

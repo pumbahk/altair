@@ -95,6 +95,18 @@ shipping = cart.shipping_address
 %>
 			<div class="confirmBox">
 				<div class="confirmBoxInner">
+					<h3>決済情報</h3>
+                    ${h.render_payment_confirm_viewlet(request, cart)}
+                </div>
+            </div>
+			<div class="confirmBox">
+				<div class="confirmBoxInner">
+					<h3>配送情報</h3>
+                    ${h.render_delivery_confirm_viewlet(request, cart)}
+                </div>
+            </div>
+			<div class="confirmBox">
+				<div class="confirmBoxInner">
 					<h3>購入者情報</h3>
 					<table id="confirmDelivery" summary="配送先情報">
 						<tr>
