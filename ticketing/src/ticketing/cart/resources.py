@@ -38,10 +38,7 @@ class TicketingCartResrouce(object):
             c_models.PaymentDeliveryMethodPair.sales_segment_id==segment.id
         ).all()
 
-        if pairs:
-            return pairs
-
-        return c_models.PaymentDeliveryMethodPair.query.all()
+        return pairs
 
 
     def get_sales_segument(self):
