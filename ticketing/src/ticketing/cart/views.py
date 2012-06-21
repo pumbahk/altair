@@ -273,7 +273,7 @@ class PaymentView(object):
         cart.payment_delivery_pair = payment_delivery_pair
 
         # TODO: マジックナンバー
-        if payment_delivery_pair.payment_method_id == 1:
+        if payment_delivery_pair.payment_method.payment_plugin_id == 1:
             return HTTPFound(self.request.route_url("payment.secure3d"))
         return HTTPFound(self.request.route_url("payment.confirm"))
 
