@@ -26,7 +26,7 @@ class IndexView(object):
         self.request = request
         self.context = request.context
 
-    
+
     @view_config(route_name='cart.index', renderer='carts/index.html', xhr=False, permission="view")
     def __call__(self):
         jquery_tools.need()
@@ -447,3 +447,18 @@ class CompleteView(object):
         cart.finish()
 
         return order
+
+class CheckoutView(object):
+    """ 楽天あんしん決済 """
+    def __init__(self, request):
+        self.request = request
+
+    @view_config(route_name='payment.checkout_test', request_method="GET", renderer="carts/checkout_test.html")
+    def checkout_test(self):
+        from ticketing.checkout import helpers as h
+        from ticketing.checkout.models import Checkout
+        form = {}
+        form['h'] = h.begin_checkout_form(self.request)
+        form['b'] = h.render_checkout(self.request, Checkout())
+        form['f'] = h.end_checkout_form(self.request)
+        return dict(form=form)

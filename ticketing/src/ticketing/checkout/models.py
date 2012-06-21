@@ -10,12 +10,22 @@ import sqlalchemy.orm as orm
 
 Base = sqlahelper.get_base()
 
-class CheckoutItem(Base):
+class CheckoutItem(object):
     """ 購入商品情報
-
     動的商品情報送信APIで利用
     """
 
+    def __init__(self):
+        self.id = u'13'
+        self.itemId = u'14'
+        self.itemName = u'itemName'
+        self.itemNumbers = u'1'
+        self.itemFee = u'1000'
+        self.checkout_id = u'15'
+        self.cart_id = u'16'
+        self.completed_order_id = u'17'
+
+    '''
     __tablename__ = 'checkout_items'
 
     id = sa.Column(sa.Integer, primary_key=True)
@@ -33,17 +43,25 @@ class CheckoutItem(Base):
     itemFeeMessage = sa.Column(sa.Unicode(100))
 
     created_at = sa.Column(sa.DateTime, default=datetime.now)
+    '''
 
-#class CheckoutCart(Base):
-#    __tablename__ = 'checkout_carts'
-#    id = sa.Column(sa.Integer, primary_key=True)
-#    created_at = sa.Column(sa.DateTime, default=datetime.now)
-
-class Checkout(Base):
+class Checkout(object):
     """ 購入情報
     動的商品情報送信APIで利用
     """
 
+    def __init__(self):
+        self.id = u'10'
+        self.serviceId = u'1000002333'
+        self.itemsInfo = [CheckoutItem()]
+        self.orderCartId = u'11'
+        self.orderCompleteUrl = u'http://www.ticketstar.jp'
+        self.orderFailedUrl = u'http://www.ticketstar.jp'
+        self.orderTotalFee = u'1000'
+        self.authMethod = u'1'
+        self.isTMode = u'1'  # 1:test
+
+    '''
     __tablename__ = 'checkouts'
     id = sa.Column(sa.Integer, primary_key=True)
 
@@ -57,6 +75,12 @@ class Checkout(Base):
     authMethod = sa.Column(sa.Enum('1', '2'))
     isTMode = sa.Column(sa.Enum('0', '1'))
     created_at = sa.Column(sa.DateTime, default=datetime.now)
+    '''
+
+#class CheckoutCart(Base):
+#    __tablename__ = 'checkout_carts'
+#    id = sa.Column(sa.Integer, primary_key=True)
+#    created_at = sa.Column(sa.DateTime, default=datetime.now)
 
 class CartConfirm(Base):
     """ 注文情報確認 API

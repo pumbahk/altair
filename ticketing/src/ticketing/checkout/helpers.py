@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 
+import base64
 from webhelpers.html.builder import literal
 from .api import sign_to_xml, checkout_to_xml
 
@@ -16,15 +17,13 @@ def begin_checkout_form(request):
             accept_charset=accept_charset,
             ))
 
-
-
 def render_checkout(request, checkout):
     """
     - checout :class:`Checkout`
     """
 
     # checkoutをXMLに変換
-    xml = to_xml(checkout)
+    xml = checkout_to_xml(checkout)
 
     # 署名作成する
     sig = sign_to_xml(request, xml)
@@ -32,11 +31,9 @@ def render_checkout(request, checkout):
     return literal('<input type="hidden" name="checkout" value="%(checkout)s" />'
                    '<input type="hidden" name="sig" value="%(sig)s" />' % 
                    dict(
-            checkout=xml,
-            sig=sig,
-            ))
-
+                checkout=base64.b64encode(xml),
+                sig=sig,
+                ))
 
 def end_checkout_form(request):
     return literal('</form>')
-

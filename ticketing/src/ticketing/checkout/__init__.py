@@ -10,7 +10,6 @@ def includeme(config):
     あんしん決済 Success URL
     あんしん決済 Fail URL 
     """
-
     utilities = config.registry.utilities
 
     secret = config.registry.settings.get('altair_checkout.secret')
@@ -25,7 +24,3 @@ def includeme(config):
         utilities.register([], ISigner, "", hmac_sha1_signer)
     elif authmethod == "HMAC-MD5":
         utilities.register([], ISigner, "", hmac_md5_signer)
-
-
-    
-    

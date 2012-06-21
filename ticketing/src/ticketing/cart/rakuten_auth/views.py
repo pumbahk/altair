@@ -24,4 +24,3 @@ class RootView(object):
 
     def verify(self):
         return HTTPFound(location=get_return_url(self.request))
-        
