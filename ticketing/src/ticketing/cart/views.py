@@ -68,6 +68,8 @@ class IndexView(object):
             sales_start_on=str(e.sales_start_on), sales_end_on=str(e.sales_end_on), venues=venues, product=e.products, )
 
         sales_segment = self.context.get_sales_segument()
+        if sales_segment is None:
+            raise HTTPNotFound
 
         return dict(event=event,
                     dates=dates,
