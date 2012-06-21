@@ -104,11 +104,15 @@
 				<table summary="イベント詳細情報">
 					<tr>
 						<th scope="row">開催期間</th>
-						<td>${event['first_start_on']} ${event['final_start_on']}</td>
+						<td>${event['first_start_on']} 〜 ${event['final_start_on']}</td>
+					</tr>
+					<tr>
+						<th scope="row">公演日程</th>
+						<td id="performance_date">${event['first_start_on']} </td>
 					</tr>
 					<tr>
 						<th scope="row">会場</th>
-						<td> ${", ".join(event['venues'])}</td>
+						<td id="venue"> ${", ".join(event['venues'])}</td>
 					</tr>
 					<tr>
 						<th scope="row">席種・料金（税込）</th>

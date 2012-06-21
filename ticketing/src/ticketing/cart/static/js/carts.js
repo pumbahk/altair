@@ -14,6 +14,7 @@ carts.init = function(venues_selection, selected, upper_limit) {
     carts.appView.init(presenter);
     $('#date-select').val(selected[1]);
     $('#date-select').change();
+    // initial setup
 };
 
 
@@ -40,14 +41,29 @@ carts.AppView.prototype.init = function(presenter) {
     $("#selectSeat li:odd").addClass("seatOdd");
     $('#date-select').change(
         function() {
-            var venues = venues_selection[$('#date-select').val()];
+            var selected_date = $('#date-select').val()
+            var venues = venues_selection[selected_date];
             $('#venue-select').empty();
+
+            // collect data
+            
+            // update select field
             $.each(venues, function(index, value) {
                 var o = $('<option/>');
                 o.text(value['name']);
                 o.attr('value', value['seat_types_url']);
                 $('#venue-select').append(o);
             });
+
+            // update settleElementBox
+            var root = $("#settlementEventDetail");
+            var new_td_venues = [];
+            root.find("#performance_date").text(selected_date);
+            $.each(venues, function(index, value){
+                new_td_venues.push(value["name"]);
+            })
+            root.find("#venue").text(new_td_venues.join(", "));
+
             if (venues.length > 0) {
                 presenter.show_seat_types(venues[0]['seat_types_url']);
             } else {
@@ -128,6 +144,11 @@ carts.AppView.prototype.show_seat_types = function(seat_types) {
 
 };
 
+carts.AppView.prototype.update_settlelement_seat_types = function(seat_types){
+    // seat typesだけじゃ足りない。
+    console.log(seat_types);
+};
+
 carts.AppView.prototype.show_payments = function(seat_type_name, products, upper_limit) {
     $('#payment-seat-type').text(seat_type_name);
     $('#payment-seat-products').empty();
@@ -169,6 +190,7 @@ carts.Presenter.prototype.show_seat_types = function(get_url) {
     var view = this.view;
     this.model.fetch_seat_types(get_url, function(data) {
         view.show_seat_types(data.seat_types);
+        view.update_settlelement_seat_types(data.seat_types);
         view.set_performance_id(data.performance_id);
     });
 };

@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 import logging
 import json
+from datetime import datetime, timedelta
 import re
 from markupsafe import Markup
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
@@ -73,6 +74,7 @@ class IndexView(object):
                     dates=dates,
                     selected=Markup(json.dumps([selected_performance.id, selected_date])),
                     venues_selection=Markup(json.dumps(select_venues)),
+                    products_from_selected_date_url = self.request.route_url("cart.date.products", event_id=event_id), 
                     order_url=self.request.route_url("cart.order"),
                     upper_limit=sales_segment.upper_limit,
         )
@@ -99,6 +101,33 @@ class IndexView(object):
                 )
         return data
 
+    @view_config(route_name="cart.date.products", renderer="json")
+    def get_products_with_date(self):
+        """ 公演日ごとの購入単位
+        (event_id, date) -> [performance] -> [productitems] -> [product]
+
+        need: request.GET["selected_date"] # e.g. format: 2011-11-11
+        """
+        selected_date = self.request.GET["selected_date"]
+        event_id = self.request.matchdict["event_id"]
+        date_begin = datetime.strptime(selected_date, "%Y-%m-%d")
+        date_end = date_begin + timedelta(days=1)
+
+        subq = DBSession.query(c_models.Performance.id)
+        subq = subq.filter(c_models.Performance.event_id==event_id)
+        subq = subq.filter(date_begin <= c_models.Performance.start_on).filter(c_models.Performance.start_on < date_end)
+
+        q = DBSession.query(c_models.ProductItem.product.id)
+        q = q.filter(c_models.ProductItem.performance_id==c_models.Performance_id)
+        q = q.filter(c_models.Event.performance_id.in_(subq))
+
+        query = DBSession.query(c_models.Product)
+        query = query.filter(c_models.Product.id.in_(q))
+        products = [dict(name=p.name, price=h.format_number(p.price, ","), id=p.id)
+                    for p in query]
+        return dict(selected_date=selected_date, 
+                    products=products)
+
     @view_config(route_name='cart.products', renderer="json")
     def get_products(self):
         """ 席種別ごとの購入単位 
@@ -122,7 +151,7 @@ class IndexView(object):
 
         products = [dict(id=p.id, name=p.name, price=h.format_number(p.price, ","))
             for p in query]
-        print products
+
         return dict(products=products,
             seat_type=dict(id=seat_type.id, name=seat_type.name))
 
