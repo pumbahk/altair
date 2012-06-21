@@ -14,9 +14,31 @@ from markupsafe import Markup
 from zope.interface import implementer
 from ..core.models import FeeTypeEnum
 import logging
-from .plugins import OrderDelivery
+from .plugins.resources import OrderDelivery, CartDelivery, OrderPayment, CartPayment
 
 logger = logging.getLogger(__name__)
+
+def render_delivery_confirm_viewlet(request, cart):
+    logger.debug("*" * 80)
+    plugin_id = cart.payment_delivery_pair.delivery_method.delivery_plugin_id
+    logger.debug("plugin_id:%d" % plugin_id)
+
+    cart = CartDelivery(cart)
+    response = render_view_to_response(cart, request, name="delivery-%d" % plugin_id, secure=False)
+    if response is None:
+        raise ValueError
+    return Markup(response.text)
+
+def render_payment_confirm_viewlet(request, cart):
+    logger.debug("*" * 80)
+    plugin_id = cart.payment_delivery_pair.payment_method.payment_plugin_id
+    logger.debug("plugin_id:%d" % plugin_id)
+
+    cart = CartPayment(cart)
+    response = render_view_to_response(cart, request, name="payment-%d" % plugin_id, secure=False)
+    if response is None:
+        raise ValueError
+    return Markup(response.text)
 
 def render_delivery_finished_viewlet(request, order):
     logger.debug("*" * 80)
@@ -27,7 +49,18 @@ def render_delivery_finished_viewlet(request, order):
     response = render_view_to_response(order, request, name="delivery-%d" % plugin_id, secure=False)
     if response is None:
         raise ValueError
-    return response.text
+    return Markup(response.text)
+
+def render_payment_finished_viewlet(request, order):
+    logger.debug("*" * 80)
+    plugin_id = order.payment_delivery_pair.payment_method.payment_plugin_id
+    logger.debug("plugin_id:%d" % plugin_id)
+
+    order = OrderPayment(order)
+    response = render_view_to_response(order, request, name="payment-%d" % plugin_id, secure=False)
+    if response is None:
+        raise ValueError
+    return Markup(response.text)
 
 def fee_type(type_enum):
     if type_enum == int(FeeTypeEnum.Once.v[0]):

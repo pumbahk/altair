@@ -1,0 +1,11 @@
+<div>
+    <h4>クレジットカードでお支払い</h4>
+    <dl>
+        <dt>カード番号</dt>
+        <dd>${card_number_mask(order['card_number'])}</dd>
+        <dt>有効期限(月/年)</dt>
+        <dd>${order['exp_month']} / ${order['exp_year']}</dd>
+        <dt>名義人</dt>
+        <dd>${order['card_holder_name']}</dd>
+    </dl>
+</div>

@@ -10,8 +10,6 @@ from ..models import DBSession
 from ..core import models as c_models
 from ..orders import models as o_models
 from . import helpers as h
-from ..multicheckout import helpers as m_h
-from ..multicheckout import api as multicheckout_api
 from . import schema
 from .rakuten_auth.api import authenticated_user
 from . import plugins
@@ -273,113 +271,23 @@ class PaymentView(object):
         cart.payment_delivery_pair = payment_delivery_pair
 
         # TODO: マジックナンバー
-        if payment_delivery_pair.payment_method.payment_plugin_id == 1:
-            return HTTPFound(self.request.route_url("payment.secure3d"))
+        #if payment_delivery_pair.payment_method.payment_plugin_id == 1:
+        #    return HTTPFound(self.request.route_url("payment.secure3d"))
+
+        payment_delivery_plugin = plugins.get_payment_delivery_plugin(self.request, 
+            payment_delivery_pair.payment_method.payment_plugin_id,
+            payment_delivery_pair.delivery_method.delivery_plugin_id,)
+        if payment_delivery_plugin is not None:
+            res = payment_delivery_plugin.prepare(self.request, cart)
+            if res is not None and callable(res):
+                return res
+        else:
+            payment_plugin = plugins.get_payment_plugin(self.request, payment_delivery_pair.payment_method.payment_plugin_id)
+            res = payment_plugin.prepare(self.request, cart)
+            if res is not None and callable(res):
+                return res
         return HTTPFound(self.request.route_url("payment.confirm"))
 
-class MultiCheckoutView(object):
-    """ マルチ決済API
-    """
-
-    def __init__(self, request):
-        self.request = request
-
-    @view_config(route_name='payment.secure3d', request_method="GET", renderer='carts/card_form.html')
-    def card_info_secure3d_form(self):
-        """ カード情報入力"""
-        return dict()
-
-    @view_config(route_name='payment.secure3d', request_method="POST", renderer='carts/card_form.html')
-    def card_info_secure3d(self):
-        """ カード情報入力(3Dセキュア)
-        """
-        form = schema.CardForm(formdata=self.request.params)
-        if not form.validate():
-            logger.debug("form error %s" % (form.errors,))
-            # TODO: 入力エラー表示
-            return dict()
-        assert h.has_cart(self.request)
-        cart = h.get_cart(self.request)
-
-        # 変換
-        order_id = cart.id
-        card_number = form['card_number'].data
-        exp_year = form['exp_year'].data
-        exp_month = form['exp_month'].data
-        order = self.request.session['order']
-        order.update(
-            order_no=order_id,
-            card_holder_name=self.request.params['card_holder_name'],
-            card_number=card_number,
-            exp_year=exp_year,
-            exp_month=exp_month,
-        )
-        self.request.session['order'] = order
-        enrol = multicheckout_api.secure3d_enrol(self.request, order_id, card_number, exp_year, exp_month, cart.total_amount)
-        if enrol.is_enable_auth_api():
-            form=m_h.secure3d_acs_form(self.request, self.request.route_url('cart.secure3d_result'), enrol)
-            self.request.response.text = form
-            return self.request.response
-        elif enrol.is_enable_secure3d():
-            # セキュア3D認証エラーだが決済APIを利用可能
-            logger.debug("3d secure is failed ErrorCd = %s RetCd = %s" %(enrol.ErrorCd, enrol.RetCd))
-
-        else:
-            # セキュア3D認証エラー
-            logger.debug("3d secure is failed ErrorCd = %s RetCd = %s" %(enrol.ErrorCd, enrol.RetCd))
-        return dict()
-
-    @view_config(route_name='cart.secure3d_result', request_method="POST", renderer="carts/confirm.html")
-    def card_info_secure3d_callback(self):
-        """ カード情報入力(3Dセキュア)コールバック
-        3Dセキュア認証結果取得
-        """
-        assert h.has_cart(self.request)
-        cart = h.get_cart(self.request)
-
-        order = self.request.session['order']
-        # 変換
-        order_id = str(cart.id) + "00"
-        pares = multicheckout_api.get_pares(self.request)
-        md = multicheckout_api.get_md(self.request)
-        order['pares'] = pares
-        order['md'] = md
-        order['order_id'] = order_id
-
-        auth_result = multicheckout_api.secure3d_auth(self.request, order_id, pares, md)
-        item_name = h.get_item_name(self.request, cart.performance)
-
-        checkout_auth_result = multicheckout_api.checkout_auth_secure3d(
-            self.request, order_id,
-            item_name, cart.total_amount, 0, order['client_name'], order['mail_address'],
-            order['card_number'], order['exp_year'] + order['exp_month'], order['card_holder_name'],
-            mvn=auth_result.Mvn, xid=auth_result.Xid, ts=auth_result.Ts,
-            eci=auth_result.Eci, cavv=auth_result.Cavv, cavv_algorithm=auth_result.Cavva,
-        )
-        tran = dict(
-            mvn=auth_result.Mvn, xid=auth_result.Xid, ts=auth_result.Ts,
-            eci=auth_result.Eci, cavv=auth_result.Cavv, cavv_algorithm=auth_result.Cavva,
-        )
-        order['tran'] = tran
-        self.request.session['order'] = order
-
-        #auth_result = dict(OrderNo=checkout_auth_result.OrderNo, Status=checkout_auth_result.Status,
-        #    PublicTranId=checkout_auth_result.PublicTranId, AheadComCd=checkout_auth_result.AheadComCd,
-        #    ApprovalNo=checkout_auth_result.ApprovalNo, CardErrorCd=checkout_auth_result.CardErrorCd,
-        #    ReqYmd=checkout_auth_result.ReqYmd, CmnErrorCd=checkout_auth_result.CmnErrorCd, )
-
-        #logger.debug("%s" % auth_result)
-
-        openid = authenticated_user(self.request)
-        user = h.get_or_create_user(self.request, openid['clamed_id'])
-        DBSession.add(checkout_auth_result)
-
-        return dict(cart=cart, auth_result=checkout_auth_result)
-
-
-    def multi_checkout(self):
-        """ マルチ決済APIで決済確定
-        """
 
 class ConfirmView(object):
     """ 決済確認画面 """
@@ -420,48 +328,21 @@ class CompleteView(object):
             c_models.PaymentDeliveryMethodPair.id==payment_delivery_pair_id
         ).one()
 
-        if payment_delivery_pair.payment_method.payment_plugin_id == 1:
-            # カード決済
-            order = self.finish_payment_card(cart, order_session)
-            DBSession.add(order)
+        payment_delivery_plugin = plugins.get_payment_delivery_plugin(self.request, 
+            payment_delivery_pair.payment_method.payment_plugin_id,
+            payment_delivery_pair.delivery_method.delivery_plugin_id,)
+        if payment_delivery_plugin is not None:
+            order = payment_delivery_plugin.finish(self.request, cart)
         else:
-            # ダミー
-            order = o_models.Order.create_from_cart(cart)
+            payment_plugin = plugins.get_payment_plugin(self.request, payment_delivery_pair.payment_method.payment_plugin_id)
+            order = payment_plugin.finish(self.request, cart)
+            DBSession.add(order)
+            delivery_plugin = plugins.get_delivery_plugin(self.request, payment_delivery_pair.delivery_method.delivery_plugin_id)
+            delivery_plugin.finish(self.request, cart)
+
         openid = authenticated_user(self.request)
         user = h.get_or_create_user(self.request, openid['clamed_id'])
         order.user = user
 
-        if payment_delivery_pair.delivery_method.delivery_plugin_id == 3:
-            self.finish_reserved_number(cart, order_session)
 
-        # 配送
         return dict(order=order)
-
-    def finish_reserved_number(self, cart, order_session):
-        # 窓口引き換え番号
-        return plugins.create_reserved_number(self.request, cart)
-
-    # TODO: APIに移動
-    def finish_payment_card(self, cart, order):
-        # 変換
-        order_id = order['order_id']
-        pares = order['pares']
-        md = order['md']
-        tran = order['tran']
-        item_name = h.get_item_name(self.request, cart.performance)
-
-        checkout_sales_result = multicheckout_api.checkout_sales_secure3d(
-            self.request, order_id,
-            item_name, cart.total_amount, 0, order['client_name'], order['mail_address'],
-            order['card_number'], order['exp_year'] + order['exp_month'], order['card_holder_name'],
-            mvn=tran['mvn'], xid=tran['xid'], ts=tran['ts'],
-            eci=tran['eci'], cavv=tran['cavv'], cavv_algorithm=tran['cavv_algorithm'],
-        )
-
-        DBSession.add(checkout_sales_result)
-
-        order = o_models.Order.create_from_cart(cart)
-        order.multicheckout_approval_no = checkout_sales_result.ApprovalNo
-        cart.finish()
-
-        return order
