@@ -37,14 +37,14 @@ def create_reserved_number(request, cart):
     return number
 
 
-@view_config(context=IOrderDelivery, name="delivery-2")
+@view_config(context=IOrderDelivery, name="delivery-3")
 def reserved_number_viewlet(context, request):
     logger.debug(u"窓口")
     order = context.order
     reserved_number = ReservedNumber.query.filter_by(order_no=order.id).one()
     return Response(text =u"引き換え番号: %s" % reserved_number.number)
 
-@view_config(context=IOrderDelivery, name="delivery-3")
+@view_config(context=IOrderDelivery, name="delivery-1")
 def deliver_viewlet(context, request):
     logger.debug(u"郵送")
     order = context.order

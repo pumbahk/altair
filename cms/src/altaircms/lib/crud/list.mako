@@ -4,8 +4,8 @@
 <%namespace name="nco" file="../../templates/navcomponents.mako"/>
 <h2>${master_env.title}</h2>
 
-<div class="row-fluid">
-  <div class="span10">
+<div class="row">
+  <div class="span12">
     ${nco.breadcrumbs(
         names=["Top", master_env.title], 
         urls=[request.route_path("dashboard")])

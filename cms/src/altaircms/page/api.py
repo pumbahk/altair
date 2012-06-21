@@ -14,10 +14,18 @@ def doc_from_performances(doc, performances):
     # doc.update(performance_venue=vs)
     return doc
 
+def _split_text(text):
+    if text is None:
+        return []
+    tags = [e.strip() for e in text.split(",")] ##
+    return [k for k in tags if k]
+
 def doc_from_event(doc, event): ## fixme
+    import warnings
+    warnings.warn("need update solr environment, but not a good opotunity, now, so disable it.")
     doc.update(event_title=event.title, 
                event_subtitle=event.subtitle, 
-               event_place=event.place, 
+               # event_performer=_split_text(event.performers), 
                event_description=event.description)
     return doc 
 

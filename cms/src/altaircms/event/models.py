@@ -26,13 +26,13 @@ class Event(BaseOriginalMixin, Base):
     title = sa.Column(sa.Unicode(255))
     subtitle = sa.Column(sa.Unicode(255), default=u"")
     description = sa.Column(sa.Unicode(255), default=u"")
-    place = sa.Column(sa.Unicode(255), default=u"")
     inquiry_for = sa.Column(sa.Unicode(255), default=u"")
     event_open = sa.Column(sa.DateTime)
     event_close = sa.Column(sa.DateTime)
     deal_open = sa.Column(sa.DateTime)
     deal_close = sa.Column(sa.DateTime)
-
+    performers = sa.Column(sa.UnicodeText)
+    notice = sa.Column(sa.UnicodeText)
     is_searchable = sa.Column(sa.Boolean, default=True)
 
     client_id = sa.Column(sa.Integer, sa.ForeignKey("client.id"))
@@ -49,7 +49,8 @@ class Event(BaseOriginalMixin, Base):
         """今週販売開始するquery(月曜日を週のはじめとする)"""
         start_day  = today + timedelta(days=offset or -today.weekday())
         where = (cls.deal_open >= start_day)
-        return (qs or cls.query).filter(where)
+        qs =  (qs or cls.query).filter(where)
+        return qs
 
     @property
     def short_title(self):

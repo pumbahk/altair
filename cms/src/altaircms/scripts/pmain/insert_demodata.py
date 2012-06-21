@@ -51,10 +51,7 @@ def import_symbol(symbol_string):
     else:
         module, symbol  = symbol_string, None
 
-    m = __import__(module)
-    if "." in module:
-        for k in module.split(".")[1:]:
-            m = getattr(m, k)
+    m = __import__(module, fromlist=[module.split(".", 1)[-1]])
 
     if symbol:
         return getattr(m, symbol)

@@ -10,6 +10,11 @@ class LinklistWidgetView(object):
         page_id = self.request.json_body["page_id"]
         context = self.request.context
         widget = context.get_widget(self.request.json_body.get("pk"))
+
+        data = dict(data)
+        if data.get("genre") == "----":
+            data.pop("genre")
+
         widget = context.update_data(widget,
                                      page_id=page_id, 
                                      **data)

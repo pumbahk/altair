@@ -1,0 +1,44 @@
+<%namespace file="./components.mako" name="co"/>
+<%inherit file="./footer.mako"/>
+
+<html lang="ja">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>チケット販売・イベントの予約 [音楽 / コンサート / 舞台 / スポーツ] - 楽天チケット</title>
+</head>
+<body bgcolor="#ffffff"><font size="1">
+  <div align="center">
+      <font color="red">
+        
+      </font>
+  <img src="/static/mobile/img/logo-small.gif" width="160" height="26" alt="楽天チケット" />
+  <hr size="2" noshade="noshade" color="#bf0000" />
+  <br />
+  <div style="background-color:#ffffbb" bgcolor="#ffffbb">
+    ${co.index_search_form(request)}
+  </div>
+</div>
+<div>
+
+<div style="background-image:url(/static/mobile/img/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000" background="/static/mobile/img/bg_bar.gif"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>トピックス</font></div>
+%for topic in topics:
+  <img src="/static/mobile/img/new.gif" width="23" height="8" />
+      <a href="${h.mobilelink.get_link_from_topic(request,topic)}">${topic.title}</a>
+     <br />
+%endfor
+</div>
+
+%if picks.count() > 0:
+  <div style="background-image:url(/static/mobile/img/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000" background="/static/mobile/img/bg_bar.gif"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>おすすめ</font></div>
+  %for pick in picks:
+    ${h.asset.create_show_img(request,pick.mobile_image_asset,align="left")}
+  <% url= h.mobilelink.get_link_from_topcontent(request,pick)%>
+	%if url == "":
+	  ${pick.title}
+	%else:
+	  <a href="${h.mobilelink.get_link_from_topcontent(request,pick)}">${pick.title}</a>
+	%endif
+  <br clear="all" style="clear:both" />
+  %endfor 
+%endif
+</div>

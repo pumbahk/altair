@@ -7,7 +7,6 @@
 </%def>
 
 
-
 #### blocks
 ## info {description,keywords,title  }
 ## custom {css_prerender,js_prerender}

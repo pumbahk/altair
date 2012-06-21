@@ -26,7 +26,7 @@ class TicketlistWidget(Widget):
     __mapper_args__ = {"polymorphic_identity": type}
     query = DBSession.query_property()
 
-    kind = sa.Column(sa.Unicode(255), default="normal")
+    kind = sa.Column(sa.Unicode(255), default=u"normal")
     caption = sa.Column(sa.UnicodeText, doc=u"見出し")
     target_performance_id = sa.Column(sa.Integer, sa.ForeignKey("performance.id"))
     target_performance = orm.relationship("Performance")

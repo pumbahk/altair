@@ -12,8 +12,6 @@ from altaircms.lib.formhelpers import dynamic_query_select_field_factory
 from altaircms.helpers.formhelpers import required_field, append_errors
 
 
-from altaircms.models import DBSession
-
 from ..event.models import Event
 from altaircms.models import Performance
 from ..plugins.widget.promotion.models import Promotion
@@ -68,6 +66,7 @@ class PerformanceForm(Form):
     end_on = fields.DateTimeField(label=u"終了時間", validators=[])
 
     purchase_link = fields.TextField(label=u"購入ページリンク")
+    mobile_purchase_link = fields.TextField(label=u"購入ページリンク(mobile)")
 
     def validate(self, **kwargs):
         data = self.data
@@ -94,7 +93,7 @@ class PerformanceForm(Form):
     __display_fields__ = [u"title", u"backend_id", u"event",
                           u"prefecture", u"venue", 
                           u"open_on", u"start_on", u"end_on",
-                          u"purchase_link"]
+                          u"purchase_link", u"mobile_purchase_link"]
 
 
 class SaleForm(Form):
@@ -245,6 +244,7 @@ class TopicForm(Form):
                                                      allow_blank=True, 
                                                      get_label=lambda obj: obj.name or u"名前なし")
     link = fields.TextField(label=u"外部リンク(ページより優先)")
+    mobile_link = fields.TextField(label=u"外部リンク(mobile ページより優先)")
     event = dynamic_query_select_field_factory(Event, 
                                                label=u"関連イベント",
                                                allow_blank=True, 
@@ -254,7 +254,7 @@ class TopicForm(Form):
                           u"text", 
                           u"publish_open_on", u"publish_close_on", 
                           u"orderno", u"is_vetoed", 
-                          u"bound_page", u"linked_page", u"link", u"event"]
+                          u"bound_page", u"linked_page", u"link", u"mobile_link", u"event"]
 
     def validate(self, **kwargs):
         data = self.data
@@ -277,7 +277,10 @@ class TopcontentForm(Form):
 
     text = fields.TextField(label=u"内容", validators=[required_field()], widget=widgets.TextArea())
     countdown_type = fields.SelectField(label=u"カウントダウンの種別", choices=Topcontent.COUNTDOWN_CANDIDATES)    
-    image_asset = dynamic_query_select_field_factory(ImageAsset,label=u"画像", allow_blank=True)
+    image_asset = dynamic_query_select_field_factory(ImageAsset,label=u"画像", allow_blank=True, 
+                                                     get_label=lambda o: o.title)
+    mobile_image_asset = dynamic_query_select_field_factory(ImageAsset,label=u"mobile画像", allow_blank=True, 
+                                                            get_label=lambda o: o.title)
 
     publish_open_on = fields.DateTimeField(label=u"公開開始日", validators=[required_field()])
     publish_close_on = fields.DateTimeField(label=u"公開終了日", validators=[required_field()])
@@ -298,12 +301,13 @@ class TopcontentForm(Form):
                                                      allow_blank=True, 
                                                      get_label=lambda obj: obj.name or u"名前なし")
     link = fields.TextField(label=u"外部リンク(ページより優先)")
+    mobile_link = fields.TextField(label=u"外部リンク(mobile ページより優先)")
 
     __display_fields__= [u"title", u"kind", u"subkind", u"is_global", 
-                         u"text", u"countdown_type", u"image_asset", 
+                         u"text", u"countdown_type", u"image_asset",u"mobile_image_asset",  
                          u"publish_open_on", u"publish_close_on", 
                          u"orderno", u"is_vetoed", 
-                         u"bound_page", u"linked_page", u"link"]
+                         u"bound_page", u"linked_page", u"link", u"mobile_link"]
     
     def validate(self, **kwargs):
         data = self.data

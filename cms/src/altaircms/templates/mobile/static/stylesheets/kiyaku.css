@@ -1,0 +1,34 @@
+/*---------------------------------------------------
+service kiyaku contents templete css: 2007.6.19
+----------------------------------------------------*/
+h3.kiyaku_title{
+	margin:10px 0px 5px 0px;
+	font-size:12px;
+	text-align:left;
+	}
+ul.kiyaku{
+	margin:0px 0px 20px 0px;
+	font-size:12px;
+	}
+ul.kiyaku li{
+	margin:0px 0px 0px 30px;
+	list-style-type:decimal;
+	font-size:12px;
+	text-align:left;
+	line-height:160%;
+	}
+table.kiyaku_table{
+	width:100%;
+	}
+table.kiyaku_table th,table.kiyaku_table td{
+	font-weight:normal;
+	vertical-align:top;
+	font-size:12px;
+	text-align:left;
+	line-height:160%;
+	}
+p.kiyaku_txt{
+	margin:0px 0px 20px 0px;
+	text-align:left;
+	line-height:160%;
+	}

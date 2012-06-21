@@ -1,0 +1,70 @@
+/*---------------------------------------------------
+service move contents templete css: 2007.6.19
+----------------------------------------------------*/
+div#move_caution{
+	margin:10px 5px 20px 5px;
+	font-size:14px;
+	text-align:left;
+	line-height:160%;
+	}
+table#os{
+	width:100%;
+	margin-bottom:20px;
+	border:1px solid #999999;
+	border-collapse:collapse;
+	}
+table#os th{
+	width:25%;
+	padding:8px;
+	border:1px solid #999999;
+	border-collapse:collapse;
+	background:#EEEEEE;
+	font-size:14px;
+	font-weight:bold;
+	}
+table#os td{
+	width:50%;
+	padding:8px;
+	border:1px solid #999999;
+	border-collapse:collapse;
+	font-size:12px;
+	font-weight:normal;
+	text-align:left;
+	vertical-align:top;
+	line-height:160%;
+	}
+ul#js{
+	margin:0px 0px 20px 0px;
+	}
+ul#js li{
+	margin:0px 0px 0px 30px;
+	list-style-type:decimal;
+	}
+ul#m_caution{
+	margin:0px 0px 20px 0px;
+	}
+ul#m_caution li{
+	margin:0px 0px 0px 30px;
+	list-style-type:decimal;
+	}
+ul#cookie{
+	margin:0px 0px 20px 0px;
+	}
+ul#cookie li{
+	margin:0px 0px 0px 30px;
+	list-style-type:decimal;
+	}
+ul#sll{
+	margin:0px 0px 20px 0px;
+	}
+ul#sll li{
+	margin:0px 0px 0px 30px;
+	list-style-type:decimal;
+	}
+ul.cash{
+	margin:0px 0px 20px 0px;
+	}
+ul.cash li{
+	margin:0px 0px 0px 30px;
+	list-style-type:decimal;
+	}

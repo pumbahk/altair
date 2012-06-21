@@ -102,6 +102,7 @@ class Performance(BaseOriginalMixin, Base):
     end_on = Column(DateTime)  # 終了
 
     purchase_link = Column(sa.UnicodeText)
+    mobile_purchase_link = sa.Column(sa.UnicodeText)
     canceld = Column(Boolean, default=False)
     event = relationship("Event", backref=orm.backref("performances", order_by=start_on, cascade="all"))
     tickets = relationship("Ticket", secondary=performance_ticket_table, backref="performances")
@@ -242,7 +243,9 @@ class Category(Base):
     pageset_id = sa.Column(sa.Integer, sa.ForeignKey("pagesets.id"))
     pageset = orm.relationship("PageSet", backref=orm.backref("category", uselist=False), uselist=False)
     orderno = sa.Column(sa.Integer)
-    origin = sa.Column(sa.Unicode(length=255))
+    origin = sa.Column(sa.Unicode(length=255), 
+                       doc=u"祖先を選定するためのフィールド今のところ{music, sports, stage, other}以外入らない。")
+    ## originはenumにしても良いかもしれない
 
     @classmethod
     def get_toplevel_categories(cls, hierarchy=u"大", site=None, request=None): ## fixme
@@ -255,3 +258,17 @@ class Category(Base):
             return cls.query.filter(cls.hierarchy==hierarchy, cls.parent==None)
 
 
+    def ancestors(self, include_self=False): ## fixme rename `include_self' keyword
+        """ return ancestors (order: parent, grand parent, ...)
+        """
+        r = []
+        me = self
+        while me.parent:
+            r.append(me)
+            me = me.parent
+        r.append(me)
+        
+        ## not include self iff include_self is false
+        if not include_self:
+            r.pop(0)
+        return r

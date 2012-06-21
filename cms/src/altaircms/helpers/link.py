@@ -54,4 +54,3 @@ def to_preview_page_from_pageset(request, pageset):
         return url
     else:
         return unquote_path_segment(request.route_path("front_preview_pageset", pageset_id=pageset.id))
-    

@@ -6,19 +6,54 @@ from . import page
 from . import widget
 from . import tag
 from . import link
-__all__ = ["base", "front", "asset", "event", "page", "widget", "tag",  "link"]
+from . import mobilelink
+__all__ = ["base", "front", "asset", "event", "page", "widget", "tag", "link", "mobilelink"]
 
 ## pagination
 from webhelpers.paginate import Page
+import urlparse
+import cgi 
+import itertools
 
-def url_generate_default(request, **kwargs): #ugly
+def url_create_with(url, **kwargs):
+    """
+    # identity
+    >>> url_create_with('/foo?bar=boo&x=y')
+    '/foo?bar=boo&x=y'
+
+    # paramater replace
+    >>> url_create_with('/foo?bar=boo&x=y', x='z')
+    '/foo?bar=boo&x=z'
+
+    # paramater replace + add paramater
+    >>> url_create_with('/foo?bar=boo&x=y', x='z', hey='yah')
+    '/foo?bar=boo&x=z&hey=yah'
+    """
+    parse_result = urlparse.urlparse(url)
+    return url_create_with_parse_result(parse_result, **kwargs)
+
+def url_create_with_parse_result(parse_result, **kwargs):
+    queries = cgi.parse_qsl(parse_result.query)
+    queries = [(k, kwargs.pop(k) if k in kwargs else v) for k, v in queries]
+    queries = itertools.chain(queries, kwargs.iteritems())
+    query = "&".join("%s=%s" % (k, v) for k, v in queries)
+    return unparse_with_replace_query(parse_result, query)
+
+def unparse_with_replace_query(parse_result, query):
+    ## from urlparse.urlunparse
+    scheme, netloc, url, params, _, fragment = parse_result
+    if params:
+        url = "%s;%s" % (url, params)
+    return urlparse.urlunsplit((scheme, netloc, url, query, fragment))
+
+
+def url_generate_default(request, **kwargs):
+    """pagination default url generator"""
     curpath = request.current_route_path(_query=kwargs.pop("_query", request.params), **kwargs)
-    def _url(page=None, **kwargs):
-        if curpath.endswith("?"):
-            return "%spage=%s" % (curpath, page)
-        else:
-            return "%s&page=%s" % (curpath, page)
-    return _url
+    parse_result = urlparse.urlparse(curpath)
+    def replacement(page, **kwargs):
+        return url_create_with_parse_result(parse_result, page=page)
+    return replacement
 
 class PagerAdapter(object):
     DEFAULT_OPT = {"items_per_page": 10, 

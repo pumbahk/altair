@@ -11,6 +11,11 @@
         body {
             padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
         }
+        .container {
+            width:auto;
+            margin-left: 10px;
+            margin-right: 10px;
+        }
 		// header css
 		#navigation { height:25px; }
 		#navigation ul{ list-style-type: none; padding-top:17px; font-size:11px; }
@@ -26,7 +31,12 @@
 
 		#navigation ul li a:hover span,
 		#navigation ul li a.active span{ background-position:right bottom; }
-    </style>
+		.big-modal{
+		 width:840px;
+		 margin-left:-420px;
+	  }
+
+ </style>
 	## for date picker
 	<link rel="stylesheet" type="text/css" href="/static/css/datepicker.css"/>
 	<script type="text/javascript" src="/static/js/bootstrap-datepicker.js"></script>

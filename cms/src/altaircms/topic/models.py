@@ -188,6 +188,7 @@ topic widgetでは
 
 
     link = sa.Column(sa.Unicode(255), doc="external link")
+    mobile_link = sa.Column(sa.Unicode(255), doc="external mobile_link")
 
     def __repr__(self):
         return "topic: %s title=%s" % (self.kind, self.title)
@@ -262,14 +263,17 @@ class Topcontent(AboutPublishMixin,
     linked_page = orm.relationship(PageSet, primaryjoin="Topcontent.linked_page_id==PageSet.id")
 
     link = sa.Column(sa.Unicode(255), doc="external link")
-
+    mobile_link = sa.Column(sa.Unicode(255), doc="external mobile_link")
+    
     ## topcontentが表示されるページ
     bound_page_id = sa.Column(sa.Integer, sa.ForeignKey("pagesets.id"), nullable=True)
     bound_page = orm.relationship(PageSet, primaryjoin="Topcontent.bound_page_id==PageSet.id")
 
     ## extend
     image_asset_id = sa.Column(sa.Integer, sa.ForeignKey("image_asset.id"), nullable=True)
-    image_asset = orm.relationship(ImageAsset, backref="topcontent")
+    image_asset = orm.relationship(ImageAsset, primaryjoin="Topcontent.image_asset_id==ImageAsset.id")
+    mobile_image_asset_id = sa.Column(sa.Integer, sa.ForeignKey("image_asset.id"), nullable=True)
+    mobile_image_asset = orm.relationship(ImageAsset, primaryjoin="Topcontent.mobile_image_asset_id==ImageAsset.id")
     countdown_type = sa.Column(sa.String(255)) #todo: fixme
     is_global = sa.Column(sa.Boolean, default=True)
 

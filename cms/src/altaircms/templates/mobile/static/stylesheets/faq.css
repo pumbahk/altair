@@ -1,0 +1,28 @@
+/*---------------------------------------------------
+service info top contents templete css: 2007.6.19
+----------------------------------------------------*/
+ul.faq_list{
+	margin:0px 0px 20px 0px;
+	font-size:12px;
+	}
+ul.faq_list li{
+	margin:10px 0px 10px 30px;
+	list-style-type:none;
+	font-size:14px;
+	text-align:left;
+	line-height:160%;
+	}
+ul.3d li{
+	padding:0px 0px 20px 40px;
+	}
+td.answer{
+	width:10px;
+	padding:5px;
+	color:#990000;
+	font-weight:bold;
+	vertical-align:top;
+	}
+td.answer_detail{
+	width:550px;
+	padding:5px;
+	}

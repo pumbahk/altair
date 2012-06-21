@@ -207,5 +207,3 @@ class SearchByKindView(object):
         params = front_api.get_navigation_categories(self.request)
         params.update(result_seq=result_seq, query_params=html_query_params)
         return params
-
-    

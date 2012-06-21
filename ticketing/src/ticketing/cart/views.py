@@ -68,6 +68,8 @@ class IndexView(object):
             sales_start_on=str(e.sales_start_on), sales_end_on=str(e.sales_end_on), venues=venues, product=e.products, )
 
         sales_segment = self.context.get_sales_segument()
+        if sales_segment is None:
+            raise HTTPNotFound
 
         return dict(event=event,
                     dates=dates,
@@ -271,7 +273,7 @@ class PaymentView(object):
         cart.payment_delivery_pair = payment_delivery_pair
 
         # TODO: マジックナンバー
-        if payment_delivery_pair.payment_method_id == 3:
+        if payment_delivery_pair.payment_method_id == 1:
             return HTTPFound(self.request.route_url("payment.secure3d"))
         return HTTPFound(self.request.route_url("payment.confirm"))
 
@@ -416,7 +418,7 @@ class CompleteView(object):
             c_models.PaymentDeliveryMethodPair.id==payment_delivery_pair_id
         ).one()
 
-        if payment_delivery_pair.payment_method.payment_plugin_id == 3:
+        if payment_delivery_pair.payment_method.payment_plugin_id == 1:
             # カード決済
             order = self.finish_payment_card(cart, order_session)
             DBSession.add(order)

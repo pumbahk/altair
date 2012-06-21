@@ -5,6 +5,10 @@ from pyramid.renderers import render_to_response
 from pyramid.view import view_config
 from altaircms.lib.fanstatic_decorator import with_jquery
 from . import api
+from ..mobile import api as mobile_api
+
+from altairsite.mobile.custom_predicates import mobile_access_predicate
+from altairsite.mobile.response import convert_response_for_mobile
 
 ## todo refactoring
 """
@@ -25,40 +29,32 @@ todo:
 カテゴリトップの場合には、サブジャンルを取得できる必要がある。
 """
 
+def _rendering(context, request, page, layout):
+    block_context = context.get_block_context(page)
+    block_context.scan(request=request,
+                       page=page, 
+                       performances=context.get_performances(page),
+                       event=page.event)
+    tmpl = context.get_layout_template(layout, context.get_render_config())
+
+    params = api.get_navigation_categories(request)
+    params.update(sub_categories=api.get_subcategories_from_page(request, page))
+    params.update(page=page, display_blocks=block_context.blocks)
+    return render_to_response(tmpl, params, request)
+
+
 @view_config(route_name="front", decorator=with_jquery)
 def rendering_page(context, request):
     url = request.matchdict["page_name"]
     dt = context.get_preview_date()
     page, layout = context.get_page_and_layout(url, dt)
-
-    block_context = context.get_block_context(page)
-    block_context.scan(request=request,
-                       page=page, 
-                       performances=context.get_performances(page),
-                       event=page.event)
-    tmpl = context.get_layout_template(layout, context.get_render_config())
-
-    params = api.get_navigation_categories(request)
-    params.update(sub_categories=api.get_subcategories_from_page(request, page))
-    params.update(page=page, display_blocks=block_context.blocks)
-    return render_to_response(tmpl, params, request)
+    return _rendering(context, request, page, layout)
 
 @view_config(route_name="front_preview", decorator=with_jquery)
 def rendering_preview_page(context, request):
     url = request.matchdict["page_name"]
     page, layout = context.get_page_and_layout_preview(url, request.matchdict["page_id"])
-
-    block_context = context.get_block_context(page)
-    block_context.scan(request=request,
-                       page=page, 
-                       performances=context.get_performances(page),
-                       event=page.event)
-    tmpl = context.get_layout_template(layout, context.get_render_config())
-    params = api.get_navigation_categories(request)
-    params.update(sub_categories=api.get_subcategories_from_page(request, page))
-    params.update(page=page, display_blocks=block_context.blocks)
-    return render_to_response(tmpl, params, request)
-
+    return _rendering(context, request, page, layout)
 
 @view_config(route_name="front_to_preview") #slack-off
 def to_preview_page(context, request):
@@ -67,3 +63,13 @@ def to_preview_page(context, request):
     page_id = request.matchdict["page_id"]
     page = context.get_unpublished_page(page_id)
     return HTTPFound(request.route_path("front_preview", page_name=page.hash_url))
+
+## for mobile
+
+@view_config(route_name="front", custom_predicates=(mobile_access_predicate,))
+def dispatch_view(context, request):
+    url = request.matchdict["page_name"]
+    dt = context.get_preview_date()
+    pageset = context.get_pageset_query_from_url(url, dt).first()
+
+    raise mobile_api.dispatch_context(request, pageset)

@@ -170,7 +170,11 @@ class RakutenOpenID(object):
         profile.last_name=user_info.get('lastName')
         profile.first_name_kana=user_info.get('firstNameKataKana')
         profile.last_name_kana=user_info.get('lastNameKataKana')
-        profile.birth_day=datetime.strptime(user_info.get('birthDay'), '%Y/%m/%d')
+        try:
+            profile.birth_day=datetime.strptime(user_info.get('birthDay'), '%Y/%m/%d')
+        except ValueError:
+            # 生年月日未登録
+            pass
         profile.sex=self.sex_no(user_info.get('sex'))
         profile.zip=contact_info.get('zip')
         profile.prefecture=contact_info.get('prefecture')
