@@ -6,6 +6,18 @@
  * To change this template use File | Settings | File Templates.
  */
 
+var util = {
+    datestring_japanize: function(datestring){
+        // year, month, day, rest
+        var dates = datestring.split(/[ -]/);
+        return "%Y年%m月%d日 %time"
+            .replace("%Y", dates[0])
+            .replace("%m", dates[1])
+            .replace("%d", dates[2])
+            .replace("%time", dates[3]);
+    }
+};
+
 var carts = {};
 carts.init = function(venues_selection, selected, upper_limit) {
     var model = new carts.Model(venues_selection);
@@ -41,7 +53,12 @@ carts.AppView.prototype.init = function(presenter) {
     $("#selectSeat li:odd").addClass("seatOdd");
     $('#date-select').change(
         function() {
-            presenter.on_date_selected($('#date-select').val());
+            presenter.on_date_selected($(this).val());
+        }
+    );
+    $("#venue-select").change(
+        function(){
+            presenter.on_venue_select($(this).text());
         }
     );
     $('#btn-order').click(function(event) {
@@ -114,7 +131,7 @@ carts.AppView.prototype.update_venues_selectfield = function(venues, selected_da
 };
 
 carts.AppView.prototype.update_performance_header_date = function(selected_date){
-    $("#hallName #performanceDate").text(selected_date);
+    $("#hallName #performanceDate").text(util.datestring_japanize(selected_date));
 }
 carts.AppView.prototype.update_performance_header_venue = function(selected_venue){
     $("#hallName #performanceVenue").text(selected_venue);
@@ -225,6 +242,11 @@ carts.Presenter.prototype.on_date_selected = function(selected_date){
     } else {
         // 多分いろいろクリアしないといけない
     }
+};
+
+carts.Presenter.prototype.on_venue_selected = function(selected_venue){
+    var view = this.view;
+    view.update_performance_header_venue(selected_venue);
 };
 
 carts.Presenter.prototype.show_products = function(get_url) {
