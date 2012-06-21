@@ -22,7 +22,7 @@
 	  以下の内容の${master_env.title}を更新します。良いですか？
 	</div>
 
-	${form_to_table(form, master_env.mapper(request, obj))}
+	${form_to_table(form, mapped)}
 
     <form action="${master_env.flow_api.next_flow_path(request)}?${request.query_string}" method="POST">
        ${fco.postdata_as_hidden_input(request.POST)}

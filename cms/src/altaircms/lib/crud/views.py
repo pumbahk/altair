@@ -8,7 +8,7 @@ import functools
 import altaircms.helpers as h
 import logging
 logger = logging.getLogger(__file__)
-
+from altaircms.security import RootFactory
 from ..flow import api as flow_api
 
 class AfterInput(Exception):
@@ -16,7 +16,7 @@ class AfterInput(Exception):
         self.form = form
         self.context = context
 
-from altaircms.security import RootFactory
+
 class CRUDResource(RootFactory): ## fixme
     flow_api = flow_api
     def __init__(self, prefix, title, model, form, mapper, endpoint, filter_form,
@@ -157,20 +157,20 @@ class UpdateView(object):
         raise AfterInput(form=form, context=self.context)
 
     def confirm(self):
+
         obj = self.context.get_model_obj(self.request.matchdict["id"])
         form = self.context.confirmed_form(obj=obj)
 
         for k, v in form.data.iteritems():
             setattr(obj, k, v)
 
-        # for don't add to db.
-        def session_cleaner(request, response):
-            import transaction
-            transaction.abort()
-        self.request.add_response_callback(session_cleaner)
+        mapped = self.context.mapper(self.request, obj)
 
+        import transaction
+        transaction.abort()
 
         return {"master_env": self.context,
+                "mapped": mapped, 
                 "form": form, 
                 "obj": obj, 
                 "display_fields": getattr(form,"__display_fields__", None) or form.data.keys()}
