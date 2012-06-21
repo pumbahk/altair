@@ -145,7 +145,7 @@ class SejOrderForm(Form):
 
 
 
-class SejCancelEventForm(Form):
+class SejRefundEventForm(Form):
 
     available = BooleanField(
         label=u'有効フラグ',
@@ -214,7 +214,6 @@ def cancel_events():
     return SejCancelEvent.all()
 
 from wtforms.ext.sqlalchemy.fields import QuerySelectField,QuerySelectMultipleField
-from ticketing.sej.models import SejCancelEvent, SejTicket
 
 
 class SejRefundOrderForm(Form):

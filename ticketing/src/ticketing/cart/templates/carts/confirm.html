@@ -43,6 +43,16 @@
 						</tr>
                         %endfor
 						<tr id="commission">
+							<th scope="row">決済手数料</th>
+							<td>&nbsp;</td>
+							<td class="align1">￥${h.format_number(cart.transaction_fee_amount)}</td>
+						</tr>
+						<tr id="commission">
+							<th scope="row">配送手数料</th>
+							<td>&nbsp;</td>
+							<td class="align1">￥${h.format_number(cart.delivery_fee_amount)}</td>
+						</tr>
+						<tr id="commission">
 							<th scope="row">システム利用料</th>
 							<td>&nbsp;</td>
 							<td class="align1">￥${h.format_number(cart.system_fee)}</td>
