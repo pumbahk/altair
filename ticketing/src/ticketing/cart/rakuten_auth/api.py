@@ -189,8 +189,14 @@ class RakutenOpenID(object):
         import transaction
         transaction.commit()
 
+<<<<<<< Updated upstream
         #point_info = self.get_rakutenid_pointacount(self.consumer_key, access_token['oauth_token'], access_token['oauth_token_secret'])
         #logger.debug('point_info : %s' % point_info)
+=======
+        point_info = self.get_rakutenid_pointacount(self.consumer_key,
+                                                 access_token['oauth_token'], self.secret + "&" + access_token['oauth_token_secret'])
+        logger.debug('point_info : %s' % point_info)
+>>>>>>> Stashed changes
 
         if is_valid == "true":
             logger.debug("authentication OK")
@@ -246,7 +252,7 @@ class RakutenOpenID(object):
         oauth_nonce = uuid.uuid4().hex
         oauth_signature_method = 'HMAC-SHA1'
         oauth_version = '1.0'
-        oauth_signature = create_oauth_sigunature(method, url, oauth_consumer_key, secret, 
+        oauth_signature = create_oauth_sigunature(method, url, oauth_consumer_key, secret,
             oauth_token, oauth_signature_method, oauth_timestamp, oauth_nonce, oauth_version, 
             [("rakuten_oauth_api", rakuten_oauth_api)])
 
@@ -284,9 +290,8 @@ class RakutenOpenID(object):
         oauth_signature_method = 'HMAC-SHA1'
         oauth_version = '1.0'
         oauth_signature = create_oauth_sigunature(method, url, oauth_consumer_key, secret,
-            oauth_token, oauth_signature_method, oauth_timestamp, oauth_nonce, oauth_version, [
-                ("rakuten_oauth_api", rakuten_oauth_api),
-                        ("nameofapi", name_of_api)])
+            oauth_token, oauth_signature_method, oauth_timestamp, oauth_nonce, oauth_version,
+            [("rakuten_oauth_api", rakuten_oauth_api), ("nameofapi", name_of_api)])
 
         params = [
             ("oauth_consumer_key", oauth_consumer_key),
@@ -301,7 +306,7 @@ class RakutenOpenID(object):
         ]
 
         request_url = url + '?' + urllib.urlencode(params)
-        logger.debug("get user_info: %s" % request_url)
+        logger.debug("get point get: %s" % request_url)
 
         try:
             f = urllib2.urlopen(request_url)
