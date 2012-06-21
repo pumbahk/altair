@@ -9,6 +9,26 @@ import time
 import sqlahelper
 DBSession = sqlahelper.get_session()
 
+
+from lxml import etree
+import re
+
+class SejTicketDataXml():
+
+    xml = ''
+
+    def __init__(self, xml):
+        self.xml = xml
+
+    def __unicode__(self):
+        from cStringIO import StringIO
+        s = StringIO(self.xml)
+        x = etree.parse(s)
+        xml =  re.sub(
+            r'''(<\?xml[^>]*)encoding=(?:'[^']*'|"[^"]"|[^> ?]*)\?>''',
+            r"\1encoding='Shift_JIS' ?>", etree.tostring(x, encoding='UTF-8', xml_declaration=True))
+        return xml.decode("utf-8")
+
 def package_ticket_template_to_zip(template_id,
                                    shop_id = u'30520'):
 

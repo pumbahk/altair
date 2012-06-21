@@ -2,6 +2,7 @@
 
 import urllib
 import urllib2
+from urllib2 import HTTPError
 import pickle
 import urlparse
 import time
@@ -42,7 +43,9 @@ def checkdigit(numbers):
     return str(check)
     
 def get_return_url(request):
+    print 'get_return_url'
     session = request.environ['session.rakuten_openid']
+    print session
     return session.get('return_url')
 
 def authenticated_user(request):
@@ -186,6 +189,9 @@ class RakutenOpenID(object):
         import transaction
         transaction.commit()
 
+        #point_info = self.get_rakutenid_pointacount(self.consumer_key, access_token['oauth_token'], access_token['oauth_token_secret'])
+        #logger.debug('point_info : %s' % point_info)
+
         if is_valid == "true":
             logger.debug("authentication OK")
             return {'clamed_id': identity['claimed_id'], "nickname": identity['ax_value_nickname']}
@@ -226,8 +232,10 @@ class RakutenOpenID(object):
         f = urllib2.urlopen(request_url)
         response_body = f.read()
         f.close()
+
         logger.debug('raw access token : %s' % response_body)
         access_token = parse_access_token_response(response_body)
+
         return access_token
 
     def call_rakutenid_api(self, oauth_consumer_key, access_token, secret, rakuten_oauth_api):
@@ -238,7 +246,7 @@ class RakutenOpenID(object):
         oauth_nonce = uuid.uuid4().hex
         oauth_signature_method = 'HMAC-SHA1'
         oauth_version = '1.0'
-        oauth_signature = create_oauth_sigunature(method, url, oauth_consumer_key, secret, 
+        oauth_signature = create_oauth_sigunature(method, url, oauth_consumer_key, secret,
             oauth_token, oauth_signature_method, oauth_timestamp, oauth_nonce, oauth_version, 
             [("rakuten_oauth_api", rakuten_oauth_api)])
 
@@ -258,6 +266,45 @@ class RakutenOpenID(object):
         try:
             f = urllib2.urlopen(request_url)
             response_body = f.read()
+        except HTTPError, e:
+            logger.debug("get user info error : %s" % e.read())
+            raise e
+        f.close()
+
+        return response_body
+
+    def get_rakutenid_pointacount(self, oauth_consumer_key, access_token, secret):
+        method = "GET"
+        url = "https://api.id.rakuten.co.jp/openid/oauth/call"
+        oauth_token = access_token
+        rakuten_oauth_api = 'rakutenpoint_api'
+        name_of_api = 'simpleget'
+        oauth_timestamp = int(time.time() * 1000)
+        oauth_nonce = uuid.uuid4().hex
+        oauth_signature_method = 'HMAC-SHA1'
+        oauth_version = '1.0'
+        oauth_signature = create_oauth_sigunature(method, url, oauth_consumer_key, secret,
+            oauth_token, oauth_signature_method, oauth_timestamp, oauth_nonce, oauth_version,
+            [("rakuten_oauth_api", rakuten_oauth_api), ("nameofapi", name_of_api)])
+
+        params = [
+            ("oauth_consumer_key", oauth_consumer_key),
+            ("oauth_token", oauth_token),
+            ("oauth_signature_method", oauth_signature_method),
+            ("oauth_timestamp", oauth_timestamp),
+            ("oauth_nonce", oauth_nonce),
+            ("oauth_version", oauth_version),
+            ("oauth_signature", oauth_signature),
+            ("rakuten_oauth_api", rakuten_oauth_api),
+            ("nameofapi", name_of_api),
+        ]
+
+        request_url = url + '?' + urllib.urlencode(params)
+        logger.debug("get point get: %s" % request_url)
+
+        try:
+            f = urllib2.urlopen(request_url)
+            response_body = f.read()
             f.close()
             return response_body
         except urllib2.HTTPError as e:
@@ -267,7 +314,6 @@ class RakutenOpenID(object):
 
 def parse_access_token_response(response):
     return dict([(key, value[0]) for key, value in urlparse.parse_qs(response).items()])
-    #return dict([line.split(":", 1) for line in response.split("\n")])
 
 def parse_rakutenid_basicinfo(response):
     

@@ -15,7 +15,8 @@ from os.path import abspath, dirname
 
 from ticketing.sej.payment import request_fileget
 from ticketing.sej.models import SejFile
-from ticketing.sej.resources import SejNotificationType, code_from_notification_type, SejServerError
+from ticketing.sej.resources import SejNotificationType, code_from_notification_type
+from ticketing.sej.exceptions import SejServerError
 
 sys.path.append(abspath(dirname(dirname(__file__))))
 
@@ -32,22 +33,7 @@ DBSession = sqlahelper.get_session()
 
 def file_get_and_import(date, notification_type = None):
 
-    for notification_type in [
-        # 5-1.入金速報
-        SejNotificationType.FileInstantPaymentInfo,
-        # 5-2.支払期限切れ
-        SejNotificationType.FilePaymentExpire,
-        # 5-3.発券期限切れ
-        SejNotificationType.FileTicketingExpire,
-        # 5-4.払戻速報
-        SejNotificationType.FileRefundExpire,
-        # 6-1.支払い案内
-        SejNotificationType.FileCheckInfo,
-        # 6-2.会計取消(入金)
-        SejNotificationType.FilePaymentCancel,
-        # 6-3.会計取消(発券)
-        SejNotificationType.FileTicketingCancel,
-    ]:
+    for notification_type in SejNotificationType:
         try:
             body = request_fileget(
                 notification_type,
@@ -115,7 +101,7 @@ def main(argv=sys.argv):
     app = loadapp('config:%s' % config, 'main')
     settings = app.registry.settings
 
-    sej_hostname = settings['sej.inticket_api_hostname']
+    sej_hostname = settings['sej.inticket_api_url']
 
     file_get_and_import(date)
 

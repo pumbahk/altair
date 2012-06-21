@@ -3,7 +3,7 @@ import unittest
 import datetime
 import os
 
-from ticketing.sej.payment import SejTicketDataXml
+from ticketing.sej.ticket import SejTicketDataXml
 from ticketing.sej.utils import JavaHashMap
 
 class SejTestFile(unittest.TestCase):
