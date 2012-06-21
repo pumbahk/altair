@@ -15,7 +15,8 @@ from os.path import abspath, dirname
 
 from ticketing.sej.payment import request_fileget
 from ticketing.sej.models import SejFile
-from ticketing.sej.resources import SejNotificationType, code_from_notification_type, SejServerError
+from ticketing.sej.resources import SejNotificationType, code_from_notification_type
+from ticketing.sej.exceptions import SejServerError
 
 sys.path.append(abspath(dirname(dirname(__file__))))
 
@@ -100,7 +101,7 @@ def main(argv=sys.argv):
     app = loadapp('config:%s' % config, 'main')
     settings = app.registry.settings
 
-    sej_hostname = settings['sej.inticket_api_hostname']
+    sej_hostname = settings['sej.inticket_api_url']
 
     file_get_and_import(date)
 
