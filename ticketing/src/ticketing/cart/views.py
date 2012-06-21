@@ -108,6 +108,7 @@ class IndexView(object):
 
         need: request.GET["selected_date"] # e.g. format: 2011-11-11
         """
+
         selected_date = self.request.GET["selected_date"]
         event_id = self.request.matchdict["event_id"]
         date_begin = datetime.strptime(selected_date, "%Y-%m-%d %H:%M")
@@ -117,9 +118,8 @@ class IndexView(object):
         subq = subq.filter(c_models.Performance.event_id==event_id)
         subq = subq.filter(date_begin <= c_models.Performance.start_on).filter(c_models.Performance.start_on < date_end)
 
-        q = DBSession.query(c_models.ProductItem.product.id)
-        q = q.filter(c_models.ProductItem.performance_id==c_models.Performance_id)
-        q = q.filter(c_models.Event.performance_id.in_(subq))
+        q = DBSession.query(c_models.ProductItem.product_id)
+        q = q.filter(c_models.ProductItem.performance_id.in_(subq))
 
         query = DBSession.query(c_models.Product)
         query = query.filter(c_models.Product.id.in_(q))

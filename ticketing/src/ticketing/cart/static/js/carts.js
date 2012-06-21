@@ -141,7 +141,6 @@ carts.AppView.prototype.update_settlement_detail = function(venues, selected_dat
     // update settleElementBox
     var root = $("#settlementEventDetail");
     var new_td_venues = [];
-    root.find("#performance_date").text(selected_date);
     $.each(venues, function(index, value){
         new_td_venues.push(value["name"]);
     })

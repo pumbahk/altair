@@ -11,6 +11,8 @@
 <link rel="shortcut icon" href="${request.static_url('ticketing.cart:static/img/common/favicon.ico')}" />
 <link rel="stylesheet" href="${request.static_url('ticketing.cart:static/css/import.css')}" type="text/css" media="all" />
 <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/carts.js')}"></script>
+
+
 </head>
 <body id="settlement">
 
@@ -105,10 +107,6 @@
 					<tr>
 						<th scope="row">開催期間</th>
 						<td>${event['first_start_on']} 〜 ${event['final_start_on']}</td>
-					</tr>
-					<tr>
-						<th scope="row">公演日程</th>
-						<td id="performance_date">${event['first_start_on']} </td>
 					</tr>
 					<tr>
 						<th scope="row">会場</th>
