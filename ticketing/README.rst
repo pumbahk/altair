@@ -1,5 +1,5 @@
-vega README
------------
+altair.ticketing README
+-----------------------
 
 Setup
 =====
@@ -16,6 +16,22 @@ Setup
   $ python setup.py develop
   $ python seed_import.py
   $ ../../../env/bin/paster serve development.ini --reload
+
+Cart test how-to
+================
+
+次のコマンドでテスト環境用プロキシを立ち上げる::
+
+  $ misc/proxy/run.sh start
+
+ブラウザのプロキシ設定を次の物に変更する::
+
+  http://localhost:58080/
+
+テスト環境用プロキシを止めたい場合::
+
+  $ misc/proxy/run.sh stop
+
 
 Useful Resources
 ================
