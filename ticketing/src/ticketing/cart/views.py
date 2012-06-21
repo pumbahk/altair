@@ -33,11 +33,11 @@ class IndexView(object):
         if e is None:
             raise HTTPNotFound(self.request.url)
         # 日程,会場,検索項目のコンボ用
-        dates = sorted(list(set([p.start_on.strftime("%Y-%m-%d") for p in e.performances])))
+        dates = sorted(list(set([p.start_on.strftime("%Y-%m-%d %H:%M") for p in e.performances])))
         # 日付ごとの会場リスト
         select_venues = {}
         for p in e.performances:
-            d = p.start_on.strftime('%Y-%m-%d')
+            d = p.start_on.strftime('%Y-%m-%d %H:%M')
             ps = select_venues.get(d, [])
             ps.append(dict(id=p.id, name=p.venue.name,
                            seat_types_url=self.request.route_url('cart.seat_types', performance_id=p.id,
@@ -54,12 +54,12 @@ class IndexView(object):
         if performance_id:
             # 指定公演とそれに紐づく会場
             selected_performance = c_models.Performance.query.filter(c_models.Performance.id==performance_id).first()
-            selected_date = selected_performance.start_on.strftime('%Y-%m-%d')
+            selected_date = selected_performance.start_on.strftime('%Y-%m-%d %H:%M')
             pass
         else:
             # １つ目の会場の1つ目の公演
             selected_performance = e.performances[0]
-            selected_date = selected_performance.start_on.strftime('%Y-%m-%d')
+            selected_date = selected_performance.start_on.strftime('%Y-%m-%d %H:%M')
             pass
 
         event = dict(id=e.id, code=e.code, title=e.title, abbreviated_title=e.abbreviated_title,
@@ -110,7 +110,7 @@ class IndexView(object):
         """
         selected_date = self.request.GET["selected_date"]
         event_id = self.request.matchdict["event_id"]
-        date_begin = datetime.strptime(selected_date, "%Y-%m-%d")
+        date_begin = datetime.strptime(selected_date, "%Y-%m-%d %H:%M")
         date_end = date_begin + timedelta(days=1)
 
         subq = DBSession.query(c_models.Performance.id)

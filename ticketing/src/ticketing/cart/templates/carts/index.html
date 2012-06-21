@@ -61,7 +61,7 @@
 		</form>
 		<div class="settlementBox2">
 			<div class="settlementBoxInner2">
-				<h2 id="hallName"><span>12月3日 14:00 幕張メッセイベントホール</span></h2>
+				<h2 id="hallName"><span><div id="performanceDate" style="display: inline">12月3日 14:00</div><div id="performanceVenue" style="display: inline">幕張メッセイベントホール</div></span></h2>
 				<div id="selectSeat" style="float:left; width: 390px;">
 					<dl>
 						<dt><img src="${request.static_url('ticketing.cart:static/img/settlement/title_select.gif')}" alt="席種をお選びください" width="380" height="33" /></dt>
@@ -116,7 +116,7 @@
 					</tr>
 					<tr>
 						<th scope="row">席種・料金（税込）</th>
-						<td>
+						<td id="pricelist">
 %for p in event['product']:
 ${p.name} ： ${h.format_number(p.price)}円 <br/>
 %endfor
