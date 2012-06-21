@@ -1,0 +1,53 @@
+<%inherit file="mypage_layout.html" />
+		<!-- InstanceBeginEditable name="main" -->
+        <h2><img src="${request.static_url('ticketing.cart:static/img/mypage/title_history.gif')}" alt="予約・購入履歴" width="742" height="43" /></h2>
+		<div class="mypageBox1">
+			<div>
+			<h3>${performance_names}</h3>
+				<dl>
+					<dt>${",".join([d.strftime(u"%Y年%m月%d(%a)".encode('utf-8')).decode('utf-8') for d in performance_dates])}</dt>
+					<dd>${venue_names}<a href="#">会場地図</a></dd>
+				</dl>
+				<ul>
+					<li><iframe src="//www.facebook.com/plugins/like.php?href=http%3A%2F%2Fxxxx&amp;send=false&amp;layout=button_count&amp;width=100&amp;show_faces=false&amp;action=like&amp;colorscheme=light&amp;font&amp;height=21" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:100px; height:21px;" allowTransparency="true"></iframe></li>
+					<li><a href="https://twitter.com/share" class="twitter-share-button" data-lang="ja" data-count="none">ツイート</a><script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script></li>
+				</ul>
+			</div>
+			<p><img src="${request.static_url('ticketing.cart:static/img/mypage/icon_ticketing.gif')}" alt="入金待ち" width="60" height="60" /></p>
+			<table>
+				<tr>
+					<th scope="row">予約番号</th>
+					<td colspan="2">${"%012d" % order.id}</td>
+				</tr>
+				<tr>
+					<th scope="row">申し込み日時</th>
+					<td colspan="2">${order.created_at.strftime(u"%Y年%m月%d %H時%M分".encode('utf-8')).decode('utf-8')}</td>
+				</tr>
+                % for i, op in enumerate(order.items):
+                <tr>
+                    % if i == 0:
+                    <th rowspan="${len(order.items)}" scope="row">購入内容</th>
+                    % endif
+                    <td class="mypageBuy">${op.product.name}</td>
+                    <td class="align1"><strong>${op.quantity if op.quantity else 1}</strong>枚</td>
+                </tr>
+                % endfor
+				<tr>
+					<th scope="row">購入金額</th>
+					<td colspan="2">￥${h.format_number(order.total_amount)}</td>
+				</tr>
+				<tr>
+					<th scope="row" class="">お支払い</th>
+					<td colspan="2" class="">入金待ち<span>（${order.payment_delivery_pair.payment_method.name}）</span></td>
+				</tr>
+				<tr>
+					<th scope="row" class="waitingPayment">配送ステータス</th>
+					<td colspan="2" class="waitingPayment">未配送<span>（${order.payment_delivery_pair.delivery_method.name}）</span></td>
+				</tr>
+			</table>
+			<p><img src="../img/mypage/btn_keep_off.gif" alt="おとなりキープ" width="110" height="22" />
+                <img src="../img/mypage/btn_ticket_off.gif" alt="チケット追加購入" width="124" height="22" />
+                <img src="../img/mypage/btn_transfer_off.gif" alt="譲渡・出品" width="88" height="22" />
+                <img src="../img/mypage/btn_invoice_off.gif" alt="請求書発行" width="88" height="22" /></p>
+		</div>
+
