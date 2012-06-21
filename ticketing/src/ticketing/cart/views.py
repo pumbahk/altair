@@ -112,6 +112,10 @@ class IndexView(object):
 
         selected_date = self.request.GET["selected_date"]
         event_id = self.request.matchdict["event_id"]
+
+        logger.debug("event_id = %(event_id)s, selected_date = %(selected_date)s"
+            % dict(event_id=event_id, selected_date=selected_date))
+
         date_begin = datetime.strptime(selected_date, "%Y-%m-%d %H:%M")
         date_end = date_begin + timedelta(days=1)
 
@@ -136,7 +140,8 @@ class IndexView(object):
         """
         seat_type_id = self.request.matchdict['seat_type_id']
         performance_id = self.request.matchdict['performance_id']
-
+        
+       
         logger.debug("seat_typeid = %(seat_type_id)s, performance_id = %(performance_id)s"
             % dict(seat_type_id=seat_type_id, performance_id=performance_id))
 
@@ -149,6 +154,13 @@ class IndexView(object):
 
         query = DBSession.query(c_models.Product)
         query = query.filter(c_models.Product.id.in_(q)).order_by(sa.desc("price"))
+
+        ### filter by salessegment
+        salessegment_id = self.request.params.get("salessegment_id")
+        selected_date = self.request.params.get("selected_date")
+        if selected_date:
+            selected_date = datetime.strptime(selected_date, "%Y-%m-%d %H:%M")
+        query = h.products_filter_by_salessegment(query, h.get_salessegment(salessegment_id, selected_date))
 
         products = [dict(id=p.id, name=p.name, price=h.format_number(p.price, ","))
             for p in query]
@@ -376,3 +388,32 @@ class CompleteView(object):
 
 
         return dict(order=order)
+
+    def finish_reserved_number(self, cart, order_session):
+        # 窓口引き換え番号
+        return plugins.create_reserved_number(self.request, cart)
+
+    # TODO: APIに移動
+    def finish_payment_card(self, cart, order):
+        # 変換
+        order_id = order['order_id']
+        pares = order['pares']
+        md = order['md']
+        tran = order['tran']
+        item_name = h.get_item_name(self.request, cart.performance)
+
+        checkout_sales_result = multicheckout_api.checkout_sales_secure3d(
+            self.request, order_id,
+            item_name, cart.total_amount, 0, order['client_name'], order['mail_address'],
+            order['card_number'], order['exp_year'] + order['exp_month'], order['card_holder_name'],
+            mvn=tran['mvn'], xid=tran['xid'], ts=tran['ts'],
+            eci=tran['eci'], cavv=tran['cavv'], cavv_algorithm=tran['cavv_algorithm'],
+        )
+
+        DBSession.add(checkout_sales_result)
+
+        order = o_models.Order.create_from_cart(cart)
+        order.multicheckout_approval_no = checkout_sales_result.ApprovalNo
+        cart.finish()
+
+        return order

@@ -1526,9 +1526,6 @@
 	overflow: hidden;
 	line-height: 26px;
 	font-weight: bold;
-	filter: alpha(opacity=50);
-	-moz-opacity: 0.5;
-	opacity: 0.5;
 }
 
 #selectSeat li img {
@@ -1554,7 +1551,7 @@
 	filter: alpha(opacity=100);
 	-moz-opacity: 1.0;
 	opacity: 1.0;
-	background: url(../img/settlement/bg_seat_select.png) no-repeat 0 0;
+//	background: url(../img/settlement/bg_seat_select.png) no-repeat 0 0;
 }
 
 #selectBuy {
@@ -1562,8 +1559,6 @@
 	float: right;
 	width: 510px;
 	margin-bottom: 10px;
-	border: 2px solid #cccccc;
-	background-color: #ffffff;
 	z-index: 10;
 }
 

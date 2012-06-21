@@ -12,6 +12,43 @@
 <link rel="stylesheet" href="${request.static_url('ticketing.cart:static/css/import.css')}" type="text/css" media="all" />
 <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/carts.js')}"></script>
 
+<style type="text/css">
+#selectSeat{
+	filter: alpha(opacity=30);
+	-moz-opacity: 0.3;
+	opacity: 0.3;
+}
+
+#selectSeat.forcus  {
+	filter: alpha(opacity=100);
+	-moz-opacity: 1.0;
+	opacity: 1.0;
+	border: 2px solid #cccccc;
+	background-color: #ffffff;
+}
+
+#selectSeat li.unselected {
+	filter: alpha(opacity=30);
+	-moz-opacity: 0.3;
+	opacity: 0.3;
+}
+
+#selectBuy.forcus{
+	filter: alpha(opacity=100);
+	-moz-opacity: 1.0;
+	opacity: 1.0;
+	border: 2px solid #cccccc;
+	background-color: #ffffff;
+}
+
+.lead {
+	letter-spacing:1px;
+	font-weight:bold;
+	font-size: 11pt;
+	color:#555;
+	padding: 5px 5px 10px 10px;
+}
+</style>
 
 </head>
 <body id="settlement">
@@ -62,11 +99,11 @@
 			</div>
 		</form>
 		<div class="settlementBox2">
-			<div class="settlementBoxInner2">
-				<h2 id="hallName"><span><div id="performanceDate" style="display: inline">12月3日 14:00</div><div id="performanceVenue" style="display: inline">幕張メッセイベントホール</div></span></h2>
-				<div id="selectSeat" style="float:left; width: 390px;">
+		  <div class="settlementBoxInner2">
+			<h2 id="hallName"><span><div id="performanceDate" style="display: inline">12月3日 14:00</div><div id="performanceVenue" style="display: inline">幕張メッセイベントホール</div></span></h2>
+			<div id="selectSeat" style="float:left; width: 390px;" class="forcus">
 					<dl>
-						<dt><img src="${request.static_url('ticketing.cart:static/img/settlement/title_select.gif')}" alt="席種をお選びください" width="380" height="33" /></dt>
+					    <dt><h3 class="lead">席種をお選びください</h3></dt>
 						<dd>
 							<ul id="seat-types-list">
 							</ul>
@@ -76,7 +113,7 @@
 				<div id="selectBuy">
 					<form id="order-form" name="form2" method="post" action="">
                         <input type="hidden" name="performance_id" id="current-performance-id"/>
-						<h3><img src="${request.static_url('ticketing.cart:static/img/settlement/select.gif')}" alt="購入枚数、購入方法をお選びください" width="246" height="14" /></h3>
+						<h3 class="lead" style="font-size:10.5pt">購入枚数、購入方法をお選びください</h3>
 						<dl>
 							<dt id="payment-seat-type"></dt>
 							<dd>
@@ -199,3 +236,4 @@ ${p.name} ： ${h.format_number(p.price)}円 <br/>
 </script>
 </body>
 </html>
+

@@ -144,3 +144,9 @@ def get_or_create_user(request, clamed_id):
     DBSession.add(user)
     return user
 
+def get_salessegment():
+    pass
+
+def products_filter_by_salessegment():
+    pass
+

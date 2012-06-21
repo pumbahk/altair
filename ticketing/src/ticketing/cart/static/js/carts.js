@@ -52,17 +52,38 @@ carts.Model.prototype.fetch_products_from_date = function(get_url, callback){
 carts.AppView = function() {
 };
 
+carts.AppView.prototype.forcusLeftBox = function(){
+    var left_box = $("#selectSeat");
+    var right_box = $("#selectBuy");
+
+    left_box.addClass("forcus");
+
+    right_box.removeClass("forcus");
+    right_box.find("#payment-seat-products").empty();
+    right_box.find("#payment-seat-type").empty();
+};
+
+carts.AppView.prototype.forcusRightBox = function(){
+    var left_box = $("#selectSeat");
+    var right_box = $("#selectBuy");
+    
+    right_box.addClass("forcus");
+};
+
 carts.AppView.prototype.init = function(presenter) {
+    var view = this;
     $("#selectSeat li:even").addClass("seatEven");
     $("#selectSeat li:odd").addClass("seatOdd");
     $('#date-select').change(
         function() {
             presenter.on_date_selected($(this).val());
+            view.forcusLeftBox();
         }
     );
     $("#venue-select").change(
         function(){
             presenter.on_venue_select($(this).text());
+            view.forcusLeftBox();
         }
     );
     $('#btn-order').click(function(event) {
@@ -153,7 +174,7 @@ carts.AppView.prototype.update_settlement_detail = function(venues){
 carts.AppView.prototype.update_settlement_pricelist = function(products){
     var arr = [];
     $.each(products, function(index, value){
-        arr.push(value.name + ": " + value.price + "("+value.id+")");
+        arr.push(value.name + ": " + value.price + "円");
     });
     $("#settlementEventDetail #pricelist").html(arr.join("<br/>"));
 };
@@ -175,7 +196,6 @@ carts.AppView.prototype.show_seat_types = function(seat_types) {
     });
     $("#selectSeat li:even").addClass("seatEven");
     $("#selectSeat li:odd").addClass("seatOdd");
-
 };
 
 
@@ -226,11 +246,14 @@ carts.Presenter.prototype.show_seat_types = function(get_url) {
 
 carts.Presenter.prototype.on_seat_type_selected = function(selected) {
     $('#seat-types-list').children('li').each(function(key, value) {
-        $(value).removeClass("selected");
+        $(value).removeClass("selected").addClass("unselected");
     });
-    selected.parent().addClass("selected");
+    selected.parent().addClass("selected").removeClass("unselected");
     var get_url = selected.val();
     this.show_products(get_url);
+
+    //隣をforcus
+    this.view.forcusRightBox();
 };
 
 carts.Presenter.prototype.on_date_selected = function(selected_date){
