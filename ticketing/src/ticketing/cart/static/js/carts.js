@@ -45,6 +45,10 @@ carts.Model.prototype.fetch_products = function(get_url, callback) {
     $.ajax({url: get_url, dataType: 'json', success: callback});
 };
 
+carts.Model.prototype.fetch_products_from_date = function(get_url, callback){
+    $.ajax({url: get_url, dateType: "json", success: callback});
+};
+
 carts.AppView = function() {
 };
 
@@ -65,7 +69,7 @@ carts.AppView.prototype.init = function(presenter) {
         event.stopPropagation();
         var values = $("#order-form").serialize();
         $.ajax({
-            url: order_url,
+            url: order_url, //this is global variable
             dataType: 'json',
             data: values,
             type: 'POST',
@@ -137,14 +141,21 @@ carts.AppView.prototype.update_performance_header_venue = function(selected_venu
     $("#hallName #performanceVenue").text(selected_venue);
 }
 
-carts.AppView.prototype.update_settlement_detail = function(venues, selected_date){
+carts.AppView.prototype.update_settlement_detail = function(venues){
     // update settleElementBox
-    var root = $("#settlementEventDetail");
     var new_td_venues = [];
     $.each(venues, function(index, value){
         new_td_venues.push(value["name"]);
     })
-    root.find("#venue").text(new_td_venues.join(", "));
+    $("#settlementEventDetail #venue").text(new_td_venues.join(", "));
+};
+
+carts.AppView.prototype.update_settlement_pricelist = function(products){
+    var arr = [];
+    $.each(products, function(index, value){
+        arr.push(value.name + ": " + value.price + "("+value.id+")");
+    });
+    $("#settlementEventDetail #pricelist").html(arr.join("<br/>"));
 };
 
 carts.AppView.prototype.show_seat_types = function(seat_types) {
@@ -167,11 +178,6 @@ carts.AppView.prototype.show_seat_types = function(seat_types) {
 
 };
 
-carts.AppView.prototype.update_settlelement_pricelist = function(){
-    // seat typesだけじゃ足りない。
-    console.log(products);
-    console.log(seat_types);
-};
 
 carts.AppView.prototype.show_payments = function(seat_type_name, products, upper_limit) {
     $('#payment-seat-type').text(seat_type_name);
@@ -233,10 +239,16 @@ carts.Presenter.prototype.on_date_selected = function(selected_date){
 
     view.update_performance_header_date(selected_date);
     view.update_venues_selectfield(venues, selected_date);
-    view.update_settlement_detail(venues, selected_date);
+    view.update_settlement_detail(venues);
 
+    this.model.fetch_products_from_date(
+        products_from_selected_date_url+"?selected_date="+selected_date,  // this is global variable
+        function(data){
+            view.update_settlement_pricelist(data.products);
+        }
+    );
+    
     if (venues.length > 0) {
-        console.log(this.show_seat_types);
         this.show_seat_types(venues[0]['seat_types_url']);
     } else {
         // 多分いろいろクリアしないといけない

@@ -3,6 +3,7 @@ import logging
 import json
 from datetime import datetime, timedelta
 import re
+import sqlalchemy as sa
 from markupsafe import Markup
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from pyramid.view import view_config
@@ -122,7 +123,7 @@ class IndexView(object):
         q = q.filter(c_models.ProductItem.performance_id.in_(subq))
 
         query = DBSession.query(c_models.Product)
-        query = query.filter(c_models.Product.id.in_(q))
+        query = query.filter(c_models.Product.id.in_(q)).order_by(sa.desc("price"))
         products = [dict(name=p.name, price=h.format_number(p.price, ","), id=p.id)
                     for p in query]
         return dict(selected_date=selected_date, 
@@ -147,7 +148,7 @@ class IndexView(object):
         q = q.filter(c_models.ProductItem.performance_id==performance_id)
 
         query = DBSession.query(c_models.Product)
-        query = query.filter(c_models.Product.id.in_(q))
+        query = query.filter(c_models.Product.id.in_(q)).order_by(sa.desc("price"))
 
         products = [dict(id=p.id, name=p.name, price=h.format_number(p.price, ","))
             for p in query]
