@@ -51,6 +51,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     payment_delivery_pair_id = Column(Identifier, ForeignKey("PaymentDeliveryMethodPair.id"))
     payment_delivery_pair = relationship("PaymentDeliveryMethodPair")
 
+    order_no = Column(String(255))
+
     @staticmethod
     def filter_by_performance_id(id):
         performance = Performance.get(id)
@@ -67,6 +69,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @classmethod
     def create_from_cart(cls, cart):
         order = cls()
+        order.order_no = str(cart.id)
         order.total_amount = cart.total_amount
         order.shipping_address = cart.shipping_address
         order.payment_delivery_pair = cart.payment_delivery_pair

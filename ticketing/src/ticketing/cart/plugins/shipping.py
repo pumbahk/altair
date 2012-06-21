@@ -12,17 +12,17 @@ def includeme(config):
     config.add_delivery_plugin(ShippingDeliveryPlugin(), PLUGIN_ID)
     config.scan(__name__)
 
-@view_config(context=ICartDelivery, name="delivery-1")
+@view_config(context=ICartDelivery, name="delivery-1", renderer="ticketing.cart.plugins:templates/shipping_confirm.html")
 def deliver_confirm_viewlet(context, request):
     logger.debug(u"郵送")
     cart = context.cart
-    return Response(text = u"郵送: %s" % cart.shipping_address.address_1)
+    return dict(shipping_address=cart.shipping_address)
 
-@view_config(context=IOrderDelivery, name="delivery-1")
+@view_config(context=IOrderDelivery, name="delivery-1", renderer="ticketing.cart.plugins:templates/shipping_confirm.html")
 def deliver_completion_viewlet(context, request):
     logger.debug(u"郵送")
     order = context.order
-    return Response(text = u"郵送: %s" % order.shipping_address.address_1)
+    return dict(shipping_address=cart.shipping_address)
 
 class ShippingDeliveryPlugin(object):
     def prepare(self, request, cart):

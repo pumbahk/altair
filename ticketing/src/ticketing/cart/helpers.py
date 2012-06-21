@@ -27,7 +27,7 @@ def render_delivery_confirm_viewlet(request, cart):
     response = render_view_to_response(cart, request, name="delivery-%d" % plugin_id, secure=False)
     if response is None:
         raise ValueError
-    return response.text
+    return Markup(response.text)
 
 def render_payment_confirm_viewlet(request, cart):
     logger.debug("*" * 80)
@@ -38,7 +38,7 @@ def render_payment_confirm_viewlet(request, cart):
     response = render_view_to_response(cart, request, name="payment-%d" % plugin_id, secure=False)
     if response is None:
         raise ValueError
-    return response.text
+    return Markup(response.text)
 
 def render_delivery_finished_viewlet(request, order):
     logger.debug("*" * 80)
@@ -49,7 +49,7 @@ def render_delivery_finished_viewlet(request, order):
     response = render_view_to_response(order, request, name="delivery-%d" % plugin_id, secure=False)
     if response is None:
         raise ValueError
-    return response.text
+    return Markup(response.text)
 
 def render_payment_finished_viewlet(request, order):
     logger.debug("*" * 80)
@@ -60,7 +60,7 @@ def render_payment_finished_viewlet(request, order):
     response = render_view_to_response(order, request, name="payment-%d" % plugin_id, secure=False)
     if response is None:
         raise ValueError
-    return response.text
+    return Markup(response.text)
 
 def fee_type(type_enum):
     if type_enum == int(FeeTypeEnum.Once.v[0]):

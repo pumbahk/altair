@@ -1,0 +1,11 @@
+<div>
+    <h4>以下の住所に郵送します</h4>
+    <dl>
+        <dt>郵便番号</dt>
+        <dd>${shipping_address.zip}</dd>
+        <dt>住所</dt>
+        <dd>${shipping_address.prefecture}${shipping_address.city}${shipping_address.address_1}${shipping_address.address_2}</dd>
+        <dt>宛名</dt>
+        <dd>${shipping_address.last_name} ${shipping_address.first_name}</dd>
+    </dl>
+</div>
