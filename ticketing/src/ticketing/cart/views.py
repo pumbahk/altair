@@ -15,6 +15,7 @@ from . import helpers as h
 from . import schema
 from .rakuten_auth.api import authenticated_user
 from . import plugins
+from .events import notify_order_completed
 
 logger = logging.getLogger(__name__)
 
@@ -385,6 +386,7 @@ class CompleteView(object):
         user = h.get_or_create_user(self.request, openid['clamed_id'])
         order.user = user
 
+        notify_order_completed(self.request, order)
 
         return dict(order=order)
 
