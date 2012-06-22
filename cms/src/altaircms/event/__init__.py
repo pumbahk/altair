@@ -32,5 +32,5 @@ def includeme(config):
     reg.registerUtility(event_repository(), IEventRepository)
 
     # バック塩度への受け渡し用(受け取り用と同じAPIトークンを使う。とりあえず)
-    config.add_route("api_event_info", "/api/event/info/{event_id}")
+    config.add_route("api_event_info", "/api/event/{event_id}/info")
     config.scan()

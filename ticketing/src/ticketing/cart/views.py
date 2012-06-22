@@ -31,6 +31,11 @@ class IndexView(object):
         jquery_tools.need()
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.params.get('performance')
+
+        from .api import get_event_info_from_cms
+        event_info = get_event_info_from_cms(self.request, event_id)
+        
+
         e = DBSession.query(c_models.Event).filter_by(id=event_id).first()
         if e is None:
             raise HTTPNotFound(self.request.url)

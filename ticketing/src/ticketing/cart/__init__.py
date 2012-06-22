@@ -66,5 +66,4 @@ def main(global_config, **settings):
                             config.registry.settings["altaircms.event.notification_url"], 
                             config.registry.settings["altaircms.apikey"]
                             )
-
     return config.make_wsgi_app()

@@ -1,7 +1,7 @@
 # coding: utf-8
 import logging
 import json
-
+logger = logging.getLogger(__file__)
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPCreated, HTTPForbidden, HTTPBadRequest, HTTPNotFound
 
@@ -45,32 +45,35 @@ def event_list(request):
 ## バックエンドとの通信用
 ##
 
-def _get_validated_apikey(request):
+@view_config(route_name="api_event_register", request_method="POST")
+def event_register(request):
     apikey = request.headers.get('X-Altair-Authorization', None)
     if apikey is None:
         return HTTPForbidden("")
-
     if not h.validate_apikey(request, apikey):
         return HTTPForbidden(body=json.dumps({u'status':u'error', u'message':u'access denined'}))
-    return apikey
 
-@view_config(route_name="api_event_register", request_method="POST")
-def event_register(request):
-    apikey = _get_validated_apikey(request)
     try:
         h.parse_and_save_event(request, request.json_body)
         return HTTPCreated(body=json.dumps({u'status':u'success'}))
     except ValueError as e:
-        logging.exception(e)
+        logger.exception(e)
         return HTTPBadRequest(body=json.dumps({u'status':u'error', u'message':unicode(e), "apikey": apikey}))
 
 @view_config(route_name="api_event_info", request_method="GET", renderer="json")
 def event_info(request):
-    apikey = _get_validated_apikey(request)
+    apikey = request.headers.get('X-Altair-Authorization', None)
+    if apikey is None:
+        return HTTPForbidden("")
+    if not h.validate_apikey(request, apikey):
+        return HTTPForbidden(body=json.dumps({u'status':u'error', u'message':u'access denined'}))
 
-    event = Event.query.filter_by(backend_id=request.matchdict["event_id"]).first()
+    backend_id = request.matchdict["event_id"]
+    logger.debug("*api* event info: apikey=%s event.id=%s (backend)" % (apikey, backend_id))
+    event = Event.query.filter_by(backend_id=backend_id).first()
+
     if event is None:
-        return HTTPNotFound("")
+        return dict(event=None)
     try:
         return dict(event=dict(subtitle=event.subtitle, 
                                contact=h.base.nl_to_br(event.inquiry_for), 
@@ -78,5 +81,5 @@ def event_info(request):
                                performer=event.performers, 
                                ))
     except ValueError as e:
-        logging.exception(e)
+        logger.exception(e)
         return HTTPBadRequest(body=json.dumps({u'status':u'error', u'message':unicode(e), "apikey": apikey}))
