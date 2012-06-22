@@ -207,6 +207,11 @@
     }
   };
 
+  VenueViewer.prototype.refresh = function VenueViewer_refresh() {
+    for (var id in this.seats)
+      this.seats[id].refresh();
+  };
+
   VenueViewer.prototype.addKeyEvent = function VenueViewer_addKeyEvent() {
     if (this.keyEvents) return;
 
@@ -401,6 +406,9 @@
 
         case 'selection':
           return aux.manager.selection;
+
+        case 'refresh':
+          return aux.manager.refresh();
 
         case 'adjacency':
           aux.manager.adjacencyLength(arguments[1]|0);

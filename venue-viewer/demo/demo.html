@@ -37,9 +37,11 @@
       <input type="radio" name="function" value="zoomout" class="ui-button ui-icon-primary-zoomout action-zoomout" id="toolbar-action-zoomout" /><label for="toolbar-action-zoomout">Zoom-out</label>
     </span>
     <select class="ui-button action-select-adjacencies" id="toolbar-seat-adjacencies-selector"></select>
+    <select class="ui-button action-select-stock-types" id="toolbar-stock-type-selector"></select>
   </div>
   <div id="venue"><div class="message">Loading...</div></div>
   <script type="text/javascript">
+var currentStockTypeId = "";
 var venue = $('#venue').venueviewer({
   dataSource: {
     drawing: "data/sample.svg",
@@ -63,6 +65,14 @@ var venue = $('#venue').venueviewer({
       n.select(function() {
         viewer.adjacencyLength(value|0);
       });
+      var n = $("#toolbar-stock-type-selector");
+      $('<option></option>').attr("value", "").text("All")
+                              .appendTo(n);
+      for (var id in viewer.metadata.stock_types) {
+        var stock_type = viewer.metadata.stock_types[id];
+        $('<option></option>').attr("value", id).text(stock_type.name)
+                              .appendTo(n);
+      }
     },
     uimodeselect: function (viewer, mode) {
       switch (mode) {
@@ -81,7 +91,9 @@ var venue = $('#venue').venueviewer({
       }
     },
     selectable: function (viewer, seat) {
-      return seat.id != "A4";
+      if (currentStockTypeId == "")
+        return true;
+      return seat.meta.stock_type_id == currentStockTypeId;
     },
     click: function (viewer, seat, highlighted) {
       $.each(highlighted, function (id, seat) {
@@ -109,6 +121,10 @@ $(".action-select-multiple").click(function () {
 });
 $(".action-select-adjacencies").change(function () {
   venue.venueviewer("adjacency", this.value);
+});
+$(".action-select-stock-types").change(function () {
+  currentStockTypeId = this.value;
+  venue.venueviewer("refresh");
 });
 </script>
 </div>
