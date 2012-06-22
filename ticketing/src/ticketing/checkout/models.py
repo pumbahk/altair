@@ -59,6 +59,7 @@ class CartConfirm(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     '''
 
+
 class CheckoutCart(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     """ 注文情報確認 API
     """

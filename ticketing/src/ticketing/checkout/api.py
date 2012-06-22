@@ -10,105 +10,6 @@ from . import interfaces
 from . import models as m
 
 
-class ItemXmlVisitor(object):
-    """ """
-    def visit_item(self, el, items_folder):
-        item = m.CheckoutItem()
-        items_folder.items.append(item)
-        for e in el:
-            if e.tag == 'itemId':
-                item.itemId = e.text.strip()
-            elif e.tag == 'itemName':
-                item.itemName = e.text.strip()
-            elif e.tag == 'itemNumbers':
-                item.itemNumbers = int(e.text.strip())
-            elif e.tag == 'itemFee':
-                item.itemFee = int(e.text.strip())
-
-
-class CartXmlVisitor(object):
-    item_visitor = ItemXmlVisitor()
-
-    def visit(self, root):
-
-        if root.tag == 'cartConfirmationRequest':
-            return self.visit_cartConfirmationRequest(root)
-        else:
-            return None
-
-    def visit_cartConfirmationRequest(self, el):
-        cart_confirm = m.CartConfirm()
-        for e in el:
-            if e.tag == 'openId':
-                cart_confirm.openid = e.text.strip()
-            elif e.tag == 'carts':
-                self.visit_carts(e, cart_confirm)
-            elif e.tag == 'isTMode':
-                cart_confirm.isTMode = e.text.strip()
-
-        return cart_confirm
-
-    def visit_carts(self, el, cart_confirm):
-        for cart_el in el:
-            if cart_el.tag == 'cart':
-                self.visit_cart(cart_el, cart_confirm)
-
-    def visit_cart(self, el, cart_confirm):
-        cart = m.CheckoutCart()
-        cart_confirm.carts.append(cart)
-        for e in el:
-            if e.tag == 'cartConfirmationId':
-                cart.cartConfirmationId = e.text.strip()
-            elif e.tag == 'orderCartId':
-                cart.orderCartId = e.text.strip()
-            elif e.tag == 'orderItemsTotalFee':
-                cart.orderItemsTotalFee = int(e.text.strip())
-            elif e.tag == 'items':
-                self.visit_items(e, cart)
-
-    def visit_items(self, el, cart):
-        for item_el in el:
-            if item_el.tag == 'item':
-                self.item_visitor.visit_item(item_el, cart)
-
-
-class CompletedOrderXmlVisitor(object):
-    """ """
-
-    item_visitor = ItemXmlVisitor()
-
-    def visit(self, root):
-        if root.tag == 'orderCompleteRequest':
-            return self.visit_root(root)
-        else:
-            return None
-
-    def visit_root(self, root):
-        completedOrder = m.Checkout()
-        for e in root:
-            if e.tag == 'orderId':
-                completedOrder.orderId = e.text.strip()
-            elif e.tag == 'orderControlId':
-                completedOrder.orderControlId = e.text.strip()
-            elif e.tag == 'orderCartId':
-                completedOrder.orderCartId = e.text.strip()
-            elif e.tag == 'orderTotalFee':
-                completedOrder.orderTotalFee = e.text.strip()
-            elif e.tag == 'orderDate':
-                completedOrder.orderDate = e.text.strip()
-            elif e.tag == 'usedPoint':
-                completedOrder.usedPoint = e.text.strip()
-            elif e.tag == 'items':
-                self.visit_items(e, completedOrder)
-
-        return completedOrder
-
-    def visit_items(self, el, completedOrder):
-        for item_el in el:
-            if item_el.tag == 'item':
-                self.item_visitor.visit_item(item_el, completedOrder)
-
-
 class HMAC_SHA1(object):
 
     def __init__(self, secret):
@@ -127,7 +28,12 @@ class HMAC_MD5(object):
         return hmac.new(self.secret, checkout_xml, hashlib.md5).hexdigest()
 
 
-class CheckoutAPI(object):
+def sign_to_xml(request, xml):
+    signer = request.registry.utilities.lookup([], interfaces.ISigner, "HMAC")
+    return signer(xml)
+
+
+class Checkout(object):
 
     def __init__(self, service_id, success_url, fail_url, auth_method, is_test):
         self.service_id = service_id
@@ -189,24 +95,59 @@ class CheckoutAPI(object):
     def save_order_complete(self, request):
         confirmId = request.params['confirmId']
         xml = confirmId.replace(' ', '+').decode('base64')
-        visitor = CompletedOrderXmlVisitor()
-        completed_order = visitor.visit(et.XML(xml))
+        completed_order = self._parse_order_complete_request(et.XML(xml))
         completed_order.save()
 
         return RESULT_FLG_SUCCESS
 
+    def _parse_order_complete_request(self, root):
+        if root.tag != 'orderCompleteRequest':
+            return None
+
+        checkout = m.Checkout()
+        for e in root:
+            if e.tag == 'orderId':
+                checkout.orderId = e.text.strip()
+            elif e.tag == 'orderControlId':
+                checkout.orderControlId = e.text.strip()
+            elif e.tag == 'orderCartId':
+                checkout.orderCartId = e.text.strip()
+            elif e.tag == 'orderTotalFee':
+                checkout.orderTotalFee = e.text.strip()
+            elif e.tag == 'orderDate':
+                checkout.orderDate = e.text.strip()
+            elif e.tag == 'usedPoint':
+                checkout.usedPoint = e.text.strip()
+            elif e.tag == 'items':
+                self._parse_item(e, checkout)
+        return checkout
+
+    def _parse_item(self, element, checkout):
+        for item_el in element:
+            if item_el.tag != 'item':
+                continue
+
+            item = m.CheckoutItem()
+            checkout.items.append(item)
+            for e in item_el:
+                if e.tag == 'itemId':
+                    item.itemId = e.text.strip()
+                elif e.tag == 'itemName':
+                    item.itemName = e.text.strip()
+                elif e.tag == 'itemNumbers':
+                    item.itemNumbers = int(e.text.strip())
+                elif e.tag == 'itemFee':
+                    item.itemFee = int(e.text.strip())
+
+
 def get_checkout_service(request):
-    return request.registry.utilities.lookup([], interfaces.ICheckoutAPI)
+    return request.registry.utilities.lookup([], interfaces.ICheckout)
 
 def generate_requestid():
     """
     安心決済の一意なリクエストIDを生成する
     """
     return uuid.uuid4().hex[:16]  # uuidの前半16桁
-
-def sign_to_xml(request, xml):
-    signer = request.registry.utilities.lookup([], interfaces.ISigner, "HMAC")
-    return signer(xml)
 
 def confirmation_to_xml(confirmation):
     root = et.Element('cartConfirmationResponse')

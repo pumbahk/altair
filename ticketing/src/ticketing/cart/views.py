@@ -469,7 +469,6 @@ class CheckoutView(object):
         )
 
         from ticketing.checkout import helpers as h
-        from ticketing.checkout.models import Checkout
         form = {}
         form['h'] = h.begin_checkout_form(self.request)
         form['b'] = h.render_checkout(self.request, cart)
