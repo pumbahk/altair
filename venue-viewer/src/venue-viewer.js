@@ -188,7 +188,7 @@
             return;
           for (var i = 0; i < candidate.length; i++) {
             var seat = self.seats[candidate[i]];
-            seat.addStyleType('highlighted');
+            seat.addOverlay('highlighted');
             self.highlighted[seat.id] = seat;
           }
         },
@@ -198,7 +198,7 @@
           var highlighted = self.highlighted;
           self.highlighted = {};
           for (var i in highlighted)
-            highlighted[i].removeStyleType('highlighted');
+            highlighted[i].removeOverlay('highlighted');
         },
         mousedown: function(evt) {
           self.callbacks.click && self.callbacks.click(self, self, self.highlighted);

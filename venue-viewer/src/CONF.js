@@ -26,15 +26,18 @@ exports.DEFAULT = {
     stroke: { color: "#000", width: 1 }
   },
 
+  OVERLAYS: {
+    highlighted: {
+      fill: null,
+      stroke: { color: "#F63", width: 3, pattern: 'solid' }
+    }
+  },
+
   AUGMENTED_STYLE: {
     selected: {
       text_color: "#FFF",
       fill:   { color: "#009BE1" },
       stroke: { color: "#FFF", width: 3 }
-    },
-    highlighted: {
-      fill: null,
-      stroke: { color: "#F63", width: 3, pattern: 'solid' }
     },
     unselectable: {
       text_color: "#888",

@@ -14,6 +14,15 @@ function mergeStyle(a, b) {
   };
 }
 
+function copyShape(shape) {
+  if (shape instanceof Fashion.Path) {
+    return new Fashion.Path({ points: shape.points(), style:shape.style() });
+  } else if (shape instanceof Fashion.Rect) {
+    return new Fashion.Rect({ position: shape.position(), size: shape.size() });
+  }
+  return null;
+}
+
 var Seat = exports.Seat = function Seat () {
   this.id = null;
   this.editor = null;
@@ -28,6 +37,8 @@ var Seat = exports.Seat = function Seat () {
   this.originalStyle = null;
   this._highlightedSeats = [];
   this._selected = false;
+  this.label = null;
+  this._overlays = {};
 
   this.init.apply(this, arguments);
 };
@@ -98,6 +109,23 @@ Seat.prototype.stylize = function Seat_stylize() {
       this.parent.drawable.erase(this.label);
       this.label = null;
     }
+  }
+};
+
+Seat.prototype.addOverlay = function Seat_addOverlay(value) {
+  if (!(value in this._overlays)) {
+    var shape = copyShape(this.shape)
+    shape.style(util.convertToFashionStyle(CONF.DEFAULT.OVERLAYS[value]));
+    this._overlays[value] = shape;
+    this.parent.drawable.draw(shape);
+  }
+};
+
+Seat.prototype.removeOverlay = function Seat_removeOverlay(value) {
+  var shape = this._overlays[value];
+  if (shape !== void(0)) {
+    this.parent.drawable.erase(shape);
+    delete this._overlays[value];
   }
 };
 
