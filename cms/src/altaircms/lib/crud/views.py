@@ -8,7 +8,7 @@ import functools
 import altaircms.helpers as h
 import logging
 logger = logging.getLogger(__file__)
-
+from altaircms.security import RootFactory
 from ..flow import api as flow_api
 
 class AfterInput(Exception):
@@ -16,7 +16,7 @@ class AfterInput(Exception):
         self.form = form
         self.context = context
 
-from altaircms.security import RootFactory
+
 class CRUDResource(RootFactory): ## fixme
     flow_api = flow_api
     def __init__(self, prefix, title, model, form, mapper, endpoint, filter_form,
@@ -99,6 +99,11 @@ class CRUDResource(RootFactory): ## fixme
             self.request.registry.notify(self.delete_event(self.request, obj, {}))
         DBSession.delete(obj)
 
+    def get_endpoint(self):
+        endpoint =  self.request.GET.get("endpoint")
+        if endpoint:
+            return endpoint
+        return self.request.route_url(self.endpoint)
 
 class CreateView(object):
     def __init__(self, context, request):
@@ -133,7 +138,7 @@ class CreateView(object):
         obj = self.context.create_model_from_form(form)
         mes = u'create <a href="%s">新しく作成されたデータを編集</a>' % self.request.route_path(self.context.join("update"), id=obj.id, action="input")
         FlashMessage.success(mes, request=self.request)
-        return HTTPFound(self.request.route_url(self.context.endpoint), self.request)
+        return HTTPFound(self.context.get_endpoint())
 
 class UpdateView(object):
     def __init__(self, context, request):
@@ -152,13 +157,20 @@ class UpdateView(object):
         raise AfterInput(form=form, context=self.context)
 
     def confirm(self):
+
         obj = self.context.get_model_obj(self.request.matchdict["id"])
         form = self.context.confirmed_form(obj=obj)
 
         for k, v in form.data.iteritems():
             setattr(obj, k, v)
 
+        mapped = self.context.mapper(self.request, obj)
+
+        import transaction
+        transaction.abort()
+
         return {"master_env": self.context,
+                "mapped": mapped, 
                 "form": form, 
                 "obj": obj, 
                 "display_fields": getattr(form,"__display_fields__", None) or form.data.keys()}
@@ -170,7 +182,7 @@ class UpdateView(object):
         obj = self.context.update_model_from_form(before_obj, form)
         mes = u'update <a href="%s">変更されたデータを編集</a>' % self.request.route_path(self.context.join("update"), id=obj.id, action="input")
         FlashMessage.success(mes, request=self.request)
-        return HTTPFound(self.request.route_url(self.context.endpoint), self.request)
+        return HTTPFound(self.context.get_endpoint())
 
 class DeleteView(object):
     def __init__(self, context, request):
@@ -190,7 +202,7 @@ class DeleteView(object):
         obj = self.context.get_model_obj(self.request.matchdict["id"])
         self.context.delete_model(obj)
         FlashMessage.success("delete", request=self.request)
-        return HTTPFound(self.request.route_url(self.context.endpoint), self.request)
+        return HTTPFound(self.context.get_endpoint())
 
 def list_view(context, request):
     qs = context.get_model_query()

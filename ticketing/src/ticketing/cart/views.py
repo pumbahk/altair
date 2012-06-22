@@ -1,7 +1,9 @@
 # -*- coding:utf-8 -*-
 import logging
 import json
+from datetime import datetime, timedelta
 import re
+import sqlalchemy as sa
 from markupsafe import Markup
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from pyramid.view import view_config
@@ -13,6 +15,7 @@ from . import helpers as h
 from . import schema
 from .rakuten_auth.api import authenticated_user
 from . import plugins
+from .events import notify_order_completed
 
 logger = logging.getLogger(__name__)
 
@@ -32,11 +35,11 @@ class IndexView(object):
         if e is None:
             raise HTTPNotFound(self.request.url)
         # 日程,会場,検索項目のコンボ用
-        dates = sorted(list(set([p.start_on.strftime("%Y-%m-%d") for p in e.performances])))
+        dates = sorted(list(set([p.start_on.strftime("%Y-%m-%d %H:%M") for p in e.performances])))
         # 日付ごとの会場リスト
         select_venues = {}
         for p in e.performances:
-            d = p.start_on.strftime('%Y-%m-%d')
+            d = p.start_on.strftime('%Y-%m-%d %H:%M')
             ps = select_venues.get(d, [])
             ps.append(dict(id=p.id, name=p.venue.name,
                            seat_types_url=self.request.route_url('cart.seat_types', performance_id=p.id,
@@ -53,13 +56,13 @@ class IndexView(object):
         if performance_id:
             # 指定公演とそれに紐づく会場
             selected_performance = c_models.Performance.query.filter(c_models.Performance.id==performance_id).first()
-            selected_date = selected_performance.start_on.strftime('%Y-%m-%d')
-            pass
+            selected_date = selected_performance.start_on.strftime('%Y-%m-%d %H:%M')
+
         else:
             # １つ目の会場の1つ目の公演
             selected_performance = e.performances[0]
-            selected_date = selected_performance.start_on.strftime('%Y-%m-%d')
-            pass
+            selected_date = selected_performance.start_on.strftime('%Y-%m-%d %H:%M')
+
 
         event = dict(id=e.id, code=e.code, title=e.title, abbreviated_title=e.abbreviated_title,
             first_start_on=str(e.first_start_on), final_start_on=str(e.final_start_on),
@@ -73,6 +76,7 @@ class IndexView(object):
                     dates=dates,
                     selected=Markup(json.dumps([selected_performance.id, selected_date])),
                     venues_selection=Markup(json.dumps(select_venues)),
+                    products_from_selected_date_url = self.request.route_url("cart.date.products", event_id=event_id), 
                     order_url=self.request.route_url("cart.order"),
                     upper_limit=sales_segment.upper_limit,
         )
@@ -99,6 +103,41 @@ class IndexView(object):
                 )
         return data
 
+    @view_config(route_name="cart.date.products", renderer="json")
+    def get_products_with_date(self):
+        """ 公演日ごとの購入単位
+        (event_id, venue, date) -> [performance] -> [productitems] -> [product]
+
+        need: request.GET["selected_date"] # e.g. format: 2011-11-11
+        """
+
+        selected_date_string = self.request.GET["selected_date"]
+        event_id = self.request.matchdict["event_id"]
+
+        logger.debug("event_id = %(event_id)s, selected_date = %(selected_date)s"
+            % dict(event_id=event_id, selected_date=selected_date_string))
+
+        selected_date = datetime.strptime(selected_date_string, "%Y-%m-%d %H:%M")
+
+        ## selected_dateが==で良いのはself.__call__で指定された候補を元に選択されるから
+        q = DBSession.query(c_models.ProductItem.product_id)
+        q = q.filter(c_models.Performance.event_id==event_id)
+        q = q.filter(c_models.Performance.start_on==selected_date)
+        q = q.filter(c_models.Performance.id == c_models.ProductItem.performance_id)
+
+
+        query = DBSession.query(c_models.Product)
+        query = query.filter(c_models.Product.id.in_(q)).order_by(sa.desc("price"))
+        ### filter by salessegment
+        salessegment = self.context.get_sales_segument()
+        query = h.products_filter_by_salessegment(query, salessegment)
+
+
+        products = [dict(name=p.name, price=h.format_number(p.price, ","), id=p.id)
+                    for p in query]
+        return dict(selected_date=selected_date_string, 
+                    products=products)
+
     @view_config(route_name='cart.products', renderer="json")
     def get_products(self):
         """ 席種別ごとの購入単位 
@@ -106,7 +145,7 @@ class IndexView(object):
         """
         seat_type_id = self.request.matchdict['seat_type_id']
         performance_id = self.request.matchdict['performance_id']
-
+       
         logger.debug("seat_typeid = %(seat_type_id)s, performance_id = %(performance_id)s"
             % dict(seat_type_id=seat_type_id, performance_id=performance_id))
 
@@ -118,11 +157,14 @@ class IndexView(object):
         q = q.filter(c_models.ProductItem.performance_id==performance_id)
 
         query = DBSession.query(c_models.Product)
-        query = query.filter(c_models.Product.id.in_(q))
+        query = query.filter(c_models.Product.id.in_(q)).order_by(sa.desc("price"))
+        ### filter by salessegment
+        salessegment = self.context.get_sales_segument()
+        query = h.products_filter_by_salessegment(query, salessegment)
 
         products = [dict(id=p.id, name=p.name, price=h.format_number(p.price, ","))
             for p in query]
-        print products
+
         return dict(products=products,
             seat_type=dict(id=seat_type.id, name=seat_type.name))
 
@@ -344,5 +386,35 @@ class CompleteView(object):
         user = h.get_or_create_user(self.request, openid['clamed_id'])
         order.user = user
 
+        notify_order_completed(self.request, order)
 
         return dict(order=order)
+
+    def finish_reserved_number(self, cart, order_session):
+        # 窓口引き換え番号
+        return plugins.create_reserved_number(self.request, cart)
+
+    # TODO: APIに移動
+    def finish_payment_card(self, cart, order):
+        # 変換
+        order_id = order['order_id']
+        pares = order['pares']
+        md = order['md']
+        tran = order['tran']
+        item_name = h.get_item_name(self.request, cart.performance)
+
+        checkout_sales_result = multicheckout_api.checkout_sales_secure3d(
+            self.request, order_id,
+            item_name, cart.total_amount, 0, order['client_name'], order['mail_address'],
+            order['card_number'], order['exp_year'] + order['exp_month'], order['card_holder_name'],
+            mvn=tran['mvn'], xid=tran['xid'], ts=tran['ts'],
+            eci=tran['eci'], cavv=tran['cavv'], cavv_algorithm=tran['cavv_algorithm'],
+        )
+
+        DBSession.add(checkout_sales_result)
+
+        order = o_models.Order.create_from_cart(cart)
+        order.multicheckout_approval_no = checkout_sales_result.ApprovalNo
+        cart.finish()
+
+        return order

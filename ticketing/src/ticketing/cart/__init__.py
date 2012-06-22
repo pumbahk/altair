@@ -17,6 +17,7 @@ def includeme(config):
     config.add_route('cart.index', 'events/{event_id}')
     config.add_route('cart.seat_types', 'events/{event_id}/performances/{performance_id}/seat_types')
     config.add_route('cart.products', 'events/{event_id}/performances/{performance_id}/seat_types/{seat_type_id}/products')
+    config.add_route('cart.date.products', 'events/{event_id}/products')
 
     config.add_route('cart.order', 'order')
     config.add_route('cart.payment', 'payment')
@@ -34,6 +35,7 @@ def includeme(config):
 
 
 def main(global_config, **settings):
+    
     engine = engine_from_config(settings)
     my_session_factory = session_factory_from_settings(settings)
     sqlahelper.add_engine(engine)
@@ -45,6 +47,8 @@ def main(global_config, **settings):
     config.add_renderer('json'  , 'ticketing.renderers.json_renderer_factory')
     config.add_renderer('csv'   , 'ticketing.renderers.csv_renderer_factory')
     config.add_static_view('img', 'ticketing.cart:static', cache_max_age=3600)
+
+    config.add_subscriber('.mail.on_order_completed', '.events.OrderCompleted')
 
     config.include('.')
     config.include('.rakuten_auth')

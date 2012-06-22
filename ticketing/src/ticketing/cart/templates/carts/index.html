@@ -9,8 +9,12 @@
 <meta http-equiv="content-style-type" content="text/css" />
 <meta http-equiv="content-script-type" content="text/javascript" />
 <link rel="shortcut icon" href="${request.static_url('ticketing.cart:static/img/common/favicon.ico')}" />
+
 <link rel="stylesheet" href="${request.static_url('ticketing.cart:static/css/import.css')}" type="text/css" media="all" />
+<link rel="stylesheet" href="${request.static_url('ticketing.cart:static/css/custom.css')}" type="text/css" media="all" />
+
 <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/carts.js')}"></script>
+
 </head>
 <body id="settlement">
 
@@ -60,11 +64,11 @@
 			</div>
 		</form>
 		<div class="settlementBox2">
-			<div class="settlementBoxInner2">
-				<h2 id="hallName"><span>12月3日 14:00 幕張メッセイベントホール</span></h2>
-				<div id="selectSeat" style="float:left; width: 390px;">
+		  <div class="settlementBoxInner2">
+			<h2 id="hallName"><span><div id="performanceDate" style="display: inline">12月3日 14:00</div><div id="performanceVenue" style="display: inline">幕張メッセイベントホール</div></span></h2>
+			<div id="selectSeat" style="float:left; width: 390px;" class="forcus">
 					<dl>
-						<dt><img src="${request.static_url('ticketing.cart:static/img/settlement/title_select.gif')}" alt="席種をお選びください" width="380" height="33" /></dt>
+					    <dt><h3 class="lead">席種をお選びください</h3></dt>
 						<dd>
 							<ul id="seat-types-list">
 							</ul>
@@ -74,7 +78,7 @@
 				<div id="selectBuy">
 					<form id="order-form" name="form2" method="post" action="">
                         <input type="hidden" name="performance_id" id="current-performance-id"/>
-						<h3><img src="${request.static_url('ticketing.cart:static/img/settlement/select.gif')}" alt="購入枚数、購入方法をお選びください" width="246" height="14" /></h3>
+						<h3 class="lead" style="font-size:10.5pt">購入枚数、購入方法をお選びください</h3>
 						<dl>
 							<dt id="payment-seat-type"></dt>
 							<dd>
@@ -104,15 +108,15 @@
 				<table summary="イベント詳細情報">
 					<tr>
 						<th scope="row">開催期間</th>
-						<td>${event['first_start_on']} ${event['final_start_on']}</td>
+						<td>${event['first_start_on']} 〜 ${event['final_start_on']}</td>
 					</tr>
 					<tr>
 						<th scope="row">会場</th>
-						<td> ${", ".join(event['venues'])}</td>
+						<td id="venue"> ${", ".join(event['venues'])}</td>
 					</tr>
 					<tr>
 						<th scope="row">席種・料金（税込）</th>
-						<td>
+						<td id="pricelist">
 %for p in event['product']:
 ${p.name} ： ${h.format_number(p.price)}円 <br/>
 %endfor
@@ -190,9 +194,11 @@ ${p.name} ： ${h.format_number(p.price)}円 <br/>
     var venues_selection = ${venues_selection};
     var upper_limit = ${upper_limit};
     var order_url = "${order_url}";
+    var products_from_selected_date_url = "${products_from_selected_date_url}";
     $(function() {
         carts.init(venues_selection, selected, upper_limit);
     })
 </script>
 </body>
 </html>
+

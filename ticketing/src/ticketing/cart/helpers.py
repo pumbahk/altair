@@ -12,7 +12,7 @@ from ..users.models import User, UserCredential, MemberShip
 from pyramid.view import render_view_to_response
 from markupsafe import Markup
 from zope.interface import implementer
-from ..core.models import FeeTypeEnum
+from ..core.models import FeeTypeEnum, SalesSegment
 import logging
 from .plugins.resources import OrderDelivery, CartDelivery, OrderPayment, CartPayment
 
@@ -143,4 +143,23 @@ def get_or_create_user(request, clamed_id):
     credential = UserCredential(user=user, auth_identifier=clamed_id, membership=membership)
     DBSession.add(user)
     return user
+
+def get_salessegment(event_id, salessegment_id, selected_date):
+    ## 販売条件は必ず一つに絞られるはず
+    if salessegment_id:
+        return SalesSegment.filter_by(id=salessegment_id).first()
+    elif selected_date:
+        qs = DBSession.query(SalesSegment).filter(SalesSegment.event_id==event_id)
+        qs = qs.filter(SalesSegment.start_at<=selected_date)
+        qs = qs.filter(SalesSegment.end_at >= selected_date)
+        return qs.first()
+    else:
+        return None
+
+def products_filter_by_salessegment(products, sales_segment):
+    if sales_segment is None:
+        logger.debug("debug: products_filter -- salessegment is none")
+    if sales_segment:
+        return products.filter_by(sales_segment=sales_segment)
+    return products
 

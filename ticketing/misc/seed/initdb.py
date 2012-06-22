@@ -12,10 +12,13 @@ from ticketing.core.models import *
 from ticketing.sej.models import *
 from ticketing.bookmark.models import *
 from ticketing.cart.models import *
+from ticketing.cart.plugins.models import *
 from ticketing.multicheckout.models import *
 from inspect import getfile, currentframe
 import os
 import re
+
+import sys
 
 def readsql(conn, f):
     buf = ''
@@ -23,6 +26,10 @@ def readsql(conn, f):
     chunk = ''
     while True:
         _chunk = f.read(4096)
+
+        sys.stderr.write(".")
+        sys.stderr.flush()
+
         chunk += (_chunk or '')
         if not chunk:
             break

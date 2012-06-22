@@ -549,6 +549,10 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     upper_limit = Column(Integer)
     seat_choice = Column(Boolean, default=True)
 
+    payment_due_at = Column(DateTime)
+    issuing_start_at = Column(DateTime)
+    issuing_end_at = Column(DateTime)
+
     event_id = Column(Identifier, ForeignKey('Event.id'))
     event = relationship('Event', backref='sales_segments')
 
