@@ -11,11 +11,26 @@ logger = logging.getLogger(__file__)
 from altaircms.security import RootFactory
 from ..flow import api as flow_api
 
+
+from sqlalchemy.sql.operators import ColumnOperators
+
 class AfterInput(Exception):
     def __init__(self, form=None, context=None):
         self.form = form
         self.context = context
 
+class ModelFaker(object):
+    def __init__(self, obj):
+        self.__dict__["obj"] = obj
+
+    def __getattr__(self, k, v=None):
+        return getattr(self.__dict__["obj"], k, v)
+
+    def to_dict(self):
+        container = self
+        obj = self.__dict__["obj"]
+        return {k: getattr(container, k) for k, v in obj.__class__.__dict__.iteritems() \
+                if isinstance(v, ColumnOperators)}
 
 class CRUDResource(RootFactory): ## fixme
     flow_api = flow_api
@@ -122,11 +137,7 @@ class CreateView(object):
 
     def confirm(self):
         form = self.context.confirmed_form()
-        obj = model_from_dict(self.context.model, form.data)
-
-        ## for don't add to db.
-        import transaction
-        transaction.abort()
+        obj = ModelFaker(model_from_dict(self.context.model, form.data))
 
         return {"master_env": self.context,
                 "form": form, 
@@ -157,20 +168,15 @@ class UpdateView(object):
         raise AfterInput(form=form, context=self.context)
 
     def confirm(self):
-
         obj = self.context.get_model_obj(self.request.matchdict["id"])
         form = self.context.confirmed_form(obj=obj)
+        obj = ModelFaker(obj)
 
         for k, v in form.data.iteritems():
             setattr(obj, k, v)
 
-        mapped = self.context.mapper(self.request, obj)
-
-        import transaction
-        transaction.abort()
-
         return {"master_env": self.context,
-                "mapped": mapped, 
+                "obj": obj, 
                 "form": form, 
                 "obj": obj, 
                 "display_fields": getattr(form,"__display_fields__", None) or form.data.keys()}

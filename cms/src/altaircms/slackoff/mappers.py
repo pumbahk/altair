@@ -1,6 +1,13 @@
 # -*- coding:utf-8 -*-
 
-from altaircms.models import model_to_dict
+from altaircms.models import model_to_dict as model_to_dict_original
+
+def model_to_dict(obj):
+    if hasattr(obj, "to_dict"):
+        return obj.to_dict()
+    else:
+        return model_to_dict_original(obj)
+
 from altaircms.topic.models import Topcontent
 import altaircms.helpers as h
 
@@ -61,7 +68,7 @@ def ticket_mapper(request, obj):
 
 def category_mapper(request, obj):
     objlike = ObjectLike(**model_to_dict(obj))
-    objlike.parent = obj.parent.name if obj.parent else None
+    objlike.parent = obj.parent.label if obj.parent else None
 
     objlike.pageset = RawText(u'<a href="%s">%s</a>' % (h.link.to_preview_page_from_pageset(request, obj.pageset), obj.pageset.name)) if obj.pageset else u"-"
     objlike.imgsrc = RawText(u'<img src="%s"/>' % obj.imgsrc)
