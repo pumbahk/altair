@@ -122,19 +122,27 @@ carts.AppView.prototype.init = function(presenter) {
                     $('#reserved-confirm-button').click(function() {
                         window.location.href = data.pyament_url;
                     });
-                    $('#order-reserved').overlay({
+                    var reserved_dialog = $('#order-reserved').overlay({
                         mask: {
                             color: "#999",
                             opacity: 0.5
                         },
-                        load: true});
+                        closeOnClick: false})
+                    $('#reserved-cancel-button').click(function() {
+                        $('#order-reserved').overlay().close();
+                    });
+                    reserved_dialog.load();
                 } else {
-                    $('#order-error-template').overlay({
+                    var order_error_dialog = $('#order-error-template').overlay({
                         mask: {
                             color: "#999",
                             opacity: 0.5
                         },
-                        load: true});
+                        closeOnClick: false})
+                    $('#error-close-button').click(function() {
+                        $('#order-error-template').overlay().close();
+                    });
+                    order_error_dialog.load();
                 }
             }
         })

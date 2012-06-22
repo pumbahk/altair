@@ -166,6 +166,7 @@ ${p.name} ： ${h.format_number(p.price)}円 <br/>
         <dt><img src="${request.static_url('ticketing.cart:static/img/settlement/error.gif')}" width="624" height="224" /></dt>
         <dd>在庫がありません。</dd>
     </dl>
+<button id="error-close-button">座席・枚数を選びなおす</button>
 <!--
     <ul id="errorBtn">
         <li><a href="#"><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_wait.gif')}" alt="空席待ち" width="206" height="46" /></a></li>
@@ -175,7 +176,7 @@ ${p.name} ： ${h.format_number(p.price)}円 <br/>
 -->
 </div>
 <div style="display:none;background:white;color:black;" id="order-reserved">
-                    <h3 id="performance-name">ZED 東京公演 12月3日 14:00 幕張メッセイベントホール</h3>
+                    <h3 id="performance-name"></h3>
                     <table>
                         <thead>
                         <tr id="total">
@@ -188,6 +189,7 @@ ${p.name} ： ${h.format_number(p.price)}円 <br/>
                         </tbody>
                     </table>
 <button id="reserved-confirm-button">購入する</button>
+<button id="reserved-cancel-button">座席・枚数を選びなおす</button>
 </div>
 <script>
     var selected = ${selected};
