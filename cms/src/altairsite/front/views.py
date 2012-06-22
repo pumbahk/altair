@@ -8,7 +8,6 @@ from . import api
 from ..mobile import api as mobile_api
 
 from altairsite.mobile.custom_predicates import mobile_access_predicate
-from altairsite.mobile.response import convert_response_for_mobile
 
 ## todo refactoring
 """
