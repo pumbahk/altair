@@ -3,12 +3,10 @@ import logging
 import json
 
 from pyramid.view import view_config
-from pyramid.httpexceptions import HTTPCreated, HTTPForbidden, HTTPBadRequest
+from pyramid.httpexceptions import HTTPCreated, HTTPForbidden, HTTPBadRequest, HTTPNotFound
 
-from altaircms.models import Performance
 from altaircms.models import Sale
 from .models import Event
-from altaircms.page.models import Page
 from altaircms.lib.fanstatic_decorator import with_bootstrap
 
 from altaircms.event.forms import EventForm
@@ -46,16 +44,39 @@ def event_list(request):
 ##
 ## バックエンドとの通信用
 ##
-@view_config(route_name="api_event_register", request_method="POST")
-def event_register(request):
+
+def _get_validated_apikey(request):
     apikey = request.headers.get('X-Altair-Authorization', None)
     if apikey is None:
         return HTTPForbidden("")
+
     if not h.validate_apikey(request, apikey):
         return HTTPForbidden(body=json.dumps({u'status':u'error', u'message':u'access denined'}))
+    return apikey
+
+@view_config(route_name="api_event_register", request_method="POST")
+def event_register(request):
+    apikey = _get_validated_apikey(request)
     try:
         h.parse_and_save_event(request, request.json_body)
         return HTTPCreated(body=json.dumps({u'status':u'success'}))
     except ValueError as e:
         logging.exception(e)
-        return HTTPBadRequest(body=json.dumps({u'status':u'error', u'message':unicode(e)}))
+        return HTTPBadRequest(body=json.dumps({u'status':u'error', u'message':unicode(e), "apikey": apikey}))
+
+@view_config(route_name="api_event_info", request_method="GET", renderer="json")
+def event_info(request):
+    apikey = _get_validated_apikey(request)
+
+    event = Event.query.filter_by(backend_id=request.matchdict["event_id"]).first()
+    if event is None:
+        return HTTPNotFound("")
+    try:
+        return dict(event=dict(subtitle=event.subtitle, 
+                               contact=h.base.nl_to_br(event.inquiry_for), 
+                               notice=h.base.nl_to_br(event.notice), 
+                               performer=event.performers, 
+                               ))
+    except ValueError as e:
+        logging.exception(e)
+        return HTTPBadRequest(body=json.dumps({u'status':u'error', u'message':unicode(e), "apikey": apikey}))
