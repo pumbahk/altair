@@ -17,8 +17,11 @@ def mobile_encoding_convert_factory(handler, registry):
     def tween(request):
         request._ua = uamobile.detect(request.environ)
         if not request._ua.is_nonmobile():
-            request.charset = "cp932"
-            response = handler(request)
+            ## DeprecationWarning: Use req = req.decode('cp932')
+            decoded = request.decode("cp932")
+            decoded.registry = request.registry
+            decoded._ua = request._ua
+            response = handler(decoded)
             return _convert_response_for_mobile(response)
         else:
             return handler(request)
