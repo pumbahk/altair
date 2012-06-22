@@ -10,6 +10,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+from ..api.impl import bound_communication_api ## cmsとの通信
+
 def includeme(config):
     # ディレクティブ
     config.add_directive("add_payment_method", ".directives.add_payment_method")
@@ -57,5 +59,12 @@ def main(global_config, **settings):
     config.include('..multicheckout')
     config.scan('..orders.models')
     config.include('.plugins')
+
+    ## cmsとの通信
+    bound_communication_api(config, 
+                            "..api.impl.CMSCommunicationApi", 
+                            config.registry.settings["altaircms.event.notification_url"], 
+                            config.registry.settings["altaircms.apikey"]
+                            )
 
     return config.make_wsgi_app()
