@@ -450,15 +450,42 @@ class CompleteView(object):
 
 class CheckoutView(object):
     """ 楽天あんしん決済 """
+
     def __init__(self, request):
         self.request = request
 
     @view_config(route_name='payment.checkout_test', request_method="GET", renderer="carts/checkout_test.html")
     def checkout_test(self):
+        from ticketing.cart.models import Cart, CartedProduct
+        from ticketing.core.models import Product, PaymentDeliveryMethodPair
+        cart = Cart(
+            id=108,
+            performance_id=1,
+            system_fee=100,
+            payment_delivery_pair=PaymentDeliveryMethodPair.get(1),
+            products = [
+                CartedProduct(quantity=1, product=Product.get(1)),
+                ]
+        )
+
         from ticketing.checkout import helpers as h
         from ticketing.checkout.models import Checkout
         form = {}
         form['h'] = h.begin_checkout_form(self.request)
-        form['b'] = h.render_checkout(self.request, Checkout())
+        form['b'] = h.render_checkout(self.request, cart)
         form['f'] = h.end_checkout_form(self.request)
         return dict(form=form)
+
+    @view_config(route_name='payment.checkout_order_complete', renderer="carts/checkout_order_complete.html")
+    def checkout_order_complete(self):
+        '''
+        注文完了通知を保存する
+        '''
+        from ticketing.checkout import api
+        service = api.get_checkout_service(self.request)
+        result = service.save_order_complete(self.request)
+
+        return {
+            'result':result,
+            'complete_time':datetime.now(),
+        }

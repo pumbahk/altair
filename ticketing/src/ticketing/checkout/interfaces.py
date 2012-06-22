@@ -8,3 +8,7 @@ class ISigner(Interface):
     def __call__(checkout):
         """ 正規化XMLの署名作成する
         """
+
+
+class ICheckoutAPI(Interface):
+    pass

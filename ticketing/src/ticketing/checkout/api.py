@@ -48,7 +48,6 @@ class CartXmlVisitor(object):
 
         return cart_confirm
 
-
     def visit_carts(self, el, cart_confirm):
         for cart_el in el:
             if cart_el.tag == 'cart':
@@ -79,14 +78,13 @@ class CompletedOrderXmlVisitor(object):
     item_visitor = ItemXmlVisitor()
 
     def visit(self, root):
-        if root.tag == 'orderCompletedRequest':
+        if root.tag == 'orderCompleteRequest':
             return self.visit_root(root)
         else:
             return None
 
-
     def visit_root(self, root):
-        completedOrder = m.CompletedOrder()
+        completedOrder = m.Checkout()
         for e in root:
             if e.tag == 'orderId':
                 completedOrder.orderId = e.text.strip()
@@ -94,11 +92,16 @@ class CompletedOrderXmlVisitor(object):
                 completedOrder.orderControlId = e.text.strip()
             elif e.tag == 'orderCartId':
                 completedOrder.orderCartId = e.text.strip()
+            elif e.tag == 'orderTotalFee':
+                completedOrder.orderTotalFee = e.text.strip()
+            elif e.tag == 'orderDate':
+                completedOrder.orderDate = e.text.strip()
+            elif e.tag == 'usedPoint':
+                completedOrder.usedPoint = e.text.strip()
             elif e.tag == 'items':
                 self.visit_items(e, completedOrder)
 
         return completedOrder
-
 
     def visit_items(self, el, completedOrder):
         for item_el in el:
@@ -107,7 +110,7 @@ class CompletedOrderXmlVisitor(object):
 
 
 class HMAC_SHA1(object):
-    hash_algorithm = "SHA1"
+
     def __init__(self, secret):
         self.secret = secret
 
@@ -116,7 +119,6 @@ class HMAC_SHA1(object):
 
 
 class HMAC_MD5(object):
-    hash_algorithm = "MD5"
 
     def __init__(self, secret):
         self.secret = secret
@@ -125,52 +127,86 @@ class HMAC_MD5(object):
         return hmac.new(self.secret, checkout_xml, hashlib.md5).hexdigest()
 
 
+class CheckoutAPI(object):
+
+    def __init__(self, service_id, success_url, fail_url, auth_method, is_test):
+        self.service_id = service_id
+        self.success_url = success_url
+        self.fail_url = fail_url
+        self.auth_method = auth_method
+        self.is_test = is_test
+
+    def create_checkout_xml(self, cart):
+        root = et.Element(u'orderItemsInfo')
+
+        et.SubElement(root, u'serviceId').text = self.service_id
+        et.SubElement(root, u'orderCompleteUrl').text = self.success_url
+        et.SubElement(root, u'orderFailedUrl').text = self.fail_url
+        et.SubElement(root, u'authMethod').text = AUTH_METHOD_TYPE.get(self.auth_method)
+        if self.is_test is not None:
+            et.SubElement(root, u'isTMode').text = self.is_test
+
+        # カート
+        et.SubElement(root, u'orderCartId').text = str(cart.id)
+        et.SubElement(root, u'orderTotalFee').text = str(int(cart.total_amount))
+
+        # 商品
+        itemsInfo = et.SubElement(root, u'itemsInfo')
+        for carted_product in cart.products:
+            item_el = et.SubElement(itemsInfo, 'item')
+            subelement = functools.partial(et.SubElement, item_el)
+            subelement('itemId').text = str(carted_product.product.id)
+            subelement('itemName').text = carted_product.product.name
+            subelement('itemNumbers').text = str(carted_product.quantity)
+            subelement('itemFee').text = str(int(carted_product.amount))
+
+        # 商品:システム手数料
+        item_el = et.SubElement(itemsInfo, 'item')
+        subelement = functools.partial(et.SubElement, item_el)
+        subelement('itemId').text = 'system_fee'
+        subelement('itemName').text = u'システム利用料'
+        subelement('itemNumbers').text = '1'
+        subelement('itemFee').text = str(int(cart.system_fee))
+
+        # 商品:決済手数料
+        item_el = et.SubElement(itemsInfo, 'item')
+        subelement = functools.partial(et.SubElement, item_el)
+        subelement('itemId').text = 'transaction_fee'
+        subelement('itemName').text = u'決済手数料'
+        subelement('itemNumbers').text = '1'
+        subelement('itemFee').text = str(int(cart.transaction_fee_amount))
+
+        # 商品:配送手数料
+        item_el = et.SubElement(itemsInfo, 'item')
+        subelement = functools.partial(et.SubElement, item_el)
+        subelement('itemId').text = 'delivery_fee'
+        subelement('itemName').text = u'配送手数料'
+        subelement('itemNumbers').text = '1'
+        subelement('itemFee').text = str(int(cart.delivery_fee_amount))
+
+        return '<?xml version="1.0" encoding="UTF-8"?>' + et.tostring(root)
+
+    def save_order_complete(self, request):
+        confirmId = request.params['confirmId']
+        xml = confirmId.replace(' ', '+').decode('base64')
+        visitor = CompletedOrderXmlVisitor()
+        completed_order = visitor.visit(et.XML(xml))
+        completed_order.save()
+
+        return RESULT_FLG_SUCCESS
+
+def get_checkout_service(request):
+    return request.registry.utilities.lookup([], interfaces.ICheckoutAPI)
+
 def generate_requestid():
     """
     安心決済の一意なリクエストIDを生成する
     """
     return uuid.uuid4().hex[:16]  # uuidの前半16桁
 
-def get_cart_confirm(request):
-    confirmId = request.params['confirmId'].decode('base64')
-
-    tree = et.XML(confirmId)
-
-    cart_xml_visitor = CartXmlVisitor()
-    cartInformation = cart_xml_visitor.visit(tree)
-    return cartInformation
-
 def sign_to_xml(request, xml):
-    signer = request.registry.utilities.lookup([], interfaces.ISigner, "")
+    signer = request.registry.utilities.lookup([], interfaces.ISigner, "HMAC")
     return signer(xml)
-
-def checkout_to_xml(checkout):
-    root = et.Element(u'orderItemsInfo')
-
-    et.SubElement(root, u'serviceId').text = checkout.serviceId
-    itemsInfo = et.SubElement(root, u'itemsInfo')
-
-    for item in checkout.itemsInfo:
-        item_el = et.SubElement(itemsInfo, 'item')
-        subelement = functools.partial(et.SubElement, item_el)
-        subelement('itemId').text = item.itemId
-        subelement('itemName').text = item.itemName
-        subelement('itemNumbers').text = str(item.itemNumbers)
-        subelement('itemFee').text = str(item.itemFee)
-
-    et.SubElement(root, u'orderCartId').text = checkout.orderCartId
-    et.SubElement(root, u'orderCompleteUrl').text = checkout.orderCompleteUrl
-    et.SubElement(root, u'orderTotalFee').text = checkout.orderTotalFee
-
-    if checkout.orderFailedUrl is not None:
-        et.SubElement(root, u'orderFailedUrl').text = checkout.orderFailedUrl
-
-    et.SubElement(root, u'authMethod').text = checkout.authMethod
-
-    if checkout.isTMode is not None:
-        et.SubElement(root, u'isTMode').text = checkout.isTMode
-
-    return '<?xml version="1.0" encoding="UTF-8"?>' + et.tostring(root)
 
 def confirmation_to_xml(confirmation):
     root = et.Element('cartConfirmationResponse')
@@ -197,8 +233,10 @@ def confirmation_to_xml(confirmation):
     return et.tostring(root)
 
 
-AUTH_METHOD_HMAC_SHA1 = 1
-AUTH_METHOD_HMAC_MD5 = 2
+AUTH_METHOD_TYPE = {
+    'HMAC-SHA1':'1',
+    'HMAC-MD5':'2',
+}
 
 IS_NOT_TO_MODE = 0
 IS_T_MODE = 1
