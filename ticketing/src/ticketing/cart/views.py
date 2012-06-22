@@ -33,8 +33,8 @@ class IndexView(object):
         performance_id = self.request.params.get('performance')
 
         from .api import get_event_info_from_cms
-        event_info = get_event_info_from_cms(self.request, event_id)
-        
+        event_extra_info = get_event_info_from_cms(self.request, event_id)
+        logger.info(event_extra_info)
 
         e = DBSession.query(c_models.Event).filter_by(id=event_id).first()
         if e is None:
@@ -84,6 +84,7 @@ class IndexView(object):
                     products_from_selected_date_url = self.request.route_url("cart.date.products", event_id=event_id), 
                     order_url=self.request.route_url("cart.order"),
                     upper_limit=sales_segment.upper_limit,
+                    event_extra_info=event_extra_info.get("event") or []
         )
 
     @view_config(route_name='cart.seat_types', renderer="json")

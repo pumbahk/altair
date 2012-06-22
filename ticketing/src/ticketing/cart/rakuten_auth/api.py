@@ -11,7 +11,6 @@ import hmac
 import hashlib
 
 from datetime import datetime
-import oauth2 as oauth
 from pyramid import security
 from ticketing.cart import logger
 

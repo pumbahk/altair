@@ -60,6 +60,13 @@ def event_register(request):
         logger.exception(e)
         return HTTPBadRequest(body=json.dumps({u'status':u'error', u'message':unicode(e), "apikey": apikey}))
 
+
+def _extra_info(name, caption, content):
+    """
+    {"caption": u"お問い合わせ先", "name": "contact", "content": u"お問い合わせ先は以下のとおりxxx-xxx-xx"}
+    """
+    return dict(caption=caption, name=name, content=content)
+
 @view_config(route_name="api_event_info", request_method="GET", renderer="json")
 def event_info(request):
     apikey = request.headers.get('X-Altair-Authorization', None)
@@ -73,13 +80,12 @@ def event_info(request):
     event = Event.query.filter_by(backend_id=backend_id).first()
 
     if event is None:
-        return dict(event=None)
+        return dict(event=[])
     try:
-        return dict(event=dict(subtitle=event.subtitle, 
-                               contact=h.base.nl_to_br(event.inquiry_for), 
-                               notice=h.base.nl_to_br(event.notice), 
-                               performer=event.performers, 
-                               ))
+        return {"event":
+                    [_extra_info("contact", u"お問い合わせ先", h.base.nl_to_br(event.inquiry_for)), 
+                     _extra_info("notice", u"注意事項", h.base.nl_to_br(event.notice)), 
+                     _extra_info("performer", u"出演者リスト", event.performers)]}
     except ValueError as e:
         logger.exception(e)
         return HTTPBadRequest(body=json.dumps({u'status':u'error', u'message':unicode(e), "apikey": apikey}))
