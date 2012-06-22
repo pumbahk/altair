@@ -31,10 +31,39 @@
 		<h1><img src="${request.static_url('ticketing.cart:static/img/settlement/title_settlement.gif')}" alt="チケット購入" width="950" height="40" /></h1>
         ${h.get_nickname(request)} さん
 		<form id="form1" name="form1" method="post" action="${request.url}">
-            <div class="client">
-                <div>
-                    <fieldset>
-                        <legend>購入者情報</legend>
+			<div class="settlementBox">
+				<div class="settlementBoxInner">
+					<h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_methods.gif')}" alt="お支払い、引き取り方法の指定" width="167" height="30" /></h2>
+
+%for m in payment_delivery_methods:
+					<div class="settlementPayBox">
+						<div class="settlementPayBoxInner">
+							<table>
+								<tr>
+									<td class="settlementPayRadio"><input type="radio" name="payment_delivery_pair_id" id="radio2" value="${m.id}" /></td>
+									<td><dl>
+										<dt>${m.payment_method.name}</dt>
+										<dd>${h.format_currency(m.transaction_fee)}
+                                            (${h.fee_type(m.payment_method.fee_type)})
+                                        </dd>
+										<dt>${m.delivery_method.name}</dt>
+										<dd>${h.format_currency(m.delivery_fee)}
+                                            (${h.fee_type(m.delivery_method.fee_type)})
+                                        </dd>
+									</dl></td>
+								</tr>
+							</table>
+						</div>
+					</div>
+%endfor
+				</div>
+			</div>
+            <div class="settlementBox">
+                <div class="settlementBoxInner">
+                    <h2>購入者情報</h2>
+                    
+                    <div class="settlementPayBox">
+                      <div class="settlementPayBoxInner">
                         <ul>
                             <li>購入者氏名
                             <ul>
@@ -81,36 +110,10 @@
                             </ul>
                             </li>
                         </ul>
-                    </fieldset>
+                      </div>
+                    </div>
                 </div>
             </div>
-			<div class="settlementBox">
-				<div class="settlementBoxInner">
-					<h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_methods.gif')}" alt="お支払い、引き取り方法の指定" width="167" height="30" /></h2>
-
-%for m in payment_delivery_methods:
-					<div class="settlementPayBox">
-						<div class="settlementPayBoxInner">
-							<table>
-								<tr>
-									<td class="settlementPayRadio"><input type="radio" name="payment_delivery_pair_id" id="radio2" value="${m.id}" /></td>
-									<td><dl>
-										<dt>${m.payment_method.name}</dt>
-										<dd>${h.format_currency(m.transaction_fee)}
-                                            (${h.fee_type(m.payment_method.fee_type)})
-                                        </dd>
-										<dt>${m.delivery_method.name}</dt>
-										<dd>${h.format_currency(m.delivery_fee)}
-                                            (${h.fee_type(m.delivery_method.fee_type)})
-                                        </dd>
-									</dl></td>
-								</tr>
-							</table>
-						</div>
-					</div>
-%endfor
-				</div>
-			</div>
 <!--
 			<div class="settlementBox">
 				<div class="settlementBoxInner">
