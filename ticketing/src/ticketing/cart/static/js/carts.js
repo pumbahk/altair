@@ -174,6 +174,7 @@ carts.AppView.prototype.update_settlement_detail = function(venues){
 carts.AppView.prototype.update_settlement_pricelist = function(products){
     var arr = [];
     $.each(products, function(index, value){
+        console.log(value.price);
         arr.push(value.name + ": " + value.price + "円");
     });
     $("#settlementEventDetail #pricelist").html(arr.join("<br/>"));
@@ -286,6 +287,7 @@ carts.Presenter.prototype.on_venue_selected = function(selected_venue){
 carts.Presenter.prototype.show_products = function(get_url) {
     var view = this.view;
     var upper_limit = this.upper_limit;
+
     this.model.fetch_products(get_url, function(data) {
         var seat_type_name = data.seat_type.name;
         var products = data.products;

@@ -56,12 +56,12 @@ class IndexView(object):
             # 指定公演とそれに紐づく会場
             selected_performance = c_models.Performance.query.filter(c_models.Performance.id==performance_id).first()
             selected_date = selected_performance.start_on.strftime('%Y-%m-%d %H:%M')
-            pass
+
         else:
             # １つ目の会場の1つ目の公演
             selected_performance = e.performances[0]
             selected_date = selected_performance.start_on.strftime('%Y-%m-%d %H:%M')
-            pass
+
 
         event = dict(id=e.id, code=e.code, title=e.title, abbreviated_title=e.abbreviated_title,
             first_start_on=str(e.first_start_on), final_start_on=str(e.final_start_on),
@@ -105,32 +105,36 @@ class IndexView(object):
     @view_config(route_name="cart.date.products", renderer="json")
     def get_products_with_date(self):
         """ 公演日ごとの購入単位
-        (event_id, date) -> [performance] -> [productitems] -> [product]
+        (event_id, venue, date) -> [performance] -> [productitems] -> [product]
 
         need: request.GET["selected_date"] # e.g. format: 2011-11-11
         """
 
-        selected_date = self.request.GET["selected_date"]
+        selected_date_string = self.request.GET["selected_date"]
         event_id = self.request.matchdict["event_id"]
 
         logger.debug("event_id = %(event_id)s, selected_date = %(selected_date)s"
-            % dict(event_id=event_id, selected_date=selected_date))
+            % dict(event_id=event_id, selected_date=selected_date_string))
 
-        date_begin = datetime.strptime(selected_date, "%Y-%m-%d %H:%M")
-        date_end = date_begin + timedelta(days=1)
+        selected_date = datetime.strptime(selected_date_string, "%Y-%m-%d %H:%M")
 
-        subq = DBSession.query(c_models.Performance.id)
-        subq = subq.filter(c_models.Performance.event_id==event_id)
-        subq = subq.filter(date_begin <= c_models.Performance.start_on).filter(c_models.Performance.start_on < date_end)
-
+        ## selected_dateが==で良いのはself.__call__で指定された候補を元に選択されるから
         q = DBSession.query(c_models.ProductItem.product_id)
-        q = q.filter(c_models.ProductItem.performance_id.in_(subq))
+        q = q.filter(c_models.Performance.event_id==event_id)
+        q = q.filter(c_models.Performance.start_on==selected_date)
+        q = q.filter(c_models.Performance.id == c_models.ProductItem.performance_id)
+
 
         query = DBSession.query(c_models.Product)
         query = query.filter(c_models.Product.id.in_(q)).order_by(sa.desc("price"))
+        ### filter by salessegment
+        salessegment = self.context.get_sales_segument()
+        query = h.products_filter_by_salessegment(query, salessegment)
+
+
         products = [dict(name=p.name, price=h.format_number(p.price, ","), id=p.id)
                     for p in query]
-        return dict(selected_date=selected_date, 
+        return dict(selected_date=selected_date_string, 
                     products=products)
 
     @view_config(route_name='cart.products', renderer="json")
@@ -140,7 +144,6 @@ class IndexView(object):
         """
         seat_type_id = self.request.matchdict['seat_type_id']
         performance_id = self.request.matchdict['performance_id']
-        
        
         logger.debug("seat_typeid = %(seat_type_id)s, performance_id = %(performance_id)s"
             % dict(seat_type_id=seat_type_id, performance_id=performance_id))
@@ -154,13 +157,9 @@ class IndexView(object):
 
         query = DBSession.query(c_models.Product)
         query = query.filter(c_models.Product.id.in_(q)).order_by(sa.desc("price"))
-
         ### filter by salessegment
-        salessegment_id = self.request.params.get("salessegment_id")
-        selected_date = self.request.params.get("selected_date")
-        if selected_date:
-            selected_date = datetime.strptime(selected_date, "%Y-%m-%d %H:%M")
-        query = h.products_filter_by_salessegment(query, h.get_salessegment(salessegment_id, selected_date))
+        salessegment = self.context.get_sales_segument()
+        query = h.products_filter_by_salessegment(query, salessegment)
 
         products = [dict(id=p.id, name=p.name, price=h.format_number(p.price, ","))
             for p in query]
