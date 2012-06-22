@@ -10,7 +10,7 @@ from pyramid.session import UnencryptedCookieSessionFactoryConfig
 from pyramid.tweens import EXCVIEW
 
 import sqlahelper
-
+from .api.impl import bound_communication_api ## cmsとの通信
 import logging
 
 
@@ -68,6 +68,14 @@ def main(global_config, **settings):
 
     config.add_tween('.tweens.session_cleaner_factory', over=EXCVIEW)
     #config.scan('ticketing') # Bad Code
+
+    ## cmsとの通信
+    bound_communication_api(config, 
+                            ".api.impl.CMSCommunicationApi", 
+                            config.registry.settings["altaircms.event.notification_url"], 
+                            config.registry.settings["altaircms.apikey"]
+                            )
+
     config.scan(".views")
 
 

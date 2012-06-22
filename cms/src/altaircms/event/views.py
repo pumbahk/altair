@@ -63,7 +63,7 @@ def event_register(request):
 
 def _extra_info(name, caption, content):
     """
-    {"caption": u"お問い合わせ先", "name": "contact", "content": u"お問い合わせ先は以下のとおりxxx-xxx-xx"}
+    {"label": u"お問い合わせ先", "name": "contact", "content": u"お問い合わせ先は以下のとおりxxx-xxx-xx"}
     """
     return dict(caption=caption, name=name, content=content)
 

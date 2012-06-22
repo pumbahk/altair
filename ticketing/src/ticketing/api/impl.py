@@ -1,7 +1,8 @@
 # -*- coding:utf-8 -*-
 import urllib2
 from .interfaces import ICommunicationApi
-
+import logging
+logger=logging.getLogger(__file__)
 from zope.interface import implementer
 
 @implementer(ICommunicationApi)
@@ -10,8 +11,13 @@ class CMSCommunicationApi(object):
         self.baseurl = baseurl
         self.apikey = apikey
 
+    def get_url(self, path):
+        return self.baseurl.rstrip("/") +"/" + path.lstrip("/")
+
     def create_connection(self, path, params=None):
-        url = self.baseurl.rstrip("/") +"/" + path.lstrip("/")
+        url = self.get_url(path)
+        logger.debug("*api* %s: url=%s" % (self.__class__.__name__, url))
+
         req = urllib2.Request(url, data=params)
 
         req.add_header('X-Altair-Authorization', self.apikey)

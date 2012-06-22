@@ -4,6 +4,8 @@ import isodate
 import json
 import logging
 import urllib2
+import contextlib
+
 from datetime import datetime
 
 import webhelpers.paginate as paginate
@@ -22,6 +24,9 @@ from ticketing.events.performances.forms import PerformanceForm
 from ticketing.events.sales_segments.forms import SalesSegmentForm
 from ticketing.events.stock_types.forms import StockTypeForm
 from ticketing.products.forms import ProductForm
+
+from ..api.impl import get_communication_api
+from ..api.impl import CMSCommunicationApi
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class Events(BaseView):
@@ -178,21 +183,20 @@ class Events(BaseView):
             self.request.session.flash(e.message)
             return HTTPFound(location=route_path('events.show', self.request, event_id=event.id))
 
-        settings = get_current_registry().settings
-        url = settings.get('altaircms.event.notification_url') + 'api/event/register'
-        req = urllib2.Request(url, json.dumps(data))
-        req.add_header('X-Altair-Authorization', settings.get('altaircms.apikey'))
-        req.add_header('Connection', 'close')
+        communication_api = get_communication_api(self.request, CMSCommunicationApi)
+        req = communication_api.create_connection('api/event/register', json.dumps(data))
 
         try:
-            res = urllib2.urlopen(req)
-            if res.getcode() == HTTPCreated.code:
-                self.request.session.flash(u'イベントをCMSへ送信しました')
-            else:
-                raise urllib2.HTTPError(code=res.getcode())
-        except urllib2.HTTPError, e:
-            logging.warn("cms sync http error: response status (%s) %s" % (e.code, e.read()))
-            self.request.session.flash(u'イベント送信に失敗しました (%s)' % e.code)
+            with contextlib.closing(urllib2.urlopen(req)) as res:
+                try:
+                    if res.getcode() == HTTPCreated.code:
+                        self.request.session.flash(u'イベントをCMSへ送信しました')
+                    else:
+                        raise urllib2.HTTPError(code=res.getcode())
+                except urllib2.HTTPError:
+                    self.request.session.flash(u'イベント送信に失敗しました (%s)' % e.code)
+        except urllib2.URLError, e:
+            logging.warn("cms sync http error: response status url=(%s) %s" % (e.reason, e))
         except Exception, e:
             logging.error("cms sync error: %s, %s" % (e.reason, e.message))
             self.request.session.flash(u'イベント送信に失敗しました')
