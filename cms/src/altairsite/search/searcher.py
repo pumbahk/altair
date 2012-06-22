@@ -73,7 +73,7 @@ def get_pageset_query_from_hotword(request, query_params):
        hotword = query_params["hotword"]
        return search_by_hotword(qs, hotword)
     else:
-       return []
+       return Page.query # empty set query is good for that?
 
 @provider(ISearchFn)
 def get_pageset_query_from_freeword(request, query_params):
@@ -86,7 +86,7 @@ def get_pageset_query_from_freeword(request, query_params):
         qs = _refine_pageset_collect_future(qs)
         return  _refine_pageset_qs(qs)
     else:
-       return []
+       return Page.query # empty set query is good for that?
 
 @provider(ISearchFn)
 def get_pageset_query_from_genre(request, query_params):
@@ -98,7 +98,7 @@ def get_pageset_query_from_genre(request, query_params):
        qs = _refine_pageset_collect_future(qs)
        return  _refine_pageset_qs(qs)
     else:
-       return []
+       return Page.query # empty set query is good for that?
 
 @provider(ISearchFn)
 def get_pageset_query_from_area(request, query_params):
@@ -112,7 +112,7 @@ def get_pageset_query_from_area(request, query_params):
        qs = _refine_pageset_collect_future(qs)
        return  _refine_pageset_qs(qs)
     else:
-       return []
+       return Page.query # empty set query is good for that?
 
 @provider(ISearchFn)
 def get_pageset_query_from_deal_cond(request, query_params):
@@ -126,7 +126,7 @@ def get_pageset_query_from_deal_cond(request, query_params):
        qs = _refine_pageset_collect_future(qs)
        return  _refine_pageset_qs(qs)
     else:
-       return []
+       return Page.query # empty set query is good for that?
 
 @provider(ISearchFn)
 def get_pageset_query_from_deal_open_within(request, query_params):
@@ -140,7 +140,7 @@ def get_pageset_query_from_deal_open_within(request, query_params):
        qs = _refine_pageset_collect_future(qs)
        return  _refine_pageset_qs(qs)
     else:
-       return []
+       return Page.query # empty set query is good for that?
 
 @provider(ISearchFn)
 def get_pageset_query_from_event_open_within(request, query_params):
@@ -157,7 +157,7 @@ def get_pageset_query_from_event_open_within(request, query_params):
        qs = _refine_pageset_collect_future(qs)
        return  _refine_pageset_qs(qs)
     else:
-       return []
+       return Page.query # empty set query is good for that?
 
 
 @provider(ISearchFn)
