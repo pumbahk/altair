@@ -1,0 +1,38 @@
+@charset "utf-8";
+
+#selectSeat{
+    margin-bottom: 10px;
+	filter: alpha(opacity=30);
+	-moz-opacity: 0.3;
+	opacity: 0.3;
+}
+
+#selectSeat.forcus  {
+	filter: alpha(opacity=100);
+	-moz-opacity: 1.0;
+	opacity: 1.0;
+	border: 2px solid #cccccc;
+	background-color: #ffffff;
+}
+
+#selectSeat li.unselected {
+	filter: alpha(opacity=30);
+	-moz-opacity: 0.3;
+	opacity: 0.3;
+}
+
+#selectBuy.forcus{
+	filter: alpha(opacity=100);
+	-moz-opacity: 1.0;
+	opacity: 1.0;
+	border: 2px solid #cccccc;
+	background-color: #ffffff;
+}
+
+.lead {
+	letter-spacing:1px;
+	font-weight:bold;
+	font-size: 11pt;
+	color:#555;
+	padding: 5px 5px 10px 10px;
+}

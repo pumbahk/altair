@@ -57,6 +57,10 @@ carts.AppView.prototype.forcusLeftBox = function(){
     var right_box = $("#selectBuy");
 
     left_box.addClass("forcus");
+    left_box.css("position", "relative");
+
+    left_box.find(".lead").css("opacity", "1.0");
+    right_box.find(".lead").css("opacity", "0.3");
 
     right_box.removeClass("forcus");
     right_box.find("#payment-seat-products").empty();
@@ -66,7 +70,11 @@ carts.AppView.prototype.forcusLeftBox = function(){
 carts.AppView.prototype.forcusRightBox = function(){
     var left_box = $("#selectSeat");
     var right_box = $("#selectBuy");
-    
+
+    left_box.find(".lead").css("opacity", "0.3");
+    right_box.find(".lead").css("opacity", "1.0");
+
+    left_box.css("position", "absolute");
     right_box.addClass("forcus");
 };
 
