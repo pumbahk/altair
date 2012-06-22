@@ -12,6 +12,7 @@ from ticketing.core.models import *
 from ticketing.sej.models import *
 from ticketing.bookmark.models import *
 from ticketing.cart.models import *
+from ticketing.cart.plugins.models import *
 from ticketing.multicheckout.models import *
 from inspect import getfile, currentframe
 import os
