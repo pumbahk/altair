@@ -70,10 +70,7 @@ Seat.prototype.init = function Seat_init(id, shape, meta, parent, events) {
     this.shape.addEvent(this.events);
   }
 
-  if (!this.selectable())
-    this.addStyleType('unselectable');
-
-  this.stylize();
+  this.refresh();
 };
 
 Seat.prototype.stylize = function Seat_stylize() {
@@ -141,6 +138,18 @@ Seat.prototype.removeStyleType = function Seat_removeStyleType(value) {
     else
       i++;
   }
+  this.stylize();
+};
+
+Seat.prototype.refreshDynamicStyle = function Seat_refreshDynamicStyle() {
+  if (!this.selectable())
+    this.addStyleType('unselectable');
+  else
+    this.removeStyleType('unselectable');
+};
+
+Seat.prototype.refresh = function Seat_refresh() {
+  this.refreshDynamicStyle();
   this.stylize();
 };
 
