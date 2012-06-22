@@ -15,8 +15,12 @@ from zope.interface import implementer
 from ..core.models import FeeTypeEnum, SalesSegment
 import logging
 from .plugins.resources import OrderDelivery, CartDelivery, OrderPayment, CartPayment
-
 logger = logging.getLogger(__name__)
+
+def get_nickname(request):
+    from .rakuten_auth.api import authenticated_user
+    user = authenticated_user(request)
+    return user['nickname']
 
 def render_delivery_confirm_viewlet(request, cart):
     logger.debug("*" * 80)

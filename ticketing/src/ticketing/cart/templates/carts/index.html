@@ -33,6 +33,7 @@
 	<!-- ========== main ========== -->
 	<div id="main">
 		<h1><img src="${request.static_url('ticketing.cart:static/img/settlement/title_settlement.gif')}" alt="チケット購入" width="950" height="40" /></h1>
+        ${h.get_nickname(request)} さん
 		<h2 id="ticketName">${event['title']}</h2>
 		<ul id="ticketIcon">
 			<li><img src="${request.static_url('ticketing.cart:static/img/detail/icon_select.gif')}" alt="座席選択可" width="80" height="30" /></li>
