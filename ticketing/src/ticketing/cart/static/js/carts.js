@@ -182,7 +182,6 @@ carts.AppView.prototype.update_settlement_detail = function(venues){
 carts.AppView.prototype.update_settlement_pricelist = function(products){
     var arr = [];
     $.each(products, function(index, value){
-        console.log(value.price);
         arr.push(value.name + ": " + value.price + "円");
     });
     $("#settlementEventDetail #pricelist").html(arr.join("<br/>"));

@@ -17,12 +17,18 @@ from inspect import getfile, currentframe
 import os
 import re
 
+import sys
+
 def readsql(conn, f):
     buf = ''
     state = 0
     chunk = ''
     while True:
         _chunk = f.read(4096)
+
+        sys.stderr.write(".")
+        sys.stderr.flush()
+
         chunk += (_chunk or '')
         if not chunk:
             break
