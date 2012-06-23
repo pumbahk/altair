@@ -42,8 +42,6 @@ from .helpers import _items_from_page
 ## ここではattributeを返しているけれど、これをりようできるようになっていない
 """
 todo:
-   classを指定する方法
-   登録した文字列を編集する方法
    改行への対応
 """
 
