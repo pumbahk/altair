@@ -89,14 +89,20 @@
         initialize: function(){
             this.model.bind("change", this.render, this);
             this.model.bind("destroy", this.remove, this);            
-            this.model.bind("redraw", this.render, this);
+            this.model.bind("redraw", this.reDraw, this);
         }, 
+
+        
         render: function(){
             $(this.el).html(this.template(this.model.toJSON()));
             this.setContent();
             return this;
         }, 
         
+        reDraw: function(me){
+            $(this.el).css("display","auto");
+            this.setContent();
+        },
         setContent: function(){
             var label = this.model.get("label");
             this.$(".label").text(label);
@@ -115,8 +121,9 @@
         }, 
         transformEditView: function(){
             this.model.unbind("change", this.render);
-            var edit_view = new EditItemView({model: this.model});
-            $(this.el).html(edit_view.render().el);
+            $(this.el).css("display","none");
+            var edit_view = new EditItemView({model: this.model, view: this});
+            $(this.el).after(edit_view.render().el);
         }, 
         remove: function() {
             $(this.el).remove();
@@ -124,30 +131,30 @@
     });
 
     var EditItemView = Backbone.View.extend({
-        tagName: "div", 
+        tagName: "tr", 
         className: "edit-item", 
-        template: _.template([
-       			'<td><label>見出し<input class="label" type="text" value="<%= label %>"/></label></td>', 
-            '<td><label>内容<textarea class="content" type="text"><%= content %></textarea></label></td>'
+        template: _.template(['<td><label>見出し<input class="label" type="text" value="<%= label %>"/></label></td>', 
+            '<td><label>内容<textarea class="content" type="text" max-width="100%" width="100%"><%= content %></textarea></label></td>',
+            '<td><button type="button" class="update_button btn">更新</button></td>'
         ].join("\n")), 
         
         events: {
-            "keypress .label": "updateOnEnter", 
-            "keypress .content": "updateOnEnter", 
+            "click .update_button": "updateOnEnter", 
         }, 
 
         updateOnEnter: function(e){
             var label = this.$(".label").val();
             var content = this.$(".content").val();
-            if (!label || !content || e.keyCode != 13) return;
-            this.model.set("label", label);
-            this.model.set("content", content);
-            this.yank();
+            this.yank(label,content);
         }, 
 
-        yank: function(){
+        yank: function(label,content){
+            // todo: move it
+            var target = this.$el.prev();
+            this.model.set("label",label);
+            this.model.set("content",content);
+            this.model.trigger("redraw", target);
             this.remove();
-            this.model.trigger("redraw");
         }, 
 
         render: function(){
