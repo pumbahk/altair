@@ -12,11 +12,13 @@
   <hr/>
   <div class="content" class="float">
     <div id="create-content">
-	  <table>
-	  	<tr>
-		  <td><label>見出し<input id="label_input" placeholder="ここに見出しを追加" type="text" /></label></td>
-	  	  <td><label>内容<textarea id="content_input" placeholder="ここに内容を追加" type="text" /></textarea></label></td>
-		</tr>
+   <table class="table">
+           <tr>
+                 <td><label>見出し<input id="label_input" placeholder="ここに見出しを追加" type="text" /></label></td>
+                   <td><label>内容<textarea width="300px" id="content_input" placeholder="ここに内容を追加" type="text" /></textarea></label></td>
+                   <td><label>購入ページに通知する<input id="notify_input"  type="checkbox" checked="checked"/></label></td>
+                 <td><button id="additem_button">追加する</button></td>
+          </tr>
 	  </table>
     </div>
 	<span class="clear"/>
@@ -153,6 +155,7 @@
         initialize: function(){
             this.label_input = this.$("#label_input");
             this.content_input = this.$("#content_input");
+            this.notify_input = this.$("#notify_input");
             this._stored_data = null; //loaded data cached
             // model
             this.contentlist = new ItemList();
@@ -160,8 +163,7 @@
         }, 
         
         events: {
-            "keypress #label_input": "createOnEnter", 
-            "keypress #content_input": "createOnEnter", 
+            "click #additem_button": "createItem",
             "click #reflesh_button": "refleshContent",
             "click #load_from_api_button": "loadDataFromAPI"
         }, 
@@ -219,10 +221,12 @@
             });
         }, 
 
-        createOnEnter: function(e){
+        createItem: function(e){
             var label = this.label_input.val();
             var content = this.content_input.val();
-            if (!label || !content || e.keyCode != 13) return;
+            var notify = this.notify_input.val();
+            if (!label || !content) return;
+
             this.contentlist.create({label: label, content: content});
             this.label_input.val("");
             this.content_input.val("");
