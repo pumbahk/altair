@@ -33,6 +33,16 @@ def render_delivery_confirm_viewlet(request, cart):
         raise ValueError
     return Markup(response.text)
 
+def error_list(request, form, name):
+    errors = form[name].errors
+    if not errors:
+        return ""
+    
+    html = '<ul class="error-list">'
+    html += "".join(['<li>%s</li>' % e for e in errors])
+    html += '</ul>'
+    return Markup(html)
+
 def render_payment_confirm_viewlet(request, cart):
     logger.debug("*" * 80)
     plugin_id = cart.payment_delivery_pair.payment_method.payment_plugin_id

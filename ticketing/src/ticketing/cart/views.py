@@ -16,6 +16,7 @@ from . import schema
 from .rakuten_auth.api import authenticated_user
 from . import plugins
 from .events import notify_order_completed
+from webob.multidict import MultiDict
 
 logger = logging.getLogger(__name__)
 
@@ -265,8 +266,23 @@ class PaymentView(object):
 
         openid = authenticated_user(self.request)
         user = h.get_or_create_user(self.request, openid['clamed_id'])
-
-        return dict(payment_delivery_methods=payment_delivery_methods,
+        user_profile = user.user_profile
+        form = schema.ClientForm(formdata=MultiDict({
+            "last_name": user_profile.last_name,
+            "last_name_kana": user_profile.last_name_kana,
+            "first_name": user_profile.first_name,
+            "first_name_kana": user_profile.first_name_kana,
+            "tel_1": user_profile.tel_1,
+            "fax": user_profile.fax,
+            "zip": user_profile.zip,
+            "prefecture": user_profile.prefecture,
+            "city": user_profile.city,
+            "address_1": user_profile.street,
+            "address_2": user_profile.address,
+            "mail_address": user_profile.email,
+        }))
+        return dict(form=form,
+            payment_delivery_methods=payment_delivery_methods,
             user=user, user_profile=user.user_profile)
 
     @view_config(route_name='cart.payment', request_method="POST", renderer="carts/payment.html")
@@ -278,8 +294,18 @@ class PaymentView(object):
             return HTTPFound('/')
         cart = h.get_cart(self.request)
 
+
         openid = authenticated_user(self.request)
         user = h.get_or_create_user(self.request, openid['clamed_id'])
+
+
+        form = schema.ClientForm(formdata=self.request.params)
+        if not form.validate():
+            self.context.event_id = cart.performance.event.id
+            payment_delivery_methods = self.context.get_payment_delivery_method_pair()
+            return dict(form=form,
+                payment_delivery_methods=payment_delivery_methods,
+                user=user, user_profile=user.user_profile)
 
         params = self.request.params
         shipping_address = o_models.ShippingAddress(
@@ -317,10 +343,6 @@ class PaymentView(object):
             c_models.PaymentDeliveryMethodPair.id==payment_delivery_pair_id
         ).one()
         cart.payment_delivery_pair = payment_delivery_pair
-
-        # TODO: マジックナンバー
-        #if payment_delivery_pair.payment_method.payment_plugin_id == 1:
-        #    return HTTPFound(self.request.route_url("payment.secure3d"))
 
         payment_delivery_plugin = plugins.get_payment_delivery_plugin(self.request, 
             payment_delivery_pair.payment_method.payment_plugin_id,
