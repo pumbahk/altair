@@ -84,3 +84,4 @@ AsyncDataWaiter.prototype.charge = function AsyncDataWaiter_charge(id, data) {
   // fire!! if all data has come.
   this.after.call(window, this.store);
 };
+
