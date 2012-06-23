@@ -58,7 +58,7 @@ class GetEventInfoTests(unittest.TestCase):
         event = Event()
         page = Page(event=event)
         widget = SummaryWidget(page=page)
-        widget.content = json.dumps([
+        widget.items = json.dumps([
                 {"name": u"name", "content": u"this-is-summary-content", "label": u"見出し"}, 
                 {"content": u"no-name", "label": u"見出し"}
                 ])

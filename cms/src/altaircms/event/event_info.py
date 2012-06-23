@@ -61,8 +61,8 @@ class SummaryWidgetGetEventInfoAdapter(object):
         nl_to_br = lambda s : s.replace("\n", "<br/>")
         appender = InfoAppender()
 
-        values = json.loads(self.target.content)
-        for v in values:
+        items = json.loads(self.target.items)
+        for v in items:
             appender.append(v.get("name", u""), v["label"], v["content"], nl_to_br)
         return {"event": appender.content}    
 

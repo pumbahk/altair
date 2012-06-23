@@ -70,7 +70,7 @@ def event_info(request):
         return HTTPForbidden(body=json.dumps({u'status':u'error', u'message':u'access denined'}))
 
     backend_id = request.matchdict["event_id"]
-    logger.debug("*api* event info: apikey=%s event.id=%s (backend)" % (apikey, backend_id))
+    logger.info("*api* event info: apikey=%s event.id=%s (backend)" % (apikey, backend_id))
     event = Event.query.filter_by(backend_id=backend_id).first()
 
     if event is None:
@@ -80,5 +80,4 @@ def event_info(request):
     except ValueError as e:
         logger.exception(e)
         return HTTPBadRequest(body=json.dumps({u'status':u'error', u'message':unicode(e), "apikey": apikey}))
-
 
