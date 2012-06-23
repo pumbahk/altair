@@ -60,13 +60,8 @@
     "1": {
       "style": {
         "text": "",
-        "stroke": {
-          "color": "#000000",
-          "width": "1",
-          "pattern": "solid"
-        },
         "fill": {
-          "color": "#d8d8d8"
+          "color": "#e0d060"
         }
       },
       "name": "S\u5e2d"
@@ -74,11 +69,6 @@
     "2": {
       "style": {
         "text": "",
-        "stroke": {
-          "color": "#d8d8d8",
-          "width": "1",
-          "pattern": "solid"
-        },
         "fill": {
           "color": "#ffec9f"
         }
@@ -88,11 +78,6 @@
     "3": {
       "style": {
         "text": "",
-        "stroke": {
-          "color": "#d8d8d8",
-          "width": "1",
-          "pattern": "double"
-        },
         "fill": {
           "color": "#99b3e6"
         }
@@ -102,11 +87,6 @@
     "4": {
       "style": {
         "text": "",
-        "stroke": {
-          "color": "#d8d8d8",
-          "width": "1",
-          "pattern": "dotted"
-        },
         "fill": {
           "color": "#cc8080"
         }

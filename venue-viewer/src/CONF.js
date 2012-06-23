@@ -22,8 +22,7 @@ exports.DEFAULT = {
 
   SEAT_STYLE: {
     text_color: "#000",
-    fill:   { color: "#fff" },
-    stroke: { color: "#000", width: 1 }
+    fill:   { color: "#fff" }
   },
 
   OVERLAYS: {
@@ -42,7 +41,7 @@ exports.DEFAULT = {
     unselectable: {
       text_color: "#888",
       fill:   { color: "#eee" },
-      stroke: { color: "#ccc", width: 1 }
+      stroke: { color: "#ccc" }
     }
   }
 };
