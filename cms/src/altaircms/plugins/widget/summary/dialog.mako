@@ -5,13 +5,17 @@
 <div id="app">
   <div class="title">
     <h1>サマリー</h1>
+    <p>購入画面では、開催期間、販売期間、会場の項目はシステム側で自動で追加されます。
+       そのため、重複して表示されないよう通知をオフにしてください
+    </p>  
   </div>
+  <hr/>
   <div class="content" class="float">
     <div id="create-content">
 	  <table>
 	  	<tr>
 		  <td><label>見出し<input id="label_input" placeholder="ここに見出しを追加" type="text" /></label></td>
-	  	  <td><label>内容<input id="content_input" placeholder="ここに内容を追加" type="text" /></label></td>
+	  	  <td><label>内容<textarea id="content_input" placeholder="ここに内容を追加" type="text" /></textarea></label></td>
 		</tr>
 	  </table>
     </div>
@@ -23,6 +27,7 @@
     <div id="contents">
 	  <button type="button" id="reflesh_button">最初の状態に戻す</button>
 	  <button type="button" url="${request.route_path("api_summary_widget_data_from_db")}" id="load_from_api_button">登録されたデータから内容を取得</button>
+	  <button id="summary_submit" type="button">登録</button>
 	  <table width="100%">
 		<thead>
 		  <tr><th>見出し</th><th>内容</th><th>削除</th></tr>
@@ -32,7 +37,6 @@
 	  </table>
     </div>
   </div>
-  <button id="summary_submit" type="button">登録</button>
 </div>
 <script type="text/javascript">
 <%text>
@@ -97,8 +101,9 @@
             // this.input.bind('blur', _.bind(this.close, this)).val(text);
             // blue is unfocus. todo sample is then saved object
         }, 
-        clearSelf: function(){
+        clearSelf: function(e){
             this.model.destroy();
+            e.preventDefault();
         }, 
         transformEditView: function(){
             this.model.unbind("change", this.render);
@@ -174,25 +179,30 @@
         },
 
         loadData: function(params){
-            var contentlist = this.contentlist
+            var contentlist = this.contentlist;
             _(params).each(function(param){
                 contentlist.create(param);
             });
         }, 
 
-        refleshContent: function(){
+        cleanAll: function(){
            _.each($(this.el).find("#contentlist tr"), function(e){
               var view = $(e).data("view");
               if(!!view){view.clearSelf();}
            });
+        },
+        refleshContent: function(){
+           self.cleanAll();
            this.loadData(this._stored_data);
         },
 
         loadDataFromAPI: function(ev){
            var self = this;
-           // todo: fixme. current url binding is too ad-hoc.
            var url = $(ev.currentTarget).attr("url");
-           $.getJSON(url, {"page": get_page()}).done(function(data){ self.loadData(data); });
+           $.getJSON(url, {"page": get_page()}).done(function(data){
+                self.cleanAll();
+				self.loadData(data); 
+			});
         },
 
         collectData: function(){
