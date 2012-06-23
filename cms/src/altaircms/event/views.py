@@ -12,7 +12,7 @@ from .models import Event
 from .forms import EventForm
 
 from . import helpers as h
-
+from .event_info import get_event_notify_info
 ##
 ## CMS view
 ##
@@ -61,20 +61,6 @@ def event_register(request):
         return HTTPBadRequest(body=json.dumps({u'status':u'error', u'message':unicode(e), "apikey": apikey}))
 
 
-class InfoAppender(object):
-    def __init__(self):
-        self.content = []
-
-    def append(self, name, label, content, convert=lambda x : x):
-        # {"label": u"お問い合わせ先", "name": "contact", "content": u"お問い合わせ先は以下のとおりxxx-xxx-xx"}
-        if content:
-            self.content.append(dict(label=label, name=name, content=convert(content)))
-        return self
-
-        
-
-
-
 @view_config(route_name="api_event_info", request_method="GET", renderer="json")
 def event_info(request):
     apikey = request.headers.get('X-Altair-Authorization', None)
@@ -90,15 +76,9 @@ def event_info(request):
     if event is None:
         return dict(event=[])
     try:
-        appender = InfoAppender()
-        appender.append("performer", u"出演者リスト", event.performers)
-        appender.append("contact", u"お問い合わせ先", event.inquiry_for, lambda s : s.replace("\n", "<br/>"))
-        appender.append("notice", u"注意事項", event.notice, lambda s : s.replace("\n", "<br/>"))
-        return {"event": appender.content}
+        return get_event_notify_info(event)
     except ValueError as e:
         logger.exception(e)
         return HTTPBadRequest(body=json.dumps({u'status':u'error', u'message':unicode(e), "apikey": apikey}))
 
-# チケット引き取り方法
-# お支払い方法
-# 購入可能枚数(文言)
+
