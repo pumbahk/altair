@@ -11,7 +11,7 @@ from altaircms.models import (
     DBSession, Base
 )
 from altaircms.layout.models import Layout
-from altaircms.auth.models import Role
+from altaircms.auth.models import Role, APIKey
 from altaircms.event.models import Event
 from altaircms.auth.models import (
     Client, 
@@ -220,7 +220,7 @@ def detail_layout():
 
 def detail_tickets(event):
     sales_choices = import_symbol("altaircms.seeds.saleskind:SALESKIND_CHOICES")
-    sale_kind,sale_name = sales_choices[0]
+    sale_kind,sale_name = u"normal", u"一般発売"
     sale_name_gen = lambda event, sale_name : u"%s(%s)" % (event.title, sale_name)
     sale = Sale(event=event, name=sale_name_gen(event, sale_name), kind=sale_kind)
     r = []
@@ -228,27 +228,31 @@ def detail_tickets(event):
         Ticket(
                sale=sale, 
                price=30000, 
-               seattype=u"SSA席", 
+               name=u"S席＋駐車場", 
                orderno=1), 
         Ticket(
                sale=sale, 
                price=15000, 
-               seattype=u"SA席", 
+               seattype=u"S席", 
+               name=u"S席", 
                orderno=2), 
         Ticket(
                sale=sale, 
                price=8000, 
                seattype=u"A席", 
+               name=u"A席", 
                orderno=3), 
         Ticket(
                sale=sale, 
                price=5000, 
                seattype=u"B席", 
+               name=u"B席", 
                orderno=4), 
         Ticket(
                sale=sale, 
                price=3000, 
                seattype=u"C席", 
+               name=u"C席", 
                orderno=5)
     ])
 
@@ -262,28 +266,35 @@ def detail_tickets(event):
                sale=sale, 
                price=30003, 
                seattype=u"SSA席", 
+               name=u"S席+駐車場", 
                orderno=1), 
         Ticket(
                sale=sale, 
                price=15003, 
                seattype=u"SA席", 
+               name=u"S席", 
                orderno=2), 
         Ticket(
                sale=sale, 
                price=8003, 
                seattype=u"A席", 
+               name=u"A席", 
                orderno=3), 
         Ticket(
                sale=sale, 
                price=5003, 
                seattype=u"B席", 
+               name=u"B席", 
                orderno=4), 
         Ticket(
                sale=sale, 
                price=3003, 
                seattype=u"C席", 
+               name=u"C席", 
                orderno=5)
     ])
+    for per in event.performances:
+        per.tickets = r
     return r
 
 
@@ -349,7 +360,11 @@ def detail_performances(event):
 
 def detail_event():
     event = Event(title= u"ブルーマングループ IN 東京", 
-                  backend_id=1,  ##todo:バックエンド側のidを保持するはず。ここで直接指定するのはあまりよくない
+                  backend_id=30,  ##todo:バックエンド側のidを保持するはず。ここで直接指定するのはあまりよくない
+                  performers=u"abc, def, ghi, klm", 
+                  notice=u"""年齢制限：3歳以下無料（ただし保護者1名に対し1名まで膝の上で。席が必要な場合はチケットをお買い求め下さい）
+							枚数制限：お一人様4枚""", 
+                  inquiry_for=u"DISK GARAGE 03-5436-9600（平日12:00～19:00）", 
                   event_open=u"2012-12-04", 
                   event_close=u"2013-5-25", 
                   deal_open=u"2013-10-1", 
@@ -409,12 +424,11 @@ def add_detail_main_block_widgets(page, asset):
 
     add_calendar_widget(page, "main", {"calendar_type":"tab"})
     
-    add_ticketlist_widget(page, "main", {"kind": "first_lottery"})
+    add_ticketlist_widget(page, "main", {"kind": "normal", "target_performance": page.pageset.event.performances[0]})
 
     data = {u"items": json.dumps(
             [{"label": u"開催期間",  "content": u"2011年12月4日(日)　開場17時30分　開演18時30分"}, 
              {"label": u"会場",  "content": u"幕張メッセイベントホール"}, 
-             {"label": u"席種・料金（税込）",  "content": u"一般指定　：　6,800円（税込）"}, 
              {"label": u"購入可能枚数",  "content": u"お一人様4枚まで"}, 
              {"label": u"チケット引取り方法",  "content": u"""
 配送のみ　※送料別途630円頂戴いたします。
@@ -1798,6 +1812,8 @@ def add_materials_settings():
         client = client,  ##,
         )
 
+    apikey = APIKey(name="default-key", apikey="456dd7214b00927782479650da0610f2f466412b101ccb10037c42be85165f99")
+    DBSession.add(apikey)
     DBSession.add(debug_user)
     DBSession.add(layout_col2)
     DBSession.add(layout_col3)

@@ -47,7 +47,7 @@ def make_link(title, url):
     """
     return u'<a href="%s">%s</a>' % (url, title)
 
-def nl_to_br(string):
+def nl_to_br(string, rawtext=True):
     return RawText(string.replace("\n", "<br/>"))
 
 WEEK =[u"月", u"火", u"水", u"木", u"金", u"土", u"日"]

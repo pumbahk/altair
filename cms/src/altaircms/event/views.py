@@ -5,13 +5,13 @@ logger = logging.getLogger(__file__)
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPCreated, HTTPForbidden, HTTPBadRequest, HTTPNotFound
 
-from altaircms.models import Sale
+from ..models import Sale
+from ..lib.fanstatic_decorator import with_bootstrap
+
 from .models import Event
-from altaircms.lib.fanstatic_decorator import with_bootstrap
+from .forms import EventForm
 
-from altaircms.event.forms import EventForm
 from . import helpers as h
-
 
 ##
 ## CMS view
@@ -61,11 +61,19 @@ def event_register(request):
         return HTTPBadRequest(body=json.dumps({u'status':u'error', u'message':unicode(e), "apikey": apikey}))
 
 
-def _extra_info(name, caption, content):
-    """
-    {"label": u"お問い合わせ先", "name": "contact", "content": u"お問い合わせ先は以下のとおりxxx-xxx-xx"}
-    """
-    return dict(caption=caption, name=name, content=content)
+class InfoAppender(object):
+    def __init__(self):
+        self.content = []
+
+    def append(self, name, label, content, convert=lambda x : x):
+        # {"label": u"お問い合わせ先", "name": "contact", "content": u"お問い合わせ先は以下のとおりxxx-xxx-xx"}
+        if content:
+            self.content.append(dict(label=label, name=name, content=convert(content)))
+        return self
+
+        
+
+
 
 @view_config(route_name="api_event_info", request_method="GET", renderer="json")
 def event_info(request):
@@ -82,10 +90,15 @@ def event_info(request):
     if event is None:
         return dict(event=[])
     try:
-        return {"event":
-                    [_extra_info("contact", u"お問い合わせ先", h.base.nl_to_br(event.inquiry_for)), 
-                     _extra_info("notice", u"注意事項", h.base.nl_to_br(event.notice)), 
-                     _extra_info("performer", u"出演者リスト", event.performers)]}
+        appender = InfoAppender()
+        appender.append("performer", u"出演者リスト", event.performers)
+        appender.append("contact", u"お問い合わせ先", event.inquiry_for, lambda s : s.replace("\n", "<br/>"))
+        appender.append("notice", u"注意事項", event.notice, lambda s : s.replace("\n", "<br/>"))
+        return {"event": appender.content}
     except ValueError as e:
         logger.exception(e)
         return HTTPBadRequest(body=json.dumps({u'status':u'error', u'message':unicode(e), "apikey": apikey}))
+
+# チケット引き取り方法
+# お支払い方法
+# 購入可能枚数(文言)
