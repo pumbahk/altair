@@ -96,7 +96,7 @@ shipping = cart.shipping_address
 %>
 			<div class="confirmBox">
 				<div class="confirmBoxInner">
-					<h3>決済情報</h3>
+                    <h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_payment.gif')}" alt="お支払い" width="78" height="30" /></h2>
                     ${h.render_payment_confirm_viewlet(request, cart)}
                 </div>
             </div>
