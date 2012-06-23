@@ -1163,14 +1163,14 @@ def build_event_datum(organization, title):
         build_sales_segment_datum(
             organization,
             u'先行',
-            datetime.combine(event_date, time(10, 0)) - relativedelta(months=-3),
-            datetime.combine(event_date, time(0, 0)) - relativedelta(months=-2, seconds=-1)
+            datetime.combine(event_date, time(10, 0)) + relativedelta(months=-3),
+            datetime.combine(event_date, time(0, 0)) + relativedelta(months=-2, seconds=-1)
             ),
         build_sales_segment_datum(
             organization,
             u'一般',
-            datetime.combine(event_date, time(10, 0)) - relativedelta(months=2),
-            datetime.combine(event_date, time(0, 0)) - relativedelta(seconds=-1)
+            datetime.combine(event_date, time(10, 0)) + relativedelta(months=-2),
+            datetime.combine(event_date, time(0, 0)) + relativedelta(seconds=-1)
             )
         ]
     stock_holder_data = [
