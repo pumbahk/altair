@@ -47,7 +47,8 @@ widget.configure({
     };
 
     var collect_data = function(we, choiced_elt){
-        return {"items": JSON.stringify($("#app").data("appview").collectData())};
+        return {"items": JSON.stringify($("#app").data("appview").collectData()), 
+                "use_notify": !!($(we.dialog).find("#use_notify").attr("checked"))};
     };
     return widget.include("summary", {
         load_page: load_page, 

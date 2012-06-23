@@ -1,20 +1,24 @@
 from pyramid.view import view_config
 from .helpers import _items_from_page
 import logging
+from altaircms.page.models import Page
 
 class SummaryWidgetView(object):
     def __init__(self, request):
         self.request = request
 
     def _create_or_update(self):
+        """ argument data = [items, use_notify]
+        """
         page_id = self.request.json_body["page_id"]
-        if self.request.json_body["data"].get("create_by_page"):
-            items = self.request.context.get_items(page_id)
+        items = self.request.json_body["data"]["items"]
+        if self.request.json_body["data"]["use_notify"]:
+            bound_event_id = Page.query.filter_by(id=page_id).with_entities("event_id").scalar()
         else:
-            items = self.request.json_body["data"]["items"]
+            bound_event_id = None
         context = self.request.context
         widget = context.get_widget(self.request.json_body.get("pk"))
-        widget = context.update_data(widget, page_id=page_id, items=items)
+        widget = context.update_data(widget, page_id=page_id, items=items, bound_event_id=bound_event_id)
         context.add(widget, flush=True)
 
         r = self.request.json_body.copy()

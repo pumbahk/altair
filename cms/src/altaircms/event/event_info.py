@@ -68,9 +68,9 @@ class SummaryWidgetGetEventInfoAdapter(object):
         return {"event": appender.content}    
 
 def get_event_notify_info(event):
-    ## 本当はここで、詳細ページに対応するページを選択したい
-    pages = Page.query.filter(Page.event_id==event.id).with_entities(Page.id)
-    summary_widget = SummaryWidget.query.filter(SummaryWidget.page_id.in_(pages)).first()
+    ## summary widgetで「購入ページのイベント詳細として利用する」の欄を有効にしたwidgetが購入画面(カート)
+    ## のイベント詳細に利用される
+    summary_widget = SummaryWidget.query.filter(bound_event_id=event.id).first()
 
     ## 本当はregistryのadaptersから引っ張る
     if summary_widget:

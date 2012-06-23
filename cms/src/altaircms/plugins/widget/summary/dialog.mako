@@ -5,12 +5,15 @@
 <div id="app">
   <div class="title">
     <h1>サマリー</h1>
-    <p>購入画面では、開催期間、販売期間、会場の項目はシステム側で自動で追加されます。
-       そのため、重複して表示されないよう通知をオフにしてください
+    <p>
+	  (外部のシステムに通知すること必要がない場合この文章と、通知に関する事柄は無視して構いません)
+	  購入画面では、開催期間、販売期間、会場の項目はシステム側で自動で追加されます。
+      そのため、重複して表示されないよう通知をオフにしてください
     </p>  
   </div>
   <hr/>
   <div class="content" class="float">
+	<p>購入ページのイベント詳細として利用する<input id="use_notify" type="checkbox"/ ${"checked" if widget.bound_event_id else ""|n}></p>
     <div id="create-content">
    <table class="table">
            <tr>
