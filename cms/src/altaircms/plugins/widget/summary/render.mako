@@ -19,7 +19,6 @@
 <div class="summary">
   <dl>
 	% for item in items:
-	  ##<dt ${item["attr"]|n}>${item["label"]}</td>
       <dt>${item["label"]}</td>
       <dd>${h.base.nl_to_br(item["content"])}</dd>
     % endfor

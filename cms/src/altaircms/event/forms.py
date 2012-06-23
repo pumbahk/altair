@@ -13,6 +13,8 @@ class EventForm(Form):
     inquiry_for = fields.TextField(label=u'問い合わせ先', widget=widgets.TextArea())
     notice = fields.TextField(label=u"説明／注意事項", widget=widgets.TextArea())
     performers = fields.TextField(label=u"出演者リスト", widget=widgets.TextArea())
+    ticket_pickup = fields.TextField(label=u"チケット引き取り方法", widget=widgets.TextArea())
+    ticket_payment = fields.TextField(label=u"支払い方法", widget=widgets.TextArea())
     event_open = fields.DateTimeField(label=u'イベント開始日', validators=[required_field()])
     event_close = fields.DateTimeField(label=u'イベント終了日', validators=[required_field()])
     deal_open = fields.DateTimeField(label=u'販売開始日', validators=[required_field()])
@@ -38,7 +40,7 @@ class EventForm(Form):
 
     __display_fields__ = [u"title", u"subtitle", 
                           u"backend_id", 
-                          u"description", u"performers", u"inquiry_for", "notice", 
+                          u"description", u"performers", u"inquiry_for", "notice", "ticket_payment", "ticket_pickup", 
                           u"event_open", u"event_close", 
                           u"deal_open", u"deal_close", 
                           u"is_searchable"]

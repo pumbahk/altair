@@ -1,5 +1,6 @@
 from pyramid.view import view_config
 from .helpers import _items_from_page
+import logging
 
 class SummaryWidgetView(object):
     def __init__(self, request):
@@ -46,4 +47,5 @@ class SummaryWidgetView(object):
 @view_config(route_name="api_summary_widget_data_from_db", renderer="json", request_method="GET")
 def api_summary_widget_initial_data(context, request):
     page_id = request.GET["page"]
+    logging.debug("*api* summary widget items get from db (page_id=%s)" % page_id)
     return _items_from_page(context._get_page(page_id))

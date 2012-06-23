@@ -116,35 +116,19 @@
 						<td id="venue"> ${", ".join(event['venues'])}</td>
 					</tr>
 					<tr>
+						<th scope="row">販売期間</th>
+						<td>
+						  ${event['sales_start_on']}
+						  ${event['sales_end_on']}
+						</td>
+					</tr>
+					<tr>
 						<th scope="row">席種・料金（税込）</th>
 						<td id="pricelist">
 %for p in event['product']:
 ${p.name} ： ${h.format_number(p.price)}円 <br/>
 %endfor
 </td>
-					</tr>
-					<tr>
-						<th scope="row">購入可能枚数</th>
-						<td>お一人様4枚まで</td>
-					</tr>
-					<tr>
-						<th scope="row">チケット引取り方法</th>
-						<td>配送のみ　※送料別途630円頂戴いたします。<br />
-						<br />
-						【発送日のご案内】<br />
-						≪10月31日までに購入されたお客様≫ご入金確認後、11月7日以降、随時発送いたします。<br />
-						≪11月5日以降に購入されたお客様≫ご入金確認後、11月28日以降、随時発送いたします。</td>
-					</tr>
-					<tr>
-						<th scope="row">お支払い方法</th>
-						<td>クレジットカード決済・楽天バンク決済</td>
-					</tr>
-					<tr>
-						<th scope="row">販売期間</th>
-						<td>
-						  ${event['sales_start_on']}
-						  ${event['sales_end_on']}
-						</td>
 					</tr>
 					%for v in event_extra_info:
 					<tr>

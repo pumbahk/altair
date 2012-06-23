@@ -5,14 +5,14 @@ logger = logging.getLogger(__file__)
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPCreated, HTTPForbidden, HTTPBadRequest, HTTPNotFound
 
-from altaircms.models import Sale
+from ..models import Sale
+from ..lib.fanstatic_decorator import with_bootstrap
+
 from .models import Event
-from altaircms.lib.fanstatic_decorator import with_bootstrap
+from .forms import EventForm
 
-from altaircms.event.forms import EventForm
 from . import helpers as h
-
-
+from .event_info import get_event_notify_info
 ##
 ## CMS view
 ##
@@ -61,12 +61,6 @@ def event_register(request):
         return HTTPBadRequest(body=json.dumps({u'status':u'error', u'message':unicode(e), "apikey": apikey}))
 
 
-def _extra_info(name, caption, content):
-    """
-    {"label": u"お問い合わせ先", "name": "contact", "content": u"お問い合わせ先は以下のとおりxxx-xxx-xx"}
-    """
-    return dict(caption=caption, name=name, content=content)
-
 @view_config(route_name="api_event_info", request_method="GET", renderer="json")
 def event_info(request):
     apikey = request.headers.get('X-Altair-Authorization', None)
@@ -76,16 +70,14 @@ def event_info(request):
         return HTTPForbidden(body=json.dumps({u'status':u'error', u'message':u'access denined'}))
 
     backend_id = request.matchdict["event_id"]
-    logger.debug("*api* event info: apikey=%s event.id=%s (backend)" % (apikey, backend_id))
+    logger.info("*api* event info: apikey=%s event.id=%s (backend)" % (apikey, backend_id))
     event = Event.query.filter_by(backend_id=backend_id).first()
 
     if event is None:
         return dict(event=[])
     try:
-        return {"event":
-                    [_extra_info("contact", u"お問い合わせ先", h.base.nl_to_br(event.inquiry_for)), 
-                     _extra_info("notice", u"注意事項", h.base.nl_to_br(event.notice)), 
-                     _extra_info("performer", u"出演者リスト", event.performers)]}
+        return get_event_notify_info(event)
     except ValueError as e:
         logger.exception(e)
         return HTTPBadRequest(body=json.dumps({u'status':u'error', u'message':unicode(e), "apikey": apikey}))
+

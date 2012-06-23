@@ -74,14 +74,40 @@
 <h3>配下のページ一覧</h3>
 <div class="box">
 <table class="table">
+  <thead>
+	<tr>
+	  <th>preview</th><th>ページセット</th><th>ページ</th><th>公開開始</th><th>公開終了</th>
+	</tr>
+  </thead>
   <tbody>
     %for pageset in event.pagesets:
+<% pages = pageset.pages %>
     <tr>
-      <td>
-        <a href="${request.route_path('pageset', pageset_id=pageset.id)}">${pageset.name}</a>
+	  <td rowspan="${len(pages)}">
         <a class="btn btn-small" href="${h.link.to_preview_page_from_pageset(request,pageset)}" target="_blank"><i class="icon-eye-open"> </i> preview</a>
+	  </td>
+      <td rowspan="${len(pages)}">
+        <a href="${request.route_path('pageset', pageset_id=pageset.id)}">${pageset.name}</a>
       </td>
-   </tr>
+
+	  %if len(pages) < 1:
+	</tr>
+	  %else:
+      <td>
+        <a href="${request.route_path('page_edit', event_id=event.id, page_id=pages[0].id)}">${pages[0].name}</a>
+      </td>
+	  <td>${pages[0].publish_begin}</td>
+	  <td>${pages[0].publish_end}</td>
+      %for page in pageset.pages[1:]:
+      <tr>
+		<td>
+          <a href="${request.route_path('page_edit', event_id=event.id, page_id=page.id)}">${page.name}</a>
+		</td>
+		<td>${page.publish_begin}</td>
+		<td>${page.publish_end}</td>
+	  </tr>
+     %endfor
+	 %endif
    %endfor
   </tbody>
 </table>

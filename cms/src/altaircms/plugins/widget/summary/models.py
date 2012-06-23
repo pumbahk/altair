@@ -42,8 +42,6 @@ from .helpers import _items_from_page
 ## ここではattributeを返しているけれど、これをりようできるようになっていない
 """
 todo:
-   classを指定する方法
-   登録した文字列を編集する方法
    改行への対応
 """
 
@@ -61,8 +59,8 @@ class SummaryWidget(Widget):
     """
     items attribute structure::
 
-       [{label: "公演期間", content: u"2012年06月03日(日) 〜 07月16日(月) (公演カレンダーを見る)", attr="class='performance_period'"}, 
-        {label: "説明／注意事項", content: u"※未就学児童のご入場はお断りいたします。", attr="class='notice'"}]
+       [{label: "公演期間", content: u"2012年06月03日(日) 〜 07月16日(月) (公演カレンダーを見る)", name="performance_period", notify=False}, 
+        {label: "説明／注意事項", content: u"※未就学児童のご入場はお断りいたします。", name="notice", notify=True}]
     """
 
     def merge_settings(self, bname, bsettings):
