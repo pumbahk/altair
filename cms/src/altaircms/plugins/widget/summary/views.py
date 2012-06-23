@@ -12,7 +12,7 @@ class SummaryWidgetView(object):
         """
         page_id = self.request.json_body["page_id"]
         items = self.request.json_body["data"]["items"]
-        if self.request.json_body["data"]["use_notify"]:
+        if self.request.json_body["data"].get("use_notify"):
             bound_event_id = Page.query.filter_by(id=page_id).with_entities("event_id").scalar()
         else:
             bound_event_id = None

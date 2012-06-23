@@ -70,10 +70,11 @@ class SummaryWidgetGetEventInfoAdapter(object):
 def get_event_notify_info(event):
     ## summary widgetで「購入ページのイベント詳細として利用する」の欄を有効にしたwidgetが購入画面(カート)
     ## のイベント詳細に利用される
-    summary_widget = SummaryWidget.query.filter(bound_event_id=event.id).first()
+    summary_widget = SummaryWidget.query.filter_by(bound_event=event).first()
 
     ## 本当はregistryのadaptersから引っ張る
     if summary_widget:
         return SummaryWidgetGetEventInfoAdapter(summary_widget).get_event_info()
     else:
         return EventGetEventInfoAdapter(event).get_event_info()
+

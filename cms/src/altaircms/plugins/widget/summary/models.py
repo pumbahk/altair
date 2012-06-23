@@ -56,7 +56,7 @@ class SummaryWidget(Widget):
 
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
     bound_event_id = sa.Column(sa.Integer, sa.ForeignKey("event.id"))
-
+    bound_event = orm.relationship("Event")
     items = sa.Column(sa.UnicodeText) #json string
     """
     items attribute structure::
