@@ -19,26 +19,26 @@
                    <td><label>購入ページに通知する<input id="notify_input"  type="checkbox" checked="checked"/></label></td>
                  <td><button id="additem_button" type="button" class="btn">追加する</button></td>
           </tr>
-	  </table>
+      </table>
     </div>
-	<span class="clear"/>
+    <span class="clear"/>
 
     <h3>現在保存されている内容</h3>
     <hr/>
 
     <div id="contents">
-	  <button class="btn" type="button" id="reflesh_button">最初の状態に戻す</button>
-	  <button class="btn" type="button" url="${request.route_path("api_summary_widget_data_from_db")}" id="load_from_api_button">登録されたデータから内容を取得</button>
-	  <button id="removeall_button" type="button" class="btn">全部削除</button>
-	  <button id="summary_submit" type="button" class="btn btn-primary">登録</button>
+      <button class="btn" type="button" id="reflesh_button">最初の状態に戻す</button>
+      <button class="btn" type="button" url="${request.route_path("api_summary_widget_data_from_db")}" id="load_from_api_button">登録されたデータから内容を取得</button>
+      <button id="removeall_button" type="button" class="btn">全部削除</button>
+      <button id="summary_submit" type="button" class="btn btn-primary">登録</button>
 
-	  <table width="100%">
-		<thead>
-		  <tr><th>見出し</th><th>内容</th><th>通知</th><th>削除</th></tr>
-		</thead>
-		<tbody id="contentlist">
-		</tbody>
-	  </table>
+      <table id="item-result"width="100%">
+        <thead>
+          <tr><th>見出し</th><th>内容</th><th>通知</th><th>削除</th></tr>
+        </thead>
+        <tbody id="contentlist">
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
@@ -100,7 +100,7 @@
         }, 
         
         reDraw: function(me){
-            $(this.el).css("display","auto");
+            $(this.el).css("display","table-row");
             this.setContent();
         },
         setContent: function(){
@@ -199,6 +199,17 @@
             _(params).each(function(param){
                 contentlist.create(param);
             });
+
+            $("#item-result tbody").sortable({
+                delay: 150,
+                helper: function(e, ui){
+                    ui.children().each(function() {
+                        $(this).width($(this).width());
+                    });
+                    return ui;
+                }
+            }).disableSelection();
+
         }, 
 
         removeAll: function(){
@@ -215,15 +226,15 @@
            var url = $(ev.currentTarget).attr("url");
            $.getJSON(url, {"page": get_page()}).done(function(data){
                 $(self.el).find("#contentlist").empty();
-				self.loadData(data); 
-			});
+                self.loadData(data); 
+            });
         },
 
         collectData: function(){
-			var get_text_or_val = function(e,expr){ 
-			  var e = e.find(expr);
-			  return e.text() || e.val();
-			}
+            var get_text_or_val = function(e,expr){ 
+              var e = e.find(expr);
+              return e.text() || e.val();
+            }
             return _($(this.el).find("#contentlist tr")).map(function(e){
                 var e = $(e);
                 return {
