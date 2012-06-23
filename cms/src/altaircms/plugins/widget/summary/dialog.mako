@@ -17,7 +17,7 @@
                  <td><label>見出し<input id="label_input" placeholder="ここに見出しを追加" type="text" /></label></td>
                    <td><label>内容<textarea width="300px" id="content_input" placeholder="ここに内容を追加" type="text" /></textarea></label></td>
                    <td><label>購入ページに通知する<input id="notify_input"  type="checkbox" checked="checked"/></label></td>
-                 <td><button id="additem_button">追加する</button></td>
+                 <td><button id="additem_button" type="button" class="btn">追加する</button></td>
           </tr>
 	  </table>
     </div>
@@ -27,12 +27,14 @@
     <hr/>
 
     <div id="contents">
-	  <button type="button" id="reflesh_button">最初の状態に戻す</button>
-	  <button type="button" url="${request.route_path("api_summary_widget_data_from_db")}" id="load_from_api_button">登録されたデータから内容を取得</button>
-	  <button id="summary_submit" type="button">登録</button>
+	  <button class="btn" type="button" id="reflesh_button">最初の状態に戻す</button>
+	  <button class="btn" type="button" url="${request.route_path("api_summary_widget_data_from_db")}" id="load_from_api_button">登録されたデータから内容を取得</button>
+	  <button id="removeall_button" type="button" class="btn">全部削除</button>
+	  <button id="summary_submit" type="button" class="btn btn-primary">登録</button>
+
 	  <table width="100%">
 		<thead>
-		  <tr><th>見出し</th><th>内容</th><th>削除</th></tr>
+		  <tr><th>見出し</th><th>内容</th><th>通知</th><th>削除</th></tr>
 		</thead>
 		<tbody id="contentlist">
 		</tbody>
@@ -75,6 +77,7 @@
         template: _.template([
             '<td class="label"></td>', 
             '<td class="content"></td>', 
+            '<td><input type="checkbox" class="notify"/></td>', 
             '<td><a href="#" class="remove">remove</a></td>', 
         ].join("\n")), 
 
@@ -100,6 +103,9 @@
 
             var content = this.model.get("content");
             this.$(".content").text(content);
+            if(this.model.get("notify")){
+              this.$(".notify").attr("checked","checked");
+            }
             // this.input.bind('blur', _.bind(this.close, this)).val(text);
             // blue is unfocus. todo sample is then saved object
         }, 
@@ -165,7 +171,8 @@
         events: {
             "click #additem_button": "createItem",
             "click #reflesh_button": "refleshContent",
-            "click #load_from_api_button": "loadDataFromAPI"
+            "click #load_from_api_button": "loadDataFromAPI",
+            "click #removeall_button": "removeAll"
         }, 
         
         addOne: function(item){
@@ -187,14 +194,12 @@
             });
         }, 
 
-        cleanAll: function(){
-           _.each($(this.el).find("#contentlist tr"), function(e){
-              var view = $(e).data("view");
-              if(!!view){view.clearSelf();}
-           });
+        removeAll: function(){
+           $(this.el).find("#contentlist").empty();
         },
+
         refleshContent: function(){
-           self.cleanAll();
+           $(this.el).find("#contentlist").empty();
            this.loadData(this._stored_data);
         },
 
@@ -202,7 +207,7 @@
            var self = this;
            var url = $(ev.currentTarget).attr("url");
            $.getJSON(url, {"page": get_page()}).done(function(data){
-                self.cleanAll();
+                $(self.el).find("#contentlist").empty();
 				self.loadData(data); 
 			});
         },
@@ -216,7 +221,8 @@
                 var e = $(e);
                 return {
                     label: get_text_or_val(e, ".label"),
-                    content: get_text_or_val(e, ".content")
+                    content: get_text_or_val(e, ".content"),
+                    notify: !!e.find(".notify").attr("checked")
                 };
             });
         }, 
@@ -224,10 +230,10 @@
         createItem: function(e){
             var label = this.label_input.val();
             var content = this.content_input.val();
-            var notify = this.notify_input.val();
+            var notify = !!this.notify_input.attr("checked");
             if (!label || !content) return;
 
-            this.contentlist.create({label: label, content: content});
+            this.contentlist.create({label: label, content: content, notify: notify});
             this.label_input.val("");
             this.content_input.val("");
         }, 
@@ -235,7 +241,7 @@
 </%text>
   var root =  $("#app");
   var appview = new AppView({el: root}); 
-  root.data("appview",appview);
+  root.data("appview", appview);
   appview.loadInitialData(${items|n}); <%doc> items is mako </%doc>
 })();
 </script>

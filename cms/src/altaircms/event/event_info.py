@@ -63,7 +63,8 @@ class SummaryWidgetGetEventInfoAdapter(object):
 
         items = json.loads(self.target.items)
         for v in items:
-            appender.append(v.get("name", u""), v["label"], v["content"], nl_to_br)
+            if v.get("notify"):
+                appender.append(v.get("name", u""), v["label"], v["content"], nl_to_br)
         return {"event": appender.content}    
 
 def get_event_notify_info(event):

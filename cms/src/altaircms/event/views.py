@@ -64,12 +64,14 @@ def event_register(request):
 @view_config(route_name="api_event_info", request_method="GET", renderer="json")
 def event_info(request):
     apikey = request.headers.get('X-Altair-Authorization', None)
+    backend_id = request.matchdict["event_id"]
+
     if apikey is None:
         return HTTPForbidden("")
     if not h.validate_apikey(request, apikey):
+        logger.warn("*api* event info: invalid api key %s (backend event id=%s)" % (apikey, backend_id))
         return HTTPForbidden(body=json.dumps({u'status':u'error', u'message':u'access denined'}))
 
-    backend_id = request.matchdict["event_id"]
     logger.info("*api* event info: apikey=%s event.id=%s (backend)" % (apikey, backend_id))
     event = Event.query.filter_by(backend_id=backend_id).first()
 
