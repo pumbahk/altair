@@ -63,6 +63,8 @@ Seat.prototype.init = function Seat_init(id, shape, meta, parent, events) {
     for (var i in events) {
       (function(i) {
         self.events[i] = function(evt) {
+          if (self.parent.dragging || self.parent.animating)
+            return;
           events[i].apply(self, arguments);
         };
       }).call(this, i);

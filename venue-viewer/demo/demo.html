@@ -31,6 +31,7 @@
   <h1>Venue Viewer Demo</h1>
   <div class="ui-corner-all ui-toolbar">
     <span class="ui-buttonset">
+      <input type="radio" name="function" value="select" class="ui-button ui-icon-primary-arrow-4 action-move" id="toolbar-action-move" checked="checked" /><label for="toolbar-action-move">Move</label>
       <input type="radio" name="function" value="select" class="ui-button ui-icon-primary-arrowthick-1-ne action-select-one" id="toolbar-action-select-one" checked="checked" /><label for="toolbar-action-select-one">Select One</label>
       <input type="radio" name="function" value="select" class="ui-button ui-icon-primary-calculator action-select-multiple" id="toolbar-action-select-multiple" /><label for="toolbar-action-select-multiple">Select Multiple</label>
       <input type="radio" name="function" value="zoomin" class="ui-button ui-icon-primary-zoomin action-zoomin" id="toolbar-action-zoomin" /><label for="toolbar-action-zoomin">Zoom-in</label>
@@ -112,6 +113,9 @@ $(".action-zoomin").click(function () {
 });
 $(".action-zoomout").click(function () {
   venue.venueviewer("uimode", "zoomout");
+});
+$(".action-move").click(function () {
+  venue.venueviewer("uimode", "move");
 });
 $(".action-select-one").click(function () {
   venue.venueviewer("uimode", "select1");

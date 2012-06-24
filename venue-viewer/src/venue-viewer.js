@@ -218,6 +218,7 @@
     this.selection = {};
     this.highlighted = {};
     this._adjacencyLength = 1;
+    this.animating = false;
     this.addKeyEvent();
     this.rubberBand = new Fashion.Rect({
       position: {x: 0, y: 0},
@@ -428,20 +429,78 @@
       this.drawable.removeEvent(["mousedown", "mouseup", "mousemove"]);
 
       switch(type) {
+      case 'move':
+        var mousedown = false, scrollPos = null;
+        this.drawable.addEvent({
+          mousedown: function (evt) {
+            if (self.animating)
+              return;
+            mousedown = true;
+            scrollPos = self.drawable.scrollPosition();
+            self.startPos = evt.logicalPosition;
+          },
+
+          mouseup: function (evt) {
+            if (self.animating)
+              return;
+            mousedown = false;
+            if (self.dragging) {
+              self.drawable.releaseMouse();
+              self.dragging = false;
+            } else {
+              var logicalViewportInnerSize = self.drawable._inverse_transform.apply(self.drawable.viewportInnerSize());
+              var halfOfLogicalViewportInnerSize = {
+                x: logicalViewportInnerSize.x / 2,
+                y: logicalViewportInnerSize.y / 2
+              };
+              self.scrollTo(
+                Fashion._lib.subtractPoint(
+                  evt.logicalPosition,
+                  halfOfLogicalViewportInnerSize));
+            }
+          },
+
+          mousemove: function (evt) {
+            if (self.animating)
+              return;
+            if (!self.dragging) {
+              if (mousedown) {
+                self.dragging = true;  
+                self.drawable.captureMouse();
+              } else {
+                return;
+              }
+            }
+            var newScrollPos = Fashion._lib.subtractPoint(
+              scrollPos,
+              Fashion._lib.subtractPoint(
+                evt.logicalPosition,
+                self.startPos));
+            scrollPos = self.drawable.scrollPosition(newScrollPos);
+          }
+        });
+        break; 
+
       case 'select1':
         break;
 
       case 'select':
         this.drawable.addEvent({
           mousedown: function(evt) {
+            if (self.animating)
+              return;
             self.startPos = evt.logicalPosition;
             self.rubberBand.position({x: self.startPos.x, y: self.startPos.y});
             self.rubberBand.size({x: 0, y: 0});
             self.drawable.draw(self.rubberBand);
             self.dragging = true;
+            self.drawable.captureMouse();
           },
 
           mouseup: function(evt) {
+            if (self.animating)
+              return;
+            self.drawable.releaseMouse();
             self.dragging = false;
             var selection = []; 
             var hitTest = util.makeHitTester(self.rubberBand);
@@ -461,6 +520,8 @@
           },
 
           mousemove: function(evt) {
+            if (self.animating)
+              return;
             if (self.dragging) {
               var pos = evt.logicalPosition;
               var w = Math.abs(pos.x - self.startPos.x);
@@ -533,6 +594,40 @@
       this._adjacencyLength = value;
     }
     return this._adjacencyLength;
+  };
+
+  VenueViewer.prototype.scrollTo = function VenueViewer_scrollTo(leftTopCorner) {
+    if (this.animating)
+      return;
+    var scrollPos = this.drawable.scrollPosition();
+    leftTopCorner = { x: leftTopCorner.x, y: leftTopCorner.y };
+    var contentSize = this.drawable.contentSize();
+    var rightBottomCorner = Fashion._lib.addPoint(
+      leftTopCorner,
+      this.drawable._inverse_transform.apply(
+        this.drawable.viewportInnerSize()));
+    if (rightBottomCorner.x > contentSize.x)
+      leftTopCorner.x += contentSize.x - rightBottomCorner.x;
+    if (rightBottomCorner.y > contentSize.y)
+      leftTopCorner.y += contentSize.y - rightBottomCorner.y;
+    leftTopCorner.x = Math.max(leftTopCorner.x, 0);
+    leftTopCorner.y = Math.max(leftTopCorner.y, 0);
+
+    this.animating = true;
+    var self = this;
+    var t = setInterval(function () {
+      var delta = Fashion._lib.subtractPoint(
+        leftTopCorner,
+        scrollPos);
+      if (Math.sqrt(delta.x * delta.x + delta.y * delta.y) < 1) {
+        clearInterval(t);
+        self.animating = false;
+        return;
+      }
+      delta = { x: delta.x / 2, y: delta.y / 2 };
+      scrollPos = Fashion._lib.addPoint(scrollPos, delta);
+      self.drawable.scrollPosition(scrollPos);
+    }, 50);
   };
 
   $.fn.venueviewer = function (options) {
