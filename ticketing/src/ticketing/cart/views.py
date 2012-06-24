@@ -101,6 +101,7 @@ class IndexView(object):
             
         data = dict(seat_types=[
                 dict(id=s.id, name=s.name,
+                    style=s.style,
                     products_url=self.request.route_url('cart.products',
                         event_id=event_id, performance_id=performance_id, seat_type_id=s.id),
                     )

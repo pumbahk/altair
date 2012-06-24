@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
 <head>
@@ -17,7 +16,7 @@
 
 <style type="text/css">
 .modal {
-  font-size: 150%;
+	font-size: 150%;
 }
 </style>
 
@@ -39,7 +38,7 @@
 	<!-- ========== main ========== -->
 	<div id="main">
 		<h1><img src="${request.static_url('ticketing.cart:static/img/settlement/title_settlement.gif')}" alt="チケット購入" width="950" height="40" /></h1>
-        ${h.get_nickname(request)} さん
+				${h.get_nickname(request)} さん
 		<h2 id="ticketName">${event['title']}</h2>
 		<ul id="ticketIcon">
 			<li><img src="${request.static_url('ticketing.cart:static/img/detail/icon_select.gif')}" alt="座席選択可" width="80" height="30" /></li>
@@ -54,13 +53,15 @@
 					<table summary="チケット購入の絞り込み">
 						<tr>
 							<th>日程</th>
-							<td><select name="select" id="date-select">
-							    %for d in dates:
-							    <option>${d}</option>
-							    %endfor
-							</select></td>
+							<td>
+								<select name="select" id="date-select">
+								%for d in dates:
+									<option>${d}</option>
+								%endfor
+								</select>
+							</td>
 						</tr>
-						<tr>
+						<tr id="settlementSelectEnd">
 							<th>会場</th>
 							<td><select name="select2" id="venue-select">
 								<option>○○○○</option>
@@ -70,78 +71,135 @@
 				</div>
 			</div>
 		</form>
-		<div class="settlementBox2">
-		  <div class="settlementBoxInner2">
-			<h2 id="hallName"><span><div id="performanceDate" style="display: inline">12月3日 14:00</div><div id="performanceVenue" style="display: inline">幕張メッセイベントホール</div></span></h2>
-			<div id="selectSeat" style="float:left; width: 390px;" class="forcus">
-					<dl>
-					    <dt><h3 class="lead">席種をお選びください</h3></dt>
-						<dd>
-							<ul id="seat-types-list">
+		<div id="settlementOperation" class="settlementBox2">
+			<div class="settlementBoxInner2">
+				<h2 id="hallName">
+					<span id="performanceDate">12月3日 14:00</span>
+					<span id="performanceVenue">幕張メッセイベントホール</span>
+				</h2>
+				<div class="settlementOperationPaneInner">
+					<div id="selectSeat" class="focused">
+						<h3 class="lead">席種をお選びください</h3>
+            <div class="seatListContainer main">
+              <ul id="seatTypeList">
+              </ul>
+            </div>
+						<script type="text/javascript">
+							(function () {
+								var selectSeat = $('#selectSeat');
+								var ul = selectSeat.find('.seatListContainer ul');
+								var selected = ul.find("li.selected");
+								var ulTopOffset = ul.parent()[0].offsetTop;
+								var arrow = null, arrowAbsPos = null;
+								function updateArrowPos() {
+									if (arrow) {
+										var scrollY = ul.parent().scrollTop();
+										arrow.css({
+											right: "0px",
+											top: arrowAbsPos - scrollY + "px"
+										});
+									}
+								}
+								ul.parent().scroll(updateArrowPos);
+								function select(it) {
+									if (!it) {
+										if (selected)
+											selected.removeClass('selected');
+										if (arrow)
+											arrow.remove();
+										selected = arrow = null;
+										return;
+									}
+									if (!it.hasClass('selected')) {
+										selected.removeClass('selected');
+										it.addClass('selected');
+										selected = it;
+										arrowAbsPos = it[0].offsetTop + ulTopOffset;
+										if (!arrow) {
+											arrow = $('<div></div>')
+												.addClass("arrow")
+												.appendTo(selectSeat);
+										}
+										updateArrowPos();
+									}
+                  var radio = it.find(':radio');
+                  if (radio.length) {
+                    radio[0].checked = true;
+                    radio.change();
+                  }
+								}
+								ul.delegate('li', 'click', function () {
+									select($(this));
+								});
+								ul.find("li:even").addClass("seatEven");
+								ul.find("li:odd").addClass("seatOdd");
+							})();
+						</script>
+					</div>
+					<div id="selectBuy" class="blur">
+						<h3 class="lead">購入枚数、購入方法をお選びください</h3>
+						<form id="order-form" name="form2" method="post" action="" class="main">
+							<input type="hidden" name="performance_id" id="current-performance-id"/>
+							<dl>
+								<dt id="payment-seat-type"></dt>
+								<dd>
+									<table summary="チケット枚数選択" id="payment-seat-products">
+									</table>
+								</dd>
+							</dl>
+<!--
+							<ul>
+								<li><a href="#"><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_select_buy.gif')}" alt="座席を選んで購入" width="236" height="46" /></a></li>
 							</ul>
-						</dd>
-					</dl>
-				</div>
-				<div id="selectBuy">
-					<form id="order-form" name="form2" method="post" action="">
-                        <input type="hidden" name="performance_id" id="current-performance-id"/>
-						<h3 class="lead" style="font-size:10.5pt">購入枚数、購入方法をお選びください</h3>
-						<dl>
-							<dt id="payment-seat-type"></dt>
-							<dd>
-								<table summary="チケット枚数選択" id="payment-seat-products">
-								</table>
-							</dd>
-						</dl>
-						<ul>
-<!--
-							<li><a href="#"><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_select_buy.gif')}" alt="座席を選んで購入" width="236" height="46" /></a></li>
 -->
-							<li><a href="javascript:void(0);" id="btn-order"><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_entrust_buy.gif')}" alt="おまかせで購入" width="236" height="46" /></a></li>
-						</ul>
-<!--
-						<ul>
-							<li><a href="#"><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_redo.gif')}" alt="席種を選択しなおす" width="236" height="46" /></a></li>
-						</ul>
--->
-					</form>
+							<ul>
+								<li><a href="javascript:void(0);" id="btn-order"><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_entrust_buy.gif')}" alt="おまかせで購入" width="236" height="46" /></a></li>
+							</ul>
+	<!--
+							<ul>
+								<li><a href="#"><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_redo.gif')}" alt="席種を選択しなおす" width="236" height="46" /></a></li>
+							</ul>
+	-->
+						</form>
+					</div>
 				</div>
 			</div>
-			<div style="clear:both;"></div>
 		</div>
-		<div class="settlementBox2" id="settlementEventDetail">
+		<div class="settlementBox2" id="settlementEventDetail" style="clear:both">
 			<div class="settlementBoxInner2">
 				<h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_event.gif')}" alt="イベント詳細" width="106" height="29" /></h2>
 				<table summary="イベント詳細情報">
-					<tr>
-						<th scope="row">開催期間</th>
-						<td>${event['first_start_on']} 〜 ${event['final_start_on']}</td>
-					</tr>
-					<tr>
-						<th scope="row">会場</th>
-						<td id="venue"> ${", ".join(event['venues'])}</td>
-					</tr>
-					<tr>
-						<th scope="row">販売期間</th>
-						<td>
-						  ${event['sales_start_on']}
-						  ${event['sales_end_on']}
-						</td>
-					</tr>
-					<tr>
-						<th scope="row">席種・料金（税込）</th>
-						<td id="pricelist">
-%for p in event['product']:
-${p.name} ： ${h.format_number(p.price)}円 <br/>
-%endfor
-</td>
-					</tr>
+					<tbody>
+						<tr>
+							<th scope="row">開催期間</th>
+							<td>${event['first_start_on']} 〜 ${event['final_start_on']}</td>
+						</tr>
+						<tr>
+							<th scope="row">会場</th>
+							<td id="venue"> ${", ".join(event['venues'])}</td>
+						</tr>
+						<tr>
+							<th scope="row">販売期間</th>
+							<td>
+								${event['sales_start_on']}
+								${event['sales_end_on']}
+							</td>
+						</tr>
+						<tr>
+							<th scope="row">席種・料金（税込）</th>
+							<td id="pricelist">
+								%for p in event['product']:
+								${p.name} ： ${h.format_number(p.price)}円 <br/>
+								%endfor
+							</td>
+						</tr>
 					%for v in event_extra_info:
-					<tr>
-					  <th scope="row">${v['label']}</th>
-					  <td>${v['content']|n}</td>
-					</tr>
+						<tr>
+							<th scope="row">${v['label']}</th>
+							<td>${v['content']|n}</td>
+						</tr>
 					%endfor
+					</tbody>
 				</table>
 			</div>
 		</div>
@@ -151,65 +209,65 @@ ${p.name} ： ${h.format_number(p.price)}円 <br/>
 <!-- /container --></div>
 
 <div class="modal payment" id="order-error-template" style="display:none">
-  <div class="modal-header">
+	<div class="modal-header">
 	<h1><span>在庫がありません</span></h1>
-  </div>
-  <div class="modal-inner">
+	</div>
+	<div class="modal-inner">
 	<div class="modal-body">
-	  <img src="${request.static_url('ticketing.cart:static/img/settlement/error.gif')}" width="624" height="224" />
+		<img src="${request.static_url('ticketing.cart:static/img/settlement/error.gif')}" width="624" height="224" />
 	</div>
 	<div class="modal-footer">
-	  <button id="error-close-button" class="btn-redo"></button>
+		<button id="error-close-button" class="btn-redo"></button>
 <!--
-    <ul id="errorBtn">
-        <li><a href="#"><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_wait.gif')}" alt="空席待ち" width="206" height="46" /></a></li>
-        <li><a href="#"><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_reselect.gif')}" alt="座席・枚数を選びなおす" width="206" height="46" /></a></li>
-        <li id="errorBtnTop"><a href="#">イベントトップに戻る</a></li>
-    </ul>
+		<ul id="errorBtn">
+				<li><a href="#"><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_wait.gif')}" alt="空席待ち" width="206" height="46" /></a></li>
+				<li><a href="#"><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_reselect.gif')}" alt="座席・枚数を選びなおす" width="206" height="46" /></a></li>
+				<li id="errorBtnTop"><a href="#">イベントトップに戻る</a></li>
+		</ul>
 -->
 	</div>
-  </div>
+	</div>
 </div>
 
 <div class="modal payment" style="display:none" id="order-reserved">
-    <div class="modal-header">
-	  <h1><span id="performance-name"></span></h1>
+		<div class="modal-header">
+		<h1><span id="performance-name"></span></h1>
 	</div>
-	  <div class="modal-inner">
+		<div class="modal-inner">
 	<div class="modal-body">
 
-	  <img src="${request.static_url('ticketing.cart:static/img/settlement/total.gif')}" alt="合計金額" width="67" height="16"
-		   style="margin-bottom:7px;">
-	  <table>
+		<img src="${request.static_url('ticketing.cart:static/img/settlement/total.gif')}" alt="合計金額" width="67" height="16"
+			 style="margin-bottom:7px;">
+		<table>
 		<tbody>
-		  <tr class="last-child">
+			<tr class="last-child">
 			<td id="cart-total-amount">￥</td>
-		  </tr>
+			</tr>
 		</tbody>
-	  </table>
+		</table>
 
-	  <p class="lead" style="margin-bottom:4px;">内訳</p>
-	  <table>
+		<p class="lead" style="margin-bottom:4px;">内訳</p>
+		<table>
 		<tbody id="contentsOfShopping">
 		</tbody>
-	  </table>
+		</table>
 	</div>
 	<div class="modal-footer">
-	  <button id="reserved-cancel-button" class="btn-redo"></button>
-	  <button id="reserved-confirm-button" class="btn-buy"></button>
+		<button id="reserved-cancel-button" class="btn-redo"></button>
+		<button id="reserved-confirm-button" class="btn-buy"></button>
 	</div>
-  </div>
+	</div>
 </div>
 
-<script>
-    var selected = ${selected};
-    var venues_selection = ${venues_selection};
-    var upper_limit = ${upper_limit};
-    var order_url = "${order_url}";
-    var products_from_selected_date_url = "${products_from_selected_date_url}";
-    $(function() {
-        carts.init(venues_selection, selected, upper_limit);
-    })
+<script type="text/javascript">
+		var selected = ${selected};
+		var venues_selection = ${venues_selection};
+		var upper_limit = ${upper_limit};
+		var order_url = "${order_url}";
+		var products_from_selected_date_url = "${products_from_selected_date_url}";
+		$(function() {
+				carts.init(venues_selection, selected, upper_limit);
+		})
 </script>
 </body>
 </html>

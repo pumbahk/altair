@@ -52,46 +52,41 @@ carts.Model.prototype.fetch_products_from_date = function(get_url, callback){
 carts.AppView = function() {
 };
 
-carts.AppView.prototype.forcusLeftBox = function(){
+carts.AppView.prototype.focusLeftBox = function(){
     var left_box = $("#selectSeat");
     var right_box = $("#selectBuy");
 
-    left_box.addClass("forcus");
-    left_box.css("position", "relative");
+    left_box.addClass("focused");
+    left_box.removeClass("blur");
+		right_box.addClass("blur");
+    right_box.removeClass("focused");
 
-    left_box.find(".lead").css("opacity", "1.0");
-    right_box.find(".lead").css("opacity", "0.3");
-
-    right_box.removeClass("forcus");
     right_box.find("#payment-seat-products").empty();
     right_box.find("#payment-seat-type").empty();
 };
 
-carts.AppView.prototype.forcusRightBox = function(){
+carts.AppView.prototype.focusRightBox = function(){
     var left_box = $("#selectSeat");
     var right_box = $("#selectBuy");
 
-    left_box.find(".lead").css("opacity", "0.3");
-    right_box.find(".lead").css("opacity", "1.0");
-
-    left_box.css("position", "absolute");
-    right_box.addClass("forcus");
+		left_box.removeClass("focused");
+		left_box.addClass("blur");
+    right_box.addClass("focused");
+		right_box.removeClass("blur");
 };
 
 carts.AppView.prototype.init = function(presenter) {
     var view = this;
-    $("#selectSeat li:even").addClass("seatEven");
-    $("#selectSeat li:odd").addClass("seatOdd");
     $('#date-select').change(
         function() {
             presenter.on_date_selected($(this).val());
-            view.forcusLeftBox();
+            view.focusLeftBox();
         }
     );
     $("#venue-select").change(
         function(){
             presenter.on_venue_select($(this).text());
-            view.forcusLeftBox();
+            view.focusLeftBox();
         }
     );
     var create_content_of_shopping_element = function(product){
@@ -234,19 +229,23 @@ carts.AppView.prototype.update_settlement_pricelist = function(products){
 };
 
 carts.AppView.prototype.show_seat_types = function(seat_types) {
-    $('#seat-types-list').empty();
+    $('#seatTypeList').empty();
     var presenter = this.presenter;
     $.each(seat_types, function(key, value) {
-        var item = $('<li />');
-        var select = $('<input type="radio" name="seat_type" />');
-        select.attr('value', value.products_url);
-        select.change(function() {presenter.on_seat_type_selected($(this))});
-        var name = $('<span />');
-        name.text(value.name);
-        item.append(select);
-        item.append(name);
-        $('#seat-types-list').append(item);
-
+        var item = $('<li></li>')
+          .append(
+            $('<input type="radio" name="seat_type" />')
+            .attr('value', value.products_url)
+            .change(function() {presenter.on_seat_type_selected($(this))}))
+          .append(
+            $('<span class="seatColor"></span>')
+            .css('background-color', value.style.fill.color))
+          .append(
+            $('<span class="seatName"></span>')
+            .text(value.name))
+          .append(
+            $('<span class="seatStatus"></span>'))
+          .appendTo($('#seatTypeList'));
     });
     $("#selectSeat li:even").addClass("seatEven");
     $("#selectSeat li:odd").addClass("seatOdd");
@@ -299,15 +298,15 @@ carts.Presenter.prototype.show_seat_types = function(get_url) {
 };
 
 carts.Presenter.prototype.on_seat_type_selected = function(selected) {
-    $('#seat-types-list').children('li').each(function(key, value) {
+    $('#seatTypeList').children('li').each(function(key, value) {
         $(value).removeClass("selected").addClass("unselected");
     });
     selected.parent().addClass("selected").removeClass("unselected");
     var get_url = selected.val();
     this.show_products(get_url);
 
-    //隣をforcus
-    this.view.forcusRightBox();
+    //隣をfocus
+    this.view.focusRightBox();
 };
 
 carts.Presenter.prototype.on_date_selected = function(selected_date){
