@@ -1,26 +1,19 @@
 @charset "utf-8";
 
-#selectSeat.blur .main,
-#selectBuy.blur .main {
-  filter: alpha(opacity=30);
-  -moz-opacity: 0.3;
-  opacity: 0.3;
+#selectBuy.blur {
+  filter: alpha(opacity=50);
+  -moz-opacity: 0.5;
+  opacity: 0.5;
 }
 
-#selectSeat.blur .main,
-#selectBuy.focused .main {
+#selectBuy.focused {
+  visibility: visible;
   filter: alpha(opacity=100);
-  -moz-opacity: 1.0;
-  opacity: 1.0;
+  -moz-opacity: 1;
+  opacity: 1;
 }
 
-#selectSeat li.unselected {
-  filter: alpha(opacity=30);
-  -moz-opacity: 0.3;
-  opacity: 0.3;
-}
-
-#selectSeat li input {
+#selectSeatType li input {
   display: none;
 }
 

@@ -53,12 +53,12 @@ carts.AppView = function() {
 };
 
 carts.AppView.prototype.focusLeftBox = function(){
-    var left_box = $("#selectSeat");
+    var left_box = $("#selectSeatType");
     var right_box = $("#selectBuy");
 
     left_box.addClass("focused");
     left_box.removeClass("blur");
-		right_box.addClass("blur");
+    right_box.addClass("blur");
     right_box.removeClass("focused");
 
     right_box.find("#payment-seat-products").empty();
@@ -66,13 +66,13 @@ carts.AppView.prototype.focusLeftBox = function(){
 };
 
 carts.AppView.prototype.focusRightBox = function(){
-    var left_box = $("#selectSeat");
+    var left_box = $("#selectSeatType");
     var right_box = $("#selectBuy");
 
-		left_box.removeClass("focused");
-		left_box.addClass("blur");
+    left_box.removeClass("focused");
+    left_box.addClass("blur");
     right_box.addClass("focused");
-		right_box.removeClass("blur");
+    right_box.removeClass("blur");
 };
 
 carts.AppView.prototype.init = function(presenter) {
@@ -229,7 +229,8 @@ carts.AppView.prototype.update_settlement_pricelist = function(products){
 };
 
 carts.AppView.prototype.show_seat_types = function(seat_types) {
-    $('#seatTypeList').empty();
+    var seatTypeList = $('#seatTypeList');
+    seatTypeList.empty();
     var presenter = this.presenter;
     $.each(seat_types, function(key, value) {
         var item = $('<li></li>')
@@ -247,8 +248,8 @@ carts.AppView.prototype.show_seat_types = function(seat_types) {
             $('<span class="seatStatus"></span>'))
           .appendTo($('#seatTypeList'));
     });
-    $("#selectSeat li:even").addClass("seatEven");
-    $("#selectSeat li:odd").addClass("seatOdd");
+    seatTypeList.find("li:even").addClass("seatEven");
+    seatTypeList.find("li:odd").addClass("seatOdd");
 };
 
 
