@@ -1,31 +1,28 @@
 # -*- coding:utf-8 -*-
 
-from .interfaces import ISigner
+from . import interfaces
 from . import api
 
 def includeme(config):
-    """ 
-    あんしん決済 サービスID
-    あんしん決済 アクセスキー 
-    あんしん決済 Success URL
-    あんしん決済 Fail URL 
+
     """
+    楽天あんしん決済 API設定
+    """
+    service_id = config.registry.settings.get('altair_checkout.service_id')
+    success_url = config.registry.settings.get('altair_checkout.success_url')
+    fail_url = config.registry.settings.get('altair_checkout.fail_url')
+    auth_method = config.registry.settings.get('altair_checkout.auth_method')
+    is_test = config.registry.settings.get('altair_checkout.is_test', False)
 
-    utilities = config.registry.utilities
+    checkout_api = api.Checkout(service_id, success_url, fail_url, auth_method, is_test)
+    config.registry.utilities.register([], interfaces.ICheckout, "", checkout_api)
 
+    """
+    楽天あんしん決済 メッセージ署名設定
+    """
     secret = config.registry.settings.get('altair_checkout.secret')
-    authmethod = config.registry.settings.get('altair_checkout.authmethod')
 
-    hmac_sha1_signer = api.HMAC_SHA1(secret)
-    hmac_md5_signer = api.HMAC_MD5(secret)
-    utilities.register([], ISigner, "HMAC-SHA1", hmac_sha1_signer)
-    utilities.register([], ISigner, "HMAC-MD5", hmac_md5_signer)
-
-    if authmethod == "HMAC-SHA1":
-        utilities.register([], ISigner, "", hmac_sha1_signer)
-    elif authmethod == "HMAC-MD5":
-        utilities.register([], ISigner, "", hmac_md5_signer)
-
-
-    
-    
+    if auth_method == "HMAC-SHA1":
+        config.registry.utilities.register([], interfaces.ISigner, "HMAC", api.HMAC_SHA1(secret))
+    elif auth_method == "HMAC-MD5":
+        config.registry.utilities.register([], interfaces.ISigner, "HMAC", api.HMAC_MD5(secret))

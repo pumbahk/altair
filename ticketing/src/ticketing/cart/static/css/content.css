@@ -517,52 +517,52 @@
 }
 
 .jcarousel-container-horizontal {
-    width: 672px;
+	width: 672px;
 }
 
 .jcarousel-clip {
-    overflow: hidden;
+	overflow: hidden;
 }
 
 .jcarousel-clip-horizontal {
-    width: 672px;
+	width: 672px;
 }
 
 .jcarousel-item {
-    width: 82px;
+	width: 82px;
 	margin: 0 7px;
 	font-weight: bold;
 	text-align: center;
 }
 
 .jcarousel-next-horizontal {
-    position: absolute;
-    top: 0;
-    right: -20px;
-    width: 15px;
-    height: 100px;
-    cursor: pointer;
-    background: url(../img/music/btn_check_next.gif) no-repeat 0 0;
+	position: absolute;
+	top: 0;
+	right: -20px;
+	width: 15px;
+	height: 100px;
+	cursor: pointer;
+	background: url(../img/music/btn_check_next.gif) no-repeat 0 0;
 }
 
 .jcarousel-next-disabled-horizontal {
-    cursor: default;
-    background-position: -15px 0;
+	cursor: default;
+	background-position: -15px 0;
 }
 
 .jcarousel-prev-horizontal {
-    position: absolute;
-    top: 0;
-    left: 17px;
-    width: 15px;
-    height: 100px;
-    cursor: pointer;
-    background: url(../img/music/btn_check_prev.gif) no-repeat 0 0;
+	position: absolute;
+	top: 0;
+	left: 17px;
+	width: 15px;
+	height: 100px;
+	cursor: pointer;
+	background: url(../img/music/btn_check_prev.gif) no-repeat 0 0;
 }
 
 .jcarousel-prev-disabled-horizontal {
-    cursor: default;
-    background-position: -15px 0;
+	cursor: default;
+	background-position: -15px 0;
 }
 
 #music #sideRefineSearch dt {
@@ -1498,77 +1498,140 @@
 	margin-bottom: 5px;
 }
 
-#hallName {
-	margin-bottom: 10px !important;
-}
-
-#hallName span {
+.settlementBox2 h2#hallName {
 	display: block;
+	margin: 8px 0 20px 0;
 	padding: 4px 0 4px 5px;
 	border-left: 2px solid #666666;
 	font-size: 116.7%;
 }
 
+#settlementOperation .settlementBoxInner2 {
+}
+
+#settlementOperation .settlementOperationPaneInner {
+	position: relative;
+	height: 350px;
+}
+
 #selectSeat {
 	position: absolute;
+	left: 0px;
+	top: 0px;
 	width: 395px;
 	z-index: 100;
-}
-
-#selectSeat dd {
-	padding: 0 0 5px 4px;
 	background: url(../img/settlement/bg_seat.gif) repeat-y 0 0;
+	overflow: hidden;
 }
 
-#selectSeat li {
+#selectSeat.blur h3 {
+	padding: 32px 0 0 0;
+	background: url(../img/settlement/title_select.blur.gif) no-repeat;
+	height: 0px;
+	overflow: hidden;
+}
+
+#selectSeat.focused h3 {
+	padding: 32px 0 0 0;
+	background: url(../img/settlement/title_select.focused.gif) no-repeat;
+	height: 0px;
+	overflow: hidden;
+}
+
+#selectSeat .arrow {
+  position: absolute;
+	width: 15px;
+	height: 26px;
+	background: url(../img/settlement/bg_seat_select.png) no-repeat right top;
+	background-position: 0 390;
+	z-index: 200;
+}
+
+#selectSeat .seatListContainer {
+  height: 318px;
+	width: 395px;
+	overflow: auto;
 	position: relative;
+}
+
+#selectSeat .seatListContainer ul {
+	padding: 0 0 5px 4px;
+}
+
+#selectSeat .seatListContainer li {
 	height: 26px;
 	overflow: hidden;
-	line-height: 26px;
+	line-height: 16px;
 	font-weight: bold;
+	filter: alpha(opacity=50);
+	-moz-opacity: 0.5;
+	opacity: 0.5;
 }
 
-#selectSeat li img {
+#selectSeat .seatListContainer li .seatColor {
 	float: left;
-	padding: 5px 13px 0 9px;
+	width: 14px;
+	height: 14px;
+	border: 1px solid #fff;
+	line-height: 14px;
+	font-size: 10px;
+	margin: 5px 13px 5px 9px;
 }
 
-#selectSeat li .seatState {
-	position: absolute;
-	top: 0;
-	right: 20px;
+#selectSeat .seatListContainer li .seatName {
+	float: left;
+	height; 16px;
+	padding: 5px 0;
 }
 
-#selectSeat li.seatEven {
+#selectSeat .seatListContainer li .seatState {
+	float: right;
+	margin: 5px 16px;
+}
+
+#selectSeat .seatListContainer li.seatEven {
 	background: url(../img/settlement/bg_seat_even.gif) no-repeat 0 0;
 }
 
-#selectSeat li.seatOdd {
+#selectSeat .seatListContainer li.seatOdd {
 	background: url(../img/settlement/bg_seat_odd.gif) no-repeat 0 0;
 }
 
-#selectSeat li.selected {
+#selectSeat .seatListContainer li.selected {
 	filter: alpha(opacity=100);
 	-moz-opacity: 1.0;
 	opacity: 1.0;
-//	background: url(../img/settlement/bg_seat_select.png) no-repeat 0 0;
+	background: url(../img/settlement/bg_seat_select.png) no-repeat 0 0;
 }
 
 #selectBuy {
-	position: relative;
-	float: right;
+	position: absolute;
+	top: 0px;
+	right: 0px;
 	width: 510px;
 	margin-bottom: 10px;
+	border: 2px solid #cccccc;
+	background-color: #ffffff;
 	z-index: 10;
 }
 
-#selectBuy h3 {
-	padding: 10px 15px;
+#selectBuy.blur h3 {
+	padding: 32px 0 0 0;
+	background: url(../img/settlement/select.blur.gif) no-repeat;
+	height: 0px;
+	overflow: hidden;
+}
+
+#selectBuy.focused h3 {
+	padding: 32px 0 0 0;
+	background: url(../img/settlement/select.focused.gif) no-repeat;
+	height: 0px;
+	overflow: hidden;
 }
 
 #selectBuy dl {
-	width: 486px;
-	margin: 0 0 10px 11px;
+	width: 492px;
+	margin: 0 0 10px 9px;
 	background: url(../img/settlement/bg_select_buy_top.gif) no-repeat 0 0;
 }
 
@@ -2038,3 +2101,7 @@
 #errorBtnTop {
 	padding-top: 20px;
 }
+
+/*
+ * vim: sts=2 sw=2 ts=2 noet
+ */

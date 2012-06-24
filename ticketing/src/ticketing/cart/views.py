@@ -26,7 +26,7 @@ class IndexView(object):
         self.request = request
         self.context = request.context
 
-    
+
     @view_config(route_name='cart.index', renderer='carts/index.html', xhr=False, permission="view")
     def __call__(self):
         jquery_tools.need()
@@ -101,6 +101,7 @@ class IndexView(object):
             
         data = dict(seat_types=[
                 dict(id=s.id, name=s.name,
+                    style=s.style,
                     products_url=self.request.route_url('cart.products',
                         event_id=event_id, performance_id=performance_id, seat_type_id=s.id),
                     )
@@ -446,3 +447,58 @@ class CompleteView(object):
         cart.finish()
 
         return order
+
+class CheckoutView(object):
+    """ 楽天あんしん決済 """
+
+    def __init__(self, request):
+        self.request = request
+
+    @view_config(route_name='payment.checkout_test', request_method="GET", renderer="carts/checkout_test.html")
+    def checkout_test(self):
+        from ticketing.cart.models import Cart, CartedProduct
+        from ticketing.core.models import Product, PaymentDeliveryMethodPair
+        cart = Cart(
+            id=108,
+            performance_id=1,
+            system_fee=100,
+            payment_delivery_pair=PaymentDeliveryMethodPair.get(1),
+            products = [
+                CartedProduct(quantity=1, product=Product.get(1)),
+                ]
+        )
+
+        from ticketing.checkout import helpers as h
+        form = {}
+        form['h'] = h.begin_checkout_form(self.request)
+        form['b'] = h.render_checkout(self.request, cart)
+        form['f'] = h.end_checkout_form(self.request)
+        return dict(form=form)
+
+    @view_config(route_name='payment.checkout_cart_confirmation', renderer="carts/checkout_response.html")
+    def checkout_cart_confirmation(self):
+        '''
+        CartConforming機能, 決済可否(セッションタイムアウトのチェック等)の確認を行う
+        '''
+        from ticketing.checkout import api
+        service = api.get_checkout_service(self.request)
+        cart_confirm = service.save_cart_confirm(self.request)
+
+        # セッションタイムアウトで確保在庫が解放されてないかチェックする
+
+        return {
+            'xml':service.create_cart_confirmation_response_xml(cart_confirm)
+        }
+
+    @view_config(route_name='payment.checkout_order_complete', renderer="carts/checkout_response.html")
+    def checkout_order_complete(self):
+        '''
+        注文完了通知を保存する
+        '''
+        from ticketing.checkout import api
+        service = api.get_checkout_service(self.request)
+        result = service.save_order_complete(self.request)
+
+        return {
+            'xml':service.create_order_complete_response_xml(result, datetime.now())
+        }

@@ -1,7 +1,7 @@
 #!/bin/sh
 ROOT=`dirname $0`
-if echo $ROOT | grep -q '^\.'; then
-    ROOT="`dirname $PWD`/$ROOT"
+if echo $ROOT | grep -v -q '^/'; then
+    ROOT="$PWD/$ROOT"
 fi
 HTTPD=httpd
 
@@ -11,7 +11,7 @@ case $1 in
             echo "Server already running?"
         else
             test -d "${ROOT}/tmp" || mkdir "${ROOT}/tmp"
-            "${HTTPD}" -f "${ROOT}/httpd.test.conf"
+            env ROOT="${ROOT}" "${HTTPD}" -f "${ROOT}/httpd.test.conf"
         fi
 		;;
 	stop)

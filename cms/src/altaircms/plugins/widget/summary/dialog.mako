@@ -5,36 +5,43 @@
 <div id="app">
   <div class="title">
     <h1>サマリー</h1>
-    <p>購入画面では、開催期間、販売期間、会場の項目はシステム側で自動で追加されます。
-       そのため、重複して表示されないよう通知をオフにしてください
+    <p>
+	  (外部のシステムに通知すること必要がない場合この文章と、通知に関する事柄は無視して構いません)
+	  購入画面では、開催期間、販売期間、会場の項目はシステム側で自動で追加されます。
+      そのため、重複して表示されないよう通知をオフにしてください
     </p>  
   </div>
   <hr/>
   <div class="content" class="float">
+	<p>購入ページのイベント詳細として利用する<input id="use_notify" type="checkbox"/ ${"checked" if widget.bound_event_id else ""|n}></p>
     <div id="create-content">
-	  <table>
-	  	<tr>
-		  <td><label>見出し<input id="label_input" placeholder="ここに見出しを追加" type="text" /></label></td>
-	  	  <td><label>内容<textarea id="content_input" placeholder="ここに内容を追加" type="text" /></textarea></label></td>
-		</tr>
-	  </table>
+   <table class="table">
+           <tr>
+                 <td><label>見出し<input id="label_input" placeholder="ここに見出しを追加" type="text" /></label></td>
+                   <td><label>内容<textarea width="300px" id="content_input" placeholder="ここに内容を追加" type="text" /></textarea></label></td>
+                   <td><label>購入ページに通知する<input id="notify_input"  type="checkbox" checked="checked"/></label></td>
+                 <td><button id="additem_button" type="button" class="btn">追加する</button></td>
+          </tr>
+      </table>
     </div>
-	<span class="clear"/>
+    <span class="clear"/>
 
     <h3>現在保存されている内容</h3>
     <hr/>
 
     <div id="contents">
-	  <button type="button" id="reflesh_button">最初の状態に戻す</button>
-	  <button type="button" url="${request.route_path("api_summary_widget_data_from_db")}" id="load_from_api_button">登録されたデータから内容を取得</button>
-	  <button id="summary_submit" type="button">登録</button>
-	  <table width="100%">
-		<thead>
-		  <tr><th>見出し</th><th>内容</th><th>削除</th></tr>
-		</thead>
-		<tbody id="contentlist">
-		</tbody>
-	  </table>
+      <button class="btn" type="button" id="reflesh_button">最初の状態に戻す</button>
+      <button class="btn" type="button" url="${request.route_path("api_summary_widget_data_from_db")}" id="load_from_api_button">登録されたデータから内容を取得</button>
+      <button id="removeall_button" type="button" class="btn">全部削除</button>
+      <button id="summary_submit" type="button" class="btn btn-primary">登録</button>
+
+      <table id="item-result"width="100%">
+        <thead>
+          <tr><th>見出し</th><th>内容</th><th>通知</th><th>削除</th></tr>
+        </thead>
+        <tbody id="contentlist">
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
@@ -73,6 +80,7 @@
         template: _.template([
             '<td class="label"></td>', 
             '<td class="content"></td>', 
+            '<td><input type="checkbox" class="notify"/></td>', 
             '<td><a href="#" class="remove">remove</a></td>', 
         ].join("\n")), 
 
@@ -84,20 +92,29 @@
         initialize: function(){
             this.model.bind("change", this.render, this);
             this.model.bind("destroy", this.remove, this);            
-            this.model.bind("redraw", this.render, this);
+            this.model.bind("redraw", this.reDraw, this);
         }, 
+
+        
         render: function(){
             $(this.el).html(this.template(this.model.toJSON()));
             this.setContent();
             return this;
         }, 
         
+        reDraw: function(me){
+            $(this.el).css("display","table-row");
+            this.setContent();
+        },
         setContent: function(){
             var label = this.model.get("label");
             this.$(".label").text(label);
 
             var content = this.model.get("content");
             this.$(".content").text(content);
+            if(this.model.get("notify")){
+              this.$(".notify").attr("checked","checked");
+            }
             // this.input.bind('blur', _.bind(this.close, this)).val(text);
             // blue is unfocus. todo sample is then saved object
         }, 
@@ -107,8 +124,9 @@
         }, 
         transformEditView: function(){
             this.model.unbind("change", this.render);
-            var edit_view = new EditItemView({model: this.model});
-            $(this.el).html(edit_view.render().el);
+            $(this.el).css("display","none");
+            var edit_view = new EditItemView({model: this.model, view: this});
+            $(this.el).after(edit_view.render().el);
         }, 
         remove: function() {
             $(this.el).remove();
@@ -116,30 +134,30 @@
     });
 
     var EditItemView = Backbone.View.extend({
-        tagName: "div", 
+        tagName: "tr", 
         className: "edit-item", 
-        template: _.template([
-       			'<td><label>見出し<input class="label" type="text" value="<%= label %>"/></label></td>', 
-            '<td><label>内容<textarea class="content" type="text"><%= content %></textarea></label></td>'
+        template: _.template(['<td><label>見出し<input class="label" type="text" value="<%= label %>"/></label></td>', 
+            '<td><label>内容<textarea class="content" type="text" max-width="100%" width="100%"><%= content %></textarea></label></td>',
+            '<td><button type="button" class="update_button btn">更新</button></td>'
         ].join("\n")), 
         
         events: {
-            "keypress .label": "updateOnEnter", 
-            "keypress .content": "updateOnEnter", 
+            "click .update_button": "updateOnEnter", 
         }, 
 
         updateOnEnter: function(e){
             var label = this.$(".label").val();
             var content = this.$(".content").val();
-            if (!label || !content || e.keyCode != 13) return;
-            this.model.set("label", label);
-            this.model.set("content", content);
-            this.yank();
+            this.yank(label,content);
         }, 
 
-        yank: function(){
+        yank: function(label,content){
+            // todo: move it
+            var target = this.$el.prev();
+            this.model.set("label",label);
+            this.model.set("content",content);
+            this.model.trigger("redraw", target);
             this.remove();
-            this.model.trigger("redraw");
         }, 
 
         render: function(){
@@ -153,6 +171,7 @@
         initialize: function(){
             this.label_input = this.$("#label_input");
             this.content_input = this.$("#content_input");
+            this.notify_input = this.$("#notify_input");
             this._stored_data = null; //loaded data cached
             // model
             this.contentlist = new ItemList();
@@ -160,10 +179,10 @@
         }, 
         
         events: {
-            "keypress #label_input": "createOnEnter", 
-            "keypress #content_input": "createOnEnter", 
+            "click #additem_button": "createItem",
             "click #reflesh_button": "refleshContent",
-            "click #load_from_api_button": "loadDataFromAPI"
+            "click #load_from_api_button": "loadDataFromAPI",
+            "click #removeall_button": "removeAll"
         }, 
         
         addOne: function(item){
@@ -183,16 +202,25 @@
             _(params).each(function(param){
                 contentlist.create(param);
             });
+
+            $("#item-result tbody").sortable({
+                delay: 150,
+                helper: function(e, ui){
+                    ui.children().each(function() {
+                        $(this).width($(this).width());
+                    });
+                    return ui;
+                }
+            }).disableSelection();
+
         }, 
 
-        cleanAll: function(){
-           _.each($(this.el).find("#contentlist tr"), function(e){
-              var view = $(e).data("view");
-              if(!!view){view.clearSelf();}
-           });
+        removeAll: function(){
+           $(this.el).find("#contentlist").empty();
         },
+
         refleshContent: function(){
-           self.cleanAll();
+           $(this.el).find("#contentlist").empty();
            this.loadData(this._stored_data);
         },
 
@@ -200,30 +228,33 @@
            var self = this;
            var url = $(ev.currentTarget).attr("url");
            $.getJSON(url, {"page": get_page()}).done(function(data){
-                self.cleanAll();
-				self.loadData(data); 
-			});
+                $(self.el).find("#contentlist").empty();
+                self.loadData(data); 
+            });
         },
 
         collectData: function(){
-			var get_text_or_val = function(e,expr){ 
-			  var e = e.find(expr);
-			  return e.text() || e.val();
-			}
+            var get_text_or_val = function(e,expr){ 
+              var e = e.find(expr);
+              return e.text() || e.val();
+            }
             return _($(this.el).find("#contentlist tr")).map(function(e){
                 var e = $(e);
                 return {
                     label: get_text_or_val(e, ".label"),
-                    content: get_text_or_val(e, ".content")
+                    content: get_text_or_val(e, ".content"),
+                    notify: !!e.find(".notify").attr("checked")
                 };
             });
         }, 
 
-        createOnEnter: function(e){
+        createItem: function(e){
             var label = this.label_input.val();
             var content = this.content_input.val();
-            if (!label || !content || e.keyCode != 13) return;
-            this.contentlist.create({label: label, content: content});
+            var notify = !!this.notify_input.attr("checked");
+            if (!label || !content) return;
+
+            this.contentlist.create({label: label, content: content, notify: notify});
             this.label_input.val("");
             this.content_input.val("");
         }, 
@@ -231,7 +262,7 @@
 </%text>
   var root =  $("#app");
   var appview = new AppView({el: root}); 
-  root.data("appview",appview);
+  root.data("appview", appview);
   appview.loadInitialData(${items|n}); <%doc> items is mako </%doc>
 })();
 </script>

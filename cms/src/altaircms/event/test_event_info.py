@@ -57,16 +57,17 @@ class GetEventInfoTests(unittest.TestCase):
 
         event = Event()
         page = Page(event=event)
-        widget = SummaryWidget(page=page)
-        widget.items = json.dumps([
-                {"name": u"name", "content": u"this-is-summary-content", "label": u"見出し"}, 
-                {"content": u"no-name", "label": u"見出し"}
-                ])
+        widget = SummaryWidget(page=page, bound_event=event)
+        widget.items =unicode( json.dumps([
+                {"name": u"name", "content": u"this-is-summary-content", "label": u"見出し", "notify": True}, 
+                {"content": u"no-name", "label": u"見出し", "notify": True}
+                ]))
 
         self.session.add(widget)
         self.session.flush()
 
         result = self._callFUT(event)["event"]
+
         self.assertEquals(result[0], {"name": u"name", "content": u"this-is-summary-content", "label": u"見出し"})
         self.assertEquals(result[1], {"content": u"no-name", "label": u"見出し", "name": u""})
 

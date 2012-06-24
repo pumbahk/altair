@@ -3,7 +3,7 @@
 import unittest
 from pyramid import testing
 
-from . import models
+from ticketing.checkout import models
 import ticketing.models
 import ticketing.orders.models
 
@@ -16,11 +16,11 @@ class SignToXml(unittest.TestCase):
         testing.tearDown()
 
     def _callFUT(self, *args, **kwargs):
-        from .api import sign_to_xml
+        from ticketing.checkout.api import sign_to_xml
         return sign_to_xml(*args, **kwargs)
 
     def test_it(self):
-        from . import interfaces
+        from ticketing.checkout import interfaces
         class DummySigner(object):
             def __call__(self, xml):
                 self.called = xml
@@ -36,7 +36,7 @@ class SignToXml(unittest.TestCase):
 
 class ItemXmlVisitorTests(unittest.TestCase):
     def _getTarget(self):
-        from .api import ItemXmlVisitor
+        from ticketing.checkout.api import ItemXmlVisitor
         return ItemXmlVisitor
 
     def _makeOne(self, *args, **kwargs):
@@ -64,7 +64,7 @@ class ItemXmlVisitorTests(unittest.TestCase):
 class CompletedOrderXmlVisitor(unittest.TestCase):
 
     def _getTarget(self):
-        from .api import CompletedOrderXmlVisitor
+        from ticketing.checkout.api import CompletedOrderXmlVisitor
         return CompletedOrderXmlVisitor
 
     def _makeOne(self, *args, **kwargs):
@@ -118,7 +118,7 @@ class CompletedOrderXmlVisitor(unittest.TestCase):
 
 class CartXmlVisitorTests(unittest.TestCase):
     def _getTarget(self):
-        from .api import CartXmlVisitor
+        from ticketing.checkout.api import CartXmlVisitor
         return CartXmlVisitor
 
     def _makeOne(self):
@@ -202,7 +202,7 @@ class CartXmlVisitorTests(unittest.TestCase):
 
 class GetCartConfirmTests(unittest.TestCase):
     def _callFUT(self, request):
-        from .api import get_cart_confirm
+        from ticketing.checkout.api import get_cart_confirm
         return get_cart_confirm(request)
 
     def test_it(self):
@@ -264,11 +264,11 @@ class IncludeMe(unittest.TestCase):
         testing.tearDown()
 
     def _callFUT(self, config):
-        from . import includeme
+        from ticketing.checkout import includeme
         return includeme(config)
 
     def test_it_with_sha1(self):
-        from .interfaces import ISigner
+        from ticketing.checkout.interfaces import ISigner
         self.config.registry.settings.update(
             {
                 'altair_checkout.secret': 'this-is-secret',
@@ -287,7 +287,7 @@ class IncludeMe(unittest.TestCase):
         self.assertEqual(lookup.hash_algorithm, "MD5")
 
     def test_it_with_md5(self):
-        from .interfaces import ISigner
+        from ticketing.checkout.interfaces import ISigner
         self.config.registry.settings.update(
             {
                 'altair_checkout.secret': 'this-is-secret',
@@ -303,7 +303,7 @@ class IncludeMe(unittest.TestCase):
 
 class ConfirmationToXmlTests(unittest.TestCase):
     def _callFUT(self, *args, **kwargs):
-        from .api import confirmation_to_xml
+        from ticketing.checkout.api import confirmation_to_xml
         return confirmation_to_xml(*args, **kwargs)
 
     def test_it_no_carts(self):
@@ -396,7 +396,7 @@ class ConfirmationToXmlTests(unittest.TestCase):
 
 class CheckoutToXmlTests(unittest.TestCase):
     def _callFUT(self, *args, **kwargs):
-        from .api import checkout_to_xml
+        from ticketing.checkout.api import checkout_to_xml
         return checkout_to_xml(*args, **kwargs)
 
     def test_it_no_items(self):
@@ -494,3 +494,7 @@ class CheckoutToXmlTests(unittest.TestCase):
                          '<authMethod>2</authMethod>'
                          '<isTMode>1</isTMode>'
                          '</orderItemsInfo>')
+
+if __name__ == "__main__":
+    unittest.main()
+
