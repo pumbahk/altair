@@ -447,16 +447,6 @@
             if (self.dragging) {
               self.drawable.releaseMouse();
               self.dragging = false;
-            } else {
-              var logicalViewportInnerSize = self.drawable._inverse_transform.apply(self.drawable.viewportInnerSize());
-              var halfOfLogicalViewportInnerSize = {
-                x: logicalViewportInnerSize.x / 2,
-                y: logicalViewportInnerSize.y / 2
-              };
-              self.scrollTo(
-                Fashion._lib.subtractPoint(
-                  evt.logicalPosition,
-                  halfOfLogicalViewportInnerSize));
             }
           },
 
