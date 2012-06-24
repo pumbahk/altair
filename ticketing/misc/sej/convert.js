@@ -823,11 +823,11 @@ var commandMap = {
 fs.readFile(process.argv[2], 'utf-8', function(err, pathstr) {
     if (err) throw err;
     var pathData = new PathData(pathstr);
-    pathData.applyMatrix(Matrix.translate({ x:112, y:0 }).scale(0.14));
-    var out = ['1e-3', 'S'];
+    pathData.applyMatrix(Matrix.translate({ x:0, y:0 }));
+    var out = ['1e-2', 'S'];
     for (var i = 0; i < pathData.length; i++) {
         for (var j = 1; j < pathData[i].length; j++) {
-            out.push((pathData[i][j] * 1000).toFixed(0));
+            out.push((pathData[i][j] * 100).toFixed(0));
         }
         out.push(commandMap[pathData[i][0]]);
     }
