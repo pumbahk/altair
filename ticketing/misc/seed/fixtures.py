@@ -1014,6 +1014,7 @@ def build_sales_segment_datum(organization, name, start_at, end_at):
         for delivery_method_index, enabled in enumerate(row) if enabled
         ]
 
+    dayrange = min((end_at - start_at).days, 7)
     return Data(
         'SalesSegment',
         name=name,
@@ -1021,6 +1022,9 @@ def build_sales_segment_datum(organization, name, start_at, end_at):
         end_at=end_at,
         upper_limit=randint(1, 10),
         seat_choice=randint(0, 1) != 0,
+        payment_due_at=end_at - relativedelta(days=randint(0, dayrange)),
+        issuing_start_at=start_at + relativedelta(days=randint(0, dayrange)),
+        issuing_end_at=end_at - relativedelta(days=randint(0, dayrange)),
         payment_delivery_method_pairs=rel(
             payment_delivery_method_pairs,
             'sales_segment_id'
