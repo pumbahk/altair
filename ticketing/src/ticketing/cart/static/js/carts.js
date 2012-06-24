@@ -94,6 +94,17 @@ carts.AppView.prototype.init = function(presenter) {
             view.forcusLeftBox();
         }
     );
+    var create_content_of_shopping_element = function(product){
+        var item = $('<tr/>');
+        var name = $('<td/>').text(product.name);;
+        var price = $('<td/>').text("￥ "+product.price);
+        var quantity = $('<td/>').text(product.quantity + " 枚");
+        item.append(name);
+        item.append(price);
+        item.append(quantity);
+        return item;
+    };
+
     $('#btn-order').click(function(event) {
         event.stopPropagation();
         var values = $("#order-form").serialize();
@@ -104,34 +115,53 @@ carts.AppView.prototype.init = function(presenter) {
             type: 'POST',
             success: function(data, textStatus, jqXHR) {
                 if (data.result == 'OK') {
+
+                    var root = $("#hallName");
+                    // var performance_date = root.find("#performanceDate").text();
+                    var performance_venue = root.find("#performanceVenue").text();
+                    // modal
+                    //$(".modal #performance-name").text(performance_date + performance_venue);
+                    $(".modal #performance-name").text(performance_venue);
+
+
                     var products = data.cart.products;
-                    $('#contentsOfShopping').empty();
+
+                    // insert product items in cart
+                    var root = $('#contentsOfShopping');
+                    root.empty();
                     for (var i=0; i < products.length; i++) {
                         var product = products[i];
-                        var item = $('<tr/>');
-                        var name = $('<th/>');
-                        $(name).text(product.name);
-                        var quantity = $('<td/>');
-                        $(quantity).text(product.quantity + " 枚");
-                        item.append(name);
-                        item.append(quantity);
+                        var item = create_content_of_shopping_element(product);//
                         $('#contentsOfShopping').append(item);
                     }
-                    $('#cart-total-amount').text(data.cart.total_amount);
+                    root.find("tr").last().addClass(".last-child");
 
-                    $('#reserved-confirm-button').click(function() {
-                        window.location.href = data.pyament_url;
-                    });
+
+                    $('#cart-total-amount').text("￥ "+data.cart.total_amount);
+
                     var reserved_dialog = $('#order-reserved').overlay({
                         mask: {
                             color: "#999",
                             opacity: 0.5
                         },
-                        closeOnClick: false})
+                        closeOnClick: false});
+
                     $('#reserved-cancel-button').click(function() {
                         $('#order-reserved').overlay().close();
                     });
+                    
+                    $('#reserved-confirm-button').click(function() {
+                        window.location.href = data.pyament_url;
+                    });
                     reserved_dialog.load();
+                    var loopback = function(){
+                        var target = $("#order-reserved");
+                        if(target.css("display") == "none"){
+                            target.overlay().load();
+                            setTimeout(loopback, 100);
+                        }
+                    }
+                    loopback();
                 } else {
                     var order_error_dialog = $('#order-error-template').overlay({
                         mask: {
@@ -143,6 +173,14 @@ carts.AppView.prototype.init = function(presenter) {
                         $('#order-error-template').overlay().close();
                     });
                     order_error_dialog.load();
+                    var loopback = function(){
+                        var target = $("#order-error-template");
+                        if(target.css("display") == "none"){
+                            target.overlay().load();
+                            setTimeout(loopback, 100);
+                        }
+                    }
+                    loopback();
                 }
             }
         })

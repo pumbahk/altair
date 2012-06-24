@@ -34,7 +34,7 @@
 	font-weight:bold;
 	font-size: 11pt;
 	color:#555;
-	padding: 5px 5px 10px 10px;
+//	padding: 5px 5px 10px 10px;
 }
 
 /* modal */
@@ -101,6 +101,7 @@
 .modal-body table {
     width: 610px;
 	background: url(../img/settlement/bg_seat_top.png) no-repeat 0 0;
+    margin-bottom: 15px;
 }
 
 .modal-body th {

@@ -15,6 +15,12 @@
 
 <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/carts.js')}"></script>
 
+<style type="text/css">
+.modal {
+  font-size: 150%;
+}
+</style>
+
 </head>
 <body id="settlement">
 
@@ -157,22 +163,36 @@ ${p.name} ： ${h.format_number(p.price)}円 <br/>
     </ul>
 -->
 </div>
-<div style="display:none;background:white;color:black;" id="order-reserved">
-                    <h3 id="performance-name"></h3>
-                    <table>
-                        <thead>
-                        <tr id="total">
-                            <th scope="row"><img src="../img/settlement/total.gif" alt="合計金額" width="67" height="16" /></th>
-                            <td>&nbsp;</td>
-                            <td class="align1" id="cart-total-amount">￥</td>
-                        </tr>
-                        <thead>
-                        <tbody id="contentsOfShopping">
-                        </tbody>
-                    </table>
-<button id="reserved-confirm-button">購入する</button>
-<button id="reserved-cancel-button">座席・枚数を選びなおす</button>
+<div class="modal payment" style="display:none" id="order-reserved">
+    <div class="modal-header">
+	  <h1><span id="performance-name"></span></h1>
+	</div>
+	  <div class="modal-inner">
+	<div class="modal-body">
+
+	  <img src="http://stg2.rt.ticketstar.jp/cart/img/img/settlement/total.gif" alt="合計金額" width="67" height="16"
+		   style="margin-bottom:7px;">
+	  <table>
+		<tbody>
+		  <tr class="last-child">
+			<td id="cart-total-amount">￥</td>
+		  </tr>
+		</tbody>
+	  </table>
+
+	  <p class="lead" style="margin-bottom:4px;">内訳</p>
+	  <table>
+		<tbody id="contentsOfShopping">
+		</tbody>
+	  </table>
+	</div>
+	<div class="modal-footer">
+	  <button id="reserved-cancel-button" class="btn-redo"></button>
+	  <button id="reserved-confirm-button" class="btn-buy"></button>
+	</div>
+  </div>
 </div>
+
 <script>
     var selected = ${selected};
     var venues_selection = ${venues_selection};
