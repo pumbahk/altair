@@ -3,7 +3,12 @@ import os
 from datetime import date
 import uuid
 import mimetypes
-from PIL import Image #PIL?
+
+try:
+    from PIL import Image
+except  ImportError:
+    import Image #PIL?
+
 
 import altaircms.tag.api as tag
 from .swfrect import swf_width_and_height
