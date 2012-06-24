@@ -12,7 +12,7 @@ def begin_checkout_form(request):
 def render_checkout(request, cart):
     # checkoutをXMLに変換
     service = api.get_checkout_service(request)
-    xml = service.create_checkout_xml(cart)
+    xml = service.create_checkout_request_xml(cart)
 
     # 署名作成する
     sig = api.sign_to_xml(request, xml)

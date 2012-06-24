@@ -21,12 +21,12 @@ class CheckoutItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     itemName = sa.Column(sa.Unicode(255))
     itemNumbers = sa.Column(sa.Integer)
     itemFee = sa.Column(sa.Integer)
-    #completed_order_id = sa.Column(sa.Integer, sa.ForeignKey("CompletedOrder.id"))
 
-    # OrderConfirming機能 out の場合のみ利用
-    #itemConfirmationResult = sa.Column(sa.Enum('0', '1', '2', '3'))
-    #itemNumbersMessage = sa.Column(sa.Unicode(100))
-    #itemFeeMessage = sa.Column(sa.Unicode(100))
+    # OrderConfirming機能の場合のみ利用
+    checkout_cart_id = sa.Column(sa.Integer, sa.ForeignKey("CheckoutCart.id"))
+    itemConfirmationResult = sa.Column(sa.Enum('0', '1', '2', '3'), default='0')
+    itemNumbersMessage = sa.Column(sa.Unicode(100))
+    itemFeeMessage = sa.Column(sa.Unicode(100))
 
 
 class Checkout(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -47,31 +47,27 @@ class Checkout(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     items = orm.relationship('CheckoutItem', backref="checkout")
 
 
-class CartConfirm(Base, BaseModel, WithTimestamp, LogicallyDeleted):
-    """ 注文情報確認 API
+class CheckoutCartConfirmation(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    """ 注文情報確認
+    CartConfirmingAPIで利用
     """
-    __tablename__ = 'CartConfirm'
+    __tablename__ = 'CheckoutCartConfirmation'
 
     id = sa.Column(sa.Integer, primary_key=True)
-    '''
-    openid = sa.Column(sa.Unicode(255))
-    carts = orm.relationship('CheckoutCart', backref='cart_confirm')
-    created_at = sa.Column(sa.DateTime, default=datetime.now)
-    '''
+    openId = sa.Column(sa.Unicode(255))
+    carts = orm.relationship('CheckoutCart', backref='checkout_cart_confirmation')
 
 
 class CheckoutCart(Base, BaseModel, WithTimestamp, LogicallyDeleted):
-    """ 注文情報確認 API
+    """ 注文情報確認
+    CartConfirmingAPIで利用
     """
     __tablename__ = 'CheckoutCart'
 
     id = sa.Column(sa.Integer, primary_key=True)
-    '''
-    cart_confirm_id = sa.Column(sa.Integer, sa.ForeignKey('CartConfirm.id'))
+    cart_confirm_id = sa.Column(sa.Integer, sa.ForeignKey('CheckoutCartConfirmation.id'))
     cartConfirmationId = sa.Column(sa.Unicode(28))
     orderCartId = sa.Column(sa.String(255))
     orderItemsTotalFee = sa.Column(sa.Integer)
-    items = orm.relationship('CheckoutItem', backref="cart_confirm")
     isTMode = sa.Column(sa.Enum('0', '1'))
-    created_at = sa.Column(sa.DateTime, default=datetime.now)
-    '''
+    items = orm.relationship('CheckoutItem', backref="checkout_cart")

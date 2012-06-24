@@ -475,7 +475,22 @@ class CheckoutView(object):
         form['f'] = h.end_checkout_form(self.request)
         return dict(form=form)
 
-    @view_config(route_name='payment.checkout_order_complete', renderer="carts/checkout_order_complete.html")
+    @view_config(route_name='payment.checkout_cart_confirmation', renderer="carts/checkout_response.html")
+    def checkout_cart_confirmation(self):
+        '''
+        CartConforming機能, 決済可否(セッションタイムアウトのチェック等)の確認を行う
+        '''
+        from ticketing.checkout import api
+        service = api.get_checkout_service(self.request)
+        cart_confirm = service.save_cart_confirm(self.request)
+
+        # セッションタイムアウトで確保在庫が解放されてないかチェックする
+
+        return {
+            'xml':service.create_cart_confirmation_response_xml(cart_confirm)
+        }
+
+    @view_config(route_name='payment.checkout_order_complete', renderer="carts/checkout_response.html")
     def checkout_order_complete(self):
         '''
         注文完了通知を保存する
@@ -485,6 +500,5 @@ class CheckoutView(object):
         result = service.save_order_complete(self.request)
 
         return {
-            'result':result,
-            'complete_time':datetime.now(),
+            'xml':service.create_order_complete_response_xml(result, datetime.now())
         }

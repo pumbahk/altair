@@ -10,6 +10,21 @@ from . import interfaces
 from . import models as m
 
 
+def generate_requestid():
+    """
+    安心決済の一意なリクエストIDを生成する
+    """
+    return uuid.uuid4().hex[:16]  # uuidの前半16桁
+
+def get_checkout_service(request):
+    return request.registry.utilities.lookup([], interfaces.ICheckout)
+
+
+def sign_to_xml(request, xml):
+    signer = request.registry.utilities.lookup([], interfaces.ISigner, "HMAC")
+    return signer(xml)
+
+
 class HMAC_SHA1(object):
 
     def __init__(self, secret):
@@ -28,11 +43,6 @@ class HMAC_MD5(object):
         return hmac.new(self.secret, checkout_xml, hashlib.md5).hexdigest()
 
 
-def sign_to_xml(request, xml):
-    signer = request.registry.utilities.lookup([], interfaces.ISigner, "HMAC")
-    return signer(xml)
-
-
 class Checkout(object):
 
     def __init__(self, service_id, success_url, fail_url, auth_method, is_test):
@@ -42,65 +52,131 @@ class Checkout(object):
         self.auth_method = auth_method
         self.is_test = is_test
 
-    def create_checkout_xml(self, cart):
-        root = et.Element(u'orderItemsInfo')
+    def create_checkout_request_xml(self, cart):
+        root = et.Element('orderItemsInfo')
 
-        et.SubElement(root, u'serviceId').text = self.service_id
-        et.SubElement(root, u'orderCompleteUrl').text = self.success_url
-        et.SubElement(root, u'orderFailedUrl').text = self.fail_url
-        et.SubElement(root, u'authMethod').text = AUTH_METHOD_TYPE.get(self.auth_method)
+        et.SubElement(root, 'serviceId').text = self.service_id
+        et.SubElement(root, 'orderCompleteUrl').text = self.success_url
+        et.SubElement(root, 'orderFailedUrl').text = self.fail_url
+        et.SubElement(root, 'authMethod').text = AUTH_METHOD_TYPE.get(self.auth_method)
         if self.is_test is not None:
-            et.SubElement(root, u'isTMode').text = self.is_test
+            et.SubElement(root, 'isTMode').text = self.is_test
 
         # カート
-        et.SubElement(root, u'orderCartId').text = str(cart.id)
-        et.SubElement(root, u'orderTotalFee').text = str(int(cart.total_amount))
+        et.SubElement(root, 'orderCartId').text = str(cart.id)
+        et.SubElement(root, 'orderTotalFee').text = str(int(cart.total_amount))
 
         # 商品
-        itemsInfo = et.SubElement(root, u'itemsInfo')
+        itemsInfo = et.SubElement(root, 'itemsInfo')
         for carted_product in cart.products:
-            item_el = et.SubElement(itemsInfo, 'item')
-            subelement = functools.partial(et.SubElement, item_el)
-            subelement('itemId').text = str(carted_product.product.id)
-            subelement('itemName').text = carted_product.product.name
-            subelement('itemNumbers').text = str(carted_product.quantity)
-            subelement('itemFee').text = str(int(carted_product.amount))
+            self._create_checkout_item_xml(itemsInfo, **dict(
+                itemId=carted_product.product.id,
+                itemName=carted_product.product.name,
+                itemNumbers=carted_product.quantity,
+                itemFee=carted_product.amount
+            ))
 
         # 商品:システム手数料
-        item_el = et.SubElement(itemsInfo, 'item')
-        subelement = functools.partial(et.SubElement, item_el)
-        subelement('itemId').text = 'system_fee'
-        subelement('itemName').text = u'システム利用料'
-        subelement('itemNumbers').text = '1'
-        subelement('itemFee').text = str(int(cart.system_fee))
+        self._create_checkout_item_xml(itemsInfo, **dict(
+            itemId='system_fee',
+            itemName=u'システム利用料',
+            itemNumbers='1',
+            itemFee=str(int(cart.system_fee))
+        ))
 
         # 商品:決済手数料
-        item_el = et.SubElement(itemsInfo, 'item')
-        subelement = functools.partial(et.SubElement, item_el)
-        subelement('itemId').text = 'transaction_fee'
-        subelement('itemName').text = u'決済手数料'
-        subelement('itemNumbers').text = '1'
-        subelement('itemFee').text = str(int(cart.transaction_fee_amount))
+        self._create_checkout_item_xml(itemsInfo, **dict(
+            itemId='transaction_fee',
+            itemName=u'決済手数料',
+            itemNumbers='1',
+            itemFee=str(int(cart.transaction_fee_amount))
+        ))
 
         # 商品:配送手数料
-        item_el = et.SubElement(itemsInfo, 'item')
-        subelement = functools.partial(et.SubElement, item_el)
-        subelement('itemId').text = 'delivery_fee'
-        subelement('itemName').text = u'配送手数料'
-        subelement('itemNumbers').text = '1'
-        subelement('itemFee').text = str(int(cart.delivery_fee_amount))
+        self._create_checkout_item_xml(itemsInfo, **dict(
+            itemId='delivery_fee',
+            itemName=u'配送手数料',
+            itemNumbers='1',
+            itemFee=str(int(cart.delivery_fee_amount))
+        ))
 
-        return '<?xml version="1.0" encoding="UTF-8"?>' + et.tostring(root)
+        return et.tostring(root)
+
+    def create_cart_confirmation_response_xml(self, cart_confirmation):
+        root = et.Element('cartConfirmationResponse')
+
+        carts_el = et.SubElement(root, 'carts')
+        for cart in cart_confirmation.carts:
+            cart_el = et.SubElement(carts_el, 'cart')
+            subelement = functools.partial(et.SubElement, cart_el)
+            subelement('cartConfirmationId').text = cart.cartConfirmationId
+            subelement('orderCartId').text = cart.orderCartId
+            subelement('orderItemsTotalFee').text = str(cart.orderItemsTotalFee)
+
+            items_el = subelement('items')
+            for item in cart.items:
+                self._create_checkout_item_xml(items_el, **dict(
+                    itemId=item.itemId,
+                    itemNumbers=str(item.itemNumbers),
+                    itemFee=str(item.itemFee),
+                    itemConfirmationResult=item.itemConfirmationResult,
+                    itemNumbersMessage=item.itemNumbersMessage,
+                    itemFeeMessage=item.itemFeeMessage,
+                ))
+
+        return et.tostring(root)
+
+    def create_order_complete_response_xml(self, result, complete_time):
+        root = et.Element('orderCompleteResponse')
+        et.SubElement(root, 'result').text = str(result)
+        et.SubElement(root, 'completeTime').text = str(complete_time)
+
+        return et.tostring(root)
+
+    def _create_checkout_item_xml(self, parent, **kwargs):
+        el = et.SubElement(parent, 'item')
+        subelement = functools.partial(et.SubElement, el)
+        subelement('itemId').text = str(kwargs.get('itemId'))
+        subelement('itemNumbers').text = str(kwargs.get('itemNumbers'))
+        subelement('itemFee').text = str(int(kwargs.get('itemFee')))
+        if 'itemName' in kwargs:
+            subelement('itemName').text = kwargs.get('itemName')
+        if 'itemConfirmationResult' in kwargs:
+            subelement('itemConfirmationResult').text = str(kwargs.get('itemConfirmationResult'))
+        if 'itemNumbersMessage' in kwargs:
+            subelement('itemNumbersMessage').text = str(kwargs.get('itemNumbersMessage'))
+        if 'itemFeeMessage' in kwargs:
+            subelement('itemFeeMessage').text = str(kwargs.get('itemFeeMessage'))
+
+    def save_cart_confirm(self, request):
+        confirmId = request.params['confirmId']
+        xml = confirmId.replace(' ', '+').decode('base64')
+        cart_confirmation = self._parse_cart_confirmation_xml(et.XML(xml))
+        cart_confirmation.save()
+
+        return cart_confirmation
 
     def save_order_complete(self, request):
         confirmId = request.params['confirmId']
         xml = confirmId.replace(' ', '+').decode('base64')
-        completed_order = self._parse_order_complete_request(et.XML(xml))
-        completed_order.save()
+        checkout = self._parse_order_complete_xml(et.XML(xml))
+        checkout.save()
 
         return RESULT_FLG_SUCCESS
 
-    def _parse_order_complete_request(self, root):
+    def _parse_cart_confirmation_xml(self, root):
+        if root.tag != 'cartConfirmationRequest':
+            return None
+
+        cart_confirmation = m.CheckoutCartConfirmation()
+        for e in root:
+            if e.tag == 'openId':
+                cart_confirmation.openId = e.text.strip()
+            elif e.tag == 'carts':
+                self._parse_cart_xml(e, cart_confirmation)
+        return cart_confirmation
+
+    def _parse_order_complete_xml(self, root):
         if root.tag != 'orderCompleteRequest':
             return None
 
@@ -119,10 +195,29 @@ class Checkout(object):
             elif e.tag == 'usedPoint':
                 checkout.usedPoint = e.text.strip()
             elif e.tag == 'items':
-                self._parse_item(e, checkout)
+                self._parse_item_xml(e, checkout)
         return checkout
 
-    def _parse_item(self, element, checkout):
+    def _parse_cart_xml(self, element, cart_confirmation):
+        for item_el in element:
+            if item_el.tag != 'cart':
+                continue
+
+            cart = m.CheckoutCart()
+            cart_confirmation.carts.append(cart)
+            for e in item_el:
+                if e.tag == 'cartConfirmationId':
+                    cart.cartConfirmationId = e.text.strip()
+                elif e.tag == 'orderCartId':
+                    cart.orderCartId = e.text.strip()
+                elif e.tag == 'orderItemsTotalFee':
+                    cart.orderItemsTotalFee = int(e.text.strip())
+                elif e.tag == 'isTMode':
+                    cart.isTMode = int(e.text.strip())
+                elif e.tag == 'items':
+                    self._parse_item_xml(e, cart)
+
+    def _parse_item_xml(self, element, checkout):
         for item_el in element:
             if item_el.tag != 'item':
                 continue
@@ -138,40 +233,6 @@ class Checkout(object):
                     item.itemNumbers = int(e.text.strip())
                 elif e.tag == 'itemFee':
                     item.itemFee = int(e.text.strip())
-
-
-def get_checkout_service(request):
-    return request.registry.utilities.lookup([], interfaces.ICheckout)
-
-def generate_requestid():
-    """
-    安心決済の一意なリクエストIDを生成する
-    """
-    return uuid.uuid4().hex[:16]  # uuidの前半16桁
-
-def confirmation_to_xml(confirmation):
-    root = et.Element('cartConfirmationResponse')
-    carts_el = et.SubElement(root, 'carts')
-
-    for cart in confirmation.carts:
-        cart_el = et.SubElement(carts_el, 'cart')
-        subelement = functools.partial(et.SubElement, cart_el)
-        subelement('cartConfirmationId').text = cart.cartConfirmationId
-        subelement('orderCartId').text = cart.orderCartId
-        subelement('orderItemsTotalFee').text = str(cart.orderItemsTotalFee)
-        items_el = subelement('items')
-
-        for item in cart.items:
-            item_el = et.SubElement(items_el, 'item')
-            isublement = functools.partial(et.SubElement, item_el)
-            isublement('itemId').text = item.itemId
-            isublement('itemNumbers').text = str(item.itemNumbers)
-            isublement('itemFee').text = str(item.itemFee)
-            isublement('itemConfirmationResult').text = item.itemConfirmationResult
-            isublement('itemNumbersMessage').text = item.itemNumbersMessage
-            isublement('itemFeeMessage').text = item.itemFeeMessage
-
-    return et.tostring(root)
 
 
 AUTH_METHOD_TYPE = {
