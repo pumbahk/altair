@@ -39,7 +39,7 @@ class Checkout(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     orderId = sa.Column(sa.Unicode(30))
     orderControlId = sa.Column(sa.Unicode(31))
     orderCartId = sa.Column(sa.Unicode(255))  # sa.ForeignKey('ticketing_carts.id')
-    openid = sa.Column(sa.Unicode(128))
+    openId = sa.Column(sa.Unicode(128))
     isTMode = sa.Column(sa.Enum('0', '1'))
     usedPoint = sa.Column(sa.Integer)
     orderTotalFee = sa.Column(sa.Integer)

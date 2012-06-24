@@ -192,6 +192,8 @@ class Checkout(object):
                 checkout.orderTotalFee = e.text.strip()
             elif e.tag == 'orderDate':
                 checkout.orderDate = e.text.strip()
+            elif e.tag == 'isTMode':
+                checkout.isTMode = e.text.strip()
             elif e.tag == 'usedPoint':
                 checkout.usedPoint = e.text.strip()
             elif e.tag == 'items':
