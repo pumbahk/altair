@@ -149,12 +149,17 @@ ${p.name} ： ${h.format_number(p.price)}円 <br/>
 	<!-- ========== /main ========== -->
 	
 <!-- /container --></div>
-<div style="display:none;background:white;color:black;" id="order-error-template">
-    <dl id="errorTitle">
-        <dt><img src="${request.static_url('ticketing.cart:static/img/settlement/error.gif')}" width="624" height="224" /></dt>
-        <dd>在庫がありません。</dd>
-    </dl>
-<button id="error-close-button">座席・枚数を選びなおす</button>
+
+<div class="modal payment" id="order-error-template" style="display:none">
+  <div class="modal-header">
+	<h1><span>在庫がありません</span></h1>
+  </div>
+  <div class="modal-inner">
+	<div class="modal-body">
+	  <img src="${request.static_url('ticketing.cart:static/img/settlement/error.gif')}" width="624" height="224" />
+	</div>
+	<div class="modal-footer">
+	  <button id="error-close-button" class="btn-redo"></button>
 <!--
     <ul id="errorBtn">
         <li><a href="#"><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_wait.gif')}" alt="空席待ち" width="206" height="46" /></a></li>
@@ -162,7 +167,10 @@ ${p.name} ： ${h.format_number(p.price)}円 <br/>
         <li id="errorBtnTop"><a href="#">イベントトップに戻る</a></li>
     </ul>
 -->
+	</div>
+  </div>
 </div>
+
 <div class="modal payment" style="display:none" id="order-reserved">
     <div class="modal-header">
 	  <h1><span id="performance-name"></span></h1>
@@ -170,7 +178,7 @@ ${p.name} ： ${h.format_number(p.price)}円 <br/>
 	  <div class="modal-inner">
 	<div class="modal-body">
 
-	  <img src="http://stg2.rt.ticketstar.jp/cart/img/img/settlement/total.gif" alt="合計金額" width="67" height="16"
+	  <img src="${request.static_url('ticketing.cart:static/img/settlement/total.gif')}" alt="合計金額" width="67" height="16"
 		   style="margin-bottom:7px;">
 	  <table>
 		<tbody>
