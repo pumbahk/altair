@@ -50,7 +50,6 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     multicheckout_approval_no = Column(Unicode(255), doc=u"マルチ決済受領番号")
 
-
     payment_delivery_pair_id = Column(Identifier, ForeignKey("PaymentDeliveryMethodPair.id"))
     payment_delivery_pair = relationship("PaymentDeliveryMethodPair")
 

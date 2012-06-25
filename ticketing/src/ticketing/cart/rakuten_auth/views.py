@@ -4,6 +4,7 @@ import pickle
 
 from pyramid.httpexceptions import HTTPFound, HTTPUnauthorized
 from pyramid.view import view_config
+from pyramid.response import Response
 from pyramid import security
 
 from .api import get_open_id_consumer, authenticated_user, remember_user, get_return_url
@@ -23,4 +24,13 @@ class RootView(object):
         return HTTPUnauthorized()
 
     def verify(self):
-        return HTTPFound(location=get_return_url(self.request))
+        return_url = get_return_url(self.request)
+        if return_url:
+            return HTTPFound(location=return_url)
+        else:
+            ''' '''
+            # return HTTPFound(location="/mypage")
+
+    def error(self):
+        return Response(body="auth error")
+        

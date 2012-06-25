@@ -15,6 +15,7 @@ from pyramid import security
 from ticketing.cart import logger
 
 from .interfaces import IRakutenOpenID
+from zope.interface import implementer
 import random
 from .. import helpers as cart_helpers
 from ticketing.models import DBSession
@@ -42,10 +43,9 @@ def checkdigit(numbers):
     return str(check)
     
 def get_return_url(request):
-    print 'get_return_url'
     session = request.environ['session.rakuten_openid']
-    print session
-    return session.get('return_url')
+    return_url = session.get('return_url')
+    return return_url
 
 def authenticated_user(request):
     data = security.authenticated_userid(request)
@@ -60,17 +60,22 @@ def remember_user(request, user_data):
     headers = security.remember(request, data.encode('base64'))
     return headers
 
+def forget(request):
+    return security.forget(request)
+
 def get_open_id_consumer(request):
     return request.registry.queryUtility(IRakutenOpenID)
 
 DEFAULT_BASE_URL = 'https://api.id.rakuten.co.jp/openid/auth'
 DEFAULT_OAUTH_URL = 'https://api.id.rakuten.co.jp/openid/oauth/accesstoken'
 
+@implementer(IRakutenOpenID)
 class RakutenOpenID(object):
-    def __init__(self, base_url, return_to, consumer_key, 
+    def __init__(self, base_url, return_to, error_to, consumer_key,
             secret=None, access_token_url=None, extra_verify_urls=None):
         self.base_url = base_url
         self.return_to = return_to
+        self.error_to = error_to
         self.consumer_key = consumer_key
         self.secret = secret
         if extra_verify_urls is None:
@@ -150,15 +155,27 @@ class RakutenOpenID(object):
         access_token = self.get_access_token(self.consumer_key, request_token, self.secret)
         logger.debug('access token : %s' % access_token)
 
-        user_info = parse_rakutenid_basicinfo(self.call_rakutenid_api(self.consumer_key, 
-                                                   access_token["oauth_token"], self.secret + "&" + access_token['oauth_token_secret'],
-                                                   rakuten_oauth_api='rakutenid_basicinfo',
-                                                ))
-        contact_info = parse_rakutenid_basicinfo(self.call_rakutenid_api(self.consumer_key, 
-                                                   access_token["oauth_token"], self.secret + "&" + access_token['oauth_token_secret'],
-                                                   rakuten_oauth_api='rakutenid_contactinfo',
-                                                ))
+        oauth_token_secret = access_token.get('oauth_token_secret')
+        if oauth_token_secret:
+            secret = self.secret + "&" + oauth_token_secret
 
+            user_info = parse_rakutenid_basicinfo(self.call_rakutenid_api(self.consumer_key,
+                                                       access_token["oauth_token"], secret,
+                                                       rakuten_oauth_api='rakutenid_basicinfo',
+                                                    ))
+            contact_info = parse_rakutenid_basicinfo(self.call_rakutenid_api(self.consumer_key,
+                                                       access_token["oauth_token"], secret,
+                                                       rakuten_oauth_api='rakutenid_contactinfo',
+                                                    ))
+            point_account = parse_rakutenid_pointaccount(self.call_rakutenid_api(self.consumer_key,
+                                                       access_token["oauth_token"], secret,
+                                                       rakuten_oauth_api='rakutenid_pointaccount',
+                                                    ))
+        else:
+            logger.debug("authentication NG")
+            return None
+
+        print point_account
         logger.debug('user_info : %s' % user_info)
         user = cart_helpers.get_or_create_user(None, identity['claimed_id'])
         if user.user_profile is None:
@@ -272,51 +289,15 @@ class RakutenOpenID(object):
 
         return response_body
 
-    def get_rakutenid_pointacount(self, oauth_consumer_key, access_token, secret):
-        method = "GET"
-        url = "https://api.id.rakuten.co.jp/openid/oauth/call"
-        oauth_token = access_token
-        rakuten_oauth_api = 'rakutenpoint_api'
-        name_of_api = 'simpleget'
-        oauth_timestamp = int(time.time() * 1000)
-        oauth_nonce = uuid.uuid4().hex
-        oauth_signature_method = 'HMAC-SHA1'
-        oauth_version = '1.0'
-        oauth_signature = create_oauth_sigunature(method, url, oauth_consumer_key, secret,
-            oauth_token, oauth_signature_method, oauth_timestamp, oauth_nonce, oauth_version,
-            [("rakuten_oauth_api", rakuten_oauth_api), ("nameofapi", name_of_api)])
-
-        params = [
-            ("oauth_consumer_key", oauth_consumer_key),
-            ("oauth_token", oauth_token),
-            ("oauth_signature_method", oauth_signature_method),
-            ("oauth_timestamp", oauth_timestamp),
-            ("oauth_nonce", oauth_nonce),
-            ("oauth_version", oauth_version),
-            ("oauth_signature", oauth_signature),
-            ("rakuten_oauth_api", rakuten_oauth_api),
-            ("nameofapi", name_of_api),
-        ]
-
-        request_url = url + '?' + urllib.urlencode(params)
-        logger.debug("get point get: %s" % request_url)
-
-        try:
-            f = urllib2.urlopen(request_url)
-            response_body = f.read()
-            f.close()
-            return response_body
-        except urllib2.HTTPError as e:
-            logger.debug(e.read())
-            logger.exception(e)
-            raise
 
 def parse_access_token_response(response):
     return dict([(key, value[0]) for key, value in urlparse.parse_qs(response).items()])
 
 def parse_rakutenid_basicinfo(response):
-    
     return dict([line.split(":", 1) for line in response.split("\n")])
+
+def parse_rakutenid_pointaccount(response):
+    return response
 
 def create_signature_base(method, url, oauth_consumer_key, secret, oauth_token, oauth_signature_method, oauth_timestamp, oauth_nonce, oauth_version, form_params):
     params = sorted(form_params + [

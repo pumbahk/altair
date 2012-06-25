@@ -4,8 +4,9 @@ from pyramid.view import view_config
 
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from ticketing.orders.models import Order, OrderedProduct, OrderedProductItem
-from ticketing.cart.rakuten_auth.api import authenticated_user
+from ticketing.cart.rakuten_auth.api import authenticated_user, forget
 from ticketing.cart import helpers as h
+from .helpers import make_order_data
 
 import webhelpers.paginate as paginate
 
@@ -38,13 +39,7 @@ class MyPageView(object):
         if self.request.method == 'POST':
             condition = self.request.POST.get('order_number')
             if condition:
-                query = query.filter(Order.id==condition)
-            condition = self.request.POST.get('order_datetime_from')
-            if condition:
-                query = query.filter(Order.created_at>=condition)
-            condition = self.request.POST.get('order_datetime_to')
-            if condition:
-                query = query.filter(Order.created_at<=condition)
+                query = query.filter(Order.order_no==condition)
 
         orders = paginate.Page(
             query,
@@ -53,9 +48,21 @@ class MyPageView(object):
             url=paginate.PageURL_WebOb(self.request)
         )
 
-        return {
-            'orders':orders,
-        }
+        print user.user_profile
+        return dict(
+            user = user.user_profile,
+            orders = orders
+        )
+
+    @view_config(route_name='mypage.logout', renderer='mypage/logout.html', xhr=False, permission="view")
+    def logout(self):
+        """
+        """
+        headers = forget(self.request)
+        return HTTPFound(location = '/',
+                         headers = headers)
+
+
 
     @view_config(route_name='mypage.order', renderer='mypage/order.html', xhr=False, permission="view")
     def order(self):
@@ -71,20 +78,9 @@ class MyPageView(object):
         except NoResultFound, e:
             raise HTTPNotFound()
 
-        performances = dict()
-        for ordered_product in order.items:
-            #product = ordered_product.product
-            for ordered_product_item in ordered_product.ordered_product_items:
-                product_item = ordered_product_item.product_item
-                performance = product_item.performance
-                performances[performance.id]=performance
-
         import locale
         locale.setlocale(locale.LC_ALL, 'ja_JP')
-
         return dict(
-            venue_names = u",".join([u"%s%s" % (p.venue.name, (u"(%s)" % p.venue.site.prefecture if p.venue.site.prefecture else '')) for p in performances.itervalues()]),
-            performance_names = u",".join([p.name for p in performances.itervalues()]),
-            performance_dates = [p.start_on for p in performances.itervalues()],
-            order=order
+            order = make_order_data(order),
+            user = user.user_profile
         )

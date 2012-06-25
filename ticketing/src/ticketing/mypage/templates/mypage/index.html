@@ -17,12 +17,14 @@
                 <dt><a href="${request.route_path('mypage.order', order_id=order.id)}">${order.items[0].product.event.title}</a></dt>
                 <dd>2012/3/24(土) 東京ビッグサイト（東京国際展示場）(東京都)</dd>
                 <dd>
-                    <img src="${request.static_url('ticketing.cart:static/img/mypage/btn_ticket_off.gif')}" alt="チケット追加購入" width="124" height="22" />
+                  ##<img src="${request.static_url('ticketing.cart:static/img/mypage/btn_ticket_off.gif')}" alt="チケット追加購入" width="124" height="22" />
                   ##<img src="${request.static_url('ticketing.cart:static/img/mypage/btn_transfer_off.gif')}" alt="譲渡・出品" width="88" height="22" />
-                    <img src="${request.static_url('ticketing.cart:static/img/mypage/btn_invoice_off.gif')}" alt="請求書発行" width="88" height="22" /></dd>
+                  ##<img src="${request.static_url('ticketing.cart:static/img/mypage/btn_invoice_off.gif')}" alt="請求書発行" width="88" height="22" /></dd>
             </dl>
         </div>
         % endfor
+      % else:
+        購入履歴はありません。
       % endif
     </div>
     <!-- InstanceEndEditable -->

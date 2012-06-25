@@ -41,6 +41,7 @@ def includeme(config):
 
     config.add_view('.views.RootView', attr="login", route_name="rakuten_auth.login")
     config.add_view('.views.RootView', attr="verify", route_name="rakuten_auth.verify")
+    config.add_view('.views.RootView', attr="error", route_name="rakuten_auth.error")
     config.set_forbidden_view('.views.RootView', attr="login")
     
     config.set_authorization_policy(ACLAuthorizationPolicy())
@@ -56,6 +57,7 @@ def main(global_conf, **settings):
     config.add_view('.signout', route_name='signout')
     config.add_route('rakuten_auth.login', '/login')
     config.add_route('rakuten_auth.verify', '/verify')
+    config.add_route('akuten_auth.error', '/verify')
 
     config.include(".")
 
