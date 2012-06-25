@@ -66,7 +66,7 @@
 						</tr>
 -->
 						<tr id="total">
-							<th scope="row"><img src="../img/settlement/total.gif" alt="合計金額" width="67" height="16" /></th>
+                            <th scope="row"><img src="${request.static_url('ticketing.cart:static/img/settlement/total.gif')}" alt="合計金額" width="67" height="16" /></th>
 							<td>&nbsp;</td>
 							<td class="align1">￥${h.format_number(cart.total_amount)}</td>
 						</tr>
