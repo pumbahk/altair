@@ -18,6 +18,8 @@ def includeme(config):
     # 購入系
     config.add_route('cart.index', 'events/{event_id}')
     config.add_route('cart.seat_types', 'events/{event_id}/performances/{performance_id}/seat_types')
+    config.add_route('cart.seats', 'events/{event_id}/performances/{performance_id}/venues/{venue_id}/seats')
+    config.add_route('cart.seat_adjacencies', 'events/{event_id}/performances/{performance_id}/venues/{venue_id}/seat_adjacencies/{length_or_range}')
     config.add_route('cart.products', 'events/{event_id}/performances/{performance_id}/seat_types/{seat_type_id}/products')
     config.add_route('cart.date.products', 'events/{event_id}/products')
 
