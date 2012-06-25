@@ -44,7 +44,7 @@ class SearchPageResource(object):
         return QueryParamsRender(query_params)
 
     def get_result_sequence_from_query_params(self, query_params, searchfn=_get_mocked_pageset_query):
-        logger.info(pprint.pformat(query_params))
+        logger.debug(query_params)
         qp = deepcopy(query_params)
         # escape query
         if 'query' in qp:

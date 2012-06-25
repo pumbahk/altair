@@ -119,13 +119,12 @@ class SearchByKindView(object):
     def search_by_deal_cond(self):
         """ 販売条件で検索した結果を表示
         """
-        params = MultiDict({"deal_cond": self.request.matchdict["value"]})
+        params = MultiDict({self.request.matchdict["value"]: True})
         query_params = forms.DealCondPartForm(params).make_query_params()
         result_seq = self.context.get_result_sequence_from_query_params(
             query_params,
             searchfn=searcher.get_pageset_query_from_deal_cond
             )
-
         ## query_paramsをhtml化する
         html_query_params = self.context.get_query_params_as_html(query_params)
         ### header page用のcategoryを集めてくる
