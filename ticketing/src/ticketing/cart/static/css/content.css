@@ -1482,7 +1482,7 @@
 .settlementBoxInner2 {
 	height: 1%;
 	overflow: hidden;
-	padding: 0 12px 10px;
+	padding: 0 16px 10px 12px;
 	background: url(../img/settlement/bg_box_top_02.gif) no-repeat 0 0;
 }
 
@@ -1510,8 +1510,14 @@
 }
 
 #settlementOperation .settlementOperationPaneInner {
+  width: 906px;
+	height: 500px;
+	overflow: hidden;
+}
+
+#settlementOperation .settlementOperationPaneInner .settlementOperationPaneInnerContent {
 	position: relative;
-	height: 350px;
+	width: 1298px;
 }
 
 #selectSeatType {
@@ -1548,8 +1554,8 @@
 }
 
 #selectSeatType .seatListContainer {
-  height: 318px;
 	width: 395px;
+  height: 462px;
 	overflow: auto;
 	position: relative;
 }
@@ -1675,6 +1681,97 @@
 }
 
 #selectBuy li {
+	margin-bottom: 5px;
+}
+
+#selectSeat {
+	position: absolute;
+	top: 0px;
+	left: 392px;
+	width: 865px;
+	height: 490px;
+	margin-bottom: 10px;
+	border: 1px solid #eee;
+	border-right: 2px solid #ccc;
+	border-bottom: 2px solid #ccc;
+	background-color: #ffffff;
+	z-index: 10;
+}
+
+.selectSeatLeftPane {
+	float: left;
+	width: 432px;
+	height: 478px;
+  padding: 11px 0 11px 11px;
+}
+
+.selectSeatRightPane {
+	float: right;
+	width: 406px;
+	height: 468px;
+	padding: 0 11px 11px 0;
+}
+
+#selectSeat .venueViewer {
+  width: 430px;
+  height: 466px;
+  border: 1px solid #ccc;
+}
+
+#selectSeat.blur #selectProduct h3 {
+	padding: 32px 0 0 0;
+	background: url(../img/settlement/select.blur.gif) no-repeat;
+	height: 0px;
+	overflow: hidden;
+}
+
+#selectSeat.focused #selectProduct h3 {
+	padding: 32px 0 0 0;
+	background: url(../img/settlement/select.focused.gif) no-repeat;
+	height: 0px;
+	overflow: hidden;
+}
+
+#selectSeat #selectProduct dl {
+	width: 395px;
+	margin: 0 0 10px 9px;
+	background: url(../img/settlement/bg_select_buy_top.gif) no-repeat 0 0;
+}
+
+#selectSeat #selectProduct dt {
+	padding: 15px 15px 10px;
+	font-weight: bold;
+}
+
+#selectSeat #selectProduct dd {
+	padding: 0 10px 10px;
+	height: 320px;
+	background: url(../img/settlement/bg_select_buy_bottom.gif) no-repeat left bottom;
+}
+
+#selectSeat #selectProduct table {
+	width: 100%;
+	border-top: 1px solid #cccccc;
+}
+
+#selectSeat #selectProduct th {
+	padding: 5px;
+	border-top: 1px dotted #cccccc;
+}
+
+#selectSeat #selectProduct td {
+	padding: 5px;
+	border-top: 1px dotted #cccccc;
+	font-weight: bold;
+	text-align: right;
+}
+
+#selectSeat #selectProduct ul {
+	float: right;
+	padding: 0 13px 10px 0;
+}
+
+#selectSeat #selectProduct li {
 	margin-bottom: 5px;
 }
 
