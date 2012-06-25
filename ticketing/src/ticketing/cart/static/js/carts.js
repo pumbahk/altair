@@ -19,13 +19,14 @@ var util = {
 };
 
 var carts = {};
-carts.init = function(venues_selection, selected, upper_limit) {
+carts.init = function(venues_selection, selected, upper_limit, cart_release_url) {
     var model = new carts.Model(venues_selection);
     var presenter = new carts.Presenter(model, upper_limit);
     carts.appView = new carts.AppView();
     carts.appView.init(presenter);
     $('#date-select').val(selected[1]);
     $('#date-select').change();
+    carts.cart_release_url = cart_release_url;
     // initial setup
 };
 
@@ -142,7 +143,14 @@ carts.AppView.prototype.init = function(presenter) {
                         closeOnClick: false});
 
                     $('#reserved-cancel-button').click(function() {
-                        $('#order-reserved').overlay().close();
+                        $.ajax({
+                            url: carts.cart_release_url,
+                            dataType: 'json',
+                            type: 'POST',  
+                            success: function() {
+                                $('#order-reserved').overlay().close();
+                            }
+                        });
                     });
                     
                     $('#reserved-confirm-button').click(function() {
@@ -211,20 +219,44 @@ carts.AppView.prototype.update_performance_header_venue = function(selected_venu
     $("#hallName #performanceVenue").text(selected_venue);
 }
 
-carts.AppView.prototype.update_settlement_detail = function(venues){
+carts.AppView.prototype.update_settlement_detail = function(venues, selected_date){
     // update settleElementBox
     var new_td_venues = [];
     $.each(venues, function(index, value){
         new_td_venues.push(value["name"]);
     })
-    $("#settlementEventDetail #venue").text(new_td_venues.join(", "));
+    var root = $("#settlementEventDetail");
+    root.find("#venue").text(new_td_venues.join(", "));
+    root.find("#performance_date").text(util.datestring_japanize(selected_date));
 };
 
 carts.AppView.prototype.update_settlement_pricelist = function(products){
-    var arr = [];
-    $.each(products, function(index, value){
-        arr.push(value.name + ": " + value.price + "円");
-    });
+    var arr = [], 
+        indices = [], 
+        grouped = {};
+
+    // refine product order
+    for(var i=0, j=products.length; i<j; i++){
+        var product = products[i];
+        var prefix = product.name.charAt(0);
+        if(!grouped[prefix]){
+            indices.push(prefix);
+            grouped[prefix] = [];
+        }
+        grouped[prefix].push(product);
+    }
+
+    // listing via grouped order.
+    for(var i=0, j=indices.length; i<j; i++){
+        var prefix = indices[i];
+        var grouped_products = grouped[prefix]
+        for(var k=0, l=grouped_products.length; k<l; k++){
+            var value = grouped_products[k];
+            arr.push(value.name + ": " + value.price + "円");
+        }
+        arr.push("");
+    }
+
     $("#settlementEventDetail #pricelist").html(arr.join("<br/>"));
 };
 
@@ -316,7 +348,7 @@ carts.Presenter.prototype.on_date_selected = function(selected_date){
 
     view.update_performance_header_date(selected_date);
     view.update_venues_selectfield(venues, selected_date);
-    view.update_settlement_detail(venues);
+    view.update_settlement_detail(venues, selected_date);
 
     this.model.fetch_products_from_date(
         products_from_selected_date_url+"?selected_date="+selected_date,  // this is global variable

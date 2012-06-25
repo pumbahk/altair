@@ -171,8 +171,8 @@
 				<table summary="イベント詳細情報">
 					<tbody>
 						<tr>
-							<th scope="row">開催期間</th>
-							<td>${event['first_start_on']} 〜 ${event['final_start_on']}</td>
+							<th scope="row">開催日時</th>
+							<td id="performance_date"></td>
 						</tr>
 						<tr>
 							<th scope="row">会場</th>
@@ -260,13 +260,14 @@
 </div>
 
 <script type="text/javascript">
+        var cart_release_url = "${cart_release_url}";
 		var selected = ${selected};
 		var venues_selection = ${venues_selection};
 		var upper_limit = ${upper_limit};
 		var order_url = "${order_url}";
 		var products_from_selected_date_url = "${products_from_selected_date_url}";
 		$(function() {
-				carts.init(venues_selection, selected, upper_limit);
+				carts.init(venues_selection, selected, upper_limit, cart_release_url);
 		})
 </script>
 </body>

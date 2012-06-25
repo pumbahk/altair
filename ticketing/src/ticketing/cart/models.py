@@ -109,6 +109,18 @@ class CartedProductItem(Base):
             seat_status.status = int(c_models.SeatStatusEnum.Ordered)
         self.finished_at = datetime.now()
 
+    def release(self):
+        # 座席開放
+        for seat_status in self.seat_statuses:
+            seat_status.status = int(c_models.SeatStatusEnum.Vacant)
+        # 在庫数戻し
+        
+        logger.debug('release stock id=%s quantity =%d' % (self.product_item.stock_id, self.quantity))
+        #stock_status = c_models.StockStatus.query.filter(c_models.StockStatus.stock_id==self.product_item.stock_id).one()
+        up = c_models.StockStatus.__table__.update().values(
+                {"quantity": c_models.StockStatus.quantity + self.quantity}
+        ).where(c_models.StockStatus.stock_id==self.product_item.stock_id)
+        DBSession.bind.execute(up)
 
 class CartedProduct(Base):
     __tablename__ = 'ticketing_cartedproducts'
@@ -160,6 +172,13 @@ class CartedProduct(Base):
             item.finish()
         self.finished_at = datetime.now()
 
+    def release(self):
+        """ 開放
+        """
+        for item in self.items:
+            item.release()
+
+        
 
 class Cart(Base):
     __tablename__ = 'ticketing_carts'
@@ -264,3 +283,10 @@ class Cart(Base):
         for product in self.products:
             product.finish()
         self.finished_at = datetime.now()
+
+    def release(self):
+        """ カート開放
+        """
+
+        for product in self.products:
+            product.release()

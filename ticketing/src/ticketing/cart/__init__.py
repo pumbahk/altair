@@ -23,6 +23,7 @@ def includeme(config):
 
     config.add_route('cart.order', 'order')
     config.add_route('cart.payment', 'payment')
+    config.add_route('cart.release', 'release')
 
     # 完了／エラー
     config.add_route('payment.confirm', 'confirm')
