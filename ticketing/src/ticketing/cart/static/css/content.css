@@ -1514,7 +1514,7 @@
 	height: 350px;
 }
 
-#selectSeat {
+#selectSeatType {
 	position: absolute;
 	left: 0px;
 	top: 0px;
@@ -1524,21 +1524,21 @@
 	overflow: hidden;
 }
 
-#selectSeat.blur h3 {
+#selectSeatType.blur h3 {
 	padding: 32px 0 0 0;
 	background: url(../img/settlement/title_select.blur.gif) no-repeat;
 	height: 0px;
 	overflow: hidden;
 }
 
-#selectSeat.focused h3 {
+#selectSeatType.focused h3 {
 	padding: 32px 0 0 0;
 	background: url(../img/settlement/title_select.focused.gif) no-repeat;
 	height: 0px;
 	overflow: hidden;
 }
 
-#selectSeat .arrow {
+#selectSeatType .arrow {
   position: absolute;
 	width: 15px;
 	height: 26px;
@@ -1547,28 +1547,35 @@
 	z-index: 200;
 }
 
-#selectSeat .seatListContainer {
+#selectSeatType .seatListContainer {
   height: 318px;
 	width: 395px;
 	overflow: auto;
 	position: relative;
 }
 
-#selectSeat .seatListContainer ul {
+#selectSeatType.blur .seatListContainer {
+	overflow: hidden;
+}
+
+#selectSeatType .seatListContainer ul {
 	padding: 0 0 5px 4px;
 }
 
-#selectSeat .seatListContainer li {
+#selectSeatType .seatListContainer li {
 	height: 26px;
 	overflow: hidden;
 	line-height: 16px;
 	font-weight: bold;
+}
+
+#selectSeatType.blur .seatListContainer li {
 	filter: alpha(opacity=50);
 	-moz-opacity: 0.5;
 	opacity: 0.5;
 }
 
-#selectSeat .seatListContainer li .seatColor {
+#selectSeatType .seatListContainer li .seatColor {
 	float: left;
 	width: 14px;
 	height: 14px;
@@ -1578,26 +1585,26 @@
 	margin: 5px 13px 5px 9px;
 }
 
-#selectSeat .seatListContainer li .seatName {
+#selectSeatType .seatListContainer li .seatName {
 	float: left;
 	height; 16px;
 	padding: 5px 0;
 }
 
-#selectSeat .seatListContainer li .seatState {
+#selectSeatType .seatListContainer li .seatState {
 	float: right;
 	margin: 5px 16px;
 }
 
-#selectSeat .seatListContainer li.seatEven {
+#selectSeatType .seatListContainer li.seatEven {
 	background: url(../img/settlement/bg_seat_even.gif) no-repeat 0 0;
 }
 
-#selectSeat .seatListContainer li.seatOdd {
-	background: url(../img/settlement/bg_seat_odd.gif) no-repeat 0 0;
+#selectSeatType .seatListContainer li.seatOdd {
+	background: url(../img/settlement/bg_seat_even.gif) no-repeat 0 0;
 }
 
-#selectSeat .seatListContainer li.selected {
+#selectSeatType .seatListContainer li.selected {
 	filter: alpha(opacity=100);
 	-moz-opacity: 1.0;
 	opacity: 1.0;

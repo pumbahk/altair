@@ -78,7 +78,7 @@
 					<span id="performanceVenue">幕張メッセイベントホール</span>
 				</h2>
 				<div class="settlementOperationPaneInner">
-					<div id="selectSeat" class="focused">
+					<div id="selectSeatType" class="focused">
 						<h3 class="lead">席種をお選びください</h3>
             <div class="seatListContainer main">
               <ul id="seatTypeList">
@@ -86,8 +86,8 @@
             </div>
 						<script type="text/javascript">
 							(function () {
-								var selectSeat = $('#selectSeat');
-								var ul = selectSeat.find('.seatListContainer ul');
+								var selectSeatType = $('#selectSeatType');
+								var ul = selectSeatType.find('.seatListContainer ul');
 								var selected = ul.find("li.selected");
 								var ulTopOffset = ul.parent()[0].offsetTop;
 								var arrow = null, arrowAbsPos = null;
@@ -118,7 +118,7 @@
 										if (!arrow) {
 											arrow = $('<div></div>')
 												.addClass("arrow")
-												.appendTo(selectSeat);
+												.appendTo(selectSeatType);
 										}
 										updateArrowPos();
 									}

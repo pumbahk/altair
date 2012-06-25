@@ -14,7 +14,7 @@ class ClientForm(Form):
     last_name_kana = fields.TextField(u"姓(カナ)", validators=[validators.required()])
     first_name = fields.TextField(u"名", validators=[validators.required()])
     first_name_kana = fields.TextField(u"名(カナ)", validators=[validators.required()])
-    tel_1 = fields.TextField(u"TEL", validators=[validators.required()])
+    tel = fields.TextField(u"TEL", validators=[validators.required()])
     fax = fields.TextField(u"FAX")
     zip = fields.TextField(u"郵便番号", validators=[validators.required()])
     prefecture = fields.TextField(u"都道府県", validators=[validators.required()])

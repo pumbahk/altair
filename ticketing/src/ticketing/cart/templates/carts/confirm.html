@@ -30,7 +30,7 @@
 	<div id="main">
 		<h1><img src="${request.static_url('ticketing.cart:static/img/settlement/title_settlement.gif')}" alt="チケット購入" width="950" height="40" /></h1>
         ${h.get_nickname(request)} さん
-		<form id="form1" name="form1" method="post" action="">
+        <form id="form1" action="${request.route_url('payment.finish')}" method="post">
 			<div class="confirmBox">
 				<div class="confirmBoxInner">
 					<h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_shopping.gif')}" alt="お買い物内容" width="114" height="30" /></h2>
@@ -135,19 +135,22 @@ shipping = cart.shipping_address
 					</table>
 				</div>
 			</div>
-<!--
 			<div class="settlementBox">
 				<div class="settlementBoxInner">
-					<h2><img src="../img/settlement/title_magazine.gif" alt="メールマガジンの配信" width="177" height="30" /></h2>
+                    <h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_magazine.gif')}" alt="メールマガジンの配信" width="177" height="30" /></h2>
 					<div id="mailMagazineBox">
 						<div id="mailMagazineBoxInner">
 							<ul>
 								<li><strong>ご利用いただいた方には、楽天チケットからのお知らせと、楽天からのメルマガをお送りします。不要な方はチェックをはずしてください。</strong></li>
+                                %for mailmagazine in mailmagazines:
 								<li>
 									<label>
-										<input type="checkbox" name="checkbox" id="checkbox" />
-										楽天チケットからのお知らせ</label>
+                                        <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />
+                                        ${mailmagazine.name}</label>
+                                    ${mailmagazine.description}
 								</li>
+                                %endfor
+                                <!--
 								<li>
 									<dl>
 										<dt>楽天からのメルマガ</dt>
@@ -155,33 +158,35 @@ shipping = cart.shipping_address
 											<ul>
 												<li>
 													<label>
-														<input type="checkbox" name="checkbox2" id="checkbox2" />
+														<input type="checkbox" name="mailmagazine_rakuten_bargain" id="checkbox2" />
 														バーゲン情報（楽天市場バーゲンニュース）</label>
 												</li>
 												<li>
 													<label>
-														<input type="checkbox" name="checkbox3" id="checkbox3" />
+														<input type="checkbox" name="mailmagazine_rakuten_coupon" id="checkbox3" />
 														クーポン情報（楽天市場 Rakuponニュース）</label>
 												</li>
 												<li>
 													<label>
-														<input type="checkbox" name="checkbox4" id="checkbox4" />
+														<input type="checkbox" name="mailmagazine_rakuten_platinum" id="checkbox4" />
 														プラチナ会員限定優待情報（楽天プラチナ優待ニュース）</label>
 												</li>
 											</ul>
 										</dd>
 									</dl>
 								</li>
+                                -->
+                                <!--
 								<li>　　<a href="#">全ての選択を解除</a>　<a href="#">全てのメルマガを選択</a></li>
 								<li class="attention1"><strong>※既に配信されているメルマガの配信停止をしたい場合は、次のページの「配信停止ページへ」のリンクから停止作業を行ってください。</strong></li>
+                                -->
 							</ul>
 						</div>
 					</div>
 				</div>
 			</div>
--->
+			<p class="align2"><input type="image" src="${request.static_url('ticketing.cart:static/img/settlement/btn_buy.gif')}" alt="購入する" width="226" height="46" /></p>
 		</form>
-			<p class="align2"><form action="${request.route_url('payment.finish')}" method="post"><input type="image" src="${request.static_url('ticketing.cart:static/img/settlement/btn_buy.gif')}" alt="購入する" width="226" height="46" /></form></p>
 	</div>
 	<!-- ========== /main ========== -->
 	
