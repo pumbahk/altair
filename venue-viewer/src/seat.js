@@ -52,7 +52,10 @@ Seat.prototype.init = function Seat_init(id, shape, meta, parent, events) {
 
   this.type = this.parent.stockTypes[meta.stock_type_id];
 
-  var style = CONF.DEFAULT.SEAT_STYLE;
+  var style = mergeStyle(
+    CONF.DEFAULT.SEAT_STYLE,
+    util.convertFromFashionStyle(shape.style()));
+
   if (this.type)
     style = mergeStyle(style, this.type.style);
 
