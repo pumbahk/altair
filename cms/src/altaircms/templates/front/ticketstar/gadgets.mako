@@ -16,7 +16,7 @@
   <div class="sideCategoryGenre">
 	<ul>
 		% for c in sub_categories:
-		  <li><a href="${h.link.get_searchpage(request, kind="genre", value=c.name)}">${c.label}</a></li>
+		  <li><a href="${h.link.get_link_from_category(request, c)}">${c.label}</a></li>
 		% endfor
 	</ul>
   </div>
@@ -137,7 +137,7 @@ form = TopPageSidebarSearchForm()
                        ${form.start_year}
                        ${form.start_month}
                        ${form.start_day}
-						<br />
+						～<br />
                        ${form.end_year}
                        ${form.end_month}
                        ${form.end_day}
