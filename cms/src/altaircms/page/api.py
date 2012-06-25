@@ -9,8 +9,6 @@ def doc_from_tags(doc, tags):
 
 def doc_from_performances(doc, performances):
     vs = [p.venue for p in performances]
-    import warnings
-    warnings.warn("need update solr environment, but not a good opotunity, now, so disable it.")
     doc.update(performance_venue=vs)
     return doc
 
@@ -21,8 +19,6 @@ def _split_text(text):
     return [k for k in tags if k]
 
 def doc_from_event(doc, event): ## fixme
-    import warnings
-    warnings.warn("need update solr environment, but not a good opotunity, now, so disable it.")
     doc.update(event_title=event.title, 
                event_subtitle=event.subtitle, 
                event_performer=_split_text(event.performers), 
