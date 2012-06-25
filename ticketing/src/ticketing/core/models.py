@@ -549,10 +549,6 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     upper_limit = Column(Integer)
     seat_choice = Column(Boolean, default=True)
 
-    payment_due_at = Column(DateTime)
-    issuing_start_at = Column(DateTime)
-    issuing_end_at = Column(DateTime)
-
     event_id = Column(Identifier, ForeignKey('Event.id'))
     event = relationship('Event', backref='sales_segments')
 
@@ -581,6 +577,13 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
     delivery_fee = Column(Numeric(precision=16, scale=2), nullable=False)
     discount = Column(Numeric(precision=16, scale=2), nullable=False)
     discount_unit = Column(Integer)
+
+    # 申し込日から計算して入金できる期限　日付指定
+    payment_period_days = Column(Integer, default=3)
+    # 入金から発券できるまでの時間
+    issuing_interval_days = Column(Integer, default=1)
+    issuing_start_at = Column(DateTime, nullable=True)
+    issuing_end_at = Column(DateTime, nullable=True)
 
     sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'))
     sales_segment = relationship('SalesSegment', backref='payment_delivery_method_pairs')
