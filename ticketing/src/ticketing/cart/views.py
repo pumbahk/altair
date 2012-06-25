@@ -7,8 +7,10 @@ import sqlalchemy as sa
 from sqlalchemy.orm import joinedload
 from markupsafe import Markup
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
+from pyramid.response import Response
 from pyramid.view import view_config
 from js.jquery_tools import jquery_tools
+from urllib2 import urlopen
 from ..models import DBSession
 from ..core import models as c_models
 from ..orders import models as o_models
@@ -102,7 +104,6 @@ class IndexView(object):
             c_models.StockHolder.id==c_models.Stock.stock_holder_id).filter(
             c_models.Stock.stock_type_id==c_models.StockType.id).all()
         performance = c_models.Performance.query.filter_by(id=performance_id).one()
-            
         data = dict(seat_types=[
                 dict(id=s.id, name=s.name,
                     style=s.style,
@@ -116,6 +117,24 @@ class IndexView(object):
                 performance_start=h.performance_date(performance),
                 performance_id=performance_id,
                 venue_name=performance.venue.name,
+                event_id=event_id,
+                venue_id=performance.venue.id,
+                data_source=dict(
+                    venue_drawing=self.request.route_url(
+                        'cart.venue_drawing',
+                        event_id=event_id,
+                        performance_id=performance_id,
+                        venue_id=performance.venue.id),
+                    seats=self.request.route_url(
+                        'cart.seats',
+                        event_id=event_id,
+                        performance_id=performance_id,
+                        venue_id=performance.venue.id),
+                    seat_adjacencies=self.request.application_url \
+                        + h.get_route_pattern(
+                          self.request.registry,
+                          'cart.seat_adjacencies')
+                    )
                 )
         return data
 
@@ -244,6 +263,14 @@ class IndexView(object):
                 }
             )
 
+    @view_config(route_name="cart.venue_drawing", request_method="GET")
+    def get_venue_drawing(self):
+        event_id = self.request.matchdict['event_id']
+        performance_id = self.request.matchdict['performance_id']
+        venue_id = int(self.request.matchdict.get('venue_id', 0))
+        venue = c_models.Venue.get(venue_id)
+        return Response(app_iter=urlopen(venue.site.drawing_url), content_type='text/xml; charset=utf-8')
+
 class ReserveView(object):
     """ 座席選択完了画面(おまかせ) """
 
@@ -296,7 +323,7 @@ class ReserveView(object):
         #self.request.session['ticketing.cart_id'] = cart.id
         #self.cart = cart
         return dict(result='OK', 
-                    pyament_url=self.request.route_url("cart.payment"),
+                    payment_url=self.request.route_url("cart.payment"),
                     cart=dict(products=[dict(name=p.product.name, 
                                              quantity=p.quantity,
                                              price=int(p.product.price),

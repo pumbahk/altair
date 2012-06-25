@@ -12,17 +12,144 @@
 <link rel="stylesheet" href="${request.static_url('ticketing.cart:static/css/import.css')}" type="text/css" media="all" />
 <link rel="stylesheet" href="${request.static_url('ticketing.cart:static/css/custom.css')}" type="text/css" media="all" />
 
+<script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/fashion.js')}"></script>
+<![if !(lt IE 9)]>
+<script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/fashion.svg.js')}" charset="utf-8"></script>
+<![endif]>
+<!--[if (lt IE 9)]>
+<script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/fashion.vml.js')}" charset="utf-8"></script>
+<![endif]-->
 <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/carts.js')}"></script>
+<script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/venue-viewer.js')}"></script>
 
 <style type="text/css">
 .modal {
 	font-size: 150%;
 }
 </style>
+<script type="text/javascript">
+var selected = ${selected};
+var venues_selection = ${venues_selection};
+var upper_limit = ${upper_limit};
+var order_url = "${order_url}";
+var products_from_selected_date_url = "${products_from_selected_date_url}";
+var cart_release_url = "${cart_release_url}";
+var currentViewer = null;
 
+function newMetadataLoaderFactory(url) {
+  var conts = [], allData = null, first = true;
+  return function createMetadataLoader(fetch) {
+    return function metadataLoader(next, error) {
+      conts.push({ fetch: fetch, next: next, error: error });
+      if (first) {
+        $.ajax({
+          url: url,
+          dataType: 'json',
+          success: function(data) {
+            allData = data;
+            var _conts = conts;
+            conts = [];
+            for (var i = 0; i < _conts.length; i++)
+              _conts[i].next(_conts[i].fetch(data));
+          },
+          error: function(xhr, text) {
+            var message = "Failed to load " + key + " (reason: " + text + ")";
+            var _conts = conts;
+            conts = [];
+            for (var i = 0; i < _conts.length; i++)
+              _conts[i].error(message);
+          }
+        });
+        first = false;
+        return;
+      } else {
+        if (allData)
+          next(fetch(allData));
+      }
+    };
+  };
+}
+
+function createDataSource(params) {
+  var factory = newMetadataLoaderFactory(params.data_source.seats);
+  return {
+    drawing: function (next, error) {
+      $.ajax({
+        url: params.data_source.venue_drawing,
+        dataType: 'xml',
+        success: function (data) { next(data); },
+        error: function (xhr, text) {
+          error("Failed to load drawing data (" + text + ")");
+        }
+      });
+    },
+    stockTypes: function (next, error) {
+      var stock_types = {};
+      for (var i = params.seat_types.length; --i >= 0;)
+        stock_types[params.seat_types[i].id] = params.seat_types[i];
+      next(stock_types);
+    },
+    info: factory(function (data) { return data['info']; }),
+    seats: factory(function (data) { return data['seats']; }),
+    areas: factory(function (data) { return data['areas']; }),
+    seat_adjacencies: function (next, error, length) {
+      var _params = $.extend(params, { length_or_range: length });
+      $.ajax({
+        url: util.build_route_path(params.data_source.seat_adjacencies._params),
+        dataType: 'json',
+        success: function (data) { next(data); },
+        error: function (xhr, text) {
+          error("Failed to load adjacency data (" + text + ")");
+        }
+      });
+    },
+    stock_types: function (next, error) {
+      continuations.stock_types_loaded.continuation(next, error);
+    }
+  };
+}
+
+$(function() {
+  var currentStockTypeId = "";
+
+  carts.init(venues_selection, selected, upper_limit, cart_release_url, {
+    seat_type_selected: function (seat_type) {
+      currentStockTypeId = seat_type.id;
+      currentViewer && currentViewer.venueviewer('refresh');
+    },
+    seat_types_loaded: function (data) {
+      if (currentViewer) {
+        currentViewer
+          .venueviewer({
+            dataSource: createDataSource(data),
+            callbacks: {
+              selectable: function (viewer, seat) {
+                if (currentStockTypeId == "")
+                  return true;
+                return seat.meta.stock_type_id == currentStockTypeId;
+              },
+              click: function (viewer, seat, highlighted) {
+                $.each(highlighted, function (id, seat) {
+                  if (carts.appView.left_box.hasClass('focused')) {
+                    carts.appView.select_seat_type(seat.type.id);
+                  }
+                });
+              },
+              select: function (viewer, selection) {
+                $.each(selection, function (i, seat) {
+                  console.log(seat);
+                });
+              }
+            }
+          })
+          .venueviewer('load');
+      }
+    }
+  });
+})
+</script>
 </head>
 <body id="settlement">
-
 <p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="${request.static_url('ticketing.cart:static/img/common/skip.gif')}" alt="本文へジャンプ" width="1" height="1" /></a></p>
 
 <div id="container">
@@ -78,90 +205,98 @@
 					<span id="performanceVenue">幕張メッセイベントホール</span>
 				</h2>
 				<div class="settlementOperationPaneInner">
-					<div id="selectSeatType" class="focused">
-						<h3 class="lead">席種をお選びください</h3>
-            <div class="seatListContainer main">
-              <ul id="seatTypeList">
-              </ul>
-            </div>
-						<script type="text/javascript">
-							(function () {
-								var selectSeatType = $('#selectSeatType');
-								var ul = selectSeatType.find('.seatListContainer ul');
-								var selected = ul.find("li.selected");
-								var ulTopOffset = ul.parent()[0].offsetTop;
-								var arrow = null, arrowAbsPos = null;
-								function updateArrowPos() {
-									if (arrow) {
-										var scrollY = ul.parent().scrollTop();
-										arrow.css({
-											right: "0px",
-											top: arrowAbsPos - scrollY + "px"
-										});
-									}
-								}
-								ul.parent().scroll(updateArrowPos);
-								function select(it) {
-									if (!it) {
-										if (selected)
-											selected.removeClass('selected');
-										if (arrow)
-											arrow.remove();
-										selected = arrow = null;
-										return;
-									}
-									if (!it.hasClass('selected')) {
-										selected.removeClass('selected');
-										it.addClass('selected');
-										selected = it;
-										arrowAbsPos = it[0].offsetTop + ulTopOffset;
-										if (!arrow) {
-											arrow = $('<div></div>')
-												.addClass("arrow")
-												.appendTo(selectSeatType);
-										}
-										updateArrowPos();
-									}
-                  var radio = it.find(':radio');
-                  if (radio.length) {
-                    radio[0].checked = true;
-                    radio.change();
+          <div class="settlementOperationPaneInnerContent">
+            <div id="selectSeatType" class="focused">
+              <h3 class="lead">席種をお選びください</h3>
+              <div class="seatListContainer main">
+                <ul id="seatTypeList">
+                </ul>
+              </div>
+              <script type="text/javascript">
+                (function () {
+                  var selectSeatType = $('#selectSeatType');
+                  var ul = selectSeatType.find('.seatListContainer ul');
+                  var selected = ul.find("li.selected");
+                  var ulTopOffset = ul.parent()[0].offsetTop;
+                  var arrow = null, arrowAbsPos = null;
+                  function updateArrowPos() {
+                    if (arrow) {
+                      var scrollY = ul.parent().scrollTop();
+                      arrow.css({
+                        right: "0px",
+                        top: arrowAbsPos - scrollY + "px"
+                      });
+                    }
                   }
-								}
-								ul.delegate('li', 'click', function () {
-									select($(this));
-								});
-								ul.find("li:even").addClass("seatEven");
-								ul.find("li:odd").addClass("seatOdd");
-							})();
-						</script>
-					</div>
-					<div id="selectBuy" class="blur">
-						<h3 class="lead">購入枚数、購入方法をお選びください</h3>
-						<form id="order-form" name="form2" method="post" action="" class="main">
-							<input type="hidden" name="performance_id" id="current-performance-id"/>
-							<dl>
-								<dt id="payment-seat-type"></dt>
-								<dd>
-									<table summary="チケット枚数選択" id="payment-seat-products">
-									</table>
-								</dd>
-							</dl>
-<!--
-							<ul>
-								<li><a href="#"><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_select_buy.gif')}" alt="座席を選んで購入" width="236" height="46" /></a></li>
-							</ul>
--->
-							<ul>
-								<li><a href="javascript:void(0);" id="btn-order"><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_buy.gif')}" alt="おまかせで購入" width="236" height="46" /></a></li>
-							</ul>
-	<!--
-							<ul>
-								<li><a href="#"><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_redo.gif')}" alt="席種を選択しなおす" width="236" height="46" /></a></li>
-							</ul>
-	-->
-						</form>
-					</div>
+                  ul.parent().scroll(updateArrowPos);
+                  function select(it) {
+                    if (!selectSeatType.hasClass('focused'))
+                      return;
+                    if (!it) {
+                      if (selected)
+                        selected.removeClass('selected');
+                      if (arrow)
+                        arrow.remove();
+                      selected = arrow = null;
+                      return;
+                    }
+                    if (!it.hasClass('selected')) {
+                      selected.removeClass('selected');
+                      it.addClass('selected');
+                      selected = it;
+                      arrowAbsPos = it[0].offsetTop + ulTopOffset;
+                      if (!arrow) {
+                        arrow = $('<div></div>')
+                          .addClass("arrow")
+                          .appendTo(selectSeatType);
+                      }
+                      updateArrowPos();
+                    }
+                    var radio = it.find(':radio');
+                    if (radio.length) {
+                      radio[0].checked = true;
+                      radio.change();
+                    }
+                  }
+                  ul.delegate('li', 'click', function () {
+                    select($(this));
+                  });
+                  ul.find("li:even").addClass("seatEven");
+                  ul.find("li:odd").addClass("seatOdd");
+                })();
+              </script>
+            </div>
+            <div id="selectSeat" class="blur">
+              <div class="selectSeatLeftPane">
+                <div class="venueViewer">???</div>
+                <script type="text/javascript">
+                  currentViewer = $('#selectSeat .venueViewer');
+                </script>
+              </div>
+              <div id="selectProduct" class="selectSeatRightPane">
+                <h3 class="lead">購入枚数、購入方法をお選びください</h3>
+                <form id="order-form" name="form2" method="post" action="" class="main">
+                  <input type="hidden" name="performance_id" id="current-performance-id"/>
+                  <dl>
+                    <dt id="payment-seat-type"></dt>
+                    <dd>
+                      <table summary="チケット枚数選択" id="payment-seat-products">
+                      </table>
+                    </dd>
+                  </dl>
+                  <ul>
+                    <li><a href="#"><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_select_buy.gif')}" alt="座席を選んで購入" width="236" height="46" /></a></li>
+                  </ul>
+                  <ul>
+                    <li><a href="javascript:void(0);" id="btn-order"><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_buy.gif')}" alt="おまかせで購入" width="236" height="46" /></a></li>
+                  </ul>
+                  <ul>
+                    <li><a href="#"><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_redo.gif')}" alt="席種を選択しなおす" width="236" height="46" /></a></li>
+                  </ul>
+                </form>
+              </div>
+            </div>
+          </div>
 				</div>
 			</div>
 		</div>
@@ -217,7 +352,7 @@
 		<img src="${request.static_url('ticketing.cart:static/img/settlement/error.gif')}" width="624" height="224" />
 	</div>
 	<div class="modal-footer">
-		<button id="error-close-button" class="btn-redo"></button>
+		<button class="close-button btn-redo"></button>
 <!--
 		<ul id="errorBtn">
 				<li><a href="#"><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_wait.gif')}" alt="空席待ち" width="206" height="46" /></a></li>
@@ -254,23 +389,10 @@
 		</table>
 	</div>
 	<div class="modal-footer">
-		<button id="reserved-cancel-button" class="btn-redo"></button>
-		<button id="reserved-confirm-button" class="btn-buy"></button>
+		<button class="cancel-button btn-redo"></button>
+		<button class="confirm-button btn-buy"></button>
 	</div>
 	</div>
 </div>
-
-<script type="text/javascript">
-        var cart_release_url = "${cart_release_url}";
-		var selected = ${selected};
-		var venues_selection = ${venues_selection};
-		var upper_limit = ${upper_limit};
-		var order_url = "${order_url}";
-		var products_from_selected_date_url = "${products_from_selected_date_url}";
-		$(function() {
-				carts.init(venues_selection, selected, upper_limit, cart_release_url);
-		})
-</script>
 </body>
 </html>
-

@@ -10,6 +10,7 @@ from .models import Cart, PaymentMethodManager, DBSession
 from .interfaces import IPaymentMethodManager
 from ..users.models import User, UserCredential, MemberShip
 from pyramid.view import render_view_to_response
+from pyramid.interfaces import IRoutesMapper
 from markupsafe import Markup
 from zope.interface import implementer
 from ..core.models import FeeTypeEnum, SalesSegment
@@ -180,3 +181,6 @@ def products_filter_by_salessegment(products, sales_segment):
         return products.filter_by(sales_segment=sales_segment)
     return products
 
+def get_route_pattern(registry, name):
+    mapper = registry.getUtility(IRoutesMapper)
+    return mapper.get_route(name).pattern
