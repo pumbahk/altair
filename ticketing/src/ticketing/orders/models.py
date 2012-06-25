@@ -44,6 +44,9 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     items = relationship('OrderedProduct')
     total_amount = Column(Numeric(precision=16, scale=2), nullable=False)
+    system_fee = Column(Numeric(precision=16, scale=2), nullable=False)
+    transaction_fee_amount = Column(Numeric(precision=16, scale=2), nullable=False)
+    delivery_fee_amount = Column(Numeric(precision=16, scale=2), nullable=False)
 
     multicheckout_approval_no = Column(Unicode(255), doc=u"マルチ決済受領番号")
 
@@ -76,6 +79,9 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         order.total_amount = cart.total_amount
         order.shipping_address = cart.shipping_address
         order.payment_delivery_pair = cart.payment_delivery_pair
+        order.system_fee = cart.system_fee
+        order.transaction_fee_amount = cart.transaction_fee_amount
+        order.delivery_fee_amount = cart.delivery_fee_amount
         order.performance = cart.performance
 
         for product in cart.products:
