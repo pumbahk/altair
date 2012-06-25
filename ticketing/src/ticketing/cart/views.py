@@ -4,6 +4,7 @@ import json
 from datetime import datetime, timedelta
 import re
 import sqlalchemy as sa
+from sqlalchemy.orm import joinedload
 from markupsafe import Markup
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from pyramid.view import view_config
@@ -183,6 +184,65 @@ class IndexView(object):
         return dict(products=products,
             seat_type=dict(id=seat_type.id, name=seat_type.name))
 
+    @view_config(route_name='cart.seats', renderer="json")
+    def get_seats(self):
+        """会場&座席情報""" 
+        event_id = self.request.matchdict['event_id']
+        performance_id = self.request.matchdict['performance_id']
+        venue_id = self.request.matchdict['venue_id']
+        return dict(
+            seats=dict(
+                (
+                    seat.l0_id,
+                    dict(
+                        id=seat.l0_id,
+                        stock_type_id=seat.stock_type_id,
+                        status=seat.status,
+                        areas=[area.id for area in seat.areas]
+                        )
+                    ) 
+                for seat in DBSession.query(c_models.Seat) \
+                            .options(joinedload('areas'),
+                                     joinedload('_status')) \
+                            .filter_by(venue_id=venue_id)
+                ),
+            areas=dict(
+                (area.id, { 'id': area.id, 'name': area.name }) \
+                for area in DBSession.query(c_models.VenueArea) \
+                            .join(c_models.VenueArea_group_l0_id) \
+                            .filter(c_models.VenueArea_group_l0_id.venue_id==venue_id)
+                ),
+            info=dict(
+                available_adjacencies=[
+                    adjacency_set.seat_count
+                    for adjacency_set in \
+                        DBSession.query(c_models.SeatAdjacencySet) \
+                        .filter_by(venue_id=venue_id)
+                    ]
+                )
+            )
+
+    @view_config(route_name='cart.seat_adjacencies', renderer="json")
+    def get_seat_adjacencies(self):
+        """連席情報""" 
+        event_id = self.request.matchdict['event_id']
+        performance_id = self.request.matchdict['performance_id']
+        venue_id = self.request.matchdict['venue_id']
+        length_or_range = self.request.matchdict['length_or_range']
+        return dict(
+            seat_adjacencies={
+                length_or_range: [
+                    [seat.l0_id for seat in seat_adjacency.seats]
+                    for seat_adjacency_set in \
+                        DBSession.query(c_models.SeatAdjacencySet) \
+                        .options(joinedload("adjacencies"),
+                                 joinedload('adjacencies.seats')) \
+                        .filter_by(venue_id=venue_id,
+                                   seat_count=length_or_range)
+                    for seat_adjacency in seat_adjacency_set.adjacencies 
+                    ]
+                }
+            )
 
 class ReserveView(object):
     """ 座席選択完了画面(おまかせ) """
