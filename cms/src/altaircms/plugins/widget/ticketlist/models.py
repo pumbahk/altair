@@ -1,5 +1,5 @@
 # -*- encoding:utf-8 -*-
-
+from collections import defaultdict
 from zope.interface import implements
 from pyramid.renderers import render
 
@@ -7,6 +7,7 @@ from altaircms.interfaces import IWidget
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 
+import itertools
 from altaircms.widget.models import Widget
 from altaircms.models import Sale, Ticket, Performance
 from altaircms.plugins.base import DBSession
@@ -41,6 +42,17 @@ class TicketlistWidget(Widget):
             tickets = Ticket.query.filter(Ticket.performances.any(id=self.target_performance.id))
             tickets = tickets.filter(Sale.kind==self.kind).filter(Sale.id==Ticket.sale_id)
             tickets = tickets.order_by(sa.desc("price"))
+            
+            ## group by seat type
+            indices = []
+            grouped = defaultdict(list)
+            for t in tickets:
+                ts = grouped[t.seattype]
+                ts.append(t)
+                if ts not in indices:
+                    indices.append(ts)
+            tickets = itertools.chain.from_iterable(indices)
+
             params = {"widget":self, "tickets": tickets}
             return render(self.template_name, params, request)
         bsettings.add(bname, ticketlist_render)
