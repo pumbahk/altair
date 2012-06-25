@@ -19,13 +19,14 @@ var util = {
 };
 
 var carts = {};
-carts.init = function(venues_selection, selected, upper_limit) {
+carts.init = function(venues_selection, selected, upper_limit, cart_release_url) {
     var model = new carts.Model(venues_selection);
     var presenter = new carts.Presenter(model, upper_limit);
     carts.appView = new carts.AppView();
     carts.appView.init(presenter);
     $('#date-select').val(selected[1]);
     $('#date-select').change();
+    carts.cart_release_url = cart_release_url;
     // initial setup
 };
 
@@ -142,7 +143,14 @@ carts.AppView.prototype.init = function(presenter) {
                         closeOnClick: false});
 
                     $('#reserved-cancel-button').click(function() {
-                        $('#order-reserved').overlay().close();
+                        $.ajax({
+                            url: carts.cart_release_url,
+                            dataType: 'json',
+                            type: 'POST',  
+                            success: function() {
+                                $('#order-reserved').overlay().close();
+                            }
+                        });
                     });
                     
                     $('#reserved-confirm-button').click(function() {
