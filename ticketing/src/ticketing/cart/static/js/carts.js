@@ -211,13 +211,15 @@ carts.AppView.prototype.update_performance_header_venue = function(selected_venu
     $("#hallName #performanceVenue").text(selected_venue);
 }
 
-carts.AppView.prototype.update_settlement_detail = function(venues){
+carts.AppView.prototype.update_settlement_detail = function(venues, selected_date){
     // update settleElementBox
     var new_td_venues = [];
     $.each(venues, function(index, value){
         new_td_venues.push(value["name"]);
     })
-    $("#settlementEventDetail #venue").text(new_td_venues.join(", "));
+    var root = $("#settlementEventDetail");
+    root.find("#venue").text(new_td_venues.join(", "));
+    root.find("#performance_date").text(util.datestring_japanize(selected_date));
 };
 
 carts.AppView.prototype.update_settlement_pricelist = function(products){
@@ -338,7 +340,7 @@ carts.Presenter.prototype.on_date_selected = function(selected_date){
 
     view.update_performance_header_date(selected_date);
     view.update_venues_selectfield(venues, selected_date);
-    view.update_settlement_detail(venues);
+    view.update_settlement_detail(venues, selected_date);
 
     this.model.fetch_products_from_date(
         products_from_selected_date_url+"?selected_date="+selected_date,  // this is global variable

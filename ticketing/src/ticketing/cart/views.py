@@ -72,7 +72,6 @@ class IndexView(object):
 
 
         event = dict(id=e.id, code=e.code, title=e.title, abbreviated_title=e.abbreviated_title,
-            first_start_on=str(e.first_start_on), final_start_on=str(e.final_start_on),
             sales_start_on=str(e.sales_start_on), sales_end_on=str(e.sales_end_on), venues=venues, product=e.products, )
 
         sales_segment = self.context.get_sales_segument()
