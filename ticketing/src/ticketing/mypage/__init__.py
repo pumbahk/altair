@@ -12,12 +12,14 @@ logger = logging.getLogger(__name__)
 
 def includeme(config):
     config.add_route('mypage.index', '/')
+    config.add_route('mypage.logout', '/logout')
     config.add_route('mypage.order', '/order/{order_id}')
 
     config.add_subscriber('ticketing.cart.subscribers.add_helpers', 'pyramid.events.BeforeRender')
 
     config.add_route('rakuten_auth.login', '/login')
     config.add_route('rakuten_auth.verify', '/verify')
+    config.add_route('rakuten_auth.error', '/error')
 
 def main(global_config, **settings):
     engine = engine_from_config(settings)

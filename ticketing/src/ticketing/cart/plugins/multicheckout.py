@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 
+from datetime import datetime
 from zope.interface import implementer
 from pyramid.view import view_config
 from pyramid.response import Response
@@ -51,6 +52,7 @@ class MultiCheckoutPlugin(object):
 
         order = o_models.Order.create_from_cart(cart)
         order.multicheckout_approval_no = checkout_sales_result.ApprovalNo
+        order.paid_at = datetime.now()
         cart.finish()
 
         return order

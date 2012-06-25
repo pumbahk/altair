@@ -3,26 +3,49 @@
     <h2><img src="${request.static_url('ticketing.cart:static/img/mypage/title_history.gif')}" alt="予約・購入履歴" width="742" height="43" /></h2>
     <div id="mypageHistory">
         <form id="form2" name="form2" method="post" action="">
-            <input name="textfield2" type="text" id="textfield2" size="40" value="予約/注文番号" onblur="if(this.value=='') this.value='予約/注文番号';" onfocus="if(this.value=='予約/注文番号') this.value='';" />
-            <input name="imageField2" type="image" id="imageField2" src="${request.static_url('ticketing.cart:static/img/common/header_search_btn.gif')}" alt="検索" />
+            <input name="q" type="text" id="textfield2" size="40" value="${q if q else ''}" title='予約/注文番号' class="js-placeholder"  />
+            <input name="imageField2" type="image" id="imageField2" src="${request.static_url('ticketing.cart:static/img/common/header_search_btn.gif')}" alt="検索"  />
         </form>
         % if orders:
           <% i = 0 %>
-          % for i, order in enumerate(orders):
+          % for i, order_ in enumerate(orders):
             <% if limit and i >= limit: break %>
-
+            <%
+from ticketing.mypage.helpers import make_order_data
+order = make_order_data(order_)
+            %>
         <div>
-            <p><img src="${request.static_url('ticketing.cart:static/img/mypage/icon_payment.gif')}" alt="入金待ち" width="60" height="60" /></p>
+            <%
+            if order.paid_at and order.delivered_at:
+                icon_url = request.static_url('ticketing.cart:static/img/mypage/icon_beige_circle.gif')
+            else:
+                icon_url = request.static_url('ticketing.cart:static/img/mypage/icon_pink_circle.gif')
+            %>
+            <p style="display: block; width: 55px; height: 60px; background-image: url(${icon_url})">
+                <span style="display: block; margin: 20px 0 0 0; width: 55px; text-align: center">
+                    % if order.paid_at:
+                    %   if order.delivered_at:
+                    配送済み
+                    %   else:
+                    入金済み
+                    %   endif
+                    % else:
+                    未入金
+                    % endif
+                </span>
+         	</p>
             <dl>
-                <dt><a href="${request.route_path('mypage.order', order_id=order.id)}">${order.items[0].product.event.title}</a></dt>
-                <dd>2012/3/24(土) 東京ビッグサイト（東京国際展示場）(東京都)</dd>
+                <dt><a href="${request.route_path('mypage.order', order_id=order.id)}">${order.event_name}${u'(%s)' % order.performance_names if order.performance_names else ''}</a></dt>
+                <dd>${order.venue_names}</dd>
                 <dd>
-                    <img src="${request.static_url('ticketing.cart:static/img/mypage/btn_ticket_off.gif')}" alt="チケット追加購入" width="124" height="22" />
+                  ##<img src="${request.static_url('ticketing.cart:static/img/mypage/btn_ticket_off.gif')}" alt="チケット追加購入" width="124" height="22" />
                   ##<img src="${request.static_url('ticketing.cart:static/img/mypage/btn_transfer_off.gif')}" alt="譲渡・出品" width="88" height="22" />
-                    <img src="${request.static_url('ticketing.cart:static/img/mypage/btn_invoice_off.gif')}" alt="請求書発行" width="88" height="22" /></dd>
+                  ##<img src="${request.static_url('ticketing.cart:static/img/mypage/btn_invoice_off.gif')}" alt="請求書発行" width="88" height="22" /></dd>
             </dl>
         </div>
         % endfor
+      % else:
+        購入履歴はありません。
       % endif
     </div>
     <!-- InstanceEndEditable -->
