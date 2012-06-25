@@ -22,7 +22,6 @@ def includeme(config):
     config.add_payment_plugin(CheckoutPlugin(), PAYMENT_PLUGIN_ID)
     config.add_route("payment.checkout_login", 'payment/checkout/login')
     config.add_route("payment.checkout_order_complete", 'payment/checkout/order_complete')
-    config.add_route("payment.checkout_cart_confirmation", 'payment/checkout/cart_confirmation')
     config.scan(__name__)
 
 
@@ -54,8 +53,8 @@ class CheckoutView(object):
     def __init__(self, request):
         self.request = request
 
-    @view_config(route_name='payment.checkout_login', request_method="GET", renderer="carts/checkout_login.html")
-    def test(self):
+    @view_config(route_name='payment.checkout_login', request_method="GET", renderer="ticketing.cart.plugins:templates/checkout_login.html")
+    def login(self):
         cart = h.get_cart(self.request)
 
         form = {}
@@ -65,22 +64,7 @@ class CheckoutView(object):
 
         return dict(form=form)
 
-    @view_config(route_name='payment.checkout_cart_confirmation', renderer="carts/checkout_response.html")
-    def cart_confirmation(self):
-        '''
-        CartConforming機能, 決済可否(セッションタイムアウトのチェック等)の確認を行う
-        '''
-        service = api.get_checkout_service(self.request)
-        cart_confirm = service.save_cart_confirm(self.request)
-
-        # セッションタイムアウトで確保在庫が解放されてないかチェックする
-        # ToDo
-
-        return {
-            'xml':service.create_cart_confirmation_response_xml(cart_confirm)
-        }
-
-    @view_config(route_name='payment.checkout_order_complete', renderer="carts/checkout_response.html")
+    @view_config(route_name='payment.checkout_order_complete', renderer="ticketing.cart.plugins:templates/checkout_response.html")
     def order_complete(self):
         '''
         注文完了通知を保存する
