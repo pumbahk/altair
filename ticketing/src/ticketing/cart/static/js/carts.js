@@ -54,7 +54,8 @@ carts.AppView = function() {
 };
 
 carts.AppView.prototype.show_popup_title = function(event_name, performance_name, performance_start, venu_name) {
-    $('#performance-name').text(event_name + " " + performance_name + " " + performance_start + " " + venu_name);
+    $('#performance-name').text(event_name + " " + performance_name);
+    $('#performance-name-sub').text(performance_start + " " + venu_name);
 };
 
 carts.AppView.prototype.focusLeftBox = function(){
