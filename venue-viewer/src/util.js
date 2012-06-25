@@ -66,22 +66,3 @@ exports.makeHitTester = function Util_makeHitTester(a) {
             (((ay0 < by0) && (by0 < ay1)) || (( ay0 < by1) && (by1 < ay1)) || ((by0 < ay0) && (ay1 < by1))));  // y
   }
 };
-
-var AsyncDataWaiter = exports.AsyncDataWaiter = function AsyncDataWaiter(options) {
-  this.store = {};
-  for (var i = 0; i < options.identifiers.length; i++) {
-    this.store[options.identifiers[i]] = void(0);
-  }
-  this.after = options.after;
-};
-
-AsyncDataWaiter.prototype.charge = function AsyncDataWaiter_charge(id, data) {
-  this.store[id] = data;
-  for (var i in this.store) {
-    if (this.store[i] === void(0))
-      return;
-  }
-  // fire!! if all data has come.
-  this.after.call(window, this.store);
-};
-

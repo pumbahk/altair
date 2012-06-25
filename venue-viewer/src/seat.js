@@ -50,8 +50,7 @@ Seat.prototype.init = function Seat_init(id, shape, meta, parent, events) {
   this.shape  = shape;
   this.meta   = meta;
 
-  this.type = this.parent.metadata.stock_types ?
-      this.parent.metadata.stock_types[meta.stock_type_id]: null;
+  this.type = this.parent.stockTypes[meta.stock_type_id];
 
   var style = CONF.DEFAULT.SEAT_STYLE;
   if (this.type)
@@ -176,16 +175,33 @@ Seat.prototype.selectable = function Seat_selectable() {
     this.parent.callbacks.selectable(this.parent, this);
 };
 
-var SeatAdjacencies = exports.SeatAdjacencies = function SeatAdjacencies(src) {
-  this.tbl = {};
-  for (var len in src) {
-    this.tbl[len] = this.convertToTable(len, src[len]);
-  }
+var SeatAdjacencies = exports.SeatAdjacencies = function SeatAdjacencies(parent) {
+  this.tbl = [];
+  this.src = parent.dataSource.seatAdjacencies;
+  this.availableAdjacencies = parent.availableAdjacencies;
+  this.callbacks = parent.callbacks;
 };
 
-SeatAdjacencies.prototype.getCandidates = function SeatAdjacencies_getCandidates(id, length) {
-  if (length == 1) return [[id]];
-  return this.tbl[length][id] || [];
+SeatAdjacencies.prototype.getCandidates = function SeatAdjacencies_getCandidates(id, length, next, error) {
+  if (length == 1)
+    return next([[id]]);
+
+  var tbl = this.tbl[length];
+  if (tbl !== void(0)) {
+    next(tbl[id] || []);
+    return;
+  }
+  this.callbacks.loadstart && this.callbacks.loadstart('seatAdjacencies');
+  var self = this;
+  this.src(function (data) {
+    var _data;
+    if (data === void(0) || (_data = data[length]) === void(0)) {
+      error("Invalid adjacency data");
+      return;
+    }
+    tbl = self.tbl[length] = self.convertToTable(length, _data);
+    next(tbl[id] || []);
+  }, error, length);
 };
 
 SeatAdjacencies.prototype.convertToTable = function SeatAdjacencies_convertToTable(len, src) {
@@ -205,23 +221,6 @@ SeatAdjacencies.prototype.convertToTable = function SeatAdjacencies_convertToTab
   for (var i in rt) rt[i].sort().reverse();
 
   return rt;
-};
-
-SeatAdjacencies.prototype.lengths = function SeatAdjacencies_lengths() {
-  var rt = [1];
-  for (var len in this.tbl)
-    rt.push(len|0);
-  return rt;
-};
-
-SeatAdjacencies.prototype.disable = function SeatAdjacencies_disable() {
-  if (this.selector) this.selector.attr('disabled', 'disabled');
-  this._enable = false;
-};
-
-SeatAdjacencies.prototype.enable = function SeatAdjacencies_enable() {
-  if (this.selector) this.selector.removeAttr('disabled');
-  this._enable = true;
 };
 
 /*

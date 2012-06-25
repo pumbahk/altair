@@ -182,18 +182,26 @@
   var VenueViewer = function VenueViewer(canvas, options) {
     this.canvas = canvas;
     this.callbacks = {
-      uimodeselect: options.callbacks && options.callbacks.uimodeselect || null,
-      message: options.callbacks && options.callbacks.message || null,
-      load: options.callbacks && options.callbacks.load || null,
-      click: options.callbacks && options.callbacks.click || null,
-      selectable: options.callbacks && options.callbacks.selectable || null,
-      select: options.callbacks && options.callbacks.select || null
+      uimodeselect: null,
+      load: null,
+      loadstart: null,
+      click: null,
+      selectable: null,
+      select: null
     };
+    this.stockTypes = null;
+    if (options.callbacks) {
+      for (var k in this.callbacks)
+        this.callbacks[k] = options.callbacks[k] || null;
+    }
+    this.callbacks.message = options.callbacks && options.callbacks.message || function () {};
+    this.dataSource = options.dataSource;
     this.zoomRatio = options.zoomRatio || CONF.DEFAULT.ZOOM_RATIO;
     this.dragging = false;
     this.startPos = { x: 0, y: 0 };
     this.rubberBand = null;
     this.drawable = null;
+    this.availableAdjacencies = [ 1 ];
     this.originalStyles = (function() {
       var store = {};
       return {
@@ -208,8 +216,6 @@
       };
     })();
     this.shift = false;
-    this.drawing = null;
-    this.metadata = null;
     this.keyEvents = null;
     this.zoomRatio = 1.0;
     this.uiMode = 'select1';
@@ -228,15 +234,31 @@
     canvas.empty();
   };
 
-  VenueViewer.prototype.load = function VenueViewer_load(data) {
+  VenueViewer.prototype.load = function VenueViewer_load() {
     if (this.drawable !== null)
       this.drawable.dispose();
-    this.drawing = data.drawing;
-    this.metadata = data.metadata; 
-    this.seatAdjacencies = new seat.SeatAdjacencies(data.metadata.seat_adjacencies);
-    this.initDrawable();
-    this.initSeats();
-    this.callbacks.load && this.callbacks.load(this);
+    this.seatAdjacencies = null;
+    var self = this;
+    this.callbacks.loadstart && this.callbacks.loadstart('stockTypes');
+    this.dataSource.stockTypes(function (data) {
+      self.stockTypes = data;
+      self.callbacks.loadstart && self.callbacks.loadstart('info');
+      self.dataSource.info(function (data) {
+        if (!'available_adjacencies' in data) {
+          self.callbacks.message("Invalid data");
+          return;
+        }
+        self.availableAdjacencies = data.available_adjacencies;
+        self.seatAdjacencies = new seat.SeatAdjacencies(self);
+        self.callbacks.loadstart && self.callbacks.loadstart('drawing');
+        self.initDrawable(self.dataSource.drawing, function () {
+          self.callbacks.loadstart && self.callbacks.loadstart('seats');
+          self.initSeats(self.dataSource.seats, function () {
+            self.callbacks.load && self.callbacks.load(self);
+          });
+        });
+      }, self.callbacks.message);
+    }, self.callbacks.message);
   };
 
   VenueViewer.prototype.dispose = function VenueViewer_dispose() {
@@ -250,150 +272,157 @@
     this.highlighted = null;
   };
 
-  VenueViewer.prototype.initDrawable = function VenueViewer_initDrawable() {
-    var drawing = this.drawing;
-    var attrs = util.allAttributes(drawing.documentElement);
-    var w = parseFloat(attrs.width), h = parseFloat(attrs.height);
-    var vb = attrs.viewBox ? attrs.viewBox.split(/\s+/).map(parseFloat) : null;
+  VenueViewer.prototype.initDrawable = function VenueViewer_initDrawable(dataSource, next) {
+    var self = this;
+    dataSource(function (drawing) {
+      var attrs = util.allAttributes(drawing.documentElement);
+      var w = parseFloat(attrs.width), h = parseFloat(attrs.height);
+      var vb = attrs.viewBox ? attrs.viewBox.split(/\s+/).map(parseFloat) : null;
 
-    vb = [0, 0, 1000, 1000];
+      vb = [0, 0, 1000, 1000];
 
-    var size = ((vb || w || h) ? {
-      x: ((vb && vb[2]) || w || h),
-      y: ((vb && vb[3]) || h || w)
-    } : null);
+      var size = ((vb || w || h) ? {
+        x: ((vb && vb[2]) || w || h),
+        y: ((vb && vb[3]) || h || w)
+      } : null);
 
-    var drawable = new Fashion.Drawable(this.canvas[0], { contentSize: {x: size.x, y: size.y} });
+      var drawable = new Fashion.Drawable(self.canvas[0], { contentSize: {x: size.x, y: size.y} });
 
-    (function iter(svgStyle, defs, nodeList) {
-      outer:
-      for (var i = 0; i < nodeList.length; i++) {
-        var n = nodeList[i];
-        if (n.nodeType != 1) continue;
-        var attrs = util.allAttributes(n);
+      (function iter(svgStyle, defs, nodeList) {
+        outer:
+        for (var i = 0; i < nodeList.length; i++) {
+          var n = nodeList[i];
+          if (n.nodeType != 1) continue;
+          var attrs = util.allAttributes(n);
 
-        var shape = null;
-        var currentSvgStyle = attrs.style ?
-          mergeSvgStyle(svgStyle, parseCSSAsSvgStyle(attrs.style, defs)):
-          svgStyle;
+          var shape = null;
+          var currentSvgStyle = attrs.style ?
+            mergeSvgStyle(svgStyle, parseCSSAsSvgStyle(attrs.style, defs)):
+            svgStyle;
 
-        switch (n.nodeName) {
-        case 'defs':
-          parseDefs(n, defs);
-          break;
+          switch (n.nodeName) {
+          case 'defs':
+            parseDefs(n, defs);
+            break;
 
-        case 'g':
-          arguments.callee.call(this, currentSvgStyle, defs, n.childNodes);
-          continue outer;
+          case 'g':
+            arguments.callee.call(self, currentSvgStyle, defs, n.childNodes);
+            continue outer;
 
-        case 'path':
-          if (!attrs.d) throw new Error("Pathdata is not provided for the path element");
-          shape = new Fashion.Path({
-            points: new Fashion.PathData(attrs.d)
-          });
-          break;
+          case 'path':
+            if (!attrs.d) throw new Error("Pathdata is not provided for the path element");
+            shape = new Fashion.Path({
+              points: new Fashion.PathData(attrs.d)
+            });
+            break;
 
-        case 'text':
-          shape = new Fashion.Text({
-            fontSize: 10,
-            text: n.firstChild.nodeValue,
-            zIndex: 99
-          });
-          break;
+          case 'text':
+            shape = new Fashion.Text({
+              fontSize: 10,
+              text: n.firstChild.nodeValue,
+              zIndex: 99
+            });
+            break;
 
-        case 'rect':
-          shape = new Fashion.Rect({
-            size: {
-              x: parseFloat(attrs.width),
-              y: parseFloat(attrs.height)
-            },
-            corner: {
-              x: parseFloat(attrs.rx || 0),
-              y: parseFloat(attrs.ry || 0)
-            }
-          });
-          break;
+          case 'rect':
+            shape = new Fashion.Rect({
+              size: {
+                x: parseFloat(attrs.width),
+                y: parseFloat(attrs.height)
+              },
+              corner: {
+                x: parseFloat(attrs.rx || 0),
+                y: parseFloat(attrs.ry || 0)
+              }
+            });
+            break;
 
-        default:
-          continue outer;
+          default:
+            continue outer;
+          }
+
+          if (shape !== null) {
+            var x = parseFloat(attrs.x),
+                y = parseFloat(attrs.y);
+            if (!isNaN(x) && !isNaN(y))
+              shape.position({ x: x, y: y });
+            shape.style(buildStyleFromSvgStyle(currentSvgStyle));
+            drawable.draw(shape);
+          }
+          self.shapes[attrs.id] = shape;
         }
+      }).call(self,
+        { fill: false, fillOpacity: false,
+          stroke: false, strokeOpacity: false },
+        {},
+        drawing.documentElement.childNodes);
 
-        if (shape !== null) {
-          var x = parseFloat(attrs.x),
-              y = parseFloat(attrs.y);
-          if (!isNaN(x) && !isNaN(y))
-            shape.position({ x: x, y: y });
-          shape.style(buildStyleFromSvgStyle(currentSvgStyle));
-          drawable.draw(shape);
-        }
-        this.shapes[attrs.id] = shape;
-      }
-    }).call(this,
-      { fill: false, fillOpacity: false,
-        stroke: false, strokeOpacity: false },
-      {},
-      drawing.documentElement.childNodes);
+      self.drawable = drawable;
 
-    this.drawable = drawable;
+      var cs = drawable.contentSize();
+      var vs = drawable.viewportSize();
+      var center = {
+        x: (cs.x - vs.x) / 2,
+        y: (cs.y - vs.y) / 2
+      };
 
-    var cs = this.drawable.contentSize();
-    var vs = this.drawable.viewportSize();
-    var center = {
-      x: (cs.x - vs.x) / 2,
-      y: (cs.y - vs.y) / 2
-    };
-
-    this.drawable.transform(Fashion.Matrix.scale(this.zoomRatio));
-    this.changeUIMode(this.uiMode);
+      self.drawable.transform(Fashion.Matrix.scale(self.zoomRatio));
+      self.changeUIMode(self.uiMode);
+      next.call(this);
+    }, self.callbacks.message);
   };
 
-  VenueViewer.prototype.initSeats = function VenueViewer_initSeats() {
+  VenueViewer.prototype.initSeats = function VenueViewer_initSeats(dataSource, next) {
     var self = this;
-    for (var id in this.shapes) {
-      var shape = this.shapes[id];
-      var meta  = this.metadata.seats[id];
-      if (!meta) continue;
-      this.seats[id] = new seat.Seat(id, shape, meta, this, {
-        mouseover: function(evt) {
-          if (self.uiMode == 'select')
-            return;
-          var candidates = self.seatAdjacencies.getCandidates(this.id, self.adjacencyLength());
-          if (candidates.length == 0)
-            return;
-          var candidate = null;
-          for (var i = 0; i < candidates.length; i++) {
-            candidate = candidates[i];
-            for (var j = 0; j < candidate.length; j++) {
-              if (!self.seats[candidate[j]].selectable()) {
-                candidate = null;
-                break;
+    dataSource(function (seats) {
+      for (var id in self.shapes) {
+        var shape = self.shapes[id];
+        var meta  = seats[id];
+        if (!meta) continue;
+        self.seats[id] = new seat.Seat(id, shape, meta, self, {
+          mouseover: function(evt) {
+            if (self.uiMode == 'select')
+              return;
+            self.seatAdjacencies.getCandidates(this.id, self.adjacencyLength(), function (candidates) {
+              if (candidates.length == 0)
+                return;
+              var candidate = null;
+              for (var i = 0; i < candidates.length; i++) {
+                candidate = candidates[i];
+                for (var j = 0; j < candidate.length; j++) {
+                  if (!self.seats[candidate[j]].selectable()) {
+                    candidate = null;
+                    break;
+                  }
+                }
+                if (candidate) {
+                  break;
+                }
               }
-            }
-            if (candidate) {
-              break;
-            }
+              if (!candidate)
+                return;
+              for (var i = 0; i < candidate.length; i++) {
+                var seat = self.seats[candidate[i]];
+                seat.addOverlay('highlighted');
+                self.highlighted[seat.id] = seat;
+              }
+            }, self.callbacks.message);
+          },
+          mouseout: function(evt) {
+            if (self.uiMode == 'select')
+              return;
+            var highlighted = self.highlighted;
+            self.highlighted = {};
+            for (var i in highlighted)
+              highlighted[i].removeOverlay('highlighted');
+          },
+          mousedown: function(evt) {
+            self.callbacks.click && self.callbacks.click(self, self, self.highlighted);
           }
-          if (!candidate)
-            return;
-          for (var i = 0; i < candidate.length; i++) {
-            var seat = self.seats[candidate[i]];
-            seat.addOverlay('highlighted');
-            self.highlighted[seat.id] = seat;
-          }
-        },
-        mouseout: function(evt) {
-          if (self.uiMode == 'select')
-            return;
-          var highlighted = self.highlighted;
-          self.highlighted = {};
-          for (var i in highlighted)
-            highlighted[i].removeOverlay('highlighted');
-        },
-        mousedown: function(evt) {
-          self.callbacks.click && self.callbacks.click(self, self, self.highlighted);
-        }
-      });
-    }
+        });
+      }
+      next.call(self);
+    }, self.callbacks.message);
   };
 
   VenueViewer.prototype.refresh = function VenueViewer_refresh() {
@@ -630,61 +659,102 @@
         throw new Error("Command issued against an uninitialized element");
       if (!options.dataSource || !options.dataSource instanceof Object)
         throw new Error("Required option missing: dataSource");
-      aux = {
-        manager: new VenueViewer(this, options),
-        dataSource: options.dataSource,
-        callbacks: { message: options.callbacks && options.callbacks.message || null }
+
+      var _options = $.extend({}, options);
+     
+      var createMetadataLoader = (function () {
+        var conts = {}, allData = null, first = true;
+        return function createMetadataLoader(key) {
+          return function metadataLoader(next, error) {
+            conts[key] = { next: next, error: error };
+            if (first) {
+              $.ajax({
+                url: options.dataSource.metadata,
+                dataType: 'json',
+                success: function(data) {
+                  allData = data;
+                  var _conts = conts;
+                  conts = {};
+                  for (var k in _conts)
+                    _conts[k].next(data[key]);
+                },
+                error: function(xhr, text) {
+                  var message = "Failed to load " + key + " (reason: " + text + ")";
+                  var _conts = conts;
+                  conts = {};
+                  for (var k in _conts)
+                    _conts[k].error(message);
+                }
+              });
+              first = false;
+              return;
+            } else {
+              if (allData) {
+                conts[key].next(allData[key]);
+                delete conts[key];
+              }
+            }
+          };
+        };
+      })();
+
+      _options.dataSource = {
+        drawing:
+          typeof options.dataSource.drawing == 'function' ?
+            options.dataSource.drawing:
+            function (next, error) {
+              $.ajax({
+                type: 'get',
+                url: options.dataSource.drawing,
+                dataType: 'xml',
+                success: function(xml) { next(xml); },
+                error: function(xhr, text) { error("Failed to load drawing data (reason: " + text + ")"); }
+              });
+            }
       };
+      $.each(
+        [
+          [ 'stockTypes', 'stock_types' ],
+          [ 'seats', 'seats' ],
+          [ 'areas', 'areas' ],
+          [ 'info', 'info' ],
+          [ 'seatAdjacencies', 'seat_adjacencies' ]
+        ],
+        function(n, k) {
+          _options.dataSource[k[0]] =
+            typeof options.dataSource[k[0]] == 'function' ?
+              options.dataSource[k[0]]:
+              createMetadataLoader(k[1]);
+        }
+      );
+      aux = new VenueViewer(this, _options),
       this.data('venueviewer', aux);
       if (options.uimode)
-        aux.manager.changeUIMode(options.uimode);
+        aux.changeUIMode(options.uimode);
     } else {
       if (typeof options == 'string' || options instanceof String) {
         switch (options) {
         case 'load':
-          // Ajax Waiter
-          var waiter = new util.AsyncDataWaiter({
-            identifiers: ['drawing', 'metadata'],
-            after: function main(data) {
-              aux.manager.load(data);
-            }
-          });
-          // Load drawing
-          $.ajax({
-            type: 'get',
-            url: aux.dataSource.drawing,
-            dataType: 'xml',
-            success: function(xml) { waiter.charge('drawing', xml); },
-            error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load drawing data (reason: " + text + ")"); }
-          });
-
-          // Load metadata
-          $.ajax({
-            url: aux.dataSource.metadata,
-            dataType: 'json',
-            success: function(data) { waiter.charge('metadata', data); },
-            error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load seat data (reason: " + text + ")"); }
-          });
-
+          aux.load();
           break;
 
         case 'remove':
-          aux.manager.dispose();
+          aux.dispose();
           this.data('venueviewer', null);
           break;
 
         case 'uimode':
-          aux.manager.changeUIMode(arguments[1]);
+          aux.changeUIMode(arguments[1]);
           break;
 
         case 'selection':
-          return aux.manager.selection;
+          return aux.selection;
 
         case 'refresh':
-          return aux.manager.refresh();
+          return aux.refresh();
 
         case 'adjacency':
-          aux.manager.adjacencyLength(arguments[1]|0);
+          aux.adjacencyLength(arguments[1]|0);
           break;
         }
       }

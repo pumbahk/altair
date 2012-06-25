@@ -46,7 +46,19 @@ var currentStockTypeId = "";
 var venue = $('#venue').venueviewer({
   dataSource: {
     drawing: "data/sample.svg",
-    metadata: "data/data.json"
+    metadata: "data/data.json",
+    seatAdjacencies: function (next, error, length) {
+      $.ajax({
+        url: 'data/adjacencies/' + (length|0) + '.json',
+        dataType: 'json',
+        success: function(data) {
+          next(data['seat_adjacencies']);
+        },
+        error: function(xhr, text) {
+          error("Failed to load adjacency data (reason: " + text + ")");
+        }
+      });
+    }
   },
   callbacks: {
     message: function (msg) {
@@ -59,7 +71,7 @@ var venue = $('#venue').venueviewer({
     },
     load: function (viewer) {
       var n = $("#toolbar-seat-adjacencies-selector");
-      $.each(viewer.seatAdjacencies.lengths(), function(i, v) {
+      $.each(viewer.availableAdjacencies, function(i, v) {
         $('<option></option>').attr("value", v).text(v)
                               .appendTo(n);
       });
@@ -69,8 +81,8 @@ var venue = $('#venue').venueviewer({
       var n = $("#toolbar-stock-type-selector");
       $('<option></option>').attr("value", "").text("All")
                               .appendTo(n);
-      for (var id in viewer.metadata.stock_types) {
-        var stock_type = viewer.metadata.stock_types[id];
+      for (var id in viewer.stockTypes) {
+        var stock_type = viewer.stockTypes[id];
         $('<option></option>').attr("value", id).text(stock_type.name)
                               .appendTo(n);
       }
@@ -105,6 +117,10 @@ var venue = $('#venue').venueviewer({
       $.each(selection, function (i, seat) {
         console.log(seat);
       });
+    },
+    loadstart: function (category) {
+      if (typeof console != 'undefined')
+        console.log(category);
     }
   }
 }).venueviewer("load");
