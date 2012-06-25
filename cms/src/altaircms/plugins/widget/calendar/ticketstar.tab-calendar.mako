@@ -56,7 +56,6 @@ def gen_id(y_and_m):
     ${calendar_table(cal, gen_id(m), visibility)}
   %endfor
 
-	<script type="text/javascript" src="/static/ticketstar/js/jquery.flatheights.js"></script>
 	<script type="text/javascript">
 	$(function() {
 	     // highlight selected month element
@@ -69,8 +68,6 @@ def gen_id(y_and_m):
 		  new_active.addClass("active");
 		  $("#"+new_active.attr("month")).show();
 		});
-
-		$('#detailSchedule td').flatHeights();
 	});
 	</script>
 </div>
