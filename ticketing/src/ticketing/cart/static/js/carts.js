@@ -53,6 +53,10 @@ carts.Model.prototype.fetch_products_from_date = function(get_url, callback){
 carts.AppView = function() {
 };
 
+carts.AppView.prototype.show_popup_title = function(event_name, performance_name, performance_start, venu_name) {
+    $('#performance-name').text(event_name + " " + performance_name + " " + performance_start + " " + venu_name);
+};
+
 carts.AppView.prototype.focusLeftBox = function(){
     var left_box = $("#selectSeatType");
     var right_box = $("#selectBuy");
@@ -117,7 +121,7 @@ carts.AppView.prototype.init = function(presenter) {
                     var performance_venue = root.find("#performanceVenue").text();
                     // modal
                     //$(".modal #performance-name").text(performance_date + performance_venue);
-                    $(".modal #performance-name").text(performance_venue);
+                    //$(".modal #performance-name").text(performance_venue);
 
 
                     var products = data.cart.products;
@@ -327,6 +331,7 @@ carts.Presenter.prototype.show_seat_types = function(get_url) {
     this.model.fetch_seat_types(get_url, function(data) {
         view.show_seat_types(data.seat_types);
         view.set_performance_id(data.performance_id);
+        view.show_popup_title(data.event_name, data.performance_name, data.performance_start, data.venue_name);
     });
 };
 
