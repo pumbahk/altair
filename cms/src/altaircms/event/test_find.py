@@ -40,8 +40,6 @@ class FindTests(unittest.TestCase):
 
         self.assertEquals(Event.near_the_deal_close_query(datetime(1900, 1, 30), 0).count(), 1)
 
-
-
         
 if __name__ == "__main__":
     unittest.main()
