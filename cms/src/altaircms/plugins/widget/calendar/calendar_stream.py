@@ -95,7 +95,7 @@ class MonthStream(object):
             months = months[m-1:]
         if self.ye.is_end:
             _, m, _ = self.ye.env["end_date"]
-            months = months[0:-(12-m)]
+            months = [x for x in months if x <= m]
         return months
 
 class DayE(Element):
