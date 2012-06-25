@@ -221,10 +221,32 @@ carts.AppView.prototype.update_settlement_detail = function(venues){
 };
 
 carts.AppView.prototype.update_settlement_pricelist = function(products){
-    var arr = [];
-    $.each(products, function(index, value){
-        arr.push(value.name + ": " + value.price + "円");
-    });
+    var arr = [], 
+        indices = [], 
+        grouped = {};
+
+    // refine product order
+    for(var i=0, j=products.length; i<j; i++){
+        var product = products[i];
+        var prefix = product.name.charAt(0);
+        if(!grouped[prefix]){
+            indices.push(prefix);
+            grouped[prefix] = [];
+        }
+        grouped[prefix].push(product);
+    }
+
+    // listing via grouped order.
+    for(var i=0, j=indices.length; i<j; i++){
+        var prefix = indices[i];
+        var grouped_products = grouped[prefix]
+        for(var k=0, l=grouped_products.length; k<l; k++){
+            var value = grouped_products[k];
+            arr.push(value.name + ": " + value.price + "円");
+        }
+        arr.push("");
+    }
+
     $("#settlementEventDetail #pricelist").html(arr.join("<br/>"));
 };
 
