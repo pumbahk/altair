@@ -28,8 +28,9 @@ def make_order_data(order) :
         shipping_address = order.shipping_address
         ordered_from = order.ordered_from
 
-        items = order.items,
-
+        items = order.items
+        paid_at = order.paid_at
+        delivered_at = order.delivered_at
         total_amount = order.total_amount
 
         multicheckout_approval_no = order.multicheckout_approval_no

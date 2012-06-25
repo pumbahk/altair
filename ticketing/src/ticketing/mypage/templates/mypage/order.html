@@ -3,16 +3,30 @@
         <h2><img src="${request.static_url('ticketing.cart:static/img/mypage/title_history.gif')}" alt="予約・購入履歴" width="742" height="43" /></h2>
 		<div class="mypageBox1">
 			<div>
-			<h3>${order.performance_names}</h3>
+			<h3>${order.event_name}${u'(%s)' % order.performance_names if order.performance_names else ''}</h3>
 				<dl>
 					<dt>${",".join([d.strftime(u"%Y年%m月%d(%a)".encode('utf-8')).decode('utf-8') for d in order.performance_dates])}</dt>
 					<dd>${order.venue_names}&nbsp;<a href="#">会場地図</a></dd>
 				</dl>
 			</div>
-
-			<p style="border: 1px solid #FFFFFF;margin: 0 0 0 0; display: block; width: 60px; height: 60px; background-image: url(${request.static_url('ticketing.cart:static/img/mypage/icon_pink_circle.gif')})">
+            <%
+            if order.paid_at and order.delivered_at:
+                icon_url = request.static_url('ticketing.cart:static/img/mypage/icon_beige_circle.gif')
+            else:
+                icon_url = request.static_url('ticketing.cart:static/img/mypage/icon_pink_circle.gif')
+            %>
+			<p style="border: 1px solid #FFFFFF;margin: 0 0 0 0; display: block; width: 60px; height: 60px; background-image: url(${icon_url})">
                 % if order.payment_delivery_pair.payment_method.payment_plugin_id == 1:
-                <span style="display: block; margin: 20px 0 0 0; width: 60px; text-align: center">入金済み
+                <span style="display: block; margin: 20px 0 0 0; width: 60px; text-align: center">
+                    % if order.paid_at:
+                    %   if order.delivered_at:
+                    配送済み
+                    %   else:
+                    入金済み
+                    %   endif
+                    % else:
+                    未入金
+                    % endif
                 </span>
                 % endif
 			</p>
@@ -39,19 +53,26 @@
 					<td colspan="2">￥${h.format_number(order.total_amount)}</td>
 				</tr>
 				<tr>
-					<th scope="row" class="">お支払い</th>
-					<td colspan="2" class="">
-                    % if order.payment_delivery_pair.payment_method.payment_plugin_id == 1:
+					<th scope="row" ${'class="waitingPayment"' if order.paid_at else ''}>お支払い</th>
+					<td colspan="2" ${'class="waitingPayment"' if order.paid_at else ''}">
+                        % if order.paid_at:
                         入金済み
-                    % elif order.payment_delivery_pair.payment_method.payment_plugin_id == 2:
-                    % endif
+                        % else:
+                        未完了
+                        % endif
                         <span>（${order.payment_delivery_pair.payment_method.name}）</span></td>
 				</tr>
 				<tr>
-					<th scope="row" class="waitingPayment">配送ステータス</th>
-					<td colspan="2" class="waitingPayment">未配送<span>（${order.payment_delivery_pair.delivery_method.name}）</span></td>
+					<th scope="row" ${'class="waitingPayment"' if order.paid_at else ''}>配送ステータス</th>
+					<td colspan="2" ${'class="waitingPayment"' if order.paid_at else ''}>
+                        % if order.delivered_at:
+					     配送済み
+					    % else:
+					     未完了
+					    % endif
+                        <span> (${order.payment_delivery_pair.delivery_method.name}）</span></td>
 				</tr>
 			</table>
-                <img src="${request.static_url('ticketing.cart:static/img/mypage/btn_invoice_on.gif')}" alt="請求書発行" width="88" height="22" /></p>
+                ## <img src="${request.static_url('ticketing.cart:static/img/mypage/btn_invoice_on.gif')}" alt="請求書発行" width="88" height="22" /></p>
 		</div>
 

@@ -27,12 +27,18 @@ class MyPageView(object):
         openid = authenticated_user(self.request)
         user = h.get_or_create_user(self.request, openid['clamed_id'])
 
+        q = self.request.POST.get('q')
         sort = self.request.GET.get('sort', 'Order.id')
         direction = self.request.GET.get('direction', 'asc')
         if direction not in ['asc', 'desc']:
             direction = 'asc'
 
         query = Order.filter(Order.user_id == user.id)
+        if q:
+            print ">>>>>>>>>>>>>>"
+            print q
+            print ">>>>>>>>>>>>>>"
+            query = Order.filter(Order.order_no == q)
         query = query.order_by(sort + ' ' + direction)
 
         # search condition
@@ -50,6 +56,7 @@ class MyPageView(object):
 
         print user.user_profile
         return dict(
+            q = q,
             user = user.user_profile,
             orders = orders
         )
