@@ -12,9 +12,6 @@
       <th>${h.sortable(form.name, paging)}</th>
       <th>${h.sortable(form.start_at, paging)}</a></th>
       <th>${h.sortable(form.end_at, paging)}</a></th>
-      <th>${h.sortable(form.payment_due_at, paging)}</a></th>
-      <th>${h.sortable(form.issuing_start_at, paging)}</a></th>
-      <th>${h.sortable(form.issuing_end_at, paging)}</a></th>
       <th>${h.sortable(form.upper_limit, paging)}</a></th>
       <th>${h.sortable(form.seat_choice, paging)}</a></th>
       <th>決済方法</th>
@@ -32,9 +29,6 @@
       <td ${rowspan} id="name"><a href="${request.route_path('sales_segments.show', sales_segment_id=sales_segment.id)}">${sales_segment.name}</a></td>
       <td ${rowspan} id="current_start_at">${h.safe_strftime(sales_segment.start_at)}</td>
       <td ${rowspan} id="current_end_at">${h.safe_strftime(sales_segment.end_at)}</td>
-      <td ${rowspan} id="current_end_at">${h.safe_strftime(sales_segment.payment_due_at)}</td>
-      <td ${rowspan} id="current_end_at">${h.safe_strftime(sales_segment.issuing_start_at)}</td>
-      <td ${rowspan} id="current_end_at">${h.safe_strftime(sales_segment.issuing_end_at)}</td>
       <td ${rowspan} id="upper_limit">${sales_segment.upper_limit or u''}</td>
       <td ${rowspan} id="seat_choice" value="${sales_segment.seat_choice}">${u'○' if sales_segment.seat_choice else u'×'}</td>
       % if count == 0:
