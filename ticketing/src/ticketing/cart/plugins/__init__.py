@@ -18,7 +18,7 @@ def includeme(config):
     config.include(".reservednumber")
     config.include(".shipping")
     config.include(".sej")
-    #config.include(".anshin")
+    config.include(".checkout")
 
 
 def get_payment_plugin(request, plugin_id):

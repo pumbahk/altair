@@ -6,7 +6,7 @@ from . import api
 
 def begin_checkout_form(request):
     action = request.registry.settings.get('altair_checkout.checkin_url')
-    return literal('<form action="%(action)s" method="%(method)s" accept-charset="%(accept_charset)s">' %
+    return literal('<form id="checkout-form" action="%(action)s" method="%(method)s" accept-charset="%(accept_charset)s">' %
                     dict(action=action, method='post', accept_charset='utf-8'))
 
 def render_checkout(request, cart):

@@ -24,11 +24,6 @@ def includeme(config):
     config.add_route('cart.order', 'order')
     config.add_route('cart.payment', 'payment')
 
-    # 決済系(あんしん決済)
-    config.add_route("payment.checkout_test", 'payment/checkout/test')
-    config.add_route("payment.checkout_order_complete", 'payment/checkout/order_complete')
-    config.add_route("payment.checkout_cart_confirmation", 'payment/checkout/cart_confirmation')
-
     # 完了／エラー
     config.add_route('payment.confirm', 'confirm')
     config.add_route('payment.finish', 'completed')
