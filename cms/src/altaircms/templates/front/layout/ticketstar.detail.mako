@@ -45,41 +45,22 @@
 	<div id="container">
 
 	  <!-- ========== header ========== -->
-	  <%block name="header">
-	  <div id="grpheader">
-		${co.master_header(top_outer_categories)}
-        ${co.section_navigation()}
-		<dl id="subSectionNav">
-		  <dt>サブカテゴリー</dt>
-		  <dd class="menuList">
-			<ul>
-			  <% nav_categories = list(categories)%>
-				% for category in nav_categories[:-1]:
-				  <% if category.name == 'index': continue %>
-				  <li><a href="${h.link.get_link_from_category(request, category)}" alt="${category.label}">${category.label}</a></li>
-				% endfor
-				% if categories:
-				  <li><a href="${h.link.get_link_from_category(request, nav_categories[-1])}" alt="${nav_categories[-1].label}">${nav_categories[-1].label}</a></li>
-				% endif
-			</ul>
-		  </dd>
-		</dl>
-		<dl id="topicPath">
-		  <dt>現在地</dt>
-		  <dd>
-<%block name="topicPath">
-  ${widgets("topicPath")}
-</%block>
-		  </dd>
-		</dl>
-	  </div>
-	</%block>
+	<div id="grpheader">
+  	  ${co.master_header(top_outer_categories)}
+    </div>
+    ${co.global_navigation(top_inner_categories, categories)}
+    ${co.header_search()}
 	<!-- ========== /header ========== -->
 
 	<hr />
 
 	<!-- ========== main ========== --> 
-	<div id="main">
+	<div id="main" style="margin-top: 20px;">
+
+<%block name="topicPath">
+  ${widgets("topicPath")}
+</%block>
+
 <%block name="main">
    ${widgets("main")}
 </%block>
@@ -89,7 +70,7 @@
 	<hr />
 
 	<!-- ========== side ========== -->
-	<div id="side">
+	<div id="side" style="margin-top: 20px;">
 <%block name="side">
     ${widgets("side")}
 </%block>

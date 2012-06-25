@@ -102,30 +102,6 @@ class Checkout(object):
 
         return et.tostring(root)
 
-    def create_cart_confirmation_response_xml(self, cart_confirmation):
-        root = et.Element('cartConfirmationResponse')
-
-        carts_el = et.SubElement(root, 'carts')
-        for cart in cart_confirmation.carts:
-            cart_el = et.SubElement(carts_el, 'cart')
-            subelement = functools.partial(et.SubElement, cart_el)
-            subelement('cartConfirmationId').text = cart.cartConfirmationId
-            subelement('orderCartId').text = cart.orderCartId
-            subelement('orderItemsTotalFee').text = str(cart.orderItemsTotalFee)
-
-            items_el = subelement('items')
-            for item in cart.items:
-                self._create_checkout_item_xml(items_el, **dict(
-                    itemId=item.itemId,
-                    itemNumbers=str(item.itemNumbers),
-                    itemFee=str(item.itemFee),
-                    itemConfirmationResult=item.itemConfirmationResult,
-                    itemNumbersMessage=item.itemNumbersMessage,
-                    itemFeeMessage=item.itemFeeMessage,
-                ))
-
-        return et.tostring(root)
-
     def create_order_complete_response_xml(self, result, complete_time):
         root = et.Element('orderCompleteResponse')
         et.SubElement(root, 'result').text = str(result)
@@ -139,42 +115,20 @@ class Checkout(object):
         subelement('itemId').text = str(kwargs.get('itemId'))
         subelement('itemNumbers').text = str(kwargs.get('itemNumbers'))
         subelement('itemFee').text = str(int(kwargs.get('itemFee')))
-        if 'itemName' in kwargs:
-            subelement('itemName').text = kwargs.get('itemName')
-        if 'itemConfirmationResult' in kwargs:
-            subelement('itemConfirmationResult').text = str(kwargs.get('itemConfirmationResult'))
-        if 'itemNumbersMessage' in kwargs:
-            subelement('itemNumbersMessage').text = str(kwargs.get('itemNumbersMessage'))
-        if 'itemFeeMessage' in kwargs:
-            subelement('itemFeeMessage').text = str(kwargs.get('itemFeeMessage'))
-
-    def save_cart_confirm(self, request):
-        confirmId = request.params['confirmId']
-        xml = confirmId.replace(' ', '+').decode('base64')
-        cart_confirmation = self._parse_cart_confirmation_xml(et.XML(xml))
-        cart_confirmation.save()
-
-        return cart_confirmation
+        subelement('itemName').text = kwargs.get('itemName')
 
     def save_order_complete(self, request):
         confirmId = request.params['confirmId']
         xml = confirmId.replace(' ', '+').decode('base64')
         checkout = self._parse_order_complete_xml(et.XML(xml))
+
+        # セッションタイムアウトで確保在庫が解放されてないかチェックする
+        # ToDo
+        # if validate:
+        #     return RESULT_FLG_FAILED
+
         checkout.save()
-
         return RESULT_FLG_SUCCESS
-
-    def _parse_cart_confirmation_xml(self, root):
-        if root.tag != 'cartConfirmationRequest':
-            return None
-
-        cart_confirmation = m.CheckoutCartConfirmation()
-        for e in root:
-            if e.tag == 'openId':
-                cart_confirmation.openId = e.text.strip()
-            elif e.tag == 'carts':
-                self._parse_cart_xml(e, cart_confirmation)
-        return cart_confirmation
 
     def _parse_order_complete_xml(self, root):
         if root.tag != 'orderCompleteRequest':
@@ -199,25 +153,6 @@ class Checkout(object):
             elif e.tag == 'items':
                 self._parse_item_xml(e, checkout)
         return checkout
-
-    def _parse_cart_xml(self, element, cart_confirmation):
-        for item_el in element:
-            if item_el.tag != 'cart':
-                continue
-
-            cart = m.CheckoutCart()
-            cart_confirmation.carts.append(cart)
-            for e in item_el:
-                if e.tag == 'cartConfirmationId':
-                    cart.cartConfirmationId = e.text.strip()
-                elif e.tag == 'orderCartId':
-                    cart.orderCartId = e.text.strip()
-                elif e.tag == 'orderItemsTotalFee':
-                    cart.orderItemsTotalFee = int(e.text.strip())
-                elif e.tag == 'isTMode':
-                    cart.isTMode = int(e.text.strip())
-                elif e.tag == 'items':
-                    self._parse_item_xml(e, cart)
 
     def _parse_item_xml(self, element, checkout):
         for item_el in element:
@@ -291,11 +226,4 @@ ORDER_ERROR_CODES = {
     "52", u"リクエストの総合計金額が不正(合計金額が 9 桁以上)",
     "60", u"別処理を既に受付(当該データが受付済みで処理待ち)",
     "90", u"システムエラー",
-}
-
-ITEM_CONFIRMATION_RESULTS = {
-    "0": u"個数・商品単価共に変更なし",
-    "1": u"個数変更あり",
-    "2": u"商品単価変更あり",
-    "3": u"個数・商品単価共に変更あり",
 }

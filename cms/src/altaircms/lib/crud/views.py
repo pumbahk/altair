@@ -53,6 +53,19 @@ class CRUDResource(RootFactory): ## fixme
     def join(self, ac):
         return "%s_%s" % (self.prefix, ac)
 
+    ## endpoint
+    CMS_ENDPOINT = "cms:endpoint"
+    def set_endpoint(self):
+        session = self.request.session
+        session[self.CMS_ENDPOINT] = self.request.referrer
+
+    def get_endpoint(self):
+        session = self.request.session
+        endpoint = session.get(self.CMS_ENDPOINT)
+        if endpoint:
+            return endpoint
+        return self.request.route_url(self.endpoint)
+
     ## search
     def query_form(self, params):
         if self.filter_form:
@@ -114,12 +127,6 @@ class CRUDResource(RootFactory): ## fixme
             self.request.registry.notify(self.delete_event(self.request, obj, {}))
         DBSession.delete(obj)
 
-    def get_endpoint(self):
-        endpoint =  self.request.GET.get("endpoint")
-        if endpoint:
-            return endpoint
-        return self.request.route_url(self.endpoint)
-
 class CreateView(object):
     def __init__(self, context, request):
         self.context = context
@@ -132,6 +139,7 @@ class CreateView(object):
                 "display_fields": getattr(form,"__display_fields__", None) or form.data.keys()}
         
     def input(self):
+        self.context.set_endpoint()
         form = self.context.input_form()
         raise AfterInput(form=form, context=self.context)
 
@@ -163,6 +171,8 @@ class UpdateView(object):
                 "display_fields": getattr(form,"__display_fields__", None) or form.data.keys()}
 
     def input(self):
+        self.context.set_endpoint()
+
         obj = self.context.get_model_obj(self.request.matchdict["id"])
         form = self.context.input_form_from_model(obj)
         raise AfterInput(form=form, context=self.context)
@@ -196,6 +206,8 @@ class DeleteView(object):
         self.request = request
 
     def confirm(self):
+        self.context.set_endpoint()
+
         obj = self.context.get_model_obj(self.request.matchdict["id"])
         form = self.context.input_form()
         return {"master_env": self.context,
