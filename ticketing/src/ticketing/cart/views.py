@@ -12,6 +12,7 @@ from ..models import DBSession
 from ..core import models as c_models
 from ..orders import models as o_models
 from ..users import models as u_models
+from .models import Cart
 from . import helpers as h
 from . import schema
 from .rakuten_auth.api import authenticated_user
@@ -81,6 +82,7 @@ class IndexView(object):
 
         return dict(event=event,
                     dates=dates,
+                    cart_release_url=self.request.route_url('cart.release'),
                     selected=Markup(json.dumps([selected_performance.id, selected_date])),
                     venues_selection=Markup(json.dumps(select_venues)),
                     products_from_selected_date_url = self.request.route_url("cart.date.products", event_id=event_id), 
@@ -243,6 +245,19 @@ class ReserveView(object):
         """ 座席確保できなかった場合
         """
 
+class ReleaseCartView(object):
+    def __init__(self, request):
+        self.request = request
+
+    @view_config(route_name='cart.release', request_method="POST", renderer="json")
+    def __call__(self):
+        cart = h.get_cart(self.request)
+        cart.release()
+        DBSession.delete(cart)
+        h.remove_cart(self.request)
+
+        return dict()
+        
 class Reserve2View(object):
     """ 座席選択完了画面(ユーザー選択) """
     def __init__(self, request):
