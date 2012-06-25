@@ -20,6 +20,7 @@ def make_order_data(order) :
 
     class OrderData:
         venue_names = u",".join([u"%s%s" % (p.venue.name, (u"(%s)" % p.venue.site.prefecture if p.venue.site.prefecture else '')) for p in performances.itervalues()])
+        event_name = u",".join([p.event.title for p in performances.itervalues()])
         performance_names = u",".join([p.name for p in performances.itervalues()])
         performance_dates = [p.start_on for p in performances.itervalues()]
         id = order.id

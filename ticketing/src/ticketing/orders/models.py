@@ -53,6 +53,9 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     payment_delivery_pair_id = Column(Identifier, ForeignKey("PaymentDeliveryMethodPair.id"))
     payment_delivery_pair = relationship("PaymentDeliveryMethodPair")
 
+    paid_at = Column(DateTime, nullable=True)
+    delivered_at = Column(DateTime, nullable=True)
+
     order_no = Column(String(255))
 
     performance_id = Column(Identifier, ForeignKey('Performance.id'))

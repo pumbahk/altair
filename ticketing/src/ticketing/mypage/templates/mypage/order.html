@@ -8,17 +8,14 @@
 					<dt>${",".join([d.strftime(u"%Y年%m月%d(%a)".encode('utf-8')).decode('utf-8') for d in order.performance_dates])}</dt>
 					<dd>${order.venue_names}&nbsp;<a href="#">会場地図</a></dd>
 				</dl>
-				<ul>
-					<li><iframe src="//www.facebook.com/plugins/like.php?href=http%3A%2F%2Fxxxx&amp;send=false&amp;layout=button_count&amp;width=100&amp;show_faces=false&amp;action=like&amp;colorscheme=light&amp;font&amp;height=21" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:100px; height:21px;" allowTransparency="true"></iframe></li>
-					<li><a href="https://twitter.com/share" class="twitter-share-button" data-lang="ja" data-count="none">ツイート</a><script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script></li>
-				</ul>
 			</div>
 
-			<div style="border: 1px solid #000;margin: 0 0 0 0; display: block; width: 60px; height: 60px; background-image: url(${request.static_url('ticketing.cart:static/img/mypage/icon_pink_circle.gif')})">
+			<p style="border: 1px solid #FFFFFF;margin: 0 0 0 0; display: block; width: 60px; height: 60px; background-image: url(${request.static_url('ticketing.cart:static/img/mypage/icon_pink_circle.gif')})">
                 % if order.payment_delivery_pair.payment_method.payment_plugin_id == 1:
-                    <p style="display: block;">入金済み</p>
+                <span style="display: block; margin: 20px 0 0 0; width: 60px; text-align: center">入金済み
+                </span>
                 % endif
-			</div>
+			</p>
 			<table>
 				<tr>
 					<th scope="row">予約番号</th>

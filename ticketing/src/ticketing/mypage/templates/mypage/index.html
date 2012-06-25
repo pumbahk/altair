@@ -8,14 +8,20 @@
         </form>
         % if orders:
           <% i = 0 %>
-          % for i, order in enumerate(orders):
+          % for i, order_ in enumerate(orders):
             <% if limit and i >= limit: break %>
-
+            <%
+from ticketing.mypage.helpers import make_order_data
+order = make_order_data(order_)
+            %>
         <div>
-            <p><img src="${request.static_url('ticketing.cart:static/img/mypage/icon_payment.gif')}" alt="入金待ち" width="60" height="60" /></p>
+            <p style="display: block; width: 55px; height: 60px; background-image: url(${request.static_url('ticketing.cart:static/img/mypage/icon_pink_circle.gif')})">
+                <span style="display: block; margin: 20px 5px 0 0; width: 55px; text-align: center">入金済み
+                </span>
+         	</p>
             <dl>
-                <dt><a href="${request.route_path('mypage.order', order_id=order.id)}">${order.items[0].product.event.title}</a></dt>
-                <dd>2012/3/24(土) 東京ビッグサイト（東京国際展示場）(東京都)</dd>
+                <dt><a href="${request.route_path('mypage.order', order_id=order.id)}">${order.event_name}</a></dt>
+                <dd>${order.venue_names}</dd>
                 <dd>
                   ##<img src="${request.static_url('ticketing.cart:static/img/mypage/btn_ticket_off.gif')}" alt="チケット追加購入" width="124" height="22" />
                   ##<img src="${request.static_url('ticketing.cart:static/img/mypage/btn_transfer_off.gif')}" alt="譲渡・出品" width="88" height="22" />
