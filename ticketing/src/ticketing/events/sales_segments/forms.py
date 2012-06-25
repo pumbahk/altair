@@ -43,6 +43,21 @@ class SalesSegmentForm(Form):
         validators=[Required()],
         format='%Y-%m-%d %H:%M'
     )
+    payment_due_at = DateTimeField(
+        label=u'入金期限',
+        validators=[Optional()],
+        format='%Y-%m-%d %H:%M'
+    )
+    issuing_start_at = DateTimeField(
+        label=u'発券開始日時',
+        validators=[],
+        format='%Y-%m-%d %H:%M'
+    )
+    issuing_end_at = DateTimeField(
+        label=u'発券終了日時',
+        validators=[],
+        format='%Y-%m-%d %H:%M'
+    )
     upper_limit = IntegerField(
         label=u'購入上限枚数',
         validators=[Optional()],
@@ -56,3 +71,17 @@ class SalesSegmentForm(Form):
     def validate_end_at(form, field):
         if field.data is not None and field.data < form.start_at.data:
             raise ValidationError(u'開演日時より過去の日時は入力できません')
+
+
+    def validate_issuing_start_at(form, field):
+        if field.data is not None:
+            if field.data >= form.issuing_end_at.data:
+                raise ValidationError(u'発券終了日時より未来の日時は入力できません')
+            if field.data < form.start_at.data:
+                raise ValidationError(u'発売開始日より過去の日時は入力できません')
+
+
+    def validate_issuing_end_at(form, field):
+        if field.data is not None and field.data <= form.issuing_start_at.data:
+            raise ValidationError(u'発券開始日時より過去の日時は入力できません')
+

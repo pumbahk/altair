@@ -32,8 +32,38 @@
         ${h.get_nickname(request)} さん
 		<p><img src="${request.static_url('ticketing.cart:static/img/settlement/completion.gif')}" alt="購入を完了いたしました。" width="201" height="50" /></p>
 
+			<div class="confirmBox">
+				<div class="confirmBoxInner">
+					<h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_shopping.gif')}" alt="お買い物内容" width="114" height="30" /></h2>
+                    <h3 id="name">${order.performance.event.title} ${order.performance.name} ${h.performance_date(order.performance)} ${order.performance.venue.name}</h3>
+					<table id="contentsOfShopping" summary="席種、金額などのお買い物内容">
+                        %for product in order.ordered_products:
+						<tr>
+							<th scope="row"><img src="${request.static_url('ticketing.cart:static/img/settlement/icon_dummy.gif')}" alt="" width="21" height="21" /> ${product.product.name}</th>
+							<td><strong>${product.quantity}</strong>枚</td>
+							<td class="align1">￥${h.format_number(product.product.price * product.quantity)}</td>
+						</tr>
+                        %endfor
+						<tr id="total">
+							<th scope="row"><img src="../img/settlement/total.gif" alt="合計金額" width="67" height="16" /></th>
+							<td>&nbsp;</td>
+							<td class="align1">￥${h.format_number(order.total_amount)}</td>
+						</tr>
+					</table>
+                </div>
+            </div>
+			<div class="confirmBox">
+				<div class="confirmBoxInner">
+                    <h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_payment.gif')}" alt="お支払い" width="78" height="30" /></h2>
 ${h.render_payment_finished_viewlet(request, order)}
+                </div>
+            </div>
+			<div class="confirmBox">
+				<div class="confirmBoxInner">
+					<h3>配送情報</h3>
 ${h.render_delivery_finished_viewlet(request, order)}
+                </div>
+            </div>
 <!--
 		<div class="settlementInterest">
 			<h2>■この商品を買った人は、こんな商品にも興味をもっています。</h2>

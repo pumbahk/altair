@@ -36,9 +36,17 @@
     <th>${form_ss.start_at.label.text}</th>
     <td id="current_start_at">${safe_strftime(sales_segment.start_at)}</td>
   </tr>
+    <tr>
+      <th>${form_ss.payment_due_at.label.text}</th>
+      <td id="current_payment_due_at">${safe_strftime(sales_segment.payment_due_at)}</td>
+    </tr>
   <tr>
-    <th>${form_ss.end_at.label.text}</th>
-    <td id="current_end_at">${safe_strftime(sales_segment.end_at)}</td>
+    <th>${form_ss.issuing_start_at.label.text}</th>
+    <td id="current_issuing_start_at">${safe_strftime(sales_segment.issuing_start_at)}</td>
+  </tr>
+  <tr>
+    <th>${form_ss.issuing_end_at.label.text}</th>
+    <td id="current_issuing_end_at">${safe_strftime(sales_segment.issuing_end_at)}</td>
   </tr>
   <tr>
     <th>${form_ss.upper_limit.label.text}</th>

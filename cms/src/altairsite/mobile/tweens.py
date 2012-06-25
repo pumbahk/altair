@@ -1,5 +1,7 @@
 # -*- encoding:utf-8 -*-
 import uamobile
+import logging
+logger = logging.getLogger(__file__)
 
 def _convert_response_for_mobile(response):
     encoding = 'Shift_JIS'
@@ -21,8 +23,12 @@ def mobile_encoding_convert_factory(handler, registry):
             decoded = request.decode("cp932")
             decoded.registry = request.registry
             decoded._ua = request._ua
+            logger.debug("**this is mobile access**")
+            decoded.is_mobile = True
             response = handler(decoded)
             return _convert_response_for_mobile(response)
         else:
+            request.is_mobile = False
+            logger.debug("**this is pc access**")
             return handler(request)
     return tween
