@@ -53,6 +53,9 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     order_no = Column(String(255))
 
+    performance_id = Column(Identifier, ForeignKey('Performance.id'))
+    performance = relationship('Performance', backref="orders")
+
     @staticmethod
     def filter_by_performance_id(id):
         performance = Performance.get(id)
@@ -73,6 +76,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         order.total_amount = cart.total_amount
         order.shipping_address = cart.shipping_address
         order.payment_delivery_pair = cart.payment_delivery_pair
+        order.performance = cart.performance
 
         for product in cart.products:
             ordered_product = OrderedProduct(

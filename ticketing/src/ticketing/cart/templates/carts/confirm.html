@@ -34,7 +34,7 @@
 			<div class="confirmBox">
 				<div class="confirmBoxInner">
 					<h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_shopping.gif')}" alt="お買い物内容" width="114" height="30" /></h2>
-					<h3 id="name">${cart.performance.name}</h3>
+                    <h3 id="name">${cart.performance.name} ${cart.performance.start_on} ${cart.performance.venue.name}</h3>
 					<table id="contentsOfShopping" summary="席種、金額などのお買い物内容">
                         %for product in cart.products:
 						<tr>
