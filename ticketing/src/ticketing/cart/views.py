@@ -100,6 +100,7 @@ class IndexView(object):
             c_models.Performance.event_id==c_models.StockHolder.event_id).filter(
             c_models.StockHolder.id==c_models.Stock.stock_holder_id).filter(
             c_models.Stock.stock_type_id==c_models.StockType.id).all()
+        performance = c_models.Performance.query.filter_by(id=performance_id).one()
             
         data = dict(seat_types=[
                 dict(id=s.id, name=s.name,
@@ -109,7 +110,11 @@ class IndexView(object):
                     )
                 for s in seat_types
                 ],
+                event_name=performance.event.title,
+                performance_name=performance.name,
+                performance_start=h.performance_date(performance),
                 performance_id=performance_id,
+                venue_name=performance.venue.name,
                 )
         return data
 
