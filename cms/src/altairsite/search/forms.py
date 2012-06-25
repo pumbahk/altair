@@ -1,5 +1,6 @@
 #-*- coding:utf-8 -*-
 from datetime import datetime
+from datetime import timedelta
 from collections import namedtuple
 from wtforms import form
 from wtforms import fields
@@ -54,6 +55,17 @@ PREF_EN_TO_JA.update(import_symbol("altaircms.seeds.prefecture:PREFECTURE_CHOICE
 ##
 
 
+def parse_date(y, m, d):
+    if d <= 0:
+        d = 1
+    try:
+        return datetime(int(y), int(m), int(d))
+    except ValueError:
+        if m == 12:
+            return datetime(int(y)+1, 1, 1) - timedelta(days=1)
+        else:
+            return datetime(int(y), int(m)+1, 1) - timedelta(days=1)
+
 ### toppage sidebar
 class TopPageSidebarSearchForm(form.Form):
     """ top page のsidebarのform"""
@@ -71,9 +83,9 @@ class TopPageSidebarSearchForm(form.Form):
         data = self.data
         performance_open, performance_close = None, None
         if all((data["start_year"], data["start_month"], data["start_day"])):
-            performance_open = datetime(*(int(x) for x in (data["start_year"], data["start_month"], data["start_day"])))
+            performance_open = parse_date(data["start_year"], data["start_month"], data["start_day"])
         if all((data["end_year"], data["end_month"], data["end_day"])):
-            performance_close = datetime(*(int(x) for x in (data["end_year"], data["end_month"], data["end_day"])))
+            performance_close = parse_date(data["end_year"], data["end_month"], data["end_day"])
 
         params =  {
             "performance_open": performance_open, 
@@ -259,9 +271,9 @@ class PerformanceTermPartForm(form.Form):
         data = self.data
         performance_open, performance_close = None, None
         if all((data["start_year"], data["start_month"], data["start_day"])):
-            performance_open = datetime(*(int(x) for x in (data["start_year"], data["start_month"], data["start_day"])))
+            performance_open = parse_date(data["start_year"], data["start_month"], data["start_day"])
         if all((data["end_year"], data["end_month"], data["end_day"])):
-            performance_close = datetime(*(int(x) for x in (data["end_year"], data["end_month"], data["end_day"])))
+            performance_close = parse_date(data["end_year"], data["end_month"], data["end_day"])
         return {"performance_open": performance_open, 
                 "performance_close": performance_close}
 
