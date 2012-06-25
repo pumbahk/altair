@@ -652,13 +652,13 @@
   $.fn.venueviewer = function (options) {
     var aux = this.data('venueviewer');
 
-    if (!aux) { // if there are no store data. init and store the data.
-      if (!options)
-        throw new Error("Options must be given");
-      if (typeof options == 'string' || options instanceof String)
-        throw new Error("Command issued against an uninitialized element");
-      if (!options.dataSource || !options.dataSource instanceof Object)
+    if (!options)
+      throw new Error("Options must be given");
+    if (typeof options == 'object') {
+      if (!options.dataSource || typeof options.dataSource != 'object')
         throw new Error("Required option missing: dataSource");
+      if (aux)
+        aux.dispose();
 
       var _options = $.extend({}, options);
      
@@ -731,32 +731,39 @@
       this.data('venueviewer', aux);
       if (options.uimode)
         aux.changeUIMode(options.uimode);
-    } else {
-      if (typeof options == 'string' || options instanceof String) {
-        switch (options) {
-        case 'load':
-          aux.load();
-          break;
+    } else if (typeof options == 'string' || options instanceof String) {
+      if (options == 'remove') {
+        aux.dispose();
+        this.data('venueviewer', null);
+      }
+      if (!aux)
+        throw new Error("Command issued against an uninitialized element");
+      switch (options) {
+      case 'load':
+        aux.load();
+        break;
 
-        case 'remove':
-          aux.dispose();
-          this.data('venueviewer', null);
-          break;
+      case 'uimode':
+        if (!aux)
+          throw new Error("Command issued against an uninitialized element");
+        aux.changeUIMode(arguments[1]);
+        break;
 
-        case 'uimode':
-          aux.changeUIMode(arguments[1]);
-          break;
+      case 'selection':
+        if (!aux)
+          throw new Error("Command issued against an uninitialized element");
+        return aux.selection;
 
-        case 'selection':
-          return aux.selection;
+      case 'refresh':
+        if (!aux)
+          throw new Error("Command issued against an uninitialized element");
+        return aux.refresh();
 
-        case 'refresh':
-          return aux.refresh();
-
-        case 'adjacency':
-          aux.adjacencyLength(arguments[1]|0);
-          break;
-        }
+      case 'adjacency':
+        if (!aux)
+          throw new Error("Command issued against an uninitialized element");
+        aux.adjacencyLength(arguments[1]|0);
+        break;
       }
     }
 
