@@ -137,7 +137,7 @@ shipping = cart.shipping_address
 			</div>
 			<div class="settlementBox">
 				<div class="settlementBoxInner">
-					<h2><img src="../img/settlement/title_magazine.gif" alt="メールマガジンの配信" width="177" height="30" /></h2>
+                    <h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_magazine.gif')}" alt="メールマガジンの配信" width="177" height="30" /></h2>
 					<div id="mailMagazineBox">
 						<div id="mailMagazineBoxInner">
 							<ul>
@@ -145,7 +145,7 @@ shipping = cart.shipping_address
                                 %for mailmagazine in mailmagazines:
 								<li>
 									<label>
-                                        <input type="checkbox" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />
+                                        <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />
                                         ${mailmagazine.name}</label>
                                     ${mailmagazine.description}
 								</li>

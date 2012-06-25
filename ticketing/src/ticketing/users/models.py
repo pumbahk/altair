@@ -25,7 +25,16 @@ class User(Base):
         return session.query(User).filter(User.id == user_id).first()
 
     def subscribe(self, mailmagazine):
-        return MailSubscription(email=self.user_profile.email, user=self, segment=mailmagazine)
+        subscription = MailSubscription.query.filter(
+            MailSubscription.user==self
+        ).filter(
+            MailSubscription.segment==mailmagazine
+        ).first()
+        if subscription:
+            return
+        subscription = MailSubscription(email=self.user_profile.email, user=self, segment=mailmagazine)
+        session.add(subscription)
+        return subscription
 
     def unsubscribe(self, mailmagazine):
         subscription = MailSubscription.query.filter(

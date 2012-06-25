@@ -434,9 +434,7 @@ class CompleteView(object):
         magazines = u_models.MailMagazine.query.all()
         openid = authenticated_user(self.request)
         user = h.get_or_create_user(self.request, openid['clamed_id'])
-        # 購読解除
-        for mailmagazine in magazines:
-            user.unsubscribe(mailmagazine)
+
         # 購読
         magazine_ids = self.request.params.getall('mailmagazine')
         logger.debug("magazines: %s" % magazine_ids)
@@ -444,7 +442,6 @@ class CompleteView(object):
         for s in subscriptins:
             logger.debug("subscribe %s" % s.name)
             subscription = user.subscribe(s)
-            DBSession.add(subscription)
 
     def finish_reserved_number(self, cart, order_session):
         # 窓口引き換え番号
