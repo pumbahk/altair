@@ -11,6 +11,7 @@ from js.jquery_tools import jquery_tools
 from ..models import DBSession
 from ..core import models as c_models
 from ..orders import models as o_models
+from ..users import models as u_models
 from . import helpers as h
 from . import schema
 from .rakuten_auth.api import authenticated_user
@@ -304,6 +305,7 @@ class PaymentView(object):
         if not form.validate():
             self.context.event_id = cart.performance.event.id
             payment_delivery_methods = self.context.get_payment_delivery_method_pair()
+            logger.debug("invalid : %s" % form.errors)
             return dict(form=form,
                 payment_delivery_methods=payment_delivery_methods,
                 user=user, user_profile=user.user_profile)
@@ -365,21 +367,26 @@ class ConfirmView(object):
     def __init__(self, request):
         self.request = request
 
+
     @view_config(route_name='payment.confirm', request_method="GET", renderer="carts/confirm.html")
     def get(self):
 
         assert h.has_cart(self.request)
         cart = h.get_cart(self.request)
 
-        return dict(cart=cart)
+        magazines = u_models.MailMagazine.query.all()
 
-    @view_config(route_name='payment.confirm', request_method="POST", renderer="carts/confirm.html")
-    def post(self):
 
-        assert h.has_cart(self.request)
-        cart = h.get_cart(self.request)
+        return dict(cart=cart, mailmagazines=magazines)
 
-        raise HTTPFound(self.request.route_url("payment.finish"))
+    # @view_config(route_name='payment.confirm', request_method="POST", renderer="carts/confirm.html")
+    # def post(self):
+
+    #     assert h.has_cart(self.request)
+    #     cart = h.get_cart(self.request)
+    #         
+    #     self.save_subscription()
+    #     return HTTPFound(self.request.route_url("payment.finish"))
 
 
 class CompleteView(object):
@@ -392,6 +399,10 @@ class CompleteView(object):
     def __call__(self):
         assert h.has_cart(self.request)
         cart = h.get_cart(self.request)
+
+        # メール購読
+        self.save_subscription()
+
         order_session = self.request.session['order']
 
         payment_delivery_pair_id = order_session['payment_delivery_pair_id']
@@ -418,6 +429,22 @@ class CompleteView(object):
         notify_order_completed(self.request, order)
 
         return dict(order=order)
+
+    def save_subscription(self):
+        magazines = u_models.MailMagazine.query.all()
+        openid = authenticated_user(self.request)
+        user = h.get_or_create_user(self.request, openid['clamed_id'])
+        # 購読解除
+        for mailmagazine in magazines:
+            user.unsubscribe(mailmagazine)
+        # 購読
+        magazine_ids = self.request.params.getall('mailmagazine')
+        logger.debug("magazines: %s" % magazine_ids)
+        subscriptins = u_models.MailMagazine.query.filter(u_models.MailMagazine.id.in_(magazine_ids)).all()
+        for s in subscriptins:
+            logger.debug("subscribe %s" % s.name)
+            subscription = user.subscribe(s)
+            DBSession.add(subscription)
 
     def finish_reserved_number(self, cart, order_session):
         # 窓口引き換え番号

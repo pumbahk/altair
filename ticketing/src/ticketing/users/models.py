@@ -24,6 +24,19 @@ class User(Base):
     def get(user_id):
         return session.query(User).filter(User.id == user_id).first()
 
+    def subscribe(self, mailmagazine):
+        return MailSubscription(email=self.user_profile.email, user=self, segment=mailmagazine)
+
+    def unsubscribe(self, mailmagazine):
+        subscription = MailSubscription.query.filter(
+            MailSubscription.user==self
+        ).filter(
+            MailSubscription.segment==mailmagazine
+        ).first()
+        if subscription:
+            session.delete(subscription)
+
+
 class SexEnum(StandardEnum):
     Male = 1
     Female = 2
@@ -129,6 +142,7 @@ class MailSubscription(Base):
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
     status = Column(Integer)
+
 
 class MemberShip(Base):
     '''
