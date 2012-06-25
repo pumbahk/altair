@@ -37,115 +37,138 @@
       <input type="radio" name="function" value="zoomin" class="ui-button ui-icon-primary-zoomin action-zoomin" id="toolbar-action-zoomin" /><label for="toolbar-action-zoomin">Zoom-in</label>
       <input type="radio" name="function" value="zoomout" class="ui-button ui-icon-primary-zoomout action-zoomout" id="toolbar-action-zoomout" /><label for="toolbar-action-zoomout">Zoom-out</label>
     </span>
+    <button class="ui-button action-reload ui-icon-primary-refresh">Reload</button>
     <select class="ui-button action-select-adjacencies" id="toolbar-seat-adjacencies-selector"></select>
     <select class="ui-button action-select-stock-types" id="toolbar-stock-type-selector"></select>
   </div>
   <div id="venue"><div class="message">Loading...</div></div>
   <script type="text/javascript">
 var currentStockTypeId = "";
-var venue = $('#venue').venueviewer({
-  dataSource: {
-    drawing: "data/sample.svg",
-    metadata: "data/data.json",
-    seatAdjacencies: function (next, error, length) {
-      $.ajax({
-        url: 'data/adjacencies/' + (length|0) + '.json',
-        dataType: 'json',
-        success: function(data) {
-          next(data['seat_adjacencies']);
-        },
-        error: function(xhr, text) {
-          error("Failed to load adjacency data (reason: " + text + ")");
-        }
-      });
-    }
-  },
-  callbacks: {
-    message: function (msg) {
-      $("<div></div>").text(msg).dialog({
-        modal: true,
-        buttons: {
-          "Ok": function () { $(this).dialog('destroy'); }
-        }
-      });
-    },
-    load: function (viewer) {
-      var n = $("#toolbar-seat-adjacencies-selector");
-      $.each(viewer.availableAdjacencies, function(i, v) {
-        $('<option></option>').attr("value", v).text(v)
-                              .appendTo(n);
-      });
-      n.select(function() {
-        viewer.adjacencyLength(value|0);
-      });
-      var n = $("#toolbar-stock-type-selector");
-      $('<option></option>').attr("value", "").text("All")
-                              .appendTo(n);
-      for (var id in viewer.stockTypes) {
-        var stock_type = viewer.stockTypes[id];
-        $('<option></option>').attr("value", id).text(stock_type.name)
-                              .appendTo(n);
+var venue = $('#venue');
+function loadVenue() {
+  venue.venueviewer({
+    dataSource: {
+      drawing: "data/sample.svg",
+      metadata: "data/data.json",
+      seatAdjacencies: function (next, error, length) {
+        $.ajax({
+          url: 'data/adjacencies/' + (length|0) + '.json',
+          dataType: 'json',
+          success: function(data) {
+            next(data['seat_adjacencies']);
+          },
+          error: function(xhr, text) {
+            error("Failed to load adjacency data (reason: " + text + ")");
+          }
+        });
       }
     },
-    uimodeselect: function (viewer, mode) {
-      switch (mode) {
-      case 'select1':
-        $("#toolbar-action-select-one").attr("checked", "checked");
-        break;
-      case 'select':
-        $("#toolbar-action-select-multiple").attr("checked", "checked");
-        break;
-      case 'zoomin':
-        $("#toolbar-action-select-zoomin").attr("checked", "checked");
-        break;
-      case 'zoomout':
-        $("#toolbar-action-select-zoomout").attr("checked", "checked");
-        break;
+    callbacks: {
+      message: function (msg) {
+        $("<div></div>").text(msg).dialog({
+          modal: true,
+          buttons: {
+            "Ok": function () { $(this).dialog('destroy'); }
+          }
+        });
+      },
+      load: function (viewer) {
+        var n = $("#toolbar-seat-adjacencies-selector");
+        $.each(viewer.availableAdjacencies, function(i, v) {
+          $('<option></option>').attr("value", v).text(v)
+                                .appendTo(n);
+        });
+        n.select(function() {
+          viewer.adjacencyLength(value|0);
+        });
+        var n = $("#toolbar-stock-type-selector");
+        $('<option></option>').attr("value", "").text("All")
+                                .appendTo(n);
+        for (var id in viewer.stockTypes) {
+          var stock_type = viewer.stockTypes[id];
+          $('<option></option>').attr("value", id).text(stock_type.name)
+                                .appendTo(n);
+        }
+      },
+      uimodeselect: function (viewer, mode) {
+        switch (mode) {
+        case 'select1':
+          $("#toolbar-action-select-one").attr("checked", "checked");
+          break;
+        case 'select':
+          $("#toolbar-action-select-multiple").attr("checked", "checked");
+          break;
+        case 'zoomin':
+          $("#toolbar-action-select-zoomin").attr("checked", "checked");
+          break;
+        case 'zoomout':
+          $("#toolbar-action-select-zoomout").attr("checked", "checked");
+          break;
+        }
+      },
+      selectable: function (viewer, seat) {
+        if (currentStockTypeId == "")
+          return true;
+        return seat.meta.stock_type_id == currentStockTypeId;
+      },
+      click: function (viewer, seat, highlighted) {
+        $.each(highlighted, function (id, seat) {
+          console.log(seat);
+        });
+      },
+      select: function (viewer, selection) {
+        $.each(selection, function (i, seat) {
+          console.log(seat);
+        });
+      },
+      loadstart: function (category) {
+        if (typeof console != 'undefined')
+          console.log(category);
       }
-    },
-    selectable: function (viewer, seat) {
-      if (currentStockTypeId == "")
-        return true;
-      return seat.meta.stock_type_id == currentStockTypeId;
-    },
-    click: function (viewer, seat, highlighted) {
-      $.each(highlighted, function (id, seat) {
-        console.log(seat);
-      });
-    },
-    select: function (viewer, selection) {
-      $.each(selection, function (i, seat) {
-        console.log(seat);
-      });
-    },
-    loadstart: function (category) {
-      if (typeof console != 'undefined')
-        console.log(category);
     }
-  }
-}).venueviewer("load");
+  }).venueviewer("load");
+}
+
 $(".action-zoomin").click(function () {
+  if (!venue)
+    return;
   venue.venueviewer("uimode", "zoomin");
 });
 $(".action-zoomout").click(function () {
+  if (!venue)
+    return;
   venue.venueviewer("uimode", "zoomout");
 });
 $(".action-move").click(function () {
+  if (!venue)
+    return;
   venue.venueviewer("uimode", "move");
 });
 $(".action-select-one").click(function () {
+  if (!venue)
+    return;
   venue.venueviewer("uimode", "select1");
 });
 $(".action-select-multiple").click(function () {
+  if (!venue)
+    return;
   venue.venueviewer("uimode", "select");
 });
 $(".action-select-adjacencies").change(function () {
+  if (!venue)
+    return;
   venue.venueviewer("adjacency", this.value);
 });
 $(".action-select-stock-types").change(function () {
+  if (!venue)
+    return;
   currentStockTypeId = this.value;
   venue.venueviewer("refresh");
 });
+$(".action-reload").click(function () {
+  loadVenue();
+});
+loadVenue();
 </script>
 </div>
 <script type="text/javascript">
