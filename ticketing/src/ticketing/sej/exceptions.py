@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-
 class SejRequestError(Exception):
 
     def __init__(self, message):
@@ -51,4 +50,5 @@ class SejResponseError(Exception):
         self.params = params
 
     def response(self):
+        from .helpers import make_sej_response
         return make_sej_response(self.params)
