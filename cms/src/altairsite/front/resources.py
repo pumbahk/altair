@@ -1,19 +1,23 @@
 # -*- coding:utf-8 -*-
 import logging
 logger = logging.getLogger(__file__)
-
 from datetime import datetime
 import sqlalchemy as sa
 from altaircms.page.models import Page
 from altaircms.page.models import PageSet
-from .api import FrontPageRenderer
+
+from . import api 
 
 class PageRenderingResource(object):
     def __init__(self, request):
         self.request = request
 
     def frontpage_renderer(self):
-        return FrontPageRenderer(self.request)
+        return api.FrontPageRenderer(self.request)
+
+    def frontpage_template(self, page):
+        filename = page.layout.template_filename
+        return api.get_frontpage_template(self.request, filename)
 
     def pc_access_control(self):
         return AccessControlPC(self.request)
@@ -39,7 +43,7 @@ class AccessControlMobile(object):
     def __init__(self, request):
         self.request = request
         self.access_ok = False
-        self.error_message = u"this-object-is-not-used" 
+        self.error_message = "this-object-is-not-used" 
 
     def can_access(self):
         if not self.access_ok:
@@ -58,12 +62,12 @@ class AccessControlMobile(object):
         self.access_ok = True
 
         if pageset is None:
-            self.error_message = u"*fetch pageset* url=%s pageset is not found" % url
+            self.error_message = "*fetch pageset* url=%s pageset is not found" % url
             self.access_ok = False
             return pageset
 
         if pageset.event and pageset.event.is_searchable == False:
-            self.error_message = u"*fetch pageset* pageset(id=%s) event is disabled event(is_searchable==False)"
+            self.error_message = "*fetch pageset* pageset(id=%s) event is disabled event(is_searchable==False)"
             self.access_ok = False
         return pageset
 
@@ -72,12 +76,25 @@ class AccessControlPC(object):
     def __init__(self, request):
         self.request = request
         self.access_ok = False
-        self.error_message = u"this-object-is-not-used" 
+        self.error_message = "this-object-is-not-used" 
 
     def can_access(self):
         if not self.access_ok:
             logger.info("*front pc access* url is not found (%s)" % self.request.referer) ## referer
         return self.access_ok
+
+    def can_rendering(self, template, page):
+        if template is None:
+            fmt = "*front pc access rendering* page(id=%s) layout(id=%s) don't have template"
+            self.error_message = fmt % (page.id, page.layout.id)
+            return False
+        ## todo 疎結合
+        if not api.template_exist(template):
+            fmt = "*front pc access rendering* page(id=%s) layout(id=%s) template(name:%s) is not found"
+            self.error_message = fmt % (page.id, page.layout.id, template)
+            return False
+        return True
+        
 
     def _fetch_page_from_params(self, url, dt):
         qs = Page.query.filter(PageSet.id==Page.pageset_id)
@@ -91,17 +108,17 @@ class AccessControlPC(object):
         self.access_ok = True
 
         if page is None:
-            self.error_message = u"*fetch page* url=%s page is not found" % url
+            self.error_message = "*fetch page* url=%s page is not found" % url
             self.access_ok = False
             return page
 
         if page.event and page.event.is_searchable == False:
-            self.error_message = u"*fetch pageset* pageset(id=%s) event is disabled event(is_searchable==False)"
+            self.error_message = "*fetch pageset* pageset(id=%s) event is disabled event(is_searchable==False)"
             self.access_ok = False
         if page.layout is None:
-            self.error_message = u"*fetch page* url=%s page(id=%s) has not rendering layout" % (url, page.id)
+            self.error_message = "*fetch page* url=%s page(id=%s) has not rendering layout" % (url, page.id)
             self.access_ok = False
         if not page.layout.valid_block():
-            self.error_message = u"*fetch page* url=%s page(id=%s) layout(id=%s) layout is broken" % (url, page.id, page.layout.id)
+            self.error_message = "*fetch page* url=%s page(id=%s) layout(id=%s) layout is broken" % (url, page.id, page.layout.id)
             self.access_ok = False
         return page

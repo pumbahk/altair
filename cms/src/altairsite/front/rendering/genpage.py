@@ -151,14 +151,12 @@ class RenderAdaptor(object):
         return r
 
     def render(self, renderer_name, value, request=None, package=None):
-        params =  dict(__renderer_name=renderer_name, 
+        params =  dict(renderer_name=renderer_name, 
                        __request=request, 
                        __package=package)
         return self.template.render(**self._add_context(value,params))
 
 ## main
-def template_to_render(template):
-    return RenderAdaptor(template).render
 
 def get_config(request):
     config = {}
@@ -174,9 +172,3 @@ def get_config(request):
 def get_layout_template(template_filename, config):
     return os.path.join(config[WIDGET_LAYOUT_DIRECTORIES], template_filename)
 
-def get_pagerender_tree(widget_tree):
-    root = PageNode()
-    for bname, widgets in widget_tree.blocks.items():
-        for w in widgets:
-            root.add(bname, w)
-    return root

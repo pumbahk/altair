@@ -25,11 +25,15 @@ def rendering_page(context, request):
     control = context.pc_access_control()
     page = control.fetch_page_from_params(url, dt)
 
-    if control.can_access():
-        renderer = context.frontpage_renderer()
-        return renderer.render(page)
-    else:
-        return HTTPNotFound(control.error_message)
+    if not control.can_access():
+        raise HTTPNotFound(control.error_message)
+
+    template = context.frontpage_template(page)
+    if not control.can_rendering(template, page):
+        raise HTTPNotFound(control.error_message)
+
+    renderer = context.frontpage_renderer()
+    return renderer.render(template, page)
 
 ## for mobile
 
