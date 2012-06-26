@@ -9,7 +9,24 @@ page.can_access(user=None, access_key=None)
 * access_key is valid -> ok.
 """
 
+def setUpModule():
+    import altaircms.event.models
+    import altaircms.page.models
+    import sqlahelper
+    import transaction
+    transaction.abort()
+    session = sqlahelper.get_session()
+    session.remove()
+    sqlahelper.add_engine("sqlite://")
+    base = sqlahelper.get_base()
+    base.metadata.drop_all()
+    base.metadata.create_all()
+
 class PagePublishStatusTests(unittest.TestCase):
+    def tearDown(self):
+        import transaction
+        transaction.abort()
+        
     def _makeOne(self, *args, **kwargs):
         from altaircms.page.models import Page
         return Page(*args, **kwargs)
@@ -34,10 +51,14 @@ class PagePublishStatusTests(unittest.TestCase):
         target.unpublish()
 
         self.assertFalse(target.published)
-        self.assertTrue(target.can_access())
+        self.assertFalse(target.can_access())
 
 
 class PagePrivateAccessTests(unittest.TestCase):
+    def tearDown(self):
+        import transaction
+        transaction.abort()
+
     def _makeOne(self, *args, **kwargs):
         from altaircms.page.models import Page
         return Page(*args, **kwargs)
@@ -98,24 +119,24 @@ class PagePrivateAccessTests(unittest.TestCase):
 
     def test_on_unpublish_access_key_before_expiredate(self):
         target = self._makeOne()
-        target.unpulish()
+        target.unpublish()
         key = target.create_access_key(key="this-is-access-key", expire=datetime(2012, 12, 1))
 
         now = datetime(2012, 8, 9)
 
         self.assertTrue(target.has_access_keys())
-        self.assertEquals(target.valid_access_keys(now), 1)
+        self.assertEquals(target.valid_access_keys(now), [key])
         self.assertTrue(target.can_access(key=key, _now=now))
 
     def test_on_unpublish_access_key_after_expiredate(self):
         target = self._makeOne()
-        target.unpulish()
+        target.unpublish()
         key = target.create_access_key(key="this-is-access-key", expire=datetime(2012, 12, 1))
 
         now = datetime(2012, 12, 12)
 
         self.assertTrue(target.has_access_keys())
-        self.assertEquals(target.valid_access_keys(now), 0)
+        self.assertEquals(target.valid_access_keys(now), [])
         self.assertFalse(target.can_access(key=key, _now=now))
         
 

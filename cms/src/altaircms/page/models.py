@@ -25,21 +25,29 @@ from altaircms.layout.models import Layout
 
 import uuid
 
-class PageHashkey(Base):
-    __tablenames__ = "page_hashkeys"
+class PageAccesskey(Base):
+    query = DBSession.query_property()
+    __tablename__ = "page_accesskeys"
     id = sa.Column(sa.Integer, primary_key=True)
     page_id = sa.Column(sa.Integer, sa.ForeignKey("page.id"))
-    page = orm.relationship("Page", backref=orm.backref("hashkeys"))
+    page = orm.relationship("Page", backref=orm.backref("access_keys", cascade="all"))
     hashkey = sa.Column(sa.String(length=32))
-    exprire_date = sa.Column(sa.DateTime)
+    expiredate = sa.Column(sa.DateTime)
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(DateTime, default=datetime.now, onupdate=datetime.now)    
 
     def hashash(self):
         return bool(self.hashkey)
 
-    def sethash(self):
-        self.hashkey = uuid.uuid4().hex
+    def default_gen_key(self):
+        return uuid.uuid4().hex
+
+    def sethashkey(self, genkey=None, key=None):
+        if key:
+            self.hashkey = key
+        else:
+            self.hashkey = (genkey or self.default_gen_key)()
+
 
 class PublishUnpublishMixin(object):
     def is_published(self):
@@ -213,6 +221,14 @@ class Page(PublishUnpublishMixin,
 
     def unpublish(self):
         self.published = False
+
+    def create_access_key(self, key=None, expire=None, _genkey=None):
+        access_key = PageAccesskey(expiredate=expire, hashkey=key, page=self)
+        access_key.sethashkey(genkey=_genkey, key=key)
+        return access_key
+
+    def delete_access_key(self, target):
+        return self.access_keys.remove(target)
 
     def _can_access(self, key=None, _now=None):
         if not key in self.access_keys:
