@@ -380,7 +380,7 @@ class PaymentView(object):
             "last_name_kana": user_profile.last_name_kana,
             "first_name": user_profile.first_name,
             "first_name_kana": user_profile.first_name_kana,
-            "tel_1": user_profile.tel_1,
+            "tel": user_profile.tel_1,
             "fax": user_profile.fax,
             "zip": user_profile.zip,
             "prefecture": user_profile.prefecture,

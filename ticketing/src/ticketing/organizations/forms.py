@@ -1,22 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import re
-
 from wtforms import Form
 from wtforms import TextField, IntegerField, HiddenField, SelectField, BooleanField
 from wtforms.validators import Length, Regexp, Optional
 
-from ticketing.formhelpers import DateTimeField, Translations, Required
+from ticketing.formhelpers import DateTimeField, Translations, Required, Phone
 from ticketing.master.models import Prefecture
-
-class Phone(Regexp):
-    def __init__(self, message=None):
-        super(Phone, self).__init__(r'^[0-9¥-]*$', re.IGNORECASE, message)
-
-    def __call__(self, form, field):
-        if self.message is None:
-            self.message = field.gettext(u'電話番号を確認してください')
-        super(Phone, self).__call__(form, field)
 
 class OrganizationForm(Form):
 
