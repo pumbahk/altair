@@ -60,6 +60,7 @@ class PublishUnpublishMixin(object):
     def to_published(self):
         self.hash_url = None
 
+
 class HasAncestorMixin(object):
     ## require self.parent
     @property
@@ -77,6 +78,7 @@ class HasAncestorMixin(object):
         if not includeme:
             r.pop(0)
         return r
+
     
 class PageSet(Base, 
               HasAncestorMixin):
@@ -259,7 +261,6 @@ class Page(PublishUnpublishMixin,
         now = _now or datetime.now()
         return [k for k in self.access_keys if k.expiredate >= now]
 
-    
 
 
 ## master    

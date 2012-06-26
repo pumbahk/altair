@@ -5,7 +5,7 @@ from datetime import datetime
 """
 page.can_access(user=None, access_key=None)
 
-* user is valid -> ok.
+* user is valid -> ok.(not implemented yet)
 * access_key is valid -> ok.
 """
 
