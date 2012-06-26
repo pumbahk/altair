@@ -9,7 +9,6 @@ from .interfaces import IPaymentPlugin, IDeliveryPlugin, IPaymentDeliveryPlugin
 logger = logging.getLogger(__name__)
 
 def includeme(config):
-    config.scan(".")
     config.add_directive("add_payment_plugin", ".directives.add_payment_plugin")
     config.add_directive("add_delivery_plugin", ".directives.add_delivery_plugin")
     config.add_directive("add_payment_delivery_plugin", ".directives.add_payment_delivery_plugin")
