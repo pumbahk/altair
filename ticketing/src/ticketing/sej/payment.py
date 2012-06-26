@@ -97,6 +97,7 @@ class SejPayment(object):
         body = res.read()
 
         self.log.info("[response]%s" % body)
+        print ("[response]%s" % body)
 
         if status == 200:
             # status == 200 はSyntaxErrorなんだって！
@@ -194,7 +195,8 @@ def request_order(
         raise SejError(
             error_type=int(error_type),
             error_msg=ret.get('Error_Msg', None),
-            error_field=ret.get('Error_Field', None))
+            error_field=ret.get('Error_Field', None),
+        error_body='')
 
     sej_order = SejOrder()
     sej_order.shop_id                   = shop_id

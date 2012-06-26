@@ -36,7 +36,7 @@ def create_sej_request(url, request_params):
     data = "&".join(buffer)
 
     log.info("[request]%s" % data)
-
+    print ("[request]%s" % data)
     req.add_data(data)
     req.add_header('User-Agent', 'SejPaymentForJava/2.00')
     req.add_header('Connection', 'close')
