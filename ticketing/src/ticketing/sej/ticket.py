@@ -22,7 +22,7 @@ class SejTicketDataXml():
 
     def __unicode__(self):
         from cStringIO import StringIO
-        s = StringIO(self.xml)
+        s = StringIO(self.xml.encode('utf8'))
         x = etree.parse(s)
         xml =  re.sub(
             r'''(<\?xml[^>]*)encoding=(?:'[^']*'|"[^"]"|[^> ?]*)\?>''',
