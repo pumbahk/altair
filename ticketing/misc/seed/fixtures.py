@@ -651,6 +651,17 @@ operator_seeds = {
     u'オペレータ': [ u'superuser' ],
     }
 
+sales_segment_kind = [
+    'first_lottery',
+    'early_lottery',
+    'early_firstcome',
+    'normal',
+    'added_sales',
+    'added_lottery',
+    'vip',
+    'other'
+    ]
+
 class Data(_Data):
     def __init__(self, schema, **fields):
         _Data.__init__(self, schema, auto('id'), **fields)
@@ -740,6 +751,7 @@ def build_payment_method_datum(organization, payment_method_plugin):
         'PaymentMethod',
         name=payment_method_plugin.name,
         fee=randint(1, 4) * 100,
+        fee_type=randint(0, 1),
         organization_id=organization,
         payment_plugin_id=payment_method_plugin
         )
@@ -749,6 +761,7 @@ def build_delivery_method_datum(organization, delivery_method_plugin):
         'DeliveryMethod',
         name=delivery_method_plugin.name,
         fee=randint(1, 4) * 100,
+        fee_type=randint(0, 1),
         organization_id=organization,
         delivery_plugin_id=delivery_method_plugin
         )
@@ -1000,21 +1013,26 @@ def build_organization_datum(name):
     return retval
 
 def build_sales_segment_datum(organization, name, start_at, end_at):
+    dayrange = min((end_at - start_at).days, 7)
     payment_delivery_method_pairs = [
         Data(
             'PaymentDeliveryMethodPair',
+            system_fee=randint(1, 2) * 100,
             transaction_fee=randint(1, 4) * 100,
             delivery_fee=randint(1, 4) * 100,
             discount=randint(0, 40) * 10,
             discount_unit=randint(0, 1),
             payment_method_id=organization.payment_methods[payment_method_index],
             delivery_method_id=organization.delivery_methods[delivery_method_index],
+            payment_period_days=randint(2, 4),
+            issuing_interval_days=dayrange,
+            issuing_start_at=start_at + relativedelta(days=randint(0, dayrange)),
+            issuing_end_at=end_at - relativedelta(days=randint(0, dayrange)),
             ) \
         for payment_method_index, row in enumerate(payment_delivery_method_pair_matrix) \
         for delivery_method_index, enabled in enumerate(row) if enabled
         ]
 
-    dayrange = min((end_at - start_at).days, 7)
     return Data(
         'SalesSegment',
         name=name,
@@ -1022,9 +1040,7 @@ def build_sales_segment_datum(organization, name, start_at, end_at):
         end_at=end_at,
         upper_limit=randint(1, 10),
         seat_choice=randint(0, 1) != 0,
-        payment_due_at=end_at - relativedelta(days=randint(0, dayrange)),
-        issuing_start_at=start_at + relativedelta(days=randint(0, dayrange)),
-        issuing_end_at=end_at - relativedelta(days=randint(0, dayrange)),
+        kind=sales_segment_kind[randint(0, 7)],
         payment_delivery_method_pairs=rel(
             payment_delivery_method_pairs,
             'sales_segment_id'
