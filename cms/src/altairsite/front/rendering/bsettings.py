@@ -5,10 +5,10 @@ page rendering process: page => widget tree => block_dict(defaultdict(list)) => 
 from collections import defaultdict
 from altaircms.lib.structures import StrictDict
 
-__all__ = ["BlockContextException",
-           "BlockContext"]
+__all__ = ["BlockSettingsException",
+           "BlockSettings"]
 
-class BlockContextException(Exception):
+class BlockSettingsException(Exception):
     pass
 
 class StoreableMixin(object):
@@ -62,11 +62,11 @@ class ScannableMixin(object):
         valds = self._collect_validators(subkind)
         for v in valds:
             if not v(self):
-                raise BlockContextException(v.__doc__)
+                raise BlockSettingsException(v.__doc__)
 
     def attach_validator(self, fn, subkind=None):
         if subkind and not subkind in self.subkind_candidates:
-            raise BlockContextException("%s is not found in subkind_candidates" % subkind)
+            raise BlockSettingsException("%s is not found in subkind_candidates" % subkind)
         self._validators.append((subkind, fn))
 
     def scan(self, **kwargs):
@@ -77,7 +77,7 @@ class ScannableMixin(object):
             self.blocks[k] = [v() if callable(v) else v for v in vs]
         self._do_validate("after_scan")    
 
-class BlockContext(StoreableMixin,
+class BlockSettings(StoreableMixin,
                    UpdatableMixin,
                    ScannableMixin, 
                    UniqueByWidgetMixin):
@@ -109,7 +109,7 @@ class BlockContext(StoreableMixin,
 
     def __repr__(self):
         fmt = "%s:blocks=%s"
-        return fmt % (super(BlockContext, self).__repr__(), 
+        return fmt % (super(BlockSettings, self).__repr__(), 
                       repr(self.blocks))
 
     @classmethod
@@ -119,6 +119,3 @@ class BlockContext(StoreableMixin,
             for w in widgets:
                 w.merge_settings(bname, bsettings) ## todo: rename method
         return bsettings
-
-    
-

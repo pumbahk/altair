@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 
 import unittest
-from ..block_context import BlockContext
+from ..bsettings import BlockSettings
 
 class DummyWidget(object):
     def __init__(self, name):
@@ -54,14 +54,14 @@ _.each(%s, echo);
             bcontext.create_store(self, [])
         bcontext.get_store(self).append(str(self.id))
 
-class BlockContextTest(unittest.TestCase):
+class BlockSettingsTest(unittest.TestCase):
     def test_simple(self):
         """動作チェック
         """
         class WTree(object):
             blocks = {"top": [DummyWidget("foo"), DummyWidget("bar")]}
 
-        bcontext = BlockContext.from_widget_tree(WTree)
+        bcontext = BlockSettings.from_widget_tree(WTree)
         bcontext.scan()
         self.assertEquals("".join(bcontext.blocks["top"]),
                           '<p>foo</p><p>bar</p>')
@@ -71,7 +71,7 @@ class BlockContextTest(unittest.TestCase):
         """
         class WTree(object):
             blocks = {"top": [WithJSWidget("foo", 1), WithJSWidget("bar", 2)]}
-        bcontext = BlockContext.from_widget_tree(WTree)
+        bcontext = BlockSettings.from_widget_tree(WTree)
         bcontext.scan()
         self.assertEquals("".join(bcontext.blocks["top"]),
                           '<p id="1">foo</p><p id="2">bar</p>')
@@ -81,7 +81,7 @@ class BlockContextTest(unittest.TestCase):
         """
         class WTree(object):
             blocks = {"top": [WithJSWidget("foo", 1), WithJSWidget("bar", 2)]}
-        bcontext = BlockContext.from_widget_tree(WTree)
+        bcontext = BlockSettings.from_widget_tree(WTree)
         bcontext.scan()
         self.assertEquals(list(bcontext.blocks["js_prerender"])[0], 
                           """function echo(i){console.log(i)} 
@@ -93,7 +93,7 @@ class BlockContextTest(unittest.TestCase):
         """
         class WTree(object):
             blocks = {"top": [DummyWidget("foo")]}
-        bcontext = BlockContext.from_widget_tree(WTree)
+        bcontext = BlockSettings.from_widget_tree(WTree)
         bcontext.scan(user="user")
         self.assertEquals(bcontext.extra["user"], "user")
 
@@ -102,17 +102,17 @@ class BlockContextTest(unittest.TestCase):
         """
         class WTree(object):
             blocks = {"top": [NeedValueWidget("foo")]}
-        bcontext = BlockContext.from_widget_tree(WTree)
+        bcontext = BlockSettings.from_widget_tree(WTree)
 
-        from ..block_context import BlockContextException
-        self.assertRaises(BlockContextException, bcontext.scan)
+        from ..bsettings import BlockSettingsException
+        self.assertRaises(BlockSettingsException, bcontext.scan)
         
     def test_extra_validator_ok(self):
         """指定した値がself.extraにあった場合はok
         """
         class WTree(object):
             blocks = {"top": [NeedValueWidget("foo")]}
-        bcontext = BlockContext.from_widget_tree(WTree)
+        bcontext = BlockSettings.from_widget_tree(WTree)
         bcontext.scan(user="user")
         self.assertEquals(list(bcontext.blocks["top"])[0], 
                           "<p>user: user</p>")

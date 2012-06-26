@@ -49,13 +49,13 @@ def rendering_source_page(request):
     rendering_context = PageRenderingResource(request)
     layout = page.layout
 
-    block_context = rendering_context.get_block_context(page)
-    block_context.scan(request=request,
+    bsettings = rendering_context.get_bsettings(page)
+    bsettings.scan(request=request,
                        page=page, 
                        performances=rendering_context.get_performances(page),
                        event=page.event)
     tmpl = rendering_context.get_layout_template(layout, rendering_context.get_render_config())
     params = api.get_navigation_categories(request)
     params.update(sub_categories=api.get_subcategories_from_page(request, page))
-    params.update(page=page, display_blocks=block_context.blocks)
+    params.update(page=page, display_blocks=bsettings.blocks)
     return render_to_response(tmpl, params, request)

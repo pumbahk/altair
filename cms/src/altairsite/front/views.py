@@ -29,8 +29,8 @@ todo:
 """
 
 def _rendering(context, request, page, layout):
-    block_context = context.get_block_context(page)
-    block_context.scan(request=request,
+    bsettings = context.get_bsettings(page)
+    bsettings.scan(request=request,
                        page=page, 
                        performances=context.get_performances(page),
                        event=page.event)
@@ -38,7 +38,7 @@ def _rendering(context, request, page, layout):
 
     params = api.get_navigation_categories(request)
     params.update(sub_categories=api.get_subcategories_from_page(request, page))
-    params.update(page=page, display_blocks=block_context.blocks)
+    params.update(page=page, display_blocks=bsettings.blocks)
     return render_to_response(tmpl, params, request)
 
 

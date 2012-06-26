@@ -13,7 +13,7 @@ from altaircms.models import Category
 
 from ..models import DBSession
 from .rendering import genpage as gen
-from .rendering.block_context import BlockContext
+from .rendering.bsettings import BlockSettings
 
 class PageRenderingResource(object):
     def __init__(self, request):
@@ -57,8 +57,8 @@ class PageRenderingResource(object):
     def get_performances(self, page):
         return page.event.performances if page.event else []
     
-    def get_block_context(self, page):
-        context =  BlockContext.from_widget_tree(WidgetTreeProxy(page), scan=True)
+    def get_bsettings(self, page):
+        context =  BlockSettings.from_widget_tree(WidgetTreeProxy(page), scan=True)
         context.blocks["description"] = [page.description]
         context.blocks["title"] = [page.title]
         return context
