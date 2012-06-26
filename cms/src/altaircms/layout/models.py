@@ -1,4 +1,5 @@
 # coding: utf-8
+import json
 from datetime import datetime
 from altaircms.models import DBSession
 from sqlalchemy import Column, Integer, DateTime, Unicode, String, ForeignKey, Text
@@ -29,3 +30,15 @@ class Layout(BaseOriginalMixin, Base):
 
     def __repr__(self):
         return '<%s %s>' % (self.__class__.__name__, self.template_filename)
+
+    def valid_block(self):
+        """ 保存されているjsonのデータがparseできるものか調べる。
+        (performanceが気になったらloadsされたオブジェクトの再利用を考える)
+        """
+        try:
+            json.loads(self.blocks)
+        except ValueError:
+            return False
+        return True
+            
+            
