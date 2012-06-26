@@ -402,16 +402,21 @@ class PaymentView(object):
             return HTTPFound('/')
         cart = h.get_cart(self.request)
 
-
         openid = authenticated_user(self.request)
         user = h.get_or_create_user(self.request, openid['clamed_id'])
 
+        payment_delivery_pair_id = self.request.params.get('payment_delivery_pair_id', 0)
+        payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter_by(id=payment_delivery_pair_id).first()
+        cart.payment_delivery_pair = payment_delivery_pair
 
         form = schema.ClientForm(formdata=self.request.params)
-        if not form.validate():
+        if not (payment_delivery_pair and form.validate()):
             self.context.event_id = cart.performance.event.id
             payment_delivery_methods = self.context.get_payment_delivery_method_pair()
-            logger.debug("invalid : %s" % form.errors)
+            if not payment_delivery_pair:
+                logger.debug("invalid : %s" % 'payment_delivery_pair_id')
+            else:
+                logger.debug("invalid : %s" % form.errors)
             return dict(form=form,
                 payment_delivery_methods=payment_delivery_methods,
                 user=user, user_profile=user.user_profile)
@@ -439,7 +444,6 @@ class PaymentView(object):
         cart.shipping_address = shipping_address
         DBSession.add(cart)
         client_name = params['last_name'] + params['first_name']
-        payment_delivery_pair_id = self.request.params['payment_delivery_pair_id']
 
         order = dict(
             client_name=client_name,
@@ -447,11 +451,6 @@ class PaymentView(object):
             payment_delivery_pair_id=payment_delivery_pair_id,
         )
         self.request.session['order'] = order
-
-        payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter(
-            c_models.PaymentDeliveryMethodPair.id==payment_delivery_pair_id
-        ).one()
-        cart.payment_delivery_pair = payment_delivery_pair
 
         payment_delivery_plugin = plugins.get_payment_delivery_plugin(self.request, 
             payment_delivery_pair.payment_method.payment_plugin_id,
