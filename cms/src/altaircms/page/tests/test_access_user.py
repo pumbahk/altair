@@ -1,7 +1,6 @@
 # -*- encoding:utf-8 -*-
 import unittest
 from datetime import datetime
-import mock
 
 """
 page.can_access(user=None, access_key=None)
@@ -11,115 +10,113 @@ page.can_access(user=None, access_key=None)
 """
 
 class PagePublishStatusTests(unittest.TestCase):
-    def _createPage(self, *args, **kwargs):
+    def _makeOne(self, *args, **kwargs):
         from altaircms.page.models import Page
         return Page(*args, **kwargs)
 
     def test_on_birth(self):
-        page = self._createPage()
+        target = self._makeOne()
 
-        self.assertFalse(page.published)
-        self.assertFalse(page.can_access())
+        self.assertFalse(target.published)
+        self.assertFalse(target.can_access())
 
     def test_on_publish(self):
-        page = self._createPage()
+        target = self._makeOne()
 
-        page.publish()
+        target.publish()
 
-        self.assertTrue(page.published)
-        self.assertTrue(page.can_access())
+        self.assertTrue(target.published)
+        self.assertTrue(target.can_access())
 
     def test_on_unpublish(self):
-        page = self._createPage()
+        target = self._makeOne()
 
-        page.unpublish()
+        target.unpublish()
 
-        self.assertFalse(page.published)
-        self.assertTrue(page.can_access())
+        self.assertFalse(target.published)
+        self.assertTrue(target.can_access())
 
 
 class PagePrivateAccessTests(unittest.TestCase):
-    def _createPage(self, *args, **kwargs):
+    def _makeOne(self, *args, **kwargs):
         from altaircms.page.models import Page
         return Page(*args, **kwargs)
 
     def test_on_birth(self):
-        page = self._createPage()
+        target = self._makeOne()
 
-        self.assertFalse(page.has_access_keys())
-        self.assertEquals(len(page.access_keys), 0)
+        self.assertFalse(target.has_access_keys())
+        self.assertEquals(len(target.access_keys), 0)
 
 
     def test_create_access_key(self):
-        page = self._createPage()
-        page.create_access_key(key="this-is-access-key")
+        target = self._makeOne()
+        target.create_access_key(key="this-is-access-key")
         
-        self.assertTrue(page.has_access_keys())
-        self.assertEquals(len(page.access_keys), 1)
+        self.assertTrue(target.has_access_keys())
+        self.assertEquals(len(target.access_keys), 1)
 
 
     def test_delete_access_key(self):
-        page = self._createPage()
-        key = page.create_access_key(key="this-is-access-key")
+        target = self._makeOne()
+        key = target.create_access_key(key="this-is-access-key")
         
-        page.delete_access_key(key) 
+        target.delete_access_key(key) 
 
-        self.assertFalse(page.has_access_keys())
-        self.assertEquals(len(page.access_keys), 0)
+        self.assertFalse(target.has_access_keys())
+        self.assertEquals(len(target.access_keys), 0)
 
 
     def test_on_publish(self):
-        page = self._createPage()
-        page.publish()
-        key = page.create_access_key(key="this-is-access-key")
+        target = self._makeOne()
+        target.publish()
+        key = target.create_access_key(key="this-is-access-key")
 
-        self.assertTrue(page.can_access())
-        self.assertTrue(page.can_access(key))
+        self.assertTrue(target.can_access())
+        self.assertTrue(target.can_access(key))
         
 
     def test_on_unpublish(self):
-        page = self._createPage()
-        page.unpublish()
-        key = page.create_access_key(key="this-is-access-key")
+        target = self._makeOne()
+        target.unpublish()
+        key = target.create_access_key(key="this-is-access-key")
         
-        self.assertFalse(page.can_access())
-        self.assertTrue(page.can_access(key))
+        self.assertFalse(target.can_access())
+        self.assertTrue(target.can_access(key))
 
 
     def test_on_unpublish_with_another_access_key(self):
-        page = self._createPage()
-        page.unpublish()
-        key = page.create_access_key(key="this-is-access-key")
+        target = self._makeOne()
+        target.unpublish()
+        key = target.create_access_key(key="this-is-access-key")
 
-        another_page = self._createPage()
-        another_key = another_page.create_access_key(key="this-is-another-access-key")
+        another_target = self._makeOne()
+        another_key = another_target.create_access_key(key="this-is-another-access-key")
 
-        self.assertFalse(page.can_access())
-        self.assertFalse(page.can_access(another_key))
+        self.assertFalse(target.can_access())
+        self.assertFalse(target.can_access(another_key))
 
     def test_on_unpublish_access_key_before_expiredate(self):
-        page = self._createPage()
-        page.unpulish()
-        key = page.create_access_key(key="this-is-access-key", expire=datetime(2012, 12, 1))
+        target = self._makeOne()
+        target.unpulish()
+        key = target.create_access_key(key="this-is-access-key", expire=datetime(2012, 12, 1))
 
-        with mock.patch("datetime.datetime") as m:
-            m.now.return_value = datetime(2012, 8, 9)
+        now = datetime(2012, 8, 9)
 
-            self.assertTrue(page.has_access_keys())
-            self.assertTrue(page.has_valid_access_keys())
-            self.assertTrue(page.can_access(key=key))
+        self.assertTrue(target.has_access_keys())
+        self.assertEquals(target.valid_access_keys(now), 1)
+        self.assertTrue(target.can_access(key=key, _now=now))
 
     def test_on_unpublish_access_key_after_expiredate(self):
-        page = self._createPage()
-        page.unpulish()
-        key = page.create_access_key(key="this-is-access-key", expire=datetime(2012, 12, 1))
+        target = self._makeOne()
+        target.unpulish()
+        key = target.create_access_key(key="this-is-access-key", expire=datetime(2012, 12, 1))
 
-        with mock.patch("datetime.datetime") as m:
-            m.now.return_value = datetime(2012, 12, 12)
+        now = datetime(2012, 12, 12)
 
-            self.assertTrue(page.has_access_keys())
-            self.assertFalse(page.has_valid_access_keys())
-            self.assertFalse(page.can_access(key=key))
+        self.assertTrue(target.has_access_keys())
+        self.assertEquals(target.valid_access_keys(now), 0)
+        self.assertFalse(target.can_access(key=key, _now=now))
         
 
 if __name__ == "__main__":

@@ -24,7 +24,22 @@ from altaircms.models import DBSession
 from altaircms.layout.models import Layout
 
 import uuid
-from datetime import datetime
+
+class PageHashkey(Base):
+    __tablenames__ = "page_hashkeys"
+    id = sa.Column(sa.Integer, primary_key=True)
+    page_id = sa.Column(sa.Integer, sa.ForeignKey("page.id"))
+    page = orm.relationship("Page", backref=orm.backref("hashkeys"))
+    hashkey = sa.Column(sa.String(length=32))
+    exprire_date = sa.Column(sa.DateTime)
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(DateTime, default=datetime.now, onupdate=datetime.now)    
+
+    def hashash(self):
+        return bool(self.hashkey)
+
+    def sethash(self):
+        self.hashkey = uuid.uuid4().hex
 
 class PublishUnpublishMixin(object):
     def is_published(self):
@@ -142,7 +157,7 @@ class Page(PublishUnpublishMixin,
     layout = relationship(Layout, backref='page', uselist=False)
     DEFAULT_STRUCTURE = "{}"
     structure = Column(Text, default=DEFAULT_STRUCTURE)
-    hash_url = Column(String(length=32), default=lambda : uuid.uuid4().hex)
+    # hash_url = Column(String(length=32), default=lambda : uuid.uuid4().hex)
 
     event_id = Column(Integer, ForeignKey('event.id')) ## todo: delete?
     event = relationship('Event', backref='pages')
@@ -152,16 +167,19 @@ class Page(PublishUnpublishMixin,
 
     publish_begin = Column(DateTime)
     publish_end = Column(DateTime)
+    published = Column(sa.Boolean, default=False)
 
     @hybrid_method
     def in_term(self, dt):
-        return (((self.publish_begin == None) or (self.publish_begin <= dt))
+        return (self.published 
+                and ((self.publish_begin == None) or (self.publish_begin <= dt))
                 and ((self.publish_end == None) or (self.publish_end > dt)))
+
     @in_term.expression
     def in_term(self, dt):
-        return sa.sql.and_(sa.sql.or_((self.publish_begin == None), (self.publish_begin <= dt)), 
+        return sa.sql.and_(self.published, 
+                           sa.sql.or_((self.publish_begin == None), (self.publish_begin <= dt)), 
                            sa.sql.or_((self.publish_end == None), (self.publish_end > dt)))
-
 
     @property
     def public_tags(self):
@@ -188,7 +206,46 @@ class Page(PublishUnpublishMixin,
             return page
         else:
             return cls(name=name)
+
+    ### page access
+    def publish(self):
+        self.published = True
+
+    def unpublish(self):
+        self.published = False
+
+    def _can_access(self, key=None, _now=None):
+        if not key in self.access_keys:
+            return False
+        if key.expiredate is None:
+            return True
+
+        now = _now or datetime.now()
+        return now <= key.expiredate
+
+    def can_access(self, key=None, request=None, _now=None):
+        if self.published:
+            return True
+
+        if request:
+            user = getattr(request, "user", None)
+            if user:
+                import warnings
+                warnings.warn("this is not implemented")
+                return False
+                # return user.validate(self) ## user側の認証どうしよう。
+        return self._can_access(key=key, _now=_now)
+
+    def has_access_keys(self):
+        return bool(self.access_keys)
+
+    def valid_access_keys(self, _now=None):
+        now = _now or datetime.now()
+        return [k for k in self.access_keys if k.expiredate >= now]
+
     
+
+
 ## master    
 class PageDefaultInfo(Base):
     query = DBSession.query_property()
