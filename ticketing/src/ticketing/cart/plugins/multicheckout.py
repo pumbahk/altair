@@ -48,6 +48,8 @@ class MultiCheckoutPlugin(object):
             eci=tran['eci'], cavv=tran['cavv'], cavv_algorithm=tran['cavv_algorithm'],
         )
 
+        # TODO: エラーチェック
+
         DBSession.add(checkout_sales_result)
 
         order = o_models.Order.create_from_cart(cart)
@@ -150,6 +152,10 @@ class MultiCheckoutView(object):
         auth_result = multicheckout_api.secure3d_auth(self.request, order_id, pares, md)
         item_name = h.get_item_name(self.request, cart.performance)
 
+        # TODO: エラーメッセージ
+        if not auth_result.is_enable_auth_checkout():
+            return HTTPFound(self.request.route_url('payment.secure3d'))
+
         checkout_auth_result = multicheckout_api.checkout_auth_secure3d(
             self.request, order_id,
             item_name, cart.total_amount, 0, order['client_name'], order['mail_address'],
@@ -157,6 +163,8 @@ class MultiCheckoutView(object):
             mvn=auth_result.Mvn, xid=auth_result.Xid, ts=auth_result.Ts,
             eci=auth_result.Eci, cavv=auth_result.Cavv, cavv_algorithm=auth_result.Cavva,
         )
+        # TODO: エラーチェック CmnErrorCd CardErrorCd
+
         tran = dict(
             mvn=auth_result.Mvn, xid=auth_result.Xid, ts=auth_result.Ts,
             eci=auth_result.Eci, cavv=auth_result.Cavv, cavv_algorithm=auth_result.Cavva,

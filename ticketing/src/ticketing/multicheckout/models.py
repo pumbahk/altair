@@ -65,6 +65,12 @@ class Secure3DAuthResponse(Base):
     Eci = sa.Column(sa.Unicode(2), doc="ECI")
     Mvn = sa.Column(sa.Unicode(10), doc="メッセージバージョンナンバー")
 
+    def is_enable_secure3d(self):
+        return self.ErrorCd == '000000' and self.RetCd in ('0', '1', '2')
+
+    def is_enable_auth_checkout(self):
+        return self.ErrorCd == '000000' and self.RetCd == '0'
+
 class MultiCheckoutRequestCard(Base):
     """
 
