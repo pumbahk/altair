@@ -47,11 +47,18 @@ class WidgetTree(object):
     def adds(self, block_name, objs):
         self.blocks[block_name].extend(objs)
 
-def _structure_as_dict(page):
-    if page.structure is None:
+def page_structure_as_dict(page_structure):
+    if page_structure is None:
         return {}
     try:
-        return json.loads(page.structure)
+        ## data cleansing
+        data = json.loads(page_structure)
+        # data.values()[0].append({"name":"dummy"})
+        # data.values()[0].append({"name":"dummy", "pk": None})
+        # data.values()[0].append({"name":None, "pk": -1})
+        # data.values()[0].append({"name":"image", "pk": -1})
+        return {k:[b for b in blocks if b.get("pk") and b.get("name")] 
+                for k, blocks in data.iteritems()}
     except ValueError, e:
         logging.exception(e)
 
@@ -78,7 +85,7 @@ class WidgetCacher(object):
     def scan(self, page):
         if self.is_scanned(page):
             return
-        for blocks in _structure_as_dict(page).values():
+        for blocks in page_structure_as_dict(page.structure).values():
             for block in blocks:
                 self.kinds[block["name"]].append(block["pk"])
         self.scanned[page] = True
@@ -99,7 +106,7 @@ class WidgetCacher(object):
         if not self.fetched:
             self.fetch()
         tree = WidgetTree()
-        for block_name, blocks in _structure_as_dict(page).items():
+        for block_name, blocks in page_structure_as_dict(page.structure).items():
             objs = []
             for o in blocks:
                 widgets = self.result[o["name"]]

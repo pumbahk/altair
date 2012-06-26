@@ -13,6 +13,28 @@ def setUpModule():
 def tearDownModule():
     from altaircms.lib.testutils import dropall_db
     dropall_db(base=Base, session=DBSession)
+
+
+class DataCleansingTests(unittest.TestCase):
+    def _callFUT(self, *args, **kwargs):
+        from altaircms.widget.tree.proxy import page_structure_as_dict
+        return page_structure_as_dict(*args, **kwargs)
+
+    def test_simple(self):
+        target = json.dumps({"main": [{"name": "image",  "pk": 1}]})
+        result = self._callFUT(target)
+        self.assertEquals(result["main"], [{"name": "image",  "pk": 1}])
+
+    def test_invalid1(self):
+        target = json.dumps({"main": [{"name": "image",  "pk": 1}, {"name": "dummy"}]})
+        result = self._callFUT(target)
+        self.assertEquals(result["main"], [{"name": "image",  "pk": 1}])
+
+    def test_invalid2(self):
+        target = json.dumps({"main": [{"name": "image",  "pk": 1}, {"name": "dummy", "pk": None}]})
+        result = self._callFUT(target)
+        self.assertEquals(result["main"], [{"name": "image",  "pk": 1}])
+
         
 class WidgetTreeProxyTest(unittest.TestCase):
     def _getPage(self):
