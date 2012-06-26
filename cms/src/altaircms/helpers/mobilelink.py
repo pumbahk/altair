@@ -54,7 +54,7 @@ def rendering_page_from_pageset(request, pageset):
         return url
     else:
         return unquote_path_segment(
-            request.route_path("front_preview_pageset", pageset_id=pageset.id))
+            request.route_path("rendering_pageset", pageset_id=pageset.id))
 
 def static_page(request, filename):
     return unquote_path_segment(

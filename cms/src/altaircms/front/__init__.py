@@ -5,7 +5,7 @@ def includeme(config):
         config.registry.settings["altaircms.usersite.url"] = "http://localhost:5432"
 
     config.include("altairsite.front")
-    config.add_route("front_preview_pageset", "/preview/pageset/{pageset_id}")
+    config.add_route("rendering_pageset", "/preview/pageset/{pageset_id}")
     config.scan(".views")
 
     #####
