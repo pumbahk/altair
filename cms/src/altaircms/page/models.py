@@ -181,14 +181,12 @@ class Page(PublishUnpublishMixin,
 
     @hybrid_method
     def in_term(self, dt):
-        return (self.published 
-                and ((self.publish_begin == None) or (self.publish_begin <= dt))
+        return (((self.publish_begin == None) or (self.publish_begin <= dt))
                 and ((self.publish_end == None) or (self.publish_end > dt)))
 
     @in_term.expression
     def in_term(self, dt):
-        return sa.sql.and_(self.published, 
-                           sa.sql.or_((self.publish_begin == None), (self.publish_begin <= dt)), 
+        return sa.sql.and_(sa.sql.or_((self.publish_begin == None), (self.publish_begin <= dt)), 
                            sa.sql.or_((self.publish_end == None), (self.publish_end > dt)))
 
     @property

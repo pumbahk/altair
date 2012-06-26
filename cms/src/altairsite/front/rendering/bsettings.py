@@ -69,7 +69,8 @@ class ScannableMixin(object):
             raise BlockSettingsException("%s is not found in subkind_candidates" % subkind)
         self._validators.append((subkind, fn))
 
-    def scan(self, **kwargs):
+    def scan(self, request=None, **kwargs):
+        kwargs["request"] = request ##?
         self.is_scaned = True
         self.extra.update(kwargs)
         self._do_validate("before_scan")
@@ -113,7 +114,7 @@ class BlockSettings(StoreableMixin,
                       repr(self.blocks))
 
     @classmethod
-    def from_widget_tree(cls, wtree, scan=True):
+    def from_widget_tree(cls, wtree):
         bsettings = cls()
         for bname, widgets in wtree.blocks.iteritems():
             for w in widgets:

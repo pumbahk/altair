@@ -1,23 +1,25 @@
 # -*- coding:utf-8 -*-
 import logging
-from datetime import datetime
-import sqlalchemy.orm.exc as saexc
-import pyramid.exceptions as pyrexc
-import sqlalchemy as sa
+logger = logging.getLogger(__file__)
 
-from altaircms.layout.models import Layout
+from datetime import datetime
+import sqlalchemy as sa
 from altaircms.page.models import Page
 from altaircms.page.models import PageSet
-from altaircms.widget.tree.proxy import WidgetTreeProxy
-from altaircms.models import Category
-
-from ..models import DBSession
-from .rendering import genpage as gen
-from .rendering.bsettings import BlockSettings
+from .api import FrontPageRenderer
 
 class PageRenderingResource(object):
     def __init__(self, request):
         self.request = request
+
+    def frontpage_renderer(self):
+        return FrontPageRenderer(self.request)
+
+    def pc_access_control(self):
+        return AccessControlPC(self.request)
+
+    def mobile_access_control(self):
+        return AccessControlMobile(self.request)
 
     def get_preview_date(self):
         if 'datetime' not in self.request.params:
@@ -26,46 +28,80 @@ class PageRenderingResource(object):
             dt = self.request.params['datetime']
             return datetime.strptime(dt, '%Y%m%d%H%M%S')
 
-    def get_pageset_query_from_url(self, url, dt):
-        return PageSet.query.filter(
-            PageSet.url==url).filter(
-            Page.pageset_id==PageSet.id).filter(
-                Page.in_term(dt))
 
-    def get_unpublished_page(self, page_id):
-        page = Page.query.filter(Page.id==page_id).one()
-        page.to_unpublished()
-        return page
+"""
+access controll object
 
-    def get_page_and_layout(self, url, dt):
-        page = Page.query.filter(Page.url==url).filter(Page.in_term(dt)).order_by("page.publish_begin").first()
+レンダリング過程が複雑になったらここでrendererのdispatchする.
+(今はresourceが持っている。)
+"""
+class AccessControlMobile(object):
+    def __init__(self, request):
+        self.request = request
+        self.access_ok = False
+        self.error_message = u"this-object-is-not-used" 
+
+    def can_access(self):
+        if not self.access_ok:
+            logger.info("*front mobile access* url is not found (%s)" % self.request.referer) ## referer?
+        return self.access_ok
+
+    def _fetch_pageset_from_params(self, url, dt):
+        qs = PageSet.query.filter(PageSet.id==Page.pageset_id)
+        qs = qs.filter(PageSet.url==url)
+        qs = qs.filter(Page.in_term(dt))
+        qs = qs.filter(Page.published==True)
+        return qs.first()
+
+    def fetch_pageset_from_params(self, url, dt):
+        pageset = self._fetch_pageset_from_params(url, dt)
+        self.access_ok = True
+
+        if pageset is None:
+            self.error_message = u"*fetch pageset* url=%s pageset is not found" % url
+            self.access_ok = False
+            return pageset
+
+        if pageset.event and pageset.event.is_searchable == False:
+            self.error_message = u"*fetch pageset* pageset(id=%s) event is disabled event(is_searchable==False)"
+            self.access_ok = False
+        return pageset
+
+
+class AccessControlPC(object):
+    def __init__(self, request):
+        self.request = request
+        self.access_ok = False
+        self.error_message = u"this-object-is-not-used" 
+
+    def can_access(self):
+        if not self.access_ok:
+            logger.info("*front pc access* url is not found (%s)" % self.request.referer) ## referer
+        return self.access_ok
+
+    def _fetch_page_from_params(self, url, dt):
+        qs = Page.query.filter(PageSet.id==Page.pageset_id)
+        qs = qs.filter(PageSet.url==url)
+        qs = qs.filter(Page.in_term(dt))
+        qs = qs.filter(Page.published==True)
+        return qs.order_by(sa.desc("page.publish_begin")).first()
+
+    def fetch_page_from_params(self, url, dt):
+        page = self._fetch_page_from_params(url, dt)
+        self.access_ok = True
+
         if page is None:
-            raise pyrexc.NotFound(u'page, url=%s and publish datetime = %s, is not found' % (url, dt))
-        return page, page.layout
+            self.error_message = u"*fetch page* url=%s page is not found" % url
+            self.access_ok = False
+            return page
 
-    def get_page_and_layout_preview(self, url, page_id):
-        try:
-            page = Page.query.filter(Page.hash_url==url, Page.id==page_id).one()
-            return page, page.layout
-        except saexc.NoResultFound:
-            raise pyrexc.NotFound(u'page, url=%s and is not found' % (url))
-
-
-    def get_render_config(self):
-        return gen.get_config(self.request)
-
-    def get_performances(self, page):
-        return page.event.performances if page.event else []
-    
-    def get_bsettings(self, page):
-        context =  BlockSettings.from_widget_tree(WidgetTreeProxy(page), scan=True)
-        context.blocks["description"] = [page.description]
-        context.blocks["title"] = [page.title]
-        return context
-
-    def get_layout_template(self, layout, config):
-        return gen.get_layout_template(str(layout.template_filename), config)
-
-    def get_categories(self, hierarchy=u"大"):
-        return Category.get_toplevel_categories(hierarchy=hierarchy, request=self.request).order_by(sa.asc("orderno"))
-
+        if page.event and page.event.is_searchable == False:
+            self.error_message = u"*fetch pageset* pageset(id=%s) event is disabled event(is_searchable==False)"
+            self.access_ok = False
+        if page.layout is None:
+            self.error_message = u"*fetch page* url=%s page(id=%s) has not rendering layout" % (url, page.id)
+            self.access_ok = False
+        if not page.layout.valid_block():
+            self.error_message = u"*fetch page* url=%s page(id=%s) layout(id=%s) layout is broken" % (url, page.id, page.layout.id)
+            self.access_ok = False
+        return page
