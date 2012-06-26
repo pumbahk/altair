@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 
+import re
 from datetime import datetime
 from exceptions import ValueError
 
@@ -58,3 +59,12 @@ class Required(validators.Required):
         # allow Zero input
         if field.data != 0:
             super(Required, self).__call__(form, field)
+
+class Phone(validators.Regexp):
+    def __init__(self, message=None):
+        super(Phone, self).__init__(r'^[0-9¥-]*$', re.IGNORECASE, message)
+
+    def __call__(self, form, field):
+        if self.message is None:
+            self.message = field.gettext(u'電話番号を確認してください')
+        super(Phone, self).__call__(form, field)

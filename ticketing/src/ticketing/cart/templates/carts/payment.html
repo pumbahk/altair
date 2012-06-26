@@ -29,18 +29,21 @@
 	<!-- ========== main ========== -->
 	<div id="main">
 		<h1><img src="${request.static_url('ticketing.cart:static/img/settlement/title_settlement.gif')}" alt="チケット購入" width="950" height="40" /></h1>
-        ${h.get_nickname(request)} さん
+
+    ${h.get_nickname(request)} さん
 		<form id="form1" name="form1" method="post" action="${request.url}">
 			<div class="settlementBox">
 				<div class="settlementBoxInner">
 					<h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_methods.gif')}" alt="お支払い、引き取り方法の指定" width="167" height="30" /></h2>
 
-%for m in payment_delivery_methods:
+          <% checked_id = request.params.get('payment_delivery_pair_id') %>
+          %for m in payment_delivery_methods:
 					<div class="settlementPayBox">
 						<div class="settlementPayBoxInner">
 							<table>
 								<tr>
-									<td class="settlementPayRadio"><input type="radio" name="payment_delivery_pair_id" id="radio2" value="${m.id}" /></td>
+                  <% checked = 'checked' if str(m.id) == checked_id else '' %>
+									<td class="settlementPayRadio"><input type="radio" name="payment_delivery_pair_id" id="radio2" value="${m.id}" ${checked} /></td>
 									<td><dl style="width:300px;">
 										<dt>${m.payment_method.name}</dt>
 										<dd>${h.format_currency(m.transaction_fee)}
@@ -59,7 +62,7 @@
 							</table>
 						</div>
 					</div>
-%endfor
+          %endfor
 				</div>
 			</div>
             <div class="confirmBox">
@@ -77,12 +80,12 @@
                                         <li>
                                         ${form['last_name'].label}
                                         ${form['last_name']}
-                                        ${h.error_list(reequest, form, 'last_name')}
+                                        ${h.error_list(request, form, 'last_name')}
                                         </li>
                                         <li>
                                         ${form['first_name'].label}
                                         ${form['first_name']}
-                                        ${h.error_list(reequest, form, 'first_name')}
+                                        ${h.error_list(request, form, 'first_name')}
                                         </li>
                                     </ul>
                                 </td>
@@ -94,12 +97,12 @@
                                         <li>
                                         ${form['last_name_kana'].label}
                                         ${form['last_name_kana']}
-                                        ${h.error_list(reequest, form, 'last_name_kana')}
+                                        ${h.error_list(request, form, 'last_name_kana')}
                                         </li>
                                         <li>
                                         ${form['first_name_kana'].label}
                                         ${form['first_name_kana']}
-                                        ${h.error_list(reequest, form, 'first_name_kana')}
+                                        ${h.error_list(request, form, 'first_name_kana')}
                                         </li>
                                     </ul>
                                 </td>
@@ -108,7 +111,7 @@
                                 <th scope="row">${form['mail_address'].label}</th>
                                 <td>
                                     ${form['mail_address']}
-                                        ${h.error_list(reequest, form, 'mail_address')}
+                                        ${h.error_list(request, form, 'mail_address')}
                                 </td>
                             </tr>
                             <tr>
@@ -117,20 +120,20 @@
                                     <ul>
                                         <li>${form['zip'].label}
                                         ${form['zip']}
-                                        ${h.error_list(reequest, form, 'zip')}
+                                        ${h.error_list(request, form, 'zip')}
                                         </li>
                                         <li>${form['prefecture'].label}
                                         ${form['prefecture']}
-                                        ${h.error_list(reequest, form, 'prefecture')}
+                                        ${h.error_list(request, form, 'prefecture')}
                                         </li>
                                         <li>${form['city'].label}
                                         ${form['city']}
-                                        ${h.error_list(reequest, form, 'city')}
+                                        ${h.error_list(request, form, 'city')}
                                         </li>
                                         <li>住所
                                         ${form['address_1']}
                                         ${form['address_2']}
-                                        ${h.error_list(reequest, form, 'address_1')}
+                                        ${h.error_list(request, form, 'address_1')}
                                         </li>
                                     </ul>
                                 </td>
@@ -139,11 +142,13 @@
                                 <th scope="row">電話番号</th>
                                 <td>
                                     <ul>
-                                        <li><label for="tel">TEL</label>
-                                        <input type="text" id="tel" name="tel" value="${user_profile.tel_1}" />
+                                        <li>${form['tel'].label}
+                                          ${form['tel']}
+                                          ${h.error_list(request, form, 'tel')}
                                         </li>
-                                        <li>FAX
-                                        <input type="text" id="fax" name="fax" value="${user_profile.fax}" />
+                                        <li>${form['fax'].label}
+                                          ${form['fax']}
+                                          ${h.error_list(request, form, 'fax')}
                                         </li>
                                     </ul>
                                 </td>
