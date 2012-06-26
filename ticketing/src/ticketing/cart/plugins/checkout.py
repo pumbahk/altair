@@ -34,6 +34,7 @@ class CheckoutPlugin(object):
     def finish(self, request, cart):
         """ 売り上げ確定 """
         order = Order.create_from_cart(cart)
+        order.paid_at = datetime.now()
         cart.finish()
 
         return order
