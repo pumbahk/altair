@@ -82,5 +82,6 @@ class WidgetTreeProxyTest(unittest.TestCase):
         blocks = WidgetTreeProxy(page, session=session).blocks
         self.assertEquals([o.asset_id for o in blocks["header"]], [10])
 
+
 if __name__ == "__main__":
     unittest.main()

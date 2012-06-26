@@ -117,5 +117,55 @@ class WidgetCacherTest(unittest.TestCase):
         self.assertEquals([o.asset_id for o in blocks["header"]], [10])
         self.assertEquals([o.asset_id for o in blocks["footer"]], [20])
 
+
+    ### added  after above test()
+    def test_build_tree_with_collect_members_only(self):
+        from altaircms.widget.tree.proxy import WidgetCacher
+        class DummyCacher(WidgetCacher):
+            def __init__(self):
+                self.result = {"image": {1: "this-is-image-widget"}, 
+                               "text": {2: "this-is-text-widget"}}
+
+        class DummyTree(object):
+            def __init__(self):
+                from collections import defaultdict
+                self.blocks = defaultdict(list)
+            def adds(self, block_name, objs):
+                self.blocks[block_name].extend(objs)
+
+
+        params = {"header": [{"name": "image", "pk": 1}], 
+                  "body": [{"name": "text", "pk": 2}]}
+        target = DummyCacher()
+        result = target._to_widget_tree(DummyTree(), params).blocks
+        
+        self.assertEquals(result["header"], ["this-is-image-widget"])
+        self.assertEquals(result["body"], ["this-is-text-widget"])
+
+
+    def test_build_tree_with_invalid_members_only(self):
+        from altaircms.widget.tree.proxy import WidgetCacher
+        class DummyCacher(WidgetCacher):
+            def __init__(self):
+                self.result = {"image": {1: "this-is-image-widget"}, 
+                               "text": {2: "this-is-text-widget"}}
+
+        class DummyTree(object):
+            def __init__(self):
+                from collections import defaultdict
+                self.blocks = defaultdict(list)
+            def adds(self, block_name, objs):
+                self.blocks[block_name].extend(objs)
+
+
+        params = {"header": [{"name": "image", "pk": 1}], 
+                  "body": [{"name": "text", "pk": -1}]}
+        target = DummyCacher()
+        result = target._to_widget_tree(DummyTree(), params).blocks
+        
+        self.assertEquals(result["header"], ["this-is-image-widget"])
+        self.assertEquals(result["body"], [])
+
+
 if __name__ == "__main__":
     unittest.main()

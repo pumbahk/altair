@@ -53,10 +53,6 @@ def page_structure_as_dict(page_structure):
     try:
         ## data cleansing
         data = json.loads(page_structure)
-        # data.values()[0].append({"name":"dummy"})
-        # data.values()[0].append({"name":"dummy", "pk": None})
-        # data.values()[0].append({"name":None, "pk": -1})
-        # data.values()[0].append({"name":"image", "pk": -1})
         return {k:[b for b in blocks if b.get("pk") and b.get("name")] 
                 for k, blocks in data.iteritems()}
     except ValueError, e:
@@ -106,7 +102,10 @@ class WidgetCacher(object):
         if not self.fetched:
             self.fetch()
         tree = WidgetTree()
-        for block_name, blocks in page_structure_as_dict(page.structure).items():
+        return self._to_widget_tree(tree, page_structure_as_dict(page.structure))
+
+    def _to_widget_tree(self, tree, params):
+        for block_name, blocks in params.items():
             objs = []
             for o in blocks:
                 widgets = self.result[o["name"]]
@@ -115,3 +114,5 @@ class WidgetCacher(object):
                 ## a widget's content is empty, then skipped
             tree.adds(block_name, objs)
         return tree
+        
+
