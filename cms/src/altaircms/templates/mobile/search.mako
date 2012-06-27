@@ -36,7 +36,7 @@ ${seq.pager()}
   <% event = pageset.event %>
 
 	%if event:
-	  <a href="${h.mobilelink.to_publish_page_from_pageset(request,pageset)}">${pageset.name}</a><br>
+	  <a href="${h.mobilelink.publish_page_from_pageset(request,pageset)}">${pageset.name}</a><br>
 	  ${h.base.jterm(event.event_open,event.event_close)}<br>
 	  ${event.title}<br>
 	  一般: ${h.base.jdate_with_hour(event.deal_open)}<br>

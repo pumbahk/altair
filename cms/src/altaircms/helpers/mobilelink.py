@@ -25,13 +25,13 @@ def get_searchpage(request, kind=None, value=None):
     return request.route_path("page_search_by", kind=kind, value=value)
 
 def get_link_from_category(request, category):
-    return to_publish_page_from_pageset(request, category.pageset)
+    return publish_page_from_pageset(request, category.pageset)
 
 def get_link_from_topic(request, topic):
     if topic.mobile_link:
         return topic.mobile_link
     elif topic.linked_page:
-        return to_publish_page_from_pageset(request, topic.linked_page)
+        return publish_page_from_pageset(request, topic.linked_page)
     else:
         return ""
 
@@ -43,7 +43,7 @@ def unquote_path_segment(string):
     """
     return string.replace("%2F", "/") #buggy!
 
-def to_publish_page_from_pageset(request, pageset):
+def publish_page_from_pageset(request, pageset):
     ## mobile用pageはversion管理されていない
     return request.route_path("mobile_detail", pageset_id=pageset.id)
 

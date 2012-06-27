@@ -181,7 +181,7 @@ class SearchResultRender(object):
 <p class="align1">%s</p>
 <p class="align1">%s</p>
 """
-        link = h.link.to_publish_page_from_pageset(self.request, self.pageset)
+        link = h.link.publish_page_from_pageset(self.request, self.pageset)
         link_label = u"%s %s" % (self.pageset.event.title, self.pageset.name)
         description = self.pageset.event.description
         ## todo. ticketから開催場所の情報を取り出す
@@ -219,6 +219,6 @@ class SearchResultRender(object):
 <a href="%s"><img src="/static/ticketstar/img/search/btn_detail.gif" alt="詳細へ" width="86" height="32" /></a>
 <a href="%s"><img src="/static/ticketstar/img/search/btn_buy.gif" alt="購入へ" width="86" height="32" /></a>
 '''
-        return fmt % (h.link.to_publish_page_from_pageset(self.request, self.pageset), 
+        return fmt % (h.link.publish_page_from_pageset(self.request, self.pageset), 
                       h.link.get_purchase_page_from_event(self.request, self.pageset.event))
 

@@ -409,7 +409,7 @@ def add_detail_main_block_widgets(page, asset):
     ## detail tab
     request = testing.DummyRequest()
     data = {u"items": json.dumps(
-            [{"label": u"チケット購入", "link": h.front.to_publish_page_from_pageset(request, page.pageset)}, 
+            [{"label": u"チケット購入", "link": h.link.publish_page_from_pageset(request, page.pageset)}, 
              {"label": u"ブルーマンの秘密",  "link": u"http://google.co.jp"}, 
              {"label": u"フォトギャラリー",  "link": u"http://google.co.jp"}, 
              ])}

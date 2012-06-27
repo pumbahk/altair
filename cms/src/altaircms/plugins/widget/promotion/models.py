@@ -100,7 +100,7 @@ class PromotionUnit(Base):
         if self.link:
             return self.link
         elif self.pageset:
-            return h.front.to_publish_page_from_pageset(request, self.pageset)
+            return h.link.publish_page_from_pageset(request, self.pageset)
         else:
             return u"" #e-
 

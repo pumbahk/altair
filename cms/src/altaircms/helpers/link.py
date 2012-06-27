@@ -23,13 +23,13 @@ def get_link_from_category(request, category):
     if category.pageset is None:
         return category.url
     else:
-        return to_publish_page_from_pageset(request, category.pageset)
+        return publish_page_from_pageset(request, category.pageset)
 
 def get_link_from_topic(request, topic):
     if topic.link:
         return topic.link
     elif topic.linked_page:
-        return to_publish_page_from_pageset(request, topic.linked_page)
+        return publish_page_from_pageset(request, topic.linked_page)
     else:
         return ""
 
@@ -41,7 +41,7 @@ def unquote_path_segment(string):
     """
     return string.replace("%2F", "/") #buggy!
 
-def to_publish_page_from_pageset(request, pageset):
+def publish_page_from_pageset(request, pageset):
     url = pageset.url
     if url.startswith("http://") or url.startswith("https://"):
         return url
@@ -58,7 +58,3 @@ def preview_page_from_pageset(request, pageset):
 def preview_page_from_page(request, page):
     logger.debug('preview')
     return request.route_path("preview_page", page_id=page.id)
-
-
-
-

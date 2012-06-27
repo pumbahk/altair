@@ -25,7 +25,7 @@ def linklist_render(widget, finder, request=None):
     if widget.max_items:
         qs = qs.limit(widget.max_items)
 
-    candidates = [u'<a href="%s">%s</a>' % (h.front.to_publish_page_from_pageset(request, p), p.name) for p in qs]
+    candidates = [u'<a href="%s">%s</a>' % (h.link.publish_page_from_pageset(request, p), p.name) for p in qs]
     content = widget.delimiter.join(candidates)
     element = u'<p>%s</p>' % content if content else ''
     return u'<div id="%s">%s</div>' % (widget.finder_kind, element)
