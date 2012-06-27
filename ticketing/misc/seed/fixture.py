@@ -115,12 +115,11 @@ class DataSet(object):
         self.seq = 1
 
     def add(self, data):
+        if data in self.data:
+            return False
+
         if self.logger.isEnabledFor(logging.DEBUG):
             self.logger.debug('Trying to add %s' % data)
-        if data in self.data:
-            if self.logger.isEnabledFor(logging.DEBUG):
-                self.logger.debug('%s is already added' % data)
-            return False
 
         if isinstance(data._id_fields, auto):
             setattr(data, data._id_fields[0], self.seq)
