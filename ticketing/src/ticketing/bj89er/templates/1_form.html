@@ -3,7 +3,7 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
 	<title>仙台89ERS 2013-2014 ブースタークラブ入会申込ページ</title>
-	<link rel="stylesheet" type="text/css" href="style.css" media="all" />
+    <link rel="stylesheet" type="text/css" href="${request.static_url('ticketing.bj89er:static/style.css')}" media="all" />
 
 </head>
 <body>
@@ -11,7 +11,7 @@
   <h1 class="title">仙台89ERS 2013-2014 ブースタークラブ入会申込ページ</h1>
   <div align="center">
 
-<form>
+      <form action="${request.url}" method="post">
 
 	<table class="layout" style="width:760px" class="wrapper">
 		<tr>
@@ -38,7 +38,17 @@
 						<tr>
 							<th>会員種別選択</th>
 							<td>
-								<select name="member-type">
+								<select name="member_type">
+                                %for p in products:
+                                <option value="${p['id']}">${p['name']} (${p['price']}円)</option>
+                                %endfor
+								</select>　<a href="#">会員種別についてはこちら</a>
+							</td>
+							</tr>
+                            <!--
+							<th>会員種別選択</th>
+							<td>
+								<select name="member_type">
 								<option value="junior">ジュニア会員 (1,000円)</option>
 								<option value="light">ライト会員 (1,000円)</option>
 								<option value="regular">レギュラー会員 (3,000円)</option>
@@ -48,6 +58,7 @@
 								</select>　<a href="#">会員種別についてはこちら</a>
 							</td>
 							</tr>
+                            -->
 							<tr>
 							<th>口数選択</th>
 							<td>
@@ -71,7 +82,8 @@
 								氏名<span class="red">*</span>
 							</th>
 							<td>
-                                <input size="45" type="text" name="name" value="">
+                                <input size="45" type="text" name="last_name" value="">
+                                <input size="45" type="text" name="first_name" value="">
                                 							</td>
 						</tr>
 						<tr>
@@ -79,7 +91,8 @@
 								氏名（フリガナ）<span class="red">*</span>
 							</th>
 							<td>
-                                <input size="45" type="text" name="name_kana" value="">
+                                <input size="45" type="text" name="last_name_kana" value="">
+                                <input size="45" type="text" name="first_name_kana" value="">
                                 							</td>
 						</tr>
 						<tr>
@@ -276,8 +289,15 @@
 								住所（チケット送付先）<span class="red">*</span>
 							</th>
 							<td>
-								<input size="45" type="text" name="address1" value="">
+                                <!-- TODO: 選択 -->
+                                都道府県
+								<input size="45" type="text" name="prefecture" value="">
                                                                 <br>
+                                市区町村
+								<input size="10" type="text" name="city" value="">
+                                                                <br>
+                                住所
+                                <input size="45" type="text" name="address1" value="">
                                 <input size="45" type="text" name="address2" value="">
                                 							</td>
 						</tr>
