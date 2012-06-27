@@ -48,9 +48,9 @@ def to_publish_page_from_pageset(request, pageset):
     else:
         return unquote_path_segment(request.route_path("front", page_name=url))
 
-def rendering_page_from_pageset(request, pageset):
+def preview_page_from_pageset(request, pageset):
     url = pageset.url
     if url.startswith("http://") or url.startswith("https://"):
         return url
     else:
-        return unquote_path_segment(request.route_path("rendering_pageset", pageset_id=pageset.id))
+        return unquote_path_segment(request.route_path("preview_pageset", pageset_id=pageset.id))

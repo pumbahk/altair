@@ -39,7 +39,7 @@ def promotion_unit_mapper(request, obj):
     objlike.promotion = obj.promotion.name
     objlike.main_image = obj.main_image.title or u"名前なし"
     objlike.thumbnail = obj.thumbnail.title or u"名前なし"
-    objlike.pageset = RawText(u'<a href="%s">%s</a>' % (h.link.rendering_page_from_pageset(request, obj.pageset), obj.pageset.name)) if obj.pageset else u"-"
+    objlike.pageset = RawText(u'<a href="%s">%s</a>' % (h.link.preview_page_from_pageset(request, obj.pageset), obj.pageset.name)) if obj.pageset else u"-"
     url = obj.get_link(request)
     objlike.link = RawText(u'<a href="%s">リンク先</a>' % url)
     return objlike
@@ -70,7 +70,7 @@ def category_mapper(request, obj):
     objlike = ObjectLike(**model_to_dict(obj))
     objlike.parent = obj.parent.label if obj.parent else None
 
-    objlike.pageset = RawText(u'<a href="%s">%s</a>' % (h.link.rendering_page_from_pageset(request, obj.pageset), obj.pageset.name)) if obj.pageset else u"-"
+    objlike.pageset = RawText(u'<a href="%s">%s</a>' % (h.link.preview_page_from_pageset(request, obj.pageset), obj.pageset.name)) if obj.pageset else u"-"
     objlike.imgsrc = RawText(u'<img src="%s"/>' % obj.imgsrc)
     for k, v in objlike.iteritems():
         if v is None:
@@ -113,5 +113,5 @@ def hotword_mapper(request, obj):
 
 def pagedefaultinfo_mapper(request, obj):
     objlike = ObjectLike(**model_to_dict(obj))
-    objlike.pageset = RawText(u'<a href="%s">%s</a>' % (h.link.rendering_page_from_pageset(request, obj.pageset), obj.pageset.name)) if obj.pageset else u"-"
+    objlike.pageset = RawText(u'<a href="%s">%s</a>' % (h.link.preview_page_from_pageset(request, obj.pageset), obj.pageset.name)) if obj.pageset else u"-"
     return objlike

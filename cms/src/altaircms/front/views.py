@@ -5,8 +5,8 @@ from pyramid.httpexceptions import HTTPInternalServerError
 from pyramid.view import view_config
 
 
-@view_config(route_name="rendering_page")
-def rendering_page(context, request):
+@view_config(route_name="preview_page")
+def preview_page(context, request):
     control = context.access_control()
     access_key = request.params.get("access_key")
     page_id = request.matchdict["page_id"]
@@ -23,8 +23,8 @@ def rendering_page(context, request):
     return renderer.render(template, page)
 
 
-@view_config(route_name="rendering_pageset")
-def rendering_pageset(context, request):
+@view_config(route_name="preview_pageset")
+def preview_pageset(context, request):
     control = context.access_control()
     pageset_id = request.matchdict["pageset_id"]
     page = control.fetch_page_from_pageset_id(pageset_id)

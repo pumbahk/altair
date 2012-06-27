@@ -84,7 +84,7 @@
 <% pages = pageset.pages %>
     <tr>
 	  <td rowspan="${len(pages)}">
-        <a class="btn btn-small" href="${h.link.rendering_page_from_pageset(request,pageset)}" target="_blank"><i class="icon-eye-open"> </i> preview</a>
+        <a class="btn btn-small" href="${h.link.preview_page_from_pageset(request,pageset)}" target="_blank"><i class="icon-eye-open"> </i> preview</a>
 	  </td>
       <td rowspan="${len(pages)}">
         <a href="${request.route_path('pageset', pageset_id=pageset.id)}">${pageset.name}</a>
