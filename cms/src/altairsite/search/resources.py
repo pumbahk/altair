@@ -5,8 +5,8 @@ from datetime import datetime
 import logging
 logger = logging.getLogger(__file__)
 
+import cgi
 import altaircms.helpers as h
-import pprint
 from altaircms.lib.structures import Nullable
 from . import forms
 
@@ -127,7 +127,7 @@ class QueryParamsRender(object):
 
         if qp.get("query_expr_message"):
             r.append(qp["query_expr_message"])
-        return u", ".join(r)
+        return cgi.escape(u", ".join(r))
 
 class SearchResultRender(object):
     """検索結果をhtmlとしてレンダリング
