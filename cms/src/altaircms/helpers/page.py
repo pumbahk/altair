@@ -1,10 +1,8 @@
 # -*- coding:utf-8 -*-
 
 def show_publish_status(page):
-    if page.is_published():
-        return u"公開中"
-    else:
-        return u"プライベート"
+    return u"公開中"
+
 
 def to_edit_page(request, page):
     if page.event is None:

@@ -48,19 +48,6 @@ class PageAccesskey(Base):
         else:
             self.hashkey = (genkey or self.default_gen_key)()
 
-
-class PublishUnpublishMixin(object):
-    def is_published(self):
-        return self.hash_url is None
-
-    def to_unpublished(self):
-        if self.hash_url is None:
-            self.hash_url = uuid.uuid4().hex
-
-    def to_published(self):
-        self.hash_url = None
-
-
 class HasAncestorMixin(object):
     ## require self.parent
     @property
@@ -137,8 +124,7 @@ class PageSet(Base,
     #     return Page.filter(Page.version==self.version_counter).one()
 
 
-class Page(PublishUnpublishMixin, 
-           BaseOriginalMixin,
+class Page(BaseOriginalMixin,
            Base):
     """
     ページ

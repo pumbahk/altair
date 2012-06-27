@@ -6,7 +6,7 @@ from . import widget
 from . import tag
 from . import link
 from . import mobilelink
-__all__ = ["base", "front", "asset", "event", "page", "widget", "tag", "link", "mobilelink"]
+__all__ = ["base", "asset", "event", "page", "widget", "tag", "link", "mobilelink"]
 
 ## pagination
 from webhelpers.paginate import Page
