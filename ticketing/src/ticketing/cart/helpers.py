@@ -4,16 +4,18 @@
 TODO: cart取得はリソースの役目
 """
 
-from webhelpers.html.tags import *
-from webhelpers.number import format_number as _format_number
 from pyramid.view import render_view_to_response
 from markupsafe import Markup
+from webhelpers.html.tags import *
+from webhelpers.number import format_number as _format_number
+from markupsafe import Markup
 from zope.interface import implementer
+from .resources import OrderDelivery, CartDelivery, OrderPayment, CartPayment
 from ..core.models import FeeTypeEnum, SalesSegment
 import logging
-from .plugins.resources import OrderDelivery, CartDelivery, OrderPayment, CartPayment
-logger = logging.getLogger(__name__)
 from .api import get_nickname
+
+logger = logging.getLogger(__name__)
 
 def performance_date(performance):
     s = performance.start_on
@@ -29,42 +31,6 @@ def error_list(request, form, name):
     html += "".join(['<li>%s</li>' % e for e in errors])
     html += '</ul>'
     return Markup(html)
-
-# TODO: plugin APIに移動
-def render_payment_confirm_viewlet(request, cart):
-    logger.debug("*" * 80)
-    plugin_id = cart.payment_delivery_pair.payment_method.payment_plugin_id
-    logger.debug("plugin_id:%d" % plugin_id)
-
-    cart = CartPayment(cart)
-    response = render_view_to_response(cart, request, name="payment-%d" % plugin_id, secure=False)
-    if response is None:
-        raise ValueError
-    return Markup(response.text)
-
-# TODO: plugin APIに移動
-def render_delivery_finished_viewlet(request, order):
-    logger.debug("*" * 80)
-    plugin_id = order.payment_delivery_pair.delivery_method.delivery_plugin_id
-    logger.debug("plugin_id:%d" % plugin_id)
-
-    order = OrderDelivery(order)
-    response = render_view_to_response(order, request, name="delivery-%d" % plugin_id, secure=False)
-    if response is None:
-        raise ValueError
-    return Markup(response.text)
-
-# TODO: plugin APIに移動
-def render_payment_finished_viewlet(request, order):
-    logger.debug("*" * 80)
-    plugin_id = order.payment_delivery_pair.payment_method.payment_plugin_id
-    logger.debug("plugin_id:%d" % plugin_id)
-
-    order = OrderPayment(order)
-    response = render_view_to_response(order, request, name="payment-%d" % plugin_id, secure=False)
-    if response is None:
-        raise ValueError
-    return Markup(response.text)
 
 def fee_type(type_enum):
     if type_enum == int(FeeTypeEnum.Once.v[0]):
@@ -86,6 +52,7 @@ def products_filter_by_salessegment(products, sales_segment):
         return products.filter_by(sales_segment=sales_segment)
     return products
 
+
 def render_delivery_confirm_viewlet(request, cart):
     logger.debug("*" * 80)
     plugin_id = cart.payment_delivery_pair.delivery_method.delivery_plugin_id
@@ -93,6 +60,39 @@ def render_delivery_confirm_viewlet(request, cart):
 
     cart = CartDelivery(cart)
     response = render_view_to_response(cart, request, name="delivery-%d" % plugin_id, secure=False)
+    if response is None:
+        raise ValueError
+    return Markup(response.text)
+
+def render_payment_confirm_viewlet(request, cart):
+    logger.debug("*" * 80)
+    plugin_id = cart.payment_delivery_pair.payment_method.payment_plugin_id
+    logger.debug("plugin_id:%d" % plugin_id)
+
+    cart = CartPayment(cart)
+    response = render_view_to_response(cart, request, name="payment-%d" % plugin_id, secure=False)
+    if response is None:
+        raise ValueError
+    return Markup(response.text)
+
+def render_delivery_finished_viewlet(request, order):
+    logger.debug("*" * 80)
+    plugin_id = order.payment_delivery_pair.delivery_method.delivery_plugin_id
+    logger.debug("plugin_id:%d" % plugin_id)
+
+    order = OrderDelivery(order)
+    response = render_view_to_response(order, request, name="delivery-%d" % plugin_id, secure=False)
+    if response is None:
+        raise ValueError
+    return Markup(response.text)
+
+def render_payment_finished_viewlet(request, order):
+    logger.debug("*" * 80)
+    plugin_id = order.payment_delivery_pair.payment_method.payment_plugin_id
+    logger.debug("plugin_id:%d" % plugin_id)
+
+    order = OrderPayment(order)
+    response = render_view_to_response(order, request, name="payment-%d" % plugin_id, secure=False)
     if response is None:
         raise ValueError
     return Markup(response.text)

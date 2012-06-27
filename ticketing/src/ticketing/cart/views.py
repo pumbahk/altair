@@ -11,6 +11,7 @@ from pyramid.response import Response
 from pyramid.view import view_config
 from js.jquery_tools import jquery_tools
 from urllib2 import urlopen
+from zope.deprecation import deprecate
 from ..models import DBSession
 from ..core import models as c_models
 from ..orders import models as o_models
@@ -19,7 +20,6 @@ from .models import Cart
 from . import helpers as h
 from . import schema
 from .rakuten_auth.api import authenticated_user
-from . import plugins
 from .events import notify_order_completed
 from webob.multidict import MultiDict
 from . import api
@@ -453,7 +453,7 @@ class PaymentView(object):
         )
         self.request.session['order'] = order
 
-        payment_delivery_plugin = plugins.get_payment_delivery_plugin(self.request, 
+        payment_delivery_plugin = api.get_payment_delivery_plugin(self.request, 
             payment_delivery_pair.payment_method.payment_plugin_id,
             payment_delivery_pair.delivery_method.delivery_plugin_id,)
         if payment_delivery_plugin is not None:
@@ -461,7 +461,7 @@ class PaymentView(object):
             if res is not None and callable(res):
                 return res
         else:
-            payment_plugin = plugins.get_payment_plugin(self.request, payment_delivery_pair.payment_method.payment_plugin_id)
+            payment_plugin = api.get_payment_plugin(self.request, payment_delivery_pair.payment_method.payment_plugin_id)
             res = payment_plugin.prepare(self.request, cart)
             if res is not None and callable(res):
                 return res
@@ -516,16 +516,16 @@ class CompleteView(object):
             c_models.PaymentDeliveryMethodPair.id==payment_delivery_pair_id
         ).one()
 
-        payment_delivery_plugin = plugins.get_payment_delivery_plugin(self.request, 
+        payment_delivery_plugin = api.get_payment_delivery_plugin(self.request, 
             payment_delivery_pair.payment_method.payment_plugin_id,
             payment_delivery_pair.delivery_method.delivery_plugin_id,)
         if payment_delivery_plugin is not None:
             order = payment_delivery_plugin.finish(self.request, cart)
         else:
-            payment_plugin = plugins.get_payment_plugin(self.request, payment_delivery_pair.payment_method.payment_plugin_id)
+            payment_plugin = api.get_payment_plugin(self.request, payment_delivery_pair.payment_method.payment_plugin_id)
             order = payment_plugin.finish(self.request, cart)
             DBSession.add(order)
-            delivery_plugin = plugins.get_delivery_plugin(self.request, payment_delivery_pair.delivery_method.delivery_plugin_id)
+            delivery_plugin = api.get_delivery_plugin(self.request, payment_delivery_pair.delivery_method.delivery_plugin_id)
             delivery_plugin.finish(self.request, cart)
 
         openid = authenticated_user(self.request)
@@ -549,31 +549,3 @@ class CompleteView(object):
             logger.debug("subscribe %s" % s.name)
             subscription = user.subscribe(s)
 
-    def finish_reserved_number(self, cart, order_session):
-        # 窓口引き換え番号
-        return plugins.create_reserved_number(self.request, cart)
-
-    # TODO: APIに移動
-    def finish_payment_card(self, cart, order):
-        # 変換
-        order_id = order['order_id']
-        pares = order['pares']
-        md = order['md']
-        tran = order['tran']
-        item_name = h.get_item_name(self.request, cart.performance)
-
-        checkout_sales_result = multicheckout_api.checkout_sales_secure3d(
-            self.request, order_id,
-            item_name, cart.total_amount, 0, order['client_name'], order['mail_address'],
-            order['card_number'], order['exp_year'] + order['exp_month'], order['card_holder_name'],
-            mvn=tran['mvn'], xid=tran['xid'], ts=tran['ts'],
-            eci=tran['eci'], cavv=tran['cavv'], cavv_algorithm=tran['cavv_algorithm'],
-        )
-
-        DBSession.add(checkout_sales_result)
-
-        order = o_models.Order.create_from_cart(cart)
-        order.multicheckout_approval_no = checkout_sales_result.ApprovalNo
-        cart.finish()
-
-        return order

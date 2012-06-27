@@ -8,7 +8,7 @@ from pyramid.response import Response
 from pyramid.httpexceptions import HTTPFound
 
 from ticketing.orders.models import Order
-from ticketing.cart.plugins.interfaces import IPaymentPlugin, IOrderPayment
+from ticketing.cart.interfaces import IPaymentPlugin, IOrderPayment
 from ticketing.cart import helpers as h
 from ticketing.cart import api as a
 from ticketing.cart.models import Cart, CartedProduct

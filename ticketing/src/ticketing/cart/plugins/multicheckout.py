@@ -9,7 +9,7 @@ from ticketing.multicheckout import helpers as m_h
 from ticketing.multicheckout import api as multicheckout_api
 from ticketing.core import models as c_models
 from ticketing.orders import models as o_models
-from .interfaces import IPaymentPlugin, ICartPayment, IOrderPayment
+from ..interfaces import IPaymentPlugin, ICartPayment, IOrderPayment
 from .models import DBSession
 from .. import schema
 from .. import logger

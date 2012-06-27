@@ -11,6 +11,7 @@ from pyramid.interfaces import IRoutesMapper
 from ..api.impl import get_communication_api
 from ..api.impl import CMSCommunicationApi
 from .interfaces import IPaymentMethodManager
+from .interfaces import IPaymentPlugin, IDeliveryPlugin, IPaymentDeliveryPlugin
 from .models import Cart, PaymentMethodManager, DBSession
 from ..users.models import User, UserCredential, MemberShip
     
@@ -122,3 +123,17 @@ def get_salessegment(request, event_id, salessegment_id, selected_date):
         return qs.first()
     else:
         return None
+
+def get_payment_plugin(request, plugin_id):
+    logger.debug("get_payment_plugin: %s" % plugin_id)
+    registry = request.registry
+    return registry.utilities.lookup([], IPaymentPlugin, name="payment-%s" % plugin_id)
+
+def get_delivery_plugin(request, plugin_id):
+    registry = request.registry
+    return registry.utilities.lookup([], IDeliveryPlugin, name="delivery-%s" % plugin_id)
+
+def get_payment_delivery_plugin(request, payment_plugin_id, delivery_plugin_id):
+    registry = request.registry
+    return registry.utilities.lookup([], IPaymentDeliveryPlugin, 
+        "payment-%s:delivery-%s" % (payment_plugin_id, delivery_plugin_id))

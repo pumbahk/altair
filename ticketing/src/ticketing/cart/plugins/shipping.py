@@ -3,7 +3,7 @@
 from pyramid.view import view_config
 from pyramid.response import Response
 from zope.interface import implementer
-from .interfaces import IDeliveryPlugin, IOrderDelivery, ICartDelivery
+from ..interfaces import IDeliveryPlugin, IOrderDelivery, ICartDelivery
 from . import models as m
 from . import logger
 
