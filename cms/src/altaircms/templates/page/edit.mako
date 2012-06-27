@@ -60,7 +60,7 @@
      ${co.page_description(page)}
   </div>
   <div class="span1">
-    <a class="btn btn-success" href="${h.front.to_preview_page(request,page)}" target="_blank"><i class="icon-eye-open"> </i> Preview</a>
+    <a class="btn btn-success" href="${h.link.preview_page_from_page(request,page)}" target="_blank"><i class="icon-eye-open"> </i> Preview</a>
   </div>
   <div class="span1">
     <a class="btn btn-danger" href="${h.page.to_delete(request,page)}"><i class="icon-trash icon-white"></i> Delete</a>

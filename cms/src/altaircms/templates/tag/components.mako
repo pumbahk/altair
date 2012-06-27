@@ -58,7 +58,7 @@
 	  % for page in query_result:
 		<tr>
 		  <td><a href="${request.route_path("page_edit_", page_id=page.id)}">${page.title}</a></td>
-		  <td><a href="${h.front.to_preview_page(request, page)}">${page.url}</a></td>
+		  <td><a href="${h.link.preview_page_from_page(request, page)}">${page.url}</a></td>
           % if page.event is None:
             <td>-</td>
           % else:
