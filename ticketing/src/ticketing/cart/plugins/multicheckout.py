@@ -157,6 +157,10 @@ class MultiCheckoutView(object):
         if not auth_result.is_enable_auth_checkout():
             return HTTPFound(self.request.route_url('payment.secure3d'))
 
+        # TODO: エラーメッセージ
+        if not auth_result.is_enable_auth_checkout():
+            return HTTPFound(self.request.route_url('payment.secure3d'))
+
         checkout_auth_result = multicheckout_api.checkout_auth_secure3d(
             self.request, order_id,
             item_name, cart.total_amount, 0, order['client_name'], order['mail_address'],
