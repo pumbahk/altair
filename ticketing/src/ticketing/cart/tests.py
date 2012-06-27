@@ -36,24 +36,24 @@ class TestIt(unittest.TestCase):
         _teardown_db()
 
     def _set_payment_url(self):
-        from . import helpers as h
+        from . import api as a
         self.config.add_route('test.payment', 'payment/3d')
         request = testing.DummyRequest()
-        payment_method_manager = h.get_payment_method_manager(request)
+        payment_method_manager = a.get_payment_method_manager(request)
         payment_method_manager.add_route_name('3', 'test.payment')
 
     def test_payment_method_url_multicheckout(self):
-        from . import helpers as h
+        from . import api as a
         self._set_payment_url()
         request = DummyRequest()
-        result = h.get_payment_method_url(request, "3")
+        result = a.get_payment_method_url(request, "3")
 
         self.assertEqual(result, "http://example.com/payment/3d")
 
     def test_get_or_create_user_create(self):
-        from . import helpers as h
+        from . import api as a
         request = DummyRequest()
-        result = h.get_or_create_user(request, 'http://example.com/clamed_id')
+        result = a.get_or_create_user(request, 'http://example.com/clamed_id')
         self.assertIsNone(result.id)
         self.assertEqual(result.user_credential[0].auth_identifier, 'http://example.com/clamed_id')
         self.assertEqual(result.user_credential[0].membership.name, 'rakuten')
@@ -68,11 +68,11 @@ class TestIt(unittest.TestCase):
         return user
 
     def test_get_or_create_user_get(self):
-        from . import helpers as h
+        from . import api as a
         
         user = self._add_user('http://example.com/clamed_id')
         request = DummyRequest()
-        result = h.get_or_create_user(request, 'http://example.com/clamed_id')
+        result = a.get_or_create_user(request, 'http://example.com/clamed_id')
         self.assertEqual(result.id, user.id)
         self.assertEqual(result.user_credential[0].auth_identifier, 'http://example.com/clamed_id')
         self.assertEqual(result.user_credential[0].membership.name, 'rakuten')
@@ -803,7 +803,7 @@ class PaymentViewTests(unittest.TestCase):
         result = target()
         self.assertEqual(result.location, '/')
 
-    @mock.patch('ticketing.cart.helpers.get_or_create_user')
+    @mock.patch('ticketing.cart.api.get_or_create_user')
     @mock.patch('ticketing.cart.rakuten_auth.api.authenticated_user')
     def test_it(self, mock_authenticated_user, mock_get_ore_create_user):
         mock_authenticated_user.return_value = {

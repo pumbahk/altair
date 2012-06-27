@@ -22,6 +22,7 @@ from .rakuten_auth.api import authenticated_user
 from . import plugins
 from .events import notify_order_completed
 from webob.multidict import MultiDict
+from . import api
 
 logger = logging.getLogger(__name__)
 
@@ -131,7 +132,7 @@ class IndexView(object):
                         performance_id=performance_id,
                         venue_id=performance.venue.id),
                     seat_adjacencies=self.request.application_url \
-                        + h.get_route_pattern(
+                        + api.get_route_pattern(
                           self.request.registry,
                           'cart.seat_adjacencies')
                     )
@@ -319,7 +320,7 @@ class ReserveView(object):
         cart = self.context.order_products(self.request.params['performance_id'], self.ordered_items)
         if cart is None:
             return dict(result='NG')
-        h.set_cart(self.request, cart)
+        api.set_cart(self.request, cart)
         #self.request.session['ticketing.cart_id'] = cart.id
         #self.cart = cart
         return dict(result='OK', 
@@ -342,7 +343,7 @@ class ReleaseCartView(object):
 
     @view_config(route_name='cart.release', request_method="POST", renderer="json")
     def __call__(self):
-        cart = h.get_cart(self.request)
+        cart = api.get_cart(self.request)
         cart.release()
         DBSession.delete(cart)
         h.remove_cart(self.request)
@@ -366,14 +367,14 @@ class PaymentView(object):
     def __call__(self):
         """ 支払い方法、引き取り方法選択
         """
-        if not h.has_cart(self.request):
+        if not api.has_cart(self.request):
             return HTTPFound('/')
-        cart = h.get_cart(self.request)
+        cart = api.get_cart(self.request)
         self.context.event_id = cart.performance.event.id
         payment_delivery_methods = self.context.get_payment_delivery_method_pair()
 
         openid = authenticated_user(self.request)
-        user = h.get_or_create_user(self.request, openid['clamed_id'])
+        user = api.get_or_create_user(self.request, openid['clamed_id'])
         user_profile = user.user_profile
         form = schema.ClientForm(formdata=MultiDict({
             "last_name": user_profile.last_name,
@@ -398,12 +399,12 @@ class PaymentView(object):
         """ 支払い方法、引き取り方法選択
         """
 
-        if not h.has_cart(self.request):
+        if not api.has_cart(self.request):
             return HTTPFound('/')
-        cart = h.get_cart(self.request)
+        cart = api.get_cart(self.request)
 
         openid = authenticated_user(self.request)
-        user = h.get_or_create_user(self.request, openid['clamed_id'])
+        user = api.get_or_create_user(self.request, openid['clamed_id'])
 
         payment_delivery_pair_id = self.request.params.get('payment_delivery_pair_id', 0)
         payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter_by(id=payment_delivery_pair_id).first()
@@ -476,8 +477,8 @@ class ConfirmView(object):
     @view_config(route_name='payment.confirm', request_method="GET", renderer="carts/confirm.html")
     def get(self):
 
-        assert h.has_cart(self.request)
-        cart = h.get_cart(self.request)
+        assert api.has_cart(self.request)
+        cart = api.get_cart(self.request)
 
         magazines = u_models.MailMagazine.query.all()
 
@@ -502,8 +503,8 @@ class CompleteView(object):
 
     @view_config(route_name='payment.finish', renderer="carts/completion.html")
     def __call__(self):
-        assert h.has_cart(self.request)
-        cart = h.get_cart(self.request)
+        assert api.has_cart(self.request)
+        cart = api.get_cart(self.request)
 
         # メール購読
         self.save_subscription()
@@ -528,7 +529,7 @@ class CompleteView(object):
             delivery_plugin.finish(self.request, cart)
 
         openid = authenticated_user(self.request)
-        user = h.get_or_create_user(self.request, openid['clamed_id'])
+        user = api.get_or_create_user(self.request, openid['clamed_id'])
         order.user = user
 
         notify_order_completed(self.request, order)
@@ -538,7 +539,7 @@ class CompleteView(object):
     def save_subscription(self):
         magazines = u_models.MailMagazine.query.all()
         openid = authenticated_user(self.request)
-        user = h.get_or_create_user(self.request, openid['clamed_id'])
+        user = api.get_or_create_user(self.request, openid['clamed_id'])
 
         # 購読
         magazine_ids = self.request.params.getall('mailmagazine')

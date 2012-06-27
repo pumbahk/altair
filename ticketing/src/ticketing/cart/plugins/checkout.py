@@ -10,6 +10,7 @@ from pyramid.httpexceptions import HTTPFound
 from ticketing.orders.models import Order
 from ticketing.cart.plugins.interfaces import IPaymentPlugin, IOrderPayment
 from ticketing.cart import helpers as h
+from ticketing.cart import api as a
 from ticketing.cart.models import Cart, CartedProduct
 from ticketing.core.models import Product, PaymentDeliveryMethodPair
 from ticketing.checkout import api
@@ -56,7 +57,7 @@ class CheckoutView(object):
 
     @view_config(route_name='payment.checkout_login', request_method="GET", renderer="ticketing.cart.plugins:templates/checkout_login.html")
     def login(self):
-        cart = h.get_cart(self.request)
+        cart = a.get_cart(self.request)
 
         form = {}
         form['h'] = helpers.begin_checkout_form(self.request)

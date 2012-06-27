@@ -15,6 +15,7 @@ from ticketing.orders import models as o_models
 from .. import schema
 from .. import logger
 from .. import helpers as h
+from .. import api as a
 
 from ticketing.cart.rakuten_auth.api import authenticated_user
 from ticketing.sej.ticket import SejTicketDataXml
@@ -134,7 +135,7 @@ class SejPaymentPlugin(object):
 
 
         openid = authenticated_user(request)
-        user = h.get_or_create_user(request, openid['clamed_id'])
+        user = a.get_or_create_user(request, openid['clamed_id'])
         user_profile  = user.user_profile
         performance = order.performance
         current_date = datetime.now()
@@ -179,7 +180,7 @@ class SejDeliveryPlugin(object):
 
         order_no = str(cart.id)
         openid = authenticated_user(request)
-        user = h.get_or_create_user(request, openid['clamed_id'])
+        user = a.get_or_create_user(request, openid['clamed_id'])
         user_profile  = user.user_profile
         performance = cart.performance
         current_date = datetime.now()
@@ -233,7 +234,7 @@ class SejPaymentDeliveryPlugin(object):
         sej_order = get_sej_order(order)
         if not sej_order:
             openid = authenticated_user(request)
-            user = h.get_or_create_user(request, openid['clamed_id'])
+            user = a.get_or_create_user(request, openid['clamed_id'])
             user_profile  = user.user_profile
             performance = cart.performance
             current_date = datetime.now()

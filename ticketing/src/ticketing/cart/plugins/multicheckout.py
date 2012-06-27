@@ -14,6 +14,7 @@ from .models import DBSession
 from .. import schema
 from .. import logger
 from .. import helpers as h
+from .. import api
 
 PLUGIN_ID = 1
 
@@ -38,7 +39,7 @@ class MultiCheckoutPlugin(object):
         pares = order['pares']
         md = order['md']
         tran = order['tran']
-        item_name = h.get_item_name(request, cart.performance)
+        item_name = api.get_item_name(request, cart.performance)
 
         checkout_sales_result = multicheckout_api.checkout_sales_secure3d(
             request, order_id,
@@ -101,8 +102,8 @@ class MultiCheckoutView(object):
             logger.debug("form error %s" % (form.errors,))
             # TODO: 入力エラー表示
             return dict()
-        assert h.has_cart(self.request)
-        cart = h.get_cart(self.request)
+        assert api.has_cart(self.request)
+        cart = api.get_cart(self.request)
 
         # 変換
         order_id = cart.id
@@ -137,8 +138,8 @@ class MultiCheckoutView(object):
         """ カード情報入力(3Dセキュア)コールバック
         3Dセキュア認証結果取得
         """
-        assert h.has_cart(self.request)
-        cart = h.get_cart(self.request)
+        assert api.has_cart(self.request)
+        cart = api.get_cart(self.request)
 
         order = self.request.session['order']
         # 変換
@@ -150,7 +151,7 @@ class MultiCheckoutView(object):
         order['order_id'] = order_id
 
         auth_result = multicheckout_api.secure3d_auth(self.request, order_id, pares, md)
-        item_name = h.get_item_name(self.request, cart.performance)
+        item_name = api.get_item_name(self.request, cart.performance)
 
         # TODO: エラーメッセージ
         if not auth_result.is_enable_auth_checkout():
