@@ -62,10 +62,10 @@ class QueryParamsRender(object):
         translator = marked_tree.translator
         for parent, children in marked_tree.tree:
             if parent in marked_tree.check_all_list:
-                yield u"%s&gt全て" % translator[parent]
+                yield u"%s>全て" % translator[parent]
             else:
                 for child in children:
-                    yield u"%s&gt%s" % (translator[parent], translator[child])
+                    yield u"%s>%s" % (translator[parent], translator[child])
 
     def describe_from_tree(self, marked_tree):
         """ 「関東 > 全て, 北海道 > 北海道」 のような表示"""

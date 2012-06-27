@@ -47,7 +47,7 @@ def search_by_freeword(context, request):
     """
     try:
         ## 全文検索を使って検索。, で区切られた文字はandで結合
-        query_params = dict(query=cgi.escape(request.GET.get("q", u"")), query_cond="intersection")
+        query_params = dict(query=request.GET.get("q", u""), query_cond="intersection")
 
         result_seq = context.get_result_sequence_from_query_params(
             query_params,
