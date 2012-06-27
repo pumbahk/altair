@@ -2,13 +2,13 @@
 
 
 import logging
-logger = logging.getLoger(__file__)
+logger = logging.getLogger(__file__)
 
 
 from altaircms.page.models import PageSet
 from altaircms.page.models import Page
 from . import api
-from .security import get_acl_candidates
+from altaircms.security import get_acl_candidates
 
 class PageRenderingResource(object):
     def __init__(self, request):
@@ -75,7 +75,7 @@ class AccessControl(object):
             self._error_message.append(str(e))
             self.access_ok = False
         return page
-
+        
     def fetch_page_from_pagesetid(self, pageset_id):
         pageset = PageSet.query.filter_by(id=pageset_id)
         self.access_ok = True
@@ -84,6 +84,7 @@ class AccessControl(object):
             self._error_message.append("*fetch pageset* pagset(id=%s) is not found" % pageset_id)
             self.access_ok = False
             return pageset
+
         page = pageset.current()
         if page is None:
             self.access_ok = False

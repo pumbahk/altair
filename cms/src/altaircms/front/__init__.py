@@ -1,8 +1,8 @@
 def includeme(config):
     settings = config.registry.settings
-    layout_lookup_class = config.maybe_dotted(".impl.LayoutTemplate")
+    layout_lookup_class = config.maybe_dotted("altairsite.front.impl.LayoutTemplate")
     layout_lookup = layout_lookup_class(settings["altaircms.layout_directory"])
-    config.registry.registerUtility(layout_lookup, config.maybe_dotted(".impl.ILayoutTemplateLookUp"))
+    config.registry.registerUtility(layout_lookup, config.maybe_dotted("altairsite.front.impl.ILayoutTemplateLookUp"))
 
     config.add_route("preview_pageset", "/preview/pageseet/{pageset_id}", factory=".resources.PageRenderingResource")
     config.add_route("preview_page", "/preview/page/{page_id}", factory=".resources.PageRenderingResource")
