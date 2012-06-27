@@ -76,7 +76,7 @@
 <table class="table">
   <thead>
 	<tr>
-	  <th>preview</th><th>ページセット</th><th>ページ</th><th>公開開始</th><th>公開終了</th>
+	  <th></th><th>ページセット</th><th>ページ</th><th>公開ステータス</th><th>公開開始</th><th>公開終了</th>
 	</tr>
   </thead>
   <tbody>
@@ -84,16 +84,17 @@
 <%
 pages = pageset.pages 
 pagesize = len(pages)
+current_page = pageset.current(published=True)
 %>
     <tr>
       <td rowspan="${pagesize}">
         <input type="radio" name="object_id" value="${pageset.id}">
       </td>
-	  <td rowspan="${pagesize}">
-        <a class="btn btn-small" href="${h.link.preview_page_from_pageset(request,pageset)}" target="_blank"><i class="icon-eye-open"> </i> preview</a>
-	  </td>
       <td rowspan="${pagesize}">
         <a href="${request.route_path('pageset', pageset_id=pageset.id)}">${pageset.name}</a>
+		<a class="action" target="_blank" href="${request.route_path("preview_pageset", pageset_id=pageset.id)}">
+		  <i class="icon-eye-open"> </i></a>
+       </a>
       </td>
 
 	  %if len(pages) < 1:
@@ -101,7 +102,12 @@ pagesize = len(pages)
 	  %else:
       <td>
         <a href="${request.route_path('page_edit', event_id=event.id, page_id=pages[0].id)}">${pages[0].name}</a>
+		<a class="action" target="_blank" href="${request.route_path("preview_page", page_id=pages[0].id)}">
+		  <i class="icon-eye-open"> </i></a>
+
       </td>
+	  <td>${u"公開中" if pages[0].published else u"非公開"}${u"(published)" if pages[0]==current_page else u""}</td>
+
 	  <td>${pages[0].publish_begin}</td>
 	  <td>${pages[0].publish_end}</td>
     </tr>
@@ -109,7 +115,10 @@ pagesize = len(pages)
       <tr>
 		<td>
           <a href="${request.route_path('page_edit', event_id=event.id, page_id=page.id)}">${page.name}</a>
+		  <a class="action" target="_blank" href="${request.route_path("preview_page", page_id=page.id)}">
+			<i class="icon-eye-open"> </i></a>
 		</td>
+		<td>${u"公開中" if page.published else u"非公開"}${u"(published)" if page==current_page else u""}</td>
 		<td>${page.publish_begin}</td>
 		<td>${page.publish_end}</td>
 	  </tr>
@@ -122,15 +131,20 @@ pagesize = len(pages)
 
   </div>
   <div class="btn-group">
-    <a class="btn" href="${request.route_path("page_add", event_id=event.id)}">
-      <i class="icon-plus"> </i> ページ追加</a>
+    <a class="btn action" target="_blank" href="${request.route_path("pageset", pageset_id="__id__")}">
+      <i class="icon-plus"> </i> ページセット期間変更</a>
     </a>
     <button class="btn dropdown-toggle" data-toggle="dropdown">
       <span class="caret"></span>
     </button>
     <ul class="dropdown-menu">
+	  <li>
+		<a class="btn action" target="_blank" href="${request.route_path("pageset", pageset_id="__id__")}">
+		  <i class="icon-plus"> </i> ページセット期間変更</a>
+       </a>
+	  </li>
      <li>
-		<a class="" href="${request.route_path("page_add", event_id=event.id)}">
+		<a class="" target="_blank" href="${request.route_path("page_add", event_id=event.id)}">
 		  <i class="icon-plus"> </i> 新しいページセットの追加</a>
 		</a>
      </li>
