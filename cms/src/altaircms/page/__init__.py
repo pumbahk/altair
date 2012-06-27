@@ -7,8 +7,9 @@ def includeme(config):
     add_route("page_delete", "/page/{id}/delete")
     add_route("page_update", "/page/{id}/update")
     add_route("page_duplicate", "/page/{id}/duplicate")
+    
     add_route('page', '/page/')
-
+    add_route("pageset_addpage", "/pageset/{pageset_id}/addpage")
     ## setup api
     add_route("api_page_setup_info", "/page/api/setupinfo")
 
@@ -22,7 +23,7 @@ def includeme(config):
     config.add_route('pageset', '/pagesets/{pageset_id}')
     config.add_route('pageset_delete', '/pagesets/{pageset_id}/delete')
     config.add_route('pageset_update', '/pagesets/{pageset_id}/update')
-
+    
     ## bind event
     config.add_subscriber(".subscribers.page_register_solr", ".subscribers.PageCreate")
     config.add_subscriber(".subscribers.page_register_solr", ".subscribers.PageUpdate")

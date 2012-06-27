@@ -106,12 +106,28 @@ class PageSet(Base,
         page.version = pageset.gen_version()
         return pageset
 
-    def current(self, dt=None):
+    def current(self, dt=None, published=True):
         dt = dt or datetime.now()
         where = (Page.in_term(dt)) | ((Page.publish_begin==None) & (Page.publish_end==None))
-        where = where & (Page.published == True)
+        if published:
+            where = where & (Page.published == published)
         return Page.query.filter(Page.pageset==self).filter(where).order_by("page.publish_begin").limit(1).first()
 
+    def create_page(self, published=None):
+        base_page = self.current(published=published)
+        if base_page is None:
+            return None
+        created = Page(pageset=self, version=self.gen_version())
+        created.event = base_page.event
+        created.name = base_page.name
+        created.title = base_page.title
+        created.keywords = base_page.keywords
+        created.description = base_page.description
+        created.url = base_page.url
+        created.layout = base_page.layout
+        return created
+
+        
     # @property
     # def page_proxy(self):
     #     if hasattr(self, "_page_proxy"):

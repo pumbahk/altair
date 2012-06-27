@@ -81,12 +81,18 @@
   </thead>
   <tbody>
     %for pageset in event.pagesets:
-<% pages = pageset.pages %>
+<%
+pages = pageset.pages 
+pagesize = len(pages)
+%>
     <tr>
-	  <td rowspan="${len(pages)}">
+      <td rowspan="${pagesize}">
+        <input type="radio" name="object_id" value="${pageset.id}">
+      </td>
+	  <td rowspan="${pagesize}">
         <a class="btn btn-small" href="${h.link.preview_page_from_pageset(request,pageset)}" target="_blank"><i class="icon-eye-open"> </i> preview</a>
 	  </td>
-      <td rowspan="${len(pages)}">
+      <td rowspan="${pagesize}">
         <a href="${request.route_path('pageset', pageset_id=pageset.id)}">${pageset.name}</a>
       </td>
 
@@ -98,6 +104,7 @@
       </td>
 	  <td>${pages[0].publish_begin}</td>
 	  <td>${pages[0].publish_end}</td>
+    </tr>
       %for page in pageset.pages[1:]:
       <tr>
 		<td>
@@ -111,24 +118,48 @@
    %endfor
   </tbody>
 </table>
-</div>
+  <div style="float:left;">
+
+  </div>
   <div class="btn-group">
     <a class="btn" href="${request.route_path("page_add", event_id=event.id)}">
       <i class="icon-plus"> </i> ページ追加</a>
     </a>
-  <%doc>
     <button class="btn dropdown-toggle" data-toggle="dropdown">
       <span class="caret"></span>
     </button>
     <ul class="dropdown-menu">
+     <li>
+		<a class="" href="${request.route_path("page_add", event_id=event.id)}">
+		  <i class="icon-plus"> </i> 新しいページセットの追加</a>
+		</a>
+     </li>
+     <li>
+	   <a id="pageset_addpage" class="individual-action" href="${request.route_path("pageset_addpage", pageset_id='__id__')}">
+		 <i class="icon-plus"> </i> 選択したページセットにページ追加</a>
+		</a>
+<script type="text/javascript">
+  $(function(){
+    $(".box #pageset_addpage").click(function(e){
+      e.preventDefault();
+      var  pk = $(this).parents(".box").find("input[name='object_id']:checked").val();
+      if(!pk){ console.log("sorry"); return false; }
+      $.post(String($(this).attr("href")).replace("__id__", pk)).done(function(){location.reload()}); //slackoff
+      return false;
+    });
+  });
+</script>
+     </li>
+<%doc>
       <li>
         <a href="${request.route_path("event_delete",action="confirm",id=event.id)}">
           <i class="icon-minus"></i> 削除
         </a>
       </li>
+</%doc>
     </ul>
-  </%doc>
   </div>
+</div>
 
 <hr/>
 

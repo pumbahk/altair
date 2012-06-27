@@ -84,6 +84,18 @@ class PageAddView(object):
             return {"form":form, "event":event, "setup_form": setup_form}
 
 
+@view_config(permission="page_create", route_name="pageset_addpage", renderer="json", request_method="POST")
+def pageset_addpage(request):
+    pageset_id = request.matchdict["pageset_id"]
+    pageset = PageSet.query.filter_by(id=pageset_id).first()
+    created = pageset.create_page()
+    if created:
+        request.context.add_page(created)
+        return "OK"
+    else:
+        return "FAIL"
+    
+
 @view_defaults(permission="page_create", decorator=with_bootstrap)
 class PageCreateView(object):
     def __init__(self, context, request):

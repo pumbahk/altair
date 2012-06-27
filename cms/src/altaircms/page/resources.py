@@ -82,6 +82,12 @@ class PageResource(security.RootFactory):
         subscribers.notify_page_create(self.request, page, params)
         return page
 
+    def add_page(self, page):
+        self.add(page, flush=True)
+        subscribers.notify_page_create(self.request, page)
+        return page
+        
+
     def update_page(self, page, form):
         tags, private_tags, params =  h.divide_data(form.data)
         for k, v in params.iteritems():
