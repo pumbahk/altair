@@ -373,8 +373,9 @@ class PaymentView(object):
         self.context.event_id = cart.performance.event.id
         payment_delivery_methods = self.context.get_payment_delivery_method_pair()
 
-        openid = authenticated_user(self.request)
-        user = api.get_or_create_user(self.request, openid['clamed_id'])
+        #openid = authenticated_user(self.request)
+        #user = api.get_or_create_user(self.request, openid['clamed_id'])
+        user = self.context.get_or_create_user()
         user_profile = user.user_profile
         form = schema.ClientForm(formdata=MultiDict({
             "last_name": user_profile.last_name,
@@ -403,8 +404,9 @@ class PaymentView(object):
             return HTTPFound('/')
         cart = api.get_cart(self.request)
 
-        openid = authenticated_user(self.request)
-        user = api.get_or_create_user(self.request, openid['clamed_id'])
+        #openid = authenticated_user(self.request)
+        #user = api.get_or_create_user(self.request, openid['clamed_id'])
+        user = self.context.get_or_create_user()
 
         payment_delivery_pair_id = self.request.params.get('payment_delivery_pair_id', 0)
         payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter_by(id=payment_delivery_pair_id).first()
@@ -528,8 +530,9 @@ class CompleteView(object):
             delivery_plugin = api.get_delivery_plugin(self.request, payment_delivery_pair.delivery_method.delivery_plugin_id)
             delivery_plugin.finish(self.request, cart)
 
-        openid = authenticated_user(self.request)
-        user = api.get_or_create_user(self.request, openid['clamed_id'])
+        #openid = authenticated_user(self.request)
+        #user = api.get_or_create_user(self.request, openid['clamed_id'])
+        user = self.context.get_or_create_user()
         order.user = user
 
         notify_order_completed(self.request, order)
@@ -538,8 +541,9 @@ class CompleteView(object):
 
     def save_subscription(self):
         magazines = u_models.MailMagazine.query.all()
-        openid = authenticated_user(self.request)
-        user = api.get_or_create_user(self.request, openid['clamed_id'])
+        #openid = authenticated_user(self.request)
+        #user = api.get_or_create_user(self.request, openid['clamed_id'])
+        user = self.context.get_or_create_user()
 
         # 購読
         magazine_ids = self.request.params.getall('mailmagazine')

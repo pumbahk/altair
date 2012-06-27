@@ -4,6 +4,7 @@ import sqlalchemy as sa
 import ticketing.core.models as c_models
 import ticketing.cart.helpers as h
 import ticketing.cart.api as api
+from ticketing.users.models import UserProfile
 from pyramid.httpexceptions import HTTPFound
 from . import schemas
 
@@ -48,5 +49,9 @@ class IndexView(object):
             logger.debug('cart is None')
             return dict()
         api.set_cart(self.request, cart)
+        user = self.context.get_or_create_user()
+        user_profile = UserProfile(
+            user=user,
+        )
         logger.debug('OK redirect')
         return HTTPFound(location=self.request.route_url("cart.payment"))
