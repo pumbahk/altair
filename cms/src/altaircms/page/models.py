@@ -122,6 +122,7 @@ class PageSet(Base,
     def current(self, dt=None):
         dt = dt or datetime.now()
         where = (Page.in_term(dt)) | ((Page.publish_begin==None) & (Page.publish_end==None))
+        where = where & (Page.published == True)
         return Page.query.filter(Page.pageset==self).filter(where).order_by("page.publish_begin").limit(1).first()
 
     # @property
@@ -230,7 +231,9 @@ class Page(PublishUnpublishMixin,
     def delete_access_key(self, target):
         return self.access_keys.remove(target)
 
-    def _can_access(self, key=None, _now=None):
+    def can_access(self, key=None, _now=None):
+        if self.published: ## これ必要?公開したページもcmsは常に見えなくても良いのではないか
+            return True
         if not key in self.access_keys:
             return False
         if key.expiredate is None:
@@ -238,19 +241,6 @@ class Page(PublishUnpublishMixin,
 
         now = _now or datetime.now()
         return now <= key.expiredate
-
-    def can_access(self, key=None, request=None, _now=None):
-        if self.published:
-            return True
-
-        if request:
-            user = getattr(request, "user", None)
-            if user:
-                import warnings
-                warnings.warn("this is not implemented")
-                return False
-                # return user.validate(self) ## user側の認証どうしよう。
-        return self._can_access(key=key, _now=_now)
 
     def has_access_keys(self):
         return bool(self.access_keys)

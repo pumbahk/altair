@@ -1,21 +1,40 @@
 # coding: utf-8
 
 from pyramid.httpexceptions import HTTPForbidden
+from pyramid.httpexceptions import HTTPInternalServerError
 from pyramid.view import view_config
 
 
 @view_config(route_name="rendering_page")
 def rendering_page(context, request):
-    control = context.access_controll_from_page(request)
+    control = context.access_control()
+    access_key = request.params.get("access_key")
+    page_id = request.matchdict["page_id"]
+    page = control.fetch_page_from_page_id(page_id, access_key=access_key)
+
     if not control.can_access():
         return HTTPForbidden()
-    return control.rendering_page()
+    
+    template = context.frontpage_template(page)
+    if not control.can_rendering(template, page):
+        raise HTTPInternalServerError(control.error_message)
+
+    renderer = context.frontpage_renderer()
+    return renderer.render(template, page)
 
 
 @view_config(route_name="rendering_pageset")
 def rendering_pageset(context, request):
-    control = context.access_controll_from_pageset(request)
+    control = context.access_control()
+    pageset_id = request.matchdict["pageset_id"]
+    page = control.fetch_page_from_pageset_id(pageset_id)
+
     if not control.can_access():
         return HTTPForbidden()
-    return control.rendering_page()
+    
+    template = context.frontpage_template(page)
+    if not control.can_rendering(template, page):
+        raise HTTPInternalServerError(control.error_message)
 
+    renderer = context.frontpage_renderer()
+    return renderer.render(template, page)

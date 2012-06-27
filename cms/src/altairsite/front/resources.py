@@ -84,17 +84,11 @@ class AccessControlPC(object):
         return self.access_ok
 
     def can_rendering(self, template, page):
-        if template is None:
-            fmt = "*front pc access rendering* page(id=%s) layout(id=%s) don't have template"
-            self.error_message = fmt % (page.id, page.layout.id)
+        try:
+            return api.is_renderable_template(template, page)
+        except Exception, e:
+            self.error_message = str(e)
             return False
-        ## todo 疎結合
-        if not api.template_exist(template):
-            fmt = "*front pc access rendering* page(id=%s) layout(id=%s) template(name:%s) is not found"
-            self.error_message = fmt % (page.id, page.layout.id, template)
-            return False
-        return True
-        
 
     def _fetch_page_from_params(self, url, dt):
         qs = Page.query.filter(PageSet.id==Page.pageset_id)

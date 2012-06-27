@@ -13,9 +13,7 @@ def includeme(config):
     config.registry.registerUtility(layout_lookup, config.maybe_dotted(".impl.ILayoutTemplateLookUp"))
 
 
-    config.add_route('front', '/publish/{page_name:.*}', factory=".resources.PageRenderingResource") # fix-url after. implemnt preview
-    config.add_route("front_to_preview", "/to/preview/{page_id}", factory=".resources.PageRenderingResource")
-    config.add_route('front_preview', '/{page_id}/preview/{page_name:.*}', factory=".resources.PageRenderingResource")
+    config.add_route('front', '/publish/{page_name:.*}', factory=".resources.PageRenderingResource")
 
     ## mobile
     config.add_view("altairsite.mobile.views.mobile_index",

@@ -41,6 +41,16 @@ def template_exist(template):
         return False
 
 
+def is_renderable_template(template, page): ## todo 適切なexception
+    if template is None:
+        fmt = "*front pc access rendering* page(id=%s) layout(id=%s) don't have template"
+        raise Exception( fmt % (page.id, page.layout.id))
+    if not template_exist(template):
+        fmt = "*front pc access rendering* page(id=%s) layout(id=%s) template(name:%s) is not found"
+        raise Exception(fmt % (page.id, page.layout.id, template))
+    return True
+
+
 """
 todo: 複数の種類に分ける?
 """
