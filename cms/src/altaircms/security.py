@@ -38,6 +38,7 @@ class RootFactory(object):
     def __init__(self, request):
         self.request = request
 
+    @property
     def __acl__(self):
         return get_acl_candidates()
                            

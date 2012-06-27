@@ -10,7 +10,7 @@ def preview_page(context, request):
     control = context.access_control()
     access_key = request.params.get("access_key")
     page_id = request.matchdict["page_id"]
-    page = control.fetch_page_from_page_id(page_id, access_key=access_key)
+    page = control.fetch_page_from_pageid(page_id, access_key=access_key)
 
     if not control.can_access():
         return HTTPForbidden()
@@ -27,7 +27,7 @@ def preview_page(context, request):
 def preview_pageset(context, request):
     control = context.access_control()
     pageset_id = request.matchdict["pageset_id"]
-    page = control.fetch_page_from_pageset_id(pageset_id)
+    page = control.fetch_page_from_pagesetid(pageset_id)
 
     if not control.can_access():
         return HTTPForbidden()

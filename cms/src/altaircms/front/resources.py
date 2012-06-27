@@ -18,11 +18,11 @@ class PageRenderingResource(object):
     def __acl__(self):
         return get_acl_candidates()
 
-    def access_controll(self):
+    def access_control(self):
         return AccessControl(self.request)
 
     def frontpage_renderer(self):
-        return api.FrontPageRenderer(self.request)
+        return api.get_frontpage_render(self.request)
 
     def frontpage_template(self, page):
         filename = page.layout.template_filename
@@ -77,7 +77,7 @@ class AccessControl(object):
         return page
         
     def fetch_page_from_pagesetid(self, pageset_id):
-        pageset = PageSet.query.filter_by(id=pageset_id)
+        pageset = PageSet.query.filter_by(id=pageset_id).first()
         self.access_ok = True
 
         if pageset is None:
