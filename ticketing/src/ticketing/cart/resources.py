@@ -16,7 +16,6 @@ from .interfaces import IOrderPayment, IOrderDelivery, ICartPayment, ICartDelive
 
 from ..core import models as c_models
 from . import models as m
-
 from . import logger
 
 class TicketingCartResrouce(object):
@@ -262,6 +261,14 @@ class TicketingCartResrouce(object):
             return cart
         finally:
             conn.close()
+
+    def get_ore_create_user(self):
+        # TODO: 依存関係がおかしいので確認 なぜrakuten_authがcart.apiを使うのか？
+        from .rakuten_auth.api import authenticated_user
+        from . import api
+        openid = authenticated_user(self.request)
+        user = api.get_or_create_user(self.request, openid['clamed_id'])
+        return user
 
 @implementer(IOrderDelivery)
 class OrderDelivery(object):
