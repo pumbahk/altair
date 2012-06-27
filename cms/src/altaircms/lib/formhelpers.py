@@ -33,78 +33,6 @@ def datetime_pick_patch(): #slack-off
 ## query_select filter
 ##
 
-class DynamicQueryChoicesDispatcher(object):
-    """ formのselect_query_fieldの絞り込みの方法を提供するクラス
-        todo: logging
-    """
-    def __init__(self, form=None, rendering_val=None, request=None):
-        self.form = form
-        self.rendering_val = rendering_val
-        self.request = request
-
-    @classmethod
-    def dispatch(cls, method_name, mfn_default):
-        def _query_refinement(field, form=None, rendering_val=None, request=None):
-            mfn = mfn_default
-            instance = cls(form=form, rendering_val=rendering_val, request=request)
-            if mfn is None:
-                mfn = getattr(DynamicQueryDefault, method_name)
-            return mfn(instance, instance._get_qs(field), field)
-        return _query_refinement
-
-    def _get_qs(self, field):
-        if field.query:
-            return field.query
-
-        if field.query_factory:
-            field.query = field.query_factory()
-            return field.query
-        raise Exception("foo")
-
-class DynamicQueryDefault(object):
-    @classmethod
-    def _filter_by_site(cls, qs, request):
-        if hasattr(request, "site"):
-            qs = qs.filter_by(site_id=request.site.id)
-        return qs
-
-    @classmethod
-    def layout(cls, info, qs, field):
-        field.query = cls._filter_by_site(qs, info.request)
-    @classmethod
-    def page(cls, info, qs, field):
-        field.query = cls._filter_by_site(qs, info.request)
-    @classmethod
-    def event(cls, info, qs, field):
-        field.query = cls._filter_by_site(qs, info.request)
-    @classmethod
-    def sale(cls, info, qs, field):
-        field.query = qs
-    @classmethod
-    def imageasset(cls, info, qs, field):
-        field.query = cls._filter_by_site(qs, info.request)
-    @classmethod
-    def pageset(cls, info, qs, field):
-        field.query = cls._filter_by_site(qs, info.request)
-    @classmethod
-    def category(cls, info, qs, field):
-        field.query = cls._filter_by_site(qs, info.request)
-    @classmethod
-    def operator(cls, info, qs, field):
-        field.query = qs
-    @classmethod
-    def widgetdisposition(cls, info, qs, field):
-        qs = cls._filter_by_site(info, info.qs, info.request)
-        from altaircms.widget.models import WidgetDisposition
-        field.query = WidgetDisposition.enable_only_query(info.request.user, qs=qs)
-    @classmethod
-    def promotion(cls, info, qs, field):
-        field.query = cls._filter_by_site(qs, info.request)
-    @classmethod
-    def pagetag(cls, info, qs, field):
-        field.query = cls._filter_by_site(qs, info.request)
-
-
 class myQuerySelectField(extfields.QuerySelectField):
     """ wtformsのfieldではdataのNoneの場合、常にblankが初期値として設定されてしまっていた。
     　　それへの対応
@@ -123,6 +51,13 @@ class myQuerySelectField(extfields.QuerySelectField):
         else:
             return obj.id == data.id or obj == data
 
+from zope.interface import Interface
+from zope.interface import Attribute
+
+class IModelQueryFilterAdaptor(Interface):
+    model = Attribute("target model")
+
+def add_dynamic_query_select
 def dynamic_query_select_field_factory(model, dynamic_query_factory=None, factory_name=None, **kwargs):
     """
     dynamic_query_factory: lambda field, form=None, rendering_val=None, request=None : ...
