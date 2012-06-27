@@ -36,6 +36,7 @@ def main(global_config, **settings):
     config.add_static_view('img', 'ticketing.cart:static', cache_max_age=3600)
 
     config.include('.')
+    config.include('.errors')
     config.include('..cart.rakuten_auth')
     config.scan()
     config.scan('..orders.models')

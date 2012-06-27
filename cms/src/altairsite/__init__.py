@@ -25,6 +25,7 @@ def main(global_config, **settings):
     config.add_tween("altairsite.mobile.tweens.mobile_encoding_convert_factory")
 
     config.include("altairsite.front")
+    config.include("altairsite.errors")
     config.include("altairsite.rakuten_auth")
     config.include("altairsite.search", route_prefix="search")
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)

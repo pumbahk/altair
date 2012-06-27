@@ -63,6 +63,7 @@ def main(global_config, **settings):
     config.include('..multicheckout')
     config.scan('..orders.models')
     config.include('.plugins')
+    config.include('.errors')
 
     ## cmsとの通信
     bound_communication_api(config, 
