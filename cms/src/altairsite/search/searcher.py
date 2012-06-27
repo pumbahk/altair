@@ -51,7 +51,7 @@ def _refine_pageset_only_published_term(qs, now=None):
    if now is None:
       now = datetime.datetime.now()
    qs = qs.filter(PageSet.id==Page.pageset_id)
-   return qs.filter(Page.publish_begin <= now).filter(now <= Page.publish_end)
+   return qs.filter(Page.in_term(now)).filter(Page.published==True)
    
 
 def _refine_pageset_qs(qs):
