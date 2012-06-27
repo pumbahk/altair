@@ -109,10 +109,10 @@ class AccessControlPC(object):
         if page.event and page.event.is_searchable == False:
             self.error_message = "*fetch pageset* pageset(id=%s) event is disabled event(is_searchable==False)"
             self.access_ok = False
-        if page.layout is None:
-            self.error_message = "*fetch page* url=%s page(id=%s) has not rendering layout" % (url, page.id)
-            self.access_ok = False
-        if not page.layout.valid_block():
-            self.error_message = "*fetch page* url=%s page(id=%s) layout(id=%s) layout is broken" % (url, page.id, page.layout.id)
+        
+        try:
+            page.valid_layout()
+        except ValueError, e:
+            self._error_message.append(str(e))
             self.access_ok = False
         return page

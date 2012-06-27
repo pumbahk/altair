@@ -69,12 +69,10 @@ class AccessControl(object):
             elif not page.can_access(key=access_key):
                 self.access_ok = False
                 self._error_message.append("invalid access key %s" % access_key.hashkey)
-
-        if page.layout is None:
-            self._error_message.append("*fetch page* page(id=%s) has not rendering layout" % (page.id))
-            self.access_ok = False
-        if not page.layout.valid_block():
-            self._error_message.append("*fetch page* page(id=%s) layout(id=%s) layout is broken" % (page.id, page.layout.id))
+        try:
+            page.valid_layout()
+        except ValueError, e:
+            self._error_message.append(str(e))
             self.access_ok = False
         return page
 
@@ -90,11 +88,12 @@ class AccessControl(object):
         if page is None:
             self.access_ok = False
             self._error_message.append("*fetch page* pageset(id=%s) has not accessable children" % pageset.id)
-        if page.layout is None:
-            self.error_message = "*fetch page* pageset(id=%s) page(id=%s) has not rendering layout" % (pageset.id, page.id)
-            self.access_ok = False
-        if not page.layout.valid_block():
-            self.error_message = "*fetch page* pageset(id=%s) page(id=%s) layout(id=%s) layout is broken" % (pageset.id, page.id, page.layout.id)
+            return page
+
+        try:
+            page.valid_layout()
+        except ValueError, e:
+            self._error_message.append(str(e))
             self.access_ok = False
         return page
 

@@ -249,6 +249,13 @@ class Page(PublishUnpublishMixin,
         now = _now or datetime.now()
         return [k for k in self.access_keys if k.expiredate >= now]
 
+    def valid_layout(self):
+        if self.layout is None:
+            raise ValueError("*layout validation* page(id=%s) has not rendering layout" % (self.id))
+        if not self.layout.valid_block():
+            raise ValueError("*layout validation* page(id=%s) layout(id=%s) layout is broken" % (self.id, self.layout.id))
+        return True
+
 
 
 ## master    
