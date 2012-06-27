@@ -16,6 +16,16 @@ from altaircms.interfaces import implementer
 from altaircms.lib.formhelpers import dynamic_query_select_field_factory
 from altaircms.helpers.formhelpers import append_errors
 
+
+## todo: 後で移動
+
+class MaybeDateTimeField(fields.DateTimeField):
+    def process_formdata(self, valuelist):
+        if valuelist[0] == u"":
+            return 
+        else:
+            return super(MaybeDateTimeField, self).process_formdata(valuelist)
+
 logger = logging.getLogger(__name__)
 
 def url_field_validator(form, field):
@@ -111,16 +121,17 @@ class PageUpdateForm(Form):
                                                 allow_blank=True, label=u"親ページ", 
                                                 get_label=lambda obj:  u'%s' % obj.name)
 
-    publish_begin = fields.DateTimeField(label=u"掲載開始")
-    publish_end = fields.DateTimeField(label=u"掲載終了")
+    publish_begin = MaybeDateTimeField(label=u"掲載開始")
+    publish_end = MaybeDateTimeField(label=u"掲載終了")
 
     def validate(self):
         """ override to form validation"""
         result = super(PageUpdateForm, self).validate()
 
         data = self.data
-        if data["publish_begin"] > data["publish_end"]:
-            append_errors(self.errors, "publish_begin", u"開始日よりも後に終了日が設定されています")
+        if data.get("publish_end"):
+            if data["publish_begin"] > data["publish_end"]:
+                append_errors(self.errors, "publish_begin", u"開始日よりも後に終了日が設定されています")
 
         # if (self.data.get('url') and self.data.get('pageset')) or (not self.data.get('url') and not self.data.get('pageset')):
         #     urlerrors = self.errors.get('url', [])
