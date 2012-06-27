@@ -1,8 +1,15 @@
-from . import schemas
+# -*- coding:utf-8 -*-
+import logging
+import sqlalchemy as sa
 import ticketing.core.models as c_models
 import ticketing.cart.helpers as h
-import sqlalchemy as sa
+import ticketing.cart.api as api
+from pyramid.httpexceptions import HTTPFound
+from . import schemas
 
+
+
+logger = logging.getLogger(__name__)
 
 class IndexView(object):
     def __init__(self, request):
@@ -28,5 +35,18 @@ class IndexView(object):
                     for p in query]
         return dict(products=products)
 
+    @property
+    def ordered_items(self):
+        number = int(self.request.params['number'])
+        product_id = self.request.params['member_type']
+        product = c_models.Product.query.filter_by(id=product_id).one()
+        return [(product, number)]
+
     def post(self):
-        return dict()
+        cart = self.context.order_products(self.context.performance_id, self.ordered_items)
+        if cart is None:
+            logger.debug('cart is None')
+            return dict()
+        api.set_cart(self.request, cart)
+        logger.debug('OK redirect')
+        return HTTPFound(location=self.request.route_url("cart.payment"))
