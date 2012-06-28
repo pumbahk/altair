@@ -1,6 +1,7 @@
 <%inherit file='../layout_2col.mako'/>
 <h3>${ps.name}</h3>
 <form action="${request.url}" method="POST">
+${form.errors}
 <table>
   <tr>
     <th>URL</th>

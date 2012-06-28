@@ -152,10 +152,7 @@ class Page(BaseOriginalMixin,
     __tablename__ = "page"
 
     id = Column(Integer, primary_key=True)
-    event_id = Column(Integer, ForeignKey('event.id'))
-    event = relationship('Event', backref='pages')
-
-
+    
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
@@ -174,10 +171,10 @@ class Page(BaseOriginalMixin,
     # hash_url = Column(String(length=32), default=lambda : uuid.uuid4().hex)
 
     event_id = Column(Integer, ForeignKey('event.id')) ## todo: delete?
-    event = relationship('Event', backref='pages')
+    event = relationship('Event', backref=orm.backref('pages', order_by=sa.asc("bpublish_begin")), uselist=False)
 
     pageset_id = Column(Integer, ForeignKey('pagesets.id'))
-    pageset = relationship('PageSet', backref='pages', uselist=False)
+    pageset = relationship('PageSet', backref=orm.backref('pages', order_by=sa.asc("publish_begin")), uselist=False)
 
     publish_begin = Column(DateTime)
     publish_end = Column(DateTime)

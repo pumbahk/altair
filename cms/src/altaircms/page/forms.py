@@ -202,10 +202,6 @@ def validate_page_publishings_connected(publishings):
         ## 最後のものは対応する開始日なしでOK
         if begin == last_start:
             continue
-        ## 終了日が存在しないものは、検証不能
-        if end is None:
-            continue
-
         res = not any([other_pub['begin'] == end 
                        for other_pub 
                        in publishings.values() if other_pub['page_id'] != page_id])
@@ -229,7 +225,6 @@ def pageset_form_validate(self):
             if m:
                 page_id = m.groupdict()['page_id']
                 page_publishing = page_publishings[page_id]
-                #page_publishing['begin'] = datetime.strptime('%Y-%m-%d %H:%M:%S', value)
                 page_publishing['begin'] = value
                 page_publishing['page_id'] = page_id
 
@@ -237,12 +232,11 @@ def pageset_form_validate(self):
             if m:
                 page_id = m.groupdict()['page_id']
                 page_publishing = page_publishings[page_id]
-                #page_publishing['end'] = datetime.strptime('%Y-%m-%d %H:%M:%S', value)
                 page_publishing['end'] = value
                 page_publishing['page_id'] = page_id
-        if not (result and validate_page_publishings(page_publishings)):
-            raise Exception
-        return True
+        # if not (result and validate_page_publishings(page_publishings)):
+        #     raise Exception
+        # return True
         return result and validate_page_publishings(page_publishings)
 
     return result
