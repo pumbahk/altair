@@ -7,7 +7,7 @@
       </tr>
     </thead>
     <tbody>
-      %for pageset in event.pagesets:
+      %for pageset in pagesets:
   <%
   pages = pageset.pages 
   pagesize = len(pages)

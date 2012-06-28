@@ -47,7 +47,7 @@
         </a>
       </li>
       <li>
-        <a href="${request.route_path("performance_delete",action="confirm",id="__id__")}" class="action">
+        <a href="${request.route_path("performance_delete", action="confirm", id="__id__")}" class="action">
           <i class="icon-minus"></i> 削除
         </a>
       </li>

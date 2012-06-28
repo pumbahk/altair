@@ -9,10 +9,6 @@ def includeme(config):
                     route_name="performance_update", 
                     decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", 
                     renderer="altaircms:templates/performance/view.mako")
-    config.add_view(".views.performance_add_getti_code", match_param="action=getti", permission="performance_update", 
-                     route_name="event_update", 
-                     renderer="json")
-
     config.add_crud("sale", title="sale", model="..models.Sale", 
                     form=".forms.SaleForm", mapper=".mappers.sale_mapper")
     config.add_crud("ticket", title="ticket", model="..models.Ticket", 

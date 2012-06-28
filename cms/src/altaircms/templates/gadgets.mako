@@ -57,7 +57,7 @@
 　　　	     params[$this.attr("name")] = $this.val();
 	　　　}
        });
-      var url = "${request.route_path("event_update", id=event.id, action="getti")}";
+      var url = "${request.route_path("plugins_jsapi_getti")}";
       // slackoff
       $.post(url, params).done(function(){location.reload();});
 	return false;
