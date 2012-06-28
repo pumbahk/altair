@@ -5,7 +5,6 @@ from datetime import datetime
 import logging
 logger = logging.getLogger(__file__)
 
-import cgi
 import altaircms.helpers as h
 from altaircms.lib.structures import Nullable
 from . import forms
@@ -88,7 +87,7 @@ class QueryParamsRender(object):
         else:
             return u" or ".join(convertor[k] for k in deal_cond_list)
 
-    def __html__(self):
+    def __unicode__(self):
         u"""\
         フリーワード:a, b, cc,
         ジャンル:音楽 &gt ジャズ・ヒュージョン,演歌・邦楽, スポーツ &gt 野球
@@ -127,7 +126,7 @@ class QueryParamsRender(object):
 
         if qp.get("query_expr_message"):
             r.append(qp["query_expr_message"])
-        return cgi.escape(u", ".join(r))
+        return u", ".join(r)
 
 class SearchResultRender(object):
     """検索結果をhtmlとしてレンダリング

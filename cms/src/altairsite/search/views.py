@@ -5,7 +5,6 @@ from webob.multidict import MultiDict
 from pyramid.httpexceptions import HTTPNotFound
 import logging
 
-import cgi
 from ..front import api as front_api
 from . import forms
 from . import searcher
