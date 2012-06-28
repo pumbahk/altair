@@ -1,6 +1,7 @@
 # coding: utf-8
 import logging
 import re
+from collections import defaultdict
 from datetime import datetime
 from webob.multidict import MultiDict
 from wtforms.form import Form
@@ -163,8 +164,7 @@ class PageSetFormProxy(object):
         m = matcher(name)
         if m is not None:
             page = self.get_page(m.groupdict()['page_id'])
-            if page is not None:
-                maybe_set_attr(page, attr_name, value)
+            maybe_set_attr(page, attr_name, value)
 
 def maybe_set_attr(obj, name, value):
     if obj is None:
@@ -175,63 +175,74 @@ def validate_page_publishings_overlapping(publishings):
     """ 重複期間チェック 
     開始日終了日間に入る他の開始日がないこと
     """
-
-    for publishing in publishings.values():
+    real_publishings = [p for p in publishings.values() if p["end"]]
+    for publishing in real_publishings:
         page_id = publishing['page_id']
         begin = publishing['begin']
-        end = publish['end']
-        res = any([in_term(other_pub, begin) for other_pub in publishings.values() if other_pub['page_id'] != page_id])
+        end = publishing['end']
+        res = any([in_term(other_pub, begin) for other_pub in real_publishings if other_pub['page_id'] != page_id])
         if res:
             return False # TODO エラーになった箇所を特定する
     return True
 
 def in_term(publishing, date):
-    return publishing['begin'] < date < publishing['end']
+    return publishing['begin'] <= date < publishing['end']
 
 
 def validate_page_publishings_connected(publishings):
     """ 連続性チェック
     すべての終了日の次の日に対応する開始日があること
     """
-    for publishing in publishings:
+    last_start = max(p["begin"] for p in publishings.values() if p["begin"])
+    for publishing in publishings.values():
         page_id = publishing['page_id']
         begin = publishing['begin']
-        end = publish['end']
+        end = publishing['end']
 
-        res = not all([other_pub['publish_begin'] == end 
+        ## 最後のものは対応する開始日なしでOK
+        if begin == last_start:
+            continue
+        ## 終了日が存在しないものは、検証不能
+        if end is None:
+            continue
+
+        res = not any([other_pub['begin'] == end 
                        for other_pub 
-                       in publishings if other_pub['page_id'] != page_id])
+                       in publishings.values() if other_pub['page_id'] != page_id])
         if res:
             return False # TDOO エラーになった箇所を特定する
     return True
 
 def validate_page_publishings(publishings):
-
     return (validate_page_publishings_overlapping(publishings) 
             and validate_page_publishings_connected(publishings))
 
 def pageset_form_validate(self):
     logger.debug('validate: %s' % self.data)
     result = Form.validate(self)
-    page_publishings = {}
+    page_publishings = defaultdict(dict)
+
+
     if result:
         for key, value in self.data.items():
             m = begin_regex.match(key)
             if m:
                 page_id = m.groupdict()['page_id']
-                page_publishing = page_publishings.get(page_id, {})
+                page_publishing = page_publishings[page_id]
                 #page_publishing['begin'] = datetime.strptime('%Y-%m-%d %H:%M:%S', value)
                 page_publishing['begin'] = value
                 page_publishing['page_id'] = page_id
-             
+
             m = end_regex.match(key)
             if m:
                 page_id = m.groupdict()['page_id']
-                page_publishing = page_publishings.get(page_id, {})
+                page_publishing = page_publishings[page_id]
                 #page_publishing['end'] = datetime.strptime('%Y-%m-%d %H:%M:%S', value)
                 page_publishing['end'] = value
                 page_publishing['page_id'] = page_id
-
+        if not (result and validate_page_publishings(page_publishings)):
+            raise Exception
+        return True
         return result and validate_page_publishings(page_publishings)
 
     return result
@@ -247,10 +258,8 @@ class PageSetFormFactory(object):
         data = MultiDict()
         for page in pageset.pages:
             page_id = page.id
-            props['begin_%d' % page_id] = fields.DateTimeField(u"",
-                                                               validators=[validators.Required()])
-            props['end_%d' % page_id] = fields.DateTimeField(u"",
-                                                             validators=[validators.Required()])
+            props['begin_%d' % page_id] = fields.DateTimeField(u"")
+            props['end_%d' % page_id] = MaybeDateTimeField(u"")
             data['begin_%d' % page_id] = page.publish_begin.strftime("%Y-%m-%d %H:%M:%S") if page.publish_begin else ""
             data['end_%d' % page_id] = page.publish_end.strftime("%Y-%m-%d %H:%M:%S") if page.publish_end else ""
 

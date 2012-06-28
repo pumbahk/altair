@@ -111,7 +111,8 @@ class PageSet(Base,
         where = (Page.in_term(dt)) | ((Page.publish_begin==None) & (Page.publish_end==None))
         if published:
             where = where & (Page.published == published)
-        return Page.query.filter(Page.pageset==self).filter(where).order_by("page.publish_begin").limit(1).first()
+        qs = Page.query.filter(Page.pageset==self).filter(where)
+        return qs.order_by("page.publish_begin", "page.publish_end").limit(1).first()
 
     def create_page(self, published=None):
         base_page = self.current(published=published)
