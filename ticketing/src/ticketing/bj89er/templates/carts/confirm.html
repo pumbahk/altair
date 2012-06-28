@@ -30,7 +30,7 @@
 						<tbody>
 						<tr>
 							<th colspan="2" style="text-align:left;font-size:18px;">
-							お申し込みNo.：000000-000000
+							お申し込みNo.：${order.order_no}
 							</tr>
 						</tbody>
 					</table>
@@ -49,22 +49,24 @@
 								<th>会員種別
 								</th>
 								<td>
-									ゴールド会員
+									${order.ordered_products[0].product.name}
 	   							</td>
 							</tr>
 							<tr>
 								<th>会員口数
 								</th>
 								<td>
-									2口
+									${order.ordered_products[0].quantity}口
 	   							</td>
 							</tr>
 							<tr>
 								<th>お名前
 								</th>
 								<td>
-									チケスタ太郎　様<br />
-									チケスタ花子　様
+									<%
+                                    user_profile = order.user.user_profile
+                                    %>
+                                    ${user_profile.last_name} ${user_profile.first_name}　様
 	   							</td>
 							</tr>
 						</tbody>
