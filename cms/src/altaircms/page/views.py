@@ -19,65 +19,13 @@ import altaircms.tag.api as tag
 from altaircms.lib.fanstatic_decorator import with_bootstrap
 from altaircms.lib.fanstatic_decorator import with_jquery
 from altaircms.lib.fanstatic_decorator import with_fanstatic_jqueries
-from altaircms.lib.fanstatic_decorator import with_wysiwyg_editor
+# from altaircms.lib.fanstatic_decorator import with_wysiwyg_editor
 import altaircms.helpers as h
 
 
 ##
 ## todo: CRUDのview整理する
 ##
-
-@view_config(route_name="api_page_setup_info", renderer="json")
-def api_page_setup_info(request):
-    try:
-        params = request.params
-        pdi = PageDefaultInfo.query.filter(PageDefaultInfo.pageset_id==params["parent"]).one()
-        name = params["name"]
-        title = pdi.title(name)
-        jurl = pdi._url(name)
-        url = pdi.url(name)
-        parent = params["parent"]
-        result = {
-            "name": name, 
-            "title": title, 
-            "jurl": jurl, 
-            "url": url, 
-            "keywords": pdi.keywords, 
-            "description": pdi.description, 
-            "parent": parent
-            }
-        return result
-    except Exception, e:
-        return {"error": str(e)}
-
-
-@view_defaults(route_name="api_page_publish_status", renderer="json", request_method="POST")
-class PageUpdatePublishStatus(object):
-    def __init__(self, request):
-        self.request = request
-
-    @view_config(match_param="status=publish")
-    def page_status_to_publish(self):
-        pageid = self.request.matchdict["page_id"]
-        page = Page.query.filter_by(id=pageid).first()
-        if page is None:
-            return False
-        else:
-            Page.query.filter(Page.event_id==page.event_id).filter(Page.id!=pageid).filter(Page.publish_begin==page.publish_begin).update({"published": False})
-            page.published = True
-            self.request.context.add(page)
-            return True
-
-    @view_config(match_param="status=unpublish")
-    def page_status_to_unpublish(self):
-        pageid = self.request.matchdict["page_id"]
-        page = Page.query.filter_by(id=pageid).first()
-        if page is None:
-            return False
-        else:
-            page.published = False
-            self.request.context.add(page)
-            return True
 
 
 @view_defaults(route_name="page_add", decorator=with_bootstrap.merge(with_jquery))
@@ -113,19 +61,7 @@ class PageAddView(object):
             event = Event.query.filter(Event.id==event_id).one()
             setup_form = forms.PageInfoSetupForm(name=form.data["name"])
             return {"form":form, "event":event, "setup_form": setup_form}
-
-
-@view_config(permission="page_create", route_name="pageset_addpage", renderer="json", request_method="POST")
-def pageset_addpage(request):
-    pageset_id = request.matchdict["pageset_id"]
-    pageset = PageSet.query.filter_by(id=pageset_id).first()
-    created = pageset.create_page()
-    if created:
-        request.context.add_page(created)
-        return "OK"
-    else:
-        return "FAIL"
-    
+ 
 
 @view_defaults(permission="page_create", decorator=with_bootstrap)
 class PageCreateView(object):

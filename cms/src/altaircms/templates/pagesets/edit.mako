@@ -39,8 +39,8 @@ ${form.errors}
           </a>
           <ul class="dropdown-menu">
             <!-- dropdown menu links -->
-            <li><a href="${request.route_path("api_page_publish_status", status="publish", page_id=page.id)}" class="publish_status">公開する</a></li>
-            <li><a href="${request.route_path("api_page_publish_status", status="unpublish", page_id=page.id)}" class="publish_status">非公開にする</a></li>
+            <li><a href="${request.route_path("plugins_jsapi_page_publish_status", status="publish", page_id=page.id)}" class="publish_status">公開する</a></li>
+            <li><a href="${request.route_path("plugins_jsapi_page_publish_status", status="unpublish", page_id=page.id)}" class="publish_status">非公開にする</a></li>
           </ul>
         </div>
     </td>

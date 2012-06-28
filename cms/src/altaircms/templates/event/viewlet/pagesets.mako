@@ -41,8 +41,8 @@
                 </a>
                 <ul class="dropdown-menu">
                   <!-- dropdown menu links -->
-                  <li><a href="${request.route_path("api_page_publish_status", status="publish", page_id=pages[0].id)}" class="publish_status">公開する</a></li>
-                  <li><a href="${request.route_path("api_page_publish_status", status="unpublish", page_id=pages[0].id)}" class="publish_status">非公開にする</a></li>
+                  <li><a href="${request.route_path("plugins_jsapi_page_publish_status", status="publish", page_id=pages[0].id)}" class="publish_status">公開する</a></li>
+                  <li><a href="${request.route_path("plugins_jsapi_page_publish_status", status="unpublish", page_id=pages[0].id)}" class="publish_status">非公開にする</a></li>
                 </ul>
               </div>
           </td>
@@ -67,8 +67,8 @@
                 </a>
                 <ul class="dropdown-menu">
                   <!-- dropdown menu links -->
-                  <li><a href="${request.route_path("api_page_publish_status", status="publish", page_id=page.id)}" class="publish_status">公開する</a></li>
-                  <li><a href="${request.route_path("api_page_publish_status", status="unpublish", page_id=page.id)}" class="publish_status">非公開にする</a></li>
+                  <li><a href="${request.route_path("plugins_jsapi_page_publish_status", status="publish", page_id=page.id)}" class="publish_status">公開する</a></li>
+                  <li><a href="${request.route_path("plugins_jsapi_page_publish_status", status="unpublish", page_id=page.id)}" class="publish_status">非公開にする</a></li>
                 </ul>
               </div>
           </td>
@@ -100,7 +100,7 @@
 		</a>
      </li>
      <li>
-	   <a id="pageset_addpage" class="individual-action" href="${request.route_path("pageset_addpage", pageset_id='__id__')}">
+	   <a id="pageset_addpage" class="individual-action" href="${request.route_path("plugins_jsapi_addpage", pageset_id='__id__')}">
 		 <i class="icon-plus"> </i> 選択したページセットにページ追加</a>
 		</a>
 <script type="text/javascript">

@@ -10,11 +10,6 @@ def includeme(config):
     add_route("page_duplicate", "/page/{id}/duplicate")
     
     add_route('page', '/page/')
-    add_route("pageset_addpage", "/pageset/{pageset_id}/addpage")
-
-    ## setup api
-    add_route("api_page_setup_info", "/page/api/setupinfo")
-    add_route("api_page_publish_status", "/page/api/publish/{page_id}/{status}")
 
     ## widget disposition
     config.add_route("disposition", "/page/{id}/disposition", factory="altaircms.page.resources.WDispositionResource")    
@@ -32,7 +27,5 @@ def includeme(config):
     config.add_subscriber(".subscribers.page_register_solr", ".subscribers.PageCreate")
     config.add_subscriber(".subscribers.page_register_solr", ".subscribers.PageUpdate")
     config.add_subscriber(".subscribers.page_delete_solr", ".subscribers.PageDelete") ## fixme
-
-
 
     config.scan('.views')
