@@ -2,7 +2,7 @@
 import logging
 from pyramid.view import view_config
 from pyramid.view import view_defaults
-from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 
 from altaircms.lib.viewhelpers import RegisterViewPredicate
 from altaircms.lib.viewhelpers import FlashMessage
@@ -252,12 +252,18 @@ def list_(request):
         setup_form=setup_form, 
     )
 
-@view_config(route_name="page_edit_", request_method="POST")
-def to_publish(request):     ## fixme
-    page_id = request.matchdict["page_id"]
-    page = Page.query.filter(Page.id==page_id).one()
-    page.to_published()
-    return HTTPFound(request.route_path("page_edit_", page_id=page_id))
+
+@view_config(route_name="page_detail", renderer='altaircms:templates/page/view.mako', permission='authenticated', 
+             decorator=with_fanstatic_jqueries.merge(with_bootstrap))
+def page_detail(request):
+    """ page詳細ページ
+    """
+    page = request.context.get_page(request.matchdict["page_id"])
+    if not page:
+        return HTTPNotFound(request.route_path("page"))
+    return {"page": page}
+
+
 
 ## todo: persmissionが正しいか確認
 @view_config(route_name='page_edit_', renderer='altaircms:templates/page/edit.mako', permission='authenticated', 
@@ -269,7 +275,7 @@ def page_edit(request):
     """
     page = request.context.get_page(request.matchdict["page_id"])
     if not page:
-        return HTTPFound(request.route_path("page"))
+        return HTTPNotFound(request.route_path("page"))
     
     layout_render = request.context.get_layout_render(page)
     disposition_select = wf.WidgetDispositionSelectForm()

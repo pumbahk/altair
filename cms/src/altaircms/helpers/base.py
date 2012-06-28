@@ -74,6 +74,12 @@ def term(beg, end):
     """ dateオブジェクトを受け取り期間を表す文字列を返す
     e.g. 2012年3月3日(土)〜7月12日(木) 
     """
+    if beg is None:
+        if end is None:
+            return u""
+        else:
+            return u"〜 %s(%s)" % (end.strftime(u"%-m月%-d日".encode("utf-8")).decode("utf-8"), WEEK[end.weekday()])
+
     beg_str = beg.strftime(u"%Y年%-m月%-d日".encode("utf-8")).decode("utf-8")
     if end is None:
         return u"%s(%s) 〜" % (beg_str, WEEK[beg.weekday()])
