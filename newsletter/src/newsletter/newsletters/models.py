@@ -88,10 +88,17 @@ class Newsletter(Base):
             if not os.path.isdir(csv_dir):
                 os.mkdir(csv_dir)
 
-            csv_file = csv.DictWriter(open(os.path.join(csv_dir, 'altair' + str(id) + '.csv'), 'w'), Newsletter.csv_fields)
-            for row in csv.DictReader(file, Newsletter.csv_fields):
+            csv_reader = csv.DictReader(file)
+            csv_file = csv.DictWriter(
+                open(os.path.join(csv_dir, 'altair' + str(id) + '.csv'), 'w'),
+                csv_reader.fieldnames,
+                quotechar='"',
+                quoting=csv.QUOTE_MINIMAL
+            )
+            csv_file.writerow(dict([(n, n) for n in csv_file.fieldnames]))
+            for row in csv_reader:
                 row['name'] = Newsletter.encode(row['name'])
-                if Newsletter.validate_email(row['email']): csv_file.writerow(row)
+                csv_file.writerow(row)
 
     @staticmethod
     def encode(string):
@@ -117,15 +124,15 @@ class Newsletter(Base):
                 return True
         return False
 
-    def test_mail(self, recipient=None):
-        subject = u'【テスト送信】' + self.subject
-        self.send(recipient=recipient, name='テスト', subject=subject)
+    def test_mail(self, recipient=None, **options):
+        options['subject'] = u'【テスト送信】' + self.subject
+        if 'name' in options:
+            options['name'] = u'テスト氏名'
+        self.send(recipient=recipient, **options)
 
-    def send(self, **options):
+    def send(self, settings=None, **options):
         # settings
-        if 'settings' in options:
-            settings = options['settings']
-        else:
+        if not settings:
             registry = threadlocal.get_current_registry()
             settings = registry.settings
 
@@ -146,21 +153,20 @@ class Newsletter(Base):
         else:
             recipient = settings['mail.report.recipient']
 
-        # body, html
-        options['name'] = unicode(options['name'], 'utf-8')
-        description = self.description.replace('${name}', options['name'])
+        # replacement subject, body, html
+        subject = options['subject'] if 'subject' in options else self.subject
+        description = self.description
+        for k, v in options.items():
+            if not isinstance(v, unicode):
+                v = unicode(v, 'utf-8')
+            subject = subject.replace('${%s}' % k, v)
+            description = description.replace('${%s}' % k, v)
+
         body = html = None
         if self.type == 'html':
             html = description
         else:
             body = description
-
-        # subject
-        if 'subject' in options:
-            subject = options['subject']
-        else:
-            subject = self.subject
-        subject = subject.replace('${name}', options['name'])
 
         mailer = Mailer(settings)
         mailer.create_message(
@@ -169,7 +175,8 @@ class Newsletter(Base):
             subject = subject,
             body = body,
             html = html
-        )   
+        )
+
         try:
             mailer.send(from_addr, recipient)
         except:

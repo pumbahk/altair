@@ -8,7 +8,7 @@ CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 requires = [
     'nose',
     'webtest',
-    'pyramid',
+    'pyramid == 1.3',
     'pyramid_debugtoolbar',
     'pyramid_fanstatic',
     'pyramid_tm',

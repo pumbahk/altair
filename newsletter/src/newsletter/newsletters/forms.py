@@ -98,9 +98,9 @@ class NewslettersForm(Form):
                  raise ValidationError(u'CSVデータが不正です')
             field.data.file.seek(0)
 
-            for row in csv.DictReader(field.data.file, Newsletter.csv_fields):
-                if not Newsletter.validate_email(row['email']):
+            csv_reader = csv.DictReader(field.data.file)
+            for row in csv_reader:
+                if not ('email' in row and Newsletter.validate_email(row['email'])):
                     raise ValidationError(u'CSVデータが不正です')
             else:
                 field.data.file.seek(0)
-

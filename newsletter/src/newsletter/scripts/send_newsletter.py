@@ -48,8 +48,8 @@ def main(argv=sys.argv):
         csv_file = os.path.join(Newsletter.subscriber_dir(), newsletter.subscriber_file())
         log_file = open(csv_file + '.log', 'w')
         count = {'sent':0, 'error':0} 
-        for row in csv.DictReader(open(csv_file), Newsletter.csv_fields):
-            result = newsletter.send(recipient=row['email'], name=row['name'], settings=settings)
+        for row in csv.DictReader(open(csv_file)):
+            result = newsletter.send(recipient=row['email'], settings=settings, **row)
             result = 'sent' if result else 'error'
             log_file.write('%s,%s\n' % (row['email'], result))
             count[result] += 1

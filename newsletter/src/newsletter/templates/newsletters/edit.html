@@ -48,7 +48,7 @@
           ${form_item('type')}
           <% help = u'''
             <span class="help-inline">
-              <a href="#" rel="popover" data-original-title="名前を差し込む" data-content="${name}と書くとメール送信時にCSVファイルのname列の値で置換されます" >
+              <a href="#" rel="popover" data-original-title="名前を差し込む" data-content="${name}と書くとメール送信時にCSVファイルのname列の値で置換されます。任意の文字での複数の置換が可能です。" >
                 <i class="icon-question-sign"></i>
               </a>
             </span>
@@ -71,7 +71,7 @@
           ${form_item('sender_name')}
           <% help = u'''
             <span class="help-inline">
-              <a href="#" rel="popover" data-original-title="CSVファイルフォーマット" data-content="email, id, name<br>(例) user@example.com, 1, なまえ">
+              <a href="#" rel="popover" data-original-title="CSVファイルフォーマット" data-content="1行目はヘッダー文字列を入れてください。<br>(例)email, id, name<br>user@example.com, 1, なまえ">
                 <i class="icon-question-sign"></i>
               </a>
             </span>
