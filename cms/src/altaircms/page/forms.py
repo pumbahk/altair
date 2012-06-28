@@ -143,9 +143,9 @@ class PageUpdateForm(Form):
 
 begin_regex = re.compile(r'begin_(?P<page_id>\d+)')
 end_regex = re.compile(r'end_(?P<page_id>\d+)')
+published_regex = re.compile(r'published_(?P<page_id>\d+)')
 
 class PageSetFormProxy(object):
-
     def __init__(self, pageset):
         self.__dict__['_pageset'] = pageset
         logger.debug(self._pageset)
@@ -175,7 +175,7 @@ def validate_page_publishings_overlapping(publishings):
     """ 重複期間チェック 
     開始日終了日間に入る他の開始日がないこと
     """
-    real_publishings = [p for p in publishings.values() if p["end"]]
+    real_publishings = [p for p in publishings.values() if p["end"] and p["published"]]
     for publishing in real_publishings:
         page_id = publishing['page_id']
         begin = publishing['begin']
@@ -195,18 +195,19 @@ def validate_page_publishings_connected(publishings):
     """
     last_start = max(p["begin"] for p in publishings.values() if p["begin"])
     for publishing in publishings.values():
-        page_id = publishing['page_id']
-        begin = publishing['begin']
-        end = publishing['end']
+        if publishing["published"]:
+            page_id = publishing['page_id']
+            begin = publishing['begin']
+            end = publishing['end']
 
-        ## 最後のものは対応する開始日なしでOK
-        if begin == last_start:
-            continue
-        res = not any([other_pub['begin'] == end 
-                       for other_pub 
-                       in publishings.values() if other_pub['page_id'] != page_id])
-        if res:
-            return False # TDOO エラーになった箇所を特定する
+            ## 最後のものは対応する開始日なしでOK
+            if begin == last_start:
+                continue
+            res = not any([other_pub['begin'] == end 
+                           for other_pub 
+                           in publishings.values() if other_pub['page_id'] != page_id])
+            if res:
+                return False # TDOO エラーになった箇所を特定する
     return True
 
 def validate_page_publishings(publishings):
@@ -234,6 +235,13 @@ def pageset_form_validate(self):
                 page_publishing = page_publishings[page_id]
                 page_publishing['end'] = value
                 page_publishing['page_id'] = page_id
+
+            m = published_regex.match(key)
+            if m:
+                page_id = m.groupdict()['page_id']
+                page_publishing = page_publishings[page_id]
+                page_publishing['published'] = value == "True" ## ugly
+                page_publishing['page_id'] = page_id
         # if not (result and validate_page_publishings(page_publishings)):
         #     raise Exception
         # return True
@@ -252,11 +260,15 @@ class PageSetFormFactory(object):
         data = MultiDict()
         for page in pageset.pages:
             page_id = page.id
-            props['begin_%d' % page_id] = fields.DateTimeField(u"")
+            if page.published:
+                props['begin_%d' % page_id] = fields.DateTimeField(u"")
+            else:
+                props['begin_%d' % page_id] = MaybeDateTimeField(u"")
             props['end_%d' % page_id] = MaybeDateTimeField(u"")
+            props['published_%d' % page_id] = fields.HiddenField(u"")
             data['begin_%d' % page_id] = page.publish_begin.strftime("%Y-%m-%d %H:%M:%S") if page.publish_begin else ""
             data['end_%d' % page_id] = page.publish_end.strftime("%Y-%m-%d %H:%M:%S") if page.publish_end else ""
-
+            data["published_%d" % page_id] = page.published
         props['validate'] = pageset_form_validate
 
         PageSetForm = type('PageSetForm',
@@ -270,6 +282,8 @@ class PageSetFormFactory(object):
             return PageSetForm(formdata=data)
 
 
+    def published(self, form, page):
+        return getattr(form, 'published_%d' % page.id)
 
     def publish_begin(self, form, page):
         return getattr(form, 'begin_%d' % page.id)

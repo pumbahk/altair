@@ -31,6 +31,7 @@ ${form.errors}
     <td>${page.created_at}</td>
     <td>${f.publish_begin(form, page)} 〜 ${f.publish_end(form, page)}</td>
     <td>
+	    ${f.published(form, page)}
         <div class="btn-group">
           <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
             ${u"公開中" if page.published else u"非公開"}

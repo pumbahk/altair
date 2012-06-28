@@ -95,7 +95,7 @@ class AccessControlPC(object):
         qs = qs.filter(PageSet.url==url)
         qs = qs.filter(Page.in_term(dt))
         qs = qs.filter(Page.published==True)
-        return qs.order_by(sa.desc("page.publish_begin"), sa.desc("page.publish_end")).first()
+        return qs.order_by(sa.desc("page.publish_begin"), "page.publish_end").first()
 
     def fetch_page_from_params(self, url, dt):
         page = self._fetch_page_from_params(url, dt)

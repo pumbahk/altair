@@ -76,7 +76,7 @@
 <table class="table">
   <thead>
 	<tr>
-	  <th></th><th>ページセット</th><th>ページ</th><th>現在表示状況</th><th>公開開始</th><th>公開終了</th>
+	  <th></th><th>ページセット</th><th>ページ</th><th>現在表示状況</th><th>公開開始</th><th>公開終了</th><th>作成日時</th>
 	</tr>
   </thead>
   <tbody>
@@ -106,7 +106,7 @@ current_page = pageset.current(published=True)
 		  <i class="icon-eye-open"> </i></a>
 		${u'<span class="label">現在表示</span>' if pages[0]==current_page else u""|n}
       </td>
-		<td>
+      <td>
 			<div class="btn-group">
 			  <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
 				${u"公開中" if pages[0].published else u"非公開"}
@@ -118,11 +118,11 @@ current_page = pageset.current(published=True)
 				<li><a href="${request.route_path("api_page_publish_status", status="unpublish", page_id=pages[0].id)}" class="publish_status">非公開にする</a></li>
 			  </ul>
 			</div>
-			${u'<span class="label">published</span>' if pages[0]==current_page else u""}
 		</td>
 
 	  <td>${pages[0].publish_begin}</td>
 	  <td>${pages[0].publish_end}</td>
+      <td>${pages[0].created_at}</td>
     </tr>
       %for page in pageset.pages[1:]:
       <tr>
@@ -147,6 +147,7 @@ current_page = pageset.current(published=True)
 		</td>
 		<td>${page.publish_begin}</td>
 		<td>${page.publish_end}</td>
+		<td>${page.created_at}</td>
 	  </tr>
      %endfor
 	 %endif
