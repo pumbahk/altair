@@ -112,3 +112,30 @@ class set_user_profile_for_orderTests(unittest.TestCase):
                 (u'tel2_3', u"123"),
                 (u'email', u"ticketstar@example.com"),
             ]))
+
+class Bj89erCartResourceTests(unittest.TestCase):
+    def setUp(self):
+        self.config = testing.setUp()
+        self.session = _setup_db()
+
+    def tearDown(self):
+        _teardown_db()
+        testing.tearDown()
+
+    def _getTarget(self):
+        from .resources import Bj89erCartResource
+        return Bj89erCartResource
+
+    def _makeOne(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
+
+    def test_get_or_create_user(self):
+        request = testing.DummyRequest()
+        request._cart = testing.DummyModel(id="this-is-cart-id")
+        request.registry.settings['89er.event_id'] = '10'
+        request.registry.settings['89er.performance_id'] = '100'
+        target = self._makeOne(request)
+        result = target.get_or_create_user()
+
+        self.assertEqual(result.user_credential[0].membership.name, '89er')
+        self.assertEqual(result.user_credential[0].auth_identifier, 'this-is-cart-id')
