@@ -53,20 +53,31 @@ class myQuerySelectField(extfields.QuerySelectField):
 
 from zope.interface import Interface
 from zope.interface import Attribute
+from zope.interface import implementer
 
-class IModelQueryFilterAdaptor(Interface):
+class IModelQueryFilter(Interface):
     model = Attribute("target model")
 
-def add_dynamic_query_select
+    def __call__(query):
+        pass
+
+@implementer(IModelQueryFilter)
+class ModelQueryFilterDefault(object):
+    def __init__(self, model):
+        self.model = model
+
+    def __call__(self, request, query):
+        if getattr(request, "site"):
+            return query.filter_by(site_id=request.site.id)
+        else:
+            return query
+
 def dynamic_query_select_field_factory(model, dynamic_query_factory=None, factory_name=None, **kwargs):
     """
     dynamic_query_factory: lambda field, form=None, rendering_val=None, request=None : ...
 
     * query_factoryが存在していない場合はてきとーに提供
     * dynamic_query_factoryをさらに追加
-        * dynamic_query_factoryが無いときはデフォルトの関数を呼び出す。
-           * factory_nameがあるとき -> DynamicQueryDefaultからその名前のメソッドを探す
-           * factory_nameが無いとき -> model.__name__.lower()のメソッドを探す
     """
     if not "query_factory" in kwargs:
         def _query_factory():
@@ -76,8 +87,12 @@ def dynamic_query_select_field_factory(model, dynamic_query_factory=None, factor
     factory_name = factory_name or model.__name__.lower()
 
     field = myQuerySelectField(**kwargs)
-    field._dynamic_query = DynamicQueryChoicesDispatcher.dispatch(
-        factory_name, 
-        dynamic_query_factory)
+    def dynamic_query(field_data, form, rendering_val, request):
+        query_filter = request.registry.queryUtility(IModelQueryFilter,
+                                                     model.__name__, 
+                                                     ModelQueryFilterDefault)
+        query = field.query_factory()
+        field_data.choices = query_filter(query, request)
+    field._dynamic_query = dynamic_query
     return field
 
