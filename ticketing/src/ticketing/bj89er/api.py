@@ -53,8 +53,6 @@ def set_user_profile_for_order(request, order, bj89er_user_profile):
         o_models.OrderedProduct.product_id==member_type
     ).one()
 
-    # TODO: 項目毎にOrderedProductAttributeを作成
-
     for attr_name in attr_names:
         o_models.OrderedProductAttribute(ordered_product=ordered_product,
             name=attr_name,
