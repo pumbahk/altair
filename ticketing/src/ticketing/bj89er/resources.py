@@ -2,6 +2,8 @@ from ticketing.cart.resources import TicketingCartResrouce
 from ticketing.core.models import DBSession
 from ticketing.users.models import User, UserCredential, MemberShip
 
+MEMBERSHIP_NAME = '89er'
+
 class Bj89erCartResource(TicketingCartResrouce):
     def __init__(self, request):
         super(Bj89erCartResource, self).__init__(request)
@@ -16,15 +18,15 @@ class Bj89erCartResource(TicketingCartResrouce):
         ).filter(
             UserCredential.membership_id==MemberShip.id
         ).filter(
-            MemberShip.name=='89er'
+            MemberShip.name==MEMBERSHIP_NAME
         ).first()
         if credential:
             return credential.user
         
         user = User()
-        membership = MemberShip.query.filter(MemberShip.name=='89er').first()
+        membership = MemberShip.query.filter(MemberShip.name==MEMBERSHIP_NAME).first()
         if membership is None:
-            membership = MemberShip(name='89er')
+            membership = MemberShip(name=MEMBERSHIP_NAME)
             DBSession.add(membership)
         credential = UserCredential(user=user, auth_identifier=str(cart.id), membership=membership)
         DBSession.add(user)
