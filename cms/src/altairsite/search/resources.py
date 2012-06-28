@@ -116,9 +116,9 @@ class QueryParamsRender(object):
         if qp.get("added_service"):
             r.append(u"付加サービス: %s" % "--dummy--")
         if qp.get("before_deal_start"):
-            r.append(u"受付・販売開始: %s" % qp["before_deal_start"])
+            r.append(u"受付・販売開始: %s日" % qp["before_deal_start"])
         if qp.get("till_deal_end"):
-            r.append(u"販売終了まで: %s" % qp["till_deal_end"])
+            r.append(u"販売終了まで: %s日" % qp["till_deal_end"])
         if qp.get("closed_only"):
             r.append(u"販売終了: 含む")
         if qp.get("canceled_only"):

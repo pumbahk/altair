@@ -60,11 +60,17 @@ def parse_date(y, m, d):
         d = 1
     try:
         return datetime(int(y), int(m), int(d))
+    except UnicodeEncodeError:
+        return None
     except ValueError:
-        if m == 12:
-            return datetime(int(y)+1, 1, 1) - timedelta(days=1)
-        else:
-            return datetime(int(y), int(m)+1, 1) - timedelta(days=1)
+        try:
+            m = int(m)
+            if m == 12:
+                return datetime(int(y)+1, 1, 1) - timedelta(days=1)
+            else:
+                return datetime(int(y), m+1, 1) - timedelta(days=1)
+        except ValueError:
+            return None
 
 ### toppage sidebar
 class TopPageSidebarSearchForm(form.Form):

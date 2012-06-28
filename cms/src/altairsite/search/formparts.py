@@ -25,7 +25,7 @@ class PutOnlyWidget(object):
 ##
 
 class MaybeSelectField(fields.SelectField):
-    NONE_VALUE = "__None"
+    NONE_VALUE = "''''"
     def __init__(self, null_label=u"------", **kwargs):
         if "choices" in kwargs:
             choices = [x for x in kwargs["choices"]]
@@ -42,7 +42,9 @@ class MaybeSelectField(fields.SelectField):
         super(MaybeSelectField, self)._value()
 
     def process_formdata(self, valuelist):
-        if valuelist[0] == "__None":
+        if not valuelist:
+            self.data = None
+        elif valuelist[0] == self.NONE_VALUE:
             self.data = None
         else:
             super(MaybeSelectField, self).process_formdata(valuelist)
