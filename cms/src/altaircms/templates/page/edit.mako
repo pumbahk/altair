@@ -84,17 +84,17 @@
 	<form action="${h.page.to_widget_disposition(request,page)}" method="POST">
        <h4>現在のwidget layoutを保存</h4>
        <table class="table table-condensed">
-       <tr><th>${forms["disposition_save"].title.label}</th><td>${forms["disposition_save"].title}</td></tr>
-       <tr><th>${forms["disposition_save"].is_public.label}</th><td>${forms["disposition_save"].is_public}</td></tr>
+       <tr><th>${disposition_save.title.label}</th><td>${disposition_save.title}</td></tr>
+       <tr><th>${disposition_save.is_public.label}</th><td>${disposition_save.is_public}</td></tr>
 	   ## submit button
-       <tr><th>${forms["disposition_save"].page}${forms["disposition_save"].owner_id}<button type="submit"><i class="icon-cog"></i>save</button></th><td></td></tr>
+       <tr><th>${disposition_save.page}${disposition_save.owner_id}<button type="submit"><i class="icon-cog"></i>save</button></th><td></td></tr>
        </table>
 	</form>
 
 	<form action="${h.page.to_widget_disposition(request,page)}" method="GET">
       <h4>widget layoutの読み込み</h4>
        <table class="table table-condensed">
-       <tr><th>${forms["disposition_select"].disposition.label}</th><td>${forms["disposition_select"].disposition}</td></tr>
+       <tr><th>${disposition_select.disposition.label}</th><td>${disposition_select.disposition}</td></tr>
        <tr><th><button type="submit"><i class="icon-cog"></i>load</button></th><td></td></tr>
        </table>
 	</form>

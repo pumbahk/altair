@@ -7,6 +7,7 @@ from pyramid.httpexceptions import HTTPFound
 from altaircms.lib.viewhelpers import RegisterViewPredicate
 from altaircms.lib.viewhelpers import FlashMessage
 from . import forms
+import altaircms.widget.forms as wf
 from altaircms.page.models import Page
 from altaircms.page.models import PageSet
 from altaircms.page.models import PageDefaultInfo
@@ -241,11 +242,14 @@ def page_edit(request):
         return HTTPFound(request.route_path("page"))
     
     layout_render = request.context.get_layout_render(page)
-    forms = request.context.get_disposition_forms(page)
+    disposition_select = wf.WidgetDispositionSelectForm()
+    user = request.user
+    disposition_save = wf.WidgetDispositionSaveForm(page=page.id, owner_id=user.id if user else None)
     return {
             'event':page.event,
             'page':page,
-            "forms": forms, #forms is dict
+            "disposition_select": disposition_select, 
+            "disposition_save": disposition_save, 
             "layout_render":layout_render
         }
 

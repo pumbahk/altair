@@ -55,12 +55,6 @@ class PageResource(security.RootFactory):
     Page = models.Page
     add = add_data
     delete = delete_data
-
-    def get_disposition_forms(self, page):
-        user = self.request.user
-        return {"disposition_select": wf.WidgetDispositionSelectForm(), 
-                "disposition_save": wf.WidgetDispositionSaveForm(page=page.id, owner_id=user.id)
-                }
        
     def get_layout_render(self, page):
         layout = DBSession.query(Layout).filter_by(id=page.layout_id).one()

@@ -13,6 +13,9 @@ def includeme(config):
     ## setup api
     add_route("api_page_setup_info", "/page/api/setupinfo")
 
+
+
+    ## widget disposition
     config.add_route("disposition", "/page/{id}/disposition", factory="altaircms.page.resources.WDispositionResource")    
     ## todo: move bellow
     config.add_route("disposition_list", "/disposition", factory="altaircms.page.resources.WDispositionResource")

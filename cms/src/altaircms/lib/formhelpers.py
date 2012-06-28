@@ -52,47 +52,49 @@ class myQuerySelectField(extfields.QuerySelectField):
             return obj.id == data.id or obj == data
 
 from zope.interface import Interface
-from zope.interface import Attribute
-from zope.interface import implementer
+from zope.interface import provider
 
 class IModelQueryFilter(Interface):
-    model = Attribute("target model")
-
-    def __call__(query):
+    def __call__(model, request, query):
+        """ filter by this function in before view rendering
+        """
         pass
 
-@implementer(IModelQueryFilter)
-class ModelQueryFilterDefault(object):
-    def __init__(self, model):
-        self.model = model
+@provider(IModelQueryFilter)
+def model_query_filter_default(model, request, query):
+    if getattr(request, "site", None):
+        return query.filter_by(site_id=request.site.id)
+    else:
+        return query
 
-    def __call__(self, request, query):
-        if getattr(request, "site"):
-            return query.filter_by(site_id=request.site.id)
-        else:
-            return query
-
-def dynamic_query_select_field_factory(model, dynamic_query_factory=None, factory_name=None, **kwargs):
+def dynamic_query_select_field_factory(model, dynamic_query=None, name=None, **kwargs):
     """
-    dynamic_query_factory: lambda field, form=None, rendering_val=None, request=None : ...
+    dynamic_query_factory: lambda model, request, query : ...
 
-    * query_factoryが存在していない場合はてきとーに提供
-    * dynamic_query_factoryをさらに追加
+    * query_factoryが存在していない場合は提供
     """
     if not "query_factory" in kwargs:
         def _query_factory():
             field.query = model.query
             return field.query
         kwargs["query_factory"] = _query_factory
-    factory_name = factory_name or model.__name__.lower()
 
     field = myQuerySelectField(**kwargs)
-    def dynamic_query(field_data, form, rendering_val, request):
-        query_filter = request.registry.queryUtility(IModelQueryFilter,
-                                                     model.__name__, 
-                                                     ModelQueryFilterDefault)
-        query = field.query_factory()
-        field_data.choices = query_filter(query, request)
+
+    name = name or model.__name__
+    def dynamic_query(field, form=None, rendering_val=None, request=None):
+        if getattr(field, "query", None):
+            query = field.query
+        else:
+            query = field.query_factory()
+
+        if "dynamic_query" in kwargs:
+            query_filter = kwargs["dynamic_query"]
+        else:
+            query_filter = request.registry.queryUtility(IModelQueryFilter,
+                                                         name, 
+                                                     model_query_filter_default)
+        field.query = query_filter(model, request, query)
     field._dynamic_query = dynamic_query
     return field
 
