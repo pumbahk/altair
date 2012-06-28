@@ -27,7 +27,8 @@ def view(request):
     return dict(
         event=event,
         performances=performances, 
-        sales=sales
+        sales=sales, 
+        myhelpers=h
     )
 
 

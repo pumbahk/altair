@@ -1,29 +1,5 @@
 <%def name="multiple_action_button(request, prefix)">
-  <div class="btn-group">
-	<a href="${request.route_path(prefix+"_update",action="input",id="__id__")}" class="btn action">
-	  <i class="icon-pencil"></i> 編集
-	</a>
-	<button class="btn dropdown-toggle" data-toggle="dropdown">
-		<span class="caret"></span>
-	</button>
-	<ul class="dropdown-menu">
-	  <li>
-		<a href="${request.route_path(prefix+"_update",action="input",id="__id__")}"  class="action">
-		  <i class="icon-minus"></i> 編集
-		</a>
-	  </li>
-	  <li>
-		<a href="${request.route_path(prefix+"_create",action="input")}">
-		  <i class="icon-minus"></i> 新規作成
-		</a>
-	  </li>
-	  <li>
-		<a href="${request.route_path(prefix+"_delete",action="confirm",id="__id__")}"  class="action">
-		  <i class="icon-minus"></i> 削除
-		</a>
-	  </li>
-	</ul>
-  </div>
+
 </%def>
 
 <%def name="getti_update_code_button()">

@@ -171,7 +171,7 @@ class Page(BaseOriginalMixin,
     # hash_url = Column(String(length=32), default=lambda : uuid.uuid4().hex)
 
     event_id = Column(Integer, ForeignKey('event.id')) ## todo: delete?
-    event = relationship('Event', backref=orm.backref('pages', order_by=sa.asc("bpublish_begin")), uselist=False)
+    event = relationship('Event', backref=orm.backref('pages', order_by=sa.asc("publish_begin")), uselist=False)
 
     pageset_id = Column(Integer, ForeignKey('pagesets.id'))
     pageset = relationship('PageSet', backref=orm.backref('pages', order_by=sa.asc("publish_begin")), uselist=False)

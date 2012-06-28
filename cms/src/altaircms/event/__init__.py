@@ -33,4 +33,4 @@ def includeme(config):
 
     # バック塩度への受け渡し用(受け取り用と同じAPIトークンを使う。とりあえず)
     config.add_route("api_event_info", "/api/event/{event_id}/info")
-    config.scan()
+    config.scan(".views")

@@ -62,6 +62,7 @@ def main(global_config, **settings):
     config.include("altaircms.base")
     config.include("altaircms.tag")
 
+    config.include("altaircms.viewlet")
     ## slack-off
     config.include("altaircms.slackoff")
 
