@@ -2,6 +2,13 @@ import json
 from pyramid.response import Response
 from .interfaces import IAPIKeyValidator, IEventRepository
 
+## for viewlet
+from pyramid.view import render_view_to_response
+from markupsafe import Markup
+from ..viewlet import api as va
+
+
+
 def validate_apikey(request, apikey):
     reg = request.registry
     validator = reg.getUtility(IAPIKeyValidator)
@@ -11,10 +18,6 @@ def parse_and_save_event(request, data):
     reg = request.registry
     repository = reg.getUtility(IEventRepository)
     return repository.parse_and_save_event(data)
-
-from pyramid.view import render_view_to_response
-from markupsafe import Markup
-from ..viewlet import api as va
 
 def pageset_describe_viewlet(request, event):
     va.set_event(request, event)

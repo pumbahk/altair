@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 
 from altaircms.event.models import Event
+from altaircms.page.models import Page
 
 def get_event(request):
     if hasattr(request, "_event"):
@@ -10,6 +11,24 @@ def get_event(request):
         event = Event.query.filter_by(id=event_id).first()
         set_event(request, event)
         return event
+
+def get_page(request):
+    if hasattr(request, "_page"):
+        return request._page
+    else:
+        page_id = request.session.get("page_id", None)
+        page = Page.query.filter_by(id=page_id).first()
+        set_page(request, page)
+        return page
+
+def get_tags(request):
+    if hasattr(request, "_tags"):
+        return request._tags
+    page = get_page(request)
+    if page:
+        return page.tags
+    else:
+        return []
 
 def get_pagesets(request):
     if hasattr(request, "_pagesets"):
@@ -41,8 +60,14 @@ def get_sales(request):
 def set_event(request, event):
     request._event = event
 
+def set_page(request, page):
+    request._page = page
+
 def set_pagesets(request, pagesets):
     request._pagesets = pagesets
+
+def set_tags(request, tags):
+    request._tags = tags
 
 def set_performances(request, performances):
     request._performances = performances

@@ -68,6 +68,7 @@
 
 <hr/>
 
+## たぶん。contextによってだしわける。
 <h3>配下のページ一覧</h3>
   ${myhelpers.pageset_describe_viewlet(request, event)}
 <hr/>

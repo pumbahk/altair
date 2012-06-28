@@ -21,7 +21,7 @@ from altaircms.lib.fanstatic_decorator import with_jquery
 from altaircms.lib.fanstatic_decorator import with_fanstatic_jqueries
 # from altaircms.lib.fanstatic_decorator import with_wysiwyg_editor
 import altaircms.helpers as h
-
+from . import helpers as myhelpers
 
 ##
 ## todo: CRUDのview整理する
@@ -197,7 +197,7 @@ def page_detail(request):
     page = request.context.get_page(request.matchdict["page_id"])
     if not page:
         return HTTPNotFound(request.route_path("page"))
-    return {"page": page}
+    return {"page": page, "myhelpers": myhelpers}
 
 
 

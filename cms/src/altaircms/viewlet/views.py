@@ -32,5 +32,21 @@ def describe_sale(request):
         "sales": sales
         }
 
+@view_config(name="describe_pagetag", renderer="altaircms:templates/page/viewlet/tags.mako")
+def describe_pagetag(request):
+    pagetags = api.get_tags(request)
+    public_tags = []
+    private_tags = []
+    for tag in pagetags:
+        if tag.publicp:
+            public_tags.append(tag)
+        else:
+            private_tags.append(tag)
+
+    return {
+        "headers": table_headers([u"タグの種類",u"",u"ラベル",u"作成日時",u"更新日時"]), 
+        "public_tags": public_tags, 
+        "private_tags": private_tags, 
+        }
 
 
