@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 """create page_access_key
 
 Revision ID: 4a4b099885d2
@@ -25,12 +26,13 @@ def upgrade():
                     sa.ForeignKeyConstraint(['page_id'], ['page.id'], name="fk_page_accesskeys_page_id_to_page_id"),
                     sa.PrimaryKeyConstraint('id')
                     )
-    op.add_column(u'page', sa.Column('published', sa.Boolean(), nullable=True))
+    ## initializeで定義されている
+    # op.add_column(u'page', sa.Column('published', sa.Boolean(), nullable=True))
     op.drop_column(u'page', u'hash_url')
 
 
 def downgrade():
     op.add_column(u'page', sa.Column(u'hash_url', mysql.VARCHAR(length=32), nullable=True))
-    op.drop_column(u'page', 'published')
+    # op.drop_column(u'page', 'published')
     op.execute("alter table page_accesskeys drop foreign key fk_page_accesskeys_page_id_to_page_id;")
     op.drop_table('page_accesskeys')

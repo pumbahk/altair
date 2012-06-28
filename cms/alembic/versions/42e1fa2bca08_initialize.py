@@ -352,6 +352,7 @@ def upgrade():
                     sa.Column('site_id', sa.Integer(), nullable=True),
                     sa.Column('layout_id', sa.Integer(), nullable=True),
                     sa.Column('structure', sa.Text(), nullable=True),
+                    sa.Column('published', sa.Boolean(), nullable=True), 
                     sa.Column('hash_url', sa.String(length=32), nullable=True),
                     sa.Column('event_id', sa.Integer(), nullable=True),
                     sa.Column('pageset_id', sa.Integer(), nullable=True),
