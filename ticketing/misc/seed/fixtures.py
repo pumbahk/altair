@@ -1004,7 +1004,7 @@ def build_organization_datum(name):
         )
     event_data = [
         build_event_datum(retval, name) \
-        for name in event_names[0:20]
+        for name in event_names[0:10]
         ]
     retval.events = rel(
         event_data,

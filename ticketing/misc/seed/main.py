@@ -15,6 +15,7 @@ def main(argv):
 
     for organization_datum in [build_organization_datum(name) for name in organization_names]:
         organization_datum.user_id=build_user_datum()
+        logging.info("Resolving references...")
         walker(organization_datum)
 
     for service_datum in service_data:
