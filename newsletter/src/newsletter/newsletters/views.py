@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import urllib
+import csv
 import os
 
 import webhelpers.paginate as paginate
@@ -170,7 +170,10 @@ class Newsletters(BaseView):
             return HTTPFound(location=route_path('newsletters.show', self.request, id=id))
 
         newsletter = Newsletter.get(id)
-        newsletter.test_mail(recipient)
+
+        csv_file = os.path.join(Newsletter.subscriber_dir(), newsletter.subscriber_file())
+        row = csv.DictReader(open(csv_file)).next()
+        newsletter.test_mail(recipient=recipient, **row)
 
         self.request.session.flash(u'テスト送信しました')
         return HTTPFound(location=route_path('newsletters.show', self.request, id=id))
