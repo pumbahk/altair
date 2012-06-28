@@ -76,7 +76,7 @@
 <table class="table">
   <thead>
 	<tr>
-	  <th></th><th>ページセット</th><th>ページ</th><th>公開ステータス</th><th>公開開始</th><th>公開終了</th>
+	  <th></th><th>ページセット</th><th>ページ</th><th>現在表示状況</th><th>公開開始</th><th>公開終了</th>
 	</tr>
   </thead>
   <tbody>
@@ -104,9 +104,22 @@ current_page = pageset.current(published=True)
         <a href="${request.route_path('page_edit', event_id=event.id, page_id=pages[0].id)}">${pages[0].name}</a>
 		<a class="action" target="_blank" href="${request.route_path("preview_page", page_id=pages[0].id)}">
 		  <i class="icon-eye-open"> </i></a>
-
+		${u'<span class="label">現在表示</span>' if pages[0]==current_page else u""|n}
       </td>
-	  <td>${u"公開中" if pages[0].published else u"非公開"}${u"(published)" if pages[0]==current_page else u""}</td>
+		<td>
+			<div class="btn-group">
+			  <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+				${u"公開中" if pages[0].published else u"非公開"}
+				<span class="caret"></span>
+			  </a>
+			  <ul class="dropdown-menu">
+				<!-- dropdown menu links -->
+				<li><a href="${request.route_path("api_page_publish_status", status="publish", page_id=pages[0].id)}" class="publish_status">公開する</a></li>
+				<li><a href="${request.route_path("api_page_publish_status", status="unpublish", page_id=pages[0].id)}" class="publish_status">非公開にする</a></li>
+			  </ul>
+			</div>
+			${u'<span class="label">published</span>' if pages[0]==current_page else u""}
+		</td>
 
 	  <td>${pages[0].publish_begin}</td>
 	  <td>${pages[0].publish_end}</td>
@@ -117,8 +130,21 @@ current_page = pageset.current(published=True)
           <a href="${request.route_path('page_edit', event_id=event.id, page_id=page.id)}">${page.name}</a>
 		  <a class="action" target="_blank" href="${request.route_path("preview_page", page_id=page.id)}">
 			<i class="icon-eye-open"> </i></a>
+		  ${u'<span class="label">現在表示</span>' if page==current_page else u""|n}
 		</td>
-		<td>${u"公開中" if page.published else u"非公開"}${u"(published)" if page==current_page else u""}</td>
+		<td>
+			<div class="btn-group">
+			  <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+				${u"公開中" if page.published else u"非公開"}
+				<span class="caret"></span>
+			  </a>
+			  <ul class="dropdown-menu">
+				<!-- dropdown menu links -->
+				<li><a href="${request.route_path("api_page_publish_status", status="publish", page_id=page.id)}" class="publish_status">公開する</a></li>
+				<li><a href="${request.route_path("api_page_publish_status", status="unpublish", page_id=page.id)}" class="publish_status">非公開にする</a></li>
+			  </ul>
+			</div>
+		</td>
 		<td>${page.publish_begin}</td>
 		<td>${page.publish_end}</td>
 	  </tr>
@@ -139,7 +165,7 @@ current_page = pageset.current(published=True)
     </button>
     <ul class="dropdown-menu">
 	  <li>
-		<a class="btn action" target="_blank" href="${request.route_path("pageset", pageset_id="__id__")}">
+		<a class="action" target="_blank" href="${request.route_path("pageset", pageset_id="__id__")}">
 		  <i class="icon-plus"> </i> ページセット期間変更</a>
        </a>
 	  </li>
@@ -154,6 +180,15 @@ current_page = pageset.current(published=True)
 		</a>
 <script type="text/javascript">
   $(function(){
+  // swap status
+  $(".box .publish_status").click(function(e){
+    e.preventDefault();
+    if(window.confirm("ステータスを「"+$(this).text()+"」に変更しますがよろしいですか？")){
+      $.post($(this).attr("href")).done(function(){location.reload();});
+    }
+  });
+
+  // add page
     $(".box #pageset_addpage").click(function(e){
       e.preventDefault();
       var  pk = $(this).parents(".box").find("input[name='object_id']:checked").val();

@@ -50,6 +50,36 @@ def api_page_setup_info(request):
     except Exception, e:
         return {"error": str(e)}
 
+
+@view_defaults(route_name="api_page_publish_status", renderer="json", request_method="POST")
+class PageUpdatePublishStatus(object):
+    def __init__(self, request):
+        self.request = request
+
+    @view_config(match_param="status=publish")
+    def page_status_to_publish(self):
+        pageid = self.request.matchdict["page_id"]
+        page = Page.query.filter_by(id=pageid).first()
+        if page is None:
+            return False
+        else:
+            Page.query.filter(Page.event_id==page.event_id).filter(Page.id!=pageid).filter(Page.publish_begin==page.publish_begin).update({"published": False})
+            page.published = True
+            self.request.context.add(page)
+            return True
+
+    @view_config(match_param="status=unpublish")
+    def page_status_to_unpublish(self):
+        pageid = self.request.matchdict["page_id"]
+        page = Page.query.filter_by(id=pageid).first()
+        if page is None:
+            return False
+        else:
+            page.published = False
+            self.request.context.add(page)
+            return True
+
+
 @view_defaults(route_name="page_add", decorator=with_bootstrap.merge(with_jquery))
 class PageAddView(object):
     """ eventの中でeventに紐ついたpageの作成
