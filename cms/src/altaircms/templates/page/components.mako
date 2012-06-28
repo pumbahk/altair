@@ -24,7 +24,7 @@
 	    var root = $("form#setup_form");
 	    var params = {"name": root.find("input[name='name']").val(),
 	                  "parent": root.find("select[name='parent']").val()};
-		$.getJSON("${request.route_path("api_page_setup_info")}",params).done(function(data,status,req){
+		$.getJSON("${request.route_path("plugins_api_page_info_default")}",params).done(function(data,status,req){
 		  if (data.error){
 			alert(data.error);
 		  } else {

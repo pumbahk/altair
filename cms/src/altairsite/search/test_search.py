@@ -527,6 +527,7 @@ class PagePublishTermOnlySearchableTests(unittest.TestCase):
         from altaircms.page.models import Page, PageSet
         
         page = Page(name=u"this-is-searchable", 
+                    published=True, 
                     publish_begin=datetime(2000, 1, 1), 
                     publish_end=datetime(2100, 1, 1))
         pageset = PageSet.get_or_create(page)

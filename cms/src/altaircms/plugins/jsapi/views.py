@@ -81,7 +81,7 @@ class PageUpdatePublishStatus(object):
             return True
 
 
-@view_config(route_name="api_page_setup_info", renderer="json")
+@view_config(route_name="plugins_api_page_info_default", renderer="json")
 def page_setup_info(request):
     try:
         params = request.params
