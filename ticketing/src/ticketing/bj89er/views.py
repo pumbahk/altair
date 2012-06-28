@@ -53,5 +53,6 @@ class IndexView(object):
         user_profile = UserProfile(
             user=user,
         )
+        self.session['bj89er.user_profile'] = dict()
         logger.debug('OK redirect')
         return HTTPFound(location=self.request.route_url("cart.payment"))
