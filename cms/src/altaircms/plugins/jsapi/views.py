@@ -1,4 +1,6 @@
 # -*- coding:utf-8 -*-
+from datetime import datetime
+
 from pyramid.view import view_config
 from pyramid.view import view_defaults
 
@@ -103,3 +105,44 @@ def page_setup_info(request):
         return result
     except Exception, e:
         return {"error": str(e)}
+
+from ...tag.api import put_tags
+import json
+
+@view_config(route_name="plugins_jsapi_page_tag_delete", renderer="json", request_method="POST")
+def delete_page_tags(request):
+    """ buggy"""
+    page = Page.query.filter_by(id=request.matchdict["page_id"]).first()
+    if page is None:
+        return "FAIL"
+    try:
+        params = json.loads(request.params)
+        put_tags(page, "page", params["tags"], params["private_tags"], request)
+        return "OK"
+    except ValueError:
+        return "FAIL"
+    
+    
+@view_defaults(route_name="plugins_jsapi_accesskey", permission="page_update") ##?
+class PageAccessKeyView(object):
+    def __init__(self, request):
+        self.request = request
+
+    @view_config(renderer="json", request_method="POST", match_param="action=create")
+    def create_accesskey(self):
+        page_id = self.request.matchdict["page_id"]
+        expire = self.request.params.get("expire", None)
+        if expire:
+            try:
+                expire = datetime.strptime("%Y-%m-%d %H:%M:%S", expire)
+            except ValueError:
+                expire = None
+                
+        page = Page.query.filter_by(id=page_id).first()
+        if page is None:
+            return "FAIL"
+        key = page.create_access_key(expire=expire)
+        DBSession.add(key)
+        return "OK"
+        
+

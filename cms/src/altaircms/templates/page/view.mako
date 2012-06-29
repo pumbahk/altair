@@ -74,16 +74,34 @@ event = page.event or page.pageset.event
     </ul>
   </div>
 
-<h3>設定されているタグ</h3>
+<h3>タグ</h3>
 ${myhelpers.pagetag_describe_viewlet(request, page)}
 <hr/>
-<h3>ホットワード</h3>
-${myhelpers.hotword_describe_viewlet(request, page)}
+##<h3>ホットワード</h3>
+##${myhelpers.hotword_describe_viewlet(request, page)}
 <h3>アクセスキー</h3>
 ${myhelpers.accesskey_describe_viewlet(request, page)}
 <h3>アセット</h3>
 <h3>トピック</h3>
 <h3>トップコンテンツ</h3>
+
+<script type="text/javascript">
+  $(function(){
+   $(".box .btn-group a.action").click(function(){
+      var  pk = $(this).parents(".box").find("input[name='object_id']:checked").val();
+      if(!pk){ console.log("sorry"); return false; }
+
+      // initialize
+      var $this = $(this);
+      if (!$this.data("href-fmt")){
+        $this.data("href-fmt", this.href);
+      }
+      this.href = $this.data("href-fmt").replace("__id__", pk);
+      return true;;
+    });
+  })
+</script>
+
 </div>
 
 

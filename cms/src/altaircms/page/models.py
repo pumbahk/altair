@@ -29,6 +29,7 @@ class PageAccesskey(Base):
     query = DBSession.query_property()
     __tablename__ = "page_accesskeys"
     id = sa.Column(sa.Integer, primary_key=True)
+    name = sa.Column(sa.Unicode(255))
     page_id = sa.Column(sa.Integer, sa.ForeignKey("page.id"))
     page = orm.relationship("Page", backref=orm.backref("access_keys", cascade="all"))
     hashkey = sa.Column(sa.String(length=32), nullable=False)

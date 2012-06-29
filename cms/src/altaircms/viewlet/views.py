@@ -51,17 +51,14 @@ def describe_hotword(request):
 def describe_accesskey(request):
     page = api.get_page(request)
     accesskeys = api.get_accesskeys(request)
-    display_fields = ["hashkey", "expiredate", "created_at"]
-    labels = [u"url", u"ハッシュ値", u"有効期限", u"作成日時"]
     return {
         "page": page, 
         "accesskeys": accesskeys, 
-        "display_fields": display_fields, 
-        "labels": labels
         }
 
 @view_config(name="describe_pagetag", renderer="altaircms:templates/page/viewlet/tags.mako")
 def describe_pagetag(request):
+    page = api.get_page(request)
     pagetags = api.get_tags(request)
     public_tags = []
     private_tags = []
@@ -73,6 +70,7 @@ def describe_pagetag(request):
 
     return {
         "headers": table_headers([u"タグの種類",u"",u"ラベル",u"作成日時",u"更新日時"]), 
+        "page": page, 
         "public_tags": public_tags, 
         "private_tags": private_tags, 
         }
