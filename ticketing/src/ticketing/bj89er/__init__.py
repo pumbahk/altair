@@ -19,6 +19,7 @@ def main(global_conf, **settings):
     config.include('ticketing.cart.plugins')
     config.include('ticketing.cart')
     config.scan('ticketing.cart.views')
+    config.add_subscriber('.api.on_order_completed', 'ticketing.cart.events.OrderCompleted')
     config.commit()
 
     config.add_view('.views.IndexView', route_name='index', attr="get", request_method='GET', renderer='carts/form.html')
