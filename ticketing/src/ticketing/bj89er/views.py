@@ -65,21 +65,23 @@ class PaymentView(_PaymentView):
         return None
 
     def create_shipping_address(self, user):
+        params = load_user_profile(self.request)
+        logger.debug('user_profile %s' % params)
         shipping_address = o_models.ShippingAddress(
-            # first_name=params['first_name'],
-            # last_name=params['last_name'],
-            # first_name_kana=params['first_name_kana'],
-            # last_name_kana=params['last_name_kana'],
-            # zip=params['zip'],
-            # prefecture=params['prefecture'],
-            # city=params['city'],
-            # address_1=params['address_1'],
-            # address_2=params['address_2'],
-            # #country=params['country'],
-            # country=u"日本国",
-            # tel_1=params['tel'],
-            # #tel_2=params['tel_2'],
-            # fax=params['fax'],
+            first_name=params['first_name'],
+            last_name=params['last_name'],
+            first_name_kana=params['first_name_kana'],
+            last_name_kana=params['last_name_kana'],
+            zip=params['zipcode1'] + params['zipcode2'],
+            prefecture=params['prefecture'],
+            city=params['city'],
+            address_1=params['address1'],
+            address_2=params['address2'],
+            #country=params['country'],
+            country=u"日本国",
+            tel_1=params['tel1_1'] + params['tel1_2'] + params['tel1_3'],
+            tel_2=params['tel2_1'] + params['tel2_2'] + params['tel2_3'],
+            #fax=params['fax'],
             user=user,
         )
         return shipping_address
