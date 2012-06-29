@@ -10,6 +10,7 @@ from altaircms.models import Performance
 from altaircms.page.models import PageSet
 from altaircms.page.models import Page
 from altaircms.page.models import PageDefaultInfo
+from altaircms.page.models import PageAccesskey
 from altaircms.page import subscribers as page_subscribers
 
 @view_config(permission="performance_update", route_name="plugins_jsapi_getti", renderer="json")
@@ -127,6 +128,15 @@ def delete_page_tags(request):
 class PageAccessKeyView(object):
     def __init__(self, request):
         self.request = request
+
+    @view_config(renderer="json", request_method="POST", match_param="action=delete")
+    def delete_accesskey(self):
+        page_id = self.request.matchdict["page_id"]
+        targets = self.request.params.getall("targets[]")
+        targets = PageAccesskey.query.filter(PageAccesskey.id.in_(targets)).filter_by(page_id=page_id)
+        for t in targets:
+            DBSession.delete(t)
+        return "OK"
 
     @view_config(renderer="json", request_method="POST", match_param="action=create")
     def create_accesskey(self):

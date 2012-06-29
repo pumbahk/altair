@@ -1,4 +1,8 @@
 <div class="box">
+%if not public_tags and not private_tags:
+
+%else:
+
   <table class="table">
 	<thead>
 	  <tr>
@@ -61,6 +65,8 @@ tagsize = len(tags)
 	  %endif
 	</tbody>
   </table>
+%endif
+
 <%doc>
   <div class="btn-group">
     <a href="${request.route_path("performance_update",action="input",id="__id__")}" class="btn action">

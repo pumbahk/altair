@@ -1,4 +1,8 @@
 <div class="box">
+
+%if not accesskeys:
+
+%else:
   <table class="table">
 	<thead>
 	  <tr>
@@ -13,7 +17,7 @@
 	  %for x in accesskeys:
         <tr>
 		  <td>
-			<input type="radio" name="object_id" value="${x.id}">
+			<input type="checkbox" name="object_id" value="${x.id}">
 		  </td>
 		  <td>${x.name}</td>
           <td>
@@ -25,6 +29,7 @@
 	  %endfor
 	</tbody>
   </table>
+%endif
   <div id="accesskey_btns" class="btn-group">
     <a href="${request.route_path("plugins_jsapi_accesskey",action="create", page_id=page.id)}" class="btn indivisual-action">
       <i class="icon-pencil"></i> アクセスキーの追加
@@ -39,8 +44,8 @@
         </a>
       </li>
       <li>
-        <a href="${request.route_path("hotword_delete",action="confirm",id="__id__")}" class="action">
-          <i class="icon-minus"></i> 削除
+        <a href="${request.route_path("plugins_jsapi_accesskey",action="delete", page_id=page.id)}" class="target-action">
+          <i class="icon-trash"></i> アクセスキーの削除
         </a>
       </li>
     </ul>
@@ -49,6 +54,18 @@
 	    e.preventDefault();
 	    var url = $(this).attr("href");
 	    $.post(url).done(function(){ location.reload(); });
+	  });
+	  $("#accesskey_btns a.target-action").click(function(e){
+	    e.preventDefault();
+	    var url = $(this).attr("href");
+	    var arr = [];
+	    var elts = $(this).parents(".box").find("input:checked");
+	    for(var i=0,j=elts.length; i<j; i++){
+		    arr.push($(elts[i]).attr("value"));
+    	}
+        if(window.confirm("選択したアクセスキーを消します。よろしいですか？")){
+	      $.post(url, {"targets": arr}).done(function(){ location.reload(); });
+		}
 	  });
     </script>
   </div>

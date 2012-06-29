@@ -5,7 +5,16 @@
 <%namespace name="mco" file="../modelcomponents.mako"/>
 <%namespace name="gadgets" file="../gadgets.mako"/>
 
+<%block name="style">
+<style type="text/css">
+#appendix h3{ 
+  margin-top:20px;
+}
+</style>
+</%block>
+
 <div class="row-fluid">
+%if page.event:
     ${nco.breadcrumbs(
         names=["Top", "Event", page.event.title, page.name],
         urls=[request.route_path("dashboard"),
@@ -13,6 +22,14 @@
               request.route_path("event", id=page.event.id)
               ]
     )}
+%else:
+    ${nco.breadcrumbs(
+        names=["Top", "Page", page.name],
+        urls=[request.route_path("dashboard"),
+              request.route_path("page"),
+              ]
+    )}
+%endif
 
 <h2>${page.name}</h2>
 	  <%
@@ -73,7 +90,7 @@ event = page.event or page.pageset.event
 		<a target="_blank" href="${request.route_path("page_edit_", page_id=page.id)}"><i class="icon-minus"></i> ページのレイアウト編集</a>
       </li>
 	  <li>
-		<a href="${h.page.to_delete(request,page)}"><i class="icon-trash"></i> Delete</a>
+		<a href="${h.page.to_delete(request,page)}"><i class="icon-trash"></i> ページの削除</a>
 	  </li>
 	  <li class="divider"></li>
 	  <li>
@@ -107,16 +124,18 @@ event = page.event or page.pageset.event
 </script>
   <div style="clear:both;"></div>
 
-<h3>タグ</h3>
-${myhelpers.pagetag_describe_viewlet(request, page)}
-<hr/>
-##<h3>ホットワード</h3>
-##${myhelpers.hotword_describe_viewlet(request, page)}
-<h3>アクセスキー</h3>
-${myhelpers.accesskey_describe_viewlet(request, page)}
-<h3>アセット</h3>
-<h3>トピック</h3>
-<h3>トップコンテンツ</h3>
+<div id="appendix">
+   <h3>タグ</h3>
+   ${myhelpers.pagetag_describe_viewlet(request, page)}
+   <hr/>
+   ##<h3>ホットワード</h3>
+   ##${myhelpers.hotword_describe_viewlet(request, page)}
+   <h3>アクセスキー</h3>
+   ${myhelpers.accesskey_describe_viewlet(request, page)}
+   <h3>アセット</h3>
+   <h3>トピック</h3>
+   <h3>トップコンテンツ</h3>
+</div>
 
 <script type="text/javascript">
   $(function(){
