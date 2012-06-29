@@ -497,7 +497,7 @@ class ConfirmView(object):
     """ 決済確認画面 """
     def __init__(self, request):
         self.request = request
-
+        self.context = request.context
 
     @view_config(route_name='payment.confirm', request_method="GET", renderer="carts/confirm.html")
     def get(self):
@@ -507,8 +507,8 @@ class ConfirmView(object):
 
         magazines = u_models.MailMagazine.query.all()
 
-
-        return dict(cart=cart, mailmagazines=magazines)
+        user = self.context.get_or_create_user()
+        return dict(cart=cart, mailmagazines=magazines, user=user)
 
     # @view_config(route_name='payment.confirm', request_method="POST", renderer="carts/confirm.html")
     # def post(self):
@@ -524,6 +524,7 @@ class CompleteView(object):
     """ 決済完了画面"""
     def __init__(self, request):
         self.request = request
+        self.context = request.context
         # TODO: Orderを表示？
 
     @view_config(route_name='payment.finish', renderer="carts/completion.html")
