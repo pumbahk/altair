@@ -395,11 +395,19 @@ class PaymentView(object):
             payment_delivery_methods=payment_delivery_methods,
             user=user, user_profile=user.user_profile)
 
+    def validate(self):
+        form = schema.ClientForm(formdata=self.request.params)
+        if form.validate():
+            return None 
+        else:
+            return form
+
     @view_config(route_name='cart.payment', request_method="POST", renderer="carts/payment.html")
     def post(self):
         """ 支払い方法、引き取り方法選択
         """
 
+        params = self.request.params
         if not api.has_cart(self.request):
             return HTTPFound('/')
         cart = api.get_cart(self.request)
@@ -412,8 +420,10 @@ class PaymentView(object):
         payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter_by(id=payment_delivery_pair_id).first()
         cart.payment_delivery_pair = payment_delivery_pair
 
-        form = schema.ClientForm(formdata=self.request.params)
-        if not (payment_delivery_pair and form.validate()):
+        form = self.validate()
+
+        #if not (payment_delivery_pair and form.validate()):
+        if not payment_delivery_pair or form:
             self.context.event_id = cart.performance.event.id
             payment_delivery_methods = self.context.get_payment_delivery_method_pair()
             if not payment_delivery_pair:
@@ -423,6 +433,44 @@ class PaymentView(object):
             return dict(form=form,
                 payment_delivery_methods=payment_delivery_methods,
                 user=user, user_profile=user.user_profile)
+
+        shipping_address = self.create_shipping_address(user)
+
+        DBSession.add(shipping_address)
+        cart.shipping_address = shipping_address
+        DBSession.add(cart)
+
+        client_name = self.get_client_name()
+        mail_address = self.get_mail_address()
+
+        order = dict(
+            client_name=client_name,
+            mail_address=mail_address,
+            payment_delivery_pair_id=payment_delivery_pair_id,
+        )
+        self.request.session['order'] = order
+
+        payment_delivery_plugin = api.get_payment_delivery_plugin(self.request, 
+            payment_delivery_pair.payment_method.payment_plugin_id,
+            payment_delivery_pair.delivery_method.delivery_plugin_id,)
+        if payment_delivery_plugin is not None:
+            res = payment_delivery_plugin.prepare(self.request, cart)
+            if res is not None and callable(res):
+                return res
+        else:
+            payment_plugin = api.get_payment_plugin(self.request, payment_delivery_pair.payment_method.payment_plugin_id)
+            res = payment_plugin.prepare(self.request, cart)
+            if res is not None and callable(res):
+                return res
+        return HTTPFound(self.request.route_url("payment.confirm"))
+
+    def get_client_name(self):
+        return self.request.params['last_name'] + self.request.params['first_name']
+
+    def get_mail_address(self):
+        return self.request.params['mail_address']
+
+    def create_shipping_address(self, user):
 
         params = self.request.params
         shipping_address = o_models.ShippingAddress(
@@ -442,32 +490,7 @@ class PaymentView(object):
             fax=params['fax'],
             user=user,
         )
-
-        DBSession.add(shipping_address)
-        cart.shipping_address = shipping_address
-        DBSession.add(cart)
-        client_name = params['last_name'] + params['first_name']
-
-        order = dict(
-            client_name=client_name,
-            mail_address=self.request.params['mail_address'],
-            payment_delivery_pair_id=payment_delivery_pair_id,
-        )
-        self.request.session['order'] = order
-
-        payment_delivery_plugin = api.get_payment_delivery_plugin(self.request, 
-            payment_delivery_pair.payment_method.payment_plugin_id,
-            payment_delivery_pair.delivery_method.delivery_plugin_id,)
-        if payment_delivery_plugin is not None:
-            res = payment_delivery_plugin.prepare(self.request, cart)
-            if res is not None and callable(res):
-                return res
-        else:
-            payment_plugin = api.get_payment_plugin(self.request, payment_delivery_pair.payment_method.payment_plugin_id)
-            res = payment_plugin.prepare(self.request, cart)
-            if res is not None and callable(res):
-                return res
-        return HTTPFound(self.request.route_url("payment.confirm"))
+        return shipping_address
 
 
 class ConfirmView(object):

@@ -10,8 +10,12 @@
 
   <h1 class="title">仙台89ERS 2013-2014 ブースタークラブ入会申込ページ</h1>
   <div align="center">
-
-<form>
+        <ul>
+      %for k, v in form.errors.items():
+      <li>${k} ${v[0]}</li>
+      %endfor
+  </ul>
+      <form method="post" action="${request.url}">
 
 	<table class="layout" style="width:760px" class="wrapper">
 		<tr>

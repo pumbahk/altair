@@ -2,12 +2,14 @@
 import logging
 import sqlalchemy as sa
 import ticketing.core.models as c_models
+from ..orders import models as o_models
 import ticketing.cart.helpers as h
 import ticketing.cart.api as api
 from ticketing.users.models import UserProfile
 from pyramid.httpexceptions import HTTPFound
 from . import schemas
-
+from .api import load_user_profile
+from ticketing.cart.views import PaymentView as _PaymentView
 
 
 logger = logging.getLogger(__name__)
@@ -48,11 +50,44 @@ class IndexView(object):
         if cart is None:
             logger.debug('cart is None')
             return dict()
+        logger.debug('cart %s' % cart)
         api.set_cart(self.request, cart)
         user = self.context.get_or_create_user()
         user_profile = UserProfile(
             user=user,
         )
-        self.session['bj89er.user_profile'] = dict()
+        self.request.session['bj89er.user_profile'] = dict(self.request.params)
         logger.debug('OK redirect')
         return HTTPFound(location=self.request.route_url("cart.payment"))
+
+class PaymentView(_PaymentView):
+    def validate(self):
+        return None
+
+    def create_shipping_address(self, user):
+        shipping_address = o_models.ShippingAddress(
+            # first_name=params['first_name'],
+            # last_name=params['last_name'],
+            # first_name_kana=params['first_name_kana'],
+            # last_name_kana=params['last_name_kana'],
+            # zip=params['zip'],
+            # prefecture=params['prefecture'],
+            # city=params['city'],
+            # address_1=params['address_1'],
+            # address_2=params['address_2'],
+            # #country=params['country'],
+            # country=u"日本国",
+            # tel_1=params['tel'],
+            # #tel_2=params['tel_2'],
+            # fax=params['fax'],
+            user=user,
+        )
+        return shipping_address
+
+    def get_client_name(self):
+        user_profile = load_user_profile(self.request)
+        return user_profile['last_name'] + user_profile['first_name']
+
+    def get_mail_address(self):
+        user_profile = load_user_profile(self.request)
+        return user_profile['email']
