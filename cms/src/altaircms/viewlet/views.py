@@ -2,6 +2,8 @@
 from pyramid.view import view_config
 from . import api
 from markupsafe import Markup
+from ..slackoff import mappers as sm
+from ..slackoff import forms as sf
 
 def table_headers(headers):
     return Markup(u"<th>%s</th>" % u"</th></th>".join(headers)) 
@@ -30,6 +32,32 @@ def describe_sale(request):
     return {
         "headers": table_headers([u"",u"名前",u"販売条件",u"適用期間",u"券種",u"席種",u"価格"]), 
         "sales": sales
+        }
+
+
+@view_config(name="describe_hotword", renderer="altaircms:templates/page/viewlet/hotwords.mako")
+def describe_hotword(request):
+    hotwords = api.get_hotwords(request)
+    display_fields = sf.HotWordForm.__display_fields__
+    labels = [getattr(sf.HotWordForm, k).kwargs["label"] for k in display_fields]
+    return {
+        "hotwords": hotwords, 
+        "mapper": sm.hotword_mapper, 
+        "display_fields": display_fields, 
+        "labels": labels
+        }
+
+@view_config(name="describe_accesskey", renderer="altaircms:templates/page/viewlet/accesskeys.mako")
+def describe_accesskey(request):
+    page = api.get_page(request)
+    accesskeys = api.get_accesskeys(request)
+    display_fields = ["hashkey", "expiredate", "created_at"]
+    labels = [u"url", u"ハッシュ値", u"有効期限", u"作成日時"]
+    return {
+        "page": page, 
+        "accesskeys": accesskeys, 
+        "display_fields": display_fields, 
+        "labels": labels
         }
 
 @view_config(name="describe_pagetag", renderer="altaircms:templates/page/viewlet/tags.mako")

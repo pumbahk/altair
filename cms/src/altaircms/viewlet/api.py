@@ -30,6 +30,23 @@ def get_tags(request):
     else:
         return []
 
+def get_hotwords(request):
+    if hasattr(request, "_hotwords"):
+        return request._hotwords
+    tags = get_tags(request)
+    if tags:
+        return [word for tag in tags for word in tag.hotwords]
+    else:
+        return []
+
+def get_accesskeys(request):
+    if hasattr(request, "_accesskeys"):
+        return request._accesskeys
+    page = get_page(request)
+    accesskeys = page.access_keys
+    set_accesskeys(request)
+    return accesskeys
+
 def get_pagesets(request):
     if hasattr(request, "_pagesets"):
         return request._pagesets
@@ -69,10 +86,14 @@ def set_pagesets(request, pagesets):
 def set_tags(request, tags):
     request._tags = tags
 
+def set_hotwords(request, hotwords):
+    request._hotwords = hotwords
+
+def set_accesskeys(request, accesskeys):
+    request._accesskeys = accesskeys
+
 def set_performances(request, performances):
     request._performances = performances
 
 def set_sales(request, sales):
     request._sales = sales
-
-    

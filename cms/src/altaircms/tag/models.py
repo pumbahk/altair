@@ -6,7 +6,7 @@ from altaircms.models import Base
 from altaircms.models import DBSession
 
 from datetime import datetime
-
+from altaircms.page.models import Page
 
 class PageTag2Page(Base):
     __tablename__ = "pagetag2page"
@@ -75,7 +75,7 @@ class HotWord(Base):
     __tablename__ = "hotword"
     
     tag_id =  sa.Column(sa.Integer, sa.ForeignKey("pagetag.id"))
-    tag = orm.relationship("PageTag", uselist=False)
+    tag = orm.relationship("PageTag", uselist=False, backref="hotwords")
     name = sa.Column(sa.Unicode(255))
     orderno = sa.Column(sa.Integer, default=100) # 0~100
 
@@ -86,3 +86,11 @@ class HotWord(Base):
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
     site_id =  sa.Column(sa.Integer, sa.ForeignKey("site.id"))
+
+    @classmethod
+    def from_page(cls, page):
+        qs = cls.query.filter(cls.tag_id==PageTag.id)
+        qs = qs.filter(PageTag2Page.tag_id==PageTag.id).filter(PageTag2Page.object_id==Page.id)
+        qs = qs.filter(Page.id==page.id)
+        return qs
+    

@@ -36,6 +36,9 @@ class PageAccesskey(Base):
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(DateTime, default=datetime.now, onupdate=datetime.now)    
 
+    def __repr__(self):
+        return "%r:%s %s" % (self.__class__, self.hashkey, self.expiredate)
+
     def default_gen_key(self):
         return uuid.uuid4().hex
 

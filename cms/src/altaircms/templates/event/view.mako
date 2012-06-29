@@ -70,14 +70,17 @@
 
 ## たぶん。contextによってだしわける。
 <h3>配下のページ一覧</h3>
+  ## 一番下のjsに依存している
   ${myhelpers.pageset_describe_viewlet(request, event)}
 <hr/>
 
 <h3>パフォーマンス</h3>
+  ## 一番下のjsに依存している
   ${myhelpers.performance_describe_viewlet(request,event)}
 <hr/>
 
 <h3>販売条件情報</h3>
+  ## 一番下のjsに依存している
   ${myhelpers.sale_describe_viewlet(request,event)}
 
 <script type="text/javascript">

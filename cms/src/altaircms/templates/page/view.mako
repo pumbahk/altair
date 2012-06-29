@@ -78,7 +78,9 @@ event = page.event or page.pageset.event
 ${myhelpers.pagetag_describe_viewlet(request, page)}
 <hr/>
 <h3>ホットワード</h3>
+${myhelpers.hotword_describe_viewlet(request, page)}
 <h3>アクセスキー</h3>
+${myhelpers.accesskey_describe_viewlet(request, page)}
 <h3>アセット</h3>
 <h3>トピック</h3>
 <h3>トップコンテンツ</h3>

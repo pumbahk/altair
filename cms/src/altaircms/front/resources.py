@@ -60,15 +60,16 @@ class AccessControl(object):
             self.access_ok = False
             return page
 
+
         ## 現状はloginしたuserは全部のページが見れる
         if not self.request.user:
             ## access_keyを持っていたとき、それが有効ならページが見れる。
             if not access_key:
                 self._error_message.append("not loging user")
                 self.access_ok = False
-            elif not page.can_access(key=access_key):
+            elif not page.can_private_access(key=access_key):
                 self.access_ok = False
-                self._error_message.append("invalid access key %s" % access_key.hashkey)
+                self._error_message.append("invalid access key %s" % access_key)
         try:
             page.valid_layout()
         except ValueError, e:

@@ -70,26 +70,6 @@ tagsize = len(tags)
         <span class="caret"></span>
     </button>
     <ul class="dropdown-menu">
-      <li>
-        <a href="${request.route_path("performance_update",action="detail",id="__id__")}" class="action">
-          <i class="icon-pencil"></i> 詳細画面
-        </a>
-      </li>
-      <li>
-        <a href="${request.route_path("performance_update",action="input",id="__id__")}" class="action">
-          <i class="icon-minus"></i> 編集
-        </a>
-      </li>
-      <li>
-        <a href="${request.route_path("performance_create",action="input")}">
-          <i class="icon-minus"></i> 新規作成
-        </a>
-      </li>
-      <li>
-        <a href="${request.route_path("performance_delete",action="confirm",id="__id__")}" class="action">
-          <i class="icon-minus"></i> 削除
-        </a>
-      </li>
     </ul>
   </div>
 </div>
