@@ -38,8 +38,6 @@ class Newsletter(Base):
     created_at       = Column(DateTime)
     updated_at       = Column(DateTime)
 
-    csv_fields = ('email', 'id', 'name')
-
     def subscriber_file(self):
         fname = 'altair' + str(self.id) + '.csv'
         csv_file = os.path.join(Newsletter.subscriber_dir(), fname)
@@ -98,6 +96,7 @@ class Newsletter(Base):
             csv_file.writerow(dict([(n, n) for n in csv_file.fieldnames]))
             for row in csv_reader:
                 row['name'] = Newsletter.encode(row['name'])
+                row['email'] = row['email'].strip()
                 csv_file.writerow(row)
 
     @staticmethod
@@ -126,8 +125,9 @@ class Newsletter(Base):
 
     def test_mail(self, recipient=None, **options):
         options['subject'] = u'【テスト送信】' + self.subject
-        if 'name' in options:
-            options['name'] = u'テスト氏名'
+        # 文字化けのチェックのためにcsvファイルの1行目のデータを使う
+        #if 'name' in options:
+        #    options['name'] = u'テスト氏名'
         self.send(recipient=recipient, **options)
 
     def send(self, settings=None, **options):

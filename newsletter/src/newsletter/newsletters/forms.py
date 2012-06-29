@@ -58,17 +58,16 @@ class NewslettersForm(Form):
             subscriber_file = args[0].get('subscriber_file')
             count = 0 
             if hasattr(subscriber_file, 'file'):
-                for row in csv.DictReader(subscriber_file.file, Newsletter.csv_fields):
-                    if Newsletter.validate_email(row['email']): count += 1
+                for row in csv.DictReader(subscriber_file.file):
+                    count += 1
                 else:
                     subscriber_file.file.seek(0)
             elif 'id' in args[0]:
                 newsletter = Newsletter.get(args[0].get('id'))
                 if newsletter.subscriber_file():
                     csv_file = os.path.join(Newsletter.subscriber_dir(), newsletter.subscriber_file())
-                    for row in csv.DictReader(open(csv_file), Newsletter.csv_fields):
+                    for row in csv.DictReader(open(csv_file)):
                         count += 1
-
             args[0].add('subscriber_count', str(count))
 
         Form.__init__(self, *args, **kw)
@@ -100,7 +99,7 @@ class NewslettersForm(Form):
 
             csv_reader = csv.DictReader(field.data.file)
             for row in csv_reader:
-                if not ('email' in row and Newsletter.validate_email(row['email'])):
-                    raise ValidationError(u'CSVデータが不正です')
+                if not ('email' in row and Newsletter.validate_email(row['email'].strip())):
+                    raise ValidationError(u'CSVデータが不正です (emailフォーマットエラー:%s)' % row['email'])
             else:
                 field.data.file.seek(0)
