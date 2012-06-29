@@ -1,6 +1,6 @@
 <%inherit file='layout_2col.mako'/>
 <div class="row">
-    <div class="span6">
+    <div class="span8">
         <h4>お知らせ</h4>
         <table class="table table-striped">
             <tbody>
@@ -31,4 +31,13 @@
           %endfor
       </table>
     </div>
+</div>
+
+<div class="well">
+<p class="lead">はじめ</p>
+<ul style="font-size:150%;">
+  <li><a href="${request.route_path("event_list")}">イベント関連のページを編集する</a></li>
+  <li><a href="${request.route_path("page")}">トップページのカテゴリトップページなどを編集する</a></li>
+  <li><a>静的なページの編集をする</a></li>
+</ul>
 </div>

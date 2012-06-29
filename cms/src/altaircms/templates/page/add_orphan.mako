@@ -30,7 +30,7 @@
 <h2>ページの追加</h2>
 
 <div class="row-fluid">
-  <div class="span10">
+  <div class="span12">
     ${nco.breadcrumbs(
 	    names=[u"Top", u"Page", u"新しいページの追加"],
 	    urls=[request.route_path("dashboard"),
@@ -43,11 +43,11 @@
   <div class="span5">
 	<h2>ページの初期値設定フォーム</h2>
   </div>
-  <div class="span5">
+  <div class="span6">
 	<h2>layout image</h2>
   </div>
     
-  <div class="span5">
+  <div class="span6">
 	${co.setup_info_form()}
 	<h2>form</h2>
 	<form id="submit_form" action="${request.current_route_path(action="create")}" method="POST">
