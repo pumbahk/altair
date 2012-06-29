@@ -219,7 +219,7 @@
     this.keyEvents = null;
     this.zoomRatio = 1.0;
     this.uiMode = 'select1';
-    this.shapes = {};
+    this.shapes = null;
     this.seats = {};
     this.selection = {};
     this.highlighted = {};
@@ -239,26 +239,26 @@
       this.drawable.dispose();
     this.seatAdjacencies = null;
     var self = this;
-    this.callbacks.loadstart && this.callbacks.loadstart('stockTypes');
-    this.dataSource.stockTypes(function (data) {
-      self.stockTypes = data;
-      self.callbacks.loadstart && self.callbacks.loadstart('info');
-      self.dataSource.info(function (data) {
-        if (!'available_adjacencies' in data) {
-          self.callbacks.message("Invalid data");
-          return;
-        }
-        self.availableAdjacencies = data.available_adjacencies;
-        self.seatAdjacencies = new seat.SeatAdjacencies(self);
-        self.callbacks.loadstart && self.callbacks.loadstart('drawing');
-        self.initDrawable(self.dataSource.drawing, function () {
+    self.callbacks.loadstart && self.callbacks.loadstart('drawing');
+    self.initDrawable(self.dataSource.drawing, function () {
+      self.callbacks.loadstart && self.callbacks.loadstart('stockTypes');
+      self.dataSource.stockTypes(function (data) {
+        self.stockTypes = data;
+        self.callbacks.loadstart && self.callbacks.loadstart('info');
+        self.dataSource.info(function (data) {
+          if (!'available_adjacencies' in data) {
+            self.callbacks.message("Invalid data");
+            return;
+          }
+          self.availableAdjacencies = data.available_adjacencies;
+          self.seatAdjacencies = new seat.SeatAdjacencies(self);
           self.callbacks.loadstart && self.callbacks.loadstart('seats');
           self.initSeats(self.dataSource.seats, function () {
             self.callbacks.load && self.callbacks.load(self);
           });
-        });
+        }, self.callbacks.message);
       }, self.callbacks.message);
-    }, self.callbacks.message);
+    });
   };
 
   VenueViewer.prototype.dispose = function VenueViewer_dispose() {
@@ -287,6 +287,7 @@
       } : null);
 
       var drawable = new Fashion.Drawable(self.canvas[0], { contentSize: {x: size.x, y: size.y} });
+      var shapes = {};
 
       (function iter(svgStyle, defs, nodeList) {
         outer:
@@ -349,7 +350,7 @@
             shape.style(buildStyleFromSvgStyle(currentSvgStyle));
             drawable.draw(shape);
           }
-          self.shapes[attrs.id] = shape;
+          shapes[attrs.id] = shape;
         }
       }).call(self,
         { fill: false, fillOpacity: false,
@@ -358,6 +359,7 @@
         drawing.documentElement.childNodes);
 
       self.drawable = drawable;
+      self.shapes = shapes;
 
       var cs = drawable.contentSize();
       var vs = drawable.viewportSize();
