@@ -7,7 +7,7 @@ class Schema(Form):
     # 新規・継続
     cont = fields.TextField(u"新規／継続", validators=[v.Required()])
     member_type = fields.TextField(u"会員種別選択", validators=[v.Required()])
-    number = fields.IntegerField(u"口数選択", validators=[v.Required()])
+    #number = fields.IntegerField(u"口数選択", validators=[v.Required()])
     first_name = fields.TextField(u"氏名", validators=[v.Required()])
     last_name = fields.TextField(u"氏名", validators=[v.Required()])
     first_name_kana = fields.TextField(u"氏名(カナ)", validators=[v.Required()])

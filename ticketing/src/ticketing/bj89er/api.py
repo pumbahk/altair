@@ -20,7 +20,6 @@ def on_order_completed(event):
 attr_names = [
     u'cont',
     u'member_type',
-    u'number',
     u'first_name',
     u'last_name',
     u'first_name_kana',

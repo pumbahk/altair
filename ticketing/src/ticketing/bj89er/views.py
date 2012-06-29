@@ -42,7 +42,8 @@ class IndexView(object):
 
     @property
     def ordered_items(self):
-        number = int(self.request.params['number'])
+        #number = int(self.request.params['number'])
+        number = 1
         product_id = self.request.params['member_type']
         product = c_models.Product.query.filter_by(id=product_id).one()
         return [(product, number)]
