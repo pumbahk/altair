@@ -735,35 +735,28 @@
       if (options == 'remove') {
         aux.dispose();
         this.data('venueviewer', null);
-      }
-      if (!aux)
-        throw new Error("Command issued against an uninitialized element");
-      switch (options) {
-      case 'load':
-        aux.load();
-        break;
-
-      case 'uimode':
+      } else {
         if (!aux)
           throw new Error("Command issued against an uninitialized element");
-        aux.changeUIMode(arguments[1]);
-        break;
+        switch (options) {
+        case 'load':
+          aux.load();
+          break;
 
-      case 'selection':
-        if (!aux)
-          throw new Error("Command issued against an uninitialized element");
-        return aux.selection;
+        case 'uimode':
+          aux.changeUIMode(arguments[1]);
+          break;
 
-      case 'refresh':
-        if (!aux)
-          throw new Error("Command issued against an uninitialized element");
-        return aux.refresh();
+        case 'selection':
+          return aux.selection;
 
-      case 'adjacency':
-        if (!aux)
-          throw new Error("Command issued against an uninitialized element");
-        aux.adjacencyLength(arguments[1]|0);
-        break;
+        case 'refresh':
+          return aux.refresh();
+
+        case 'adjacency':
+          aux.adjacencyLength(arguments[1]|0);
+          break;
+        }
       }
     }
 
