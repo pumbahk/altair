@@ -27,15 +27,14 @@
   });
 </script>
 
-<h2>ページの追加(event: ${event.title})</h2>
+<h2>ページの追加</h2>
 
 <div class="row-fluid">
   <div class="span10">
     ${nco.breadcrumbs(
-	    names=["Top", "Event", event.short_title, u"新しいページの追加"], 
+	    names=[u"Top", u"Page", u"新しいページの追加"],
 	    urls=[request.route_path("dashboard"),
-              request.route_path("event_list"),
-              request.route_path("event", id=event.id)]
+              request.route_path("page")]
 	)}
   </div>
 </div>
@@ -51,8 +50,8 @@
   <div class="span5">
 	${co.setup_info_form()}
 	<h2>form</h2>
-	<form id="submit_form" action="${request.current_route_path(event_id=event.id, action="create")}" method="POST">
-     ${fco.form_as_table_strict(form, ["parent", "name", "url", "title","event", "publish_begin", "publish_end","description","keywords","tags","private_tags","layout"])}
+	<form id="submit_form" action="${request.current_route_path(action="create")}" method="POST">
+     ${fco.form_as_table_strict(form, ["parent", "name", "url", "title", "publish_begin", "publish_end","description","keywords","tags","private_tags","layout"])}
 	  <button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> Create</button>
     </form>
   </div>

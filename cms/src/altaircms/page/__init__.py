@@ -3,7 +3,10 @@ def includeme(config):
     add_route = functools.partial(config.add_route, factory="altaircms.page.resources.PageResource")
     add_route('page_edit_', '/page/{page_id}/edit')
     add_route("page_detail", "/page/{page_id}")
-    add_route('page_add', '/event/{event_id}/page/')
+
+    add_route('page_add', '/event/{event_id}/page/create/{action}')
+    add_route("page_add_orphan", "/page/create/{action}")
+
     add_route('page_edit', '/event/{event_id}/page/{page_id}/edit')
     add_route("page_delete", "/page/{id}/delete")
     add_route("page_update", "/page/{id}/update")

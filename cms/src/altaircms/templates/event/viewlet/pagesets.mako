@@ -96,7 +96,7 @@
        </a>
 	  </li>
      <li>
-		<a class="" target="_blank" href="${request.route_path("page_add", event_id=event.id)}">
+		<a class="" target="_blank" href="${request.route_path("page_add", event_id=event.id, action="input")}">
 		  <i class="icon-plus"> </i> 新しいページセットの追加</a>
 		</a>
      </li>

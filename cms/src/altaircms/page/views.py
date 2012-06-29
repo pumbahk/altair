@@ -23,30 +23,74 @@ from altaircms.lib.fanstatic_decorator import with_fanstatic_jqueries
 import altaircms.helpers as h
 from . import helpers as myhelpers
 
+class AfterInput(Exception):
+    pass
+
 ##
 ## todo: CRUDのview整理する
 ##
 
-
-@view_defaults(route_name="page_add", decorator=with_bootstrap.merge(with_jquery))
+@view_defaults(decorator=with_bootstrap.merge(with_jquery))
 class PageAddView(object):
-    """ eventの中でeventに紐ついたpageの作成
-    """
     def __init__(self, context, request):
-        self.request = request
         self.context = context
-        self.event_id = request.matchdict["event_id"]
+        self.request = request
 
-    @view_config(request_method="GET", renderer="altaircms:templates/page/add.mako")
-    def input_form(self):
+    @view_config(route_name="page_add", request_method="GET", match_param="action=input", permission="page_create")
+    def input_form_with_event(self):
         event_id = self.request.matchdict["event_id"]
-        event = Event.query.filter(Event.id==event_id).one()
-        form = forms.PageForm(event=event)
-        setup_form = forms.PageInfoSetupForm(name=event.title)
-        return {"form":form, "setup_form": setup_form, "event":event}
+        event = self.request._event = Event.query.filter(Event.id==event_id).one()
+        self.request._form = forms.PageForm(event=event)
+        self.request._setup_form = forms.PageInfoSetupForm(name=event.title)
+        raise AfterInput
 
-    @view_config(request_method="POST", renderer="altaircms:templates/page/add.mako")
-    def create_page(self):
+    @view_config(route_name="page_add_orphan", request_method="GET", match_param="action=input", permission="page_create")
+    def input_form(self):
+        self.request._form = forms.PageForm()
+        self.request._setup_form = forms.PageInfoSetupForm()
+        raise AfterInput
+        
+    @view_config(route_name="page_add", context=AfterInput, decorator=with_bootstrap.merge(with_jquery), 
+                 renderer="altaircms:templates/page/add.mako")
+    def after_input_with_event(self):
+        request = self.request
+        return {"event": request._event, 
+                "form": request._form, 
+                "setup_form": request._setup_form}
+
+    @view_config(route_name="page_add_orphan", context=AfterInput, decorator=with_bootstrap.merge(with_jquery), 
+                 renderer="altaircms:templates/page/add_orphan.mako")
+    def after_input(self):
+        request = self.request
+        return {"form": request._form, 
+                "setup_form": request._setup_form}
+
+    @view_config(route_name="page_add", permission="page_create", match_param="action=confirm", request_method="POST")
+    def confirm_with_event(self):
+        self.request.POST
+        form = forms.PageForm(self.request.POST)
+        if form.validate():
+            return {"form": form}
+        else:
+            event_id = self.request.matchdict["event_id"]
+            self.request._form = form
+            self.request._event = Event.query.filter(Event.id==event_id).one()
+            self.request._setup_form = forms.PageInfoSetupForm(name=form.data["name"])
+            raise AfterInput
+
+    @view_config(route_name="page_add_orphan", permission="page_create", match_param="action=confirm", request_method="POST")
+    def confirm(self):
+        self.request.POST
+        form = forms.PageForm(self.request.POST)
+        if form.validate():
+            return {"form": form}
+        else:
+            self.request._form = form
+            self.request._setup_form = forms.PageInfoSetupForm(name=form.data["name"])
+            raise AfterInput
+
+    @view_config(route_name="page_add", permission="page_create", request_method="POST", match_param="action=create")
+    def create_page_with_event(self):
         logging.debug('create_page')
         form = forms.PageForm(self.request.POST)
         event_id = self.request.matchdict["event_id"]
@@ -55,12 +99,63 @@ class PageAddView(object):
             ## flash messsage
             mes = u'page created <a href="%s">作成されたページを編集する</a>' % self.request.route_path("page_edit_", page_id=page.id)
             FlashMessage.success(mes, request=self.request)
-            return HTTPFound(self.request.route_path("event", id=self.event_id))
+            return HTTPFound(self.request.route_path("event", id=self.request.matchdict["event_id"]))
         else:
-            logging.debug("%s" % form.errors)
-            event = Event.query.filter(Event.id==event_id).one()
-            setup_form = forms.PageInfoSetupForm(name=form.data["name"])
-            return {"form":form, "event":event, "setup_form": setup_form}
+            event_id = self.request.matchdict["event_id"]
+            self.request._form = form
+            self.request._event = Event.query.filter(Event.id==event_id).one()
+            self.request._setup_form = forms.PageInfoSetupForm(name=form.data["name"])
+            raise AfterInput
+
+    @view_config(route_name="page_add_orphan", permission="page_create", request_method="POST", match_param="action=create")
+    def create_page(self):
+        logging.debug('create_page')
+        form = forms.PageForm(self.request.POST)
+        if form.validate():
+            page = self.context.create_page(form)
+            ## flash messsage
+            mes = u'page created <a href="%s">作成されたページを編集する</a>' % self.request.route_path("page_edit_", page_id=page.id)
+            FlashMessage.success(mes, request=self.request)
+            return HTTPFound(self.request.route_path("page"))
+        else:
+            self.request._form = form
+            self.request._setup_form = forms.PageInfoSetupForm(name=form.data["name"])
+            raise AfterInput
+
+
+# @view_defaults(route_name="page_add", decorator=with_bootstrap.merge(with_jquery))
+# class PageAddView(object):
+#     """ eventの中でeventに紐ついたpageの作成
+#     """
+#     def __init__(self, context, request):
+#         self.request = request
+#         self.context = context
+#         self.event_id = request.matchdict["event_id"]
+
+#     @view_config(request_method="GET", renderer="altaircms:templates/page/add.mako")
+#     def input_form(self):
+#         event_id = self.request.matchdict["event_id"]
+#         event = Event.query.filter(Event.id==event_id).one()
+#         form = forms.PageForm(event=event)
+#         setup_form = forms.PageInfoSetupForm(name=event.title)
+#         return {"form":form, "setup_form": setup_form, "event":event}
+
+#     @view_config(request_method="POST", renderer="altaircms:templates/page/add.mako")
+#     def create_page(self):
+#         logging.debug('create_page')
+#         form = forms.PageForm(self.request.POST)
+#         event_id = self.request.matchdict["event_id"]
+#         if form.validate():
+#             page = self.context.create_page(form)
+#             ## flash messsage
+#             mes = u'page created <a href="%s">作成されたページを編集する</a>' % self.request.route_path("page_edit_", page_id=page.id)
+#             FlashMessage.success(mes, request=self.request)
+#             return HTTPFound(self.request.route_path("event", id=self.event_id))
+#         else:
+#             logging.debug("%s" % form.errors)
+#             event = Event.query.filter(Event.id==event_id).one()
+#             setup_form = forms.PageInfoSetupForm(name=form.data["name"])
+#             return {"form":form, "event":event, "setup_form": setup_form}
  
 
 @view_defaults(permission="page_create", decorator=with_bootstrap)
@@ -122,8 +217,6 @@ class PageDeleteView(object):
         return HTTPFound(location=h.page.to_list_page(self.request))
 
 
-class AfterInput(Exception):
-    pass
 
 @view_config(route_name="page_update", context=AfterInput, renderer="altaircms:templates/page/input.mako", 
              decorator=with_bootstrap)
