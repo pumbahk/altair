@@ -13,7 +13,7 @@ def preview_page(context, request):
     page = control.fetch_page_from_pageid(page_id, access_key=access_key)
 
     if not control.can_access():
-        return HTTPForbidden()
+        return HTTPForbidden(control.error_message)
     
     template = context.frontpage_template(page)
     if not control.can_rendering(template, page):

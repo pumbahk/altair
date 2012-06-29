@@ -133,7 +133,7 @@ class PagePrivateAccessTests(unittest.TestCase):
         session = sqlahelper.get_session()
         session.add(key)
 
-        self.assertTrue(target.can_private_access(key.hashkey))
+        self.assertTrue(target.can_private_access(key=key.hashkey))
         self.assertFalse(target.can_private_access(key="this-is-not-access-key-so-this-is-invalid"))
 
 if __name__ == "__main__":

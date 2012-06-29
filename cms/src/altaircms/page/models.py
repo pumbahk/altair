@@ -241,7 +241,6 @@ class Page(BaseOriginalMixin,
 
     def can_private_access(self, key=None, now=None):
         key = self.get_access_key(key)
-        
         if key is None:
             return False
 

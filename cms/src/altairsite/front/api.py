@@ -6,10 +6,11 @@ from pyramid.renderers import render_to_response
 
 from altaircms.tag.models import HotWord
 from altaircms.widget.tree.proxy import WidgetTreeProxy
-
 from .bsettings import BlockSettings
 from . import helpers as h
 from .impl import ILayoutTemplateLookUp
+
+from .helpers import get_navigation_categories
 
 import logging
 logger = logging.getLogger(__file__)

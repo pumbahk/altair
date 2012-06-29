@@ -62,6 +62,7 @@ class AccessControl(object):
 
 
         ## 現状はloginしたuserは全部のページが見れる
+        access_key = page.get_access_key(access_key)
         if not self.request.user:
             ## access_keyを持っていたとき、それが有効ならページが見れる。
             if not access_key:
@@ -69,7 +70,7 @@ class AccessControl(object):
                 self.access_ok = False
             elif not page.can_private_access(key=access_key):
                 self.access_ok = False
-                self._error_message.append("invalid access key %s" % access_key)
+                self._error_message.append(u"invalid access key %s.\n 有効期限が切れているかもしれません. (有効期限:%s)" % (access_key.hashkey, access_key.expiredate))
         try:
             page.valid_layout()
         except ValueError, e:
