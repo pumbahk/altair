@@ -2,6 +2,12 @@
 <%namespace name="nco" file="../navcomponents.mako"/>
 <%namespace name="mco" file="../modelcomponents.mako"/>
 
+<%block name="style">
+<style type="text/css">
+  .row-fluid h3 { margin-top:20px;  }
+</style>
+</%block>
+
 <h2>page</h2>
 
 <div class="row-fluid">
@@ -14,7 +20,7 @@
 </div>
 
 <div class="row-fluid">
-  <h3>ページ追加</h3>
+  <h3 style="margin-top:0px;">ページ追加</h3>
     <a href="${request.route_path("page_add_orphan", action="input")}" class="btn btn-success btn-large">新しいページを作成する</a>
 
 

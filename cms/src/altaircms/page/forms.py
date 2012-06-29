@@ -16,16 +16,7 @@ from altaircms.interfaces import IForm
 from altaircms.interfaces import implementer
 from altaircms.lib.formhelpers import dynamic_query_select_field_factory
 from altaircms.helpers.formhelpers import append_errors
-
-
-## todo: 後で移動
-
-class MaybeDateTimeField(fields.DateTimeField):
-    def process_formdata(self, valuelist):
-        if valuelist[0] == u"":
-            return 
-        else:
-            return super(MaybeDateTimeField, self).process_formdata(valuelist)
+from altaircms.helpers.formhelpers import MaybeDateTimeField
 
 logger = logging.getLogger(__name__)
 

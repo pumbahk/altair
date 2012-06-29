@@ -31,15 +31,23 @@ def view(request):
         myhelpers=h
     )
 
-
+from . import forms
+from . import searcher
 @view_config(route_name='event_list', renderer='altaircms:templates/event/list.mako', permission='event_read', request_method="GET", 
              decorator=with_bootstrap)
 def event_list(request):
     events = Event.query
-    form = EventForm()
+
+    if request.GET:
+        search_form = forms.EventSearchForm(request.GET)
+        if search_form.validate():
+            events = searcher.make_event_search_query(request, search_form.data, qs=events)
+    else:
+        search_form = forms.EventSearchForm()
+
     return dict(
-        form=form,
-        events=events
+        events=events, 
+        search_form=search_form, 
     )
 
 ##

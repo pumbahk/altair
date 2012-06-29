@@ -2,9 +2,17 @@
 
 <%namespace name="fco" file="../../templates/formcomponents.mako"/>
 <%namespace name="nco" file="../../templates/navcomponents.mako"/>
+
+<%block name="style">
+<style type="text/css">
+  .row-fluid h3 { margin-top:20px;  }
+  .row-fluid h3.first { margin-top:0px;  }
+</style>
+</%block>
+
 <h2>${master_env.title}</h2>
 
-<div class="row">
+<div class="row-fluid">
   <div class="span12">
     ${nco.breadcrumbs(
         names=["Top", master_env.title], 
@@ -14,7 +22,7 @@
 </div>
 
 <div class="row-fluid">
-    <h3>${master_env.title}追加</h3>
+    <h3 class="first">${master_env.title}追加</h3>
     <a href="${request.route_path(master_env.join("create"), action="input")}"  class="btn btn-success btn-large">新しい${master_env.title}を作成する</a>
 
     %if query_form:

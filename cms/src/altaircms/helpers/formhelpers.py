@@ -1,5 +1,14 @@
 # -*- coding:utf-8 -*-
 from wtforms import validators
+from wtforms import fields
+
+class MaybeDateTimeField(fields.DateTimeField):
+    def process_formdata(self, valuelist):
+        if valuelist[0] == u"":
+            return 
+        else:
+            return super(MaybeDateTimeField, self).process_formdata(valuelist)
+
 
 def required_field(message=None):
     if message is None:

@@ -1,4 +1,6 @@
 # coding: utf-8
+
+from altaircms.helpers.formhelpers import MaybeDateTimeField
 from wtforms import fields, validators
 from wtforms.form import Form
 from wtforms import widgets
@@ -44,3 +46,21 @@ class EventForm(Form):
                           u"event_open", u"event_close", 
                           u"deal_open", u"deal_close", 
                           u"is_searchable"]
+
+class EventSearchForm(Form):
+    freeword = fields.TextField(label=u'タイトル, サブタイトルなど')
+    event_open = MaybeDateTimeField(label=u'イベント開始日')
+    # op_choice = ([("lte", u"より前") ,("eq", u"その日"), ("gte", u"より後")]) #lt, gt?
+    op_choice = ([("lte", u"より前") , ("gte", u"より後")]) #lt, gt?
+    event_open_op = fields.SelectField(choices=op_choice)
+    event_close = MaybeDateTimeField(label=u'イベント終了日')
+    event_close_op = fields.SelectField(choices=op_choice)
+    deal_open = MaybeDateTimeField(label=u'販売開始日')
+    deal_open_op = fields.SelectField(choices=op_choice)
+    deal_close = MaybeDateTimeField(label=u'販売終了日')
+    deal_close_op = fields.SelectField(choices=op_choice)
+    created_at = MaybeDateTimeField(label=u'作成日')
+    created_at_op = fields.SelectField(choices=op_choice)
+    updated_at = MaybeDateTimeField(label=u'更新日')
+    updated_at_op = fields.SelectField(choices=op_choice)
+

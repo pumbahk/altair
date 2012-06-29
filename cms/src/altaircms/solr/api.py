@@ -12,6 +12,27 @@ def get_fulltext_search(request):
     search_cls = request.registry.getUtility(IFulltextSearch)
     return search_cls.create_from_request(request)
 
+def _create_query_from_word(word):
+    """ 検索用の辞書作る
+    solrに格納される各フィールドはcopyfieldとしてsearchtextが設定されている。
+    (see: buildout.cfg 'solr' section)
+    """
+    return SolrSearchQuery(dict(searchtext=word))
+    
+def create_query_from_freewords(words, query_cond=None):
+    assert query_cond in ("intersection", "union")
+    
+    if query_cond == "intersection":
+        cop = u" AND "
+    elif query_cond == "union":
+        cop = u" OR "
+
+    q = _create_query_from_word(words[0])
+    for word in words[1:]:
+        q = q.compose(_create_query_from_word(word), cop)
+    return q
+
+
 class NullSearchQuery(object):
     def AND(self, other):
         return SolrSearchQuery(other, cop=" AND ")

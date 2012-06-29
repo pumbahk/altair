@@ -7,7 +7,16 @@ from pyramid.view import render_view_to_response
 from markupsafe import Markup
 from ..viewlet import api as va
 
+## for fulltext search
+# -*
 
+from altaircms.solr import api as solrapi
+
+def pageset_id_list_from_word(request, word):
+    fulltext_search = solrapi.get_fulltext_search(request)
+    query = solrapi._create_query_from_word(word)
+    result = fulltext_search.search(query, fields=["pageset_id"])
+    return [f["pageset_id"] for f in result]
 
 def validate_apikey(request, apikey):
     reg = request.registry
