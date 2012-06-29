@@ -31,13 +31,10 @@ class PageAccesskey(Base):
     id = sa.Column(sa.Integer, primary_key=True)
     page_id = sa.Column(sa.Integer, sa.ForeignKey("page.id"))
     page = orm.relationship("Page", backref=orm.backref("access_keys", cascade="all"))
-    hashkey = sa.Column(sa.String(length=32))
+    hashkey = sa.Column(sa.String(length=32), nullable=False)
     expiredate = sa.Column(sa.DateTime)
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(DateTime, default=datetime.now, onupdate=datetime.now)    
-
-    def hashash(self):
-        return bool(self.hashkey)
 
     def default_gen_key(self):
         return uuid.uuid4().hex
@@ -224,22 +221,32 @@ class Page(BaseOriginalMixin,
         self.published = False
 
     def create_access_key(self, key=None, expire=None, _genkey=None):
-        access_key = PageAccesskey(expiredate=expire, hashkey=key, page=self)
+        access_key = PageAccesskey(expiredate=expire, page=self)
         access_key.sethashkey(genkey=_genkey, key=key)
         return access_key
 
     def delete_access_key(self, target):
         return self.access_keys.remove(target)
 
-    def can_access(self, key=None, _now=None):
-        if self.published: ## これ必要?公開したページもcmsは常に見えなくても良いのではないか
-            return True
+    def get_access_key(self, key):
+        if key is None:
+            return None
+        if getattr(key, "hashkey", None):
+            return key
+        return PageAccesskey.query.filter_by(page=self, hashkey=key).first()
+
+    def can_private_access(self, key=None, now=None):
+        key = self.get_access_key(key)
+        
+        if key is None:
+            return False
+
         if not key in self.access_keys:
             return False
         if key.expiredate is None:
             return True
 
-        now = _now or datetime.now()
+        now = now or datetime.now()
         return now <= key.expiredate
 
     def has_access_keys(self):

@@ -12,12 +12,13 @@ page.can_access(user=None, access_key=None)
 def setUpModule():
     import altaircms.event.models
     import altaircms.page.models
+    import sqlalchemy as sa
     import sqlahelper
     import transaction
-    transaction.abort()
     session = sqlahelper.get_session()
     session.remove()
-    sqlahelper.add_engine("sqlite://")
+    transaction.abort()
+    sqlahelper.add_engine(sa.create_engine("sqlite://"))
     base = sqlahelper.get_base()
     base.metadata.drop_all()
     base.metadata.create_all()
@@ -26,7 +27,7 @@ class PagePublishStatusTests(unittest.TestCase):
     def tearDown(self):
         import transaction
         transaction.abort()
-        
+
     def _makeOne(self, *args, **kwargs):
         from altaircms.page.models import Page
         return Page(*args, **kwargs)
@@ -35,7 +36,6 @@ class PagePublishStatusTests(unittest.TestCase):
         target = self._makeOne()
 
         self.assertFalse(target.published)
-        self.assertFalse(target.can_access())
 
     def test_on_publish(self):
         target = self._makeOne()
@@ -43,7 +43,6 @@ class PagePublishStatusTests(unittest.TestCase):
         target.publish()
 
         self.assertTrue(target.published)
-        self.assertTrue(target.can_access())
 
     def test_on_unpublish(self):
         target = self._makeOne()
@@ -51,7 +50,6 @@ class PagePublishStatusTests(unittest.TestCase):
         target.unpublish()
 
         self.assertFalse(target.published)
-        self.assertFalse(target.can_access())
 
 
 class PagePrivateAccessTests(unittest.TestCase):
@@ -88,57 +86,55 @@ class PagePrivateAccessTests(unittest.TestCase):
         self.assertEquals(len(target.access_keys), 0)
 
 
-    def test_on_publish(self):
+    def test_access_with_key(self):
         target = self._makeOne()
-        target.publish()
         key = target.create_access_key(key="this-is-access-key")
 
-        self.assertTrue(target.can_access())
-        self.assertTrue(target.can_access(key))
-        
+        self.assertFalse(target.can_private_access())
+        self.assertTrue(target.can_private_access(key))
 
-    def test_on_unpublish(self):
+    def test_with_another_access_key(self):
         target = self._makeOne()
-        target.unpublish()
-        key = target.create_access_key(key="this-is-access-key")
-        
-        self.assertFalse(target.can_access())
-        self.assertTrue(target.can_access(key))
-
-
-    def test_on_unpublish_with_another_access_key(self):
-        target = self._makeOne()
-        target.unpublish()
         key = target.create_access_key(key="this-is-access-key")
 
         another_target = self._makeOne()
         another_key = another_target.create_access_key(key="this-is-another-access-key")
 
-        self.assertFalse(target.can_access())
-        self.assertFalse(target.can_access(another_key))
+        self.assertFalse(target.can_private_access())
+        self.assertFalse(target.can_private_access(another_key))
 
-    def test_on_unpublish_access_key_before_expiredate(self):
+    def test_access_key_before_expiredate(self):
         target = self._makeOne()
-        target.unpublish()
         key = target.create_access_key(key="this-is-access-key", expire=datetime(2012, 12, 1))
 
         now = datetime(2012, 8, 9)
 
         self.assertTrue(target.has_access_keys())
         self.assertEquals(target.valid_access_keys(now), [key])
-        self.assertTrue(target.can_access(key=key, _now=now))
+        self.assertTrue(target.can_private_access(key=key, now=now))
 
     def test_on_unpublish_access_key_after_expiredate(self):
         target = self._makeOne()
-        target.unpublish()
         key = target.create_access_key(key="this-is-access-key", expire=datetime(2012, 12, 1))
 
         now = datetime(2012, 12, 12)
 
         self.assertTrue(target.has_access_keys())
         self.assertEquals(target.valid_access_keys(now), [])
-        self.assertFalse(target.can_access(key=key, _now=now))
-        
+        self.assertFalse(target.can_private_access(key=key, now=now))
+
+
+    ## 
+    def test_can_private_access_via_string(self):
+        target = self._makeOne()
+        key = target.create_access_key(key="this-is-access-key")
+
+        import sqlahelper
+        session = sqlahelper.get_session()
+        session.add(key)
+
+        self.assertTrue(target.can_private_access(key.hashkey))
+        self.assertFalse(target.can_private_access(key="this-is-not-access-key-so-this-is-invalid"))
 
 if __name__ == "__main__":
     unittest.main()
