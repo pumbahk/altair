@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import logging
+from datetime import datetime
 import sqlalchemy as sa
 import ticketing.core.models as c_models
 from ..orders import models as o_models
@@ -8,6 +9,7 @@ import ticketing.cart.api as api
 from ticketing.users.models import UserProfile
 from pyramid.httpexceptions import HTTPFound
 from . import schemas
+from .models import DBSession
 from .api import load_user_profile
 from ticketing.cart.views import PaymentView as _PaymentView
 
@@ -51,11 +53,35 @@ class IndexView(object):
             logger.debug('cart is None')
             return dict()
         logger.debug('cart %s' % cart)
+        form = schemas.Schema(self.request.params)
+        if not form.validate():
+            self.request.errors = form.errors
+            return self.get()
+
         api.set_cart(self.request, cart)
         user = self.context.get_or_create_user()
-        user_profile = UserProfile(
+        params = self.request.params
+        profile = UserProfile(
             user=user,
         )
+        profile.email=params['email']
+        profile.nick_name=params['nickname']
+        profile.first_name=params['first_name']
+        profile.last_name=params['last_name']
+        profile.first_name_kana=params['first_name_kana']
+        profile.last_name_kana=params['last_name_kana']
+        profile.birth_day=datetime(int(params['year']), int(params['month']), int(params['day']))
+        profile.sex=params['sex']
+        profile.zip=params['zipcode1'] + params['zipcode2']
+        profile.prefecture=params['prefecture']
+        profile.city=params['city']
+        profile.street=params['address1']
+        profile.address=params['address2']
+        profile.other_address=None
+        profile.tel_1=params['tel1_1'] + params['tel1_2'] + params['tel1_3']
+        profile.tel_2=params['tel2_1'] + params['tel2_2'] + params['tel2_3']
+        profile.fax=None
+        DBSession.add(profile)
         self.request.session['bj89er.user_profile'] = dict(self.request.params)
         logger.debug('OK redirect')
         return HTTPFound(location=self.request.route_url("cart.payment"))
