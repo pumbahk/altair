@@ -3,7 +3,7 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
 	<title>仙台89ERS 2013-2014 ブースタークラブ入会申込ページ</title>
-	<link rel="stylesheet" type="text/css" href="style.css" media="all" />
+    <link rel="stylesheet" type="text/css" href="${request.static_url('ticketing.bj89er:static/style.css')}" media="all" />
 
 </head>
 <body>
@@ -11,7 +11,7 @@
   <h1 class="title">仙台89ERS 2013-2014 ブースタークラブ入会申込ページ</h1>
   <div align="center">
 
-<form>
+        <form id="form1" action="${request.route_url('payment.finish')}" method="post">
 
 	<table class="layout" style="width:760px" class="wrapper">
 		<tr>
@@ -30,7 +30,7 @@
 						<tbody>
 						<tr>
 							<th colspan="2" style="text-align:left;font-size:18px;">
-							お申し込みNo.：${order.order_no}
+							お申し込みNo.：${cart.id}
 							</tr>
 						</tbody>
 					</table>
@@ -49,14 +49,14 @@
 								<th>会員種別
 								</th>
 								<td>
-									${order.ordered_products[0].product.name}
+									${cart.products[0].product.name}
 	   							</td>
 							</tr>
 							<tr>
 								<th>会員口数
 								</th>
 								<td>
-									${order.ordered_products[0].quantity}口
+									${cart.products[0].quantity}口
 	   							</td>
 							</tr>
 							<tr>
@@ -64,11 +64,26 @@
 								</th>
 								<td>
 									<%
-                                    user_profile = order.user.user_profile
+                                    user_profile = user.user_profile
                                     %>
                                     ${user_profile.last_name} ${user_profile.first_name}　様
 	   							</td>
 							</tr>
+						</tbody>
+					</table>
+				
+					<table cellpadding="0" cellspacing="0" class="form89ers">
+						<colgroup>
+						<col style="width:180px;">
+						<col style="width:310px;">
+						</colgroup>
+						<tbody>
+							<tr>
+								<td colspan="2" style="text-align:left;">									
+								<input type="submit" value="送信" class="submit" style="width:400px;height:50px;">
+								</td>
+							</tr>
+						
 						</tbody>
 					</table>
 				</div>
