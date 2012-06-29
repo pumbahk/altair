@@ -10,6 +10,8 @@ from ..lib.fanstatic_decorator import with_bootstrap
 
 from .models import Event
 from .forms import EventForm
+from . import forms
+from . import searcher
 
 from . import helpers as h
 from .event_info import get_event_notify_info
@@ -31,14 +33,15 @@ def view(request):
         myhelpers=h
     )
 
-from . import forms
-from . import searcher
 @view_config(route_name='event_list', renderer='altaircms:templates/event/list.mako', permission='event_read', request_method="GET", 
              decorator=with_bootstrap)
 def event_list(request):
     events = Event.query
 
-    if request.GET:
+    params = dict(request.GET)
+    if "page" in params:
+        params.pop("page") ## pagination
+    if params:
         search_form = forms.EventSearchForm(request.GET)
         if search_form.validate():
             events = searcher.make_event_search_query(request, search_form.data, qs=events)

@@ -4,10 +4,12 @@ from wtforms import fields
 
 class MaybeDateTimeField(fields.DateTimeField):
     def process_formdata(self, valuelist):
-        if valuelist[0] == u"":
-            return 
+        if not valuelist:
+            self.data = None
+        elif valuelist[0] == u"":
+            self.data = None
         else:
-            return super(MaybeDateTimeField, self).process_formdata(valuelist)
+            super(MaybeDateTimeField, self).process_formdata(valuelist)
 
 
 def required_field(message=None):
