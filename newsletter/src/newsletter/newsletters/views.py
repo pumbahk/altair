@@ -26,7 +26,7 @@ class Newsletters(BaseView):
     def index(self):
         current_page = int(self.request.params.get('page', 1))
         sort = self.request.GET.get('sort', 'id')
-        direction = self.request.GET.get('direction', 'asc')
+        direction = self.request.GET.get('direction', 'desc')
         if direction not in ['asc', 'desc']:
             direction = 'asc'
 
