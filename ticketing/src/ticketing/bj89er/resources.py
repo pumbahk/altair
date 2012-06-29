@@ -24,14 +24,20 @@ class Bj89erCartResource(TicketingCartResrouce):
         ).first()
         if credential:
             user = credential.user
+<<<<<<< HEAD
         
         else:
             user = User()
+=======
+            return user
+        
+>>>>>>> develop
 
         membership = MemberShip.query.filter(MemberShip.name==MEMBERSHIP_NAME).first()
         if membership is None:
             membership = MemberShip(name=MEMBERSHIP_NAME)
             DBSession.add(membership)
+<<<<<<< HEAD
         credential = user.user_credential
         if credential is None:
             credential = UserCredential(user=user, auth_identifier=str(cart.id), membership=membership)
@@ -56,5 +62,11 @@ class Bj89erCartResource(TicketingCartResrouce):
         profile.tel_1=params['tel1_1'] + params['tel1_2'] + params['tel1_3']
         profile.tel_2=params['tel2_1'] + params['tel2_2'] + params['tel2_3']
         profile.fax=None
+=======
+
+        user = User()
+        credential = UserCredential(user=user, auth_identifier=str(cart.id), membership=membership)
+        credential = user.user_credential
+>>>>>>> develop
         DBSession.add(user)
         return user
