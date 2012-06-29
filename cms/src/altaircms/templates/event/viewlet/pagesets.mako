@@ -29,7 +29,7 @@
       </tr>
         %else:
         <td>
-          <a href="${request.route_path('page_edit', event_id=event.id, page_id=pages[0].id)}">${pages[0].name}</a>
+          <a href="${request.route_path('page_detail', page_id=pages[0].id)}">${pages[0].name}</a>
           <a class="action" target="_blank" href="${request.route_path("preview_page", page_id=pages[0].id)}">
             <i class="icon-eye-open"> </i></a>
           ${u'<span class="label">現在表示</span>' if pages[0]==current_page else u""|n}
@@ -55,7 +55,7 @@
         %for page in pageset.pages[1:]:
         <tr>
           <td>
-            <a href="${request.route_path('page_edit', event_id=event.id, page_id=page.id)}">${page.name}</a>
+            <a href="${request.route_path('page_detail', page_id=page.id)}">${page.name}</a>
             <a class="action" target="_blank" href="${request.route_path("preview_page", page_id=page.id)}">
               <i class="icon-eye-open"> </i></a>
             ${u'<span class="label">現在表示</span>' if page==current_page else u""|n}

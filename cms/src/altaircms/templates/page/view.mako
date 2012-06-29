@@ -48,8 +48,8 @@ event = page.event or page.pageset.event
         <th class="span2">キーワード</th><td>${page.keywords}</td>
       </tr>
       <tr>
-	<th>掲載期間</th>
-	<td>　${h.base.jterm(page.publish_begin, page.publish_end)}</td>
+		<th>掲載期間</th>
+		<td>${h.base.jterm(page.publish_begin, page.publish_end)}</td>
       </tr>
       <tr>
         <th class="span2">公開ステータス</th><td>${u"公開中" if page.published else u"非公開"}</td>
@@ -72,6 +72,9 @@ event = page.event or page.pageset.event
       <li>
 		<a target="_blank" href="${request.route_path("page_edit_", page_id=page.id)}"><i class="icon-minus"></i> ページのレイアウト編集</a>
       </li>
+	  <li>
+		<a href="${h.page.to_delete(request,page)}"><i class="icon-trash"></i> Delete</a>
+	  </li>
 	  <li class="divider"></li>
 	  <li>
 	   	<a target="_blank" href="${request.route_path("preview_page", page_id=page.id)}"><i class="icon-eye-open"></i>Preview</a>
