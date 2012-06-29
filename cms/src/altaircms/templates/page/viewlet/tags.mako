@@ -19,7 +19,7 @@ tagsize = len(tags)
 ##		<td>
 ##          <input type="checkbox" name="object_id" value="${tags[0].id}">
 ##		</td>
-		  <td>${tags[0].label}</td>
+		  <td><a class="tag" href="${h.tag.to_search_query(request, "page", tags[0])}">${tags[0].label}</a></td>
 		  <td>${h.base.jdate(tags[0].created_at)}</td>
 		%endif
 	  </tr>
@@ -29,7 +29,7 @@ tagsize = len(tags)
 ##		<td>
 ##          <input type="checkbox" name="object_id" value="${tag.id}">
 ##		</td>
-		<td>${tag.label}</td>
+		<td><a class="tag" href="${h.tag.to_search_query(request, "page", tag)}">${tag.label}</a></td>
 		<td>${h.base.jdate(tag.created_at)}</td>
 	  </tr>
 	  %endfor
@@ -44,7 +44,7 @@ tagsize = len(tags)
 ##		  <td>
 ##			<input type="checkbox" name="object_id" value="${tags[0].id}">
 ##		  </td>
-		  <td>${tags[0].label}</td>
+		  <td><a class="tag" href="${h.tag.to_search_query(request, "page", tag)}">${tags[0].label}</a></td>
 		  <td>${h.base.jdate(tags[0].created_at)}</td>
 		%endif
 	  </tr>
@@ -54,7 +54,7 @@ tagsize = len(tags)
 ##		<td>
 ##          <input type="checkbox" name="object_id" value="${tag.id}">
 ##		</td>
-		<td>${tag.label}</td>
+		<td><a class="tag" href="${h.tag.to_search_query(request, "page", tag)}">${tag.label}</a></td>
 		<td>${h.base.jdate(tag.created_at)}</td>
 	  </tr>
 	  %endfor

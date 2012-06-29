@@ -52,18 +52,23 @@ event = page.event or page.pageset.event
 	<td>　${h.base.jterm(page.publish_begin, page.publish_end)}</td>
       </tr>
       <tr>
-        <th class="span2">公開ステータス</th><td>${h.page.show_publish_status(page)}</td>
+        <th class="span2">公開ステータス</th><td>${u"公開中" if page.published else u"非公開"}</td>
       </tr>
     </table>
 
-  <div class="btn-group" style="margin-bottom:20px;">
+  <div class="btn-group" style="float:left; margin-bottom:20px; margin-right:10px;">
     <a target="_blank" href="${request.route_path("page_update",id=page.id)}" class="btn">
       <i class="icon-pencil"></i> ページ基本情報編集
     </a>
-    <button class="btn dropdown-toggle" data-toggle="dropdown">
+    <a class="btn dropdown-toggle" data-toggle="dropdown">
         <span class="caret"></span>
-    </button>
+    </a>
     <ul class="dropdown-menu">
+	  <li>
+		<a target="_blank" href="${request.route_path("page_update",id=page.id)}" class="">
+		  <i class="icon-pencil"></i> ページ基本情報編集
+		</a>
+	  </li>
       <li>
 		<a target="_blank" href="${request.route_path("page_edit_", page_id=page.id)}"><i class="icon-minus"></i> ページのレイアウト編集</a>
       </li>
@@ -73,6 +78,31 @@ event = page.event or page.pageset.event
 	  </li>
     </ul>
   </div>
+
+  <div>
+	%if page.published:
+	<button 
+	   href="${request.route_path("plugins_jsapi_page_publish_status", status="unpublish", page_id=page.id)}"
+	   id="publish_status" class="btn btn-inverse"><i class="icon-plus icon-white"></i>ページを非公開</button>
+	%else:
+	<button 
+	   href="${request.route_path("plugins_jsapi_page_publish_status", status="publish", page_id=page.id)}"
+	   id="publish_status" class="btn btn-info"><i class="icon-plus"></i>ページを公開</button>
+	%endif
+  </div>
+
+<script type="text/javascript">
+  $(function(){
+      // swap status
+	$("#publish_status").click(function(e){
+	  e.preventDefault();
+	  if(window.confirm("「"+$(this).text()+"」しますがよろしいですか？\n\n(公開したページは、特別な権限を持たない限り変更できなくなります。)")){
+		$.post($(this).attr("href")).done(function(){location.reload();});
+	  }
+	});
+  });
+</script>
+  <div style="clear:both;"></div>
 
 <h3>タグ</h3>
 ${myhelpers.pagetag_describe_viewlet(request, page)}
