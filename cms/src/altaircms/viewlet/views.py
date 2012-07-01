@@ -84,5 +84,12 @@ def describe_asset(request):
     return {"assets": assets, 
             "taglabel": taglabel}
 
-
+@view_config(name="describe_topic", renderer="altaircms:templates/page/viewlet/topics.mako")
+def describe_topic(request):
+    pageset = api.get_pageset(request)
+    event = api.get_event(request)
+    topics = api.get_topics(request)
+    return {"topics": topics, 
+            "event": event, 
+            "pageset": pageset}
 

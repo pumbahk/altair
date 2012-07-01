@@ -16,7 +16,7 @@
      %for asset in assets:
   <tr>
 	<td><input type="radio" name="object_id" value="${asset.id}"></td>
-	<td><img src="${h.asset.to_show_page(request,asset)}" width=50px height=50px/></td>
+	<td><a href="${request.route_path("asset_image_detail",asset_id=asset.id)}"><img src="${h.asset.to_show_page(request,asset)}" width=50px height=50px/></a></td>
 	<td>${asset.title}</td>
 	<td>${asset.created_at}</td>
 	<td>${asset.size}</td>

@@ -51,6 +51,7 @@ def pageset_describe_viewlet(request, pageset):
 
 from ..tag.api import get_tagmanager
 from ..asset.api import set_taglabel
+from ..topic.models import Topic
 
 def asset_describe_viewlet(request, pageset):
     tmanager = get_tagmanager("asset", request) ##
@@ -63,14 +64,16 @@ def asset_describe_viewlet(request, pageset):
     return Markup(response.text)
 
 
-# def topic_describe_viewlet(request, page):
-#     va.set_page(request, page)
-#     topics = Topic.from_page(page)
-#     va.set_topics(request, topics)
-#     response = render_view_to_response(request.context, request, name="describe_topic")
-#     if response is None:
-#         raise ValueError
-#     return Markup(response.text)
+def topic_describe_viewlet(request, pageset):
+    va.set_pageset(request, pageset)
+    event = pageset.event
+    va.set_event(request, event)
+    topics = Topic.query.filter_by(event=event).filter_by(bound_page=pageset).order_by("topic.kind", "topic.subkind", "topic.orderno")
+    va.set_topics(request, topics)
+    response = render_view_to_response(request.context, request, name="describe_topic")
+    if response is None:
+        raise ValueError
+    return Markup(response.text)
 
 # def topcontent_describe_viewlet(request, page):
 #     va.set_page(request, page)

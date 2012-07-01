@@ -2,6 +2,7 @@
 
 from altaircms.event.models import Event
 from altaircms.page.models import Page
+from altaircms.page.models import PageSet
 
 def get_event(request):
     if hasattr(request, "_event"):
@@ -20,6 +21,15 @@ def get_page(request):
         page = Page.query.filter_by(id=page_id).first()
         set_page(request, page)
         return page
+
+def get_pageset(request):
+    if hasattr(request, "_pageset"):
+        return request._pageset
+    else:
+        pageset_id = request.session.get("pageset_id", None)
+        pageset = PageSet.query.filter_by(id=pageset_id).first()
+        set_pageset(request, pageset)
+        return pageset
 
 def get_tags(request):
     if hasattr(request, "_tags"):
@@ -78,6 +88,11 @@ def get_assets(request):
     if hasattr(request, "_assets"):
         return request._assets
     raise NotImplemented
+
+def get_topics(request):
+    if hasattr(request, "_topics"):
+        return request._topics
+    raise NotImplemented
     
 def set_event(request, event):
     request._event = event
@@ -87,6 +102,9 @@ def set_page(request, page):
 
 def set_pagesets(request, pagesets):
     request._pagesets = pagesets
+
+def set_pageset(request, pageset):
+    request._pageset = pageset
 
 def set_tags(request, tags):
     request._tags = tags
@@ -105,3 +123,6 @@ def set_sales(request, sales):
 
 def set_assets(request, assets):
     request._assets = assets
+
+def set_topics(request, topics):
+    request._topics = topics

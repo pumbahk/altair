@@ -64,9 +64,11 @@
   ${myhelpers.asset_describe_viewlet(request,pageset)}
 <hr/>
 
-<h3>プロモーション枠</h3>
-<h3>画像付きトピック</h3>
 <h3>画像なしトピック</h3>
+  ${myhelpers.topic_describe_viewlet(request,pageset)}
+<hr/>
+
+<h3>画像付きトピック</h3>
 
 <script type="text/javascript">
   $(function(){
