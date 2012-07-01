@@ -74,8 +74,8 @@ class CRUDResource(RootFactory): ## fixme
             return None
 
     ## create
-    def input_form(self):
-        return self.form()
+    def input_form(self, *args, **kwargs):
+        return self.form(*args, **kwargs)
 
     def confirmed_form(self, obj=None):
         form = self.form(self.request.POST)
@@ -140,7 +140,7 @@ class CreateView(object):
         
     def input(self):
         self.context.set_endpoint()
-        form = self.context.input_form()
+        form = self.context.input_form(self.request.GET)
         raise AfterInput(form=form, context=self.context)
 
     def confirm(self):

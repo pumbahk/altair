@@ -21,16 +21,18 @@ def describe_pageset(request):
 @view_config(name="describe_performance", renderer="altaircms:templates/event/viewlet/performances.mako")
 def describe_performance(request):
     performances = api.get_performances(request)
+    event = api.get_event(request)
     return {
-        "headers": table_headers([u"",u"公演名",u"バックエンドID",u"公演日時",u"場所",u"pc購入URL",u"mobile購入URL"]), 
+        "event": event, 
         "performances": performances
         }
 
 @view_config(name="describe_sale", renderer="altaircms:templates/event/viewlet/sales.mako")
 def describe_sale(request):
     sales = api.get_sales(request)
+    event = api.get_event(request)
     return {
-        "headers": table_headers([u"",u"名前",u"販売条件",u"適用期間",u"券種",u"席種",u"価格"]), 
+        "event": event, 
         "sales": sales
         }
 

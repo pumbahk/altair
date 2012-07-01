@@ -1,6 +1,15 @@
 <div class="box">
 <table class="table">
-  <thead><tr>${headers}</tr>
+  <thead>
+	<tr>
+	  <th></th>
+	  <th>名前</th>
+	  <th>販売条件</th>
+	  <th>適用期間</th>
+	  <th>券種</th>
+	  <th>席種</th>
+	  <th>価格</th>
+	</tr>
   </thead>
   <tbody>
      %for sale in sales:
@@ -47,7 +56,7 @@ tickets_size = len(tickets)
 		</a>
 	  </li>
 	  <li>
-		<a href="${request.route_path("sale_create",action="input")}">
+		<a href="${request.route_path("sale_create",action="input",_query=dict(event=event.id))}">
 		  <i class="icon-minus"></i> 新規作成
 		</a>
 	  </li>

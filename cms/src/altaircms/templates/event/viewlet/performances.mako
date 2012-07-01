@@ -3,7 +3,16 @@
 <div class="box">
   <p align="right">※ pc購入URL,mobile購入URLは、個別に飛び先のURLが設定されている場合にy。そうでない場合にはnが付きます。</p>
   <table class="table">
-    <thead><tr>${headers}</tr>
+    <thead>
+	  <tr>    
+		<th></th>
+		<th>公演名</th>
+		<th>バックエンドID</th>
+		<th>公演日時</th>
+		<th>場所</th>
+		<th>pc購入URL</th>
+		<th>mobile購入URL</th>
+	  </tr>       
     </thead>
     <tbody>
          %for p in performances:
@@ -42,7 +51,7 @@
         </a>
       </li>
       <li>
-        <a href="${request.route_path("performance_create",action="input")}">
+        <a href="${request.route_path("performance_create",action="input",_query=dict(event=event.id))}">
           <i class="icon-minus"></i> 新規作成
         </a>
       </li>
