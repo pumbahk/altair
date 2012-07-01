@@ -49,7 +49,7 @@ seq = h.paginate(request, pages, item_count=page_count)
   <tbody>
     %for page in seq.paginated():
       <tr>
-        <td><a href="${request.route_path("pageset_detail_orphan", pageset_id=page.id)}">${page.name}</a></td>
+        <td><a href="${request.route_path("pageset_detail", pageset_id=page.id, kind="other")}">${page.name}</a></td>
         <td>${page.url}</td>
         <td>
           <a href="${h.link.preview_page_from_pageset(request, page)}" class="btn btn-small"><i class="icon-eye-open"> </i> Preview</a>

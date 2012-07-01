@@ -96,7 +96,11 @@
        </a>
 	  </li>
      <li>
+%if event:
 		<a class="" target="_blank" href="${request.route_path("page_add", event_id=event.id, action="input")}">
+%else:
+		<a class="" target="_blank" href="${request.route_path("page_add_orphan", action="input")}">
+%endif
 		  <i class="icon-plus"> </i> 新しいページセットの追加</a>
 		</a>
      </li>
@@ -125,13 +129,6 @@
   });
 </script>
      </li>
-<%doc>
-      <li>
-        <a href="${request.route_path("event_delete",action="confirm",id=event.id)}">
-          <i class="icon-minus"></i> 削除
-        </a>
-      </li>
-</%doc>
     </ul>
   </div>
 </div>

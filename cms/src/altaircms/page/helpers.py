@@ -41,7 +41,6 @@ def accesskey_describe_viewlet(request, page):
         raise ValueError
     return Markup(response.text)
 
-
 # def asset_describe_viewlet(request, page):
 #     va.set_page(request, page)
 #     assets = Asset.from_page(page)

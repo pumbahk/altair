@@ -30,7 +30,7 @@ def preview_pageset(context, request):
     page = control.fetch_page_from_pagesetid(pageset_id)
 
     if not control.can_access():
-        return HTTPForbidden()
+        return HTTPForbidden(control.error_message)
     
     template = context.frontpage_template(page)
     if not control.can_rendering(template, page):

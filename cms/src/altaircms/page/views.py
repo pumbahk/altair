@@ -237,13 +237,7 @@ class PageUpdateView(object):
             return self._input_page(page, form)
 
 
-"""
-page一覧ページというものは存在しない。
-pageset -> [page, page, page]というようなpagesetというオブジェクトが存在し。
-pagesetの一覧ページのみが存在する。
-"""
-
-@view_defaults(permission="page_read", route_name="page_list", decorator=with_bootstrap, request_method="GET")
+@view_defaults(permission="page_read", route_name="pageset_list", decorator=with_bootstrap, request_method="GET")
 class PageListView(object):
     def __init__(self, request):
         self.request = request
@@ -264,12 +258,42 @@ class PageListView(object):
         return {"pages":pages}
 
 
-@view_config(route_name='page', renderer='altaircms:templates/page/list.mako', 
-             permission='page_read', request_method="GET", decorator=with_bootstrap)
-def list_(request):
-    return dict(
-        pages=request.context.Page.query, 
-    )
+def with_pageset_predicate(kind): #don't support static page
+    def decorate(info, request):
+        if not hasattr(request, "_pageset"):
+            pageset_id = request.matchdict["pageset_id"]
+            request._pageset = PageSet.query.filter_by(id=pageset_id).first()
+        pageset = request._pageset
+        if pageset is None:
+            return False
+        if pageset.event_id == None:
+            return kind == "other"
+        else:
+            return kind == "event"
+    return decorate
+
+@view_defaults(permission="page_read", route_name="pageset_detail", decorator=with_bootstrap, request_method="GET")
+class PageSetDetailView(object):
+    def __init__(self, request):
+        self.request = request
+
+    def static_page_detail(self):
+        pass
+
+    @view_config(renderer="altaircms:templates/pagesets/event_page_detail.mako", 
+                 custom_predicates=(with_pageset_predicate("event"),))
+    def event_bound_page_detail(self):
+        """ event詳細ページと結びついているpage """
+        pass
+
+    @view_config(renderer="altaircms:templates/pagesets/other_page_detail.mako", 
+                 custom_predicates=(with_pageset_predicate("other"),))
+    def other_page_detail(self):
+        """event詳細ページとは結びついていないページ(e.g. トップ、カテゴリトップ) """
+        pageset = self.request._pageset ## predicate
+        return {"pageset":pageset}
+
+
 
 
 @view_config(route_name="page_detail", renderer='altaircms:templates/page/view.mako', permission='authenticated', 
@@ -282,6 +306,14 @@ def page_detail(request):
         return HTTPNotFound(request.route_path("page"))
     return {"page": page, "myhelpers": myhelpers}
 
+
+##deprecated view
+@view_config(route_name='page', renderer='altaircms:templates/page/list.mako', 
+             permission='page_read', request_method="GET", decorator=with_bootstrap)
+def list_(request):
+    return dict(
+        pages=request.context.Page.query, 
+    )
 
 
 ## todo: persmissionが正しいか確認
