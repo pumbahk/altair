@@ -93,6 +93,11 @@ def get_topics(request):
     if hasattr(request, "_topics"):
         return request._topics
     raise NotImplemented
+
+def get_topcontents(request):
+    if hasattr(request, "_topcontents"):
+        return request._topcontents
+    raise NotImplemented
     
 def set_event(request, event):
     request._event = event
@@ -126,3 +131,6 @@ def set_assets(request, assets):
 
 def set_topics(request, topics):
     request._topics = topics
+
+def set_topcontents(request, topcontents):
+    request._topcontents = topcontents

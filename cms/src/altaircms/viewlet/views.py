@@ -93,3 +93,10 @@ def describe_topic(request):
             "event": event, 
             "pageset": pageset}
 
+@view_config(name="describe_topcontent", renderer="altaircms:templates/page/viewlet/topcontents.mako")
+def describe_topcontent(request):
+    pageset = api.get_pageset(request)
+    topcontents = api.get_topcontents(request)
+    return {"topcontents": topcontents, 
+            "pageset": pageset}
+

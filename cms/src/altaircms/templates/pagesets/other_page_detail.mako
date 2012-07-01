@@ -69,6 +69,8 @@
 <hr/>
 
 <h3>画像付きトピック</h3>
+  ${myhelpers.topcontent_describe_viewlet(request,pageset)}
+<hr/>
 
 <script type="text/javascript">
   $(function(){
