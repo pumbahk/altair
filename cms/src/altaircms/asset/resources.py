@@ -97,8 +97,8 @@ class AssetResource(RootFactory):
         return query_filter_by_users(qs, data)
     
     ## delete
-    def delete_asset_file(self, asset, _delete_file=h.delete_file_if_exist):
-        path = os.path.join(self.storepath, asset.filepath)
+    def delete_asset_file(self, assetfile, _delete_file=h.delete_file_if_exist):
+        path = os.path.join(self.storepath, assetfile)
         _delete_file(path)
 
     ## create
