@@ -50,6 +50,7 @@ def url_generate_default(request, **kwargs):
     """pagination default url generator"""
     curpath = request.url
     parse_result = urlparse.urlparse(curpath)
+
     def replacement(page, **kwargs):
         return url_create_with_parse_result(parse_result, page=page)
     return replacement
