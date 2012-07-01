@@ -61,3 +61,5 @@ def ftsearch_delete_register_from_page(request, page, ftsearch=None):
     ftsearch = ftsearch or solr.get_fulltext_search(request)
     doc = solr.create_doc_from_dict({"page_id": page.id})
     ftsearch.delete(doc, commit=True)
+    
+

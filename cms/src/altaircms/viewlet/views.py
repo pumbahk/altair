@@ -4,6 +4,7 @@ from . import api
 from markupsafe import Markup
 from ..slackoff import mappers as sm
 from ..slackoff import forms as sf
+from ..asset.api import get_taglabel
 
 def table_headers(headers):
     return Markup(u"<th>%s</th>" % u"</th></th>".join(headers)) 
@@ -76,8 +77,10 @@ def describe_pagetag(request):
 
 @view_config(name="describe_asset", renderer="altaircms:templates/page/viewlet/assets.mako")
 def describe_asset(request):
+    taglabel = get_taglabel(request)
     assets = api.get_assets(request)
-    return {"assets": assets}
+    return {"assets": assets, 
+            "taglabel": taglabel}
 
 
 

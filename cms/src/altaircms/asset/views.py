@@ -13,6 +13,19 @@ from pyramid.view import (
 from altaircms.lib.fanstatic_decorator import with_bootstrap
 from . import helpers as h
 
+@view_defaults(permission="asset_create", decorator=with_bootstrap, route_name="asset_add")
+class AssetAddView(object):
+    def __init__(self, request):
+        self.request = request
+        self.context = request.context        
+
+    @view_config(match_param="kind=image", renderer="altaircms:templates/asset/image/add.mako", 
+                 request_method="GET")
+    def add_image_asset_input(self):
+        private_tags = self.request.params.get("private_tags", "")
+        form = self.context.forms.ImageAssetForm(private_tags=private_tags)
+        return {"form": form}
+
 @view_defaults(permission="asset_read", decorator=with_bootstrap)
 class AssetListView(object):
     def __init__(self, request):

@@ -50,12 +50,13 @@ def pageset_describe_viewlet(request, pageset):
     return Markup(response.text)
 
 from ..tag.api import get_tagmanager
+from ..asset.api import set_taglabel
 
 def asset_describe_viewlet(request, pageset):
     tmanager = get_tagmanager("asset", request) ##
     assets = tmanager.search_by_tag_label(pageset.taglabel)
     va.set_assets(request, assets)
-
+    set_taglabel(request, pageset.taglabel)
     response = render_view_to_response(request.context, request, name="describe_asset")
     if response is None:
         raise ValueError

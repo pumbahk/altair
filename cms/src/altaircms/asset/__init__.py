@@ -3,6 +3,8 @@
 import functools
 def includeme(config):
     add_route = functools.partial(config.add_route, factory=".resources.AssetResource")
+    add_route("asset_add", "/asset/{kind}")
+
     add_route('asset_list', '')
     add_route("asset_image_list", "/image")
     add_route('asset_movie_list', '/movie')
