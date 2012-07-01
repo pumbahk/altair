@@ -58,3 +58,9 @@ def preview_page_from_pageset(request, pageset):
 def preview_page_from_page(request, page):
     logger.debug('preview')
     return request.route_path("preview_page", page_id=page.id)
+
+def pageset_detail(request, pageset):
+    if pageset.event_id is None:
+        return request.route_path("pageset_detail", pageset_id=pageset.id, kind="other")
+    else:
+        return request.route_path("pageset_detail", pageset_id=pageset.id, kind="event")

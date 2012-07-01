@@ -24,7 +24,7 @@
           <input type="radio" name="object_id" value="${pageset.id}">
         </td>
         <td rowspan="${pagesize}">
-          <a href="${request.route_path('pageset', pageset_id=pageset.id)}">${pageset.name}</a>
+          <a href="${h.link.pageset_detail(request,pageset)}">${pageset.name}</a>
           <a class="action" target="_blank" href="${request.route_path("preview_pageset", pageset_id=pageset.id)}">
             <i class="icon-eye-open"> </i></a>
          </a>

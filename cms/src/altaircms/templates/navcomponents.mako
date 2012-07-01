@@ -19,8 +19,12 @@
     <li><a href="${request.route_path("sale_list")}">イベント販売条件</a></li>
     <li><a href="${request.route_path("ticket_list")}">チケット</a></li>
     <li class="nav-header">ページ管理</li>
-    <li><a href="${request.route_path("page")}">ページ</a></li>
+    <li><a href="${request.route_path("pageset_list",kind="event")}">イベント関連のページ</a></li>
+    <li><a href="${request.route_path("pageset_list",kind="other")}">トップ/カテゴリトップ</a></li>
+<%doc>
+  <li><a href="${request.route_path("page")}">ページ</a></li>
     <li><a href="${request.route_path("pagesets")}">ページセット</a></li>
+</%doc>
 	<li class="nav-header">トピック管理</li>
     <li><a href="${request.route_path("promotion_list")}">プロモーション枠</a></li>
     <li><a href="${request.route_path("promotion_unit_list")}">プロモーション</a></li>

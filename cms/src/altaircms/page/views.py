@@ -248,7 +248,8 @@ class PageListView(object):
     @view_config(match_param="kind=event", renderer="altaircms:templates/page/event_page_list.mako")
     def event_bound_page_list(self):
         """ event詳細ページと結びついているpage """
-        pass
+        pages = PageSet.query.filter(PageSet.event != None)
+        return {"pages":pages}
 
     @view_config(match_param="kind=other", renderer="altaircms:templates/page/other_page_list.mako")
     def other_page_list(self):
@@ -284,7 +285,10 @@ class PageSetDetailView(object):
                  custom_predicates=(with_pageset_predicate("event"),))
     def event_bound_page_detail(self):
         """ event詳細ページと結びついているpage """
-        pass
+        pageset = self.request._pageset ## predicate
+        return {"pageset":pageset, 
+                "myhelpers": myhelpers}
+
 
     @view_config(renderer="altaircms:templates/pagesets/other_page_detail.mako", 
                  custom_predicates=(with_pageset_predicate("other"),))

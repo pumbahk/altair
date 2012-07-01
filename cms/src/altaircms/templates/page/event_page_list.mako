@@ -26,11 +26,11 @@
   <h3 style="margin-top:0px;">ページ追加</h3>
     <a href="${request.route_path("page_add_orphan", action="input")}" class="btn btn-success btn-large">新しいページを作成する</a>
 
-
   <h3>ページ一覧</h3>
+
   <ul class="nav nav-tabs">
-    <li><a href="${request.route_path("pageset_list",kind="event")}">イベント詳細ページ</a></li>
-    <li  class="active"><a href="${request.route_path("pageset_list",kind="other")}">トップ／カテゴリトップページ</a></li>
+    <li class="active"><a href="${request.route_path("pageset_list",kind="event")}">イベント詳細ページ</a></li>
+    <li><a href="${request.route_path("pageset_list",kind="other")}">トップ／カテゴリトップページ</a></li>
   </ul>
 
 <%
@@ -55,7 +55,7 @@ seq = h.paginate(request, pages, item_count=page_count)
   <tbody>
     %for page in seq.paginated():
       <tr>
-        <td><a href="${request.route_path("pageset_detail", pageset_id=page.id, kind="other")}">${page.name}</a></td>
+        <td><a href="${request.route_path("pageset_detail", pageset_id=page.id, kind="event")}">${page.name}</a></td>
         <td>${page.url}</td>
         <td>
           <a href="${h.link.preview_page_from_pageset(request, page)}" class="btn btn-small"><i class="icon-eye-open"> </i> Preview</a>

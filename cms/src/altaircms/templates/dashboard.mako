@@ -36,7 +36,8 @@
 <div class="well">
 <p class="lead">はじめ</p>
 <ul style="font-size:150%;">
-  <li><a href="${request.route_path("event_list")}">イベント関連のページを編集する</a></li>
+  <li><a href="${request.route_path("event_list")}">イベント情報を編集する</a></li>
+  <li><a href="${request.route_path("pageset_list",kind="event")}">イベント関連のページを編集する</a></li>
   <li><a href="${request.route_path("pageset_list",kind="other")}">トップページのカテゴリトップページなどを編集する</a></li>
   <li><a>静的なページの編集をする</a></li>
 </ul>
