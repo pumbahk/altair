@@ -40,6 +40,7 @@
 <div class="row-fluid">
 <h3>${master_env.title}一覧</h3>
 
+<p>全${xs.opts.get("item_count") or xs.collection.count()}件</p>
 ${xs.pager()}
 <table class="table table-striped">
   <thead>

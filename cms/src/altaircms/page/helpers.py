@@ -62,14 +62,6 @@ def asset_describe_viewlet(request, pageset):
         raise ValueError
     return Markup(response.text)
 
-# def asset_describe_viewlet(request, page):
-#     va.set_page(request, page)
-#     assets = Asset.from_page(page)
-#     va.set_assets(request, assets)
-#     response = render_view_to_response(request.context, request, name="describe_asset")
-#     if response is None:
-#         raise ValueError
-#     return Markup(response.text)
 
 # def topic_describe_viewlet(request, page):
 #     va.set_page(request, page)

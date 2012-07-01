@@ -36,6 +36,15 @@ class ISlackOffForm(Interface):
         pass
 """
 
+def as_filter(kwargs):
+    def wrapper(self, qs):
+        for k in kwargs:
+            it = self.data.get(k)
+            if it and "__None" != it:
+                qs = qs.filter_by(**{k: it})
+        return qs
+    return wrapper
+
 def validate_blocks(form, field):
     ## + complete json
     ## + elements of field.data is list like object
@@ -147,6 +156,13 @@ class PromotionUnitForm(Form):
     link = fields.TextField(label=u"外部リンク(ページより優先)")
     __display_fields__ = [u"promotion", u"main_image", u"text", u"thumbnail", "pageset", "link"]
     
+
+class PromotionUnitFilterForm(Form):
+    promotion = extfields.QuerySelectField(id="promotion", label=u"プロモーション枠", 
+                                           get_label=lambda obj: obj.name, 
+                                           query_factory = lambda : Promotion.query)
+    as_filter = as_filter(["promotion"])
+
 class PromotionForm(Form):
     name = fields.TextField(label=u"プロモーション枠名")
     ## site
@@ -199,16 +215,6 @@ class CategoryForm(Form):
     ## site
 
 
-def as_filter(kwargs):
-    def wrapper(self, qs):
-        for k in kwargs:
-            it = self.data.get(k)
-            if it and "__None" != it:
-                qs = qs.filter_by(**{k: it})
-        return qs
-    return wrapper
-
-
 class CategoryFilterForm(Form):
     hierarchy = fields.SelectField(label=u"階層", choices=[("__None", "----------")]+_hierarchy_choices)
     parent = dynamic_query_select_field_factory(
@@ -235,12 +241,12 @@ class TopicForm(Form):
 
     bound_page = dynamic_query_select_field_factory(PageSet, 
                                                     label=u"表示ページ",
-                                                    query_factory=lambda : PageSet.query.filter(PageSet.event_id==None), 
+                                                    query_factory=lambda : PageSet.query.order_by("name").filter(PageSet.event_id==None), 
                                                     allow_blank=True, 
                                                     get_label=lambda obj: obj.name or u"名前なし")
     linked_page = dynamic_query_select_field_factory(PageSet, 
                                                      label=u"リンク先ページ",
-                                                     query_factory=lambda : PageSet.query, 
+                                                     query_factory=lambda : PageSet.query.order_by("name"), 
                                                      allow_blank=True, 
                                                      get_label=lambda obj: obj.name or u"名前なし")
     link = fields.TextField(label=u"外部リンク(ページより優先)")
@@ -292,12 +298,12 @@ class TopcontentForm(Form):
     ##本当は、client.id, site.idでfilteringする必要がある
     bound_page = dynamic_query_select_field_factory(PageSet, 
                                                     label=u"表示ページ",
-                                                    query_factory=lambda : PageSet.query.filter(PageSet.event_id==None), 
+                                                    query_factory=lambda : PageSet.query.order_by("name").filter(PageSet.event_id==None), 
                                                     allow_blank=True, 
                                                     get_label=lambda obj: obj.name or u"名前なし")
     linked_page = dynamic_query_select_field_factory(PageSet, 
                                                      label=u"リンク先ページ",
-                                                     query_factory=lambda : PageSet.query, 
+                                                     query_factory=lambda : PageSet.query.order_by("name"), 
                                                      allow_blank=True, 
                                                      get_label=lambda obj: obj.name or u"名前なし")
     link = fields.TextField(label=u"外部リンク(ページより優先)")
@@ -343,7 +349,7 @@ class PageDefaultInfoForm(Form):
     keywords = fields.TextField(label=u"keywordsのデフォルト値",  widget=widgets.TextArea())    
     pageset = dynamic_query_select_field_factory(PageSet, 
                                                      label=u"親となるページセット",
-                                                     query_factory=lambda : PageSet.query, 
+                                                     query_factory=lambda : PageSet.query.order_by("name"), 
                                                      allow_blank=True, 
                                                      get_label=lambda obj: obj.name or u"名前なし")
 
