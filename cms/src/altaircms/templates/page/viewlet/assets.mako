@@ -1,4 +1,5 @@
 <div class="box">
+  <p>${taglabel}のタグがついているものを表示</p>
   <table class="table">
 	<thead>
 	  <tr>
