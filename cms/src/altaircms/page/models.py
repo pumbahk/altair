@@ -81,6 +81,10 @@ class PageSet(Base,
 
     parent_id = Column(Integer, ForeignKey('pagesets.id'))
     parent = orm.relationship("PageSet", remote_side=[id], uselist=False)
+
+    @property
+    def taglabel(self):
+        return u"pageset:%s" % self.id
     
     def gen_version(self):
         if self.version_counter is None:

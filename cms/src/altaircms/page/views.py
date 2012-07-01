@@ -291,7 +291,8 @@ class PageSetDetailView(object):
     def other_page_detail(self):
         """event詳細ページとは結びついていないページ(e.g. トップ、カテゴリトップ) """
         pageset = self.request._pageset ## predicate
-        return {"pageset":pageset}
+        return {"pageset":pageset, 
+                "myhelpers": myhelpers}
 
 
 

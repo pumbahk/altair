@@ -13,7 +13,6 @@ def describe_pageset(request):
     event = api.get_event(request)
     pagesets = api.get_pagesets(request)
     return {
-        "headers": table_headers([u"ページセット", u"ページ", u"現在表示状況", u"公開開始", u"公開終了", u"作成日時"]), 
         "event": event, 
         "pagesets": pagesets
         }
@@ -74,5 +73,11 @@ def describe_pagetag(request):
         "public_tags": public_tags, 
         "private_tags": private_tags, 
         }
+
+@view_config(name="describe_asset", renderer="altaircms:templates/page/viewlet/assets.mako")
+def describe_asset(request):
+    assets = api.get_assets(request)
+    return {"assets": assets}
+
 
 

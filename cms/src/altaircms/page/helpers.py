@@ -41,6 +41,26 @@ def accesskey_describe_viewlet(request, page):
         raise ValueError
     return Markup(response.text)
 
+def pageset_describe_viewlet(request, pageset):
+    va.set_event(request, None)
+    va.set_pagesets(request, [pageset])
+    response = render_view_to_response(request.context, request, name="describe_pageset")
+    if response is None:
+        raise ValueError
+    return Markup(response.text)
+
+from ..tag.api import get_tagmanager
+
+def asset_describe_viewlet(request, pageset):
+    tmanager = get_tagmanager("asset", request) ##
+    assets = tmanager.search_by_tag_label(pageset.taglabel)
+    va.set_assets(request, assets)
+
+    response = render_view_to_response(request.context, request, name="describe_asset")
+    if response is None:
+        raise ValueError
+    return Markup(response.text)
+
 # def asset_describe_viewlet(request, page):
 #     va.set_page(request, page)
 #     assets = Asset.from_page(page)

@@ -8,8 +8,6 @@ def get_event(request):
         return request._event
     else:
         event_id = request.session.get("event_id", None)
-        if event_id is None:
-            return None
         event = Event.query.filter_by(id=event_id).first()
         set_event(request, event)
         return event
@@ -19,8 +17,6 @@ def get_page(request):
         return request._page
     else:
         page_id = request.session.get("page_id", None)
-        if page_id is None:
-            return None
         page = Page.query.filter_by(id=page_id).first()
         set_page(request, page)
         return page
@@ -77,6 +73,11 @@ def get_sales(request):
         return event.sales
     else:
         return []
+
+def get_assets(request):
+    if hasattr(request, "_assets"):
+        return request._assets
+    raise NotImplemented
     
 def set_event(request, event):
     request._event = event
@@ -101,3 +102,6 @@ def set_performances(request, performances):
 
 def set_sales(request, sales):
     request._sales = sales
+
+def set_assets(request, assets):
+    request._assets = assets

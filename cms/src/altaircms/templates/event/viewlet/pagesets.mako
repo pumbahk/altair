@@ -3,8 +3,13 @@
   <table class="table">
     <thead>
       <tr>
-##まったくうれしくない.
-        ${headers}
+		<th></th>
+		<th>ページセット</th>
+		<th>ページ</th>
+		<th>表示状況</th>
+		<th>公開開始</th>
+		<th>公開終了</th>
+		<th>作成日時</th>
       </tr>
     </thead>
     <tbody>
