@@ -123,39 +123,6 @@ class PageAddView(object):
             raise AfterInput
 
 
-# @view_defaults(route_name="page_add", decorator=with_bootstrap.merge(with_jquery))
-# class PageAddView(object):
-#     """ eventの中でeventに紐ついたpageの作成
-#     """
-#     def __init__(self, context, request):
-#         self.request = request
-#         self.context = context
-#         self.event_id = request.matchdict["event_id"]
-
-#     @view_config(request_method="GET", renderer="altaircms:templates/page/add.mako")
-#     def input_form(self):
-#         event_id = self.request.matchdict["event_id"]
-#         event = Event.query.filter(Event.id==event_id).one()
-#         form = forms.PageForm(event=event)
-#         setup_form = forms.PageInfoSetupForm(name=event.title)
-#         return {"form":form, "setup_form": setup_form, "event":event}
-
-#     @view_config(request_method="POST", renderer="altaircms:templates/page/add.mako")
-#     def create_page(self):
-#         logging.debug('create_page')
-#         form = forms.PageForm(self.request.POST)
-#         event_id = self.request.matchdict["event_id"]
-#         if form.validate():
-#             page = self.context.create_page(form)
-#             ## flash messsage
-#             mes = u'page created <a href="%s">作成されたページを編集する</a>' % self.request.route_path("page_edit_", page_id=page.id)
-#             FlashMessage.success(mes, request=self.request)
-#             return HTTPFound(self.request.route_path("event", id=self.event_id))
-#         else:
-#             logging.debug("%s" % form.errors)
-#             event = Event.query.filter(Event.id==event_id).one()
-#             setup_form = forms.PageInfoSetupForm(name=form.data["name"])
-#             return {"form":form, "event":event, "setup_form": setup_form}
  
 
 @view_defaults(permission="page_create", decorator=with_bootstrap)
@@ -270,15 +237,38 @@ class PageUpdateView(object):
             return self._input_page(page, form)
 
 
+"""
+page一覧ページというものは存在しない。
+pageset -> [page, page, page]というようなpagesetというオブジェクトが存在し。
+pagesetの一覧ページのみが存在する。
+"""
+
+@view_defaults(permission="page_read", route_name="page_list", decorator=with_bootstrap, request_method="GET")
+class PageListView(object):
+    def __init__(self, request):
+        self.request = request
+
+    def static_page_list(self):
+        pass
+
+    @view_config(match_param="kind=event", renderer="altaircms:templates/page/event_page_list.mako")
+    def event_bound_page_list(self):
+        """ event詳細ページと結びついているpage """
+        pass
+
+    @view_config(match_param="kind=other", renderer="altaircms:templates/page/other_page_list.mako")
+    def other_page_list(self):
+        """event詳細ページとは結びついていないページ(e.g. トップ、カテゴリトップ) """
+        #kind = self.request.matchdict["kind"]
+        pages = PageSet.query.filter(PageSet.event == None)
+        return {"pages":pages}
+
+
 @view_config(route_name='page', renderer='altaircms:templates/page/list.mako', 
              permission='page_read', request_method="GET", decorator=with_bootstrap)
 def list_(request):
-    form = forms.PageForm()
-    setup_form = forms.PageInfoSetupForm()
     return dict(
         pages=request.context.Page.query, 
-        form=form, 
-        setup_form=setup_form, 
     )
 
 

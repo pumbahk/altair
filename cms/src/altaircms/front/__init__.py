@@ -4,7 +4,7 @@ def includeme(config):
     layout_lookup = layout_lookup_class(settings["altaircms.layout_directory"])
     config.registry.registerUtility(layout_lookup, config.maybe_dotted("altairsite.front.impl.ILayoutTemplateLookUp"))
 
-    config.add_route("preview_pageset", "/preview/pageseet/{pageset_id}", factory=".resources.PageRenderingResource")
+    config.add_route("preview_pageset", "/preview/pageset/{pageset_id}", factory=".resources.PageRenderingResource")
     config.add_route("preview_page", "/preview/page/{page_id}", factory=".resources.PageRenderingResource")
     config.scan(".views")
 
