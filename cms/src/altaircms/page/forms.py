@@ -196,8 +196,9 @@ def validate_page_publishings_connected(publishings):
     """ 連続性チェック
     すべての終了日の次の日に対応する開始日があること
     """
-    last_start = max(p["begin"] for p in publishings.values() if p["begin"])
-    for publishing in publishings.values():
+    real_publishings = [p for p in publishings.values() if p["begin"] and p["published"]]
+    last_start = max(p["begin"] for p in real_publishings)
+    for publishing in real_publishings:
         if publishing["published"]:
             page_id = publishing['page_id']
             begin = publishing['begin']
@@ -208,7 +209,7 @@ def validate_page_publishings_connected(publishings):
                 continue
             res = not any([other_pub['begin'] == end 
                            for other_pub 
-                           in publishings.values() if other_pub['page_id'] != page_id])
+                           in real_publishings if other_pub['page_id'] != page_id])
             if res:
                 return False # TDOO エラーになった箇所を特定する
     return True
@@ -248,6 +249,7 @@ def pageset_form_validate(self):
         # if not (result and validate_page_publishings(page_publishings)):
         #     raise Exception
         # return True
+                
         return result and validate_page_publishings(page_publishings)
 
     return result
@@ -272,8 +274,8 @@ class PageSetFormFactory(object):
             data['begin_%d' % page_id] = page.publish_begin.strftime("%Y-%m-%d %H:%M:%S") if page.publish_begin else ""
             data['end_%d' % page_id] = page.publish_end.strftime("%Y-%m-%d %H:%M:%S") if page.publish_end else ""
             data["published_%d" % page_id] = page.published
-        props['validate'] = pageset_form_validate
 
+        props['validate'] = pageset_form_validate
         PageSetForm = type('PageSetForm',
                            (base_form,),
                            props)

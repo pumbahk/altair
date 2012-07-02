@@ -1,7 +1,11 @@
 <%inherit file='../layout_2col.mako'/>
 <h3>${ps.name}</h3>
 <form action="${request.url}" method="POST">
-${form.errors}
+%if form.errors:
+<div class="alert alert-info">
+ ${form.errors}
+</div>
+%endif
 <table>
   <tr>
     <th>URL</th>

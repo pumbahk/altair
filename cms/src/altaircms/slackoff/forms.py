@@ -241,7 +241,8 @@ class TopicForm(Form):
 
     bound_page = dynamic_query_select_field_factory(PageSet, 
                                                     label=u"表示ページ",
-                                                    query_factory=lambda : PageSet.query.order_by("name").filter(PageSet.event_id==None), 
+                                                    # query_factory=lambda : PageSet.query.order_by("name").filter(PageSet.event_id==None), 
+                                                    query_factory=lambda : PageSet.query.order_by("name"), 
                                                     allow_blank=True, 
                                                     get_label=lambda obj: obj.name or u"名前なし")
     linked_page = dynamic_query_select_field_factory(PageSet, 

@@ -425,6 +425,7 @@ class PageSetView(object):
             
             form.populate_obj(proxy)
             FlashMessage.success(u"ページの掲載期間を変更しました", request=self.request)
-
+        else:
+            FlashMessage.error(u"期間に誤りがあります", request=self.request)
         return dict(ps=pageset, form=form, f=factory)
 
