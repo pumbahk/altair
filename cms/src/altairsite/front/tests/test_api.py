@@ -18,7 +18,7 @@ def setUpModule():
 
 class FindSubCategoryFromPageTests(unittest.TestCase):
     def _callFUT(self, page, *args, **kwargs):
-        from altairsite.front.api import get_subcategories_from_page
+        from altairsite.front.helpers import get_subcategories_from_page
         return get_subcategories_from_page(page, *args, **kwargs)
 
     def tearDown(self):

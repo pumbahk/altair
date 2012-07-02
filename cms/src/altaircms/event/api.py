@@ -149,6 +149,8 @@ class Scanner(object):
         return self.events
 
 def parse_and_save_event(parsed):
+    # import pprint
+    # pprint.pprint(parsed)
     return Scanner(DBSession)(parsed)
 
 def validate_apikey(apikey):

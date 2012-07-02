@@ -32,14 +32,7 @@ class UnqoutePathSegmentTests(unittest.TestCase):
         self.assertNotEquals(result,self._quoted("foo%2Fbar%ffwe%2%3%2F"))
 
 class URLQueryReplacerTest(unittest.TestCase):
-    def _getTarget(self, *args, **kwargs):
-        from altaircms.helpers import url_query_replacer
-        return url_query_replacer(*args, **kwargs)
-
-    def test_it(self):
-        target = self._getTarget("/")
-        result = target("1")
-        print result
+    pass
 
 if __name__ == "__main__":
     unittest.main()

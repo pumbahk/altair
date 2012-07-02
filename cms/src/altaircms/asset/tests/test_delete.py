@@ -23,6 +23,6 @@ class AssetDeleteTests(unittest.TestCase):
 
         target = self._makeOne(testing.DummyRequest())
         target.storepath = "."
-        target.delete_asset_file(asset, delete_file_dummy)
+        target.delete_asset_file(asset.filepath, delete_file_dummy)
 
         self.assertEquals(delete_file_dummy.deleted, "./foo.jpg")

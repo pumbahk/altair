@@ -27,7 +27,7 @@ def makeImageasset(*args, **kwargs):
 
 class PromotionUnitTest(unittest.TestCase):
     def setUp(self):
-        self.config = testing.setUp()
+        self.config = testing.setUp(settings={"altaircms.layout_directory": "altaircms:/templates/front/layout"})
         self.config.include("altairsite.front")
 
     def tearDown(self):
@@ -62,7 +62,7 @@ class PromotionUnitTest(unittest.TestCase):
 
 class PromotionManagerTests(unittest.TestCase):
     def setUp(self):
-        self.config = testing.setUp()
+        self.config = testing.setUp(settings={"altaircms.layout_directory": "altaircms:/templates/front/layout"})
         self.config.include("altairsite.front")
         self.config.include("altaircms.asset")
 
