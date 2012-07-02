@@ -41,12 +41,13 @@
 	${search_form.freeword.label}: ${search_form.freeword}
 ## ugly
 <table>
-  <tr><td>${search_form.deal_open.label}: </td><td>${search_form.deal_open}</td><td>${search_form.deal_open_op}</td></tr>
-  <tr><td>${search_form.deal_close.label}: </td><td>${search_form.deal_close}</td><td>${search_form.deal_close_op}</td></tr>
-  <tr><td>${search_form.event_open.label}: </td><td>${search_form.event_open}</td><td>${search_form.event_open_op}</td></tr>
-  <tr><td>${search_form.event_close.label}: </td><td>${search_form.event_close}</td><td>${search_form.event_close_op}</td></tr>
-  <tr><td>${search_form.created_at.label}: </td><td>${search_form.created_at}</td><td>${search_form.created_at_op}</td></tr>
-  <tr><td>${search_form.updated_at.label}: </td><td>${search_form.updated_at}</td><td>${search_form.updated_at_op}</td></tr>
+  <tr><th>${search_form.category.label}: </th><td>${search_form.category}</td></tr>
+  <tr><th>${search_form.deal_open.label}: </th><td>${search_form.deal_open}</td><td>${search_form.deal_open_op}</td></tr>
+  <tr><th>${search_form.deal_close.label}: </th><td>${search_form.deal_close}</td><td>${search_form.deal_close_op}</td></tr>
+  <tr><th>${search_form.event_open.label}: </th><td>${search_form.event_open}</td><td>${search_form.event_open_op}</td></tr>
+  <tr><th>${search_form.event_close.label}: </th><td>${search_form.event_close}</td><td>${search_form.event_close_op}</td></tr>
+  <tr><th>${search_form.created_at.label}: </th><td>${search_form.created_at}</td><td>${search_form.created_at_op}</td></tr>
+  <tr><th>${search_form.updated_at.label}: </th><td>${search_form.updated_at}</td><td>${search_form.updated_at_op}</td></tr>
 </table>
 </div>
   </div>

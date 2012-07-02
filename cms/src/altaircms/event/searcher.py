@@ -1,6 +1,7 @@
 from .models import Event
 from .helpers import pageset_id_list_from_word
 from ..page.models import PageSet
+from ..models import Category
 
 def _op_choice(x, sop, y):
     if sop == "lte":
@@ -15,6 +16,7 @@ def make_event_search_query(request, data, qs=None):
     qs = qs or Event.query    
     qs = make_event_search_by_date(qs, data)    
     qs = make_event_search_by_word(request, qs, data)
+    qs = make_event_search_by_category(qs, data)
     return qs
 
 def make_event_search_by_date(qs, data):
@@ -42,4 +44,13 @@ def make_event_search_by_word(request, qs, data):
         # qs = qs.filter(where | Event.title.like(likeword), Event.subtitle.like(likeword))
     return qs
 
+
+def make_event_search_by_category(qs, data):
+    if data["category"]:
+        category = data["category"]
+        if category.parent is None:
+            qs = qs.filter(Event.id==PageSet.event_id).filter(PageSet.parent_id==Category.pageset_id).filter(Category.origin==category.origin)
+        else:
+            qs = qs.filter(Event.id==PageSet.event_id).filter(PageSet.parent_id==Category.pageset_id).filter(Category.id==category.id)
+    return qs
 

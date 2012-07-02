@@ -4,8 +4,11 @@ from altaircms.helpers.formhelpers import MaybeDateTimeField
 from wtforms import fields, validators
 from wtforms.form import Form
 from wtforms import widgets
+
 from altaircms.helpers.formhelpers import required_field, append_errors
 from .models import Event
+from ..models import Category
+from altaircms.lib.formhelpers import dynamic_query_select_field_factory
 
 class EventForm(Form):
     title = fields.TextField(label=u'タイトル', validators=[required_field()])
@@ -63,4 +66,8 @@ class EventSearchForm(Form):
     created_at_op = fields.SelectField(choices=op_choice)
     updated_at = MaybeDateTimeField(label=u'更新日')
     updated_at_op = fields.SelectField(choices=op_choice)
+    category = dynamic_query_select_field_factory(
+        Category, allow_blank=True, label=u"カテゴリ",
+        get_label=lambda obj: obj.label or u"--なし--")
+
 
