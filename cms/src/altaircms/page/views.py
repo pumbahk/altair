@@ -7,10 +7,9 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from altaircms.lib.viewhelpers import RegisterViewPredicate
 from altaircms.lib.viewhelpers import FlashMessage
 from . import forms
+from . import searcher
 import altaircms.widget.forms as wf
-from altaircms.page.models import Page
 from altaircms.page.models import PageSet
-from altaircms.page.models import PageDefaultInfo
 from altaircms.event.models import Event
 
 
@@ -249,7 +248,17 @@ class PageListView(object):
     def event_bound_page_list(self):
         """ event詳細ページと結びついているpage """
         pages = PageSet.query.filter(PageSet.event != None)
-        return {"pages":pages}
+        params = dict(self.request.GET)
+        if "page" in params:
+            params.pop("page") ## pagination
+        if params:
+            search_form = forms.PageSetSearchForm(self.request.GET)
+            if search_form.validate():
+                pages = searcher.make_pageset_search_query(self.request, search_form.data, qs=pages)
+        else:
+            search_form = forms.PageSetSearchForm()
+
+        return {"pages":pages, "search_form": search_form}
 
     @view_config(match_param="kind=other", renderer="altaircms:templates/page/other_page_list.mako")
     def other_page_list(self):
@@ -257,7 +266,6 @@ class PageListView(object):
         #kind = self.request.matchdict["kind"]
         pages = PageSet.query.filter(PageSet.event == None)
         return {"pages":pages}
-
 
 def with_pageset_predicate(kind): #don't support static page
     def decorate(info, request):

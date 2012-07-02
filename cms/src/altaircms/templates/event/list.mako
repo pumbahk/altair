@@ -38,9 +38,9 @@
   <form class="form-inline">
   <div class="modal-body">
 <div class="well">
-	${search_form.freeword.label}: ${search_form.freeword}
 ## ugly
 <table>
+  <tr><th>${search_form.freeword.label}: <th><td>${search_form.freeword}</td></tr>
   <tr><th>${search_form.category.label}: </th><td>${search_form.category}</td><td>${search_form.is_vetoed.label}:${search_form.is_vetoed}</td></tr>
   <tr><th>${search_form.deal_open.label}: </th><td>${search_form.deal_open}</td><td>${search_form.deal_open_op}</td></tr>
   <tr><th>${search_form.deal_close.label}: </th><td>${search_form.deal_close}</td><td>${search_form.deal_close_op}</td></tr>

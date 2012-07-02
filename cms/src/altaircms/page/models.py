@@ -111,6 +111,14 @@ class PageSet(Base,
         page.version = pageset.gen_version()
         return pageset
 
+    # @classmethod
+    # def unpublished_pageset(cls, dt, qs=None):
+    #     """dt時点で掲載されていないページを探す"""
+    #     qs = qs or cls.query
+    #     where = (Page.in_term(dt)) | ((Page.publish_begin <= dt) & (Page.publish_end==None))
+    #     qs = qs.filter(sa.not_(where & (Page.published==True) & (PageSet.id==Page.pageset_id)))
+    #     return qs
+
     def current(self, dt=None, published=True):
         dt = dt or datetime.now()
         where = (Page.in_term(dt)) | ((Page.publish_begin==None) & (Page.publish_end==None))

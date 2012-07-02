@@ -20,14 +20,17 @@ from altaircms.helpers.formhelpers import MaybeDateTimeField
 
 logger = logging.getLogger(__name__)
 
+from ..models import Category
 
 class PageSetSearchForm(Form):
     """
-    検索対象: category,  name,  公開中, 公開停止中, 
+    検索対象: category,  name,  公開停止中, 
     """
-    pass
-
-
+    freeword = fields.TextField(label=u'タイトル, サブタイトルなど')
+    is_vetoed = fields.BooleanField(label=u"検索対象から除外したものだけを探す")
+    category = dynamic_query_select_field_factory(
+        Category, allow_blank=True, label=u"カテゴリ",
+        get_label=lambda obj: obj.label or u"--なし--")
 
 def url_field_validator(form, field):
     ## conflictチェックも必要

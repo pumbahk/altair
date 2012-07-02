@@ -24,7 +24,42 @@
 
 <div class="row-fluid">
   <h3 style="margin-top:0px;">ページ追加</h3>
-    <a href="${request.route_path("page_add_orphan", action="input")}" class="btn btn-success btn-large">新しいページを作成する</a>
+
+    <div class="btn-group">
+      <a href="${request.route_path("page_add_orphan", action="input")}" class="btn btn-success btn-large">新しいページを作成する</a>
+	  <a class="btn btn-info btn-large" data-toggle="modal" href="#searchModal" >
+		<i class="icon-search icon-white"></i> 検索フォーム</a>
+	</div>
+
+<div class="modal hide big-modal" id="searchModal">
+  <div class="modal-header">
+	<button type="button" class="close" data-dismiss="modal">×</button>
+	<h3>イベント検索</h3>
+  </div>
+  <form class="form-inline">
+  <div class="modal-body">
+<div class="well">
+## ugly
+${search_form.freeword.label}: <th><td>${search_form.freeword}
+${search_form.category.label}: </th><td>${search_form.category}
+  <!-- <tr><th>${search_form.is_vetoed.label}: </th><td>${search_form.is_vetoed}</td></tr> -->
+</table>
+</div>
+  </div>
+  <div class="modal-footer">
+	<a href="#" class="btn" data-dismiss="modal">Close</a>
+	<button type="submit" class="btn btn-info">検索する</button>
+	%if search_form.errors:
+      <div class="alert alert-error">
+		${search_form.errors}
+	  </div>
+	  <script type="text/javascript">
+		$('#searchModal').modal('show');
+	  </script>
+	%endif
+  </div>
+  </form>
+</div>
 
   <h3>ページ一覧</h3>
 

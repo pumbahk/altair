@@ -8,6 +8,13 @@ from pyramid.decorator import reify
 from .interfaces import IFulltextSearch
 import random
 
+
+def pageset_id_list_from_word(request, word):
+    fulltext_search = get_fulltext_search(request)
+    query = _create_query_from_word(word)
+    result = fulltext_search.search(query, fields=["pageset_id"])
+    return [f["pageset_id"] for f in result]
+
 def get_fulltext_search(request):
     search_cls = request.registry.getUtility(IFulltextSearch)
     return search_cls.create_from_request(request)

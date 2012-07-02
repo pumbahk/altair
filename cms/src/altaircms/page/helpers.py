@@ -2,7 +2,12 @@
 from pyramid.view import render_view_to_response
 from markupsafe import Markup
 from ..viewlet import api as va
-from altaircms.tag.models import HotWord ## ugly
+from ..tag.models import HotWord ## ugly
+from ..solr.api import pageset_id_list_from_word
+from ..tag.api import get_tagmanager
+from ..asset.api import set_taglabel
+from ..topic.models import Topic
+from ..topic.models import Topcontent
 
 def _extract_tags(params, k):
     if k not in params:
@@ -48,11 +53,6 @@ def pageset_describe_viewlet(request, pageset):
     if response is None:
         raise ValueError
     return Markup(response.text)
-
-from ..tag.api import get_tagmanager
-from ..asset.api import set_taglabel
-from ..topic.models import Topic
-from ..topic.models import Topcontent
 
 def asset_describe_viewlet(request, pageset):
     tmanager = get_tagmanager("asset", request) ##
