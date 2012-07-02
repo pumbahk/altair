@@ -51,7 +51,7 @@ class Event(BaseOriginalMixin, Base):
     def deal_start_this_week_query(cls, today, offset=None, qs=None):
         """今週販売開始するquery(月曜日を週のはじめとする)"""
         start_day  = today + timedelta(days=offset or -today.weekday())
-        where = (cls.deal_open >= start_day)
+        where = (cls.deal_open >= start_day) & (cls.deal_open <= start_day+timedelta(days=7))
         qs =  (qs or cls.query).filter(where)
         return qs
 
