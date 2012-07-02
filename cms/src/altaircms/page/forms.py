@@ -20,6 +20,15 @@ from altaircms.helpers.formhelpers import MaybeDateTimeField
 
 logger = logging.getLogger(__name__)
 
+
+class PageSetSearchForm(Form):
+    """
+    検索対象: category,  name,  公開中, 公開停止中, 
+    """
+    pass
+
+
+
 def url_field_validator(form, field):
     ## conflictチェックも必要
     if field.data.startswith("/") or "://" in field.data :

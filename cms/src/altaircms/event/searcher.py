@@ -17,6 +17,8 @@ def make_event_search_query(request, data, qs=None):
     qs = make_event_search_by_date(qs, data)    
     qs = make_event_search_by_word(request, qs, data)
     qs = make_event_search_by_category(qs, data)
+    if data["is_vetoed"]:
+        qs = qs.filter_by(is_searchable=False)
     return qs
 
 def make_event_search_by_date(qs, data):

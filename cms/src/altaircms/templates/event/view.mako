@@ -12,7 +12,11 @@
 
 <table class="table table-striped">
       <tr>
-        <th class="span2">タイトル</th><td>${event.title}</td>
+        <th class="span2">タイトル</th><td>${event.title}
+%if not event.is_searchable:
+<span class="label label-warnings">検索対象から除外</span>
+%endif
+</td>   
       </tr>
       <tr>
         <th class="span2">サブタイトル</th><td>${event.subtitle}</td>

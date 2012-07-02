@@ -15,9 +15,11 @@
     <li class="nav-header">イベント管理</li>
     <!-- <li><a href="/client">edit client</a></li> -->
     <li><a href="${request.route_path("event_list")}">イベント</a></li>
+<%doc>
     <li><a href="${request.route_path("performance_list")}">パフォーマンス</a></li>
     <li><a href="${request.route_path("sale_list")}">イベント販売条件</a></li>
     <li><a href="${request.route_path("ticket_list")}">チケット</a></li>
+</%doc>
     <li class="nav-header">ページ管理</li>
     <li><a href="${request.route_path("pageset_list",kind="event")}">イベント関連のページ</a></li>
     <li><a href="${request.route_path("pageset_list",kind="other")}">トップ/カテゴリトップ</a></li>

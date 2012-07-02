@@ -52,6 +52,7 @@ class EventForm(Form):
 
 class EventSearchForm(Form):
     freeword = fields.TextField(label=u'タイトル, サブタイトルなど')
+    is_vetoed = fields.BooleanField(label=u"検索対象から除外したものだけを探す")
     event_open = MaybeDateTimeField(label=u'イベント開始日')
     # op_choice = ([("lte", u"より前") ,("eq", u"その日"), ("gte", u"より後")]) #lt, gt?
     op_choice = ([("lte", u"より前") , ("gte", u"より後")]) #lt, gt?

@@ -15,6 +15,7 @@
         <th>イベント名</th>
         <th>公演数</th>
         <th>公開日</th>
+        <th>検索対象に含める</th>
     </tr>
     </thead>
     <tbody>
@@ -23,6 +24,8 @@
         <td><a href="${request.route_path("event", id=event.id)}">${event.title}</a></td>
         <td>${len(event.performances)}</td>
         <td>${event.event_open} - ${event.event_close}</td>
+		<td>${event.is_searchable}</td>
+<%doc>
 		<td>
 		  <a href="${request.route_path("event_update",action="input",id=event.id)}" class="btn btn-small btn-primary">
 			<i class="icon-cog icon-white"> </i> Update
@@ -31,6 +34,7 @@
 			<i class="icon-trash icon-white"> </i> Delete
 		  </a>
 		</td>
+</%doc>
       </tr>
     %endfor
   </table>

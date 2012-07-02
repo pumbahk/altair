@@ -114,7 +114,7 @@ class CRUDResource(RootFactory): ## fixme
 
     def update_model_from_form(self, obj, form):
         for k, v in form.data.iteritems():
-            if v: setattr(obj, k, v)
+            setattr(obj, k, v)
         DBSession.add(obj)
 
         if self.update_event:
