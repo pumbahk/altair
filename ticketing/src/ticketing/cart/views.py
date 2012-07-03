@@ -346,7 +346,7 @@ class ReleaseCartView(object):
         cart = api.get_cart(self.request)
         cart.release()
         DBSession.delete(cart)
-        h.remove_cart(self.request)
+        api.remove_cart(self.request)
 
         return dict()
         
