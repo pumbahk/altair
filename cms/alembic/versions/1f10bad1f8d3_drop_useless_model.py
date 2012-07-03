@@ -19,6 +19,7 @@ def upgrade():
     op.drop_table(u'order_history')
     op.drop_table(u'site')
     op.drop_table(u'user')
+    op.drop_column(u'operator', u'client_id')
     op.drop_column('apikey', u'client_id')
     op.drop_column('asset', u'site_id')
     op.drop_column('category', u'site_id')
@@ -81,7 +82,7 @@ def downgrade():
                     sa.ForeignKeyConstraint(['site_id'], ['site.id'], name="fk_user_site_id_to_site_id"),
                     sa.PrimaryKeyConstraint('id')
                     )
-
+    op.add_column(u'operator', sa.Column(u'client_id', mysql.INTEGER(display_width=11), nullable=True))
     op.add_column('apikey', sa.Column(u'client_id', mysql.INTEGER(display_width=11), nullable=True))
     op.add_column('asset', sa.Column(u'site_id', mysql.INTEGER(display_width=11), nullable=True))
     op.add_column('category', sa.Column(u'site_id', mysql.INTEGER(display_width=11), nullable=True))

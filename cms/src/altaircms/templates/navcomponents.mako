@@ -89,7 +89,7 @@
 		  <ul class="nav pull-right">
 			  % if user:
 				<li class="dropdown">
-				  <a href="#" class="dropdown-toggle" data-toggle="dropdown">${user.screen_name}<b class="caret"></b></a>
+				  <a href="#" class="dropdown-toggle" data-toggle="dropdown">${request.user.screen_name}(${request.user.organization.name})<b class="caret"></b></a>
 				  <ul class="dropdown-menu">
 					<li><a href="#">
 					  <i class="icon-cog"> </i>
@@ -111,7 +111,7 @@
 			<ul>
 			  <li><a href=""><span>ダッシュボード</span></a></li>
 			  <li><a href="/"><span>票券管理</span></a></li>
-			  <li><a href="/cms" class="active"><span>CMS</span></a></li>
+			  <li><a href="/" class="active"><span>CMS</span></a></li>
 			</ul>
 		  </div>
 		  <!-- End Navigation -->

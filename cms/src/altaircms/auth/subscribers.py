@@ -1,7 +1,10 @@
+# -*- coding:utf-8 -*-
+
 from zope.interface import implementer
 from altaircms.interfaces import IAfterResponseEvent
 from ..models import DBSession
 from . import helpers as h
+from altaircms.lib.viewhelpers import FlashMessage
 
 @implementer(IAfterResponseEvent)
 class AfterLogin(object):

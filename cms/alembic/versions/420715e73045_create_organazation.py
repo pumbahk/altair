@@ -15,6 +15,19 @@ import sqlalchemy as sa
 
 
 def upgrade():
+    op.create_table('organization',
+                    sa.Column('id', sa.Integer(), nullable=False),
+                    sa.Column('backend_id', sa.Integer(), nullable=True),
+                    sa.Column('created_at', sa.DateTime(), nullable=True),
+                    sa.Column('updated_at', sa.DateTime(), nullable=True),
+                    sa.Column('name', sa.Unicode(length=255), nullable=True),
+                    sa.Column('prefecture', sa.Unicode(length=255), nullable=True),
+                    sa.Column('address', sa.Unicode(length=255), nullable=True),
+                    sa.Column('email', sa.String(length=255), nullable=True),
+                    sa.Column('contract_status', sa.Integer(), nullable=True),
+                    sa.PrimaryKeyConstraint('id')
+    )
+
     op.add_column('asset', sa.Column('organization_id', sa.Integer(), nullable=True))
     op.add_column('assettag', sa.Column('organization_id', sa.Integer(), nullable=True))
     op.add_column('category', sa.Column('organization_id', sa.Integer(), nullable=True))
@@ -35,6 +48,7 @@ def upgrade():
 
 
 def downgrade():
+    op.drop_table('organization')
     op.drop_column('asset', 'organization_id')
     op.drop_column('assettag', 'organization_id')
     op.drop_column('category', 'organization_id')
