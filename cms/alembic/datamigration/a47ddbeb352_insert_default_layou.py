@@ -30,7 +30,8 @@ csv layout
 ============
 layout
 ============
-id, blocks, client_id, created_at, site_id, template_filename, title, updated_at
+id, blocks, created_at, organization_id, template_filename, title, updated_at
+
 """
 
 class args:

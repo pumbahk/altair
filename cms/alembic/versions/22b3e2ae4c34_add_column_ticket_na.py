@@ -1,14 +1,14 @@
 """add column ticket.name
 
 Revision ID: 22b3e2ae4c34
-Revises: 2342ce6cd8fc
+Revises: 3adbb1f00111
 Create Date: 2012-06-14 11:38:07.933970
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '22b3e2ae4c34'
-down_revision = '2342ce6cd8fc'
+down_revision = '3adbb1f00111'
 
 from alembic import op
 import sqlalchemy as sa

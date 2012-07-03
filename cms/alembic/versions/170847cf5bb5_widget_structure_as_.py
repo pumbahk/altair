@@ -1,14 +1,14 @@
 """widget structure as text
 
 Revision ID: 170847cf5bb5
-Revises: 1dce352cb9f3
+Revises: 42e1fa2bca08
 Create Date: 2012-06-11 20:11:25.784081
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '170847cf5bb5'
-down_revision = '1dce352cb9f3'
+down_revision = '42e1fa2bca08'
 
 from alembic import op
 import sqlalchemy as sa
