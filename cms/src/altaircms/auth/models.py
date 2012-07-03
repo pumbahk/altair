@@ -150,7 +150,7 @@ class Operator(WithOrganizationMixin, Base):
     updated_at = Column(DateTime, default=datetime.now)
 
     roles = relationship("Role", backref=("operators"), secondary=operator_role, cascade='all')
-    client_id = Column(Integer, ForeignKey("client.id"))
+    organization_id = Column(Integer, ForeignKey("organization.id"))
 
     # quick fix!
     @property
@@ -193,12 +193,13 @@ class RolePermission(Base):
 
 class Organization(Base):
     """
-    顧客マスタ
+    所属組織
     """
-    __tablename__ = 'client'
+    __tablename__ = 'organization'
     query = _session.query_property()
 
     id = Column(Integer, primary_key=True)
+    backend_id = Column(Integer)
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=datetime.now())
 
@@ -208,7 +209,7 @@ class Organization(Base):
     email = Column(String(255))
     contract_status = Column(Integer)
 
-    operators = relationship("Operator", backref="client")
+    operators = relationship("Operator", backref="organization")
 
     def inthere(self, key="organization_id"):
         def transform(qs):

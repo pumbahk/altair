@@ -5,7 +5,9 @@ from datetime import datetime
 from pyramid.security import authenticated_userid
 
 from altaircms.models import DBSession
-from altaircms.auth.models import Operator, Role
+from altaircms.auth.models import Operator
+from altaircms.auth.models import Role
+from altaircms.auth.models import Organization
 from zope.deprecation import deprecation
 
 logger = logging.getLogger(__file__)
@@ -45,6 +47,15 @@ def get_roles_from_role_names(role_names):
     else:
         return []
 
+def get_or_create_organization(organization_id, organization_name):
+    organization = Organization.query.filter_by(backend_id=organization_id).first()
+    if organization is None:
+        logger.info("*login* organization is not found. create it")
+        organization = Organization(backend_id=organization_id, name=organization_name)
+        created_data = dict(backend_id=organization_id, name=organization_name)
+        logger.info("*login* created organization: %s" % created_data)
+    return organization
+
 def get_or_create_operator(source, user_id, screen_name):
     operator = Operator.query.filter_by(auth_source=source, user_id=user_id).first()
     if operator is None:
@@ -59,7 +70,7 @@ def update_operator_with_data(operator, roles, data):
     operator.last_login = datetime.now()
     operator.screen_name = data['screen_name']
     operator.oauth_token = data['access_token']
-    operator.oauth_token_secret = ''
+    operator.oauth_token_secret = ''##?
     operator.roles = roles
     return operator
 
