@@ -52,36 +52,23 @@ class OAuthLogin(object):
     def __init__(self, request, **kwargs):
         self.request = request
 
-        settings = request.registry.settings
-        for k in ['client_id', 'secret_key', 'authorize_url', 'access_token_url']:
-            setattr(self, k, kwargs.get(k, settings.get('altair.oauth.%s' % k)))
-        
-
-    # def _oauth_request(self, client, url, method):
-    #     if self._stub_client:
-    #         return self._stub_client.request(url, method)
-
-    #     return client.request(url, method)
-
     @view_config(route_name='oauth_entry')
     def oauth_entry(self):
-        url = '%s?client_id=%s&response_type=code' %(self.authorize_url, self.client_id)
+        oc = api.get_oauth_component(self.request)
+        url = oc.create_oauth_entry_url()
         logger.info("*login* oauth entry url: %s" % url)
         return HTTPFound(url)
  
     @view_config(route_name='oauth_callback')
     def oauth_callback(self):
-
         data = None
         try:
-            args = dict(
-                client_id=self.client_id,
-                client_secret=self.secret_key,
-                code=self.request.GET.get("code"),
-                grant_type='authorization_code')
-
-            url = self.access_token_url +"?" + urllib.urlencode(args)
+            oc = api.get_oauth_component(self.request)
+            code = self.request.GET.get("code")
+            grant_type='authorization_code'
+            url = oc.create_oauth_token_url(code, grant_type)
             logger.info("*login* access token url: %s" % url)
+
             data = json.loads(self._urllib2.urlopen(url).read())
             logger.info("*login* access token return: %s" % data)
 

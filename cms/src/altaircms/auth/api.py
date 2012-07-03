@@ -3,17 +3,22 @@
 
 from zope.interface import implementer
 import urllib
+import logging
+logger = logging.getLogger(__file__)
 
 from pyramid.security import forget
 
 from .interfaces import ILogoutAction
 from .interfaces import IActionResult
+from .interfaces import IOAuthComponent
 from altaircms.auth.helpers import get_authenticated_user
 
 
 def get_logout_action(request):
     return request.registry.getUtility(ILogoutAction)
 
+def get_oauth_component(request):
+    return request.registry.getUtility(IOAuthComponent)
 
 def forget_self(request):
     headers = forget(request)
@@ -59,4 +64,27 @@ class ActionResult(dict):
     def __init__(self, return_to, headers=None):
         self.return_to = return_to
         self.headers = headers
+
+
+@implementer(IOAuthComponent)
+class OAuthComponent(object):
+    def __init__(self, client_id, secret_key, authorize_url, access_token_url):
+        self.client_id = client_id
+        self.secret_key = secret_key
+        self.authorize_url = authorize_url
+        self.access_token_url = access_token_url
+    
+    def create_oauth_entry_url(self):
+        url = '%s?client_id=%s&response_type=code' %(self.authorize_url, self.client_id)
+        return url
+
+    def create_oauth_token_url(self, code, grant_type='authorization_code'):
+        args = dict(
+            client_id=self.client_id,
+            client_secret=self.secret_key,
+            code=code,
+            grant_type=grant_type)
+        
+        url = self.access_token_url +"?" + urllib.urlencode(args)
+        return url
 

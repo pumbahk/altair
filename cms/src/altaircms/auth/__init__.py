@@ -1,16 +1,32 @@
-from .interfaces import ILogoutAction
-
 def includeme(config):
     """
     requirement in settings:
     
     altaircms.logout.external.url
     altaircms.logout.action
+
+    for oauth login:
+    altair.oauth.client_id
+    altair.oauth.secret_key
+    altair.oauth.authorize_url
+    altair.oauth.access_token_url
     """
     settings = config.registry.settings
     url = settings.get("altaircms.logout.external.url")
     logout_action_class = config.maybe_dotted(settings.get("altaircms.logout.action"))
-    config.registry.registerUtility(logout_action_class(url), ILogoutAction)
+    config.registry.registerUtility(logout_action_class(url), 
+                                    config.maybe_dotted(".interfaces.ILogoutAction"))
+
+    oauth_component_class = config.maybe_dotted(".api.OAuthComponent")
+    oauth_component = oauth_component_class(
+        settings["altair.oauth.client_id"], 
+        settings["altair.oauth.secret_key"], 
+        settings["altair.oauth.authorize_url"], 
+        settings["altair.oauth.access_token_url"], 
+        )
+    config.registry.registerUtility(oauth_component, 
+                                    config.maybe_dotted(".interfaces.IOAuthComponent"))
+    
 
     config.add_route('login', '/login')
     config.add_route('logout', '/logout')
