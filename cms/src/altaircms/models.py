@@ -92,7 +92,6 @@ class Performance(BaseOriginalMixin, Base):
     id = Column(Integer, primary_key=True)
     backend_id = Column(Integer)
     event_id = Column(Integer, ForeignKey('event.id'))
-    client_id = Column(Integer, ForeignKey("client.id"))
 
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
@@ -109,7 +108,6 @@ class Performance(BaseOriginalMixin, Base):
     canceld = Column(Boolean, default=False)
     event = relationship("Event", backref=orm.backref("performances", order_by=start_on, cascade="all"))
     tickets = relationship("Ticket", secondary=performance_ticket_table, backref="performances")
-    # client = relationship("Client", backref=orm.backref("performances", order_by=id))
 
     @property
     def jprefecture(self):

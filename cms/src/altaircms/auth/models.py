@@ -203,7 +203,7 @@ class Organization(Base):
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=datetime.now())
 
-    auth_source = Column(String(255), nullable=False)
+    auth_source = Column(String(255)) ##nullable=False?
     name = Column(Unicode(255))
     prefecture = Column(Unicode(255))
     address = Column(Unicode(255))

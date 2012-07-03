@@ -275,6 +275,8 @@ class OAuthLoginTests(unittest.TestCase):
 
         res_data = json.dumps({
             'user_id': '99999999',
+            'organization_id': '10101010', 
+            'organization_name': 'this-is-organization', 
             'roles': [
                 'administrator',
                 'staff',
@@ -303,6 +305,9 @@ class OAuthLoginTests(unittest.TestCase):
         self.assertEqual(operator.roles[0].name, 'administrator')
         self.assertEqual(operator.roles[1].name, 'staff')
 
+        self.assertEqual(operator.organization.name, "this-is-organization")
+
+
     def test_oauth_callback_with_operator(self):
         import json
         from ..api import OAuthComponent
@@ -322,6 +327,8 @@ class OAuthLoginTests(unittest.TestCase):
 
         res_data = json.dumps({
             'user_id': '888888888',
+            'organization_id': '10101010', 
+            'organization_name': 'this-is-organization', 
             'roles': [
                 'administrator',
                 'staff'
@@ -348,6 +355,8 @@ class OAuthLoginTests(unittest.TestCase):
         self.assertEqual(len(operator.roles), 2)
         self.assertEqual(operator.roles[0].name, 'administrator')
         self.assertEqual(operator.roles[1].name, 'staff')
+
+        self.assertEqual(operator.organization.name, "this-is-organization")
         self.assertIsNotNone(operator.last_login)
 
 

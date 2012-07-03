@@ -39,8 +39,6 @@ class Event(BaseOriginalMixin, WithOrganizationMixin, Base):
     ticket_pickup = sa.Column(sa.UnicodeText, doc=u"チケット引き取り方法")
     ticket_payment = sa.Column(sa.UnicodeText, doc=u"支払い方法")
 
-    client_id = sa.Column(sa.Integer, sa.ForeignKey("client.id"))
-
     @classmethod
     def near_the_deal_close_query(cls, today, N=7, qs=None):
         """ 現在から販売終了N日前までのqueryを返す"""
