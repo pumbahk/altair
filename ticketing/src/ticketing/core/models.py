@@ -440,7 +440,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return {'id':self.id,
                 'title':self.title,
                 'subtitle':self.abbreviated_title,
-                "organization_id": self.organization_id, 
+                "organization_id": self.organization.id, 
                 }
 
     def get_cms_data(self):
@@ -452,6 +452,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         data = {
           "created_at": "2012-01-10T13:42:00+09:00",
           "updated_at": "2012-01-11T15:32:00+09:00",
+          "organization_id": 1, 
           "events":[
             {
               "id":1,
