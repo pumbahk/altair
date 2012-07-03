@@ -51,6 +51,9 @@ class BaseOriginalMixin(object):
     @classmethod
     def from_dict(cls, D):
         return model_from_dict(cls, D)
+
+class WithOrganizationMixin(object):
+    organization_id = Column(Integer) ## need FK?(organization.id)
     
 Base = sqlahelper.get_base()
 DBSession = sqlahelper.get_session()
@@ -160,44 +163,8 @@ class Ticket(BaseOriginalMixin, Base):
 
     name = Column(Unicode(255))
     seattype = Column(Unicode(255))
-
-
-# class Seatfigure(BaseOriginalMixin, Base):
-#     """
-#     席図
-#     """
-#     __tablename__ = "seatfigure"
-#     query = DBSession.query_property()
-
-#     id = Column(Integer, primary_key=True)
-#     created_at = Column(DateTime, default=datetime.now)
-#     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
-
-#     figure_url = Column(String(255))
-#     controller_url = Column(String(255))
-
-#     client_id = Column(Integer, ForeignKey("event.id"))
-
-
-
-
-class Site(BaseOriginalMixin, Base):
-    __tablename__ = "site"
-    query = DBSession.query_property()
-
-    id = Column(Integer, primary_key=True)
-    created_at = Column(DateTime, default=datetime.now)
-    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
-
-    name = Column(Unicode(255))
-    description = Column(Unicode(255))
-    url = Column(String(255))
-
-    client_id = Column(Integer, ForeignKey("client.id")) #@TODO: サイトにくっつけるべき？
-    client = relationship("Client", backref="site", uselist=False) ##?
-
     
-class Category(Base):
+class Category(Base, WithOrganizationMixin):
     """
     サイト内カテゴリマスター
 
@@ -223,13 +190,11 @@ class Category(Base):
     """
     __tablename__ = "category"
     __tableargs__ = (
-        sa.UniqueConstraint("site_id", "name")
+        sa.UniqueConstraint("organization_id", "name")
         )
     query = DBSession.query_property()
     id = sa.Column(sa.Integer, primary_key=True)
 
-    site_id = sa.Column(sa.Integer, sa.ForeignKey("site.id"))
-    site = orm.relationship("Site", backref="categories", uselist=False)
     parent_id = sa.Column(sa.Integer, sa.ForeignKey("category.id"))
     parent = orm.relationship("Category", remote_side=[id], backref="children", uselist=False)
     #parent = orm.relationship("Category", remote_side=[id], uselist=False, cascade="all")
@@ -248,13 +213,13 @@ class Category(Base):
     ## originはenumにしても良いかもしれない
 
     @classmethod
-    def get_toplevel_categories(cls, hierarchy=u"大", site=None, request=None): ## fixme
-        if site is None and request and hasattr(request,"site"):
-            site = request.site
-            return cls.query.filter(cls.site==site, cls.hierarchy==hierarchy, cls.parent==None)
+    def get_toplevel_categories(cls, hierarchy=u"大", organization=None, request=None): ## fixme
+        if organization is None and request and hasattr(request,"organization"):
+            organization = request.organization
+            return cls.query.filter(cls.organization==organization, cls.hierarchy==hierarchy, cls.parent==None)
         else:
             ## 本当はこちらは存在しないはず。
-            ## request.siteはまだ未実装。
+            ## request.organizationはまだ未実装。
             return cls.query.filter(cls.hierarchy==hierarchy, cls.parent==None)
 
 

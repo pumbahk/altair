@@ -62,8 +62,8 @@ class IModelQueryFilter(Interface):
 
 @provider(IModelQueryFilter)
 def model_query_filter_default(model, request, query):
-    if getattr(request, "site", None):
-        return query.filter_by(site_id=request.site.id)
+    if getattr(request, "organization", None):
+        return query.filter_by(organization_id=request.organization.id)
     else:
         return query
 

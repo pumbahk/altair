@@ -6,8 +6,9 @@ from sqlalchemy import Column, Integer, DateTime, Unicode, String, ForeignKey, T
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from altaircms.models import Base, BaseOriginalMixin
+from altaircms.models import WithOrganizationMixin
 
-class Layout(BaseOriginalMixin, Base):
+class Layout(BaseOriginalMixin, WithOrganizationMixin, Base):
     """
     テンプレートレイアウトマスタ
     """
@@ -22,11 +23,6 @@ class Layout(BaseOriginalMixin, Base):
     template_filename = Column(String(255))
     DEFAULT_BLOCKS = "[]"
     blocks = Column(Text, default=DEFAULT_BLOCKS)
-
-    site_id = Column(Integer(), ForeignKey("site.id"))
-    site = orm.relationship("Site", backref="layouts")
-    client_id = Column(Integer(), ForeignKey("client.id"))
-    client = orm.relationship("Client", backref="layouts")
 
     def __repr__(self):
         return '<%s %s>' % (self.__class__.__name__, self.template_filename)

@@ -7,6 +7,7 @@ from altaircms.models import DBSession
 
 from datetime import datetime
 from altaircms.page.models import Page
+from altaircms.models import WithOrganizationMixin
 
 class PageTag2Page(Base):
     __tablename__ = "pagetag2page"
@@ -17,7 +18,7 @@ class PageTag2Page(Base):
     # page = orm.relationship("Page", backref=orm.backref("pagetag2page", cascade="all, delete-orphan"))
 
 
-class PageTag(Base):
+class PageTag(WithOrganizationMixin, Base):
     CLASSIFIER = "page"
 
     __tablename__ = "pagetag"
@@ -38,7 +39,7 @@ class AssetTag2Asset(Base):
     tag_id = sa.Column(sa.Integer, sa.ForeignKey("assettag.id"))
     asset = orm.relationship("Asset", backref=orm.backref("assettag2asset", cascade="all, delete-orphan"))
 
-class AssetTag(Base):
+class AssetTag(WithOrganizationMixin, Base):
     CLASSIFIER = "asset"
 
     __tablename__ = "assettag"
@@ -68,7 +69,7 @@ class FlashAssetTag(AssetTag):
     __mapper_args__ = {"polymorphic_identity": type}
 
 
-class HotWord(Base):
+class HotWord(WithOrganizationMixin, Base):
     query = DBSession.query_property()
 
     id = sa.Column(sa.Integer, primary_key=True)
@@ -85,7 +86,6 @@ class HotWord(Base):
 
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
-    site_id =  sa.Column(sa.Integer, sa.ForeignKey("site.id"))
 
     @classmethod
     def from_page(cls, page):

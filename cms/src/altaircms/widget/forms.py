@@ -8,8 +8,8 @@ from . import models
 
 
 def disposition_query_filter(model, request, query):
-    if getattr(request, "site", None):
-        query = query.filter_by(site_id=request.site.id)
+    if getattr(request, "organization", None):
+        query = query.filter_by(organization_id=request.organization.id)
     return model.enable_only_query(request.user, qs=query)
 
 class WidgetDispositionSelectForm(form.Form):

@@ -165,7 +165,7 @@ class PromotionUnitFilterForm(Form):
 
 class PromotionForm(Form):
     name = fields.TextField(label=u"プロモーション枠名")
-    ## site
+    ## organization
     __display_fields__ = [u"name"]
 
 _hierarchy_choices = [(x, x) for x in [u"大", u"中", u"小", "top_couter", "top_inner", "masked"]]
@@ -196,8 +196,8 @@ class CategoryForm(Form):
 
     # def configure(self, request):
     #     qs = DBSession.query(Category.hierarchy)
-    #     if hasattr(request, "site"):
-    #         qs = qs.filter_by(site=request.site)
+    #     if hasattr(request, "organization"):
+    #         qs = qs.filter_by(organization=request.organization)
     #     self.hierarchy.choices = qs
 
     # ## delete validateion
@@ -212,7 +212,7 @@ class CategoryForm(Form):
     #         parent.label==data["label"], 
     #         ).count() > 0:
     #         self.warns["hierarchy"] = u"まだ子を持ったカテゴリを消そうとしています"
-    ## site
+    ## organization
 
 
 class CategoryFilterForm(Form):
@@ -296,7 +296,7 @@ class TopcontentForm(Form):
     orderno = fields.IntegerField(label=u"表示順序(1〜100)", default=50)
     is_vetoed = fields.BooleanField(label=u"公開禁止")
 
-    ##本当は、client.id, site.idでfilteringする必要がある
+    ##本当は、client.id, organization.idでfilteringする必要がある
     bound_page = dynamic_query_select_field_factory(PageSet, 
                                                     label=u"表示ページ",
                                                     query_factory=lambda : PageSet.query.order_by("name").filter(PageSet.event_id==None), 

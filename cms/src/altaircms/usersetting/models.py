@@ -10,37 +10,37 @@ from sqlalchemy import Integer, DateTime, String, Unicode
 
 from altaircms.models import Base
 
-class User(Base):
-    """
-    サイト利用者
-    """
-    __tablename__ = "user"
+# class User(Base):
+#     """
+#     サイト利用者
+#     """
+#     __tablename__ = "user"
 
-    id = Column(Integer, primary_key=True)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
+#     id = Column(Integer, primary_key=True)
+#     created_at = Column(DateTime, default=datetime.now())
+#     updated_at = Column(DateTime, default=datetime.now())
 
-    email = Column(String(255))
-    site_id = Column(Integer, ForeignKey("site.id"))
-    is_active = Column(Integer, default=1)
-    is_administrator = Column(Integer, default=0)
+#     email = Column(String(255))
+#     organization_id = Column(Integer, ForeignKey("organization.id"))
+#     is_active = Column(Integer, default=1)
+#     is_administrator = Column(Integer, default=0)
 
-    billinghistory = relationship("BillingHistory", backref="user")
+    # billinghistory = relationship("BillingHistory", backref="user")
 
 
-class BillingHistory(Base):
-    """
-    購入履歴
-    """
-    __tablename__ = 'order_history'
+# class BillingHistory(Base):
+#     """
+#     購入履歴
+#     """
+#     __tablename__ = 'order_history'
 
-    id = Column(Integer, primary_key=True)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
+#     id = Column(Integer, primary_key=True)
+#     created_at = Column(DateTime, default=datetime.now())
+#     updated_at = Column(DateTime, default=datetime.now())
 
-    ticket_id = Column(Integer, ForeignKey("ticket.id"))
+#     ticket_id = Column(Integer, ForeignKey("ticket.id"))
 
-    user_id = Column(Integer, ForeignKey("user.id"))
+#     user_id = Column(Integer, ForeignKey("user.id"))
 
 
 # class MailMagazine(Base):
@@ -53,7 +53,7 @@ class BillingHistory(Base):
 #     title = Column(Unicode(255)) # メルマガタイトル
 #     description = Column(Unicode(255)) # メルマガ説明
 
-#     site_id = Column(Integer, ForeignKey("site.id"))
+#     organization_id = Column(Integer, ForeignKey("organization.id"))
 
 
 # class MailMagazineUser(Base):

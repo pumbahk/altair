@@ -4,7 +4,7 @@ from bpmappers.mappers import Mapper
 
 class BaseAssetMapper(Mapper):
     id = RawField()
-    site_id = RawField()
+    organization_id = RawField()
     mimetype = RawField()
     filepath = RawField()
 

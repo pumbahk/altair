@@ -35,7 +35,7 @@ def _getPage(structure):
          'keywords': u'oo',
          'layout_id': 2,
          'parent_id': None,
-         'site_id': None,
+         'organization_id': None,
          'structure': structure,
          'title': u'fofoo',
          'updated_at': datetime(2012, 2, 14, 15, 13, 26, 438156),
@@ -49,7 +49,7 @@ def _getLayout():
          'client_id': None,
          'created_at': datetime(2012, 2, 16, 11, 26, 55, 755523),
          'id': 2,
-         'site_id': None,
+         'organization_id': None,
          'template_filename': u'layout.mako',
          'title': 'simple',
          'updated_at': datetime(2012, 2, 16, 11, 26, 55, 755641)}

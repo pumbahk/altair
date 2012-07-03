@@ -9,7 +9,7 @@ from altaircms.models import DBSession
 from altaircms.page.models import PageSet
 from altaircms.asset.models import ImageAsset
 from altaircms.event.models import Event
-
+from altaircms.models import WithOrganizationMixin
 import altaircms.helpers as h
 
 """
@@ -81,6 +81,7 @@ _where = object()
 
 class Topic(AboutPublishMixin, 
             BaseOriginalMixin,
+            WithOrganizationMixin, 
             Base):
     """
     トピック
@@ -168,8 +169,6 @@ topic widgetでは
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
 
-    client_id = sa.Column(sa.Integer, sa.ForeignKey("client.id")) #?
-    site_id = sa.Column(sa.Integer, sa.ForeignKey("site.id"))   
     kind = sa.Column(sa.Unicode(255))
     subkind = sa.Column(sa.Unicode(255))
     title = sa.Column(sa.Unicode(255))
@@ -238,6 +237,7 @@ topic widgetでは
 
 class Topcontent(AboutPublishMixin,
                  BaseOriginalMixin,
+                 WithOrganizationMixin, 
                  Base):
     """
     Topページの画像つきtopicのようなもの
@@ -251,8 +251,6 @@ class Topcontent(AboutPublishMixin,
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
 
-    client_id = sa.Column(sa.Integer, sa.ForeignKey("client.id")) #?
-    site_id = sa.Column(sa.Integer, sa.ForeignKey("site.id"))   
     kind = sa.Column(sa.Unicode(255))
     subkind = sa.Column(sa.Unicode(255))
     title = sa.Column(sa.Unicode(255))

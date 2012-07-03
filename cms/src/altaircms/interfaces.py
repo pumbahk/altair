@@ -87,12 +87,6 @@ class IWidget(Interface):
 class IAsset(Interface):
     type = Attribute(""" type """)
 
-
-class IHasSite(Interface):
-    """ has site data
-    """
-    site_id = Attribute(""" site """)
-
 class IHasMedia(Interface):
     """ using media data. e.g. flash, image, .etc
     """

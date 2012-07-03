@@ -11,8 +11,6 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from zope.interface import implements
 from altaircms.interfaces import IAsset
 from altaircms.interfaces import IHasMedia
-from altaircms.interfaces import IHasSite
-from altaircms.interfaces import IHasTimeHistory
 
 __all__ = [
     'Asset',
@@ -21,13 +19,12 @@ __all__ = [
     'FlashAsset',
     # 'CssAsset'
 ]
-
+from altaircms.models import WithOrganizationMixin
 import os
 DIR = os.path.dirname(os.path.abspath(__file__))
 # import sqlalchemy.orm as orm
 
-class Asset(BaseOriginalMixin, Base):
-    implements(IHasTimeHistory, IHasSite)
+class Asset(BaseOriginalMixin, WithOrganizationMixin, Base):
     query = DBSession.query_property()
     __tablename__ = "asset"
 
@@ -44,8 +41,6 @@ class Asset(BaseOriginalMixin, Base):
     updated_by_id = sa.Column(sa.Integer, sa.ForeignKey("operator.id"))
     updated_by = orm.relationship("Operator", backref="updated_assets", 
                                   primaryjoin="Asset.updated_by_id==Operator.id")
-
-    site_id =  sa.Column(sa.Integer, sa.ForeignKey("site.id"))
 
     __mapper_args__ = {"polymorphic_on": discriminator}
 

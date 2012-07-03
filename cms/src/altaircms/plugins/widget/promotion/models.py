@@ -52,8 +52,6 @@ class Promotion(Base):
     __tablename__ = "promotion"
     id = sa.Column(sa.Integer, primary_key=True)
     name = sa.Column(sa.Unicode(255), index=True)
-    site_id = sa.Column(sa.Integer, sa.ForeignKey("site.id"))
-    site = orm.relationship("Site")
 
     INTERVAL_TIME = 5000
     def as_info(self, request, idx=0, limit=15):

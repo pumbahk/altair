@@ -15,17 +15,14 @@ from sqlalchemy import (Column,
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declared_attr
 
-from zope.interface import implements
-from altaircms.interfaces import IHasSite
-from altaircms.interfaces import IHasTimeHistory
-
 from altaircms.models import Base, BaseOriginalMixin
 from altaircms.models import DBSession
 from altaircms.layout.models import Layout
+from altaircms.models import WithOrganizationMixin
 
 import uuid
 
-class PageAccesskey(Base):
+class PageAccesskey(Base, WithOrganizationMixin):
     query = DBSession.query_property()
     __tablename__ = "page_accesskeys"
     id = sa.Column(sa.Integer, primary_key=True)
@@ -69,6 +66,7 @@ class HasAncestorMixin(object):
 
     
 class PageSet(Base, 
+              WithOrganizationMixin, 
               HasAncestorMixin):
     __tablename__ = 'pagesets'
     query = DBSession.query_property()
@@ -155,11 +153,11 @@ class PageSet(Base,
 
 
 class Page(BaseOriginalMixin,
+           WithOrganizationMixin, 
            Base):
     """
     ページ
     """
-    implements(IHasTimeHistory, IHasSite)
 
     query = DBSession.query_property()
     __tablename__ = "page"
@@ -176,7 +174,6 @@ class Page(BaseOriginalMixin,
     url = Column(String(255), unique=True, index=True) ##todo: delete
     version = Column(Integer, default=1)
 
-    site_id = Column(Integer, ForeignKey("site.id"))
     layout_id = Column(Integer, ForeignKey("layout.id"))
     layout = relationship(Layout, backref='page', uselist=False)
     DEFAULT_STRUCTURE = "{}"
@@ -293,7 +290,7 @@ class PageDefaultInfo(Base):
 
     keywords = Column(Unicode(255), default=u"")
     description = Column(Unicode(255), default=u"")
-    
+
     def _urlprefix_from_category(self, connector=u"/"):
         category = self.category
         r = []

@@ -6,7 +6,7 @@ from altaircms.asset.mappers import ImageAssetMapper, FlashAssetMapper, MovieAss
 
 class BaseWidgetMapper(Mapper):
     id = RawField()
-    site_id = RawField()
+    organization_id = RawField()
     # type = RawField()
 
     

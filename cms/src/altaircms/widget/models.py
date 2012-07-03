@@ -8,11 +8,10 @@ import sqlalchemy as sa
 import sqlalchemy.orm as orm
 
 from altaircms.models import Base, DBSession, BaseOriginalMixin
+from altaircms.models import WithOrganizationMixin
 
 from datetime import datetime
 from zope.interface import implements
-from altaircms.interfaces import IHasSite
-from altaircms.interfaces import IHasTimeHistory
 from altaircms.page.models import Page
 from altaircms.layout.models import Layout
 
@@ -27,8 +26,6 @@ __all__ = [
 ]
 
 class Widget(BaseOriginalMixin, Base):
-    implements(IHasTimeHistory, IHasSite)
-
     query = DBSession.query_property()
     __tablename__ = "widget"
     page_id = sa.Column(sa.Integer, sa.ForeignKey("page.id"))
@@ -38,7 +35,6 @@ class Widget(BaseOriginalMixin, Base):
     disposition = orm.relationship("WidgetDisposition", backref="widgets")
 
     id = sa.Column(sa.Integer, primary_key=True)
-    site_id = sa.Column(sa.Integer, sa.ForeignKey("site.id"))
     discriminator = sa.Column("type", sa.String(32), nullable=False)
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
@@ -61,7 +57,7 @@ class Widget(BaseOriginalMixin, Base):
         session.add(ins)
         return ins
 
-class WidgetDisposition(BaseOriginalMixin, Base): #todo: rename
+class WidgetDisposition(WithOrganizationMixin, BaseOriginalMixin, Base): #todo: rename
     """ widgetの利用内容を記録しておくためのモデル
     以下を記録する。
     * 利用しているwidgetの位置
@@ -69,13 +65,10 @@ class WidgetDisposition(BaseOriginalMixin, Base): #todo: rename
 
     pageから作成し、pageにbindする
     """
-    implements(IHasTimeHistory, IHasSite)
-
     query = DBSession.query_property()
     __tablename__ = "widgetdisposition"
     id = sa.Column(sa.Integer, primary_key=True)
     title = sa.Column(sa.Unicode(255))
-    site_id = sa.Column(sa.Integer, sa.ForeignKey("site.id"))
 
     structure = sa.Column(sa.Text, default=Page.DEFAULT_STRUCTURE) # same as: Page.structure
     blocks = sa.Column(sa.String(255), default=Layout.DEFAULT_BLOCKS) # same as: Layout.blocks
@@ -89,7 +82,7 @@ class WidgetDisposition(BaseOriginalMixin, Base): #todo: rename
     @classmethod
     def _create_empty_from_page(cls, page, title_fmt=u"%sより"):
         D = {"title": title_fmt % page.title, 
-             "site_id": page.site_id, 
+             "organization_id": page.organization_id, 
              "blocks": page.layout.blocks}
         return cls.from_dict(D)
 

@@ -10,6 +10,7 @@ from sqlalchemy.schema import Table, Column, ForeignKey, UniqueConstraint
 from sqlalchemy.types import String, DateTime, Integer, Unicode, Enum
 from sqlalchemy.ext.associationproxy import association_proxy
 from zope.deprecation import deprecation
+from altaircms.models import WithOrganizationMixin
 
 Base = sqlahelper.get_base()
 _session = sqlahelper.get_session()
@@ -126,7 +127,7 @@ operator_role = Table(
 )
 
 
-class Operator(Base):
+class Operator(WithOrganizationMixin, Base):
     """
     サイト管理者
     """
@@ -190,7 +191,7 @@ class RolePermission(Base):
     role_id = Column(Integer, ForeignKey('role.id'))
 
 
-class Client(Base):
+class Organization(Base):
     """
     顧客マスタ
     """
@@ -208,9 +209,6 @@ class Client(Base):
     contract_status = Column(Integer)
 
     operators = relationship("Operator", backref="client")
-    sites = relationship("Site", backref="site")
-    events = relationship("Event", backref="event")
-
 
 class APIKey(Base):
     __tablename__ = 'apikey'
@@ -226,8 +224,6 @@ class APIKey(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(255))
     apikey = Column(String(255), default=generate_apikey)
-    client = relationship("Client", backref=backref("apikeys", order_by=id))
-    client_id = Column(Integer, ForeignKey("client.id"))
 
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=datetime.now())

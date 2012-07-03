@@ -3,12 +3,13 @@
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from altaircms.models import Base, BaseOriginalMixin
+from altaircms.models import WithOrganizationMixin
 from altaircms.models import DBSession
 from datetime import datetime
 from datetime import timedelta
 import hashlib
 
-class Event(BaseOriginalMixin, Base):
+class Event(BaseOriginalMixin, WithOrganizationMixin, Base):
     """
     イベント
 

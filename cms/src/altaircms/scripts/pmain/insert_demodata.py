@@ -30,7 +30,7 @@ from altaircms.plugins.widget.promotion.models import (
     Promotion, PromotionUnit
 )
 from altaircms.models import(
-    Site, 
+    Organization, 
     Category, 
     Sale
 )
@@ -212,7 +212,7 @@ def detail_layout():
         template_filename = "ticketstar.detail.mako",
         # blocks = '[["header"], ["main", "side"],["userBox"]]',
         blocks = '[["topicPath"], ["main", "side"],["userBox"]]',
-        site_id = 1, ##
+        organization_id = 1, ##
         client_id = 1 ##
         )
     return layout
@@ -484,7 +484,7 @@ def help_layout():
         title = u"ticketstar.help",
         template_filename = "ticketstar.help.mako",
         blocks = '[["main", "side"]]',
-        site_id = 1, ##
+        organization_id = 1, ##
         client_id = 1 ##
         )
     return layout
@@ -776,7 +776,7 @@ def change_layout():
         title = u"ticketstar.change",
         template_filename = "ticketstar.change.mako",
         blocks = '[["main", "side"]]',
-        site_id = 1, ##
+        organization_id = 1, ##
         client_id = 1 ##
         )
     return layout
@@ -954,7 +954,7 @@ def first_layout():
         title = u"ticketstar.first",
         template_filename = "ticketstar.first.mako",
         blocks = '[["main", "side"]]',
-        site_id = 1, ##
+        organization_id = 1, ##
         client_id = 1 ##
         )
     return layout
@@ -1771,7 +1771,7 @@ def add_top_page_settings():
 
 
 def add_materials_settings():
-    """ siteなど
+    """ organizationなど
     """
     client = Client.query.filter_by(name=u"master").first()
     if client is None:
@@ -1784,13 +1784,13 @@ def add_materials_settings():
             contract_status = 0
             )
         DBSession.add(client)
-    site = Site.query.filter_by(name=u"ticketstar").first()
-    if site is None:
-        site = Site(name=u"ticketstar",
+    organization = Organization.query.filter_by(name=u"ticketstar").first()
+    if organization is None:
+        organization = Organization(name=u"ticketstar",
                     description=u"ticketstar ticketstar",
                     url="http://example.com",
                     client=client)
-        DBSession.add(site)
+        DBSession.add(organization)
 
     debug_user = Operator(auth_source="debug", screen_name="debug user")
     debug_user.roles.append(Role.query.filter_by(name=u"administrator").first())
@@ -1800,7 +1800,7 @@ def add_materials_settings():
         title = "col2", 
         template_filename = "col2.mako", 
         blocks = '[["header"],["left", "right"],["footer"]]', 
-        site = site,  ##
+        organization = organization,  ##
         client = client,  ##
         )
     
@@ -1808,7 +1808,7 @@ def add_materials_settings():
         title = "col3",
         template_filename = "col3.mako",
         blocks = '[["header"],["left1", "right1"],["left2", "center", "right2"], ["footer"]]',
-        site = site,  ##
+        organization = organization,  ##
         client = client,  ##,
         )
 
