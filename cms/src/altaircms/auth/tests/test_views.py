@@ -220,6 +220,8 @@ class OperatorViewTests(unittest.TestCase):
 class OAuthLoginTests(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp()
+        self.config.add_subscriber("altaircms.auth.subscribers.touch_operator_after_login",
+                                   "altaircms.auth.subscribers.AfterLogin")
 
     def tearDown(self):
         import transaction
@@ -254,33 +256,22 @@ class OAuthLoginTests(unittest.TestCase):
         session.add(operator)
         return operator
 
-    def test_init(self):
-        request = testing.DummyRequest(GET={'code': 'code'})
-        request.registry.settings = {
-            'altair.oauth.client_id': 'client-id',
-            'altair.oauth.secret_key': 'secret-key',
-            'altair.oauth.authorize_url': 'authorized-url',
-            'altair.oauth.access_token_url': 'access-token',
-            }
-
-        target = self._makeOne(request)
-        self.assertEqual(target.access_token_url, 'access-token')
-
-
     def test_oauth_callback_without_operator(self):
         import json
+        from ..api import OAuthComponent
+        from ..interfaces import IOAuthComponent
+
         self.config.add_route('dashboard', '/')
         self._add_role(u'administrator')
         self._add_role(u'staff')
 
         request = testing.DummyRequest(GET={'code': 'code'})
-        request.registry.settings = {
-            'altair.oauth.client_id': 'client-id',
-            'altair.oauth.secret_key': 'secret-key',
-            'altair.oauth.authorize_url': 'authorized-url',
-            'altair.oauth.access_token_url': 'http://example.com/access-token',
-        }
-
+        oauth_compnent = OAuthComponent(
+            'client-id',
+            'secret-key',
+            'authorized-url',
+            'http://example.com/access-token')
+        request.registry.registerUtility(oauth_compnent, IOAuthComponent)
 
         res_data = json.dumps({
             'user_id': '99999999',
@@ -314,18 +305,20 @@ class OAuthLoginTests(unittest.TestCase):
 
     def test_oauth_callback_with_operator(self):
         import json
+        from ..api import OAuthComponent
+        from ..interfaces import IOAuthComponent
+
         self.config.add_route('dashboard', '/')
         self._add_role(u'administrator')
         self._add_role(u'staff')
 
         request = testing.DummyRequest(GET={'code': 'code'})
-        request.registry.settings = {
-            'altair.oauth.client_id': 'client-id',
-            'altair.oauth.secret_key': 'secret-key',
-            'altair.oauth.authorize_url': 'authorized-url',
-            'altair.oauth.access_token_url': 'http://example.com/access-token',
-            }
-
+        oauth_compnent = OAuthComponent(
+            'client-id',
+            'secret-key',
+            'authorized-url',
+            'http://example.com/access-token')
+        request.registry.registerUtility(oauth_compnent, IOAuthComponent)
 
         res_data = json.dumps({
             'user_id': '888888888',
