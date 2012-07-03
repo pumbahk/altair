@@ -21,6 +21,7 @@ def upgrade():
                     sa.Column('created_at', sa.DateTime(), nullable=True),
                     sa.Column('updated_at', sa.DateTime(), nullable=True),
                     sa.Column('name', sa.Unicode(length=255), nullable=True),
+                    sa.Column('auth_source', sa.String(length=255), nullable=False),
                     sa.Column('prefecture', sa.Unicode(length=255), nullable=True),
                     sa.Column('address', sa.Unicode(length=255), nullable=True),
                     sa.Column('email', sa.String(length=255), nullable=True),

@@ -26,18 +26,10 @@ def get_authenticated_user(request):
     user_id = authenticated_userid(request)
     logger.debug("*authenticate* user_id = %s" % user_id)
     try:
-        return Operator.query.filter_by(user_id=user_id).filter(Operator.auth_source != "debug").one()
+        return Operator.query.filter_by(user_id=user_id).one()
     except NoResultFound:
         logging.warn("operator is not found. so request.user is None")
         return None
-
-@deprecation.deprecate("no more use dummy user")
-def get_debug_user(request):
-    try:
-        return DBSession.query(Operator).filter_by(user_id=1).one() # return debug user if initial data are added
-    except NoResultFound:
-        role = Role.query.filter(Role.id==1).first()
-        return Operator(auth_source="debug",  roles=[role], screen_name=u"debug user")
 
 ### use where auth event 
 
@@ -47,12 +39,14 @@ def get_roles_from_role_names(role_names):
     else:
         return []
 
-def get_or_create_organization(organization_id, organization_name):
-    organization = Organization.query.filter_by(backend_id=organization_id).first()
+def get_or_create_organization(source, organization_id, organization_name):
+    organization = Organization.query.filter_by(backend_id=organization_id, auth_source=source).first()
     if organization is None:
         logger.info("*login* organization is not found. create it")
-        organization = Organization(backend_id=organization_id, name=organization_name)
-        created_data = dict(backend_id=organization_id, name=organization_name)
+        organization = Organization(backend_id=organization_id, name=organization_name, 
+                                    auth_source=source)
+        created_data = dict(backend_id=organization_id, name=organization_name, 
+                            auth_source=source)
         logger.info("*login* created organization: %s" % created_data)
     return organization
 

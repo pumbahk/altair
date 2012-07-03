@@ -33,7 +33,7 @@ def login(request):
     if request.user is None:
         message = u"まだログインしていません。ログインしてください。"
     else:
-        message = u"このページを閲覧する権限が不足しています。閲覧権限を持ったログインで再ログインしてください"
+        message = u"このページを閲覧する権限が不足しています。ログアウト後、閲覧権限を持ったログインで再ログインしてください"
 
     return dict(
         message=message
@@ -179,7 +179,12 @@ class RoleView(object):
             raise
         return HTTPFound(self.request.route_path("role_list"))
 
-
+@view_config(route_name="operator_info", renderer='altaircms:templates/auth/operator/info.mako', 
+             permission="authenticated", decorator=with_bootstrap)
+def operator_info(request):
+    operator = request.user
+    return {"operator": operator, 
+            "organization": operator.organization}
 
 
 class RolePermissionView(object):

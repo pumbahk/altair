@@ -87,11 +87,16 @@
 		<a class="brand" href="/cms"><img src="/static/img/altair_logo.png"></a>
 		<div class="nav-collapse">
 		  <ul class="nav pull-right">
-			  % if user:
+			  % if request.user:
 				<li class="dropdown">
-				  <a href="#" class="dropdown-toggle" data-toggle="dropdown">${request.user.screen_name}(${request.user.organization.name})<b class="caret"></b></a>
+				  <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+					${request.user.screen_name}
+					%if request.user.organization:
+					(${request.user.organization.name})
+				    %endif
+					<b class="caret"></b></a>
 				  <ul class="dropdown-menu">
-					<li><a href="#">
+					<li><a href="${request.route_path("operator_info")}">
 					  <i class="icon-cog"> </i>
 					  Settings</a>
 					</li>
