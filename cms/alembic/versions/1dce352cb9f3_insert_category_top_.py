@@ -23,7 +23,8 @@ category,  pagesetは再帰的
 """
 
 from altaircms.page.models import PageDefaultInfo
-from altaircms.models import Category, Site
+from altaircms.models import Category
+from altaircms.auth.models import Organization
 from altaircms.layout.models import Layout
 from functools import partial
 import transaction
@@ -44,34 +45,34 @@ def with_session(session, o):
 def generate_from_tabular(fn, headings, tabular):
     return [fn(**dict(zip(headings, line))) for line in tabular]
 
-def create_master_categories(site):
+def create_master_categories(organization_id):
    
    ## トップページ
-    DBSession.add(Category(site=site, hierarchy=u"大", label=u"チケットトップ", name="index", orderno=0, 
+    DBSession.add(Category(organization_id=organization_id, hierarchy=u"大", label=u"チケットトップ", name="index", orderno=0, 
                               imgsrc="/static/ticketstar/img/common/header_nav_top.gif"))
     ## 音楽
-    DBSession.add(Category(site=site, hierarchy=u"大", label=u"音楽", name="music", orderno=1, 
+    DBSession.add(Category(organization_id=organization_id, hierarchy=u"大", label=u"音楽", name="music", orderno=1, 
                               imgsrc="/static/ticketstar/img/common/header_nav_music.gif"))
 
-    DBSession.add(Category(site=site, hierarchy=u"大", label=u"スポーツ", name="sports", orderno=2, 
+    DBSession.add(Category(organization_id=organization_id, hierarchy=u"大", label=u"スポーツ", name="sports", orderno=2, 
                               imgsrc="/static/ticketstar/img/common/header_nav_sports.gif"))
 
-    DBSession.add(Category(site=site, hierarchy=u"大", label=u"演劇", name="stage", orderno=3, 
+    DBSession.add(Category(organization_id=organization_id, hierarchy=u"大", label=u"演劇", name="stage", orderno=3, 
                               imgsrc="/static/ticketstar/img/common/header_nav_stage.gif"))
     
-    DBSession.add(Category(site=site, hierarchy=u"大", label=u"イベント・その他", name="event", orderno=4, 
+    DBSession.add(Category(organization_id=organization_id, hierarchy=u"大", label=u"イベント・その他", name="event", orderno=4, 
                               imgsrc="/static/ticketstar/img/common/header_nav_event.gif"))
 
     ## misc global navigation
-    DBSession.add(Category(site=site, orderno=1, hierarchy=u"top_outer", url="http://example.com", label=u"初めての方へ", name="first"))
-    DBSession.add(Category(site=site, orderno=2, hierarchy=u"top_outer", url="http://example.com", label=u"公演中止・変更情報", name="change"))
-    DBSession.add(Category(site=site, orderno=3, hierarchy=u"top_outer", url="http://example.com", label=u"ヘルプ", name="help"))
-    DBSession.add(Category(site=site, orderno=4, hierarchy=u"top_outer", url="http://example.com", label=u"サイトマップ", name="sitemap"))
+    DBSession.add(Category(organization_id=organization_id, orderno=1, hierarchy=u"top_outer", url="http://example.com", label=u"初めての方へ", name="first"))
+    DBSession.add(Category(organization_id=organization_id, orderno=2, hierarchy=u"top_outer", url="http://example.com", label=u"公演中止・変更情報", name="change"))
+    DBSession.add(Category(organization_id=organization_id, orderno=3, hierarchy=u"top_outer", url="http://example.com", label=u"ヘルプ", name="help"))
+    DBSession.add(Category(organization_id=organization_id, orderno=4, hierarchy=u"top_outer", url="http://example.com", label=u"サイトマップ", name="organization_idmap"))
 
-    DBSession.add(Category(site=site, orderno=1, hierarchy=u"top_inner", url="http://example.com", label=u"マイページ", name="mypage"))
-    DBSession.add(Category(site=site, orderno=2, hierarchy=u"top_inner", url="http://example.com", label=u"お気に入り", name="favorite"))
-    DBSession.add(Category(site=site, orderno=3, hierarchy=u"top_inner", url="http://example.com", label=u"購入履歴", name="purchase_history"))
-    DBSession.add(Category(site=site, orderno=4, hierarchy=u"top_inner", url="http://example.com", label=u"抽選申込履歴", name="lottery_history"))
+    DBSession.add(Category(organization_id=organization_id, orderno=1, hierarchy=u"top_inner", url="http://example.com", label=u"マイページ", name="mypage"))
+    DBSession.add(Category(organization_id=organization_id, orderno=2, hierarchy=u"top_inner", url="http://example.com", label=u"お気に入り", name="favorite"))
+    DBSession.add(Category(organization_id=organization_id, orderno=3, hierarchy=u"top_inner", url="http://example.com", label=u"購入履歴", name="purchase_history"))
+    DBSession.add(Category(organization_id=organization_id, orderno=4, hierarchy=u"top_inner", url="http://example.com", label=u"抽選申込履歴", name="lottery_history"))
 
 def create_child(page_default_info, name, category, url=None, url_fmt=None, title_fmt=None):
     """ 子のpageset, page, page_default_infoを作成
@@ -101,7 +102,7 @@ def get_layout(filename):
     return Layout.query.filter_by(template_filename=filename).one()
 
 
-def create_category_top_page(site):
+def create_category_top_page(organization_id):
     keywords = u"チケット,演劇,クラシック,オペラ,コンサート,バレエ,ミュージカル,野球,サッカー,格闘技"
     description=u"チケットの販売、イベントの予約は楽天チケットで！楽天チケットは演劇、バレエ、ミュージカルなどの舞台、クラシック、オペラ、ロックなどのコンサート、野球、サッカー、格闘技などのスポーツ、その他イベントなどのチケットのオンラインショッピングサイトです。"
     title_fmt = u"【楽天チケット】%(title)s｜公演・ライブのチケット予約・購入"
@@ -137,7 +138,7 @@ def create_category_top_page(site):
                                            url_fmt=u"s/%s/%%(url)s" % top_level_pdi._url(root.label), 
                                            title_fmt=title_fmt)
     
-    subcategory_create = partial(Category, site=site, hierarchy=u"中", parent=root)
+    subcategory_create = partial(Category, organization_id=organization_id, hierarchy=u"中", parent=root)
     headings = ["name", "label"]
     tabular = import_symbol("altaircms.seeds.categories.music:MUSIC_SUBCATEGORY_CHOICES")
 
@@ -164,7 +165,7 @@ def create_category_top_page(site):
                                            url_fmt=u"s/%s/%%(url)s" % top_level_pdi._url(root.label), 
                                            title_fmt=title_fmt)
     
-    subcategory_create = partial(Category, site=site, hierarchy=u"中", parent=root)
+    subcategory_create = partial(Category, organization_id=organization_id, hierarchy=u"中", parent=root)
     headings = ["name", "label"]
     tabular = import_symbol("altaircms.seeds.categories.sports:SPORTS_SUBCATEGORY_CHOICES")
 
@@ -192,7 +193,7 @@ def create_category_top_page(site):
                                            url_fmt=u"s/%s/%%(url)s" % top_level_pdi._url(root.label), 
                                            title_fmt=title_fmt)
     
-    subcategory_create = partial(Category, site=site, hierarchy=u"中", parent=root)
+    subcategory_create = partial(Category, organization_id=organization_id, hierarchy=u"中", parent=root)
     headings = ["name", "label"]
     tabular = import_symbol("altaircms.seeds.categories.stage:STAGE_SUBCATEGORY_CHOICES")
 
@@ -220,7 +221,7 @@ def create_category_top_page(site):
                                            url_fmt=u"s/%s/%%(url)s" % top_level_pdi._url(root.label), 
                                            title_fmt=title_fmt)
     
-    subcategory_create = partial(Category, site=site, hierarchy=u"中", parent=root)
+    subcategory_create = partial(Category, organization_id=organization_id, hierarchy=u"中", parent=root)
     headings = ["name", "label"]
     tabular = import_symbol("altaircms.seeds.categories.other:OTHER_SUBCATEGORY_CHOICES")
 
@@ -231,9 +232,9 @@ def create_category_top_page(site):
 
 
 def upgrade():
-    site = Site.query.filter_by(name=u"ticketstar").one()
-    create_master_categories(site)
-    create_category_top_page(site)
+    organization_id = Organization.query.filter_by(name=u"ticketstar").one().id
+    create_master_categories(organization_id)
+    create_category_top_page(organization_id)
     transaction.commit()
 
 

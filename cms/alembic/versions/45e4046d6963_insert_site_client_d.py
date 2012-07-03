@@ -14,13 +14,12 @@ from alembic import op
 import sqlalchemy as sa
 
 import sqlahelper
-from altaircms.models import Site
-from altaircms.auth.models import Client
+from altaircms.auth.models import Organization
 
 DBSession = sqlahelper.get_session()
 
 def upgrade():
-    client = Client(
+    organization = Organization(
         id = 1,
         name = u"master",
         prefecture = u"tokyo",
@@ -32,9 +31,9 @@ def upgrade():
     site = Site(name=u"ticketstar",
                 description=u"ticketstar ticketstar",
                 url="http://example.com",
-                client=client)
+                organization=organization)
 
-    DBSession.add(client)
+    DBSession.add(organization)
     DBSession.add(site)
 
     import transaction 
@@ -48,6 +47,6 @@ def downgrade():
     Site.query.delete()
     transaction.commit()
 
-    Client.query.delete()
+    Organization.query.delete()
     transaction.commit()
 
