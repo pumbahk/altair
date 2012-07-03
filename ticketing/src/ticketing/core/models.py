@@ -436,6 +436,13 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 .filter(StockHolder.event_id==self.id)\
                 .distinct()
 
+    def _get_self_cms_data(self):
+        return {'id':self.id,
+                'title':self.title,
+                'subtitle':self.abbreviated_title,
+                "organization_id": self.organization_id, 
+                }
+
     def get_cms_data(self):
         '''
         CMSに連携するデータを生成する
@@ -485,10 +492,8 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             raise Exception(u'販売期間が登録されていないイベントは送信できません')
 
         # 論理削除レコードも含めるので{Model}.query.filter()で取得している
-        data = {
-            'id':self.id,
-            'title':self.title,
-            'subtitle':self.abbreviated_title,
+        data = self._get_self_cms_data()
+        data.update({
             'start_on':start_on,
             'end_on':end_on,
             'deal_open':sales_start_on,
@@ -496,7 +501,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             'performances':[p.get_cms_data() for p in Performance.query.filter_by(event_id=self.id).all()],
             'tickets':[p.get_cms_data() for p in Product.find(event_id=self.id, include_deleted=True)],
             'sales':[s.get_cms_data() for s in SalesSegment.query.filter_by(event_id=self.id).all()],
-        }
+        })
         if self.deleted_at:
             data['deleted'] = 'true'
 
