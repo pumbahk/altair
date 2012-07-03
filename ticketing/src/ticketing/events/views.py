@@ -188,15 +188,16 @@ class Events(BaseView):
 
         try:
             with contextlib.closing(urllib2.urlopen(req)) as res:
-                try:
-                    if res.getcode() == HTTPCreated.code:
-                        self.request.session.flash(u'イベントをCMSへ送信しました')
-                    else:
-                        raise urllib2.HTTPError(code=res.getcode())
-                except urllib2.HTTPError:
-                    self.request.session.flash(u'イベント送信に失敗しました (%s)' % e.code)
+                if res.getcode() == HTTPCreated.code:
+                    self.request.session.flash(u'イベントをCMSへ送信しました')
+                else:
+                    raise urllib2.HTTPError(code=res.getcode())
+        except urllib2.HTTPError, e:
+            logging.warn("cms sync http error: response status url=(%s) %s" % (e.code, e))
+            self.request.session.flash(u'イベント送信に失敗しました (%s)' % e.code)
         except urllib2.URLError, e:
             logging.warn("cms sync http error: response status url=(%s) %s" % (e.reason, e))
+            self.request.session.flash(u'イベント送信に失敗しました (%s)' % e.reason)
         except Exception, e:
             logging.error("cms sync error: %s, %s" % (e.reason, e.message))
             self.request.session.flash(u'イベント送信に失敗しました')
