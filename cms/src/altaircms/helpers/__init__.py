@@ -49,7 +49,7 @@ def unparse_with_replace_query(parse_result, query):
 
 def url_generate_default(request, **kwargs):
     """pagination default url generator"""
-    curpath = request.current_route_path(_query=kwargs.pop("_query", request.params), **kwargs)
+    curpath = request.current_route_path(**kwargs)
     parse_result = urlparse.urlparse(curpath)
     def replacement(page, **kwargs):
         return url_create_with_parse_result(parse_result, page=page)
