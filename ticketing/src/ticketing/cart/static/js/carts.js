@@ -21,6 +21,20 @@ var util = {
         return pattern.replace(/\{([^}]+)\}/, function ($0, $1) {
             return kwds[$1] || '';
         });
+    },
+
+    render_template: function (template, vars) {
+        return template.replace(/\{\{((?:[^}]|\}[^}])*)\}\}/, function (_, n) { return vars[n]; });
+    },
+
+    render_template_into: function (jq, template, vars) {
+        var regexp = /\{\{((?:[^}]|\}[^}])*)\}\}|((?:[^{]|\{(?:[^{]|$))+)/g, g;
+        while ((g = regexp.exec(template))) {
+            if (g[1])
+                jq.append(vars[g[1]]);
+            else if (g[2])
+                jq.append(g[2]);
+        }
     }
 };
 
@@ -426,25 +440,23 @@ carts.AppView.prototype.show_payments = function(seat_type_name, products, upper
     this.seatTypeName.text(seat_type_name);
     this.productChoices.empty();
     $.each(products, function(key, value) {
-        var name = $('<th scope="row" />');
+        var name = $('<span class="productName"></span>');
         name.text(value.name);
-        var payment = $('<td />');
-        var price = $('<span/>');
-        price.text('￥' + value.price);
-        payment.append(price);
-        var amount = $('<select/>');
-        amount.attr('name', "product-" + value.id);
+        var payment = $('<span class="productPrice"></span>');
+        payment.text('￥' + value.price);
+        var quantity = $('<span class="productQuantity">');
+        var pullDown = $('<select />').attr('name', "product-" + value.id);
         for (var i = 0; i < upper_limit+1; i++) {
-            opt = $('<option/>');
-            opt.text(i);
-            opt.val(i);
-            amount.append(opt);
+            $('<option></option>').text(i).val(i).appendTo(pullDown);
         }
-        payment.append(amount);
-        payment.append('<span>枚</span>');
-        var row = $('<tr/>');
-        row.append(name).append(payment);
-        self.productChoices.append(row);
+        util.render_template_into(quantity, value.unit_template, { num: pullDown });
+        // payment.append(amount);
+        // payment.append('<span>枚</span>');
+        $('<li class="productListItem"></li>')
+            .append(name)
+            .append(payment)
+            .append(quantity)
+            .appendTo(self.productChoices);
     });
 };
 

@@ -1749,29 +1749,37 @@
 	background: url(../img/settlement/bg_select_buy_bottom.gif) no-repeat left bottom;
 }
 
-#selectSeat #selectProduct table {
-	width: 100%;
-	border-top: 1px solid #cccccc;
+#selectProduct .productList {
+    list-style-type: none;
+		border-top: 1px solid #cccccc;
 }
 
-#selectSeat #selectProduct th {
-	padding: 5px;
-	border-top: 1px dotted #cccccc;
+#selectProduct .productList li {
+    overflow: hidden;
+    clear: both;
+		padding: 5px;
 }
 
-#selectSeat #selectProduct td {
-	padding: 5px;
-	border-top: 1px dotted #cccccc;
-	font-weight: bold;
-	text-align: right;
+#selectProduct .productList .productName {
+    float: left;
+		font-weight: bold;
 }
 
-#selectSeat #selectProduct ul {
+#selectProduct .productList .productPrice {
+    float: right;
+}
+
+#selectProduct .productList .productQuantity {
+    clear: right;
+    float: right;
+}
+
+#selectSeat #selectProduct ul.buttonSet {
 	float: right;
 	padding: 0 13px 10px 0;
 }
 
-#selectSeat #selectProduct li {
+#selectSeat #selectProduct ul.buttonSet li {
 	margin-bottom: 5px;
 }
 
