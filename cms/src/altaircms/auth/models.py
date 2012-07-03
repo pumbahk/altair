@@ -210,6 +210,11 @@ class Organization(Base):
 
     operators = relationship("Operator", backref="client")
 
+    def inthere(self, key="organization_id"):
+        def transform(qs):
+            return qs.filter_by(**{key: self.id})
+        return transform
+
 class APIKey(Base):
     __tablename__ = 'apikey'
     query = _session.query_property()
