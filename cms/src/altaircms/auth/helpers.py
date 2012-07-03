@@ -21,8 +21,10 @@ def get_authenticated_user(request):
     """
     認証済みのuserオブジェクトを返す。存在しない場合にはNoneを返す
     """
+    user_id = authenticated_userid(request)
+    logger.debug("*authenticate* user_id = %s" % user_id)
     try:
-        return DBSession.query(Operator).filter_by(user_id=authenticated_userid(request)).filter(Operator.auth_source != "debug").one()
+        return Operator.query.filter_by(user_id=user_id).filter(Operator.auth_source != "debug").one()
     except NoResultFound:
         logging.warn("operator is not found. so request.user is None")
         return None
@@ -43,13 +45,13 @@ def get_roles_from_role_names(role_names):
     else:
         return []
 
-def get_or_create_operator(source, user_id):
+def get_or_create_operator(source, user_id, screen_name):
     operator = Operator.query.filter_by(auth_source=source, user_id=user_id).first()
-
     if operator is None:
-        logger.info("operator is not found. create it")
-        operator = Operator(auth_source=source, user_id=user_id)
-        created_data = dict(auth_source=source, user_id=user_id)
+        logger.info("*login* operator is not found. create it")
+        operator = Operator(auth_source=source, user_id=user_id, screen_name=screen_name)
+
+        created_data = dict(auth_source=source, user_id=user_id, screen_name=screen_name)
         logger.info("*login* created operator: %s" % created_data)
     return operator
 

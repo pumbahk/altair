@@ -73,34 +73,14 @@ class OAuthLogin(object):
             logger.info("*login* access token return: %s" % data)
 
             api.notify_after_oauth_login(self.request, data)
+
         except IOError, e:
-            logging.exception(e)
+            logger.exception(e)
             self.request.response.body = str(e)
             return self.request.response
 
-        role_names = data.get('roles')
-        if role_names is not None:
-            roles = Role.query.filter(Role.name.in_(role_names)).order_by(Role.id).all()
-        else:
-            roles = []
-
-        try:
-            operator = Operator.query.filter_by(auth_source='oauth', user_id=data['user_id']).one()
-        except NoResultFound:
-            logger.info("operator is not found. create it")
-            operator = Operator(auth_source='oauth', user_id=data['user_id'])
-            logger.info("*login* created operator: %s" % model_to_dict(operator))
-
-        operator.last_login = datetime.now()
-        operator.screen_name = data['screen_name']
-        operator.oauth_token = data['access_token']
-        operator.oauth_token_secret = ''
-        operator.roles = roles
-
-        DBSession.add(operator)
-
-        headers = remember(self.request, operator.user_id)
-
+        logger.info("*login* remember user_id = %s" % data["user_id"])
+        headers = remember(self.request, data["user_id"])
         url = self.request.route_url('dashboard')
         return HTTPFound(url, headers=headers)
 
