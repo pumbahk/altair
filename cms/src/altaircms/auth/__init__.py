@@ -26,7 +26,9 @@ def includeme(config):
         )
     config.registry.registerUtility(oauth_component, 
                                     config.maybe_dotted(".interfaces.IOAuthComponent"))
-    
+    ## bind event
+    config.add_subscriber(".subscribers.touch_operator_after_login", ".subscribers.AfterLogin")
+
 
     config.add_route('login', '/login')
     config.add_route('logout', '/logout')

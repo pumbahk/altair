@@ -12,6 +12,9 @@ class IModelEvent(Interface):
     obj = Attribute("")
     params = Attribute("params")
 
+class IAfterResponseEvent(Interface):
+    request = Attribute("request object")
+    response_data = Attribute("response data usually dict like object")
 ##
 
 class IConcrete(Interface):

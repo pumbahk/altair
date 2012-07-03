@@ -72,6 +72,7 @@ class OAuthLogin(object):
             data = json.loads(self._urllib2.urlopen(url).read())
             logger.info("*login* access token return: %s" % data)
 
+            api.notify_after_oauth_login(self.request, data)
         except IOError, e:
             logging.exception(e)
             self.request.response.body = str(e)
@@ -82,6 +83,7 @@ class OAuthLogin(object):
             roles = Role.query.filter(Role.name.in_(role_names)).order_by(Role.id).all()
         else:
             roles = []
+
         try:
             operator = Operator.query.filter_by(auth_source='oauth', user_id=data['user_id']).one()
         except NoResultFound:

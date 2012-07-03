@@ -11,6 +11,7 @@ from pyramid.security import forget
 from .interfaces import ILogoutAction
 from .interfaces import IActionResult
 from .interfaces import IOAuthComponent
+from .subscribers import AfterLogin
 from altaircms.auth.helpers import get_authenticated_user
 
 
@@ -19,6 +20,9 @@ def get_logout_action(request):
 
 def get_oauth_component(request):
     return request.registry.getUtility(IOAuthComponent)
+
+def notify_after_oauth_login(request, data):
+    return request.registry.notify(AfterLogin(request, data))
 
 def forget_self(request):
     headers = forget(request)
