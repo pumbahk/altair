@@ -71,8 +71,8 @@ class CartedProductItem(Base):
     seats = orm.relationship("Seat", secondary=cart_seat_table)
     #seat_status = orm.relationship("SeatStatus")
 
-    carted_product_id = sa.Column(sa.Integer, sa.ForeignKey("ticketing_cartedproducts.id"))
-    carted_product = orm.relationship("CartedProduct", backref="items")
+    carted_product_id = sa.Column(sa.Integer, sa.ForeignKey("ticketing_cartedproducts.id", onupdate='cascade', ondelete='cascade'))
+    carted_product = orm.relationship("CartedProduct", backref="items", cascade='all')
 
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, nullable=True, onupdate=datetime.now)
@@ -129,8 +129,8 @@ class CartedProduct(Base):
 
     id = sa.Column(sa.Integer, primary_key=True)
     quantity = sa.Column(sa.Integer)
-    cart_id = sa.Column(sa.Integer, sa.ForeignKey('ticketing_carts.id'))
-    cart = orm.relation("Cart", backref="products")
+    cart_id = sa.Column(sa.Integer, sa.ForeignKey('ticketing_carts.id', onupdate='cascade', ondelete='cascade'))
+    cart = orm.relationship("Cart", backref="products", cascade='all')
 
     product_id = sa.Column(sa.BigInteger, sa.ForeignKey("Product.id"))
     product = orm.relationship("Product")
