@@ -52,6 +52,7 @@ requires = [
     'pyramid_who',
     'repoze.who',
     'beaker',
+    'mock',
     ]
 
 setup(name='ticketing',
