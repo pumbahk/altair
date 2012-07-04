@@ -201,11 +201,11 @@ ${h.breadcrumbs(
     % else:
           <tr>
             <td colspan="2" class="span2">決済手数料</td>
-            <td colspan="2" class="span2">${h.price_format(order.transaction_fee_amount)}円</td>
+            <td colspan="2" class="span2">${h.price_format(order.transaction_fee)}円</td>
           </tr>
           <tr>
             <td colspan="2" class="span2">配送手数料</td>
-            <td colspan="2" class="span2">${h.price_format(order.delivery_fee_amount)}円</td>
+            <td colspan="2" class="span2">${h.price_format(order.delivery_fee)}円</td>
           </tr>
           <tr>
             <td colspan="2" class="span2">システム利用料</td>
