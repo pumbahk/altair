@@ -1,11 +1,8 @@
 <%inherit file="/layout_2cols.html" />
-<%namespace file="/common/helpers.html" import="flash_messages" />
-<%namespace file="/common/helpers.html" import="safe_strftime" />
-<%namespace file="/common/helpers.html" import="price_format" />
-<%namespace file="/common/helpers.html" import="breadcrumbs" />
+<%namespace file="/common/helpers.html" name="h" />
 
 <div class="breadcrumbs">
-${breadcrumbs(
+${h.breadcrumbs(
   names=[u'トップ', u'購入情報', order.order_no],
   urls=[request.route_path('index'), request.route_path('orders.index')]
 )}
@@ -15,7 +12,7 @@ ${breadcrumbs(
 </div>
 
 <div class="content">
-  ${flash_messages(request)}
+  ${h.flash_messages(request)}
 </div>
 
 <div class="row-fluid">
@@ -32,21 +29,26 @@ ${breadcrumbs(
       </tr>
       <tr>
         <th>受注日時</th>
-        <td>${safe_strftime(order.created_at)}</td>
+        <td>${h.safe_strftime(order.created_at)}</td>
       </tr>
       <tr>
         <th>ステータス</th>
         <td>
-          % if order.paid_at and order.delivered_at:
+          % if order.status == 'canceled':
+          <span class="label label-important">キャンセル</span>
+          % elif order.status == 'delivered':
           <span class="label label-success">配送済み</span>
-          % elif order.paid_at:
+          % elif order.status == 'paid':
           <span class="label label-warning">入金済み</span>
           % else:
-          <span class="label label-important">未入金</span>
+          <span class="label label-inverse">未入金</span>
           % endif
         </td>
       </tr>
     </table>
+    <div class="pull-right">
+      <%include file="/orders/_action_button.html" args="order=order" />
+    </div>
   </div>
 
   <div class="span6">
@@ -88,9 +90,9 @@ ${breadcrumbs(
         <th>配送日時</th>
         <td>
           % if order.delivered_at:
-            ${safe_strftime(order.delivered_at)}
+            ${h.safe_strftime(order.delivered_at)}
           % else:
-            <span class="label label-important">未配送</span>
+            <span class="label label-inverse">未配送</span>
           % endif
         </td>
       </tr>
@@ -111,6 +113,11 @@ ${breadcrumbs(
         <td>${sa.fax or ''}</td>
       </tr>
     </table>
+    <div class="pull-right">
+      <a href="${request.route_path('orders.edit_delivery', order_id=order.id)}" class="btn">
+        <i class="icon-pencil"></i> 変更
+      </a>
+    </div>
   </div>
 
   <div class="span6">
@@ -127,9 +134,9 @@ ${breadcrumbs(
         <th>決済日時</th>
         <td>
           % if order.delivered_at:
-            ${safe_strftime(order.paid_at)}
+            ${h.safe_strftime(order.paid_at)}
           % else:
-            <span class="label label-important">未入金</span>
+            <span class="label label-inverse">未入金</span>
           % endif
         </td>
       </tr>
@@ -140,6 +147,11 @@ ${breadcrumbs(
       </tr>
       % endif
     </table>
+    <div class="pull-right">
+      <a href="${request.route_path('orders.edit_payment', order_id=order.id)}" class="btn">
+        <i class="icon-pencil"></i> 変更
+      </a>
+    </div>
   </div>
 </div>
 
@@ -175,35 +187,40 @@ ${breadcrumbs(
       % endif
           <tr>
             <td colspan="2">${ordered_product.product.name}</td>
-            <td class="span2">${price_format(ordered_product.price)}円</td>
-            <td class="span2">${price_format(ordered_product.quantity)}</td>
+            <td class="span2">${h.price_format(ordered_product.price)}円</td>
+            <td class="span2">${h.price_format(ordered_product.quantity)}</td>
           </tr>
       % for i, ordered_product_item in enumerate(ordered_product.ordered_product_items):
           <tr>
             <td class="span4"></td>
             <td class="span4">${ordered_product_item.product_item.stock_type.name}</td>
-            <td class="span2">${price_format(ordered_product_item.product_item.price)}円</td>
-            <td class="span2">${price_format(ordered_product_item.product_item.quantity)}</td>
+            <td class="span2">${h.price_format(ordered_product_item.product_item.price)}円</td>
+            <td class="span2">${h.price_format(ordered_product_item.product_item.quantity)}</td>
           </tr>
       % endfor
     % else:
           <tr>
             <td colspan="2" class="span2">決済手数料</td>
-            <td colspan="2" class="span2">${price_format(order.transaction_fee)}円</td>
+            <td colspan="2" class="span2">${h.price_format(order.transaction_fee_amount)}円</td>
           </tr>
           <tr>
             <td colspan="2" class="span2">配送手数料</td>
-            <td colspan="2" class="span2">${price_format(order.delivery_fee)}円</td>
+            <td colspan="2" class="span2">${h.price_format(order.delivery_fee_amount)}円</td>
           </tr>
           <tr>
             <td colspan="2" class="span2">システム利用料</td>
-            <td colspan="2" class="span2">${price_format(order.system_fee)}円</td>
+            <td colspan="2" class="span2">${h.price_format(order.system_fee)}円</td>
           </tr>
           <tr>
             <td colspan="2" class="span2"><strong>合計</strong></td>
-            <td colspan="2" class="span2"><strong>${price_format(order.total_amount)}円</strong></td>
+            <td colspan="2" class="span2"><strong>${h.price_format(order.total_amount)}円</strong></td>
           </tr>
         </table>
     % endfor
+    <div class="pull-right">
+      <a href="${request.route_path('orders.edit_product', order_id=order.id)}" class="btn">
+        <i class="icon-pencil"></i> 変更
+      </a>
+    </div>
   </div>
 </div>

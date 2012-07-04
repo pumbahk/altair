@@ -1,11 +1,16 @@
 # -*- coding: utf-8 -*-
 
+import logging
+from datetime import datetime
+
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, Numeric, Unicode
 from sqlalchemy.orm import join, backref, column_property
 
 from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier, relationship
 from ticketing.core.models import Seat, Performance, Product, ProductItem
 from ticketing.users.models import User
+
+logger = logging.getLogger(__name__)
 
 orders_seat_table = Table("orders_seat", Base.metadata,
     Column("seat_id", Identifier, ForeignKey("Seat.id")),
@@ -56,11 +61,23 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     paid_at = Column(DateTime, nullable=True)
     delivered_at = Column(DateTime, nullable=True)
+    canceled_at = Column(DateTime, nullable=True)
 
     order_no = Column(String(255))
 
     performance_id = Column(Identifier, ForeignKey('Performance.id'))
     performance = relationship('Performance', backref="orders")
+
+    @property
+    def status(self):
+        if self.canceled_at:
+            return 'canceled'
+        elif self.delivered_at:
+            return 'delivered'
+        elif self.paid_at:
+            return 'paid'
+        else:
+            return 'ordered'
 
     @staticmethod
     def filter_by_performance_id(id):
@@ -98,6 +115,39 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         return order
 
+    def cancel(self):
+        # 決済をキャンセル
+        ppid = self.payment_delivery_pair.payment_method.payment_plugin_id
+
+        if ppid == 1:  # クレジットカード決済
+            # ToDo
+            pass
+        elif ppid == 2:  # 楽天あんしん決済
+            # ToDo
+            pass
+        elif ppid == 3:  # コンビニ決済 (セブンイレブン)
+            from ticketing.sej.models import SejOrder
+            from ticketing.sej.exceptions import SejServerError
+            from ticketing.sej.payment import request_cancel_order
+
+            sej_order = SejOrder.query.filter_by(order_id='%(#)012d' % {'#':self.id}).first()
+            if sej_order and not sej_order.cancel_at:
+                try:
+                    request_cancel_order(
+                        sej_order.order_id,
+                        sej_order.billing_number,
+                        sej_order.exchange_number,
+                    )
+                except SejServerError, e:
+                    logger.error(u'コンビニ決済(セブンイレブン)のキャンセルに失敗しました。 %s' % e)
+                    return False
+        elif ppid == 4:  # 窓口支払
+            pass
+
+        self.canceled_at = datetime.now()
+        self.save()
+
+        return True
 
 class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrderedProduct'

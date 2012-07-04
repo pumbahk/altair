@@ -1,0 +1,25 @@
+<%page args="order" />
+<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/modal.html" name="m" />
+
+<script type="text/javascript">
+  function cancel_order(id) {
+    modal = $('#modal-delete');
+    modal.find('#delete').attr('href', '/orders/cancel/' + id);
+    modal.find('#message').text("${u'選択した受注をキャンセルします。よろしいですか？'}");
+    modal.modal('toggle');
+  }
+</script>
+
+<%
+actions = {
+  'cancel':dict(
+    label=u'キャンセル',
+    url='javascript:cancel_order(%d);' % order.id,
+    icon='icon-remove',
+  ),
+}
+%>
+${h.action_button(actions)}
+
+${m.delete_modal()}
