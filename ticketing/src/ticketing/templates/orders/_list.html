@@ -1,9 +1,29 @@
 <%page args="form, orders, limit=None, detail=True" />
 <%namespace file="/common/helpers.html" name="h" />
-
 <% paging = False if limit else True %>
 
+<style type="text/css">
+  .ordered-item {
+    text-decoration: none;
+    background-color: #EEE;
+    display: inline-block;
+    border: 1px solid #DDD;
+    text-align: center;
+    -webkit-border-radius: 15px;
+    -moz-border-radius: 15px;
+    border-radius: 15px;
+    min-height: 20px;
+    line-height: 20px;
+    padding: 5px 14px 5px 14px
+  }
+</style>
+
+% if paging:
+  ${h.pager(orders)}
+% endif
+
 % if orders:
+  <div style="margin-top: 20px;"></div>
   <% i = 0 %>
   % for i, order in enumerate(orders):
     <% if limit and i >= limit: break %>
@@ -11,46 +31,50 @@
     <table class="table table-striped table-bordered">
       <thead>
       <tr>
-        <th class="span1"></th>
-        <th class="span1">${h.sortable(form.id)}</th>
+        <th class="span1">ステータス</th>
+        <th class="span1">${h.sortable(form.order_no)}</th>
         <th class="span2">${h.sortable(form.created_at)}</th>
         <th class="span2">${h.sortable(form.total_amount)}</th>
         <th class="span2">ユーザー</th>
         % if detail:
         <th>イベント</th>
-        <th class="span2">日時</th>
-        <th>会場</th>
+        <th class="span2">開演日時</th>
         % endif
       </tr>
       </thead>
       <tbody>
     % endif
       <tr>
-        <td></td>
-        <td>${order.id}</td>
+        <td>
+          % if order.paid_at and order.delivered_at:
+          <span class="label label-success">配送済み</span>
+          % elif order.paid_at:
+          <span class="label label-warning">入金済み</span>
+          % else:
+          <span class="label label-important">未入金</span>
+          % endif
+        </td>
+        <td>${order.order_no}</td>
         <td><a href="${request.route_path('orders.show', order_id=order.id)}">${h.safe_strftime(order.created_at)}</a></td>
         <td>${h.price_format(order.total_amount)}円</td>
         <td>${order.user.user_profile.nick_name}</td>
         % if detail:
         <td>${order.ordered_products[0].product.event.title}</td>
         <td>${order.ordered_products[0].ordered_product_items[0].product_item.performance.start_on}</td>
-        <td>${order.ordered_products[0].ordered_product_items[0].product_item.performance.venue.name}</td>
         % endif
       </tr>
       % if detail:
       <tr>
         <td colspan="8">
           % for ordered_product in order.ordered_products:
-          <span class="ordered-item">${ordered_product.product.name} ${h.price_format(ordered_product.product.price)}円</span>
+          <span class="ordered-item pull-right">${ordered_product.product.name} ${h.price_format(ordered_product.product.price)}円</span>
           % endfor
         </td>
       </tr>
       % endif
   % else:
-    % if i > 0:
       </tbody>
     </table>
-    % endif
   % endfor
 % endif
 

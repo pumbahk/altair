@@ -1,20 +1,5 @@
 <%inherit file="/layout_2cols.html"/>
 <%namespace file="/common/helpers.html" name="h" />
-<style type="text/css">
-  .ordered-item {
-    text-decoration: none;
-    background-color: #EEE;
-    display: inline-block;
-    border: 1px solid #DDD;
-    text-align: center;
-    -webkit-border-radius: 15px;
-    -moz-border-radius: 15px;
-    border-radius: 15px;
-    min-height: 20px;
-    line-height: 20px;
-    padding: 5px 14px 5px 14px
-  }
-</style>
 
 <div class="breadcrumbs">
   ${h.breadcrumbs(
@@ -34,9 +19,8 @@
 <div style="float: left;">
   <%include file="/orders/_search.html" />
 </div>
+<div style="clear: both;"></div>
 
 <div class="orders">
-  ${h.pager(orders)}
   <%include file="/orders/_list.html" args="form=form, orders=orders" />
-  ${h.pager(orders)}
 </div>

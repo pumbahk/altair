@@ -6,8 +6,8 @@ from wtforms.validators import Optional,Required
 
 class OrderForm(Form):
 
-    id = HiddenField(
-        label=u'ID',
+    order_no = HiddenField(
+        label=u'受注番号',
         validators=[Optional()],
     )
     total_amount = HiddenField(

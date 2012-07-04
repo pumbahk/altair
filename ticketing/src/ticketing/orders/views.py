@@ -19,18 +19,18 @@ class Orders(BaseView):
     @view_config(route_name='orders.index', renderer='ticketing:templates/orders/index.html')
     def index(self):
         sort = self.request.GET.get('sort', 'Order.id')
-        direction = self.request.GET.get('direction', 'asc')
+        direction = self.request.GET.get('direction', 'desc')
         if direction not in ['asc', 'desc']:
-            direction = 'asc'
+            direction = 'desc'
 
         query = Order.filter(Order.organization_id==int(self.context.user.organization_id))
         query = query.order_by(sort + ' ' + direction)
 
         # search condition
         if self.request.method == 'POST':
-            condition = self.request.POST.get('order_number')
+            condition = self.request.POST.get('order_no')
             if condition:
-                query = query.filter(Order.id==condition)
+                query = query.filter(Order.order_no==condition)
             condition = self.request.POST.get('order_datetime_from')
             if condition:
                 query = query.filter(Order.created_at>=condition)
