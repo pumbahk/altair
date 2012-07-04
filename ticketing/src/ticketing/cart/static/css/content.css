@@ -2137,15 +2137,26 @@
 	border: none
 }
 
+#mailMagazineBoxInner dl {
+	margin: 0 0;
+	padding: 0 0;
+}
+
 #mailMagazineBoxInner dt {
 	font-weight: bold;
+	padding: 10px 10px;
+	border-bottom: 1px solid #ccc;
+}
+
+#mailMagazineBoxInner dd {
+	padding: 0px 10px 10px 10px;
 }
 
 #mailMagazineBoxInner dd ul {
 	overflow: hidden;
 }
 
-#mailMagazineBoxInner dd li {
+#mailMagazineBoxInner dd ul li {
 	float: left;
 	width: 48%;
 	padding: 10px 0 0;

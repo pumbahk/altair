@@ -140,17 +140,24 @@ shipping = cart.shipping_address
                     <h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_magazine.gif')}" alt="メールマガジンの配信" width="177" height="30" /></h2>
 					<div id="mailMagazineBox">
 						<div id="mailMagazineBoxInner">
-							<ul>
-								<li><strong>ご利用いただいた方には、楽天チケットからのお知らせと、楽天からのメルマガをお送りします。不要な方はチェックをはずしてください。</strong></li>
-                                %for mailmagazine in mailmagazines:
-								<li>
-									<label>
-                                        <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />
-                                        ${mailmagazine.name}</label>
-                                    ${mailmagazine.description}
-								</li>
-                                %endfor
-                                <!--
+							<dl>
+								<dt>ご利用いただいた方には、楽天チケットからのお知らせと、楽天からのメルマガをお送りします。不要な方はチェックをはずしてください。</dt>
+                <dd>
+                  <ul>
+                  %for mailmagazine in mailmagazines:
+                    <li>
+                      <div>
+                        <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />
+                        <label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
+                      </div>
+                      <div>
+                        ${mailmagazine.description|n}
+                      </div>
+                    </li>
+                  %endfor
+                  </ul>
+                </dd>
+                <!--
 								<li>
 									<dl>
 										<dt>楽天からのメルマガ</dt>
@@ -180,7 +187,7 @@ shipping = cart.shipping_address
 								<li>　　<a href="#">全ての選択を解除</a>　<a href="#">全てのメルマガを選択</a></li>
 								<li class="attention1"><strong>※既に配信されているメルマガの配信停止をしたい場合は、次のページの「配信停止ページへ」のリンクから停止作業を行ってください。</strong></li>
                                 -->
-							</ul>
+							</dl>
 						</div>
 					</div>
 				</div>
