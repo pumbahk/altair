@@ -793,6 +793,15 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     stock_status = relationship("StockStatus", uselist=False, backref='stock')
 
+    def save(self):
+        # 登録時にStockStatusを作成
+        case_add = False if hasattr(self, 'id') and self.id else True
+        super(Stock, self).save()
+
+        if case_add:
+            stock_status = StockStatus(stock_id=self.id, quantity=self.quantity)
+            stock_status.save()
+
     @staticmethod
     def create_from_template(template, performance_id):
         stock = Stock.clone(template)
