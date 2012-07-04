@@ -561,16 +561,16 @@ class CompleteView(object):
 
         # メール購読でエラーが出てロールバックされても困る
         order_id = order.id
+        mail_address = cart.shipping_address.email
         transaction.commit()
         order = DBSession.query(order.__class__).get(order_id)
 
         # メール購読
-        self.save_subscription()
+        self.save_subscription(mail_address)
 
         return dict(order=order)
 
-    def save_subscription(self):
-        cart = api.get_cart(self.request)
+    def save_subscription(self, mail_address):
         magazines = u_models.MailMagazine.query.all()
         user = self.context.get_or_create_user()
 
@@ -578,7 +578,7 @@ class CompleteView(object):
         magazine_ids = self.request.params.getall('mailmagazine')
         logger.debug("magazines: %s" % magazine_ids)
         for subscription in u_models.MailMagazine.query.filter(u_models.MailMagazine.id.in_(magazine_ids)).all():
-            if subscription.subscribe(user, cart.shipping_address.email):
-                logger.debug("User %s starts subscribing %s for <%s>" % (user, subscription.name, cart.shipping_address.email))
+            if subscription.subscribe(user, mail_address):
+                logger.debug("User %s starts subscribing %s for <%s>" % (user, subscription.name, mail_address))
             else:
-                logger.debug("User %s is already subscribing %s for <%s>" % (user, subscription.name, cart.shipping_address.email))
+                logger.debug("User %s is already subscribing %s for <%s>" % (user, subscription.name, mail_address))
