@@ -128,7 +128,7 @@ class MailMagazine(Base):
         # with the same e-mail address.
         if subscription:
             return None
-        subscription = MailSubscription(email=self.user_profile.email, user=self, segment=mailmagazine)
+        subscription = MailSubscription(email=mail_address, user=user, segment=self)
         session.add(subscription)
         return subscription
 
