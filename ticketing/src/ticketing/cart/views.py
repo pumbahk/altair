@@ -377,20 +377,25 @@ class PaymentView(object):
         #user = api.get_or_create_user(self.request, openid['clamed_id'])
         user = self.context.get_or_create_user()
         user_profile = user.user_profile
-        form = schema.ClientForm(formdata=MultiDict({
-            "last_name": user_profile.last_name,
-            "last_name_kana": user_profile.last_name_kana,
-            "first_name": user_profile.first_name,
-            "first_name_kana": user_profile.first_name_kana,
-            "tel": user_profile.tel_1,
-            "fax": user_profile.fax,
-            "zip": user_profile.zip,
-            "prefecture": user_profile.prefecture,
-            "city": user_profile.city,
-            "address_1": user_profile.street,
-            "address_2": user_profile.address,
-            "mail_address": user_profile.email,
-        }))
+        if user_profile is not None:
+            formdata = MultiDict(
+                last_name=user_profile.last_name,
+                last_name_kana=user_profile.last_name_kana,
+                first_name=user_profile.first_name,
+                first_name_kana=user_profile.first_name_kana,
+                tel=user_profile.tel_1,
+                fax=user_profile.fax,
+                zip=user_profile.zip,
+                prefecture=user_profile.prefecture,
+                city=user_profile.city,
+                address_1=user_profile.street,
+                address_2=user_profile.address,
+                mail_address=user_profile.email
+                )
+        else:
+            formdata = None
+
+        form = schema.ClientForm(formdata=formdata)
         return dict(form=form,
             payment_delivery_methods=payment_delivery_methods,
             user=user, user_profile=user.user_profile)
