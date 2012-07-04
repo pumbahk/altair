@@ -11,7 +11,7 @@ class QueryParser(object):
     """
     def __init__(self, query):
         self.query = query
-    
+
     def parse(self):
         words = re.split(u"[, 　\s]+", self.query.strip())
         return [x for x in words if x]

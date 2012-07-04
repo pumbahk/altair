@@ -6,6 +6,7 @@ from .manager import QueryParser
 from . import SUPPORTED_CLASSIFIER
 from . import forms
 
+
 def in_support_classifier(context, request):
     return request.matchdict.get("classifier") in SUPPORTED_CLASSIFIER
 
@@ -21,9 +22,11 @@ class TopView(object):
     @view_config(request_method="GET", renderer="altaircms:templates/tag/top.mako")
     def toppage_view_default(self):
         form = forms.TagSearchForm()
+        pages = get_tagmanager("page").recent_change_tags()
+        assets = get_tagmanager("asset").recent_change_tags()
         new_tags_dict = dict(
-            page=get_tagmanager("page").recent_change_tags().limit(self.RECENT_CHANGE_TAGS_LIMIT), 
-            asset=get_tagmanager("asset").recent_change_tags().limit(self.RECENT_CHANGE_TAGS_LIMIT), 
+            page=self.request.allowable("PageTag", qs=pages).limit(self.RECENT_CHANGE_TAGS_LIMIT), 
+            asset=self.request.allowable("AssetTag", qs=assets).limit(self.RECENT_CHANGE_TAGS_LIMIT)
             )
         return {"supported": SUPPORTED_CLASSIFIER, "form": form, 
                 "new_tags_dict": new_tags_dict}
@@ -34,7 +37,9 @@ class TopView(object):
         form = forms.TagSearchForm(**self.request.GET)
         classifier = self.request.GET["classifier"]
         query = self.request.GET["query"]
-        query_result = QueryParser(query).and_search_by_manager(get_tagmanager(classifier))
+        manager = get_tagmanager(classifier)
+        query_result = QueryParser(query).and_search_by_manager(manager)
+        query_result = self.request.allowable(manager.Object.__name__, qs=query_result)
         return {"supported": SUPPORTED_CLASSIFIER, 
                 "form": form, 
                 "query_result": query_result, 
@@ -45,7 +50,8 @@ class TopView(object):
     def subtoppage_view(self):
         classifier = self.request.matchdict["classifier"]
         form = forms.TagSearchForm(classifier=classifier)
-        tags = get_tagmanager(classifier).recent_change_tags()
+        manager = get_tagmanager(classifier)
+        tags = self.request.allowable(manager.Object.__name__, qs=manager.recent_change_tags())
         new_tags = tags.limit(self.RECENT_CHANGE_TAGS_LIMIT)
         return {"classifier": classifier, 
                 "new_tags": new_tags, 
