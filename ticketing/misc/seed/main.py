@@ -1,7 +1,7 @@
 import os
 import sys
 from locale import getpreferredencoding
-from fixtures import sites, organization_names, build_organization_datum, build_user_datum, service_data
+from fixtures import sites, organization_names, build_organization_datum, build_user_datum, build_mail_magazines, build_user_datum, service_data
 from fixture import DataSuite, DataWalker, ReferenceGraph, SQLSerializer
 from svggen import SVGGenerator, NESW
 from lxml.etree import tostring
@@ -13,10 +13,17 @@ def main(argv):
     digraph = ReferenceGraph()
     walker = DataWalker(suite, digraph)
 
-    for organization_datum in [build_organization_datum(name) for name in organization_names]:
+    user_data = [build_user_datum() for _ in range(100)]
+    for organization_datum in [build_organization_datum(user_data, code, name) for code, name in organization_names]:
         organization_datum.user_id=build_user_datum()
+        mail_magazines = build_mail_magazines(organization_datum)
         logging.info("Resolving references...")
         walker(organization_datum)
+        for mail_magazine in mail_magazines:
+            walker(mail_magazine)
+
+    for user_datum in user_data:
+        walker(user_datum)
 
     for service_datum in service_data:
         walker(service_datum)

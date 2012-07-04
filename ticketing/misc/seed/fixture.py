@@ -289,7 +289,7 @@ class InsertStmtBuilder(object):
 
         if self.prev_table != table or self.prev_keys != keys:
             self.flush()
-            self.write("INSERT INTO %s (%s) VALUES\n" % (
+            self.write("INSERT INTO `%s` (%s) VALUES\n" % (
                 table.encode(encoding),
                 ', '.join(self.builder.put_identifier(k) for k, v in values)))
         else:
