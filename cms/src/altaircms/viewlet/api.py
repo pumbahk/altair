@@ -9,7 +9,7 @@ def get_event(request):
         return request._event
     else:
         event_id = request.session.get("event_id", None)
-        event = Event.query.filter_by(id=event_id).first()
+        event = request.allowable("Event").filter_by(id=event_id).first()
         set_event(request, event)
         return event
 
@@ -18,7 +18,7 @@ def get_page(request):
         return request._page
     else:
         page_id = request.session.get("page_id", None)
-        page = Page.query.filter_by(id=page_id).first()
+        page = request.allowable("Page").filter_by(id=page_id).first()
         set_page(request, page)
         return page
 
@@ -27,7 +27,7 @@ def get_pageset(request):
         return request._pageset
     else:
         pageset_id = request.session.get("pageset_id", None)
-        pageset = PageSet.query.filter_by(id=pageset_id).first()
+        pageset = request.allowable("PageSet").filter_by(id=pageset_id).first()
         set_pageset(request, pageset)
         return pageset
 
