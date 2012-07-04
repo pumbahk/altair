@@ -31,8 +31,18 @@ def get_authenticated_user(request):
         logging.warn("operator is not found. so request.user is None")
         return None
 
-### use where auth event 
+def get_authenticated_organization(request):
+    """
+    認証済みのorganizationオブジェクトを返す。存在しない場合にはNoneを返す
+    """
+    if hasattr(request, "user"):
+        return request.user.organization if request.user else None
+    raise NotImplementedError
 
+
+
+
+### use where auth event 
 def get_roles_from_role_names(role_names):
     if role_names is not None:
         return Role.query.filter(Role.name.in_(role_names)).order_by(Role.id).all()

@@ -45,7 +45,8 @@ def main(global_config, **settings):
 
     ## bind authenticated user to request.user
     config.set_request_property("altaircms.auth.helpers.get_authenticated_user", "user", reify=True)
-
+    config.set_request_property("altaircms.auth.helpers.get_authenticated_organization", "organization", reify=True)
+    config.set_request_property("altaircms.auth.api.get_allowable_query", "allowable", reify=True)
 
     config.include("altaircms.lib.crud")    
 
@@ -78,6 +79,17 @@ def main(global_config, **settings):
                           "pyramid.events.BeforeRender")
     config.add_subscriber(".subscribers.add_choices_query_refinement", 
                           ".lib.formevent.AfterFormInitialize")
+
+    ## allowable query(organizationごとに絞り込んだデータを提供)
+    iquery = config.maybe_dotted(".auth.interfaces.IAllowableQueryFactory")
+    query_factory = config.maybe_dotted(".auth.api.AllowableQueryFactory")
+    
+    config.registry.registerUtility(query_factory(config.maybe_dotted(".asset.models.ImageAsset")), iquery, name="ImageAsset")
+    config.registry.registerUtility(query_factory(config.maybe_dotted(".asset.models.MovieAsset")), iquery, name="MovieAsset")
+    config.registry.registerUtility(query_factory(config.maybe_dotted(".asset.models.FlashAsset")), iquery, name="FlashAsset")
+    config.registry.registerUtility(query_factory(config.maybe_dotted(".event.models.Event")), iquery, name="Event")
+    # config.registry.registerUtility(query_factory(config.maybe_dotted("")), iquery, name="")
+
     
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)
     config.add_static_view('plugins/static', 'altaircms:plugins/static', cache_max_age=3600)

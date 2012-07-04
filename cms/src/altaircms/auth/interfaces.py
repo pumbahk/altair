@@ -23,3 +23,10 @@ class IOAuthComponent(Interface):
     def create_oauth_token_url(args):
         pass
 
+
+class IAllowableQueryFactory(Interface):
+    model = Attribute("query source")
+
+    def __call__(request):
+        """ return allowable query(usually filtering by organization)"""
+        pass

@@ -1,6 +1,6 @@
 # -*- encoding:utf-8 -*-
 
-
+from pyramid.httpexceptions import HTTPForbidden
 from zope.interface import implementer
 import urllib
 import logging
@@ -11,6 +11,7 @@ from pyramid.security import forget
 from .interfaces import ILogoutAction
 from .interfaces import IActionResult
 from .interfaces import IOAuthComponent
+from .interfaces import IAllowableQueryFactory
 from .subscribers import AfterLogin
 from altaircms.auth.helpers import get_authenticated_user
 
@@ -92,3 +93,24 @@ class OAuthComponent(object):
         url = self.access_token_url +"?" + urllib.urlencode(args)
         return url
 
+###login後の絞り込み
+class AllowableQueryFactory(object):
+    def __init__(self, model):
+        self.model = model
+
+    def __call__(self, request):
+        query = self.model.query
+        if request.organization:
+            return query.with_transformation(request.organization.inthere("organization_id"))
+        logger.warn("this-is-not-allowable-query. request.organization is not found")
+        return query
+
+def get_allowable_query(request):
+    def query(name):
+        factory = request.registry.getUtility(IAllowableQueryFactory, name=name)
+        return factory(request)
+    return query
+
+def raise_error_if_notallowable(request, obj):
+    if request.organization.id != obj.organization_id:
+        raise HTTPForbidden(u"閲覧権限を持っていません")

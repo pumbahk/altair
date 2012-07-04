@@ -15,6 +15,7 @@ from . import searcher
 
 from . import helpers as h
 from .event_info import get_event_notify_info
+
 ##
 ## CMS view
 ##
@@ -23,9 +24,11 @@ from .event_info import get_event_notify_info
 def view(request):
     id_ = request.matchdict['id']
 
-    event = Event.query.filter_by(id=id_).first()
+    event = request.allowable("Event").filter_by(id=id_).first()
+    if event is None:
+        raise HTTPNotFound() ##
     performances = event.performances
-    sales = Sale.query.filter_by(event_id=id_)
+    sales = event.sales
     return dict(
         event=event,
         performances=performances, 
@@ -36,7 +39,7 @@ def view(request):
 @view_config(route_name='event_list', renderer='altaircms:templates/event/list.mako', permission='event_read', request_method="GET", 
              decorator=with_bootstrap)
 def event_list(request):
-    events = Event.query
+    events = request.allowable("Event")
 
     params = dict(request.GET)
     if "page" in params:

@@ -15,7 +15,6 @@ class IModelEvent(Interface):
 class IAfterResponseEvent(Interface):
     request = Attribute("request object")
     response_data = Attribute("response data usually dict like object")
-##
 
 class IConcrete(Interface):
     def concrete():
