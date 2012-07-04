@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import re
 import sqlalchemy as sa
 from sqlalchemy.orm import joinedload
+from sqlalchemy.sql.expression import or_
 from markupsafe import Markup
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from pyramid.response import Response
@@ -506,7 +507,7 @@ class ConfirmView(object):
         assert api.has_cart(self.request)
         cart = api.get_cart(self.request)
 
-        magazines = u_models.MailMagazine.query.all()
+        magazines = u_models.MailMagazine.query.outerjoin(u_models.MailSubscription).filter(u_models.MailMagazine.organization==cart.performance.event.organization).filter(or_(u_models.MailSubscription.email != cart.shipping_address.email, u_models.MailSubscription.email == None)).all()
 
         user = self.context.get_or_create_user()
         return dict(cart=cart, mailmagazines=magazines, user=user)
