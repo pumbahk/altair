@@ -805,11 +805,11 @@ class PaymentViewTests(unittest.TestCase):
 
     @mock.patch('ticketing.cart.api.get_or_create_user')
     @mock.patch('ticketing.cart.rakuten_auth.api.authenticated_user')
-    def test_it(self, mock_authenticated_user, mock_get_ore_create_user):
+    def test_it(self, mock_authenticated_user, mock_get_or_create_user):
         mock_authenticated_user.return_value = {
             'clamed_id': 'http://ticketstar.example.com/user/1'
         }
-        mock_get_ore_create_user.return_value = testing.DummyModel(
+        mock_get_or_create_user.return_value = testing.DummyModel(
             user_profile=testing.DummyModel(
                 last_name=u'楽天',
                 last_name_kana=u'ラクテン',
