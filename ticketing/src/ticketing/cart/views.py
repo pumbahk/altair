@@ -422,8 +422,8 @@ class PaymentView(object):
         #user = api.get_or_create_user(self.request, openid['clamed_id'])
         user = self.context.get_or_create_user()
 
-        payment_delivery_pair_id = self.request.params.get('payment_delivery_pair_id', 0)
-        payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter_by(id=payment_delivery_pair_id).first()
+        payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id', 0)
+        payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter_by(id=payment_delivery_method_pair_id).first()
         cart.payment_delivery_pair = payment_delivery_pair
 
         form = self.validate()
@@ -433,7 +433,7 @@ class PaymentView(object):
             self.context.event_id = cart.performance.event.id
             payment_delivery_methods = self.context.get_payment_delivery_method_pair()
             if not payment_delivery_pair:
-                logger.debug("invalid : %s" % 'payment_delivery_pair_id')
+                logger.debug("invalid : %s" % 'payment_delivery_method_pair_id')
             else:
                 logger.debug("invalid : %s" % form.errors)
             return dict(form=form,
@@ -450,7 +450,7 @@ class PaymentView(object):
 
         order = dict(
             client_name=client_name,
-            payment_delivery_pair_id=payment_delivery_pair_id,
+            payment_delivery_method_pair_id=payment_delivery_method_pair_id,
         )
         self.request.session['order'] = order
 
@@ -535,9 +535,9 @@ class CompleteView(object):
 
         order_session = self.request.session['order']
 
-        payment_delivery_pair_id = order_session['payment_delivery_pair_id']
+        payment_delivery_method_pair_id = order_session['payment_delivery_method_pair_id']
         payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter(
-            c_models.PaymentDeliveryMethodPair.id==payment_delivery_pair_id
+            c_models.PaymentDeliveryMethodPair.id==payment_delivery_method_pair_id
         ).one()
 
         payment_delivery_plugin = api.get_payment_delivery_plugin(self.request, 

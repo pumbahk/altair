@@ -201,7 +201,7 @@ class Cart(Base):
     shipping_address_id = sa.Column(Identifier, sa.ForeignKey("ShippingAddress.id"))
     shipping_address = orm.relationship('ShippingAddress', backref='cart')
 
-    payment_delivery_pair_id = sa.Column(Identifier, sa.ForeignKey("PaymentDeliveryMethodPair.id"))
+    payment_delivery_method_pair_id = sa.Column(Identifier, sa.ForeignKey("PaymentDeliveryMethodPair.id"))
     payment_delivery_pair = orm.relationship("PaymentDeliveryMethodPair")
 
     @property
