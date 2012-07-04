@@ -18,7 +18,7 @@ from ..core import models as c_models
 from . import models as m
 from . import logger
 
-class TicketingCartResrouce(object):
+class TicketingCartResource(object):
     __acl__ = [
         (Allow, Authenticated, 'view'),
     ]

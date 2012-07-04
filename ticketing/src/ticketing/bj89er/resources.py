@@ -1,12 +1,12 @@
 from datetime import datetime
-from ticketing.cart.resources import TicketingCartResrouce
+from ticketing.cart.resources import TicketingCartResource
 from ticketing.core.models import DBSession
 from ticketing.users.models import User, UserCredential, MemberShip, UserProfile
 from .api import load_user_profile
 
 MEMBERSHIP_NAME = '89er'
 
-class Bj89erCartResource(TicketingCartResrouce):
+class Bj89erCartResource(TicketingCartResource):
     def __init__(self, request):
         super(Bj89erCartResource, self).__init__(request)
         self.event_id = request.registry.settings['89er.event_id']

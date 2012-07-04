@@ -302,7 +302,7 @@ class TicketingCartResourceTests(unittest.TestCase):
 
     def _getTarget(self):
         from . import resources
-        return resources.TicketingCartResrouce
+        return resources.TicketingCartResource
 
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
@@ -554,7 +554,7 @@ class ReserveViewTests(unittest.TestCase):
 
         from ticketing.core.models import Seat, SeatAdjacency, SeatAdjacencySet, SeatStatus, SeatStatusEnum, Stock, StockStatus, Product, ProductItem, Performance
         from .models import Cart
-        from .resources import TicketingCartResrouce
+        from .resources import TicketingCartResource
 
         self.config.add_route('cart.payment', 'payment')
         # 在庫
@@ -598,7 +598,7 @@ class ReserveViewTests(unittest.TestCase):
             }
 
         request = testing.DummyRequest(params=params)
-        request.context = TicketingCartResrouce(request)
+        request.context = TicketingCartResource(request)
         target = self._makeOne(request)
         result = target()
 
@@ -630,7 +630,7 @@ class ReserveViewTests(unittest.TestCase):
 
         from ticketing.core.models import Seat, SeatAdjacency, SeatAdjacencySet, SeatStatus, SeatStatusEnum, Stock, StockStatus, Product, ProductItem, Performance
         from .models import Cart
-        from .resources import TicketingCartResrouce
+        from .resources import TicketingCartResource
 
         # 在庫
         stock_id = 1
@@ -673,7 +673,7 @@ class ReserveViewTests(unittest.TestCase):
             }
 
         request = testing.DummyRequest(params=params)
-        request.context = TicketingCartResrouce(request)
+        request.context = TicketingCartResource(request)
         target = self._makeOne(request)
         result = target()
 
@@ -687,7 +687,7 @@ class ReserveViewTests(unittest.TestCase):
 #
 #        from ticketing.core.models import Seat, SeatAdjacency, SeatAdjacencySet, SeatStatus, SeatStatusEnum, Stock, StockStatus, Product, ProductItem, Performance
 #        from .models import Cart
-#        from .resources import TicketingCartResrouce
+#        from .resources import TicketingCartResource
 #
 #        # 在庫
 #        stock_id = 1
@@ -730,7 +730,7 @@ class ReserveViewTests(unittest.TestCase):
 #            }
 #
 #        request = testing.DummyRequest(params=params)
-#        request.context = TicketingCartResrouce(request)
+#        request.context = TicketingCartResource(request)
 #        target = self._makeOne(request)
 #        result = target()
 #
