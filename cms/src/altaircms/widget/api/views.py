@@ -1,4 +1,6 @@
 from pyramid.view import view_config
+from altaircms.auth.api import get_or_404
+from altaircms.page.models import Page
 import json
 
 class StructureView(object):
@@ -13,7 +15,7 @@ class StructureView(object):
     def update(self):
         request = self.request
         pk = request.json_body["page"]
-        page = request.context.get_page(pk)
+        page = get_or_404(request.allowable("Page"), Page.id==pk)
         page.structure = json.dumps(request.json_body["structure"])
         request.context.add(page, flush=True) ## flush?
         return "ok"
@@ -26,7 +28,7 @@ class StructureView(object):
     def get(self):
         request = self.request
         pk = request.GET["page"]
-        page = request.context.get_page(pk)
+        page = get_or_404(request.allowable("Page"), Page.id==pk)
         if page.structure:
             return dict(loaded=json.loads(page.structure))
         else:

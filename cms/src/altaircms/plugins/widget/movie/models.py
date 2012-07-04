@@ -13,7 +13,7 @@ from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
 
 from pyramid.renderers import render
-MovieAsset = asset.models.MovieAsset
+MovieAsset = asset.MovieAsset
 
 class MovieWidget(Widget):
     implements(IWidget)

@@ -13,7 +13,7 @@ from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
 
 from pyramid.renderers import render
-ImageAsset = asset.models.ImageAsset
+ImageAsset = asset.ImageAsset
 
 class ImageWidget(Widget):
     implements(IWidget)

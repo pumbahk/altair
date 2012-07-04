@@ -17,7 +17,10 @@ def dashboard(request):
     """
     ログイン後トップページ
     """
-    events = DBSession.query(Event).order_by(desc(Event.event_open)).limit(5)
+    if request.user:
+        events = request.allowable("Event").order_by(desc(Event.event_open)).limit(5)
+    else:
+        events = []
     return dict(
         events=events
     )

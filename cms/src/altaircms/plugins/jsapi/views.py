@@ -13,7 +13,11 @@ from altaircms.page.models import PageDefaultInfo
 from altaircms.page.models import PageAccesskey
 from altaircms.page import subscribers as page_subscribers
 
-@view_config(permission="performance_update", route_name="plugins_jsapi_getti", renderer="json")
+def require_login(info, request):
+    return bool(getattr(request, "user", None))
+
+@view_config(permission="performance_update", route_name="plugins_jsapi_getti", renderer="json", 
+             custom_predicates=(require_login, ))
 def performance_add_getti_code(request):
     """ gettiのコードつける
     """
@@ -40,10 +44,11 @@ def performance_add_getti_code(request):
 
 ### page
 @view_config(permission="page_create",
-             route_name="plugins_jsapi_addpage", renderer="json", request_method="POST")
+             route_name="plugins_jsapi_addpage", renderer="json", request_method="POST", 
+             custom_predicates=(require_login,))
 def pageset_addpage(request):
     pageset_id = request.matchdict["pageset_id"]
-    pageset = PageSet.query.filter_by(id=pageset_id).first()
+    pageset = request.allowable("PageSet").filter_by(id=pageset_id).first()
     created = pageset.create_page()
 
     if created:
@@ -55,19 +60,20 @@ def pageset_addpage(request):
         return "FAIL"
 
 
-@view_defaults(route_name="plugins_jsapi_page_publish_status", renderer="json", request_method="POST")
+@view_defaults(route_name="plugins_jsapi_page_publish_status", renderer="json", request_method="POST", 
+               custom_predicates=(require_login,))
 class PageUpdatePublishStatus(object):
     def __init__(self, request):
         self.request = request
 
-    @view_config(match_param="status=publish")
+    @view_config(match_param="status=publish", )
     def page_status_to_publish(self):
         pageid = self.request.matchdict["page_id"]
-        page = Page.query.filter_by(id=pageid).first()
+        page = self.request.allowable("Page").filter_by(id=pageid).first()
         if page is None:
             return False
         else:
-            Page.query.filter(Page.event_id==page.event_id).filter(Page.id!=pageid).filter(Page.publish_begin==page.publish_begin).update({"published": False})
+            self.request.allowable("Page").filter(Page.event_id==page.event_id).filter(Page.id!=pageid).filter(Page.publish_begin==page.publish_begin).update({"published": False})
             page.published = True
             DBSession.add(page)
             return True
@@ -75,7 +81,7 @@ class PageUpdatePublishStatus(object):
     @view_config(match_param="status=unpublish")
     def page_status_to_unpublish(self):
         pageid = self.request.matchdict["page_id"]
-        page = Page.query.filter_by(id=pageid).first()
+        page = self.request.allowable("Page").filter_by(id=pageid).first()
         if page is None:
             return False
         else:
@@ -84,7 +90,8 @@ class PageUpdatePublishStatus(object):
             return True
 
 
-@view_config(route_name="plugins_api_page_info_default", renderer="json")
+@view_config(route_name="plugins_api_page_info_default", renderer="json", 
+             custom_predicates=(require_login, ))
 def page_setup_info(request):
     try:
         params = request.params
@@ -110,10 +117,11 @@ def page_setup_info(request):
 from ...tag.api import put_tags
 import json
 
-@view_config(route_name="plugins_jsapi_page_tag_delete", renderer="json", request_method="POST")
+@view_config(route_name="plugins_jsapi_page_tag_delete", renderer="json", request_method="POST", 
+             custom_predicates=(require_login, ))
 def delete_page_tags(request):
     """ buggy"""
-    page = Page.query.filter_by(id=request.matchdict["page_id"]).first()
+    page = request.allowable("Page").filter_by(id=request.matchdict["page_id"]).first()
     if page is None:
         return "FAIL"
     try:
@@ -124,7 +132,8 @@ def delete_page_tags(request):
         return "FAIL"
     
     
-@view_defaults(route_name="plugins_jsapi_accesskey", permission="page_update") ##?
+@view_defaults(route_name="plugins_jsapi_accesskey", permission="page_update", 
+               custom_predicates=(require_login, )) ##?
 class PageAccessKeyView(object):
     def __init__(self, request):
         self.request = request
@@ -148,7 +157,7 @@ class PageAccessKeyView(object):
             except ValueError:
                 expire = None
                 
-        page = Page.query.filter_by(id=page_id).first()
+        page = self.request.allowable("Page").filter_by(id=page_id).first()
         if page is None:
             return "FAIL"
         key = page.create_access_key(expire=expire)

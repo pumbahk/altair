@@ -12,7 +12,7 @@ from altaircms.plugins.base.mixins import HandleSessionMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
 
-FlashAsset = asset.models.FlashAsset
+FlashAsset = asset.FlashAsset
 from pyramid.renderers import render
 
 class FlashWidget(Widget):
