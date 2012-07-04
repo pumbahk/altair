@@ -46,7 +46,6 @@ def main(global_config, **settings):
     ## bind authenticated user to request.user
     config.set_request_property("altaircms.auth.helpers.get_authenticated_user", "user", reify=True)
     config.set_request_property("altaircms.auth.helpers.get_authenticated_organization", "organization", reify=True)
-    config.set_request_property("altaircms.auth.api.get_allowable_query", "allowable", reify=True)
 
     config.include("altaircms.lib.crud")    
 
@@ -81,6 +80,7 @@ def main(global_config, **settings):
                           ".lib.formevent.AfterFormInitialize")
 
     ## allowable query(organizationごとに絞り込んだデータを提供)
+    config.set_request_property("altaircms.auth.api.get_allowable_query", "allowable", reify=True)
     iquery = config.maybe_dotted(".auth.interfaces.IAllowableQueryFactory")
     query_factory = config.maybe_dotted(".auth.api.AllowableQueryFactory")
     def register_allowable(modelname, callname):

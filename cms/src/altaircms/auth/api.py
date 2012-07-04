@@ -103,7 +103,7 @@ class AllowableQueryFactory(object):
         query = query or self.model.query
         if request.organization:
             return query.with_transformation(request.organization.inthere("organization_id"))
-        logger.warn("this-is-not-allowable-query. request.organization is not found")
+        logger.debug("this-is-external-request. e.g. access with pageaccess key. request.organization is not found")
         return query
 
 def get_allowable_query(request):

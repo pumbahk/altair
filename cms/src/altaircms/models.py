@@ -211,8 +211,8 @@ class Category(Base, WithOrganizationMixin):
     ## originはenumにしても良いかもしれない
 
     @classmethod
-    def get_toplevel_categories(cls, hierarchy=u"大", organization=None, request=None): ## fixme
-        if organization is None and request and hasattr(request,"organization"):
+    def get_toplevel_categories(cls, hierarchy=u"大", request=None): ## fixme
+        if request and getattr(request,"organization", None):
             organization = request.organization
             return cls.query.filter(cls.organization_id==organization.id, cls.hierarchy==hierarchy, cls.parent==None)
         else:
