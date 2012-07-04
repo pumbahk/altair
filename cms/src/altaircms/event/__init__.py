@@ -31,6 +31,6 @@ def includeme(config):
     event_repository = config.maybe_dotted('.api.EventRepositry')
     reg.registerUtility(event_repository(), IEventRepository)
 
-    # バック塩度への受け渡し用(受け取り用と同じAPIトークンを使う。とりあえず)
+    # バックエンドへの受け渡し用(受け取り用と同じAPIトークンを使う。)
     config.add_route("api_event_info", "/api/event/{event_id}/info")
     config.scan(".views")

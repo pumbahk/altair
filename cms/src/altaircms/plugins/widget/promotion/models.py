@@ -13,6 +13,7 @@ from altaircms.plugins.base import Base
 from altaircms.plugins.base.mixins import HandleSessionMixin
 from altaircms.plugins.base.mixins import HandleWidgetMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
+from altaircms.models import WithOrganizationMixin
 from altaircms.security import RootFactory
 import altaircms.helpers as h
 
@@ -47,7 +48,7 @@ PROMOTION_DISPATH = {
         )
     }
 
-class Promotion(Base):
+class Promotion(WithOrganizationMixin, Base):
     query = DBSession.query_property()
     __tablename__ = "promotion"
     id = sa.Column(sa.Integer, primary_key=True)
@@ -73,7 +74,7 @@ class Promotion(Base):
             unit_candidates = [int(pu.id) for pu in punits]
             )
 
-class PromotionUnit(Base):
+class PromotionUnit(WithOrganizationMixin, Base):
     query = DBSession.query_property()
     __tablename__ = "promotion_unit"
     id = sa.Column(sa.Integer, primary_key=True)

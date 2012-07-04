@@ -105,7 +105,11 @@ class CRUDResource(RootFactory): ## fixme
 
     ## listing
     def get_model_query(self):
-        return self.model.query
+        ## todo 疎結合
+        if hasattr(self.request, "organization"):
+            return self.request.allowable(self.model.__name__)
+        else:
+            return self.model.query
 
     ## update
     def input_form_from_model(self, obj):

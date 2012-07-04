@@ -39,13 +39,13 @@
     <li><a href="${request.route_path("tag", classifier="top")}">タグ</a></li>
 	<li class="nav-header">マスター</li>
     <li><a href="${request.route_path("layout_list")}">レイアウト</a></li>
-    <li><a href="${request.route_path("pagedefaultinfo_list")}">ページのurlmapping</a></li>
+##    <li><a href="${request.route_path("pagedefaultinfo_list")}">ページのurlmapping</a></li>
 	
     <li><a href="${request.route_path("category_list")}">カテゴリー</a></li>
     <!-- <li><a href="#">メールマガジン</a></li> -->
-    <li><a href="${request.route_path("operator_list")}">オペレータ</a></li>
-    <li><a href="${request.route_path("apikey_list")}">APIKEY</a></li>
-    <li><a href="${request.route_path("role_list")}">ロール</a></li>
+##    <li><a href="${request.route_path("operator_list")}">オペレータ</a></li>
+##    <li><a href="${request.route_path("apikey_list")}">APIKEY</a></li>
+##    <li><a href="${request.route_path("role_list")}">ロール</a></li>
   </ul>
 </%def>
 

@@ -91,6 +91,13 @@ def main(global_config, **settings):
     config.registry.registerUtility(query_factory(config.maybe_dotted(".page.models.Page")), iquery, name="Page")
     config.registry.registerUtility(query_factory(config.maybe_dotted(".page.models.PageSet")), iquery, name="PageSet")
     config.registry.registerUtility(query_factory(config.maybe_dotted(".widget.models.WidgetDisposition")), iquery, name="WidgetDisposition")
+    config.registry.registerUtility(query_factory(config.maybe_dotted(".layout.models.Layout")), iquery, name="Layout")
+    config.registry.registerUtility(query_factory(config.maybe_dotted(".plugins.widget.promotion.models.PromotionUnit")), iquery, name="PromotionUnit")
+    config.registry.registerUtility(query_factory(config.maybe_dotted(".plugins.widget.promotion.models.Promotion")), iquery, name="Promotion")
+    config.registry.registerUtility(query_factory(config.maybe_dotted(".models.Category")), iquery, name="Category")
+    config.registry.registerUtility(query_factory(config.maybe_dotted(".topic.models.Topic")), iquery, name="Topic")
+    config.registry.registerUtility(query_factory(config.maybe_dotted(".topic.models.Topcontent")), iquery, name="Topcontent")
+    config.registry.registerUtility(query_factory(config.maybe_dotted(".tag.models.HotWord")), iquery, name="HotWord")
     # config.registry.registerUtility(query_factory(config.maybe_dotted("")), iquery, name="")
 
     
