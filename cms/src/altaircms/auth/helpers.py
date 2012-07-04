@@ -4,11 +4,9 @@ from sqlalchemy.orm.exc import NoResultFound
 from datetime import datetime
 from pyramid.security import authenticated_userid
 
-from altaircms.models import DBSession
 from altaircms.auth.models import Operator
 from altaircms.auth.models import Role
 from altaircms.auth.models import Organization
-from zope.deprecation import deprecation
 
 logger = logging.getLogger(__file__)
 

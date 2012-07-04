@@ -113,7 +113,6 @@ class FiltererdQueryFromRequestTests(unittest.TestCase):
         result = target(request)
 
         self.assertEqual(list(result.all()), [])
-        
 
 if __name__ == "__main__":
     unittest.main()

@@ -49,10 +49,10 @@
 		</ul>
 		<ul id="globalNav2">
 			  <% nav_categories = list(top_inner_categories)%>
+			  % if categories.count() > 0:
 			  % for category in nav_categories[:-1]:
 			    <li><a href="${h.link.get_link_from_category(request, category)}" alt="${category.label}">${category.label}</a></li>
 			  % endfor
-			  % if categories:
 			    <li><a href="${h.link.get_link_from_category(request, nav_categories[-1])}" alt="${nav_categories[-1].label}">${nav_categories[-1].label}</a></li>
 			  % endif
 		</ul>

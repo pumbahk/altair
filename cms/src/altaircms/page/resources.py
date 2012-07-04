@@ -30,17 +30,14 @@ class WDispositionResource(security.RootFactory):
     delete = delete_data
 
     def get_disposition_from_page(self, page, data=None):
+        ## pageはallowableなもののみ
+        assert page.organization_id == self.request.organization.id
+
         wd = WidgetDisposition.from_page(page, DBSession)
         if data:
             for k, v in data.iteritems():
                 setattr(wd, k, v)
         return wd
-
-    def get_disposition(self, id_):
-        return WidgetDisposition.query.filter(WidgetDisposition.id==id_).one()
-
-    def get_disposition_list(self):
-        return WidgetDisposition.enable_only_query(self.request.user)
 
     def bind_disposition(self, page, wdisposition):
         return wdisposition.bind_page(page, DBSession)
@@ -57,11 +54,11 @@ class PageResource(security.RootFactory):
     delete = delete_data
        
     def get_layout_render(self, page):
+        ## pageはallowableなもののみ
+        assert page.organization_id == self.request.organization.id
+
         layout = DBSession.query(Layout).filter_by(id=page.layout_id).one()
         return renderable.LayoutRender(layout)
-
-    def get_page(self, page_id):
-        return models.Page.query.filter(models.Page.id==page_id).first()
 
     def create_page(self, form):
         tags, private_tags, params =  h.divide_data(form.data)

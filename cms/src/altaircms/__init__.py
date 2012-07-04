@@ -88,6 +88,9 @@ def main(global_config, **settings):
     config.registry.registerUtility(query_factory(config.maybe_dotted(".asset.models.MovieAsset")), iquery, name="MovieAsset")
     config.registry.registerUtility(query_factory(config.maybe_dotted(".asset.models.FlashAsset")), iquery, name="FlashAsset")
     config.registry.registerUtility(query_factory(config.maybe_dotted(".event.models.Event")), iquery, name="Event")
+    config.registry.registerUtility(query_factory(config.maybe_dotted(".page.models.Page")), iquery, name="Page")
+    config.registry.registerUtility(query_factory(config.maybe_dotted(".page.models.PageSet")), iquery, name="PageSet")
+    config.registry.registerUtility(query_factory(config.maybe_dotted(".widget.models.WidgetDisposition")), iquery, name="WidgetDisposition")
     # config.registry.registerUtility(query_factory(config.maybe_dotted("")), iquery, name="")
 
     

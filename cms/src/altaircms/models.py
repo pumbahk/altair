@@ -214,7 +214,7 @@ class Category(Base, WithOrganizationMixin):
     def get_toplevel_categories(cls, hierarchy=u"大", organization=None, request=None): ## fixme
         if organization is None and request and hasattr(request,"organization"):
             organization = request.organization
-            return cls.query.filter(cls.organization==organization, cls.hierarchy==hierarchy, cls.parent==None)
+            return cls.query.filter(cls.organization_id==organization.id, cls.hierarchy==hierarchy, cls.parent==None)
         else:
             ## 本当はこちらは存在しないはず。
             ## request.organizationはまだ未実装。

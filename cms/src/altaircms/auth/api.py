@@ -1,6 +1,6 @@
 # -*- encoding:utf-8 -*-
 
-from pyramid.httpexceptions import HTTPForbidden
+from pyramid.httpexceptions import HTTPNotFound
 from zope.interface import implementer
 import urllib
 import logging
@@ -111,6 +111,12 @@ def get_allowable_query(request):
         factory = request.registry.getUtility(IAllowableQueryFactory, name=name)
         return factory(request)
     return query
+
+def get_or_404(qs, criteria):
+    r = qs.filter(criteria).first()
+    if r is None:
+        raise HTTPNotFound("----")
+    return r
 
 # def raise_error_if_notallowable(request, obj):
 #     if request.organization.id != obj.organization_id:
