@@ -6,7 +6,6 @@ from datetime import datetime
 import urllib
 import urllib2
 
-from altaircms.models import model_to_dict
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.security import forget, remember, authenticated_userid
 from pyramid.view import view_config
@@ -22,7 +21,7 @@ from altaircms.auth.forms import RoleForm
 from .models import Operator, Role, DEFAULT_ROLE
 
 from . import api
-
+from .api import get_or_404
 
 @view_config(route_name='login', renderer='altaircms:templates/login.mako')
 @view_config(context='pyramid.httpexceptions.HTTPForbidden', renderer='altaircms:templates/login.mako',
@@ -92,7 +91,7 @@ class OperatorView(object):
 
     @view_config(route_name="operator_list", renderer='altaircms:templates/auth/operator/list.mako', permission="operator_read")
     def list(self):
-        operators = Operator.query.all()
+        operators = self.request.allowable("Operator")
 
         return dict(
             operators=operators
@@ -100,21 +99,13 @@ class OperatorView(object):
 
     @view_config(route_name="operator", renderer='altaircms:templates/auth/operator/view.mako', permission="operator_read")
     def read(self):
-        operator_id = self.request.matchdict['id']
-        try:
-            operator = Operator.query.filter_by(id=operator_id).one()
-            return dict(operator=operator)
-        except NoResultFound:
-            raise HTTPNotFound(self.request.url)
+        operator = get_or_404(self.request.allowable("Operator"), Operator==self.request.matchdict['id'])
+        return dict(operator=operator)
 
     @view_config(route_name="operator", permission="operator_delete",
         request_method="POST", request_param="_method=delete")
     def delete(self):
-        operator_id = self.request.matchdict['id']
-        try:
-            operator = Operator.query.filter_by(id=operator_id).one()
-        except NoResultFound:
-            raise HTTPNotFound(self.request.url)
+        operator = get_or_404(self.request.allowable("Operator"), Operator==self.request.matchdict['id'])
         logged_in_user_id = authenticated_userid(self.request)
         user_id = operator.user_id
         DBSession.delete(operator)

@@ -99,6 +99,7 @@ def main(global_config, **settings):
     config.registry.registerUtility(query_factory(config.maybe_dotted(".topic.models.Topic")), iquery, name="Topic")
     config.registry.registerUtility(query_factory(config.maybe_dotted(".topic.models.Topcontent")), iquery, name="Topcontent")
     config.registry.registerUtility(query_factory(config.maybe_dotted(".tag.models.HotWord")), iquery, name="HotWord")
+    config.registry.registerUtility(query_factory(config.maybe_dotted(".auth.models.Operator")), iquery, name="Operator")
     # config.registry.registerUtility(query_factory(config.maybe_dotted("")), iquery, name="")
 
     
