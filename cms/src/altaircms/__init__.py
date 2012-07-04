@@ -84,6 +84,7 @@ def main(global_config, **settings):
     iquery = config.maybe_dotted(".auth.interfaces.IAllowableQueryFactory")
     query_factory = config.maybe_dotted(".auth.api.AllowableQueryFactory")
     
+    config.registry.registerUtility(query_factory(config.maybe_dotted(".asset.models.Asset")), iquery, name="Asset")
     config.registry.registerUtility(query_factory(config.maybe_dotted(".asset.models.ImageAsset")), iquery, name="ImageAsset")
     config.registry.registerUtility(query_factory(config.maybe_dotted(".asset.models.MovieAsset")), iquery, name="MovieAsset")
     config.registry.registerUtility(query_factory(config.maybe_dotted(".asset.models.FlashAsset")), iquery, name="FlashAsset")

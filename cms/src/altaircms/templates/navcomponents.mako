@@ -27,7 +27,7 @@
   <li><a href="${request.route_path("page")}">ページ</a></li>
     <li><a href="${request.route_path("pagesets")}">ページセット</a></li>
 </%doc>
-	<li class="nav-header">トピック管理</li>
+	<li class="nav-header">アイテム管理</li>
     <li><a href="${request.route_path("promotion_list")}">プロモーション枠</a></li>
     <li><a href="${request.route_path("promotion_unit_list")}">プロモーション</a></li>
     <li><a href="${request.route_path("topic_list")}">トピック</a></li>
@@ -36,7 +36,7 @@
 
     <li class="nav-header">アセット管理</li>
     <li><a href="${request.route_path("asset_list")}">アセット</a></li>
-    <li><a href="${request.route_path("tag", classifier="top")}">タグ</a></li>
+##    <li><a href="${request.route_path("tag", classifier="top")}">タグ</a></li>
 	<li class="nav-header">マスター</li>
     <li><a href="${request.route_path("layout_list")}">レイアウト</a></li>
 ##    <li><a href="${request.route_path("pagedefaultinfo_list")}">ページのurlmapping</a></li>

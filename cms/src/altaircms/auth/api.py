@@ -99,17 +99,17 @@ class AllowableQueryFactory(object):
         assert hasattr(model, "organization_id")
         self.model = model
 
-    def __call__(self, request):
-        query = self.model.query
+    def __call__(self, request, query=None):
+        query = query or self.model.query
         if request.organization:
             return query.with_transformation(request.organization.inthere("organization_id"))
         logger.warn("this-is-not-allowable-query. request.organization is not found")
         return query
 
 def get_allowable_query(request):
-    def query(name):
+    def query(name, qs=None):
         factory = request.registry.getUtility(IAllowableQueryFactory, name=name)
-        return factory(request)
+        return factory(request, query=qs)
     return query
 
 def get_or_404(qs, criteria):
