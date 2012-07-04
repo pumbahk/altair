@@ -77,4 +77,3 @@ def update_operator_with_data(operator, roles, data):
     operator.oauth_token_secret = ''##?
     operator.roles = roles
     return operator
-

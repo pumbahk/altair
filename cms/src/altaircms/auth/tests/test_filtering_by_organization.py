@@ -59,7 +59,60 @@ class FilteringByOrganizationTests(unittest.TestCase):
 
         self.assertEquals(sorted(result), sorted([op1]))
 
-        
+
+class FiltererdQueryFromRequestTests(unittest.TestCase):
+    def setUp(self):
+        import sqlahelper
+        self.session = sqlahelper.get_session()
+
+    def tearDown(self):
+        self.session.remove()
+        import transaction
+        transaction.abort()
+
+    def _withDB(self, o):
+        self.session.add(o)
+        return o
+
+    def _getTarget(self):
+        from altaircms.auth.api import AllowableQueryFactory        
+        return AllowableQueryFactory
+
+    def _makeOne(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
+
+    def test_matched_organization(self):
+        from altaircms.auth.models import Operator
+        from altaircms.auth.models import Organization
+
+        org = self._withDB(Organization(id=1))
+        op = self._withDB(Operator(organization=org, auth_source="this-is-operator-auth_source"))
+
+        self.session.add(op)
+        class request(object):
+            organization = org
+
+        target = self._makeOne(Operator)       
+        result = target(request)
+
+        self.assertEqual(list(result.all()), [op])
+
+    def test_unmatched_organization(self):
+        from altaircms.auth.models import Operator
+        from altaircms.auth.models import Organization
+
+        org = self._withDB(Organization(id=1))
+        op = self._withDB(Operator(organization=org, auth_source="this-is-operator-auth_source"))
+
+        self.session.add(op)
+        another_org = self._withDB(Organization(id=2))
+        class request(object):
+            organization = another_org
+
+        target = self._makeOne(Operator)       
+        result = target(request)
+
+        self.assertEqual(list(result.all()), [])
         
 
 if __name__ == "__main__":

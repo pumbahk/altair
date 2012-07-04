@@ -96,6 +96,7 @@ class OAuthComponent(object):
 ###login後の絞り込み
 class AllowableQueryFactory(object):
     def __init__(self, model):
+        assert hasattr(model, "organization_id")
         self.model = model
 
     def __call__(self, request):
@@ -111,6 +112,6 @@ def get_allowable_query(request):
         return factory(request)
     return query
 
-def raise_error_if_notallowable(request, obj):
-    if request.organization.id != obj.organization_id:
-        raise HTTPForbidden(u"閲覧権限を持っていません")
+# def raise_error_if_notallowable(request, obj):
+#     if request.organization.id != obj.organization_id:
+#         raise HTTPForbidden(u"閲覧権限を持っていません")
