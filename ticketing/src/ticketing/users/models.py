@@ -1,4 +1,4 @@
-from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL
+from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL, Index
 from sqlalchemy.orm import join, backref, column_property
 
 from standardenum import StandardEnum
@@ -145,9 +145,12 @@ class MailMagazine(Base):
 
 class MailSubscription(Base):
     __tablename__ = 'MailSubscription'
+    __table_args__ = (
+        Index('email_segment_idx', 'email', 'segment_id', unique=True),
+        )
     query = session.query_property()
     id = Column(Identifier, primary_key=True)
-    email = Column(String(255), index=True, unique=True)
+    email = Column(String(255))
     user_id = Column(Identifier, ForeignKey("User.id"), nullable=True)
     user = relationship('User', uselist=False)
     segment_id = Column(Identifier, ForeignKey("MailMagazine.id"), nullable=True)
