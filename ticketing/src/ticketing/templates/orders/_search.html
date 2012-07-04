@@ -8,7 +8,7 @@
 <ul class="nav nav-pills">
   <li class="dropdown" id="top-search-text">
     <form id="search-event" action="/orders/" method="POST">
-      <input name="order_number" type="text" class="search-query span2" placeholder="受注番号">
+      <input name="order_no" type="text" class="search-query" placeholder="受注番号">
     </form>
   </li>
   <li class="dropdown" id="top-search" style="margin-left: 10px;">
@@ -39,7 +39,7 @@
   <div class="modal-body">
     <form id="search" action="/orders/" method="POST">
       <label>受注番号</label>
-      <input name="order_number" type="text" class="span3" placeholder="">
+      <input name="order_no" type="text" class="span3" placeholder="">
       <label>受注日時</label>
       <input name="order_datetime_from" type="text" class="span3"> 〜
       <input name="order_datetime_to" type="text" class="span3">

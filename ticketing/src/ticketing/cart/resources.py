@@ -18,7 +18,7 @@ from ..core import models as c_models
 from . import models as m
 from . import logger
 
-class TicketingCartResrouce(object):
+class TicketingCartResource(object):
     __acl__ = [
         (Allow, Authenticated, 'view'),
     ]
@@ -262,7 +262,7 @@ class TicketingCartResrouce(object):
         finally:
             conn.close()
 
-    def get_ore_create_user(self):
+    def get_or_create_user(self):
         # TODO: 依存関係がおかしいので確認 なぜrakuten_authがcart.apiを使うのか？
         from .rakuten_auth.api import authenticated_user
         from . import api

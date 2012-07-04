@@ -91,6 +91,7 @@ def get_payment_method_url(request, payment_method_id, route_args={}):
         return ""
 
 def get_or_create_user(request, clamed_id):
+    # TODO: 楽天OpenID以外にも対応できるフレームワークを...
     credential = UserCredential.query.filter(
         UserCredential.auth_identifier==clamed_id
     ).filter(

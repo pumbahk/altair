@@ -47,7 +47,7 @@ def main(global_config, **settings):
     sqlahelper.add_engine(engine)
 
     config = Configurator(settings=settings, session_factory=my_session_factory)
-    config.set_root_factory('.resources.TicketingCartResrouce')
+    config.set_root_factory('.resources.TicketingCartResource')
     config.registry['sa.engine'] = engine
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.add_renderer('json'  , 'ticketing.renderers.json_renderer_factory')

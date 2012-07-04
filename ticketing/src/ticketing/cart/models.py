@@ -71,8 +71,8 @@ class CartedProductItem(Base):
     seats = orm.relationship("Seat", secondary=cart_seat_table)
     #seat_status = orm.relationship("SeatStatus")
 
-    carted_product_id = sa.Column(sa.Integer, sa.ForeignKey("ticketing_cartedproducts.id"))
-    carted_product = orm.relationship("CartedProduct", backref="items")
+    carted_product_id = sa.Column(sa.Integer, sa.ForeignKey("ticketing_cartedproducts.id", onupdate='cascade', ondelete='cascade'))
+    carted_product = orm.relationship("CartedProduct", backref="items", cascade='all')
 
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, nullable=True, onupdate=datetime.now)
@@ -129,8 +129,8 @@ class CartedProduct(Base):
 
     id = sa.Column(sa.Integer, primary_key=True)
     quantity = sa.Column(sa.Integer)
-    cart_id = sa.Column(sa.Integer, sa.ForeignKey('ticketing_carts.id'))
-    cart = orm.relation("Cart", backref="products")
+    cart_id = sa.Column(sa.Integer, sa.ForeignKey('ticketing_carts.id', onupdate='cascade', ondelete='cascade'))
+    cart = orm.relationship("Cart", backref="products", cascade='all')
 
     product_id = sa.Column(sa.BigInteger, sa.ForeignKey("Product.id"))
     product = orm.relationship("Product")
@@ -206,7 +206,7 @@ class Cart(Base):
 
     @property
     def total_amount(self):
-        return self.tickets_amount + self.system_fee + self.transaction_fee_amount + self.delivery_fee_amount
+        return self.tickets_amount + self.system_fee + self.transaction_fee + self.delivery_fee
 
     @property
     def tickets_amount(self):
@@ -217,7 +217,7 @@ class Cart(Base):
         return sum(cp.quantity for cp in self.products)
 
     @property
-    def transaction_fee_amount(self):
+    def transaction_fee(self):
         """ 決済手数料 """
         payment_fee = self.payment_delivery_pair.transaction_fee
         payment_method = self.payment_delivery_pair.payment_method
@@ -229,7 +229,7 @@ class Cart(Base):
             return 0
 
     @property 
-    def delivery_fee_amount(self):
+    def delivery_fee(self):
         """ 配送手数料 """
         delivery_fee = self.payment_delivery_pair.delivery_fee
         delivery_method = self.payment_delivery_pair.delivery_method

@@ -2,26 +2,36 @@
 <html lang="en">
 <head>
 	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-	<title>仙台89ERS 2013-2014 ブースタークラブ入会申込ページ</title>
+	<title>仙台89ERS 2012-2013 ブースタークラブ入会申込ページ</title>
     <link rel="stylesheet" type="text/css" href="${request.static_url('ticketing.bj89er:static/style.css')}" media="all" />
 
 </head>
 <body>
 
-  <h1 class="title">仙台89ERS 2013-2014 ブースタークラブ入会申込ページ</h1>
   <div align="center">
 
-        <form id="form1" action="${request.route_url('payment.finish')}" method="post">
+  <div class="header">
+	  <img src="${request.static_url('ticketing.bj89er:static/images/head_title.png')}" alt="仙台89ERS" width="780" height="135" />
+  </div>
+	
+	<!-- これはdisplay none指定, なぜか... -->
+  <h1 class="title">仙台89ERS 2012-2013 ブースタークラブ入会申込ページ</h1>
+	
+    <form id="form1" action="${request.route_url('payment.finish')}" method="post">
 
 	<table class="layout" style="width:760px" class="wrapper">
 		<tr>
 			<td>
 
-<h2>以下の内容で登録いたします。</h2>
+<h2>申込内容確認</h2>
 
 
 <div class="formWrapper">
                     
+<!--
+以下の内容で申し込みます。
+-->
+
 					<table cellpadding="0" cellspacing="0" class="form89ers">
 						<colgroup>
 						<col style="width:180px;">
@@ -30,32 +40,66 @@
 						<tbody>
 						<tr>
 							<th colspan="2" style="text-align:left;font-size:18px;">
-							お申し込み内容
+							仙台89ERS 2012-2013 ブースタークラブ
 							</tr>
 
+							<%
+                                up = user.user_profile
+                            %>
 							<tr>
-								<th>会員種別
-								</th>
-								<td>
-									${cart.products[0].product.name}
-	   							</td>
+								<th>新規／継続</th>
+								<td></td>
 							</tr>
 							<tr>
-								<th>会員口数
-								</th>
-								<td>
-									${cart.products[0].quantity}口
-	   							</td>
+								<th>会員種別</th>
+								<td>${cart.products[0].product.name}</td>
 							</tr>
 							<tr>
-								<th>お名前
-								</th>
+								<th>氏名</th>
+								<td>${up.last_name} ${up.first_name}</td>
+							</tr>
+							<tr>
+								<th>氏名（フリガナ）</th>
+								<td>${up.last_name_kana} ${up.first_name_kana}</td>
+							</tr>
+							<tr>
+								<th>誕生日</th>
+								<td>${up.birth_day.year}年${up.birth_day.month}月${up.birth_day.day}日</td>
+							</tr>
+							<tr>
+								<th>性別</th>
 								<td>
-									<%
-                                    user_profile = user.user_profile
-                                    %>
-                                    ${user_profile.last_name} ${user_profile.first_name}　様
-	   							</td>
+									%if up.sex==1:
+										男性
+									%endif
+									%if up.sex==2:
+										女性
+									%endif
+								</td>
+							</tr>
+							<tr>
+								<th>住所</th>
+								<td>${up.prefecture} ${up.city} ${up.street} ${up.address}</td>
+							</tr>
+							<tr>
+								<th>電話番号（携帯）</th>
+								<td>${up.tel_1}</td>
+							</tr>
+							<tr>
+								<th>電話番号（自宅）</th>
+								<td>${up.tel_2}</td>
+							</tr>
+							<tr>
+								<th>メールアドレス</th>
+								<td>${up.email}</td>
+							</tr>
+							<tr>
+								<th>媒体への掲載希望</th>
+								<td></td>
+							</tr>
+							<tr>
+								<th>媒体掲載時のニックネーム</th>
+								<td>${up.nick_name}</td>
 							</tr>
 						</tbody>
 					</table>
@@ -68,7 +112,7 @@
 						<tbody>
 							<tr>
 								<td colspan="2" style="text-align:left;">									
-								<input type="submit" value="送信" class="submit" style="width:400px;height:50px;">
+								<input type="submit" value="申し込む" class="submit" style="width:400px;height:50px;">
 								</td>
 							</tr>
 						
@@ -85,5 +129,8 @@
     </table>
 </form>
   </div>
+
+	<%include file="footer.inc" />
+
 </body>
 </html>

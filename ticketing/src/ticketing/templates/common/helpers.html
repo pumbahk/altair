@@ -134,12 +134,13 @@ ${locale.format("%d", price, grouping=True)}
 % endif
 </%def>
 
-<%def name="action_button(actions, order)">
-<% key = order.next() %>
+<%def name="action_button(actions, order=None)">
+<% key = order.next() if order and len(actions) > 1 else actions.keys()[0] %>
 <div class="btn-group">
   <a href="${actions[key]['url']}" class="btn">
     <i class="${actions[key]['icon']}"></i> ${actions[key]['label']}
   </a>
+  % if order:
   <button class="btn dropdown-toggle" data-toggle="dropdown">
     <span class="caret"></span>
   </button>
@@ -156,5 +157,6 @@ ${locale.format("%d", price, grouping=True)}
     </li>
     % endfor
   </ul>
+  % endif
 </div>
 </%def>

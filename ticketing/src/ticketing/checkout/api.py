@@ -89,7 +89,7 @@ class Checkout(object):
             itemId='transaction_fee',
             itemName=u'決済手数料',
             itemNumbers='1',
-            itemFee=str(int(cart.transaction_fee_amount))
+            itemFee=str(int(cart.transaction_fee))
         ))
 
         # 商品:配送手数料
@@ -97,7 +97,7 @@ class Checkout(object):
             itemId='delivery_fee',
             itemName=u'配送手数料',
             itemNumbers='1',
-            itemFee=str(int(cart.delivery_fee_amount))
+            itemFee=str(int(cart.delivery_fee))
         ))
 
         return et.tostring(root)

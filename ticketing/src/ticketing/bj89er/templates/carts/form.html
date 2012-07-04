@@ -2,15 +2,30 @@
 <html lang="en">
 <head>
 	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-	<title>仙台89ERS 2013-2014 ブースタークラブ入会申込ページ</title>
+	<title>仙台89ERS 2012-2013 ブースタークラブ入会申込ページ</title>
     <link rel="stylesheet" type="text/css" href="${request.static_url('ticketing.bj89er:static/style.css')}" media="all" />
 
 </head>
 <body>
 
-  <h1 class="title">仙台89ERS 2013-2014 ブースタークラブ入会申込ページ</h1>
   <div align="center">
 
+  <div class="header">
+	  <img src="${request.static_url('ticketing.bj89er:static/images/head_title.png')}" alt="仙台89ERS" width="780" height="135" />
+  </div>
+	
+	<!-- これはdisplay none指定, なぜか... -->
+  <h1 class="title">仙台89ERS 2012-2013 ブースタークラブ入会申込ページ</h1>
+
+	<form action="${request.url}" method="post">
+
+	<table class="layout" style="width:760px" class="wrapper">
+		<tr>
+			<td>
+				
+				<h2>仙台89ERS 2012-2013 ブースタークラブ入会申込ページ</h2>
+				
+	
     %if hasattr(request, 'errors'):
       <ul>
           %for e in request.errors:
@@ -23,15 +38,7 @@
           </li>
           %endfor
       </ul>
-      %endif
-      <form action="${request.url}" method="post">
-
-	<table class="layout" style="width:760px" class="wrapper">
-		<tr>
-			<td>
-				
-				<h2>仙台89ERS 2013-2014 ブースタークラブ入会申込ページ</h2>
-				
+    %endif
 				
 				<div class="formWrapper">
                     
@@ -49,9 +56,10 @@
 							</td>
 						</tr>
 						<tr>
-							<th>会員種別選択</th>
+							<th>会員種別</th>
 							<td>
 								<select name="member_type">
+								<option value=""></option>
                                 %for p in products:
                                 <option value="${p['id']}">${p['name']} (${p['price']}円)</option>
                                 %endfor
@@ -93,29 +101,35 @@
                     -->	
 						<tr>
 							<th>
-								氏名<span class="red">*</span>
+								氏名 <span class="red">*</span>
 							</th>
 							<td>
-                                氏<input size="45" type="text" name="last_name" value=""><br>
-                                名<input size="45" type="text" name="first_name" value="">
+                                姓<input size="20" type="text" name="last_name" value="">
+								（＊全角）
+								<br>
+                                名<input size="20" type="text" name="first_name" value="">
+								（＊全角）
                                 							</td>
 						</tr>
 						<tr>
 							<th>
-								氏名（フリガナ）<span class="red">*</span>
+								氏名（フリガナ） <span class="red">*</span>
 							</th>
 							<td>
-                                氏<input size="45" type="text" name="last_name_kana" value=""><br>
-                                名<input size="45" type="text" name="first_name_kana" value="">
+                                セイ<input size="30" type="text" name="last_name_kana" value="">
+								（＊全角カナ）
+								<br>
+                                メイ<input size="30" type="text" name="first_name_kana" value="">
+								（＊全角カナ）
                                 							</td>
 						</tr>
 						<tr>
 							<th>
-								誕生日<span class="red">*</span>
+								誕生日 <span class="red">*</span>
 							</th>
 							<td>
                                 <select name="year">
-								<option value="" selected="selected">-</option>
+								<option value="">-</option>
 								<option value="1900">1900</option>
 								<option value="1901">1901</option>
 								<option value="1902">1902</option>
@@ -231,7 +245,7 @@
 								<option value="2012">2012</option>
 								</select>年
 								<select name="month">
-								<option value="" selected="selected">-</option>
+								<option value="">-</option>
 								<option value="1">01</option>
 								<option value="2">02</option>
 								<option value="3">03</option>
@@ -246,7 +260,7 @@
 								<option value="12">12</option>
 								</select>月
 								<select name="day">
-								<option value="" selected="selected">-</option>
+								<option value="">-</option>
 								<option value="1">01</option>
 								<option value="2">02</option>
 								<option value="3">03</option>
@@ -283,36 +297,36 @@
 						</tr>
 						<tr>
 							<th>
-								性別<span class="red">*</span>
+								性別 <span class="red">*</span>
 							</th>
 							<td>
-                                <label for="sex_1"><input type="radio" name="sex" value="male" id="sex_1">男性</label>
-<label for="sex_2"><input type="radio" name="sex" value="female" id="sex_2">女性</label>
+                                <label for="sex_1"><input type="radio" name="sex" value="1" id="sex_1">男性</label>
+<label for="sex_2"><input type="radio" name="sex" value="2" id="sex_2">女性</label>
                                 							</td>
 						</tr>
 						<tr>
 							<th>
-								郵便番号<span class="red">*</span>
+								郵便番号 <span class="red">*</span>
 							</th>
 							<td>
-                                <input size="4" type="text" name="zipcode1" value="" maxlength="3">-<input size="6" type="text" name="zipcode2" value="" maxlength="4"><span><small>（半角英数）</small></span>
+                                <input size="4" type="text" name="zipcode1" value="" maxlength="3">-<input size="6" type="text" name="zipcode2" value="" maxlength="4"><span><small>（半角数字）</small></span>
                                 							</td>
 						</tr>
 						<tr>
 							<th>
-								住所（チケット送付先）<span class="red">*</span>
+								住所 <span class="red">*</span>
 							</th>
 							<td>
                                 <!-- TODO: 選択 -->
                                 都道府県
-								<input size="45" type="text" name="prefecture" value="">
+								<input size="10" type="text" name="prefecture" value="">
                                                                 <br>
                                 市区町村
 								<input size="10" type="text" name="city" value="">
                                                                 <br>
-                                住所
-                                <input size="45" type="text" name="address1" value="">
-                                <input size="45" type="text" name="address2" value="">
+                                町名番地 <input size="45" type="text" name="address1" value="">
+								<br>
+                                建物名等 <input size="45" type="text" name="address2" value="">
                                 							</td>
 						</tr>
 						<tr>
@@ -320,7 +334,7 @@
 								電話番号（携帯）<span class="red">*</span>
 							</th>
 							<td>
-                                <input size="4" type="text" name="tel1_1" value="">-<input size="4" type="text" name="tel1_2" value="">-<input size="4" type="text" name="tel1_3" value=""><span><small>（半角英数）</small></span>
+                                <input size="4" type="text" name="tel1_1" value="">-<input size="4" type="text" name="tel1_2" value="">-<input size="4" type="text" name="tel1_3" value=""><span><small>（半角数字）</small></span>
                                 							</td>
 						</tr>
 						<tr>
@@ -328,12 +342,12 @@
 								電話番号（自宅）<span class="red">*</span>
 							</th>
 							<td>
-                                <input size="4" type="text" name="tel2_1" value="">-<input size="4" type="text" name="tel2_2" value="">-<input size="4" type="text" name="tel2_3" value=""><span><small>（半角英数）</small></span>
+                                <input size="4" type="text" name="tel2_1" value="">-<input size="4" type="text" name="tel2_2" value="">-<input size="4" type="text" name="tel2_3" value=""><span><small>（半角数字）</small></span>
                                 							</td>
 						</tr>
 						<tr>
 							<th>
-								メールアドレス<span class="red">*</span>
+								メールアドレス <span class="red">*</span>
 							</th>
 							<td>
 								<input size="45" type="text" name="email" value="">
@@ -389,6 +403,8 @@
     </table>
 </form>
   </div>
+
+	<%include file="footer.inc" />
 	
 </body>
 </html>

@@ -19,18 +19,18 @@ class Orders(BaseView):
     @view_config(route_name='orders.index', renderer='ticketing:templates/orders/index.html')
     def index(self):
         sort = self.request.GET.get('sort', 'Order.id')
-        direction = self.request.GET.get('direction', 'asc')
+        direction = self.request.GET.get('direction', 'desc')
         if direction not in ['asc', 'desc']:
-            direction = 'asc'
+            direction = 'desc'
 
         query = Order.filter(Order.organization_id==int(self.context.user.organization_id))
         query = query.order_by(sort + ' ' + direction)
 
         # search condition
         if self.request.method == 'POST':
-            condition = self.request.POST.get('order_number')
+            condition = self.request.POST.get('order_no')
             if condition:
-                query = query.filter(Order.id==condition)
+                query = query.filter(Order.order_no==condition)
             condition = self.request.POST.get('order_datetime_from')
             if condition:
                 query = query.filter(Order.created_at>=condition)
@@ -60,6 +60,52 @@ class Orders(BaseView):
         return {
             'order':order,
         }
+
+    @view_config(route_name='orders.cancel')
+    def cancel(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id)
+        if order is None:
+            return HTTPNotFound('order id %d is not found' % order_id)
+
+        order.cancel()
+
+        self.request.session.flash(u'受注(%s)をキャンセルしました' % order.order_no)
+        return HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
+
+    @view_config(route_name='orders.edit_payment', renderer='ticketing:templates/orders/edit_payment.html')
+    def edit_payment(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id)
+        if order is None:
+            return HTTPNotFound('order id %d is not found' % order_id)
+
+        return {
+            'order':order,
+        }
+
+    @view_config(route_name='orders.edit_delivery', renderer='ticketing:templates/orders/edit_delivery.html')
+    def edit_delivery(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id)
+        if order is None:
+            return HTTPNotFound('order id %d is not found' % order_id)
+
+        return {
+            'order':order,
+        }
+
+    @view_config(route_name='orders.edit_product', renderer='ticketing:templates/orders/edit_product.html')
+    def edit_product(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id)
+        if order is None:
+            return HTTPNotFound('order id %d is not found' % order_id)
+
+        return {
+            'order':order,
+        }
+
 
 from ticketing.sej.models import SejOrder, SejTicket, SejTicketTemplateFile, SejRefundEvent, SejRefundTicket
 from ticketing.sej.ticket import SejTicketDataXml

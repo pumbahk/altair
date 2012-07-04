@@ -5,13 +5,14 @@ TODO: cart取得はリソースの役目
 """
 
 from pyramid.view import render_view_to_response
+from pyramid.compat import escape
 from markupsafe import Markup
 from webhelpers.html.tags import *
 from webhelpers.number import format_number as _format_number
 from markupsafe import Markup
 from zope.interface import implementer
 from .resources import OrderDelivery, CartDelivery, OrderPayment, CartPayment
-from ..core.models import FeeTypeEnum, SalesSegment
+from ..core.models import FeeTypeEnum, SalesSegment, StockTypeEnum
 import logging
 from .api import get_nickname
 
@@ -44,6 +45,17 @@ def format_number(num, thousands=","):
 def format_currency(num, thousands=","):
     return u"￥" + format_number(num, thousands)
 
+def build_unit_template(product, performance_id):
+    items = product.items_by_performance_id(performance_id)
+    if len(items) == 1:
+        if items[0].quantity == 1:
+            return u"{{num}}枚"
+        else:
+            return u"%d×{{num}}枚" % items[0].quantity
+    else:
+        return u"(%s)×{{num}}" % u" + ".join(
+            u"%s:%d枚" % (escape(item.stock_type.name), item.quantity)
+            for item in items)
 
 def products_filter_by_salessegment(products, sales_segment):
     if sales_segment is None:
@@ -96,4 +108,3 @@ def render_payment_finished_viewlet(request, order):
     if response is None:
         raise ValueError
     return Markup(response.text)
-

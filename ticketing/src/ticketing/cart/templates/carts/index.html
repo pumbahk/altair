@@ -280,14 +280,14 @@ $(function() {
                   <dl>
                     <dt id="payment-seat-type"></dt>
                     <dd>
-                      <table summary="チケット枚数選択" id="payment-seat-products">
-                      </table>
+                      <ul id="payment-seat-products" class="productList">
+                      </ul>
                     </dd>
                   </dl>
-                  <ul>
+                  <ul class="buttonSet">
                     <li><a href="#"><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_select_buy.shrunken.gif')}" alt="座席を選んで購入" /></a></li>
                   </ul>
-                  <ul>
+                  <ul class="buttonSet">
                     <li><a href="javascript:void(0);" id="btn-order"><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_buy.shrunken.gif')}" alt="おまかせで購入" /></a></li>
                   </ul>
                 </form>
