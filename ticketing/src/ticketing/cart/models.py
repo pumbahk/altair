@@ -206,7 +206,7 @@ class Cart(Base):
 
     @property
     def total_amount(self):
-        return self.tickets_amount + self.system_fee + self.transaction_fee_amount + self.delivery_fee_amount
+        return self.tickets_amount + self.system_fee + self.transaction_fee + self.delivery_fee
 
     @property
     def tickets_amount(self):
@@ -217,7 +217,7 @@ class Cart(Base):
         return sum(cp.quantity for cp in self.products)
 
     @property
-    def transaction_fee_amount(self):
+    def transaction_fee(self):
         """ 決済手数料 """
         payment_fee = self.payment_delivery_pair.transaction_fee
         payment_method = self.payment_delivery_pair.payment_method
@@ -229,7 +229,7 @@ class Cart(Base):
             return 0
 
     @property 
-    def delivery_fee_amount(self):
+    def delivery_fee(self):
         """ 配送手数料 """
         delivery_fee = self.payment_delivery_pair.delivery_fee
         delivery_method = self.payment_delivery_pair.delivery_method

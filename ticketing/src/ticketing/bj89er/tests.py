@@ -43,7 +43,7 @@ class set_user_profile_for_orderTests(unittest.TestCase):
     def _add_order(self, product_id):
         from ticketing.core.models import  Product, ProductItem
         from ticketing.orders.models import Order, OrderedProduct
-        order = Order(total_amount=0, system_fee=0, transaction_fee_amount=0, delivery_fee_amount=0)
+        order = Order(total_amount=0, system_fee=0, transaction_fee=0, delivery_fee=0)
         ordered_product = OrderedProduct(product_id=product_id, order=order, price=0)
         self.session.add(order)
         return order
