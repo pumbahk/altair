@@ -24,28 +24,6 @@ class User(Base):
     def get(user_id):
         return session.query(User).filter(User.id == user_id).first()
 
-    def subscribe(self, mailmagazine):
-        subscription = MailSubscription.query.filter(
-            MailSubscription.user==self
-        ).filter(
-            MailSubscription.segment==mailmagazine
-        ).first()
-        if subscription:
-            return
-        subscription = MailSubscription(email=self.user_profile.email, user=self, segment=mailmagazine)
-        session.add(subscription)
-        return subscription
-
-    def unsubscribe(self, mailmagazine):
-        subscription = MailSubscription.query.filter(
-            MailSubscription.user==self
-        ).filter(
-            MailSubscription.segment==mailmagazine
-        ).first()
-        if subscription:
-            session.delete(subscription)
-
-
 class SexEnum(StandardEnum):
     Male = 1
     Female = 2
@@ -138,11 +116,38 @@ class MailMagazine(Base):
     created_at = Column(DateTime)
     status = Column(Integer)
 
+    def subscribe(self, user, mail_address):
+        subscription = MailSubscription.query.filter(
+            MailSubscription.user==user,
+            MailSubscription.email==mail_address
+        ).filter(
+            MailSubscription.segment==self
+        ).first()
+
+        # Do nothing if the user is subscribing the magazine
+        # with the same e-mail address.
+        if subscription:
+            return None
+        subscription = MailSubscription(email=self.user_profile.email, user=self, segment=mailmagazine)
+        session.add(subscription)
+        return subscription
+
+    def unsubscribe(self, user, mail_address):
+        subscription = MailSubscription.query.filter(
+            MailSubscription.user==user,
+            MailSubscription.email==mail_address
+        ).filter(
+            MailSubscription.segment==mailmagazine
+        ).first()
+        if subscription:
+            session.delete(subscription)
+
+
 class MailSubscription(Base):
     __tablename__ = 'MailSubscription'
     query = session.query_property()
     id = Column(Identifier, primary_key=True)
-    email = Column(String(255))
+    email = Column(String(255), index=True, unique=True)
     user_id = Column(Identifier, ForeignKey("User.id"), nullable=True)
     user = relationship('User', uselist=False)
     segment_id = Column(Identifier, ForeignKey("MailMagazine.id"), nullable=True)

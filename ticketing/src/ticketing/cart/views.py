@@ -23,6 +23,7 @@ from .rakuten_auth.api import authenticated_user
 from .events import notify_order_completed
 from webob.multidict import MultiDict
 from . import api
+import transaction
 
 logger = logging.getLogger(__name__)
 
@@ -446,11 +447,9 @@ class PaymentView(object):
         DBSession.add(cart)
 
         client_name = self.get_client_name()
-        mail_address = self.get_mail_address()
 
         order = dict(
             client_name=client_name,
-            mail_address=mail_address,
             payment_delivery_pair_id=payment_delivery_pair_id,
         )
         self.request.session['order'] = order
@@ -472,11 +471,7 @@ class PaymentView(object):
     def get_client_name(self):
         return self.request.params['last_name'] + self.request.params['first_name']
 
-    def get_mail_address(self):
-        return self.request.params['mail_address']
-
     def create_shipping_address(self, user):
-
         params = self.request.params
         shipping_address = o_models.ShippingAddress(
             first_name=params['first_name'],
@@ -494,6 +489,7 @@ class PaymentView(object):
             #tel_2=params['tel_2'],
             fax=params['fax'],
             user=user,
+            email=params['mail_address']
         )
         return shipping_address
 
@@ -537,9 +533,6 @@ class CompleteView(object):
         assert api.has_cart(self.request)
         cart = api.get_cart(self.request)
 
-        # メール購読
-        self.save_subscription()
-
         order_session = self.request.session['order']
 
         payment_delivery_pair_id = order_session['payment_delivery_pair_id']
@@ -566,19 +559,26 @@ class CompleteView(object):
 
         notify_order_completed(self.request, order)
 
+        # メール購読でエラーが出てロールバックされても困る
+        order_id = order.id
+        transaction.commit()
+        order = DBSession.query(order.__class__).get(order_id)
+
+        # メール購読
+        self.save_subscription()
+
         return dict(order=order)
 
     def save_subscription(self):
+        cart = api.get_cart(self.request)
         magazines = u_models.MailMagazine.query.all()
-        #openid = authenticated_user(self.request)
-        #user = api.get_or_create_user(self.request, openid['clamed_id'])
         user = self.context.get_or_create_user()
 
         # 購読
         magazine_ids = self.request.params.getall('mailmagazine')
         logger.debug("magazines: %s" % magazine_ids)
-        subscriptins = u_models.MailMagazine.query.filter(u_models.MailMagazine.id.in_(magazine_ids)).all()
-        for s in subscriptins:
-            logger.debug("subscribe %s" % s.name)
-            subscription = user.subscribe(s)
-
+        for subscription in u_models.MailMagazine.query.filter(u_models.MailMagazine.id.in_(magazine_ids)).all():
+            if subscription.subscribe(user, cart.shipping_address.email):
+                logger.debug("User %s starts subscribing %s for <%s>" % (user, subscription.name, cart.shipping_address.email))
+            else:
+                logger.debug("User %s is already subscribing %s for <%s>" % (user, subscription.name, cart.shipping_address.email))

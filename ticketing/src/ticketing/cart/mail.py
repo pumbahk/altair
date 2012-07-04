@@ -16,7 +16,7 @@ def create_message(order):
     user_profile = order.user.user_profile
     message = Message(
         subject=u"購入メールテスト",
-        recipients=[user_profile.email],
+        recipients=[order.shipping_address.email],
         body=u"""購入メールテスト
 ======================================
 
