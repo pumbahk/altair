@@ -45,6 +45,8 @@ def upgrade():
     op.add_column('pagetag', sa.Column('organization_id', sa.Integer(), nullable=True))
     op.add_column('topcontent', sa.Column('organization_id', sa.Integer(), nullable=True))
     op.add_column('topic', sa.Column('organization_id', sa.Integer(), nullable=True))
+    op.add_column('promotion', sa.Column('organization_id', sa.Integer(), nullable=True))
+    op.add_column('promotion_unit', sa.Column('organization_id', sa.Integer(), nullable=True))
     op.add_column('widgetdisposition', sa.Column('organization_id', sa.Integer(), nullable=True))
 
 
@@ -66,6 +68,8 @@ def downgrade():
     op.drop_column('pagetag', 'organization_id')
     op.drop_column('topcontent', 'organization_id')
     op.drop_column('topic', 'organization_id')
+    op.drop_column('promotion', 'organization_id')
+    op.drop_column('promotion_unit', 'organization_id')
     op.drop_column('widgetdisposition', 'organization_id')
 
 
