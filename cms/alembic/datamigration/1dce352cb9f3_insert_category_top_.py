@@ -232,7 +232,7 @@ def create_category_top_page(organization_id):
 
 
 def upgrade():
-    organization_id = Organization.query.filter_by(name=u"ticketstar").one().id
+    organization_id = Organization.query.filter_by(name=u"master").one().id
     create_master_categories(organization_id)
     create_category_top_page(organization_id)
     transaction.commit()

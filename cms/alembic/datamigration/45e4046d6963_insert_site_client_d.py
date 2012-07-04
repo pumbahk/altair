@@ -22,7 +22,8 @@ def upgrade():
         prefecture = u"tokyo",
         address = u"000",
         email = "foo@example.jp",
-        contract_status = 0
+        contract_status = 0, 
+        auth_source="debug"
         )
 
     DBSession.add(organization)
