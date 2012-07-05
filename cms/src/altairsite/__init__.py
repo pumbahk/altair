@@ -40,7 +40,10 @@ def main(global_config, **settings):
     config.add_route('rakuten_auth.login', '/rakuten/rauth/login')
     config.add_route('rakuten_auth.verify', '/rakuten/rauth/verify')
 
+    ## organizationごとのseparate
+    config.include(".separation")
 
+    ## front
     config.add_route('front', '/{page_name:.*}', factory=".front.resources.PageRenderingResource") # fix-url after. implemnt preview
     
     config.add_subscriber(".subscribers.add_renderer_globals", 

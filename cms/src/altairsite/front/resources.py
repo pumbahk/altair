@@ -76,7 +76,11 @@ class AccessControlPC(object):
     def __init__(self, request):
         self.request = request
         self.access_ok = False
-        self.error_message = "this-object-is-not-used" 
+        self._error_message = []
+
+    @property
+    def error_message(self):
+        return u"\n".join(self._error_message)
 
     def can_access(self):
         if not self.access_ok:
@@ -87,7 +91,7 @@ class AccessControlPC(object):
         try:
             return api.is_renderable_template(template, page)
         except Exception, e:
-            self.error_message = str(e)
+            self._error_message.append(str(e)) 
             return False
 
     def _fetch_page_from_params(self, url, dt):
@@ -102,12 +106,12 @@ class AccessControlPC(object):
         self.access_ok = True
 
         if page is None:
-            self.error_message = "*fetch page* url=%s page is not found" % url
+            self._error_message.append( "*fetch page* url=%s page is not found" % url)
             self.access_ok = False
             return page
 
         if page.event and page.event.is_searchable == False:
-            self.error_message = "*fetch pageset* pageset(id=%s) event is disabled event(is_searchable==False)"
+            self._error_message.append("*fetch pageset* pageset(id=%s) event is disabled event(is_searchable==False)")
             self.access_ok = False
         
         try:
