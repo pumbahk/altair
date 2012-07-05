@@ -1,4 +1,5 @@
-from pyramid.view import view_config
+from pyramid.view import view_config, view_defaults
+from altaircms.auth.api import require_login
 from datetime import datetime
 from . import demo
 from forms import CalendarSelectForm
@@ -12,6 +13,7 @@ def _dict_to_object_params(data):
         params["to_date"] = datetime.strptime(data["to_date"], "%Y-%m-%d").date()
     return params
     
+@view_defaults(custom_predicates=(require_login,))
 class CalendarWidgetView(object):
     def __init__(self, request):
         self.request = request

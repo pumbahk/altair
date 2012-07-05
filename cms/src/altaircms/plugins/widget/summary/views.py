@@ -1,7 +1,9 @@
-from pyramid.view import view_config
+from pyramid.view import view_config, view_defaults
+from altaircms.auth.api import require_login
 from .helpers import _items_from_page
 import logging
 
+@view_defaults(custom_predicates=(require_login,))
 class SummaryWidgetView(object):
     def __init__(self, request):
         self.request = request

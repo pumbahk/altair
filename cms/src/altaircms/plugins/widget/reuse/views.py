@@ -1,10 +1,12 @@
-from pyramid.view import view_config
+from pyramid.view import view_config, view_defaults
+from altaircms.auth.api import require_login
 from pyramid.renderers import render_to_response
 from altairsite.front.resources import PageRenderingResource
 from . import forms
 from altairsite.front import api
 
 
+@view_defaults(custom_predicates=(require_login,))
 class ReuseWidgetView(object):
     def __init__(self, request):
         self.request = request

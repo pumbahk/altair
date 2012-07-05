@@ -1,7 +1,9 @@
-from pyramid.view import view_config
+from pyramid.view import view_config, view_defaults
+from altaircms.auth.api import require_login
 from altaircms.lib.itertools import group_by_n
 from . import forms
 
+@view_defaults(custom_predicates=(require_login,))
 class ImageWidgetView(object):
     def __init__(self, request):
         self.request = request
