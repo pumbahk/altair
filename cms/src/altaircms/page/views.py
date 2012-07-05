@@ -116,9 +116,9 @@ class PageAddView(object):
         if form.validate():
             page = self.context.create_page(form)
             ## flash messsage
-            mes = u'page created <a href="%s">作成されたページを編集する</a>' % self.request.route_path("page_edit_", page_id=page.id)
+            mes = u'page created <a href="%s">作成されたページを編集する</a>' % self.request.route_path("page_detail", page_id=page.id)
             FlashMessage.success(mes, request=self.request)
-            return HTTPFound(self.request.route_path("page"))
+            return HTTPFound(self.request.route_path("pageset_list", kind="other"))
         else:
             self.request._form = form
             self.request._setup_form = forms.PageInfoSetupForm(name=form.data["name"])

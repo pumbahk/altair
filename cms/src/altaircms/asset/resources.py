@@ -11,6 +11,7 @@ from altaircms.tag.api import put_tags
 from pyramid.decorator import reify
 from . import forms
 from altaircms.auth.api import get_or_404
+from altaircms.subscribers import notify_model_create
 
 def _setattrs(asset, params):
     for k, v in params.iteritems():
@@ -120,6 +121,7 @@ class AssetResource(RootFactory):
         asset = models.ImageAsset.from_dict(params)
         _put_tags(asset, "image_asset", tags, private_tags, self.request)
         _add_operator(asset, self.request)
+        notify_model_create(self.request, asset, params)
         return asset
 
     def create_movie_asset(self, form,
@@ -138,6 +140,7 @@ class AssetResource(RootFactory):
         asset = models.MovieAsset.from_dict(params)
         _put_tags(asset, "movie_asset", tags, private_tags, self.request)
         _add_operator(asset, self.request)
+        notify_model_create(self.request, asset, params)
         return asset
 
     def create_flash_asset(self, form,
@@ -156,6 +159,7 @@ class AssetResource(RootFactory):
         asset = models.FlashAsset.from_dict(params)
         _put_tags(asset, "flash_asset", tags, private_tags, self.request)
         _add_operator(asset, self.request)
+        notify_model_create(self.request, asset, params)
         return asset
 
     ## update

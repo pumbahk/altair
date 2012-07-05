@@ -52,5 +52,5 @@
 seq = h.paginate(request, assets, item_count=assets.count())
 %>
 ${seq.pager()}
-${mco.model_list(seq.paginated(), mco.asset_list, u"アセットは登録されていません")}
+${mco.model_list(seq.paginated(), lambda xs,: mco.asset_list(xs, "asset_image_detail"), u"アセットは登録されていません")}
 ${seq.pager()}

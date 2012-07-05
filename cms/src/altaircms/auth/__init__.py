@@ -29,7 +29,6 @@ def includeme(config):
     ## bind event
     config.add_subscriber(".subscribers.touch_operator_after_login", ".subscribers.AfterLogin")
 
-
     config.add_route('login', '/login')
     config.add_route('logout', '/logout')
 

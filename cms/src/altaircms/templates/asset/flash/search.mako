@@ -36,4 +36,4 @@
 </div>
 
 <h4>登録済みのアセット一覧</h4>
-${mco.model_list(search_result, mco.asset_list, u"アセットは登録されていません")}
+${mco.model_list(search_result, lambda xs,: mco.asset_list(xs, "asset_flash_detail"), u"アセットは登録されていません")}

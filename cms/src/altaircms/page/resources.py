@@ -5,7 +5,7 @@ from altaircms.layout.models import Layout
 import altaircms.widget.forms as wf
 import altaircms.security as security
 from altaircms.layout import renderable
-
+from altaircms.subscribers import notify_model_create
 from altaircms.widget.models import WidgetDisposition
 from altaircms.tag.api import put_tags
 from . import helpers as h
@@ -71,6 +71,8 @@ class PageResource(security.RootFactory):
 
         self.add(page, flush=True)
         subscribers.notify_page_create(self.request, page, params)
+        notify_model_create(self.request, page, form.data)
+        notify_model_create(self.request, pageset, form.data)
         return page
 
     def update_page(self, page, form):

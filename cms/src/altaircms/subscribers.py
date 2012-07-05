@@ -33,3 +33,20 @@ def add_choices_query_refinement(event): #todo:refactoring
             if dynamic_query:
                 dynamic_query(v, form=form, rendering_val=rendering_val, request=request)
 
+from altaircms.interfaces import IModelEvent
+from zope.interface import implementer
+
+@implementer(IModelEvent)
+class ModelCreate(object):
+    def __init__(self, request, obj, params=None):
+        self.request = request
+        self.obj = obj
+        self.params = params
+
+def notify_model_create(request, obj, params=None):
+    registry = request.registry
+    return registry.notify(ModelCreate(request, obj, params))
+
+def add_request_organization_id(self):
+    if hasattr(self.obj, "organization_id"):
+        self.obj.organization_id = self.request.organization.id

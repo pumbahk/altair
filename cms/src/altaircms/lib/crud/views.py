@@ -10,7 +10,7 @@ import logging
 logger = logging.getLogger(__file__)
 from altaircms.security import RootFactory
 from ..flow import api as flow_api
-
+from altaircms.subscribers import notify_model_create ## too-bad
 
 from sqlalchemy.sql.operators import ColumnOperators
 
@@ -90,10 +90,13 @@ class CRUDResource(RootFactory): ## fixme
         obj = model_from_dict(self.model, form.data)
         DBSession.add(obj)
 
+        ## todo: 疎
+        notify_model_create(self.request, obj, form.data)
+        DBSession.flush()
         if self.create_event:
             ## IModelEvent
             self.request.registry.notify(self.create_event(self.request, obj, form.data))
-        DBSession.flush()
+
         return obj
 
     def get_model_obj(self, id):

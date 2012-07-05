@@ -57,7 +57,7 @@
 </table>
 </%def>
 
-<%def name="asset_list(assets)">
+<%def name="asset_list(assets,route_name)">
   <table class="table table-striped">
       <thead>
       <tr>
@@ -72,7 +72,7 @@
           %for asset in assets:
           <tr>
               <td>${asset.discriminator}</td>
-              <td><a href="${request.route_path("asset_image_detail", asset_id=asset.id)}">${asset.title}</a></td>
+              <td><a href="${request.route_path(route_name, asset_id=asset.id)}">${asset.title}</a></td>
               <td>${u",".join([x.label for x in asset.tags])}</td>
               <td>${asset.created_at}(${asset.created_by.screen_name})</td>
               <td>${asset.updated_at}(${asset.updated_by.screen_name})</td>

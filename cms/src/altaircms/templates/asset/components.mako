@@ -46,7 +46,7 @@
 </%def>
 
 <%def name="movie_asset_describe(request, asset)">
-    ${asset_show(request,asset)}
+    ${flash_show(request,asset)}
 	<div class="span5">
 	  <table class="table">
 		<tbody>

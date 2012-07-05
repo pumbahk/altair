@@ -72,6 +72,8 @@ def main(global_config, **settings):
     config.add_fulltext_search(search_utility)
 
     ## bind event
+    config.add_subscriber(".subscribers.add_request_organization_id",
+                          ".subscribers.ModelCreate")
     config.add_subscriber(".subscribers.add_renderer_globals", 
                           "pyramid.events.BeforeRender")
     config.add_subscriber(".subscribers.after_form_initialize", 
