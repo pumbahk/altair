@@ -1,7 +1,6 @@
 from pyramid.view import view_config
 from .helpers import _items_from_page
 import logging
-from altaircms.page.models import Page
 
 class SummaryWidgetView(object):
     def __init__(self, request):
@@ -13,7 +12,7 @@ class SummaryWidgetView(object):
         page_id = self.request.json_body["page_id"]
         items = self.request.json_body["data"]["items"]
         if self.request.json_body["data"].get("use_notify"):
-            bound_event_id = Page.query.filter_by(id=page_id).with_entities("event_id").scalar()
+            bound_event_id = self.request.allowable("Page").filter_by(id=page_id).with_entities("event_id").scalar()
         else:
             bound_event_id = None
         context = self.request.context

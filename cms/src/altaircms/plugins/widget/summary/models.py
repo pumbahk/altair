@@ -94,7 +94,7 @@ class SummaryWidgetResource(HandleSessionMixin,
         return json.dumps(_items_from_page(page), ensure_ascii=False)
     
     def _get_page(self, page_id):
-        return Page.query.filter(Page.id==page_id).one()
+        return self.request.allowable("Page").filter(Page.id==page_id).one()
 
     def get_items(self, page_id):
         page = self._get_page(page_id)

@@ -24,6 +24,7 @@ def linklist_render(widget, finder, request=None):
         qs = qs.filter(PageSet.id==Category.pageset_id).filter(Category.origin==widget.genre)
     if widget.max_items:
         qs = qs.limit(widget.max_items)
+    qs = qs.with_entities(PageSet.name, PageSet.url)
 
     candidates = [u'<a href="%s">%s</a>' % (h.link.publish_page_from_pageset(request, p), p.name) for p in qs]
     content = widget.delimiter.join(candidates)
