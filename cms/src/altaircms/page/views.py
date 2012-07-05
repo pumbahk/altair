@@ -326,6 +326,12 @@ def page_edit(request):
     """pageの中をwidgetを利用して変更する
     """
     page = get_or_404(request.allowable("Page"), Page.id==request.matchdict["page_id"])
+    try:
+        page.valid_layout()
+    except ValueError, e:
+        FlashMessage.error(str(e), request=request)
+        raise HTTPFound(request.route_url("page_update", id=page.id))
+
     layout_render = request.context.get_layout_render(page)
     disposition_select = wf.WidgetDispositionSelectForm()
     user = request.user

@@ -24,19 +24,17 @@ class StructureView(object):
     def update(self):
         request = self.request
         pk = request.json_body["page"]
+        # page = get_or_404(request.allowPage("Page"), Page.id==pk)
         page = get_or_404(Page.query, Page.id==pk)
         page.structure = json.dumps(request.json_body["structure"])
         request.context.add(page, flush=True) ## flush?
         return "ok"
 
-    # @view_config(route_name="structure", renderer="json", request_method="DELETE")
-    # def delete(self):
-    #     print "hor. lay"
-
     @view_config(route_name="structure_get", renderer="json", request_method="GET")
     def get(self):
         request = self.request
         pk = request.GET["page"]
+        # page = get_or_404(request.allowPage("Page"), Page.id==pk)
         page = get_or_404(Page.query, Page.id==pk)
         if page.structure:
             return dict(loaded=json.loads(page.structure))

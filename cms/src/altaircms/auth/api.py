@@ -100,6 +100,7 @@ class OAuthComponent(object):
         return url
 
 ###login後の絞り込み
+@implementer(IAllowableQueryFactory)
 class AllowableQueryFactory(object):
     def __init__(self, model):
         assert hasattr(model, "organization_id")

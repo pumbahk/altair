@@ -59,7 +59,7 @@ event = page.event or page.pageset.event
       <tr><th class="span2">keywords</th><td>${page.keywords}</td><td>${params["keywords"]}</td></tr>
       <tr><th class="span2">公開タグ</th><td>${u",".join([t.label for t in page.tags])}</td><td>${params["tags"]}</td></tr>
       <tr><th class="span2">非公開タグ</th><td>${u",".join([t.label for t in page.private_tags])}</td><td>${params["private_tags"]}</td></tr>
-      <tr><th class="span2">レイアウト</th><td>${page.layout.title}</td><td>${params["layout"]}</td></tr>
+      <tr><th class="span2">レイアウト</th><td>${page.layout.title if page.layout else "-"}</td><td>${params["layout"]}</td></tr>
 </%def>
 
 <%def name="page_description(page)">

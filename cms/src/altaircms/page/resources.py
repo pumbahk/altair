@@ -57,7 +57,7 @@ class PageResource(security.RootFactory):
         ## pageはallowableなもののみ
         assert page.organization_id == self.request.organization.id
 
-        layout = DBSession.query(Layout).filter_by(id=page.layout_id).one()
+        layout = page.layout
         return renderable.LayoutRender(layout)
 
     def create_page(self, form):

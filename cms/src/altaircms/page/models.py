@@ -175,7 +175,7 @@ class Page(BaseOriginalMixin,
     version = Column(Integer, default=1)
 
     layout_id = Column(Integer, ForeignKey("layout.id"))
-    layout = relationship(Layout, backref='page', uselist=False)
+    layout = relationship(Layout, backref='pages', uselist=False)
     DEFAULT_STRUCTURE = "{}"
     structure = Column(Text, default=DEFAULT_STRUCTURE)
     # hash_url = Column(String(length=32), default=lambda : uuid.uuid4().hex)

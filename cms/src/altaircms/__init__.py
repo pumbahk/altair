@@ -109,7 +109,7 @@ def main(global_config, **settings):
     register_allowable(".tag.models.MovieAssetTag", "MovieAssetTag")
     register_allowable(".tag.models.FlashAssetTag", "FlashAssetTag")
     register_allowable(".auth.models.Operator", "Operator")
-    # config.registry.registerUtility(query_factory(config.maybe_dotted("", "")
+
 
     
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)
