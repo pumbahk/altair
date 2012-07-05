@@ -15,6 +15,9 @@ from .interfaces import IAllowableQueryFactory
 from .subscribers import AfterLogin
 from altaircms.auth.helpers import get_authenticated_user
 
+def require_login(info, request):
+    """custom predicates"""
+    return bool(getattr(request, "user", None))
 
 def get_logout_action(request):
     return request.registry.getUtility(ILogoutAction)

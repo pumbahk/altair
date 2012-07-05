@@ -12,9 +12,7 @@ from altaircms.page.models import Page
 from altaircms.page.models import PageDefaultInfo
 from altaircms.page.models import PageAccesskey
 from altaircms.page import subscribers as page_subscribers
-
-def require_login(info, request):
-    return bool(getattr(request, "user", None))
+from altaircms.auth.api import require_login
 
 @view_config(permission="performance_update", route_name="plugins_jsapi_getti", renderer="json", 
              custom_predicates=(require_login, ))
