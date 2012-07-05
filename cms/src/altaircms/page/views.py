@@ -183,7 +183,7 @@ class PageDeleteView(object):
         ## flash messsage
         FlashMessage.success("page deleted", request=self.request)
 
-        return HTTPFound(location=h.page.to_list_page(self.request))
+        return HTTPFound(location=h.page.to_list_page(self.request, page))
 
 
 

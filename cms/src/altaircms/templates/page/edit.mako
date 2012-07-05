@@ -12,7 +12,7 @@
     ${nco.breadcrumbs(
         names=["Top", "Page", page.title], 
         urls=[request.route_path("dashboard"),
-              h.page.to_list_page(request)]
+              h.page.to_list_page(request,page)]
     )}
   </div>
 </div>

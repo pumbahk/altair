@@ -10,8 +10,12 @@ def to_edit_page(request, page):
     else:
         return request.route_path("page_edit", event_id=page.event.id, page_id=page.id)
 
-def to_list_page(request):
-    return request.route_path("page")
+def to_list_page(request, page):
+    if page.event is None:
+        return request.route_path("pageset_list", kind="other")
+    else:
+        return request.route_path("pageset_list", kind="event")
+
 
 def to_delete(request, page):
     return request.route_path("page_delete", id=page.id)

@@ -37,6 +37,8 @@
           <a href="${request.route_path('page_detail', page_id=pages[0].id)}">${pages[0].name}</a>
           <a class="action" target="_blank" href="${request.route_path("preview_page", page_id=pages[0].id)}">
             <i class="icon-eye-open"> </i></a>
+          <a class="action" target="_blank" href="${request.route_path("page_edit_", page_id=pages[0].id)}">
+            <i class="icon-edit"> </i></a>
           ${u'<span class="label">現在表示</span>' if pages[0]==current_page else u""|n}
         </td>
         <td>
@@ -63,6 +65,9 @@
             <a href="${request.route_path('page_detail', page_id=page.id)}">${page.name}</a>
             <a class="action" target="_blank" href="${request.route_path("preview_page", page_id=page.id)}">
               <i class="icon-eye-open"> </i></a>
+            <a class="action" target="_blank" href="${request.route_path("page_edit_", page_id=page.id)}">
+              <i class="icon-edit"> </i></a>
+
             ${u'<span class="label">現在表示</span>' if page==current_page else u""|n}
           </td>
           <td>
