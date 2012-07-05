@@ -90,7 +90,7 @@
 	</script>
 
 	<div class="span5">
-	  <img src="${h.asset.to_show_page(request, asset)}" alt="${asset.alt}"/>
+      <div id="asset"></div>
 	</div>
 </%def>
 

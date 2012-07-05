@@ -8,7 +8,12 @@ class FlashWidgetView(object):
         self.request = request
 
     def _create_or_update(self):
-        asset_id = self.request.json_body["data"]["asset_id"]
+        asset_id = self.request.json_body["data"].get("asset_id")
+        if asset_id is None:
+            r = self.request.json_body.copy()
+            r.update(pk=None, asset_id=None)
+            return r
+
         page_id = self.request.json_body["page_id"]
         context = self.request.context
         asset = context.get_asset(asset_id);

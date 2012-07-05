@@ -5,7 +5,7 @@
   % for g in assets:
   <div>
      % for flash in g:
-       <img pk="${flash.id}" src="${h.asset.to_show_page(request,flash,filepath="imagepath")}" alt=""/>
+       <img pk="${flash.id}" src="${h.asset.to_show_page(request,flash,filepath=flash.imagepath)}" alt=""/>
      % endfor          
   </div>
   % endfor 
