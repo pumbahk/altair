@@ -68,9 +68,10 @@ class Orders(BaseView):
         if order is None:
             return HTTPNotFound('order id %d is not found' % order_id)
 
-        order.cancel()
-
-        self.request.session.flash(u'受注(%s)をキャンセルしました' % order.order_no)
+        if order.cancel(self.request):
+            self.request.session.flash(u'受注(%s)をキャンセルしました' % order.order_no)
+        else:
+            self.request.session.flash(u'受注(%s)をキャンセルできません' % order.order_no)
         return HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
 
     @view_config(route_name='orders.edit_payment', renderer='ticketing:templates/orders/edit_payment.html')

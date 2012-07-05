@@ -6,7 +6,7 @@ from datetime import datetime
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, Numeric, Unicode
 from sqlalchemy.orm import join, backref, column_property
 
-from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier, relationship
+from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier, relationship, DBSession
 from ticketing.core.models import Seat, Performance, Product, ProductItem
 from ticketing.users.models import User
 
@@ -118,13 +118,21 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         return order
 
-    def cancel(self):
+    def cancel(self, request):
         # 決済をキャンセル
         ppid = self.payment_delivery_pair.payment_method.payment_plugin_id
+        if not ppid:
+            return False
 
         if ppid == 1:  # クレジットカード決済
-            # ToDo
-            pass
+            # 売り上げキャンセル
+            from ticketing.multicheckout import api as multi_checkout_api
+
+            multi_checkout_result = multi_checkout_api.checkout_sales_cancel(request, self.order_no)
+            DBSession.add(multi_checkout_result)
+
+            self.multi_checkout_approval_no = multi_checkout_result.ApprovalNo
+
         elif ppid == 2:  # 楽天あんしん決済
             # ToDo
             pass
