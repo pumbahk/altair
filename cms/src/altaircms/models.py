@@ -53,7 +53,7 @@ class BaseOriginalMixin(object):
         return model_from_dict(cls, D)
 
 class WithOrganizationMixin(object):
-    organization_id = Column(Integer) ## need FK?(organization.id)
+    organization_id = Column(Integer, index=True) ## need FK?(organization.id)
     
 Base = sqlahelper.get_base()
 DBSession = sqlahelper.get_session()
