@@ -13,6 +13,9 @@ from altaircms.page.models import PageDefaultInfo
 from altaircms.page.models import PageAccesskey
 from altaircms.page import subscribers as page_subscribers
 from altaircms.auth.api import require_login
+from altaircms.event.models import Event
+
+from altaircms.subscribers import notify_model_create
 
 @view_config(permission="performance_update", route_name="plugins_jsapi_getti", renderer="json", 
              custom_predicates=(require_login, ))
@@ -27,7 +30,9 @@ def performance_add_getti_code(request):
         _, i = k.split(":", 1)
         codes[int(i)] = getti_code
 
-    for obj in Performance.query.filter(Performance.id.in_(codes.keys())):
+    perfs = Performance.query.filter(Performance.id.in_(codes.keys()))
+    perfs = request.allowable("Event", qs=perfs.filter(Performance.event_id==Event.id))
+    for obj in perfs:
         changed.append(obj.id)
         getti_code = codes[obj.id]
 
@@ -53,6 +58,7 @@ def pageset_addpage(request):
         DBSession.add(created)
         DBSession.flush()
         page_subscribers.notify_page_create(request, created)
+        notify_model_create(request, created, {})
         return "OK"
     else:
         return "FAIL"

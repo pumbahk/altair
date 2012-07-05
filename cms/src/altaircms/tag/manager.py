@@ -86,6 +86,7 @@ class TagManager(object):
 
         for label in updates:
             obj.tags.append(self.get_or_create_tag(label, public_status))
+        
 
     def add_tags(self, obj, tag_label_list, public_status):
         tags = obj.tags
