@@ -14,10 +14,13 @@ from .interfaces import IOAuthComponent
 from .interfaces import IAllowableQueryFactory
 from .subscribers import AfterLogin
 from altaircms.auth.helpers import get_authenticated_user
+from pyramid.security import unauthenticated_userid
 
 def require_login(info, request):
     """custom predicates"""
-    return bool(getattr(request, "user", None))
+    ## this process has DB access.
+    # return bool(getattr(request, "user", None))
+    return bool(unauthenticated_userid(request))
 
 def get_logout_action(request):
     return request.registry.getUtility(ILogoutAction)

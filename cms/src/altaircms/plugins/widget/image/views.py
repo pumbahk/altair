@@ -9,7 +9,12 @@ class ImageWidgetView(object):
         self.request = request
 
     def _create_or_update(self):
-        asset_id = self.request.json_body["data"]["asset_id"]
+        asset_id = self.request.json_body["data"].get("asset_id")
+        if asset_id is None:
+            r = self.request.json_body.copy()
+            r.update(pk=None, asset_id=None)
+            return r
+
         nowrap = self.request.json_body["data"].get("nowrap")
         alt = self.request.json_body["data"].get("alt")
         width = self.request.json_body["data"].get("width")
