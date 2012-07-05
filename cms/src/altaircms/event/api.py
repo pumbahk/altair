@@ -106,6 +106,7 @@ class Scanner(object):
                 event.event_close = parse_datetime(event_record['end_on'])
                 event.deal_open = parse_datetime(event_record.get('deal_open'))
                 event.deal_close = parse_datetime(event_record.get('deal_close'))
+                event.organization_id = event_record["organization_id"]
             except KeyError as e:
                 raise Exception("missing property '%s' in the event record" % e.message)
 

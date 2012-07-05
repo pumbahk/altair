@@ -113,7 +113,7 @@ class ParseAndSaveEventTests(unittest.TestCase):
         self.assertEqual(event.backend_id, 20) #backend id
         self.assertEqual(event.event_open, datetime(2012, 3, 15, 10))
         self.assertEqual(event.event_close, datetime(2012, 3, 15, 13))
-
+        self.assertEqual(event.organization_id, 1000)
         self.assertEqual(len(event.performances), 2)
 
         performance = event.performances[0]
@@ -154,6 +154,7 @@ class ParseAndSaveEventTests(unittest.TestCase):
               "deal_open": "2012-10-25T10:00:00",
               "end_on": "2012-03-15T13:00:00",
               "id": 20,
+              "organization_id": 1000, 
               "performances": [{"end_on": "2012-03-15T13:00:00",
                                  "id": 96,
                                  "name": "マツイ・オン・アイス(東京公演)",
