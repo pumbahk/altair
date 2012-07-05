@@ -23,5 +23,6 @@ def includeme(config):
         "imgdirectory": os.path.join(DIR, "img")
         }
     widget_plugin_install(config, settings)
+    config.scan(".views")
     add_finder(config, ".api.near_the_end_events", key="nearTheEnd")
     add_finder(config, ".api.deal_start_this_week_events", key="thisWeek")

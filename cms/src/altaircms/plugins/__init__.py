@@ -5,14 +5,14 @@ def includeme(config):
     config.include(".widget.movie", route_prefix="api")
     config.include(".widget.calendar", route_prefix="api")
     config.include(".widget.performancelist", route_prefix="api")
-    config.include(".widget.detail", route_prefix="api")
+    # config.include(".widget.detail", route_prefix="api")
     config.include(".widget.ticketlist", route_prefix="api")
     config.include(".widget.menu", route_prefix="api")
     config.include(".widget.topic", route_prefix="api")
     config.include(".widget.breadcrumbs", route_prefix="api")
     config.include(".widget.summary", route_prefix="api")
     config.include(".widget.countdown", route_prefix="api")
-    config.include(".widget.reuse", route_prefix="api")
+    # config.include(".widget.reuse", route_prefix="api")
     config.include(".widget.iconset", route_prefix="api")
     config.include(".widget.linklist", route_prefix="api")
     config.include(".widget.heading", route_prefix="api")
@@ -22,4 +22,4 @@ def includeme(config):
     config.include(".widget.twitter", route_prefix="api")
 
     config.include(".jsapi", route_prefix="api")
-    config.scan(".")
+

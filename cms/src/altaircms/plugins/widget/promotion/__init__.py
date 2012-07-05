@@ -17,6 +17,7 @@ def includeme(config):
         "imgdirectory": os.path.join(DIR, "img")
         }
     widget_plugin_install(config, settings)
+    config.scan(".views")
 
     utility = config.registry.settings.get("altaircms.plugins.promotion.imagefetch.utility")
     if utility:

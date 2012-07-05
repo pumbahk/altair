@@ -37,34 +37,41 @@ class RenderableAdaptor(object):
     __call__ = render
 
 
-dummy_performances = [
-    perf(1, "event1", datetime(2012, 2, 10, 10), datetime(2012, 2, 10, 12)), 
-    perf(2, "event2", datetime(2012, 2, 13, 13), datetime(2012, 2, 13, 15)), 
-    perf(3, "event3", datetime(2012, 2, 20, 20), datetime(2012, 2, 20, 12)), 
-    perf(1, "event1", datetime(2012, 3, 10, 10), datetime(2012, 3, 10, 13)), 
-    perf(3, "event3", datetime(2012, 3, 15, 15), datetime(2012, 3, 15, 15)), 
-    perf(5, "event5", datetime(2012, 3, 20, 20), datetime(2012, 3, 20, 13)), 
-    ]
-
+_dummy_performances = None
+def dummy_performances():
+    global _dummy_performances
+    if _dummy_performances:
+        return _dummy_performances
+    _dummy_performances = \
+    [
+        perf(1, "event1", datetime(2012, 2, 10, 10), datetime(2012, 2, 10, 12)), 
+        perf(2, "event2", datetime(2012, 2, 13, 13), datetime(2012, 2, 13, 15)), 
+        perf(3, "event3", datetime(2012, 2, 20, 20), datetime(2012, 2, 20, 12)), 
+        perf(1, "event1", datetime(2012, 3, 10, 10), datetime(2012, 3, 10, 13)), 
+        perf(3, "event3", datetime(2012, 3, 15, 15), datetime(2012, 3, 15, 15)), 
+        perf(5, "event5", datetime(2012, 3, 20, 20), datetime(2012, 3, 20, 13)), 
+        ]
+    return _dummy_performances
 
 def obi():
     template = Template(filename=os.path.join(here, "rakuten.calendar.mako"), 
                         input_encoding="utf-8")
-    cal = CalendarOutput.from_performances(dummy_performances, template=template)
+    cal = CalendarOutput.from_performances(dummy_performances(), template=template)
+    performances = dummy_performances()
     return {
         "description":  u"""
 一番初めの公演日と一番最後の公演日から縦長のカレンダーを作成。
 """, 
         "renderable": RenderableAdaptor(cal.render,
-                                        dummy_performances[0].start_on, 
-                                        dummy_performances[-1].start_on), 
+                                        performances[0].start_on, 
+                                        performances[-1].start_on), 
         }
     
 def term():
     from forms import SelectTermForm
     template = Template(filename=os.path.join(here, "rakuten.calendar.mako"), 
                         input_encoding="utf-8")
-    cal = CalendarOutput.from_performances(dummy_performances, template=template)
+    cal = CalendarOutput.from_performances(dummy_performances(), template=template)
     return {
         "description":  u"""
 開始日／終了日を指定してその範囲のカレンダを表示
@@ -105,7 +112,7 @@ def tab():
             "renderable": RenderableAdaptor(template.render, cals=cals, months=months, visibilities=visibilities)
             }
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
     # print term()["renderable"].render()
     # print obi()["renderable"].render()
-    print tab()["renderable"].render()
+    # print tab()["renderable"].render()

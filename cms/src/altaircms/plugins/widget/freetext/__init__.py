@@ -16,3 +16,4 @@ def includeme(config):
         "jsfile": os.path.join(DIR, "lib.js")
         }
     widget_plugin_install(config, settings)
+    config.scan(".views")
