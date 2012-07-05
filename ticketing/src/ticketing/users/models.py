@@ -29,7 +29,7 @@ class SexEnum(StandardEnum):
     Female = 2
     NoAnswer = 0
 
-class UserProfile(Base):
+class UserProfile(Base, BaseModel, WithTimestamp):
     __tablename__ = 'UserProfile'
     query = session.query_property()
     id = Column(Identifier, primary_key=True)
@@ -45,17 +45,14 @@ class UserProfile(Base):
     birth_day = Column(DateTime)
     sex = Column(Integer)
     zip = Column(String(255))
-    prefecture    = Column(String(64), nullable=False, default=u'')
-    city = Column(String(255))
-    street = Column(String(255))
-    address = Column(String(255))
-    other_address = Column(String(255))
+    country = Column(String(255))
+    prefecture = Column(String(64), nullable=False, default=u'')
+    city = Column(String(255), nullable=False, default=u'')
+    address_1 = Column(String(255), nullable=False, default=u'')
+    address_2 = Column(String(255))
     tel_1 = Column(String(32))
     tel_2 = Column(String(32))
     fax = Column(String(32))
-
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
     status = Column(Integer)
 
 class UserCredential(Base):
