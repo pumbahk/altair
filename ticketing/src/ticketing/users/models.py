@@ -1,4 +1,4 @@
-from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL
+from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL, Index
 from sqlalchemy.orm import join, backref, column_property
 
 from standardenum import StandardEnum
@@ -29,7 +29,7 @@ class SexEnum(StandardEnum):
     Female = 2
     NoAnswer = 0
 
-class UserProfile(Base):
+class UserProfile(Base, BaseModel, WithTimestamp):
     __tablename__ = 'UserProfile'
     query = session.query_property()
     id = Column(Identifier, primary_key=True)
@@ -45,17 +45,14 @@ class UserProfile(Base):
     birth_day = Column(DateTime)
     sex = Column(Integer)
     zip = Column(String(255))
-    prefecture    = Column(String(64), nullable=False, default=u'')
-    city = Column(String(255))
-    street = Column(String(255))
-    address = Column(String(255))
-    other_address = Column(String(255))
+    country = Column(String(255))
+    prefecture = Column(String(64), nullable=False, default=u'')
+    city = Column(String(255), nullable=False, default=u'')
+    address_1 = Column(String(255), nullable=False, default=u'')
+    address_2 = Column(String(255))
     tel_1 = Column(String(32))
     tel_2 = Column(String(32))
     fax = Column(String(32))
-
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
     status = Column(Integer)
 
 class UserCredential(Base):
@@ -128,7 +125,7 @@ class MailMagazine(Base):
         # with the same e-mail address.
         if subscription:
             return None
-        subscription = MailSubscription(email=self.user_profile.email, user=self, segment=mailmagazine)
+        subscription = MailSubscription(email=mail_address, user=user, segment=self)
         session.add(subscription)
         return subscription
 
@@ -145,9 +142,12 @@ class MailMagazine(Base):
 
 class MailSubscription(Base):
     __tablename__ = 'MailSubscription'
+    __table_args__ = (
+        Index('email_segment_idx', 'email', 'segment_id', unique=True),
+        )
     query = session.query_property()
     id = Column(Identifier, primary_key=True)
-    email = Column(String(255), index=True, unique=True)
+    email = Column(String(255))
     user_id = Column(Identifier, ForeignKey("User.id"), nullable=True)
     user = relationship('User', uselist=False)
     segment_id = Column(Identifier, ForeignKey("MailMagazine.id"), nullable=True)

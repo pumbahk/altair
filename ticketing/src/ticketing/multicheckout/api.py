@@ -112,6 +112,10 @@ def checkout_sales_secure3d(request,
     service = get_multicheckout_service(request)
     return service.request_card_sales(order_no, params)
 
+def checkout_sales_cancel(request, order_no):
+    service = get_multicheckout_service(request)
+    return service.request_card_cancel_sales(order_no)
+
 def checkout_auth_secure_code(request, order_no, item_name, amount, tax, client_name, mail_address,
                      card_no, card_limit, card_holder_name,
                      secure_code,
@@ -226,10 +230,9 @@ class Checkout3D(object):
         logger.debug("got response %s" % etree.tostring(res))
         return self._parse_response_card_xml(res)
 
-    def request_card_cancel_sales(self, order_no, card_auth):
-        message = self._create_request_card_xml(card_auth, check=True)
+    def request_card_cancel_sales(self, order_no):
         url = self.card_cancel_sales_url(order_no)
-        res = self._request(url, message)
+        res = self._request(url)
         logger.debug("got response %s" % etree.tostring(res))
         return self._parse_response_card_xml(res)
 
@@ -241,9 +244,9 @@ class Checkout3D(object):
         return self._parse_inquiry_response_card_xml(res)
 
 
-    def _request(self, url, message):
+    def _request(self, url, message=None):
         content_type = "application/xhtml+xml;charset=UTF-8"
-        body = etree.tostring(message, encoding='utf-8')
+        body = etree.tostring(message, encoding='utf-8') if message else ''
         url_parts = urlparse.urlparse(url)
 
         if url_parts.scheme == "http":

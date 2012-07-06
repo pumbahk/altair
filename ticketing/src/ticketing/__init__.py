@@ -42,6 +42,7 @@ def main(global_config, **settings):
     config.add_route("index", "/")
 
     config.include('ticketing.core')
+    config.include('ticketing.multicheckout')
     config.include('ticketing.operators' , route_prefix='/operators')
     config.include('ticketing.login' , route_prefix='/login')
     config.include('ticketing.organizations' , route_prefix='/organizations')

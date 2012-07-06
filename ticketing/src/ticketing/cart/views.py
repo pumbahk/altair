@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import re
 import sqlalchemy as sa
 from sqlalchemy.orm import joinedload
+from sqlalchemy.sql.expression import or_
 from markupsafe import Markup
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from pyramid.response import Response
@@ -422,8 +423,8 @@ class PaymentView(object):
         #user = api.get_or_create_user(self.request, openid['clamed_id'])
         user = self.context.get_or_create_user()
 
-        payment_delivery_pair_id = self.request.params.get('payment_delivery_pair_id', 0)
-        payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter_by(id=payment_delivery_pair_id).first()
+        payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id', 0)
+        payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter_by(id=payment_delivery_method_pair_id).first()
         cart.payment_delivery_pair = payment_delivery_pair
 
         form = self.validate()
@@ -433,7 +434,7 @@ class PaymentView(object):
             self.context.event_id = cart.performance.event.id
             payment_delivery_methods = self.context.get_payment_delivery_method_pair()
             if not payment_delivery_pair:
-                logger.debug("invalid : %s" % 'payment_delivery_pair_id')
+                logger.debug("invalid : %s" % 'payment_delivery_method_pair_id')
             else:
                 logger.debug("invalid : %s" % form.errors)
             return dict(form=form,
@@ -450,7 +451,7 @@ class PaymentView(object):
 
         order = dict(
             client_name=client_name,
-            payment_delivery_pair_id=payment_delivery_pair_id,
+            payment_delivery_method_pair_id=payment_delivery_method_pair_id,
         )
         self.request.session['order'] = order
 
@@ -506,7 +507,7 @@ class ConfirmView(object):
         assert api.has_cart(self.request)
         cart = api.get_cart(self.request)
 
-        magazines = u_models.MailMagazine.query.all()
+        magazines = u_models.MailMagazine.query.outerjoin(u_models.MailSubscription).filter(u_models.MailMagazine.organization==cart.performance.event.organization).filter(or_(u_models.MailSubscription.email != cart.shipping_address.email, u_models.MailSubscription.email == None)).all()
 
         user = self.context.get_or_create_user()
         return dict(cart=cart, mailmagazines=magazines, user=user)
@@ -535,9 +536,9 @@ class CompleteView(object):
 
         order_session = self.request.session['order']
 
-        payment_delivery_pair_id = order_session['payment_delivery_pair_id']
+        payment_delivery_method_pair_id = order_session['payment_delivery_method_pair_id']
         payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter(
-            c_models.PaymentDeliveryMethodPair.id==payment_delivery_pair_id
+            c_models.PaymentDeliveryMethodPair.id==payment_delivery_method_pair_id
         ).one()
 
         payment_delivery_plugin = api.get_payment_delivery_plugin(self.request, 
@@ -561,16 +562,16 @@ class CompleteView(object):
 
         # メール購読でエラーが出てロールバックされても困る
         order_id = order.id
+        mail_address = cart.shipping_address.email
         transaction.commit()
         order = DBSession.query(order.__class__).get(order_id)
 
         # メール購読
-        self.save_subscription()
+        self.save_subscription(mail_address)
 
         return dict(order=order)
 
-    def save_subscription(self):
-        cart = api.get_cart(self.request)
+    def save_subscription(self, mail_address):
         magazines = u_models.MailMagazine.query.all()
         user = self.context.get_or_create_user()
 
@@ -578,7 +579,7 @@ class CompleteView(object):
         magazine_ids = self.request.params.getall('mailmagazine')
         logger.debug("magazines: %s" % magazine_ids)
         for subscription in u_models.MailMagazine.query.filter(u_models.MailMagazine.id.in_(magazine_ids)).all():
-            if subscription.subscribe(user, cart.shipping_address.email):
-                logger.debug("User %s starts subscribing %s for <%s>" % (user, subscription.name, cart.shipping_address.email))
+            if subscription.subscribe(user, mail_address):
+                logger.debug("User %s starts subscribing %s for <%s>" % (user, subscription.name, mail_address))
             else:
-                logger.debug("User %s is already subscribing %s for <%s>" % (user, subscription.name, cart.shipping_address.email))
+                logger.debug("User %s is already subscribing %s for <%s>" % (user, subscription.name, mail_address))

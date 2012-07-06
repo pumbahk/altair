@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-from random import randint, choice
+from random import randint, choice, sample
 from datetime import datetime, date, time
 from dateutil.relativedelta import relativedelta
 from itertools import chain
@@ -444,8 +444,8 @@ site_names = [
     ]
 
 organization_names= [
-    u'楽天チケット',
-    u'楽天野球団',
+    (u'RT', u'楽天チケット'),
+    (u'RE', u'楽天野球団'),
     ]
 
 account_pairs = [
@@ -662,6 +662,42 @@ sales_segment_kind = [
     'other'
     ]
 
+class DigitCodec(object):
+    def __init__(self, digits):
+        self.digits = digits
+
+    def encode(self, num):
+        l = len(self.digits)
+        retval = []
+        n = num
+        while True:
+            rem = n % l
+            quo = n // l
+            retval.insert(0, self.digits[rem])
+            if quo == 0:
+                break
+            n = quo
+        return ''.join(retval)
+
+    def decode(self, s):
+        i = 0
+        sl = len(s)
+        l = len(self.digits)
+        retval = 0
+        while i < sl:
+            c = s[i]
+            d = self.digits.find(c)
+            if d < 0:
+                raise ValueError("Invalid digit: " + c)
+            retval *= l
+            retval += d
+            i += 1
+        return retval
+
+encoder = DigitCodec("0123456789ACFGHJKLPRSUWXYZ")
+sensible_alnum_encode = encoder.encode
+sensible_alnum_decode = encoder.decode
+
 class Data(_Data):
     def __init__(self, schema, **fields):
         _Data.__init__(self, schema, auto('id'), **fields)
@@ -669,8 +705,14 @@ class Data(_Data):
 def random_date():
     return datetime.now().date().replace(month=1, day=1) + relativedelta(days=randint(0, 364))
 
+def some_day_between(start, end):
+    return start + relativedelta(days=randint(0, (end - start).days))
+
 def random_color():
     return u'#%x%x%x' % (randint(0, 15), randint(0, 15), randint(0, 15))
+
+def random_order_number(organization):
+    return organization.code + sensible_alnum_encode(randint(0, 10000000)).zfill(10)
 
 def build_site_datum(name):
     colgroups = ['0'] + ['ABCDEFGHIJKLMNOPQRSTUVWXYZ'[i] for i, (_, type, quantity_only) in enumerate(stock_type_triplets) if type == STOCK_TYPE_TYPE_SEAT and not quantity_only]
@@ -893,6 +935,20 @@ def build_bank_account_datum():
         account_owner=u'ラクテン タロウ'
         )
 
+def build_mail_magazine(name, organization):
+    return Data(
+        'MailMagazine',
+        name=name,
+        description=u"""<span class="mailMagazineFrequency">月曜日配信</span><span class="mailMagazineDescription">旬なエンタメ情報とエンタメに関する商品情報をお届けします！</span>""",
+        organization_id=organization
+        )
+
+def build_mail_magazines(organization):
+    return [
+        build_mail_magazine(u"%s%sメルマガZ" % (organization.name, adjective), organization)
+        for adjective in [u'わくわく', u'とくとく', u'ドキドキ']
+        ]
+
 def build_user_datum():
     return Data(
         'User',
@@ -912,9 +968,8 @@ def build_user_datum():
                 zip="251-0036",
                 prefecture=u"東京都",
                 city=u"品川区",
-                street=u"",
-                address=u"東五反田5-21-15'",
-                other_address=u"メタリオンOSビル",
+                address_1=u"東五反田5-21-15'",
+                address_2=u"メタリオンOSビル",
                 tel_1=u"03-9999-9999",
                 tel_2=u"090-0000-0000",
                 fax=u"03-9876-5432"
@@ -960,11 +1015,12 @@ def build_user_credential(user):
         auth_secret=gendigest("asdfasdf")
         )
 
-def build_organization_datum(name):
+def build_organization_datum(users, code, name):
     logger.info(u"Building Organization %s" % name)
     retval = Data(
         'Organization',
         name=name,
+        code=code,
         events=None,
         accounts=rel(
             [build_account_datum(name, type) for name, type in account_pairs],
@@ -1003,7 +1059,7 @@ def build_organization_datum(name):
         'organization_id'
         )
     event_data = [
-        build_event_datum(retval, name) \
+        build_event_datum(retval, users, name) \
         for name in event_names[0:10]
         ]
     retval.events = rel(
@@ -1064,7 +1120,7 @@ def build_stock_datum(performance, stock_type, stock_holder, quantity):
             )
         )
 
-def build_performance_datum(organization, event, name, performance_date):
+def build_performance_datum(organization, users, event, name, performance_date):
     logger.info(u"Building Performance %s" % name)
 
     retval = Data(
@@ -1127,6 +1183,29 @@ def build_performance_datum(organization, event, name, performance_date):
             ))),
         'performance_id'
         )
+    order_data = []
+    for _ in range(0, 10):
+        try:
+            order_data.append(
+                build_order_datum(
+                    organization,
+                    choice(users),
+                    choice(event.sales_segments),
+                    retval,
+                    [
+                        (product, randint(1, 3))
+                        for product in sample(event.products, randint(1, 3))
+                        ]
+                    )
+                )
+        except:
+            pass
+
+    retval.orders = rel(
+        order_data,
+        'performance_id'
+        )
+
     return retval
 
 def build_stock_type_datum(name, type, quantity_only):
@@ -1175,7 +1254,96 @@ def build_product_data(sales_segment):
         for name, product_item_seeds in stock_type_combinations.iteritems()
         ]
 
-def build_event_datum(organization, title):
+def pick_stocks(performance, product_item):
+    if product_item.stock_id.stock_type_id.type == STOCK_TYPE_TYPE_SEAT:
+        venue = performance.venue[0]
+        seats = sample([seat for seat in venue.seats if seat.status[0].status == 1], product_item.quantity)
+    else:
+        seats = []
+    return seats
+
+def build_ordered_product_datum(performance, product, quantity):
+    product_items = [
+        product_item
+        for product_item in performance.product_items
+        if product_item.product_id == product
+        ]
+    return Data(
+        'OrderedProduct',
+        product_id=product,
+        price=product.price,
+        quantity=quantity,
+        ordered_product_items=rel(
+            [
+                Data(
+                    'OrderedProductItem',
+                    product_item_id=product_item,
+                    seats=rel(
+                        pick_stocks(performance, product_item),
+                        'OrderedProductItem_id',
+                        'seat_id',
+                        'orders_seat'
+                        ),
+                    price=product_item.price
+                    )
+                for product_item in product_items
+                ],
+            'ordered_product_id'
+            )
+        )
+
+def build_order_datum(organization, user, sales_segment, performance, product_quantity_pairs):
+    ordered_products = [
+        build_ordered_product_datum(performance, product, quantity)
+        for product, quantity in product_quantity_pairs
+        ]
+
+    # check availability
+    for ordered_product in ordered_products:
+        for ordered_product_item in ordered_product.ordered_product_items:
+            product_item = ordered_product_item.product_item_id
+            available = product_item.stock_id.stock_status[0].quantity
+            needed = product_item.quantity
+            if available < needed:
+                raise Exception("Oops! (%d (%d) < %d)" % (available, product_item.stock_id.quantity, needed))
+
+    # decrement availability
+    for ordered_product in ordered_products:
+        for ordered_product_item in ordered_product.ordered_product_items:
+            product_item = ordered_product_item.product_item_id
+            product_item.stock_id.stock_status[0].quantity -= product_item.quantity
+            for seat in ordered_product_item.seats:
+                seat.status[0].status = 5 # Shipped
+
+    payment_delivery_method_pair = choice(sales_segment.payment_delivery_method_pairs)
+    total_amount = sum(
+        ordered_product.price * ordered_product.quantity
+        for ordered_product in ordered_products
+        ) \
+        + payment_delivery_method_pair.system_fee \
+        + payment_delivery_method_pair.transaction_fee \
+        + payment_delivery_method_pair.delivery_fee
+
+    paid_at = some_day_between(sales_segment.start_at, sales_segment.end_at)
+
+    return Data(
+        'Order',
+        user_id=user,
+        shipping_address_id=build_shipping_address_datum(user),
+        organization_id=organization,
+        performance_id=performance,
+        order_no=random_order_number(organization),
+        items=rel(ordered_products, 'order_id'),
+        total_amount=total_amount,
+        system_fee=payment_delivery_method_pair.system_fee,
+        transaction_fee=payment_delivery_method_pair.transaction_fee,
+        delivery_fee=payment_delivery_method_pair.delivery_fee,
+        payment_delivery_method_pair_id=payment_delivery_method_pair,
+        paid_at=paid_at,
+        delivered_at=paid_at + relativedelta(days=randint(0, 3))
+        )
+
+def build_event_datum(organization, users, title):
     logger.info(u"Building Event %s" % title)
     event_date = random_date()
     stock_type_data = [build_stock_type_datum(_name, type, quantity_only) for _name, type, quantity_only in stock_type_triplets]
@@ -1202,6 +1370,11 @@ def build_event_datum(organization, title):
             ) \
         for account in organization.accounts
         ]
+    product_data = list(chain(*(
+        build_product_data(sales_segment_datum) \
+        for sales_segment_datum in sales_segment_data
+        )))
+
     retval = Data(
         'Event',
         title=title,
@@ -1220,19 +1393,37 @@ def build_event_datum(organization, title):
             'event_id'
             ),
         products=rel(
-            list(chain(*(
-                build_product_data(sales_segment_datum) \
-                for sales_segment_datum in sales_segment_data
-                ))),
+            product_data,
             'event_id'
             )
         )
     retval.performances = rel(
         [
             build_performance_datum(
-                organization, retval, name,
+                organization, users, retval, name,
                 event_date + relativedelta(days=i)) \
-            for i, name in enumerate(performance_names)],
+            for i, name in enumerate(performance_names)
+            ],
         'event_id'
         )
     return retval
+
+def build_shipping_address_datum(user):
+    return Data(
+        'ShippingAddress',
+        user_id=user,
+        email=lambda self: "dev+test%03d@ticketstar.jp" % self._id[0],
+        first_name=lambda self: u"太郎%d" % self._id[0],
+        last_name=u"楽天",
+        first_name_kana=u"タロウ",
+        last_name_kana=u"ラクテン",
+        zip="251-0036",
+        prefecture=u"東京都",
+        city=u"品川区",
+        address_1=u"東五反田5-21-15'",
+        address_2=u"メタリオンOSビル",
+        tel_1=u"03-9999-9999",
+        tel_2=u"090-0000-0000",
+        fax=u"03-9876-5432"
+        )
+

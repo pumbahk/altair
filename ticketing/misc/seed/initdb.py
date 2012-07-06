@@ -27,9 +27,6 @@ def readsql(conn, f):
     while True:
         _chunk = f.read(4096)
 
-        sys.stderr.write(".")
-        sys.stderr.flush()
-
         chunk += (_chunk or '')
         if not chunk:
             break
@@ -70,7 +67,10 @@ def readsql(conn, f):
         sql = buf + chunk[0:e + 1]
         buf = ''
         chunk = chunk[e + 1:]
+        sys.stderr.write("\x1b[32mExecuting SQL:\x1b[0m %s...%s\r" % (sql[0:37].replace("\n", " "), sql[-21:].replace("\n", " ")))
+        sys.stderr.flush()
         conn.execute(sql) 
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('config', type=str, help='configuration file')
@@ -86,8 +86,12 @@ if args.d is not None:
         settings[k] = v
 
 sqlahelper.add_engine(sqlalchemy.engine_from_config(settings, 'sqlalchemy.'))
+sys.stderr.write("Initializing database...")
+sys.stderr.flush()
 sqlahelper.get_base().metadata.drop_all()
 sqlahelper.get_base().metadata.create_all()
+sys.stderr.write("done\n")
+sys.stderr.flush()
 
 conn = sqlahelper.get_engine().connect()
 f = open(os.path.join(os.path.dirname(getfile(currentframe())), 'ticketing.sql'))

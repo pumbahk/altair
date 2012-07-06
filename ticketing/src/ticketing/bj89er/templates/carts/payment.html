@@ -46,7 +46,12 @@
 					</td></tr>
 					</table>
                    -->
-                        <% checked_id = request.params.get('payment_delivery_pair_id') %>
+                        <p style="margin-left: 30px;">
+                        チケット代金の支払方法を指定して、「次へ進む」ボタンをクリックして下さい。<br>
+                        チケット購入時には、チケット代金のほかに支払方法により、手数料がかかる場合があります。
+                        </p>
+
+                        <% checked_id = request.params.get('payment_delivery_method_pair_id') %>
                         %for m in payment_delivery_methods:
                         <% checked = 'checked' if str(m.id) == checked_id else '' %>
                         <table cellpadding="0" cellspacing="0" class="form89ers">
@@ -57,7 +62,7 @@
                             <tbody>
                             <tr>
                                 <th colspan="2" style="text-align:left;">
-                                    <label><input type="radio" name="payment_delivery_pair_id" id="radio2" value="${m.id}" ${checked} >　${m.payment_method.name}</label>
+                                    <label><input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" ${checked} >　${m.payment_method.name}</label>
                                 </th>
                             </tr>
                             <tr>
@@ -67,6 +72,37 @@
                                     (${h.fee_type(m.payment_method.fee_type)})
                                 </td>
                             </tr>
+
+                            % if m.payment_method.payment_plugin_id == 1:
+                            <tr>
+                                <td colspan="2">
+                                    <p style="font-size: 90%;">
+                                    予約受付完了と同時に決済され、即時予約確定となります。
+                                    支払回数は≪1回払い≫のみのお取扱いとなります。
+                                    以下のクレジットカードがご利用できます。
+                                    </p>
+                                    <p>
+	                                  <img src="${request.static_url('ticketing.bj89er:static/images/kc_logo_rakuten.gif')}" height="30px" />
+	                                  <img src="${request.static_url('ticketing.bj89er:static/images/visa.gif')}" height="30px" />
+	                                  <img src="${request.static_url('ticketing.bj89er:static/images/master.gif')}" height="30px" />
+	                                  <img src="${request.static_url('ticketing.bj89er:static/images/jcb.gif')}" height="30px" />
+	                                  <img src="${request.static_url('ticketing.bj89er:static/images/amex_logo.gif')}" height="30px" />
+	                                  <img src="${request.static_url('ticketing.bj89er:static/images/s-logo_diners.jpg')}" height="30px" />
+                                    </p>
+                                </td>
+                            </tr>
+                            % elif m.payment_method.payment_plugin_id == 3:
+                            <tr>
+                                <td colspan="2">
+                                    <p>
+                                    予約有効期日までにお支払頂きます。
+                                    お支払が確認できた時点で予約確定となります。
+                                    </p>
+                                </td>
+                            </tr>
+                            % endif
+
+
                             </tbody>
                         </table>
                         %endfor

@@ -6,7 +6,7 @@ from datetime import datetime
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, Numeric, Unicode
 from sqlalchemy.orm import join, backref, column_property
 
-from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier, relationship
+from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier, relationship, DBSession
 from ticketing.core.models import Seat, Performance, Product, ProductItem
 from ticketing.users.models import User
 
@@ -23,16 +23,19 @@ class ShippingAddress(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id = Column(Identifier, primary_key=True)
     user_id = Column(Identifier, ForeignKey("User.id"))
     user = relationship('User', backref='shipping_addresses')
+    email = Column(String(255))
+    nick_name = Column(String(255))
     first_name = Column(String(255))
     last_name = Column(String(255))
     first_name_kana = Column(String(255))
     last_name_kana = Column(String(255))
+    sex = Column(Integer)
     zip = Column(String(255))
-    prefecture = Column(String(255))
-    city = Column(String(255))
-    address_1 = Column(String(255))
-    address_2 = Column(String(255))
     country = Column(String(255))
+    prefecture = Column(String(255), nullable=False, default=u'')
+    city = Column(String(255), nullable=False, default=u'')
+    address_1 = Column(String(255), nullable=False, default=u'')
+    address_2 = Column(String(255))
     tel_1 = Column(String(32))
     tel_2 = Column(String(32))
     fax = Column(String(32))
@@ -56,7 +59,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     multicheckout_approval_no = Column(Unicode(255), doc=u"マルチ決済受領番号")
 
-    payment_delivery_pair_id = Column(Identifier, ForeignKey("PaymentDeliveryMethodPair.id"))
+    payment_delivery_method_pair_id = Column(Identifier, ForeignKey("PaymentDeliveryMethodPair.id"))
     payment_delivery_pair = relationship("PaymentDeliveryMethodPair")
 
     paid_at = Column(DateTime, nullable=True)
@@ -115,13 +118,25 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         return order
 
-    def cancel(self):
+    def cancel(self, request):
+        # キャンセル済み、配送済みはキャンセルできない
+        if self.status == 'canceled' or self.status == 'delivered':
+            return False
+
         # 決済をキャンセル
         ppid = self.payment_delivery_pair.payment_method.payment_plugin_id
+        if not ppid:
+            return False
 
         if ppid == 1:  # クレジットカード決済
-            # ToDo
-            pass
+            # 売り上げキャンセル
+            from ticketing.multicheckout import api as multi_checkout_api
+
+            multi_checkout_result = multi_checkout_api.checkout_sales_cancel(request, self.order_no)
+            DBSession.add(multi_checkout_result)
+
+            self.multi_checkout_approval_no = multi_checkout_result.ApprovalNo
+
         elif ppid == 2:  # 楽天あんしん決済
             # ToDo
             pass
