@@ -44,8 +44,6 @@ class SejPayment(object):
     def request_file(self, params, retry_mode):
         request_params = create_request_params(params, self.secret_key)
         req = create_sej_request(self.url, request_params)
-        print self.url
-        print req
         try:
             res = urllib2.urlopen(req)
         except urllib2.HTTPError, e:

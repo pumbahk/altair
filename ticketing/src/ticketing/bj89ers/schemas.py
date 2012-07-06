@@ -56,7 +56,7 @@ class Schema(Form):
     sex = fields.RadioField(u"性別", validators=[v.Required()], choices=[('male', u'男性'),('female', u'女性')])
     zipcode1 = fields.TextField(u"郵便番号", validators=[v.Required(), v.Regexp(r'\d{3}')])
     zipcode2 = fields.TextField(u"郵便番号", validators=[v.Required(), v.Regexp(r'\d{4}')])
-    prefecture = fields.TextField(u"都道府県", validators=[v.Required()])
+    prefecture = fields.SelectField(u"都道府県", validators=[v.Required()], choices=[(p.name, p.name)for p in Prefecture.all()])
     city = fields.TextField(u"市区町村", validators=[v.Required()])
     address1 = fields.TextField(u"住所", validators=[v.Required()])
     address2 = fields.TextField(u"住所")

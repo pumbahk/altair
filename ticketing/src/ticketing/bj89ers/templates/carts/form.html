@@ -1,18 +1,5 @@
-
+<%namespace file="helpers.html" name="h" />
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<%def name="error(names)">
-<%
-if not hasattr(request, 'errors'):
-  return ''
-if not isinstance(names, list):
-  names = [names]
-errs = dict()
-for name in names:
-  for err in request.errors.get(name,[]):
-    errs[err] = err
-%>
-<p class="error">${", ".join(errs.values())}</p>
-</%def>
 <html lang="en">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
@@ -53,7 +40,7 @@ for name in names:
                       % for c in form.cont:
                         ${c.label}${c()}
                       % endfor
-                      ${error('cont')}
+                      ${h.error('cont')}
                     </td>
                 </tr>
                 <tr>
@@ -66,14 +53,14 @@ for name in names:
                         % endfor
                         </select>
                         <a href="#">会員種別についてはこちら</a>
-                        ${error('member_type')}
+                        ${h.error('member_type')}
                     </td>
                 </tr>
                 <tr id='t_shirts_size' style="display: none">
                   <th>Tシャツサイズ</th>
                   <td>
                     ${form.t_shirts_size}
-                    ${error('t_shirts_size')}
+                    ${h.error('t_shirts_size')}
                   </td>
                 </tr>
                 <tr>
@@ -83,7 +70,7 @@ for name in names:
                   <td>
                     姓${form.last_name(size="45")}<small>（＊全角）</small><br>
                     名${form.first_name(size="45")}<small>（＊全角）</small>
-                    ${error(['last_name','first_name'])}
+                    ${h.error(['last_name','first_name'])}
                   </td>
                 </tr>
                 <tr>
@@ -93,7 +80,7 @@ for name in names:
                   <td>
                     セイ${form.last_name_kana(size="45")}<small>（＊全角カナ）</small><br>
                     メイ${form.first_name_kana(size="45")}<small>（＊全角カナ）</small>
-                    ${error(['last_name_kana','first_name_kana'])}
+                    ${h.error(['last_name_kana','first_name_kana'])}
                   </td>
                 </tr>
                 <tr>
@@ -102,7 +89,7 @@ for name in names:
                   </th>
                   <td>
                     ${form.year}年${form.month}月${form.day}日
-                    ${error(['year','month', 'day'])}
+                    ${h.error(['year','month', 'day'])}
                   </td>
                 </tr>
                 <tr>
@@ -113,7 +100,7 @@ for name in names:
                     % for c in form.sex:
                      ${c.label}${c()}
                     % endfor
-                    ${error('sex')}
+                    ${h.error('sex')}
                   </td>
                 </tr>
                 <tr>
@@ -122,7 +109,7 @@ for name in names:
                   </th>
                   <td>
                     ${form.zipcode1(size="6", maxlength="3")}-${form.zipcode2(size="6", maxlength="4")}<span><small>（半角英数）</small></span>
-                    ${error(['zipcode1', 'zipcode2'])}
+                    ${h.error(['zipcode1', 'zipcode2'])}
                   </td>
                 </tr>
                 <tr>
@@ -132,13 +119,13 @@ for name in names:
                   <td>
                     <!-- TODO: 選択 -->
                     都道府県
-                    ${form.prefecture(size=10)}<br>
+                    ${form.prefecture()}<br>
                     市区町村
                     ${form.city(size=10)}<br>
                     町名番地 ${form.address1(size=45)}
                     <br>
                     建物名等 ${form.address2(size=45)}
-                    ${error(['prefecture', 'city', 'address1', 'address2'])}
+                    ${h.error(['prefecture', 'city', 'address1', 'address2'])}
                     </td>
                 </tr>
                 <tr>
@@ -147,7 +134,7 @@ for name in names:
                   </th>
                   <td>
                     ${form.tel1_1(size=4)}-${form.tel1_2(size=4)}-${form.tel1_3(size=4)}<span><small>（半角数字）</small></span>
-                    ${error(['tel1_1', 'tel1_2', 'tel1_3'])}
+                    ${h.error(['tel1_1', 'tel1_2', 'tel1_3'])}
                   </td>
                 </tr>
                 <tr>
@@ -156,7 +143,7 @@ for name in names:
                   </th>
                   <td>
                     ${form.tel2_1(size=4)}-${form.tel2_2(size=4)}-${form.tel2_3(size=4)}<span><small>（半角数字）</small></span>
-                    ${error(['tel2_1', 'tel2_2', 'tel2_3'])}
+                    ${h.error(['tel2_1', 'tel2_2', 'tel2_3'])}
                   </td>
                 </tr>
                 <tr>
@@ -165,7 +152,7 @@ for name in names:
                   </th>
                   <td>
                     ${form.email}
-                    ${error('email')}
+                    ${h.error('email')}
                   </td>
                 </tr>
                 <tr>
@@ -174,7 +161,7 @@ for name in names:
                   </th>
                   <td>
                    ${form.email2}
-                    ${error('email2')}
+                    ${h.error('email2')}
                   </td>
                 </tr>
                 <tr>
@@ -183,7 +170,7 @@ for name in names:
                   </th>
                   <td>
                     ${form.publicity}
-                    ${error('publicity')}
+                    ${h.error('publicity')}
                   </td>
                 </tr>
                 <tr>
@@ -192,7 +179,7 @@ for name in names:
                   </th>
                   <td>
                     ${form.nickname(size=45)}
-                    ${error('nickname')}
+                    ${h.error('nickname')}
                   </td>
                 </tr>
                 <tr>

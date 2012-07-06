@@ -13,7 +13,7 @@ from . import schemas
 from .models import DBSession
 from .api import load_user_profile
 from ticketing.cart.views import PaymentView as _PaymentView
-
+from ticketing.users.models import SexEnum
 
 logger = logging.getLogger(__name__)
 
@@ -45,35 +45,36 @@ class IndexView(object):
         return form, products
 
     def get(self):
-
         current_date = datetime.now()
         if current_date < self.context.start_at or self.context.end_at < current_date:
             return render_to_response('carts/ready.html',dict(), self.request)
 
-        #event = c_models.Event.query.filter_by(id=self.context.event_id).one()
         form,products = self._create_form()
         return dict(form=form,products=products)
 
     @property
     def ordered_items(self):
-        #number = int(self.request.params['number'])
         number = 1
+        print
         product_id = self.request.params['member_type']
         product = c_models.Product.query.filter_by(id=product_id).one()
         return [(product, number)]
 
     def post(self):
+        form,products = self._create_form()
+        if not form.validate():
+            self.request.errors = form.errors
+            return self.get()
+
         cart = self.context.order_products(self.context.performance_id, self.ordered_items)
         if cart is None:
             logger.debug('cart is None')
             return dict()
         logger.debug('cart %s' % cart)
-        form = schemas.Schema(self.request.params)
-        if not form.validate():
-            self.request.errors = form.errors
-            return self.get()
+
 
         api.set_cart(self.request, cart)
+        '''
         user = self.context.get_or_create_user()
         params = self.request.params
         profile = UserProfile(
@@ -86,7 +87,7 @@ class IndexView(object):
         profile.first_name_kana=params['first_name_kana']
         profile.last_name_kana=params['last_name_kana']
         profile.birth_day=datetime(int(params['year']), int(params['month']), int(params['day']))
-        profile.sex=params['sex']
+        profile.sex=SexEnum.Male.v if params['sex'] == 'male' else SexEnum.Female.v
         profile.zip=params['zipcode1'] + params['zipcode2']
         profile.prefecture=params['prefecture']
         profile.city=params['city']
@@ -96,7 +97,7 @@ class IndexView(object):
         profile.tel_1=params['tel1_1'] + params['tel1_2'] + params['tel1_3']
         profile.tel_2=params['tel2_1'] + params['tel2_2'] + params['tel2_3']
         profile.fax=None
-        DBSession.add(profile)
+        DBSession.add(profile)'''
         self.request.session['bj89er.user_profile'] = dict(self.request.params)
         logger.debug('OK redirect')
         return HTTPFound(location=self.request.route_url("cart.payment"))
@@ -118,12 +119,13 @@ class PaymentView(_PaymentView):
             city=params['city'],
             address_1=params['address1'],
             address_2=params['address2'],
+            email=params['email'],
             #country=params['country'],
             #country=u"日本国",
             tel_1=params['tel1_1'] + params['tel1_2'] + params['tel1_3'],
             tel_2=params['tel2_1'] + params['tel2_2'] + params['tel2_3'],
             #fax=params['fax'],
-            user=user,
+            user=None,
         )
         return shipping_address
 
