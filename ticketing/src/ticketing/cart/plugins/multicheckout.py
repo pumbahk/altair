@@ -43,7 +43,7 @@ class MultiCheckoutPlugin(object):
 
         checkout_sales_result = multicheckout_api.checkout_sales_secure3d(
             request, order_id,
-            item_name, cart.total_amount, 0, order['client_name'], order['mail_address'],
+            item_name, cart.total_amount, 0, order['client_name'], order.get('mail_address', ''),
             order['card_number'], order['exp_year'] + order['exp_month'], order['card_holder_name'],
             mvn=tran['mvn'], xid=tran['xid'], ts=tran['ts'],
             eci=tran['eci'], cavv=tran['cavv'], cavv_algorithm=tran['cavv_algorithm'],
@@ -159,7 +159,7 @@ class MultiCheckoutView(object):
 
         checkout_auth_result = multicheckout_api.checkout_auth_secure3d(
             self.request, order_id,
-            item_name, cart.total_amount, 0, order['client_name'], order['mail_address'],
+            item_name, cart.total_amount, 0, order['client_name'], order.get('mail_address', ''),
             order['card_number'], order['exp_year'] + order['exp_month'], order['card_holder_name'],
             mvn=auth_result.Mvn, xid=auth_result.Xid, ts=auth_result.Ts,
             eci=auth_result.Eci, cavv=auth_result.Cavv, cavv_algorithm=auth_result.Cavva,

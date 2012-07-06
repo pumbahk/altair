@@ -169,6 +169,16 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         return True
 
+    def delivered(self):
+        # 入金済みのみ配送済みにステータス変更できる
+        if self.status == 'paid':
+            self.delivered_at = datetime.now()
+            self.save()
+            return True
+        else:
+            return False
+
+
 class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrderedProduct'
     id = Column(Identifier, primary_key=True)

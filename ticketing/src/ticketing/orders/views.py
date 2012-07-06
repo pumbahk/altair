@@ -74,6 +74,19 @@ class Orders(BaseView):
             self.request.session.flash(u'受注(%s)をキャンセルできません' % order.order_no)
         return HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
 
+    @view_config(route_name='orders.delivered')
+    def delivered(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id)
+        if order is None:
+            return HTTPNotFound('order id %d is not found' % order_id)
+
+        if order.delivered():
+            self.request.session.flash(u'受注(%s)を配送済みにしました' % order.order_no)
+        else:
+            self.request.session.flash(u'受注(%s)を配送済みにできません' % order.order_no)
+        return HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
+
 
 from ticketing.sej.models import SejOrder, SejTicket, SejTicketTemplateFile, SejRefundEvent, SejRefundTicket
 from ticketing.sej.ticket import SejTicketDataXml

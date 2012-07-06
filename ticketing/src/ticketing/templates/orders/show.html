@@ -28,10 +28,6 @@ ${h.breadcrumbs(
         <td class="span3">${order.order_no}</td>
       </tr>
       <tr>
-        <th>受注日時</th>
-        <td>${h.safe_strftime(order.created_at)}</td>
-      </tr>
-      <tr>
         <th>ステータス</th>
         <td>
           % if order.status == 'canceled':
@@ -42,6 +38,30 @@ ${h.breadcrumbs(
           <span class="label label-warning">入金済み</span>
           % else:
           <span class="label label-inverse">未入金</span>
+          % endif
+        </td>
+      </tr>
+      <tr>
+        <th>受注日時</th>
+        <td>${h.safe_strftime(order.created_at)}</td>
+      </tr>
+      <tr>
+        <th>決済日時</th>
+        <td>
+          % if order.paid_at:
+            ${h.safe_strftime(order.paid_at)}
+          % else:
+            <span class="label label-inverse">未入金</span>
+          % endif
+        </td>
+      </tr>
+      <tr>
+        <th>配送日時</th>
+        <td>
+          % if order.delivered_at:
+            ${h.safe_strftime(order.delivered_at)}
+          % else:
+            <span class="label label-inverse">未配送</span>
           % endif
         </td>
       </tr>
@@ -93,16 +113,6 @@ ${h.breadcrumbs(
         <td class="span3">${order.payment_delivery_pair.delivery_method.name}</td>
       </tr>
       <tr>
-        <th>配送日時</th>
-        <td>
-          % if order.delivered_at:
-            ${h.safe_strftime(order.delivered_at)}
-          % else:
-            <span class="label label-inverse">未配送</span>
-          % endif
-        </td>
-      </tr>
-      <tr>
         <th>氏名</th>
         <td>${sa.last_name} ${sa.first_name} (${sa.last_name_kana} ${sa.first_name_kana})</td>
       </tr>
@@ -130,16 +140,6 @@ ${h.breadcrumbs(
       <tr>
         <th class="span2">決済方法</th>
         <td class="span3">${order.payment_delivery_pair.payment_method.name}</td>
-      </tr>
-      <tr>
-        <th>決済日時</th>
-        <td>
-          % if order.delivered_at:
-            ${h.safe_strftime(order.paid_at)}
-          % else:
-            <span class="label label-inverse">未入金</span>
-          % endif
-        </td>
       </tr>
       % if order.multicheckout_approval_no:
       <tr>

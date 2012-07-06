@@ -15,7 +15,7 @@
     <table class="table table-striped table-bordered">
       <thead>
       <tr>
-        <th style="width: 80px;">ステータス</th>
+        <th style="width: 120px;">ステータス</th>
         <th style="width: 100px;">${h.sortable(form.order_no)}</th>
         <th style="width: 120px;">${h.sortable(form.created_at)}</th>
         <th style="width: 80px;">${h.sortable(form.total_amount)}</th>
@@ -30,7 +30,9 @@
     % endif
       <tr>
         <td>
-          % if order.status == 'canceled':
+          % if order.status == 'refunded':
+          <span class="label label-important">キャンセル (返金済)</span>
+          % elif order.status == 'canceled':
           <span class="label label-important">キャンセル</span>
           % elif order.status == 'delivered':
           <span class="label label-success">配送済み</span>
