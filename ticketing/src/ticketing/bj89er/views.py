@@ -76,8 +76,8 @@ class IndexView(object):
         profile.zip=params['zipcode1'] + params['zipcode2']
         profile.prefecture=params['prefecture']
         profile.city=params['city']
-        profile.street=params['address1']
-        profile.address=params['address2']
+        profile.address_1=params['address1']
+        profile.address_2=params['address2']
         profile.other_address=None
         profile.tel_1=params['tel1_1'] + params['tel1_2'] + params['tel1_3']
         profile.tel_2=params['tel2_1'] + params['tel2_2'] + params['tel2_3']
@@ -102,8 +102,8 @@ class PaymentView(_PaymentView):
             zip=params['zipcode1'] + params['zipcode2'],
             prefecture=params['prefecture'],
             city=params['city'],
-            street=params['address1'],
-            address=params['address2'],
+            address_1=params['address1'],
+            address_2=params['address2'],
             #country=params['country'],
             #country=u"日本国",
             tel_1=params['tel1_1'] + params['tel1_2'] + params['tel1_3'],

@@ -557,14 +557,15 @@ class CompleteView(object):
         #user = api.get_or_create_user(self.request, openid['clamed_id'])
         user = self.context.get_or_create_user()
         order.user = user
+        order.organization_id = order.performance.event.organization_id
 
         notify_order_completed(self.request, order)
 
         # メール購読でエラーが出てロールバックされても困る
         order_id = order.id
         mail_address = cart.shipping_address.email
-        transaction.commit()
-        order = DBSession.query(order.__class__).get(order_id)
+        #transaction.commit()
+        #order = DBSession.query(order.__class__).get(order_id)
 
         # メール購読
         self.save_subscription(mail_address)
