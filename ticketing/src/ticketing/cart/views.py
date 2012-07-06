@@ -390,8 +390,8 @@ class PaymentView(object):
                 zip=user_profile.zip,
                 prefecture=user_profile.prefecture,
                 city=user_profile.city,
-                address_1=user_profile.street,
-                address_2=user_profile.address,
+                address_1=user_profile.address_1,
+                address_2=user_profile.address_2,
                 mail_address=user_profile.email
                 )
         else:
