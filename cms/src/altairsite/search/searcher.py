@@ -120,7 +120,7 @@ def get_pageset_query_from_deal_cond(request, query_params):
     qs = PageSet.query
     if query_params.get("deal_cond"):
        sub_qs = DBSession.query(Event.id)
-       sub_qs = events_by_deal_cond_flags(sub_qs, query_params) ## 未実装
+       sub_qs = events_by_deal_cond_flags(sub_qs, query_params)
        sub_qs = sub_qs.filter(Event.is_searchable==True)
        qs = search_by_events(qs, sub_qs)
        qs = _refine_pageset_collect_future(qs)

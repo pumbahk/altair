@@ -25,7 +25,7 @@ class PutOnlyWidget(object):
 ##
 
 class MaybeSelectField(fields.SelectField):
-    NONE_VALUE = "''''"
+    NONE_VALUE = ""
     def __init__(self, null_label=u"------", **kwargs):
         if "choices" in kwargs:
             choices = [x for x in kwargs["choices"]]
@@ -84,6 +84,12 @@ class CheckboxListField(fields.Field):
     def __init__(self, choices=None, **kwargs):
         super(CheckboxListField, self).__init__(**kwargs)
         self.choices = choices or []
+        if choices and "_prefix" in kwargs:
+            prefix = kwargs["_prefix"]
+            self.prefix = prefix
+            self.choices = [(prefix+k, v) for k, v in self.choices]
+        else:
+            self.prefix = None
 
     def _value(self):
         """
@@ -99,12 +105,17 @@ class CheckboxListField(fields.Field):
         else:
             return self.data
         
+    def _normalize(self, k):
+        if self.prefix:
+            k = k.replace(self.prefix, '')
+        return k
+
     def process(self, formdata, data=fields.core._unset_value):
         """@orverride: 
         """
         if formdata:
             candidates = dict(self.choices)
-            self._collected_candidats = [k for k in formdata if k in candidates and formdata.getlist(k)]
+            self._collected_candidats = [self._normalize(k) for k in formdata if k in candidates and formdata.getlist(k)]
         else:
             self._collected_candidats = []
         super(CheckboxListField, self).process(formdata, data=data)

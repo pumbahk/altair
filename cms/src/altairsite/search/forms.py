@@ -289,7 +289,7 @@ class DealCondPartForm(form.Form):
     deal_cond_choices=import_symbol("altaircms.seeds.saleskind:SALESKIND_CHOICES")
     DDICT = dict(deal_cond_choices)
 
-    deal_cond = CheckboxListField(choices=deal_cond_choices)
+    deal_cond = CheckboxListField(choices=deal_cond_choices, prefix="s:")
     # deal_cond = fields.RadioField(choices=deal_cond_choices, 
     #                                widget=PutOnlyWidget())
 
@@ -342,13 +342,13 @@ class AboutDealPartForm(form.Form):
 class DetailSearchQueryForm(object):
     def __init__(self, formdata=None):
         self._forms = []
-        self.query = self._append_with(QueryPartForm(formdata=formdata))
-        self.genre = self._append_with(GenrePartForm(formdata=formdata))
-        self.area = self._append_with(AreaPartForm(formdata=formdata))
-        self.performance_term = self._append_with(PerformanceTermPartForm(formdata=formdata))
-        self.deal_cond = self._append_with(DealCondPartForm(formdata=formdata))
-        self.added_service = self._append_with(AddedServicePartForm(formdata=formdata))
-        self.about_deal = self._append_with(AboutDealPartForm(formdata=formdata))
+        self.query = self._append_with(QueryPartForm(formdata=formdata, prefix="q-"))
+        self.genre = self._append_with(GenrePartForm(formdata=formdata, prefix="g-"))
+        self.area = self._append_with(AreaPartForm(formdata=formdata, prefix="a"))
+        self.performance_term = self._append_with(PerformanceTermPartForm(formdata=formdata, prefix="pt-"))
+        self.deal_cond = self._append_with(DealCondPartForm(formdata=formdata, prefix="dc-"))
+        self.added_service = self._append_with(AddedServicePartForm(formdata=formdata, prefix="as-"))
+        self.about_deal = self._append_with(AboutDealPartForm(formdata=formdata, prefix="ad-"))
 
     def _append_with(self, form):
         self._forms.append(form)
