@@ -24,21 +24,21 @@
         % if not display_only:
         <td><input type="radio" name="performance_id" value="${performance.id}" /></td>
         % endif
-        <td>${performance.open_on.strftime("%Y-%m-%d")}</td>
+        <td>${performance.open_on.strftime("%Y-%m-%d")if performance.open_on else ''}</td>
         <td><a href="${request.route_path('performances.show', performance_id=performance.id)}">${performance.name}</a></td>
         <td>${performance.venue.name if performance.venue else u'(なし)'}</td>
         <td style="white-space: nowrap; font-size: 10px; line-height: 12px">
           <div>
             <span>${form.open_on.label.text}</span>
-            <span>${performance.open_on.strftime("%H:%M")}</span>
+            <span>${performance.open_on.strftime("%H:%M") if performance.open_on else ''}</span>
           </div>
           <div>
             <span>${form.start_on.label.text}</span>
-            <span>${performance.start_on.strftime("%H:%M")}</span>
+            <span>${performance.start_on.strftime("%H:%M") if performance.start_on else ''}</span>
           </div>
           <div>
             <span>${form.end_on.label.text}</span>
-            <span style="white-space: nowrap">${performance.end_on.strftime("%H:%M")}</span>
+            <span style="white-space: nowrap">${performance.end_on.strftime("%H:%M") if performance.end_on else ''}</span>
           </div>
         </td>
       </tr>
