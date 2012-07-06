@@ -26,15 +26,7 @@ class IndexView(object):
     def __call__(self):
         return dict()
 
-    def get(self):
-
-        current_date = datetime.now()
-        if current_date < self.context.start_at or self.context.end_at < current_date:
-            return render_to_response('carts/ready.html',
-                                          {'foo':1, 'bar':2},
-                                          request=self.request)
-
-        event = c_models.Event.query.filter_by(id=self.context.event_id).one()
+    def _create_form(self):
 
         salessegment = self.context.get_sales_segument()
 
@@ -43,10 +35,24 @@ class IndexView(object):
         query = query.order_by(sa.desc("price"))
         query = h.products_filter_by_salessegment(query, salessegment)
 
+        products = dict()
+        for p in query:
+            products[str(p.id)] = p
 
-        products = [dict(name=p.name, price=h.format_number(p.price, ","), id=p.id)
-                    for p in query]
-        return dict(products=products)
+        form = schemas.Schema(self.request.params)
+        choices = [(str(p.id), u"%s (%s円)" % (p.name, h.format_number(p.price, ","))) for p in query]
+        form.member_type.choices = choices
+        return form, products
+
+    def get(self):
+
+        current_date = datetime.now()
+        if current_date < self.context.start_at or self.context.end_at < current_date:
+            return render_to_response('carts/ready.html',dict(), self.request)
+
+        #event = c_models.Event.query.filter_by(id=self.context.event_id).one()
+        form,products = self._create_form()
+        return dict(form=form,products=products)
 
     @property
     def ordered_items(self):
