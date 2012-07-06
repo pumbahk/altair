@@ -11,7 +11,7 @@ def main(global_conf, **settings):
     config = Configurator(settings=settings, session_factory=my_session_factory)
     config.set_root_factory('.resources.Bj89erCartResource')
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
-    config.add_static_view('static', 'ticketing.bj89er:static', cache_max_age=3600)
+    config.add_static_view('static', 'ticketing.bj89ers:static', cache_max_age=3600)
     config.add_route('index', '/')
     config.include('ticketing.checkout')
     config.include('ticketing.multicheckout')
