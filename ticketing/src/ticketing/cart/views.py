@@ -390,8 +390,8 @@ class PaymentView(object):
                 zip=user_profile.zip,
                 prefecture=user_profile.prefecture,
                 city=user_profile.city,
-                address_1=user_profile.street,
-                address_2=user_profile.address,
+                address_1=user_profile.address_1,
+                address_2=user_profile.address_2,
                 mail_address=user_profile.email
                 )
         else:
@@ -557,23 +557,25 @@ class CompleteView(object):
         #user = api.get_or_create_user(self.request, openid['clamed_id'])
         user = self.context.get_or_create_user()
         order.user = user
+        order.organization_id = order.performance.event.organization_id
 
         notify_order_completed(self.request, order)
 
         # メール購読でエラーが出てロールバックされても困る
         order_id = order.id
         mail_address = cart.shipping_address.email
+        user_id = self.context.get_or_create_user().id
         transaction.commit()
+        user = DBSession.query(user.__class__).get(user_id)
         order = DBSession.query(order.__class__).get(order_id)
-
+ 
         # メール購読
-        self.save_subscription(mail_address)
+        self.save_subscription(user, mail_address)
 
         return dict(order=order)
 
-    def save_subscription(self, mail_address):
+    def save_subscription(self, user, mail_address):
         magazines = u_models.MailMagazine.query.all()
-        user = self.context.get_or_create_user()
 
         # 購読
         magazine_ids = self.request.params.getall('mailmagazine')

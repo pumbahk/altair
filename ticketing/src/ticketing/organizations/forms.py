@@ -27,8 +27,8 @@ class OrganizationForm(Form):
         label = u'企業コード',
         validators=[
             Required(),
-            Regexp(u'^[a-zA-Z0-9]*$', message=u'英数字のみ入力できます'),
-            Length(min=3, max=3, message=u'3文字で入力してください'),
+            Regexp(u'^[A-Z]*$', message=u'アルファベット大文字のみ入力できます'),
+            Length(min=2, max=2, message=u'2文字で入力してください'),
         ]
     )
     client_type = SelectField(

@@ -1,16 +1,19 @@
 from datetime import datetime
+from dateutil import parser
 from ticketing.cart.resources import TicketingCartResource
 from ticketing.core.models import DBSession
 from ticketing.users.models import User, UserCredential, MemberShip, UserProfile
 from .api import load_user_profile
 
-MEMBERSHIP_NAME = '89er'
+MEMBERSHIP_NAME = '89ers'
 
 class Bj89erCartResource(TicketingCartResource):
     def __init__(self, request):
         super(Bj89erCartResource, self).__init__(request)
-        self.event_id = request.registry.settings['89er.event_id']
-        self.performance_id = request.registry.settings['89er.performance_id']
+        self.event_id = request.registry.settings['89ers.event_id']
+        self.performance_id = request.registry.settings['89ers.performance_id']
+        self.start_at = parser.parse(request.registry.settings['89ers.start_at'])
+        self.end_at = parser.parse(request.registry.settings['89ers.end_at'])
 
     def get_or_create_user(self):
         from ticketing.cart import api

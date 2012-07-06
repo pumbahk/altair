@@ -132,10 +132,10 @@ class Bj89erCartResourceTests(unittest.TestCase):
     def test_get_or_create_user(self):
         request = testing.DummyRequest()
         request._cart = testing.DummyModel(id="this-is-cart-id")
-        request.registry.settings['89er.event_id'] = '10'
-        request.registry.settings['89er.performance_id'] = '100'
+        request.registry.settings['89ers.event_id'] = '10'
+        request.registry.settings['89ers.performance_id'] = '100'
         target = self._makeOne(request)
         result = target.get_or_create_user()
 
-        self.assertEqual(result.user_credential[0].membership.name, '89er')
+        self.assertEqual(result.user_credential[0].membership.name, '89ers')
         self.assertEqual(result.user_credential[0].auth_identifier, 'this-is-cart-id')

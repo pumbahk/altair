@@ -62,9 +62,9 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     payment_delivery_method_pair_id = Column(Identifier, ForeignKey("PaymentDeliveryMethodPair.id"))
     payment_delivery_pair = relationship("PaymentDeliveryMethodPair")
 
-    paid_at = Column(DateTime, nullable=True)
-    delivered_at = Column(DateTime, nullable=True)
-    canceled_at = Column(DateTime, nullable=True)
+    paid_at = Column(DateTime, nullable=True, default=None)
+    delivered_at = Column(DateTime, nullable=True, default=None)
+    canceled_at = Column(DateTime, nullable=True, default=None)
 
     order_no = Column(String(255))
 
@@ -74,7 +74,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @property
     def status(self):
         if self.canceled_at:
-            return 'canceled'
+            return 'refunded' if self.paid_at else 'canceled'
         elif self.delivered_at:
             return 'delivered'
         elif self.paid_at:
@@ -119,44 +119,49 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return order
 
     def cancel(self, request):
-        # キャンセル済み、配送済みはキャンセルできない
-        if self.status == 'canceled' or self.status == 'delivered':
+        # キャンセル済み、売上キャンセル済み、配送済みはキャンセルできない
+        if self.status == 'canceled' or self.status == 'refunded' or self.status == 'delivered':
             return False
 
-        # 決済をキャンセル
-        ppid = self.payment_delivery_pair.payment_method.payment_plugin_id
-        if not ppid:
-            return False
+        # 入金済みなら決済をキャンセル
+        elif self.status == 'paid':
+            ppid = self.payment_delivery_pair.payment_method.payment_plugin_id
+            if not ppid:
+                return False
 
-        if ppid == 1:  # クレジットカード決済
-            # 売り上げキャンセル
-            from ticketing.multicheckout import api as multi_checkout_api
+            if ppid == 1:  # クレジットカード決済
+                # 売り上げキャンセル
+                from ticketing.multicheckout import api as multi_checkout_api
 
-            multi_checkout_result = multi_checkout_api.checkout_sales_cancel(request, self.order_no)
-            DBSession.add(multi_checkout_result)
+                multi_checkout_result = multi_checkout_api.checkout_sales_cancel(request, self.order_no)
+                DBSession.add(multi_checkout_result)
 
-            self.multi_checkout_approval_no = multi_checkout_result.ApprovalNo
+                self.multi_checkout_approval_no = multi_checkout_result.ApprovalNo
 
-        elif ppid == 2:  # 楽天あんしん決済
-            # ToDo
-            pass
-        elif ppid == 3:  # コンビニ決済 (セブンイレブン)
-            from ticketing.sej.models import SejOrder
-            from ticketing.sej.exceptions import SejServerError
-            from ticketing.sej.payment import request_cancel_order
+            elif ppid == 2:  # 楽天あんしん決済
+                # ToDo
+                pass
+            elif ppid == 3:  # コンビニ決済 (セブンイレブン)
+                from ticketing.sej.models import SejOrder
+                from ticketing.sej.exceptions import SejServerError
+                from ticketing.sej.payment import request_cancel_order
 
-            sej_order = SejOrder.query.filter_by(order_id='%(#)012d' % {'#':self.id}).first()
-            if sej_order and not sej_order.cancel_at:
-                try:
-                    request_cancel_order(
-                        sej_order.order_id,
-                        sej_order.billing_number,
-                        sej_order.exchange_number,
-                    )
-                except SejServerError, e:
-                    logger.error(u'コンビニ決済(セブンイレブン)のキャンセルに失敗しました。 %s' % e)
-                    return False
-        elif ppid == 4:  # 窓口支払
+                sej_order = SejOrder.query.filter_by(order_id='%(#)012d' % {'#':self.id}).first()
+                if sej_order and not sej_order.cancel_at:
+                    try:
+                        request_cancel_order(
+                            sej_order.order_id,
+                            sej_order.billing_number,
+                            sej_order.exchange_number,
+                        )
+                    except SejServerError, e:
+                        logger.error(u'コンビニ決済(セブンイレブン)のキャンセルに失敗しました。 %s' % e)
+                        return False
+            elif ppid == 4:  # 窓口支払
+                pass
+
+        # 未入金ならキャンセル日付をセットするのみ
+        elif self.status == 'ordered':
             pass
 
         self.canceled_at = datetime.now()

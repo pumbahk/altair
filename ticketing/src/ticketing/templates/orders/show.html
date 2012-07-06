@@ -45,6 +45,12 @@ ${h.breadcrumbs(
           % endif
         </td>
       </tr>
+      % if order.status == 'canceled':
+      <tr>
+        <th>キャンセル日時</th>
+        <td>${h.safe_strftime(order.canceled_at)}</td>
+      </tr>
+      % endif
     </table>
     <div class="pull-right">
       <%include file="/orders/_action_button.html" args="order=order" />
@@ -102,7 +108,7 @@ ${h.breadcrumbs(
       </tr>
       <tr>
         <th>住所</th>
-        <td>${sa.zip} ${sa.country} ${sa.prefecture} ${sa.city} ${sa.address_1} ${sa.address_2}</td>
+        <td>${sa.zip} ${sa.country or ''} ${sa.prefecture} ${sa.city} ${sa.address_1} ${sa.address_2}</td>
       </tr>
       <tr>
         <th>Tel</th>
@@ -113,11 +119,6 @@ ${h.breadcrumbs(
         <td>${sa.fax or ''}</td>
       </tr>
     </table>
-    <div class="pull-right">
-      <a href="${request.route_path('orders.edit_delivery', order_id=order.id)}" class="btn">
-        <i class="icon-pencil"></i> 変更
-      </a>
-    </div>
   </div>
 
   <div class="span6">
@@ -147,11 +148,6 @@ ${h.breadcrumbs(
       </tr>
       % endif
     </table>
-    <div class="pull-right">
-      <a href="${request.route_path('orders.edit_payment', order_id=order.id)}" class="btn">
-        <i class="icon-pencil"></i> 変更
-      </a>
-    </div>
   </div>
 </div>
 
@@ -217,10 +213,5 @@ ${h.breadcrumbs(
           </tr>
         </table>
     % endfor
-    <div class="pull-right">
-      <a href="${request.route_path('orders.edit_product', order_id=order.id)}" class="btn">
-        <i class="icon-pencil"></i> 変更
-      </a>
-    </div>
   </div>
 </div>

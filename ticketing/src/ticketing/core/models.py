@@ -284,7 +284,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
-    code = Column(String(12))
+    code = Column(String(12))  # Organization.code(2桁) + Event.code(3桁) + 7桁(デフォルトはstart.onのYYMMDD+ランダム1桁)
     open_on = Column(DateTime)
     start_on = Column(DateTime)
     end_on = Column(DateTime)
@@ -366,7 +366,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Event'
 
     id = Column(Identifier, primary_key=True)
-    code = Column(String(12))
+    code = Column(String(12))  # Organization.code(2桁) + 3桁英数字大文字のみ
     title = Column(String(1024))
     abbreviated_title = Column(String(1024))
 
@@ -902,7 +902,7 @@ class Organization(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "Organization"
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
-    code = Column(String(3))
+    code = Column(String(3))  # 2桁英字大文字のみ
     client_type = Column(Integer)
     city = Column(String(255))
     street = Column(String(255))
