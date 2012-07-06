@@ -8,6 +8,7 @@ import ticketing.cart.helpers as h
 import ticketing.cart.api as api
 from ticketing.users.models import UserProfile
 from pyramid.httpexceptions import HTTPFound
+from pyramid.renderers import render_to_response
 from . import schemas
 from .models import DBSession
 from .api import load_user_profile
@@ -26,6 +27,13 @@ class IndexView(object):
         return dict()
 
     def get(self):
+
+        current_date = datetime.now()
+        if current_date < self.context.start_at or self.context.end_at < current_date:
+            return render_to_response('carts/ready.html',
+                                          {'foo':1, 'bar':2},
+                                          request=self.request)
+
         event = c_models.Event.query.filter_by(id=self.context.event_id).one()
 
         salessegment = self.context.get_sales_segument()
