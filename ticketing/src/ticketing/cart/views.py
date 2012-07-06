@@ -564,17 +564,18 @@ class CompleteView(object):
         # メール購読でエラーが出てロールバックされても困る
         order_id = order.id
         mail_address = cart.shipping_address.email
-        #transaction.commit()
-        #order = DBSession.query(order.__class__).get(order_id)
-
+        user_id = self.context.get_or_create_user().id
+        transaction.commit()
+        user = DBSession.query(user.__class__).get(user_id)
+        order = DBSession.query(order.__class__).get(order_id)
+ 
         # メール購読
-        self.save_subscription(mail_address)
+        self.save_subscription(user, mail_address)
 
         return dict(order=order)
 
-    def save_subscription(self, mail_address):
+    def save_subscription(self, user, mail_address):
         magazines = u_models.MailMagazine.query.all()
-        user = self.context.get_or_create_user()
 
         # 購読
         magazine_ids = self.request.params.getall('mailmagazine')
