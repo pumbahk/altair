@@ -4,7 +4,7 @@ from random import randint, choice, sample
 from datetime import datetime, date, time
 from dateutil.relativedelta import relativedelta
 from itertools import chain
-from fixture import rel, auto, Data as _Data, DataSuite, DataWalker
+from tableau import many_to_many, one_to_many, many_to_one, auto, Datum as _Datum
 from collections import OrderedDict
 import logging
 import hashlib
@@ -698,9 +698,9 @@ encoder = DigitCodec("0123456789ACFGHJKLPRSUWXYZ")
 sensible_alnum_encode = encoder.encode
 sensible_alnum_decode = encoder.decode
 
-class Data(_Data):
+class Datum(_Datum):
     def __init__(self, schema, **fields):
-        _Data.__init__(self, schema, auto('id'), **fields)
+        _Datum.__init__(self, schema, auto('id'), **fields)
 
 def random_date():
     return datetime.now().date().replace(month=1, day=1) + relativedelta(days=randint(0, 364))
@@ -716,7 +716,7 @@ def random_order_number(organization):
 
 def build_site_datum(name):
     colgroups = ['0'] + ['ABCDEFGHIJKLMNOPQRSTUVWXYZ'[i] for i, (_, type, quantity_only) in enumerate(stock_type_triplets) if type == STOCK_TYPE_TYPE_SEAT and not quantity_only]
-    return Data(
+    return Datum(
         'Site',
         name=name,
         drawing_url=lambda self:'file:src/ticketing/static/site-data/%08d.xml' % self._id[0],
@@ -732,7 +732,7 @@ def build_site_datum(name):
 sites = [build_site_datum(name) for name in site_names]
 
 banks = [
-    Data(
+    Datum(
         'Bank',
         code=code,
         name=name
@@ -741,7 +741,7 @@ banks = [
     ]
 
 payment_method_plugin_data = [
-    Data(
+    Datum(
         'PaymentMethodPlugin',
         name=name
         ) \
@@ -749,7 +749,7 @@ payment_method_plugin_data = [
     ]
 
 delivery_method_plugin_data = [
-    Data(
+    Datum(
         'DeliveryMethodPlugin',
         name=name
         ) \
@@ -759,11 +759,11 @@ delivery_method_plugin_data = [
 operator_role_map = dict(
     (
         name,
-        Data(
+        Datum(
             'OperatorRole',
             name=name,
-            permissions=rel(
-                [Data(
+            permissions=one_to_many(
+                [Datum(
                     'Permission',
                     category_name=category_name,
                     permit=permit
@@ -779,7 +779,7 @@ operator_role_map = dict(
     )
 
 service_data = [
-    Data(
+    Datum(
         'Service',
         name=u'Altair CMS',
         key=u'fa12a58972626f0597c2faee1454e1',
@@ -789,49 +789,49 @@ service_data = [
     ]
 
 def build_payment_method_datum(organization, payment_method_plugin):
-    return Data(
+    return Datum(
         'PaymentMethod',
         name=payment_method_plugin.name,
         fee=randint(1, 4) * 100,
         fee_type=randint(0, 1),
-        organization_id=organization,
-        payment_plugin_id=payment_method_plugin
+        organization=many_to_one(organization, 'organization_id'),
+        payment_plugin=many_to_one(payment_method_plugin, 'payment_plugin_id')
         )
 
 def build_delivery_method_datum(organization, delivery_method_plugin):
-    return Data(
+    return Datum(
         'DeliveryMethod',
         name=delivery_method_plugin.name,
         fee=randint(1, 4) * 100,
         fee_type=randint(0, 1),
-        organization_id=organization,
-        delivery_plugin_id=delivery_method_plugin
+        organization=many_to_one(organization, 'organization_id'),
+        delivery_plugin=many_to_one(delivery_method_plugin, 'delivery_plugin_id')
         )
 
 def build_account_datum(name, type):
-    return Data(
+    return Datum(
         'Account',
         name=name,
         account_type=type,
-        user_id=build_user_datum()
+        user=many_to_one(build_user_datum(), 'user_id')
         )
 
 def build_seat_datum(group_l0_id, l0_id, stock):
-    return Data(
+    return Datum(
         'Seat',
         l0_id=l0_id,
-        stock_id=stock,
-        stock_type_id=stock.stock_type_id,
+        stock=many_to_one(stock, 'stock_id'),
+        stock_type=many_to_one(stock.stock_type, 'stock_type_id'),
         venue_id=None,
         group_l0_id=group_l0_id,
-        venue_areas=rel(
+        venue_areas=many_to_many(
             [],
             ('venue_id', 'group_l0_id'),
             'venue_area_id',
             'VenueArea_group_l0_id'
             ),
-        status=rel(
-            [_Data(
+        status=one_to_many(
+            [_Datum(
                 'SeatStatus',
                 'seat_id',
                 status=1
@@ -841,11 +841,11 @@ def build_seat_datum(group_l0_id, l0_id, stock):
         )
 
 def build_venue_area_datum(venue, colgroup):
-    return Data(
+    return Datum(
         'VenueArea',
         name=colgroup[0],
-        groups=rel(
-            [_Data(
+        groups=one_to_many(
+            [_Datum(
                 'VenueArea_group_l0_id',
                 (),
                 venue_id=venue,
@@ -865,19 +865,19 @@ def build_adjacency_set_datum(l0_id_to_seat, config, n):
                 for l0_id in seat_ids[row_num:row_num + seats_per_row]
                 ]
             for i in range(0, seats_per_row - n + 1):
-                adjacency_data.append(Data(
+                adjacency_data.append(Datum(
                     'SeatAdjacency',
-                    seats=rel(
+                    seats=many_to_many(
                         seats_in_row[i:i+n],
                         'seat_adjacency_id',
                         'seat_id',
                         'Seat_SeatAdjacency',
                         )
                     ))
-    return Data(
+    return Datum(
         'SeatAdjacencySet',
         seat_count=n,
-        adjacencies=rel(
+        adjacencies=one_to_many(
             adjacency_data,
             'adjacency_set_id'
             )
@@ -903,44 +903,45 @@ def build_venue_datum(organization, site, stock_sets):
         for n in range(2, config['seats_per_row'])
         ]
 
-    retval = Data(
+    retval = Datum(
         'Venue',
         name=site.name,
-        seats=rel(
+        seats=one_to_many(
             seats,
             'venue_id'
             ),
-        site_id=site,
-        organization_id=organization,
-        adjacency_sets=rel(
+        site=many_to_one(site, 'site_id'),
+        organization=many_to_one(organization, 'organization_id'),
+        adjacency_sets=one_to_many(
             adjacency_set_data,
             'venue_id'
             )
         )
-    retval.areas = rel(
+    retval.areas = many_to_many(
         [
             build_venue_area_datum(retval, config['colgroups'][i]) \
             for i, _ in stock_sets
             ],
-            ()
+        'venue_id',
+        'venue_area_id'
         )
     return retval
 
 def build_bank_account_datum():
-    return Data(
+    return Datum(
         'BankAccount',
-        bank_id=choice(banks),
+        bank=many_to_one(choice(banks), 'bank_id'),
         account_type=1,
         account_number=u''.join(choice(u'0123456789') for _ in range(0, 7)),
         account_owner=u'ラクテン タロウ'
         )
 
 def build_mail_magazine(name, organization):
-    return Data(
+    return Datum(
         'MailMagazine',
         name=name,
         description=u"""<span class="mailMagazineFrequency">月曜日配信</span><span class="mailMagazineDescription">旬なエンタメ情報とエンタメに関する商品情報をお届けします！</span>""",
-        organization_id=organization
+        organization=many_to_one(organization, 'organization_id'),
         )
 
 def build_mail_magazines(organization):
@@ -950,11 +951,11 @@ def build_mail_magazines(organization):
         ]
 
 def build_user_datum():
-    return Data(
+    return Datum(
         'User',
-        bank_account_id=build_bank_account_datum(),
-        user_profile=rel(
-            [_Data(
+        bank_account=many_to_one(build_bank_account_datum(), 'bank_account_id'),
+        user_profile=one_to_many(
+            [_Datum(
                 'UserProfile',
                 'user_id',
                 email=lambda self: "dev+test%03d@ticketstar.jp" % self._id[0],
@@ -979,11 +980,11 @@ def build_user_datum():
         )
 
 def build_operator_datum(name, operator_roles):
-    return Data(
+    return Datum(
         'Operator',
         name=name,
         email=lambda self: 'dev+test%03d@ticketstar.jp' % self._id[0],
-        roles=rel(
+        roles=many_to_many(
             operator_roles,
             'operator_id',
             'operator_role_id',
@@ -991,8 +992,8 @@ def build_operator_datum(name, operator_roles):
             ),
         expire_at=None,
         status=1,
-        auth=rel([
-            _Data(
+        auth=one_to_many([
+            _Datum(
                 'OperatorAuth',
                 'operator_id',
                 login_id=lambda self: u'dev+test%03d@ticketstar.jp' % self._id[0] if self._id[0] > 1 else u'admin',
@@ -1009,7 +1010,7 @@ def gendigest(password):
     return hashlib.sha1(SALT + password).hexdigest()
 
 def build_user_credential(user):
-    return Data(
+    return Datum(
         'UserCredential',
         auth_identifier=user.email,
         auth_secret=gendigest("asdfasdf")
@@ -1017,16 +1018,16 @@ def build_user_credential(user):
 
 def build_organization_datum(users, code, name):
     logger.info(u"Building Organization %s" % name)
-    retval = Data(
+    retval = Datum(
         'Organization',
         name=name,
         code=code,
         events=None,
-        accounts=rel(
+        accounts=one_to_many(
             [build_account_datum(name, type) for name, type in account_pairs],
             'organization_id'
             ),
-        operators=rel(
+        operators=one_to_many(
             [
                 build_operator_datum(
                     operator_name,
@@ -1050,11 +1051,11 @@ def build_organization_datum(users, code, name):
             delivery_method_plugin_datum) \
         for delivery_method_plugin_datum in delivery_method_plugin_data
         ]
-    retval.payment_methods = rel(
+    retval.payment_methods = one_to_many(
         payment_method_data,
         'organization_id'
         )
-    retval.delivery_methods = rel(
+    retval.delivery_methods = one_to_many(
         delivery_method_data,
         'organization_id'
         )
@@ -1062,7 +1063,7 @@ def build_organization_datum(users, code, name):
         build_event_datum(retval, users, name) \
         for name in event_names[0:10]
         ]
-    retval.events = rel(
+    retval.events = one_to_many(
         event_data,
         'organization_id'
         )
@@ -1071,15 +1072,15 @@ def build_organization_datum(users, code, name):
 def build_sales_segment_datum(organization, name, start_at, end_at):
     dayrange = min((end_at - start_at).days, 7)
     payment_delivery_method_pairs = [
-        Data(
+        Datum(
             'PaymentDeliveryMethodPair',
             system_fee=randint(1, 2) * 100,
             transaction_fee=randint(1, 4) * 100,
             delivery_fee=randint(1, 4) * 100,
             discount=randint(0, 40) * 10,
             discount_unit=randint(0, 1),
-            payment_method_id=organization.payment_methods[payment_method_index],
-            delivery_method_id=organization.delivery_methods[delivery_method_index],
+            payment_method=many_to_one(organization.payment_methods[payment_method_index], 'payment_method_id'),
+            delivery_method=many_to_one(organization.delivery_methods[delivery_method_index], 'delivery_method_id'),
             payment_period_days=randint(2, 4),
             issuing_interval_days=dayrange,
             issuing_start_at=start_at + relativedelta(days=randint(0, dayrange)),
@@ -1089,7 +1090,7 @@ def build_sales_segment_datum(organization, name, start_at, end_at):
         for delivery_method_index, enabled in enumerate(row) if enabled
         ]
 
-    return Data(
+    return Datum(
         'SalesSegment',
         name=name,
         start_at=start_at,
@@ -1097,21 +1098,21 @@ def build_sales_segment_datum(organization, name, start_at, end_at):
         upper_limit=randint(1, 10),
         seat_choice=randint(0, 1) != 0,
         kind=sales_segment_kind[randint(0, 7)],
-        payment_delivery_method_pairs=rel(
+        payment_delivery_method_pairs=one_to_many(
             payment_delivery_method_pairs,
             'sales_segment_id'
             )
         )
 
 def build_stock_datum(performance, stock_type, stock_holder, quantity):
-    return Data(
+    return Datum(
         'Stock',
-        performance_id=performance,
-        stock_type_id=stock_type,
+        performance=many_to_one(performance, 'performance_id'),
+        stock_type=many_to_one(stock_type, 'stock_type_id'),
         quantity=quantity,
-        stock_holder_id=stock_holder,
-        stock_status=rel(
-            [_Data(
+        stock_holder=many_to_one(stock_holder, 'stock_holder_id'),
+        stock_status=one_to_many(
+            [_Datum(
                 'StockStatus',
                 'stock_id',
                 quantity=quantity,
@@ -1123,7 +1124,7 @@ def build_stock_datum(performance, stock_type, stock_holder, quantity):
 def build_performance_datum(organization, users, event, name, performance_date):
     logger.info(u"Building Performance %s" % name)
 
-    retval = Data(
+    retval = Datum(
         'Performance',
         name=name,
         open_on=datetime.combine(performance_date, time(18, 0, 0)),
@@ -1148,12 +1149,12 @@ def build_performance_datum(organization, users, event, name, performance_date):
             colgroup_index += 1
         else:
             quantity = randint(10, 100) * 10
-        stock_allocation_datum = _Data(
+        stock_allocation_datum = _Datum(
             'StockAllocation',
             ('stock_type_id', 'performance_id'),
-            stock_type_id=stock_type,
-            performance_id=retval,
-            quantity=quantity,
+            stock_type=many_to_one(stock_type, 'stock_type_id'),
+            performance=many_to_one(retval, 'performance_id'),
+            quantity=quantity
             )
         stock_allocation_data.append(stock_allocation_datum)
         rest = quantity
@@ -1164,19 +1165,19 @@ def build_performance_datum(organization, users, event, name, performance_date):
             stock_set.append(stock_datum)
             rest -= assigned
     
-    retval.venue=rel(
+    retval.venue = one_to_many(
         [build_venue_datum(organization, site, stock_sets)],
         'performance_id'
         )
-    retval.stock_allocations=rel(
+    retval.stock_allocations = one_to_many(
         stock_allocation_data,
         'performance_id'
         )
-    retval.stocks=rel(
+    retval.stocks = one_to_many(
         stock_data,
         'performance_id'
         )
-    retval.product_items = rel(
+    retval.product_items = one_to_many(
         list(chain(*(
             build_product_item_data(retval, product, stock_data) \
             for product in event.products
@@ -1201,7 +1202,7 @@ def build_performance_datum(organization, users, event, name, performance_date):
         except:
             pass
 
-    retval.orders = rel(
+    retval.orders = one_to_many(
         order_data,
         'performance_id'
         )
@@ -1209,7 +1210,7 @@ def build_performance_datum(organization, users, event, name, performance_date):
     return retval
 
 def build_stock_type_datum(name, type, quantity_only):
-    return Data(
+    return Datum(
         'StockType',
         name=name,
         type=type,
@@ -1218,20 +1219,20 @@ def build_stock_type_datum(name, type, quantity_only):
         )
 
 def build_product_item(performance, product, stock, price, quantity):
-    return Data(
+    return Datum(
         'ProductItem',
         item_type=1,
         price=price,
-        stock_id=stock,
-        product_id=product,
-        performance_id=performance,
+        stock=many_to_one(stock, 'stock_id'),
+        product=many_to_one(product, 'product_id'),
+        performance=many_to_one(performance, 'performance_id'),
         quantity=quantity
         )
 
 def build_product_item_data(performance, product, stocks):
     def find_stock(stock_type_name):
         for stock in stocks:
-            if stock.stock_type_id.name == stock_type_name:
+            if stock.stock_type.name == stock_type_name:
                 return stock
         raise Exception("No such stock that corresponds to %s" % stock_type_name)
 
@@ -1245,17 +1246,17 @@ def build_product_item_data(performance, product, stocks):
 
 def build_product_data(sales_segment):
     return [
-        Data(
+        Datum(
             'Product',
             name=name,
             price=sum(price for stock_type_name, price in product_item_seeds),
-            sales_segment_id=sales_segment,
+            sales_segment=many_to_one(sales_segment, 'sales_segment_id')
             ) \
         for name, product_item_seeds in stock_type_combinations.iteritems()
         ]
 
 def pick_stocks(performance, product_item):
-    if product_item.stock_id.stock_type_id.type == STOCK_TYPE_TYPE_SEAT:
+    if product_item.stock.stock_type.type == STOCK_TYPE_TYPE_SEAT:
         venue = performance.venue[0]
         seats = sample([seat for seat in venue.seats if seat.status[0].status == 1], product_item.quantity)
     else:
@@ -1266,19 +1267,19 @@ def build_ordered_product_datum(performance, product, quantity):
     product_items = [
         product_item
         for product_item in performance.product_items
-        if product_item.product_id == product
+        if product_item.product == product
         ]
-    return Data(
+    return Datum(
         'OrderedProduct',
-        product_id=product,
+        product=many_to_one(product, 'product_id'),
         price=product.price,
         quantity=quantity,
-        ordered_product_items=rel(
+        ordered_product_items=one_to_many(
             [
-                Data(
+                Datum(
                     'OrderedProductItem',
-                    product_item_id=product_item,
-                    seats=rel(
+                    product_item=many_to_one(product_item, 'product_item_id'),
+                    seats=many_to_many(
                         pick_stocks(performance, product_item),
                         'OrderedProductItem_id',
                         'seat_id',
@@ -1301,17 +1302,17 @@ def build_order_datum(organization, user, sales_segment, performance, product_qu
     # check availability
     for ordered_product in ordered_products:
         for ordered_product_item in ordered_product.ordered_product_items:
-            product_item = ordered_product_item.product_item_id
-            available = product_item.stock_id.stock_status[0].quantity
+            product_item = ordered_product_item.product_item
+            available = product_item.stock.stock_status[0].quantity
             needed = product_item.quantity
             if available < needed:
-                raise Exception("Oops! (%d (%d) < %d)" % (available, product_item.stock_id.quantity, needed))
+                raise Exception("Oops! (%d (%d) < %d)" % (available, product_item.stock.quantity, needed))
 
     # decrement availability
     for ordered_product in ordered_products:
         for ordered_product_item in ordered_product.ordered_product_items:
-            product_item = ordered_product_item.product_item_id
-            product_item.stock_id.stock_status[0].quantity -= product_item.quantity
+            product_item = ordered_product_item.product_item
+            product_item.stock.stock_status[0].quantity -= product_item.quantity
             for seat in ordered_product_item.seats:
                 seat.status[0].status = 5 # Shipped
 
@@ -1326,19 +1327,19 @@ def build_order_datum(organization, user, sales_segment, performance, product_qu
 
     paid_at = some_day_between(sales_segment.start_at, sales_segment.end_at)
 
-    return Data(
+    return Datum(
         'Order',
-        user_id=user,
-        shipping_address_id=build_shipping_address_datum(user),
-        organization_id=organization,
-        performance_id=performance,
+        user=many_to_one(user, 'user_id'),
+        shipping_address=many_to_one(build_shipping_address_datum(user), 'shipping_address_id'),
+        organization=many_to_one(organization, 'organization_id'),
+        performance=many_to_one(performance, 'performance_id'),
         order_no=random_order_number(organization),
-        items=rel(ordered_products, 'order_id'),
+        items=one_to_many(ordered_products, 'order_id'),
         total_amount=total_amount,
         system_fee=payment_delivery_method_pair.system_fee,
         transaction_fee=payment_delivery_method_pair.transaction_fee,
         delivery_fee=payment_delivery_method_pair.delivery_fee,
-        payment_delivery_method_pair_id=payment_delivery_method_pair,
+        payment_delivery_method_pair=many_to_one(payment_delivery_method_pair, 'payment_delivery_method_pair_id'),
         paid_at=paid_at,
         delivered_at=paid_at + relativedelta(days=randint(0, 3))
         )
@@ -1362,10 +1363,10 @@ def build_event_datum(organization, users, title):
             )
         ]
     stock_holder_data = [
-        Data(
+        Datum(
             'StockHolder',
             name=account.name,
-            account_id=account,
+            account=many_to_one(account, 'account_id'),
             style=json.dumps(dict(text=account.name[0]), ensure_ascii=False)
             ) \
         for account in organization.accounts
@@ -1375,29 +1376,29 @@ def build_event_datum(organization, users, title):
         for sales_segment_datum in sales_segment_data
         )))
 
-    retval = Data(
+    retval = Datum(
         'Event',
         title=title,
-        organization_id=organization,
-        stock_types=rel(
+        organization=many_to_one(organization, 'organization_id'),
+        stock_types=one_to_many(
             stock_type_data,
             'event_id'
             ),
-        account_id=choice(organization.accounts),
-        sales_segments=rel(
+        account=many_to_one(choice(organization.accounts), 'account_id'),
+        sales_segments=one_to_many(
             sales_segment_data,
             'event_id'
             ),
-        stock_holders=rel(
+        stock_holders=one_to_many(
             stock_holder_data,
             'event_id'
             ),
-        products=rel(
+        products=one_to_many(
             product_data,
             'event_id'
             )
         )
-    retval.performances = rel(
+    retval.performances = one_to_many(
         [
             build_performance_datum(
                 organization, users, retval, name,
@@ -1409,9 +1410,9 @@ def build_event_datum(organization, users, title):
     return retval
 
 def build_shipping_address_datum(user):
-    return Data(
+    return Datum(
         'ShippingAddress',
-        user_id=user,
+        user=many_to_one(user, 'user_id'),
         email=lambda self: "dev+test%03d@ticketstar.jp" % self._id[0],
         first_name=lambda self: u"太郎%d" % self._id[0],
         last_name=u"楽天",

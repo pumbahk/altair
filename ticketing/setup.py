@@ -53,6 +53,7 @@ requires = [
     'repoze.who',
     'beaker',
     'mock',
+    'tableau',
     ]
 
 setup(name='ticketing',
@@ -77,6 +78,7 @@ setup(name='ticketing',
       dependency_links = [
         'file:../commons#egg=altair-commons-0.0',
         'file:../bundle/js.underscore#egg=js.underscore-1.3.3',
+        'https://github.com/moriyoshi/tableau/tarball/master#egg=tableau-0.0.1',
       ],
       tests_require=requires,
       test_suite="ticketing",

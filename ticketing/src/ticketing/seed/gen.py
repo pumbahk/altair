@@ -2,16 +2,17 @@ import os
 import sys
 from locale import getpreferredencoding
 from fixtures import sites, organization_names, build_organization_datum, build_user_datum, build_mail_magazines, build_user_datum, service_data
-from fixture import DataSuite, DataWalker, ReferenceGraph, SQLSerializer
+from tableau import DataSuite, DataWalker
+from tableau.sql import SQLGenerator
 from svggen import SVGGenerator, NESW
 from lxml.etree import tostring
 import logging
+from cProfile import run
 
 def main(argv):
     logging.basicConfig(level=getattr(logging, os.environ.get('LOGLEVEL', 'INFO'), logging.INFO), stream=sys.stderr)
     suite = DataSuite()
-    digraph = ReferenceGraph()
-    walker = DataWalker(suite, digraph)
+    walker = DataWalker(suite)
 
     user_data = [build_user_datum() for _ in range(100)]
     for organization_datum in [build_organization_datum(user_data, code, name) for code, name in organization_names]:
@@ -41,7 +42,7 @@ def main(argv):
                 pretty_print=True)
             )
 
-    SQLSerializer(sys.stdout, encoding=getpreferredencoding())(suite, digraph)
+    SQLGenerator(sys.stdout, encoding=getpreferredencoding())(suite)
 
 if __name__ == '__main__':
     main(sys.argv)

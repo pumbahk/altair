@@ -14,7 +14,6 @@ Setup
   $ source env/bin/activate
   $ cd altair/ticketing/src
   $ python setup.py develop
-  $ python seed_import.py
   $ ../../../env/bin/paster serve development.ini --reload
 
 Generating seed data
@@ -22,13 +21,11 @@ Generating seed data
 
 次のスクリプトでシードデータを生成::
 
-  $ cd misc/seed
-  $ python main.py > ticketing.sql
+  $ python src/ticketing/seed/gen.py > ticketing.sql
 
 DB再生成とシードデータのインポート::
 
-  # on misc/seed
-  $ python initdb.py ../../development.ini
+  $ python initdb.py development.ini ticketing.sql
 
 
 Cart test how-to

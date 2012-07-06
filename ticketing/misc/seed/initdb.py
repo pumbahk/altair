@@ -74,6 +74,7 @@ def readsql(conn, f):
 
 parser = argparse.ArgumentParser()
 parser.add_argument('config', type=str, help='configuration file')
+parser.add_argument('sql', type=str, help='SQL file')
 parser.add_argument('-d', nargs=1, type=str, metavar='param=value', action='append', help='extra settings')
 
 args = parser.parse_args()
@@ -94,5 +95,4 @@ sys.stderr.write("done\n")
 sys.stderr.flush()
 
 conn = sqlahelper.get_engine().connect()
-f = open(os.path.join(os.path.dirname(getfile(currentframe())), 'ticketing.sql'))
-readsql(conn, f)
+readsql(conn, open(args.sql))
