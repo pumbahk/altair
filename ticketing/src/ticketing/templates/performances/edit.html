@@ -19,7 +19,11 @@
     $('#end_on').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
     $('#open_on').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
     $('#open_on').focusout(function(){
-      $('#code').val('${event.code}' + $(this).val().replace(/([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2})/g, '$2$3$4'));
+      $('#code').val(
+          '${event.code}'
+          + $(this).val().replace(/([0-9]{2})([0-9]{2})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2})/g, '$2$3$4')
+          + Math.floor(Math.random()*10)
+      );
     });
   });
 </script>
