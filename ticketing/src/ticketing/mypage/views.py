@@ -5,7 +5,7 @@ from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from ticketing.orders.models import Order, OrderedProduct, OrderedProductItem
 from ticketing.cart.rakuten_auth.api import authenticated_user, forget
-from ticketing.cart import helpers as h
+from ticketing.cart import api
 from .helpers import make_order_data
 
 import webhelpers.paginate as paginate
@@ -25,7 +25,7 @@ class MyPageView(object):
     def index(self):
 
         openid = authenticated_user(self.request)
-        user = h.get_or_create_user(self.request, openid['clamed_id'])
+        user = api.get_or_create_user(self.request, openid['clamed_id'])
 
         q = self.request.POST.get('q')
         sort = self.request.GET.get('sort', 'Order.id')
@@ -75,7 +75,7 @@ class MyPageView(object):
     def order(self):
 
         openid = authenticated_user(self.request)
-        user = h.get_or_create_user(self.request, openid['clamed_id'])
+        user = api.get_or_create_user(self.request, openid['clamed_id'])
         order_id = int(self.request.matchdict.get('order_id', 0))
 
         from sqlalchemy.orm.exc import NoResultFound
