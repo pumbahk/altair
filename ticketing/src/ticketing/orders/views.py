@@ -74,39 +74,6 @@ class Orders(BaseView):
             self.request.session.flash(u'受注(%s)をキャンセルできません' % order.order_no)
         return HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
 
-    @view_config(route_name='orders.edit_payment', renderer='ticketing:templates/orders/edit_payment.html')
-    def edit_payment(self):
-        order_id = int(self.request.matchdict.get('order_id', 0))
-        order = Order.get(order_id)
-        if order is None:
-            return HTTPNotFound('order id %d is not found' % order_id)
-
-        return {
-            'order':order,
-        }
-
-    @view_config(route_name='orders.edit_delivery', renderer='ticketing:templates/orders/edit_delivery.html')
-    def edit_delivery(self):
-        order_id = int(self.request.matchdict.get('order_id', 0))
-        order = Order.get(order_id)
-        if order is None:
-            return HTTPNotFound('order id %d is not found' % order_id)
-
-        return {
-            'order':order,
-        }
-
-    @view_config(route_name='orders.edit_product', renderer='ticketing:templates/orders/edit_product.html')
-    def edit_product(self):
-        order_id = int(self.request.matchdict.get('order_id', 0))
-        order = Order.get(order_id)
-        if order is None:
-            return HTTPNotFound('order id %d is not found' % order_id)
-
-        return {
-            'order':order,
-        }
-
 
 from ticketing.sej.models import SejOrder, SejTicket, SejTicketTemplateFile, SejRefundEvent, SejRefundTicket
 from ticketing.sej.ticket import SejTicketDataXml
