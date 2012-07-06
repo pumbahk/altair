@@ -4,7 +4,7 @@ from ticketing.core.models import DBSession
 from ticketing.users.models import User, UserCredential, MemberShip, UserProfile
 from .api import load_user_profile
 
-MEMBERSHIP_NAME = '89er'
+MEMBERSHIP_NAME = '89ers'
 
 class Bj89erCartResource(TicketingCartResource):
     def __init__(self, request):
