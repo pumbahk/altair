@@ -29,7 +29,7 @@ def main(argv):
         walker(service_datum)
 
     for site in builder.site_data:
-        suite[site._schema].add(site)
+        suite[site._tableau_schema].add(site)
         open('%08d.xml' % site.id, 'w').write(
             tostring(
                 SVGGenerator(

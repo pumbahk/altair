@@ -32,7 +32,7 @@ class Site(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 class VenueArea_group_l0_id(Base):
     __tablename__   = "VenueArea_group_l0_id"
     venue_id = Column(Identifier, ForeignKey('Venue.id'), primary_key=True, nullable=False)
-    group_l0_id = Column(String(255), primary_key=True, nullable=False)
+    group_l0_id = Column(String(255), ForeignKey('Seat.group_l0_id', onupdate=None, ondelete=None), primary_key=True, nullable=True)
     venue_area_id = Column(Identifier, ForeignKey('VenueArea.id'), index=True, primary_key=True, nullable=False)
     venue = relationship('Venue')
 
@@ -57,6 +57,7 @@ class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     site = relationship("Site", uselist=False)
     areas = relationship("VenueArea", backref='venues', secondary=VenueArea_group_l0_id.__table__)
     organization = relationship("Organization", backref='venues')
+    seat_index_types = relationship("SeatIndexType", backref='venue')
 
     @staticmethod
     def create_from_template(template, performance_id):
@@ -90,7 +91,7 @@ class VenueArea(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__   = "VenueArea"
     id              = Column(Identifier, primary_key=True)
     name            = Column(String(255), nullable=False)
-    groups          = relationship('VenueArea_group_l0_id')
+    groups          = relationship('VenueArea_group_l0_id', backref='area')
 
     @staticmethod
     def create_from_template(template, venue_id):
@@ -151,9 +152,9 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                                    secondaryjoin=VenueArea_group_l0_id.venue_area_id==VenueArea.id,
                                    backref="seats")
     adjacencies     = relationship("SeatAdjacency", secondary=seat_seat_adjacency_table, backref="seats")
-    _status = relationship('SeatStatus', uselist=False, backref='seat') # 1:1
+    status_ = relationship('SeatStatus', uselist=False, backref='seat') # 1:1
 
-    status = association_proxy('_status', 'status')
+    status = association_proxy('status_', 'status')
 
     def __setitem__(self, name, value):
         session.add(self)
@@ -165,6 +166,9 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if attr is None:
             raise KeyError(name)
         return attr.value
+
+    def get_index(self, index_type_id):
+        return session.query(SeatIndex).filter_by(seat=self, index_type_id=index_type_id)
 
     @staticmethod
     def create_from_template(template, venue_id):
@@ -272,7 +276,7 @@ class Account(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     user = relationship('User')
 
     organization_id = Column(Identifier, ForeignKey("Organization.id"), nullable=True)
-    organization = relationship('Organization', uselist=False)
+    organization = relationship('Organization', uselist=False, backref='accounts')
     stock_holders = relationship('StockHolder', backref='account')
 
     @staticmethod
@@ -894,6 +898,19 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                           .filter(StockType.type==StockTypeEnum.Seat.v)\
                           .with_entities(StockType.name).first()
         return name if name else ''
+
+class SeatIndexType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__  = "SeatIndexType"
+    id             = Column(Identifier, primary_key=True)
+    venue_id       = Column(Identifier, ForeignKey('Venue.id'))
+    name           = Column(String(255), nullable=False)
+    seat_indexes   = relationship('SeatIndex', backref='seat_index_type')
+
+class SeatIndex(Base, BaseModel):
+    __tablename__      = "SeatIndex"
+    seat_index_type_id = Column(Identifier, ForeignKey('SeatIndexType.id'), primary_key=True)
+    seat_id            = Column(Identifier, ForeignKey('Seat.id'), primary_key=True)
+    index              = Column(Integer, nullable=False)
 
 class OrganizationTypeEnum(StandardEnum):
     Standard = 1

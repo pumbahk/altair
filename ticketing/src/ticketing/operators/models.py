@@ -82,7 +82,7 @@ class Operator(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     expire_at = Column(DateTime, nullable=True)
     status = Column(Integer, default=1)
 
-    organization = relationship('Organization',uselist=False)
+    organization = relationship('Organization', uselist=False, backref='operators')
     roles = relationship('OperatorRole',
         secondary=operator_role_association_table)
     auth = relationship('OperatorAuth', uselist=False, backref='operator')

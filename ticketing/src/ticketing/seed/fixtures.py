@@ -1,10 +1,10 @@
 # encoding: utf-8
 
-from random import randint, choice, sample
+from random import randint, choice, sample, shuffle
 from datetime import datetime, date, time
 from dateutil.relativedelta import relativedelta
 from itertools import chain
-from tableau import many_to_many, one_to_many, many_to_one, auto, Datum as _Datum
+from tableau import many_to_many, one_to_many, many_to_one, auto, Datum
 from collections import OrderedDict
 import logging
 import hashlib
@@ -57,9 +57,10 @@ encoder = DigitCodec("0123456789ACFGHJKLPRSUWXYZ")
 sensible_alnum_encode = encoder.encode
 sensible_alnum_decode = encoder.decode
 
-class Datum(_Datum):
-    def __init__(self, schema, **fields):
-        _Datum.__init__(self, schema, auto('id'), **fields)
+def permute(iterable):
+    retval = list(iterable)
+    shuffle(retval)
+    return retval
 
 def random_date():
     return datetime.now().date().replace(month=1, day=1) + relativedelta(days=randint(0, 364))
@@ -74,11 +75,13 @@ def random_order_number(organization):
     return organization.code + sensible_alnum_encode(randint(0, 10000000)).zfill(10)
 
 class FixtureBuilder(object):
-    def __init__(self, stock_type_triplets, stock_type_combinations,
-            event_names, site_names, organization_names, account_pairs,
+    def __init__(self, stock_type_triplets,
+            stock_type_combinations, event_names, site_names,
+            organization_names, account_pairs,
             performance_names, payment_method_names, delivery_method_names,
             payment_delivery_method_pair_matrix, bank_pairs, role_seeds,
-            operator_seeds, sales_segment_kind, salt, num_users, **kwargs):
+            operator_seeds, sales_segment_kind, salt, num_users,
+            Datum=Datum, **kwargs):
         self.stock_type_triplets = stock_type_triplets
         self.stock_type_combinations = stock_type_combinations
         self.event_names = event_names
@@ -95,6 +98,11 @@ class FixtureBuilder(object):
         self.sales_segment_kind = sales_segment_kind
         self.salt = salt
         self.num_users = num_users
+        class _Datum(Datum):
+            def __init__(self, schema, **fields):
+                Datum.__init__(self, schema, auto('id'), **fields)
+        self.Datum = _Datum
+        self._Datum = Datum
 
     def singleton(func):
         cell = [None]
@@ -116,7 +124,7 @@ class FixtureBuilder(object):
 
     def build_bank_data(self):
         return [
-            Datum(
+            self.Datum(
                 'Bank',
                 code=code,
                 name=name
@@ -128,7 +136,7 @@ class FixtureBuilder(object):
 
     def build_payment_method_plugin_data(self):
         return [
-            Datum(
+            self.Datum(
                 'PaymentMethodPlugin',
                 name=name
                 ) \
@@ -139,7 +147,7 @@ class FixtureBuilder(object):
 
     def build_delivery_method_data(self):
         return [
-            Datum(
+            self.Datum(
                 'DeliveryMethodPlugin',
                 name=name
                 ) \
@@ -152,11 +160,11 @@ class FixtureBuilder(object):
         return dict(
             (
                 name,
-                Datum(
+                self.Datum(
                     'OperatorRole',
                     name=name,
                     permissions=one_to_many(
-                        [Datum(
+                        [self.Datum(
                             'Permission',
                             category_name=category_name,
                             permit=permit
@@ -175,7 +183,7 @@ class FixtureBuilder(object):
 
     def build_service_data(self):
         return [
-            Datum(
+            self.Datum(
                 'Service',
                 name=u'Altair CMS',
                 key=u'fa12a58972626f0597c2faee1454e1',
@@ -188,7 +196,7 @@ class FixtureBuilder(object):
 
     def build_site_datum(self, name):
         colgroups = ['0'] + ['ABCDEFGHIJKLMNOPQRSTUVWXYZ'[i] for i, (_, type, quantity_only) in enumerate(self.stock_type_triplets) if type == STOCK_TYPE_TYPE_SEAT and not quantity_only]
-        return Datum(
+        return self.Datum(
             'Site',
             name=name,
             drawing_url=lambda self:'file:src/ticketing/static/site-data/%08d.xml' % self._id[0],
@@ -202,7 +210,7 @@ class FixtureBuilder(object):
             )
 
     def build_payment_method_datum(self, organization, payment_method_plugin):
-        return Datum(
+        return self.Datum(
             'PaymentMethod',
             name=payment_method_plugin.name,
             fee=randint(1, 4) * 100,
@@ -212,7 +220,7 @@ class FixtureBuilder(object):
             )
 
     def build_delivery_method_datum(self, organization, delivery_method_plugin):
-        return Datum(
+        return self.Datum(
             'DeliveryMethod',
             name=delivery_method_plugin.name,
             fee=randint(1, 4) * 100,
@@ -222,7 +230,7 @@ class FixtureBuilder(object):
             )
 
     def build_account_datum(self, name, type):
-        return Datum(
+        return self.Datum(
             'Account',
             name=name,
             account_type=type,
@@ -230,7 +238,7 @@ class FixtureBuilder(object):
             )
 
     def build_seat_datum(self, group_l0_id, l0_id, stock):
-        return Datum(
+        return self.Datum(
             'Seat',
             l0_id=l0_id,
             stock=many_to_one(stock, 'stock_id'),
@@ -243,8 +251,8 @@ class FixtureBuilder(object):
                 'venue_area_id',
                 'VenueArea_group_l0_id'
                 ),
-            status=one_to_many(
-                [_Datum(
+            status_=one_to_many(
+                [self._Datum(
                     'SeatStatus',
                     'seat_id',
                     status=1
@@ -253,14 +261,50 @@ class FixtureBuilder(object):
                 )
             )
 
+    def build_seat_index_type_data(self, seats):
+        return [
+            self.Datum(
+                'SeatIndexType',
+                name=u'前から',
+                seat_indexes=one_to_many(
+                    [
+                        self._Datum(
+                            'SeatIndex',
+                            ('seat_index_type_id', 'seat_id'),
+                            seat_id=seat,
+                            index=i
+                            )
+                            for i, seat in zip(range(1, len(seats) + 1), seats)
+                        ],
+                    'seat_index_type_id'
+                    )
+                ),
+            self.Datum(
+                'SeatIndexType',
+                name=u'ランダム',
+                seat_indexes=one_to_many(
+                    [
+                        self._Datum(
+                            'SeatIndex',
+                            ('seat_index_type_id', 'seat_id'),
+                            seat_id=seat,
+                            index=i
+                            )
+                        for i, seat in zip(permute(range(1, len(seats) + 1)), seats)
+                        ],
+                    'seat_index_type_id'
+                    )
+                ),
+            ]
+
     def build_venue_area_datum(self, venue, colgroup):
-        return Datum(
+        return self.Datum(
             'VenueArea',
             name=colgroup[0],
             groups=one_to_many(
-                [_Datum(
+                [self._Datum(
                     'VenueArea_group_l0_id',
-                    (),
+                    ('venue_id', 'group_l0_id', 'venue_area_id'),
                     venue_id=venue,
                     group_l0_id=colgroup[1]
                     )],
@@ -278,7 +322,7 @@ class FixtureBuilder(object):
                     for l0_id in seat_ids[row_num:row_num + seats_per_row]
                     ]
                 for i in range(0, seats_per_row - n + 1):
-                    adjacency_data.append(Datum(
+                    adjacency_data.append(self.Datum(
                         'SeatAdjacency',
                         seats=many_to_many(
                             seats_in_row[i:i+n],
@@ -287,7 +331,7 @@ class FixtureBuilder(object):
                             'Seat_SeatAdjacency',
                             )
                         ))
-        return Datum(
+        return self.Datum(
             'SeatAdjacencySet',
             seat_count=n,
             adjacencies=one_to_many(
@@ -316,7 +360,7 @@ class FixtureBuilder(object):
             for n in range(2, config['seats_per_row'])
             ]
 
-        retval = Datum(
+        retval = self.Datum(
             'Venue',
             name=site.name,
             seats=one_to_many(
@@ -327,6 +371,10 @@ class FixtureBuilder(object):
             organization=many_to_one(organization, 'organization_id'),
             adjacency_sets=one_to_many(
                 adjacency_set_data,
+                'venue_id'
+                ),
+            seat_index_types=one_to_many(
+                self.build_seat_index_type_data(seats),
                 'venue_id'
                 )
             )
@@ -341,7 +389,7 @@ class FixtureBuilder(object):
         return retval
 
     def build_bank_account_datum(self):
-        return Datum(
+        return self.Datum(
             'BankAccount',
             bank=many_to_one(choice(self.bank_data), 'bank_id'),
             account_type=1,
@@ -350,7 +398,7 @@ class FixtureBuilder(object):
             )
 
     def build_mail_magazine(self, name, organization):
-        return Datum(
+        return self.Datum(
             'MailMagazine',
             name=name,
             description=u"""<span class="mailMagazineFrequency">月曜日配信</span><span class="mailMagazineDescription">旬なエンタメ情報とエンタメに関する商品情報をお届けします！</span>""",
@@ -364,13 +412,12 @@ class FixtureBuilder(object):
             ]
 
     def build_user_datum(self):
-        return Datum(
+        return self.Datum(
             'User',
             bank_account=many_to_one(self.build_bank_account_datum(), 'bank_account_id'),
             user_profile=one_to_many(
-                [_Datum(
+                [self.Datum(
                     'UserProfile',
-                    'user_id',
                     email=lambda self: "dev+test%03d@ticketstar.jp" % self._id[0],
                     nick_name=lambda self: "dev+test%03d@ticketstar.jp" % self._id[0],
                     first_name=lambda self: u"太郎%d" % self._id[0],
@@ -393,7 +440,7 @@ class FixtureBuilder(object):
             )
 
     def build_operator_datum(self, name, operator_roles):
-        return Datum(
+        return self.Datum(
             'Operator',
             name=name,
             email=lambda self: 'dev+test%03d@ticketstar.jp' % self._id[0],
@@ -406,7 +453,7 @@ class FixtureBuilder(object):
             expire_at=None,
             status=1,
             auth=one_to_many([
-                _Datum(
+                self._Datum(
                     'OperatorAuth',
                     'operator_id',
                     login_id=lambda self: u'dev+test%03d@ticketstar.jp' % self._id[0] if self._id[0] > 1 else u'admin',
@@ -423,7 +470,7 @@ class FixtureBuilder(object):
         return hashlib.sha1(self.salt + password).hexdigest()
 
     def build_user_credential(self, user):
-        return Datum(
+        return self.Datum(
             'UserCredential',
             auth_identifier=user.email,
             auth_secret=gendigest("asdfasdf")
@@ -431,11 +478,10 @@ class FixtureBuilder(object):
 
     def build_organization_datum(self, code, name):
         logger.info(u"Building Organization %s" % name)
-        retval = Datum(
+        retval = self.Datum(
             'Organization',
             name=name,
             code=code,
-            events=None,
             accounts=one_to_many(
                 [self.build_account_datum(name, type) for name, type in self.account_pairs],
                 'organization_id'
@@ -464,11 +510,11 @@ class FixtureBuilder(object):
                 delivery_method_plugin_datum) \
             for delivery_method_plugin_datum in self.delivery_method_plugin_data
             ]
-        retval.payment_methods = one_to_many(
+        retval.payment_method_list = one_to_many(
             payment_method_data,
             'organization_id'
             )
-        retval.delivery_methods = one_to_many(
+        retval.delivery_method_list = one_to_many(
             delivery_method_data,
             'organization_id'
             )
@@ -489,15 +535,15 @@ class FixtureBuilder(object):
     def build_sales_segment_datum(self, organization, name, start_at, end_at):
         dayrange = min((end_at - start_at).days, 7)
         payment_delivery_method_pairs = [
-            Datum(
+            self.Datum(
                 'PaymentDeliveryMethodPair',
                 system_fee=randint(1, 2) * 100,
                 transaction_fee=randint(1, 4) * 100,
                 delivery_fee=randint(1, 4) * 100,
                 discount=randint(0, 40) * 10,
                 discount_unit=randint(0, 1),
-                payment_method=many_to_one(organization.payment_methods[payment_method_index], 'payment_method_id'),
-                delivery_method=many_to_one(organization.delivery_methods[delivery_method_index], 'delivery_method_id'),
+                payment_method=many_to_one(organization.payment_method_list[payment_method_index], 'payment_method_id'),
+                delivery_method=many_to_one(organization.delivery_method_list[delivery_method_index], 'delivery_method_id'),
                 payment_period_days=randint(2, 4),
                 issuing_interval_days=dayrange,
                 issuing_start_at=start_at + relativedelta(days=randint(0, dayrange)),
@@ -507,14 +553,14 @@ class FixtureBuilder(object):
             for delivery_method_index, enabled in enumerate(row) if enabled
             ]
 
-        return Datum(
+        return self.Datum(
             'SalesSegment',
             name=name,
             start_at=start_at,
             end_at=end_at,
             upper_limit=randint(1, 10),
             seat_choice=randint(0, 1) != 0,
-            kind=self.sales_segment_kind[randint(0, 7)],
+            kind=self.sales_segment_kind[randint(0, len(self.sales_segment_kind) - 1)],
             payment_delivery_method_pairs=one_to_many(
                 payment_delivery_method_pairs,
                 'sales_segment_id'
@@ -522,14 +568,14 @@ class FixtureBuilder(object):
             )
 
     def build_stock_datum(self, performance, stock_type, stock_holder, quantity):
-        return Datum(
+        return self.Datum(
             'Stock',
             performance=many_to_one(performance, 'performance_id'),
             stock_type=many_to_one(stock_type, 'stock_type_id'),
             quantity=quantity,
             stock_holder=many_to_one(stock_holder, 'stock_holder_id'),
             stock_status=one_to_many(
-                [_Datum(
+                [self._Datum(
                     'StockStatus',
                     'stock_id',
                     quantity=quantity,
@@ -541,7 +587,7 @@ class FixtureBuilder(object):
     def build_performance_datum(self, organization, event, name, performance_date):
         logger.info(u"Building Performance %s" % name)
 
-        retval = Datum(
+        retval = self.Datum(
             'Performance',
             name=name,
             open_on=datetime.combine(performance_date, time(18, 0, 0)),
@@ -566,7 +612,7 @@ class FixtureBuilder(object):
                 colgroup_index += 1
             else:
                 quantity = randint(10, 100) * 10
-            stock_allocation_datum = _Datum(
+            stock_allocation_datum = self._Datum(
                 'StockAllocation',
                 ('stock_type_id', 'performance_id'),
                 stock_type=many_to_one(stock_type, 'stock_type_id'),
@@ -627,7 +673,7 @@ class FixtureBuilder(object):
         return retval
 
     def build_stock_type_datum(self, name, type, quantity_only):
-        return Datum(
+        return self.Datum(
             'StockType',
             name=name,
             type=type,
@@ -636,7 +682,7 @@ class FixtureBuilder(object):
             )
 
     def build_product_item(self, performance, product, stock, price, quantity):
-        return Datum(
+        return self.Datum(
             'ProductItem',
             item_type=1,
             price=price,
@@ -663,7 +709,7 @@ class FixtureBuilder(object):
 
     def build_product_data(self, sales_segment):
         return [
-            Datum(
+            self.Datum(
                 'Product',
                 name=name,
                 price=sum(price for stock_type_name, price in product_item_seeds),
@@ -686,14 +732,14 @@ class FixtureBuilder(object):
             for product_item in performance.product_items
             if product_item.product == product
             ]
-        return Datum(
+        return self.Datum(
             'OrderedProduct',
             product=many_to_one(product, 'product_id'),
             price=product.price,
             quantity=quantity,
             ordered_product_items=one_to_many(
                 [
-                    Datum(
+                    self.Datum(
                         'OrderedProductItem',
                         product_item=many_to_one(product_item, 'product_item_id'),
                         seats=many_to_many(
@@ -744,7 +790,7 @@ class FixtureBuilder(object):
 
         paid_at = some_day_between(sales_segment.start_at, sales_segment.end_at)
 
-        return Datum(
+        return self.Datum(
             'Order',
             user=many_to_one(user, 'user_id'),
             shipping_address=many_to_one(build_shipping_address_datum(user), 'shipping_address_id'),
@@ -783,7 +829,7 @@ class FixtureBuilder(object):
                 )
             ]
         stock_holder_data = [
-            Datum(
+            self.Datum(
                 'StockHolder',
                 name=account.name,
                 account=many_to_one(account, 'account_id'),
@@ -796,7 +842,7 @@ class FixtureBuilder(object):
             for sales_segment_datum in sales_segment_data
             )))
 
-        retval = Datum(
+        retval = self.Datum(
             'Event',
             title=title,
             organization=many_to_one(organization, 'organization_id'),
@@ -830,7 +876,7 @@ class FixtureBuilder(object):
         return retval
 
     def build_shipping_address_datum(self, user):
-        return Datum(
+        return self.Datum(
             'ShippingAddress',
             user=many_to_one(user, 'user_id'),
             email=lambda self: "dev+test%03d@ticketstar.jp" % self._id[0],
