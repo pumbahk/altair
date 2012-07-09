@@ -19,4 +19,4 @@ def upgrade():
     op.drop_column('sale', 'performance_id')
 
 def downgrade():
-    op.add_column('sale', sa.Column(Integer, ForeignKey('performance.id', ondelete='CASCADE')))
+    op.add_column('sale', sa.Column(sa.Integer, sa.ForeignKey('performance.id', ondelete='CASCADE')))
