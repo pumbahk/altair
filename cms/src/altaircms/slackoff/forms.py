@@ -63,7 +63,13 @@ class LayoutForm(Form):
 
     def validate_template_filename(form, field):
         pass
-    
+
+class LayoutCreateForm(Form):
+    title = fields.TextField(u'タイトル', validators=[validators.Required()])
+    filepath = fields.FileField(label=u"テンプレートファイル")
+
+    __display_fields__ = [u"title", u"filepath"]
+
 class PerformanceForm(Form):
     title = fields.TextField(label=u"公演タイトル")
     backend_id = fields.IntegerField(validators=[required_field()], label=u"バックエンド管理番号")

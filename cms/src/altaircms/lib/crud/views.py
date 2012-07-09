@@ -110,7 +110,7 @@ class CRUDResource(RootFactory): ## fixme
     def get_model_query(self):
         ## todo 疎結合
         if hasattr(self.request, "organization"):
-            return self.request.allowable(self.model.__name__)
+            return self.request.allowable(self.model)
         else:
             return self.model.query
 
