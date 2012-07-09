@@ -73,10 +73,10 @@ var InfoService = {
         return $(e).attr("cid");
     }, 
     is_dropped_widget: function(e){
-        return $(e).hasClass("dropped-widget")
+        return $(e).hasClass("dropped-widget");
     }, 
     is_widget: function(e){
-        return $(e).hasClass("widget")
+        return $(e).hasClass("widget");
     }
 };
 
@@ -487,7 +487,7 @@ var BlockSheetView = Backbone.View.extend({
             drop: function(ev, ui){
                 if(InfoService.is_dropped_widget(ui.draggable)){
                     self.drop_from_block(ui.draggable, this);
-                } else if(InfoService.is_widget(ui.draggble)){
+                } else if(InfoService.is_widget(ui.draggable)){
                     self.drop_from_palet(ui.draggable, this);
                 }
             }
