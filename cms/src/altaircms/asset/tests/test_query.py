@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 import unittest
-
+from pyramid import testing
 
 def _withDB(o, flush=False):
     from altaircms.models import DBSession
@@ -26,7 +26,11 @@ class AssetSearchQueryTest(unittest.TestCase):
         return AssetResource
 
     def _makeOne(self):
-        return self._getTarget()(None)
+        def allowable(model, qs=None):
+            return qs or model.query
+        request = testing.DummyRequest(allowable=allowable)
+        return self._getTarget()(request)
+
 
     def test_search_image_asset_empty_params(self):
         from altaircms.asset.models import ImageAsset
@@ -99,7 +103,10 @@ class AssetQueryTests(unittest.TestCase):
         return AssetResource
 
     def _makeOne(self):
-        return self._getTarget()(None)
+        def allowable(model, qs=None):
+            return qs or model.query
+        request = testing.DummyRequest(allowable=allowable)
+        return self._getTarget()(request)
 
     def test_query_all(self):
         from altaircms.asset.models import Asset
@@ -147,7 +154,10 @@ class AssetGetOneTests(unittest.TestCase):
         return AssetResource
 
     def _makeOne(self):
-        return self._getTarget()(None)
+        def allowable(model, qs=None):
+            return qs or model.query
+        request = testing.DummyRequest(allowable=allowable)
+        return self._getTarget()(request)
 
     def test_get_anything_asset(self):
         from altaircms.asset.models import ImageAsset

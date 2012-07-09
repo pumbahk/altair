@@ -74,12 +74,9 @@ class FiltererdQueryFromRequestTests(unittest.TestCase):
         self.session.add(o)
         return o
 
-    def _getTarget(self):
-        from altaircms.auth.api import AllowableQueryFactory        
-        return AllowableQueryFactory
-
-    def _makeOne(self, *args, **kwargs):
-        return self._getTarget()(*args, **kwargs)
+    def _callFUT(self, request, model):
+        from altaircms.auth.api import get_allowable_query
+        return get_allowable_query(request)(model)
 
     def test_matched_organization(self):
         from altaircms.auth.models import Operator
@@ -91,9 +88,7 @@ class FiltererdQueryFromRequestTests(unittest.TestCase):
         self.session.add(op)
         class request(object):
             organization = org
-
-        target = self._makeOne(Operator)       
-        result = target(request)
+        result = self._callFUT(request, Operator)
 
         self.assertEqual(list(result.all()), [op])
 
@@ -109,8 +104,7 @@ class FiltererdQueryFromRequestTests(unittest.TestCase):
         class request(object):
             organization = another_org
 
-        target = self._makeOne(Operator)       
-        result = target(request)
+        result = self._callFUT(request, Operator)
 
         self.assertEqual(list(result.all()), [])
 

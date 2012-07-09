@@ -11,7 +11,6 @@ from pyramid.security import forget
 from .interfaces import ILogoutAction
 from .interfaces import IActionResult
 from .interfaces import IOAuthComponent
-from .interfaces import IAllowableQueryFactory
 from .subscribers import AfterLogin
 from altaircms.auth.helpers import get_authenticated_user
 from pyramid.security import unauthenticated_userid
@@ -100,15 +99,6 @@ class OAuthComponent(object):
         return url
 
 ###login後の絞り込み
-@implementer(IAllowableQueryFactory)
-class AllowableQueryFactory(object):
-    def __init__(self, model):
-        assert hasattr(model, "organization_id")
-        self.model = model
-
-    def __call__(self, request, query=None):
-        return query
-
 def get_allowable_query(request):
     def query(model, qs=None):
         qs = qs or model.query
