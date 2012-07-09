@@ -102,7 +102,7 @@ class Performance(BaseOriginalMixin, Base):
     start_on = sa.Column(sa.DateTime)  # 開始
     end_on = sa.Column(sa.DateTime)  # 終了
 
-    calendar_content = sa.Column(sa.UnicodeText)
+    calendar_content = sa.Column(sa.UnicodeText, default=u"")
     purchase_link = sa.Column(sa.UnicodeText)
     mobile_purchase_link = sa.Column(sa.UnicodeText)
     canceld = sa.Column(sa.Boolean, default=False)

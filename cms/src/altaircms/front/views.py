@@ -2,10 +2,11 @@
 
 from pyramid.httpexceptions import HTTPForbidden
 from pyramid.httpexceptions import HTTPInternalServerError
+from altaircms.lib.fanstatic_decorator import with_jquery
 from pyramid.view import view_config
 
 
-@view_config(route_name="preview_page")
+@view_config(route_name="preview_page", decorator=with_jquery)
 def preview_page(context, request):
     control = context.access_control()
     access_key = request.params.get("access_key")
@@ -23,7 +24,7 @@ def preview_page(context, request):
     return renderer.render(template, page)
 
 
-@view_config(route_name="preview_pageset")
+@view_config(route_name="preview_pageset", decorator=with_jquery)
 def preview_pageset(context, request):
     control = context.access_control()
     pageset_id = request.matchdict["pageset_id"]

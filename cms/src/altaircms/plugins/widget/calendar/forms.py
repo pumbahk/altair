@@ -6,7 +6,7 @@ from wtforms import fields
 class CalendarSelectForm(Form):
     CHOICES = [("obi", u"帯（縦長)"), ("tab", u"タブ"),]
     # CHOICES = [("obi", u"帯（縦長)"), ("term", u"開始日終了日指定"),]
-    calendar_type = fields.SelectField("Calendar type", choices=CHOICES, default="this_month")
+    calendar_type = fields.SelectField(id="calendar_type", label=u"カレンダーの種類", choices=CHOICES, default="this_month")
 
 class SelectTermForm(Form):
     from_date = fields.DateField(u"開始")

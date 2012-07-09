@@ -76,6 +76,7 @@ class PerformanceForm(Form):
 
     purchase_link = fields.TextField(label=u"購入ページリンク")
     mobile_purchase_link = fields.TextField(label=u"購入ページリンク(mobile)")
+    calendar_content = fields.TextField(label=u"カレンダーに追加する文字列")
 
     def validate(self, **kwargs):
         data = self.data
@@ -102,7 +103,8 @@ class PerformanceForm(Form):
     __display_fields__ = [u"title", u"backend_id", u"event",
                           u"prefecture", u"venue", 
                           u"open_on", u"start_on", u"end_on",
-                          u"purchase_link", u"mobile_purchase_link"]
+                          u"purchase_link", u"mobile_purchase_link", 
+                          u"calendar_content"]
 
 
 class SaleForm(Form):
