@@ -7,7 +7,6 @@ import sqlalchemy as sa
 from datetime import datetime
 import sqlahelper
 import sqlalchemy.orm as orm
-from sqlalchemy import (Column, Integer, Unicode, String, ForeignKey, DateTime, Boolean)
 from sqlalchemy.orm import relationship
 
 from sqlalchemy.sql.operators import ColumnOperators
@@ -53,7 +52,7 @@ class BaseOriginalMixin(object):
         return model_from_dict(cls, D)
 
 class WithOrganizationMixin(object):
-    organization_id = Column(Integer, index=True) ## need FK?(organization.id)
+    organization_id = sa.Column(sa.Integer, index=True) ## need FK?(organization.id)
     
 Base = sqlahelper.get_base()
 DBSession = sqlahelper.get_session()
@@ -77,8 +76,8 @@ def initialize_sql(engine, dropall=False):
 """
 
 performance_ticket_table = sa.Table("performance_ticket", Base.metadata,
-    Column("performance_id", Integer, ForeignKey("performance.id")),
-    Column("ticket_id", Integer, ForeignKey("ticket.id")),
+    sa.Column("performance_id", sa.Integer, sa.ForeignKey("performance.id")),
+    sa.Column("ticket_id", sa.Integer, sa.ForeignKey("ticket.id")),
 )
 
 PDICT = import_symbol("altaircms.seeds.prefecture:PrefectureMapping")
@@ -89,23 +88,24 @@ class Performance(BaseOriginalMixin, Base):
     __tablename__ = "performance"
     query = DBSession.query_property()
 
-    id = Column(Integer, primary_key=True)
-    backend_id = Column(Integer)
-    event_id = Column(Integer, ForeignKey('event.id'))
+    id = sa.Column(sa.Integer, primary_key=True)
+    backend_id = sa.Column(sa.Integer)
+    event_id = sa.Column(sa.Integer, sa.ForeignKey('event.id'))
 
-    created_at = Column(DateTime, default=datetime.now)
-    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
 
-    title = Column(Unicode(255))
-    venue = Column(Unicode(255)) #開催地
-    prefecture = Column(sa.Enum(*import_symbol("altaircms.seeds.prefecture:PREFECTURE_ENUMS"))) #開催地(県)
-    open_on = Column(DateTime)  # 開場
-    start_on = Column(DateTime)  # 開始
-    end_on = Column(DateTime)  # 終了
+    title = sa.Column(sa.Unicode(255))
+    venue = sa.Column(sa.Unicode(255)) #開催地
+    prefecture = sa.Column(sa.Enum(*import_symbol("altaircms.seeds.prefecture:PREFECTURE_ENUMS"))) #開催地(県)
+    open_on = sa.Column(sa.DateTime)  # 開場
+    start_on = sa.Column(sa.DateTime)  # 開始
+    end_on = sa.Column(sa.DateTime)  # 終了
 
-    purchase_link = Column(sa.UnicodeText)
+    calendar_content = sa.Column(sa.UnicodeText)
+    purchase_link = sa.Column(sa.UnicodeText)
     mobile_purchase_link = sa.Column(sa.UnicodeText)
-    canceld = Column(Boolean, default=False)
+    canceld = sa.Column(sa.Boolean, default=False)
     event = relationship("Event", backref=orm.backref("performances", order_by=start_on, cascade="all"))
     tickets = relationship("Ticket", secondary=performance_ticket_table, backref="performances")
 
@@ -119,20 +119,20 @@ class Sale(BaseOriginalMixin, Base):
     __tablename__ = 'sale'
     query = DBSession.query_property()
 
-    id = Column(Integer, primary_key=True)
-    backend_id = Column(Integer)
+    id = sa.Column(sa.Integer, primary_key=True)
+    backend_id = sa.Column(sa.Integer)
 
-    event_id = Column(Integer, ForeignKey('event.id'))
+    event_id = sa.Column(sa.Integer, sa.ForeignKey('event.id'))
     event  = relationship("Event", backref=orm.backref("sales", cascade="all"))
 
-    name = Column(Unicode(length=255))
-    kind = Column(Unicode(length=255), doc=u"saleskind. 販売条件(最速抽選, 先行抽選, 先行先着, 一般発売, 追加抽選.etc)", default=u"normal")
+    name = sa.Column(sa.Unicode(length=255))
+    kind = sa.Column(sa.Unicode(length=255), doc=u"saleskind. 販売条件(最速抽選, 先行抽選, 先行先着, 一般発売, 追加抽選.etc)", default=u"normal")
 
-    start_on = Column(DateTime)
-    end_on = Column(DateTime)
+    start_on = sa.Column(sa.DateTime)
+    end_on = sa.Column(sa.DateTime)
 
-    created_at = Column(DateTime, default=datetime.now)
-    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
 
     SALESKIND_DICT = dict(SALESKIND_CHOICES)
     @property
@@ -147,20 +147,20 @@ class Ticket(BaseOriginalMixin, Base):
     __tablename__ = "ticket"
     query = DBSession.query_property()
 
-    id = Column(Integer, primary_key=True)
-    backend_id = Column(Integer)
+    id = sa.Column(sa.Integer, primary_key=True)
+    backend_id = sa.Column(sa.Integer)
 
-    orderno = Column(Integer, default=50)
-    sale_id = Column(Integer, ForeignKey("sale.id", ondelete='CASCADE'))
+    orderno = sa.Column(sa.Integer, default=50)
+    sale_id = sa.Column(sa.Integer, sa.ForeignKey("sale.id", ondelete='CASCADE'))
 
-    created_at = Column(DateTime, default=datetime.now)
-    updated_at = Column(DateTime, default=datetime.now)
-    price = Column(Integer, default=0)
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now)
+    price = sa.Column(sa.Integer, default=0)
 
     sale = relationship("Sale", backref=orm.backref("tickets", order_by=price.desc(), cascade="all"))
 
-    name = Column(Unicode(255))
-    seattype = Column(Unicode(255))
+    name = sa.Column(sa.Unicode(255))
+    seattype = sa.Column(sa.Unicode(255))
     
 class Category(Base, WithOrganizationMixin):
     """
