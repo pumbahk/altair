@@ -55,9 +55,11 @@
     background-color: #ccf;
 }
 
-/* container */
-.simple_overlay {
-	width:675px;	
+/* popup dialog (with scroll bar) */
+#overlay {
+    overflow:scroll;
+    max-width:660px;
+    max-height:400px;
 }
 
 #wrapped {
