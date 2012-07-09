@@ -104,7 +104,9 @@ def get_allowable_query(request):
         qs = qs or model.query
         if request.organization:
             return qs.with_transformation(request.organization.inthere("organization_id"))
-        logger.debug("this-is-external-request. e.g. access with pageaccess key. request.organization is not found")
+        logger.debug(u"""this-is-external-request. e.g. access with pageaccess key. request.organization is not found\n
+class: %s""" % model)
+        return qs
     return query
 
 def get_or_404(qs, criteria):

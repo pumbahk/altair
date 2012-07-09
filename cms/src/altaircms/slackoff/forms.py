@@ -80,15 +80,18 @@ class PerformanceForm(Form):
 
     def validate(self, **kwargs):
         data = self.data
-        if data["open_on"] and data["start_on"] is None:
-            data["start_ono"] = data["open_on"]
-        elif data["start_on"] and data["open_on"] is None:
-            data["open_ono"] = data["start_on"]
+        try:
+            if data["open_on"] and data["start_on"] is None:
+                data["start_ono"] = data["open_on"]
+            elif data["start_on"] and data["open_on"] is None:
+                data["open_ono"] = data["start_on"]
 
-        if data["open_on"] > data["start_on"]:
-            append_errors(self.errors, "open_on", u"開始時刻よりも後に開場時刻が設定されてます")
-        if data["end_on"] and data["start_on"] > data["end_on"]:
-            append_errors(self.errors, "open_on", u"終了時刻よりも後に開始時刻が設定されてます")
+            if data["open_on"] > data["start_on"]:
+                append_errors(self.errors, "open_on", u"開始時刻よりも後に開場時刻が設定されてます")
+            if data["end_on"] and data["start_on"] > data["end_on"]:
+                append_errors(self.errors, "open_on", u"終了時刻よりも後に開始時刻が設定されてます")
+        except Exception, e:
+            append_errors(self.errors, "__all__", u"不正な文字列が入力されてます。")
         return not bool(self.errors)
 
     def object_validate(self, obj=None):

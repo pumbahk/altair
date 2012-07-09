@@ -1,6 +1,7 @@
 <%def name="form_to_table(form)">
 <table class="table table-striped">
   <tbody>
+
   % for k,v in form.data.iteritems():
     <tr>
 	  <td>${getattr(form,k).label}</td>
@@ -14,6 +15,14 @@
 <%def name="form_as_table_strict(form, keys)">
 <table class="table table-striped">
   <tbody>
+  % if form.errors.get("__all__"):
+	<div class="alert alert-danger">
+        %for err in form.errors["__all__"]:
+          ${err}
+        %endfor
+    </div>
+  % endif
+
   % for k in keys:
     ${formfield(form, k)}
   % endfor
@@ -46,7 +55,7 @@
 	%if k in form.errors:
 	  <br/>
 	  %for error in form.errors[k]:
-		<span class="btn btn-danger">${error}</span>
+		<span class="alert alert-danger">${error}</span>
 	  %endfor
 	%endif
 	</td></tr>
