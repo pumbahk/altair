@@ -30,7 +30,7 @@ class WidgetTestSourceMixn(object):
         return session
 
     def _makeRequest(self, **kwargs):
-        from pyramid.testing import DummyRequest
+        from altaircms.testing import DummyRequest
         request = DummyRequest()
         for k, v in kwargs.iteritems():
             setattr(request, k, v)

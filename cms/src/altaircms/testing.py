@@ -9,6 +9,9 @@ class DummyRequest(testing.DummyRequest):
             if hasattr(self, attr):
                 setattr(self, attr, MultiDict(getattr(self, attr)))
 
+    def allowable(self, model, qs=None):
+        return qs or model.query
+
 
 def dummy_form_factory(name="DummyForm", validate=False, errors=None):
     def _validate(self):

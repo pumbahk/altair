@@ -20,6 +20,14 @@ def teardown_module():
     import sqlahelper
     sqlahelper.get_base().metadata.drop_all()
 
+def dummy_request(*args, **kwargs):
+    request = testing.DummyRequest(*args, **kwargs)
+    from types import MethodType
+    def allowable(self, model, qs=None):
+        return model.query
+    request.allowable = MethodType(allowable, request, request.__class__)
+    return request
+
 class RoleViewTests(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp()
@@ -37,7 +45,7 @@ class RoleViewTests(unittest.TestCase):
         return self._getTarget()(request)
 
     def test_it(self):
-        request = testing.DummyRequest()
+        request = dummy_request()
         target = self._makeOne(request)                
         self.assertEqual(target.request, request)
 
@@ -51,21 +59,21 @@ class RoleViewTests(unittest.TestCase):
 
     def test_get_role(self):
         role = self.add_role('test-role', ['page_update'])
-        request = testing.DummyRequest(matchdict=dict(id=role.id))
+        request = dummy_request(matchdict=dict(id=role.id))
         target = self._makeOne(request)                
         result = target.get_role()
         self.assertEqual(result, role)
 
     def test_list(self):
         role = self.add_role('test-role', ['page_update'])
-        request = testing.DummyRequest()
+        request = dummy_request()
         target = self._makeOne(request)                
         result = target.list()
         self.assertEqual(result['roles'], [role])
 
     def test_read(self):
         role = self.add_role('test-role', ['page_update'])
-        request = testing.DummyRequest(matchdict=dict(id=role.id))
+        request = dummy_request(matchdict=dict(id=role.id))
         target = self._makeOne(request)                
         result = target.read()
         self.assertEqual(result['role'], role)
@@ -74,7 +82,7 @@ class RoleViewTests(unittest.TestCase):
 
     def test_read_not_found(self):
         from pyramid.httpexceptions import HTTPNotFound
-        request = testing.DummyRequest(matchdict=dict(id="99999999999999"))
+        request = dummy_request(matchdict=dict(id="99999999999999"))
         target = self._makeOne(request)                
         try:
             result = target.read()
@@ -130,7 +138,7 @@ class RolePermissionViewTests(unittest.TestCase):
         return self._getTarget()(request)
 
     def test_it(self):
-        request = testing.DummyRequest()
+        request = dummy_request()
         target = self._makeOne(request)
 
         self.assertEqual(target.request, request)
@@ -147,7 +155,7 @@ class RolePermissionViewTests(unittest.TestCase):
         self.config.add_route('role', '/roles/{id}')
         role = self._add_role('test-role', permissions=['page_update'])
         matchdict = {'id': 'page_update', 'role_id': str(role.id)}
-        request = testing.DummyRequest(matchdict=matchdict)
+        request = dummy_request(matchdict=matchdict)
 
         target = self._makeOne(request)
         result = target.delete()
@@ -175,7 +183,7 @@ class OperatorViewTests(unittest.TestCase):
 
 
     def test_it(self):
-        request = testing.DummyRequest()
+        request = dummy_request()
         target = self._makeOne(request)
 
         self.assertEqual(target.request, request)
@@ -191,7 +199,7 @@ class OperatorViewTests(unittest.TestCase):
 
     def test_list(self):
         operator = self._add_operator(u'test-operator')
-        request = testing.DummyRequest()
+        request = dummy_request()
         target = self._makeOne(request)
 
         result = target.list()
@@ -200,7 +208,7 @@ class OperatorViewTests(unittest.TestCase):
         
     def test_read(self):
         operator = self._add_operator(u'test-operator')
-        request = testing.DummyRequest(matchdict=dict(id=str(operator.id)))
+        request = dummy_request(matchdict=dict(id=str(operator.id)))
         target = self._makeOne(request)
 
         result = target.read()
@@ -210,7 +218,7 @@ class OperatorViewTests(unittest.TestCase):
     def test_delete(self):
         self.config.add_route('operator_list', '/operators')
         operator = self._add_operator(u'test-operator')
-        request = testing.DummyRequest(matchdict=dict(id=str(operator.id)))
+        request = dummy_request(matchdict=dict(id=str(operator.id)))
         target = self._makeOne(request)
 
         result = target.delete()
@@ -265,7 +273,7 @@ class OAuthLoginTests(unittest.TestCase):
         self._add_role(u'administrator')
         self._add_role(u'staff')
 
-        request = testing.DummyRequest(GET={'code': 'code'})
+        request = dummy_request(GET={'code': 'code'})
         oauth_compnent = OAuthComponent(
             'client-id',
             'secret-key',
@@ -317,7 +325,7 @@ class OAuthLoginTests(unittest.TestCase):
         self._add_role(u'administrator')
         self._add_role(u'staff')
 
-        request = testing.DummyRequest(GET={'code': 'code'})
+        request = dummy_request(GET={'code': 'code'})
         oauth_compnent = OAuthComponent(
             'client-id',
             'secret-key',

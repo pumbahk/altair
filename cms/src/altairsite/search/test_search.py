@@ -453,7 +453,8 @@ class SearchOnlyIsSearcheableEventTests(unittest.TestCase):
     """
     def test_it(self):
         from altairsite.search.searcher import get_pageset_query_fullset
-        result =  str(get_pageset_query_fullset(None, {}))
+        from altaircms.testing import DummyRequest
+        result =  str(get_pageset_query_fullset(DummyRequest(), {}))
         
         self.assertIn("event.is_searchable = ? AND event.id = pagesets.event_id", result)
 
