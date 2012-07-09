@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 
+import os
+import csv
+
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
+from pyramid.response import Response
 from pyramid.url import route_path
 import webhelpers.paginate as paginate
 from sqlalchemy import or_, and_
@@ -29,6 +33,7 @@ class Orders(BaseView):
         query = query.order_by(sort + ' ' + direction)
 
         # search condition
+        # ToDo: 処理を切り出す
         form_search = OrderSearchForm(self.request.POST)
         if self.request.method == 'POST':
             condition = form_search.order_no.data
@@ -115,6 +120,119 @@ class Orders(BaseView):
         else:
             self.request.session.flash(u'受注(%s)を配送済みにできません' % order.order_no)
         return HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
+
+    @view_config(route_name='orders.download')
+    def download(self):
+        # ToDo: 検索条件指定の結果をセットする、また上限件数をチェックする
+        # ToDo: 処理を切り出す
+        orders = Order.filter(Order.organization_id==int(self.context.user.organization_id)).all()
+
+        headers = [
+            ('Content-Type', 'text/csv'),
+            ('Content-Disposition', 'attachment; filename=orders.csv')
+        ]
+        response = Response(headers=headers)
+
+        # csv header
+        order_header = [
+            'order_no',
+            'status',  #
+            'created_at',  #
+            'paid_at',
+            'delivered_at',
+            'canceled_at',
+            ]
+        user_profile_header = [
+            'last_name',
+            'first_name',
+            'last_name_kana',
+            'first_name_kana',
+            'nick_name',
+            ]
+        shipping_address_header = [
+            'last_name',  #
+            'first_name',  #
+            'last_name_kana',  #
+            'first_name_kana',  #
+            'zip',
+            'country',
+            'prefecture',
+            'city',
+            'address_1',
+            'address_2',
+            'tel_1',
+            'fax',
+            ]
+        payment_header = [
+            'total_amount',
+            'transaction_fee',
+            'delivery_fee',
+            'system_fee',
+            ]
+        other_header = [
+            'payment',
+            'delivery',
+            'event',
+            'venue',
+            'start_on',
+            ]
+        product_header = [
+            'name',
+            'price',
+            'quantity',
+            ]
+        field_names = order_header + user_profile_header + shipping_address_header + payment_header + other_header
+
+        # csv data
+        rows = []
+        for order in orders:
+            order_dict = record_to_multidict(order)
+            order_list = [(column, order_dict.get(column)) for column in order_header]
+            payment_list = [(column, order_dict.get(column)) for column in payment_header]
+
+            user_profile_dict = record_to_multidict(order.user.user_profile)
+            user_profile_list = [(column, user_profile_dict.get(column)) for column in user_profile_header]
+
+            shipping_address_dict = record_to_multidict(order.shipping_address)
+            shipping_address_list = [(column, shipping_address_dict.get(column)) for column in shipping_address_header]
+
+            other_list = [
+                ('payment', order.payment_delivery_pair.payment_method.name),
+                ('delivery', order.payment_delivery_pair.delivery_method.name),
+                ('event', order.ordered_products[0].product.event.title),
+                ('venue', order.ordered_products[0].ordered_product_items[0].product_item.performance.start_on),
+                ('start_on', order.ordered_products[0].ordered_product_items[0].product_item.performance.venue.name),
+            ]
+
+            product_list = []
+            for i, ordered_product in enumerate(order.ordered_products):
+                for column in product_header:
+                    column_name = 'product_%s_%s' % (column, i)
+                    if not column_name in field_names:
+                        field_names.append(column_name)
+                    if column == 'name':
+                        product_list.append((column_name, ordered_product.product.name))
+                    if column == 'price':
+                        product_list.append((column_name, ordered_product.price))
+                    if column == 'quantity':
+                        product_list.append((column_name, ordered_product.quantity))
+
+            row = dict(order_list + user_profile_list + shipping_address_list + payment_list + other_list + product_list)
+            for key, value in row.items():
+                if value:
+                    if not isinstance(value, unicode):
+                        value = unicode(value)
+                    value = value.encode('utf-8')
+                else:
+                    value = ''
+                row[key] = value
+            rows.append(row)
+
+        writer = csv.DictWriter(response, field_names, delimiter=',', quoting=csv.QUOTE_ALL)
+        writer.writeheader()
+        writer.writerows(rows)
+
+        return response
 
 
 from ticketing.sej.models import SejOrder, SejTicket, SejTicketTemplateFile, SejRefundEvent, SejRefundTicket

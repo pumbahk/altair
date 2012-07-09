@@ -5,6 +5,7 @@ def includeme(config):
     config.add_route('orders.show'                      , '/show/{order_id}')
     config.add_route('orders.cancel'                    , '/cancel/{order_id}')
     config.add_route('orders.delivered'                 , '/delivered/{order_id}')
+    config.add_route('orders.download'                  , '/download/')
 
     config.add_route('orders.sej'                       , '/sej')
 

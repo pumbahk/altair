@@ -5,34 +5,50 @@
   $(function() {
     $('.datefield').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
   });
+
+  function download_orders() {
+    modal = $('#modal-search');
+    modal.find('#search').attr('action', '/orders/download/').submit();
+    $('#modal-download_orders').modal('hide');
+  }
 </script>
 
-<ul class="nav nav-pills">
-  <li class="dropdown" id="top-search-text">
-    <form id="search-event" action="/orders/" method="POST">
-      <input name="order_no" type="text" class="search-query" placeholder="受注番号">
-    </form>
-  </li>
-  <li class="dropdown" id="top-search" style="margin-left: 10px;">
-    <div class="btn-group">
-      <a href="javascript:$('#search-event').submit();" class="btn">
-        <i class="icon-search"></i> 検索
-      </a>
-      <button class="btn dropdown-toggle" data-toggle="dropdown">
-        <span class="caret"></span>
-      </button>
-      <ul class="dropdown-menu">
-        <li>
-          <a data-toggle="modal" href="#modal-search">
-            <i class=""></i> 詳細検索
-          </a>
-        </li>
-      </ul>
-    </div>
-  </li>
-</ul>
+<div style="float: left;">
+  <ul class="nav nav-pills">
+    <li class="dropdown" id="top-search-text">
+      <form id="search-event" action="/orders/" method="POST">
+        <input name="order_no" type="text" class="search-query" placeholder="受注番号">
+      </form>
+    </li>
+    <li class="dropdown" id="top-search" style="margin-left: 10px;">
+      <div class="btn-group">
+        <a href="javascript:$('#search-event').submit();" class="btn">
+          <i class="icon-search"></i> 検索
+        </a>
+        <button class="btn dropdown-toggle" data-toggle="dropdown">
+          <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+          <li>
+            <a data-toggle="modal" href="#modal-search">
+              <i class=""></i> 詳細検索
+            </a>
+          </li>
+        </ul>
+      </div>
+    </li>
+  </ul>
+</div>
 
-<div class="modal fade" id="modal-search">
+<div class="btn-group" style="float: left;">
+  <a class="btn btn-inverse" style="margin-left: 10px;" data-toggle="modal" href="#modal-download_orders">
+    <i class="icon-download icon-white"></i> ダウンロード
+  </a>
+</div>
+<div style="clear: left;"></div>
+
+
+<div id="modal-search" class="modal hide fade">
   <div class="modal-header">
     <a class="close" data-dismiss="modal">×</a>
     <h3>検索条件設定</h3>
@@ -66,6 +82,24 @@
     <a href="javascript:$('#search').submit();" class="btn btn-primary">検索</a>
   </div>
 </div>
+
+
+<div id="modal-download_orders" class="modal hide fade">
+  <div class="modal-header">
+    <a href="#" class="close">&times;</a>
+    <h3>確認</h3>
+  </div>
+
+  <div class="modal-body">
+    <p>購入情報(CSV)をダウンロードします。よろしいですか？</p>
+  </div>
+
+  <div class="modal-footer">
+    <a href="javascript:$('#modal-download_orders').modal('hide');" class="btn secondary">キャンセル</a>
+    <a href="javascript:download_orders();" class="btn danger">ダウンロード</a>
+  </div>
+</div>
+
 
 % if len(orders) == 0:
   見つかりませんでした
