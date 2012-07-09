@@ -1,0 +1,13 @@
+<%def name="error(names)">
+<%
+if not hasattr(request, 'errors'):
+  return ''
+if not isinstance(names, list):
+  names = [names]
+errs = dict()
+for name in names:
+  for err in request.errors.get(name,[]):
+    errs[err] = err
+%>
+<p class="error">${", ".join(errs.values())}</p>
+</%def>

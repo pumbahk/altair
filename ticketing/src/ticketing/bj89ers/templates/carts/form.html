@@ -1,4 +1,4 @@
-<%namespace file="helpers.html" name="h" />
+<%namespace file="../commons/helpers.html" name="h" />
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html lang="en">
 <head>
@@ -162,6 +162,15 @@
                   <td>
                    ${form.email2}
                     ${h.error('email2')}
+                  </td>
+                </tr>
+                <tr>
+                  <th>
+                  メルマガ配信
+                  </th>
+                  <td>
+                   ${form.mail_permission}
+                    ${h.error('mail_permission')}
                   </td>
                 </tr>
                 <tr>

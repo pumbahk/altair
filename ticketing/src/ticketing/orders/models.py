@@ -5,7 +5,8 @@ from datetime import datetime
 
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, Numeric, Unicode
 from sqlalchemy.orm import join, backref, column_property
-
+from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.orm.exc import NoResultFound
 from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier, relationship, DBSession
 from ticketing.core.models import Seat, Performance, Product, ProductItem
 from ticketing.users.models import User
@@ -178,6 +179,12 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         else:
             return False
 
+class OrderedProductAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__   = "OrderedProductAttribute"
+    ordered_product_item_id  = Column(Identifier, ForeignKey('OrderedProductItem.id'), primary_key=True, nullable=False)
+    ordered_product_item  = relationship("OrderedProductItem", backref='_attributes')
+    name = Column(String(255), primary_key=True, nullable=False)
+    value = Column(String(1023))
 
 class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrderedProduct'
@@ -188,8 +195,6 @@ class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     product = relationship('Product')
     price = Column(Numeric(precision=16, scale=2), nullable=False)
     quantity = Column(Integer)
-
-    attributes      = relationship("OrderedProductAttribute", backref='ordered_product', cascade='save-update, merge')
 
 class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrderedProductItem'
@@ -203,8 +208,25 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     seats = relationship("Seat", secondary=orders_seat_table)
     price = Column(Numeric(precision=16, scale=2), nullable=False)
 
-class OrderedProductAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
-    __tablename__   = "OrderedProductAttribute"
-    ordered_product_id  = Column(Identifier, ForeignKey('OrderedProduct.id'), primary_key=True, nullable=False)
-    name = Column(String(255), primary_key=True, nullable=False)
-    value = Column(String(1023))
+    def _get(self, name):
+        for item in self.items():
+            if item.name == name:
+                return item
+
+    def put(self, name, value):
+        attr = self._get(name)
+        if attr:
+            attr.value = value
+        else:
+            attr = OrderedProductAttribute()
+            attr.ordered_product = self
+            attr.name = name
+            attr.value = value
+            DBSession.add(attr)
+
+    def get(self,name):
+        return self.get(name).value
+
+    def items(self):
+        return [(attr.name, attr.items) for attr in self._attributes]
+

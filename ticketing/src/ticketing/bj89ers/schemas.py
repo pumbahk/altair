@@ -36,7 +36,7 @@ class JananeseTranslations(object):
             return singular
         return plural
 
-class Schema(Form):
+class OrderFormSchema(Form):
 
     def _get_translations(self):
         return DefaultTranslations(JananeseTranslations())
@@ -69,7 +69,12 @@ class Schema(Form):
     email = fields.TextField(u"メールアドレス", validators=[v.Email()])
     email2 = fields.TextField(u"メールアドレス（確認用）", validators=[v.Email(), v.EqualTo('email')])
     publicity = fields.SelectField(u"媒体への掲載希望", validators=[v.Required()], choices=[('yes', u'希望する'),('no', u'希望しない')])
+    mail_permission = fields.BooleanField(u"メルマガ配信")
     nickname = fields.TextField(u"媒体掲載時のニックネーム")
 
     def validate_t_shirts_size(self, field):
         pass
+
+class OrderReviewSchema(Form):
+    order_no = fields.TextField(u"オーダー番号", validators=[v.Required()])
+    tel = fields.TextField(u"電話番号", validators=[v.Required()])

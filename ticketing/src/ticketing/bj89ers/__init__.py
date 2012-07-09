@@ -22,8 +22,15 @@ def main(global_conf, **settings):
     config.add_subscriber('.api.on_order_completed', 'ticketing.cart.events.OrderCompleted')
     config.commit()
 
+
+    config.add_route('order_review', 'review')
+
     config.add_view('.views.IndexView', route_name='index', attr="get", request_method='GET', renderer='carts/form.html')
     config.add_view('.views.IndexView', route_name='index', attr="post", request_method='POST', renderer='carts/form.html')
     config.add_view('.views.PaymentView', route_name='cart.payment', attr="post", request_method="POST", renderer="carts/payment.html")
+    config.add_view('.views.CompleteView', route_name='payment.finish', request_method="POST", renderer="carts/completion.html")
+
+    config.add_view('.views.OrderReviewView', route_name='order_review', attr="get", request_method="GET")
+    config.add_view('.views.OrderReviewView', route_name='order_review', attr="post", request_method="POST", renderer="order_review/show.html")
 
     return config.make_wsgi_app()
