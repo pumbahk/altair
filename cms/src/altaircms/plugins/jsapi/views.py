@@ -13,6 +13,7 @@ from altaircms.page.models import PageDefaultInfo
 from altaircms.page.models import PageAccesskey
 from altaircms.page import subscribers as page_subscribers
 from altaircms.auth.api import require_login
+from altaircms.auth.api import get_or_404
 from altaircms.event.models import Event
 
 from altaircms.subscribers import notify_model_create
@@ -45,13 +46,28 @@ def performance_add_getti_code(request):
     return {"status": "ok", 
             "changed": changed}
 
-### page
+
+### pageset
+@view_config(permission="page_create", 
+             route_name="plugins_jsapi_pageset_reset_event", renderer="json", request_method="POST", 
+             custom_predicates=(require_login, ))
+def pageset_reset_event(request):
+    pageset_id = request.matchdict["pageset_id"]
+    pageset = get_or_404(request.allowable("PageSet"), PageSet.id==pageset_id)
+    
+    pageset.take_in_event(None)
+    for page in pageset.pages:
+        page_subscribers.notify_page_update(request, page)
+    DBSession.add(pageset)
+    return "OK"
+
+
 @view_config(permission="page_create",
              route_name="plugins_jsapi_addpage", renderer="json", request_method="POST", 
              custom_predicates=(require_login,))
 def pageset_addpage(request):
     pageset_id = request.matchdict["pageset_id"]
-    pageset = request.allowable("PageSet").filter_by(id=pageset_id).first()
+    pageset = get_or_404(request.allowable("PageSet"), PageSet.id==pageset_id)
     created = pageset.create_page()
 
     if created:

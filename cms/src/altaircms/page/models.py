@@ -139,6 +139,10 @@ class PageSet(Base,
         created.layout = base_page.layout
         return created
 
+    def take_in_event(self, event):
+        self.event = event
+        for p in self.pages:
+            p.event = event
         
     # @property
     # def page_proxy(self):

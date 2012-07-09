@@ -3,22 +3,51 @@ import logging
 import json
 logger = logging.getLogger(__file__)
 from pyramid.view import view_config
-from pyramid.httpexceptions import HTTPCreated, HTTPForbidden, HTTPBadRequest, HTTPNotFound
+from pyramid.view import view_defaults
+from pyramid.httpexceptions import HTTPCreated, HTTPForbidden, HTTPBadRequest, HTTPNotFound, HTTPFound
 
-from ..models import Sale
 from ..lib.fanstatic_decorator import with_bootstrap
-
+from ..auth.api import get_or_404
 from .models import Event
-from .forms import EventForm
 from . import forms
 from . import searcher
-
+from ..models import DBSession
 from . import helpers as h
 from .event_info import get_event_notify_info
-
+from ..page.subscribers import notify_page_update
 ##
 ## CMS view
 ##
+@view_defaults(route_name="event_takein_pageset", renderer="altaircms:templates/event/takein_pageset.mako", 
+               permission="event_update", 
+               decorator=with_bootstrap)
+class PageSetTakein(object):
+    """ pagesetを配下のページとして取り込む"""
+    def __init__(self, request):
+        self.request = request
+
+    @view_config(request_method="GET")
+    def input_view(self):
+        event = get_or_404(self.request.allowable("Event"), Event.id==self.request.matchdict["event_id"])
+        form = forms.EventTakeinPageForm(event=event)
+        return {"form": form, "event": event}
+
+    @view_config(request_method="POST")
+    def page_takein(self):
+        event = get_or_404(self.request.allowable("Event"), Event.id==self.request.matchdict["event_id"])
+        form = forms.EventTakeinPageForm(self.request.POST)
+        if form.validate():
+            pageset = form.data["pageset"]
+            pageset.take_in_event(event)
+            for page in pageset.pages:
+                notify_page_update(self.request, page)
+            DBSession.add(pageset)
+            return HTTPFound(self.request.route_url("event", id=event.id))
+        else:
+            return {"form": form, "event": event}
+
+
+
 @view_config(route_name='event', renderer='altaircms:templates/event/view.mako', permission='event_read',
              decorator=with_bootstrap)
 def view(request):

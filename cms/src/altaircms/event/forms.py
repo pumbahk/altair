@@ -7,6 +7,7 @@ from wtforms import widgets
 
 from altaircms.helpers.formhelpers import required_field, append_errors
 from .models import Event
+from ..page.models import PageSet
 from ..models import Category
 from altaircms.lib.formhelpers import dynamic_query_select_field_factory
 
@@ -71,4 +72,11 @@ class EventSearchForm(Form):
         Category, allow_blank=True, label=u"カテゴリ",
         get_label=lambda obj: obj.label or u"--なし--")
 
+class EventTakeinPageForm(Form):
+    pageset = dynamic_query_select_field_factory(
+        PageSet, allow_blank=False, label=u"取り込むページ",
+        get_label=lambda obj: u"%s %s" % (obj.name, u"(イベント配下)" if obj.event_id else u""))
 
+    def validate_pageset(form, field):
+        if field.data.category:
+            raise validators.ValidationError(u"トップ／カテゴリトップのページは配下におくことができません")

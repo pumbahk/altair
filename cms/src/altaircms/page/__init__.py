@@ -24,7 +24,7 @@ def includeme(config):
     # PageSet
     config.add_route('pagesets', '/pagesets')
     config.add_route('pageset', '/pagesets/{pageset_id}')
-    config.add_route("pageset_detail", "/pagesets/{pageset_id}/detail/{kind}")
+    add_route("pageset_detail", "/pagesets/{pageset_id}/detail/{kind}")
     config.add_route('pageset_delete', '/pagesets/{pageset_id}/delete')
     config.add_route('pageset_update', '/pagesets/{pageset_id}/update')
     

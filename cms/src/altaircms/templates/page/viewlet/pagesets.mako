@@ -103,16 +103,8 @@
 		<a class="action" target="_blank" href="${request.route_path("pageset", pageset_id="__id__")}">
 		  <i class="icon-plus"> </i> ページセット期間変更</a>
 	  </li>
-	  <li>
-		<a href="${request.route_path("event_takein_pageset",event_id=event.id)}">
-		  <i class="icon-plus">_</i> このイベントに配下のページとして別のページセットを取り込む</a>
-	  </li>
-	  <li>
-		<a id="reset_event" class="individual-action" href="${request.route_path("plugins_jsapi_pageset_reset_event", pageset_id="__id__")}">
-		  <i class="icon-plus"> </i> 選択したページセットをイベントと結びつかないページセットにする</a>
-	  </li>
      <li>
-		<a class="" target="_blank" href="${request.route_path("page_add", event_id=event.id, action="input")}">
+		<a class="" target="_blank" href="${request.route_path("page_add_orphan", action="input")}">
 		  <i class="icon-plus"> </i> 新しいページセットの追加</a>
      </li>
      <li>
@@ -131,14 +123,6 @@
 
   // add page
     $(".box #pageset_addpage").click(function(e){
-      e.preventDefault();
-      var  pk = $(this).parents(".box").find("input[name='object_id']:checked").val();
-      if(!pk){ console.log("sorry"); return false; }
-      $.post(String($(this).attr("href")).replace("__id__", pk)).done(function(){location.reload()}); //slackoff
-      return false;
-    });
-  // reset event
-    $(".box #reset_event").click(function(e){
       e.preventDefault();
       var  pk = $(this).parents(".box").find("input[name='object_id']:checked").val();
       if(!pk){ console.log("sorry"); return false; }

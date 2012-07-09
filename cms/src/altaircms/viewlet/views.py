@@ -18,6 +18,14 @@ def describe_pageset(request):
         "pagesets": pagesets
         }
 
+@view_config(name="describe_pageset", renderer="altaircms:templates/page/viewlet/pagesets.mako", 
+             context="altaircms.page.resources.PageResource")
+def describe_pageset_without_event(request):
+    pagesets = api.get_pagesets(request)
+    return {
+        "pagesets": pagesets
+        }
+
 @view_config(name="describe_performance", renderer="altaircms:templates/event/viewlet/performances.mako")
 def describe_performance(request):
     performances = api.get_performances(request)

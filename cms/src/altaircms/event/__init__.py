@@ -3,6 +3,7 @@ from .interfaces import IAPIKeyValidator, IEventRepository
 
 def includeme(config):
     config.add_route('event', '/event/{id}')
+    config.add_route("event_takein_pageset", "/event/{event_id}/takein/pageset")
     config.add_route('event_list', '/event/')
     config.add_crud("event", title="event", model=".models.Event",
                     form=".forms.EventForm", mapper=".mappers.event_mapper", 
