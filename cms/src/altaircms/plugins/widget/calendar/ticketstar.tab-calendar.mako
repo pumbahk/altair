@@ -24,6 +24,7 @@
 	              <p class="${status}">
 					<strong>${h.event.content_string_from_performance_status(status)}</strong>
 					<a target="_blank" href="${h.link.get_purchase_page_from_performance(request,p)}">${p.start_on.strftime("%H:%M")}</a>
+                    <p>${p.calendar_content or u""}</p>
 				  </p>
               %endfor
             </td>   
