@@ -718,10 +718,10 @@ class FixtureBuilder(object):
             for name, product_item_seeds in self.stock_type_combinations.iteritems()
             ]
 
-    def pick_stocks(performance, product_item):
+    def pick_stocks(self, performance, product_item):
         if product_item.stock.stock_type.type == STOCK_TYPE_TYPE_SEAT:
             venue = performance.venue[0]
-            seats = sample([seat for seat in venue.seats if seat.status[0].status == 1], product_item.quantity)
+            seats = sample([seat for seat in venue.seats if seat.status_[0].status == 1], product_item.quantity)
         else:
             seats = []
         return seats
@@ -758,7 +758,7 @@ class FixtureBuilder(object):
 
     def build_order_datum(self, organization, user, sales_segment, performance, product_quantity_pairs):
         ordered_products = [
-            build_ordered_product_datum(performance, product, quantity)
+            self.build_ordered_product_datum(performance, product, quantity)
             for product, quantity in product_quantity_pairs
             ]
 
@@ -777,7 +777,7 @@ class FixtureBuilder(object):
                 product_item = ordered_product_item.product_item
                 product_item.stock.stock_status[0].quantity -= product_item.quantity
                 for seat in ordered_product_item.seats:
-                    seat.status[0].status = 5 # Shipped
+                    seat.status_[0].status = 5 # Shipped
 
         payment_delivery_method_pair = choice(sales_segment.payment_delivery_method_pairs)
         total_amount = sum(
@@ -793,7 +793,7 @@ class FixtureBuilder(object):
         return self.Datum(
             'Order',
             user=many_to_one(user, 'user_id'),
-            shipping_address=many_to_one(build_shipping_address_datum(user), 'shipping_address_id'),
+            shipping_address=many_to_one(self.build_shipping_address_datum(user), 'shipping_address_id'),
             organization=many_to_one(organization, 'organization_id'),
             performance=many_to_one(performance, 'performance_id'),
             order_no=random_order_number(organization),
