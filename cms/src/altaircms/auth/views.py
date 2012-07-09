@@ -91,7 +91,7 @@ class OperatorView(object):
 
     @view_config(route_name="operator_list", renderer='altaircms:templates/auth/operator/list.mako', permission="operator_read")
     def list(self):
-        operators = self.request.allowable("Operator")
+        operators = self.request.allowable(Operator)
 
         return dict(
             operators=operators
@@ -99,13 +99,13 @@ class OperatorView(object):
 
     @view_config(route_name="operator", renderer='altaircms:templates/auth/operator/view.mako', permission="operator_read")
     def read(self):
-        operator = get_or_404(self.request.allowable("Operator"), Operator==self.request.matchdict['id'])
+        operator = get_or_404(self.request.allowable(Operator), Operator==self.request.matchdict['id'])
         return dict(operator=operator)
 
     @view_config(route_name="operator", permission="operator_delete",
         request_method="POST", request_param="_method=delete")
     def delete(self):
-        operator = get_or_404(self.request.allowable("Operator"), Operator==self.request.matchdict['id'])
+        operator = get_or_404(self.request.allowable(Operator), Operator==self.request.matchdict['id'])
         logged_in_user_id = authenticated_userid(self.request)
         user_id = operator.user_id
         DBSession.delete(operator)

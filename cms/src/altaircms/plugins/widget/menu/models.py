@@ -53,6 +53,6 @@ class MenuWidgetResource(HandleSessionMixin,
         return self._get_or_create(MenuWidget, widget_id)
 
     def get_items(self, page_id):
-        page = self.request.allowable("Page").filter(Page.id==page_id).one()
+        page = self.request.allowable(Page).filter(Page.id==page_id).one()
         return h.items_from_page(self.request, page) if page.event else "[]"
 

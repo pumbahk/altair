@@ -7,6 +7,7 @@ import wtforms.ext.sqlalchemy.fields as extfields
 import wtforms.validators as validators
 from altaircms.models import Performance
 from altaircms.models import Sale
+from altaircms.page.models import Page
 from altaircms.seeds.saleskind import SALESKIND_CHOICES
 
 class TicketlistChoiceForm(form.Form):
@@ -21,7 +22,7 @@ class TicketlistChoiceForm(form.Form):
             return
 
         ## pageで絞り込んでいるから大丈夫なはず。organization的に
-        page = request.allowable("Page").filter_by(id=page_id).first()
+        page = request.allowable(Page).filter_by(id=page_id).first()
         if page is None:
             return
         ## sales choice

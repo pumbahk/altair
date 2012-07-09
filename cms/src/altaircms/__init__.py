@@ -83,36 +83,6 @@ def main(global_config, **settings):
 
     ## allowable query(organizationごとに絞り込んだデータを提供)
     config.set_request_property("altaircms.auth.api.get_allowable_query", "allowable", reify=True)
-    iquery = config.maybe_dotted(".auth.interfaces.IAllowableQueryFactory")
-    query_factory = config.maybe_dotted(".auth.api.AllowableQueryFactory")
-    def register_allowable(modelname, callname):
-        """ request.allowable("<call-name>")で呼べるようにモデルを登録する"""
-        allowable_query_factory = query_factory(config.maybe_dotted(modelname))
-        config.registry.registerUtility(allowable_query_factory, iquery, name=callname)
-
-    register_allowable(".asset.models.Asset", "Asset")
-    register_allowable(".asset.models.ImageAsset", "ImageAsset")
-    register_allowable(".asset.models.MovieAsset", "MovieAsset")
-    register_allowable(".asset.models.FlashAsset", "FlashAsset")
-    register_allowable(".event.models.Event", "Event")
-    register_allowable(".page.models.Page", "Page")
-    register_allowable(".page.models.PageSet", "PageSet")
-    register_allowable(".widget.models.WidgetDisposition", "WidgetDisposition")
-    register_allowable(".layout.models.Layout", "Layout")
-    register_allowable(".plugins.widget.promotion.models.PromotionUnit", "PromotionUnit")
-    register_allowable(".plugins.widget.promotion.models.Promotion", "Promotion")
-    register_allowable(".models.Category", "Category")
-    register_allowable(".topic.models.Topic", "Topic")
-    register_allowable(".topic.models.Topcontent", "Topcontent")
-    register_allowable(".tag.models.HotWord", "HotWord")
-    register_allowable(".tag.models.PageTag", "PageTag")
-    register_allowable(".tag.models.AssetTag", "AssetTag")
-    register_allowable(".tag.models.ImageAssetTag", "ImageAssetTag")
-    register_allowable(".tag.models.MovieAssetTag", "MovieAssetTag")
-    register_allowable(".tag.models.FlashAssetTag", "FlashAssetTag")
-    register_allowable(".auth.models.Operator", "Operator")
-
-
     
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)
     config.add_static_view('plugins/static', 'altaircms:plugins/static', cache_max_age=3600)

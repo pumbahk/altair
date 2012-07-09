@@ -9,7 +9,7 @@ def get_linklist_candidates_finder(request, key):
 
 @provider(IWFinder)
 def near_the_end_events(request, N, today):
-    qs = request.allowable("PageSet").filter(PageSet.event_id==Event.id)
+    qs = request.allowable(PageSet).filter(PageSet.event_id==Event.id)
     qs = qs.filter(Event.is_searchable==True)
     qs =  Event.near_the_deal_close_query(today, N=N, qs=qs)
     qs = qs.order_by(sa.asc(Event.deal_close))
@@ -17,7 +17,7 @@ def near_the_end_events(request, N, today):
 
 @provider(IWFinder)
 def deal_start_this_week_events(request, N, today):
-    qs = request.allowable("PageSet").filter(PageSet.event_id==Event.id)
+    qs = request.allowable(PageSet).filter(PageSet.event_id==Event.id)
     qs = qs.filter(Event.is_searchable==True)
     qs =  Event.deal_start_this_week_query(today, offset=-today.weekday(), qs=qs)
     qs = qs.order_by(sa.desc(Event.deal_open))

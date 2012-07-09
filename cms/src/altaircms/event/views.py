@@ -28,13 +28,13 @@ class PageSetTakein(object):
 
     @view_config(request_method="GET")
     def input_view(self):
-        event = get_or_404(self.request.allowable("Event"), Event.id==self.request.matchdict["event_id"])
+        event = get_or_404(self.request.allowable(Event), Event.id==self.request.matchdict["event_id"])
         form = forms.EventTakeinPageForm(event=event)
         return {"form": form, "event": event}
 
     @view_config(request_method="POST")
     def page_takein(self):
-        event = get_or_404(self.request.allowable("Event"), Event.id==self.request.matchdict["event_id"])
+        event = get_or_404(self.request.allowable(Event), Event.id==self.request.matchdict["event_id"])
         form = forms.EventTakeinPageForm(self.request.POST)
         if form.validate():
             pageset = form.data["pageset"]
@@ -53,7 +53,7 @@ class PageSetTakein(object):
 def view(request):
     id_ = request.matchdict['id']
 
-    event = request.allowable("Event").filter_by(id=id_).first()
+    event = request.allowable(Event).filter_by(id=id_).first()
     if event is None:
         raise HTTPNotFound() ##
     performances = event.performances
@@ -68,7 +68,7 @@ def view(request):
 @view_config(route_name='event_list', renderer='altaircms:templates/event/list.mako', permission='event_read', request_method="GET", 
              decorator=with_bootstrap)
 def event_list(request):
-    events = request.allowable("Event")
+    events = request.allowable(Event)
 
     params = dict(request.GET)
     if "page" in params:

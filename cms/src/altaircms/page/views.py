@@ -40,7 +40,7 @@ class PageAddView(object):
     @view_config(route_name="page_add", request_method="GET", match_param="action=input", permission="page_create")
     def input_form_with_event(self):
         event_id = self.request.matchdict["event_id"]
-        event = self.request._event = get_or_404(self.request.allowable("Event"), (Event.id==event_id))
+        event = self.request._event = get_or_404(self.request.allowable(Event), (Event.id==event_id))
             
         self.request._form = forms.PageForm(event=event)
         self.request._setup_form = forms.PageInfoSetupForm(name=event.title)
@@ -76,7 +76,7 @@ class PageAddView(object):
         else:
             event_id = self.request.matchdict["event_id"]
             self.request._form = form
-            self.request._event = get_or_404(self.request.allowable("Event"), Event.id==event_id)
+            self.request._event = get_or_404(self.request.allowable(Event), Event.id==event_id)
             self.request._setup_form = forms.PageInfoSetupForm(name=form.data["name"])
             raise AfterInput
 
@@ -105,7 +105,7 @@ class PageAddView(object):
         else:
             event_id = self.request.matchdict["event_id"]
             self.request._form = form
-            self.request._event = get_or_404(self.request.allowable("Event"), Event.id==event_id)
+            self.request._event = get_or_404(self.request.allowable(Event), Event.id==event_id)
             self.request._setup_form = forms.PageInfoSetupForm(name=form.data["name"])
             raise AfterInput
 
@@ -152,12 +152,12 @@ class PageCreateView(object):
 
     @view_config(route_name="page_duplicate", request_method="GET", renderer="altaircms:templates/page/duplicate_confirm.mako")
     def duplicate_confirm(self):
-        page = get_or_404(self.request.allowable("Page"), Page.id==self.request.matchdict["id"])
+        page = get_or_404(self.request.allowable(Page), Page.id==self.request.matchdict["id"])
         return {"page": page}
         
     @view_config(route_name="page_duplicate", request_method="POST")
     def duplicate(self):
-        page = get_or_404(self.request.allowable("Page"), Page.id==self.request.matchdict["id"])
+        page = get_or_404(self.request.allowable(Page), Page.id==self.request.matchdict["id"])
         self.context.clone_page(page)
         ## flash messsage
         FlashMessage.success("page duplicated", request=self.request)
@@ -172,12 +172,12 @@ class PageDeleteView(object):
 
     @view_config(renderer="altaircms:templates/page/delete_confirm.mako", request_method="GET")
     def delete_confirm(self):
-        page = get_or_404(self.request.allowable("Page"), Page.id==self.request.matchdict["id"])
+        page = get_or_404(self.request.allowable(Page), Page.id==self.request.matchdict["id"])
         return {"page": page}
 
     @view_config(request_method="POST")
     def delete(self):
-        page = get_or_404(self.request.allowable("Page"), Page.id==self.request.matchdict["id"])
+        page = get_or_404(self.request.allowable(Page), Page.id==self.request.matchdict["id"])
         self.context.delete_page(page)
 
         ## flash messsage
@@ -207,7 +207,7 @@ class PageUpdateView(object):
         
     @view_config(request_method="GET")
     def input(self):
-        page = get_or_404(self.request.allowable("Page"), Page.id==self.request.matchdict["id"])
+        page = get_or_404(self.request.allowable(Page), Page.id==self.request.matchdict["id"])
         params = page.to_dict()
         params["tags"] = tag.tags_to_string(page.public_tags)
         params["private_tags"] = tag.tags_to_string(page.private_tags)
@@ -218,7 +218,7 @@ class PageUpdateView(object):
                     custom_predicates=[RegisterViewPredicate.confirm])
     def update_confirm(self):
         form = forms.PageUpdateForm(self.request.POST)
-        page = get_or_404(self.request.allowable("Page"), Page.id==self.request.matchdict["id"])
+        page = get_or_404(self.request.allowable(Page), Page.id==self.request.matchdict["id"])
         if form.validate():
             return dict( page=page, params=self.request.POST.items())
         else:
@@ -226,7 +226,7 @@ class PageUpdateView(object):
 
     @view_config(request_method="POST", custom_predicates=[RegisterViewPredicate.execute])
     def update(self):
-        page = get_or_404(self.request.allowable("Page"), Page.id==self.request.matchdict["id"])
+        page = get_or_404(self.request.allowable(Page), Page.id==self.request.matchdict["id"])
         form = forms.PageUpdateForm(self.request.POST)
         if form.validate():
             page = self.context.update_page(page, form)
@@ -248,7 +248,7 @@ class PageListView(object):
     @view_config(match_param="kind=event", renderer="altaircms:templates/page/event_page_list.mako")
     def event_bound_page_list(self):
         """ event詳細ページと結びついているpage """
-        pages = self.request.allowable("PageSet").filter(PageSet.event != None)
+        pages = self.request.allowable(PageSet).filter(PageSet.event != None)
         params = dict(self.request.GET)
         if "page" in params:
             params.pop("page") ## pagination
@@ -265,14 +265,14 @@ class PageListView(object):
     def other_page_list(self):
         """event詳細ページとは結びついていないページ(e.g. トップ、カテゴリトップ) """
         #kind = self.request.matchdict["kind"]
-        pages = self.request.allowable("PageSet").filter(PageSet.event == None)
+        pages = self.request.allowable(PageSet).filter(PageSet.event == None)
         return {"pages":pages}
 
 def with_pageset_predicate(kind): #don't support static page
     def decorate(info, request):
         if not hasattr(request, "_pageset"):
             pageset_id = request.matchdict["pageset_id"]
-            request._pageset = request.allowable("PageSet").filter_by(id=pageset_id).first()
+            request._pageset = request.allowable(PageSet).filter_by(id=pageset_id).first()
         pageset = request._pageset
         if pageset is None:
             return False
@@ -314,7 +314,7 @@ class PageSetDetailView(object):
 def page_detail(request):
     """ page詳細ページ
     """
-    page = get_or_404(request.allowable("Page"), Page.id==request.matchdict["page_id"])
+    page = get_or_404(request.allowable(Page), Page.id==request.matchdict["page_id"])
     return {"page": page, "myhelpers": myhelpers}
 
 ## todo: persmissionが正しいか確認
@@ -325,7 +325,7 @@ def page_detail(request):
 def page_edit(request):
     """pageの中をwidgetを利用して変更する
     """
-    page = get_or_404(request.allowable("Page"), Page.id==request.matchdict["page_id"])
+    page = get_or_404(request.allowable(Page), Page.id==request.matchdict["page_id"])
     try:
         page.valid_layout()
     except ValueError, e:
@@ -348,7 +348,7 @@ def page_edit(request):
 @view_config(route_name="disposition", request_method="POST", permission='authenticated')
 def disposition_save(context, request):
     form = context.Form(request.POST)
-    page = get_or_404(request.allowable("Page"), Page.id==request.matchdict["id"])
+    page = get_or_404(request.allowable(Page), Page.id==request.matchdict["id"])
 
     if form.validate():
         wdisposition = context.get_disposition_from_page(page, form.data)
@@ -361,8 +361,8 @@ def disposition_save(context, request):
 
 @view_config(route_name="disposition", request_method="GET", permission='authenticated')
 def disposition_load(context, request):
-    page = get_or_404(request.allowable("Page"), Page.id==request.matchdict["id"])
-    wdisposition = get_or_404(request.allowable("WidgetDisposition"), WidgetDisposition.id==request.GET["disposition"])
+    page = get_or_404(request.allowable(Page), Page.id==request.matchdict["id"])
+    wdisposition = get_or_404(request.allowable(WidgetDisposition), WidgetDisposition.id==request.GET["disposition"])
     loaded_page = context.bind_disposition(page, wdisposition)
     context.add(loaded_page)
     
@@ -378,7 +378,7 @@ def disposition_list(context, request):
 
 @view_config(route_name="disposition_alter", request_method="POST", permission='authenticated') #permission
 def disposition_delete(context, request):
-    disposition = get_or_404(request.allowable("WidgetDisposition"), WidgetDisposition.id==request.GET["disposition"])
+    disposition = get_or_404(request.allowable(WidgetDisposition), WidgetDisposition.id==request.GET["disposition"])
     title = disposition.title
     context.delete_disposition(disposition)
     FlashMessage.success(u"%sを消しました" % title, request=request)
@@ -391,13 +391,13 @@ class PageSetView(object):
 
     @view_config(route_name='pagesets', renderer="altaircms:templates/pagesets/list.mako", decorator=with_bootstrap)
     def pageset_list(self):
-        pagesets = self.request.allowable("PageSet")
+        pagesets = self.request.allowable(PageSet)
         return dict(pagesets=pagesets)
 
     @view_config(route_name='pageset', renderer="altaircms:templates/pagesets/edit.mako", decorator=with_bootstrap, request_method="GET")
     def pageset(self):
         pageset_id = self.request.matchdict['pageset_id']
-        pageset = get_or_404(self.request.allowable("PageSet"), PageSet.id==pageset_id)
+        pageset = get_or_404(self.request.allowable(PageSet), PageSet.id==pageset_id)
         factory = forms.PageSetFormFactory(self.request)
         form = factory(pageset)
         return dict(ps=pageset, form=form, f=factory)
@@ -406,7 +406,7 @@ class PageSetView(object):
     def update_times(self):
         logging.debug('post ')
         pageset_id = self.request.matchdict['pageset_id']
-        pageset = get_or_404(self.request.allowable("PageSet"), PageSet.id==pageset_id)
+        pageset = get_or_404(self.request.allowable(PageSet), PageSet.id==pageset_id)
         proxy = forms.PageSetFormProxy(pageset)
 
         factory = forms.PageSetFormFactory(self.request)

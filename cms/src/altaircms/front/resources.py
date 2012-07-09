@@ -6,6 +6,8 @@ logger = logging.getLogger(__file__)
 
 from . import api
 from altaircms.security import get_acl_candidates
+from altaircms.page.models import Page
+from altaircms.page.models import PageSet
 
 class PageRenderingResource(object):
     def __init__(self, request):
@@ -49,7 +51,7 @@ class AccessControl(object):
             return False
 
     def fetch_page_from_pageid(self, page_id, access_key=None):
-        page = self.request.allowable("Page").filter_by(id=page_id).first()
+        page = self.request.allowable(Page).filter_by(id=page_id).first()
         self.access_ok = True
 
         if page is None:
@@ -76,7 +78,7 @@ class AccessControl(object):
         return page
         
     def fetch_page_from_pagesetid(self, pageset_id):
-        pageset = self.request.allowable("PageSet").filter_by(id=pageset_id).first()
+        pageset = self.request.allowable(PageSet).filter_by(id=pageset_id).first()
         self.access_ok = True
 
         if pageset is None:

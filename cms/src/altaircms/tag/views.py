@@ -5,7 +5,8 @@ from altaircms.tag.api import get_tagmanager
 from .manager import QueryParser
 from . import SUPPORTED_CLASSIFIER
 from . import forms
-
+from .models import PageTag
+from .models import AssetTag
 
 def in_support_classifier(context, request):
     return request.matchdict.get("classifier") in SUPPORTED_CLASSIFIER
@@ -25,8 +26,8 @@ class TopView(object):
         pages = get_tagmanager("page").recent_change_tags()
         assets = get_tagmanager("asset").recent_change_tags()
         new_tags_dict = dict(
-            page=self.request.allowable("PageTag", qs=pages).limit(self.RECENT_CHANGE_TAGS_LIMIT), 
-            asset=self.request.allowable("AssetTag", qs=assets).limit(self.RECENT_CHANGE_TAGS_LIMIT)
+            page=self.request.allowable(PageTag, qs=pages).limit(self.RECENT_CHANGE_TAGS_LIMIT), 
+            asset=self.request.allowable(AssetTag, qs=assets).limit(self.RECENT_CHANGE_TAGS_LIMIT)
             )
         return {"supported": SUPPORTED_CLASSIFIER, "form": form, 
                 "new_tags_dict": new_tags_dict}

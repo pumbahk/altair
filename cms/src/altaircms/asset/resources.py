@@ -66,36 +66,36 @@ class AssetResource(RootFactory):
         self.request = request
 
     def get_image_assets(self):
-        return self.request.allowable("ImageAsset").order_by(sa.desc(models.ImageAsset.id))
+        return self.request.allowable(models.ImageAsset).order_by(sa.desc(models.ImageAsset.id))
     def get_movie_assets(self):
-        return self.request.allowable("MovieAsset").order_by(sa.desc(models.MovieAsset.id))
+        return self.request.allowable(models.MovieAsset).order_by(sa.desc(models.MovieAsset.id))
     def get_flash_assets(self):
-        return self.request.allowable("FlashAsset").order_by(sa.desc(models.FlashAsset.id))
+        return self.request.allowable(models.FlashAsset).order_by(sa.desc(models.FlashAsset.id))
     def get_assets_all(self):
-        return self.request.allowable("Asset").order_by(sa.desc(models.Asset.id))
+        return self.request.allowable(models.Asset).order_by(sa.desc(models.Asset.id))
 
     def get_image_asset(self, id_):
-        return get_or_404(self.request.allowable("ImageAsset"), models.ImageAsset.id==id_)
+        return get_or_404(self.request.allowable(models.ImageAsset), models.ImageAsset.id==id_)
     def get_movie_asset(self, id_):
-        return get_or_404(self.request.allowable("MovieAsset"), models.MovieAsset.id==id_)
+        return get_or_404(self.request.allowable(models.MovieAsset), models.MovieAsset.id==id_)
     def get_flash_asset(self, id_):
-        return get_or_404(self.request.allowable("FlashAsset"), models.FlashAsset.id==id_)
+        return get_or_404(self.request.allowable(models.FlashAsset), models.FlashAsset.id==id_)
     def get_asset(self, id_):
-        return get_or_404(self.request.allowable("Asset"), models.Asset.id==id_)
+        return get_or_404(self.request.allowable(models.Asset), models.Asset.id==id_)
 
     def search_image_asset_by_query(self, data,
                                     _get_search_query=h.image_asset_query_from_search_params):
-        qs = self.request.allowable("ImageAsset", qs=_get_search_query(data))
+        qs = self.request.allowable(models.ImageAsset, qs=_get_search_query(data))
         return query_filter_by_users(qs, data)
 
     def search_movie_asset_by_query(self, data,
                                     _get_search_query=h.movie_asset_query_from_search_params):
-        qs = self.request.allowable("MovieAsset", qs=_get_search_query(data))
+        qs = self.request.allowable(models.MovieAsset, qs=_get_search_query(data))
         return query_filter_by_users(qs, data)
 
     def search_flash_asset_by_query(self, data,
                                     _get_search_query=h.flash_asset_query_from_search_params):
-        qs = self.request.allowable("FlashAsset", qs=_get_search_query(data))
+        qs = self.request.allowable(models.FlashAsset, qs=_get_search_query(data))
         return query_filter_by_users(qs, data)
     
     ## delete

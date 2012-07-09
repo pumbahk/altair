@@ -70,7 +70,7 @@ def topics_merge_settings(template_name, widget, bname, bsettings):
         page = bsettings.extra["page"] if widget.display_page else None
 
         qs = Topic.matched_qs(page=page, d=d, kind=widget.kind, subkind=widget.subkind)
-        qs = request.allowable("Topic", qs=qs)
+        qs = request.allowable(Topic, qs=qs)
         qs = _qs_refine(qs, Topic, widget)
         return render(template_name, 
                       {"widget": widget, "topics": qs}, 
@@ -87,7 +87,7 @@ def topcontent_merge_settings(template_name, widget, bname, bsettings):
         request = bsettings.extra["request"]
         page = bsettings.extra["page"] if widget.display_page else None
         qs = Topcontent.matched_qs(page=page, d=d, kind=widget.kind, subkind=widget.subkind)
-        qs = request.allowable("Topcontent", qs=qs)
+        qs = request.allowable(Topcontent, qs=qs)
         qs = _qs_refine(qs, Topcontent, widget)
         return render(template_name, 
                       {"widget": widget, "topcontents": qs}, 

@@ -32,7 +32,7 @@ def performance_add_getti_code(request):
         codes[int(i)] = getti_code
 
     perfs = Performance.query.filter(Performance.id.in_(codes.keys()))
-    perfs = request.allowable("Event", qs=perfs.filter(Performance.event_id==Event.id))
+    perfs = request.allowable(Event, qs=perfs.filter(Performance.event_id==Event.id))
     for obj in perfs:
         changed.append(obj.id)
         getti_code = codes[obj.id]
@@ -53,7 +53,7 @@ def performance_add_getti_code(request):
              custom_predicates=(require_login, ))
 def pageset_reset_event(request):
     pageset_id = request.matchdict["pageset_id"]
-    pageset = get_or_404(request.allowable("PageSet"), PageSet.id==pageset_id)
+    pageset = get_or_404(request.allowable(PageSet), PageSet.id==pageset_id)
     
     pageset.take_in_event(None)
     for page in pageset.pages:
@@ -67,7 +67,7 @@ def pageset_reset_event(request):
              custom_predicates=(require_login,))
 def pageset_addpage(request):
     pageset_id = request.matchdict["pageset_id"]
-    pageset = get_or_404(request.allowable("PageSet"), PageSet.id==pageset_id)
+    pageset = get_or_404(request.allowable(PageSet), PageSet.id==pageset_id)
     created = pageset.create_page()
 
     if created:
@@ -89,11 +89,11 @@ class PageUpdatePublishStatus(object):
     @view_config(match_param="status=publish", )
     def page_status_to_publish(self):
         pageid = self.request.matchdict["page_id"]
-        page = self.request.allowable("Page").filter_by(id=pageid).first()
+        page = self.request.allowable(Page).filter_by(id=pageid).first()
         if page is None:
             return False
         else:
-            self.request.allowable("Page").filter(Page.event_id==page.event_id).filter(Page.id!=pageid).filter(Page.publish_begin==page.publish_begin).update({"published": False})
+            self.request.allowable(Page).filter(Page.event_id==page.event_id).filter(Page.id!=pageid).filter(Page.publish_begin==page.publish_begin).update({"published": False})
             page.published = True
             DBSession.add(page)
             return True
@@ -101,7 +101,7 @@ class PageUpdatePublishStatus(object):
     @view_config(match_param="status=unpublish")
     def page_status_to_unpublish(self):
         pageid = self.request.matchdict["page_id"]
-        page = self.request.allowable("Page").filter_by(id=pageid).first()
+        page = self.request.allowable(Page).filter_by(id=pageid).first()
         if page is None:
             return False
         else:
@@ -141,7 +141,7 @@ import json
              custom_predicates=(require_login, ))
 def delete_page_tags(request):
     """ buggy"""
-    page = request.allowable("Page").filter_by(id=request.matchdict["page_id"]).first()
+    page = request.allowable(Page).filter_by(id=request.matchdict["page_id"]).first()
     if page is None:
         return "FAIL"
     try:
@@ -177,7 +177,7 @@ class PageAccessKeyView(object):
             except ValueError:
                 expire = None
                 
-        page = self.request.allowable("Page").filter_by(id=page_id).first()
+        page = self.request.allowable(Page).filter_by(id=page_id).first()
         if page is None:
             return "FAIL"
         key = page.create_access_key(expire=expire)

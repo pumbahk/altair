@@ -107,16 +107,14 @@ class AllowableQueryFactory(object):
         self.model = model
 
     def __call__(self, request, query=None):
-        query = query or self.model.query
-        if request.organization:
-            return query.with_transformation(request.organization.inthere("organization_id"))
-        logger.debug("this-is-external-request. e.g. access with pageaccess key. request.organization is not found")
         return query
 
 def get_allowable_query(request):
-    def query(name, qs=None):
-        factory = request.registry.getUtility(IAllowableQueryFactory, name=name)
-        return factory(request, query=qs)
+    def query(model, qs=None):
+        qs = qs or model.query
+        if request.organization:
+            return qs.with_transformation(request.organization.inthere("organization_id"))
+        logger.debug("this-is-external-request. e.g. access with pageaccess key. request.organization is not found")
     return query
 
 def get_or_404(qs, criteria):

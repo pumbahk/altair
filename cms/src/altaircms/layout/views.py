@@ -7,5 +7,5 @@ from altaircms.auth.api import get_or_404
 
 @view_config(route_name="layout_demo", renderer="altaircms:templates/layout/demo.mako")
 def demo(request):
-    layout = get_or_404(request.allowable("Layout"), Layout.id==request.GET["id"])
+    layout = get_or_404(request.allowable(Layout), Layout.id==request.GET["id"])
     return dict(layout_image=LayoutRender(layout).blocks_image())
