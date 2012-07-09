@@ -4,12 +4,14 @@ from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path
 import webhelpers.paginate as paginate
+from sqlalchemy import or_, and_
 
 from ticketing.models import merge_session_with_post, record_to_appstruct, merge_and_flush, record_to_multidict
-from ..core.models import Organization
+from ticketing.core.models import PaymentMethod, DeliveryMethod
 from ticketing.operators.models import Operator, OperatorRole, Permission
 from ticketing.orders.models import Order
-from ticketing.orders.forms import OrderForm, SejOrderForm, SejTicketForm, SejTicketForm, SejRefundEventForm,SejRefundOrderForm
+from ticketing.orders.forms import (OrderForm, OrderSearchForm, SejOrderForm, SejTicketForm, SejTicketForm,
+                                    SejRefundEventForm,SejRefundOrderForm)
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 
@@ -27,16 +29,42 @@ class Orders(BaseView):
         query = query.order_by(sort + ' ' + direction)
 
         # search condition
+        form_search = OrderSearchForm(self.request.POST)
         if self.request.method == 'POST':
-            condition = self.request.POST.get('order_no')
+            condition = form_search.order_no.data
             if condition:
                 query = query.filter(Order.order_no==condition)
-            condition = self.request.POST.get('order_datetime_from')
+            condition = form_search.ordered_from.data
             if condition:
                 query = query.filter(Order.created_at>=condition)
-            condition = self.request.POST.get('order_datetime_to')
+            condition = form_search.ordered_to.data
             if condition:
                 query = query.filter(Order.created_at<=condition)
+            condition = form_search.payment_method.data
+            if condition:
+                query = query.join(Order.payment_delivery_pair)
+                query = query.join(PaymentMethod)
+                query = query.filter(PaymentMethod.payment_plugin_id.in_(condition))
+            condition = form_search.delivery_method.data
+            if condition:
+                query = query.join(Order.payment_delivery_pair)
+                query = query.join(DeliveryMethod)
+                query = query.filter(DeliveryMethod.delivery_plugin_id.in_(condition))
+            condition = form_search.status.data
+            if condition:
+                status_cond = []
+                if 'refunded' in condition:
+                    status_cond.append(and_(Order.canceled_at!=None, Order.paid_at!=None))
+                if 'canceled' in condition:
+                    status_cond.append(and_(Order.canceled_at!=None, Order.paid_at==None))
+                if 'delivered' in condition:
+                    status_cond.append(and_(Order.canceled_at==None, Order.delivered_at!=None))
+                if 'paid' in condition:
+                    status_cond.append(and_(Order.canceled_at==None, Order.paid_at!=None, Order.delivered_at==None))
+                if 'ordered' in condition:
+                    status_cond.append(and_(Order.canceled_at==None, Order.paid_at==None, Order.delivered_at==None))
+                if status_cond:
+                    query = query.filter(or_(*status_cond))
 
         orders = paginate.Page(
             query,
@@ -47,6 +75,7 @@ class Orders(BaseView):
 
         return {
             'form':OrderForm(),
+            'form_search':form_search,
             'orders':orders,
         }
 

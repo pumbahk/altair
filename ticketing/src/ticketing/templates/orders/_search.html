@@ -1,7 +1,9 @@
+<%page args="form" />
+<%namespace file="/common/helpers.html" name="h" />
+
 <script type="text/javascript">
   $(function() {
-    $('input[name=order_datetime_from]').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
-    $('input[name=order_datetime_to]').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
+    $('.datefield').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
   });
 </script>
 
@@ -37,12 +39,25 @@
   </div>
 
   <div class="modal-body">
-    <form id="search" action="/orders/" method="POST">
-      <label>受注番号</label>
-      <input name="order_no" type="text" class="span3" placeholder="">
-      <label>受注日時</label>
-      <input name="order_datetime_from" type="text" class="span3"> 〜
-      <input name="order_datetime_to" type="text" class="span3">
+    <form id="search" class="form-horizontal" action="/orders/" method="POST">
+      <fieldset>
+        ${h.form_item(form.order_no, option={'class':'span8', 'maxlength':12})}
+        <div class="control-group ">
+          <label class="control-label">
+            ${form.ordered_from.label.text}
+          </label>
+          <div class="controls">
+            <div style="float: left;">
+              <input class="span5 datefield" id="ordered_from" name="ordered_from" type="text"> 〜
+              <input class="span5 datefield" id="ordered_to" name="ordered_to" type="text">
+            </div>
+          </div>
+        </div>
+        <div style="clear: both;"></div>
+        ${h.form_item(form.payment_method)}
+        ${h.form_item(form.delivery_method)}
+        ${h.form_item(form.status)}
+      </fieldset>
     </form>
   </div>
 
@@ -51,3 +66,7 @@
     <a href="javascript:$('#search').submit();" class="btn btn-primary">検索</a>
   </div>
 </div>
+
+% if len(orders) == 0:
+  見つかりませんでした
+% endif
