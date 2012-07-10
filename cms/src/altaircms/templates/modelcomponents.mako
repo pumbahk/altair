@@ -16,6 +16,7 @@
         <th>公演数</th>
         <th>公開日</th>
         <th>検索対象に含める</th>
+        <th>更新日時</th>
     </tr>
     </thead>
     <tbody>
@@ -25,6 +26,7 @@
         <td>${len(event.performances)}</td>
         <td>${event.event_open} - ${event.event_close}</td>
 		<td>${event.is_searchable}</td>
+        <td>${event.updated_at}</td>
 <%doc>
 		<td>
 		  <a href="${request.route_path("event_update",action="input",id=event.id)}" class="btn btn-small btn-primary">

@@ -12,7 +12,7 @@
 <h2>event</h2>
 
 <div class="row-fluid">
-  <div class="span10">
+  <div class="span12">
     ${nco.breadcrumbs(
 	    names=["Top", "Event"], 
 	    urls=[request.route_path("dashboard")]
@@ -70,7 +70,7 @@
 
     <h3>イベント一覧</h3>
 <%
-seq = h.paginate(request, events, item_count=events.count())
+seq = h.paginate(request, events, item_count=events.count(), items_per_page=50)
 %>
 ${seq.pager()}
 ${mco.model_list(seq.paginated(), mco.event_list, u"イベントは登録されていません")}

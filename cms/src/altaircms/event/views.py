@@ -1,6 +1,7 @@
 # coding: utf-8
 import logging
 import json
+import sqlalchemy as sa
 logger = logging.getLogger(__file__)
 from pyramid.view import view_config
 from pyramid.view import view_defaults
@@ -81,7 +82,7 @@ def event_list(request):
         search_form = forms.EventSearchForm()
 
     return dict(
-        events=events, 
+        events=events.order_by(sa.desc("updated_by")), 
         search_form=search_form, 
     )
 
