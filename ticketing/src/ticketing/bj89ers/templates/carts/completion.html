@@ -64,8 +64,7 @@
 								</th>
 								<td>
                                     <%
-                                    #user_profile = order.user.user_profile
-                                    user_profile = request.session['bj89ers.user_profile']
+                                    user_profile = _api.load_user_profile(request)
                                     %>
                                     ${user_profile['last_name']} ${user_profile['first_name']}　様
 	   							</td>
