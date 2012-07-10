@@ -6,6 +6,11 @@
     $('.datefield').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
   });
 
+  function search_orders() {
+    modal = $('#modal-search');
+    modal.find('#search').attr('action', '/orders/').submit();
+  }
+
   function download_orders() {
     modal = $('#modal-search');
     modal.find('#search').attr('action', '/orders/download/').submit();
@@ -16,13 +21,13 @@
 <div style="float: left;">
   <ul class="nav nav-pills">
     <li class="dropdown" id="top-search-text">
-      <form id="search-event" action="/orders/" method="POST">
+      <form id="search-order" action="/orders/" method="POST">
         <input name="order_no" type="text" class="search-query" placeholder="受注番号">
       </form>
     </li>
     <li class="dropdown" id="top-search" style="margin-left: 10px;">
       <div class="btn-group">
-        <a href="javascript:$('#search-event').submit();" class="btn">
+        <a href="javascript:$('#search-order').submit();" class="btn">
           <i class="icon-search"></i> 検索
         </a>
         <button class="btn dropdown-toggle" data-toggle="dropdown">
@@ -79,7 +84,7 @@
 
   <div class="modal-footer">
     <a href="#" class="btn" data-dismiss="modal">閉じる</a>
-    <a href="javascript:$('#search').submit();" class="btn btn-primary">検索</a>
+    <a href="javascript:search_orders();" class="btn btn-primary">検索</a>
   </div>
 </div>
 
@@ -91,7 +96,9 @@
   </div>
 
   <div class="modal-body">
-    <p>購入情報(CSV)をダウンロードします。よろしいですか？</p>
+    <p>購入情報(CSV)をダウンロードします。よろしいですか？<br>
+      <div class="alert alert-error">現在の検索条件で抽出され、上限件数は500件までとなります。</div>
+    </p>
   </div>
 
   <div class="modal-footer">

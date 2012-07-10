@@ -3,12 +3,13 @@
 import logging
 from datetime import datetime
 
-from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, Numeric, Unicode
+from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, Numeric, Unicode, or_, and_
 from sqlalchemy.orm import join, backref, column_property
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm.exc import NoResultFound
-from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier, relationship, DBSession
-from ticketing.core.models import Seat, Performance, Product, ProductItem
+
+from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier, relationship, DBSession, record_to_multidict
+from ticketing.core.models import Seat, Performance, Product, ProductItem, PaymentMethod, DeliveryMethod
 from ticketing.users.models import User
 
 logger = logging.getLogger(__name__)
@@ -178,6 +179,147 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             return True
         else:
             return False
+
+    @staticmethod
+    def set_search_condition(query, form):
+        condition = form.order_no.data
+        if condition:
+            query = query.filter(Order.order_no==condition)
+        condition = form.ordered_from.data
+        if condition:
+            query = query.filter(Order.created_at>=condition)
+        condition = form.ordered_to.data
+        if condition:
+            query = query.filter(Order.created_at<=condition)
+        condition = form.payment_method.data
+        if condition:
+            query = query.join(Order.payment_delivery_pair)
+            query = query.join(PaymentMethod)
+            query = query.filter(PaymentMethod.payment_plugin_id.in_(condition))
+        condition = form.delivery_method.data
+        if condition:
+            query = query.join(Order.payment_delivery_pair)
+            query = query.join(DeliveryMethod)
+            query = query.filter(DeliveryMethod.delivery_plugin_id.in_(condition))
+        condition = form.status.data
+        if condition:
+            status_cond = []
+            if 'refunded' in condition:
+                status_cond.append(and_(Order.canceled_at!=None, Order.paid_at!=None))
+            if 'canceled' in condition:
+                status_cond.append(and_(Order.canceled_at!=None, Order.paid_at==None))
+            if 'delivered' in condition:
+                status_cond.append(and_(Order.canceled_at==None, Order.delivered_at!=None))
+            if 'paid' in condition:
+                status_cond.append(and_(Order.canceled_at==None, Order.paid_at!=None, Order.delivered_at==None))
+            if 'ordered' in condition:
+                status_cond.append(and_(Order.canceled_at==None, Order.paid_at==None, Order.delivered_at==None))
+            if status_cond:
+                query = query.filter(or_(*status_cond))
+        return query
+
+class OrderCSV(object):
+
+    # csv header
+    order_header = [
+        'order_no',
+        'status',
+        'created_at',
+        'paid_at',
+        'delivered_at',
+        'canceled_at',
+        'total_amount',
+        'transaction_fee',
+        'delivery_fee',
+        'system_fee',
+        ]
+    user_profile_header = [
+        'last_name',
+        'first_name',
+        'last_name_kana',
+        'first_name_kana',
+        'nick_name',
+        ]
+    shipping_address_header = [
+        'last_name',
+        'first_name',
+        'last_name_kana',
+        'first_name_kana',
+        'zip',
+        'country',
+        'prefecture',
+        'city',
+        'address_1',
+        'address_2',
+        'tel_1',
+        'fax',
+        ]
+    other_header = [
+        'payment',
+        'delivery',
+        'event',
+        'venue',
+        'start_on',
+        ]
+    product_header = [
+        'name',
+        'price',
+        'quantity',
+        ]
+
+    def __init__(self, orders):
+        # shipping_addressのヘッダーにはuser_profileのカラムと区別する為にprefix(shipping_)をつける
+        self.header = self.order_header \
+                    + self.user_profile_header \
+                    + ['shipping_' + sa for sa in self.shipping_address_header] \
+                    + self.other_header
+        self.rows = [self._convert_to_csv(order) for order in orders]
+
+    def _convert_to_csv(self, order):
+        order_dict = record_to_multidict(order)
+        order_dict.add('created_at', str(order.created_at))
+        order_dict.add('status', order.status)
+        order_list = [(column, order_dict.get(column)) for column in self.order_header]
+
+        user_profile_dict = record_to_multidict(order.user.user_profile)
+        user_profile_list = [(column, user_profile_dict.get(column)) for column in self.user_profile_header]
+
+        shipping_address_dict = record_to_multidict(order.shipping_address)
+        shipping_address_list = [('shipping_' + column, shipping_address_dict.get(column)) for column in self.shipping_address_header]
+
+        other_list = [
+            ('payment', order.payment_delivery_pair.payment_method.name),
+            ('delivery', order.payment_delivery_pair.delivery_method.name),
+            ('event', order.ordered_products[0].product.event.title),
+            ('venue', order.ordered_products[0].ordered_product_items[0].product_item.performance.venue.name),
+            ('start_on', order.ordered_products[0].ordered_product_items[0].product_item.performance.start_on),
+        ]
+
+        product_list = []
+        for i, ordered_product in enumerate(order.ordered_products):
+            for column in self.product_header:
+                column_name = 'product_%s_%s' % (column, i)
+                if not column_name in self.header:
+                    self.header.append(column_name)
+                if column == 'name':
+                    product_list.append((column_name, ordered_product.product.name))
+                if column == 'price':
+                    product_list.append((column_name, ordered_product.price))
+                if column == 'quantity':
+                    product_list.append((column_name, ordered_product.quantity))
+
+        # encoding
+        row = dict(order_list + user_profile_list + shipping_address_list + other_list + product_list)
+        for key, value in row.items():
+            if value:
+                if not isinstance(value, unicode):
+                    value = unicode(value)
+                value = value.encode('utf-8')
+            else:
+                value = ''
+            row[key] = value
+
+        return row
 
 class OrderedProductAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__   = "OrderedProductAttribute"
