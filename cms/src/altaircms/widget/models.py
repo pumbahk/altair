@@ -165,8 +165,8 @@ class AssetWidgetResourceMixin(object):
         return self._get_or_create(self.WidgetClass, widget_id)
 
     def get_asset_query(self):
-        return self.AssetClass.query
+        return self.request.allowable(self.AssetClass)
 
     def get_asset(self, asset_id):
-        return self.AssetClass.query.filter(self.AssetClass.id == asset_id).one()
+        return self.request.allowable(self.AssetClass).filter(self.AssetClass.id == asset_id).one()
 
