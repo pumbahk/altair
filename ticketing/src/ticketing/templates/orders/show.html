@@ -30,7 +30,9 @@ ${h.breadcrumbs(
       <tr>
         <th>ステータス</th>
         <td>
-          % if order.status == 'canceled':
+          % if order.status == 'refunded':
+          <span class="label label-important">キャンセル (返金済)</span>
+          % elif order.status == 'canceled':
           <span class="label label-important">キャンセル</span>
           % elif order.status == 'delivered':
           <span class="label label-success">配送済み</span>
