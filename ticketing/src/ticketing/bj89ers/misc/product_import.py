@@ -3,15 +3,22 @@
 import sys
 import sqlahelper
 from pyramid.paster import bootstrap
+import sqlalchemy
+from sqlalchemy import engine_from_config
 
 import ticketing.core.models as c_model
+import ticketing.operators.models as o_model
+import hashlib
 
-
+import transaction
 def main():
-    session = sqlahelper.get_session()
-
     ini_file = sys.argv[1]
     env = bootstrap(ini_file)
+
+    session = sqlahelper.get_session()
+    print session
+
+    t = transaction.begin()
 
     org = c_model.Organization(
         id = 10,
@@ -30,26 +37,48 @@ def main():
     )
     session.add(org)
 
+
+    role = session.query(o_model.OperatorRole).filter_by(name='administrator').one()
+    operator = o_model.Operator(
+        name = 'bj89ers',
+        email = 'dev+bj01@ticketstar.jp',
+        roles=[role],
+        expire_at=None,
+        status=1,
+        organization=org
+    )
+    session.add(operator)
+
+    auth = o_model.OperatorAuth(
+        operator_id = operator.id,
+        login_id= u'dev+bj01@ticketstar.jp',
+        password=hashlib.md5('admin').hexdigest(),
+        auth_code=u'auth_code',
+        access_token=u'access_token',
+        secret_key=u'secret_key'
+    )
+    session.add(auth)
+
     payment_method1 = c_model.PaymentMethod(
         name = 'コンビニ支払い',
         fee = 0,
-        fee_type = c_model.FeeTypeEnum.Once.v,
+        fee_type = c_model.FeeTypeEnum.Once.v[0],
         organization = org,
-        payment_plugin_id = 1
+        payment_plugin = c_model.PaymentMethodPlugin.get(1)
     )
     payment_method2 = c_model.PaymentMethod(
         name = 'クレジットカード払い',
         fee = 0,
-        fee_type = c_model.FeeTypeEnum.Once.v,
+        fee_type = c_model.FeeTypeEnum.Once.v[0],
         organization = org,
-        payment_plugin_id = 3
+        payment_plugin = c_model.PaymentMethodPlugin.get(3)
     )
     delivery_method = c_model.DeliveryMethod(
         name = u'なし',
         fee = 0,
-        fee_type = c_model.FeeTypeEnum.Once.v,
+        fee_type = c_model.FeeTypeEnum.Once.v[0],
         organization = org,
-        delivery_plugin_id = 1
+        delivery_plugin = c_model.DeliveryMethodPlugin.get(1)
     )
     session.add(payment_method1)
     session.add(payment_method2)
@@ -64,7 +93,7 @@ def main():
     event = c_model.Event(
         account = account,
         code = 'BJ890',
-        title = u'FC会員登録 89ers',
+        title = u'仙台89ers FC会員登録',
         abbreviated_title = 'bj89ers'
     )
     session.add(event)
@@ -130,5 +159,6 @@ def main():
     session.add(performance)
     session.flush()
 
+    t.commit()
 main()
 
