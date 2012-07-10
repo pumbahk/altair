@@ -71,15 +71,15 @@ def main():
     session.add(operator)
 
     payment_method1 = c_model.PaymentMethod(
-        name = 'コンビニ支払い',
+        name = 'クレジットカード払い',
         fee = 0,
         fee_type = c_model.FeeTypeEnum.Once.v[0],
         organization = org,
         payment_plugin = c_model.PaymentMethodPlugin.get(1)
     )
     payment_method2 = c_model.PaymentMethod(
-        name = 'クレジットカード払い',
-        fee = 0,
+        name = 'セブンイレブン支払い',
+        fee = 158,
         fee_type = c_model.FeeTypeEnum.Once.v[0],
         organization = org,
         payment_plugin = c_model.PaymentMethodPlugin.get(3)
@@ -164,7 +164,7 @@ def main():
     )
     pdmp2 = c_model.PaymentDeliveryMethodPair(
         system_fee = 0,
-        transaction_fee = 0,
+        transaction_fee = 158,
         delivery_fee = 0,
         discount = 0,
         discount_unit = 0,
