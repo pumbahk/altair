@@ -35,6 +35,15 @@ def model_column_iters(modelclass, D):
     for k, v in modelclass.__dict__.items():
         if isinstance(v, ColumnOperators):
             yield k, D.get(k)
+
+def model_clone(obj):
+    cls = obj.__class__
+    cloned = cls()
+    pk_keys = set([c.key for c in orm.class_mapper(cls).primary_key])
+    for p in  orm.class_mapper(cls).iterate_properties:
+        if p.key not in  pk_keys:
+            setattr(cloned, p.key, getattr(obj, p.key, None))
+    return cloned
             
 class BaseOriginalMixin(object):
     def to_dict(self):

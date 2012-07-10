@@ -212,6 +212,11 @@
     margin-left: 5px;	
 }
 
+#subkindSlideShow #slideShowRight .subkindThumbnail img{
+    max-height: 95px;
+    max-width: 95px;
+}
+
 #subkindSlideShow #slideShowRight .subkindThumbnail .slideBoxLeft{
     margin-left: 5px;
     width: 40%;

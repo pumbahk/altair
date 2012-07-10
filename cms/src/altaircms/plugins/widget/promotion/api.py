@@ -10,21 +10,20 @@ def get_promotion_manager(request):
     return request.registry.getUtility(IPromotionManager)
 
 
-
 @provider(IPromotionManager)
 class RealPromotionManager(object):
     @classmethod
-    def promotion_info(cls, request, promotion, idx=0, limit=None):
-        return promotion.as_info(request, idx=idx, limit=limit)
+    def promotion_info(cls, request, promotion_sheet, idx=0, limit=None):
+        return promotion_sheet.as_info(request, idx=idx, limit=limit)
     
     @classmethod
     def main_image_info(cls, request):
         try:
-            punit = request.context.PromotionUnit.query.filter_by(id=request.GET["promotion_unit_id"]).one()
-            return {"id": punit.id, 
-                    "link": punit.get_link(request), 
-                    "src": h.asset.to_show_page(request, punit.main_image), 
-                    "message": punit.text}
+            p = request.context.Promotion.query.filter_by(id=request.GET["promotion_unit_id"]).one()
+            return {"id": p.id, 
+                    "link": h.link.get_link_from_promotion(request, p), 
+                    "src": h.asset.to_show_page(request, p.main_image), 
+                    "message": p.text}
         except Exception, e:
             logger.exception(e)
             return {}

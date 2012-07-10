@@ -14,11 +14,10 @@ from altaircms.helpers.formhelpers import required_field, append_errors
 
 from ..event.models import Event
 from altaircms.models import Performance
-from ..plugins.widget.promotion.models import Promotion
 from ..models import Category, Sale
 from ..asset.models import ImageAsset
 from ..page.models import PageSet
-from ..topic.models import Topic, Topcontent
+from ..topic.models import Topic, Topcontent, Kind, Promotion
 from ..tag.models import PageTag
 
 
@@ -149,10 +148,8 @@ class TicketForm(Form):
     __display_fields__ = [u"sale",u"name",  u"seattype", u"price"]
     # __display_fields__ = [u"sale", u"name", u"seattype", u"price", u"orderno"]
 
-class PromotionUnitForm(Form):
-    promotion = extfields.QuerySelectField(id="promotion", label=u"プロモーション枠", 
-                                           get_label=lambda obj: obj.name, 
-                                           query_factory = lambda : Promotion.query)
+class PromotionForm(Form):
+    kind_content = fields.TextField(label=u"タグ的なもの(, 区切り)") #@todo rename
     main_image = dynamic_query_select_field_factory(
         ImageAsset, allow_blank=False, label=u"メイン画像",
         get_label=lambda obj: obj.title or u"名前なし")
@@ -161,25 +158,43 @@ class PromotionUnitForm(Form):
         ImageAsset, allow_blank=False, label=u"サブ画像(60x60)",
         get_label=lambda obj: obj.title or u"名前なし")
 
-    pageset = dynamic_query_select_field_factory(
+    linked_page = dynamic_query_select_field_factory(
         PageSet, allow_blank=True, label=u"リンク先ページ(CMSで作成したもの)",
         get_label=lambda obj: obj.name or u"--なし--")
     link = fields.TextField(label=u"外部リンク(ページより優先)")
-    __display_fields__ = [u"promotion", u"main_image", u"text", u"thumbnail", "pageset", "link"]
+
+    publish_open_on = fields.DateTimeField(label=u"公開開始日", validators=[required_field()])
+    publish_close_on = fields.DateTimeField(label=u"公開終了日", validators=[required_field()])
     
+    orderno = fields.IntegerField(label=u"表示順序(1〜100)", default=50)
+    is_vetoed = fields.BooleanField(label=u"公開禁止")
 
-class PromotionUnitFilterForm(Form):
-    promotion = extfields.QuerySelectField(id="promotion", label=u"プロモーション枠", 
-                                           get_label=lambda obj: obj.name, 
-                                           query_factory = lambda : Promotion.query)
-    as_filter = as_filter(["promotion"])
+    def validate(self, **kwargs):
+        data = self.data
+        if data["publish_open_on"] > data["publish_close_on"]:
+            append_errors(self.errors, "publish_open_on", u"公開開始日よりも後に終了日が設定されています")
+        return not bool(self.errors)
 
-class PromotionForm(Form):
-    name = fields.TextField(label=u"プロモーション枠名")
-    ## organization
-    __display_fields__ = [u"name"]
+    __display_fields__ = [
+        u"kind_content",
+        u"main_image", u"text", u"thumbnail", u"linked_page", u"link", 
+        u"publish_open_on", u"publish_close_on", u"orderno", u"is_vetoed"
+        ]
+
+
+class PromotionFilterForm(Form):
+    kind = dynamic_query_select_field_factory(
+        Kind, allow_blank=False, label=u"タグ的なもの",
+        get_label=lambda obj: obj.name)
+
+    def as_filter(self, qs):
+        kind = self.data.get("kind")
+        if kind and "__None" != kind:
+            qs = qs.filter(Promotion.kinds.any(Kind.name==kind.name))
+        return qs
 
 _hierarchy_choices = [(x, x) for x in [u"大", u"中", u"小", "top_couter", "top_inner", "header_menu", "footer_menu", "masked"]]
+
 class CategoryForm(Form):
     name = fields.TextField(label=u"カテゴリ名")
     origin = fields.TextField(label=u"分類")

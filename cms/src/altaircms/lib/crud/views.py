@@ -114,7 +114,11 @@ class CRUDResource(RootFactory): ## fixme
 
     ## update
     def input_form_from_model(self, obj):
-        form = self.form(**model_to_dict(obj))
+        if hasattr(obj, "to_dict"):
+            params = obj.to_dict()
+        else:
+            params = model_to_dict(obj)
+        form = self.form(**params)
         return form
 
     def update_model_from_form(self, obj, form):
@@ -193,7 +197,6 @@ class UpdateView(object):
         return {"master_env": self.context,
                 "obj": obj, 
                 "form": form, 
-                "obj": obj, 
                 "display_fields": getattr(form,"__display_fields__", None) or form.data.keys()}
 
     def update_model(self):

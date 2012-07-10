@@ -14,11 +14,11 @@ def makePageset(*args, **kwargs):
     return PageSet(*args, **kwargs)
 
 def makePromotionUnit(*args, **kwargs):
-    from altaircms.plugins.widget.promotion.models import PromotionUnit
+    from altaircms.topic.models import PromotionUnit
     return PromotionUnit(*args, **kwargs)
 
 def makePromotion(*args, **kwargs):
-    from altaircms.plugins.widget.promotion.models import Promotion
+    from altaircms.topic.models import Promotion
     return Promotion(*args, **kwargs)
 
 def makeImageasset(*args, **kwargs):
@@ -36,7 +36,7 @@ class PromotionUnitTest(unittest.TestCase):
         testing.tearDown()
 
     def _makeOne(self, *args, **kwargs):
-        from altaircms.plugins.widget.promotion.models import PromotionUnit
+        from altaircms.topic.models import PromotionUnit
         return PromotionUnit(*args, **kwargs)
 
     def _callFUT(self, target, *args, **kwargs):
@@ -97,7 +97,7 @@ class PromotionManagerTests(unittest.TestCase):
         
         promotion = withDB(makePromotion(promotion_units=[pu]), flush=True)
         request = testing.DummyRequest(GET=dict(promotion_unit_id=promotion.id))
-        from altaircms.plugins.widget.promotion.models import PromotionWidgetResource
+        from altaircms.plugins.promotion.models import PromotionWidgetResource
         request.context =  PromotionWidgetResource(request)
         result = self._getTarget().main_image_info(request)
 
