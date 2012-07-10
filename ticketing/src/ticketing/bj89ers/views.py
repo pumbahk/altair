@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 import logging
-from datetime import datetime
+from datetime import datetime, date
 import sqlalchemy as sa
 from sqlalchemy.orm.exc import NoResultFound
 import ticketing.core.models as c_models
@@ -8,7 +8,7 @@ from ..orders import models as o_models
 import ticketing.cart.helpers as h
 import ticketing.cart.api as api
 import ticketing.bj89ers.api as bj89ers_api
-from ticketing.users.models import UserProfile
+from ticketing.users.models import User, UserProfile
 from pyramid.httpexceptions import HTTPFound
 from pyramid.renderers import render_to_response
 from . import schemas
@@ -136,9 +136,33 @@ class CompleteView(_CompleteView):
             delivery_plugin = api.get_delivery_plugin(self.request, payment_delivery_pair.delivery_method.delivery_plugin_id)
             delivery_plugin.finish(self.request, cart)
 
-        order.organization_id = order.performance.event.organization_id
-
         profile = bj89ers_api.load_user_profile(self.request)
+
+        # これ本当にいるの??
+        order.user = User(
+            user_profile=UserProfile(
+                email=profile['email'],
+                nick_name=profile['nickname'],
+                first_name=profile['first_name'], 
+                last_name=profile['last_name'],
+                first_name_kana=profile['first_name_kana'],
+                last_name_kana=profile['last_name_kana'],
+                birth_day=date(int(profile['year']), int(profile['month']), int(profile['day'])),
+                sex=profile['sex'],
+                zip=profile['zipcode1'] + u'-' + profile['zipcode2'],
+                country='Japan',
+                prefecture=profile['prefecture'],
+                city=profile['city'],
+                address_1=profile['address1'],
+                address_2=profile['address2'],
+                tel_1=u'-'.join(profile[k] for k in ('tel1_1', 'tel1_2', 'tel1_3')),
+                tel_2=u'-'.join(profile[k] for k in ('tel2_1', 'tel2_2', 'tel2_3')),
+                fax='',
+                status=0
+                )
+            )
+
+        order.organization_id = order.performance.event.organization_id
 
         # productは一個しか来ない
         order_product = order.items[0]
@@ -146,18 +170,19 @@ class CompleteView(_CompleteView):
             product_item = ordered_product_item.product_item
             # Tシャツ
             if product_item.stock.stock_type.type == c_models.StockTypeEnum.Other.v:
-                ordered_product_item.put('t_shirts_size', profile['t_shirts_size'])
+                ordered_product_item.attributes['t_shirts_size'] = profile['t_shirts_size']
             else:
+                # これ本当にいるの??
                 for k, v in profile.items():
                     if k != 't_shirts_size':
-                        ordered_product_item.put(k, v)
+                        ordered_product_item.attributes[k] = v
 
         notify_order_completed(self.request, order)
 
 
         return dict(order=order)
 
-class OrderReviewView(object):
+class orderreviewview(object):
 
     def __init__(self, request):
         self.request = request
@@ -167,30 +192,30 @@ class OrderReviewView(object):
         return dict()
 
     def get(self):
-        form = schemas.OrderReviewSchema(self.request.params)
+        form = schemas.orderreviewschema(self.request.params)
         return render_to_response('order_review/form.html',dict(form=form), self.request)
 
     @property
     def order_not_found_message(self):
-        return [u'オーダーIDまたは電話番号が違います。']
+        return [u'オーダーidまたは電話番号が違います。']
 
     def post(self):
-        form = schemas.OrderReviewSchema(self.request.params)
+        form = schemas.orderreviewschema(self.request.params)
         if not form.validate():
             self.request.errors = form.errors
             return self.get()
         try:
-            order = o_models.Order.filter_by(
+            order = o_models.order.filter_by(
                 organization_id = self.context.organization_id,
                 order_no = form.data.get('order_no')
             ).one()
 
-        except NoResultFound, e:
+        except noresultfound, e:
             self.request.errors = form.errors
             self.request.errors['order_no'] = self.order_not_found_message
             return self.get()
 
-        if order.shipping_address is None or order.shipping_address.tel_1== form.tel or \
+        if order.shipping_address is none or order.shipping_address.tel_1== form.tel or \
                                                 order.shipping_address.tel_2 == form.tel:
             self.request.errors = form.errors
             self.request.errors['order_no'] = self.order_not_found_message
