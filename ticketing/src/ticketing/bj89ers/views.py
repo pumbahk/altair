@@ -2,7 +2,6 @@
 import logging
 from datetime import datetime, date
 import sqlalchemy as sa
-from sqlalchemy.orm.exc import NoResultFound
 import ticketing.core.models as c_models
 from ..orders import models as o_models
 import ticketing.cart.helpers as h
@@ -182,7 +181,7 @@ class CompleteView(_CompleteView):
 
         return dict(order=order)
 
-class orderreviewview(object):
+class OrderReviewView(object):
 
     def __init__(self, request):
         self.request = request
@@ -192,7 +191,7 @@ class orderreviewview(object):
         return dict()
 
     def get(self):
-        form = schemas.orderreviewschema(self.request.params)
+        form = schemas.OrderReviewSchema(self.request.params)
         return render_to_response('order_review/form.html',dict(form=form), self.request)
 
     @property
@@ -200,25 +199,19 @@ class orderreviewview(object):
         return [u'オーダーidまたは電話番号が違います。']
 
     def post(self):
-        form = schemas.orderreviewschema(self.request.params)
+        form = schemas.OrderReviewSchema(self.request.params)
+
         if not form.validate():
             self.request.errors = form.errors
             return self.get()
-        try:
-            order = o_models.order.filter_by(
-                organization_id = self.context.organization_id,
-                order_no = form.data.get('order_no')
-            ).one()
 
-        except noresultfound, e:
-            self.request.errors = form.errors
-            self.request.errors['order_no'] = self.order_not_found_message
-            return self.get()
-
-        if order.shipping_address is none or order.shipping_address.tel_1== form.tel or \
-                                                order.shipping_address.tel_2 == form.tel:
+        order, sej_order = self.context.get_order()
+        if not order or \
+           order.shipping_address is None or \
+           order.shipping_address.tel_1== form.tel or \
+           order.shipping_address.tel_2 == form.tel:
             self.request.errors = form.errors
             self.request.errors['order_no'] = self.order_not_found_message
             return self.get()
         else:
-            return dict(order=order)
+            return dict(order=order, sej_order = sej_order)

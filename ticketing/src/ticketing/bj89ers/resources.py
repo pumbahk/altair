@@ -3,7 +3,10 @@ from dateutil import parser
 from ticketing.cart.resources import TicketingCartResource
 from ticketing.core.models import DBSession
 from ticketing.users.models import User, UserCredential, MemberShip, UserProfile
+from ticketing.orders.models import Order
+from ticketing.sej.models import SejOrder
 from .api import load_user_profile
+from sqlalchemy.orm.exc import NoResultFound
 
 MEMBERSHIP_NAME = '89ers'
 
@@ -41,3 +44,21 @@ class Bj89erCartResource(TicketingCartResource):
         credential = user.user_credential
         DBSession.add(user)
         return user
+
+    def get_order(self):
+        order_no = self.request.params.get('order_no')
+        order = Order.filter_by(
+            organization_id = self.organization_id,
+            order_no = order_no
+        ).first()
+        sej_order = None
+
+        payment_method_plugin_id = order.payment_delivery_pair.payment_method.payment_plugin.id
+        if payment_method_plugin_id == 1:
+            pass
+        elif payment_method_plugin_id == 3:
+            sej_order = SejOrder.filter(SejOrder.order_id == "%012d" % int(order_no)).first()
+
+        return order, sej_order
+
+

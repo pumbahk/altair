@@ -30,7 +30,7 @@
 							</thead>
 							<tbody>
 								<tr>
-									<td class="textC font20">123456789012</td>
+									<td class="textC font20">${order.order_no}</td>
 								</tr>
 							</tbody>
 						</table>
@@ -40,7 +40,8 @@
 
 					<div class="kadomaru">
 						<h3>お支払い</h3>
-						
+
+                    %if order.payment_delivery_pair.payment_method.payment_plugin.id == 3:
 						<table class="purchasedContents">
 							<thead>
 								<tr>
@@ -50,11 +51,11 @@
 							<tbody>
 								<tr>
 									<td>払込票番号</td>
-									<td class="textR">XXXX-XXXX-XXXXX</td>
+									<td class="textR">${sej_order.billing_number}</td>
 								</tr>
 								<tr>
 									<td>予約有効期限</td>
-									<td class="textR">2012年7月22日(日)23:59</td>
+									<td class="textR">${sej_order.payment_due_at.strftime(u"%Y年%m月%d日(%a) %H時%M分".encode('utf-8')).decode('utf-8')}</td>
 								</tr>
 								<tr>
 									<td colspan="2">
@@ -72,12 +73,27 @@
 							<tfoot>
 								<tr>
 									<td colspan="2" class="textC">
-										<div class="paymentCoupon">払込票印刷</div>
+                                        <form action="${sej_order.exchange_sheet_url}" method="post" target="_blank">
+                                        <input type="hidden" name="iraihyo_id_00" value="${sej_order.exchange_sheet_number}" />
+										<input type="submit" class="paymentCoupon" value="払込票印刷">
+                                        </form>
 									</td>
 								</tr>
 							</tfoot>
 						</table>
-						
+				    % else:
+                        <table class="purchasedContents">
+                        <thead>
+                            <tr>
+                                <th colspan="2"><span>クレジットカード</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                          </tbody>
+                            <tfoot>
+                            </tfoot>
+                        </table>
+                    % endif
 					</div>
 					<!-- kadomaruおわり -->
 
