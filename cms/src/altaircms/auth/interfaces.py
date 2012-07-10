@@ -24,9 +24,7 @@ class IOAuthComponent(Interface):
         pass
 
 
-class IAllowableQueryFactory(Interface):
-    model = Attribute("query source")
-
-    def __call__(request):
+class IAllowableQuery(Interface):
+    def __call__(model):
         """ return allowable query(usually filtering by organization)"""
         pass

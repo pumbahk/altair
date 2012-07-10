@@ -10,6 +10,7 @@ from altaircms.lib.crud.views import AfterInput
 from pyramid.view import view_defaults
 from altaircms.slackoff import forms
 from . import subscribers 
+from . import api
 
 @view_config(route_name="layout_demo", renderer="altaircms:templates/layout/demo.mako")
 def demo(request):
@@ -23,38 +24,38 @@ class LayoutCreateView(object):
         self.request = request
         self.context = request.context
 
-    # @view_config(match_param="action=input")
-    # def input(self):
-    #     # self.context.set_endpoint() ##
-    #     form = forms.LayoutCreateForm()
-    #     raise AfterInput(form=form, context=self.request.context)
-
-    # @view_config(context=AfterInput, renderer="altaircms:lib/layout/create/input.mako")
-    # def _after_input(self):
-    #     form = self.request.context.form
-    #     return {"master_env": self.context.context, 
-    #             "form": form, 
-    #             "display_fields": getattr(form, "__display_fields__")}
-
-    @view_config(match_param="action=input", renderer="altaircms:templates/layout/create/input.mako")
+    @view_config(match_param="action=input")
     def input(self):
         # self.context.set_endpoint() ##
-        form = forms.LayoutCreateForm()
-        return {"master_env": self.context, 
-                "form": form, 
+        self.request._form = forms.LayoutCreateForm()
+        raise AfterInput
+
+    @view_config(context=AfterInput, renderer="altaircms:templates/layout/create/input.mako")
+    def _after_input(self):
+        form = self.request._form
+        return {"form": form, 
                 "display_fields": getattr(form, "__display_fields__")}
 
-    @view_config(match_param="action=create", renderer="altaircms:templates/layout/create/input.mako")
+    # @view_config(match_param="action=confirm", renderer="altaircms:templates/layout/create/confirm.mako")
+    # def confirm(self):
+    #     form = forms.LayoutCreateForm(self.request.POST)
+    #     if not form.validate():
+    #         self.request._form = form
+    #         raise AfterInput
+    #     else:
+    #         return {"form": form, 
+    #                 "display_fields": getattr(form, "__display_fields__")}
+
+    @view_config(match_param="action=create")
     def create(self):
         form = forms.LayoutCreateForm(self.request.POST)
-
+        form = api.get_layout_creator(self.request).as_form_proxy(form)
         if not form.validate():
-            return {"master_env": self.context, 
-                    "form": form, 
-                    "display_fields": getattr(form, "__display_fields__")}
+            self.request._form = form
+            raise AfterInput
         else:
             subscribers.notify_layout_create(self.request, form.data)
             from pyramid.httpexceptions import HTTPFound
-            return HTTPFound("/") ##
+            return HTTPFound(self.request.route_url("layout_list")) ##
         
 

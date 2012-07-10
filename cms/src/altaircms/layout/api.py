@@ -6,12 +6,22 @@ from pyramid.path import AssetResolver
 def get_layout_creator(request):
     return request.registry.getUtility(ILayoutCreator)
 
+class LayoutFormProxy(object):
+    def __getattr__(self, k, default=None):
+        return getattr(self.form, k, default)
+
+    def __init__(self, template_path, form):
+        self.template_path = template_path
+        self.form = form
+
+    def validate(self):
+        return True
+
 @implementer(ILayoutCreator)
 class LayoutCreator(object):
     """
     params = {
       title: "fooo", 
-      organization_id: "", 
       file: "file object", 
       blocks: "" #auto detect
     }
@@ -20,8 +30,11 @@ class LayoutCreator(object):
         self.assetresolver = AssetResolver()
         self.template_path = self.assetresolver.resolve(template_path).abspath()
 
+    def as_form_proxy(self, form):
+        return LayoutFormProxy(self.template_path, form)
+
     def get_basename(self, params):
-        return os.path.basename(params["filepath"].name)
+        return os.path.basename(params["filepath"].filename)
 
     def get_filename(self, params):
         return os.path.join(self.template_path, self.get_basename(params))

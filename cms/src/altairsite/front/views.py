@@ -5,6 +5,8 @@ from pyramid.view import view_config
 from altaircms.lib.fanstatic_decorator import with_jquery
 from ..mobile import api as mobile_api
 from altairsite.mobile.custom_predicates import mobile_access_predicate
+import logging 
+
 
 ## todo refactoring
 """
@@ -18,7 +20,7 @@ todo:
 カテゴリトップの場合には、サブジャンルを取得できる必要がある。
 """
 @view_config(route_name="front", decorator=with_jquery)
-def preview_page(context, request):
+def rendering_page(context, request):
     url = request.matchdict["page_name"]
     dt = context.get_preview_date()
 
@@ -33,7 +35,8 @@ def preview_page(context, request):
         raise HTTPNotFound(control.error_message)
 
     renderer = context.frontpage_renderer()
-    return renderer.render(template, page)
+    response = renderer.render(template, page)
+    return response
 
 ## for mobile
 
@@ -48,4 +51,5 @@ def dispatch_view(context, request):
     if control.can_access():
         raise mobile_api.dispatch_context(request, pageset)
     else:
+        logging.info(control.error_message)
         return HTTPNotFound(control.error_message)
