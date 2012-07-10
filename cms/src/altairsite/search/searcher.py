@@ -81,7 +81,7 @@ def get_pageset_query_from_freeword(request, query_params):
     qs = PageSet.query
 
     words = _extract_tags(query_params, "query")
-    if words:
+    if words and (len(words) > 1 or words[0] != u'""'):
         qs = search_by_freeword(qs, request, words, query_params.get("query_cond"))
         qs = _refine_pageset_collect_future(qs)
         return  _refine_pageset_qs(qs)
@@ -120,7 +120,7 @@ def get_pageset_query_from_deal_cond(request, query_params):
     qs = PageSet.query
     if query_params.get("deal_cond"):
        sub_qs = DBSession.query(Event.id)
-       sub_qs = events_by_deal_cond_flags(sub_qs, query_params) ## 未実装
+       sub_qs = events_by_deal_cond_flags(sub_qs, query_params)
        sub_qs = sub_qs.filter(Event.is_searchable==True)
        qs = search_by_events(qs, sub_qs)
        qs = _refine_pageset_collect_future(qs)

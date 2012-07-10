@@ -108,7 +108,7 @@ class MailMagazine(Base):
     name = Column(String(255))
     description = Column(String(1024))
     organization_id = Column(Identifier, ForeignKey("Organization.id"), nullable=True)
-    organization = relationship('Organization', uselist=False)
+    organization = relationship('Organization', uselist=False, backref='mail_magazines')
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
     status = Column(Integer)

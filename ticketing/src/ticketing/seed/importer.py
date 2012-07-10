@@ -22,7 +22,7 @@ from service import ServiceData
 from organization import OrganizationData
 from account import AccountData
 from permission import PermissionData
-from operator import OperatorData, OperatorRoleData, OperatorAuthData
+from operator_ import OperatorData, OperatorRoleData, OperatorAuthData
 from event import *
 from venue import *
 from product import *

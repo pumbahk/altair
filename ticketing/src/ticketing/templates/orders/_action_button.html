@@ -13,13 +13,19 @@
 
 <%
 actions = {
+  'delivered':dict(
+    label=u'配送済みにする',
+    url=request.route_path('orders.delivered', order_id=order.id),
+    icon='icon-ok',
+  ),
   'cancel':dict(
     label=u'キャンセル',
     url='javascript:cancel_order(%d);' % order.id,
     icon='icon-remove',
   ),
 }
+sort = iter(['delivered', 'cancel'])
 %>
-${h.action_button(actions)}
+${h.action_button(actions, sort, virtical=False)}
 
 ${m.delete_modal()}

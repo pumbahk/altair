@@ -133,10 +133,7 @@ class SejPaymentPlugin(object):
         order = o_models.Order.create_from_cart(cart)
         cart.finish()
 
-
-        openid = authenticated_user(request)
-        user = a.get_or_create_user(request, openid['clamed_id'])
-        user_profile  = user.user_profile
+        shipping_address = order.shipping_address
         performance = order.performance
         current_date = datetime.now()
 
@@ -151,11 +148,11 @@ class SejPaymentPlugin(object):
                 contact_01          = u'00-0000-0000',
                 contact_02          = u'楽天チケット お問い合わせセンター 050-5830-6860',
                 order_id            = get_order_no(order),
-                username            = u'%s%s' % (user_profile.last_name, user_profile.first_name),
-                username_kana       = u'%s%s' % (user_profile.last_name_kana, user_profile.first_name_kana),
-                tel                 = user_profile.tel_1.replace('-', ''),
-                zip                 = user_profile.zip.replace('-', ''),
-                email               = user_profile.email,
+                username            = u'%s%s' % (shipping_address.last_name, shipping_address.first_name),
+                username_kana       = u'%s%s' % (shipping_address.last_name_kana, shipping_address.first_name_kana),
+                tel                 = shipping_address.tel_1.replace('-', ''),
+                zip                 = shipping_address.zip.replace('-', ''),
+                email               = shipping_address.email,
                 total               = order.total_amount,
                 ticket_total        = cart.tickets_amount,
                 commission_fee      = order.system_fee + order.transaction_fee,
@@ -164,7 +161,8 @@ class SejPaymentPlugin(object):
                 payment_due_at      = payment_due_at,
                 ticketing_start_at  = ticketing_start_at,
                 ticketing_due_at    = ticketing_due_at,
-                regrant_number_due_at = performance.start_on + timedelta(days=1)
+                regrant_number_due_at = performance.start_on + timedelta(days=1) if performance.start_on else
+                current_date + timedelta(days=365)
             )
 
         return order

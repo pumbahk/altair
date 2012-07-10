@@ -1,17 +1,21 @@
 # -*- coding: utf-8 -*-
 
+import csv
+
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
+from pyramid.response import Response
 from pyramid.url import route_path
 import webhelpers.paginate as paginate
 
 from ticketing.models import merge_session_with_post, record_to_appstruct, merge_and_flush, record_to_multidict
-from ..core.models import Organization
 from ticketing.operators.models import Operator, OperatorRole, Permission
-from ticketing.orders.models import Order
-from ticketing.orders.forms import OrderForm, SejOrderForm, SejTicketForm, SejTicketForm, SejRefundEventForm,SejRefundOrderForm
+from ticketing.orders.models import Order, OrderCSV
+from ticketing.orders.forms import (OrderForm, OrderSearchForm, SejOrderForm, SejTicketForm, SejTicketForm,
+                                    SejRefundEventForm,SejRefundOrderForm)
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
+from ticketing.orders.events import notify_order_canceled
 
 @view_defaults(decorator=with_bootstrap)
 class Orders(BaseView):
@@ -26,17 +30,9 @@ class Orders(BaseView):
         query = Order.filter(Order.organization_id==int(self.context.user.organization_id))
         query = query.order_by(sort + ' ' + direction)
 
-        # search condition
+        form_search = OrderSearchForm(self.request.POST)
         if self.request.method == 'POST':
-            condition = self.request.POST.get('order_no')
-            if condition:
-                query = query.filter(Order.order_no==condition)
-            condition = self.request.POST.get('order_datetime_from')
-            if condition:
-                query = query.filter(Order.created_at>=condition)
-            condition = self.request.POST.get('order_datetime_to')
-            if condition:
-                query = query.filter(Order.created_at<=condition)
+            query = Order.set_search_condition(query, form_search)
 
         orders = paginate.Page(
             query,
@@ -47,6 +43,7 @@ class Orders(BaseView):
 
         return {
             'form':OrderForm(),
+            'form_search':form_search,
             'orders':orders,
         }
 
@@ -69,10 +66,55 @@ class Orders(BaseView):
             return HTTPNotFound('order id %d is not found' % order_id)
 
         if order.cancel(self.request):
+            notify_order_canceled(self.request, order)
             self.request.session.flash(u'受注(%s)をキャンセルしました' % order.order_no)
         else:
             self.request.session.flash(u'受注(%s)をキャンセルできません' % order.order_no)
         return HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
+
+    @view_config(route_name='orders.delivered')
+    def delivered(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id)
+        if order is None:
+            return HTTPNotFound('order id %d is not found' % order_id)
+
+        if order.delivered():
+            self.request.session.flash(u'受注(%s)を配送済みにしました' % order.order_no)
+        else:
+            self.request.session.flash(u'受注(%s)を配送済みにできません' % order.order_no)
+        return HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
+
+    @view_config(route_name='orders.download')
+    def download(self):
+        sort = self.request.GET.get('sort', 'Order.id')
+        direction = self.request.GET.get('direction', 'desc')
+        if direction not in ['asc', 'desc']:
+            direction = 'desc'
+
+        query = Order.filter(Order.organization_id==int(self.context.user.organization_id))
+        query = query.order_by(sort + ' ' + direction)
+
+        form_search = OrderSearchForm(self.request.POST)
+        if self.request.method == 'POST':
+            query = Order.set_search_condition(query, form_search)
+
+        # ダウンロード可能な上限件数の条件を付加
+        orders = query.limit(500).all()
+
+        headers = [
+            ('Content-Type', 'text/csv'),
+            ('Content-Disposition', 'attachment; filename=orders.csv')
+        ]
+        response = Response(headers=headers)
+
+        order_csv = OrderCSV(orders)
+
+        writer = csv.DictWriter(response, order_csv.header, delimiter=',', quoting=csv.QUOTE_ALL)
+        writer.writeheader()
+        writer.writerows(order_csv.rows)
+
+        return response
 
 
 from ticketing.sej.models import SejOrder, SejTicket, SejTicketTemplateFile, SejRefundEvent, SejRefundTicket

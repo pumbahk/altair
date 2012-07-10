@@ -8,7 +8,7 @@
 <body>
   <div align="center">
   <div class="header">
-	  <img src="${request.static_url('ticketing.bj89er:static/images/head_title.png')}" alt="仙台89ERS" width="780" height="135" />
+	  <img src="${request.static_url('ticketing.bj89ers:static/images/head_title.png')}" alt="仙台89ERS" width="780" height="135" />
   </div>
 	
 	<!-- これはdisplay none指定, なぜか... -->
@@ -42,10 +42,11 @@
 
 							<%
                                 up = user.user_profile
+                                pm = request.session['bj89er.user_profile']
                             %>
 							<tr>
 								<th>新規／継続</th>
-								<td></td>
+								<td>${u'継続' if pm.get('cont') == 'yes' else u'新規'}</td>
 							</tr>
 							<tr>
 								<th>会員種別</th>
@@ -53,50 +54,50 @@
 							</tr>
 							<tr>
 								<th>氏名</th>
-								<td>${up.last_name} ${up.first_name}</td>
+								<td>${pm['last_name']} ${pm['first_name']}</td>
 							</tr>
 							<tr>
 								<th>氏名（フリガナ）</th>
-								<td>${up.last_name_kana} ${up.first_name_kana}</td>
+								<td>${pm['last_name_kana']} ${pm['first_name_kana']}</td>
 							</tr>
 							<tr>
 								<th>誕生日</th>
-								<td>${up.birth_day.year}年${up.birth_day.month}月${up.birth_day.day}日</td>
+								<td>${pm['year']}年${pm['month']}月${pm['day']}日</td>
 							</tr>
 							<tr>
 								<th>性別</th>
 								<td>
-									%if up.sex==1:
+									%if pm['sex']=='male':
 										男性
 									%endif
-									%if up.sex==2:
+									%if pm['sex']==2:
 										女性
 									%endif
 								</td>
 							</tr>
 							<tr>
 								<th>住所</th>
-								<td>${up.prefecture} ${up.city} ${up.address_1} ${up.address_2}</td>
+								<td>${pm['prefecture']} ${pm['city']} ${pm['address1']} ${pm['address2']}</td>
 							</tr>
 							<tr>
 								<th>電話番号（携帯）</th>
-								<td>${up.tel_1}</td>
+								<td>${pm['tel1_1']}${pm['tel1_2']}${pm['tel1_3']}</td>
 							</tr>
 							<tr>
 								<th>電話番号（自宅）</th>
-								<td>${up.tel_2}</td>
+								<td>${pm['tel2_1']}${pm['tel2_2']}${pm['tel2_3']}</td>
 							</tr>
 							<tr>
 								<th>メールアドレス</th>
-								<td>${up.email}</td>
+								<td>${pm['email']}</td>
 							</tr>
 							<tr>
 								<th>媒体への掲載希望</th>
-								<td></td>
+								<td>${u'はい' if pm.get('publicity') == 'yes' else u'いいえ'}</td>
 							</tr>
 							<tr>
 								<th>媒体掲載時のニックネーム</th>
-								<td>${up.nick_name}</td>
+								<td>${pm['nickname']}</td>
 							</tr>
 						</tbody>
 					</table>

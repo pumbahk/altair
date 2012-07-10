@@ -33,7 +33,7 @@ def url_create_with(url, **kwargs):
     return url_create_with_parse_result(parse_result, **kwargs)
 
 def url_create_with_parse_result(parse_result, **kwargs):
-    queries = cgi.parse_qsl(parse_result.query)
+    queries = cgi.parse_qsl(parse_result.query, keep_blank_values=True)
     queries = [(k, kwargs.pop(k) if k in kwargs else v) for k, v in queries]
     queries = itertools.chain(queries, kwargs.iteritems())
     query = "&".join("%s=%s" % (k, v) for k, v in queries)
@@ -49,7 +49,7 @@ def unparse_with_replace_query(parse_result, query):
 
 def url_generate_default(request, **kwargs):
     """pagination default url generator"""
-    curpath = request.current_route_path(**kwargs)
+    curpath = request.url
     parse_result = urlparse.urlparse(curpath)
     def replacement(page, **kwargs):
         return url_create_with_parse_result(parse_result, page=page)

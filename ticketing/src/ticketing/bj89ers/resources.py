@@ -10,6 +10,7 @@ MEMBERSHIP_NAME = '89ers'
 class Bj89erCartResource(TicketingCartResource):
     def __init__(self, request):
         super(Bj89erCartResource, self).__init__(request)
+        self.organization_id = request.registry.settings['89ers.organization_id']
         self.event_id = request.registry.settings['89ers.event_id']
         self.performance_id = request.registry.settings['89ers.performance_id']
         self.start_at = parser.parse(request.registry.settings['89ers.start_at'])

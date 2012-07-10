@@ -214,7 +214,9 @@ class MutationDict(Mutable, dict):
     def coerce(cls, key, value):
         "Convert plain dictionaries to MutationDict."
 
-        if not isinstance(value, MutationDict):
+        if isinstance(value, basestring):
+            return MutationDict(json.loads(value))   
+        elif not isinstance(value, MutationDict):
             if isinstance(value, dict):
                 return MutationDict(value)
 

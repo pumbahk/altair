@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 
 from wtforms import Form
-from wtforms import HiddenField, TextField, DateTimeField, SelectField, TextAreaField, BooleanField, RadioField, FieldList, FormField
+from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, TextAreaField,
+                     BooleanField, RadioField, FieldList, FormField)
 from wtforms.validators import Optional,Required
+
+from ticketing.formhelpers import DateTimeField, Translations, Required
+from ticketing.core.models import PaymentMethodPlugin, DeliveryMethodPlugin
 
 class OrderForm(Form):
 
@@ -17,6 +21,38 @@ class OrderForm(Form):
     created_at = HiddenField(
         label=u'受注日時',
         validators=[Optional()],
+    )
+
+class OrderSearchForm(Form):
+
+    order_no = TextField(
+        label=u'受注番号',
+        validators=[Optional()],
+    )
+    ordered_from = DateTimeField(
+        label=u'受注日時',
+        validators=[Optional()],
+    )
+    ordered_to = DateTimeField(
+        validators=[Optional()],
+    )
+    payment_method = SelectMultipleField(
+        label=u'決済方法',
+        validators=[Optional()],
+        choices=[(pm.id, pm.name) for pm in PaymentMethodPlugin.all()],
+        coerce=int,
+    )
+    delivery_method = SelectMultipleField(
+        label=u'配送方法',
+        validators=[Optional()],
+        choices=[(pm.id, pm.name) for pm in DeliveryMethodPlugin.all()],
+        coerce=int,
+    )
+    status = SelectMultipleField(
+        label=u'ステータス',
+        validators=[Optional()],
+        choices=[('ordered', u'未入金'), ('paid', u'入金済み'), ('delivered', u'配送済み'), ('canceled', u'キャンセル'), ('refunded', u'キャンセル (返金済)')],
+        coerce=str,
     )
 
 class SejTicketForm(Form):

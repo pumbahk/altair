@@ -19,7 +19,7 @@ class MaybeSelectFieldTests(unittest.TestCase):
     def test_rendering(self):
         target_field = self._makeOne(null_label=u"not found", choices=[("a", "a")])
         form = self._makeForm(target_field)
-        self.assertIn('<option value="__None">not found</option>', form.target.__html__())
+        self.assertIn('<option value="">not found</option>', form.target.__html__())
 
     def test_process_formdata(self):
         from webob.multidict import MultiDict
@@ -128,6 +128,17 @@ class CheckBoxFieldValueTest(unittest.TestCase):
         result = form.data["target"]
         self.assertEquals(sorted(result), sorted(["1", "2", "3"]))
 
+    def test_process_formdata_with_prefix(self):
+        target_field = self._makeOne(choices=[(unicode(x), x) for x in [1, 2, 3, 4, 5]])
+
+        from webob.multidict import MultiDict
+        postdata = MultiDict({"heh:1":"y", "2":"y"})
+        form = self._makeForm(target_field, formdata=postdata, prefix="heh:")
+        result = form.data["target"]
+
+        self.assertEquals(sorted(result), sorted(["1"]))
+
 
 if __name__ == "__main__":
     unittest.main()
+
