@@ -48,14 +48,22 @@ attr_names = [
 
 def set_user_profile_for_order(request, order, bj89er_user_profile):
     member_type = bj89er_user_profile['member_type']
-    ordered_product = o_models.OrderedProduct.query.filter(
+    # ordered_product = o_models.OrderedProduct.query.filter(
+    #     o_models.OrderedProduct.order==order
+    # ).filter(
+    #     o_models.OrderedProduct.product_id==member_type
+    # ).one()
+
+    ordered_product_item = o_models.OrderedProductItem.query.filter(
         o_models.OrderedProduct.order==order
     ).filter(
         o_models.OrderedProduct.product_id==member_type
-    ).one()
+    ).filter(
+        o_models.OrderedProductItem.ordered_product_id==o_models.OrderedProduct.id
+    ).first()
 
     for attr_name in attr_names:
-        o_models.OrderedProductAttribute(ordered_product=ordered_product,
+        o_models.OrderedProductAttribute(ordered_product_item=ordered_product_item,
             name=attr_name,
             value=bj89er_user_profile[attr_name])
 

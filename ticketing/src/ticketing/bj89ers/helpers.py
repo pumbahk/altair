@@ -14,3 +14,4 @@ def error(names):
             errs[err] = err
     errs = ", ".join(errs.values())
     return Markup('<p class="error">%s</p>' % errs)
+    return Markup('<font color="red">%s</font><br />' % errs)
