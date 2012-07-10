@@ -1,5 +1,4 @@
 ## page名,公開日,公開ステータス,url,preview
-## event付きかのlabel
 ##
 <%inherit file='../layout_2col.mako'/>
 <%namespace name="nco" file="../navcomponents.mako"/>
@@ -70,7 +69,7 @@ ${search_form.category.label}: </th><td>${search_form.category}
 
 <%
 page_count = pages.count()
-seq = h.paginate(request, pages, item_count=page_count)
+seq = h.paginate(request, pages, item_count=page_count, items_per_page=50)
 %>
 <p>全${seq.opts.get("item_count") or seq.collection.count()}件</p>
   ${seq.pager()}

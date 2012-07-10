@@ -35,7 +35,7 @@
 
 <%
 page_count = pages.count()
-seq = h.paginate(request, pages, item_count=page_count)
+seq = h.paginate(request, pages, item_count=page_count, items_per_page=50)
 %>
 <p>全${seq.opts.get("item_count") or seq.collection.count()}件</p>
   ${seq.pager()}

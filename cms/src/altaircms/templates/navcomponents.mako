@@ -21,8 +21,9 @@
     <li><a href="${request.route_path("ticket_list")}">チケット</a></li>
 </%doc>
     <li class="nav-header">ページ管理</li>
-    <li><a href="${request.route_path("pageset_list",kind="event")}">イベント関連のページ</a></li>
-    <li><a href="${request.route_path("pageset_list",kind="other")}">トップ/カテゴリトップ</a></li>
+    <li><a href="${request.route_path("pageset_list",kind="event")}">イベント詳細</a></li>
+    <li><a href="${request.route_path("pageset_list",kind="other")}">露出枠(≒トップページ)</a></li>
+    <li>静的ページ</li>
 <%doc>
   <li><a href="${request.route_path("page")}">ページ</a></li>
     <li><a href="${request.route_path("pagesets")}">ページセット</a></li>
