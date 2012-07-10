@@ -8,6 +8,7 @@ from sqlalchemy import engine_from_config
 
 import ticketing.core.models as c_model
 import ticketing.operators.models as o_model
+import ticketing.users.models as u_model
 import hashlib
 
 import transaction
@@ -20,6 +21,14 @@ def main():
 
     session = sqlahelper.get_session()
     t = transaction.begin()
+
+    user = u_model.User(
+        updated_at = None,
+        created_at = None,
+        status = 1,
+        bank_account    = None,
+    )
+    session.add(user)
 
     org = c_model.Organization(
         id = 10,
@@ -34,7 +43,8 @@ def main():
         tel_2 = u'',
         fax = u'',
         prefecture = u'',
-        status = 1
+        status = 1,
+        user = user
     )
     session.add(org)
 
@@ -87,7 +97,8 @@ def main():
 
     account = c_model.Account(
         account_type = c_model.AccountTypeEnum.Promoter.v,
-        name = u'89ers'
+        name = u'89ers',
+        user = user
     )
     session.add(account)
 
@@ -105,7 +116,7 @@ def main():
         open_on = None,
         start_on = None,
         end_on =  None,
-        venue = None,
+        venue = c_model.Venue.get(1)
     )
     session.add(performance)
     event.performances.append(performance)
@@ -113,12 +124,14 @@ def main():
     stock_type_1 = c_model.StockType(
         name = u'会員権',
         type = c_model.StockTypeEnum.Other.v,
-        quantity_only = True
+        quantity_only = True,
+        style = dict()
     )
     stock_type_2 = c_model.StockType(
         name = u'Tシャツ',
         type = c_model.StockTypeEnum.Other.v,
-        quantity_only = True
+        quantity_only = True,
+        style = dict()
     )
     session.add(stock_type_1)
     session.add(stock_type_2)
@@ -170,11 +183,12 @@ def main():
         name = u'test',
         event_id = event.id,
         account_id = account.id,
-        style = None
+        style = dict()
     )
+    session.add(stock_holder)
 
     stock_status_1 = c_model.StockStatus(
-        quantity = 100
+        quantity = 1000
     )
     session.add(stock_status_1)
     stock_1 = c_model.Stock(
@@ -185,33 +199,26 @@ def main():
         stock_status = stock_status_1
     )
     session.add(stock_1)
+    stock_type_1.stocks.append(stock_1)
+    stock_holder.stocks.append(stock_1)
 
     stock_status_2 = c_model.StockStatus(
-        quantity = 100,
+        quantity = 1000,
     )
     session.add(stock_status_2)
     stock_2 = c_model.Stock(
         quantity = 1000,
         performance_id = performance.id,
-        stock_holder_id = stock_holder.id,
         stock_type_id = stock_type_1.id,
         stock_status = stock_status_2
     )
     session.add(stock_2)
-
-
-    product1 = c_model.Product(
-        name = u'法人会員',
-        price = 100500,
-        sales_segment = sales_segment,
-        event = event
-    )
-    session.add(product1)
+    stock_type_2.stocks.append(stock_2)
+    stock_holder.stocks.append(stock_2)
 
     product_item1_1 = c_model.ProductItem(
         item_type = '',
         price = 100500,
-        product_id =product1.id,
         performance_id = performance.id,
         stock = stock_1,
         quantity = 50
@@ -220,25 +227,24 @@ def main():
     product_item1_2 = c_model.ProductItem(
         item_type = '',
         price = 0,
-        product_id =product1.id,
         performance_id = performance.id,
         stock = stock_2,
         quantity = 50
     )
     session.add(product_item1_2)
-
-    product2 = c_model.Product(
-        name = u'プラチナ会員',
-        price = 30000,
+    product1 = c_model.Product(
+        name = u'法人会員',
+        price = 100500,
         sales_segment = sales_segment,
         event = event
     )
-    session.add(product2)
+    session.add(product1)
+    product1.items.append(product_item1_1)
+    product1.items.append(product_item1_2)
 
     product_item2_1 = c_model.ProductItem(
         item_type = '',
         price = 30000,
-        product_id =product1.id,
         performance_id = performance.id,
         stock = stock_1,
         quantity = 50
@@ -247,25 +253,24 @@ def main():
     product_item2_2 = c_model.ProductItem(
         item_type = '',
         price = 0,
-        product_id =product1.id,
         performance_id = performance.id,
         stock = stock_2,
         quantity = 50
     )
     session.add(product_item2_2)
-
-    product3 = c_model.Product(
-        name = u'ゴールド会員',
-        price = 10000,
+    product2 = c_model.Product(
+        name = u'プラチナ会員',
+        price = 30000,
         sales_segment = sales_segment,
         event = event
     )
-    session.add(product3)
+    session.add(product2)
+    product2.items.append(product_item2_1)
+    product2.items.append(product_item2_2)
 
     product_item3_1 = c_model.ProductItem(
         item_type = '',
         price = 10000,
-        product_id =product1.id,
         performance_id = performance.id,
         stock = stock_1,
         quantity = 50
@@ -274,13 +279,29 @@ def main():
     product_item3_2 = c_model.ProductItem(
         item_type = '',
         price = 0,
-        product_id =product1.id,
         performance_id = performance.id,
         stock = stock_2,
         quantity = 50
     )
     session.add(product_item3_2)
+    product3 = c_model.Product(
+        name = u'ゴールド会員',
+        price = 10000,
+        sales_segment = sales_segment,
+        event = event
+    )
+    session.add(product3)
+    product3.items.append(product_item3_1)
+    product3.items.append(product_item3_2)
 
+    product_item4_1 = c_model.ProductItem(
+        item_type = '',
+        price = 3000,
+        performance_id = performance.id,
+        stock = stock_1,
+        quantity = 50
+    )
+    session.add(product_item4_1)
     product4 = c_model.Product(
         name = u'レギュラー会員',
         price = 3000,
@@ -288,17 +309,16 @@ def main():
         event = event
     )
     session.add(product4)
+    product4.items.append(product_item4_1)
 
-    product_item4_1 = c_model.ProductItem(
+    product_item5_1 = c_model.ProductItem(
         item_type = '',
-        price = 3000,
-        product_id =product1.id,
+        price = 1000,
         performance_id = performance.id,
         stock = stock_1,
         quantity = 50
     )
-    session.add(product_item4_1)
-
+    session.add(product_item5_1)
     product5 = c_model.Product(
         name = u'ライト会員',
         price = 1000,
@@ -306,34 +326,25 @@ def main():
         event = event
     )
     session.add(product5)
+    product5.items.append(product_item5_1)
 
-    product_item5_1 = c_model.ProductItem(
+    product_item6_1 = c_model.ProductItem(
         item_type = '',
         price = 1000,
-        product_id =product1.id,
         performance_id = performance.id,
         stock = stock_1,
         quantity = 50
     )
-    session.add(product_item5_1)
-
-    product5 = c_model.Product(
+    session.add(product_item6_1)
+    product6 = c_model.Product(
         name = u'ジュニア会員',
         price = 1000,
         sales_segment = sales_segment,
         event = event
     )
-    session.add(product5)
+    session.add(product6)
+    product6.items.append(product_item6_1)
 
-    product_item5_1 = c_model.ProductItem(
-        item_type = '',
-        price = 1000,
-        product_id =product1.id,
-        performance_id = performance.id,
-        stock = stock_1,
-        quantity = 50
-    )
-    session.add(product_item5_1)
 
     session.flush()
 
