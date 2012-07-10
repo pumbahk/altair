@@ -1,12 +1,28 @@
 # -*- coding:utf-8 -*-
 from wtforms import Form
 from wtforms import fields
+from wtforms import widgets
 from wtforms import validators as v
 from wtforms.ext.i18n.utils import DefaultTranslations
 
 from ticketing.master.models import Prefecture
 from ticketing.core import models as c_models
 from datetime import datetime
+
+from . import fields as my_fields
+from . import widgets as my_widgets
+
+ymd_widget = my_widgets.Switcher(
+    'select',
+    select=widgets.Select(),
+    input=widgets.TextInput()
+    )
+
+radio_list_widget = my_widgets.Switcher(
+    'list',
+    list=widgets.ListWidget(prefix_label=False),
+    plain=my_widgets.GenericSerializerWidget(prefix_label=False)
+    )
 
 def get_year_choices():
     current_year = datetime.now().year
@@ -42,7 +58,7 @@ class OrderFormSchema(Form):
         return DefaultTranslations(JananeseTranslations())
 
     # 新規・継続
-    cont = fields.RadioField(u"新規／継続", validators=[v.Required()], choices=[('yes', u'継続'),('no', u'新規')])
+    cont = fields.RadioField(u"新規／継続", validators=[v.Required()], choices=[('yes', u'継続'),('no', u'新規')], widget=radio_list_widget)
     member_type = fields.SelectField(u"会員種別選択", validators=[v.Required()])
     t_shirts_size = fields.SelectField(u"Tシャツサイズ", choices=[('S', u'S'),('M', u'M'),('L', u'L'),('LL', u'LL')])
     #number = fields.IntegerField(u"口数選択", validators=[v.Required()])
@@ -50,10 +66,10 @@ class OrderFormSchema(Form):
     last_name = fields.TextField(u"氏名", validators=[v.Required()])
     first_name_kana = fields.TextField(u"氏名(カナ)", validators=[v.Required()])
     last_name_kana = fields.TextField(u"氏名(カナ)", validators=[v.Required()])
-    year = fields.SelectField(u"誕生日", choices=get_year_choices())
-    month = fields.SelectField(u"誕生日", validators=[v.Required()], choices=get_year_months())
-    day = fields.SelectField(u"誕生日", validators=[v.Required()], choices=get_year_days())
-    sex = fields.RadioField(u"性別", validators=[v.Required()], choices=[('male', u'男性'),('female', u'女性')])
+    year = my_fields.StringFieldWithChoice(u"誕生日", choices=get_year_choices(), widget=ymd_widget)
+    month = my_fields.StringFieldWithChoice(u"誕生日", validators=[v.Required()], choices=get_year_months(), widget=ymd_widget)
+    day = my_fields.StringFieldWithChoice(u"誕生日", validators=[v.Required()], choices=get_year_days(), widget=ymd_widget)
+    sex = fields.RadioField(u"性別", validators=[v.Required()], choices=[('male', u'男性'),('female', u'女性')], widget=radio_list_widget)
     zipcode1 = fields.TextField(u"郵便番号", validators=[v.Required(), v.Regexp(r'\d{3}')])
     zipcode2 = fields.TextField(u"郵便番号", validators=[v.Required(), v.Regexp(r'\d{4}')])
     prefecture = fields.SelectField(u"都道府県", validators=[v.Required()], choices=[(p.name, p.name)for p in Prefecture.all()])

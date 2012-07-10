@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<title>仙台89ERS 2013-2014 ブースタークラブ入会申込ページ</title>
+    <link rel="stylesheet" type="text/css" href="${request.static_url('ticketing.bj89ers:static/style.css')}" media="all" />
+
+</head>
+<body>
+
+  <h1 class="title">仙台89ERS 2013-2014 ブースタークラブ入会申込ページ</h1>
+  <div align="center">
+
+    <form id="form1" name="form1" method="post" action="${request.url}">
+
+	<table class="layout" style="width:760px" class="wrapper">
+		<tr>
+			<td>
+
+<h2>仙台89ERS 2013-2014 ブースタークラブ入会申込ページ</h2>
+
+
+<div class="formWrapper">
+					<table cellpadding="0" cellspacing="0" class="form89ers">
+					<tr><td>
+					利用可能なカードブランドの表示が必要。
+					3Dセキュア? セキュリティーコード?
+					入力内容を確認してもらう。合計金額の表示が必要。
+					戻るボタンも欲しい。
+					カード決済エラーだった場合もこの画面に戻る。
+					</td></tr>
+					</table>
+                    
+					<table cellpadding="0" cellspacing="0" class="form89ers">
+						<colgroup>
+						<col style="width:180px;">
+						<col style="width:310px;">
+						</colgroup>
+						<tbody>
+							<tr>
+								<th colspan="2" style="text-align:left;">
+								<label><input type="radio" name="payment" value="card">　クレジットカード決済</label>
+								</th>
+							</tr>
+							<tr>
+								<th>カード番号</th>
+								<td>
+									<input size="45" type="text" name="card_number" value="半角数字" onClick="this.value=''">
+	   							</td>
+							</tr>
+							<tr>
+								<th>有効期限</th>
+							<td>
+								<select name="exp_month">
+								<option value="" selected="selected">-</option>
+								<option value="01">01</option>
+								<option value="02">02</option>
+								<option value="03">03</option>
+								<option value="04">04</option>
+								<option value="05">05</option>
+								<option value="06">06</option>
+								<option value="07">07</option>
+								<option value="08">08</option>
+								<option value="09">09</option>
+								<option value="10">10</option>
+								<option value="11">11</option>
+								<option value="12">12</option>
+								</select>月/ 
+                                <select name="exp_year">
+								<option value="" selected="selected">-</option>
+								<option value="12">2012</option>
+								<option value="13">2013</option>
+								<option value="14">2014</option>
+								<option value="15">2015</option>
+								<option value="16">2016</option>
+								<option value="17">2017</option>
+								<option value="18">2018</option>
+								<option value="19">2019</option>
+								<option value="20">2020</option>
+								</select>年　
+                            </td>
+							</tr>
+							<tr>
+								<th>カード名義</th>
+								<td>
+									<input size="45" type="text" name="card_holder_name" value="半角英字" onClick="this.value=''">
+	   							</td>
+							</tr>
+						</tbody>
+					</table>
+				
+					<table cellpadding="0" cellspacing="0" class="form89ers">
+						<colgroup>
+						<col style="width:180px;">
+						<col style="width:310px;">
+						</colgroup>
+						<tbody>
+							<tr>
+								<td colspan="2" style="text-align:left;">									
+								<input type="submit" value="送信" class="submit" style="width:400px;height:50px;">
+								</td>
+							</tr>
+						
+						</tbody>
+					</table>
+
+
+<br />
+<br />
+<br />			
+			</td>
+		</tr>
+    </table>
+</form>
+  </div>
+</body>
+</html>
