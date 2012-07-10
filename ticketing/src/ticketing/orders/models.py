@@ -105,6 +105,11 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 multi_checkout_result = multi_checkout_api.checkout_sales_cancel(request, self.order_no)
                 DBSession.add(multi_checkout_result)
 
+                error_code = multi_checkout_result.CmnErrorCd or multi_checkout_result.CardErrorCd
+                if error_code:
+                    logger.error(u'クレジットカード決済のキャンセルに失敗しました。 %s' % error_code)
+                    return False
+
                 self.multi_checkout_approval_no = multi_checkout_result.ApprovalNo
 
             elif ppid == 2:  # 楽天あんしん決済
