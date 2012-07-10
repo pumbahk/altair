@@ -9,9 +9,10 @@ from ticketing.formhelpers import DateTimeField, Translations, Required, Phone
 
 class CardForm(Form):
 
-    card_number = fields.TextField(validators=[Length(16)])
+    card_number = fields.TextField(validators=[Length(15)])
     exp_year = fields.TextField(validators=[Length(2)])
     exp_month = fields.TextField(validators=[Length(2)])
+    secure_code = fields.TextField(validators=[Length(3)])
 
 
 class ClientForm(Form):

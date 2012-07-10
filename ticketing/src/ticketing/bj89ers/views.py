@@ -138,7 +138,7 @@ class CompleteView(_CompleteView):
 
         order.organization_id = order.performance.event.organization_id
 
-        profile = self.request.session[SESSION_KEY]
+        profile = bj89ers_api.load_user_profile(self.request)
 
         # productは一個しか来ない
         order_product = order.items[0]
@@ -146,7 +146,7 @@ class CompleteView(_CompleteView):
             product_item = ordered_product_item.product_item
             # Tシャツ
             if product_item.stock.stock_type.type == c_models.StockTypeEnum.Other.v:
-                ordered_product_item.set('t_shirts_size', profile.t_shirts_size)
+                ordered_product_item.put('t_shirts_size', profile['t_shirts_size'])
             else:
                 for k, v in profile.items():
                     if k != 't_shirts_size':
