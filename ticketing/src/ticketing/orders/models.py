@@ -105,7 +105,12 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 multi_checkout_result = multi_checkout_api.checkout_sales_cancel(request, self.order_no)
                 DBSession.add(multi_checkout_result)
 
-                error_code = multi_checkout_result.CmnErrorCd or multi_checkout_result.CardErrorCd
+                error_code = ''
+                if multi_checkout_result.CmnErrorCd and multi_checkout_result.CmnErrorCd != '000000':
+                    error_code = multi_checkout_result.CmnErrorCd
+                elif multi_checkout_result.CardErrorCd and multi_checkout_result.CardErrorCd != '000000':
+                    error_code = multi_checkout_result.CardErrorCd
+
                 if error_code:
                     logger.error(u'クレジットカード決済のキャンセルに失敗しました。 %s' % error_code)
                     return False
