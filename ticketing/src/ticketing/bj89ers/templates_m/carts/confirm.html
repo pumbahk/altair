@@ -4,7 +4,7 @@
 <form id="form1" action="${request.route_url('payment.finish')}" method="post">
 <%
 up = user.user_profile
-pm = request.session['bj89er.user_profile']
+pm = _api.load_user_profile(request)
 %>
 <%mobile:form_header>新規／継続</%mobile:form_header>
 <div>${u'継続' if pm.get('cont') == 'yes' else u'新規'}</div>

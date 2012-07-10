@@ -42,8 +42,8 @@
 
 							<%
                                 up = user.user_profile
-                                pm = request.session['bj89ers.user_profile']
-                            %>
+                                pm = _api.load_user_profile(request)
+              %>
 							<tr>
 								<th>新規／継続</th>
 								<td>${u'継続' if pm.get('cont') == 'yes' else u'新規'}</td>
