@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import csv
+from datetime import datetime
 
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
@@ -104,7 +105,7 @@ class Orders(BaseView):
 
         headers = [
             ('Content-Type', 'text/csv'),
-            ('Content-Disposition', 'attachment; filename=orders.csv')
+            ('Content-Disposition', 'attachment; filename=orders_{date}.csv'.format(date=datetime.now().strftime('%Y%m%d')))
         ]
         response = Response(headers=headers)
 

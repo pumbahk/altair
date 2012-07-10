@@ -32,9 +32,11 @@ class OrderSearchForm(Form):
     ordered_from = DateTimeField(
         label=u'受注日時',
         validators=[Optional()],
+        format='%Y-%m-%d %H:%M',
     )
     ordered_to = DateTimeField(
         validators=[Optional()],
+        format='%Y-%m-%d %H:%M',
     )
     payment_method = SelectMultipleField(
         label=u'決済方法',
