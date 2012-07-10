@@ -33,4 +33,6 @@ def main(global_conf, **settings):
     config.add_view('.views.OrderReviewView', route_name='order_review', attr="get", request_method="GET")
     config.add_view('.views.OrderReviewView', route_name='order_review', attr="post", request_method="POST", renderer="order_review/show.html")
 
+    config.add_subscriber('.subscribers.add_helpers', 'pyramid.events.BeforeRender')
+
     return config.make_wsgi_app()
