@@ -12,6 +12,9 @@ from sqlalchemy.orm.exc import NoResultFound
 from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier, relationship, DBSession, record_to_multidict
 from ticketing.core.models import Seat, Performance, Product, ProductItem, PaymentMethod, DeliveryMethod, StockStatus
 from ticketing.users.models import User
+from ticketing.sej.models import SejOrder
+from ticketing.sej.exceptions import SejServerError
+from ticketing.sej.payment import request_cancel_order
 
 logger = logging.getLogger(__name__)
 
@@ -102,17 +105,18 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 multi_checkout_result = multi_checkout_api.checkout_sales_cancel(request, self.order_no)
                 DBSession.add(multi_checkout_result)
 
+                error_code = multi_checkout_result.CmnErrorCd or multi_checkout_result.CardErrorCd
+                if error_code:
+                    logger.error(u'クレジットカード決済のキャンセルに失敗しました。 %s' % error_code)
+                    return False
+
                 self.multi_checkout_approval_no = multi_checkout_result.ApprovalNo
 
             elif ppid == 2:  # 楽天あんしん決済
                 # ToDo
                 pass
             elif ppid == 3:  # コンビニ決済 (セブンイレブン)
-                from ticketing.sej.models import SejOrder
-                from ticketing.sej.exceptions import SejServerError
-                from ticketing.sej.payment import request_cancel_order
-
-                sej_order = SejOrder.query.filter_by(order_id='%(#)012d' % {'#':self.id}).first()
+                sej_order = SejOrder.query.filter_by(order_id='%(#)012d' % {'#':int(self.order_no)}).first()
                 if sej_order and not sej_order.cancel_at:
                     try:
                         request_cancel_order(

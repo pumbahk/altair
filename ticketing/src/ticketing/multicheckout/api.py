@@ -113,6 +113,7 @@ def checkout_sales_secure3d(request,
     return service.request_card_sales(order_no, params)
 
 def checkout_sales_cancel(request, order_no):
+    order_no += '00'
     service = get_multicheckout_service(request)
     return service.request_card_cancel_sales(order_no)
 

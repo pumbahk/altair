@@ -67,5 +67,5 @@ def set_user_profile_for_order(request, order, bj89er_user_profile):
     for attr_name in attr_names:
         o_models.OrderedProductAttribute(ordered_product_item=ordered_product_item,
             name=attr_name,
-            value=bj89er_user_profile[attr_name])
+            value=bj89er_user_profile.get(attr_name))
 
