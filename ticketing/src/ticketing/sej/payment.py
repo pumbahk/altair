@@ -79,7 +79,7 @@ class SejPayment(object):
     def _send_request(self, request_params, mode, retry_flg):
         if retry_flg:
             request_params['retry_cnt'] = '1'
-
+        print self.url
         req = create_sej_request(self.url, request_params)
 
         try:
@@ -278,7 +278,9 @@ def request_cancel_order(
         raise SejError(
             error_type=int(error_type),
             error_msg=ret.get('Error_Msg', None),
-            error_field=ret.get('Error_Field', None))
+            error_field=ret.get('Error_Field', None),
+            error_body=u''
+        )
 
     sej_order = SejOrder.query.filter_by(order_id = order_id, billing_number = billing_number, exchange_number=exchange_number).one()
     sej_order.cancel_at = datetime.now()

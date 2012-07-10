@@ -119,10 +119,13 @@ class Orders(BaseView):
 
 from ticketing.sej.models import SejOrder, SejTicket, SejTicketTemplateFile, SejRefundEvent, SejRefundTicket
 from ticketing.sej.ticket import SejTicketDataXml
+from ticketing.sej import payment
 from ticketing.sej.payment import request_update_order, request_cancel_order
 from ticketing.sej.resources import code_from_ticket_type, code_from_update_reason, code_from_payment_type
 from ticketing.sej.exceptions import  SejServerError
 from sqlalchemy import or_, and_
+
+from pyramid.threadlocal import get_current_registry
 
 import sqlahelper
 DBSession = sqlahelper.get_session()
@@ -131,6 +134,7 @@ DBSession = sqlahelper.get_session()
 class SejOrderView(object):
 
     def __init__(self, request):
+
         self.request = request
 
     @view_config(route_name='orders.sej', renderer='ticketing:templates/sej/index.html')
@@ -168,7 +172,16 @@ class SejOrderView(object):
         }
 
 @view_defaults(decorator=with_bootstrap)
-class SejOrderInfoView(BaseView):
+class SejOrderInfoView(object):
+
+    def __init__(self, request):
+
+        settings = get_current_registry().settings
+        self.sej_hostname = settings['sej.inticket_api_url']
+        self.shop_id = settings['sej.shop_id']
+        self.secret_key = settings['sej.api_key']
+
+        self.request = request
 
     @view_config(route_name='orders.sej.order.request', request_method="GET", renderer='ticketing:templates/sej/request.html')
     def order_request_get(self):
@@ -245,7 +258,10 @@ class SejOrderInfoView(BaseView):
                         order_id        = order.order_id,
                         billing_number  = order.billing_number,
                         exchange_number = order.exchange_number,
-                    )
+                    ),
+                    shop_id=self.shop_id,
+                    secret_key=self.secret_key,
+                    hostname=self.sej_hostname
                 )
                 self.request.session.flash(u'オーダー情報を送信しました。')
             except SejServerError, e:
@@ -305,6 +321,9 @@ class SejOrderInfoView(BaseView):
                 order.order_id,
                 order.billing_number,
                 order.exchange_number,
+                shop_id=self.shop_id,
+                secret_key=self.secret_key,
+                hostname=self.sej_hostname
             )
             self.request.session.flash(u'オーダーをキャンセルしました。')
         except SejServerError, e:

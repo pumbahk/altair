@@ -247,7 +247,8 @@ class SejRefundEventForm(Form):
     )
 
 def cancel_events():
-    return SejCancelEvent.all()
+    from ticketing.sej.models import SejRefundEvent
+    return SejRefundEvent.all()
 
 from wtforms.ext.sqlalchemy.fields import QuerySelectField,QuerySelectMultipleField
 
