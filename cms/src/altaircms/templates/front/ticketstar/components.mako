@@ -40,7 +40,7 @@
 	<div id="globalNav">
 		<ul id="globalNav1">
 		  % for category in categories:
-		     <li><a href="${h.link.get_link_from_category(request, category) or ''}">
+		     <li><a href="${h.link.get_link_from_category(request, category) or '/'}">
 				 <img src="${category.imgsrc}" alt="${category.label}"/></a>
 			 </li>
 		     ## dirty hack(cssのbackground-imageで表示しようとしたが横幅を揃えることができず失敗)

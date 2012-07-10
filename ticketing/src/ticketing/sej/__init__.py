@@ -10,7 +10,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 def includeme(config):
-    config.add_route('sej.callback'                 , '/callback')
+    config.add_route('sej.callback'                 , '/callback/')
     config.add_route('sej.callback.form'            , '/callback/form')
 
 def main(global_config, **settings):
