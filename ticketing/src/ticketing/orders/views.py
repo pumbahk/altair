@@ -15,6 +15,7 @@ from ticketing.orders.forms import (OrderForm, OrderSearchForm, SejOrderForm, Se
                                     SejRefundEventForm,SejRefundOrderForm)
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
+from ticketing.orders.events import notify_order_canceled
 
 @view_defaults(decorator=with_bootstrap)
 class Orders(BaseView):
@@ -65,6 +66,7 @@ class Orders(BaseView):
             return HTTPNotFound('order id %d is not found' % order_id)
 
         if order.cancel(self.request):
+            notify_order_canceled(self.request, order)
             self.request.session.flash(u'受注(%s)をキャンセルしました' % order.order_no)
         else:
             self.request.session.flash(u'受注(%s)をキャンセルできません' % order.order_no)
