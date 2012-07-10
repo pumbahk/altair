@@ -3,11 +3,13 @@
 import ticketing.orders.models as o_models
 from .models import DBSession
 
+SESSION_KEY = 'bj89ers.user_profile'
+
 def store_user_profile(request, user_profile):
-    request.session['bj89er.user_profile'] = user_profile
+    request.session[SESSION_KEY] = user_profile
 
 def load_user_profile(request):
-    return request.session['bj89er.user_profile']
+    return request.session[SESSION_KEY]
 
 def on_order_completed(event):
     order = event.order

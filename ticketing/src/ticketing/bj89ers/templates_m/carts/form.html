@@ -1,18 +1,15 @@
 <%inherit file="/layout.html"/>
-<div align="center">
-仙台89ERS 2012-2013<br />
-ブースタークラブ<br />
-入会申込ページ
-</div>
-<form action="${request.url}" method="post">
-<div>新規/継続</div>
+<%namespace file="/tags.html" name="mobile" />
+<%mobile:header>お客様情報の入力</%mobile:header>
+<form method="post" action="${request.url}">
+<%mobile:form_header>新規/継続</%mobile:form_header>
 <div>
 % for c in form.cont:
   ${c()}${c.label}<br />
 % endfor
-## ${h.error('cont')}
+${h.error('cont')}
 </div>
-<div>会員種別</div>
+<%mobile:form_header>会員種別</%mobile:form_header>
 <div>
   <select id="member_type" name="member_type" class="">
     <option value="">選択してください</option>
@@ -21,97 +18,97 @@
   % endfor
   </select><br />
   <a href="#">※会員種別についてはこちら</a><br ?>
-## ${h.error('member_type')}
+${h.error('member_type')}
 </div>
-<div>Tシャツサイズ</div>
+<%mobile:form_header>Tシャツサイズ</%mobile:form_header>
 <div>
   ${form.t_shirts_size}
-## ${h.error('t_shirts_size')}
+${h.error('t_shirts_size')}
 </div>
 <div>氏名<font color="red">*</font></div>
 <div>
   姓${form.last_name(size="10", istyle="1", iprof="name1")}<br />
   名${form.first_name(size="10", istyle="1", iprof="name2")}<br />
-## ${h.error(['last_name','first_name'])}
+${h.error(['last_name','first_name'])}
 </div>
-<div>フリガナ<span class="red">*</span></div>
+<%mobile:form_header required="true">フリガナ</%mobile:form_header>
 <div>
   セイ${form.last_name_kana(size="10", istyle="2", iprof="kana1")}<br />
   メイ${form.first_name_kana(size="10", istyle="2", iprof="kana2")}<br />
-## ${h.error(['last_name_kana','first_name_kana'])}
+${h.error(['last_name_kana','first_name_kana'])}
 </div>
-<div>誕生日<span class="red">*</div>
+<%mobile:form_header required="true">誕生日</%mobile:form_header>
 <div>
   ${form.year(widget="input", _input_size="2", istyle="4")}年${form.month(widget="input", _input_size="2", istyle="4")}月${form.day(widget="input", _input_size="2", istyle="4")}日<br />
-## ${h.error(['year','month', 'day'])}
+${h.error(['year','month', 'day'])}
 </div>
-<div>性別<span class="red">*</div>
+<%mobile:form_header required="true">性別</%mobile:form_header>
 <div>
 % for c in form.sex:
  ${c()}${c.label}<br />
 % endfor
-## ${h.error('sex')}
+${h.error('sex')}
 </div>
-<div>郵便番号<span class="red">*</span></div>
+<%mobile:form_header required="true">郵便番号</%mobile:form_header>
 <div>
   ${form.zipcode1(size="3", maxlength="3", istyle="4")}-${form.zipcode2(size="4", maxlength="4", istyle="4")}<span>
-## ${h.error(['zipcode1', 'zipcode2'])}
+${h.error(['zipcode1', 'zipcode2'])}
 </div>
-<div>都道府県</div>
+<%mobile:form_header>都道府県</%mobile:form_header>
 <div>
   ${form.prefecture()}
-## ${h.error('prefecture')} 
+${h.error('prefecture')} 
 </div>
-<div>市区町村</div>
+<%mobile:form_header>市区町村</%mobile:form_header>
 <div>
-  ${form.city(size=10)}
-## $(h.error('city')}
+  ${form.city(size=10, istyle="1", iprof="address2")}
+${h.error('city')}
 </div>
-<div>町名番地</div>
+<%mobile:form_header>町名番地</%mobile:form_header>
 <div>
-  ${form.address1(size=10)}
-## $(h.error('address1')}
+  ${form.address1(size=10, istyle="1", iprof="address3")}
+${h.error('address1')}
 </div>
-<div>建物名等</div>
+<%mobile:form_header>建物名等</%mobile:form_header>
 <div>
-  ${form.address2(size=10)}
-## $(h.error('address2')}
+  ${form.address2(size=10, istyle="1", iprof="address4")}
+${h.error('address2')}
 </div>
-<div>電話番号(携帯)<span class="red">*</span></div>
+<%mobile:form_header required="true">電話番号(携帯)</%mobile:form_header>
 <div>
   ${form.tel1_1(size=4, istyle="4")}-${form.tel1_2(size=4, istyle="4")}-${form.tel1_3(size=4, istyle="4")}<br />
-## ${h.error(['tel1_1', 'tel1_2', 'tel1_3'])}
+${h.error(['tel1_1', 'tel1_2', 'tel1_3'])}
 </div>
-<div>電話番号(自宅)<span class="red">*</span></div>
+<%mobile:form_header required="true">電話番号(自宅)</%mobile:form_header>
 <div>
   ${form.tel2_1(size=4, istyle="4")}-${form.tel2_2(size=4, istyle="4")}-${form.tel2_3(size=4, istyle="4")}<br />
-##  ${h.error(['tel2_1', 'tel2_2', 'tel2_3'])}
+${h.error(['tel2_1', 'tel2_2', 'tel2_3'])}
 </div>
-<div>メールアドレス<span class="red">*</span></div>
+<%mobile:form_header required="true">メールアドレス</%mobile:form_header>
 <div>
-  ${form.email(istyle="4")}<br />
-##  ${h.error('email')}
+  ${form.email(istyle="3", iprof="mail1")}<br />
+${h.error('email')}
 </div>
-<div>メールアドレス(確認用)<span class="red">*</span></div>
+<%mobile:form_header required="true">メールアドレス(確認用)</%mobile:form_header>
 <div>
-  ${form.email2(istyle="4")}<br />
-## ${h.error('email2')}
+  ${form.email2(istyle="3", iprof="mail1")}<br />
+${h.error('email2')}
 </div>
-<div>メルマガ</div>
 <div>
-  ${form.mail_permission}<br />
-## ${h.error('mail_permission')}
+  ${form.mail_permission}メルマガ購読を希望<br />
+${h.error('mail_permission')}
 </div>
-<div>媒体への掲載希望</div>
+<%mobile:form_header>媒体への掲載希望</%mobile:form_header>
 <div>
   ${form.publicity}<br />
-## ${h.error('publicity')}
+${h.error('publicity')}
 </div>
-<div>媒体掲載時のニックネーム</div>
+<%mobile:form_header>媒体掲載時のニックネーム</%mobile:form_header>
 <div>
   ${form.nickname(size=10)}<br />
-## ${h.error('nickname')}
+${h.error('nickname')}
 </div>
 <div><font color="red">*は入力必須項目です。電話番号は携帯・自宅のどちらか一方で構いません。</font></div>
+<hr />
 <input type="submit" value="次に進む" />
 </form>
