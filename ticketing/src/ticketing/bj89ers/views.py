@@ -7,6 +7,7 @@ import ticketing.core.models as c_models
 from ..orders import models as o_models
 import ticketing.cart.helpers as h
 import ticketing.cart.api as api
+import ticketing.bj89ers.api as bj89ers_api
 from ticketing.users.models import UserProfile
 from pyramid.httpexceptions import HTTPFound
 from pyramid.renderers import render_to_response
@@ -19,8 +20,6 @@ from ticketing.cart.events import notify_order_completed
 
 logger = logging.getLogger(__name__)
 
-SESSION_KEY = 'bj89ers.user_profile'
-
 class IndexView(object):
     def __init__(self, request):
         self.request = request
@@ -31,11 +30,9 @@ class IndexView(object):
         return dict()
 
     def _create_form(self):
-
         salessegment = self.context.get_sales_segument()
-
         query = c_models.Product.query
-        #query = query.filter(c_models.Product.id.in_(q))
+        query = query.filter(c_models.Product.event_id == self.context.event_id)
         query = query.order_by(sa.desc("price"))
         query = h.products_filter_by_salessegment(query, salessegment)
 
@@ -72,10 +69,10 @@ class IndexView(object):
         cart = self.context.order_products(self.context.performance_id, self.ordered_items)
         if cart is None:
             logger.debug('cart is None')
-            return dict()
+            return dict(form=form, products=products)
         logger.debug('cart %s' % cart)
         api.set_cart(self.request, cart)
-        self.request.session[SESSION_KEY] = dict(self.request.params)
+        bj89ers_api.store_user_profile(self.request, dict(self.request.params))
         logger.debug('OK redirect')
         return HTTPFound(location=self.request.route_url("cart.payment"))
 

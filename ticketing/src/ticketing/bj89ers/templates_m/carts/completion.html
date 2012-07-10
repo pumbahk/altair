@@ -1,0 +1,86 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<title>仙台89ERS 2013-2014 ブースタークラブ入会申込ページ</title>
+    <link rel="stylesheet" type="text/css" href="${request.static_url('ticketing.bj89ers:static/style.css')}" media="all" />
+
+</head>
+<body>
+
+  <h1 class="title">仙台89ERS 2013-2014 ブースタークラブ入会申込ページ</h1>
+  <div align="center">
+
+<form>
+
+	<table class="layout" style="width:760px" class="wrapper">
+		<tr>
+			<td>
+
+<h2>お申し込みありがとうございました</h2>
+
+
+<div class="formWrapper">
+                    
+					<table cellpadding="0" cellspacing="0" class="form89ers">
+						<colgroup>
+						<col style="width:180px;">
+						<col style="width:310px;">
+						</colgroup>
+						<tbody>
+						<tr>
+							<th colspan="2" style="text-align:left;font-size:18px;">
+                                お申し込みNo.：${order.order_no}
+							</tr>
+						</tbody>
+					</table>
+					<table cellpadding="0" cellspacing="0" class="form89ers">
+						<colgroup>
+						<col style="width:180px;">
+						<col style="width:310px;">
+						</colgroup>
+						<tbody>
+						<tr>
+							<th colspan="2" style="text-align:left;font-size:18px;">
+							お申し込み内容
+							</tr>
+
+							<tr>
+								<th>会員種別
+								</th>
+								<td>
+                                    ${order.ordered_products[0].product.name}
+	   							</td>
+							</tr>
+							<tr>
+								<th>会員口数
+								</th>
+								<td>
+                                    ${order.ordered_products[0].quantity}口
+	   							</td>
+							</tr>
+							<tr>
+								<th>お名前
+								</th>
+								<td>
+                                    <%
+                                    user_profile = order.user.user_profile
+                                    %>
+                                    ${user_profile.last_name} ${user_profile.first_name}　様
+	   							</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+
+
+<br />
+<br />
+<br />			
+			</td>
+		</tr>
+    </table>
+</form>
+  </div>
+</body>
+</html>

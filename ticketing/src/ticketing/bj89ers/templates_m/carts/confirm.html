@@ -1,0 +1,42 @@
+<%inherit file="/layout.html"/>
+<%namespace file="/tags.html" name="mobile" />
+<%mobile:header>申込内容確認</%mobile:header>
+<form id="form1" action="${request.route_url('payment.finish')}" method="post">
+<%
+up = user.user_profile
+pm = request.session['bj89er.user_profile']
+%>
+<%mobile:form_header>新規／継続</%mobile:form_header>
+<div>${u'継続' if pm.get('cont') == 'yes' else u'新規'}</div>
+<%mobile:form_header>会員種別</%mobile:form_header>
+<div>${cart.products[0].product.name}</div>
+<%mobile:form_header>氏名</%mobile:form_header>
+<div>${pm['last_name']} ${pm['first_name']}</div>
+<%mobile:form_header>氏名（フリガナ）</%mobile:form_header>
+<div>${pm['last_name_kana']} ${pm['first_name_kana']}</div>
+<%mobile:form_header>誕生日</%mobile:form_header>
+<div>${pm['year']}年${pm['month']}月${pm['day']}日</div>
+<%mobile:form_header>性別</%mobile:form_header>
+<div>
+%if pm['sex']=='male':
+男性
+%endif
+%if pm['sex']==2:
+女性
+%endif
+</div>
+<%mobile:form_header>住所</%mobile:form_header>
+<div>${pm['prefecture']} ${pm['city']} ${pm['address1']} ${pm['address2']}</div>
+<%mobile:form_header>電話番号（携帯）</%mobile:form_header>
+<div>${pm['tel1_1']}${pm['tel1_2']}${pm['tel1_3']}</div>
+<%mobile:form_header>電話番号（自宅）</%mobile:form_header>
+<div>${pm['tel2_1']}${pm['tel2_2']}${pm['tel2_3']}</div>
+<%mobile:form_header>メールアドレス</%mobile:form_header>
+<div>${pm['email']}</div>
+<%mobile:form_header>媒体への掲載希望</%mobile:form_header>
+<div>${u'はい' if pm.get('publicity') == 'yes' else u'いいえ'}</div>
+<%mobile:form_header>媒体掲載時のニックネーム</%mobile:form_header>
+<div>${pm['nickname']}</div>
+<hr />
+<input type="submit" value="申し込む" />
+</form>

@@ -9,7 +9,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm.exc import NoResultFound
 
 from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier, relationship, DBSession, record_to_multidict
-from ticketing.core.models import Seat, Performance, Product, ProductItem, PaymentMethod, DeliveryMethod
+from ticketing.core.models import Seat, Performance, Product, ProductItem, PaymentMethod, DeliveryMethod, StockStatus
 from ticketing.users.models import User
 
 logger = logging.getLogger(__name__)
@@ -84,42 +84,6 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         else:
             return 'ordered'
 
-    @staticmethod
-    def filter_by_performance_id(id):
-        performance = Performance.get(id)
-        if not performance:
-            return None
-
-        return Order.filter_by(organization_id=performance.event.organization_id)\
-                             .join(Order.ordered_products)\
-                             .join(OrderedProduct.ordered_product_items)\
-                             .join(OrderedProductItem.product_item)\
-                             .filter(ProductItem.performance_id==id)\
-                             .distinct()
-
-    @classmethod
-    def create_from_cart(cls, cart):
-        order = cls()
-        order.order_no = str(cart.id)
-        order.total_amount = cart.total_amount
-        order.shipping_address = cart.shipping_address
-        order.payment_delivery_pair = cart.payment_delivery_pair
-        order.system_fee = cart.system_fee
-        order.transaction_fee = cart.transaction_fee
-        order.delivery_fee = cart.delivery_fee
-        order.performance = cart.performance
-
-        for product in cart.products:
-            ordered_product = OrderedProduct(
-                order=order, product=product.product, price=product.product.price, quantity=product.quantity)
-            for item in product.items:
-                ordered_product_item = OrderedProductItem(
-                    ordered_product=ordered_product, product_item=item.product_item, price=item.product_item.price,
-                    seats=item.seats,
-                )
-
-        return order
-
     def cancel(self, request):
         # キャンセル済み、売上キャンセル済み、配送済みはキャンセルできない
         if self.status == 'canceled' or self.status == 'refunded' or self.status == 'delivered':
@@ -166,10 +130,17 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         elif self.status == 'ordered':
             pass
 
+        # 在庫を戻す
+        self.release()
         self.canceled_at = datetime.now()
         self.save()
 
         return True
+
+    def release(self):
+        # 在庫を解放する
+        for product in self.ordered_products:
+            product.release()
 
     def delivered(self):
         # 入金済みのみ配送済みにステータス変更できる
@@ -179,6 +150,42 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             return True
         else:
             return False
+
+    @classmethod
+    def create_from_cart(cls, cart):
+        order = cls()
+        order.order_no = str(cart.id)
+        order.total_amount = cart.total_amount
+        order.shipping_address = cart.shipping_address
+        order.payment_delivery_pair = cart.payment_delivery_pair
+        order.system_fee = cart.system_fee
+        order.transaction_fee = cart.transaction_fee
+        order.delivery_fee = cart.delivery_fee
+        order.performance = cart.performance
+
+        for product in cart.products:
+            ordered_product = OrderedProduct(
+                order=order, product=product.product, price=product.product.price, quantity=product.quantity)
+            for item in product.items:
+                ordered_product_item = OrderedProductItem(
+                    ordered_product=ordered_product, product_item=item.product_item, price=item.product_item.price,
+                    seats=item.seats,
+                )
+
+        return order
+
+    @staticmethod
+    def filter_by_performance_id(id):
+        performance = Performance.get(id)
+        if not performance:
+            return None
+
+        return Order.filter_by(organization_id=performance.event.organization_id)\
+        .join(Order.ordered_products)\
+        .join(OrderedProduct.ordered_product_items)\
+        .join(OrderedProductItem.product_item)\
+        .filter(ProductItem.performance_id==id)\
+        .distinct()
 
     @staticmethod
     def set_search_condition(query, form):
@@ -338,6 +345,11 @@ class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     price = Column(Numeric(precision=16, scale=2), nullable=False)
     quantity = Column(Integer)
 
+    def release(self):
+        # 在庫を解放する
+        for item in self.ordered_product_items:
+            item.release()
+
 class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrderedProductItem'
     id = Column(Identifier, primary_key=True)
@@ -372,3 +384,10 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def items(self):
         return [(attr.name, attr.items) for attr in self._attributes]
 
+    def release(self):
+        # 在庫数を戻す
+        logger.debug('release stock id=%s quantity=%d' % (self.product_item.stock_id, self.product_item.quantity))
+        query = StockStatus.__table__.update().values(
+            {'quantity': StockStatus.quantity + self.product_item.quantity}
+        ).where(StockStatus.stock_id==self.product_item.stock_id)
+        DBSession.bind.execute(query)

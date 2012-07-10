@@ -1,0 +1,41 @@
+<%inherit file="/layout.html"/>
+<%namespace file="/tags.html" name="mobile" />
+<form method="post" action="${request.url}">
+<%mobile:header>支払方法選択</%mobile:header>
+%if form:
+<ul>
+  %for k, v in form.errors.items():
+  <li>${k} ${v[0]}</li>
+  %endfor
+</ul>
+%endif
+<div>
+チケット代金の支払方法を指定して、「次へ進む」ボタンをクリックして下さい。<br>
+チケット購入時には、チケット代金のほかに支払方法により、手数料がかかる場合があります。
+</div>
+<% checked_id = request.params.get('payment_delivery_method_pair_id') %>
+%for m in payment_delivery_methods:
+<hr />
+<% checked = 'checked' if str(m.id) == checked_id else '' %>
+<input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" ${checked}>${m.payment_method.name}<br/>
+手数料:${h.format_currency(m.transaction_fee)} (${h.fee_type(m.payment_method.fee_type)})<br />
+<div>
+% if m.payment_method.payment_plugin_id == 1:
+<font size="2">
+予約受付完了と同時に決済され、即時予約確定となります。支払回数は≪1回払い≫のみのお取扱いとなります。以下のクレジットカードがご利用できます。<br />
+<img src="${request.static_url('ticketing.bj89ers:static/images/kc_logo_rakuten.gif')}" height="30px" />
+<img src="${request.static_url('ticketing.bj89ers:static/images/visa.gif')}" height="30px" />
+<img src="${request.static_url('ticketing.bj89ers:static/images/master.gif')}" height="30px" />
+<img src="${request.static_url('ticketing.bj89ers:static/images/jcb.gif')}" height="30px" />
+<img src="${request.static_url('ticketing.bj89ers:static/images/amex_logo.gif')}" height="30px" />
+<img src="${request.static_url('ticketing.bj89ers:static/images/s-logo_diners.jpg')}" height="30px" />
+</font>
+% elif m.payment_method.payment_plugin_id == 3:
+予約有効期日までにお支払頂きます。
+お支払が確認できた時点で予約確定となります。
+% endif
+</div>
+%endfor
+<hr />
+<input type="submit" value="次に進む" class="submit">
+</form>
