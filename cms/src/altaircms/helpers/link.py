@@ -34,6 +34,7 @@ def get_link_from_topic(request, topic):
         return ""
 
 get_link_from_topcontent = get_link_from_topic
+get_link_from_promotion = get_link_from_topic
 
 def unquote_path_segment(string):
     """ request.route_pathの結果"foo/bar"が "foo%2Fbar"になってしまう部分の修正。

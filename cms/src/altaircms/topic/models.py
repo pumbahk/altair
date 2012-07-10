@@ -5,7 +5,7 @@ import sqlalchemy.orm as orm
 from datetime import datetime
 
 from altaircms.models import Base, BaseOriginalMixin
-from altaircms.models import DBSession
+from altaircms.models import DBSession, model_to_dict
 from altaircms.page.models import PageSet
 from altaircms.asset.models import ImageAsset
 from altaircms.event.models import Event
@@ -169,7 +169,7 @@ topic widgetでは
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
 
-    kind = sa.Column(sa.Unicode(255))
+    kind = sa.Column(sa.Unicode(255), index=True)
     subkind = sa.Column(sa.Unicode(255))
     title = sa.Column(sa.Unicode(255))
     text = sa.Column(sa.UnicodeText)
@@ -251,7 +251,7 @@ class Topcontent(AboutPublishMixin,
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
 
-    kind = sa.Column(sa.Unicode(255))
+    kind = sa.Column(sa.Unicode(255), index=True)
     subkind = sa.Column(sa.Unicode(255))
     title = sa.Column(sa.Unicode(255))
     text = sa.Column(sa.Unicode(255))
@@ -326,3 +326,94 @@ class Topcontent(AboutPublishMixin,
         else:
             return qs.filter(where | (cls.is_global==True))
 
+### promotion
+promotion2kind = sa.Table(
+    "promotion2kind", Base.metadata, 
+    sa.Column("promotion_id", sa.Integer, sa.ForeignKey("promotion.id")), 
+    sa.Column("kind_id", sa.Integer, sa.ForeignKey("kind.id"))
+    )
+
+from sqlalchemy.ext.declarative import declared_attr
+
+class Kind(WithOrganizationMixin, Base):
+    query = DBSession.query_property()
+    __tablename__ = "kind"
+    id = sa.Column(sa.Integer, primary_key=True)
+    name = sa.Column(sa.Unicode(255), index=True)
+
+    @declared_attr
+    def __tableargs__(cls):
+        return  ((sa.schema.UniqueConstraint(cls.name,cls.organization_id)))        
+
+    def __repr__(self):
+        return "<%r name: %r organization_id: %r>" % (self.__class__, self.name, self.organization_id)
+
+class Promotion(WithOrganizationMixin, 
+                AboutPublishMixin,
+                Base):
+    INTERVAL_TIME = 5000
+
+    query = DBSession.query_property()
+    __tablename__ = "promotion"
+
+    kinds = orm.relationship("Kind", secondary=promotion2kind, 
+                             backref=orm.backref("promotions"))
+
+    id = sa.Column(sa.Integer, primary_key=True)
+    main_image_id = sa.Column(sa.Integer, sa.ForeignKey("image_asset.id"))
+    main_image = orm.relationship("ImageAsset", uselist=False, primaryjoin="Promotion.main_image_id==ImageAsset.id")
+    thumbnail_id = sa.Column(sa.Integer, sa.ForeignKey("image_asset.id"))
+    thumbnail = orm.relationship("ImageAsset", uselist=False, primaryjoin="Promotion.thumbnail_id==ImageAsset.id")
+    text = sa.Column(sa.UnicodeText, default=u"no message")
+
+    ## linkとpagesetは排他的
+    link = sa.Column(sa.Unicode(255), nullable=True)
+    linked_page_id = sa.Column(sa.Integer, sa.ForeignKey("pagesets.id"), nullable=True)
+    linked_page = orm.relationship("PageSet")
+
+    def validate(self):
+        return self.pageset or self.link
+
+    def to_dict(self):
+        D = model_to_dict(self)
+        D["kind_content"] = self.kind_content
+        return D
+
+    @property
+    def kind_content(self):
+        return u", ".join(k.name for k in self.kinds)
+
+    @kind_content.setter
+    def kind_content(self, v):
+        self._kind_content = v
+    
+    import re
+    SPLIT_RX = re.compile("[,、]")
+    def update_kind(self, ks):
+        ## 面倒なのでO(N)
+        splitted = self.SPLIT_RX.split(ks)
+        ks = set(k.strip() for k in splitted)
+        will_updates = []
+        for k in ks:
+            if k: 
+                kind = Kind.query.filter_by(name=k, organization_id=self.organization_id).first()
+                kind = kind or Kind(name=k, organization_id=self.organization_id)
+                will_updates.append(kind)
+        will_deletes = set(self.kinds).difference(will_updates)
+        for k in will_updates:
+            self.kinds.append(k)
+        for k in will_deletes:
+            self.kinds.remove(k)
+
+    @classmethod
+    def matched_qs(cls, d=None, kind=None, qs=None):
+        qs = cls.publishing(d=d, qs=qs)
+        if kind:
+            qs = qs.filter(cls.kinds.any(Kind.name==kind))
+
+        return qs
+
+def delete_orphan_kind(mapper, connection, target):
+    Kind.query.filter(~Kind.promotions.any()).delete(synchronize_session=False)
+
+sa.event.listen(Promotion, "after_delete", delete_orphan_kind)

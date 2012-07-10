@@ -25,13 +25,15 @@ def add_choices_query_refinement(event): #todo:refactoring
 
     request = event.request
     rendering_val = event.rendering_val
-    for k, v in form.__dict__.iteritems():
+
+    for k, v in form._fields.iteritems():
         if k.startswith("_"):
             continue
         if hasattr(form_class, k):
             dynamic_query = getattr(getattr(form_class, k), "_dynamic_query", None)
             if dynamic_query:
                 dynamic_query(v, form=form, rendering_val=rendering_val, request=request)
+
 
 from altaircms.interfaces import IModelEvent
 from zope.interface import implementer

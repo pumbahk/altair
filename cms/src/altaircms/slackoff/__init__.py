@@ -19,11 +19,15 @@ def includeme(config):
                     bind_actions=["create", "delete", "update"], 
                     form=".forms.TicketForm", mapper=".mappers.ticket_mapper")
 
-    config.add_crud("promotion_unit",  title="promotion_unit",  model="..plugins.widget.promotion.models.PromotionUnit", 
-                    form=".forms.PromotionUnitForm",  mapper=".mappers.promotion_unit_mapper", 
-                    filter_form=".forms.PromotionUnitFilterForm")
-    config.add_crud("promotion",  title="promotion",  model="..plugins.widget.promotion.models.Promotion",
-                    form=".forms.PromotionForm", mapper=".mappers.promotion_mapper")
+    config.add_crud("promotion",  title="promotion",  model="..topic.models.Promotion",
+                    form=".forms.PromotionForm", mapper=".mappers.promotion_mapper", 
+                    filter_form=".forms.PromotionFilterForm", 
+                    events=dict(create_event=config.maybe_dotted(".subscribers.PromotionCreate"), 
+                                update_event=config.maybe_dotted(".subscribers.PromotionUpdate"), 
+                                ))
+    ## bind_event
+    config.add_subscriber(".subscribers.update_kind", ".subscribers.PromotionCreate")
+    config.add_subscriber(".subscribers.update_kind", ".subscribers.PromotionUpdate")
     config.add_crud("category", title="category", model="..models.Category",
                     form=".forms.CategoryForm", mapper=".mappers.category_mapper", 
                     filter_form=".forms.CategoryFilterForm")

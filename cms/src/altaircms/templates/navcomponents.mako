@@ -30,7 +30,7 @@
 </%doc>
 	<li class="nav-header">アイテム管理</li>
     <li><a href="${request.route_path("promotion_list")}">プロモーション枠</a></li>
-    <li><a href="${request.route_path("promotion_unit_list")}">プロモーション</a></li>
+##    <li><a href="${request.route_path("promotion_unit_list")}">プロモーション</a></li>
     <li><a href="${request.route_path("topic_list")}">トピック</a></li>
     <li><a href="${request.route_path("topcontent_list")}">トップコンテンツ</a></li>
     <li><a href="${request.route_path("hotword_list")}">ホットワード</a></li>

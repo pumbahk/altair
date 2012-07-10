@@ -9,8 +9,8 @@
 
 <table class="table">
   <tbody>
+    ${co.formfield(form, "display_type")}
     ${co.formfield(form, "kind")}
-    ${co.formfield(form, "promotion")}
   </tbody>
 </table>
 <button type="button" id="promotion_submit">登録</button>
