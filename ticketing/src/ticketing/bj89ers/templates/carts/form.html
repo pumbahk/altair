@@ -213,12 +213,14 @@
 </form>
   </div>
   <script type="text/javascript">
-  $('#member_type').change(function(){
-      if ($('#member_type option:selected').attr('with-shirt') == 'true')
-        $('#t_shirts_size').removeAttr('disabled')
-      else
-        $('#t_shirts_size').attr('disabled','disabled')
-  });
+  function c () {
+    if ($('#member_type option:selected').attr('with-shirt') == 'true')
+      $('#t_shirts_size').removeAttr('disabled')
+    else
+      $('#t_shirts_size').attr('disabled','disabled')
+  }
+  $('#member_type').change(c);
+  c();
   </script>
 	<%include file="../commons/footer.inc" />
 	

@@ -92,6 +92,12 @@ class OrderFormSchema(Form):
     mail_permission = fields.BooleanField(u"メルマガ配信", default=True)
     nickname = fields.TextField(u"媒体掲載時のニックネーム")
 
+    def validate_nickname(self, form):
+        if self.publicity.data == 'yes' and not form.data:
+            from wtforms.validators import ValidationError
+            raise ValidationError(u'ニックネームを入力してください。')
+
+
 class OrderReviewSchema(Form):
     order_no = fields.TextField(u"オーダー番号", validators=[v.Required()])
     tel = fields.TextField(u"電話番号", validators=[v.Required()])

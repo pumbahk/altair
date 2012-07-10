@@ -43,11 +43,17 @@
 							<%
                                 up = user.user_profile
                                 pm = _api.load_user_profile(request)
-              %>
+                            %>
 							<tr>
 								<th>新規／継続</th>
 								<td>${u'継続' if pm.get('cont') == 'yes' else u'新規'}</td>
 							</tr>
+                           % if pm.get('old_id_number'):
+                        　　<tr>
+                 			    <th>2011-12会員番号</th>
+                 			　　<td>${pm.get('old_id_number')}</td>
+                 			</tr>
+                           % endif
 							<tr>
 								<th>会員種別</th>
 								<td>${cart.products[0].product.name}</td>
@@ -75,6 +81,10 @@
 									%endif
 								</td>
 							</tr>
+                            <tr>
+                                <th>郵便番号</th>
+                                <td>${pm['zipcode1']}-${pm['zipcode2']}</td>
+                            </tr>
 							<tr>
 								<th>住所</th>
 								<td>${pm['prefecture']} ${pm['city']} ${pm['address1']} ${pm['address2']}</td>
@@ -91,14 +101,19 @@
 								<th>メールアドレス</th>
 								<td>${pm['email']}</td>
 							</tr>
+                            <tr>
+                                <th>仙台89ERSからのメールマガジンの配信	</th>
+                                <td>${u'希望する' if pm.get('mail_permission') else u'希望しない'}</td>
+                            </tr>
 							<tr>
-								<th>媒体への掲載希望</th>
+								<th>メモリアルブックへの掲載希望</th>
 								<td>${u'はい' if pm.get('publicity') == 'yes' else u'いいえ'}</td>
 							</tr>
-							<tr>
-								<th>媒体掲載時のニックネーム</th>
-								<td>${pm['nickname']}</td>
-							</tr>
+
+                            <tr>
+                                <th>メモリアルブック掲載時のニックネーム</th>
+                                <td>${pm['nickname']}</td>
+                            </tr>
 						</tbody>
 					</table>
 				
