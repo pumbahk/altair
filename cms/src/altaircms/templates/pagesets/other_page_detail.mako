@@ -33,7 +33,7 @@
     <th class="span2">ページタイプ</th><td>その他</td>
   </tr>
   <tr>
-    <th class="span2">ページカテゴリ</th><td>${pageset.category.label}</td>
+    <th class="span2">ページカテゴリ</th><td>${pageset.category.label if pageset.category else u""}</td>
   </tr>
 </table>
 
