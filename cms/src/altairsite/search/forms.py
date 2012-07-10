@@ -93,6 +93,9 @@ class TopPageSidebarSearchForm(form.Form):
         if all((data["end_year"], data["end_month"], data["end_day"])):
             performance_close = parse_date(data["end_year"], data["end_month"], data["end_day"])
 
+        if performance_open and performance_close and performance_open > performance_close:
+            performance_open, performance_close = performance_close, performance_open
+
         params =  {
             "performance_open": performance_open, 
             "performance_close": performance_close, 
@@ -280,6 +283,10 @@ class PerformanceTermPartForm(form.Form):
             performance_open = parse_date(data["start_year"], data["start_month"], data["start_day"])
         if all((data["end_year"], data["end_month"], data["end_day"])):
             performance_close = parse_date(data["end_year"], data["end_month"], data["end_day"])
+
+        if performance_open and performance_close and performance_open > performance_close:
+            performance_open, performance_close = performance_close, performance_open
+
         return {"performance_open": performance_open, 
                 "performance_close": performance_close}
 
