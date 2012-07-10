@@ -289,7 +289,7 @@ class DealCondPartForm(form.Form):
     deal_cond_choices=import_symbol("altaircms.seeds.saleskind:SALESKIND_CHOICES")
     DDICT = dict(deal_cond_choices)
 
-    deal_cond = CheckboxListField(choices=deal_cond_choices, prefix="s:")
+    deal_cond = CheckboxListField(choices=deal_cond_choices)
     # deal_cond = fields.RadioField(choices=deal_cond_choices, 
     #                                widget=PutOnlyWidget())
 
