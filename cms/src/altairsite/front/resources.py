@@ -47,7 +47,7 @@ class AccessControlMobile(object):
 
     def can_access(self):
         if not self.access_ok:
-            logger.info("*front mobile access* url is not found (%s) error=%s" % (self.request.referer, self.error_message.encode("utf-8"))) ## referer?
+            logging.info("*front mobile access* url is not found (%s) error=%s" % (self.request.referer, self.error_message.encode("utf-8"))) ## referer?
         return self.access_ok
 
     def _fetch_pageset_from_params(self, url, dt):
@@ -86,7 +86,7 @@ class AccessControlPC(object):
         if not self.access_ok:
             fmt = u"*front pc access* url is not found (%s). error=%s"
             mes = fmt % (self.request.referer, self.error_message)
-            logger.info(mes)
+            logging.info(mes)
         return self.access_ok
 
     def can_rendering(self, template, page):
@@ -96,7 +96,7 @@ class AccessControlPC(object):
             self._error_message.append(str(e)) 
             fmt = u"*front pc access* url is not found (%s). error=%s"
             mes = fmt % (self.request.referer, str(e))
-            logger.info(mes)
+            logging.info(mes)
             return False
 
     def _fetch_page_from_params(self, url, dt):

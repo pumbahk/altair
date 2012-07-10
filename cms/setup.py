@@ -101,6 +101,7 @@ setup(name='altair-cms',
       [console_scripts]
       loadfromcsv = altaircms.scripts.loadfromcsv:main
       syncsolr = altaircms.scripts.syncsolr:main
+      rendering_page = altaircms.scripts.page_rendering_check:main
       """,
       paster_plugins=['pyramid'],
       )
