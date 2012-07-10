@@ -452,6 +452,7 @@ class PaymentView(object):
         order = dict(
             client_name=client_name,
             payment_delivery_method_pair_id=payment_delivery_method_pair_id,
+            mail_address=shipping_address.email,
         )
         self.request.session['order'] = order
 
