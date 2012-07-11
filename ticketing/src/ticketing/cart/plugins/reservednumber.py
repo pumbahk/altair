@@ -54,7 +54,7 @@ class ReservedNumberDeliveryPlugin(object):
     def finish(self, request, cart):
         """ 確定処理 """
         number = hashlib.md5(str(cart.id)).hexdigest()
-        reserved_number = m.ReservedNumber(order_no=cart.id, number=number)
+        reserved_number = m.ReservedNumber(order_no=cart.order_no, number=number)
         m.DBSession.add(reserved_number)
         logger.debug("引き換え番号: %s" % reserved_number.number)
 
@@ -73,7 +73,7 @@ class ReservedNumberPaymentPlugin(object):
             number = rand_string(string.digits, 10)
             existing_number = m.PaymentReservedNumber.query.filter_by(number=number).first()
             if existing_number is None:
-                reserved_number = m.PaymentReservedNumber(order_no=cart.id, number=number)
+                reserved_number = m.PaymentReservedNumber(order_no=cart.order_no, number=number)
                 break
         m.DBSession.add(reserved_number)
         logger.debug("支払い番号: %s" % reserved_number.number)

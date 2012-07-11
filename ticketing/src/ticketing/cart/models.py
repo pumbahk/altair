@@ -29,6 +29,7 @@ from sqlalchemy import sql
 from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm.exc import NoResultFound
 
+from ticketing.utils import sensible_alnum_encode
 from ticketing.models import Identifier
 from ..core import models as c_models
 from . import logger
@@ -204,6 +205,10 @@ class Cart(Base):
 
     payment_delivery_method_pair_id = sa.Column(Identifier, sa.ForeignKey("PaymentDeliveryMethodPair.id"))
     payment_delivery_pair = orm.relationship("PaymentDeliveryMethodPair")
+
+    @property
+    def order_no(self):
+        return self.performance.event.organization.code + sensible_alnum_encode(self.id).zfill(10)
 
     @property
     def total_amount(self):

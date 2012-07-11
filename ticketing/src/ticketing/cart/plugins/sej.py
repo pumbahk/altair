@@ -34,9 +34,6 @@ def includeme(config):
     config.add_payment_delivery_plugin(SejPaymentDeliveryPlugin(), PAYMENT_PLUGIN_ID, DELIVERY_PLUGIN_ID)
     config.scan(__name__)
 
-def get_order_no(order):
-    return u'%012d' % int(order.order_no)
-
 def get_payment_due_at(current_date, cart):
     if cart.payment_delivery_pair.payment_period_days:
         payment_due_at = current_date + timedelta(days=cart.payment_delivery_pair.payment_period_days)
@@ -53,7 +50,7 @@ def get_ticketing_start_at(current_date, cart):
 
 def get_sej_order(order):
     try:
-        sej_order = SejOrder.filter(SejOrder.order_id == get_order_no(order)).one()
+        sej_order = SejOrder.filter(SejOrder.order_id == order.order_no).one()
     except NoResultFound, e:
         return None
     return sej_order
@@ -147,7 +144,7 @@ class SejPaymentPlugin(object):
                 shop_id             = u'30520',
                 contact_01          = u'00-0000-0000',
                 contact_02          = u'楽天チケット お問い合わせセンター 050-5830-6860',
-                order_id            = get_order_no(order),
+                order_id            = order.order_no,
                 username            = u'%s%s' % (shipping_address.last_name, shipping_address.first_name),
                 username_kana       = u'%s%s' % (shipping_address.last_name_kana, shipping_address.first_name_kana),
                 tel                 = shipping_address.tel_1.replace('-', ''),
@@ -187,7 +184,7 @@ class SejDeliveryPlugin(object):
         ticketing_start_at = get_ticketing_start_at(current_date,cart)
         ticketing_due_at = cart.payment_delivery_pair.issuing_end_at
         tickets = get_tickets_from_cart(cart)
-        order_no = u'%012d' % cart.id
+        order_no = cart.order_no
 
         try:
             sej_order = SejOrder.filter(SejOrder.order_id == order_no).one()
@@ -245,7 +242,7 @@ class SejPaymentDeliveryPlugin(object):
                 shop_id             = u'30520',
                 contact_01          = u'00-0000-0000',
                 contact_02          = u'楽天チケット お問い合わせセンター 050-5830-6860',
-                order_id            = get_order_no(order),
+                order_id            = order.order_no,
                 username            = u'%s%s' % (user_profile.last_name, user_profile.first_name),
                 username_kana       = u'%s%s' % (user_profile.last_name_kana, user_profile.first_name_kana),
                 tel                 = user_profile.tel_1.replace('-', ''),

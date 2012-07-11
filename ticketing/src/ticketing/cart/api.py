@@ -12,9 +12,13 @@ from ..api.impl import get_communication_api
 from ..api.impl import CMSCommunicationApi
 from .interfaces import IPaymentMethodManager
 from .interfaces import IPaymentPlugin, IDeliveryPlugin, IPaymentDeliveryPlugin
+from .interfaces import IMobileRequest
 from .models import Cart, PaymentMethodManager, DBSession
 from ..users.models import User, UserCredential, MemberShip
     
+def is_mobile(request):
+    return IMobileRequest.providedBy(request)
+
 def get_event_info_from_cms(request, event_id):
     communication_api = get_communication_api(request, CMSCommunicationApi)
     path = "/api/event/%(event_id)s/info" % {"event_id": event_id}

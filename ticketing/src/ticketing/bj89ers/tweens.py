@@ -23,13 +23,17 @@ def mobile_encoding_convert_factory(handler, registry):
         if not request._ua.is_nonmobile():
             ## DeprecationWarning: Use req = req.decode('cp932')
             decoded = request.decode("cp932")
+            decoded.is_mobile = True
+            directlyProvides(decoded, IMobileRequest)
+            decoded.is_docomo = request._ua.is_docomo()
             decoded.registry = request.registry
             decoded._ua = request._ua
             logger.debug("**this is mobile access**")
-            decoded.is_mobile = True
-            directlyProvides(decoded, IMobileRequest)
             response = handler(decoded)
-            return _convert_response_for_mobile(response)
+            if request._ua.is_docomo():
+                return _convert_response_for_mobile(response)
+            else:
+                return response
         else:
             request.is_mobile = False
             logger.debug("**this is pc access**")
