@@ -45,10 +45,14 @@
         <td><a href="${request.route_path('orders.show', order_id=order.id)}">${order.order_no}</a></td>
         <td><a href="${request.route_path('orders.show', order_id=order.id)}">${h.safe_strftime(order.created_at)}</a></td>
         <td>${h.price_format(order.total_amount)}円</td>
-        <td>${order.user.user_profile.nick_name}</td>
+        <td>
+          % if order.user:
+            ${order.user.user_profile.nick_name}
+          % endif
+        </td>
         % if detail:
         <td>${order.ordered_products[0].product.event.title}</td>
-        <td>${order.ordered_products[0].ordered_product_items[0].product_item.performance.start_on}</td>
+        <td>${order.ordered_products[0].ordered_product_items[0].product_item.performance.start_on or ''}</td>
         % endif
       </tr>
   % else:

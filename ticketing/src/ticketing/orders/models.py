@@ -297,8 +297,11 @@ class OrderCSV(object):
         order_dict.add('status', order.status)
         order_list = [(column, order_dict.get(column)) for column in self.order_header]
 
-        user_profile_dict = record_to_multidict(order.user.user_profile)
-        user_profile_list = [(column, user_profile_dict.get(column)) for column in self.user_profile_header]
+        if order.user:
+            user_profile_dict = record_to_multidict(order.user.user_profile)
+            user_profile_list = [(column, user_profile_dict.get(column)) for column in self.user_profile_header]
+        else:
+            user_profile_list = []
 
         shipping_address_dict = record_to_multidict(order.shipping_address)
         shipping_address_list = [('shipping_' + column, shipping_address_dict.get(column)) for column in self.shipping_address_header]
