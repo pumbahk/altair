@@ -5,7 +5,7 @@ from datetime import datetime
 from exceptions import ValueError
 
 from wtforms import validators, fields
-
+import logging
 
 '''
 Customized field definition datetime format of "%Y-%m-%d %H:%M"
@@ -30,27 +30,33 @@ class DateTimeField(fields.DateTimeField):
             except ValueError:
                 self.data = None
                 raise validators.ValidationError(u'日付の形式を確認してください')
-
+logger = logging.getLogger(__name__)
 
 class Translations(object):
+    messages={
+        'Not a valid choice': u'不正な選択です',
+        'Not a valid decimal value': u'数字または小数で入力してください',
+        'Not a valid integer value': u'数字で入力してください',
+        'Invalid email address.':u'不正なメールアドレスです',
+        'This field is required.':u'入力してください',
+        'Field must be at least %(min)d characters long.' : u'%(min)d文字以上で入力してください。'
+    }
+    def __init__(self, messages = None):
+        if messages:
+            self.messages = dict(self.messages, **messages)
+        print messages
 
     def gettext(self, string):
-        if string == 'Not a valid choice':
-            return u'不正な選択です'
-        if string == 'Not a valid decimal value':
-            return u'数字または小数で入力してください'
-        if string == 'Not a valid integer value':
-            return u'数字で入力してください'
-        if string == 'Invalid email address.':
-            return u'不正なメールアドレスです'
-        if string == 'This field is required.':
-            return u'入力してください'
-        return string
+        return self.messages.get(string, string)
 
     def ngettext(self, singular, plural, n):
-        if n == 1:
-            return singular
-        return plural
+        ural = singular if n == 1 else plural
+        message  = self.messages.get(ural)
+        if message:
+            return message
+        else:
+            logger.warn("localize message not found: '%s'", ural)
+            return ural
 
 
 class Required(validators.Required):

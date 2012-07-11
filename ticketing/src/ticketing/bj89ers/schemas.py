@@ -9,6 +9,7 @@ from ticketing.master.models import Prefecture
 from ticketing.core import models as c_models
 from datetime import datetime
 import unicodedata
+from ticketing.formhelpers import Translations
 
 from . import fields as my_fields
 from . import widgets as my_widgets
@@ -38,21 +39,6 @@ def get_year_days():
     days =  [(str(month), month) for month in range(1,32)]
     return days
 
-messages = {
-    'This field is required.' : u'入力してください',
-    'Not a valid choice' : u'選択してください',
-    'Invalid email address.' : u'Emailの形式が正しくありません。'
-}
-
-class JananeseTranslations(object):
-    def ugettext(self, string):
-        return messages.get(string, '=')
-
-    def ungettext(self, singular, plural, n):
-        if n == 1:
-            return singular
-        return plural
-
 Zenkaku = v.Regexp(r"^[^\x01-\x7f]+$", message=u'全角で入力してください')
 Katakana = v.Regexp(ur'^[ァ-ヶ]+$', message=u'カタカナで入力してください')
 
@@ -62,7 +48,11 @@ def NFKC(unistr):
 class OrderFormSchema(Form):
 
     def _get_translations(self):
-        return DefaultTranslations(JananeseTranslations())
+        return Translations({
+            'This field is required.' : u'入力してください',
+            'Not a valid choice' : u'選択してください',
+            'Invalid email address.' : u'Emailの形式が正しくありません。'
+        })
 
     # 新規・継続
     cont = fields.RadioField(u"新規／継続", validators=[v.Required()], choices=[('no', u'新規'),('yes', u'継続')], widget=radio_list_widget)
