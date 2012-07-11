@@ -3,17 +3,6 @@
 <%mobile:header>お客様情報の入力</%mobile:header>
 <form method="post" action="${request.url}">
 <%mobile:form_header>新規/継続</%mobile:form_header>
-%if hasattr(request, 'errors'):
-<ul>
-%for e in request.errors:
-<li>${e} 
-%for msg in request.errors[e]:
-<span>${msg}</span>
-%endfor
-</li>
-%endfor
-</ul>
-%endif
 <div>
 % for c in form.cont:
   ${c()}${c.label}<br />
