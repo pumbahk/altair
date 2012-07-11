@@ -98,7 +98,7 @@ ${h.breadcrumbs(
         <th>ニックネーム</th>
         <td>
           % if order.user:
-            ${order.user.user_profile.nick_name}
+            ${order.user.user_profile.nick_name or ''}
           % endif
         </td>
       </tr>

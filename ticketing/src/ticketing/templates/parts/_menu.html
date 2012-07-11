@@ -1,6 +1,8 @@
 <%page args="event=None" />
 <%
 from ticketing.bookmark.models import Bookmark
+from pyramid.threadlocal import get_current_registry
+testing = get_current_registry().settings.get('ticketing.testing', False)
 %>
 <div class="well sidebar-nav">
   <ul class="nav nav-list">
@@ -15,17 +17,24 @@ from ticketing.bookmark.models import Bookmark
       <li><a href="${request.route_path('performances.index', event_id=event.id)}">パフォーマンス</a></li>
     </ul>
     % endif
+    % if testing:
     <li><a href="">帳票出力</a></li>
+    % endif
     <li><a href="${request.route_path('accounts.index')}">クライアント</a></li>
     <li class="divider"></li>
     <li class="nav-header">マスタ管理</li>
+    % if testing:
     <li><a href="">会場図</a></li>
+    % endif
     <li><a href="${request.route_path('payment_methods.index')}">決済方法</a></li>
     <li><a href="${request.route_path('delivery_methods.index')}">配送方法</a></li>
+    % if testing:
     <li><a href="">チケット券面</a></li>
+    % endif
     <li class="divider"></li>
     <li class="nav-header">ユーザー管理</li>
     <li><a href="${request.route_path('orders.index')}">購入情報</a></li>
+    % if testing:
     <li class="nav-header">営業管理</li>
     <li><a href="">売上</a></li>
     <li><a href="">週報／日報設定</a></li>
@@ -37,5 +46,6 @@ from ticketing.bookmark.models import Bookmark
     <li><a href="${bookmark.url}">${bookmark.name}</a></li>
     % endfor
     <li style="text-align: right;"><a href="${request.route_path('bookmark.index')}"><i class="icon-pencil"></i>編集</a></li>
+    % endif
   </ul>
 </div>
