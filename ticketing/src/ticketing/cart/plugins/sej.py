@@ -142,8 +142,8 @@ class SejPaymentPlugin(object):
             request_order(
                 shop_name           = performance.event.organization.name,
                 shop_id             = u'30520',
-                contact_01          = u'00-0000-0000',
-                contact_02          = u'楽天チケット お問い合わせセンター 050-5830-6860',
+                contact_01          = u'022-215-8138',
+                contact_02          = u'仙台89ERS　ブースター事務局　TEL: 022-215-8138　(平日：9:00〜18:00)',
                 order_id            = order.order_no,
                 username            = u'%s%s' % (shipping_address.last_name, shipping_address.first_name),
                 username_kana       = u'%s%s' % (shipping_address.last_name_kana, shipping_address.first_name_kana),

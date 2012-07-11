@@ -480,3 +480,38 @@ h2.sidebar-heading {
 	color: #ffffff;
 	background: url(../img/search/side_title_long.gif) no-repeat;
 }
+
+/*
+salessegment icon
+*/
+.icon-salessegment {
+    background-repeat: no-repeat;
+    height: 14px;
+    width: 60px;
+    background-image: url(../img/search/icon_release.gif);
+}
+
+.icon-salessegment.first_lottery{
+    background-image: url(../img/search/icon_first_lottery.gif);
+}
+.icon-salessegment.early_lottery{
+    background-image: url(../img/search/icon_lottery.gif);
+}
+.icon-salessegment.early_firstcome{
+    background-image: url(../img/search/icon_early_firstcome.gif);
+}
+.icon-salessegment.normal{
+    background-image: url(../img/search/icon_release.gif);
+}
+.icon-salessegment.added_sales{
+    background-image: url(../img/search/icon_added_sales.gif);
+}
+.icon-salessegment.added_lottery{
+    background-image: url(../img/search/icon_added_lottery.gif);
+}
+.icon-salessegment.vip{
+    background-image: url(../img/search/icon_vip.gif);
+}
+.icon-salessegment.other{
+    background-image: url(../img/search/icon_other.gif);
+}
