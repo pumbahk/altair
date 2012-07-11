@@ -23,8 +23,8 @@ def main(global_conf, **settings):
     config.commit()
 
 
-    config.add_tween(".tweens.mobile_encoding_convert_factory")
-    #config.add_tween(".tweens.mobile_request_factory")
+    #config.add_tween(".tweens.mobile_encoding_convert_factory")
+    config.add_tween(".tweens.mobile_request_factory")
     config.add_route('order_review', 'review')
 
     config.add_view('.views.IndexView', route_name='index', attr="get", request_method='GET', renderer='carts/form.html')

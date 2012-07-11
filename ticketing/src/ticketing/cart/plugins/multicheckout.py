@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-
+import logging
 from datetime import datetime
 from zope.interface import implementer
 from pyramid.view import view_config
@@ -15,6 +15,9 @@ from .. import schema
 from .. import logger
 from .. import helpers as h
 from .. import api
+
+
+logger = logging.getLogger(__name__)
 
 PLUGIN_ID = 1
 
@@ -58,7 +61,9 @@ class MultiCheckoutPlugin(object):
             eci=tran['eci'], cavv=tran['cavv'], cavv_algorithm=tran['cavv_algorithm'],
         )
 
-        # TODO: エラーチェック
+        if checkout_sales_result.CmnErrorCd != '000000':
+            logger.info(u'決済エラー order_no = %s, error_code = %s' % (order_id, checkout_sales_result.CmnErrorCd))
+            raise HTTPFound(location=request.route_url('payment.secure3d'))
 
         DBSession.add(checkout_sales_result)
 
@@ -82,7 +87,9 @@ class MultiCheckoutPlugin(object):
             order['secure_code'],
         )
 
-        # TODO: エラーチェック
+        if checkout_sales_result.CmnErrorCd != '000000':
+            logger.info(u'決済エラー order_no = %s, error_code = %s' % (order_id, checkout_sales_result.CmnErrorCd))
+            raise HTTPFound(location=request.route_url('payment.secure3d'))
 
         DBSession.add(checkout_sales_result)
 
@@ -213,7 +220,7 @@ class MultiCheckoutView(object):
     def _secure3d(self, card_number, exp_year, exp_month):
         """ セキュア3D """
         cart = api.get_cart(self.request)
-        order = self.request.session('order')
+        order = self.request.session['order']
         order_id = order['order_no']
         enrol = multicheckout_api.secure3d_enrol(self.request, order_id, card_number, exp_year, exp_month, cart.total_amount)
         if enrol.is_enable_auth_api():
