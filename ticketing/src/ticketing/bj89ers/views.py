@@ -173,7 +173,7 @@ class CompleteView(_CompleteView):
             product_item = ordered_product_item.product_item
             # Tシャツ
             if product_item.stock.stock_type.type == c_models.StockTypeEnum.Other.v:
-                ordered_product_item.attributes['t_shirts_size'] = profile['t_shirts_size']
+                ordered_product_item.attributes['t_shirts_size'] = profile.get('t_shirts_size')
             else:
                 # これ本当にいるの??
                 for k, v in profile.items():
