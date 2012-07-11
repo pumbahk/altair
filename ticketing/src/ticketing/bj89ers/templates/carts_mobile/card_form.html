@@ -1,7 +1,7 @@
 <%inherit file="/layout_mobile.html"/>
 <%namespace file="/tags_mobile.html" name="mobile" />
 <%mobile:header>カード情報の入力</%mobile:header>
-<form id="form1" name="form1" method="post" action="${request.url}">
+<form id="form1" name="form1" method="post" action="${request.route_url('payment.secure_code')}">
 <%mobile:form_header required="true">カード番号</%mobile:form_header>
 <div>
 <input size="10" maxlength="16" type="text" name="card_number" istyle="4" />

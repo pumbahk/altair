@@ -143,11 +143,38 @@ def checkout_auth_secure_code(request, order_no, item_name, amount, tax, client_
         SecureKind='2',
         SecureCode=secure_code,
     )
-    m.DBSession.add(params)
     service = get_multicheckout_service(request)
-    result = service.request_card_auth(order_no, params)
-    m.DBSesion.add(result)
-    return result.Status == "110"
+    return service.request_card_auth(order_no, params)
+
+
+def checkout_sales_secure_code(request, order_no, item_name, amount, tax, client_name, mail_address,
+                     card_no, card_limit, card_holder_name,
+                     secure_code,
+                     free_data=None, item_cd=DEFAULT_ITEM_CODE, date=date):
+
+    order_ymd = date.today().strftime('%Y%m%d')
+    params = m.MultiCheckoutRequestCard(
+        ItemCd=item_cd,
+        ItemName=item_name,
+        OrderYMD=order_ymd,
+        SalesAmount=amount,
+        TaxCarriage=tax,
+        FreeData=free_data,
+        ClientName=client_name,
+        MailAddress=mail_address,
+        MailSend='1',
+
+        CardNo=card_no,
+        CardLimit=card_limit,
+        CardHolderName=card_holder_name,
+
+        PayKindCd='10',
+        PayCount=None,
+        SecureKind='2',
+        SecureCode=secure_code,
+    )
+    service = get_multicheckout_service(request)
+    return service.request_card_sales(order_no, params)
 
 class MultiCheckoutAPIError(Exception):
     pass
