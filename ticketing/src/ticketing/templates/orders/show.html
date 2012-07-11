@@ -86,17 +86,25 @@ ${h.breadcrumbs(
 
     <table class="table table-striped table-bordered">
       <tr>
-        <th>氏名</th>
-        <% up = order.user.user_profile %>
-        <td>${up.last_name} ${up.first_name} (${up.last_name_kana} ${up.first_name_kana})</td>
+        <th class="span2">氏名</th>
+        <td class="span3">
+          % if order.user:
+            <% up = order.user.user_profile %>
+            ${up.last_name} ${up.first_name} (${up.last_name_kana} ${up.first_name_kana})
+          % endif
+        </td>
       </tr>
       <tr>
         <th>ニックネーム</th>
-        <td>${order.user.user_profile.nick_name}</td>
+        <td>
+          % if order.user:
+            ${order.user.user_profile.nick_name}
+          % endif
+        </td>
       </tr>
       <tr>
         <th>メールアドレス</th>
-        <td>${order.user.user_profile.email}</td>
+        <td>${order.shipping_address.email}</td>
       </tr>
     </table>
   </div>
@@ -168,7 +176,7 @@ ${h.breadcrumbs(
           </tr>
           <tr>
             <th>開始日時</th>
-            <td>${ordered_product.ordered_product_items[0].product_item.performance.start_on}</td>
+            <td>${ordered_product.ordered_product_items[0].product_item.performance.start_on or ''}</td>
           </tr>
           <tr>
             <th>会場</th>

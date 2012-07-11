@@ -221,7 +221,7 @@ def main():
         price = 100500,
         performance_id = performance.id,
         stock = stock_1,
-        quantity = 50
+        quantity = 1
     )
     session.add(product_item1_1)
     product_item1_2 = c_model.ProductItem(
@@ -229,7 +229,7 @@ def main():
         price = 0,
         performance_id = performance.id,
         stock = stock_2,
-        quantity = 50
+        quantity = 1
     )
     session.add(product_item1_2)
     product1 = c_model.Product(
@@ -247,7 +247,7 @@ def main():
         price = 30000,
         performance_id = performance.id,
         stock = stock_1,
-        quantity = 50
+        quantity = 1
     )
     session.add(product_item2_1)
     product_item2_2 = c_model.ProductItem(
@@ -255,7 +255,7 @@ def main():
         price = 0,
         performance_id = performance.id,
         stock = stock_2,
-        quantity = 50
+        quantity = 1
     )
     session.add(product_item2_2)
     product2 = c_model.Product(
@@ -273,7 +273,7 @@ def main():
         price = 10000,
         performance_id = performance.id,
         stock = stock_1,
-        quantity = 50
+        quantity = 1
     )
     session.add(product_item3_1)
     product_item3_2 = c_model.ProductItem(
@@ -281,7 +281,7 @@ def main():
         price = 0,
         performance_id = performance.id,
         stock = stock_2,
-        quantity = 50
+        quantity = 1
     )
     session.add(product_item3_2)
     product3 = c_model.Product(
@@ -299,7 +299,7 @@ def main():
         price = 3000,
         performance_id = performance.id,
         stock = stock_1,
-        quantity = 50
+        quantity = 1
     )
     session.add(product_item4_1)
     product4 = c_model.Product(
@@ -316,7 +316,7 @@ def main():
         price = 1000,
         performance_id = performance.id,
         stock = stock_1,
-        quantity = 50
+        quantity = 1
     )
     session.add(product_item5_1)
     product5 = c_model.Product(
@@ -333,7 +333,7 @@ def main():
         price = 1000,
         performance_id = performance.id,
         stock = stock_1,
-        quantity = 50
+        quantity = 1
     )
     session.add(product_item6_1)
     product6 = c_model.Product(

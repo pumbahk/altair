@@ -35,6 +35,7 @@ class IndexView(object):
         self.context = request.context
 
 
+    @view_config(route_name='cart.index', renderer='carts_mobile/index.html', xhr=False, permission="view", request_type=".interfaces.IMobileRequest")
     @view_config(route_name='cart.index', renderer='carts/index.html', xhr=False, permission="view")
     def __call__(self):
         jquery_tools.need()
@@ -366,6 +367,7 @@ class PaymentView(object):
         self.context = request.context
 
     @view_config(route_name='cart.payment', request_method="GET", renderer="carts/payment.html")
+    @view_config(route_name='cart.payment', request_type='.interfaces.IMobileRequest', request_method="GET", renderer="carts_mobile/payment.html")
     def __call__(self):
         """ 支払い方法、引き取り方法選択
         """
@@ -410,6 +412,7 @@ class PaymentView(object):
             return form
 
     @view_config(route_name='cart.payment', request_method="POST", renderer="carts/payment.html")
+    @view_config(route_name='cart.payment', request_type='.interfaces.IMobileRequest', request_method="POST", renderer="carts_mobile/payment.html")
     def post(self):
         """ 支払い方法、引き取り方法選択
         """
@@ -503,6 +506,7 @@ class ConfirmView(object):
         self.context = request.context
 
     @view_config(route_name='payment.confirm', request_method="GET", renderer="carts/confirm.html")
+    @view_config(route_name='payment.confirm', request_type='.interfaces.IMobileRequest', request_method="GET", renderer="carts_mobile/confirm.html")
     def get(self):
 
         assert api.has_cart(self.request)
@@ -531,6 +535,7 @@ class CompleteView(object):
         # TODO: Orderを表示？
 
     @view_config(route_name='payment.finish', renderer="carts/completion.html")
+    @view_config(route_name='payment.finish', request_type='.interfaces.IMobileRequest', renderer="carts_mobile/completion.html")
     def __call__(self):
         assert api.has_cart(self.request)
         cart = api.get_cart(self.request)

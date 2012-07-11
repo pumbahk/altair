@@ -63,6 +63,7 @@ class IndexView(object):
         form,products = self._create_form()
         if not form.validate():
             self.request.errors = form.errors
+            logger.debug("%s" % form.errors)
             return self.get()
 
         cart = self.context.order_products(self.context.performance_id, self.ordered_items)
