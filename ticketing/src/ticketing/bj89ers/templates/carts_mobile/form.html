@@ -14,10 +14,10 @@ ${h.error('cont')}
   <select id="member_type" name="member_type" class="">
     <option value="">選択してください</option>
   % for val in form.member_type.iter_choices():
-    <option value="${val[0]}">${val[1]}</option>
+    <option value="${val[0]}"${" selected=selected" if val[0]==form.member_type.data else ''}>${val[1]}</option>
   % endfor
   </select><br />
-  <a href="#">※会員種別についてはこちら</a><br ?>
+  <a href="#">※会員種別についてはこちら</a><br>
 ${h.error('member_type')}
 </div>
 <%mobile:form_header>Tシャツサイズ</%mobile:form_header>

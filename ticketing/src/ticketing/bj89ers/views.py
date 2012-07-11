@@ -16,6 +16,9 @@ from .api import load_user_profile
 from ticketing.cart.views import PaymentView as _PaymentView, CompleteView as _CompleteView
 from ticketing.users.models import SexEnum
 from ticketing.cart.events import notify_order_completed
+from pyramid.view import view_config
+
+from pyramid.view import render_view_to_response
 
 logger = logging.getLogger(__name__)
 
@@ -182,6 +185,7 @@ class CompleteView(_CompleteView):
 
         return dict(order=order)
 
+
 class OrderReviewView(object):
 
     def __init__(self, request):
@@ -193,7 +197,10 @@ class OrderReviewView(object):
 
     def get(self):
         form = schemas.OrderReviewSchema(self.request.params)
-        return render_to_response('order_review/form.html',dict(form=form), self.request)
+        response = render_view_to_response(form, self.request, name="order_review_form")
+        if response is None:
+            raise ValueError
+        return response
 
     @property
     def order_not_found_message(self):
@@ -201,18 +208,29 @@ class OrderReviewView(object):
 
     def post(self):
         form = schemas.OrderReviewSchema(self.request.params)
-
         if not form.validate():
-            self.request.errors = form.errors
-            return self.get()
+            response = render_view_to_response(form, self.request, name="order_review_form")
+            if response is None:
+                raise ValueError
+            return response
 
         order, sej_order = self.context.get_order()
         if not order or \
            order.shipping_address is None or \
            order.shipping_address.tel_1== form.tel or \
            order.shipping_address.tel_2 == form.tel:
+
             self.request.errors = form.errors
             self.request.errors['order_no'] = self.order_not_found_message
-            return self.get()
+
+            response = render_view_to_response(form, self.request, name="order_review_form")
+            if response is None:
+                raise ValueError
+            return response
+
         else:
             return dict(order=order, sej_order = sej_order)
+
+@view_config(name="order_review_form")
+def order_review_form_view(form, request):
+    return dict(form=form)

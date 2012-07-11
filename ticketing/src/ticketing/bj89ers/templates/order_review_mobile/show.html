@@ -1,1 +1,35 @@
-show
+<%inherit file="/layout_mobile.html"/>
+<%namespace file="/tags_mobile.html" name="mobile" />
+<%mobile:header>受付履歴確認 検索結果</%mobile:header>
+<%mobile:form_header>受付番号</%mobile:form_header>
+<div>${order.order_no}</div>
+<%mobile:form_header>お支払い</%mobile:form_header>
+%if order.payment_delivery_pair.payment_method.payment_plugin.id == 3:
+<div>セブン-イレブン</div>
+<%mobile:form_header>払込票番号</%mobile:form_header>
+<div>${sej_order.billing_number}</div>
+<%mobile:form_header>予約有効期限</%mobile:form_header>
+<div>${sej_order.payment_due_at.strftime(u"%Y年%m月%d日(%a) %H時%M分".encode('utf-8')).decode('utf-8')}</div>
+<form action="${sej_order.exchange_sheet_url}" method="post" target="_blank">
+  <input type="hidden" name="iraihyo_id_00" value="${sej_order.exchange_sheet_number}" />
+  <input type="submit" class="paymentCoupon" value="払込票印刷">
+</form>
+% else:
+<%mobile:form_header>クレジットカード</%mobile:form_header>
+% endif
+<div>
+&#xe737;注意事項<br />
+%if order.payment_delivery_pair.payment_method.payment_plugin.id == 3:
+・セブンイレブン決済の際には払込番号が必要です。下記、「払込票印刷」ボタンをクリックし、払込票を印刷してお持ちになるか、上記の払込票番号をお控えいただき、レジでお伝え下さい。<br />
+・予約有効期限までに、払込票または払込票番号をセブン-イレブン店頭レジにてお申し出の上、代金をお支払いください。<br />
+・支払期日までに入金されない場合は、会員登録/入会申込が無効となりますのでご注意ください。<br />
+% endif
+・会員証やグッズは、2012年9月15日(土)までに入会された方には開幕戦までにお届けします。9月16日(日)以降に入会された方には、直近のホームゲーム会場にてお渡しいたします。直近のホームゲームに来場されない場合には、後日郵送でお届けいたします。<br />
+・入会者多数の場合には、入会受付を2013年3月末日よりも早めに締切る場合がございます。お早めにご入会ください。<br />
+・入会後の会員プランの変更及び回避の返却には応じかねますのでご注意ください。<br />
+</div>
+<%mobile:form_header>お問い合わせ先</%mobile:form_header>
+<div>
+仙台89ERS ブースター事務局<br />
+TEL: 022-215-8138 (平日: 9:00〜18:00)<br />
+</div>

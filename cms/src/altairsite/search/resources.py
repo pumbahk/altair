@@ -185,7 +185,7 @@ class SearchResultRender(object):
         link_label = u"%s %s" % (self.pageset.event.title, self.pageset.name)
         description = self.pageset.event.description
         ## todo. ticketから開催場所の情報を取り出す
-        performances = u"</p><p class='align1'>".join([u"%s %s(%s)" % (p.start_on, p.venue, p.jprefecture) for p in self.pageset.event.performances[:2]])
+        performances = u"</p><p class='align1'>".join([u"%s %s(%s)" % (p.start_on, p.venue, p.jprefecture) for p in self.pageset.event.performances[:5]])
         return fmt % (link, link_label, description, performances)
 
     def deal_limit(self):

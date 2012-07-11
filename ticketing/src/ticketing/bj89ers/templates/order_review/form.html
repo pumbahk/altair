@@ -21,7 +21,8 @@
     </div>
     <!-- これはdisplay none指定, なぜか... -->
     <h1 class="title">仙台89ERS 2012-2013 ブースタークラブ入会申込ページ</h1>
-	<form action="${request.url}" method="post">
+
+      <form action="${request.route_path('order_review.show')}" method="post">
 	<table class="layout" style="width:760px" class="wrapper">
       <tr>
 		<td>
