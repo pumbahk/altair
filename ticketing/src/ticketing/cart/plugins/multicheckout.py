@@ -258,13 +258,14 @@ class MultiCheckoutView(object):
         item_name = api.get_item_name(self.request, cart.performance)
 
         # TODO: エラーメッセージ
-        if not auth_result.is_enable_auth_checkout():
-            return HTTPFound(self.request.route_url('payment.secure3d'))
+        #if not auth_result.is_enable_auth_checkout():
+        #    return HTTPFound(self.request.route_url('payment.secure3d'))
 
         # TODO: エラーメッセージ
-        if not auth_result.is_enable_auth_checkout():
+        if not auth_result.is_enable_secure3d():
             return HTTPFound(self.request.route_url('payment.secure3d'))
 
+        logger.debug('call checkout auth')
         checkout_auth_result = multicheckout_api.checkout_auth_secure3d(
             self.request, get_order_no(self.request, cart),
             item_name, cart.total_amount, 0, order['client_name'], order['mail_address'],
@@ -272,7 +273,11 @@ class MultiCheckoutView(object):
             mvn=auth_result.Mvn, xid=auth_result.Xid, ts=auth_result.Ts,
             eci=auth_result.Eci, cavv=auth_result.Cavv, cavv_algorithm=auth_result.Cavva,
         )
+        logger.debug('called checkout auth')
         # TODO: エラーチェック CmnErrorCd CardErrorCd
+        if checkout_auth_result.CmnErrorCd != '000000':
+            logger.info(u'決済エラー order_no = %s, error_code = %s' % (order['order_no'], checkout_auth_result.CmnErrorCd))
+            raise HTTPFound(location=request.route_url('payment.secure3d'))
 
         tran = dict(
             mvn=auth_result.Mvn, xid=auth_result.Xid, ts=auth_result.Ts,
