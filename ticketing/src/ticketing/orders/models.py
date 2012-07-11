@@ -92,13 +92,17 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if self.status == 'canceled' or self.status == 'refunded' or self.status == 'delivered':
             return False
 
-        # 入金済みなら決済をキャンセル
-        elif self.status == 'paid':
-            ppid = self.payment_delivery_pair.payment_method.payment_plugin_id
-            if not ppid:
-                return False
+        '''
+        決済方法ごとに払戻し処理
+        '''
+        ppid = self.payment_delivery_pair.payment_method.payment_plugin_id
+        if not ppid:
+            return False
 
-            if ppid == 1:  # クレジットカード決済
+        # クレジットカード決済
+        if ppid == 1:
+            # 入金済みなら決済をキャンセル
+            if self.status == 'paid':
                 # 売り上げキャンセル
                 from ticketing.multicheckout import api as multi_checkout_api
 
@@ -117,10 +121,19 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
                 self.multi_checkout_approval_no = multi_checkout_result.ApprovalNo
 
-            elif ppid == 2:  # 楽天あんしん決済
-                # ToDo
-                pass
-            elif ppid == 3:  # コンビニ決済 (セブンイレブン)
+        # 楽天あんしん決済
+        elif ppid == 2:
+            # ToDo
+            pass
+
+        # コンビニ決済 (セブンイレブン)
+        elif ppid == 3:
+            # 入金済みならキャンセル不可
+            if self.status == 'paid':
+                return False
+
+            # 未入金ならコンビニ決済のキャンセル通知
+            elif self.status == 'ordered':
                 sej_order = SejOrder.query.filter_by(order_id='%(#)012d' % {'#':int(self.order_no)}).first()
                 if sej_order and not sej_order.cancel_at:
                     try:
@@ -132,11 +145,9 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     except SejServerError, e:
                         logger.error(u'コンビニ決済(セブンイレブン)のキャンセルに失敗しました。 %s' % e)
                         return False
-            elif ppid == 4:  # 窓口支払
-                pass
 
-        # 未入金ならキャンセル日付をセットするのみ
-        elif self.status == 'ordered':
+        # 窓口支払
+        elif ppid == 4:
             pass
 
         # 在庫を戻す
@@ -190,11 +201,11 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             return None
 
         return Order.filter_by(organization_id=performance.event.organization_id)\
-        .join(Order.ordered_products)\
-        .join(OrderedProduct.ordered_product_items)\
-        .join(OrderedProductItem.product_item)\
-        .filter(ProductItem.performance_id==id)\
-        .distinct()
+            .join(Order.ordered_products)\
+            .join(OrderedProduct.ordered_product_items)\
+            .join(OrderedProductItem.product_item)\
+            .filter(ProductItem.performance_id==id)\
+            .distinct()
 
     @staticmethod
     def set_search_condition(query, form):
