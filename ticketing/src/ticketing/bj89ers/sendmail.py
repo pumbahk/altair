@@ -3,13 +3,18 @@ from pyramid import renderers
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
 import logging
+from ticketing.sej.models import SejOrder
 
 logger = logging.getLogger(__name__)
 
 mail_renderer_names = {
     '1': 'mail/89ERS_Completion_EMAIL_NEW_CreditCard.txt',
-    #'3': 'mail/89ERS_Completion_EMAIL_NEW_SEJ.txt',
-    #'4': 'mail/89ERS_Completion_EMAIL_NEW_Combined.txt',
+    '3': 'mail/89ERS_Completion_EMAIL_NEW_SEJ.txt',
+    '4': 'mail/89ERS_Completion_EMAIL_NEW_Combined.txt',
+}
+
+extra_info_populators = {
+    '3': lambda order, value: value.update(dict(sej_order=SejOrder.filter(SejOrder.order_id == order.order_no).first())),
 }
 
 def on_order_completed(order_completed):
@@ -44,6 +49,8 @@ def create_message(request, order):
                 delivery_fee=order.delivery_fee,
                 transaction_fee=order.transaction_fee,
                  )
+    populate_with_extra_info = extra_info_populators.get(plugin_id)
+    populate_with_extra_info and populate_with_extra_info(order, value)
     mail_body = renderers.render(renderer_name, value, request=request)
 
     message = Message(

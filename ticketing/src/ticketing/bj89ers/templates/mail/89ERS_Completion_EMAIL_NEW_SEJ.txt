@@ -1,43 +1,41 @@
-${SUBJECT: 受付完了メール 【${ORGANIZATION:仙台89ERS}】}
-${FROM: ${MAIL_SENDER:order@ticket.rakuten.co.jp or other}}
-
-${BODY：
-
-${NAME:マツイケンタ}　様
+${name}　様
 
 
 以下のご注文の受付が完了しました。ご利用ありがとうございました。
 
 -----
 ■お名前カナ
-${USER_NAME: マツイケンタ} 
+${name_kana}
 ■電話番号
-${USER_TEL_NO: 080-2093-3640} 
+${tel_no}
 ■メールアドレス
-${USER_EMAIL: kenta.matsui@gmail.com} 
+${email}
 
 -----
 ■受付番号
-${ORDER_NUMBER:A12345678}
+${order_no}
 予約内容確認の際などに必要です。必ずお控え下さい。
 
 ■受付日
-${ORDER_DATE:2012年07月15日 10:03（月） or TODAY??} 
+${order_datetime}
 
 -----
-${PERFORMANCE_NAME: 2012-13 仙台89ERS ブースタークラブ}
-
-■予約・購入情報
-${ORDERED_PRODUCT_ITEM_NAME_1: 法人会員}
+${performance_name}
 
 ■商品代金
-${ORDERED_PRODUCT_VALUE: 10,500} 円
+%for ordered_product in order_items:
+${ordered_product.product.name} ${h.format_currency(ordered_product.product.price)}
+%endfor
 
 ■サービス利用料・手数料
-セブン-イレブン決済手数料：${PAYMENT_METHOD_FEE: 158} 円
+システム利用料： ${h.format_currency(system_fee)}
+セブン-イレブン決済手数料：${h.format_currency(transaction_fee)} 円
+%if delivery_fee:
+配送手数料：${h.format_currency(delivery_fee)}
+%endif
 
 ■合計金額
-${ORDERED_AMOUNT: 10,658} 円
+${h.format_currency(order_total_amount)}
 
 -----
 ■お支払
@@ -45,8 +43,8 @@ ${ORDERED_AMOUNT: 10,658} 円
 お支払状況：未完了
 
 ＜コンビニでのお支払いの方＞
-払込票番号：${HARAIKOMI_NO:xxxx-xxxx-xxxx}
-支払期日：${SHIHARAI_KIJITU:2012/07/18 23:59}
+払込票番号：${sej_order.billing_number}
+支払期日：${sej_order.payment_due_at.strftime(u"%Y年%m月%d日(%a) %H時%M分".encode('utf-8')).decode('utf-8')}
 　
 支払期日までに、上記払込番号をお持ちの上、指定のコンビニエンスストア店頭レジにてお支払いください。
 支払期日までに入金されない場合は会員登録/入会申し込みの無効となりますので、ご注意ください。
@@ -61,6 +59,4 @@ ${ORDERED_AMOUNT: 10,658} 円
 
 -----
 仙台89ERS　ブースタークラブ事務局
-℡：022-215-8138　（平日09:00～18:00）
-
-}
+TEL：022-215-8138　（平日09:00～18:00）
