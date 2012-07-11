@@ -1,5 +1,9 @@
 from pyramid.config import Configurator
 from pyramid_beaker import session_factory_from_settings
+
+from ticketing.cart.interfaces import IPaymentPlugin, ICartPayment, IOrderPayment
+from ticketing.cart.interfaces import IDeliveryPlugin, ICartDelivery, IOrderDelivery
+
 from sqlalchemy import engine_from_config
 import sqlahelper
 
@@ -53,6 +57,15 @@ def main(global_conf, **settings):
     config.add_view('.views.OrderReviewView', route_name='order_review', attr="post", request_method="POST", renderer="order_review/show.html")
     config.add_view('.views.OrderReviewView', request_type='ticketing.cart.interfaces.IMobileRequest', route_name='order_review', 
                     attr="post", request_method="POST", renderer="order_review_mobile/show.html")
+
+    # @view_config()
+
+    PAYMENT_PLUGIN_ID = 3
+
+    config.add_view('ticketing.cart.plugins.sej.sej_payment_viewlet', context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID,
+                    renderer='carts/sej_payment_complete.html')
+    config.add_view('ticketing.cart.plugins.sej.sej_payment_viewlet', context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, request_type='ticketing.cart.interfaces.IMobileRequest',
+                    renderer="carts_mobile/sej_payment_complete.html")
 
     config.add_subscriber('.subscribers.add_helpers', 'pyramid.events.BeforeRender')
 

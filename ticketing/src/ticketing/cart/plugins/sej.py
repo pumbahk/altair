@@ -174,9 +174,7 @@ class SejDeliveryPlugin(object):
         logger.debug('Sej Delivery')
 
         order_no = str(cart.id)
-        openid = authenticated_user(request)
-        user = a.get_or_create_user(request, openid['clamed_id'])
-        user_profile  = user.user_profile
+        shipping_address = cart.shipping_address
         performance = cart.performance
         current_date = datetime.now()
 
@@ -198,11 +196,11 @@ class SejDeliveryPlugin(object):
                 contact_01          = u'00-0000-0000',
                 contact_02          = u'楽天チケット お問い合わせセンター 050-5830-6860',
                 order_id            = order_no,
-                username            = u'%s%s' % (user_profile.last_name, user_profile.first_name),
-                username_kana       = u'%s%s' % (user_profile.last_name_kana, user_profile.first_name_kana),
-                tel                 = user_profile.tel_1.replace('-', ''),
-                zip                 = user_profile.zip.replace('-', ''),
-                email               = user_profile.email,
+                username            = u'%s%s' % (shipping_address.last_name, shipping_address.first_name),
+                username_kana       = u'%s%s' % (shipping_address.last_name_kana, shipping_address.first_name_kana),
+                tel                 = shipping_address.tel_1.replace('-', ''),
+                zip                 = shipping_address.zip.replace('-', ''),
+                email               = shipping_address.email,
                 total               = 0,
                 ticket_total        = 0,
                 commission_fee      = 0,
@@ -262,31 +260,29 @@ class SejPaymentDeliveryPlugin(object):
 
         return order
 
-@view_config(context=IOrderDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID)
+
+@view_config(context=IOrderDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer='ticketing.cart.plugins:templates/carts/sej_delivery_complete.html')
 def sej_delivery_viewlet(context, request):
     order = context.order
     sej_order = get_sej_order(order)
-    params = dict(
+    return dict(
         order=order,
         sej_order=sej_order
     )
-    return render_to_response("ticketing.cart.plugins:templates/sej_exchange_sheet.html", params, request=request)
 
-@view_config(context=ICartDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID)
+@view_config(context=ICartDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer='ticketing.cart.plugins:templates/carts/sej_delivery_confirm.html')
 def sej_delivery_confirm_viewlet(context, request):
     return Response(text=u'セブンイレブン受け取り')
 
-@view_config(context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
+@view_config(context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer='ticketing.cart.plugins:templates/sej_payment_complete.html')
 def sej_payment_viewlet(context, request):
     order = context.order
     sej_order = get_sej_order(order)
-    params = dict(
+    return dict(
         order=order,
         sej_order=sej_order
     )
-    return render_to_response("ticketing.cart.plugins:templates/sej_exchange_sheet.html", params, request=request)
 
-@view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
+@view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer='ticketing.cart.plugins:templates/carts/sej_payment_confirm.html')
 def sej_payment_confirm_viewlet(context, request):
-
     return Response(text=u'セブンイレブン支払い')
