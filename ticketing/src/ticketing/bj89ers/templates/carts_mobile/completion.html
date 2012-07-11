@@ -13,6 +13,8 @@
 <div>${order.ordered_products[0].quantity}口</div>
 <%mobile:form_header>お名前</%mobile:form_header>
 ${user_profile.last_name} ${user_profile.first_name}様
+<%mobile:header>決済情報</%mobile:header>
+${h.render_payment_finished_viewlet(request, order)}
 </form>
 </body>
 </html>
