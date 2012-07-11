@@ -94,13 +94,6 @@ class OrderFormSchema(Form):
     email2 = fields.TextField(u"メールアドレス（確認用）", validators=[v.Email(), v.EqualTo('email', u'確認用メールアドレスが一致しません。')])
     publicity = fields.SelectField(u"媒体への掲載希望", validators=[v.Required()], choices=[('yes', u'希望する'),('no', u'希望しない')])
     mail_permission = fields.BooleanField(u"メルマガ配信", default=True)
-    nickname = fields.TextField(u"媒体掲載時のニックネーム")
-
-    def validate_nickname(self, form):
-        if self.publicity.data == 'yes' and not form.data:
-            from wtforms.validators import ValidationError
-            raise ValidationError(u'ニックネームを入力してください。')
-
 
 class OrderReviewSchema(Form):
     order_no = fields.TextField(u"オーダー番号", validators=[v.Required()])

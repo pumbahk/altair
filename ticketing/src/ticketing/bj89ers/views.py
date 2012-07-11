@@ -143,7 +143,6 @@ class CompleteView(_CompleteView):
         order.user = User(
             user_profile=UserProfile(
                 email=profile['email'],
-                nick_name=profile['nickname'],
                 first_name=profile['first_name'], 
                 last_name=profile['last_name'],
                 first_name_kana=profile['first_name_kana'],
