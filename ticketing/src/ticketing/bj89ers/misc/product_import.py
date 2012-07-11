@@ -186,6 +186,7 @@ def main():
         style = dict()
     )
     session.add(stock_holder)
+    account.stock_holders.append(stock_holder)
 
     stock_status_1 = c_model.StockStatus(
         quantity = 1000
