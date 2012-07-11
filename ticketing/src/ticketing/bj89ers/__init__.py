@@ -13,6 +13,7 @@ def main(global_conf, **settings):
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.add_static_view('static', 'ticketing.bj89ers:static', cache_max_age=3600)
     config.add_route('index', '/')
+    config.add_route('notready', '/notready')
     config.include('ticketing.checkout')
     config.include('ticketing.multicheckout')
     config.scan('ticketing.orders.models')
@@ -27,6 +28,8 @@ def main(global_conf, **settings):
     #config.add_tween(".tweens.mobile_request_factory")
     config.add_route('order_review', 'review')
 
+    config.add_view('.views.IndexView', attr='notready', route_name='notready', renderer='carts/notready.html')
+    config.add_view('.views.IndexView', attr='notready', request_type='ticketing.cart.interfaces.IMobileRequest', route_name='notready', renderer='carts_mobile/notready.html')
     config.add_view('.views.IndexView', route_name='index', attr="get", request_method='GET', renderer='carts/form.html')
     config.add_view('.views.IndexView', request_type='ticketing.cart.interfaces.IMobileRequest', route_name='index', 
                     attr="get", request_method='GET', renderer='carts_mobile/form.html')
