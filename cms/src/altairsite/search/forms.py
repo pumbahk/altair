@@ -325,8 +325,8 @@ class AboutDealPartForm(form.Form):
     before_deal_start = MaybeSelectField(choices=days)
     till_deal_end = MaybeSelectField(choices=days)
     
-    closed_only = fields.BooleanField(label=u"販売終了", widget=CheckboxWithLabelInput())
-    canceled_only = fields.BooleanField(label=u"公演中止", widget=CheckboxWithLabelInput())
+    closed_only = fields.BooleanField(label=u"販売終了した公演", widget=CheckboxWithLabelInput())
+    canceled_only = fields.BooleanField(label=u"中止した公演", widget=CheckboxWithLabelInput())
 
     def __html__(self):
         return u"""
