@@ -2,25 +2,35 @@
 import logging
 from datetime import datetime, date
 import sqlalchemy as sa
-import ticketing.core.models as c_models
-from ..orders import models as o_models
-import ticketing.cart.helpers as h
-import ticketing.cart.api as api
-import ticketing.bj89ers.api as bj89ers_api
-from ticketing.users.models import User, UserProfile
 from pyramid.httpexceptions import HTTPFound
 from pyramid.renderers import render_to_response
-from . import schemas
-from .models import DBSession
-from .api import load_user_profile
-from ticketing.cart.views import PaymentView as _PaymentView, CompleteView as _CompleteView
-from ticketing.users.models import SexEnum
-from ticketing.cart.events import notify_order_completed
-from pyramid.view import view_config
+from pyramid.threadlocal import get_current_request
+from pyramid.view import view_config, render_view_to_response
+from webob.multidict import MultiDict
 
-from pyramid.view import render_view_to_response
+from ..cart.events import notify_order_completed
+from ..cart.views import PaymentView as _PaymentView, CompleteView as _CompleteView
+from ..cart import api
+from ..cart import helpers as h
+from ..core import models as c_models
+
+from ..orders import models as o_models
+from ..users.models import SexEnum
+from ..users.models import User, UserProfile
+
+from . import schemas
+from .api import load_user_profile, store_user_profile, remove_user_profile
+from .models import DBSession
 
 logger = logging.getLogger(__name__)
+
+def back(func):
+    def retval(*args, **kwargs):
+        request = get_current_request()
+        if request.params.get('back'):
+            return HTTPFound(request.route_url('index'))
+        return func(*args, **kwargs)
+    return retval
 
 class IndexView(object):
     def __init__(self, request):
@@ -30,7 +40,7 @@ class IndexView(object):
     def __call__(self):
         return dict()
 
-    def _create_form(self):
+    def _create_form(self, params):
         salessegment = self.context.get_sales_segument()
         query = c_models.Product.query
         query = query.filter(c_models.Product.event_id == self.context.event_id)
@@ -41,7 +51,7 @@ class IndexView(object):
         for p in query:
             products[str(p.id)] = p
 
-        form = schemas.OrderFormSchema(self.request.params)
+        form = schemas.OrderFormSchema(params)
         choices = [(str(p.id), u"%s (%s円)" % (p.name, h.format_number(p.price, ","))) for p in query]
         form.member_type.choices = choices
         return form, products
@@ -53,8 +63,9 @@ class IndexView(object):
         current_date = datetime.now()
         if current_date < self.context.start_at or self.context.end_at < current_date:
             return HTTPFound(location=self.request.route_url('notready'))
-        form,products = self._create_form()
-        return dict(form=form,products=products)
+        user_profile = load_user_profile(self.request)
+        form, products = self._create_form(MultiDict(user_profile) if user_profile else MultiDict())
+        return dict(form=form, products=products)
 
     @property
     def ordered_items(self):
@@ -64,11 +75,11 @@ class IndexView(object):
         return [(product, number)]
 
     def post(self):
-        form,products = self._create_form()
+        form,products = self._create_form(self.request.params)
         if not form.validate():
             self.request.errors = form.errors
             logger.debug("%s" % form.errors)
-            return self.get()
+            return dict(form=form, products=products)
 
         cart = self.context.order_products(self.context.performance_id, self.ordered_items)
         if cart is None:
@@ -76,7 +87,7 @@ class IndexView(object):
             return dict(form=form, products=products)
         logger.debug('cart %s' % cart)
         api.set_cart(self.request, cart)
-        bj89ers_api.store_user_profile(self.request, dict(self.request.params))
+        store_user_profile(self.request, dict(self.request.params))
         logger.debug('OK redirect')
         return HTTPFound(location=self.request.route_url("cart.payment"))
 
@@ -115,8 +126,12 @@ class PaymentView(_PaymentView):
         user_profile = load_user_profile(self.request)
         return user_profile['email']
 
-class CompleteView(_CompleteView):
+    @back
+    def post(self):
+        return super(self.__class__, self).post()
 
+class CompleteView(_CompleteView):
+    @back
     def __call__(self):
         assert api.has_cart(self.request)
         cart = api.get_cart(self.request)
@@ -140,7 +155,7 @@ class CompleteView(_CompleteView):
             delivery_plugin = api.get_delivery_plugin(self.request, payment_delivery_pair.delivery_method.delivery_plugin_id)
             delivery_plugin.finish(self.request, cart)
 
-        profile = bj89ers_api.load_user_profile(self.request)
+        profile = load_user_profile(self.request)
 
         # これ本当にいるの??
         order.user = User(
@@ -182,6 +197,7 @@ class CompleteView(_CompleteView):
 
         notify_order_completed(self.request, order)
 
+        remove_user_profile(self.request)
 
         return dict(order=order)
 

@@ -143,36 +143,6 @@ table.form89ers tfoot td{
 
 
 
-input.submit{
-background: #c13b23; /* Old browsers */
-background: -moz-linear-gradient(top, #c13b23 0%, #962814 50%, #7d1601 51%, #883600 75%, #6a1200 100%); /* FF3.6+ */
-background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#c13b23), color-stop(50%,#962814), color-stop(51%,#7d1601), color-stop(75%,#883600), color-stop(100%,#6a1200)); /* Chrome,Safari4+ */
-background: -webkit-linear-gradient(top, #c13b23 0%,#962814 50%,#7d1601 51%,#883600 75%,#6a1200 100%); /* Chrome10+,Safari5.1+ */
-background: -o-linear-gradient(top, #c13b23 0%,#962814 50%,#7d1601 51%,#883600 75%,#6a1200 100%); /* Opera 11.10+ */
-background: -ms-linear-gradient(top, #c13b23 0%,#962814 50%,#7d1601 51%,#883600 75%,#6a1200 100%); /* IE10+ */
-background: linear-gradient(top, #c13b23 0%,#962814 50%,#7d1601 51%,#883600 75%,#6a1200 100%); /* W3C */
-filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#c13b23', endColorstr='#6a1200',GradientType=0 ); /* IE6-9 */
-text-align: center;
-color: #fff;
-padding: 5px;
-border: 2px solid #970018;
-margin: 10px auto;
-font-size: 20px;
-font-weight: bold;
-display: block;
-}
-
-input.submit:hover{
-	background: #9a2f1c; /* Old browsers */
-background: -moz-linear-gradient(top, #9a2f1c 0%, #761f10 50%, #631101 51%, #6c2b00 75%, #540e00 100%); /* FF3.6+ */
-background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#9a2f1c), color-stop(50%,#761f10), color-stop(51%,#631101), color-stop(75%,#6c2b00), color-stop(100%,#540e00)); /* Chrome,Safari4+ */
-background: -webkit-linear-gradient(top, #9a2f1c 0%,#761f10 50%,#631101 51%,#6c2b00 75%,#540e00 100%); /* Chrome10+,Safari5.1+ */
-background: -o-linear-gradient(top, #9a2f1c 0%,#761f10 50%,#631101 51%,#6c2b00 75%,#540e00 100%); /* Opera 11.10+ */
-background: -ms-linear-gradient(top, #9a2f1c 0%,#761f10 50%,#631101 51%,#6c2b00 75%,#540e00 100%); /* IE10+ */
-background: linear-gradient(top, #9a2f1c 0%,#761f10 50%,#631101 51%,#6c2b00 75%,#540e00 100%); /* W3C */
-filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#9a2f1c', endColorstr='#540e00',GradientType=0 ); /* IE6-9 */
-}
-
 .red{
 	color: #970018;
 }
@@ -237,7 +207,7 @@ border: 2px solid #970018;
 margin: 10px auto;
 font-size: 20px;
 font-weight: bold;
-display: block;
+display: inline-block;
 }
 
 input.submit:hover{

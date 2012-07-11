@@ -36,5 +36,6 @@ pm = _api.load_user_profile(request)
 <%mobile:form_header>媒体への掲載希望</%mobile:form_header>
 <div>${u'はい' if pm.get('publicity') == 'yes' else u'いいえ'}</div>
 <hr />
+<input type="submit" name="back" value="戻る" />
 <input type="submit" value="申し込む" />
 </form>
