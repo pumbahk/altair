@@ -105,7 +105,8 @@ class ParseAndSaveEventTests(unittest.TestCase):
     def test_it(self):
         from datetime import datetime
         import json
-        result = self._callFUT(json.loads(self.data))
+        request = testing.DummyRequest()
+        result = self._callFUT(request, json.loads(self.data))
 
         self.assertEqual(len(result), 1)
         event = result[0]
@@ -219,12 +220,13 @@ class ParseAndSaveEventTests(unittest.TestCase):
         import json
         from ..models import Ticket, Performance, Sale
 
-        result = self._callFUT(json.loads(self.data))
+        request = testing.DummyRequest()
+        result = self._callFUT(request, json.loads(self.data))
         fst_performance_count = Performance.query.count()
         fst_sale_count = Sale.query.count()
         fst_ticket_count = Ticket.query.count()
 
-        result = self._callFUT(json.loads(self.data))
+        result = self._callFUT(request, json.loads(self.data))
         self.assertEquals(fst_performance_count, Performance.query.count())
         self.assertEquals(fst_sale_count, Sale.query.count())
         self.assertEquals(fst_ticket_count, Ticket.query.count())
@@ -271,7 +273,8 @@ class DummyValidator(object):
         return self.apikey == apikey
 
 class DummyEventRepositry(testing.DummyResource):
-    def parse_and_save_event(self, data):
+    def parse_and_save_event(self, request, data):
+        self.request = request
         self.called_data = data
 
 class TestEventRegister(unittest.TestCase):
@@ -296,7 +299,6 @@ class TestEventRegister(unittest.TestCase):
                                          headers=headers,
                                          json_body={}
                                          )
-
         response = self._callFUT(request)
 
         self.assertEqual(response.status_int, 201)

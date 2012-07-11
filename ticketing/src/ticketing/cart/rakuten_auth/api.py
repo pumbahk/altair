@@ -142,7 +142,7 @@ class RakutenOpenID(object):
             ('openid.ns.ax', identity['ns_ax']),
             ('openid.ax.mode', identity['ax_mode']),
             ('openid.ax.type.nickname', identity['ax_type_nickname']),
-            ('openid.ax.value.nickname', identity['ax_value_nickname']),
+            ('openid.ax.value.nickname', identity['ax_value_nickname'].encode('utf-8')),
         ])
 
         f = urllib2.urlopen(url)

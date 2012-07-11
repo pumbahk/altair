@@ -6,5 +6,5 @@ class IAPIKeyValidator(Interface):
         """ validate api key"""
 
 class IEventRepository(Interface):
-    def parse_and_save_event(data):
+    def parse_and_save_event(request, data):
         """ """
