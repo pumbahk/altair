@@ -346,7 +346,6 @@ def main():
     session.add(product6)
     product6.items.append(product_item6_1)
 
-
     session.flush()
 
 
