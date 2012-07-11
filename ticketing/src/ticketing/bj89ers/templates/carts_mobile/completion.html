@@ -3,7 +3,6 @@
 <%mobile:header>お申し込み完了</%mobile:header>
 <% user_profile = order.user.user_profile %>
 下記の内容でお申し込みが完了しました。
-<form>
 <%mobile:header>お申し込み内容</%mobile:header>
 <%mobile:form_header>お申し込みNo.</%mobile:form_header>
 <div>${order.order_no}</div>
@@ -15,6 +14,5 @@
 ${user_profile.last_name} ${user_profile.first_name}様
 <%mobile:header>決済情報</%mobile:header>
 ${h.render_payment_finished_viewlet(request, order)}
-</form>
 </body>
 </html>
