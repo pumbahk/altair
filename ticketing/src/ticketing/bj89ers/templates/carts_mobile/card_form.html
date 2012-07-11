@@ -4,7 +4,8 @@
 <form id="form1" name="form1" method="post" action="${request.route_url('payment.secure_code')}">
 <%mobile:form_header required="true">カード番号</%mobile:form_header>
 <div>
-<input size="10" maxlength="16" type="text" name="card_number" istyle="4" />
+<input size="10" maxlength="16" type="text" name="card_number" istyle="4" /><br />
+${h.error(['card_number'])}
 </div>
 <%mobile:form_header required="true">有効期限</%mobile:form_header>
 <div>
@@ -35,11 +36,24 @@
 <option value="19">2019</option>
 <option value="20">2020</option>
 </select>年　
+${h.error(['exp_month','exp_year'])}
 </div>
 <%mobile:form_header required="true">カード名義</%mobile:form_header>
-<input type="text" name="card_holder_name" istyle="3" />
+<div>
+<input type="text" name="card_holder_name" istyle="3" /><br />
+${h.error(['card_holder_name'])}
+</div>
 <%mobile:form_header required="true">セキュリティコード</%mobile:form_header>
-<input type="text" name="secure_code" istyle="4" />
+<div>
+<input type="text" name="secure_code" istyle="4" /><br />
+${h.error(['secure_code'])}
+<font size="-2">
+※半角 (例:123)<br />
+カード裏面の署名欄に記載された数字のうち末尾3桁のセキュリティコードを入力して下さい。<br />
+（カード会社により、カード表面のクレジットカード番号の左上または右上の数字4桁の場合もあります）。<br />
+クレジットカードの暗証番号とは異なりますのでご注意下さい。<br />
+</font>
+</div>
 <hr />
 <input type="submit" value="送信" />
 </form>

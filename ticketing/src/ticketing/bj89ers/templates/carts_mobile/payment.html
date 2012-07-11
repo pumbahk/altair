@@ -21,7 +21,7 @@
 手数料:${h.format_currency(m.transaction_fee)} (${h.fee_type(m.payment_method.fee_type)})<br />
 <div>
 % if m.payment_method.payment_plugin_id == 1:
-<font size="2">
+<font size="-2">
 予約受付完了と同時に決済され、即時予約確定となります。支払回数は≪1回払い≫のみのお取扱いとなります。以下のクレジットカードがご利用できます。<br />
 <img src="${request.static_url('ticketing.bj89ers:static/images/kc_logo_rakuten.gif')}" height="30px" />
 <img src="${request.static_url('ticketing.bj89ers:static/images/visa.gif')}" height="30px" />
@@ -31,8 +31,10 @@
 <img src="${request.static_url('ticketing.bj89ers:static/images/s-logo_diners.jpg')}" height="30px" />
 </font>
 % elif m.payment_method.payment_plugin_id == 3:
-予約有効期日までにお支払頂きます。
-お支払が確認できた時点で予約確定となります。
+<font size="-2">
+予約有効期日までにお支払頂きます。<br />
+お支払が確認できた時点で予約確定となります。<br />
+</font>
 % endif
 </div>
 %endfor
