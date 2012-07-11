@@ -8,12 +8,19 @@ from ticketing.formhelpers import DateTimeField, Translations, Required, Phone
 
 
 class CardForm(Form):
+    def _get_translations(self):
+        return Translations({
+            'This field is required.' : u'入力してください',
+            'Not a valid choice' : u'選択してください',
+            'Invalid email address.' : u'Emailの形式が正しくありません。',
+           'Field must be at least %(min)d characters long.' : u'正しく入力してください。',
+        })
 
-    card_number = fields.TextField(validators=[Length(15)])
-    exp_year = fields.TextField(validators=[Length(2)])
-    exp_month = fields.TextField(validators=[Length(2)])
-    secure_code = fields.TextField(validators=[Length(3)])
-
+    card_number = fields.TextField('card', validators=[Length(15), Required()])
+    exp_year = fields.TextField('exp_year', validators=[Length(2)])
+    exp_month = fields.TextField('exp_month', validators=[Length(2)])
+    card_holder_name = fields.TextField('card_holder_name', validators=[Length(2)])
+    secure_code = fields.TextField('secure_code', validators=[Length(3)])
 
 class ClientForm(Form):
 

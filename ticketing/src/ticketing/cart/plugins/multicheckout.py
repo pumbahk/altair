@@ -68,7 +68,8 @@ class MultiCheckoutPlugin(object):
         )
 
         if checkout_sales_result.CmnErrorCd != '000000':
-            logger.info(u'決済エラー order_no = %s, error_code = %s' % (order_no, checkout_sales_result.CmnErrorCd))
+            logger.info(u'finish_secure_3d: 決済エラー order_no = %s, error_code = %s' % (order_no, checkout_sales_result.CmnErrorCd))
+            request.session.flash(u'決済エラー:決済に失敗しました。カードや内容を確認の上再度お試しください。')
             raise HTTPFound(location=request.route_url('payment.secure3d'))
 
         DBSession.add(checkout_sales_result)
@@ -94,7 +95,8 @@ class MultiCheckoutPlugin(object):
         )
 
         if checkout_sales_result.CmnErrorCd != '000000':
-            logger.info(u'決済エラー order_no = %s, error_code = %s' % (order_no, checkout_sales_result.CmnErrorCd))
+            logger.info(u'finish_secure_code: 決済エラー order_no = %s, error_code = %s' % (order_no, checkout_sales_result.CmnErrorCd))
+            request.session.flash(u'決済エラー:決済に失敗しました。カードや内容を確認の上再度お試しください。')
             raise HTTPFound(location=request.route_url('payment.secure3d'))
 
         DBSession.add(checkout_sales_result)
@@ -147,7 +149,8 @@ class MultiCheckoutView(object):
         form = schema.CardForm(formdata=self.request.params)
         if not form.validate():
             logger.debug("form error %s" % (form.errors,))
-            # TODO: 入力エラー表示
+            self.request.errors = form.errors
+            print form.errors
             return dict()
         assert api.has_cart(self.request)
         cart = api.get_cart(self.request)
@@ -165,7 +168,7 @@ class MultiCheckoutView(object):
         form = schema.CardForm(formdata=self.request.params)
         if not form.validate():
             logger.debug("form error %s" % (form.errors,))
-            # TODO: 入力エラー表示
+            self.request.errors = form.errors
             return dict()
         assert api.has_cart(self.request)
 
@@ -276,7 +279,8 @@ class MultiCheckoutView(object):
         logger.debug('called checkout auth')
         # TODO: エラーチェック CmnErrorCd CardErrorCd
         if checkout_auth_result.CmnErrorCd != '000000':
-            logger.info(u'決済エラー order_no = %s, error_code = %s' % (order['order_no'], checkout_auth_result.CmnErrorCd))
+            logger.info(u'card_info_secure3d_callback: 決済エラー order_no = %s, error_code = %s' % (order['order_no'], checkout_auth_result.CmnErrorCd))
+            self.request.session.flash(u'決済エラー:決済に失敗しました。カードや内容を確認の上再度お試しください。')
             raise HTTPFound(location=self.request.route_url('payment.secure3d'))
 
         tran = dict(
