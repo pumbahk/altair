@@ -8,5 +8,14 @@ __all__ = (
 class StringFieldWithChoice(StringField, SelectField):
     widget = TextInput()
 
+    def _coerce(self, value):
+        return self.coerce(value) if value is not None else ''
+
+    def process_data(self, value):
+        try:
+            self.data = self._coerce(value)
+        except (ValueError, TypeError):
+            self.data = None
+
     def _value(self):
-        return self.coerce(self.data) if self.data is not None else ''
+        return self.data
