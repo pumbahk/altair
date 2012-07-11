@@ -8,6 +8,7 @@ from wtforms.ext.i18n.utils import DefaultTranslations
 from ticketing.master.models import Prefecture
 from ticketing.core import models as c_models
 from datetime import datetime
+import unicodedata
 
 from . import fields as my_fields
 from . import widgets as my_widgets
@@ -55,6 +56,9 @@ class JananeseTranslations(object):
 Zenkaku = v.Regexp(r"^[^\x01-\x7f]+$", message=u'全角で入力してください')
 Katakana = v.Regexp(ur'^[ァ-ヶ]+$', message=u'カタカナで入力してください')
 
+def NFKC(unistr):
+    return unistr and unicodedata.normalize('NFKC', unistr)
+
 class OrderFormSchema(Form):
 
     def _get_translations(self):
@@ -68,8 +72,8 @@ class OrderFormSchema(Form):
     #number = fields.IntegerField(u"口数選択", validators=[v.Required()])
     first_name = fields.TextField(u"氏名", validators=[v.Required(), Zenkaku])
     last_name = fields.TextField(u"氏名", validators=[v.Required(),Zenkaku])
-    first_name_kana = fields.TextField(u"氏名(カナ)", validators=[v.Required(),Katakana])
-    last_name_kana = fields.TextField(u"氏名(カナ)", validators=[v.Required(),Katakana])
+    first_name_kana = fields.TextField(u"氏名(カナ)", filters=[NFKC], validators=[v.Required(),Katakana])
+    last_name_kana = fields.TextField(u"氏名(カナ)", filters=[NFKC], validators=[v.Required(),Katakana])
     year = my_fields.StringFieldWithChoice(u"誕生日", choices=get_year_choices(), widget=ymd_widget)
     month = my_fields.StringFieldWithChoice(u"誕生日", validators=[v.Required()], choices=get_year_months(), widget=ymd_widget)
     day = my_fields.StringFieldWithChoice(u"誕生日", validators=[v.Required()], choices=get_year_days(), widget=ymd_widget)

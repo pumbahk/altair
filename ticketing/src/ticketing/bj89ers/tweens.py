@@ -2,6 +2,7 @@ import uamobile
 import logging
 from zope.interface import directlyProvides
 from ticketing.cart.interfaces import IMobileRequest
+from pyramid.threadlocal import manager
 logger = logging.getLogger(__name__)
 
 def _convert_response_for_docomo(response):
@@ -28,6 +29,7 @@ def mobile_encoding_convert_factory(handler, registry):
         if not request._ua.is_nonmobile():
             ## DeprecationWarning: Use req = req.decode('cp932')
             decoded = request.decode("cp932")
+            manager.get()['request'] = decoded # hack!
             decoded.is_mobile = True
             directlyProvides(decoded, IMobileRequest)
             decoded.is_docomo = request._ua.is_docomo()

@@ -13,5 +13,7 @@ def error(names):
         for err in request.errors.get(name,[]):
             errs[err] = err
     errs = ", ".join(errs.values())
-    return Markup('<p class="error">%s</p>' % errs)
-    return Markup('<font color="red">%s</font><br />' % errs)
+    if request.is_mobile:
+        return Markup('<font color="red">%s</font><br />' % errs)
+    else:
+        return Markup('<p class="error">%s</p>' % errs)
