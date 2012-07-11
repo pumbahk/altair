@@ -5,6 +5,7 @@ from datetime import datetime
 from itertools import chain
 from pyramid.paster import bootstrap
 from tableau import *
+from tableau.sql import SQLGenerator
 from tableau.sqla import newSADatum
 import sqlahelper
 import logging
@@ -46,7 +47,9 @@ class Bj89ersFixtureBuilder(FixtureBuilder):
                 event_names=[
                     u"仙台89ers FC会員登録",
                     ],
-                site_names=[],
+                site_names=[
+                    u"ダミー会場"
+                    ],
                 organization_names=[],
                 account_pairs=[],
                 performance_names=[
@@ -54,7 +57,12 @@ class Bj89ersFixtureBuilder(FixtureBuilder):
                     ],
                 payment_method_names=payment_method_names,
                 delivery_method_names=delivery_method_names,
-                payment_delivery_method_pair_matrix=payment_delivery_method_pair_matrix,
+                payment_delivery_method_pair_matrix=[
+                    [ True, True, True ],
+                    [ False, False, False ],
+                    [ True, True, True ],
+                    [ False, False, False ],
+                    ],
                 bank_pairs=bank_pairs,
                 role_seeds=role_seeds,
                 operator_seeds=operator_seeds,
@@ -122,7 +130,7 @@ class Bj89ersFixtureBuilder(FixtureBuilder):
             [
                 self.build_performance_datum(
                     organization, retval, name,
-                    self.start_at, False) \
+                    self.start_at) \
                 for i, name in enumerate(self.performance_names)
                 ],
             'event_id'
@@ -136,9 +144,19 @@ class Bj89ersFixtureBuilder(FixtureBuilder):
 
 if __name__ == '__main__':
     logging.basicConfig(level=getattr(logging, os.environ.get('LOGLEVEL', 'INFO'), logging.INFO), stream=sys.stderr)
-    env = bootstrap(sys.argv[1])
-    session = sqlahelper.get_session()
-    import ticketing.core.models
-    builder = Bj89ersFixtureBuilder(newSADatum(sqlahelper.get_base().metadata, sqlahelper.get_base()))
-    session.add(builder.build())
-    transaction.commit()
+    if len(sys.argv) > 1:
+        env = bootstrap(sys.argv[1])
+        session = sqlahelper.get_session()
+        import ticketing.core.models
+        builder = Bj89ersFixtureBuilder(newSADatum(sqlahelper.get_base().metadata, sqlahelper.get_base()))
+        session.add(builder.build())
+        transaction.commit()
+    else:
+        builder = Bj89ersFixtureBuilder(Datum)
+        suite = DataSuite() 
+        walker = DataWalker(suite)
+        walker(builder.build())
+        for service_datum in builder.service_data:
+            walker(service_datum)
+        SQLGenerator(sys.stdout, encoding='utf-8')(suite)
+
