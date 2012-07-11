@@ -2,7 +2,7 @@
 import logging
 from datetime import datetime, date
 import sqlalchemy as sa
-from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.renderers import render_to_response
 from pyramid.threadlocal import get_current_request
 from pyramid.view import view_config, render_view_to_response
@@ -256,3 +256,15 @@ class OrderReviewView(object):
 @view_config(name="order_review_form")
 def order_review_form_view(form, request):
     return dict(form=form)
+
+
+@view_config(context=Exception)
+def exception_view(context, request):
+    logger.error("The error was: %s" % context, exc_info=(context))
+    return dict()
+
+@view_config(context=HTTPNotFound)
+def notfound_view(context, request):
+    logger.error("The error was: %s" % context, exc_info=(context))
+    return dict()
+

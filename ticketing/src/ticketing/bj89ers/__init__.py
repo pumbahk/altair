@@ -1,5 +1,6 @@
 from pyramid.config import Configurator
 from pyramid_beaker import session_factory_from_settings
+from pyramid.httpexceptions import HTTPNotFound
 
 from ticketing.cart.interfaces import IPaymentPlugin, ICartPayment, IOrderPayment
 from ticketing.cart.interfaces import IDeliveryPlugin, ICartDelivery, IOrderDelivery
@@ -27,7 +28,6 @@ def main(global_conf, **settings):
     config.scan('ticketing.cart.views')
     config.add_subscriber('.api.on_order_completed', 'ticketing.cart.events.OrderCompleted')
     config.commit()
-
 
     config.add_tween(".tweens.mobile_encoding_convert_factory")
     #config.add_tween(".tweens.mobile_request_factory")
@@ -64,6 +64,11 @@ def main(global_conf, **settings):
     config.add_view('.views.order_review_form_view', name="order_review_form", renderer="order_review/form.html")
     config.add_view('.views.order_review_form_view', name="order_review_form", renderer="order_review_mobile/form.html", request_type='ticketing.cart.interfaces.IMobileRequest')
 
+    config.add_view('.views.notfound_view', context=HTTPNotFound, renderer="errors/not_fount.html")
+    config.add_view('.views.notfound_view', context=HTTPNotFound, renderer="errors_mobile/not_fount.html", request_type='ticketing.cart.interfaces.IMobileRequest')
+    config.add_view('.views.exception_view', context=Exception, renderer="errors/error.html")
+    config.add_view('.views.exception_view', context=Exception, renderer="errors_mobile/error.html", request_type='ticketing.cart.interfaces.IMobileRequest')
+
     # @view_config()
 
     PAYMENT_PLUGIN_ID_SEJ = 3
@@ -78,6 +83,7 @@ def main(global_conf, **settings):
                     renderer='carts/multicheckout_payment_complete.html')
     config.add_view('ticketing.cart.plugins.multicheckout.completion_viewlet', context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID_CARD, request_type='ticketing.cart.interfaces.IMobileRequest',
                     renderer="carts_mobile/multicheckout_payment_complete.html")
+
 
 
     config.add_subscriber('.subscribers.add_helpers', 'pyramid.events.BeforeRender')
