@@ -7,10 +7,11 @@ from altaircms.event.models import Event
 from altaircms.models import DBSession, Performance, Sale, Ticket
 from altaircms.auth.models import APIKey
 from altaircms.seeds.prefecture import PREFECTURE_CHOICES
+from . import subscribers
 
 class EventRepositry(object):
-    def parse_and_save_event(self, parsed):
-        return parse_and_save_event(parsed)
+    def parse_and_save_event(self, request, parsed):       
+        return parse_and_save_event(request, parsed)
 
 def parse_datetime(dtstr):
     if dtstr is None:
@@ -21,7 +22,8 @@ def parse_datetime(dtstr):
         raise "Invalid ISO8601 datetime: %s" % dtstr
 
 class Scanner(object):
-    def __init__(self, session):
+    def __init__(self, session, request):
+        self.request = request
         self.session = session
         self.current_event = None
         self.current_performance = None
@@ -109,6 +111,9 @@ class Scanner(object):
                 event.organization_id = event_record["organization_id"]
             except KeyError as e:
                 raise Exception("missing property '%s' in the event record" % e.message)
+            def notify_event_update():
+                subscribers.notify_event_update(self.request, event)
+            self.after_parsed_actions.append(notify_event_update)
 
         self.current_event = event
 
@@ -132,6 +137,9 @@ class Scanner(object):
 
         if deleted:
             Event.query.filter_by(backend_id=event_record['id']).delete()
+            def notify_event_deleted():
+                subscribers.notify_event_delete(self.request, event)
+            self.after_parsed_actions.append(notify_event_deleted)
         else:
             self.session.add(event)
             self.events.append(event)
@@ -149,10 +157,10 @@ class Scanner(object):
             action()
         return self.events
 
-def parse_and_save_event(parsed):
+def parse_and_save_event(request, parsed):
     # import pprint
     # pprint.pprint(parsed)
-    return Scanner(DBSession)(parsed)
+    return Scanner(DBSession, request)(parsed)
 
 def validate_apikey(apikey):
     try:

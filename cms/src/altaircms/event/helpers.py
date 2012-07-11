@@ -20,7 +20,7 @@ def validate_apikey(request, apikey):
 def parse_and_save_event(request, data):
     reg = request.registry
     repository = reg.getUtility(IEventRepository)
-    return repository.parse_and_save_event(data)
+    return repository.parse_and_save_event(request, data)
 
 def pageset_describe_viewlet(request, event):
     va.set_event(request, event)
