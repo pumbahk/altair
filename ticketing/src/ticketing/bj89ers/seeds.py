@@ -45,7 +45,7 @@ class Bj89ersFixtureBuilder(FixtureBuilder):
                     ],
                 },
                 event_names=[
-                    u"仙台８９ｅｒｓ FC会員登録",
+                    u"仙台８９ERS FC会員登録",
                     ],
                 site_names=[
                     u"会場なし"
@@ -89,7 +89,7 @@ class Bj89ersFixtureBuilder(FixtureBuilder):
                 self.end_at
                 ),
             ]
-        account_datum = self.build_account_datum(u'仙台８９ｅｒｓ', 2)
+        account_datum = self.build_account_datum(u'仙台８９ERS', 2)
         stock_holder_data = [
             self.Datum(
                 'StockHolder',
