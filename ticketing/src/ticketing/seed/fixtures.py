@@ -584,7 +584,7 @@ class FixtureBuilder(object):
                 )
             )
 
-    def build_performance_datum(self, organization, event, name, performance_date):
+    def build_performance_datum(self, organization, event, name, performance_date, build_venue=False):
         logger.info(u"Building Performance %s" % name)
 
         retval = self.Datum(
@@ -594,19 +594,23 @@ class FixtureBuilder(object):
             start_on=datetime.combine(performance_date, time(19, 0, 0)),
             end_on=datetime.combine(performance_date, time(21, 0, 0))
             )
-
-        site = choice(self.site_data)
-        site_config = site._config
+        if build_venue:
+            site = choice(self.site_data)
+        else:
+            site = None
         stock_allocation_data = []
         stock_data = []
-        stock_sets = [
-            (0, [self.build_stock_datum(retval, None, None, len(site_config['colgroups'][0][2]))]),
-            ]
+        stock_sets = []
+        if site is not None:
+            # unassigned seats
+            stock_sets.append(
+                (0, [self.build_stock_datum(retval, None, None, len(site._config['colgroups'][0][2]))])
+                )
         colgroup_index = 1 # first colgroup is for "unassigned" seats.
         for stock_type in event.stock_types:
             stock_set = []
             if stock_type.type == STOCK_TYPE_TYPE_SEAT and not stock_type.quantity_only:
-                colgroup = site_config['colgroups'][colgroup_index]
+                colgroup = site._config['colgroups'][colgroup_index]
                 quantity = len(colgroup[2])
                 stock_sets.append((colgroup_index, stock_set))
                 colgroup_index += 1
@@ -627,11 +631,11 @@ class FixtureBuilder(object):
                 stock_data.append(stock_datum)
                 stock_set.append(stock_datum)
                 rest -= assigned
-        
-        retval.venue = one_to_many(
-            [self.build_venue_datum(organization, site, stock_sets)],
-            'performance_id'
-            )
+        if build_venue: 
+            retval.venue = one_to_many(
+                [self.build_venue_datum(organization, site, stock_sets)],
+                'performance_id'
+                )
         retval.stock_allocations = one_to_many(
             stock_allocation_data,
             'performance_id'
