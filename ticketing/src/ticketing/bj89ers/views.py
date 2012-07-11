@@ -9,6 +9,7 @@ from pyramid.view import view_config, render_view_to_response
 from webob.multidict import MultiDict
 
 from ..cart.events import notify_order_completed
+from ..cart.exceptions import NoCartError
 from ..cart.views import PaymentView as _PaymentView, CompleteView as _CompleteView
 from ..cart import api
 from ..cart import helpers as h
@@ -23,6 +24,11 @@ from .api import load_user_profile, store_user_profile, remove_user_profile
 from .models import DBSession
 
 logger = logging.getLogger(__name__)
+
+@view_config(context=NoCartError)
+def no_cart(context, request):
+    logger.error("No cart!")
+    return HTTPFound(request.route_url('index'))
 
 def back(func):
     def retval(*args, **kwargs):
