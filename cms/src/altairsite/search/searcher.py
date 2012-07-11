@@ -121,7 +121,7 @@ def get_pageset_query_from_deal_cond(request, query_params):
     qs = _refine_pageset_collect_future(qs)
     if query_params.get("deal_cond"):
        sub_qs = request.allowable(Event).with_entities(Event.id)
-       sub_qs = events_by_deal_cond_flags(sub_qs, query_params)
+       sub_qs = events_by_deal_cond_flags(sub_qs, query_params.get("deal_cond", []))
        sub_qs = sub_qs.filter(Event.is_searchable==True)
        qs = search_by_events(qs, sub_qs)
        return  _refine_pageset_qs(qs)
@@ -291,7 +291,7 @@ def events_by_performance_term(qs, performance_open, performance_close):
 
 def events_by_deal_cond_flags(qs, flags):
    if flags:
-      return qs.filter(Event.id==Sale.event_id).filter(Sale.kind.in_(flags))
+      return qs.filter(Event.id==Sale.event_id).filter(Sale.kind.in_(flags)).distinct()
    else:
       return qs
 
