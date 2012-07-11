@@ -202,11 +202,10 @@ class SearchResultRender(object):
             return u"販売終了"
 
     def deal_info_icons(self):
-        import warnings
-        warnings.warn("difficult. so supported this function is later.")
-        return u'''\
-<img src="/static/ticketstar/img/search/icon_release.gif" alt="一般発売" width="60" height="14" />
-'''
+        event = self.pageset.event
+        kinds = set(s.kind for s in event.sales) 
+        return u"".join(u'<div class="icon-salessegment %s"></div>'% k for k in kinds)
+
 
     def deal_description(self):
         event = self.pageset.event
