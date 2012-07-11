@@ -275,9 +275,7 @@ def events_by_area(qs, prefectures):
 ##日以内に開始系の関数
 def events_by_within_n_days_of(qs, start_from, n, _nowday=datetime.datetime.now):
    today = _nowday()
-   qs = qs.filter(start_from <= (today+datetime.timedelta(days=n)))
-   ## 今日より後のもののみ検索対象とするのは `_refine_pageset_collect_futureでやっている
-   # qs = qs.filter(start_from >= today).filter(start_from <= (today+datetime.timedelta(days=n)))
+   qs = qs.filter(today+datetime.timedelta(days=-1) <= start_from).filter(start_from <= (today+datetime.timedelta(days=n)))
    return qs
    
 
