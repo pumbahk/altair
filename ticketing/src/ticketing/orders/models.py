@@ -174,7 +174,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @classmethod
     def create_from_cart(cls, cart):
         order = cls()
-        order.order_no = str(cart.id)
+        order.order_no = cart.order_no
         order.total_amount = cart.total_amount
         order.shipping_address = cart.shipping_address
         order.payment_delivery_pair = cart.payment_delivery_pair

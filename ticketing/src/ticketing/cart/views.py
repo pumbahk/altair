@@ -568,12 +568,11 @@ class CompleteView(object):
         notify_order_completed(self.request, order)
 
         # メール購読でエラーが出てロールバックされても困る
-        order_id = order.id
         mail_address = cart.shipping_address.email
         user_id = self.context.get_or_create_user().id
         transaction.commit()
         user = DBSession.query(user.__class__).get(user_id)
-        order = DBSession.query(order.__class__).get(order_id)
+        order = DBSession.query(order.__class__).get(order.id)
  
         # メール購読
         self.save_subscription(user, mail_address)

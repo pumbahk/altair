@@ -57,8 +57,7 @@ class Bj89erCartResource(TicketingCartResource):
         if payment_method_plugin_id == 1:
             pass
         elif payment_method_plugin_id == 3:
-            sej_order = SejOrder.filter(SejOrder.order_id == "%012d" % int(order_no)).first()
+            sej_order = SejOrder.filter(SejOrder.order_id == order_no).first()
 
         return order, sej_order
-
 
