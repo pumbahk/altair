@@ -163,7 +163,7 @@ def get_pageset_query_from_event_open_within(request, query_params):
 @provider(ISearchFn)
 def get_pageset_query_from_multi(request, query_params):
     qs = request.allowable(PageSet)
-
+    qs = _refine_pageset_collect_future(qs)
     sub_qs = request.allowable(Event).with_entities(Event.id)
     sub_qs = events_by_area(sub_qs, query_params.get("prefectures"))
     sub_qs = events_by_performance_term(sub_qs, query_params.get("performance_open"), query_params.get("performance_close"))
