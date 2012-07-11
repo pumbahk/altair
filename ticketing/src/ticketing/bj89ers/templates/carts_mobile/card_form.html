@@ -3,6 +3,13 @@
 <%mobile:header>カード情報の入力</%mobile:header>
 <form id="form1" name="form1" method="post" action="${request.route_url('payment.secure_code')}">
 <%mobile:form_header required="true">カード番号</%mobile:form_header>
+% if request.session.peek_flash():
+<div>
+% for message in request.session.pop_flash():
+<font color="red">${message}</font><br />
+% endfor
+</div>
+% endif
 <div>
 <input size="10" maxlength="16" type="text" name="card_number" istyle="4" /><br />
 ${h.error(['card_number'])}
