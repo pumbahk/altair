@@ -259,11 +259,11 @@ def order_review_form_view(form, request):
     return dict(form=form)
 
 def exception_view(context, request):
-    logger.error("The error was: %s" % context, exc_info=(context))
+    logger.error("The error was: %s" % context, exc_info=request.exc_info)
     return dict()
 
 def notfound_view(context, request):
-    logger.error("The error was: %s" % context, exc_info=(context))
+    logger.error("The error was: %s" % context, exc_info=request.exc_info)
     return dict()
 
 @view_config(name="contact")
