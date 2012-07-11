@@ -74,9 +74,9 @@ def main(global_conf, **settings):
     config.add_view('ticketing.cart.plugins.sej.sej_payment_viewlet', context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID_SEJ, request_type='ticketing.cart.interfaces.IMobileRequest',
                     renderer="carts_mobile/sej_payment_complete.html")
 
-    config.add_view('ticketing.cart.plugins.checkout.completion_viewlet', context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID_CARD,
+    config.add_view('ticketing.cart.plugins.multicheckout.completion_viewlet', context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID_CARD,
                     renderer='carts/multicheckout_payment_complete.html')
-    config.add_view('ticketing.cart.plugins.checkout.completion_viewlet', context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID_CARD, request_type='ticketing.cart.interfaces.IMobileRequest',
+    config.add_view('ticketing.cart.plugins.multicheckout.completion_viewlet', context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID_CARD, request_type='ticketing.cart.interfaces.IMobileRequest',
                     renderer="carts_mobile/multicheckout_payment_complete.html")
 
 
