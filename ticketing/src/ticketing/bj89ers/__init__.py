@@ -19,6 +19,7 @@ def main(global_conf, **settings):
     config.add_renderer('.txt' , 'pyramid.mako_templating.renderer_factory')
     config.add_static_view('static', 'ticketing.bj89ers:static', cache_max_age=3600)
     config.add_route('index', '/')
+    config.add_route('contact', '/contact')
     config.add_route('notready', '/notready')
     config.include('ticketing.checkout')
     config.include('ticketing.multicheckout')
@@ -68,6 +69,8 @@ def main(global_conf, **settings):
     config.add_view('.views.notfound_view', context=HTTPNotFound, renderer="errors_mobile/not_fount.html", request_type='ticketing.cart.interfaces.IMobileRequest')
     config.add_view('.views.exception_view', context=Exception, renderer="errors/error.html")
     config.add_view('.views.exception_view', context=Exception, renderer="errors_mobile/error.html", request_type='ticketing.cart.interfaces.IMobileRequest')
+    config.add_view('.views.contact_view', route_name="contact", renderer="static/contact.html")
+    config.add_view('.views.contact_view', route_name="contact", renderer="static_mobile/contact.html", request_type='ticketing.cart.interfaces.IMobileRequest')
 
     # @view_config()
 
