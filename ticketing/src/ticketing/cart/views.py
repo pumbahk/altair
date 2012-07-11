@@ -20,6 +20,7 @@ from ..users import models as u_models
 from .models import Cart
 from . import helpers as h
 from . import schema
+from .exceptions import *
 from .rakuten_auth.api import authenticated_user
 from .events import notify_order_completed
 from webob.multidict import MultiDict
@@ -27,6 +28,15 @@ from . import api
 import transaction
 
 logger = logging.getLogger(__name__)
+
+class ExceptionView(object):
+    def __init__(self, request):
+        self.request = request
+
+    @view_config(context=NoCartError)
+    def handle_nocarterror(self):
+        logger.error("No cart!")
+        return HTTPFound('/')
 
 class IndexView(object):
     """ 座席選択画面 """
@@ -372,7 +382,7 @@ class PaymentView(object):
         """ 支払い方法、引き取り方法選択
         """
         if not api.has_cart(self.request):
-            return HTTPFound('/')
+            raise NoCartError()
         cart = api.get_cart(self.request)
         self.context.event_id = cart.performance.event.id
         payment_delivery_methods = self.context.get_payment_delivery_method_pair()
@@ -419,7 +429,7 @@ class PaymentView(object):
 
         params = self.request.params
         if not api.has_cart(self.request):
-            return HTTPFound('/')
+            raise NoCartError()
         cart = api.get_cart(self.request)
 
         #openid = authenticated_user(self.request)

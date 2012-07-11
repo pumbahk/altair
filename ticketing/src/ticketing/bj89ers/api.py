@@ -5,11 +5,19 @@ from .models import DBSession
 
 SESSION_KEY = 'bj89ers.user_profile'
 
+def remove_user_profile(request):
+    if SESSION_KEY in request.session:
+        del request.session[SESSION_KEY]
+
 def store_user_profile(request, user_profile):
     request.session[SESSION_KEY] = user_profile
 
 def load_user_profile(request):
-    return request.session[SESSION_KEY]
+    return request.session.get(SESSION_KEY)
+
+def clear_user_profile(request):
+    if SESSION_KEY in request.session:
+        del request.session[SESSION_KEY]
 
 def on_order_completed(event):
     order = event.order

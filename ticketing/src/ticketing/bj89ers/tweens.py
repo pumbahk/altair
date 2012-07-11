@@ -28,7 +28,9 @@ def mobile_encoding_convert_factory(handler, registry):
         request._ua = uamobile.detect(request.environ)
         if not request._ua.is_nonmobile():
             ## DeprecationWarning: Use req = req.decode('cp932')
+            session = getattr(request, 'session', None)
             decoded = request.decode("cp932")
+            decoded.session = session
             manager.get()['request'] = decoded # hack!
             decoded.is_mobile = True
             directlyProvides(decoded, IMobileRequest)
