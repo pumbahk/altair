@@ -208,6 +208,7 @@ class Cart(Base):
 
     @property
     def order_no(self):
+        logger.debug("organization.id = %d" % self.performance.event.organization.id)
         return self.performance.event.organization.code + sensible_alnum_encode(self.id).zfill(10)
 
     @property

@@ -15,6 +15,7 @@ def main(global_conf, **settings):
     config = Configurator(settings=settings, session_factory=my_session_factory)
     config.set_root_factory('.resources.Bj89erCartResource')
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
+    config.add_renderer('.txt' , 'pyramid.mako_templating.renderer_factory')
     config.add_static_view('static', 'ticketing.bj89ers:static', cache_max_age=3600)
     config.add_route('index', '/')
     config.add_route('notready', '/notready')
@@ -68,5 +69,6 @@ def main(global_conf, **settings):
                     renderer="carts_mobile/sej_payment_complete.html")
 
     config.add_subscriber('.subscribers.add_helpers', 'pyramid.events.BeforeRender')
+    config.add_subscriber('.sendmail.on_order_completed', 'ticketing.cart.events.OrderCompleted')
 
     return config.make_wsgi_app()
