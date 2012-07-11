@@ -31,7 +31,8 @@ class TicketingCartResource(object):
             self.event_id = None
 
     def get_system_fee(self):
-        return 315
+        # 暫定で0に設定
+        return 0
 
 
     def get_payment_delivery_method_pair(self):
