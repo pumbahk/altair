@@ -6,6 +6,7 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.renderers import render_to_response
 from pyramid.threadlocal import get_current_request
 from pyramid.view import view_config, render_view_to_response
+from pyramid.view import notfound_view_config
 from webob.multidict import MultiDict
 
 from ..cart.events import notify_order_completed
@@ -257,12 +258,10 @@ class OrderReviewView(object):
 def order_review_form_view(form, request):
     return dict(form=form)
 
-@view_config(context=Exception)
 def exception_view(context, request):
     logger.error("The error was: %s" % context, exc_info=(context))
     return dict()
 
-@view_config(context=HTTPNotFound)
 def notfound_view(context, request):
     logger.error("The error was: %s" % context, exc_info=(context))
     return dict()

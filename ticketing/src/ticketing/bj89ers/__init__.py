@@ -65,12 +65,12 @@ def main(global_conf, **settings):
     config.add_view('.views.order_review_form_view', name="order_review_form", renderer="order_review/form.html")
     config.add_view('.views.order_review_form_view', name="order_review_form", renderer="order_review_mobile/form.html", request_type='ticketing.cart.interfaces.IMobileRequest')
 
-    config.add_view('.views.notfound_view', context=HTTPNotFound, renderer="errors/not_fount.html")
-    config.add_view('.views.notfound_view', context=HTTPNotFound, renderer="errors_mobile/not_fount.html", request_type='ticketing.cart.interfaces.IMobileRequest')
-    config.add_view('.views.exception_view', context=Exception, renderer="errors/error.html")
-    config.add_view('.views.exception_view', context=Exception, renderer="errors_mobile/error.html", request_type='ticketing.cart.interfaces.IMobileRequest')
     config.add_view('.views.contact_view', route_name="contact", renderer="static/contact.html")
     config.add_view('.views.contact_view', route_name="contact", renderer="static_mobile/contact.html", request_type='ticketing.cart.interfaces.IMobileRequest')
+    config.add_view('.views.notfound_view', context=HTTPNotFound, renderer="errors/not_fount.html", )
+    config.add_view('.views.notfound_view', context=HTTPNotFound,  renderer="errors_mobile/not_fount.html", request_type='ticketing.cart.interfaces.IMobileRequest')
+    config.add_view('.views.exception_view',  context=Exception, renderer="errors/error.html")
+    config.add_view('.views.exception_view', context=Exception,  renderer="errors_mobile/error.html", request_type='ticketing.cart.interfaces.IMobileRequest')
 
     # @view_config()
 
@@ -86,8 +86,6 @@ def main(global_conf, **settings):
                     renderer='carts/multicheckout_payment_complete.html')
     config.add_view('ticketing.cart.plugins.multicheckout.completion_viewlet', context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID_CARD, request_type='ticketing.cart.interfaces.IMobileRequest',
                     renderer="carts_mobile/multicheckout_payment_complete.html")
-
-
 
     config.add_subscriber('.subscribers.add_helpers', 'pyramid.events.BeforeRender')
     config.add_subscriber('.sendmail.on_order_completed', 'ticketing.cart.events.OrderCompleted')
