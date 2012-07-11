@@ -24,7 +24,6 @@ class IndexView(object):
         self.request = request
         self.context = request.context
 
-
     def __call__(self):
         return dict()
 
@@ -44,11 +43,13 @@ class IndexView(object):
         form.member_type.choices = choices
         return form, products
 
+    def notready(self):
+        return dict(start_at=self.context.start_at, end_at=self.context.end_at)
+
     def get(self):
         current_date = datetime.now()
         if current_date < self.context.start_at or self.context.end_at < current_date:
-            return render_to_response('carts/ready.html',dict(), self.request)
-
+            return HTTPFound(location=self.request.route_url('notready'))
         form,products = self._create_form()
         return dict(form=form,products=products)
 

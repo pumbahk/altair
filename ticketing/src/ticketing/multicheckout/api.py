@@ -274,7 +274,8 @@ class Checkout3D(object):
 
     def _request(self, url, message=None):
         content_type = "application/xhtml+xml;charset=UTF-8"
-        body = etree.tostring(message, encoding='utf-8') if message else ''
+        #body = etree.tostring(message, encoding='utf-8') if message else ''
+        body = etree.tostring(message) if message else ''
         url_parts = urlparse.urlparse(url)
 
         if url_parts.scheme == "http":

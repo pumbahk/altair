@@ -134,7 +134,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
             # 未入金ならコンビニ決済のキャンセル通知
             elif self.status == 'ordered':
-                sej_order = SejOrder.query.filter_by(order_id='%(#)012d' % {'#':int(self.order_no)}).first()
+                sej_order = SejOrder.query.filter_by(order_id=self.order_no).first()
                 if sej_order and not sej_order.cancel_at:
                     try:
                         request_cancel_order(

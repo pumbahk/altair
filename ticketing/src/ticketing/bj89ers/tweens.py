@@ -4,11 +4,16 @@ from zope.interface import directlyProvides
 from ticketing.cart.interfaces import IMobileRequest
 logger = logging.getLogger(__name__)
 
-def _convert_response_for_mobile(response):
+def _convert_response_for_docomo(response):
+    if response.content_type.startswith('text/html'):
+        response.content_type = 'application/xhtml+xml'
+    return response
+
+def _convert_response_sjis(response):
     encoding = 'Shift_JIS'
     if response.content_type.startswith("text"):
         response.body = response.unicode_body.encode("cp932", "replace")
-        response.content_type = 'application/xhtml+xml; charset=%s' % encoding
+        response.charset = encoding
     return response
 
 def mobile_request_factory(handler, registry):
@@ -30,10 +35,10 @@ def mobile_encoding_convert_factory(handler, registry):
             decoded._ua = request._ua
             logger.debug("**this is mobile access**")
             response = handler(decoded)
+            response = _convert_response_sjis(response)
             if request._ua.is_docomo():
-                return _convert_response_for_mobile(response)
-            else:
-                return response
+                response = _convert_response_for_docomo(response)
+            return response
         else:
             request.is_mobile = False
             logger.debug("**this is pc access**")
