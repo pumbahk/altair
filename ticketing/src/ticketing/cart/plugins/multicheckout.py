@@ -277,7 +277,7 @@ class MultiCheckoutView(object):
         # TODO: エラーチェック CmnErrorCd CardErrorCd
         if checkout_auth_result.CmnErrorCd != '000000':
             logger.info(u'決済エラー order_no = %s, error_code = %s' % (order['order_no'], checkout_auth_result.CmnErrorCd))
-            raise HTTPFound(location=request.route_url('payment.secure3d'))
+            raise HTTPFound(location=self.request.route_url('payment.secure3d'))
 
         tran = dict(
             mvn=auth_result.Mvn, xid=auth_result.Xid, ts=auth_result.Ts,

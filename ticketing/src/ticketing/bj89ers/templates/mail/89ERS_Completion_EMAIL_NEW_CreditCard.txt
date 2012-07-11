@@ -1,0 +1,50 @@
+${name}　様
+
+
+以下のご注文の受付が完了しました。ご利用ありがとうございました。
+
+-----
+■お名前カナ
+${name_kana}
+■電話番号
+${tel_no}
+■メールアドレス
+${email}
+
+-----
+■受付番号
+${order_no}
+受付内容確認の際などに必要です。必ずお控え下さい。
+
+■受付日
+${order_datetime}
+
+-----
+${performance_name}
+
+■商品代金
+%for ordered_product in order_items:
+${ordered_product.product.name} ${h.format_currency(ordered_product.product.price)}
+%endfor
+
+■サービス利用料・手数料
+システム利用料： ${h.format_currency(system_fee)}
+決済手数料： ${h.format_currency(transaction_fee)}
+%if delivery_fee:
+配送手数料：${h.format_currency(delivery_fee)}
+%endif
+
+■合計金額
+${h.format_currency(order_total_amount)}
+
+-----
+■注意事項
+・会員証やグッズは、２０１２年９月１５日までに入会された方には１０月１３日開幕戦までにお届けします。９月１６日以降に入会された方には、直近のホームゲーム会場でお渡しします。
+　直近のホームゲームに来場されない場合には、後日郵送でお届けします。
+・ご入会後の会員プランの変更及び会費の返却には応じかねます。
+・ご登録いただいた個人情報は、会員証やグッズ、各種イベント等の案内を送付する目的以外で使用することはございません。弊社では収集した個人情報の漏えいまたは減失ま　　たは破棄の防止及び目的以外使用防止のために必要かつ適切な安全措置を講じております。
+・お申込状況は、申込ページ（http://ticketstar.jp/89ers/booster）の「履歴確認」メニューからご確認いただけます。
+
+-----
+仙台89ERS　ブースタークラブ事務局
+℡：022-215-8138　（平日09:00～18:00）

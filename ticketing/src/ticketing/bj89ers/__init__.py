@@ -69,5 +69,6 @@ def main(global_conf, **settings):
                     renderer="carts_mobile/sej_payment_complete.html")
 
     config.add_subscriber('.subscribers.add_helpers', 'pyramid.events.BeforeRender')
+    config.add_subscriber('.sendmail.on_order_completed', 'ticketing.cart.events.OrderCompleted')
 
     return config.make_wsgi_app()
