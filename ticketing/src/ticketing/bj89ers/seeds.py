@@ -58,9 +58,9 @@ class Bj89ersFixtureBuilder(FixtureBuilder):
                 payment_method_names=payment_method_names,
                 delivery_method_names=delivery_method_names,
                 payment_delivery_method_pair_matrix=[
-                    [ True, True, True ],
+                    [ False, False, True ],
                     [ False, False, False ],
-                    [ True, True, True ],
+                    [ False, True, False ],
                     [ False, False, False ],
                     ],
                 bank_pairs=bank_pairs,
