@@ -1,0 +1,43 @@
+${up.last_name} ${up.first_name} 様
+
+「${title}」のご注文キャンセル手続きが
+完了しましたのでご連絡させていただきます。
+
+このキャンセル処理は、下記のような理由によりおこなっております。
+
+(キャンセル理由の例)
+　・お客様からキャンセルのご連絡があったため
+　・期限内のご入金がなくキャンセル扱いとしたため
+　・二重注文により、ひとつをキャンセル処理したため
+
+ご不明な点がございましたら、${order.ordered_from.name}までお問い合わせください。
+
+=====================================================================
+■ 販売会社： ${order.ordered_from.name}
+■ メールアドレス: support@ticketstar.jp
+=====================================================================
+[受付番号]  ${order.order_no}
+[受付日時]  ${order.created_at}
+[注文者]    ${up.last_name} ${up.first_name} 様
+[支払方法]  ${order.payment_delivery_pair.payment_method.name}
+[配送方法]  ${order.payment_delivery_pair.delivery_method.name}
+==========
+[送付先]    ${sa.last_name} ${sa.first_name} 様
+〒 ${sa.zip}
+${sa.prefecture} ${sa.city}
+${sa.address_1} ${sa.address_2}
+(TEL) ${sa.tel_1}
+[商品]
+${title}
+${venue}
+${products}
+システム利用料 ${system_fee}（円）
+決済手数料　　 ${transaction_fee}（円）
+配送手数料　　 ${delivery_fee}（円）
+********************************************************************
+合計　　　　　 ${total_amount}（円）
+
+─────────────問い合わせ─────────────────
+商品、決済・発送に関するお問い合わせ support@ticketstar.jp
+楽天チケット http://ticket.rakuten.co.jp/
+───────────────────────────────────

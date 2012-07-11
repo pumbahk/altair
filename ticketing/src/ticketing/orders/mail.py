@@ -1,73 +1,68 @@
 # -*- coding:utf-8 -*-
 
+from pyramid import renderers
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
 
+from ticketing.cart import helpers as h
+
 import logging
+
 logger = logging.getLogger(__name__)
 
+mail_renderer_names = {
+    '1': 'ticketing:templates/mail/order_cancel.txt',
+    '2': 'ticketing:templates/mail/order_cancel.txt',
+    '3': 'ticketing:templates/mail/order_cancel.txt',
+    '4': 'ticketing:templates/mail/order_cancel.txt',
+}
+
 def on_order_canceled(event):
-    message = create_cancel_message(event.order)
+    message = create_cancel_message(event.request, event.order)
     mailer = get_mailer(event.request)
     mailer.send(message)
-    logger.info("send cancel mail to %s" % message.recipients)
+    logger.info('send cancel mail to %s' % message.recipients)
 
-def create_cancel_message(order):
-    product_message_format = u'{ordered_product.product.name}　' \
-                           + u'{ordered_product.price:n}（円）× ' \
-                           + u'{ordered_product.quantity:n}（個）\r\n'
-    product_detail = ''
+def create_cancel_message(request, order):
+    plugin_id = str(order.payment_delivery_pair.payment_method.payment_plugin_id)
+    if plugin_id not in mail_renderer_names:
+        logger.warn('mail renderer not found for plugin_id %s' % plugin_id)
+        return
+
+    subject = u'ご注文キャンセルについて 【{organization.name}】'.format(organization=order.ordered_from)
+    from_ = u'order@ticket.rakuten.co.jp'
+    product_message_format = u'{product}　{price}（円）× {quantity}\r\n'
+    products = ''
     for ordered_product in order.ordered_products:
-        product_detail += product_message_format.format(ordered_product=ordered_product)
+        products += product_message_format.format(
+            product=ordered_product.product.name,
+            price=h.format_currency(ordered_product.price),
+            quantity=ordered_product.quantity,
+        )
+
+    performance = order.ordered_products[0].ordered_product_items[0].product_item.performance
+    venue_info = ''
+    if performance.venue.id != 1:  # ダミー会場でないなら
+        venue_info = u'{venue} ({start_on}開演)'.format(performance.venue.name, performance.start.on)
+
+    value = dict(
+        order=order,
+        up=order.user.user_profile,
+        sa=order.shipping_address,
+        products=products,
+        venue=venue_info,
+        title=order.ordered_products[0].product.event.title,
+        system_fee=h.format_currency(order.system_fee),
+        transaction_fee=h.format_currency(order.transaction_fee),
+        delivery_fee=h.format_currency(order.delivery_fee),
+        total_amount=h.format_currency(order.total_amount),
+    )
+    mail_body = renderers.render(mail_renderer_names[plugin_id], value, request=request)
+    mail_body = unicode(mail_body, 'utf-8')
 
     message = Message(
-        subject=u'ご注文キャンセルについて',
+        subject=subject,
         recipients=[order.shipping_address.email],
-        body=u'''
-{user_profile.last_name} {user_profile.first_name} 様
-
-「{order.ordered_products[0].product.event.title}」のご注文キャンセル手続きが
-完了しましたのでご連絡させていただきます。
-
-このキャンセル処理は、下記のような理由によりおこなっております。
-
-(キャンセル理由の例)
-　・お客様からキャンセルのご連絡があったため
-　・期限内のご入金がなくキャンセル扱いとしたため
-　・二重注文により、ひとつをキャンセル処理したため
-
-ご不明な点がございましたら、{order.ordered_from.name}までお問い合わせください。
-
-=====================================================================
-■ 販売会社： {order.ordered_from.name}
-■ メールアドレス: support@ticketstar.jp
-=====================================================================
-[受付番号]  {order.order_no}
-[受付日時]  {order.created_at}
-[注文者]    {user_profile.last_name} {user_profile.first_name} 様
-[支払方法]  {order.payment_delivery_pair.payment_method.name}
-[配送方法]  {order.payment_delivery_pair.delivery_method.name}
-==========
-[送付先]    {shipping_address.last_name} {shipping_address.first_name} 様
-            〒 {shipping_address.zip}
-            {shipping_address.prefecture} {shipping_address.city}
-            {shipping_address.address_1} {shipping_address.address_2}
-            (TEL) {shipping_address.tel_1}
-[商品]
-{order.ordered_products[0].product.event.title}
-{order.ordered_products[0].ordered_product_items[0].product_item.performance.venue.name} ({order.ordered_products[0].ordered_product_items[0].product_item.performance.start_on}開演)
-{product_detail}
-システム利用料 {order.system_fee:n}（円）
-決済手数料　　 {order.transaction_fee:n}（円）
-配送手数料　　 {order.delivery_fee:n}（円）
-********************************************************************
-合計　　　　　 {order.total_amount:n}（円）
-
-─────────────問い合わせ─────────────────
-商品、決済・発送に関するお問い合わせ support@ticketstar.jp
-楽天チケット http://ticket.rakuten.co.jp/
-───────────────────────────────────
-'''.format(order=order, user=order.user, user_profile=order.user.user_profile, shipping_address=order.shipping_address, product_detail=product_detail),
-        sender='support@ticketstar.jp',
-    )
+        body=mail_body,
+        sender=from_)
     return message
