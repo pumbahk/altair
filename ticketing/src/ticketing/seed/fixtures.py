@@ -584,7 +584,7 @@ class FixtureBuilder(object):
                 )
             )
 
-    def build_performance_datum(self, organization, event, name, performance_date, build_venue=False):
+    def build_performance_datum(self, organization, event, name, performance_date, build_venue=True):
         logger.info(u"Building Performance %s" % name)
 
         retval = self.Datum(
