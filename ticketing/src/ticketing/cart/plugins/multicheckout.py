@@ -120,12 +120,12 @@ def confirm_viewlet(context, request):
     logger.debug("order_session %s" % order_session)
     return dict(order=order_session, card_number_mask=card_number_mask)
 
-@view_config(context=IOrderPayment, name="payment-1")
+@view_config(context=IOrderPayment, name="payment-1", renderer="ticketing.cart.plugins:templates/cart_complete.html")
 def completion_viewlet(context, request):
     """ 完了画面表示 
     :param context: IOrderPayment
     """
-    return Response(text=u"クレジットカード")
+    return dict()
 
 class MultiCheckoutView(object):
     """ マルチ決済API
