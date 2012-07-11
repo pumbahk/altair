@@ -23,15 +23,33 @@ def main(global_conf, **settings):
     config.commit()
 
 
+    config.add_tween(".tweens.mobile_encoding_convert_factory")
+    #config.add_tween(".tweens.mobile_request_factory")
     config.add_route('order_review', 'review')
 
     config.add_view('.views.IndexView', route_name='index', attr="get", request_method='GET', renderer='carts/form.html')
+    config.add_view('.views.IndexView', request_type='ticketing.cart.interfaces.IMobileRequest', route_name='index', 
+                    attr="get", request_method='GET', renderer='carts_mobile/form.html')
+
     config.add_view('.views.IndexView', route_name='index', attr="post", request_method='POST', renderer='carts/form.html')
+    config.add_view('.views.IndexView', request_type='ticketing.cart.interfaces.IMobileRequest', route_name='index', 
+                    attr="post", request_method='POST', renderer='carts_mobile/form.html')
+
     config.add_view('.views.PaymentView', route_name='cart.payment', attr="post", request_method="POST", renderer="carts/payment.html")
+    config.add_view('.views.PaymentView', request_type='ticketing.cart.interfaces.IMobileRequest',  route_name='cart.payment', 
+                    attr="post", request_method="POST", renderer="carts_mobile/payment.html")
+
     config.add_view('.views.CompleteView', route_name='payment.finish', request_method="POST", renderer="carts/completion.html")
+    config.add_view('.views.CompleteView', request_type='ticketing.cart.interfaces.IMobileRequest', route_name='payment.finish', 
+                    request_method="POST", renderer="carts_mobile/completion.html")
 
     config.add_view('.views.OrderReviewView', route_name='order_review', attr="get", request_method="GET")
+    config.add_view('.views.OrderReviewView', request_type='ticketing.cart.interfaces.IMobileRequest', route_name='order_review', 
+                    attr="get", request_method="GET")
+
     config.add_view('.views.OrderReviewView', route_name='order_review', attr="post", request_method="POST", renderer="order_review/show.html")
+    config.add_view('.views.OrderReviewView', request_type='ticketing.cart.interfaces.IMobileRequest', route_name='order_review', 
+                    attr="post", request_method="POST", renderer="order_review_mobile/show.html")
 
     config.add_subscriber('.subscribers.add_helpers', 'pyramid.events.BeforeRender')
 

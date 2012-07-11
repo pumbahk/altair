@@ -54,6 +54,7 @@ requires = [
     'beaker',
     'mock',
     'tableau >= 0.0.4pre',
+    'uamobile',
     ]
 
 setup(name='ticketing',

@@ -57,3 +57,6 @@ class IPaymentDeliveryPlugin(Interface):
 
     def finish(request, cart):
         """ 確定処理 """
+
+class IMobileRequest(Interface):
+    """ mobile request interface"""
