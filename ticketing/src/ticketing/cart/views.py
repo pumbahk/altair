@@ -226,7 +226,7 @@ class IndexView(object):
                     ) 
                 for seat in DBSession.query(c_models.Seat) \
                             .options(joinedload('areas'),
-                                     joinedload('_status')) \
+                                     joinedload('status_')) \
                             .filter_by(venue_id=venue_id)
                 ),
             areas=dict(
