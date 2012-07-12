@@ -187,6 +187,10 @@ class MultiCheckoutView(object):
         order = self._form_to_order(form)
 
         self.request.session['order'] = order
+        if not multicheckout_api.is_enable_secure3d(self.request, order['card_number']):
+            self.request.session['secure_type'] = 'secure_code'
+            return self._secure_code(order['order_no'], order['card_number'], order['exp_year'], order['exp_month'], order['secure_code'])
+
         self.request.session['secure_type'] = 'secure_3d'
         return self._secure3d(order['card_number'], order['exp_year'], order['exp_month'])
 
