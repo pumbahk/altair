@@ -227,7 +227,11 @@ class MultiCheckoutView(object):
             order['card_number'], order['exp_year'] + order['exp_month'], order['card_holder_name'],
             order['secure_code'],
         )
-        # TODO: エラーチェック CmnErrorCd CardErrorCd
+
+        if checkout_auth_result.CmnErrorCd != '000000':
+            logger.info(u'card_info_secure3d_callback: 決済エラー order_no = %s, error_code = %s' % (order['order_no'], checkout_auth_result.CmnErrorCd))
+            self.request.session.flash(get_error_message(self.request, checkout_auth_result.CmnErrorCd))
+            raise HTTPFound(location=self.request.route_url('payment.secure3d'))
 
         self.request.session['order'] = order
 
