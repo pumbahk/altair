@@ -81,6 +81,7 @@ class MultiCheckoutPlugin(object):
 
         if checkout_sales_result.CmnErrorCd != '000000':
             logger.info(u'finish_secure_3d: 決済エラー order_no = %s, error_code = %s' % (order_no, checkout_sales_result.CmnErrorCd))
+            multicheckout_api.checkout_auth_cancel(request, get_order_no(request, cart))
             request.session.flash(get_error_message(request, checkout_sales_result.CmnErrorCd))
             raise HTTPFound(location=request.route_url('payment.secure3d'))
 
@@ -108,6 +109,7 @@ class MultiCheckoutPlugin(object):
 
         if checkout_sales_result.CmnErrorCd != '000000':
             logger.info(u'finish_secure_code: 決済エラー order_no = %s, error_code = %s' % (order_no, checkout_sales_result.CmnErrorCd))
+            multicheckout_api.checkout_auth_cancel(get_order_no(request, cart))
             request.session.flash(get_error_message(request, checkout_sales_result.CmnErrorCd))
             raise HTTPFound(location=request.route_url('payment.secure3d'))
 
