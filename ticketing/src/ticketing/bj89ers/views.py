@@ -118,8 +118,8 @@ class PaymentView(_PaymentView):
             email=params['email'],
             #country=params['country'],
             #country=u"日本国",
-            tel_1=params['tel1_1'] + params['tel1_2'] + params['tel1_3'],
-            tel_2=params['tel2_1'] + params['tel2_2'] + params['tel2_3'],
+            tel_1=params['tel_1'],
+            tel_2=params['tel_2'],
             #fax=params['fax'],
             user=None,
         )
@@ -180,8 +180,8 @@ class CompleteView(_CompleteView):
                 city=profile['city'],
                 address_1=profile['address1'],
                 address_2=profile['address2'],
-                tel_1=u'-'.join(profile[k] for k in ('tel1_1', 'tel1_2', 'tel1_3')),
-                tel_2=u'-'.join(profile[k] for k in ('tel2_1', 'tel2_2', 'tel2_3')),
+                tel_1=profile['tel_1'],
+                tel_2=profile['tel_2'],
                 fax='',
                 status=0
                 )
@@ -238,9 +238,6 @@ class OrderReviewView(object):
             return response
 
         order, sej_order = self.context.get_order()
-        print order.shipping_address.tel_1
-        print order.shipping_address.tel_2
-
         if not order or \
            order.shipping_address is None or \
            order.shipping_address.tel_1== form.tel or \
