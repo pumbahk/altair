@@ -26,7 +26,7 @@ class CommonView(BaseView):
 
     @view_config(route_name='index', renderer='ticketing:templates/index.html')
     def index(self):
-        return {}
+        return HTTPFound(location=route_path('events.index', self.request))
 
     @view_config(context=HTTPForbidden, renderer='ticketing:templates/common/forbidden.html')
     def forbidden_view(self):

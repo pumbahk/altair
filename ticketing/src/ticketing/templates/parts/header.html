@@ -2,18 +2,20 @@
 from pyramid.threadlocal import get_current_registry
 settings = get_current_registry().settings
 altaircms_url = settings.get('altaircms.front_end_url')
+testing = get_current_registry().settings.get('ticketing.testing', False)
 %>
 <link rel="stylesheet" type="text/css" href="/static/css/navigation.css" />
 <div class="navbar navbar-fixed-top">
     <div class="navbar-inner">
         <div class="container">
-            <a class="brand" href="${request.route_path('index')}"><img src="/static/images/altair_logo.png"></a>
+            <a class="brand" href="${request.route_path('events.index')}"><img src="/static/images/altair_logo.png"></a>
             <div class="nav-collapse">
                 <ul class="nav pull-right">
                     % if request.context.user:
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">${request.context.user.name}<b class="caret"></b></a>
                         <ul class="dropdown-menu">
+                            % if testing:
                             <li><a href="${request.route_path('login.info')}">
                                 <i class="icon-cog"> </i>
                                 個人設定</a>
@@ -22,6 +24,7 @@ altaircms_url = settings.get('altaircms.front_end_url')
                                   <i class="icon-cog"> </i>
                                 管理メニュー</a>
                             </li>
+                            % endif
                             <li><a href="${request.route_path('login.logout')}">
                                 <i class="icon-off"> </i>
                                 ログアウト</a>
@@ -36,9 +39,13 @@ altaircms_url = settings.get('altaircms.front_end_url')
             <!-- Navigation -->
             <div class="nav-collapse">
               <ul class="nav">
+                % if testing:
                 <li class="active"><a href="${request.route_path('dashboard.index')}">Home</a></li>
+                % endif
                 <li><a href="${request.route_path('events.index')}">イベント</a></li>
+                % if testing:
                 <li><a href="${altaircms_url}">CMS</a></li>
+                % endif
               </ul>
             </div>
             <!-- End Navigation -->

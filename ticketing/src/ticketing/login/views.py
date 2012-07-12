@@ -29,7 +29,7 @@ class Login(BaseView):
         if user is not None:
             return HTTPFound(location=route_path("index", self.request))
         return {
-            'form':LoginForm ()
+            'form':LoginForm()
         }
 
     @view_config(route_name='login.index', request_method="POST", renderer='ticketing:templates/login/index.html')
