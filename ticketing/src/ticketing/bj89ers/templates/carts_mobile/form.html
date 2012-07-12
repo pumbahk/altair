@@ -1,5 +1,8 @@
 <%inherit file="/layout_mobile.html"/>
 <%namespace file="/tags_mobile.html" name="mobile" />
+<hr />
+<div style="text-align:center" align="center"><font color="#ff0">◆</font>購入履歴は<a href="${request.route_url('order_review.form')}">こちらのページ</a>で確認できます<font color="#ff0">◆</font></div>
+<hr />
 <%mobile:header>お客様情報の入力</%mobile:header>
 <form method="post" action="${request.url}">
 <%mobile:form_header>新規/継続</%mobile:form_header>
@@ -104,12 +107,12 @@ ${h.error('email2')}
   ${form.mail_permission}メルマガ購読を希望<br />
 ${h.error('mail_permission')}
 </div>
-<%mobile:form_header>媒体への掲載希望</%mobile:form_header>
+<%mobile:form_header>メモリアルブックへの氏名掲載希望</%mobile:form_header>
 <div>
   ${form.publicity}<br />
 ${h.error('publicity')}
 </div>
-<div><font color="red">*は入力必須項目です。電話番号は携帯・自宅のどちらか一方で構いません。</font></div>
+<div><font color="red">*は入力必須項目です。電話番号は携帯・自宅のどちらか一方で構いません。会員番号はどうしてもお分かりにならない場合、空欄で結構です。</font></div>
 <hr />
 <input type="submit" value="次に進む" />
 </form>
