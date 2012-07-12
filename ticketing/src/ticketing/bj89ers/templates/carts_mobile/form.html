@@ -1,5 +1,8 @@
 <%inherit file="/layout_mobile.html"/>
 <%namespace file="/tags_mobile.html" name="mobile" />
+<hr />
+<div style="text-align:center" align="center"><font color="#ff0">◆</font>購入履歴は<a href="${request.route_url('order_review.form')}">こちらのページ</a>で確認できます<font color="#ff0">◆</font></div>
+<hr />
 <%mobile:header>お客様情報の入力</%mobile:header>
 <form method="post" action="${request.url}">
 <%mobile:form_header>新規/継続</%mobile:form_header>
