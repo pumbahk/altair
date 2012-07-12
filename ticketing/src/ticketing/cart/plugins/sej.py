@@ -226,9 +226,7 @@ class SejPaymentDeliveryPlugin(object):
 
         sej_order = get_sej_order(order)
         if not sej_order:
-            openid = authenticated_user(request)
-            user = a.get_or_create_user(request, openid['clamed_id'])
-            user_profile  = user.user_profile
+            shipping_address = cart.shipping_address
             performance = cart.performance
             current_date = datetime.now()
             payment_due_at = get_payment_due_at(current_date,order)
@@ -241,11 +239,11 @@ class SejPaymentDeliveryPlugin(object):
                 contact_01          = u'00-0000-0000',
                 contact_02          = u'楽天チケット お問い合わせセンター 050-5830-6860',
                 order_id            = order.order_no,
-                username            = u'%s%s' % (user_profile.last_name, user_profile.first_name),
-                username_kana       = u'%s%s' % (user_profile.last_name_kana, user_profile.first_name_kana),
-                tel                 = user_profile.tel_1.replace('-', ''),
-                zip                 = user_profile.zip.replace('-', ''),
-                email               = user_profile.email,
+                username            = u'%s%s' % (shipping_address.last_name, shipping_address.first_name),
+                username_kana       = u'%s%s' % (shipping_address.last_name_kana, shipping_address.first_name_kana),
+                tel                 = shipping_address.tel_1.replace('-', ''),
+                zip                 = shipping_address.zip.replace('-', ''),
+                email               = shipping_address.email,
                 total               = order.total_amount,
                 ticket_total        = cart.tickets_amount,
                 commission_fee      = order.system_fee + order.transaction_fee,

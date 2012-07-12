@@ -58,7 +58,7 @@ def main(global_conf, **settings):
     config.add_view('.views.OrderReviewView', request_type='ticketing.cart.interfaces.IMobileRequest', route_name='order_review.form',
                     attr="get", request_method="GET", renderer="order_review_mobile/form.html")
 
-    config.add_view('.views.OrderReviewView', route_name='order_review.show', attr="post", request_method="POST")
+    config.add_view('.views.OrderReviewView', route_name='order_review.show', attr="post", request_method="POST", renderer="order_review/show.html")
     config.add_view('.views.OrderReviewView', request_type='ticketing.cart.interfaces.IMobileRequest', route_name='order_review.show',
                     attr="post", request_method="POST", renderer="order_review_mobile/show.html")
 

@@ -377,18 +377,20 @@ class Checkout3D(object):
         self._add_param(card, 'SecureKind', card_auth.SecureKind)
 
         # CVVチェック
-        secure_code = etree.SubElement(auth, 'SecureCode')
-        self._add_param(secure_code, 'Code', card_auth.SecureCode, optional=card_auth.SecureKind != '2')
+        if card_auth.SecureKind == '2':
+            secure_code = etree.SubElement(auth, 'SecureCd')
+            self._add_param(secure_code, 'Code', card_auth.SecureCode, optional=card_auth.SecureKind != '2')
 
         # セキュア3D
-        secure_3d = etree.SubElement(auth, 'Secure3D')
-        self._add_param(secure_3d, 'Mvn', card_auth.Mvn, optional=card_auth.SecureKind != '3')
-        self._add_param(secure_3d, 'Xid', card_auth.Xid, optional=card_auth.SecureKind != '3')
-        self._add_param(secure_3d, 'Ts', card_auth.Ts, optional=card_auth.SecureKind != '3')
-        self._add_param(secure_3d, 'ECI', card_auth.ECI, optional=card_auth.SecureKind != '3')
-        self._add_param(secure_3d, 'CAVV', card_auth.CAVV, optional=card_auth.SecureKind != '3')
-        self._add_param(secure_3d, 'CavvAlgorithm', card_auth.CavvAlgorithm, optional=card_auth.SecureKind != '3')
-        self._add_param(secure_3d, 'CardNo', card_auth.CardNo, optional=card_auth.SecureKind != '3')
+        if card_auth.SecureKind == '3':
+            secure_3d = etree.SubElement(auth, 'Secure3D')
+            self._add_param(secure_3d, 'Mvn', card_auth.Mvn, optional=card_auth.SecureKind != '3')
+            self._add_param(secure_3d, 'Xid', card_auth.Xid, optional=card_auth.SecureKind != '3')
+            self._add_param(secure_3d, 'Ts', card_auth.Ts, optional=card_auth.SecureKind != '3')
+            self._add_param(secure_3d, 'ECI', card_auth.ECI, optional=card_auth.SecureKind != '3')
+            self._add_param(secure_3d, 'CAVV', card_auth.CAVV, optional=card_auth.SecureKind != '3')
+            self._add_param(secure_3d, 'CavvAlgorithm', card_auth.CavvAlgorithm, optional=card_auth.SecureKind != '3')
+            self._add_param(secure_3d, 'CardNo', card_auth.CardNo, optional=card_auth.SecureKind != '3')
 
         return message
 

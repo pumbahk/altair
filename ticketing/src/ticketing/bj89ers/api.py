@@ -23,7 +23,7 @@ def on_order_completed(event):
     order = event.order
 
     user_profile = load_user_profile(event.request)
-
+    print user_profile
     set_user_profile_for_order(event.request, order, user_profile)
 
 
@@ -46,12 +46,8 @@ attr_names = [
     u'city',
     u'address1',
     u'address2',
-    u'tel1_1',
-    u'tel1_2',
-    u'tel1_3',
-    u'tel2_1',
-    u'tel2_2',
-    u'tel2_3',
+    u'tel1',
+    u'tel2',
     u'email',
     ]
 

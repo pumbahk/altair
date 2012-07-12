@@ -82,13 +82,13 @@ ${h.error('address2')}
 </div>
 <%mobile:form_header required="true">電話番号(携帯)</%mobile:form_header>
 <div>
-  ${form.tel1_1(size=4, istyle="4")}-${form.tel1_2(size=4, istyle="4")}-${form.tel1_3(size=4, istyle="4")}<br />
-${h.error(['tel1_1', 'tel1_2', 'tel1_3'])}
+  ${form.tel_1(size=12, istyle="12")}<br />
+${h.error(['tel_1'])}
 </div>
 <%mobile:form_header required="true">電話番号(自宅)</%mobile:form_header>
 <div>
-  ${form.tel2_1(size=4, istyle="4")}-${form.tel2_2(size=4, istyle="4")}-${form.tel2_3(size=4, istyle="4")}<br />
-${h.error(['tel2_1', 'tel2_2', 'tel2_3'])}
+  ${form.tel_2(size=12, istyle="12")}<br />
+${h.error(['tel_2'])}
 </div>
 <%mobile:form_header required="true">メールアドレス</%mobile:form_header>
 <div>

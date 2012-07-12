@@ -33,7 +33,8 @@ def create_message(request, order):
     renderer_name = mail_renderer_names[plugin_id]
     organization = order.ordered_from
     subject = u"受付完了メール 【{organization.name}】".format(organization=organization)
-    from_ = u"order@ticket.rakuten.co.jp"
+    #from_ = u"order@ticket.rakuten.co.jp"
+    from_ = u"89ers@ticketstar.jp"
     sa = order.shipping_address 
     value = dict(order=order,
                 name=u"{0} {1}".format(sa.last_name, sa.first_name),
@@ -56,6 +57,7 @@ def create_message(request, order):
     message = Message(
         subject=subject,
         recipients=[sa.email],
+        bcc=[from_],
         body=mail_body,
         sender=from_)
     return message

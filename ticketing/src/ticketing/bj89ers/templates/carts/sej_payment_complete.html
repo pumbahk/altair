@@ -15,7 +15,7 @@
 			</tr>
 			<tr>
 				<td>予約有効期限</td>
-				<td class="textR">${sej_order.payment_due_at.strftime(u"%Y年%m月%d日(%a) %H時%M分".encode('utf-8')).decode('utf-8')}</td>
+				<td class="textR">${h.japanese_date(sej_order.payment_due_at)}${h.japanese_time(sej_order.payment_due_at)}</td>
 			</tr>
 			<tr>
 				<td colspan="2">
