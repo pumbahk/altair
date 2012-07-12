@@ -60,7 +60,7 @@ class Bj89ersFixtureBuilder(FixtureBuilder):
                 payment_delivery_method_pair_matrix=[
                     [ False, False, True ],
                     [ False, False, False ],
-                    [ False, True, False ],
+                    [ False, False, True ],
                     [ False, False, False ],
                     ],
                 bank_pairs=bank_pairs,
@@ -93,7 +93,7 @@ class Bj89ersFixtureBuilder(FixtureBuilder):
         stock_holder_data = [
             self.Datum(
                 'StockHolder',
-                name=u'仙台89ers',
+                name=u'仙台89ERS',
                 account=many_to_one(account_datum, 'account_id'),
                 style='{}'
                 )
@@ -138,7 +138,7 @@ class Bj89ersFixtureBuilder(FixtureBuilder):
         return retval
 
     def build(self):
-        organization = self.build_organization_datum('89', u'仙台89ers')
+        organization = self.build_organization_datum('89', u'仙台89ERS')
         organization.id = self.organization_id
         return organization
 
