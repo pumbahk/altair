@@ -194,7 +194,7 @@ class CompleteView(_CompleteView):
         for ordered_product_item in order_product.ordered_product_items:
             product_item = ordered_product_item.product_item
             # Tシャツ
-            if product_item.stock.stock_type.type == c_models.StockTypeEnum.Other.v:
+            if product_item.stock.stock_type.name != u'会員権':
                 ordered_product_item.attributes['t_shirts_size'] = profile.get('t_shirts_size')
             else:
                 # これ本当にいるの??
@@ -239,9 +239,9 @@ class OrderReviewView(object):
 
         order, sej_order = self.context.get_order()
         if not order or \
-           order.shipping_address is None or \
-           order.shipping_address.tel_1== form.tel or \
-           order.shipping_address.tel_2 == form.tel:
+           order.shipping_address is None or ( \
+           order.shipping_address.tel_1 != form.data.get('tel') and \
+           order.shipping_address.tel_2 != form.data.get('tel')):
 
             self.request.errors = form.errors
             self.request.errors['order_no'] = self.order_not_found_message

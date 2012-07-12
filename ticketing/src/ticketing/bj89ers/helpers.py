@@ -27,3 +27,17 @@ def error(names):
         return Markup('<font color="red">%s</font><br />' % errs)
     else:
         return Markup('<p class="error">%s</p>' % errs)
+
+def order_desc(order):
+    profile = None
+    t_shirts = None
+
+    for item in order.items:
+        for ordered_product_item in item.ordered_product_items:
+            if ordered_product_item.product_item.stock.stock_type.name == u'会員権':
+                profile =  ordered_product_item.attributes
+            else:
+                t_shirts = ordered_product_item.attributes
+
+    print profile
+    return profile, t_shirts

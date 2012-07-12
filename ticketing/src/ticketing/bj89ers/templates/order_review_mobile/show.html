@@ -2,14 +2,49 @@
 <%namespace file="/tags_mobile.html" name="mobile" />
 <%mobile:header>受付履歴確認 検索結果</%mobile:header>
 <%mobile:form_header>受付番号</%mobile:form_header>
-<div>${order.order_no}</div>
+${order.order_no}
+<%mobile:form_header>購入情報</%mobile:form_header>
+<% pm,t_shirts = h.order_desc(order) %>
+仙台89ERS 2012-2013 ブースタークラブ
+<%mobile:form_header>新規／継続:</%mobile:form_header>
+${u'継続' if pm.get('cont') == 'yes' else u'新規'}
+% if pm.get('cont') == 'yes' and pm.get('old_id_number'):
+<%mobile:form_header>2011-12会員番号</%mobile:form_header>
+${pm.get('old_id_number')}
+% endif:
+<%mobile:form_header>会員種別</%mobile:form_header>
+${order.items[0].product.name}
+<%mobile:form_header>Tシャツサイズ</%mobile:form_header>
+${t_shirts['t_shirts_size']}
+<%mobile:form_header>氏名</%mobile:form_header>
+${pm['last_name']} ${pm['first_name']}
+<%mobile:form_header>氏名（フリガナ）</%mobile:form_header>
+${pm['last_name_kana']} ${pm['first_name_kana']}
+<%mobile:form_header>誕生日</%mobile:form_header>
+${pm['year']}年${pm['month']}月${pm['day']}日
+<%mobile:form_header>性別</%mobile:form_header>
+${u'男性' if pm['sex']=='male' else u'女性' }
+<%mobile:form_header>郵便番号</%mobile:form_header>
+${pm['zipcode1']}-${pm['zipcode2']}</td>
+<%mobile:form_header>住所</%mobile:form_header>
+${pm['prefecture']} ${pm['city']} ${pm['address1']} ${pm['address2']}</td>
+<%mobile:form_header>電話番号（携帯）</%mobile:form_header>
+${pm.get('tel_1')}</td>
+<%mobile:form_header>電話番号（自宅）</%mobile:form_header>
+${pm.get('tel_2')}</td>
+<%mobile:form_header>メールアドレス</%mobile:form_header>
+${pm['email']}</td>
+<%mobile:form_header>仙台89ERSからのメールマガジンの配信	</%mobile:form_header>
+${u'希望する' if pm.get('mail_permission') else u'希望しない'}</td>
+<%mobile:form_header>メモリアルブックの掲載希望 </%mobile:form_header>
+${u'はい' if pm.get('publicity') == 'yes' else u'いいえ'}</td>
 <%mobile:form_header>お支払い</%mobile:form_header>
 %if order.payment_delivery_pair.payment_method.payment_plugin.id == 3:
 <div>セブン-イレブン</div>
 <%mobile:form_header>払込票番号</%mobile:form_header>
 <div>${sej_order.billing_number}</div>
 <%mobile:form_header>予約有効期限</%mobile:form_header>
-<div>${sej_order.payment_due_at.strftime(u"%Y年%m月%d日(%a) %H時%M分".encode('utf-8')).decode('utf-8')}</div>
+<div>${h.japanese_date(sej_order.payment_due_at)}${h.japanese_time(sej_order.payment_due_at)}</div>
 <form action="${sej_order.exchange_sheet_url}" method="post" target="_blank">
   <input type="hidden" name="iraihyo_id_00" value="${sej_order.exchange_sheet_number}" />
   <input type="submit" class="paymentCoupon" value="払込票印刷">
@@ -32,4 +67,5 @@
 <div>
 仙台89ERS ブースター事務局<br />
 TEL: 022-215-8138 (平日: 9:00〜18:00)<br />
+メール: <a href="mailto:89ers@ticketstar.jp">89ers@ticketstar.jp</a><br>
 </div>

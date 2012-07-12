@@ -8,6 +8,10 @@ pm = _api.load_user_profile(request)
 %>
 <%mobile:form_header>新規／継続</%mobile:form_header>
 <div>${u'継続' if pm.get('cont') == 'yes' else u'新規'}</div>
+% if pm.get('cont') == 'yes' and pm.get('old_id_number'):
+<%mobile:form_header>2011-12会員番号</%mobile:form_header>
+<div>${pm.get('old_id_number')}</div>
+% endif:
 <%mobile:form_header>会員種別</%mobile:form_header>
 <div>${cart.products[0].product.name}</div>
 <%mobile:form_header>氏名</%mobile:form_header>

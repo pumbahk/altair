@@ -55,6 +55,11 @@ def strip(chars):
         return unistr and unistr.strip(chars)
     return stripper
 
+def strip(chars):
+    def stripper(unistr):
+        return unistr and unistr.strip(chars)
+    return stripper
+
 strip_spaces = strip(u' 　')
 
 class OrderFormSchema(Form):
@@ -63,7 +68,7 @@ class OrderFormSchema(Form):
         return Translations({
             'This field is required.' : u'入力してください',
             'Not a valid choice' : u'選択してください',
-            'Invalid email address.' : u'Emailの形式が正しくありません。'
+            'Invalid email address.' : u'Emailの形式が正しくありません。',
         })
 
     # 新規・継続
@@ -86,8 +91,8 @@ class OrderFormSchema(Form):
     city = fields.TextField(u"市区町村", filters=[strip_spaces], validators=[v.Required()])
     address1 = fields.TextField(u"住所", filters=[strip_spaces], validators=[v.Required()])
     address2 = fields.TextField(u"住所", filters=[strip_spaces])
-    tel_1 = fields.TextField(u"電話番号(携帯)", validators=[v.Regexp(r'\d*')])
-    tel_2 = fields.TextField(u"電話番号(自宅)", validators=[v.Regexp(r'\d*')])
+    tel_1 = fields.TextField(u"電話番号(携帯)", validators=[v.Regexp(r'^\d+$', message=u'-を抜いた数字のみを入力してください')])
+    tel_2 = fields.TextField(u"電話番号(自宅)", validators=[v.Regexp(r'^\d+$', message=u'-を抜いた数字のみを入力してください')])
     email = fields.TextField(u"メールアドレス", filters=[strip_spaces], validators=[v.Email()])
     email2 = fields.TextField(u"メールアドレス（確認用）", filters=[strip_spaces], validators=[v.Email(), v.EqualTo('email', u'確認用メールアドレスが一致しません。')])
     publicity = fields.SelectField(u"媒体への掲載希望", validators=[v.Required()], choices=[('yes', u'希望する'),('no', u'希望しない')])
