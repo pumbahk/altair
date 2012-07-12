@@ -30,6 +30,18 @@ def includeme(config):
     config.scan(__name__)
 
 
+error_messages = {
+    '001002': u'注文が不正です最初からお試しください。',
+    '001009': u'購入者氏名が不正です',
+    '001012': u'カード番号が不正です',
+    '001013': u'カード有効期限が不正です',
+    '001014': u'カード名義人が不正です',
+    '001018': u'セキュリティコードが不正です',
+}
+
+def get_error_message(request, error_code):
+    return u'決済エラー:' + error_messages.get(error_code, u'決済に失敗しました。カードや内容を確認の上再度お試しください。')
+
 def get_order_no(request, cart):
     
     if request.registry.settings.get('multicheckout.testing', False):
@@ -69,7 +81,7 @@ class MultiCheckoutPlugin(object):
 
         if checkout_sales_result.CmnErrorCd != '000000':
             logger.info(u'finish_secure_3d: 決済エラー order_no = %s, error_code = %s' % (order_no, checkout_sales_result.CmnErrorCd))
-            request.session.flash(u'決済エラー:決済に失敗しました。カードや内容を確認の上再度お試しください。')
+            request.session.flash(get_error_message(request, checkout_sales_result.CmnErrorCd))
             raise HTTPFound(location=request.route_url('payment.secure3d'))
 
         DBSession.add(checkout_sales_result)
@@ -96,7 +108,7 @@ class MultiCheckoutPlugin(object):
 
         if checkout_sales_result.CmnErrorCd != '000000':
             logger.info(u'finish_secure_code: 決済エラー order_no = %s, error_code = %s' % (order_no, checkout_sales_result.CmnErrorCd))
-            request.session.flash(u'決済エラー:決済に失敗しました。カードや内容を確認の上再度お試しください。')
+            request.session.flash(get_error_message(request, checkout_sales_result.CmnErrorCd))
             raise HTTPFound(location=request.route_url('payment.secure3d'))
 
         DBSession.add(checkout_sales_result)
@@ -280,7 +292,7 @@ class MultiCheckoutView(object):
         # TODO: エラーチェック CmnErrorCd CardErrorCd
         if checkout_auth_result.CmnErrorCd != '000000':
             logger.info(u'card_info_secure3d_callback: 決済エラー order_no = %s, error_code = %s' % (order['order_no'], checkout_auth_result.CmnErrorCd))
-            self.request.session.flash(u'決済エラー:決済に失敗しました。カードや内容を確認の上再度お試しください。')
+            self.request.session.flash(get_error_message(self.request, checkout_auth_result.CmnErrorCd))
             raise HTTPFound(location=self.request.route_url('payment.secure3d'))
 
         tran = dict(
