@@ -47,12 +47,12 @@ def NFKC(unistr):
 
 def lstrip(chars):
     def stripper(unistr):
-        return unistr.lstrip(chars)
+        return unistr and unistr.lstrip(chars)
     return stripper
 
 def strip(chars):
     def stripper(unistr):
-        return unistr.strip(chars)
+        return unistr and unistr.strip(chars)
     return stripper
 
 strip_spaces = strip(u' 　')
