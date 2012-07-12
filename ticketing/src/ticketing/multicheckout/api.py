@@ -13,6 +13,11 @@ from . import logger
 
 DEFAULT_ITEM_CODE = "120" # 通販
 
+def is_enable_secure3d(request, card_number):
+    """ セキュア3D対応のカード会社か判定する """
+    # とりあえず
+    return len(card_number) == 16
+
 def get_pares(request):
     """ get ``PARES`` value from request
     """
