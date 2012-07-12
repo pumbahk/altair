@@ -1,36 +1,37 @@
-<%inherit file="../layout.html" />
-<%block name="title">ログイン</%block>
-<%def name="error(f)">
-%if f.errors:
-  <ul class="errors">
-  %for error in f.errors:
-      <li>${error}</li>
-  %endfor:
-  </ul>
-% endif:
-</%def>
+<%inherit file="/layout.html" />
+<%namespace file="/common/helpers.html" name="h" />
 
-<ul class="errors">
-% for field in form:
-%   if field.errors:
-%     for e in field.errors:
-        <li>${field.label}:${e}</li>
-%     endfor:
-%   endif:
-% endfor
-</ul>
+<div class="container" style="width: 600px;">
+  <div class="page-header">
+    <h1>ログイン</h1>
+  </div>
 
+  <div class="content">
+    ${h.flash_messages(request)}
+    ${h.alert_message(form)}
+  </div>
 
-<div id="login1">
-    <div class="box">
-        <form action="${request.route_url('login.index', _query=(('next',request.GET.get('next')),))}" method="POST">
-            <label><span>ログインID</span>${form.login_id(id="email")}</label>
-            <label><span>パスワード</span>${form.password(id="password")}</label>
-
-            <div class="spacer">
-                <input type="submit" name="submit" value="Login" />
-            </div>
-        </form>
-        <a href="${request.route_url('login.reset')}">パスワードリセット</a>
+  <div class="well">
+    <div id="login1" style="margin-top: 30px;">
+      <%
+        next_url = request.GET.get('next')
+        query_string = ('next', next_url) if next_url else ''
+      %>
+      <form class="form-horizontal" action="${request.route_url('login.index', _query=(query_string))}" method="POST">
+        <fieldset>
+          <div class="control-group">
+            <label class="control-label">${form.login_id.label.text}</label>
+            <div class="controls">${form.login_id()}</div>
+          </div>
+          <div class="control-group">
+            <label class="control-label">${form.password.label.text}</label>
+            <div class="controls">${form.password()}</div>
+          </div>
+        </fieldset>
+        <div class="spacer" style="width:100px; margin:0 auto 0 auto;">
+          <input class="btn btn-primary" type="submit" name="submit" value="ログイン">
+        </div>
+      </form>
     </div>
+  </div>
 </div>
