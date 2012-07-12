@@ -42,7 +42,7 @@
                                 <dl>
                                     <dt>カード番号</dt>
                                     <dd>
-                                        <input name="card_number" type="text" id="textfield" length="16" />
+                                      <input name="card_number" type="text" id="textfield" length="16" placeholder="aaaabbbbccccdddd"/>
                                     </dd>
                                     <dt>有効期限</dt>
                                     <dd>
@@ -74,17 +74,21 @@
                                             <option value="20">2020</option>
                                         </select>
                                         年</dd>
-                                    <dt>名義人</dt>
+                                    <dt>名義人(ローマ字)</dt>
                                     <dd>
-                                        <input name="card_holder_name" type="text" id="textfield5" size="50" />
+                                        <input name="card_holder_name" type="text" id="textfield5" size="50" placeholder="YAMADATARO"/>
                                     </dd>
                                     <dt>セキュリティコード</dt>
                                     <dd>
-                                        <input name="secure_code" type="text" id="textfield6" size="5" />
+                                        <input name="secure_code" type="text" id="textfield6" size="5"/>
                                     </dd>
                                 </dl>
                             </div>
                         </div>
+
+						<p>セキュリティコードは、MasterCard、VisaまたはJCBでは、カード裏面の署名欄に印刷されている下3桁の数字です。<br/>
+						  American Expressでは、カードの表に印刷されている4桁の数字です。
+						</p>
 
                         説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明<br />
 						<img src="${request.static_url('ticketing.cart:static//img/settlement/card.gif')}" alt="カードの種類" width="374" height="35" /></dd>
