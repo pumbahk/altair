@@ -238,6 +238,9 @@ class OrderReviewView(object):
             return response
 
         order, sej_order = self.context.get_order()
+        print order.shipping_address.tel_1
+        print order.shipping_address.tel_2
+
         if not order or \
            order.shipping_address is None or \
            order.shipping_address.tel_1== form.tel or \

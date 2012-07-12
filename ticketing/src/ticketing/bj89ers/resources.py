@@ -51,6 +51,8 @@ class Bj89erCartResource(TicketingCartResource):
             organization_id = self.organization_id,
             order_no = order_no
         ).first()
+        print ">>>"
+        print order
 
         sej_order = None
         if order:
