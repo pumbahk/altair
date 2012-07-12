@@ -1,6 +1,6 @@
 <%inherit file="/layout_mobile.html"/>
 <%namespace file="/tags_mobile.html" name="mobile" />
-<%block name="header">オーダー確認ページ</%block>
+<%block name="header">受付確認ページ</%block>
 <form method="post" action="${request.route_path('order_review.show')}">
 %if hasattr(request, 'errors'):
 <ul>
@@ -13,7 +13,7 @@
 %endfor
 </ul>
 %endif
-<%mobile:form_header required="true">オーダー番号</%mobile:form_header>
+<%mobile:form_header required="true">受付番号</%mobile:form_header>
 <div>
 ${form.order_no}
 ${h.error('order_no')}
