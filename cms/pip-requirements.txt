@@ -1,9 +1,7 @@
 mock
 nose
 coverage
-gunicorn-console
 pyramid-debugtoolbar
 sadisplay
 alembic
 webtest
-gunicorn
