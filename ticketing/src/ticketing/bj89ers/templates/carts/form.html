@@ -51,14 +51,14 @@
                           <option value="${val[0]}" with-shirt="${'true' if len(products.get(val[0]).items)-1 else 'false'}"${" selected=selected" if val[0]==form.member_type.data else ''}>${val[1]}</option>
                         % endfor
                         </select>
-                        <a href="http://www.89ers.jp/booster/index.html">会員種別についてはこちら</a>
+                        <a href="http://www.89ers.jp/booster/index.html"><span><small>会員種別についてはこちら</small></span></a>
                         ${h.error('member_type')}
                     </td>
                 </tr>
                 <tr >
                   <th>Tシャツサイズ</th>
                   <td>
-                    ${form.t_shirts_size(id='t_shirts_size',disabled="disabled" )}<small>法人/プラチナ/ゴールド会員を選択の方はTシャツサイズをお選びください。</small>
+                    ${form.t_shirts_size(id='t_shirts_size',disabled="disabled" )} <span><small>法人/プラチナ/ゴールド会員を選択の方はTシャツサイズをお選びください。</small></span>
                     ${h.error('t_shirts_size')}
                   </td>
                 </tr>
@@ -177,7 +177,7 @@
                   　メモリアルブックへの氏名掲載希望
                   </th>
                   <td>
-                    ${form.publicity}
+                    ${form.publicity} <span><small>ライト・ジュニア会員は記載されません</small></span>
                     ${h.error('publicity')}
                   </td>
                 </tr>
