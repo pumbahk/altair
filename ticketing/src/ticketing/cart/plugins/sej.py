@@ -12,7 +12,6 @@ from ..interfaces import IDeliveryPlugin, ICartDelivery, IOrderDelivery
 from ..interfaces import IPaymentDeliveryPlugin
 from .models import DBSession
 from ticketing.orders import models as o_models
-from .. import schema
 from .. import logger
 from .. import helpers as h
 from .. import api as a

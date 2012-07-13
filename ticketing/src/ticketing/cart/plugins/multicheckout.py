@@ -11,7 +11,7 @@ from ticketing.core import models as c_models
 from ticketing.orders import models as o_models
 from ..interfaces import IPaymentPlugin, ICartPayment, IOrderPayment
 from .models import DBSession
-from .. import schema
+from .. import schemas
 from .. import logger
 from .. import helpers as h
 from .. import api
@@ -161,7 +161,7 @@ class MultiCheckoutView(object):
     @view_config(route_name='payment.secure_code', request_type='ticketing.cart.interfaces.IMobileRequest', request_method="POST", renderer='carts_mobile/card_form.html')
     def card_info_secure_code(self):
         """ カード決済処理(セキュアコード)"""
-        form = schema.CardForm(formdata=self.request.params, csrf_context=self.request.session)
+        form = schemas.CardForm(formdata=self.request.params, csrf_context=self.request.session)
         if not form.validate():
             logger.debug("form error %s" % (form.errors,))
             self.request.errors = form.errors
@@ -181,7 +181,7 @@ class MultiCheckoutView(object):
     def card_info_secure3d(self):
         """ カード決済処理(3Dセキュア)
         """
-        form = schema.CardForm(formdata=self.request.params)
+        form = schemas.CardForm(formdata=self.request.params)
         if not form.validate():
             logger.debug("form error %s" % (form.errors,))
             self.request.errors = form.errors
