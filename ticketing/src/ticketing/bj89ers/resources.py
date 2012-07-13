@@ -7,8 +7,10 @@ from ticketing.orders.models import Order
 from ticketing.sej.models import SejOrder
 from .api import load_user_profile
 from sqlalchemy.orm.exc import NoResultFound
+import logging
 
 MEMBERSHIP_NAME = '89ers'
+logger = logging.getLogger(__name__)
 
 class Bj89erCartResource(TicketingCartResource):
     def __init__(self, request):
@@ -48,12 +50,10 @@ class Bj89erCartResource(TicketingCartResource):
     def get_order(self):
         order_no = self.request.params.get('order_no')
         order = Order.filter_by(
-            organization_id = self.organization_id,
-            order_no = order_no
+            organization_id=self.organization_id,
+            order_no=order_no
         ).first()
-        print ">>>"
-        print order
-
+        logger.debug("organization_id=%s, order_no=%s, order=%s" % (self.organization_id, order_no, order))
         sej_order = None
         if order:
             payment_method_plugin_id = order.payment_delivery_pair.payment_method.payment_plugin.id
