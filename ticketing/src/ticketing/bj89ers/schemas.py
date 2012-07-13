@@ -4,10 +4,11 @@ from wtforms import fields
 from wtforms import widgets
 from wtforms import validators as v
 from wtforms.ext.i18n.utils import DefaultTranslations
+from wtforms import ValidationError
 
 from ticketing.master.models import Prefecture
 from ticketing.core import models as c_models
-from datetime import datetime
+from datetime import date, datetime
 import unicodedata
 from ticketing.formhelpers import Translations
 
@@ -69,7 +70,14 @@ class OrderFormSchema(Form):
             'This field is required.' : u'入力してください',
             'Not a valid choice' : u'選択してください',
             'Invalid email address.' : u'Emailの形式が正しくありません。',
+            'Invalid input.' : u'入力が正しくありません',
         })
+
+    def validate_day(self, field):
+        try:
+            date(int(self.year.data), int(self.month.data), int(self.day.data))
+        except ValueError:
+            raise ValidationError(u'日付が正しくありません')
 
     # 新規・継続
     cont = fields.RadioField(u"新規／継続", validators=[v.Required()], choices=[('no', u'新規'),('yes', u'継続')], widget=radio_list_widget)

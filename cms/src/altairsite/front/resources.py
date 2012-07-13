@@ -47,7 +47,8 @@ class AccessControlMobile(object):
 
     def can_access(self):
         if not self.access_ok:
-            logging.info("*front mobile access* url is not found (%s) error=%s" % (self.request.referer, self.error_message.encode("utf-8"))) ## referer?
+            mes = u"*front mobile access* url is not found (%s) error=%s" % (self.request.referer, self.error_message)
+            logger.warn(mes.encode("utf-8")) ## referer?
         return self.access_ok
 
     def _fetch_pageset_from_params(self, url, dt):
@@ -67,7 +68,7 @@ class AccessControlMobile(object):
             return pageset
 
         if pageset.event and pageset.event.is_searchable == False:
-            self.error_message = "*fetch pageset* pageset(id=%s) event is disabled event(is_searchable==False)"
+            self.error_message = "*fetch pageset* pageset(id=%s) event is disabled event(is_searchable==False)" % pageset.id
             self.access_ok = False
         return pageset
 
@@ -86,7 +87,7 @@ class AccessControlPC(object):
         if not self.access_ok:
             fmt = u"*front pc access* url is not found (%s). error=%s"
             mes = fmt % (self.request.referer, self.error_message)
-            logging.info(mes)
+            logger.warn(mes)
         return self.access_ok
 
     def can_rendering(self, template, page):
@@ -96,7 +97,7 @@ class AccessControlPC(object):
             self._error_message.append(str(e)) 
             fmt = u"*front pc access* url is not found (%s). error=%s"
             mes = fmt % (self.request.referer, str(e))
-            logging.info(mes)
+            logger.warn(mes.encode("utf-8"))
             return False
 
     def _fetch_page_from_params(self, url, dt):
@@ -111,12 +112,12 @@ class AccessControlPC(object):
         self.access_ok = True
 
         if page is None:
-            self._error_message.append( "*fetch page* url=%s page is not found" % url)
+            self._error_message.append(u"*fetch page* url=%s page is not found" % url)
             self.access_ok = False
             return page
 
         if page.event and page.event.is_searchable == False:
-            self._error_message.append("*fetch pageset* pageset(id=%s) event is disabled event(is_searchable==False)")
+            self._error_message.append(u"*fetch pageset* pageset(id=%s) event(id=%s) is not searcheable" % (page.id, page.event.id))
             self.access_ok = False
         
         try:

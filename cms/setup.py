@@ -56,7 +56,6 @@ devtools_require = [
 extras_require = {
     "mysql": ["pymysql"],
     "testing": tests_require,
-    "gunicorn": ["gunicorn", "gunicorn-console"],
     "devtools": devtools_require,
     "solr": solr_require
 }
