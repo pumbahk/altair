@@ -26,19 +26,10 @@ def main(global_config, **settings):
 
     config.include("altairsite.front")
     config.include("altairsite.errors")
-    config.include("altairsite.rakuten_auth")
     config.include("altairsite.search", route_prefix="search")
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)
     config.add_static_view('plugins/static', 'altaircms:plugins/static', cache_max_age=3600)
     config.add_static_view("staticasset", settings["altaircms.asset.storepath"], cache_max_age=3600)
-
-    ## 楽天ログイン
-    config.add_route('top', '/rakuten/rauth/')
-    config.add_view('altairsite.rakuten_auth.index', route_name="top")
-    config.add_route('signout', '/rakuten/rauth/signout')
-    config.add_view('altairsite.rakuten_auth.signout', route_name='signout')
-    config.add_route('rakuten_auth.login', '/rakuten/rauth/login')
-    config.add_route('rakuten_auth.verify', '/rakuten/rauth/verify')
 
     ## organizationごとのseparate
     config.include(".separation")
