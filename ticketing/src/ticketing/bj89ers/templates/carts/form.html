@@ -51,7 +51,7 @@
                           <option value="${val[0]}" with-shirt="${'true' if len(products.get(val[0]).items)-1 else 'false'}"${" selected=selected" if val[0]==form.member_type.data else ''}>${val[1]}</option>
                         % endfor
                         </select>
-                        <a href="http://www.89ers.jp/booster/index.html"><span><small>会員種別についてはこちら</small></span></a>
+                        <a href="http://www.89ers.jp/booster/index.html" target=”_blank”><span><small>会員種別についてはこちら</small></span></a>
                         ${h.error('member_type')}
                     </td>
                 </tr>
