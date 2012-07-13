@@ -56,11 +56,6 @@ def strip(chars):
         return unistr and unistr.strip(chars)
     return stripper
 
-def strip(chars):
-    def stripper(unistr):
-        return unistr and unistr.strip(chars)
-    return stripper
-
 strip_spaces = strip(u' 　')
 
 class OrderFormSchema(Form):
@@ -107,5 +102,5 @@ class OrderFormSchema(Form):
     mail_permission = fields.BooleanField(u"メルマガ配信", default=True)
 
 class OrderReviewSchema(Form):
-    order_no = fields.TextField(u"オーダー番号", filters=[strip_spaces], validators=[v.Required()])
+    order_no = fields.TextField(u"注文番号", filters=[strip_spaces], validators=[v.Required()])
     tel = fields.TextField(u"電話番号", filters=[strip_spaces], validators=[v.Required()])

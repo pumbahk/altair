@@ -11,7 +11,7 @@ from ticketing.core import models as c_models
 from ticketing.orders import models as o_models
 from ..interfaces import IPaymentPlugin, ICartPayment, IOrderPayment
 from .models import DBSession
-from .. import schema
+from .. import schemas
 from .. import logger
 from .. import helpers as h
 from .. import api
@@ -154,19 +154,18 @@ class MultiCheckoutView(object):
     @view_config(route_name='payment.secure3d', request_type='ticketing.cart.interfaces.IMobileRequest', request_method="GET", renderer='carts_mobile/card_form.html')
     def card_info_secure3d_form(self):
         """ カード情報入力"""
-        form = schema.CardForm(formdata=self.request.params, csrf_context=self.request.session)
+        form = schemas.CardForm(formdata=self.request.params, csrf_context=self.request.session)
         return dict(form=form)
 
     @view_config(route_name='payment.secure_code', request_method="POST", renderer='carts/card_form.html')
     @view_config(route_name='payment.secure_code', request_type='ticketing.cart.interfaces.IMobileRequest', request_method="POST", renderer='carts_mobile/card_form.html')
     def card_info_secure_code(self):
         """ カード決済処理(セキュアコード)"""
-        form = schema.CardForm(formdata=self.request.params, csrf_context=self.request.session)
+        form = schemas.CardForm(formdata=self.request.params, csrf_context=self.request.session)
         if not form.validate():
             logger.debug("form error %s" % (form.errors,))
             self.request.errors = form.errors
-            print form.errors
-            return dict()
+            return dict(form=form)
         assert not form.csrf_token.errors
         assert api.has_cart(self.request)
         cart = api.get_cart(self.request)
@@ -181,11 +180,11 @@ class MultiCheckoutView(object):
     def card_info_secure3d(self):
         """ カード決済処理(3Dセキュア)
         """
-        form = schema.CardForm(formdata=self.request.params)
+        form = schemas.CardForm(formdata=self.request.params, csrf_context=self.request.session)
         if not form.validate():
             logger.debug("form error %s" % (form.errors,))
             self.request.errors = form.errors
-            return dict()
+            return dict(form=form)
         assert not form.csrf_token.errors
         assert api.has_cart(self.request)
 
@@ -264,7 +263,7 @@ class MultiCheckoutView(object):
         else:
             # セキュア3D認証エラー
             logger.debug("3d secure is failed ErrorCd = %s RetCd = %s" %(enrol.ErrorCd, enrol.RetCd))
-        return dict()
+        return dict(form=schemas.CardForm())
 
     @view_config(route_name='cart.secure3d_result', request_method="POST", renderer="carts/confirm.html")
     def card_info_secure3d_callback(self):

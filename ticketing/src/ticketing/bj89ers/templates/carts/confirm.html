@@ -12,6 +12,7 @@
   </div>
   <h1 class="title">仙台89ERS 2012-2013 ブースタークラブ入会申込ページ</h1>
   <form id="form1" action="${request.route_url('payment.finish')}" method="post">
+    ${form.csrf_token()}
 	<table class="layout" style="width:760px" class="wrapper">
       <tr>
 		<td>
