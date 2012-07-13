@@ -2,7 +2,7 @@
 <html lang="jp">
 <head>
 	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-	<link rel="stylesheet" type="text/css" href="style.css" media="all" />
+	<link rel="stylesheet" type="text/css" href="/static/89ers/css/style.css" media="all" />
 	<title>89ers</title>
 </head>
 <body>
@@ -23,7 +23,7 @@
 
 			<div class="kadomaru">
 
-				<img src="images/newTicketSystemRelease.png" alt="newTicketSystemRelease" width="620" height="678" />
+				<img src="/static/89ers/images/newTicketSystemRelease.png" alt="newTicketSystemRelease" width="620" height="678" />
 
 
 
@@ -123,7 +123,7 @@
 					</tr>
 					<tr>
 						<td>
-							<img src="images/sample.png" alt="sample" width="150" height="150"/>
+							<img src="/static/89ers/images/sample.png" alt="sample" width="150" height="150"/>
 							サンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキスト
 							サンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキスト
 							サンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキスト
@@ -138,7 +138,7 @@
 					</tr>
 					<tr>
 						<td>
-							<img src="images/sample.png" alt="sample" width="150" height="150"/>
+							<img src="/static/89ers/images/sample.png" alt="sample" width="150" height="150"/>
 							サンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキスト
 							サンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキスト
 							サンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキスト
@@ -153,7 +153,7 @@
 					</tr>
 					<tr>
 						<td>
-							<img src="images/sample.png" alt="sample" width="150" height="150"/>
+							<img src="/static/89ers/images/sample.png" alt="sample" width="150" height="150"/>
 							サンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキスト
 							サンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキスト
 							サンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキスト
@@ -168,7 +168,7 @@
 					</tr>
 					<tr>
 						<td>
-							<img src="images/sample.png" alt="sample" width="150" height="150"/>
+							<img src="/static/89ers/images/sample.png" alt="sample" width="150" height="150"/>
 							サンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキスト
 							サンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキスト
 							サンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキスト

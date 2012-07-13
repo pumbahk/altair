@@ -2,7 +2,7 @@
 <html lang="jp">
 <head>
 	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-	<link rel="stylesheet" type="text/css" href="style.css" media="all" />
+	<link rel="stylesheet" type="text/css" href="/static/89ers/css/style.css" media="all" />
 	<title>89ers</title>
 </head>
 <body>
@@ -23,13 +23,13 @@
 
 			<div class="kadomaru">
 
-				<img src="images/newTicketSystemRelease.png" alt="newTicketSystemRelease" width="620" height="678" />
+				<img src="/static/89ers/images/newTicketSystemRelease.png" alt="newTicketSystemRelease" width="620" height="678" />
 
 			</div>
 
 			<div class="kadomaru redBG">
 
-				<h2 class="std"><img src="images/logo_200x76.png" alt="89ERS" width="200" height="76" />チケットなら…</h2><br />
+				<h2 class="std"><img src="/static/89ers/images/logo_200x76.png" alt="89ERS" width="200" height="76" />チケットなら…</h2><br />
 				<ul>
 					<li>サンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキスト</li>
 					<li>サンプルテキストサンプルテキストサンプルテキストサンプルテキスト</li>
@@ -125,7 +125,7 @@
 				</div>
 
 				<h2>席種・チケット価格</h2>
-					<img src="images/seat-sample.png" alt="seat-sample" width="620" height="465" />
+					<img src="/static/89ers/images/seat-sample.png" alt="seat-sample" width="620" height="465" />
 					
 					<table class="info">
 						<thead>
