@@ -251,19 +251,22 @@ class MultiCheckoutView(object):
     def _secure3d(self, card_number, exp_year, exp_month):
         """ セキュア3D """
         cart = api.get_cart(self.request)
+        order = self.request.session['order']
         enrol = multicheckout_api.secure3d_enrol(self.request, get_order_no(self.request, cart), card_number, exp_year, exp_month, cart.total_amount)
         if enrol.is_enable_auth_api():
             form=m_h.secure3d_acs_form(self.request, self.request.route_url('cart.secure3d_result'), enrol)
             self.request.response.text = form
             return self.request.response
-        elif enrol.is_enable_secure3d():
-            # セキュア3D認証エラーだが決済APIを利用可能
-            logger.debug("3d secure is failed ErrorCd = %s RetCd = %s" %(enrol.ErrorCd, enrol.RetCd))
-
+        # elif enrol.is_enable_secure3d():
+        #     # セキュア3D認証エラーだが決済APIを利用可能
+        #     logger.debug("3d secure is failed ErrorCd = %s RetCd = %s" %(enrol.ErrorCd, enrol.RetCd))
         else:
             # セキュア3D認証エラー
             logger.debug("3d secure is failed ErrorCd = %s RetCd = %s" %(enrol.ErrorCd, enrol.RetCd))
-        return dict(form=schemas.CardForm())
+            self.request.session['secure_type'] = 'secure_code'
+            return self._secure_code(order['order_no'], order['card_number'], order['exp_year'], order['exp_month'], order['secure_code'])
+        form = schemas.CardForm(csrf_context=self.request.session)
+        return dict(form=form)
 
     @view_config(route_name='cart.secure3d_result', request_method="POST", renderer="carts/confirm.html")
     def card_info_secure3d_callback(self):

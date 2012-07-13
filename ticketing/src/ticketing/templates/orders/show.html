@@ -203,7 +203,7 @@ ${h.breadcrumbs(
       % for i, ordered_product_item in enumerate(ordered_product.ordered_product_items):
           <tr>
             <td class="span2"></td>
-            <% attr = ordered_product_item.attributes.get('t_shirts_size', '') %>
+            <% attr = ordered_product_item.attributes.get('t_shirts_size') or '' %>
             <td class="span4">${ordered_product_item.product_item.stock_type.name} ${attr}</td>
             <td style="text-align: right;">${h.price_format(ordered_product_item.product_item.price)}円</td>
             <td >${ordered_product_item.product_item.quantity}</td>
