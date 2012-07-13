@@ -14,6 +14,10 @@ pm = _api.load_user_profile(request)
 % endif:
 <%mobile:form_header>会員種別</%mobile:form_header>
 <div>${cart.products[0].product.name}</div>
+% if h.is_include_t_shirts(cart):
+<%mobile:form_header>Tシャツサイズ</%mobile:form_header>
+<div>${pm['t_shirts_size']}</div>
+% endif
 <%mobile:form_header>氏名</%mobile:form_header>
 <div>${pm['last_name']} ${pm['first_name']}</div>
 <%mobile:form_header>氏名（フリガナ）</%mobile:form_header>
