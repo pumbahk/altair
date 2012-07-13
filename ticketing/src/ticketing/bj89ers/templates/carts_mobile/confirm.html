@@ -2,6 +2,7 @@
 <%namespace file="/tags_mobile.html" name="mobile" />
 <%mobile:header>申込内容確認</%mobile:header>
 <form id="form1" action="${request.route_url('payment.finish')}" method="post">
+${form.csrf_token()}
 <%
 up = user.user_profile
 pm = _api.load_user_profile(request)

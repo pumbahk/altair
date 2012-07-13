@@ -518,6 +518,7 @@ class ConfirmView(object):
     @view_config(route_name='payment.confirm', request_method="GET", renderer="carts/confirm.html")
     @view_config(route_name='payment.confirm', request_type='.interfaces.IMobileRequest', request_method="GET", renderer="carts_mobile/confirm.html")
     def get(self):
+        form = schema.CSRFSecureForm(csrf_context=self.request.session)
 
         assert api.has_cart(self.request)
         cart = api.get_cart(self.request)
@@ -525,7 +526,7 @@ class ConfirmView(object):
         magazines = u_models.MailMagazine.query.outerjoin(u_models.MailSubscription).filter(u_models.MailMagazine.organization==cart.performance.event.organization).filter(or_(u_models.MailSubscription.email != cart.shipping_address.email, u_models.MailSubscription.email == None)).all()
 
         user = self.context.get_or_create_user()
-        return dict(cart=cart, mailmagazines=magazines, user=user)
+        return dict(cart=cart, mailmagazines=magazines, user=user, form=form)
 
     # @view_config(route_name='payment.confirm', request_method="POST", renderer="carts/confirm.html")
     # def post(self):
@@ -547,6 +548,9 @@ class CompleteView(object):
     @view_config(route_name='payment.finish', renderer="carts/completion.html", request_method="POST")
     @view_config(route_name='payment.finish', request_type='.interfaces.IMobileRequest', renderer="carts_mobile/completion.html", request_method="POST")
     def __call__(self):
+        form = schema.CSRFSecureForm(csrf_context=self.request.session)
+        form.validate()
+        assert not form.csrf_token.errors
         assert api.has_cart(self.request)
         cart = api.get_cart(self.request)
 

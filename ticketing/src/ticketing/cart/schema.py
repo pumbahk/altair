@@ -13,8 +13,11 @@ CARD_EXP_YEAR_REGEXP = r'^\d{2}$'
 CARD_EXP_MONTH_REGEXP = r'^\d{2}$'
 CARD_SECURE_CODE_REGEXP = r'^\d{3,4}$'
 
-class CardForm(SessionSecureForm):
+class CSRFSecureForm(SessionSecureForm):
     SECRET_KEY = 'EPj00jpfj8Gx1SjnyLxwBBSQfnQ9DJYe0Ym'
+
+
+class CardForm(CSRFSecureForm):
     def _get_translations(self):
         return Translations({
             'This field is required.' : u'入力してください',
