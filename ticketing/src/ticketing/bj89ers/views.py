@@ -227,7 +227,7 @@ class OrderReviewView(object):
 
     @property
     def order_not_found_message(self):
-        return [u'オーダーidまたは電話番号が違います。']
+        return [u'受付番号または電話番号が違います。']
 
     def post(self):
         form = schemas.OrderReviewSchema(self.request.params)
