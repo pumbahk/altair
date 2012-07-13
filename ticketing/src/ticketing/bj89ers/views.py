@@ -252,7 +252,7 @@ class OrderReviewView(object):
             return response
 
         else:
-            return dict(order=order, sej_order = sej_order)
+            return dict(order=order, sej_order=sej_order)
 
 @view_config(name="order_review_form")
 def order_review_form_view(form, request):
