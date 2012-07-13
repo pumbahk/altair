@@ -203,7 +203,8 @@ ${h.breadcrumbs(
       % for i, ordered_product_item in enumerate(ordered_product.ordered_product_items):
           <tr>
             <td class="span2"></td>
-            <td class="span4">${ordered_product_item.product_item.stock_type.name}</td>
+            <% attr = '　'.join([value for value in ordered_product_item.attributes.values()]) %>
+            <td class="span4">${ordered_product_item.product_item.stock_type.name} ${attr}</td>
             <td style="text-align: right;">${h.price_format(ordered_product_item.product_item.price)}円</td>
             <td >${ordered_product_item.product_item.quantity}</td>
             <td style="text-align: right;">
