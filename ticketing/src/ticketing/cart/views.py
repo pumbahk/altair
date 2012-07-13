@@ -19,7 +19,7 @@ from ..orders import models as o_models
 from ..users import models as u_models
 from .models import Cart
 from . import helpers as h
-from . import schema
+from . import schemas
 from .exceptions import *
 from .rakuten_auth.api import authenticated_user
 from .events import notify_order_completed
@@ -409,13 +409,13 @@ class PaymentView(object):
         else:
             formdata = None
 
-        form = schema.ClientForm(formdata=formdata)
+        form = schemas.ClientForm(formdata=formdata)
         return dict(form=form,
             payment_delivery_methods=payment_delivery_methods,
             user=user, user_profile=user.user_profile)
 
     def validate(self):
-        form = schema.ClientForm(formdata=self.request.params)
+        form = schemas.ClientForm(formdata=self.request.params)
         if form.validate():
             return None 
         else:

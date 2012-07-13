@@ -13,6 +13,9 @@ CARD_EXP_YEAR_REGEXP = r'^\d{2}$'
 CARD_EXP_MONTH_REGEXP = r'^\d{2}$'
 CARD_SECURE_CODE_REGEXP = r'^\d{3,4}$'
 
+def capitalize(unistr):
+    return unistr and unistr.upper()
+
 class CSRFSecureForm(SessionSecureForm):
     SECRET_KEY = 'EPj00jpfj8Gx1SjnyLxwBBSQfnQ9DJYe0Ym'
 
@@ -31,7 +34,7 @@ class CardForm(CSRFSecureForm):
     card_number = fields.TextField('card', validators=[Length(15, 16), Regexp(CARD_NUMBER_REGEXP), Required()])
     exp_year = fields.TextField('exp_year', validators=[Length(2), Regexp(CARD_EXP_YEAR_REGEXP)])
     exp_month = fields.TextField('exp_month', validators=[Length(2), Regexp(CARD_EXP_MONTH_REGEXP)])
-    card_holder_name = fields.TextField('card_holder_name', validators=[Length(2), Regexp(CARD_HOLDER_NAME_REGEXP)])
+    card_holder_name = fields.TextField('card_holder_name', filters=[capitalize], validators=[Length(2), Regexp(CARD_HOLDER_NAME_REGEXP)])
     secure_code = fields.TextField('secure_code', validators=[Length(3, 4), Regexp(CARD_SECURE_CODE_REGEXP)])
 
 class ClientForm(Form):

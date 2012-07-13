@@ -53,9 +53,9 @@
 							<tr>
 								<th>カード番号</th>
 								<td>
-									<input size="45" type="text" name="card_number" value="半角数字" onClick="this.value=''">
-                                    ${h.error(['card_number'])}
-	   							</td>
+									<input size="45" type="text" name="card_number" value="${form.card_number._value()}" placeholder="半角数字" />
+                  ${h.error(['card_number'])}
+	   					  </td>
 							</tr>
 							<tr>
 								<th>有効期限</th>
@@ -75,7 +75,7 @@
 								<option value="11">11</option>
 								<option value="12">12</option>
 								</select>月/ 
-                                <select name="exp_year">
+                <select name="exp_year">
 								<option value="" selected="selected">-</option>
 								<option value="12">2012</option>
 								<option value="13">2013</option>
@@ -93,14 +93,14 @@
 							<tr>
 								<th>カード名義</th>
 								<td>
-									<input size="45" type="text" name="card_holder_name" value="半角英字" onClick="this.value=''">
-                                    ${h.error(['card_holder_name'])}
-	   							</td>
+									<input size="45" type="text" name="card_holder_name" value="${form.card_holder_name._value()}" placeholder="半角英字">
+                  ${h.error(['card_holder_name'])}
+                </td>
 							</tr>
 							<tr>
 								<th>セキュリティコード</th>
 								<td>
-									<input size="5" type="text" name="secure_code" value="半角数字" onClick="this.value=''">
+									<input size="5" type="text" name="secure_code" value="${form.secure_code._value()}" placeholder="半角数字">
                   ${h.error(['secure_code'])}
                   <div style="font-size:88%">
                     <p style="margin:0">※半角 (例:123)</p>
