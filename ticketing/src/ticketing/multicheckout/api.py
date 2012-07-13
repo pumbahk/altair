@@ -68,7 +68,7 @@ def checkout_auth_secure3d(request,
         FreeData=free_data,
         ClientName=client_name,
         MailAddress=mail_address,
-        MailSend='1',
+        MailSend='0',
         CardNo=card_no,
         CardLimit=card_limit,
         CardHolderName=card_holder_name,
@@ -100,7 +100,7 @@ def checkout_sales_secure3d(request,
         FreeData=free_data,
         ClientName=client_name,
         MailAddress=mail_address,
-        MailSend='1',
+        MailSend='0',
         CardNo=card_no,
         CardLimit=card_limit,
         CardHolderName=card_holder_name,
@@ -116,6 +116,10 @@ def checkout_sales_secure3d(request,
     )
     service = get_multicheckout_service(request)
     return service.request_card_sales(order_no, params)
+
+def checkout_auth_cancel(request, order_no):
+    service = get_multicheckout_service(request)
+    return service.request_card_cancel_auth(order_no)
 
 def checkout_sales_cancel(request, order_no):
     service = get_multicheckout_service(request)
@@ -136,7 +140,7 @@ def checkout_auth_secure_code(request, order_no, item_name, amount, tax, client_
         FreeData=free_data,
         ClientName=client_name,
         MailAddress=mail_address,
-        MailSend='1',
+        MailSend='0',
 
         CardNo=card_no,
         CardLimit=card_limit,
@@ -166,7 +170,7 @@ def checkout_sales_secure_code(request, order_no, item_name, amount, tax, client
         FreeData=free_data,
         ClientName=client_name,
         MailAddress=mail_address,
-        MailSend='1',
+        MailSend='0',
 
         CardNo=card_no,
         CardLimit=card_limit,
@@ -248,10 +252,9 @@ class Checkout3D(object):
         logger.debug("got response %s" % etree.tostring(res))
         return self._parse_response_card_xml(res)
 
-    def request_card_cancel_auth(self, order_no, card_auth):
-        message = self._create_request_card_xml(card_auth, check=True)
+    def request_card_cancel_auth(self, order_no):
         url = self.card_auth_cancel_url(order_no)
-        res = self._request(url, message)
+        res = self._request(url)
         logger.debug("got response %s" % etree.tostring(res))
         return self._parse_response_card_xml(res)
 

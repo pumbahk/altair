@@ -26,6 +26,7 @@ def on_order_completed(order_completed):
     logger.info("send mail to %s" % message.recipients)
 
 def create_message(request, order):
+    settings = request.registry.settings
     plugin_id = str(order.payment_delivery_pair.payment_method.payment_plugin_id)
     if plugin_id not in mail_renderer_names:
         logger.warn('mail renderer not found for plugin_id %s' % plugin_id)
@@ -33,8 +34,8 @@ def create_message(request, order):
     renderer_name = mail_renderer_names[plugin_id]
     organization = order.ordered_from
     subject = u"受付完了メール 【{organization.name}】".format(organization=organization)
-    #from_ = u"order@ticket.rakuten.co.jp"
-    from_ = u"89ers@ticketstar.jp"
+    #from_ = u"89ers@ticketstar.jp"
+    from_ = settings['89ers.sender']
     sa = order.shipping_address 
     value = dict(order=order,
                 name=u"{0} {1}".format(sa.last_name, sa.first_name),

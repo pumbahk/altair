@@ -798,10 +798,10 @@ class PaymentViewTests(unittest.TestCase):
         self.config.registry.utilities.register([], interfaces.IPaymentMethodManager, "", dummy_method_manager)
 
     def test_it_no_cart(self):
+        from .exceptions import NoCartError
         request = testing.DummyRequest()
         target = self._makeOne(request)
-        result = target()
-        self.assertEqual(result.location, '/')
+        self.assertRaises(NoCartError, lambda: target())
 
     @mock.patch('ticketing.cart.api.get_or_create_user')
     @mock.patch('ticketing.cart.rakuten_auth.api.authenticated_user')

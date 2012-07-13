@@ -29,13 +29,12 @@
 	<!-- ========== main ========== -->
 	<div id="main">
 		<h1><img src="${request.static_url('ticketing.cart:static/img/settlement/title_settlement.gif')}" alt="チケット購入" width="950" height="40" /></h1>
-
     ${h.get_nickname(request)} さん
 		<form id="form1" name="form1" method="post" action="${request.url}">
 			<div class="settlementBox">
 				<div class="settlementBoxInner">
 					<h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_methods.gif')}" alt="お支払い、引き取り方法の指定" width="167" height="30" /></h2>
-
+					<p style="margin-left:20px;">どれかひとつをお選びください</p>
           <% checked_id = request.params.get('payment_delivery_method_pair_id') %>
           %for m in payment_delivery_methods:
 					<div class="settlementPayBox">
@@ -74,7 +73,7 @@
                     -->
                         <table id="confirmDelivery">
                             <tr>
-                                <th scope="row">購入者氏名</th>
+                                <th scope="row">購入者氏名(全角入力(例：山田, 太郎))</th>
                                 <td>
                                     <ul>
                                         <li>
@@ -91,7 +90,7 @@
                                 </td>
                             </tr>
                             <tr>
-                                <th scope="row">購入者氏名(カナ)</th>
+                                <th scope="row">購入者氏名(カナ(例：ヤマダ, タロウ))</th>
                                 <td>
                                     <ul>
                                         <li>
@@ -108,14 +107,14 @@
                                 </td>
                             </tr>
                             <tr>
-                                <th scope="row">${form['mail_address'].label}</th>
+                                <th scope="row">${form['mail_address'].label}（例:mail@example.ne.jp）</th>
                                 <td>
                                     ${form['mail_address']}
                                         ${h.error_list(request, form, 'mail_address')}
                                 </td>
                             </tr>
                             <tr>
-                                <th scope="row">住所</th>
+                                <th scope="row">住所(例: 1410022,東京都,品川区,東五反田x-xx-xx,yyビルz階 )</th>
                                 <td>
                                     <ul>
                                         <li>${form['zip'].label}
@@ -139,7 +138,7 @@
                                 </td>
                             </tr>
                             <tr>
-                                <th scope="row">電話番号</th>
+                                <th scope="row">電話番号(例: 080xxxxyyyy)</th>
                                 <td>
                                     <ul>
                                         <li>${form['tel'].label}

@@ -81,6 +81,7 @@ class MultiCheckoutPlugin(object):
 
         if checkout_sales_result.CmnErrorCd != '000000':
             logger.info(u'finish_secure_3d: 決済エラー order_no = %s, error_code = %s' % (order_no, checkout_sales_result.CmnErrorCd))
+            multicheckout_api.checkout_auth_cancel(request, get_order_no(request, cart))
             request.session.flash(get_error_message(request, checkout_sales_result.CmnErrorCd))
             raise HTTPFound(location=request.route_url('payment.secure3d'))
 
@@ -108,6 +109,7 @@ class MultiCheckoutPlugin(object):
 
         if checkout_sales_result.CmnErrorCd != '000000':
             logger.info(u'finish_secure_code: 決済エラー order_no = %s, error_code = %s' % (order_no, checkout_sales_result.CmnErrorCd))
+            multicheckout_api.checkout_auth_cancel(get_order_no(request, cart))
             request.session.flash(get_error_message(request, checkout_sales_result.CmnErrorCd))
             raise HTTPFound(location=request.route_url('payment.secure3d'))
 
@@ -134,7 +136,7 @@ def confirm_viewlet(context, request):
     logger.debug("order_session %s" % order_session)
     return dict(order=order_session, card_number_mask=card_number_mask)
 
-@view_config(context=IOrderPayment, name="payment-1", renderer="ticketing.cart.plugins:templates/cart_complete.html")
+@view_config(context=IOrderPayment, name="payment-1", renderer="ticketing.cart.plugins:templates/card_complete.html")
 def completion_viewlet(context, request):
     """ 完了画面表示 
     :param context: IOrderPayment
