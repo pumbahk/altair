@@ -544,8 +544,8 @@ class CompleteView(object):
         self.context = request.context
         # TODO: Orderを表示？
 
-    @view_config(route_name='payment.finish', renderer="carts/completion.html")
-    @view_config(route_name='payment.finish', request_type='.interfaces.IMobileRequest', renderer="carts_mobile/completion.html")
+    @view_config(route_name='payment.finish', renderer="carts/completion.html", request_method="POST")
+    @view_config(route_name='payment.finish', request_type='.interfaces.IMobileRequest', renderer="carts_mobile/completion.html", request_method="POST")
     def __call__(self):
         assert api.has_cart(self.request)
         cart = api.get_cart(self.request)
