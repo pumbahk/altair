@@ -341,7 +341,7 @@ class OrderCSV(object):
                 if column == 'other':
                     attr = []
                     for ordered_product_item in ordered_product.ordered_product_items:
-                        attr += [value for key, value in ordered_product_item.attributes.items() if key == 't_shirts_size']
+                        attr += [value for key, value in ordered_product_item.attributes.items() if key == 't_shirts_size' and value]
                     product_list.append((column_name, ','.join(attr)))
 
         # encoding
