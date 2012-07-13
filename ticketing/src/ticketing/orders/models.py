@@ -292,6 +292,7 @@ class OrderCSV(object):
         'name',
         'price',
         'quantity',
+        'other',
         ]
 
     def __init__(self, orders):
@@ -337,6 +338,11 @@ class OrderCSV(object):
                     product_list.append((column_name, ordered_product.price))
                 if column == 'quantity':
                     product_list.append((column_name, ordered_product.quantity))
+                if column == 'other':
+                    attr = []
+                    for ordered_product_item in ordered_product.ordered_product_items:
+                        attr += [value for value in ordered_product_item.attributes.values()]
+                    product_list.append((column_name, ','.join(attr)))
 
         # encoding
         row = dict(order_list + user_profile_list + shipping_address_list + other_list + product_list)

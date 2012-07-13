@@ -2,6 +2,7 @@
 <%namespace file="/tags_mobile.html" name="mobile" />
 <%mobile:header>カード情報の入力</%mobile:header>
 <form id="form1" name="form1" method="post" action="${request.route_url('payment.secure_code')}">
+    ${form.csrf_token()}
 <%mobile:form_header required="true">カード番号</%mobile:form_header>
 % if request.session.peek_flash():
 <div>
