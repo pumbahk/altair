@@ -11,11 +11,14 @@ ${u'継続' if pm.get('cont') == 'yes' else u'新規'}
 % if pm.get('cont') == 'yes' and pm.get('old_id_number'):
 <%mobile:form_header>2011-12会員番号</%mobile:form_header>
 ${pm.get('old_id_number')}
-% endif:
+% endif
 <%mobile:form_header>会員種別</%mobile:form_header>
 ${order.items[0].product.name}
+<% t_shirts_size = order.items[0].ordered_product_items[0].attributes.get('t_shirts_size') %>
+% if t_shirts_size:
 <%mobile:form_header>Tシャツサイズ</%mobile:form_header>
-${t_shirts['t_shirts_size']}
+${t_shirts_size}
+% endif
 <%mobile:form_header>氏名</%mobile:form_header>
 ${pm['last_name']} ${pm['first_name']}
 <%mobile:form_header>氏名（フリガナ）</%mobile:form_header>

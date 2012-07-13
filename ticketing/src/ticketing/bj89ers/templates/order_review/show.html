@@ -62,10 +62,13 @@
                                 <td>会員種別</td>
                                 <td class="textR">${order.items[0].product.name}</td>
                             </tr>
+                        <% t_shirts_size = order.items[0].ordered_product_items[0].attributes.get('t_shirts_size') %>
+                        % if t_shirts_size:
                            <tr>
                                 <td>Tシャツサイズ</td>
-                                <td class="textR">${t_shirts['t_shirts_size']}</td>
+                                <td class="textR">${t_shirts_size}</td>
                             </tr>
+                        % endif
                             <tr>
                                 <td>氏名</td>
                                 <td class="textR">${pm['last_name']} ${pm['first_name']}</td>
