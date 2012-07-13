@@ -518,7 +518,7 @@ class ConfirmView(object):
     @view_config(route_name='payment.confirm', request_method="GET", renderer="carts/confirm.html")
     @view_config(route_name='payment.confirm', request_type='.interfaces.IMobileRequest', request_method="GET", renderer="carts_mobile/confirm.html")
     def get(self):
-        form = schema.CSRFSecureForm(csrf_context=self.request.session)
+        form = schemas.CSRFSecureForm(csrf_context=self.request.session)
 
         assert api.has_cart(self.request)
         cart = api.get_cart(self.request)
@@ -548,7 +548,7 @@ class CompleteView(object):
     @view_config(route_name='payment.finish', renderer="carts/completion.html", request_method="POST")
     @view_config(route_name='payment.finish', request_type='.interfaces.IMobileRequest', renderer="carts_mobile/completion.html", request_method="POST")
     def __call__(self):
-        form = schema.CSRFSecureForm(csrf_context=self.request.session)
+        form = schemas.CSRFSecureForm(csrf_context=self.request.session)
         form.validate()
         assert not form.csrf_token.errors
         assert api.has_cart(self.request)
