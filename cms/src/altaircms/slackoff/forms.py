@@ -179,7 +179,7 @@ class PromotionForm(Form):
     ## organization
     __display_fields__ = [u"name"]
 
-_hierarchy_choices = [(x, x) for x in [u"大", u"中", u"小", "top_couter", "top_inner", "masked"]]
+_hierarchy_choices = [(x, x) for x in [u"大", u"中", u"小", "top_couter", "top_inner", "header_menu", "footer_menu", "masked"]]
 class CategoryForm(Form):
     name = fields.TextField(label=u"カテゴリ名")
     origin = fields.TextField(label=u"分類")

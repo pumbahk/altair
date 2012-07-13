@@ -82,7 +82,7 @@ class PageForm(Form):
                                                 get_label=lambda obj:  u'%s' % obj.name)
 
     publish_begin = fields.DateTimeField(label=u"掲載開始")
-    publish_end = fields.DateTimeField(label=u"掲載終了")
+    publish_end = MaybeDateTimeField(label=u"掲載終了")
 
 
     add_to_pagset = fields.BooleanField(label=u"既存のページセットに追加")
@@ -91,8 +91,9 @@ class PageForm(Form):
         """ override to form validation"""
         super(PageForm, self).validate()
         data = self.data
-        if data["publish_begin"] > data["publish_end"]:
-            append_errors(self.errors, "publish_begin", u"開始日よりも後に終了日が設定されています")
+        if data["publish_end"]:
+            if data["publish_begin"] > data["publish_end"]:
+                append_errors(self.errors, "publish_begin", u"開始日よりも後に終了日が設定されています")
 
         if (self.data.get('url') and self.data.get('pageset')) or (not self.data.get('url') and not self.data.get('pageset')):
             urlerrors = self.errors.get('url', [])
