@@ -139,6 +139,13 @@ class SejPaymentPlugin(object):
         tel1 = shipping_address.tel_1.replace('-', '')
         tel2 = shipping_address.tel_2.replace('-', '')
         sej_order = get_sej_order(order)
+
+
+        from pyramid.threadlocal import get_current_registry
+        settings = get_current_registry().settings
+        api_key = settings['sej.api_key']
+        api_url = settings['sej.inticket_api_url']
+
         if not sej_order:
             request_order(
                 shop_name           = performance.event.organization.name,
@@ -160,7 +167,9 @@ class SejPaymentPlugin(object):
                 ticketing_start_at  = ticketing_start_at,
                 ticketing_due_at    = ticketing_due_at,
                 regrant_number_due_at = performance.start_on + timedelta(days=1) if performance.start_on else
-                current_date + timedelta(days=365)
+                current_date + timedelta(days=365),
+                secret_key = api_key,
+                hostname = api_url
             )
 
         return order

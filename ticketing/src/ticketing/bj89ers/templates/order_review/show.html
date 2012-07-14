@@ -12,7 +12,6 @@
   <h1 class="title">仙台89ERS 2012-2013 ブースタークラブ入会申込ページ</h1>
   <div align="center">
       <img src="${request.static_url('ticketing.bj89ers:static/images/head_title.png')}" alt="仙台89ERS" width="780" height="135" />
-
 	<table class="layout" style="width:760px" class="wrapper">
 		<tr>
 			<td>
@@ -100,11 +99,11 @@
                             </tr>
                             <tr>
                                 <td>電話番号（携帯）</td>
-                                <td class="textR">${pm.get('tel_1')}</td>
+                                <td class="textR">${pm.get('tel_1', '-')}</td>
                             </tr>
                             <tr>
                                 <td>電話番号（自宅）</td>
-                                <td class="textR">${pm.get('tel_2')}</td>
+                                <td class="textR">${pm.get('tel_2', '-')}</td>
                             </tr>
                             <tr>
                                 <td>メールアドレス</td>

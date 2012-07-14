@@ -11,7 +11,7 @@
 <%mobile:form_header>金額</%mobile:form_header>
 <div>￥${h.format_number(order.ordered_products[0].product.price)}</div>
 <%mobile:form_header>決済手数料</%mobile:form_header>
-<div>￥${order.transaction_fee}</div>
+<div>￥${h.format_number(order.transaction_fee)}</div>
 <%mobile:form_header>合計</%mobile:form_header>
 <div>￥${h.format_number(order.total_amount)}</div>
 <%mobile:form_header>お名前</%mobile:form_header>

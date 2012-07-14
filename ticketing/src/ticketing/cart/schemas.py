@@ -7,7 +7,7 @@ from wtforms.validators import Regexp, Email, Length, NumberRange, EqualTo, Opti
 
 from ticketing.formhelpers import DateTimeField, Translations, Required, Phone
 
-CARD_NUMBER_REGEXP = r'^\d{15,16}$'
+CARD_NUMBER_REGEXP = r'^\d{14,16}$'
 CARD_HOLDER_NAME_REGEXP = r'^[A-Z\s]+$'
 CARD_EXP_YEAR_REGEXP = r'^\d{2}$'
 CARD_EXP_MONTH_REGEXP = r'^\d{2}$'
@@ -31,7 +31,7 @@ class CardForm(CSRFSecureForm):
             'Invalid input.': u'形式が正しくありません。',
         })
 
-    card_number = fields.TextField('card', validators=[Length(15, 16), Regexp(CARD_NUMBER_REGEXP), Required()])
+    card_number = fields.TextField('card', validators=[Length(14, 16), Regexp(CARD_NUMBER_REGEXP), Required()])
     exp_year = fields.TextField('exp_year', validators=[Length(2), Regexp(CARD_EXP_YEAR_REGEXP)])
     exp_month = fields.TextField('exp_month', validators=[Length(2), Regexp(CARD_EXP_MONTH_REGEXP)])
     card_holder_name = fields.TextField('card_holder_name', filters=[capitalize], validators=[Length(2), Regexp(CARD_HOLDER_NAME_REGEXP)])

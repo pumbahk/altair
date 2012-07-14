@@ -104,7 +104,7 @@ class OrderFormSchema(Form):
     address1 = fields.TextField(u"住所", filters=[strip_spaces], validators=[v.Required()])
     address2 = fields.TextField(u"住所", filters=[strip_spaces])
     tel_1 = fields.TextField(u"電話番号(携帯)", filters=[strip_spaces], validators=[v.Regexp(r'^\d*$', message=u'-を抜いた数字のみを入力してください')])
-    tel_2 = fields.TextField(u"電話番号(自宅)", filters=[strip_spaces], validators=[v.Regexp(r'^\d*$', message=u'-を抜いた数字のみを入力してください')])
+    tel_2 = fields.TextField(u"電話番号(自宅)", filters=[strip_spaces], validators=[v.Regexp(r'^\d*$', message=u'-を抜いた数字のみを入力してください'), v.Required()])
     email = fields.TextField(u"メールアドレス", filters=[strip_spaces], validators=[v.Email()])
     email2 = fields.TextField(u"メールアドレス（確認用）", filters=[strip_spaces], validators=[v.Email(), v.EqualTo('email', u'確認用メールアドレスが一致しません。')])
     publicity = fields.SelectField(u"媒体への掲載希望", validators=[v.Optional()], choices=[('yes', u'希望する'),('no', u'希望しない')])

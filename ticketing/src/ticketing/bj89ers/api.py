@@ -46,8 +46,8 @@ attr_names = [
     u'city',
     u'address1',
     u'address2',
-    u'tel1',
-    u'tel2',
+    u'tel_1',
+    u'tel_2',
     u'email',
     ]
 

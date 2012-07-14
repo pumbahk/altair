@@ -41,6 +41,7 @@ def create_message(request, order):
                 name=u"{0} {1}".format(sa.last_name, sa.first_name),
                 name_kana=u"{0} {1}".format(sa.last_name_kana, sa.first_name_kana),
                 tel_no=sa.tel_1,
+                tel2_no=sa.tel_2,
                 email=sa.email,
                 order_no=order.order_no,
                 order_datetime=u'{d.year}年 {d.month}月 {d.day}日 {d.hour}時 {d.minute}分'.format(d=order.created_at),

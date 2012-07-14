@@ -5,7 +5,7 @@
 <div>${sej_order.billing_number}</div>
 <%mobile:form_header>予約有効期限</%mobile:form_header>
 <div>${h.japanese_date(sej_order.payment_due_at)}${h.japanese_time(sej_order.payment_due_at)}</div>
-<form action="${sej_order.exchange_sheet_url}" method="POST">
+<!-- <form action="${sej_order.exchange_sheet_url}" method="POST">
 <input type="hidden" name="iraihyo_id_00" value="${sej_order.exchange_sheet_number}">
 <input type="submit" name="submit" value="払込票を印字" class="paymentCoupon"/>
-</form>
+</form>-->

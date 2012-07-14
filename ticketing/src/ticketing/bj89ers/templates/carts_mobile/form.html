@@ -26,7 +26,7 @@ ${h.error(['cont','old_id_number'])}
     <option value="${val[0]}"${" selected=selected" if val[0]==form.member_type.data else ''}>${val[1]}</option>
   % endfor
   </select><br />
-  <a href="#">※会員種別についてはこちら</a><br >
+  <a href="http://news.89ers.jp/?guid=ON&eid=428">※会員種別についてはこちら</a><br >
 ${h.error('member_type')}
 </div>
 <%mobile:form_header>Tシャツサイズ</%mobile:form_header>
@@ -83,7 +83,7 @@ ${h.error('address1')}
   ${form.address2(size=10, istyle="1", iprof="address4")}
 ${h.error('address2')}
 </div>
-<%mobile:form_header required="true">電話番号(携帯)</%mobile:form_header>
+<%mobile:form_header>電話番号(携帯)</%mobile:form_header>
 <div>
   ${form.tel_1(size=12, istyle="4")}<br />
 ${h.error(['tel_1'])}
