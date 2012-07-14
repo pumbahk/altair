@@ -3,24 +3,30 @@
 """
 89ers用のデータ作成。巨大になったら死亡
 """
-from tableau.sqla import newSADatum
-import sqlahelper
+import itertools
+import sys
+import functools
 import sqlalchemy as sa
-# sqlahelper.add_engine(sa.create_engine("sqlite://"))
-sqlahelper.add_engine(sa.create_engine("mysql+pymysql://altaircms:altaircms@localhost/altaircms?charset=utf8"))
+from pyramid.decorator import reify
+from datetime import datetime
 
+import tableau as t
+from tableau.sqla import newSADatum
+from tableau import DataWalker
+from tableau.sql import SQLGenerator
+from altaircms.scripts.misc.dataset import DataSuite, WithCallbackDataSet
+
+import sqlahelper
 import altaircms.models
+
 import altaircms.event.models
 import altaircms.page.models
 import altaircms.layout.models
-from pyramid.decorator import reify
-import itertools
-from datetime import datetime
-import tableau as t
-from tableau import DataSuite
-from tableau import DataWalker
-from tableau.sql import SQLGenerator, SQLBuilder
-import sys
+
+# sqlahelper.add_engine(sa.create_engine("sqlite://"))
+# sqlahelper.get_base().metadata.create_all()
+sqlahelper.add_engine(sa.create_engine("mysql+pymysql://altaircms:altaircms@localhost/altaircms?charset=utf8"))
+
 
 def build_dict(items, k):
     return {getattr(e, k):e for e in items}
@@ -51,31 +57,25 @@ class Bj89ersFixtureBuilder(FixtureBuilder):
     def __init__(self, Datum):
         """
         layout_triples: (title, template_filename, blocks)
-        page_doubles: (name, url)
+        page_triples: (name, url, layout)
         """
         super(Bj89ersFixtureBuilder, self).__init__(Datum)
         layout_triples = [
-            (u'89ersシンプル', '89ers.base.mako', '[["kadomaru"]]'), 
-            (u'89ers.before','89ers.before.mako', '[]'),
-            (u'89ers.faq','89ers.faq.mako', '[]'),
-            (u'89ers.introduction','89ers.introduction.mako', '[]'),
-            (u'89ers.order-history','89ers.order-history.mako', '[]'),
-            (u'89ers.purcharsed-credit','89ers.purchased-credit.mako', '[]'),
-            (u'89ers.purchased-seven','89ers.purchased-seven.mako', '[]'),
-            (u'89ers.tickets_top','89ers.tickets_top.mako', '[]'),
+            (u'89ersシンプル', '89ers.base.mako', '[["header"], ["kadomaru"]]'), 
+            (u'89ers.introduction','89ers.introduction.mako', '[["header"], ["kadomaru"], ["card_and_QR"],["card_and_seven"],["card_and_home"],["card_and_onsite"]]'),
             ]
         self.layout_triples = layout_triples
 
-        page_doubles = [
-            ("89ers.before", "/before"),
-            ("89ers.faq", "/faq"),
-            ("89ers.introduction", "/introduction"),
-            ("89ers.order-history", "/order/history"),
-            ("89ers.purcharsed-credit", "/purcharsed/credit"),
-            ("89ers.purchased-seven", "/purcharsed/seven"),
-            ("89ers.tickets_top", "/tickets/top"),
+        page_triples = [
+            ("89ers.before", "/before", u"89ersシンプル"),
+            ("89ers.faq", "/faq", u"89ersシンプル"),
+            ("89ers.introduction", "/introduction", u"89ers.introduction"),
+            ("89ers.order-history", "/order/history", u"89ersシンプル"),
+            ("89ers.purcharsed-credit", "/purcharsed/credit", u"89ersシンプル"),
+            ("89ers.purchased-seven", "/purcharsed/seven", u"89ersシンプル"),
+            ("89ers.tickets_top", "/tickets/top", u"89ersシンプル"),
             ]
-        self.page_doubles = page_doubles
+        self.page_triples = page_triples
         self.organization_id = 2 ## fixme
 
     @reify
@@ -96,8 +96,9 @@ class Bj89ersFixtureBuilder(FixtureBuilder):
         retval = [self.Datum("pagesets", 
                              name=name, 
                              organization_id=self.organization_id, 
+                             layout_name=layout_name, 
                              url=url)\
-                      for name, url in self.page_doubles]
+                      for name, url, layout_name in self.page_triples]
         result = Result(retval, build_dict(retval, "name"))
         return result
 
@@ -116,7 +117,7 @@ class Bj89ersFixtureBuilder(FixtureBuilder):
                   created_at=self.Default.created_at, 
                   updated_at=self.Default.updated_at, 
                   organization_id=self.organization_id, 
-                  layout_id=layouts[pageset.name])
+                  layout_id=layouts[pageset.layout_name])
                       for pageset in self.build_pageset]
         result = Result(retval, build_dict(retval, "name"))
         return result
@@ -128,17 +129,14 @@ class Bj89ersFixtureBuilder(FixtureBuilder):
                 self.build_page
                 ], )
                  
-
-class WithOffsetSqlBuilder(SQLBuilder):
+class WithOffset(object):
     """ insert sql id with offset value
 
     e.g. offset = 10
     insert statment start from id=11
     """
-    def __init__(self, *args, **kwargs):
-        super(WithOffsetSqlBuilder, self).__init__(*args, **kwargs)
+    def __init__(self):
         self.offset_table = {}
-
         self.session = sqlahelper.get_session()
         self.table_to_declarative = self.collect_declarative(sqlahelper.get_base())
 
@@ -148,33 +146,32 @@ class WithOffsetSqlBuilder(SQLBuilder):
             for class_name, declarative in base._decl_class_registry.items():
                 table_to_declarative[declarative.__table__.name] = declarative
         return table_to_declarative
-        
 
-    def _get_offset_value(self, schema):
+    def _get_offset_value(self, schema, data):
         cls = self.table_to_declarative[schema]
         return cls.query.with_entities(sa.func.Max(cls.id)).scalar() or 0
 
-    def get_offset_value(self, schema): #memoize function
+    def get_offset_value(self, schema, data): #memoize function
         if not schema in self.offset_table:
-            self.offset_table[schema] = self._get_offset_value(schema)
+            self.offset_table[schema] = self._get_offset_value(schema, data)
         return self.offset_table[schema]
         
-    def insert(self, table, data):
+    def setvalue(self, dataset, data):
+        schema = data._tableau_table.name
+        offset = self.get_offset_value(schema, data)
+        pk = dataset.seq + offset
+        setattr(datum, datum._tableau_id_fields[0], pk)
+        assert getattr(datum, datum._tableau_id_fields[0], pk)
 
-        assert data
-        assert data[0][0] == "id"
-
-        data[0] = data[0][0], data[0][1] + self.get_offset_value(table)
-        super(WithOffsetSqlBuilder, self).insert(table, data)
 
 Base = sqlahelper.get_base()
 Session = sqlahelper.get_session()
 Datum = newSADatum(Base.metadata, Base)
 
 builder = Bj89ersFixtureBuilder(Datum)
-suite = DataSuite()
+suite = DataSuite(dataset_impl=functools.partial(WithCallbackDataSet, on_autoid=WithOffset()))
 walker = DataWalker(suite)
 
 for datum in builder.build():
     walker(datum)
-SQLGenerator(sys.stdout, encoding='utf-8', builder_impl=WithOffsetSqlBuilder)(suite)
+SQLGenerator(sys.stdout, encoding='utf-8')(suite)
