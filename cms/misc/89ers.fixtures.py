@@ -55,13 +55,14 @@ class Bj89ersFixtureBuilder(FixtureBuilder):
         """
         super(Bj89ersFixtureBuilder, self).__init__(Datum)
         layout_triples = [
-            ("89ers.before","89ers.before.mako", "[]"),
-            ("89ers.faq","89ers.faq.mako", "[]"),
-            ("89ers.introduction","89ers.introduction.mako", "[]"),
-            ("89ers.order-history","89ers.order-history.mako", "[]"),
-            ("89ers.purcharsed-credit","89ers.purchased-credit.mako", "[]"),
-            ("89ers.purchased-seven","89ers.purchased-seven.mako", "[]"),
-            ("89ers.tickets_top","89ers.tickets_top.mako", "[]"),
+            (u'89ersシンプル', '89ers.base.mako', '[["kadomaru"]]'), 
+            (u'89ers.before','89ers.before.mako', '[]'),
+            (u'89ers.faq','89ers.faq.mako', '[]'),
+            (u'89ers.introduction','89ers.introduction.mako', '[]'),
+            (u'89ers.order-history','89ers.order-history.mako', '[]'),
+            (u'89ers.purcharsed-credit','89ers.purchased-credit.mako', '[]'),
+            (u'89ers.purchased-seven','89ers.purchased-seven.mako', '[]'),
+            (u'89ers.tickets_top','89ers.tickets_top.mako', '[]'),
             ]
         self.layout_triples = layout_triples
 

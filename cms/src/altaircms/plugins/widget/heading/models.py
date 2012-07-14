@@ -12,7 +12,9 @@ from altaircms.plugins.base.mixins import HandleWidgetMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
 
+## 後で修正
 headings_candidates = [
+    (u'89ers:見出し', u'<h2 id="%s">%s</h2>'), 
     (u"チケットスター：詳細ページタイトル", u'<h1 id="%s" class="detail-title">%s</h1>'), 
     (u"チケットスター：詳細ページ見出し", u'<h2 id="%s" class="detail heading">%s</h2>'),  #/static/ticketstar/css/custom.css
     (u"チケットスター：トップページ見出し", u'<h2 id="%s" class="index heading">%s</h2>'),  #/static/ticketstar/css/custom.css

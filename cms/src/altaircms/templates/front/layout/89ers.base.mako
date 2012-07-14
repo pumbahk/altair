@@ -1,4 +1,9 @@
 ## kadomaru
+<%def name="widgets(name)">
+  % for w in display_blocks[name]:
+      ${w|n}
+  % endfor
+</%def>
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html lang="jp">
@@ -24,14 +29,8 @@
 			</header>
 
 			<div class="kadomaru">
-			  <%block title="kadomaru">
-				<h2>仙台89ERS 2012〜2013 ブースタークラブ入会申込ページ</h2>
-				
-				<div class="textC">
-					受付は、2012年7月15日(日)10:00からとなります。<br />
-					今しばらくお待ちください。<br />
-					<div class="prepare">準備中</div>
-				</div>
+			  <%block name="kadomaru">
+                ${widgets("kadomaru")}
 			  </%block>
 			</div>
 			<!-- kadomaru終わり -->
