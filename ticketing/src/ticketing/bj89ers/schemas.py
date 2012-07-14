@@ -15,6 +15,8 @@ from ticketing.formhelpers import Translations
 from . import fields as my_fields
 from . import widgets as my_widgets
 
+import re
+
 ymd_widget = my_widgets.Switcher(
     'select',
     select=widgets.Select(),
@@ -54,6 +56,13 @@ def lstrip(chars):
 def strip(chars):
     def stripper(unistr):
         return unistr and unistr.strip(chars)
+    return stripper
+
+REGEX_HYPHEN = re.compile('\-')
+def strip_hyphen():
+    def stripper(unistr):
+        print unistr
+        return unistr and REGEX_HYPHEN.sub('', unistr)
     return stripper
 
 strip_spaces = strip(u' 　')
@@ -103,4 +112,4 @@ class OrderFormSchema(Form):
 
 class OrderReviewSchema(Form):
     order_no = fields.TextField(u"注文番号", filters=[strip_spaces], validators=[v.Required()])
-    tel = fields.TextField(u"電話番号", filters=[strip_spaces], validators=[v.Required()])
+    tel = fields.TextField(u"電話番号", filters=[strip_spaces, strip_hyphen()], validators=[v.Required()])
