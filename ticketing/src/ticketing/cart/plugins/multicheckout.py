@@ -206,11 +206,12 @@ class MultiCheckoutView(object):
         exp_year = form['exp_year'].data
         exp_month = form['exp_month'].data
         secure_code = form['secure_code'].data
+        card_holder_name = form['card_holder_name'].data
 
         order = self.request.session['order']
         order.update(
             order_no=get_order_no(self.request, cart),
-            card_holder_name=self.request.params['card_holder_name'],
+            card_holder_name=card_holder_name,
             card_number=card_number,
             exp_year=exp_year,
             exp_month=exp_month,
