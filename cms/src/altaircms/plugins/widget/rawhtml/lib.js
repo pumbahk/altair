@@ -27,7 +27,7 @@ widget.configure({
     var opt = {} //widget local variable
     var load_page = function(we){
         var pk = we.get_pk(we.where);
-        var url = "/api/widget/{{package}}/dialog";
+        var url = "/api/widget/rawhtml/dialog";
         var params = {}
         if(!!pk){
             params["pk"] = pk;
@@ -38,7 +38,7 @@ widget.configure({
 
     var on_dialog = function(we){
         we.bind_retry(we, 10, 1.43, 15, 
-                      function(){return $("#{{package}}_submit")}, 
+                      function(){return $("#rawhtml_submit")}, 
                       function(elt){elt.click(function(){we.finish_dialog(this);});}
                      )();
     };
@@ -48,9 +48,9 @@ widget.configure({
 
     var collect_data = function(we, choiced_elt){
         var root = $(we.dialog);
-        return {};
+        return {"text": root.find("#rawhtml_body").val()};
     };
-    return widget.include("{{package}}", {
+    return widget.include("rawhtml", {
         load_page: load_page, 
         on_dialog: on_dialog, 
         on_close: on_close, 
