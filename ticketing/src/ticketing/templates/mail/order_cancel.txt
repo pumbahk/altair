@@ -14,7 +14,6 @@ ${up.last_name} ${up.first_name} 様
 
 =====================================================================
 ■ 販売会社： ${order.ordered_from.name}
-■ メールアドレス: support@ticketstar.jp
 =====================================================================
 [受付番号]  ${order.order_no}
 [受付日時]  ${order.created_at}
@@ -38,6 +37,6 @@ ${products}
 合計　　　　　 ${total_amount}（円）
 
 ─────────────問い合わせ─────────────────
-商品、決済・発送に関するお問い合わせ support@ticketstar.jp
+商品、決済・発送に関するお問い合わせ rt_support@ticketstar.jp
 楽天チケット http://ticket.rakuten.co.jp/
 ───────────────────────────────────
