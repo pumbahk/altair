@@ -26,7 +26,7 @@
     ${nco.breadcrumbs(
         names=["Top", "Page", page.name],
         urls=[request.route_path("dashboard"),
-              request.route_path("page"),
+              request.route_path("pageset_detail", pageset_id=page.pageset.id, kind=page.kind),
               ]
     )}
 %endif

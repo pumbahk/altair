@@ -1,3 +1,11 @@
+<%def name="widgets(name)">
+  % for w in display_blocks[name]:
+      ${w|n}
+  % endfor
+</%def>
+
+## above_table,below_table,card_and_QR,card_and_seven,card_and_home,card_and_onsite
+
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html lang="jp">
 <head>
@@ -23,9 +31,9 @@
 
 			<div class="kadomaru">
 
-				<img src="/static/89ers/images/newTicketSystemRelease.png" alt="newTicketSystemRelease" width="620" height="678" />
-
-
+<%block name="above_table">
+  ${widgets("above_table")}
+</%block>
 
 
 				<table class="info">
@@ -114,8 +122,10 @@
 						</tr>
 					</tbody>
 				</table>
-				
-				<h3>お支払い方法・引取方法　詳細</h3>
+
+<%block name="below_table">
+  ${widgets("below_table")}
+</%block>
 
 				<table class="info" style="border-left:1px #ccc solid;">
 					<tr>
@@ -123,11 +133,9 @@
 					</tr>
 					<tr>
 						<td>
-							<img src="/static/89ers/images/sample.png" alt="sample" width="150" height="150"/>
-							サンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキスト
-							サンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキスト
-							サンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキスト
-							サンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキスト
+<%block name="card_and_QR">
+  ${widgets("card_and_QR")}
+</%block>
 						</td>
 					</tr>
 				</table>
@@ -138,11 +146,9 @@
 					</tr>
 					<tr>
 						<td>
-							<img src="/static/89ers/images/sample.png" alt="sample" width="150" height="150"/>
-							サンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキスト
-							サンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキスト
-							サンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキスト
-							サンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキスト
+<%block name="card_and_seven">
+  ${widgets("card_and_seven")}
+</%block>
 						</td>
 					</tr>
 				</table>
@@ -153,11 +159,9 @@
 					</tr>
 					<tr>
 						<td>
-							<img src="/static/89ers/images/sample.png" alt="sample" width="150" height="150"/>
-							サンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキスト
-							サンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキスト
-							サンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキスト
-							サンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキスト
+<%block name="card_and_home">
+  ${widgets("card_and_home")}
+</%block>
 						</td>
 					</tr>
 				</table>
@@ -168,11 +172,9 @@
 					</tr>
 					<tr>
 						<td>
-							<img src="/static/89ers/images/sample.png" alt="sample" width="150" height="150"/>
-							サンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキスト
-							サンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキスト
-							サンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキスト
-							サンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキスト
+<%block name="card_and_onsite">
+  ${widgets("card_and_onsite")}
+</%block>
 						</td>
 					</tr>
 				</table>

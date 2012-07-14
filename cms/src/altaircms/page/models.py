@@ -279,6 +279,12 @@ class Page(BaseOriginalMixin,
             raise ValueError("*layout validation* page(id=%s) layout(id=%s) layout is broken" % (self.id, self.layout.id))
         return True
 
+    @property
+    def kind(self):
+        if self.event_id:
+            return "event"
+        else:
+            return "other"
 
 
 ## master    
