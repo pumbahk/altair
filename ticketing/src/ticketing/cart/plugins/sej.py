@@ -136,6 +136,8 @@ class SejPaymentPlugin(object):
         payment_due_at = get_payment_due_at(current_date,order)
         ticketing_start_at = get_ticketing_start_at(current_date,order)
         ticketing_due_at = order.payment_delivery_pair.issuing_end_at
+        tel1 = shipping_address.tel_1.replace('-', '')
+        tel2 = shipping_address.tel_2.replace('-', '')
         sej_order = get_sej_order(order)
         if not sej_order:
             request_order(
@@ -146,7 +148,7 @@ class SejPaymentPlugin(object):
                 order_id            = order.order_no,
                 username            = u'%s%s' % (shipping_address.last_name, shipping_address.first_name),
                 username_kana       = u'%s%s' % (shipping_address.last_name_kana, shipping_address.first_name_kana),
-                tel                 = shipping_address.tel_1.replace('-', ''),
+                tel                 = tel1 if tel1 else tel2,
                 zip                 = shipping_address.zip.replace('-', ''),
                 email               = shipping_address.email,
                 total               = order.total_amount,
@@ -182,6 +184,8 @@ class SejDeliveryPlugin(object):
         ticketing_due_at = cart.payment_delivery_pair.issuing_end_at
         tickets = get_tickets_from_cart(cart)
         order_no = cart.order_no
+        tel1 = shipping_address.tel_1.replace('-', '')
+        tel2 = shipping_address.tel_2.replace('-', '')
 
         try:
             sej_order = SejOrder.filter(SejOrder.order_id == order_no).one()
@@ -197,7 +201,7 @@ class SejDeliveryPlugin(object):
                 order_id            = order_no,
                 username            = u'%s%s' % (shipping_address.last_name, shipping_address.first_name),
                 username_kana       = u'%s%s' % (shipping_address.last_name_kana, shipping_address.first_name_kana),
-                tel                 = shipping_address.tel_1.replace('-', ''),
+                tel                 = tel1 if tel1 else tel2,
                 zip                 = shipping_address.zip.replace('-', ''),
                 email               = shipping_address.email,
                 total               = 0,
@@ -231,6 +235,8 @@ class SejPaymentDeliveryPlugin(object):
             payment_due_at = get_payment_due_at(current_date,order)
             ticketing_start_at = get_ticketing_start_at(current_date,order)
             ticketing_due_at = cart.payment_delivery_pair.issuing_end_at
+            tel1 = shipping_address.tel_1.replace('-', '')
+            tel2 = shipping_address.tel_2.replace('-', '')
             tickets = get_tickets(order)
             request_order(
                 shop_name           = performance.event.organization.name,
@@ -240,7 +246,7 @@ class SejPaymentDeliveryPlugin(object):
                 order_id            = order.order_no,
                 username            = u'%s%s' % (shipping_address.last_name, shipping_address.first_name),
                 username_kana       = u'%s%s' % (shipping_address.last_name_kana, shipping_address.first_name_kana),
-                tel                 = shipping_address.tel_1.replace('-', ''),
+                tel                 = tel1 if tel1 else tel2,
                 zip                 = shipping_address.zip.replace('-', ''),
                 email               = shipping_address.email,
                 total               = order.total_amount,

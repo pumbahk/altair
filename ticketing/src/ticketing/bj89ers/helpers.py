@@ -34,7 +34,7 @@ def order_desc(order):
 
     for item in order.items:
         for ordered_product_item in item.ordered_product_items:
-            if ordered_product_item.product_item.stock.stock_type.name == u'会員権':
+            if ordered_product_item.product_item.stock.stock_type.name == u'Tシャツ':
                 profile =  ordered_product_item.attributes
             else:
                 t_shirts = ordered_product_item.attributes
