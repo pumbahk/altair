@@ -30,7 +30,8 @@ def create_cancel_message(request, order):
         return
 
     subject = u'ご注文キャンセルについて 【{organization.name}】'.format(organization=order.ordered_from)
-    from_ = u'order@ticket.rakuten.co.jp'
+    settings = request.registry.settings
+    from_ = settings['order.sender']
     product_message_format = u'{product}　{price}（円）× {quantity}\r\n'
     products = ''
     for ordered_product in order.ordered_products:
@@ -43,7 +44,7 @@ def create_cancel_message(request, order):
     performance = order.ordered_products[0].ordered_product_items[0].product_item.performance
     venue_info = ''
     if performance.venue.id != 1:  # ダミー会場でないなら
-        venue_info = u'{venue} ({start_on}開演)'.format(performance.venue.name, performance.start.on)
+        venue_info = u'{venue} ({start_on}開演)'.format(performance.venue.name, performance.start_on)
 
     value = dict(
         order=order,
