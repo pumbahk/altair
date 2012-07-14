@@ -350,7 +350,7 @@ class OrderCSV(object):
             if value:
                 if not isinstance(value, unicode):
                     value = unicode(value)
-                value = value.encode('utf-8')
+                value = value.encode('cp932')
             else:
                 value = ''
             row[key] = value
