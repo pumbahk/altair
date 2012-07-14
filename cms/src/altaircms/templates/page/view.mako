@@ -100,6 +100,8 @@ event = page.event or page.pageset.event
   </div>
 
   <div>
+  <a target="_blank" href="${request.route_path("page_edit_", page_id=page.id)}" class="btn">D&Dとwidgetでページレイアウト編集</a>
+
 	%if page.published:
 	<button 
 	   href="${request.route_path("plugins_jsapi_page_publish_status", status="unpublish", page_id=page.id)}"

@@ -1,5 +1,6 @@
 # coding: utf-8
 import logging
+import sqlalchemy as sa
 from pyramid.view import view_config
 from pyramid.view import view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound

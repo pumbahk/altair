@@ -276,7 +276,7 @@ class TopicForm(Form):
 
     def validate(self, **kwargs):
         data = self.data
-        if data["publish_open_on"] > data["publish_close_on"]:
+        if data["publish_close_on"] and data["publish_open_on"] and data["publish_open_on"] > data["publish_close_on"]:
             append_errors(self.errors, "publish_open_on", u"公開開始日よりも後に終了日が設定されています")
         return not bool(self.errors)
 
@@ -329,7 +329,7 @@ class TopcontentForm(Form):
     
     def validate(self, **kwargs):
         data = self.data
-        if data["publish_open_on"] > data["publish_close_on"]:
+        if data["publish_close_on"] and data["publish_open_on"] and data["publish_open_on"] > data["publish_close_on"]:
             append_errors(self.errors, "publish_open_on", u"公開開始日よりも後に終了日が設定されています")
         return not bool(self.errors)
    
@@ -350,7 +350,7 @@ class HotWordForm(Form):
 
     def validate(self, **kwargs):
         data = self.data
-        if data["term_begin"] > data["term_end"]:
+        if data["term_begin"] and data["term_end"] and data["term_begin"] > data["term_end"]:
             append_errors(self.errors, "term_begin", u"開始日よりも後に終了日が設定されています")
         return not bool(self.errors)
 
