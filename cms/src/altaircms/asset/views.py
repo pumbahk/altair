@@ -12,6 +12,7 @@ from pyramid.view import (
 )
 from altaircms.lib.fanstatic_decorator import with_bootstrap
 from . import helpers as h
+from altaircms.lib.viewhelpers import get_endpoint, set_endpoint
 
 @view_defaults(permission="asset_create", decorator=with_bootstrap, route_name="asset_add")
 class AssetAddView(object):
@@ -22,6 +23,7 @@ class AssetAddView(object):
     @view_config(match_param="kind=image", renderer="altaircms:templates/asset/image/add.mako", 
                  request_method="GET")
     def add_image_asset_input(self):
+        set_endpoint(self.request)
         private_tags = self.request.params.get("private_tags", "")
         form = self.context.forms.ImageAssetForm(private_tags=private_tags)
         return {"form": form}
@@ -199,7 +201,7 @@ class AssetCreateView(object):
             self.context.add(asset)
 
             FlashMessage.success("image asset created", request=self.request)    
-            return HTTPFound(self.request.route_path("asset_image_list"))
+            return HTTPFound(get_endpoint(self.request)) or HTTPFound(self.request.route_path("asset_image_list"))
 
     @view_config(route_name="asset_movie_create", renderer="altaircms:templates/asset/movie/list.mako", 
                  request_method="POST")
@@ -215,7 +217,7 @@ class AssetCreateView(object):
             self.context.add(asset)
 
             FlashMessage.success("movie asset created", request=self.request)    
-            return HTTPFound(self.request.route_path("asset_movie_list"))
+            return HTTPFound(get_endpoint(self.request)) or HTTPFound(self.request.route_path("asset_movie_list"))
 
     @view_config(route_name="asset_flash_create", renderer="altaircms:templates/asset/flash/list.mako", 
                  request_method="POST")
@@ -231,7 +233,7 @@ class AssetCreateView(object):
             self.context.add(asset)
 
             FlashMessage.success("flash asset created", request=self.request)    
-            return HTTPFound(self.request.route_path("asset_flash_list"))
+            return HTTPFound(get_endpoint(self.request)) or HTTPFound(self.request.route_path("asset_flash_list"))
 
 @view_defaults(route_name="asset_delete", permission="asset_delete",
                decorator=with_bootstrap)

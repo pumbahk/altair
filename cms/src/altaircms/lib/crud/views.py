@@ -1,5 +1,5 @@
 # -*- encoding:utf-8 -*-
-
+import transaction
 from pyramid.httpexceptions import HTTPFound
 from altaircms.lib.viewhelpers import FlashMessage
 from altaircms.models import DBSession
@@ -149,7 +149,7 @@ class CreateView(object):
     def confirm(self):
         form = self.context.confirmed_form()
         obj = ModelFaker(model_from_dict(self.context.model, form.data))
-
+        transaction.abort() ## for
         return {"master_env": self.context,
                 "form": form, 
                 "obj": obj, 
