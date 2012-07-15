@@ -62,10 +62,7 @@ class IModelQueryFilter(Interface):
 
 @provider(IModelQueryFilter)
 def model_query_filter_default(model, request, query):
-    if getattr(request, "organization", None):
-        return query.filter_by(organization_id=request.organization.id)
-    else:
-        return query
+    return request.allowable(model, qs=query)
 
 def dynamic_query_select_field_factory(model, dynamic_query=None, name=None, **kwargs):
     """
@@ -83,6 +80,9 @@ def dynamic_query_select_field_factory(model, dynamic_query=None, name=None, **k
 
     name = name or model.__name__
     def dynamic_query(field, form=None, rendering_val=None, request=None):
+        field._object_list = None
+        #hack . this is almost wrong.(if calling memoize function field.get_object_list() using this field as cache store))
+
         if getattr(field, "query", None):
             query = field.query
         else:
