@@ -10,6 +10,7 @@ import logging
 logger = logging.getLogger(__file__)
 from altaircms.security import RootFactory
 from ..flow import api as flow_api
+from ..viewhelpers import set_endpoint, get_endpoint
 from altaircms.subscribers import notify_model_create ## too-bad
 
 from sqlalchemy.sql.operators import ColumnOperators
@@ -54,17 +55,12 @@ class CRUDResource(RootFactory): ## fixme
         return "%s_%s" % (self.prefix, ac)
 
     ## endpoint
-    CMS_ENDPOINT = "cms:endpoint"
     def set_endpoint(self):
-        session = self.request.session
-        session[self.CMS_ENDPOINT] = self.request.referrer
+        set_endpoint(self.request)
 
     def get_endpoint(self):
-        session = self.request.session
-        endpoint = session.get(self.CMS_ENDPOINT)
-        if endpoint:
-            return endpoint
-        return self.request.route_url(self.endpoint)
+        endpoint = get_endpoint(self.request)
+        return endpoint or self.request.route_url(self.endpoint)
 
     ## search
     def query_form(self, params):
