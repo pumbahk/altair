@@ -21,10 +21,9 @@
 			<header>
 				<div class="gnavi">
 					<ul>
-						<li><a href="#">チケットTOP</a></li>
-						<li><a href="#">チケット購入・引取方法</a></li>
-						<li><a href="#">ブースタークラブ申込</a></li>
-						<li><a href="#">よくある質問</a></li>
+%for c in myhelper._get_categories(request, "header_menu"):
+	<li><a href="${h.link.get_link_from_category(request,c)}">${c.label}</a></li>
+%endfor
 					</ul>　　
 				</div>
 			</header>

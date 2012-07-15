@@ -1,5 +1,3 @@
-## kadomaru
-
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html lang="jp">
 <head>
@@ -15,10 +13,10 @@
 			<header>
 				<div class="gnavi">
 					<ul>
-						<li><a href="#">チケット購入・引取方法</a></li>
-						<li><a href="#">入場方法</a></li>
-						<li><a href="#">ファンクラブ申し込みフォーム</a></li>
-						<li><a href="#">よくある質問</a></li>
+<% from altairsite.front import helpers as myhelper %>
+%for c in myhelper._get_categories(request, "header_menu"):
+	<li><a href="${h.link.get_link_from_category(request,c)}">${c.label}</a></li>
+%endfor
 					</ul>　　
 				</div>
 			</header>

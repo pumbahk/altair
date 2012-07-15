@@ -68,21 +68,23 @@ class Bj89ersFixtureBuilder(FixtureBuilder):
         self.layout_triples = layout_triples
 
         page_triples = [
-            (u"89ers:準備中", "/before", u"89ersシンプル"),
-            (u"89ers:よくある質問", "/faq", u"89ersシンプル"),
-            (u"89ers:チケット新登場(introduction)", "/introduction", u"89ers.introduction"),
-            (u"89ers:受付履歴確認", "/order/history", u"89ersシンプル"),
-            (u"89ers:予約購入完了(カード)", "/purcharsed/credit", u"89ersシンプル"),
-            (u"89ers:予約購入完了(セブン)", "/purcharsed/seven", u"89ersシンプル"),
-            (u"89ers:チケットトップ", "/tickets/top", u"89ersシンプル"),
+            (u"89ers:準備中", "before", u"89ersシンプル"),
+            (u"89ers:よくある質問", "faq", u"89ersシンプル"),
+            (u"89ers:チケット新登場(introduction)", "introduction", u"89ers.introduction"),
+            (u"89ers:受付履歴確認", "order/history", u"89ersシンプル"),
+            (u"89ers:予約購入完了(カード)", "register/purcharsed/credit", u"89ersシンプル"),
+            (u"89ers:予約購入完了(セブン)", "register/purcharsed/seven", u"89ersシンプル"),
+            (u"89ers:チケットトップ", "tickets/top", u"89ersシンプル"),
+            (u"89ers:チケット購入・引き取り方法", "purcharsed/credit", u"89ersシンプル"),
+            (u"89ers:ブースタークラブ申込", "purcharsed/seven", u"89ersシンプル"),
             ]
         self.page_triples = page_triples
 
         category_items = [
             (1, "top", u"チケットTOP", "header_menu", u"89ers:チケットトップ", ), 
-            (2, "",  u"チケット購入・引き取り方法", "header_menu", None), ##?
-            (3, "",  u"ブースタークラブ申込", "header_menu", None), ##?
-            (4, "",  u"よくある質問", "header_menu", u"89ers:よくある質問"), 
+            (2, "order_way",  u"チケット購入・引き取り方法", "header_menu", u"89ers:チケット購入・引き取り方法"), ##?
+            (3, "register_club",  u"ブースタークラブ申込", "header_menu", u"89ers:ブースタークラブ申込"), ##?
+            (4, "faq",  u"よくある質問", "header_menu", u"89ers:よくある質問"), 
             ]
         self.category_items = category_items
         self.organization_id = 2 ## fixme

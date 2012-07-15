@@ -11,9 +11,6 @@ def get_performances(event):
     else:
         return []
 
-def get_target_page(pagename, dt):
-    pass
-
 ## category
 
 def _get_categories(request, hierarchy):
