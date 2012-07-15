@@ -46,7 +46,7 @@
         </a>
       </li>
       <li>
-        <a target="_blank" href="${request.route_path("asset_add", kind="image",_query=dict(private_tags=taglabel))}">
+        <a href="${request.route_path("asset_add", kind="image",_query=dict(private_tags=taglabel))}">
           <i class="icon-minus"></i> 新規作成
         </a>
       </li>

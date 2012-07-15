@@ -212,14 +212,8 @@ class Category(Base, WithOrganizationMixin):
 
     @classmethod
     def get_toplevel_categories(cls, hierarchy=u"大", request=None): ## fixme
-        if request and getattr(request,"organization", None):
-            organization = request.organization
-            return cls.query.filter(cls.organization_id==organization.id, cls.hierarchy==hierarchy, cls.parent==None)
-        else:
-            ## 本当はこちらは存在しないはず。
-            ## request.organizationはまだ未実装。
-            return cls.query.filter(cls.hierarchy==hierarchy, cls.parent==None)
-
+        query = request.allowable(cls)
+        return query.filter(cls.hierarchy==hierarchy, cls.parent==None)
 
     def ancestors(self, include_self=False): ## fixme rename `include_self' keyword
         """ return ancestors (order: parent, grand parent, ...)

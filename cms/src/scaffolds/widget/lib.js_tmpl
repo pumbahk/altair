@@ -37,8 +37,8 @@ widget.configure({
     };
 
     var on_dialog = function(we){
-        we.bind_retry(15, 25, 
-                      function(){return $("#submit")}, 
+        we.bind_retry(we, 10, 1.43, 15, 
+                      function(){return $("#{{package}}_submit")}, 
                       function(elt){elt.click(function(){we.finish_dialog(this);});}
                      )();
     };
@@ -47,6 +47,7 @@ widget.configure({
     };
 
     var collect_data = function(we, choiced_elt){
+        var root = $(we.dialog);
         return {};
     };
     return widget.include("{{package}}", {

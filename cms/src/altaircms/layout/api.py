@@ -22,7 +22,7 @@ class LayoutCreator(object):
     """
     params = {
       title: "fooo", 
-      file: "file object", 
+      file: "file field object", 
       blocks: "" #auto detect
     }
     """

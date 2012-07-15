@@ -8,9 +8,8 @@
 <div class="row-fluid">
   <div class="span10">
     ${nco.breadcrumbs(
-        names=["Top", master_env.title, u"新規作成", u"確認画面"], 
+        names=["Top", u"新規作成", u"確認画面"], 
         urls=[request.route_path("dashboard"),
-	          request.route_path(master_env.join("list")),
               request.route_path(master_env.join("create"), action="input"),
 	])
     }

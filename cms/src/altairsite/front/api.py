@@ -79,5 +79,6 @@ class FrontPageRenderer(object):
 
     def build_render_params(self, page):
         params = h.get_navigation_categories(self.request)
-        params.update(sub_categories=h.get_subcategories_from_page(self.request, page))
+        params.update(sub_categories=h.get_subcategories_from_page(self.request, page), 
+                      myhelper=h)
         return params

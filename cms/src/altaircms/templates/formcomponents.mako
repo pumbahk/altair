@@ -16,7 +16,7 @@
 <table class="table table-striped">
   <tbody>
   % if form.errors.get("__all__"):
-	<div class="alert alert-danger">
+	<div class="btn btn-danger">
         %for err in form.errors["__all__"]:
           ${err}
         %endfor
@@ -55,7 +55,7 @@
 	%if k in form.errors:
 	  <br/>
 	  %for error in form.errors[k]:
-		<span class="alert alert-danger">${error}</span>
+		<span class="btn btn-danger">${error}</span>
 	  %endfor
 	%endif
 	</td></tr>

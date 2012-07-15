@@ -64,7 +64,7 @@ class AboutPublishMixin(object):
         """ 掲載期間のもののみ
         """
         qs = qs.filter(cls.publish_open_on  <= d)
-        return qs.filter(d <= cls.publish_close_on)
+        return qs.filter((d <= cls.publish_close_on) | (cls.publish_close_on == None))
 
     @classmethod
     def _orderby_logic(cls, qs):
@@ -163,7 +163,7 @@ topic widgetでは
     query = DBSession.query_property()
 
     __tablename__ = "topic"
-    KIND_CANDIDATES = [u"公演中止情報", u"トピックス", u"その他", u"ヘルプ", u"特集", u"特集(サブカテゴリ)"]
+    KIND_CANDIDATES = [u"89ers質問", u"公演中止情報", u"トピックス", u"その他", u"ヘルプ", u"特集", u"特集(サブカテゴリ)"]
 
     id = sa.Column(sa.Integer, primary_key=True)
     created_at = sa.Column(sa.DateTime, default=datetime.now)

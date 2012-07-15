@@ -47,7 +47,7 @@ class AccessControl(object):
         try:
             return api.is_renderable_template(template, page)
         except Exception, e:
-            self.error_message = str(e)
+            self._error_message.append(str(e))
             return False
 
     def fetch_page_from_pageid(self, page_id, access_key=None):
@@ -87,6 +87,7 @@ class AccessControl(object):
             return pageset
 
         page = pageset.current()
+
         if page is None:
             self.access_ok = False
             self._error_message.append("*fetch page* pageset(id=%s) has not accessable children" % pageset.id)

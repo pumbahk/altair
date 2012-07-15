@@ -52,7 +52,7 @@ class AccessControlMobile(object):
         return self.access_ok
 
     def _fetch_pageset_from_params(self, url, dt):
-        qs = PageSet.query.filter(PageSet.id==Page.pageset_id)
+        qs = self.request.allowable(PageSet).filter(PageSet.id==Page.pageset_id)
         qs = qs.filter(PageSet.url==url)
         qs = qs.filter(Page.in_term(dt))
         qs = qs.filter(Page.published==True)
@@ -101,7 +101,7 @@ class AccessControlPC(object):
             return False
 
     def _fetch_page_from_params(self, url, dt):
-        qs = Page.query.filter(PageSet.id==Page.pageset_id)
+        qs = self.request.allowable(Page).filter(PageSet.id==Page.pageset_id)
         qs = qs.filter(PageSet.url==url)
         qs = qs.filter(Page.in_term(dt))
         qs = qs.filter(Page.published==True)
