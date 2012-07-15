@@ -58,6 +58,7 @@ class Bj89ersFixtureBuilder(FixtureBuilder):
         """
         layout_triples: (title, template_filename, blocks)
         page_triples: (name, url, layout)
+        category_items: (orderno, name, label, hierarchy, page_name)
         """
         super(Bj89ersFixtureBuilder, self).__init__(Datum)
         layout_triples = [
@@ -67,15 +68,23 @@ class Bj89ersFixtureBuilder(FixtureBuilder):
         self.layout_triples = layout_triples
 
         page_triples = [
-            ("89ers.before", "/before", u"89ersシンプル"),
-            ("89ers.faq", "/faq", u"89ersシンプル"),
-            ("89ers.introduction", "/introduction", u"89ers.introduction"),
-            ("89ers.order-history", "/order/history", u"89ersシンプル"),
-            ("89ers.purcharsed-credit", "/purcharsed/credit", u"89ersシンプル"),
-            ("89ers.purchased-seven", "/purcharsed/seven", u"89ersシンプル"),
-            ("89ers.tickets_top", "/tickets/top", u"89ersシンプル"),
+            (u"89ers:準備中", "/before", u"89ersシンプル"),
+            (u"89ers:よくある質問", "/faq", u"89ersシンプル"),
+            (u"89ers:チケット新登場(introduction)", "/introduction", u"89ers.introduction"),
+            (u"89ers:受付履歴確認", "/order/history", u"89ersシンプル"),
+            (u"89ers:予約購入完了(カード)", "/purcharsed/credit", u"89ersシンプル"),
+            (u"89ers:予約購入完了(セブン)", "/purcharsed/seven", u"89ersシンプル"),
+            (u"89ers:チケットトップ", "/tickets/top", u"89ersシンプル"),
             ]
         self.page_triples = page_triples
+
+        category_items = [
+            (1, "top", u"チケットTOP", "header_menu", u"89ers:チケットトップ", ), 
+            (2, "",  u"チケット購入・引き取り方法", "header_menu", None), ##?
+            (3, "",  u"ブースタークラブ申込", "header_menu", None), ##?
+            (4, "",  u"よくある質問", "header_menu", u"89ers:よくある質問"), 
+            ]
+        self.category_items = category_items
         self.organization_id = 2 ## fixme
 
     @reify
@@ -122,11 +131,28 @@ class Bj89ersFixtureBuilder(FixtureBuilder):
         result = Result(retval, build_dict(retval, "name"))
         return result
         
+    @reify
+    def build_category(self):
+        pagesets = self.build_pageset.cache
+        retval = [self.Datum("category", 
+                             orderno=orderno, 
+                             organization_id=self.organization_id, 
+                             name=name, 
+                             label=label, 
+                             hierarchy=hierarchy, 
+                             pageset_id=pagesets.get(page_name)
+                             )
+                  for orderno, name, label, hierarchy, page_name in self.category_items]
+        result = Result(retval, build_dict(retval, "name"))
+        return result
+
+    
     def build(self):
         return itertools.chain.from_iterable([
                 self.build_layout, 
                 self.build_pageset, 
-                self.build_page
+                self.build_page, 
+                self.build_category
                 ], )
                  
 class WithOffset(object):
