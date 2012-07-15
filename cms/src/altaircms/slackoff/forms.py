@@ -185,19 +185,16 @@ class CategoryForm(Form):
     origin = fields.TextField(label=u"分類")
     label = fields.TextField(label=u"label")
     parent = dynamic_query_select_field_factory(
-        Category, allow_blank=False, label=u"親カテゴリ",
+        Category, allow_blank=True, blank_text=u"--------", label=u"親カテゴリ",
         get_label=lambda obj: obj.label or u"--なし--")
 
     pageset = dynamic_query_select_field_factory(
-        PageSet, allow_blank=False, label=u"リンク先ページ(CMSで作成したもの)",
+        PageSet, allow_blank=True, blank_text=u"--------", label=u"リンク先ページ(CMSで作成したもの)",
         get_label=lambda obj: obj.name or u"--なし--")
     hierarchy = fields.SelectField(label=u"階層", choices=_hierarchy_choices)
     # hierarchy = fields.SelectField(label=u"階層")
     imgsrc = fields.TextField(label=u"imgsrc(e.g. /static/ticketstar/img/common/header_nav_top.gif)")
     url = fields.TextField(label=u"リンク(外部ページのURL)")
-    pageset = dynamic_query_select_field_factory(
-        PageSet, allow_blank=False, label=u"リンク先ページ(CMSで作成したもの)",
-        get_label=lambda obj: obj.name or u"--なし--")
     orderno = fields.IntegerField(label=u"表示順序")
 
     __display_fields__ = [u"name", u"origin", u"label",
