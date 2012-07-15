@@ -83,6 +83,10 @@ class OrderFormSchema(Form):
         except ValueError:
             raise ValidationError(u'日付が正しくありません')
 
+    def validate_tel_2(self, field):
+        if not self.tel_1.data and not self.tel_2.data:
+            raise ValidationError(u'電話番号は自宅か携帯かどちらかを入力してください')
+
     # 新規・継続
     cont = fields.RadioField(u"新規／継続", validators=[v.Required()], choices=[('no', u'新規'),('yes', u'継続')], widget=radio_list_widget)
     old_id_number = fields.TextField(u"会員番号", filters=[strip_spaces], validators=[v.Regexp(r'\d{8}', message=u'半角数字8ケタで入力してください。'), v.Optional()])
@@ -104,7 +108,7 @@ class OrderFormSchema(Form):
     address1 = fields.TextField(u"住所", filters=[strip_spaces], validators=[v.Required()])
     address2 = fields.TextField(u"住所", filters=[strip_spaces])
     tel_1 = fields.TextField(u"電話番号(携帯)", filters=[strip_spaces], validators=[v.Regexp(r'^\d*$', message=u'-を抜いた数字のみを入力してください')])
-    tel_2 = fields.TextField(u"電話番号(自宅)", filters=[strip_spaces], validators=[v.Regexp(r'^\d*$', message=u'-を抜いた数字のみを入力してください'), v.Required()])
+    tel_2 = fields.TextField(u"電話番号(自宅)", filters=[strip_spaces], validators=[v.Regexp(r'^\d*$', message=u'-を抜いた数字のみを入力してください')])
     email = fields.TextField(u"メールアドレス", filters=[strip_spaces], validators=[v.Email()])
     email2 = fields.TextField(u"メールアドレス（確認用）", filters=[strip_spaces], validators=[v.Email(), v.EqualTo('email', u'確認用メールアドレスが一致しません。')])
     publicity = fields.SelectField(u"媒体への掲載希望", validators=[v.Optional()], choices=[('yes', u'希望する'),('no', u'希望しない')])
