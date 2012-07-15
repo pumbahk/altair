@@ -105,7 +105,6 @@ class Bj89ersFixtureBuilder(FixtureBuilder):
         retval = [self.Datum("pagesets", 
                              name=name, 
                              organization_id=self.organization_id, 
-                             layout_name=layout_name, 
                              url=url)\
                       for name, url, layout_name in self.page_triples]
         result = Result(retval, build_dict(retval, "name"))
@@ -114,20 +113,21 @@ class Bj89ersFixtureBuilder(FixtureBuilder):
     @reify
     def build_page(self):       
         layouts = self.build_layout.cache
+        pagesets = self.build_pageset.cache
         retval = [self.Datum("page", 
-                  name=pageset.name, 
-                  title=pageset.name, 
-                  url=pageset.url, 
+                  name=name, 
+                  title=name, 
+                  url=url, 
                   description="", 
-                  pageset=t.many_to_one(pageset, "pageset_id"), 
+                  pageset=t.many_to_one(pagesets[name], "pageset_id"), 
                   keywords="", 
                   published=True, 
                   publish_begin=self.Default.publish_begin, 
                   created_at=self.Default.created_at, 
                   updated_at=self.Default.updated_at, 
                   organization_id=self.organization_id, 
-                  layout_id=layouts[pageset.layout_name])
-                      for pageset in self.build_pageset]
+                  layout_id=layouts[layout_name])
+                      for name, url, layout_name in self.page_triples]
         result = Result(retval, build_dict(retval, "name"))
         return result
         
