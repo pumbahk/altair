@@ -233,7 +233,7 @@ class AssetCreateView(object):
             self.context.add(asset)
 
             FlashMessage.success("flash asset created", request=self.request)    
-            return HTTPFound(get_endpoint(self.request) or  self.request.route_path("asset_flash_list"))
+            return HTTPFound(get_endpoint(self.request) or self.request.route_path("asset_flash_list"))
 
 @view_defaults(route_name="asset_delete", permission="asset_delete",
                decorator=with_bootstrap)
