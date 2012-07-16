@@ -201,7 +201,7 @@ class AssetCreateView(object):
             self.context.add(asset)
 
             FlashMessage.success("image asset created", request=self.request)    
-            return HTTPFound(get_endpoint(self.request)) or HTTPFound(self.request.route_path("asset_image_list"))
+            return HTTPFound(get_endpoint(self.request) or self.request.route_path("asset_image_list"))
 
     @view_config(route_name="asset_movie_create", renderer="altaircms:templates/asset/movie/list.mako", 
                  request_method="POST")
@@ -217,7 +217,7 @@ class AssetCreateView(object):
             self.context.add(asset)
 
             FlashMessage.success("movie asset created", request=self.request)    
-            return HTTPFound(get_endpoint(self.request)) or HTTPFound(self.request.route_path("asset_movie_list"))
+            return HTTPFound(get_endpoint(self.request) or self.request.route_path("asset_movie_list"))
 
     @view_config(route_name="asset_flash_create", renderer="altaircms:templates/asset/flash/list.mako", 
                  request_method="POST")
@@ -233,7 +233,7 @@ class AssetCreateView(object):
             self.context.add(asset)
 
             FlashMessage.success("flash asset created", request=self.request)    
-            return HTTPFound(get_endpoint(self.request)) or HTTPFound(self.request.route_path("asset_flash_list"))
+            return HTTPFound(get_endpoint(self.request) or self.request.route_path("asset_flash_list"))
 
 @view_defaults(route_name="asset_delete", permission="asset_delete",
                decorator=with_bootstrap)
