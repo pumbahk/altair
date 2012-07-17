@@ -241,3 +241,42 @@ ${h.breadcrumbs(
     % endfor
   </div>
 </div>
+
+<% row = 0 %>
+% for ordered_product in order.ordered_products:
+  % for ordered_product_item in ordered_product.ordered_product_items:
+    % for key, value in ordered_product_item.attributes.items():
+      % if value and key in ['t_shirts_size', 'publicity', 'mail_permission', 'cont']:
+        % if row == 0:
+<div class="row-fluid">
+  <div class="span6">
+    <table class="table table-striped table-bordered">
+        % endif
+      <tr>
+        <%
+          label = ''
+          if key == 't_shirts_size':
+            label = u'Tシャツサイズ'
+          elif key == 'publicity':
+            label = u'メモリアルブックへの氏名掲載希望'
+          elif key == 'mail_permission':
+            label = u'メールマガジン配信'
+            value = 'yes' if value == 'y' else 'no'
+          elif key == 'cont':
+            label = u'新規/継続'
+            value = u'新規' if value == 'no' else u'継続'
+        %>
+        <th class="span3">${label} (${key})</th>
+        <td class="span2">${value}</td>
+      </tr>
+        <% row += 1 %>
+      % endif
+    % endfor
+  % else:
+    % if row > 0:
+    </table>
+  </div>
+</div>
+    % endif
+  % endfor
+% endfor

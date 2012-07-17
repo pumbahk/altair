@@ -339,20 +339,31 @@ class OrderCSV(object):
         product_list = []
         for i, ordered_product in enumerate(order.ordered_products):
             for column in self.product_header:
-                column_name = 'product_%s_%s' % (column, i)
-                if not column_name in self.header:
-                    self.header.append(column_name)
-                if column == 'name':
-                    product_list.append((column_name, ordered_product.product.name))
-                if column == 'price':
-                    product_list.append((column_name, ordered_product.price))
-                if column == 'quantity':
-                    product_list.append((column_name, ordered_product.quantity))
-                if column == 'other':
-                    attr = []
+                if column != 'other':
+                    column_name = 'product_%s_%s' % (column, i)
+                    if not column_name in self.header:
+                        self.header.append(column_name)
+                    if column == 'name':
+                        product_list.append((column_name, ordered_product.product.name))
+                    if column == 'price':
+                        product_list.append((column_name, ordered_product.price))
+                    if column == 'quantity':
+                        product_list.append((column_name, ordered_product.quantity))
+                else:
                     for ordered_product_item in ordered_product.ordered_product_items:
-                        attr += [value for key, value in ordered_product_item.attributes.items() if key == 't_shirts_size' and value]
-                    product_list.append((column_name, ','.join(attr)))
+                        for key, value in ordered_product_item.attributes.items():
+                            if value and key in ['t_shirts_size', 'publicity', 'mail_permission', 'cont']:
+                                column_name = '%s_%s' % (key, i)
+                                if not column_name in self.header:
+                                    self.header.append(column_name)
+
+                                # for bj89ers
+                                if key == 'mail_permission':
+                                    value = 'yes' if value == 'y' else 'no'
+                                elif key == 'cont':
+                                    value = u'新規' if value == 'no' else u'継続'
+
+                                product_list.append((column_name, value))
 
         # encoding
         row = dict(order_list + user_profile_list + shipping_address_list + other_list + product_list)
