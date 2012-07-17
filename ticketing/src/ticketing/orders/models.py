@@ -8,6 +8,7 @@ from sqlalchemy.orm import join, backref, column_property
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm.exc import NoResultFound
+from pyramid.threadlocal import get_current_registry
 
 from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier, relationship, DBSession, record_to_multidict
 from ticketing.core.models import Seat, Performance, Product, ProductItem, PaymentMethod, DeliveryMethod, StockStatus
@@ -136,14 +137,23 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             elif self.status == 'ordered':
                 sej_order = SejOrder.query.filter_by(order_id=self.order_no).first()
                 if sej_order and not sej_order.cancel_at:
+                    settings = get_current_registry().settings
+                    shop_id = settings.get('sej.shop_id', 0)
+                    if sej_order.shop_id != shop_id:
+                        logger.error(u'コンビニ決済(セブンイレブン)のキャンセルに失敗しました Invalid shop_id : %s' % shop_id)
+                        return False
+
                     try:
                         request_cancel_order(
-                            sej_order.order_id,
-                            sej_order.billing_number,
-                            sej_order.exchange_number,
+                            order_id=sej_order.order_id,
+                            billing_number=sej_order.billing_number,
+                            exchange_number=sej_order.exchange_number,
+                            shop_id=shop_id,
+                            secret_key=settings.get('sej.api_key'),
+                            hostname=settings.get('sej.inticket_api_url')
                         )
                     except SejServerError, e:
-                        logger.error(u'コンビニ決済(セブンイレブン)のキャンセルに失敗しました。 %s' % e)
+                        logger.error(u'コンビニ決済(セブンイレブン)のキャンセルに失敗しました %s' % e)
                         return False
 
         # 窓口支払
