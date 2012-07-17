@@ -550,7 +550,7 @@ class CompleteView(object):
     def __call__(self):
         form = schemas.CSRFSecureForm(form_data=self.request.params, csrf_context=self.request.session)
         form.validate()
-        assert not form.csrf_token.errors
+        #assert not form.csrf_token.errors
         assert api.has_cart(self.request)
         cart = api.get_cart(self.request)
 
