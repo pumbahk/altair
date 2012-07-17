@@ -107,6 +107,7 @@ class Bj89ersFixtureBuilder(FixtureBuilder):
         retval = [self.Datum("pagesets", 
                              name=name, 
                              organization_id=self.organization_id, 
+                             version_counter=0, 
                              url=url)\
                       for name, url, layout_name in self.page_triples]
         result = Result(retval, build_dict(retval, "name"))
@@ -123,6 +124,8 @@ class Bj89ersFixtureBuilder(FixtureBuilder):
                   description="", 
                   pageset=t.many_to_one(pagesets[name], "pageset_id"), 
                   keywords="", 
+                  structure="[]", 
+                  version=0, 
                   published=True, 
                   publish_begin=self.Default.publish_begin, 
                   created_at=self.Default.created_at, 
