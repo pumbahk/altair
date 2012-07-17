@@ -45,6 +45,8 @@ class PaymentMethodManager(object):
         return self.route_map.get(payment_method_id)
 
 
+MULTICHECKOUT_AUTH_OK = '110'
+MULTICHECKOUT_SALES_OK = '120'
 
 Base = sqlahelper.get_base()
 DBSession = sqlahelper.get_session()

@@ -125,6 +125,10 @@ def checkout_sales_cancel(request, order_no):
     service = get_multicheckout_service(request)
     return service.request_card_cancel_sales(order_no)
 
+def checkout_inquiry(request, order_no):
+    service = get_multicheckout_service(request)
+    return service.request_card_inquiry(order_no)
+
 def checkout_auth_secure_code(request, order_no, item_name, amount, tax, client_name, mail_address,
                      card_no, card_limit, card_holder_name,
                      secure_code,
@@ -271,10 +275,9 @@ class Checkout3D(object):
         logger.debug("got response %s" % etree.tostring(res))
         return self._parse_response_card_xml(res)
 
-    def request_card_inquiry(self, order_no, card_auth):
-        message = self._create_request_card_xml(card_auth, check=True)
+    def request_card_inquiry(self, order_no):
         url = self.card_inquiry_url(order_no)
-        res = self._request(url, message)
+        res = self._request(url)
         logger.debug("got response %s" % etree.tostring(res))
         return self._parse_inquiry_response_card_xml(res)
 

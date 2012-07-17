@@ -86,6 +86,9 @@ setup(name='ticketing',
       entry_points = """\
       [paste.app_factory]
       main = ticketing:main
+      [console_scripts]
+      inquiry_demo=ticketing.cart.commands:inquiry_demo
+      cancel_auth_expired_carts=ticketing.cart.commands:cancel_auth_expired_carts
       """,
       paster_plugins=['pyramid'],
       )
