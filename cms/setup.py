@@ -30,7 +30,8 @@ requires = [
     'js.tinymce',
     'pyramid_who',
     'altair-commons',
-    'uamobile'
+    'uamobile', 
+    'tableau'
     ]
 
 solr_require = [
