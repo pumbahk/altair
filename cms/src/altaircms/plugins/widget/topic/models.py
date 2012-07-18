@@ -96,6 +96,10 @@ def topcontent_merge_settings(template_name, widget, bname, bsettings):
        
 
 MERGE_SETTINGS_DISPATH = {
+    ("noimage", u"NH質問"): functools.partial(
+        topics_merge_settings, 
+        "altaircms.plugins.widget:topic/NH_faq_render.mako"
+        ), 
     ("noimage", u"89ers質問"): functools.partial(
         topics_merge_settings, 
         "altaircms.plugins.widget:topic/89ers_faq_render.mako"
