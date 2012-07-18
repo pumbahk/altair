@@ -2,8 +2,22 @@
 <%namespace file="/common/helpers.html" name="h" />
 <% paging = False if limit else True %>
 
+<%def name="search_and_sort(column, paging=True)">
 % if paging:
-  ${h.pager(orders)}
+<%
+  sort_column = request.params.get('sort')
+  sort_direction = request.params.get('direction')
+  direction = 'desc' if (column.name == sort_column and sort_direction == 'asc') else 'asc'
+  css_class = 'current ' + sort_direction if (column.name == sort_column) else ''
+%>
+<a href="javascript:sort_orders('${column.name}', '${direction}');" class="${css_class}">${column.label.text}</a>
+% else:
+  ${column.label.text}
+% endif
+</%def>
+
+% if paging:
+  ${h.pager(orders, "javascript:sort_orders('', '', '$partial_url')")}
 % endif
 
 % if orders:
@@ -16,9 +30,9 @@
       <thead>
       <tr>
         <th style="width: 120px;">ステータス</th>
-        <th style="width: 100px;">${h.sortable(form.order_no)}</th>
-        <th style="width: 120px;">${h.sortable(form.created_at)}</th>
-        <th style="width: 80px;">${h.sortable(form.total_amount)}</th>
+        <th style="width: 100px;">${search_and_sort(form.order_no)}</th>
+        <th style="width: 120px;">${search_and_sort(form.created_at)}</th>
+        <th style="width: 80px;">${search_and_sort(form.total_amount)}</th>
         <th style="width: 80px;">ユーザー</th>
         % if detail:
         <th>イベント</th>
@@ -62,5 +76,5 @@
 % endif
 
 % if paging:
-  ${h.pager(orders)}
+  ${h.pager(orders, "javascript:sort_orders('', '', '$partial_url')")}
 % endif

@@ -11,6 +11,14 @@
     modal.find('#search').attr('action', '/orders/').submit();
   }
 
+  function sort_orders(sort, direction, url) {
+    url = url || '/orders/';
+    modal = $('#modal-search');
+    if (sort) modal.find('#sort').val(sort);
+    if (direction) modal.find('#direction').val(direction);
+    modal.find('#search').attr('action', url).submit();
+  }
+
   function download_orders() {
     modal = $('#modal-search');
     modal.find('#search').attr('action', '/orders/download/').submit();
@@ -78,6 +86,8 @@
         ${h.form_item(form.payment_method)}
         ${h.form_item(form.delivery_method)}
         ${h.form_item(form.status)}
+        ${h.form_item(form.sort)}
+        ${h.form_item(form.direction)}
       </fieldset>
     </form>
   </div>

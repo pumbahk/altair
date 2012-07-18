@@ -219,6 +219,10 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @staticmethod
     def set_search_condition(query, form):
+        sort = form.sort.data or 'Order.id'
+        direction = form.direction.data or 'desc'
+        query = query.order_by(sort + ' ' + direction)
+
         condition = form.order_no.data
         if condition:
             query = query.filter(Order.order_no==condition)

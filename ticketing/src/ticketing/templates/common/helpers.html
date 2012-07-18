@@ -4,14 +4,14 @@
 <%!
   from webhelpers.paginate import Page
 %>
-<%def name="pager(items)">
+<%def name="pager(items, url='%s')">
   % if isinstance(items, Page):
   <div class="pagination-centered">
     ${items.pager(format='$link_previous ~2~ $link_next',
                   link_attr={"class": "btn small"},
                   curpage_attr={"class": "btn primary small disabled"},
                   dotdot_attr={"class": "btn small disabled"},
-                  onclick="%s; return false;")}
+                  onclick=url + "; return false;")}
   </div>
   % endif
 </%def>

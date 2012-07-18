@@ -3,7 +3,7 @@
 from wtforms import Form
 from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, TextAreaField,
                      BooleanField, RadioField, FieldList, FormField)
-from wtforms.validators import Optional,Required
+from wtforms.validators import Optional, AnyOf
 
 from ticketing.formhelpers import DateTimeField, Translations, Required
 from ticketing.core.models import PaymentMethodPlugin, DeliveryMethodPlugin
@@ -55,6 +55,13 @@ class OrderSearchForm(Form):
         validators=[Optional()],
         choices=[('ordered', u'未入金'), ('paid', u'入金済み'), ('delivered', u'配送済み'), ('canceled', u'キャンセル'), ('refunded', u'キャンセル (返金済)')],
         coerce=str,
+    )
+    sort = HiddenField(
+        validators=[Optional()],
+    )
+    direction = HiddenField(
+        validators=[Optional(), AnyOf(['asc', 'desc'], message='')],
+        default='desc',
     )
 
 class SejTicketForm(Form):
