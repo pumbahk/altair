@@ -30,8 +30,7 @@ def create_cancel_message(request, order):
         return
 
     subject = u'ご注文キャンセルについて 【{organization.name}】'.format(organization=order.ordered_from)
-    settings = request.registry.settings
-    from_ = settings['order.sender']
+    from_ = order.ordered_from.contact_email
     product_message_format = u'{product}　{price}（円）× {quantity}\r\n'
     products = ''
     for ordered_product in order.ordered_products:
@@ -57,6 +56,7 @@ def create_cancel_message(request, order):
         transaction_fee=h.format_currency(order.transaction_fee),
         delivery_fee=h.format_currency(order.delivery_fee),
         total_amount=h.format_currency(order.total_amount),
+        contact_email=order.ordered_from.contact_email,
     )
     mail_body = renderers.render(mail_renderer_names[plugin_id], value, request=request)
     mail_body = unicode(mail_body, 'utf-8')

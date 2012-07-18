@@ -2,7 +2,7 @@
 
 from wtforms import Form
 from wtforms import TextField, IntegerField, HiddenField, SelectField, BooleanField
-from wtforms.validators import Length, Regexp, Optional
+from wtforms.validators import Length, Regexp, Email, Optional
 
 from ticketing.formhelpers import DateTimeField, Translations, Required, Phone
 from ticketing.master.models import Prefecture
@@ -27,7 +27,7 @@ class OrganizationForm(Form):
         label = u'企業コード',
         validators=[
             Required(),
-            Regexp(u'^[A-Z]*$', message=u'アルファベット大文字のみ入力できます'),
+            Regexp(u'^[A-Z0-9]*$', message=u'数字およびアルファベット大文字のみ入力できます'),
             Length(min=2, max=2, message=u'2文字で入力してください'),
         ]
     )
@@ -35,6 +35,13 @@ class OrganizationForm(Form):
         label=u'クライアントタイプ',
         choices=[(1, u'スタンダード')],
         coerce=int,
+    )
+    contact_email = TextField(
+        label = u'問い合わせメールアドレス',
+        validators=[
+            Required(),
+            Email(),
+        ]
     )
     prefecture_id = SelectField(
         label=u'都道府県',

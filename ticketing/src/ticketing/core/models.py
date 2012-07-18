@@ -921,6 +921,7 @@ class Organization(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     name = Column(String(255))
     code = Column(String(3))  # 2桁英字大文字のみ
     client_type = Column(Integer)
+    contact_email = Column(String(255))
     city = Column(String(255))
     street = Column(String(255))
     address = Column(String(255))
