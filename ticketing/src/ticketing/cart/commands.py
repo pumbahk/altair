@@ -1,17 +1,15 @@
 # -*- coding:utf-8 -*-
-
+import os
 import sys
 import logging
 from datetime import datetime, timedelta
 from pyramid.paster import bootstrap
+
 import transaction
 from ..orders import models as o_m
 from ..multicheckout import api as a
 from . import models as m
 
-logging.basicConfig()
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
 # copied from ticketing.cart.plugins.multicheckout
 def get_order_no(request, cart):
@@ -21,6 +19,7 @@ def get_order_no(request, cart):
     return cart.order_no
 
 def inquiry_demo():
+    logger = logging.getLogger(__name__)
     config_file = sys.argv[1]
     app_env = bootstrap(config_file)
     request = app_env['request']
@@ -31,6 +30,7 @@ def inquiry_demo():
 
     a.checkout_auth_cancel(request, order_no)
 
+
 def cancel_auth_expired_carts():
     """ 期限切れカートのオーソリをキャンセルする
     """
@@ -38,12 +38,14 @@ def cancel_auth_expired_carts():
     config_file = sys.argv[1]
 
     app_env = bootstrap(config_file)
+    logfile = os.path.abspath(sys.argv[2])
+    logging.config.fileConfig(logfile)
     request = app_env['request']
     registry = app_env['registry']
     settings = registry.settings
     expire_time = int(settings['altair_cart.expire_time'])
 
-    logger.debug("start auth cancel batch")
+    logging.info("start auth cancel batch")
     while True:
         now = datetime.now()
         # 期限切れカート取得 1件ずつ処理
@@ -61,16 +63,16 @@ def cancel_auth_expired_carts():
 
         order_no = get_order_no(request, cart)
         # 状態確認
-        logger.debug('check for order_no=%s' % order_no)
+        logging.debug('check for order_no=%s' % order_no)
         inquiry = a.checkout_inquiry(request, order_no)
 
         # オーソリOKだったらキャンセル
         if inquiry.Status == m.MULTICHECKOUT_AUTH_OK:
-            logger.info("cancel auth for order_no=%s" % order_no)
+            logging.info("cancel auth for order_no=%s" % order_no)
             a.checkout_auth_cancel(request, order_no)
         else:
-            logger.info("Order(order_no = %s) status = %s " % (order_no, inquiry.Status))
+            logging.info("Order(order_no = %s) status = %s " % (order_no, inquiry.Status))
 
         cart.finished_at = now
         transaction.commit()
-    logger.debug("end auth cancel batch")
+    logging.info("end auth cancel batch")
