@@ -14,6 +14,7 @@ from altaircms.security import RootFactory
 
 ## 後で修正
 headings_candidates = [
+    (u'NH:見出し', u'<h2 id="%s">%s</h2>'), 
     (u'89ers:見出し', u'<h2 id="%s">%s</h2>'), 
     (u"チケットスター：詳細ページタイトル", u'<h1 id="%s" class="detail-title">%s</h1>'), 
     (u"チケットスター：詳細ページ見出し", u'<h2 id="%s" class="detail heading">%s</h2>'),  #/static/ticketstar/css/custom.css
