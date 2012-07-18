@@ -11,6 +11,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from pyramid.threadlocal import get_current_registry
 
 from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier, relationship, DBSession, record_to_multidict
+from ticketing.utils import sensible_alnum_decode
 from ticketing.core.models import Seat, Performance, Product, ProductItem, PaymentMethod, DeliveryMethod, StockStatus
 from ticketing.users.models import User
 from ticketing.sej.models import SejOrder
@@ -107,7 +108,10 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 # 売り上げキャンセル
                 from ticketing.multicheckout import api as multi_checkout_api
 
-                multi_checkout_result = multi_checkout_api.checkout_sales_cancel(request, self.order_no)
+                order_no = self.order_no
+                if request.registry.settings.get('multicheckout.testing', False):
+                    order_no = '%010d%02d' % (sensible_alnum_decode(order_no[2:12]), 0)
+                multi_checkout_result = multi_checkout_api.checkout_sales_cancel(request, order_no)
                 DBSession.add(multi_checkout_result)
 
                 error_code = ''
