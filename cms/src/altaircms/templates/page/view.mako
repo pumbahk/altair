@@ -65,6 +65,9 @@ event = page.event or page.pageset.event
         <th class="span2">キーワード</th><td>${page.keywords}</td>
       </tr>
       <tr>
+        <th class="span2">レイアウト</th><td>${page.layout.title if page.layout else u""}</td>
+      </tr>
+      <tr>
 		<th>掲載期間</th>
 		<td>${h.base.jterm(page.publish_begin, page.publish_end)}</td>
       </tr>
