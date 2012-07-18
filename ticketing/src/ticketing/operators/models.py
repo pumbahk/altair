@@ -39,17 +39,13 @@ class Permission(Base):
         return DBSession.query(Permission)\
             .filter(Permission.category_name.in_(category_names)).all()
 
-class OperatorRole(Base, WithTimestamp):
+class OperatorRole(Base, BaseModel, WithTimestamp):
     __tablename__ = 'OperatorRole'
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
     operators = relationship('Operator', secondary=operator_role_association_table)
     permissions = relationship('Permission')
     status = Column('status',Integer, default=1)
-
-    @staticmethod
-    def all():
-        return DBSession.query(OperatorRole).all()
 
 class OperatorActionHistoryTypeENum(StandardEnum):
     View      = 1
@@ -64,7 +60,7 @@ class OperatorActionHistory(Base):
     operator = relationship('Operator', uselist=False, backref='histories')
     function = Column(String(255))
 
-class OperatorAuth(Base, WithTimestamp):
+class OperatorAuth(Base, BaseModel, WithTimestamp):
     __tablename__ = 'OperatorAuth'
     operator_id = Column(Identifier, ForeignKey('Operator.id'), primary_key=True, nullable=False)
     login_id = Column(String(32), unique=True)
@@ -89,12 +85,16 @@ class Operator(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @staticmethod
     def get_by_login_id(user_id):
-        return Operator.query.join(OperatorAuth)\
-                .filter(OperatorAuth.login_id == user_id).first()
+        return Operator.filter().join(OperatorAuth)\
+                .filter(OperatorAuth.login_id==user_id).first()
+
+    @staticmethod
+    def get_by_email(email):
+        return Operator.filter_by(email=email).first()
 
     @staticmethod
     def login(login_id, password):
-        operator = Operator.query.join(OperatorAuth)\
-                .filter(OperatorAuth.login_id == login_id)\
-                .filter(OperatorAuth.password == md5(password).hexdigest()).first()
+        operator = Operator.filter().join(OperatorAuth)\
+                .filter(OperatorAuth.login_id==login_id)\
+                .filter(OperatorAuth.password==md5(password).hexdigest()).first()
         return operator
