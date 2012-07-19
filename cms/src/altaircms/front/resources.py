@@ -36,11 +36,12 @@ class AccessControl(object):
 
     @property
     def error_message(self):
-        return "\n".join(self._error_message)
+        return u"\n".join(self._error_message)
 
     def can_access(self):
         if not self.access_ok:
             logger.info("*cms front preview* url is not found (%s)" % self.request.referer) ## referer
+            logger.warn("*cms front preview* error=%s" % self.error_message)
         return self.access_ok
 
     def can_rendering(self, template, page):
@@ -50,33 +51,45 @@ class AccessControl(object):
             self._error_message.append(str(e))
             return False
 
-    def fetch_page_from_pageid(self, page_id, access_key=None):
-        page = self.request.allowable(Page).filter_by(id=page_id).first()
-        self.access_ok = True
-
+    def _check_page_is_accessable(self, page, access_key):
         if page is None:
             self._error_message.append("*fetch page* page is not found")
             self.access_ok = False
             return page
 
-
-        ## 現状はloginしたuserは全部のページが見れる
+        ## accesskeyが存在していれば
         access_key = page.get_access_key(access_key)
-        if not self.request.user:
-            ## access_keyを持っていたとき、それが有効ならページが見れる。
-            if not access_key:
+        if not access_key:
+            self.access_ok = False
+
+            if self.request.user is None:
                 self._error_message.append("not loging user")
-                self.access_ok = False
-            elif not page.can_private_access(key=access_key):
-                self.access_ok = False
-                self._error_message.append(u"invalid access key %s.\n 有効期限が切れているかもしれません. (有効期限:%s)" % (access_key.hashkey, access_key.expiredate))
+                return page
+
+            ## 同じorganizatioに属しているオペレーターは全部見れる。
+            if self.request.user and self.request.user.organization_id == page.organization_id:
+                self.access_ok = True
+            else:
+                fmt = "*fetch page* invalid organization page(%s) != operator(%s)" 
+                self._error_message.appen(fmt % (self.request.user.organization_id, page.organization_id))
+                return page
+        elif not page.can_private_access(key=access_key):
+            self.access_ok = False
+            self._error_message.append(u"invalid access key %s.\n 有効期限が切れているかもしれません. (有効期限:%s)" % (access_key.hashkey, access_key.expiredate))
+            return page
+
         try:
             page.valid_layout()
         except ValueError, e:
             self._error_message.append(str(e))
             self.access_ok = False
         return page
-        
+
+    def fetch_page_from_pageid(self, page_id, access_key=None):
+        page = Page.query.filter_by(id=page_id).first()
+        self.access_ok = True
+        return self._check_page_is_accessable(page, access_key)
+
     def fetch_page_from_pagesetid(self, pageset_id):
         pageset = self.request.allowable(PageSet).filter_by(id=pageset_id).first()
         self.access_ok = True
@@ -99,6 +112,3 @@ class AccessControl(object):
             self._error_message.append(str(e))
             self.access_ok = False
         return page
-
-
-    
