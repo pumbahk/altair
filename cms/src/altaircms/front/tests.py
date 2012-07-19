@@ -102,7 +102,7 @@ class FrontAccessControlTests(unittest.TestCase):
         self.assertEquals(page._called, ["can_private_access", "valid_layout"])
         # print target.error_message
 
-    def test_not_login_with_invalid_access_key_can_access(self):
+    def test_not_login_with_invalid_access_key_cant_access(self):
         organization_id = 1
         request = testing.DummyRequest(organization=None)
 
