@@ -94,7 +94,7 @@ class IndexView(object):
             return dict(form=form, products=products)
         logger.debug('cart %s' % cart)
         api.set_cart(self.request, cart)
-        store_user_profile(self.request, dict(self.request.params))
+        store_user_profile(self.request, form.data)
         logger.debug('OK redirect')
         return HTTPFound(location=self.request.route_url("cart.payment"))
 
