@@ -16,6 +16,7 @@ from ticketing.users.models import User
 from ticketing.sej.models import SejOrder
 from ticketing.sej.exceptions import SejServerError
 from ticketing.sej.payment import request_cancel_order
+from ticketing.cart.helpers import format_number as _format_number
 
 logger = logging.getLogger(__name__)
 
@@ -259,7 +260,15 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 query = query.filter(or_(*status_cond))
         return query
 
+
+def no_filter(value):
+    return value
+
+def format_number(value):
+    return _format_number(float(value))
+
 class OrderCSV(object):
+    order_value_filters = dict((k, format_number) for k in ['transaction_fee', 'delivery_fee', 'system_fee', 'total_amount'])
 
     # csv header
     order_header = [
@@ -321,7 +330,7 @@ class OrderCSV(object):
         order_dict = record_to_multidict(order)
         order_dict.add('created_at', str(order.created_at))
         order_dict.add('status', order.status)
-        order_list = [(column, order_dict.get(column)) for column in self.order_header]
+        order_list = [(column, self.order_value_filters.get(column, no_filter)(order_dict.get(column))) for column in self.order_header]
 
         if order.user:
             user_profile_dict = record_to_multidict(order.user.user_profile)
@@ -350,7 +359,7 @@ class OrderCSV(object):
                     if column == 'name':
                         product_list.append((column_name, ordered_product.product.name))
                     if column == 'price':
-                        product_list.append((column_name, ordered_product.price))
+                        product_list.append((column_name, format_number(ordered_product.price)))
                     if column == 'quantity':
                         product_list.append((column_name, ordered_product.quantity))
                 else:
