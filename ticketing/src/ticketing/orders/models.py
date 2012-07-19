@@ -356,7 +356,7 @@ class OrderCSV(object):
                 else:
                     for ordered_product_item in ordered_product.ordered_product_items:
                         for key, value in ordered_product_item.attributes.items():
-                            if value and key in ['t_shirts_size', 'publicity', 'mail_permission', 'cont']:
+                            if value and key in ['t_shirts_size', 'publicity', 'mail_permission', 'cont', 'old_id_number']:
                                 column_name = '%s_%s' % (key, i)
                                 if not column_name in self.header:
                                     self.header.append(column_name)
