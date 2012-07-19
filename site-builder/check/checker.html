@@ -1,0 +1,61 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script type="text/javascript">
+<!--
+var load = function(url) {
+	$.ajax({
+		url: url,
+		dataType: 'text',
+		success: function(r) {
+			$('#stage').get(0).innerHTML = r;
+			
+			$('#stage g g rect').hover(function() {
+				var b = $('metadata', $(this).parents('g').eq(1)).eq(0);
+				var r = $('metadata', $(this).parents('g').eq(0)).eq(0);
+				$('#block').text($('property[name="name"]', b).text());
+				$('#row').text($('property[name="name"]', r).text());
+				$('#seat').text($(this).text());
+				$(this).attr('fill-opacity', '0.2');
+			}, function() {
+				var e = $(this).get(0);
+				$('#block').text(' ');
+				$('#row').text(' ');
+				$('#seat').text(' ');
+				$(this).attr('fill-opacity', '');
+			});
+		}
+	});
+};
+$(function() {
+	$('#stage').css({ cursor: 'url(pointer.png)' });
+	$('form').submit(function() {
+		load($('#url').val());
+		return false;
+	});
+	$('form').submit();
+});
+//-->
+</script>
+</head>
+<body>
+<div>Seat Check Tool</div>
+<div style="height: 20px;">
+	Block: <span id="block"></span>
+	&nbsp;&nbsp;&nbsp;
+	Row: <span id="row"></span>
+	&nbsp;&nbsp;&nbsp;
+	Seat: <span id="seat"></span>
+</div>
+<div>
+	<form style="padding-top: 8px;">
+	Location: <input type="text" id="url" value="sample.svg" style="width: 90%" />
+	<input type="submit" value="Load" />
+	</form>
+</div>
+
+<div id="stage"></div>
+
+</body>
+</html>
