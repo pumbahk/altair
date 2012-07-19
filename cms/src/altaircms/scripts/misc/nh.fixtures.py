@@ -62,9 +62,9 @@ class BjNHFixtureBuilder(FixtureBuilder):
         """
         super(BjNHFixtureBuilder, self).__init__(Datum)
         layout_triples = [
-            (u'nhシンプル', 'nh.base.mako', '[["header"], ["kadomaru"]]'), 
-            (u'nhチケットトップ', 'nh.complex.mako', '[["above_kadomaru"],["kadomaru"],["below_kadomaru"]]'), 
-            (u'nh.introduction','nh.introduction.mako', '[["header"], ["kadomaru"], ["card_and_QR"],["card_and_seven"],["card_and_home"],["card_and_onsite"]]'),
+            (u'nhシンプル', 'NH.base.mako', '[["header"], ["kadomaru"]]'), 
+            (u'nhチケットトップ', 'NH.complex.mako', '[["above_kadomaru"],["kadomaru"],["below_kadomaru"]]'), 
+            (u'nh.introduction','NH.introduction.mako', '[["header"], ["kadomaru"], ["card_and_QR"],["card_and_seven"],["card_and_home"],["card_and_onsite"]]'),
             ]
         self.layout_triples = layout_triples
 
@@ -120,7 +120,7 @@ class BjNHFixtureBuilder(FixtureBuilder):
                   description="", 
                   pageset=t.many_to_one(pagesets[name], "pageset_id"), 
                   keywords="", 
-                  structure="[]", 
+                  structure="{}", 
                   version=0, 
                   published=True, 
                   publish_begin=self.Default.publish_begin, 

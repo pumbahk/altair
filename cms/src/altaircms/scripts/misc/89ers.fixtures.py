@@ -120,7 +120,7 @@ class Bj89ersFixtureBuilder(FixtureBuilder):
                   description="", 
                   pageset=t.many_to_one(pagesets[name], "pageset_id"), 
                   keywords="", 
-                  structure="[]", 
+                  structure="{}", 
                   version=0, 
                   published=True, 
                   publish_begin=self.Default.publish_begin, 
