@@ -289,6 +289,7 @@ class OrderCSV(object):
         'last_name_kana',
         'first_name_kana',
         'nick_name',
+        'sex',
         ]
     shipping_address_header = [
         'last_name',
