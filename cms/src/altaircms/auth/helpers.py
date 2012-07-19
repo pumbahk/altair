@@ -37,7 +37,8 @@ def get_authenticated_organization(request):
     """
     if hasattr(request, "user"):
         return request.user.organization if request.user else None
-    raise NotImplementedError
+    logger.warn("user is None. so request.organization is also None")
+    return None
 
 
 

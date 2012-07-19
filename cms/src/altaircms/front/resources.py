@@ -40,7 +40,7 @@ class AccessControl(object):
 
     def can_access(self):
         if not self.access_ok:
-            logger.info("*cms front preview* url is not found (%s)" % self.request.referer) ## referer
+            logger.info("*cms front preview* url is not found (%s)" % self.request.url)
             logger.warn("*cms front preview* error=%s" % self.error_message)
         return self.access_ok
 
@@ -62,16 +62,16 @@ class AccessControl(object):
         if not access_key:
             self.access_ok = False
 
-            if self.request.user is None:
+            if self.request.organization is None:
                 self._error_message.append("not loging user")
                 return page
 
             ## 同じorganizatioに属しているオペレーターは全部見れる。
-            if self.request.user and self.request.user.organization_id == page.organization_id:
+            if self.request.organization and self.request.organization.id == page.organization_id:
                 self.access_ok = True
             else:
                 fmt = "*fetch page* invalid organization page(%s) != operator(%s)" 
-                self._error_message.appen(fmt % (self.request.user.organization_id, page.organization_id))
+                self._error_message.append(fmt % (self.request.organization.id, page.organization_id))
                 return page
         elif not page.can_private_access(key=access_key):
             self.access_ok = False
@@ -91,6 +91,7 @@ class AccessControl(object):
         return self._check_page_is_accessable(page, access_key)
 
     def fetch_page_from_pagesetid(self, pageset_id):
+        ## pagesetはクライアントから確認しない。allowableが正しい。
         pageset = self.request.allowable(PageSet).filter_by(id=pageset_id).first()
         self.access_ok = True
 
