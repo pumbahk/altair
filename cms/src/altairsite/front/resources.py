@@ -87,7 +87,7 @@ class AccessControlPC(object):
         if not self.access_ok:
             fmt = u"*front pc access* url is not found (%s). error=%s"
             mes = fmt % (self.request.referer, self.error_message)
-            logger.warn(mes)
+            logger.warn(mes.encode("utf-8"))
         return self.access_ok
 
     def can_rendering(self, template, page):
