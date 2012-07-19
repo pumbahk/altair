@@ -22,6 +22,8 @@ def get_authenticated_user(request):
     認証済みのuserオブジェクトを返す。存在しない場合にはNoneを返す
     """
     user_id = authenticated_userid(request)
+    if user_id is None:
+        return None
     logger.debug("*authenticate* user_id = %s" % user_id)
     try:
         return Operator.query.filter_by(user_id=user_id).one()
