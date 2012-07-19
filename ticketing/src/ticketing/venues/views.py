@@ -26,7 +26,7 @@ def get_seats(request):
         return HTTPNotFound("Venue id #%d not found" % venue_id)
 
     seats_data = {}
-    for seat in DBSession.query(Seat).options(joinedload('attributes'), joinedload('areas'), joinedload('stock'), joinedload('_status')).filter_by(venue=venue):
+    for seat in DBSession.query(Seat).options(joinedload('attributes'), joinedload('areas'), joinedload('stock'), joinedload('status_')).filter_by(venue=venue):
         seat_datum = {
             'id': seat.l0_id,
             'stock_type_id': seat.stock_type_id,
