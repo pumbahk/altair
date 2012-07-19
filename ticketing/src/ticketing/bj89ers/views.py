@@ -23,6 +23,7 @@ from ..users.models import User, UserProfile
 from . import schemas
 from .api import load_user_profile, store_user_profile, remove_user_profile
 from .models import DBSession
+from .helpers import sex_value
 
 logger = logging.getLogger(__name__)
 
@@ -173,7 +174,7 @@ class CompleteView(_CompleteView):
                 first_name_kana=profile['first_name_kana'],
                 last_name_kana=profile['last_name_kana'],
                 birth_day=date(int(profile['year']), int(profile['month']), int(profile['day'])),
-                sex=profile['sex'],
+                sex=sex_value(profile['sex']),
                 zip=profile['zipcode1'] + u'-' + profile['zipcode2'],
                 country='Japan',
                 prefecture=profile['prefecture'],
