@@ -10,6 +10,7 @@ import json
 from sqlalchemy import Table, Column, ForeignKey, ForeignKeyConstraint, Index, func
 from sqlalchemy.types import TypeEngine, TypeDecorator, VARCHAR, BigInteger, Integer, String, TIMESTAMP
 from sqlalchemy.orm import column_property, scoped_session, deferred, relationship as _relationship
+from sqlalchemy.orm.attributes import QueryableAttribute
 from sqlalchemy.orm.collections import InstrumentedList
 from sqlalchemy.orm.properties import RelationshipProperty  
 from sqlalchemy.exc import IntegrityError
@@ -54,7 +55,24 @@ class Identifier(Integer):
 from paste.util.multidict import MultiDict
 
 def record_to_appstruct(self):
-    return dict([(k, self.__dict__[k]) for k in sorted(self.__dict__) if '_sa_' != k[:4]])
+    if hasattr(self.__class__, '_decl_class_registry'):
+        # declarative
+        keys = []
+        for k in dir(self.__class__):
+            if k.startswith('__'):
+                continue
+            v = getattr(self.__class__, k, None)
+            if isinstance(v, QueryableAttribute):
+                keys.append(k)
+    else:
+        # non-declarative
+        keys = []
+        for k in dir(self.__class__):
+            if k.startswith('__'):
+                continue
+            keys.append(k)
+
+    return dict((k, getattr(self, k, None)) for k in keys)
 
 def record_to_multidict(self, filters=dict()):
     app_struct = record_to_appstruct(self)
