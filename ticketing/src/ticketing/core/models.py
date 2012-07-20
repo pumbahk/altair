@@ -1,5 +1,4 @@
 # encoding: utf-8
-
 from sqlalchemy import Table, Column, ForeignKey, ForeignKeyConstraint, func
 from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric
 from sqlalchemy.orm import join, backref
@@ -250,6 +249,7 @@ class SeatStatus(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 class SeatAdjacency(Base):
     __tablename__ = "SeatAdjacency"
+    query = DBSession.query_property()
     id = Column(Identifier, primary_key=True)
     adjacency_set_id = Column(Identifier, ForeignKey('SeatAdjacencySet.id'))
 
