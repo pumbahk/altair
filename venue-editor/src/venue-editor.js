@@ -198,9 +198,8 @@
     };
     if (options.callbacks) {
       for (var k in this.callbacks)
-        this.callbacks[k] = options.callbacks[k] || null;
+        this.callbacks[k] = options.callbacks[k] || (k == 'message' ? function(){} : null);
     }
-    this.callbacks.message = options.callbacks && options.callbacks.message || function () {};
     this.dataSource = options.dataSource;
     this.zoomRatio = options.zoomRatio || CONF.DEFAULT.ZOOM_RATIO;
     this.dragging = false;
@@ -222,6 +221,7 @@
     })();
     this.shift = false;
     this.drawing = null;
+    this.metadata = null;
     this.keyEvents = null;
     this.zoomRatio = 1.0;
     this.uiMode = 'select1';
@@ -243,24 +243,14 @@
   VenueEditor.prototype.load = function VenueEditor_load(data) {
     if (this.drawable !== null)
       this.drawable.dispose();
-    var metadata = {
-      stock_types: [],
-      info: null
-    };
-    var self = this;
-    self.callbacks.loadstart && self.callbacks.loadstart('drawing');
-    self.initDrawable(self.dataSource.drawing, function () {
-      self.callbacks.loadstart && this.callbacks.loadstart('info');
-      self.dataSource.info(function (data) {
-        metadata.info = data;
-        self.callbacks.loadstart && this.callbacks.loadstart('stockTypes');
-        self.dataSource.stockTypes(function (data) {
-          metadata.stock_types = data;
-          self.initModel(metadata);
-          self.initSeats();
-        }, self.callbacks.message);
-      }, self.callbacks.message);
-    }, self.callbacks.message);
+    this.drawing = data.drawing;
+    this.metadata = data.metadata;
+    if (data.metadata.seat_adjacencies)
+      this.seatAdjacencies = new models.SeatAdjacencies(data.metadata.seat_adjacencies);
+    this.initDrawable();
+    this.initModel();
+    this.initSeats();
+    this.callbacks.load && this.callbacks.load(this);
   };
 
   VenueEditor.prototype.dispose = function VenueEditor_dispose() {
@@ -274,78 +264,84 @@
     this.highlighted = null;
   };
 
-  VenueEditor.prototype.initDrawable = function VenueEditor_initDrawable(dataSource, next) {
+  VenueEditor.prototype.initDrawable = function VenueEditor_initDrawable() {
     var self = this;
-    dataSource(function (drawing) {
-      var attrs = util.allAttributes(drawing.documentElement);
-      var w = parseFloat(attrs.width), h = parseFloat(attrs.height);
-      var vb = attrs.viewBox ? attrs.viewBox.split(/\s+/).map(parseFloat) : null;
+    var drawing = this.drawing;
+    var attrs = util.allAttributes(drawing.documentElement);
+    var w = parseFloat(attrs.width), h = parseFloat(attrs.height);
+    var vb = attrs.viewBox ? attrs.viewBox.split(/\s+/).map(parseFloat) : null;
 
-      vb = [0, 0, 1000, 1000];
+    var size = ((vb || w || h) ? {
+      x: ((vb && vb[2]) || w || h),
+      y: ((vb && vb[3]) || h || w)
+    } : null);
 
-      var size = ((vb || w || h) ? {
-        x: ((vb && vb[2]) || w || h),
-        y: ((vb && vb[3]) || h || w)
-      } : null);
+    var drawable = new Fashion.Drawable(self.canvas[0], { contentSize: {x: size.x, y: size.y}, viewportSize: { x: this.canvas.innerWidth(), y: this.canvas.innerHeight() } });
+    var shapes = {};
 
-      var drawable = new Fashion.Drawable(self.canvas[0], { contentSize: {x: size.x, y: size.y} });
-      var shapes = {};
-
-      (function iter(svgStyle, defs, nodeList) {
-        outer:
+    (function iter(svgStyle, defs, nodeList) {
+      outer:
         for (var i = 0; i < nodeList.length; i++) {
           var n = nodeList[i];
           if (n.nodeType != 1) continue;
-          var attrs = util.allAttributes(n);
 
           var shape = null;
+          var attrs = util.allAttributes(n);
+
           var currentSvgStyle = attrs.style ?
             mergeSvgStyle(svgStyle, parseCSSAsSvgStyle(attrs.style, defs)):
             svgStyle;
 
           switch (n.nodeName) {
-          case 'defs':
-            parseDefs(n, defs);
-            break;
+            case 'defs':
+              parseDefs(n, defs);
+              break;
 
-          case 'g':
-            arguments.callee.call(self, currentSvgStyle, defs, n.childNodes);
-            continue outer;
+            case 'g':
+              arguments.callee.call(self, currentSvgStyle, defs, n.childNodes);
+              continue outer;
 
-          case 'path':
-            if (!attrs.d) throw new Error("Pathdata is not provided for the path element");
-            shape = new Fashion.Path({
-              points: new Fashion.PathData(attrs.d)
-            });
-            break;
+            case 'path':
+              if (!attrs.d) throw new Error("Pathdata is not provided for the path element");
+              shape = new Fashion.Path({points: new Fashion.PathData(attrs.d)});
+              shape.style(CONF.DEFAULT.SHAPE_STYLE);
+              break;
 
-          case 'text':
-            shape = new Fashion.Text({
-              fontSize: 10,
-              text: n.firstChild.nodeValue,
-              zIndex: 99
-            });
-            break;
+            case 'text':
+              shape = new Fashion.Text({
+                //position: {
+                //  x: parseFloat(attrs.x),
+                //  y: parseFloat(attrs.y)
+                //},
+                fontSize: 10,
+                text: n.firstChild.nodeValue,
+                zIndex: 99
+              });
+              shape.style(CONF.DEFAULT.TEXT_STYLE);
+              break;
 
-          case 'rect':
-            shape = new Fashion.Rect({
-              size: {
-                x: parseFloat(attrs.width),
-                y: parseFloat(attrs.height)
-              },
-              /*   
-              corner: {
-                x: parseFloat(attrs.rx || 0),
-                y: parseFloat(attrs.ry || 0)
-              }
-              */
-            });
-            break;
+            case 'rect':
+              shape = new Fashion.Rect({
+                //position: {
+                //  x: parseFloat(attrs.x),
+                //  y: parseFloat(attrs.y)
+                //},
+                //corner: {
+                //  x: parseFloat(attrs.rx || 0),
+                //  y: parseFloat(attrs.ry || 0)
+                //}
+                size: {
+                  x: parseFloat(attrs.width),
+                  y: parseFloat(attrs.height)
+                },
+              });
+              shape.style(CONF.DEFAULT.SHAPE_STYLE);
+              break;
 
-          default:
-            continue outer;
+            default:
+              continue outer;
+
           }
-
           if (shape !== null) {
             var x = parseFloat(attrs.x),
                 y = parseFloat(attrs.y);
@@ -356,30 +352,27 @@
           }
           shapes[attrs.id] = shape;
         }
-      }).call(self,
-        { fill: false, fillOpacity: false,
-          stroke: false, strokeOpacity: false },
-        {},
-        drawing.documentElement.childNodes);
+    }).call(self,
+      { fill: false, fillOpacity: false,
+        stroke: false, strokeOpacity: false },
+      {},
+      drawing.documentElement.childNodes);
 
-      self.drawable = drawable;
-      self.shapes = shapes;
+    self.drawable = drawable;
+    self.shapes = shapes;
 
-      var cs = drawable.contentSize();
-      var vs = drawable.viewportSize();
-      var center = {
-        x: (cs.x - vs.x) / 2,
-        y: (cs.y - vs.y) / 2
-      };
-
-      self.drawable.transform(Fashion.Matrix.scale(self.zoomRatio));
-      self.changeUIMode(self.uiMode);
-      next.call(this);
-    }, self.callbacks.message);
+    var cs = drawable.contentSize();
+    var vs = drawable.viewportSize();
+    var center = {
+      x: (cs.x - vs.x) / 2,
+      y: (cs.y - vs.y) / 2
+    };
+    self.drawable.transform(Fashion.Matrix.scale(self.zoomRatio));
+    self.changeUIMode(self.uiMode);
   };
 
-  VenueEditor.prototype.initModel = function VenueEditor_initModel(metadata) {
-    this.venue = new models.Venue(metadata, {
+  VenueEditor.prototype.initModel = function VenueEditor_initModel() {
+    this.venue = new models.Venue(this.metadata, {
       callbacks: this.callbacks
     });
   };
@@ -484,6 +477,27 @@
 
       switch(type) {
       case 'select1':
+        this.drawable.addEvent({
+          mouseup: function(evt) {
+            self.startPos = evt.logicalPosition;
+            self.rubberBand.position({x: self.startPos.x, y: self.startPos.y});
+            self.rubberBand.size({x: 0, y: 0});
+
+            var selection = null;
+            var hitTest = util.makeHitTester(self.rubberBand);
+            for (var id in self.seats) {
+              var seatVO = self.seats[id];
+              var seat = seatVO.get('model');
+              if ((hitTest(seatVO.get('shape')) || (self.shift && seat.get('selected')) && seat.get('selectable'))) {
+                selection = seat;
+                break;
+              }
+            }
+            self._unselectAll();
+            selection.set('selected', true);
+            self.callbacks.select && self.callbacks.select(self, [selection]);
+          }
+        });
         break;
 
       case 'select':
@@ -585,128 +599,86 @@
   $.fn.venueeditor = function (options) {
     var aux = this.data('venueeditor');
 
-    if (!options)
-      throw new Error("Options must be given");
-
-    if (typeof options == 'object') {
-      if (!options.dataSource || typeof options.dataSource != 'object')
+    if (!aux) { // if there are no store data. init and store the data.
+      if (!options)
+        throw new Error("Options must be given");
+      if (typeof options == 'string' || options instanceof String)
+        throw new Error("Command issued against an uninitialized element");
+      if (!options.dataSource || !options.dataSource instanceof Object)
         throw new Error("Required option missing: dataSource");
-      if (aux)
-        aux.dispose();
-
-      var _options = $.extend({}, options);
-
-      var createMetadataLoader = (function () {
-        var conts = {}, allData = null, first = true;
-        return function createMetadataLoader(key) {
-          return function metadataLoader(next, error) {
-            conts[key] = { next: next, error: error };
-            if (first) {
-              $.ajax({
-                url: options.dataSource.metadata,
-                dataType: 'json',
-                success: function(data) {
-                  allData = data;
-                  var _conts = conts;
-                  conts = {};
-                  for (var k in _conts)
-                    _conts[k].next(data[key]);
-                },
-                error: function(xhr, text) {
-                  var message = "Failed to load " + key + " (reason: " + text + ")";
-                  var _conts = conts;
-                  conts = {};
-                  for (var k in _conts)
-                    _conts[k].error(message);
-                }
-              });
-              first = false;
-              return;
-            } else {
-              if (allData) {
-                conts[key].next(allData[key]);
-                delete conts[key];
-              }
-            }
-          };
-        };
-      })();
-
-      _options.dataSource = {
-        drawing:
-          typeof options.dataSource.drawing == 'function' ?
-            options.dataSource.drawing:
-            function (next, error) {
-              $.ajax({
-                type: 'get',
-                url: options.dataSource.drawing,
-                dataType: 'xml',
-                success: function(xml) { next(xml); },
-                error: function(xhr, text) { error("Failed to load drawing data (reason: " + text + ")"); }
-              });
-            }
+      aux = {
+        manager: new VenueEditor(this, options),
+        dataSource: options.dataSource,
+        callbacks: { message: options.callbacks && options.callbacks.message || null, loading: options.callbacks && options.callbacks.loading || null }
       };
-      $.each(
-        [
-          [ 'stockTypes', 'stock_types' ],
-          [ 'seats', 'seats' ],
-          [ 'areas', 'areas' ],
-          [ 'info', 'info' ]
-        ],
-        function(n, k) { 
-          _options.dataSource[k[0]] =
-            typeof options.dataSource[k[0]] == 'function' ?
-              options.dataSource[k[0]]:
-              createMetadataLoader(k[1]);
-        }
-      );
-      aux = new VenueEditor(this, _options);
       this.data('venueeditor', aux);
       if (options.uimode)
-        aux.changeUIMode(options.uimode);
-    } else if (typeof options == 'string' || options instanceof String) {
-      if (options == 'remove') {
-        aux.dispose();
-        this.data('venueviewer', null);
-      }
-      if (!aux)
-        throw new Error("Command issued against an uninitialized element");
-      switch (options) {
-      case 'load':
-        aux.load();
-        break;
+        aux.manager.changeUIMode(options.uimode);
+    } else {
+      if (typeof options == 'string' || options instanceof String) {
+        switch (options) {
+          case 'load':
+            // Ajax Waiter
+            var waiter = new util.AsyncDataWaiter({
+              identifiers: ['drawing', 'metadata'],
+              after: function main(data) {
+                aux.manager.load(data);
+              }
+            });
+            // Load drawing
+            $.ajax({
+              type: 'get',
+              url: aux.dataSource.drawing,
+              dataType: 'xml',
+              success: function(xml) { waiter.charge('drawing', xml); },
+              error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load drawing data (reason: " + text + ")"); }
+            });
 
-      case 'uimode':
-        aux.changeUIMode(arguments[1]);
-        break;
+            // Load metadata
+            $.ajax({
+              url: aux.dataSource.metadata,
+              dataType: 'json',
+              success: function(data) { waiter.charge('metadata', data); },
+              error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load seat data (reason: " + text + ")"); }
+            });
+            aux.callbacks.loading && aux.callbacks.loading(aux.manager);
+            break;
 
-      case 'selection':
-        return aux.selection;
+          case 'remove':
+            aux.manager.dispose();
+            this.data('venueeditor', null);
+            break;
 
-      case 'clearSelection':
-        aux.unselectAll();
-        return; 
+          case 'uimode':
+            aux.manager.changeUIMode(arguments[1]);
+            break;
 
-      case 'adjacency':
-        aux.adjacencyLength(arguments[1]|0);
-        break;
+          case 'selection':
+            return aux.manager.selection;
 
-      case 'model':
-        return aux.venue;
+          case 'clearSelection':
+            aux.manager.unselectAll();
+            return;
 
-      case 'viewportSize':
-        if (aux.drawable) {
-          aux.drawable.viewportSize(
-            { x: arguments[1].width, y: arguments[1].height }
-          );
+          case 'adjacency':
+            aux.manager.adjacencyLength(arguments[1]|0);
+            break;
+
+          case 'model':
+            return aux.manager.venue;
+
+          case 'viewportSize':
+            if (aux.manager.drawable) {
+              aux.manager.drawable.viewportSize(
+                { x: arguments[1].width, y: arguments[1].height }
+              );
+            }
+            break;
         }
-        break;
       }
     }
-
     return this;
   };
-
 })(jQuery);
 /*
  * vim: sts=2 sw=2 ts=2 et

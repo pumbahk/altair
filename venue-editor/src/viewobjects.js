@@ -114,7 +114,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
 
   _refreshStyle: function Seat__refreshStyle() {
     var model = this.get('model');
-    var style = model && model.get('stock').baseStyle || {};
+    var style = model && model.get('stock').attributes.style || {};
     var shape = this.get('shape');
     if (!shape)
       return;
