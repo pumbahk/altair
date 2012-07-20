@@ -374,7 +374,7 @@ class OrderCSV(object):
 
                                 # for bj89ers
                                 if key == 'mail_permission':
-                                    value = 'yes' if value == 'y' else 'no'
+                                    value = '' if value is None else value
                                 elif key == 'cont':
                                     value = u'新規' if value == 'no' else u'継続'
 
