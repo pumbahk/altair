@@ -244,7 +244,7 @@
     if (this.drawable !== null)
       this.drawable.dispose();
     var metadata = {
-      stockTypes: null,
+      stock_types: [],
       info: null
     };
     var self = this;
@@ -255,7 +255,7 @@
         metadata.info = data;
         self.callbacks.loadstart && this.callbacks.loadstart('stockTypes');
         self.dataSource.stockTypes(function (data) {
-          metadata.stockTypes = data;
+          metadata.stock_types = data;
           self.initModel(metadata);
           self.initSeats();
         }, self.callbacks.message);
@@ -333,10 +333,12 @@
                 x: parseFloat(attrs.width),
                 y: parseFloat(attrs.height)
               },
+              /*   
               corner: {
                 x: parseFloat(attrs.rx || 0),
                 y: parseFloat(attrs.ry || 0)
               }
+              */
             });
             break;
 
@@ -675,26 +677,26 @@
         break;
 
       case 'uimode':
-        aux.manager.changeUIMode(arguments[1]);
+        aux.changeUIMode(arguments[1]);
         break;
 
       case 'selection':
-        return aux.manager.selection;
+        return aux.selection;
 
       case 'clearSelection':
-        aux.manager.unselectAll();
+        aux.unselectAll();
         return; 
 
       case 'adjacency':
-        aux.manager.adjacencyLength(arguments[1]|0);
+        aux.adjacencyLength(arguments[1]|0);
         break;
 
       case 'model':
-        return aux.manager.venue;
+        return aux.venue;
 
       case 'viewportSize':
-        if (aux.manager.drawable) {
-          aux.manager.drawable.viewportSize(
+        if (aux.drawable) {
+          aux.drawable.viewportSize(
             { x: arguments[1].width, y: arguments[1].height }
           );
         }

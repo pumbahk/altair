@@ -29,7 +29,7 @@ exports.DEFAULT = {
   AUGMENTED_STYLE: {
     selected: {
       text_color: "#FFF",
-      fill:   { color: "#009BE1" },
+      fill:   { color: "#009BE1" }
     },
     highlighted: {
       fill: null,
