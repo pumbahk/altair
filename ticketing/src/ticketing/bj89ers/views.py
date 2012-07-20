@@ -195,7 +195,7 @@ class CompleteView(_CompleteView):
         for ordered_product_item in order_product.ordered_product_items:
             product_item = ordered_product_item.product_item
             # Tシャツ
-            if product_item.stock.stock_type.name != u'会員権':
+            if product_item.stock.stock_type.name == u'Tシャツ':
                 ordered_product_item.attributes['t_shirts_size'] = profile.get('t_shirts_size')
             else:
                 # これ本当にいるの??
