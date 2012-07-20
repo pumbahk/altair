@@ -42,6 +42,8 @@ pm = _api.load_user_profile(request)
 <div>${pm['tel_2']}</div>
 <%mobile:form_header>メールアドレス</%mobile:form_header>
 <div>${pm['email']}</div>
+<%mobile:form_header>仙台89ERSからのメールマガジンの配信</%mobile:form_header>
+<div>${u'希望する' if pm.get('mail_permission') else u'希望しない'}</div>
 <%mobile:form_header>メモリアルブックへの掲載希望</%mobile:form_header>
 <div>${u'はい' if pm.get('publicity') == 'yes' else u'いいえ'}</div>
 <hr />
