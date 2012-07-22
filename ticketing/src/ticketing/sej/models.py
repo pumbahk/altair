@@ -108,7 +108,7 @@ class SejNotification(BaseModel, WithTimestamp, LogicallyDeleted, Base):
 class SejFile(BaseModel, WithTimestamp, LogicallyDeleted, Base):
     __tablename__           = 'SejFile'
     id                      = Column(Identifier, primary_key=True)
-    notification_type       = Column(Enum('94', '51', '61', '92', '94', '95', '96'))
+    notification_type       = Column(Enum('91', '51', '61', '92', '94', '95', '96'))
     file_date               = Column(Date, unique=True)
     reflected_at            = Column(DateTime, nullable=True)
     file_url                = Column(String(255))
