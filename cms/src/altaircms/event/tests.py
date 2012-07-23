@@ -11,6 +11,7 @@ def setUpModule():
     from sqlalchemy import create_engine
     import altaircms.page.models
     import altaircms.event.models
+    import altaircms.auth.models
     import altaircms.models
 
     engine = create_engine("sqlite:///")
@@ -105,6 +106,7 @@ class ParseAndSaveEventTests(unittest.TestCase):
     def test_it(self):
         from datetime import datetime
         import json
+        from altaircms.auth.models import Organization
         request = testing.DummyRequest()
         result = self._callFUT(request, json.loads(self.data))
 
@@ -114,7 +116,8 @@ class ParseAndSaveEventTests(unittest.TestCase):
         self.assertEqual(event.backend_id, 20) #backend id
         self.assertEqual(event.event_open, datetime(2012, 3, 15, 10))
         self.assertEqual(event.event_close, datetime(2012, 3, 15, 13))
-        self.assertEqual(event.organization_id, 1000)
+        self.assertNotEqual(event.organization_id, 1000)
+        self.assertEqual(event.organization_id, Organization.query.filter_by(backend_id=1000).one().id)
         self.assertEqual(len(event.performances), 2)
 
         performance = event.performances[0]
