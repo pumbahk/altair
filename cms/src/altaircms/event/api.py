@@ -4,6 +4,7 @@ import isodate
 from sqlalchemy.orm.exc import NoResultFound
 
 from altaircms.event.models import Event
+from altaircms.auth.models import Organization
 from altaircms.models import DBSession, Performance, Sale, Ticket
 from altaircms.auth.models import APIKey
 from altaircms.seeds.prefecture import PREFECTURE_CHOICES
@@ -20,6 +21,8 @@ def parse_datetime(dtstr):
         return isodate.parse_datetime(dtstr)
     except ValueError:
         raise "Invalid ISO8601 datetime: %s" % dtstr
+
+
 
 class Scanner(object):
     def __init__(self, session, request):
@@ -95,6 +98,12 @@ class Scanner(object):
                 raise Exception("missing property '%s' in the event record" % e.message)
             self.session.add(performance)
 
+    def get_organization_record(self, event_record):
+        organization = Organization.get_or_create(event_record["organization_id"], "oauth")
+        self.session.add(organization)
+        self.session.flush()
+        return organization
+
     def scan_event_record(self, event_record):
         event = Event.query.filter_by(backend_id=event_record['id']).first() or Event()
 
@@ -108,7 +117,7 @@ class Scanner(object):
                 event.event_close = parse_datetime(event_record['end_on'])
                 event.deal_open = parse_datetime(event_record.get('deal_open'))
                 event.deal_close = parse_datetime(event_record.get('deal_close'))
-                event.organization_id = event_record["organization_id"]
+                event.organization_id = self.get_organization_record(event_record).id
             except KeyError as e:
                 raise Exception("missing property '%s' in the event record" % e.message)
             def notify_event_update():
