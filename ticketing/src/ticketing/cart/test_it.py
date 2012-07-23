@@ -106,6 +106,7 @@ class ReserveSeatsTests(unittest.TestCase):
 
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
+
     def test_prepare(self):
         """ 生成データの確認 """
         import ticketing.core.models as c_m
@@ -152,3 +153,15 @@ class ReserveSeatsTests(unittest.TestCase):
         result = target.get_vacant_seats(self.stock_id, 4)
         self.assertEqual(len(result), 4)
         self.assertEqual(result[0].name, 'D-1')
+
+    def test_reserve(self):
+        import ticketing.core.models as c_m
+        request = testing.DummyRequest()
+        target = self._makeOne(request)
+        seats = c_m.Seat.query.filter(c_m.Seat.name.in_([u'B-1', u'C-1', u'E-1'])).all()
+
+        result = target._reserve(seats)
+        self.assertEqual(len(result), len(seats))
+
+        for s in result:
+            self.assertEqual(s.status, int(c_m.SeatStatusEnum.InCart))

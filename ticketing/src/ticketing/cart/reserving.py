@@ -11,6 +11,19 @@ class Reserving(object):
     def __init__(self, request):
         self.request = request
 
+    def reserve_seats(self, stock_id, quantity):
+        seats = self.get_vacant_seats(stock_id, quantity)
+        self._reserve(seats)
+        return seats
+
+    def _reserve(self, seats):
+        statuses = SeatStatus.query.filter(
+            SeatStatus.seat_id.in_([s.id for s in seats])
+        ).all()
+        for stat in statuses:
+            stat.status = int(SeatStatusEnum.InCart)
+        return statuses
+        
     def get_vacant_seats(self, stock_id, quantity):
         """ 空き席を取得 """
 
