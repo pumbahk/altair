@@ -59,7 +59,7 @@ def _setup_performance(session):
         seat_adjacency_sets[seat_count] = c_m.SeatAdjacencySet(venue=venue, seat_count=seat_count)
 
     seat_index_type = c_m.SeatIndexType(venue=venue, name='testing')
-    for row, ss in zip(ROWS, SEAT_STATUSES):
+    for seat_index_index, (row, ss) in enumerate(zip(ROWS, SEAT_STATUSES)):
         seats = []
         for i, s in enumerate(ss):
             # seat
@@ -67,7 +67,7 @@ def _setup_performance(session):
             # seat_status
             status = int(c_m.SeatStatusEnum.InCart) if s else int(c_m.SeatStatusEnum.Vacant)
             seat_status = c_m.SeatStatus(seat=seat, status=status)
-            seat_index = c_m.SeatIndex(seat=seat, index=i, seat_index_type=seat_index_type)
+            seat_index = c_m.SeatIndex(seat=seat, index=seat_index_index, seat_index_type=seat_index_type)
             seats.append(seat)
         # seat_adjacency
         for seat_count in range(2, 5):
@@ -118,6 +118,8 @@ class ReserveSeatsTests(unittest.TestCase):
                 ).count(), 
             22)
         self.assertEqual(c_m.SeatAdjacency.query.count(), 60)
+        self.assertEqual(c_m.SeatStatus.query.filter(c_m.SeatStatus.status==int(c_m.SeatStatusEnum.InCart)).count(),
+            8)
 
     def test_1seat(self):
         """ 単席確保 """
@@ -125,6 +127,22 @@ class ReserveSeatsTests(unittest.TestCase):
         target = self._makeOne(request)
 
         result = target.get_vacant_seats(self.stock_id, 1)
+
+    def _reserve_all_seats(self):
+        import ticketing.core.models as c_m
+        ss = c_m.SeatStatus.query.all()
+        for s in ss:
+            s.status = int(c_m.SeatStatusEnum.InCart)
+
+    def test_2seats_without_vacant_seats(self):
+        """ 2連席確保 """
+        from ticketing.cart.reserving import NotEnoughAdjacencyException
+        self._reserve_all_seats()
+
+        request = testing.DummyRequest()
+        target = self._makeOne(request)
+
+        self.assertRaises(NotEnoughAdjacencyException, target.get_vacant_seats, self.stock_id, 2)
 
     def test_2seats(self):
         """ 2連席確保 """
@@ -135,6 +153,7 @@ class ReserveSeatsTests(unittest.TestCase):
 
         self.assertEqual(len(result), 2)
         self.assertEqual(result[0].name, 'B-1')
+        self.assertEqual(result[1].name, 'B-2')
 
     def test_3seats(self):
         """ 3連席確保 """
@@ -165,3 +184,76 @@ class ReserveSeatsTests(unittest.TestCase):
 
         for s in result:
             self.assertEqual(s.status, int(c_m.SeatStatusEnum.InCart))
+
+    def test_reserve_seats(self):
+        import ticketing.core.models as c_m
+        request = testing.DummyRequest()
+        target = self._makeOne(request)
+        result = target.reserve_seats(self.stock_id, 2)
+
+        self.assertEqual(len(result), 2)
+
+        statuses = c_m.SeatStatus.query.filter(c_m.SeatStatus.seat_id.in_([s.id for s in result])).all()
+        self.assertEqual(len(statuses), 2)
+
+        for s in statuses:
+            self.assertEqual(s.status, int(c_m.SeatStatusEnum.InCart))
+
+        statuses = c_m.SeatStatus.query.filter(c_m.SeatStatus.status==int(c_m.SeatStatusEnum.InCart)).all()
+        self.assertEqual(len(statuses), 2 + 8)
+        
+            
+
+    def test_reserve_2seats_twice(self):
+        """ 2連席連続確保 """
+        import ticketing.core.models as c_m
+        request = testing.DummyRequest()
+        target = self._makeOne(request)
+        result = target.reserve_seats(self.stock_id, 2)
+        self.assertEqual(result[0].name, 'B-1')
+        self.assertEqual(result[1].name, 'B-2')
+        result = target.reserve_seats(self.stock_id, 2)
+        self.assertEqual(result[0].name, 'B-4')
+        self.assertEqual(result[1].name, 'B-5')
+
+    def test_reserve_seats_3times(self):
+        """ 4 -> 3 -> 2 連席連続確保 """
+        import ticketing.core.models as c_m
+        request = testing.DummyRequest()
+        target = self._makeOne(request)
+        result = target.reserve_seats(self.stock_id, 4)
+        self.assertEqual(result[0].name, 'D-1')
+        self.assertEqual(result[1].name, 'D-2')
+        self.assertEqual(result[2].name, 'D-3')
+        self.assertEqual(result[3].name, 'D-4')
+        result = target.reserve_seats(self.stock_id, 3)
+        self.assertEqual(result[0].name, 'C-1')
+        self.assertEqual(result[1].name, 'C-2')
+        self.assertEqual(result[2].name, 'C-3')
+        result = target.reserve_seats(self.stock_id, 2)
+        self.assertEqual(result[0].name, 'B-1')
+        self.assertEqual(result[1].name, 'B-2')
+
+
+    def test_reserve_2seats_until_sold_out(self):
+        import ticketing.core.models as c_m
+        from ticketing.cart.reserving import NotEnoughAdjacencyException
+        request = testing.DummyRequest()
+        target = self._makeOne(request)
+
+        for i in range(8):
+            target.reserve_seats(self.stock_id, 2)
+        self.assertRaises(NotEnoughAdjacencyException, target.reserve_seats, self.stock_id, 2)
+
+    def test_reserve_3seats_until_sold_out(self):
+        import ticketing.core.models as c_m
+        from ticketing.cart.reserving import NotEnoughAdjacencyException
+        request = testing.DummyRequest()
+        target = self._makeOne(request)
+
+        for i in range(3):
+            target.reserve_seats(self.stock_id, 3)
+        self.assertRaises(NotEnoughAdjacencyException, target.reserve_seats, self.stock_id, 3)
+        for i in range(4):
+            target.reserve_seats(self.stock_id, 2)
+        self.assertRaises(NotEnoughAdjacencyException, target.reserve_seats, self.stock_id, 2)

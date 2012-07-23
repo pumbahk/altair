@@ -7,6 +7,9 @@
 from ticketing.core.models import *
 from sqlalchemy.sql import not_
 
+class NotEnoughAdjacencyException(Exception):
+    """ 必要な連席が存在しない場合 """
+
 class Reserving(object):
     def __init__(self, request):
         self.request = request
@@ -63,4 +66,6 @@ class Reserving(object):
             SeatIndex.seat_id==Seat.id
         ).order_by(SeatIndex.index).first()
 
+        if adjacency is None:
+            raise NotEnoughAdjacencyException
         return adjacency.seats
