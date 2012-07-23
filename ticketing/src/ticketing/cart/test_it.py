@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 
 import unittest
-
+from pyramid import testing
 
 # Trueはすでにその席が抑えられていることをあらわす
 SEAT_STATUSES = [
@@ -15,7 +15,7 @@ SEAT_STATUSES = [
 def _setup_db():
     from sqlalchemy import create_engine
     engine = create_engine("sqlite:///")
-    # engine.echo = True
+    engine.echo = True
     import sqlahelper
     sqlahelper.add_engine(engine)
     from ticketing.core import models
@@ -23,6 +23,8 @@ def _setup_db():
     return sqlahelper.get_session()
 
 def _setup_performance(session):
+    """ 席データまでの必要なデータをすべて作成 """
+
     import itertools
     import ticketing.core.models as c_m
     # organization
@@ -54,14 +56,16 @@ def _setup_performance(session):
     for seat_count in range(2, 5):
         seat_adjacency_sets[seat_count] = c_m.SeatAdjacencySet(venue=venue, seat_count=seat_count)
 
+    seat_index_type = c_m.SeatIndexType(venue=venue, name='testing')
     for ss in SEAT_STATUSES:
         seats = []
-        for s in ss:
+        for i, s in enumerate(ss):
             # seat
-            seat = c_m.Seat(venue=venue)
+            seat = c_m.Seat(venue=venue, stock=stock)
             # seat_status
             status = int(c_m.SeatStatusEnum.InCart) if s else int(c_m.SeatStatusEnum.Vacant)
             seat_status = c_m.SeatStatus(seat=seat, status=status)
+            seat_index = c_m.SeatIndex(seat=seat, index=i, seat_index_type=seat_index_type)
             seats.append(seat)
         # seat_adjacency
         for seat_count in range(2, 5):
@@ -75,7 +79,7 @@ def _setup_performance(session):
     session.add(org)
     session.flush()
 
-    # seat_index
+    return stock.id
 
 class ReserveSeatsTests(unittest.TestCase):
     """
@@ -87,13 +91,19 @@ class ReserveSeatsTests(unittest.TestCase):
         cls.session = _setup_db()
 
     def setUp(self):
-        _setup_performance(self.session)
+        self.stock_id = _setup_performance(self.session)
 
     def tearDown(self):
         import transaction
         transaction.abort()
         self.session.remove()
 
+    def _getTarget(self):
+        from .reserving import Reserving
+        return Reserving
+
+    def _makeOne(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
     def test_prepare(self):
         """ 生成データの確認 """
         import ticketing.core.models as c_m
@@ -108,16 +118,32 @@ class ReserveSeatsTests(unittest.TestCase):
 
     def test_1seat(self):
         """ 単席確保 """
-        pass
+        request = testing.DummyRequest()
+        target = self._makeOne(request)
+
+        result = target.reserve_seats(self.stock_id, 1)
 
     def test_2seats(self):
         """ 2連席確保 """
-        pass
+        request = testing.DummyRequest()
+        target = self._makeOne(request)
+
+        result = target.reserve_seats(self.stock_id, 2)
+
+        self.assertEqual(len(result), 2)
 
     def test_3seats(self):
         """ 3連席確保 """
-        pass
+        request = testing.DummyRequest()
+        target = self._makeOne(request)
+
+        result = target.reserve_seats(self.stock_id, 3)
+        self.assertEqual(len(result), 3)
 
     def test_4seats(self):
         """ 4連席確保 """
-        pass
+        request = testing.DummyRequest()
+        target = self._makeOne(request)
+
+        result = target.reserve_seats(self.stock_id, 4)
+        self.assertEqual(len(result), 4)
