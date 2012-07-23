@@ -48,3 +48,12 @@ def is_include_t_shirts(cart):
             if item.stock.stock_type.name == u'Tシャツ':
                 return True
     return False
+
+def sex_value(value):
+    if value == u'male':
+        return 1
+    elif value == u'female':
+        return 2
+    else:
+        return 0
+

@@ -293,6 +293,7 @@ class OrderCSV(object):
         'last_name_kana',
         'first_name_kana',
         'nick_name',
+        'sex',
         ]
     shipping_address_header = [
         'last_name',
@@ -306,6 +307,7 @@ class OrderCSV(object):
         'address_1',
         'address_2',
         'tel_1',
+        'tel_2',
         'fax',
         ]
     other_header = [
@@ -376,7 +378,7 @@ class OrderCSV(object):
 
                                 # for bj89ers
                                 if key == 'mail_permission':
-                                    value = 'yes' if value == 'y' else 'no'
+                                    value = '' if value is None else value
                                 elif key == 'cont':
                                     value = u'新規' if value == 'no' else u'継続'
 

@@ -23,6 +23,7 @@ from ..users.models import User, UserProfile
 from . import schemas
 from .api import load_user_profile, store_user_profile, remove_user_profile
 from .models import DBSession
+from .helpers import sex_value
 
 logger = logging.getLogger(__name__)
 
@@ -94,7 +95,7 @@ class IndexView(object):
             return dict(form=form, products=products)
         logger.debug('cart %s' % cart)
         api.set_cart(self.request, cart)
-        store_user_profile(self.request, dict(self.request.params))
+        store_user_profile(self.request, form.data)
         logger.debug('OK redirect')
         return HTTPFound(location=self.request.route_url("cart.payment"))
 
@@ -173,7 +174,7 @@ class CompleteView(_CompleteView):
                 first_name_kana=profile['first_name_kana'],
                 last_name_kana=profile['last_name_kana'],
                 birth_day=date(int(profile['year']), int(profile['month']), int(profile['day'])),
-                sex=profile['sex'],
+                sex=sex_value(profile['sex']),
                 zip=profile['zipcode1'] + u'-' + profile['zipcode2'],
                 country='Japan',
                 prefecture=profile['prefecture'],
@@ -194,7 +195,7 @@ class CompleteView(_CompleteView):
         for ordered_product_item in order_product.ordered_product_items:
             product_item = ordered_product_item.product_item
             # Tシャツ
-            if product_item.stock.stock_type.name != u'会員権':
+            if product_item.stock.stock_type.name == u'Tシャツ':
                 ordered_product_item.attributes['t_shirts_size'] = profile.get('t_shirts_size')
             else:
                 # これ本当にいるの??

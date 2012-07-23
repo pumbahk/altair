@@ -1,6 +1,6 @@
 # encoding: utf-8
 from sqlalchemy import Table, Column, ForeignKey, ForeignKeyConstraint, func
-from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric
+from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric, Unicode
 from sqlalchemy.orm import join, backref
 from sqlalchemy.ext.associationproxy import association_proxy
 
@@ -132,7 +132,7 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     id              = Column(Identifier, primary_key=True)
     l0_id           = Column(String(255))
-
+    name            = Column(Unicode(50), nullable=False, default=u"", server_default=u"")
     stock_id        = Column(Identifier, ForeignKey('Stock.id'))
     stock_type_id   = Column(Identifier, ForeignKey('StockType.id'))
 
