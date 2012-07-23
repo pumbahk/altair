@@ -257,3 +257,44 @@ class ReserveSeatsTests(unittest.TestCase):
         for i in range(4):
             target.reserve_seats(self.stock_id, 2)
         self.assertRaises(NotEnoughAdjacencyException, target.reserve_seats, self.stock_id, 2)
+
+class StockerTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.session = _setup_db()
+
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        import transaction
+        transaction.abort()
+
+    def _getTarget(self):
+        from ticketing.cart.stocker import Stocker
+        return Stocker
+
+    def _makeOne(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
+
+    def _add_stock(self, quantity):
+        import ticketing.core.models as c_m
+        stock = c_m.Stock(quantity=quantity)
+        c_m.StockStatus(stock=stock, quantity=quantity)
+        c_m.DBSession.add(stock)
+        c_m.DBSession.flush()
+        return stock
+
+    def test_take_stock(self):
+        request = testing.DummyRequest()
+        target = self._makeOne(request)
+        stock = self._add_stock(10)
+        result = target.take_stock([(stock.id, 8)])
+        self.assertEqual(result[0].quantity, 2)
+
+    def test_take_stock_not_enough(self):
+        from ticketing.cart.stocker import NotEnoughStockException
+        request = testing.DummyRequest()
+        target = self._makeOne(request)
+        stock = self._add_stock(10)
+        self.assertRaises(NotEnoughStockException, target.take_stock, [(stock.id, 100)])

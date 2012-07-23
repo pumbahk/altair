@@ -17,6 +17,7 @@ from .interfaces import IOrderPayment, IOrderDelivery, ICartPayment, ICartDelive
 from ..core import models as c_models
 from . import models as m
 from . import logger
+from zope.deprecation import deprecation
 
 class TicketingCartResource(object):
     __acl__ = [
@@ -82,6 +83,7 @@ class TicketingCartResource(object):
         return ((stock_id, sum(quantity for _, quantity in ordered_items)) for stock_id, ordered_items in q)
 
 
+    @deprecation.deprecated
     def _get_stock(self, conn, performance_id, ordered_products):
         """ 在庫確保
         """
