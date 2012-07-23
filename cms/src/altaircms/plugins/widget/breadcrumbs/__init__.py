@@ -3,6 +3,7 @@ import os.path
 DIR = os.path.dirname(os.path.abspath(__file__))
 
 def includeme(config):
+    config.add_widgetname("breadcrumbs")
     from .models import BreadcrumbsWidget
     from .models import BreadcrumbsWidgetResource
     config.add_route("breadcrumbs_widget_create", "/widget/breadcrumbs/create", factory=BreadcrumbsWidgetResource)

@@ -21,9 +21,9 @@
     <link rel="stylesheet" type="text/css" href="/static/css/overlay-basic.css"/>
     <link rel="stylesheet" href="/static/css/page/edit.css" type="text/css" />
 
+	### widget追加する度に変更する必要(internal.css.mako)
 	${css.widget_css_scripts()}
 
-	### widget追加する度に変更する必要(internal.css.mako)
     ${css.container_layout()}
 
 <link href="/static/css/jquery.cleditor.css" rel="stylesheet" type="text/css"></link>
@@ -107,13 +107,13 @@
   <!-- <div id="pagelayout">レイアウト選択</div>
    !-- <div id="pageversion">ページのバージョンが入る</div> -->
   <div id="pagewidget">ウィジェット
-	${co.widget_palets()}
+	### paletに表示するwidget
+	${widget_aggregator.get_widget_paletcode(request)|n}
   </div>
   <br class="clear"/>
     <div id="main_page">ページ編集
       <div id="selected_layout" class="clear">
 
-		### widget追加する度に修正が必要。(component.mako)
         ${co.render_blocks(layout_render.blocks_image())}
       </div>
 
@@ -128,8 +128,8 @@
   function get_page(){return ${page.id};}
 </script>
 
-### widget追加する度に追加が必要(components.mako)
-${co.widget_js_scripts()} 
+## jsの読み込み
+${widget_aggregator.get_widget_jscode(request)|n} 
 
 <script type="text/javascript" src="/static/js/page/backbone_patch.js"></script>
 <script type="text/javascript" src="/static/js/page/edit.js"></script>

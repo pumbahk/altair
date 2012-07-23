@@ -3,6 +3,7 @@ import os.path
 DIR = os.path.dirname(os.path.abspath(__file__))
 
 def includeme(config):
+    config.add_widgetname("twitter")
     from .models import TwitterWidget
     from .models import TwitterWidgetResource
     config.add_route("twitter_widget_create", "/widget/twitter/create", factory=TwitterWidgetResource)

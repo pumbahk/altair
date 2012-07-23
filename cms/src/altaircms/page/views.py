@@ -1,10 +1,10 @@
 # coding: utf-8
 import logging
-import sqlalchemy as sa
+
 from pyramid.view import view_config
 from pyramid.view import view_defaults
-from pyramid.httpexceptions import HTTPFound, HTTPNotFound
-
+from pyramid.httpexceptions import HTTPFound
+from ..plugins.api import get_widget_aggregator_dispatcher
 from altaircms.lib.viewhelpers import RegisterViewPredicate
 from altaircms.lib.viewhelpers import FlashMessage
 from . import forms
@@ -342,7 +342,8 @@ def page_edit(request):
             'page':page,
             "disposition_select": disposition_select, 
             "disposition_save": disposition_save, 
-            "layout_render":layout_render
+            "layout_render":layout_render, 
+            "widget_aggregator": get_widget_aggregator_dispatcher(request).dispatch(request, page)
         }
 
 ## widgetの保存 場所移動？

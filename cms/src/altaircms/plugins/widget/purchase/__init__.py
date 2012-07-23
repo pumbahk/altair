@@ -3,6 +3,7 @@ import os.path
 DIR = os.path.dirname(os.path.abspath(__file__))
 
 def includeme(config):
+    config.add_widgetname("purchase")
     from .models import PurchaseWidget
     from .models import PurchaseWidgetResource
     config.add_route("purchase_widget_create", "/widget/purchase/create", factory=PurchaseWidgetResource)

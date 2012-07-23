@@ -3,6 +3,7 @@ import os.path
 DIR = os.path.dirname(os.path.abspath(__file__))
 
 def includeme(config):
+    config.add_widgetname("movie")
     from .models import MovieWidget
     from .models import MovieWidgetResource
     config.add_route("movie_widget_create", "/widget/movie/create", factory=MovieWidgetResource)

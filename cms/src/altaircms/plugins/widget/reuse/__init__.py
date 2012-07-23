@@ -3,6 +3,7 @@ import os.path
 DIR = os.path.dirname(os.path.abspath(__file__))
 
 def includeme(config):
+    config.add_widgetname("reuse")
     from .models import ReuseWidget
     from .models import ReuseWidgetResource
     config.add_route("reuse_widget_create", "/widget/reuse/create", factory=ReuseWidgetResource)

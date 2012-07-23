@@ -3,6 +3,7 @@ import os.path
 DIR = os.path.dirname(os.path.abspath(__file__))
 
 def includeme(config):
+    config.add_widgetname("countdown")
     from .models import CountdownWidget
     from .models import CountdownWidgetResource
     config.add_route("countdown_widget_create", "/widget/countdown/create", factory=CountdownWidgetResource)

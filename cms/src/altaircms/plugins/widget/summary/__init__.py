@@ -3,6 +3,7 @@ import os.path
 DIR = os.path.dirname(os.path.abspath(__file__))
 
 def includeme(config):
+    config.add_widgetname("summary")
     from .models import SummaryWidget
     from .models import SummaryWidgetResource
     config.add_route("summary_widget_create", "/widget/summary/create", factory=SummaryWidgetResource)

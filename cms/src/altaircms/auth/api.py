@@ -1,5 +1,5 @@
 # -*- encoding:utf-8 -*-
-
+import json
 from pyramid.httpexceptions import HTTPNotFound
 from zope.interface import implementer
 import urllib
@@ -11,9 +11,13 @@ from pyramid.security import forget
 from .interfaces import ILogoutAction
 from .interfaces import IActionResult
 from .interfaces import IOAuthComponent
+from .interfaces import IOrganizationMapping
 from .subscribers import AfterLogin
 from altaircms.auth.helpers import get_authenticated_user
 from pyramid.security import unauthenticated_userid
+
+from pyramid.path import AssetResolver
+from pyramid.exceptions import ConfigurationError
 
 def require_login(info, request):
     """custom predicates"""
@@ -75,6 +79,38 @@ class ActionResult(dict):
         self.return_to = return_to
         self.headers = headers
 
+
+@implementer(IOrganizationMapping)
+class OrganizationMapping(object):
+    def __init__(self, jsonfile, _open=open):
+        """ jsonfile is asset spec format"""
+        assetresolver = AssetResolver()
+        resolved = assetresolver.resolve(jsonfile)
+        if not resolved.exists():
+            raise ConfigurationError("inifile: %s is not found" % resolved.abspath())
+        jsonfile_abs_path =  resolved.abspath()
+
+        data = json.load(_open(jsonfile_abs_path))
+        self.data = data["data"]
+
+    def __getitem__(self, k):
+        return self.data[k]
+
+    def get(self, k, default=None):
+        return self.get(k, default)
+
+    def get_keypair(self, k):
+        v = self.data[k]
+        return (v["backend_id"], v["auth_source"])
+
+    def register(self, config):
+        set_organization_mapping(config, self)
+
+def set_organization_mapping(config, utility):
+    config.registry.registerUtility(utility, IOrganizationMapping)
+
+def get_organization_mapping(request):
+    return request.registry.getUtility(IOrganizationMapping)
 
 @implementer(IOAuthComponent)
 class OAuthComponent(object):

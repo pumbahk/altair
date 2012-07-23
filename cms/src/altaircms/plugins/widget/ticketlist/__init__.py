@@ -3,6 +3,7 @@ import os.path
 DIR = os.path.dirname(os.path.abspath(__file__))
 
 def includeme(config):
+    config.add_widgetname("ticketlist")
     from .models import TicketlistWidget
     from .models import TicketlistWidgetResource
     config.add_route("ticketlist_widget_create", "/widget/ticketlist/create", factory=TicketlistWidgetResource)

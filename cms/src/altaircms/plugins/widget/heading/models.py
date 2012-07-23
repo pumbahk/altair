@@ -1,10 +1,13 @@
 # -*- coding:utf-8 -*-
+
+import re
 from zope.interface import implements
 from altaircms.interfaces import IWidget
 
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 
+from altaircms.lib.interception import not_support_if_keyerror
 from altaircms.widget.models import Widget
 from altaircms.plugins.base import DBSession
 from altaircms.plugins.base.mixins import HandleSessionMixin
@@ -12,29 +15,65 @@ from altaircms.plugins.base.mixins import HandleWidgetMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
 
-## 後で修正
-headings_candidates = [
-    (u'NH:見出し', u'<h2 id="%s">%s</h2>'), 
-    (u'89ers:見出し', u'<h2 id="%s">%s</h2>'), 
-    (u"チケットスター：詳細ページタイトル", u'<h1 id="%s" class="detail-title">%s</h1>'), 
-    (u"チケットスター：詳細ページ見出し", u'<h2 id="%s" class="detail heading">%s</h2>'),  #/static/ticketstar/css/custom.css
-    (u"チケットスター：トップページ見出し", u'<h2 id="%s" class="index heading">%s</h2>'),  #/static/ticketstar/css/custom.css
-    (u"チケットスター：スポーツ見出し", u'<h2 id="%s" class="sports heading">%s</h2>'),  #/static/ticketstar/css/custom.css
-    (u"チケットスター：音楽見出し", u'<h2 id="%s" class="music heading">%s</h2>'),  #/static/ticketstar/css/custom.css
-    (u"チケットスター：演劇見出し", u'<h2 id="%s" class="stage heading">%s</h2>'),  #/static/ticketstar/css/custom.css
-    (u"チケットスター：その他見出し", u'<h2 id="%s" class="other heading">%s</h2>'),  #/static/ticketstar/css/custom.css
-    (u"チケットスター：ヘルプページ見出し", u'<h2 id="%s" class="help heading">%s</h2>'),  #/static/ticketstar/css/custom.css
-    (u"チケットスター：公演中止情報ページ見出し",  u'<h2 id="%s" class="change heading">%s</h2>'),  #/static/ticketstar/css/custom.css
-    (u"チケットスター：サイドバー見出し", u'<h2 id="%s" class="sidebar-heading">%s</h2>')
-]
-HEADING_DISPATCH = dict(headings_candidates)
-HEADING_KIND_CHOICES = [(x, x) for x, _ in headings_candidates]
+from altaircms.plugins.interfaces import IWidgetUtility
+from altaircms.plugins.api import list_from_setting_value
+from altaircms.plugins.api import get_widget_utility
+from zope.interface import implementer
+
+import logging
+logger = logging.getLogger(__file__)
+
+@implementer(IWidgetUtility)
+class HeadingWidgetUtilityDefault(object):
+    SPLIT_RX = re.compile("\n")
+    def __init__(self):
+        self.settings = None
+        self.choices = None
+        self.renderers = None
+
+    def parse_settings(self, config, configparser):
+        """ how to write a settings:
+        values = heading complex_heading
+        labels = 見出し 凝った見出し 
+        renderers = 
+          <h2 id="%%s">%%s</h2>
+          <h2 class="すごい見出し" id="%%s">%%s</h2
+        """
+        self.settings = dict(configparser.items("heading"))
+        values = list_from_setting_value(self.settings["values"].decode("utf-8"))
+        labels = list_from_setting_value(self.settings["labels"].decode("utf-8"))
+
+        self.choices = zip(values, labels)
+        fmts = list_from_setting_value(self.settings["renderers"].replace("%%", "%"), self.SPLIT_RX)
+        self.renderers = dict(zip(values, fmts))
+        return self
+
+    def validation(self):
+        class Dummy(object):
+            kind = None
+            html_id = -1000
+            text = u"this-is-dummy-text"
+        for kind, fmt in self.renderers.items():
+            Dummy.kind = kind
+            try:
+                fmt % (Dummy.html_id, Dummy.text)
+            except Exception, e:
+                logger.exception(str(e))
+                raise
+        return True
+
+    def render_function(self, widget):
+        fmt = self.renderers.get(widget.kind)
+        if fmt:
+            result = fmt % (widget.html_id, widget.text)
+        else:
+            result =  u"heading widget: kind=%s is not found" % widget.kind
+        return result
 
 class HeadingWidget(Widget):
     implements(IWidget)
     type = "heading"
 
-    # template_name = "altaircms.plugins.widget:heading/render.mako"
     __tablename__ = "widget_heading"
     __mapper_args__ = {"polymorphic_identity": type}
 
@@ -50,12 +89,14 @@ class HeadingWidget(Widget):
 
     def merge_settings(self, bname, bsettings):
         bsettings.need_extra_in_scan("request")
-        fmt = HEADING_DISPATCH.get(self.kind)
-        if fmt:
-            content = fmt % (self.html_id, self.text)
-        else:
-            content = u"heading widget: kind=%s is not found" % self.kind
-        bsettings.add(bname, content)
+        bsettings.need_extra_in_scan("page")
+        @not_support_if_keyerror("heading widget: %(err)s")
+        def render():
+            request = bsettings.extra["request"]
+            page = bsettings.extra["page"]
+            utility = get_widget_utility(request, page, self.type)
+            return utility.render_function(self)
+        bsettings.add(bname, render)
 
 class HeadingWidgetResource(HandleSessionMixin,
                             UpdateDataMixin,

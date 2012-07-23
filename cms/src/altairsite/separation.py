@@ -34,3 +34,6 @@ def includeme(config):
         config.registry.settings["altairsite.organization.backend_id"])
     config.registry.registerUtility(get_allowable_query._get_allowable_query, IAllowableQuery)
     config.set_request_property(get_allowable_query, "allowable", reify=True)
+
+    organization = get_allowable_query.organization
+    config.set_request_property(lambda *args, **kwargs: organization, "organization", reify=True)

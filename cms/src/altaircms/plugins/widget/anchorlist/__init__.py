@@ -3,6 +3,7 @@ import os.path
 DIR = os.path.dirname(os.path.abspath(__file__))
 
 def includeme(config):
+    config.add_widgetname("anchorlist")
     from .models import AnchorlistWidget
     from .models import AnchorlistWidgetResource
     config.add_route("anchorlist_widget_create", "/widget/anchorlist/create", factory=AnchorlistWidgetResource)

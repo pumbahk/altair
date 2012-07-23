@@ -5,6 +5,6 @@ import wtforms.validators as validators
 from . import models
 
 class HeadingForm(form.Form):
-    _choices = models.HEADING_KIND_CHOICES
+    _choices = []
     kind = fields.SelectField(id="kind", label=u"見出しの種類", choices=_choices)
     text = fields.TextField(id="widget_text", label=u"内容")

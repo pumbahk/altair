@@ -3,6 +3,7 @@ import os.path
 DIR = os.path.dirname(os.path.abspath(__file__))
 
 def includeme(config):
+    config.add_widgetname("iconset")
     from .models import IconsetWidget
     from .models import IconsetWidgetResource
     config.add_route("iconset_widget_create", "/widget/iconset/create", factory=IconsetWidgetResource)
