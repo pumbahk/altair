@@ -92,13 +92,5 @@ def main(global_config, **settings):
     engine = engine_from_config(settings, 'sqlalchemy.')
     sqlahelper.get_session().remove()
     sqlahelper.add_engine(engine)
-
-    ## test
-    # from altaircms.auth.api import get_organization_mapping
-    # m = get_organization_mapping(config)
-    # print m.get_keypair("ticketstar")
-    # print m.get_keypair("rakuten-baseball")
-    # print m.get_keypair("BJ:89ers")
-    # print m.get_keypair("BJ:NH")
     
     return config.make_wsgi_app()

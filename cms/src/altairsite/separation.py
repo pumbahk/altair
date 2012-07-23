@@ -23,15 +23,13 @@ def includeme(config):
     """
     settingsに必要なのは以下の要素。
 
-    altairsite.organization.auth_source: 組織名のauth_source
-    altairsite.organization.backend_id:  バックエンド側のid
+    altaircms.organization.mapping.json = <asset spec format>
+    altairsite.organization.mapping.name
     """
-
+    mapping = config.maybe_dotted("altaircms.auth.api.get_organization_mapping")(config)
+    backend_id, source = mapping.get_keypair(config.registry.settings["altairsite.organization.mapping.name"])
     ## allowable query(organizationごとに絞り込んだデータを提供)
-    get_allowable_query = query_factory_as_params(
-        AllowableMyOrganizationOnly, 
-        config.registry.settings["altairsite.organization.auth_source"], 
-        config.registry.settings["altairsite.organization.backend_id"])
+    get_allowable_query = query_factory_as_params(AllowableMyOrganizationOnly, source, backend_id)
     config.registry.registerUtility(get_allowable_query._get_allowable_query, IAllowableQuery)
     config.set_request_property(get_allowable_query, "allowable", reify=True)
 
