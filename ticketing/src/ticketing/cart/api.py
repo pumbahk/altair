@@ -142,3 +142,24 @@ def get_payment_delivery_plugin(request, payment_plugin_id, delivery_plugin_id):
     registry = request.registry
     return registry.utilities.lookup([], IPaymentDeliveryPlugin, 
         "payment-%s:delivery-%s" % (payment_plugin_id, delivery_plugin_id))
+
+
+def order_products(request, performance_id, product_requires):
+    stocker = get_stocker(request)
+    reserving = get_reserving(request)
+
+    stockstatuses = stocker.take_stock(performance_id, product_requires)
+
+    seats = []
+    for stockstatus, quantity in stockstatuses:
+        if stockstatuses.stock.stock_type.quantity_only:
+            continue
+        seats += reserving.reserve_seats(stockstatus.stock_id, quantity)        
+
+    cart = _create_cart(seat_statuses, ordered_products, performance_id)
+    return cart
+
+def _create_cart(self, seats, ordered_products):
+    cart = m.Cart(system_fee=self.get_system_fee())
+    cart.add_seat(seats, ordered_products)
+    return cart

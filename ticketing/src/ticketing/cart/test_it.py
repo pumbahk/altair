@@ -279,22 +279,43 @@ class StockerTests(unittest.TestCase):
 
     def _add_stock(self, quantity):
         import ticketing.core.models as c_m
+        # organization
+        org = c_m.Organization()
+        # event
+        event = c_m.Event(organization=org)
+        # performance
+        performance = c_m.Performance(event=event)
         stock = c_m.Stock(quantity=quantity)
+        product = c_m.Product(price=100.0)
+        product_item = c_m.ProductItem(product=product, stock=stock, price=100.0, performance=performance)
         c_m.StockStatus(stock=stock, quantity=quantity)
         c_m.DBSession.add(stock)
         c_m.DBSession.flush()
         return stock
 
-    def test_take_stock(self):
+    def test__take_stock(self):
         request = testing.DummyRequest()
         target = self._makeOne(request)
         stock = self._add_stock(10)
-        result = target.take_stock([(stock.id, 8)])
-        self.assertEqual(result[0].quantity, 2)
+        result = target._take_stock([(stock.id, 8)])
+        self.assertEqual(result[0][0].quantity, 2)
+        self.assertEqual(result[0][1], 8)
 
-    def test_take_stock_not_enough(self):
+    def test__take_stock_not_enough(self):
         from ticketing.cart.stocker import NotEnoughStockException
         request = testing.DummyRequest()
         target = self._makeOne(request)
         stock = self._add_stock(10)
-        self.assertRaises(NotEnoughStockException, target.take_stock, [(stock.id, 100)])
+        self.assertRaises(NotEnoughStockException, target._take_stock, [(stock.id, 100)])
+
+    def test_take_stock(self):
+        stock = self._add_stock(10)
+        status = stock.stock_status
+        product = stock.product_items[0].product
+        performance = stock.product_items[0].performance
+        
+        request = testing.DummyRequest()
+        target = self._makeOne(request)
+        result = target.take_stock(performance.id, [(product, 10)])
+        self.assertEqual(result[0], (status, 10))
+
