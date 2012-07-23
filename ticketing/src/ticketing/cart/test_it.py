@@ -123,14 +123,14 @@ class ReserveSeatsTests(unittest.TestCase):
         request = testing.DummyRequest()
         target = self._makeOne(request)
 
-        result = target.reserve_seats(self.stock_id, 1)
+        result = target.get_vacant_seats(self.stock_id, 1)
 
     def test_2seats(self):
         """ 2連席確保 """
         request = testing.DummyRequest()
         target = self._makeOne(request)
 
-        result = target.reserve_seats(self.stock_id, 2)
+        result = target.get_vacant_seats(self.stock_id, 2)
 
         self.assertEqual(len(result), 2)
         self.assertEqual(result[0].name, 'B-1')
@@ -140,7 +140,7 @@ class ReserveSeatsTests(unittest.TestCase):
         request = testing.DummyRequest()
         target = self._makeOne(request)
 
-        result = target.reserve_seats(self.stock_id, 3)
+        result = target.get_vacant_seats(self.stock_id, 3)
         self.assertEqual(len(result), 3)
         self.assertEqual(result[0].name, 'C-1')
 
@@ -149,6 +149,6 @@ class ReserveSeatsTests(unittest.TestCase):
         request = testing.DummyRequest()
         target = self._makeOne(request)
 
-        result = target.reserve_seats(self.stock_id, 4)
+        result = target.get_vacant_seats(self.stock_id, 4)
         self.assertEqual(len(result), 4)
         self.assertEqual(result[0].name, 'D-1')
