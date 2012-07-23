@@ -7,15 +7,17 @@ from pyramid import testing
 SEAT_STATUSES = [
     [True,  False, True,  False, True,  False,], # A
     [False, False, True,  False, False, True,],  # B
-    [False, False, False, True,  False, False,], # B
-    [False, False, False, False, True,  False,], # B
-    [False, False, False, False, False, True,],  # B
+    [False, False, False, True,  False, False,], # C
+    [False, False, False, False, True,  False,], # D
+    [False, False, False, False, False, True,],  # E
 ]
+
+ROWS = ['A', 'B', 'C', 'D', 'E']
 
 def _setup_db():
     from sqlalchemy import create_engine
     engine = create_engine("sqlite:///")
-    engine.echo = True
+    #engine.echo = True
     import sqlahelper
     sqlahelper.add_engine(engine)
     from ticketing.core import models
@@ -57,11 +59,11 @@ def _setup_performance(session):
         seat_adjacency_sets[seat_count] = c_m.SeatAdjacencySet(venue=venue, seat_count=seat_count)
 
     seat_index_type = c_m.SeatIndexType(venue=venue, name='testing')
-    for ss in SEAT_STATUSES:
+    for row, ss in zip(ROWS, SEAT_STATUSES):
         seats = []
         for i, s in enumerate(ss):
             # seat
-            seat = c_m.Seat(venue=venue, stock=stock)
+            seat = c_m.Seat(venue=venue, stock=stock, name=u"%s-%s" % (row, i+1))
             # seat_status
             status = int(c_m.SeatStatusEnum.InCart) if s else int(c_m.SeatStatusEnum.Vacant)
             seat_status = c_m.SeatStatus(seat=seat, status=status)
@@ -131,6 +133,7 @@ class ReserveSeatsTests(unittest.TestCase):
         result = target.reserve_seats(self.stock_id, 2)
 
         self.assertEqual(len(result), 2)
+        self.assertEqual(result[0].name, 'B-1')
 
     def test_3seats(self):
         """ 3連席確保 """
@@ -139,6 +142,7 @@ class ReserveSeatsTests(unittest.TestCase):
 
         result = target.reserve_seats(self.stock_id, 3)
         self.assertEqual(len(result), 3)
+        self.assertEqual(result[0].name, 'C-1')
 
     def test_4seats(self):
         """ 4連席確保 """
@@ -147,3 +151,4 @@ class ReserveSeatsTests(unittest.TestCase):
 
         result = target.reserve_seats(self.stock_id, 4)
         self.assertEqual(len(result), 4)
+        self.assertEqual(result[0].name, 'D-1')
