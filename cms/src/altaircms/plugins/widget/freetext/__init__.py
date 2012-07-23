@@ -3,6 +3,7 @@ import os.path
 DIR = os.path.dirname(os.path.abspath(__file__))
 
 def includeme(config):
+    config.add_widgetname("freetext")
     from .models import FreetextWidget
     from .models import FreetextWidgetResource
     config.add_route("freetext_widget_create", "/widget/freetext/create", factory=FreetextWidgetResource)

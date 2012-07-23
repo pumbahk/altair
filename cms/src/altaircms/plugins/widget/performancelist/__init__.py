@@ -3,6 +3,7 @@ import os.path
 DIR = os.path.dirname(os.path.abspath(__file__))
 
 def includeme(config):
+    config.add_widgetname("performancelist")
     from .models import PerformancelistWidget
     from .models import PerformancelistWidgetResource
     config.add_route("performancelist_widget_create", "/widget/performancelist/create", factory=PerformancelistWidgetResource)

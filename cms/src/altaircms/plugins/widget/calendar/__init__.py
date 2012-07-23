@@ -15,6 +15,7 @@ class CalendarTemplatePathStore(object):
         return os.path.join(cls.here, getattr(cls, k))
 
 def includeme(config):
+    config.add_widgetname("calendar")
     from .models import CalendarWidget
     from .models import CalendarWidgetResource
     config.add_route("calendar_widget_create", "/widget/calendar/create", factory=CalendarWidgetResource)

@@ -8,6 +8,7 @@ def add_finder(config, finder, key=None):
     config.registry.registerUtility(config.maybe_dotted(finder), IWFinder, key)
 
 def includeme(config):
+    config.add_widgetname("linklist")
     from .models import LinklistWidget
     from .models import LinklistWidgetResource
     config.add_route("linklist_widget_create", "/widget/linklist/create", factory=LinklistWidgetResource)

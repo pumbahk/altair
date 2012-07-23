@@ -19,10 +19,7 @@ from altaircms.plugins.base.mixins import HandleWidgetMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
 from datetime import datetime
-"""
-1つのwidgetは１つのトピックを持つ
-"""
-
+        
 class TopicWidget(Widget):
     now_date_function = datetime.now
 
