@@ -5,8 +5,11 @@ import json
 import logging
 import urllib2
 import contextlib
-
+import xlwt
+import xlrd
+from xlutils.copy import copy
 from datetime import datetime
+from time import strftime
 
 import webhelpers.paginate as paginate
 from sqlalchemy import or_
@@ -205,3 +208,81 @@ class Events(BaseView):
             self.request.session.flash(u'イベント送信に失敗しました')
 
         return HTTPFound(location=route_path('events.show', self.request, event_id=event.id))
+
+    @view_config(route_name='events.report', renderer='ticketing:templates/events/report.html')
+    def report(self):
+        event_id = int(self.request.matchdict.get('event_id', 0))
+        event = Event.get(event_id)
+        if event is None:
+            return HTTPNotFound('event id %d is not found' % event_id)
+
+        f = EventForm(user_id=self.context.user.id)
+        f.process(record_to_multidict(event))
+        return {
+            'form':f,
+            'event':event,
+        }
+
+    @view_config(route_name='events.report.sales')
+    def download_sales_report(self):
+        event_id = int(self.request.matchdict.get('event_id', 0))
+        event = Event.get(event_id)
+        if event is None:
+            return HTTPNotFound('event id %d is not found' % event_id)
+
+        # copy from template.xls
+        rb = xlrd.open_workbook('src/ticketing/templates/reports/sales_report_template.xls', formatting_info=True)
+        wb = copy(rb)
+        print dir(wb)
+
+        # find data as json format
+
+        # add data to xls sheet
+        #book = xlwt.Workbook()
+        #book.add_sheet("NewSheet_1")
+        #book.save('sample.xls')
+
+        sheet = wb.get_sheet(0)
+        print dir(sheet)
+
+        # Event
+        sheet.write(0, 34, u"(現在日時)")
+        sheet.write(5, 0, u"(イベント名)")
+        sheet.write(11, 0, u"(販売区分名)")
+        sheet.write(11, 12, u"(販売開始日時)")
+        sheet.write(11, 18, u"(販売終了日時)")
+        sheet.write(11, 30, u"(販売手数料)")
+        sheet.write(12, 30, u"(払戻手数料)")
+        sheet.write(13, 30, u"(印刷代金)")
+        sheet.write(14, 30, u"(登録手数料)")
+        sheet.write(16, 0, u"(会場名)")
+
+        # Performance
+
+        #
+
+        '''
+        sheet_row_1 = sheet.row(1)
+        sheet_row_1.write(0, "A2")
+        sheet_row_1.write(1, "B2")
+        sheet_row_1.write(2, "C2")
+        sheet_row_1.write(3, "D2")
+        sheet_row_1.write(4, "E2")
+        '''
+
+        # download
+        wb.save('sales_report_%s_%s.xls' % (event_id, strftime('%Y%m%d%H%M%S')))
+
+        # temporary redirect
+        return HTTPFound(location=route_path('events.report', self.request, event_id=event.id))
+
+        #fname = os.path.join(Newsletter.subscriber_dir(), newsletter.subscriber_file())
+        #f = open(fname)
+        #headers = [
+        #    ('Content-Type', 'application/octet-stream'),
+        #    ('Content-Disposition', 'attachment; filename=%s' % os.path.basename(fname))
+        #]
+        #response = Response(f.read(), headers=headers)
+        #f.close()
+
+        #return response
