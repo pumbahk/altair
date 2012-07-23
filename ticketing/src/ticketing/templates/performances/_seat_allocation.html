@@ -176,17 +176,16 @@ function bind(bindable, model, attr) {
   onchange.call(model);
 }
 
-function makeAssignable(n, model) {
+function makeAssignable(n, stock) {
   var assignable = $('<a class="assignable"></a>').appendTo(n);
   function refresh() {
-    assignable.text(model.get('quantity'));
+    assignable.text(stock.get('assigned'));
   }
-  model.on('change:quantity', refresh);
+  stock.on('change:assigned', refresh);
   assignable.click(function () {
     var selection = venueEditorRoot.venueeditor('selection');
-    var venue = venueEditorRoot.venueeditor('model');
     selection.each(function (seat) {
-      seat.set('stockType', model);
+      seat.set('stock', stock);
     });
     venueEditorRoot.venueeditor('clearSelection');
     return false;
@@ -286,7 +285,7 @@ function buildStockRow(stock) {
   tr.append(name);
   var quantity = $('<td class="stock-quantity"></td>');
   if (stockType.get('isSeat') && !stockType.get('quantityOnly')) {
-    makeAssignable(quantity, stockType);
+    makeAssignable(quantity, stock);
   } else {
     bind(makeEditable(quantity), stockType, 'quantity');
   }
@@ -303,7 +302,7 @@ function buildStockHolderTypeTables(venue) {
     var table = $('<table class="table table-bordered"></table>');
     var tbody = $('<tbody></tbody>').appendTo(table);
     venue.stockTypes.each(function (stockType) {
-      var stock = keyedStocks[stockType.id];
+      var stock = keyedStocks && keyedStocks[stockType.id];
       if (!stock)
         return;
       var row = buildStockRow(stock);

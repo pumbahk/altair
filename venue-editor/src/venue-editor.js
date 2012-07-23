@@ -477,27 +477,6 @@
 
       switch(type) {
       case 'select1':
-        this.drawable.addEvent({
-          mouseup: function(evt) {
-            self.startPos = evt.logicalPosition;
-            self.rubberBand.position({x: self.startPos.x, y: self.startPos.y});
-            self.rubberBand.size({x: 0, y: 0});
-
-            var selection = null;
-            var hitTest = util.makeHitTester(self.rubberBand);
-            for (var id in self.seats) {
-              var seatVO = self.seats[id];
-              var seat = seatVO.get('model');
-              if ((hitTest(seatVO.get('shape')) || (self.shift && seat.get('selected')) && seat.get('selectable'))) {
-                selection = seat;
-                break;
-              }
-            }
-            self._unselectAll();
-            selection.set('selected', true);
-            self.callbacks.select && self.callbacks.select(self, [selection]);
-          }
-        });
         break;
 
       case 'select':

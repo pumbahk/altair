@@ -133,6 +133,7 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
       var set = perStockSeatSet[stock.id];
       if (!set)
         set = perStockSeatSet[stock.id] = new IdentifiableSet();
+      set.add(seat);
       seat.on('change:stock', function () {
         var prev = this.previous('stock');
         var new_ = this.get('stock');

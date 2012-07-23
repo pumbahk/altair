@@ -153,9 +153,8 @@ function makeAssignable(n, model) {
   model.on('change:quantity', refresh);
   assignable.click(function () {
     var selection = venueEditorRoot.venueeditor('selection');
-    var venue = venueEditorRoot.venueeditor('model');
     selection.each(function (seat) {
-      seat.set('stockType', model);
+      seat.get('stock').set('stockType', model);
     });
     venueEditorRoot.venueeditor('clearSelection');
     return false;

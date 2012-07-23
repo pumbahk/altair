@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['q4PTJZCXO9XXW3NV'] = (function (exports) { (function () { 
+__LIBS__['Q0J6S4SZZ6K75C41'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -48,7 +48,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['X8I8DB5VEJ_PG34_'] = (function (exports) { (function () { 
+__LIBS__['CWWSF7HU09IIRTNK'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -74,7 +74,7 @@ exports.ja = {
   } 
 };
  })(); return exports; })({});
-__LIBS__['IHW_Z31EVKNWUPWC'] = (function (exports) { (function () { 
+__LIBS__['A6VH5VWRBSIRFRVC'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -173,7 +173,7 @@ exports.mergeStyle = function mergeStyle(a, b) {
   };
 };
  })(); return exports; })({});
-__LIBS__['OP5HDJ00OURS8MYD'] = (function (exports) { (function () { 
+__LIBS__['qZUYDB26EK0OIMHS'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -222,12 +222,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['W9JGNH4VF0I2SKOP'] = (function (exports) { (function () { 
+__LIBS__['STWBNKXQLA3AMXK5'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['IHW_Z31EVKNWUPWC'];
-var CONF = __LIBS__['q4PTJZCXO9XXW3NV'];
-var IdentifiableSet = __LIBS__['OP5HDJ00OURS8MYD'].IdentifiableSet;
+var util = __LIBS__['A6VH5VWRBSIRFRVC'];
+var CONF = __LIBS__['Q0J6S4SZZ6K75C41'];
+var IdentifiableSet = __LIBS__['qZUYDB26EK0OIMHS'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -360,6 +360,7 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
       var set = perStockSeatSet[stock.id];
       if (!set)
         set = perStockSeatSet[stock.id] = new IdentifiableSet();
+      set.add(seat);
       seat.on('change:stock', function () {
         var prev = this.previous('stock');
         var new_ = this.get('stock');
@@ -634,12 +635,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['r5GHEGNCP8_LSKSU'] = (function (exports) { (function () { 
+__LIBS__['O0UI7CO9DGILNK41'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['IHW_Z31EVKNWUPWC'];
-var CONF = __LIBS__['q4PTJZCXO9XXW3NV'];
-var models = __LIBS__['W9JGNH4VF0I2SKOP'];
+var util = __LIBS__['A6VH5VWRBSIRFRVC'];
+var CONF = __LIBS__['Q0J6S4SZZ6K75C41'];
+var models = __LIBS__['STWBNKXQLA3AMXK5'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -753,7 +754,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
 
   _refreshStyle: function Seat__refreshStyle() {
     var model = this.get('model');
-    var style = model && model.get('stock').attributes.style || {};
+    var style = model && model.get('stock').get('style') || {};
     var shape = this.get('shape');
     if (!shape)
       return;
@@ -815,13 +816,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['q4PTJZCXO9XXW3NV'];
-  var models = __LIBS__['W9JGNH4VF0I2SKOP'];
-  var util = __LIBS__['IHW_Z31EVKNWUPWC'];
-  var viewobjects = __LIBS__['r5GHEGNCP8_LSKSU'];
-  var IdentifiableSet = __LIBS__['OP5HDJ00OURS8MYD'].IdentifiableSet;
+  var CONF = __LIBS__['Q0J6S4SZZ6K75C41'];
+  var models = __LIBS__['STWBNKXQLA3AMXK5'];
+  var util = __LIBS__['A6VH5VWRBSIRFRVC'];
+  var viewobjects = __LIBS__['O0UI7CO9DGILNK41'];
+  var IdentifiableSet = __LIBS__['qZUYDB26EK0OIMHS'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['X8I8DB5VEJ_PG34_'];
+    I18n.translations = __LIBS__['CWWSF7HU09IIRTNK'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
@@ -1292,27 +1293,6 @@ var Seat = exports.Seat = Backbone.Model.extend({
 
       switch(type) {
       case 'select1':
-        this.drawable.addEvent({
-          mouseup: function(evt) {
-            self.startPos = evt.logicalPosition;
-            self.rubberBand.position({x: self.startPos.x, y: self.startPos.y});
-            self.rubberBand.size({x: 0, y: 0});
-
-            var selection = null;
-            var hitTest = util.makeHitTester(self.rubberBand);
-            for (var id in self.seats) {
-              var seatVO = self.seats[id];
-              var seat = seatVO.get('model');
-              if ((hitTest(seatVO.get('shape')) || (self.shift && seat.get('selected')) && seat.get('selectable'))) {
-                selection = seat;
-                break;
-              }
-            }
-            self._unselectAll();
-            selection.set('selected', true);
-            self.callbacks.select && self.callbacks.select(self, [selection]);
-          }
-        });
         break;
 
       case 'select':
