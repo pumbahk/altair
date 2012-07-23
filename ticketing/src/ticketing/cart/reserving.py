@@ -29,25 +29,6 @@ class Reserving(object):
 
         if quantity == 1:
             return
-        # 対象になる stock
-        Stock.id == stock_id
-
-        # stockに属するSeat
-        Seat.stock_id == Stock.id
-
-        # quantityに対応する連席
-        SeatAdjacencySet.seat_count == quantity
-        SeatAdjacency.adjacency_set_id == SeatAdjacencySet.id
-        
-        # 連席に属する席
-        seat_seat_adjacency_table.c.seat_adjacency_id == SeatAdjacency.id
-        seat_seat_adjacency_table.c.seat_id == Seat.id
-
-        # 席状況
-        SeatStatus.seat_id == seat_seat_adjacency_table.c.seat_id
-
-
-
         # すでに確保済みのSeatを持つ連席
         reserved_adjacencies = DBSession.query(SeatAdjacency.id).filter(
             # すでに確保済み
@@ -55,7 +36,13 @@ class Reserving(object):
         ).filter(
             seat_seat_adjacency_table.c.seat_adjacency_id == SeatAdjacency.id
         ).filter(
-            seat_seat_adjacency_table.c.seat_id == SeatStatus.seat_id
+            seat_seat_adjacency_table.c.seat_id == Seat.id
+        ).filter(
+            SeatAdjacencySet.seat_count==quantity,
+        ).filter(
+            Seat.stock_id==stock_id
+        ).filter(
+            SeatStatus.seat_id==Seat.id
         )
 
         adjacency = SeatAdjacency.query.filter(
@@ -72,6 +59,8 @@ class Reserving(object):
             SeatIndex.seat_id==Seat.id
         ).filter(
             not_(SeatAdjacency.id.in_(reserved_adjacencies))
-        ).first()
+        ).filter(
+            SeatIndex.seat_id==Seat.id
+        ).order_by(SeatIndex.index).first()
 
         return adjacency.seats
