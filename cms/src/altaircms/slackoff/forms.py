@@ -85,6 +85,7 @@ class PerformanceForm(Form):
     calendar_content = fields.TextField(label=u"カレンダーに追加する文字列")
 
     def validate(self, **kwargs):
+        super(PerformanceForm, self).validate()
         data = self.data
         try:
             if data["open_on"] and data["start_on"] is None:
@@ -126,6 +127,7 @@ class SaleForm(Form):
     __display_fields__ = [u"event", u"kind", u"name", u"start_on", u"end_on"]
 
     def validate(self, **kwargs):
+        super(SaleForm, self).validate()
         data = self.data
         if not data["name"]:
             data["name"] = data["event"].title
@@ -272,6 +274,7 @@ class TopicForm(Form):
                           u"bound_page", u"linked_page", u"link", u"mobile_link", u"event"]
 
     def validate(self, **kwargs):
+        super(TopicForm, self).validate()
         data = self.data
         if data["publish_close_on"] and data["publish_open_on"] and data["publish_open_on"] > data["publish_close_on"]:
             append_errors(self.errors, "publish_open_on", u"公開開始日よりも後に終了日が設定されています")
@@ -325,6 +328,7 @@ class TopcontentForm(Form):
                          u"bound_page", u"linked_page", u"link", u"mobile_link"]
     
     def validate(self, **kwargs):
+        super(TopcontentForm, self).validate()
         data = self.data
         if data["publish_close_on"] and data["publish_open_on"] and data["publish_open_on"] > data["publish_close_on"]:
             append_errors(self.errors, "publish_open_on", u"公開開始日よりも後に終了日が設定されています")
@@ -346,6 +350,7 @@ class HotWordForm(Form):
                           u"orderno"]
 
     def validate(self, **kwargs):
+        super(HotWordForm, self).validate()
         data = self.data
         if data["term_begin"] and data["term_end"] and data["term_begin"] > data["term_end"]:
             append_errors(self.errors, "term_begin", u"開始日よりも後に終了日が設定されています")

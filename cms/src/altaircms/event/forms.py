@@ -28,6 +28,7 @@ class EventForm(Form):
     is_searchable = fields.BooleanField(label=u'検索対象に含める', default=True)
     
     def validate(self, **kwargs):
+        super(EventForm, self).validate()
         data = self.data
         if data["event_open"] > data["event_close"]:
             append_errors(self.errors, "event_open", u"イベント終了日よりも後に設定されてます")
