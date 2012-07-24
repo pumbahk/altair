@@ -19,3 +19,6 @@ class IWidgetUtility(Interface):
         settings = dict(configparser.items("your-widget-name"))
         self.settings = self.bulid_settings(settings)
         """
+
+class IExternalAPI(Interface):
+    external_url = Attribute("external url")

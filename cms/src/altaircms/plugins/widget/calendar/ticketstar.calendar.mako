@@ -28,9 +28,9 @@
 		  <td class="${de["day_class"]}">
             <span class="day">${de["day"]}&nbsp;</span>
 			%for p in de["day_performances"]:
-                  <% status= h.event.detect_performance_status(p)%>
-	              <p class="${status}">
-					<strong>${h.event.content_string_from_performance_status(status)}</strong>
+                  <% status= calendar_status.get_status(p)%>
+	              <p class="${status["class"]}">
+					<strong>${status["string"]}</strong>
 					<a target="_blank" href="${h.link.get_purchase_page_from_performance(request,p)}">${p.start_on.strftime("%H:%M")}</a>
                     <p>${p.calendar_content or u""}</p>
 				  </p>
