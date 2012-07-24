@@ -55,6 +55,7 @@ requires = [
     'mock',
     'tableau >= 0.0.4pre',
     'uamobile',
+    'alembic >= 0.3.3',
     ]
 
 setup(name='ticketing',
