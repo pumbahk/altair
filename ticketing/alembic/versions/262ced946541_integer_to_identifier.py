@@ -13,14 +13,15 @@ down_revision = '18090a14e5c0'
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy import schema
+from sqlalchemy.sql.expression import text
 
 Identifier = sa.BigInteger
 
-def integer_to_identifier(table, column_name, nullable=False):
-    op.alter_column(table, column_name, name=column_name, nullable=nullable, type_=Identifier(), existing_type=sa.Integer(), existing_nullable=nullable)
+def integer_to_identifier(table, column_name, nullable=False, server_default=False, autoincrement=None):
+    op.alter_column(table, column_name, name=column_name, nullable=nullable, type_=Identifier(), server_default=server_default, autoincrement=autoincrement, existing_type=sa.Integer(), existing_nullable=nullable, existing_server_default=server_default, existing_autoincrement=autoincrement)
 
-def identifier_to_integer(table, column_name, nullable=False):
-    op.alter_column(table, column_name, name=column_name, nullable=nullable, type_=sa.Integer(), existing_type=Identifier(), existing_nullable=nullable)
+def identifier_to_integer(table, column_name, nullable=False, server_default=False, autoincrement=None):
+    op.alter_column(table, column_name, name=column_name, nullable=nullable, type_=sa.Integer(), server_default=server_default, autoincrement=autoincrement, existing_type=Identifier(), existing_nullable=nullable, existing_server_default=server_default, existing_autoincrement=autoincrement)
 
 constraints = []
 
@@ -44,9 +45,9 @@ def restore_all_constraints():
         op.create_foreign_key(**constraint)
 
 def upgrade():
-    integer_to_identifier('OperatorRole_Operator', 'id')
-    integer_to_identifier('reserved_number', 'id')
-    integer_to_identifier('payment_reserved_number', 'id')
+    integer_to_identifier('OperatorRole_Operator', 'id', autoincrement=True)
+    integer_to_identifier('reserved_number', 'id', autoincrement=True)
+    integer_to_identifier('payment_reserved_number', 'id', autoincrement=True)
     pop_foreign_key(
         'cat_seat_ibfk_1',
         'cat_seat',
@@ -61,7 +62,7 @@ def upgrade():
         ['carted_product_id'], ['id']
         )
     integer_to_identifier('ticketing_cartedproductitems', 'carted_product_id', True)
-    integer_to_identifier('ticketing_cartedproductitems', 'id')
+    integer_to_identifier('ticketing_cartedproductitems', 'id', autoincrement=True)
     pop_foreign_key(
         'ticketing_cartedproducts_ibfk_1',
         'ticketing_cartedproducts',
@@ -69,13 +70,13 @@ def upgrade():
         ['cart_id'], ['id']
         )
     integer_to_identifier('ticketing_cartedproducts', 'cart_id', True)
-    integer_to_identifier('ticketing_cartedproducts', 'id')
-    integer_to_identifier('ticketing_carts', 'id')
-    integer_to_identifier('SejTicket', 'id')
-    integer_to_identifier('secure3d_req_enrol_response', 'id')
-    integer_to_identifier('secure3d_req_enrol_request', 'id')
-    integer_to_identifier('secure3d_req_auth_response', 'id')
-    integer_to_identifier('secure3d_req_auth_request', 'id')
+    integer_to_identifier('ticketing_cartedproducts', 'id', autoincrement=True)
+    integer_to_identifier('ticketing_carts', 'id', autoincrement=True)
+    integer_to_identifier('SejTicket', 'id', autoincrement=True)
+    integer_to_identifier('secure3d_req_enrol_response', 'id', autoincrement=True)
+    integer_to_identifier('secure3d_req_enrol_request', 'id', autoincrement=True)
+    integer_to_identifier('secure3d_req_auth_response', 'id', autoincrement=True)
+    integer_to_identifier('secure3d_req_auth_request', 'id', autoincrement=True)
     pop_foreign_key(
         'multicheckout_inquiry_response_card_history_ibfk_1',
         'multicheckout_inquiry_response_card_history',
@@ -83,10 +84,10 @@ def upgrade():
         ['inquiry_id'], ['id']
         )
     integer_to_identifier('multicheckout_inquiry_response_card_history', 'inquiry_id', True)
-    integer_to_identifier('multicheckout_inquiry_response_card_history', 'id')
-    integer_to_identifier('multicheckout_inquiry_response_card', 'id')
-    integer_to_identifier('multicheckout_response_card', 'id')
-    integer_to_identifier('multicheckout_request_card', 'id')
+    integer_to_identifier('multicheckout_inquiry_response_card_history', 'id', autoincrement=True)
+    integer_to_identifier('multicheckout_inquiry_response_card', 'id', autoincrement=True)
+    integer_to_identifier('multicheckout_response_card', 'id', autoincrement=True)
+    integer_to_identifier('multicheckout_request_card', 'id', autoincrement=True)
     pop_foreign_key(
         'checkoutitem_ibfk_1',
         'CheckoutItem',
@@ -94,15 +95,15 @@ def upgrade():
         ['checkout_id'], ['id']
         )
     integer_to_identifier('CheckoutItem', 'checkout_id', True)
-    integer_to_identifier('CheckoutItem', 'id')
-    integer_to_identifier('Checkout', 'id')
-    integer_to_identifier('BuyerConditionSet', 'id')
+    integer_to_identifier('CheckoutItem', 'id', autoincrement=True)
+    integer_to_identifier('Checkout', 'id', autoincrement=True)
+    integer_to_identifier('BuyerConditionSet', 'id', autoincrement=True)
     restore_all_constraints()
 
 def downgrade():
-    identifier_to_integer('OperatorRole_Operator', 'id')
-    identifier_to_integer('reserved_number', 'id')
-    identifier_to_integer('payment_reserved_number', 'id')
+    identifier_to_integer('OperatorRole_Operator', 'id', autoincrement=True)
+    identifier_to_integer('reserved_number', 'id', autoincrement=True)
+    identifier_to_integer('payment_reserved_number', 'id', autoincrement=True)
     pop_foreign_key(
         'cat_seat_ibfk_1',
         'cat_seat',
@@ -117,7 +118,7 @@ def downgrade():
         ['carted_product_id'], ['id']
         )
     identifier_to_integer('ticketing_cartedproductitems', 'carted_product_id', True)
-    identifier_to_integer('ticketing_cartedproductitems', 'id')
+    identifier_to_integer('ticketing_cartedproductitems', 'id', autoincrement=True)
     pop_foreign_key(
         'ticketing_cartedproducts_ibfk_1',
         'ticketing_cartedproducts',
@@ -125,13 +126,13 @@ def downgrade():
         ['cart_id'], ['id']
         )
     identifier_to_integer('ticketing_cartedproducts', 'cart_id', True)
-    identifier_to_integer('ticketing_cartedproducts', 'id')
-    identifier_to_integer('ticketing_carts', 'id')
-    identifier_to_integer('SejTicket', 'id')
-    identifier_to_integer('secure3d_req_enrol_response', 'id')
-    identifier_to_integer('secure3d_req_enrol_request', 'id')
-    identifier_to_integer('secure3d_req_auth_response', 'id')
-    identifier_to_integer('secure3d_req_auth_request', 'id')
+    identifier_to_integer('ticketing_cartedproducts', 'id', autoincrement=True)
+    identifier_to_integer('ticketing_carts', 'id', autoincrement=True)
+    identifier_to_integer('SejTicket', 'id', autoincrement=True)
+    identifier_to_integer('secure3d_req_enrol_response', 'id', autoincrement=True)
+    identifier_to_integer('secure3d_req_enrol_request', 'id', autoincrement=True)
+    identifier_to_integer('secure3d_req_auth_response', 'id', autoincrement=True)
+    identifier_to_integer('secure3d_req_auth_request', 'id', autoincrement=True)
     pop_foreign_key(
         'multicheckout_inquiry_response_card_history_ibfk_1',
         'multicheckout_inquiry_response_card_history',
@@ -139,10 +140,10 @@ def downgrade():
         ['inquiry_id'], ['id']
         )
     identifier_to_integer('multicheckout_inquiry_response_card_history', 'inquiry_id', True)
-    identifier_to_integer('multicheckout_inquiry_response_card_history', 'id')
-    identifier_to_integer('multicheckout_inquiry_response_card', 'id')
-    identifier_to_integer('multicheckout_response_card', 'id')
-    identifier_to_integer('multicheckout_request_card', 'id')
+    identifier_to_integer('multicheckout_inquiry_response_card_history', 'id', autoincrement=True)
+    identifier_to_integer('multicheckout_inquiry_response_card', 'id', autoincrement=True)
+    identifier_to_integer('multicheckout_response_card', 'id', autoincrement=True)
+    identifier_to_integer('multicheckout_request_card', 'id', autoincrement=True)
     pop_foreign_key(
         'checkoutitem_ibfk_1',
         'CheckoutItem',
@@ -150,7 +151,7 @@ def downgrade():
         ['checkout_id'], ['id']
         )
     identifier_to_integer('CheckoutItem', 'checkout_id', True)
-    identifier_to_integer('CheckoutItem', 'id')
-    identifier_to_integer('Checkout', 'id')
-    identifier_to_integer('BuyerConditionSet', 'id')
+    identifier_to_integer('CheckoutItem', 'id', autoincrement=True)
+    identifier_to_integer('Checkout', 'id', autoincrement=True)
+    identifier_to_integer('BuyerConditionSet', 'id', autoincrement=True)
     restore_all_constraints()
