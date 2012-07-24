@@ -181,6 +181,7 @@ def _create_cart(request, performance_id, seats, ordered_products):
 
 def get_system_fee(request):
     return 380
+
 def _pop_seat(request, product_item, quantity, seats):
     """ product_itemに対応した席を取り出す
     """

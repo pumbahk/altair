@@ -319,3 +319,83 @@ class StockerTests(unittest.TestCase):
         result = target.take_stock(performance.id, [(product, 10)])
         self.assertEqual(result[0], (status, 10))
 
+class pop_seatTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.session = _setup_db()
+
+
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        import transaction
+        transaction.abort()
+        self.session.remove()
+
+    def _callFUT(self, *args, **kwargs):
+        from .api import _pop_seat
+        return _pop_seat(*args, **kwargs)
+
+    def _add_seats(self):
+        import ticketing.core.models as c_m
+        import ticketing.orders.models as o_m
+        # organization
+        org = c_m.Organization()
+        # event
+        event = c_m.Event(organization=org)
+        # performance
+        performance = c_m.Performance(event=event)
+        # site
+        site = c_m.Site()
+        # venue
+        venue = c_m.Venue(site=site, organization=org, performance=performance)
+        stock1 = c_m.Stock()
+        stock2 = c_m.Stock()
+        product_item1 = c_m.ProductItem(price=100, stock=stock1)
+        product_item2 = c_m.ProductItem(price=200, stock=stock2)
+        seat1 = c_m.Seat(stock=stock1, venue=venue)
+        seat2 = c_m.Seat(stock=stock2, venue=venue)
+        seat3 = c_m.Seat(stock=stock1, venue=venue)
+        seat4 = c_m.Seat(stock=stock2, venue=venue)
+
+        seats = [ seat1, seat2, seat3, seat4 ]
+
+        self.session.add(stock1)
+        self.session.add(stock2)
+        self.session.flush()
+
+        return performance, product_item1, seats
+
+    def test_it(self):
+
+        performance, product_item1, seats = self._add_seats()
+
+        seat1 = seats[0]
+        seat2 = seats[1]
+        seat3 = seats[2]
+        seat4 = seats[3]
+
+        quantity = 2
+
+        request = testing.DummyRequest()
+        result = self._callFUT(request, product_item1, quantity, seats)
+        self.assertEqual(result, [seat1, seat3])
+        self.assertEqual(seats, [seat2, seat4])
+
+    def test_it_with_few_quantity(self):
+
+        performance, product_item1, seats = self._add_seats()
+
+        seat1 = seats[0]
+        seat2 = seats[1]
+        seat3 = seats[2]
+        seat4 = seats[3]
+
+        quantity = 1
+
+        request = testing.DummyRequest()
+        result = self._callFUT(request, product_item1, quantity, seats)
+        self.assertEqual(result, [seat1])
+
+        self.assertEqual(seats, [seat2, seat3, seat4])
