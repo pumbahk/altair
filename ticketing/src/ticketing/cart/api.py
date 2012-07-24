@@ -156,10 +156,36 @@ def order_products(request, performance_id, product_requires):
             continue
         seats += reserving.reserve_seats(stockstatus.stock_id, quantity)        
 
-    cart = _create_cart(seat_statuses, ordered_products, performance_id)
+    cart = _create_cart(request, performance_id, seats, ordered_products)
     return cart
 
-def _create_cart(self, seats, ordered_products):
-    cart = m.Cart(system_fee=self.get_system_fee())
-    cart.add_seat(seats, ordered_products)
+def _create_cart(request, performance_id, seats, ordered_products):
+    # Cart
+    system_fee = get_system_fee(request)
+    cart = m.Cart(performance_id=performance_id, system_fee=system_fee)
+    for ordered_product, quantity in ordered_products:
+        # CartedProduct
+        cart_product = CartedProduct(cart=self, product=ordered_product, quantity=quantity)
+        for ordered_product_item, quantity in orderd_product.product_item:
+            # CartedProductItem
+            cart_product_item = CartedProductItem(carted_product=cart_product, quantity=quantity,
+                product_item=ordered_product_item)
+            # 席割り当て
+            if not ordered_product_item.stock.stock_type.quantity_only:
+                item_seats = _pop_seat(ordered_product_item, quantity, seats)
+                cart_product_item.seats = item_seats
+
+    assert len(seats) == 0
     return cart
+
+
+def get_system_fee(request):
+    return 380
+def _pop_seat(request, product_item, quantity, seats):
+    """ product_itemに対応した席を取り出す
+    """
+
+    my_seats = [seat for seat in seats if seat.stock_id == product_item.stock_id][:quantity]
+    assert len(my_seats) == quantity
+    map(seats.remove, my_seats)
+    return my_seats
