@@ -7,12 +7,12 @@ import contextlib
 from zope.deprecation import deprecate
 
 logger = logging.getLogger(__file__)
-from pyramid.interfaces import IRoutesMapper
+from pyramid.interfaces import IRoutesMapper, IRequest
 from ..api.impl import get_communication_api
 from ..api.impl import CMSCommunicationApi
 from .interfaces import IPaymentMethodManager
 from .interfaces import IPaymentPlugin, IDeliveryPlugin, IPaymentDeliveryPlugin
-from .interfaces import IMobileRequest
+from .interfaces import IMobileRequest, IStocker, IReserving, ICartFactory
 from .models import Cart, PaymentMethodManager, DBSession, CartedProductItem, CartedProduct
 from ..users.models import User, UserCredential, MemberShip
     
@@ -143,50 +143,42 @@ def get_payment_delivery_plugin(request, payment_plugin_id, delivery_plugin_id):
     return registry.utilities.lookup([], IPaymentDeliveryPlugin, 
         "payment-%s:delivery-%s" % (payment_plugin_id, delivery_plugin_id))
 
+def get_stocker(request):
+    reg = request.registry
+    stocker_cls = reg.adapters.lookup([IRequest], IStocker, "")
+    return stocker_cls(request)
+
+def get_reserving(request):
+    reg = request.registry
+    stocker_cls = reg.adapters.lookup([IRequest], IReserving, "")
+    return stocker_cls(request)
+
+def get_cart_factory(request):
+    reg = request.registry
+    stocker_cls = reg.adapters.lookup([IRequest], ICartFactory, "")
+    return stocker_cls(request)
+
 
 def order_products(request, performance_id, product_requires):
     stocker = get_stocker(request)
     reserving = get_reserving(request)
+    cart_factory = get_cart_factory(request)
 
     stockstatuses = stocker.take_stock(performance_id, product_requires)
 
     seats = []
     for stockstatus, quantity in stockstatuses:
-        if stockstatuses.stock.stock_type.quantity_only:
+        if is_quantity_only(stockstatus.stock):
             continue
         seats += reserving.reserve_seats(stockstatus.stock_id, quantity)        
 
-    cart = _create_cart(request, performance_id, seats, ordered_products)
+    cart = cart_factory.create_cart(performance_id, seats, product_requires)
     return cart
 
-def create_cart(request, performance_id, seats, ordered_products):
-    # Cart
-    system_fee = get_system_fee(request)
-    cart = Cart(performance_id=performance_id, system_fee=system_fee)
-    for ordered_product, quantity in ordered_products:
-        # CartedProduct
-        cart_product = CartedProduct(cart=cart, product=ordered_product, quantity=quantity)
-        for ordered_product_item in ordered_product.items:
-            # CartedProductItem
-            cart_product_item = CartedProductItem(carted_product=cart_product, quantity=quantity,
-                product_item=ordered_product_item)
-            # 席割り当て
-            if not ordered_product_item.stock.stock_type.quantity_only:
-                item_seats = pop_seat(request, ordered_product_item, quantity, seats)
-                cart_product_item.seats = item_seats
-
-    assert len(seats) == 0
-    return cart
+def is_quantity_only(stock):
+    return stock.stock_type.quantity_only
 
 
 def get_system_fee(request):
     return 380
 
-def pop_seat(request, product_item, quantity, seats):
-    """ product_itemに対応した席を取り出す
-    """
-
-    my_seats = [seat for seat in seats if seat.stock_id == product_item.stock_id][:quantity]
-    assert len(my_seats) == quantity
-    map(seats.remove, my_seats)
-    return my_seats

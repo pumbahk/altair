@@ -368,40 +368,7 @@ class pop_seatTests(unittest.TestCase):
 
         return performance, product_item1, seats
 
-    def test_it(self):
-
-        performance, product_item1, seats = self._add_seats()
-
-        seat1 = seats[0]
-        seat2 = seats[1]
-        seat3 = seats[2]
-        seat4 = seats[3]
-
-        quantity = 2
-
-        request = testing.DummyRequest()
-        result = self._callFUT(request, product_item1, quantity, seats)
-        self.assertEqual(result, [seat1, seat3])
-        self.assertEqual(seats, [seat2, seat4])
-
-    def test_it_with_few_quantity(self):
-
-        performance, product_item1, seats = self._add_seats()
-
-        seat1 = seats[0]
-        seat2 = seats[1]
-        seat3 = seats[2]
-        seat4 = seats[3]
-
-        quantity = 1
-
-        request = testing.DummyRequest()
-        result = self._callFUT(request, product_item1, quantity, seats)
-        self.assertEqual(result, [seat1])
-
-        self.assertEqual(seats, [seat2, seat3, seat4])
-
-class create_cartTests(unittest.TestCase):
+class CartFactoryTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.session = _setup_db()
@@ -415,9 +382,13 @@ class create_cartTests(unittest.TestCase):
         transaction.abort()
         self.session.remove()
 
-    def _callFUT(self, *args, **kwargs):
-        from .api import create_cart
-        return create_cart(*args, **kwargs)
+    def _getTarget(self):
+        from carting import CartFactory
+        return CartFactory
+
+    def _makeOne(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
+
 
     def _add_seats(self):
         import ticketing.core.models as c_m
@@ -458,7 +429,7 @@ class create_cartTests(unittest.TestCase):
 
         return performance, product1, product2, product3, seats
 
-    def test_it(self):
+    def test_create_cart(self):
         performance, product1, product2, product3, seats = self._add_seats()
 
         seat1 = seats[0]
@@ -475,7 +446,8 @@ class create_cartTests(unittest.TestCase):
             (product3, 10),
         ]
 
-        result = self._callFUT(request, performance_id, seats, ordered_products)
+        target = self._makeOne(request)
+        result = target.create_cart(performance_id, seats, ordered_products)
         self.assertEqual(len(result.products), 3)
         self.assertEqual(result.products[0].items[0].seats, [seat1, seat3])
         self.assertEqual(result.products[0].quantity, 2)
@@ -483,3 +455,96 @@ class create_cartTests(unittest.TestCase):
         self.assertEqual(result.products[1].quantity, 3)
         self.assertEqual(result.products[2].items[0].seats, [])
         self.assertEqual(result.products[2].quantity, 10)
+
+    def test_pop_seats(self):
+
+        performance, product1, product2, product3, seats = self._add_seats()
+        product_item1 = product1.items[0]
+
+        seat1 = seats[0]
+        seat2 = seats[1]
+        seat3 = seats[2]
+        seat4 = seats[3]
+        seat5 = seats[4]
+
+        quantity = 2
+
+        request = testing.DummyRequest()
+        target = self._makeOne(request)
+
+        result = target.pop_seats(product_item1, quantity, seats)
+
+        self.assertEqual(result, [seat1, seat3])
+        self.assertEqual(seats, [seat2, seat4, seat5])
+
+    def test_pop_seats_with_few_quantity(self):
+
+        performance, product1, product2, product3, seats = self._add_seats()
+
+        seat1 = seats[0]
+        seat2 = seats[1]
+        seat3 = seats[2]
+        seat4 = seats[3]
+        seat5 = seats[4]
+
+        product_item1 = product1.items[0]
+        quantity = 1
+        request = testing.DummyRequest()
+
+        target = self._makeOne(request)
+        result = target.pop_seats(product_item1, quantity, seats)
+
+        self.assertEqual(result, [seat1])
+        self.assertEqual(seats, [seat2, seat3, seat4, seat5])
+
+class order_productsTests(unittest.TestCase):
+    """ 購入処理テスト(ユニット) """
+
+    def _callFUT(self, *args, **kwargs):
+        from .api import order_products
+        return order_products(*args, **kwargs)
+
+    def test_it(self):
+        from pyramid.interfaces import IRequest
+        from .interfaces import IStocker, IReserving, ICartFactory
+        request = testing.DummyRequest()
+        request.registry.adapters.register([IRequest], IStocker, "", DummyStocker)
+        request.registry.adapters.register([IRequest], IReserving, "", DummyReserving)
+        request.registry.adapters.register([IRequest], ICartFactory, "", DummyCartFactory)
+
+        performance_id = "1"
+        product_requires = [
+            (testing.DummyModel(), 10),
+            (testing.DummyModel(), 20),
+        ]
+
+        result = self._callFUT(request, performance_id, product_requires)
+        self.assertIsNotNone(result)
+
+class DummyStocker(object):
+    """ dummy for IStocker"""
+    def __init__(self, request):
+        self.request = request
+
+    def take_stock(self, performance_id, product_requires):
+        return [
+            (testing.DummyModel(
+                stock_id=10000,
+                stock=testing.DummyModel(
+                    stock_type=testing.DummyModel(quantity_only=False))), 10)
+        ]
+
+class DummyReserving(object):
+    """ dummy for IReserving"""
+    def __init__(self, request):
+        self.request = request
+
+    def reserve_seats(self, stock_id, quantity):
+        return [testing.DummyModel()] * quantity
+
+class DummyCartFactory(object):
+    def __init__(self, request):
+        self.request = request
+    
+    def create_cart(self, performance_id, seats, ordered_products):
+        return testing.DummyModel(performance_id=performance_id, seats=seats, ordered_products=ordered_products)

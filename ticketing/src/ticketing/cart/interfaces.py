@@ -76,3 +76,8 @@ class IReserving(Interface):
         :return: list of seat
         """
 
+class ICartFactory(Interface):
+    def create_cart():
+        """
+        カート作成
+        """
