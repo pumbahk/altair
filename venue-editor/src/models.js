@@ -45,13 +45,20 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
   });
   for (var i = 0; i < initialData.stock_types.length; i++) {
     var stockTypeDatum = initialData.stock_types[i];
-    stockTypes.add({
+    var stockType = new StockType({
       id: stockTypeDatum.id,
       name: stockTypeDatum.name,
       isSeat: stockTypeDatum.is_seat,
       quantityOnly: stockTypeDatum.quantity_only,
       quantity: stockTypeDatum.quantity,
       style: stockTypeDatum.style
+    });
+    stockTypes.add(stockType);
+    stockType.on('change:name', function () {
+      this.set('edited', true);
+    });
+    stockType.on('change:style', function () {
+      this.set('edited', true);
     });
   }
   stockHolders.add({
@@ -93,6 +100,7 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
       map[stockHolder.id] = stock;
     }
     stock.on('change:assigned', function () {
+      this.set('edited', true);
       this.get('stockHolder').recalculateQuantity();
       this.get('stockType').recalculateQuantity();
     });
@@ -201,9 +209,21 @@ Venue.prototype.toJSON = function Venue_toJSON () {
     }
   });
 
+  var stockTypeData = [];
+  this.stockTypes.each(function (stockType) {
+    if (stockType.get('edited')) {
+      stockTypeData.push({
+        id: stockType.get('id'),
+        name: stockType.get('name'),
+        style: stockType.get('style')
+      });
+    }
+  });
+
   return {
     seats:seatData,
-    stocks:stockData
+    stocks:stockData,
+    stock_types:stockTypeData
   };
 };
 
@@ -233,7 +253,8 @@ var StockType = exports.StockType = ProvidesStyle.extend({
     isSeat: false,
     quantityOnly: false,
     assigned: 0,
-    available: 0
+    available: 0,
+    edited: false
   },
 
   keyedStocks: function StockType_stocks() {

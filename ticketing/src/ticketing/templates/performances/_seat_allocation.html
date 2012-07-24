@@ -259,20 +259,21 @@ var makeEditable = (function () {
 function buildStockRow(stock) {
   var tr = $('<tr></tr>');
   var legend = $('<td class="stock-legend"></td>');
-  buildColorButton(stock, 'style').appendTo(legend);
-  tr.append(legend);
   var name = $('<td class="stock-name"></td>');
   var stockType = stock.get('stockType');
-  if (stockType.id != "")
+  if (stockType.id != "") {
+    buildColorButton(stockType, 'style').appendTo(legend);
     bind(makeEditable(name), stockType, 'name');
-  else
+  } else {
     name.text(stockType.get('name'));
+  }
+  tr.append(legend);
   tr.append(name);
   var quantity = $('<td class="stock-quantity"></td>');
   if (stockType.get('isSeat') && !stockType.get('quantityOnly')) {
     makeAssignable(quantity, stock);
   } else {
-    bind(makeEditable(quantity), stockType, 'quantity');
+    bind(makeEditable(quantity), stock, 'assigned');
   }
   tr.append(quantity);
   return tr;

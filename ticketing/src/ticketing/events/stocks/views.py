@@ -13,7 +13,7 @@ from paste.util.multidict import MultiDict
 from ticketing.models import merge_session_with_post
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
-from ticketing.core.models import Stock, StockAllocation, Seat, Venue, Performance
+from ticketing.core.models import Stock, StockAllocation, StockType, Seat, Venue, Performance
 from ticketing.events.stocks.forms import StockForms
 
 logger = logging.getLogger(__name__)
@@ -76,7 +76,7 @@ class Stocks(BaseView):
 
         post_data = MultiDict(self.request.json_body)
         print post_data
-        if not post_data.get('seats'):
+        if not post_data.get('seats') and not post_data.get('stocks') and not post_data.get('stock_types'):
             return {
                 'result':'success',
                 'message':u'保存対象がありません',
@@ -93,6 +93,12 @@ class Stocks(BaseView):
             stock = Stock.filter_by(id=post_stock.get('id')).first()
             stock.quantity = post_stock.get('quantity')
             stock.save()
+
+        for post_stock_type in post_data.get('stock_types'):
+            stock_type = StockType.get(id=post_stock_type.get('id'))
+            stock_type.name = post_stock_type.get('name')
+            stock_type.style = post_stock_type.get('style')
+            stock_type.save()
 
         return {
             'result':'success',
