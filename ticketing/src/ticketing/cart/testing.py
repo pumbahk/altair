@@ -2,9 +2,10 @@ from zope.interface import implementer
 from ..checkout import interfaces
 from pyramid import testing
 
-def _setup_db():
+def _setup_db(echo=False):
     from sqlalchemy import create_engine
     engine = create_engine("sqlite:///")
+    engine.echo = echo
     #engine.echo = True
     import sqlahelper
     sqlahelper.add_engine(engine)

@@ -6,7 +6,7 @@ import logging
 import contextlib
 from zope.deprecation import deprecate
 
-logger = logging.getLogger(__file__)
+logger = logging.getLogger(__name__)
 from pyramid.interfaces import IRoutesMapper, IRequest
 from ..api.impl import get_communication_api
 from ..api.impl import CMSCommunicationApi
@@ -166,12 +166,15 @@ def order_products(request, performance_id, product_requires):
 
     stockstatuses = stocker.take_stock(performance_id, product_requires)
 
+    logger.debug("stock %s" % stockstatuses)
     seats = []
     for stockstatus, quantity in stockstatuses:
         if is_quantity_only(stockstatus.stock):
+            logger.debug('quantity only')
             continue
         seats += reserving.reserve_seats(stockstatus.stock_id, quantity)        
 
+    logger.debug(seats)
     cart = cart_factory.create_cart(performance_id, seats, product_requires)
     return cart
 

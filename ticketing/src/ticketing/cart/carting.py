@@ -1,7 +1,9 @@
 # -*- coding:utf-8 -*-
-
+import logging
 from .models import Cart, CartedProduct, CartedProductItem, DBSession
 from .api import get_system_fee
+
+logger = logging.getLogger(__name__)
 
 class CartFactory(object):
     def __init__(self, request):
@@ -33,6 +35,8 @@ class CartFactory(object):
         """
     
         my_seats = [seat for seat in seats if seat.stock_id == product_item.stock_id][:quantity]
-        assert len(my_seats) == quantity
+        if len(my_seats) != quantity:
+            logger.debug("%d != %d" % (len(my_seats), quantity))
+            raise Exception
         map(seats.remove, my_seats)
         return my_seats

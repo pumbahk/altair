@@ -16,6 +16,7 @@ class Stocker(object):
     def __init__(self, request):
         self.request = request
 
+    # TODO: 在庫オブジェクトの取得内容を確認。必要なproductの分がすべて取得できているか？
     def take_stock(self, performance_id, product_requires):
         """
         :param product_requires: list of tuple (product_id, quantity)
@@ -23,6 +24,7 @@ class Stocker(object):
         """
 
         stock_requires = self.quantity_for_stock_id(performance_id, product_requires)
+        logger.debug("stock requires %s" % stock_requires)
         return self._take_stock(stock_requires)
 
 
@@ -63,6 +65,7 @@ class Stocker(object):
 
         """
 
+        logger.debug("ordered products: %s" % ordered_products)
         ordered_product_items = self._convert_order_product_items(performance_id, ordered_products=ordered_products)
         ordered_product_items = list(ordered_product_items)
         logger.debug("ordered product items: %s" % ordered_product_items)

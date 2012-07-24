@@ -4,8 +4,11 @@
 席予約のロジック実装
 """
 
+import logging
 from ticketing.core.models import *
 from sqlalchemy.sql import not_
+
+logger = logging.getLogger(__name__)
 
 class NotEnoughAdjacencyException(Exception):
     """ 必要な連席が存在しない場合 """
@@ -16,6 +19,7 @@ class Reserving(object):
 
     def reserve_seats(self, stock_id, quantity):
         seats = self.get_vacant_seats(stock_id, quantity)
+        logger.debug('reserving %d seats' % len(seats))
         self._reserve(seats)
         return seats
 
@@ -68,4 +72,5 @@ class Reserving(object):
 
         if adjacency is None:
             raise NotEnoughAdjacencyException
+        assert len(adjacency.seats) == quantity
         return adjacency.seats
