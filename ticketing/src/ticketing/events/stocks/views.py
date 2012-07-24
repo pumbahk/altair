@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import logging
 import webhelpers.paginate as paginate
 
 from pyramid.view import view_config, view_defaults
@@ -12,8 +13,10 @@ from paste.util.multidict import MultiDict
 from ticketing.models import merge_session_with_post
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
-from ticketing.core.models import Stock, StockAllocation, Seat, Venue
+from ticketing.core.models import Stock, StockAllocation, Seat, Venue, Performance
 from ticketing.events.stocks.forms import StockForms
+
+logger = logging.getLogger(__name__)
 
 @view_defaults(decorator=with_bootstrap)
 class Stocks(BaseView):
@@ -63,7 +66,21 @@ class Stocks(BaseView):
     @view_config(route_name='stocks.allocate', request_method='POST', renderer='json')
     def allocate(self):
         performance_id = int(self.request.matchdict.get('performance_id', 0))
+        performance = Performance.get(performance_id)
+        if performance is not None:
+            logger.error('performance id %d is not found' % performance_id)
+            return {
+                'result':'error',
+                'message':u'不正なデータ',
+            }
+
         post_data = MultiDict(self.request.json_body)
+        print post_data
+        if not post_data.get('seats'):
+            return {
+                'result':'success',
+                'message':u'保存対象がありません',
+            }
 
         for post_seat in post_data.get('seats'):
             seat = Seat.filter_by(l0_id=post_seat.get('id'))\
@@ -77,4 +94,7 @@ class Stocks(BaseView):
             stock.quantity = post_stock.get('quantity')
             stock.save()
 
-        return {'result':False}
+        return {
+            'result':'success',
+            'message':u'席種・配券先を保存しました',
+        }

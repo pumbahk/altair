@@ -56,23 +56,6 @@ span.editable {
   });
 
   $(".collapse").collapse();
-
-  function stocks_save() {
-    var venue = venueEditorRoot.venueeditor('model');
-    $.ajax({
-      type: 'post',
-      url: "${request.route_path('stocks.allocate', performance_id=performance.id)}",
-      dataType: 'json',
-      data: JSON.stringify(venue.toJSON()),
-      contentType: 'application/json; charset=utf-8',
-      success: function(xml) {
-        alert(xml);
-      },
-      error: function(xhr, text) {
-        aux.callbacks.message && aux.callbacks.message("Failed to save data (reason: " + text + ")");
-      }
-    });
-  }
 </script>
 
 <div class="tabbable tabs-below tabs-above" id="seat-allocation-tab">
@@ -92,7 +75,7 @@ data_source = {
           <%vv:venueeditor data_source="${data_source}">
             <%def name="toolbar_extra()">
               <div style="float:right">
-                <a href="javascript:stocks_save();">保存</a>
+                <a href="javascript:saveStocks();" class="btn btn-primary">保存する</a>
                 <ul class="nav nav-pills">
                   <li class="dropdown">
                     <a class="dropdown-toggle" data-toggle="dropdown" href="#menu1">
@@ -337,6 +320,31 @@ function buildStockHolderTypeTables(venue) {
   return retval;
 }
 
+function saveStocks() {
+  var venue = venueEditorRoot.venueeditor('model');
+  $.ajax({
+    type: 'post',
+    url: "${request.route_path('stocks.allocate', performance_id=performance.id)}",
+    contentType: 'application/json; charset=utf-8',
+    dataType: 'json',
+    data: JSON.stringify(venue.toJSON()),
+    success: function(result) {
+      var modal = $('#modal-result');
+      if (result['result'] == 'success') {
+        modal.find('#message').text(result['message']);
+      } else {
+        modal.find('#message').text("保存できませんでした (" + result['message'] + ")");
+      }
+      modal.modal('toggle');
+    },
+    error: function(xhr, text) {
+      var modal = $('#modal-result');
+      modal.find('#message').text("保存できませんでした (" + text + ")");
+      modal.modal('toggle');
+    }
+  });
+}
+
 callbacks.load = function (viewer) {
   outer.empty();
   outer.append(buildStockHolderTypeTables(viewer.venue));
@@ -360,6 +368,21 @@ callbacks.select = function (viewer, selection) {
 <%include file="/stocks/_action_button.html" args="performance=performance" />
 <div id="stocks-form">
   <%include file="/stocks/_form.html" args="forms=forms_stock" />
+</div>
+
+<div id="modal-result" class="modal hide">
+  <div class="modal-header">
+    <a href="#" class="close">&times;</a>
+    <h3>保存</h3>
+  </div>
+
+  <div class="modal-body">
+    <p id="message"></p>
+  </div>
+
+  <div class="modal-footer">
+    <a href="javascript:$('#modal-result').modal('hide');" class="btn secondary">閉じる</a>
+  </div>
 </div>
 
 <div class="modal fade" id="modal-report">
