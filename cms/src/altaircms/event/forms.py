@@ -28,11 +28,16 @@ class EventForm(Form):
     is_searchable = fields.BooleanField(label=u'検索対象に含める', default=True)
     
     def validate(self, **kwargs):
+        super(EventForm, self).validate()
         data = self.data
         if data["event_open"] > data["event_close"]:
             append_errors(self.errors, "event_open", u"イベント終了日よりも後に設定されてます")
         if data["deal_open"] > data["deal_close"]:
             append_errors(self.errors, "deal_open", u"販売終了日よりも後に設定されてます")
+        if data["deal_open"] > data["event_open"]:
+            append_errors(self.errors, "販売前にイベントが始まっています")
+        if data["deal_close"] < data["event_close"]:
+            append_errors(self.errors, "イベント終了後も販売期間中です")
         return not bool(self.errors)
 
     def object_validate(self, obj=None):

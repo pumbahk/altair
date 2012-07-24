@@ -1,7 +1,6 @@
 # encoding: utf-8
-
 from sqlalchemy import Table, Column, ForeignKey, ForeignKeyConstraint, func
-from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric
+from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric, Unicode
 from sqlalchemy.orm import join, backref
 from sqlalchemy.ext.associationproxy import association_proxy
 
@@ -133,7 +132,7 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     id              = Column(Identifier, primary_key=True)
     l0_id           = Column(String(255))
-
+    name            = Column(Unicode(50), nullable=False, default=u"", server_default=u"")
     stock_id        = Column(Identifier, ForeignKey('Stock.id'))
     stock_type_id   = Column(Identifier, ForeignKey('StockType.id'))
 
@@ -250,6 +249,7 @@ class SeatStatus(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 class SeatAdjacency(Base):
     __tablename__ = "SeatAdjacency"
+    query = DBSession.query_property()
     id = Column(Identifier, primary_key=True)
     adjacency_set_id = Column(Identifier, ForeignKey('SeatAdjacencySet.id'))
 
@@ -648,7 +648,7 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return DeliveryMethod.filter(DeliveryMethod.organization_id==id).all()
 
 buyer_condition_set_table =  Table('BuyerConditionSet', Base.metadata,
-    Column('id', Integer, primary_key=True),
+    Column('id', Identifier, primary_key=True),
     Column('buyer_condition_id', Identifier, ForeignKey('BuyerCondition.id')),
     Column('product_id', Identifier, ForeignKey('Product.id'))
 )
@@ -911,6 +911,7 @@ class SeatIndex(Base, BaseModel):
     seat_index_type_id = Column(Identifier, ForeignKey('SeatIndexType.id'), primary_key=True)
     seat_id            = Column(Identifier, ForeignKey('Seat.id'), primary_key=True)
     index              = Column(Integer, nullable=False)
+    seat               = relationship('Seat', backref='indexes')
 
 class OrganizationTypeEnum(StandardEnum):
     Standard = 1

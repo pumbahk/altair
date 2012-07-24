@@ -3,6 +3,7 @@ import os.path
 DIR = os.path.dirname(os.path.abspath(__file__))
 
 def includeme(config):
+    config.add_widgetname("topic")
     from .models import TopicWidget
     from .models import TopicWidgetResource
     config.add_route("topic_widget_create", "/widget/topic/create", factory=TopicWidgetResource)

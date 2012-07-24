@@ -28,6 +28,7 @@ class WidgetTestSourceMixn(object):
     def _makeRequest(self, **kwargs):
         from pyramid.testing import DummyRequest
         request = DummyRequest()
+        request.allowable = lambda cls, qs=None : cls.query
         for k, v in kwargs.iteritems():
             setattr(request, k, v)
         return request

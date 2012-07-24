@@ -3,6 +3,7 @@ import os.path
 DIR = os.path.dirname(os.path.abspath(__file__))
 
 def includeme(config):
+    config.add_widgetname("menu")
     from .models import MenuWidget
     from .models import MenuWidgetResource
     config.add_route("menu_widget_create", "/widget/menu/create", factory=MenuWidgetResource)

@@ -29,6 +29,9 @@ radio_list_widget = my_widgets.Switcher(
     plain=my_widgets.GenericSerializerWidget(prefix_label=False)
     )
 
+def text_type_but_none_if_not_given(value):
+    return unicode(value) if value is not None else None
+
 def get_year_choices():
     current_year = datetime.now().year
     years =  [(str(year), year) for year in range(current_year-100, current_year)]
@@ -91,7 +94,7 @@ class OrderFormSchema(Form):
     cont = fields.RadioField(u"新規／継続", validators=[v.Required()], choices=[('no', u'新規'),('yes', u'継続')], widget=radio_list_widget)
     old_id_number = fields.TextField(u"会員番号", filters=[strip_spaces], validators=[v.Regexp(r'\d{8}', message=u'半角数字8ケタで入力してください。'), v.Optional()])
     member_type = fields.SelectField(u"会員種別選択", validators=[v.Required()])
-    t_shirts_size = fields.SelectField(u"Tシャツサイズ", choices=[('L', u'L'),('3L', u'3L')], validators=[v.Optional()])
+    t_shirts_size = fields.SelectField(u"Tシャツサイズ", choices=[('L', u'L'),('3L', u'3L')], validators=[v.Optional()], coerce=text_type_but_none_if_not_given)
     #number = fields.IntegerField(u"口数選択", validators=[v.Required()])
     first_name = fields.TextField(u"氏名", filters=[strip_spaces], validators=[v.Required(), Zenkaku])
     last_name = fields.TextField(u"氏名", filters=[strip_spaces], validators=[v.Required(),Zenkaku])
@@ -111,7 +114,7 @@ class OrderFormSchema(Form):
     tel_2 = fields.TextField(u"電話番号(自宅)", filters=[strip_spaces], validators=[v.Regexp(r'^\d*$', message=u'-を抜いた数字のみを入力してください')])
     email = fields.TextField(u"メールアドレス", filters=[strip_spaces], validators=[v.Email()])
     email2 = fields.TextField(u"メールアドレス（確認用）", filters=[strip_spaces], validators=[v.Email(), v.EqualTo('email', u'確認用メールアドレスが一致しません。')])
-    publicity = fields.SelectField(u"媒体への掲載希望", validators=[v.Optional()], choices=[('yes', u'希望する'),('no', u'希望しない')])
+    publicity = fields.SelectField(u"媒体への掲載希望", validators=[v.Optional()], choices=[('yes', u'希望する'),('no', u'希望しない')], coerce=text_type_but_none_if_not_given)
     mail_permission = fields.BooleanField(u"メルマガ配信", default=True)
 
 class OrderReviewSchema(Form):

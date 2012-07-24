@@ -6,14 +6,14 @@ import logging
 import contextlib
 from zope.deprecation import deprecate
 
-logger = logging.getLogger(__file__)
-from pyramid.interfaces import IRoutesMapper
+logger = logging.getLogger(__name__)
+from pyramid.interfaces import IRoutesMapper, IRequest
 from ..api.impl import get_communication_api
 from ..api.impl import CMSCommunicationApi
 from .interfaces import IPaymentMethodManager
 from .interfaces import IPaymentPlugin, IDeliveryPlugin, IPaymentDeliveryPlugin
-from .interfaces import IMobileRequest
-from .models import Cart, PaymentMethodManager, DBSession
+from .interfaces import IMobileRequest, IStocker, IReserving, ICartFactory
+from .models import Cart, PaymentMethodManager, DBSession, CartedProductItem, CartedProduct
 from ..users.models import User, UserCredential, MemberShip
     
 def is_mobile(request):
@@ -142,3 +142,46 @@ def get_payment_delivery_plugin(request, payment_plugin_id, delivery_plugin_id):
     registry = request.registry
     return registry.utilities.lookup([], IPaymentDeliveryPlugin, 
         "payment-%s:delivery-%s" % (payment_plugin_id, delivery_plugin_id))
+
+def get_stocker(request):
+    reg = request.registry
+    stocker_cls = reg.adapters.lookup([IRequest], IStocker, "")
+    return stocker_cls(request)
+
+def get_reserving(request):
+    reg = request.registry
+    stocker_cls = reg.adapters.lookup([IRequest], IReserving, "")
+    return stocker_cls(request)
+
+def get_cart_factory(request):
+    reg = request.registry
+    stocker_cls = reg.adapters.lookup([IRequest], ICartFactory, "")
+    return stocker_cls(request)
+
+
+def order_products(request, performance_id, product_requires):
+    stocker = get_stocker(request)
+    reserving = get_reserving(request)
+    cart_factory = get_cart_factory(request)
+
+    stockstatuses = stocker.take_stock(performance_id, product_requires)
+
+    logger.debug("stock %s" % stockstatuses)
+    seats = []
+    for stockstatus, quantity in stockstatuses:
+        if is_quantity_only(stockstatus.stock):
+            logger.debug('quantity only')
+            continue
+        seats += reserving.reserve_seats(stockstatus.stock_id, quantity)        
+
+    logger.debug(seats)
+    cart = cart_factory.create_cart(performance_id, seats, product_requires)
+    return cart
+
+def is_quantity_only(stock):
+    return stock.stock_type.quantity_only
+
+
+def get_system_fee(request):
+    return 380
+

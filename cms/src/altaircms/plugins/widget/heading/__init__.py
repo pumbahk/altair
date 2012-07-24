@@ -3,6 +3,7 @@ import os.path
 DIR = os.path.dirname(os.path.abspath(__file__))
 
 def includeme(config):
+    config.add_widgetname("heading")
     from .models import HeadingWidget
     from .models import HeadingWidgetResource
     config.add_route("heading_widget_create", "/widget/heading/create", factory=HeadingWidgetResource)

@@ -17,6 +17,7 @@ from .interfaces import IOrderPayment, IOrderDelivery, ICartPayment, ICartDelive
 from ..core import models as c_models
 from . import models as m
 from . import logger
+from zope.deprecation import deprecate
 
 class TicketingCartResource(object):
     __acl__ = [
@@ -57,6 +58,7 @@ class TicketingCartResource(object):
             c_models.SalesSegment.end_at>=now
         ).first()
 
+    @deprecate("deprecated method")
     def _convert_order_product_items(self, performance_id, ordered_products):
         """ 選択したProductからProductItemと個数の組に展開する
         :param ordered_products: list of (product, quantity)
@@ -68,6 +70,7 @@ class TicketingCartResource(object):
                         c_models.ProductItem.performance_id==performance_id).all():
                 yield (product_item, quantity)
 
+    @deprecate("deprecated method")
     def quantity_for_stock_id(self, performance_id, ordered_products):
         """ ProductItemと個数の組から、stock_id, 個数の組に集約する
         :param ordered_product_items: iter of (product_item, quantity)
@@ -82,6 +85,7 @@ class TicketingCartResource(object):
         return ((stock_id, sum(quantity for _, quantity in ordered_items)) for stock_id, ordered_items in q)
 
 
+    @deprecate("deprecated method")
     def _get_stock(self, conn, performance_id, ordered_products):
         """ 在庫確保
         """
@@ -104,6 +108,7 @@ class TicketingCartResource(object):
                 return False
         return stock_quantity
 
+    @deprecate("deprecated method")
     def _get_seats(self, conn, stock_quantity):
         """ 座席確保
         """
@@ -206,6 +211,7 @@ class TicketingCartResource(object):
     # 問題となったパターン (暫定対応の条件追加済)
     # パフォーマンスがことなるプロダクトアイテムまで参照しにいってしまう
     # 確保済みシートを含むadjacencyを参照してしまう
+    @deprecate("deprecated method")
     def order_products(self, performance_id, ordered_products):
         """
 

@@ -3,9 +3,6 @@
 from altaircms.lib.formhelpers import datetime_pick_patch
 datetime_pick_patch()
 
-import re
-import warnings
-
 import logging
 logger = logging.getLogger(__name__)
 
@@ -42,6 +39,10 @@ def main(global_config, **settings):
         authentication_policy=authn_policy,
         authorization_policy=authz_policy
     )
+
+    ## organization mapping
+    OrganizationMapping = config.maybe_dotted(".auth.api.OrganizationMapping")
+    OrganizationMapping(settings["altaircms.organization.mapping.json"]).register(config)
 
     ## bind authenticated user to request.user
     config.set_request_property("altaircms.auth.helpers.get_authenticated_user", "user", reify=True)
@@ -91,5 +92,5 @@ def main(global_config, **settings):
     engine = engine_from_config(settings, 'sqlalchemy.')
     sqlahelper.get_session().remove()
     sqlahelper.add_engine(engine)
-
+    
     return config.make_wsgi_app()

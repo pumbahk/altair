@@ -219,6 +219,14 @@ class Organization(Base):
             return qs.filter_by(**{key: self.id})
         return transform
 
+    @classmethod
+    def get_or_create(cls, backend_id, source):
+        obj = cls.query.filter_by(backend_id=backend_id, auth_source=source).first()
+        if obj:
+            return obj
+        return cls(backend_id=backend_id, auth_source=source)
+        
+
 class APIKey(Base):
     __tablename__ = 'apikey'
     query = _session.query_property()

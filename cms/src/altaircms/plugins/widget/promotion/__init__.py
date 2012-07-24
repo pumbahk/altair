@@ -3,6 +3,7 @@ import os.path
 DIR = os.path.dirname(os.path.abspath(__file__))
 
 def includeme(config):
+    config.add_widgetname("promotion")
     from .models import PromotionWidget
     config.add_route("promotion_widget_create", "/widget/promotion/create", factory=".models.PromotionWidgetResource")
     config.add_route("promotion_widget_delete", "/widget/promotion/delete", factory=".models.PromotionWidgetResource")

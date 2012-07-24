@@ -11,7 +11,7 @@ from ticketing.core.models import Organization
 from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, DBSession, Identifier, relationship
 
 operator_role_association_table = Table('OperatorRole_Operator', Base.metadata,
-    Column('id', Integer, primary_key=True),
+    Column('id', Identifier, primary_key=True),
     Column('operator_role_id', Identifier, ForeignKey('OperatorRole.id')),
     Column('operator_id', Identifier, ForeignKey('Operator.id'))
 )

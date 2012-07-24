@@ -1,6 +1,9 @@
 from pyramid.view import view_config, view_defaults
 from altaircms.auth.api import require_login
 from . import forms
+from altaircms.plugins.api import get_widget_utility
+from altaircms.page.models import Page
+
 @view_defaults(custom_predicates=(require_login,))
 class HeadingWidgetView(object):
     def __init__(self, request):
@@ -39,13 +42,16 @@ class HeadingWidgetView(object):
         context = self.request.context
         widget = context.get_widget(self.request.GET.get("pk"))
         form = forms.HeadingForm(**widget.to_dict())
+        
+        page = self.request.allowable(Page).filter_by(id=self.request.GET["page"]).first()
+        utility = get_widget_utility(self.request, page, widget.type)
+        form.kind.choices = utility.choices
+
         return {"widget": widget, "form": form}
 
 @view_config(route_name="api_heading_title", renderer="json")
 def api_heading_title(request):
-    from altaircms.page.models import Page
-    page = Page.query.filter_by(id=request.GET.get("page")).first()
-
+    page = request.allowable(Page).filter_by(id=request.GET.get("page")).first()
     if page:
         return {"name": page.name}
     else:

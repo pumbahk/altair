@@ -3,6 +3,7 @@ import os.path
 DIR = os.path.dirname(os.path.abspath(__file__))
 
 def includeme(config):
+    config.add_widgetname("flash")
     from .models import FlashWidget
     from .models import FlashWidgetResource
     config.add_route("flash_widget_create", "/widget/flash/create", factory=FlashWidgetResource)

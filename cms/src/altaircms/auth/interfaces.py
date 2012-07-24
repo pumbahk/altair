@@ -23,8 +23,14 @@ class IOAuthComponent(Interface):
     def create_oauth_token_url(args):
         pass
 
-
 class IAllowableQuery(Interface):
     def __call__(model):
         """ return allowable query(usually filtering by organization)"""
         pass
+
+class IOrganizationMapping(Interface):
+    def __call__(name):
+        """
+        organization name -> (backend_id,  auth_source)
+        * organization_name is individual name in cms area.
+        """

@@ -13,6 +13,8 @@ from ticketing.oauth2.models import Service, AccessToken
 #from forms import AuthorizeForm
 from ticketing.oauth2.authorize import Authorizer, MissingRedirectURI, AuthorizationException
 from ticketing.operators.models import Operator
+from ..core import models as c_models
+from sqlalchemy.orm import joinedload
 
 import sqlahelper
 session = sqlahelper.get_session()
@@ -82,3 +84,48 @@ class LoginOAuth(BaseView):
             redirect_url = HTTPFound(location="/")
         logger.info("*api login* authorize redirect url: status:%s location:%s" % (redirect_url.status, redirect_url.location))
         return redirect_url
+
+class StockStatus(BaseView):
+    @view_config(route_name='api.stock_statuses_for_event', request_method="GET", renderer='json')
+    def stock_statuses(self):
+        event_id = self.request.matchdict.get('event_id')
+        stocks = session.query(c_models.Stock) \
+            .options(joinedload(c_models.Stock.stock_status), joinedload(c_models.Stock.stock_type), joinedload(c_models.Stock.performance)) \
+            .join(c_models.ProductItem) \
+            .join(c_models.Product) \
+            .join(c_models.Event) \
+            .join(c_models.StockHolder) \
+            .join(c_models.Account) \
+            .filter(c_models.Product.event_id == event_id) \
+            .filter(c_models.Account.organization_id == c_models.Event.organization_id) \
+            .distinct(c_models.Stock.id) \
+            .order_by(c_models.Stock.id) \
+            .all()
+        return dict(
+            performances=[
+                dict(
+                    id=performance.id,
+                    name=performance.name,
+                    start_on=performance.start_on and performance.start_on.isoformat(),
+                    end_on=performance.end_on and performance.end_on.isoformat()
+                    )
+                    for performance in dict((stock.performance_id, stock.performance) for stock in stocks).values()
+                ],
+            stock_types=[
+                dict(
+                    id=stock_type.id,
+                    name=stock_type.name
+                    )
+                    for stock_type in dict((stock.stock_type.id, stock.stock_type) for stock in stocks).values()
+                ],
+            stocks=[
+                dict(
+                    id=stock.id,
+                    stock_type_id=stock.stock_type_id,
+                    performance_id=stock.performance_id,
+                    assigned=stock.quantity,
+                    available=stock.stock_status.quantity
+                    )
+                for stock in stocks
+                ]
+            )

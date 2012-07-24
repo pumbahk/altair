@@ -49,6 +49,7 @@ attr_names = [
     u'tel_1',
     u'tel_2',
     u'email',
+    u'mail_permission',
     ]
 
 

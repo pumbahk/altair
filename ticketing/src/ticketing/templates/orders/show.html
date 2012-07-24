@@ -261,7 +261,7 @@ ${h.breadcrumbs(
             label = u'メモリアルブックへの氏名掲載希望'
           elif key == 'mail_permission':
             label = u'メールマガジン配信'
-            value = 'yes' if value == 'y' else 'no'
+            value = 'no' if value in ('no', 'n', '0', None) else 'yes'
           elif key == 'cont':
             label = u'新規/継続'
             value = u'新規' if value == 'no' else u'継続'

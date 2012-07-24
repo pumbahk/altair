@@ -6,6 +6,8 @@ import sqlahelper
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 
+from ..models import Identifier
+
 # for schema dependencies
 import ticketing.core.models
 import ticketing.orders.models
@@ -17,7 +19,7 @@ class Secure3DReqEnrolRequest(Base):
     """ 3D認証可否確認依頼処理（リクエスト）
     """
     __tablename__ = 'secure3d_req_enrol_request'
-    id = sa.Column(sa.Integer, primary_key=True)
+    id = sa.Column(Identifier, primary_key=True)
     CardNumber = sa.Column(sa.Unicode(16), doc="カード番号")
     ExpYear = sa.Column(sa.Unicode(2), doc="カード有効期限(年)")
     ExpMonth = sa.Column(sa.Unicode(2), doc="カード有効期限(月)")
@@ -28,7 +30,7 @@ class Secure3DReqEnrolResponse(Base):
     """ 3D認証可否確認依頼処理（レスポンス）
     """
     __tablename__ = 'secure3d_req_enrol_response'
-    id = sa.Column(sa.Integer, primary_key=True)
+    id = sa.Column(Identifier, primary_key=True)
     Md = sa.Column(sa.UnicodeText, doc="マーチャントデータ")
     ErrorCd = sa.Column(sa.Unicode(6), doc="エラーコード")
     RetCd = sa.Column(sa.Unicode(1), doc="リターンコード")
@@ -45,7 +47,7 @@ class Secure3DAuthRequest(Base):
     """ 3D認証結果確認依頼処理（リクエスト）
     """
     __tablename__ = 'secure3d_req_auth_request'
-    id = sa.Column(sa.Integer, primary_key=True)
+    id = sa.Column(Identifier, primary_key=True)
     Md = sa.Column(sa.UnicodeText, doc="マーチャントデータ")
     PaRes = sa.Column(sa.UnicodeText, doc="PARes 電文")
 
@@ -54,7 +56,7 @@ class Secure3DAuthResponse(Base):
     """ 3D認証結果確認依頼処理（リクエスト）
     """
     __tablename__ = 'secure3d_req_auth_response'
-    id = sa.Column(sa.Integer, primary_key=True)
+    id = sa.Column(Identifier, primary_key=True)
 
     ErrorCd = sa.Column(sa.Unicode(6), doc="エラーコート")
     RetCd = sa.Column(sa.Unicode(1), doc="リターンコート")
@@ -81,7 +83,7 @@ class MultiCheckoutRequestCard(Base):
     - 3: 3Dセキュア 3D
     """
     __tablename__ = 'multicheckout_request_card'
-    id = sa.Column(sa.Integer, primary_key=True)
+    id = sa.Column(Identifier, primary_key=True)
 
     query = DBSession.query_property()
 
@@ -120,7 +122,7 @@ class MultiCheckoutRequestCard(Base):
 
 class MultiCheckoutResponseCard(Base):
     __tablename__ = 'multicheckout_response_card'
-    id = sa.Column(sa.Integer, primary_key=True)
+    id = sa.Column(Identifier, primary_key=True)
 
     #依頼情報
     BizClassCd = sa.Column(sa.Unicode(2), doc=u"業務分類コード")
@@ -142,13 +144,13 @@ class MultiCheckoutInquiryResponseCardHistory(Base):
     """
 
     __tablename__ = 'multicheckout_inquiry_response_card_history'
-    id = sa.Column(sa.Integer, primary_key=True)
+    id = sa.Column(Identifier, primary_key=True)
 
     BizClassCd = sa.Column(sa.Unicode(2), doc=u"業務分類コード")
     EventDate = sa.Column(sa.Unicode(14), doc=u"取引日時(yyyymmddhhmiss)")
     SalesAmount = sa.Column(sa.Unicode(7), doc=u"売上金額")
 
-    inquiry_id = sa.Column(sa.Integer, sa.ForeignKey("multicheckout_inquiry_response_card.id"))
+    inquiry_id = sa.Column(Identifier, sa.ForeignKey("multicheckout_inquiry_response_card.id"))
     inquiry = orm.relationship(
         "MultiCheckoutInquiryResponseCard",
         backref="histories")
@@ -159,7 +161,7 @@ class MultiCheckoutInquiryResponseCard(Base):
     """
 
     __tablename__ = 'multicheckout_inquiry_response_card'
-    id = sa.Column(sa.Integer, primary_key=True)
+    id = sa.Column(Identifier, primary_key=True)
 
     Storecd = sa.Column(sa.Unicode(10), doc=u"店舗コード")
 

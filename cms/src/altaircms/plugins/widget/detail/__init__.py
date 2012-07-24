@@ -3,6 +3,7 @@ import os.path
 DIR = os.path.dirname(os.path.abspath(__file__))
 
 def includeme(config):
+    config.add_widgetname("detail")
     from .models import DetailWidget
     from .models import DetailWidgetResource
     config.add_route("detail_widget_create", "/widget/detail/create", factory=DetailWidgetResource)

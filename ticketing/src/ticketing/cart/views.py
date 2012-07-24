@@ -323,6 +323,21 @@ class ReserveView(object):
 
         return [(products.get(int(c[0])), c[1]) for c in controls]
 
+    def reserve(self):
+        cart = api.order_products(self.request, self.request.params['performance_id'], self.ordered_items)
+        if cart is None:
+            return dict(result='NG')
+        api.set_cart(self.request, cart)
+        return dict(result='OK', 
+                    payment_url=self.request.route_url("cart.payment"),
+                    cart=dict(products=[dict(name=p.product.name, 
+                                             quantity=p.quantity,
+                                             price=int(p.product.price),
+                                        ) 
+                                        for p in cart.products],
+                              total_amount=h.format_number(cart.tickets_amount),
+                    ))
+
 
     @view_config(route_name='cart.order', request_method="POST", renderer='json')
     def __call__(self):
