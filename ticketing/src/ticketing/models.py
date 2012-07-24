@@ -19,6 +19,7 @@ from sqlalchemy.sql.expression import text
 from sqlalchemy.sql import functions as sqlf, and_
 from zope.sqlalchemy import ZopeTransactionExtension
 import sqlahelper
+from paste.util.multidict import MultiDict
 
 from ticketing.utils import StandardEnum
 
@@ -50,8 +51,6 @@ class Identifier(Integer):
     @property
     def _expression_adaptations(self):
         return self.inner._expression_adaptations
-
-from paste.util.multidict import MultiDict
 
 def record_to_appstruct(self):
     return dict([(k, self.__dict__[k]) for k in sorted(self.__dict__) if '_sa_' != k[:4]])
@@ -205,9 +204,6 @@ class JSONEncodedDict(TypeDecorator):
         if value is not None:
             value = json.loads(value)
         return value
-
-    import collections
-    from sqlalchemy.ext.mutable import Mutable
 
 class MutationDict(Mutable, dict):
     @classmethod

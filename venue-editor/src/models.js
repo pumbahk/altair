@@ -135,18 +135,23 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
         set = perStockSeatSet[stock.id] = new IdentifiableSet();
       set.add(seat);
       seat.on('change:stock', function () {
+        this.set('edited', true);
         var prev = this.previous('stock');
         var new_ = this.get('stock');
         if (prev != new_) {
           if (prev) {
             perStockSeatSet[prev.id].remove(this);
-            if (prev.has('assigned'))
+            if (prev.has('assigned')) {
+              prev.set('edited', true);
               prev.set('assigned', perStockSeatSet[prev.id].length);
+            }
           }
           if (new_) {
             perStockSeatSet[new_.id].add(this);
-            if (new_.has('assigned'))
+            if (new_.has('assigned')) {
+              new_.set('edited', true);
               new_.set('assigned', perStockSeatSet[new_.id].length);
+            }
           }
         }
       });
@@ -176,19 +181,29 @@ Venue.prototype.isSelectable = function Venue_isSelectable(seat) {
 };
 
 Venue.prototype.toJSON = function Venue_toJSON () {
-  var seatData = {};
+  var seatData = [];
   this.seats.each(function (seat) {
-    seatData[seat.id] = {
-      id: seat.id,
-      stock_type_id: seat.get('stockType').id,
-      stock_holder_id: seat.get('stockHolder').id,
-      areas: seat.get('areas')
-    };
+    if (seat.get('edited')) {
+      seatData.push({
+        id: seat.id,
+        stock_id: seat.get('stock').id
+      });
+    }
   });
+
+  var stockData = [];
+  this.stocks.each(function (stock) {
+    if (stock.get('edited')) {
+      stockData.push({
+        id: stock.get('id'),
+        quantity: stock.get('assigned')
+      });
+    }
+  });
+
   return {
-    seats: seatData,
-    stockTypes: this.stockTypes.toJSON(),
-    stockHolders: this.stockHolders.toJSON()
+    seats:seatData,
+    stocks:stockData
   };
 };
 
@@ -277,7 +292,8 @@ var Stock = exports.Stock = Backbone.Model.extend({
     stockType: null,
     assigned: 0,
     available: 0,
-    style: CONF.DEFAULT.SEAT_STYLE
+    style: CONF.DEFAULT.SEAT_STYLE,
+    edited: false
   },
 
   _refreshStyle: function Stock__refreshStyle() {
@@ -327,7 +343,8 @@ var Seat = exports.Seat = Backbone.Model.extend({
     stock: null,
     selectable: true,
     selected: false,
-    areas: []
+    areas: [],
+    edited: false
   },
 
   validate: function (attrs, options) {

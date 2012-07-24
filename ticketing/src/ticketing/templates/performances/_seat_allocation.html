@@ -56,6 +56,23 @@ span.editable {
   });
 
   $(".collapse").collapse();
+
+  function stocks_save() {
+    var venue = venueEditorRoot.venueeditor('model');
+    $.ajax({
+      type: 'post',
+      url: "${request.route_path('stocks.allocate', performance_id=performance.id)}",
+      dataType: 'json',
+      data: JSON.stringify(venue.toJSON()),
+      contentType: 'application/json; charset=utf-8',
+      success: function(xml) {
+        alert(xml);
+      },
+      error: function(xhr, text) {
+        aux.callbacks.message && aux.callbacks.message("Failed to save data (reason: " + text + ")");
+      }
+    });
+  }
 </script>
 
 <div class="tabbable tabs-below tabs-above" id="seat-allocation-tab">
@@ -75,6 +92,7 @@ data_source = {
           <%vv:venueeditor data_source="${data_source}">
             <%def name="toolbar_extra()">
               <div style="float:right">
+                <a href="javascript:stocks_save();">保存</a>
                 <ul class="nav nav-pills">
                   <li class="dropdown">
                     <a class="dropdown-toggle" data-toggle="dropdown" href="#menu1">
