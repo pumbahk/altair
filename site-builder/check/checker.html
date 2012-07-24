@@ -11,18 +11,27 @@ var load = function(url) {
 		success: function(r) {
 			$('#stage').get(0).innerHTML = r;
 			
+			// 適当に縮小
+			$('#stage > svg > g').attr('transform', 'scale(0.5)');
+			
+			$('#venue').text($('#stage > svg > title').text());
+			
 			$('#stage g g rect').hover(function() {
 				var b = $('metadata', $(this).parents('g').eq(1)).eq(0);
 				var r = $('metadata', $(this).parents('g').eq(0)).eq(0);
 				$('#block').text($('property[name="name"]', b).text());
 				$('#row').text($('property[name="name"]', r).text());
-				$('#seat').text($(this).text());
+				$('#seat').text($('title', this).text());
+				$('#seat_id').text($(this).attr('id'));
+				$('#seat_proto').text($('metadata object', this).attr('prototype'));
 				$(this).attr('fill-opacity', '0.2');
 			}, function() {
 				var e = $(this).get(0);
 				$('#block').text(' ');
 				$('#row').text(' ');
 				$('#seat').text(' ');
+				$('#seat_id').text(' ');
+				$('#seat_proto').text(' ');
 				$(this).attr('fill-opacity', '');
 			});
 		}
@@ -38,21 +47,31 @@ $(function() {
 });
 //-->
 </script>
+<link rel="stylesheet" href="../style.css" type="text/css">
+<style type="text/css">
+* { font-size: 8px; }
+#status span { display: inline-block; width: 320px; overflow: hidden; }
+</style>
 </head>
 <body>
-<div>Seat Check Tool</div>
-<div style="height: 20px;">
-	Block: <span id="block"></span>
-	&nbsp;&nbsp;&nbsp;
-	Row: <span id="row"></span>
-	&nbsp;&nbsp;&nbsp;
-	Seat: <span id="seat"></span>
-</div>
 <div>
 	<form style="padding-top: 8px;">
-	Location: <input type="text" id="url" value="sample.svg" style="width: 90%" />
+	<u>Seat Check Tool</u>
+	Location: <input type="text" id="url" value="../akita-shiritsu.xml" style="width: 90%" />
 	<input type="submit" value="Load" />
 	</form>
+	<div style="height: 20px;" id="status">
+		Venue: <span id="venue"></span>
+		Block: <span id="block"></span>
+		&nbsp;&nbsp;&nbsp;
+		Row: <span id="row"></span>
+		&nbsp;&nbsp;&nbsp;
+		Seat: <span id="seat"></span>
+		&nbsp;&nbsp;&nbsp;
+		Seat_ID: <span id="seat_id"></span>
+		&nbsp;&nbsp;&nbsp;
+		Seat_Prototype: <span id="seat_proto"></span>
+	</div>
 </div>
 
 <div id="stage"></div>
