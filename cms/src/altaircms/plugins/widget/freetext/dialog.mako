@@ -21,7 +21,3 @@
   <button class="btn btn-small" type="button" id="freetext_default_body_submit">定型文挿入</button>	
   <a target="blank" href="${request.route_path("freetext_default_list")}">定型文登録</a>
 </form>
-
-
-
-
