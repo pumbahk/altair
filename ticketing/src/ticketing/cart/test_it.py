@@ -269,6 +269,7 @@ class StockerTests(unittest.TestCase):
     def tearDown(self):
         import transaction
         transaction.abort()
+        self.session.remove()
 
     def _getTarget(self):
         from ticketing.cart.stocker import Stocker

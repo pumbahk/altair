@@ -83,7 +83,7 @@ class CartedProductItem(Base):
     deleted_at = sa.Column(sa.DateTime, nullable=True)
     finished_at = sa.Column(sa.DateTime)
 
-    @deprecate
+    @deprecate("deprecated method")
     def pop_seats(self, seats):
         """ 必要な座席を取り出して保持する
 
@@ -147,7 +147,7 @@ class CartedProduct(Base):
         """
         return self.product.price * self.quantity
 
-    @deprecate
+    @deprecate("deprecated method")
     def pop_seats(self, seats, performance_id):
         for product_item in self.product.items:
             if product_item.performance_id != performance_id:
@@ -156,7 +156,7 @@ class CartedProduct(Base):
             seats = cart_product_item.pop_seats(seats)
         return seats
 
-    @deprecate
+    @deprecate("deprecated method")
     def adjust_items(self, performance_id):
         for product_item in self.product.items:
             if product_item.performance_id != performance_id:
@@ -267,7 +267,7 @@ class Cart(Base):
         """
         return self.created_at > datetime.now() - timedelta(minutes=expire_span_minutes)
 
-    @deprecate
+    @deprecate("deprecated method")
     def add_seat(self, seats, ordered_products):
         """ 確保した座席を追加
         :param seats: list of Seat
@@ -280,7 +280,7 @@ class Cart(Base):
             seats = cart_product.pop_seats(seats, self.performance_id)
         # CartProductでseatsから必要な座席を取り出し
 
-    @deprecate
+    @deprecate("deprecated method")
     def add_products(self, ordered_products):
         for ordered_product, quantity in ordered_products:
             # ordered_productでCartProductを作成
