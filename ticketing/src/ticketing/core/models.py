@@ -1,5 +1,4 @@
 # encoding: utf-8
-
 from sqlalchemy import Table, Column, ForeignKey, ForeignKeyConstraint, func
 from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric, Unicode
 from sqlalchemy.orm import join, backref
@@ -250,6 +249,7 @@ class SeatStatus(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 class SeatAdjacency(Base):
     __tablename__ = "SeatAdjacency"
+    query = DBSession.query_property()
     id = Column(Identifier, primary_key=True)
     adjacency_set_id = Column(Identifier, ForeignKey('SeatAdjacencySet.id'))
 
@@ -911,6 +911,7 @@ class SeatIndex(Base, BaseModel):
     seat_index_type_id = Column(Identifier, ForeignKey('SeatIndexType.id'), primary_key=True)
     seat_id            = Column(Identifier, ForeignKey('Seat.id'), primary_key=True)
     index              = Column(Integer, nullable=False)
+    seat               = relationship('Seat', backref='indexes')
 
 class OrganizationTypeEnum(StandardEnum):
     Standard = 1
