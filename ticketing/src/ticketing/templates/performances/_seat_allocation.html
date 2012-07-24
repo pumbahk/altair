@@ -1,7 +1,7 @@
-<%page args="performance, form_stock_holder" />
+<%page args="performance" />
 <%namespace file="./_venue_view.html" name="vv" />
-<style type="text/css">
 
+<style type="text/css">
 .assignable {
   text-decoration: none;
   color: #000;
@@ -42,8 +42,8 @@
 span.editable {
   margin: 0 0;
 }
-
 </style>
+
 <script type="text/javascript">
   $(window).resize(function(api){
     $("#seat-map").height($(window).height()-230);
@@ -54,8 +54,6 @@ span.editable {
     $("#seat-map").height($(window).height()-230);
     $("#allocated-list").height($(window).height()-230);
   });
-
-  $(".collapse").collapse();
 </script>
 
 <div class="tabbable tabs-below tabs-above" id="seat-allocation-tab">
@@ -63,36 +61,24 @@ span.editable {
     <div class="tab-pane active" id="map">
       <div class="container-fluid">
         <div class="row-fluid">
-<%
-data_source = {
-  'drawing': request.route_path('api.get_drawing',
-                                venue_id=performance.venue.id),
-  'metadata': request.route_path('api.get_seats',
-                                 venue_id=performance.venue.id,
-                                 _query={u'n':u'seats|stock_types|stock_holders|stocks'})
-  }
-%>
+          <%
+            data_source = {
+              'drawing': request.route_path('api.get_drawing', venue_id=performance.venue.id),
+              'metadata': request.route_path('api.get_seats', venue_id=performance.venue.id,
+                                             _query={u'n':u'seats|stock_types|stock_holders|stocks'})
+            }
+          %>
           <%vv:venueeditor data_source="${data_source}">
             <%def name="toolbar_extra()">
               <div style="float:right">
                 <a href="javascript:saveStocks();" class="btn btn-primary">保存する</a>
-                <ul class="nav nav-pills">
-                  <li class="dropdown">
-                    <a class="dropdown-toggle" data-toggle="dropdown" href="#menu1">
-                      <span>席種→枠</span>
-                      <i class="caret"></i>
-                    </a>
-                    <ul class="dropdown-menu">
-                      <li><a>席種→枠</a></li>
-                      <li><a>枠→席種</a></li>
-                    </ul>
-                  </li>
-                </ul>
               </div>
             </%def>
-            <%include file="/stock_holders/_list.html" args="performance=performance" />
             <%def name="post()">
-        <script type="text/javascript">
+
+<script type="text/javascript">
+var outer = venueEditorSide.children();
+
 function deepClone(o) {
   if (o !== null && typeof o == 'object' && o.constructor == Object) {
     var retval = {};
@@ -103,8 +89,6 @@ function deepClone(o) {
     return _.clone(o);
   }
 }
-
-var outer = venueEditorSide.children();
 
 function gradientStyle(name, colors) {
   var buf = [], n = colors.length;
@@ -365,11 +349,6 @@ callbacks.select = function (viewer, selection) {
   </div>
 </div>
 
-<%include file="/stocks/_action_button.html" args="performance=performance" />
-<div id="stocks-form">
-  <%include file="/stocks/_form.html" args="forms=forms_stock" />
-</div>
-
 <div id="modal-result" class="modal hide">
   <div class="modal-header">
     <a href="#" class="close">&times;</a>
@@ -382,35 +361,5 @@ callbacks.select = function (viewer, selection) {
 
   <div class="modal-footer">
     <a href="javascript:$('#modal-result').modal('hide');" class="btn secondary">閉じる</a>
-  </div>
-</div>
-
-<div class="modal fade" id="modal-report">
-  <div class="modal-header">
-    <a class="close" data-dismiss="modal">×</a>
-    <h3>帳票</h3>
-  </div>
-
-  <div class="modal-body">
-    <label class="control-label">帳票の出力タイプを選択</label>
-    <div class="controls">
-      <label class="radio">
-        <input type="radio" name="optionsRadios" id="optionsRadios1" value="option1" checked>
-        Excel
-      </label>
-      <label class="radio">
-        <input type="radio" name="optionsRadios" id="optionsRadios2" value="option2">
-        Csv
-      </label>
-      <label class="radio">
-        <input type="radio" name="optionsRadios" id="optionsRadios3" value="option2">
-        PDF
-      </label>
-    </div>
-  </div>
-
-  <div class="modal-footer">
-    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
-    <a href="#" class="btn btn-primary">出力</a>
   </div>
 </div>

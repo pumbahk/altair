@@ -67,7 +67,7 @@ class Stocks(BaseView):
     def allocate(self):
         performance_id = int(self.request.matchdict.get('performance_id', 0))
         performance = Performance.get(performance_id)
-        if performance is not None:
+        if performance is None:
             logger.error('performance id %d is not found' % performance_id)
             return {
                 'result':'error',
