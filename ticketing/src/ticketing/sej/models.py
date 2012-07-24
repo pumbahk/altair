@@ -173,7 +173,7 @@ class SejOrder(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
 class SejTicket(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     __tablename__           = 'SejTicket'
 
-    id                      = Column(Integer, primary_key=True)
+    id                      = Column(Identifier, primary_key=True)
     ticket_type             = Column(Enum('1', '2', '3', '4'))
     barcode_number          = Column(String(13))
     event_name              = Column(String(40))

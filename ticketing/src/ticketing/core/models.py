@@ -648,7 +648,7 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return DeliveryMethod.filter(DeliveryMethod.organization_id==id).all()
 
 buyer_condition_set_table =  Table('BuyerConditionSet', Base.metadata,
-    Column('id', Integer, primary_key=True),
+    Column('id', Identifier, primary_key=True),
     Column('buyer_condition_id', Identifier, ForeignKey('BuyerCondition.id')),
     Column('product_id', Identifier, ForeignKey('Product.id'))
 )
