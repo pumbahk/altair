@@ -1,5 +1,8 @@
 from pyramid.view import view_config, view_defaults
 from altaircms.auth.api import require_login
+from altaircms.auth.api import get_or_404
+from . import models
+from . import forms
 
 @view_defaults(custom_predicates=(require_login,))
 class FreetextWidgetView(object):
@@ -33,10 +36,25 @@ class FreetextWidgetView(object):
         context.delete(widget, flush=True)
         return {"status": "ok"}
 
+
+    ##
     @view_config(route_name="freetext_widget_dialog", renderer="altaircms.plugins.widget:freetext/dialog.mako", request_method="GET")
     def dialog(self):
         context = self.request.context
         pk = self.request.GET.get("pk")
         widget = context.get_widget(pk)
-
-        return {"widget": widget}
+        choice_form = forms.FreeTextChoiceForm()
+        return {"widget": widget, "choice_form": choice_form}
+    
+    @view_config(route_name="api_get_default_text", request_method="GET", renderer="json", request_param="default_body_id")
+    def get_data(self):
+        params = self.request.GET
+        obj = get_or_404(self.request.allowable(models.FreetextDefaultBody),
+                         models.FreetextDefaultBody.id==params.get("default_body_id"))
+        return {
+            "name": obj.__class__.__name__, 
+            "data": {
+                "name": obj.name, 
+                "text": obj.text
+                }
+            }
