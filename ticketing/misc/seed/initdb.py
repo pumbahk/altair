@@ -87,12 +87,7 @@ if args.d is not None:
         settings[k] = v
 
 sqlahelper.add_engine(sqlalchemy.engine_from_config(settings, 'sqlalchemy.'))
-sys.stderr.write("Initializing database...")
-sys.stderr.flush()
-sqlahelper.get_base().metadata.drop_all()
-sqlahelper.get_base().metadata.create_all()
-sys.stderr.write("done\n")
-sys.stderr.flush()
-
 conn = sqlahelper.get_engine().connect()
 readsql(conn, open(args.sql))
+sys.stderr.write("done.\n")
+sys.stderr.flush()

@@ -23,7 +23,11 @@ Generating seed data
 
   $ python src/ticketing/seed/gen.py > ticketing.sql
 
-DB再生成とシードデータのインポート::
+DB再生成::
+  
+  $ alembic -c alembic.ini upgrade head
+
+シードデータのインポート::
 
   $ python initdb.py development.ini ticketing.sql
 
