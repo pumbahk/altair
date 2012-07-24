@@ -8,5 +8,6 @@ def includeme(config):
     config.add_route('login.access_token'           , '/access_token')
     config.add_route('login.missing_redirect_url'   , '/missing_redirect_url')
 
+    config.add_route('api.stock_statuses_for_event', '/events/{event_id}/stock_statuses')
 
     config.scan(".")
