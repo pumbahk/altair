@@ -13,7 +13,7 @@ from ..api.impl import CMSCommunicationApi
 from .interfaces import IPaymentMethodManager
 from .interfaces import IPaymentPlugin, IDeliveryPlugin, IPaymentDeliveryPlugin
 from .interfaces import IMobileRequest
-from .models import Cart, PaymentMethodManager, DBSession
+from .models import Cart, PaymentMethodManager, DBSession, CartedProductItem, CartedProduct
 from ..users.models import User, UserCredential, MemberShip
     
 def is_mobile(request):
@@ -159,20 +159,20 @@ def order_products(request, performance_id, product_requires):
     cart = _create_cart(request, performance_id, seats, ordered_products)
     return cart
 
-def _create_cart(request, performance_id, seats, ordered_products):
+def create_cart(request, performance_id, seats, ordered_products):
     # Cart
     system_fee = get_system_fee(request)
-    cart = m.Cart(performance_id=performance_id, system_fee=system_fee)
+    cart = Cart(performance_id=performance_id, system_fee=system_fee)
     for ordered_product, quantity in ordered_products:
         # CartedProduct
-        cart_product = CartedProduct(cart=self, product=ordered_product, quantity=quantity)
-        for ordered_product_item, quantity in orderd_product.product_item:
+        cart_product = CartedProduct(cart=cart, product=ordered_product, quantity=quantity)
+        for ordered_product_item in ordered_product.items:
             # CartedProductItem
             cart_product_item = CartedProductItem(carted_product=cart_product, quantity=quantity,
                 product_item=ordered_product_item)
             # 席割り当て
             if not ordered_product_item.stock.stock_type.quantity_only:
-                item_seats = _pop_seat(ordered_product_item, quantity, seats)
+                item_seats = pop_seat(request, ordered_product_item, quantity, seats)
                 cart_product_item.seats = item_seats
 
     assert len(seats) == 0
@@ -182,7 +182,7 @@ def _create_cart(request, performance_id, seats, ordered_products):
 def get_system_fee(request):
     return 380
 
-def _pop_seat(request, product_item, quantity, seats):
+def pop_seat(request, product_item, quantity, seats):
     """ product_itemに対応した席を取り出す
     """
 
