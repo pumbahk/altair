@@ -11,8 +11,8 @@
 
 <div class="breadcrumbs">
   ${h.breadcrumbs(
-    names=[u'イベント', u'帳票'],
-    urls=[request.route_path('events.index')]
+    names=[u'イベント', event.title, u'帳票'],
+    urls=[request.route_path('events.index'), request.route_path('events.show', event_id=event.id)]
   )}
 </div>
 
