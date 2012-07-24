@@ -1,5 +1,6 @@
 import sqlalchemy as sa
 from zope.interface import implements
+from datetime import datetime
 
 from altaircms.interfaces import IWidget
 from altaircms.widget.models import Widget
@@ -9,8 +10,21 @@ from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.plugins.base.mixins import HandleWidgetMixin
 from altaircms.security import RootFactory
 
-
+from altaircms.auth.models import WithOrganizationMixin
+from altaircms.models import Base
 from pyramid.renderers import render
+
+class FreetextDefaultBody(WithOrganizationMixin, 
+                          Base):
+    query = DBSession.query_property()
+    __tablename__ = "freetext_default"
+    id = sa.Column(sa.Integer, primary_key=True)
+    name = sa.Column(sa.Unicode(255))
+    text = sa.Column(sa.UnicodeText)
+
+    created_by_id = sa.Column(sa.Integer)
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
 
 class FreetextWidget(Widget):
     implements(IWidget)
