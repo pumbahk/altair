@@ -2,6 +2,7 @@
 
 import unittest
 from pyramid import testing
+from .testing import _setup_db
 
 # Trueはすでにその席が抑えられていることをあらわす
 SEAT_STATUSES = [
@@ -14,15 +15,6 @@ SEAT_STATUSES = [
 
 ROWS = ['A', 'B', 'C', 'D', 'E']
 
-def _setup_db():
-    from sqlalchemy import create_engine
-    engine = create_engine("sqlite:///")
-    #engine.echo = True
-    import sqlahelper
-    sqlahelper.add_engine(engine)
-    from ticketing.core import models
-    models.Base.metadata.create_all()
-    return sqlahelper.get_session()
 
 def _setup_performance(session):
     """ 席データまでの必要なデータをすべて作成 """

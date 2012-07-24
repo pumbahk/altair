@@ -2,6 +2,16 @@ from zope.interface import implementer
 from ..checkout import interfaces
 from pyramid import testing
 
+def _setup_db():
+    from sqlalchemy import create_engine
+    engine = create_engine("sqlite:///")
+    #engine.echo = True
+    import sqlahelper
+    sqlahelper.add_engine(engine)
+    from ticketing.core import models
+    models.Base.metadata.create_all()
+    return sqlahelper.get_session()
+
 @implementer(interfaces.ISigner)
 class DummySigner(object):
     def __init__(self, sign_result):
