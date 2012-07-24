@@ -138,7 +138,7 @@ class OAuthComponent(object):
 def get_allowable_query(request):
     def query(model, qs=None):
         qs = qs or model.query
-        if request.organization:
+        if request.organization and hasattr(model, "organization_id"):
             return qs.with_transformation(request.organization.inthere("organization_id"))
         logger.debug(u"""this-is-external-request. e.g. access with pageaccess key. request.organization is not found\n
 class: %s""" % model)
