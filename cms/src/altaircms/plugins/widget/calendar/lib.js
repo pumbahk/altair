@@ -72,7 +72,7 @@ widget.configure({
         we.bind_retry(we, 10, 1.43, 15, 
                       function(){return $("#calendar_submit")}, 
                       function(elt){
-                          $("#calendar").bind("change", function(){_draw_demo_api(we, $(this).val())});
+                          $("#calendar_type").bind("change", function(){_draw_demo_api(we, $(this).val())});
                           _draw_demo_api(we, $("#calendar_type").val());
                           elt.click(function(){we.finish_dialog(this);});
                       }
@@ -84,8 +84,9 @@ widget.configure({
 
     var collect_data = function(we, choiced_elt){
         return {calendar_type: $("#calendar_type").val(), 
-                from_date: $("#from_date").val(), 
-                to_date: $("#to_date").val()
+                salessegment_id: $("#sale_choice").val()
+//                from_date: $("#from_date").val(), 
+                //to_date: $("#to_date").val()
                };
     };
 

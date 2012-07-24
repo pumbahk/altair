@@ -129,7 +129,7 @@ class CalendarWidgetViewTests(WidgetTestSourceMixn,
         view = self._makeTarget(request)
         
         result = view.dialog()
-        self.assertEquals(sorted(["form_class", "form"]), 
+        self.assertEquals(sorted(["form"]), 
                          sorted(result.keys()))
 
 if __name__ == "__main__":
