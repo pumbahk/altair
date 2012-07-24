@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 import logging
 from .models import Cart, CartedProduct, CartedProductItem, DBSession
-from .api import get_system_fee
+from .api import get_system_fee, is_quantity_only
 
 logger = logging.getLogger(__name__)
 
@@ -22,9 +22,13 @@ class CartFactory(object):
                 cart_product_item = CartedProductItem(carted_product=cart_product, quantity=quantity,
                     product_item=ordered_product_item)
                 # 席割り当て
-                if not ordered_product_item.stock.stock_type.quantity_only:
-                    item_seats = self.pop_seats(ordered_product_item, quantity, seats)
-                    cart_product_item.seats = item_seats
+                logger.debug('stock_id %s, stock_type %s' % (ordered_product_item.stock.id, ordered_product_item.stock.stock_type_id))
+                if is_quantity_only(ordered_product_item.stock):
+                    logger.debug('stock %d quantity only' % ordered_product_item.stock.id)
+                    continue
+
+                item_seats = self.pop_seats(ordered_product_item, quantity, seats)
+                cart_product_item.seats = item_seats
     
         assert len(seats) == 0
         return cart
@@ -34,9 +38,10 @@ class CartFactory(object):
         """ product_itemに対応した席を取り出す
         """
     
+        logger.debug("seat stocks = %s" % [s.stock_id for s in seats])
         my_seats = [seat for seat in seats if seat.stock_id == product_item.stock_id][:quantity]
         if len(my_seats) != quantity:
-            logger.debug("%d != %d" % (len(my_seats), quantity))
+            logger.debug("stock %d, quantity error %d != %d" % (product_item.stock_id, len(my_seats), quantity))
             raise Exception
         map(seats.remove, my_seats)
         return my_seats

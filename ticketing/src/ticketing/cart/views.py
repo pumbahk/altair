@@ -323,6 +323,7 @@ class ReserveView(object):
 
         return [(products.get(int(c[0])), c[1]) for c in controls]
 
+    @view_config(route_name='cart.order', request_method="POST", renderer='json')
     def reserve(self):
         cart = api.order_products(self.request, self.request.params['performance_id'], self.ordered_items)
         if cart is None:
@@ -339,7 +340,6 @@ class ReserveView(object):
                     ))
 
 
-    @view_config(route_name='cart.order', request_method="POST", renderer='json')
     def __call__(self):
         """
         座席情報から座席グループを検索する

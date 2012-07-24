@@ -170,7 +170,7 @@ def order_products(request, performance_id, product_requires):
     seats = []
     for stockstatus, quantity in stockstatuses:
         if is_quantity_only(stockstatus.stock):
-            logger.debug('quantity only')
+            logger.debug('stock %d quantity only' % stockstatus.stock.id)
             continue
         seats += reserving.reserve_seats(stockstatus.stock_id, quantity)        
 

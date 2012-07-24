@@ -19,7 +19,7 @@ class Reserving(object):
 
     def reserve_seats(self, stock_id, quantity):
         seats = self.get_vacant_seats(stock_id, quantity)
-        logger.debug('reserving %d seats' % len(seats))
+        logger.debug('reserving %d seats for stock %s' % (len(seats), stock_id))
         self._reserve(seats)
         return seats
 

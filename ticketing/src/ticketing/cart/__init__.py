@@ -40,6 +40,16 @@ def includeme(config):
     config.add_route('rakuten_auth.verify', '/verify')
     config.add_route('rakuten_auth.error', '/error')
 
+    from pyramid.interfaces import IRequest
+    from .interfaces import IStocker, IReserving, ICartFactory
+    from .stocker import Stocker
+    from .reserving import Reserving
+    from .carting import CartFactory
+    reg = config.registry
+    reg.adapters.register([IRequest], IStocker, "", Stocker)
+    reg.adapters.register([IRequest], IReserving, "", Reserving)
+    reg.adapters.register([IRequest], ICartFactory, "", CartFactory)
+
 
 def main(global_config, **settings):
     
