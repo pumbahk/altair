@@ -1,14 +1,14 @@
 """ update promotion model
 
 Revision ID: 435502b9fa0c
-Revises: 1b83e811f262
+Revises: 78bc31cbf22
 Create Date: 2012-07-10 16:15:20.557974
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '435502b9fa0c'
-down_revision = '1b83e811f262'
+down_revision = '78bc31cbf22'
 
 from alembic import op
 import sqlalchemy as sa
@@ -29,11 +29,9 @@ def upgrade():
     sa.PrimaryKeyConstraint()
     )
     op.drop_table(u'promotion_unit')
-    op.drop_column(u'event', u'client_id')
     op.alter_column(u'organization', u'auth_source', 
                existing_type=mysql.VARCHAR(length=255), 
                nullable=True)
-    op.drop_column(u'performance', u'client_id')
     op.add_column(u'promotion', sa.Column('main_image_id', sa.Integer(), nullable=True))
     op.add_column(u'promotion', sa.Column('thumbnail_id', sa.Integer(), nullable=True))
     op.add_column(u'promotion', sa.Column('text', sa.UnicodeText(), nullable=True))
@@ -56,7 +54,6 @@ def downgrade():
     op.add_column('widget_promotion', sa.Column(u'promotion_id', mysql.INTEGER(display_width=11), nullable=True))
     op.drop_column('widget_promotion', 'display_type')
     op.drop_column('widget_promotion', 'kind_id')
-    op.add_column('promotion', sa.Column(u'target', mysql.VARCHAR(length=255), nullable=True))
     op.drop_column('promotion', 'is_vetoed')
     op.drop_column('promotion', 'publish_open_on')
     op.drop_column('promotion', 'orderno')
@@ -67,11 +64,9 @@ def downgrade():
     op.drop_column(u'promotion', 'text')
     op.drop_column(u'promotion', 'thumbnail_id')
     op.drop_column(u'promotion', 'main_image_id')
-    op.add_column(u'performance', sa.Column(u'client_id', mysql.INTEGER(display_width=11), nullable=True))
     op.alter_column(u'organization', u'auth_source', 
                existing_type=mysql.VARCHAR(length=255), 
                nullable=False)
-    op.add_column(u'event', sa.Column(u'client_id', mysql.INTEGER(display_width=11), nullable=True))
     op.create_table(u'promotion_unit',
     sa.Column(u'id', mysql.INTEGER(display_width=11), nullable=False),
     sa.Column(u'promotion_id', mysql.INTEGER(display_width=11), nullable=True),
@@ -89,7 +84,3 @@ def downgrade():
     )
     op.drop_table('promotion2kind')
     op.drop_table('kind')
-    op.drop_column('promotion', 'is_vetoed')
-    op.drop_column('promotion', 'publish_open_on')
-    op.drop_column('promotion', 'orderno')
-    op.drop_column('promotion', 'publish_close_on')
