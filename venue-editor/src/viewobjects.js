@@ -31,7 +31,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
         self.removeStyleType('selected');
     }
 
-    function stockChanged() {
+    function onStockChanged() {
+      var prevModel = self.get('model').previous('stock');
+      if (prevModel)
+        prevModel.off('change:style', onStockChanged);
+      var model = self.get('model').get('stock');
+      if (model)
+        model.on('change:style', onStockChanged);
       self._refreshStyle();
     };
 
@@ -42,15 +48,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
         model.off('change:venue', selectableChanged);
         model.off('change:selectable', selectableChanged);
         model.off('change:selected', selectedChanged);
-        model.off('change:stock', stockChanged);
-        model.get('stock').off('change:style', stockChanged);
+        model.off('change:stock', onStockChanged);
       }
       if (model) {
         model.on('change:venue', selectableChanged);
         model.on('change:selectable', selectableChanged);
         model.on('change:selected', selectedChanged);
-        model.on('change:stock', stockChanged);
-        model.get('stock').on('change:style', stockChanged);
+        model.on('change:stock', onStockChanged);
       }
     }
 
@@ -112,6 +116,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
     onModelChange();
     onShapeChange();
     onEventsChange();
+    onStockChanged();
   },
 
   _refreshStyle: function Seat__refreshStyle() {

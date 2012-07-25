@@ -74,13 +74,13 @@ def get_seats(request):
 
     retval[u'stock_types'] = [
         dict(
-            id=stock_allocation.stock_type.id,
-            name=stock_allocation.stock_type.name,
-            is_seat=stock_allocation.stock_type.is_seat,
-            quantity_only=stock_allocation.stock_type.quantity_only,
-            quantity=stock_allocation.quantity,
-            style=stock_allocation.stock_type.style) \
-        for stock_allocation in DBSession.query(StockAllocation).filter_by(performance=venue.performance)
+            id=stock_type.id,
+            name=stock_type.name,
+            is_seat=stock_type.is_seat,
+            quantity_only=stock_type.quantity_only,
+            quantity=0,
+            style=stock_type.style) \
+        for stock_type in DBSession.query(StockType).filter_by(event=venue.performance.event)
         ]
 
     retval[u'stock_holders'] = [

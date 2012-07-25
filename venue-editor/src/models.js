@@ -155,7 +155,10 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
             }
           }
           if (new_) {
-            perStockSeatSet[new_.id].add(this);
+            var set = perStockSeatSet[new_.id]
+            if (!set)
+              set = perStockSeatSet[new_.id] = new IdentifiableSet();
+            set.add(this);
             if (new_.has('assigned')) {
               new_.set('edited', true);
               new_.set('assigned', perStockSeatSet[new_.id].length);
