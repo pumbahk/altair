@@ -295,7 +295,10 @@ function buildStockHolderTypeTables(venue) {
       tbody.append(row);
     });
     head.click(function () {
-      div.css('display', 'block');
+      if (div.css('display') == 'block')
+        div.css('display', 'none');
+      else
+        div.css('display', 'block');
     });
     table.appendTo(div);
 
