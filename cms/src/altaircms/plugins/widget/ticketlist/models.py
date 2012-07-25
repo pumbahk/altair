@@ -39,6 +39,8 @@ class TicketlistWidget(Widget):
         @not_support_if_keyerror("ticketlist widget: %(err)s")
         def ticketlist_render():
             request = bsettings.extra["request"]
+            if self.target_performance is None:
+                raise KeyError("target performance is not found")
             tickets = Ticket.query.filter(Ticket.performances.any(id=self.target_performance.id))
             tickets = tickets.filter(Sale.kind==self.kind).filter(Sale.id==Ticket.sale_id)
             tickets = tickets.order_by(sa.desc("price"))
