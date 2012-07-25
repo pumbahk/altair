@@ -72,9 +72,14 @@ class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             VenueArea.create_from_template(template=template_area, venue_id=venue.id)
 
         # create Seat
-        default_stock = Stock.filter_by(performance_id=performance_id).filter_by(stock_type_id=None).first()
+        default_stock = Stock.get_default(performance_id=performance_id)
         for template_seat in template.seats:
             Seat.create_from_template(template=template_seat, venue_id=venue.id, stock_id=default_stock.id)
+
+        # defaultのStockに席数をセット
+        stock = Stock.get_default(performance_id=performance_id)
+        stock.quantity = len(template.seats)
+        stock.save()
 
     def delete_cascade(self):
         # delete Seat
@@ -319,13 +324,20 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             for template_stock_allocation in template_performance.stock_allocations:
                 StockAllocation.create_from_template(template=template_stock_allocation, performance_id=self.id)
 
+        else:
+            """
+            Performanceの作成時は以下のモデルを自動生成する
+              - Stock
+            """
+            # create default Stock
+            Stock.create_default(performance_id=self.id)
+
     def save(self):
         BaseModel.save(self)
 
         """
-        Performanceの作成時は以下のモデルを自動生成する
-        また更新時にVenueの変更があったら以下のモデルをdeleteする
-          - Stock (デフォルト値の"未選択"の在庫)
+        Performanceの作成/更新時は以下のモデルを自動生成する
+        またVenueの変更があったら関連モデルを削除する
           - Venue
             - VenueArea
               - VenueArea_group_l0_id
@@ -333,9 +345,6 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
               - SeatAttribute
               - SeatStatus
         """
-        # create default Stock
-        Stock.create_default(performance_id=self.id)
-
         # create Venue - VenueArea, Seat - SeatAttribute
         if hasattr(self, 'create_venue_id') and self.venue_id:
             template_venue = Venue.get(self.venue_id)
@@ -811,11 +820,41 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             stock_status.save()
 
     @staticmethod
-    def create_default(performance_id):
-        stock = Stock(
-            performance_id=performance_id,
-        )
-        stock.save()
+    def get_default(performance_id):
+        return Stock.filter_by(performance_id=performance_id).filter_by(stock_type_id=None).first()
+
+    @staticmethod
+    def create_default(performance_id=None, stock_type_id=None, stock_holder_id=None):
+        '''
+        初期状態のStockを生成する
+          - デフォルト値となる"未選択"のStock
+          - StockHolder × StockType分のStock
+        既に該当のStockが存在する場合は、足りないStockのみ生成する
+        '''
+        if performance_id:
+            performance = Performance.get(performance_id)
+
+            # デフォルト値となる"未選択"のStock
+            stock = Stock(
+                performance_id=performance_id,
+                quantity=0
+            )
+            stock.save()
+
+            # StockHolder × StockType分のStock
+            stocks = performance.stocks
+            for stock_type in performance.event.stock_types:
+                for stock_holder in performance.event.stock_holders:
+                    def stock_filter(stock):
+                        return (stock.stock_type_id == stock_type.id and stock.stock_holder_id == stock_holder.id)
+                    if not filter(stock_filter, stocks):
+                        stock = Stock(
+                            performance_id=performance.id,
+                            stock_type_id=stock_type.id,
+                            stock_holder_id=stock_holder.id,
+                            quantity=0
+                        )
+                        stock.save()
 
     @staticmethod
     def create_from_template(template, performance_id):
