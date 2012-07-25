@@ -16,14 +16,28 @@ var load = function(url) {
 			
 			$('#venue').text($('#stage > svg > title').text());
 			
+			var svgfind = function(p, element, attr, value) {
+				var len = p.size();
+				for(var i=0 ; i<len ; i++) {
+					if(p.get(i).tagName == element) {
+						if(!attr || p.eq(i).attr(attr) == value) {
+							return p.get(i);
+						}
+					}
+				}
+			};
 			$('#stage g g rect').hover(function() {
+				// jQuery DOES NOT SUPPORT SVG Elements traversal
 				var b = $('metadata', $(this).parents('g').eq(1)).eq(0);
 				var r = $('metadata', $(this).parents('g').eq(0)).eq(0);
-				$('#block').text($('property[name="name"]', b).text());
-				$('#row').text($('property[name="name"]', r).text());
+				var block = svgfind($('*', b), 'si:property', 'name', 'name');
+				$('#block').text(block ? block.childNodes.item(0).data : '?');
+				var row = svgfind($('*', r), 'si:property', 'name', 'name');
+				$('#row').text(row ? row.childNodes.item(0).data : '?');
 				$('#seat').text($('title', this).text());
 				$('#seat_id').text($(this).attr('id'));
-				$('#seat_proto').text($('metadata object', this).attr('prototype'));
+				var obj = svgfind($('metadata *', this), 'si:object');
+				$('#seat_proto').text(obj.getAttribute('prototype'));
 				$(this).attr('fill-opacity', '0.2');
 			}, function() {
 				var e = $(this).get(0);
@@ -50,7 +64,7 @@ $(function() {
 <link rel="stylesheet" href="../style.css" type="text/css">
 <style type="text/css">
 * { font-size: 8px; }
-#status span { display: inline-block; width: 320px; overflow: hidden; }
+#status span { display: inline-block; width: 160px; overflow: hidden; }
 </style>
 </head>
 <body>
