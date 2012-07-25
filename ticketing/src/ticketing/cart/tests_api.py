@@ -75,7 +75,7 @@ def _setup_performance(session):
 
     return stock.id
 
-class ReserveSeatsTests(unittest.TestCase):
+class ReservingTests(unittest.TestCase):
     """
     おまかせ席選択の連席バリエーションでのテスト
     """
@@ -119,6 +119,7 @@ class ReserveSeatsTests(unittest.TestCase):
         target = self._makeOne(request)
 
         result = target.get_vacant_seats(self.stock_id, 1)
+        self.assertEqual(result[0].name, 'A-2')
 
     def _reserve_all_seats(self):
         import ticketing.core.models as c_m

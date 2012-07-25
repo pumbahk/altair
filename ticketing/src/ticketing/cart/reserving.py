@@ -31,11 +31,24 @@ class Reserving(object):
             stat.status = int(SeatStatusEnum.InCart)
         return statuses
         
+    def _get_single_seat(self, stock_id):
+        return Seat.query.filter(
+            Seat.stock_id==stock_id
+        ).filter(
+            SeatStatus.seat_id==Seat.id
+        ).filter(
+            SeatStatus.status==int(SeatStatusEnum.Vacant)
+        ).filter(
+            SeatIndex.seat_id==Seat.id
+        ).order_by(SeatIndex.index)[:1]
+
     def get_vacant_seats(self, stock_id, quantity):
         """ 空き席を取得 """
 
         if quantity == 1:
-            return
+            
+            return self._get_single_seat(stock_id)
+
         # すでに確保済みのSeatを持つ連席
         reserved_adjacencies = DBSession.query(SeatAdjacency.id).filter(
             # すでに確保済み
