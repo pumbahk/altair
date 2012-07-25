@@ -10,15 +10,20 @@ class CartFactory(object):
         self.request = request
 
     def create_cart(self, performance_id, seats, ordered_products):
+        logger.debug('create cart for ordered products %s' % ordered_products)
         request = self.request
         # Cart
         system_fee = get_system_fee(request)
         cart = Cart(performance_id=performance_id, system_fee=system_fee)
         for ordered_product, quantity in ordered_products:
+            logger.debug("carted product for product_id = %s" % (ordered_product.id))
             # CartedProduct
             cart_product = CartedProduct(cart=cart, product=ordered_product, quantity=quantity)
             for ordered_product_item in ordered_product.items:
                 # CartedProductItem
+                logger.debug("carted product item for product_item_id = %s, performance_id = %s" % (ordered_product_item.id, ordered_product_item.performance_id))
+                if str(ordered_product_item.performance_id) != str(performance_id):
+                    continue
                 cart_product_item = CartedProductItem(carted_product=cart_product, quantity=quantity,
                     product_item=ordered_product_item)
                 # 席割り当て
