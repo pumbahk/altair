@@ -38,6 +38,8 @@ def upgrade():
     op.drop_table(u'order_history')
     op.drop_table(u'site')
     op.drop_table(u'user')
+    op.drop_column(u"event", u"client_id")
+    op.drop_column(u"performance", u"client_id")
     op.drop_column(u'operator', u'client_id')
     op.drop_column('apikey', u'client_id')
     op.drop_column('asset', u'site_id')
@@ -119,4 +121,5 @@ def downgrade():
     op.add_column('topic', sa.Column(u'client_id', mysql.INTEGER(display_width=11), nullable=True))
     op.add_column('widget', sa.Column(u'site_id', mysql.INTEGER(display_width=11), nullable=True))
     op.add_column('widgetdisposition', sa.Column(u'site_id', mysql.INTEGER(display_width=11), nullable=True))
-
+    op.add_column('event', sa.Column(u'client_id', mysql.INTEGER(display_width=11), nullable=True))
+    op.add_column('performance', sa.Column(u'client_id', mysql.INTEGER(display_width=11), nullable=True))
