@@ -348,6 +348,7 @@ class ReserveView(object):
                     cart=dict(products=[dict(name=p.product.name, 
                                              quantity=p.quantity,
                                              price=int(p.product.price),
+                                             seats=p.seats,
                                         ) 
                                         for p in cart.products],
                               total_amount=h.format_number(cart.tickets_amount),

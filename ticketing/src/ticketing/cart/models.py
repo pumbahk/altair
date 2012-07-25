@@ -22,6 +22,8 @@ Reserved
 
 
 from datetime import datetime, timedelta
+import itertools
+import operator
 import sqlahelper
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
@@ -83,6 +85,11 @@ class CartedProductItem(Base):
     updated_at = sa.Column(sa.DateTime, nullable=True, onupdate=datetime.now)
     deleted_at = sa.Column(sa.DateTime, nullable=True)
     finished_at = sa.Column(sa.DateTime)
+
+    @property
+    def seatdicts(self):
+        return ({'name': s.name, 'l0_id': s.l0_id}
+                for s in self.seats)
 
     @deprecate("deprecated method")
     def pop_seats(self, seats):
@@ -147,6 +154,11 @@ class CartedProduct(Base):
         """ 購入額小計
         """
         return self.product.price * self.quantity
+
+    @property
+    def seats(self):
+        return sorted(itertools.chain.from_iterable(i.seatdicts for i in self.items), 
+            key=operator.itemgetter('l0_id'))
 
     @deprecate("deprecated method")
     def pop_seats(self, seats, performance_id):
