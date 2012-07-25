@@ -10,9 +10,8 @@ from pyramid.url import route_path
 from ticketing.core.models import merge_session_with_post
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
-from ticketing.core.models import Venue, Seat, Event, Performance, StockType, StockTypeEnum, StockAllocation
+from ticketing.core.models import Event, StockType
 from ticketing.events.stock_types.forms import StockTypeForm
-from ticketing.events.stock_allocations.forms import StockAllocationForm
 
 @view_defaults(decorator=with_bootstrap)
 class StockTypes(BaseView):

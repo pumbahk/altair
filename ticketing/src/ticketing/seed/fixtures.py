@@ -608,7 +608,6 @@ class FixtureBuilder(object):
             site = choice(self.site_data)
         else:
             site = None
-        stock_allocation_data = []
         stock_data = []
         stock_sets = []
         if site is not None:
@@ -626,14 +625,6 @@ class FixtureBuilder(object):
                 colgroup_index += 1
             else:
                 quantity = randint(10, 100) * 10
-            stock_allocation_datum = self._Datum(
-                'StockAllocation',
-                ('stock_type_id', 'performance_id'),
-                stock_type=many_to_one(stock_type, 'stock_type_id'),
-                performance=many_to_one(retval, 'performance_id'),
-                quantity=quantity
-                )
-            stock_allocation_data.append(stock_allocation_datum)
             rest = quantity
             for i, stock_holder in enumerate(chain([None], event.stock_holders)):
                 assigned = rest if i == len(event.stock_holders) - 1 else randint(0, rest)
@@ -646,10 +637,6 @@ class FixtureBuilder(object):
                 [self.build_venue_datum(organization, site, stock_sets)],
                 'performance_id'
                 )
-        retval.stock_allocations = one_to_many(
-            stock_allocation_data,
-            'performance_id'
-            )
         retval.stocks = one_to_many(
             stock_data,
             'performance_id'

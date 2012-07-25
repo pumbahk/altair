@@ -312,17 +312,12 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             Performanceのコピー時は以下のモデルをcloneする
               - Stock
                 - ProductItem
-              - StockAllocation
             """
             template_performance = Performance.get(self.original_id)
 
             # create Stock - ProductItem
             for template_stock in template_performance.stocks:
                 Stock.create_from_template(template=template_stock, performance_id=self.id)
-
-            # create StockAllocation
-            for template_stock_allocation in template_performance.stock_allocations:
-                StockAllocation.create_from_template(template=template_stock_allocation, performance_id=self.id)
 
         else:
             """
@@ -732,10 +727,10 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return self.type == StockTypeEnum.Seat.v
 
     def num_seats(self, performance_id=None):
-        query = StockType.filter_by(id=self.id).join(StockType.stock_allocations)\
-                         .with_entities(func.sum(StockAllocation.quantity))
+        # 同一Performanceの同一StockTypeにおけるStock.quantityの合計
+        query = Stock.filter_by(stock_type_id=self.id).with_entities(func.sum(Stock.quantity))
         if performance_id:
-            query = query.filter(StockAllocation.performance_id==performance_id)
+            query = query.filter_by(performance_id==performance_id)
         return query.scalar()
 
     def set_style(self, data):
@@ -752,35 +747,6 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             }
         else:
             self.style = {}
-
-class StockAllocation(Base, BaseModel):
-    __tablename__ = "StockAllocation"
-    stock_type_id = Column(Identifier, ForeignKey('StockType.id'), primary_key=True)
-    performance_id = Column(Identifier, ForeignKey('Performance.id'), primary_key=True)
-    stock_type = relationship('StockType', uselist=False, backref='stock_allocations')
-    performance = relationship('Performance', uselist=False, backref='stock_allocations')
-    quantity = Column(Integer, nullable=False)
-
-    def save(self):
-        stock_allocation = DBSession.query(StockAllocation)\
-            .filter_by(performance_id=self.performance_id)\
-            .filter_by(stock_type_id=self.stock_type_id)\
-            .first()
-
-        if stock_allocation:
-            DBSession.merge(self)
-        else:
-            DBSession.add(self)
-        DBSession.flush()
-
-    @staticmethod
-    def create_from_template(template, performance_id):
-        stock_allocation = StockAllocation(
-            performance_id=performance_id,
-            stock_type_id=template.stock_type_id,
-            quantity = template.quantity
-        )
-        stock_allocation.save()
 
 class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "StockHolder"

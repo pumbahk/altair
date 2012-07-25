@@ -10,11 +10,9 @@ from pyramid.url import route_path
 from sqlalchemy.sql import func
 from paste.util.multidict import MultiDict
 
-from ticketing.models import merge_session_with_post
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
-from ticketing.core.models import Stock, StockAllocation, StockType, Seat, Venue, Performance
-from ticketing.events.stocks.forms import StockForms
+from ticketing.core.models import Stock, StockType, Seat, Venue, Performance
 
 logger = logging.getLogger(__name__)
 
