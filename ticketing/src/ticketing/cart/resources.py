@@ -49,14 +49,25 @@ class TicketingCartResource(object):
         """ 該当イベントのSalesSegment取得
         """
 
+        sales_segment_id = self.request.matchdict.get('sales_segment_id')
+
         now = datetime.now()
-        return c_models.SalesSegment.query.filter(
-            c_models.SalesSegment.event_id==self.event_id
-        ).filter(
-            c_models.SalesSegment.start_at<=now
-        ).filter(
-            c_models.SalesSegment.end_at>=now
-        ).first()
+        if sales_segment_id is not None:
+            sales_segment = c_models.SalesSegment.query.filter(
+                c_models.SalesSegment.id==sales_segment_id
+            ).filter(
+                c_models.SalesSegment.event_id==self.event_id
+            ).first()
+            if sales_segment.start_at <= now and sales_segment.end_at >= now:
+                return sales_segment
+        else:
+            return c_models.SalesSegment.query.filter(
+                c_models.SalesSegment.event_id==self.event_id
+            ).filter(
+                c_models.SalesSegment.start_at<=now
+            ).filter(
+                c_models.SalesSegment.end_at>=now
+            ).first()
 
     @deprecate("deprecated method")
     def _convert_order_product_items(self, performance_id, ordered_products):

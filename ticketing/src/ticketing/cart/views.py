@@ -48,10 +48,15 @@ class IndexView(object):
     @view_config(route_name='cart.index', renderer='carts_mobile/index.html', xhr=False, permission="view", request_type=".interfaces.IMobileRequest")
     @view_config(route_name='cart.index.sales', renderer='carts_mobile/index.html', xhr=False, permission="view", request_type=".interfaces.IMobileRequest")
     @view_config(route_name='cart.index', renderer='carts/index.html', xhr=False, permission="view")
+    @view_config(route_name='cart.index.sales', renderer='carts/index.html', xhr=False, permission="view")
     def __call__(self):
         jquery_tools.need()
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.params.get('performance')
+
+        sales_segment = self.context.get_sales_segument()
+        if sales_segment is None:
+            raise HTTPNotFound
 
         from .api import get_event_info_from_cms
         event_extra_info = get_event_info_from_cms(self.request, event_id)
@@ -68,7 +73,9 @@ class IndexView(object):
             d = p.start_on.strftime('%Y-%m-%d %H:%M')
             ps = select_venues.get(d, [])
             ps.append(dict(id=p.id, name=p.venue.name,
-                           seat_types_url=self.request.route_url('cart.seat_types', performance_id=p.id,
+                           seat_types_url=self.request.route_url('cart.seat_types', 
+                                                                 performance_id=p.id,
+                                                                 sales_segment_id=sales_segment.id,
                                                                  event_id=e.id)))
             select_venues[d] = ps
 
@@ -93,10 +100,6 @@ class IndexView(object):
         event = dict(id=e.id, code=e.code, title=e.title, abbreviated_title=e.abbreviated_title,
             sales_start_on=str(e.sales_start_on), sales_end_on=str(e.sales_end_on), venues=venues, product=e.products, )
 
-        sales_segment = self.context.get_sales_segument()
-        if sales_segment is None:
-            raise HTTPNotFound
-
         return dict(event=event,
                     dates=dates,
                     cart_release_url=self.request.route_url('cart.release'),
@@ -112,13 +115,22 @@ class IndexView(object):
     def get_seat_types(self):
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.matchdict['performance_id']
+        sales_segment_id = self.request.matchdict['sales_segment_id']
+
+        segment_stocks = DBSession.query(c_models.ProductItem.stock_id).filter(
+            c_models.ProductItem.product_id==c_models.Product.id).filter(
+            c_models.Product.sales_segment_id==sales_segment_id)
+
         seat_types = DBSession.query(c_models.StockType).filter(
             c_models.Performance.event_id==event_id).filter(
             c_models.Performance.id==performance_id).filter(
             c_models.Performance.event_id==c_models.StockHolder.event_id).filter(
             c_models.StockHolder.id==c_models.Stock.stock_holder_id).filter(
-            c_models.Stock.stock_type_id==c_models.StockType.id).all()
+            c_models.Stock.stock_type_id==c_models.StockType.id).filter(
+            c_models.Stock.id.in_(segment_stocks)).all()
+
         performance = c_models.Performance.query.filter_by(id=performance_id).one()
+
         data = dict(seat_types=[
                 dict(id=s.id, name=s.name,
                     style=s.style,
