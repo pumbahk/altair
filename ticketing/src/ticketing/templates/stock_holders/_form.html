@@ -5,7 +5,6 @@
   $(function() {
     $('#modal-stock_holder').on('shown', function(){
       $(this).css('max-height', '750px')
-          .css('height', '620px')
           .css('margin-top', ($(this).outerHeight()/2)*-1)
           .css('margin-left',($(this).outerWidth()/2)*-1);
     });
@@ -14,23 +13,23 @@
 
 <div id="modal-stock_holder" class="modal fade">
   <div class="modal-header">
-    <a class="close" data-dismiss="modal">×</a>
+    <a class="close" data-dismiss="modal">&times;</a>
     <h3>配券先</h3>
   </div>
 
-  <form action="javascript:save_stock_holder();" method="POST">
-    <div class="modal-body">
+  <div class="modal-body">
+    <form action="javascript:save_stock_holder();" method="POST">
       ${form_item(form.id)}
       ${form_item(form.event_id)}
       ${form_item(form.name, option={'maxlength':255})}
       ${form_item(form.account_id)}
       ${form_item(form.text)}
       ${form_item(form.text_color, option={'class':'kolorPicker span3'})}
-    </div>
+    </form>
+  </div>
 
-    <div class="modal-footer" style="margin-top: 150px;">
-      <a href="#" class="btn" data-dismiss="modal">閉じる</a>
-      <input class="btn" type="submit" value="保存">
-    </div>
-  </form>
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+    <a href="javascript:$('#modal-stock_holder').find('form').submit();" class="btn">保存</a>
+  </div>
 </div>

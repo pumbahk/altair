@@ -65,12 +65,25 @@
 </table>
 <%include file="/events/_action_button.html" args="event=event, order=['edit', 'delete']" />
 
+<hr />
+
 <div id="stock_types">
   <h3>席種</h3>
   <%include file="/stock_types/_list.html" args="stock_types=event.stock_types, limit=5" />
   <%include file="/stock_types/_action_button.html" args="event=event" />
   <div id="stock_types-form">
     <%include file="/stock_types/_form.html" args="form=form_stock_type" />
+  </div>
+</div>
+
+<hr />
+
+<div id="stock_holders">
+  <h3>配券先</h3>
+  <%include file="/stock_holders/_list.html" args="form=form_stock_holder, event=event, limit=5" />
+  <%include file="/stock_holders/_action_button.html" />
+  <div id="stock_holders-form">
+    <%include file="/stock_holders/_form.html" args="form=form_stock_holder" />
   </div>
 </div>
 
