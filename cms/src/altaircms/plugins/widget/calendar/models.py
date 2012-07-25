@@ -13,6 +13,7 @@ from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
 from altaircms.lib.interception import not_support_if_keyerror
 from . import renderable
+from . import api
 
 class CalendarWidget(Widget):
     implements(IWidget)
@@ -26,17 +27,26 @@ class CalendarWidget(Widget):
     calendar_type = sa.Column(sa.String(255))
     from_date = sa.Column(sa.Date)
     to_date = sa.Column(sa.Date)
+    salessegment_id = sa.Column(sa.Integer, sa.ForeignKey("sale.id"))
+    salessegment = orm.relationship("Sale")
+
+    def display_all_bool(self):
+        return self.salessegment_id is None
+
 
     def merge_settings(self, bname, bsettings):
         bsettings.need_extra_in_scan("performances")
+        bsettings.need_extra_in_scan("event")
         bsettings.need_extra_in_scan("request")
 
         @not_support_if_keyerror("calendar widget: %(err)s")
         def calendar_render():
             performances = bsettings.extra["performances"]
+            event = bsettings.extra["event"]
             request = bsettings.extra["request"]
+            calendar_status = api.get_performance_status(request, self, event)
             render_fn = getattr(renderable, self.calendar_type)
-            return render_fn(self, performances, request)
+            return render_fn(self, calendar_status, performances, request)
         bsettings.add(bname, calendar_render)
         self._if_tab_add_js_script(bsettings)
 
@@ -56,11 +66,6 @@ class CalendarWidgetResource(HandleSessionMixin,
                              HandleWidgetMixin, 
                              RootFactory):
     WidgetClass = CalendarWidget
-
-    def attach_form_from_widget(self, D, widget):
-        form = D["form_class"](**widget.to_dict())
-        D["form"] = form
-        return D
 
     def get_widget(self, widget_id):
         return self._get_or_create(CalendarWidget, widget_id)

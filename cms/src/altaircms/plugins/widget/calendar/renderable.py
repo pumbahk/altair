@@ -113,7 +113,7 @@ def _next_month_date(d):
     else:
         return date(d.year, d.month+1, 1)
 
-def obi(widget, performances, request):
+def obi(widget, calendar_status, performances, request):
     """公演の開始から終了までを縦に表示するカレンダー
     ※ performancesはstart_onでsortされているとする
     """
@@ -124,11 +124,11 @@ def obi(widget, performances, request):
     if performances:
         cal = CalendarOutput.from_performances(performances)
         rows = cal.each_rows(performances[0].start_on, performances[-1].start_on)
-        return render(template_name, {"cal":rows, "i":cal.i}, request)
+        return render(template_name, {"cal":rows, "i":cal.i, "calendar_status": calendar_status}, request)
     else:
         return u"performance is not found"
 
-def term(widget, performances, request):
+def term(widget, calendar_status, performances, request):
     """開始日／終了日を指定してその範囲のカレンダーを表示
     """
     template_name = CalendarTemplatePathStore.path("term")
@@ -136,9 +136,9 @@ def term(widget, performances, request):
 
     cal = CalendarOutput.from_performances(performances)
     rows = cal.each_rows(widget.from_date, widget.to_date)
-    return render(template_name, {"cal":rows, "i":cal.i}, request)
+    return render(template_name, {"cal":rows, "i":cal.i, "calendar_status":calendar_status}, request)
 
-def tab(widget, performances, request):
+def tab(widget, calendar_status, performances, request):
     """月毎のタブが存在するカレンダーを表示
     ※ performancesはstart_onでsortされているとする
     """
@@ -151,4 +151,7 @@ def tab(widget, performances, request):
     monthly_performances = itertools.groupby(performances, lambda p: (p.start_on.year, p.start_on.month))
     cals = (CalendarOutput.from_performances(perfs).each_rows(date(y, m, 1), _next_month_date(date(y, m, 1)))\
                 for (y, m), perfs in monthly_performances)
-    return render(template_name, {"cals":cals, "months":months, "visibilities": visibilities})
+    return render(template_name, {"cals":cals,
+                                  "months":months,
+                                  "visibilities": visibilities,
+                                  "calendar_status":calendar_status})

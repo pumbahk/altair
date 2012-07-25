@@ -237,9 +237,10 @@ class FixtureBuilder(object):
             user=many_to_one(self.build_user_datum(), 'user_id')
             )
 
-    def build_seat_datum(self, group_l0_id, l0_id, stock):
+    def build_seat_datum(self, group_l0_id, l0_id, stock, name):
         return self.Datum(
             'Seat',
+            name=name,
             l0_id=l0_id,
             stock=many_to_one(stock, 'stock_id'),
             stock_type=many_to_one(stock.stock_type, 'stock_type_id'),
@@ -349,8 +350,8 @@ class FixtureBuilder(object):
             colgroup = config['colgroups'][i]
             seat_index = 0
             for stock in stocks:
-                for l0_id in colgroup[2][seat_index:seat_index + stock.quantity]:
-                    seat_datum = self.build_seat_datum(colgroup[1], l0_id, stock)
+                for i, l0_id in enumerate(colgroup[2][seat_index:seat_index + stock.quantity]):
+                    seat_datum = self.build_seat_datum(colgroup[1], l0_id, stock, u'ブロック%s %s番' % (colgroup[0], i + 1))
                     seats.append(seat_datum)
                     l0_id_to_seat[l0_id] = seat_datum
                 seat_index += stock.quantity

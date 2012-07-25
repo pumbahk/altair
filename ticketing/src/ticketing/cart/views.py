@@ -8,6 +8,7 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.expression import or_
 from markupsafe import Markup
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
+from pyramid.exceptions import NotFound
 from pyramid.response import Response
 from pyramid.view import view_config
 from js.jquery_tools import jquery_tools
@@ -29,15 +30,6 @@ import transaction
 
 logger = logging.getLogger(__name__)
 
-class ExceptionView(object):
-    def __init__(self, request):
-        self.request = request
-
-    @view_config(context=NoCartError)
-    def handle_nocarterror(self):
-        logger.error("No cart!")
-        return HTTPFound('/')
-
 class IndexView(object):
     """ 座席選択画面 """
     def __init__(self, request):
@@ -56,7 +48,7 @@ class IndexView(object):
 
         sales_segment = self.context.get_sales_segument()
         if sales_segment is None:
-            raise HTTPNotFound
+            raise NoEventError("No matching sales_segment")
 
         from .api import get_event_info_from_cms
         event_extra_info = get_event_info_from_cms(self.request, event_id)
@@ -64,7 +56,7 @@ class IndexView(object):
 
         e = DBSession.query(c_models.Event).filter_by(id=event_id).first()
         if e is None:
-            raise HTTPNotFound(self.request.url)
+            raise NoEventError("No such event (%d)" % event_id)
         # 日程,会場,検索項目のコンボ用
         dates = sorted(list(set([p.start_on.strftime("%Y-%m-%d %H:%M") for p in e.performances])))
         # 日付ごとの会場リスト

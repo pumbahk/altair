@@ -49,6 +49,8 @@ def price_format(price):
     """
     return locale.format("%d", price, grouping=True)
 
+from zope.deprecation import deprecation
+@deprecation.deprecate("this is deprecation method. dont use it")
 def detect_performance_status(performance):
     """ circle, triangle, cross
     """
@@ -56,6 +58,7 @@ def detect_performance_status(performance):
     warnings.warn("it is not implemented, yet, that detect performance status logic")
     return "circle"
 
+@deprecation.deprecate("this is deprecation method. dont use it")
 def content_string_from_performance_status(status):
     return {"circle": u"○", 
             "triangle": u"△", 

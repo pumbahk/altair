@@ -145,15 +145,15 @@ widgets =
         self.assertEquals(result.conts[(1, "oauth")]._after_dispatch.keys(), ["event_page", "other_page"])
 
         ## get widget aggregation dispatcher
-        organization = organization=testing.DummyResource(backend_id=1, auth_source="oauth")
+        organization = organization=testing.DummyResource(backend_id=1, auth_source="oauth", id=10)
         request = testing.DummyRequest(organization=organization)
 
         ## event id is none
-        aggregator = result.dispatch(request, testing.DummyResource(event_id=None))
+        aggregator = result.dispatch(request, testing.DummyResource(event_id=None, organization_id=10))
         self.assertEquals(aggregator.widgets, ["image", "freetext", "rawhtml"])
 
         ## event is is exist
-        aggregator = result.dispatch(request, testing.DummyResource(event_id=1))
+        aggregator = result.dispatch(request, testing.DummyResource(event_id=1, organization_id=10))
         self.assertEquals(aggregator.widgets, ["purchase", "twitter", "rawhtml"])
 
 

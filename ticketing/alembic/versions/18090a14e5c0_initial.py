@@ -80,7 +80,7 @@ def create_organization_table():
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
-        sa.ForeignKeyConstraint(['user_id'], ['User.id'], ),
+        sa.ForeignKeyConstraint(['user_id'], ['User.id'], 'organization_ibfk_1'),
         sa.PrimaryKeyConstraint('id')
         )
     op.create_table('Account',
@@ -92,8 +92,8 @@ def create_organization_table():
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
-        sa.ForeignKeyConstraint(['organization_id'], ['Organization.id'], ),
-        sa.ForeignKeyConstraint(['user_id'], ['User.id'], ),
+        sa.ForeignKeyConstraint(['organization_id'], ['Organization.id'], 'account_ibfk_1'),
+        sa.ForeignKeyConstraint(['user_id'], ['User.id'], 'account_ibfk_2'),
         sa.PrimaryKeyConstraint('id')
         )
 
@@ -108,7 +108,7 @@ def create_user_related_tables():
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
-        sa.ForeignKeyConstraint(['bank_id'], ['Bank.id'], ),
+        sa.ForeignKeyConstraint(['bank_id'], ['Bank.id'], 'bankaccount_ibfk_1'),
         sa.PrimaryKeyConstraint('id')
         )
     op.create_table('User',
@@ -117,7 +117,7 @@ def create_user_related_tables():
         sa.Column('created_at', sa.DateTime(), nullable=True),
         sa.Column('status', sa.Integer(), nullable=True),
         sa.Column('bank_account_id', Identifier(), nullable=True),
-        sa.ForeignKeyConstraint(['bank_account_id'], ['BankAccount.id'], ),
+        sa.ForeignKeyConstraint(['bank_account_id'], ['BankAccount.id'], 'user_ibfk_1'),
         sa.PrimaryKeyConstraint('id')
         )
     op.create_table('UserProfile',
@@ -143,7 +143,7 @@ def create_user_related_tables():
         sa.Column('status', sa.Integer(), nullable=True),
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
-        sa.ForeignKeyConstraint(['user_id'], ['User.id'], ),
+        sa.ForeignKeyConstraint(['user_id'], ['User.id'], 'userprofile_ibfk_1'),
         sa.PrimaryKeyConstraint('id')
         )
     op.create_table('MemberShip',
@@ -164,7 +164,7 @@ def create_mail_magazine_related_tables():
         sa.Column('updated_at', sa.DateTime(), nullable=True),
         sa.Column('created_at', sa.DateTime(), nullable=True),
         sa.Column('status', sa.Integer(), nullable=True),
-        sa.ForeignKeyConstraint(['organization_id'], ['Organization.id'], ),
+        sa.ForeignKeyConstraint(['organization_id'], ['Organization.id'], 'mailmagazine_ibfk_1'),
         sa.PrimaryKeyConstraint('id')
         )
     op.create_table('MailSubscription',
@@ -175,8 +175,8 @@ def create_mail_magazine_related_tables():
         sa.Column('updated_at', sa.DateTime(), nullable=True),
         sa.Column('created_at', sa.DateTime(), nullable=True),
         sa.Column('status', sa.Integer(), nullable=True),
-        sa.ForeignKeyConstraint(['segment_id'], ['MailMagazine.id'], ),
-        sa.ForeignKeyConstraint(['user_id'], ['User.id'], ),
+        sa.ForeignKeyConstraint(['segment_id'], ['MailMagazine.id'], 'mailsubscription_ibfk_1'),
+        sa.ForeignKeyConstraint(['user_id'], ['User.id'], 'mailsubscription_ibfk_2'),
         sa.PrimaryKeyConstraint('id')
         )
 
@@ -191,8 +191,8 @@ def create_event_related_tables():
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
-        sa.ForeignKeyConstraint(['account_id'], ['Account.id'], ),
-        sa.ForeignKeyConstraint(['organization_id'], ['Organization.id'], ),
+        sa.ForeignKeyConstraint(['account_id'], ['Account.id'], 'event_ibfk_1'),
+        sa.ForeignKeyConstraint(['organization_id'], ['Organization.id'], 'event_ibfk_2'),
         sa.PrimaryKeyConstraint('id')
         )
     op.create_table('Performance',
@@ -206,7 +206,7 @@ def create_event_related_tables():
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
-        sa.ForeignKeyConstraint(['event_id'], ['Event.id'], ),
+        sa.ForeignKeyConstraint(['event_id'], ['Event.id'], 'performance_ibfk_1'),
         sa.PrimaryKeyConstraint('id')
         )
 
@@ -240,10 +240,10 @@ def create_venue_related_tables():
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
-        sa.ForeignKeyConstraint(['organization_id'], ['Organization.id'], ),
-        sa.ForeignKeyConstraint(['original_venue_id'], ['Venue.id'], ),
-        sa.ForeignKeyConstraint(['performance_id'], ['Performance.id'], ),
-        sa.ForeignKeyConstraint(['site_id'], ['Site.id'], ),
+        sa.ForeignKeyConstraint(['organization_id'], ['Organization.id'], 'venue_ibfk_1'),
+        sa.ForeignKeyConstraint(['original_venue_id'], ['Venue.id'], 'venue_ibfk_2'),
+        sa.ForeignKeyConstraint(['performance_id'], ['Performance.id'], 'venue_ibfk_3'),
+        sa.ForeignKeyConstraint(['site_id'], ['Site.id'], 'venue_ibfk_4'),
         sa.PrimaryKeyConstraint('id')
         )
     op.create_table('VenueArea',
@@ -267,9 +267,9 @@ def create_venue_related_tables():
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
         sa.Index('ix_l0_id', 'l0_id', unique=False),
         sa.Index('ix_group_l0_id', 'group_l0_id', unique=False),
-        sa.ForeignKeyConstraint(['stock_id'], ['Stock.id'], ),
-        sa.ForeignKeyConstraint(['stock_type_id'], ['StockType.id'], ),
-        sa.ForeignKeyConstraint(['venue_id'], ['Venue.id'], ),
+        sa.ForeignKeyConstraint(['stock_id'], ['Stock.id'], 'seat_ibfk_1'),
+        sa.ForeignKeyConstraint(['stock_type_id'], ['StockType.id'], 'seat_ibfk_2'),
+        sa.ForeignKeyConstraint(['venue_id'], ['Venue.id'], 'seat_ibfk_3'),
         sa.PrimaryKeyConstraint('id')
         )
     op.create_table('SeatAdjacencySet',
@@ -279,20 +279,20 @@ def create_venue_related_tables():
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
-        sa.ForeignKeyConstraint(['venue_id'], ['Venue.id'], ),
+        sa.ForeignKeyConstraint(['venue_id'], ['Venue.id'], 'seatadjacencyset_ibfk_1'),
         sa.PrimaryKeyConstraint('id')
         )
     op.create_table('SeatAdjacency',
         sa.Column('id', Identifier(), nullable=False),
         sa.Column('adjacency_set_id', Identifier(), nullable=True),
-        sa.ForeignKeyConstraint(['adjacency_set_id'], ['SeatAdjacencySet.id'], ),
+        sa.ForeignKeyConstraint(['adjacency_set_id'], ['SeatAdjacencySet.id'], 'seatadjacency_ibfk_1'),
         sa.PrimaryKeyConstraint('id')
         )
     op.create_table('Seat_SeatAdjacency',
         sa.Column('seat_id', Identifier(), nullable=False),
         sa.Column('seat_adjacency_id', Identifier(), nullable=False),
-        sa.ForeignKeyConstraint(['seat_adjacency_id'], ['SeatAdjacency.id'], ),
-        sa.ForeignKeyConstraint(['seat_id'], ['Seat.id'], ),
+        sa.ForeignKeyConstraint(['seat_adjacency_id'], ['SeatAdjacency.id'], 'seat_seatadjacency_ibfk_1'),
+        sa.ForeignKeyConstraint(['seat_id'], ['Seat.id'], 'seat_seatadjacency_ibfk_2'),
         sa.PrimaryKeyConstraint('seat_id', 'seat_adjacency_id')
         )
     op.create_table('SeatStatus',
@@ -301,7 +301,7 @@ def create_venue_related_tables():
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
-        sa.ForeignKeyConstraint(['seat_id'], ['Seat.id'], ),
+        sa.ForeignKeyConstraint(['seat_id'], ['Seat.id'], 'seatstatus_ibfk_1'),
         sa.PrimaryKeyConstraint('seat_id')
         )
     op.create_table('SeatAttribute',
@@ -311,7 +311,7 @@ def create_venue_related_tables():
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
-        sa.ForeignKeyConstraint(['seat_id'], ['Seat.id'], ),
+        sa.ForeignKeyConstraint(['seat_id'], ['Seat.id'], 'seatattribute_ibfk_1'),
         sa.PrimaryKeyConstraint('seat_id', 'name')
         )
     op.create_table('SeatIndexType',
@@ -321,24 +321,24 @@ def create_venue_related_tables():
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
-        sa.ForeignKeyConstraint(['venue_id'], ['Venue.id'], ),
+        sa.ForeignKeyConstraint(['venue_id'], ['Venue.id'], 'seatindextype_ibfk_1'),
         sa.PrimaryKeyConstraint('id')
         )
     op.create_table('SeatIndex',
         sa.Column('seat_index_type_id', Identifier(), nullable=False),
         sa.Column('seat_id', Identifier(), nullable=False),
         sa.Column('index', sa.Integer(), nullable=False),
-        sa.ForeignKeyConstraint(['seat_id'], ['Seat.id'], ),
-        sa.ForeignKeyConstraint(['seat_index_type_id'], ['SeatIndexType.id'], ),
+        sa.ForeignKeyConstraint(['seat_id'], ['Seat.id'], 'seatindex_ibfk_1'),
+        sa.ForeignKeyConstraint(['seat_index_type_id'], ['SeatIndexType.id'], 'seatindex_ibfk_2'),
         sa.PrimaryKeyConstraint('seat_index_type_id', 'seat_id')
         )
     op.create_table('VenueArea_group_l0_id',
         sa.Column('venue_id', Identifier(), nullable=False),
         sa.Column('group_l0_id', sa.String(length=255), nullable=True),
         sa.Column('venue_area_id', Identifier(), nullable=False),
-        sa.ForeignKeyConstraint(['group_l0_id'], ['Seat.group_l0_id'], ),
-        sa.ForeignKeyConstraint(['venue_area_id'], ['VenueArea.id'], ),
-        sa.ForeignKeyConstraint(['venue_id'], ['Venue.id'], ),
+        sa.ForeignKeyConstraint(['group_l0_id'], ['Seat.group_l0_id'], 'venuearea_group_l0_id_ibfk_1'),
+        sa.ForeignKeyConstraint(['venue_area_id'], ['VenueArea.id'], 'venuearea_group_l0_id_ibfk_2'),
+        sa.ForeignKeyConstraint(['venue_id'], ['Venue.id'], 'venuearea_group_l0_id_ibfk_3'),
         sa.PrimaryKeyConstraint('venue_id', 'group_l0_id', 'venue_area_id')
         )
 
@@ -353,8 +353,8 @@ def create_sales_related_tables():
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
-        sa.ForeignKeyConstraint(['organization_id'], ['Organization.id'], ),
-        sa.ForeignKeyConstraint(['payment_plugin_id'], ['PaymentMethodPlugin.id'], ),
+        sa.ForeignKeyConstraint(['organization_id'], ['Organization.id'], 'paymentmethod_ibfk_1'),
+        sa.ForeignKeyConstraint(['payment_plugin_id'], ['PaymentMethodPlugin.id'], 'paymentmethod_ibfk_2'),
         sa.PrimaryKeyConstraint('id')
         )
     op.create_table('DeliveryMethod',
@@ -367,8 +367,8 @@ def create_sales_related_tables():
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
-        sa.ForeignKeyConstraint(['delivery_plugin_id'], ['DeliveryMethodPlugin.id'], ),
-        sa.ForeignKeyConstraint(['organization_id'], ['Organization.id'], ),
+        sa.ForeignKeyConstraint(['delivery_plugin_id'], ['DeliveryMethodPlugin.id'], 'deliverymethod_ibfk_1'),
+        sa.ForeignKeyConstraint(['organization_id'], ['Organization.id'], 'deliverymethod_ibfk_2'),
         sa.PrimaryKeyConstraint('id')
         )
     op.create_table('SalesSegment',
@@ -384,7 +384,7 @@ def create_sales_related_tables():
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
         sa.CheckConstraint('TODO'),
-        sa.ForeignKeyConstraint(['event_id'], ['Event.id'], ),
+        sa.ForeignKeyConstraint(['event_id'], ['Event.id'], 'salessegment_ibfk_1'),
         sa.PrimaryKeyConstraint('id')
         )
     op.create_table('PaymentDeliveryMethodPair',
@@ -404,9 +404,9 @@ def create_sales_related_tables():
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
-        sa.ForeignKeyConstraint(['delivery_method_id'], ['DeliveryMethod.id'], ),
-        sa.ForeignKeyConstraint(['payment_method_id'], ['PaymentMethod.id'], ),
-        sa.ForeignKeyConstraint(['sales_segment_id'], ['SalesSegment.id'], ),
+        sa.ForeignKeyConstraint(['delivery_method_id'], ['DeliveryMethod.id'], 'paymentdeliverymethodpair_ibfk_1'),
+        sa.ForeignKeyConstraint(['payment_method_id'], ['PaymentMethod.id'], 'paymentdeliverymethodpair_ibfk_2'),
+        sa.ForeignKeyConstraint(['sales_segment_id'], ['SalesSegment.id'], 'paymentdeliverymethodpair_ibfk_3'),
         sa.PrimaryKeyConstraint('id')
         )
     op.create_table('StockType',
@@ -420,15 +420,15 @@ def create_sales_related_tables():
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
         sa.CheckConstraint('TODO'),
-        sa.ForeignKeyConstraint(['event_id'], ['Event.id'], ),
+        sa.ForeignKeyConstraint(['event_id'], ['Event.id'], 'stocktype_ibfk_1'),
         sa.PrimaryKeyConstraint('id')
         )
     op.create_table('StockAllocation',
         sa.Column('stock_type_id', Identifier(), nullable=False),
         sa.Column('performance_id', Identifier(), nullable=False),
         sa.Column('quantity', sa.Integer(), nullable=False),
-        sa.ForeignKeyConstraint(['performance_id'], ['Performance.id'], ),
-        sa.ForeignKeyConstraint(['stock_type_id'], ['StockType.id'], ),
+        sa.ForeignKeyConstraint(['performance_id'], ['Performance.id'], 'stockallocation_ibfk_1'),
+        sa.ForeignKeyConstraint(['stock_type_id'], ['StockType.id'], 'stockallocation_ibfk_2'),
         sa.PrimaryKeyConstraint('stock_type_id', 'performance_id')
         )
     op.create_table('StockHolder',
@@ -440,8 +440,8 @@ def create_sales_related_tables():
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
-        sa.ForeignKeyConstraint(['account_id'], ['Account.id'], ),
-        sa.ForeignKeyConstraint(['event_id'], ['Event.id'], ),
+        sa.ForeignKeyConstraint(['account_id'], ['Account.id'], 'stockholder_ibfk_1'),
+        sa.ForeignKeyConstraint(['event_id'], ['Event.id'], 'stockholder_ibfk_2'),
         sa.PrimaryKeyConstraint('id')
         )
     op.create_table('Stock',
@@ -453,9 +453,9 @@ def create_sales_related_tables():
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
-        sa.ForeignKeyConstraint(['performance_id'], ['Performance.id'], ),
-        sa.ForeignKeyConstraint(['stock_holder_id'], ['StockHolder.id'], ),
-        sa.ForeignKeyConstraint(['stock_type_id'], ['StockType.id'], ),
+        sa.ForeignKeyConstraint(['performance_id'], ['Performance.id'], 'stock_ibfk_1'),
+        sa.ForeignKeyConstraint(['stock_holder_id'], ['StockHolder.id'], 'stock_ibfk_2'),
+        sa.ForeignKeyConstraint(['stock_type_id'], ['StockType.id'], 'stock_ibfk_3'),
         sa.PrimaryKeyConstraint('id')
         )
     op.create_table('StockStatus',
@@ -464,7 +464,7 @@ def create_sales_related_tables():
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
-        sa.ForeignKeyConstraint(['stock_id'], ['Stock.id'], ),
+        sa.ForeignKeyConstraint(['stock_id'], ['Stock.id'], 'stockstatus_ibfk_1'),
         sa.PrimaryKeyConstraint('stock_id')
         )
     op.create_table('Product',
@@ -476,8 +476,8 @@ def create_sales_related_tables():
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
-        sa.ForeignKeyConstraint(['event_id'], ['Event.id'], ),
-        sa.ForeignKeyConstraint(['sales_segment_id'], ['SalesSegment.id'], ),
+        sa.ForeignKeyConstraint(['event_id'], ['Event.id'], 'product_ibfk_1'),
+        sa.ForeignKeyConstraint(['sales_segment_id'], ['SalesSegment.id'], 'product_ibfk_2'),
         sa.PrimaryKeyConstraint('id')
         )
     op.create_table('ProductItem',
@@ -491,23 +491,23 @@ def create_sales_related_tables():
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
-        sa.ForeignKeyConstraint(['performance_id'], ['Performance.id'], ),
-        sa.ForeignKeyConstraint(['product_id'], ['Product.id'], ),
-        sa.ForeignKeyConstraint(['stock_id'], ['Stock.id'], ),
+        sa.ForeignKeyConstraint(['performance_id'], ['Performance.id'], 'productitem_ibfk_1'),
+        sa.ForeignKeyConstraint(['product_id'], ['Product.id'], 'productitem_ibfk_2'),
+        sa.ForeignKeyConstraint(['stock_id'], ['Stock.id'], 'productitem_ibfk_3'),
         sa.PrimaryKeyConstraint('id')
         )
     op.create_table('BuyerCondition',
         sa.Column('id', Identifier(), nullable=False),
         sa.Column('membership_id', Identifier(), nullable=True),
-        sa.ForeignKeyConstraint(['membership_id'], ['MemberShip.id'], ),
+        sa.ForeignKeyConstraint(['membership_id'], ['MemberShip.id'], 'buyercondition_ibfk_1'),
         sa.PrimaryKeyConstraint('id')
         )
     op.create_table('BuyerConditionSet',
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('buyer_condition_id', Identifier(), nullable=True),
         sa.Column('product_id', Identifier(), nullable=True),
-        sa.ForeignKeyConstraint(['buyer_condition_id'], ['BuyerCondition.id'], ),
-        sa.ForeignKeyConstraint(['product_id'], ['Product.id'], ),
+        sa.ForeignKeyConstraint(['buyer_condition_id'], ['BuyerCondition.id'], 'buyerconditionset_ibfk_1'),
+        sa.ForeignKeyConstraint(['product_id'], ['Product.id'], 'buyerconditionset_ibfk_2'),
         sa.PrimaryKeyConstraint('id')
         )
 
@@ -538,7 +538,7 @@ def create_checkout_related_tables():
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
-        sa.ForeignKeyConstraint(['checkout_id'], ['Checkout.id'], ),
+        sa.ForeignKeyConstraint(['checkout_id'], ['Checkout.id'], 'checkoutitem_ibfk_1'),
         sa.PrimaryKeyConstraint('id')
         )
 
@@ -613,7 +613,7 @@ def create_multicheckout_related_tables():
         sa.Column('EventDate', sa.Unicode(length=14), nullable=True),
         sa.Column('SalesAmount', sa.Unicode(length=7), nullable=True),
         sa.Column('inquiry_id', sa.Integer(), nullable=True),
-        sa.ForeignKeyConstraint(['inquiry_id'], ['multicheckout_inquiry_response_card.id'], ),
+        sa.ForeignKeyConstraint(['inquiry_id'], ['multicheckout_inquiry_response_card.id'], 'multicheckout_inquiry_response_card_history_ibfk_1'),
         sa.PrimaryKeyConstraint('id')
         )
     op.create_table('secure3d_req_auth_request',
@@ -806,7 +806,7 @@ def create_sej_related_tables():
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
-        sa.ForeignKeyConstraint(['refund_event_id'], ['SejRefundEvent.id'], ),
+        sa.ForeignKeyConstraint(['refund_event_id'], ['SejRefundEvent.id'], 'sejrefundticket_ibfk_1'),
         sa.PrimaryKeyConstraint('id')
         )
     op.create_table('SejTicket',
@@ -824,7 +824,7 @@ def create_sej_related_tables():
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
         sa.CheckConstraint('TODO'),
-        sa.ForeignKeyConstraint(['order_id'], ['SejOrder.id'], ),
+        sa.ForeignKeyConstraint(['order_id'], ['SejOrder.id'], 'sejticket_ibfk_1'),
         sa.PrimaryKeyConstraint('id')
         )
 
@@ -839,7 +839,7 @@ def create_point_related_tables():
         sa.Column('updated_at', sa.DateTime(), nullable=True),
         sa.Column('created_at', sa.DateTime(), nullable=True),
         sa.Column('status', sa.Integer(), nullable=True),
-        sa.ForeignKeyConstraint(['user_id'], ['User.id'], ),
+        sa.ForeignKeyConstraint(['user_id'], ['User.id'], 'userpointaccount_ibfk_1'),
         sa.PrimaryKeyConstraint('id')
         )
     op.create_table('UserPointHistory',
@@ -851,8 +851,8 @@ def create_point_related_tables():
         sa.Column('updated_at', sa.DateTime(), nullable=True),
         sa.Column('created_at', sa.DateTime(), nullable=True),
         sa.Column('status', sa.Integer(), nullable=True),
-        sa.ForeignKeyConstraint(['user_id'], ['User.id'], ),
-        sa.ForeignKeyConstraint(['user_point_account_id'], ['UserPointAccount.id'], ),
+        sa.ForeignKeyConstraint(['user_id'], ['User.id'], 'userpointhistory_ibfk_1'),
+        sa.ForeignKeyConstraint(['user_point_account_id'], ['UserPointAccount.id'], 'userpointhistory_ibfk_2'),
         sa.PrimaryKeyConstraint('id')
         )
 
@@ -869,9 +869,9 @@ def create_cart_related_tables():
         sa.Column('shipping_address_id', Identifier(), nullable=False),
         sa.Column('payment_delivery_method_pair_id', Identifier(), nullable=True),
         sa.Index('ix_cart_session_id', 'cart_session_id'),
-        sa.ForeignKeyConstraint(['payment_delivery_method_pair_id'], ['PaymentDeliveryMethodPair.id'], ),
-        sa.ForeignKeyConstraint(['performance_id'], ['Performance.id'], ),
-        sa.ForeignKeyConstraint(['shipping_address_id'], ['ShippingAddress.id'], ),
+        sa.ForeignKeyConstraint(['payment_delivery_method_pair_id'], ['PaymentDeliveryMethodPair.id'], 'ticketing_carts_ibfk_1'),
+        sa.ForeignKeyConstraint(['performance_id'], ['Performance.id'], 'ticketing_carts_ibfk_2'),
+        sa.ForeignKeyConstraint(['shipping_address_id'], ['ShippingAddress.id'], 'ticketing_carts_ibfk_3'),
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint('cart_session_id')
         )
@@ -884,8 +884,8 @@ def create_cart_related_tables():
         sa.Column('updated_at', sa.DateTime(), nullable=True),
         sa.Column('deleted_at', sa.DateTime(), nullable=True),
         sa.Column('finished_at', sa.DateTime(), nullable=True),
-        sa.ForeignKeyConstraint(['cart_id'], ['ticketing_carts.id'], ),
-        sa.ForeignKeyConstraint(['product_id'], ['Product.id'], ),
+        sa.ForeignKeyConstraint(['cart_id'], ['ticketing_carts.id'], 'ticketing_cartedproducts_ibfk_1'),
+        sa.ForeignKeyConstraint(['product_id'], ['Product.id'], 'ticketing_cartedproducts_ibfk_2'),
         sa.PrimaryKeyConstraint('id')
         )
     op.create_table('ticketing_cartedproductitems',
@@ -897,15 +897,15 @@ def create_cart_related_tables():
         sa.Column('updated_at', sa.DateTime(), nullable=True),
         sa.Column('deleted_at', sa.DateTime(), nullable=True),
         sa.Column('finished_at', sa.DateTime(), nullable=True),
-        sa.ForeignKeyConstraint(['carted_product_id'], ['ticketing_cartedproducts.id'], ),
-        sa.ForeignKeyConstraint(['product_item_id'], ['ProductItem.id'], ),
+        sa.ForeignKeyConstraint(['carted_product_id'], ['ticketing_cartedproducts.id'], 'ticketing_cartedproductitems_ibfk_1'),
+        sa.ForeignKeyConstraint(['product_item_id'], ['ProductItem.id'], 'ticketing_cartedproductitems_ibfk_2'),
         sa.PrimaryKeyConstraint('id')
         )
     op.create_table('cat_seat',
         sa.Column('seat_id', Identifier(), nullable=True),
         sa.Column('cartproductitem_id', sa.Integer(), nullable=True),
-        sa.ForeignKeyConstraint(['cartproductitem_id'], ['ticketing_cartedproductitems.id'], ),
-        sa.ForeignKeyConstraint(['seat_id'], ['Seat.id'], ),
+        sa.ForeignKeyConstraint(['cartproductitem_id'], ['ticketing_cartedproductitems.id'], 'cat_seat_ibfk_1'),
+        sa.ForeignKeyConstraint(['seat_id'], ['Seat.id'], 'cat_seat_ibfk_2'),
         sa.PrimaryKeyConstraint()
         )
 
@@ -932,7 +932,7 @@ def create_order_related_tables():
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
-        sa.ForeignKeyConstraint(['user_id'], ['User.id'], ),
+        sa.ForeignKeyConstraint(['user_id'], ['User.id'], 'shippingaddress_ibfk_1'),
         sa.PrimaryKeyConstraint('id')
         )
 
@@ -955,11 +955,11 @@ def create_order_related_tables():
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
-        sa.ForeignKeyConstraint(['organization_id'], ['Organization.id'], ),
-        sa.ForeignKeyConstraint(['payment_delivery_method_pair_id'], ['PaymentDeliveryMethodPair.id'], ),
-        sa.ForeignKeyConstraint(['performance_id'], ['Performance.id'], ),
-        sa.ForeignKeyConstraint(['shipping_address_id'], ['ShippingAddress.id'], ),
-        sa.ForeignKeyConstraint(['user_id'], ['User.id'], ),
+        sa.ForeignKeyConstraint(['organization_id'], ['Organization.id'], 'order_ibfk_1'),
+        sa.ForeignKeyConstraint(['payment_delivery_method_pair_id'], ['PaymentDeliveryMethodPair.id'], 'order_ibfk_2'),
+        sa.ForeignKeyConstraint(['performance_id'], ['Performance.id'], 'order_ibfk_3'),
+        sa.ForeignKeyConstraint(['shipping_address_id'], ['ShippingAddress.id'], 'order_ibfk_4'),
+        sa.ForeignKeyConstraint(['user_id'], ['User.id'], 'order_ibfk_5'),
         sa.PrimaryKeyConstraint('id')
         )
     op.create_table('OrderedProduct',
@@ -971,8 +971,8 @@ def create_order_related_tables():
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
-        sa.ForeignKeyConstraint(['order_id'], ['Order.id'], ),
-        sa.ForeignKeyConstraint(['product_id'], ['Product.id'], ),
+        sa.ForeignKeyConstraint(['order_id'], ['Order.id'], 'orderedproduct_ibfk_1'),
+        sa.ForeignKeyConstraint(['product_id'], ['Product.id'], 'orderedproduct_ibfk_2'),
         sa.PrimaryKeyConstraint('id')
         )
     op.create_table('OrderedProductItem',
@@ -983,15 +983,15 @@ def create_order_related_tables():
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
-        sa.ForeignKeyConstraint(['ordered_product_id'], ['OrderedProduct.id'], ),
-        sa.ForeignKeyConstraint(['product_item_id'], ['ProductItem.id'], ),
+        sa.ForeignKeyConstraint(['ordered_product_id'], ['OrderedProduct.id'], 'orderedproductitem_ibfk_1'),
+        sa.ForeignKeyConstraint(['product_item_id'], ['ProductItem.id'], 'orderedproductitem_ibfk_2'),
         sa.PrimaryKeyConstraint('id')
         )
     op.create_table('orders_seat',
         sa.Column('seat_id', Identifier(), nullable=True),
         sa.Column('OrderedProductItem_id', Identifier(), nullable=True),
-        sa.ForeignKeyConstraint(['OrderedProductItem_id'], ['OrderedProductItem.id'], ),
-        sa.ForeignKeyConstraint(['seat_id'], ['Seat.id'], ),
+        sa.ForeignKeyConstraint(['OrderedProductItem_id'], ['OrderedProductItem.id'], 'orders_seat_ibfk_1'),
+        sa.ForeignKeyConstraint(['seat_id'], ['Seat.id'], 'orders_seat_ibfk_2'),
         sa.PrimaryKeyConstraint()
         )
     op.create_table('OrderedProductAttribute',
@@ -1001,7 +1001,7 @@ def create_order_related_tables():
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
-        sa.ForeignKeyConstraint(['ordered_product_item_id'], ['OrderedProductItem.id'], ),
+        sa.ForeignKeyConstraint(['ordered_product_item_id'], ['OrderedProductItem.id'], 'orderedproductattribute_ibfk_1'),
         sa.PrimaryKeyConstraint('ordered_product_item_id', 'name')
         )
     op.create_table('payment_reserved_number',
@@ -1030,7 +1030,7 @@ def create_auth_related_tables():
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
-        sa.ForeignKeyConstraint(['organization_id'], ['Organization.id'], ),
+        sa.ForeignKeyConstraint(['organization_id'], ['Organization.id'], 'operator_ibfk_1'),
         sa.PrimaryKeyConstraint('id')
         )
     op.create_table('OperatorRole',
@@ -1046,15 +1046,15 @@ def create_auth_related_tables():
         sa.Column('operator_role_id', Identifier(), nullable=True),
         sa.Column('category_name', sa.String(length=255), nullable=True),
         sa.Column('permit', sa.Integer(), nullable=True),
-        sa.ForeignKeyConstraint(['operator_role_id'], ['OperatorRole.id'], ),
+        sa.ForeignKeyConstraint(['operator_role_id'], ['OperatorRole.id'], 'permission_ibfk_1'),
         sa.PrimaryKeyConstraint('id')
         )
     op.create_table('OperatorRole_Operator',
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('operator_role_id', Identifier(), nullable=True),
         sa.Column('operator_id', Identifier(), nullable=True),
-        sa.ForeignKeyConstraint(['operator_id'], ['Operator.id'], ),
-        sa.ForeignKeyConstraint(['operator_role_id'], ['OperatorRole.id'], ),
+        sa.ForeignKeyConstraint(['operator_id'], ['Operator.id'], 'operatorrole_operator_ibfk_1'),
+        sa.ForeignKeyConstraint(['operator_role_id'], ['OperatorRole.id'], 'operatorrole_operator_ibfk_2'),
         sa.PrimaryKeyConstraint('id')
         )
     op.create_table('UserCredential',
@@ -1066,8 +1066,8 @@ def create_auth_related_tables():
         sa.Column('updated_at', sa.DateTime(), nullable=True),
         sa.Column('created_at', sa.DateTime(), nullable=True),
         sa.Column('status', sa.Integer(), nullable=True),
-        sa.ForeignKeyConstraint(['membership_id'], ['MemberShip.id'], ),
-        sa.ForeignKeyConstraint(['user_id'], ['User.id'], ),
+        sa.ForeignKeyConstraint(['membership_id'], ['MemberShip.id'], 'usercredential_ibfk_1'),
+        sa.ForeignKeyConstraint(['user_id'], ['User.id'], 'usercredential_ibfk_2'),
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint('auth_identifier')
         )
@@ -1086,8 +1086,8 @@ def create_auth_related_tables():
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.CheckConstraint('TODO'),
-        sa.ForeignKeyConstraint(['operator_id'], ['Operator.id'], ),
-        sa.ForeignKeyConstraint(['service_id'], ['Service.id'], ),
+        sa.ForeignKeyConstraint(['operator_id'], ['Operator.id'], 'accesstoken_ibfk_1'),
+        sa.ForeignKeyConstraint(['service_id'], ['Service.id'], 'accesstoken_ibfk_2'),
         sa.PrimaryKeyConstraint('id')
         )
     op.create_table('MACNonce',
@@ -1097,7 +1097,7 @@ def create_auth_related_tables():
         sa.Column('status', sa.Integer(), nullable=True),
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
-        sa.ForeignKeyConstraint(['access_token_id'], ['AccessToken.id'], ),
+        sa.ForeignKeyConstraint(['access_token_id'], ['AccessToken.id'], 'macnonce_ibfk_1'),
         sa.PrimaryKeyConstraint('id')
         )
     op.create_table('OperatorAuth',
@@ -1109,7 +1109,7 @@ def create_auth_related_tables():
         sa.Column('secret_key', sa.String(length=32), nullable=True),
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
-        sa.ForeignKeyConstraint(['operator_id'], ['Operator.id'], ),
+        sa.ForeignKeyConstraint(['operator_id'], ['Operator.id'], 'operatorauth_ibfk_1'),
         sa.PrimaryKeyConstraint('operator_id'),
         sa.UniqueConstraint('login_id')
         )
@@ -1119,7 +1119,7 @@ def create_audit_related_tables():
         sa.Column('id', Identifier(), nullable=False),
         sa.Column('operator_id', Identifier(), nullable=True),
         sa.Column('function', sa.String(length=255), nullable=True),
-        sa.ForeignKeyConstraint(['operator_id'], ['Operator.id'], ),
+        sa.ForeignKeyConstraint(['operator_id'], ['Operator.id'], 'operatoractionhistory_ibfk_1'),
         sa.PrimaryKeyConstraint('id')
         )
 
@@ -1132,7 +1132,7 @@ def create_bookmark_related_tables():
         sa.Column('status', sa.Integer(), nullable=True),
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
-        sa.ForeignKeyConstraint(['organization_id'], ['Organization.id'], ),
+        sa.ForeignKeyConstraint(['organization_id'], ['Organization.id'], 'bookmark_ibfk_1'),
         sa.PrimaryKeyConstraint('id')
         )
 
