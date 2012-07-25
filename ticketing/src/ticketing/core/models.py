@@ -72,8 +72,9 @@ class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             VenueArea.create_from_template(template=template_area, venue_id=venue.id)
 
         # create Seat
+        default_stock = Stock.filter_by(performance_id=performance_id).filter_by(stock_type_id=None).first()
         for template_seat in template.seats:
-            Seat.create_from_template(template=template_seat, venue_id=venue.id)
+            Seat.create_from_template(template=template_seat, venue_id=venue.id, stock_id=default_stock.id)
 
     def delete_cascade(self):
         # delete Seat
@@ -171,13 +172,12 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return session.query(SeatIndex).filter_by(seat=self, index_type_id=index_type_id)
 
     @staticmethod
-    def create_from_template(template, venue_id):
+    def create_from_template(template, venue_id, stock_id):
         # create Seat
         seat = Seat.clone(template)
         seat.venue_id = venue_id
-        seat.stock_id = None
-        if not seat.stock_type_id:
-            seat.stock_type_id = None
+        seat.stock_id = stock_id
+        seat.stock_type_id = None
         seat.save()
 
         # create SeatAttribute
@@ -325,6 +325,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         """
         Performanceの作成時は以下のモデルを自動生成する
         また更新時にVenueの変更があったら以下のモデルをdeleteする
+          - Stock (デフォルト値の"未選択"の在庫)
           - Venue
             - VenueArea
               - VenueArea_group_l0_id
@@ -332,6 +333,9 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
               - SeatAttribute
               - SeatStatus
         """
+        # create default Stock
+        Stock.create_default(performance_id=self.id)
+
         # create Venue - VenueArea, Seat - SeatAttribute
         if hasattr(self, 'create_venue_id') and self.venue_id:
             template_venue = Venue.get(self.venue_id)
@@ -805,6 +809,13 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if case_add:
             stock_status = StockStatus(stock_id=self.id, quantity=self.quantity)
             stock_status.save()
+
+    @staticmethod
+    def create_default(performance_id):
+        stock = Stock(
+            performance_id=performance_id,
+        )
+        stock.save()
 
     @staticmethod
     def create_from_template(template, performance_id):
