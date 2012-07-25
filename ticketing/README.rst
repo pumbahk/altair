@@ -31,6 +31,20 @@ DB再生成::
 
   $ python initdb.py development.ini ticketing.sql
 
+Set Up Database
+=====================
+
+データベースの作成::
+
+ mysql>> CREATE DATABASE ticketing CHARACTER SET utf8;
+
+alembic実行::
+
+ $ alembic upgrade head
+
+データ投入::
+
+ $ python initdb.py development.ini ticketing.sql
 
 Cart test how-to
 ================
