@@ -43,12 +43,14 @@ var Seat = exports.Seat = Backbone.Model.extend({
         model.off('change:selectable', selectableChanged);
         model.off('change:selected', selectedChanged);
         model.off('change:stock', stockChanged);
+        model.get('stock').off('change:style', stockChanged);
       }
       if (model) {
         model.on('change:venue', selectableChanged);
         model.on('change:selectable', selectableChanged);
         model.on('change:selected', selectedChanged);
         model.on('change:stock', stockChanged);
+        model.get('stock').on('change:style', stockChanged);
       }
     }
 

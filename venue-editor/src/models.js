@@ -331,22 +331,10 @@ var Stock = exports.Stock = Backbone.Model.extend({
   initialize: function Stock_initialize() {
     var self = this;
 
-    var refreshStyleCallback = function refreshStyleCallback() {
-      self._refreshStyle();
-    };
-
-    var styleProviderAttrChanged = {};
     _.each(Stock.styleProviderAttributes, function (name) {
-      styleProviderAttrChanged[name] = function () {
-        var prevAttr = this.previous(name);
-        if (prevAttr)
-          prevAttr.off('change:style', refreshStyleCallback);
-        var newAttr = this.get(name);
-        if (newAttr)
-          newAttr.on('change:style', refreshStyleCallback);
-        this._refreshStyle();
-      };
-      self.on('change:' + name, styleProviderAttrChanged[name]);
+      self.get(name).on('change:style', function () {
+        self._refreshStyle();
+      });
     });
 
     this._refreshStyle();

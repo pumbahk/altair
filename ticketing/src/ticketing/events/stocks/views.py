@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 @view_defaults(decorator=with_bootstrap)
 class Stocks(BaseView):
 
+    '''
     @view_config(route_name='stocks.allocate_number', request_method='POST', renderer='ticketing:templates/stocks/_form.html')
     def allocate_number(self):
         f = StockForms(self.request.POST)
@@ -62,6 +63,7 @@ class Stocks(BaseView):
             allocation_counts[sa.stock_type_id] = {'total':sa.quantity, 'sum':int(sum_quantity)}
 
         return allocation_counts
+    '''
 
     @view_config(route_name='stocks.allocate', request_method='POST', renderer='json')
     def allocate(self):
