@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 from datetime import datetime
-
+import sqlalchemy.orm as orm
 from pyramid.view import view_config
 from pyramid.view import view_defaults
 
@@ -18,8 +18,7 @@ from altaircms.event.models import Event
 
 from altaircms.subscribers import notify_model_create
 
-@view_config(permission="performance_update", route_name="plugins_jsapi_getti", renderer="json", 
-             custom_predicates=(require_login, ))
+@view_config(permission="performance_update", route_name="plugins_jsapi_getti", renderer="json")
 def performance_add_getti_code(request):
     """ gettiのコードつける
     """
@@ -32,8 +31,11 @@ def performance_add_getti_code(request):
         codes[int(i)] = getti_code
 
     perfs = Performance.query.filter(Performance.id.in_(codes.keys()))
-    perfs = request.allowable(Event, qs=perfs.filter(Performance.event_id==Event.id))
+    perfs = perfs.options(orm.joinedload(Performance.event))
+
     for obj in perfs:
+        if obj.event.organization_id != request.organization.id:
+            continue
         changed.append(obj.id)
         getti_code = codes[obj.id]
 
