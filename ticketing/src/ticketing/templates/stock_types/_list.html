@@ -77,7 +77,7 @@ for stock_type in stock_types:
           <th>名称</th>
           <th>在庫数</th>
         </tr>
-      <thead>
+      </thead>
       <tbody>
       % for stock_type in non_seat_stock_types:
         <%
@@ -105,8 +105,8 @@ for stock_type in stock_types:
       % endfor
       </tbody>
     </table>
-    % endif
   </div>
+  % endif
 </div>
 
 % if paging:
