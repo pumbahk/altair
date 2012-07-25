@@ -30,21 +30,6 @@ import transaction
 
 logger = logging.getLogger(__name__)
 
-class ExceptionView(object):
-    def __init__(self, request):
-        self.request = request
-
-    @view_config(context=NoCartError)
-    def handle_nocarterror(self):
-        logger.error(self.request.context, exc_info=self.request.exc_info)
-        return HTTPFound('/')
-
-    @view_config(context=NoEventError, renderer='ticketing.cart:templates/errors/notfound.html')
-    def handle_noeventerror(self):
-        logger.error(self.request.context, exc_info=self.request.exc_info)
-        self.request.response.status = 404
-        return {}
-
 class IndexView(object):
     """ 座席選択画面 """
     def __init__(self, request):
