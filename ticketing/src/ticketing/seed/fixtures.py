@@ -478,14 +478,15 @@ class FixtureBuilder(object):
 
     def build_organization_datum(self, code, name):
         logger.info(u"Building Organization %s" % name)
+        account_data = [
+            self.build_account_datum(name, type) \
+            for name, type in self.account_pairs
+            ]
         retval = self.Datum(
             'Organization',
             name=name,
             code=code,
-            accounts=one_to_many(
-                [self.build_account_datum(name, type) for name, type in self.account_pairs],
-                'organization_id'
-                ),
+            accounts=one_to_many(account_data, 'organization_id'),
             operators=one_to_many(
                 [
                     self.build_operator_datum(
@@ -496,6 +497,14 @@ class FixtureBuilder(object):
                     for operator_name, role_names in self.operator_seeds.iteritems()
                     ],
                 'organization_id',
+                ),
+            user=many_to_one(
+                [
+                    account_datum.user \
+                    for account_datum in account_data \
+                    if account_datum.name == name
+                    ][0],
+                'user_id'
                 )
             )
         payment_method_data = [
@@ -646,7 +655,7 @@ class FixtureBuilder(object):
             )
         retval.product_items = one_to_many(
             list(chain(*(
-                self.build_product_item_data(retval, product, stock_data) \
+                self.build_product_item_data(organization, retval, product, stock_data) \
                 for product in event.products
                 ))),
             'performance_id'
@@ -696,10 +705,12 @@ class FixtureBuilder(object):
             quantity=quantity
             )
 
-    def build_product_item_data(self, performance, product, stocks):
+    def build_product_item_data(self, organization, performance, product, stocks):
         def find_stock(stock_type_name):
             for stock in stocks:
-                if stock.stock_type.name == stock_type_name:
+                if stock.stock_type.name == stock_type_name and \
+                   stock.stock_holder is not None and \
+                   stock.stock_holder.account.user == organization.user:
                     return stock
             raise Exception("No such stock that corresponds to %s" % stock_type_name)
 
