@@ -48,8 +48,6 @@ def teardown_db():
     transaction.abort()
     sqlahelper.get_base().metadata.drop_all()
 
-
-# from .dbinspect import listing_all
 """
 todo: output meessage via logger
 """
