@@ -1,3 +1,5 @@
 .block { fill: rgb(255, 255, 192); stroke: rgb(0, 0, 0); stroke-width: 1px; vector-effect: non-scaling-stroke; }
 g .seat { fill: rgb(255, 255, 255); stroke: rgb(0, 0, 0); stroke-width: 1px; vector-effect: non-scaling-stroke; }
 g g .seat { fill: rgb(160, 160, 160); stroke: rgb(0, 0, 0); stroke-width: 1px; vector-effect: non-scaling-stroke; }
+.label { z-index: 2; fill: rgb(0, 0, 255); }
+.background { z-index: 1; stroke: rgb(220, 220, 220); fill: transparent; }
