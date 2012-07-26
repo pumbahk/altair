@@ -334,8 +334,9 @@ class ReserveView(object):
     @view_config(route_name='cart.order', request_method="POST", renderer='json')
     def reserve(self):
         order_items = self.ordered_items
+        selected_seats = self.request.params.getall('selected_seat')
         logger.debug('order_items %s' % order_items)
-        cart = api.order_products(self.request, self.request.params['performance_id'], order_items)
+        cart = api.order_products(self.request, self.request.params['performance_id'], order_items, selected_seats=selected_seats)
         if cart is None:
             return dict(result='NG')
         api.set_cart(self.request, cart)

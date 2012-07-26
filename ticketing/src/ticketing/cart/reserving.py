@@ -13,9 +13,44 @@ logger = logging.getLogger(__name__)
 class NotEnoughAdjacencyException(Exception):
     """ 必要な連席が存在しない場合 """
 
+
+class InvalidSeatSelectionException(Exception):
+    """ ユーザー選択座席が不正な場合 """
+
 class Reserving(object):
     def __init__(self, request):
         self.request = request
+
+    def reserve_selected_seats(self, stockstatus, performance_id, selected_seat_l0_ids):
+        """ ユーザー選択座席予約 """
+        selected_seats = Seat.query.filter(
+            Seat.l0_id.in_(selected_seat_l0_ids),
+        ).filter(
+            Venue.id==Seat.venue_id,
+        ).filter(
+            Performance.id==Venue.performance_id
+        ).filter(
+            Stock.id==Seat.stock_id
+        ).filter(
+            Stock.id.in_([s[0].stock_id for s in stockstatus])
+        ).all()
+
+        if len(selected_seats) != len(selected_seat_l0_ids):
+            logger.debug("seats %s" % selected_seats)
+            raise InvalidSeatSelectionException
+        seat_statuses = SeatStatus.query.filter(
+            SeatStatus.seat_id.in_([s.id for s in selected_seats])
+        ).filter(
+            SeatStatus.status==int(SeatStatusEnum.Vacant)
+        ).all()
+
+        if len(seat_statuses) != len(selected_seat_l0_ids):
+            logger.debug("seat_statuses %s" % seat_statuses)
+            raise InvalidSeatSelectionException
+
+        for s in seat_statuses:
+            s.status = int(SeatStatusEnum.InCart)
+        return selected_seats
 
     def reserve_seats(self, stock_id, quantity):
         seats = self.get_vacant_seats(stock_id, quantity)

@@ -159,7 +159,7 @@ def get_cart_factory(request):
     return stocker_cls(request)
 
 
-def order_products(request, performance_id, product_requires):
+def order_products(request, performance_id, product_requires, selected_seats=[]):
     stocker = get_stocker(request)
     reserving = get_reserving(request)
     cart_factory = get_cart_factory(request)
@@ -168,11 +168,14 @@ def order_products(request, performance_id, product_requires):
 
     logger.debug("stock %s" % stockstatuses)
     seats = []
-    for stockstatus, quantity in stockstatuses:
-        if is_quantity_only(stockstatus.stock):
-            logger.debug('stock %d quantity only' % stockstatus.stock.id)
-            continue
-        seats += reserving.reserve_seats(stockstatus.stock_id, quantity)        
+    if selected_seats:
+        seats += reserving.reserve_selected_seats(stockstatuses, performance_id, selected_seats)
+    else:
+        for stockstatus, quantity in stockstatuses:
+            if is_quantity_only(stockstatus.stock):
+                logger.debug('stock %d quantity only' % stockstatus.stock.id)
+                continue
+            seats += reserving.reserve_seats(stockstatus.stock_id, quantity)        
 
     logger.debug(seats)
     cart = cart_factory.create_cart(performance_id, seats, product_requires)
