@@ -2,10 +2,10 @@ import unittest
 config  = None
 def setUpModule():
     global config
-    from altaircms.lib import testutils
-    config = testutils.config()
+    from altaircms import testing as mytesting
+    config = mytesting.config()
     config.include("altaircms.tag")
-    testutils.create_db(force=False)
+    mytesting.create_db(force=False)
     
 def tearDownModule():
     from pyramid.testing import tearDown

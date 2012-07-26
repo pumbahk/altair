@@ -73,6 +73,6 @@ if __name__ == "__main__":
     import altaircms.tag.models
     import altaircms.event.models
     import altaircms.asset.models
-    from altaircms.lib.testutils import db_initialize_for_unittest
+    from altaircms.testing import db_initialize_for_unittest
     db_initialize_for_unittest()
     unittest.main()

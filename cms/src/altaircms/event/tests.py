@@ -2,7 +2,7 @@
 import unittest
 from pyramid import testing
 from altaircms import testing as a_testing
-from altaircms.lib.testutils import _initTestingDB
+from altaircms.testing import _initTestingDB
 from .api import EventRepositry
 from .interfaces import IAPIKeyValidator, IEventRepository
 

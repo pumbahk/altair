@@ -1,7 +1,7 @@
 import unittest
 from pyramid import testing
 from altaircms.testing import DummyRequest
-from altaircms.lib.testutils import BaseTest
+from altaircms.testing import BaseTest
 from altaircms.auth.models import Operator
 class TestBaseView(BaseTest):
     def tearDown(self):

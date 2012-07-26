@@ -6,9 +6,9 @@ from altaircms.plugins.widget.iconset.models import IconsetWidget
 config  = None
 def setUpModule():
     global config
-    from altaircms.lib import testutils
-    testutils.create_db(force=False)
-    config = testutils.config()
+    from altaircms import testing as mytesting
+    mytesting.create_db(force=False)
+    config = mytesting.config()
 
 class WidgetTestSourceMixn(object):
     def _makePage(self, id=None):

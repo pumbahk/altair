@@ -10,7 +10,7 @@ Page.structure{} # widget id
 Widget
 """
 
-from altaircms.lib.testutils import functionalTestTearDown
+from altaircms.testing import functionalTestTearDown
 
 app = None
 def setUpModule():

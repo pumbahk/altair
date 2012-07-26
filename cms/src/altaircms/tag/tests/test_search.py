@@ -225,5 +225,5 @@ if __name__ == "__main__":
     import altaircms.event.models
     import altaircms.asset.models
     import altaircms.tag.models
-    from altaircms.lib.testutils import db_initialize_for_unittest
+    from altaircms.testing import db_initialize_for_unittest
     db_initialize_for_unittest()

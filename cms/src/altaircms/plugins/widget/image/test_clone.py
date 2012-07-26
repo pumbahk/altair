@@ -10,9 +10,9 @@ from models import ImageWidget
 config  = None
 def setUpModule():
     global config
-    from altaircms.lib import testutils
-    testutils.create_db(force=False)
-    config = testutils.config()
+    from altaircms import testing as mytesting
+    mytesting.create_db(force=False)
+    config = mytesting.config()
 
 def tearDownModule():
     from pyramid.testing import tearDown
