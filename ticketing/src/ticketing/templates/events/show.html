@@ -1,5 +1,11 @@
 <%inherit file="/layout_2cols.html" />
 <%namespace file="/common/helpers.html" name="h" />
+
+<%block name="style">
+<link rel="stylesheet" type="text/css" href="/static/css/decentcolorpicker.css" />
+<script type="text/javascript" src="/static/js/jquery.decentcolorpicker.js"></script>
+</%block>
+
 <div class="breadcrumbs">
   ${h.breadcrumbs(
       names=[u'イベント', event.title],

@@ -37,7 +37,7 @@ class AllocateStockForm(Form):
     def validate_quantity(form, field):
         # Seatの割当数と一致すること
         stock = Stock.get(form.id.data)
-        if stock and stock.stock_type.is_seat:
+        if stock and stock.stock_type and stock.stock_type.is_seat:
             allocated_seats = Seat.filter_by(stock_id=form.id.data).count()
             if allocated_seats != int(form.quantity.data):
                 raise ValidationError(u'席種に割り当てられている在庫数合計が一致しません')
