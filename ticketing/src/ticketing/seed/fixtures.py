@@ -480,8 +480,8 @@ class FixtureBuilder(object):
     def build_organization_datum(self, code, name):
         logger.info(u"Building Organization %s" % name)
         account_data = [
-            self.build_account_datum(name, type) \
-            for name, type in self.account_pairs
+            self.build_account_datum(name_, type) \
+            for name_, type in self.account_pairs
             ]
         retval = self.Datum(
             'Organization',
