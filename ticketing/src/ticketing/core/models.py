@@ -325,7 +325,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
               - Stock
             """
             # create default Stock
-            Stock.create_default(performance_id=self.id)
+            Stock.create_default(self.event, performance_id=self.id)
 
     def save(self):
         BaseModel.save(self)
@@ -726,6 +726,12 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def is_seat(self):
         return self.type == StockTypeEnum.Seat.v
 
+    def add(self):
+        super(StockType, self).add()
+
+        # create default Stock
+        Stock.create_default(self.event, stock_type_id=self.id)
+
     def num_seats(self, performance_id=None):
         # 同一Performanceの同一StockTypeにおけるStock.quantityの合計
         query = Stock.filter_by(stock_type_id=self.id).with_entities(func.sum(Stock.quantity))
@@ -760,6 +766,12 @@ class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     stocks = relationship('Stock', backref='stock_holder')
 
+    def add(self):
+        super(StockHolder, self).add()
+
+        # create default Stock
+        Stock.create_default(self.event, stock_holder_id=self.id)
+
     def stocks_by_performance(self, performance_id):
         def performance_filter(stock):
             return (stock.performance_id == performance_id)
@@ -790,30 +802,33 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return Stock.filter_by(performance_id=performance_id).filter_by(stock_type_id=None).first()
 
     @staticmethod
-    def create_default(performance_id=None, stock_type_id=None, stock_holder_id=None):
+    def create_default(event, performance_id=None, stock_type_id=None, stock_holder_id=None):
         '''
         初期状態のStockを生成する
           - デフォルト値となる"未選択"のStock
           - StockHolder × StockType分のStock
         既に該当のStockが存在する場合は、足りないStockのみ生成する
         '''
-        if performance_id:
-            performance = Performance.get(performance_id)
+        performances = [Performance.get(performance_id)] if performance_id else event.performances
+        stock_types = [StockType.get(stock_type_id)] if stock_type_id else event.stock_types
+        stock_holders = [StockHolder.get(stock_holder_id)] if stock_holder_id else event.stock_holders
 
-            # デフォルト値となる"未選択"のStock
-            stock = Stock(
-                performance_id=performance_id,
-                quantity=0
-            )
-            stock.save()
+        # デフォルト値となる"未選択"のStockを生成
+        for performance in performances:
+            if not Stock.get_default(performance.id):
+                stock = Stock(
+                    performance_id=performance.id,
+                    quantity=0
+                )
+                stock.save()
 
-            # StockHolder × StockType分のStock
-            stocks = performance.stocks
-            for stock_type in performance.event.stock_types:
-                for stock_holder in performance.event.stock_holders:
+        # Performance × StockType × StockHolder分のStockを生成
+        for performance in performances:
+            for stock_type in stock_types:
+                for stock_holder in stock_holders:
                     def stock_filter(stock):
                         return (stock.stock_type_id == stock_type.id and stock.stock_holder_id == stock_holder.id)
-                    if not filter(stock_filter, stocks):
+                    if not filter(stock_filter, performance.stocks):
                         stock = Stock(
                             performance_id=performance.id,
                             stock_type_id=stock_type.id,
