@@ -1,4 +1,6 @@
 import unittest
+from pyramid import testing
+
 config  = None
 def setUpModule():
     from altaircms.testing import setup_db
@@ -45,7 +47,7 @@ class AnyKindAssetSearchTests(unittest.TestCase):
 
     def _makeOne(self, classifier):
         from altaircms.tag.api import get_tagmanager
-        return get_tagmanager(classifier)
+        return get_tagmanager(classifier, testing.DummyRequest())
 
     def test_any_kind(self):
         """ search_by_tag_label image. flash, movie asset exist in session"""

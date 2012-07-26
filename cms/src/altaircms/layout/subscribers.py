@@ -5,7 +5,7 @@ from altaircms.interfaces import IModelEvent
 from .interfaces import ILayoutCreator
 from . import api
 from ..models import DBSession
-from altaircms.lib.viewhelpers import FlashMessage
+from altaircms.helpers.viewhelpers import FlashMessage
 
 @implementer(IModelEvent)
 class LayoutCreate(object):

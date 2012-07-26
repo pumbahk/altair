@@ -1,7 +1,7 @@
 # coding: utf-8
 import os
 
-from altaircms.lib.viewhelpers import FlashMessage
+from altaircms.helpers.viewhelpers import FlashMessage
 from pyramid.httpexceptions import (
     HTTPFound
 )
@@ -12,7 +12,7 @@ from pyramid.view import (
 )
 from altaircms.lib.fanstatic_decorator import with_bootstrap
 from . import helpers as h
-from altaircms.lib.viewhelpers import get_endpoint, set_endpoint
+from altaircms.helpers.viewhelpers import get_endpoint, set_endpoint
 
 @view_defaults(permission="asset_create", decorator=with_bootstrap, route_name="asset_add")
 class AssetAddView(object):

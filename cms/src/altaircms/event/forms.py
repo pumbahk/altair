@@ -9,7 +9,7 @@ from altaircms.helpers.formhelpers import required_field, append_errors
 from .models import Event
 from ..page.models import PageSet
 from ..models import Category
-from altaircms.lib.formhelpers import dynamic_query_select_field_factory
+from altaircms.helpers.formhelpers import dynamic_query_select_field_factory
 
 class EventForm(Form):
     title = fields.TextField(label=u'タイトル', validators=[required_field()])
