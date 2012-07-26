@@ -318,3 +318,61 @@ class Events(BaseView):
         ]
         response = Response(exporter.as_string(), headerlist=headers)
         return response
+
+    @view_config(route_name='events.report.seat_stocks')
+    def download_seat_stocks(self):
+        event_id = int(self.request.matchdict.get('event_id', 0))
+        event = Event.get(event_id)
+        if event is None:
+            return HTTPNotFound('event id %d is not found' % event_id)
+
+        assetresolver = AssetResolver()
+        template_path = assetresolver.resolve(
+            "ticketing:/templates/reports/assign_template.xls").abspath()
+        exporter = xls_export.SeatAssignExporter(template=template_path)
+        # TODO:Event
+        sheet_0 = exporter.workbook.get_sheet(0)
+        exporter.set_event_name(sheet_0, event.title)
+        # TODO:Performance
+
+        # 出力ファイル名
+        filename = "assign_%(code)s_%(datetime)s" % dict(
+            code=event.code,  # イベントコード
+            datetime=strftime('%Y%m%d%H%M%S')
+        )
+
+        headers = [
+            ('Content-Type', 'application/octet-stream'),
+            ('Content-Disposition', 'attachment; filename=%s' % filename)
+        ]
+        response = Response(exporter.as_string(), headerlist=headers)
+        return response
+
+    @view_config(route_name='events.report.seat_returns')
+    def download_seat_returns(self):
+        event_id = int(self.request.matchdict.get('event_id', 0))
+        event = Event.get(event_id)
+        if event is None:
+            return HTTPNotFound('event id %d is not found' % event_id)
+
+        assetresolver = AssetResolver()
+        template_path = assetresolver.resolve(
+            "ticketing:/templates/reports/assign_template.xls").abspath()
+        exporter = xls_export.SeatAssignExporter(template=template_path)
+        # TODO:Event
+        sheet_0 = exporter.workbook.get_sheet(0)
+        exporter.set_event_name(sheet_0, event.title)
+        # TODO:Performance
+
+        # 出力ファイル名
+        filename = "assign_%(code)s_%(datetime)s" % dict(
+            code=event.code,  # イベントコード
+            datetime=strftime('%Y%m%d%H%M%S')
+        )
+
+        headers = [
+            ('Content-Type', 'application/octet-stream'),
+            ('Content-Disposition', 'attachment; filename=%s' % filename)
+        ]
+        response = Response(exporter.as_string(), headerlist=headers)
+        return response
