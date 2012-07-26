@@ -7,7 +7,7 @@ config  = None
 def setUpModule():
     global config
     from altaircms import testing as mytesting
-    mytesting.create_db(force=False)
+    mytesting.setup_db(["altaircms.page.models", "altaircms.tag.models", "altaircms.event.models", "altaircms.asset.models"])
     config = mytesting.config()
 
 def tearDownModule():

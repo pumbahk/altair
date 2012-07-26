@@ -1,5 +1,11 @@
 from pyramid import testing
+from sqlalchemy import create_engine
+import transaction
+
+import sqlahelper
 from webob.multidict import MultiDict 
+from pyramid.path import DottedNameResolver
+from altaircms.models import Base
 
 class DummyRequest(testing.DummyRequest):
     def __init__(self, *args, **kwargs):
@@ -28,45 +34,25 @@ def dummy_form_factory(name="DummyForm", validate=False, errors=None):
 
 
 def setup_db(models=[]):
-    from pyramid.path import DottedNameResolver
     resolver = DottedNameResolver(package='altaircms')
     for m in models:
         resolver.maybe_resolve(m)
 
-    import sqlahelper
-    from sqlalchemy import create_engine
     engine = create_engine("sqlite:///")
     sqlahelper.get_session().remove()
     sqlahelper.add_engine(engine)
     sqlahelper.get_base().metadata.create_all()
-    from ..models import Base
     assert Base == sqlahelper.get_base()
 
 def teardown_db():
-    import transaction
     transaction.abort()
-    import sqlahelper
     sqlahelper.get_base().metadata.drop_all()
 
-import sys
-import unittest
+
 # from .dbinspect import listing_all
 """
 todo: output meessage via logger
 """
-from sqlalchemy import create_engine
-from altaircms.models import DBSession
-from altaircms.models import Base
-from pyramid import testing
-import transaction
-
-def db_initialize_for_unittest(echo=False):
-    import sqlalchemy as sa
-    engine = sa.create_engine("sqlite://", echo=echo)
-    Base.metadata.bind = engine
-    DBSession.configure(bind=engine)
-    Base.metadata.create_all()
-    unittest.main()
 
 def config():
     return testing.setUp(
@@ -85,13 +71,10 @@ def config():
         )
 
 def functionalTestSetUp(extra=None):
-    DBSession.remove()
-    import sqlahelper
-
-    engine = create_engine("sqlite:///")
-    engine.echo = False
-    sqlahelper.get_session().remove()
-    sqlahelper.add_engine(engine)
+    setup_db(["altaircms.page.models", 
+              "altaircms.tag.models", 
+              "altaircms.event.models", 
+              "altaircms.asset.models"])
 
     from altaircms import main
     defaults = {"sqlalchemy.url": "sqlite://", 
@@ -112,65 +95,8 @@ def functionalTestSetUp(extra=None):
     if extra:
         config.update(extra)
     app = main({}, **config)
-
-    sqlahelper.get_base().metadata.drop_all()
-    sqlahelper.get_base().metadata.create_all()
     return app
 
 def functionalTestTearDown():
-    dropall_db(message="test view drop")
-    create_db(force=True)
-    transaction.abort()
-    testing.tearDown()
+    teardown_db()
 
-def _initTestingDB():
-    DBSession.remove()
-    from altaircms.models import initialize_sql
-    engine = create_engine('sqlite:///:memory:')
-    # engine.echo = True
-    import sqlahelper
-
-    sqlahelper.add_engine(engine)
-    session = initialize_sql(engine, dropall=True)
-    return session
-
-class BaseTest(unittest.TestCase):
-    def setUp(self):
-        self.config = testing.setUp()
-        self.session = _initTestingDB()
-
-def _create_db(Base, DBSession, engine, force=False):
-    if force or any([x.bind is None for x in [Base.metadata, DBSession]]):
-        if not Base.metadata.is_bound():
-            Base.metadata.bind = engine
-        if not DBSession.bind and not DBSession.registry.has():
-            DBSession.configure(bind=engine)
-        Base.metadata.create_all()
-    return DBSession
-
-def _message(message):
-    if message:
-        sys.stderr.write("----------------\n")
-        sys.stderr.write(message)
-        sys.stderr.write("\n----------------\n")
-
-def create_db(echo=False, base=None, session=None, message=None, force=False):
-    # _message(message)
-    if base is None or session is None:
-        engine = create_engine('sqlite:///')
-        engine.echo = echo
-        import altaircms.models as m
-        return _create_db(m.Base, m.DBSession, engine, force)
-    else:
-        engine = create_engine('sqlite:///')
-        engine.echo = echo
-        return _create_db(base, session, engine, force)
-
-def dropall_db(base=None, session=None, message=None):
-    if base is None or session is None:
-        import altaircms.models as m
-        # listing_all(m.Base.metadata)
-        m.Base.metadata.drop_all(bind=m.DBSession.bind)
-    else:
-        # listing_all(base.metadata)
-        base.metadata.drop_all(bind=session.bind)

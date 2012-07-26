@@ -68,11 +68,13 @@ class PageQueryParserSearchTests(unittest.TestCase):
         self.assertEquals(len(self._callFUT(manager, u"abc xyz").all()), 1)
         self.assertEquals(len(self._callFUT(manager, u"abc def").all()), 1)
 
-if __name__ == "__main__":
-    import altaircms.page.models
-    import altaircms.tag.models
-    import altaircms.event.models
-    import altaircms.asset.models
-    from altaircms.testing import db_initialize_for_unittest
-    db_initialize_for_unittest()
-    unittest.main()
+def setUpModule():
+    from altaircms.testing import setup_db
+    setup_db(["altaircms.page.models", 
+              "altaircms.tag.models", 
+              "altaircms.event.models", 
+              "altaircms.asset.models"])
+
+def tearDown():
+    from altaircms.testing import teardown_db
+    teardown_db()
