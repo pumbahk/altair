@@ -309,6 +309,8 @@ function buildStockHolderTypeTables(venue) {
 }
 
 function saveStocks() {
+  var modal = $('#modal-result');
+  modal.find('.modal-body .alert').remove();
   var venue = venueEditorRoot.venueeditor('model');
   $.ajax({
     type: 'post',
@@ -317,17 +319,20 @@ function saveStocks() {
     dataType: 'json',
     data: JSON.stringify(venue.toJSON()),
     success: function(result) {
-      var modal = $('#modal-result');
-      if (result['result'] == 'success') {
-        modal.find('#message').text(result['message']);
-      } else {
-        modal.find('#message').text("保存できませんでした (" + result['message'] + ")");
-      }
+      modal.find('#message').text(result['message']);
       modal.modal('toggle');
     },
     error: function(xhr, text) {
-      var modal = $('#modal-result');
-      modal.find('#message').text("保存できませんでした (" + text + ")");
+      var responseText = JSON.parse(xhr.responseText);
+      var messages = responseText['message'] || xhr.statusText
+      var errors = '';
+      if (typeof messages == 'string') {
+        errors += '<li>' + messages + '</li>';
+      } else {
+        for (i in messages)
+          errors += '<li>' + messages[i] + '</li>';
+      }
+      modal.find('#message').text("保存できませんでした").after('<div class="alert alert-error"><ul>' + errors + '</ul></div>');
       modal.modal('toggle');
     }
   });
