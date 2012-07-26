@@ -17,6 +17,9 @@ body {
     ## Javascript
     <%block name="javascript"/>
     <script type="text/javascript" src="/static/js/ticketing.common.js"></script>
+    <script type="text/javascript">
+typeof I18n == 'object' && (I18n.defaultLocale = 'ja');
+</script>
   </head>
   <body>
     <%block name="header"><%include file="parts/header.html"/></%block>

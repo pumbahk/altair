@@ -19,4 +19,6 @@ def upgrade():
     op.drop_column('sale', 'performance_id')
 
 def downgrade():
-    op.add_column('sale', sa.Column(sa.Integer, sa.ForeignKey('performance.id', ondelete='CASCADE')))
+    op.add_column('sale', sa.Column(sa.Integer, sa.ForeignKey('performance.id', ondelete='CASCADE', 
+                                                              name="fk_sale_performance_id_to_performance_id")))
+    op.execute("alter table sale drop foreign key fk_sale_performance_id_to_performance_id;")

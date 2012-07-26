@@ -71,8 +71,14 @@ class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             VenueArea.create_from_template(template=template_area, venue_id=venue.id)
 
         # create Seat
+        default_stock = Stock.get_default(performance_id=performance_id)
         for template_seat in template.seats:
-            Seat.create_from_template(template=template_seat, venue_id=venue.id)
+            Seat.create_from_template(template=template_seat, venue_id=venue.id, stock_id=default_stock.id)
+
+        # defaultのStockに席数をセット
+        stock = Stock.get_default(performance_id=performance_id)
+        stock.quantity = len(template.seats)
+        stock.save()
 
     def delete_cascade(self):
         # delete Seat
@@ -170,13 +176,12 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return session.query(SeatIndex).filter_by(seat=self, index_type_id=index_type_id)
 
     @staticmethod
-    def create_from_template(template, venue_id):
+    def create_from_template(template, venue_id, stock_id):
         # create Seat
         seat = Seat.clone(template)
         seat.venue_id = venue_id
-        seat.stock_id = None
-        if not seat.stock_type_id:
-            seat.stock_type_id = None
+        seat.stock_id = stock_id
+        seat.stock_type_id = None
         seat.save()
 
         # create SeatAttribute
@@ -307,7 +312,6 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             Performanceのコピー時は以下のモデルをcloneする
               - Stock
                 - ProductItem
-              - StockAllocation
             """
             template_performance = Performance.get(self.original_id)
 
@@ -315,16 +319,20 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             for template_stock in template_performance.stocks:
                 Stock.create_from_template(template=template_stock, performance_id=self.id)
 
-            # create StockAllocation
-            for template_stock_allocation in template_performance.stock_allocations:
-                StockAllocation.create_from_template(template=template_stock_allocation, performance_id=self.id)
+        else:
+            """
+            Performanceの作成時は以下のモデルを自動生成する
+              - Stock
+            """
+            # create default Stock
+            Stock.create_default(performance_id=self.id)
 
     def save(self):
         BaseModel.save(self)
 
         """
-        Performanceの作成時は以下のモデルを自動生成する
-        また更新時にVenueの変更があったら以下のモデルをdeleteする
+        Performanceの作成/更新時は以下のモデルを自動生成する
+        またVenueの変更があったら関連モデルを削除する
           - Venue
             - VenueArea
               - VenueArea_group_l0_id
@@ -719,10 +727,10 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return self.type == StockTypeEnum.Seat.v
 
     def num_seats(self, performance_id=None):
-        query = StockType.filter_by(id=self.id).join(StockType.stock_allocations)\
-                         .with_entities(func.sum(StockAllocation.quantity))
+        # 同一Performanceの同一StockTypeにおけるStock.quantityの合計
+        query = Stock.filter_by(stock_type_id=self.id).with_entities(func.sum(Stock.quantity))
         if performance_id:
-            query = query.filter(StockAllocation.performance_id==performance_id)
+            query = query.filter_by(performance_id==performance_id)
         return query.scalar()
 
     def set_style(self, data):
@@ -739,35 +747,6 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             }
         else:
             self.style = {}
-
-class StockAllocation(Base, BaseModel):
-    __tablename__ = "StockAllocation"
-    stock_type_id = Column(Identifier, ForeignKey('StockType.id'), primary_key=True)
-    performance_id = Column(Identifier, ForeignKey('Performance.id'), primary_key=True)
-    stock_type = relationship('StockType', uselist=False, backref='stock_allocations')
-    performance = relationship('Performance', uselist=False, backref='stock_allocations')
-    quantity = Column(Integer, nullable=False)
-
-    def save(self):
-        stock_allocation = DBSession.query(StockAllocation)\
-            .filter_by(performance_id=self.performance_id)\
-            .filter_by(stock_type_id=self.stock_type_id)\
-            .first()
-
-        if stock_allocation:
-            DBSession.merge(self)
-        else:
-            DBSession.add(self)
-        DBSession.flush()
-
-    @staticmethod
-    def create_from_template(template, performance_id):
-        stock_allocation = StockAllocation(
-            performance_id=performance_id,
-            stock_type_id=template.stock_type_id,
-            quantity = template.quantity
-        )
-        stock_allocation.save()
 
 class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "StockHolder"
@@ -791,9 +770,9 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "Stock"
     id = Column(Identifier, primary_key=True)
     quantity = Column(Integer)
-    performance_id = Column(Identifier, ForeignKey('Performance.id'))
-    stock_holder_id = Column(Identifier, ForeignKey('StockHolder.id'))
-    stock_type_id = Column(Identifier, ForeignKey('StockType.id'))
+    performance_id = Column(Identifier, ForeignKey('Performance.id'), nullable=False)
+    stock_holder_id = Column(Identifier, ForeignKey('StockHolder.id'), nullable=True)
+    stock_type_id = Column(Identifier, ForeignKey('StockType.id'), nullable=True)
 
     stock_status = relationship("StockStatus", uselist=False, backref='stock')
 
@@ -805,6 +784,43 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if case_add:
             stock_status = StockStatus(stock_id=self.id, quantity=self.quantity)
             stock_status.save()
+
+    @staticmethod
+    def get_default(performance_id):
+        return Stock.filter_by(performance_id=performance_id).filter_by(stock_type_id=None).first()
+
+    @staticmethod
+    def create_default(performance_id=None, stock_type_id=None, stock_holder_id=None):
+        '''
+        初期状態のStockを生成する
+          - デフォルト値となる"未選択"のStock
+          - StockHolder × StockType分のStock
+        既に該当のStockが存在する場合は、足りないStockのみ生成する
+        '''
+        if performance_id:
+            performance = Performance.get(performance_id)
+
+            # デフォルト値となる"未選択"のStock
+            stock = Stock(
+                performance_id=performance_id,
+                quantity=0
+            )
+            stock.save()
+
+            # StockHolder × StockType分のStock
+            stocks = performance.stocks
+            for stock_type in performance.event.stock_types:
+                for stock_holder in performance.event.stock_holders:
+                    def stock_filter(stock):
+                        return (stock.stock_type_id == stock_type.id and stock.stock_holder_id == stock_holder.id)
+                    if not filter(stock_filter, stocks):
+                        stock = Stock(
+                            performance_id=performance.id,
+                            stock_type_id=stock_type.id,
+                            stock_holder_id=stock_holder.id,
+                            quantity=0
+                        )
+                        stock.save()
 
     @staticmethod
     def create_from_template(template, performance_id):

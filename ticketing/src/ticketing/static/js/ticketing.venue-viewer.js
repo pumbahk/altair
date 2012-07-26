@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['AVO0FJ0_C9IDO61G'] = (function (exports) { (function () { 
+__LIBS__['T_ANEZ3YMWCL6J07'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -89,96 +89,8 @@ AsyncDataWaiter.prototype.charge = function AsyncDataWaiter_charge(id, data) {
   // fire!! if all data has come.
   this.after.call(window, this.store);
 };
- })(); return exports; })({});__LIBS__['REVBX181GQ0A_GE8'] = (function (exports) { (function () { 
-
-/************** util.js **************/
-exports.eventKey = function Util_eventKey(e) {
-  var shift, ctrl;
-  // Mozilla
-  if (e != null) {
-    keycode = e.which;
-    ctrl    = typeof e.modifiers == 'undefined' ? e.ctrlKey : e.modifiers & Event.CONTROL_MASK;
-    shift   = typeof e.modifiers == 'undefined' ? e.shiftKey : e.modifiers & Event.SHIFT_MASK;
-
-  }
-  // ie
-  else {
-    keycode = event.keyCode;
-    ctrl    = event.ctrlKey;
-    shift   = event.shiftKey;
-
-  }
-
-  keychar = String.fromCharCode(keycode).toUpperCase();
-
-  return {
-    ctrl:    (!!ctrl) || keycode === 17,
-    shift:   (!!shift) || keycode === 16,
-    keycode: keycode,
-    keychar: keychar
-  };
-};
-
-exports.convertToFashionStyle = function Util_convertToFashionStyle(style, gradient) {
-  var filler = function(color) {
-    if (gradient) return new Fashion.LinearGradientFill([[0, new Fashion.Color("#fff")], [1, new Fashion.Color(color || "#fff")]], .125);
-    return new Fashion.FloodFill(new Fashion.Color(color || "#000"));
-  };
-
-  return {
-    "fill": style.fill ? filler(style.fill.color): null,
-    "stroke": style.stroke ? new Fashion.Stroke((style.stroke.color || "#000") + " " + (style.stroke.width ? style.stroke.width: 1) + " " + (style.stroke.pattern || "")) : null
-  };
-};
-
-exports.allAttributes = function Util_allAttributes(el) {
-  var rt = {}, attrs=el.attributes, attr;
-  for (var i=0, l=attrs.length; i<l; i++) {
-    attr = attrs[i];
-    rt[attr.nodeName] = attr.nodeValue;
-  }
-  return rt;
-};  
-
-exports.makeHitTester = function Util_makeHitTester(a) {
-  var pa = a.position(),
-  sa = a.size(),
-  ax0 = pa.x,
-  ax1 = pa.x + sa.x,
-  ay0 = pa.y,
-  ay1 = pa.y + sa.y;
-
-  return function(b) {
-    var pb = b.position(),
-    sb = b.size(),
-    bx0 = pb.x,
-    bx1 = pb.x + sb.x,
-    by0 = pb.y,
-    by1 = pb.y + sb.y;
-
-    return ((((ax0 < bx0) && (bx0 < ax1)) || (( ax0 < bx1) && (bx1 < ax1)) || ((bx0 < ax0) && (ax1 < bx1))) && // x
-            (((ay0 < by0) && (by0 < ay1)) || (( ay0 < by1) && (by1 < ay1)) || ((by0 < ay0) && (ay1 < by1))));  // y
-  }
-};
-
-var AsyncDataWaiter = exports.AsyncDataWaiter = function AsyncDataWaiter(options) {
-  this.store = {};
-  for (var i = 0; i < options.identifiers.length; i++) {
-    this.store[options.identifiers[i]] = void(0);
-  }
-  this.after = options.after;
-};
-
-AsyncDataWaiter.prototype.charge = function AsyncDataWaiter_charge(id, data) {
-  this.store[id] = data;
-  for (var i in this.store) {
-    if (this.store[i] === void(0))
-      return;
-  }
-  // fire!! if all data has come.
-  this.after.call(window, this.store);
-};
- })(); return exports; })({});__LIBS__['uD3YZG5NVZPKMB6Y'] = (function (exports) { (function () { 
+ })(); return exports; })({});
+__LIBS__['QK_DH1ZBUE3H_9KM'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -226,59 +138,12 @@ exports.DEFAULT = {
     }
   }
 };
- })(); return exports; })({});__LIBS__['dOOYANEQSMUE3NH5'] = (function (exports) { (function () { 
-
-/************** CONF.js **************/
-exports.DEFAULT = {
-  ZOOM_RATIO: 0.8,
-  SHAPE_STYLE: {
-    fill: new Fashion.FloodFill(new Fashion.Color('#fff')),
-    stroke: new Fashion.Stroke(new Fashion.Color("#000"), 1)
-  },
-
-  TEXT_STYLE: {
-    fill: new Fashion.FloodFill(new Fashion.Color('#000')),
-    stroke: null
-  },
-
-  VENUE_STYLE: {
-    fill: new Fashion.FloodFill(new Fashion.Color('#FFCB3F')),
-    stroke: new Fashion.Stroke(new Fashion.Color('#5ABECD'), 1)
-  },
-
-  MASK_STYLE: {
-    fill:   new Fashion.FloodFill(new Fashion.Color("#0064ff80")),
-    stroke: new Fashion.Stroke(new Fashion.Color("#0080FF"), 2)
-  },
-
-  SEAT_STYLE: {
-    text_color: "#000",
-    fill:   { color: "#fff" },
-    stroke: { color: "#000", width: 1 }
-  },
-
-  AUGMENTED_STYLE: {
-    selected: {
-      text_color: "#FFF",
-      fill:   { color: "#009BE1" },
-      stroke: { color: "#FFF", width: 3 }
-    },
-    highlighted: {
-      fill: null,
-      stroke: { color: "#F63", width: 3, pattern: 'solid' }
-    },
-    unselectable: {
-      text_color: "#888",
-      fill:   { color: "#eee" },
-      stroke: { color: "#ccc", width: 1 }
-    }
-  }
-};
- })(); return exports; })({});__LIBS__['dJAVQPMYPNPHGG75'] = (function (exports) { (function () { 
+ })(); return exports; })({});
+__LIBS__['aRVJNRLDMJ2KSJ4C'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['AVO0FJ0_C9IDO61G'];
-var CONF = __LIBS__['uD3YZG5NVZPKMB6Y'];
+var util = __LIBS__['T_ANEZ3YMWCL6J07'];
+var CONF = __LIBS__['QK_DH1ZBUE3H_9KM'];
 
 function clone(obj) {
   return $.extend({}, obj); 
@@ -364,7 +229,7 @@ Seat.prototype.stylize = function Seat_stylize() {
         new Fashion.Text({
           position: {
             x: p.x,
-            y: p.y + (s.y * 0.75),
+            y: p.y + (s.y * 0.75)
           },
           fontSize: (s.y * 0.75),
           text: style.text,
@@ -482,11 +347,12 @@ console.log(ad2);
  */
  })(); return exports; })({});
 
+
 /************** venue-viewer.js **************/
 (function ($) {
-  var CONF = __LIBS__['dOOYANEQSMUE3NH5'];
-  var seat = __LIBS__['dJAVQPMYPNPHGG75'];
-  var util = __LIBS__['REVBX181GQ0A_GE8'];
+  var CONF = __LIBS__['QK_DH1ZBUE3H_9KM'];
+  var seat = __LIBS__['aRVJNRLDMJ2KSJ4C'];
+  var util = __LIBS__['T_ANEZ3YMWCL6J07'];
 
   var VenueViewer = function VenueViewer(canvas, options) {
     this.canvas = canvas;
@@ -496,7 +362,7 @@ console.log(ad2);
       load: options.callbacks && options.callbacks.load || null,
       click: options.callbacks && options.callbacks.click || null,
       selectable: options.callbacks && options.callbacks.selectable || null,
-      click: options.callbacks && options.callbacks.click || null
+      select: options.callbacks && options.callbacks.select || null
     };
     this.zoomRatio = options.zoomRatio || CONF.DEFAULT.ZOOM_RATIO;
     this.dragging = false;
@@ -601,9 +467,9 @@ console.log(ad2);
                 x: parseFloat(attrs.x),
                 y: parseFloat(attrs.y)
               },
-              fontSize: parseFloat(n.style.fontSize),
+              fontSize: 10,
               text: n.firstChild.nodeValue,
-              zIndex: 99,
+              zIndex: 99
             }));
           shape.style(CONF.DEFAULT.TEXT_STYLE);
           break;
@@ -639,7 +505,7 @@ console.log(ad2);
       y: (cs.y - vs.y) / 2
     };
 
-    this.drawable.transform(Fashion.Util.Matrix.scale(this.zoomRatio));
+    this.drawable.transform(Fashion.Matrix.scale(this.zoomRatio));
     this.changeUIMode(this.uiMode);
   };
 
@@ -686,7 +552,7 @@ console.log(ad2);
             highlighted[i].removeStyleType('highlighted');
         },
         mousedown: function(evt) {
-          self.callbacks.click && self.callbacks.click(self, this);
+          self.callbacks.click && self.callbacks.click(self, self, self.highlighted);
         }
       });
     }
@@ -702,16 +568,16 @@ console.log(ad2);
       up:   function(e) { if (util.eventKey(e).shift) self.shift = false; return true; }
     };
 
-    document.addEventListener('keydown', this.keyEvents.down, false);
-    document.addEventListener('keyup',   this.keyEvents.up,   false);
+    $(document).bind('keydown', this.keyEvents.down);
+    $(document).bind('keyup',   this.keyEvents.up);
 
   };
 
   VenueViewer.prototype.removeKeyEvent = function VenueViewer_removeKeyEvent() {
     if (!this.keyEvents) return;
 
-    document.removeEventListener('keydown', this.keyEvents.down, false);
-    document.removeEventListener('keyup',   this.keyEvents.up,   false);
+    $(document).unbind('keydown', this.keyEvents.down);
+    $(document).unbind('keyup',   this.keyEvents.up);
   };
 
   VenueViewer.prototype.changeUIMode = function VenueViewer_changeUIMode(type) {
@@ -749,6 +615,7 @@ console.log(ad2);
             self.drawable.erase(self.rubberBand);
             for (var i = 0; i < selection.length; i++)
               selection[i].selected(true);
+            self.callbacks.select && self.callbacks.select(self, selection);
           },
 
           mousemove: function(evt) {
@@ -775,7 +642,7 @@ console.log(ad2);
         this.drawable.addEvent({
           mouseup: function(evt) {
             self.zoomRatio*=1.2;
-            this.transform(Fashion.Util.Matrix.scale(self.zoomRatio));
+            this.transform(Fashion.Matrix.scale(self.zoomRatio));
           }
         });
         break;
@@ -784,7 +651,7 @@ console.log(ad2);
         this.drawable.addEvent({
           mouseup: function(evt) {
             self.zoomRatio/=1.2;
-            this.transform(Fashion.Util.Matrix.scale(self.zoomRatio));
+            this.transform(Fashion.Matrix.scale(self.zoomRatio));
           }
         });
         break;
@@ -855,7 +722,6 @@ console.log(ad2);
               aux.manager.load(data);
             }
           });
-
           // Load drawing
           $.ajax({
             type: 'get',

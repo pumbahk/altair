@@ -14,3 +14,5 @@ def setup(env):
     from altaircms.tag.models import PageTag, PageTag2Page
     env["PageTag"] = PageTag
     env["PageTag2Page"] = PageTag2Page
+    from altaircms.topic.models import Promotion
+    env["Promotion"] = Promotion

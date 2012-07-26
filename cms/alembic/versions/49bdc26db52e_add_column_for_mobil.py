@@ -18,13 +18,13 @@ def upgrade():
 
     op.add_column('topcontent', sa.Column('mobile_link', sa.Unicode(length=255), nullable=True))
     op.add_column('topcontent', sa.Column('mobile_image_asset_id', sa.Integer(), sa.ForeignKey("image_asset.id", use_alter=True, name="topcontent_mobile_image_asset_id_to_image_asset_id_fk"), nullable=True))
-    op.execute("alter table topcontent add constraint topcontent_image_asset_id_fk foreign key (mobile_image_asset_id) references image_asset(id);")
+    op.execute("alter table topcontent add constraint topcontent_mobile_image_asset_id_to_image_asset_id_fk foreign key (mobile_image_asset_id) references image_asset(id);")
     op.add_column('topic', sa.Column('mobile_link', sa.Unicode(length=255), nullable=True))
 
 def downgrade():
     op.drop_column('performance', 'mobile_purchase_link')
 
-    op.execute("alter table topcontent_mobile_image_asset_id_to_image_asset_id_fk;")
+    op.execute("alter table topcontent drop foreign key topcontent_mobile_image_asset_id_to_image_asset_id_fk;")
     op.drop_column('topcontent', 'mobile_image_asset_id')
     op.drop_column('topcontent', 'mobile_link')
 
