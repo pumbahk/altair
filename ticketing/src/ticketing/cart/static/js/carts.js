@@ -119,6 +119,7 @@ carts.AppView = function() {
     this.dateSelector = null;
     this.venueSelector = null;
     this.orderButton = null;
+    this.selectedOrderButton = null;
     this.orderForm = null;
     this.hallName = null;
     this.inCartProductList = null;
@@ -332,6 +333,29 @@ carts.AppView.prototype.init = function(presenter) {
             });
             event.stopPropagation(); /* XXX: is this really necessary? */
             return false;
+        });
+
+        self.selectedOrderButton.click(function (event) {
+            var currentViewer = $('#selectSeat .venueViewer');
+            var selection = currentViewer.venueviewer('selection');
+            var seat_ids = [];
+            for (var l0_id in selection) {
+              seat_ids.push(l0_id);
+            }
+            if (seat_ids.length < get_current_quantity()) {
+                alert('席をあと' + (get_current_quantity()-seat_ids.length) + '選択してください');
+            } else if (seat_ids.length > get_current_quantity()) {
+                currentViewer.venueviewer('refresh')
+                alert('購入枚数と選択した席の数が一致していません。');
+            } else {
+                $('#selected-seats').empty();
+                for (var i = 0; i < seat_ids.length; i++) {
+                    var seat = $('<input type="hidden" name="selected_seat" value="' + seat_ids[i] + '" />');
+                    $('#selected-seats').append(seat);
+                    
+                }
+                self.orderButton.click();
+            }
         });
     })();
     this.presenter = presenter;
