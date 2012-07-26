@@ -9,6 +9,7 @@ def includeme(config):
     config.add_route('events.send', '/send/{event_id}')
     config.add_route('events.report', '/report/{event_id}')
     config.add_route('events.report.sales', '/report/{event_id}/sales')
+    config.add_route('events.report.seat_all', '/report/{event_id}/seat_all')
 
     config.include('ticketing.events.performances', route_prefix='performances')
     config.include('ticketing.events.sales_segments', route_prefix='sales_segments')

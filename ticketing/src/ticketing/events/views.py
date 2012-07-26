@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import os
 import isodate
 import json
 import logging
@@ -17,6 +17,8 @@ from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPCreated
 from pyramid.threadlocal import get_current_registry
 from pyramid.url import route_path
+from pyramid.response import Response
+from pyramid.path import AssetResolver
 
 from ticketing.models import merge_session_with_post, record_to_multidict, DBSession
 from ticketing.views import BaseView
@@ -28,6 +30,7 @@ from ticketing.events.sales_segments.forms import SalesSegmentForm
 from ticketing.events.stock_types.forms import StockTypeForm
 from ticketing.events.stock_holders.forms import StockHolderForm
 from ticketing.products.forms import ProductForm
+from ticketing.events.reports import xls_export
 
 from ..api.impl import get_communication_api
 from ..api.impl import CMSCommunicationApi
@@ -286,3 +289,32 @@ class Events(BaseView):
         #f.close()
 
         #return response
+
+    @view_config(route_name='events.report.seat_all')
+    def download_seat_all(self):
+        event_id = int(self.request.matchdict.get('event_id', 0))
+        event = Event.get(event_id)
+        if event is None:
+            return HTTPNotFound('event id %d is not found' % event_id)
+
+        assetresolver = AssetResolver()
+        template_path = assetresolver.resolve(
+            "ticketing:/templates/reports/assign_template.xls").abspath()
+        exporter = xls_export.SeatAssignExporter(template=template_path)
+        # TODO:Event
+        sheet_0 = exporter.workbook.get_sheet(0)
+        exporter.set_event_name(sheet_0, event.title)
+        # TODO:Performance
+
+        # 出力ファイル名
+        filename = "assign_%(code)s_%(datetime)s" % dict(
+            code=event.code,  # イベントコード
+            datetime=strftime('%Y%m%d%H%M%S')
+        )
+
+        headers = [
+            ('Content-Type', 'application/octet-stream'),
+            ('Content-Disposition', 'attachment; filename=%s' % filename)
+        ]
+        response = Response(exporter.as_string(), headerlist=headers)
+        return response

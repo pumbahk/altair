@@ -2,9 +2,24 @@
 <%namespace file="/common/helpers.html" name="h" />
 
 <script type="text/javascript">
-  function report_event(id) {
+  function report_event_sales(id) {
     modal = $('#modal-report');
     modal.find('#report').attr('href', '/events/report/' + id + '/sales');
+    modal.modal('toggle');
+  }
+  function report_event_seat_all(id) {
+    modal = $('#modal-report');
+    modal.find('#report').attr('href', '/events/report/' + id + '/seat_all');
+    modal.modal('toggle');
+  }
+  function report_event_seat_stocks(id) {
+    modal = $('#modal-report');
+    modal.find('#report').attr('href', '/events/report/' + id + '/seat_stocks');
+    modal.modal('toggle');
+  }
+  function report_event_seat_returns(id) {
+    modal = $('#modal-report');
+    modal.find('#report').attr('href', '/events/report/' + id + '/seat_returns');
     modal.modal('toggle');
   }
 </script>
@@ -27,8 +42,23 @@
 
 <div class="well">
   <div class="btn-group" style="float: left;">
-    <a class="btn btn-success" href="javascript:report_event(${event.id});" style="margin-left: 10px;">
+    <a class="btn btn-success" href="javascript:report_event_sales(${event.id});" style="margin-left: 10px;">
       <i class="icon-file icon-white"></i> 販売日程管理表
+    </a>
+  </div>
+  <div class="btn-group" style="float: left;">
+    <a class="btn btn-success" href="javascript:report_event_seat_all(${event.id});" style="margin-left: 10px;">
+      <i class="icon-file icon-white"></i> 座席明細書(すべて)
+    </a>
+  </div>
+  <div class="btn-group" style="float: left;">
+    <a class="btn btn-success" href="javascript:report_event_seat_stocks(${event.id});" style="margin-left: 10px;">
+      <i class="icon-file icon-white"></i> 座席明細書(追券)
+    </a>
+  </div>
+  <div class="btn-group" style="float: left;">
+    <a class="btn btn-success" href="javascript:report_event_seat_returns(${event.id});" style="margin-left: 10px;">
+      <i class="icon-file icon-white"></i> 座席明細書(返券)
     </a>
   </div>
 </div>

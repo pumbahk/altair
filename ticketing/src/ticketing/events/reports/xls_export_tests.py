@@ -30,6 +30,7 @@ class SeatAssignExporterTestCase(TestCase):
             ],
             'total1': "2",
             'total2': "10",
+            'seattype': u"■Ｓ席",
         })
         
         test_sheet = exporter.add_sheet(u"テスト")

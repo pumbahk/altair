@@ -351,6 +351,12 @@ class SeatAssignExporter(BaseExporter):
         """シートに席種ごとのデータを追加する
         """
         self.write_seat_header(sheet)
+        # 席種
+        seattype = data.get('seattype')
+        if seattype:
+            seattype_rowx = self.current_pos[sheet] - 3
+            self.update_cell_text(sheet, seattype_rowx, 0, seattype)
+        # レコード書き込み
         for record in data.get('records', []):
             self.write_record_row(sheet, record)
         self.write_seat_footer(sheet)
