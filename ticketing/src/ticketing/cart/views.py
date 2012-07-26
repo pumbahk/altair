@@ -224,7 +224,7 @@ class IndexView(object):
             for p in query]
 
         return dict(products=products,
-            seat_type=dict(id=seat_type.id, name=seat_type.name))
+                    seat_type=dict(id=seat_type.id, name=seat_type.name))
 
     @view_config(route_name='cart.seats', renderer="json")
     def get_seats(self):
@@ -389,13 +389,7 @@ class ReleaseCartView(object):
         api.remove_cart(self.request)
 
         return dict()
-        
-class Reserve2View(object):
-    """ 座席選択完了画面(ユーザー選択) """
-    def __init__(self, request):
-        self.request = request
 
-        # TODO: 座席選択コンポーネントへの入力を作る
 
 class PaymentView(object):
     """ 支払い方法、引き取り方法選択 """
