@@ -183,22 +183,24 @@ class WithOffset(object):
             self.offset_table[schema] = self._get_offset_value(schema, data)
         return self.offset_table[schema]
         
-    def setvalue(self, dataset, data):
-        schema = data._tableau_table.name
-        offset = self.get_offset_value(schema, data)
+    def setvalue(self, dataset, datum):
+        schema = datum._tableau_table.name
+        offset = self.get_offset_value(schema, datum)
         pk = dataset.seq + offset
         setattr(datum, datum._tableau_id_fields[0], pk)
         assert getattr(datum, datum._tableau_id_fields[0], pk)
 
+def main(args):
+    sqlahelper.add_engine(sa.create_engine(args[1]))
 
-Base = sqlahelper.get_base()
-Session = sqlahelper.get_session()
-Datum = newSADatum(Base.metadata, Base)
+    Base = sqlahelper.get_base()
+    Datum = newSADatum(Base.metadata, Base)
 
-builder = BjNHFixtureBuilder(Datum)
-suite = DataSuite(dataset_impl=functools.partial(WithCallbackDataSet, on_autoid=WithOffset()))
-walker = DataWalker(suite)
+    builder = BjNHFixtureBuilder(Datum)
+    suite = DataSuite(dataset_impl=functools.partial(WithCallbackDataSet, on_autoid=WithOffset()))
+    walker = DataWalker(suite)
 
-for datum in builder.build():
-    walker(datum)
-SQLGenerator(sys.stdout, encoding='utf-8')(suite)
+    for datum in builder.build():
+        walker(datum)
+    SQLGenerator(sys.stdout, encoding='utf-8')(suite)
+main(sys.argv)
