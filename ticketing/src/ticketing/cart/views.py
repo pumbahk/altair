@@ -216,7 +216,11 @@ class IndexView(object):
         salessegment = self.context.get_sales_segument()
         query = h.products_filter_by_salessegment(query, salessegment)
 
-        products = [dict(id=p.id, name=p.name, price=h.format_number(p.price, ","), unit_template=h.build_unit_template(p, performance_id))
+        products = [dict(id=p.id, 
+                         name=p.name, 
+                         price=h.format_number(p.price, ","), 
+                         unit_template=h.build_unit_template(p, performance_id),
+                         quantity_power=p.get_quantity_power(seat_type, performance_id))
             for p in query]
 
         return dict(products=products,

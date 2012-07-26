@@ -855,6 +855,11 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     items = relationship('ProductItem', backref='product')
 
+    def get_quantity_power(self, stock_type, performance_id):
+        """ 数量倍率 """
+        perform_items = ProductItem.query.filter(ProductItem.product==self).filter(ProductItem.performance_id==performance_id).all()
+        return sum([pi.quantity for pi in perform_items if pi.stock.stock_type == stock_type])
+
     @staticmethod
     def find(performance_id=None, event_id=None, sales_segment_id=None, include_deleted=False):
         query = Product.query
