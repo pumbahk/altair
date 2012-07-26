@@ -1,6 +1,14 @@
 import unittest
 from pyramid import testing
-from .testing import _setup_db
+from .testing import _setup_db as _setup_db_
+
+def _setup_db(echo=False):
+    return _setup_db_(
+        modules=[
+            'ticketing.core.models',
+            ],
+        echo=echo
+        )
 
 def _setup_it(config):
     from pyramid.interfaces import IRequest

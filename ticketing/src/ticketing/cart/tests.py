@@ -3,27 +3,20 @@
 import unittest
 from pyramid import testing
 from .testing import DummyRequest, DummySecure3D
+from ..testing import _setup_db as _setup_db_, _teardown_db
 import mock
 
-def _setup_db():
-    import sqlahelper
-    from sqlalchemy import create_engine
-    from . import models
-    import ticketing.models
-    import ticketing.orders.models
-    import ticketing.users.models
-    import ticketing.multicheckout.models
-
-    engine = create_engine("sqlite:///")
-    sqlahelper.get_session().remove()
-    sqlahelper.add_engine(engine)
-    sqlahelper.get_base().metadata.drop_all()
-    sqlahelper.get_base().metadata.create_all()
-    return sqlahelper.get_session()
-
-def _teardown_db():
-    import transaction
-    transaction.abort()
+def _setup_db(echo=False):
+    return _setup_db_(
+        modules=[
+            'ticketing.models',
+            'ticketing.cart.models',
+            'ticketing.orders.models', 
+            'ticketing.users.models',
+            'ticketing.multicheckout.models',
+            ],
+        echo=echo
+        )
 
 class TestIt(unittest.TestCase):
     def setUp(self):
