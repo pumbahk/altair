@@ -78,7 +78,6 @@ def get_seats(request):
             name=stock_type.name,
             is_seat=stock_type.is_seat,
             quantity_only=stock_type.quantity_only,
-            quantity=0,
             style=stock_type.style) \
         for stock_type in DBSession.query(StockType).filter_by(event=venue.performance.event)
         ]
