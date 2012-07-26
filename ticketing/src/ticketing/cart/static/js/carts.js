@@ -215,6 +215,7 @@ carts.AppView.prototype.init = function(presenter) {
     this.dateSelector = $('#date-select');
     this.venueSelector = $("#venue-select");
     this.orderButton = $('#btn-order');
+    this.selectedOrderButton = $('#btn-selected-order');
     this.orderForm = $("#order-form");
     this.hallName = $("#hallName");
     this.inCartProductList = $('#contentsOfShopping');
