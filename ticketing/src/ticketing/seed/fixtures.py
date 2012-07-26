@@ -4,6 +4,7 @@ from random import randint, choice, sample, shuffle
 from datetime import datetime, date, time
 from dateutil.relativedelta import relativedelta
 from itertools import chain
+from ticketing.core.models import SeatStatusEnum
 from tableau import many_to_many, one_to_many, many_to_one, auto, Datum
 from collections import OrderedDict
 import logging
@@ -256,7 +257,7 @@ class FixtureBuilder(object):
                 [self._Datum(
                     'SeatStatus',
                     'seat_id',
-                    status=1
+                    status=SeatStatusEnum.Vacant.v
                     )],
                 'seat_id'
                 )
@@ -780,7 +781,7 @@ class FixtureBuilder(object):
                 product_item = ordered_product_item.product_item
                 product_item.stock.stock_status[0].quantity -= product_item.quantity
                 for seat in ordered_product_item.seats:
-                    seat.status_[0].status = 5 # Shipped
+                    seat.status_[0].status = SeatStatusEnum.Shipped.v # Shipped
 
         payment_delivery_method_pair = choice(sales_segment.payment_delivery_method_pairs)
         total_amount = sum(
