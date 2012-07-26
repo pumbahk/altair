@@ -158,3 +158,27 @@ class ReserveViewTests(unittest.TestCase):
         results = target.reserve()
 
         self.assertEqual(results['result'], 'OK')
+
+    def test_it_invalid_reserving_selected(self):
+        from webob.multidict import MultiDict
+        from .reserving import InvalidSeatSelectionException
+        performance, product1, product2, product3, seats = self._add_seats()
+
+        seat1 = seats[0]
+        seat2 = seats[1]
+        seat3 = seats[2]
+        seat4 = seats[3]
+        seat5 = seats[4]
+
+        params = MultiDict([
+            ('performance_id', str(performance.id)),
+            ('product-%d' % product1.id, 2),
+            ('selected_seat', seat2.l0_id),
+            ('selected_seat', seat4.l0_id),
+        ])
+
+        request = testing.DummyRequest(params=params, 
+            context=testing.DummyResource())
+        target = self._makeOne(request)
+
+        self.assertRaises(InvalidSeatSelectionException, target.reserve)
