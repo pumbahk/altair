@@ -10,9 +10,9 @@ import json
 from sqlalchemy import Table, Column, ForeignKey, ForeignKeyConstraint, Index, func
 from sqlalchemy.types import TypeEngine, TypeDecorator, VARCHAR, BigInteger, Integer, String, TIMESTAMP
 from sqlalchemy.orm import column_property, scoped_session, deferred, relationship as _relationship
-from sqlalchemy.orm.attributes import QueryableAttribute
+from sqlalchemy.orm.attributes import manager_of_class
 from sqlalchemy.orm.collections import InstrumentedList
-from sqlalchemy.orm.properties import RelationshipProperty  
+from sqlalchemy.orm.properties import ColumnProperty, RelationshipProperty
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.mutable import Mutable
 from sqlalchemy.ext.declarative import declared_attr
@@ -53,25 +53,16 @@ class Identifier(Integer):
     def _expression_adaptations(self):
         return self.inner._expression_adaptations
 
-def record_to_appstruct(self):
-    if hasattr(self.__class__, '_decl_class_registry'):
-        # declarative
-        keys = []
-        for k in dir(self.__class__):
-            if k.startswith('__'):
-                continue
-            v = getattr(self.__class__, k, None)
-            if isinstance(v, QueryableAttribute):
-                keys.append(k)
-    else:
-        # non-declarative
-        keys = []
-        for k in dir(self.__class__):
-            if k.startswith('__'):
-                continue
-            keys.append(k)
+def record_to_appstruct(obj):
+    manager = manager_of_class(type(obj))
+    if manager is None:
+        raise TypeError("No mapper is defined for %s" % type(obj))
+    keys = []
+    for property in manager.mapper.iterate_properties:
+        if isinstance(property, ColumnProperty):
+            keys.append(property.key)
 
-    return dict((k, getattr(self, k, None)) for k in keys)
+    return dict((k, getattr(obj, k, None)) for k in keys)
 
 def record_to_multidict(self, filters=dict()):
     app_struct = record_to_appstruct(self)
@@ -129,6 +120,8 @@ def merge_and_flush(session):
     DBSession.flush()
 
 class WithTimestamp(object):
+    __clone_excluded__ = ['created_at', 'updated_at']
+
     @declared_attr
     def created_at(self):
         return deferred(Column(TIMESTAMP, nullable=False,
@@ -143,9 +136,69 @@ class WithTimestamp(object):
                                server_onupdate=sqlf.current_timestamp()))
 
 class LogicallyDeleted(object):
+    __clone_excluded__ = ['deleted_at']
+
     @declared_attr
     def deleted_at(self):
         return deferred(Column(TIMESTAMP, nullable=True, index=True))
+
+
+class Cloner(object):
+    def __init__(self, deep):
+        self.deep = deep
+        self.visited = {}
+
+    def __call__(self, cls, origin, excluded=None):
+        if not issubclass(type(origin), cls):
+            raise TypeError("%s is not a subclass of %s" % (type(origin), cls))
+        retval = self.visited.get(origin)
+        if retval is not None:
+            return retval
+
+        excluded_properties = set()
+        for super_cls in cls.__mro__:
+            excluded_ = getattr(super_cls, '__clone_excluded__', None)
+            if excluded_ is not None:
+                excluded_properties.update(excluded_)
+        if excluded is not None:
+            excluded_properties.update(excluded)
+
+        manager = manager_of_class(cls)
+        if manager is None:
+            raise TypeError("No mapper is defined for %s" % type(obj))
+
+        columns = {}
+        relationships = {}
+        for property in manager.mapper.iterate_properties:
+            if isinstance(property, ColumnProperty):
+                columns[property.key] = property
+            if isinstance(property, RelationshipProperty):
+                relationships[property.key] = property
+
+        retval = cls()
+        self.visited[origin] = retval
+
+        for key, property in columns.iteritems():
+            if key in excluded_properties:
+                continue
+            setattr(retval, key, getattr(origin, key)) 
+
+        if self.deep:
+            for key, property in relationships.iteritems():
+                if key in excluded_properties:
+                    continue
+                if property.uselist:
+                    objs = []
+                    for obj in getattr(origin, key):
+                        if not hasattr(obj.__class__, 'clone'):
+                            raise TypeError('%s, contained in property %s is not cloneable' % (obj, key))
+                        objs.append(self(obj.__class__, obj))
+                    setattr(retval, key, objs)
+                else:
+                    obj = getattr(origin, key)
+                    setattr(retval, key, self(obj.__class__, obj))
+
+        return retval
 
 class BaseModel(object):
     query = DBSession.query_property()
@@ -174,12 +227,8 @@ class BaseModel(object):
         return cls.filter().all()
 
     @classmethod
-    def clone(cls, origin):
-        data = record_to_multidict(origin)
-        for column in ['id', 'created_at', 'updated_at', 'deleted_at']:
-            if column in data.keys():
-                data.pop(column)
-        return cls(**data)
+    def clone(cls, origin, deep=False, excluded=None):
+        return Cloner(deep)(cls, origin, excluded)
 
     def save(self):
         if hasattr(self, 'id') and self.id:
