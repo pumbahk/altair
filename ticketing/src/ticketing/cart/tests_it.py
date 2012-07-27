@@ -2,12 +2,14 @@
 
 import unittest
 from pyramid import testing
-from .testing import _setup_db as _setup_db_
+from .testing import _setup_db as _setup_db_, _teardown_db
 
 def _setup_db(echo=False):
     return _setup_db_(
         modules=[
             'ticketing.core.models',
+            'ticketing.orders.models',
+            'ticketing.cart.models',
             ],
         echo=echo
         )

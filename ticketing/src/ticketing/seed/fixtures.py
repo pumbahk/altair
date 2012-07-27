@@ -22,6 +22,9 @@ logger = logging.getLogger('fixtures')
 STOCK_TYPE_TYPE_SEAT = 0
 STOCK_TYPE_TYPE_OTHER = 1
 
+class NotEnoughStockError(Exception):
+    pass
+
 class DigitCodec(object):
     def __init__(self, digits):
         self.digits = digits
@@ -664,8 +667,8 @@ class FixtureBuilder(object):
                             ]
                         )
                     )
-            except:
-                pass
+            except NotEnoughStockError, e:
+                logger.info(e)
 
         retval.orders = one_to_many(
             order_data,
@@ -767,19 +770,25 @@ class FixtureBuilder(object):
             ]
 
         # check availability
+        summaries = {}
         for ordered_product in ordered_products:
             for ordered_product_item in ordered_product.ordered_product_items:
                 product_item = ordered_product_item.product_item
-                available = product_item.stock.stock_status[0].quantity
-                needed = product_item.quantity
-                if available < needed:
-                    raise Exception("Oops! (%d (%d) < %d)" % (available, product_item.stock.quantity, needed))
+                stock = product_item.stock
+                if stock not in summaries:
+                    summaries[stock] = [stock.stock_status[0].quantity, 0]
+                summaries[stock][1] += product_item.quantity * ordered_product.quantity
+
+        for stock, (available, needed) in summaries.items():
+            if available < needed:
+                raise NotEnoughStockError("OutOfStock (%s < %d; total=%d)" % (available, needed, stock.quantity))
 
         # decrement availability
         for ordered_product in ordered_products:
             for ordered_product_item in ordered_product.ordered_product_items:
                 product_item = ordered_product_item.product_item
-                product_item.stock.stock_status[0].quantity -= product_item.quantity
+                product_item.stock.stock_status[0].quantity -= product_item.quantity * ordered_product.quantity
+                assert product_item.stock.stock_status[0].quantity >= 0
                 for seat in ordered_product_item.seats:
                     seat.status_[0].status = SeatStatusEnum.Shipped.v # Shipped
 

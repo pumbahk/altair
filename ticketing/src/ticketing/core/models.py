@@ -175,6 +175,9 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def get_index(self, index_type_id):
         return session.query(SeatIndex).filter_by(seat=self, index_type_id=index_type_id)
 
+    def is_hold(self, stock_holder):
+        return self.stock.stock_holder == stock_holder
+
     @staticmethod
     def create_from_template(template, venue_id, stock_id):
         # create Seat

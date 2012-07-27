@@ -235,6 +235,8 @@ class IndexView(object):
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.matchdict['performance_id']
         venue_id = self.request.matchdict['venue_id']
+        stock_holder = api.get_stock_holder(self.request, event_id)
+        logger.debug("stock holder is %s:%s" % (stock_holder.id, stock_holder.name))
         return dict(
             seats=dict(
                 (
@@ -244,7 +246,8 @@ class IndexView(object):
                         stock_type_id=seat.stock_type_id,
                         stock_holder_id=seat.stock.stock_holder_id,
                         status=seat.status,
-                        areas=[area.id for area in seat.areas]
+                        areas=[area.id for area in seat.areas],
+                        is_hold=seat.stock.stock_holder_id==stock_holder.id,
                         )
                     ) 
                 for seat in DBSession.query(c_models.Seat) \

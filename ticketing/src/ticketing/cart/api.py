@@ -169,8 +169,10 @@ def order_products(request, performance_id, product_requires, selected_seats=[])
     logger.debug("stock %s" % stockstatuses)
     seats = []
     if selected_seats:
+        logger.debug("seat selected by user")
         seats += reserving.reserve_selected_seats(stockstatuses, performance_id, selected_seats)
     else:
+        logger.debug("selecting seat by system")
         for stockstatus, quantity in stockstatuses:
             if is_quantity_only(stockstatus.stock):
                 logger.debug('stock %d quantity only' % stockstatus.stock.id)
@@ -188,3 +190,6 @@ def is_quantity_only(stock):
 def get_system_fee(request):
     return 380
 
+def get_stock_holder(request, event_id):
+    stocker = get_stocker(request)
+    return stocker.get_stock_holder(event_id)
