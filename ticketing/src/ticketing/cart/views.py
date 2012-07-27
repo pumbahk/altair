@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import logging
+import transaction
 import json
 from datetime import datetime, timedelta
 import re
@@ -241,6 +242,7 @@ class IndexView(object):
                     dict(
                         id=seat.l0_id,
                         stock_type_id=seat.stock_type_id,
+                        stock_holder_id=seat.stock.stock_holder_id,
                         status=seat.status,
                         areas=[area.id for area in seat.areas]
                         )
@@ -341,12 +343,17 @@ class ReserveView(object):
         try:
             cart = api.order_products(self.request, self.request.params['performance_id'], order_items, selected_seats=selected_seats)
             if cart is None:
+                transaction.abort()
                 return dict(result='NG')
         except InvalidSeatSelectionException:
+            transaction.abort()
             return dict(result='NG')
         except NotEnoughStockException:
+            transaction.abort()
             return dict(result='NG')
 
+        DBSession.add(cart)
+        DBSession.flush()
         api.set_cart(self.request, cart)
         return dict(result='OK', 
                     payment_url=self.request.route_url("cart.payment"),
