@@ -70,6 +70,65 @@ class ProductTests(unittest.TestCase):
         self.assertEqual(result, 3)
         
 
+class SeatTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(self):
+        self.session = _setup_db(modules=['ticketing.core.models'])
+
+    @classmethod
+    def tearDownClass(self):
+        _teardown_db()
+
+    def tearDown(self):
+        import transaction
+        transaction.abort()
+
+    def _getTarget(self):
+        from .models import Seat
+        return Seat
+
+    def _makeOne(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
+
+    def _create_performance(self):
+        from .models import Performance
+        return Performance()
+
+    def _create_stock(self, performance, stock_holder):
+        from .models import Stock, StockType
+        stock_type = StockType()
+        return Stock(stock_type=stock_type, 
+                     performance=performance,
+                     stock_holder=stock_holder)
+
+    def _create_stock_holder(self):
+        from .models import StockHolder
+        return StockHolder()
+
+    def test_is_hold_instance(self):
+        stock_holder = self._create_stock_holder()        
+        performance = self._create_performance()
+        stock = self._create_stock(performance, stock_holder)
+
+        target = self._makeOne(stock=stock)
+
+        result = target.is_hold(stock_holder)
+
+        self.assertTrue(result)
+
+    def test_is_hold_instance_not_hold(self):
+        stock_holder = self._create_stock_holder()        
+        other_stock_holder = self._create_stock_holder()        
+        performance = self._create_performance()
+        stock = self._create_stock(performance, stock_holder)
+
+        target = self._makeOne(stock=stock)
+
+        result = target.is_hold(other_stock_holder)
+
+        self.assertFalse(result)
+
+
 if __name__ == "__main__":
     unittest.main()
 

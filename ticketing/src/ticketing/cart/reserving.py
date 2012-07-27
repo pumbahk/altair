@@ -23,6 +23,8 @@ class Reserving(object):
 
     def reserve_selected_seats(self, stockstatus, performance_id, selected_seat_l0_ids):
         """ ユーザー選択座席予約 """
+        logger.debug('user select seats %s, performance_id %s' % (selected_seat_l0_ids, performance_id))
+        logger.debug('stock %s' % [s[0].stock_id for s in stockstatus])
         selected_seats = Seat.query.filter(
             Seat.l0_id.in_(selected_seat_l0_ids),
         ).filter(

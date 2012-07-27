@@ -251,9 +251,19 @@ carts.AppView.prototype.init = function(presenter) {
         var name = $('<td/>').text(product.name);;
         var price = $('<td/>').text("￥ "+product.price);
         var quantity = $('<td/>').text(product.quantity + " 枚");
+        // TODO: 予約席をProductごとに追加
+        var seats_container = $('<td/>');
+        var seats = $('<ul/>');
+        var selected_seats = product.seats;
+        for (var i = 0; i < selected_seats.length; i++) {
+            var seat_item = $('<li/>');
+            seat_item.text(selected_seats[i].name);
+        }
+        seats_container.append(seats);
         item.append(name);
         item.append(price);
         item.append(quantity);
+        item.append(seats_container);
         return item;
     };
 
