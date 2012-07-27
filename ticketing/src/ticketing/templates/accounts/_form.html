@@ -7,16 +7,16 @@
     <h3>クライアント</h3>
   </div>
 
-  <form action="javascript:save_account();" method="POST">
-    <div class="modal-body">
+  <div class="modal-body">
+    <form action="javascript:save_account();" method="POST">
       ${form_item(form.id)}
       ${form_item(form.organization_id, option={'class':'span6'})}
       ${form_item(form.name, option={'maxlength':255})}
-    </div>
+    </form>
+  </div>
 
-    <div class="modal-footer">
-      <a href="#" class="btn" data-dismiss="modal">閉じる</a>
-      <input class="btn" type="submit" value="保存"></a>
-    </div>
-  </form>
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+    <a href="javascript:$('#modal-account').find('form').submit();" class="btn">保存</a>
+  </div>
 </div>
