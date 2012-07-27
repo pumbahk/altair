@@ -75,17 +75,14 @@ class Stocker(object):
 
     def get_stock_holder(self, event_id):
         """ イベントに対する主枠ホルダー """
-
+        
         return StockHolder.query.filter(
             Account.id==StockHolder.account_id
         ).filter(
-            Organization.id==Account.organization_id
+            User.id==Account.user_id
         ).filter(
-            Event.organization_id==Organization.id
+            Organization.user_id==User.id
         ).filter(
-            Event.id==StockHolder.event_id
-        ).filter(
-            Event.account_id==Account.id
-        ).filter(
-            Event.id==event_id
+            StockHolder.event_id==event_id
         ).one()
+
