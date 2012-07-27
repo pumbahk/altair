@@ -2,6 +2,7 @@
 
 # move it.
 import unittest
+from ..testing import _setup_db, _teardown_db
 
 def get_organization(*args, **kwargs):
     from .models import Organization
@@ -22,21 +23,17 @@ class EventCMSDataTests(unittest.TestCase):
         self.assertEqual(result["organization_id"], 10000)
 
 class ProductTests(unittest.TestCase):
-    def setUp(self):
+    @classmethod
+    def setUpClass(self):
+        self.session = _setup_db(modules=['ticketing.core.models'])
 
-        # あとで ticketing.testingの_setup_db呼ぶように変更する
-        from sqlalchemy import create_engine
-        engine = create_engine("sqlite:///")
-        import sqlahelper
-        sqlahelper.add_engine(engine)
-        from ticketing.core import models
-        models.Base.metadata.create_all()
-        self.session = sqlahelper.get_session()
+    @classmethod
+    def tearDownClass(self):
+        _teardown_db()
 
     def tearDown(self):
         import transaction
         transaction.abort()
-        self.session.remove()
 
     def _getTarget(self):
         from .models import Product
@@ -49,10 +46,10 @@ class ProductTests(unittest.TestCase):
         from .models import Performance
         return Performance()
 
-    def _create_stock(self):
+    def _create_stock(self, performance):
         from .models import Stock, StockType
         stock_type = StockType()
-        return Stock(stock_type=stock_type)
+        return Stock(stock_type=stock_type, performance=performance)
         
     def _create_items(self, performance, stock, quantities):
         from .models import ProductItem
@@ -60,8 +57,8 @@ class ProductTests(unittest.TestCase):
 
     def test_get_quantity_power(self):
         performance = self._create_performance()
-        stock1 = self._create_stock()
-        stock2 = self._create_stock()
+        stock1 = self._create_stock(performance)
+        stock2 = self._create_stock(performance)
         target = self._makeOne(
             price=0,
             items=self._create_items(performance, stock1, [1, 2]) + self._create_items(performance, stock2, [3, 4]))
