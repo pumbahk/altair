@@ -7,14 +7,24 @@
     modal.find('#report').attr('href', '/events/report/' + id + '/sales');
     modal.modal('toggle');
   }
-  function report_event_seat_all(id) {
-    modal = $('#modal-report');
-    modal.find('#report').attr('href', '/events/report/' + id + '/seat_all');
-    modal.modal('toggle');
-  }
+  //function report_event_seat_all(id) {
+  //  modal = $('#modal-report');
+  //  modal.find('#report').attr('href', '/events/report/' + id + '/seat_all');
+  //  modal.modal('toggle');
+  //}
   function report_event_seat_stocks(id) {
     modal = $('#modal-report');
     modal.find('#report').attr('href', '/events/report/' + id + '/seat_stocks');
+    modal.modal('toggle');
+  }
+  function report_event_seat_distributes(id) {
+    modal = $('#modal-report');
+    modal.find('#report').attr('href', '/events/report/' + id + '/seat_distributes');
+    modal.modal('toggle');
+  }
+  function report_event_seat_adds(id) {
+    modal = $('#modal-report');
+    modal.find('#report').attr('href', '/events/report/' + id + '/seat_adds');
     modal.modal('toggle');
   }
   function report_event_seat_returns(id) {
@@ -22,6 +32,17 @@
     modal.find('#report').attr('href', '/events/report/' + id + '/seat_returns');
     modal.modal('toggle');
   }
+  function report_event_seat_unsolds(id) {
+    modal = $('#modal-report');
+    modal.find('#report').attr('href', '/events/report/' + id + '/seat_unsolds');
+    modal.modal('toggle');
+  }
+  $(document).ready(function() {
+    $("#report").click(function() {
+      modal = $('#modal-report');
+      modal.modal('toggle');
+    });
+  })
 </script>
 
 <div class="breadcrumbs">
@@ -47,18 +68,28 @@
     </a>
   </div>
   <div class="btn-group" style="float: left;">
-    <a class="btn btn-success" href="javascript:report_event_seat_all(${event.id});" style="margin-left: 10px;">
-      <i class="icon-file icon-white"></i> 座席明細書(すべて)
+    <a class="btn btn-success" href="javascript:report_event_seat_stocks(${event.id});" style="margin-left: 10px;">
+      <i class="icon-file icon-white"></i> 仕入明細
     </a>
   </div>
   <div class="btn-group" style="float: left;">
-    <a class="btn btn-success" href="javascript:report_event_seat_stocks(${event.id});" style="margin-left: 10px;">
-      <i class="icon-file icon-white"></i> 座席明細書(追券)
+    <a class="btn btn-success" href="javascript:report_event_seat_distributes(${event.id});" style="margin-left: 10px;">
+      <i class="icon-file icon-white"></i> 配券明細
+    </a>
+  </div>
+  <div class="btn-group" style="float: left;">
+    <a class="btn btn-success" href="javascript:report_event_seat_adds(${event.id});" style="margin-left: 10px;">
+      <i class="icon-file icon-white"></i> 追券明細
     </a>
   </div>
   <div class="btn-group" style="float: left;">
     <a class="btn btn-success" href="javascript:report_event_seat_returns(${event.id});" style="margin-left: 10px;">
-      <i class="icon-file icon-white"></i> 座席明細書(返券)
+      <i class="icon-file icon-white"></i> 返券明細
+    </a>
+  </div>
+  <div class="btn-group" style="float: left;">
+    <a class="btn btn-success" href="javascript:report_event_seat_unsolds(${event.id});" style="margin-left: 10px;">
+      <i class="icon-file icon-white"></i> 残席明細
     </a>
   </div>
 </div>
