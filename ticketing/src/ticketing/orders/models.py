@@ -309,6 +309,7 @@ class OrderCSV(object):
         'tel_1',
         'tel_2',
         'fax',
+        'email',
         ]
     other_header = [
         'payment',
