@@ -19,3 +19,6 @@ def _setup_db(modules=[], echo=False):
 def _teardown_db():
     import transaction
     transaction.abort()
+    import sqlahelper
+    session = sqlahelper.get_session()
+    session.remove()
