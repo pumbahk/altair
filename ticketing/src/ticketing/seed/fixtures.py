@@ -471,6 +471,13 @@ class FixtureBuilder(object):
                 )
             )
 
+    def build_api_key_datum(self, apikey):
+        return self.Datum(
+            'APIKey',
+            expire_at=None,
+            apikey=apikey
+            )
+
     def gendigest(self, password):
         return hashlib.sha1(self.salt + password).hexdigest()
 

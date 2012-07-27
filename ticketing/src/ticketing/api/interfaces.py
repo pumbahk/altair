@@ -1,5 +1,4 @@
-from zope.interface import Interface
-from zope.interface import Attribute
+from zope.interface import Interface, Attribute
 
 class ICommunicationApi(Interface):
     baseurl = Attribute("base url of external resource")

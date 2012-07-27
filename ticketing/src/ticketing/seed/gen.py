@@ -28,6 +28,9 @@ def main(argv):
     for service_datum in builder.service_data:
         walker(service_datum)
 
+    for i in range(0, 4):
+        walker(builder.build_api_key_datum('API%08d' % i))
+
     for site in builder.site_data:
         suite[site._tableau_schema].add(site)
         open('%08d.xml' % site.id, 'w').write(

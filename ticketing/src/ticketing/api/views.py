@@ -85,6 +85,7 @@ class LoginOAuth(BaseView):
         logger.info("*api login* authorize redirect url: status:%s location:%s" % (redirect_url.status, redirect_url.location))
         return redirect_url
 
+@view_defaults(permission="api")
 class StockStatus(BaseView):
     @view_config(route_name='api.stock_statuses_for_event', request_method="GET", renderer='json')
     def stock_statuses(self):

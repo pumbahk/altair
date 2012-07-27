@@ -2,7 +2,7 @@
 from pyramid.config import Configurator
 
 from sqlalchemy import engine_from_config
-from .resources import RootFactory, groupfinder
+from .resources import newRootFactory, groupfinder
 
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
@@ -13,6 +13,12 @@ import sqlahelper
 from .api.impl import bound_communication_api ## cmsとの通信
 import logging
 
+from .authentication import CombinedAuthenticationPolicy, APIAuthenticationPolicy
+from .authentication.apikey.impl import newDBAPIKeyEntryResolver
+
+import re
+
+authn_exemption = re.compile(r'^(/_deform)|(/static)|(/_debug_toolbar)|(/favicon.ico)')
 
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
@@ -20,17 +26,24 @@ def main(global_config, **settings):
     engine = engine_from_config(settings, 'sqlalchemy.')
     sqlahelper.add_engine(engine)
 
-    authn_policy = AuthTktAuthenticationPolicy('secretstring',
-        cookie_name='backendtkt',
-                                               callback=groupfinder)
-    authz_policy = ACLAuthorizationPolicy()
-
     config = Configurator(settings=settings,
-                          root_factory='ticketing.resources.RootFactory',
-                          authentication_policy=authn_policy,
-                          authorization_policy=authz_policy,
+                          root_factory=newRootFactory(lambda request:authn_exemption.match(request.path)),
                           session_factory=UnencryptedCookieSessionFactoryConfig('altair'))
 
+    config.set_authentication_policy(
+        CombinedAuthenticationPolicy([
+            AuthTktAuthenticationPolicy(
+                'secretstring',
+                cookie_name='backendtkt',
+                callback=groupfinder),
+            APIAuthenticationPolicy(
+                resolver_factory=newDBAPIKeyEntryResolver,
+                header_name='X-Altair-Authorization',
+                userid_prefix='__altair_ticketing__api__',
+                principals=['api'])
+            ])
+        )
+    config.set_authorization_policy(ACLAuthorizationPolicy())
 
     config.add_static_view('static', 'ticketing:static', cache_max_age=3600)
 
