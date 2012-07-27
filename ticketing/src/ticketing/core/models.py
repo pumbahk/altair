@@ -1,7 +1,6 @@
 # encoding: utf-8
-
 from sqlalchemy import Table, Column, ForeignKey, ForeignKeyConstraint, func
-from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric
+from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric, Unicode
 from sqlalchemy.orm import join, backref
 from sqlalchemy.ext.associationproxy import association_proxy
 
@@ -72,8 +71,14 @@ class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             VenueArea.create_from_template(template=template_area, venue_id=venue.id)
 
         # create Seat
+        default_stock = Stock.get_default(performance_id=performance_id)
         for template_seat in template.seats:
-            Seat.create_from_template(template=template_seat, venue_id=venue.id)
+            Seat.create_from_template(template=template_seat, venue_id=venue.id, stock_id=default_stock.id)
+
+        # defaultのStockに席数をセット
+        stock = Stock.get_default(performance_id=performance_id)
+        stock.quantity = len(template.seats)
+        stock.save()
 
     def delete_cascade(self):
         # delete Seat
@@ -133,7 +138,7 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     id              = Column(Identifier, primary_key=True)
     l0_id           = Column(String(255))
-
+    name            = Column(Unicode(50), nullable=False, default=u"", server_default=u"")
     stock_id        = Column(Identifier, ForeignKey('Stock.id'))
     stock_type_id   = Column(Identifier, ForeignKey('StockType.id'))
 
@@ -171,13 +176,12 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return session.query(SeatIndex).filter_by(seat=self, index_type_id=index_type_id)
 
     @staticmethod
-    def create_from_template(template, venue_id):
+    def create_from_template(template, venue_id, stock_id):
         # create Seat
         seat = Seat.clone(template)
         seat.venue_id = venue_id
-        seat.stock_id = None
-        if not seat.stock_type_id:
-            seat.stock_type_id = None
+        seat.stock_id = stock_id
+        seat.stock_type_id = None
         seat.save()
 
         # create SeatAttribute
@@ -250,6 +254,7 @@ class SeatStatus(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 class SeatAdjacency(Base):
     __tablename__ = "SeatAdjacency"
+    query = DBSession.query_property()
     id = Column(Identifier, primary_key=True)
     adjacency_set_id = Column(Identifier, ForeignKey('SeatAdjacencySet.id'))
 
@@ -307,7 +312,6 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             Performanceのコピー時は以下のモデルをcloneする
               - Stock
                 - ProductItem
-              - StockAllocation
             """
             template_performance = Performance.get(self.original_id)
 
@@ -315,16 +319,20 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             for template_stock in template_performance.stocks:
                 Stock.create_from_template(template=template_stock, performance_id=self.id)
 
-            # create StockAllocation
-            for template_stock_allocation in template_performance.stock_allocations:
-                StockAllocation.create_from_template(template=template_stock_allocation, performance_id=self.id)
+        else:
+            """
+            Performanceの作成時は以下のモデルを自動生成する
+              - Stock
+            """
+            # create default Stock
+            Stock.create_default(self.event, performance_id=self.id)
 
     def save(self):
         BaseModel.save(self)
 
         """
-        Performanceの作成時は以下のモデルを自動生成する
-        また更新時にVenueの変更があったら以下のモデルをdeleteする
+        Performanceの作成/更新時は以下のモデルを自動生成する
+        またVenueの変更があったら関連モデルを削除する
           - Venue
             - VenueArea
               - VenueArea_group_l0_id
@@ -648,7 +656,7 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return DeliveryMethod.filter(DeliveryMethod.organization_id==id).all()
 
 buyer_condition_set_table =  Table('BuyerConditionSet', Base.metadata,
-    Column('id', Integer, primary_key=True),
+    Column('id', Identifier, primary_key=True),
     Column('buyer_condition_id', Identifier, ForeignKey('BuyerCondition.id')),
     Column('product_id', Identifier, ForeignKey('Product.id'))
 )
@@ -718,11 +726,17 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def is_seat(self):
         return self.type == StockTypeEnum.Seat.v
 
+    def add(self):
+        super(StockType, self).add()
+
+        # create default Stock
+        Stock.create_default(self.event, stock_type_id=self.id)
+
     def num_seats(self, performance_id=None):
-        query = StockType.filter_by(id=self.id).join(StockType.stock_allocations)\
-                         .with_entities(func.sum(StockAllocation.quantity))
+        # 同一Performanceの同一StockTypeにおけるStock.quantityの合計
+        query = Stock.filter_by(stock_type_id=self.id).with_entities(func.sum(Stock.quantity))
         if performance_id:
-            query = query.filter(StockAllocation.performance_id==performance_id)
+            query = query.filter_by(performance_id==performance_id)
         return query.scalar()
 
     def set_style(self, data):
@@ -740,35 +754,6 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         else:
             self.style = {}
 
-class StockAllocation(Base, BaseModel):
-    __tablename__ = "StockAllocation"
-    stock_type_id = Column(Identifier, ForeignKey('StockType.id'), primary_key=True)
-    performance_id = Column(Identifier, ForeignKey('Performance.id'), primary_key=True)
-    stock_type = relationship('StockType', uselist=False, backref='stock_allocations')
-    performance = relationship('Performance', uselist=False, backref='stock_allocations')
-    quantity = Column(Integer, nullable=False)
-
-    def save(self):
-        stock_allocation = DBSession.query(StockAllocation)\
-            .filter_by(performance_id=self.performance_id)\
-            .filter_by(stock_type_id=self.stock_type_id)\
-            .first()
-
-        if stock_allocation:
-            DBSession.merge(self)
-        else:
-            DBSession.add(self)
-        DBSession.flush()
-
-    @staticmethod
-    def create_from_template(template, performance_id):
-        stock_allocation = StockAllocation(
-            performance_id=performance_id,
-            stock_type_id=template.stock_type_id,
-            quantity = template.quantity
-        )
-        stock_allocation.save()
-
 class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "StockHolder"
     id = Column(Identifier, primary_key=True)
@@ -781,6 +766,12 @@ class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     stocks = relationship('Stock', backref='stock_holder')
 
+    def add(self):
+        super(StockHolder, self).add()
+
+        # create default Stock
+        Stock.create_default(self.event, stock_holder_id=self.id)
+
     def stocks_by_performance(self, performance_id):
         def performance_filter(stock):
             return (stock.performance_id == performance_id)
@@ -791,9 +782,9 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "Stock"
     id = Column(Identifier, primary_key=True)
     quantity = Column(Integer)
-    performance_id = Column(Identifier, ForeignKey('Performance.id'))
-    stock_holder_id = Column(Identifier, ForeignKey('StockHolder.id'))
-    stock_type_id = Column(Identifier, ForeignKey('StockType.id'))
+    performance_id = Column(Identifier, ForeignKey('Performance.id'), nullable=False)
+    stock_holder_id = Column(Identifier, ForeignKey('StockHolder.id'), nullable=True)
+    stock_type_id = Column(Identifier, ForeignKey('StockType.id'), nullable=True)
 
     stock_status = relationship("StockStatus", uselist=False, backref='stock')
 
@@ -805,6 +796,46 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if case_add:
             stock_status = StockStatus(stock_id=self.id, quantity=self.quantity)
             stock_status.save()
+
+    @staticmethod
+    def get_default(performance_id):
+        return Stock.filter_by(performance_id=performance_id).filter_by(stock_type_id=None).first()
+
+    @staticmethod
+    def create_default(event, performance_id=None, stock_type_id=None, stock_holder_id=None):
+        '''
+        初期状態のStockを生成する
+          - デフォルト値となる"未選択"のStock
+          - StockHolder × StockType分のStock
+        既に該当のStockが存在する場合は、足りないStockのみ生成する
+        '''
+        performances = [Performance.get(performance_id)] if performance_id else event.performances
+        stock_types = [StockType.get(stock_type_id)] if stock_type_id else event.stock_types
+        stock_holders = [StockHolder.get(stock_holder_id)] if stock_holder_id else event.stock_holders
+
+        # デフォルト値となる"未選択"のStockを生成
+        for performance in performances:
+            if not Stock.get_default(performance.id):
+                stock = Stock(
+                    performance_id=performance.id,
+                    quantity=0
+                )
+                stock.save()
+
+        # Performance × StockType × StockHolder分のStockを生成
+        for performance in performances:
+            for stock_type in stock_types:
+                for stock_holder in stock_holders:
+                    def stock_filter(stock):
+                        return (stock.stock_type_id == stock_type.id and stock.stock_holder_id == stock_holder.id)
+                    if not filter(stock_filter, performance.stocks):
+                        stock = Stock(
+                            performance_id=performance.id,
+                            stock_type_id=stock_type.id,
+                            stock_holder_id=stock_holder.id,
+                            quantity=0
+                        )
+                        stock.save()
 
     @staticmethod
     def create_from_template(template, performance_id):
@@ -838,6 +869,11 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     event = relationship('Event', backref='products')
 
     items = relationship('ProductItem', backref='product')
+
+    def get_quantity_power(self, stock_type, performance_id):
+        """ 数量倍率 """
+        perform_items = ProductItem.query.filter(ProductItem.product==self).filter(ProductItem.performance_id==performance_id).all()
+        return sum([pi.quantity for pi in perform_items if pi.stock.stock_type == stock_type])
 
     @staticmethod
     def find(performance_id=None, event_id=None, sales_segment_id=None, include_deleted=False):
@@ -911,6 +947,7 @@ class SeatIndex(Base, BaseModel):
     seat_index_type_id = Column(Identifier, ForeignKey('SeatIndexType.id'), primary_key=True)
     seat_id            = Column(Identifier, ForeignKey('Seat.id'), primary_key=True)
     index              = Column(Integer, nullable=False)
+    seat               = relationship('Seat', backref='indexes')
 
 class OrganizationTypeEnum(StandardEnum):
     Standard = 1

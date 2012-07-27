@@ -18,17 +18,20 @@
           .css('margin-top', ($(this).outerHeight()/2)*-1)
           .css('margin-left',($(this).outerWidth()/2)*-1);
     });
+
+    $("#modal-stock_type #fill_color").decentcolorpicker();
+    $("#modal-stock_type #stroke_color").decentcolorpicker();
   });
 </script>
 
 <div id="modal-stock_type" class="modal fade">
   <div class="modal-header">
-    <a class="close" data-dismiss="modal">×</a>
+    <a class="close" data-dismiss="modal">&times;</a>
     <h3>席種</h3>
   </div>
 
-  <form action="javascript:save_stock_type();" method="POST">
-    <div class="modal-body">
+  <div class="modal-body">
+    <form action="javascript:save_stock_type();" method="POST">
       ${h.form_item(form.id)}
       ${h.form_item(form.event_id)}
       ${h.form_item(form.name, option={'style':'display: block;','maxlength':255})}
@@ -37,14 +40,14 @@
       <hr />
 
       <div id="color-picker">
-        ${h.form_item(form.fill_color, option={'class':'kolorPicker span3'})}
-        ${h.form_item(form.stroke_color, option={'class':'kolorPicker span3'})}
+        ${h.form_item(form.fill_color, option={'class':'span3'})}
+        ${h.form_item(form.stroke_color, option={'class':'span3'})}
       </div>
-    </div>
+    </form>
+  </div>
 
-    <div class="modal-footer">
-      <a href="#" class="btn" data-dismiss="modal">閉じる</a>
-      <input class="btn" type="submit" value="保存"></a>
-    </div>
-  </form>
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+    <a href="javascript:$('#modal-stock_type').find('form').submit();" class="btn">保存</a>
+  </div>
 </div>

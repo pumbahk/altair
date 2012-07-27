@@ -1,0 +1,16 @@
+<%inherit file="/layout.html" />
+<%namespace file="/common/helpers.html" name="h" />
+
+<div class="container" style="width: 600px;">
+  <div class="page-header">
+    <h1>パスワードリセット</h1>
+  </div>
+
+  <div class="content">
+    ${h.flash_messages(request)}
+  </div>
+
+  <div class="well">
+    メールを送信しました。メールが届かない場合、入力したメールアドレスが登録されていないか、間違っている可能性があります。
+  </div>
+</div>

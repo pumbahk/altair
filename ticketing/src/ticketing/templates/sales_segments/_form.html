@@ -20,8 +20,8 @@
     <h3>販売方法</h3>
   </div>
 
-  <form id="edit" action="javascript:save_sales_segment();" method="POST">
-    <div class="modal-body">
+  <div class="modal-body">
+    <form id="edit" action="javascript:save_sales_segment();" method="POST">
       ${h.form_item(form.id)}
       ${h.form_item(form.event_id)}
       ${h.form_item(form.kind)}
@@ -33,13 +33,12 @@
       ${h.form_item(form.issuing_end_at,option={"class":"datefield"})}
       ${h.form_item(form.upper_limit)}
       ${h.form_item(form.seat_choice)}
-    </div>
-    <p>
-        ※セブンイレブン発券では発券日を指定した場合「前払い後日発券」になります。
-    </p>
-    <div class="modal-footer">
-      <a href="#" class="btn" data-dismiss="modal">閉じる</a>
-      <input class="btn" type="submit" value="保存"></a>
-    </div>
-  </form>
+      <p>※セブンイレブン発券では発券日を指定した場合「前払い後日発券」になります。</p>
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+    <a href="javascript:$('#modal-sales_segment').find('form').submit();" class="btn">保存</a>
+  </div>
 </div>

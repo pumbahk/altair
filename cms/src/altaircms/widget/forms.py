@@ -3,7 +3,7 @@ import wtforms.form as form
 import wtforms.fields as fields
 import wtforms.validators as validators
 import wtforms.widgets as widgets
-from altaircms.lib.formhelpers import dynamic_query_select_field_factory
+from altaircms.helpers.formhelpers import dynamic_query_select_field_factory
 from . import models
 
 

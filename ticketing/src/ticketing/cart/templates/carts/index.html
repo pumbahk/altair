@@ -109,6 +109,12 @@ function createDataSource(params) {
   };
 }
 
+function get_current_quantity() {
+  var num = 0;
+  $.each($('#order-form select'), function(_,quantity) {num+=Number($(quantity).val())})
+  return num;
+}
+
 $(function() {
   var currentStockTypeId = "";
 
@@ -126,12 +132,20 @@ $(function() {
               selectable: function (viewer, seat) {
                 if (currentStockTypeId == "")
                   return true;
-                return seat.meta.stock_type_id == currentStockTypeId;
+                return seat.meta.stock_type_id == currentStockTypeId && seat.meta.status == 1;
               },
               click: function (viewer, seat, highlighted) {
                 $.each(highlighted, function (id, seat) {
                   if (carts.appView.left_box.hasClass('focused')) {
                     carts.appView.select_seat_type(seat.type.id);
+                  } else {
+                    if (seat.selected()) {
+                      seat.selected(false);
+                    } else {
+                      if (viewer.selectionCount < get_current_quantity()) {
+                        seat.selected(true);
+                      }
+                    }
                   }
                 });
               },
@@ -275,6 +289,12 @@ $(function() {
                 <script type="text/javascript">
                   currentViewer = $('#selectSeat .venueViewer');
                 </script>
+                <div>
+                  <ul class="buttonSet">
+                    <li><a href="javascript:void(0);" id="btn-selected-order"><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_buy.shrunken.gif')}" alt="購入" /></a></li>
+                  </ul>
+
+                </div>
               </div>
               <div id="selectProduct" class="selectSeatRightPane">
                 <h3 class="lead">購入枚数、購入方法をお選びください</h3>
@@ -287,11 +307,13 @@ $(function() {
                       </ul>
                     </dd>
                   </dl>
+                  <fieldset style="display:none;" id="selected-seats">
+                  </fieldset>
                   <ul class="buttonSet">
                     <li><a href="#"><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_select_buy.shrunken.gif')}" alt="座席を選んで購入" /></a></li>
                   </ul>
                   <ul class="buttonSet">
-                    <li><a href="javascript:void(0);" id="btn-order"><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_buy.shrunken.gif')}" alt="おまかせで購入" /></a></li>
+                    <li><a href="javascript:void(0);" id="btn-order"><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_entrust_buy.gif')}" alt="おまかせで購入" width="150px" /></a></li>
                   </ul>
                 </form>
               </div>

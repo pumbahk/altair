@@ -7,12 +7,12 @@ DBSession = models.DBSession
 DummyWidget = models.DummyWidget
 
 def setUpModule():
-    from altaircms.lib.testutils import create_db
-    create_db(base=Base, session=DBSession)
+    from altaircms.testing import setup_db
+    setup_db(base=Base, session=DBSession)
 
 def tearDownModule():
-    from altaircms.lib.testutils import dropall_db
-    dropall_db(base=Base, session=DBSession)
+    from altaircms.testing import teardown_db
+    teardown_db(base=Base, session=DBSession)
 
 
 class DataCleansingTests(unittest.TestCase):

@@ -1,6 +1,7 @@
 from zope.interface import implementer
 from ..checkout import interfaces
 from pyramid import testing
+from ..testing import _setup_db, _teardown_db
 
 @implementer(interfaces.ISigner)
 class DummySigner(object):

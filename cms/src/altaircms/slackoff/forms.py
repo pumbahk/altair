@@ -8,7 +8,7 @@ from wtforms import validators
 import wtforms.ext.sqlalchemy.fields as extfields
 
 
-from altaircms.lib.formhelpers import dynamic_query_select_field_factory
+from altaircms.helpers.formhelpers import dynamic_query_select_field_factory
 from altaircms.helpers.formhelpers import required_field, append_errors
 
 

@@ -21,50 +21,73 @@ def get_drawing(request):
 @view_config(route_name="api.get_seats", request_method="GET", renderer='json')
 def get_seats(request):
     venue_id = int(request.matchdict.get('venue_id', 0))
+    _necessary_params = request.params.get(u'n', None)
+    necessary_params = set() if _necessary_params is None else set(_necessary_params.split(u'|'))
+
     venue = Venue.get(venue_id)
     if venue is None:
         return HTTPNotFound("Venue id #%d not found" % venue_id)
 
-    seats_data = {}
-    for seat in DBSession.query(Seat).options(joinedload('attributes'), joinedload('areas'), joinedload('stock'), joinedload('_status')).filter_by(venue=venue):
-        seat_datum = {
-            'id': seat.l0_id,
-            'stock_type_id': seat.stock_type_id,
-            'stock_holder_id': seat.stock and seat.stock.stock_holder_id,
-            'status': seat.status,
-            'areas': [area.id for area in seat.areas],
-            }
-        for attr in seat.attributes:
-            seat_datum[attr.name] = attr.value
-        seats_data[seat.l0_id] = seat_datum
+    retval = {}
 
-    seat_adjacencies_data = {}
-    for seat_adjacency_set in DBSession.query(SeatAdjacencySet).options(joinedload("adjacencies"), joinedload('adjacencies.seats')).filter(SeatAdjacencySet.venue==venue):
-        for seat_adjacency in seat_adjacency_set.adjacencies:
-            seat_adjacencies_data[seat_adjacency_set.seat_count] = [
-                [seat.l0_id for seat in seat_adjacency.seats] \
-                for seat_adjacency in seat_adjacency_set.adjacencies \
-                ]
-
-    stock_types_data = {}
-    for stock_type in DBSession.query(StockType).filter_by(event=venue.performance.event):
-        stock_types_data[stock_type.id] = dict(
-            name=stock_type.name,
-            style=stock_type.style)
-
-    stock_holders_data = {}
-    for stock_holder in DBSession.query(StockHolder).filter_by(event=venue.performance.event):
-        stock_holders_data[stock_holder.id] = dict(
-            name=stock_holder.name,
-            style=stock_holder.style)
-
-    return {
-        'areas': dict(
+    if u'areas' in necessary_params:
+        retval[u'areas'] = dict(
             (area.id, { 'id': area.id, 'name': area.name }) \
             for area in venue.areas \
-            ),
-        'seats': seats_data,
-        'seat_adjacencies': seat_adjacencies_data,
-        'stock_types': stock_types_data,
-        'stock_holders': stock_holders_data
-        }
+            )
+
+    if u'seats' in necessary_params:
+        seats_data = {}
+        for seat in DBSession.query(Seat).options(joinedload('attributes'), joinedload('areas'), joinedload('status_')).filter_by(venue=venue):
+            seat_datum = {
+                'id': seat.l0_id,
+                'stock_id': seat.stock_id,
+                'status': seat.status,
+                'areas': [area.id for area in seat.areas],
+                }
+            for attr in seat.attributes:
+                seat_datum[attr.name] = attr.value
+            seats_data[seat.l0_id] = seat_datum
+        retval[u'seats'] = seats_data
+
+    if u'adjacencies' in necessary_params:
+        retval[u'adjacencies'] = [
+            dict(
+                count=seat_adjacency_set.seat_count,
+                set=[
+                    [seat.l0_id for seat in seat_adjacency.seats] \
+                    for seat_adjacency in seat_adjacency_set.adjacencies \
+                    ]
+                ) \
+            for seat_adjacency_set in DBSession.query(SeatAdjacencySet).options(joinedload("adjacencies"), joinedload('adjacencies.seats')).filter(SeatAdjacencySet.venue==venue)
+            ]
+
+    retval[u'stocks'] = [
+        dict(
+            id=stock.id,
+            assigned=stock.quantity,
+            stock_type_id=stock.stock_type_id,
+            stock_holder_id=stock.stock_holder_id,
+            available=stock.stock_status.quantity) \
+        for stock in DBSession.query(Stock).options(joinedload('stock_status')).filter_by(performance=venue.performance)
+        ]
+
+    retval[u'stock_types'] = [
+        dict(
+            id=stock_type.id,
+            name=stock_type.name,
+            is_seat=stock_type.is_seat,
+            quantity_only=stock_type.quantity_only,
+            style=stock_type.style) \
+        for stock_type in DBSession.query(StockType).filter_by(event=venue.performance.event)
+        ]
+
+    retval[u'stock_holders'] = [
+        dict(
+            id=stock_holder.id,
+            name=stock_holder.name,
+            style=stock_holder.style) \
+        for stock_holder in DBSession.query(StockHolder).filter_by(event=venue.performance.event)
+        ]
+
+    return retval

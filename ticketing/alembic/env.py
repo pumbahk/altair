@@ -16,6 +16,23 @@ fileConfig(config.config_file_name)
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 from ticketing import models
+
+import ticketing.bj89ers.models
+import ticketing.bookmark.models
+import ticketing.cart.models
+import ticketing.cart.plugins.models
+import ticketing.checkout.models
+import ticketing.core.models
+import ticketing.master.models
+import ticketing.models
+import ticketing.multicheckout.models
+import ticketing.mypage.models
+import ticketing.oauth2.models
+import ticketing.operators.models
+import ticketing.orders.models
+import ticketing.sej.models
+import ticketing.users.models
+
 target_metadata = models.Base.metadata
 # target_metadata = None
 

@@ -1,18 +1,38 @@
-<%inherit file="../layout.html" />
-<h2><%block name="title">ログイン情報</%block></h2>
+<%inherit file="/layout.html" />
+<%namespace file="/common/helpers.html" name="h" />
 
-<table class="table">
+<div class="container" style="width: 600px;">
+  <div class="page-header">
+    <h1>ログイン情報</h1>
+  </div>
+
+  <div class="content">
+    ${h.flash_messages(request)}
+  </div>
+
+  <table class="table table-bordered">
     <tr>
-        <th>名前</th>
-        <td>${operator.name}</td>
+      <th>${form.name.label.text}</th>
+      <td>${operator.name}</td>
     </tr>
     <tr>
-        <th>Email</th>
-        <td>${operator.email}</td>
+      <th>${form.email.label.text}</th>
+      <td>${operator.email}</td>
     </tr>
     <tr>
-        <th>ログインID</th>
-        <td>${operator.auth.login_id}</td>
+      <th>${form.login_id.label.text}</th>
+      <td>${operator.auth.login_id}</td>
     </tr>
-</table>
-<a href="${request.route_path('login.info.edit')}" class="btn">変更する</a>
+    <tr>
+      <th>${form.expire_at.label.text}</th>
+      <td>${operator.expire_at or ''}</td>
+    </tr>
+    <tr>
+      <th>企業・団体名称</th>
+      <td>${operator.organization.name}</td>
+    </tr>
+  </table>
+  <div class="spacer" style="width:100px; margin:0 auto 0 auto;">
+    <a href="${request.route_path('login.info.edit')}" class="btn">変更する</a>
+  </div>
+</div>

@@ -23,6 +23,7 @@ from ticketing.events.forms import EventForm
 from ticketing.events.performances.forms import PerformanceForm
 from ticketing.events.sales_segments.forms import SalesSegmentForm
 from ticketing.events.stock_types.forms import StockTypeForm
+from ticketing.events.stock_holders.forms import StockHolderForm
 from ticketing.products.forms import ProductForm
 
 from ..api.impl import get_communication_api
@@ -81,6 +82,7 @@ class Events(BaseView):
             'form':EventForm(),
             'form_performance':PerformanceForm(organization_id=self.context.user.organization_id),
             'form_stock_type':StockTypeForm(event_id=event_id),
+            'form_stock_holder':StockHolderForm(organization_id=self.context.user.organization_id, event_id=event_id),
             'form_sales_segment':SalesSegmentForm(event_id=event_id),
             'form_product':ProductForm(event_id=event.id),
         }

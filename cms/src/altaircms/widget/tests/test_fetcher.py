@@ -6,13 +6,16 @@ DBSession = models.DBSession
 DummyWidget = models.DummyWidget
 
 def setUpModule():
-    DBSession.remove()
-    from altaircms.lib.testutils import create_db
-    create_db(base=Base, session=DBSession)
+    from altaircms.testing import setup_db
+    setup_db(["altaircms.widget.tests.models", 
+              "altaircms.event.models", 
+              "altaircms.page.models"])
+
+
 
 def tearDownModule():
-    from altaircms.lib.testutils import dropall_db
-    dropall_db(base=Base, session=DBSession)
+    from altaircms.testing import teardown_db
+    teardown_db()
 
 class WidgetFetcherTest(unittest.TestCase):
     def setUp(self):

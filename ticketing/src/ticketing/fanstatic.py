@@ -12,6 +12,7 @@ from js.bootstrap import bootstrap, bootstrap_responsive_css
 from js.jquery_timepicker_addon import timepicker
 from js.jquery_colorpicker import jquery_colorpicker
 from js.jqueryui_bootstrap import jqueryui_bootstrap
+from js.i18n import i18n
 
 from ticketing.jslib.jquery_validation_engine import validation_engine
 
@@ -90,4 +91,5 @@ with_bootstrap = FanstaticDecoratorFactory(
     bootstrap.need,
     bootstrap_responsive_css.need,
     timepicker.need,
+    i18n.need
     )

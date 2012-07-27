@@ -2,7 +2,15 @@
 <%namespace file="/common/helpers.html" name='h' />
 
 <% paging = False if limit else True %>
-
+<%
+seat_stock_types = []
+non_seat_stock_types = []
+for stock_type in stock_types:
+  if stock_type.is_seat:
+    seat_stock_types.append(stock_type)
+  else:
+    non_seat_stock_types.append(stock_type)
+%>
 <style>
   .swatch {
     display: inline-block;
@@ -15,28 +23,28 @@
   }
 </style>
 
-% if stock_types:
-  <% count = 0 %>
-  % for stock_type in stock_types:
-    % if stock_type.is_seat:
-      <%
-        count += 1
-        conditions = {'performance_id':performance.id} if performance else {}
-        quantity = stock_type.num_seats(**conditions) or 0
-      %>
-      % if count == 1:
-      <h4>席種</h4>
-      <table class="table table-striped table-bordered">
-        <tbody>
+<div class="row-fluid">
+  % if seat_stock_types:
+  <div class="span6">
+    <h4>席種</h4>
+
+    <table class="table table-striped table-bordered">
+      <thead>
         <tr>
-          <th></th>
+          <th style="width:20px"></th>
           <th>名称</th>
           <th>席数</th>
         </tr>
-      % endif
+      </thead>
+      <tbody>
+      % for stock_type in seat_stock_types:
+        <%
+          conditions = {'performance_id':performance.id} if performance else {}
+          quantity = stock_type.num_seats(**conditions) or 0
+        %>
         <tr>
-          <td style="width: 40px">
-            <input type="radio" name="stock_type_id" value=${stock_type.id} />
+          <td>
+            ${h.seat_style(stock_type.style)}
           </td>
           <td>
             <a href="javascript:edit_stock_type(${stock_type.id});"
@@ -45,48 +53,40 @@
                type="${stock_type.type}"
                quantity="${quantity}"
                data="${h.json(stock_type.style)}">
-              ${h.seat_style(stock_type.style)}
               ${stock_type.name}
             </a>
-            % if stock_type.quantity_only:
-            <span class="label label-info">数受け</span>
-            % endif
           </td>
           <td style="width: 60px">
             ${quantity}
           </td>
         </tr>
-      % if count == 1:
-        </tbody>
-      % endif
-    % endif
-  % else:
-    % if count > 0:
-      </table>
-    % endif
-  % endfor
+      % endfor
+      </tbody>
+    </table>
+  </div>
+  %endif
 
-  <% count = 0 %>
-  % for stock_type in stock_types:
-    % if not stock_type.is_seat:
-      <%
-        count += 1
-        conditions = {'performance_id':performance.id} if performance else {}
-        quantity = stock_type.num_seats(**conditions) or 0
-      %>
-      % if count == 1:
-      <h4>その他</h4>
-      <table class="table table-striped table-bordered">
-        <tbody>
+  %if non_seat_stock_types:
+  <div class="span6">
+    <h4>その他</h4>
+
+    <table class="table table-striped table-bordered">
+      <thead>
         <tr>
-          <th></th>
+          <th style="width:20px"></th>
           <th>名称</th>
           <th>在庫数</th>
         </tr>
-      % endif
+      </thead>
+      <tbody>
+      % for stock_type in non_seat_stock_types:
+        <%
+          conditions = {'performance_id':performance.id} if performance else {}
+          quantity = stock_type.num_seats(**conditions) or 0
+        %>
         <tr>
-          <td style="width: 40px">
-            <input type="radio" name="stock_type_id" value=${stock_type.id} />
+          <td>
+            ${h.seat_style(stock_type.style)}
           </td>
           <td>
             <a href="javascript:edit_stock_type(${stock_type.id});"
@@ -95,27 +95,19 @@
                type="${stock_type.type}"
                quantity="${quantity}"
                data='${h.json(stock_type.style)}'>
-              ${h.seat_style(stock_type.style)}
               ${stock_type.name}
             </a>
-            % if stock_type.quantity_only:
-            <span class="label label-info">数受け</span>
-            % endif
           </td>
           <td style="width: 60px">
             ${quantity}
           </td>
         </tr>
-      % if count == 1:
-        </tbody>
-      % endif
-    % endif
-  % else:
-    % if count > 0:
-      </table>
-    % endif
-  % endfor
-% endif
+      % endfor
+      </tbody>
+    </table>
+  </div>
+  % endif
+</div>
 
 % if paging:
   ${h.pager(stock_types)}

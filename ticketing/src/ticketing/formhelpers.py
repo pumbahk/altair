@@ -44,7 +44,6 @@ class Translations(object):
     def __init__(self, messages = None):
         if messages:
             self.messages = dict(self.messages, **messages)
-        print messages
 
     def gettext(self, string):
         return self.messages.get(string, string)

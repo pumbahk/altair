@@ -5,3 +5,6 @@ class CartException(Exception):
 
 class NoCartError(CartException):
     pass
+
+class NoEventError(CartException):
+    pass

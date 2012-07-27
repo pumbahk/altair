@@ -50,12 +50,12 @@ class SalesSegmentForm(Form):
     )
     issuing_start_at = DateTimeField(
         label=u'発券開始日時',
-        validators=[],
+        validators=[Optional()],
         format='%Y-%m-%d %H:%M'
     )
     issuing_end_at = DateTimeField(
         label=u'発券終了日時',
-        validators=[],
+        validators=[Optional()],
         format='%Y-%m-%d %H:%M'
     )
     upper_limit = IntegerField(

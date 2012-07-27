@@ -3,6 +3,11 @@ from zope.interface import Attribute
 from zope.interface import implementer
 
 ## 
+class IAfterFormInitialize(Interface):
+    request = Attribute("request")
+    form = Attribute("form")
+    rendering_val = Attribute("rendering_val")
+
 class IForm(Interface):
     def validate():
         pass

@@ -1,82 +1,61 @@
 # -*- coding: utf-8 -*-
 
 from wtforms import Form
-from wtforms import TextField, SelectField, HiddenField, FormField, IntegerField, FieldList
-from wtforms.validators import Regexp, Length, NumberRange, Optional, ValidationError
-from sqlalchemy.sql import func
+from wtforms import TextField, IntegerField, ValidationError
+from wtforms.validators import Length, NumberRange, Optional
 
-from ticketing.core.models import record_to_multidict, DBSession
 from ticketing.formhelpers import Translations, Required
-from ticketing.core.models import Stock, StockHolder, StockAllocation
+from ticketing.core.models import Seat, Stock
 
-class StockForm(Form):
+class AllocateSeatForm(Form):
 
     def _get_translations(self):
         return Translations()
 
-    id = HiddenField(
-        validators=[Optional()],
-    )
-    performance_id = HiddenField(
+    id = TextField(
         validators=[Required()],
     )
-    stock_holder_id = HiddenField(
+    stock_id = IntegerField(
         validators=[Required()],
     )
-    stock_type_id = HiddenField(
+
+class AllocateStockForm(Form):
+
+    def _get_translations(self):
+        return Translations()
+
+    id = IntegerField(
         validators=[Required()],
-    )
-    stock_type_name = HiddenField(
-        validators=[Optional()],
     )
     quantity = IntegerField(
-        label=u'在庫数',
         validators=[
             Required(),
-            NumberRange(min=0, message=u'有効な値を入力してください'),
+            NumberRange(min=0, message=u'在庫数に有効な値を入力してください'),
         ],
     )
 
     def validate_quantity(form, field):
-        # 同一Performanceの同一StockTypeにおける合計がStockAllocation.quantityを超えないこと
-        conditions = {
-            'stock_type_id':form.stock_type_id.data,
-            'performance_id':form.performance_id.data,
-        }
-        allocated_quantity = StockAllocation.filter_by(**conditions).with_entities(StockAllocation.quantity).scalar() or 0
-        sum_quantity = Stock.filter(Stock.id!=form.id.data)\
-                            .filter_by(**conditions)\
-                            .with_entities(func.sum(Stock.quantity))\
-                            .scalar() or 0
-        if allocated_quantity < (sum_quantity + int(form.quantity.data)):
-            raise ValidationError(u'割り当てられている在庫数以上は入力できません')
+        # Seatの割当数と一致すること
+        stock = Stock.get(form.id.data)
+        if stock and stock.stock_type and stock.stock_type.is_seat:
+            allocated_seats = Seat.filter_by(stock_id=form.id.data).count()
+            if allocated_seats != int(form.quantity.data):
+                raise ValidationError(u'席種に割り当てられている在庫数合計が一致しません')
 
+class AllocateStockTypeForm(Form):
 
-class StockForms(Form):
+    def _get_translations(self):
+        return Translations()
 
-    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
-        super(StockForms, self).__init__(formdata, obj, prefix, **kwargs)
-
-        def _append_stock_type(stock_types):
-            for stock_type in stock_types:
-                self.stock_forms.append_entry({'stock_type_id':stock_type.id, 'stock_type_name':stock_type.name})
-
-        if 'stock_types' in kwargs:
-            _append_stock_type(kwargs['stock_types'])
-        if 'stock_holder_id' in kwargs:
-            stock_holder = StockHolder.get(kwargs['stock_holder_id'])
-            stocks = stock_holder.stocks_by_performance(kwargs['performance_id'])
-            if stocks:
-                for stock in stocks:
-                    entry = self.stock_forms.append_entry(stock)
-                    entry.form.stock_type_name.data = stock.stock_type.name
-            else:
-                _append_stock_type(stock_holder.event.stock_types)
-
-    performance_id = HiddenField(
+    id = IntegerField(
         validators=[Required()],
     )
-    stock_holder_id = HiddenField(
-        validators=[Required()],
+    name = TextField(
+        validators=[
+            Required(),
+            Length(max=255, message=u'席種名は255文字以内で入力してください'),
+        ]
     )
-    stock_forms = FieldList(FormField(StockForm))
+    style = TextField(
+        validators=[Required()]
+    )

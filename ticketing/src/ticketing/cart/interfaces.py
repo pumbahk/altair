@@ -60,3 +60,24 @@ class IPaymentDeliveryPlugin(Interface):
 
 class IMobileRequest(Interface):
     """ mobile request interface"""
+
+class IStocker(Interface):
+    def take_stock(performance_id, product_requires):
+        """ 在庫取得
+        :param product_requires: list of tuple (product_id, quantity)
+        :return: list of tuple (StockStatus, quantity)
+        """
+
+class IReserving(Interface):
+    def reserve_seats(stock_id, quantity):
+        """ お任せ席指定 
+        :param stock_id: 席の在庫単位
+        :param quantity: 数量
+        :return: list of seat
+        """
+
+class ICartFactory(Interface):
+    def create_cart():
+        """
+        カート作成
+        """

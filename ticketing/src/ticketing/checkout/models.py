@@ -6,7 +6,7 @@ APIに合わせるためPEP8命名規約に従わない
 import sqlahelper
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
-from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted
+from ..models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier
 
 
 class CheckoutItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -15,8 +15,8 @@ class CheckoutItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     """
     __tablename__ = 'CheckoutItem'
 
-    id = sa.Column(sa.Integer, primary_key=True)
-    checkout_id = sa.Column(sa.Integer, sa.ForeignKey('Checkout.id'))
+    id = sa.Column(Identifier, primary_key=True)
+    checkout_id = sa.Column(Identifier, sa.ForeignKey('Checkout.id'))
     itemId = sa.Column(sa.String(100))
     itemName = sa.Column(sa.Unicode(255))
     itemNumbers = sa.Column(sa.Integer)
@@ -29,7 +29,7 @@ class Checkout(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     """
     __tablename__ = 'Checkout'
 
-    id = sa.Column(sa.Integer, primary_key=True)
+    id = sa.Column(Identifier, primary_key=True)
     orderId = sa.Column(sa.Unicode(30))
     orderControlId = sa.Column(sa.Unicode(31))
     orderCartId = sa.Column(sa.Unicode(255))  # sa.ForeignKey('ticketing_carts.id')

@@ -1,42 +1,28 @@
 <%inherit file="../layout_2cols.html" />
 <%namespace file="/common/helpers.html" name="h" />
-<% tab = request.matchdict.get('tab', 'venue-designer') %>
+<% tab = request.matchdict.get('tab', 'seat-allocation') %>
 <% route_path = request.route_path('performances.show', performance_id=performance.id) %>
 <%block name="style">
-<link rel="stylesheet" type="text/css" href="/static/css/kolorpicker.css" />
+<link rel="stylesheet" type="text/css" href="/static/css/decentcolorpicker.css" />
 <link rel="stylesheet" type="text/css" href="/static/css/performance.css" />
-<script type="text/javascript" src="/static/js/jquery.kolorpicker.js"></script>
-<script type="text/javascript" src="/static/js/ticketing.performance.js"></script>
-<script type="text/javascript" src="/static/js/fashion.js"></script>
-<script type="text/javascript" src="/static/js/ticketing.venue-viewer.js"></script>
-<style type="text/css">
-  .canvas {
-    height: 91%;
-    margin: 0 0;
-    padding: 0 0;
-  }
-  .ui-toolbar { padding: 2px 2px 2px 2px; height: 32px; }
-  .ui-toolbar { margin: 0 0; }
-
-  #venue-map {
-    padding: 0;
-  }
-  #seat-map {
-    padding: 0;
-  }
-</style>
 </%block>
+<%block name="javascript">
+<script type="text/javascript" src="/static/js/fashion.js"></script>
+<![if !(lt IE 9)]>
+<script type="text/javascript" src="/static/js/fashion.svg.js"></script>
+<![endif]>
+<!--[if (lt IE 9)]> 
+<script type="text/javascript" src="/static/js/fashion.vml.js"></script>
+<![endif]-->
+<script type="text/javascript" src="/static/js/jquery.decentcolorpicker.js"></script>
 <script type="text/javascript">
-var dataSource = {
-  drawing: "${request.route_path('api.get_drawing', venue_id=performance.venue.id)}" + "?" + Math.random(),
-  metadata: "${request.route_path('api.get_seats', venue_id=performance.venue.id)}" + "?" + Math.random()
-};
-$(function() {
-  tab = '#${tab}';
-  $(tab + '-tab').addClass('active');
-  $(tab).addClass('active');
+$(function () {
+  $(".kolorPicker").decentcolorpicker();
 });
 </script>
+<script type="text/javascript" src="/static/js/ticketing.performance.js"></script>
+<script type="text/javascript" src="/static/js/ticketing.venue-editor.js"></script>
+</%block>
 <div class="breadcrumbs">
   ${h.breadcrumbs(
       names=[u'イベント', performance.event.title, u'パフォーマンス', performance.name],
@@ -49,7 +35,7 @@ $(function() {
 </div>
 <div class="page-header">
   <h1>
-    ${performance.event.title}
+    ${performance.event.title}<br />
     <small>${performance.name}</small>
   </h1>
 </div>
@@ -85,18 +71,13 @@ $(function() {
 
 <div class="tabbable tabs-top" id="tabbable-content">
   <ul class="nav nav-tabs">
-    <li id="venue-designer-tab"><a href="${route_path}/venue-designer">会場／席種</a></li>
-    <li id="seat-allocation-tab"><a href="${route_path}/seat-allocation">配券／配席</a></li>
+    <li id="seat-allocation-tab"><a href="${route_path}/seat-allocation">席種／配券</a></li>
     <li id="product-tab"><a href="${route_path}/product">商品</a></li>
     <li id="reservation-tab"><a href="${route_path}/reservation">予約</a></li>
     <li id="ticket-designer-tab"><a href="${route_path}/ticket-designer">チケット券面</a></li>
   </ul>
   <div class="tab-content" id="tabbable-tab-content">
-    % if tab == 'seat-allocation':
-    <div class="tab-pane" id="seat-allocation">
-      <%include file="./_seat_allocation.html" args="performance=performance, form_stock_holder=form_stock_holder" />
-    </div>
-    % elif tab == 'product':
+    % if tab == 'product':
     <div class="tab-pane" id="product">
       <%include file="./_product.html" args="performance=performance, form_product=form_product, form_product_item=form_product_item" />
     </div>
@@ -109,102 +90,17 @@ $(function() {
       <%include file="./_ticket_designer.html" />
     </div>
     % else:
-    <div class="tab-pane" id="venue-designer">
-      <%include file="./_venue_designer.html" args="performance=performance, form_stock_type=form_stock_type, form_stock_allocation=form_stock_allocation" />
+    <div class="tab-pane" id="seat-allocation">
+      <%include file="./_seat_allocation.html" args="performance=performance, form_stock_holder=form_stock_holder" />
     </div>
     % endif
   </div>
+
   <script type="text/javascript">
-    var callbacks = {
-      message: function (msg) {
-        $("<div></div>").text(msg).dialog({
-          modal: true,
-          buttons: {
-            "Ok": function () { $(this).dialog('destroy'); }
-          }
-        });
-      }
-    };
-
-    function buildViewerArea() {
-      var viewer = $('<div></div>')
-        .venueviewer({
-          dataSource: dataSource,
-          callbacks: callbacks,
-          uimode: 'select'
-        });
-      var n = $([
-      '<div class="ui-widget-header ui-corner-all ui-toolbar">',
-        '<span class="ui-buttonset">',
-          '<input type="radio" name="function" value="select" class="ui-button ui-icon-primary-arrowthick-1-ne ui-no-text action-function action-select" id="toolbar-action-select" /><label for="toolbar-action-select">Select</label>',
-          '<input type="radio" name="function" value="zoomin" class="ui-button ui-icon-primary-zoomin ui-no-text action-function action-zoomin" id="toolbar-action-zoomin" /><label for="toolbar-action-zoomin">Zoom-in</label>',
-          '<input type="radio" name="function" value="zoomout" class="ui-button ui-icon-primary-zoomout ui-no-text action-function action-zoomout" id="toolbar-action-zoomout" /><label for="toolbar-action-zoomout">Zoom-out</label>',
-        '</span>',
-      '</div>',
-      ].join(""));
-      n.find(".ui-button").each(function (i, n) {
-        n = $(n);
-        n.removeClass('ui-button');
-        var cssClass = n.attr("class").split(/\s+/);
-        var options = { icons: {} }; 
-        for (var i = 0; i < cssClass.length; i++) {
-          var g;
-          if ((g = /ui-icon-primary-(.+)/.exec(cssClass[i])))
-            options.icons.primary = 'ui-icon-' + g[1];
-          if ((g = /ui-icon-secondary-(.+)/.exec(cssClass[i])))
-            options.icons.secondary = 'ui-icon-' + g[1];
-          if ('ui-no-text' == cssClass[i])
-            options.text = false;
-        }
-        n.button(options);
-      });
-      n.find(".ui-buttonset").remove('ui-buttonset').buttonset();
-      n.find(".action-function").on('click', function () {
-        viewer.venueviewer('uimode', this.value);
-      }).each(function (i, n) {
-        if (n.checked)
-          viewer.venueviewer('uimode', n.value);
-      });
-      viewer.venueviewer('load');
-      n.push(viewer[0]);
-      return n;
-    }
-
-    (function() {
-      var active_tab = null;
-      function activate_tab() {
-        var new_active_tab = $(this).find("#tabbable-tab-content > .tab-pane.active");
-        if (active_tab) {
-          switch (active_tab.attr('id')) {
-          case 'venue-designer':
-            try {
-              $('#venue-map > :eq(1)').venueviewer('remove');
-            } catch (e) {}
-            $('#venue-map').empty();
-            break;
-          case 'seat-allocation':
-            try {
-              $('#seat-map > :eq(1)').venueviewer('remove');
-            } catch (e) {}
-            $('#seat-map').empty();
-            break;
-          }
-        }
-
-        switch (new_active_tab.attr('id')) {
-        case 'venue-designer':
-          $("#venue-map").append(buildViewerArea());
-          break;
-        case 'seat-allocation':
-          $("#seat-map").append(buildViewerArea());
-          break;
-        case 'ticket-designer':
-          TicketDesigner_adjustViewSize();
-          break;
-        }
-        active_tab = new_active_tab;
-      }
-      activate_tab.call($("#tabbable-content").on('shown', activate_tab));
-    })();
-  </script>
+$(function() {
+tab = '#${tab}';
+$(tab + '-tab').addClass('active');
+$(tab).addClass('active');
+});
+</script>
 </div>

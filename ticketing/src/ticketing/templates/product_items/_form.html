@@ -38,8 +38,9 @@
     <a class="close" data-dismiss="modal">×</a>
     <h3>商品</h3>
   </div>
-  <form action="javascript:save_product_item();" method="POST">
-    <div class="modal-body">
+
+  <div class="modal-body">
+    <form action="javascript:save_product_item();" method="POST">
       <fieldset>
         <div id="product">
           <table class="table table-bordered">
@@ -67,11 +68,11 @@
           ${form_item(form.quantity)}
         </div>
       </fieldset>
-    </div>
+    </form>
+  </div>
 
-    <div class="modal-footer">
-      <a href="#" class="btn" data-dismiss="modal">閉じる</a>
-      <input class="btn" type="submit" value="保存"></a>
-    </div>
-  </form>
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+    <a href="javascript:$('#modal-product_item').find('form').submit();" class="btn">保存</a>
+  </div>
 </div>

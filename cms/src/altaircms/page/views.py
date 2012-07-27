@@ -5,8 +5,8 @@ from pyramid.view import view_config
 from pyramid.view import view_defaults
 from pyramid.httpexceptions import HTTPFound
 from ..plugins.api import get_widget_aggregator_dispatcher
-from altaircms.lib.viewhelpers import RegisterViewPredicate
-from altaircms.lib.viewhelpers import FlashMessage
+from altaircms.helpers.viewhelpers import RegisterViewPredicate
+from altaircms.helpers.viewhelpers import FlashMessage
 from . import forms
 from . import searcher
 import altaircms.widget.forms as wf

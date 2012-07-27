@@ -17,7 +17,8 @@ def includeme(config):
     config.add_directive("add_payment_method", ".directives.add_payment_method")
     # 購入系
     config.add_route('cart.index', 'events/{event_id}')
-    config.add_route('cart.seat_types', 'events/{event_id}/performances/{performance_id}/seat_types')
+    config.add_route('cart.index.sales', 'events/{event_id}/sales/{sales_segment_id}')
+    config.add_route('cart.seat_types', 'events/{event_id}/performances/{performance_id}/sales_segment/{sales_segment_id}/seat_types')
     config.add_route('cart.seats', 'events/{event_id}/performances/{performance_id}/venues/{venue_id}/seats')
     config.add_route('cart.seat_adjacencies', 'events/{event_id}/performances/{performance_id}/venues/{venue_id}/seat_adjacencies/{length_or_range}')
     config.add_route('cart.venue_drawing', 'events/{event_id}/performances/{performance_id}/venues/{venue_id}/drawing')
@@ -39,6 +40,16 @@ def includeme(config):
     config.add_route('rakuten_auth.verify', '/verify')
     config.add_route('rakuten_auth.error', '/error')
 
+    from pyramid.interfaces import IRequest
+    from .interfaces import IStocker, IReserving, ICartFactory
+    from .stocker import Stocker
+    from .reserving import Reserving
+    from .carting import CartFactory
+    reg = config.registry
+    reg.adapters.register([IRequest], IStocker, "", Stocker)
+    reg.adapters.register([IRequest], IReserving, "", Reserving)
+    reg.adapters.register([IRequest], ICartFactory, "", CartFactory)
+
 
 def main(global_config, **settings):
     
@@ -52,7 +63,7 @@ def main(global_config, **settings):
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.add_renderer('json'  , 'ticketing.renderers.json_renderer_factory')
     config.add_renderer('csv'   , 'ticketing.renderers.csv_renderer_factory')
-    config.add_static_view('img', 'ticketing.cart:static', cache_max_age=3600)
+    config.add_static_view('staic', 'ticketing.cart:static', cache_max_age=3600)
 
     config.add_subscriber('.mail.on_order_completed', '.events.OrderCompleted')
 

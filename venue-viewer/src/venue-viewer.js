@@ -222,6 +222,7 @@
     this.shapes = null;
     this.seats = {};
     this.selection = {};
+    this.selectionCount = 0;
     this.highlighted = {};
     this._adjacencyLength = 1;
     this.animating = false;
@@ -600,11 +601,13 @@
     if (value) {
       if (!(seat.id in this.selection)) {
         this.selection[seat.id] = seat;
+        this.selectionCount++;
         seat.__selected();
       }
     } else {
       if (seat.id in this.selection) {
         delete this.selection[seat.id];
+        this.selectionCount--;
         seat.__unselected();
       }
     }

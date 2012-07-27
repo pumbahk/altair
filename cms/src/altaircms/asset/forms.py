@@ -4,7 +4,7 @@ from wtforms import form, fields, validators
 from altaircms.interfaces import IForm
 from altaircms.interfaces import implementer
 from altaircms.helpers.formhelpers import required_field
-from altaircms.lib.formhelpers import dynamic_query_select_field_factory
+from altaircms.helpers.formhelpers import dynamic_query_select_field_factory
 from altaircms.auth.models import Operator
 
 class OnlyExtsFileGen(object):

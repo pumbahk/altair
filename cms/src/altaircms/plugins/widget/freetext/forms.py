@@ -3,7 +3,7 @@ from wtforms.form import Form
 from wtforms import fields
 from wtforms import widgets
 from wtforms import validators
-from altaircms.lib.formhelpers import dynamic_query_select_field_factory
+from altaircms.helpers.formhelpers import dynamic_query_select_field_factory
 from . import models
 
 class FreetextBodyForm(Form):

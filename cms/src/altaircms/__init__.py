@@ -1,6 +1,6 @@
 # coding:utf-8
 
-from altaircms.lib.formhelpers import datetime_pick_patch
+from altaircms.helpers.formhelpers import datetime_pick_patch
 datetime_pick_patch()
 
 import logging
@@ -80,7 +80,7 @@ def main(global_config, **settings):
     config.add_subscriber(".subscribers.after_form_initialize", 
                           "pyramid.events.BeforeRender")
     config.add_subscriber(".subscribers.add_choices_query_refinement", 
-                          ".lib.formevent.AfterFormInitialize")
+                          ".subscribers.AfterFormInitialize")
 
     ## allowable query(organizationごとに絞り込んだデータを提供)
     config.set_request_property("altaircms.auth.api.get_allowable_query", "allowable", reify=True)

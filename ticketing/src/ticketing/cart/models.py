@@ -22,16 +22,20 @@ Reserved
 
 
 from datetime import datetime, timedelta
+import itertools
+import operator
 import sqlahelper
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from sqlalchemy import sql
 from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm.exc import NoResultFound
+from zope.deprecation import deprecate
 
 from ticketing.utils import sensible_alnum_encode
 from ticketing.models import Identifier
 from ..core import models as c_models
+from ..models import Identifier
 from . import logger
 
 class PaymentMethodManager(object):
@@ -52,8 +56,8 @@ Base = sqlahelper.get_base()
 DBSession = sqlahelper.get_session()
 
 cart_seat_table = sa.Table("cat_seat", Base.metadata,
-    sa.Column("seat_id", sa.BigInteger, sa.ForeignKey("Seat.id")),
-    sa.Column("cartproductitem_id", sa.Integer, sa.ForeignKey("ticketing_cartedproductitems.id")),
+    sa.Column("seat_id", Identifier, sa.ForeignKey("Seat.id")),
+    sa.Column("cartproductitem_id", Identifier, sa.ForeignKey("ticketing_cartedproductitems.id")),
 )
 
 class CartedProductItem(Base):
@@ -62,11 +66,11 @@ class CartedProductItem(Base):
     __tablename__ = 'ticketing_cartedproductitems'
     query = DBSession.query_property()
 
-    id = sa.Column(sa.Integer, primary_key=True)
+    id = sa.Column(Identifier, primary_key=True)
 
     quantity = sa.Column(sa.Integer)
 
-    product_item_id = sa.Column(sa.BigInteger, sa.ForeignKey("ProductItem.id"))
+    product_item_id = sa.Column(Identifier, sa.ForeignKey("ProductItem.id"))
 
     #seat_status_id = sa.Column(sa.Integer, sa.ForeignKey(""))
 
@@ -74,7 +78,7 @@ class CartedProductItem(Base):
     seats = orm.relationship("Seat", secondary=cart_seat_table)
     #seat_status = orm.relationship("SeatStatus")
 
-    carted_product_id = sa.Column(sa.Integer, sa.ForeignKey("ticketing_cartedproducts.id", onupdate='cascade', ondelete='cascade'))
+    carted_product_id = sa.Column(Identifier, sa.ForeignKey("ticketing_cartedproducts.id", onupdate='cascade', ondelete='cascade'))
     carted_product = orm.relationship("CartedProduct", backref="items", cascade='all')
 
     created_at = sa.Column(sa.DateTime, default=datetime.now)
@@ -82,6 +86,12 @@ class CartedProductItem(Base):
     deleted_at = sa.Column(sa.DateTime, nullable=True)
     finished_at = sa.Column(sa.DateTime)
 
+    @property
+    def seatdicts(self):
+        return ({'name': s.name, 'l0_id': s.l0_id}
+                for s in self.seats)
+
+    @deprecate("deprecated method")
     def pop_seats(self, seats):
         """ 必要な座席を取り出して保持する
 
@@ -89,11 +99,6 @@ class CartedProductItem(Base):
         :param seats: list of :class:`ticketing.models.Seat`
         """
 
-        # TODO: ループじゃなくてquantityでスライスするような実装も可能
-#        for i in range(self.quantity):
-#            myseat = [seat for seat in seats if seat.stock_id == self.product_item.stock_id][0]
-#            seats.remove(myseat)
-#            self.seats.append(myseat)
         my_seats = [seat for seat in seats if seat.stock_id == self.product_item.stock_id][:self.quantity]
         map(seats.remove, my_seats)
         self.seats.extend(my_seats)
@@ -131,12 +136,12 @@ class CartedProduct(Base):
 
     query = DBSession.query_property()
 
-    id = sa.Column(sa.Integer, primary_key=True)
+    id = sa.Column(Identifier, primary_key=True)
     quantity = sa.Column(sa.Integer)
-    cart_id = sa.Column(sa.Integer, sa.ForeignKey('ticketing_carts.id', onupdate='cascade', ondelete='cascade'))
+    cart_id = sa.Column(Identifier, sa.ForeignKey('ticketing_carts.id', onupdate='cascade', ondelete='cascade'))
     cart = orm.relationship("Cart", backref="products", cascade='all')
 
-    product_id = sa.Column(sa.BigInteger, sa.ForeignKey("Product.id"))
+    product_id = sa.Column(Identifier, sa.ForeignKey("Product.id"))
     product = orm.relationship("Product")
 
     created_at = sa.Column(sa.DateTime, default=datetime.now)
@@ -150,6 +155,12 @@ class CartedProduct(Base):
         """
         return self.product.price * self.quantity
 
+    @property
+    def seats(self):
+        return sorted(itertools.chain.from_iterable(i.seatdicts for i in self.items), 
+            key=operator.itemgetter('l0_id'))
+
+    @deprecate("deprecated method")
     def pop_seats(self, seats, performance_id):
         for product_item in self.product.items:
             if product_item.performance_id != performance_id:
@@ -158,6 +169,7 @@ class CartedProduct(Base):
             seats = cart_product_item.pop_seats(seats)
         return seats
 
+    @deprecate("deprecated method")
     def adjust_items(self, performance_id):
         for product_item in self.product.items:
             if product_item.performance_id != performance_id:
@@ -189,9 +201,9 @@ class Cart(Base):
 
     query = DBSession.query_property()
 
-    id = sa.Column(sa.Integer, primary_key=True)
+    id = sa.Column(Identifier, primary_key=True)
     cart_session_id = sa.Column(sa.Unicode(255), unique=True)
-    performance_id = sa.Column(sa.BigInteger, sa.ForeignKey('Performance.id'))
+    performance_id = sa.Column(Identifier, sa.ForeignKey('Performance.id'))
 
     performance = orm.relationship('Performance')
 
@@ -268,6 +280,7 @@ class Cart(Base):
         """
         return self.created_at > datetime.now() - timedelta(minutes=expire_span_minutes)
 
+    @deprecate("deprecated method")
     def add_seat(self, seats, ordered_products):
         """ 確保した座席を追加
         :param seats: list of Seat
@@ -280,6 +293,7 @@ class Cart(Base):
             seats = cart_product.pop_seats(seats, self.performance_id)
         # CartProductでseatsから必要な座席を取り出し
 
+    @deprecate("deprecated method")
     def add_products(self, ordered_products):
         for ordered_product, quantity in ordered_products:
             # ordered_productでCartProductを作成

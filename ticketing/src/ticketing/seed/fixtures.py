@@ -237,9 +237,10 @@ class FixtureBuilder(object):
             user=many_to_one(self.build_user_datum(), 'user_id')
             )
 
-    def build_seat_datum(self, group_l0_id, l0_id, stock):
+    def build_seat_datum(self, group_l0_id, l0_id, stock, name):
         return self.Datum(
             'Seat',
+            name=name,
             l0_id=l0_id,
             stock=many_to_one(stock, 'stock_id'),
             stock_type=many_to_one(stock.stock_type, 'stock_type_id'),
@@ -349,8 +350,8 @@ class FixtureBuilder(object):
             colgroup = config['colgroups'][i]
             seat_index = 0
             for stock in stocks:
-                for l0_id in colgroup[2][seat_index:seat_index + stock.quantity]:
-                    seat_datum = self.build_seat_datum(colgroup[1], l0_id, stock)
+                for i, l0_id in enumerate(colgroup[2][seat_index:seat_index + stock.quantity]):
+                    seat_datum = self.build_seat_datum(colgroup[1], l0_id, stock, u'ブロック%s %s番' % (colgroup[0], i + 1))
                     seats.append(seat_datum)
                     l0_id_to_seat[l0_id] = seat_datum
                 seat_index += stock.quantity
@@ -478,14 +479,15 @@ class FixtureBuilder(object):
 
     def build_organization_datum(self, code, name):
         logger.info(u"Building Organization %s" % name)
+        account_data = [
+            self.build_account_datum(name_, type) \
+            for name_, type in self.account_pairs
+            ]
         retval = self.Datum(
             'Organization',
             name=name,
             code=code,
-            accounts=one_to_many(
-                [self.build_account_datum(name, type) for name, type in self.account_pairs],
-                'organization_id'
-                ),
+            accounts=one_to_many(account_data, 'organization_id'),
             operators=one_to_many(
                 [
                     self.build_operator_datum(
@@ -496,6 +498,14 @@ class FixtureBuilder(object):
                     for operator_name, role_names in self.operator_seeds.iteritems()
                     ],
                 'organization_id',
+                ),
+            user=many_to_one(
+                [
+                    account_datum.user \
+                    for account_datum in account_data \
+                    if account_datum.name == name
+                    ][0],
+                'user_id'
                 )
             )
         payment_method_data = [
@@ -598,7 +608,6 @@ class FixtureBuilder(object):
             site = choice(self.site_data)
         else:
             site = None
-        stock_allocation_data = []
         stock_data = []
         stock_sets = []
         if site is not None:
@@ -616,14 +625,6 @@ class FixtureBuilder(object):
                 colgroup_index += 1
             else:
                 quantity = randint(10, 100) * 10
-            stock_allocation_datum = self._Datum(
-                'StockAllocation',
-                ('stock_type_id', 'performance_id'),
-                stock_type=many_to_one(stock_type, 'stock_type_id'),
-                performance=many_to_one(retval, 'performance_id'),
-                quantity=quantity
-                )
-            stock_allocation_data.append(stock_allocation_datum)
             rest = quantity
             for i, stock_holder in enumerate(chain([None], event.stock_holders)):
                 assigned = rest if i == len(event.stock_holders) - 1 else randint(0, rest)
@@ -636,17 +637,13 @@ class FixtureBuilder(object):
                 [self.build_venue_datum(organization, site, stock_sets)],
                 'performance_id'
                 )
-        retval.stock_allocations = one_to_many(
-            stock_allocation_data,
-            'performance_id'
-            )
         retval.stocks = one_to_many(
             stock_data,
             'performance_id'
             )
         retval.product_items = one_to_many(
             list(chain(*(
-                self.build_product_item_data(retval, product, stock_data) \
+                self.build_product_item_data(organization, retval, product, stock_data) \
                 for product in event.products
                 ))),
             'performance_id'
@@ -696,10 +693,12 @@ class FixtureBuilder(object):
             quantity=quantity
             )
 
-    def build_product_item_data(self, performance, product, stocks):
+    def build_product_item_data(self, organization, performance, product, stocks):
         def find_stock(stock_type_name):
             for stock in stocks:
-                if stock.stock_type.name == stock_type_name:
+                if stock.stock_type.name == stock_type_name and \
+                   stock.stock_holder is not None and \
+                   stock.stock_holder.account.user == organization.user:
                     return stock
             raise Exception("No such stock that corresponds to %s" % stock_type_name)
 

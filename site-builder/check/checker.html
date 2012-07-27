@@ -1,0 +1,94 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script type="text/javascript">
+<!--
+var load = function(url) {
+	$.ajax({
+		url: url,
+		dataType: 'text',
+		success: function(r) {
+			$('#stage').get(0).innerHTML = r;
+			
+			// 適当に縮小
+			$('#stage > svg > g').attr('transform', 'scale(0.5)');
+			
+			$('#venue').text($('#stage > svg > title').text());
+			
+			var svgfind = function(p, element, attr, value) {
+				var len = p.size();
+				for(var i=0 ; i<len ; i++) {
+					if(p.get(i).tagName == element) {
+						if(!attr || p.eq(i).attr(attr) == value) {
+							return p.get(i);
+						}
+					}
+				}
+			};
+			$('#stage g g rect').hover(function() {
+				// jQuery DOES NOT SUPPORT SVG Elements traversal
+				var b = $('metadata', $(this).parents('g').eq(1)).eq(0);
+				var r = $('metadata', $(this).parents('g').eq(0)).eq(0);
+				var block = svgfind($('*', b), 'si:property', 'name', 'name');
+				$('#block').text(block ? block.childNodes.item(0).data : '?');
+				var row = svgfind($('*', r), 'si:property', 'name', 'name');
+				$('#row').text(row ? row.childNodes.item(0).data : '?');
+				$('#seat').text($('title', this).text());
+				$('#seat_id').text($(this).attr('id'));
+				var obj = svgfind($('metadata *', this), 'si:object');
+				$('#seat_proto').text(obj.getAttribute('prototype'));
+				$(this).attr('fill-opacity', '0.2');
+			}, function() {
+				var e = $(this).get(0);
+				$('#block').text(' ');
+				$('#row').text(' ');
+				$('#seat').text(' ');
+				$('#seat_id').text(' ');
+				$('#seat_proto').text(' ');
+				$(this).attr('fill-opacity', '');
+			});
+		}
+	});
+};
+$(function() {
+	$('#stage').css({ cursor: 'url(pointer.png)' });
+	$('form').submit(function() {
+		load($('#url').val());
+		return false;
+	});
+	$('form').submit();
+});
+//-->
+</script>
+<link rel="stylesheet" href="../style.css" type="text/css">
+<style type="text/css">
+* { font-size: 8px; }
+#status span { display: inline-block; width: 160px; overflow: hidden; }
+</style>
+</head>
+<body>
+<div>
+	<form style="padding-top: 8px;">
+	<u>Seat Check Tool</u>
+	Location: <input type="text" id="url" value="../akita-shiritsu.xml" style="width: 90%" />
+	<input type="submit" value="Load" />
+	</form>
+	<div style="height: 20px;" id="status">
+		Venue: <span id="venue"></span>
+		Block: <span id="block"></span>
+		&nbsp;&nbsp;&nbsp;
+		Row: <span id="row"></span>
+		&nbsp;&nbsp;&nbsp;
+		Seat: <span id="seat"></span>
+		&nbsp;&nbsp;&nbsp;
+		Seat_ID: <span id="seat_id"></span>
+		&nbsp;&nbsp;&nbsp;
+		Seat_Prototype: <span id="seat_proto"></span>
+	</div>
+</div>
+
+<div id="stage"></div>
+
+</body>
+</html>

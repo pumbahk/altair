@@ -1,18 +1,17 @@
 import unittest
 from pyramid import testing
 
-def setup_module():
-    import sqlahelper
-    from sqlalchemy import create_engine
-    engine = create_engine("sqlite:///")
-    sqlahelper.add_engine(engine)
-    
-    from ..auth import models
-    sqlahelper.get_base().metadata.create_all()
+def setUpModule():
+    from altaircms.testing import setup_db
+    setup_db(["altaircms.auth.models", 
+              "altaircms.event.models", 
+              "altaircms.page.models"])
 
-def teardown_module():
-    import sqlahelper
-    sqlahelper.get_base().metadata.drop_all()
+def tearDownModule():
+    from altaircms.testing import teardown_db
+    teardown_db()
+    
+
 
 class RootFactoryTests(unittest.TestCase):
 
@@ -25,7 +24,7 @@ class RootFactoryTests(unittest.TestCase):
         transaction.abort()
 
     def _getTarget(self):
-        from .. import security
+        from altaircms import security
         return security.RootFactory
 
     def _makeOne(self, request):
@@ -39,10 +38,10 @@ class RootFactoryTests(unittest.TestCase):
         target = self._makeOne(request)
         result = target.__acl__
 
-        self.assertEqual(result, [(Allow, Authenticated, 'authenticated')])
+        self.assertEqual(list(result), [(Allow, Authenticated, 'authenticated')])
 
     def _add_role(self, role_name, permissions):
-        from ..auth import models
+        from altaircms.auth import models
         role = models.Role(name=role_name, permissions=permissions)
         import sqlahelper
         sqlahelper.get_session().add(role)
@@ -57,6 +56,7 @@ class RootFactoryTests(unittest.TestCase):
         target = self._makeOne(request)
         result = target.__acl__
 
-        self.assertEqual(result, 
+        self.assertEqual(list(result), 
             [(Allow, Authenticated, 'authenticated'),
             ('Allow', 'test-role', 'page_update')])
+

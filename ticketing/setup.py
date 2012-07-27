@@ -42,6 +42,7 @@ requires = [
     'js.bootstrap==2.1.1',
     'js.jquery_timepicker_addon',
     'js.jquery_colorpicker',
+    'js.i18n',
     'simplejson',
     'waitress',
     'altair-commons',
@@ -55,6 +56,7 @@ requires = [
     'mock',
     'tableau >= 0.0.4pre',
     'uamobile',
+    'alembic >= 0.3.3',
     ]
 
 setup(name='ticketing',
@@ -80,6 +82,7 @@ setup(name='ticketing',
         'file:../commons#egg=altair-commons-0.0',
         'file:../bundle/js.underscore#egg=js.underscore-1.3.3',
         'https://github.com/moriyoshi/tableau/tarball/master#egg=tableau-0.0.4pre',
+        'https://bitbucket.org/moriyoshi/alembic/get/9fe8d037f71f.zip#egg=alembic-0.3.5moriyoshi'
       ],
       tests_require=requires,
       test_suite="ticketing",

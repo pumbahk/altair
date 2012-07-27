@@ -8,6 +8,7 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.expression import or_
 from markupsafe import Markup
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
+from pyramid.exceptions import NotFound
 from pyramid.response import Response
 from pyramid.view import view_config
 from js.jquery_tools import jquery_tools
@@ -25,18 +26,11 @@ from .rakuten_auth.api import authenticated_user
 from .events import notify_order_completed
 from webob.multidict import MultiDict
 from . import api
+from .reserving import InvalidSeatSelectionException
+from .stocker import NotEnoughStockException
 import transaction
 
 logger = logging.getLogger(__name__)
-
-class ExceptionView(object):
-    def __init__(self, request):
-        self.request = request
-
-    @view_config(context=NoCartError)
-    def handle_nocarterror(self):
-        logger.error("No cart!")
-        return HTTPFound('/')
 
 class IndexView(object):
     """ 座席選択画面 """
@@ -46,11 +40,17 @@ class IndexView(object):
 
 
     @view_config(route_name='cart.index', renderer='carts_mobile/index.html', xhr=False, permission="view", request_type=".interfaces.IMobileRequest")
+    @view_config(route_name='cart.index.sales', renderer='carts_mobile/index.html', xhr=False, permission="view", request_type=".interfaces.IMobileRequest")
     @view_config(route_name='cart.index', renderer='carts/index.html', xhr=False, permission="view")
+    @view_config(route_name='cart.index.sales', renderer='carts/index.html', xhr=False, permission="view")
     def __call__(self):
         jquery_tools.need()
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.params.get('performance')
+
+        sales_segment = self.context.get_sales_segument()
+        if sales_segment is None:
+            raise NoEventError("No matching sales_segment")
 
         from .api import get_event_info_from_cms
         event_extra_info = get_event_info_from_cms(self.request, event_id)
@@ -58,7 +58,7 @@ class IndexView(object):
 
         e = DBSession.query(c_models.Event).filter_by(id=event_id).first()
         if e is None:
-            raise HTTPNotFound(self.request.url)
+            raise NoEventError("No such event (%d)" % event_id)
         # 日程,会場,検索項目のコンボ用
         dates = sorted(list(set([p.start_on.strftime("%Y-%m-%d %H:%M") for p in e.performances])))
         # 日付ごとの会場リスト
@@ -67,7 +67,9 @@ class IndexView(object):
             d = p.start_on.strftime('%Y-%m-%d %H:%M')
             ps = select_venues.get(d, [])
             ps.append(dict(id=p.id, name=p.venue.name,
-                           seat_types_url=self.request.route_url('cart.seat_types', performance_id=p.id,
+                           seat_types_url=self.request.route_url('cart.seat_types', 
+                                                                 performance_id=p.id,
+                                                                 sales_segment_id=sales_segment.id,
                                                                  event_id=e.id)))
             select_venues[d] = ps
 
@@ -92,10 +94,6 @@ class IndexView(object):
         event = dict(id=e.id, code=e.code, title=e.title, abbreviated_title=e.abbreviated_title,
             sales_start_on=str(e.sales_start_on), sales_end_on=str(e.sales_end_on), venues=venues, product=e.products, )
 
-        sales_segment = self.context.get_sales_segument()
-        if sales_segment is None:
-            raise HTTPNotFound
-
         return dict(event=event,
                     dates=dates,
                     cart_release_url=self.request.route_url('cart.release'),
@@ -111,13 +109,22 @@ class IndexView(object):
     def get_seat_types(self):
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.matchdict['performance_id']
+        sales_segment_id = self.request.matchdict['sales_segment_id']
+
+        segment_stocks = DBSession.query(c_models.ProductItem.stock_id).filter(
+            c_models.ProductItem.product_id==c_models.Product.id).filter(
+            c_models.Product.sales_segment_id==sales_segment_id)
+
         seat_types = DBSession.query(c_models.StockType).filter(
             c_models.Performance.event_id==event_id).filter(
             c_models.Performance.id==performance_id).filter(
             c_models.Performance.event_id==c_models.StockHolder.event_id).filter(
             c_models.StockHolder.id==c_models.Stock.stock_holder_id).filter(
-            c_models.Stock.stock_type_id==c_models.StockType.id).all()
+            c_models.Stock.stock_type_id==c_models.StockType.id).filter(
+            c_models.Stock.id.in_(segment_stocks)).all()
+
         performance = c_models.Performance.query.filter_by(id=performance_id).one()
+
         data = dict(seat_types=[
                 dict(id=s.id, name=s.name,
                     style=s.style,
@@ -211,11 +218,15 @@ class IndexView(object):
         salessegment = self.context.get_sales_segument()
         query = h.products_filter_by_salessegment(query, salessegment)
 
-        products = [dict(id=p.id, name=p.name, price=h.format_number(p.price, ","), unit_template=h.build_unit_template(p, performance_id))
+        products = [dict(id=p.id, 
+                         name=p.name, 
+                         price=h.format_number(p.price, ","), 
+                         unit_template=h.build_unit_template(p, performance_id),
+                         quantity_power=p.get_quantity_power(seat_type, performance_id))
             for p in query]
 
         return dict(products=products,
-            seat_type=dict(id=seat_type.id, name=seat_type.name))
+                    seat_type=dict(id=seat_type.id, name=seat_type.name))
 
     @view_config(route_name='cart.seats', renderer="json")
     def get_seats(self):
@@ -322,8 +333,33 @@ class ReserveView(object):
 
         return [(products.get(int(c[0])), c[1]) for c in controls]
 
-
     @view_config(route_name='cart.order', request_method="POST", renderer='json')
+    def reserve(self):
+        order_items = self.ordered_items
+        selected_seats = self.request.params.getall('selected_seat')
+        logger.debug('order_items %s' % order_items)
+        try:
+            cart = api.order_products(self.request, self.request.params['performance_id'], order_items, selected_seats=selected_seats)
+            if cart is None:
+                return dict(result='NG')
+        except InvalidSeatSelectionException:
+            return dict(result='NG')
+        except NotEnoughStockException:
+            return dict(result='NG')
+
+        api.set_cart(self.request, cart)
+        return dict(result='OK', 
+                    payment_url=self.request.route_url("cart.payment"),
+                    cart=dict(products=[dict(name=p.product.name, 
+                                             quantity=p.quantity,
+                                             price=int(p.product.price),
+                                             seats=p.seats,
+                                        ) 
+                                        for p in cart.products],
+                              total_amount=h.format_number(cart.tickets_amount),
+                    ))
+
+
     def __call__(self):
         """
         座席情報から座席グループを検索する
@@ -362,13 +398,7 @@ class ReleaseCartView(object):
         api.remove_cart(self.request)
 
         return dict()
-        
-class Reserve2View(object):
-    """ 座席選択完了画面(ユーザー選択) """
-    def __init__(self, request):
-        self.request = request
 
-        # TODO: 座席選択コンポーネントへの入力を作る
 
 class PaymentView(object):
     """ 支払い方法、引き取り方法選択 """

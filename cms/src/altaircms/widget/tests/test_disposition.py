@@ -2,8 +2,8 @@
 from altaircms.widget.models import WidgetDisposition
 from altaircms.plugins.widget.image.models import ImageWidget
 from altaircms.plugins.widget.freetext.models import FreetextWidget
-from altaircms.lib.testutils import functionalTestSetUp
-from altaircms.lib.testutils import functionalTestTearDown
+from altaircms.testing import functionalTestSetUp
+from altaircms.testing import functionalTestTearDown
 
 import unittest
 import datetime

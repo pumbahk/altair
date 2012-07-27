@@ -23,10 +23,28 @@ Generating seed data
 
   $ python src/ticketing/seed/gen.py > ticketing.sql
 
-DB再生成とシードデータのインポート::
+DB再生成::
+  
+  $ alembic -c alembic.ini upgrade head
+
+シードデータのインポート::
 
   $ python initdb.py development.ini ticketing.sql
 
+Set Up Database
+=====================
+
+データベースの作成::
+
+ mysql>> CREATE DATABASE ticketing CHARACTER SET utf8;
+
+alembic実行::
+
+ $ alembic upgrade head
+
+データ投入::
+
+ $ python initdb.py development.ini ticketing.sql
 
 Cart test how-to
 ================
