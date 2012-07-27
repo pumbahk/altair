@@ -51,8 +51,6 @@ class Organizations(BaseView):
         return {
             'form':OrganizationForm(),
             'organization':organization,
-            'distributing_events':Event.get_distributing(organization_id=organization_id),
-            'distributed_events':Event.get_distributed(user_id=organization.user_id),
         }
 
     @view_config(route_name='organizations.new', request_method='GET', renderer='ticketing:templates/organizations/edit.html')

@@ -4,13 +4,14 @@
 <div id="modal-account" class="modal fade">
   <div class="modal-header">
     <a class="close" data-dismiss="modal">×</a>
-    <h3>クライアント</h3>
+    <h3>取引先</h3>
   </div>
 
   <div class="modal-body">
     <form action="javascript:save_account();" method="POST">
       ${form_item(form.id)}
-      ${form_item(form.organization_id, option={'class':'span6'})}
+      ${form_item(form.account_type, option={'class':'span6'})}
+      ${form_item(form.user_id, option={'class':'span6'})}
       ${form_item(form.name, option={'maxlength':255})}
     </form>
   </div>

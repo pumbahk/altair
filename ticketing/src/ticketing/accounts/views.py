@@ -3,14 +3,14 @@
 import webhelpers.paginate as paginate
 
 from pyramid.view import view_config, view_defaults
-from pyramid.httpexceptions import HTTPFound, HTTPNotFound
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPForbidden
 from pyramid.renderers import render_to_response
 from pyramid.url import route_path
 
 from ticketing.views import BaseView
-from ticketing.models import merge_session_with_post, record_to_multidict, LogicallyDeleted
+from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.fanstatic import with_bootstrap
-from ticketing.core.models import Account
+from ticketing.core.models import Account, Event
 from ticketing.accounts.forms import AccountForm
 from ticketing.organizations.forms import OrganizationForm
 
@@ -24,9 +24,7 @@ class Accounts(BaseView):
         if direction not in ['asc', 'desc']:
             direction = 'asc'
 
-        query = Account.filter(Account.user_id==int(self.context.user.id))
-        query = query.order_by(sort + ' ' + direction)
-
+        query = Account.filter_by(organization_id=int(self.context.user.organization_id)).order_by(sort + ' ' + direction)
         accounts = paginate.Page(
             query,
             page=int(self.request.params.get('page', 0)),
@@ -49,18 +47,20 @@ class Accounts(BaseView):
         return {
             'form':AccountForm(record_to_multidict(account)),
             'form_organization':OrganizationForm(),
-            'account':account
+            'account':account,
+            'owner_events':Event.get_owner_event(user_id=account.user.id),
+            'client_events':Event.get_client_event(user_id=account.user.id),
         }
 
     @view_config(route_name='accounts.new', request_method='POST', renderer='ticketing:templates/accounts/_form.html')
     def new_post(self):
-        f = AccountForm(self.request.POST)
+        f = AccountForm(self.request.POST, organization_id=self.context.user.organization.id)
         if f.validate():
             account = merge_session_with_post(Account(), f.data)
-            account.user_id = self.context.user.id
+            account.organization_id = self.context.user.organization.id
             account.save()
 
-            self.request.session.flash(u'アカウントを保存しました')
+            self.request.session.flash(u'取引先を保存しました')
             return render_to_response('ticketing:templates/refresh.html', {}, request=self.request)
         else:
             return {
@@ -74,13 +74,13 @@ class Accounts(BaseView):
         if account is None:
             return HTTPNotFound('account id %d is not found' % account_id)
 
-        f = AccountForm(self.request.POST)
+        f = AccountForm(self.request.POST, organization_id=self.context.user.organization.id)
         if f.validate():
             account = merge_session_with_post(account, f.data)
-            account.user_id = self.context.user.id
+            account.organization_id = self.context.user.organization.id
             account.save()
 
-            self.request.session.flash(u'アカウントを保存しました')
+            self.request.session.flash(u'取引先を保存しました')
             return render_to_response('ticketing:templates/refresh.html', {}, request=self.request)
         else:
             return {
@@ -96,5 +96,5 @@ class Accounts(BaseView):
 
         account.delete()
 
-        self.request.session.flash(u'アカウントを削除しました')
+        self.request.session.flash(u'取引先を削除しました')
         return HTTPFound(location=route_path('accounts.index', self.request))

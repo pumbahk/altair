@@ -270,9 +270,9 @@ class SeatAdjacencySet(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     venue = relationship("Venue", backref='adjacency_sets')
 
 class AccountTypeEnum(StandardEnum):
-    Promoter    = 1
-    Playguide   = 2
-    User        = 3
+    Promoter    = (1, u'プロモーター')
+    Playguide   = (2, u'プレイガイド')
+    User        = (3, u'ユーザー')
 
 class Account(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "Account"
@@ -286,6 +286,13 @@ class Account(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization_id = Column(Identifier, ForeignKey("Organization.id"), nullable=True)
     organization = relationship('Organization', uselist=False, backref='accounts')
     stock_holders = relationship('StockHolder', backref='account')
+
+    @property
+    def account_type_label(self):
+        for account_type in AccountTypeEnum:
+            if account_type.v[0] == self.account_type:
+                return account_type.v[1]
+        return
 
     @staticmethod
     def get_by_organization_id(id):
@@ -437,12 +444,15 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return self._final_performance
 
     @staticmethod
-    def get_distributing(organization_id):
-        return Event.filter().join(Event.account).filter(Account.organization_id==organization_id).all()
+    def get_owner_event(user_id):
+        return Event.filter().join(Event.account).filter(Account.user_id==user_id).all()
 
     @staticmethod
-    def get_distributed(user_id):
-        return Event.filter().join(Event.account).filter(Account.user_id==user_id).all()
+    def get_client_event(user_id):
+        return Event.filter().join(Event.stock_holders)\
+                             .join(StockHolder.account)\
+                             .filter(Account.user_id==user_id)\
+                             .all()
 
     def get_accounts(self):
         return Account.filter().with_entities(Account.name).join(StockHolder)\
@@ -535,7 +545,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                          .filter_by(user_id=self.organization.user_id).first()
         if not account:
             account = Account(
-                account_type=AccountTypeEnum.Playguide.v,
+                account_type=AccountTypeEnum.Playguide.v[0],
                 name=u'自社',
                 user_id=self.organization.user_id,
                 organization_id=self.organization.id,
@@ -971,7 +981,7 @@ class Organization(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     fax = Column(String(32))
 
     user_id = Column(Identifier, ForeignKey("User.id"), nullable=True)
-    user = relationship("User", uselist=False)
+    user = relationship("User", uselist=False, backref=backref('organization', uselist=False))
     prefecture = Column(String(64), nullable=False, default=u'')
 
     status = Column(Integer)
