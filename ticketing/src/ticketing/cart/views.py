@@ -26,6 +26,8 @@ from .rakuten_auth.api import authenticated_user
 from .events import notify_order_completed
 from webob.multidict import MultiDict
 from . import api
+from .reserving import InvalidSeatSelectionException
+from .stocker import NotEnoughStockException
 import transaction
 
 logger = logging.getLogger(__name__)
@@ -336,9 +338,15 @@ class ReserveView(object):
         order_items = self.ordered_items
         selected_seats = self.request.params.getall('selected_seat')
         logger.debug('order_items %s' % order_items)
-        cart = api.order_products(self.request, self.request.params['performance_id'], order_items, selected_seats=selected_seats)
-        if cart is None:
+        try:
+            cart = api.order_products(self.request, self.request.params['performance_id'], order_items, selected_seats=selected_seats)
+            if cart is None:
+                return dict(result='NG')
+        except InvalidSeatSelectionException:
             return dict(result='NG')
+        except NotEnoughStockException:
+            return dict(result='NG')
+
         api.set_cart(self.request, cart)
         return dict(result='OK', 
                     payment_url=self.request.route_url("cart.payment"),
