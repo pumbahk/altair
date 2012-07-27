@@ -11,9 +11,9 @@ class EventForm(Form):
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         Form.__init__(self, formdata, obj, prefix, **kwargs)
-        if 'user_id' in kwargs:
+        if 'organization_id' in kwargs:
             self.account_id.choices = [
-                (account.id, account.name) for account in Account.filter_by(user_id=kwargs['user_id'])
+                (account.id, account.name) for account in Account.filter_by(organization_id=kwargs['organization_id'])
             ]
 
     def _get_translations(self):
@@ -24,7 +24,7 @@ class EventForm(Form):
         validators=[Optional()],
     )
     account_id = SelectField(
-        label=u'クライアント',
+        label=u'配券元',
         validators=[Required(u'選択してください')],
         choices=[],
         coerce=int

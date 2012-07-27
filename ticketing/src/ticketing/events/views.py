@@ -89,7 +89,7 @@ class Events(BaseView):
 
     @view_config(route_name='events.new', request_method='GET', renderer='ticketing:templates/events/edit.html')
     def new_get(self):
-        f = EventForm(user_id=self.context.user.id)
+        f = EventForm(organization_id=self.context.user.organization.id)
         event = Event(organization_id=self.context.user.organization_id)
 
         event_id = int(self.request.matchdict.get('event_id', 0))
@@ -108,7 +108,7 @@ class Events(BaseView):
 
     @view_config(route_name='events.new', request_method='POST', renderer='ticketing:templates/events/edit.html')
     def new_post(self):
-        f = EventForm(self.request.POST, user_id=self.context.user.id)
+        f = EventForm(self.request.POST, organization_id=self.context.user.organization.id)
 
         if f.validate():
             event = merge_session_with_post(Event(organization_id=self.context.user.organization_id), f.data)
@@ -128,7 +128,7 @@ class Events(BaseView):
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
 
-        f = EventForm(user_id=self.context.user.id)
+        f = EventForm(organization_id=self.context.user.organization.id)
         f.process(record_to_multidict(event))
         return {
             'form':f,
@@ -142,7 +142,7 @@ class Events(BaseView):
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
 
-        f = EventForm(self.request.POST, user_id=self.context.user.id)
+        f = EventForm(self.request.POST, organization_id=self.context.user.organization.id)
         if f.validate():
             event = merge_session_with_post(event, f.data)
             event.save()
