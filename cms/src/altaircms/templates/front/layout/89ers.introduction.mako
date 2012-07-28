@@ -62,6 +62,8 @@
   ${widgets("seven_and_seven")}
 </%block>
 
+</div>
+<!-- kadomaruおわり -->
 
 			<footer>
 				<div class="footernav">
