@@ -19,7 +19,7 @@ if(!widget){
             params["pk"] = pk;
         }
         url += "?" + $.param(params);
-        return we.dialog.load(load_dialog_url);
+        return we.dialog.load(url);
     };
 
     var on_default_text_yanked = function(){
