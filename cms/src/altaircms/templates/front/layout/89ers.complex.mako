@@ -1,5 +1,4 @@
 ## above_kadomaru,kadomaru,below_kadomaru
-http://cms.stg2.rt.ticketstar.jp/
 <%def name="widgets(name)">
   % for w in display_blocks[name]:
       ${w|n}
