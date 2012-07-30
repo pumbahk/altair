@@ -27,7 +27,7 @@ from .rakuten_auth.api import authenticated_user
 from .events import notify_order_completed
 from webob.multidict import MultiDict
 from . import api
-from .reserving import InvalidSeatSelectionException
+from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from .stocker import NotEnoughStockException
 import transaction
 
@@ -349,11 +349,17 @@ class ReserveView(object):
             if cart is None:
                 transaction.abort()
                 return dict(result='NG')
+        except NotEnoughAdjacencyException:
+            transaction.abort()
+            logger.debug("not enough adjacency")
+            return dict(result='NG')
         except InvalidSeatSelectionException:
             transaction.abort()
+            logger.debug("seat selection is invalid.")
             return dict(result='NG')
-        except NotEnoughStockException:
+        except NotEnoughStockException as e:
             transaction.abort()
+            logger.debug("not enough stock quantity :%s" % e)
             return dict(result='NG')
 
         DBSession.add(cart)
