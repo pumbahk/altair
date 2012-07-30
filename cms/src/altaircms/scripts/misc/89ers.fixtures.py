@@ -39,6 +39,8 @@ class FixtureBuilder(object):
             created_at=datetime(1900, 1, 1)
             updated_at=datetime(1900, 1, 1) 
             publish_begin=datetime(1900, 1, 1)
+            today = datetime(2007, 7, 29)
+            next_year = datetime(3007, 7, 29)
         self.Default = Default
 
 class Result(object):
@@ -55,6 +57,7 @@ class Bj89ersFixtureBuilder(FixtureBuilder):
         layout_triples: (title, template_filename, blocks)
         page_triples: (name, url, layout, structure)
         category_items: (orderno, name, label, hierarchy, page_name)
+        topic_items: (kind, subkind, title, text, )
         """
         super(Bj89ersFixtureBuilder, self).__init__(Datum)
         layout_triples = [
@@ -159,6 +162,20 @@ class Bj89ersFixtureBuilder(FixtureBuilder):
         result = Result(retval, build_dict(retval, "name"))
         return result
 
+    @reify
+    def build_topic(self):
+        pagesets = self.build_pageset.cache
+        retval = [self.Datum("topic", 
+                             publish_open_on=self.Default.today, 
+                             publish_end_on=self.Default.next_year, 
+                             kind=kind, 
+                             subkinid=subkind, 
+                             bound_page_id=pagesets[page], 
+                             title=title, 
+                             text=text)
+                  for kind, subkind, title, text, page in self.topic_items]
+        result = Result(retval, build_dict(retval, "title"))
+        return result
     
     def build(self):
         return itertools.chain.from_iterable([
