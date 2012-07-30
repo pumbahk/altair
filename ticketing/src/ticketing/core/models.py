@@ -724,18 +724,19 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         for performance in product.event.performances:
             product_item = [item for item in product.items if item.performance_id == performance.id]
             if not product_item:
-                stock_holder = StockHolder.get_seller(performance.event)
-                stock = Stock.filter_by(performance_id=performance.id)\
-                             .filter_by(stock_type_id=product.seat_stock_type_id)\
-                             .filter_by(stock_holder_id=stock_holder.id)\
-                             .first()
-                product_item = ProductItem(
-                    price=product.price,
-                    product_id=product.id,
-                    performance_id=performance.id,
-                    stock_id=stock.id,
-                )
-                product_item.save()
+                stock_holders = StockHolder.get_seller(performance.event)
+                for stock_holder in stock_holders:
+                    stock = Stock.filter_by(performance_id=performance.id)\
+                                 .filter_by(stock_type_id=product.seat_stock_type_id)\
+                                 .filter_by(stock_holder_id=stock_holder.id)\
+                                 .first()
+                    product_item = ProductItem(
+                        price=product.price,
+                        product_id=product.id,
+                        performance_id=performance.id,
+                        stock_id=stock.id,
+                    )
+                    product_item.save()
 
     @staticmethod
     def create_from_template(template, stock_id, performance_id):
@@ -821,7 +822,7 @@ class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return StockHolder.filter(StockHolder.event_id==event.id)\
                           .join(StockHolder.account)\
                           .filter(Account.user_id==event.organization.user_id)\
-                          .first()
+                          .all()
 
 # stock based on quantity
 class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -947,13 +948,12 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def create_default(stock_type=None):
         '''
         StockType追加時に、座席(StockType.is_seatが真)のProductならデフォルトのProductを自動生成する
-        TODO: SalesSegmentはどうするか
         '''
         if stock_type.is_seat:
             # Productを生成
             product = Product(
                 name=stock_type.name,
-                price=0,
+                price=0,  #TODO: SalesSegmentのデフォルト値はどうするか
                 event_id=stock_type.event_id,
                 seat_stock_type_id=stock_type.id
             )
