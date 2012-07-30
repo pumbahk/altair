@@ -17,7 +17,7 @@ from altaircms.interfaces import implementer
 from altaircms.helpers.formhelpers import dynamic_query_select_field_factory
 from altaircms.helpers.formhelpers import append_errors
 from altaircms.helpers.formhelpers import MaybeDateTimeField
-
+from pyramid.threadlocal import get_current_request
 logger = logging.getLogger(__name__)
 
 from ..models import Category
@@ -40,7 +40,15 @@ def url_field_validator(form, field):
 def url_not_conflict(form, field):
     if form.data.get('add_to_pagset'):
         return 
-    if Page.query.filter_by(url=field.data).count() > 0:
+    ## fixme
+    request = get_current_request()
+    ####
+    qs = Page.query.filter_by(url=field.data, organization_id=request.organization.id)
+    if request.matchdict.get("page_id") or request.matchdict.get("id"):
+        pk = request.matchdict.get("page_id") or request.matchdict.get("id")
+        qs = qs.filter(Page.id!=pk)
+
+    if qs.count() > 0:
         raise validators.ValidationError(u'URL "%s" は既に登録されてます' % field.data)
 
 
@@ -106,7 +114,7 @@ class PageForm(Form):
 @implementer(IForm)
 class PageUpdateForm(Form):
     name = fields.TextField(label=u"名前", validators=[validators.Required()])
-    url = fields.TextField(validators=[url_field_validator],
+    url = fields.TextField(validators=[url_field_validator, url_not_conflict],
                            label=u"URLhttp://stg2.rt.ticketstar.jp/", 
                            widget=widgets.TextArea())
 
