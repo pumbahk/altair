@@ -329,6 +329,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             """
             Performanceの作成時は以下のモデルを自動生成する
               - Stock
+                - ProductItem
             """
             # create default Stock
             Stock.create_default(self.event, performance_id=self.id)
@@ -711,6 +712,32 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             return None
 
     @staticmethod
+    def create_default(product):
+        '''
+        ProductIetmを自動生成する
+          - Product追加時に、座席(StockType.is_seatが真)のProductItemをPerformance数だけ生成
+          - Performance追加時に、StockType × Product分のProductItemを生成
+        '''
+        if not product.seat_stock_type.is_seat:
+            return
+
+        for performance in product.event.performances:
+            product_item = [item for item in product.items if item.performance_id == performance.id]
+            if not product_item:
+                stock_holder = StockHolder.get_seller(performance.event)
+                stock = Stock.filter_by(performance_id=performance.id)\
+                             .filter_by(stock_type_id=product.seat_stock_type_id)\
+                             .filter_by(stock_holder_id=stock_holder.id)\
+                             .first()
+                product_item = ProductItem(
+                    price=product.price,
+                    product_id=product.id,
+                    performance_id=performance.id,
+                    stock_id=stock.id,
+                )
+                product_item.save()
+
+    @staticmethod
     def create_from_template(template, stock_id, performance_id):
         product_item = ProductItem.clone(template)
         product_item.performance_id = performance_id
@@ -740,6 +767,9 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         # create default Stock
         Stock.create_default(self.event, stock_type_id=self.id)
+
+        # create default Product
+        Product.create_default(stock_type=self)
 
     def num_seats(self, performance_id=None):
         # 同一Performanceの同一StockTypeにおけるStock.quantityの合計
@@ -785,6 +815,13 @@ class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         def performance_filter(stock):
             return (stock.performance_id == performance_id)
         return filter(performance_filter, self.stocks)
+
+    @staticmethod
+    def get_seller(event):
+        return StockHolder.filter(StockHolder.event_id==event.id)\
+                          .join(StockHolder.account)\
+                          .filter(Account.user_id==event.organization.user_id)\
+                          .first()
 
 # stock based on quantity
 class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -832,6 +869,7 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 stock.save()
 
         # Performance × StockType × StockHolder分のStockを生成
+        created_stock_types = []
         for performance in performances:
             for stock_type in stock_types:
                 for stock_holder in stock_holders:
@@ -845,6 +883,16 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                             quantity=0
                         )
                         stock.save()
+                        if stock_type.id not in created_stock_types:
+                            created_stock_types.append(stock_type.id)
+
+        # ProductItemを生成
+        for stock_type_id in created_stock_types:
+            products = Product.filter(Product.event_id==event.id)\
+                              .filter(Product.seat_stock_type_id==stock_type_id)\
+                              .all()
+            for product in products:
+                ProductItem.create_default(product)
 
     @staticmethod
     def create_from_template(template, performance_id):
@@ -874,15 +922,13 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'), nullable=True)
     sales_segment = relationship('SalesSegment', uselist=False, backref='product')
 
+    seat_stock_type_id = Column(Identifier, ForeignKey('StockType.id'), nullable=True)
+    seat_stock_type = relationship('StockType', uselist=False, backref='product')
+
     event_id = Column(Identifier, ForeignKey('Event.id'))
     event = relationship('Event', backref='products')
 
     items = relationship('ProductItem', backref='product')
-
-    def get_quantity_power(self, stock_type, performance_id):
-        """ 数量倍率 """
-        perform_items = ProductItem.query.filter(ProductItem.product==self).filter(ProductItem.performance_id==performance_id).all()
-        return sum([pi.quantity for pi in perform_items if pi.stock.stock_type == stock_type])
 
     @staticmethod
     def find(performance_id=None, event_id=None, sales_segment_id=None, include_deleted=False):
@@ -896,6 +942,36 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if not include_deleted:
             query = query.filter(Product.deleted_at==None)
         return query.all()
+
+    @staticmethod
+    def create_default(stock_type=None):
+        '''
+        StockType追加時に、座席(StockType.is_seatが真)のProductならデフォルトのProductを自動生成する
+        TODO: SalesSegmentはどうするか
+        '''
+        if stock_type.is_seat:
+            # Productを生成
+            product = Product(
+                name=stock_type.name,
+                price=0,
+                event_id=stock_type.event_id,
+                seat_stock_type_id=stock_type.id
+            )
+            product.save()
+
+            # Performance数分のProductItemを生成
+            ProductItem.create_default(product=product)
+
+    def add(self):
+        super(Product, self).add()
+
+        # Performance数分のProductItemを生成
+        ProductItem.create_default(product=self)
+
+    def get_quantity_power(self, stock_type, performance_id):
+        """ 数量倍率 """
+        perform_items = ProductItem.query.filter(ProductItem.product==self).filter(ProductItem.performance_id==performance_id).all()
+        return sum([pi.quantity for pi in perform_items if pi.stock.stock_type == stock_type])
 
     def items_by_performance_id(self, id):
         return ProductItem.filter_by(performance_id=id)\
