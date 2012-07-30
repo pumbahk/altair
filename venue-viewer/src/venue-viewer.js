@@ -280,8 +280,6 @@
       var w = parseFloat(attrs.width), h = parseFloat(attrs.height);
       var vb = attrs.viewBox ? attrs.viewBox.split(/\s+/).map(parseFloat) : null;
 
-      vb = [0, 0, 1000, 1000];
-
       var size = ((vb || w || h) ? {
         x: ((vb && vb[2]) || w || h),
         y: ((vb && vb[3]) || h || w)
@@ -319,11 +317,13 @@
             break;
 
           case 'text':
-            shape = new Fashion.Text({
-              fontSize: 10,
-              text: n.firstChild.nodeValue,
-              zIndex: 99
-            });
+            if (n.firstChild) {
+              shape = new Fashion.Text({
+                fontSize: 10,
+                text: n.firstChild.nodeValue,
+                zIndex: 99
+              });
+            }
             break;
 
           case 'rect':

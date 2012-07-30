@@ -48,8 +48,22 @@ var venue = $('#venue');
 function loadVenue() {
   venue.venueviewer({
     dataSource: {
-      drawing: "data/sample.svg",
+      // drawing: "data/sample.svg",
+      drawing: "data/xebio-arena.xml",
       metadata: "data/data.json",
+      seats: function (next, error) {
+        $.ajax({
+          // url: 'data/seat-data.json',
+          url: 'data/seat-data-xebio.json',
+          dataType: 'json',
+          success: function(data) {
+            next(data['seats']);
+          },
+          error: function(xhr, text) {
+            error("Failed to load adjacency data (reason: " + text + ")");
+          }
+        });
+      },
       seatAdjacencies: function (next, error, length) {
         $.ajax({
           url: 'data/adjacencies/' + (length|0) + '.json',
