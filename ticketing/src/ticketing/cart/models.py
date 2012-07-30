@@ -125,7 +125,6 @@ class CartedProductItem(Base):
 
         # 在庫数戻し
         logger.debug('release stock id=%s quantity=%d' % (self.product_item.stock_id, self.quantity))
-        #stock_status = c_models.StockStatus.query.filter(c_models.StockStatus.stock_id==self.product_item.stock_id).one()
         up = c_models.StockStatus.__table__.update().values(
                 {"quantity": c_models.StockStatus.quantity + self.quantity}
         ).where(c_models.StockStatus.stock_id==self.product_item.stock_id)

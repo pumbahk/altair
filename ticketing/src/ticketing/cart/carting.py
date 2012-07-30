@@ -21,17 +21,19 @@ class CartFactory(object):
             cart_product = CartedProduct(cart=cart, product=ordered_product, quantity=quantity)
             for ordered_product_item in ordered_product.items:
                 # CartedProductItem
-                logger.debug("carted product item for product_item_id = %s, performance_id = %s" % (ordered_product_item.id, ordered_product_item.performance_id))
                 if str(ordered_product_item.performance_id) != str(performance_id):
                     continue
+                logger.debug("carted product item for product_item_id = %s, performance_id = %s" % (ordered_product_item.id, ordered_product_item.performance_id))
                 cart_product_item = CartedProductItem(carted_product=cart_product, quantity=quantity,
                     product_item=ordered_product_item)
-                # 席割り当て
+
                 logger.debug('stock_id %s, stock_type %s' % (ordered_product_item.stock.id, ordered_product_item.stock.stock_type_id))
                 if is_quantity_only(ordered_product_item.stock):
+                    # 数受けはここまでで処理完了
                     logger.debug('stock %d quantity only' % ordered_product_item.stock.id)
                     continue
 
+                # 席割り当て
                 item_seats = self.pop_seats(ordered_product_item, quantity, seats)
                 cart_product_item.seats = item_seats
     

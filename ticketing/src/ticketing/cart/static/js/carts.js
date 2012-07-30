@@ -119,6 +119,7 @@ carts.AppView = function() {
     this.dateSelector = null;
     this.venueSelector = null;
     this.orderButton = null;
+    this.orderQuantityOnlyButton = null;
     this.selectedOrderButton = null;
     this.orderForm = null;
     this.hallName = null;
@@ -216,6 +217,7 @@ carts.AppView.prototype.init = function(presenter) {
     this.dateSelector = $('#date-select');
     this.venueSelector = $("#venue-select");
     this.orderButton = $('#btn-order');
+    this.orderQuantityOnlyButton = $('#btn-order-quantity-only');
     this.selectedOrderButton = $('#btn-selected-order');
     this.orderForm = $("#order-form");
     this.hallName = $("#hallName");
@@ -329,6 +331,25 @@ carts.AppView.prototype.init = function(presenter) {
         }
 
         self.orderButton.click(function (event) {
+            var values = self.orderForm.serialize();
+            $.ajax({
+                url: order_url, //this is global variable
+                dataType: 'json',
+                data: values,
+                type: 'POST',
+                success: function(data, textStatus, jqXHR) {
+                    if (data.result == 'OK') {
+                        proceedToCheckout(data);
+                    } else {
+                        error();
+                    }
+                }
+            });
+            event.stopPropagation(); /* XXX: is this really necessary? */
+            return false;
+        });
+
+        self.orderQuantityOnlyButton.click(function (event) {
             var values = self.orderForm.serialize();
             $.ajax({
                 url: order_url, //this is global variable
