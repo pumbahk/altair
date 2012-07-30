@@ -140,7 +140,6 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     l0_id           = Column(String(255))
     name            = Column(Unicode(50), nullable=False, default=u"", server_default=u"")
     stock_id        = Column(Identifier, ForeignKey('Stock.id'))
-    stock_type_id   = Column(Identifier, ForeignKey('StockType.id'))
 
     venue_id        = Column(Identifier, ForeignKey('Venue.id'), nullable=False)
     group_l0_id     = Column(String(255), index=True)
@@ -184,7 +183,6 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         seat = Seat.clone(template)
         seat.venue_id = venue_id
         seat.stock_id = stock_id
-        seat.stock_type_id = None
         seat.save()
 
         # create SeatAttribute

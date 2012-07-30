@@ -244,7 +244,7 @@ class IndexView(object):
                     seat.l0_id,
                     dict(
                         id=seat.l0_id,
-                        stock_type_id=seat.stock_type_id,
+                        stock_type_id=seat.stock.stock_type_id,
                         stock_holder_id=seat.stock.stock_holder_id,
                         status=seat.status,
                         areas=[area.id for area in seat.areas],
