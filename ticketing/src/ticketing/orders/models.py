@@ -12,7 +12,7 @@ from pyramid.threadlocal import get_current_registry
 
 from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier, relationship, DBSession, record_to_multidict
 from ticketing.utils import sensible_alnum_decode
-from ticketing.core.models import Seat, Performance, Product, ProductItem, PaymentMethod, DeliveryMethod, StockStatus
+from ticketing.core.models import Seat, Performance, Product, ProductItem, PaymentMethod, DeliveryMethod, StockStatus, SeatStatus, SeatStatusEnum
 from ticketing.users.models import User
 from ticketing.sej.models import SejOrder
 from ticketing.sej.exceptions import SejServerError
@@ -434,7 +434,17 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     _attributes = relationship("OrderedProductAttribute", backref='ordered_product_item', collection_class=attribute_mapped_collection('name'), cascade='all,delete-orphan')
     attributes = association_proxy('_attributes', 'value', creator=lambda k, v: OrderedProductAttribute(name=k, value=v))
 
+    @property
+    def seat_statuses(self):
+        """ 確保済の座席ステータス
+        """
+        return DBSession.query(SeatStatus).filter(SeatStatus.seat_id.in_([s.id for s in self.seats])).all()
+
     def release(self):
+        # 座席開放
+        for seat_status in self.seat_statuses:
+            logger.debug('release seat id=%d' % (seat_status.seat_id))
+            seat_status.status = int(SeatStatusEnum.Vacant)
         # 在庫数を戻す
         logger.debug('release stock id=%s quantity=%d' % (self.product_item.stock_id, self.product_item.quantity))
         query = StockStatus.__table__.update().values(
