@@ -2,6 +2,7 @@
 from sqlalchemy import Table, Column, ForeignKey, ForeignKeyConstraint, func
 from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric, Unicode
 from sqlalchemy.orm import join, backref
+from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.ext.associationproxy import association_proxy
 
 from ticketing.models import *
@@ -147,7 +148,7 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     venue           = relationship("Venue", backref='seats')
     stock           = relationship("Stock", backref='seats')
 
-    attributes      = relationship("SeatAttribute", backref='seat', cascade='save-update, merge')
+    attributes_      = relationship("SeatAttribute", backref='seat', collection_class=attribute_mapped_collection('name'), cascade='all,delete-orphan')
     areas           = relationship("VenueArea",
                                    primaryjoin=lambda:and_(
                                         Seat.venue_id==VenueArea_group_l0_id.venue_id,
@@ -160,19 +161,16 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     status = association_proxy('status_', 'status')
 
+    attributes = association_proxy('attributes_', 'value', creator=lambda k, v: SeatAttribute(name=k, value=v))
+
     def __setitem__(self, name, value):
-        session.add(self)
-        session.flush([self])
-        session.merge(SeatAttribute(seat_id=self.id, name=name, value=value))
+        self.attributes[name] = value
 
     def __getitem__(self, name):
-        attr = session.query(SeatAttribute).get((self.id, name))
-        if attr is None:
-            raise KeyError(name)
-        return attr.value
+        return self.attributes[name]
 
     def get_index(self, index_type_id):
-        return session.query(SeatIndex).filter_by(seat=self, index_type_id=index_type_id)
+        return DBSession.query(SeatIndex).filter_by(seat=self, index_type_id=index_type_id)
 
     def is_hold(self, stock_holder):
         return self.stock.stock_holder == stock_holder

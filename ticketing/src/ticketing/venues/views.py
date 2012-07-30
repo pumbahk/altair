@@ -38,7 +38,7 @@ def get_seats(request):
 
     if u'seats' in necessary_params:
         seats_data = {}
-        for seat in DBSession.query(Seat).options(joinedload('attributes'), joinedload('areas'), joinedload('status_')).filter_by(venue=venue):
+        for seat in DBSession.query(Seat).options(joinedload('attributes_'), joinedload('areas'), joinedload('status_')).filter_by(venue=venue):
             seat_datum = {
                 'id': seat.l0_id,
                 'stock_id': seat.stock_id,
