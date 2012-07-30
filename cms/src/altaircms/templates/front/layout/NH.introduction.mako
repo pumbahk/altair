@@ -4,14 +4,14 @@
   % endfor
 </%def>
 
-## above_table,below_table,card_and_QR,card_and_seven,card_and_home,card_and_onsite
+## above_kadomaru, card_and_QR,card_and_seven,card_and_home,anshin_and_QR,anshin_and_seven,anshin_and_home,seven_and_seven
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html lang="jp">
 <head>
 	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
 	<link rel="stylesheet" type="text/css" href="/static/NH/css/style.css" media="all" />
-	<title>NH</title>
+	    <title>${page.title}</title>    <meta name="description" content="${page.description}">    <meta name="keywords" content="${page.keywords}">
 </head>
 <body>
 	<!-- wrapper -->	
@@ -28,67 +28,42 @@
 				</div>
 			</header>
 
-			<div class="kadomaru">
-
-<%block name="kadomaru">
-  ${widgets("kadomaru")}
+<%block name="above_kadomaru">
+  ${widgets("above_kadomaru")}
 </%block>
 
-				<table class="info" style="border-left:1px #ccc solid;">
-					<tr>
-						<th>クレジットカードでお支払い　＆　QRコードでお引き取り</th>
-					</tr>
-					<tr>
-						<td>
+			<div class="kadomaru">
+
 <%block name="card_and_QR">
   ${widgets("card_and_QR")}
 </%block>
-						</td>
-					</tr>
-				</table>
 
-				<table class="info" style="border-left:1px #ccc solid;">
-					<tr>
-						<th>クレジットカードでお支払い　＆　セブン-イレブンにて引取</th>
-					</tr>
-					<tr>
-						<td>
 <%block name="card_and_seven">
   ${widgets("card_and_seven")}
 </%block>
-						</td>
-					</tr>
-				</table>
 
-				<table class="info" style="border-left:1px #ccc solid;">
-					<tr>
-						<th>クレジットカードでお支払い　＆　自宅へ配送</th>
-					</tr>
-					<tr>
-						<td>
 <%block name="card_and_home">
   ${widgets("card_and_home")}
 </%block>
-						</td>
-					</tr>
-				</table>
 
-				<table class="info" style="border-left:1px #ccc solid;">
-					<tr>
-						<th>セブン-イレブンにてお支払い　＆　その場で発券・引取</th>
-					</tr>
-					<tr>
-						<td>
-<%block name="card_and_onsite">
-  ${widgets("card_and_onsite")}
+<%block name="anshin_and_QR">
+  ${widgets("anshin_and_QR")}
 </%block>
-						</td>
-					</tr>
-				</table>
-				
-			</div>
 
+<%block name="anshin_and_seven">
+  ${widgets("anshin_and_seven")}
+</%block>
 
+<%block name="anshin_and_home">
+  ${widgets("anshin_and_home")}
+</%block>
+
+<%block name="seven_and_seven">
+  ${widgets("seven_and_seven")}
+</%block>
+
+</div>
+<!-- kadomaruおわり -->
 
 			<footer>
 				<div class="footernav">

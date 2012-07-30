@@ -1,4 +1,4 @@
-## kadomaru
+## above_kadomaru,kadomaru,below_kadomaru
 <%def name="widgets(name)">
   % for w in display_blocks[name]:
       ${w|n}
@@ -10,9 +10,7 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
 	<link rel="stylesheet" type="text/css" href="/static/NH/css/style.css" media="all" />
-    <title>${page.title}</title>
-    <meta name="description" content="${page.description}">
-    <meta name="keywords" content="${page.keywords}">
+	    <title>${page.title}</title>    <meta name="description" content="${page.description}">    <meta name="keywords" content="${page.keywords}">
 </head>
 <body>
 	<!-- wrapper -->	
@@ -29,12 +27,30 @@
 				</div>
 			</header>
 
+			  <%block name="above_kadomaru">
+                ${widgets("above_kadomaru")}
+			  </%block>
+
 			<div class="kadomaru">
 			  <%block name="kadomaru">
                 ${widgets("kadomaru")}
 			  </%block>
 			</div>
+			<div class="kadomaru">
+			  <%block name="kadomaru2">
+                ${widgets("kadomaru2")}
+			  </%block>
+			</div>
+			<div class="kadomaru">
+			  <%block name="kadomaru3">
+                ${widgets("kadomaru3")}
+			  </%block>
+			</div>
 			<!-- kadomaru終わり -->
+
+			  <%block name="below_kadomaru">
+                ${widgets("below_kadomaru")}
+			  </%block>
 
 
 			<footer>
