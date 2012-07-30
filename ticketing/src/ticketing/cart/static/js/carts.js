@@ -279,6 +279,8 @@ carts.AppView.prototype.init = function(presenter) {
                     self.reservationDialog.overlay().close();
                 }
             });
+            self.reservationDialog.overlay().close();
+            $("#selectSeatType").click();
         });
         self.reservationDialog.find('.confirm-button').click(function() {
             window.location.href = reservationData.payment_url;

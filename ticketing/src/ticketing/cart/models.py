@@ -120,7 +120,7 @@ class CartedProductItem(Base):
     def release(self):
         # 座席開放
         for seat_status in self.seat_statuses:
-            logger.debug('release seat id=%d' % (seat_status.id))
+            logger.debug('release seat id=%d' % (seat_status.seat_id))
             seat_status.status = int(c_models.SeatStatusEnum.Vacant)
 
         # 在庫数戻し
