@@ -287,6 +287,7 @@
 
       var drawable = new Fashion.Drawable(self.canvas[0], { contentSize: {x: size.x, y: size.y} });
       var shapes = {};
+      var styleClasses = CONF.DEFAULT.STYLES;
 
       (function iter(svgStyle, defs, nodeList) {
         outer:
@@ -296,9 +297,14 @@
           var attrs = util.allAttributes(n);
 
           var shape = null;
-          var currentSvgStyle = attrs.style ?
-            mergeSvgStyle(svgStyle, parseCSSAsSvgStyle(attrs.style, defs)):
-            svgStyle;
+          var currentSvgStyle = svgStyle;
+          if (attrs.style)
+            currentSvgStyle = mergeSvgStyle(currentSvgStyle, parseCSSAsSvgStyle(attrs.style, defs));
+          if (attrs['class']) {
+            var style = styleClasses[attrs['class']];
+            if (style)
+              currentSvgStyle = mergeSvgStyle(currentSvgStyle, style);
+          }
 
           switch (n.nodeName) {
           case 'defs':
