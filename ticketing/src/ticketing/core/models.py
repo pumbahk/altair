@@ -9,8 +9,8 @@ from ticketing.users.models import User
 
 seat_seat_adjacency_table = Table(
     "Seat_SeatAdjacency", Base.metadata,
-    Column('seat_id', Identifier, ForeignKey("Seat.id"), primary_key=True, nullable=False),
-    Column('seat_adjacency_id', Identifier, ForeignKey("SeatAdjacency.id"), primary_key=True, nullable=False)
+    Column('seat_id', Identifier, ForeignKey("Seat.id", ondelete='CASCADE'), primary_key=True, nullable=False),
+    Column('seat_adjacency_id', Identifier, ForeignKey("SeatAdjacency.id", ondelete='CASCADE'), primary_key=True, nullable=False)
     )
 
 class Site(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -30,9 +30,9 @@ class Site(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 class VenueArea_group_l0_id(Base):
     __tablename__   = "VenueArea_group_l0_id"
-    venue_id = Column(Identifier, ForeignKey('Venue.id'), primary_key=True, nullable=False)
+    venue_id = Column(Identifier, ForeignKey('Venue.id', ondelete='CASCADE'), primary_key=True, nullable=False)
     group_l0_id = Column(String(255), ForeignKey('Seat.group_l0_id', onupdate=None, ondelete=None), primary_key=True, nullable=True)
-    venue_area_id = Column(Identifier, ForeignKey('VenueArea.id'), index=True, primary_key=True, nullable=False)
+    venue_area_id = Column(Identifier, ForeignKey('VenueArea.id', ondelete='CASCADE'), index=True, primary_key=True, nullable=False)
     venue = relationship('Venue')
 
 class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -43,8 +43,8 @@ class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "Venue"
     id = Column(Identifier, primary_key=True)
     site_id = Column(Identifier, ForeignKey("Site.id"), nullable=False)
-    performance_id = Column(Identifier, ForeignKey("Performance.id"), nullable=True)
-    organization_id = Column(Identifier, ForeignKey("Organization.id"), nullable=False)
+    performance_id = Column(Identifier, ForeignKey("Performance.id", ondelete='CASCADE'), nullable=True)
+    organization_id = Column(Identifier, ForeignKey("Organization.id", ondelete='CASCADE'), nullable=False)
     name = Column(String(255))
     sub_name = Column(String(255))
 
@@ -122,7 +122,7 @@ class VenueArea(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 class SeatAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__   = "SeatAttribute"
-    seat_id         = Column(Identifier, ForeignKey('Seat.id'), primary_key=True, nullable=False)
+    seat_id         = Column(Identifier, ForeignKey('Seat.id', ondelete='CASCADE'), primary_key=True, nullable=False)
     name            = Column(String(255), primary_key=True, nullable=False)
     value           = Column(String(1023))
 
@@ -141,7 +141,7 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     name            = Column(Unicode(50), nullable=False, default=u"", server_default=u"")
     stock_id        = Column(Identifier, ForeignKey('Stock.id'))
 
-    venue_id        = Column(Identifier, ForeignKey('Venue.id'), nullable=False)
+    venue_id        = Column(Identifier, ForeignKey('Venue.id', ondelete='CASCADE'), nullable=False)
     group_l0_id     = Column(String(255), index=True)
 
     venue           = relationship("Venue", backref='seats')
@@ -222,7 +222,7 @@ class SeatStatusEnum(StandardEnum):
 
 class SeatStatus(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "SeatStatus"
-    seat_id = Column(Identifier, ForeignKey("Seat.id"), primary_key=True)
+    seat_id = Column(Identifier, ForeignKey("Seat.id", ondelete='CASCADE'), primary_key=True)
     status = Column(Integer)
 
     @staticmethod
@@ -257,12 +257,12 @@ class SeatAdjacency(Base):
     __tablename__ = "SeatAdjacency"
     query = DBSession.query_property()
     id = Column(Identifier, primary_key=True)
-    adjacency_set_id = Column(Identifier, ForeignKey('SeatAdjacencySet.id'))
+    adjacency_set_id = Column(Identifier, ForeignKey('SeatAdjacencySet.id', ondelete='CASCADE'))
 
 class SeatAdjacencySet(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "SeatAdjacencySet"
     id = Column(Identifier, primary_key=True)
-    venue_id = Column(Identifier, ForeignKey('Venue.id'))
+    venue_id = Column(Identifier, ForeignKey('Venue.id', ondelete='CASCADE'))
     seat_count = Column(Integer, nullable=False)
     adjacencies = relationship("SeatAdjacency", backref='adjacency_set')
     venue = relationship("Venue", backref='adjacency_sets')
@@ -949,14 +949,14 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 class SeatIndexType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__  = "SeatIndexType"
     id             = Column(Identifier, primary_key=True)
-    venue_id       = Column(Identifier, ForeignKey('Venue.id'))
+    venue_id       = Column(Identifier, ForeignKey('Venue.id', ondelete='CASCADE'))
     name           = Column(String(255), nullable=False)
     seat_indexes   = relationship('SeatIndex', backref='seat_index_type')
 
 class SeatIndex(Base, BaseModel):
     __tablename__      = "SeatIndex"
-    seat_index_type_id = Column(Identifier, ForeignKey('SeatIndexType.id'), primary_key=True)
-    seat_id            = Column(Identifier, ForeignKey('Seat.id'), primary_key=True)
+    seat_index_type_id = Column(Identifier, ForeignKey('SeatIndexType.id', ondelete='CASCADE'), primary_key=True)
+    seat_id            = Column(Identifier, ForeignKey('Seat.id', ondelete='CASCADE'), primary_key=True)
     index              = Column(Integer, nullable=False)
     seat               = relationship('Seat', backref='indexes')
 
