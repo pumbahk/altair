@@ -352,15 +352,15 @@ class ReserveView(object):
         except NotEnoughAdjacencyException:
             transaction.abort()
             logger.debug("not enough adjacency")
-            return dict(result='NG')
+            return dict(result='NG', reason="adjacency")
         except InvalidSeatSelectionException:
             transaction.abort()
             logger.debug("seat selection is invalid.")
-            return dict(result='NG')
+            return dict(result='NG', reason="invalid seats")
         except NotEnoughStockException as e:
             transaction.abort()
             logger.debug("not enough stock quantity :%s" % e)
-            return dict(result='NG')
+            return dict(result='NG', reason="stock")
 
         DBSession.add(cart)
         DBSession.flush()
