@@ -278,7 +278,13 @@
     dataSource(function (drawing) {
       var attrs = util.allAttributes(drawing.documentElement);
       var w = parseFloat(attrs.width), h = parseFloat(attrs.height);
-      var vb = attrs.viewBox ? attrs.viewBox.split(/\s+/).map(parseFloat) : null;
+      var vb = null;
+      if (attrs.viewBox) {
+        var comps = attrs.viewBox.split(/\s+/);
+        vb = new Array(comps.length);
+        for (var i = 0; i < comps.length; i++)
+          vb[i] = parseFloat(comps[i]);
+      }
 
       var size = ((vb || w || h) ? {
         x: ((vb && vb[2]) || w || h),
