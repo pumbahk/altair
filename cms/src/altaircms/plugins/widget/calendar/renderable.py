@@ -113,11 +113,11 @@ def _next_month_date(d):
     else:
         return date(d.year, d.month+1, 1)
 
-def obi(widget, calendar_status, performances, request):
+def obi(widget, calendar_status, performances, request, template_name=None): 
     """公演の開始から終了までを縦に表示するカレンダー
     ※ performancesはstart_onでsortされているとする
     """
-    template_name = CalendarTemplatePathStore.path("obi")
+    template_name = template_name or CalendarTemplatePathStore.path("obi")
     logger.debug("calendar template: "+template_name)
 
     performances = list(performances)
@@ -128,21 +128,21 @@ def obi(widget, calendar_status, performances, request):
     else:
         return u"performance is not found"
 
-def term(widget, calendar_status, performances, request):
+def term(widget, calendar_status, performances, request, template_name=None): 
     """開始日／終了日を指定してその範囲のカレンダーを表示
     """
-    template_name = CalendarTemplatePathStore.path("term")
+    template_name = template_name or CalendarTemplatePathStore.path("term")
     logger.debug("calendar template: "+template_name)
 
     cal = CalendarOutput.from_performances(performances)
     rows = cal.each_rows(widget.from_date, widget.to_date)
     return render(template_name, {"cal":rows, "i":cal.i, "calendar_status":calendar_status}, request)
 
-def tab(widget, calendar_status, performances, request):
+def tab(widget, calendar_status, performances, request, template_name=None):
     """月毎のタブが存在するカレンダーを表示
     ※ performancesはstart_onでsortされているとする
     """
-    template_name = CalendarTemplatePathStore.path("tab")
+    template_name = template_name or CalendarTemplatePathStore.path("tab")
     logger.debug("calendar template: "+template_name)
 
 

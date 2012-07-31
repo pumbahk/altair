@@ -1,13 +1,14 @@
 from altaircms.plugins.widget import widget_plugin_install
+from zope.deprecation import deprecation
 import os.path
 DIR = os.path.dirname(os.path.abspath(__file__))
 
 ## fixme move to ini file
+@deprecation.deprecate("this is deprecated class. define by [calendar] section in your organization settings.]")
 class CalendarTemplatePathStore(object):
     obi = "ticketstar.calendar.mako"
     term = "rakuten.calendar.mako"
-    # tab = "ticketstar.tab-calendar.mako"
-    tab = "89ers.tab-calendar.mako"
+    tab = "ticketstar.tab-calendar.mako"
     here = "altaircms.plugins.widget:calendar"
     @classmethod
     def path(cls, k):

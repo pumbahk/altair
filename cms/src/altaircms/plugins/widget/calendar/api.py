@@ -28,7 +28,7 @@ def get_performance_status(request, widget, event):
         data = json.loads(data)
     except Exception, e:
         logger.warn("*calendar widget* api call is failed")
-        logger.exception(str(e))
+        # logger.exception(str(e))
         data =  dummy_data
     return _get_performance_status(request, CalcResult(rawdata=data))
 
