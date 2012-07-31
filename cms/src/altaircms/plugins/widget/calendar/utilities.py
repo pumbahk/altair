@@ -18,6 +18,7 @@ class CalendarWidgetUtilityDefault(object):
     def __init__(self):
         self.renderers = None
         self.choices = None
+        self.status_impl = None
 
     def parse_settings(self, config, configparser):
         """以下のような形式のものを見る
@@ -40,6 +41,8 @@ class CalendarWidgetUtilityDefault(object):
         fns =  [maybe_dotted(x) for x in \
                     list_from_setting_value(self.settings["rendering_functions"])]
         self.rendering_functions = dict(zip(values, fns))
+
+        self.status_impl = config.maybe_dotted(self.settings["status_impl"])
         return self
 
     def validation(self):

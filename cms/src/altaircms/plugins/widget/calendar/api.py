@@ -18,8 +18,18 @@ status :: performance -> calendar-status
 def get_calendar_data_api(request):
     return request.registry.getUtility(IExternalAPI, name=CalendarDataAPI.__name__)
 
+class CalendarStatus(object):
+    circle = {"class": "circle", "string":u"○"}
+    triangle = {"class": "triangle", "string":u"△"}
+    cross = {"class": "cross", "string":u"×"}
+
+class MaruBatsuSankaku(object):
+    circle = {"class": "maru", "string":u"○"}
+    triangle = {"class": "sankaku", "string":u"△"}
+    cross = {"class": "batsu", "string":u"×"}
+
 dummy_data = {"stocks": []}
-def get_performance_status(request, widget, event):
+def get_performance_status(request, widget, event, status_impl):
     """
     call api
     """
@@ -30,7 +40,7 @@ def get_performance_status(request, widget, event):
         logger.warn("*calendar widget* api call is failed")
         # logger.exception(str(e))
         data =  dummy_data
-    return _get_performance_status(request, CalcResult(rawdata=data))
+    return _get_performance_status(request, CalcResult(rawdata=data, status_impl=status_impl))
 
 def _get_performance_status(request, data):
     for stock in data.rawdata["stocks"]:
@@ -56,16 +66,11 @@ class CalendarDataAPI(object):
 class NotFoundMatchResultException(Exception):
     pass
 
-class CalendarStatus(object):
-    circle = {"class": "circle", "string":u"○"}
-    triangle = {"class": "triangle", "string":u"△"}
-    cross = {"class": "cross", "string":u"×"}
-
-
 
 ## (find-file "api-dummy-data.json")
 class CalcResult(object): #すごい決め打ち
-    def __init__(self, rawdata=None):
+    def __init__(self, rawdata=None, status_impl=CalendarStatus):
+        self.status_impl = status_impl
         self.scores = defaultdict(int)
         self.counts = defaultdict(int)
         self.has_soldout = {}
@@ -82,11 +87,11 @@ class CalcResult(object): #すごい決め打ち
         k = performance.backend_id
         try:
             if self.scores[k] <= 0:
-                return CalendarStatus.cross
+                return self.status_impl.cross
             elif self.has_soldout.get(k) or (float(self.scores[k]) / self.counts[k]) <= 0.2:
-                return CalendarStatus.triangle
+                return self.status_impl.triangle
             else:
-                return CalendarStatus.circle
+                return self.status_impl.circle
         except KeyError:
             logger.warn("performance [backend_id=%d] is not found" % performance.backend_id)
-            return CalendarStatus.cross
+            return self.status_impl.cross

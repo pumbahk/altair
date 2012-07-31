@@ -49,7 +49,10 @@ class CalendarWidget(Widget):
             request = bsettings.extra["request"]
 
             utility = get_widget_utility(request, page, self.type)
-            calendar_status = api.get_performance_status(request, self, event)
+
+            status_impl = utility.status_impl
+            calendar_status = api.get_performance_status(request, self, event, status_impl)
+
             template_name = utility.get_template_name(request, self)
             render_fn = utility.get_rendering_function(request, self)
             return render_fn(self, calendar_status, performances, request, template_name=template_name)
