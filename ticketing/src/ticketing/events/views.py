@@ -363,8 +363,15 @@ class Events(BaseView):
             # 席種ごとのオブジェクトを作成
             for stock in stocks:
                 stock_type = StockType.get(stock.stock_type_id)
+                # Stock
                 stock_record = report_sheet.StockRecord(seat_type=stock_type.name)
-                seat_record = report_sheet.SeatRecord(block=u"テスト")
+                # 数受けの場合
+                if stock_type.quantity_only:
+                    seat_record = report_sheet.SeatRecord(
+                        block=stock_type.name,
+                        quantity=stock.quantity)
+                else:
+                    seat_record = report_sheet.SeatRecord(block=u"テスト")
                 stock_record.records.append(seat_record)
                 stock_records.append(stock_record)
             # シートに埋め込み
