@@ -23,7 +23,7 @@ from pyramid.path import AssetResolver
 from ticketing.models import merge_session_with_post, record_to_multidict, DBSession
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
-from ticketing.core.models import Event, Performance
+from ticketing.core.models import Event, Performance, StockHolder, StockType, Stock
 from ticketing.events.forms import EventForm
 from ticketing.events.performances.forms import PerformanceForm
 from ticketing.events.sales_segments.forms import SalesSegmentForm
@@ -31,6 +31,8 @@ from ticketing.events.stock_types.forms import StockTypeForm
 from ticketing.events.stock_holders.forms import StockHolderForm
 from ticketing.products.forms import ProductForm
 from ticketing.events.reports import xls_export
+from ticketing.events.reports import sheet as report_sheet
+from ticketing.helpers.base import jdatetime
 
 from ..api.impl import get_communication_api
 from ..api.impl import CMSCommunicationApi
@@ -321,6 +323,8 @@ class Events(BaseView):
 
     @view_config(route_name='events.report.seat_stocks')
     def download_seat_stocks(self):
+        """仕入明細ダウンロード
+        """
         event_id = int(self.request.matchdict.get('event_id', 0))
         event = Event.get(event_id)
         if event is None:
@@ -330,15 +334,65 @@ class Events(BaseView):
         template_path = assetresolver.resolve(
             "ticketing:/templates/reports/assign_template.xls").abspath()
         exporter = xls_export.SeatAssignExporter(template=template_path)
-        # TODO:Event
-        sheet_0 = exporter.workbook.get_sheet(0)
-        exporter.set_event_name(sheet_0, event.title)
-        # TODO:Performance
-
+        # 現在日時
+        timestamp = strftime('%Y%m%d%H%M%S')
+        # Performance
+        query = Performance.filter(Performance.event_id==event_id)
+        query = query.order_by(Performance.id)
+        performances = list(query)
+        # StockHolder
+        stock_holder = StockHolder \
+            .filter(StockHolder.event_id==event_id) \
+            .filter(StockHolder.account_id==self.context.user.id).first()
+        if stock_holder is None:
+            raise Exception("StockHolder is not found event_id=%s, account_id=%s" % (event_id, self.user.id))
+        # 1つ目のシート
+        sheet_num = 1  # シート番号
+        if performances:
+            performance = performances[0]
+            sheet_0 = exporter.workbook.get_sheet(0)
+            sheet_name = u"%s%d" % (jdatetime(performance.start_on), sheet_num)
+            sheet_0.set_name(sheet_name)
+            # PerformanceごとのStockを取得
+            stock_records = []
+            stock_query = Stock \
+                .filter(Stock.performance_id==performance.id) \
+                .filter(Stock.stock_holder_id==stock_holder.id) \
+                .order_by(Stock.stock_type_id)
+            stocks = list(stock_query)
+            # 席種ごとのオブジェクトを作成
+            for stock in stocks:
+                stock_type = StockType.get(stock.stock_type_id)
+                stock_record = report_sheet.StockRecord(seat_type=stock_type.name)
+                seat_record = report_sheet.SeatRecord(block=u"テスト")
+                stock_record.records.append(seat_record)
+                stock_records.append(stock_record)
+            # シートに埋め込み
+            report_sheet.process_sheet(exporter, sheet_0, event, performance, stock_records)
+        # 2つ目以降のシート
+        for performance in performances[1:]:
+            sheet_num += 1
+            sheet_name = u"%s%d" % (jdatetime(performance.start_on), sheet_num)
+            new_sheet = exporter.add_sheet(sheet_name)
+            # PerformanceごとのStockを取得
+            stock_records = []
+            stock_query = Stock \
+                .filter(Stock.performance_id==performance.id) \
+                .filter(Stock.stock_holder_id==stock_holder.id) \
+                .order_by(Stock.stock_type_id)
+            stocks = list(stock_query)
+            # 席種ごとのオブジェクトを作成
+            for stock in stocks:
+                stock_type = StockType.get(stock.stock_type_id)
+                stock_record = report_sheet.StockRecord(seat_type=stock_type.name)
+                seat_record = report_sheet.SeatRecord(block=u"テスト")
+                stock_record.records.append(seat_record)
+                stock_records.append(stock_record)
+            report_sheet.process_sheet(exporter, new_sheet, event, performance, stock_records)
         # 出力ファイル名
         filename = "assign_%(code)s_%(datetime)s" % dict(
             code=event.code,  # イベントコード
-            datetime=strftime('%Y%m%d%H%M%S')
+            datetime=timestamp
         )
 
         headers = [

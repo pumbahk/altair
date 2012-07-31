@@ -180,6 +180,9 @@ class BaseExporter(object):
                 xf_index = self.workbook.add_style(style)
                 copied_cell.rowx = row_index
                 copied_cell.xf_idx = xf_index
+                # 文字列の場合は参照カウント増やす
+                if isinstance(copied_cell, StrCell):
+                    self.workbook._Workbook__sst._tally[copied_cell.sst_idx] += 1
             row.insert_cell(i, copied_cell)
         # セルの結合情報をコピー
         for tpl in merged_ranges:
@@ -191,6 +194,7 @@ class BaseExporter(object):
     def update_cell_text(self, sheet, row_index, colx, text):
         """指定したセルのテキストを更新(Styleは保持)
         """
+        self.workbook._Workbook__sst.add_str(text)
         cell = get_cell(sheet, row_index, colx)
         if cell is None:
             style = XFStyle()
