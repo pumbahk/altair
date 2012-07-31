@@ -715,8 +715,10 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def create_default(product):
         '''
         ProductIetmを自動生成する
-          - Product追加時に、座席(StockType.is_seatが真)のProductItemをPerformance数だけ生成
-          - Performance追加時に、StockType × Product分のProductItemを生成
+          - Productが座席(StockType.is_seatが真)をもっていること
+          - Product追加時に、Performance * StockHolderの数分生成
+          - Stock追加時に、該当StockTypeのProductに対して、Performance * StockHolderの数分生成
+            * Stock追加 ＝ StockType or StockHolder or Performance のいずれかが追加されたとき
         '''
         if not product.seat_stock_type.is_seat:
             return
@@ -887,11 +889,9 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                         if stock_type.id not in created_stock_types:
                             created_stock_types.append(stock_type.id)
 
-        # ProductItemを生成
+        # 生成したStockをProductに紐づけるProductItemを生成
         for stock_type_id in created_stock_types:
-            products = Product.filter(Product.event_id==event.id)\
-                              .filter(Product.seat_stock_type_id==stock_type_id)\
-                              .all()
+            products = Product.filter(Product.seat_stock_type_id==stock_type_id).all()
             for product in products:
                 ProductItem.create_default(product)
 
@@ -958,9 +958,6 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 seat_stock_type_id=stock_type.id
             )
             product.save()
-
-            # Performance数分のProductItemを生成
-            ProductItem.create_default(product=product)
 
     def add(self):
         super(Product, self).add()
