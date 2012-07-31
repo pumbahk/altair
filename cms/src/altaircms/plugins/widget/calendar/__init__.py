@@ -4,11 +4,10 @@ DIR = os.path.dirname(os.path.abspath(__file__))
 
 ## fixme move to ini file
 class CalendarTemplatePathStore(object):
-    #obi = "rakuten.calendar.mako"
     obi = "ticketstar.calendar.mako"
     term = "rakuten.calendar.mako"
-    # tab = "rakuten.tab-calendar.mako"
-    tab = "ticketstar.tab-calendar.mako"
+    # tab = "ticketstar.tab-calendar.mako"
+    tab = "89ers.tab-calendar.mako"
     here = "altaircms.plugins.widget:calendar"
     @classmethod
     def path(cls, k):
