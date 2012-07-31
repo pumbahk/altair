@@ -148,7 +148,7 @@ def import_tree(organization, tree, file):
         for row_obj in block_obj['children']:
             row_name = row_obj['properties'].get('name')
             for seat_obj in row_obj['children']:
-                seat = Seat(venue=venue, l0_id=seat_obj['id'], group_l0_id=group_l0_id)
+                seat = Seat(venue=venue, l0_id=seat_obj['_node'].get('id'), group_l0_id=group_l0_id)
                 name = seat_obj['properties'].get('name')
                 gate = seat_obj['properties'].get('gate')
                 floor = seat_obj['properties'].get('floor')
