@@ -260,6 +260,7 @@ carts.AppView.prototype.init = function(presenter) {
         for (var i = 0; i < selected_seats.length; i++) {
             var seat_item = $('<li/>');
             seat_item.text(selected_seats[i].name);
+            seats.append(seat_item);
         }
         seats_container.append(seats);
         item.append(name);
@@ -281,6 +282,7 @@ carts.AppView.prototype.init = function(presenter) {
                     self.reservationDialog.overlay().close();
                 }
             });
+            $("#selectSeat .venueViewer").venueviewer("load");
             self.reservationDialog.overlay().close();
             $("#selectSeatType").click();
         });
