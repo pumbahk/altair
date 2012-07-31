@@ -95,7 +95,10 @@ class PageUpdatePublishStatus(object):
         if page is None:
             return False
         else:
-            self.request.allowable(Page).filter(Page.event_id==page.event_id).filter(Page.id!=pageid).filter(Page.publish_begin==page.publish_begin).update({"published": False})
+            self.request.allowable(Page)\
+            .filter(Page.id!=pageid)\
+            .filter(Page.pageset_id==page.pageset_id)\
+            .filter(Page.publish_begin==page.publish_begin).update({"published": False})
             page.published = True
             DBSession.add(page)
             return True
