@@ -198,9 +198,9 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         seat.stock_id = stock_id
         seat.save()
 
-        # create SeatAttribute
-        for template_attribute in template.attributes:
-            SeatAttribute.create_from_template(template=template_attribute, seat_id=seat.id)
+        ## create SeatAttribute
+        #for template_attribute in template.attributes:
+        #    SeatAttribute.create_from_template(template=template_attribute, seat_id=seat.id)
 
         # create SeatStatus
         SeatStatus.create_default(seat_id=seat.id)
