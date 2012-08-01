@@ -46,7 +46,7 @@ def get_seats(request):
                 'areas': [area.id for area in seat.areas],
                 }
             for attr in seat.attributes:
-                seat_datum[attr.name] = attr.value
+                seat_datum[attr] = seat[attr]
             seats_data[seat.l0_id] = seat_datum
         retval[u'seats'] = seats_data
 
