@@ -2,47 +2,21 @@
 <%namespace file="/common/helpers.html" name="h" />
 
 <script type="text/javascript">
-  function report_event_sales(id) {
-    modal = $('#modal-report');
-    modal.find('#report').attr('href', '/events/report/' + id + '/sales');
-    modal.modal('toggle');
-  }
-  //function report_event_seat_all(id) {
-  //  modal = $('#modal-report');
-  //  modal.find('#report').attr('href', '/events/report/' + id + '/seat_all');
-  //  modal.modal('toggle');
-  //}
-  function report_event_seat_stocks(id) {
-    modal = $('#modal-report');
-    modal.find('#report').attr('href', '/events/report/' + id + '/seat_stocks');
-    modal.modal('toggle');
-  }
-  function report_event_seat_distributes(id) {
-    modal = $('#modal-report');
-    modal.find('#report').attr('href', '/events/report/' + id + '/seat_distributes');
-    modal.modal('toggle');
-  }
-  function report_event_seat_adds(id) {
-    modal = $('#modal-report');
-    modal.find('#report').attr('href', '/events/report/' + id + '/seat_adds');
-    modal.modal('toggle');
-  }
-  function report_event_seat_returns(id) {
-    modal = $('#modal-report');
-    modal.find('#report').attr('href', '/events/report/' + id + '/seat_returns');
-    modal.modal('toggle');
-  }
-  function report_event_seat_unsolds(id) {
-    modal = $('#modal-report');
-    modal.find('#report').attr('href', '/events/report/' + id + '/seat_unsolds');
-    modal.modal('toggle');
-  }
   $(document).ready(function() {
-    $("#report").click(function() {
+    var event_id = ${event.id};
+    function report_event(report_type, label) {
       modal = $('#modal-report');
+      modal.find('#report-label').text(label);
+      modal.find('#report').attr('href', '/events/report/' + event_id + '/' + report_type);
+      modal.find('#report').click(function() {
+        modal.modal('hide');
+      });
       modal.modal('toggle');
+    }
+    $("#btn-report-event-stocks").click(function() {
+      report_event("seat_stocks", "仕入明細");
     });
-  })
+  });
 </script>
 
 <div class="breadcrumbs">
@@ -62,16 +36,19 @@
 </div>
 
 <div class="well">
+  <!--
   <div class="btn-group" style="float: left;">
     <a class="btn btn-success" href="javascript:report_event_sales(${event.id});" style="margin-left: 10px;">
       <i class="icon-file icon-white"></i> 販売日程管理表
     </a>
   </div>
+  -->
   <div class="btn-group" style="float: left;">
-    <a class="btn btn-success" href="javascript:report_event_seat_stocks(${event.id});" style="margin-left: 10px;">
+    <a id="btn-report-event-stocks" class="btn btn-success" href="javascript:void(0);" style="margin-left: 10px;">
       <i class="icon-file icon-white"></i> 仕入明細
     </a>
   </div>
+  <!--
   <div class="btn-group" style="float: left;">
     <a class="btn btn-success" href="javascript:report_event_seat_distributes(${event.id});" style="margin-left: 10px;">
       <i class="icon-file icon-white"></i> 配券明細
@@ -92,6 +69,7 @@
       <i class="icon-file icon-white"></i> 残席明細
     </a>
   </div>
+  -->
 </div>
 
 <div id="modal-report" class="modal hide fade">
@@ -101,7 +79,7 @@
   </div>
 
   <div class="modal-body">
-    <p>帳票をダウンロードします。よろしいですか？</p>
+    <p><span id="report-label"></span>をダウンロードします。よろしいですか？</p>
   </div>
 
   <div class="modal-footer">
