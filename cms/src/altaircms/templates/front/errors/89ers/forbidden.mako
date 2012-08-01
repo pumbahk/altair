@@ -4,13 +4,20 @@
 	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
 	<link rel="stylesheet" type="text/css" href="/static/89ers/css/style.css" media="all" />
 	<title>89ers</title>
+
+	<!--[if lte IE 6]>  
+    <script type="text/javascript" src="/static/89ers/js/DD_belatedPNG.js">  
+    </script>  
+    <script type="text/javascript"> DD_belatedPNG.fix( '.header,.sparkle');</script>  
+    <![endif]-->  
+
 </head>
 <body>
 	<!-- wrapper -->	
 	<div class="wrapper">
 		<!-- メインカラム -->
 		<div class="maincol">
-			<header>
+			<div class="header">
 				<div class="gnavi">
 					<ul>
 <% from altairsite.front import helpers as myhelper %>
@@ -19,14 +26,14 @@
 %endfor
 					</ul>　　
 				</div>
-			</header>
+			</div>
 
 			<div class="kadomaru">
 ページの閲覧は禁止されています。
 			</div>
 			<!-- kadomaru終わり -->
 
-			<footer>
+			<div class="footer">
 				<div class="footernav">
 		          <ul>
 		            <li class="first"><a href="/static/faq/faq.html">ヘルプ</a></li>
@@ -39,7 +46,7 @@
 				<div class="copyright">
 					Copyright &copy; 2010-2011 TicketStar Inc. All Rights Reserved. 
 				</div>
-			</footer>
+			</div>
 
 		</div>
 		<!-- メインカラムおわり -->
