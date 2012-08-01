@@ -1,9 +1,9 @@
-<%page args="events" />
+<%page args="events, title=None" />
 <%namespace file="/common/helpers.html" name="h" />
 
 % if events:
   <div class="page-header">
-    <h3>配券されているイベント</h3>
+    <h3>${title}イベント</h3>
   </div>
   <table class="table table-striped table-bordered table-condensed">
     <tr>

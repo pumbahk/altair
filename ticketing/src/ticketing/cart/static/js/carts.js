@@ -119,6 +119,7 @@ carts.AppView = function() {
     this.dateSelector = null;
     this.venueSelector = null;
     this.orderButton = null;
+    this.orderQuantityOnlyButton = null;
     this.selectedOrderButton = null;
     this.orderForm = null;
     this.hallName = null;
@@ -216,6 +217,7 @@ carts.AppView.prototype.init = function(presenter) {
     this.dateSelector = $('#date-select');
     this.venueSelector = $("#venue-select");
     this.orderButton = $('#btn-order');
+    this.orderQuantityOnlyButton = $('#btn-order-quantity-only');
     this.selectedOrderButton = $('#btn-selected-order');
     this.orderForm = $("#order-form");
     this.hallName = $("#hallName");
@@ -258,6 +260,7 @@ carts.AppView.prototype.init = function(presenter) {
         for (var i = 0; i < selected_seats.length; i++) {
             var seat_item = $('<li/>');
             seat_item.text(selected_seats[i].name);
+            seats.append(seat_item);
         }
         seats_container.append(seats);
         item.append(name);
@@ -279,6 +282,9 @@ carts.AppView.prototype.init = function(presenter) {
                     self.reservationDialog.overlay().close();
                 }
             });
+            $("#selectSeat .venueViewer").venueviewer("load");
+            self.reservationDialog.overlay().close();
+            $("#selectSeatType").click();
         });
         self.reservationDialog.find('.confirm-button').click(function() {
             window.location.href = reservationData.payment_url;
@@ -327,6 +333,25 @@ carts.AppView.prototype.init = function(presenter) {
         }
 
         self.orderButton.click(function (event) {
+            var values = self.orderForm.serialize();
+            $.ajax({
+                url: order_url, //this is global variable
+                dataType: 'json',
+                data: values,
+                type: 'POST',
+                success: function(data, textStatus, jqXHR) {
+                    if (data.result == 'OK') {
+                        proceedToCheckout(data);
+                    } else {
+                        error();
+                    }
+                }
+            });
+            event.stopPropagation(); /* XXX: is this really necessary? */
+            return false;
+        });
+
+        self.orderQuantityOnlyButton.click(function (event) {
             var values = self.orderForm.serialize();
             $.ajax({
                 url: order_url, //this is global variable
@@ -542,8 +567,25 @@ carts.Presenter.prototype.show_seat_types = function(get_url) {
 carts.Presenter.prototype.on_seat_type_selected = function(seat_type_id) {
     var seat_type = this.currentSeatTypeMap[seat_type_id];
     this.show_products(seat_type);
+    this.change_buy_buttons(seat_type);
     this.view.focusRightBox();
     this.callbacks.seat_type_selected && this.callbacks.seat_type_selected(seat_type);
+};
+
+carts.Presenter.prototype.change_buy_buttons = function(seat_type) {
+    if (seat_type.quantity_only) {
+        // 数受け
+        $('#btn-buy-container').show();
+        $('#btn-select-buy-container').hide();
+        $('#btn-entrust-buy-container').hide();
+        $('#btn-selected-order-container').hide();
+    } else {
+        // 席指定
+        $('#btn-buy-container').hide();
+        $('#btn-select-buy-container').show();
+        $('#btn-entrust-buy-container').show();
+        $('#btn-selected-order-container').show();
+    }
 };
 
 carts.Presenter.prototype.on_date_selected = function(selected_date){

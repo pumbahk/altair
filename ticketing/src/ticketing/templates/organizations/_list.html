@@ -6,14 +6,14 @@
   function delete_organization(id) {
     var modal = $('#modal-delete');
     modal.find('#delete').attr('href', '/organizations/delete/' + id);
-    modal.find('#message').text('選択した配券元／配券先を削除します。よろしいですか？');
+    modal.find('#message').text('選択した取引先を削除します。よろしいですか？');
     modal.modal('toggle');
   }
 </script>
 
 <form>
   <div class="ui-toolbar">
-    <a href="${request.route_path('organizations.new')}" class="ui-button">新規クライアント</a>
+    <a href="${request.route_path('organizations.new')}" class="ui-button">新規取引先</a>
     <a href="#" class="ui-button">まとめて削除</a>
   </div>
   <table class="table fullwidth checkboxed_table">
@@ -21,7 +21,7 @@
       <tr>
         <th class="minwidth"><input type="checkbox" class="__action__-select_all" /></th>
         <th class="minwidth">ID</th>
-        <th>クライアント名</th>
+        <th>取引先名</th>
         <th>操作</th>
       </tr>
     </thead>

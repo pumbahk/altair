@@ -3,13 +3,13 @@
 
 <div class="breadcrumbs">
 ${h.breadcrumbs(
-    names=[u'トップ', u'クライアント詳細'],
+    names=[u'トップ', u'取引先詳細'],
     urls=[request.route_path('index')]
 )}
 </div>
 
 <div class="page-header">
-  <h3>クライアント詳細</h3>
+  <h3>取引先詳細</h3>
 </div>
 
 <div class="content">
@@ -17,5 +17,3 @@ ${h.breadcrumbs(
 </div>
 
 <%include file="/organizations/_detail.html" args="form=form, organization=organization" />
-<%include file="/organizations/_distributing_events.html" args="events=distributing_events" />
-<%include file="/organizations/_distributed_events.html" args="events=distributed_events" />

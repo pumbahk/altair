@@ -201,6 +201,8 @@ class Cloner(object):
         return retval
 
 class BaseModel(object):
+    __clone_excluded__ = ['id']
+
     query = DBSession.query_property()
 
     @classmethod

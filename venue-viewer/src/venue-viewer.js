@@ -278,9 +278,13 @@
     dataSource(function (drawing) {
       var attrs = util.allAttributes(drawing.documentElement);
       var w = parseFloat(attrs.width), h = parseFloat(attrs.height);
-      var vb = attrs.viewBox ? attrs.viewBox.split(/\s+/).map(parseFloat) : null;
-
-      vb = [0, 0, 1000, 1000];
+      var vb = null;
+      if (attrs.viewBox) {
+        var comps = attrs.viewBox.split(/\s+/);
+        vb = new Array(comps.length);
+        for (var i = 0; i < comps.length; i++)
+          vb[i] = parseFloat(comps[i]);
+      }
 
       var size = ((vb || w || h) ? {
         x: ((vb && vb[2]) || w || h),
@@ -289,6 +293,7 @@
 
       var drawable = new Fashion.Drawable(self.canvas[0], { contentSize: {x: size.x, y: size.y} });
       var shapes = {};
+      var styleClasses = CONF.DEFAULT.STYLES;
 
       (function iter(svgStyle, defs, nodeList) {
         outer:
@@ -298,9 +303,14 @@
           var attrs = util.allAttributes(n);
 
           var shape = null;
-          var currentSvgStyle = attrs.style ?
-            mergeSvgStyle(svgStyle, parseCSSAsSvgStyle(attrs.style, defs)):
-            svgStyle;
+          var currentSvgStyle = svgStyle;
+          if (attrs.style)
+            currentSvgStyle = mergeSvgStyle(currentSvgStyle, parseCSSAsSvgStyle(attrs.style, defs));
+          if (attrs['class']) {
+            var style = styleClasses[attrs['class']];
+            if (style)
+              currentSvgStyle = mergeSvgStyle(currentSvgStyle, style);
+          }
 
           switch (n.nodeName) {
           case 'defs':
@@ -319,11 +329,13 @@
             break;
 
           case 'text':
-            shape = new Fashion.Text({
-              fontSize: 10,
-              text: n.firstChild.nodeValue,
-              zIndex: 99
-            });
+            if (n.firstChild) {
+              shape = new Fashion.Text({
+                fontSize: 10,
+                text: n.firstChild.nodeValue,
+                zIndex: 99
+              });
+            }
             break;
 
           case 'rect':

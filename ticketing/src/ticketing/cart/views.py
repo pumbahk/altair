@@ -27,7 +27,7 @@ from .rakuten_auth.api import authenticated_user
 from .events import notify_order_completed
 from webob.multidict import MultiDict
 from . import api
-from .reserving import InvalidSeatSelectionException
+from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from .stocker import NotEnoughStockException
 import transaction
 
@@ -100,6 +100,7 @@ class IndexView(object):
                     cart_release_url=self.request.route_url('cart.release'),
                     selected=Markup(json.dumps([selected_performance.id, selected_date])),
                     venues_selection=Markup(json.dumps(select_venues)),
+                    sales_segment=Markup(json.dumps(dict(seat_choice=sales_segment.seat_choice))),
                     products_from_selected_date_url = self.request.route_url("cart.date.products", event_id=event_id), 
                     order_url=self.request.route_url("cart.order"),
                     upper_limit=sales_segment.upper_limit,
@@ -131,6 +132,7 @@ class IndexView(object):
                     style=s.style,
                     products_url=self.request.route_url('cart.products',
                         event_id=event_id, performance_id=performance_id, seat_type_id=s.id),
+                    quantity_only=s.quantity_only,
                     )
                 for s in seat_types
                 ],
@@ -243,7 +245,7 @@ class IndexView(object):
                     seat.l0_id,
                     dict(
                         id=seat.l0_id,
-                        stock_type_id=seat.stock_type_id,
+                        stock_type_id=seat.stock.stock_type_id,
                         stock_holder_id=seat.stock.stock_holder_id,
                         status=seat.status,
                         areas=[area.id for area in seat.areas],
@@ -348,12 +350,18 @@ class ReserveView(object):
             if cart is None:
                 transaction.abort()
                 return dict(result='NG')
+        except NotEnoughAdjacencyException:
+            transaction.abort()
+            logger.debug("not enough adjacency")
+            return dict(result='NG', reason="adjacency")
         except InvalidSeatSelectionException:
             transaction.abort()
-            return dict(result='NG')
-        except NotEnoughStockException:
+            logger.debug("seat selection is invalid.")
+            return dict(result='NG', reason="invalid seats")
+        except NotEnoughStockException as e:
             transaction.abort()
-            return dict(result='NG')
+            logger.debug("not enough stock quantity :%s" % e)
+            return dict(result='NG', reason="stock")
 
         DBSession.add(cart)
         DBSession.flush()

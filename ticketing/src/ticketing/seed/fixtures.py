@@ -247,7 +247,6 @@ class FixtureBuilder(object):
             name=name,
             l0_id=l0_id,
             stock=many_to_one(stock, 'stock_id'),
-            stock_type=many_to_one(stock.stock_type, 'stock_type_id'),
             venue_id=None,
             group_l0_id=group_l0_id,
             venue_areas=many_to_many(
@@ -469,6 +468,13 @@ class FixtureBuilder(object):
                     )],
                 'operator_id'
                 )
+            )
+
+    def build_api_key_datum(self, apikey):
+        return self.Datum(
+            'APIKey',
+            expire_at=None,
+            apikey=apikey
             )
 
     def gendigest(self, password):

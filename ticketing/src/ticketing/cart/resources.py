@@ -133,8 +133,8 @@ class TicketingCartResource(object):
                 continue
             no_vacants = sql.select([c_models.SeatAdjacency.id]).where(
                 sql.and_(
-                    c_models.SeatAdjacency.id==c_models.seat_seat_adjacency_table.c.seat_adjacency_id,
-                    c_models.Seat.id==c_models.seat_seat_adjacency_table.c.seat_id,
+                    c_models.SeatAdjacency.id==c_models.Seat_SeatAdjacency.seat_adjacency_id,
+                    c_models.Seat.id==c_models.Seat_SeatAdjacency.seat_id,
                     c_models.SeatStatus.seat_id == c_models.Seat.id,
                     c_models.SeatStatus.status != int(c_models.SeatStatusEnum.Vacant),
                     c_models.SeatAdjacencySet.seat_count == quantity,
@@ -156,8 +156,8 @@ class TicketingCartResource(object):
                     # 連席情報内の席割当
                     c_models.SeatAdjacencySet.id==c_models.SeatAdjacency.adjacency_set_id,
                     # 連席情報と席の紐付け
-                    c_models.SeatAdjacency.id==c_models.seat_seat_adjacency_table.c.seat_adjacency_id,
-                    c_models.Seat.id==c_models.seat_seat_adjacency_table.c.seat_id,
+                    c_models.SeatAdjacency.id==c_models.Seat_SeatAdjacency.seat_adjacency_id,
+                    c_models.Seat.id==c_models.Seat_SeatAdjacency.seat_id,
                     # 確保済みの席と紐づいていない
                     sql.not_(c_models.SeatAdjacency.id.in_(no_vacants)),
                 )
@@ -170,8 +170,8 @@ class TicketingCartResource(object):
                 sql.and_(
                     #確保されていない
                     c_models.SeatStatus.status == int(c_models.SeatStatusEnum.Vacant),
-                    c_models.SeatAdjacency.id==c_models.seat_seat_adjacency_table.c.seat_adjacency_id,
-                    c_models.Seat.id==c_models.seat_seat_adjacency_table.c.seat_id,
+                    c_models.SeatAdjacency.id==c_models.Seat_SeatAdjacency.seat_adjacency_id,
+                    c_models.Seat.id==c_models.Seat_SeatAdjacency.seat_id,
                     c_models.SeatStatus.seat_id == c_models.Seat.id,
                     c_models.SeatAdjacency.id==adjacency[0],
                 )

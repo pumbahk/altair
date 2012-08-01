@@ -1,22 +1,27 @@
 <%inherit file="/layout_2cols.html"/>
-<%namespace file="/common/helpers.html" import="flash_messages" />
-<%namespace file="/common/helpers.html" import="breadcrumbs" />
+<%namespace file="/common/helpers.html" name="h" />
+
 <div class="breadcrumbs">
-  ${breadcrumbs(
-      names=[u'トップ', u'クライアント'],
+  ${h.breadcrumbs(
+      names=[u'トップ', u'取引先'],
       urls=[request.route_path('index')]
   )}
 </div>
 <div class="page-header">
-  <h3>クライアント／配券元</h3>
+  <h3>取引先</h3>
 </div>
 
 <div class="content">
-  ${flash_messages(request)}
+  ${h.flash_messages(request)}
 </div>
 
-<%include file="/accounts/_list.html" args="form=form, accounts=accounts" />
 <%include file="/accounts/_action_button.html" />
 <div id="accounts-form">
   <%include file="/accounts/_form.html" args="form=form" />
+</div>
+
+<div class="row-fluid" style="margin-top: 30px;">
+  <div class="span6">
+    <%include file="/accounts/_list.html" args="form=form, accounts=accounts" />
+  </div>
 </div>

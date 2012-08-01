@@ -17,7 +17,7 @@ class OrganizationForm(Form):
         validators=[Optional()],
     )
     name = TextField(
-        label=u'クライアント名',
+        label=u'取引先名',
         validators=[
             Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
@@ -32,7 +32,7 @@ class OrganizationForm(Form):
         ]
     )
     client_type = SelectField(
-        label=u'クライアントタイプ',
+        label=u'取引先タイプ',
         choices=[(1, u'スタンダード')],
         coerce=int,
     )

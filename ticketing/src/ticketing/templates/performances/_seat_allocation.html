@@ -319,8 +319,7 @@ function saveStocks() {
     dataType: 'json',
     data: JSON.stringify(venue.toJSON()),
     success: function(result) {
-      modal.find('#message').text(result['message']);
-      modal.modal('toggle');
+      location.reload(true);
     },
     error: function(xhr, text) {
       var responseText = JSON.parse(xhr.responseText);

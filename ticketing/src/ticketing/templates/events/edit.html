@@ -1,14 +1,13 @@
 <%inherit file="/layout_2cols.html" />
-<%namespace file="/common/helpers.html" import="validate_errors" />
-<%namespace file="/common/helpers.html" import="alert_message" />
-<%namespace file="/common/helpers.html" import="flash_messages" />
-<%namespace file="/common/helpers.html" import="form_item" />
-<%namespace file="/common/helpers.html" import="breadcrumbs" />
+<%namespace file="/common/helpers.html" name="h" />
 
 <%
   if request.matched_route.name == 'events.edit':
     route_name = u'編集'
     route_path = request.route_path('events.edit', event_id=event.id)
+  elif request.matched_route.name == 'events.copy':
+    route_name = u'コピー'
+    route_path = request.route_path('events.copy', event_id=form.original_id.data)
   else:
     route_name = u'登録'
     route_path = request.route_path('events.new')
@@ -38,7 +37,7 @@
 </script>
 
 <div class="breadcrumbs">
-${breadcrumbs(
+${h.breadcrumbs(
     names=[u'イベント', route_name],
     urls=[request.route_path('events.index')]
 )}
@@ -49,18 +48,19 @@ ${breadcrumbs(
 </div>
 
 <div class="content">
-  ${flash_messages(request)}
-  ${alert_message(form)}
+  ${h.flash_messages(request)}
+  ${h.alert_message(form)}
 </div>
 
 <div class="well">
   <form class="form-horizontal" action="${route_path}" enctype="multipart/form-data" method="POST">
     <fieldset>
-      ${form_item(form.id)}
-      ${form_item(form.account_id, option={'class':'span5'})}
-      ${form_item(form.title, option={'class':'span8', 'maxlength':200})}
-      ${form_item(form.abbreviated_title, option={'class':'span4', 'maxlength':100})}
-      ${form_item(form.code, option={'style':'width:100px', 'maxlength':5, 'placeholder':request.context.user.organization.code})}
+      ${h.form_item(form.id)}
+      ${h.form_item(form.original_id)}
+      ${h.form_item(form.account_id, option={'class':'span5'})}
+      ${h.form_item(form.title, option={'class':'span8', 'maxlength':200})}
+      ${h.form_item(form.abbreviated_title, option={'class':'span4', 'maxlength':100})}
+      ${h.form_item(form.code, option={'style':'width:100px', 'maxlength':5, 'placeholder':request.context.user.organization.code})}
     </fieldset>
     <div class="form-actions">
       <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">
