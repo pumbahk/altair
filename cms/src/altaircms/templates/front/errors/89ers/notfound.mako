@@ -9,6 +9,18 @@
     </script>  
     <script type="text/javascript"> DD_belatedPNG.fix( .header,.sparkle);</script>  
     <![endif]-->  
+<script type="text/javascript">
+     $(function(){
+var e = $("<a>");
+e.attr("href","http://www.89ers.jp/")
+e.css({"position": "relative",
+       "display": "block",
+       "width": "165px",
+       "height": "100px",
+       "margin-left": "50px"
+       });
+$(".header").append(e);
+});
 </head>
 <body>
 	<!-- wrapper -->	
@@ -19,7 +31,7 @@
 				<div class="gnavi">
 					<ul>
 <% from altairsite.front import helpers as myhelper %>
-%for c in myhelper._get_categories(request, "div_menu"):
+%for c in myhelper._get_categories(request, "header_menu"):
 	<li><a href="${h.link.get_link_from_category(request,c)}">${c.label}</a></li>
 %endfor
 					</ul>　　
@@ -34,11 +46,18 @@
 			<div class="footer">
 				<div class="footernav">
 		          <ul>
-		            <li class="first"><a href="/static/faq/faq.html">ヘルプ</a></li>
-		            <li><a href="http://www.ticketstar.jp/corporate">運営会社</a></li>
-		            <li><a href="https://ticket.rakuten.co.jp/contact/form">お問い合わせ</a></li>
-		            <li><a href="http://www.ticketstar.jp/privacy">個人情報保護方針</a></li>
-		            <li class="last"><a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a></li>
+					<% xs = myhelper._get_categories(request, "footer_menu").all()%>
+					 %if len(xs) >= 2:
+							 <li><a class="first" href="${h.link.get_link_from_category(request,xs[0])}">${xs[0].label}</a></li>
+							 %for c in xs[1:-1]:
+									 <li><a href="${h.link.get_link_from_category(request,c)}">${c.label}</a></li>
+							 %endfor
+							 <li><a class="last" href="${h.link.get_link_from_category(request,xs[-1])}">${xs[-1].label}</a></li>
+					 %else:
+							 %for c in xs:
+									 <li><a class="first last" href="${h.link.get_link_from_category(request,c)}">${c.label}</a></li>
+							 %endfor
+					 %endif
 		          </ul>
 		        </div>
 				<div class="copyright">
