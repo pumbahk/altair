@@ -7,7 +7,7 @@ from sqlalchemy.orm import joinedload, noload
 from urllib2 import urlopen
 
 from ticketing.models import DBSession
-from ..core.models import Venue, Seat, SeatAttribute, VenueArea, SeatAdjacency, SeatAdjacencySet, Stock, StockHolder, StockType, seat_seat_adjacency_table
+from ticketing.core.models import Venue, Seat, SeatAdjacencySet, Stock, StockHolder, StockType
 
 @view_config(route_name="api.get_drawing", request_method="GET")
 def get_drawing(request):
@@ -38,7 +38,7 @@ def get_seats(request):
 
     if u'seats' in necessary_params:
         seats_data = {}
-        for seat in DBSession.query(Seat).options(joinedload('attributes'), joinedload('areas'), joinedload('status_')).filter_by(venue=venue):
+        for seat in DBSession.query(Seat).options(joinedload('attributes_'), joinedload('areas'), joinedload('status_')).filter_by(venue=venue):
             seat_datum = {
                 'id': seat.l0_id,
                 'stock_id': seat.stock_id,
@@ -46,7 +46,7 @@ def get_seats(request):
                 'areas': [area.id for area in seat.areas],
                 }
             for attr in seat.attributes:
-                seat_datum[attr.name] = attr.value
+                seat_datum[attr] = seat[attr]
             seats_data[seat.l0_id] = seat_datum
         retval[u'seats'] = seats_data
 
@@ -78,7 +78,6 @@ def get_seats(request):
             name=stock_type.name,
             is_seat=stock_type.is_seat,
             quantity_only=stock_type.quantity_only,
-            quantity=0,
             style=stock_type.style) \
         for stock_type in DBSession.query(StockType).filter_by(event=venue.performance.event)
         ]

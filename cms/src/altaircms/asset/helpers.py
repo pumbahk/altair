@@ -95,6 +95,7 @@ def get_form_params_from_asset(asset):
 
 def _asset_query_from_search_params(model, classifier, params):
     if "tags" in params:
+        ## すまないすまない
         manager = get_tagmanager(classifier)
         return QueryParser(params["tags"]).and_search_by_manager(manager)
     else:

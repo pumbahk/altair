@@ -1,30 +1,38 @@
 from zope.interface import Interface, Attribute, implements
-import re
+from zope.interface.verify import verifyObject
 
 from pyramid.security import Allow, Everyone, Authenticated, authenticated_userid
-from ticketing.operators.models import *
+from .operators.models import OperatorAuth, OperatorRole, Operator
 
 import sqlahelper
 session = sqlahelper.get_session()
 
-r = re.compile(r'^(/_deform)|(/static)|(/_debug_toolbar)|(/favicon.ico)')
-
-class RootFactory(object):
-    __acl__ = [
+def newRootFactory(exemption_matcher):
+    acl = [
         (Allow, Everyone        , 'everybody'),
         (Allow, Authenticated   , 'authenticated'),
         (Allow, 'login'         , 'everybody'),
+        (Allow, 'api'           , 'api'),
         ]
-    user = None
-    def __init__(self, request):
-        if not r.match(request.path):
-            roles = OperatorRole.all()
-            for role in roles:
-                for permission in role.permissions:
-                    self.__acl__.append((Allow, role.name, permission.category_name))
 
+    # build ACL
+    roles = OperatorRole.all()
+    for role in roles:
+        for permission in role.permissions:
+            acl.append((Allow, role.name, permission.category_name))
+
+    class Root(object):
+        # the same ACL is applied to every resource under.
+        __acl__ = acl
+        def __init__(self, request):
+            if exemption_matcher(request):
+                return None
             user_id = authenticated_userid(request)
+            # assign the operator object to the context
             self.user = Operator.get_by_login_id(user_id) if user_id is not None else None
+            self.request = request
+
+    return Root
 
 def groupfinder(userid, request):
     user = session.query(Operator).join(OperatorAuth).filter(OperatorAuth.login_id == userid).first()

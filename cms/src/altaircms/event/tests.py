@@ -2,24 +2,19 @@
 import unittest
 from pyramid import testing
 from altaircms import testing as a_testing
-from altaircms.lib.testutils import _initTestingDB
 from .api import EventRepositry
 from .interfaces import IAPIKeyValidator, IEventRepository
 
 def setUpModule():
-    import sqlahelper
-    from sqlalchemy import create_engine
-    import altaircms.page.models
-    import altaircms.event.models
-    import altaircms.auth.models
-    import altaircms.models
+    from altaircms.testing import setup_db
+    setup_db(["altaircms.page.models", 
+              "altaircms.tag.models", 
+              "altaircms.event.models", 
+              "altaircms.asset.models"])
 
-    engine = create_engine("sqlite:///")
-    engine.echo = False
-    sqlahelper.get_session().remove()
-    sqlahelper.add_engine(engine)
-    sqlahelper.get_base().metadata.drop_all()
-    sqlahelper.get_base().metadata.create_all()
+def tearDown():
+    from altaircms.testing import teardown_db
+    teardown_db()
 
 def _to_utc(d):
     return d.replace(tzinfo=None) - d.utcoffset()
@@ -238,7 +233,8 @@ class ParseAndSaveEventTests(unittest.TestCase):
 
 class ValidateAPIKeyTests(unittest.TestCase):
     def setUp(self):
-        self.session = _initTestingDB()
+        import sqlahelper
+        self.session = sqlahelper.get_session()
 
     def tearDown(self):
         import transaction
@@ -283,7 +279,8 @@ class DummyEventRepositry(testing.DummyResource):
 class TestEventRegister(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp()
-        self.session = _initTestingDB()
+        import sqlahelper
+        self.session = sqlahelper.get_session()
         self.validator = DummyValidator('hogehoge')
         self.config.registry.registerUtility(self.validator, IAPIKeyValidator)
 

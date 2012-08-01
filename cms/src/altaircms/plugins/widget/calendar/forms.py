@@ -2,7 +2,7 @@
 
 from wtforms.form import Form
 from wtforms import fields
-from altaircms.lib.formhelpers import dynamic_query_select_field_factory
+from altaircms.helpers.formhelpers import dynamic_query_select_field_factory
 from altaircms.models import Sale
 from altaircms.page.models import Page
 from altaircms.event.models import Event

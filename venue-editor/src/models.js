@@ -50,7 +50,6 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
       name: stockTypeDatum.name,
       isSeat: stockTypeDatum.is_seat,
       quantityOnly: stockTypeDatum.quantity_only,
-      quantity: stockTypeDatum.quantity,
       style: stockTypeDatum.style
     });
     stockTypes.add(stockType);

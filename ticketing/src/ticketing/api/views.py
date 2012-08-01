@@ -85,19 +85,21 @@ class LoginOAuth(BaseView):
         logger.info("*api login* authorize redirect url: status:%s location:%s" % (redirect_url.status, redirect_url.location))
         return redirect_url
 
+@view_defaults(permission="api")
 class StockStatus(BaseView):
     @view_config(route_name='api.stock_statuses_for_event', request_method="GET", renderer='json')
     def stock_statuses(self):
         event_id = self.request.matchdict.get('event_id')
         stocks = session.query(c_models.Stock) \
             .options(joinedload(c_models.Stock.stock_status), joinedload(c_models.Stock.stock_type), joinedload(c_models.Stock.performance)) \
-            .join(c_models.ProductItem) \
-            .join(c_models.Product) \
-            .join(c_models.Event) \
-            .join(c_models.StockHolder) \
-            .join(c_models.Account) \
+            .join(c_models.ProductItem.stock) \
+            .join(c_models.ProductItem.product) \
+            .join(c_models.Product.event) \
+            .join(c_models.Stock.stock_holder) \
+            .join(c_models.StockHolder.account) \
+            .join(c_models.Event.organization) \
             .filter(c_models.Product.event_id == event_id) \
-            .filter(c_models.Account.organization_id == c_models.Event.organization_id) \
+            .filter(c_models.Account.user_id == c_models.Organization.user_id) \
             .distinct(c_models.Stock.id) \
             .order_by(c_models.Stock.id) \
             .all()

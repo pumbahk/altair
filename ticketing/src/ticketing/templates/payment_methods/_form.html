@@ -7,19 +7,19 @@
     <h3>決済方法</h3>
   </div>
 
-  <form action="javascript:save_payment_method();" method="POST">
-    <div class="modal-body">
+  <div class="modal-body">
+    <form action="javascript:save_payment_method();" method="POST">
       ${h.form_item(form.id)}
       ${h.form_item(form.organization_id, option={'class':'span6'})}
       ${h.form_item(form.payment_plugin_id)}
       ${h.form_item(form.name, option={'maxlength':255})}
       ${h.form_item(form.fee)}
       ${h.form_item(form.fee_type)}
-    </div>
+    </form>
+  </div>
 
-    <div class="modal-footer">
-      <a href="#" class="btn" data-dismiss="modal">閉じる</a>
-      <input class="btn" type="submit" value="保存"></a>
-    </div>
-  </form>
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+    <a href="javascript:$('#modal-payment_method').find('form').submit();" class="btn">保存</a>
+  </div>
 </div>

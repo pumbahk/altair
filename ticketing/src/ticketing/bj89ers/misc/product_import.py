@@ -96,7 +96,7 @@ def main():
     session.add(delivery_method)
 
     account = c_model.Account(
-        account_type = c_model.AccountTypeEnum.Promoter.v,
+        account_type = c_model.AccountTypeEnum.Promoter.v[0],
         name = u'89ers',
         user = user
     )

@@ -8,6 +8,8 @@
           .css('margin-top', ($(this).outerHeight()/2)*-1)
           .css('margin-left',($(this).outerWidth()/2)*-1);
     });
+
+    $("#modal-stock_holder #text_color").decentcolorpicker();  
   });
 </script>
 
@@ -24,7 +26,7 @@
       ${form_item(form.name, option={'maxlength':255})}
       ${form_item(form.account_id)}
       ${form_item(form.text)}
-      ${form_item(form.text_color, option={'class':'kolorPicker span3'})}
+      ${form_item(form.text_color, option={'class':'span3'})}
     </form>
   </div>
 

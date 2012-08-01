@@ -15,6 +15,17 @@ exports.DEFAULT = {
     stroke: new Fashion.Stroke(new Fashion.Color('#5ABECD'), 1)
   },
 
+  STYLES: {
+    label: {
+      fill: new Fashion.Color('#000'),
+      stroke: null
+    },
+    seat: {
+      fill: new Fashion.Color('#fff'),
+      stroke: new Fashion.Color('#000')
+    }
+  },
+
   MASK_STYLE: {
     fill:   new Fashion.FloodFill(new Fashion.Color("#0064ff80")),
     stroke: new Fashion.Stroke(new Fashion.Color("#0080FF"), 2)

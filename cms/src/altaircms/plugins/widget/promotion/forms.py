@@ -2,7 +2,7 @@
 import wtforms.form as form
 import wtforms.fields as fields
 import wtforms.validators as validators
-from altaircms.lib.formhelpers import dynamic_query_select_field_factory
+from altaircms.helpers.formhelpers import dynamic_query_select_field_factory
 from . import models
 from altaircms.topic.models import Kind
 

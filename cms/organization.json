@@ -1,3 +1,25 @@
+git add cms/organization.json
+git add cms/usersite_who.ini
+#       both deleted:       deploy/conf/production/89ers.ini
+#       both deleted:       deploy/conf/production/cms.ini
+#       both deleted:       deploy/conf/production/mypage.ini
+#       both deleted:       deploy/conf/production/mypage_who.ini
+#       both deleted:       deploy/conf/production/organization.json
+#       both deleted:       deploy/conf/production/payment.ini
+#       both deleted:       deploy/conf/production/payment_who.ini
+#       both deleted:       deploy/conf/production/sej.ini
+#       both deleted:       deploy/conf/production/ticketing.ini
+#       both deleted:       deploy/conf/production/usersite.89ers.ini
+#       both deleted:       deploy/conf/production/usersite.ini
+#       both deleted:       deploy/conf/production/usersite.nh.ini
+#       both deleted:       deploy/conf/production/usersite_who.ini
+#       both deleted:       deploy/conf/staging/organization.json
+git add deploy/production/conf/usersite.89ers.ini
+git add deploy/production/conf/usersite.ini
+git add deploy/production/conf/usersite.nh.ini
+git add deploy/staging/conf/organization.json
+
+
 {
     "comment": "organizationの特定にbackend_idとauth_sourceをkeyにするのが辛くなってきた...", 
     "data": {

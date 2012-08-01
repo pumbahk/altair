@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from pyramid.view import view_config, view_defaults
+from pyramid.view import view_config, view_defaults, forbidden_view_config
 from pyramid.httpexceptions import HTTPFound, HTTPForbidden
 from pyramid.renderers import render_to_response
 from pyramid.security import Authenticated
@@ -9,6 +9,8 @@ from pyramid.view import view_config
 
 from ticketing.fanstatic import with_bootstrap
 from ticketing.fanstatic import bootstrap_need
+
+from .interfaces import IAPIContext
 
 from pyramid.url import route_path
 class BaseView(object):
@@ -30,6 +32,8 @@ class CommonView(BaseView):
 
     @view_config(context=HTTPForbidden, renderer='ticketing:templates/common/forbidden.html')
     def forbidden_view(self):
+        if IAPIContext.providedBy(self.request.context):
+            return HTTPForbidden()
 
         if authenticated_userid(self.request):
             return {}
@@ -37,5 +41,4 @@ class CommonView(BaseView):
         loc = self.request.route_url('login.index', _query=(('next', self.request.url),))
 
         return HTTPFound(location=loc)
-
 

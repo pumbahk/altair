@@ -31,6 +31,7 @@
 var selected = ${selected};
 var venues_selection = ${venues_selection};
 var upper_limit = ${upper_limit};
+var sales_segment = ${sales_segment};
 var order_url = "${order_url}";
 var products_from_selected_date_url = "${products_from_selected_date_url}";
 var cart_release_url = "${cart_release_url}";
@@ -109,6 +110,12 @@ function createDataSource(params) {
   };
 }
 
+function get_current_quantity() {
+  var num = 0;
+  $.each($('#order-form select'), function(_,quantity) {num+=Number($(quantity).val())})
+  return num;
+}
+
 $(function() {
   var currentStockTypeId = "";
 
@@ -126,12 +133,20 @@ $(function() {
               selectable: function (viewer, seat) {
                 if (currentStockTypeId == "")
                   return true;
-                return seat.meta.stock_type_id == currentStockTypeId;
+                return seat.meta.stock_type_id == currentStockTypeId && seat.meta.status == 1 && seat.meta.is_hold;
               },
               click: function (viewer, seat, highlighted) {
                 $.each(highlighted, function (id, seat) {
                   if (carts.appView.left_box.hasClass('focused')) {
                     carts.appView.select_seat_type(seat.type.id);
+                  } else {
+                    if (seat.selected()) {
+                      seat.selected(false);
+                    } else {
+                      if (viewer.selectionCount < get_current_quantity()) {
+                        seat.selected(true);
+                      }
+                    }
                   }
                 });
               },
@@ -275,6 +290,12 @@ $(function() {
                 <script type="text/javascript">
                   currentViewer = $('#selectSeat .venueViewer');
                 </script>
+                <div>
+                  <ul class="buttonSet" id="btn-selected-order-container">
+                    <li><a href="javascript:void(0);" id="btn-selected-order"><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_buy.shrunken.gif')}" alt="購入" /></a></li>
+                  </ul>
+
+                </div>
               </div>
               <div id="selectProduct" class="selectSeatRightPane">
                 <h3 class="lead">購入枚数、購入方法をお選びください</h3>
@@ -287,11 +308,16 @@ $(function() {
                       </ul>
                     </dd>
                   </dl>
-                  <ul class="buttonSet">
+                  <fieldset style="display:none;" id="selected-seats">
+                  </fieldset>
+                  <ul class="buttonSet" id="btn-select-buy-container">
                     <li><a href="#"><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_select_buy.shrunken.gif')}" alt="座席を選んで購入" /></a></li>
                   </ul>
-                  <ul class="buttonSet">
-                    <li><a href="javascript:void(0);" id="btn-order"><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_buy.shrunken.gif')}" alt="おまかせで購入" /></a></li>
+                  <ul class="buttonSet" id="btn-entrust-buy-container">
+                    <li><a href="javascript:void(0);" id="btn-order"><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_entrust_buy.shrunken.gif')}" alt="おまかせで購入" /></a></li>
+                  </ul>
+                  <ul class="buttonSet" id="btn-buy-container">
+                    <li><a href="javascript:void(0);" id="btn-order-quantity-only"><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_buy.shrunken.gif')}" alt="購入" /></a></li>
                   </ul>
                 </form>
               </div>
@@ -365,33 +391,33 @@ $(function() {
 </div>
 
 <div class="modal payment" style="display:none" id="order-reserved">
-		<div class="modal-header">
-            <h3><span id="performance-name"></span></h3>
-            <h4><span id="performance-name-sub"></span></h4>
+	<div class="modal-header">
+        <h3><span id="performance-name"></span></h3>
+        <h4><span id="performance-name-sub"></span></h4>
 	</div>
-		<div class="modal-inner">
-	<div class="modal-body">
+	<div class="modal-inner">
+	    <div class="modal-body">
 
-		<img src="${request.static_url('ticketing.cart:static/img/settlement/total.gif')}" alt="合計金額" width="67" height="16"
-			 style="margin-bottom:7px;">
-		<table>
-		<tbody>
-			<tr class="last-child">
-			<td id="cart-total-amount">￥</td>
-			</tr>
-		</tbody>
-		</table>
+	    	<img src="${request.static_url('ticketing.cart:static/img/settlement/total.gif')}" alt="合計金額" width="67" height="16"
+	    		 style="margin-bottom:7px;">
+	    	<table>
+	    	<tbody>
+	    		<tr class="last-child">
+	    		<td id="cart-total-amount">￥</td>
+	    		</tr>
+	    	</tbody>
+	    	</table>
 
-		<p class="lead" style="margin-bottom:4px;">内訳</p>
-		<table>
-		<tbody id="contentsOfShopping">
-		</tbody>
-		</table>
-	</div>
-	<div class="modal-footer">
-		<button class="cancel-button btn-redo"></button>
-		<button class="confirm-button btn-buy"></button>
-	</div>
+	    	<p class="lead" style="margin-bottom:4px;">内訳</p>
+	    	<table>
+	    	<tbody id="contentsOfShopping">
+	    	</tbody>
+	    	</table>
+	    </div>
+	    <div class="modal-footer">
+	    	<button class="cancel-button btn-redo"></button>
+	    	<button class="confirm-button btn-buy"></button>
+	    </div>
 	</div>
 </div>
 </body>

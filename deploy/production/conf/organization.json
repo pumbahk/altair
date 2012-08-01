@@ -1,0 +1,9 @@
+{
+    "comment": "organizationの特定にbackend_idとauth_sourceをkeyにするのが辛くなってきた...", 
+    "data": {
+        "BJ:89ers": {"backend_id": 1, "auth_source": "oauth"}, 
+        "ticketstar": {"backend_id": 1111,  "auth_source": "oauth"},
+        "rakuten-baseball": {"backend_id": 21111, "auth_source": "oauth"}, 
+        "BJ:NH": {"backend_id": 2, "auth_source": "oauth"}
+    }
+}

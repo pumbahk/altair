@@ -3,8 +3,8 @@
 #from altaircms.models import DBSession
 #from altaircms.page.models import Page
 #
-#from altaircms.lib.testutils import functionalTestSetUp
-#from altaircms.lib.testutils import functionalTestTearDown
+#from altaircms.testing import functionalTestSetUp
+#from altaircms.testing import functionalTestTearDown
 #
 #app = None
 #def setUpModule():

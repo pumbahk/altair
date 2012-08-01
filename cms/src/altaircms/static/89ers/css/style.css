@@ -104,6 +104,16 @@ img a{
 border: 0;
 }
 
+
+.floatR{
+	float: right !important;
+}
+
+.floatL{
+	float: left !important;
+}
+
+
 .textR{
 	text-align: right !important;	
 }
@@ -141,7 +151,51 @@ border: 0;
 }
 
 
+.marginB10{
+	margin-bottom: 10px;
+}
 
+.marginB20{
+	margin-bottom: 20px;
+}
+
+.marginB30{
+	margin-bottom: 30px;
+}
+
+.marginT20{
+	margin-top: 20px;
+}
+
+
+.margin20{
+	margin: 20px;
+}
+
+.margin30{
+	margin: 30px;
+}
+
+.valignT{
+	vertical-align: top !important;
+}
+
+.valignB{
+	vertical-align: bottom !important;
+}
+
+.valignM{
+	vertical-align: middle !important;
+}
+
+
+.padding20{
+	padding: 20px;
+}
+
+h1{
+	margin-left: 50px;
+}
 
 h2{
 	background: #FFB900; /* Old browsers */
@@ -172,6 +226,27 @@ h3{
 	font-weight: bold;	
 	color: #555;
 }
+
+
+h4{
+	margin: 10px 0 5px 0;
+	color: #000;
+	background: #efefef;
+	padding: 3px 0;
+	font-size: 14px;
+}
+
+
+h4 span.order{
+	background: #990018;
+	color: #fff;
+	font-size: 14px;
+	font-weight: bold;
+	padding: 3px;
+	font-family: sans-serif;
+	margin: 0 5px 0 3px;
+}
+
 
 .purchased{
 	padding: 10px 20px;
@@ -382,7 +457,7 @@ h3{
 
 table.info{
 	border-collapse: collapse;
-	margin: 20px auto;
+	margin: 0 auto 20px auto;
 	border-top: 1px #ccc solid;
 	border-right: 1px #ccc solid;
 	width: 620px;
@@ -411,8 +486,6 @@ table.info td{
 }
 
 table.info td img{
-	float: right;
-	margin-left: 5px;
 }
 
 
@@ -450,6 +523,13 @@ table.info td span.detail a{
 	text-decoration: none;
 }
 
+
+
+table.ticketPayRecieve{
+	border: 1px #ccc solid;
+}
+
+
 .prepare{
 	background: #f2f6f8; /* Old browsers */
 	background: -moz-linear-gradient(top, #f2f6f8 0%, #d8e1e7 50%, #b5c6d0 51%, #e0eff9 100%); /* FF3.6+ */
@@ -486,8 +566,310 @@ dl.faq dd{
 	background: #fff5db;
 }
 
+.howtoNotice{
+	padding: 5px 5px 5px 10px;
+	background: #fff6dd;
+	font-weight: bold;
+	margin: 5px;
+	font-size: 10px;
+	border-left: 3px #990018 double;
+}
+
+.function{
+	background: url(/static/89ers/images/functions.png) no-repeat;
+	width:575px;
+	height: 180px;
+	padding: 110px 50px 50px 50px;
+	margin: 0 auto;
+}
+
+.function ul{
+	margin: 10px 0 0 100px ;
+	color: #fff;
+}
+
+.function ul li{
+	font-size: 14px;
+	font-weight: bold;
+	line-height: 16px;
+	padding-top:8px;
+}
 
 
+table.ticketAmount {
+	border-top: 3px #990018 solid;
+	border-left: 1px #ccc solid;
+	border-right: 1px #ccc solid;
+	border-bottom: 1px #ccc solid;
+	width:100%;	
+	margin-top: 20px;
+}
+
+table.ticketAmount .matchDate{
+	font-size: 20px;
+	font-weight: bold;
+}
+
+table.ticketAmount thead th{
+	vertical-align: top;
+}
+
+
+.ticketAmount th{
+	background: #efefef;
+	font-weight: bold;
+	border-right: 1px #ccc solid;
+	border-bottom: 1px #ccc solid;
+	font-weight: bold;
+	padding: 3px;
+}
+
+.ticketAmount td{
+	text-align: center;
+	border-right: 1px #ccc dashed;
+	border-bottom: 1px #ccc solid;
+	padding: 7px 5px 6px;
+}
+
+.ticketAmount .tdLast{
+	text-align: center;
+	border-right: none;
+	border-bottom: 1px #ccc solid;
+}
+
+
+.ticketAmount .t01 {
+	background-repeat: no-repeat;
+	background-position: right bottom;
+	padding: 7px 5px 6px;
+	text-align: center;
+	font-size: 14px;
+	font-weight: bold;
+	line-height: 130%;
+	color: #33CC00;
+}
+.ticketAmount .t02 {
+	background-repeat: no-repeat;
+	background-position: right bottom;
+	padding: 7px 5px 6px;
+	text-align: center;
+	font-size: 14px;
+	font-weight: bold;
+	line-height: 130%;
+	color: #0033FF;
+}
+.ticketAmount .t03 {
+	background-repeat: no-repeat;
+	background-position: right bottom;
+	padding: 7px 5px 6px;
+	text-align: center;
+	font-size: 14px;
+	font-weight: bold;
+	line-height: 130%;
+	color: #CC0000;
+}
+.ticketAmount .t04 {
+	background-repeat: no-repeat;
+	background-position: right bottom;
+	padding: 7px 5px 6px;
+	text-align: center;
+	font-size: 14px;
+	font-weight: bold;
+	line-height: 130%;
+	color: #333333;
+}
+
+
+.ticketAmount .date{
+	font-size: 20px;
+}
+
+.ticketAmount .colorSat01{
+	font-size: 20px;
+	background: #e4f2f8;
+	color: #0882da;
+}
+
+.ticketAmount .colorSun01{
+	font-size: 20px;
+	background: #fce6ec;
+	color: #f4659e;
+}
+
+
+
+.calendarInner{
+	height: 450px;
+	overflow: hidden;
+}
+
+
+div#performance-calendar {
+  padding: 0;
+}
+
+div#performance-calendar table {
+  width: 620px;
+  border-collapse: collapse;
+  font-family: "Trebuchet MS";
+  background: #fff;
+}
+
+div#performance-calendar table td,
+div#performance-calendar table th {
+  border: 1px solid #990018;
+  background: #fff;
+  }
+
+div#performance-calendar table thead th {
+  border-top: 2px solid #990018;
+  text-align: center;
+  font-weight: bold;
+  height: 20px;
+  background-color: #ccc;
+}
+
+div#performance-calendar table tr.last th,
+div#performance-calendar table tr.last td {
+  border-bottom: 2px solid #990018;
+}
+
+div#performance-calendar table th.first,
+div#performance-calendar table td.first {
+  border-left: 2px solid #990018;
+}
+
+div#performance-calendar table th.last,
+div#performance-calendar table td.last {
+  border-right: 2px solid #990018;
+}
+
+div#performance-calendar table td.empty {
+  border: none !important;
+  width: 48px;
+}
+
+div#performance-calendar table th.month {
+  border: none !important;
+  width: 48px;
+  color: #fff;
+  font-weight: bold;
+  padding: 0 0;
+  margin: 0 0;
+}
+
+div#performance-calendar table tbody td {
+  width: 98px;
+  height: 64px;
+  vertical-align: top;
+  padding: 8px 8px;
+}
+
+div#performance-calendar table tbody td .day {
+  font-size: 15px;
+  font-weight: bold;
+}
+
+div#performance-calendar table tbody td ul {
+  margin: 0 0 0 0;
+  padding: 0 0 0 0;
+}
+
+div#performance-calendar table tbody td ul li {
+  list-style-type: none;
+  margin: 0 0 0 0;
+  padding: 0 0 0 0;
+}
+
+div#performance-calendar table tbody td.odd_month {
+  background-color: #fff;
+}
+
+div#performance-calendar table tbody td.even_month {
+  background-color: #ffd;
+}
+
+div#performance-calendar table tbody td.saturday .day {
+  color: #48e;
+}
+
+div#performance-calendar table tbody td.holiday .day {
+  color: #e48;
+}
+
+
+div#performance-calendar table td ul li.maru{
+	background: url(/static/89ers/images/maru.png) #f1fbff no-repeat left top;
+	padding: 3px;
+	text-align: center;
+	font-size: 11px;
+}
+
+div#performance-calendar table td ul li.sankaku{
+	background: url(/static/89ers/images/sankaku.png) #fffcf0 no-repeat left top;
+	padding: 3px;
+	text-align: center;
+	font-size: 11px;
+}
+
+div#performance-calendar table td ul li.batsu{
+	background: url(/static/89ers/images/batsu.png) #eee no-repeat left top;
+	padding: 3px;
+	text-align: center;
+	font-size: 11px;
+}
+
+div#performance-calendar table td ul li a{
+	text-decoration: underline;
+	color: #555;
+}
+
+table.phone th{
+	vertical-align: top;
+	text-align: right;
+	font-weight: bold;
+	font-size: 14px;
+}
+
+.phoneNo{
+	font-weight: bold;
+	font-size: 14px;
+	padding-left: 30px !important;
+}
+
+.f00{
+	color: #f00;
+}
+
+.month-tab{
+	margin:30px 10px 0 10px;
+}
+
+
+div#performance-calendar .month-tab span{
+	margin: 2px 10px;
+	background-color: #990018;
+	padding: 10px 20px 5px 20px;
+	color: #fff;
+	border-radius: 5px 5px 0px 0px;
+	position: relative;
+	top:-2px;
+}
+
+div#performance-calendar .month-tab span.current{
+	background-color: #ff8800;
+	font-weight: bold;
+}
+
+div#performance-calendar .month-tab span.current a{
+	color: #00F;
+	text-decoration: none;
+}
+
+div#performance-calendar .month-tab span a{
+	color: #fff;
+	text-decoration: underline;
+}
 
 
 
@@ -527,7 +909,7 @@ footer .footernav ul li.first {
 }
 
 footer .footernav ul li {
-    border-left: 1px solid #534741;
+    border-left: 1px solid #990018;
     display: inline;
     padding: 0 6px;
     white-space: nowrap;
@@ -542,3 +924,6 @@ footer .footernav ul li {
 	color: #fff;
 }
 
+.bgfff{
+	background: #fff !important;
+}

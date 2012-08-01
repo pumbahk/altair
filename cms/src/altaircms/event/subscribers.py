@@ -4,7 +4,7 @@ from zope.interface import implementer
 from altaircms.interfaces import IModelEvent
 from ..solr import api as solr
 from ..page import api as pageapi
-from altaircms.lib.viewhelpers import FlashMessage
+from altaircms.helpers.viewhelpers import FlashMessage
 
 def notify_event_create(request, event, params=None):
     registry = request.registry

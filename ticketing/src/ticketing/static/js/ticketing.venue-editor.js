@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['zDZMMJHVA_WG6W6T'] = (function (exports) { (function () { 
+__LIBS__['fVZHP_KCCLZAEKP8'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -18,6 +18,17 @@ exports.DEFAULT = {
   VENUE_STYLE: {
     fill: new Fashion.FloodFill(new Fashion.Color('#FFCB3F')),
     stroke: new Fashion.Stroke(new Fashion.Color('#5ABECD'), 1)
+  },
+
+  STYLES: {
+    label: {
+      fill: new Fashion.Color('#000'),
+      stroke: null
+    },
+    seat: {
+      fill: new Fashion.Color('#fff'),
+      stroke: new Fashion.Color('#000')
+    }
   },
 
   MASK_STYLE: {
@@ -48,7 +59,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['Y8WFWF_BF1J65U69'] = (function (exports) { (function () { 
+__LIBS__['HZZN5VOBM3AB80GV'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -74,7 +85,7 @@ exports.ja = {
   } 
 };
  })(); return exports; })({});
-__LIBS__['V4MIIHQIGI7WS28M'] = (function (exports) { (function () { 
+__LIBS__['oGMDXPWTYVHTAP_M'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -173,7 +184,7 @@ exports.mergeStyle = function mergeStyle(a, b) {
   };
 };
  })(); return exports; })({});
-__LIBS__['XUGQKCHR5ZQX777O'] = (function (exports) { (function () { 
+__LIBS__['j8J03931EB8B99G7'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -222,12 +233,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['t3PVJHNZP2K3O7JC'] = (function (exports) { (function () { 
+__LIBS__['SCJK56I0IJ599QR6'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['V4MIIHQIGI7WS28M'];
-var CONF = __LIBS__['zDZMMJHVA_WG6W6T'];
-var IdentifiableSet = __LIBS__['XUGQKCHR5ZQX777O'].IdentifiableSet;
+var util = __LIBS__['oGMDXPWTYVHTAP_M'];
+var CONF = __LIBS__['fVZHP_KCCLZAEKP8'];
+var IdentifiableSet = __LIBS__['j8J03931EB8B99G7'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -277,7 +288,6 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
       name: stockTypeDatum.name,
       isSeat: stockTypeDatum.is_seat,
       quantityOnly: stockTypeDatum.quantity_only,
-      quantity: stockTypeDatum.quantity,
       style: stockTypeDatum.style
     });
     stockTypes.add(stockType);
@@ -664,12 +674,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['M0QA8RWHYR_Y6DUC'] = (function (exports) { (function () { 
+__LIBS__['NNKXIKR14M7TCD9W'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['V4MIIHQIGI7WS28M'];
-var CONF = __LIBS__['zDZMMJHVA_WG6W6T'];
-var models = __LIBS__['t3PVJHNZP2K3O7JC'];
+var util = __LIBS__['oGMDXPWTYVHTAP_M'];
+var CONF = __LIBS__['fVZHP_KCCLZAEKP8'];
+var models = __LIBS__['SCJK56I0IJ599QR6'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -852,13 +862,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['zDZMMJHVA_WG6W6T'];
-  var models = __LIBS__['t3PVJHNZP2K3O7JC'];
-  var util = __LIBS__['V4MIIHQIGI7WS28M'];
-  var viewobjects = __LIBS__['M0QA8RWHYR_Y6DUC'];
-  var IdentifiableSet = __LIBS__['XUGQKCHR5ZQX777O'].IdentifiableSet;
+  var CONF = __LIBS__['fVZHP_KCCLZAEKP8'];
+  var models = __LIBS__['SCJK56I0IJ599QR6'];
+  var util = __LIBS__['oGMDXPWTYVHTAP_M'];
+  var viewobjects = __LIBS__['NNKXIKR14M7TCD9W'];
+  var IdentifiableSet = __LIBS__['j8J03931EB8B99G7'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['Y8WFWF_BF1J65U69'];
+    I18n.translations = __LIBS__['HZZN5VOBM3AB80GV'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
@@ -1121,7 +1131,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
     var drawing = this.drawing;
     var attrs = util.allAttributes(drawing.documentElement);
     var w = parseFloat(attrs.width), h = parseFloat(attrs.height);
-    var vb = attrs.viewBox ? attrs.viewBox.split(/\s+/).map(parseFloat) : null;
+    var vb = null;
+    if (attrs.viewBox) {
+      var comps = attrs.viewBox.split(/\s+/);
+      vb = new Array(comps.length);
+      for (var i = 0; i < comps.length; i++)
+        vb[i] = parseFloat(comps[i]);
+    }
 
     var size = ((vb || w || h) ? {
       x: ((vb && vb[2]) || w || h),
@@ -1130,6 +1146,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
 
     var drawable = new Fashion.Drawable(self.canvas[0], { contentSize: {x: size.x, y: size.y}, viewportSize: { x: this.canvas.innerWidth(), y: this.canvas.innerHeight() } });
     var shapes = {};
+    var styleClasses = CONF.DEFAULT.STYLES;
 
     (function iter(svgStyle, defs, nodeList) {
       outer:
@@ -1140,9 +1157,14 @@ var Seat = exports.Seat = Backbone.Model.extend({
           var shape = null;
           var attrs = util.allAttributes(n);
 
-          var currentSvgStyle = attrs.style ?
-            mergeSvgStyle(svgStyle, parseCSSAsSvgStyle(attrs.style, defs)):
-            svgStyle;
+          var currentSvgStyle = svgStyle;
+          if (attrs.style)
+            currentSvgStyle = mergeSvgStyle(currentSvgStyle, parseCSSAsSvgStyle(attrs.style, defs));
+          if (attrs['class']) {
+            var style = styleClasses[attrs['class']];
+            if (style)
+              currentSvgStyle = mergeSvgStyle(currentSvgStyle, style);
+          }
 
           switch (n.nodeName) {
             case 'defs':
@@ -1160,16 +1182,14 @@ var Seat = exports.Seat = Backbone.Model.extend({
               break;
 
             case 'text':
-              shape = new Fashion.Text({
-                //position: {
-                //  x: parseFloat(attrs.x),
-                //  y: parseFloat(attrs.y)
-                //},
-                fontSize: 10,
-                text: n.firstChild.nodeValue,
-                zIndex: 99
-              });
-              shape.style(CONF.DEFAULT.TEXT_STYLE);
+              if (n.firstChild) {
+                shape = new Fashion.Text({
+                  fontSize: 10,
+                  text: n.firstChild.nodeValue,
+                  zIndex: 99
+                });
+                shape.style(CONF.DEFAULT.TEXT_STYLE);
+              }
               break;
 
             case 'rect':

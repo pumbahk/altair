@@ -1,7 +1,15 @@
-from altaircms.lib.formevent import AfterFormInitialize
 from wtforms.form import Form
 # from altaircms.auth.helpers import user_context
 from . import helpers
+from interfaces import IAfterFormInitialize
+from zope.interface import implementer 
+
+@implementer(IAfterFormInitialize)
+class AfterFormInitialize(object):
+    def __init__(self, form, request, rendering_val):
+        self.form = form
+        self.request = request
+        self.rendering_val = rendering_val
 
 def add_renderer_globals(event):
     event['h'] = helpers

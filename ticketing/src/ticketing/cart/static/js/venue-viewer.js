@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['QJ30JOCQGSQV7RHR'] = (function (exports) { (function () { 
+__LIBS__['U4M5JCIV7938G4Y_'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -121,7 +121,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['HPCV14SJHCWS73D8'] = (function (exports) { (function () { 
+__LIBS__['k4T0_ARF8J3S8VZ6'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -172,11 +172,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['p9M6TKMO1L0QC38O'] = (function (exports) { (function () { 
+__LIBS__['h8LU7SKYF1F6M_UR'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['QJ30JOCQGSQV7RHR'];
-var CONF = __LIBS__['HPCV14SJHCWS73D8'];
+var util = __LIBS__['U4M5JCIV7938G4Y_'];
+var CONF = __LIBS__['k4T0_ARF8J3S8VZ6'];
 
 function clone(obj) {
   return $.extend({}, obj); 
@@ -420,9 +420,9 @@ console.log(ad2);
 
 /************** venue-viewer.js **************/
 (function ($) {
-  var CONF = __LIBS__['HPCV14SJHCWS73D8'];
-  var seat = __LIBS__['p9M6TKMO1L0QC38O'];
-  var util = __LIBS__['QJ30JOCQGSQV7RHR'];
+  var CONF = __LIBS__['k4T0_ARF8J3S8VZ6'];
+  var seat = __LIBS__['h8LU7SKYF1F6M_UR'];
+  var util = __LIBS__['U4M5JCIV7938G4Y_'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
@@ -640,9 +640,10 @@ console.log(ad2);
     this.keyEvents = null;
     this.zoomRatio = 1.0;
     this.uiMode = 'select1';
-    this.shapes = {};
+    this.shapes = null;
     this.seats = {};
     this.selection = {};
+    this.selectionCount = 0;
     this.highlighted = {};
     this._adjacencyLength = 1;
     this.animating = false;
@@ -660,26 +661,26 @@ console.log(ad2);
       this.drawable.dispose();
     this.seatAdjacencies = null;
     var self = this;
-    this.callbacks.loadstart && this.callbacks.loadstart('stockTypes');
-    this.dataSource.stockTypes(function (data) {
-      self.stockTypes = data;
-      self.callbacks.loadstart && self.callbacks.loadstart('info');
-      self.dataSource.info(function (data) {
-        if (!'available_adjacencies' in data) {
-          self.callbacks.message("Invalid data");
-          return;
-        }
-        self.availableAdjacencies = data.available_adjacencies;
-        self.seatAdjacencies = new seat.SeatAdjacencies(self);
-        self.callbacks.loadstart && self.callbacks.loadstart('drawing');
-        self.initDrawable(self.dataSource.drawing, function () {
+    self.callbacks.loadstart && self.callbacks.loadstart('drawing');
+    self.initDrawable(self.dataSource.drawing, function () {
+      self.callbacks.loadstart && self.callbacks.loadstart('stockTypes');
+      self.dataSource.stockTypes(function (data) {
+        self.stockTypes = data;
+        self.callbacks.loadstart && self.callbacks.loadstart('info');
+        self.dataSource.info(function (data) {
+          if (!'available_adjacencies' in data) {
+            self.callbacks.message("Invalid data");
+            return;
+          }
+          self.availableAdjacencies = data.available_adjacencies;
+          self.seatAdjacencies = new seat.SeatAdjacencies(self);
           self.callbacks.loadstart && self.callbacks.loadstart('seats');
           self.initSeats(self.dataSource.seats, function () {
             self.callbacks.load && self.callbacks.load(self);
           });
-        });
+        }, self.callbacks.message);
       }, self.callbacks.message);
-    }, self.callbacks.message);
+    });
   };
 
   VenueViewer.prototype.dispose = function VenueViewer_dispose() {
@@ -708,6 +709,7 @@ console.log(ad2);
       } : null);
 
       var drawable = new Fashion.Drawable(self.canvas[0], { contentSize: {x: size.x, y: size.y} });
+      var shapes = {};
 
       (function iter(svgStyle, defs, nodeList) {
         outer:
@@ -770,7 +772,7 @@ console.log(ad2);
             shape.style(buildStyleFromSvgStyle(currentSvgStyle));
             drawable.draw(shape);
           }
-          self.shapes[attrs.id] = shape;
+          shapes[attrs.id] = shape;
         }
       }).call(self,
         { fill: false, fillOpacity: false,
@@ -779,6 +781,7 @@ console.log(ad2);
         drawing.documentElement.childNodes);
 
       self.drawable = drawable;
+      self.shapes = shapes;
 
       var cs = drawable.contentSize();
       var vs = drawable.viewportSize();
@@ -1019,11 +1022,13 @@ console.log(ad2);
     if (value) {
       if (!(seat.id in this.selection)) {
         this.selection[seat.id] = seat;
+        this.selectionCount++;
         seat.__selected();
       }
     } else {
       if (seat.id in this.selection) {
         delete this.selection[seat.id];
+        this.selectionCount--;
         seat.__unselected();
       }
     }
@@ -1156,35 +1161,28 @@ console.log(ad2);
       if (options == 'remove') {
         aux.dispose();
         this.data('venueviewer', null);
-      }
-      if (!aux)
-        throw new Error("Command issued against an uninitialized element");
-      switch (options) {
-      case 'load':
-        aux.load();
-        break;
-
-      case 'uimode':
+      } else {
         if (!aux)
           throw new Error("Command issued against an uninitialized element");
-        aux.changeUIMode(arguments[1]);
-        break;
+        switch (options) {
+        case 'load':
+          aux.load();
+          break;
 
-      case 'selection':
-        if (!aux)
-          throw new Error("Command issued against an uninitialized element");
-        return aux.selection;
+        case 'uimode':
+          aux.changeUIMode(arguments[1]);
+          break;
 
-      case 'refresh':
-        if (!aux)
-          throw new Error("Command issued against an uninitialized element");
-        return aux.refresh();
+        case 'selection':
+          return aux.selection;
 
-      case 'adjacency':
-        if (!aux)
-          throw new Error("Command issued against an uninitialized element");
-        aux.adjacencyLength(arguments[1]|0);
-        break;
+        case 'refresh':
+          return aux.refresh();
+
+        case 'adjacency':
+          aux.adjacencyLength(arguments[1]|0);
+          break;
+        }
       }
     }
 

@@ -6,9 +6,9 @@ from altaircms.plugins.widget.linklist.models import LinklistWidget
 config  = None
 def setUpModule():
     global config
-    from altaircms.lib import testutils
-    testutils.create_db(force=False)
-    config = testutils.config()
+    from altaircms import testing as mytesting
+    mytesting.setup_db(["altaircms.page.models", "altaircms.tag.models", "altaircms.event.models", "altaircms.asset.models"])
+    config = mytesting.config()
 
 class WidgetTestSourceMixn(object):
     def _makePage(self, id=None):

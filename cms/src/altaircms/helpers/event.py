@@ -1,6 +1,5 @@
 # -*- coding:utf-8 -*-
-import locale
-locale.setlocale(locale.LC_ALL, "")
+
 from .base import jdate
 WEEK =[u"月", u"火", u"水", u"木", u"金", u"土", u"日"]
 

@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 import wtforms.form as form
 import wtforms.fields as fields
-from altaircms.lib.formhelpers import dynamic_query_select_field_factory
+from altaircms.helpers.formhelpers import dynamic_query_select_field_factory
 import wtforms.validators as validators
 from altaircms.page.models import Page
 

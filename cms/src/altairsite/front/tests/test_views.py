@@ -10,7 +10,7 @@ Page.structure{} # widget id
 Widget
 """
 
-from altaircms.lib.testutils import functionalTestTearDown
+from altaircms.testing import functionalTestTearDown
 
 app = None
 def setUpModule():
@@ -26,10 +26,18 @@ def setUpModule():
     sqlahelper.add_engine(engine)
 
     from altairsite import main
+    import altaircms.auth.models
+    import altaircms.models
     defaults = {"sqlalchemy.url": "sqlite://", 
                 "session.secret": "B7gzHVRUqErB1TFgSeLCHH3Ux6ShtI", 
                 "mako.directories": os.path.join(DIR, "templates"), 
                 "pyramid_who.config": "usersite_who.ini",  ##
+                "altaircms.organization.mapping.json": "altaircms:../../organization.json", 
+                "altaircms.backend.url": "localhost:7654", 
+                "altaircms.widget.each_organization.settings": "altaircms.plugins:ticketstar-widget-settings.ini", 
+                "altairsite.organization.mapping.name": "ticketstar", 
+                "altaircms.usrsite.notfound.template": "altaircms:templates/front/errors/ticketstar/notfound.mako",
+                "altaircms.usrsite.forbidden.template": "altaircms:templates/front/errors/ticketstar/forbidden.mako",
                 "altaircms.asset.storepath": "altaircms:../../data/assets", 
                 "altaircms.debug.strip_security": 'true', 
                 "altaircms.plugin_static_directory": "altaircms:plugins/static", 

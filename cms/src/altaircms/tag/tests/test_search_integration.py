@@ -1,13 +1,24 @@
 import unittest
+from pyramid import testing
+
 config  = None
 def setUpModule():
+    from altaircms.testing import setup_db
+    setup_db(["altaircms.page.models", 
+              "altaircms.tag.models", 
+              "altaircms.event.models", 
+              "altaircms.asset.models"])
+
     global config
-    from altaircms.lib import testutils
-    config = testutils.config()
+    from altaircms import testing as mytesting
+    config = mytesting.config()
     config.include("altaircms.tag")
-    testutils.create_db(force=False)
+    mytesting.setup_db(["altaircms.page.models", "altaircms.tag.models", "altaircms.event.models", "altaircms.asset.models"])
     
 def tearDownModule():
+    from altaircms.testing import teardown_db
+    teardown_db()
+
     from pyramid.testing import tearDown
     tearDown()
 
@@ -36,7 +47,7 @@ class AnyKindAssetSearchTests(unittest.TestCase):
 
     def _makeOne(self, classifier):
         from altaircms.tag.api import get_tagmanager
-        return get_tagmanager(classifier)
+        return get_tagmanager(classifier, testing.DummyRequest())
 
     def test_any_kind(self):
         """ search_by_tag_label image. flash, movie asset exist in session"""

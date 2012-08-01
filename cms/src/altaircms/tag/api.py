@@ -1,9 +1,9 @@
 from .interfaces import ITagManager
-from altaircms.lib.apiutils import get_registry
 from altaircms.subscribers import notify_model_create
+from pyramid.threadlocal import get_current_registry
 
 def get_tagmanager(classifier, request=None):
-    registry = get_registry(request)
+    registry = request.registry if request else get_current_registry()
     return registry.queryUtility(ITagManager, classifier)
 
 def put_tags(obj, classifier, tags, private_tags, request):

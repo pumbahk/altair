@@ -28,8 +28,6 @@ class PageTagAlterTest(unittest.TestCase):
         from altaircms.tag import models as m
         return TagManager(Object=Page, XRef=m.PageTag2Page, Tag=m.PageTag)
 
-    ## create
-    #
 
     def test_tagged_when_create(self):
         page = self._withSession(self._makePage())
@@ -132,11 +130,15 @@ class PageTagAlterTest(unittest.TestCase):
         ## delete private `both' tag
         manager.delete_tags(page, [u"both"], public_status=True)
         self.assertEquals(len(page.tags), 5)
-       
-if __name__ == "__main__":
-    import altaircms.page.models
-    import altaircms.event.models
-    import altaircms.asset.models
-    import altaircms.tag.models
-    from altaircms.lib.testutils import db_initialize_for_unittest
-    db_initialize_for_unittest()
+
+
+def setUpModule():
+    from altaircms.testing import setup_db
+    setup_db(["altaircms.page.models", 
+              "altaircms.tag.models", 
+              "altaircms.event.models", 
+              "altaircms.asset.models"])
+
+def tearDown():
+    from altaircms.testing import teardown_db
+    teardown_db()

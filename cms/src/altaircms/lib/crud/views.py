@@ -1,7 +1,7 @@
 # -*- encoding:utf-8 -*-
 import transaction
 from pyramid.httpexceptions import HTTPFound
-from altaircms.lib.viewhelpers import FlashMessage
+from altaircms.helpers.viewhelpers import FlashMessage
 from altaircms.models import DBSession
 from altaircms.models import model_from_dict, model_to_dict
 import functools
@@ -10,7 +10,7 @@ import logging
 logger = logging.getLogger(__file__)
 from altaircms.security import RootFactory
 from ..flow import api as flow_api
-from ..viewhelpers import set_endpoint, get_endpoint
+from altaircms.helpers.viewhelpers import set_endpoint, get_endpoint
 from altaircms.subscribers import notify_model_create ## too-bad
 
 from sqlalchemy.sql.operators import ColumnOperators

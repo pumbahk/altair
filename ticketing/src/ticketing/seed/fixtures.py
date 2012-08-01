@@ -4,6 +4,7 @@ from random import randint, choice, sample, shuffle
 from datetime import datetime, date, time
 from dateutil.relativedelta import relativedelta
 from itertools import chain
+from ticketing.core.models import SeatStatusEnum
 from tableau import many_to_many, one_to_many, many_to_one, auto, Datum
 from collections import OrderedDict
 import logging
@@ -20,6 +21,9 @@ logger = logging.getLogger('fixtures')
 
 STOCK_TYPE_TYPE_SEAT = 0
 STOCK_TYPE_TYPE_OTHER = 1
+
+class NotEnoughStockError(Exception):
+    pass
 
 class DigitCodec(object):
     def __init__(self, digits):
@@ -243,7 +247,6 @@ class FixtureBuilder(object):
             name=name,
             l0_id=l0_id,
             stock=many_to_one(stock, 'stock_id'),
-            stock_type=many_to_one(stock.stock_type, 'stock_type_id'),
             venue_id=None,
             group_l0_id=group_l0_id,
             venue_areas=many_to_many(
@@ -256,7 +259,7 @@ class FixtureBuilder(object):
                 [self._Datum(
                     'SeatStatus',
                     'seat_id',
-                    status=1
+                    status=SeatStatusEnum.Vacant.v
                     )],
                 'seat_id'
                 )
@@ -467,6 +470,13 @@ class FixtureBuilder(object):
                 )
             )
 
+    def build_api_key_datum(self, apikey):
+        return self.Datum(
+            'APIKey',
+            expire_at=None,
+            apikey=apikey
+            )
+
     def gendigest(self, password):
         return hashlib.sha1(self.salt + password).hexdigest()
 
@@ -480,8 +490,8 @@ class FixtureBuilder(object):
     def build_organization_datum(self, code, name):
         logger.info(u"Building Organization %s" % name)
         account_data = [
-            self.build_account_datum(name, type) \
-            for name, type in self.account_pairs
+            self.build_account_datum(name_, type) \
+            for name_, type in self.account_pairs
             ]
         retval = self.Datum(
             'Organization',
@@ -663,8 +673,8 @@ class FixtureBuilder(object):
                             ]
                         )
                     )
-            except:
-                pass
+            except NotEnoughStockError, e:
+                logger.info(e)
 
         retval.orders = one_to_many(
             order_data,
@@ -766,21 +776,27 @@ class FixtureBuilder(object):
             ]
 
         # check availability
+        summaries = {}
         for ordered_product in ordered_products:
             for ordered_product_item in ordered_product.ordered_product_items:
                 product_item = ordered_product_item.product_item
-                available = product_item.stock.stock_status[0].quantity
-                needed = product_item.quantity
-                if available < needed:
-                    raise Exception("Oops! (%d (%d) < %d)" % (available, product_item.stock.quantity, needed))
+                stock = product_item.stock
+                if stock not in summaries:
+                    summaries[stock] = [stock.stock_status[0].quantity, 0]
+                summaries[stock][1] += product_item.quantity * ordered_product.quantity
+
+        for stock, (available, needed) in summaries.items():
+            if available < needed:
+                raise NotEnoughStockError("OutOfStock (%s < %d; total=%d)" % (available, needed, stock.quantity))
 
         # decrement availability
         for ordered_product in ordered_products:
             for ordered_product_item in ordered_product.ordered_product_items:
                 product_item = ordered_product_item.product_item
-                product_item.stock.stock_status[0].quantity -= product_item.quantity
+                product_item.stock.stock_status[0].quantity -= product_item.quantity * ordered_product.quantity
+                assert product_item.stock.stock_status[0].quantity >= 0
                 for seat in ordered_product_item.seats:
-                    seat.status_[0].status = 5 # Shipped
+                    seat.status_[0].status = SeatStatusEnum.Shipped.v # Shipped
 
         payment_delivery_method_pair = choice(sales_segment.payment_delivery_method_pairs)
         total_amount = sum(

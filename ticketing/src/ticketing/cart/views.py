@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import logging
+import transaction
 import json
 from datetime import datetime, timedelta
 import re
@@ -26,6 +27,8 @@ from .rakuten_auth.api import authenticated_user
 from .events import notify_order_completed
 from webob.multidict import MultiDict
 from . import api
+from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
+from .stocker import NotEnoughStockException
 import transaction
 
 logger = logging.getLogger(__name__)
@@ -97,6 +100,7 @@ class IndexView(object):
                     cart_release_url=self.request.route_url('cart.release'),
                     selected=Markup(json.dumps([selected_performance.id, selected_date])),
                     venues_selection=Markup(json.dumps(select_venues)),
+                    sales_segment=Markup(json.dumps(dict(seat_choice=sales_segment.seat_choice))),
                     products_from_selected_date_url = self.request.route_url("cart.date.products", event_id=event_id), 
                     order_url=self.request.route_url("cart.order"),
                     upper_limit=sales_segment.upper_limit,
@@ -128,6 +132,7 @@ class IndexView(object):
                     style=s.style,
                     products_url=self.request.route_url('cart.products',
                         event_id=event_id, performance_id=performance_id, seat_type_id=s.id),
+                    quantity_only=s.quantity_only,
                     )
                 for s in seat_types
                 ],
@@ -224,7 +229,7 @@ class IndexView(object):
             for p in query]
 
         return dict(products=products,
-            seat_type=dict(id=seat_type.id, name=seat_type.name))
+                    seat_type=dict(id=seat_type.id, name=seat_type.name))
 
     @view_config(route_name='cart.seats', renderer="json")
     def get_seats(self):
@@ -232,15 +237,19 @@ class IndexView(object):
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.matchdict['performance_id']
         venue_id = self.request.matchdict['venue_id']
+        stock_holder = api.get_stock_holder(self.request, event_id)
+        logger.debug("stock holder is %s:%s" % (stock_holder.id, stock_holder.name))
         return dict(
             seats=dict(
                 (
                     seat.l0_id,
                     dict(
                         id=seat.l0_id,
-                        stock_type_id=seat.stock_type_id,
+                        stock_type_id=seat.stock.stock_type_id,
+                        stock_holder_id=seat.stock.stock_holder_id,
                         status=seat.status,
-                        areas=[area.id for area in seat.areas]
+                        areas=[area.id for area in seat.areas],
+                        is_hold=seat.stock.stock_holder_id==stock_holder.id,
                         )
                     ) 
                 for seat in DBSession.query(c_models.Seat) \
@@ -334,10 +343,28 @@ class ReserveView(object):
     @view_config(route_name='cart.order', request_method="POST", renderer='json')
     def reserve(self):
         order_items = self.ordered_items
+        selected_seats = self.request.params.getall('selected_seat')
         logger.debug('order_items %s' % order_items)
-        cart = api.order_products(self.request, self.request.params['performance_id'], order_items)
-        if cart is None:
-            return dict(result='NG')
+        try:
+            cart = api.order_products(self.request, self.request.params['performance_id'], order_items, selected_seats=selected_seats)
+            if cart is None:
+                transaction.abort()
+                return dict(result='NG')
+        except NotEnoughAdjacencyException:
+            transaction.abort()
+            logger.debug("not enough adjacency")
+            return dict(result='NG', reason="adjacency")
+        except InvalidSeatSelectionException:
+            transaction.abort()
+            logger.debug("seat selection is invalid.")
+            return dict(result='NG', reason="invalid seats")
+        except NotEnoughStockException as e:
+            transaction.abort()
+            logger.debug("not enough stock quantity :%s" % e)
+            return dict(result='NG', reason="stock")
+
+        DBSession.add(cart)
+        DBSession.flush()
         api.set_cart(self.request, cart)
         return dict(result='OK', 
                     payment_url=self.request.route_url("cart.payment"),
@@ -389,13 +416,7 @@ class ReleaseCartView(object):
         api.remove_cart(self.request)
 
         return dict()
-        
-class Reserve2View(object):
-    """ 座席選択完了画面(ユーザー選択) """
-    def __init__(self, request):
-        self.request = request
 
-        # TODO: 座席選択コンポーネントへの入力を作る
 
 class PaymentView(object):
     """ 支払い方法、引き取り方法選択 """

@@ -14,7 +14,7 @@ from altaircms.page.models import PageSet
 from altaircms.event.models import Event
 from altaircms.interfaces import IForm
 from altaircms.interfaces import implementer
-from altaircms.lib.formhelpers import dynamic_query_select_field_factory
+from altaircms.helpers.formhelpers import dynamic_query_select_field_factory
 from altaircms.helpers.formhelpers import append_errors
 from altaircms.helpers.formhelpers import MaybeDateTimeField
 

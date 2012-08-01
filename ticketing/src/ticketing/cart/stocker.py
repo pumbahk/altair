@@ -12,6 +12,23 @@ logger = logging.getLogger(__name__)
 class NotEnoughStockException(Exception):
     """ 必要な在庫数がない場合 """
 
+    def __init__(self, stock, actualy, required):
+        super(NotEnoughStockException, self).__init__()
+        self.stock = stock
+        self.stock_holder_name = self.stock.stock_holder.name
+        self.stock_type_name = self.stock.stock_type.name
+        self.actualy = actualy
+        self.required = required
+
+    def __str__(self):
+        return (u"NotEnoughStockException stock = %s:%s:id=%s, actualy = %d, required = %d" % (
+            self.stock_holder_name,
+            self.stock_type_name,
+            self.stock.id,
+            self.actualy,
+            self.required,
+            )).encode('utf-8')
+
 class Stocker(object):
     def __init__(self, request):
         self.request = request
@@ -43,7 +60,7 @@ class Stocker(object):
         for status in statuses:
             quantity = require_quantities[status.stock_id]
             if status.quantity < quantity:
-                raise NotEnoughStockException
+                raise NotEnoughStockException(status.stock, status.quantity, quantity)
             status.quantity -= quantity
             results.append((status, quantity))
         return results
@@ -72,4 +89,17 @@ class Stocker(object):
         q = sorted(ordered_product_items, key=lambda x: x[0].stock_id)
         q = itertools.groupby(q, key=lambda x: x[0].stock_id)
         return [(stock_id, sum(quantity for _, quantity in ordered_items)) for stock_id, ordered_items in q]
+
+    def get_stock_holder(self, event_id):
+        """ イベントに対する主枠ホルダー """
+        
+        return StockHolder.query.filter(
+            Account.id==StockHolder.account_id
+        ).filter(
+            User.id==Account.user_id
+        ).filter(
+            Organization.user_id==User.id
+        ).filter(
+            StockHolder.event_id==event_id
+        ).one()
 

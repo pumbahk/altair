@@ -4,15 +4,29 @@
   % endfor
 </%def>
 
-## above_table,below_table,card_and_QR,card_and_seven,card_and_home,card_and_onsite
+## above_kadomaru, card_and_QR,card_and_seven,card_and_home,anshin_and_QR,anshin_and_seven,anshin_and_home,seven_and_seven
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html lang="jp">
 <head>
 	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
 	<link rel="stylesheet" type="text/css" href="/static/89ers/css/style.css" media="all" />
-	<title>89ers</title>
+	<title>${page.title}</title>     <meta name="description" content="${page.description}">     <meta name="keywords" content="${page.keywords}">
+<script type="text/javascript">
+     $(function(){
+var e = $("<a>");
+e.attr("href","http://www.89ers.jp/")
+e.css({"position": "relative",
+       "display": "block",
+       "width": "165px",
+       "height": "100px",
+       "margin-left": "50px"
+       });
+$("header").append(e);
+     });
+   </script>
 </head>
+
 <body>
 	<!-- wrapper -->	
 	<div class="wrapper">
@@ -28,76 +42,58 @@
 				</div>
 			</header>
 
-			<div class="kadomaru">
-
-<%block name="kadomaru">
-  ${widgets("kadomaru")}
+<%block name="above_kadomaru">
+  ${widgets("above_kadomaru")}
 </%block>
 
-				<table class="info" style="border-left:1px #ccc solid;">
-					<tr>
-						<th>クレジットカードでお支払い　＆　QRコードでお引き取り</th>
-					</tr>
-					<tr>
-						<td>
+			<div class="kadomaru">
+
 <%block name="card_and_QR">
   ${widgets("card_and_QR")}
 </%block>
-						</td>
-					</tr>
-				</table>
 
-				<table class="info" style="border-left:1px #ccc solid;">
-					<tr>
-						<th>クレジットカードでお支払い　＆　セブン-イレブンにて引取</th>
-					</tr>
-					<tr>
-						<td>
 <%block name="card_and_seven">
   ${widgets("card_and_seven")}
 </%block>
-						</td>
-					</tr>
-				</table>
 
-				<table class="info" style="border-left:1px #ccc solid;">
-					<tr>
-						<th>クレジットカードでお支払い　＆　自宅へ配送</th>
-					</tr>
-					<tr>
-						<td>
 <%block name="card_and_home">
   ${widgets("card_and_home")}
 </%block>
-						</td>
-					</tr>
-				</table>
 
-				<table class="info" style="border-left:1px #ccc solid;">
-					<tr>
-						<th>セブン-イレブンにてお支払い　＆　その場で発券・引取</th>
-					</tr>
-					<tr>
-						<td>
-<%block name="card_and_onsite">
-  ${widgets("card_and_onsite")}
+<%block name="anshin_and_QR">
+  ${widgets("anshin_and_QR")}
 </%block>
-						</td>
-					</tr>
-				</table>
-				
-			</div>
 
+<%block name="anshin_and_seven">
+  ${widgets("anshin_and_seven")}
+</%block>
 
+<%block name="anshin_and_home">
+  ${widgets("anshin_and_home")}
+</%block>
+
+<%block name="seven_and_seven">
+  ${widgets("seven_and_seven")}
+</%block>
+
+</div>
+<!-- kadomaruおわり -->
 
 			<footer>
 				<div class="footernav">
 		          <ul>
-		            <li class="first"><a href="/static/faq/faq.html">ヘルプ</a></li>
-		            <li><a href="http://www.ticketstar.jp/corporate">運営会社</a></li>
-		            <li><a href="https://ticket.rakuten.co.jp/contact/form">お問い合わせ</a></li>
-		            <li><a href="http://www.ticketstar.jp/privacy">個人情報保護方針</a></li>
-		            <li class="last"><a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a></li>
+					<% xs = myhelper._get_categories(request, "footer_menu").all()%>
+					 %if len(xs) >= 2:
+							 <li><a class="first" href="${h.link.get_link_from_category(request,xs[0])}">${xs[0].label}</a></li>
+							 %for c in xs[1:-1]:
+									 <li><a href="${h.link.get_link_from_category(request,c)}">${c.label}</a></li>
+							 %endfor
+							 <li><a class="last" href="${h.link.get_link_from_category(request,xs[-1])}">${xs[-1].label}</a></li>
+					 %else:
+							 %for c in xs:
+									 <li><a class="first last" href="${h.link.get_link_from_category(request,c)}">${c.label}</a></li>
+							 %endfor
+					 %endif
 		          </ul>
 		        </div>
 				<div class="copyright">
