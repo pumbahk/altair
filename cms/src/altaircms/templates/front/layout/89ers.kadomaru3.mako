@@ -21,7 +21,7 @@ e.css({"position": "relative",
        "height": "100px",
        "margin-left": "50px"
        });
-$("header").append(e);
+$(".header").append(e);
      });
    </script>
 </head>
