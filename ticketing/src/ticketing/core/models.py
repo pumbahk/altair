@@ -163,7 +163,7 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     venue           = relationship("Venue", backref='seats')
     stock           = relationship("Stock", backref='seats')
 
-    attributes_      = relationship("SeatAttribute", backref='seat', collection_class=attribute_mapped_collection('name'), cascade='all,delete-orphan')
+    attributes_     = relationship("SeatAttribute", backref='seat', collection_class=attribute_mapped_collection('name'), cascade='all,delete-orphan')
     areas           = relationship("VenueArea",
                                    primaryjoin=lambda:and_(
                                         Seat.venue_id==VenueArea_group_l0_id.venue_id,
@@ -196,11 +196,9 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         seat = Seat.clone(template)
         seat.venue_id = venue_id
         seat.stock_id = stock_id
+        for template_attribute in template.attributes:
+            seat[template_attribute] = template[template_attribute]
         seat.save()
-
-        ## create SeatAttribute
-        #for template_attribute in template.attributes:
-        #    SeatAttribute.create_from_template(template=template_attribute, seat_id=seat.id)
 
         # create SeatStatus
         SeatStatus.create_default(seat_id=seat.id)
