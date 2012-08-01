@@ -22,6 +22,7 @@ e.css({"position": "relative",
        });
 $(".header").append(e);
 });
+</script>
 </head>
 <body>
 	<!-- wrapper -->	
