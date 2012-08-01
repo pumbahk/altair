@@ -2,14 +2,14 @@
 import os
 from unittest import TestCase
 
-import xls_export
+from . import xls_export
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+TEMPLATE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../templates/reports/")
 
 
 class SeatAssignExporterTestCase(TestCase):
     def setUp(self):
-        self.template_path = os.path.join(BASE_DIR, 'assign_template.xls')
+        self.template_path = os.path.join(TEMPLATE_DIR, 'assign_template.xls')
 
     def testOk(self):
         exporter = xls_export.SeatAssignExporter(template=self.template_path)
@@ -51,10 +51,7 @@ class SeatAssignExporterTestCase(TestCase):
         exporter.set_performance_datetime(test_sheet, u"2011年08月23日18時30分")
         exporter.set_performance_name(test_sheet, u"三重県営サンアリーナ")
         result = exporter.as_string()
-
-        f = open('test.xls', 'wb')
-        f.write(result)
-        f.close()
+        self.assertTrue(len(result) > 0)
 
     def testAddSheet(self):
         exporter = xls_export.SeatAssignExporter(template=self.template_path)

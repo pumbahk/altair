@@ -23,7 +23,8 @@ from pyramid.path import AssetResolver
 from ticketing.models import merge_session_with_post, record_to_multidict, DBSession
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
-from ticketing.core.models import Event, Performance, StockHolder, StockType, Stock, Seat
+from ticketing.core.models import Event, Performance, StockHolder, StockType, Stock
+from ticketing.core.models import SeatAttribute, Seat
 from ticketing.events.forms import EventForm
 from ticketing.events.performances.forms import PerformanceForm
 from ticketing.events.sales_segments.forms import SalesSegmentForm
