@@ -17,8 +17,8 @@ var e = $("<a>");
 e.attr("href","http://www.89ers.jp/")
 e.css({"position": "relative",
        "display": "block",
-       "width": "85px",
-       "height": 100,
+       "width": "165px",
+       "height": "100px",
        "margin-left": "50px"
        });
 $("header").append(e);

@@ -14,15 +14,15 @@
 	<title>${page.title}</title>     <meta name="description" content="${page.description}">     <meta name="keywords" content="${page.keywords}">
 <script type="text/javascript">
      $(function(){
-       $("header").click(function(e){window.location = "http://www.89ers.jp"; });
-       $(".gnavi").click(function(e){
-         if(e.stopPropagation){
-           e.stopPropagation();
-         } else if(window.event){
-           window.event.cancelBubble=true;
-         }
-         return false;
+var e = $("<a>");
+e.attr("href","http://www.89ers.jp/")
+e.css({"position": "relative",
+       "display": "block",
+       "width": "165px",
+       "height": "100px",
+       "margin-left": "50px"
        });
+$("header").append(e);
      });
    </script>
 </head>
