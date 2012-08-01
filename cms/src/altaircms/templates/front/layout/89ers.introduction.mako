@@ -18,7 +18,7 @@
 	<div class="wrapper">
 		<!-- メインカラム -->
 		<div class="maincol">
-			<header>
+			<header onclick="window.location = "http://www.89ers.jp";">
 				<div class="gnavi">
 					<ul>
 %for c in myhelper._get_categories(request, "header_menu"):
@@ -68,8 +68,8 @@
 			<footer>
 				<div class="footernav">
 		          <ul>
-		            <li class="first"><a href="/static/faq/faq.html">ヘルプ</a></li>
-		            <li><a href="http://www.ticketstar.jp/corporate">運営会社</a></li>
+		            <!-- <li class="first"><a href="/static/faq/faq.html">ヘルプ</a></li> -->
+		            <li class="first"><a href="http://www.ticketstar.jp/corporate">運営会社</a></li>
 		            <li><a href="https://ticket.rakuten.co.jp/contact/form">お問い合わせ</a></li>
 		            <li><a href="http://www.ticketstar.jp/privacy">個人情報保護方針</a></li>
 		            <li class="last"><a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a></li>

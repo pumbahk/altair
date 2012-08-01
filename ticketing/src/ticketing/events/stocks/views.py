@@ -81,6 +81,5 @@ class Stocks(BaseView):
                 'message':u'例外が発生しました',
             }))
 
-        return {
-            'message':u'席種・配券先を保存しました',
-        }
+        self.request.session.flash(u'席種・配券先を保存しました')
+        return {}

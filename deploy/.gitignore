@@ -1,0 +1,3 @@
+staging/bin/*
+production/bin/*
+production.usersite/bin/*

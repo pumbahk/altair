@@ -51,6 +51,9 @@ class EventForm(Form):
             Length(max=100, message=u'100文字以内で入力してください'),
         ]
     )
+    original_id = HiddenField(
+        validators=[Optional()],
+    )
 
     def validate_code(form, field):
         if form.id and form.id.data:

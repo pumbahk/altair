@@ -14,6 +14,9 @@
     modal.find('#send_event').attr('href', '/events/send/' + id);
     modal.modal('toggle');
   }
+  function copy_event(id) {
+    $(location).attr('href', '/events/copy/' + id);
+  }
 </script>
 
 <%
@@ -38,8 +41,13 @@
       url=request.route_path('events.show', event_id=event.id),
       icon='icon-th-list',
     ),
-  }
-  order = iter(order or ['new', 'show', 'edit', 'delete'])
+    'copy':dict(
+      label=u'コピーして新規作成',
+      url='javascript:copy_event(%d);' % event.id,
+      icon='icon-plus',
+    ),
+}
+  order = iter(order or ['new', 'show', 'edit', 'delete', 'copy'])
 %>
 <div style="float: left;">
   ${action_button(actions, order)}

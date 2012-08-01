@@ -8,7 +8,7 @@ from wtforms.validators import Length, NumberRange, EqualTo, Optional, Validatio
 from sqlalchemy.sql import func
 
 from ticketing.formhelpers import Translations, Required
-from ticketing.core.models import SalesSegment, Product, ProductItem, StockHolder, Stock
+from ticketing.core.models import SalesSegment, Product, ProductItem, StockHolder, StockType, Stock, Event
 
 class ProductForm(Form):
 
@@ -20,6 +20,9 @@ class ProductForm(Form):
             }
             self.sales_segment_id.choices = [
                 (sales_segment.id, sales_segment.name) for sales_segment in SalesSegment.filter_by(**conditions).all()
+            ]
+            self.seat_stock_type_id.choices = [
+                (stock_type.id, stock_type.name) for stock_type in StockType.filter_by(**conditions).all() if stock_type.is_seat
             ]
 
     def _get_translations(self):
@@ -43,6 +46,12 @@ class ProductForm(Form):
         label=u'価格',
         places=2,
         validators=[Required()]
+    )
+    seat_stock_type_id = SelectField(
+        label=u'席種',
+        validators=[Required(u'選択してください')],
+        choices=[],
+        coerce=int
     )
     sales_segment_id = SelectField(
         label=u'販売区分',
@@ -71,13 +80,9 @@ class ProductItemForm(Form):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         Form.__init__(self, formdata, obj, prefix, **kwargs)
         if 'event_id' in kwargs:
-            conditions ={
-                'event_id':kwargs['event_id']
-            }
-            stock_holders = StockHolder.filter_by(**conditions).all()
-            self.stock_holders.choices = []
-            for sh in stock_holders:
-                self.stock_holders.choices.append((sh.id, sh.name))
+            event = Event.get(kwargs['event_id'])
+            stock_holders = StockHolder.get_seller(event)
+            self.stock_holders.choices = [(sh.id, sh.name) for sh in stock_holders]
         if self.stock_holders.data:
             conditions ={
                 'stock_holder_id':self.stock_holders.data

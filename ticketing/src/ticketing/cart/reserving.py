@@ -91,9 +91,9 @@ class Reserving(object):
             # すでに確保済み
             SeatStatus.status != int(SeatStatusEnum.Vacant)
         ).filter(
-            seat_seat_adjacency_table.c.seat_adjacency_id == SeatAdjacency.id
+            Seat_SeatAdjacency.seat_adjacency_id == SeatAdjacency.id
         ).filter(
-            seat_seat_adjacency_table.c.seat_id == Seat.id
+            Seat_SeatAdjacency.seat_id == Seat.id
         ).filter(
             SeatAdjacencySet.seat_count==quantity,
         ).filter(
@@ -109,9 +109,9 @@ class Reserving(object):
         ).filter(
             Seat.stock_id==stock_id
         ).filter(
-            SeatAdjacency.id==seat_seat_adjacency_table.c.seat_adjacency_id
+            SeatAdjacency.id==Seat_SeatAdjacency.seat_adjacency_id
         ).filter(
-            Seat.id==seat_seat_adjacency_table.c.seat_id
+            Seat.id==Seat_SeatAdjacency.seat_id
         ).filter(
             SeatIndex.seat_id==Seat.id
         ).filter(

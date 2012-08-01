@@ -120,12 +120,11 @@ class CartedProductItem(Base):
     def release(self):
         # 座席開放
         for seat_status in self.seat_statuses:
-            logger.debug('release seat id=%d' % (seat_status.id))
+            logger.debug('release seat id=%d' % (seat_status.seat_id))
             seat_status.status = int(c_models.SeatStatusEnum.Vacant)
 
         # 在庫数戻し
         logger.debug('release stock id=%s quantity=%d' % (self.product_item.stock_id, self.quantity))
-        #stock_status = c_models.StockStatus.query.filter(c_models.StockStatus.stock_id==self.product_item.stock_id).one()
         up = c_models.StockStatus.__table__.update().values(
                 {"quantity": c_models.StockStatus.quantity + self.quantity}
         ).where(c_models.StockStatus.stock_id==self.product_item.stock_id)

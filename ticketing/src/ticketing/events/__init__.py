@@ -5,6 +5,7 @@ def includeme(config):
     config.add_route('events.new', '/new')
     config.add_route('events.show', '/show/{event_id}')
     config.add_route('events.edit', '/edit/{event_id}')
+    config.add_route('events.copy', '/copy/{event_id}')
     config.add_route('events.delete', '/delete/{event_id}')
     config.add_route('events.send', '/send/{event_id}')
     config.add_route('events.report', '/report/{event_id}')
