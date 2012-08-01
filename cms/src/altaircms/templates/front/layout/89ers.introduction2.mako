@@ -1,9 +1,10 @@
-## above_kadomaru,kadomaru,below_kadomaru
 <%def name="widgets(name)">
   % for w in display_blocks[name]:
       ${w|n}
   % endfor
 </%def>
+
+## above_kadomaru, card_and_QR,card_and_seven,card_and_home,anshin_and_QR,anshin_and_seven,anshin_and_home,seven_and_seven
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html lang="jp">
@@ -41,41 +42,48 @@
 				</div>
 			</header>
 
-			  <%block name="above_kadomaru">
-                ${widgets("above_kadomaru")}
-			  </%block>
+<%block name="above_kadomaru">
+  ${widgets("above_kadomaru")}
+</%block>
 
 			<div class="kadomaru">
-			  <%block name="kadomaru">
-                ${widgets("kadomaru")}
-			  </%block>
-			</div>
-			<div class="kadomaru">
-			  <%block name="kadomaru2">
-                ${widgets("kadomaru2")}
-			  </%block>
-			</div>
-			<div class="kadomaru">
-			  <%block name="kadomaru3">
-                ${widgets("kadomaru3")}
-			  </%block>
-			</div>
-			<div class="kadomaru">
-			  <%block name="kadomaru4">
-                ${widgets("kadomaru4")}
-			  </%block>
-			</div>
-			<div class="kadomaru">
-			  <%block name="kadomaru5">
-                ${widgets("kadomaru5")}
-			  </%block>
-			</div>
-			<!-- kadomaru終わり -->
 
-			  <%block name="below_kadomaru">
-                ${widgets("below_kadomaru")}
-			  </%block>
+<%block name="card_and_QR">
+  ${widgets("card_and_QR")}
+</%block>
 
+<%block name="card_and_seven">
+  ${widgets("card_and_seven")}
+</%block>
+
+<%block name="card_and_home">
+  ${widgets("card_and_home")}
+</%block>
+
+<%block name="anshin_and_QR">
+  ${widgets("anshin_and_QR")}
+</%block>
+
+<%block name="anshin_and_seven">
+  ${widgets("anshin_and_seven")}
+</%block>
+
+<%block name="anshin_and_home">
+  ${widgets("anshin_and_home")}
+</%block>
+
+<%block name="seven_and_seven">
+  ${widgets("seven_and_seven")}
+</%block>
+
+</div>
+
+<div class="kadomaru">
+  <%block name="kadomaru2">
+	${widgets("kadomaru2")}
+  </%block>
+</div>
+<!-- kadomaruおわり -->
 
 			<footer>
 				<div class="footernav">

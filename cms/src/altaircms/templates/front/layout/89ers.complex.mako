@@ -10,14 +10,28 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
 	<link rel="stylesheet" type="text/css" href="/static/89ers/css/style.css" media="all" />
-	<title>89ers</title>
+	<title>${page.title}</title>     <meta name="description" content="${page.description}">     <meta name="keywords" content="${page.keywords}">
+<script type="text/javascript">
+     $(function(){
+       $("header").click(function(e){window.location = "http://www.89ers.jp"; });
+       $(".gnavi").click(function(e){
+         if(e.stopPropagation){
+           e.stopPropagation();
+         } else if(window.event){
+           window.event.cancelBubble=true;
+         }
+         return false;
+       });
+     });
+   </script>
 </head>
+
 <body>
 	<!-- wrapper -->	
 	<div class="wrapper">
 		<!-- メインカラム -->
 		<div class="maincol">
-			<header onclick="window.location = 'http://www.89ers.jp';">
+			<header>
 				<div class="gnavi">
 					<ul>
 %for c in myhelper._get_categories(request, "header_menu"):
