@@ -60,7 +60,8 @@ class SalesSegmentForm(Form):
     )
     upper_limit = IntegerField(
         label=u'購入上限枚数',
-        validators=[Optional()],
+        default=10,
+        validators=[Required()],
     )
     seat_choice = IntegerField(
         label=u'座席選択可',
