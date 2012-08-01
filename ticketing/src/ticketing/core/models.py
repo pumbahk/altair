@@ -840,9 +840,6 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
           - Stock追加時に、該当StockTypeのProductに対して、Performance * StockHolderの数分生成
             * Stock追加 ＝ StockType or StockHolder or Performance のいずれかが追加されたとき
         '''
-        if not product.seat_stock_type.is_seat:
-            return
-
         for performance in product.event.performances:
             product_item = [item for item in product.items if item.performance_id == performance.id]
             if not product_item:
