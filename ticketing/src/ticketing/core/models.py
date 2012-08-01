@@ -988,13 +988,22 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     stock_status = relationship("StockStatus", uselist=False, backref='stock')
 
     def save(self):
-        # 登録時にStockStatusを作成
         case_add = False if hasattr(self, 'id') and self.id else True
         super(Stock, self).save()
 
         if case_add:
+            # 登録時にStockStatusを作成
             stock_status = StockStatus(stock_id=self.id, quantity=self.quantity)
-            stock_status.save()
+        else:
+            # 更新時はquantityを更新
+            stock_status = StockStatus.filter_by(stock_id=self.id).first()
+            seat_quantity = Seat.filter(Seat.stock_id==self.id)\
+                .join(SeatStatus)\
+                .filter(Seat.id==SeatStatus.seat_id)\
+                .filter(SeatStatus.status.in_([SeatStatusEnum.Vacant.v]))\
+                .count()
+            stock_status.quantity = seat_quantity
+        stock_status.save()
 
     @staticmethod
     def get_default(performance_id):
