@@ -375,7 +375,9 @@ class Events(BaseView):
                         quantity=stock.quantity)
                 else:
                     # Seat
-                    #seats = Seat.filter(Seat.stock_id=stock.id)
+                    seats = Seat.filter(Seat.stock_id==stock.id).order_by(Seat.name)
+                    seat_sources = map(report_sheet.seat_source_from_seat, seats)
+                    seat_records = report_sheet.seat_records_from_seat_sources(seat_records)
                     seat_record = report_sheet.SeatRecord(block=u"テスト")
                 stock_record.records.append(seat_record)
                 stock_records.append(stock_record)

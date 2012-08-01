@@ -1,6 +1,18 @@
 # -*- coding: utf-8 -*-
+import json
 from datetime import datetime
 from ticketing.helpers.base import jdate, jdatetime
+
+
+class SeatSource(object):
+    def __init__(self, block=None, floor=None, line=None, seat=None):
+        self.block = block
+        self.floor = floor
+        self.line = line
+        self.seat = seat
+
+    def get_block_display(self):
+        return "%s %s" % (self.block, self.floor)
 
 
 class SeatRecord(object):
@@ -100,3 +112,40 @@ def process_sheet(exporter, sheet, event, performance, stock_records, now=None):
     exporter.set_performance_datetime(sheet, jdatetime(performance.start_on))
     for stock_record in stock_records:
         exporter.add_records(sheet, stock_record.get_records())
+
+
+def seat_source_from_seat(seat):
+    """SeatからSeatSourceを作る
+    seat.venue.attributesにはjsonデコード可能な値が入る
+    {
+      "display_name_format": "%(block)s %(floor)s %(row)s %(seat)s",
+      "scale": ["block", "floor", "row", "seat"]
+    }
+    """
+    # TODO:モデルから取得
+    #venue_attributes = seat.venue.attributes
+    venue_attributes = """{
+"display_name_format": "%(block)s %(floor)s %(row)s %(seat)s",
+"scale": ["block", "floor", "row", "seat"]
+}"""
+    if venue_attributes:
+        venue_attributes_dict = json.loads(venue_attributes)
+    else:
+        venue_attributes_dict = {}
+    scales_keys = venue_attributes_dict.get("scale")
+    seat_source = SeatSource()
+    if scales_keys:
+        if "block" in scales_keys:
+            seat_source.block = seat["block"]
+        if "floor" in scales_keys:
+            seat_source.floor = seat["floor"]
+        if "row" in scales_keys:
+            seat_source.line = seat["row"]
+        if "seat" in scales_keys:
+            seat_source.seat = seat["seat"]
+    return seat_source
+
+
+def seat_records_from_seat_sources(seat_sources):
+    """SeatSourceのリストからSeatRecordを返す
+    """
