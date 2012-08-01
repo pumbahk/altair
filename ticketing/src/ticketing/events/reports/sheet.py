@@ -1,18 +1,27 @@
 # -*- coding: utf-8 -*-
 import json
 from datetime import datetime
+from itertools import groupby
+
 from ticketing.helpers.base import jdate, jdatetime
 
 
 class SeatSource(object):
-    def __init__(self, block=None, floor=None, line=None, seat=None):
+    """SeatRecordを作成する際に使うオブジェクトSeatモデルには依存しない
+    """
+    def __init__(self, block=None, floor=None, line=None, seat=None, source=None):
+        self.source = source
         self.block = block
         self.floor = floor
         self.line = line
         self.seat = seat
 
     def get_block_display(self):
-        return "%s %s" % (self.block, self.floor)
+        if self.block and self.floor:
+            return "%s %s" % (self.block, self.floor)
+        if self.source and self.source.name:
+            return self.source.name
+        return ""
 
 
 class SeatRecord(object):
@@ -133,19 +142,38 @@ def seat_source_from_seat(seat):
     else:
         venue_attributes_dict = {}
     scales_keys = venue_attributes_dict.get("scale")
-    seat_source = SeatSource()
+    seat_source = SeatSource(source=seat)
     if scales_keys:
         if "block" in scales_keys:
-            seat_source.block = seat["block"]
+            seat_source.block = seat.get("block")
         if "floor" in scales_keys:
-            seat_source.floor = seat["floor"]
+            seat_source.floor = seat.get("floor")
         if "row" in scales_keys:
-            seat_source.line = seat["row"]
+            seat_source.line = seat.get("row")
         if "seat" in scales_keys:
-            seat_source.seat = seat["seat"]
+            seat_source.seat = seat.get("seat")
     return seat_source
 
 
 def seat_records_from_seat_sources(seat_sources):
-    """SeatSourceのリストからSeatRecordを返す
+    """SeatSourceのリストからSeatRecordのリストを返す
+    サマリー作成
     """
+    result = []
+    # block,floor,line,seatの優先順でソートする
+    sorted_seat_sources = sorted(
+        seat_sources,
+        key=lambda v: (v.block, v.floor, v.line, v.seat))
+    # block,floor,lineでグループ化してSeatRecordを作る
+    for key, generator in groupby(sorted_seat_sources, lambda v: (v.block, v.floor, v.line)):
+        values = list(generator)
+        # TODO: stock_type対応
+        seat_record = SeatRecord(
+            block=values[0].get_block_display(),
+            line=key[2],
+            start=values[0].seat,
+            end=values[-1].seat,
+            quantity=len(values),
+        )
+        result.append(seat_record)
+    return result
