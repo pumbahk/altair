@@ -72,7 +72,7 @@ class ObjectRetriever(object):
                 object__ = self.object_cache[ref_id]
                 props[prop_node.get('name')] = object__
             else:
-                props[prop_node.get('name')] = prop_node.text
+                props[prop_node.get('name')] = unicode(prop_node.text)
 
         for coll_node in node.findall('{%s}collection' % SITE_INFO_NAMESPACE):
             coll = []
