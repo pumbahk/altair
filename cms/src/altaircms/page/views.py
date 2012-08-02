@@ -380,7 +380,7 @@ def disposition_list(context, request):
 
 @view_config(route_name="disposition_alter", request_method="POST", permission='authenticated') #permission
 def disposition_delete(context, request):
-    disposition = get_or_404(request.allowable(WidgetDisposition), WidgetDisposition.id==request.GET["disposition"])
+    disposition = get_or_404(request.allowable(WidgetDisposition), WidgetDisposition.id==request.POST["disposition"])
     title = disposition.title
     context.delete_disposition(disposition)
     FlashMessage.success(u"%sを消しました" % title, request=request)
