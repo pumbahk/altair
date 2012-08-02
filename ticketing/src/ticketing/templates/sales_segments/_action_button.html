@@ -10,7 +10,7 @@
   }
   function new_sales_segment() {
     var modal = $('#modal-sales_segment');
-    reset_form(modal, '#event_id');
+    reset_form(modal, '#event_id, #upper_limit, #seat_choice');
     modal.modal('toggle');
   }
   function edit_sales_segment() {
@@ -19,6 +19,7 @@
     var el = '#sales_segment-' + id;
     var modal = $('#modal-sales_segment');
     modal.find('#id').val($(el + ' #id').text());
+    modal.find('#kind').val($(el + ' #kind').attr('value'));
     modal.find('#name').val($(el + ' #name').text());
     modal.find('#start_at').val($(el + ' #current_start_at').text().trim());
     modal.find('#end_at').val($(el + ' #current_end_at').text().trim());

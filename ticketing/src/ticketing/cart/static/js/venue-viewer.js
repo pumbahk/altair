@@ -1,6 +1,53 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['U4M5JCIV7938G4Y_'] = (function (exports) { (function () { 
+__LIBS__['iVRCN9AO25IS0OSU'] = (function (exports) { (function () { 
+
+/************** CONF.js **************/
+exports.DEFAULT = {
+  ZOOM_RATIO: 0.8,
+  STYLES: {
+    label: {
+      fill: new Fashion.Color('#000'),
+      stroke: null
+    },
+    seat: {
+      fill: new Fashion.Color('#fff'),
+      stroke: new Fashion.Color('#000')
+    }
+  },
+
+  MASK_STYLE: {
+    fill:   new Fashion.FloodFill(new Fashion.Color("#0064ff80")),
+    stroke: new Fashion.Stroke(new Fashion.Color("#0080FF"), 2)
+  },
+
+  SEAT_STYLE: {
+    text_color: "#000",
+    fill:   { color: "#fff" }
+  },
+
+  OVERLAYS: {
+    highlighted: {
+      fill: null,
+      stroke: { color: "#F63", width: 3, pattern: 'solid' }
+    }
+  },
+
+  AUGMENTED_STYLE: {
+    selected: {
+      text_color: "#FFF",
+      fill:   { color: "#009BE1" },
+      stroke: { color: "#FFF", width: 3 }
+    },
+    unselectable: {
+      text_color: "#888",
+      fill:   { color: "#eee" },
+      stroke: { color: "#ccc" }
+    }
+  }
+};
+ })(); return exports; })({});
+__LIBS__['BFUZL9VYPU0P75SC'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -121,62 +168,11 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['k4T0_ARF8J3S8VZ6'] = (function (exports) { (function () { 
-
-/************** CONF.js **************/
-exports.DEFAULT = {
-  ZOOM_RATIO: 0.8,
-  SHAPE_STYLE: {
-    fill: new Fashion.FloodFill(new Fashion.Color('#fff')),
-    stroke: new Fashion.Stroke(new Fashion.Color("#000"), 1)
-  },
-
-  TEXT_STYLE: {
-    fill: new Fashion.FloodFill(new Fashion.Color('#000')),
-    stroke: null
-  },
-
-  VENUE_STYLE: {
-    fill: new Fashion.FloodFill(new Fashion.Color('#FFCB3F')),
-    stroke: new Fashion.Stroke(new Fashion.Color('#5ABECD'), 1)
-  },
-
-  MASK_STYLE: {
-    fill:   new Fashion.FloodFill(new Fashion.Color("#0064ff80")),
-    stroke: new Fashion.Stroke(new Fashion.Color("#0080FF"), 2)
-  },
-
-  SEAT_STYLE: {
-    text_color: "#000",
-    fill:   { color: "#fff" }
-  },
-
-  OVERLAYS: {
-    highlighted: {
-      fill: null,
-      stroke: { color: "#F63", width: 3, pattern: 'solid' }
-    }
-  },
-
-  AUGMENTED_STYLE: {
-    selected: {
-      text_color: "#FFF",
-      fill:   { color: "#009BE1" },
-      stroke: { color: "#FFF", width: 3 }
-    },
-    unselectable: {
-      text_color: "#888",
-      fill:   { color: "#eee" },
-      stroke: { color: "#ccc" }
-    }
-  }
-};
- })(); return exports; })({});
-__LIBS__['h8LU7SKYF1F6M_UR'] = (function (exports) { (function () { 
+__LIBS__['o1XEMHB_T4I58F3_'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['U4M5JCIV7938G4Y_'];
-var CONF = __LIBS__['k4T0_ARF8J3S8VZ6'];
+var util = __LIBS__['BFUZL9VYPU0P75SC'];
+var CONF = __LIBS__['iVRCN9AO25IS0OSU'];
 
 function clone(obj) {
   return $.extend({}, obj); 
@@ -420,9 +416,9 @@ console.log(ad2);
 
 /************** venue-viewer.js **************/
 (function ($) {
-  var CONF = __LIBS__['k4T0_ARF8J3S8VZ6'];
-  var seat = __LIBS__['h8LU7SKYF1F6M_UR'];
-  var util = __LIBS__['U4M5JCIV7938G4Y_'];
+  var CONF = __LIBS__['iVRCN9AO25IS0OSU'];
+  var seat = __LIBS__['o1XEMHB_T4I58F3_'];
+  var util = __LIBS__['BFUZL9VYPU0P75SC'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
@@ -699,9 +695,13 @@ console.log(ad2);
     dataSource(function (drawing) {
       var attrs = util.allAttributes(drawing.documentElement);
       var w = parseFloat(attrs.width), h = parseFloat(attrs.height);
-      var vb = attrs.viewBox ? attrs.viewBox.split(/\s+/).map(parseFloat) : null;
-
-      vb = [0, 0, 1000, 1000];
+      var vb = null;
+      if (attrs.viewBox) {
+        var comps = attrs.viewBox.split(/\s+/);
+        vb = new Array(comps.length);
+        for (var i = 0; i < comps.length; i++)
+          vb[i] = parseFloat(comps[i]);
+      }
 
       var size = ((vb || w || h) ? {
         x: ((vb && vb[2]) || w || h),
@@ -710,6 +710,7 @@ console.log(ad2);
 
       var drawable = new Fashion.Drawable(self.canvas[0], { contentSize: {x: size.x, y: size.y} });
       var shapes = {};
+      var styleClasses = CONF.DEFAULT.STYLES;
 
       (function iter(svgStyle, defs, nodeList) {
         outer:
@@ -719,9 +720,14 @@ console.log(ad2);
           var attrs = util.allAttributes(n);
 
           var shape = null;
-          var currentSvgStyle = attrs.style ?
-            mergeSvgStyle(svgStyle, parseCSSAsSvgStyle(attrs.style, defs)):
-            svgStyle;
+          var currentSvgStyle = svgStyle;
+          if (attrs.style)
+            currentSvgStyle = mergeSvgStyle(currentSvgStyle, parseCSSAsSvgStyle(attrs.style, defs));
+          if (attrs['class']) {
+            var style = styleClasses[attrs['class']];
+            if (style)
+              currentSvgStyle = mergeSvgStyle(currentSvgStyle, style);
+          }
 
           switch (n.nodeName) {
           case 'defs':
@@ -740,11 +746,13 @@ console.log(ad2);
             break;
 
           case 'text':
-            shape = new Fashion.Text({
-              fontSize: 10,
-              text: n.firstChild.nodeValue,
-              zIndex: 99
-            });
+            if (n.firstChild) {
+              shape = new Fashion.Text({
+                fontSize: 10,
+                text: n.firstChild.nodeValue,
+                zIndex: 99
+              });
+            }
             break;
 
           case 'rect':

@@ -11,6 +11,7 @@
       <th>イベント名</th>
       <th>初回公演</th>
       <th>最終公演</th>
+      <th>オーナー</th>
     </tr>
     % for event in events:
     <tr>
@@ -18,6 +19,7 @@
       <td><a href="${request.route_path('events.show', event_id=event.id)}">${event.title}</a></td>
       <td>${h.safe_strftime(event.first_start_on)}</td>
       <td>${h.safe_strftime(event.final_start_on)}</td>
+      <td><a href="${request.route_path('accounts.show', account_id=event.account.id)}">${event.account.name}</a></td>
     </tr>
     % endfor
   </table>
