@@ -232,11 +232,17 @@ class Events(BaseView):
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
 
+        # StockHolder
+        stock_holders = list(StockHolder \
+            .filter(StockHolder.event_id==event_id) \
+            .order_by(StockHolder.id))
+
         f = EventForm(user_id=self.context.user.id)
         f.process(record_to_multidict(event))
         return {
             'form':f,
             'event':event,
+            'stock_holders': stock_holders,
         }
 
     @view_config(route_name='events.report.sales')
