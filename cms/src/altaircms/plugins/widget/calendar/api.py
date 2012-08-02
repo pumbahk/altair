@@ -56,7 +56,7 @@ class CalendarDataAPI(object):
         self.external_url = url
 
     def fetch_stock_status(self, request, event, salessegment=None):
-        fmt = self.external_url.rstrip()+"/api/events/%(event_id)s/stock_statuses".lstrip()
+        fmt = self.external_url.rstrip("/")+"/api/events/%(event_id)s/stock_statuses"
         url = fmt % dict(event_id=event.backend_id)
         with contextlib.closing(urllib2.urlopen(url)) as res:
             data = res.read()
@@ -65,7 +65,6 @@ class CalendarDataAPI(object):
 
 class NotFoundMatchResultException(Exception):
     pass
-
 
 ## (find-file "api-dummy-data.json")
 class CalcResult(object): #すごい決め打ち
