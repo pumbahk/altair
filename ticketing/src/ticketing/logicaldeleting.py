@@ -12,7 +12,25 @@ def install():
         orm.sessionmaker(class_=LogicalDeletableSession, 
             extension=_ZTE()))
 
+class LogicalDeletableQuery(orm.Query):
+    def filter(self, *args, **kwargs):
+        q = super(LogicalDeletableQuery, self).filter(*args, **kwargs)
+
+        condition = args[0]
+        for side in ('left', 'right'):
+
+            if hasattr(condition, side):
+                operand = getattr(condition, side)
+                if hasattr(operand, "table"):
+                    if hasattr(operand.table.c, "deleted_at"):
+                        q = orm.Query.filter(q, operand.table.c.deleted_at==None)
+        return q
+
 class LogicalDeletableSession(orm.Session):
+    def __init__(self, *args, **kwargs):
+        kwargs.update(query_cls=LogicalDeletableQuery)
+        super(LogicalDeletableSession, self).__init__(*args, **kwargs)
+
     def query(self, *args, **kwargs):
         q = super(LogicalDeletableSession, self).query(*args, **kwargs)
         option = LogicalDeletingOption("deleted_at")
