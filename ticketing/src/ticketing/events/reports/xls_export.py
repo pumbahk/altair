@@ -331,6 +331,11 @@ class SeatAssignExporter(BaseExporter):
         """
         self.update_cell_text(sheet, 0, 13, value)
 
+    def set_stock_holder_name(self, sheet, value):
+        """取引先名の入力
+        """
+        self.update_cell_text(sheet, 2, 0, value)
+
     def set_datetime(self, sheet, value):
         """日時
         """

@@ -110,11 +110,12 @@ class StockRecord(object):
         return data
 
 
-def process_sheet(exporter, sheet, event, performance, stock_records, now=None):
+def process_sheet(exporter, sheet, event, performance, stock_holder, stock_records, now=None):
     """シートの内容を埋める
     """
     today_stamp = jdate(now or datetime.now())
     exporter.set_id(sheet, performance.code or "")
+    exporter.set_stock_holder_name(sheet, stock_holder.name or "")
     exporter.set_datetime(sheet, today_stamp)
     exporter.set_event_name(sheet, event.title or "")
     exporter.set_performance_name(sheet, performance.name or "")

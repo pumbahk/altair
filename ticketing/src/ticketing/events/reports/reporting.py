@@ -56,5 +56,5 @@ def export_for_stock_holder(event, stock_holder):
                 for seat_record in seat_records:
                     stock_record.records.append(seat_record)
             stock_records.append(stock_record)
-        report_sheet.process_sheet(exporter, sheet, event, performance, stock_records)
+        report_sheet.process_sheet(exporter, sheet, event, performance, stock_holder, stock_records)
     return exporter
