@@ -16,9 +16,7 @@ import sqlalchemy as sa
 
 def upgrade(): 
     op.execute("ALTER TABLE pagesets DROP INDEX url;")
-    op.execute("ALTER TABLE page add unique organization_id (organization_id, url);")
     op.execute("ALTER TABLE pagesets add unique organization_id (organization_id, url);")
-
 
 def downgrade():
     ## don't support it.'
