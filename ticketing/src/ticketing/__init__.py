@@ -20,6 +20,8 @@ authn_exemption = re.compile(r'^(/_deform)|(/static)|(/_debug_toolbar)|(/favicon
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
+    from ticketing.logicaldeleting import install as install_ld
+    install_ld()
     from .resources import newRootFactory, groupfinder
     from .authentication import CombinedAuthenticationPolicy, APIAuthenticationPolicy
     from .authentication.apikey.impl import newDBAPIKeyEntryResolver

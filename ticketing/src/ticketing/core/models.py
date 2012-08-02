@@ -1278,6 +1278,7 @@ class Organization(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     status = Column(Integer)
 
+'''
 class TicketTemplate(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "TicketTemplate"
     id = Column(Identifier, primary_key=True)
@@ -1315,4 +1316,5 @@ class TicketPrintHistory(Base, BaseModel, WithTimestamp):
     ordered_product_item = relationship('OrderedProductItem', backref='print_histories')
     seat_id = Column(Identifier, ForeignKey('Seat.id'), nullable=True)
     seat = relationship('OrderedProductItem', backref='print_histories')
+'''
 

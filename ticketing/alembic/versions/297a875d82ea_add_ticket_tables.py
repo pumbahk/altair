@@ -72,7 +72,7 @@ def upgrade():
     create_ticket_tables()
 
 def downgrade():
+    op.drop_table('TicketPrintHistory')
     op.drop_table('TicketAttribute')
     op.drop_table('Ticket')
     op.drop_table('TicketTemplate')
-    op.drop_table('Ticket')
