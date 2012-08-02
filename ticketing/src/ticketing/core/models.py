@@ -1257,3 +1257,41 @@ class Organization(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     status = Column(Integer)
 
+class TicketTemplate(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = "TicketTemplate"
+    id = Column(Identifier, primary_key=True)
+    name = Column(Unicode(255), nullable=False, default=u'')
+    organization_id = Column(Identifier, ForeignKey('Organization.id'), nullable=True)
+    organization = relationship('Organization', uselist=False, backref=backref('ticket_templates'))
+    operator_id = Column(Identifier, ForeignKey('Operator.id'), nullable=True)
+    operator = relationship('Operator', uselist=False)
+    data = JSONEncodedDict(65536)
+
+class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = "Ticket"
+    id = Column(Identifier, primary_key=True)
+    event_id = Column(Identifier, ForeignKey('Event.id', ondelete='CASCADE'))
+    template_id = Column(Identifier, ForeignKey('TicketTemplate.id', ondelete='CASCADE'))
+    template = relationship('TicketTemplate', uselist=False)
+    operator_id = Column(Identifier, ForeignKey('Operator.id'))
+    operator = relationship('Operator', uselist=False)
+    name = Column(Unicode(255), nullable=False, default=u'')
+    event = relationship('Event', uselist=False, backref='tickets')
+    attributes_ = relationship("TicketAttribute", backref='ticket', collection_class=attribute_mapped_collection('name'), cascade='all,delete-orphan')
+    attributes = association_proxy('attributes_', 'value', creator=lambda k, v: SeatAttribute(name=k, value=v))
+
+class TicketAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = "TicketAttribute" 
+    ticket_id = Column(Identifier, ForeignKey('Ticket.id', ondelete='CASCADE'), primary_key=True, nullable=False)
+    name = Column(String(255), primary_key=True, nullable=False)
+    value = Column(String(1023))
+
+class TicketPrintHistory(Base, BaseModel, WithTimestamp):
+    __tablename__ = "TicketPrintHistory"
+    id = Column(Identifier, primary_key=True, autoincrement=True, nullable=False)
+    operator_id = Column(Identifier, ForeignKey('Operator.id'), nullable=True)
+    ordered_product_item_id = Column(Identifier, ForeignKey('OrderedProductItem.id'), nullable=True)
+    ordered_product_item = relationship('OrderedProductItem', backref='print_histories')
+    seat_id = Column(Identifier, ForeignKey('Seat.id'), nullable=True)
+    seat = relationship('OrderedProductItem', backref='print_histories')
+
