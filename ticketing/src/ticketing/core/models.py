@@ -241,13 +241,14 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             )
 
         # create Seat_SeatAdjacency
-        seat_seat_adjacencies = []
-        for template_adjacency in template.adjacencies:
-            seat_seat_adjacencies.append({
-                'seat_adjacency_id':convert_map['seat_adjacency'][template_adjacency.id],
-                'seat_id':seat.id,
-            })
-        DBSession.execute(Seat_SeatAdjacency.__table__.insert(), seat_seat_adjacencies)
+        if template.adjacencies:
+            seat_seat_adjacencies = []
+            for template_adjacency in template.adjacencies:
+                seat_seat_adjacencies.append({
+                    'seat_adjacency_id':convert_map['seat_adjacency'][template_adjacency.id],
+                    'seat_id':seat.id,
+                })
+            DBSession.execute(Seat_SeatAdjacency.__table__.insert(), seat_seat_adjacencies)
 
     def delete_cascade(self):
         # delete SeatStatus
@@ -632,6 +633,30 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def add(self):
         super(Event, self).add()
 
+        """
+        Eventの作成時は以下のモデルを自動生成する
+          - Account (自社枠、ない場合のみ)
+            - StockHolder (デフォルト枠)
+        """
+        account = Account.filter_by(organization_id=self.organization.id)\
+        .filter_by(user_id=self.organization.user_id).first()
+        if not account:
+            account = Account(
+                account_type=AccountTypeEnum.Playguide.v[0],
+                name=u'自社',
+                user_id=self.organization.user_id,
+                organization_id=self.organization.id,
+            )
+            account.save()
+
+        stock_holder = StockHolder(
+            name=u'自社',
+            event_id=self.id,
+            account_id=account.id,
+            style={"text": u"自", "text_color": "#a62020"},
+        )
+        stock_holder.save()
+
         if hasattr(self, 'original_id') and self.original_id:
             """
             Eventのコピー時は以下のモデルをcloneする
@@ -674,31 +699,6 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             # create Product
             for template_product in template_event.products:
                 Product.create_from_template(template=template_product, event_id=self.id, convert_map=convert_map)
-
-        else:
-            """
-            Eventの作成時は以下のモデルを自動生成する
-              - Account (自社枠、ない場合のみ)
-                - StockHolder (デフォルト枠)
-            """
-            account = Account.filter_by(organization_id=self.organization.id)\
-                             .filter_by(user_id=self.organization.user_id).first()
-            if not account:
-                account = Account(
-                    account_type=AccountTypeEnum.Playguide.v[0],
-                    name=u'自社',
-                    user_id=self.organization.user_id,
-                    organization_id=self.organization.id,
-                )
-                account.save()
-
-            stock_holder = StockHolder(
-                name=u'自社',
-                event_id=self.id,
-                account_id=account.id,
-                style={"text": u"自", "text_color": "#a62020"},
-            )
-            stock_holder.save()
 
 class SalesSegmentKindEnum(StandardEnum):
     first_lottery   = u'最速抽選'
