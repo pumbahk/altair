@@ -52,14 +52,20 @@ def _get_performance_status(request, data):
 
 @implementer(IExternalAPI)
 class CalendarDataAPI(object):
-    def __init__(self, url):
+    def __init__(self, url, apikey):
         self.external_url = url
+        self.apikey = apikey
 
     def fetch_stock_status(self, request, event, salessegment=None):
         fmt = self.external_url.rstrip("/")+"/api/events/%(event_id)s/stock_statuses"
         url = fmt % dict(event_id=event.backend_id)
-        with contextlib.closing(urllib2.urlopen(url)) as res:
+
+        req = urllib2.Request(url)
+        req.add_header('X-Altair-Authorization', self.apikey)
+
+        with contextlib.closing(urllib2.urlopen(req)) as res:
             data = res.read()
+            logger.debug("*calendar widget api* returned value: %s" % data)
             return data 
 
 

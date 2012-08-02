@@ -22,7 +22,9 @@ def includeme(config):
     config.add_route("calendar_widget_dialog", "/widget/calendar/dialog", factory=".models.CalendarWidgetResource")
     config.add_route("calendar_widget_dialog_demo", "/widget/calendar/dialog/demo/{type}", factory=".models.CalendarWidgetResource")
 
-    api_impl = config.maybe_dotted(".api.CalendarDataAPI")(config.registry.settings["altaircms.backend.url"])
+    api_impl = (config.maybe_dotted(".api.CalendarDataAPI")
+                (config.registry.settings["altaircms.backend.url"], 
+                 config.registry.settings["altaircms.backend.apikey"]))
     config.registry.registerUtility(api_impl, 
                                     config.maybe_dotted("altaircms.plugins.interfaces.IExternalAPI"), 
                                     api_impl.__class__.__name__)
