@@ -1,14 +1,14 @@
 """alter table product add column seat_stock_type_id
 
 Revision ID: 50e50f325afb
-Revises: 7fd74bf0044
+Revises: 484ad490e328
 Create Date: 2012-07-30 13:31:23.556454
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '50e50f325afb'
-down_revision = '7fd74bf0044'
+down_revision = '484ad490e328'
 
 from alembic import op
 import sqlalchemy as sa
