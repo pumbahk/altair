@@ -24,7 +24,10 @@
     <tr id="sales_segment-${sales_segment.id}">
       <% count = len(sales_segment.payment_delivery_method_pairs) %>
       <% rowspan = 'rowspan=%s' % (count) %>
-      <td ${rowspan}><input type="radio" name="sales_segment_id" value="${sales_segment.id}" /></td>
+      <td ${rowspan}>
+        <input type="radio" id="sales_segment_id" value="${sales_segment.id}" />
+        <input type="hidden" id="kind" value="${sales_segment.kind}" />
+      </td>
       <td ${rowspan} id="id">${sales_segment.id}</td>
       <td ${rowspan} id="name"><a href="${request.route_path('sales_segments.show', sales_segment_id=sales_segment.id)}">${sales_segment.name}</a></td>
       <td ${rowspan} id="current_start_at">${h.safe_strftime(sales_segment.start_at)}</td>
