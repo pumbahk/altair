@@ -1,4 +1,7 @@
 # encoding: utf-8
+
+import logging
+
 from sqlalchemy import Table, Column, ForeignKey, ForeignKeyConstraint, func
 from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric, Unicode
 from sqlalchemy.orm import join, backref
@@ -8,13 +11,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from ticketing.models import *
 from ticketing.users.models import User
 
-'''
-seat_seat_adjacency_table = Table(
-    "Seat_SeatAdjacency", Base.metadata,
-    Column('seat_id', Identifier, ForeignKey("Seat.id", ondelete='CASCADE'), primary_key=True, nullable=False),
-    Column('seat_adjacency_id', Identifier, ForeignKey("SeatAdjacency.id", ondelete='CASCADE'), primary_key=True, nullable=False)
-    )
-'''
+logger = logging.getLogger(__name__)
 
 class Seat_SeatAdjacency(Base):
     __tablename__ = 'Seat_SeatAdjacency'
@@ -68,28 +65,44 @@ class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @staticmethod
     def create_from_template(template, performance_id):
+        # 各モデルのコピー元/コピー先のidの対比表
+        conversion = {
+            'seat_adjacency':dict(),
+            'seat_index_type':dict(),
+        }
+
         # create Venue
         venue = Venue.clone(template)
         venue.original_venue_id = template.id
         venue.performance_id = performance_id
         venue.save()
 
-        # create VenueArea
+        # create VenueArea - VenueArea_group_l0_id
         for template_area in template.areas:
             VenueArea.create_from_template(template=template_area, venue_id=venue.id)
 
-        # create Seat
-        default_stock = Stock.get_default(performance_id=performance_id)
-        for template_seat in template.seats:
-            Seat.create_from_template(template=template_seat, venue_id=venue.id, stock_id=default_stock.id)
+        # create SeatAdjacencySet - SeatAdjacency
+        for template_adjacency_set in template.adjacency_sets:
+            conversion['seat_adjacency'].update(SeatAdjacencySet.create_from_template(
+                template=template_adjacency_set,
+                venue_id=venue.id
+            ))
 
         # create SeatIndexType
         for template_seat_index_type in template.seat_index_types:
-            SeatIndexType.create_from_template(template=template_seat_index_type, venue_id=venue.id)
+            conversion['seat_index_type'].update(
+                SeatIndexType.create_from_template(template=template_seat_index_type, venue_id=venue.id)
+            )
 
-        # create SeatAdjacencySet
-        for template_adjacency_set in template.adjacency_sets:
-            SeatAdjacencySet.create_from_template(template=template_adjacency_set, venue_id=venue.id)
+        # create Seat - SeatAttribute, SeatStatus, SeatIndex, Seat_SeatAdjacency
+        default_stock = Stock.get_default(performance_id=performance_id)
+        for template_seat in template.seats:
+            Seat.create_from_template(
+                template=template_seat,
+                venue_id=venue.id,
+                stock_id=default_stock.id,
+                conversion=conversion
+            )
 
         # defaultのStockに席数をセット
         stock = Stock.get_default(performance_id=performance_id)
@@ -191,7 +204,7 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return self.stock.stock_holder == stock_holder
 
     @staticmethod
-    def create_from_template(template, venue_id, stock_id):
+    def create_from_template(template, venue_id, stock_id, conversion):
         # create Seat
         seat = Seat.clone(template)
         seat.venue_id = venue_id
@@ -205,17 +218,20 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         # create SeatIndex
         for template_seat_index in template.indexes:
-            SeatIndex.create_from_template(template_seat_index, seat_id=seat.id)
+            SeatIndex.create_from_template(
+                template=template_seat_index,
+                seat_id=seat.id,
+                conversion=conversion
+            )
 
         # create Seat_SeatAdjacency
-        '''
+        seat_seat_adjacencies = []
         for template_adjacency in template.adjacencies:
-            association = Seat_SeatAdjacency(
-                seat_adjacency_id=template_adjacency.id,
-                seat_id=seat.id,
-            )
-            DBSession.add(association)
-        '''
+            seat_seat_adjacencies.append({
+                'seat_adjacency_id':conversion['seat_adjacency'][template_adjacency.id],
+                'seat_id':seat.id,
+            })
+        DBSession.execute(Seat_SeatAdjacency.__table__.insert(), seat_seat_adjacencies)
 
     def delete_cascade(self):
         # delete SeatStatus
@@ -285,20 +301,11 @@ class SeatAdjacency(Base, BaseModel):
     adjacency_set_id = Column(Identifier, ForeignKey('SeatAdjacencySet.id', ondelete='CASCADE'))
 
     @staticmethod
-    def create_from_template(template, adjacency_set_id, venue_id):
+    def create_from_template(template, adjacency_set_id):
         adjacency = SeatAdjacency.clone(template)
         adjacency.adjacency_set_id = adjacency_set_id
         adjacency.save()
-
-        # 関連テーブルのseat_index_type_idを書き換える
-        venue = Venue.get(venue_id)
-        '''
-        for seat in venue.seats:
-            DBSession.query(Seat_SeatAdjacency)\
-                .filter_by(seat_adjacency_id=template.id)\
-                .filter_by(seat_id=seat.id)\
-                .update({'seat_adjacency_id':adjacency.id})
-        '''
+        return {template.id:adjacency.id}
 
 class SeatAdjacencySet(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "SeatAdjacencySet"
@@ -314,8 +321,13 @@ class SeatAdjacencySet(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         adjacency_set.venue_id = venue_id
         adjacency_set.save()
 
+        conversion = {}
         for template_adjacency in template.adjacencies:
-            SeatAdjacency.create_from_template(template_adjacency, adjacency_set.id, venue_id)
+            conversion.update(
+                SeatAdjacency.create_from_template(template_adjacency, adjacency_set.id)
+            )
+
+        return conversion
 
 class AccountTypeEnum(StandardEnum):
     Promoter    = (1, u'プロモーター')
@@ -395,14 +407,14 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
           - Venue
             - VenueArea
               - VenueArea_group_l0_id
+            - SeatAdjacencySet
+              - SeatAdjacency
+            - SeatIndexType
             - Seat
               - SeatAttribute
               - SeatStatus
               - SeatIndex
               - SeatAdjacency_Seat
-            - SeatIndexType
-            - SeatAdjacencySet
-              - SeatAdjacency
         """
         # create Venue - VenueArea, Seat - SeatAttribute
         if hasattr(self, 'create_venue_id') and self.venue_id:
@@ -602,35 +614,45 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if hasattr(self, 'original_id') and self.original_id:
             """
             Eventのコピー時は以下のモデルをcloneする
-              - Performance
-                - (この階層以下はPerformance.add()を参照)
-              - Product
-              - StockHolder
               - StockType
+              - StockHolder
               - SalesSegment
                 - PaymentDeliveryMethodPair
+              - Product
+              - Performance
+                - (この階層以下はPerformance.add()を参照)
             """
             template_event = Event.get(self.original_id)
+
+            # 各モデルのコピー元/コピー先のidの対比表
+            conversion = {
+                'stock_type':dict(),
+                'sales_segment':dict(),
+            }
 
             # create Performance
             for template_performance in template_event.performances:
                 Performance.create_from_template(template=template_performance, event_id=self.id)
 
-            # create Product
-            for template_product in template_event.products:
-                Product.create_from_template(template=template_product, event_id=self.id)
+            # create StockType
+            for template_stock_type in template_event.stock_types:
+                conversion['stock_type'].update(
+                    StockType.create_from_template(template=template_stock_type, event_id=self.id)
+                )
 
             # create StockHolder
             for template_stock_holder in template_event.stock_holders:
                 StockHolder.create_from_template(template=template_stock_holder, event_id=self.id)
 
-            # create StockType
-            for template_stock_type in template_event.stock_types:
-                StockType.create_from_template(template=template_stock_type, event_id=self.id)
-
             # create SalesSegment - PaymentDeliveryMethodPair
             for template_sales_segment in template_event.sales_segments:
-                SalesSegment.create_from_template(template=template_sales_segment, event_id=self.id)
+                conversion['sales_segment'].update(
+                    SalesSegment.create_from_template(template=template_sales_segment, event_id=self.id)
+                )
+
+            # create Product
+            for template_product in template_event.products:
+                Product.create_from_template(template=template_product, event_id=self.id, conversion=conversion)
 
         else:
             """
@@ -701,13 +723,10 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         sales_segment.event_id = event_id
         sales_segment.save()
 
-        # 関連テーブルのsales_segment_idを書き換える
-        Product.filter_by(event_id=event_id)\
-            .filter_by(sales_segment_id=template.id)\
-            .update({'sales_segment_id':sales_segment.id})
-
         for template_pdmp in template.payment_delivery_method_pairs:
             PaymentDeliveryMethodPair.create_from_template(template=template_pdmp, sales_segment_id=sales_segment.id)
+
+        return {template.id:sales_segment.id}
 
 class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentDeliveryMethodPair'
@@ -920,15 +939,13 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         stock_type.save()
 
         # 関連テーブルのstock_type_idを書き換える
-        Product.filter_by(event_id=event_id)\
-            .filter_by(seat_stock_type_id=template.id)\
-            .update({'seat_stock_type_id':stock_type.id})
-
         event = Event.get(event_id)
         for performance in event.performances:
             Stock.filter_by(stock_type_id=template.id)\
                 .filter_by(performance_id=performance.id)\
                 .update({'stock_type_id':stock_type.id})
+
+        return {template.id:stock_type.id}
 
 class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "StockHolder"
@@ -1109,7 +1126,7 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             # Productを生成
             product = Product(
                 name=stock_type.name,
-                price=0,  #TODO: SalesSegmentのデフォルト値はどうするか
+                price=0,
                 event_id=stock_type.event_id,
                 seat_stock_type_id=stock_type.id
             )
@@ -1174,12 +1191,14 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return name if name else ''
 
     @staticmethod
-    def create_from_template(template, event_id):
+    def create_from_template(template, event_id, conversion):
         product = Product.clone(template)
         product.event_id = event_id
+        product.seat_stock_type_id = conversion['stock_type'][template.seat_stock_type_id]
+        product.sales_segment_id = conversion['sales_segment'][template.sales_segment_id]
         product.save()
 
-        # 関連テーブルのsales_holder_idを書き換える
+        # 関連テーブルのproduct_idを書き換える
         event = Event.get(event_id)
         for performance in event.performances:
             ProductItem.filter_by(product_id=template.id)\
@@ -1198,15 +1217,7 @@ class SeatIndexType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         seat_index_type = SeatIndexType.clone(template)
         seat_index_type.venue_id = venue_id
         seat_index_type.save()
-
-        # 関連テーブルのseat_index_type_idを書き換える
-        venue = Venue.get(venue_id)
-        '''
-        for seat in venue.seats:
-            SeatIndex.filter_by(seat_index_type_id=template.id)\
-                .filter_by(seat_id=seat.id)\
-                .update({'seat_index_type_id':seat_index_type.id})
-        '''
+        return {template.id:seat_index_type.id}
 
 class SeatIndex(Base, BaseModel):
     __tablename__      = "SeatIndex"
@@ -1216,9 +1227,10 @@ class SeatIndex(Base, BaseModel):
     seat               = relationship('Seat', backref='indexes')
 
     @staticmethod
-    def create_from_template(template, seat_id):
+    def create_from_template(template, seat_id, conversion):
         seat_index = SeatIndex.clone(template)
         seat_index.seat_id = seat_id
+        seat_index.seat_index_type_id = conversion['seat_index_type'][template.seat_index_type_id]
         seat_index.save()
 
 class OrganizationTypeEnum(StandardEnum):
