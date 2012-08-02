@@ -8,7 +8,7 @@ from wtforms.validators import Length, NumberRange, EqualTo, Optional, Validatio
 from sqlalchemy.sql import func
 
 from ticketing.formhelpers import Translations, Required
-from ticketing.core.models import SalesSegment, Product, ProductItem, StockHolder, StockType, Stock, Event
+from ticketing.core.models import SalesSegment, Product, ProductItem, StockHolder, StockType, Stock, Performance
 
 class ProductForm(Form):
 
@@ -79,12 +79,13 @@ class ProductItemForm(Form):
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         Form.__init__(self, formdata, obj, prefix, **kwargs)
-        if 'event_id' in kwargs:
-            event = Event.get(kwargs['event_id'])
-            stock_holders = StockHolder.get_seller(event)
+        if 'performance_id' in kwargs:
+            performance = Performance.get(kwargs['performance_id'])
+            stock_holders = StockHolder.get_seller(performance.event)
             self.stock_holders.choices = [(sh.id, sh.name) for sh in stock_holders]
         if self.stock_holders.data:
             conditions ={
+                'performance_id':self.performance_id.data,
                 'stock_holder_id':self.stock_holders.data
             }
             self.stock_id.choices = [

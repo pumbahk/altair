@@ -114,7 +114,7 @@ class ProductItems(BaseView):
         if performance is None:
             return HTTPNotFound('performance id %d is not found' % performance_id)
 
-        f = ProductItemForm(self.request.POST, user_id=self.context.user.id, event_id=performance.event_id)
+        f = ProductItemForm(self.request.POST, user_id=self.context.user.id, performance_id=performance_id)
         if f.validate():
             product_item = merge_session_with_post(ProductItem(), f.data)
             product_item.save()
@@ -140,7 +140,7 @@ class ProductItems(BaseView):
         if performance is None:
             return HTTPNotFound('performance id %d is not found' % performance_id)
 
-        f = ProductItemForm(self.request.POST, user_id=self.context.user.id, event_id=performance.event_id)
+        f = ProductItemForm(self.request.POST, user_id=self.context.user.id, performance_id=performance_id)
         if f.validate():
             product_item = merge_session_with_post(product_item, f.data)
             product_item.save()

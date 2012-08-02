@@ -60,7 +60,7 @@ class Performances(BaseView):
             pass
         elif tab == 'product':
             data['form_product'] = ProductForm(event_id=performance.event_id)
-            data['form_product_item'] = ProductItemForm(user_id=self.context.user.id, event_id=performance.event_id)
+            data['form_product_item'] = ProductItemForm(user_id=self.context.user.id, performance_id=performance_id)
         elif tab == 'reservation':
             data['form_order'] = OrderForm(event_id=performance.event_id)
             data['orders'] = Order.filter_by_performance_id(performance_id)

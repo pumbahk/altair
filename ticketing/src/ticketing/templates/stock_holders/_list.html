@@ -23,6 +23,7 @@
         <th style="width: 30px;"></th>
         <th style="width: 30px;"></th>
         <th>${h.sortable(form.name, paging)}</th>
+        <th>${form.account_id.label.text}</th>
       </tr>
       </thead>
       <tbody>
@@ -32,6 +33,7 @@
         <th><input type="radio" name="stock_holder_id" value="${stock_holder.id}" /></th>
         <td>${h.seat_style(stock_holder.style)}</td>
         <td><a href="javascript:edit_stock_holder('${stock_holder.id}');"><span id="name">${stock_holder.name}</span></a></td>
+        <td><a href="${request.route_path('accounts.show', account_id=stock_holder.account_id)}"><span id="account_id" value="${stock_holder.account_id}">${stock_holder.account.name}</span></a></td>
       </tr>
       % endfor
       </tbody>

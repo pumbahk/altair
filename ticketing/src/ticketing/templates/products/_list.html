@@ -60,6 +60,7 @@
       <th class="minwidth">${sortable(form.id, paging)}</th>
       <th>${sortable(form.name, paging)}</th>
       <th>${sortable(form.price, paging)}</th>
+      <th>${sortable(form.seat_stock_type_id, paging)}</th>
       <th>販売区分</th>
       <th>販売開始日時</th>
       <th>販売終了日時</th>
@@ -73,6 +74,7 @@
       <td><span id="id">${product.id}</span></td>
       <td><a href="javascript:edit_product('${product.id}');"><span id="name">${product.name}</span></a></td>
       <td><span id="price" value="${product.price}">${price_format(product.price)}</span>円</td>
+      <td><div id="seat_stock_type_id" value="${product.seat_stock_type_id}">${product.seat_stock_type.name}</div></td>
       % if product.sales_segment:
       <td>
         <a href="${request.route_path('sales_segments.show', sales_segment_id=product.sales_segment.id)}">
@@ -90,7 +92,7 @@
 
     % if performance:
     <tr>
-      <td colspan="7">
+      <td colspan="8">
         % for item in product.items_by_performance_id(performance.id):
         <div class="product-item-group" id="product_item-${item.id}">
           <div class="product-item" id="stock_holder" value="${item.stock.stock_holder.id}">${item.stock.stock_holder.name}</div>
