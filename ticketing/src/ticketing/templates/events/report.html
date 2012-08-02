@@ -26,7 +26,7 @@
       modal.find('.modal-report-submit').attr('href', 'javascript:void(0);');
       modal.find('.modal-report-submit').click(function() {
         // フォームからstock_holder_idを取得
-        var stock_holder_id = 1;
+        var stock_holder_id = modal.find('select[name=stock-holder-id]').val();
         modal.find('.modal-report-submit').attr('href', '/events/report/' + event_id + '/' + report_type + '/' + stock_holder_id);
         modal.modal('hide');
       });

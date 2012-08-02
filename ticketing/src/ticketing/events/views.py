@@ -33,10 +33,12 @@ from ticketing.events.stock_holders.forms import StockHolderForm
 from ticketing.products.forms import ProductForm
 from ticketing.events.reports import xls_export
 from ticketing.events.reports import sheet as report_sheet
+from .reports import reporting
 from ticketing.helpers.base import jdatetime
 
 from ..api.impl import get_communication_api
 from ..api.impl import CMSCommunicationApi
+
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class Events(BaseView):
@@ -309,97 +311,28 @@ class Events(BaseView):
 
         #return response
 
-    @view_config(route_name='events.report.seat_all')
-    def download_seat_all(self):
-        event_id = int(self.request.matchdict.get('event_id', 0))
-        event = Event.get(event_id)
-        if event is None:
-            return HTTPNotFound('event id %d is not found' % event_id)
-
-        assetresolver = AssetResolver()
-        template_path = assetresolver.resolve(
-            "ticketing:/templates/reports/assign_template.xls").abspath()
-        exporter = xls_export.SeatAssignExporter(template=template_path)
-        # TODO:Event
-        sheet_0 = exporter.workbook.get_sheet(0)
-        exporter.set_event_name(sheet_0, event.title)
-        # TODO:Performance
-
-        # 出力ファイル名
-        filename = "assign_%(code)s_%(datetime)s" % dict(
-            code=event.code,  # イベントコード
-            datetime=strftime('%Y%m%d%H%M%S')
-        )
-
-        headers = [
-            ('Content-Type', 'application/octet-stream'),
-            ('Content-Disposition', 'attachment; filename=%s' % filename)
-        ]
-        response = Response(exporter.as_string(), headerlist=headers)
-        return response
-
     @view_config(route_name='events.report.seat_stocks')
     def download_seat_stocks(self):
         """仕入明細ダウンロード
         """
+        # Event
         event_id = int(self.request.matchdict.get('event_id', 0))
         event = Event.get(event_id)
         if event is None:
-            return HTTPNotFound('event id %d is not found' % event_id)
-
-        assetresolver = AssetResolver()
-        template_path = assetresolver.resolve(
-            "ticketing:/templates/reports/assign_template.xls").abspath()
-        exporter = xls_export.SeatAssignExporter(template=template_path)
-        # 現在日時
-        timestamp = strftime('%Y%m%d%H%M%S')
-        # Performance
-        query = Performance.filter(Performance.event_id==event_id)
-        query = query.order_by(Performance.id)
-        performances = list(query)
+            raise HTTPNotFound('event id %d is not found' % event_id)
         # StockHolder
         stock_holder = StockHolder \
             .filter(StockHolder.event_id==event_id) \
             .filter(StockHolder.account_id==self.context.user.id).first()
         if stock_holder is None:
-            raise Exception("StockHolder is not found event_id=%s, account_id=%s" % (event_id, self.user.id))
+            raise HTTPNotFound("StockHolder is not found id=%s" % stock_holder_id)
 
-        for i, performance in enumerate(performances):
-            sheet_num = i + 1
-            sheet_name = u"%s%d" % (jdatetime(performance.start_on), sheet_num)
-            # 一つ目のシートは追加せずに取得
-            if i == 0:
-                sheet = exporter.workbook.get_sheet(0)
-                sheet.set_name(sheet_name)
-            else:
-                sheet = exporter.add_sheet(sheet_name)
-            # PerformanceごとのStockを取得
-            stock_records = []
-            stock_query = Stock \
-                .filter(Stock.performance_id==performance.id) \
-                .filter(Stock.stock_holder_id==stock_holder.id) \
-                .order_by(Stock.stock_type_id)
-            stocks = list(stock_query)
-            # 席種ごとのオブジェクトを作成
-            for stock in stocks:
-                stock_type = StockType.get(stock.stock_type_id)
-                # Stock
-                stock_record = report_sheet.StockRecord(seat_type=stock_type.name)
-                # 数受けの場合
-                if stock_type.quantity_only:
-                    seat_record = report_sheet.SeatRecord(
-                        block=stock_type.name,
-                        quantity=stock.quantity)
-                    stock_record.records.append(seat_record)
-                else:
-                    # Seat
-                    seats = Seat.filter(Seat.stock_id==stock.id).order_by(Seat.name)
-                    seat_sources = map(report_sheet.seat_source_from_seat, seats)
-                    seat_records = report_sheet.seat_records_from_seat_sources(seat_sources)
-                    for seat_record in seat_records:
-                        stock_record.records.append(seat_record)
-                stock_records.append(stock_record)
-            report_sheet.process_sheet(exporter, sheet, event, performance, stock_records)
+        exporter = reporting.export_for_stock_holder(
+            event,
+            stock_holder
+        )
+        # 現在日時
+        timestamp = strftime('%Y%m%d%H%M%S')
         # 出力ファイル名
         filename = "assign_%(code)s_%(datetime)s" % dict(
             code=event.code,  # イベントコード
@@ -413,26 +346,30 @@ class Events(BaseView):
         response = Response(exporter.as_string(), headerlist=headers)
         return response
 
-    @view_config(route_name='events.report.seat_returns')
-    def download_seat_returns(self):
+    
+    @view_config(route_name='events.report.seat_stock_to_stockholder')
+    def seat_stock_to_stockholder(self):
         event_id = int(self.request.matchdict.get('event_id', 0))
+        # Event
         event = Event.get(event_id)
         if event is None:
-            return HTTPNotFound('event id %d is not found' % event_id)
+            raise HTTPNotFound('event id %d is not found' % event_id)
+        # StockHolder
+        stock_holder_id = int(self.request.matchdict.get('stock_holder_id', 0))
+        stock_holder = StockHolder.get(stock_holder_id)
+        if stock_holder is None:
+            raise HTTPNotFound("StockHolder is not found id=%s" % stock_holder_id)
 
-        assetresolver = AssetResolver()
-        template_path = assetresolver.resolve(
-            "ticketing:/templates/reports/assign_template.xls").abspath()
-        exporter = xls_export.SeatAssignExporter(template=template_path)
-        # TODO:Event
-        sheet_0 = exporter.workbook.get_sheet(0)
-        exporter.set_event_name(sheet_0, event.title)
-        # TODO:Performance
-
+        exporter = reporting.export_for_stock_holder(
+            event,
+            stock_holder
+        )
+        # 現在日時
+        timestamp = strftime('%Y%m%d%H%M%S')
         # 出力ファイル名
         filename = "assign_%(code)s_%(datetime)s" % dict(
             code=event.code,  # イベントコード
-            datetime=strftime('%Y%m%d%H%M%S')
+            datetime=timestamp
         )
 
         headers = [
