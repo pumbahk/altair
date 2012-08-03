@@ -1,4 +1,4 @@
-${up.last_name} ${up.first_name} 様
+${sa.last_name} ${sa.first_name} 様
 
 「${title}」のご注文キャンセル手続きが
 完了しましたのでご連絡させていただきます。
@@ -17,7 +17,7 @@ ${up.last_name} ${up.first_name} 様
 =====================================================================
 [受付番号]  ${order.order_no}
 [受付日時]  ${order.created_at}
-[注文者]    ${up.last_name} ${up.first_name} 様
+[注文者]    ${sa.last_name} ${sa.first_name} 様
 [支払方法]  ${order.payment_delivery_pair.payment_method.name}
 [配送方法]  ${order.payment_delivery_pair.delivery_method.name}
 ==========
