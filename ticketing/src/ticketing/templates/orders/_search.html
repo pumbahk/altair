@@ -35,7 +35,7 @@
     </li>
     <li class="dropdown" id="top-search" style="margin-left: 10px;">
       <div class="btn-group">
-        <a href="javascript:$('#search-order').submit();" class="btn">
+        <a href="javascript:void(0);" onclick="$('#search-order').submit();" class="btn">
           <i class="icon-search"></i> 検索
         </a>
         <button class="btn dropdown-toggle" data-toggle="dropdown">
@@ -112,7 +112,7 @@
   </div>
 
   <div class="modal-footer">
-    <a href="javascript:$('#modal-download_orders').modal('hide');" class="btn secondary">キャンセル</a>
+    <a href="javascript:void(0);" onclick="$('#modal-download_orders').modal('hide');" class="btn secondary">キャンセル</a>
     <a href="javascript:download_orders();" class="btn danger">ダウンロード</a>
   </div>
 </div>
