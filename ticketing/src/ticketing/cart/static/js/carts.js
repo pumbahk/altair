@@ -282,7 +282,7 @@ carts.AppView.prototype.init = function(presenter) {
                     self.reservationDialog.overlay().close();
                 }
             });
-            $("#selectSeat .venueViewer").venueviewer("load");
+            $("#selectSeat .venueViewer").venueviewer("refresh");
             self.reservationDialog.overlay().close();
             $("#selectSeatType").click();
         });
@@ -352,6 +352,7 @@ carts.AppView.prototype.init = function(presenter) {
         });
 
         self.orderQuantityOnlyButton.click(function (event) {
+            $('#selected-seats').empty();
             var values = self.orderForm.serialize();
             $.ajax({
                 url: order_url, //this is global variable
@@ -643,4 +644,3 @@ carts.Future.prototype.data = function carts_Future_data(next, error) {
   if (this.next)
     this.next(data);
 };
-
