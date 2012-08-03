@@ -38,11 +38,11 @@ def get_widget_utility(request, page,_type):
     logger.warn("*get widget utility* %s" % _type)
     if not hasattr(request, "_widget_utilities"):
         request._widget_utilities = {}
-    utility = request._widget_utilities.get((page.organization_id, type))
+    utility = request._widget_utilities.get((page.organization_id, _type))
     if utility is None:
         dispacher = get_widget_aggregator_dispatcher(request)
         utility = dispacher.dispatch(request, page).utilities[_type]
-        request._widget_utilities[(page.organization_id, type)] = utility
+        request._widget_utilities[(page.organization_id, _type)] = utility
     return utility
 
 
