@@ -138,6 +138,7 @@ def set_request_organization(request, organization_id):
     """ 一時的な絞り込みのためのorganization情報をセット。(未ログインでのクライアント確認でのアクセスなどに必要)
     """
     organization = getattr(request, "organization", None)
+    logger.debug("*set request organization* request.organization: %s, tmp organization: %s" % (getattr(organization, "id", None), organization_id))
     if organization and organization.id == organization_id:
         return 
     tmp_organization = Organization.query.filter_by(id=organization_id).one()
@@ -153,8 +154,9 @@ def get_allowable_query(request):
     def query(model, qs=None):
         qs = qs or model.query
         organization = fetch_correct_organization(request)
+        logger.debug("*request.allowable* organization id: %s" % getattr(organization, "id", None))
         if organization and hasattr(model, "organization_id"):
-            return qs.with_transformation(request.organization.inthere("organization_id"))
+            return qs.with_transformation(organization.inthere("organization_id"))
         logger.debug(u"""this-is-external-request. e.g. access with pageaccess key. request.organization is not found\n
 class: %s""" % model)
         return qs
