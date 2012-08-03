@@ -9,6 +9,7 @@ from altaircms.auth.api import get_organization_mapping
 from zope.interface import implementer
 from .interfaces import IConflictValidateFunction
 
+from altaircms.auth.models import Organization
 import logging
 logger = logging.getLogger(__file__)
 
@@ -147,9 +148,7 @@ class WidgetAggregatorDispatcher(object):
         self.conts[key] = dispatch
 
     def dispatch(self, request, page):
-        ### !! request.organization が取れること前提にしている　
-        organization = request.organization
-        assert request.organization.id == page.organization_id
+        organization = Organization.query.filter_by(id=page.organization_id).one()
         k = (organization.backend_id, organization.auth_source)
 
         logger.debug("widget aggregator dispach:%s" % (k,))
