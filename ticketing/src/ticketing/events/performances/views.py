@@ -60,7 +60,7 @@ class Performances(BaseView):
             pass
         elif tab == 'product':
             data['form_product'] = ProductForm(event_id=performance.event_id)
-            data['form_product_item'] = ProductItemForm(user_id=self.context.user.id, event_id=performance.event_id)
+            data['form_product_item'] = ProductItemForm(user_id=self.context.user.id, performance_id=performance_id)
         elif tab == 'reservation':
             data['form_order'] = OrderForm(event_id=performance.event_id)
             data['orders'] = Order.filter_by_performance_id(performance_id)
@@ -111,11 +111,15 @@ class Performances(BaseView):
         if performance is None:
             return HTTPNotFound('performance id %d is not found' % performance_id)
 
-        f = PerformanceForm(organization_id=self.context.user.organization_id)
-        f.process(record_to_multidict(performance))
-        f.venue_id.data = performance.venue.original_venue_id
+        is_copy = (self.request.matched_route.name == 'performances.copy')
+        kwargs = dict(organization_id=self.context.user.organization_id)
+        if is_copy:
+            kwargs.update(dict(venue_id=performance.venue.id))
 
-        if self.request.matched_route.name == 'performances.copy':
+        f = PerformanceForm(**kwargs)
+        f.process(record_to_multidict(performance))
+
+        if is_copy:
             f.original_id.data = f.id.data
             f.id.data = None
 
@@ -132,9 +136,14 @@ class Performances(BaseView):
         if performance is None:
             return HTTPNotFound('performance id %d is not found' % performance_id)
 
-        f = PerformanceForm(self.request.POST, organization_id=self.context.user.organization_id)
+        is_copy = (self.request.matched_route.name == 'performances.copy')
+        kwargs = dict(organization_id=self.context.user.organization_id)
+        if is_copy:
+            kwargs.update(dict(venue_id=performance.venue.id))
+
+        f = PerformanceForm(self.request.POST, **kwargs)
         if f.validate():
-            if self.request.matched_route.name == 'performances.copy':
+            if is_copy:
                 event_id = performance.event_id
                 performance = merge_session_with_post(Performance(), f.data)
                 performance.event_id = event_id

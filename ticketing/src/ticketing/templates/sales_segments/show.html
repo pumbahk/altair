@@ -1,11 +1,8 @@
 <%inherit file="/layout_2cols.html"/>
-<%namespace file="/common/helpers.html" import="pager"/>                                               
-<%namespace file="/common/helpers.html" import="flash_messages" />
-<%namespace file="/common/helpers.html" import="safe_strftime" />
-<%namespace file="/common/helpers.html" import="breadcrumbs" />
+<%namespace file="/common/helpers.html" name="h"/>
 
 <div class="breadcrumbs">
-  ${breadcrumbs(
+  ${h.breadcrumbs(
     names=[u'イベント', sales_segment.event.title, u'販売区分', sales_segment.name],
     urls=[
       request.route_path('events.index'),
@@ -20,7 +17,7 @@
 </div>
 
 <div class="content">
-  ${flash_messages(request)}
+  ${h.flash_messages(request)}
 </div>
 
 <table class="table table-striped table-bordered table-condensed" id="sales_segment-${sales_segment.id}">
@@ -29,12 +26,21 @@
     <td id="id">${sales_segment.id}</td>
   </tr>
   <tr>
+    <th>${form_ss.kind.label.text}</th>
+    <% kind = [v for k, v in form_ss.kind.choices if k == sales_segment.kind] %>
+    <td id="kind" value="${sales_segment.kind}">${kind.pop() or ''}</td>
+  </tr>
+  <tr>
     <th>${form_ss.name.label.text}</th>
     <td id="name">${sales_segment.name}</td>
   </tr>
   <tr>
     <th>${form_ss.start_at.label.text}</th>
-    <td id="current_start_at">${safe_strftime(sales_segment.start_at)}</td>
+    <td id="current_start_at">${h.safe_strftime(sales_segment.start_at)}</td>
+  </tr>
+  <tr>
+    <th>${form_ss.end_at.label.text}</th>
+    <td id="current_end_at">${h.safe_strftime(sales_segment.end_at)}</td>
   </tr>
   <tr>
     <th>${form_ss.upper_limit.label.text}</th>

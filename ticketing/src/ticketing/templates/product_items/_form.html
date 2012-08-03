@@ -6,7 +6,9 @@
     % for stock_holder in performance.event.stock_holders:
       '${stock_holder.id}':[
         % for stock in stock_holder.stocks:
-          ['${stock.id}', '${stock.stock_type.name}'],
+          % if stock.performance_id == performance.id:
+            ['${stock.id}', '${stock.stock_type.name}'],
+          % endif
         % endfor
       ],
     % endfor

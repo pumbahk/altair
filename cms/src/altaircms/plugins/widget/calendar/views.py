@@ -2,7 +2,9 @@ from pyramid.view import view_config, view_defaults
 from altaircms.auth.api import require_login
 from . import demo
 from forms import CalendarSelectForm
-    
+from altaircms.page.models import Page    
+from altaircms.auth.api import get_or_404
+
 @view_defaults(custom_predicates=(require_login,))
 class CalendarWidgetView(object):
     def __init__(self, request):
@@ -41,8 +43,10 @@ class CalendarWidgetView(object):
     def dialog(self):
         context = self.request.context
         widget = context.get_widget(self.request.GET.get("pk"))
+        page = get_or_404(self.request.allowable(Page), Page.id==self.request.GET["page"])
         params = widget.to_dict()
         form = CalendarSelectForm(sale_choice=widget.salessegment, **params)
+        form.configure(self.request, page)
         return {"form": form}
 
 

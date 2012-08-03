@@ -6,7 +6,19 @@ import re
 import argparse
 
 from ticketing.models import DBSession
-from ticketing.core.models import Site, Venue, VenueArea, VenueArea_group_l0_id, Seat, SeatAttribute, SeatIndexType, SeatIndex, Organization
+from ticketing.core.models import (
+    Site,
+    Venue,
+    VenueArea,
+    VenueArea_group_l0_id,
+    Seat,
+    SeatAttribute,
+    SeatIndexType,
+    SeatIndex,
+    SeatAdjacencySet,
+    SeatAdjacency,
+    Organization,
+    )
 
 SVG_NAMESPACE = 'http://www.w3.org/2000/svg'
 SITE_INFO_NAMESPACE = 'http://xmlns.ticketstar.jp/2012/site-info'
@@ -72,7 +84,7 @@ class ObjectRetriever(object):
                 object__ = self.object_cache[ref_id]
                 props[prop_node.get('name')] = object__
             else:
-                props[prop_node.get('name')] = prop_node.text
+                props[prop_node.get('name')] = unicode(prop_node.text)
 
         for coll_node in node.findall('{%s}collection' % SITE_INFO_NAMESPACE):
             coll = []
@@ -132,6 +144,8 @@ def import_tree(organization, tree, file):
     venue.organization = organization
     seat_index_type_objs = tree['collections'].get('seatIndexTypes')
     seat_index_type_map = {}
+    adjacency_sets = {}
+
     if seat_index_type_objs is not None:
         for seat_index_type_obj in seat_index_type_objs:
             if seat_index_type_obj['class'] != 'SeatIndexType':
@@ -139,15 +153,19 @@ def import_tree(organization, tree, file):
             seat_index_type = SeatIndexType(venue=venue, name=seat_index_type_obj['properties']['name'])
             seat_index_type_map[seat_index_type_obj['id']] = seat_index_type
             venue.seat_index_types.append(seat_index_type)
-           
+
     for block_obj in tree['children']:
         block = VenueArea(name=block_obj['properties']['name'])
         group_l0_id = block_obj['_node'].get('id')
         if group_l0_id is not None:
             DBSession.add(VenueArea_group_l0_id(area=block, venue=venue, group_l0_id=group_l0_id))
+
         for row_obj in block_obj['children']:
             row_name = row_obj['properties'].get('name')
-            for seat_obj in row_obj['children']:
+            seat_objs = row_obj['children']
+            num_seats_in_row = len(seat_objs)
+            seats_in_row = []
+            for seat_obj in seat_objs:
                 seat = Seat(venue=venue, l0_id=seat_obj['_node'].get('id'), group_l0_id=group_l0_id)
                 name = seat_obj['properties'].get('name')
                 gate = seat_obj['properties'].get('gate')
@@ -168,8 +186,24 @@ def import_tree(organization, tree, file):
                                 seat=seat,
                                 index=index_obj['properties']['index'],
                                 seat_index_type=seat_index_type_map[index_obj['properties']['index_type']['id']]))
+                seats_in_row.append(seat)
                 DBSession.add(seat)
+
+            # sort by l0_id
+            seats_in_row.sort(lambda a, b: cmp(a.l0_id, b.l0_id))
+
+            # generate adjacencies
+            for seat_count in range(2, num_seats_in_row + 1):
+                adjacency_set = adjacency_sets.get(seat_count)
+                if adjacency_set is None:
+                    adjacency_set = adjacency_sets[seat_count] = SeatAdjacencySet(venue=venue, seat_count=seat_count)
+                adjacency_set.adjacencies.extend(
+                    SeatAdjacency(seats=seats_in_row[i:i + seat_count])
+                    for i in range(0, num_seats_in_row - seat_count + 1))
         DBSession.add(block)
+
+    for adjacency_set in adjacency_sets.values():
+        DBSession.add(adjacency_set)
 
     DBSession.add(site)
     DBSession.add(venue)

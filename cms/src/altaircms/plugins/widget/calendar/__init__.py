@@ -1,13 +1,13 @@
 from altaircms.plugins.widget import widget_plugin_install
+from zope.deprecation import deprecation
 import os.path
 DIR = os.path.dirname(os.path.abspath(__file__))
 
 ## fixme move to ini file
+@deprecation.deprecate("this is deprecated class. define by [calendar] section in your organization settings.]")
 class CalendarTemplatePathStore(object):
-    #obi = "rakuten.calendar.mako"
     obi = "ticketstar.calendar.mako"
     term = "rakuten.calendar.mako"
-    # tab = "rakuten.tab-calendar.mako"
     tab = "ticketstar.tab-calendar.mako"
     here = "altaircms.plugins.widget:calendar"
     @classmethod
@@ -22,7 +22,9 @@ def includeme(config):
     config.add_route("calendar_widget_dialog", "/widget/calendar/dialog", factory=".models.CalendarWidgetResource")
     config.add_route("calendar_widget_dialog_demo", "/widget/calendar/dialog/demo/{type}", factory=".models.CalendarWidgetResource")
 
-    api_impl = config.maybe_dotted(".api.CalendarDataAPI")(config.registry.settings["altaircms.backend.url"])
+    api_impl = (config.maybe_dotted(".api.CalendarDataAPI")
+                (config.registry.settings["altaircms.backend.url"], 
+                 config.registry.settings["altaircms.backend.apikey"]))
     config.registry.registerUtility(api_impl, 
                                     config.maybe_dotted("altaircms.plugins.interfaces.IExternalAPI"), 
                                     api_impl.__class__.__name__)

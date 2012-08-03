@@ -80,6 +80,10 @@ class PageSet(Base,
     parent_id = Column(Integer, ForeignKey('pagesets.id'))
     parent = orm.relationship("PageSet", remote_side=[id], uselist=False)
 
+    @declared_attr
+    def __table_args__(cls):
+        return (sa.schema.UniqueConstraint("url", "organization_id"), )
+
     @property
     def taglabel(self):
         return u"pageset:%s" % self.id
@@ -175,7 +179,7 @@ class Page(BaseOriginalMixin,
     title = Column(Unicode(255), default=u"")
     keywords = Column(Unicode(255), default=u"")
     description = Column(Unicode(255), default=u"")
-    url = Column(String(255), unique=True, index=True) ##todo: delete
+    url = Column(String(255), index=True) ##todo: delete
     version = Column(Integer, default=1)
 
     layout_id = Column(Integer, ForeignKey("layout.id"))
@@ -193,6 +197,10 @@ class Page(BaseOriginalMixin,
     publish_begin = Column(DateTime)
     publish_end = Column(DateTime)
     published = Column(sa.Boolean, default=False)
+
+    @declared_attr
+    def __table_args__(cls):
+        return (sa.schema.UniqueConstraint("url", "organization_id"), )
 
     @hybrid_method
     def in_term(self, dt):

@@ -10,7 +10,9 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
 	<link rel="stylesheet" type="text/css" href="/static/NH/css/style.css" media="all" />
-	<title>NH</title>
+    <title>${page.title}</title>
+    <meta name="description" content="${page.description}">
+    <meta name="keywords" content="${page.keywords}">
 </head>
 <body>
 	<!-- wrapper -->	

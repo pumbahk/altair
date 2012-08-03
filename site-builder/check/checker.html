@@ -11,9 +11,6 @@ var load = function(url) {
 		success: function(r) {
 			$('#stage').get(0).innerHTML = r;
 			
-			// 適当に縮小
-			$('#stage > svg > g').attr('transform', 'scale(0.5)');
-			
 			$('#venue').text($('#stage > svg > title').text());
 			
 			var svgfind = function(p, element, attr, value) {

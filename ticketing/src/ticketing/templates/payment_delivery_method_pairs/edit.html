@@ -10,8 +10,8 @@
     route_path = request.route_path('payment_delivery_method_pairs.new', sales_segment_id=sales_segment.id)
 %>
 
-% if payment_methods:
 <script type="text/javascript">
+  % if payment_methods:
   var payment_method_data = {
     % for payment_method in payment_methods:
       '${payment_method.id}':'${payment_method.fee}',
@@ -27,14 +27,18 @@
     $('#payment_method_id').change(function(){
       $('#transaction_fee').val(Math.floor(payment_method_data[$(this).val()]));
     }).change();
-  });
-  $(function() {
     $('#delivery_method_id').change(function(){
       $('#delivery_fee').val(Math.floor(delivery_method_data[$(this).val()]));
     }).change();
   });
+  % endif
+
+  $(function() {
+    $('#system_fee, #transaction_fee, #delivery_fee, #discount').load(function(){
+      $(this).val(Math.floor($(this).val()));
+    }).load();
+  });
 </script>
-% endif
 
 <div class="breadcrumbs">
   ${h.breadcrumbs(
