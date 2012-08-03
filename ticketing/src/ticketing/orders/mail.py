@@ -48,7 +48,6 @@ def create_cancel_message(request, order):
 
     value = dict(
         order=order,
-        up=order.user.user_profile,
         sa=order.shipping_address,
         products=products,
         venue=venue_info,
