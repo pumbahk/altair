@@ -22,7 +22,7 @@
           <% status= calendar_status.get_status(p)%>
           <li class="${status["class"]}">
 			<!-- <strong>${status["string"]}</strong> -->
-            <a href="${h.link.get_purchase_page_from_performance(request,p)}}">${p.start_on.strftime("%H:%M")}</a>
+            <a href="${h.link.get_purchase_page_from_performance(request,p)}">${p.start_on.strftime("%H:%M")}</a>
             <p>${p.calendar_content or u""}</p></li>
         %endfor
         </ul>

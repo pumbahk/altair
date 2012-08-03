@@ -6,10 +6,10 @@ from pyramid.decorator import reify
 from pyramid.exceptions import ConfigurationError
 from altaircms.plugins.helpers import get_installed_widgets, list_from_setting_value
 from altaircms.auth.api import get_organization_mapping
+from altaircms.auth.api import fetch_correct_organization
 from zope.interface import implementer
 from .interfaces import IConflictValidateFunction
 
-from altaircms.auth.models import Organization
 import logging
 logger = logging.getLogger(__file__)
 
@@ -148,7 +148,9 @@ class WidgetAggregatorDispatcher(object):
         self.conts[key] = dispatch
 
     def dispatch(self, request, page):
-        organization = Organization.query.filter_by(id=page.organization_id).one()
+        ### !! request.`organizationかrequest.organization が取れること前提にしている　
+        organization = fetch_correct_organization(request)
+        assert organization.id == page.organization_id
         k = (organization.backend_id, organization.auth_source)
 
         logger.debug("widget aggregator dispach:%s" % (k,))
