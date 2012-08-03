@@ -8,6 +8,7 @@ from . import api
 from altaircms.security import get_acl_candidates
 from altaircms.page.models import Page
 from altaircms.page.models import PageSet
+from altaircms.auth.api import set_request_organization
 
 class PageRenderingResource(object):
     def __init__(self, request):
@@ -77,6 +78,9 @@ class AccessControl(object):
             self.access_ok = False
             self._error_message.append(u"invalid access key %s.\n 有効期限が切れているかもしれません. (有効期限:%s)" % (access_key.hashkey, access_key.expiredate))
             return page
+
+        ## 未ログインの場合request._organizationがないので追加
+        set_request_organization(self.request, page.organization_id)
 
         try:
             page.valid_layout()
