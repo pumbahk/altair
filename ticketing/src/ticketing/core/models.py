@@ -633,30 +633,6 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def add(self):
         super(Event, self).add()
 
-        """
-        Eventの作成時は以下のモデルを自動生成する
-          - Account (自社枠、ない場合のみ)
-            - StockHolder (デフォルト枠)
-        """
-        account = Account.filter_by(organization_id=self.organization.id)\
-        .filter_by(user_id=self.organization.user_id).first()
-        if not account:
-            account = Account(
-                account_type=AccountTypeEnum.Playguide.v[0],
-                name=u'自社',
-                user_id=self.organization.user_id,
-                organization_id=self.organization.id,
-            )
-            account.save()
-
-        stock_holder = StockHolder(
-            name=u'自社',
-            event_id=self.id,
-            account_id=account.id,
-            style={"text": u"自", "text_color": "#a62020"},
-        )
-        stock_holder.save()
-
         if hasattr(self, 'original_id') and self.original_id:
             """
             Eventのコピー時は以下のモデルをcloneする
@@ -673,12 +649,10 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             # 各モデルのコピー元/コピー先のidの対比表
             convert_map = {
                 'stock_type':dict(),
+                'stock_holder':dict(),
                 'sales_segment':dict(),
+                'product':dict(),
             }
-
-            # create Performance
-            for template_performance in template_event.performances:
-                Performance.create_from_template(template=template_performance, event_id=self.id)
 
             # create StockType
             for template_stock_type in template_event.stock_types:
@@ -688,7 +662,9 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
             # create StockHolder
             for template_stock_holder in template_event.stock_holders:
-                StockHolder.create_from_template(template=template_stock_holder, event_id=self.id)
+                convert_map['stock_holder'].update(
+                    StockHolder.create_from_template(template=template_stock_holder, event_id=self.id)
+                )
 
             # create SalesSegment - PaymentDeliveryMethodPair
             for template_sales_segment in template_event.sales_segments:
@@ -698,7 +674,62 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
             # create Product
             for template_product in template_event.products:
-                Product.create_from_template(template=template_product, event_id=self.id, convert_map=convert_map)
+                convert_map['product'].update(
+                    Product.create_from_template(template=template_product, event_id=self.id, convert_map=convert_map)
+                )
+
+            # create Performance
+            for template_performance in template_event.performances:
+                Performance.create_from_template(template=template_performance, event_id=self.id)
+
+            '''
+            Performance以下のコピーしたモデルにidを反映する
+            '''
+            performances = Performance.filter_by(event_id=self.id).with_entities(Performance.id).all()
+            print performances
+            for performance in performances:
+                # 関連テーブルのstock_type_idを書き換える
+                for old_id, new_id in convert_map['stock_type'].iteritems():
+                    Stock.filter_by(stock_type_id=old_id)\
+                        .filter_by(performance_id=performance.id)\
+                        .update({'stock_type_id':new_id})
+
+                # 関連テーブルのsales_holder_idを書き換える
+                for old_id, new_id in convert_map['stock_holder'].iteritems():
+                    Stock.filter_by(stock_holder_id=old_id)\
+                        .filter_by(performance_id=performance.id)\
+                        .update({'stock_holder_id':new_id})
+
+                # 関連テーブルのproduct_idを書き換える
+                for old_id, new_id in convert_map['product'].iteritems():
+                    ProductItem.filter_by(product_id=old_id)\
+                        .filter_by(performance_id=performance.id)\
+                        .update({'product_id':new_id})
+
+        else:
+            """
+            Eventの作成時は以下のモデルを自動生成する
+              - Account (自社枠、ない場合のみ)
+                - StockHolder (デフォルト枠)
+            """
+            account = Account.filter_by(organization_id=self.organization.id)\
+            .filter_by(user_id=self.organization.user_id).first()
+            if not account:
+                account = Account(
+                    account_type=AccountTypeEnum.Playguide.v[0],
+                    name=u'自社',
+                    user_id=self.organization.user_id,
+                    organization_id=self.organization.id,
+                )
+                account.save()
+
+            stock_holder = StockHolder(
+                name=u'自社',
+                event_id=self.id,
+                account_id=account.id,
+                style={"text": u"自", "text_color": "#a62020"},
+            )
+            stock_holder.save()
 
 class SalesSegmentKindEnum(StandardEnum):
     first_lottery   = u'最速抽選'
@@ -958,14 +989,6 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         stock_type = StockType.clone(template)
         stock_type.event_id = event_id
         stock_type.save()
-
-        # 関連テーブルのstock_type_idを書き換える
-        event = Event.get(event_id)
-        for performance in event.performances:
-            Stock.filter_by(stock_type_id=template.id)\
-                .filter_by(performance_id=performance.id)\
-                .update({'stock_type_id':stock_type.id})
-
         return {template.id:stock_type.id}
 
 class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -1003,13 +1026,7 @@ class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         stock_holder = StockHolder.clone(template)
         stock_holder.event_id = event_id
         stock_holder.save()
-
-        # 関連テーブルのsales_holder_idを書き換える
-        event = Event.get(event_id)
-        for performance in event.performances:
-            Stock.filter_by(stock_holder_id=template.id)\
-                .filter_by(performance_id=performance.id)\
-                .update({'stock_holder_id':stock_holder.id})
+        return {template.id:stock_holder.id}
 
 # stock based on quantity
 class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -1218,13 +1235,7 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         product.seat_stock_type_id = convert_map['stock_type'][template.seat_stock_type_id]
         product.sales_segment_id = convert_map['sales_segment'][template.sales_segment_id]
         product.save()
-
-        # 関連テーブルのproduct_idを書き換える
-        event = Event.get(event_id)
-        for performance in event.performances:
-            ProductItem.filter_by(product_id=template.id)\
-                .filter_by(performance_id=performance.id)\
-                .update({'product_id':product.id})
+        return {template.id:product.id}
 
 class SeatIndexType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__  = "SeatIndexType"
