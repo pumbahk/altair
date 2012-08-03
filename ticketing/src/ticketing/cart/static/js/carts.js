@@ -333,6 +333,7 @@ carts.AppView.prototype.init = function(presenter) {
         }
 
         self.orderButton.click(function (event) {
+            $('#selected-seats').empty();
             var values = self.orderForm.serialize();
             $.ajax({
                 url: order_url, //this is global variable
@@ -390,7 +391,22 @@ carts.AppView.prototype.init = function(presenter) {
                     $('#selected-seats').append(seat);
                     
                 }
-                self.orderButton.click();
+                var values = self.orderForm.serialize();
+                $.ajax({
+                    url: order_url, //this is global variable
+                    dataType: 'json',
+                    data: values,
+                    type: 'POST',
+                    success: function(data, textStatus, jqXHR) {
+                        if (data.result == 'OK') {
+                            proceedToCheckout(data);
+                        } else {
+                            error();
+                        }
+                    }
+                });
+                event.stopPropagation(); /* XXX: is this really necessary? */
+                return false;
             }
         });
     })();
