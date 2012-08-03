@@ -16,9 +16,9 @@ import sqlalchemy as sa
 Identifier = sa.BigInteger
 
 def upgrade():
-    op.drop_constraint('seat_ibfk_2', 'Seat', 'foreignkey')
+    op.drop_constraint('Seat_ibfk_2', 'Seat', 'foreignkey')
     op.drop_column('Seat', 'stock_type_id') 
 
 def downgrade():
     op.add_column('Seat', sa.Column('stock_type_id', Identifier, nullable=True))
-    op.create_foreign_key('seat_ibfk_2', 'Seat', 'StockType', ['stock_type_id'], ['id'])
+    op.create_foreign_key('Seat_ibfk_2', 'Seat', 'StockType', ['stock_type_id'], ['id'])
