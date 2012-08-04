@@ -8,6 +8,10 @@ import java.net.URI;
 
 import javax.swing.JFileChooser;
 
+import jp.ticketstar.ticketing.printing.svg.ExtendedSVG12BridgeContext;
+import jp.ticketstar.ticketing.printing.svg.ExtendedSVG12OMDocument;
+import jp.ticketstar.ticketing.printing.svg.OurDocumentLoader;
+
 import org.apache.batik.bridge.BridgeExtension;
 import org.apache.batik.bridge.UserAgent;
 import org.apache.batik.gvt.event.EventDispatcher;

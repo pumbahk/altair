@@ -6,6 +6,11 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import jp.ticketstar.ticketing.printing.svg.ExtendedSVG12BridgeContext;
+import jp.ticketstar.ticketing.printing.svg.ExtendedSVG12OMDocument;
+import jp.ticketstar.ticketing.printing.svg.SVGOMPageElement;
+import jp.ticketstar.ticketing.printing.svg.SVGOMPageSetElement;
+
 import org.apache.batik.bridge.GVTBuilder;
 import org.apache.batik.dom.svg.AbstractElement;
 import org.apache.batik.dom.svg.SVGOMElement;

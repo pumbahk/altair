@@ -1,7 +1,6 @@
 package jp.ticketstar.ticketing.printing;
 
 import java.awt.CardLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.EventQueue;
 
@@ -14,7 +13,6 @@ import javax.swing.JToolBar;
 import javax.swing.JButton;
 import javax.swing.ImageIcon;
 import javax.swing.JSplitPane;
-import javax.swing.JLayeredPane;
 import javax.swing.JList;
 
 import java.awt.event.ActionListener;
@@ -28,11 +26,10 @@ import javax.swing.event.ListSelectionListener;
 import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.swing.JPanel;
-import java.awt.FlowLayout;
+
+import jp.ticketstar.ticketing.printing.svg.JGVTComponent;
 
 class TicketCellRenderer extends DefaultListCellRenderer {
 	private static final long serialVersionUID = 1L;
