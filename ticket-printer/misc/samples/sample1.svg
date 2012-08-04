@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg xmlns="http://www.w3.org/2000/svg" width="630.56689" height="230.45668" version="1.2">
+  <pageSet>
+    <page>
+      <title>注文番号 TEST00000001</title>
+      <g transform="translate(0,-821.9055)">
+        <flowRoot xml:space="preserve" id="flowRoot3008" style="font-size:10px;font-style:normal;font-variant:normal;font-weight:900;font-stretch:normal;text-align:middle;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:MS PGothic" transform="translate(10,821.35437)">
+          <flowRegion id="flowRegion3010">
+            <rect id="rect3012" width="437" height="36.000004" x="68" y="13.007811" style="text-align:middle;text-anchor:middle;font-family:MS PGothic;" ry="1.5511301" fill="none" stroke="none" />
+          </flowRegion>
+          <flowDiv>
+            <flowPara style="font-size:14px;text-align:middle;text-anchor:middle" id="flowPara3028">{{公演タイトル}}</flowPara>
+            <flowPara style="font-size:14px;text-align:middle;text-anchor:middle" id="flowPara3054"/>
+          </flowDiv>
+        </flowRoot>
+        <flowRoot transform="translate(0,859.9055)" style="font-size:10px;font-style:normal;font-variant:normal;font-weight:900;font-stretch:normal;text-align:middle;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:MS PGothic;" id="flowRoot3020" xml:space="preserve">
+          <flowRegion id="flowRegion3022">
+            <rect style="text-align:middle;text-anchor:middle;font-family:MS PGothic;" y="10.45668" x="78" height="30" width="437" id="rect3024" fill="none" stroke="none" />
+          </flowRegion>
+          <flowDiv>
+            <flowPara id="flowPara3026">{{副公演名}}</flowPara>
+          </flowDiv>
+        </flowRoot>
+        <flowRoot xml:space="preserve" id="flowRoot3056" style="font-size:10px;font-style:normal;font-variant:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:MS PGothic;" transform="translate(0,821.9055)">
+          <flowRegion id="flowRegion3058">
+            <rect id="rect3060" width="155" height="36.5" x="78" y="77.95668" style="font-style:normal;font-variant:normal;font-stretch:normal;text-align:start;text-anchor:start;font-family:MS PGothic;" fill="none" stroke="none" />
+          </flowRegion>
+          <flowDiv>
+            <flowPara id="flowPara3064">{{開催日}}</flowPara>
+            <flowPara id="flowPara3070">開場 {{開場時刻}} 開演 {{開演時刻}}</flowPara>
+            <flowPara id="flowPara3082">公演コード {{公演コード}}</flowPara>
+            <flowPara id="flowPara3076"/>
+          </flowDiv>
+        </flowRoot>
+        <flowRoot transform="translate(246,823.15124)" style="font-size:10px;font-style:normal;font-variant:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:MS PGothic;" id="flowRoot3103" xml:space="preserve">
+          <flowRegion id="flowRegion3105">
+            <rect style="font-style:normal;font-variant:normal;font-stretch:normal;text-align:start;text-anchor:start;font-family:MS PGothic;" y="77.95668" x="78" height="35.254261" width="191" id="rect3107" fill="none" stroke="none" />
+          </flowRegion>
+          <flowDiv>
+            <flowPara id="flowPara3111">{{席種}} {{席番}}</flowPara>
+            <flowPara id="flowPara3115">{{チケット価格}} (税込)</flowPara>
+          </flowDiv>
+        </flowRoot>
+        <flowRoot transform="translate(0,868.4055)" style="font-size:10px;font-style:normal;font-variant:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:MS PGothic;" id="flowRoot3175" xml:space="preserve">
+          <flowRegion id="flowRegion3177">
+            <rect style="font-style:normal;font-variant:normal;font-stretch:normal;text-align:start;text-anchor:start;font-family:MS PGothic;" y="77.95668" x="78" height="61.5" width="437" id="rect3179" fill="none" stroke="none" />
+          </flowRegion>
+          <flowDiv>
+            <flowPara id="flowPara3216">{{注意事項}}</flowPara>
+            <flowPara id="flowPara3218"/>
+            <flowPara id="flowPara3187"/>
+          </flowDiv>
+        </flowRoot>
+        <flowRoot transform="translate(0,935.4055)" style="font-size:10px;font-style:normal;font-variant:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:MS PGothic;" id="flowRoot3250" xml:space="preserve">
+          <flowRegion id="flowRegion3252">
+            <rect style="font-style:normal;font-variant:normal;font-stretch:normal;text-align:start;text-anchor:start;font-family:MS PGothic;" y="77.95668" x="78" height="36.5" width="155" id="rect3254" fill="none" stroke="none" />
+          </flowRegion>
+          <flowDiv>
+            <flowPara id="flowPara3293">TEST00000001</flowPara>
+            <flowPara id="flowPara3262"/>
+          </flowDiv>
+        </flowRoot>
+      </g>
+    </page>
+    <page>
+      <title>注文番号 TEST00000002</title>
+      <g transform="translate(0,-821.9055)">
+        <flowRoot xml:space="preserve" id="flowRoot3008" style="font-size:10px;font-style:normal;font-variant:normal;font-weight:900;font-stretch:normal;text-align:middle;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:MS PGothic" transform="translate(10,821.35437)">
+          <flowRegion id="flowRegion3010">
+            <rect id="rect3012" width="437" height="36.000004" x="68" y="13.007811" style="text-align:middle;text-anchor:middle;font-family:MS PGothic;" ry="1.5511301" fill="none" stroke="none" />
+          </flowRegion>
+          <flowDiv>
+            <flowPara style="font-size:14px;text-align:middle;text-anchor:middle" id="flowPara3028">{{公演タイトル}}</flowPara>
+            <flowPara style="font-size:14px;text-align:middle;text-anchor:middle" id="flowPara3054"/>
+          </flowDiv>
+        </flowRoot>
+        <flowRoot transform="translate(0,859.9055)" style="font-size:10px;font-style:normal;font-variant:normal;font-weight:900;font-stretch:normal;text-align:middle;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:MS PGothic;" id="flowRoot3020" xml:space="preserve">
+          <flowRegion id="flowRegion3022">
+            <rect style="text-align:middle;text-anchor:middle;font-family:MS PGothic;" y="10.45668" x="78" height="30" width="437" id="rect3024" fill="none" stroke="none" />
+          </flowRegion>
+          <flowDiv>
+            <flowPara id="flowPara3026">{{副公演名}}</flowPara>
+          </flowDiv>
+        </flowRoot>
+        <flowRoot xml:space="preserve" id="flowRoot3056" style="font-size:10px;font-style:normal;font-variant:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:MS PGothic;" transform="translate(0,821.9055)">
+          <flowRegion id="flowRegion3058">
+            <rect id="rect3060" width="155" height="36.5" x="78" y="77.95668" style="font-style:normal;font-variant:normal;font-stretch:normal;text-align:start;text-anchor:start;font-family:MS PGothic;" fill="none" stroke="none" />
+          </flowRegion>
+          <flowDiv>
+            <flowPara id="flowPara3064">{{開催日}}</flowPara>
+            <flowPara id="flowPara3070">開場 {{開場時刻}} 開演 {{開演時刻}}</flowPara>
+            <flowPara id="flowPara3082">公演コード {{公演コード}}</flowPara>
+            <flowPara id="flowPara3076"/>
+          </flowDiv>
+        </flowRoot>
+        <flowRoot transform="translate(246,823.15124)" style="font-size:10px;font-style:normal;font-variant:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:MS PGothic;" id="flowRoot3103" xml:space="preserve">
+          <flowRegion id="flowRegion3105">
+            <rect style="font-style:normal;font-variant:normal;font-stretch:normal;text-align:start;text-anchor:start;font-family:MS PGothic;" y="77.95668" x="78" height="35.254261" width="191" id="rect3107" fill="none" stroke="none" />
+          </flowRegion>
+          <flowDiv>
+            <flowPara id="flowPara3111">{{席種}} {{席番}}</flowPara>
+            <flowPara id="flowPara3115">{{チケット価格}} (税込)</flowPara>
+          </flowDiv>
+        </flowRoot>
+        <flowRoot transform="translate(0,868.4055)" style="font-size:10px;font-style:normal;font-variant:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:MS PGothic;" id="flowRoot3175" xml:space="preserve">
+          <flowRegion id="flowRegion3177">
+            <rect style="font-style:normal;font-variant:normal;font-stretch:normal;text-align:start;text-anchor:start;font-family:MS PGothic;" y="77.95668" x="78" height="61.5" width="437" id="rect3179" fill="none" stroke="none" />
+          </flowRegion>
+          <flowDiv>
+            <flowPara id="flowPara3216">{{注意事項}}</flowPara>
+            <flowPara id="flowPara3218"/>
+            <flowPara id="flowPara3187"/>
+          </flowDiv>
+        </flowRoot>
+        <flowRoot transform="translate(0,935.4055)" style="font-size:10px;font-style:normal;font-variant:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:MS PGothic;" id="flowRoot3250" xml:space="preserve">
+          <flowRegion id="flowRegion3252">
+            <rect style="font-style:normal;font-variant:normal;font-stretch:normal;text-align:start;text-anchor:start;font-family:MS PGothic;" y="77.95668" x="78" height="36.5" width="155" id="rect3254" fill="none" stroke="none" />
+          </flowRegion>
+          <flowDiv>
+            <flowPara id="flowPara3293">TEST00000002</flowPara>
+            <flowPara id="flowPara3262"/>
+          </flowDiv>
+        </flowRoot>
+      </g>
+    </page>
+  </pageSet>
+</svg>
