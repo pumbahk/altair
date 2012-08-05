@@ -14,6 +14,55 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
+  <build>
+    <plugins>
+      <plugin>
+	    <groupId>org.apache.maven.plugins</groupId>
+	    <artifactId>maven-jar-plugin</artifactId> 
+	    <version>2.4</version>
+	    <configuration>
+         <descriptors>
+           <descriptor>src/main/assembly/descriptor-bin.xml</descriptor>
+         </descriptors>
+	      <archive>
+	        <index>true</index>
+	      	<manifest>
+	      	  <addClasspath>true</addClasspath>
+	      	  <mainClass>jp.ticketstar.ticketing.printing.App</mainClass>
+	     	</manifest>
+	  	  </archive>
+	    </configuration>
+	  </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>appassembler-maven-plugin</artifactId>
+        <version>1.0</version>
+        <configuration>
+          <repositoryLayout>flat</repositoryLayout>
+          <repositoryName>lib</repositoryName>
+          <configurationDirectory>config</configurationDirectory>
+          <generateRepository>true</generateRepository>
+          <installArtifacts>false</installArtifacts>
+          <extraJvmArguments>-Xmx512m</extraJvmArguments>
+          <programs>
+            <program>
+              <mainClass>jp.ticketstar.ticketing.printing.App</mainClass>
+              <name>ticketprinter</name>
+            </program>
+          </programs>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>assemble</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -30,8 +79,6 @@
         <groupId>com.sun</groupId>
         <artifactId>jlfgr</artifactId>
         <version>1.0</version>
-        <scope>system</scope>
-        <systemPath>${project.basedir}/lib/jlfgr-1.0.jar</systemPath>
     </dependency>
     <dependency>
     	<groupId>com.google.guava</groupId>
@@ -39,4 +86,18 @@
     	<version>r03</version>
     </dependency>
   </dependencies>
+ 
+  <repositories>
+    <repository>
+      <id>geotoolkit</id>
+      <url>http://maven.geotoolkit.org/</url>
+    </repository>
+  </repositories> 
+  
+  <pluginRepositories>
+    <pluginRepository>
+      <id>Codehaus repository</id>
+      <url>http://repository.codehaus.org/</url>
+    </pluginRepository>
+  </pluginRepositories>
 </project>

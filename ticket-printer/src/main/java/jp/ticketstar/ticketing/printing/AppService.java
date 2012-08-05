@@ -4,6 +4,9 @@ import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Dimension2D;
+import java.awt.print.Printable;
+import java.awt.print.PrinterJob;
+import java.io.File;
 import java.net.URI;
 
 import javax.swing.JFileChooser;
@@ -101,6 +104,7 @@ public class AppService extends SVGUserAgentGUIAdapter implements UserAgent {
 
 	public void openFileDialog() {
 		JFileChooser chooser = new JFileChooser();
+		chooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
 		if (chooser.showOpenDialog(parentComponent) == JFileChooser.APPROVE_OPTION) {
 			loadDocument(chooser.getSelectedFile().toURI());
 		}
@@ -141,5 +145,21 @@ public class AppService extends SVGUserAgentGUIAdapter implements UserAgent {
 			}
 		});
 		documentLoader.start();
+	}
+
+	public void printAll() {
+		try {
+			final PrinterJob job = PrinterJob.getPrinterJob();
+			job.setPrintService(appWindowModel.getPrintService());
+			final Printable printable = new TicketPrintable(
+				appWindowModel.getTicketSetModel().getTickets(),
+				new AffineTransform(1, 0, 0, 1, 0, 0)
+			);
+			job.setPrintable(printable);
+			if (job.printDialog())
+				job.print();
+		} catch (Exception e) {
+			displayError("Failed to print tickets\nReason: " + e);
+		}
 	}
 }
