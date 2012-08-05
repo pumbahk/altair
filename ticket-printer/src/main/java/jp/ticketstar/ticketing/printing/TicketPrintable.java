@@ -23,10 +23,8 @@ public class TicketPrintable implements Printable {
 		if (pageIndex >= tickets.size())
 			return NO_SUCH_PAGE;
 		Graphics2D g = (Graphics2D)_g;
-		AffineTransform prevTrans = g.getTransform();
-		g.setTransform(trans);
+		g.transform(trans);
 		tickets.get(pageIndex).getGraphics().paint(g);
-		g.setTransform(prevTrans);
 		return PAGE_EXISTS;
 	}
 }

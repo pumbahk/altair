@@ -36,7 +36,6 @@ import java.util.Collection;
 
 import javax.swing.JPanel;
 
-import jp.ticketstar.ticketing.printing.svg.JGVTComponent;
 import javax.swing.JComboBox;
 
 import org.apache.batik.swing.gvt.Overlay;
@@ -119,6 +118,7 @@ public class AppWindow {
 						overlays.add(guidesOverlay);
 						overlays.add(boundingBoxOverlay);
 					}
+					gvtComponent.setPageFormat(model.getPageFormat());
 					gvtComponent.addComponentListener(centeringListener);
 					gvtComponent.setSize(new Dimension((int)documentSize.getWidth(), (int)documentSize.getHeight()));
 					gvtComponent.setGraphicsNode(ticket.getGraphics());
@@ -152,6 +152,9 @@ public class AppWindow {
 			if (evt.getNewValue() != null) {
 				OurPageFormat pageFormat = (OurPageFormat)evt.getNewValue();
 				comboBoxPageFormat.setSelectedItem(pageFormat);
+				for (Component c: panel.getComponents())
+					((JGVTComponent)c).setPageFormat(model.getPageFormat());
+				panel.paintImmediately(0, 0, (int)panel.getSize().getWidth(), (int)panel.getSize().getHeight());
 			}
 		}
 	};

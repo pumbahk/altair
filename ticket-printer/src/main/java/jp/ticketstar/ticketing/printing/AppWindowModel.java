@@ -37,6 +37,7 @@ public class AppWindowModel {
 	        final GenericComboBoxModel<OurPageFormat> prevPageFormats = this.pageFormats;
 			final GenericComboBoxModel<OurPageFormat> pageFormats = new GenericComboBoxModel<OurPageFormat>();
 			pageFormats.add(PageFormatRegistry.buildPageFormatForRT());
+			pageFormats.add(PageFormatRegistry.buildPageFormatA4Portrait());
 			this.pageFormats = pageFormats;
 			propertyChangeSupport.firePropertyChange("pageFormats", prevPageFormats, pageFormats);
 		}

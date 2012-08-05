@@ -153,9 +153,9 @@ public class AppService extends SVGUserAgentGUIAdapter implements UserAgent {
 			job.setPrintService(appWindowModel.getPrintService());
 			final Printable printable = new TicketPrintable(
 				appWindowModel.getTicketSetModel().getTickets(),
-				new AffineTransform(1, 0, 0, 1, 0, 0)
+				new AffineTransform(72. / 90, 0, 0, 72. / 90, 0, 0)
 			);
-			job.setPrintable(printable);
+			job.setPrintable(printable, appWindowModel.getPageFormat());
 			if (job.printDialog())
 				job.print();
 		} catch (Exception e) {
