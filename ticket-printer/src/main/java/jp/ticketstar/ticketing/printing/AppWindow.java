@@ -18,8 +18,11 @@ import javax.swing.JList;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Dimension2D;
 
 import javax.swing.ListSelectionModel;
@@ -29,11 +32,14 @@ import javax.swing.event.ListSelectionListener;
 import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Collection;
 
 import javax.swing.JPanel;
 
 import jp.ticketstar.ticketing.printing.svg.JGVTComponent;
 import javax.swing.JComboBox;
+
+import org.apache.batik.swing.gvt.Overlay;
 
 class TicketCellRenderer extends DefaultListCellRenderer {
 	private static final long serialVersionUID = 1L;
@@ -81,6 +87,22 @@ public class AppWindow {
 	private JPanel panel;
 
 	private GuidesOverlay guidesOverlay;
+	private BoundingBoxOverlay boundingBoxOverlay;
+	private ComponentListener centeringListener = new ComponentListener() {
+		public void componentHidden(ComponentEvent e) {}
+
+		public void componentMoved(ComponentEvent e) {}
+
+		public void componentResized(ComponentEvent e) {
+			final Dimension2D documentSize = model.getTicketSetModel().getBridgeContext().getDocumentSize();
+			final JGVTComponent source = (JGVTComponent)e.getSource();
+			double ox = Math.max(0, (source.getWidth() - documentSize.getWidth()) / 2),
+				   oy = Math.max(0, (source.getHeight() - documentSize.getHeight()) / 2);
+			source.setPaintingTransform(new AffineTransform(1, 0, 0, 1, ox, oy));
+		}
+
+		public void componentShown(ComponentEvent e) {}
+	};
 	
 	private PropertyChangeListener ticketSetModelChangeListener = new PropertyChangeListener() {
 		@SuppressWarnings("unchecked")
@@ -92,11 +114,17 @@ public class AppWindow {
 				for (Ticket ticket: ticketSetModel.getTickets()) {
 					final JGVTComponent gvtComponent = new JGVTComponent(false, false);
 					final Dimension2D documentSize = ticketSetModel.getBridgeContext().getDocumentSize();
-					gvtComponent.getOverlays().add(guidesOverlay);
+					{
+						Collection<Overlay> overlays = gvtComponent.getOverlays();
+						overlays.add(guidesOverlay);
+						overlays.add(boundingBoxOverlay);
+					}
+					gvtComponent.addComponentListener(centeringListener);
 					gvtComponent.setSize(new Dimension((int)documentSize.getWidth(), (int)documentSize.getHeight()));
 					gvtComponent.setGraphicsNode(ticket.getGraphics());
 					panel.add(gvtComponent, ticket.getName());
 				}
+				panel.doLayout();
 				list.setModel(ticketSetModel.getTickets());
 			}
 		}
@@ -149,6 +177,7 @@ public class AppWindow {
 		initialize();
 		appService.setAppWindow(this);
 		guidesOverlay = new GuidesOverlay(model);
+		boundingBoxOverlay = new BoundingBoxOverlay(model);
 	}
 
 	public void unbind() {

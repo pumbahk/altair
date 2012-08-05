@@ -56,10 +56,6 @@ public class GuidesOverlay implements Overlay {
 			setDocumentSize(model.getTicketSetModel().getBridgeContext().getDocumentSize());
 	}
 
-	static double pointToPixel(double point) {
-		return point * 90 / 72;
-	}
-	
 	public void paint(Graphics _g) {
 		Graphics2D g = (Graphics2D)_g;
 		g.setColor(Color.BLACK);
@@ -68,13 +64,13 @@ public class GuidesOverlay implements Overlay {
 	        BasicStroke.JOIN_MITER, 2.f, new float[] { 2.f }, 0.f));	
 		if (verticalGuides != null) {
 			for (double x: verticalGuides) {
-				int _x = (int)pointToPixel(x);
+				int _x = (int)UnitUtils.pointToPixel(x);
 				g.drawLine(_x, 0, _x, (int)size.getHeight());
 			}
 		}
 		if (horizontalGuides != null) {
 			for (double y: horizontalGuides) {
-				int _y = (int)pointToPixel(y);
+				int _y = (int)UnitUtils.pointToPixel(y);
 				g.drawLine(0, _y, (int)size.getWidth(), _y);
 			}
 		}
