@@ -261,7 +261,7 @@ class SejPaymentDeliveryPlugin(object):
                 total               = order.total_amount,
                 ticket_total        = cart.tickets_amount,
                 commission_fee      = order.system_fee + order.transaction_fee,
-                payment_type        = SejPaymentType.CashOnDelivery,
+                payment_type        = SejPaymentType.Prepayment if  jPaymentType.CashOnDelivery,
                 ticketing_fee       = order.delivery_fee,
                 payment_due_at      = payment_due_at,
                 ticketing_start_at  = ticketing_start_at,
