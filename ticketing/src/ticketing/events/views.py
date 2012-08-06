@@ -378,3 +378,38 @@ class Events(BaseView):
         ]
         response = Response(exporter.as_string(), headerlist=headers)
         return response
+
+    @view_config(route_name='events.report.seat_unsold')
+    def seat_stock_unsold(self):
+        """残席明細ダウンロード
+        """
+        # Event
+        event_id = int(self.request.matchdict.get('event_id', 0))
+        event = Event.get(event_id)
+        if event is None:
+            raise HTTPNotFound('event id %d is not found' % event_id)
+        # StockHolder
+        stock_holder = StockHolder \
+            .filter(StockHolder.event_id==event_id) \
+            .filter(StockHolder.account_id==self.context.user.id).first()
+        if stock_holder is None:
+            raise HTTPNotFound("StockHolder is not found id=%s" % stock_holder_id)
+
+        exporter = reporting.export_for_stock_holder_unsold(
+            event,
+            stock_holder,
+        )
+        # 現在日時
+        timestamp = strftime('%Y%m%d%H%M%S')
+        # 出力ファイル名
+        filename = "unsold_%(code)s_%(datetime)s" % dict(
+            code=event.code,  # イベントコード
+            datetime=timestamp
+        )
+
+        headers = [
+            ('Content-Type', 'application/octet-stream'),
+            ('Content-Disposition', 'attachment; filename=%s' % filename)
+        ]
+        response = Response(exporter.as_string(), headerlist=headers)
+        return response

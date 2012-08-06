@@ -3,18 +3,20 @@ import json
 from datetime import datetime
 from itertools import groupby
 
+from ticketing.core.models import SeatStatusEnum
 from ticketing.helpers.base import jdate, jdatetime
 
 
 class SeatSource(object):
     """SeatRecordを作成する際に使うオブジェクトSeatモデルには依存しない
     """
-    def __init__(self, block=None, floor=None, line=None, seat=None, source=None):
+    def __init__(self, block=None, floor=None, line=None, seat=None, status=None, source=None):
         self.source = source
         self.block = block
         self.floor = floor
         self.line = line
         self.seat = seat
+        self.status = status
 
     def get_block_display(self):
         if self.block and self.floor:
@@ -71,7 +73,8 @@ class SeatRecord(object):
 class StockRecord(object):
     """席種ごとの帳票データ
     """
-    def __init__(self, seat_type=None):
+    def __init__(self, seat_type=None, stocks_label=None):
+        self.stocks_label = stocks_label
         self.seat_type = seat_type
         self.records = []
 
@@ -101,6 +104,7 @@ class StockRecord(object):
         """
         data = {
             "seattype": self.get_seat_type_display(),
+            "stocks_label": self.stocks_label,
             "total1": str(self.get_total_stocks()),
             "total2": str(self.get_total_returns()),
             "records": [],
@@ -153,6 +157,7 @@ def seat_source_from_seat(seat):
             seat_source.line = seat.get("row")
         if "seat" in scales_keys:
             seat_source.seat = seat.get("seat")
+    seat_source.status = seat.status
     return seat_source
 
 
@@ -168,7 +173,6 @@ def seat_records_from_seat_sources(seat_sources):
     # block,floor,lineでグループ化してSeatRecordを作る
     for key, generator in groupby(sorted_seat_sources, lambda v: (v.block, v.floor, v.line)):
         values = list(generator)
-        # TODO: stock_type対応
         seat_record = SeatRecord(
             block=values[0].get_block_display(),
             line=key[2],
@@ -177,4 +181,47 @@ def seat_records_from_seat_sources(seat_sources):
             quantity=len(values),
         )
         result.append(seat_record)
+    return result
+
+
+def seat_records_from_seat_sources_unsold(seat_sources):
+    """SeatSourceのリストからSeatRecordのリストを返す
+    空席のみのサマリー作成
+    """
+    result = []
+    # block,floor,line,seatの優先順でソートする
+    sorted_seat_sources = sorted(
+        seat_sources,
+        key=lambda v: (v.block, v.floor, v.line, v.seat))
+    # block,floor,lineでグループ化してSeatRecordを作る
+    for key, generator in groupby(sorted_seat_sources, lambda v: (v.block, v.floor, v.line)):
+        values = list(generator)
+        # 連続した座席はまとめる
+        lst_values = []
+        for value in values:
+            # 空席のもの
+            if value.status == SeatStatusEnum.Vacant.v:
+                lst_values.append(value)
+            else:
+                if lst_values:
+                    # flush
+                    seat_record = SeatRecord(
+                        block=lst_values[0].get_block_display(),
+                        line=key[2],
+                        start=lst_values[0].seat,
+                        end=lst_values[-1].seat,
+                        quantity=len(lst_values),
+                    )
+                    result.append(seat_record)
+                lst_values = []
+        # 残り
+        if lst_values:
+            seat_record = SeatRecord(
+                block=lst_values[0].get_block_display(),
+                line=key[2],
+                start=lst_values[0].seat,
+                end=lst_values[-1].seat,
+                quantity=len(lst_values),
+            )
+            result.append(seat_record)
     return result

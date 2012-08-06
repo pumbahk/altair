@@ -365,6 +365,11 @@ class SeatAssignExporter(BaseExporter):
         if seattype:
             seattype_rowx = self.current_pos[sheet] - 3
             self.update_cell_text(sheet, seattype_rowx, 0, seattype)
+        # 仕入席数のラベル
+        stocks_label = data.get('stocks_label')
+        if stocks_label:
+            stocks_label_rowx = self.current_pos[sheet] - 2
+            self.update_cell_text(sheet, stocks_label_rowx, 6, stocks_label)
         # レコード書き込み
         for record in data.get('records', []):
             self.write_record_row(sheet, record)
