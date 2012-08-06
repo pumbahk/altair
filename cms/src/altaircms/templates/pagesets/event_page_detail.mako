@@ -59,7 +59,7 @@
 
 <h3>ページ一覧</h3>
   ## 一番下のjsに依存している
-  ${myhelpers.pageset_describe_viewlet(request, pageset)}
+  ${myhelpers.event_pageset_describe_viewlet(request, pageset)}
 <hr/>
 
 <h3>登録しているアセット</h3>
