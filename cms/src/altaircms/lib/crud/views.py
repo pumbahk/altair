@@ -147,7 +147,7 @@ class CreateView(object):
 
     def copied_input(self):
         self.context.set_endpoint()
-
+        
         obj = self.context.get_model_obj(self.request.params["id"])
         form = self.context.input_form_from_model(obj)
         raise self.context.AfterInput(form=form, context=self.context)
@@ -169,7 +169,8 @@ class CreateView(object):
     def create_model(self):
         form = self.context.confirmed_form()
         obj = self.context.create_model_from_form(form)
-        mes = u'create <a href="%s">新しく作成されたデータを編集</a>' % self.request.route_path(self.context.join("update"), id=obj.id, action="input")
+        url = self.request.route_path(self.context.join("update"), id=obj.id, action="input")
+        mes = u'%sを作成しました <a href="%s">新しく作成されたデータを編集</a>' % (self.context.title, url)
         FlashMessage.success(mes, request=self.request)
         return HTTPFound(self.context.get_endpoint())
 
@@ -209,7 +210,8 @@ class UpdateView(object):
         form = self.context.confirmed_form(obj=before_obj)
 
         obj = self.context.update_model_from_form(before_obj, form)
-        mes = u'update <a href="%s">変更されたデータを編集</a>' % self.request.route_path(self.context.join("update"), id=obj.id, action="input")
+        url = self.request.route_path(self.context.join("update"), id=obj.id, action="input")
+        mes = u'%sを編集しました <a href="%s">変更されたデータを編集</a>' % (self.context.title, url)
         FlashMessage.success(mes, request=self.request)
         return HTTPFound(self.context.get_endpoint())
 
@@ -232,7 +234,7 @@ class DeleteView(object):
     def delete_model(self):
         obj = self.context.get_model_obj(self.request.matchdict["id"])
         self.context.delete_model(obj)
-        FlashMessage.success("delete", request=self.request)
+        FlashMessage.success(u"%sを削除しました" % self.context.title, request=self.request)
         return HTTPFound(self.context.get_endpoint())
 
 def list_view(context, request):

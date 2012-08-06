@@ -101,6 +101,7 @@ class PromotionWidgetResource(HandleSessionMixin,
                               HandleWidgetMixin,
                               RootFactory
                               ):
+    Promotion = Promotion
     WidgetClass = PromotionWidget
     Kind = Kind
     def get_widget(self, widget_id):
