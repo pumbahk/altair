@@ -17,6 +17,7 @@ from altaircms.event.models import Event
 from altaircms.auth.api import get_or_404
 
 import altaircms.tag.api as tag
+from altaircms.helpers.viewhelpers import get_endpoint, set_endpoint
 
 from altaircms.lib.fanstatic_decorator import with_bootstrap
 from altaircms.lib.fanstatic_decorator import with_jquery
@@ -40,6 +41,7 @@ class PageAddView(object):
 
     @view_config(route_name="page_add", request_method="GET", match_param="action=input", permission="page_create")
     def input_form_with_event(self):
+        set_endpoint(self.request)
         event_id = self.request.matchdict["event_id"]
         event = self.request._event = get_or_404(self.request.allowable(Event), (Event.id==event_id))
             
@@ -49,6 +51,7 @@ class PageAddView(object):
 
     @view_config(route_name="page_add_orphan", request_method="GET", match_param="action=input", permission="page_create")
     def input_form(self):
+        set_endpoint(self.request)
         self.request._form = forms.PageForm()
         self.request._setup_form = forms.PageInfoSetupForm()
         raise AfterInput
@@ -102,7 +105,7 @@ class PageAddView(object):
             ## flash messsage
             mes = u'page created <a href="%s">作成されたページを編集する</a>' % self.request.route_path("page_edit_", page_id=page.id)
             FlashMessage.success(mes, request=self.request)
-            return HTTPFound(self.request.route_path("event", id=self.request.matchdict["event_id"]))
+            return HTTPFound(get_endpoint(self.request)) or HTTPFound(self.request.route_path("event", id=self.request.matchdict["event_id"]))
         else:
             event_id = self.request.matchdict["event_id"]
             self.request._form = form
@@ -119,7 +122,7 @@ class PageAddView(object):
             ## flash messsage
             mes = u'page created <a href="%s">作成されたページを編集する</a>' % self.request.route_path("page_detail", page_id=page.id)
             FlashMessage.success(mes, request=self.request)
-            return HTTPFound(self.request.route_path("pageset_list", kind="other"))
+            return HTTPFound(get_endpoint(self.request)) or HTTPFound(self.request.route_path("pageset_list", kind="other"))
         else:
             self.request._form = form
             self.request._setup_form = forms.PageInfoSetupForm(name=form.data["name"])

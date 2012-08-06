@@ -112,7 +112,7 @@
 		  <i class="icon-plus"> </i> 選択したページセットをイベントと結びつかないページセットにする</a>
 	  </li>
      <li>
-		<a class="" target="_blank" href="${request.route_path("page_add", event_id=event.id, action="input")}">
+		<a class="" href="${request.route_path("page_add", event_id=event.id, action="input")}">
 		  <i class="icon-plus"> </i> 新しいページセットの追加</a>
      </li>
      <li>

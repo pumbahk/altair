@@ -89,7 +89,7 @@ class PageForm(Form):
                                                 allow_blank=True, label=u"親ページ", 
                                                 get_label=lambda obj:  u'%s' % obj.name)
 
-    publish_begin = fields.DateTimeField(label=u"掲載開始")
+    publish_begin = fields.DateTimeField(label=u"掲載開始", validators=[validators.Required()])
     publish_end = MaybeDateTimeField(label=u"掲載終了")
 
 
