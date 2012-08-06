@@ -19,6 +19,9 @@
     $("#btn-report-event-stocks").click(function() {
       report_event("seat_stocks", "仕入明細");
     });
+    $("#btn-report-event-unsold").click(function() {
+      report_event("seat_unsold", "残席明細");
+    });
 
     function report_event_to_stockholder(report_type, label) {
       modal = $('#modal-report-stockholder');
@@ -73,6 +76,11 @@
   <div class="btn-group" style="float: left;">
     <a id="btn-report-event-stock-to-stockholder" class="btn btn-success" href="javascript:void(0);" style="margin-left: 10px;">
       <i class="icon-file icon-white"></i> 配券明細
+    </a>
+  </div>
+  <div class="btn-group" style="float: left;">
+    <a id="btn-report-event-unsold" class="btn btn-success" href="javascript:void(0);" style="margin-left: 10px;">
+      <i class="icon-file icon-white"></i> 残席明細
     </a>
   </div>
   <!--
