@@ -51,6 +51,11 @@
         </a>
       </li>
       <li>
+        <a href="${request.route_path("performance_create", action="copied_input",_query=dict(id="__id__"))}" class="action">
+          <i class="icon-minus"></i> コピーして新規作成
+        </a>
+      </li>
+      <li>
         <a href="${request.route_path("performance_create",action="input",_query=dict(event=event.id))}">
           <i class="icon-minus"></i> 新規作成
         </a>
