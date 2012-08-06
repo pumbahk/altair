@@ -24,6 +24,7 @@ def newRootFactory(exemption_matcher):
     class Root(object):
         # the same ACL is applied to every resource under.
         __acl__ = acl
+
         def __init__(self, request):
             if exemption_matcher(request):
                 return None

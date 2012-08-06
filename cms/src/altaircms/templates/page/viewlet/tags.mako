@@ -48,7 +48,7 @@ tagsize = len(tags)
 ##		  <td>
 ##			<input type="checkbox" name="object_id" value="${tags[0].id}">
 ##		  </td>
-		  <td><a class="tag" href="${h.tag.to_search_query(request, "page", tag)}">${tags[0].label}</a></td>
+		  <td><a class="tag" href="${h.tag.to_search_query(request, "page", tags[0])}">${tags[0].label}</a></td>
 		  <td>${h.base.jdate(tags[0].created_at)}</td>
 		%endif
 	  </tr>

@@ -11,10 +11,11 @@ class PerformanceForm(Form):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         Form.__init__(self, formdata, obj, prefix, **kwargs)
         if 'organization_id' in kwargs:
-            conditions = {
-                'organization_id':kwargs['organization_id'],
-                'original_venue_id':None,
-            }
+            conditions = {'organization_id':kwargs['organization_id']}
+            if 'venue_id' in kwargs:
+                conditions.update({'id':kwargs['venue_id']})
+            else:
+                conditions.update({'original_venue_id':None})
             self.venue_id.choices = [
                 (venue.id, venue.name) for venue in Venue.filter_by(**conditions).all()
             ]

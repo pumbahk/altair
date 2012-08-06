@@ -31,7 +31,8 @@ widget.configure({
         if(!!pk){
             params["pk"] = pk;
         }
-            url += "?" + $.param(params);
+        params["page"] = get_page();
+        url += "?" + $.param(params);
         return url;
     }
 

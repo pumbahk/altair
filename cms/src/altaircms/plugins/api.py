@@ -9,6 +9,10 @@ from . import widget_aggregate as aggregate
 from .interfaces import IWidgetAggregateDispatcher
 from .helpers import list_from_setting_value ## for convinience
 
+import logging
+logger = logging.getLogger(__file__)
+
+
 def page_type(request, page):
     if page.event_id is None:
         return "other_page"
@@ -31,13 +35,14 @@ def get_widget_aggregator_dispatcher(request):
     return request.registry.getUtility(IWidgetAggregateDispatcher)
 
 def get_widget_utility(request, page,_type):
+    logger.warn("*get widget utility* %s" % _type)
     if not hasattr(request, "_widget_utilities"):
         request._widget_utilities = {}
-    utility = request._widget_utilities.get((page.organization_id, type))
+    utility = request._widget_utilities.get((page.organization_id, _type))
     if utility is None:
         dispacher = get_widget_aggregator_dispatcher(request)
         utility = dispacher.dispatch(request, page).utilities[_type]
-        request._widget_utilities[(page.organization_id, type)] = utility
+        request._widget_utilities[(page.organization_id, _type)] = utility
     return utility
 
 

@@ -4,6 +4,11 @@ padding:0;
 border:none;
 }
 
+html {
+    margin-bottom:1px;
+    height:100%;
+}
+
 body{
 	margin: 0;
 	padding: 0;

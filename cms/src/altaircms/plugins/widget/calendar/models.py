@@ -12,7 +12,7 @@ from altaircms.plugins.base.mixins import HandleWidgetMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
 from altaircms.lib.interception import not_support_if_keyerror
-from . import renderable
+from altaircms.plugins.api import get_widget_utility
 from . import api
 
 class CalendarWidget(Widget):
@@ -37,16 +37,25 @@ class CalendarWidget(Widget):
     def merge_settings(self, bname, bsettings):
         bsettings.need_extra_in_scan("performances")
         bsettings.need_extra_in_scan("event")
+        bsettings.need_extra_in_scan("page")
         bsettings.need_extra_in_scan("request")
 
         @not_support_if_keyerror("calendar widget: %(err)s")
         def calendar_render():
+            ## todo あとで整理
             performances = bsettings.extra["performances"]
             event = bsettings.extra["event"]
+            page = bsettings.extra["page"]
             request = bsettings.extra["request"]
-            calendar_status = api.get_performance_status(request, self, event)
-            render_fn = getattr(renderable, self.calendar_type)
-            return render_fn(self, calendar_status, performances, request)
+
+            utility = get_widget_utility(request, page, self.type)
+
+            status_impl = utility.status_impl
+            calendar_status = api.get_performance_status(request, self, event, status_impl)
+
+            template_name = utility.get_template_name(request, self)
+            render_fn = utility.get_rendering_function(request, self)
+            return render_fn(self, calendar_status, performances, request, template_name=template_name)
         bsettings.add(bname, calendar_render)
         self._if_tab_add_js_script(bsettings)
 

@@ -328,6 +328,7 @@ Seat.prototype.refreshDynamicStyle = function Seat_refreshDynamicStyle() {
 Seat.prototype.refresh = function Seat_refresh() {
   this.refreshDynamicStyle();
   this.stylize();
+  this.selected(false);
 };
 
 Seat.prototype.__selected = function Seat___selected() {

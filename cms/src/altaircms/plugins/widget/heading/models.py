@@ -39,7 +39,7 @@ class HeadingWidgetUtilityDefault(object):
           <h2 id="%%s">%%s</h2>
           <h2 class="すごい見出し" id="%%s">%%s</h2
         """
-        self.settings = dict(configparser.items("heading"))
+        self.settings = dict(configparser.items(HeadingWidget.type))
         values = list_from_setting_value(self.settings["values"].decode("utf-8"))
         labels = list_from_setting_value(self.settings["labels"].decode("utf-8"))
 

@@ -6,8 +6,13 @@ from pyramid.decorator import reify
 from pyramid.exceptions import ConfigurationError
 from altaircms.plugins.helpers import get_installed_widgets, list_from_setting_value
 from altaircms.auth.api import get_organization_mapping
+from altaircms.auth.api import fetch_correct_organization
 from zope.interface import implementer
 from .interfaces import IConflictValidateFunction
+
+import logging
+logger = logging.getLogger(__file__)
+
 
 """
 ## in development.ini
@@ -101,6 +106,7 @@ class WidgetAggregator(object):
                 utility_instance = utility_cls().parse_settings(config, configparser)
                 if not hasattr(utility_instance, "validation") or utility_instance.validation():
                     utilities[k] = utility_instance
+        logger.debug("*widget aggregator* widgets:%s,  utilities:%s" % (widgets, utilities))
         return cls(widgets, utilities=utilities)
 
     def __init__(self, widgets, utilities=None):
@@ -133,18 +139,22 @@ class WidgetAggregatorDispatcher(object):
         after_dispatch = aggregators
         def dispatch(request, page):
             r = dispatch_function(request, page)
+            logger.debug("widget aggretator subdispatch: %s" % r)
             return after_dispatch[r]
 
         ## for convinience
         dispatch._after_dispatch = after_dispatch
-
+        logger.debug("widget aggregator add dispatch:%s <- %s" % (key, aggregators))
         self.conts[key] = dispatch
 
     def dispatch(self, request, page):
-        ### !! request.organization が取れること前提にしている　
-        organization = request.organization
-        assert request.organization.id == page.organization_id
-        subdispatch = self.conts[(organization.backend_id, organization.auth_source)]
+        ### !! request.`organizationかrequest.organization が取れること前提にしている　
+        organization = fetch_correct_organization(request)
+        assert organization.id == page.organization_id
+        k = (organization.backend_id, organization.auth_source)
+
+        logger.debug("widget aggregator dispach:%s" % (k,))
+        subdispatch = self.conts[k]
         return subdispatch(request, page)
 
 

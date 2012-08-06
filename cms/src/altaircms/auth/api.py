@@ -7,7 +7,7 @@ import logging
 logger = logging.getLogger(__file__)
 
 from pyramid.security import forget
-
+from .models import Organization
 from .interfaces import ILogoutAction
 from .interfaces import IActionResult
 from .interfaces import IOAuthComponent
@@ -40,7 +40,6 @@ def forget_self(request):
     ## キャッシュしていたoperatorのデータをリフレッシュ.
     request.set_property(get_authenticated_user, "user", reify=True)
     return headers
-
 
 @implementer(ILogoutAction)
 class LogoutSelfOnly(object):
@@ -134,12 +133,30 @@ class OAuthComponent(object):
         url = self.access_token_url +"?" + urllib.urlencode(args)
         return url
 
+
+def set_request_organization(request, organization_id):
+    """ 一時的な絞り込みのためのorganization情報をセット。(未ログインでのクライアント確認でのアクセスなどに必要)
+    """
+    organization = getattr(request, "organization", None)
+    logger.debug("*set request organization* request.organization: %s, tmp organization: %s" % (getattr(organization, "id", None), organization_id))
+    if organization and organization.id == organization_id:
+        return 
+    tmp_organization = Organization.query.filter_by(id=organization_id).one()
+    request._organization = tmp_organization
+
+def fetch_correct_organization(request):
+    """ _organizationはtemporaryな値。ページ確認URLなどで使う
+    """
+    return getattr(request, "_organization", None) or getattr(request, "organization", None)
+
 ###login後の絞り込み
 def get_allowable_query(request):
     def query(model, qs=None):
         qs = qs or model.query
-        if request.organization and hasattr(model, "organization_id"):
-            return qs.with_transformation(request.organization.inthere("organization_id"))
+        organization = fetch_correct_organization(request)
+        logger.debug("*request.allowable* organization id: %s" % getattr(organization, "id", None))
+        if organization and hasattr(model, "organization_id"):
+            return qs.with_transformation(organization.inthere("organization_id"))
         logger.debug(u"""this-is-external-request. e.g. access with pageaccess key. request.organization is not found\n
 class: %s""" % model)
         return qs
