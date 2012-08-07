@@ -29,33 +29,18 @@ h3{
         <th>更新日時</th><td>${h.base.jdate(static_page.updated_at)}</td>
       </tr>
     </table>
-<%doc>
-  <div class="btn-group">
-    <a href="${request.route_path("event_update",action="input",id=event.id)}" class="btn">
-      <i class="icon-pencil"></i> 編集
+
+<div class="btn-group">
+    <a class="btn do-post"
+	   href="${request.route_path("static_page",action="delete",static_page_id=static_page.id)}">
+      <i class="icon-trash"></i> 削除
     </a>
     <button class="btn dropdown-toggle" data-toggle="dropdown">
         <span class="caret"></span>
     </button>
     <ul class="dropdown-menu">
-      <li>
-        <a href="${request.route_path("event_update",action="input",id=event.id)}">
-          <i class="icon-minus"></i> 編集
-        </a>
-      </li>
-      <li>
-        <a href="${request.route_path("event_create",action="input")}">
-          <i class="icon-minus"></i> 新規作成
-        </a>
-      </li>
-      <li>
-        <a href="${request.route_path("event_delete",action="confirm",id=event.id)}">
-          <i class="icon-minus"></i> 削除
-        </a>
-      </li>
     </ul>
-  </div>
-</%doc>
+</div>
 <hr/>
 
 <h3>登録されているファイル</h3>
@@ -98,7 +83,13 @@ h3{
       this.href = $this.data("href-fmt").replace("__id__", pk);
       return true;;
     });
-  })
+  $("a.do-post").click(function(){
+    $.post($(this).attr("href")).done(function(data){
+      location.href = data["redirect_to"];
+    });
+    return false;
+  });
+ })
 </script>
 
 </div>

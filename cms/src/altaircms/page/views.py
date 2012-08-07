@@ -472,8 +472,9 @@ class StaticPageCreateView(object):
         
 @view_defaults(route_name="static_page")
 class StaticPageView(object):
-    def __init__(self, request):
+    def __init__(self, context, request):
         self.request = request
+        self.context = context
 
     @view_config(match_param="action=detail", renderer="altaircms:templates/page/static_detail.mako", 
                  decorator=with_bootstrap)
@@ -484,6 +485,22 @@ class StaticPageView(object):
 
         return {"static_page": static_page, 
                 "static_directory": static_directory}
+
+    @view_config(match_param="action=delete", request_method="POST", renderer="json")
+    def delete(self):
+        pk = self.request.matchdict["static_page_id"]
+        static_page = get_or_404(self.request.allowable(StaticPage), StaticPage.id==pk)
+        static_directory = get_static_page_utility(self.request)
+        name = static_page.name
+        
+        self.context.delete_static_page(static_page)
+
+        ## snapshot取っておく
+        src = os.path.join(static_directory.basedir, static_page.name)
+        writefile.create_directory_snapshot(src)
+
+        FlashMessage.success("%s is deleted" % name, request=self.request)
+        return {"redirect_to": self.request.route_url("pageset_list", kind="static")}
 
     @view_config(match_param="action=download")
     def download(self):

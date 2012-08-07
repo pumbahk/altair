@@ -106,3 +106,6 @@ class StaticPageResource(security.RootFactory):
         notify_model_create(self.request, static_page, data)
         DBSession.flush()
         return static_page
+
+    def delete_static_page(self, static_page):
+        DBSession.delete(static_page)
