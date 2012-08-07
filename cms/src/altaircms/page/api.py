@@ -12,8 +12,8 @@ from markupsafe import Markup
 def get_static_page_utility(request):
     return request.registry.getUtility(IDirectoryResource, "static_page")
 
-def set_static_page_utility(config, basedir):
-    utility = StaticPageDirectory(basedir)
+def set_static_page_utility(config, basedir, tmpdir):
+    utility = StaticPageDirectory(basedir, tmpdir)
     utility.validate()
     return config.registry.registerUtility(utility, IDirectoryResource, "static_page")
 
@@ -27,9 +27,12 @@ class StaticPageDirectory(object):
     def validate(self):
         if os.path.exists(self.basedir):
             if not os.path.isdir(self.basedir):
-                raise ConfigurationError("%s is not directory" % self.basedir)
+                raise ConfigurationError("altaircms.page.static.directory: %s is not directory" % self.basedir)
         else:
             os.makedirs(self.basedir)
+
+        if not os.access(self.tmpdir, os.W_OK):
+            raise ConfigurationError("altaircms.page.tmp.directory: %s is not writable" % self.tmpdir)
         return True
 
     def get_base_directory(self):

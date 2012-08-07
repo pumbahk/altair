@@ -4,9 +4,14 @@ import functools
 def includeme(config):
     """ 
     altaircms.page.static.directory: static pageのデータが登録されるディレクトリ
+    altaircms.page.tmp.directory: zip fileなどtemporaryなファイルが置かれるディレクトリ
     """
     settings = config.registry.settings
-    config.maybe_dotted(".api.set_static_page_utility")(config, settings["altaircms.page.static.directory"])
+    config.maybe_dotted(".api.set_static_page_utility")(
+        config, 
+        settings["altaircms.page.static.directory"], 
+        settings["altaircms.page.tmp.directory"]
+        )
 
     add_route = functools.partial(config.add_route, factory="altaircms.page.resources.PageResource")
     add_route('page_edit_', '/page/{page_id}/edit')
