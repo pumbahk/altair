@@ -1,5 +1,13 @@
+# -*- coding:utf-8 -*-
+
 import functools
 def includeme(config):
+    """ 
+    altaircms.page.static.directory: static pageのデータが登録されるディレクトリ
+    """
+    settings = config.registry.settings
+    config.maybe_dotted(".api.set_static_page_utility")(config, settings["altaircms.page.static.directory"])
+
     add_route = functools.partial(config.add_route, factory="altaircms.page.resources.PageResource")
     add_route('page_edit_', '/page/{page_id}/edit')
     add_route("page_detail", "/page/{page_id}")
@@ -27,7 +35,10 @@ def includeme(config):
     add_route("pageset_detail", "/pagesets/{pageset_id}/detail/{kind}")
     config.add_route('pageset_delete', '/pagesets/{pageset_id}/delete')
     config.add_route('pageset_update', '/pagesets/{pageset_id}/update')
-    
+
+    ## Static page
+    config.add_route("static_page", "/page/static/{static_page_id}/{action}")
+
     ## bind event
     config.add_subscriber(".subscribers.page_register_solr", ".subscribers.PageCreate")
     config.add_subscriber(".subscribers.page_register_solr", ".subscribers.PageUpdate")

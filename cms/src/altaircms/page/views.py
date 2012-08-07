@@ -1,5 +1,6 @@
 # coding: utf-8
 import logging
+import os
 
 from pyramid.view import view_config
 from pyramid.view import view_defaults
@@ -12,6 +13,7 @@ from . import searcher
 import altaircms.widget.forms as wf
 from altaircms.page.models import PageSet
 from altaircms.page.models import Page
+from altaircms.page.models import StaticPage
 from altaircms.widget.models import WidgetDisposition
 from altaircms.event.models import Event
 from altaircms.auth.api import get_or_404
@@ -24,7 +26,11 @@ from altaircms.lib.fanstatic_decorator import with_jquery
 from altaircms.lib.fanstatic_decorator import with_fanstatic_jqueries
 # from altaircms.lib.fanstatic_decorator import with_wysiwyg_editor
 import altaircms.helpers as h
+from .api import get_static_page_utility
 from . import helpers as myhelpers
+from pyramid.response import FileResponse
+from .writefile import create_zipfile_from_directory
+from .writefile import current_directory
 
 class AfterInput(Exception):
     pass
@@ -246,8 +252,11 @@ class PageListView(object):
     def __init__(self, request):
         self.request = request
 
+    @view_config(match_param="kind=static", renderer="altaircms:templates/page/static_page_list.mako")
     def static_page_list(self):
-        pass
+        static_directory = get_static_page_utility(self.request)
+        return {"static_directory": static_directory, 
+                "pages": static_directory.get_managemented_files(self.request)}
 
     @view_config(match_param="kind=event", renderer="altaircms:templates/page/event_page_list.mako")
     def event_bound_page_list(self):
@@ -424,4 +433,31 @@ class PageSetView(object):
         else:
             FlashMessage.error(u"期間に誤りがあります", request=self.request)
         return dict(ps=pageset, form=form, f=factory)
+
+@view_defaults(route_name="static_page")
+class StaticPageView(object):
+    def __init__(self, request):
+        self.request = request
+
+    @view_config(match_param="action=detail", renderer="altaircms:templates/page/static_detail.mako", 
+                 decorator=with_bootstrap)
+    def detail(self):
+        pk = self.request.matchdict["static_page_id"]
+        static_page = get_or_404(self.request.allowable(StaticPage), StaticPage.id==pk)
+        static_directory = get_static_page_utility(self.request)
+        return {"static_page": static_page, 
+                "static_directory": static_directory}
+
+    @view_config(match_param="action=download")
+    def download(self):
+        pk = self.request.matchdict["static_page_id"]
+        static_page = get_or_404(self.request.allowable(StaticPage), StaticPage.id==pk)
+        static_directory = get_static_page_utility(self.request)
+
+        dirname = os.path.join(static_directory.basedir, static_page.name)
+        writename = os.path.join(static_directory.tmpdir, static_page.name+".zip")
+        with current_directory(dirname):
+            create_zipfile_from_directory(".", writename)
+        return FileResponse(path=writename, request=self.request)
+
 

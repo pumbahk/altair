@@ -159,6 +159,21 @@ class PageSet(Base,
     #     ## パフォーマンス上げるために本当はここキャッシュしておけたりすると良いのかなと思う
     #     return Page.filter(Page.version==self.version_counter).one()
 
+class StaticPage(BaseOriginalMixin, 
+                     WithOrganizationMixin, 
+                     Base):
+    """
+    static pageの情報. pageの表示の際のlookupには使わない。
+    """
+    query = DBSession.query_property()
+    __tablename__ = "static_pages"
+
+    id = sa.Column(sa.Integer, primary_key=True)
+    
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
+    name = sa.Column(sa.String(255), doc="directory name(internal)")
+    
 
 class Page(BaseOriginalMixin,
            WithOrganizationMixin, 
