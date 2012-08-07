@@ -1,17 +1,12 @@
 import unittest
 
-import models
-Base = models.Base
-DBSession = models.DBSession
-DummyWidget = models.DummyWidget
-
 def setUpModule():
+    from altaircms.widget.tests.models import DummyWidget
     from altaircms.testing import setup_db
     setup_db(["altaircms.widget.tests.models", 
               "altaircms.event.models", 
-              "altaircms.page.models"])
-
-
+              "altaircms.page.models"], 
+             extra_tables=[DummyWidget.__table__])
 
 def tearDownModule():
     from altaircms.testing import teardown_db
@@ -26,13 +21,15 @@ class WidgetFetcherTest(unittest.TestCase):
         transaction.abort()
 
     def _getSession(self):
-        return DBSession
+        import sqlahelper
+        return sqlahelper.get_session()
 
     def _getTarget(self, session):
         from altaircms.widget.fetcher import WidgetFetcher
         return WidgetFetcher(session=session)
 
     def test_dummy_widget(self):
+        from altaircms.widget.tests.models import DummyWidget
         session = self._getSession()
         iw = DummyWidget(id=1, asset_id=1)
         session.add(iw)
@@ -42,6 +39,7 @@ class WidgetFetcherTest(unittest.TestCase):
         self.assertEquals(fetcher.dummy_widget([1]).one().asset_id, 1)
 
     def test_not_found_widget(self):
+        from altaircms.widget.tests.models import DummyWidget
         session = self._getSession()
         iw = DummyWidget(id=1, asset_id=1)
         session.add(iw)
