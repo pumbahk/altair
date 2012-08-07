@@ -2,18 +2,23 @@
 import os
 from unittest import TestCase
 
-from ...core.models import Seat
+from ...core.models import Seat, SeatStatusEnum
 from . import sheet
+
+
+class DummySeat(dict):
+    pass
 
 
 class SeatSourceFromSeatTest(TestCase):
     """SeatからSeatSourceへの変換テスト"""
     def setUp(self):
-        self.seat = {}
+        self.seat = DummySeat()
         self.seat["block"] = u"テストブロック"
         self.seat["floor"] = u"1階"
         self.seat["row"] = u"あ"
         self.seat["seat"] = u"A1"
+        self.seat.status = SeatStatusEnum.Vacant
 
     def test_ok(self):
         result = sheet.seat_source_from_seat(self.seat)
