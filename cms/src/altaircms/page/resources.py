@@ -99,3 +99,10 @@ class PageResource(security.RootFactory):
         subscribers.notify_page_create(self.request, cloned)
         return cloned
 
+class StaticPageResource(security.RootFactory):
+    def create_static_page(self, data):
+        static_page = models.StaticPage(name=data["name"])
+        DBSession.add(static_page)
+        notify_model_create(self.request, static_page, data)
+        DBSession.flush()
+        return static_page

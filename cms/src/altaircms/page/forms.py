@@ -1,4 +1,5 @@
 # coding: utf-8
+import os
 import logging
 import re
 from collections import defaultdict
@@ -21,6 +22,7 @@ from pyramid.threadlocal import get_current_request
 logger = logging.getLogger(__name__)
 
 from ..models import Category
+from .api import get_static_page_utility
 
 class PageSetSearchForm(Form):
     """
@@ -304,3 +306,18 @@ class PageSetFormFactory(object):
 
     def publish_end(self, form, page):
         return getattr(form, 'end_%d' % page.id)
+
+
+## static page
+class StaticPageCreateForm(Form):
+    name = fields.TextField(label=u"name", validators=[validators.Required()])
+    zipfile = fields.FileField(label=u"zipファイルを投稿")
+
+    def validate(self, request):
+        status = super(type(self), self).validate()
+        static_directory = get_static_page_utility(request)
+        path = os.path.join(static_directory.basedir, self.data["name"])
+        if os.path.exists(path):
+            append_errors(self.errors, "name", u"%sは既に存在しています。他の名前で登録してください" % self.data["name"])
+            status = False
+        return status

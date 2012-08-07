@@ -42,7 +42,10 @@ def includeme(config):
     config.add_route('pageset_update', '/pagesets/{pageset_id}/update')
 
     ## Static page
-    config.add_route("static_page", "/page/static/{static_page_id}/{action}")
+    config.add_route("static_page", "/page/static/{static_page_id}/{action}", 
+                     factory=".resources.StaticPageResource")
+    config.add_route("static_page_create", "/page/static/{action}", 
+                     factory=".resources.StaticPageResource")
 
     ## bind event
     config.add_subscriber(".subscribers.page_register_solr", ".subscribers.PageCreate")

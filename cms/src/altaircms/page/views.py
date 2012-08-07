@@ -433,6 +433,43 @@ class PageSetView(object):
             FlashMessage.error(u"期間に誤りがあります", request=self.request)
         return dict(ps=pageset, form=form, f=factory)
 
+
+@view_defaults(route_name="static_page_create")
+class StaticPageCreateView(object):
+    def __init__(self, context, request):
+        self.request = request
+        self.context = context
+        
+    @view_config(match_param="action=input", decorator=with_bootstrap,
+                 renderer="altaircms:templates/page/static_page_add.mako")
+    def input(self):
+        form = forms.StaticPageCreateForm()
+        return {"form": form}
+
+    @view_config(match_param="action=create", request_method="POST", 
+                 decorator=with_bootstrap,
+                 renderer="altaircms:templates/page/static_page_add.mako")
+    def create(self):
+        form = forms.StaticPageCreateForm(self.request.POST)
+        if not form.validate(self.request):
+            return {"form": form}
+
+        static_directory = get_static_page_utility(self.request)
+        filestorage = form.data["zipfile"]
+        uploaded = filestorage.file
+        
+        ## todo rewrite
+        if not writefile.is_zipfile(uploaded):
+            raise HTTPBadRequest("uploaded file %s is not zip file" % filestorage.filename)
+
+        static_page = self.context.create_static_page(form.data)
+        src = os.path.join(static_directory.basedir, static_page.name)
+        writefile.replace_directory_from_zipfile(src, filestorage.file)
+
+        FlashMessage.success("%s is created" % filestorage.filename, request=self.request)
+        return HTTPFound(self.request.route_url("static_page", action="detail", static_page_id=static_page.id))
+
+        
 @view_defaults(route_name="static_page")
 class StaticPageView(object):
     def __init__(self, request):
@@ -459,13 +496,6 @@ class StaticPageView(object):
         with writefile.current_directory(dirname):
             writefile.create_zipfile_from_directory(".", writename)
         return FileResponse(path=writename, request=self.request)
-
-    # @view_config(match_param="action=create_input")
-    
-
-    # @view_config(match_param="action=create", requset_param="zipfile", request_method="POST")
-    # def create(self):
-    #     pass
 
     @view_config(match_param="action=upload", request_param="zipfile", request_method="POST")
     def upload(self):

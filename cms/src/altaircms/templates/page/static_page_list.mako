@@ -24,8 +24,7 @@
 
 <div class="row-fluid">
   <h3 style="margin-top:0px;">ページ追加</h3>
-##    <a href="${request.route_path("page_add_orphan", action="input")}" class="btn btn-success btn-large">新しいページを作成する</a>
-
+    <a href="${request.route_path("static_page_create", action="input")}" class="btn btn-success btn-large">新しい静的ページを追加する</a>
 
   <h3>ページ一覧</h3>
   <ul class="nav nav-tabs">

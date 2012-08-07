@@ -58,18 +58,30 @@ h3{
 </%doc>
 <hr/>
 
+<h3>登録されているファイル</h3>
+<div class="well">
+  ${static_directory.link_tree_from_static_page(request,static_page)}
+</div>
 
 <h3>操作</h3>
-<a href="${request.route_path("static_page", action="download", static_page_id=static_page.id)}" class="btn">zipでdownload</a>
-<form action="${request.route_path("static_page", action="upload", static_page_id=static_page.id)}" 
-	  method="POST" enctype="multipart/form-data">
-  <input type="file" name="zipfile">
-  <button type="submit" class="btn">zipでupload</button>  
-</form>
+<div class="row">
+  <div class="span5">
+	<div class="well" style="height:120px;">
+	  <h4 style="margin-bottom:10px;">zipファイルにまとめてdownloadする</h4>
+	  <a href="${request.route_path("static_page", action="download", static_page_id=static_page.id)}" class="btn">zipでdownload</a>
+	</div>
+  </div>
 
-<h3>登録されているファイル</h3>
-<div style="margin-left: 20px;">
-  ${static_directory.link_tree_from_static_page(request,static_page)}
+  <div class="span6">
+	<div class="well" style="height:120px;">
+	  <h4 style="margin-bottom:10px;">zipファイルでuploadし直す</h4>
+	  <form class="form" action="${request.route_path("static_page", action="upload", static_page_id=static_page.id)}" 
+			method="POST" enctype="multipart/form-data">
+		<label>zipfile: <input id="zipfile" type="file" name="zipfile"/></label>
+		<input class="btn" type="submit" value="zipでupload"/>
+	  </form>
+	</div>
+  </div>
 </div>
 
 <script type="text/javascript">
