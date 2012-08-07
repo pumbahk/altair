@@ -1,27 +1,21 @@
 # -*- encoding:utf-8 -*-
 import unittest
 from datetime import datetime
+from altaircms.testing import setup_db
+from altaircms.testing import teardown_db
 
 """
 page.can_access(user=None, access_key=None)
 
-* user is valid -> ok.(not implemented yet)
 * access_key is valid -> ok.
 """
 
 def setUpModule():
-    import altaircms.event.models
-    import altaircms.page.models
-    import sqlalchemy as sa
-    import sqlahelper
-    import transaction
-    session = sqlahelper.get_session()
-    session.remove()
-    transaction.abort()
-    sqlahelper.add_engine(sa.create_engine("sqlite://"))
-    base = sqlahelper.get_base()
-    base.metadata.drop_all()
-    base.metadata.create_all()
+    setup_db(["altaircms.event.models", 
+              "altaircms.page.models"])
+
+def tearDownModule():
+    teardown_db()
 
 class PagePublishStatusTests(unittest.TestCase):
     def tearDown(self):

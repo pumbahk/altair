@@ -12,7 +12,8 @@ from altaircms.tag.api import put_tags
 from . import helpers as h
 from . import models
 from . import subscribers
-
+# from .api import get_static_page_utility
+# from altaircms.auth.api import get_or_404
 
 def add_data(self, data, flush=False):
     DBSession.add(data)
@@ -108,9 +109,10 @@ class StaticPageResource(security.RootFactory):
         DBSession.flush()
         return static_page
 
-    def touch_static_page(self, static_page):
-        static_page.updated_at = datetime.now()
+    def touch_static_page(self, static_page, _now=datetime.now):
+        static_page.updated_at = _now()
         DBSession.add(static_page)
+        return static_page
 
     def delete_static_page(self, static_page):
         DBSession.delete(static_page)

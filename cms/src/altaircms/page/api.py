@@ -25,11 +25,13 @@ class StaticPageDirectory(object):
         self.tmpdir = self.assetresolver.resolve(tmpdir).abspath()
 
     def validate(self):
-        if os.path.exists(self.basedir):
+        if not os.path.exists(self.basedir):
+            os.makedirs(self.basedir)
+        else:
             if not os.path.isdir(self.basedir):
                 raise ConfigurationError("altaircms.page.static.directory: %s is not directory" % self.basedir)
-        else:
-            os.makedirs(self.basedir)
+            if not os.access(self.basedir, os.W_OK):
+                raise ConfigurationError("altaircms.page.static.directory: %s is not writable" % self.tmpdir)
 
         if not os.access(self.tmpdir, os.W_OK):
             raise ConfigurationError("altaircms.page.tmp.directory: %s is not writable" % self.tmpdir)
