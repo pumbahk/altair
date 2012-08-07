@@ -61,7 +61,11 @@ h3{
 
 <h3>操作</h3>
 <a href="${request.route_path("static_page", action="download", static_page_id=static_page.id)}" class="btn">zipでdownload</a>
-<a class="btn">zipでupload</a>
+<form action="${request.route_path("static_page", action="upload", static_page_id=static_page.id)}" 
+	  method="POST" enctype="multipart/form-data">
+  <input type="file" name="zipfile">
+  <button type="submit" class="btn">zipでupload</button>  
+</form>
 
 <h3>登録されているファイル</h3>
 <div style="margin-left: 20px;">

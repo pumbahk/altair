@@ -4,7 +4,7 @@ import os
 
 from pyramid.view import view_config
 from pyramid.view import view_defaults
-from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPFound, HTTPBadRequest
 from ..plugins.api import get_widget_aggregator_dispatcher
 from altaircms.helpers.viewhelpers import RegisterViewPredicate
 from altaircms.helpers.viewhelpers import FlashMessage
@@ -29,8 +29,7 @@ import altaircms.helpers as h
 from .api import get_static_page_utility
 from . import helpers as myhelpers
 from pyramid.response import FileResponse
-from .writefile import create_zipfile_from_directory
-from .writefile import current_directory
+from . import writefile 
 
 class AfterInput(Exception):
     pass
@@ -445,6 +444,7 @@ class StaticPageView(object):
         pk = self.request.matchdict["static_page_id"]
         static_page = get_or_404(self.request.allowable(StaticPage), StaticPage.id==pk)
         static_directory = get_static_page_utility(self.request)
+
         return {"static_page": static_page, 
                 "static_directory": static_directory}
 
@@ -456,8 +456,39 @@ class StaticPageView(object):
 
         dirname = os.path.join(static_directory.basedir, static_page.name)
         writename = os.path.join(static_directory.tmpdir, static_page.name+".zip")
-        with current_directory(dirname):
-            create_zipfile_from_directory(".", writename)
+        with writefile.current_directory(dirname):
+            writefile.create_zipfile_from_directory(".", writename)
         return FileResponse(path=writename, request=self.request)
 
+    # @view_config(match_param="action=create_input")
+    
 
+    # @view_config(match_param="action=create", requset_param="zipfile", request_method="POST")
+    # def create(self):
+    #     pass
+
+    @view_config(match_param="action=upload", request_param="zipfile", request_method="POST")
+    def upload(self):
+        pk = self.request.matchdict["static_page_id"]
+        static_page = get_or_404(self.request.allowable(StaticPage), StaticPage.id==pk)
+        static_directory = get_static_page_utility(self.request)
+
+        filestorage = self.request.POST["zipfile"]
+        uploaded = filestorage.file
+        
+        if not writefile.is_zipfile(uploaded):
+            raise HTTPBadRequest("uploaded file %s is not zip file" % filestorage.filename)
+
+        src = os.path.join(static_directory.basedir, static_page.name)
+        snapshot_path = writefile.create_directory_snapshot(src)
+
+        try:
+            writefile.replace_directory_from_zipfile(src, filestorage.file)
+        except:
+            writefile.snapshot_rollback(src, snapshot_path)
+
+        FlashMessage.success("%s is updated" % filestorage.filename, request=self.request)
+        return HTTPFound(self.request.route_url("static_page", action="detail", static_page_id=static_page.id))
+
+
+        
