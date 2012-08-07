@@ -80,6 +80,9 @@ class PageSet(Base,
     parent_id = Column(Integer, ForeignKey('pagesets.id'))
     parent = orm.relationship("PageSet", remote_side=[id], uselist=False)
 
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
+
     @declared_attr
     def __table_args__(cls):
         return (sa.schema.UniqueConstraint("url", "organization_id"), )

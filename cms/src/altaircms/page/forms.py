@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 
 from ..models import Category
 from .api import get_static_page_utility
+from . import writefile
 
 class PageSetSearchForm(Form):
     """
@@ -319,5 +320,9 @@ class StaticPageCreateForm(Form):
         path = os.path.join(static_directory.basedir, self.data["name"])
         if os.path.exists(path):
             append_errors(self.errors, "name", u"%sは既に存在しています。他の名前で登録してください" % self.data["name"])
+            status = False
+        if not writefile.is_zipfile(self.data["zipfile"].file):
+            message = u"%sはzipfileではありません。.zipの拡張子が付いたファイルを投稿してください" % (self.data["zipfile"].filename)
+            append_errors(self.errors, "zipfile", message)
             status = False
         return status

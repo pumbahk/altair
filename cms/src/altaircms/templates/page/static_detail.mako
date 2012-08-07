@@ -84,9 +84,11 @@ h3{
       return true;;
     });
   $("a.do-post").click(function(){
-    $.post($(this).attr("href")).done(function(data){
-      location.href = data["redirect_to"];
-    });
+    if(window.confirm("本当に登録されたデータを削除しますか?")){
+	  $.post($(this).attr("href")).done(function(data){
+		location.href = data["redirect_to"];
+	  });
+    }
     return false;
   });
  })

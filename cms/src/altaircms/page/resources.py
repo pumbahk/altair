@@ -1,5 +1,6 @@
 # coding: utf-8
 import logging
+from datetime import datetime
 from altaircms.models import DBSession
 from altaircms.layout.models import Layout
 import altaircms.widget.forms as wf
@@ -106,6 +107,10 @@ class StaticPageResource(security.RootFactory):
         notify_model_create(self.request, static_page, data)
         DBSession.flush()
         return static_page
+
+    def touch_static_page(self, static_page):
+        static_page.updated_at = datetime.now()
+        DBSession.add(static_page)
 
     def delete_static_page(self, static_page):
         DBSession.delete(static_page)

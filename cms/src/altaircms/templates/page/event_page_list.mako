@@ -65,6 +65,7 @@ ${search_form.category.label}: </th><td>${search_form.category}
   <ul class="nav nav-tabs">
     <li class="active"><a href="${request.route_path("pageset_list",kind="event")}">イベント詳細ページ</a></li>
     <li><a href="${request.route_path("pageset_list",kind="other")}">トップ／カテゴリトップページ</a></li>
+    <li><a href="${request.route_path("pageset_list",kind="static")}">静的ページ</a></li>
   </ul>
 
 <%
@@ -84,6 +85,8 @@ seq = h.paginate(request, pages, item_count=page_count, items_per_page=50)
 	  <th>ページ名</th>
 	  <th>URL</th>
 	  <th>preview</th>
+	  <th>生成日時</th>
+	  <th>更新日時</th>
 	</tr>
   </thead>
   <tbody>
@@ -94,6 +97,8 @@ seq = h.paginate(request, pages, item_count=page_count, items_per_page=50)
         <td>
           <a href="${h.link.preview_page_from_pageset(request, page)}" class="btn btn-small"><i class="icon-eye-open"> </i> Preview</a>
         </td>
+		<td>${h.base.jdate(page.created_at)}</td>
+		<td>${h.base.jdate(page.updated_at)}</td>
       </tr>
     %endfor
   </tbody>

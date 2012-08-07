@@ -456,17 +456,12 @@ class StaticPageCreateView(object):
 
         static_directory = get_static_page_utility(self.request)
         filestorage = form.data["zipfile"]
-        uploaded = filestorage.file
-        
-        ## todo rewrite
-        if not writefile.is_zipfile(uploaded):
-            raise HTTPBadRequest("uploaded file %s is not zip file" % filestorage.filename)
 
         static_page = self.context.create_static_page(form.data)
         src = os.path.join(static_directory.basedir, static_page.name)
         writefile.replace_directory_from_zipfile(src, filestorage.file)
 
-        FlashMessage.success("%s is created" % filestorage.filename, request=self.request)
+        FlashMessage.success(u"%sが作成されました" % filestorage.filename, request=self.request)
         return HTTPFound(self.request.route_url("static_page", action="detail", static_page_id=static_page.id))
 
         
@@ -499,7 +494,7 @@ class StaticPageView(object):
         src = os.path.join(static_directory.basedir, static_page.name)
         writefile.create_directory_snapshot(src)
 
-        FlashMessage.success("%s is deleted" % name, request=self.request)
+        FlashMessage.success(u"%sが削除されました" % name, request=self.request)
         return {"redirect_to": self.request.route_url("pageset_list", kind="static")}
 
     @view_config(match_param="action=download")
@@ -524,17 +519,19 @@ class StaticPageView(object):
         uploaded = filestorage.file
         
         if not writefile.is_zipfile(uploaded):
-            raise HTTPBadRequest("uploaded file %s is not zip file" % filestorage.filename)
+            FlashMessage.error(u"投稿されたファイル%sは、zipファイルではありません" % filestorage.filename, request=self.request)
+            raise HTTPFound(self.request.route_url("static_page", action="detail", static_page_id=static_page.id))
 
         src = os.path.join(static_directory.basedir, static_page.name)
         snapshot_path = writefile.create_directory_snapshot(src)
 
         try:
             writefile.replace_directory_from_zipfile(src, filestorage.file)
+            self.context.touch_static_page(static_page)
         except:
             writefile.snapshot_rollback(src, snapshot_path)
 
-        FlashMessage.success("%s is updated" % filestorage.filename, request=self.request)
+        FlashMessage.success(u"%sが更新されました" % filestorage.filename, request=self.request)
         return HTTPFound(self.request.route_url("static_page", action="detail", static_page_id=static_page.id))
 
 
