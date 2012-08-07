@@ -108,7 +108,7 @@ class PageAddView(object):
         if form.validate():
             page = self.context.create_page(form)
             ## flash messsage
-            mes = u'page created <a href="%s">作成されたページを編集する</a>' % self.request.route_path("page_edit_", page_id=page.id)
+            mes = u'page created <a href="%s">作成されたページを編集する</a>' % self.request.route_path("pageset_detail", pageset_id=page.pageset.id, kind="event")
             FlashMessage.success(mes, request=self.request)
             return HTTPFound(get_endpoint(self.request)) or HTTPFound(self.request.route_path("event", id=self.request.matchdict["event_id"]))
         else:
@@ -125,7 +125,7 @@ class PageAddView(object):
         if form.validate():
             page = self.context.create_page(form)
             ## flash messsage
-            mes = u'page created <a href="%s">作成されたページを編集する</a>' % self.request.route_path("page_detail", page_id=page.id)
+            mes = u'page created <a href="%s">作成されたページを編集する</a>' % self.request.route_path("pageset_detail", pageset_id=page.pageset.id, kind="other")
             FlashMessage.success(mes, request=self.request)
             return HTTPFound(get_endpoint(self.request)) or HTTPFound(self.request.route_path("pageset_list", kind="other"))
         else:
@@ -193,6 +193,32 @@ class PageDeleteView(object):
         FlashMessage.success("page deleted", request=self.request)
 
         return HTTPFound(location=h.page.to_list_page(self.request, page))
+
+@view_defaults(route_name="pageset_delete", permission="page_delete", decorator=with_bootstrap)
+class PageDeleteView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @view_config(renderer="altaircms:templates/pagesets/delete_confirm.mako", request_method="GET")
+    def delete_confirm(self):
+        pageset = get_or_404(self.request.allowable(PageSet), PageSet.id==self.request.matchdict["pageset_id"])
+        return {"pageset": pageset, "myhelpers": myhelpers}
+
+    @view_config(request_method="POST")
+    def delete(self):
+        pageset = get_or_404(self.request.allowable(PageSet), PageSet.id==self.request.matchdict["pageset_id"])
+        try:
+            self.context.delete_pageset(pageset)
+            ## Integritty errorをキャッチしたいので
+            import transaction
+            transaction.commit()
+        except Exception, e:
+            FlashMessage.error(str(e), request=self.request)
+            raise HTTPFound(self.request.route_url("pageset_delete", pageset_id=self.request.matchdict["pageset_id"]))
+        ## flash messsage
+        FlashMessage.success(u"%sのページセットがまるごと削除されました" % pageset.name, request=self.request)
+        return HTTPFound(self.request.route_url("dashboard"))
 
 
 

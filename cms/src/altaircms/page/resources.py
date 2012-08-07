@@ -96,6 +96,11 @@ class PageResource(security.RootFactory):
         subscribers.notify_page_delete(self.request, page)
         self.delete(page)
 
+    def delete_pageset(self, pageset):
+        for page in pageset.pages:
+            subscribers.notify_page_delete(self.request, page)
+        self.delete(pageset)
+
     def clone_page(self, page):
         cloned = page.clone(DBSession, request=self.request)
         subscribers.notify_page_create(self.request, cloned)

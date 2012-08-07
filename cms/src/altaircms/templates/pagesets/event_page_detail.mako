@@ -41,15 +41,20 @@
 
   <div class="btn-group">
     <a href="#" class="btn">
-      <i class="icon-pencil"></i> 編集
+      <i class="icon-pencil"></i> ページセットの編集
     </a>
     <button class="btn dropdown-toggle" data-toggle="dropdown">
         <span class="caret"></span>
     </button>
     <ul class="dropdown-menu">
       <li>
+        <a href="${request.route_path("pageset_delete", pageset_id=pageset.id)}">
+          <i class="icon-trash"></i> ページセットの削除
+        </a>
+      </li>
+      <li>
         <a href="#">
-          <i class="icon-minus"></i> 編集
+          <i class="icon-minus"></i> ページセットの編集
         </a>
       </li>
     </ul>
@@ -59,7 +64,12 @@
 
 <h3>ページ一覧</h3>
   ## 一番下のjsに依存している
+<div id="pageset_items">
   ${myhelpers.event_pageset_describe_viewlet(request, pageset)}
+</div>
+<script type="text/javascript">
+  $(function(){$("#pageset_items input:radio, #pageset_items .btn-group").css("display", "none");});
+</script>
 <hr/>
 
 <h3>登録しているアセット</h3>
