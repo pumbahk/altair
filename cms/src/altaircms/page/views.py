@@ -195,7 +195,7 @@ class PageDeleteView(object):
         return HTTPFound(location=h.page.to_list_page(self.request, page))
 
 @view_defaults(route_name="pageset_delete", permission="page_delete", decorator=with_bootstrap)
-class PageDeleteView(object):
+class PageSetDeleteView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
@@ -460,7 +460,7 @@ class PageSetView(object):
         return dict(ps=pageset, form=form, f=factory)
 
 
-@view_defaults(route_name="static_page_create")
+@view_defaults(route_name="static_page_create", permission="authenticated")
 class StaticPageCreateView(object):
     def __init__(self, context, request):
         self.request = request
@@ -491,7 +491,7 @@ class StaticPageCreateView(object):
         return HTTPFound(self.request.route_url("static_page", action="detail", static_page_id=static_page.id))
 
         
-@view_defaults(route_name="static_page")
+@view_defaults(route_name="static_page", permission="authenticated")
 class StaticPageView(object):
     def __init__(self, context, request):
         self.request = request
