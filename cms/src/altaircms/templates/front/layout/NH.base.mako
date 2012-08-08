@@ -13,15 +13,22 @@
     <title>${page.title}</title>
     <meta name="description" content="${page.description}">
     <meta name="keywords" content="${page.keywords}">
+	<!--[if lte IE 6]>  
+    <script type="text/javascript" src="/static/NH/js/DD_belatedPNG.js">  
+    </script>  
+    <script type="text/javascript"> DD_belatedPNG.fix( .header,.sparkle);</script>  
+    <![endif]-->  
+
 <script type="text/javascript">
      $(function(){
 var e = $("<a>");
-e.attr("href","http://www.89ers.jp/")
+e.attr("href","http://happinets.net/")
 e.css({"position": "relative",
+	   "top": "10px",
+	   "left": "510px",
        "display": "block",
-       "width": "165px",
-       "height": "100px",
-       "margin-left": "50px"
+       "width": "175px",
+       "height": "120px"
        });
 $(".header").append(e);
      });
@@ -51,6 +58,10 @@ $(".header").append(e);
 			  </%block>
 			</div>
 			<!-- kadomaru終わり -->
+
+			  <%block name="bellow_kadomaru">
+                ${widgets("bellow_kadomaru")}
+			  </%block>
 
 
 			<div class="footer">
