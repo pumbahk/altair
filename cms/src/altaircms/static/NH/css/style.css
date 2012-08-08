@@ -27,7 +27,7 @@ body{
 	width: 225px;
 }
 
-header{
+.header{
 	background: url(/static/NH/images/header.png) no-repeat center top;
 	width:734px;
 	height:179px;
@@ -90,7 +90,7 @@ a{
 }
 
 a:hover{
-	color:#6b0011;
+	color:#ffabb9;
 }
 
 
@@ -864,8 +864,8 @@ div#performance-calendar .month-tab span a{
 
 
 
-footer {
-    background-color: #FFFFFF;
+.footer {
+    background-color: #000;
     border-top: 1px solid #CCCCCC;
     clear: both;
     text-align: center;
@@ -875,19 +875,20 @@ footer {
     
 }
 
-footer .footernav {
+.footer .footernav {
     height: 1em;
     margin: 10px auto;
     padding: 8px 36px;
 }
 
-footer .copyright {
+.footer .copyright {
     color: #555;
     font-size: 75%;
     margin: 10px auto;
+    color: #fff;
 }
 
-footer .footernav ul {
+.footer .footernav ul {
     display: inline;
     font-size: 75%;
     list-style-type: none;
@@ -895,11 +896,11 @@ footer .footernav ul {
     padding: 0;
 }
 
-footer .footernav ul li.first {
+.footer .footernav ul li.first {
     border-left: medium none;
 }
 
-footer .footernav ul li {
+.footer .footernav ul li {
     border-left: 1px solid #dc0078;
     display: inline;
     padding: 0 6px;
@@ -918,6 +919,17 @@ footer .footernav ul li {
 .bgfff{
 	background: #fff !important;
 }
+
+
+table.login{
+	border: 2px #ccc solid;
+	border-collapse: collapse;
+	margin: 0 auto;
+	width: 290px;
+	height: 230px;
+}
+
+
 table.login thead th{
 	background: #dc0078;
 	color: #fff;
