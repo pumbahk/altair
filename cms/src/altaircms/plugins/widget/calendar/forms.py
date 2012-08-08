@@ -7,11 +7,13 @@ from altaircms.plugins.api import get_widget_utility
 from altaircms.models import Sale
 from altaircms.page.models import Page
 from altaircms.event.models import Event
+from altaircms.auth.api import fetch_correct_organization
 from . models import CalendarWidget
 
 def selected_sale(model, request, qs):
-    qs = qs.filter(Sale.event_id==Event.id).filter(Event.organization_id==request.organization.id)
-    return qs.filter(Event.id==Page.id).filter(Page.id==request["page"])
+    qs = qs.filter(Sale.event_id==Event.id).filter(Event.organization_id==fetch_correct_organization(request).id)
+    qs = qs.filter(Event.id==Page.event_id).filter(Page.id==request.GET["page"])
+    return qs
     
 class CalendarSelectForm(Form):
     calendar_type = fields.SelectField(id="calendar_type", 

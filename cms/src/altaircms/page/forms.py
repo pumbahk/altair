@@ -102,7 +102,7 @@ class PageForm(Form):
         """ override to form validation"""
         super(PageForm, self).validate()
         data = self.data
-        if data["publish_end"]:
+        if data["publish_end"] and data["publish_begin"]:
             if data["publish_begin"] > data["publish_end"]:
                 append_errors(self.errors, "publish_begin", u"開始日よりも後に終了日が設定されています")
 
