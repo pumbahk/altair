@@ -6,6 +6,12 @@ import sqlahelper
 from webob.multidict import MultiDict 
 from pyramid.path import DottedNameResolver
 from altaircms.models import Base
+import StringIO
+
+class DummyFileStorage(object):
+    def __init__(self, filename, _file):
+        self.filename = filename
+        self.file = StringIO.StringIO(_file)
 
 class DummyRequest(testing.DummyRequest):
     def __init__(self, *args, **kwargs):
@@ -33,13 +39,18 @@ def dummy_form_factory(name="DummyForm", validate=False, errors=None):
     return type(name, (object, ), attrs)
 
 
-def setup_db(models=[]):
+def setup_db(models=[], extra_tables=[]):
+    sqlahelper.get_session().remove()
+
     resolver = DottedNameResolver(package='altaircms')
     for m in models:
         resolver.maybe_resolve(m)
 
+    metadata = sqlahelper.get_base().metadata
+    for t in extra_tables:
+        t.tometadata(metadata)
+
     engine = create_engine("sqlite:///")
-    sqlahelper.get_session().remove()
     sqlahelper.add_engine(engine)
     sqlahelper.get_base().metadata.create_all()
     assert Base == sqlahelper.get_base()

@@ -9,7 +9,6 @@ import altaircms.helpers as h
 import logging
 logger = logging.getLogger(__file__)
 from altaircms.security import RootFactory
-from ..flow import api as flow_api
 from altaircms.helpers.viewhelpers import set_endpoint, get_endpoint
 from altaircms.subscribers import notify_model_create ## too-bad
 
@@ -34,7 +33,6 @@ class ModelFaker(object):
                 if isinstance(v, ColumnOperators)}
 
 class CRUDResource(RootFactory): ## fixme
-    flow_api = flow_api
     def __init__(self, prefix, title, model, form, mapper, endpoint, filter_form,
                  request,
                  after_input_context=None, 
@@ -146,6 +144,13 @@ class CreateView(object):
         return {"master_env": self.context.context,
                 "form": form, 
                 "display_fields": getattr(form,"__display_fields__", None) or form.data.keys()}
+
+    def copied_input(self):
+        self.context.set_endpoint()
+        
+        obj = self.context.get_model_obj(self.request.params["id"])
+        form = self.context.input_form_from_model(obj)
+        raise self.context.AfterInput(form=form, context=self.context)
         
     def input(self):
         self.context.set_endpoint()
@@ -164,7 +169,8 @@ class CreateView(object):
     def create_model(self):
         form = self.context.confirmed_form()
         obj = self.context.create_model_from_form(form)
-        mes = u'create <a href="%s">新しく作成されたデータを編集</a>' % self.request.route_path(self.context.join("update"), id=obj.id, action="input")
+        url = self.request.route_path(self.context.join("update"), id=obj.id, action="input")
+        mes = u'%sを作成しました <a href="%s">新しく作成されたデータを編集</a>' % (self.context.title, url)
         FlashMessage.success(mes, request=self.request)
         return HTTPFound(self.context.get_endpoint())
 
@@ -204,7 +210,8 @@ class UpdateView(object):
         form = self.context.confirmed_form(obj=before_obj)
 
         obj = self.context.update_model_from_form(before_obj, form)
-        mes = u'update <a href="%s">変更されたデータを編集</a>' % self.request.route_path(self.context.join("update"), id=obj.id, action="input")
+        url = self.request.route_path(self.context.join("update"), id=obj.id, action="input")
+        mes = u'%sを編集しました <a href="%s">変更されたデータを編集</a>' % (self.context.title, url)
         FlashMessage.success(mes, request=self.request)
         return HTTPFound(self.context.get_endpoint())
 
@@ -227,7 +234,7 @@ class DeleteView(object):
     def delete_model(self):
         obj = self.context.get_model_obj(self.request.matchdict["id"])
         self.context.delete_model(obj)
-        FlashMessage.success("delete", request=self.request)
+        FlashMessage.success(u"%sを削除しました" % self.context.title, request=self.request)
         return HTTPFound(self.context.get_endpoint())
 
 def list_view(context, request):
@@ -293,8 +300,7 @@ class SimpleCRUDFactory(object):
         if "create" in bind_actions:
 
             config.add_route(self._join("create"), "/%s/create/{action}" % self.prefix, factory=resource)
-            config.add_route_flow(self._join("create"), direction_name="crud-create-flow", match_param="action")
-
+            _add_view(CreateView, match_param="action=copied_input", attr="copied_input", route_name=self._join("create"))
             _add_view(CreateView, match_param="action=input", attr="input", route_name=self._join("create"))
             config.add_view(CreateView, context=AfterInput, attr="_after_input", route_name=self._join("create"), 
                             decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/create/input.mako")
@@ -304,7 +310,6 @@ class SimpleCRUDFactory(object):
 
         if "update" in bind_actions:
             config.add_route(self._join("update"), "/%s/update/{id}/{action}" % self.prefix, factory=resource)
-            config.add_route_flow(self._join("update"), direction_name="crud-update-flow", match_param="action")
 
             _add_view(UpdateView, match_param="action=input", attr="input",
                       route_name=self._join("update"), decorator="altaircms.lib.fanstatic_decorator.with_bootstrap",
@@ -318,7 +323,6 @@ class SimpleCRUDFactory(object):
 
         if "delete" in bind_actions:
             config.add_route(self._join("delete"), "/%s/delete/{id}/{action}" % self.prefix, factory=resource)
-            config.add_route_flow(self._join("delete"), direction_name="crud-delete-flow", match_param="action")
 
             _add_view(DeleteView, match_param="action=confirm", attr="confirm",
                             route_name=self._join("delete"), decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/delete/confirm.mako")

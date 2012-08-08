@@ -19,5 +19,6 @@ def upgrade():
     op.execute("ALTER TABLE pagesets add unique organization_id (organization_id, url);")
 
 def downgrade():
+    op.execute("ALTER TABLE pagesets DROP INDEX organization_id;")
     ## don't support it.'
     pass

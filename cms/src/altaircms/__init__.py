@@ -12,7 +12,7 @@ from pyramid.session import UnencryptedCookieSessionFactoryConfig
 import sqlahelper
 from sqlalchemy import engine_from_config
 
-from altaircms.security import rolefinder, RootFactory
+from altaircms.security import RootFactory
 
 try:
     import pymysql_sa
@@ -22,10 +22,21 @@ except:
     pass
 
 def _get_policies(settings):
+    from altaircms.security import rolefinder
     from pyramid.authentication import AuthTktAuthenticationPolicy
     from pyramid.authorization import ACLAuthorizationPolicy
-    return  AuthTktAuthenticationPolicy(settings.get('authtkt.secret'), callback=rolefinder, cookie_name='cmstkt'), \
-        ACLAuthorizationPolicy()
+    import re
+    skip_rx = re.compile("^(?:/static|/fanstatic|/staticasset|/plugins/static)/")
+
+    def static_path_skiped(userid, request):
+        if skip_rx.search(request.path):
+            return []
+        else:
+            return rolefinder(userid, request)
+    authentication = AuthTktAuthenticationPolicy(settings.get('authtkt.secret'), callback=static_path_skiped, cookie_name='cmstkt')
+    authorization = ACLAuthorizationPolicy()
+    return authentication, authorization
+
 
 def main(global_config, **settings):
     """ apprications main
@@ -94,3 +105,4 @@ def main(global_config, **settings):
     sqlahelper.add_engine(engine)
     
     return config.make_wsgi_app()
+

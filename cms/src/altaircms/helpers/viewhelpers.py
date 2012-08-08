@@ -33,6 +33,8 @@ def set_endpoint(request, endpoint=None):
 def get_endpoint(request): #maybe
     session = request.session
     endpoint = session.get(CMS_ENDPOINT)
+    if endpoint:
+        del session[CMS_ENDPOINT]
     logger.debug("returned endpoint: %s" % endpoint)
     return endpoint
 

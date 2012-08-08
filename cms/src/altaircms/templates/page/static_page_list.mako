@@ -24,14 +24,13 @@
 
 <div class="row-fluid">
   <h3 style="margin-top:0px;">ページ追加</h3>
-    <a href="${request.route_path("page_add_orphan", action="input")}" class="btn btn-success btn-large">新しいページを作成する</a>
-
+    <a href="${request.route_path("static_page_create", action="input")}" class="btn btn-success btn-large">新しい静的ページを追加する</a>
 
   <h3>ページ一覧</h3>
   <ul class="nav nav-tabs">
     <li><a href="${request.route_path("pageset_list",kind="event")}">イベント詳細ページ</a></li>
-    <li  class="active"><a href="${request.route_path("pageset_list",kind="other")}">トップ／カテゴリトップページ</a></li>
-    <li><a href="${request.route_path("pageset_list",kind="static")}">静的ページ</a></li>
+    <li><a href="${request.route_path("pageset_list",kind="other")}">トップ／カテゴリトップページ</a></li>
+    <li class="active"><a href="${request.route_path("pageset_list",kind="static")}">静的ページ</a></li>
   </ul>
 
 <%
@@ -48,9 +47,7 @@ seq = h.paginate(request, pages, item_count=page_count, items_per_page=50)
 <table class="table table-striped">
   <thead>
 	<tr>
-	  <th>ページ名</th>
-	  <th>URL</th>
-	  <th>preview</th>
+	  <th>名前</th>
 	  <th>生成日時</th>
 	  <th>更新日時</th>
 	</tr>
@@ -58,10 +55,8 @@ seq = h.paginate(request, pages, item_count=page_count, items_per_page=50)
   <tbody>
     %for page in seq.paginated():
       <tr>
-        <td><a href="${request.route_path("pageset_detail", pageset_id=page.id, kind="other")}">${page.name}</a></td>
-        <td>${page.url}</td>
-        <td>
-          <a href="${h.link.preview_page_from_pageset(request, page)}" class="btn btn-small"><i class="icon-eye-open"> </i> Preview</a>
+        <td> 
+		  <a href="${request.route_path("static_page", action="detail", static_page_id=page.id)}">${page.name}</a>
         </td>
 		<td>${h.base.jdate(page.created_at)}</td>
 		<td>${h.base.jdate(page.updated_at)}</td>
