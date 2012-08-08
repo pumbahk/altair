@@ -41,7 +41,6 @@ $(".header").append(e);
 					</ul>　　
 				</div>
 			</div>
-
 			  <%block name="above_kadomaru">
                 ${widgets("above_kadomaru")}
 			  </%block>

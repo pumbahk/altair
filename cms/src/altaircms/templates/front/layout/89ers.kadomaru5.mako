@@ -11,6 +11,12 @@
 	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
 	<link rel="stylesheet" type="text/css" href="/static/89ers/css/style.css" media="all" />
 	<title>${page.title}</title>     <meta name="description" content="${page.description}">     <meta name="keywords" content="${page.keywords}">
+	<!--[if lte IE 6]>  
+    <script type="text/javascript" src="/static/89ers/js/DD_belatedPNG.js">  
+    </script>  
+    <script type="text/javascript"> DD_belatedPNG.fix( .header,.sparkle);</script>  
+    <![endif]-->  
+
 <script type="text/javascript">
      $(function(){
 var e = $("<a>");
@@ -31,7 +37,7 @@ $(".header").append(e);
 	<div class="wrapper">
 		<!-- メインカラム -->
 		<div class="maincol">
-			<header>
+			<div class="header">
 				<div class="gnavi">
 					<ul>
 %for c in myhelper._get_categories(request, "header_menu"):
@@ -39,7 +45,7 @@ $(".header").append(e);
 %endfor
 					</ul>　　
 				</div>
-			</header>
+			</div>
 
 			  <%block name="above_kadomaru">
                 ${widgets("above_kadomaru")}
@@ -77,7 +83,7 @@ $(".header").append(e);
 			  </%block>
 
 
-			<footer>
+			<div class="footer">
 				<div class="footernav">
 		          <ul>
 					<% xs = myhelper._get_categories(request, "footer_menu").all()%>
@@ -97,7 +103,7 @@ $(".header").append(e);
 				<div class="copyright">
 					Copyright &copy; 2010-2011 TicketStar Inc. All Rights Reserved. 
 				</div>
-			</footer>
+			</div>
 
 		</div>
 		<!-- メインカラムおわり -->

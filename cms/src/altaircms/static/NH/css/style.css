@@ -918,3 +918,35 @@ footer .footernav ul li {
 .bgfff{
 	background: #fff !important;
 }
+table.login thead th{
+	background: #dc0078;
+	color: #fff;
+	font-weight: bold;
+	padding: 5px 10px;
+	
+}
+
+table.login td{
+	padding: 5px 10px;
+}
+
+table.login td input{
+	padding: 5px;
+	border: 1px #ccc solid;
+}
+
+.small{
+	font-size: x-small;
+}
+
+.submitBtn{
+	padding: 20px;
+	margin: 0 auto;
+	width: 400px;
+	text-align: center;
+	color: #444;
+}
+
+.submitBtn input{
+	padding:3px 7px;
+}
