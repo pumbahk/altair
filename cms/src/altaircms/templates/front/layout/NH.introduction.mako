@@ -18,7 +18,7 @@
 	<div class="wrapper">
 		<!-- メインカラム -->
 		<div class="maincol">
-			<header>
+			<div class="header">
 				<div class="gnavi">
 					<ul>
 %for c in myhelper._get_categories(request, "header_menu"):
@@ -26,7 +26,7 @@
 %endfor
 					</ul>　　
 				</div>
-			</header>
+			</div>
 
 <%block name="above_kadomaru">
   ${widgets("above_kadomaru")}
@@ -65,7 +65,7 @@
 </div>
 <!-- kadomaruおわり -->
 
-			<footer>
+			<div class="footer">
 				<div class="footernav">
 		          <ul>
 		            <li class="first"><a href="/static/faq/faq.html">ヘルプ</a></li>
@@ -78,7 +78,7 @@
 				<div class="copyright">
 					Copyright &copy; 2010-2011 TicketStar Inc. All Rights Reserved. 
 				</div>
-			</footer>
+			</div>
 
 		</div>
 		<!-- メインカラムおわり -->
