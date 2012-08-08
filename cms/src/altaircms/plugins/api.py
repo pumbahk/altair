@@ -17,7 +17,6 @@ import logging
 logger = logging.getLogger(__file__)
 
 
-### extra resource
 def get_configparsers_from_inifiles(config, inifiles, _open=open):
     assetresolver = AssetResolver()
     configparsers = []
@@ -38,9 +37,17 @@ def _get_configparser_from_inifile(path, _open=open):
         configparser.readfp(rf)    
     return configparser
 
+### extra resource
+
 @implementer(IExtraResource)
 class ExtraResource(dict):
-    pass
+    def __init__(self, items):
+        self.items = items
+        for k, v in items:
+            self[k] = self.parse(v)
+
+    def parse(self, v):
+        return [x.decode("utf-8") for x in list_from_setting_value(v)] ## ok?
 
 def set_extra_resource(config, configparser):
     if not configparser.has_section("extra_resource"):
