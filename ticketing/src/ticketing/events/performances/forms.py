@@ -49,7 +49,7 @@ class PerformanceForm(Form):
     )
     start_on = DateTimeField(
         label=u'開演',
-        validators=[Optional()],
+        validators=[Required()],
         format='%Y-%m-%d %H:%M',
     )
     end_on = DateTimeField(

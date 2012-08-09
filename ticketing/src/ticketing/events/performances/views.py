@@ -113,8 +113,7 @@ class Performances(BaseView):
 
         is_copy = (self.request.matched_route.name == 'performances.copy')
         kwargs = dict(organization_id=self.context.user.organization_id)
-        if is_copy:
-            kwargs.update(dict(venue_id=performance.venue.id))
+        kwargs.update(dict(venue_id=performance.venue.id))
 
         f = PerformanceForm(**kwargs)
         f.process(record_to_multidict(performance))
