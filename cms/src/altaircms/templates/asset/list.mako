@@ -22,31 +22,57 @@
   </ul>
 </div>
 
-<div class="row">
-  <div class="span6">
-    ## image asset
-    <h4>画像アセットの追加</h4>
-	<form action="${request.route_path("asset_image_create")}" method="POST" enctype="multipart/form-data">
-      ${fco.form_as_table_strict(image_asset_form, ["filepath","title","tags","private_tags"])}
-	  <button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> Create</button>
-    </form>
-
-    ## movie asset
-    <h4>動画アセットの追加</h4>
-	<form action="${request.route_path("asset_movie_create")}" method="POST" enctype="multipart/form-data">
-      ${fco.form_as_table_strict(movie_asset_form, ["filepath","title","placeholder","tags","private_tags"])}
-	  <button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> Create</button>
-    </form>
-
-    ## flash asset
-    <h4>flashアセットの追加</h4>
-	<form action="${request.route_path("asset_flash_create")}" method="POST" enctype="multipart/form-data">
-      ${fco.form_as_table_strict(flash_asset_form, ["filepath","title","placeholder","tags","private_tags"])}
-	  <button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> Create</button>
-    </form>
-
-  </div>
+<div class="btn-group" style="margin-bottom:20px;">
+  <a class="btn" data-toggle="modal" href="#imageformModal" ><i class="icon-minus"></i> 画像アセットの追加</a>
+  <a class="btn" data-toggle="modal" href="#movieformModal" ><i class="icon-minus"></i> 動画アセットの追加</a>
+  <a class="btn" data-toggle="modal" href="#flashformModal" ><i class="icon-minus"></i> Flashアセットの追加</a>
 </div>
+
+<div class="modal hide big-modal" id="imageformModal">
+  <div class="modal-header">
+    <h3>画像アセットの追加</h3>
+  </div>
+	<form action="${request.route_path("asset_image_create")}" method="POST" enctype="multipart/form-data">	
+  <div class="modal-body">
+    ${fco.form_as_table_strict(image_asset_form, ["filepath","title","tags","private_tags"])}		
+  </div>
+  <div class="modal-footer">
+	<a href="#" class="btn" data-dismiss="modal">Close</a>
+	<button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> 登録する</button>
+  </div>
+  </form>
+</div>
+
+<div class="modal hide big-modal" id="movieformModal">
+  <div class="modal-header">
+    <h3>動画アセットの追加</h3>
+  </div>
+	<form action="${request.route_path("asset_movie_create")}" method="POST" enctype="multipart/form-data">
+  <div class="modal-body">
+    ${fco.form_as_table_strict(movie_asset_form, ["filepath","title","placeholder","tags","private_tags"])}
+  </div>
+  <div class="modal-footer">
+	<a href="#" class="btn" data-dismiss="modal">Close</a>
+	<button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> 登録する</button>
+  </div>
+  </form>
+</div>
+
+<div class="modal hide big-modal" id="flashformModal">
+  <div class="modal-header">
+    <h3>Flashアセットの追加</h3>
+  </div>
+	<form action="${request.route_path("asset_flash_create")}" method="POST" enctype="multipart/form-data">
+  <div class="modal-body">
+    ${fco.form_as_table_strict(flash_asset_form, ["filepath","title","placeholder","tags","private_tags"])}
+  </div>
+  <div class="modal-footer">
+	<a href="#" class="btn" data-dismiss="modal">Close</a>
+	<button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> 登録する</button>
+  </div>
+  </form>
+</div>
+
 
 <%
 seq = h.paginate(request, assets, item_count=assets.count())
@@ -58,9 +84,10 @@ ${seq.pager()}
     <tbody>
         %for asset in seq.paginated():
         <tr>
-            <td>${asset.created_at}</td>
             <td>${asset.discriminator}</td>
-            <td><a href="${request.route_path("asset_detail", asset_type=asset.discriminator, asset_id=asset.id)}">${asset}</a></td>
+            <td><a href="${request.route_path("asset_detail", asset_type=asset.discriminator, asset_id=asset.id)}">${asset.title}</a></td>
+            <td>${asset.created_at}</td>
+            <td>${asset.updated_at}</td>
         </tr>
         %endfor
     </tbody>
