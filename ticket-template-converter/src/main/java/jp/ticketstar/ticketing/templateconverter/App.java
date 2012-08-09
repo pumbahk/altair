@@ -161,6 +161,23 @@ public class App {
 					}
 					{
 						final Element flowDivElement = doc.createElementNS(SVG_NAMESPACE, "flowDiv");
+						String alignment = null;
+						switch (textBox.getHorizontalAlignment()) {
+						case HSSFTextbox.HORIZONTAL_ALIGNMENT_CENTERED:	
+							alignment = "center";
+							break;
+						case HSSFTextbox.HORIZONTAL_ALIGNMENT_RIGHT:
+							alignment = "right";
+							break;
+						case HSSFTextbox.HORIZONTAL_ALIGNMENT_LEFT:
+						default:
+							alignment = "left";
+							break;
+						case HSSFTextbox.HORIZONTAL_ALIGNMENT_JUSTIFIED:
+							alignment = "justify";
+							break;
+						}
+						flowDivElement.setAttributeNS(SVG_NAMESPACE, "style", "text-align:" + alignment);
 						populateWithFlowSpans(workbook, flowDivElement, textBox.getString());
 						flowRootElement.appendChild(flowDivElement);
 					}
