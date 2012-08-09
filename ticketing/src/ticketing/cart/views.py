@@ -60,10 +60,12 @@ class IndexView(object):
             raise NoEventError("No such event (%d)" % event_id)
         # 日程,会場,検索項目のコンボ用
         dates = sorted(list(set([p.start_on.strftime("%Y-%m-%d %H:%M") for p in e.performances])))
+        logger.debug("dates:%s" % dates)
         # 日付ごとの会場リスト
         select_venues = {}
         for p in e.performances:
             d = p.start_on.strftime('%Y-%m-%d %H:%M')
+            logger.debug('performance %d date %s' % (p.id, d))
             ps = select_venues.get(d, [])
             ps.append(dict(id=p.id, name=p.venue.name,
                            seat_types_url=self.request.route_url('cart.seat_types', 
@@ -71,6 +73,7 @@ class IndexView(object):
                                                                  sales_segment_id=sales_segment.id,
                                                                  event_id=e.id)))
             select_venues[d] = ps
+        logger.debug("venues %s" % select_venues)
 
         # 会場
         venues = set([p.venue.name for p in e.performances])
