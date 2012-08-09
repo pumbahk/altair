@@ -6,6 +6,12 @@
 <script type="text/javascript" src="/static/js/jquery.decentcolorpicker.js"></script>
 </%block>
 
+<script>
+  $(function() {
+    $('[rel=popover]').popover()
+  });
+</script>
+
 <div class="breadcrumbs">
   ${h.breadcrumbs(
       names=[u'イベント', event.title],
@@ -40,11 +46,25 @@
       <td>${event.account.name} 様</td>
     </tr>
     <tr>
-      <th>販売開始日時</th>
+      <th>
+        販売開始日時
+        <span class="help-inline">
+          <a rel="popover" data-original-title="販売開始日時" data-content="登録済みの商品のうち最初の販売開始日時">
+            <i class="icon-question-sign"></i>
+          </a>
+        </span>
+      </th>
       <td>${h.safe_strftime(event.sales_start_on)}</td>
     </tr>
     <tr>
-      <th>販売終了日時</th>
+      <th>
+        販売終了日時
+        <span class="help-inline">
+          <a rel="popover" data-original-title="販売終了日時" data-content="登録済みの商品のうち最後の販売終了日時">
+            <i class="icon-question-sign"></i>
+          </a>
+        </span>
+      </th>
       <td>${h.safe_strftime(event.sales_end_on)}</td>
     </tr>
     <tr>
