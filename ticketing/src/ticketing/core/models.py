@@ -947,7 +947,7 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     event_id = Column(Identifier, ForeignKey("Event.id"))
     quantity_only = Column(Boolean, default=False)
     style = Column(MutationDict.as_mutable(JSONEncodedDict(1024)))
-    stocks = relationship('Stock', backref='stock_type')
+    stocks = relationship('Stock', backref=backref('stock_type', order_by='StockType.order_no'))
 
     @property
     def is_seat(self):
@@ -1130,17 +1130,18 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
     price = Column(Numeric(precision=16, scale=2), nullable=False)
+    order_no = Column(Integer, default=1)
 
     sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'), nullable=True)
-    sales_segment = relationship('SalesSegment', uselist=False, backref='product')
+    sales_segment = relationship('SalesSegment', uselist=False, backref=backref('product', order_by='Product.order_no'))
 
     seat_stock_type_id = Column(Identifier, ForeignKey('StockType.id'), nullable=True)
-    seat_stock_type = relationship('StockType', uselist=False, backref='product')
+    seat_stock_type = relationship('StockType', uselist=False, backref=backref('product', order_by='Product.order_no'))
 
     event_id = Column(Identifier, ForeignKey('Event.id'))
-    event = relationship('Event', backref='products')
+    event = relationship('Event', backref=backref('products', order_by='Product.order_no'))
 
-    items = relationship('ProductItem', backref='product')
+    items = relationship('ProductItem', backref=backref('product', order_by='Product.order_no'))
 
     @staticmethod
     def find(performance_id=None, event_id=None, sales_segment_id=None, include_deleted=False):
