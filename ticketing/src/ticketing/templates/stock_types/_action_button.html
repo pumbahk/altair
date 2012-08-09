@@ -14,6 +14,7 @@
     var modal = $('#modal-stock_type');
     modal.find('#id').val(id);
     modal.find('#name').val($(el).attr('name'));
+    modal.find('#order_no').val($(el).attr('order_no'));
     if ($(el).attr('quantity_only') == '1') {
       modal.find('#quantity_only').attr('checked', 'checked').change();
     }

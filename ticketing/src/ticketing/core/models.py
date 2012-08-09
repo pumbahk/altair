@@ -496,7 +496,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization = relationship('Organization', backref='events')
 
     performances = relationship('Performance', backref='event')
-    stock_types = relationship('StockType', backref='event')
+    stock_types = relationship('StockType', backref='event', order_by='StockType.order_no')
     stock_holders = relationship('StockHolder', backref='event')
 
     _first_performance = None
@@ -943,6 +943,7 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
     type = Column(Integer)  # @see StockTypeEnum
+    order_no = Column(Integer, default=1)
     event_id = Column(Identifier, ForeignKey("Event.id"))
     quantity_only = Column(Boolean, default=False)
     style = Column(MutationDict.as_mutable(JSONEncodedDict(1024)))

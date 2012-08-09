@@ -123,7 +123,7 @@ class IndexView(object):
             c_models.Performance.event_id==c_models.StockHolder.event_id).filter(
             c_models.StockHolder.id==c_models.Stock.stock_holder_id).filter(
             c_models.Stock.stock_type_id==c_models.StockType.id).filter(
-            c_models.Stock.id.in_(segment_stocks)).all()
+            c_models.Stock.id.in_(segment_stocks)).order_by(c_models.StockType.order_no).all()
 
         performance = c_models.Performance.query.filter_by(id=performance_id).one()
 
