@@ -48,6 +48,7 @@ ${xs.pager()}
       %for k in display_fields:
       <th>${getattr(form,k).label}</th>
       %endfor
+	  <th>操作</th>
     </tr>
   </thead>
     <tbody>
@@ -60,12 +61,28 @@ ${xs.pager()}
                 <td>${getattr(x,k, "-")}</td>
               %endfor
               <td>
-              <a href="${request.route_path(master_env.join("update"),action="input",id=x.id)}" class="btn btn-small btn-primary">
-                <i class="icon-cog icon-white"> </i> Update
-              </a>
-              <a href="${request.route_path(master_env.join("delete"),action="confirm",id=x.id)}" class="btn btn-small btn-danger">
-                <i class="icon-trash icon-white"> </i> Delete
-              </a>
+				<div class="btn-group">
+				  <button class="btn dropdown-toggle" data-toggle="dropdown">
+					<span class="caret"></span>
+				  </button>
+				  <ul class="dropdown-menu">
+					<li>
+					  <a href="${request.route_path(master_env.join("update"),action="input",id=x.id)}">
+						<i class="icon-cog"> </i> 編集
+					  </a>
+					</li>
+					<li>
+					  <a href="${request.route_path(master_env.join("create"), action="copied_input",_query=dict(id=x.id))}">
+						<i class="icon-cog"> </i> コピーして新規作成
+					  </a>
+					</li>
+					<li>
+					  <a href="${request.route_path(master_env.join("delete"),action="confirm",id=x.id)}">
+						<i class="icon-trash"> </i> 削除
+					  </a>
+					</li>
+				  </ul>
+				</div>
               </td>
             </tr>
         %endfor

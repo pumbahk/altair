@@ -18,6 +18,7 @@
          <td>${d.created_at}</td>
 		 <td>
 		   <form action="${h.widget.to_disposition_alter(request,d)}" method="POST">
+             <input type="hidden" name="disposition" value="${d.id}"/>
 			 <button type="submit" class="btn btn-danger"><i class="icon-trash icon-white"></i>delete</button>
 		   </form>
 		 </td>

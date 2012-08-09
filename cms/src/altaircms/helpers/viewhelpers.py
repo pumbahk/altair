@@ -22,18 +22,22 @@ CMS_ENDPOINT = "cms:endpoint"
 _CMS_ENDPOINT_SENTINEL =  "cms:endpoint:sentinel" #sentinel?
 def set_endpoint(request, endpoint=None):
     session = request.session
+    logger.debug(session.get(_CMS_ENDPOINT_SENTINEL) != request.matched_route.name)
     if session.get(_CMS_ENDPOINT_SENTINEL) != request.matched_route.name:
         session[_CMS_ENDPOINT_SENTINEL] = request.matched_route.name
         session[CMS_ENDPOINT] = endpoint or request.referrer
     logger.debug("matched route name")
     logger.debug(request.matched_route.name)
     logger.debug("session")
-    logger.debug("sentinel: %s, endpoint: %s" % (session.get(_CMS_ENDPOINT_SENTINEL), session.get(CMS_ENDPOINT)))
+    logger.debug("sentinel: %s, endpoint: %s, referer: %s" % (session.get(_CMS_ENDPOINT_SENTINEL), session.get(CMS_ENDPOINT), request.referrer))
 
 def get_endpoint(request): #maybe
     session = request.session
     endpoint = session.get(CMS_ENDPOINT)
-    logger.debug("returned endpoint: %s" % endpoint)
+    if endpoint:
+        del session[CMS_ENDPOINT]
+    session[_CMS_ENDPOINT_SENTINEL] = None #sentinel?
+    logger.debug("sentinel: %s, endpoint: %s, referer: %s" % (session.get(_CMS_ENDPOINT_SENTINEL), session.get(CMS_ENDPOINT), request.referrer))
     return endpoint
 
 

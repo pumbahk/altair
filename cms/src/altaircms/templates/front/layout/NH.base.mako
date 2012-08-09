@@ -13,13 +13,33 @@
     <title>${page.title}</title>
     <meta name="description" content="${page.description}">
     <meta name="keywords" content="${page.keywords}">
+	<!--[if lte IE 6]>  
+    <script type="text/javascript" src="/static/NH/js/DD_belatedPNG.js">  
+    </script>  
+    <script type="text/javascript"> DD_belatedPNG.fix( .header,.sparkle);</script>  
+    <![endif]-->  
+
+<script type="text/javascript">
+     $(function(){
+var e = $("<a>");
+e.attr("href","http://happinets.net/")
+e.css({"position": "relative",
+	   "top": "10px",
+	   "left": "510px",
+       "display": "block",
+       "width": "175px",
+       "height": "120px"
+       });
+$(".header").append(e);
+     });
+   </script>
 </head>
 <body>
 	<!-- wrapper -->	
 	<div class="wrapper">
 		<!-- メインカラム -->
 		<div class="maincol">
-			<header>
+			<div class="header">
 				<div class="gnavi">
 					<ul>
 %for c in myhelper._get_categories(request, "header_menu"):
@@ -27,7 +47,10 @@
 %endfor
 					</ul>　　
 				</div>
-			</header>
+			</div>
+			  <%block name="above_kadomaru">
+                ${widgets("above_kadomaru")}
+			  </%block>
 
 			<div class="kadomaru">
 			  <%block name="kadomaru">
@@ -36,21 +59,32 @@
 			</div>
 			<!-- kadomaru終わり -->
 
+			  <%block name="bellow_kadomaru">
+                ${widgets("bellow_kadomaru")}
+			  </%block>
 
-			<footer>
+
+			<div class="footer">
 				<div class="footernav">
 		          <ul>
-		            <li class="first"><a href="/static/faq/faq.html">ヘルプ</a></li>
-		            <li><a href="http://www.ticketstar.jp/corporate">運営会社</a></li>
-		            <li><a href="https://ticket.rakuten.co.jp/contact/form">お問い合わせ</a></li>
-		            <li><a href="http://www.ticketstar.jp/privacy">個人情報保護方針</a></li>
-		            <li class="last"><a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a></li>
+					<% xs = myhelper._get_categories(request, "footer_menu").all()%>
+					 %if len(xs) >= 2:
+							 <li><a class="first" href="${h.link.get_link_from_category(request,xs[0])}">${xs[0].label}</a></li>
+							 %for c in xs[1:-1]:
+									 <li><a href="${h.link.get_link_from_category(request,c)}">${c.label}</a></li>
+							 %endfor
+							 <li><a class="last" href="${h.link.get_link_from_category(request,xs[-1])}">${xs[-1].label}</a></li>
+					 %else:
+							 %for c in xs:
+									 <li><a class="first last" href="${h.link.get_link_from_category(request,c)}">${c.label}</a></li>
+							 %endfor
+					 %endif
 		          </ul>
 		        </div>
 				<div class="copyright">
 					Copyright &copy; 2010-2011 TicketStar Inc. All Rights Reserved. 
 				</div>
-			</footer>
+			</div>
 
 		</div>
 		<!-- メインカラムおわり -->

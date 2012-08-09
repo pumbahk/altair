@@ -15,10 +15,8 @@ testing = get_current_registry().settings.get('ticketing.testing', False)
       <li><a href="${request.route_path('products.index', event_id=event.id)}">商品</a></li>
       <li><a href="">チケット券面</a></li>
       <li><a href="${request.route_path('performances.index', event_id=event.id)}">パフォーマンス</a></li>
+      <li><a href="${request.route_path('events.report', event_id=event.id)}"></i>帳票出力</a></li>
     </ul>
-    % endif
-    % if testing:
-    <li><a href="">帳票出力</a></li>
     % endif
     <li><a href="${request.route_path('accounts.index')}">取引先</a></li>
     <li class="divider"></li>

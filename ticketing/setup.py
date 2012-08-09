@@ -57,6 +57,9 @@ requires = [
     'tableau >= 0.0.4pre',
     'uamobile',
     'alembic >= 0.3.3',
+    'xlrd',
+    'xlwt',
+    'xlutils',
     ]
 
 setup(name='ticketing',
