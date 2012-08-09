@@ -5,7 +5,7 @@ package jp.ticketstar.ticketing.printing;
  *
  */
 public class App {
-    public static void main(String[] args) {
+	public static void main(String[] args) {
     	final AppWindowModel model = new AppWindowModel();
     	final AppService appService = new AppService(model);
     	final AppWindow appWindow = new AppWindow(appService);

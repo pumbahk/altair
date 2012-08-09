@@ -22,8 +22,8 @@ import org.w3c.dom.Element;
 class ExtendedSVG12BridgeExtension extends SVG12BridgeExtension {
     public float getPriority() { return 0f; }
 
-    @SuppressWarnings("unchecked")
-	public Iterator<BridgeExtension> getImplementedExtensions() {
+	@SuppressWarnings("unchecked")
+	public Iterator<String> getImplementedExtensions() {
         return Collections.EMPTY_LIST.iterator();
     }
 
