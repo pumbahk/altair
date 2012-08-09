@@ -836,6 +836,12 @@ class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     payment_plugin_id = Column(Identifier, ForeignKey('PaymentMethodPlugin.id'))
     payment_plugin = relationship('PaymentMethodPlugin', uselist=False)
 
+    @property
+    def fee_type_label(self):
+        for ft in FeeTypeEnum:
+            if ft.v[0] == self.fee_type:
+                return ft.v[1]
+
     @staticmethod
     def get_by_organization_id(id):
         return PaymentMethod.filter(PaymentMethod.organization_id==id).all()
@@ -851,6 +857,12 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization = relationship('Organization', uselist=False , backref='delivery_method_list')
     delivery_plugin_id = Column(Identifier, ForeignKey('DeliveryMethodPlugin.id'))
     delivery_plugin = relationship('DeliveryMethodPlugin', uselist=False)
+
+    @property
+    def fee_type_label(self):
+        for ft in FeeTypeEnum:
+            if ft.v[0] == self.fee_type:
+                return ft.v[1]
 
     @staticmethod
     def get_by_organization_id(id):
