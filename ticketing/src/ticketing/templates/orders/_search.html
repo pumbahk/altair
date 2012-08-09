@@ -70,15 +70,15 @@
   <div class="modal-body">
     <form id="search" class="form-horizontal" action="/orders/" method="POST">
       <fieldset>
-        ${h.form_item(form.order_no, option={'class':'span8', 'maxlength':12})}
+        ${h.form_item(form.order_no, option={'style':'width: 200px;', 'maxlength':12})}
         <div class="control-group ">
           <label class="control-label">
             ${form.ordered_from.label.text}
           </label>
           <div class="controls">
             <div style="float: left;">
-              <input class="span5 datefield" id="ordered_from" name="ordered_from" type="text"> 〜
-              <input class="span5 datefield" id="ordered_to" name="ordered_to" type="text">
+              <input class="datefield" style="width: 140px;" id="ordered_from" name="ordered_from" type="text"> 〜
+              <input class="datefield" style="width: 140px;" id="ordered_to" name="ordered_to" type="text">
             </div>
           </div>
         </div>
