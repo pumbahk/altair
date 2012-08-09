@@ -22,7 +22,7 @@ class ProductForm(Form):
                 (sales_segment.id, sales_segment.name) for sales_segment in SalesSegment.filter_by(**conditions).all()
             ]
             self.seat_stock_type_id.choices = [
-                (stock_type.id, stock_type.name) for stock_type in StockType.filter_by(**conditions).all() if stock_type.is_seat
+                (stock_type.id, stock_type.name) for stock_type in StockType.filter_by(**conditions).all()
             ]
 
     def _get_translations(self):
