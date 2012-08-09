@@ -55,6 +55,7 @@ for stock_type in stock_types:
                id="stock_type-${stock_type.id}"
                name="${stock_type.name}"
                type="${stock_type.type}"
+               quantity_only="${1 if stock_type.quantity_only else 0}"
                quantity="${quantity}"
                data="${h.json(stock_type.style)}">
               ${stock_type.name}
@@ -97,6 +98,7 @@ for stock_type in stock_types:
                id="stock_type-${stock_type.id}"
                name="${stock_type.name}"
                type="${stock_type.type}"
+               quantity_only="${1 if stock_type.quantity_only else 0}"
                quantity="${quantity}"
                data='${h.json(stock_type.style)}'>
               ${stock_type.name}

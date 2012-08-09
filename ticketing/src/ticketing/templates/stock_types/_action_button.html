@@ -14,8 +14,11 @@
     var modal = $('#modal-stock_type');
     modal.find('#id').val(id);
     modal.find('#name').val($(el).attr('name'));
+    if ($(el).attr('quantity_only') == '1') {
+      modal.find('#quantity_only').attr('checked', 'checked').change();
+    }
     if ($(el).attr('type') == '1') {
-      modal.find('#type').attr('checked', 'checked');
+      modal.find('#type').attr('checked', 'checked').change();
     }
     var data = JSON.parse($(el).attr('data'));
     if (data) {

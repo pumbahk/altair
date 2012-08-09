@@ -13,6 +13,14 @@
       }
     });
 
+    $('#modal-stock_type #quantity_only').change(function() {
+      if ($(this).attr('checked')) {
+        $(this).val(1);
+      } else {
+        $(this).val(0);
+      }
+    });
+
     $('#modal-stock_type').on('shown', function(){
       $(this).css('max-height', '750px')
           .css('margin-top', ($(this).outerHeight()/2)*-1)

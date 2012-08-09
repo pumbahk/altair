@@ -74,7 +74,7 @@
       <td><span id="id">${product.id}</span></td>
       <td><a href="javascript:edit_product('${product.id}');"><span id="name">${product.name}</span></a></td>
       <td><span id="price" value="${product.price}">${price_format(product.price)}</span>円</td>
-      <td><div id="seat_stock_type_id" value="${product.seat_stock_type_id}">${product.seat_stock_type.name}</div></td>
+      <td><div id="seat_stock_type_id" value="${product.seat_stock_type_id}">${product.seat_type()}</div></td>
       % if product.sales_segment:
       <td>
         <a href="${request.route_path('sales_segments.show', sales_segment_id=product.sales_segment.id)}">
