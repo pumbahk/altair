@@ -875,7 +875,6 @@ class BuyerCondition(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'ProductItem'
     id = Column(Identifier, primary_key=True)
-    item_type = Column(Integer)
     price = Column(Numeric(precision=16, scale=2), nullable=False)
 
     product_id = Column(Identifier, ForeignKey('Product.id'))

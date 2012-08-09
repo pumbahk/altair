@@ -23,14 +23,12 @@ class ProductData(DataSet):
 
 class ProductItemData(DataSet):
     class productitem_1:
-        item_type = 1
         product = ProductData.product_1
 #        performance = PerformanceData.performance_1
         stock_type_id = None
         price_id = None
         status = None
     class productitem_2:
-        item_type = 2
         product = ProductData.product_2
 #        performance = PerformanceData.performance_1
         stock_type_id = None
