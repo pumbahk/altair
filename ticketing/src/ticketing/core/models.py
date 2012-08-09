@@ -821,8 +821,8 @@ class DeliveryMethodPlugin(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     name = Column(String(255))
 
 class FeeTypeEnum(StandardEnum):
-    Once = (0, u'1回あたりの手数料')
-    PerUnit = (1, u'1件あたりの手数料')
+    Once = (0, u'1件あたりの手数料')
+    PerUnit = (1, u'1枚あたりの手数料')
 
 class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentMethod'
