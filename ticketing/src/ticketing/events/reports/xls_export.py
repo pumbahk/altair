@@ -124,6 +124,12 @@ class BaseExporter(object):
         """
         return self.xl_writer.style_list[cell.xf_idx]
 
+    def remove_sheet(self, index):
+        # シートのリストから指定した位置のシートを削除
+        sheet = self.workbook._Workbook__worksheets.pop(index)
+        # シート名からのインデックスを削除
+        del self.workbook._Workbook__worksheet_idx_from_name[sheet.name]
+
     def add_sheet(self, sheetname):
         """シートの1つ目をコピーして増やす
         """
@@ -210,6 +216,17 @@ class SalesScheduleReportExporter(BaseExporter):
     """
     def __init__(self, template):
         super(SalesScheduleReportExporter, self).__init__(template)
+
+    def write_data(self, sheet, data):
+        """シートにデータを流し込む
+        {
+          'event': {},
+          'meta': {},
+          'sales': [{}],
+          'performances': [{}],
+          'price_blocks': [{'prices': [{}]}],
+        }
+        """
 
 
 class SeatAssignExporter(BaseExporter):
