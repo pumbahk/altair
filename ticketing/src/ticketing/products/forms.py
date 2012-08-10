@@ -29,7 +29,7 @@ class ProductForm(Form):
         return Translations()
 
     id = HiddenField(
-        label=u'ID',
+        label=u'商品ID',
         validators=[Optional()],
     )
     event_id = HiddenField(
