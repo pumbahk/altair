@@ -217,16 +217,33 @@ class SalesScheduleReportExporter(BaseExporter):
     def __init__(self, template):
         super(SalesScheduleReportExporter, self).__init__(template)
 
+    def remove_templates(self):
+        "先頭から2つのテンプレート用のシートを削除"
+        self.remove_sheet(0)
+        self.remove_sheet(0)
+
+    def write_output_datetime(self, sheet, value):
+        self.update_cell_text(sheet, 0, 12, value)
+
+    def write_event_title(self, sheet, value):
+        self.update_cell_text(sheet, 4, 0, value)
+
     def write_data(self, sheet, data):
         """シートにデータを流し込む
         {
-          'event': {},
-          'meta': {},
+          'event_title': value,
+          'output_datetime': value,
           'sales': [{}],
           'performances': [{}],
           'price_blocks': [{'prices': [{}]}],
         }
         """
+        event_title = data.get('event_title')
+        if event_title:
+            self.write_event_title(sheet, event_title)
+        output_datetime = data.get('output_datetime')
+        if output_datetime:
+            self.write_output_datetime(sheet, output_datetime)
 
 
 class SeatAssignExporter(BaseExporter):
