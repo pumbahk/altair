@@ -878,8 +878,8 @@ class BuyerCondition(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'BuyerCondition'
     id = Column(Identifier, primary_key=True)
 
-    member_ship_id = Column(Identifier, ForeignKey('MemberShip.id'))
-    member_ship   = relationship('MemberShip')
+    member_ship_id = Column(Identifier, ForeignKey('Membership.id'))
+    member_ship   = relationship('Membership')
     '''
      Any Conditions.....
     '''

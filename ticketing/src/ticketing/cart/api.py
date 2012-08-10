@@ -14,7 +14,7 @@ from .interfaces import IPaymentMethodManager
 from .interfaces import IPaymentPlugin, IDeliveryPlugin, IPaymentDeliveryPlugin
 from .interfaces import IMobileRequest, IStocker, IReserving, ICartFactory
 from .models import Cart, PaymentMethodManager, DBSession, CartedProductItem, CartedProduct
-from ..users.models import User, UserCredential, MemberShip
+from ..users.models import User, UserCredential, Membership
     
 def is_mobile(request):
     return IMobileRequest.providedBy(request)
@@ -99,17 +99,17 @@ def get_or_create_user(request, clamed_id):
     credential = UserCredential.query.filter(
         UserCredential.auth_identifier==clamed_id
     ).filter(
-        UserCredential.membership_id==MemberShip.id
+        UserCredential.membership_id==Membership.id
     ).filter(
-        MemberShip.name=='rakuten'
+        Membership.name=='rakuten'
     ).first()
     if credential:
         return credential.user
     
     user = User()
-    membership = MemberShip.query.filter(MemberShip.name=='rakuten').first()
+    membership = Membership.query.filter(Membership.name=='rakuten').first()
     if membership is None:
-        membership = MemberShip(name='rakuten')
+        membership = Membership(name='rakuten')
         DBSession.add(membership)
     credential = UserCredential(user=user, auth_identifier=clamed_id, membership=membership)
     DBSession.add(user)

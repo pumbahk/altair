@@ -64,8 +64,8 @@ class UserCredential(Base, WithTimestamp):
     user_id = Column(Identifier, ForeignKey('User.id'))
     user = relationship('User', backref="user_credential", uselist=False)
 
-    membership_id = Column(Identifier, ForeignKey('MemberShip.id'))
-    membership = relationship("MemberShip", uselist=False)
+    membership_id = Column(Identifier, ForeignKey('Membership.id'))
+    membership = relationship("Membership", uselist=False)
 
     status = Column(Integer)
 
@@ -146,11 +146,11 @@ class MailSubscription(Base, WithTimestamp):
     status = Column(Integer)
 
 
-class MemberShip(Base, WithTimestamp):
+class Membership(Base, WithTimestamp):
     '''
       Membership ex) Rakuten Fanclub ....
     '''
-    __tablename__ = 'MemberShip'
+    __tablename__ = 'Membership'
     query = session.query_property()
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
