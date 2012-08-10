@@ -592,8 +592,8 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 "tickets":[1,2],
               ],
               "tickets":[
-                {"id":1, "sale_id":1, "name":"A席大人", "seat_type":"A席", "price":5000},
-                {"id":2, "sale_id":2, "name":"B席大人", "seat_type":"B席", "price":3000},
+                {"id":1, "sale_id":1, "name":"A席大人", "seat_type":"A席", "price":5000, "order_no":1},
+                {"id":2, "sale_id":2, "name":"B席大人", "seat_type":"B席", "price":3000, "order_no":2},
               ],
               "sales":[
                 {"id":1, "name":"販売区分1", "start_on":~, "end_on":~, "seat_choice":true},
@@ -1229,6 +1229,7 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             'price':floor(self.price),
             'sale_id':self.sales_segment_id,
             'seat_type':self.seat_type(),
+            'order_no':self.order_no,
         }
         if self.deleted_at:
             data['deleted'] = 'true'

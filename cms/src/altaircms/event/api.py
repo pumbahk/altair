@@ -49,6 +49,7 @@ class Scanner(object):
                 ticket.name = ticket_record['name']
                 ticket.seattype = ticket_record['seat_type']
                 ticket.price = ticket_record['price']
+                ticket.orderno = ticket_record['order_no']
             except KeyError as e:
                 raise "missing property '%s' in the ticket record" % e.message
             self.session.add(ticket)
