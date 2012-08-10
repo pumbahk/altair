@@ -129,7 +129,6 @@ class MailMagazine(Base, WithTimestamp):
         if subscription:
             session.delete(subscription)
 
-
 class MailSubscription(Base, WithTimestamp):
     __tablename__ = 'MailSubscription'
     __table_args__ = (
@@ -145,7 +144,6 @@ class MailSubscription(Base, WithTimestamp):
 
     status = Column(Integer)
 
-
 class Membership(Base, WithTimestamp):
     '''
       Membership ex) Rakuten Fanclub ....
@@ -154,5 +152,11 @@ class Membership(Base, WithTimestamp):
     query = session.query_property()
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
-
+    sales_segments = lambda:relationship('SalesSegment', secondary=Membership_SalesSegment.__table__, backref='memberships')
     status = Column(Integer)
+
+class Membership_SalesSegment(Base):
+    __tablename__ = 'Membership_SalesSegment'
+    query = session.query_property()
+    membership_id = Column(Identifier, ForeignKey('Membership.id'), primary_key=True)
+    sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'), primary_key=True)
