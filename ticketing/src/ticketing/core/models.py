@@ -1078,6 +1078,7 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         '''
         初期状態のStockを生成する
           - デフォルト値となる"未選択"のStock
+          - StockHolderのないStockType毎のStock
           - StockHolder × StockType分のStock
         既に該当のStockが存在する場合は、足りないStockのみ生成する
         '''
@@ -1094,10 +1095,20 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 )
                 stock.save()
 
-        # Performance × StockType × StockHolder分のStockを生成
         created_stock_types = []
         for performance in performances:
             for stock_type in stock_types:
+                # StockHolderのないStockType毎のStockを生成
+                if not [stock for stock in performance.stocks if stock.stock_type_id == stock_type.id]:
+                    stock = Stock(
+                        performance_id=performance.id,
+                        stock_type_id=stock_type.id,
+                        stock_holder_id=None,
+                        quantity=0
+                    )
+                    stock.save()
+
+                # Performance × StockType × StockHolder分のStockを生成
                 for stock_holder in stock_holders:
                     def stock_filter(stock):
                         return (stock.stock_type_id == stock_type.id and stock.stock_holder_id == stock_holder.id)
