@@ -205,9 +205,11 @@ class BaseExporter(object):
         cell = get_cell(sheet, row_index, colx)
 
 
-class SalesReportExporter(BaseExporter):
+class SalesScheduleReportExporter(BaseExporter):
     """販売日程管理票の帳票出力(Excel)
     """
+    def __init__(self, template):
+        super(SalesScheduleReportExporter, self).__init__(template)
 
 
 class SeatAssignExporter(BaseExporter):
