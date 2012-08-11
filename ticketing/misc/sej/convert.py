@@ -480,8 +480,8 @@ class PathDataScanner(object):
             raise Exception('moveto takes 2 * n arguments')
         i = iter(operand)
         try:
-            x = float(i.next())
-            y = float(i.next())
+            x = self.current_position[0] + float(i.next())
+            y = self.current_position[1] + float(i.next())
             self.handler.move_to(x, y)
             self.current_position = (x, y)
             while True:
@@ -1148,14 +1148,14 @@ class Visitor(object):
     @stylable
     @transformable
     def visit_path(self, scanner, ns, local_name, elem):
-        self.apply_styles(elem)
         path = elem.get(u'd')
         if path is None:
             raise Exception("No `d' attribute for path")
+        self.emitter.emit_new_path()
         PathDataScanner(
             tokenize_path_data(path),
             EmittingPathDataHandler(self.emitter))()
-        self.unapply_styles()
+        self.emit_fill_stroke()
 
     @namespace(SVG_NAMESPACE)
     @stylable
