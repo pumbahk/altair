@@ -15,7 +15,9 @@ body {
 
 .pre { white-space: pre; }
 .b { font-weight: 900; }
+.l { text-align: left; }
 .c { text-align: center; }
+.r { text-align: right; }
 .f0 { font-family: "Arial"; }
 .f1 { font-family: "Arial Black"; }
 .f2 { font-family: "Verdana"; }
@@ -252,7 +254,7 @@ function loadXml(url, success, error) {
 }
 
 function newScanner(text) {
-  var regexp = /"((?:[^"]|\\.)*)"|:([^\s"]*)|(-?(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)(?:[eE][-+]?[0-9]+)?)|([*+/A-Za-z_-]+)|([ \t]+)|(\r\n|\r|\n)|(.)/g;
+  var regexp = /"((?:\\.|[^"])*)"|:([^\s"]*)|(-?(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)(?:[eE][-+]?[0-9]+)?)|([*+/A-Za-z_-]+)|([ \t]+)|(\r\n|\r|\n)|(.)/g;
   var line = 0;
   var column = 0;
   return {
@@ -627,14 +629,15 @@ function newHandler(n, xmldoc) {
       unit = _unit;
     },
     X: function showText(width, height, text) {
+      var p = applyMatrix(currentMatrix, currentPoint);
       n.insertAdjacentHTML('beforeEnd', [
         '<div style="position:absolute;',
         'font-size:', fontSize, 'pt', ';',
         'line-height:', lineHeight || fontSize, 'pt', ';',
-        'left:', currentPoint.x, unit, ';',
-        'top:', currentPoint.y, unit, ';',
-        'width:', width, unit, ';',
-        'height:', height, unit, '"',
+        'left:', p.x, unit, ';',
+        'top:', p.y, unit, ';',
+        'width:', width * scale, unit, ';',
+        'height:', height * scale, unit, '"',
         ' class="', classes.join(' '), '"',
         '>', text, '</div>'].join(''));
     },
