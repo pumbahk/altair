@@ -84,7 +84,7 @@ class TicketNotationEmitter(object):
         self.result.append(u'Sw')
 
     def emit_unit(self, value):
-        self.emit_scalar_value(value)
+        self.emit_symbol(value)
         self.result.append(u'U')
 
     def emit_show_text(self, width, height, text):
@@ -833,7 +833,7 @@ class Visitor(object):
             Style(fill_color=StyleNone,
                   stroke_color=StyleNone,
                   stroke_width=1,
-                  font_size=10,
+                  font_size=12,
                   text_anchor='start'),
             False)
         self.style_stack = []
@@ -1022,7 +1022,7 @@ class Visitor(object):
                 html_styles = []
                 style = self.fetch_styles_from_element(elem)
                 if self.current_style_ctx.style.font_size != style.font_size:
-                    html_styles.append((u'font-size', unicode(style.font_size) + u'pt'))
+                    html_styles.append((u'font-size', unicode(style.font_size) + u'px'))
                 if self.current_style_ctx.style.fill_color != style.fill_color:
                     html_styles.append((u'color', stype.fill_color))
                 current_font_family_class = self.font_classes.get(self.current_style_ctx.style.font_family)
