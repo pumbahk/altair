@@ -1138,7 +1138,7 @@ class Visitor(object):
     def emit_fill_stroke(self):
         if self.current_style_ctx.style.fill_color is not StyleNone:
             if self.current_style_ctx.style.stroke_color is not StyleNone:
-                self.emitter.emit_fill_stroke()
+                self.emitter.emit_stroke_and_fill()
             else:
                 self.emitter.emit_fill()
         elif self.current_style_ctx.style.stroke_color is not StyleNone:
