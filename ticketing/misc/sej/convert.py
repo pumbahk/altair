@@ -1099,7 +1099,7 @@ class Visitor(object):
 
         if new_style.text_anchor is not None:
             text_anchor_class = self.text_anchor_classes.get(new_style.text_anchor)
-            old_text_anchor_class = self.text_anchor_classes.get(new_style.text_anchor)
+            old_text_anchor_class = self.text_anchor_classes.get(self.current_style_ctx.style.text_anchor)
             if text_anchor_class is None:
                 raise Exception('Unsupported anchor type: %s' % new_style.text_anchor)
             if text_anchor_class != old_text_anchor_class:
