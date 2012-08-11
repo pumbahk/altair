@@ -60,6 +60,7 @@ requires = [
     'xlrd',
     'xlwt',
     'xlutils',
+    'cssutils',
     ]
 
 setup(name='ticketing',
