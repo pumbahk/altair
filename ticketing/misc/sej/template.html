@@ -753,7 +753,6 @@ function newHandler(n, xmldoc) {
     s: function stroke() {
       if (pathData == null)
         return;
-      pathData.push(['Z']);
       initDrawable();
       drawable.path(pathData).style({
         strokeWidth: style.strokeWidth * Math.sqrt(Math.abs(determinant(currentMatrix))) * scale,
