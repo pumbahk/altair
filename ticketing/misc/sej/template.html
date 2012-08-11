@@ -472,6 +472,10 @@ if (window.ActiveXObject) {
             ((ecy + ry) * 1000).toFixed(0),
             rsxs, rsys, rexs, reys);
           buf.push('m', rexs, reys);
+          if (thetad < 0) {
+            buf.push('m', rsxs, rsys);
+            buf.push('l', rsxs, rsys);
+          }
         }
         break;
       }
