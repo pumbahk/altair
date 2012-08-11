@@ -30,17 +30,20 @@ class TicketNotationEmitter(object):
     def emit_scalar_value(self, value, string_as_symbol=False):
         if isinstance(value, basestring):
             if string_as_symbol and not re.match('[\s"]', value):
-                return u':' + value
-            self.result.append(u'"' + unicode(value).replace('\\', '\\\\').replace('"', '\\"') + u'"')
+                self.result.append(u':' + value)
+            else:
+                self.result.append(u'"' + unicode(value).replace('\\', '\\\\').replace('"', '\\"') + u'"')
         elif isinstance(value, bool):
             self.result.append(u'1' if value else u'0')
         elif isinstance(value, (int, long)):
             self.result.append(unicode(value))
         elif isinstance(value, float):
             if value.is_integer():
-                return self.result.append(unicode(int(value)))
+                self.result.append(unicode(int(value)))
             else:
-                return self.result.append(unicode(value))
+                self.result.append(unicode(value))
+        else:
+            raise TypeError(value)
 
     def emit_symbol(self, value):
         value = unicode(value)
@@ -882,6 +885,8 @@ class Visitor(object):
             return None
         elif color == u'none':
             return StyleNone
+        else:
+            return color
 
     @staticmethod
     def parse_transform(transform_str):
