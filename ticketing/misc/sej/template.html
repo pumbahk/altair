@@ -493,7 +493,7 @@ if (window.ActiveXObject) {
       n: path,
       style: function (value) {
         if (value.strokeWidth)
-          path.setAttribute('strokeWeight', value.strokeWidth * 2.5);
+          path.setAttribute('strokeWeight', value.strokeWidth);
         if (value.strokeColor) {
           path.setAttribute('strokeColor', value.strokeColor || 'none');
           path.setAttribute('stroked', 't');
@@ -576,6 +576,9 @@ function newHandler(n, xmldoc) {
     return { x: point.x * matrix.a + point.y * matrix.c + matrix.e,
              y: point.x * matrix.b + point.y * matrix.d + matrix.f };
   }
+  function determinant(matrix) {
+    return matrix.a * matrix.d - matrix.b * matrix.c;
+  }
   return {
     xn: function xmlNode(path) {
       var nodes = findXmlNode(xmldoc, xmldoc.documentElement, path);
@@ -627,7 +630,7 @@ function newHandler(n, xmldoc) {
       style.strokeColor = value;
     },
     Sw: function setStrokeWidth(value) {
-      style.strokeWidth = value * scale;
+      style.strokeWidth = value;
     },
     U: function setUnit(_unit) {
       unit = _unit;
@@ -753,7 +756,7 @@ function newHandler(n, xmldoc) {
       pathData.push(['Z']);
       initDrawable();
       drawable.path(pathData).style({
-        strokeWidth: style.strokeWidth,
+        strokeWidth: style.strokeWidth * Math.sqrt(Math.abs(determinant(currentMatrix))) * scale,
         strokeColor: style.strokeColor,
         fillColor: null
       });
@@ -764,7 +767,11 @@ function newHandler(n, xmldoc) {
         return;
       if (drawable == null)
         drawable = new Drawable(n, '1000' + unit, '1000' + unit);
-      drawable.path(pathData).style(style);
+      drawable.path(pathData).style({
+        strokeWidth: style.strokeWidth * Math.sqrt(Math.abs(determinant(currentMatrix))) * scale,
+        strokeColor: style.strokeColor,
+        fillColor: style.fillColor
+      });
       pathData = null;
     }
   };
