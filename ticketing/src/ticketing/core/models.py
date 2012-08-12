@@ -62,6 +62,7 @@ class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     areas = relationship("VenueArea", backref='venues', secondary=VenueArea_group_l0_id.__table__)
     organization = relationship("Organization", backref='venues')
     seat_index_types = relationship("SeatIndexType", backref='venue')
+    attributes = JSONEncodedDict(16384)
 
     @staticmethod
     def create_from_template(template, performance_id, original_performance_id=None):
