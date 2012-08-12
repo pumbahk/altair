@@ -45,7 +45,7 @@ class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "TicketBundle"
     id = Column(Identifier, primary_key=True)
     event_id = Column(Identifier, ForeignKey('Event.id', ondelete='CASCADE'))
-    event = relationship('Event', uselist=False, backref='tickets')
+    event = relationship('Event', uselist=False, backref='ticket_bundles')
     operator_id = Column(Identifier, ForeignKey('Operator.id'))
     operator = relationship('Operator', uselist=False)
     attributes_ = relationship("TicketBundleAttribute", backref='bundle', collection_class=attribute_mapped_collection('name'), cascade='all,delete-orphan')
@@ -60,5 +60,5 @@ class TicketPrintHistory(Base, BaseModel, WithTimestamp):
     ordered_product_item_id = Column(Identifier, ForeignKey('OrderedProductItem.id'), nullable=True)
     ordered_product_item = relationship('OrderedProductItem', backref='print_histories')
     seat_id = Column(Identifier, ForeignKey('Seat.id'), nullable=True)
-    seat = relationship('OrderedProductItem', backref='print_histories')
+    seat = relationship('Seat', backref='print_histories')
     ticket_bundle_id = Column(Identifier, ForeignKey('TicketBundle.id'), nullable=False)
