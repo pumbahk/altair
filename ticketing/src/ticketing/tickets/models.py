@@ -13,14 +13,18 @@ class Ticket_TicketBundle(Base, BaseModel, LogicallyDeleted):
     ticket_bundle_id = Column(Identifier, ForeignKey('TicketBundle.id'), primary_key=True)
     ticket_id = Column(Identifier, ForeignKey('Ticket.id'), primary_key=True)
 
+class TicketFormat_DeliveryMethod(Base, BaseModel, LogicallyDeleted):
+    __tablename__ = 'TicketFormat_DeliveryMethod'
+    ticket_format_id = Column(Identifier, ForeignKey('TicketFormat.id'), primary_key=True)
+    delivery_method_id = Column(Identifier, ForeignKey('DeliveryMethod.id'), primary_key=True)
+
 class TicketFormat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "TicketFormat"
     id = Column(Identifier, primary_key=True)
     name = Column(Unicode(255), nullable=False)
     organization_id = Column(Identifier, ForeignKey('Organization.id'), nullable=True)
     organization = relationship('Organization', uselist=False, backref='ticket_formats')
-    delivery_method_id = Column(Identifier, ForeignKey('DeliveryMethod.id'), nullable=True)
-    delivery_method = relationship('DeliveryMethod', uselist=False, backref='ticket_formats')
+    delivery_methods = relationship('DeliveryMethod', secondary=TicketFormat_DeliveryMethod.__table__, backref='ticket_formats')
     data = JSONEncodedDict(65536)
 
 class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):

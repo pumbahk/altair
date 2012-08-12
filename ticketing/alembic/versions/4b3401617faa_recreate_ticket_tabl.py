@@ -73,14 +73,19 @@ def create_ticket_tables():
         sa.Column('id', Identifier(), nullable=False),
         sa.Column('name', sa.Unicode(length=255), nullable=False),
         sa.Column('organization_id', Identifier(), nullable=True),
-        sa.Column('delivery_method_id', Identifier(), nullable=True),
         sa.Column('data', sa.String(length=65536), nullable=False, default=''),
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
         sa.PrimaryKeyConstraint('id'),
-        sa.ForeignKeyConstraint(['organization_id'], ['Organization.id'], 'TicketFormat_ibfk_1', ondelete='CASCADE'),
-        sa.ForeignKeyConstraint(['delivery_method_id'], ['DeliveryMethod.id'], 'TicketFormat_ibfk_2', ondelete='CASCADE')
+        sa.ForeignKeyConstraint(['organization_id'], ['Organization.id'], 'TicketFormat_ibfk_1', ondelete='CASCADE')
+        )
+    op.create_table('TicketFormat_DeliveryMethod',
+        sa.Column('ticket_format_id', Identifier(), nullable=False),
+        sa.Column('delivery_method_id', Identifier(), nullable=False),
+        sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
+        sa.ForeignKeyConstraint(['ticket_format_id'], ['TicketFormat.id'], 'TicketFormat_DeliveryMethod_ibfk_1', ondelete='CASCADE'),
+        sa.ForeignKeyConstraint(['delivery_method_id'], ['DeliveryMethod.id'], 'TicketFormat_DeliveryMethod_ibfk_2', ondelete='CASCADE')
         )
     op.create_table('Ticket',
         sa.Column('id', Identifier(), nullable=False),
