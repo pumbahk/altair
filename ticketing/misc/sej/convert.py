@@ -16,6 +16,41 @@ logger = logging.getLogger(__name__)
 
 
 SVG_NAMESPACE = 'http://www.w3.org/2000/svg'
+TS_SVG_EXT_NAMESPACE = "http://xmlns.ticketstar.jp/svg-extension" 
+
+SEJ_ECLEVEL_MAP = {
+    'h': 'H',
+    'l': 'Q',
+    'm': 'Q',
+    'q': 'Q',
+    }
+
+QR_LEVEL_TABLE_BINARY = [
+    [ 11,  20,  32,  46,  60,  74,  86,  108, 130, 151, 177 ],
+    [  7,  14,  24,  34,  44,  58,  64,   84,  98, 119, 137 ]
+    ]
+
+QR_LEVEL_TABLE_KANJI = [
+    [  7,  12,  20,  28,  37,  45,  53,  66,  80,  93, 109 ],
+    [  4,   8,  15,  21,  27,  36,  39,  52,  60,  74,  85 ]
+    ]
+
+QR_LEVEL_TABLE_ALNUM = [
+    [ 16, 29, 47, 67, 87, 108, 125, 157, 189, 221, 259 ],
+    [ 10, 20, 35, 50, 64,  84,  93, 122, 143, 174, 200 ]
+    ]
+
+QR_LEVEL_TABLE_NUM = [
+    [ 27,  48,  77, 111, 144, 178, 207, 259, 312, 364, 427 ],
+    [ 17,  34,  58,  82, 106, 139, 154, 202, 235, 288, 331 ]
+    ]
+
+QR_LEVEL_TABLES = [
+    QR_LEVEL_TABLE_NUM,
+    QR_LEVEL_TABLE_ALNUM,
+    QR_LEVEL_TABLE_KANJI,
+    QR_LEVEL_TABLE_BINARY
+    ]
 
 def _len(value):
     try:
@@ -319,7 +354,7 @@ class ScaleFilter(object):
         self.outer.emit_stroke_color(value)
 
     def emit_stroke_width(self, value):
-        self.outer.emit_stroke_width(value)
+        self.outer.emit_stroke_width(int(float(value) / self.base_scale))
 
     def emit_unit(self, value):
         self.outer.emit_unit(value)
@@ -802,6 +837,27 @@ def text_and_elements(elem):
         if subelem.tail:
             yield unicode(subelem.tail)
 
+def as_user_unit(size):
+    if size is None:
+        return None
+    spec = re.match('(-?[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(pt|pc|mm|cm|in|px)?', size.strip().lower())
+    if spec is None:
+        raise Exception('Invalid length / size specifier: ' + size)
+    degree = float(spec.group(1))
+    unit = spec.group(2) or 'px'
+    if unit == 'pt':
+        return degree * 1.25
+    elif unit == 'pc':
+        return degree * 15
+    elif unit == 'mm':
+        return degree * 90 / 25.4
+    elif unit == 'cm':
+        return degree * 90 / 2.54
+    elif unit == 'in':
+        return degree * 90.
+    elif unit == 'px':
+        return degree
+
 def namespace(ns):
     def decorator(f):
         f._visitor_namespace = ns
@@ -961,35 +1017,13 @@ class Visitor(object):
                         ],
                     dtype=numpy.float64)
 
-    @staticmethod
-    def as_user_unit(size):
-        if size is None:
-            return None
-        spec = re.match('([0-9]+(?:\.[0-9]*)?|\.[0-9]+)(pt|pc|mm|cm|in|px)?', size.strip().lower())
-        if spec is None:
-            raise Exception('Invalid length / size specifier: ' + size)
-        degree = float(spec.group(1))
-        unit = spec.group(2) or 'px'
-        if unit == 'pt':
-            return degree * 1.25
-        elif unit == 'pc':
-            return degree * 15
-        elif unit == 'mm':
-            return degree * 90 / 25.4
-        elif unit == 'cm':
-            return degree * 90 / 2.54
-        elif unit == 'in':
-            return degree * 90.
-        elif unit == 'px':
-            return degree
-
     def fetch_styles_from_element(self, elem):
         css_style_decl = self.css_parser.parseStyle(elem.get(u'style', ''), validate=False)
 
         stroke_color = self.parse_color_style(css_style_decl[u'stroke'] or elem.get(u'stroke'))
-        stroke_width = css_style_decl[u'stroke-width'] or elem.get(u'stroke-width')
+        stroke_width = as_user_unit(css_style_decl[u'stroke-width'] or elem.get(u'stroke-width'))
         fill_color = self.parse_color_style(css_style_decl[u'fill'] or elem.get(u'fill'))
-        font_size = self.as_user_unit(css_style_decl['font-size'] or elem.get(u'font-size'))
+        font_size = as_user_unit(css_style_decl['font-size'] or elem.get(u'font-size'))
         font_family = css_style_decl['font-family'] or elem.get(u'font-family', None)
         font_weight = css_style_decl['font-weight'] or elem.get(u'font-weight', None)
         text_anchor = css_style_decl['text-anchor'] or elem.get(u'text-anchor')
@@ -1161,12 +1195,12 @@ class Visitor(object):
     @stylable
     @transformable
     def visit_rect(self, scanner, ns, local_name, elem):
-        x = self.as_user_unit(elem.get(u'x', u'0'))
-        y = self.as_user_unit(elem.get(u'y', u'0'))
-        width = self.as_user_unit(elem.get(u'width', u'0'))
-        height = self.as_user_unit(elem.get(u'height', u'0'))
-        rx = self.as_user_unit(elem.get(u'rx', u'0'))
-        ry = self.as_user_unit(elem.get(u'ry', u'0'))
+        x = as_user_unit(elem.get(u'x', u'0'))
+        y = as_user_unit(elem.get(u'y', u'0'))
+        width = as_user_unit(elem.get(u'width', u'0'))
+        height = as_user_unit(elem.get(u'height', u'0'))
+        rx = as_user_unit(elem.get(u'rx', u'0'))
+        ry = as_user_unit(elem.get(u'ry', u'0'))
         self.emitter.emit_new_path()
         if rx == 0 and ry == 0:
             self.emitter.emit_move_to(x, y)
@@ -1192,9 +1226,9 @@ class Visitor(object):
     @stylable
     @transformable
     def visit_circle(self, scanner, ns, local_name, elem):
-        cx = self.as_user_unit(elem.get(u'cx', u'0'))
-        cy = self.as_user_unit(elem.get(u'cy', u'0'))
-        r = self.as_user_unit(elem.get(u'r', u'0'))
+        cx = as_user_unit(elem.get(u'cx', u'0'))
+        cy = as_user_unit(elem.get(u'cy', u'0'))
+        r = as_user_unit(elem.get(u'r', u'0'))
         self.emitter.emit_new_path()
         self.emitter.emit_move_to(cx + r, y)
         self.emitter.emit_arc(r, r, False, False, True, cx + r, cy)
@@ -1210,10 +1244,10 @@ class Visitor(object):
             raise Exception('flowRegion must contain only one element and it must be <rect>')
         rect = children[0]
         self.flow_bbox = (
-            self.as_user_unit(rect.get(u'x', u'0')),
-            self.as_user_unit(rect.get(u'y', u'0')),
-            self.as_user_unit(rect.get(u'width', u'0')),
-            self.as_user_unit(rect.get(u'height', u'0'))
+            as_user_unit(rect.get(u'x', u'0')),
+            as_user_unit(rect.get(u'y', u'0')),
+            as_user_unit(rect.get(u'width', u'0')),
+            as_user_unit(rect.get(u'height', u'0'))
             )
 
     @namespace(SVG_NAMESPACE)
@@ -1278,6 +1312,59 @@ class Scanner(object):
                 f = self.visitor._visit_default
             f(self, ns, local_name, elem)
 
+def determine_qrcode_type(qrcode_content):
+    if not re.match(r'[^0-9]', qrcode_content):
+        return 1
+    if not re.match(r'[^0-9A-Z $%*+./:-]', qrcode_content):
+        return 2
+    i = iter(qrcode_content.encode('CP932'))
+    try:
+        while True:
+            c = ord(i.next())
+            if (c >= 0x81 and c <= 0x9f) or (c >= 0xe0 and c <= 0xfe):
+                i.next()
+            else:
+                return 4
+    except StopIteration:
+        pass
+    return 3
+
+def determine_level_and_cell_size(width, height, ectype, qrcode_type, qrcode_content):
+    table = QR_LEVEL_TABLES[qrcode_type - 1][ectype == 'H']
+    l = len(qrcode_content)
+    level = None
+    import sys
+    for level, _l in enumerate(table):
+        if l <= _l:
+            break
+    else:
+        raise Exception('No suitable QR code level found: content too long? - %s' % qrcode_content)
+    calculated_width = None
+    cell_size = None
+    width = min(24.2, width)
+    height = min(24.2, height)
+    for cell_size in (6, 5, 4):
+        cell_size_in_mm = 1.3552 * cell_size / 4
+        calculated_width = (level + 5 + .25 + 1) * cell_size_in_mm
+        if calculated_width <= width and calculated_width <= height:
+            break
+    else:
+        raise Exception('No suitable cell size found: drawing area too small? (%g, %g) > (%g, %g)' % (calculated_width, calculated_width, width, height))
+    return level, cell_size   
+
+def handle_qrcode(retval, qrcode):
+    content = qrcode.get('content')
+    width = as_user_unit(qrcode.get('width'))
+    height = as_user_unit(qrcode.get('height'))
+    type_ = determine_qrcode_type(content)
+    ectype = SEJ_ECLEVEL_MAP.get(qrcode.get('eclevel', 'h').lower(), 'Q')
+    level, cell_size = determine_level_and_cell_size(width, height, ectype, type_, content)
+    retval.append(E.QR_DATA(content))
+    retval.append(E.QR_CHAR('%d' % type_))
+    retval.append(E.QR_ERR(ectype))
+    retval.append(E.QR_VER(u'%02d' % (level + 1)))
+    retval.append(E.QR_CELL('%d' % cell_size))
+
 def convert_svg(doc):
     opcodes = []
     emitter = ScaleFilter(Assembler(opcodes), .1)
@@ -1294,6 +1381,10 @@ def convert_svg(doc):
         E.FIXTAG04(),
         E.FIXTAG05(),
         E.FIXTAG06())
+    qrcode = doc.find('{%s}qrcode' % TS_SVG_EXT_NAMESPACE)
+    if qrcode is not None:
+        handle_qrcode(retval, qrcode)
+
     return retval
 
 if __name__ == '__main__':
