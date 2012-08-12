@@ -898,7 +898,6 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     quantity = Column(Integer, nullable=False, default=1, server_default='1')
 
     ticket_bundle_id = Column(Identifier, ForeignKey('TicketBundle.id'), nullable=True)
-    ticket_bundle = relationship('TicketBundle', uselist=False, backref='product_items')
 
     @property
     def stock_type_id(self):
