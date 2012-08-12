@@ -122,6 +122,7 @@ def create_ticket_tables():
     op.create_table('Ticket_TicketBundle',
         sa.Column('ticket_bundle_id', Identifier(), nullable=False),
         sa.Column('ticket_id', Identifier(), nullable=False),
+        sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
         sa.ForeignKeyConstraint(['ticket_bundle_id'], ['TicketBundle.id'], 'Ticket_TicketBundle_ibfk_1', ondelete='CASCADE'),
         sa.ForeignKeyConstraint(['ticket_id'], ['Ticket.id'], 'Ticket_TicketBundle_ibfk_2', ondelete='CASCADE')
         )
