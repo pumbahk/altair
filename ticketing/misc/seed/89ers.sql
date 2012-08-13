@@ -46,13 +46,13 @@ INSERT INTO `Stock` VALUES (100001,1000,100000,100000,100001,'1000002-07-10 17:4
 INSERT INTO `StockStatus` (stock_id, quantity) VALUES (100000,1000);
 INSERT INTO `StockStatus` (stock_id, quantity) VALUES (100001,1000);
 
-INSERT INTO `ProductItem` VALUES (NULL,0,100500.00,100000,100000,100000,1,'1000002-07-10 17:44:29','1000002-07-11 05:35:33',NULL);
-INSERT INTO `ProductItem` VALUES (NULL,0,0.00,100000,100000,100001,1,'1000002-07-10 17:44:29','1000002-07-11 05:35:42',NULL);
-INSERT INTO `ProductItem` VALUES (NULL,0,30000.00,100001,100000,100000,1,'1000002-07-10 17:44:29','1000002-07-11 05:35:48',NULL);
-INSERT INTO `ProductItem` VALUES (NULL,0,0.00,100001,100000,100001,1,'1000002-07-10 17:44:29','1000002-07-11 05:35:56',NULL);
-INSERT INTO `ProductItem` VALUES (NULL,0,10000.00,100002,100000,100000,1,'1000002-07-10 17:44:29','1000002-07-11 05:36:04',NULL);
-INSERT INTO `ProductItem` VALUES (NULL,0,0.00,100002,100000,100001,1,'1000002-07-10 17:44:29','1000002-07-11 05:36:11',NULL);
-INSERT INTO `ProductItem` VALUES (NULL,0,3000.00,100003,100000,100000,1,'1000002-07-10 17:44:29','1000002-07-11 05:36:18',NULL);
-INSERT INTO `ProductItem` VALUES (NULL,0,1000.00,100004,100000,100000,1,'1000002-07-10 17:44:29','1000002-07-11 05:36:28',NULL);
-INSERT INTO `ProductItem` VALUES (NULL,0,1000.00,100005,100000,100000,1,'1000002-07-10 17:44:29','1000002-07-11 05:36:36',NULL);
+INSERT INTO `ProductItem` (id, item_type, price, product_id, performance_id, stock_id, quantity, created_at) VALUES (NULL,0,100500.00,100000,100000,100000,1,'2012-07-10 17:44:29','2012-07-11 05:35:33',NULL);
+INSERT INTO `ProductItem` (id, item_type, price, product_id, performance_id, stock_id, quantity, created_at) VALUES (NULL,0,0.00,100000,100000,100001,1,'2012-07-10 17:44:29','2012-07-11 05:35:42',NULL);
+INSERT INTO `ProductItem` (id, item_type, price, product_id, performance_id, stock_id, quantity, created_at) VALUES (NULL,0,30000.00,100001,100000,100000,1,'2012-07-10 17:44:29','2012-07-11 05:35:48',NULL);
+INSERT INTO `ProductItem` (id, item_type, price, product_id, performance_id, stock_id, quantity, created_at) VALUES (NULL,0,0.00,100001,100000,100001,1,'2012-07-10 17:44:29','2012-07-11 05:35:56',NULL);
+INSERT INTO `ProductItem` (id, item_type, price, product_id, performance_id, stock_id, quantity, created_at) VALUES (NULL,0,10000.00,100002,100000,100000,1,'2012-07-10 17:44:29','2012-07-11 05:36:04',NULL);
+INSERT INTO `ProductItem` (id, item_type, price, product_id, performance_id, stock_id, quantity, created_at) VALUES (NULL,0,0.00,100002,100000,100001,1,'2012-07-10 17:44:29','2012-07-11 05:36:11',NULL);
+INSERT INTO `ProductItem` (id, item_type, price, product_id, performance_id, stock_id, quantity, created_at) VALUES (NULL,0,3000.00,100003,100000,100000,1,'2012-07-10 17:44:29','2012-07-11 05:36:18',NULL);
+INSERT INTO `ProductItem` (id, item_type, price, product_id, performance_id, stock_id, quantity, created_at) VALUES (NULL,0,1000.00,100004,100000,100000,1,'2012-07-10 17:44:29','2012-07-11 05:36:28',NULL);
+INSERT INTO `ProductItem` (id, item_type, price, product_id, performance_id, stock_id, quantity, created_at) VALUES (NULL,0,1000.00,100005,100000,100000,1,'2012-07-10 17:44:29','2012-07-11 05:36:36',NULL);
 COMMIT;
