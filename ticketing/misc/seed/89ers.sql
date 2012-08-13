@@ -38,8 +38,8 @@ INSERT INTO `Product` (id, name, price, sales_segment_id, event_id, created_at, 
 
 INSERT INTO `StockHolder` VALUES (100000,'89ers',100001,100000,'{\"text\": \"B\", \"text_color\": \"#ffd940\"}','2012-07-10 17:44:29','2012-07-11 05:34:38',NULL);
 
-INSERT INTO `StockType` VALUES (100000,'89ERS会員権',1,NULL,1,'{}','2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
-INSERT INTO `StockType` VALUES (100001,'Tシャツ',1,NULL,1,'{}','2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
+INSERT INTO `StockType` (id, name, `type`, event_id, quantity_only, style, created_at, updated_at, deleted_at) VALUES (100000,'89ERS会員権',1,NULL,1,'{}','2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
+INSERT INTO `StockType` (id, name, `type`, event_id, quantity_only, style, created_at, updated_at, deleted_at) VALUES (100001,'Tシャツ',1,NULL,1,'{}','2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
 
 INSERT INTO `Stock` VALUES (100000,1000,100000,100000,100000,'1000002-07-10 17:44:29','1000002-07-10 17:44:29',NULL);
 INSERT INTO `Stock` VALUES (100001,1000,100000,100000,100001,'1000002-07-10 17:44:29','1000002-07-10 17:44:29',NULL);
