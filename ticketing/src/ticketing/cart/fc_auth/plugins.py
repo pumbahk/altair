@@ -19,7 +19,7 @@ def make_plugin(rememberer_name, login_url, sha1salt):
 class FCAuthPlugin(object):
     def __init__(self, rememberer_name, login_url=None):
         self.rememberer_name = rememberer_name
-	self.login_url = login_url
+    	self.login_url = login_url
 
     def _get_rememberer(self, environ):
         rememberer = environ['repoze.who.plugins'][self.rememberer_name]
