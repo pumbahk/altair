@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from pyramid.paster import bootstrap
 
 import transaction
-from ..orders import models as o_m
+from ..core import models as o_m
 from ..multicheckout import api as a
 from . import models as m
 

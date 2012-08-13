@@ -23,7 +23,6 @@ def main(global_conf, **settings):
     config.add_route('notready', '/notready')
     config.include('ticketing.checkout')
     config.include('ticketing.multicheckout')
-    config.scan('ticketing.orders.models')
     config.include('ticketing.cart.plugins')
     config.include('ticketing.cart')
     config.scan('ticketing.cart.views')

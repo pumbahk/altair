@@ -17,7 +17,6 @@ from urllib2 import urlopen
 from zope.deprecation import deprecate
 from ..models import DBSession
 from ..core import models as c_models
-from ..orders import models as o_models
 from ..users import models as u_models
 from .models import Cart
 from . import helpers as h
@@ -536,7 +535,7 @@ class PaymentView(object):
 
     def create_shipping_address(self, user):
         params = self.request.params
-        shipping_address = o_models.ShippingAddress(
+        shipping_address = c_models.ShippingAddress(
             first_name=params['first_name'],
             last_name=params['last_name'],
             first_name_kana=params['first_name_kana'],

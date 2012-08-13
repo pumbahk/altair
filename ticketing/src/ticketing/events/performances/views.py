@@ -11,9 +11,8 @@ from ticketing.core.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.events.performances.forms import PerformanceForm
-from ticketing.core.models import Event, Performance
+from ticketing.core.models import Event, Performance, Order
 from ticketing.products.forms import ProductForm, ProductItemForm
-from ticketing.orders.models import Order
 from ticketing.orders.forms import OrderForm
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")

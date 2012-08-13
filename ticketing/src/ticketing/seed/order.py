@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 from ticketing.seed import DataSet
-from ticketing.orders.models import Order, OrderedProduct, OrderedProductItem
+from ticketing.core.models import Order, OrderedProduct, OrderedProductItem
 from .product import *
 from .venue import *
 from .user import *
