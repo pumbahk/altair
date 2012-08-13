@@ -14,9 +14,69 @@ class SalesScheduleReportExporterTestCase(TestCase):
     def testOk(self):
         exporter = xls_export.SalesScheduleReportExporter(template=self.template_path)
         sheet1 = exporter.add_sheet(u"追加1")
+        exporter.write_data(sheet1, {
+            'event_title': u'テストイベント',
+            'output_datetime': u'2012年1月1日',
+            'sales': [
+                {
+                    'sales_seg': u'先行',
+                    'sales_start': u'2012年5月1日',
+                    'sales_end': u'2012年5月30日',
+                },
+                {
+                    'sales_seg': u'一般販売',
+                    'sales_start': u'2012年6月1日',
+                    'sales_end': u'2012年6月30日',
+                },
+            ],
+            'venue_name': u'大阪ドーム',
+            'performances': [
+                {
+                    'datetime': u'2012年7月5日',
+                    'open': u'16時00分',
+                    'start': u'17時00分',
+                    'price_name': u'価格表1',
+                    'sales_end': u'2012年6月30日',
+                    'submit_order': u'不要',
+                    'submit_pay': u'不要',
+                    'pay_datetime': u'2012年7月31日',
+                },
+            ],
+            'prices': [
+                {
+                    'name': u'価格表1',
+                    'records': [
+                        {
+                            'seat_type': u'S席',
+                            'ticket_type': u'',
+                            'price': u'3000円',
+                        },
+                        {
+                            'seat_type': u'A席',
+                            'ticket_type': u'',
+                            'price': u'2000円',
+                        },
+                    ],
+                },
+                {
+                    'name': u'価格表2',
+                    'records': [
+                        {
+                            'seat_type': u'S席',
+                            'ticket_type': u'',
+                            'price': u'4000円',
+                        },
+                        {
+                            'seat_type': u'A席',
+                            'ticket_type': u'',
+                            'price': u'3000円',
+                        },
+                    ],
+                },
+            ]
+        })
         sheet2 = exporter.add_sheet(u"追加2")
-        exporter.remove_sheet(0)
-        exporter.remove_sheet(0)
+        exporter.remove_templates()
         result = exporter.as_string()
         self.assertTrue(len(result) > 0)
 
