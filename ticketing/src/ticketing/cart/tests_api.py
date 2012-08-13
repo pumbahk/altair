@@ -341,7 +341,6 @@ class pop_seatTests(unittest.TestCase):
 
     def _add_seats(self):
         import ticketing.core.models as c_m
-        import ticketing.orders.models as o_m
         # organization
         org = c_m.Organization()
         # event
@@ -393,7 +392,6 @@ class CartFactoryTests(unittest.TestCase):
 
     def _add_seats(self):
         import ticketing.core.models as c_m
-        import ticketing.orders.models as o_m
         # organization
         org = c_m.Organization()
         # event

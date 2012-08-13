@@ -5,7 +5,7 @@ from pyramid import testing
 
 from ticketing.checkout import models
 import ticketing.models
-import ticketing.orders.models
+import ticketing.core.models
 
 
 class SignToXml(unittest.TestCase):

@@ -29,7 +29,6 @@ import ticketing.multicheckout.models
 import ticketing.mypage.models
 import ticketing.oauth2.models
 import ticketing.operators.models
-import ticketing.orders.models
 import ticketing.sej.models
 import ticketing.users.models
 import ticketing.tickets.models
