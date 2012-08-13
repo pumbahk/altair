@@ -29,12 +29,12 @@ INSERT INTO `Performance` VALUES (100000,'FC会員登録２０１２','B8REG2012
 
 INSERT INTO `Venue` (id, site_id, performance_id, organization_id, name, sub_name, original_venue_id, created_at, updated_at, deleted_at) VALUES (100000,1,100000,1,'座席なし会場',NULL,NULL,'2012-06-20 12:09:33','2012-07-10 17:44:29',NULL);
 
-INSERT INTO `Product` VALUES (100000,'法人会員',100500.00,100000,100001,'2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
-INSERT INTO `Product` VALUES (100001,'プラチナ会員',30000.00,100000,100001,'2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
-INSERT INTO `Product` VALUES (100002,'ゴールド会員',10000.00,100000,100001,'2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
-INSERT INTO `Product` VALUES (100003,'レギュラー会員',3000.00,100000,100001,'2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
-INSERT INTO `Product` VALUES (100004,'ライト会員',1000.00,100000,100001,'2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
-INSERT INTO `Product` VALUES (100005,'ジュニア会員',1000.00,100000,100001,'2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
+INSERT INTO `Product` (id, name, price, sales_segment_id, event_id, created_at, updated_at, deleted_at) VALUES (100000,'法人会員',100500.00,100000,100001,'2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
+INSERT INTO `Product` (id, name, price, sales_segment_id, event_id, created_at, updated_at, deleted_at) VALUES (100001,'プラチナ会員',30000.00,100000,100001,'2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
+INSERT INTO `Product` (id, name, price, sales_segment_id, event_id, created_at, updated_at, deleted_at) VALUES (100002,'ゴールド会員',10000.00,100000,100001,'2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
+INSERT INTO `Product` (id, name, price, sales_segment_id, event_id, created_at, updated_at, deleted_at) VALUES (100003,'レギュラー会員',3000.00,100000,100001,'2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
+INSERT INTO `Product` (id, name, price, sales_segment_id, event_id, created_at, updated_at, deleted_at) VALUES (100004,'ライト会員',1000.00,100000,100001,'2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
+INSERT INTO `Product` (id, name, price, sales_segment_id, event_id, created_at, updated_at, deleted_at) VALUES (100005,'ジュニア会員',1000.00,100000,100001,'2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
 
 INSERT INTO `StockHolder` VALUES (100000,'89ers',100001,100000,'{\"text\": \"B\", \"text_color\": \"#ffd940\"}','2012-07-10 17:44:29','2012-07-11 05:34:38',NULL);
 
