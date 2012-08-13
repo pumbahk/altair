@@ -1,6 +1,7 @@
 package jp.ticketstar.ticketing.templateconverter;
 
 import java.awt.EventQueue;
+import java.awt.Graphics2D;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -112,7 +113,7 @@ public class AppWindow {
 		JButton button_1 = new JButton("変換");
 		button_1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				App.doConvert(new File(textField.getText()));
+				App.doConvert(new File(textField.getText()), ((Graphics2D)frame.getGraphics()).getFontRenderContext());
 			}
 		});
 		panel.add(button_1);
