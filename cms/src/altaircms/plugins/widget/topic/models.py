@@ -12,7 +12,7 @@ import sqlalchemy.orm as orm
 from altaircms.topic.models import Topic
 from altaircms.topic.models import Topcontent
 from altaircms.widget.models import Widget
-from altaircms.lib.interception import not_support_if_keyerror
+from altaircms.plugins.base.interception import not_support_if_keyerror
 from altaircms.plugins.base import DBSession
 from altaircms.plugins.base.mixins import HandleSessionMixin
 from altaircms.plugins.base.mixins import HandleWidgetMixin

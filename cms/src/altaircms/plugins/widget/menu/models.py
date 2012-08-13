@@ -12,7 +12,7 @@ from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
 from altaircms.page.models import Page
 
-from altaircms.lib.interception import not_support_if_keyerror
+from altaircms.plugins.base.interception import not_support_if_keyerror
 from . import helpers as h
 
 class MenuWidget(Widget):

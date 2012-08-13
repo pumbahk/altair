@@ -15,7 +15,7 @@ from altaircms.plugins.base.mixins import HandleSessionMixin
 from altaircms.plugins.base.mixins import HandleWidgetMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
-from altaircms.lib.interception import not_support_if_keyerror
+from altaircms.plugins.base.interception import not_support_if_keyerror
 from altaircms.seeds.saleskind import SALESKIND_CHOICES
 
 class TicketlistWidget(Widget):
