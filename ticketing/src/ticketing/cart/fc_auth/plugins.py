@@ -1,5 +1,5 @@
 #
-
+import pickle
 import logging
 import webob
 from webob.exc import HTTPFound
@@ -17,19 +17,46 @@ def make_plugin():
 
 @implementer(IIdentifier, IAuthenticator, IChallenger)
 class FCAuthPlugin(object):
+    def __init__(self, rememberer_name):
+        self.rememberer_name = rememberer_name
 
+    def _get_rememberer(self, environ):
+        rememberer = environ['repoze.who.plugins'][self.rememberer_name]
+        return rememberer
+
+    def get_identity(self, req):
+        rememberer = self._get_rememberer(req.environ)
+        return rememberer.identify(req.environ)
 
     # IIdentifier
     def identify(self, environ):
-        pass
+        identity = self.get_identity(req)
+        logging.debug(identity)
+
+        if identity is None:
+            logger.debug("identity failed")
+            return None
+
+        if 'repoze.who.plugins.auth_tkt.userid' in identity:
+            try:
+                userdata = pickle.loads(identity['repoze.who.plugins.auth_tkt.userid'].decode('base64'))
+                if 'membership' in userdata:
+                    return userdata
+            except Exception, e:
+                logger.exception(e)
+
 
     # IIdentifier
     def remember(self, environ, identity):
-        pass
+        logger.debug('remember identity')
+        rememberer = self._get_rememberer(environ)
+        return rememberer.remember(environ, identity)
 
     # IIdentifier
     def forget(self, environ, identity):
-        pass
+        rememberer = self._get_rememberer(environ)
+        return rememberer.forget(environ, identity)
+
 
     # IAuthenticator
     def authenticate(self, environ, identity):
@@ -54,7 +81,11 @@ class FCAuthPlugin(object):
                     u_m.User.id==u_m.UserCredential.user_id
                 ).one()
 
-        return user
+        if user is None:
+            return
+
+        data = {'username': username, 'membership': membership}
+        return pickle.dumps(data).encode('base64')
 
 
 
