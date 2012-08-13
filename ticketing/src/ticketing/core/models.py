@@ -62,6 +62,7 @@ class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     areas = relationship("VenueArea", backref='venues', secondary=VenueArea_group_l0_id.__table__)
     organization = relationship("Organization", backref='venues')
     seat_index_types = relationship("SeatIndexType", backref='venue')
+    attributes = JSONEncodedDict(16384)
 
     @staticmethod
     def create_from_template(template, performance_id, original_performance_id=None):
@@ -592,8 +593,8 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 "tickets":[1,2],
               ],
               "tickets":[
-                {"id":1, "sale_id":1, "name":"A席大人", "seat_type":"A席", "price":5000},
-                {"id":2, "sale_id":2, "name":"B席大人", "seat_type":"B席", "price":3000},
+                {"id":1, "sale_id":1, "name":"A席大人", "seat_type":"A席", "price":5000, "order_no":1},
+                {"id":2, "sale_id":2, "name":"B席大人", "seat_type":"B席", "price":3000, "order_no":2},
               ],
               "sales":[
                 {"id":1, "name":"販売区分1", "start_on":~, "end_on":~, "seat_choice":true},
@@ -878,8 +879,8 @@ class BuyerCondition(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'BuyerCondition'
     id = Column(Identifier, primary_key=True)
 
-    member_ship_id = Column(Identifier, ForeignKey('MemberShip.id'))
-    member_ship   = relationship('MemberShip')
+    member_ship_id = Column(Identifier, ForeignKey('Membership.id'))
+    member_ship   = relationship('Membership')
     '''
      Any Conditions.....
     '''
@@ -896,6 +897,8 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     stock = relationship("Stock", backref="product_items")
 
     quantity = Column(Integer, nullable=False, default=1, server_default='1')
+
+    ticket_bundle_id = Column(Identifier, ForeignKey('TicketBundle.id'), nullable=True)
 
     @property
     def stock_type_id(self):
@@ -1078,6 +1081,7 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         '''
         初期状態のStockを生成する
           - デフォルト値となる"未選択"のStock
+          - StockHolderのないStockType毎のStock
           - StockHolder × StockType分のStock
         既に該当のStockが存在する場合は、足りないStockのみ生成する
         '''
@@ -1094,10 +1098,20 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 )
                 stock.save()
 
-        # Performance × StockType × StockHolder分のStockを生成
         created_stock_types = []
         for performance in performances:
             for stock_type in stock_types:
+                # StockHolderのないStockType毎のStockを生成
+                if not [stock for stock in performance.stocks if stock.stock_type_id == stock_type.id]:
+                    stock = Stock(
+                        performance_id=performance.id,
+                        stock_type_id=stock_type.id,
+                        stock_holder_id=None,
+                        quantity=0
+                    )
+                    stock.save()
+
+                # Performance × StockType × StockHolder分のStockを生成
                 for stock_holder in stock_holders:
                     def stock_filter(stock):
                         return (stock.stock_type_id == stock_type.id and stock.stock_holder_id == stock_holder.id)
@@ -1229,6 +1243,7 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             'price':floor(self.price),
             'sale_id':self.sales_segment_id,
             'seat_type':self.seat_type(),
+            'order_no':self.order_no,
         }
         if self.deleted_at:
             data['deleted'] = 'true'
@@ -1301,44 +1316,4 @@ class Organization(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     prefecture = Column(String(64), nullable=False, default=u'')
 
     status = Column(Integer)
-
-'''
-class TicketTemplate(Base, BaseModel, WithTimestamp, LogicallyDeleted):
-    __tablename__ = "TicketTemplate"
-    id = Column(Identifier, primary_key=True)
-    name = Column(Unicode(255), nullable=False, default=u'')
-    organization_id = Column(Identifier, ForeignKey('Organization.id'), nullable=True)
-    organization = relationship('Organization', uselist=False, backref=backref('ticket_templates'))
-    operator_id = Column(Identifier, ForeignKey('Operator.id'), nullable=True)
-    operator = relationship('Operator', uselist=False)
-    data = JSONEncodedDict(65536)
-
-class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
-    __tablename__ = "Ticket"
-    id = Column(Identifier, primary_key=True)
-    event_id = Column(Identifier, ForeignKey('Event.id', ondelete='CASCADE'))
-    template_id = Column(Identifier, ForeignKey('TicketTemplate.id', ondelete='CASCADE'))
-    template = relationship('TicketTemplate', uselist=False)
-    operator_id = Column(Identifier, ForeignKey('Operator.id'))
-    operator = relationship('Operator', uselist=False)
-    name = Column(Unicode(255), nullable=False, default=u'')
-    event = relationship('Event', uselist=False, backref='tickets')
-    attributes_ = relationship("TicketAttribute", backref='ticket', collection_class=attribute_mapped_collection('name'), cascade='all,delete-orphan')
-    attributes = association_proxy('attributes_', 'value', creator=lambda k, v: SeatAttribute(name=k, value=v))
-
-class TicketAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
-    __tablename__ = "TicketAttribute" 
-    ticket_id = Column(Identifier, ForeignKey('Ticket.id', ondelete='CASCADE'), primary_key=True, nullable=False)
-    name = Column(String(255), primary_key=True, nullable=False)
-    value = Column(String(1023))
-
-class TicketPrintHistory(Base, BaseModel, WithTimestamp):
-    __tablename__ = "TicketPrintHistory"
-    id = Column(Identifier, primary_key=True, autoincrement=True, nullable=False)
-    operator_id = Column(Identifier, ForeignKey('Operator.id'), nullable=True)
-    ordered_product_item_id = Column(Identifier, ForeignKey('OrderedProductItem.id'), nullable=True)
-    ordered_product_item = relationship('OrderedProductItem', backref='print_histories')
-    seat_id = Column(Identifier, ForeignKey('Seat.id'), nullable=True)
-    seat = relationship('OrderedProductItem', backref='print_histories')
-'''
 

@@ -52,9 +52,9 @@ class TestIt(unittest.TestCase):
         self.assertEqual(result.user_credential[0].membership.name, 'rakuten')
 
     def _add_user(self, clamed_id):
-        from ..users.models import User, UserCredential, MemberShip
+        from ..users.models import User, UserCredential, Membership
         user = User()
-        membership = MemberShip(name="rakuten")
+        membership = Membership(name="rakuten")
         credential = UserCredential(user=user, auth_identifier=clamed_id, membership=membership)
         self.session.add(user)
         self.session.flush()

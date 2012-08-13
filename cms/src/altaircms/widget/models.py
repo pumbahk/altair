@@ -57,6 +57,10 @@ class Widget(BaseOriginalMixin, Base):
         session.add(ins)
         return ins
 
+class StructureSaveType(object):
+    shallow = "shallow"
+    deep = "deep"
+
 class WidgetDisposition(WithOrganizationMixin, BaseOriginalMixin, Base): #todo: rename
     """ widgetの利用内容を記録しておくためのモデル
     以下を記録する。
@@ -74,6 +78,7 @@ class WidgetDisposition(WithOrganizationMixin, BaseOriginalMixin, Base): #todo: 
     blocks = sa.Column(sa.String(255), default=Layout.DEFAULT_BLOCKS) # same as: Layout.blocks
 
     is_public = sa.Column(sa.Boolean, default=False)
+    save_type = sa.Column(sa.String(16), index=True)
     owner_id = sa.Column(sa.Integer, sa.ForeignKey("operator.id"))
     owner = orm.relationship("Operator", backref="widget_dispositions")
     created_at = sa.Column(sa.DateTime, default=datetime.now)
@@ -87,7 +92,15 @@ class WidgetDisposition(WithOrganizationMixin, BaseOriginalMixin, Base): #todo: 
         return cls.from_dict(D)
 
     @classmethod
-    def from_page(cls, page, session):
+    def shallow_copy_from_page(cls, page, session):
+        instance = cls._create_empty_from_page(page, title_fmt=u"%sより") ##
+        structure = json.loads(page.structure)
+        new_structure = {k:[{"name": d["name"] for d in vs}] for k, vs in structure.iteritems()}
+        instance.structure = json.dumps(new_structure)
+        return instance
+
+    @classmethod
+    def deep_copy_from_page(cls, page, session):
         wtree = WidgetTreeProxy(page)
         new_wtree = wclone.clone(session, None, wtree)
         if session:
@@ -101,7 +114,20 @@ class WidgetDisposition(WithOrganizationMixin, BaseOriginalMixin, Base): #todo: 
                 w.disposition = instance
         return instance
 
-    def bind_page(self, page, session):
+    @classmethod
+    def from_page(cls, page, session, save_type):
+        if save_type == StructureSaveType.deep:
+            return cls.deep_copy_from_page(page, session)
+        elif save_type == StructureSaveType.shallow:
+            return cls.shallow_copy_from_page(page, session)
+        else:
+            raise NotImplementedError("save type %s is not implemented yet" % save_type)
+
+    def _bind_page_shallow(self, page):
+        page.structure = self.structure
+        return page
+
+    def _bind_page_deep(self, page, session):
         ## cleanup
         wtree = WidgetTreeProxy(self)
         new_wtree = wclone.clone(session, page, wtree)
@@ -112,6 +138,13 @@ class WidgetDisposition(WithOrganizationMixin, BaseOriginalMixin, Base): #todo: 
         if session:
             session.flush()
         page.structure = json.dumps(wclone.to_structure(new_wtree))
+        return page
+
+    def bind_page(self, page, session):
+        if self.save_type == StructureSaveType.shallow:
+            page = self._bind_page_shallow(page)
+        elif self.save_type == StructureSaveType.deep:
+            page = self._bind_page_deep(page, session)
         return page
 
     def delete_widgets(self):

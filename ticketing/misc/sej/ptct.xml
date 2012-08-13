@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Shift_JIS" ?>
 <TICKET>
 <b><![CDATA[:mm U
-:#000 rg .14 0 0 .14 112 0 cm :rl lo f
+:#000 rg .14 0 0 .14 112 0 cm :rl lo f 1 0 0 1 0 0 cm
 :f15 hc 1 S :b hc
 :c hc 12 fs 14 0 m 93 12 "BLUE MAN GROUP IN %(area_eng)s" X 10 fs pc
 14 8 m 93 5 "%(event_name)s %(number)s" X

@@ -103,6 +103,6 @@ def main(global_config, **settings):
     engine = engine_from_config(settings, 'sqlalchemy.')
     sqlahelper.get_session().remove()
     sqlahelper.add_engine(engine)
-    
+
     return config.make_wsgi_app()
 

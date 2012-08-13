@@ -79,7 +79,6 @@ class SejPayment(object):
     def _send_request(self, request_params, mode, retry_flg):
         if retry_flg:
             request_params['retry_cnt'] = '1'
-        print self.url
         req = create_sej_request(self.url, request_params)
 
         try:
@@ -87,15 +86,14 @@ class SejPayment(object):
         except urllib2.HTTPError, e:
             res = e
         except urllib2.URLError, e:
-            #print e.args
+            self.log.error(e)
             return
 
         status = res.code
         reason = res.msg
         body = res.read()
 
-        self.log.info("[response]%s" % body)
-        print ("[response]%s" % body)
+        self.log.info("[response]\n%s" % body)
 
         if status == 200:
             # status == 200 はSyntaxErrorなんだって！

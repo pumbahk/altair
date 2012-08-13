@@ -7,7 +7,7 @@ from altaircms.interfaces import IWidget
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 
-from altaircms.lib.interception import not_support_if_keyerror
+from altaircms.plugins.base.interception import not_support_if_keyerror
 from altaircms.widget.models import Widget
 from altaircms.plugins.base import DBSession
 from altaircms.plugins.base.mixins import HandleSessionMixin

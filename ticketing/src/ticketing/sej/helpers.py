@@ -35,8 +35,7 @@ def create_sej_request(url, request_params):
     buffer = ["%s=%s" % (name, urllib2.quote(unicode(param).encode('shift_jis', 'xmlcharrefreplace'))) for name, param in request_params.iteritems()]
     data = "&".join(buffer)
 
-    log.info("[request]%s" % data)
-    print ("[request]%s" % data)
+    log.info("[request]\n%s" % data)
     req.add_data(data)
     req.add_header('User-Agent', 'SejPaymentForJava/2.00')
     req.add_header('Connection', 'close')

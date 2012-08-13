@@ -129,8 +129,8 @@ widgets =
    rawhtml
 """
     def _callFUT(self, *args, **kwargs):
-        from altaircms.plugins.api import parse_inifiles
-        return parse_inifiles(*args, **kwargs)
+        from altaircms.plugins.api import set_widget_aggregator_dispatcher
+        return set_widget_aggregator_dispatcher(*args, **kwargs)
     
     def test_it(self):
         config = testing.setUp()
@@ -139,7 +139,9 @@ widgets =
         from altaircms.auth.api import set_organization_mapping
         set_organization_mapping(config, dummy_mapping_utility(config))
 
-        result = self._callFUT(config, [self.inifile], validator=None, _open=DummyOpen)
+        from altaircms.plugins.api import _get_configparser_from_inifile
+        configparser = _get_configparser_from_inifile(self.inifile, _open=DummyOpen)
+        result = self._callFUT(config, [configparser], validator=None)
 
         self.assertEquals(result.conts.keys(), [(1, "oauth")])
         self.assertEquals(result.conts[(1, "oauth")]._after_dispatch.keys(), ["event_page", "other_page"])

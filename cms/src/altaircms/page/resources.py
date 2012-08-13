@@ -35,7 +35,7 @@ class WDispositionResource(security.RootFactory):
         ## pageはallowableなもののみ
         assert page.organization_id == self.request.organization.id
 
-        wd = WidgetDisposition.from_page(page, DBSession)
+        wd = WidgetDisposition.from_page(page, DBSession, data["save_type"]) # page`type is shallow or deep
         if data:
             for k, v in data.iteritems():
                 setattr(wd, k, v)

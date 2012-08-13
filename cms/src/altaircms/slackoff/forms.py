@@ -19,7 +19,7 @@ from ..asset.models import ImageAsset
 from ..page.models import PageSet
 from ..topic.models import Topic, Topcontent, Kind, Promotion
 from ..tag.models import PageTag
-
+from ..plugins.api import get_extra_resource
 
 import pkg_resources
 def import_symbol(symbol):
@@ -293,16 +293,23 @@ class TopicForm(Form):
             append_errors(self.errors, "publish_open_on", u"公開開始日よりも後に終了日が設定されています")
         return not bool(self.errors)
 
+    def configure(self, request):
+        extra_resource = get_extra_resource(request)
+        self.kind.choices = [(x, x) for x in extra_resource["topic_kinds"]]
+
 class TopicFilterForm(Form):
-    kind = fields.SelectField(label=u"トピックの種類", choices=[("__None", "----------")]+[(x, x) for x in Topic.KIND_CANDIDATES])
+    kind = fields.SelectField(label=u"トピックの種類", choices=[])
     subkind = fields.TextField(label=u"サブ分類")    
 
     as_filter = as_filter(["kind", "subkind"])
 
+    def configure(self, request):
+        extra_resource = get_extra_resource(request)
+        self.kind.choices = [("__None", "----------")]+[(x, x) for x in extra_resource["topic_kinds"]]
 
 class TopcontentForm(Form):
     title = fields.TextField(label=u"タイトル", validators=[required_field()])
-    kind = fields.SelectField(label=u"種別", choices=[(x, x) for x in Topcontent.KIND_CANDIDATES])
+    kind = fields.SelectField(label=u"種別", choices=[])
     subkind = fields.TextField(label=u"サブ分類")
     is_global = fields.BooleanField(label=u"全体に公開", default=True)
 
@@ -347,6 +354,10 @@ class TopcontentForm(Form):
             append_errors(self.errors, "publish_open_on", u"公開開始日よりも後に終了日が設定されています")
         return not bool(self.errors)
    
+    def configure(self, request):
+        extra_resource = get_extra_resource(request)
+        self.kind.choices = [(x, x) for x in extra_resource["topcontent_kinds"]]
+
 
 class HotWordForm(Form):
     name = fields.TextField(label=u"ホットワード名")

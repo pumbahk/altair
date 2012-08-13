@@ -65,13 +65,18 @@ class CRUDResource(RootFactory): ## fixme
     ## search
     def query_form(self, params):
         if self.filter_form:
-            return self.filter_form(params)
+            form = self.filter_form(params)
+            if hasattr(form, "configure"):
+                form.configure(self.request)
         else:
             return None
 
     ## create
     def input_form(self, *args, **kwargs):
-        return self.form(*args, **kwargs)
+        form = self.form(*args, **kwargs)
+        if hasattr(form, "configure"):
+            form.configure(self.request)
+        return form
 
     def confirmed_form(self, obj=None):
         form = self.form(self.request.POST)
@@ -117,6 +122,8 @@ class CRUDResource(RootFactory): ## fixme
         else:
             params = model_to_dict(obj)
         form = self.form(**params)
+        if hasattr(form, "configure"):
+            form.configure(self.request)
         return form
 
     def update_model_from_form(self, obj, form):

@@ -67,6 +67,7 @@ ${nco.breadcrumbs(
 	   <table class="table">
 		 <tr><th>${disposition_save.title.label}</th><td>${disposition_save.title}</td></tr>
 		 <tr><th>${disposition_save.is_public.label}</th><td>${disposition_save.is_public}</td></tr>
+		 <tr><th>${disposition_save.save_type.label}</th><td>${disposition_save.save_type}</td></tr>
 		 ## submit button
 		 <tr><th>${disposition_save.page}${disposition_save.owner_id}<button class="btn" type="submit"><i class="icon-cog"></i>save</button></th><td></td></tr>
 	   </table>
