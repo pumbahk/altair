@@ -27,6 +27,13 @@ class TicketFormat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     delivery_methods = relationship('DeliveryMethod', secondary=TicketFormat_DeliveryMethod.__table__, backref='ticket_formats')
     data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
 
+    def append_delivery_method(self, method_id):
+        TicketFormat_DeliveryMethod(ticket_format_id=self.id, delivery_method_id=method_id)
+        
+    # delivery_methods_box = association_proxy("delivery_methods", "delivery_method_box", 
+    #                                          creator=lambda self, method_id: TicketFormat_DeliveryMethod(ticket_format_id=self.id, 
+    #                                                                                                      delivery_method_id=method_id))
+    
 class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "Ticket"
     id = Column(Identifier, primary_key=True)

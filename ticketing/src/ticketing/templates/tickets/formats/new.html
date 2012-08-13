@@ -1,0 +1,32 @@
+<%inherit file="../../layout_2cols.html" />
+<%namespace file="/common/helpers.html" import="breadcrumbs,flash_messages,form_item"/>
+<div class="breadcrumbs">
+${breadcrumbs(
+  names=[u'トップ', u'チケット様式', u"登録"],
+  urls=[request.route_path('index'), request.route_path("tickets.formats.index")]
+)}
+</div>
+
+<div class="page-header">
+  <h3>チケット様式登録</h3>
+</div>
+
+<%doc>
+<div class="content">
+  ${flash_messages(request)}
+  ${alert_message(form)}
+</div>
+</%doc>
+
+<div class="well">
+  <form class="form-horizontal" action="#" method="POST">
+	<fieldset>
+	  ${form_item(form.name, option={"style": 'width:100px'})}
+	  ${form_item(form.data_value)}
+	  ${form_item(form.delivery_methods)}
+	</fieldset>
+	<div class="form-actions">
+	  <input class="btn btn-primary" type="submit" name="submit" value="登録">
+	</div>
+  </form>
+</div>
