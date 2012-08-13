@@ -8,7 +8,8 @@ import numpy
 import logging
 
 __all__ = (
-    'convert',
+    'convert_svg',
+    'as_user_unit',
     )
 
 logging.basicConfig(level=logging.INFO)

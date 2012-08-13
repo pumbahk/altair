@@ -1,0 +1,30 @@
+<%inherit file="../../layout_2cols.html" />
+<%namespace file="/common/helpers.html" import="breadcrumbs,pager,flash_messages"/>
+<div class="breadcrumbs">
+${breadcrumbs(
+  names=[u'トップ', u'チケット様式'],
+  urls=[request.route_path('index')]
+)}
+</div>
+<table class="table fullwidth checkboxed_table">
+  <thead>
+    <tr>
+      <th class="minwidth"><input type="checkbox" class="__action__-select_all" /></th>
+      <th><a href="#" class="sortable">名前</a></th>
+      <th><a href="#" class="sortable">用紙サイズ</a></th>
+      <th><a href="#" class="sortable">配送方法</a></th>
+    </tr>
+  </thead>
+  <tbody>
+  % for format in formats:
+    <tr>
+      <td><input type="checkbox" name="id" value="${format.id}" /></td>
+      <td><a href="${request.route_url('tickets.formats.show', id=format.id)}">${format.name}</a></td>
+      <td>${h.format_size(h.extract_paper_size(format))} 
+      <td>${u' / '.join(dm.name for dm in format.delivery_methods)}</td>
+      <td>${format.updated_at}</td>
+      <td>${format.created_at}</td>
+    </tr>
+  % endfor
+  </tbody>
+</table>
