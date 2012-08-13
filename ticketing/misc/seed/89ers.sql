@@ -27,7 +27,7 @@ INSERT INTO `PaymentDeliveryMethodPair` (id, system_fee, transaction_fee, delive
 
 INSERT INTO `Performance` VALUES (100000,'FC会員登録２０１２','B8REG2012000',NULL,NULL,NULL,100001,'2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
 
-INSERT INTO `Venue` VALUES (100000,1,100000,1,'座席なし会場',NULL,NULL,'2012-06-20 12:09:33','2012-07-10 17:44:29',NULL);
+INSERT INTO `Venue` (id, site_id, performance_id, organization_id, name, sub_name, original_venue_id, created_at, updated_at, deleted_at) VALUES (100000,1,100000,1,'座席なし会場',NULL,NULL,'2012-06-20 12:09:33','2012-07-10 17:44:29',NULL);
 
 INSERT INTO `Product` VALUES (100000,'法人会員',100500.00,100000,100001,'2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
 INSERT INTO `Product` VALUES (100001,'プラチナ会員',30000.00,100000,100001,'2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
