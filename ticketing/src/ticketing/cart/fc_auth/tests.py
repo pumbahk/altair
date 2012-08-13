@@ -107,7 +107,8 @@ class TestIt(unittest.TestCase):
         from repoze.who.plugins.auth_tkt import AuthTktCookiePlugin
         from .plugins import FCAuthPlugin, logger
 
-        fc_auth = FCAuthPlugin(rememberer_name='auth_tkt')
+        fc_auth = FCAuthPlugin(rememberer_name='auth_tkt',
+            login_url=kwargs.get('login_url'))
         auth_tkt = AuthTktCookiePlugin('secret', 'auth_tkt')
         identifiers = [('fc_auth', fc_auth), 
                        ('auth_tkt', auth_tkt),]
@@ -162,3 +163,25 @@ class TestIt(unittest.TestCase):
 
         import pickle
         self.assertEqual(pickle.loads(authenticated['repoze.who.userid'].decode('base64')), {'username': 'test_user', 'membership': 'fc'})
+
+    def test_challenge_none(self):
+        login_url = 'http://example.com/login'
+        factory = self._makeAPIFactory(login_url=login_url)
+        environ = self._makeEnv()
+        api = factory(environ)
+        environ['repoze.who.plugins'] = api.name_registry
+
+        result = api.challenge()
+        self.assertIsNone(result)
+
+    def test_challenge_redirect(self):
+        login_url = 'http://example.com/login'
+        factory = self._makeAPIFactory(login_url=login_url)
+        environ = self._makeEnv()
+        environ['ticketing.cart.fc_auth.required'] = True
+        api = factory(environ)
+        environ['repoze.who.plugins'] = api.name_registry
+
+        result = api.challenge()
+
+        self.assertEqual(result.location, login_url)

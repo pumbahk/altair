@@ -11,14 +11,15 @@ import ticketing.users.models as u_m
 
 logger = logging.getLogger(__name__)
 
-def make_plugin():
+def make_plugin(rememberer_name, login_url, sha1salt):
     pass
 
 
 @implementer(IIdentifier, IAuthenticator, IChallenger)
 class FCAuthPlugin(object):
-    def __init__(self, rememberer_name):
+    def __init__(self, rememberer_name, login_url=None):
         self.rememberer_name = rememberer_name
+	self.login_url = login_url
 
     def _get_rememberer(self, environ):
         rememberer = environ['repoze.who.plugins'][self.rememberer_name]
@@ -91,7 +92,9 @@ class FCAuthPlugin(object):
 
     # IChallenger
     def challenge(self, environ, status, app_headers, forget_headers):
-        pass
+        if not environ.get('ticketing.cart.fc_auth.required'):
+            return
+        return HTTPFound(location=self.login_url)
 
     # IMetadataProvider
     def add_metadata(self, environ, identity):
