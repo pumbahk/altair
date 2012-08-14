@@ -45,8 +45,8 @@ class TicketFormatForm(Form):
             form.data["data_value"] = data
             if not "size" in data:
                 raise ValidationError("size is not found")
-            if not "perforlations" in data:
-                raise ValidationError("perforlations is not found")
+            if not "perforations" in data:
+                raise ValidationError("perforations is not found")
             if not "printable_areas" in data:
                 raise ValidationError("printable_areas is not found")
             
@@ -55,5 +55,6 @@ class TicketFormatForm(Form):
 
     def validate(self):
         super(type(self), self).validate()
-        del self.errors["delivery_methods"]
+        if "delivery_methods" in self.errors:
+            del self.errors["delivery_methods"]
         return not bool(self.errors)

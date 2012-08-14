@@ -36,4 +36,31 @@ ${breadcrumbs(
 </div>
 
 <div class="row-fluid">
+<div class="btn-group">
+  <a href="${request.route_path("tickets.formats.edit",id=format.id)}" class="btn">
+    <i class="icon-pencil"></i> 編集
+  </a>
+      <button class="btn dropdown-toggle" data-toggle="dropdown">
+        <span class="caret"></span>
+      </button>
+      <ul class="dropdown-menu">
+        <li>
+		  <a href="${request.route_path("tickets.formats.edit",id=format.id)}">
+			<i class="icon-pencil"></i> 編集
+		  </a>
+        </li>
+<%doc>
+        <li>
+          <a href="javascript:delete_event(9);" data-controls-modal="modal-delete" data-backdrop="true" data-keyboard="true">
+            <i class="icon-minus"></i> 削除
+          </a>
+        </li>
+        <li>
+          <a href="javascript:copy_event(9);">
+            <i class="icon-plus"></i> コピーして新規作成
+          </a>
+        </li>
+</%doc>
+      </ul>
+</div>
 </div>
