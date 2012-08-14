@@ -31,7 +31,7 @@
 <div id="tickets">
   <h3>チケット券面</h3>
 
-  <div class="row-fluid">
+  <div class="row-fluid well">
 	<div class="btn-group">
 	  <a href="${request.route_path("events.tickets.api.ticketform",event_id=event.id)}" 
 		 data-toggle="modal" data-target="#AjaxModal"
@@ -45,6 +45,29 @@
 		  </ul>
 	</div>
   </div>
+
+  <table class="table fullwidth checkboxed_table">
+	<thead>
+	  <tr>
+		<th class="minwidth"></th>
+		<th><a href="#" class="sortable">名前</a></th>
+		<th><a href="#" class="sortable">チケット様式</a></th>
+		<th><a href="#" class="sortable">更新日時</a></th>
+		<th><a href="#" class="sortable">作成日時</a></th>
+	  </tr>
+	</thead>
+	<tbody>
+	% for ticket in tickets:
+	  <tr>
+		<td><input type="radio" name="id" value="${ticket.id}" /></td>
+		<td><a href="#">${ticket.name}</a></td>
+		<td>${ticket.ticket_format.name}</td>
+		<td>${ticket.updated_at}</td>
+		<td>${ticket.created_at}</td>
+	  </tr>
+	% endfor
+	</tbody>
+  </table>
 
 </div>
 

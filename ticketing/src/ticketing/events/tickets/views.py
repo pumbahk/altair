@@ -14,7 +14,8 @@ class IndexView(BaseView):
     @view_config(route_name="events.tickets.index", renderer="ticketing:templates/tickets/events/index.html")
     def index(self):
         event = self.context.event
-        return dict(event=event)
+        tickets = self.context.tickets
+        return dict(event=event, tickets=tickets)
 
     @view_config(route_name="events.tickets.api.ticketform", renderer="ticketing:templates/tickets/events/_ticketform.html")
     def _api_ticketform(self):
