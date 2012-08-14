@@ -25,6 +25,21 @@ class TicketFormats(BaseView):
         qs = TicketFormat.filter_by(organization_id=self.context.user.organization_id).order_by(sa.desc("updated_at"))
         return dict(h=helpers, formats=qs)
 
+    # ## todo pagination
+    # @view_config(route_name='tickets.formats.index', renderer='ticketing:templates/tickets/formats/index.html', request_method="GET")
+    # def index(self):
+    #     items_per_page = 3
+    #     qs = TicketFormat.filter_by(organization_id=self.context.user.organization_id).order_by(sa.desc("updated_at"))
+    #     qs = paginate.Page(qs,
+    #                        items_per_page=items_per_page, 
+    #                        item_count=qs.count(), 
+    #                        url=paginate.PageURL_WebOb(self.request)
+    #                        )
+    #     if hasattr(self.request.GET, "page"):
+    #         n = (int(self.request.GET["page"])-1)*items_per_page
+    #         qs = qs.offset(n).limit(items_per_page)
+    #     return dict(h=helpers, formats=qs)
+
     @view_config(route_name='tickets.formats.index', renderer='ticketing:templates/tickets/formats/index.html', request_method="GET", 
                  request_param="sort")
     def index_with_sortable(self):
