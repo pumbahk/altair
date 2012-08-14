@@ -33,7 +33,7 @@ def create_old_ticket_tables():
         )
     op.create_table('Ticket',
         sa.Column('id', Identifier(), nullable=False),
-        sa.Column('event_id', Identifier(), nullable=False),
+        sa.Column('event_id', Identifier(), nullable=True),
         sa.Column('template_id', Identifier(), nullable=False),
         sa.Column('operator_id', Identifier(), nullable=False),
         sa.Column('name', sa.Unicode(255), default=u'', nullable=False),
