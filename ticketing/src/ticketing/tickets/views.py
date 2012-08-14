@@ -155,4 +155,27 @@ class TicketFormats(BaseView):
 class TicketTemplates(BaseView):
     @view_config(route_name='tickets.templates.index', renderer='ticketing:templates/tickets/templates/index.html')
     def index(self):
-        pass 
+        qs = Ticket.templates_query().filter_by(organization_id=self.context.user.organization_id)
+        return dict(h=helpers, templates=qs)
+
+    @view_config(route_name="tickets.templates.new", renderer="ticketing:templates/tickets/templates/new.html", 
+                 request_method="GET")
+    def new(self):
+        form = forms.TicketTemplateForm(organization_id=self.context.user.organization_id)
+        return dict(h=helpers, form=form)
+
+    @view_config(route_name='tickets.templates.new', renderer='ticketing:templates/tickets/templates/new.html', request_method="POST")
+    def new_post(self):
+        form = forms.TicketTemplateForm(organization_id=self.context.user.organization_id, 
+                                      formdata=self.request.POST)
+        if not form.validate():
+            return dict(h=helpers, form=form)
+
+        ticket_template = Ticket(name=form.data["name"], 
+                                 data=form.data_value, 
+                                 organization_id=self.context.user.organization_id
+                                 )
+        
+        ticket_template.save()
+        self.request.session.flash(u'チケットテンプレートを登録しました')
+        return HTTPFound(location=self.request.route_path("tickets.templates.index"))

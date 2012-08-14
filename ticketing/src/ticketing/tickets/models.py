@@ -1,3 +1,5 @@
+# -*- coding:utf-8 -*-
+
 from sqlalchemy import Table, Column, ForeignKey, ForeignKeyConstraint, Index, func
 from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric, Unicode
 from sqlalchemy.orm import join, backref
@@ -28,16 +30,23 @@ class TicketFormat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
 
 class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    """
+    Ticket.event_idがNULLのものはマスターデータ。これを雛形として実際にeventとひもづけるTicketオブジェクトを作成する。
+    """
     __tablename__ = "Ticket"
     id = Column(Identifier, primary_key=True)
     organization_id = Column(Identifier, ForeignKey('Organization.id'), nullable=True)
     organization = relationship('Organization', uselist=False, backref=backref('ticket_templates'))
-    event_id = Column(Identifier, ForeignKey('Event.id', ondelete='CASCADE'))
+    event_id = Column(Identifier, ForeignKey('Event.id', ondelete='CASCADE'), nullable=True)
     event = relationship('Event', uselist=False, backref='tickets')
     ticket_format_id = Column(Identifier, ForeignKey('TicketFormat.id'), nullable=False)
     ticket_format = relationship('TicketFormat', uselist=False, backref='tickets')
     name = Column(Unicode(255), nullable=False, default=u'')
     data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
+
+    @classmethod
+    def templates_query(cls):
+        return cls.filter_by(event_id=None)
 
 class TicketBundleAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "TicketBundleAttribute" 

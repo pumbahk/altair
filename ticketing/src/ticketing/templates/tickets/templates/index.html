@@ -1,0 +1,13 @@
+<%inherit file="../../layout_2cols.html" />
+<%namespace file="/common/helpers.html" import="breadcrumbs,pager,flash_messages"/>
+<div class="breadcrumbs">
+${breadcrumbs(
+  names=[u'トップ', u'チケットテンプレート'],
+  urls=[request.route_path('index')]
+)}
+</div>
+
+<div class="content">
+  ${flash_messages(request)}
+</div>
+

@@ -1,12 +1,81 @@
 # -*- coding: utf-8 -*-
 
 import json
+import os.path
+from StringIO import StringIO
+import xml.etree.ElementTree as etree
 from wtforms import Form
-from wtforms import TextField, IntegerField, HiddenField, SelectField, SelectMultipleField
+from wtforms import TextField, IntegerField, HiddenField, SelectField, SelectMultipleField, FileField
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 from wtforms.widgets import TextArea
 from ticketing.formhelpers import DateTimeField, Translations, Required
 from ticketing.core.models import Event, Account, DeliveryMethod
+from .models import TicketFormat
+
+class FileRequired(object):
+    def __init__(self, extnames=None):
+        self.extnames = extnames
+
+    def __call__(self, form, field):
+        if not field.data.filename:
+            raise ValidationError(u"ファイルが存在しません。アップロードするファイルを指定してください")
+        
+        if self.extnames and not os.path.splitext(field.data.filename)[1] in self.extnames:
+            raise ValidationError(u"対応していないファイル形式です。対応している形式(%s)" % self.extnames)
+
+class TicketTemplateForm(Form):
+    def _get_translations(self):
+        return Translations()
+
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        Form.__init__(self, formdata=formdata, obj=obj, prefix=prefix, **kwargs)
+        if 'organization_id' in kwargs:
+            self.ticket_format.choices = [
+                (format.id, format.name) for format in TicketFormat.filter_by(organization_id=kwargs['organization_id'])
+            ]
+        self._drawing = None
+
+    name = TextField(
+        label = u'名前',
+        validators=[
+            Required(),
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ]
+    )
+
+    ticket_format = SelectField(
+        label=u"チケット様式",
+        choices=[], 
+        coerce=long 
+    )
+
+    drawing = FileField(
+        label=u"券面データ", 
+        validators=[
+            FileRequired([".xml", ".svg"])
+        ]
+     )    
+
+    def validate_drawing(form, field):
+        try:
+            form._drawing = etree.parse(field.data.file)
+            field.data.file.seek(0)
+            return field.data
+        except Exception, e:
+            raise ValidationError(str(e))
+
+    def build_data_value(self):
+        if self._drawing:
+            out = StringIO()
+            self._drawing.write(out) #doc declaration?
+            return dict(drawing=out.getvalue())
+        return dict()
+
+    def validate(self):
+        super(type(self), self).validate()
+        self.data_value = self.build_data_value()
+        return not bool(self.errors)
+        
 
 class TicketFormatForm(Form):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
@@ -37,7 +106,10 @@ class TicketFormatForm(Form):
         widget=TextArea()
         )
 
-    delivery_methods = SelectMultipleField(label=u"配送方法", choices=[])
+    delivery_methods = SelectMultipleField(
+        label=u"配送方法",
+        coerce=long , 
+        choices=[])
     
     def validate_data_value(form, field):
         try:
@@ -57,9 +129,3 @@ class TicketFormatForm(Form):
             
         except Exception, e:
             raise ValidationError(str(e))
-
-    def validate(self):
-        super(type(self), self).validate()
-        if "delivery_methods" in self.errors:
-            del self.errors["delivery_methods"]
-        return not bool(self.errors)
