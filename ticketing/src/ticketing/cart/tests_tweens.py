@@ -26,7 +26,7 @@ class SelectAuthTweenTests(unittest.TestCase):
 
         result = target(request)
 
-        self.assertNotIn('ticketing.cart.fc_auth.required', request.environ)
+        self.assertTrue(request.environ['ticketing.cart.rakuten_auth.required'])
 
     def test_it(self):
         registry = self.config.registry
@@ -39,7 +39,7 @@ class SelectAuthTweenTests(unittest.TestCase):
 
         result = target(request)
 
-        self.assertTrue(request.environ['ticketing.cart.fc_auth.required'])
+        self.assertNotIn('ticketing.cart.rakuten_auth.required', request.environ)
 
 
 class DummyHandler(object):

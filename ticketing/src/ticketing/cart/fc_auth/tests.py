@@ -107,8 +107,7 @@ class TestIt(unittest.TestCase):
         from repoze.who.plugins.auth_tkt import AuthTktCookiePlugin
         from .plugins import FCAuthPlugin, logger
 
-        fc_auth = FCAuthPlugin(rememberer_name='auth_tkt',
-            login_url=kwargs.get('login_url'))
+        fc_auth = FCAuthPlugin(rememberer_name='auth_tkt')
         auth_tkt = AuthTktCookiePlugin('secret', 'auth_tkt')
         identifiers = [('fc_auth', fc_auth), 
                        ('auth_tkt', auth_tkt),]
@@ -176,12 +175,20 @@ class TestIt(unittest.TestCase):
 
     def test_challenge_redirect(self):
         login_url = 'http://example.com/login'
-        factory = self._makeAPIFactory(login_url=login_url)
+        factory = self._makeAPIFactory()
         environ = self._makeEnv()
         environ['ticketing.cart.fc_auth.required'] = True
         api = factory(environ)
         environ['repoze.who.plugins'] = api.name_registry
+        environ['ticketing.cart.fc_auth.login_url'] = login_url
+        session = DummySession()
+        environ['session.rakuten_openid'] = session
 
         result = api.challenge()
 
         self.assertEqual(result.location, login_url)
+        self.assertEqual(session['return_url'], 'http://127.0.0.1/')
+
+class DummySession(dict):
+    def save(self):
+        pass

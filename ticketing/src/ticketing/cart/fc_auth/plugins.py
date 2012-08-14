@@ -1,6 +1,7 @@
 #
 import pickle
 import logging
+import wsgiref.util
 import webob
 from webob.exc import HTTPFound
 from zope.interface import implementer
@@ -11,15 +12,14 @@ import ticketing.users.models as u_m
 
 logger = logging.getLogger(__name__)
 
-def make_plugin(rememberer_name, login_url, sha1salt):
+def make_plugin(rememberer_name, sha1salt):
     pass
 
 
 @implementer(IIdentifier, IAuthenticator, IChallenger)
 class FCAuthPlugin(object):
-    def __init__(self, rememberer_name, login_url=None):
+    def __init__(self, rememberer_name):
         self.rememberer_name = rememberer_name
-    	self.login_url = login_url
 
     def _get_rememberer(self, environ):
         rememberer = environ['repoze.who.plugins'][self.rememberer_name]
@@ -94,7 +94,10 @@ class FCAuthPlugin(object):
     def challenge(self, environ, status, app_headers, forget_headers):
         if not environ.get('ticketing.cart.fc_auth.required'):
             return
-        return HTTPFound(location=self.login_url)
+        session = environ['session.rakuten_openid']
+        session['return_url'] = wsgiref.util.request_uri(environ)
+        session.save()
+        return HTTPFound(location=environ['ticketing.cart.fc_auth.login_url'])
 
     # IMetadataProvider
     def add_metadata(self, environ, identity):
