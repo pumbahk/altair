@@ -12,6 +12,9 @@ from ticketing.formhelpers import DateTimeField, Translations, Required
 from ticketing.core.models import Event, Account, DeliveryMethod
 from .models import TicketFormat
 
+def filestorage_has_file(storage):
+    return hasattr(storage, "filename") and storage.file
+
 class FileRequired(object):
     def __init__(self, extnames=None):
         self.extnames = extnames
@@ -19,7 +22,7 @@ class FileRequired(object):
     field_flags = ('required', )
 
     def __call__(self, form, field):
-        if not hasattr(field.data, "filename") or not field.data.filename:
+        if not filestorage_has_file(field.data):
             raise StopValidation(u"ファイルが存在しません。アップロードするファイルを指定してください")
         
         if self.extnames and not os.path.splitext(field.data.filename)[1] in self.extnames:
@@ -120,7 +123,7 @@ class TicketTemplateEditForm(Form):
      )    
 
     def validate_drawing(form, field):
-        if not field.data and not hasattr(field.data, "file"):
+        if not filestorage_has_file(field.data):
             return None
         try:
             form._drawing = etree.parse(field.data.file)
