@@ -6,7 +6,7 @@ from StringIO import StringIO
 import xml.etree.ElementTree as etree
 from wtforms import Form
 from wtforms import TextField, IntegerField, HiddenField, SelectField, SelectMultipleField, FileField
-from wtforms.validators import Regexp, Length, Optional, ValidationError
+from wtforms.validators import Regexp, Length, Optional, ValidationError, StopValidation
 from wtforms.widgets import TextArea
 from ticketing.formhelpers import DateTimeField, Translations, Required
 from ticketing.core.models import Event, Account, DeliveryMethod
@@ -17,11 +17,11 @@ class FileRequired(object):
         self.extnames = extnames
 
     def __call__(self, form, field):
-        if not field.data.filename:
-            raise ValidationError(u"ファイルが存在しません。アップロードするファイルを指定してください")
+        if not hasattr(field.data, "filename") or not field.data.filename:
+            raise StopValidation(u"ファイルが存在しません。アップロードするファイルを指定してください")
         
         if self.extnames and not os.path.splitext(field.data.filename)[1] in self.extnames:
-            raise ValidationError(u"対応していないファイル形式です。対応している形式(%s)" % self.extnames)
+            raise StopValidation(u"対応していないファイル形式です。(対応している形式: %s)" % self.extnames)
 
 class TicketTemplateForm(Form):
     def _get_translations(self):

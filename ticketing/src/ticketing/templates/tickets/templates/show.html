@@ -2,12 +2,12 @@
 <%namespace file="/common/helpers.html" import="breadcrumbs,pager,flash_messages"/>
 <div class="breadcrumbs">
 ${breadcrumbs(
-  names=[u'トップ', u'チケット様式', format.name],
-  urls=[request.route_path('index'), request.route_path('tickets.formats.index')]
+  names=[u'トップ', u'チケットテンプレート', template.name],
+  urls=[request.route_path('index'), request.route_path('tickets.templates.index')]
 )}
 </div>
 <div class="page-header">
-  <h1>チケット様式</h1>
+  <h1>チケットテンプレート</h1>
 </div>
 <div class="content">
   ${flash_messages(request)}
@@ -20,46 +20,21 @@ ${breadcrumbs(
       <tbody>
         <tr>
           <th class="span2">名称</th>
-          <td class="span3">${format.name}</td>
+          <td class="span3">${template.name}</td>
         </tr>
         <tr>
-          <th>サイズ</th>
-          <td>
-            ${h.format_size(h.extract_paper_size(format))}
-          </td>
-        </tr>
-        <tr>
-          <th>配送方法</th>
-          <td>
-			${u' / '.join(dm.name for dm in format.delivery_methods)}
+          <th class="span2">チケット様式</th>
+          <td class="span3"><a href="${request.route_path("tickets.formats.show",id=template.ticket_format_id)}">
+			  ${template.ticket_format.name}
 		  </td>
         </tr>
         <tr>
-          <th>ミシン目</th>
-          <td>
-            <% ps = h.extract_perforations(format) %>
-            垂直方向:${u", ".join(ps["vertical"])}
-            水平方向:${u", ".join(ps["horizontal"])}
-          </td>
-        </tr>
-        <tr>
-          <th>印刷領域</th>
-          <td>
-            <% areas = h.extract_printable_areas(format) %>
-            <ul>
-            %for area in areas:
-              <li>x:${area["x"]}, y:${area["y"]}, 幅:${area["width"]}, 高さ:${area["height"]}</li>
-            %endfor
-            </ul>
-          </td>
-        </tr>
-        <tr>
           <th class="span2">作成日時</th>
-          <td class="span3">${format.created_at}</td>
+          <td class="span3">${template.created_at}</td>
         </tr>
         <tr>
           <th class="span2">更新日時</th>
-          <td class="span3">${format.updated_at}</td>
+          <td class="span3">${template.updated_at}</td>
         </tr>
       </tbody>
     </table>
@@ -70,7 +45,7 @@ ${breadcrumbs(
 
 <div class="row-fluid">
   <div class="btn-group">
-    <a href="${request.route_path("tickets.formats.edit",id=format.id)}" class="btn">
+    <a href="${request.route_path("tickets.templates.edit",id=template.id)}" class="btn">
       <i class="icon-pencil"></i> 編集
     </a>
         <button class="btn dropdown-toggle" data-toggle="dropdown">
@@ -82,11 +57,13 @@ ${breadcrumbs(
               <i class="icon-minus"></i> 削除
             </a>
           </li>
+<%doc>
           <li>
-            <a href="${request.route_path("tickets.formats.new",_query=dict(id=format.id))}">
+            <a href="${request.route_path("tickets.templates.new",_query=dict(id=template.id))}">
               <i class="icon-plus"></i> コピーして新規作成
             </a>
           </li>
+</%doc>
         </ul>
   </div>
 </div>
@@ -97,11 +74,11 @@ ${breadcrumbs(
     <h3>確認</h3>
   </div>
   <div class="modal-body">
-    このチケット様式を削除します。よろしいですか？
+    このチケットテンプレートを削除します。よろしいですか？
   </div>
   <div class="modal-footer">
     <a href="#" class="btn" data-dismiss="modal">キャンセル</a>
-    <form action="${request.route_path("tickets.formats.delete",id=format.id)}" method="POST">
+    <form action="${request.route_path("tickets.templates.delete",id=template.id)}" method="POST">
       <button type="submit" class="btn">削除する</button>
     </form>
   </div>

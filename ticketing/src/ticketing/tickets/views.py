@@ -146,7 +146,7 @@ class TicketFormats(BaseView):
 
     @view_config(route_name='tickets.formats.show', renderer='ticketing:templates/tickets/formats/show.html')
     def show(self):
-        qs = TicketFormat.query.filter_by(id=self.request.matchdict['id'])
+        qs = TicketFormat.filter_by(id=self.request.matchdict['id'])
         format = qs.filter_by(organization_id=self.context.user.organization_id).one()
         return dict(h=helpers, format=format)
     
@@ -172,6 +172,7 @@ class TicketTemplates(BaseView):
             return dict(h=helpers, form=form)
 
         ticket_template = Ticket(name=form.data["name"], 
+                                 ticket_format_id=form.data["ticket_format"], 
                                  data=form.data_value, 
                                  organization_id=self.context.user.organization_id
                                  )
@@ -179,3 +180,23 @@ class TicketTemplates(BaseView):
         ticket_template.save()
         self.request.session.flash(u'チケットテンプレートを登録しました')
         return HTTPFound(location=self.request.route_path("tickets.templates.index"))
+
+    @view_config(route_name='tickets.templates.delete', request_method="POST")
+    def delete_post(self):
+        template = Ticket.templates_query().filter_by(
+            organization_id=self.context.user.organization_id,
+            id=self.request.matchdict["id"]).first()
+
+        if template is None:
+            raise HTTPNotFound("this is not found")
+
+        template.delete()
+        self.request.session.flash(u'チケットテンプレートを削除しました')
+
+        return HTTPFound(location=self.request.route_path("tickets.templates.index"))
+
+    @view_config(route_name='tickets.templates.show', renderer='ticketing:templates/tickets/templates/show.html')
+    def show(self):
+        qs = Ticket.templates_query().filter_by(id=self.request.matchdict['id'])
+        template = qs.filter_by(organization_id=self.context.user.organization_id).one()
+        return dict(h=helpers, template=template)
