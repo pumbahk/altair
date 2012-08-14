@@ -158,6 +158,14 @@ class TicketTemplates(BaseView):
         qs = Ticket.templates_query().filter_by(organization_id=self.context.user.organization_id)
         return dict(h=helpers, templates=qs)
 
+    @view_config(route_name='tickets.templates.index', renderer='ticketing:templates/tickets/templates/index.html', request_method="GET", 
+                 request_param="sort")
+    def index_with_sortable(self):
+        direction = helpers.get_direction(self.request.params["direction"])
+        qs = Ticket.templates_query().filter_by(organization_id=self.context.user.organization_id)
+        qs = qs.order_by(direction(self.request.params["sort"]))
+        return dict(h=helpers, templates=qs)
+
     @view_config(route_name="tickets.templates.new", renderer="ticketing:templates/tickets/templates/new.html", 
                  request_method="GET")
     def new(self):
