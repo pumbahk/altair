@@ -3,25 +3,30 @@
 
 <% paging = False if limit else True %>
 
-<%def name="actions(product_id, product_item_id)">
+<%def name="actions(product_id, product_item_id=None)">
 <%
-  return {
+  action_dict = {}
+  if product_item_id:
+    action_dict.update({
+      'edit':dict(
+        label=u'編集',
+        url='javascript:edit_product_item(%s, %s);' % (product_id, product_item_id),
+        icon='icon-pencil',
+      ),
+      'delete':dict(
+        label=u'削除',
+        url='javascript:delete_product_item(%s);' % product_item_id,
+        icon='icon-minus',
+      )
+    })
+  action_dict.update({
     'new':dict(
       label=u'追加',
       url='javascript:new_product_item(%s);' % product_id,
       icon='icon-plus',
     ),
-    'edit':dict(
-      label=u'編集',
-      url='javascript:edit_product_item(%s, %s);' % (product_id, product_item_id),
-      icon='icon-pencil',
-    ),
-    'delete':dict(
-      label=u'削除',
-      url='javascript:delete_product_item(%s);' % product_id,
-      icon='icon-minus',
-    ),
-  }
+  })
+  return action_dict
 %>
 </%def>
 
@@ -99,15 +104,19 @@
               % if j != 0:
         <tr id="product-${product.id}">
               % endif
-            <td id="stock_holder-${item.id}" value="${item.stock.stock_holder.id}" style="border-left: 1px solid #ddd;">${item.stock.stock_holder.name}</td>
-            <td id="stock-${item.id}" value="${item.stock.id}">${item.stock.stock_type.name}</td>
-            <td id="item_price-${item.id}" value="${item.price}">${h.price_format(item.price)}円</td>
-            <td id="quantity-${item.id}">${item.quantity}</td>
-            <td>${item.stock.stock_status.quantity} / ${item.stock.quantity}席</td>
-            <td>${item.stock.id}</td>
-            <td>${h.action_button(actions(product.id, item.id), order=iter(['edit', 'new', 'delete']), options='btn-small')}</td>
+          <td id="stock_holder-${item.id}" value="${item.stock.stock_holder.id}" style="border-left: 1px solid #ddd;">${item.stock.stock_holder.name}</td>
+          <td id="stock-${item.id}" value="${item.stock.id}">${item.stock.stock_type.name}</td>
+          <td id="item_price-${item.id}" value="${item.price}">${h.price_format(item.price)}円</td>
+          <td id="quantity-${item.id}">${item.quantity}</td>
+          <td>${item.stock.stock_status.quantity} / ${item.stock.quantity}席</td>
+          <td>${item.stock.id}</td>
+          <td>${h.action_button(actions(product.id, item.id), order=iter(['edit', 'new', 'delete']), options='btn-small')}</td>
         </tr>
             % endfor
+            % if count == 0:
+          <td colspan="7">${h.action_button(actions(product.id), options='btn-small')}</td>
+        </tr>
+            % endif
           % endif
         </tr>
         % endfor

@@ -1134,11 +1134,12 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                         if stock_type.id not in created_stock_types:
                             created_stock_types.append(stock_type.id)
 
-        # 生成したStockをProductに紐づけるProductItemを生成
-        for stock_type_id in created_stock_types:
-            products = Product.filter(Product.seat_stock_type_id==stock_type_id).all()
-            for product in products:
-                ProductItem.create_default(product)
+        ''' ProductItemの自動生成は行わない '''
+        ## 生成したStockをProductに紐づけるProductItemを生成
+        #for stock_type_id in created_stock_types:
+        #    products = Product.filter(Product.seat_stock_type_id==stock_type_id).all()
+        #    for product in products:
+        #        ProductItem.create_default(product)
 
     @staticmethod
     def create_from_template(template, performance_id):
@@ -1208,8 +1209,9 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def add(self):
         super(Product, self).add()
 
-        # Performance数分のProductItemを生成
-        ProductItem.create_default(product=self)
+        ''' ProductItemの自動生成は行わない '''
+        ## Performance数分のProductItemを生成
+        #ProductItem.create_default(product=self)
 
     def get_quantity_power(self, stock_type, performance_id):
         """ 数量倍率 """
