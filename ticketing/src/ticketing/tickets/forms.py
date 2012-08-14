@@ -16,6 +16,8 @@ class FileRequired(object):
     def __init__(self, extnames=None):
         self.extnames = extnames
 
+    field_flags = ('required', )
+
     def __call__(self, form, field):
         if not hasattr(field.data, "filename") or not field.data.filename:
             raise StopValidation(u"ファイルが存在しません。アップロードするファイルを指定してください")
@@ -23,6 +25,19 @@ class FileRequired(object):
         if self.extnames and not os.path.splitext(field.data.filename)[1] in self.extnames:
             raise StopValidation(u"対応していないファイル形式です。(対応している形式: %s)" % self.extnames)
 
+    def none_is_ok(self, form, field):
+        if not field.data:
+            return None
+        else:
+            return self.__call__(form, field)
+
+def build_template_data_value(drawing):
+    if drawing:
+        out = StringIO()
+        drawing.write(out) #doc declaration?
+        return dict(drawing=out.getvalue())
+    return dict()
+    
 class TicketTemplateForm(Form):
     def _get_translations(self):
         return Translations()
@@ -46,7 +61,8 @@ class TicketTemplateForm(Form):
     ticket_format = SelectField(
         label=u"チケット様式",
         choices=[], 
-        coerce=long 
+        coerce=long , 
+        validators=[Required()]
     )
 
     drawing = FileField(
@@ -64,16 +80,58 @@ class TicketTemplateForm(Form):
         except Exception, e:
             raise ValidationError(str(e))
 
-    def build_data_value(self):
-        if self._drawing:
-            out = StringIO()
-            self._drawing.write(out) #doc declaration?
-            return dict(drawing=out.getvalue())
-        return dict()
+    def validate(self):
+        super(type(self), self).validate()
+        self.data_value = build_template_data_value(self._drawing)
+        return not bool(self.errors)
+
+class TicketTemplateEditForm(Form):
+    def _get_translations(self):
+        return Translations()
+
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        Form.__init__(self, formdata=formdata, obj=obj, prefix=prefix, **kwargs)
+        if 'organization_id' in kwargs:
+            self.ticket_format.choices = [
+                (format.id, format.name) for format in TicketFormat.filter_by(organization_id=kwargs['organization_id'])
+            ]
+        self._drawing = None
+
+    name = TextField(
+        label = u'名前',
+        validators=[
+            Required(),
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ]
+    )
+
+    ticket_format = SelectField(
+        label=u"チケット様式",
+        choices=[], 
+        coerce=long , 
+        validators=[Required()]
+    )
+
+    drawing = FileField(
+        label=u"券面データ", 
+        validators=[
+            FileRequired([".xml", ".svg"]).none_is_ok
+        ]
+     )    
+
+    def validate_drawing(form, field):
+        if not field.data and not hasattr(field.data, "file"):
+            return None
+        try:
+            form._drawing = etree.parse(field.data.file)
+            field.data.file.seek(0)
+            return field.data
+        except Exception, e:
+            raise ValidationError(str(e))
 
     def validate(self):
         super(type(self), self).validate()
-        self.data_value = self.build_data_value()
+        self.data_value = build_template_data_value(self._drawing)
         return not bool(self.errors)
         
 
@@ -108,6 +166,7 @@ class TicketFormatForm(Form):
 
     delivery_methods = SelectMultipleField(
         label=u"配送方法",
+        validators=[Required()], 
         coerce=long , 
         choices=[])
     

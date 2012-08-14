@@ -181,6 +181,48 @@ class TicketTemplates(BaseView):
         self.request.session.flash(u'チケットテンプレートを登録しました')
         return HTTPFound(location=self.request.route_path("tickets.templates.index"))
 
+    @view_config(route_name='tickets.templates.edit', renderer='ticketing:templates/tickets/templates/new.html',
+                 request_method="GET")
+    def edit(self):
+        template = Ticket.templates_query().filter_by(
+            organization_id=self.context.user.organization_id,
+            id=self.request.matchdict["id"]).first()
+
+        if template is None:
+            raise HTTPNotFound("this is not found")
+        
+        form = forms.TicketTemplateEditForm(
+            organization_id=self.request.context.user.organization_id, 
+            name=template.name, 
+            ticket_format=template.ticket_format_id
+            )
+        return dict(h=helpers, form=form, template=template)
+
+    @view_config(route_name='tickets.templates.edit', renderer='ticketing:templates/tickets/templates/new.html',
+                 request_method="POST")
+    def edit_post(self):
+        template = Ticket.templates_query().filter_by(
+            organization_id=self.context.user.organization_id,
+            id=self.request.matchdict["id"]).first()
+
+        if template is None:
+            raise HTTPNotFound("this is not found")
+
+        form = forms.TicketTemplateEditForm(organization_id=self.context.user.organization_id, 
+                                        formdata=self.request.POST)
+        if not form.validate():
+            return dict(h=helpers, form=form, template=template)
+
+        template.name = form.data["name"]
+        template.ticket_format_id = form.data["ticket_format"]
+
+        if form.data_value:
+            template.data = form.data_value
+        template.save()
+        self.request.session.flash(u'チケットテンプレートを更新しました')
+        return HTTPFound(location=self.request.route_path("tickets.templates.index"))
+
+
     @view_config(route_name='tickets.templates.delete', request_method="POST")
     def delete_post(self):
         template = Ticket.templates_query().filter_by(

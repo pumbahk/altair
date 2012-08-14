@@ -22,9 +22,11 @@ ${breadcrumbs(
   if request.matched_route.name == 'tickets.templates.edit':
     route_name = u'編集'
     route_path = request.route_path('tickets.templates.edit', id=template.id)
+    place_holder = u"この欄が空の場合には、現在登録されているファイルが使われます"
   else:
     route_name = u'登録'
     route_path = request.route_path('tickets.templates.new')
+    place_holder = u""
 %>
 
 
@@ -35,7 +37,7 @@ ${breadcrumbs(
 	<fieldset>
 	  ${form_item(form.name)}
 	  ${form_item(form.ticket_format)}
-	  ${form_item(form.drawing)}
+	  ${form_item(form.drawing, option={"placeholder": place_holder})}
 	</fieldset>
 	<div class="form-actions">
 	  <input class="btn btn-primary" type="submit" name="submit" value="登録">
