@@ -16,9 +16,9 @@ Setup
   $ virtualenv env
   $ env/bin/easy_install pyramid
   $ source env/bin/activate
-  $ cd altair/ticketing/src
+  $ cd altair/ticketing
   $ python setup.py develop
-  $ ../../../env/bin/paster serve development.ini --reload
+  $ ../../env/bin/paster serve development.ini --reload
 
 Generating seed data
 ====================
