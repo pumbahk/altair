@@ -76,7 +76,7 @@
           <th style="width: 50px;">${form.order_no.label.text}</th>
           % if performance:
           <th style="width: 100px;">配券先</th>
-          <th style="width: 100px;">席種名</th>
+          <th style="width: 100px;">商品明細名</th>
           <th style="width: 80px;">単価</th>
           <th style="width: 60px;">販売単位</th>
           <th style="width: 100px;">席数</th>
@@ -105,7 +105,7 @@
         <tr id="product-${product.id}">
               % endif
           <td id="stock_holder-${item.id}" value="${item.stock.stock_holder.id}" style="border-left: 1px solid #ddd;">${item.stock.stock_holder.name}</td>
-          <td id="stock-${item.id}" value="${item.stock.id}">${item.stock.stock_type.name}</td>
+          <td id="item_name-${item.id}" value="${item.name}">${item.name}</td>
           <td id="item_price-${item.id}" value="${item.price}">${h.price_format(item.price)}円</td>
           <td id="quantity-${item.id}">${item.quantity}</td>
           <td>${item.stock.stock_status.quantity} / ${item.stock.quantity}席</td>

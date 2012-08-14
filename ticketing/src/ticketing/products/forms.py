@@ -107,6 +107,13 @@ class ProductItemForm(Form):
     product_id = HiddenField(
         validators=[Required()]
     )
+    name = TextField(
+        label=u'商品明細名',
+        validators=[
+            Required(),
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ]
+    )
     price = TextField(
         label=u'単価',
         validators=[Required()]

@@ -31,7 +31,6 @@ import ticketing.oauth2.models
 import ticketing.operators.models
 import ticketing.sej.models
 import ticketing.users.models
-import ticketing.tickets.models
 
 target_metadata = models.Base.metadata
 # target_metadata = None

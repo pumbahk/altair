@@ -896,6 +896,7 @@ class BuyerCondition(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'ProductItem'
     id = Column(Identifier, primary_key=True)
+    name = Column(String(255))
     price = Column(Numeric(precision=16, scale=2), nullable=False)
 
     product_id = Column(Identifier, ForeignKey('Product.id'))
@@ -1260,11 +1261,7 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return data
 
     def seat_type(self):
-        name = ProductItem.filter_by(product_id=self.id)\
-                          .join(Stock).join(StockType)\
-                          .filter(StockType.type==StockTypeEnum.Seat.v)\
-                          .with_entities(StockType.name).distinct().scalar()
-        return name if name else ''
+        return self.seat_stock_type.name if self.seat_stock_type else ''
 
     @staticmethod
     def create_from_template(template, event_id, convert_map):
@@ -1354,8 +1351,6 @@ class ShippingAddress(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     tel_2 = Column(String(32))
     fax = Column(String(32))
     email = Column(String(255))
-
-from ticketing.operators.models import Operator
 
 class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Order'

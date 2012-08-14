@@ -13,6 +13,7 @@
     modal.find('#product_id').val($(product).find('#id').text());
     modal.find('#stock_holders').removeAttr('disabled');
     modal.find('#stock_id').removeAttr('disabled');
+    modal.find('#product-item #name').val('');
     modal.find('#product-item #price').val('');
     modal.find('#quantity').val(1);
     modal.modal('toggle');
@@ -31,6 +32,7 @@
     modal.find('#stock_holders').attr('disabled', 'disabled');
     modal.find('#stock_id').val($('#stock-' + product_item_id).attr('value'));
     modal.find('#stock_id').attr('disabled', 'disabled');
+    modal.find('#product-item #name').val($('#item_name-' + product_item_id).attr('value'));
     modal.find('#product-item #price').val(Math.floor($('#item_price-' + product_item_id).attr('value')));
     modal.find('#quantity').val($('#quantity-' + product_item_id).text());
     modal.modal('toggle');

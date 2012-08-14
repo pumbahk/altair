@@ -1,4 +1,5 @@
-from ..carts.helpers import format_number as _format_number
+# -*- coding: utf-8 -*-
+from ..cart.helpers import format_number as _format_number
 
 def format_number(value):
     return _format_number(float(value))
