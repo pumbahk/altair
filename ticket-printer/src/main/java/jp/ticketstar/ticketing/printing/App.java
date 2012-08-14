@@ -1,5 +1,8 @@
 package jp.ticketstar.ticketing.printing;
 
+import jp.ticketstar.ticketing.printing.gui.AppWindow;
+import jp.ticketstar.ticketing.printing.gui.AppWindowModel;
+
 /**
  * Hello world!
  *
