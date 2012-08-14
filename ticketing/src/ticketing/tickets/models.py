@@ -48,6 +48,11 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def templates_query(cls):
         return cls.filter_by(event_id=None)
 
+    def create_event_bound(self, event):
+        new_object = self.__class__.clone(self)
+        new_object.event_id = event.id
+        return new_object
+
 class TicketBundleAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "TicketBundleAttribute" 
     ticket_bundle_id = Column(Identifier, ForeignKey('TicketBundle.id', ondelete='CASCADE'), primary_key=True, nullable=False)

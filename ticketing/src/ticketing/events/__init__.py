@@ -20,4 +20,5 @@ def includeme(config):
     config.include('ticketing.events.stock_holders', route_prefix='stock_holders')
     config.include('ticketing.events.stock_types' , route_prefix='stock_types')
     config.include('ticketing.events.stocks' , route_prefix='stocks')
+    config.include("ticketing.events.tickets", route_prefix="tickets")
     config.scan(".")
