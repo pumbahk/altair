@@ -73,6 +73,7 @@ def main(global_config, **settings):
     config.scan()
     config.include('..checkout')
     config.include('..multicheckout')
+    config.include('..mobile')
     config.include('.plugins')
     config.include('.errors')
 

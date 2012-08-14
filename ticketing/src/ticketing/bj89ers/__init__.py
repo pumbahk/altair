@@ -29,8 +29,7 @@ def main(global_conf, **settings):
     config.add_subscriber('.api.on_order_completed', 'ticketing.cart.events.OrderCompleted')
     config.commit()
 
-    config.add_tween(".tweens.mobile_encoding_convert_factory")
-    #config.add_tween(".tweens.mobile_request_factory")
+    config.include('..mobile')
 
     config.add_route('order_review.form', '/review')
     config.add_route('order_review.show', '/review/show')
