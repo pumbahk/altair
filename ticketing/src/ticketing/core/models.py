@@ -1662,6 +1662,8 @@ class TicketBundleAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     name = Column(String(255), primary_key=True, nullable=False)
     value = Column(String(1023))
 
+from ..operators.models import Operator
+
 class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "TicketBundle"
     id = Column(Identifier, primary_key=True)
