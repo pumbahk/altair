@@ -45,6 +45,11 @@ class TicketFormatForm(Form):
             form.data["data_value"] = data
             if not "size" in data:
                 raise ValidationError("size is not found")
+            if not data["size"].get("width"):
+                raise ValidationError("size[\"width\"] is not found")
+            if not data["size"].get("height"):
+                raise ValidationError("size[\"height\"] is not found")
+
             if not "perforations" in data:
                 raise ValidationError("perforations is not found")
             if not "printable_areas" in data:

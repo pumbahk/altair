@@ -13,25 +13,25 @@ ${breadcrumbs(
 
 <script type="text/javascript">
   $(function(){
-	$("#action_menu a.id-action").click(
-	 function(){
-	   var pk = $("input[name='id']:checked").val();
+    $("#action_menu a.id-action").click(
+     function(){
+       var pk = $("input[name='id']:checked").val();
        if(!pk){ return false; }
-	   $(this).attr("href", $(this).attr("data-base-url").replace("__id__", pk));
-	   return true;
-	});
+       $(this).attr("href", $(this).attr("data-base-url").replace("__id__", pk));
+       return true;
+    });
 
-	$("#action_menu a.id-delegate-action").click(
-	 function(){
-	   var pk = $("input[name='id']:checked").val();
+    $("#action_menu a.id-delegate-action").click(
+     function(){
+       var pk = $("input[name='id']:checked").val();
        if(!pk){ return false; }
        var delegated=$(this).attr("data-delegated");
 // fixme
        var form = $(delegated).find("form")
        $(form).attr("action",$(form).attr("data-base-url").replace("__id__", pk));
        $(delegated).modal();
-	   return true;
-	});
+       return true;
+    });
   });
 </script>
 
@@ -45,24 +45,24 @@ ${breadcrumbs(
       <ul class="dropdown-menu">
         <li>
           <a class="id-action" href="#"
-			 data-base-url="${request.route_path("tickets.formats.edit",id="__id__")}">
+             data-base-url="${request.route_path("tickets.formats.edit",id="__id__")}">
             <i class="icon-pencil"></i> 編集
           </a>
         </li>
         <li>
           <a class="id-delegate-action" href="#" 
-			 data-delegated="#deleteModal"
-			 data-base-url="${request.route_path("tickets.formats.delete",id="__id__")}"
-			 href="#deleteModal" data-toggle="modal">
+             data-delegated="#deleteModal"
+             data-base-url="${request.route_path("tickets.formats.delete",id="__id__")}"
+             href="#deleteModal" data-toggle="modal">
             <i class="icon-minus"></i> 削除
           </a>
         </li>
-		<li>
-		  <a class="id-action" href="#"
-			 data-base-url="${request.route_path("tickets.formats.new",_query=dict(id="__id__"))}">
-			<i class="icon-plus"></i> コピーして新規作成
-		  </a>
-		</li>
+        <li>
+          <a class="id-action" href="#"
+             data-base-url="${request.route_path("tickets.formats.new",_query=dict(id="__id__"))}">
+            <i class="icon-plus"></i> コピーして新規作成
+          </a>
+        </li>
       </ul>
 </div>
 
@@ -70,9 +70,11 @@ ${breadcrumbs(
   <thead>
     <tr>
       <th class="minwidth"></th>
-      <th><a href="#" class="sortable">名前</a></th>
+      <th><a href="${h.sortable(request, "name")}" class="sortable">名前</a></th>
       <th><a href="#" class="sortable">用紙サイズ</a></th>
       <th><a href="#" class="sortable">配送方法</a></th>
+      <th><a href="${h.sortable(request, "created_at", direction="desc")}" class="sortable">作成日時</a></th>
+      <th><a href="${h.sortable(request, "updated_at", direction="desc")}" class="sortable">更新日時</a></th>
     </tr>
   </thead>
   <tbody>
@@ -91,16 +93,16 @@ ${breadcrumbs(
 
 <div class="modal hide" id="deleteModal">
   <div class="modal-header">
-	<button type="button" class="close" data-dismiss="modal">×</button>
-	<h3>確認</h3>
+    <button type="button" class="close" data-dismiss="modal">×</button>
+    <h3>確認</h3>
   </div>
   <div class="modal-body">
-	このチケット様式を削除します。よろしいですか？
+    このチケット様式を削除します。よろしいですか？
   </div>
   <div class="modal-footer">
-	<a href="#" class="btn" data-dismiss="modal">キャンセル</a>
-	<form action="#" data-base-url="${request.route_path("tickets.formats.delete",id="__id__")}" method="POST">
-	  <button type="submit" class="btn">削除する</button>
-	</form>
+    <a href="#" class="btn" data-dismiss="modal">キャンセル</a>
+    <form action="#" data-base-url="${request.route_path("tickets.formats.delete",id="__id__")}" method="POST">
+      <button type="submit" class="btn">削除する</button>
+    </form>
   </div>
 </div>

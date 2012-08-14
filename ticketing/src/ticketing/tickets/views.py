@@ -25,6 +25,14 @@ class TicketFormats(BaseView):
         qs = TicketFormat.filter_by(organization_id=self.context.user.organization_id).order_by(sa.desc("updated_at"))
         return dict(h=helpers, formats=qs)
 
+    @view_config(route_name='tickets.formats.index', renderer='ticketing:templates/tickets/formats/index.html', request_method="GET", 
+                 request_param="sort")
+    def index_with_sortable(self):
+        direction = helpers.get_direction(self.request.params["direction"])
+        qs = TicketFormat.filter_by(organization_id=self.context.user.organization_id)
+        qs = qs.order_by(direction(self.request.params["sort"]))
+        return dict(h=helpers, formats=qs)
+
     @view_config(route_name="tickets.formats.edit",renderer='ticketing:templates/tickets/formats/new.html')
     def edit(self):
         format = TicketFormat.filter_by(organization_id=self.context.user.organization_id,
