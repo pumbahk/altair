@@ -36,31 +36,45 @@ ${breadcrumbs(
 </div>
 
 <div class="row-fluid">
-<div class="btn-group">
-  <a href="${request.route_path("tickets.formats.edit",id=format.id)}" class="btn">
-    <i class="icon-pencil"></i> 編集
-  </a>
-      <button class="btn dropdown-toggle" data-toggle="dropdown">
-        <span class="caret"></span>
-      </button>
-      <ul class="dropdown-menu">
-        <li>
-		  <a href="${request.route_path("tickets.formats.edit",id=format.id)}">
-			<i class="icon-pencil"></i> 編集
-		  </a>
-        </li>
-<%doc>
-        <li>
-          <a href="javascript:delete_event(9);" data-controls-modal="modal-delete" data-backdrop="true" data-keyboard="true">
-            <i class="icon-minus"></i> 削除
-          </a>
-        </li>
-        <li>
-          <a href="javascript:copy_event(9);">
-            <i class="icon-plus"></i> コピーして新規作成
-          </a>
-        </li>
-</%doc>
-      </ul>
+  <div class="btn-group">
+	<a href="${request.route_path("tickets.formats.edit",id=format.id)}" class="btn">
+	  <i class="icon-pencil"></i> 編集
+	</a>
+		<button class="btn dropdown-toggle" data-toggle="dropdown">
+		  <span class="caret"></span>
+		</button>
+		<ul class="dropdown-menu">
+		  <li>
+			<a href="${request.route_path("tickets.formats.edit",id=format.id)}">
+			  <i class="icon-pencil"></i> 編集
+			</a>
+		  </li>
+		  <li>
+			<a href="#deleteModal" data-toggle="modal">
+			  <i class="icon-minus"></i> 削除
+			</a>
+		  </li>
+		  <li>
+			<a href="${request.route_path("tickets.formats.new",_query=dict(id=format.id))}">
+			  <i class="icon-plus"></i> コピーして新規作成
+			</a>
+		  </li>
+		</ul>
+  </div>
 </div>
+
+<div class="modal hide" id="deleteModal">
+  <div class="modal-header">
+	<button type="button" class="close" data-dismiss="modal">×</button>
+	<h3>確認</h3>
+  </div>
+  <div class="modal-body">
+	このチケット様式を削除します。よろしいですか？
+  </div>
+  <div class="modal-footer">
+	<a href="#" class="btn" data-dismiss="modal">キャンセル</a>
+	<form action="${request.route_path("tickets.formats.delete",id=format.id)}" method="POST">
+	  <button type="submit" class="btn">削除する</button>
+	</form>
+  </div>
 </div>

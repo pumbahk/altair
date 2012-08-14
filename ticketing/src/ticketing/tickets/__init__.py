@@ -5,6 +5,7 @@ def includeme(config):
     config.add_route('tickets.formats.new', '/formats/new')
     config.add_route('tickets.formats.show', '/formats/{id}')
     config.add_route('tickets.formats.edit', '/formats/{id}/edit')
+    config.add_route('tickets.formats.delete', '/formats/{id}/delete')
 
 
     config.add_route('tickets.templates.index', '/templates')
