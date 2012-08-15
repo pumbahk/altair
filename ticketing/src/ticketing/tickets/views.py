@@ -149,7 +149,12 @@ class TicketFormats(BaseView):
         qs = TicketFormat.filter_by(id=self.request.matchdict['id'])
         format = qs.filter_by(organization_id=self.context.user.organization_id).one()
         return dict(h=helpers, format=format)
-    
+
+    @view_config(route_name='tickets.formats.data', renderer='json')
+    def data(self):
+        qs = TicketFormat.filter_by(id=self.request.matchdict['id'])
+        format = qs.filter_by(organization_id=self.context.user.organization_id).one()
+        return format.data
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class TicketTemplates(BaseView):
