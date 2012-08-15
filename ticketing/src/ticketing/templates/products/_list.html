@@ -98,7 +98,7 @@
             <input type="hidden" id="sales_segment_id" value="${sales_segment_id}" />
             <input type="hidden" id="seat_stock_type_id" value="${stock_type_id}" />
           </td>
-          <td ${rowspan}><span id="id">${product.seat_type()}</span></td>
+          <td ${rowspan}><span>${product.seat_type()}</span></td>
           <td ${rowspan}><span id="id">${product.id}</span></td>
           <td ${rowspan}><a href="javascript:edit_product('${product.id}');"><span id="name">${product.name}</span></a></td>
           <td ${rowspan}><span id="price" value="${product.price}">${h.price_format(product.price)}</span>円</td>
