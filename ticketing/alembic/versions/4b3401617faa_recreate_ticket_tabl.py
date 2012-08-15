@@ -160,6 +160,7 @@ def downgrade():
     op.drop_column('ProductItem', 'ticket_bundle_id')
     op.drop_table('TicketPrintHistory')
     op.drop_table('TicketBundleAttribute')
+    op.drop_table('TicketFormat_DeliveryMethod')
     op.drop_table('Ticket_TicketBundle')
     op.drop_table('TicketBundle')
     op.drop_table('Ticket')
