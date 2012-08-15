@@ -5,9 +5,10 @@ from ticketing.fanstatic import with_bootstrap
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPCreated
 from pyramid.path import AssetResolver
-from ticketing.core.models import Ticket
+from ticketing.core.models import Ticket, TicketBundle
 from ticketing.views import BaseView
 from . import forms
+   
 
 @view_defaults(decorator=with_bootstrap)
 class IndexView(BaseView):
@@ -15,28 +16,68 @@ class IndexView(BaseView):
     def index(self):
         event = self.context.event
         tickets = self.context.tickets
-        return dict(event=event, tickets=tickets)
+        bundles = self.context.bundles
+        return dict(event=event, tickets=tickets, bundles=bundles)
 
-    @view_config(route_name="events.tickets.api.ticketform", renderer="ticketing:templates/tickets/events/_ticketform.html")
+    @view_config(route_name="events.tickets.api.ticketform", request_method="GET", 
+                 renderer="ticketing:templates/tickets/events/_ticketform.html")
     def _api_ticketform(self):
         form = forms.BoundTicketForm(organization_id=self.context.user.organization_id)
         return dict(form=form)
 
-    ## too-bad
-    @view_config(route_name="events.tickets.bind.ticket", request_method="POST")
-    def bind_ticket(self):
+    @view_config(route_name="events.tickets.api.bundleform", request_method="GET", 
+                 renderer="ticketing:templates/tickets/events/_bundleform.html")
+    def _api_ticketbundle_form(self):
+        form = forms.BundleForm(event_id=self.request.matchdict["event_id"])
+        return dict(form=form)
+
+
+@view_config(route_name="events.tickets.bind.ticket", request_method="POST", 
+             decorator=with_bootstrap)
+def bind_ticket(request):
+    event = request.context.event
+    organization_id = request.context.user.organization_id
+    form = forms.BoundTicketForm(organization_id=organization_id, 
+                                 formdata=request.POST)
+    if not form.validate():
+        request.session.flash(u'%s' % form.errors)
+        raise HTTPFound(request.route_path("events.tickets.index", event=event.id))
+
+    qs = Ticket.templates_query().filter_by(organization_id=organization_id)
+    ticket_template = qs.filter_by(id=form.data["ticket_template"]).one()
+    bound_ticket = ticket_template.create_event_bound(event)
+    bound_ticket.save()
+
+    request.session.flash(u'チケットが登録されました')
+    return HTTPFound(request.route_path("events.tickets.index", event_id=event.id))
+
+
+@view_defaults(decorator=with_bootstrap)
+class BundleView(BaseView):
+    @view_config(route_name="events.tickets.bundles.new", request_method="POST")
+    def bundle_new(self):
+        form = forms.BundleForm(event_id=self.request.matchdict["event_id"], 
+                                formdata=self.request.POST)
         event = self.context.event
-        organization_id = self.context.user.organization_id
-        form = forms.BoundTicketForm(organization_id=organization_id, 
-                                     formdata=self.request.POST)
+
         if not form.validate():
             self.request.session.flash(u'%s' % form.errors)
             raise HTTPFound(self.request.route_path("events.tickets.index", event=event.id))
 
-        qs = Ticket.templates_query().filter_by(organization_id=organization_id)
-        ticket_template = qs.filter_by(id=form.data["ticket_template"]).one()
-        bound_ticket = ticket_template.create_event_bound(event)
-        bound_ticket.save()
-        
-        self.request.session.flash(u'チケットが登録されました')
+        bundle = TicketBundle(operator=self.context.user, 
+                              event_id=event.id, 
+                              name=form.data["name"], 
+                              )
+        for ticket in Ticket.filter(Ticket.id.in_(form.data["tickets"])):
+            bundle.tickets.append(ticket)
+        bundle.save()
+
+        self.request.session.flash(u'チケット券面構成(TicketBundle)が登録されました')
         return HTTPFound(self.request.route_path("events.tickets.index", event_id=event.id))
+
+    @view_config(route_name="events.tickets.bundles.show",
+                 renderer="ticketing:templates/tickets/events/bundles/show.html")
+    def show(self):
+        return dict(bundle=self.context.bundle, 
+                    event=self.context.event)
+

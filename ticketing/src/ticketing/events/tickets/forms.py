@@ -28,3 +28,27 @@ class BoundTicketForm(Form):
         choices=[], 
         coerce=long
         )
+
+
+class BundleForm(Form):
+    def get_translations(self):
+        return Translations()
+
+    def __init__(self, formdata=None, obj=None, prefix="", **kwargs):
+        Form.__init__(self, formdata=formdata, obj=obj, prefix=prefix, **kwargs)
+        if 'event_id' in kwargs:
+            self.tickets.choices = [
+                (ticket.id, ticket.name) for ticket in Ticket.filter_by(event_id=kwargs['event_id'])
+            ]
+
+    name = TextField(
+        label=u"名称", 
+        validators=[Required()]
+        )
+
+    tickets = SelectMultipleField(
+        label=u"チケットテンプレート",
+        validators=[Required()], 
+        coerce=long , 
+        choices=[])
+    

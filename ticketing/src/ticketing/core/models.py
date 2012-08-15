@@ -1709,7 +1709,7 @@ from ..operators.models import Operator
 class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "TicketBundle"
     id = Column(Identifier, primary_key=True)
-    name = Column(Unicode(255), default="", nullable=False)
+    name = Column(Unicode(255), default=u"", nullable=False)
     event_id = Column(Identifier, ForeignKey('Event.id', ondelete='CASCADE'))
     event = relationship('Event', uselist=False, backref='ticket_bundles')
     operator_id = Column(Identifier, ForeignKey('Operator.id'))
