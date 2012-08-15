@@ -1073,11 +1073,14 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         else:
             # 更新時はquantityを更新
             stock_status = StockStatus.filter_by(stock_id=self.id).first()
-            seat_quantity = Seat.filter(Seat.stock_id==self.id)\
-                .join(SeatStatus)\
-                .filter(Seat.id==SeatStatus.seat_id)\
-                .filter(SeatStatus.status.in_([SeatStatusEnum.Vacant.v]))\
-                .count()
+            if self.stock_type and self.stock_type.quantity_only:
+                seat_quantity = self.quantity
+            else:
+                seat_quantity = Seat.filter(Seat.stock_id==self.id)\
+                    .join(SeatStatus)\
+                    .filter(Seat.id==SeatStatus.seat_id)\
+                    .filter(SeatStatus.status.in_([SeatStatusEnum.Vacant.v]))\
+                    .count()
             stock_status.quantity = seat_quantity
         stock_status.save()
 
