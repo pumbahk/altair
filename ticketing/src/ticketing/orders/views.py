@@ -453,48 +453,4 @@ class SejTicketTemplate(BaseView):
             templates=templates
         )
 
-from ticketing.core.models import  TicketPrintHistory
 
-@view_defaults(decorator=with_bootstrap, permission="event_editor", renderer="json")
-class TicketPrintApi(BaseView):
-    @view_config(route_name='orders.api.ticket', request_method="GET")
-    def get_ticket(self):
-        ''' '''
-        order = Order.filter_by(id=self.request.matchdict["id"]).first()
-        if not order:
-            return HTTPNotFound()
-
-        tickets = []
-        for ordered_product in order.ordered_products:
-            for ordered_product_item in ordered_product.ordered_product_items:
-                ticket_bundle = ordered_product_item.product_item.ticket_bundle
-                if ticket_bundle:
-                    for ticket in ticket_bundle.tickets:
-                        data = ticket.data
-                        tickets.append(data)
-
-        return dict(tickets = tickets)
-
-    @view_config(route_name='orders.api.ticket', request_method="POST")
-    def print_ticket(self):
-        ''' '''
-        order = Order.filter_by(id=self.request.matchdict["id"]).first()
-        if not order:
-            return HTTPNotFound()
-
-        now = datetime.now()
-        for ordered_product in order.ordered_products:
-            for ordered_product_item in ordered_product.ordered_product_items:
-                ticket_bundle = ordered_product_item.product_item.ticket_bundle
-                if ticket_bundle:
-                    seats = ordered_product_item.seats
-                    for ticket in ticket_bundle.tickets:
-                        for seat in seats:
-                            c = TicketPrintHistory(
-                                operator = self.context.user,
-                                ordered_product_item = ordered_product_item,
-                                seat=seat,
-                                ticket_bundle = ticket_bundle)
-                            c.save()
-
-        return dict(result='ok')
