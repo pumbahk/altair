@@ -43,8 +43,12 @@
           ${h.form_item(form.id)}
           ${h.form_item(form.organization_id)}
           ${h.form_item(form.name, option={'class':'span5', 'maxlength':255})}
+          ${h.form_item(form.login_id)}
+          % if request.matched_route.name == 'operators.new':
+          ${h.form_item(form.password)}
+          % endif
           ${h.form_item(form.email)}
-          ${h.form_item(form.expire_at)}
+          ${h.form_item(form.role_ids)}
         </fieldset>
         <div class="form-actions">
           <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">

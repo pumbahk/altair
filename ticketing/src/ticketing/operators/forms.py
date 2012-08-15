@@ -1,18 +1,25 @@
 # -*- coding: utf-8 -*-
 
 from wtforms import Form
-from wtforms import TextField, HiddenField, DateField
+from wtforms import TextField, HiddenField, DateField, PasswordField, SelectMultipleField
 from wtforms.validators import Length, Email, Optional
 
 from ticketing.formhelpers import DateTimeField, Translations, Required
-
-class OperatorRole(Form):
-    pass
+from ticketing.operators.models import OperatorRole
 
 class OperatorRoleForm(Form):
     pass
 
 class OperatorForm(Form):
+
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        Form.__init__(self, formdata, obj, prefix, **kwargs)
+        if obj:
+            self.login_id.data = obj.auth.login_id
+            self.role_ids.data = [role.id for role in obj.roles]
+            self.password.validators.append(Optional())
+        else:
+            self.password.validators.append(Required())
 
     def _get_translations(self):
         return Translations()
@@ -40,6 +47,27 @@ class OperatorForm(Form):
     )
     expire_at = DateTimeField(
         label=u'有効期限',
-        validators=[Required()],
+        validators=[Optional()],
         format='%Y-%m-%d %H:%M',
+    )
+
+    login_id = TextField(
+        label=u'ログインID',
+        validators=[
+            Required(),
+            Length(4, 32, message=u'4文字以上32文字以内で入力してください'),
+        ]
+    )
+    password = PasswordField(
+        label=u'パスワード',
+        validators=[
+            Length(4, 32, message=u'4文字以上32文字以内で入力してください'),
+        ]
+    )
+
+    role_ids = SelectMultipleField(
+        label=u'権限',
+        validators=[Optional()],
+        choices=[(role.id, role.name) for role in OperatorRole.all()],
+        coerce=int,
     )

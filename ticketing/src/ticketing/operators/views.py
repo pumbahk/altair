@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from hashlib import md5
+import hashlib
+from datetime import datetime, timedelta
 
 import webhelpers.paginate as paginate
 from pyramid.view import view_config, view_defaults
@@ -20,7 +21,7 @@ from deform.exception import ValidationFailure
 import  sqlahelper
 session = sqlahelper.get_session()
 
-@view_defaults(decorator=with_bootstrap)
+@view_defaults(decorator=with_bootstrap, permission='administrator')
 class Operators(BaseView):
 
     def _role_id_list_to_role_list(self, role_id_list):
@@ -33,7 +34,7 @@ class Operators(BaseView):
         if direction not in ['asc', 'desc']:
             direction = 'asc'
 
-        query = Operator.filter().order_by(sort + ' ' + direction)
+        query = Operator.filter_by(organization_id=self.context.user.organization_id).order_by(sort + ' ' + direction)
 
         operators = paginate.Page(
             query,
@@ -69,9 +70,10 @@ class Operators(BaseView):
     def new_post(self):
         f = OperatorForm(self.request.POST)
         if f.validate():
-            #operator = merge_session_with_post(Operator(), f.data, filters={'roles':Operators()._role_id_list_to_role_list()})
-            #operator.secret_key = md5(operator.secret_key).hexdigest()
+            #operator = merge_session_with_post(Operator(), f.data, filters={'roles':self._role_id_list_to_role_list()})
             operator = merge_session_with_post(Operator(), f.data)
+            operator.expire_at = datetime.today() + timedelta(days=180)
+            operator.role_ids = f.data['role_ids']
             operator.save()
 
             self.request.session.flash(u'オペレーターを保存しました')
@@ -88,8 +90,7 @@ class Operators(BaseView):
         if operator is None:
             return HTTPNotFound("Operator id %d is not found" % operator_id)
 
-        f = OperatorForm()
-        f.process(record_to_multidict(operator))
+        f = OperatorForm(obj=operator)
         return {
             'form':f,
         }
@@ -102,8 +103,12 @@ class Operators(BaseView):
             return HTTPNotFound("Operator id %d is not found" % operator_id)
 
         f = OperatorForm(self.request.POST)
+        f.password.data = operator.auth.password
+        f.expire_at.data = operator.expire_at
         if f.validate():
+            #operator = merge_session_with_post(operator, f.data, filters={'roles':self._role_id_list_to_role_list()})
             operator = merge_session_with_post(operator, f.data)
+            operator.role_ids = f.data['role_ids']
             operator.save()
 
             self.request.session.flash(u'オペレーターを保存しました')
@@ -122,7 +127,7 @@ class Operators(BaseView):
 
         operator.delete()
 
-        self.request.session.flash(u'パラメーターを削除しました')
+        self.request.session.flash(u'オペレーターを削除しました')
         return HTTPFound(location=route_path('operators.index', self.request))
 
 @view_defaults(decorator=with_bootstrap)
@@ -146,18 +151,6 @@ class OperatorRoles(BaseView):
 
         return {
             'roles':roles
-        }
-
-    @view_config(route_name='operator_roles.show', renderer='ticketing:templates/operator_roles/show.html')
-    def show(self):
-        operator_role_id = int(self.request.matchdict.get('operator_role_id', 0))
-        operator_role = session.query(OperatorRole).filter_by(id=operator_role_id)
-        if operator_role is None:
-            return HTTPNotFound("operator_role id %d is not found" % operator_role_id)
-
-        return {
-            'form':OperatorRoleForm(),
-            'operator_role':operator_role,
         }
 
     @view_config(route_name='operator_roles.new', renderer='ticketing:templates/operator_roles/edit.html')
