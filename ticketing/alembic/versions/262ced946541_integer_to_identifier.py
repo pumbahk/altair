@@ -89,7 +89,7 @@ def upgrade():
     integer_to_identifier('multicheckout_response_card', 'id', autoincrement=True)
     integer_to_identifier('multicheckout_request_card', 'id', autoincrement=True)
     pop_foreign_key(
-        'checkoutitem_ibfk_1',
+        'CheckoutItem_ibfk_1',
         'CheckoutItem',
         'Checkout',
         ['checkout_id'], ['id']
