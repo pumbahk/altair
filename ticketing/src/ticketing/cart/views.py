@@ -39,7 +39,6 @@ class IndexView(object):
         self.context = request.context
 
 
-    @view_config(route_name='cart.index', renderer='carts_mobile/index.html', xhr=False, permission="view", request_type=".interfaces.IMobileRequest")
     @view_config(route_name='cart.index.sales', renderer='carts_mobile/index.html', xhr=False, permission="view", request_type=".interfaces.IMobileRequest")
     @view_config(route_name='cart.index', renderer='carts/index.html', xhr=False, permission="view")
     @view_config(route_name='cart.index.sales', renderer='carts/index.html', xhr=False, permission="view")
@@ -652,3 +651,50 @@ class CompleteView(object):
                 logger.debug("User %s starts subscribing %s for <%s>" % (user, subscription.name, mail_address))
             else:
                 logger.debug("User %s is already subscribing %s for <%s>" % (user, subscription.name, mail_address))
+
+
+class MobileIndexView(object):
+    """モバイルの会場選択
+    """
+    def __init__(self, request):
+        self.request = request
+        self.context = request.context
+
+    @view_config(route_name='cart.index', renderer='carts_mobile/index.html', xhr=False, permission="view", request_type=".interfaces.IMobileRequest")
+    def __call__(self):
+        event_id = self.request.matchdict['event_id']
+        venue_name = self.request.params.get('v')
+
+        # セールスセグメント必須
+        sales_segment = self.context.get_sales_segument()
+        if sales_segment is None:
+            raise NoEventError("No matching sales_segment")
+
+        event = c_models.Event.query.filter(c_models.Event.id==event_id).first()
+        if event is None:
+            raise NoEventError("No such event (%d)" % event_id)
+
+        if venue_name:
+            venue = c_models.Venue.query.filter(c_models.Venue.name==venue_name).first()
+        else:
+            venue = None
+        # 会場が指定されていなければ会場を選択肢を作る
+        if venue:
+            venues = []
+            # 会場が確定しているならパフォーマンスの選択肢を作る
+            performances_query = c_models.Performance.query \
+                .filter(c_models.Performance.event_id==event_id)
+            performances = [dict(id=p.id, start_on=p.start_on.strftime('%Y-%m-%d %H:%M')) \
+                for p in performances_query if p.venue.name==venue_name]
+        else:
+            # 会場は会場名で一意にする
+            venues = set(performance.venue.name for performance in event.performances)
+            performances = []
+
+        return dict(
+            event=event,
+            sales_segment=sales_segment,
+            venue=venue,
+            venues=venues,
+            performances=performances,
+        )
