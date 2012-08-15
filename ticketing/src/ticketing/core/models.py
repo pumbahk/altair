@@ -1534,6 +1534,9 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         condition = form.order_no.data
         if condition:
             query = query.filter(Order.order_no==condition)
+        condition = form.performance_id.data
+        if condition:
+            query = query.filter(Order.performance_id==condition)
         condition = form.ordered_from.data
         if condition:
             query = query.filter(Order.created_at>=condition)

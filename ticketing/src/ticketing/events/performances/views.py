@@ -13,7 +13,7 @@ from ticketing.fanstatic import with_bootstrap
 from ticketing.events.performances.forms import PerformanceForm
 from ticketing.core.models import Event, Performance, Order
 from ticketing.products.forms import ProductForm, ProductItemForm
-from ticketing.orders.forms import OrderForm
+from ticketing.orders.forms import OrderForm, OrderSearchForm
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class Performances(BaseView):
@@ -62,7 +62,20 @@ class Performances(BaseView):
             data['form_product_item'] = ProductItemForm(user_id=self.context.user.id, performance_id=performance_id)
         elif tab == 'reservation':
             data['form_order'] = OrderForm(event_id=performance.event_id)
-            data['orders'] = Order.filter_by_performance_id(performance_id)
+            data['form_search'] = OrderSearchForm(performance_id=performance_id)
+
+            query = Order.filter_by(performance_id=performance_id)
+            form_search = OrderSearchForm(self.request.params)
+            if form_search.validate():
+                query = Order.set_search_condition(query, form_search)
+            else:
+                self.request.session.flash(u'検索条件が正しくありません')
+            data['orders'] = paginate.Page(
+                query,
+                page=int(self.request.params.get('page', 0)),
+                items_per_page=20,
+                url=paginate.PageURL_WebOb(self.request)
+            )
         elif tab == 'ticket-designer':
             pass
 

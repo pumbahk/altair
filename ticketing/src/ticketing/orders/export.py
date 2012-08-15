@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-from ..cart.helpers import format_number as _format_number
+from ticketing.cart.helpers import format_number as _format_number
+from ticketing.core.models import no_filter
+from ticketing.models import record_to_multidict
 
 def format_number(value):
     return _format_number(float(value))
@@ -72,7 +74,7 @@ class OrderCSV(object):
         order_dict.add('status', order.status)
         order_list = [(column, self.order_value_filters.get(column, no_filter)(order_dict.get(column))) for column in self.order_header]
 
-        if order.user:
+        if order.user and order.user.user_profile:
             user_profile_dict = record_to_multidict(order.user.user_profile)
             user_profile_list = [(column, user_profile_dict.get(column)) for column in self.user_profile_header]
         else:

@@ -97,8 +97,7 @@ class Orders(BaseView):
         if self.request.method == 'POST':
             query = Order.set_search_condition(query, form_search)
 
-        # ダウンロード可能な上限件数の条件を付加
-        orders = query.limit(500).all()
+        orders = query.all()
 
         headers = [
             ('Content-Type', 'application/octet-stream; charset=cp932'),
