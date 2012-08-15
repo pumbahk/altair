@@ -908,6 +908,7 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     stock = relationship("Stock", backref="product_items")
 
     quantity = Column(Integer, nullable=False, default=1, server_default='1')
+    ticket_bundle_id = Column(Identifier, ForeignKey('TicketBundle.id'), nullable=True)
 
     @property
     def stock_type_id(self):
@@ -1659,11 +1660,6 @@ class TicketFormat_DeliveryMethod(Base, BaseModel, LogicallyDeleted):
     ticket_format_id = Column(Identifier, ForeignKey('TicketFormat.id'), primary_key=True)
     delivery_method_id = Column(Identifier, ForeignKey('DeliveryMethod.id'), primary_key=True)
 
-class TicketBundle_ProductItem(Base, BaseModel, LogicallyDeleted):
-    __tablename__ = "TicketBundle_ProductItem"
-    ticket_bundle_id = Column(Identifier, ForeignKey("TicketBundle.id"), primary_key=True)
-    product_item_id = Column(Identifier, ForeignKey("ProductItem.id"), primary_key=True)
-
 class TicketFormat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "TicketFormat"
     id = Column(Identifier, primary_key=True)
@@ -1721,7 +1717,7 @@ class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     attributes_ = relationship("TicketBundleAttribute", backref='bundle', collection_class=attribute_mapped_collection('name'), cascade='all,delete-orphan')
     attributes = association_proxy('attributes_', 'value', creator=lambda k, v: SeatAttribute(name=k, value=v))
     tickets = relationship('Ticket', secondary=Ticket_TicketBundle.__table__, backref='bundles')
-    product_items = relationship('ProductItem', secondary=TicketBundle_ProductItem.__table__, backref='ticket_bundle')
+    product_items = relationship('ProductItem', backref='ticket_bundle')
 
 class TicketPrintHistory(Base, BaseModel, WithTimestamp):
     __tablename__ = "TicketPrintHistory"
