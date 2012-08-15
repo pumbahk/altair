@@ -1,0 +1,92 @@
+{
+  "info": {
+    "available_adjacencies": [ 1, 2, 3, 4 ]
+  },
+  "stock_types": {
+    "1": {
+      "style": {
+        "text": "",
+        "fill": {
+          "color": "#e0d060"
+        }
+      },
+      "name": "S\u5e2d"
+    },
+    "2": {
+      "style": {
+        "text": "",
+        "fill": {
+          "color": "#ffec9f"
+        }
+      },
+      "name": "A\u5e2d"
+    },
+    "3": {
+      "style": {
+        "text": "",
+        "fill": {
+          "color": "#99b3e6"
+        }
+      },
+      "name": "B\u5e2d"
+    },
+    "4": {
+      "style": {
+        "text": "",
+        "fill": {
+          "color": "#cc8080"
+        }
+      },
+      "name": "C\u5e2d"
+    }
+  },
+  "drawings": {
+    "root": {
+      "id": 1,
+      "name": "全体図",
+      "group_l0_ids": {
+        "rect121054": "block_a",
+        "rect123324": "block_a",
+        "rect127233": "block_a",
+        "rect127815": "block_b",
+        "rect128959": "block_b",
+        "rect132174": "block_b",
+        "rect133082": "block_c",
+        "rect135412": "block_c",
+        "rect139336": "block_d",
+        "rect140480": "block_d",
+        "rect143023": "block_courtside"
+      }
+    },
+    "block_a": {
+      "id": 2,
+      "name": "Aブロック",
+      "group_l0_ids": {
+      }
+    },
+    "block_b": {
+      "id": 3,
+      "name": "Bブロック",
+      "group_l0_ids": {
+      }
+    },
+    "block_c": {
+      "id": 4,
+      "name": "Cブロック",
+      "group_l0_ids": {
+      }
+    },
+    "block_d": {
+      "id": 5,
+      "name": "Dブロック",
+      "group_l0_ids": {
+      }
+    },
+    "block_courtside": {
+      "id": 6,
+      "name": "コートサイド",
+      "group_l0_ids": {
+      }
+    }
+  }
+}
