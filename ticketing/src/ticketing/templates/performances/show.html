@@ -1,6 +1,5 @@
 <%inherit file="../layout_2cols.html" />
 <%namespace file="/common/helpers.html" name="h" />
-<% tab = request.matchdict.get('tab', 'seat-allocation') %>
 <% route_path = request.route_path('performances.show', performance_id=performance.id) %>
 <%block name="style">
 <link rel="stylesheet" type="text/css" href="/static/css/decentcolorpicker.css" />
@@ -97,10 +96,10 @@ $(function () {
   </div>
 
   <script type="text/javascript">
-$(function() {
-tab = '#${tab}';
-$(tab + '-tab').addClass('active');
-$(tab).addClass('active');
-});
-</script>
+  $(function() {
+    tab = '#${tab}';
+    $(tab + '-tab').addClass('active');
+    $(tab).addClass('active');
+  });
+  </script>
 </div>

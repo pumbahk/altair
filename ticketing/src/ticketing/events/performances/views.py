@@ -54,7 +54,7 @@ class Performances(BaseView):
 
         data = {'performance':performance}
 
-        tab = self.request.matchdict.get('tab', 'venue-designer')
+        tab = self.request.matchdict.get('tab', 'product')
         if tab == 'seat-allocation':
             pass
         elif tab == 'product':
@@ -79,6 +79,7 @@ class Performances(BaseView):
         elif tab == 'ticket-designer':
             pass
 
+        data['tab'] = tab
         return data
 
     @view_config(route_name='performances.new', request_method='GET', renderer='ticketing:templates/performances/edit.html')
