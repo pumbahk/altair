@@ -1642,9 +1642,12 @@ class TicketFormat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization_id = Column(Identifier, ForeignKey('Organization.id'), nullable=True)
     organization = relationship('Organization', uselist=False, backref='ticket_formats')
     delivery_methods = relationship('DeliveryMethod', secondary=TicketFormat_DeliveryMethod.__table__, backref='ticket_formats')
-    data = JSONEncodedDict(65536)
+    data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
 
 class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    """
+    Ticket.event_idがNULLのものはマスターデータ。これを雛形として実際にeventとひもづけるTicketオブジェクトを作成する。
+    """
     __tablename__ = "Ticket"
     id = Column(Identifier, primary_key=True)
     organization_id = Column(Identifier, ForeignKey('Organization.id'), nullable=True)
@@ -1654,7 +1657,16 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     ticket_format_id = Column(Identifier, ForeignKey('TicketFormat.id'), nullable=False)
     ticket_format = relationship('TicketFormat', uselist=False, backref='tickets')
     name = Column(Unicode(255), nullable=False, default=u'')
-    data = JSONEncodedDict(65536)
+    data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
+
+    @classmethod
+    def templates_query(cls):
+        return cls.filter_by(event_id=None)
+
+    def create_event_bound(self, event):
+        new_object = self.__class__.clone(self)
+        new_object.event_id = event.id
+        return new_object
 
 class TicketBundleAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "TicketBundleAttribute" 

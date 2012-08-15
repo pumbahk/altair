@@ -1,7 +1,7 @@
 from pyramid.interfaces import IRootFactory
 from pyramid.httpexceptions import HTTPNotFound
 from ticketing.core.models import Event
-from ticketing.tickets.models import Ticket
+from ticketing.core.models import Ticket
 
 class EventBoundTicketsResource(object):
     __name__ = 'events.tickets'

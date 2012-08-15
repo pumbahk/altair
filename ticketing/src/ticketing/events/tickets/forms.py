@@ -9,7 +9,7 @@ from wtforms import TextField, IntegerField, HiddenField, SelectField, SelectMul
 from wtforms.validators import Regexp, Length, Optional, ValidationError, StopValidation
 from wtforms.widgets import TextArea
 from ticketing.formhelpers import DateTimeField, Translations, Required
-from ticketing.tickets.models import Ticket
+from ticketing.core.models import Ticket
 
 class BoundTicketForm(Form):
     def _get_translations(self):

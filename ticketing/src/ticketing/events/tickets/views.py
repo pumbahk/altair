@@ -5,7 +5,7 @@ from ticketing.fanstatic import with_bootstrap
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPCreated
 from pyramid.path import AssetResolver
-from ticketing.tickets.models import Ticket
+from ticketing.core.models import Ticket
 from ticketing.views import BaseView
 from . import forms
 

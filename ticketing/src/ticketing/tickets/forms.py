@@ -10,7 +10,7 @@ from wtforms.validators import Regexp, Length, Optional, ValidationError, StopVa
 from wtforms.widgets import TextArea
 from ticketing.formhelpers import DateTimeField, Translations, Required
 from ticketing.core.models import Event, Account, DeliveryMethod
-from .models import TicketFormat
+from ticketing.core.models import TicketFormat
 
 def filestorage_has_file(storage):
     return hasattr(storage, "filename") and storage.file

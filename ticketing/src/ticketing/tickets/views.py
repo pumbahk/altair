@@ -14,7 +14,7 @@ from pyramid.path import AssetResolver
 from ticketing.views import BaseView
 
 from ticketing.core.models import DeliveryMethod
-from .models import TicketFormat, Ticket
+from ticketing.core.models import TicketFormat, Ticket
 from . import forms
 from . import helpers
 
