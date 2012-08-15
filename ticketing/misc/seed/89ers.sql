@@ -5,7 +5,7 @@ INSERT INTO `Organization` VALUES (11,'秋田ノーザンハピネッツ','DD',1
 INSERT INTO `Account` VALUES (100000,NULL,'BJ89ers',5,10,'2012-07-11 05:32:51','2012-07-11 05:32:51',NULL);
 INSERT INTO `Account` VALUES (100001,NULL,'NH',1,11,'2012-07-18 12:27:32','2012-07-18 12:27:32',NULL);
 INSERT INTO `Event` VALUES (100001,'BJ890','仙台89ers FC会員登録','bj89ers',100000,10,'2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
-INSERT INTO `MemberShip` VALUES (NULL,'89ers',NULL,NULL,NULL);
+INSERT INTO `Membership` VALUES (NULL,'89ers',NULL,NULL,NULL);
 INSERT INTO `Operator` VALUES (100000,'bj89ers','dev+bj01@ticketstar.jp',10,NULL,1,'2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
 INSERT INTO `Operator` VALUES (100001,'bjnh','dev+bj02@ticketstar.jp',11,NULL,1,'2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
 
@@ -27,32 +27,32 @@ INSERT INTO `PaymentDeliveryMethodPair` (id, system_fee, transaction_fee, delive
 
 INSERT INTO `Performance` VALUES (100000,'FC会員登録２０１２','B8REG2012000',NULL,NULL,NULL,100001,'2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
 
-INSERT INTO `Venue` VALUES (100000,1,100000,1,'座席なし会場',NULL,NULL,'2012-06-20 12:09:33','2012-07-10 17:44:29',NULL);
+INSERT INTO `Venue` (id, site_id, performance_id, organization_id, name, sub_name, original_venue_id, created_at, updated_at, deleted_at) VALUES (100000,1,100000,1,'座席なし会場',NULL,NULL,'2012-06-20 12:09:33','2012-07-10 17:44:29',NULL);
 
-INSERT INTO `Product` VALUES (100000,'法人会員',100500.00,100000,100001,'2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
-INSERT INTO `Product` VALUES (100001,'プラチナ会員',30000.00,100000,100001,'2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
-INSERT INTO `Product` VALUES (100002,'ゴールド会員',10000.00,100000,100001,'2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
-INSERT INTO `Product` VALUES (100003,'レギュラー会員',3000.00,100000,100001,'2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
-INSERT INTO `Product` VALUES (100004,'ライト会員',1000.00,100000,100001,'2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
-INSERT INTO `Product` VALUES (100005,'ジュニア会員',1000.00,100000,100001,'2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
+INSERT INTO `Product` (id, name, price, sales_segment_id, event_id, created_at, updated_at, deleted_at) VALUES (100000,'法人会員',100500.00,100000,100001,'2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
+INSERT INTO `Product` (id, name, price, sales_segment_id, event_id, created_at, updated_at, deleted_at) VALUES (100001,'プラチナ会員',30000.00,100000,100001,'2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
+INSERT INTO `Product` (id, name, price, sales_segment_id, event_id, created_at, updated_at, deleted_at) VALUES (100002,'ゴールド会員',10000.00,100000,100001,'2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
+INSERT INTO `Product` (id, name, price, sales_segment_id, event_id, created_at, updated_at, deleted_at) VALUES (100003,'レギュラー会員',3000.00,100000,100001,'2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
+INSERT INTO `Product` (id, name, price, sales_segment_id, event_id, created_at, updated_at, deleted_at) VALUES (100004,'ライト会員',1000.00,100000,100001,'2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
+INSERT INTO `Product` (id, name, price, sales_segment_id, event_id, created_at, updated_at, deleted_at) VALUES (100005,'ジュニア会員',1000.00,100000,100001,'2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
 
 INSERT INTO `StockHolder` VALUES (100000,'89ers',100001,100000,'{\"text\": \"B\", \"text_color\": \"#ffd940\"}','2012-07-10 17:44:29','2012-07-11 05:34:38',NULL);
 
-INSERT INTO `StockType` VALUES (100000,'89ERS会員権',1,NULL,1,'{}','2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
-INSERT INTO `StockType` VALUES (100001,'Tシャツ',1,NULL,1,'{}','2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
+INSERT INTO `StockType` (id, name, `type`, event_id, quantity_only, style, created_at, updated_at, deleted_at) VALUES (100000,'89ERS会員権',1,NULL,1,'{}','2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
+INSERT INTO `StockType` (id, name, `type`, event_id, quantity_only, style, created_at, updated_at, deleted_at) VALUES (100001,'Tシャツ',1,NULL,1,'{}','2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
 
 INSERT INTO `Stock` VALUES (100000,1000,100000,100000,100000,'1000002-07-10 17:44:29','1000002-07-10 17:44:29',NULL);
 INSERT INTO `Stock` VALUES (100001,1000,100000,100000,100001,'1000002-07-10 17:44:29','1000002-07-10 17:44:29',NULL);
 INSERT INTO `StockStatus` (stock_id, quantity) VALUES (100000,1000);
 INSERT INTO `StockStatus` (stock_id, quantity) VALUES (100001,1000);
 
-INSERT INTO `ProductItem` VALUES (NULL,0,100500.00,100000,100000,100000,1,'1000002-07-10 17:44:29','1000002-07-11 05:35:33',NULL);
-INSERT INTO `ProductItem` VALUES (NULL,0,0.00,100000,100000,100001,1,'1000002-07-10 17:44:29','1000002-07-11 05:35:42',NULL);
-INSERT INTO `ProductItem` VALUES (NULL,0,30000.00,100001,100000,100000,1,'1000002-07-10 17:44:29','1000002-07-11 05:35:48',NULL);
-INSERT INTO `ProductItem` VALUES (NULL,0,0.00,100001,100000,100001,1,'1000002-07-10 17:44:29','1000002-07-11 05:35:56',NULL);
-INSERT INTO `ProductItem` VALUES (NULL,0,10000.00,100002,100000,100000,1,'1000002-07-10 17:44:29','1000002-07-11 05:36:04',NULL);
-INSERT INTO `ProductItem` VALUES (NULL,0,0.00,100002,100000,100001,1,'1000002-07-10 17:44:29','1000002-07-11 05:36:11',NULL);
-INSERT INTO `ProductItem` VALUES (NULL,0,3000.00,100003,100000,100000,1,'1000002-07-10 17:44:29','1000002-07-11 05:36:18',NULL);
-INSERT INTO `ProductItem` VALUES (NULL,0,1000.00,100004,100000,100000,1,'1000002-07-10 17:44:29','1000002-07-11 05:36:28',NULL);
-INSERT INTO `ProductItem` VALUES (NULL,0,1000.00,100005,100000,100000,1,'1000002-07-10 17:44:29','1000002-07-11 05:36:36',NULL);
+INSERT INTO `ProductItem` (id, price, product_id, performance_id, stock_id, quantity, created_at, updated_at, deleted_at) VALUES (NULL,100500.00,100000,100000,100000,1,'2012-07-10 17:44:29','2012-07-11 05:35:33',NULL);
+INSERT INTO `ProductItem` (id, price, product_id, performance_id, stock_id, quantity, created_at, updated_at, deleted_at) VALUES (NULL,0.00,100000,100000,100001,1,'2012-07-10 17:44:29','2012-07-11 05:35:42',NULL);
+INSERT INTO `ProductItem` (id, price, product_id, performance_id, stock_id, quantity, created_at, updated_at, deleted_at) VALUES (NULL,30000.00,100001,100000,100000,1,'2012-07-10 17:44:29','2012-07-11 05:35:48',NULL);
+INSERT INTO `ProductItem` (id, price, product_id, performance_id, stock_id, quantity, created_at, updated_at, deleted_at) VALUES (NULL,0.00,100001,100000,100001,1,'2012-07-10 17:44:29','2012-07-11 05:35:56',NULL);
+INSERT INTO `ProductItem` (id, price, product_id, performance_id, stock_id, quantity, created_at, updated_at, deleted_at) VALUES (NULL,10000.00,100002,100000,100000,1,'2012-07-10 17:44:29','2012-07-11 05:36:04',NULL);
+INSERT INTO `ProductItem` (id, price, product_id, performance_id, stock_id, quantity, created_at, updated_at, deleted_at) VALUES (NULL,0.00,100002,100000,100001,1,'2012-07-10 17:44:29','2012-07-11 05:36:11',NULL);
+INSERT INTO `ProductItem` (id, price, product_id, performance_id, stock_id, quantity, created_at, updated_at, deleted_at) VALUES (NULL,3000.00,100003,100000,100000,1,'2012-07-10 17:44:29','2012-07-11 05:36:18',NULL);
+INSERT INTO `ProductItem` (id, price, product_id, performance_id, stock_id, quantity, created_at, updated_at, deleted_at) VALUES (NULL,1000.00,100004,100000,100000,1,'2012-07-10 17:44:29','2012-07-11 05:36:28',NULL);
+INSERT INTO `ProductItem` (id, price, product_id, performance_id, stock_id, quantity, created_at, updated_at, deleted_at) VALUES (NULL,1000.00,100005,100000,100000,1,'2012-07-10 17:44:29','2012-07-11 05:36:36',NULL);
 COMMIT;

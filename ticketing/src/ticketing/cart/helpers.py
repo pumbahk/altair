@@ -35,7 +35,7 @@ def error_list(request, form, name):
 
 def fee_type(type_enum):
     if type_enum == int(FeeTypeEnum.Once.v[0]):
-        return u"1回ごと"
+        return u"1件ごと"
     if type_enum == int(FeeTypeEnum.PerUnit.v[0]):
         return u"1枚ごと"
 

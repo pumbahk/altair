@@ -78,7 +78,7 @@ def dynamic_query_select_field_factory(model, dynamic_query=None, name=None, **k
     field = myQuerySelectField(**kwargs)
 
     name = name or model.__name__
-    def dynamic_query(field, form=None, rendering_val=None, request=None):
+    def dynamic_query_filter(field, form=None, rendering_val=None, request=None):
         field._object_list = None
         #hack . this is almost wrong.(if calling memoize function field.get_object_list() using this field as cache store))
 
@@ -87,14 +87,14 @@ def dynamic_query_select_field_factory(model, dynamic_query=None, name=None, **k
         else:
             query = field.query_factory()
 
-        if "dynamic_query" in kwargs:
-            query_filter = kwargs["dynamic_query"]
+        if dynamic_query:
+            query_filter = dynamic_query
         else:
             query_filter = request.registry.queryUtility(IModelQueryFilter,
                                                          name, 
                                                      model_query_filter_default)
         field.query = query_filter(model, request, query)
-    field._dynamic_query = dynamic_query
+    field._dynamic_query = dynamic_query_filter
     return field
 
 

@@ -6,6 +6,20 @@ from altaircms.lib.fanstatic_decorator import with_jquery
 from pyramid.view import view_config
 
 
+
+def _append_preview_message(response, message):
+    preview_message = u"""
+<script type="text/javascript">
+  $(function(){
+    var css_opt = {"text-align": "left",  "color": "red", "font-size": "45px"};
+    $("body").prepend($("<div class='cms-message'>").css(css_opt).text("%s"));
+  })
+</script>
+</body>
+    """ % message
+    response.text = response.text.replace("</body>", preview_message)    
+    return response
+
 @view_config(route_name="preview_page", decorator=with_jquery)
 def preview_page(context, request):
     control = context.access_control()
@@ -21,7 +35,10 @@ def preview_page(context, request):
         raise HTTPInternalServerError(control.error_message)
 
     renderer = context.frontpage_renderer()
-    return renderer.render(template, page)
+    response = renderer.render(template, page)
+
+    ## ugly
+    return _append_preview_message(response, u"これはpreview画面です。")
 
 
 @view_config(route_name="preview_pageset", decorator=with_jquery)
@@ -38,4 +55,8 @@ def preview_pageset(context, request):
         raise HTTPInternalServerError(control.error_message)
 
     renderer = context.frontpage_renderer()
-    return renderer.render(template, page)
+    response = renderer.render(template, page)
+    ## ugly
+    return _append_preview_message(response, u"これはpreview画面です。")
+
+

@@ -3,6 +3,11 @@ from zope.interface import Attribute
 from zope.interface import implementer
 
 ## 
+class IDirectoryResource(Interface):
+    def get_base_directory():
+        """ base directory.
+        """
+
 class IAfterFormInitialize(Interface):
     request = Attribute("request")
     form = Attribute("form")

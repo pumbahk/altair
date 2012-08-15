@@ -1,0 +1,73 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" import="breadcrumbs,pager,flash_messages"/>
+
+<div class="breadcrumbs">
+  ${breadcrumbs(
+    names=[u'イベント', event.title, u'券面'],
+    urls=[request.route_path('events.index'), request.route_path('events.show', event_id=event.id)]
+  )}
+</div>
+
+<script>
+  // ajax modal
+  $(function(){
+	$("a.ajax-modal[data-toggle=modal]").click(function(){
+      $($(this).attr("data-target")).load($(this).attr("href"));
+	});
+  });
+</script>
+
+<div class="modal hide" id="AjaxModal">
+</div>
+
+<div class="page-header">
+  <h1>券面</h1>
+</div>
+
+<div class="content">
+  ${flash_messages(request)}
+</div>
+
+<div id="tickets">
+  <h3>チケット券面</h3>
+
+  <div class="row-fluid well">
+	<div class="btn-group">
+	  <a href="${request.route_path("events.tickets.api.ticketform",event_id=event.id)}" 
+		 data-toggle="modal" data-target="#AjaxModal"
+		 class="btn ajax-modal">
+		<i class="icon-plus"></i> ${event.title}にチケット券面を追加
+	  </a>
+		  <button class="btn dropdown-toggle" data-toggle="dropdown">
+			<span class="caret"></span>
+		  </button>
+		  <ul class="dropdown-menu">
+		  </ul>
+	</div>
+  </div>
+
+  <table class="table fullwidth checkboxed_table">
+	<thead>
+	  <tr>
+		<th class="minwidth"></th>
+		<th><a href="#" class="sortable">名前</a></th>
+		<th><a href="#" class="sortable">チケット様式</a></th>
+		<th><a href="#" class="sortable">更新日時</a></th>
+		<th><a href="#" class="sortable">作成日時</a></th>
+	  </tr>
+	</thead>
+	<tbody>
+	% for ticket in tickets:
+	  <tr>
+		<td><input type="radio" name="id" value="${ticket.id}" /></td>
+		<td><a href="#">${ticket.name}</a></td>
+		<td>${ticket.ticket_format.name}</td>
+		<td>${ticket.updated_at}</td>
+		<td>${ticket.created_at}</td>
+	  </tr>
+	% endfor
+	</tbody>
+  </table>
+
+</div>
+

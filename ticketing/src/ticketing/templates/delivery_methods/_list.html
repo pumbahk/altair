@@ -19,7 +19,7 @@
     <td><span id="id">${delivery_method.id}</span></td>
     <td><a href="javascript:edit_delivery_method(${delivery_method.id});"><span id="name">${delivery_method.name}</span></a></td>
     <td><span id="fee">${h.price_format(delivery_method.fee)}</span>円</td>
-    <td><span id="fee_type">${delivery_method.fee}</span></td>
+    <td><span id="fee_type">${delivery_method.fee_type_label}</span></td>
   </tr>
   % endfor
   </tbody>

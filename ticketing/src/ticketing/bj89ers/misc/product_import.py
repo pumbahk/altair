@@ -218,7 +218,6 @@ def main():
     stock_holder.stocks.append(stock_2)
 
     product_item1_1 = c_model.ProductItem(
-        item_type = '',
         price = 100500,
         performance_id = performance.id,
         stock = stock_1,
@@ -226,7 +225,6 @@ def main():
     )
     session.add(product_item1_1)
     product_item1_2 = c_model.ProductItem(
-        item_type = '',
         price = 0,
         performance_id = performance.id,
         stock = stock_2,
@@ -244,7 +242,6 @@ def main():
     product1.items.append(product_item1_2)
 
     product_item2_1 = c_model.ProductItem(
-        item_type = '',
         price = 30000,
         performance_id = performance.id,
         stock = stock_1,
@@ -252,7 +249,6 @@ def main():
     )
     session.add(product_item2_1)
     product_item2_2 = c_model.ProductItem(
-        item_type = '',
         price = 0,
         performance_id = performance.id,
         stock = stock_2,
@@ -270,7 +266,6 @@ def main():
     product2.items.append(product_item2_2)
 
     product_item3_1 = c_model.ProductItem(
-        item_type = '',
         price = 10000,
         performance_id = performance.id,
         stock = stock_1,
@@ -278,7 +273,6 @@ def main():
     )
     session.add(product_item3_1)
     product_item3_2 = c_model.ProductItem(
-        item_type = '',
         price = 0,
         performance_id = performance.id,
         stock = stock_2,
@@ -296,7 +290,6 @@ def main():
     product3.items.append(product_item3_2)
 
     product_item4_1 = c_model.ProductItem(
-        item_type = '',
         price = 3000,
         performance_id = performance.id,
         stock = stock_1,
@@ -313,7 +306,6 @@ def main():
     product4.items.append(product_item4_1)
 
     product_item5_1 = c_model.ProductItem(
-        item_type = '',
         price = 1000,
         performance_id = performance.id,
         stock = stock_1,
@@ -330,7 +322,6 @@ def main():
     product5.items.append(product_item5_1)
 
     product_item6_1 = c_model.ProductItem(
-        item_type = '',
         price = 1000,
         performance_id = performance.id,
         stock = stock_1,

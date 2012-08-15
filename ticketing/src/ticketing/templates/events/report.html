@@ -1,0 +1,142 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="h" />
+
+<script type="text/javascript">
+  $(document).ready(function() {
+    var event_id = ${event.id};
+    function report_event(report_type, label) {
+      modal = $('#modal-report');
+      modal.find('.modal-report-label').text(label);
+      modal.find('.modal-report-submit').attr('href', '/events/report/' + event_id + '/' + report_type);
+      modal.find('.modal-report-submit').click(function() {
+        modal.modal('hide');
+      });
+      modal.find('.btn-close').click(function() {
+        modal.modal('hide');
+      });
+      modal.modal('toggle');
+    }
+    $("#btn-report-event-stocks").click(function() {
+      report_event("seat_stocks", "仕入明細");
+    });
+    $("#btn-report-event-unsold").click(function() {
+      report_event("seat_unsold", "残席明細");
+    });
+
+    function report_event_to_stockholder(report_type, label) {
+      modal = $('#modal-report-stockholder');
+      modal.find('.modal-report-label').text(label);
+      modal.find('.modal-report-submit').attr('href', 'javascript:void(0);');
+      modal.find('.modal-report-submit').click(function() {
+        // フォームからstock_holder_idを取得
+        var stock_holder_id = modal.find('select[name=stock-holder-id]').val();
+        modal.find('.modal-report-submit').attr('href', '/events/report/' + event_id + '/' + report_type + '/' + stock_holder_id);
+        modal.modal('hide');
+      });
+      modal.find('.btn-close').click(function() {
+        modal.modal('hide');
+      });
+      modal.modal('toggle');
+    }
+    $("#btn-report-event-stock-to-stockholder").click(function() {
+      report_event_to_stockholder("seat_stock_to_stockholder", "配券明細");
+    });
+  });
+</script>
+
+<div class="breadcrumbs">
+  ${h.breadcrumbs(
+    names=[u'イベント', event.title, u'帳票'],
+    urls=[request.route_path('events.index'), request.route_path('events.show', event_id=event.id)]
+  )}
+</div>
+
+<div class="page-header">
+  <h1>帳票</h1>
+</div>
+
+<div class="content">
+  ${h.flash_messages(request)}
+  ${h.alert_message(form)}
+</div>
+
+<div class="well">
+  <!--
+  <div class="btn-group" style="float: left;">
+    <a class="btn btn-success" href="javascript:report_event_sales(${event.id});" style="margin-left: 10px;">
+      <i class="icon-file icon-white"></i> 販売日程管理表
+    </a>
+  </div>
+  -->
+  <div class="btn-group" style="float: left;">
+    <a id="btn-report-event-stocks" class="btn btn-success" href="javascript:void(0);" style="margin-left: 10px;">
+      <i class="icon-file icon-white"></i> 仕入明細
+    </a>
+  </div>
+  <div class="btn-group" style="float: left;">
+    <a id="btn-report-event-stock-to-stockholder" class="btn btn-success" href="javascript:void(0);" style="margin-left: 10px;">
+      <i class="icon-file icon-white"></i> 配券明細
+    </a>
+  </div>
+  <div class="btn-group" style="float: left;">
+    <a id="btn-report-event-unsold" class="btn btn-success" href="javascript:void(0);" style="margin-left: 10px;">
+      <i class="icon-file icon-white"></i> 残席明細
+    </a>
+  </div>
+  <!--
+  <div class="btn-group" style="float: left;">
+    <a class="btn btn-success" href="javascript:report_event_seat_adds(${event.id});" style="margin-left: 10px;">
+      <i class="icon-file icon-white"></i> 追券明細
+    </a>
+  </div>
+  <div class="btn-group" style="float: left;">
+    <a class="btn btn-success" href="javascript:report_event_seat_returns(${event.id});" style="margin-left: 10px;">
+      <i class="icon-file icon-white"></i> 返券明細
+    </a>
+  </div>
+  <div class="btn-group" style="float: left;">
+    <a class="btn btn-success" href="javascript:report_event_seat_unsolds(${event.id});" style="margin-left: 10px;">
+      <i class="icon-file icon-white"></i> 残席明細
+    </a>
+  </div>
+  -->
+</div>
+
+<div id="modal-report" class="modal hide fade">
+  <div class="modal-header">
+    <a href="javascript:void(0);" class="close btn-close">&times;</a>
+    <h3>確認</h3>
+  </div>
+
+  <div class="modal-body">
+    <p><span class="modal-report-label"></span>をダウンロードします。よろしいですか？</p>
+  </div>
+
+  <div class="modal-footer">
+    <a href="javascript:void(0);" class="btn secondary btn-close">キャンセル</a>
+    <a href="" class="btn danger modal-report-submit">ダウンロード</a>
+  </div>
+</div>
+
+<div id="modal-report-stockholder" class="modal hide fade">
+  <div class="modal-header">
+    <a href="javascript:void(0);" class="close btn-close">&times;</a>
+    <h3>確認</h3>
+  </div>
+
+  <div class="modal-body">
+    <p><span class="modal-report-label"></span>をダウンロードします。取引先を選択してください。</p>
+    <form name="modal-report-form">
+      <select name="stock-holder-id">
+      % for stock_holder in stock_holders:
+        <option value="${stock_holder.id}">${stock_holder.name}</option>
+      % endfor
+      </select>
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <a href="javascript:void(0);" class="btn secondary btn-close">キャンセル</a>
+    <a href="javascript:void(0);" class="btn danger modal-report-submit">ダウンロード</a>
+  </div>
+</div>

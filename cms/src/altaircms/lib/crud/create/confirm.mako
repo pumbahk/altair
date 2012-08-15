@@ -37,8 +37,7 @@
 	</div>
 
 	${form_to_table(form, master_env.mapper(request, obj))}
-
-    <form action="${master_env.flow_api.next_flow_path(request)}" method="POST">
+    <form action="${request.current_route_path(action="create")}" method="POST">
        ${fco.postdata_as_hidden_input(request.POST)}
         <button class="btn" type="submit">保存</button>
     </form>

@@ -63,6 +63,9 @@ class OrderSearchForm(Form):
         validators=[Optional(), AnyOf(['asc', 'desc'], message='')],
         default='desc',
     )
+    performance_id = HiddenField(
+        validators=[Optional()],
+    )
 
 class SejTicketForm(Form):
     ticket_type = SelectField(

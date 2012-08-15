@@ -4,6 +4,7 @@ from markupsafe import Markup
 from ..viewlet import api as va
 from ..tag.models import HotWord ## ugly
 from ..solr.api import pageset_id_list_from_word
+from pyramid.interfaces import IRootFactory
 from ..tag.api import get_tagmanager
 from ..asset.api import set_taglabel
 from ..topic.models import Topic
@@ -50,6 +51,15 @@ def pageset_describe_viewlet(request, pageset):
     va.set_event(request, None)
     va.set_pagesets(request, [pageset])
     response = render_view_to_response(request.context, request, name="describe_pageset")
+    if response is None:
+        raise ValueError
+    return Markup(response.text)
+
+def event_pageset_describe_viewlet(request, pageset):
+    va.set_event(request, pageset.event)
+    va.set_pagesets(request, [pageset])
+    context = request.registry.getUtility(IRootFactory)(request)
+    response = render_view_to_response(context, request, name="describe_pageset")
     if response is None:
         raise ValueError
     return Markup(response.text)

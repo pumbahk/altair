@@ -3,10 +3,27 @@
 page rendering process: page => widget tree => block_dict(defaultdict(list)) => html
 """
 from collections import defaultdict
-from altaircms.lib.structures import StrictDict
 
 __all__ = ["BlockSettingsException",
            "BlockSettings"]
+
+class StrictDict(dict):
+    """ subspecies. a value of getitem from this is None raise KeyError
+    >>> sd = StrictDict(foo="bar")
+
+    >>> sd["v"] = None
+    >>> ## key error sd["v"] 
+
+    >>> sd["v"] = 1
+    >>> sd["v"]
+    1
+    """
+    def __getitem__(self, k):
+        v = super(StrictDict, self).__getitem__(k)
+        if v is None:
+            raise KeyError(u".%s is not found (strict dict not support getting None value)" % k)
+        return v
+      
 
 class BlockSettingsException(Exception):
     pass

@@ -6,11 +6,36 @@ import logging
 logger = logging.getLogger(__file__)
 
 import altaircms.helpers as h
-from altaircms.lib.structures import Nullable
 from . import forms
 
 class SearchResult(dict):
     pass
+
+
+## null object
+class Nullable(object):
+    """
+    >>> Nullable(None).x.y.z.value
+    None
+    >>> Nullable(1).value
+    1
+    """
+    NULL = None #for flyweight
+    def __init__(self, obj):
+        self.obj = obj
+
+    def __getattr__(self, k):
+        obj = self.obj
+        if hasattr(obj, k):
+            return Nullable(getattr(obj, k))
+        else:
+            return self.NULL
+
+    @property
+    def value(self):
+        return self.__dict__["obj"]
+
+Nullable.NULL = Nullable(None)
 
 def _get_mocked_pageset_query(request, query_params):
     """ mocked pageset queyr (for testing)"""

@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 
-import ticketing.orders.models as o_models
+import ticketing.core.models as c_models
 from .models import DBSession
 
 SESSION_KEY = 'bj89ers.user_profile'
@@ -55,22 +55,22 @@ attr_names = [
 
 def set_user_profile_for_order(request, order, bj89er_user_profile):
     member_type = bj89er_user_profile['member_type']
-    # ordered_product = o_models.OrderedProduct.query.filter(
-    #     o_models.OrderedProduct.order==order
+    # ordered_product = c_models.OrderedProduct.query.filter(
+    #     c_models.OrderedProduct.order==order
     # ).filter(
-    #     o_models.OrderedProduct.product_id==member_type
+    #     c_models.OrderedProduct.product_id==member_type
     # ).one()
 
-    ordered_product_item = o_models.OrderedProductItem.query.filter(
-        o_models.OrderedProduct.order==order
+    ordered_product_item = c_models.OrderedProductItem.query.filter(
+        c_models.OrderedProduct.order==order
     ).filter(
-        o_models.OrderedProduct.product_id==member_type
+        c_models.OrderedProduct.product_id==member_type
     ).filter(
-        o_models.OrderedProductItem.ordered_product_id==o_models.OrderedProduct.id
+        c_models.OrderedProductItem.ordered_product_id==c_models.OrderedProduct.id
     ).first()
 
     for attr_name in attr_names:
-        o_models.OrderedProductAttribute(ordered_product_item=ordered_product_item,
+        c_models.OrderedProductAttribute(ordered_product_item=ordered_product_item,
             name=attr_name,
             value=bj89er_user_profile.get(attr_name))
 

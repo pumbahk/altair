@@ -47,6 +47,11 @@
         </a>
       </li>
       <li>
+        <a target="_blank" href="${request.route_path("topcontent_create", action="copied_input",_query=dict(id="__id__"))}" class="action">
+          <i class="icon-minus"></i> コピーして新規作成
+        </a>
+      </li>
+      <li>
         <a target="_blank" href="${request.route_path("topcontent_create", action="input", _query=dict(bound_page=pageset.id))}">
           <i class="icon-minus"></i> 新規作成
         </a>

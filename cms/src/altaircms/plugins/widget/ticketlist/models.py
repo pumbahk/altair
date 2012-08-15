@@ -15,7 +15,7 @@ from altaircms.plugins.base.mixins import HandleSessionMixin
 from altaircms.plugins.base.mixins import HandleWidgetMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
-from altaircms.lib.interception import not_support_if_keyerror
+from altaircms.plugins.base.interception import not_support_if_keyerror
 from altaircms.seeds.saleskind import SALESKIND_CHOICES
 
 class TicketlistWidget(Widget):
@@ -43,17 +43,18 @@ class TicketlistWidget(Widget):
                 raise KeyError("target performance is not found")
             tickets = Ticket.query.filter(Ticket.performances.any(id=self.target_performance.id))
             tickets = tickets.filter(Sale.kind==self.kind).filter(Sale.id==Ticket.sale_id)
-            tickets = tickets.order_by(sa.desc("price"))
+            tickets = tickets.order_by(sa.asc("orderno"))
+            # tickets = tickets.order_by(sa.desc("price"))
             
-            ## group by seat type
-            indices = []
-            grouped = defaultdict(list)
-            for t in tickets:
-                ts = grouped[t.seattype]
-                ts.append(t)
-                if ts not in indices:
-                    indices.append(ts)
-            tickets = itertools.chain.from_iterable(indices)
+            # ## group by seat type
+            # indices = []
+            # grouped = defaultdict(list)
+            # for t in tickets:
+            #     ts = grouped[t.seattype]
+            #     ts.append(t)
+            #     if ts not in indices:
+            #         indices.append(ts)
+            # tickets = itertools.chain.from_iterable(indices)
 
             params = {"widget":self, "tickets": tickets}
             return render(self.template_name, params, request)

@@ -8,6 +8,11 @@ def includeme(config):
     config.add_route('events.copy', '/copy/{event_id}')
     config.add_route('events.delete', '/delete/{event_id}')
     config.add_route('events.send', '/send/{event_id}')
+    config.add_route('events.report', '/report/{event_id}')
+    config.add_route('events.report.sales', '/report/{event_id}/sales')
+    config.add_route('events.report.seat_stocks', '/report/{event_id}/seat_stocks')
+    config.add_route('events.report.seat_stock_to_stockholder', '/report/{event_id}/seat_stock_to_stockholder/{stock_holder_id}')
+    config.add_route('events.report.seat_unsold', '/report/{event_id}/seat_unsold')
 
     config.include('ticketing.events.performances', route_prefix='performances')
     config.include('ticketing.events.sales_segments', route_prefix='sales_segments')
@@ -15,4 +20,5 @@ def includeme(config):
     config.include('ticketing.events.stock_holders', route_prefix='stock_holders')
     config.include('ticketing.events.stock_types' , route_prefix='stock_types')
     config.include('ticketing.events.stocks' , route_prefix='stocks')
+    config.include("ticketing.events.tickets", route_prefix="tickets")
     config.scan(".")

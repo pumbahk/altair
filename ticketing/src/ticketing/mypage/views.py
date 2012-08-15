@@ -3,7 +3,7 @@ import logging
 from pyramid.view import view_config
 
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
-from ticketing.orders.models import Order, OrderedProduct, OrderedProductItem
+from ticketing.core.models import Order, OrderedProduct, OrderedProductItem
 from ticketing.cart.rakuten_auth.api import authenticated_user, forget
 from ticketing.cart import api
 from .helpers import make_order_data

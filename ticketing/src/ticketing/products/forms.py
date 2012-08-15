@@ -22,14 +22,14 @@ class ProductForm(Form):
                 (sales_segment.id, sales_segment.name) for sales_segment in SalesSegment.filter_by(**conditions).all()
             ]
             self.seat_stock_type_id.choices = [
-                (stock_type.id, stock_type.name) for stock_type in StockType.filter_by(**conditions).all() if stock_type.is_seat
+                (stock_type.id, stock_type.name) for stock_type in StockType.filter_by(**conditions).all()
             ]
 
     def _get_translations(self):
         return Translations()
 
     id = HiddenField(
-        label=u'ID',
+        label=u'商品ID',
         validators=[Optional()],
     )
     event_id = HiddenField(
@@ -46,6 +46,9 @@ class ProductForm(Form):
         label=u'価格',
         places=2,
         validators=[Required()]
+    )
+    order_no = IntegerField(
+        label=u'表示順',
     )
     seat_stock_type_id = SelectField(
         label=u'席種',
@@ -103,6 +106,13 @@ class ProductItemForm(Form):
     )
     product_id = HiddenField(
         validators=[Required()]
+    )
+    name = TextField(
+        label=u'商品明細名',
+        validators=[
+            Required(),
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ]
     )
     price = TextField(
         label=u'単価',

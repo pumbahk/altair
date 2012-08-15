@@ -15,7 +15,9 @@ body {
 
 .pre { white-space: pre; }
 .b { font-weight: 900; }
+.l { text-align: left; }
 .c { text-align: center; }
+.r { text-align: right; }
 .f0 { font-family: "Arial"; }
 .f1 { font-family: "Arial Black"; }
 .f2 { font-family: "Verdana"; }
@@ -252,7 +254,7 @@ function loadXml(url, success, error) {
 }
 
 function newScanner(text) {
-  var regexp = /"((?:[^"]|\\.)*)"|:([^\s"]*)|(-?(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)(?:[eE][-+]?[0-9]+)?)|([*+/A-Za-z_-]+)|([ \t]+)|(\r\n|\r|\n)|(.)/g;
+  var regexp = /"((?:\\.|[^"])*)"|:([^\s"]*)|(-?(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)(?:[eE][-+]?[0-9]+)?)|([*+/A-Za-z_-]+)|([ \t]+)|(\r\n|\r|\n)|(.)/g;
   var line = 0;
   var column = 0;
   return {
@@ -263,7 +265,7 @@ function newScanner(text) {
         if (!g)
           return null;
         if (g[1]) {
-          retval = ['string', g[1].replace(/\\(.)/, '$1')];
+          retval = ['string', g[1].replace(/\\(.)/g, '$1')];
         } else if (g[2]) {
           retval = ['symbol', g[2]];
         } else if (g[3]) {
@@ -470,6 +472,10 @@ if (window.ActiveXObject) {
             ((ecy + ry) * 1000).toFixed(0),
             rsxs, rsys, rexs, reys);
           buf.push('m', rexs, reys);
+          if (thetad < 0) {
+            buf.push('m', rsxs, rsys);
+            buf.push('l', rsxs, rsys);
+          }
         }
         break;
       }
@@ -487,7 +493,7 @@ if (window.ActiveXObject) {
       n: path,
       style: function (value) {
         if (value.strokeWidth)
-          path.setAttribute('strokeWeight', value.strokeWidth * 2.5);
+          path.setAttribute('strokeWeight', value.strokeWidth);
         if (value.strokeColor) {
           path.setAttribute('strokeColor', value.strokeColor || 'none');
           path.setAttribute('stroked', 't');
@@ -570,6 +576,9 @@ function newHandler(n, xmldoc) {
     return { x: point.x * matrix.a + point.y * matrix.c + matrix.e,
              y: point.x * matrix.b + point.y * matrix.d + matrix.f };
   }
+  function determinant(matrix) {
+    return matrix.a * matrix.d - matrix.b * matrix.c;
+  }
   return {
     xn: function xmlNode(path) {
       var nodes = findXmlNode(xmldoc, xmldoc.documentElement, path);
@@ -621,20 +630,21 @@ function newHandler(n, xmldoc) {
       style.strokeColor = value;
     },
     Sw: function setStrokeWidth(value) {
-      style.strokeWidth = value * scale;
+      style.strokeWidth = value;
     },
     U: function setUnit(_unit) {
       unit = _unit;
     },
     X: function showText(width, height, text) {
+      var p = applyMatrix(currentMatrix, currentPoint);
       n.insertAdjacentHTML('beforeEnd', [
         '<div style="position:absolute;',
         'font-size:', fontSize, 'pt', ';',
         'line-height:', lineHeight || fontSize, 'pt', ';',
-        'left:', currentPoint.x, unit, ';',
-        'top:', currentPoint.y, unit, ';',
-        'width:', width, unit, ';',
-        'height:', height, unit, '"',
+        'left:', p.x, unit, ';',
+        'top:', p.y, unit, ';',
+        'width:', width * scale, unit, ';',
+        'height:', height * scale, unit, '"',
         ' class="', classes.join(' '), '"',
         '>', text, '</div>'].join(''));
     },
@@ -743,10 +753,9 @@ function newHandler(n, xmldoc) {
     s: function stroke() {
       if (pathData == null)
         return;
-      pathData.push(['Z']);
       initDrawable();
       drawable.path(pathData).style({
-        strokeWidth: style.strokeWidth,
+        strokeWidth: style.strokeWidth * Math.sqrt(Math.abs(determinant(currentMatrix))) * scale,
         strokeColor: style.strokeColor,
         fillColor: null
       });
@@ -757,7 +766,11 @@ function newHandler(n, xmldoc) {
         return;
       if (drawable == null)
         drawable = new Drawable(n, '1000' + unit, '1000' + unit);
-      drawable.path(pathData).style(style);
+      drawable.path(pathData).style({
+        strokeWidth: style.strokeWidth * Math.sqrt(Math.abs(determinant(currentMatrix))) * scale,
+        strokeColor: style.strokeColor,
+        fillColor: style.fillColor
+      });
       pathData = null;
     }
   };

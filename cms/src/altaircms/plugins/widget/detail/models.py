@@ -13,7 +13,7 @@ from altaircms.plugins.base.mixins import HandleWidgetMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
 from . import renderable
-from altaircms.lib.interception import not_support_if_keyerror
+from altaircms.plugins.base.interception import not_support_if_keyerror
 
 ## kind = divのクラス名として展開(todo整理)
 KINDS = ["description", "dummy"]

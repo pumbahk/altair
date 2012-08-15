@@ -104,10 +104,6 @@
 		  <i class="icon-plus"> </i> ページセット期間変更</a>
 	  </li>
      <li>
-		<a class="" target="_blank" href="${request.route_path("page_add_orphan", action="input")}">
-		  <i class="icon-plus"> </i> 新しいページセットの追加</a>
-     </li>
-     <li>
 	   <a id="pageset_addpage" class="individual-action" href="${request.route_path("plugins_jsapi_addpage", pageset_id='__id__')}">
 		 <i class="icon-plus"> </i> 選択したページセットにページ追加</a>
 

@@ -88,7 +88,7 @@ class PromotionWidget(Widget):
     @property
     def promotion_sheet(self, d=None):
         from altaircms.topic.models import Promotion
-        qs = Promotion.matched_qs(d=d, kind=self.kind.name)
+        qs = Promotion.matched_qs(d=d, kind=self.kind.name).options(orm.joinedload("thumbnail"), orm.joinedload("linked_page"))
         return PromotionSheet(qs.all()) ##
 
     def merge_settings(self, bname, bsettings):
@@ -101,6 +101,7 @@ class PromotionWidgetResource(HandleSessionMixin,
                               HandleWidgetMixin,
                               RootFactory
                               ):
+    Promotion = Promotion
     WidgetClass = PromotionWidget
     Kind = Kind
     def get_widget(self, widget_id):

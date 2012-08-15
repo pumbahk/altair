@@ -134,13 +134,13 @@ ${locale.format("%d", price, grouping=True)}
 % endif
 </%def>
 
-<%def name="action_button(actions, order=None, virtical=True)">
+<%def name="action_button(actions, order=None, virtical=True, options=None)">
 <%
   multi = True if len(actions) > 1 and order else False
   key = order.next() if multi else actions.keys()[0]
 %>
 <div class="btn-group">
-  <a href="${actions[key]['url']}" class="btn">
+  <a href="${actions[key]['url']}" class="btn ${options}">
     <i class="${actions[key]['icon']}"></i> ${actions[key]['label']}
   </a>
   % if multi:

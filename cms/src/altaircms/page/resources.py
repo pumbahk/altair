@@ -1,5 +1,6 @@
 # coding: utf-8
 import logging
+from datetime import datetime
 from altaircms.models import DBSession
 from altaircms.layout.models import Layout
 import altaircms.widget.forms as wf
@@ -11,7 +12,8 @@ from altaircms.tag.api import put_tags
 from . import helpers as h
 from . import models
 from . import subscribers
-
+# from .api import get_static_page_utility
+# from altaircms.auth.api import get_or_404
 
 def add_data(self, data, flush=False):
     DBSession.add(data)
@@ -33,7 +35,7 @@ class WDispositionResource(security.RootFactory):
         ## pageはallowableなもののみ
         assert page.organization_id == self.request.organization.id
 
-        wd = WidgetDisposition.from_page(page, DBSession)
+        wd = WidgetDisposition.from_page(page, DBSession, data["save_type"]) # page`type is shallow or deep
         if data:
             for k, v in data.iteritems():
                 setattr(wd, k, v)
@@ -94,8 +96,28 @@ class PageResource(security.RootFactory):
         subscribers.notify_page_delete(self.request, page)
         self.delete(page)
 
+    def delete_pageset(self, pageset):
+        for page in pageset.pages:
+            subscribers.notify_page_delete(self.request, page)
+        self.delete(pageset)
+
     def clone_page(self, page):
         cloned = page.clone(DBSession, request=self.request)
         subscribers.notify_page_create(self.request, cloned)
         return cloned
 
+class StaticPageResource(security.RootFactory):
+    def create_static_page(self, data):
+        static_page = models.StaticPage(name=data["name"])
+        DBSession.add(static_page)
+        notify_model_create(self.request, static_page, data)
+        DBSession.flush()
+        return static_page
+
+    def touch_static_page(self, static_page, _now=datetime.now):
+        static_page.updated_at = _now()
+        DBSession.add(static_page)
+        return static_page
+
+    def delete_static_page(self, static_page):
+        DBSession.delete(static_page)

@@ -1,5 +1,3 @@
-from .helpers import list_from_setting_value
-
 def includeme(config):
     """
     e.g. 
@@ -31,11 +29,16 @@ def includeme(config):
     config.include(".widget.purchase", route_prefix="api")
     config.include(".widget.twitter", route_prefix="api")
     config.include(".widget.rawhtml", route_prefix="api")
-
-    ## todo: move ini
-    inifiles = list_from_setting_value(config.registry.settings["altaircms.widget.each_organization.settings"])
-    set_widget_aggregator_dispatcher = config.maybe_dotted(".api.set_widget_aggregator_dispatcher")
-    set_widget_aggregator_dispatcher(config, inifiles)
-
     config.include(".jsapi", route_prefix="api")
+
+    ## settings
+    m = config.maybe_dotted
+    osettings = config.registry.settings["altaircms.widget.each_organization.settings"]
+    configparsers = m(".api.get_configparsers_from_inifiles")(config, m(".helpers.list_from_setting_value")(osettings))
+
+    m(".api.set_widget_aggregator_dispatcher")(config, configparsers)
+
+    for configparser in configparsers:
+        m(".api.set_extra_resource")(config, configparser)
+
 

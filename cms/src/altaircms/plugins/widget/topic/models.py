@@ -12,7 +12,7 @@ import sqlalchemy.orm as orm
 from altaircms.topic.models import Topic
 from altaircms.topic.models import Topcontent
 from altaircms.widget.models import Widget
-from altaircms.lib.interception import not_support_if_keyerror
+from altaircms.plugins.base.interception import not_support_if_keyerror
 from altaircms.plugins.base import DBSession
 from altaircms.plugins.base.mixins import HandleSessionMixin
 from altaircms.plugins.base.mixins import HandleWidgetMixin
@@ -67,7 +67,7 @@ def topics_merge_settings(template_name, widget, bname, bsettings):
 
         qs = Topic.matched_qs(page=page, d=d, kind=widget.kind, subkind=widget.subkind)
         qs = request.allowable(Topic, qs=qs)
-        qs = _qs_refine(qs, Topic, widget)
+        qs = _qs_refine(qs, Topic, widget).options(orm.joinedload("linked_page"))
         return render(template_name, 
                       {"widget": widget, "topics": qs}, 
                       request)
@@ -85,6 +85,9 @@ def topcontent_merge_settings(template_name, widget, bname, bsettings):
         qs = Topcontent.matched_qs(page=page, d=d, kind=widget.kind, subkind=widget.subkind)
         qs = request.allowable(Topcontent, qs=qs)
         qs = _qs_refine(qs, Topcontent, widget)
+        qs = qs.options(orm.joinedload("linked_page"),
+                        orm.joinedload("linked_page.event"), 
+                        orm.joinedload("image_asset"))
         return render(template_name, 
                       {"widget": widget, "topcontents": qs}, 
                       request)

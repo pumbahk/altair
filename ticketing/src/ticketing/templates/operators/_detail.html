@@ -18,5 +18,19 @@
     <th class="span3">${form.expire_at.label.text}</th>
     <td>${h.safe_strftime(operator.expire_at)}</td>
   </tr>
+  <tr>
+    <th class="span3">${form.login_id.label.text}</th>
+    <td>${operator.auth.login_id}</td>
+  </tr>
+  <tr>
+    <th class="span3">${form.role_ids.label.text}</th>
+    <td>
+      % for role in operator.roles:
+      <ul>
+        <li>${role.name}</li>
+      </ul>
+      % endfor
+    </td>
+  </tr>
   </tbody>
 </table>

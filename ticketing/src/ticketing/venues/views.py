@@ -79,7 +79,7 @@ def get_seats(request):
             is_seat=stock_type.is_seat,
             quantity_only=stock_type.quantity_only,
             style=stock_type.style) \
-        for stock_type in DBSession.query(StockType).filter_by(event=venue.performance.event)
+        for stock_type in DBSession.query(StockType).filter_by(event=venue.performance.event).order_by(StockType.order_no)
         ]
 
     retval[u'stock_holders'] = [

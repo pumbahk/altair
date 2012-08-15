@@ -9,12 +9,10 @@ import sqlahelper
 session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
 
-class User(Base):
+class User(Base, WithTimestamp):
     __tablename__ = 'User'
     query = session.query_property()
     id = Column(Identifier, primary_key=True)
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
     status = Column(Integer)
 
     bank_account_id = Column(Identifier, ForeignKey('BankAccount.id'))
@@ -55,7 +53,7 @@ class UserProfile(Base, BaseModel, WithTimestamp):
     fax = Column(String(32))
     status = Column(Integer)
 
-class UserCredential(Base):
+class UserCredential(Base, WithTimestamp):
     __tablename__ = 'UserCredential'
     query = session.query_property()
     id = Column(Identifier, primary_key=True)
@@ -66,14 +64,12 @@ class UserCredential(Base):
     user_id = Column(Identifier, ForeignKey('User.id'))
     user = relationship('User', backref="user_credential", uselist=False)
 
-    membership_id = Column(Identifier, ForeignKey('MemberShip.id'))
-    membership = relationship("MemberShip", uselist=False)
+    membership_id = Column(Identifier, ForeignKey('Membership.id'))
+    membership = relationship("Membership", uselist=False)
 
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
     status = Column(Integer)
 
-class UserPointAccount(Base):
+class UserPointAccount(Base, WithTimestamp):
     __tablename__ = 'UserPointAccount'
     query = session.query_property()
     id = Column(Identifier, primary_key=True)
@@ -83,11 +79,9 @@ class UserPointAccount(Base):
     account_number = Column(String(255))
     account_expire = Column(String(255))
     account_owner = Column(String(255))
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
     status = Column(Integer)
 
-class UserPointHistory(Base):
+class UserPointHistory(Base, WithTimestamp):
     __tablename__ = 'UserPointHistory'
     query = session.query_property()
     id = Column(Identifier, primary_key=True)
@@ -97,11 +91,9 @@ class UserPointHistory(Base):
     user = relationship('User', uselist=False)
     point = Column(Integer)
     rate = Column(Integer)
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
     status = Column(Integer)
 
-class MailMagazine(Base):
+class MailMagazine(Base, WithTimestamp):
     __tablename__ = 'MailMagazine'
     query = session.query_property()
     id = Column(Identifier, primary_key=True)
@@ -109,8 +101,6 @@ class MailMagazine(Base):
     description = Column(String(1024))
     organization_id = Column(Identifier, ForeignKey("Organization.id"), nullable=True)
     organization = relationship('Organization', uselist=False, backref='mail_magazines')
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
     status = Column(Integer)
 
     def subscribe(self, user, mail_address):
@@ -139,8 +129,7 @@ class MailMagazine(Base):
         if subscription:
             session.delete(subscription)
 
-
-class MailSubscription(Base):
+class MailSubscription(Base, WithTimestamp):
     __tablename__ = 'MailSubscription'
     __table_args__ = (
         Index('email_segment_idx', 'email', 'segment_id', unique=True),
@@ -153,20 +142,21 @@ class MailSubscription(Base):
     segment_id = Column(Identifier, ForeignKey("MailMagazine.id"), nullable=True)
     segment = relationship('MailMagazine', uselist=False)
 
-    updated_at = Column(DateTime)
-    created_at = Column(DateTime)
     status = Column(Integer)
 
-
-class MemberShip(Base):
+class Membership(Base, WithTimestamp):
     '''
       Membership ex) Rakuten Fanclub ....
     '''
-    __tablename__ = 'MemberShip'
+    __tablename__ = 'Membership'
     query = session.query_property()
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
-
-    updated_at = Column(DateTime, nullable=True)
-    created_at = Column(DateTime)
+    sales_segments = lambda:relationship('SalesSegment', secondary=Membership_SalesSegment.__table__, backref='memberships')
     status = Column(Integer)
+
+class Membership_SalesSegment(Base):
+    __tablename__ = 'Membership_SalesSegment'
+    query = session.query_property()
+    membership_id = Column(Identifier, ForeignKey('Membership.id'), primary_key=True)
+    sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'), primary_key=True)

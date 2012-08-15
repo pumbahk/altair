@@ -761,7 +761,10 @@
           break;
 
         case 'uimode':
-          aux.changeUIMode(arguments[1]);
+          if (arguments.length >= 2)
+            aux.changeUIMode(arguments[1]);
+          else
+            return aux.uiMode;
           break;
 
         case 'selection':

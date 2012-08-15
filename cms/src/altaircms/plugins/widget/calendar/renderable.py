@@ -113,6 +113,12 @@ def _next_month_date(d):
     else:
         return date(d.year, d.month+1, 1)
 
+def get_start_date_and_end_date(salessegment, performances):
+    if salessegment:
+        return salessegment.start_on, salessegment.end_on
+    else:
+        return performances[0].start_on, performances[-1].start_on        
+
 def obi(widget, calendar_status, performances, request, template_name=None): 
     """公演の開始から終了までを縦に表示するカレンダー
     ※ performancesはstart_onでsortされているとする
@@ -123,7 +129,7 @@ def obi(widget, calendar_status, performances, request, template_name=None):
     performances = list(performances)
     if performances:
         cal = CalendarOutput.from_performances(performances)
-        rows = cal.each_rows(performances[0].start_on, performances[-1].start_on)
+        rows = cal.each_rows(*get_start_date_and_end_date(widget.salessegment, performances))
         return render(template_name, {"cal":rows, "i":cal.i, "calendar_status": calendar_status}, request)
     else:
         return u"performance is not found"
@@ -145,8 +151,10 @@ def tab(widget, calendar_status, performances, request, template_name=None):
     template_name = template_name or CalendarTemplatePathStore.path("tab")
     logger.debug("calendar template: "+template_name)
 
-
-    months = sorted(set((p.start_on.year, p.start_on.month) for p in performances))
+    performances = list(performances)
+    start_date, end_date = get_start_date_and_end_date(widget.salessegment, performances)
+    months = sorted(set((p.start_on.year, p.start_on.month) for p in performances 
+                        if start_date <= p.start_on and p.start_on <= end_date))
     visibilities = itertools.chain([True], itertools.repeat(False))
     monthly_performances = itertools.groupby(performances, lambda p: (p.start_on.year, p.start_on.month))
     cals = (CalendarOutput.from_performances(perfs).each_rows(date(y, m, 1), _next_month_date(date(y, m, 1)))\

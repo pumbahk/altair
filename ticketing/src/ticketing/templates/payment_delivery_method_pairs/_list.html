@@ -19,8 +19,23 @@
     <td>${pdmp.payment_method.name}</td>
     <td>${pdmp.delivery_method.name}</td>
     <td>${h.price_format(pdmp.system_fee)}</td>
-    <td>${h.price_format(pdmp.transaction_fee)}</td>
-    <td>${h.price_format(pdmp.delivery_fee)}</td>
+    <%! from ticketing.core.models import FeeTypeEnum %>
+    <%
+      fee_type = ''
+      if pdmp.payment_method.fee_type == int(FeeTypeEnum.Once.v[0]):
+        fee_type = u' / 件'
+      if pdmp.payment_method.fee_type == int(FeeTypeEnum.PerUnit.v[0]):
+        fee_type = u' / 枚'
+    %>
+    <td>${h.price_format(pdmp.transaction_fee)}円${fee_type}</td>
+    <%
+      fee_type = ''
+      if pdmp.delivery_method.fee_type == int(FeeTypeEnum.Once.v[0]):
+        fee_type = u' / 件'
+      if pdmp.delivery_method.fee_type == int(FeeTypeEnum.PerUnit.v[0]):
+        fee_type = u' / 枚'
+    %>
+    <td>${h.price_format(pdmp.delivery_fee)}円${fee_type}</td>
     <td>${h.price_format(pdmp.discount)}</td>
     <td>${pdmp.discount_unit or ''}</td>
   </tr>

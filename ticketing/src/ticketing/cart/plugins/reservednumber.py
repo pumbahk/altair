@@ -5,7 +5,7 @@ import string
 from pyramid.view import view_config
 from pyramid.response import Response
 from zope.interface import implementer
-from ticketing.orders import models as o_models
+from ticketing.core import models as c_models
 from ..interfaces import IDeliveryPlugin, IOrderDelivery, ICartDelivery
 from ..interfaces import IPaymentPlugin, IOrderPayment, ICartPayment
 from . import models as m
@@ -77,7 +77,7 @@ class ReservedNumberPaymentPlugin(object):
                 break
         m.DBSession.add(reserved_number)
         logger.debug("支払い番号: %s" % reserved_number.number)
-        order = o_models.Order.create_from_cart(cart)
+        order = c_models.Order.create_from_cart(cart)
         cart.finish()
 
         return order

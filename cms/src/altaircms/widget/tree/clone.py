@@ -8,3 +8,5 @@ def clone(session, page, wtree):
 def to_structure(wtree):
     return {bname: [dict(name=w.type, pk=w.id) for w in ws]\
                 for bname, ws in wtree.blocks.items()}
+
+

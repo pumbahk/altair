@@ -1,4 +1,4 @@
-<%page args="form" />
+<%page args="form, url='/orders/'" />
 <%namespace file="/common/helpers.html" name="h" />
 
 <script type="text/javascript">
@@ -8,11 +8,11 @@
 
   function search_orders() {
     modal = $('#modal-search');
-    modal.find('#search').attr('action', '/orders/').submit();
+    modal.find('#search').attr('action', '${url}').submit();
   }
 
   function sort_orders(sort, direction, url) {
-    url = url || '/orders/';
+    url = url || '${url}';
     modal = $('#modal-search');
     if (sort) modal.find('#sort').val(sort);
     if (direction) modal.find('#direction').val(direction);
@@ -29,7 +29,7 @@
 <div style="float: left;">
   <ul class="nav nav-pills">
     <li class="dropdown" id="top-search-text">
-      <form id="search-order" action="/orders/" method="POST">
+      <form id="search-order" action="${url}" method="POST">
         <input name="order_no" type="text" class="search-query" placeholder="受注番号">
       </form>
     </li>
@@ -70,15 +70,15 @@
   <div class="modal-body">
     <form id="search" class="form-horizontal" action="/orders/" method="POST">
       <fieldset>
-        ${h.form_item(form.order_no, option={'class':'span8', 'maxlength':12})}
+        ${h.form_item(form.order_no, option={'style':'width: 200px;', 'maxlength':12})}
         <div class="control-group ">
           <label class="control-label">
             ${form.ordered_from.label.text}
           </label>
           <div class="controls">
             <div style="float: left;">
-              <input class="span5 datefield" id="ordered_from" name="ordered_from" type="text"> 〜
-              <input class="span5 datefield" id="ordered_to" name="ordered_to" type="text">
+              <input class="datefield" style="width: 140px;" id="ordered_from" name="ordered_from" type="text"> 〜
+              <input class="datefield" style="width: 140px;" id="ordered_to" name="ordered_to" type="text">
             </div>
           </div>
         </div>
@@ -88,6 +88,7 @@
         ${h.form_item(form.status)}
         ${h.form_item(form.sort)}
         ${h.form_item(form.direction)}
+        ${h.form_item(form.performance_id)}
       </fieldset>
     </form>
   </div>
@@ -107,7 +108,7 @@
 
   <div class="modal-body">
     <p>購入情報(CSV)をダウンロードします。よろしいですか？<br>
-      <div class="alert alert-error">現在の検索条件で抽出され、上限件数は500件までとなります。</div>
+      <div class="alert alert-error">現在の検索条件で抽出されます。</div>
     </p>
   </div>
 

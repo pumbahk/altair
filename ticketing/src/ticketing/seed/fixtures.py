@@ -695,7 +695,6 @@ class FixtureBuilder(object):
     def build_product_item(self, performance, product, stock, price, quantity):
         return self.Datum(
             'ProductItem',
-            item_type=1,
             price=price,
             stock=many_to_one(stock, 'stock_id'),
             product=many_to_one(product, 'product_id'),

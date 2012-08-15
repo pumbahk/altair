@@ -1,9 +1,8 @@
 from datetime import datetime
 from dateutil import parser
 from ticketing.cart.resources import TicketingCartResource
-from ticketing.core.models import DBSession
-from ticketing.users.models import User, UserCredential, MemberShip, UserProfile
-from ticketing.orders.models import Order
+from ticketing.core.models import DBSession, Order
+from ticketing.users.models import User, UserCredential, Membership, UserProfile
 from ticketing.sej.models import SejOrder
 from .api import load_user_profile
 from sqlalchemy.orm.exc import NoResultFound
@@ -27,18 +26,18 @@ class Bj89erCartResource(TicketingCartResource):
         credential = UserCredential.query.filter(
             UserCredential.auth_identifier==str(cart.id),
         ).filter(
-            UserCredential.membership_id==MemberShip.id
+            UserCredential.membership_id==Membership.id
         ).filter(
-            MemberShip.name==MEMBERSHIP_NAME
+            Membership.name==MEMBERSHIP_NAME
         ).first()
         if credential:
             user = credential.user
             return user
         
 
-        membership = MemberShip.query.filter(MemberShip.name==MEMBERSHIP_NAME).first()
+        membership = Membership.query.filter(Membership.name==MEMBERSHIP_NAME).first()
         if membership is None:
-            membership = MemberShip(name=MEMBERSHIP_NAME)
+            membership = Membership(name=MEMBERSHIP_NAME)
             DBSession.add(membership)
 
         user = User()

@@ -17,7 +17,6 @@ from urllib2 import urlopen
 from zope.deprecation import deprecate
 from ..models import DBSession
 from ..core import models as c_models
-from ..orders import models as o_models
 from ..users import models as u_models
 from .models import Cart
 from . import helpers as h
@@ -123,7 +122,7 @@ class IndexView(object):
             c_models.Performance.event_id==c_models.StockHolder.event_id).filter(
             c_models.StockHolder.id==c_models.Stock.stock_holder_id).filter(
             c_models.Stock.stock_type_id==c_models.StockType.id).filter(
-            c_models.Stock.id.in_(segment_stocks)).all()
+            c_models.Stock.id.in_(segment_stocks)).order_by(c_models.StockType.order_no).all()
 
         performance = c_models.Performance.query.filter_by(id=performance_id).one()
 
@@ -536,7 +535,7 @@ class PaymentView(object):
 
     def create_shipping_address(self, user):
         params = self.request.params
-        shipping_address = o_models.ShippingAddress(
+        shipping_address = c_models.ShippingAddress(
             first_name=params['first_name'],
             last_name=params['last_name'],
             first_name_kana=params['first_name_kana'],

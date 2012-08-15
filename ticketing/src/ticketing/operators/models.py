@@ -1,20 +1,18 @@
 # -*- coding: utf-8 -*-
 
+import hashlib
+
 from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, ForeignKey
 from sqlalchemy.orm import join, column_property, mapper
 
-from hashlib import md5
-
 from ticketing.utils import StandardEnum
-
-from ticketing.core.models import Organization
 from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, DBSession, Identifier, relationship
 
-operator_role_association_table = Table('OperatorRole_Operator', Base.metadata,
-    Column('id', Identifier, primary_key=True),
-    Column('operator_role_id', Identifier, ForeignKey('OperatorRole.id')),
-    Column('operator_id', Identifier, ForeignKey('Operator.id'))
-)
+class OperatorRole_Operator(Base):
+    __tablename__   = 'OperatorRole_Operator'
+    id = Column(Identifier, primary_key=True, nullable=False)
+    operator_id = Column(Identifier, ForeignKey('Operator.id', ondelete='CASCADE'), index=True, nullable=False)
+    operator_role_id = Column(Identifier, ForeignKey('OperatorRole.id', ondelete='CASCADE'), index=True, nullable=False)
 
 class Permission(Base):
     __tablename__ = 'Permission'
@@ -43,7 +41,7 @@ class OperatorRole(Base, BaseModel, WithTimestamp):
     __tablename__ = 'OperatorRole'
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
-    operators = relationship('Operator', secondary=operator_role_association_table)
+    operators = relationship('Operator', secondary=OperatorRole_Operator.__table__)
     permissions = relationship('Permission')
     status = Column('status',Integer, default=1)
 
@@ -79,8 +77,7 @@ class Operator(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     status = Column(Integer, default=1)
 
     organization = relationship('Organization', uselist=False, backref='operators')
-    roles = relationship('OperatorRole',
-        secondary=operator_role_association_table)
+    roles = relationship('OperatorRole', secondary=OperatorRole_Operator.__table__)
     auth = relationship('OperatorAuth', uselist=False, backref='operator')
 
     @staticmethod
@@ -96,5 +93,29 @@ class Operator(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def login(login_id, password):
         operator = Operator.filter().join(OperatorAuth)\
                 .filter(OperatorAuth.login_id==login_id)\
-                .filter(OperatorAuth.password==md5(password).hexdigest()).first()
+                .filter(OperatorAuth.password==hashlib.md5(password).hexdigest()).first()
         return operator
+
+    def save(self):
+        super(Operator, self).save()
+
+        # create/update OperatorAuth
+        operator_auth = OperatorAuth.filter_by(operator_id=self.id).first()
+        if operator_auth:
+            operator_auth.login_id = self.login_id
+        else:
+            operator_auth = OperatorAuth(
+                operator_id=self.id,
+                login_id=self.login_id,
+                password=hashlib.md5(self.password).hexdigest()
+            )
+        operator_auth.save()
+
+        # create/update OperatorRole
+        DBSession.query(OperatorRole_Operator).filter_by(operator_id=self.id).delete('fetch')
+        for role_id in self.role_ids:
+            operator_role_assoc = OperatorRole_Operator(
+                operator_id=self.id,
+                operator_role_id=role_id
+            )
+            DBSession.add(operator_role_assoc)

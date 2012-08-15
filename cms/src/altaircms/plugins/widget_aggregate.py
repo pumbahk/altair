@@ -60,6 +60,9 @@ renderers =
 get_renderer = altaircms.plugins.widget.image.api:get_renderer
 """
 
+class WidgetAggregateDispatcherException(Exception):
+    pass
+
 @implementer(IConflictValidateFunction)
 def widget_conflict_validator(config, widgets):
     stored = get_installed_widgets(config.registry.settings).keys()
@@ -154,7 +157,11 @@ class WidgetAggregatorDispatcher(object):
         k = (organization.backend_id, organization.auth_source)
 
         logger.debug("widget aggregator dispach:%s" % (k,))
-        subdispatch = self.conts[k]
+        try:
+            subdispatch = self.conts[k]
+        except KeyError:
+            fmt = "Organization(id=%d, backend_id=%d, auth_source=%s) doesn't bound to %s. please check the 'organization.json' file."
+            raise WidgetAggregateDispatcherException((fmt % (organization.id, organization.backend_id, organization.auth_source, k, )))
         return subdispatch(request, page)
 
 

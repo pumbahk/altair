@@ -11,7 +11,7 @@ from ..interfaces import IPaymentPlugin, ICartPayment, IOrderPayment
 from ..interfaces import IDeliveryPlugin, ICartDelivery, IOrderDelivery
 from ..interfaces import IPaymentDeliveryPlugin
 from .models import DBSession
-from ticketing.orders import models as o_models
+from ticketing.core import models as c_models
 from .. import logger
 from .. import helpers as h
 from .. import api as a
@@ -126,7 +126,7 @@ class SejPaymentPlugin(object):
     def finish(self, request, cart):
         """ 売り上げ確定 """
         logger.debug('Sej Payment')
-        order = o_models.Order.create_from_cart(cart)
+        order = c_models.Order.create_from_cart(cart)
         cart.finish()
 
         shipping_address = order.shipping_address
@@ -233,7 +233,7 @@ class SejPaymentDeliveryPlugin(object):
     def finish(self, request, cart):
         """  """
         logger.debug('Sej Payment and Delivery')
-        order = o_models.Order.create_from_cart(cart)
+        order = c_models.Order.create_from_cart(cart)
         cart.finish()
 
         sej_order = get_sej_order(order)
