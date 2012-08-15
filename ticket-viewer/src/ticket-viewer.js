@@ -44,8 +44,7 @@
         };
         var contentSize = { x: 1000, y: 1000 };
         var drawable = new Fashion.Drawable(self.node, { contentSize: contentSize });
-        drawable.scrollPosition({ x: 300, y: 200 });
-        var offset = { x: (contentSize.x - paperSize.x) / 2, y: (contentSize.y - paperSize.y) / 2 };
+        var offset = { x: 0, y: 0 };
         drawable.draw(new Fashion.Rect({
           position: offset,
           size: paperSize,
@@ -89,9 +88,11 @@
             }
           }));
         }
-        parse(tokenizer.newScanner(data['drawing']),
-              newHandler(self.objects, self.styleClasses, drawable, offset),
-              []);
+        if (data['drawing'] !== void(0)) {
+          parse(tokenizer.newScanner(data['drawing']),
+                newHandler(self.objects, self.styleClasses, drawable, offset),
+                []);
+        }
         drawable.transform(Fashion.Matrix.scale(self.zoomRatio));
         self.drawable = drawable;
         self._refreshUI(self.uiMode);
