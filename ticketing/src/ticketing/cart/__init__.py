@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
-
+from ticketing.logicaldeleting import install as ld_install
+ld_install()
 from pyramid.config import Configurator
 from pyramid.session import UnencryptedCookieSessionFactoryConfig
 from sqlalchemy import engine_from_config
@@ -52,8 +53,6 @@ def includeme(config):
 
 
 def main(global_config, **settings):
-    from ticketing.logicaldeleting import install as install_ld
-    install_ld()    
     engine = engine_from_config(settings)
     my_session_factory = session_factory_from_settings(settings)
     sqlahelper.add_engine(engine)
