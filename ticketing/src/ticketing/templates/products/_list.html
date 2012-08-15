@@ -61,34 +61,33 @@
   <% sales_segment = map[sales_segment_id] %>
   <span class="label ${label_classes[i%6]}" style="font-size: 120%;">${sales_segment['name']}</span>
 
-  % for stock_type_id in sales_segment['stock_types']:
-    <% if limit and row_count >= limit: break %>
-    <% stock_type = sales_segment['stock_types'][stock_type_id] %>
-    <div style="margin: 10px 0 0 25px;">
-      <h3 style="font-size: 120%;">${stock_type['name']}</h3>
-    </div>
+  <div style="margin: 10px 0 5px 30px;">
+    <table class="table table-striped table-bordered table-condensed">
+      <thead>
+      <tr>
+        <th style="width: 20px;"></th>
+        <th style="width: 100px;">席種</th>
+        <th style="width: 50px;">${form.id.label.text}</th>
+        <th style="width: 130px;">${form.name.label.text}</th>
+        <th style="width: 100px;">${form.price.label.text}</th>
+        <th style="width: 60px;">${form.order_no.label.text}</th>
+        % if performance:
+        <th style="width: 100px;">配券先</th>
+        <th style="width: 100px;">商品明細名</th>
+        <th style="width: 80px;">単価</th>
+        <th style="width: 80px;">販売単位</th>
+        <th style="width: 100px;">席数</th>
+        <th style="width: 60px;">在庫ID</th>
+        <th style="width: 110px;"></th>
+        % endif
+      </tr>
+      </thead>
 
-    <div style="margin: 5px 0 5px 50px;">
-      <table class="table table-striped table-bordered table-condensed">
-        <thead>
-        <tr>
-          <th style="width: 20px;"></th>
-          <th style="width: 50px;">${form.id.label.text}</th>
-          <th style="width: 130px;">${form.name.label.text}</th>
-          <th style="width: 100px;">${form.price.label.text}</th>
-          <th style="width: 50px;">${form.order_no.label.text}</th>
-          % if performance:
-          <th style="width: 100px;">配券先</th>
-          <th style="width: 100px;">商品明細名</th>
-          <th style="width: 80px;">単価</th>
-          <th style="width: 60px;">販売単位</th>
-          <th style="width: 100px;">席数</th>
-          <th style="width: 50px;">在庫ID</th>
-          <th style="width: 100px;"></th>
-          % endif
-        </tr>
-        </thead>
+      % for stock_type_id in sales_segment['stock_types']:
+        <% if limit and row_count >= limit: break %>
+        <% stock_type = sales_segment['stock_types'][stock_type_id] %>
         <tbody>
+
         % for product in stock_type['products']:
         <% if limit and row_count >= limit: break %>
         <% count = len(product.items_by_performance_id(performance.id)) if performance else 1 %>
@@ -99,6 +98,7 @@
             <input type="hidden" id="sales_segment_id" value="${sales_segment_id}" />
             <input type="hidden" id="seat_stock_type_id" value="${stock_type_id}" />
           </td>
+          <td ${rowspan}><span id="id">${product.seat_type()}</span></td>
           <td ${rowspan}><span id="id">${product.id}</span></td>
           <td ${rowspan}><a href="javascript:edit_product('${product.id}');"><span id="name">${product.name}</span></a></td>
           <td ${rowspan}><span id="price" value="${product.price}">${h.price_format(product.price)}</span>円</td>
@@ -118,7 +118,8 @@
         </tr>
             % endfor
             % if count == 0:
-          <td colspan="7">${h.action_button(actions(product.id), options='btn-small')}</td>
+          <td colspan="6"></td>
+          <td>${h.action_button(actions(product.id), options='btn-small')}</td>
         </tr>
             % endif
           % endif
@@ -126,9 +127,9 @@
         <% row_count += 1 %>
         % endfor
         </tbody>
-      </table>
-    </div>
-  % endfor
+      % endfor
+    </table>
+  </div>
 % endfor
 
 % if paging:
