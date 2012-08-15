@@ -39,7 +39,6 @@ class IndexView(object):
         self.context = request.context
 
 
-    @view_config(route_name='cart.index.sales', renderer='carts_mobile/index.html', xhr=False, permission="view", request_type=".interfaces.IMobileRequest")
     @view_config(route_name='cart.index', renderer='carts/index.html', xhr=False, permission="view")
     @view_config(route_name='cart.index.sales', renderer='carts/index.html', xhr=False, permission="view")
     def __call__(self):
@@ -654,13 +653,14 @@ class CompleteView(object):
 
 
 class MobileIndexView(object):
-    """モバイルの会場選択
+    """モバイルのパフォーマンス選択
     """
     def __init__(self, request):
         self.request = request
         self.context = request.context
 
     @view_config(route_name='cart.index', renderer='carts_mobile/index.html', xhr=False, permission="view", request_type=".interfaces.IMobileRequest")
+    @view_config(route_name='cart.index.sales', renderer='carts_mobile/index.html', xhr=False, permission="view", request_type=".interfaces.IMobileRequest")
     def __call__(self):
         event_id = self.request.matchdict['event_id']
         venue_name = self.request.params.get('v')
@@ -670,12 +670,22 @@ class MobileIndexView(object):
         if sales_segment is None:
             raise NoEventError("No matching sales_segment")
 
+        # パフォーマンスIDが確定しているなら商品選択へリダイレクト
+        performance_id = self.request.params.get('pid')
+        if performance_id:
+            return HTTPFound(self.request.route_url(
+                "cart.mobile",
+                event_id=event_id,
+                performance_id=performance_id))
+
         event = c_models.Event.query.filter(c_models.Event.id==event_id).first()
         if event is None:
             raise NoEventError("No such event (%d)" % event_id)
 
         if venue_name:
             venue = c_models.Venue.query.filter(c_models.Venue.name==venue_name).first()
+            if venue is None:
+                logger.debug("No such venue venue_name=%s" % venue_name)
         else:
             venue = None
         # 会場が指定されていなければ会場を選択肢を作る
@@ -698,3 +708,23 @@ class MobileIndexView(object):
             venues=venues,
             performances=performances,
         )
+
+
+class MobileSelectProductView(object):
+    """モバイルの商品選択
+    """
+    def __init__(self, request):
+        self.request = request
+        self.context = request.context
+
+    @view_config(route_name='cart.mobile', renderer='carts_mobile/products.html', xhr=False, permission="view", request_type=".interfaces.IMobileRequest")
+    def __call__(self):
+        event_id = self.request.matchdict['event_id']
+        performance_id = self.request.matchdict['performance_id']
+
+        # セールスセグメント必須
+        sales_segment = self.context.get_sales_segument()
+        if sales_segment is None:
+            raise NoEventError("No matching sales_segment")
+
+        return dict()
