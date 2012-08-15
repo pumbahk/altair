@@ -29,21 +29,6 @@
           <td class="span3">${bundle.name}</td>
         </tr>
         <tr>
-          <th class="span2">チケット券面(Ticket)</th>
-          <td class="span3">
-			<ul>
-			%for ticket in bundle.tickets:
-			  <li><a href="#">${ticket.name}</a></li>
-##			  <li>${request.route_path("tickets.events.tickets.show", event_id=event.id, bundle_id=ticket.id)}</li>
-			%endfor
-			</ul>
-		  </td>
-        </tr>
-        <tr>
-          <th class="span2">属性(TicketAttribute)</th>
-          <td class="span3">${bundle.name}</td>
-        </tr>
-        <tr>
           <th class="span2">作成日時</th>
           <td class="span3">${bundle.created_at}</td>
         </tr>
@@ -186,7 +171,7 @@
 </div>
 
 ## delete modal
-<div class="modal hide" bundle_id="deleteModal">
+<div class="modal" bundle_id="deleteModal">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal">×</button>
     <h3>確認</h3>

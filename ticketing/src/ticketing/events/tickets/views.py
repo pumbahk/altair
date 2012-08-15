@@ -75,6 +75,43 @@ class BundleView(BaseView):
         self.request.session.flash(u'チケット券面構成(TicketBundle)が登録されました')
         return HTTPFound(self.request.route_path("events.tickets.index", event_id=event.id))
 
+    @view_config(route_name="events.tickets.bundles.edit", request_method="GET", 
+                 renderer="ticketing:templates/tickets/events/bundles/new.html")
+    def edit(self):
+        bundle = self.context.bundle
+        event = self.context.event
+        form = forms.BundleForm(event_id=event.id, 
+                                name=bundle.name, 
+                                tickets=[e.id for e in bundle.tickets])
+        
+        return dict(form=form, event=event, bundle=bundle)
+
+    @view_config(route_name="events.tickets.bundles.edit", request_method="POST", 
+                 renderer="ticketing:templates/tickets/events/bundles/new.html")
+    def edit_post(self):
+        bundle = self.context.bundle
+        event = self.context.event
+        form = forms.BundleForm(event_id=event.id, 
+                                formdata=self.request.POST)
+        if not form.validate():
+            return dict(form=form, event=event, bundle=bundle)
+
+        bundle.name = form.data["name"]
+        bundle.replace_tickets(Ticket.filter(Ticket.id.in_(form.data["tickets"])))
+        bundle.save()
+
+        self.request.session.flash(u'チケット券面構成(TicketBundle)が更新されました')
+        return HTTPFound(self.request.route_path("events.tickets.bundles.show", event_id=event.id, bundle_id=bundle.id))
+        
+
+    @view_config(route_name='events.tickets.bundles.delete', request_method="POST")
+    def delete_post(self):
+        event_id = self.request.matchdict["event_id"]
+        ## todo: check dangling object
+        self.context.bundle.delete()
+        self.request.session.flash(u'チケット券面構成(TicketBundle)を削除しました')
+        return HTTPFound(self.request.route_path("events.tickets.index", event_id=event_id))
+
     @view_config(route_name="events.tickets.bundles.show",
                  renderer="ticketing:templates/tickets/events/bundles/show.html")
     def show(self):

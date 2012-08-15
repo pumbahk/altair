@@ -1719,6 +1719,12 @@ class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     tickets = relationship('Ticket', secondary=Ticket_TicketBundle.__table__, backref='bundles')
     product_items = relationship('ProductItem', backref='ticket_bundle')
 
+    def replace_tickets(self, news):
+        for ticket in self.tickets:
+            self.tickets.remove(ticket)
+        for ticket in news:
+            self.tickets.append(ticket)
+
 class TicketPrintHistory(Base, BaseModel, WithTimestamp):
     __tablename__ = "TicketPrintHistory"
     id = Column(Identifier, primary_key=True, autoincrement=True, nullable=False)
