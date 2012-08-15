@@ -55,11 +55,14 @@
       stock_types[stock_type_id]['products'].append(product)
 %>
 
+<% row_count = 0 %>
 % for i, sales_segment_id in enumerate(map):
+  <% if limit and row_count >= limit: break %>
   <% sales_segment = map[sales_segment_id] %>
   <span class="label ${label_classes[i%6]}" style="font-size: 120%;">${sales_segment['name']}</span>
 
   % for stock_type_id in sales_segment['stock_types']:
+    <% if limit and row_count >= limit: break %>
     <% stock_type = sales_segment['stock_types'][stock_type_id] %>
     <div style="margin: 10px 0 0 25px;">
       <h3 style="font-size: 120%;">${stock_type['name']}</h3>
@@ -87,6 +90,7 @@
         </thead>
         <tbody>
         % for product in stock_type['products']:
+        <% if limit and row_count >= limit: break %>
         <% count = len(product.items_by_performance_id(performance.id)) if performance else 1 %>
         <% rowspan = 'rowspan=%s' % (count) %>
         <tr id="product-${product.id}">
@@ -119,6 +123,7 @@
             % endif
           % endif
         </tr>
+        <% row_count += 1 %>
         % endfor
         </tbody>
       </table>

@@ -39,8 +39,9 @@ for stock_type in stock_types:
         </tr>
       </thead>
       <tbody>
-      % for stock_type in seat_stock_types:
+      % for i, stock_type in enumerate(seat_stock_types):
         <%
+          if limit and i >= limit: break
           conditions = {'performance_id':performance.id} if performance else {}
           quantity = stock_type.num_seats(**conditions) or 0
         %>
@@ -90,8 +91,9 @@ for stock_type in stock_types:
         </tr>
       </thead>
       <tbody>
-      % for stock_type in non_seat_stock_types:
+      % for i, stock_type in enumerate(non_seat_stock_types):
         <%
+          if limit and i >= limit: break
           conditions = {'performance_id':performance.id} if performance else {}
           quantity = stock_type.num_seats(**conditions) or 0
         %>

@@ -35,7 +35,7 @@
     var modal = '#modal-stock_holder';
     var form = '#stock_holders-form';
     var id = $(modal).find('#id').val();
-    var url = id ? '/events/stock_holders/edit/' + id : '/events/stock_holders/new';
+    var url = id ? '/events/stock_holders/edit/' + id : '/events/stock_holders/new/' + $(modal).find('#event_id').val();
     post_modal_form(modal, form, url);
   }
 </script>
