@@ -39,6 +39,6 @@ def main(global_config, **settings):
     config.include('.errors')
     config.include('..cart.rakuten_auth')
     config.scan()
-    config.scan('..orders.models')
+    config.scan('..core.models')
 
     return config.make_wsgi_app()

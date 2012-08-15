@@ -1,18 +1,17 @@
 # -*- coding:utf-8 -*-
 
 #
-# SEJとの外部結合の為に使ったスクリプト
+# 通知ファイルをダウンロードする
 #
 
-import optparse
 import sys
 import sqlahelper
 from sqlalchemy.orm.exc import NoResultFound
+import optparse, textwrap
 
-from datetime import datetime, timedelta
-from dateutil.parser import parse
 from os.path import abspath, dirname
 
+from pyramid.paster import bootstrap
 from ticketing.sej.payment import request_fileget
 from ticketing.sej.models import SejFile
 from ticketing.sej.resources import SejNotificationType, code_from_notification_type
@@ -31,7 +30,8 @@ import os
 
 DBSession = sqlahelper.get_session()
 
-def file_get_and_import(date, notification_type = None):
+
+def file_get_and_import(date, shop_id, secret_key, hostname, file_dest):
 
     for notification_type in SejNotificationType:
         try:
@@ -40,7 +40,7 @@ def file_get_and_import(date, notification_type = None):
                 date)
 
             date_str = date.strftime('%Y%m%d')
-            sej_output_path = "/tmp/sej/%s" % date_str
+            sej_output_path = "%s/%s" % (file_dest, date_str)
             if not os.path.exists(sej_output_path):
                 os.makedirs(sej_output_path)
             file_path = '%s/SEITIS%02d_%s.txt' % (sej_output_path, notification_type.v,date_str)
@@ -66,44 +66,46 @@ def file_get_and_import(date, notification_type = None):
 
 def main(argv=sys.argv):
 
+    description = """\
+    """
+    usage = "usage: %prog config_uri --date 2012070"
+    parser = optparse.OptionParser(
+        usage=usage,
+        description=textwrap.dedent(description)
+        )
+    parser.add_option(
+        '-d', '--date',
+        dest='date',
+        metavar='YYYYMMDD',
+        type="string",
+        help=("target date")
+        )
+
+    options, args = parser.parse_args(sys.argv[1:])
+    if not len(args) >= 2:
+        print('You must provide at least one argument')
+        return 2
+
+    config_uri = args[0]
+    env = bootstrap(config_uri)
+    request = env['request']
+    registry = env['registry']
+    settings = registry.settings
+
+    date = options.date
     session = sqlahelper.get_session()
     session.configure(autocommit=True, extension=[])
 
-    parser = optparse.OptionParser(
-        description=__doc__,
-        usage='%prog [options]',
-    )
-    parser.add_option('-c', '--config',
-        dest='config',
-        help='Path to configuration file (defaults to $CWD/development.ini)',
-        metavar='FILE'
-    )
-    parser.add_option('-d', '--date',
-        dest='date',
-        help='must be set date',
-        metavar='FILE'
-    )
-    options, args = parser.parse_args(argv[1:])
+    if len(sys.argv) < 2:
+        print "usage: python sej_notification.py development.ini"
+        sys.exit()
 
-    # configuration
-    config = options.config
-    if config is None:
-        print 'You must give a config file'
-        return
+    hostname = settings['sej.inticket_api_url']
+    shop_id = settings['sej.shop_id']
+    secret_key = settings['sej.api_key']
+    file_dest = settings['sej.file_dest_path']
 
-    date = options.date
-    if date is None:
-        date = (datetime.now() - timedelta(days=1)).strftime("%Y%m%d")
-
-    date = parse(date)
-    print date
-
-    app = loadapp('config:%s' % config, 'main')
-    settings = app.registry.settings
-
-    sej_hostname = settings['sej.inticket_api_url']
-
-    file_get_and_import(date)
+    file_get_and_import(date, shop_id, secret_key, hostname, file_dest)
 
 if __name__ == u"__main__":
     main(sys.argv)
