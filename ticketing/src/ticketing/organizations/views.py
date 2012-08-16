@@ -16,6 +16,8 @@ from ..core.models import Organization
 from ticketing.organizations.forms import OrganizationForm
 from ticketing.core.models import Event, Account
 
+from ticketing.sej.models import SejTenant
+
 #@view_defaults(decorator=with_bootstrap, permission="administrator")
 @view_defaults(decorator=with_bootstrap)
 class Organizations(BaseView):
@@ -47,10 +49,11 @@ class Organizations(BaseView):
         organization = Organization.get(organization_id)
         if organization is None:
             return HTTPNotFound("organization id %d is not found" % organization_id)
-
+        sej_tenants = SejTenant.filter_by(organization_id=organization.id).all()
         return {
             'form':OrganizationForm(),
             'organization':organization,
+            'sej_tenants':sej_tenants
         }
 
     @view_config(route_name='organizations.new', request_method='GET', renderer='ticketing:templates/organizations/edit.html')

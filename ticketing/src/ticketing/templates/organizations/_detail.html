@@ -89,3 +89,25 @@
   </tbody>
 </table>
 % endif
+
+<div class="page-header">
+  <h4>コンビニ設定</h4>
+</div>
+<table class="table table-bordered fullwidth">
+  <thead>
+    <tr>
+        <th>ショップ名</th>
+        <th>連絡先１</th>
+        <th>連絡先２</th>
+    </tr>
+  </thead>
+  <tbody>
+% for tenant in sej_tenants:
+  <tr>
+    <td class="span3">${tenant.name}</td>
+    <td>${tenant.contact_01}</td>
+    <td>${tenant.contact_02}</td>
+  </tr>
+% endfor
+  <tbody>
+</table>
