@@ -266,7 +266,8 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             seat_status.delete()
 
         # delete SeatAttribute
-        for attribute in self.attributes:
+        seat_attributes = SeatAttribute.filter_by(seat_id=self.id).all()
+        for attribute in seat_attributes:
             attribute.delete()
 
         # delete Seat
@@ -1033,6 +1034,18 @@ class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         # create default Stock
         Stock.create_default(self.event, stock_holder_id=self.id)
 
+    def delete(self):
+        # 在庫が割り当てられている場合は削除できない
+        for stock in self.stocks:
+            if stock.quantity > 0:
+                raise Exception(u'座席および席数の割当がある為、削除できません')
+
+        # delete Stock
+        for stock in self.stocks:
+            stock.delete()
+
+        super(StockHolder, self).delete()
+
     def stocks_by_performance(self, performance_id):
         def performance_filter(stock):
             return (stock.performance_id == performance_id)
@@ -1083,6 +1096,12 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     .count()
             stock_status.quantity = seat_quantity
         stock_status.save()
+
+    def delete(self):
+        # delete StockStatus
+        self.stock_status.delete()
+
+        super(Stock, self).delete()
 
     @staticmethod
     def get_default(performance_id):

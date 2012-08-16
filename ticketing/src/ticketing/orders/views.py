@@ -453,4 +453,3 @@ class SejTicketTemplate(BaseView):
             templates=templates
         )
 
-
