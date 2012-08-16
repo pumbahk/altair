@@ -15,6 +15,9 @@
 	 src="${h.asset.to_show_page(request,widget.asset)}" alt="${widget.alt}"/>
 %endif
 </%def>
+
+${render(request, widget)}
+<%doc>
 %if widget.nowrap:
     ${render(request, widget)}
 %else:
@@ -22,3 +25,4 @@
     ${render(request, widget)}
 </div>
 %endif
+</%doc>
