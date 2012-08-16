@@ -58,7 +58,7 @@
 	  <tr>
 		<td><input type="radio" name="id" value="${ticket.id}" /></td>
 		<td id="ticket:${ticket.id}"><a href="#">${ticket.name}</a></td>
-		<td>${ticket.ticket_format.name}</td>
+		<td><a href="${request.route_path("tickets.formats.show", id=ticket.ticket_format.id)}">${ticket.ticket_format.name}</a></td>
 		<td>${ticket.updated_at}</td>
 		<td>${ticket.created_at}</td>
 	  </tr>
@@ -95,9 +95,9 @@
 	  <tr>
 		<th class="minwidth"></th>
 		<th><a href="#" class="sortable">名前</a></th>
-		<th><a href="#" class="sortable">属性(TicketAttribute)</a></th>
 		<th><a href="#" class="sortable">チケット券面(Ticket)</a></th>
 		<th><a href="#" class="sortable">商品(ProductItem)</a></th>
+		<th><a href="#" class="sortable">属性(TicketAttribute)</a></th>
 	  </tr>
 	</thead>
 	<tbody>
@@ -105,11 +105,26 @@
 	  <tr>
 		<td><input type="radio" name="id" value="${bundle.id}"/></td>
 		<td><a href="${request.route_path("events.tickets.bundles.show",bundle_id=bundle.id, event_id=event.id)}"
-			   >${bundle.name}</a></td>
+			   >${bundle.name}</a>
+		</td>
 		<td>
 		  <ul>
 			  %for ticket in bundle.tickets:
 			  <li><a href="#ticket:${ticket.id}">${ticket.name}</a></li>
+			  %endfor		  
+		  </ul>
+		</td>
+		<td>
+		  <ul>
+			  %for product_item in bundle.product_items:
+			  <li>${product_item.name}</a></li>
+			  %endfor		  
+		  </ul>
+		</td>
+		<td>
+		  <ul>
+			  %for attribute in bundle.attributes_.itervalues():
+			  <li>${attribute.name}</li>
 			  %endfor		  
 		  </ul>
 		</td>
