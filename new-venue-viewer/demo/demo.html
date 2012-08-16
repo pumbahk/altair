@@ -82,7 +82,6 @@ function loadVenue() {
     },
     callbacks: {
       changeCurrentClassName: function (parent_list) {
-        console.log(parent_list);
         var holder = $("#current-class-name-holder");
         holder.empty();
         for (var i=0,l=parent_list.length; i<l; i++) {
@@ -144,17 +143,17 @@ function loadVenue() {
       },
       click: function (viewer, seat, highlighted) {
         $.each(highlighted, function (id, seat) {
-          console.log(seat);
+                                                //console.log(seat);
         });
       },
       select: function (viewer, selection) {
         $.each(selection, function (i, seat) {
-          console.log(seat);
+                                                //console.log(seat);
         });
       },
       loadstart: function (category) {
-        if (typeof console != 'undefined')
-          console.log(category);
+        if (typeof console != 'undefined');
+                                                //console.log(category);
       }
     }
   }).venueviewer("load");

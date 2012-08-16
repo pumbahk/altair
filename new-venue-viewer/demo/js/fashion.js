@@ -478,7 +478,7 @@ _lib._class = _class;
       else if (target === 'canvas' && Fashion.Backend.Canvas)
         return Fashion.Backend.Canvas;
     }
-
+    
     function unsupported() {
       throw new NotSupported('Browser is not supported');
     }
@@ -497,19 +497,25 @@ _lib._class = _class;
     var pending = [];
     var loaded = false;
 
-    _bindEvent(_window, 'load', function () {
-      loaded = true;
-      _unbindEvent(_window, 'load', arguments.callee);
-      while (pending.length)
-        (pending.shift())();
-    });
-  
-    return function onceOnLoad(f) {
-      if (loaded)
+    if (_window) {
+      _bindEvent(_window, 'load', function () {
+        loaded = true;
+        _unbindEvent(_window, 'load', arguments.callee);
+        while (pending.length)
+          (pending.shift())();
+      });
+    
+      return function onceOnLoad(f) {
+        if (loaded)
+          f();
+        else
+          pending.push(f);
+      };
+    } else {
+      return function onceOnLoad(f) {
         f();
-      else
-        pending.push(f);
-    };
+      }
+    }
   })();
 
 /** @file Matrix.js { */
@@ -751,6 +757,7 @@ var Refresher = _class("Refresher", {
     },
 
     call: function (target, dirty) {
+      var originalDirty = dirty;
       if (this._preHandler) {
         var _dirty = this._preHandler.call(target, dirty);
         if (_dirty !== void(0))
@@ -763,7 +770,7 @@ var Refresher = _class("Refresher", {
             pair[1].call(target, dirty);
         }
       }
-      this._postHandler && this._postHandler.call(target, dirty);
+      this._postHandler && this._postHandler.call(target, dirty, originalDirty);
     }
   }
 });
@@ -1838,26 +1845,47 @@ var MouseEvt = _class("MouseEvt", {
 /** @} */
   this.MouseEvt = MouseEvt;
 
+/** @file VisualChangeEvt.js { */
+var VisualChangeEvt = _class("VisualChangeEvt", {
+  props: {
+    type: 'visualchange',
+    target: null,
+    dirty: 0
+  },
+
+  methods: {}
+});
+
+/** @} */
+  this.VisualChangeEvt = VisualChangeEvt;
+
+/** @file ScrollEvt.js { */
+var ScrollEvt = _class("ScrollEvt", {
+
+  props: {
+    type: 'scroll',
+    target: null,
+    logicalPosition:   { x: 0, y: 0 },
+    physicalPosition:  { x: 0, y: 0 }
+  },
+
+  methods: {}
+});
+/** @} */
+  this.ScrollEvt = ScrollEvt;
+
 /** @file MouseEventsHandler.js { */
 var MouseEventsHandler = _class("MouseEventsHandler", {
   props : {
-    _handlersMap: {
-      mousedown: [],
-      mouseup:   [],
-      mousemove: [],
-      mouseover: [],
-      mouseout:  []
-    },
+    _handlersMap: {},
     _target: null
   },
 
   methods: {
-    init: function(target, h) {
+    init: function(target, events) {
       this._target = target;
-
-      if (h) {
-        this.add(h);
-      }
+      for (var i in events)
+        this._handlersMap[events[i]] = [];
     },
 
     getHandlerFunctionsFor: function(type) {
@@ -2063,8 +2091,12 @@ var Base = _class("Base", {
     },
 
     addEvent: function(type, h) {
-      if (this.handler === null)
-        this.handler = new MouseEventsHandler(this);
+      if (this.handler === null) {
+        this.handler = new MouseEventsHandler(
+          this,
+          ['mousedown', 'mouseup', 'mousemove', 'mouseover', 'mouseout']
+        );
+      }
       this.handler.add.apply(this.handler, arguments);
       this._dirty |= Fashion.DIRTY_EVENT_HANDLERS;
       if (this.drawable)
@@ -2329,8 +2361,13 @@ var Drawable = _class("Drawable", {
     },
 
     addEvent: function(type, h) {
-      if (this.handler === null)
-        this.handler = new MouseEventsHandler(this);
+      if (this.handler === null) {
+        this.handler = new MouseEventsHandler(
+          this,
+          ['mousedown', 'mouseup', 'mousemove', 'mouseover', 'mouseout',
+           'scroll', 'visualchange']
+        );
+      }
       this.handler.add.apply(this.handler, arguments);
       this._dirty |= Fashion.DIRTY_EVENT_HANDLERS;
       this._enqueueForUpdate(this);

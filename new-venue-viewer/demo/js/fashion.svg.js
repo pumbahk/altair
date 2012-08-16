@@ -99,7 +99,6 @@ var Base = _class("BaseSVG", {
           return;
         if (!this._elem) {
           this._elem = this.newElement();
-          // this.drawable._frag.appendChild(this._elem);
           this.drawable._vg.appendChild(this._elem);
         }
       },
@@ -199,7 +198,7 @@ var Base = _class("BaseSVG", {
       var self = this;
       this._eventFunc = function(domEvt) {
         if (self.drawable._capturingShape &&
-            self.drawable._capturingShape != self)
+            self.drawable._capturingShape !== self)
           return true;
         self.wrapper.handler.dispatch(buildMouseEvt(self, domEvt));
         return false;
@@ -691,7 +690,6 @@ var Drawable = _class("DrawableSVG", {
     _depthManager: null,
     _svg:         null,
     _vg:          null,
-    //_frag:        null,
     _viewport:    null,
     _viewportInnerSize: null,
     _capturingShape: null,
@@ -699,10 +697,13 @@ var Drawable = _class("DrawableSVG", {
       mousedown: null,
       mouseup:   null,
       mousemove: null,
-      mouseout:  null
+      mouseout:  null,
+      scroll: null,
+      visualchange: null
     },
     _eventFunc: null,
     _captureEventFunc: null,
+    _scrollEventFunc: null,
     _refresher: null
   },
 
@@ -713,7 +714,13 @@ var Drawable = _class("DrawableSVG", {
           this.wrapper.target.appendChild(this._viewport);
         }
       },
-
+      postHandler: function (_, originalDirty) {
+        var evt = new Fashion.VisualChangeEvt();
+        evt.target = this.wrapper;
+        evt.dirty = originalDirty;
+        if (this.wrapper.handler)
+          this.wrapper.handler.dispatch(evt);
+      },
       handlers: [
         [
           Fashion.DIRTY_SIZE,
@@ -738,10 +745,18 @@ var Drawable = _class("DrawableSVG", {
               var handled = this.wrapper.handler.handles(type);
               var eventFunc = this._handledEvents[type];
               if (!eventFunc && handled) {
-                this._svg.addEventListener(type, this._eventFunc, false);
-                this._handledEvents[type] = this._eventFunc;
+                if (type == 'scroll') {
+                  this._viewport.addEventListener(type, this._scrollEventFunc, false);
+                  this._handledEvents[type] = this._scrollEventFunc;
+                } else if (type.indexOf('visualchange') != 0) {
+                  this._svg.addEventListener(type, this._eventFunc, false);
+                  this._handledEvents[type] = this._eventFunc;
+                }
               } else if (eventFunc && !handled) {
-                this._svg.removeEventListener(type, eventFunc, false);
+                if (type == 'scroll')
+                  this._viewport.removeEventListener(type, this._eventFunc, false);
+                else if (type.indexOf('visualchange') != 0)
+                  this._svg.removeEventListener(type, eventFunc, false);
                 this._handledEvents[type] = null;
               }
             }
@@ -770,6 +785,19 @@ var Drawable = _class("DrawableSVG", {
         return func ? func(domEvt): true;
       };
 
+      this._scrollEventFunc = function () {
+        if (self._handledEvents.scroll) {
+          var evt = new Fashion.ScrollEvt();
+          evt.target = self.wrapper;
+          evt.physicalPosition = {
+            x: self._viewport.scrollLeft,
+            y: self._viewport.scrollTop
+          };
+          evt.logicalPosition = self.scrollPosition();
+          self.wrapper.handler.dispatch(evt);
+        }
+      };
+
       var viewport = this._buildViewportElement();
 
       var svg = this._buildSvgElement();
@@ -787,7 +815,6 @@ var Drawable = _class("DrawableSVG", {
       this._viewport = viewport;
       this._svg      = svg;
       this._vg       = root;
-      // this._frag     = window.document.createDocumentFragment();
     },
 
     dispose: function() {
@@ -865,6 +892,10 @@ var Drawable = _class("DrawableSVG", {
       this._capturingShape = null;
     },
 
+    capturingShape: function () {
+      return this._capturingShape;
+    },
+
     convertToLogicalPoint: function(point) {
       return _addPoint(this.scrollPosition(), this.wrapper._inverse_transform.apply(point));
     },
@@ -887,6 +918,7 @@ var Drawable = _class("DrawableSVG", {
         x: this._viewport.clientWidth,
         y: this._viewport.clientHeight,
       };
+      this._scrollEventFunc();
     },
 
     _buildSvgElement: function() {
