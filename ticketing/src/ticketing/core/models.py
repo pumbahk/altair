@@ -3,7 +3,8 @@
 import logging
 from datetime import datetime
 
-from sqlalchemy import Table, Column, ForeignKey, ForeignKeyConstraint, func, or_, and_
+from sqlalchemy import Table, Column, ForeignKey, func, or_, and_
+from sqlalchemy import ForeignKeyConstraint, UniqueConstraint
 from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric, Unicode
 from sqlalchemy.orm import join, backref, column_property
 from sqlalchemy.orm.collections import attribute_mapped_collection
@@ -1695,9 +1696,14 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 class TicketBundleAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "TicketBundleAttribute" 
-    ticket_bundle_id = Column(Identifier, ForeignKey('TicketBundle.id', ondelete='CASCADE'), primary_key=True, nullable=False)
-    name = Column(String(255), primary_key=True, nullable=False)
+    id = Column(Identifier, primary_key=True)
+    ticket_bundle_id = Column(Identifier, ForeignKey('TicketBundle.id', ondelete='CASCADE'), nullable=False)
+    name = Column(String(255), nullable=False)
     value = Column(String(1023))
+
+    __table_args__= (
+        UniqueConstraint("ticket_bundle_id", "name", "deleted_at", name="ib_unique_1"), 
+        )
 
 from ..operators.models import Operator
 
