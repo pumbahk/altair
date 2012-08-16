@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+from StringIO import StringIO
 import json
 import webhelpers.paginate as paginate
 from ticketing.fanstatic import with_bootstrap
@@ -17,6 +18,7 @@ from ticketing.core.models import DeliveryMethod
 from ticketing.core.models import TicketFormat, Ticket
 from . import forms
 from . import helpers
+from .response import FileLikeResponse
 from .convert import to_opcodes
 from lxml import etree
 
@@ -257,6 +259,13 @@ class TicketTemplates(BaseView):
         qs = Ticket.templates_query().filter_by(id=self.request.matchdict['id'])
         template = qs.filter_by(organization_id=self.context.user.organization_id).one()
         return dict(h=helpers, template=template)
+
+    @view_config(route_name='tickets.templates.download')
+    def download(self):
+        qs = Ticket.templates_query().filter_by(id=self.request.matchdict['id'])
+        template = qs.filter_by(organization_id=self.context.user.organization_id).one()
+        return FileLikeResponse(StringIO(template.data["drawing"]),
+                                request=self.request)
 
     @view_config(route_name='tickets.templates.data', renderer='json')
     def data(self):

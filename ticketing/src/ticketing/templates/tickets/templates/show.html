@@ -76,6 +76,11 @@ $('#ticket-viewer').ticketviewer(options).ticketviewer('load');
               <i class="icon-minus"></i> 削除
             </a>
           </li>
+		  <li>
+			<a href="${request.route_path("tickets.templates.download",id=template.id)}">
+			  <i class="icon-minus"></i> 登録されている内容をdownload
+			</a>
+		  </li>
 <%doc>
           <li>
             <a href="${request.route_path("tickets.templates.new",_query=dict(id=template.id))}">
