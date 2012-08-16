@@ -18,6 +18,7 @@ mail_renderer_names = {
 }
 
 def on_order_canceled(event):
+    print '>>>>>>>>>> cancel mail'
     message = create_cancel_message(event.request, event.order)
     mailer = get_mailer(event.request)
     mailer.send(message)

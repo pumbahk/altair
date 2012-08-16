@@ -90,6 +90,9 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def cancel(self, request):
         # キャンセル済み、売上キャンセル済み、配送済みはキャンセルできない
         if self.status == 'canceled' or self.status == 'refunded' or self.status == 'delivered':
+            print 'status fail'
+            print self.status
+            print self.canceled_at
             return False
 
         '''
@@ -97,6 +100,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         '''
         ppid = self.payment_delivery_pair.payment_method.payment_plugin_id
         if not ppid:
+            print 'ppid not found'
             return False
 
         # クレジットカード決済
