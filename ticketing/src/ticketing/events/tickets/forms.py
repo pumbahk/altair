@@ -2,8 +2,6 @@
 
 import json
 import os.path
-from StringIO import StringIO
-import xml.etree.ElementTree as etree
 from wtforms import Form
 from wtforms import TextField, IntegerField, HiddenField, SelectField, SelectMultipleField, FileField
 from wtforms.validators import Regexp, Length, Optional, ValidationError, StopValidation
@@ -27,6 +25,34 @@ class BoundTicketForm(Form):
         choices=[], 
         coerce=long
         )
+
+class AttributeForm(Form):
+    def get_translations(self):
+        return Translations()
+
+    name = TextField(
+        label = u'名前',
+        validators=[
+            Required(),
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ]
+    )
+
+    data_value = TextField(
+        label = u"データ", 
+        validators=[
+            Required(), 
+            ## json?
+            ], 
+        widget=TextArea()
+        )
+
+    def validate_data_value(form, field):
+        try:
+            data = json.loads(field.data)
+            form.data["data_value"] = data
+        except Exception, e:
+            raise ValidationError(str(e))
 
 
 class BundleForm(Form):

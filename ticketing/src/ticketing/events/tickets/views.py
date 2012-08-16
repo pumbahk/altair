@@ -4,8 +4,8 @@ import webhelpers.paginate as paginate
 from ticketing.fanstatic import with_bootstrap
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPCreated
-from pyramid.path import AssetResolver
-from ticketing.core.models import Ticket, TicketBundle, ProductItem
+from ticketing.core.models import ProductItem
+from ticketing.core.models import Ticket, TicketBundle, TicketBundleAttribute
 from ticketing.views import BaseView
 from . import forms
    
@@ -43,7 +43,10 @@ def bind_ticket(request):
         request.session.flash(u'%s' % form.errors)
         raise HTTPFound(request.route_path("events.tickets.index", event=event.id))
 
-    request.context.modifier.bind_ticket(event, form.data)
+    qs = Ticket.templates_query().filter_by(organization_id=organization_id)
+    ticket_template = qs.filter_by(id=form.data["ticket_template"]).one()
+    bound_ticket = ticket_template.create_event_bound(event)
+    bound_ticket.save()
 
     request.session.flash(u'チケットが登録されました')
     return HTTPFound(request.route_path("events.tickets.index", event_id=event.id))
@@ -130,3 +133,30 @@ class BundleView(BaseView):
         return dict(bundle=self.context.bundle, 
                     event=self.context.event)
 
+
+@view_defaults(decorator=with_bootstrap, permission="authenticated")
+class BundleAttributeView(BaseView):
+    """ 属性(TicketBundleAttribute)
+    """
+    @view_config(route_name="events.tickets.attributes.new", request_method="GET", 
+                 renderer="ticketing:templates/tickets/events/attributes/new.html")
+    def new(self):
+        form = forms.AttributeForm(data_value="{\n}")
+        return dict(form=form,event=self.context.event)
+
+    @view_config(route_name="events.tickets.attributes.new", request_method="POST", 
+                 renderer="ticketing:templates/tickets/events/attributes/new.html")
+    def new_post(self):
+        bundle = self.context.bundle
+        event_id = self.request.matchdict["event_id"]
+        form = forms.AttributeForm(self.request.POST)
+        if not form.validate():
+            return dict(form=form,event=self.context.event)
+
+        attr = TicketBundleAttribute(name=form.data["name"], 
+                                     value=form.data["data_value"], 
+                                     bundle=bundle)
+        attr.save()
+        self.request.session.flash(u'属性(TicketBundleAttribute)を追加しました')
+
+        return self.request.route_url("events.tickets.bundles.show", event_id=event_id, bundle_id=bundle.id)
