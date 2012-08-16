@@ -266,7 +266,8 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             seat_status.delete()
 
         # delete SeatAttribute
-        for attribute in self.attributes:
+        seat_attributes = SeatAttribute.filter_by(seat_id=self.id).all()
+        for attribute in seat_attributes:
             attribute.delete()
 
         # delete Seat
