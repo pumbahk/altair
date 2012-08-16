@@ -40,7 +40,7 @@
       "name": "C\u5e2d"
     }
   },
-  "drawings": {
+  "drawing_classes": {
     "root": {
       "id": 1,
       "name": "全体図",

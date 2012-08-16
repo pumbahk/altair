@@ -1,0 +1,225 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+  <title>Venue Viewer Demo</title>
+  <link rel="stylesheet" href="js/css/bootstrap/jquery-ui-1.8.16.custom.css" />
+  <script type="text/javascript" src="js/jquery-1.7.2.js"></script>
+  <script type="text/javascript" src="js/jquery-ui-1.8.20.custom.min.js"></script>
+  <script type="text/javascript" src="js/fashion.js"></script>
+  <![if !(lt IE 9)]>
+  <script type="text/javascript" src="js/fashion.svg.js"></script>
+  <![endif]>
+  <!--[if (lt IE 9)]> 
+  <script type="text/javascript" src="js/fashion.vml.js"></script>
+  <![endif]-->
+  <script type="text/javascript" src="js/venue-viewer.js"></script>
+  <style type="text/css">
+.ui-widget {
+  font-size: 12px;
+}
+
+#venue {
+  height: 500px;
+  border: 1px solid #ccc;
+}
+#current-class-name-holder {
+  font-size: 13px;
+  margin-left: 10px;
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Venue Viewer Demo</h1>
+  <div class="ui-corner-all ui-toolbar">
+    <span class="ui-buttonset">
+      <input type="radio" name="function" value="select" class="ui-button ui-icon-primary-arrow-4 action-move" id="toolbar-action-move" checked="checked" /><label for="toolbar-action-move">Move</label>
+      <input type="radio" name="function" value="select" class="ui-button ui-icon-primary-arrowthick-1-ne action-select-one" id="toolbar-action-select-one" checked="checked" /><label for="toolbar-action-select-one">Select One</label>
+      <input type="radio" name="function" value="select" class="ui-button ui-icon-primary-calculator action-select-multiple" id="toolbar-action-select-multiple" /><label for="toolbar-action-select-multiple">Select Multiple</label>
+      <input type="radio" name="function" value="zoomin" class="ui-button ui-icon-primary-zoomin action-zoomin" id="toolbar-action-zoomin" /><label for="toolbar-action-zoomin">Zoom-in</label>
+      <input type="radio" name="function" value="zoomout" class="ui-button ui-icon-primary-zoomout action-zoomout" id="toolbar-action-zoomout" /><label for="toolbar-action-zoomout">Zoom-out</label>
+    </span>
+    <button class="ui-button action-reload ui-icon-primary-refresh">Reload</button>
+    <select class="ui-button action-select-adjacencies" id="toolbar-seat-adjacencies-selector"></select>
+    <select class="ui-button action-select-stock-types" id="toolbar-stock-type-selector"></select>
+    <span id="current-class-name-holder"></span>
+  </div>
+  <div id="venue"><div class="message">Loading...</div></div>
+  <script type="text/javascript">
+var currentStockTypeId = "";
+var venue = $('#venue');
+function loadVenue() {
+  venue.venueviewer({
+    dataSource: {
+      drawing: "data/xebio-arena/drawings/root.xml",
+      metadata: "data/xebio-arena/data.json",
+      seats: function (next, error) {
+        $.ajax({
+          // url: 'data/seat-data.json',
+          url: 'data/xebio-arena/seat-data.json',
+          dataType: 'json',
+          success: function(data) {
+            next(data['seats']);
+          },
+          error: function(xhr, text) {
+            error("Failed to load adjacency data (reason: " + text + ")");
+          }
+        });
+      },
+      seatAdjacencies: function (next, error, length) {
+        $.ajax({
+          url: 'data/xebio-arena/adjacencies/' + (length|0) + '.json',
+          dataType: 'json',
+          success: function(data) {
+            next(data['seat_adjacencies']);
+          },
+          error: function(xhr, text) {
+            error("Failed to load adjacency data (reason: " + text + ")");
+          }
+        });
+      }
+    },
+    callbacks: {
+      changeCurrentClassName: function (parent_list) {
+        console.log(parent_list);
+        var holder = $("#current-class-name-holder");
+        holder.empty();
+        for (var i=0,l=parent_list.length; i<l; i++) {
+          var callback = parent_list[i][0];
+          var txt = parent_list[i][1];
+          if (i == l-1) {
+            holder.append($("<b>"+txt+"</b>"));
+          } else {
+            holder.append($("<a href='javascript:void(0)'>"+txt+"</a>").bind("click", callback));
+            holder.append(' &gt; ');
+          }
+        }
+      },
+      message: function (msg) {
+        $("<div></div>").text(msg).dialog({
+          modal: true,
+          buttons: {
+            "Ok": function () { $(this).dialog('destroy'); }
+          }
+        });
+      },
+      load: function (viewer) {
+        var n = $("#toolbar-seat-adjacencies-selector");
+        $.each(viewer.availableAdjacencies, function(i, v) {
+          $('<option></option>').attr("value", v).text(v)
+                                .appendTo(n);
+        });
+        n.select(function() {
+          viewer.adjacencyLength(value|0);
+        });
+        var n = $("#toolbar-stock-type-selector");
+        $('<option></option>').attr("value", "").text("All")
+                                .appendTo(n);
+        for (var id in viewer.stockTypes) {
+          var stock_type = viewer.stockTypes[id];
+          $('<option></option>').attr("value", id).text(stock_type.name)
+                                .appendTo(n);
+        }
+      },
+      with_uimodeselect: function (viewer, mode) {
+        switch (mode) {
+        case 'select1':
+          $("#toolbar-action-select-one").attr("checked", "checked");
+          break;
+        case 'select':
+          $("#toolbar-action-select-multiple").attr("checked", "checked");
+          break;
+        case 'zoomin':
+          $("#toolbar-action-select-zoomin").attr("checked", "checked");
+          break;
+        case 'zoomout':
+          $("#toolbar-action-select-zoomout").attr("checked", "checked");
+          break;
+        }
+      },
+      selectable: function (viewer, seat) {
+        if (currentStockTypeId == "") return true;
+        return seat.meta.stock_type_id == currentStockTypeId;
+      },
+      click: function (viewer, seat, highlighted) {
+        $.each(highlighted, function (id, seat) {
+          console.log(seat);
+        });
+      },
+      select: function (viewer, selection) {
+        $.each(selection, function (i, seat) {
+          console.log(seat);
+        });
+      },
+      loadstart: function (category) {
+        if (typeof console != 'undefined')
+          console.log(category);
+      }
+    }
+  }).venueviewer("load");
+}
+
+$(".action-zoomin").click(function () {
+  if (!venue)
+    return;
+  venue.venueviewer("uimode", "zoomin");
+});
+$(".action-zoomout").click(function () {
+  if (!venue)
+    return;
+  venue.venueviewer("uimode", "zoomout");
+});
+$(".action-move").click(function () {
+  if (!venue)
+    return;
+  venue.venueviewer("uimode", "move");
+});
+$(".action-select-one").click(function () {
+  if (!venue)
+    return;
+  venue.venueviewer("uimode", "select1");
+});
+$(".action-select-multiple").click(function () {
+  if (!venue)
+    return;
+  venue.venueviewer("uimode", "select");
+});
+$(".action-select-adjacencies").change(function () {
+  if (!venue)
+    return;
+  venue.venueviewer("adjacency", this.value);
+});
+$(".action-select-stock-types").change(function () {
+  if (!venue)
+    return;
+  currentStockTypeId = this.value;
+  venue.venueviewer("refresh");
+});
+$(".action-reload").click(function () {
+  loadVenue();
+});
+loadVenue();
+</script>
+</div>
+<script type="text/javascript">
+$(".ui-button").each(function (i, n) {
+  n = $(n);
+  n.removeClass('ui-button');
+  var cssClass = n.attr("class").split(/\s+/);
+  var options = { icons: {} }; 
+  for (var i = 0; i < cssClass.length; i++) {
+    var g;
+    if ((g = /ui-icon-primary-(.+)/.exec(cssClass[i])))
+      options.icons.primary = 'ui-icon-' + g[1];
+    if ((g = /ui-icon-secondary-(.+)/.exec(cssClass[i])))
+      options.icons.secondary = 'ui-icon-' + g[1];
+    if ('ui-no-text' == cssClass[i])
+      options.text = false;
+  }
+  n.button(options);
+});
+$(".ui-buttonset").remove('ui-buttonset').buttonset();
+</script>
+</body>
+</html>
