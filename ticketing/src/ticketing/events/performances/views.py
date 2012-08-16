@@ -125,8 +125,10 @@ class Performances(BaseView):
             return HTTPNotFound('performance id %d is not found' % performance_id)
 
         is_copy = (self.request.matched_route.name == 'performances.copy')
-        kwargs = dict(organization_id=self.context.user.organization_id)
-        kwargs.update(dict(venue_id=performance.venue.id))
+        kwargs = dict(
+            organization_id=self.context.user.organization_id,
+            venue_id=performance.venue.id
+        )
 
         f = PerformanceForm(**kwargs)
         f.process(record_to_multidict(performance))
@@ -149,9 +151,10 @@ class Performances(BaseView):
             return HTTPNotFound('performance id %d is not found' % performance_id)
 
         is_copy = (self.request.matched_route.name == 'performances.copy')
-        kwargs = dict(organization_id=self.context.user.organization_id)
-        if is_copy:
-            kwargs.update(dict(venue_id=performance.venue.id))
+        kwargs = dict(
+            organization_id=self.context.user.organization_id,
+            venue_id=performance.venue.id
+        )
 
         f = PerformanceForm(self.request.POST, **kwargs)
         if f.validate():
@@ -162,7 +165,7 @@ class Performances(BaseView):
                 performance.create_venue_id = f.data['venue_id']
             else:
                 performance = merge_session_with_post(performance, f.data)
-                if f.data['venue_id'] != performance.venue.original_venue_id:
+                if f.data['venue_id'] != performance.venue.id:
                     performance.delete_venue_id = performance.venue.id
                     performance.create_venue_id = f.data['venue_id']
 

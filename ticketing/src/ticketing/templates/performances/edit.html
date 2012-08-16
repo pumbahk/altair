@@ -24,6 +24,10 @@
         $('#code').val('${event.code}' + $(this).val().replace(re, '$2$3$4') + '1');
       }
     });
+
+    % if request.matched_route.name == 'performances.copy':
+      $('#venue_id').attr('disabled', 'disabled');
+    % endif
   });
 </script>
 
