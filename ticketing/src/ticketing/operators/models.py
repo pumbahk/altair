@@ -113,9 +113,10 @@ class Operator(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         # create/update OperatorRole
         DBSession.query(OperatorRole_Operator).filter_by(operator_id=self.id).delete('fetch')
-        for role_id in self.role_ids:
-            operator_role_assoc = OperatorRole_Operator(
-                operator_id=self.id,
-                operator_role_id=role_id
-            )
-            DBSession.add(operator_role_assoc)
+        if hasattr(self, 'role_ids'):
+            for role_id in self.role_ids:
+                operator_role_assoc = OperatorRole_Operator(
+                    operator_id=self.id,
+                    operator_role_id=role_id
+                )
+                DBSession.add(operator_role_assoc)

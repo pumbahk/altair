@@ -455,6 +455,7 @@ class SejTicketTemplate(BaseView):
 
 from ticketing.core.models import  TicketPrintHistory
 
+'''
 @view_defaults(decorator=with_bootstrap, permission="event_editor", renderer="json")
 class TicketPrintApi(BaseView):
     @view_config(route_name='orders.api.ticket', request_method="GET")
@@ -498,3 +499,4 @@ class TicketPrintApi(BaseView):
                             c.save()
 
         return dict(result='ok')
+'''
