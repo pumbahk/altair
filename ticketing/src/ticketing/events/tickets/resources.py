@@ -37,4 +37,21 @@ class EventBoundTicketsResource(object):
     @property
     def bundles(self):
         return TicketBundle.filter_by(event_id=self.request.matchdict["event_id"])
-    
+
+    @property
+    def modifier(self):
+        return Modifier(self, self.request)
+
+class Modifier(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    def bind_ticket(self, event, params):
+        organization_id = self.context.user.organization_id
+        qs = Ticket.templates_query().filter_by(organization_id=organization_id)
+        ticket_template = qs.filter_by(id=params["ticket_template"]).one()
+        bound_ticket = ticket_template.create_event_bound(event)
+        bound_ticket.save()
+        return bound_ticket
+

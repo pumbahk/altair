@@ -9,7 +9,7 @@ from wtforms import TextField, IntegerField, HiddenField, SelectField, SelectMul
 from wtforms.validators import Regexp, Length, Optional, ValidationError, StopValidation
 from wtforms.widgets import TextArea
 from ticketing.formhelpers import DateTimeField, Translations, Required
-from ticketing.core.models import Ticket
+from ticketing.core.models import Ticket, Product, ProductItem
 
 class BoundTicketForm(Form):
     def _get_translations(self):
@@ -21,7 +21,6 @@ class BoundTicketForm(Form):
             self.ticket_template.choices = [
                 (ticket.id, ticket.name) for ticket in Ticket.templates_query().filter_by(organization_id=kwargs['organization_id'])
             ]
-        self._drawing = None
 
     ticket_template = SelectField(
         label=u"チケットテンプレート", 
@@ -40,6 +39,9 @@ class BundleForm(Form):
             self.tickets.choices = [
                 (ticket.id, ticket.name) for ticket in Ticket.filter_by(event_id=kwargs['event_id'])
             ]
+            self.product_items.choices = [
+                (item.id, item.name) for item in ProductItem.query.filter_by(deleted_at=None)
+            ]
 
     name = TextField(
         label=u"名称", 
@@ -51,4 +53,9 @@ class BundleForm(Form):
         validators=[Required()], 
         coerce=long , 
         choices=[])
-    
+
+    product_items = SelectMultipleField(
+        label=u"商品(ProductItem)",
+        validators=[Required()], 
+        coerce=long , 
+        choices=[])

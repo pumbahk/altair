@@ -5,12 +5,12 @@ from ticketing.fanstatic import with_bootstrap
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPCreated
 from pyramid.path import AssetResolver
-from ticketing.core.models import Ticket, TicketBundle
+from ticketing.core.models import Ticket, TicketBundle, ProductItem
 from ticketing.views import BaseView
 from . import forms
    
 
-@view_defaults(decorator=with_bootstrap)
+@view_defaults(decorator=with_bootstrap, permission="authenticated")
 class IndexView(BaseView):
     @view_config(route_name="events.tickets.index", renderer="ticketing:templates/tickets/events/index.html")
     def index(self):
@@ -33,7 +33,7 @@ class IndexView(BaseView):
 
 
 @view_config(route_name="events.tickets.bind.ticket", request_method="POST", 
-             decorator=with_bootstrap)
+             decorator=with_bootstrap, permission="authenticated")
 def bind_ticket(request):
     event = request.context.event
     organization_id = request.context.user.organization_id
@@ -43,17 +43,16 @@ def bind_ticket(request):
         request.session.flash(u'%s' % form.errors)
         raise HTTPFound(request.route_path("events.tickets.index", event=event.id))
 
-    qs = Ticket.templates_query().filter_by(organization_id=organization_id)
-    ticket_template = qs.filter_by(id=form.data["ticket_template"]).one()
-    bound_ticket = ticket_template.create_event_bound(event)
-    bound_ticket.save()
+    request.context.modifier.bind_ticket(event, form.data)
 
     request.session.flash(u'チケットが登録されました')
     return HTTPFound(request.route_path("events.tickets.index", event_id=event.id))
 
 
-@view_defaults(decorator=with_bootstrap)
+@view_defaults(decorator=with_bootstrap, permission="authenticated")
 class BundleView(BaseView):
+    """ チケット券面構成(TicketBundle)
+    """
     @view_config(route_name="events.tickets.bundles.new", request_method="POST")
     def bundle_new(self):
         form = forms.BundleForm(event_id=self.request.matchdict["event_id"], 
@@ -68,8 +67,9 @@ class BundleView(BaseView):
                               event_id=event.id, 
                               name=form.data["name"], 
                               )
-        for ticket in Ticket.filter(Ticket.id.in_(form.data["tickets"])):
-            bundle.tickets.append(ticket)
+
+        bundle.replace_tickets(Ticket.filter(Ticket.id.in_(form.data["tickets"])))
+        bundle.replace_product_items(ProductItem.filter(ProductItem.id.in_(form.data["product_items"])))
         bundle.save()
 
         self.request.session.flash(u'チケット券面構成(TicketBundle)が登録されました')
@@ -82,7 +82,8 @@ class BundleView(BaseView):
         event = self.context.event
         form = forms.BundleForm(event_id=event.id, 
                                 name=bundle.name, 
-                                tickets=[e.id for e in bundle.tickets])
+                                tickets=[e.id for e in bundle.tickets], 
+                                product_items=[e.id for e in bundle.product_items])
         
         return dict(form=form, event=event, bundle=bundle)
 
@@ -98,6 +99,7 @@ class BundleView(BaseView):
 
         bundle.name = form.data["name"]
         bundle.replace_tickets(Ticket.filter(Ticket.id.in_(form.data["tickets"])))
+        bundle.replace_product_items(ProductItem.filter(ProductItem.id.in_(form.data["product_items"])))
         bundle.save()
 
         self.request.session.flash(u'チケット券面構成(TicketBundle)が更新されました')

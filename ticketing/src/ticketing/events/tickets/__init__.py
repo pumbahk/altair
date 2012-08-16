@@ -9,6 +9,8 @@ def includeme(config):
     add_route("events.tickets.bundles.delete", "/event/{event_id}/bundle/{bundle_id}/delete")
     add_route("events.tickets.bundles.show", "/event/{event_id}/bundle/{bundle_id}")
 
+    add_route("events.tickets.attributes.new", "/event/{event_id}/bundle/{bundle_id}/attribute/new")
+
     add_route("events.tickets.api.ticketform", "/api/event/{event_id}/_ticketform")
     add_route("events.tickets.api.bundleform", "/api/event/{event_id}/_bundleform")
 
