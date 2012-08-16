@@ -57,7 +57,7 @@
 	% for ticket in tickets:
 	  <tr>
 		<td><input type="radio" name="id" value="${ticket.id}" /></td>
-		<td id="ticket:${ticket.id}"><a href="#">${ticket.name}</a></td>
+		<td id="ticket:${ticket.id}"><a href="${request.route_path("events.tickets.boundtickets.show", event_id=event.id, id=ticket.id)}">${ticket.name}</a></td>
 		<td><a href="${request.route_path("tickets.formats.show", id=ticket.ticket_format.id)}">${ticket.ticket_format.name}</a></td>
 		<td>${ticket.updated_at}</td>
 		<td>${ticket.created_at}</td>

@@ -171,7 +171,7 @@ class TicketTemplates(BaseView):
                  request_param="sort")
     def index_with_sortable(self):
         direction = helpers.get_direction(self.request.params["direction"])
-        qs = Ticket.templates_query().filter_by(organization_id=self.context.user.organization_id)
+        qs = self.context.tickets_query().filter_by(organization_id=self.context.user.organization_id)
         qs = qs.order_by(direction(self.request.params["sort"]))
         return dict(h=helpers, templates=qs)
 
@@ -198,10 +198,12 @@ class TicketTemplates(BaseView):
         self.request.session.flash(u'チケットテンプレートを登録しました')
         return HTTPFound(location=self.request.route_path("tickets.templates.index"))
 
+    @view_config(route_name="events.tickets.boundtickets.edit", renderer='ticketing:templates/tickets/events/tickets/new.html', 
+                 request_method="GET")
     @view_config(route_name='tickets.templates.edit', renderer='ticketing:templates/tickets/templates/new.html',
                  request_method="GET")
     def edit(self):
-        template = Ticket.templates_query().filter_by(
+        template = self.context.tickets_query().filter_by(
             organization_id=self.context.user.organization_id,
             id=self.request.matchdict["id"]).first()
 
@@ -215,10 +217,12 @@ class TicketTemplates(BaseView):
             )
         return dict(h=helpers, form=form, template=template)
 
+    @view_config(route_name="events.tickets.boundtickets.edit", renderer='ticketing:templates/tickets/events/tickets/new.html', 
+                 request_method="POST")
     @view_config(route_name='tickets.templates.edit', renderer='ticketing:templates/tickets/templates/new.html',
                  request_method="POST")
     def edit_post(self):
-        template = Ticket.templates_query().filter_by(
+        template = self.context.tickets_query().filter_by(
             organization_id=self.context.user.organization_id,
             id=self.request.matchdict["id"]).first()
 
@@ -237,12 +241,13 @@ class TicketTemplates(BaseView):
             template.data = form.data_value
         template.save()
         self.request.session.flash(u'チケットテンプレートを更新しました')
-        return HTTPFound(location=self.request.route_path("tickets.templates.index"))
+        return self.context.after_ticket_action_redirect()
 
 
+    @view_config(route_name='events.tickets.boundtickets.delete', request_method="POST")
     @view_config(route_name='tickets.templates.delete', request_method="POST")
     def delete_post(self):
-        template = Ticket.templates_query().filter_by(
+        template = self.context.tickets_query().filter_by(
             organization_id=self.context.user.organization_id,
             id=self.request.matchdict["id"]).first()
 
@@ -252,24 +257,27 @@ class TicketTemplates(BaseView):
         template.delete()
         self.request.session.flash(u'チケットテンプレートを削除しました')
 
-        return HTTPFound(location=self.request.route_path("tickets.templates.index"))
+        return self.context.after_ticket_action_redirect()
 
+    @view_config(route_name='events.tickets.boundtickets.show', renderer='ticketing:templates/tickets/events/tickets/show.html')
     @view_config(route_name='tickets.templates.show', renderer='ticketing:templates/tickets/templates/show.html')
     def show(self):
-        qs = Ticket.templates_query().filter_by(id=self.request.matchdict['id'])
+        qs = self.context.tickets_query().filter_by(id=self.request.matchdict['id'])
         template = qs.filter_by(organization_id=self.context.user.organization_id).one()
         return dict(h=helpers, template=template)
 
+    @view_config(route_name="events.tickets.boundtickets.download")
     @view_config(route_name='tickets.templates.download')
     def download(self):
-        qs = Ticket.templates_query().filter_by(id=self.request.matchdict['id'])
+        qs = self.context.tickets_query().filter_by(id=self.request.matchdict['id'])
         template = qs.filter_by(organization_id=self.context.user.organization_id).one()
         return FileLikeResponse(StringIO(template.data["drawing"]),
                                 request=self.request)
 
+    @view_config(route_name="events.tickets.boundtickets.data", renderer="json")
     @view_config(route_name='tickets.templates.data', renderer='json')
     def data(self):
-        qs = Ticket.templates_query().filter_by(id=self.request.matchdict['id'])
+        qs = self.context.tickets_query().filter_by(id=self.request.matchdict['id'])
         template = qs.filter_by(organization_id=self.context.user.organization_id).one()
         data = dict(template.ticket_format.data)
         data.update(dict(drawing=' '.join(to_opcodes(etree.ElementTree(etree.fromstring(template.data['drawing']))))))
