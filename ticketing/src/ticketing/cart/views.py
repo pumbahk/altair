@@ -717,14 +717,59 @@ class MobileSelectProductView(object):
         self.request = request
         self.context = request.context
 
-    @view_config(route_name='cart.mobile', renderer='carts_mobile/products.html', xhr=False, permission="view", request_type=".interfaces.IMobileRequest")
+    @view_config(route_name='cart.mobile', renderer='carts_mobile/seat_types.html', xhr=False, permission="view", request_type=".interfaces.IMobileRequest")
     def __call__(self):
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.matchdict['performance_id']
+        seat_type_id = self.request.params.get('stid')
+
+        if seat_type_id:
+            return HTTPFound(self.request.route_url(
+                "cart.products",
+                event_id=event_id,
+                performance_id=performance_id,
+                seat_type_id=seat_type_id))
 
         # セールスセグメント必須
         sales_segment = self.context.get_sales_segument()
         if sales_segment is None:
             raise NoEventError("No matching sales_segment")
 
+        event = c_models.Event.query.filter(c_models.Event.id==event_id).first()
+        if event is None:
+            raise NoEventError("No such event (%d)" % event_id)
+
+        performance = c_models.Performance.query.filter(
+            c_models.Performance.id==performance_id).first()
+        if performance is None:
+            raise NoEventError("No such performance (%d)" % performance_id)
+
+        segment_stocks = DBSession.query(c_models.ProductItem.stock_id).filter(
+            c_models.ProductItem.product_id==c_models.Product.id).filter(
+            c_models.Product.sales_segment_id==sales_segment.id)
+
+        seat_types = DBSession.query(c_models.StockType).filter(
+            c_models.Performance.event_id==event_id).filter(
+            c_models.Performance.id==performance_id).filter(
+            c_models.Performance.event_id==c_models.StockHolder.event_id).filter(
+            c_models.StockHolder.id==c_models.Stock.stock_holder_id).filter(
+            c_models.Stock.stock_type_id==c_models.StockType.id).filter(
+            c_models.Stock.id.in_(segment_stocks)).order_by(c_models.StockType.order_no).all()
+
+        data = dict(
+            seat_types=[
+                dict(
+                    id=s.id,
+                    name=s.name
+                )
+            for s in seat_types
+            ],
+            event=event,
+            performance=performance,
+            venue=performance.venue,
+        )
+        return data
+
+    @view_config(route_name='cart.products', renderer='carts_mobile/products.html', xhr=False, permission="view", request_type=".interfaces.IMobileRequest")
+    def products(self):
         return dict()
