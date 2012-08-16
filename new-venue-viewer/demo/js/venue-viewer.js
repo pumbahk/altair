@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['xAZ899Z8GQKLJ_3A'] = (function (exports) { (function () { 
+__LIBS__['QVBSLOARX_GCGB4K'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -42,12 +42,12 @@ exports.convertToFashionStyle = function Util_convertToFashionStyle(style, gradi
             [1, new Fashion.Color(fill.color || "#fff")]
           ], .125);
       } else {
-        return new Fashion.FloodFill(fill.color);
+        return new Fashion.FloodFill(new Fashion.Color(fill.color));
       }
     case 'linear':
-      return new Fashion.LinearGradientFill(fill.colors, fill.angle);
+      return new Fashion.LinearGradientFill(_map(fill.colors, function (c) { return new Fashion.Color(c); }), fill.angle);
     case 'radial':
-      return new Fashion.LinearGradientFill(fill.colors, fill.focus);
+      return new Fashion.LinearGradientFill(_map(fill.colors, function (c) { return new Fashion.Color(c); }), fill.focus);
     case 'tile':
       return new Fashion.ImageTileFill(fill.imageData);
     }
@@ -73,19 +73,19 @@ exports.convertFromFashionStyle = function (style) {
     text_color: null,
     fill: 
       style.fill instanceof Fashion.FloodFill ?
-        { type: 'flood', color: style.fill.color }:
+        { type: 'flood', color: style.fill.color._toString() }:
       style.fill instanceof Fashion.LinearGradientFill ?
-        { type: 'linear', colors: style.fill.colors,
+        { type: 'linear', colors: _map(style.fill.colors, function (c) { return c._toString() }),
           angle: style.fill.angle }:
       style.fill instanceof Fashion.RadialGradientFill ?
-        { type: 'radial', colors: style.fill.colors,
+        { type: 'radial', colors: _map(style.fill.colors, function (c) { return c._toString() }),
           focus: style.fill.focus }:
       style.fill instanceof Fashion.ImageTileFill ?
         { type: 'tile', imageData: style.imageData }:
       null,
     stroke:
       style.stroke ?
-        { color: style.stroke.color, width: style.stroke.width,
+        { color: style.stroke.color._toString(), width: style.stroke.width,
           pattern: style.stroke.pattern }:
         null
   };
@@ -121,7 +121,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['ADXNHTS4C9T_QUE_'] = (function (exports) { (function () { 
+__LIBS__['JUN78XA_IKUO91TQ'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -172,11 +172,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['mH1DE0LYVSOWJKCO'] = (function (exports) { (function () { 
+__LIBS__['wP7BOW7J_VGGG3I0'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['xAZ899Z8GQKLJ_3A'];
-var CONF = __LIBS__['ADXNHTS4C9T_QUE_'];
+var util = __LIBS__['QVBSLOARX_GCGB4K'];
+var CONF = __LIBS__['JUN78XA_IKUO91TQ'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -912,9 +912,18 @@ function copyShape(shape) {
   }
   return null;
 }
-  var CONF = __LIBS__['ADXNHTS4C9T_QUE_'];
-  var seat = __LIBS__['mH1DE0LYVSOWJKCO'];
-  var util = __LIBS__['xAZ899Z8GQKLJ_3A'];
+
+function _map(arr, fn) {
+  var retval = new Array(arr.length);
+  for (var i = 0; i < arr.length; i++) {
+    retval[i] = fn(arr[i]);
+  }
+  return retval;
+}
+
+  var CONF = __LIBS__['JUN78XA_IKUO91TQ'];
+  var seat = __LIBS__['wP7BOW7J_VGGG3I0'];
+  var util = __LIBS__['QVBSLOARX_GCGB4K'];
 
   var createDrawingLoader = function(url) {
     return function (next, error) {

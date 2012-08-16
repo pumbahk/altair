@@ -196,3 +196,11 @@ function copyShape(shape) {
   }
   return null;
 }
+
+function _map(arr, fn) {
+  var retval = new Array(arr.length);
+  for (var i = 0; i < arr.length; i++) {
+    retval[i] = fn(arr[i]);
+  }
+  return retval;
+}

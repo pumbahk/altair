@@ -435,6 +435,8 @@ var Base = (function() {
               fill.setOuterAttribute('fillColor', st.fill.color._toString(true));
             } else {
               fill.setInnerAttribute('type', "solid");
+              if (st.fill.color._toString === void(0))
+                alert("OUCH!!!!!" + typeof(st.fill.color));
               fill.setInnerAttribute('color', st.fill.color._toString(true));
               fill.setInnerAttribute('opacity', st.fill.color.a / 255.);
             }
@@ -471,7 +473,7 @@ var Base = (function() {
         } else {
           stroke.setOuterAttribute('stroked', false);
         }
-        fillAndStroke.setStyle('cursor', st.cursor ? st.cursor: 'normal');
+        fillAndStroke.setStyle('cursor', st.cursor ? st.cursor: 'default');
       }
     }
   });

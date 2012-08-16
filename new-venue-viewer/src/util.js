@@ -37,12 +37,12 @@ exports.convertToFashionStyle = function Util_convertToFashionStyle(style, gradi
             [1, new Fashion.Color(fill.color || "#fff")]
           ], .125);
       } else {
-        return new Fashion.FloodFill(fill.color);
+        return new Fashion.FloodFill(new Fashion.Color(fill.color));
       }
     case 'linear':
-      return new Fashion.LinearGradientFill(fill.colors, fill.angle);
+      return new Fashion.LinearGradientFill(_map(fill.colors, function (c) { return new Fashion.Color(c); }), fill.angle);
     case 'radial':
-      return new Fashion.LinearGradientFill(fill.colors, fill.focus);
+      return new Fashion.LinearGradientFill(_map(fill.colors, function (c) { return new Fashion.Color(c); }), fill.focus);
     case 'tile':
       return new Fashion.ImageTileFill(fill.imageData);
     }
@@ -68,19 +68,19 @@ exports.convertFromFashionStyle = function (style) {
     text_color: null,
     fill: 
       style.fill instanceof Fashion.FloodFill ?
-        { type: 'flood', color: style.fill.color }:
+        { type: 'flood', color: style.fill.color._toString() }:
       style.fill instanceof Fashion.LinearGradientFill ?
-        { type: 'linear', colors: style.fill.colors,
+        { type: 'linear', colors: _map(style.fill.colors, function (c) { return c._toString() }),
           angle: style.fill.angle }:
       style.fill instanceof Fashion.RadialGradientFill ?
-        { type: 'radial', colors: style.fill.colors,
+        { type: 'radial', colors: _map(style.fill.colors, function (c) { return c._toString() }),
           focus: style.fill.focus }:
       style.fill instanceof Fashion.ImageTileFill ?
         { type: 'tile', imageData: style.imageData }:
       null,
     stroke:
       style.stroke ?
-        { color: style.stroke.color, width: style.stroke.width,
+        { color: style.stroke.color._toString(), width: style.stroke.width,
           pattern: style.stroke.pattern }:
         null
   };
