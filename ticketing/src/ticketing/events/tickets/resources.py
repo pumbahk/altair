@@ -37,3 +37,4 @@ class EventBoundTicketsResource(object):
     @property
     def bundles(self):
         return TicketBundle.filter_by(event_id=self.request.matchdict["event_id"])
+    
