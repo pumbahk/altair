@@ -11,6 +11,7 @@ testing = get_current_registry().settings.get('ticketing.testing', False)
     % if event:
     <ul style="margin-left:15px">
       <li><a href="${request.route_path('stock_types.index', event_id=event.id)}">席種</a></li>
+      <li><a href="${request.route_path('stock_holders.index', event_id=event.id)}">配券先</a></li>
       <li><a href="${request.route_path('sales_segments.index', event_id=event.id)}">販売区分</a></li>
       <li><a href="${request.route_path('products.index', event_id=event.id)}">商品</a></li>
       <li><a href="${request.route_path('performances.index', event_id=event.id)}">パフォーマンス</a></li>

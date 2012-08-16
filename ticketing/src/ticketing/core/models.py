@@ -1073,11 +1073,14 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         else:
             # 更新時はquantityを更新
             stock_status = StockStatus.filter_by(stock_id=self.id).first()
-            seat_quantity = Seat.filter(Seat.stock_id==self.id)\
-                .join(SeatStatus)\
-                .filter(Seat.id==SeatStatus.seat_id)\
-                .filter(SeatStatus.status.in_([SeatStatusEnum.Vacant.v]))\
-                .count()
+            if self.stock_type and self.stock_type.quantity_only:
+                seat_quantity = self.quantity
+            else:
+                seat_quantity = Seat.filter(Seat.stock_id==self.id)\
+                    .join(SeatStatus)\
+                    .filter(Seat.id==SeatStatus.seat_id)\
+                    .filter(SeatStatus.status.in_([SeatStatusEnum.Vacant.v]))\
+                    .count()
             stock_status.quantity = seat_quantity
         stock_status.save()
 
@@ -1534,6 +1537,9 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         condition = form.order_no.data
         if condition:
             query = query.filter(Order.order_no==condition)
+        condition = form.performance_id.data
+        if condition:
+            query = query.filter(Order.performance_id==condition)
         condition = form.ordered_from.data
         if condition:
             query = query.filter(Order.created_at>=condition)
@@ -1692,9 +1698,11 @@ class TicketPrintHistory(Base, BaseModel, WithTimestamp):
     __tablename__ = "TicketPrintHistory"
     id = Column(Identifier, primary_key=True, autoincrement=True, nullable=False)
     operator_id = Column(Identifier, ForeignKey('Operator.id'), nullable=True)
+    operator = relationship('Operator', uselist=False)
     ordered_product_item_id = Column(Identifier, ForeignKey('OrderedProductItem.id'), nullable=True)
     ordered_product_item = relationship('OrderedProductItem', backref='print_histories')
     seat_id = Column(Identifier, ForeignKey('Seat.id'), nullable=True)
     seat = relationship('Seat', backref='print_histories')
     ticket_bundle_id = Column(Identifier, ForeignKey('TicketBundle.id'), nullable=False)
+    ticket_bundle = relationship('TicketBundle', backref='print_histories')
 

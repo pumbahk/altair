@@ -29,8 +29,8 @@
     % for role in roles.items:
     <tr>
       <td><input type="checkbox" /></td>
-      <td><a href="${request.route_path('operator_roles.show', operator_role_id=role.id)}">${role.id}</a></td>
-      <td><a href="${request.route_path('operator_roles.show', operator_role_id=role.id)}">${role.name}</a></td>
+      <td>${role.id}</td>
+      <td>${role.name}</td>
       <td>
         % for permission in role.permissions:
           ${permission.category_name}

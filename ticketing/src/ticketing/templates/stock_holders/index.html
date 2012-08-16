@@ -1,0 +1,23 @@
+<%inherit file="/layout_2cols.html"/>
+<%namespace file="/common/helpers.html" name="h" />
+
+<div class="breadcrumbs">
+  ${h.breadcrumbs(
+      names=[u'イベント', event.title, u'配券先'],
+      urls=[request.route_path('events.index'), request.route_path('events.show', event_id=event.id)]
+  )}
+</div>
+
+<div class="page-header">
+  <h1>配券先</h1>
+</div>
+
+<div class="content">
+  ${h.flash_messages(request)}
+</div>
+
+<%include file="/stock_holders/_list.html" args="form=form_stock_holder, stock_holders=stock_holders" />
+<%include file="/stock_holders/_action_button.html" />
+<div id="sales_segments-form">
+  <%include file="/stock_holders/_form.html" args="form=form_stock_holder" />
+</div>

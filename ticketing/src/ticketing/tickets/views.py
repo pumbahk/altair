@@ -17,6 +17,8 @@ from ticketing.core.models import DeliveryMethod
 from ticketing.core.models import TicketFormat, Ticket
 from . import forms
 from . import helpers
+from .convert import to_opcodes
+from lxml import etree
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class TicketFormats(BaseView):
@@ -149,7 +151,12 @@ class TicketFormats(BaseView):
         qs = TicketFormat.filter_by(id=self.request.matchdict['id'])
         format = qs.filter_by(organization_id=self.context.user.organization_id).one()
         return dict(h=helpers, format=format)
-    
+
+    @view_config(route_name='tickets.formats.data', renderer='json')
+    def data(self):
+        qs = TicketFormat.filter_by(id=self.request.matchdict['id'])
+        format = qs.filter_by(organization_id=self.context.user.organization_id).one()
+        return format.data
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class TicketTemplates(BaseView):
@@ -250,3 +257,12 @@ class TicketTemplates(BaseView):
         qs = Ticket.templates_query().filter_by(id=self.request.matchdict['id'])
         template = qs.filter_by(organization_id=self.context.user.organization_id).one()
         return dict(h=helpers, template=template)
+
+    @view_config(route_name='tickets.templates.data', renderer='json')
+    def data(self):
+        qs = Ticket.templates_query().filter_by(id=self.request.matchdict['id'])
+        template = qs.filter_by(organization_id=self.context.user.organization_id).one()
+        data = dict(template.ticket_format.data)
+        data.update(dict(drawing=' '.join(to_opcodes(etree.ElementTree(etree.fromstring(template.data['drawing']))))))
+        return data
+

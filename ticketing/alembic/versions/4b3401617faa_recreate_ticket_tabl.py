@@ -33,7 +33,7 @@ def create_old_ticket_tables():
         )
     op.create_table('Ticket',
         sa.Column('id', Identifier(), nullable=False),
-        sa.Column('event_id', Identifier(), nullable=True),
+        sa.Column('event_id', Identifier(), nullable=False),
         sa.Column('template_id', Identifier(), nullable=False),
         sa.Column('operator_id', Identifier(), nullable=False),
         sa.Column('name', sa.Unicode(255), default=u'', nullable=False),
@@ -90,7 +90,7 @@ def create_ticket_tables():
     op.create_table('Ticket',
         sa.Column('id', Identifier(), nullable=False),
         sa.Column('organization_id', Identifier(), nullable=True),
-        sa.Column('event_id', Identifier(), nullable=False),
+        sa.Column('event_id', Identifier(), nullable=True),
         sa.Column('name', sa.Unicode(length=255), nullable=False),
         sa.Column('data', sa.String(length=65536), nullable=False, default=''),
         sa.Column('ticket_format_id', Identifier(), nullable=False),
@@ -160,6 +160,7 @@ def downgrade():
     op.drop_column('ProductItem', 'ticket_bundle_id')
     op.drop_table('TicketPrintHistory')
     op.drop_table('TicketBundleAttribute')
+    op.drop_table('TicketFormat_DeliveryMethod')
     op.drop_table('Ticket_TicketBundle')
     op.drop_table('TicketBundle')
     op.drop_table('Ticket')

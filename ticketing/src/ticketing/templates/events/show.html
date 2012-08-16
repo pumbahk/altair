@@ -115,8 +115,8 @@
     <div id="stock_holders">
       <h3>配券先</h3>
       <div style="margin-top: 20px;">
-        <%include file="/stock_holders/_list.html" args="form=form_stock_holder, event=event, limit=10" />
-        <%include file="/stock_holders/_action_button.html" />
+        <%include file="/stock_holders/_list.html" args="form=form_stock_holder, stock_holders=event.stock_holders, limit=10" />
+        <%include file="/stock_holders/_action_button.html" args="event=event" />
         <div id="stock_holders-form">
           <%include file="/stock_holders/_form.html" args="form=form_stock_holder" />
         </div>

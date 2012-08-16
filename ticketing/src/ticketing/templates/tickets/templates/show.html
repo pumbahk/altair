@@ -1,5 +1,16 @@
 <%inherit file="../../layout_2cols.html" />
 <%namespace file="/common/helpers.html" import="breadcrumbs,pager,flash_messages"/>
+<% import json %>
+<%block name="javascript">
+<script type="text/javascript" src="/static/js/fashion.js"></script>
+<![if !(lt IE 9)]>
+<script type="text/javascript" src="/static/js/fashion.svg.js"></script>
+<![endif]>
+<!--[if (lt IE 9)]> 
+<script type="text/javascript" src="/static/js/fashion.vml.js"></script>
+<![endif]-->
+<script type="text/javascript" src="/static/js/ticketing.ticket-viewer.js"></script>
+</%block>
 <div class="breadcrumbs">
 ${breadcrumbs(
   names=[u'トップ', u'チケットテンプレート', template.name],
@@ -41,6 +52,14 @@ ${breadcrumbs(
   </div>
 
   <div class="span6"></div>
+</div>
+
+<div class="row-fluid">
+  <div id="ticket-viewer" style="height:300px"></div>
+  <script type="text/javascript">
+var options = ${json.dumps({ 'dataSource': request.route_url('tickets.templates.data', id=template.id)})|n};
+$('#ticket-viewer').ticketviewer(options).ticketviewer('load');
+</script>
 </div>
 
 <div class="row-fluid well">

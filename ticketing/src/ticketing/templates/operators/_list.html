@@ -12,14 +12,13 @@
 </script>
 
 <form>
-  <div class="ui-toolbar">
-    <a href="${request.route_path('operators.new')}" class="btn">新規ユーザ</a>
+  <div>
+    <a href="${request.route_path('operators.new')}" class="btn">新規オペレーター</a>
     <a href="${request.route_path('operator_roles.index')}" class="btn">ロール設定</a>
   </div>
   <table class="table fullwidth checkboxed_table">
     <thead>
     <tr>
-      <th class="minwidth"><input type="checkbox" class="__action__-select_all" /></td>
       <th class="minwidth">ID</th>
       <th>ログインID</th>
       <th>名前</th>
@@ -31,15 +30,14 @@
     <tbody>
     % for operator in operators.items:
     <tr>
-      <td><input type="checkbox" /></td>
-      <td><a href="${request.route_path('operators.show', operator_id=1)}">${operator.id}</a></td>
-      <td><a href="${request.route_path('operators.show', operator_id=1)}">${operator.auth.login_id}</a></td>
-      <td><a href="${request.route_path('operators.show', operator_id=1)}">${operator.name}</a></td>
+      <td><a href="${request.route_path('operators.show', operator_id=operator.id)}">${operator.id}</a></td>
+      <td><a href="${request.route_path('operators.show', operator_id=operator.id)}">${operator.auth.login_id}</a></td>
+      <td><a href="${request.route_path('operators.show', operator_id=operator.id)}">${operator.name}</a></td>
       <td><a href="${request.route_path('organizations.show', organization_id=operator.organization.id)}">${operator.organization.name}</a></td>
       <td>
         % for role in operator.roles:
         <ul>
-          <li><a href="${request.route_path('operator_roles.show', operator_role_id=role.id)}">${role.name}</a></li>
+          <li>${role.name}</li>
         </ul>
         % endfor
       </td>

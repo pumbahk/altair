@@ -8,6 +8,7 @@ import numpy
 import logging
 
 __all__ = (
+    'to_opcodes',
     'convert_svg',
     'as_user_unit',
     )
@@ -1366,7 +1367,7 @@ def handle_qrcode(retval, qrcode):
     retval.append(E.QR_VER(u'%02d' % (level + 1)))
     retval.append(E.QR_CELL('%d' % cell_size))
 
-def convert_svg(doc):
+def to_opcodes(doc):
     opcodes = []
     emitter = ScaleFilter(Assembler(opcodes), .1)
     emitter.emit_unit('px')
@@ -1374,8 +1375,11 @@ def convert_svg(doc):
     opcodes = Optimizer()(opcodes)
     result = []
     emit_opcodes(TicketNotationEmitter(result), opcodes)
+    return result
+
+def convert_svg(doc):
     retval = E.TICKET(
-        E.b(u' '.join(result)), 
+        E.b(u' '.join(to_opcodes(doc))), 
         E.FIXTAG01(),
         E.FIXTAG02(),
         E.FIXTAG03(),

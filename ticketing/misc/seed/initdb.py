@@ -6,7 +6,6 @@ import argparse
 from ticketing.oauth2.models import *
 from ticketing.master.models import *
 from ticketing.operators.models import *
-from ticketing.orders.models import *
 from ticketing.users.models import *
 from ticketing.core.models import *
 from ticketing.sej.models import *
