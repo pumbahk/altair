@@ -41,7 +41,7 @@ def bind_ticket(request):
                                  formdata=request.POST)
     if not form.validate():
         request.session.flash(u'%s' % form.errors)
-        raise HTTPFound(request.route_path("events.tickets.index", event=event.id))
+        raise HTTPFound(request.route_path("events.tickets.index", event_id=event.id))
 
     qs = Ticket.templates_query().filter_by(organization_id=organization_id)
     ticket_template = qs.filter_by(id=form.data["ticket_template"]).one()
@@ -56,15 +56,17 @@ def bind_ticket(request):
 class BundleView(BaseView):
     """ チケット券面構成(TicketBundle)
     """
-    @view_config(route_name="events.tickets.bundles.new", request_method="POST")
+    @view_config(route_name="events.tickets.bundles.new", request_method="POST", 
+                 renderer="ticketing:templates/tickets/events/bundles/new.html")
     def bundle_new(self):
         form = forms.BundleForm(event_id=self.request.matchdict["event_id"], 
                                 formdata=self.request.POST)
         event = self.context.event
 
         if not form.validate():
-            self.request.session.flash(u'%s' % form.errors)
-            raise HTTPFound(self.request.route_path("events.tickets.index", event=event.id))
+            # self.request.session.flash(u'%s' % form.errors)
+            # raise HTTPFound(self.request.route_path("events.tickets.index", event_id=event.id))
+            return dict(form=form, event=event)
 
         bundle = TicketBundle(operator=self.context.user, 
                               event_id=event.id, 
@@ -106,7 +108,8 @@ class BundleView(BaseView):
         bundle.save()
 
         self.request.session.flash(u'チケット券面構成(TicketBundle)が更新されました')
-        return HTTPFound(self.request.route_path("events.tickets.bundles.show", event_id=event.id, bundle_id=bundle.id))
+        return HTTPFound(self.request.route_path("events.tickets.bundles.show",
+                                                 event_id=event.id, bundle_id=bundle.id))
         
 
     @view_config(route_name='events.tickets.bundles.delete', request_method="GET", 
@@ -154,9 +157,60 @@ class BundleAttributeView(BaseView):
             return dict(form=form,event=self.context.event)
 
         attr = TicketBundleAttribute(name=form.data["name"], 
-                                     value=form.data["data_value"], 
+                                     value=form.data["value"], 
                                      bundle=bundle)
         attr.save()
         self.request.session.flash(u'属性(TicketBundleAttribute)を追加しました')
 
-        return self.request.route_url("events.tickets.bundles.show", event_id=event_id, bundle_id=bundle.id)
+        return HTTPFound(self.request.route_url("events.tickets.bundles.show", event_id=event_id, bundle_id=bundle.id))
+
+    @view_config(route_name="events.tickets.attributes.edit", request_method="GET", 
+                 renderer="ticketing:templates/tickets/events/attributes/new.html")
+    def edit(self):
+        bundle_attribute = self.context.bundle_attribute
+        form = forms.AttributeEditForm(name=bundle_attribute.name, 
+                                       value=bundle_attribute.value, 
+                                       attribute_id=bundle_attribute.id)
+        return dict(form=form, event=self.context.event, attribute=bundle_attribute)
+
+    @view_config(route_name="events.tickets.attributes.edit", request_method="POST", 
+                 renderer="ticketing:templates/tickets/events/attributes/new.html")
+    def edit_post(self):
+        attribute = self.context.bundle_attribute
+        form = forms.AttributeEditForm(self.request.POST, 
+                                       attribute_id=attribute.id)
+
+        if not form.validate():
+            return dict(form=form,event=self.context.event, attribute=attribute)
+
+        attribute.name = form.data["name"]
+        attribute.value = form.data["value"]
+        attribute.save()
+
+        self.request.session.flash(u'属性(TicketBundleAttribute)を更新しました')
+        kwargs = dict(event_id=self.request.matchdict["event_id"], 
+                      bundle_id=attribute.ticket_bundle_id)
+        return HTTPFound(self.request.route_url("events.tickets.bundles.show", **kwargs))
+
+    @view_config(route_name='events.tickets.attributes.delete', request_method="GET", 
+                 renderer="ticketing:templates/tickets/events/_deleteform.html")
+    def delete(self):
+        attribute_id = self.request.matchdict["attribute_id"]
+        bundle_id = self.request.matchdict["bundle_id"]
+        event_id = self.request.matchdict["event_id"]
+        message = u"この属性(TicketBundleAttribute)を削除します。よろしいですか？"
+        next_to = self.request.route_path("events.tickets.attributes.delete",
+                                          attribute_id=attribute_id, 
+                                          bundle_id=bundle_id,
+                                          event_id=event_id)
+        return dict(message=message, next_to=next_to)
+
+    @view_config(route_name='events.tickets.attributes.delete', request_method="POST")
+    def delete_post(self):
+        event_id = self.request.matchdict["event_id"]
+        bundle_id = self.request.matchdict["bundle_id"]
+        self.context.bundle_attribute.delete()
+        self.request.session.flash(u'"属性(TicketBundleAttribute)を削除しました')
+        return HTTPFound(self.request.route_path("events.tickets.bundles.show",
+                                                 event_id=event_id, bundle_id=bundle_id))
+
