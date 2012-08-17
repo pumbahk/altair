@@ -18,7 +18,7 @@ logger = logging.getLogger(__file__)
 def get_current_hotwords(request, _nowday=datetime.now):
     today = _nowday()
     qs =  HotWord.query.filter(HotWord.term_begin <= today).filter(today <= HotWord.term_end)
-    qs = qs.filter_by(enablep=True).order_by(sa.asc("orderno"), sa.asc("term_end"))
+    qs = qs.filter_by(enablep=True).order_by(sa.asc("display_order"), sa.asc("term_end"))
     return qs
 
 def get_frontpage_render(request):

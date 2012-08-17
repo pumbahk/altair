@@ -43,7 +43,7 @@ class TicketlistWidget(Widget):
                 raise KeyError("target performance is not found")
             tickets = Ticket.query.filter(Ticket.performances.any(id=self.target_performance.id))
             tickets = tickets.filter(Sale.kind==self.kind).filter(Sale.id==Ticket.sale_id)
-            tickets = tickets.order_by(sa.asc("orderno"))
+            tickets = tickets.order_by(sa.asc("display_order"))
             # tickets = tickets.order_by(sa.desc("price"))
             
             # ## group by seat type

@@ -99,7 +99,7 @@ class HotWord(WithOrganizationMixin, Base):
     tag_id =  sa.Column(sa.Integer, sa.ForeignKey("pagetag.id"))
     tag = orm.relationship("PageTag", uselist=False, backref="hotwords")
     name = sa.Column(sa.Unicode(255))
-    orderno = sa.Column(sa.Integer, default=100) # 0~100
+    display_order = sa.Column(sa.Integer, default=100) # 0~100
 
     enablep = sa.Column(sa.Boolean, default=True)
     term_begin = sa.Column(sa.DateTime)

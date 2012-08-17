@@ -18,7 +18,7 @@ widget.configure({
     }, 
     attach_managed: function(e){
     }, 
-    get_orderno: function(e){
+    get_display_order: function(e){
     }
 });
 */

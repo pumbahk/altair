@@ -159,7 +159,7 @@ class Ticket(BaseOriginalMixin, Base):
     id = sa.Column(sa.Integer, primary_key=True)
     backend_id = sa.Column(sa.Integer)
 
-    orderno = sa.Column(sa.Integer, default=50)
+    display_order = sa.Column(sa.Integer, default=50)
     sale_id = sa.Column(sa.Integer, sa.ForeignKey("sale.id", ondelete='CASCADE'))
 
     created_at = sa.Column(sa.DateTime, default=datetime.now)
@@ -214,7 +214,7 @@ class Category(Base, WithOrganizationMixin):
     url = sa.Column(sa.Unicode(length=255))
     pageset_id = sa.Column(sa.Integer, sa.ForeignKey("pagesets.id"))
     pageset = orm.relationship("PageSet", backref=orm.backref("category", uselist=False), uselist=False)
-    orderno = sa.Column(sa.Integer)
+    display_order = sa.Column(sa.Integer)
     origin = sa.Column(sa.Unicode(length=255), 
                        doc=u"祖先を選定するためのフィールド今のところ{music, sports, stage, other}以外入らない。")
     ## originはenumにしても良いかもしれない

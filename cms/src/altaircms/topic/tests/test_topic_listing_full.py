@@ -56,27 +56,27 @@ class TopicListingFull(unittest.TestCase):
                       publish_close_on=datetime(2013, 1, 1), 
                       title=u"1. オススメ!!! 最重要(begin 2011/1/1)  1", 
                       is_global=True, 
-                      orderno=1)
+                      display_order=1)
         self._makeObj(Topic, publish_open_on=datetime(2011, 5, 1),
                       publish_close_on=datetime(2013, 1, 1), 
                       title=u"2. 何とか(begin 2011/5/1)               50", 
                       is_global=True, 
-                      orderno=50)
+                      display_order=50)
         self._makeObj(Topic, publish_open_on=datetime(2011, 4, 1),
                       publish_close_on=datetime(2013, 1, 1), 
                       title=u"3. かんとか(begin 2011/4/1)             50", 
                       is_global=True, 
-                      orderno=50)
+                      display_order=50)
         self._makeObj(Topic, publish_open_on=datetime(2011, 3, 1),
                       publish_close_on=datetime(2013, 1, 1), 
                       title=u"4. ふつうな感じの告知(begin 2011/3/1)   50", 
                       is_global=True, 
-                      orderno=50)
+                      display_order=50)
         self._makeObj(Topic, publish_open_on=datetime(2011, 3, 1),
                       publish_close_on=datetime(2013, 1, 1), 
                       title=u"5. ちょっとどうでも良い(begin 2011/5/1) 100", 
                       is_global=True, 
-                      orderno=100)
+                      display_order=100)
 
         qs = Topic.matched_qs(datetime(2011, 7, 1)).all()
         self.assertEquals(self.getDump(qs), 
@@ -110,7 +110,7 @@ class TopicListingFull(unittest.TestCase):
         self._makeObj(Topic, publish_open_on=datetime(2011, 1, 1),
                       publish_close_on=datetime(2013, 1, 1), 
                       title=u"global", 
-                      orderno=1, 
+                      display_order=1, 
                       is_global=True)
         self._makeObj(Topic, publish_open_on=datetime(2011, 5, 1),
                       publish_close_on=datetime(2013, 1, 1), 
@@ -123,12 +123,12 @@ class TopicListingFull(unittest.TestCase):
         self._makeObj(Topic, publish_open_on=datetime(2011, 5, 1),
                       publish_close_on=datetime(2013, 1, 1), 
                       title=u"page0", 
-                      orderno=100, 
+                      display_order=100, 
                       bound_page=page0)
         self._makeObj(Topic, publish_open_on=datetime(2011, 5, 1),
                       publish_close_on=datetime(2013, 1, 1), 
                       title=u"page1", 
-                      orderno=100, 
+                      display_order=100, 
                       bound_page=page1)
 
         qs = Topic.matched_qs(datetime(2011, 7, 1), page=page0, event=event0)

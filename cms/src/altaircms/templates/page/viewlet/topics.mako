@@ -23,7 +23,7 @@
 	<td>${topic.subkind}</td>
 	<td>${topic.publish_open_on}</td>
 	<td>${topic.publish_close_on}</td>
-	<td>${topic.orderno}</td>
+	<td>${topic.display_order}</td>
     <td>${topic.is_vetoed}</td>
 	<td><a href="${h.link.get_link_from_topic(request,topic)}">リンク先</a></td>
   </tr>

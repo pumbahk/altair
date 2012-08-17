@@ -42,7 +42,7 @@ class AboutPublishMixin(object):
     """
     publish_open_on = sa.Column(sa.DateTime)
     publish_close_on = sa.Column(sa.DateTime)
-    orderno = sa.Column(sa.Integer, default=50)
+    display_order = sa.Column(sa.Integer, default=50)
     is_vetoed = sa.Column(sa.Boolean, default=False)
     
     @classmethod
@@ -71,7 +71,7 @@ class AboutPublishMixin(object):
         """ 表示順序で並べた後、公開期間で降順
         """
         table = cls.__tablename__
-        return qs.order_by(sa.asc(table+".orderno"),
+        return qs.order_by(sa.asc(table+".display_order"),
                            sa.desc(table+".publish_open_on"), 
                            )
 
