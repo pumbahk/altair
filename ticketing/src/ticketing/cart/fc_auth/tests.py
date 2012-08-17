@@ -7,9 +7,9 @@ class FCAuthPluginTests(unittest.TestCase):
     def setUpClass(cls):
         cls.session = _setup_db(modules=[
                 'ticketing.core.models',
-                'ticketing.tickets.models',
+                #'ticketing.tickets.models',
                 'ticketing.operators.models',
-                'ticketing.users.models',
+                #'ticketing.users.models',
                 ])
 
     @classmethod
@@ -89,9 +89,9 @@ class TestIt(unittest.TestCase):
     def setUpClass(cls):
         cls.session = _setup_db(modules=[
                 'ticketing.core.models',
-                'ticketing.tickets.models',
+                #'ticketing.tickets.models',
                 'ticketing.operators.models',
-                'ticketing.users.models',
+                #'ticketing.users.models',
                 ])
 
     @classmethod
