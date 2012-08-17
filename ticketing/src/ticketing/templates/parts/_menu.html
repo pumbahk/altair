@@ -1,9 +1,10 @@
 <%page args="event=None" />
 <%
-from ticketing.bookmark.models import Bookmark
-from pyramid.threadlocal import get_current_registry
-testing = get_current_registry().settings.get('ticketing.testing', False)
+  from ticketing.bookmark.models import Bookmark
+  from pyramid.threadlocal import get_current_registry
+  testing = get_current_registry().settings.get('ticketing.testing', False)
 %>
+
 <div class="well sidebar-nav">
   <ul class="nav nav-list">
     <li class="nav-header">公演管理</li>

@@ -1,8 +1,8 @@
 <%
-from pyramid.threadlocal import get_current_registry
-settings = get_current_registry().settings
-altaircms_url = settings.get('altaircms.front_end_url')
-testing = get_current_registry().settings.get('ticketing.testing', False)
+  from pyramid.threadlocal import get_current_registry
+  settings = get_current_registry().settings
+  altaircms_url = settings.get('altaircms.front_end_url')
+  testing = get_current_registry().settings.get('ticketing.testing', False)
 %>
 <link rel="stylesheet" type="text/css" href="/static/css/navigation.css" />
 <div class="navbar navbar-fixed-top">
