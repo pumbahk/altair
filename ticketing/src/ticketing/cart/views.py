@@ -844,6 +844,65 @@ class MobileSelectProductView(object):
         )
         return data
 
+    def ordered_items(self):
+        """ リクエストパラメータから(プロダクトID,数量)タプルのリストを作成する
+        :return: list of tuple(ticketing.products.models.Product, int)
+        """
+
+        controls = list(self.iter_ordered_items())
+        logger.debug('order %s' % controls)
+        if len(controls) == 0:
+            return []
+
+        products = dict([(p.id, p) for p in DBSession.query(c_models.Product).filter(c_models.Product.id.in_([c[0] for c in controls]))])
+        logger.debug('order %s' % products)
+
+        return [(products.get(int(c[0])), c[1]) for c in controls]
+
     def reserve(self):
-        form = schemas.CSRFSecureForm(form_data=self.request.params, csrf_context=self.request.session)
+        performance_id = self.request.matchdict['performance_id']
+
+        # CSRFトークンの確認
+        form = schemas.CSRFSecureForm(
+            form_data=self.request.params,
+            csrf_context=self.request.session)
         form.validate()
+
+        order_items = self.ordered_items()
+        try:
+            # カート生成(席はおまかせ)
+            cart = api.order_products(
+                self.request,
+                performance_id,
+                order_items)
+            if cart is None:
+                transaction.abort()
+                logger.debug("cart is None. aborted.")
+                # TODO: 例外を上げる
+                return dict(result='NG')
+        except NotEnoughAdjacencyException:
+            transaction.abort()
+            logger.debug("not enough adjacency")
+            return dict(result='NG', reason="adjacency")
+        except InvalidSeatSelectionException:
+            transaction.abort()
+            logger.debug("seat selection is invalid.")
+            return dict(result='NG', reason="invalid seats")
+        except NotEnoughStockException as e:
+            transaction.abort()
+            logger.debug("not enough stock quantity :%s" % e)
+            return dict(result='NG', reason="stock")
+
+        DBSession.add(cart)
+        DBSession.flush()
+        api.set_cart(self.request, cart)
+        return dict(result='OK', 
+                    payment_url=self.request.route_url("cart.payment"),
+                    cart=dict(products=[dict(name=p.product.name, 
+                                             quantity=p.quantity,
+                                             price=int(p.product.price),
+                                             seats=p.seats,
+                                        ) 
+                                        for p in cart.products],
+                              total_amount=h.format_number(cart.tickets_amount),
+                    ))
