@@ -244,6 +244,17 @@ class TicketTemplates(BaseView):
         return self.context.after_ticket_action_redirect()
 
 
+    @view_config(route_name='events.tickets.boundtickets.delete', request_method="GET", 
+                 renderer="ticketing:templates/tickets/events/_deleteform.html")
+    def delete(self):
+        ticket_id = self.request.matchdict["id"]
+        event_id = self.request.matchdict["event_id"]
+        message = u"このチケットテンプレートを削除します。よろしいですか？"
+        next_to = self.request.route_path("events.tickets.boundtickets.delete",
+                                          id=ticket_id,
+                                          event_id=event_id)
+        return dict(message=message, next_to=next_to)
+
     @view_config(route_name='events.tickets.boundtickets.delete', request_method="POST")
     @view_config(route_name='tickets.templates.delete', request_method="POST")
     def delete_post(self):

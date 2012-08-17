@@ -14,12 +14,19 @@
 <script>
   // ajax modal
   $(function(){
+    $("a.id-action").click(  
+     function(){
+       var pk = $("input[name='ticket_id']:checked").val();
+       if(!pk){ return false; }
+       $(this).attr("href", $(this).attr("data-base-url").replace("__id__", pk));
+       return true;
+    });
+
 	$("a.ajax-modal[data-toggle=modal]").click(function(){
       $($(this).attr("data-target")).load($(this).attr("href"));
 	});
   });
 </script>
-
 <div class="modal hide" id="AjaxModal">
 </div>
 
@@ -56,7 +63,7 @@
 	<tbody>
 	% for ticket in tickets:
 	  <tr>
-		<td><input type="radio" name="id" value="${ticket.id}" /></td>
+		<td><input type="radio" name="ticket_id" value="${ticket.id}" /></td>
 		<td id="ticket:${ticket.id}"><a href="${request.route_path("events.tickets.boundtickets.show", event_id=event.id, id=ticket.id)}">${ticket.name}</a></td>
 		<td><a href="${request.route_path("tickets.formats.show", id=ticket.ticket_format.id)}">${ticket.ticket_format.name}</a></td>
 		<td>${ticket.updated_at}</td>
@@ -78,6 +85,25 @@
 			<span class="caret"></span>
 		  </button>
 		  <ul class="dropdown-menu">
+			<li>
+			  <a data-base-url="${request.route_path("events.tickets.boundtickets.edit",event_id=event.id, id="__id__")}"
+				 href="#" class="id-action">
+				<i class="icon-pencil"></i> 編集
+			  </a>
+			</li>
+			<li>
+			  <a href="#" class="id-action ajax-modal"
+				 data-base-url="${request.route_path("events.tickets.boundtickets.delete", id="__id__", event_id=event.id)}" 
+				 data-toggle="modal" data-target="#AjaxModal">
+				<i class="icon-minus"></i> 削除
+			  </a>
+			</li>
+		  <li>
+			<a data-base-url="${request.route_path("events.tickets.boundtickets.download", id="__id__", event_id=event.id)}"
+			  href="#" class="id-action">
+			  <i class="icon-minus"></i> 登録されている内容をdownload
+			</a>
+		  </li>
 		  </ul>
 	</div>
   </div>
