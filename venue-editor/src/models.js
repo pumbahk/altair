@@ -122,6 +122,7 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
     var seat = new Seat({
       id: seatDatum.id,
       seat_no: seatDatum.seat_no,
+      status: seatDatum.status,
       stock: stocks.get(seatDatum.stock_id),
       attrs: seatDatum.attrs,
       areas: seatDatum.areas

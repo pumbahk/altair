@@ -123,6 +123,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
   _refreshStyle: function Seat__refreshStyle() {
     var model = this.get('model');
     var style = model && model.get('stock').get('style') || {};
+    style = util.mergeStyle(style, CONF.DEFAULT.SEAT_STATUS_STYLE[model.get('status')]);
     var shape = this.get('shape');
     if (!shape)
       return;
