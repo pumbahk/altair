@@ -191,6 +191,7 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id              = Column(Identifier, primary_key=True)
     l0_id           = Column(String(255))
     name            = Column(Unicode(50), nullable=False, default=u"", server_default=u"")
+    seat_no         = Column(String(255))
     stock_id        = Column(Identifier, ForeignKey('Stock.id'))
 
     venue_id        = Column(Identifier, ForeignKey('Venue.id', ondelete='CASCADE'), nullable=False)
