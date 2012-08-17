@@ -36,13 +36,15 @@ class FCAuthPlugin(object):
         logging.debug(identity)
 
         if identity is None:
-            logger.debug("identity failed")
+            logger.debug("fc_auth identity failed")
             return None
 
         if 'repoze.who.plugins.auth_tkt.userid' in identity:
             try:
                 userdata = pickle.loads(identity['repoze.who.plugins.auth_tkt.userid'].decode('base64'))
                 if 'membership' in userdata:
+                    userdata['identify'] = True
+                    logger.debug('fc auth identified %s' % userdata)
                     return userdata
             except Exception, e:
                 logger.exception(e)
@@ -66,22 +68,28 @@ class FCAuthPlugin(object):
         membership = identity.get('membership')
         username = identity.get('username')
         password = identity.get('password')
+        is_identify = identity.get('identify', False)
 
-        if not (membership and username and password):
+        if not (membership and username and password) and not is_identify:
             logger.debug('fc_auth identity was not found : %s' % identity)
             return
 
-        user = u_m.User.query.filter(
+        user_query = u_m.User.query.filter(
             u_m.UserCredential.auth_identifier==username
             ).filter(
-            u_m.UserCredential.auth_secret==password
+            u_m.Membership.id==u_m.UserCredential.membership_id
             ).filter(
-                u_m.Membership.id==u_m.UserCredential.membership_id
-                ).filter(
-                u_m.Membership.name==membership
-                ).filter(
-                    u_m.User.id==u_m.UserCredential.user_id
-                ).one()
+            u_m.Membership.name==membership
+            ).filter(
+                u_m.User.id==u_m.UserCredential.user_id
+            )
+
+        if not is_identify:
+            user_query = user_query.filter(
+                u_m.UserCredential.auth_secret==password
+            )
+
+        user = user_query.first()
 
         if user is None:
             return
