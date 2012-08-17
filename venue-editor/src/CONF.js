@@ -44,7 +44,7 @@ exports.DEFAULT = {
     },
     highlighted: {
       fill: null,
-      stroke: { color: "#F63", width: 3, pattern: 'solid' }
+      stroke: { color: "#F63", width: 2, pattern: 'solid' }
     },
     unselectable: {
       text_color: "#888",

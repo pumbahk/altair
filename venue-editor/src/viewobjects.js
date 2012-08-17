@@ -58,7 +58,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
       }
     }
 
-    function onShapeChange() {
+    function onShapeChange(init) {
       var prev = self.previous('shape');
       var events = self.get('events');
       if (events) {
@@ -77,7 +77,8 @@ var Seat = exports.Seat = Backbone.Model.extend({
         var new_ = self.get('shape');
         new_.addEvent(events);
       }
-      self._refreshStyle();
+      if (!init)
+        self._refreshStyle();
     }
 
     function onEventsChange() {
@@ -114,7 +115,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
     // initialization.
     this._previousAttributes = {};
     onModelChange();
-    onShapeChange();
+    onShapeChange(true);
     onEventsChange();
     onStockChanged();
   },
@@ -130,31 +131,28 @@ var Seat = exports.Seat = Backbone.Model.extend({
       style = util.mergeStyle(style, CONF.DEFAULT.AUGMENTED_STYLE[styleType]);
     }
     shape.style(util.convertToFashionStyle(style));
-    if (style.text) {
-      if (!this.label) {
-        var p = shape.position(),
-            s = shape.size();
-        this.label = shape.drawable.draw(
-          new Fashion.Text({
-            position: {
-              x: p.x,
-              y: p.y + (s.y * 0.75)
-            },
-            fontSize: (s.y * 0.75),
-            text: style.text,
-            style: { fill: new Fashion.FloodFill(new Fashion.Color(style.text_color)) }
-          })
-        );
-        this.label.addEvent(this.get('events'));
-      } else {
-        this.label.text(style.text);
-        this.label.style({ fill: new Fashion.FloodFill(new Fashion.Color(style.text_color)) });
-      }
+    var styleText = style.text || model.get('seat_no');
+    if (style.text && $.inArray('highlighted', this.styleTypes) != -1) {
+      styleText = model.get('seat_no');
+    }
+    if (!this.label) {
+      var p = shape.position(),
+          s = shape.size();
+      this.label = shape.drawable.draw(
+        new Fashion.Text({
+          position: {
+            x: p.x + (s.x * 0.10),
+            y: p.y + (s.y * 0.75)
+          },
+          fontSize: (s.y * 0.75),
+          text: styleText,
+          style: { fill: new Fashion.FloodFill(new Fashion.Color(style.text_color)) }
+        })
+      );
+      this.label.addEvent(this.get('events'));
     } else {
-      if (this.label) {
-        this.label.drawable.erase(this.label);
-        this.label = null;
-      }
+      this.label.text(styleText);
+      this.label.style({ fill: new Fashion.FloodFill(new Fashion.Color(style.text_color)) });
     }
   },
 

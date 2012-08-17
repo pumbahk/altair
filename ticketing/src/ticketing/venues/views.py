@@ -41,6 +41,7 @@ def get_seats(request):
         for seat in DBSession.query(Seat).options(joinedload('attributes_'), joinedload('areas'), joinedload('status_')).filter_by(venue=venue):
             seat_datum = {
                 'id': seat.l0_id,
+                'seat_no': seat.seat_no,
                 'stock_id': seat.stock_id,
                 'status': seat.status,
                 'areas': [area.id for area in seat.areas],

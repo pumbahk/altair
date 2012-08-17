@@ -121,6 +121,7 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
     var seatDatum = initialData.seats[id];
     var seat = new Seat({
       id: seatDatum.id,
+      seat_no: seatDatum.seat_no,
       stock: stocks.get(seatDatum.stock_id),
       attrs: seatDatum.attrs,
       areas: seatDatum.areas
@@ -350,6 +351,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
 
   defaults: {
     id: null,
+    seat_no: null,
     venue: null,
     stock: null,
     selectable: true,
