@@ -8,6 +8,9 @@
   )}
 </div>
 
+<style type="text/css">
+  h3 {margin-top: 20px;  }
+</style>
 <script>
   // ajax modal
   $(function(){
@@ -28,8 +31,41 @@
   ${flash_messages(request)}
 </div>
 
+<div class="message">
+<p>
+  1. イベントにチケット券面を割り当ててください。(主券、副券..など)<br/>
+  2. チケット券面を割り当てたら、チケット券面構成(TicketBundle)を作成してください。(「主券のみ」,「主券+副券」など)<br/>
+  3. 作成したチケット券面構成(TicketBundle)に属性(TicketAttribute)、商品(ProductItem)を追加してください。
+</p>
+</div>
+
 <div id="tickets">
-  <h3>チケット券面</h3>
+  <h3>1. チケット券面</h3>
+
+%if tickets.count() > 0:
+  <table class="table fullwidth checkboxed_table">
+	<thead>
+	  <tr>
+		<th class="minwidth"></th>
+		<th><a href="#" class="sortable">名前</a></th>
+		<th><a href="#" class="sortable">チケット様式</a></th>
+		<th><a href="#" class="sortable">更新日時</a></th>
+		<th><a href="#" class="sortable">作成日時</a></th>
+	  </tr>
+	</thead>
+	<tbody>
+	% for ticket in tickets:
+	  <tr>
+		<td><input type="radio" name="id" value="${ticket.id}" /></td>
+		<td id="ticket:${ticket.id}"><a href="#">${ticket.name}</a></td>
+		<td><a href="${request.route_path("tickets.formats.show", id=ticket.ticket_format.id)}">${ticket.ticket_format.name}</a></td>
+		<td>${ticket.updated_at}</td>
+		<td>${ticket.created_at}</td>
+	  </tr>
+	% endfor
+	</tbody>
+  </table>
+%endif
 
   <div class="row-fluid well">
 	<div class="btn-group">
@@ -46,28 +82,71 @@
 	</div>
   </div>
 
+</div>
+
+<hr/>
+
+<div id="ticket-bundle">
+  <h3>2. チケット券面構成(TicketBundle)</h3>
+
+%if bundles.count() > 0:
   <table class="table fullwidth checkboxed_table">
 	<thead>
 	  <tr>
 		<th class="minwidth"></th>
 		<th><a href="#" class="sortable">名前</a></th>
-		<th><a href="#" class="sortable">チケット様式</a></th>
-		<th><a href="#" class="sortable">更新日時</a></th>
-		<th><a href="#" class="sortable">作成日時</a></th>
+		<th><a href="#" class="sortable">チケット券面(Ticket)</a></th>
+		<th><a href="#" class="sortable">商品(ProductItem)</a></th>
+		<th><a href="#" class="sortable">属性(TicketAttribute)</a></th>
 	  </tr>
 	</thead>
 	<tbody>
-	% for ticket in tickets:
+	% for bundle in bundles:
 	  <tr>
-		<td><input type="radio" name="id" value="${ticket.id}" /></td>
-		<td><a href="#">${ticket.name}</a></td>
-		<td>${ticket.ticket_format.name}</td>
-		<td>${ticket.updated_at}</td>
-		<td>${ticket.created_at}</td>
+		<td><input type="radio" name="id" value="${bundle.id}"/></td>
+		<td><a href="${request.route_path("events.tickets.bundles.show",bundle_id=bundle.id, event_id=event.id)}"
+			   >${bundle.name}</a>
+		</td>
+		<td>
+		  <ul>
+			  %for ticket in bundle.tickets:
+			  <li><a href="#ticket:${ticket.id}">${ticket.name}</a></li>
+			  %endfor		  
+		  </ul>
+		</td>
+		<td>
+		  <ul>
+			  %for product_item in bundle.product_items:
+			  <li>${product_item.name}</a></li>
+			  %endfor		  
+		  </ul>
+		</td>
+		<td>
+		  <ul>
+			  %for attribute in bundle.attributes_.itervalues():
+			  <li>${attribute.name}</li>
+			  %endfor		  
+		  </ul>
+		</td>
 	  </tr>
 	% endfor
 	</tbody>
   </table>
+%endif
 
+  <div class="row-fluid well">
+	<div class="btn-group">
+	  <a href="${request.route_path("events.tickets.api.bundleform",event_id=event.id)}" 
+		 data-toggle="modal" data-target="#AjaxModal"
+		 class="btn ajax-modal">
+		<i class="icon-plus"></i> ${event.title}にチケット券面構成(TicketBundle)を追加
+	  </a>
+		  <button class="btn dropdown-toggle" data-toggle="dropdown">
+			<span class="caret"></span>
+		  </button>
+		  <ul class="dropdown-menu">
+		  </ul>
+	</div>
+  </div>
 </div>
 

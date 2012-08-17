@@ -1,5 +1,12 @@
 <%inherit file="../../layout_2cols.html" />
 <%namespace file="/common/helpers.html" import="breadcrumbs,flash_messages,form_item"/>
+
+<style type="text/css">
+  .controls select{width: 80%;}
+  .controls input{width: 80%;}
+  .controls textarea{width: 80%; min-height:100px;}
+</style>
+
 <div class="breadcrumbs">
 ${breadcrumbs(
   names=[u'トップ', u'チケット様式', u"登録"],
@@ -32,7 +39,7 @@ ${breadcrumbs(
 <div class="well">
   <form class="form-horizontal" action="${route_path}" method="POST">
 	<fieldset>
-	  ${form_item(form.name, option={"style": 'width:100px'})}
+	  ${form_item(form.name)}
 	  ${form_item(form.data_value)}
 	  ${form_item(form.delivery_methods)}
 	</fieldset>

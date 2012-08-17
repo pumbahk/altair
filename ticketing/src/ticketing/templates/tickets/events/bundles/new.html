@@ -1,0 +1,52 @@
+<%inherit file="../../../layout_2cols.html" />
+<%namespace file="/common/helpers.html" import="breadcrumbs,pager,flash_messages,form_item"/>
+
+<style type="text/css">
+  .controls select{width: 80%;}
+  .controls input{width: 80%;}
+</style>
+
+<div class="breadcrumbs">
+  ${breadcrumbs(
+    names=[u'イベント', event.title, u'券面', u'チケット券面構成(TicketBundle)'],
+    urls=[request.route_path('events.index'), 
+          request.route_path('events.show', event_id=event.id),
+          request.route_path('events.tickets.index', event_id=event.id),
+         ]
+  )}
+</div>
+
+<div class="page-header">
+  <h3>チケット券面構成(TicketBundle)登録</h3>
+</div>
+
+<%doc>
+<div class="content">
+  ${flash_messages(request)}
+  ${alert_message(form)}
+</div>
+</%doc>
+
+<%
+  if request.matched_route.name == 'events.tickets.bundles.edit':
+    route_name = u'編集'
+    route_path = request.route_path('events.tickets.bundles.edit', bundle_id=bundle.id,event_id=event.id)
+  else:
+    route_name = u'登録'
+    route_path = request.route_path('events.tickets.bundles.new', event_id=event.id)
+%>
+
+
+
+<div class="well">
+  <form class="form-horizontal" action="${route_path}" method="POST">
+	<fieldset>
+	  ${form_item(form.name)}
+	  ${form_item(form.tickets)}
+	  ${form_item(form.product_items)}
+	</fieldset>
+	<div class="form-actions">
+	  <input class="btn btn-primary" type="submit" name="submit" value="登録">
+	</div>
+  </form>
+</div>

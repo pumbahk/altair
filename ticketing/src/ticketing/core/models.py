@@ -3,7 +3,8 @@
 import logging
 from datetime import datetime
 
-from sqlalchemy import Table, Column, ForeignKey, ForeignKeyConstraint, func, or_, and_
+from sqlalchemy import Table, Column, ForeignKey, func, or_, and_
+from sqlalchemy import ForeignKeyConstraint, UniqueConstraint
 from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric, Unicode
 from sqlalchemy.orm import join, backref, column_property
 from sqlalchemy.orm.collections import attribute_mapped_collection
@@ -266,7 +267,8 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             seat_status.delete()
 
         # delete SeatAttribute
-        for attribute in self.attributes:
+        seat_attributes = SeatAttribute.filter_by(seat_id=self.id).all()
+        for attribute in seat_attributes:
             attribute.delete()
 
         # delete Seat
@@ -906,7 +908,6 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     stock = relationship("Stock", backref="product_items")
 
     quantity = Column(Integer, nullable=False, default=1, server_default='1')
-
     ticket_bundle_id = Column(Identifier, ForeignKey('TicketBundle.id'), nullable=True)
 
     @property
@@ -1033,6 +1034,18 @@ class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         # create default Stock
         Stock.create_default(self.event, stock_holder_id=self.id)
 
+    def delete(self):
+        # 在庫が割り当てられている場合は削除できない
+        for stock in self.stocks:
+            if stock.quantity > 0:
+                raise Exception(u'座席および席数の割当がある為、削除できません')
+
+        # delete Stock
+        for stock in self.stocks:
+            stock.delete()
+
+        super(StockHolder, self).delete()
+
     def stocks_by_performance(self, performance_id):
         def performance_filter(stock):
             return (stock.performance_id == performance_id)
@@ -1083,6 +1096,12 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     .count()
             stock_status.quantity = seat_quantity
         stock_status.save()
+
+    def delete(self):
+        # delete StockStatus
+        self.stock_status.delete()
+
+        super(Stock, self).delete()
 
     @staticmethod
     def get_default(performance_id):
@@ -1676,15 +1695,21 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 class TicketBundleAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "TicketBundleAttribute" 
-    ticket_bundle_id = Column(Identifier, ForeignKey('TicketBundle.id', ondelete='CASCADE'), primary_key=True, nullable=False)
-    name = Column(String(255), primary_key=True, nullable=False)
+    id = Column(Identifier, primary_key=True)
+    ticket_bundle_id = Column(Identifier, ForeignKey('TicketBundle.id', ondelete='CASCADE'), nullable=False)
+    name = Column(String(255), nullable=False)
     value = Column(String(1023))
+
+    __table_args__= (
+        UniqueConstraint("ticket_bundle_id", "name", "deleted_at", name="ib_unique_1"), 
+        )
 
 from ..operators.models import Operator
 
 class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "TicketBundle"
     id = Column(Identifier, primary_key=True)
+    name = Column(Unicode(255), default=u"", nullable=False)
     event_id = Column(Identifier, ForeignKey('Event.id', ondelete='CASCADE'))
     event = relationship('Event', uselist=False, backref='ticket_bundles')
     operator_id = Column(Identifier, ForeignKey('Operator.id'))
@@ -1693,6 +1718,18 @@ class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     attributes = association_proxy('attributes_', 'value', creator=lambda k, v: SeatAttribute(name=k, value=v))
     tickets = relationship('Ticket', secondary=Ticket_TicketBundle.__table__, backref='bundles')
     product_items = relationship('ProductItem', backref='ticket_bundle')
+
+    def replace_tickets(self, news):
+        for ticket in self.tickets:
+            self.tickets.remove(ticket)
+        for ticket in news:
+            self.tickets.append(ticket)
+
+    def replace_product_items(self, news):
+        for product_item in self.product_items:
+            self.product_items.remove(product_item)
+        for product_item in news:
+            self.product_items.append(product_item)
 
 class TicketPrintHistory(Base, BaseModel, WithTimestamp):
     __tablename__ = "TicketPrintHistory"

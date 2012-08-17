@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import webhelpers.paginate as paginate
+import logging
 
+import webhelpers.paginate as paginate
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.renderers import render_to_response
@@ -12,6 +13,8 @@ from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.events.stock_holders.forms import StockHolderForm
 from ticketing.core.models import Event, StockHolder
+
+logger = logging.getLogger(__name__)
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class StockHolders(BaseView):
@@ -100,7 +103,10 @@ class StockHolders(BaseView):
         if stock_holder is None:
             return HTTPNotFound('stock_holder id %d is not found' % stock_holder_id)
 
-        stock_holder.delete()
+        try:
+            stock_holder.delete()
+            self.request.session.flash(u'枠を削除しました')
+        except Exception, e:
+            self.request.session.flash(e.message)
 
-        self.request.session.flash(u'枠を削除しました')
         return HTTPFound(location=route_path('events.show', self.request, event_id=stock_holder.event.id))
