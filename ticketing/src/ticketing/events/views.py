@@ -341,7 +341,7 @@ class Events(BaseView):
 
         headers = [
             ('Content-Type', 'application/octet-stream'),
-            ('Content-Disposition', 'attachment; filename=%s' % filename)
+            ('Content-Disposition', 'attachment; filename=%s' % str(filename))
         ]
         response = Response(exporter.as_string(), headerlist=headers)
         return response
@@ -374,7 +374,7 @@ class Events(BaseView):
 
         headers = [
             ('Content-Type', 'application/octet-stream'),
-            ('Content-Disposition', 'attachment; filename=%s' % filename)
+            ('Content-Disposition', 'attachment; filename=%s' % str(filename))
         ]
         response = Response(exporter.as_string(), headerlist=headers)
         return response
@@ -409,7 +409,7 @@ class Events(BaseView):
 
         headers = [
             ('Content-Type', 'application/octet-stream'),
-            ('Content-Disposition', 'attachment; filename=%s' % filename)
+            ('Content-Disposition', 'attachment; filename=%s' % str(filename))
         ]
         response = Response(exporter.as_string(), headerlist=headers)
         return response
