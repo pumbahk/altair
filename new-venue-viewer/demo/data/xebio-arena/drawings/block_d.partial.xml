@@ -44,6 +44,7 @@
     </rdf:RDF>
   </metadata>
   <g
+     transform="translate(-1778.75,-37.393753)"
      id="g115717">
     <title
        id="title115719">ブロックD1F</title>
@@ -2480,6 +2481,7 @@
     </g>
   </g>
   <g
+     transform="translate(-1778.75,-37.393753)"
      id="g116861">
     <title
        id="title116863">ブロックD2F</title>
@@ -8064,259 +8066,697 @@
       </rect>
     </g>
   </g>
+  <g
+     transform="translate(-1778.75,-37.393753)"
+     id="g120576" />
   <text
-     x="1960.875"
-     y="78.300003"
+     x="182.125"
+     y="40.90625"
      id="text120588"
      style="text-anchor:middle">9_</text>
   <text
-     x="2023.875"
-     y="78.300003"
+     x="245.125"
+     y="40.90625"
      id="text120590"
      style="text-anchor:middle">13_</text>
   <text
-     x="1913.625"
-     y="509.54999"
+     x="-1503.125"
+     y="54.40625"
+     id="text120594"
+     style="text-anchor:middle" />
+  <text
+     x="-1487.375"
+     y="54.40625"
+     id="text120596"
+     style="text-anchor:middle" />
+  <text
+     x="-1408.625"
+     y="54.40625"
+     id="text120598"
+     style="text-anchor:middle" />
+  <text
+     x="-1298.375"
+     y="54.40625"
+     id="text120600"
+     style="text-anchor:middle" />
+  <text
+     x="-1282.625"
+     y="54.40625"
+     id="text120602"
+     style="text-anchor:middle" />
+  <text
+     x="-1266.875"
+     y="54.40625"
+     id="text120604"
+     style="text-anchor:middle" />
+  <text
+     x="-1251.125"
+     y="54.40625"
+     id="text120606"
+     style="text-anchor:middle" />
+  <text
+     x="-1188.125"
+     y="54.40625"
+     id="text120608"
+     style="text-anchor:middle" />
+  <text
+     x="-1077.875"
+     y="54.40625"
+     id="text120610"
+     style="text-anchor:middle" />
+  <text
+     x="-1062.125"
+     y="54.40625"
+     id="text120612"
+     style="text-anchor:middle" />
+  <text
+     x="-1046.375"
+     y="54.40625"
+     id="text120614"
+     style="text-anchor:middle" />
+  <text
+     x="-1030.625"
+     y="54.40625"
+     id="text120616"
+     style="text-anchor:middle" />
+  <text
+     x="-1014.875"
+     y="54.40625"
+     id="text120618"
+     style="text-anchor:middle" />
+  <text
+     x="-967.625"
+     y="54.40625"
+     id="text120620"
+     style="text-anchor:middle" />
+  <text
+     x="-841.625"
+     y="54.40625"
+     id="text120622"
+     style="text-anchor:middle" />
+  <text
+     x="-825.875"
+     y="54.40625"
+     id="text120624"
+     style="text-anchor:middle" />
+  <text
+     x="-810.125"
+     y="54.40625"
+     id="text120626"
+     style="text-anchor:middle" />
+  <text
+     x="-794.375"
+     y="54.40625"
+     id="text120628"
+     style="text-anchor:middle" />
+  <text
+     x="-778.625"
+     y="54.40625"
+     id="text120630"
+     style="text-anchor:middle" />
+  <text
+     x="-762.875"
+     y="54.40625"
+     id="text120632"
+     style="text-anchor:middle" />
+  <text
+     x="-747.125"
+     y="54.40625"
+     id="text120634"
+     style="text-anchor:middle" />
+  <text
+     x="-621.125"
+     y="54.40625"
+     id="text120636"
+     style="text-anchor:middle" />
+  <text
+     x="-605.375"
+     y="54.40625"
+     id="text120638"
+     style="text-anchor:middle" />
+  <text
+     x="-589.625"
+     y="54.40625"
+     id="text120640"
+     style="text-anchor:middle" />
+  <text
+     x="-573.875"
+     y="54.40625"
+     id="text120642"
+     style="text-anchor:middle" />
+  <text
+     x="-558.125"
+     y="54.40625"
+     id="text120644"
+     style="text-anchor:middle" />
+  <text
+     x="-542.375"
+     y="54.40625"
+     id="text120646"
+     style="text-anchor:middle" />
+  <text
+     x="-526.625"
+     y="54.40625"
+     id="text120648"
+     style="text-anchor:middle" />
+  <text
+     x="-384.875"
+     y="54.40625"
+     id="text120650"
+     style="text-anchor:middle" />
+  <text
+     x="-369.125"
+     y="54.40625"
+     id="text120652"
+     style="text-anchor:middle" />
+  <text
+     x="-353.375"
+     y="54.40625"
+     id="text120654"
+     style="text-anchor:middle" />
+  <text
+     x="-337.625"
+     y="54.40625"
+     id="text120656"
+     style="text-anchor:middle" />
+  <text
+     x="-321.875"
+     y="54.40625"
+     id="text120658"
+     style="text-anchor:middle" />
+  <text
+     x="-306.125"
+     y="54.40625"
+     id="text120660"
+     style="text-anchor:middle" />
+  <text
+     x="-148.625"
+     y="54.40625"
+     id="text120662"
+     style="text-anchor:middle" />
+  <text
+     x="-132.875"
+     y="54.40625"
+     id="text120664"
+     style="text-anchor:middle" />
+  <text
+     x="-117.125"
+     y="54.40625"
+     id="text120666"
+     style="text-anchor:middle" />
+  <text
+     x="-101.375"
+     y="54.40625"
+     id="text120668"
+     style="text-anchor:middle" />
+  <text
+     x="-85.625"
+     y="54.40625"
+     id="text120670"
+     style="text-anchor:middle" />
+  <text
+     x="87.625"
+     y="54.40625"
+     id="text120672"
+     style="text-anchor:middle" />
+  <text
+     x="103.375"
+     y="54.40625"
+     id="text120674"
+     style="text-anchor:middle" />
+  <text
+     x="119.125"
+     y="54.40625"
+     id="text120676"
+     style="text-anchor:middle" />
+  <text
+     x="-1408.625"
+     y="67.90625"
+     id="text120678"
+     style="text-anchor:middle" />
+  <text
+     x="-1188.125"
+     y="67.90625"
+     id="text120680"
+     style="text-anchor:middle" />
+  <text
+     x="-967.625"
+     y="67.90625"
+     id="text120682"
+     style="text-anchor:middle" />
+  <text
+     x="-747.125"
+     y="67.90625"
+     id="text120684"
+     style="text-anchor:middle" />
+  <text
+     x="-526.625"
+     y="67.90625"
+     id="text120686"
+     style="text-anchor:middle" />
+  <text
+     x="-306.125"
+     y="67.90625"
+     id="text120688"
+     style="text-anchor:middle" />
+  <text
+     x="-85.625"
+     y="67.90625"
+     id="text120690"
+     style="text-anchor:middle" />
+  <text
+     x="-1408.625"
+     y="81.40625"
+     id="text120692"
+     style="text-anchor:middle" />
+  <text
+     x="-1188.125"
+     y="81.40625"
+     id="text120694"
+     style="text-anchor:middle" />
+  <text
+     x="-967.625"
+     y="81.40625"
+     id="text120696"
+     style="text-anchor:middle" />
+  <text
+     x="-747.125"
+     y="81.40625"
+     id="text120698"
+     style="text-anchor:middle" />
+  <text
+     x="-526.625"
+     y="81.40625"
+     id="text120700"
+     style="text-anchor:middle" />
+  <text
+     x="-306.125"
+     y="81.40625"
+     id="text120702"
+     style="text-anchor:middle" />
+  <text
+     x="-85.625"
+     y="81.40625"
+     id="text120704"
+     style="text-anchor:middle" />
+  <text
+     x="-1408.625"
+     y="94.90625"
+     id="text120706"
+     style="text-anchor:middle" />
+  <text
+     x="-1188.125"
+     y="94.90625"
+     id="text120708"
+     style="text-anchor:middle" />
+  <text
+     x="-967.625"
+     y="94.90625"
+     id="text120710"
+     style="text-anchor:middle" />
+  <text
+     x="-747.125"
+     y="94.90625"
+     id="text120712"
+     style="text-anchor:middle" />
+  <text
+     x="-526.625"
+     y="94.90625"
+     id="text120714"
+     style="text-anchor:middle" />
+  <text
+     x="-306.125"
+     y="94.90625"
+     id="text120716"
+     style="text-anchor:middle" />
+  <text
+     x="-85.625"
+     y="94.90625"
+     id="text120718"
+     style="text-anchor:middle" />
+  <text
+     x="-1408.625"
+     y="108.40625"
+     id="text120720"
+     style="text-anchor:middle" />
+  <text
+     x="-1188.125"
+     y="108.40625"
+     id="text120722"
+     style="text-anchor:middle" />
+  <text
+     x="-967.625"
+     y="108.40625"
+     id="text120724"
+     style="text-anchor:middle" />
+  <text
+     x="-747.125"
+     y="108.40625"
+     id="text120726"
+     style="text-anchor:middle" />
+  <text
+     x="-526.625"
+     y="108.40625"
+     id="text120728"
+     style="text-anchor:middle" />
+  <text
+     x="-306.125"
+     y="108.40625"
+     id="text120730"
+     style="text-anchor:middle" />
+  <text
+     x="-85.625"
+     y="108.40625"
+     id="text120732"
+     style="text-anchor:middle" />
+  <text
+     x="-22.625"
+     y="108.40625"
+     id="text120734"
+     style="text-anchor:middle" />
+  <text
+     x="-6.875"
+     y="108.40625"
+     id="text120736"
+     style="text-anchor:middle" />
+  <text
+     x="8.875"
+     y="108.40625"
+     id="text120738"
+     style="text-anchor:middle" />
+  <text
+     x="24.625"
+     y="108.40625"
+     id="text120740"
+     style="text-anchor:middle" />
+  <text
+     x="40.375"
+     y="108.40625"
+     id="text120742"
+     style="text-anchor:middle" />
+  <text
+     x="56.125"
+     y="108.40625"
+     id="text120744"
+     style="text-anchor:middle" />
+  <text
+     x="71.875"
+     y="108.40625"
+     id="text120746"
+     style="text-anchor:middle" />
+  <text
+     x="87.625"
+     y="108.40625"
+     id="text120748"
+     style="text-anchor:middle" />
+  <text
+     x="103.375"
+     y="108.40625"
+     id="text120750"
+     style="text-anchor:middle" />
+  <text
+     x="119.125"
+     y="108.40625"
+     id="text120752"
+     style="text-anchor:middle" />
+  <text
+     x="-1408.625"
+     y="121.90625"
+     id="text120754"
+     style="text-anchor:middle" />
+  <text
+     x="-1188.125"
+     y="121.90625"
+     id="text120756"
+     style="text-anchor:middle" />
+  <text
+     x="-967.625"
+     y="121.90625"
+     id="text120758"
+     style="text-anchor:middle" />
+  <text
+     x="-747.125"
+     y="121.90625"
+     id="text120760"
+     style="text-anchor:middle" />
+  <text
+     x="-526.625"
+     y="121.90625"
+     id="text120762"
+     style="text-anchor:middle" />
+  <text
+     x="-306.125"
+     y="121.90625"
+     id="text120764"
+     style="text-anchor:middle" />
+  <text
+     x="-85.625"
+     y="121.90625"
+     id="text120766"
+     style="text-anchor:middle" />
+  <text
+     x="-22.625"
+     y="121.90625"
+     id="text120768"
+     style="text-anchor:middle" />
+  <text
+     x="-6.875"
+     y="121.90625"
+     id="text120770"
+     style="text-anchor:middle" />
+  <text
+     x="8.875"
+     y="121.90625"
+     id="text120772"
+     style="text-anchor:middle" />
+  <text
+     x="24.625"
+     y="121.90625"
+     id="text120774"
+     style="text-anchor:middle" />
+  <text
+     x="40.375"
+     y="121.90625"
+     id="text120776"
+     style="text-anchor:middle" />
+  <text
+     x="56.125"
+     y="121.90625"
+     id="text120778"
+     style="text-anchor:middle" />
+  <text
+     x="71.875"
+     y="121.90625"
+     id="text120780"
+     style="text-anchor:middle" />
+  <text
+     x="87.625"
+     y="121.90625"
+     id="text120782"
+     style="text-anchor:middle" />
+  <text
+     x="103.375"
+     y="121.90625"
+     id="text120784"
+     style="text-anchor:middle" />
+  <text
+     x="119.125"
+     y="121.90625"
+     id="text120786"
+     style="text-anchor:middle" />
+  <text
+     x="-1408.625"
+     y="135.40625"
+     id="text120788"
+     style="text-anchor:middle" />
+  <text
+     x="-1188.125"
+     y="135.40625"
+     id="text120790"
+     style="text-anchor:middle" />
+  <text
+     x="-967.625"
+     y="135.40625"
+     id="text120792"
+     style="text-anchor:middle" />
+  <text
+     x="-747.125"
+     y="135.40625"
+     id="text120794"
+     style="text-anchor:middle" />
+  <text
+     x="-526.625"
+     y="135.40625"
+     id="text120796"
+     style="text-anchor:middle" />
+  <text
+     x="-306.125"
+     y="135.40625"
+     id="text120798"
+     style="text-anchor:middle" />
+  <text
+     x="-85.625"
+     y="135.40625"
+     id="text120800"
+     style="text-anchor:middle" />
+  <text
+     x="-22.625"
+     y="135.40625"
+     id="text120802"
+     style="text-anchor:middle" />
+  <text
+     x="-6.875"
+     y="135.40625"
+     id="text120804"
+     style="text-anchor:middle" />
+  <text
+     x="8.875"
+     y="135.40625"
+     id="text120806"
+     style="text-anchor:middle" />
+  <text
+     x="24.625"
+     y="135.40625"
+     id="text120808"
+     style="text-anchor:middle" />
+  <text
+     x="40.375"
+     y="135.40625"
+     id="text120810"
+     style="text-anchor:middle" />
+  <text
+     x="56.125"
+     y="135.40625"
+     id="text120812"
+     style="text-anchor:middle" />
+  <text
+     x="71.875"
+     y="135.40625"
+     id="text120814"
+     style="text-anchor:middle" />
+  <text
+     x="87.625"
+     y="135.40625"
+     id="text120816"
+     style="text-anchor:middle" />
+  <text
+     x="103.375"
+     y="135.40625"
+     id="text120818"
+     style="text-anchor:middle" />
+  <text
+     x="119.125"
+     y="135.40625"
+     id="text120820"
+     style="text-anchor:middle" />
+  <text
+     x="-1408.625"
+     y="148.90625"
+     id="text120824"
+     style="text-anchor:middle" />
+  <text
+     x="-1188.125"
+     y="148.90625"
+     id="text120826"
+     style="text-anchor:middle" />
+  <text
+     x="-967.625"
+     y="148.90625"
+     id="text120828"
+     style="text-anchor:middle" />
+  <text
+     x="-747.125"
+     y="148.90625"
+     id="text120830"
+     style="text-anchor:middle" />
+  <text
+     x="-526.625"
+     y="148.90625"
+     id="text120832"
+     style="text-anchor:middle" />
+  <text
+     x="-306.125"
+     y="148.90625"
+     id="text120834"
+     style="text-anchor:middle" />
+  <text
+     x="-85.625"
+     y="148.90625"
+     id="text120836"
+     style="text-anchor:middle" />
+  <text
+     x="-22.625"
+     y="148.90625"
+     id="text120838"
+     style="text-anchor:middle" />
+  <text
+     x="-6.875"
+     y="148.90625"
+     id="text120840"
+     style="text-anchor:middle" />
+  <text
+     x="8.875"
+     y="148.90625"
+     id="text120842"
+     style="text-anchor:middle" />
+  <text
+     x="24.625"
+     y="148.90625"
+     id="text120844"
+     style="text-anchor:middle" />
+  <text
+     x="40.375"
+     y="148.90625"
+     id="text120846"
+     style="text-anchor:middle" />
+  <text
+     x="56.125"
+     y="148.90625"
+     id="text120848"
+     style="text-anchor:middle" />
+  <text
+     x="71.875"
+     y="148.90625"
+     id="text120850"
+     style="text-anchor:middle" />
+  <text
+     x="87.625"
+     y="148.90625"
+     id="text120852"
+     style="text-anchor:middle" />
+  <text
+     x="103.375"
+     y="148.90625"
+     id="text120854"
+     style="text-anchor:middle" />
+  <text
+     x="119.125"
+     y="148.90625"
+     id="text120856"
+     style="text-anchor:middle" />
+  <text
+     x="134.875"
+     y="472.15625"
      id="text120876"
      style="text-anchor:middle">2階→</text>
   <text
-     x="1913.625"
-     y="536.54999"
+     x="134.875"
+     y="499.15625"
      id="text120880"
      style="text-anchor:middle">1階↓</text>
   <text
-     x="1819.125"
-     y="577.04999"
+     x="40.375"
+     y="539.65625"
      id="text120888"
      style="text-anchor:middle">1_</text>
   <text
-     x="1929.375"
-     y="577.04999"
+     x="150.625"
+     y="539.65625"
      id="text120890"
      style="text-anchor:middle">8_</text>
   <text
-     x="1874.25"
-     y="828.15002"
+     x="95.5"
+     y="790.75629"
      id="text120926"
      style="text-anchor:middle">Dブロック</text>
-  <g
-     id="g121048"
-     style="fill:#e57696;fill-opacity:1">
-    <title
-       id="title121050">ブロックA1F</title>
-    <metadata
-       id="metadata121052">
-      <si:object>
-        <si:class>Block</si:class>
-        <si:property
-           name="name">ブロックA1F</si:property>
-      </si:object>
-    </metadata>
-    <rect
-       width="1338.75"
-       height="81"
-       x="393.75"
-       y="202.5"
-       id="rect121054"
-       style="fill:#e57696;fill-opacity:1;stroke:#888888" />
-  </g>
-  <g
-     id="g123318">
-    <title
-       id="title123320">ブロックA2F</title>
-    <metadata
-       id="metadata123322">
-      <si:object>
-        <si:class>Block</si:class>
-        <si:property
-           name="name">ブロックA2F</si:property>
-      </si:object>
-    </metadata>
-    <rect
-       width="1638"
-       height="108"
-       x="267.75"
-       y="81"
-       id="rect123324"
-       style="fill:#e57696;fill-opacity:1;stroke:#888888;stroke-opacity:1" />
-  </g>
-  <g
-     id="g127227"
-     style="fill:#e57696;fill-opacity:1">
-    <title
-       id="title127229">ブロックA3F</title>
-    <metadata
-       id="metadata127231">
-      <si:object>
-        <si:class>Block</si:class>
-        <si:property
-           name="name">ブロックA3F</si:property>
-      </si:object>
-    </metadata>
-    <rect
-       width="630"
-       height="40.5"
-       x="267.75"
-       y="27"
-       id="rect127233"
-       style="fill:#e57696;fill-opacity:1;stroke:#888888" />
-  </g>
-  <g
-     id="g127809"
-     style="fill:#e5d196;fill-opacity:1">
-    <title
-       id="title127811">ブロックB1F</title>
-    <metadata
-       id="metadata127813">
-      <si:object>
-        <si:class>Block</si:class>
-        <si:property
-           name="name">ブロックB1F</si:property>
-      </si:object>
-    </metadata>
-    <rect
-       width="126"
-       height="472.5"
-       x="236.25"
-       y="580.5"
-       id="rect127815"
-       style="fill:#e5d196;fill-opacity:1;stroke:#888888" />
-  </g>
-  <g
-     id="g128953"
-     style="fill:#e5d196;fill-opacity:1">
-    <title
-       id="title128955">ブロックB2F</title>
-    <metadata
-       id="metadata128957">
-      <si:object>
-        <si:class>Block</si:class>
-        <si:property
-           name="name">ブロックB2F</si:property>
-      </si:object>
-    </metadata>
-    <rect
-       width="110.25"
-       height="1431"
-       x="110.25"
-       y="81"
-       id="rect128959"
-       style="fill:#e5d196;fill-opacity:1;stroke:#888888" />
-  </g>
-  <g
-     id="g132168"
-     style="fill:#e5d196;fill-opacity:1">
-    <title
-       id="title132170">ブロックB3F</title>
-    <metadata
-       id="metadata132172">
-      <si:object>
-        <si:class>Block</si:class>
-        <si:property
-           name="name">ブロックB3F</si:property>
-      </si:object>
-    </metadata>
-    <rect
-       width="47.25"
-       height="877.5"
-       x="47.25"
-       y="378"
-       id="rect132174"
-       style="fill:#e5d196;fill-opacity:1;stroke:#888888" />
-  </g>
-  <g
-     id="g133076"
-     style="fill:#88c576;fill-opacity:1">
-    <title
-       id="title133078">ブロックC1F</title>
-    <metadata
-       id="metadata133080">
-      <si:object>
-        <si:class>Block</si:class>
-        <si:property
-           name="name">ブロックC1F</si:property>
-      </si:object>
-    </metadata>
-    <rect
-       width="1370.25"
-       height="81"
-       x="393.75"
-       y="1309.5"
-       id="rect133082"
-       style="fill:#88c576;fill-opacity:1;stroke:#888888" />
-  </g>
-  <g
-     id="g135406"
-     style="fill:#88c576;fill-opacity:1">
-    <title
-       id="title135408">ブロックC2F</title>
-    <metadata
-       id="metadata135410">
-      <si:object>
-        <si:class>Block</si:class>
-        <si:property
-           name="name">ブロックC2F</si:property>
-      </si:object>
-    </metadata>
-    <rect
-       width="1638"
-       height="108"
-       x="267.75"
-       y="1404"
-       id="rect135412"
-       style="fill:#88c576;fill-opacity:1;stroke:#888888" />
-  </g>
-  <g
-     id="g143017">
-    <title
-       id="title143019">コートまわり</title>
-    <metadata
-       id="metadata143021">
-      <si:object>
-        <si:class>Block</si:class>
-        <si:property
-           name="name">コートまわり</si:property>
-      </si:object>
-    </metadata>
-    <path
-       d="m 472.5,539.25 0,553.5 1228.5,0 0,-553.5 -1228.5,0 z m 53,47 1122.5,0 0,459.5 -1122.5,0 0,-459.5 z"
-       id="rect143023"
-       style="fill:#cccc37;fill-opacity:1;stroke:#888888;stroke-opacity:1" />
-  </g>
-  <text
-     x="1065.1406"
-     y="316"
-     id="text145431"
-     xml:space="preserve"
-     style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:100;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"><tspan
-       x="1065.1406"
-       y="316"
-       id="tspan145433">Aブロック</tspan></text>
-  <text
-     x="208"
-     y="816"
-     id="text145458"
-     xml:space="preserve"
-     style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:100;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"><tspan
-       x="208"
-       y="816"
-       id="tspan145460">Bブロック</tspan></text>
-  <text
-     x="1080.3105"
-     y="1292"
-     id="text145462"
-     xml:space="preserve"
-     style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:100;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"><tspan
-       x="1080.3105"
-       y="1292"
-       id="tspan145464">Cブロック</tspan></text>
-  <text
-     x="1078"
-     y="1072"
-     id="text145470"
-     xml:space="preserve"
-     style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:100;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"><tspan
-       x="1078"
-       y="1072"
-       id="tspan145472">コートサイド</tspan></text>
 </svg>
