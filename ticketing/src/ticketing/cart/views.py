@@ -823,6 +823,9 @@ class MobileSelectProductView(object):
             sa.desc("price")).filter_by(
             sales_segment=sales_segment)
 
+        # CSRFトークン発行
+        form = schemas.CSRFSecureForm(csrf_context=self.request.session)
+
         data = dict(
             event=event,
             performance=performance,
@@ -837,5 +840,10 @@ class MobileSelectProductView(object):
                 )
                 for product in products
             ],
+            form=form,
         )
         return data
+
+    def reserve(self):
+        form = schemas.CSRFSecureForm(form_data=self.request.params, csrf_context=self.request.session)
+        form.validate()

@@ -32,7 +32,7 @@ ${seat_type.name}
 商品をお選びください
 </p>
 
-<form>
+<form action="" method="post">
   % for product in products:
     <div>
       <br/>■${product['name']} &yen;${product['price']}<br/>
@@ -52,6 +52,7 @@ ${seat_type.name}
   % endfor
   <div style="text-align:center;">
   <br/>
+  ${form.csrf_token()}
   <input type="submit" value="次へ">
   </div>
 </form>
