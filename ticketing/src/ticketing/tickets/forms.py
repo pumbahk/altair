@@ -3,7 +3,8 @@
 import json
 import os.path
 from StringIO import StringIO
-import xml.etree.ElementTree as etree
+from lxml import etree
+# import xml.etree.ElementTree as etree
 from wtforms import Form
 from wtforms import TextField, IntegerField, HiddenField, SelectField, SelectMultipleField, FileField
 from wtforms.validators import Regexp, Length, Optional, ValidationError, StopValidation
@@ -11,6 +12,7 @@ from wtforms.widgets import TextArea
 from ticketing.formhelpers import DateTimeField, Translations, Required
 from ticketing.core.models import Event, Account, DeliveryMethod
 from ticketing.core.models import TicketFormat
+from .convert import to_opcodes
 
 def filestorage_has_file(storage):
     return hasattr(storage, "filename") and storage.file
@@ -78,6 +80,7 @@ class TicketTemplateForm(Form):
     def validate_drawing(form, field):
         try:
             form._drawing = etree.parse(field.data.file)
+            to_opcodes(form._drawing)
             field.data.file.seek(0)
             return field.data
         except Exception, e:
@@ -125,8 +128,10 @@ class TicketTemplateEditForm(Form):
     def validate_drawing(form, field):
         if not filestorage_has_file(field.data):
             return None
+
         try:
             form._drawing = etree.parse(field.data.file)
+            to_opcodes(form._drawing)
             field.data.file.seek(0)
             return field.data
         except Exception, e:
