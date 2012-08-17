@@ -31,6 +31,10 @@ class TicketingCartResource(object):
         else:
             self.event_id = None
 
+    @property
+    def membership(self):
+        return "89ers" # debug
+
     def get_system_fee(self):
         # 暫定で0に設定
         return 0

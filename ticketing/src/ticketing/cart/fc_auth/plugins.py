@@ -13,7 +13,7 @@ import ticketing.users.models as u_m
 logger = logging.getLogger(__name__)
 
 def make_plugin(rememberer_name, sha1salt):
-    pass
+    return FCAuthPlugin(rememberer_name=rememberer_name)
 
 
 @implementer(IIdentifier, IAuthenticator, IChallenger)
@@ -31,6 +31,7 @@ class FCAuthPlugin(object):
 
     # IIdentifier
     def identify(self, environ):
+        req = webob.Request(environ)
         identity = self.get_identity(req)
         logging.debug(identity)
 
