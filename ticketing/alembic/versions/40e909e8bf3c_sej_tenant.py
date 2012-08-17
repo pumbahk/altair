@@ -27,6 +27,7 @@ def upgrade():
         sa.Column('contact_02', sa.String(length=255), nullable=False),
         sa.Column('api_key', sa.String(length=255), nullable=True),
         sa.Column('inticket_api_url', sa.String(length=255), nullable=True),
+        sa.Column('organization_id', Identifier(), nullable=False),
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),

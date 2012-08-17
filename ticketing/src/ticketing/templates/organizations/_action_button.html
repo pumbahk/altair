@@ -1,0 +1,52 @@
+<%page args="organization, order=None" />
+<%namespace file="/common/helpers.html" import="action_button" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+
+<script type="text/javascript">
+  function delete_event(id) {
+    modal = $('#modal-delete');
+    modal.find('#delete').attr('href', '/events/delete/' + id);
+    modal.find('#message').text("${u'選択したテナントを削除します。よろしいですか？'}");
+    modal.modal('toggle');
+  }
+</script>
+
+<%
+  actions = {
+    'new':dict(
+      label=u'新規',
+      url=request.route_path('organizations.sej_tenant_new', organization_id=organization.id),
+      icon='icon-plus',
+    ),
+    'delete':dict(
+      label=u'削除',
+      url='javascript:delete_event(%d);' % organization.id,
+      icon='icon-minus',
+    ),
+}
+  order = iter(order or ['new', 'delete'])
+%>
+<div style="float: left;">
+  ${action_button(actions, order)}
+</div>
+
+
+<div style="clear: left;"></div>
+
+<div id="modal-send_event" class="modal hide fade">
+  <div class="modal-header">
+    <a href="#" class="close">&times;</a>
+    <h3>確認</h3>
+  </div>
+
+  <div class="modal-body">
+    <p>CMSへイベントを送信します。よろしいですか？</p>
+  </div>
+
+  <div class="modal-footer">
+    <a href="javascript:void(0);" onclick="$('#modal-send_event').modal('hide');" class="btn secondary">キャンセル</a>
+    <a id="send_event" href="" class="btn danger">送信</a>
+  </div>
+</div>
+
+${delete_modal()}

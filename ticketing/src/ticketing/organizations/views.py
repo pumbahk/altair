@@ -13,7 +13,7 @@ from ticketing.fanstatic import with_bootstrap
 from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
 from ..core.models import Organization
-from ticketing.organizations.forms import OrganizationForm
+from ticketing.organizations.forms import OrganizationForm, SejTenantForm
 from ticketing.core.models import Event, Account
 
 from ticketing.sej.models import SejTenant
@@ -121,3 +121,69 @@ class Organizations(BaseView):
 
         self.request.session.flash(u'配券先／配券元を削除しました')
         return HTTPFound(location=route_path('organizations.index', self.request))
+
+    ## SEJ Tenant
+
+    @view_config(route_name='organizations.sej_tenant_new', request_method="GET")
+    def sej_new(self):
+        '''
+        '''
+        organization_id = int(self.request.matchdict.get('organization_id', 0))
+        organization = Organization.get(organization_id)
+        if not organization:
+            raise HTTPNotFound()
+
+        form = SejTenantForm()
+        return dict(form=form)
+    @view_config(route_name='organizations.sej_tenant_new', request_method="POST")
+    def sej_new_post(self):
+        '''
+        '''
+        organization_id = int(self.request.matchdict.get('organization_id', 0))
+        organization = Organization.get(organization_id)
+        if not organization:
+            raise HTTPNotFound()
+        form = SejTenantForm(self.request.POST)
+        if not form.validate():
+            return dict(form=form)
+        else:
+            tenant = merge_session_with_post(SejTenant(), form.data)
+            tenant.organization = organization
+            organization.save()
+
+    @view_config(route_name='organizations.sej_tenant_edit')
+    def sej_edit(self):
+        '''
+        '''
+        organization_id = int(self.request.matchdict.get('organization_id', 0))
+        organization = Organization.get(organization_id)
+        sej_tenant_id = int(self.request.matchdict.get('id', 0))
+        sej_tenant = SejTenant.get(sej_tenant_id)
+        if not organization or not sej_tenant:
+            raise HTTPNotFound()
+        return dict(sej_tenant=sej_tenant, organization=organization)
+
+    @view_config(route_name='organizations.sej_tenant_edit')
+    def sej_edit_post(self):
+        '''
+        '''
+        organization_id = int(self.request.matchdict.get('organization_id', 0))
+        organization = Organization.get(organization_id)
+        sej_tenant_id = int(self.request.matchdict.get('id', 0))
+        sej_tenant = SejTenant.get(sej_tenant_id)
+        if not organization or not sej_tenant:
+            raise HTTPNotFound()
+        form = SejTenantForm(self.request.POST)
+        if not form.validate():
+            return dict(form=form)
+        else:
+            tenant = merge_session_with_post(sej_tenant, form.data)
+            tenant.organization = organization
+            organization.save()
+
+    @view_config(route_name='organizations.sej_tenant_delete')
+    def sej_delete(self):
+        '''
+        '''
+        organization_id = int(self.request.matchdict.get('organization_id', 0))
+        sej_tenant_id = int(self.request.matchdict.get('id', 0))
