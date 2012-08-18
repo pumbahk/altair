@@ -171,7 +171,7 @@ class TicketTemplates(BaseView):
         
         ticket_template.save()
         self.request.session.flash(u'チケットテンプレートを登録しました')
-        return HTTPFound(location=self.request.route_path("tickets.templates.index"))
+        return HTTPFound(location=self.request.route_path("tickets.index"))
 
     @view_config(route_name="events.tickets.boundtickets.edit", renderer='ticketing:templates/tickets/events/tickets/new.html', 
                  request_method="GET")
