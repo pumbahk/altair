@@ -123,7 +123,7 @@ class BundleForm(Form):
         )
 
     tickets = SelectMultipleField(
-        label=u"チケットテンプレート",
+        label=u"チケット券面",
         validators=[Required()], 
         coerce=long , 
         choices=[])
