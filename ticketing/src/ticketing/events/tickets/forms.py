@@ -26,6 +26,14 @@ class BoundTicketForm(Form):
         coerce=long
         )
 
+    name = TextField(
+        label=u"券面名称",
+        validators=[
+            Required(),
+            Length(max=255, message=u'255文字以内で入力してください')
+            ]
+        )
+
 class AttributeForm(Form):
     def _get_translations(self):
         return Translations()
