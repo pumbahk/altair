@@ -41,6 +41,7 @@ def get_seats(request):
         for seat in DBSession.query(Seat).options(joinedload('attributes_'), joinedload('areas'), joinedload('status_')).filter_by(venue=venue):
             seat_datum = {
                 'id': seat.l0_id,
+                'seat_no': seat.seat_no,
                 'stock_id': seat.stock_id,
                 'status': seat.status,
                 'areas': [area.id for area in seat.areas],
@@ -79,7 +80,7 @@ def get_seats(request):
             is_seat=stock_type.is_seat,
             quantity_only=stock_type.quantity_only,
             style=stock_type.style) \
-        for stock_type in DBSession.query(StockType).filter_by(event=venue.performance.event).order_by(StockType.order_no)
+        for stock_type in DBSession.query(StockType).filter_by(event=venue.performance.event).order_by(StockType.display_order)
         ]
 
     retval[u'stock_holders'] = [

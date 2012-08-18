@@ -13,8 +13,8 @@
 </%block>
 <div class="breadcrumbs">
 ${breadcrumbs(
-  names=[u'トップ', u'チケット様式', format.name],
-  urls=[request.route_path('index'), request.route_path('tickets.formats.index')]
+  names=[u'トップ', u'チケット券面', u'様式: %s' % format.name],
+  urls=[request.route_path('index'), request.route_path('tickets.index')]
 )}
 </div>
 <div class="page-header">

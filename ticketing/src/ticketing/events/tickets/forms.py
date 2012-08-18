@@ -26,6 +26,14 @@ class BoundTicketForm(Form):
         coerce=long
         )
 
+    name = TextField(
+        label=u"券面名称",
+        validators=[
+            Required(),
+            Length(max=255, message=u'255文字以内で入力してください')
+            ]
+        )
+
 class AttributeForm(Form):
     def _get_translations(self):
         return Translations()
@@ -106,7 +114,7 @@ class BundleForm(Form):
             ]
             qs = ProductItem.query.filter_by(deleted_at=None).join(Product).filter(Product.event_id==kwargs["event_id"])
             self.product_items.choices = [
-                (item.id, item.name) for item in qs
+                (item.id, u'%s: %s' % (item.product.name, item.name)) for item in qs
             ]
 
     name = TextField(
@@ -115,7 +123,7 @@ class BundleForm(Form):
         )
 
     tickets = SelectMultipleField(
-        label=u"チケットテンプレート",
+        label=u"チケット券面",
         validators=[Required()], 
         coerce=long , 
         choices=[])

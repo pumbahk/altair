@@ -44,6 +44,7 @@ class CalendarWidget(Widget):
         def calendar_render():
             ## todo あとで整理
             performances = bsettings.extra["performances"]
+            performances = [p for p in performances if p.start_on]
             event = bsettings.extra["event"]
             page = bsettings.extra["page"]
             request = bsettings.extra["request"]

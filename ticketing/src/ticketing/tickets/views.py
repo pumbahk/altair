@@ -23,35 +23,23 @@ from .convert import to_opcodes
 from lxml import etree
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
-class TicketFormats(BaseView):
-    @view_config(route_name='tickets.formats.index', renderer='ticketing:templates/tickets/formats/index.html', request_method="GET")
+class TicketMasters(BaseView):
+    @view_config(route_name='tickets.index', renderer='ticketing:templates/tickets/index.html', request_method="GET")
     def index(self):
-        qs = TicketFormat.filter_by(organization_id=self.context.user.organization_id).order_by(sa.desc("updated_at"))
-        return dict(h=helpers, formats=qs)
+        ticket_format_sort_by, ticket_format_direction = helpers.sortparams('ticket_format', self.request, ('updated_at', 'desc'))
 
-    # ## todo pagination
-    # @view_config(route_name='tickets.formats.index', renderer='ticketing:templates/tickets/formats/index.html', request_method="GET")
-    # def index(self):
-    #     items_per_page = 3
-    #     qs = TicketFormat.filter_by(organization_id=self.context.user.organization_id).order_by(sa.desc("updated_at"))
-    #     qs = paginate.Page(qs,
-    #                        items_per_page=items_per_page, 
-    #                        item_count=qs.count(), 
-    #                        url=paginate.PageURL_WebOb(self.request)
-    #                        )
-    #     if hasattr(self.request.GET, "page"):
-    #         n = (int(self.request.GET["page"])-1)*items_per_page
-    #         qs = qs.offset(n).limit(items_per_page)
-    #     return dict(h=helpers, formats=qs)
+        ticket_template_sort_by, ticket_template_direction = helpers.sortparams('ticket_template', self.request, ('updated_at', 'desc'))
 
-    @view_config(route_name='tickets.formats.index', renderer='ticketing:templates/tickets/formats/index.html', request_method="GET", 
-                 request_param="sort")
-    def index_with_sortable(self):
-        direction = helpers.get_direction(self.request.params["direction"])
-        qs = TicketFormat.filter_by(organization_id=self.context.user.organization_id)
-        qs = qs.order_by(direction(self.request.params["sort"]))
-        return dict(h=helpers, formats=qs)
+        ticket_format_qs = TicketFormat.filter_by(organization_id=self.context.user.organization_id)
+        ticket_template_qs = Ticket.templates_query().filter_by(organization_id=self.context.user.organization_id)
 
+        ticket_format_qs = ticket_format_qs.order_by(helpers.get_direction(ticket_format_direction)(ticket_format_sort_by))
+
+        ticket_template_qs = ticket_template_qs.order_by(helpers.get_direction(ticket_template_direction)(ticket_template_sort_by))
+        return dict(h=helpers, formats=ticket_format_qs, templates=ticket_template_qs)
+
+@view_defaults(decorator=with_bootstrap, permission="event_editor")
+class TicketFormats(BaseView):
     @view_config(route_name="tickets.formats.edit",renderer='ticketing:templates/tickets/formats/new.html')
     def edit(self):
         format = TicketFormat.filter_by(organization_id=self.context.user.organization_id,
@@ -162,19 +150,6 @@ class TicketFormats(BaseView):
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class TicketTemplates(BaseView):
-    @view_config(route_name='tickets.templates.index', renderer='ticketing:templates/tickets/templates/index.html')
-    def index(self):
-        qs = Ticket.templates_query().filter_by(organization_id=self.context.user.organization_id)
-        return dict(h=helpers, templates=qs)
-
-    @view_config(route_name='tickets.templates.index', renderer='ticketing:templates/tickets/templates/index.html', request_method="GET", 
-                 request_param="sort")
-    def index_with_sortable(self):
-        direction = helpers.get_direction(self.request.params["direction"])
-        qs = self.context.tickets_query().filter_by(organization_id=self.context.user.organization_id)
-        qs = qs.order_by(direction(self.request.params["sort"]))
-        return dict(h=helpers, templates=qs)
-
     @view_config(route_name="tickets.templates.new", renderer="ticketing:templates/tickets/templates/new.html", 
                  request_method="GET")
     def new(self):
@@ -196,7 +171,7 @@ class TicketTemplates(BaseView):
         
         ticket_template.save()
         self.request.session.flash(u'チケットテンプレートを登録しました')
-        return HTTPFound(location=self.request.route_path("tickets.templates.index"))
+        return HTTPFound(location=self.request.route_path("tickets.index"))
 
     @view_config(route_name="events.tickets.boundtickets.edit", renderer='ticketing:templates/tickets/events/tickets/new.html', 
                  request_method="GET")
