@@ -1277,7 +1277,7 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             'price':floor(self.price),
             'sale_id':self.sales_segment_id,
             'seat_type':self.seat_type(),
-            'order_no':self.display_order,
+            'display_order':self.display_order,
         }
         if self.deleted_at:
             data['deleted'] = 'true'
