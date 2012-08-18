@@ -70,7 +70,7 @@
         <th style="width: 50px;">${form.id.label.text}</th>
         <th style="width: 130px;">${form.name.label.text}</th>
         <th style="width: 100px;">${form.price.label.text}</th>
-        <th style="width: 60px;">${form.order_no.label.text}</th>
+        <th style="width: 60px;">${form.display_order.label.text}</th>
         % if performance:
         <th style="width: 100px;">配券先</th>
         <th style="width: 100px;">商品明細名</th>
@@ -102,7 +102,7 @@
           <td ${rowspan}><span id="id">${product.id}</span></td>
           <td ${rowspan}><a href="javascript:edit_product('${product.id}');"><span id="name">${product.name}</span></a></td>
           <td ${rowspan}><span id="price" value="${product.price}">${h.price_format(product.price)}</span>円</td>
-          <td ${rowspan}><span id="order_no">${product.order_no}</span></td>
+          <td ${rowspan}><span id="display_order">${product.display_order}</span></td>
           % if performance:
             % for j, item in enumerate(product.items_by_performance_id(performance.id)):
               % if j != 0:

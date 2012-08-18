@@ -114,7 +114,7 @@ class BundleForm(Form):
             ]
             qs = ProductItem.query.filter_by(deleted_at=None).join(Product).filter(Product.event_id==kwargs["event_id"])
             self.product_items.choices = [
-                (item.id, item.name) for item in qs
+                (item.id, u'%s: %s' % (item.product.name, item.name)) for item in qs
             ]
 
     name = TextField(

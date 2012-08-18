@@ -508,7 +508,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization = relationship('Organization', backref='events')
 
     performances = relationship('Performance', backref='event')
-    stock_types = relationship('StockType', backref='event', order_by='StockType.order_no')
+    stock_types = relationship('StockType', backref='event', order_by='StockType.display_order')
     stock_holders = relationship('StockHolder', backref='event')
 
     _first_performance = None
@@ -604,8 +604,8 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 "tickets":[1,2],
               ],
               "tickets":[
-                {"id":1, "sale_id":1, "name":"A席大人", "seat_type":"A席", "price":5000, "order_no":1},
-                {"id":2, "sale_id":2, "name":"B席大人", "seat_type":"B席", "price":3000, "order_no":2},
+                {"id":1, "sale_id":1, "name":"A席大人", "seat_type":"A席", "price":5000, "display_order":1},
+                {"id":2, "sale_id":2, "name":"B席大人", "seat_type":"B席", "price":3000, "display_order":2},
               ],
               "sales":[
                 {"id":1, "name":"販売区分1", "start_on":~, "end_on":~, "seat_choice":true},
@@ -969,11 +969,11 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
     type = Column(Integer)  # @see StockTypeEnum
-    order_no = Column(Integer, default=1)
+    display_order = Column(Integer, nullable=False, default=1)
     event_id = Column(Identifier, ForeignKey("Event.id"))
     quantity_only = Column(Boolean, default=False)
     style = Column(MutationDict.as_mutable(JSONEncodedDict(1024)))
-    stocks = relationship('Stock', backref=backref('stock_type', order_by='StockType.order_no'))
+    stocks = relationship('Stock', backref=backref('stock_type', order_by='StockType.display_order'))
 
     @property
     def is_seat(self):
@@ -1189,18 +1189,18 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
     price = Column(Numeric(precision=16, scale=2), nullable=False)
-    order_no = Column(Integer, default=1)
+    display_order = Column(Integer, nullable=False, default=1)
 
     sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'), nullable=True)
-    sales_segment = relationship('SalesSegment', uselist=False, backref=backref('product', order_by='Product.order_no'))
+    sales_segment = relationship('SalesSegment', uselist=False, backref=backref('product', order_by='Product.display_order'))
 
     seat_stock_type_id = Column(Identifier, ForeignKey('StockType.id'), nullable=True)
-    seat_stock_type = relationship('StockType', uselist=False, backref=backref('product', order_by='Product.order_no'))
+    seat_stock_type = relationship('StockType', uselist=False, backref=backref('product', order_by='Product.display_order'))
 
     event_id = Column(Identifier, ForeignKey('Event.id'))
-    event = relationship('Event', backref=backref('products', order_by='Product.order_no'))
+    event = relationship('Event', backref=backref('products', order_by='Product.display_order'))
 
-    items = relationship('ProductItem', backref=backref('product', order_by='Product.order_no'))
+    items = relationship('ProductItem', backref=backref('product', order_by='Product.display_order'))
 
     @staticmethod
     def find(performance_id=None, event_id=None, sales_segment_id=None, include_deleted=False):
@@ -1277,7 +1277,7 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             'price':floor(self.price),
             'sale_id':self.sales_segment_id,
             'seat_type':self.seat_type(),
-            'order_no':self.order_no,
+            'order_no':self.display_order,
         }
         if self.deleted_at:
             data['deleted'] = 'true'

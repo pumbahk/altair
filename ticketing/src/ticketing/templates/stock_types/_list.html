@@ -59,7 +59,7 @@ for stock_type in stock_types:
                type="${stock_type.type}"
                quantity_only="${1 if stock_type.quantity_only else 0}"
                quantity="${quantity}"
-               order_no="${stock_type.order_no}"
+               display_order="${stock_type.display_order}"
                data="${h.json(stock_type.style)}">
               ${stock_type.name}
             </a>
@@ -68,7 +68,7 @@ for stock_type in stock_types:
             ${quantity}
           </td>
           <td>
-            ${stock_type.order_no}
+            ${stock_type.display_order}
           </td>
         </tr>
       % endfor
@@ -108,7 +108,7 @@ for stock_type in stock_types:
                type="${stock_type.type}"
                quantity_only="${1 if stock_type.quantity_only else 0}"
                quantity="${quantity}"
-               order_no="${stock_type.order_no}"
+               display_order="${stock_type.display_order}"
                data='${h.json(stock_type.style)}'>
               ${stock_type.name}
             </a>
@@ -117,7 +117,7 @@ for stock_type in stock_types:
             ${quantity}
           </td>
           <td>
-            ${stock_type.order_no}
+            ${stock_type.display_order}
           </td>
         </tr>
       % endfor

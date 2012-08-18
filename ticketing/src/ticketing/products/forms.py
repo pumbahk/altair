@@ -47,7 +47,7 @@ class ProductForm(Form):
         places=2,
         validators=[Required()]
     )
-    order_no = IntegerField(
+    display_order = IntegerField(
         label=u'表示順',
     )
     seat_stock_type_id = SelectField(
