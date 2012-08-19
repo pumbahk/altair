@@ -36,10 +36,9 @@ class TicketingCartResource(object):
         sales_segment = self.sales_segment
         if sales_segment is None:
             return None
-        memberships = sales_segment.memberships
-        if memberships:
-            return memberships[0]
-        return None
+        if not sales_segment.member_group:
+            return None
+        return sales_segment.member_group.membership
 
     def get_system_fee(self):
         # 暫定で0に設定
