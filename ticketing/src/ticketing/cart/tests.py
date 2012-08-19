@@ -11,7 +11,7 @@ def _setup_db(echo=False):
         modules=[
             'ticketing.models',
             'ticketing.cart.models',
-            'ticketing.orders.models', 
+            #'ticketing.orders.models', 
             'ticketing.users.models',
             'ticketing.multicheckout.models',
             ],
@@ -424,7 +424,7 @@ class TicketingCartResourceTests(unittest.TestCase):
         performance_id = 8
 
         venue = self._add_venue(organization_id, site_id, venue_id)
-        stock = Stock(id=stock_id, quantity=100)
+        stock = Stock(id=stock_id, quantity=100, performance_id=performance_id)
         stock_status = StockStatus(stock_id=stock.id, quantity=100)
         seats = [Seat(id=i, stock_id=stock.id, venue=venue) for i in range(5)]
         seat_statuses = [SeatStatus(seat_id=i, status=int(SeatStatusEnum.Vacant)) for i in range(2)]
@@ -561,7 +561,7 @@ class ReserveViewTests(unittest.TestCase):
         performance_id = 8
 
         venue = self._add_venue(organization_id, site_id, venue_id)
-        stock = Stock(id=stock_id, quantity=100)
+        stock = Stock(id=stock_id, quantity=100, performance_id=performance_id)
         stock_status = StockStatus(stock_id=stock.id, quantity=100)
         seats = [Seat(id=i, stock_id=stock.id, venue=venue) for i in range(2)]
         seat_statuses = [SeatStatus(seat_id=i, status=int(SeatStatusEnum.Vacant)) for i in range(2)]
@@ -636,7 +636,7 @@ class ReserveViewTests(unittest.TestCase):
         performance_id = 8
 
         venue = self._add_venue(organization_id, site_id, venue_id)
-        stock = Stock(id=stock_id, quantity=100)
+        stock = Stock(id=stock_id, quantity=100, performance_id=performance_id)
         stock_status = StockStatus(stock_id=stock.id, quantity=0)
         seats = [Seat(id=i, stock_id=stock.id, venue=venue) for i in range(5)]
         seat_statuses = [SeatStatus(seat_id=i, status=int(SeatStatusEnum.InCart)) for i in range(5)]
@@ -813,8 +813,8 @@ class PaymentViewTests(unittest.TestCase):
                 zip=u"000-0000",
                 prefecture=u"東京都",
                 city=u"渋谷区",
-                street=u"住所",
-                address=u"",
+                address_1=u"住所",
+                address_2=u"",
                 email='mail-address@example.com',
             ),
         )
@@ -828,6 +828,7 @@ class PaymentViewTests(unittest.TestCase):
             ),
         )
         request.context = testing.DummyResource()
+        request.context.get_or_create_user = mock_get_or_create_user
         request.context.get_payment_delivery_method_pair = lambda: None
         target = self._makeOne(request)
         result = target()
