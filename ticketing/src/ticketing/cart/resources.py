@@ -33,7 +33,13 @@ class TicketingCartResource(object):
 
     @property
     def membership(self):
-        return "89ers" # debug
+        sales_segment = self.sales_segment
+        if sales_segment is None:
+            return None
+        memberships = sales_segment.memberships
+        if memberships:
+            return memberships[0]
+        return None
 
     def get_system_fee(self):
         # 暫定で0に設定
@@ -49,7 +55,11 @@ class TicketingCartResource(object):
         return pairs
 
 
+    @deprecate("deprecated method")
     def get_sales_segument(self):
+        return self.get_sales_segment()
+
+    def get_sales_segment(self):
         """ 該当イベントのSalesSegment取得
         """
 
@@ -72,6 +82,8 @@ class TicketingCartResource(object):
             ).filter(
                 c_models.SalesSegment.end_at>=now
             ).first()
+
+    sales_segment = property(get_sales_segment)
 
     @deprecate("deprecated method")
     def _convert_order_product_items(self, performance_id, ordered_products):
