@@ -384,6 +384,8 @@ class ReserveView(object):
             c_models.Performance.id==performance_id).first()
         if performance is None:
             raise NoEventError("No such performance (%d)" % performance_id)
+        # イベント
+        event = performance.event
 
         # CSRFトークンの確認
         form = schemas.CSRFSecureForm(
@@ -393,6 +395,12 @@ class ReserveView(object):
 
         # CSRFトークン発行
         form_next = schemas.CSRFSecureForm(csrf_context=self.request.session)
+
+        data = dict(
+            event=event,
+            performance=performance, 
+            seat_type_id=seat_type_id,
+        )
 
         order_items = self.ordered_items
         try:
@@ -405,26 +413,28 @@ class ReserveView(object):
                 transaction.abort()
                 logger.debug("cart is None. aborted.")
                 # TODO: 例外を上げる
-                return dict(result='NG')
+                data.update(dict(result='NG'))
+                return data
         except NotEnoughAdjacencyException:
             transaction.abort()
             logger.debug("not enough adjacency")
-            return dict(result='NG', reason="adjacency")
+            data.update(dict(result='NG', reason="adjacency"))
+            return data
         except InvalidSeatSelectionException:
             transaction.abort()
             logger.debug("seat selection is invalid.")
-            return dict(result='NG', reason="invalid seats")
+            data.update(dict(result='NG', reason="invalid seats"))
+            return data
         except NotEnoughStockException as e:
             transaction.abort()
             logger.debug("not enough stock quantity :%s" % e)
-            return dict(result='NG', reason="stock")
+            data.update(dict(result='NG', reason="stock"))
+            return data
 
         DBSession.add(cart)
         DBSession.flush()
         api.set_cart(self.request, cart)
-        return dict(performance=performance, 
-                    event=performance.event,
-                    seat_type_id=seat_type_id,
+        data.update(dict(result='OK',
                     payment_url=self.request.route_url("cart.payment"),
                     form=form_next,
                     cart=dict(products=[dict(name=p.product.name, 
@@ -434,8 +444,8 @@ class ReserveView(object):
                                         ) 
                                         for p in cart.products],
                               total_amount=h.format_number(cart.tickets_amount),
-                    ))
-
+                    )))
+        return data
 
     def __call__(self):
         """

@@ -16,29 +16,32 @@
 
 ${event.title}
 
-% for product in cart['products']:
-<div>
-  商品名(金額):<br/>
-  ${product['name']}(${product['price']}円)<br />
-  座席番号:<br/>
-  % for seat in product['seats']:
-    ${seat['name']}<br/>
-  % endfor
-  数量: ${product['quantity']}<br/>
-</div>
-% endfor
-<div>
-  合計金額:<br/>
-  ${cart['total_amount']}円
-</div>
-
-<form action="" method="post">
-  <div style="text-align:center;">
-  <br/>
-  ${form.csrf_token()}
-  <input type="submit" value="決済へ">
+% if result == 'OK':
+  % for product in cart['products']:
+  <div>
+    商品名(金額):<br/>
+    ${product['name']}(${product['price']}円)<br />
+    座席番号:<br/>
+    % for seat in product['seats']:
+      ${seat['name']}<br/>
+    % endfor
+    数量: ${product['quantity']}<br/>
   </div>
-</form>
+  % endfor
+  <div>
+    合計金額:<br/>
+    ${cart['total_amount']}円
+  </div>
+  <form action="" method="post">
+    <div style="text-align:center;">
+    <br/>
+    ${form.csrf_token()}
+    <input type="submit" value="決済へ">
+    </div>
+  </form>
+% else:
+  <p>在庫がありません。</p>
+% endif
 <form action="${request.route_url('cart.products', event_id=event.id, performance_id=performance.id, seat_type_id=seat_type_id)}">
   <div style="text-align:center;">
   <input type="submit" value="戻る">
