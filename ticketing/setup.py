@@ -43,6 +43,7 @@ requires = [
     'js.jquery_timepicker_addon',
     'js.jquery_colorpicker',
     'js.i18n',
+    'js.jquery_cookie',
     'simplejson',
     'waitress',
     'altair-commons',

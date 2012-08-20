@@ -57,7 +57,7 @@ class BjNHFixtureBuilder(FixtureBuilder):
         """
         layout_triples: (title, template_filename, blocks)
         page_triples: (name, url, layout, structure)
-        category_items: (orderno, name, label, hierarchy, page_name)
+        category_items: (display_order, name, label, hierarchy, page_name)
         topic_items: (kind, subkind, title, text, )
         """
         super(BjNHFixtureBuilder, self).__init__(Datum)
@@ -171,14 +171,14 @@ class BjNHFixtureBuilder(FixtureBuilder):
     def build_category(self):
         pagesets = self.build_pageset.cache
         retval = [self.Datum("category", 
-                             orderno=orderno, 
+                             display_order=display_order, 
                              organization_id=self.organization_id, 
                              name=name, 
                              label=label, 
                              hierarchy=hierarchy, 
                              pageset_id=pagesets.get(page_name)
                              )
-                  for orderno, name, label, hierarchy, page_name in self.category_items]
+                  for display_order, name, label, hierarchy, page_name in self.category_items]
         result = Result(retval, build_dict(retval, "name"))
         return result
 
@@ -192,10 +192,10 @@ class BjNHFixtureBuilder(FixtureBuilder):
                              subkind=subkind, 
                              bound_page_id=pagesets[page], 
                              organization_id=self.organization_id, 
-                             orderno=orderno, 
+                             display_order=display_order, 
                              title=title, 
                              text=text)
-                  for orderno, kind, subkind, title, text, page in self.topic_items]
+                  for display_order, kind, subkind, title, text, page in self.topic_items]
         result = Result(retval, build_dict(retval, "title"))
         return result
     

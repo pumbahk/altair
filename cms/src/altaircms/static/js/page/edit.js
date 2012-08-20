@@ -31,8 +31,8 @@ widget.configure({
     attach_managed: function(e){
         return $(e).addClass("managed")
     }, 
-    get_orderno: function(e){
-        return $(e).data("view").model.get_orderno();
+    get_display_order: function(e){
+        return $(e).data("view").model.get_display_order();
     }
 });
 
@@ -95,9 +95,9 @@ var DroppedWidget = Backbone.Model.extend({
     isNew: function(){
         return !this.get("pk")
     }, 
-    get_orderno: function(){
-        this.trigger("orderno", this);
-        return this.get("orderno");
+    get_display_order: function(){
+        this.trigger("display_order", this);
+        return this.get("display_order");
     }
 });
 
@@ -302,20 +302,20 @@ var Block = Backbone.Model.extend({
     add_widget: function(dwidget){
         // check("pre add_widget", this);
         this.get("widgets").push(dwidget);
-        dwidget.bind("orderno", this.get_orderno, this);
+        dwidget.bind("display_order", this.get_display_order, this);
         // check("post add_widget", this);
     }, 
-    get_orderno: function(dwidget){
+    get_display_order: function(dwidget){
         var no = 0;
         for(var i=0, j=arr.length; i<j; i++){
             if(!!arr[i]){
                 if(arr[i].cid == dwidget.cid){
-                    dwidget.set("orderno", no);
+                    dwidget.set("display_order", no);
                 }
                 no++;
             }
         }
-        throw "get_orderno: match widget is not found";
+        throw "get_display_order: match widget is not found";
     }, 
     get_index: function(dwidget){
         var arr = this.get("widgets");

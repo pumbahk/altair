@@ -3,7 +3,8 @@
 import json
 import os.path
 from StringIO import StringIO
-import xml.etree.ElementTree as etree
+from lxml import etree
+# import xml.etree.ElementTree as etree
 from wtforms import Form
 from wtforms import TextField, IntegerField, HiddenField, SelectField, SelectMultipleField, FileField
 from wtforms.validators import Regexp, Length, Optional, ValidationError, StopValidation
@@ -11,6 +12,7 @@ from wtforms.widgets import TextArea
 from ticketing.formhelpers import DateTimeField, Translations, Required
 from ticketing.core.models import Event, Account, DeliveryMethod
 from ticketing.core.models import TicketFormat
+from .convert import to_opcodes
 
 def filestorage_has_file(storage):
     return hasattr(storage, "filename") and storage.file
@@ -40,7 +42,19 @@ def build_template_data_value(drawing):
         drawing.write(out) #doc declaration?
         return dict(drawing=out.getvalue())
     return dict()
-    
+
+def get_validated_xmltree_as_opcode_source(svgio):
+    try:
+        xmltree  = etree.parse(svgio)
+    except Exception, e:
+        raise ValidationError("xml:" + str(e))
+    try:
+        to_opcodes(xmltree)
+        svgio.seek(0)
+        return xmltree
+    except Exception, e:
+        raise ValidationError("opcode:" + str(e))
+
 class TicketTemplateForm(Form):
     def _get_translations(self):
         return Translations()
@@ -76,12 +90,8 @@ class TicketTemplateForm(Form):
      )    
 
     def validate_drawing(form, field):
-        try:
-            form._drawing = etree.parse(field.data.file)
-            field.data.file.seek(0)
-            return field.data
-        except Exception, e:
-            raise ValidationError(str(e))
+        form._drawing = get_validated_xmltree_as_opcode_source(field.data.file)
+        return field.data
 
     def validate(self):
         super(type(self), self).validate()
@@ -122,15 +132,12 @@ class TicketTemplateEditForm(Form):
         ]
      )    
 
+
     def validate_drawing(form, field):
         if not filestorage_has_file(field.data):
             return None
-        try:
-            form._drawing = etree.parse(field.data.file)
-            field.data.file.seek(0)
-            return field.data
-        except Exception, e:
-            raise ValidationError(str(e))
+        form._drawing = get_validated_xmltree_as_opcode_source(field.data.file)
+        return field.data
 
     def validate(self):
         super(type(self), self).validate()

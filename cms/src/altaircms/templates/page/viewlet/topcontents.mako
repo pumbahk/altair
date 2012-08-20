@@ -25,7 +25,7 @@
 	<td>${topcontent.subkind}</td>
 	<td>${topcontent.publish_open_on}</td>
 	<td>${topcontent.publish_close_on}</td>
-	<td>${topcontent.orderno}</td>
+	<td>${topcontent.display_order}</td>
     <td>${topcontent.is_vetoed}</td>
 	<td><a href="${h.link.get_link_from_topcontent(request,topcontent)}">リンク先</a></td>
   </tr>

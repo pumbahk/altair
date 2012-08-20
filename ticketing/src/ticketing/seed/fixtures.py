@@ -692,10 +692,11 @@ class FixtureBuilder(object):
             style=json.dumps(dict(fill=dict(color=random_color())), ensure_ascii=False)
             )
 
-    def build_product_item(self, performance, product, stock, price, quantity):
+    def build_product_item(self, performance, product, stock, name, price, quantity):
         return self.Datum(
             'ProductItem',
             price=price,
+            name=name,
             stock=many_to_one(stock, 'stock_id'),
             product=many_to_one(product, 'product_id'),
             performance=many_to_one(performance, 'performance_id'),
@@ -715,8 +716,8 @@ class FixtureBuilder(object):
         return [
             self.build_product_item(
                 performance, product,
-                find_stock(stock_type_name), price, 1)
-                for stock_type_name, price in product_item_seeds
+                find_stock(stock_type_name), name, price, 1)
+                for stock_type_name, name, price in product_item_seeds
             ]
 
     def build_product_data(self, sales_segment):
@@ -724,7 +725,7 @@ class FixtureBuilder(object):
             self.Datum(
                 'Product',
                 name=name,
-                price=sum(price for stock_type_name, price in product_item_seeds),
+                price=sum(price for stock_type_name, _, price in product_item_seeds),
                 sales_segment=many_to_one(sales_segment, 'sales_segment_id')
                 ) \
             for name, product_item_seeds in self.stock_type_combinations.iteritems()

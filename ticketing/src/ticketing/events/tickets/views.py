@@ -46,6 +46,7 @@ def bind_ticket(request):
     qs = Ticket.templates_query().filter_by(organization_id=organization_id)
     ticket_template = qs.filter_by(id=form.data["ticket_template"]).one()
     bound_ticket = ticket_template.create_event_bound(event)
+    bound_ticket.name = form.data["name"]
     bound_ticket.save()
 
     request.session.flash(u'チケットが登録されました')

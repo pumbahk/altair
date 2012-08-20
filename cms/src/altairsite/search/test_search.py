@@ -619,7 +619,7 @@ class HotWordSearchTests(unittest.TestCase):
         ## proxyほしい
 
         hotword = HotWord(name=u"this-is-hotword-name", tag=pagetag, enablep=True, 
-                          orderno=1, 
+                          display_order=1, 
                           term_begin=datetime(1900, 1, 1), term_end=datetime(2100, 1, 1))
         self.session.add(hotword)
         
@@ -654,7 +654,7 @@ class HotWordSearchTests(unittest.TestCase):
         ## proxyほしい
 
         hotword = HotWord(name=u"this-is-hotword-name", tag=pagetag, enablep=True, 
-                          orderno=1, 
+                          display_order=1, 
                           term_begin=datetime(1900, 1, 1), term_end=datetime(2100, 1, 1))
         self.session.add(hotword)
         

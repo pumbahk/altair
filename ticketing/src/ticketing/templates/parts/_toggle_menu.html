@@ -1,0 +1,37 @@
+<script>
+  $(function() {
+    $('#menu-toggle').toggle(
+      function() {
+        if ($.cookie('menu')) {
+          $('.sidebar-nav').hide();
+        } else {
+          $('.sidebar-nav').toggle('slide', {direction: 'left'}, 100);
+        }
+        $('#main-container').removeAttr('class');
+        $('#left-menu').removeAttr('class');
+        $.cookie('menu', 'hide', {path:'/', expires:7});
+      },
+      function() {
+        $('#main-container').attr('class', 'span10');
+        $('#left-menu').removeAttr('style').attr('class', 'span2');
+        $('.sidebar-nav').toggle('slide', {direction: 'left'}, 100);
+        $.cookie('menu', null, {path:'/', expires:7});
+      }
+    );
+    if ($.cookie('menu')) {
+      $('#menu-toggle').click();
+    }
+  });
+</script>
+
+<div id="menu-toggle" class="label" style="width: 80px; margin-bottom: 5px; text-align: center;">
+  メニュー
+</div>
+
+<%def name="menu_style()">
+<% return 'display: none;' if request.cookies.get('menu') else '' %>
+</%def>
+
+<%def name="container_class()">
+<% return 'span10' if not request.cookies.get('menu') else '' %>
+</%def>

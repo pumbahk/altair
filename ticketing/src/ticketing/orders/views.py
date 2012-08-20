@@ -490,11 +490,18 @@ class TicketPrintApi(BaseView):
                 if ticket_bundle:
                     seats = ordered_product_item.seats
                     for ticket in ticket_bundle.tickets:
-                        for seat in seats:
+                        if seats and len(seats):
+                            for seat in seats:
+                                c = TicketPrintHistory(
+                                    operator = self.context.user,
+                                    ordered_product_item = ordered_product_item,
+                                    seat=seat,
+                                    ticket_bundle = ticket_bundle)
+                                c.save()
+                        else:
                             c = TicketPrintHistory(
                                 operator = self.context.user,
                                 ordered_product_item = ordered_product_item,
-                                seat=seat,
                                 ticket_bundle = ticket_bundle)
                             c.save()
 

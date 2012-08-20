@@ -44,12 +44,46 @@ exports.DEFAULT = {
     },
     highlighted: {
       fill: null,
-      stroke: { color: "#F63", width: 3, pattern: 'solid' }
+      stroke: { color: "#F63", width: 2, pattern: 'solid' }
     },
     unselectable: {
       text_color: "#888",
       fill:   { color: "#eee" },
       stroke: { color: "#ccc", width: 1 }
+    }
+  },
+
+  SEAT_STATUS_STYLE: {
+    //NotOnSale
+    0: {
+      stroke: { color: "#929292", width: 1, pattern: 'solid' }
+    },
+    //Vacant
+    1: {
+    },
+    //InCart
+    2: {
+      stroke: { color: "#ffff40", width: 1, pattern: 'solid' }
+    },
+    //Ordered
+    3: {
+      stroke: { color: "#2020d2", width: 1, pattern: 'solid' }
+    },
+    //Confirmed
+    4: {
+      stroke: { color: "#ff8c40", width: 1, pattern: 'solid' }
+    },
+    //Shipped
+    5: {
+      stroke: { color: "#b3d940", width: 1, pattern: 'solid' }
+    },
+    //Canceled
+    6: {
+      stroke: { color: "#ff4040", width: 1, pattern: 'solid' }
+    },
+    //Reserved
+    7: {
+      stroke: { color: "#9f9fec", width: 1, pattern: 'solid' }
     }
   }
 };

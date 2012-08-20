@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:ts="http://xmlns.ticketstar.jp/svg-extension" width="630.56689" height="230.45668" version="1.2">
+  <pageSet>
+    <page>
+      <defs
+         id="defs56">
+        <clipPath
+           id="clipPath16">
+          <path
+             id="path18"
+             d="M 7,7 571,7 571,835 7,835 7,7 z" />
+        </clipPath>
+        <clipPath
+           id="clipPath3018"
+           clipPathUnits="userSpaceOnUse">
+          <path
+             id="path3020"
+             d="M 0,300 300,300 300,0 0,0 0,300 z" />
+        </clipPath>
+        <clipPath
+           id="clipPath16-9">
+          <path
+             id="path18-7"
+             d="M 7,7 571,7 571,835 7,835 7,7 z" />
+        </clipPath>
+      </defs>
+      <ts:qrcode
+         content="日本語"
+         x="134mm"
+         y="30mm"
+         width="24mm"
+         height="24mm"
+         fill="#000"
+         stroke="none" />
+      <rect
+         style="fill:none;stroke:#000000;stroke-width:1;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+         id="rect3074"
+         width="35.117931"
+         height="35.117928"
+         x="82.980408"
+         y="23.216621" />
+      <rect
+         y="69.281769"
+         x="82.045555"
+         height="34.987633"
+         width="70.420708"
+         id="rect3142"
+         style="fill:none;stroke:#000000;stroke-width:1;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+      <rect
+         style="fill:none;stroke:#000000;stroke-width:1;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+         id="rect3144"
+         width="176.46283"
+         height="34.730549"
+         x="82.174103"
+         y="117.41032" />
+      <text
+         xml:space="preserve"
+         style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:1000%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"
+         x="127.67188"
+         y="49.314957"
+         id="text3146"><tspan
+           id="tspan3148"
+           x="127.67188"
+           y="49.314957"
+           style="font-size:16px">10mm</tspan></text>
+      <text
+         id="text3150"
+         y="95.314957"
+         x="161.67188"
+         style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:1000%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"
+         xml:space="preserve"><tspan
+           style="font-size:16px"
+           y="95.314957"
+           x="161.67188">20mm</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:1000%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"
+         x="269.67188"
+         y="140.31496"
+         id="text3154"><tspan
+           id="tspan3156"
+           x="269.67188"
+           y="140.31496"
+           style="font-size:16px">50mm</tspan></text>
+      <rect
+         y="165.55405"
+         x="82.317833"
+         height="34.443092"
+         width="353.34073"
+         id="rect3158"
+         style="fill:none;stroke:#000000;stroke-width:1;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+      <text
+         id="text3160"
+         y="188.31496"
+         x="449.67188"
+         style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:1000%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"
+         xml:space="preserve"><tspan
+           style="font-size:16px"
+           y="188.31496"
+           x="449.67188"
+           id="tspan3162">100mm</tspan></text>
+    </page>
+  </pageSet>
+</svg>

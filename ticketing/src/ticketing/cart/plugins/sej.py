@@ -16,9 +16,11 @@ from .. import logger
 from .. import helpers as h
 from .. import api as a
 
+from pyramid.threadlocal import get_current_registry
+
 from ticketing.cart.rakuten_auth.api import authenticated_user
 from ticketing.sej.ticket import SejTicketDataXml
-from ticketing.sej.models import SejOrder
+from ticketing.sej.models import SejOrder, SejTenant
 from ticketing.sej.payment import request_order
 from ticketing.sej.resources import SejPaymentType, SejTicketType
 from ticketing.sej.utils import han2zen
@@ -129,6 +131,7 @@ class SejPaymentPlugin(object):
         order = c_models.Order.create_from_cart(cart)
         cart.finish()
 
+
         shipping_address = order.shipping_address
         performance = order.performance
         current_date = datetime.now()
@@ -138,20 +141,19 @@ class SejPaymentPlugin(object):
         ticketing_due_at = order.payment_delivery_pair.issuing_end_at
         tel1 = shipping_address.tel_1.replace('-', '')
         tel2 = shipping_address.tel_2.replace('-', '')
-        sej_order = get_sej_order(order)
 
-
-        from pyramid.threadlocal import get_current_registry
         settings = get_current_registry().settings
-        api_key = settings['sej.api_key']
-        api_url = settings['sej.inticket_api_url']
+        tenant = SejTenant.find_by(organization_id = performance.event.organization.id)
+        api_key = tenant.api_key or settings['sej.api_key']
+        api_url = tenant.inticket_api_url or settings['sej.inticket_api_url']
 
+        sej_order = get_sej_order(order)
         if not sej_order:
             request_order(
-                shop_name           = performance.event.organization.name,
-                shop_id             = u'30520',
-                contact_01          = u'022-215-8138',
-                contact_02          = u'仙台89ERS　ブースター事務局　TEL: 022-215-8138　(平日：9:00〜18:00)',
+                shop_name           = tenant.shop_name,
+                shop_id             = tenant.shop_id,
+                contact_01          = tenant.contact_01,
+                contact_02          = tenant.contact_02,
                 order_id            = order.order_no,
                 username            = u'%s%s' % (shipping_address.last_name, shipping_address.first_name),
                 username_kana       = u'%s%s' % (shipping_address.last_name_kana, shipping_address.first_name_kana),
@@ -196,17 +198,18 @@ class SejDeliveryPlugin(object):
         tel1 = shipping_address.tel_1.replace('-', '')
         tel2 = shipping_address.tel_2.replace('-', '')
 
-        try:
-            sej_order = SejOrder.filter(SejOrder.order_id == order_no).one()
-        except NoResultFound, e:
-            sej_order = None
+        settings = get_current_registry().settings
+        tenant = SejTenant.find_by(organization_id = performance.event.organization.id)
+        api_key = tenant.api_key or settings['sej.api_key']
+        api_url = tenant.inticket_api_url or settings['sej.inticket_api_url']
 
+        sej_order = get_sej_order(order)
         if not sej_order:
             request_order(
-                shop_name           = performance.event.organization.name,
-                shop_id             = u'30520',
-                contact_01          = u'00-0000-0000',
-                contact_02          = u'楽天チケット お問い合わせセンター 050-5830-6860',
+                shop_name           = tenant.shop_name,
+                shop_id             = tenant.shop_id,
+                contact_01          = tenant.contact_01,
+                contact_02          = tenant.contact_02,
                 order_id            = order_no,
                 username            = u'%s%s' % (shipping_address.last_name, shipping_address.first_name),
                 username_kana       = u'%s%s' % (shipping_address.last_name_kana, shipping_address.first_name_kana),
@@ -222,7 +225,9 @@ class SejDeliveryPlugin(object):
                 ticketing_start_at  = ticketing_start_at,
                 ticketing_due_at    = ticketing_due_at,
                 regrant_number_due_at = performance.start_on + timedelta(days=1),
-                tickets=tickets
+                tickets=tickets,
+                secret_key = api_key,
+                hostname = api_url
             )
 
 @implementer(IDeliveryPlugin)
@@ -236,6 +241,13 @@ class SejPaymentDeliveryPlugin(object):
         order = c_models.Order.create_from_cart(cart)
         cart.finish()
 
+        performance = cart.performance
+
+        settings = get_current_registry().settings
+        tenant = SejTenant.find_by(organization_id = performance.event.organization.id)
+        api_key = tenant.api_key or settings['sej.api_key']
+        api_url = tenant.inticket_api_url or settings['sej.inticket_api_url']
+
         sej_order = get_sej_order(order)
         if not sej_order:
             shipping_address = cart.shipping_address
@@ -248,10 +260,10 @@ class SejPaymentDeliveryPlugin(object):
             tel2 = shipping_address.tel_2.replace('-', '')
             tickets = get_tickets(order)
             request_order(
-                shop_name           = performance.event.organization.name,
-                shop_id             = u'30520',
-                contact_01          = u'00-0000-0000',
-                contact_02          = u'楽天チケット お問い合わせセンター 050-5830-6860',
+                shop_name           = tenant.shop_name,
+                shop_id             = tenant.shop_id,
+                contact_01          = tenant.contact_01,
+                contact_02          = tenant.contact_02,
                 order_id            = order.order_no,
                 username            = u'%s%s' % (shipping_address.last_name, shipping_address.first_name),
                 username_kana       = u'%s%s' % (shipping_address.last_name_kana, shipping_address.first_name_kana),
@@ -267,7 +279,9 @@ class SejPaymentDeliveryPlugin(object):
                 ticketing_start_at  = ticketing_start_at,
                 ticketing_due_at    = ticketing_due_at,
                 regrant_number_due_at = performance.start_on + timedelta(days=1),
-                tickets=tickets
+                tickets=tickets,
+                secret_key = api_key,
+                hostname = api_url
             )
 
         return order

@@ -1,5 +1,5 @@
 from pyramid.interfaces import IRootFactory
-from pyramid.httpexceptions import HTTPNotFound
+from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from ticketing.core.models import Event
 from ticketing.core.models import Ticket, TicketBundle, TicketBundleAttribute
 
@@ -14,6 +14,12 @@ class EventBoundTicketsResource(object):
         if not hasattr(self, "__acl__") and parent and hasattr(parent, "__acl__"):
             self.__acl__ = parent.__acl__
         self.user = parent.user
+
+    def after_ticket_action_redirect(self):
+        return HTTPFound(location=self.request.route_path("events.tickets.index", event_id=self.request.matchdict["event_id"]))
+    
+    def tickets_query(self):
+        return Ticket.filter_by(event_id=self.request.matchdict["event_id"])
 
     @property
     def event(self):
