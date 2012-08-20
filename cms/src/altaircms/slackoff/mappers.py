@@ -31,6 +31,9 @@ def image_asset_layout(request, asset):
 
 def layout_mapper(request, obj):
     objlike = ObjectLike(**model_to_dict(obj))
+    downloadlink = request.route_path("layout_download", layout_id=obj.id)
+    previewlink = request.route_path("layout_preview", layout_id=obj.id)
+    objlike.template_filename = Markup(u'%s(<a href="%s">download</a>)<a href="%s"><i class="icon-eye-open"></i></a>' % (obj.template_filename, downloadlink, previewlink))
     return objlike
 
 def promotion_mapper(request, obj):

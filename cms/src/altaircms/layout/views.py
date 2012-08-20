@@ -8,6 +8,7 @@ from altaircms.auth.api import get_or_404
 
 from altaircms.lib.crud.views import AfterInput
 from pyramid.view import view_defaults
+from pyramid.response import FileResponse
 from altaircms.slackoff import forms
 from . import subscribers 
 from . import api
@@ -16,6 +17,30 @@ from . import api
 def demo(request):
     layout = get_or_404(request.allowable(Layout), Layout.id==request.GET["id"])
     return dict(layout_image=LayoutRender(layout).blocks_image())
+
+from ..layout.api import get_layout_creator
+import os
+from collections import defaultdict
+
+@view_config(route_name="layout_preview", decorator="altaircms.lib.fanstatic_decorator.with_jquery", 
+             renderer="dummy.mako")
+def preview(context, request):
+    layout_creator = get_layout_creator(request) ##
+    layout = get_or_404(request.allowable(Layout), Layout.id==request.matchdict["layout_id"])
+    template = os.path.join(layout_creator.template_path_asset_spec, layout.template_filename)
+    request.override_renderer = template
+    blocks = defaultdict(list)
+    class Page(object):
+        title = layout.title
+        keywords = layout.title
+        description = "layout preview"
+    return {"display_blocks": blocks, "page": Page}
+
+@view_config(route_name="layout_download")
+def download(request):
+    layout = get_or_404(request.allowable(Layout), Layout.id==request.matchdict["layout_id"])
+    path = api.get_layout_creator(request).get_layout_filepath(layout)
+    return FileResponse(path)
 
 @view_defaults(route_name="layout_create", 
                decorator="altaircms.lib.fanstatic_decorator.with_bootstrap")

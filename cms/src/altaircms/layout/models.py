@@ -37,4 +37,3 @@ class Layout(BaseOriginalMixin, WithOrganizationMixin, Base):
             return False
         return True
             
-            

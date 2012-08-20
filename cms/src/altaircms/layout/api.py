@@ -28,6 +28,7 @@ class LayoutCreator(object):
     """
     def __init__(self, template_path):
         self.assetresolver = AssetResolver()
+        self.template_path_asset_spec = template_path
         self.template_path = self.assetresolver.resolve(template_path).abspath()
 
     def as_form_proxy(self, form):
@@ -38,6 +39,9 @@ class LayoutCreator(object):
 
     def get_filename(self, params):
         return os.path.join(self.template_path, self.get_basename(params))
+
+    def get_layout_filepath(self, layout):
+        return os.path.join(self.template_path, layout.template_filename)
 
     def get_buf(self, params):
         return params["filepath"].file
