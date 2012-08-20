@@ -415,6 +415,10 @@ callbacks.select = function (viewer, selection) {
   </div>
 </div>
 
+<div style="float: right;">
+  <a class="btn btn-inverse" href="${request.route_path('seats.download', venue_id=performance.venue.id)}">すべての座席をCSV出力</a>
+</div>
+
 <div id="modal-result" class="modal hide">
   <div class="modal-header">
     <a href="#" class="close">&times;</a>
