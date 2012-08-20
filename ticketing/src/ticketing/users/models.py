@@ -164,7 +164,7 @@ class MemberGroup(Base, WithTimestamp):
      id = Column(Identifier, primary_key=True)
      name = Column(String(255))
      membership_id = Column(Identifier, ForeignKey('Membership.id'))
-     membership = lambda:relationthip('Membership', backref='membergruops')
+     membership = relationship('Membership', backref='membergruops')
 
    
 # class Membership_SalesSegment(Base):

@@ -24,7 +24,7 @@ class LoginView(object):
 
     @view_config(request_method="GET", route_name='fc_auth.login', renderer='json')
     def login_form(self):
-        membership = self.context.membership
+        membership = self.request.matchdict['membership']
         self.select_renderer(membership)
         return dict(username='')
 
@@ -32,7 +32,7 @@ class LoginView(object):
     @view_config(request_method="POST", route_name='fc_auth.login', renderer='string')
     def login(self):
         who_api = get_who_api(self.request.environ)
-        membership = self.context.membership
+        membership = self.request.matchdict['membership']
         username = self.request.params['username']
         password = self.request.params['password']
         logger.debug("authenticate for membership %s" % membership)

@@ -1,4 +1,7 @@
+import logging
 from .api import login_url
+
+logger = logging.getLogger(__name__)
 
 class FCAuthTween(object):
     def __init__(self, handler, registry):
@@ -11,6 +14,6 @@ class FCAuthTween(object):
             return self.handler(request)
         finally:
             if hasattr(request.context, 'membership') and request.context.membership:
+                logger.debug('check fc_auth %s' % request.context.membership)
                 request.environ['ticketing.cart.fc_auth.required'] = True
-                request.environ['ticketing.cart.fc_auth.membership'] = request.context.membership
                 request.environ['ticketing.cart.fc_auth.login_url'] = login_url(request)
