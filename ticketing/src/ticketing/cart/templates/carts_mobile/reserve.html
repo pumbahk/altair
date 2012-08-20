@@ -16,51 +16,31 @@
 
 ${event.title}
 
-<p>会場:<br/>
-${venue.name}
-</p>
-
-<p>日時:<br/>
-${performance.start_on}
-</p>
-
-<p>席種:<br/>
-${seat_type.name}
-</p>
-
-<p>
-商品をお選びください
-</p>
-
-<form action="${request.route_url('cart.order')}" method="post">
-  % for product in products:
-    <div>
-      <br/>■${product['name']} &yen;${product['price']}<br/>
-      % if product['detail']:
-        ${product['detail']}<br/>
-      % endif
-      数量
-      <select name="product-${product['id']}">
-        <option value="0">0</option>
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5">5</option>
-      </select>
-    </div>
+% for product in cart['products']:
+<div>
+  商品名(金額):<br/>
+  ${product['name']}(${product['price']}円)<br />
+  座席番号:<br/>
+  % for seat in product['seats']:
+    ${seat['name']}<br/>
   % endfor
+  数量: ${product['quantity']}<br/>
+</div>
+% endfor
+<div>
+  合計金額:<br/>
+  ${cart['total_amount']}円
+</div>
+
+<form action="" method="post">
   <div style="text-align:center;">
   <br/>
-  <input type="hidden" name="performance_id" value="${performance.id}">
-  <input type="hidden" name="seat_type_id" value="${seat_type.id}">
   ${form.csrf_token()}
-  <input type="submit" value="次へ">
+  <input type="submit" value="決済へ">
   </div>
 </form>
-<form action="${request.route_url('cart.mobile', event_id=event.id, performance_id=performance.id)}">
+<form action="${request.route_url('cart.products', event_id=event.id, performance_id=performance.id, seat_type_id=seat_type_id)}">
   <div style="text-align:center;">
-  <input type="hidden" name="v" value="${venue.name}">
   <input type="submit" value="戻る">
   </div>
 </form>
