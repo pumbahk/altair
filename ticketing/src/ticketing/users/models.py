@@ -18,6 +18,9 @@ class User(Base, WithTimestamp):
     bank_account_id = Column(Identifier, ForeignKey('BankAccount.id'))
     bank_account    = relationship('BankAccount')
 
+    membergroup_id = Column(Identifier, ForeignKey('MemberGroup.id'))
+    membergroup = relationship('MemberGroup', backref='users')
+
     @staticmethod
     def get(user_id):
         return session.query(User).filter(User.id == user_id).first()

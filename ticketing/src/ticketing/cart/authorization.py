@@ -15,11 +15,14 @@ class MembershipAuthorizationPolicy(object):
         """
 
         membership = context.membership    
-        if membership is None:
+        membergroup = context.membergroup
+        if membership is None or membergroup is None:
             # 楽天認証
             return "rakuten_user" in principals
 
-        return "membership:%s" % membership in principals
+        permit_membership = "membership:%s" % membership in principals
+        permit_membergroup = "membergroup:%s" % membergroup in principals
+        return permit_membership and permit_membergroup
 
     def principals_allowed_by_permission(self, context, permission):
         raise NotImplementedError

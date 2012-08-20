@@ -94,7 +94,9 @@ class FCAuthPlugin(object):
         if user is None:
             return
 
-        data = {'username': username, 'membership': membership}
+        data = {'username': username, 
+            'membership': user.membership.name,
+            'membergroup': membergroup}
         return pickle.dumps(data).encode('base64')
 
 
