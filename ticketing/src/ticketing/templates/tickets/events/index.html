@@ -118,7 +118,6 @@
       <th class="minwidth"></th>
       <th><a href="#" class="sortable">名前</a></th>
       <th><a href="#" class="sortable">チケット券面(Ticket)</a></th>
-      <th><a href="#" class="sortable">商品(ProductItem)</a></th>
       <th><a href="#" class="sortable">属性(TicketAttribute)</a></th>
       </tr>
     </thead>
@@ -133,13 +132,6 @@
           <ul>
             %for ticket in bundle.tickets:
             <li><a href="#ticket:${ticket.id}">${ticket.name}</a></li>
-            %endfor		  
-          </ul>
-        </td>
-        <td>
-          <ul>
-            %for product_item in bundle.product_items:
-            <li>${product_item.name}</a></li>
             %endfor		  
           </ul>
         </td>

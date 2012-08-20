@@ -113,9 +113,6 @@ class BundleForm(Form):
                 (ticket.id, ticket.name) for ticket in Ticket.filter_by(event_id=kwargs['event_id'])
             ]
             qs = ProductItem.query.filter_by(deleted_at=None).join(Product).filter(Product.event_id==kwargs["event_id"])
-            self.product_items.choices = [
-                (item.id, u'%s: %s' % (item.product.name, item.name)) for item in qs
-            ]
 
     name = TextField(
         label=u"名称", 
@@ -124,12 +121,6 @@ class BundleForm(Form):
 
     tickets = SelectMultipleField(
         label=u"チケット券面",
-        validators=[Required()], 
-        coerce=long , 
-        choices=[])
-
-    product_items = SelectMultipleField(
-        label=u"商品(ProductItem)",
         validators=[Required()], 
         coerce=long , 
         choices=[])
