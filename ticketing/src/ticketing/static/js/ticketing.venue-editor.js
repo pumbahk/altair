@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['MYTN0MXECAVA9M9S'] = (function (exports) { (function () { 
+__LIBS__['lDR0F7WY8QJ2LIPE'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -93,7 +93,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['LMB1Q7AJW39L48BY'] = (function (exports) { (function () { 
+__LIBS__['O4PQWIN8RT2BXGJI'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -119,7 +119,7 @@ exports.ja = {
   } 
 };
  })(); return exports; })({});
-__LIBS__['pNCGHR4ZV3LC7FUP'] = (function (exports) { (function () { 
+__LIBS__['CNA67P58C5TNL4F5'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -218,7 +218,7 @@ exports.mergeStyle = function mergeStyle(a, b) {
   };
 };
  })(); return exports; })({});
-__LIBS__['mSF_HH8DZ_9NCFEI'] = (function (exports) { (function () { 
+__LIBS__['qQQI18V7UAE7YXFP'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -267,12 +267,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['GOT7USEYLFC17XLY'] = (function (exports) { (function () { 
+__LIBS__['GXL1RN1S8CB2RO3L'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['pNCGHR4ZV3LC7FUP'];
-var CONF = __LIBS__['MYTN0MXECAVA9M9S'];
-var IdentifiableSet = __LIBS__['mSF_HH8DZ_9NCFEI'].IdentifiableSet;
+var util = __LIBS__['CNA67P58C5TNL4F5'];
+var CONF = __LIBS__['lDR0F7WY8QJ2LIPE'];
+var IdentifiableSet = __LIBS__['qQQI18V7UAE7YXFP'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -711,12 +711,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['EMMCJNAR6WT51VIU'] = (function (exports) { (function () { 
+__LIBS__['UQWRFH9OMDTBFEDM'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['pNCGHR4ZV3LC7FUP'];
-var CONF = __LIBS__['MYTN0MXECAVA9M9S'];
-var models = __LIBS__['GOT7USEYLFC17XLY'];
+var util = __LIBS__['CNA67P58C5TNL4F5'];
+var CONF = __LIBS__['lDR0F7WY8QJ2LIPE'];
+var models = __LIBS__['GXL1RN1S8CB2RO3L'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -861,7 +861,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
             x: p.x + (s.x * 0.10),
             y: p.y + (s.y * 0.75)
           },
-          fontSize: (s.y * 0.75),
+          fontSize: (s.y * 0.5),
           text: styleText,
           style: { fill: new Fashion.FloodFill(new Fashion.Color(style.text_color)) }
         })
@@ -898,13 +898,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['MYTN0MXECAVA9M9S'];
-  var models = __LIBS__['GOT7USEYLFC17XLY'];
-  var util = __LIBS__['pNCGHR4ZV3LC7FUP'];
-  var viewobjects = __LIBS__['EMMCJNAR6WT51VIU'];
-  var IdentifiableSet = __LIBS__['mSF_HH8DZ_9NCFEI'].IdentifiableSet;
+  var CONF = __LIBS__['lDR0F7WY8QJ2LIPE'];
+  var models = __LIBS__['GXL1RN1S8CB2RO3L'];
+  var util = __LIBS__['CNA67P58C5TNL4F5'];
+  var viewobjects = __LIBS__['UQWRFH9OMDTBFEDM'];
+  var IdentifiableSet = __LIBS__['qQQI18V7UAE7YXFP'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['LMB1Q7AJW39L48BY'];
+    I18n.translations = __LIBS__['O4PQWIN8RT2BXGJI'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;

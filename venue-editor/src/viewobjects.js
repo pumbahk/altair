@@ -145,7 +145,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
             x: p.x + (s.x * 0.10),
             y: p.y + (s.y * 0.75)
           },
-          fontSize: (s.y * 0.75),
+          fontSize: (s.y * 0.5),
           text: styleText,
           style: { fill: new Fashion.FloodFill(new Fashion.Color(style.text_color)) }
         })
