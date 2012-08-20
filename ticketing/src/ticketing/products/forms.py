@@ -91,7 +91,6 @@ class ProductItemForm(Form):
         if event_id is not None:
             ticket_bundles = TicketBundle.filter_by(event_id=event_id)
             self.ticket_bundle_id.choices = [(u'', u'(なし)')] + [(tb.id, tb.name) for tb in ticket_bundles]
-            print self.ticket_bundle_id.choices
 
         if self.stock_holders.data:
             conditions ={
