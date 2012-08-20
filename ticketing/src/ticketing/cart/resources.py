@@ -77,6 +77,8 @@ class TicketingCartResource(object):
             ).filter(
                 c_models.SalesSegment.event_id==self.event_id
             ).first()
+            if sales_segment is None:
+                return None
             if sales_segment.start_at <= now and sales_segment.end_at >= now:
                 return sales_segment
         else:

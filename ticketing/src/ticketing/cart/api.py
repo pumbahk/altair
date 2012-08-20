@@ -74,7 +74,7 @@ def get_item_name(request, performance):
 def get_nickname(request):
     from .rakuten_auth.api import authenticated_user
     user = authenticated_user(request)
-    return user['nickname']
+    return user.get('nickname', '')
 
 def get_payment_method_manager(request=None, registry=None):
     if request is not None:
