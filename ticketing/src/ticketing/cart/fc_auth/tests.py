@@ -60,16 +60,17 @@ class FCAuthPluginTests(unittest.TestCase):
 
         self.assertFalse(result)
 
-    def _addCredential(self, membership, username, password):
-        user = add_credential(membership, username, password)
+    def _addCredential(self, membership, membergroup, username, password):
+        user = add_credential(membership, membergroup, username, password)
         self.session.add(user)
         return user
 
     def test_authenticate(self):
         membership = "fc"
+        membergroup = "fc_platinum"
         username = "test_user"
         password = "secret"
-        self._addCredential(membership, username, password)
+        self._addCredential(membership, membergroup, username, password)
 
         identity = {
             "membership": membership,
@@ -137,8 +138,8 @@ class TestIt(unittest.TestCase):
         environ.update(kwargs)
         return environ
 
-    def _addCredential(self, membership, username, password):
-        user = add_credential(membership, username, password)
+    def _addCredential(self, membership, membergroup, username, password):
+        user = add_credential(membership, membergroup, username, password)
         self.session.add(user)
         return user
 
@@ -149,9 +150,10 @@ class TestIt(unittest.TestCase):
         environ['repoze.who.plugins'] = api.name_registry
 
         membership = "fc"
+        membergroup = "fc_plutinum"
         username = "test_user"
         password = "secret"
-        self._addCredential(membership, username, password)
+        self._addCredential(membership, membergroup, username, password)
         creds = {
             "membership": membership,
             "username": username,
@@ -161,7 +163,8 @@ class TestIt(unittest.TestCase):
         authenticated, headers = api.login(creds)
 
         import pickle
-        self.assertEqual(pickle.loads(authenticated['repoze.who.userid'].decode('base64')), {'username': 'test_user', 'membership': 'fc'})
+        self.assertEqual(pickle.loads(authenticated['repoze.who.userid'].decode('base64')), 
+            {'username': 'test_user', 'membership': 'fc', 'membergroup': 'fc_plutinum'})
 
     def test_challenge_none(self):
         login_url = 'http://example.com/login'

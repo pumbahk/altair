@@ -1,9 +1,10 @@
-def add_credential(membership, username, password):
+def add_credential(membership, membergroup, username, password):
     import ticketing.core.models
-    from ticketing.users.models import Membership, User, UserCredential
+    from ticketing.users.models import Membership, User, UserCredential, MemberGroup
     
     m = Membership(name=membership)
-    u = User()
+    mg = MemberGroup(membership=m, name=membergroup)
+    u = User(membergroup=mg)
     uc = UserCredential(membership=m,
                         user=u,
                         auth_identifier=username,
