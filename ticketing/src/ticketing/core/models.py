@@ -767,7 +767,7 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     event = relationship('Event', backref='sales_segments')
 
     membergroup_id = Column(Identifier, ForeignKey('MemberGroup.id'))
-    membergroup = lambda: relationship('MemberGroup', backref='salessegments')
+    membergroup = relationship('MemberGroup', backref='salessegments')
 
     def get_cms_data(self):
         start_at = isodate.datetime_isoformat(self.start_at) if self.start_at else ''

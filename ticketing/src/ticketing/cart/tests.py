@@ -323,6 +323,45 @@ class TicketingCartResourceTests(unittest.TestCase):
         self.session.add(sales_segment)
         return sales_segment
 
+    @mock.patch("ticketing.cart.resources.datetime")
+    def test_membership_none(self, mock_datetime):
+        from datetime import datetime
+        mock_datetime.now.return_value = datetime(2012, 6, 20)
+
+        event_id = "99"
+        ss1 = self._add_sales_segement(event_id=event_id, start_at=datetime(2012, 6, 1), end_at=datetime(2012, 6, 30))
+        ss2 = self._add_sales_segement(event_id=event_id, start_at=datetime(2012, 6, 21), end_at=datetime(2012, 6, 30))
+        ss3 = self._add_sales_segement(event_id=event_id, start_at=datetime(2012, 6, 1), end_at=datetime(2012, 6, 19))
+        self.session.flush()
+
+        request = DummyRequest(matchdict={'event_id': event_id})
+        target = self._makeOne(request)
+        result = target.membership
+
+        self.assertIsNone(result)
+
+    @mock.patch("ticketing.cart.resources.datetime")
+    def test_membership(self, mock_datetime):
+        from ticketing.users.models import Membership, MemberGroup
+        from datetime import datetime
+        mock_datetime.now.return_value = datetime(2012, 6, 20)
+
+        event_id = "99"
+        ss1 = self._add_sales_segement(event_id=event_id, start_at=datetime(2012, 6, 1), end_at=datetime(2012, 6, 30))
+        ss2 = self._add_sales_segement(event_id=event_id, start_at=datetime(2012, 6, 21), end_at=datetime(2012, 6, 30))
+        ss3 = self._add_sales_segement(event_id=event_id, start_at=datetime(2012, 6, 1), end_at=datetime(2012, 6, 19))
+        ms = Membership()
+        mg = MemberGroup(membership=ms)
+        ss1.membergroup = mg
+        self.session.flush()
+
+        request = DummyRequest(matchdict={'event_id': event_id})
+        target = self._makeOne(request)
+        result = target.membership
+
+        self.assertIsNotNone(result)
+        self.assertEqual(result, ms)
+
     def test_event_id(self):
         request = DummyRequest(matchdict={"event_id": "this-is-event"})
         target = self._makeOne(request)
