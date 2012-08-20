@@ -35,6 +35,9 @@ def upgrade():
         sa.ForeignKey('MemberGroup.id', name='SalesSegment_ibfk_2'),
         nullable=True,
         ))
+    op.add_column(u'User', sa.Column('membergroup_id', Identifier(),
+        sa.ForeignKey('MemberGroup.id', name='User_ibfk_3'),
+        nullable=True))
     ### end Alembic commands ###
 
 def downgrade():
@@ -48,5 +51,7 @@ def downgrade():
          )
     op.drop_constraint('SalesSegment_ibfk_2', 'SalesSegment', type='foreignkey')
     op.drop_column('SalesSegment', 'membergroup_id')
+    op.drop_constraint('User_ibfk_3', 'User', type='foreignkey')
+    op.drop_column('User', 'membergroup_id')
     op.drop_table('MemberGroup')
     ### end Alembic commands ###
