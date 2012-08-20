@@ -1594,6 +1594,15 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 status_cond.append(and_(Order.canceled_at==None, Order.paid_at==None, Order.delivered_at==None))
             if status_cond:
                 query = query.filter(or_(*status_cond))
+        condition = form.tel.data
+        if condition:
+            query = query.join(Order.shipping_address).filter(ShippingAddress.tel_1==condition)
+        condition = form.start_on_from.data
+        if condition:
+            query = query.join(Order.performance).filter(Performance.start_on>=condition)
+        condition = form.start_on_to.data
+        if condition:
+            query = query.join(Order.performance).filter(Performance.start_on<=condition)
         return query
 
 

@@ -29,8 +29,6 @@ class Orders(BaseView):
         form_search = OrderSearchForm(self.request.params)
         if form_search.validate():
             query = Order.set_search_condition(query, form_search)
-        else:
-            self.request.session.flash(u'検索条件が正しくありません')
 
         orders = paginate.Page(
             query,
@@ -101,7 +99,7 @@ class Orders(BaseView):
 
         headers = [
             ('Content-Type', 'application/octet-stream; charset=cp932'),
-            ('Content-Disposition', 'attachment; filename=orders_{date}.csv'.format(date=datetime.now().strftime('%Y%m%d')))
+            ('Content-Disposition', 'attachment; filename=orders_{date}.csv'.format(date=datetime.now().strftime('%Y%m%d%H%M%S')))
         ]
         response = Response(headers=headers)
 
