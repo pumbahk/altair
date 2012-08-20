@@ -5,7 +5,6 @@ from altaircms.layout.models import Layout
 from .renderable import LayoutRender
 from altaircms.auth.api import get_or_404
 
-
 from altaircms.lib.crud.views import AfterInput
 from pyramid.view import view_defaults
 from pyramid.response import FileResponse
@@ -34,7 +33,8 @@ def preview(context, request):
         title = layout.title
         keywords = layout.title
         description = "layout preview"
-    return {"display_blocks": blocks, "page": Page}
+    from altairsite.front import helpers as fh
+    return {"display_blocks": blocks, "page": Page, "myhelper": fh}
 
 @view_config(route_name="layout_download")
 def download(request):
