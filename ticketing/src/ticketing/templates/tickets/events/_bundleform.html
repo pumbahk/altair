@@ -12,8 +12,15 @@
 		<fieldset>
 		  ${form_item(form.name)}
 		  ${form_item(form.tickets)}
-		  ${form_item(form.product_items)}
 		</fieldset>
+    % if performances:
+    <h4>現在関連づけられているパフォーマンス</h4>
+    <ul>
+    % for performance in performances:
+      <li>${performance.name}</li>
+    % endfor
+    % endif
+    </ul>
 	</div>
 	<div class="modal-footer">
 		<a href="#" class="btn" data-dismiss="modal">キャンセル</a>
