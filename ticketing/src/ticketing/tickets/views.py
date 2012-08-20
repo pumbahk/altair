@@ -272,3 +272,14 @@ class TicketTemplates(BaseView):
         data.update(dict(drawing=' '.join(to_opcodes(etree.ElementTree(etree.fromstring(template.data['drawing']))))))
         return data
 
+
+from ticketing.core.models import TicketPrintQueue
+
+@view_defaults(decorator=with_bootstrap, permission="event_editor")
+class TicketPrinter(BaseView):
+
+    @view_config(route_name='tickets.print.dequeue', renderer='json')
+    def dequeue(self):
+        retval = TicketPrintQueue.dequeue_all(self.context.user)
+        return dict(print_queue_list=retval)
+

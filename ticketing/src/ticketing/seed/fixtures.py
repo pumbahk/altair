@@ -486,6 +486,16 @@ class FixtureBuilder(object):
             auth_identifier=user.email,
             auth_secret=gendigest("asdfasdf")
             )
+    def build_sej_organization_datum(self, name):
+        retval = self.Datum(
+            'SejOrganization',
+            shop_id = '30520',
+            shop_name = name,
+            secret_key = '050-5830-6860',
+            contact_01 = '050-5830-6860',
+            contact_02 = u'楽天チケット お問い合わせセンター 050-5830-6860'
+        )
+        return retval
 
     def build_organization_datum(self, code, name):
         logger.info(u"Building Organization %s" % name)
@@ -509,6 +519,7 @@ class FixtureBuilder(object):
                     ],
                 'organization_id',
                 ),
+<<<<<<< Updated upstream
             user=many_to_one(
                 [
                     account_datum.user \
@@ -516,8 +527,13 @@ class FixtureBuilder(object):
                     if account_datum.name == name
                     ][0],
                 'user_id'
+=======
+            sej_organization=one_to_many(
+                [self.build_sej_organization_datum(name)],
+                'organization_id'
+>>>>>>> Stashed changes
                 )
-            )
+            ),
         payment_method_data = [
             self.build_payment_method_datum(
                 retval,

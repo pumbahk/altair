@@ -15,5 +15,7 @@ def includeme(config):
     config.add_route('tickets.templates.delete', '/templates/{id}/delete', factory=".resources.TicketsResource")
     config.add_route('tickets.templates.data', '/templates/{id}/data', factory=".resources.TicketsResource")
 
+    config.add_route('tickets.print.dequeue', '/print/dequeue')
+
     ## events.tickets.templatesもview`configに含まれている
     config.scan('.views')

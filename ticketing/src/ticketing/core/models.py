@@ -1747,3 +1747,31 @@ class TicketPrintHistory(Base, BaseModel, WithTimestamp):
     ticket_bundle_id = Column(Identifier, ForeignKey('TicketBundle.id'), nullable=False)
     ticket_bundle = relationship('TicketBundle', backref='print_histories')
 
+class TicketPrintQueue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = "TicketPrintQueue"
+    id = Column(Identifier, primary_key=True, autoincrement=True, nullable=False)
+    operator_id = Column(Identifier, ForeignKey('Operator.id'), nullable=True)
+    operator = relationship('Operator', uselist=False)
+    data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
+
+    @classmethod
+    def enqueue(self, operator, data):
+        '''
+        '''
+        DBSession.add(TicketPrintQueue(data = data, operator = operator))
+
+    @classmethod
+    def dequeue_all(self, operator):
+        '''
+        '''
+        ret_val = []
+        now = datetime.now()
+        queues = TicketPrintQueue.filter_by(deleted_at = None).order_by('created_at desc').all()
+        for queue in queues:
+            queue.deleted_at = now
+            ret_val.append(dict(
+                id = queue.id,
+                data = queue.data
+            ))
+        return ret_val
+
