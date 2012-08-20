@@ -39,7 +39,12 @@ from altairsite.front import helpers as fh
 
 ## required:categories
 ## required:top_inner_category
-<%def name="global_navigation(top_inner_categories, categories)">
+<%def name="global_navigation()">
+<%
+from altairsite.front import helpers as fh
+categories = fh._get_categories(request, u"大")
+nav_categories = list(fh._get_categories(request, u"top_inner"))
+%>
 	<div id="globalNav">
 		<ul id="globalNav1">
 		  % for category in categories:
@@ -51,7 +56,6 @@ from altairsite.front import helpers as fh
 		  % endfor
 		</ul>
 		<ul id="globalNav2">
-			  <% nav_categories = list(top_inner_categories)%>
 			  % if categories.count() > 0:
 			  % for category in nav_categories[:-1]:
 			    <li><a href="${h.link.get_link_from_category(request, category)}" alt="${category.label}">${category.label}</a></li>

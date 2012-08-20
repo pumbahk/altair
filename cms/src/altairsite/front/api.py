@@ -10,8 +10,6 @@ from .bsettings import BlockSettings
 from . import helpers as h
 from .impl import ILayoutTemplateLookUp
 
-from .helpers import get_navigation_categories
-
 import logging
 logger = logging.getLogger(__file__)
 
@@ -78,7 +76,7 @@ class FrontPageRenderer(object):
         return bsettings
 
     def build_render_params(self, page):
-        params = h.get_navigation_categories(self.request)
+        params = {}
         params.update(sub_categories=h.get_subcategories_from_page(self.request, page), 
                       myhelper=h)
         return params
