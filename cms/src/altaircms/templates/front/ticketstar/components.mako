@@ -1,6 +1,9 @@
 <%namespace file="./gadgets.mako" name="gadgets"/>
 
-<%def name="master_header(top_ourter_categories)">
+<%def name="master_header()">
+<%
+from altairsite.front import helpers as fh
+%>
 		<p id="tagLine">チケット販売・イベント予約</p>
 		<p id="siteID"><a href="http://www.rakuten.co.jp/"><img src="/static/ticketstar/img/common/header_logo_01.gif" alt="楽天チケット" class="serviceLogo" width="97" height="35" /></a><a href="/"><img src="/static/ticketstar/img/common/header_logo_02.gif" alt="チケット" class="serviceTitle" width="88" height="23" /></a></p>
 		<dl id="remoteNav">
@@ -21,7 +24,7 @@
 		  <dt>補助メニュー</dt>
 		  <dd class="siteUtility">
 			<ul>
-			  <% categories = list(top_outer_categories)%>
+			  <% categories = list(fh._get_categories(request,u"top_outer"))%>
 			  % for category in categories[:-1]:
 			    <li><a href="${h.link.get_link_from_category(request, category)}" alt="${category.label}">${category.label}</a></li>
 			  % endfor

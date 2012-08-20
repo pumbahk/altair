@@ -46,7 +46,7 @@
 
 	  <!-- ========== header ========== -->
 	<div id="grpheader">
-  	  ${co.master_header(top_outer_categories)}
+  	  ${co.master_header()}
     </div>
     ${co.global_navigation(top_inner_categories, categories)}
     ${co.header_search()}
