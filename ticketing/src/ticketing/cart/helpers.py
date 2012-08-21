@@ -22,6 +22,12 @@ def performance_date(performance):
     s = performance.start_on
     return u'{0.month}月{0.day}日 {0.hour:02}:{0.minute:02}'.format(s)
 
+def japanese_date(date):
+    return u"%d年%d月%d日(%s)" % (date.year, date.month, date.day, u"月火水木金土日"[date.weekday()])
+
+def japanese_time(time):
+    return u"%d時%d分" % (time.hour, time.minute)
+
 # TODO: requestをパラメータから排除
 def error_list(request, form, name):
     errors = form[name].errors

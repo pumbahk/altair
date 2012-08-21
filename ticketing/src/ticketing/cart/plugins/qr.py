@@ -3,7 +3,7 @@
 from pyramid.view import view_config
 from pyramid.response import Response
 from zope.interface import implementer
-from ..interfaces import IDeliveryPlugin, IOrderDelivery, ICartDelivery
+from ..interfaces import IOrderDelivery, ICartDelivery, ICompleteMailDelivery
 from . import models as m
 from . import logger
 import qrcode
@@ -22,6 +22,10 @@ def deliver_confirm_viewlet(context, request):
 
 @view_config(context=IOrderDelivery, name="delivery-%d" % PLUGIN_ID, renderer="ticketing.cart.plugins:templates/qr_complete.html")
 def deliver_completion_viewlet(context, request):
+    return dict()
+
+@view_config(context=ICompleteMailDelivery, name="delivery-%d" % PLUGIN_ID, renderer="ticketing.cart.plugins:templates/qr_mail_complete.html")
+def deliver_completion_mail_viewlet(context, request):
     return dict()
 
 class QRTicketDeliveryPlugin(object):

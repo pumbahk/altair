@@ -142,13 +142,6 @@ def completion_viewlet(context, request):
     """
     return dict()
 
-@view_config(context=ICompleteMailPayment, name="payment-1", renderer="ticketing.cart.plugins:templates/mail_complete.html")
-def completion_mail_viewlet(context, request):
-    """ 完了メール表示
-    :param context: ICompleteMailPayment
-    """
-    return dict()
-
 class MultiCheckoutView(object):
     """ マルチ決済API
     """

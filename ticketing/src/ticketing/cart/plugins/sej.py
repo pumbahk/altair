@@ -3,7 +3,7 @@ from zope.interface import implementer
 from pyramid.view import view_config
 from pyramid.response import Response
 
-from ..interfaces import IPaymentPlugin, ICartPayment, IOrderPayment
+from ..interfaces import IPaymentPlugin, ICartPayment, IOrderPayment, ICompleteMailPayment, ICompleteMailDelivery
 from ..interfaces import IDeliveryPlugin, ICartDelivery, IOrderDelivery
 
 from .. import logger
@@ -25,6 +25,7 @@ from lxml import html, etree
 from lxml.builder import E
 from datetime import datetime, timedelta
 import pystache
+from ticketing.cart import helpers as cart_helper
 
 PAYMENT_PLUGIN_ID = 3
 DELIVERY_PLUGIN_ID = 2
@@ -279,3 +280,20 @@ def sej_payment_viewlet(context, request):
 @view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer='ticketing.cart.plugins:templates/carts/sej_payment_confirm.html')
 def sej_payment_confirm_viewlet(context, request):
     return Response(text=u'セブンイレブン支払い')
+
+
+@view_config(context=ICompleteMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer="ticketing.cart.plugins:templates/sej_payment_mail_complete.html")
+def completion_payment_mail_viewlet(context, request):
+    """ 完了メール表示
+    :param context: ICompleteMailPayment
+    """
+    sej_order=get_sej_order(context.order)
+    return dict(sej_order=sej_order, h=cart_helper)
+
+@view_config(context=ICompleteMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer="ticketing.cart.plugins:templates/sej_delivery_mail_complete.html")
+def completion_delivery_mail_viewlet(context, request):
+    """ 完了メール表示
+    :param context: ICompleteMailDelivery
+    """
+    sej_order=get_sej_order(context.order)
+    return dict(sej_order=sej_order, h=cart_helper)
