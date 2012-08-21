@@ -40,6 +40,7 @@ def get_payment_due_at(current_date, cart):
         payment_due_at = current_date + timedelta(days=cart.payment_delivery_pair.payment_period_days)
     else:
         payment_due_at = current_date + timedelta(days=3)
+        payment_due_at.replace(hour=23, minute=59, second=59)
     return payment_due_at
 
 def get_ticketing_start_at(current_date, cart):
@@ -47,6 +48,7 @@ def get_ticketing_start_at(current_date, cart):
         ticketing_start_at = cart.payment_delivery_pair.issuing_start_at
     else:
         ticketing_start_at = current_date + timedelta(days=cart.payment_delivery_pair.issuing_interval_days)
+        ticketing_start_at.replace(hour=00, minute=00, second=00)
     return ticketing_start_at
 
 def get_sej_order(order):

@@ -645,7 +645,7 @@ function newHandler(n, xmldoc) {
       n.insertAdjacentHTML('beforeEnd', [
         '<div style="position:absolute;',
         'font-size:', fontSize, 'px', ';',
-        'line-height:', lineHeight || fontSize, 'px', ';',
+        'line-height:', lineHeight ? (lineHeight + 'px'): '1em', ';',
         'left:', p.x * dpiFix, unit, ';',
         'top:', p.y * dpiFix, unit, ';',
         'width:', width * dpiFix * scale, unit, ';',

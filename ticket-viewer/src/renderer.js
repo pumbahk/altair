@@ -29,7 +29,7 @@ function newHandler(objects, styleClasses, drawable, offset) {
       text.n.style.width = _s.x + 'px';
       text.n.style.height = _s.y + 'px';
       text.n.style.fontSize = text.fontSize * canvasScale + 'px';
-      text.n.style.lineHeight = text.lineHeight * canvasScale + 'px';
+      text.n.style.lineHeight = text.lineHeight ? (text.lineHeight * canvasScale) + 'px': '1em';
     }
   });
   function initPathData() {
@@ -112,11 +112,10 @@ function newHandler(objects, styleClasses, drawable, offset) {
       // Font sizes are always in px. (this is the spec)
       var canvasScale = Math.sqrt(Math.abs(determinant(canvasTransform)));
       var n = document.createElement('div');
-      var _lineHeight = (lineHeight || fontSize);
       n.setAttribute('style', [
           'position:absolute;',
           'font-size:', fontSize * canvasScale, 'px', ';',
-          'line-height:', _lineHeight * canvasScale, 'px', ';',
+          'line-height:', lineHeight ? (lineHeight * canvasScale) + 'px': '1em', ';',
           'left:', _p.x, 'px', ';',
           'top:', _p.y, 'px', ';',
           'width:', _s.x, 'px', ';',
@@ -124,7 +123,7 @@ function newHandler(objects, styleClasses, drawable, offset) {
         ].concat(styleDefs).join(''));
       n.innerHTML = text;
       viewport.appendChild(n);
-      texts.push({ n: n, position: p, size: s, fontSize: fontSize, lineHeight: _lineHeight });
+      texts.push({ n: n, position: p, size: s, fontSize: fontSize, lineHeight: lineHeight });
     },
     cm: function _currentTransformationMatrix(a, b, c, d, e, f) {
       currentMatrix = { a: a, b: b, c: c, d: d, e: e, f: f };
