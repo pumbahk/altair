@@ -35,6 +35,7 @@ def includeme(config):
     # 完了／エラー
     config.add_route('payment.confirm', 'confirm')
     config.add_route('payment.finish', 'completed')
+    config.add_route('qr.make', 'qr')
 
     config.add_subscriber('.subscribers.add_helpers', 'pyramid.events.BeforeRender')
 

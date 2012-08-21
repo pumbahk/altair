@@ -62,7 +62,8 @@ requires = [
     'xlwt',
     'xlutils',
     'cssutils',
-    'numpy'
+    'numpy',
+    'qrcode',
     ]
 
 setup(name='ticketing',
