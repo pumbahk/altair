@@ -935,6 +935,8 @@ class Visitor(object):
         self.font_weight_classes = {
             u"900": u"b",
             u"bold": u"b",
+            u"400": None,
+            u"normal": None,
             }
 
     @staticmethod
@@ -1130,13 +1132,14 @@ class Visitor(object):
                 classes_pushed += 1
 
         if new_style.font_weight is not None:
-            font_weight_class = self.font_weight_classes.get(new_style.font_weight)
-            if font_weight_class is None:
-                raise Exception('Unsupported font: %s' % new_style.font_weight)
-            old_font_weight_class = self.font_weight_classes.get(self.current_style_ctx.style.font_weight)
-            if font_weight_class != old_font_weight_class:
-                self.emitter.emit_push_class(font_weight_class)
-                classes_pushed += 1
+            if new_style.font_weight not in self.font_weight_classes:
+                raise Exception('Unsupported font weight: %s' % new_style.font_weight)
+            font_weight_class = self.font_weight_classes[new_style.font_weight]
+            if font_weight_class is not None:
+                old_font_weight_class = self.font_weight_classes.get(self.current_style_ctx.style.font_weight)
+                if font_weight_class != old_font_weight_class:
+                    self.emitter.emit_push_class(font_weight_class)
+                    classes_pushed += 1
 
         if new_style.text_anchor is not None:
             text_anchor_class = self.text_anchor_classes.get(new_style.text_anchor)
