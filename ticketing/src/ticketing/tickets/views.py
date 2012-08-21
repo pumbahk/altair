@@ -260,7 +260,7 @@ class TicketTemplates(BaseView):
     def download(self):
         qs = self.context.tickets_query().filter_by(id=self.request.matchdict['id'])
         template = qs.filter_by(organization_id=self.context.user.organization_id).one()
-        return FileLikeResponse(StringIO(template.data["drawing"]),
+        return FileLikeResponse(StringIO(template.drawing),
                                 request=self.request)
 
     @view_config(route_name="events.tickets.boundtickets.data", renderer="json")
@@ -269,7 +269,7 @@ class TicketTemplates(BaseView):
         qs = self.context.tickets_query().filter_by(id=self.request.matchdict['id'])
         template = qs.filter_by(organization_id=self.context.user.organization_id).one()
         data = dict(template.ticket_format.data)
-        data.update(dict(drawing=' '.join(to_opcodes(etree.ElementTree(etree.fromstring(template.data['drawing']))))))
+        data.update(dict(drawing=' '.join(to_opcodes(etree.ElementTree(etree.fromstring(template.drawing))))))
         return data
 
 

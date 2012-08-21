@@ -1701,6 +1701,10 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def templates_query(cls):
         return cls.filter_by(event_id=None)
 
+    @property
+    def drawing(self):
+        return self.data["drawing"]
+
     def create_event_bound(self, event):
         new_object = self.__class__.clone(self)
         new_object.event_id = event.id
@@ -1762,6 +1766,10 @@ class TicketPrintQueue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     operator_id = Column(Identifier, ForeignKey('Operator.id'), nullable=True)
     operator = relationship('Operator', uselist=False)
     data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
+
+    @property
+    def drawing(self):
+        return self.data["drawing"]
 
     @classmethod
     def enqueue(self, operator, data):
