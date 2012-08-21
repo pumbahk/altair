@@ -18,6 +18,10 @@ class SeatCSV(object):
         'stock_type_id',
         'stock_type_name',
         ]
+    stock_holder_header = [
+        'stock_holder_id',
+        'stock_holder_name',
+        ]
     account_header = [
         'account_id',
         'account_name',
@@ -30,6 +34,7 @@ class SeatCSV(object):
         self.header = self.seat_header\
                     + self.stock_attribute_header\
                     + self.stock_type_header\
+                    + self.stock_holder_header\
                     + self.account_header\
                     + self.seat_status_header
         self.rows = [self._convert_to_csv(seat) for seat in seats]
@@ -52,6 +57,13 @@ class SeatCSV(object):
                 ('stock_type_name', seat.stock.stock_type.name)
             ]
 
+        stock_holder_list = []
+        if seat.stock.stock_holder:
+            stock_holder_list = [
+                ('stock_holder_id', seat.stock.stock_holder.id),
+                ('stock_holder_name', seat.stock.stock_holder.name)
+            ]
+
         account_list = []
         if seat.stock.stock_holder:
             account_list = [
@@ -70,6 +82,7 @@ class SeatCSV(object):
             seat_list
             + stock_attribute_list
             + stock_type_list
+            + stock_holder_list
             + account_list
             + seat_status_list
         )
