@@ -83,16 +83,10 @@ class Orders(BaseView):
 
     @view_config(route_name='orders.download')
     def download(self):
-        sort = self.request.GET.get('sort', 'Order.id')
-        direction = self.request.GET.get('direction', 'desc')
-        if direction not in ['asc', 'desc']:
-            direction = 'desc'
-
         query = Order.filter(Order.organization_id==int(self.context.user.organization_id))
-        query = query.order_by(sort + ' ' + direction)
 
-        form_search = OrderSearchForm(self.request.POST)
-        if self.request.method == 'POST':
+        form_search = OrderSearchForm(self.request.params)
+        if form_search.validate():
             query = Order.set_search_condition(query, form_search)
 
         orders = query.all()
