@@ -150,3 +150,12 @@ def render_payment_finished_viewlet(request, order):
     if response is None:
         raise ValueError
     return Markup(response.text)
+
+def product_name_with_unit(product, performance_id):
+    items = product.items_by_performance_id(performance_id)
+    if len(items) == 1:
+        return None
+    else:
+        return u"(%s)" % (u" + ".join(
+            u"%s:%d枚" % (escape(item.stock_type.name), item.quantity)
+            for item in items))

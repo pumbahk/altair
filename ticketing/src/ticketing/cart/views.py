@@ -21,7 +21,7 @@ from ..users import models as u_models
 from .models import Cart
 from . import helpers as h
 from . import schemas
-from .exceptions import *
+from .exceptions import CartException, NoCartError, NoEventError
 from .rakuten_auth.api import authenticated_user
 from .events import notify_order_completed
 from webob.multidict import MultiDict
@@ -39,8 +39,6 @@ class IndexView(object):
         self.context = request.context
 
 
-    @view_config(route_name='cart.index', renderer='carts_mobile/index.html', xhr=False, permission="buy", request_type=".interfaces.IMobileRequest")
-    @view_config(route_name='cart.index.sales', renderer='carts_mobile/index.html', xhr=False, permission="buy", request_type=".interfaces.IMobileRequest")
     @view_config(route_name='cart.index', renderer='carts/index.html', xhr=False, permission="buy")
     @view_config(route_name='cart.index.sales', renderer='carts/index.html', xhr=False, permission="buy")
     def __call__(self):
@@ -377,6 +375,74 @@ class ReserveView(object):
                               total_amount=h.format_number(cart.tickets_amount),
                     ))
 
+    @view_config(route_name='cart.order', request_method="POST", renderer='carts_mobile/reserve.html', request_type=".interfaces.IMobileRequest")
+    def reserve_mobile(self):
+        performance_id = self.request.params.get('performance_id')
+        seat_type_id = self.request.params.get('seat_type_id')
+
+        # パフォーマンス
+        performance = c_models.Performance.query.filter(
+            c_models.Performance.id==performance_id).first()
+        if performance is None:
+            raise NoEventError("No such performance (%d)" % performance_id)
+        # イベント
+        event = performance.event
+
+        # CSRFトークンの確認
+        form = schemas.CSRFSecureForm(
+            form_data=self.request.params,
+            csrf_context=self.request.session)
+        form.validate()
+
+        data = dict(
+            event=event,
+            performance=performance, 
+            seat_type_id=seat_type_id,
+        )
+
+        order_items = self.ordered_items
+        try:
+            # カート生成(席はおまかせ)
+            cart = api.order_products(
+                self.request,
+                performance_id,
+                order_items)
+            if cart is None:
+                transaction.abort()
+                logger.debug("cart is None. aborted.")
+                # TODO: 例外を上げる
+                data.update(dict(result='NG'))
+                return data
+        except NotEnoughAdjacencyException:
+            transaction.abort()
+            logger.debug("not enough adjacency")
+            data.update(dict(result='NG', reason="adjacency"))
+            return data
+        except InvalidSeatSelectionException:
+            transaction.abort()
+            logger.debug("seat selection is invalid.")
+            data.update(dict(result='NG', reason="invalid seats"))
+            return data
+        except NotEnoughStockException as e:
+            transaction.abort()
+            logger.debug("not enough stock quantity :%s" % e)
+            data.update(dict(result='NG', reason="stock"))
+            return data
+
+        DBSession.add(cart)
+        DBSession.flush()
+        api.set_cart(self.request, cart)
+        data.update(dict(result='OK',
+                    payment_url=self.request.route_url("cart.payment"),
+                    cart=dict(products=[dict(name=p.product.name, 
+                                             quantity=p.quantity,
+                                             price=int(p.product.price),
+                                             seats=p.seats,
+                                        ) 
+                                        for p in cart.products],
+                              total_amount=h.format_number(cart.tickets_amount),
+                    )))
+        return data
 
     def __call__(self):
         """
@@ -667,3 +733,196 @@ class InvalidMemberGroupView(object):
         location = api.get_valid_sales_url(self.request, event)
         logger.debug('url: %s ' % location)
         return HTTPFound(location=location)
+
+
+class MobileIndexView(object):
+    """モバイルのパフォーマンス選択
+    """
+    def __init__(self, request):
+        self.request = request
+        self.context = request.context
+
+    @view_config(route_name='cart.index', renderer='carts_mobile/index.html', xhr=False, permission="buy", request_type=".interfaces.IMobileRequest")
+    @view_config(route_name='cart.index.sales', renderer='carts_mobile/index.html', xhr=False, permission="buy", request_type=".interfaces.IMobileRequest")
+    def __call__(self):
+        event_id = self.request.matchdict['event_id']
+        venue_name = self.request.params.get('v')
+
+        # セールスセグメント必須
+        sales_segment = self.context.get_sales_segument()
+        if sales_segment is None:
+            raise NoEventError("No matching sales_segment")
+
+        # パフォーマンスIDが確定しているなら商品選択へリダイレクト
+        performance_id = self.request.params.get('pid')
+        if performance_id:
+            return HTTPFound(self.request.route_url(
+                "cart.mobile",
+                event_id=event_id,
+                performance_id=performance_id))
+
+        event = c_models.Event.query.filter(c_models.Event.id==event_id).first()
+        if event is None:
+            raise NoEventError("No such event (%d)" % event_id)
+
+        if venue_name:
+            venue = c_models.Venue.query.filter(c_models.Venue.name==venue_name).first()
+            if venue is None:
+                logger.debug("No such venue venue_name=%s" % venue_name)
+        else:
+            venue = None
+        # 会場が指定されていなければ会場を選択肢を作る
+        if venue:
+            venues = []
+            # 会場が確定しているならパフォーマンスの選択肢を作る
+            performances_query = c_models.Performance.query \
+                .filter(c_models.Performance.event_id==event_id)
+            performances = [dict(id=p.id, start_on=p.start_on.strftime('%Y-%m-%d %H:%M')) \
+                for p in performances_query if p.venue.name==venue_name]
+        else:
+            # 会場は会場名で一意にする
+            venues = set(performance.venue.name for performance in event.performances)
+            performances = []
+
+        return dict(
+            event=event,
+            sales_segment=sales_segment,
+            venue=venue,
+            venues=venues,
+            performances=performances,
+        )
+
+
+class MobileSelectProductView(object):
+    """モバイルの商品選択
+    """
+    def __init__(self, request):
+        self.request = request
+        self.context = request.context
+
+    @view_config(route_name='cart.mobile', renderer='carts_mobile/seat_types.html', xhr=False, permission="buy", request_type=".interfaces.IMobileRequest")
+    def __call__(self):
+        event_id = self.request.matchdict['event_id']
+        performance_id = self.request.matchdict['performance_id']
+        seat_type_id = self.request.params.get('stid')
+
+        if seat_type_id:
+            return HTTPFound(self.request.route_url(
+                "cart.products",
+                event_id=event_id,
+                performance_id=performance_id,
+                seat_type_id=seat_type_id))
+
+        # セールスセグメント必須
+        sales_segment = self.context.get_sales_segument()
+        if sales_segment is None:
+            raise NoEventError("No matching sales_segment")
+
+        event = c_models.Event.query.filter(c_models.Event.id==event_id).first()
+        if event is None:
+            raise NoEventError("No such event (%d)" % event_id)
+
+        performance = c_models.Performance.query.filter(
+            c_models.Performance.id==performance_id).filter(
+            c_models.Performance.event_id==event.id).first()
+        if performance is None:
+            raise NoEventError("No such performance (%d)" % performance_id)
+
+        segment_stocks = DBSession.query(c_models.ProductItem.stock_id).filter(
+            c_models.ProductItem.product_id==c_models.Product.id).filter(
+            c_models.Product.sales_segment_id==sales_segment.id)
+
+        seat_types = DBSession.query(c_models.StockType).filter(
+            c_models.Performance.event_id==event_id).filter(
+            c_models.Performance.id==performance_id).filter(
+            c_models.Performance.event_id==c_models.StockHolder.event_id).filter(
+            c_models.StockHolder.id==c_models.Stock.stock_holder_id).filter(
+            c_models.Stock.stock_type_id==c_models.StockType.id).filter(
+            c_models.Stock.id.in_(segment_stocks)).order_by(c_models.StockType.display_order).all()
+
+        data = dict(
+            seat_types=[
+                dict(
+                    id=s.id,
+                    name=s.name
+                )
+            for s in seat_types
+            ],
+            event=event,
+            performance=performance,
+            venue=performance.venue,
+        )
+        return data
+
+    @view_config(route_name='cart.products', renderer='carts_mobile/products.html', xhr=False, permission="buy", request_type=".interfaces.IMobileRequest")
+    def products(self):
+        event_id = self.request.matchdict['event_id']
+        performance_id = self.request.matchdict['performance_id']
+        seat_type_id = self.request.matchdict['seat_type_id']
+
+        # セールスセグメント必須
+        sales_segment = self.context.get_sales_segument()
+        if sales_segment is None:
+            raise NoEventError("No matching sales_segment")
+
+        # イベント
+        event = c_models.Event.query.filter(c_models.Event.id==event_id).first()
+        if event is None:
+            raise NoEventError("No such event (%d)" % event_id)
+
+        # パフォーマンス(イベントにひもづいてること)
+        performance = c_models.Performance.query.filter(
+            c_models.Performance.id==performance_id).filter(
+            c_models.Performance.event_id==event.id).first()
+        if performance is None:
+            raise NoEventError("No such performance (%d)" % performance_id)
+
+        # 席種(イベントとパフォーマンスにひもづいてること)
+        segment_stocks = DBSession.query(c_models.ProductItem.stock_id).filter(
+            c_models.ProductItem.product_id==c_models.Product.id).filter(
+            c_models.Product.sales_segment_id==sales_segment.id)
+
+        seat_type = DBSession.query(c_models.StockType).filter(
+            c_models.Performance.event_id==event_id).filter(
+            c_models.Performance.id==performance_id).filter(
+            c_models.Performance.event_id==c_models.StockHolder.event_id).filter(
+            c_models.StockHolder.id==c_models.Stock.stock_holder_id).filter(
+            c_models.Stock.stock_type_id==c_models.StockType.id).filter(
+            c_models.Stock.id.in_(segment_stocks)).filter(
+            c_models.StockType.id==seat_type_id).first()
+
+        if seat_type is None:
+            raise NoEventError("No such seat_type (%s)" % seat_type_id)
+
+        # 商品一覧
+        # サブクエリの部分
+        product_items = DBSession.query(c_models.ProductItem.product_id).filter(
+            c_models.ProductItem.stock_id==c_models.Stock.id).filter(
+            c_models.Stock.stock_type_id==seat_type_id).filter(
+            c_models.ProductItem.performance_id==performance_id)
+
+        products = c_models.Product.query.filter(
+            c_models.Product.id.in_(product_items)).order_by(
+            sa.desc("price")).filter_by(
+            sales_segment=sales_segment)
+
+        # CSRFトークン発行
+        form = schemas.CSRFSecureForm(csrf_context=self.request.session)
+
+        data = dict(
+            event=event,
+            performance=performance,
+            venue=performance.venue,
+            seat_type=seat_type,
+            products=[
+                dict(
+                    id=product.id,
+                    name=product.name,
+                    detail=h.product_name_with_unit(product, performance_id),
+                    price=h.format_number(product.price, ","),
+                )
+                for product in products
+            ],
+            form=form,
+        )
+        return data

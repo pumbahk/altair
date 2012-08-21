@@ -1,0 +1,62 @@
+<%inherit file="./base.html"/>
+
+<div style="background-image:url(${request.static_url('ticketing.cart:static/img/mobile/bg_bar.gif')});background-color:#bf0000" bgcolor="#bf0000" background="${request.static_url('ticketing.cart:static/img/mobile/bg_bar.gif')}"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>チケット購入</font></div>
+
+${event.title}
+
+<hr size="1" color="#888888" noshade="noshade" />
+
+商品をお選びください
+
+<form action="${request.route_url('cart.order')}" method="post">
+  % for product in products:
+    <div>
+      <br/>
+      <div>
+        <font color="#ffbf00">■</font>${product['name']} &yen;${product['price']}
+      </div>
+      % if product['detail']:
+        ${product['detail']}<br/>
+      % endif
+      数量
+      <select name="product-${product['id']}">
+        <option value="0">0</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
+    </div>
+  % endfor
+  <div style="text-align:center;">
+  <br/>
+  <input type="hidden" name="performance_id" value="${performance.id}">
+  <input type="hidden" name="seat_type_id" value="${seat_type.id}">
+  ${form.csrf_token()}
+  <input type="submit" value="次へ">
+  </div>
+</form>
+<form action="${request.route_url('cart.mobile', event_id=event.id, performance_id=performance.id)}">
+  <div style="text-align:center;">
+  <input type="hidden" name="v" value="${venue.name}">
+  <input type="submit" value="戻る">
+  </div>
+</form>
+
+<hr size="1" color="#888888" noshade="noshade" />
+
+<div style="background-color:#ffdddd">会場</div>
+<div>
+  ${venue.name}
+</div>
+
+<div style="background-color:#ffdddd">日時</div>
+<div>
+  ${performance.start_on}
+</div>
+
+<div style="background-color:#ffdddd">席種</div>
+<div>
+${seat_type.name}
+</div>

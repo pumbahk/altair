@@ -107,7 +107,7 @@ class SejPaymentPlugin(object):
         tel2 = shipping_address.tel_2.replace('-', '')
 
         settings = get_current_registry().settings
-        tenant = SejTenant.find_by(organization_id = performance.event.organization.id)
+        tenant = SejTenant.filter_by(organization_id = performance.event.organization.id).first()
         api_key = tenant.api_key or settings['sej.api_key']
         api_url = tenant.inticket_api_url or settings['sej.inticket_api_url']
 
@@ -163,7 +163,7 @@ class SejDeliveryPlugin(object):
         tel2 = shipping_address.tel_2.replace('-', '')
 
         settings = get_current_registry().settings
-        tenant = SejTenant.find_by(organization_id = performance.event.organization.id)
+        tenant = SejTenant.filter_by(organization_id = performance.event.organization.id).first()
         api_key = tenant.api_key or settings['sej.api_key']
         api_url = tenant.inticket_api_url or settings['sej.inticket_api_url']
 
@@ -208,7 +208,7 @@ class SejPaymentDeliveryPlugin(object):
         performance = cart.performance
 
         settings = get_current_registry().settings
-        tenant = SejTenant.find_by(organization_id = performance.event.organization.id)
+        tenant = SejTenant.filter_by(organization_id = performance.event.organization.id).first()
         api_key = tenant.api_key or settings['sej.api_key']
         api_url = tenant.inticket_api_url or settings['sej.inticket_api_url']
 
