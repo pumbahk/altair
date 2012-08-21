@@ -1,4 +1,4 @@
-"""empty message
+"""add ticket print queue
 
 Revision ID: 9ef25d188e3
 Revises: 52fcb95562ea
@@ -8,8 +8,7 @@ Create Date: 2012-08-20 17:49:02.795411
 
 # revision identifiers, used by Alembic.
 revision = '9ef25d188e3'
-#down_revision = '52fcb95562ea'
-down_revision = '19ead4ed557'
+down_revision = '52fcb95562ea'
 
 from alembic import op
 import sqlalchemy as sa
@@ -32,4 +31,5 @@ def upgrade():
         )
 
 def downgrade():
+    op.drop_constraint('ticketprintqueue_ibfk_1', 'TicketPrintQueue', type='foreignkey')
     op.drop_table('TicketPrintQueue')
