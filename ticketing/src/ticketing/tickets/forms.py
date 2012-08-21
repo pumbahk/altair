@@ -4,7 +4,7 @@ import json
 import os.path
 from StringIO import StringIO
 from lxml import etree
-# import xml.etree.ElementTree as etree
+#import xml.etree.ElementTree as etree
 from wtforms import Form
 from wtforms import TextField, IntegerField, HiddenField, SelectField, SelectMultipleField, FileField
 from wtforms.validators import Regexp, Length, Optional, ValidationError, StopValidation
@@ -39,7 +39,7 @@ class FileRequired(object):
 def build_template_data_value(drawing):
     if drawing:
         out = StringIO()
-        drawing.write(out) #doc declaration?
+        drawing.write(out, encoding="UTF-8") #doc declaration?
         return dict(drawing=out.getvalue())
     return dict()
 
