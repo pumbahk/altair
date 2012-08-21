@@ -1,13 +1,108 @@
 <%inherit file="./base.html"/>
 
 <form method="post" action="${request.url}">
-%if form:
-<ul>
-  %for k, v in form.errors.items():
-  <li>${k} ${v[0]}</li>
-  %endfor
-</ul>
-%endif
+<div>
+購入者情報を入力して下さい。
+</div>
+
+<div>
+<font color="#ffbf00">■</font>購入者氏名(全角)
+</div>
+<div>
+  ${form['last_name'].label}
+  ${form['last_name']}
+  <div style="color:#ff0000">
+    ${h.error_list(request, form, 'last_name')}
+  </div>
+</div>
+<div>
+  ${form['first_name'].label}
+  ${form['first_name']}
+  <div style="color:#ff0000">
+    ${h.error_list(request, form, 'first_name')}
+  </div>
+<div color="#ff0000">
+
+<div>
+<font color="#ffbf00">■</font>購入者氏名(カナ)
+</div>
+<div>
+  ${form['last_name_kana'].label}
+  ${form['last_name_kana']}
+  <div style="color:#ff0000">
+    ${h.error_list(request, form, 'last_name_kana')}
+  </div>
+</div>
+<div>
+  ${form['first_name_kana'].label}
+  ${form['first_name_kana']}
+  <div style="color:#ff0000">
+    ${h.error_list(request, form, 'first_name_kana')}
+  </div>
+</div>
+
+<div>
+<font color="#ffbf00">■</font>${form['mail_address'].label}
+</div>
+<div>
+  ${form['mail_address']}
+  <div style="color:#ff0000">
+    ${h.error_list(request, form, 'mail_address')}
+  </div>
+</div>
+
+<div>
+<font color="#ffbf00">■</font>住所
+</div>
+<div>
+  ${form['zip'].label}(例:1410022)<br/>
+  ${form['zip']}
+  <div style="color:#ff0000">
+    ${h.error_list(request, form, 'zip')}
+  </div>
+</div>
+<div>
+  ${form['prefecture'].label}<br/>
+  ${form['prefecture']}
+  <div style="color:#ff0000">
+    ${h.error_list(request, form, 'prefecture')}
+  </div>
+</div>
+<div>
+  ${form['city'].label}<br/>
+  ${form['city']}
+  <div style="color:#ff0000">
+    ${h.error_list(request, form, 'city')}
+  </div>
+</div>
+<div>
+  住所<br/>
+  ${form['address_1']}<br/>
+  ${form['address_2']}
+  <div style="color:#ff0000">
+    ${h.error_list(request, form, 'address_1')}
+  </div>
+</div>
+
+<div>
+<font color="#ffbf00">■</font>電話番号
+</div>
+<div>
+  ${form['tel'].label}<br/>
+  ${form['tel']}
+  <div style="color:#ff0000">
+    ${h.error_list(request, form, 'tel')}
+  </div>
+</div>
+<div>
+  ${form['fax'].label}<br/>
+  ${form['fax']}
+  <div style="color:#ff0000">
+    ${h.error_list(request, form, 'fax')}
+  </div>
+</div>
+
+<hr />
 <div>
 代金の支払方法を指定して、「次へ進む」ボタンをクリックして下さい。<br>
 購入時には、代金のほかに支払方法により、手数料がかかる場合があります。
