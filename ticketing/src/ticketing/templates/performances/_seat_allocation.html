@@ -341,7 +341,7 @@ function buildStockHolderTypeTables(venue) {
     var head = $('<h4 class="ui-header" style="float: left;"></h4>').text(' ' + stockHolder.get('name'));
     var button = $('<a class="reporting btn btn-mini btn-inverse" data-toggle="modal" href="#modal-report">配券明細</a>');
     button.attr('onclick', "$('.modal-report-submit').attr('href', '/events/reports/${performance.event_id}/seat_stock_to_stockholder/" + stockHolder.get('id') + "');");
-    var div = $('<div></div>').css('display', 'block');
+    var div = $('<div></div>').css('display', 'none');
     var table = $('<table class="table table-bordered"></table>');
     var tbody = $('<tbody></tbody>').appendTo(table);
     venue.stockTypes.each(function (stockType) {
