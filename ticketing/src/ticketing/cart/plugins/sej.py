@@ -105,13 +105,13 @@ class SejPaymentPlugin(object):
         payment_due_at = get_payment_due_at(current_date,order)
         ticketing_start_at = get_ticketing_start_at(current_date,order)
         ticketing_due_at = order.payment_delivery_pair.issuing_end_at
-        tel1 = shipping_address.tel_1.replace('-', '')
-        tel2 = shipping_address.tel_2.replace('-', '')
+        tel1 = shipping_address.tel_1 and shipping_address.tel_1.replace('-', '')
+        tel2 = shipping_address.tel_2 and shipping_address.tel_2.replace('-', '')
 
         settings = get_current_registry().settings
         tenant = SejTenant.filter_by(organization_id = performance.event.organization.id).first()
-        api_key = tenant.api_key or settings['sej.api_key']
-        api_url = tenant.inticket_api_url or settings['sej.inticket_api_url']
+        api_key = (tenant and tenant.api_key) or settings['sej.api_key']
+        api_url = (tenant and tenant.inticket_api_url) or settings['sej.inticket_api_url']
 
         sej_order = get_sej_order(order)
         if not sej_order:
@@ -161,13 +161,13 @@ class SejDeliveryPlugin(object):
         ticketing_due_at = cart.payment_delivery_pair.issuing_end_at
         tickets = get_tickets_from_cart(cart)
         order_no = cart.order_no
-        tel1 = shipping_address.tel_1.replace('-', '')
-        tel2 = shipping_address.tel_2.replace('-', '')
+        tel1 = shipping_address.tel_1 and shipping_address.tel_1.replace('-', '')
+        tel2 = shipping_address.tel_2 and shipping_address.tel_2.replace('-', '')
 
         settings = get_current_registry().settings
         tenant = SejTenant.filter_by(organization_id = performance.event.organization.id).first()
-        api_key = tenant.api_key or settings['sej.api_key']
-        api_url = tenant.inticket_api_url or settings['sej.inticket_api_url']
+        api_key = (tenant and tenant.api_key) or settings['sej.api_key']
+        api_url = (tenant and tenant.inticket_api_url) or settings['sej.inticket_api_url']
 
         sej_order = get_sej_order(order)
         if not sej_order:
